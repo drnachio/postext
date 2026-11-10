@@ -28,12 +28,22 @@ function edited(b64: string, edits: [string, string][]): { base64: string; fileN
 }
 
 describe('the Word round trip as tools (#1397)', () => {
-  it('exports the semantic document as data and finds no change in it untouched', async () => {
+  it('exports the formatted document unless the semantic one is asked for', async () => {
     const { call } = harness();
     const out = await call('sandbox_export', { format: 'docx', deliver: 'data' });
+    expect(out).toMatchObject({ ok: true, format: 'docx', variant: 'formatted', scope: 'book', file: 'Guide.docx' });
+    // Flowing text in the book's design: nothing sits in a text box.
+    expect(strFromU8(unzipSync(fromBase64(out.base64))['word/document.xml']!)).not.toContain('<w:txbxContent>');
+    const dry = await call('sandbox_apply_word_edits', { file: { base64: out.base64, fileName: 'Guide.docx' }, dryRun: true });
+    expect(dry).toMatchObject({ ok: true, dryRun: true, counts: { applied: 0, conflict: 0, rejected: 0 }, edits: [] });
+  });
+
+  it('exports the semantic document as data and finds no change in it untouched', async () => {
+    const { call } = harness();
+    const out = await call('sandbox_export', { format: 'docx', variant: 'semantic', deliver: 'data' });
     expect(out).toMatchObject({ ok: true, format: 'docx', variant: 'semantic', scope: 'book', file: 'Guide.docx' });
     expect(out.base64.length).toBeGreaterThan(1000);
-    const chapter = await call('sandbox_export', { format: 'docx', scope: 'chapter', deliver: 'data' });
+    const chapter = await call('sandbox_export', { format: 'docx', variant: 'semantic', scope: 'chapter', deliver: 'data' });
     expect(chapter.file).toBe('Guide - Opening.docx');
     const dry = await call('sandbox_apply_word_edits', { file: { base64: out.base64, fileName: 'Guide.docx' }, dryRun: true });
     expect(dry).toMatchObject({ ok: true, dryRun: true, variant: 'semantic', counts: { applied: 0, conflict: 0, rejected: 0 }, edits: [] });

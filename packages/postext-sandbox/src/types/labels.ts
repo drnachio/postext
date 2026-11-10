@@ -5544,12 +5544,7 @@ export interface SandboxLabels {
   wordExportSemanticHint: string;
   wordExportFormatted: string;
   wordExportFormattedHint: string;
-  /** Under the variants, when Formatted is chosen for a book mostly of
-   *  composed or comic pages (#1444). */
-  wordExportPagesSuggested: string;
-  wordExportLaying: string;
   wordExportFonts: string;
-  wordExportPages: string;
   wordExportWriting: string;
   wordExportFailed: string;
   wordExportNotes: string;

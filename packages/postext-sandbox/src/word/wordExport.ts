@@ -1,13 +1,12 @@
-// The Word export of the Sandbox (#1397): the semantic document (Word
-// styles, lists, notes and tables, built from the Markdown) or the
-// formatted one (every page as the PDF tab prints it, built from the same
-// print chain, picture bytes and fonts). The export dialog and the
+// The Word export of the Sandbox (#1397, #1458): the book as flowing,
+// editable text, built from the Markdown. Semantic is content only (plain
+// Word styles that name each part); Formatted sets the same text with the
+// book's design and its fonts embedded. The export dialog and the
 // `sandbox_export` tool share it. Both files carry the export map, so the
 // edited document comes back through `applyDocxEdits` (./wordEdits).
 
-import { documentDisplayList, parseFontString, type PostextConfig, type Resource, type VDTDocument } from 'postext';
+import { baseFontFamily, type PostextConfig, type Resource } from 'postext';
 import {
-  formattedDocx,
   planWordFonts,
   semanticDocx,
   type FontWarning,
@@ -16,27 +15,21 @@ import {
   type WordFontPlan,
 } from 'postext/word';
 import { decompressWoff2, rasterizeSvgWithDom, type PdfFontProvider } from 'postext-pdf';
-import { composeBookMemo } from '../book/compose.js';
-import { planContent } from '../book/jumps.js';
-import { layoutCacheKey } from '../book/layoutKeys.js';
-import { layOutBookPrint } from '../book/printChain.js';
-import type { BookPlan, Chapter } from '../book/types.js';
-import { ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
+import type { Chapter } from '../book/types.js';
+import { configFontUses, ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
 import { getBlob } from '../storage/blobStore.js';
-import type { LayoutService } from '../worker/LayoutService.js';
 
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
 export type WordVariant = 'semantic' | 'formatted';
 export type WordScope = 'chapter' | 'book';
 
-/** Where an export stands: chapters laid out, faces fetched, pages written. */
+/** Where an export stands: faces fetched, then the document written. */
 export interface WordExportProgress {
-  phase: 'layout' | 'fonts' | 'pages' | 'write';
+  phase: 'fonts' | 'write';
   done: number;
   total: number;
 }
-
 /** What the export could not carry over as the book has it. */
 export type WordExportNote =
   | { kind: 'font'; family: string; reason: FontWarning['reason']; detail?: string }
@@ -87,46 +80,46 @@ async function rasterizeSvg(svg: string, widthPx: number, heightPx: number): Pro
   }
 }
 
-/** The faces the pages set text in and the characters each sets, read from
- *  the display lists the formatted writer draws from. */
-export function fontUse(docs: readonly VDTDocument[]): { fontStrings: string[]; usedText: Map<string, Set<number>> } {
-  const usedText = new Map<string, Set<number>>();
-  const strings = new Set<string>();
-  const note = (fontString: string | undefined, text: string) => {
-    if (!fontString) return;
-    strings.add(fontString);
-    const face = parseFontString(fontString);
-    if (!face) return;
-    const key = `${face.family}|${face.weight}|${face.style}`;
-    let set = usedText.get(key);
-    if (!set) usedText.set(key, (set = new Set()));
-    for (const ch of text) set.add(ch.codePointAt(0)!);
+/** The faces the book sets text in and the characters the export holds,
+ *  read from the settings and the text (no layout): every weight and slant
+ *  the configuration asks of each family, and one set of characters for
+ *  them all (chapters, resources' wording, the texts of the design). */
+export function fontUse(
+  config: PostextConfig,
+  chapters: readonly WordChapterInput[],
+  resources: readonly Resource[],
+  title?: string,
+): { faces: { family: string; weight: number; style: 'normal' | 'italic' }[]; usedText: Map<string, Set<number>> } {
+  const text = new Set<number>();
+  const read = (s: string | undefined) => {
+    if (s) for (const ch of s) text.add(ch.codePointAt(0)!);
   };
-  type Item = ReturnType<typeof documentDisplayList>[number]['items'][number];
-  const visit = (item: Item | null | undefined) => {
-    if (!item) return;
-    if (item.kind === 'table') {
-      for (const cell of item.cells) visit(cell.item);
-      return;
-    }
-    if (item.kind !== 'text') return;
-    for (const line of item.lines) {
-      for (const run of line.runs) {
-        note(run.fontString, run.text);
-        if (run.ruby) note(run.ruby.fontString, run.ruby.text);
-        if (run.warichu) note(run.warichu.fontString, run.warichu.upper + run.warichu.lower);
-        for (const mark of run.kunten?.runs ?? []) note(mark.fontString, mark.text);
-      }
-    }
-  };
-  for (const doc of docs) {
-    for (const page of documentDisplayList(doc)) for (const item of page.items) visit(item);
+  for (const c of chapters) {
+    read(c.title);
+    read(c.markdown);
   }
-  return { fontStrings: [...strings], usedText };
+  read(title);
+  read(JSON.stringify(resources));
+  read(JSON.stringify(config));
+  const faces: { family: string; weight: number; style: 'normal' | 'italic' }[] = [];
+  const usedText = new Map<string, Set<number>>();
+  const seen = new Set<string>();
+  for (const [name, uses] of configFontUses(config, chapters.map((c) => c.markdown))) {
+    const family = baseFontFamily(name);
+    usedText.set(family, text);
+    for (const use of uses) {
+      const key = `${family}|${use.weight}|${use.style}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      faces.push({ family, weight: use.weight, style: use.style });
+    }
+  }
+  return { faces, usedText };
 }
 
-/** The faces the pages use, each asked of the PDF tab's font provider
- *  with the characters it sets; a face that cannot be had is a note. */
+/** The faces the book uses, each asked of the PDF tab's font provider
+ *  with the characters the export holds; a face that cannot be had is a
+ *  note. */
 export async function sourceFaces(
   use: ReturnType<typeof fontUse>,
   provider: PdfFontProvider,
@@ -134,80 +127,30 @@ export async function sourceFaces(
 ): Promise<{ faces: SourceFace[]; missing: FontWarning[] }> {
   const faces: SourceFace[] = [];
   const missing: FontWarning[] = [];
-  const keys = [...use.usedText.keys()];
   let done = 0;
-  for (const key of keys) {
-    const [family, weight, style] = key.split('|') as [string, string, 'normal' | 'italic'];
+  for (const { family, weight, style } of use.faces) {
     try {
-      const answer = await provider(family, Number(weight), style, { codePoints: use.usedText.get(key)! });
-      faces.push({ family, weight: Number(weight), style, files: Array.isArray(answer) ? [...answer] : [answer] });
+      const answer = await provider(family, weight, style, { codePoints: use.usedText.get(family) ?? new Set<number>() });
+      faces.push({ family, weight, style, files: Array.isArray(answer) ? [...answer] : [answer] });
     } catch (err) {
       if (!missing.some((m) => m.family === family)) missing.push({ family, reason: 'missing', detail: err instanceof Error ? err.message : String(err) });
     }
-    onProgress?.(++done, keys.length);
+    onProgress?.(++done, use.faces.length);
   }
   return { faces, missing };
 }
 
-export interface WordChainInput {
-  service: LayoutService;
-  clientId: string;
+export interface WordExportInput {
+  variant: WordVariant;
   scope: WordScope;
   chapters: readonly Chapter[];
   activeChapterId: string;
   resources: Resource[];
-  /** The configuration the layout runs with (hyphenation locale applied). */
+  /** The book's configuration (hyphenation locale applied). */
   config: PostextConfig;
-  plan: BookPlan;
-  onProgress?: (p: WordExportProgress) => void;
-}
-
-/** The print chain the PDF tab lays out: the whole book chapter after
- *  chapter, or the active chapter continued after the ones before it. */
-export async function layOutWordChain(input: WordChainInput): Promise<{ docs: VDTDocument[]; chapters: WordChapterInput[] }> {
-  const { service, clientId, chapters, resources, config, plan } = input;
-  await ensureConfigFontsLoaded(config);
-  const build = (content: Parameters<LayoutService['build']>[0]['content'], cacheKey: string) =>
-    service.build({ clientId, priority: 'pdf', content, config, cacheKey });
-  if (input.scope === 'book') {
-    const docs = await layOutBookPrint({
-      plan,
-      chapters,
-      resources,
-      config,
-      build: (content, _config, opts) => build(content, opts.cacheKey),
-      onChapter: (index, count) => input.onProgress?.({ phase: 'layout', done: index, total: count }),
-    });
-    // The chain leaves out a chapter it cannot find: the documents follow
-    // the plan's chapters that are in the book.
-    const ids = plan.chapters.map((p) => p.chapterId).filter((id) => chapters.some((c) => c.id === id));
-    if (ids.length !== docs.length) throw new Error(`the book laid out as ${docs.length} documents for ${ids.length} chapters`);
-    return { docs, chapters: ids.map((id) => chapters.find((c) => c.id === id)!).map((c) => ({ id: c.id, title: c.title, markdown: c.markdown })) };
-  }
-  const chapter = chapters.find((c) => c.id === input.activeChapterId);
-  const chapterPlan = chapter ? plan.byId[chapter.id] : undefined;
-  if (!chapter || !chapterPlan) throw new Error('the chapter is no longer in the book');
-  input.onProgress?.({ phase: 'layout', done: 0, total: 1 });
-  const book = composeBookMemo(chapters, chapter.id);
-  const doc = await build(
-    { markdown: book.markdown, metadata: book.metadata, resources, continuation: chapterPlan.continuation, ...planContent(chapterPlan) },
-    layoutCacheKey({
-      markdown: book.markdown,
-      metadata: book.metadata,
-      config,
-      resources,
-      continuation: chapterPlan.continuation,
-      continuationKey: chapterPlan.continuationKey,
-      outlineKey: chapterPlan.outlineKey,
-    }),
-  );
-  return { docs: [doc], chapters: [{ id: chapter.id, title: chapter.title, markdown: chapter.markdown }] };
-}
-
-export interface WordExportInput extends Omit<WordChainInput, 'onProgress'> {
-  variant: WordVariant;
   title?: string;
-  /** The PDF tab's provider (`createPdfFontProvider()`): TrueType bytes. */
+  /** The PDF tab's provider (`createPdfFontProvider()`): TrueType bytes.
+   *  With it the Formatted document embeds the book's faces. */
   fontProvider?: PdfFontProvider;
   onProgress?: (p: WordExportProgress) => void;
   onNote?: (note: WordExportNote) => void;
@@ -227,39 +170,29 @@ export async function buildWordExport(input: WordExportInput): Promise<Uint8Arra
     input.onNote?.(n);
   };
   const content = (w: { code: string; message: string; chapter?: string }) => note({ kind: 'content', code: w.code, message: w.message, ...(w.chapter ? { chapter: w.chapter } : {}) });
-  if (input.variant === 'semantic') {
-    const chapters = wordChapters(input.chapters, input.scope, input.activeChapterId);
-    const bytes = await wordResourceBytes(input.resources);
-    input.onProgress?.({ phase: 'write', done: 0, total: 1 });
-    return semanticDocx({
-      chapters,
-      config: input.config,
-      resources: input.resources,
-      resourceBytes: (id) => bytes.get(id),
-      rasterizeSvg,
-      ...(input.title ? { title: input.title } : {}),
-      onWarning: content,
-    });
-  }
-
-  const { docs, chapters } = await layOutWordChain(input);
+  const chapters = wordChapters(input.chapters, input.scope, input.activeChapterId);
+  // Semantic: content only, in neutral styles and the reader's own fonts.
+  // Formatted: the book's design, with its faces embedded.
   let plan: WordFontPlan | undefined;
-  if (input.fontProvider) {
-    const use = fontUse(docs);
+  if (input.variant === 'formatted' && input.fontProvider) {
+    // The loader knows each family's files once the previews asked for it.
+    await ensureConfigFontsLoaded(input.config).catch(() => undefined);
+    const use = fontUse(input.config, chapters, input.resources, input.title);
     const { faces, missing } = await sourceFaces(use, input.fontProvider, (done, total) => input.onProgress?.({ phase: 'fonts', done, total }));
-    plan = await planWordFonts(faces, { usedText: use.usedText, fontStrings: use.fontStrings, decompressWoff2 });
+    plan = await planWordFonts(faces, { usedText: use.usedText, decompressWoff2 });
     for (const w of [...missing, ...plan.warnings]) note(fontNote(w));
   }
   const bytes = await wordResourceBytes(input.resources);
-  return formattedDocx({
-    docs,
+  input.onProgress?.({ phase: 'write', done: 0, total: 1 });
+  return semanticDocx({
     chapters,
+    config: input.config,
+    design: input.variant === 'semantic' ? 'plain' : 'book',
     resources: input.resources,
     resourceBytes: (id) => bytes.get(id),
     rasterizeSvg,
     ...(plan ? { fonts: plan } : {}),
     ...(input.title ? { title: input.title } : {}),
     onWarning: content,
-    onProgress: (done, total) => input.onProgress?.({ phase: 'pages', done, total }),
   });
 }

@@ -8,11 +8,11 @@ import { reviewChanges, reviewWordEdits } from './wordEdits.js';
 // #1397: the review of an edited Word export, as the dialog lists it.
 
 async function exported() {
-  const { host, get } = harness();
+  const { get } = harness();
   const s = get();
   const bytes = await buildWordExport({
-    variant: 'semantic', scope: 'book', service: host.layout, clientId: 'test', chapters: s.chapters,
-    activeChapterId: s.activeChapterId, resources: s.resources, config: layoutConfig(s), plan: host.store.getPlan(s),
+    variant: 'semantic', scope: 'book', chapters: s.chapters,
+    activeChapterId: s.activeChapterId, resources: s.resources, config: layoutConfig(s),
   });
   return { bytes, get };
 }
@@ -42,12 +42,12 @@ describe('the review of an edited Word export (#1397)', () => {
   });
 
   it('gives each note once, however many faces of a family fail', async () => {
-    const { host, get } = harness();
+    const { get } = harness();
     const s = get();
     const notes: WordExportNote[] = [];
     await buildWordExport({
-      variant: 'formatted', scope: 'book', service: host.layout, clientId: 'test', chapters: s.chapters,
-      activeChapterId: s.activeChapterId, resources: s.resources, config: layoutConfig(s), plan: host.store.getPlan(s),
+      variant: 'formatted', scope: 'book', chapters: s.chapters,
+      activeChapterId: s.activeChapterId, resources: s.resources, config: layoutConfig(s),
       // Bytes that are no font: every face of every family fails alike.
       fontProvider: async () => new Uint8Array([0, 1, 0, 0, 0, 0]),
       onNote: (n) => notes.push(n),

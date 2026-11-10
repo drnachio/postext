@@ -1,5 +1,6 @@
-// The Word round trip as tools (#1397): `sandbox_export` writes either
-// Word document (`exportWordFile`), and `sandbox_apply_word_edits` reads
+// The Word round trip as tools (#1397, #1458): `sandbox_export` writes
+// either Word document (`exportWordFile`: content only, or the book's
+// design), and `sandbox_apply_word_edits` reads
 // an edited export back into the book, as the Manuscript panel's export
 // dialog and review dialog do.
 
@@ -10,7 +11,7 @@ import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
 import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordVariant } from '../../word/wordExport.js';
 import { reviewChanges, reviewWordEdits, writeWordEdits } from '../../word/wordEdits.js';
 import { chapterText, stateReaches } from '../chapterEdits.js';
-import { layoutConfig, whenSettled, type SandboxToolHost } from '../host.js';
+import { layoutConfig, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { WAIT_PARAM, fileParam, layoutAnswer } from './book.js';
 import { readFileInput, type FileInput } from './resources.js';
@@ -41,7 +42,7 @@ function describeNote(s: SandboxState, n: WordExportNote): Record<string, unknow
 export const VARIANT_PARAM = {
   type: 'string',
   enum: ['semantic', 'formatted'],
-  description: 'docx: semantic (default) is an editable document in Word styles, lists, footnotes and tables, built from the Markdown; formatted reproduces every page as the PDF prints it (same layout, pictures and embedded fonts) for checking the layout. Both carry the marks that take the edits made in Word back into the book (sandbox_apply_word_edits).',
+  description: "docx: both are flowing, editable text built from the Markdown (Word styles, lists, footnotes, tables), for Word or Google Docs. semantic is content only: plain styles that name each part and no page design, for correcting the words. formatted (default) is the same text with the book's design as far as Word allows (page size, margins, columns, embedded fonts, openers, boxes, running heads). Both carry the marks that take the edits made in Word back into the book (sandbox_apply_word_edits).",
 } as const;
 
 /** `sandbox_export` with format docx: the file, downloaded or handed back. */
@@ -50,12 +51,9 @@ export async function exportWordFile(
   args: Record<string, unknown>,
   bookName: string,
   maxDataBytes: number,
-  signal?: AbortSignal,
 ): Promise<Record<string, unknown>> {
-  const variant = (args.variant as WordVariant | undefined) ?? 'semantic';
+  const variant = (args.variant as WordVariant | undefined) ?? 'formatted';
   const scope = (args.scope as 'chapter' | 'book' | undefined) ?? 'book';
-  // The formatted document is the print chain: the book laid out first.
-  if (variant === 'formatted') await whenSettled(host, { signal });
   const s = host.store.getSnapshot();
   const notes: WordExportNote[] = [];
   let bytes: Uint8Array;
@@ -63,13 +61,10 @@ export async function exportWordFile(
     bytes = await buildWordExport({
       variant,
       scope,
-      service: host.layout,
-      clientId: 'webmcp:word-export',
       chapters: s.chapters,
       activeChapterId: s.activeChapterId,
       resources: s.resources,
       config: layoutConfig(s),
-      plan: host.store.getPlan(s),
       title: bookName,
       ...(variant === 'formatted' ? { fontProvider: createPdfFontProvider() } : {}),
       onNote: (n) => notes.push(n),

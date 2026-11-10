@@ -12,7 +12,7 @@ import { isProjectOnlyFile, loadBook, type Book } from '../input';
 import { sameBytes, sameFiles } from '../io';
 import { layOut, selectChapters } from '../layout';
 import { Reporter, style } from '../log';
-import { docxVariant, embedsFonts, writeDocx } from '../outputs/docx';
+import { docxVariant, embedsFonts, needsLayout as docxNeedsLayout, writeDocx } from '../outputs/docx';
 import { writeEpub } from '../outputs/epub';
 import { writeHtml } from '../outputs/html';
 import { writeImages } from '../outputs/images';
@@ -56,11 +56,12 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
   const { opts, reporter } = ctx;
   const book = await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
   const docx = opts.string('docx');
-  const variant = docxVariant(opts, 'docx-variant', selectChapters(book, opts));
-  // The formatted Word file is written from the layout the others share;
-  // the semantic one needs none, only the faces it embeds.
-  const needsLayout = TARGETS.some((t) => opts.string(t) && (t !== 'docx' || variant === 'formatted'));
-  const needsFonts = needsLayout || (!!docx && embedsFonts(opts, 'docx-fonts'));
+  const variant = docxVariant(opts, 'docx-variant');
+  // The facsimile Word file is written from the layout the others share;
+  // the flow files need none, only the faces the formatted one embeds.
+  const docxFromLayout = docxNeedsLayout(variant);
+  const needsLayout = TARGETS.some((t) => opts.string(t) && (t !== 'docx' || docxFromLayout));
+  const needsFonts = needsLayout || (!!docx && embedsFonts(opts, 'docx-fonts', variant));
   const fonts = needsFonts
     ? await reporter.time('fonts', () => resolveFonts(book, {
       fontDirs: opts.list('font-dir'),
@@ -68,7 +69,7 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
       ...(opts.string('cache-dir') ? { cacheDir: opts.string('cache-dir')! } : {}),
     }, reporter))
     : undefined;
-  const docxFonts = fonts && embedsFonts(opts, 'docx-fonts') ? { fonts } : {};
+  const docxFonts = fonts && embedsFonts(opts, 'docx-fonts', variant) ? { fonts } : {};
   if (needsLayout && fonts) {
     const assets = assetsOf(book, fonts);
     if (state.last && !sameAssets(state.last.assets, assets)) {
@@ -96,11 +97,11 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
     const previous = state.last?.docs;
     const repaint = previous ? (p: { doc: VDTDocument; chapter: number }) => p.doc !== previous[p.chapter - 1] : undefined;
     if (images) jobs.push(writeImages(book, layout, opts, reporter, images, opts.string('pages'), repaint));
-    if (docx && variant === 'formatted') jobs.push(writeDocx(book, { variant, chapters: layout.chapters, layout, ...docxFonts }, reporter, docx));
+    if (docx && docxFromLayout) jobs.push(writeDocx(book, { variant, chapters: layout.chapters, layout, ...docxFonts }, reporter, docx));
     await Promise.all(jobs);
     state.last = { docs: layout.docs, assets };
   }
-  if (docx && variant === 'semantic') await writeDocx(book, { variant, chapters: selectChapters(book, opts), ...docxFonts }, reporter, docx);
+  if (docx && !docxFromLayout) await writeDocx(book, { variant, chapters: selectChapters(book, opts), ...docxFonts }, reporter, docx);
   return book.watchPaths;
 }
 

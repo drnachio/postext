@@ -1,13 +1,13 @@
 # Word export fidelity check
 
-Tools for #1399. They measure how closely the formatted `.docx` (the PDF's pages written as Word text boxes, #1392) matches the PDF the same layout produced. They also say where the round-trip tests for the Word import live.
+Tools for #1399. They measure how closely the facsimile `.docx` (the PDF's pages written as Word text boxes, #1392; `postext docx --variant facsimile`) matches the PDF the same layout produced. The two documents people edit, semantic and formatted, are flowing text and are not measured against the PDF: Word breaks their lines and pages itself. They also say where the round-trip tests for the Word import live.
 
 | File | What it does |
 | --- | --- |
 | `compare.mjs` | Compares one `.docx` with its reference PDF: pixels per page and line breaks per page |
 | `lines.mjs` | Reads the lines of each page from `pdftotext` and regroups them so both PDFs read the same visible line the same way |
 | `raster.mjs` | Samples the page images under a line's box, to tell a line that is visible from one hidden under a shape |
-| `export-fixtures.mjs` | Lays out the reference books once and writes each one as a PDF plus a formatted `.docx` (and a semantic `.docx` if asked) |
+| `export-fixtures.mjs` | Lays out the reference books once and writes each one as a PDF plus a facsimile `.docx` (and the two flow files, semantic and formatted, with `--flow`) |
 | `guide-bundle.ts` | Packs the built-in guide into a `.postext` book the CLI can read (Bun only, because it imports the Sandbox's sources) |
 | `compare.test.mjs` | Tests for the comparator: `node --test scripts/docx-compare/compare.test.mjs` |
 
@@ -76,13 +76,22 @@ Exit codes:
 ## Reference fixtures
 
 ```sh
-node scripts/docx-compare/export-fixtures.mjs --out /tmp/docx-fixtures            # PDF + formatted .docx
-node scripts/docx-compare/export-fixtures.mjs --out /tmp/docx-fixtures --semantic --compare
+node scripts/docx-compare/export-fixtures.mjs --out /tmp/docx-fixtures            # PDF + facsimile .docx
+node scripts/docx-compare/export-fixtures.mjs --out /tmp/docx-fixtures --flow --compare
 node scripts/docx-compare/export-fixtures.mjs --only rtl,vertical-cjk
 node scripts/docx-compare/export-fixtures.mjs --list
 ```
 
-Each fixture is one `postext build <book> --pdf F.pdf --docx F.docx --docx-variant formatted`. The PDF and the `.docx` therefore come from the same layout. The CLI runs from `packages/postext-cli/src/main.ts` under Bun, the same way its tests run it, or from the executable `POSTEXT_BIN` names. Files go to `--out` (default `<tmp>/postext-docx-fixtures`), and `fixtures.json` in that folder lists what was written. A run with `--only` keeps the other entries already in the list.
+Each fixture is one `postext build <book> --pdf F.pdf --docx F.facsimile.docx --docx-variant facsimile`. The PDF and the `.docx` therefore come from the same layout. The CLI runs from `packages/postext-cli/src/main.ts` under Bun, the same way its tests run it, or from the executable `POSTEXT_BIN` names. Files go to `--out` (default `<tmp>/postext-docx-fixtures`), and `fixtures.json` in that folder lists what was written. A run with `--only` keeps the other entries already in the list.
+
+| File | What it is |
+| --- | --- |
+| `<name>.pdf` | The reference PDF |
+| `<name>.facsimile.docx` | The same pages in text boxes, the file `compare.mjs` measures |
+| `<name>.semantic.docx` | With `--flow`: content only, in plain styles (`postext docx --variant semantic`) |
+| `<name>.formatted.docx` | With `--flow`: the same flowing text in the book's design (`postext docx --variant formatted`) |
+
+The flow files are for opening in Word and Google Docs and for `postext import-docx <file> <book> --dry-run`, which reports no edits on a file nobody touched.
 
 | Name | Book | Part laid out |
 | --- | --- | --- |
@@ -98,26 +107,26 @@ A whole run takes about 20 s.
 Known gaps in the fixtures:
 
 - **Guide:** the guide's figures and tables are included, with every SVG drawn for the edition. The comic strips, the videos and the cover painting are not: they live in the Sandbox's blob store, and the CLI reports them as missing. The pages that use them differ from the Sandbox's own guide, but the PDF and the `.docx` still come from the same layout.
-- **Bioquímica (Feduchi):** this is the other column-and-a-half preset. `postext docx --variant formatted` on it currently crashes inside the CLI's SVG rasteriser (a resvg panic: `geom.rs: called Option::unwrap() on a None value`). The PDF and the semantic `.docx` are fine. Once that is fixed, it can replace or join OpenStax.
+- **Bioquímica (Feduchi):** this is the other column-and-a-half preset. `postext docx --variant facsimile` on it currently crashes inside the CLI's SVG rasteriser (a resvg panic: `geom.rs: called Option::unwrap() on a None value`). The PDF and the flow files are fine. Once that is fixed, it can replace or join OpenStax.
 - **The private column-and-a-half preset** (Feduchi *colymedia*) lives outside this repository and is not a fixture.
 
 ## Manual check in Microsoft Word
 
-LibreOffice does not render text boxes, `eaVert` text, ruby or kashida the way Word does. For each reference fixture, check it in Word once per release that changes the formatted writer:
+LibreOffice does not render text boxes, `eaVert` text, ruby or kashida the way Word does. For each reference fixture, check it in Word once per release that changes the facsimile writer:
 
-1. Open `F.docx` in Word (Microsoft 365, Mac or Windows). Accept no prompts that offer to convert or update the file. Word should open it without a repair message.
+1. Open `F.facsimile.docx` in Word (Microsoft 365, Mac or Windows). Accept no prompts that offer to convert or update the file. Word should open it without a repair message.
 2. Check:
    - pages: every page has the reference page's size, and the page count is the same
    - line breaks: no line has rewrapped (spot-check the last line of every paragraph and the hyphenated line ends)
    - fonts: File → Info shows the fonts embedded, and nothing falls back to Calibri or Times
 3. Export a PDF from Word (File → Save As → PDF, "Best for printing"), then compare it:
-   `node scripts/docx-compare/compare.mjs F.docx F.pdf --docx-pdf F-word.pdf --sheets`
+   `node scripts/docx-compare/compare.mjs F.facsimile.docx F.pdf --docx-pdf F-word.pdf --sheets`
 4. Look at the contact sheets of the pages that differ. Check each fixture's own points:
    - `footnotes`: the note numbers are lettered per page, and the notes sit at the foot of the column
    - `rtl`: the lines run right to left, the kashida is as long as the engine set it, and Word adds none of its own (`jc=both` on Arabic)
    - `vertical-cjk`: the columns run top to bottom and right to left, the furigana stand beside the base text, and the 縦中横 digits stand upright
    - `two-column` and `column-and-a-half`: the floats and the side column sit where they sit in the PDF
-5. Type a word into a paragraph, save, and run `postext import-docx F.docx <book> --dry-run`. Only that word should be reported, as applied.
+5. Type a word into a paragraph, save, and run `postext import-docx F.facsimile.docx <book> --dry-run`. Only that word should be reported, as applied.
 
 Write the Word version and the result into the issue that tracks the release.
 

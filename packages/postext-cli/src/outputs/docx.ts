@@ -1,8 +1,11 @@
-// Word export (`postext/word`, #1387): the semantic variant (native Word
-// structures, built from the Markdown, no layout) or the formatted one
-// (the PDF's pages, from the layout the other outputs share). Both carry
-// an export map, so `postext import-docx` brings the edits made in Word
-// back into the chapters and resources.
+// Word export (`postext/word`, #1387, #1458). Two flow files built from
+// the Markdown with no layout, both editable in Word and Google Docs: the
+// semantic one (content only, plain styles that name each part) and the
+// formatted one (the same text in the book's design, fonts embedded). A
+// third, the facsimile, sets the PDF's pages line by line in text boxes
+// from the layout the other outputs share. All carry an export map, so
+// `postext import-docx` brings the edits made in Word back into the
+// chapters and resources.
 
 import { readFileSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
@@ -12,7 +15,6 @@ import {
   formattedDocx,
   parseTemplate,
   planWordFonts,
-  preferredWordVariant,
   readDocx,
   semanticDocx,
   type FontWarning,
@@ -29,20 +31,22 @@ import type { Layout } from '../layout';
 import type { Reporter } from '../log';
 import { rasterizeSvg } from '../svgImage';
 
-export const DOCX_VARIANTS = ['semantic', 'formatted'] as const;
+export const DOCX_VARIANTS = ['semantic', 'formatted', 'facsimile'] as const;
 export type DocxVariant = (typeof DOCX_VARIANTS)[number];
 
 /** `postext docx --variant` (`build --docx-variant`) as given, else the
- *  one that suits the chapters (#1444): formatted when most of their text
- *  is in composed or comic pages, which the semantic file can only stand
- *  in for; semantic otherwise. */
-export function docxVariant(opts: Options, option = 'variant', chapters?: ReadonlyArray<{ markdown: string }>): DocxVariant {
-  return opts.choice(option, DOCX_VARIANTS) ?? (chapters ? preferredWordVariant(chapters) : 'semantic');
+ *  formatted file. */
+export function docxVariant(opts: Options, option = 'variant'): DocxVariant {
+  return opts.choice(option, DOCX_VARIANTS) ?? 'formatted';
 }
 
+/** Whether the variant is written from the laid-out pages. */
+export const needsLayout = (variant: DocxVariant): boolean => variant === 'facsimile';
+
 /** Whether the export embeds the book's faces (`--no-embed-fonts`,
- *  `build --no-docx-fonts`). */
-export const embedsFonts = (opts: Options, option = 'embed-fonts'): boolean => opts.flag(option) !== false;
+ *  `build --no-docx-fonts`). The semantic file never does: it is set in
+ *  the reader's own fonts. */
+export const embedsFonts = (opts: Options, option = 'embed-fonts', variant?: DocxVariant): boolean => variant !== 'semantic' && opts.flag(option) !== false;
 
 /** A template from a .json file, or from the one a .docx carries (the
  *  import of a Word file postext did not export). */
@@ -164,22 +168,23 @@ function resourceBytes(book: Book): (fileId: string) => Uint8Array | undefined {
 
 export interface DocxJob {
   variant: DocxVariant;
-  /** The chapters exported (the semantic variant). */
+  /** The chapters exported (the flow variants). */
   chapters: readonly BookChapter[];
-  /** The layout the formatted variant is written from. */
+  /** The layout the facsimile is written from. */
   layout?: Layout;
   /** The resolved faces; absent, nothing is embedded. */
   fonts?: FontSet;
 }
 
 export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, out: string): Promise<void> {
-  const chapters = job.variant === 'formatted' ? job.layout?.chapters : job.chapters;
-  if (!chapters) throw new UsageError('The formatted Word file needs a layout');
+  const facsimile = job.variant === 'facsimile';
+  const chapters = facsimile ? job.layout?.chapters : job.chapters;
+  if (!chapters) throw new UsageError('The facsimile Word file needs a layout');
   const meta = extractFrontmatter(chapters[0]?.markdown ?? '').metadata as Record<string, unknown>;
   const author = metadataText(Array.isArray(meta.author) ? meta.author.join(', ') : meta.author);
   const title = metadataText(meta.title) ?? book.name;
   const ids = chapterIds(book);
-  const fonts = job.fonts ? await wordFontPlan(book, job.fonts, reporter) : undefined;
+  const fonts = job.fonts && job.variant !== 'semantic' ? await wordFontPlan(book, job.fonts, reporter) : undefined;
   const common = {
     chapters: wordChapters(chapters, ids),
     resources: book.resources,
@@ -195,8 +200,8 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
   };
   // Where the book starts (`preset.json`'s `start`): the heading numbers
   // and page numbers its first chapter counts on from, as in the layout.
-  const semanticStart = job.variant === 'semantic' && chapters[0] === book.chapters[0] ? book.start : undefined;
-  const bytes = await reporter.time('docx', () => job.variant === 'formatted'
+  const flowStart = !facsimile && chapters[0] === book.chapters[0] ? book.start : undefined;
+  const bytes = await reporter.time('docx', () => facsimile
     ? formattedDocx({
       ...common,
       docs: job.layout!.docs,
@@ -205,7 +210,7 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
         if (done % 50 === 0) reporter.detail(`  docx: ${done}/${total} pages`);
       },
     })
-    : semanticDocx({ ...common, config: book.config, ...(semanticStart ? { start: semanticStart } : {}), onWarning: warn }));
+    : semanticDocx({ ...common, config: book.config, design: job.variant === 'semantic' ? 'plain' : 'book', ...(flowStart ? { start: flowStart } : {}), onWarning: warn }));
   await writeOut(out, bytes);
-  reporter.output({ kind: 'docx', path: out, bytes: byteLength(bytes), ...(job.variant === 'formatted' ? { pages: job.layout!.pageCount } : {}) });
+  reporter.output({ kind: 'docx', path: out, bytes: byteLength(bytes), variant: job.variant, ...(facsimile ? { pages: job.layout!.pageCount } : {}) });
 }
