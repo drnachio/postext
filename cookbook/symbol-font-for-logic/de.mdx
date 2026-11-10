@@ -1,0 +1,56 @@
+---
+title: "Logik- und Mengenzeichen aus einer Symbolschrift"
+summary: "Eine Logikfibel in Schriften ohne ∀, ∈ und ℵ: symbolFont nennt Noto Sans Math, die diese Zeichen und das Griechische auf der Leinwand und im PDF zeichnet."
+plain: "Ein kurzes Kapitel, das die Zeichen der Logik und der Mengenlehre lesen lehrt. Den Schriften des Buchs fehlen diese Zeichen; eine zweite Schrift setzt sie ein, am Bildschirm und im gedruckten PDF."
+description: "Eine Logikfibel in Postext mit symbolFont: Noto Sans Math zeichnet ∀, ∃, ∈, ℵ und Griechisch in jeder Schrift, auf der Leinwand und im PDF, ohne leere Kästchen."
+question: "Wie drucke ich Logik- und Mengenzeichen (∀, ∈, ℵ) und Griechisch, die der Schrift fehlen, ohne leere Kästchen?"
+aliases: ["Symbolschrift", "symbolFont", "Ersatzschrift", "fehlende Glyphen", "leere Kästchen im PDF", "Tofu", "Logikzeichen", "Mengenschreibweise", "Prädikatenlogik", "Noto Sans Math", "glyphFallbackAt"]
+---
+
+## Was Sie setzen
+
+Das erste Kapitel einer kleinen Logikfibel auf einer Seite von 155 × 235 mm: ein weinroter Balken mit den Zeichen des Kapitels in großem Grad, danach vier Abschnitte, die ∀, ∃, ∈, ∪, ∅ und ℵ vorlesen, mit den Formeln im Fließtext und abgesetzt zwischen den Absätzen. Der Text steht in Crimson Pro, die Überschriften in Cormorant Garamond, die Auszeichnungen in IBM Plex Sans Condensed. Keine der drei hat ∀, ∈ oder einen griechischen Buchstaben in den Dateien, die Fontsource ausliefert. Eine einzige Einstellung, `symbolFont`, stellt Noto Sans Math hinter jede von ihnen. So kommen alle Zeichen aus derselben Schrift, im Text, in den Überschriften, den Kolumnentiteln und den Tabellenzellen, und das PDF druckt sie alle.
+
+## Zubereitung
+
+### 1 · Eine Symbolschrift hinter allen Schriften
+
+Der Code dieses Schritts ist die kurze Antwort oben. `symbolFont: 'Noto Sans Math'` ([Symbolschrift](/de/docs/configuration-fonts-colors-viewers#symbolschrift)) stellt die Familie hinter jede Familie, die die Konfiguration nennt: Ein Zeichen, das der Schrift fehlt, wird aus Noto Sans Math gezeichnet, im Grad und in der Farbe der Schrift, und der Rest der Zeile bleibt in ihr. Fontsource liefert Noto Sans Math vollständig in der Datei `latin` aus, 3.033 Zeichen, aber das Kit meldet diese Datei nur für den lateinischen Bereich an, und der Browser würde sie nicht nach ∀ fragen. `resolve` und `pdfFonts` des Rezepts reichen dieselbe Datei ohne Bereich weiter, am Bildschirm und an `renderToPdf`. Nur fehlende Zeichen wechseln die Schrift: Crimson Pro hat ¬, die Negation im Text bleibt also in Crimson Pro.
+
+### 2 · Ein erster Satz ohne sie zeigt, was fehlt
+
+<Excerpt region="without" />
+
+Der erste Satzlauf lässt `symbolFont` leer und gibt seine `glyphFallbackAt`-Warnungen aus, eine je Absatz, Überschrift oder Tabelle mit Zeichen, für die ihre Schrift keine Glyphe hat, mit Seite und Zeichen. Die englische Ausgabe meldet achtzehn: vierzehn Absätze in Crimson Pro, drei Überschriften in Cormorant Garamond und die Kopfzeile von Tabelle 1.1 in IBM Plex Sans Condensed fett. Ohne eine Familie, die sie zeichnet, nimmt die Leinwand die Zeichen aus einer Systemschrift des Lesers, und das PDF druckt für jedes ein leeres Kästchen. Der zweite Satzlauf, mit der Symbolschrift, ist der auf der Seite; seine Warnungen nennen `"Noto Sans Math"` als die Familie, die sie zeichnet.
+
+### 3 · Die Zeichen der Eröffnung sind Text
+
+<Excerpt region="opener" />
+
+Die Zeile aus sieben Zeichen unter dem Titel ist ein Gestaltungstext in Cormorant Garamond zu 30 pt, gespeist aus dem Attribut `signs` der Überschrift. Cormorant Garamond hat keines davon, also kommen alle sieben aus der Symbolschrift, im Weiß des Balkens. Eine Sperrung von 9 pt verteilt sie über die Satzbreite.
+
+### 4 · Zellen und Kolumnentitel nehmen dieselbe Schrift
+
+<Excerpt region="tables" />
+
+Die Wahrheitstafel entsteht aus den Junktoren selbst: Der Kopf jeder Spalte ist die Formel, jede Zelle das, was die Formel in dieser Zeile ergibt. Die Kopfzellen stehen in IBM Plex Sans Condensed fett kursiv, die übrigen in Crimson Pro; die Symbolschrift bedient beide. Ihr einziger gerader Schnitt zeichnet für jedes Gewicht und jede Lage, sodass das ∧ im fetten Kopf und das ∈ einer kursiven Formel dasselbe aufrechte Zeichen sind. Der Kolumnentitel der rechten Seite druckt den laufenden Abschnitt, `{firstMark.h2}`, und *SETS: ∈, ∪, ∩ AND ∅* auf Seite 3 nimmt seine Zeichen ebenfalls aus Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Seite 3: die Mengenformeln in Crimson Pro kursiv, jedes Zeichen aus Noto Sans Math." />
+
+## Varianten
+
+### Den ersten Satzlauf weglassen
+
+Sind die Warnungen gelesen, genügt ein Satzlauf.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Häufige Fehler
+
+- Eine Schrift, deren Fontsource-Dateien Griechisch enthalten (Source Serif 4, Alegreya), setzt φ und Γ selbst, und das Kit lädt diese Datei, wenn der Text Griechisch enthält: Dann gehen nur die Zeichen an die Symbolschrift. Crimson Pro hat keine griechische Datei, ihr Griechisch kommt also aus Noto Sans Math.
+- Die Symbolschrift hat nur einen Schnitt, gerade und normal. Eine fette Überschrift oder eine kursive Formel setzt ihre Zeichen in diesem Schnitt, so wie die Mathematik sie druckt.

@@ -1,0 +1,774 @@
+{
+  "schemaVersion": 1,
+  "slug": "symbol-font-for-logic",
+  "sourceHash": "21eedba0d8eb5db96634e435f726a802b44cc375874afb4bd3050b832b98f7f5",
+  "engine": {
+    "postext": "1.73.0",
+    "postextPdf": "1.73.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T20:40:35.385Z",
+  "variants": {
+    "en": {
+      "hash8": "20f21fc7",
+      "vdtHash": "c7326081a59f393575f8911322dfbcb02b171c9b",
+      "timings": {
+        "importMs": 1656,
+        "fontsMs": 27,
+        "buildMs": 17,
+        "totalMs": 2657,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Crimson Pro",
+          "IBM Plex Sans Condensed"
+        ],
+        "pages": 4,
+        "ownLines": 163
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 111484,
+          "alt": "Opening page 1: Reading the Signs."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 81474,
+          "alt": "Page 2: Quantifiers: ∀ and ∃. Table 1.1. The five connectives, row by row."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 129918,
+          "alt": "Page 3: Sets: ∈, ∪, ∩ and ∅."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 70968,
+          "alt": "Page 4: Where the signs come from. Table 1.2. Where the signs come from."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "symbol-font-for-logic.pdf",
+        "bytes": 83809,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "symbol-font-for-logic.postext",
+        "bytes": 26519,
+        "folio": "66a2cfd9",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "aa5bf52e4fdda9bc",
+            "lines": "09a8c7ff0ed9145f"
+          }
+        ],
+        "warnings": [
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "formatWarning",
+          "parseTSV",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "symbolFont",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerBold",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "symbolFont",
+          "tableStyle"
+        ],
+        "configLeaves": 215,
+        "designElements": 9,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "~…~"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "super-subscripts",
+          "symbol-font",
+          "table-model"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.89
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "a34db0b1",
+      "vdtHash": "6e669522a3cebb6ca2dbc06f724ceae42c9763f8",
+      "timings": {
+        "importMs": 1649,
+        "fontsMs": 27,
+        "buildMs": 15,
+        "totalMs": 2643,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          155,
+          235
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Crimson Pro",
+          "IBM Plex Sans Condensed"
+        ],
+        "pages": 4,
+        "ownLines": 163
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1516,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 112810,
+          "alt": "Página de apertura 1: Leer los signos."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 90386,
+          "alt": "Página 2: Cuantificadores: ∀ y ∃. Tabla 1.1. Las cinco conectivas, fila a fila."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 124786,
+          "alt": "Página 3: Conjuntos: ∈, ∪, ∩ y ∅."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1516,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 89616,
+          "alt": "Página 4: De dónde vienen los signos. Tabla 1.2. De dónde vienen los signos."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "crop"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "symbol-font-for-logic.pdf",
+        "bytes": 88221,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "symbol-font-for-logic.postext",
+        "bytes": 26396,
+        "folio": "66a2cfd9",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "eb152d8f7362091f",
+            "lines": "7a41d82fcbe1cd7f"
+          }
+        ],
+        "warnings": [
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt",
+          "glyphFallbackAt"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "formatWarning",
+          "parseTSV",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].hyphenation.enabled",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "symbolFont",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerBold",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "symbolFont",
+          "tableStyle"
+        ],
+        "configLeaves": 215,
+        "designElements": 9,
+        "directives": [
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "~…~"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "heading-attributes",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "super-subscripts",
+          "symbol-font",
+          "table-model"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.73
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}
