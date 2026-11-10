@@ -151,6 +151,14 @@ export const MathSection = memo(function MathSection() {
         onReset={() => resetField('keepWithLeadIn')}
       />
       <ToggleSwitch
+        label={labels.mathSnapToGrid}
+        checked={math.snapToGrid}
+        onChange={(v) => updateMath({ snapToGrid: v })}
+        tooltip={labels.baselineGridStyleTooltip}
+        isDefault={math.snapToGrid === D.snapToGrid}
+        onReset={() => resetField('snapToGrid')}
+      />
+      <ToggleSwitch
         label={labels.mathEquationNumbering}
         checked={eq.enabled}
         onChange={(v) => updateEquations({ enabled: v })}

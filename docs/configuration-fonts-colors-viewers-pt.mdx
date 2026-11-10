@@ -447,7 +447,7 @@ A propriedade `pdfGeneration` controla como o renderizador de PDF gera o documen
 
 `buildDocument` os leva na VDT, como `doc.config.pdfGeneration`, e `renderToPdf` toma cada ajuste do primeiro lugar que o fornece:
 
-1. as opções passadas a ele (`outlines`, `accessible`, `colorSpace`);
+1. suas próprias opções passadas a ele (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
 2. o `pdfGeneration` do primeiro documento que renderiza (num livro, os ajustes do primeiro capítulo valem para o arquivo inteiro);
 3. os valores padrão: marcadores e marcação de estrutura ligados, cor RGB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Converte todas as cores para `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espaço de destino usado quando `forceColorSpace` é true.
   accessible?: boolean;        // Saída marcada, orientada a PDF/UA (árvore de estrutura, texto alternativo, idioma).
+  baselineGrid?: boolean;      // Desenhar também no PDF a grade de `page.baselineGrid`.
 }
 ```
 
@@ -497,6 +498,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Gera um PDF acessível e marcado, orientado ao PDF/UA-1: uma árvore de estrutura lógica na ordem de leitura (títulos que nunca pulam um nível, parágrafos, listas, citações em bloco, boxes, tabelas com células de cabeçalho, figuras com seu texto alternativo e suas legendas, fórmulas, referências clicáveis como links, o conteúdo de um `:::toc` como um único `TOC` com um `TOCI` por linha: o número da linha como `Lbl`, o título e a página como uma `Reference` que contém o link), o título e o idioma do documento (o `locale` do nível superior), a identificação PDF/UA nos metadados XMP, e cada marca decorativa (fundo da página, fios, grade de linhas de base, cabeçalhos e rodapés, marcas de corte, cabeçalhos de tabela repetidos, o título repetido e o marcador de continuação de um boxe dividido) sinalizada como artefato, para que os leitores de tela a ignorem. Uma figura sem `altText` usa a legenda e, na falta dela, o rótulo. Uma figura ou tabela flutuante é lida logo depois do texto que a cita pela primeira vez, ou do texto anterior à linha `::resource` dela, e um boxe flutuante depois do texto anterior à linha de abertura dele, mesmo quando o flutuante vai para uma página posterior; uma lista ou o sumário que continuam depois de um flutuante permanecem um único elemento, e uma lista dentro de um boxe flutuante ou ancorado na página (`placement: 'fixed'`) é uma lista só. Desligue só em matrizes de impressão em que a estrutura extra não é desejada.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Desenha no PDF a grade de linhas de base enquanto <code>page.baselineGrid</code> está ligada. Ligado por padrão, como até agora; com <code>false</code> a grade fica como guia para conferir a página na tela, fora do PDF, e o canvas e o visualizador HTML continuam a mostrá-la. No Sandbox é <strong>Grade de linhas de base no PDF</strong>, na seção PDF.</td>
     </tr>
   </tbody>
 </table>

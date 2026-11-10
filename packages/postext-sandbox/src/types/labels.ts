@@ -188,6 +188,11 @@ export interface SandboxLabels {
   baselineGridLineWidthTooltip: string;
 
   // Page numbering (inside Page section)
+  baselineGridPerStyle: string;
+  baselineGridPerStyleTooltip: string;
+  baselineGridBodyText: string;
+  baselineGridFirstParagraph: string;
+  baselineGridStyleTooltip: string;
   pageNumbering: string;
   pageNumberingTooltip: string;
   pageNumberingFormat: string;
@@ -543,6 +548,8 @@ export interface SandboxLabels {
   pdfOutlinesTooltip: string;
   pdfAccessible: string;
   pdfAccessibleTooltip: string;
+  pdfBaselineGrid: string;
+  pdfBaselineGridTooltip: string;
   pdfForceColorSpace: string;
   pdfForceColorSpaceTooltip: string;
   pdfColorSpace: string;
@@ -720,6 +727,7 @@ export interface SandboxLabels {
   mathIndentAfterDisplayTooltip: string;
   mathKeepWithLeadIn: string;
   mathKeepWithLeadInTooltip: string;
+  mathSnapToGrid: string;
   footnotesSection: string;
   footnotesPlacement: string;
   footnotesPlacementTooltip: string;
@@ -1512,6 +1520,8 @@ export interface SandboxLabels {
   headingsKeepWithNextSplitFill: string;
   headingsSnapToGrid: string;
   headingsSnapToGridTooltip: string;
+  headingRegainGrid: string;
+  headingRegainGridTooltip: string;
   headingsColumnHeadSpace: string;
   headingsColumnHeadSpaceTooltip: string;
   headingsColumnHeadSpaceNone: string;
@@ -4220,6 +4230,8 @@ export interface SandboxLabels {
   resourceTypePlacementGroup: string;
   resourceTypePlacementHint: string;
   resourceTypePlacementResetConfirm: string;
+  resourceTypeSnapToGrid: string;
+  resourceTypeSnapToGridTooltip: string;
   resourceTypePlacementInherit: string;
   resourceTypePlacementPosition: string;
   resourceTypePlacementPositionAuto: string;

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Headings',
   description: 'Heading defaults, the overrides for each level, page breaks before a heading, page-wide chapter openers and numbers spelled out in words',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '31 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ The `headings` property controls typography for all heading levels (H1–H6). Yo
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Whether the flow snaps back onto the baseline grid under a heading. With <code>true</code> the heading's <code>marginBottom</code> is rounded up to whole grid lines; with <code>false</code> the exact margin is kept and the text under the heading may sit off the grid until the next snap point (the end of a list, a <code>:::paragraphs</code> tail, display math) — the way many books set a line and a half under a heading. A level (<code>levels[].snapToGrid</code>) or a heading style can set its own value; this one is what they inherit.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Read only when <code>snapToGrid</code> is <code>false</code>: the heading keeps its exact margins and its own leading, and the text after it starts at the next grid line, so the column regains the grid there instead of running off it until the next snap point. Column balancing adds no lines above such a heading. A level (<code>levels[].regainGrid</code>) or a heading style can set its own value. In the Sandbox: <strong>Regain the grid at the text</strong>, under the grid switch.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

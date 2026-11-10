@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Encabezados',
   description: 'Cómo se configuran los encabezados: los valores por defecto y los de cada nivel, los saltos de página antes de un encabezado, las aperturas de capítulo a todo el ancho de la página y los números escritos con letras',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ La propiedad `headings` controla la tipografía de todos los niveles de encabeza
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Si el flujo vuelve a la rejilla base bajo un encabezado. Con <code>true</code>, el <code>marginBottom</code> del encabezado se redondea a líneas enteras de la rejilla; con <code>false</code>, se conserva el margen exacto y el texto bajo el encabezado puede quedar fuera de la rejilla hasta el siguiente punto de ajuste (el final de una lista, la cola de un <code>:::paragraphs</code>, una ecuación), como en muchos libros, que dejan línea y media bajo el título. Un nivel (<code>levels[].snapToGrid</code>) o un estilo de encabezado pueden fijar su propio valor; este es el que heredan.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Solo se lee cuando <code>snapToGrid</code> es <code>false</code>: el título conserva sus márgenes exactos y su propio interlineado, y el texto que lo sigue empieza en la siguiente línea de la rejilla, de modo que la columna recupera ahí la rejilla en vez de seguir fuera de ella hasta el siguiente punto de ajuste. El equilibrado de columnas no añade líneas encima de un título así. Un nivel (<code>levels[].regainGrid</code>) o un estilo de título pueden fijar su propio valor. En el Sandbox: <strong>Recuperar la rejilla en el texto</strong>, bajo el interruptor de la rejilla.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

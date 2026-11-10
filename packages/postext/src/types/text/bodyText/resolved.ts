@@ -87,6 +87,8 @@ export interface ResolvedBodyTextConfig {
   keepColonWithList: boolean;
   colonListRoom: ColonListRoom;
   hyphenateAcrossColumns: boolean | 'withinPage';
+  snapToGrid: boolean;
+  firstParagraphSnapToGrid: boolean;
   paragraphContainerSpacing: ParagraphContainerSpacing;
   paragraphStylesInBoxes: ParagraphStylesInBoxes;
   /** `emphasis` resolved; absent when `*…*` is set in italics. */

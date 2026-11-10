@@ -64,6 +64,18 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
       <td>El espacio entre dos párrafos. <code>true</code> inserta una línea en blanco (igual a <code>lineHeight</code>), como hacen algunas editoriales; una medida como <code>&#123; value: 2, unit: 'mm' &#125;</code> o <code>0.33em</code> del cuerpo del texto deja exactamente ese espacio, en el texto corrido, en los recuadros y en los marcos de las páginas compuestas. Una medida que no sea un número entero de líneas saca los párrafos de la rejilla base; el siguiente bloque que se ajusta a ella (un título, el último elemento de una lista, una fórmula destacada) devuelve el texto a la rejilla. Es el mismo espacio que <code>paragraphStyles[].spaceBetween</code>, que lo sustituye dentro de un contenedor <code>:::paragraphs</code>. Un recuadro fija el suyo en <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un párrafo de cuerpo (y una cita) va sobre la rejilla base: con <code>page.baselineGrid.perStyle</code> empieza en la siguiente línea de la rejilla, termine como termine el bloque anterior; <code>false</code> lo deja donde lo dejó el bloque anterior. Solo se lee con <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Lo mismo para el primer párrafo tras un encabezado, que puede seguir al espaciado propio del encabezado mientras el resto del texto se ciñe a la rejilla. Solo se lee con <code>page.baselineGrid.perStyle</code>.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

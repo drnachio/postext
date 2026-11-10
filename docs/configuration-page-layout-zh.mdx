@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '页面与版式',
   description: '页面尺寸、页边距和基线网格，页码的编排，以及分栏和栏间距',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '22分钟',
   order: 5,
   parent: 'configuration',
@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>关闭</td>
-      <td>在页面上画出基线网格，用来检查纵向节奏。无论画不画出来，版面都会对齐到网格。详见下文。</td>
+      <td>在页面上画出基线网格，用来检查纵向节奏。无论画不画出来，版面都会对齐到网格。<code>pdfGeneration.baselineGrid: false</code>会让它不出现在PDF中。详见下文。</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ export const metadata = {
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>网格线的粗细。</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>每种样式自行决定。<code>false</code>为目前的规则：不对齐网格的样式（<code>snapToGrid: false</code>）会让其后的文字偏离网格，直到下一个对齐网格的块，偏移因此层层传递。<code>true</code>：样式对齐网格的块从下一条网格线开始，不论前一块在何处结束；不对齐网格的块保持其精确间距，且不把它传给后面。参与决定的样式：标题级别与标题样式、段落样式、正文（<code>bodyText.snapToGrid</code>）与标题后的第一段（<code>bodyText.firstParagraphSnapToGrid</code>，默认均为<code>true</code>，仅在<code>perStyle</code>下读取）、标注框样式、列表（<code>snapTopToGrid</code>）、独立公式（<code>math.snapToGrid</code>）以及图与表（其资源类型的<code>snapToGrid</code>）。栏顶始终在网格上。在Sandbox中：分栏 › <strong>每种样式各自决定</strong>。</td>
     </tr>
   </tbody>
 </table>

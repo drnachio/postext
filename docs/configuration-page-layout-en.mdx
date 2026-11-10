@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Page and layout',
   description: 'The page size, margins and baseline grid, page numbering, and the columns and their gutters',
   lang: 'en',
-  lastUpdated: '2026-10-19',
-  readingTime: '32 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '33 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "This page covers the settings for the sheet itself. You choose the page size, the margins, the side the book is bound on and the grid the lines of text sit on. You set how page numbers are counted and written. You set how many columns a page has and how much space runs between them, and whether the text runs across the page or down it. The running headers and footers have a page of their own.",
@@ -75,7 +75,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disabled</td>
-      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. See below.</td>
+      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. <code>pdfGeneration.baselineGrid: false</code> keeps it out of the PDF. See below.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ The baseline grid is the rhythm of the body text: lines one body line height apa
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Thickness of the grid lines.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Each style decides for itself. <code>false</code>, the rule so far: an off-grid style (<code>snapToGrid: false</code>) leaves the text after it off the grid until the next block that snaps, so its offset cascades. <code>true</code>: a block whose style sits on the grid opens on the next grid line however the block before it ended, and an off-grid one keeps its exact spacing without passing it on. The styles that decide: heading levels and styles, paragraph styles, the body text (<code>bodyText.snapToGrid</code>) and the first paragraph after a heading (<code>bodyText.firstParagraphSnapToGrid</code>), both <code>true</code> by default and read only with <code>perStyle</code>, callout styles, lists (<code>snapTopToGrid</code>), display formulas (<code>math.snapToGrid</code>) and figures and tables (their resource type's <code>snapToGrid</code>). The top of a column is always on the grid. In the Sandbox: Columns › <strong>Each style decides for itself</strong>.</td>
     </tr>
   </tbody>
 </table>

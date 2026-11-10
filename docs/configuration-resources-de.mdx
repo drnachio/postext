@@ -145,6 +145,11 @@ Ein Typ darf Felder weglassen (seit postext 1.38): Der eingebaute Typ mit dersel
       <td><code>CaptionStyleConfig</code> (optional)</td>
       <td>Teilweise Überschreibung des <a href="#legendenstil">Legendenstils</a> für Ressourcen dieses Typs. Nur die gesetzten Schlüssel ersetzen den globalen <code>captionStyle</code>; alles andere wird geerbt (eine überschriebene <code>color</code> bestimmt auch die Farben von Bezeichnung und Anmerkung, sofern diese nicht ausdrücklich gesetzt sind). Typischer Einsatz: Tabellen mit Legende <em>oben</em> auf einem farbigen Balken, während Abbildungen ihre Legende unten behalten. Palettenverweise werden wie jede andere Farbe aufgelöst.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>true</code>. Ob eine Abbildung oder Tabelle dieses Typs, die im Text steht, im Grundlinienraster steht: Unter der Ressource kehrt der Fluss ins Raster zurück (und mit <code>page.baselineGrid.perStyle</code> beginnt sie auf einer Rasterlinie). <code>false</code> behält den genauen Abstand, den sie lässt. Gleitobjekte am Kopf oder Fuß einer Spalte sind nicht betroffen.</td>
+    </tr>
   </tbody>
 </table>
 

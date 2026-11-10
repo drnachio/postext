@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Página y disposición',
   description: 'El tamaño de página, los márgenes y la rejilla base; la numeración de las páginas, y las columnas y sus medianiles.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '36 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '37 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de la propia hoja. Eliges el tamaño de página, los márgenes, el lado por el que se encuaderna el libro y la rejilla sobre la que se apoyan las líneas de texto. Decides cómo se cuentan y cómo se escriben los números de página. Decides cuántas columnas tiene la página y cuánto espacio las separa, y si el texto va en líneas horizontales o verticales. Las cabeceras y los pies de página se explican en otra página.",
@@ -75,7 +75,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desactivado</td>
-      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. Véase más abajo.</td>
+      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. <code>pdfGeneration.baselineGrid: false</code> la deja fuera del PDF. Véase más abajo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ La rejilla base marca el ritmo del texto base: líneas separadas por el interlin
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Grosor de las líneas de la rejilla.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cada estilo decide por sí mismo. <code>false</code>, la regla hasta ahora: un estilo fuera de la rejilla (<code>snapToGrid: false</code>) deja fuera de ella el texto que lo sigue hasta el siguiente bloque que se ajusta, de modo que su desfase se arrastra en cascada. <code>true</code>: un bloque cuyo estilo va sobre la rejilla empieza en la siguiente línea de la rejilla, termine como termine el bloque anterior, y uno fuera de la rejilla conserva su espaciado exacto sin transmitirlo. Los estilos que deciden: los niveles y estilos de encabezado, los estilos de párrafo, el texto de cuerpo (<code>bodyText.snapToGrid</code>) y el primer párrafo tras un encabezado (<code>bodyText.firstParagraphSnapToGrid</code>), ambos <code>true</code> por defecto y leídos solo con <code>perStyle</code>, los estilos de aviso, las listas (<code>snapTopToGrid</code>), las fórmulas en bloque (<code>math.snapToGrid</code>) y las figuras y tablas (el <code>snapToGrid</code> de su tipo de recurso). El arranque de una columna está siempre sobre la rejilla. En el Sandbox: Columnas › <strong>Cada estilo decide por sí mismo</strong>.</td>
     </tr>
   </tbody>
 </table>

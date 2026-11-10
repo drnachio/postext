@@ -291,6 +291,14 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
+              <ToggleSwitch
+                label={labels.resourceTypeSnapToGrid}
+                checked={type.snapToGrid !== false}
+                onChange={(v) => updateType(type.id, { snapToGrid: v })}
+                tooltip={labels.resourceTypeSnapToGridTooltip}
+                isDefault={type.snapToGrid === undefined}
+                onReset={() => updateType(type.id, { snapToGrid: undefined })}
+              />
             </div>
 
             <div className="mt-2">

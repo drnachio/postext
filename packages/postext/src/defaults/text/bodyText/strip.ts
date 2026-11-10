@@ -307,6 +307,12 @@ export function stripBodyTextDefaults(
     result.colonListRoom = bodyText.colonListRoom;
     hasOverride = true;
   }
+  for (const key of ['snapToGrid', 'firstParagraphSnapToGrid'] as const) {
+    if (bodyText[key] !== undefined && bodyText[key] !== DEFAULT_BODY_TEXT_CONFIG[key]) {
+      result[key] = bodyText[key];
+      hasOverride = true;
+    }
+  }
   if (bodyText.hyphenateAcrossColumns === false || bodyText.hyphenateAcrossColumns === 'withinPage') {
     result.hyphenateAcrossColumns = bodyText.hyphenateAcrossColumns;
     hasOverride = true;

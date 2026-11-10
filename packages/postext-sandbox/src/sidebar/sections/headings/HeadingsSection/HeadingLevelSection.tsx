@@ -197,6 +197,16 @@ export function HeadingLevelSection({
         isDefault={raw?.snapToGrid === undefined}
         onReset={() => onReset(level, 'snapToGrid')}
       />
+      {!resolved.snapToGrid && (
+        <ToggleSwitch
+          label={labels.headingRegainGrid}
+          checked={resolved.regainGrid}
+          onChange={(v) => onUpdate(level, { regainGrid: v })}
+          tooltip={labels.headingRegainGridTooltip}
+          isDefault={raw?.regainGrid === undefined}
+          onReset={() => onReset(level, 'regainGrid')}
+        />
+      )}
       <NumberInput
         label={labels.headingLineSpan}
         value={resolved.lineSpan ?? 0}

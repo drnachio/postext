@@ -64,6 +64,18 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>The space between two paragraphs. <code>true</code> inserts a blank line (equal to <code>lineHeight</code>), as some publishers separate paragraphs; a length such as <code>&#123; value: 2, unit: 'mm' &#125;</code> or <code>0.33em</code> of the text size sets exactly that much, in the running text, in boxes and in composed frames. A length that is not a whole number of lines takes the paragraphs off the baseline grid; the next block that snaps to it (a heading, the last item of a list, display maths) brings the text back. It is the same space as <code>paragraphStyles[].spaceBetween</code>, which takes its place inside a <code>:::paragraphs</code> container. A box sets its own in <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a body paragraph (and a blockquote) sits on the baseline grid: with <code>page.baselineGrid.perStyle</code> it opens on the next grid line however the block before it ended; <code>false</code> keeps it where the block before left it. Read only with <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>The same for the first paragraph after a heading, which may run on from the heading's own spacing while the rest of the text keeps to the grid. Read only with <code>page.baselineGrid.perStyle</code>.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

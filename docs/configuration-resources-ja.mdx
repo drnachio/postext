@@ -145,6 +145,11 @@ interface ResourceType {
       <td><code>CaptionStyleConfig</code>（省略可）</td>
       <td>この種類のリソースに対する、<a href="#キャプションスタイル">キャプションのスタイル</a>の部分的な上書きです。設定したキーだけがグローバルの<code>captionStyle</code>を置き換え、それ以外はすべて継承されます（<code>color</code>を上書きすると、ラベルと注の色も明示的に設定されていない限りその色になります）。典型的な使い方は、表のキャプションを色付きの帯にして<em>上</em>に置き、図のキャプションは下のままにすることです。パレットの参照は、ほかの色と同じように解決されます。</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（省略可）</td>
+      <td>既定は<code>true</code>。本文中に置いたこのタイプの図や表をベースライングリッドに合わせるかどうか。リソースの下で流れがグリッドに戻ります（<code>page.baselineGrid.perStyle</code>のときは、リソースもグリッド線から始まります）。<code>false</code>ではリソースが残す正確なアキを保ちます。段の頭や足に置いたフロートには影響しません。</td>
+    </tr>
   </tbody>
 </table>
 

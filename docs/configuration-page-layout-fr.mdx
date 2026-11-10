@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Page et mise en page',
   description: 'Le format de la page, les marges et la grille de ligne de base, la numérotation des pages, les colonnes et leurs gouttières',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '37 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '38 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Cette page réunit les réglages de la feuille elle-même. Vous choisissez le format de la page, les marges, le côté de la reliure et la grille sur laquelle reposent les lignes de texte. Vous fixez la façon dont les pages sont comptées et dont leur numéro s’écrit. Vous fixez le nombre de colonnes d’une page et l’espace qui les sépare, et vous décidez si le texte court en travers de la page ou de haut en bas. Les en-têtes et pieds de page ont leur propre page.",
@@ -75,7 +75,7 @@ La propriété `page` contrôle les dimensions physiques et l’apparence de la 
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>désactivée</td>
-      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. Voir ci-dessous.</td>
+      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. <code>pdfGeneration.baselineGrid: false</code> la laisse hors du PDF. Voir ci-dessous.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ La grille de ligne de base est le rythme du texte courant : des lignes espacée
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Épaisseur des lignes de la grille.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Chaque style décide pour lui-même. <code>false</code>, la règle jusqu’ici : un style hors grille (<code>snapToGrid: false</code>) laisse le texte qui le suit hors de la grille jusqu’au prochain bloc qui s’y aligne, son décalage se propage donc. <code>true</code> : un bloc dont le style s’aligne sur la grille commence à la ligne suivante de la grille, quelle que soit la fin du bloc précédent, et un style hors grille garde son espacement exact sans le transmettre. Les styles qui décident : niveaux et styles de titre, styles de paragraphe, le texte courant (<code>bodyText.snapToGrid</code>) et le premier paragraphe après un titre (<code>bodyText.firstParagraphSnapToGrid</code>), tous deux <code>true</code> par défaut et lus seulement avec <code>perStyle</code>, styles d’encadré, listes (<code>snapTopToGrid</code>), formules centrées (<code>math.snapToGrid</code>) et figures et tableaux (le <code>snapToGrid</code> de leur type de ressource). Le haut d’une colonne est toujours sur la grille. Dans le Sandbox : Colonnes › <strong>Chaque style décide pour lui-même</strong>.</td>
     </tr>
   </tbody>
 </table>

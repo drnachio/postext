@@ -465,6 +465,16 @@ export interface BodyTextConfig {
    *  filled). It moves fewer lines than
    *  `false`; in a single-column layout the two give the same lines. */
   hyphenateAcrossColumns?: boolean | 'withinPage';
+  /** Whether a body paragraph (and a blockquote) sits on the baseline
+   *  grid: with `page.baselineGrid.perStyle` it opens on the next grid line
+   *  however the block before it ended. `false` keeps it where the block
+   *  before left it. Default `true`. Read only with `perStyle`. */
+  snapToGrid?: boolean;
+  /** The same for the first paragraph after a heading, which a designer may
+   *  want to run on from the heading's own spacing while the rest of the
+   *  text keeps to the grid. Default `true`. Read only with
+   *  `page.baselineGrid.perStyle`. */
+  firstParagraphSnapToGrid?: boolean;
   /** The space under a `:::paragraphs` container that closes on a
    *  paragraph, between that paragraph and the block after it:
    *  - `'collapse'` (default): the larger of the style's `spaceBetween` and

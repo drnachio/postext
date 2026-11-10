@@ -8,6 +8,7 @@ export const DEFAULT_PDF_GENERATION_CONFIG: ResolvedPdfGenerationConfig = {
   forceColorSpace: false,
   colorSpace: 'cmyk',
   accessible: true,
+  baselineGrid: true,
 };
 
 export function resolvePdfGenerationConfig(
@@ -20,6 +21,7 @@ export function resolvePdfGenerationConfig(
       partial.forceColorSpace ?? DEFAULT_PDF_GENERATION_CONFIG.forceColorSpace,
     colorSpace: partial.colorSpace ?? DEFAULT_PDF_GENERATION_CONFIG.colorSpace,
     accessible: partial.accessible ?? DEFAULT_PDF_GENERATION_CONFIG.accessible,
+    baselineGrid: partial.baselineGrid ?? DEFAULT_PDF_GENERATION_CONFIG.baselineGrid,
   };
 }
 
@@ -55,6 +57,13 @@ export function stripPdfGenerationDefaults(
     cfg.accessible !== DEFAULT_PDF_GENERATION_CONFIG.accessible
   ) {
     result.accessible = cfg.accessible;
+    hasOverride = true;
+  }
+  if (
+    cfg.baselineGrid !== undefined &&
+    cfg.baselineGrid !== DEFAULT_PDF_GENERATION_CONFIG.baselineGrid
+  ) {
+    result.baselineGrid = cfg.baselineGrid;
     hasOverride = true;
   }
   return hasOverride ? result : undefined;

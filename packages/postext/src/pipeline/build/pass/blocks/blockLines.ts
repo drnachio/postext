@@ -9,7 +9,7 @@ import { lineInsetsAt } from '../../../../measure/types.js';
 import { resolvedDirection, arabicNumbersOf } from '../../../config.js';
 import { mirrorListMarker, directListMarker, listBulletPosition, listItemGapPx, listItemSpacingPx } from '../../../text/lists.js';
 import { measuringVertically } from '../../../../measure/vertical.js';
-import { nextNonMarkerBlock } from '../../../blocks/buildHelpers.js';
+import { nextNonMarkerBlock, prevNonMarkerBlock } from '../../../blocks/buildHelpers.js';
 import { verseSnaps } from '../../passHelpers.js';
 import { versesLineByLine } from '../../../text/verseLines.js';
 import { raggedLooseLines } from '../../../text/raggedLines.js';
@@ -150,10 +150,40 @@ export function createBlockLines(deps: BlockLinesDeps) {
       // as the one block postext 1.22 set it in did not.
       (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)
         && (rawBlock.verse.stanza === undefined || rawBlock.verse.stanza.last || versesLineByLine(rawBlock, resolved))) ||
-      vdtType === 'mathDisplay' ||
+      (vdtType === 'mathDisplay' && resolved.math.snapToGrid) ||
       // A score's last system: the text after it goes back on the grid.
       (vdtType === 'score' && (rawBlock.score?.index ?? 0) === (rawBlock.score?.count ?? 1) - 1)
     );
+    /** Per-style grid: the block's own style sits on the grid, so it opens
+     *  on a grid line whatever ended above it. A list's first item is
+     *  handled with its `snapTopToGrid` below, in either rule. */
+    const sitsOnGrid = resolved.page.baselineGrid.perStyle && rawBlock.toc === undefined && rawBlock.index === undefined && (
+      vdtType === 'heading'
+        ? (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)
+        : vdtType === 'mathDisplay'
+          ? resolved.math.snapToGrid
+          : vdtType === 'blockquote'
+            ? resolved.bodyText.snapToGrid
+            : vdtType === 'paragraph'
+              ? (rawBlock.verse !== undefined
+                ? verseSnaps(rawBlock.verse.attrs.style, resolved)
+                : paragraphContainer === undefined
+                  // The body text, and the first paragraph after a heading,
+                  // each by its own switch.
+                  ? (prevNonMarkerBlock(contentBlocks, blockTurn.blockIdx)?.type === 'heading'
+                    ? resolved.bodyText.firstParagraphSnapToGrid
+                    : resolved.bodyText.snapToGrid)
+                  // Inside a container only its first paragraph opens on the
+                  // grid; the rest follow the container's own leading.
+                  : (contentBlocks[blockTurn.blockIdx - 1]?.type === 'containerStart'
+                    && contentBlocks[blockTurn.blockIdx - 1]?.containerId === paragraphContainer.id
+                    && paragraphContainer.snapToGrid !== false))
+              : false
+    );
+    /** A heading off the grid whose next block regains it. */
+    const regainGrid = !shouldSnapToGrid && vdtType === 'heading' && !nextIsHeading
+      && rawBlock.toc === undefined && rawBlock.index === undefined
+      && (headingLevels.forBlock(rawBlock)?.regainGrid ?? resolved.headings.regainGrid);
 
     // Place block, splitting across columns/pages if needed.
     // List items may split too — orphan/widow protection per-list is gated by
@@ -242,6 +272,8 @@ export function createBlockLines(deps: BlockLinesDeps) {
     blockTurn.itemGapPx = itemGapPx;
     blockTurn.nextIsHeading = nextIsHeading;
     blockTurn.shouldSnapToGrid = shouldSnapToGrid;
+    blockTurn.sitsOnGrid = sitsOnGrid;
+    blockTurn.regainGrid = regainGrid;
     blockTurn.canSplit = canSplit;
     blockTurn.guardedColumnEnds = guardedColumnEnds;
     blockTurn.wrapsBeside = wrapsBeside;

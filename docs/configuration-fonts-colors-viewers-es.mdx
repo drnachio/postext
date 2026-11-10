@@ -447,7 +447,7 @@ La propiedad `pdfGeneration` controla cómo genera el documento final el backend
 
 `buildDocument` los incluye en el VDT, como `doc.config.pdfGeneration`, y `renderToPdf` toma cada ajuste del primer sitio en el que lo encuentra:
 
-1. sus propias opciones (`outlines`, `accessible`, `colorSpace`);
+1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `baselineGrid`);
 2. el `pdfGeneration` del primer documento que recibe (en un libro, los ajustes del primer capítulo valen para todo el archivo);
 3. los valores por defecto: marcadores y etiquetado activados, color RGB.
 
@@ -461,6 +461,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
   accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
+  baselineGrid?: boolean;      // Dibujar también en el PDF la rejilla base de `page.baselineGrid`.
 }
 ```
 
@@ -497,6 +498,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (encabezados que nunca se saltan un nivel, párrafos, listas, citas, recuadros, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces y el índice de un `:::toc` como un solo `TOC` con un `TOCI` por fila: el número de la fila como `Lbl`, y su título y su página como un `Reference` que contiene el enlace), el título y el idioma del documento (el `locale` de primer nivel), la identificación PDF/UA en los metadatos XMP, y todas las marcas decorativas (fondo de página, filetes, rejilla base, titulillos y pies de página, marcas de corte, cabeceras de tabla repetidas, el título repetido y el indicador de continuación de un recuadro partido) marcadas como artefactos para que los lectores de pantalla las omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Una figura o una tabla flotante se lee justo después del texto que la cita por primera vez, o del texto anterior a su línea `::resource`, y un recuadro flotante, después del texto anterior a su línea de apertura, aunque el flotante quede en una página posterior; una lista o un índice que continúan después de un flotante siguen siendo un solo elemento, y una lista dentro de un recuadro flotante o fijo (`placement: 'fixed'`) es una sola lista. Desactívalo solo en los originales de imprenta en los que esa estructura adicional sobre.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuja en el PDF la rejilla base mientras <code>page.baselineGrid</code> está activada. Activado por defecto, como hasta ahora; con <code>false</code> la rejilla queda como guía para comprobar la página en pantalla, fuera del PDF, y el lienzo y el visor HTML la siguen mostrando. En el Sandbox es <strong>Rejilla base en el PDF</strong>, en la sección PDF.</td>
     </tr>
   </tbody>
 </table>

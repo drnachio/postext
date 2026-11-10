@@ -12,7 +12,7 @@ import { tabStopLists, dropCapSettings } from './choices.js';
 // here, so the check never flags a setting the engine reads.
 const HEADINGS_KEYS = {
   fontFamily: true, figureStyle: true, lineHeight: true, color: true, textAlign: true, fontWeight: true,
-  marginTop: true, marginBottom: true, keepWithNext: true, keepWithNextSpread: true, keepWithNextSplit: true, snapToGrid: true, columnHeadSpace: true, inlineMarks: true, balancing: true, levels: true,
+  marginTop: true, marginBottom: true, keepWithNext: true, keepWithNextSpread: true, keepWithNextSplit: true, snapToGrid: true, regainGrid: true, columnHeadSpace: true, inlineMarks: true, balancing: true, levels: true,
 } satisfies Record<keyof HeadingsConfig, true>;
 const BALANCING_KEYS = {
   enabled: true, maxLinesPerHeading: true, maxLinesBeforeLoose: true, stretchAfterLists: true, maxLinesAfterList: true, stretchAfterDisplays: true,
@@ -22,7 +22,7 @@ const BALANCING_KEYS = {
 const HEADING_LEVEL_KEYS = {
   level: true, fontSize: true, lineHeight: true, fontFamily: true, figureStyle: true, color: true, fontWeight: true,
   marginTop: true, marginBottom: true, numberingTemplate: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true,
-  breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true,
+  breakBefore: true, span: true, spanBreak: true, advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, regainGrid: true,
   lineSpan: true, indent: true, firstLineIndent: true, jidori: true, dropCap: true,
 } satisfies Record<keyof HeadingLevelConfig, true>;
 const HEADING_STYLE_KEYS = {
@@ -30,7 +30,7 @@ const HEADING_STYLE_KEYS = {
   margins: true, layout: true, bodyStyle: true, palette: true,
   fontSize: true, lineHeight: true, fontFamily: true, figureStyle: true, color: true, fontWeight: true, marginTop: true,
   marginBottom: true, numberSeparator: true, numberPosition: true, italic: true, letterSpacing: true, breakBefore: true, span: true, spanBreak: true,
-  advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, lineSpan: true, indent: true, firstLineIndent: true, jidori: true,
+  advancedDesign: true, textTransform: true, hidden: true, snapToGrid: true, regainGrid: true, lineSpan: true, indent: true, firstLineIndent: true, jidori: true,
   dropCap: true,
 } satisfies Record<keyof HeadingStyleConfig, true>;
 const PARAGRAPH_STYLE_KEYS = {

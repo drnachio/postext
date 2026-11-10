@@ -64,6 +64,18 @@ export const metadata = {
       <td>两段之间的间距。<code>true</code>插入一个空行（高度等于<code>lineHeight</code>），即出版物常用的段间分隔方式；<code>&#123; value: 2, unit: 'mm' &#125;</code>这样的长度，或按正文字号计的<code>0.33em</code>，在正文、框和组版页面的版框中都按原值排。不是整行数的长度会让段落离开基线网格，下一个对齐网格的块（标题、列表的最后一项、独立公式）会把文字带回网格上。它与<code>paragraphStyles[].spaceBetween</code>是同一种间距，在<code>:::paragraphs</code>容器内由后者取代。框在<code>calloutStyles[].body.paragraphSpacing</code>中设置自己的间距。</td>
     </tr>
     <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>正文段落（及引用块）是否对齐基线网格：在<code>page.baselineGrid.perStyle</code>下，它从下一条网格线开始，不论前一块在何处结束；<code>false</code>则让它留在前一块留下的位置。仅在<code>perStyle</code>下读取。</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>对标题后的第一段作同样的设定：其余正文对齐网格时，这一段可以接着标题自身的间距排。仅在<code>page.baselineGrid.perStyle</code>下读取。</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

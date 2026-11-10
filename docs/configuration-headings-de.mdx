@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Überschriften',
   description: 'Standardwerte für Überschriften, Überschreibungen pro Ebene, Seitenumbrüche vor einer Überschrift, Kapitelauftakte über die ganze Seitenbreite und ausgeschriebene Zahlen',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '31 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ Die Eigenschaft `headings` steuert die Typografie aller Überschriftenebenen (H1
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Ob der Textfluss unter einer Überschrift wieder auf das Grundlinienraster einrastet. Mit <code>true</code> wird das <code>marginBottom</code> der Überschrift auf ganze Rasterzeilen aufgerundet; mit <code>false</code> bleibt der genaue Rand erhalten, und der Text unter der Überschrift darf bis zum nächsten Einrastpunkt (dem Ende einer Liste, dem Ende eines <code>:::paragraphs</code>, abgesetzter Mathematik) außerhalb des Rasters stehen – so, wie viele Bücher anderthalb Zeilen unter eine Überschrift setzen. Eine Ebene (<code>levels[].snapToGrid</code>) oder ein Überschriftenstil kann einen eigenen Wert setzen; dieser hier ist der, den sie erben.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Nur gelesen, wenn <code>snapToGrid</code> <code>false</code> ist: Die Überschrift behält ihre genauen Abstände und ihren eigenen Zeilenabstand, und der Text danach beginnt auf der nächsten Rasterlinie, sodass die Spalte dort ins Raster zurückfindet, statt bis zum nächsten Einrastpunkt außerhalb zu bleiben. Der Spaltenausgleich fügt über einer solchen Überschrift keine Zeilen ein. Eine Ebene (<code>levels[].regainGrid</code>) oder ein Überschriftenstil kann einen eigenen Wert setzen. Im Sandbox: <strong>Raster beim Text wiederfinden</strong>, unter dem Rasterschalter.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

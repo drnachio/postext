@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ページとレイアウト',
   description: 'ページサイズ、余白、ベースライングリッド、ノンブル、段組みと段間',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '32分',
+  lastUpdated: '2026-11-10',
+  readingTime: '33分',
   order: 5,
   parent: 'configuration',
   plainSummary: "このページでは、紙面そのものの設定を説明します。ページの大きさ、余白、本を綴じる側、文字の行をそろえるグリッドを選びます。ページ番号の数え方と書き方を決めます。1ページを何段に分けるか、段と段のあいだをどれだけ空けるか、文字を横に組むか縦に組むかを決めます。各ページの上と下に印刷するものは、別のページで説明します。",
@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>無効</td>
-      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。後述します。</td>
+      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。<code>pdfGeneration.baselineGrid: false</code>にするとPDFには描きません。後述します。</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ export const metadata = {
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>グリッド線の太さ。</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>スタイルごとに決めます。<code>false</code>はこれまでの規則で、グリッドに合わせないスタイル（<code>snapToGrid: false</code>）は、次にグリッドに合わせるブロックまで後の本文をグリッドから外したままにするため、ずれが連鎖します。<code>true</code>では、グリッドに合わせるスタイルのブロックは前のブロックの終わり方にかかわらず次のグリッド線から始まり、合わせないブロックは正確な間隔を保ったまま、それを後に伝えません。対象となるスタイル：見出しのレベルと見出しスタイル、段落スタイル、本文（<code>bodyText.snapToGrid</code>）と見出し直後の段落（<code>bodyText.firstParagraphSnapToGrid</code>。どちらも既定は<code>true</code>で、<code>perStyle</code>のときだけ読まれます）、囲みスタイル、箇条書き（<code>snapTopToGrid</code>）、別行立て数式（<code>math.snapToGrid</code>）、図と表（リソースタイプの<code>snapToGrid</code>）。段の先頭は常にグリッド上にあります。Sandboxでは：段組み › <strong>スタイルごとに決める</strong>。</td>
     </tr>
   </tbody>
 </table>

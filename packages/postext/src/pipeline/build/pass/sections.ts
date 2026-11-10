@@ -117,6 +117,7 @@ export function createSections(deps: SectionsDeps) {
 
   state.blockIdCounter = 0;
   state.pendingSpacing = 0;
+  state.regainAfter = null;
   /** The float gap an inline resource still owes the block right after it
    *  (EF-93), or the space a `:::paragraphs` container still owes the block
    *  after its closing marker (EF-159; `container`, carried through the

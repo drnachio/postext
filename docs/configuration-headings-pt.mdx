@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Títulos',
   description: 'Os padrões dos títulos, os valores próprios de cada nível, as quebras de página antes de um título, as aberturas de capítulo na largura da página e os números por extenso',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '34 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ A propriedade `headings` controla a tipografia de todos os níveis de título (H
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Se o fluxo volta a se ajustar à grade de linhas de base sob um título. Com <code>true</code>, o <code>marginBottom</code> do título é arredondado para cima até linhas inteiras da grade; com <code>false</code>, a margem exata é mantida e o texto sob o título pode ficar fora da grade até o próximo ponto de ajuste (o fim de uma lista, a cauda de um <code>:::paragraphs</code>, uma fórmula em destaque), como muitos livros fazem com uma linha e meia sob um título. Um nível (<code>levels[].snapToGrid</code>) ou um estilo de título pode definir o próprio valor; este é o que eles herdam.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Só é lido quando <code>snapToGrid</code> é <code>false</code>: o título mantém as margens exatas e a própria entrelinha, e o texto que o segue começa na próxima linha da grade, de modo que a coluna recupera ali a grade em vez de ficar fora dela até o próximo ponto de ajuste. O balanceamento de colunas não acrescenta linhas acima de um título assim. Um nível (<code>levels[].regainGrid</code>) ou um estilo de título pode definir seu próprio valor. No Sandbox: <strong>Recuperar a grade no texto</strong>, abaixo do interruptor da grade.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

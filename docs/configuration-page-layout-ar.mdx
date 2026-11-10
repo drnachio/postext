@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'الصفحة والتخطيط',
   description: 'مقاس الصفحة والهوامش وشبكة خطوط الأساس، وترقيم الصفحات، والأعمدة والفواصل بينها',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
-  readingTime: '34 دقيقة',
+  lastUpdated: '2026-11-10',
+  readingTime: '35 دقيقة',
   order: 5,
   parent: 'configuration',
   plainSummary: "تتناول هذه الصفحة إعدادات الورقة نفسها. تختار مقاس الصفحة والهوامش وجهة تجليد الكتاب والشبكة التي تستقر عليها أسطر النص. وتحدد طريقة عدّ أرقام الصفحات وكتابتها. وتحدد عدد أعمدة الصفحة ومقدار الفراغ بينها، وهل يسير النص أفقيًا أم عموديًا. وللترويسات والتذييلات صفحة خاصة بها.",
@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>معطّل</td>
-      <td>يرسم شبكة خطوط الأساس فوق الصفحات لفحص الإيقاع العمودي. يلتزم الإخراج بالشبكة سواء رُسمت أم لم تُرسم. انظر أدناه.</td>
+      <td>يرسم شبكة خطوط الأساس فوق الصفحات لفحص الإيقاع العمودي. يلتزم الإخراج بالشبكة سواء رُسمت أم لم تُرسم. و<code>pdfGeneration.baselineGrid: false</code> يُبقيها خارج PDF. انظر أدناه.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ export const metadata = {
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>سماكة خطوط الشبكة.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>كل نمط يقرّر بنفسه. <code>false</code>، القاعدة المتّبعة حتى الآن: النمط الخارج عن الشبكة (<code>snapToGrid: false</code>) يترك النص الذي يليه خارجها حتى أول كتلة تعود إليها، فينتقل انزياحه تتابعيًّا. <code>true</code>: الكتلة التي يقع نمطها على الشبكة تبدأ عند خط الشبكة التالي أيًّا كانت نهاية الكتلة التي قبلها، والكتلة الخارجة عن الشبكة تحتفظ بتباعدها الدقيق دون أن تنقله إلى ما بعدها. الأنماط التي تقرّر: مستويات العناوين وأنماطها، وأنماط الفقرات، ونص المتن (<code>bodyText.snapToGrid</code>) وأول فقرة بعد العنوان (<code>bodyText.firstParagraphSnapToGrid</code>)، وكلاهما <code>true</code> افتراضيًا ولا يُقرآن إلا مع <code>perStyle</code>، وأنماط الإطارات، والقوائم (<code>snapTopToGrid</code>)، والصيغ المنفصلة (<code>math.snapToGrid</code>)، والأشكال والجداول (<code>snapToGrid</code> لنوع موردها). أعلى العمود يقع دائمًا على الشبكة. في Sandbox: الأعمدة › <strong>كل نمط يقرر وحده</strong>.</td>
     </tr>
   </tbody>
 </table>

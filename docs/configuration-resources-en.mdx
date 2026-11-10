@@ -145,6 +145,11 @@ A type may leave fields out (since postext 1.38): the built-in type of the same 
       <td><code>CaptionStyleConfig</code> (optional)</td>
       <td>Partial <a href="#caption-style">caption style</a> override for resources of this type. Only the keys you set replace the global <code>captionStyle</code>; everything else is inherited (an overridden <code>color</code> also drives the label and note colours unless those are set explicitly). Typical use: tables captioned <em>above</em> on a coloured bar while figures keep their caption below. Palette references resolve like any other colour.</td>
     </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Default <code>true</code>. Whether a figure or table of this type placed in the text sits on the baseline grid: the flow snaps back onto it under the resource (and, with <code>page.baselineGrid.perStyle</code>, the resource opens on a grid line). <code>false</code> keeps the exact space the resource leaves. Floats at the head or foot of a column are not affected.</td>
+    </tr>
   </tbody>
 </table>
 
