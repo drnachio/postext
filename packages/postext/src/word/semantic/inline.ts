@@ -37,6 +37,9 @@ export interface InlineSource {
   /** Footnote id → Word footnote id (creates the note); undefined when the
    *  marker cannot become a footnote. */
   noteRef?: (id: string) => number | undefined;
+  /** Sets a note holding a citation's text (a note style) and gives its
+   *  Word footnote id; absent where a note cannot stand (inside a note). */
+  citationNote?: (text: string) => number | undefined;
   /** Write links as HYPERLINK fields (in parts without relationships of
    *  their own: footnotes). */
   linkFields?: boolean;
@@ -227,7 +230,17 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
     } else if (span.citation) {
       const raw = span.citation.raw;
       const end = s.src.startsWith(raw, at) ? at + raw.length : atomEnd(s.src, at, limit);
-      units.push(atomUnit(p, raw, base, STYLE.reference, at, end, 'citation'));
+      // As the citation processor prints it ("[1,2]"); as written when no
+      // reference defines its keys.
+      const cited = ctx.citations?.label(span);
+      const noteId = cited?.note ? s.citationNote?.(cited.text) : undefined;
+      if (cited?.note && noteId !== undefined) {
+        // A note style: the citation in a note of its own, the author's
+        // name kept in the sentence.
+        const name = cited.note.name;
+        const ref = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteReference w:id="${noteId}"/></w:r>`;
+        units.push({ kind: 'obj', p, xml: textRuns(name, rPr(runProps(base))) + ref, fmt: base, text: name + OBJECT_CHAR, atom: { start: at, end, kind: 'citation' } });
+      } else units.push(atomUnit(p, cited?.text ?? raw, base, STYLE.reference, at, end, 'citation'));
     } else if (span.chip && !span.chip.gap && chipGlyph(ctx, span.chip)) {
       const glyph = chipGlyph(ctx, span.chip)!;
       const xml = textRuns(glyph.text, rPr(glyph.props));

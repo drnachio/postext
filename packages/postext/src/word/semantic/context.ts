@@ -12,6 +12,7 @@ import type { StyleRegistry } from './styles.js';
 import type { WordChapterInput } from './types.js';
 import type { Units } from './wml.js';
 import type { BookNumbers } from './engineNumbers.js';
+import type { BookCitations } from './prose/citations.js';
 
 /** Where a book that continues a longer one starts: its heading counters
  *  and page numbering. */
@@ -110,6 +111,9 @@ export interface WriterContext {
   book: readonly { blocks: ContentBlock[] }[];
   /** Where the book starts (`semanticDocx`'s `start`). */
   start?: BookStart;
+  /** The book's citations as the processor formats them (a book that
+   *  cites works, with a citation engine registered). */
+  citations?: BookCitations;
   /** The book's outline, computed on first use (see `fields.ts`). */
   outline?: OutlineEntry[];
 }

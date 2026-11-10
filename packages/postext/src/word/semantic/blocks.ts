@@ -115,6 +115,7 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
     inlineCode: block.inlineCode?.map((r) => ({ start: abs(ctx, r.start), end: abs(ctx, r.end) })),
     inserts: markInserts(ctx, block, sourceMap),
     noteRef: notes ? (id) => footnote(ctx, id) : undefined,
+    citationNote: notes ? (text) => citationNote(ctx, text) : undefined,
     linkFields: !notes,
   };
 }
@@ -173,6 +174,14 @@ function footnote(ctx: WriterContext, id: string): number | undefined {
   });
   const mark = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r>`;
   ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${wrapped}</w:p></w:footnote>`);
+  return wordId;
+}
+
+/** A Word footnote holding a citation (a note style): generated text. */
+function citationNote(ctx: WriterContext, text: string): number {
+  const wordId = ctx.nextFootnoteId();
+  const mark = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r>`;
+  ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${textRuns(text, '')}</w:p></w:footnote>`);
   return wordId;
 }
 

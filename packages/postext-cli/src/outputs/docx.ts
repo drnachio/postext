@@ -9,7 +9,7 @@
 
 import { readFileSync } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
-import { applySingleInkToSvg, extractFrontmatter, metadataText } from 'postext';
+import { applySingleInkToSvg, extractFrontmatter, metadataText, setCitationEngineLoader } from 'postext';
 import { diagramInkHex } from 'postext/bundle';
 import {
   facsimileDocx,
@@ -30,6 +30,10 @@ import { byteLength, writeOut } from '../io';
 import type { Layout } from '../layout';
 import type { Reporter } from '../log';
 import { rasterizeSvg } from '../svgImage';
+
+// The flow files print each citation and the list of works as the
+// citation processor formats them: loaded when a book cites.
+setCitationEngineLoader(() => import('postext-citeproc/register'));
 
 export const DOCX_VARIANTS = ['semantic', 'formatted', 'facsimile'] as const;
 export type DocxVariant = (typeof DOCX_VARIANTS)[number];

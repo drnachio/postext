@@ -32,6 +32,7 @@ import { composedMediaIds } from './media/pageOpener.js';
 import { prepareExercises } from './exercises/exercises.js';
 import { floatedResources } from './media/floated.js';
 import { prepareScores } from './media/scores.js';
+import { prepareCitations } from './prose/citations.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageSettings } from './page/settings.js';
@@ -172,6 +173,8 @@ export async function semanticDocx(options: SemanticDocxOptions): Promise<Uint8A
     ...(start ? { start } : {}),
     chapter: { index: 0, input: { id: '', markdown: '' }, markdown: '', offset: 0, defs: new Map(), cited: new Set(), usedDefs: new Set(), headingNumbers: new Map(), blockCounter: 0 },
   };
+  const citations = await prepareCitations(parsed, book, options.resources ?? []);
+  if (citations) ctx.citations = citations;
   await prepareMedia(ctx, shown);
   await prepareScores(ctx, parsed);
   prepareExercises(ctx, parsed);

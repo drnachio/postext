@@ -72,7 +72,7 @@ export function renderStrip(ctx: WriterContext, b: ContentBlock, widthTwips: num
   const nil = ['top', 'left', 'bottom', 'right'].map((s) => `<w:${s} w:val="nil"/>`).join('');
   const capRow = cap ? `<w:tr><w:trPr><w:cantSplit/></w:trPr><w:tc><w:tcPr><w:tcW w:w="${total}" w:type="dxa"/><w:gridSpan w:val="${widths.length}"/><w:tcBorders>${nil}</w:tcBorders></w:tcPr>${cap}</w:tc></w:tr>` : '';
   const tbl =
-    `<w:tbl><w:tblPr><w:tblW w:w="${total}" w:type="dxa"/><w:jc w:val="center"/><w:tblCellSpacing w:w="${GUTTER / 2}" w:type="dxa"/>` +
+    `<w:tbl><w:tblPr><w:tblW w:w="${total}" w:type="dxa"/><w:jc w:val="center"/><w:tblCellSpacing w:w="${Math.round(GUTTER / 2)}" w:type="dxa"/>` +
     '<w:tblBorders><w:top w:val="nil"/><w:left w:val="nil"/><w:bottom w:val="nil"/><w:right w:val="nil"/><w:insideH w:val="nil"/><w:insideV w:val="nil"/></w:tblBorders><w:tblLayout w:type="fixed"/>' +
     '<w:tblLook w:val="0000" w:firstRow="0" w:lastRow="0" w:firstColumn="0" w:lastColumn="0" w:noHBand="1" w:noVBand="1"/></w:tblPr>' +
     `<w:tblGrid>${widths.map((w) => `<w:gridCol w:w="${w}"/>`).join('')}</w:tblGrid>` +

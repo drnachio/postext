@@ -5,7 +5,7 @@
 // `sandbox_export` tool share it. Both files carry the export map, so the
 // edited document comes back through `applyDocxEdits` (./wordEdits).
 
-import { baseFontFamily, type PostextConfig, type Resource } from 'postext';
+import { baseFontFamily, setCitationEngineLoader, type PostextConfig, type Resource } from 'postext';
 import {
   planWordFonts,
   semanticDocx,
@@ -18,6 +18,10 @@ import { decompressWoff2, rasterizeSvgWithDom, type PdfFontProvider } from 'post
 import type { Chapter } from '../book/types.js';
 import { configFontUses, ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
 import { getBlob } from '../storage/blobStore.js';
+
+// Citations and the list of works are written as the citation processor
+// formats them: loaded when a book cites.
+setCitationEngineLoader(() => import('postext-citeproc/register'));
 
 export const DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 
