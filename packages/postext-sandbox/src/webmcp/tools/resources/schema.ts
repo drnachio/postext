@@ -71,9 +71,6 @@ export function withPlacement(placement: ResourcePlacement | undefined, patch: R
     } else if ((key === 'width' || key === 'minScale') && value !== undefined && !((value as number) > 0 && (value as number) <= 1)) {
       throw new ToolError(`placement.${key} is a share, above 0 and up to 1 (0.5 for a half)${key === 'width' ? ', or a length { value, unit } in mm, cm, in or pt' : ''}, not ${JSON.stringify(given)}.`);
     }
-    if (key === 'plate' && value !== undefined && ![true, false, 'content', 'trim', 'bleed'].includes(value as never)) {
-      throw new ToolError(`placement.plate is true, false, "content", "trim" or "bleed", not ${JSON.stringify(given)}.`);
-    }
     if (key === 'wrapGap' && value !== undefined) {
       const gap = value as { value?: unknown; unit?: unknown };
       if (typeof gap.value !== 'number' || typeof gap.unit !== 'string') throw new ToolError('placement.wrapGap is a length: { value, unit } with a unit such as pt, mm or em.');

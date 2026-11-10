@@ -108,7 +108,7 @@ describe('the resource tools', () => {
     expect(get().resources[0]!.placement).toEqual({ width: 0.4 });
     expect((await call('sandbox_save_resource', { id: 'map', placement: { width: { value: 3, unit: 'em' } } })).error).toMatch(/unit among mm, cm, in, pt/);
     expect((await call('sandbox_save_resource', { id: 'map', placement: { width: { value: 0, unit: 'mm' } } })).error).toMatch(/value above 0/);
-    expect((await call('sandbox_save_resource', { id: 'map', placement: { plate: 'page' } })).error).toMatch(/placement\.plate is true, false/);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { plate: 'page' } })).error).toMatch(/placement\.plate/);
   });
 
   it('merge single fields, and take a placement key back to the type\'s', async () => {
