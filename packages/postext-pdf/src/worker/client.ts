@@ -155,7 +155,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         for (const [, bytes] of resourceBytes) {
           if (bytes.buffer instanceof ArrayBuffer) buffers.add(bytes.buffer);
         }
-        const { pageNegative, outlines, colorSpace, accessible, print, profileBaseUrl } = renderOptions;
+        const { forms, pageNegative, outlines, colorSpace, accessible, print, profileBaseUrl } = renderOptions;
         // The profile is copied, like the HarfBuzz bytes below; a relative
         // base URL resolves against this page.
         const outputProfile = renderOptions.outputProfile?.slice();
@@ -171,6 +171,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         try {
           send({ kind: 'render', id, docs, settings: {
               pageNegative, outlines, colorSpace, accessible,
+              ...(forms ? { forms } : {}),
               ...(print ? { print } : {}),
               ...(outputProfile ? { outputProfile } : {}),
               ...(profileBase ? { profileBaseUrl: profileBase } : {}),

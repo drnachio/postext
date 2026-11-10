@@ -193,6 +193,15 @@ describe('number fields painted for print (#1445)', () => {
     expect(price.getText()).toBe('1234.5');
     expect(js(price.acroField.dict, 'F')).toBe('AFNumber_Format(2, 0, 0, 0, " USD", false);');
   });
+
+  it('takes the options from pdfGeneration.forms when the host passes none, the host winning field by field (#1491)', async () => {
+    const markdown = 'Price :chip[1234.5]{style="field" field="price" format="currency"}';
+    const configured: PostextConfig = { ...config, pdfGeneration: { forms: { currency: 'USD', currencyBefore: false, separatorStyle: 0, font: 'helvetica' } } };
+    const fromConfig = (await PDFDocument.load(await renderToPdf(buildDocument({ markdown }, configured), { fontProvider }))).getForm().getTextField('price');
+    expect(js(fromConfig.acroField.dict, 'F')).toBe('AFNumber_Format(2, 0, 0, 0, " USD", false);');
+    const host = (await PDFDocument.load(await renderToPdf(buildDocument({ markdown }, configured), { fontProvider, forms: { currency: 'CHF' } }))).getForm().getTextField('price');
+    expect(js(host.acroField.dict, 'F')).toBe('AFNumber_Format(2, 0, 0, 0, " CHF", false);');
+  });
 });
 
 // A total over order lines, a check box with a fixed price and numbers in

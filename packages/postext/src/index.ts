@@ -473,7 +473,7 @@ export type {
   FootnoteMarkerPosition,
   FootnoteSeparatorConfig,
   PdfColorSpace,
-  PdfGenerationConfig,
+  PdfGenerationConfig, PdfFormsConfig, PdfFormFieldFont,
   ResolvedPdfGenerationConfig,
   PdfXStandard,
   PrintRenderingIntent,
@@ -690,7 +690,7 @@ export { computeColumnEdges } from './pipeline/resources/resourceLayout.js';
 export { findAnnotations } from './parse/annotations.js';
 export type { FoundAnnotation, AnnotationName } from './parse/annotations.js';
 export type { ContentBlock, ContentBlockType, DirectiveAttrs, VerseInfo, VerseStanza, VerseLineInfo, DirectiveName, ContainerName, RefCase, InlineSpan, InlineIcon, InlineLink, TextSpan, MathSpan, MathMeta, ListKind, ParseIssue, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, UnclosedCodeBlockIssue, CodeBlockInfo, ParseOptions, TocBlockInfo, IndexBlockInfo, IndexMark, ChipBox, SwatchShape, SwatchBox, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten, FormFieldSpec, FormFieldCalcOp, FormFieldCalc, FormFieldCalcCall, FormFieldCalcArg, FormNumberOptions, FormNumberStyle } from './parse/index.js';
-export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES, formatFieldNumber, formNumberStyle, numberFieldText } from './parse/index.js';
+export { parseMarkdownWithIssues, MATH_PLACEHOLDER, SWATCH_PLACEHOLDER, CHIP_PLACEHOLDER, KNOWN_DIRECTIVES, KNOWN_CONTAINERS, spaceDirectiveLines, MAX_SPACE_LINES, formatFieldNumber, formNumberStyle, formOptionsOf, numberFieldText } from './parse/index.js';
 // Composed pages in the document (#854): each `::::page` fence's content by
 // slot, and the slot checks the content warnings run.
 export { composedPages } from './composed/document.js';
