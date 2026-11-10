@@ -444,6 +444,34 @@ function touchesGenerated(v: BlockView, h: Hunk): boolean {
 /** Atoms whose printed text the engine generates from the construct. */
 const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
 
+const OPENERS_RE = /(?:\*\*|__|\*|_|\^|~|`|:smallcaps\[|\[)+$/;
+const CLOSERS_RE = /^(?:\*\*|__|\*|_|\^|~|`|\]\([^()\s]*(?:\s+"[^"]*")?\)|\])+/;
+
+/** The source of a text replaced whole (`blockHunks`): from its first
+ *  character to its last with the markup around and between them, when
+ *  that markup pairs up. The new text then brings its own, and no mark is
+ *  left open or empty. */
+function wholeRange(v: BlockView, base: string): [number, number] | undefined {
+  let s = Infinity;
+  let e = -1;
+  for (const m of v.M) {
+    if (m < 0) return undefined;
+    s = Math.min(s, m);
+    e = Math.max(e, m + 1);
+  }
+  if (e < 0) return undefined;
+  if (escapeBefore(base, s)) s--;
+  const line = base.lastIndexOf('\n', s - 1) + 1;
+  const open = OPENERS_RE.exec(base.slice(line, s))?.[0] ?? '';
+  const end = base.indexOf('\n', e);
+  const close = CLOSERS_RE.exec(base.slice(e, end < 0 ? base.length : end))?.[0] ?? '';
+  const inner: string[] = [];
+  const at = [...v.M].sort((x, y) => x - y);
+  for (let k = 1; k < at.length; k++) if (at[k]! > at[k - 1]! + 1) inner.push(base.slice(at[k - 1]! + 1, at[k]!));
+  if (!markupDeletable([open, ...inner, close])) return undefined;
+  return [s - open.length, e + close.length];
+}
+
 /** Source edits for one changed hunk. */
 export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {
   // A note typed beside another one's reference: of the two marks, the
@@ -458,6 +486,8 @@ export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {
     const { pos } = insertionPoint(v, base, h);
     return [{ target: v.target, start: pos, end: pos, text: v.N.slice(h.b0, h.b1), kind, reject: 'generated', before: v.O.slice(h.a0, h.a1) }];
   }
+  const whole = v.replaced && h.a0 === 0 && h.a1 === v.O.length ? wholeRange(v, base) : undefined;
+  if (whole) return [{ target: v.target, start: whole[0], end: whole[1], text: insertText(v, base, h, ''), kind }];
   const ranges = deletedRanges(v, base, h);
   if (!ranges.length) {
     const { pos, key } = insertionPoint(v, base, h);

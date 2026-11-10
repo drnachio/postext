@@ -94,6 +94,10 @@ export interface ReadDocx {
    *  their neighbours, which could not be told from text typed there
    *  (`lost.ts`): they read as deleted, the text as typed in. */
   unpaired: Set<string>;
+  /** Fragments whose bookmark was put back among more or fewer unmarked
+   *  paragraphs than fragments without bookmark: each took the paragraph
+   *  most like it (`lost.ts`). */
+  placed: Set<string>;
   /** Some style or run of the file sets capitals with `w:caps`; an editor
    *  that has no such mark (Google Docs) types the capitals out. Set when
    *  the looks were read. */
@@ -114,6 +118,8 @@ export interface ReadOptions {
   absent?: ReadonlySet<string>;
   /** The paragraphs the writer set outside every fragment. */
   furniture?: ReadonlyMap<string, number>;
+  /** Fragment id → the look of each character as the writer set it. */
+  written?: ReadonlyMap<string, readonly string[]>;
 }
 
 type Files = Record<string, Uint8Array>;
@@ -439,13 +445,13 @@ export function readExportedDocx(bytes: Uint8Array, options: ReadOptions = {}): 
     if (chars.some((c) => c.ch.trim())) newNotes.set(key, chars);
   }
   // The bookmarks an editor took away with a text replaced whole.
-  const { absent, foreign, furniture } = options;
-  const restored = restoreLost(tokens, map, { noteBoxes, ...(absent ? { absent } : {}), ...(foreign ? { foreign } : {}), ...(furniture ? { furniture } : {}) });
+  const { absent, foreign, furniture, written } = options;
+  const restored = restoreLost(tokens, map, { noteBoxes, ...(absent ? { absent } : {}), ...(foreign ? { foreign } : {}), ...(furniture ? { furniture } : {}), ...(written ? { written } : {}) });
   const { fragments, added, strays, marks } = assign(restored.tokens, map, options.foreign);
   for (const id of restored.put) if (fragments.has(id)) fragments.get(id)!.replaced = true;
   const holders = map.holders === true && noProof;
   return {
-    map, fragments, added, strays, unpaired: restored.unpaired, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders,
+    map, fragments, added, strays, unpaired: restored.unpaired, placed: restored.placed, newNotes, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders,
     ...(looks ? { caps: looks.caps } : {}),
   };
 }

@@ -51,6 +51,14 @@ function likeness(a: Set<string>, b: Set<string>): number {
   return common / Math.max(a.size, b.size);
 }
 
+/** How much of two texts' words they share, 0 to 1 (none when either
+ *  has no word). */
+export function sharedWords(a: string, b: string): number {
+  const x = words(a);
+  const y = words(b);
+  return x.size && y.size ? likeness(x, y) : 0;
+}
+
 /** The words of a text in their order. */
 const wordsInOrder = (text: string): string[] => looseText(text).match(/[\p{L}\p{N}]+/gu) ?? [];
 

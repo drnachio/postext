@@ -66,9 +66,9 @@ const typedBefore = (text: string, typed: string): Edit => () => (bytes) =>
 const target = (md: string) => ({ chapters: [{ id: 'ch1', title: 'Chapter 1', markdown: md }], config: {} as never, resources: [TABLE] });
 
 /** Export `MD`, save it as Google Docs does, edit it and bring it back
- *  into `now` (the book as it is at import). */
-async function fromDocs(edits: Edit[], now = MD): Promise<DocxEditResult> {
-  const e = await exportDocx([MD], { config: {} as never, design: 'book', resources: [TABLE] });
+ *  into `now` (the book as it is at import); `was`: the book exported. */
+async function fromDocs(edits: Edit[], now = MD, was = MD): Promise<DocxEditResult> {
+  const e = await exportDocx([was], { config: {} as never, design: 'book', resources: [TABLE] });
   let bytes = savedByGoogleDocs(e.bytes);
   for (const edit of edits) bytes = edit(e)(bytes);
   const book = target(now);
@@ -185,16 +185,105 @@ describe('a bookmark gone with nothing, or with more, in its place', () => {
     expect(md(r)).toContain('## Where water goes\n\nWater runs down the valley and into the sea, slowly.\n');
   });
 
-  it('one fragment gone and two paragraphs there: deleted and typed in, as before, and said so', async () => {
+  it('one fragment gone and two paragraphs there: the one most like it is its text, the other one typed in, and said so', async () => {
     const r = await fromDocs([
       inDoc('Water runs down the valley and into the sea, slowly.', 'Water runs to the sea.'),
       typedBefore('Water runs to the sea.', 'A paragraph typed in.'),
     ]);
-    expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
-    const gone = r.edits.filter((e) => e.after === '');
-    expect(gone.map((e) => e.reason)).toEqual(['bookmark-unpaired']);
-    expect(md(r)).not.toContain('down the valley');
-    expect(md(r)).toContain('A paragraph typed in.\n\nWater runs to the sea.\n');
+    expect(r.edits.map((e) => [e.kind, e.status, e.reason])).toEqual([['text', 'applied', 'bookmark-placed'], ['paragraph', 'applied', undefined]]);
+    expect(md(r)).toBe(MD.replace('Water runs down the valley and into the sea, slowly.', 'A paragraph typed in.\n\nWater runs to the sea.'));
+  });
+
+  // The formatted design as Google Docs saves it: no heading keeps a
+  // style name, each run says how it is set.
+  const unstyled: Edit = () => (bytes) => editPart(bytes, 'word/document.xml', (xml) => xml.replace(/<w:pStyle w:val="[^"]*"\/>/g, ''));
+  /** A paragraph typed after the one that holds `text`, set as it is. */
+  const typedAfter = (text: string, typed: string): Edit => () => (bytes) =>
+    editPart(bytes, 'word/document.xml', (xml) => {
+      const at = xml.indexOf(`>${text}<`);
+      const from = xml.lastIndexOf('<w:p ', at);
+      const to = xml.indexOf('</w:p>', at) + '</w:p>'.length;
+      const copy = xml.slice(from, to).replace(/<w:bookmark(?:Start|End) [^>]*\/>/g, '').replace(`>${text}<`, `>${typed}<`);
+      return xml.slice(0, to) + copy + xml.slice(to);
+    });
+
+  for (const [name, beside] of [
+    ['before it', typedBefore('Where rivers end', 'Rivers, typed in.')],
+    ['after it, set as the heading is', typedAfter('Where rivers end', 'Typed after the heading.')],
+  ] as const) {
+    it(`a heading replaced stays a heading with a paragraph typed ${name}, styles or none`, async () => {
+      for (const more of [[], [unstyled]]) {
+        const r = await fromDocs([inDoc('Where water goes', 'Where rivers end'), beside, ...more]);
+        expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+        expect(r.edits.filter((e) => e.after === '')).toEqual([]);
+        expect(md(r)).toContain('## Where rivers end\n');
+        expect(md(r)).not.toContain('**Where rivers end**');
+        expect(md(r)).not.toContain('Where water goes');
+        expect(md(r)).toMatch(/Rivers, typed in\.|Typed after the heading\./);
+      }
+    });
+  }
+
+  it('a paragraph replaced beside a heading-like paragraph typed in is told by how it is set', async () => {
+    const r = await fromDocs([
+      inDoc('Water runs down the valley and into the sea, slowly.', 'Brooks join.'),
+      typedAfter('Where water goes', 'Typed, set as a heading'),
+      unstyled,
+    ]);
+    expect(r.edits.filter((e) => e.after === '')).toEqual([]);
+    expect(md(r)).toContain('## Where water goes\n\n**Typed, set as a heading**\n\nBrooks join.\n');
+  });
+
+  it('two replaced in a row and one of them deleted: the heading left is the heading, the paragraph is deleted and said so', async () => {
+    for (const more of [[], [unstyled]]) {
+      const r = await fromDocs([inDoc('Where water goes', 'Where rivers end'), inDoc('Water runs down the valley and into the sea, slowly.', undefined), ...more]);
+      expect(r.edits.map((e) => [e.kind, e.status, e.reason])).toEqual([['text', 'applied', 'bookmark-placed'], ['paragraph', 'applied', 'bookmark-unpaired']]);
+      expect(md(r)).toBe(MD.replace('## Where water goes\n\nWater runs down the valley and into the sea, slowly.\n\n', '## Where rivers end\n\n'));
+    }
+    const r = await fromDocs([inDoc('Where water goes', undefined), inDoc('Water runs down the valley and into the sea, slowly.', 'Brooks join.'), unstyled]);
+    expect(md(r)).toBe(MD.replace('## Where water goes\n\nWater runs down the valley and into the sea, slowly.\n\n', 'Brooks join.\n\n'));
+  });
+
+  it('two cells replaced in a row and one of them emptied: each is the cell in its place', async () => {
+    for (const [edits, want] of [
+      [[inDoc('Tool', undefined), inDoc('Result', 'Outcome')], ['', 'Outcome']],
+      [[inDoc('Tool', 'Instrument'), inDoc('Result', undefined)], ['Instrument', '']],
+    ] as const) {
+      const r = await fromDocs([...edits]);
+      expect(r.edits.every((e) => e.status === 'applied')).toBe(true);
+      expect(table(r).table!.model.rows.map((row) => row.map((c) => c.content))).toEqual([want, ['Engine', 'Uneven']]);
+      expect(md(r)).toBe(MD);
+    }
+  });
+});
+
+describe('a text replaced whole that held marks', () => {
+  const WAS = '# Rivers\n\n1. **Faults of the line.** The _widows_ and the _orphans_ are [known](https://example.org/k), the **rest** is not\n2. Second item\n\nA \\*starred\\* word and _one_ more.\n';
+
+  it('is one edit that leaves no mark open or empty, and reads back with no edit', async () => {
+    const edits = [inDoc('Faults of the line. The widows and the orphans are known, the rest is not', 'Widows and orphans.'), inDoc('A *starred* word and one more.', 'A plain sentence.')];
+    const r = await fromDocs(edits, WAS, WAS);
+    expect(r.edits.map((e) => [e.kind, e.status])).toEqual([['text', 'applied'], ['text', 'applied']]);
+    const want = '# Rivers\n\n1. **Widows and orphans.**\n2. Second item\n\nA plain sentence.\n';
+    expect(md(r)).toBe(want);
+    const again = await fromDocs(edits, want, WAS);
+    expect(again.edits).toEqual([]);
+  });
+});
+
+describe('a line of an index the book no longer gives', () => {
+  const INDEX = '# Index\n\n:::index\n';
+  const BODY = '# Rivers\n\nA brook:index{term="brook"} runs here.\n\nThe delta:index{term="delta"} is wide and slow, every year.\n\nThe estuary:index{term="estuary"} opens.\n';
+
+  it('is not a paragraph typed in the editor', async () => {
+    const e = await exportDocx([BODY, INDEX], { config: {} as never, design: 'book' });
+    const bytes = savedByGoogleDocs(e.bytes);
+    // The passage that brought `delta` was reworded in the book since.
+    const now = BODY.replace('The delta:index{term="delta"} is wide and slow, every year.', 'The mouth is wide and slow, every year.');
+    const book = { chapters: [{ id: 'ch1', title: 'Chapter 1', markdown: now }, { id: 'ch2', title: 'Chapter 2', markdown: INDEX }], config: {} as never };
+    const r = applyDocxEdits(bytes, { chapters: book.chapters }, { rebuilt: (await rebuildExportMap(bytes, book))! });
+    expect(r.chapters[1]!.markdown).toBe(INDEX);
+    expect(r.edits.filter((x) => x.kind === 'paragraph')).toEqual([]);
   });
 });
 

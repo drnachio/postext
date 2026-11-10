@@ -15,11 +15,18 @@
 // paragraphs that stand there, in order, only when there are as many of
 // one as of the other and each paragraph can be its fragment (a note in
 // a note, a cell in its table, a paragraph styled like the others of its
-// kind). Otherwise nothing is put back: the fragments read as deleted
-// and the paragraphs as typed in, as before, and `unpaired` names them.
+// kind). With more of one than of the other (a paragraph typed beside
+// the text replaced, or one of two replaced texts deleted), they still
+// pair in order, each fragment with the paragraph that can be it and is
+// most like it: set as its first character was (an editor gives a text
+// typed over another the format of what it replaces), sharing its words.
+// `placed` names those. The fragments left without a paragraph read as
+// deleted and the paragraphs left over as typed in, and `unpaired` names
+// the former. Table cells and notes are never paired so: which cell or
+// which note a text stands in is not told by its likeness.
 
 import type { ExportMap, MapFragment } from '../anchors/types.js';
-import { counterOf, looseText } from './align.js';
+import { counterOf, looseText, sharedWords } from './align.js';
 import { LOOK_HIDDEN } from './looks.js';
 import { furnitureKey } from './selfRead.js';
 import type { Token } from './walk.js';
@@ -34,6 +41,56 @@ export interface LostOptions {
   furniture?: ReadonlyMap<string, number>;
   /** The containers that are notes of the file. */
   noteBoxes?: ReadonlySet<number>;
+  /** Fragment id → the look of each character as written (`selfRead`). */
+  written?: ReadonlyMap<string, readonly string[]>;
+}
+
+/** What `restoreLost` gives back. */
+export interface Restored {
+  /** The tokens with the bookmarks put back (the same array when there
+   *  was nothing to put back). */
+  tokens: Token[];
+  /** The fragments a bookmark was put back for. */
+  put: string[];
+  /** Of those, the ones told from text typed beside them by likeness. */
+  placed: Set<string>;
+  /** The fragments read as deleted though unmarked text stands around
+   *  their place. */
+  unpaired: Set<string>;
+}
+
+/** The letters of a look that tell one kind of text from another: bold,
+ *  italic, monospaced (capitals may be typed out, hidden text is gone). */
+const kindLook = (look: string | undefined): string | undefined => (look === undefined ? undefined : look.replace(/[^bik]/g, ''));
+
+/** More pairs than this are not weighed. */
+const MAX_WEIGHED = 40000;
+
+/**
+ * Pair `m` fragments with `n` paragraphs, both in order, no pair crossing
+ * another: the pairs that weigh most together, `weight` undefined for a
+ * pair that cannot be. Of two equal ways, the earlier paragraph.
+ */
+function pairInOrder(m: number, n: number, weight: (i: number, j: number) => number | undefined): [number, number][] {
+  if (m * n > MAX_WEIGHED) return [];
+  const w = new Float64Array(m * n);
+  const best = new Float64Array((m + 1) * (n + 1));
+  const at = (i: number, j: number): number => i * (n + 1) + j;
+  for (let i = m - 1; i >= 0; i--) {
+    for (let j = n - 1; j >= 0; j--) {
+      const own = weight(i, j);
+      w[i * n + j] = own ?? -1;
+      best[at(i, j)] = Math.max(best[at(i + 1, j)]!, best[at(i, j + 1)]!, own === undefined ? 0 : own + best[at(i + 1, j + 1)]!);
+    }
+  }
+  const out: [number, number][] = [];
+  for (let i = 0, j = 0; i < m && j < n; ) {
+    const own = w[i * n + j]!;
+    if (own >= 0 && best[at(i, j)] === own + best[at(i + 1, j + 1)]!) out.push([i++, j++]);
+    else if (best[at(i, j)] === best[at(i, j + 1)]) j++;
+    else i++;
+  }
+  return out;
 }
 
 type Start = Extract<Token, { t: 'bmStart' }>;
@@ -64,11 +121,13 @@ const HEAD = 24;
 
 /** The fragments whose bookmark stands in the file, with where it opens
  *  and closes, and the unmarked text that may stand for the others. */
-function survey(tokens: readonly Token[], known: ReadonlySet<string>, generated: ReadonlySet<string>): { where: Map<string, [number, number]>; starts: Map<string, Start>; candidates: Candidate[]; boxes: Set<number> } {
+function survey(tokens: readonly Token[], known: ReadonlySet<string>, generated: ReadonlySet<string>): { where: Map<string, [number, number]>; starts: Map<string, Start>; candidates: Candidate[]; boxes: Set<number>; blanks: number[] } {
   const where = new Map<string, [number, number]>();
   const starts = new Map<string, Start>();
   const boxes = new Set<number>();
   const candidates: Candidate[] = [];
+  /** Where the empty unmarked paragraphs of tables end (an emptied cell). */
+  const blanks: number[] = [];
   const open: { wid: string; fid: string }[] = [];
   const paras = new Map<number, ParaState>();
   const state = (para: number): ParaState => {
@@ -112,12 +171,13 @@ function survey(tokens: readonly Token[], known: ReadonlySet<string>, generated:
     } else if (tok.t === 'para') {
       const p = paras.get(tok.para);
       paras.delete(tok.para);
-      if (!p || open.length) return;
-      const shown = p.loose.filter((i) => {
+      if (open.length) return;
+      const shown = (p?.loose ?? []).filter((i) => {
         const c = tokens[i] as Extract<Token, { t: 'char' }>;
         return c.ch.trim() !== '' || c.tex !== undefined;
       });
-      if (!shown.length) return;
+      if (!shown.length && !p?.marked && tok.tbl !== undefined) blanks.push(k);
+      if (!p || !shown.length) return;
       // After a bookmark of the paragraph, only what follows a generated
       // fragment: text typed after the book's own joins that text.
       if (p.marked && !(p.closed !== undefined && generated.has(p.closed))) return;
@@ -132,25 +192,23 @@ function survey(tokens: readonly Token[], known: ReadonlySet<string>, generated:
       candidates.push({ first, last, text, mark: tok, ...(p.marked ? { tailOf: p.closed! } : {}) });
     }
   });
-  return { where, starts, candidates, boxes };
+  return { where, starts, candidates, boxes, blanks };
 }
 
 /**
  * Put back the bookmarks of the fragments that lost theirs to a text
- * replaced whole. Returns the tokens with the bookmarks in (the same
- * array when there was nothing to put back), the fragments it put them
- * back for, and the ones that could not be told from text typed beside
- * them.
+ * replaced whole.
  */
-export function restoreLost(tokens: Token[], map: ExportMap, options: LostOptions = {}): { tokens: Token[]; put: string[]; unpaired: Set<string> } {
+export function restoreLost(tokens: Token[], map: ExportMap, options: LostOptions = {}): Restored {
   const unpaired = new Set<string>();
+  const placed = new Set<string>();
   const known = new Set(map.fragments.map((f) => f.id));
   for (const id of options.foreign ?? []) known.add(id);
   const generated = new Set(map.fragments.filter((f) => f.target.kind === 'generated').map((f) => f.id));
-  const { where, starts, candidates: all, boxes } = survey(tokens, known, generated);
+  const { where, starts, candidates: all, boxes, blanks } = survey(tokens, known, generated);
   // A fragment without text and without bookmark says nothing.
   const order = map.fragments.filter((f) => !options.absent?.has(f.id) && (where.has(f.id) || f.text.trim() !== ''));
-  if (order.every((f) => where.has(f.id)) || !all.length) return { tokens, put: [], unpaired };
+  if (order.every((f) => where.has(f.id)) || !all.length) return { tokens, put: [], placed, unpaired };
 
   const inNote = (c: Candidate): boolean => options.noteBoxes?.has(c.mark.box) === true;
   // Text in a container without any bookmark is decoration (a folio, a
@@ -180,15 +238,26 @@ export function restoreLost(tokens: Token[], map: ExportMap, options: LostOption
     own.add(styleAt.get(s.para) ?? '');
     if (f.target.kind === 'resource' && f.target.field === 'cell' && s.tbl !== undefined) tables.set(f.target.resourceId, s.tbl);
   }
+  // A paragraph in a table of the book is a cell's, or a row typed in.
+  const cellTables = new Set(tables.values());
   const fits = (f: MapFragment, c: Candidate): boolean => {
     const note = f.role === 'footnote';
     if (inNote(c) ? !note : note && (options.noteBoxes?.size ?? 0) > 0) return false;
     if (f.target.kind === 'resource' && f.target.field === 'cell') {
       const table = tables.get(f.target.resourceId);
       if (c.mark.tbl === undefined || (table !== undefined && table !== c.mark.tbl)) return false;
-    }
+    } else if (c.mark.tbl !== undefined && cellTables.has(c.mark.tbl)) return false;
     const own = styles.get(f.role ?? '');
     return !own || own.has(c.mark.props?.style ?? '');
+  };
+
+  // How much a paragraph is like a fragment: it stands for it (1), it is
+  // set as the fragment's first character was (2), it shares its words
+  // (up to 1).
+  const likeness = (f: MapFragment, c: Candidate): number => {
+    const was = kindLook(options.written?.get(f.id)?.[f.text.search(/\S/)]);
+    const now = kindLook((tokens[c.first] as Extract<Token, { t: 'char' }>).look);
+    return 1 + (was !== undefined && was === now ? 2 : 0) + sharedWords(f.text, c.text);
   };
 
   const put: { f: MapFragment; c: Candidate }[] = [];
@@ -223,10 +292,38 @@ export function restoreLost(tokens: Token[], map: ExportMap, options: LostOption
       if (typed.length >= 4 && looseText(after.text).startsWith(typed)) there.pop();
     }
     if (!run.length || !there.length) continue;
-    if (run.length === there.length && run.every((f, i) => fits(f, there[i]!))) run.forEach((f, i) => put.push({ f, c: there[i]! }));
-    else for (const f of run) unpaired.add(f.id);
+    if (run.length === there.length && run.every((f, i) => fits(f, there[i]!))) {
+      run.forEach((f, i) => put.push({ f, c: there[i]! }));
+      continue;
+    }
+    const held = there;
+    // Cells of one table, as many as the paragraphs of that table that
+    // stand there without bookmark, the empty ones counted: each cell is
+    // the paragraph in its place, and an empty one a cell emptied.
+    const cellOf = (f: MapFragment): string | undefined => (f.target.kind === 'resource' && f.target.field === 'cell' ? f.target.resourceId : undefined);
+    const tbl = held[0]!.mark.tbl;
+    if (tbl !== undefined && cellOf(run[0]!) !== undefined && run.every((f) => cellOf(f) === cellOf(run[0]!)) && held.every((c) => c.mark.tbl === tbl && fits(run[0]!, c))) {
+      const empty = blanks.filter((at) => at > lo && at < hi && (tokens[at] as Para).tbl === tbl);
+      const places = [...held.map((c) => ({ at: c.last, c })), ...empty.map((at) => ({ at, c: undefined }))].sort((a, b) => a.at - b.at);
+      if (places.length === run.length) {
+        places.forEach((x, i) => x.c && put.push({ f: run[i]!, c: x.c }));
+        continue;
+      }
+    }
+    // A cell or a note has a place of its own (its row and column, the
+    // mark that calls it) that likeness cannot tell: those stay apart.
+    const inFlow = (f: MapFragment): boolean => f.role !== 'footnote' && !(f.target.kind === 'resource' && f.target.field === 'cell');
+    const pairs = pairInOrder(run.length, held.length, (i, j) => (inFlow(run[i]!) && fits(run[i]!, held[j]!) ? likeness(run[i]!, held[j]!) : undefined));
+    const found = new Set(pairs.map(([i]) => i));
+    for (const [i, j] of pairs) {
+      put.push({ f: run[i]!, c: held[j]! });
+      placed.add(run[i]!.id);
+    }
+    run.forEach((f, i) => {
+      if (!found.has(i)) unpaired.add(f.id);
+    });
   }
-  if (!put.length) return { tokens, put: [], unpaired };
+  if (!put.length) return { tokens, put: [], placed, unpaired };
 
   const opens = new Map<number, Token>();
   const closes = new Map<number, Token>();
@@ -244,7 +341,7 @@ export function restoreLost(tokens: Token[], map: ExportMap, options: LostOption
     const c = closes.get(k);
     if (c) out.push(c);
   });
-  return { tokens: out, put: put.map((p) => p.f.id), unpaired };
+  return { tokens: out, put: put.map((p) => p.f.id), placed, unpaired };
 }
 
 /** The fragments of a map written again from the book that the file

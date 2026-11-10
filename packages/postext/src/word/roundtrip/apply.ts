@@ -11,7 +11,7 @@ import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
 import { formatEdits } from './formats.js';
 import { neverMarked } from './lost.js';
 import { mergeText, type PlacedEdit } from './merge.js';
-import { readExportedDocx, type ReadComment, type ReadDocx } from './read.js';
+import { readExportedDocx, type AddedParagraph, type ReadComment, type ReadDocx } from './read.js';
 import type { RebuiltMap } from './rebuild.js';
 import { looseText } from './align.js';
 import { furnitureKey } from './selfRead.js';
@@ -185,17 +185,29 @@ function rejoinSplits(read: ReadDocx): void {
  * Paragraphs of the file that read like the ones the writer set outside
  * every fragment (a contents line, an index entry, a label): an editor
  * turned the field or the style that marked them into plain text. They
- * are the writer's, not paragraphs typed in the editor.
+ * are the writer's, not paragraphs typed in the editor. So is a
+ * paragraph that stands between two of them in one run of unmarked
+ * paragraphs: a line of a contents list or an index the book no longer
+ * gives (the passage that brought the entry was deleted or reworded).
  */
-function dropFurniture(added: { chars: readonly { ch: string }[] }[], furniture: ReadonlyMap<string, number>): void {
+function dropFurniture(added: Pick<AddedParagraph, 'chars' | 'fid' | 'side' | 'next'>[], furniture: ReadonlyMap<string, number>): void {
   const left = new Map(furniture);
-  for (let i = 0; i < added.length; i++) {
-    const key = furnitureKey(added[i]!.chars.map((c) => c.ch).join(''));
+  const own = added.map((a) => {
+    const key = furnitureKey(a.chars.map((c) => c.ch).join(''));
     const n = left.get(key) ?? 0;
-    if (n <= 0) continue;
-    left.set(key, n - 1);
-    added.splice(i--, 1);
+    if (n > 0) left.set(key, n - 1);
+    return n > 0;
+  });
+  const sameRun = (a: (typeof added)[number], b: (typeof added)[number]): boolean => a.fid === b.fid && a.side === b.side && a.next === b.next;
+  for (let k = 0; k < added.length; ) {
+    let e = k + 1;
+    while (e < added.length && sameRun(added[k]!, added[e]!)) e++;
+    const first = own.indexOf(true, k);
+    const last = own.lastIndexOf(true, e - 1);
+    if (first >= k && first < e) for (let i = first; i <= last; i++) own[i] = true;
+    k = e;
   }
+  for (let i = added.length - 1; i >= 0; i--) if (own[i]) added.splice(i, 1);
 }
 
 /**
@@ -272,7 +284,7 @@ function commentSource(v: BlockView, hunks: readonly Hunk[], fid: string, index:
  */
 export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, options: { rebuilt?: RebuiltMap } = {}): DocxEditResult {
   const given = options.rebuilt;
-  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign, absent: neverMarked(given), furniture: given.furniture } : {});
+  const read = readExportedDocx(bytes, given ? { map: given.map, looks: true, foreign: given.foreign, absent: neverMarked(given), furniture: given.furniture, written: given.looks } : {});
   const { map } = read;
   rejoinSplits(read);
   // The file's own map when it has one.
@@ -355,6 +367,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
       const r = editsOfBlock(v, base);
       // Read as deleted though text stands around its place (`lost.ts`).
       if (v.missing && v.frags.some((f) => read.unpaired.has(f.id))) for (const e of r.edits) e.note = 'bookmark-unpaired';
+      // Told from text typed beside it by likeness alone.
+      else if (v.frags.some((f) => read.placed.has(f.id))) for (const e of r.edits) e.note = 'bookmark-placed';
       hunksOf.set(v, r.hunks);
       r.edits.forEach(add);
       // The notes typed in the block: their definitions close the chapter.

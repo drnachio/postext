@@ -165,7 +165,8 @@ const REASONS: Record<string, string> = {
   'format-partial': 'the formatting covers only part of a marked span',
   moved: 'a paragraph moved in Word stays where it is in the book (move it in the Markdown)',
   'table-row': 'a row or a line added to a table in Word does not come into the book (add it to the table in the book)',
-  'bookmark-unpaired': 'its bookmark is gone and the text around its place could not be told from text typed there: read as deleted, and that text as added',
+  'bookmark-unpaired': 'its bookmark is gone and none of the text that stands around its place could be told to be its own: read as deleted, and that text as added',
+  'bookmark-placed': 'its bookmark is gone: read from the text most like it among the text that stands in its place, the rest as added',
 };
 
 /** What an edit changed, in words a reader can follow: a paragraph mark

@@ -30,7 +30,10 @@ export interface DocxEdit {
   /** Why an edit did not apply. On one that did, something to know about
    *  it: `bookmark-unpaired`, a passage whose bookmark the editor took
    *  away, read as deleted because the text that stands around its place
-   *  could not be told from text typed there (it comes in as added). */
+   *  could not be told from text typed there (it comes in as added);
+   *  `bookmark-placed`, a passage whose bookmark the editor took away,
+   *  read from the text most like it among the unmarked text that stands
+   *  around its place (the rest comes in as added). */
   reason?: string;
 }
 
