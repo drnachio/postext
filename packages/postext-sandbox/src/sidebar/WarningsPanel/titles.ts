@@ -277,6 +277,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsHereNotEmbeddedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
+    case 'stack':
+      return labels.warningsStackTitle;
     case 'openerFloat':
       return labels.warningsOpenerFloatTitle;
     case 'tocGroupSplit':

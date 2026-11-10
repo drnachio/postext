@@ -19,6 +19,17 @@ export type TextSettingWarning =
    *  line a break it can take. Found by the layout, so
    *  `collectContentWarnings` never returns it. */
   | { kind: 'raggedLine'; text: string; ratio: number }
+  /** A stack (#1463, `bodyText.stacks: 'warn' | 'avoid'`): two consecutive
+   *  lines of a paragraph, in one column, that end (`edge: 'end'`) or
+   *  start (`edge: 'start'`) on the same word or the same
+   *  `bodyText.stackMinCharacters` characters. `text` is what they repeat,
+   *  as the first line prints it, and `lines` the two lines' texts. Under
+   *  `'warn'` every stack is reported; under `'avoid'` those the breaker
+   *  kept (no setting within the word spacing avoided them, or it would
+   *  have cost more than `stackPenalty`). The source range covers both
+   *  lines. Found by the layout, so `collectContentWarnings` never returns
+   *  it. */
+  | { kind: 'stack'; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** A word of a joining script (Arabic, Syriac, N'Ko…) wider than its
    *  line: such a word is never divided (its letters connect, and a piece
    *  would lose its joining forms), so it runs past the measure

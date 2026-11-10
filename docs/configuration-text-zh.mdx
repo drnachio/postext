@@ -232,22 +232,22 @@ export const metadata = {
       <td>在复合词的连字符处断行后，下一行也以连字符开头：<code>vencer-</code> · <code>-se</code>，这是葡萄牙语拼写的要求；<code>léxico-</code> · <code>-semántico</code>，这是西班牙皇家学院自2010年起的规则。重复的连字符随所在的行一起测量和绘制，行把它记录为<code>repeatedHyphen</code>；行的<code>plainStart</code>和<code>sourceStart</code>指向它之后的位置，因此链接、书眉和沙盒读到的是原样的词。PDF在一个不包含它的<code>/ActualText</code>下绘制它，所以从PDF复制或提取的文字里这个词只出现一次。网址从不添加重复连字符。它作用于连续正文、标题、列表、引用块和框；含有复合词的无格式段落，这时改由处理带格式文字的断行器来断行。</td>
     </tr>
     <tr>
-      <td><code>avoidStacks</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>避免重复：段落中相邻两行以同一个词结尾，或以相同的最后<code>stackMinCharacters</code>个字符（含空格）结尾（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>），或以同一个词或相同的开头字符开头（<code>of the</code> / <code>of a</code>）。断行器在词距允许的范围内重新排段落以避免重复；重复的分量由<code>stackPenalty</code>决定。需要开启<code>optimalLineBreaking</code>。 重音符号不作区分（“sól”即“sol”）；同一个单音节词（如“a”“y”“de”“la”）出现在相邻两行的同一端时，无论惩罚值多少都不允许。图注、注释和表格单元格同样适用。默认关闭，因此此前排好的文档行不变。</td>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>行首行尾重复：段落中同一栏内相邻的两行以同一个词结尾，或以相同的最后<code>stackMinCharacters</code>个字符（含空格）结尾（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>），或以同一个词或相同的开头字符开头（<code>of the</code> / <code>of a</code>）。<code>'allow'</code>按断行器找到的样子排行，不作报告。<code>'warn'</code>照样排行，并把每处重复报告为内容警告<code>stack</code>，Sandbox在“检查”中列出并在页面上标出。<code>'avoid'</code>为每处重复加上<code>stackPenalty</code>缺陷值，让断行器在词距允许的范围内换一种排法，并报告保留下来的重复。不区分重音和大小写（“sól”即“sol”）。只在用空格分词的文字中比较词：中文、日文、泰文、藏文等不以空格分词的文字没有重复。行边缘的公式、标签或色块从不比较。设为<code>'avoid'</code>时，图注、注释和表格单元格（两端对齐或左对齐）都用Knuth–Plass整体断行以遵循此规则；组版页面的框架排其文字时不用此规则。需要<code>optimalLineBreaking</code>。移植书籍时请保持<code>'allow'</code>，或在校样时使用<code>'warn'</code>：移植要重现原书的断行。</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>相邻两行的同一侧边缘须共有多少个字符（含空格）才算重复（<code>avoidStacks</code>）。紧贴边缘的标点不计，同一个词总是算重复。</td>
+      <td>相邻两行的同一侧边缘须共有多少个字符（含空格）才算重复（<code>stacks</code>）。紧贴边缘的标点不计，同一个词总是算重复。</td>
     </tr>
     <tr>
       <td><code>stackPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>100000</code></td>
-      <td>重复（相邻两行以同一个词或相同的字符结尾或开头，<code>avoidStacks</code>会避免它）的代价，以等效劣度表示：100相当于词距达到上限的一行；1000超过限度内的任何一行。默认值100000使重复成为硬性限制：它甚至超过词距超出上限的行，因此只有在段落的任何排法都无法避免时才保留重复。 单音节词的重复无论此值多少都一律禁止。</td>
+      <td><code>3000</code></td>
+      <td>设为<code>stacks: 'avoid'</code>时，每处重复给断行器增加的缺陷值（计入段落），与<code>consecutiveHyphenDemerit</code>同一尺度（连续两行以连字符结尾为3000）。重复的单音节词（按拉丁、希腊和西里尔字母的元音计）加倍。数值越高，避开的重复越多，代价是行更松；为0时全部保留。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

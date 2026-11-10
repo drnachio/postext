@@ -170,6 +170,62 @@ jobs:
           path: .ci-passed
           key: passed-epubcheck-${{ steps.hash.outputs.hash }}
 
+  # The WebAssembly line breaker (#1463): bytes.generated.ts is built from
+  # rust/ with the pinned toolchain (rust/rust-toolchain.toml) and binaryen,
+  # and the build is reproducible, so this job builds it again and fails
+  # when the committed bytes differ. It installs no Node packages, and its
+  # marker is keyed by the Rust sources and the module: a run that changes
+  # neither skips it.
+  wasm:
+    name: WebAssembly line breaker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - id: passed
+        if: ${{ !inputs.full }}
+        uses: actions/cache/restore@v4
+        with:
+          path: .ci-passed
+          key: passed-wasm-${{ hashFiles('rust/**', '!rust/target/**', 'packages/postext/src/knuthPlass/wasm/bytes.generated.ts') }}
+          lookup-only: true
+
+      - name: Toolchain
+        if: steps.passed.outputs.cache-hit != 'true'
+        run: |
+          cd rust && rustup show active-toolchain || rustup toolchain install
+          curl -fsSL https://github.com/WebAssembly/binaryen/releases/download/version_133/binaryen-version_133-x86_64-linux.tar.gz | tar xz -C "$RUNNER_TEMP"
+          echo "$RUNNER_TEMP/binaryen-version_133/bin" >> "$GITHUB_PATH"
+
+      - name: Test, lint and format
+        if: steps.passed.outputs.cache-hit != 'true'
+        working-directory: rust
+        run: |
+          cargo fmt --check
+          cargo clippy --workspace --all-targets -- -D warnings
+          cargo test --workspace
+
+      - name: Rebuild and compare
+        if: steps.passed.outputs.cache-hit != 'true'
+        run: |
+          wasm-opt --version
+          node rust/scripts/build-wasm.mjs
+          git diff --exit-code packages/postext/src/knuthPlass/wasm/bytes.generated.ts || {
+            echo "::error file=packages/postext/src/knuthPlass/wasm/bytes.generated.ts::The committed WebAssembly module is not what rust/ builds. Run node rust/scripts/build-wasm.mjs with the pinned toolchain and binaryen 133, and commit the result."
+            exit 1
+          }
+
+      - if: steps.passed.outputs.cache-hit != 'true'
+        run: mkdir -p .ci-passed && echo ok > .ci-passed/hash
+      - if: steps.passed.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: .ci-passed
+          key: passed-wasm-${{ hashFiles('rust/**', '!rust/target/**', 'packages/postext/src/knuthPlass/wasm/bytes.generated.ts') }}
+
   # The site's production build: some 8000 static pages, the longest job.
   # Next's own cache (.next/cache) is kept between runs.
   web-build:
@@ -287,7 +343,7 @@ jobs:
   ci:
     name: Build & Check
     if: always()
-    needs: [lockfile, release-scripts, test, epubcheck, web-build, checks, cli-windows]
+    needs: [lockfile, release-scripts, test, epubcheck, wasm, web-build, checks, cli-windows]
     runs-on: ubuntu-latest
     steps:
       - name: Every job passed

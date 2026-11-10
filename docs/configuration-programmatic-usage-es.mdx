@@ -374,6 +374,11 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>La lista se parte donde acaba la columna.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Dos líneas seguidas de un párrafo, en una misma columna, que terminan (<code>edge: 'end'</code>) o empiezan (<code>'start'</code>) con la misma palabra o los mismos <code>bodyText.stackMinCharacters</code> caracteres: <code>text</code> es lo que repiten, tal como lo imprime la primera línea, y <code>lines</code> las dos líneas. Con <code>bodyText.stacks: 'warn'</code> se informa de todas; con <code>'avoid'</code>, de las que mantuvo el algoritmo. Uno por repetición; apunta a las dos líneas, con su página. Desde postext 1.72.</td>
+      <td>Las líneas se componen como están.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloque del índice que debe ir unido (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), encabezado por <code>title</code> y compuesto en <code>columns</code> columnas, que es más alto que una columna entera, o cuya columna de inicio es corta (bajo un recuadro a ancho de página, junto a un flotante). Uno por bloque; el aviso apunta a la directiva <code>:::toc</code>, con la página en la que empieza el bloque. Para evitarlo, incluye menos niveles (<code>levels="1"</code>), encabeza los bloques con un nivel inferior (<code>toc.groups.head: 2</code>) o haz las entradas más pequeñas o más apretadas. Desde postext 1.34.</td>
       <td>El bloque se parte; con <code>toc.groups.continuation</code>, cada columna en la que continúa se abre con su fila de cabecera y la marca de continuación.</td>

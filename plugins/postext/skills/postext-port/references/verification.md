@@ -247,6 +247,12 @@ those lines, or run the script.
   opener page (`layout.openerFloats`). Set the rule to `"avoid"` to have
   the engine keep the list whole or move the float past the opener page;
   a `shortListSplit` left under `"avoid"` is a list taller than a column.
+- `WARN stack` (postext ≥ 1.72, only with `bodyText.stacks: "warn"` or
+  `"avoid"`): two lines in a row of a paragraph end or start on the same
+  word or the same `stackMinCharacters` characters (`edge`, `text`). In a
+  port it is a note for proofs, not a defect: the original's breaks are
+  what the port reproduces, so leave the rule on `"warn"` (or `"allow"`)
+  and do not switch it to `"avoid"` to clear the list.
 - `WARN unknownResourceId|unknownDirective|malformedEmbed|unknown…Style|raggedTableGrid`
   (releases with engine content warnings): a reference, `:::` line, `::resource`
   line or style id the engine could not resolve, or a table whose merged cells

@@ -1,17 +1,14 @@
 export const KP_INFINITY = 10000;
 export const HYPHEN_PENALTY = 50;
 export const DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT = 3000;
-/** Extra badness of a break against a rule set as a limit (a stack at this
- *  cost, a repeated monosyllable): it outweighs any line the breaker can
- *  set (a line stretched past the word-spacing limits included, up to some
- *  seven times its stretch), so the rule gives way only where no setting
- *  of the paragraph keeps it. */
-export const HARD_RULE_BADNESS = 100000;
-/** Default extra badness of a stack (`KPOptions.stacks`): dearer than a
- *  hyphen or a loose line. */
-export const DEFAULT_STACK_BADNESS = 500;
-/** Default letters two words must share at a line's edge to stack. */
-export const DEFAULT_STACK_MIN_CHARS = 3;
+/** Active nodes past which the exact stacks search (#1463, `limited` in
+ *  `breakpoints/search.ts`) gives up and the merged setting stands. The
+ *  merged search keeps one node per line and fitness class; the exact one
+ *  one per edge a line may start on too, a few times as many on ordinary
+ *  text. Set from the benchmark in the issue: one paragraph in 433 of
+ *  Don Quijote reaches it (one of its longest), and a 3000-word paragraph
+ *  does, which is set four times faster for it. */
+export const EXACT_MAX_ACTIVE = 400;
 export const DEFAULT_FITNESS_CLASS_DEMERIT = 100;
 export const BADNESS_CAP = 10000;
 /** Extra badness for a line stretched beyond `maxWordSpacing` (adjustment

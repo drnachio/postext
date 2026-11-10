@@ -374,6 +374,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>リストは段の終わりで切られます。</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>段落の同じ段にある連続した2行が、同じ語または同じ<code>bodyText.stackMinCharacters</code>文字で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は繰り返された文字列（1行目の表記どおり）、<code>lines</code>は2行の文字列です。<code>bodyText.stacks: 'warn'</code>ではすべての重複を、<code>'avoid'</code>では改行処理が残したものを報告します。重複ごとに1件。2行を指し、そのページが付きます。postext 1.72以降。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>まとめて組むよう指定した目次のグループ（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>）です。先頭は<code>title</code>で、<code>columns</code>段に組まれています。1段の高さを超えているか、グループが始まる段が短い場合です（ページ幅の囲みの下、フロートの横）。グループごとに1件。<code>:::toc</code>ディレクティブを指し、グループが始まるページが付きます。解消するには、載せるレベルを減らす（<code>levels="1"</code>）、もっと下位のレベルを先頭にする（<code>toc.groups.head: 2</code>）、項目を小さくするか詰めて組む、のいずれかを行います。postext 1.34以降。</td>
       <td>グループは分割されます。<code>toc.groups.continuation</code>が有効なら、続きが入る各段の頭に先頭行と続きの印を組みます。</td>

@@ -231,22 +231,22 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Beginnt die Zeile nach einem Umbruch am Bindestrich eines Kompositums ebenfalls mit einem Bindestrich: <code>vencer-</code> · <code>-se</code>, wie es die portugiesische Rechtschreibung verlangt, und <code>léxico-</code> · <code>-semántico</code>, wie es die Regeln der Spanischen Akademie seit 2010 verlangen. Der wiederholte Bindestrich wird mit seiner Zeile gemessen und gezeichnet, die ihn als <code>repeatedHyphen</code> speichert; ihre Werte <code>plainStart</code> und <code>sourceStart</code> zeigen hinter ihn, sodass Links, lebende Kolumnentitel und die Sandbox das Wort so lesen, wie es geschrieben ist. Das PDF zeichnet ihn unter einem <code>/ActualText</code>, das ihn auslässt, sodass aus dem PDF kopierter oder extrahierter Text das Wort einmal enthält. Eine Webadresse erhält nie einen. Gilt für laufenden Text, Überschriften, Listen, Zitate und Kästen; ein Absatz ohne Formatierung, der ein Kompositum enthält, wird dann von dem Umbruchverfahren umbrochen, das formatierten Text setzt.</td>
     </tr>
     <tr>
-      <td><code>avoidStacks</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Vermeidet Stapel: zwei aufeinanderfolgende Zeilen eines Absatzes, die auf dasselbe Wort oder auf dieselben letzten <code>stackMinCharacters</code> Zeichen enden, Leerzeichen eingeschlossen (<code>-ung</code> / <code>-ung</code>, <code>in der</code> / <code>von der</code>), oder die mit demselben Wort oder denselben ersten Zeichen beginnen (<code>in der</code> / <code>in den</code>). Der Umbruch setzt den Absatz neu, um sie zu vermeiden, wo der Wortabstand es erlaubt; wie schwer ein Stapel wiegt, bestimmt <code>stackPenalty</code>. Braucht <code>optimalLineBreaking</code>. Akzente zählen nicht („sól“ ist „sol“), und dasselbe einsilbige Wort („a“, „und“, „in“, „der“) am Rand zweier aufeinanderfolgender Zeilen wird nie zugelassen, gleich wie hoch die Strafe ist. Auch Bildunterschriften, Anmerkungen und Tabellenzellen vermeiden sie. Standardmäßig aus, damit ein früher gesetztes Dokument seine Zeilen behält.</td>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Wiederholungen: zwei Zeilen hintereinander eines Absatzes in derselben Spalte, die auf dasselbe Wort oder auf dieselben letzten <code>stackMinCharacters</code> Zeichen enden, Leerzeichen mitgezählt (<code>-ung</code> / <code>-ung</code>, <code>in der</code> / <code>von der</code>), oder die mit demselben Wort oder denselben ersten Zeichen beginnen (<code>in der</code> / <code>in den</code>). <code>'allow'</code> setzt die Zeilen, wie der Algorithmus sie findet, und meldet nichts. <code>'warn'</code> setzt sie ebenso und meldet jede Wiederholung als Inhaltswarnung <code>stack</code>, die die Sandbox unter Prüfung aufführt und auf der Seite markiert. <code>'avoid'</code> addiert <code>stackPenalty</code> zu den Strafpunkten jeder Wiederholung, sodass der Algorithmus den Absatz anders setzt, wo der Wortabstand es erlaubt, und meldet die Wiederholungen, die er behält. Akzente und Groß- und Kleinschreibung zählen nicht („sól“ ist „sol“). Wörter werden nur in Schriften verglichen, die sie mit Leerzeichen trennen: Chinesischer, japanischer, thailändischer, laotischer, Khmer-, birmanischer und tibetischer Text hat keine Wiederholungen. Eine Formel, ein Chip oder ein Farbfeld am Rand einer Zeile wird nie verglichen. Unter <code>'avoid'</code> werden Bildunterschriften, Anmerkungen und Tabellenzellen, im Blocksatz oder im Flattersatz, ganz mit Knuth–Plass umbrochen, um der Regel zu folgen; der Rahmen einer komponierten Seite setzt seinen Text ohne sie. Braucht <code>optimalLineBreaking</code>. Beim Portieren eines Buchs bleibt sie auf <code>'allow'</code>, oder <code>'warn'</code> für Korrekturabzüge: Die Portierung gibt die Umbrüche des Originals wieder.</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>Zeichen, Leerzeichen eingeschlossen, die derselbe Rand zweier aufeinanderfolgender Zeilen teilen muss, damit ein Stapel vorliegt (<code>avoidStacks</code>). Satzzeichen ganz am Rand zählen nicht, und dasselbe Wort ist immer ein Stapel.</td>
+      <td>Zeichen, Leerzeichen mitgezählt, die derselbe Rand zweier Zeilen hintereinander teilen muss, damit eine Wiederholung vorliegt (<code>stacks</code>). Satzzeichen ganz am Rand zählen nicht, und dasselbe Wort ist immer eine Wiederholung.</td>
     </tr>
     <tr>
       <td><code>stackPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>100000</code></td>
-      <td>Kosten eines Stapels (zwei aufeinanderfolgende Zeilen, die mit demselben Wort oder denselben Zeichen enden oder beginnen, was <code>avoidStacks</code> vermeidet), als äquivalente Badness: 100 ist eine Zeile an der Grenze des Wortabstands; 1000 wiegt mehr als jede Zeile innerhalb davon. Der Standardwert 100000 macht Stapel zu einer Grenze: Er wiegt sogar mehr als eine über die Abstandsgrenzen gedehnte Zeile, sodass ein Stapel nur bleibt, wo kein Umbruch des Absatzes ihn vermeidet. Ein wiederholtes einsilbiges Wort ist unabhängig von diesem Wert eine Grenze.</td>
+      <td><code>3000</code></td>
+      <td>Was eine Wiederholung den Algorithmus unter <code>stacks: 'avoid'</code> kostet, als Strafpunkte, die zu denen des Absatzes addiert werden, auf der Skala von <code>consecutiveHyphenDemerit</code> (zwei getrennte Zeilen hintereinander kosten 3000). Ein wiederholtes einsilbiges Wort („in“, „und“, „der“, mit den Vokalen der lateinischen, griechischen und kyrillischen Schrift) kostet doppelt so viel. Ein höherer Wert vermeidet mehr Wiederholungen um den Preis lockererer Zeilen; 0 behält alle.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

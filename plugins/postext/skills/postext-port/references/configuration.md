@@ -372,10 +372,12 @@ H&J / Knuth–Plass
 ├─ gradedRuntPenalty    false  true = a runt costs runtPenalty × (1 − width/threshold): a two-word ending costs less than one word
 ├─ tightenRunts         true   re-set a runt paragraph one line shorter (tighter spaces, ≤ maxRuntTracking; refused if a justified line passes max(maxWordSpacing, the paragraph's loosest justified line) or more lines go ragged)
 ├─ maxRuntTracking      10     thousandths of an em (10 = 0.01em), applied negatively
-├─ avoidStacks          false; stackMinCharacters 3;  stackPenalty 100000   two lines in a row ending or starting on the same word or the same
-│                        last/first stackMinCharacters characters (spaces included, accents ignored) are set again where the spacing allows; the
-│                        default penalty is a limit, and a repeated monosyllable always is. Captions, notes and table cells too. Off by default:
-│                        turn it on for Spanish (and most European) typesetting; needs optimalLineBreaking
+├─ stacks             'allow'; stackMinCharacters 3;  stackPenalty 3000   ≥ 1.72 two lines in a row of a paragraph, in one column, ending or
+│                        starting on the same word or the same last/first stackMinCharacters characters (spaces included, accents and case
+│                        ignored; none in Chinese, Japanese, Thai, Lao, Khmer, Myanmar, Tibetan): 'warn' = same layout + a `stack` warning per
+│                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
+│                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
+│                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word

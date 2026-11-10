@@ -232,22 +232,22 @@ export const metadata = {
       <td>複合語のハイフンで改行したとき、次の行の頭にもハイフンを置きます。ポルトガル語の正書法が求める<code>vencer-</code> · <code>-se</code>や、2010年以降のスペイン王立アカデミーの規則が求める<code>léxico-</code> · <code>-semántico</code>の形です。繰り返したハイフンはその行の一部として計測・描画され、行はそれを<code>repeatedHyphen</code>として記録します。行の<code>plainStart</code>と<code>sourceStart</code>はハイフンの後を指すので、リンク、柱、Sandboxは語を書かれたとおりに読みます。PDFはこのハイフンを、それを除いた<code>/ActualText</code>の下で描画するので、PDFからコピーまたは抽出したテキストでは語は1回だけ現れます。Webアドレスには付けません。本文テキスト、見出し、リスト、引用ブロック、囲みに適用されます。複合語を含む書式なしの段落は、このとき書式付きのテキストを組む改行処理で改行されます。</td>
     </tr>
     <tr>
-      <td><code>avoidStacks</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>重複を避けます。重複とは、段落の連続する2行が同じ語で終わる、または同じ末尾の<code>stackMinCharacters</code>文字（スペースを含む）で終わること（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>）、あるいは同じ語や同じ先頭の文字で始まること（<code>of the</code> / <code>of a</code>）です。語間が許す範囲で段落を組み直して避けます。重複の重さは<code>stackPenalty</code>で決まります。<code>optimalLineBreaking</code>が必要です。 アクセント記号の有無は区別しません（「sól」と「sol」は同じ）。また、同じ単音節語（「a」「y」「de」「la」など）が連続する2行の端に来ることは、ペナルティの値にかかわらず認めません。図版キャプション、注、表のセルにも適用されます。既定ではオフなので、以前に組んだ文書の行は変わりません。</td>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>行頭・行末の重複です。段落の同じ段にある連続した2行が、同じ語、または同じ末尾の<code>stackMinCharacters</code>文字（スペースを含む）で終わること（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>）、あるいは同じ語や同じ先頭の文字で始まること（<code>of the</code> / <code>of a</code>）を指します。<code>'allow'</code>は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code>は同じように組み、重複を1つずつコンテンツ警告<code>stack</code>として報告します。Sandboxはこれを「確認」に挙げ、ページに印を付けます。<code>'avoid'</code>は重複ごとに<code>stackPenalty</code>をデメリットに加え、語間の許す範囲で段落を別の組み方にさせ、残した重複を報告します。アクセントと大文字・小文字は区別しません（「sól」は「sol」）。語を比べるのは単語をスペースで区切る文字体系だけで、中国語、日本語、タイ語、ラオ語、クメール語、ビルマ語、チベット語の文には重複がありません。行の端にある数式、チップ、色見本は比べません。<code>'avoid'</code>のとき、キャプション、注、表のセルは、揃えでも成り行きでも、規則に従うためKnuth–Plassで全体をまとめて改行します。コンポーズドページのフレームは規則なしで本文を組みます。<code>optimalLineBreaking</code>が必要です。本を移植するときは<code>'allow'</code>のままにするか、校正用に<code>'warn'</code>を使います。移植は原本の改行を再現するためです。</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>連続する2行の同じ側の端が、重複とみなされる（<code>avoidStacks</code>）ために共有する文字数（スペースを含む）。端にある約物は数えません。同じ語は常に重複とみなします。</td>
+      <td>連続する2行の同じ側の端が、重複とみなされる（<code>stacks</code>）ために共有する文字数（スペースを含む）。端にある約物は数えません。同じ語は常に重複とみなします。</td>
     </tr>
     <tr>
       <td><code>stackPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>100000</code></td>
-      <td>重複（連続する2行が同じ語や同じ文字で終わる、または始まること。<code>avoidStacks</code>がこれを避けます）のコストを、等価な悪さで表します。100は語間の限度ちょうどの行、1000は限度内のどの行よりも重くなります。既定値の100000では重複は上限として働きます。限度を超えて広がった行よりも重いため、重複が残るのは段落のどの組み方でも避けられない場合だけです。 単音節語の繰り返しは、この値にかかわらず常に禁止されます。</td>
+      <td><code>3000</code></td>
+      <td><code>stacks: 'avoid'</code>のとき、重複1つが改行処理に加えるデメリット（段落のデメリットに加算）。尺度は<code>consecutiveHyphenDemerit</code>と同じです（ハイフンで終わる行が2行続くと3000）。繰り返される単音節語（ラテン文字、ギリシア文字、キリル文字の母音で数えます）は2倍になります。値を上げると行が緩むかわりに重複が減り、0ではすべて残ります。</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

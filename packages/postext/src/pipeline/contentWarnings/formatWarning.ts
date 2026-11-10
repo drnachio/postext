@@ -337,6 +337,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'tocGroupSplit':
       text = `The contents block "${w.title}" is cut between ${w.columns} columns — it is taller than a full column, or its column is too short to hold it; list fewer levels (:::toc{levels="1"}), head the blocks with a lower level (toc.groups.head) or make the rows smaller`;
       break;
+    case 'stack':
+      text = `Two lines in a row ${w.edge === 'end' ? 'end' : 'start'} on "${w.text}", a stack. With bodyText.stacks: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
+      break;
     case 'shortListSplit':
       text = `A list of ${w.items} ${w.items === 1 ? 'item' : 'items'} is cut between two columns — bodyText.shortListSplit: "avoid" sets a short list whole when a column can hold it`;
       break;

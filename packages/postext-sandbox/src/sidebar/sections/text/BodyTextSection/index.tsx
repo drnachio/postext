@@ -2,7 +2,7 @@
 
 import { memo } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../../context/SandboxContext.js';
-import { DEFAULT_BODY_TEXT_CONFIG, isCjkLanguage, avoidWidowsByDefault, avoidOrphansByDefault, resolveBodyTextConfig, baseFontFamily, dimensionsEqual, colorsEqual, type EmphasisStyle, type TashkilMode, type ColonListRoom, type CompositionRule } from 'postext';
+import { DEFAULT_BODY_TEXT_CONFIG, isCjkLanguage, avoidWidowsByDefault, avoidOrphansByDefault, resolveBodyTextConfig, baseFontFamily, dimensionsEqual, colorsEqual, type EmphasisStyle, type TashkilMode } from 'postext';
 import { CollapsibleSection, FieldGroup, FontPicker, DimensionInput, NumberInput, SelectInput, ToggleSwitch, ColorPicker, FieldRow } from '../../../../controls/index.js';
 import { TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, INDENT_UNITS } from './constants.js';
 import { defaultDocumentLocale, withHyphenationLocale } from '../../../../controls/language/hyphenation.js';
@@ -12,8 +12,7 @@ import { VerseSubsection } from './VerseSubsection.js';
 import { RaggedHyphenationSubsection } from './HyphenationFields.js';
 import { TypeSample } from '../../../settings/TypeSample.js';
 import { AlignPicture } from '../../../settings/pictures.js';
-import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections.js';
-import { StacksSubsection } from './StacksSubsection.js';
+import { LineControlSubsection } from './LineControlSubsection.js';
 import { isArabicScriptLanguage } from '../../../../context/arabicDefaults.js';
 import { useRightToLeftFlow, flowSideLabels } from '../../../settings/flowSides.js';
 import { TabStopsField } from '../../../settings/TabStopsField.js';
@@ -85,23 +84,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
   const isMaxWordSpacingDefault = bodyText.maxWordSpacing === D.maxWordSpacing;
   const isMinWordSpacingDefault = bodyText.minWordSpacing === D.minWordSpacing;
   const isOptimalLineBreakingDefault = bodyText.optimalLineBreaking === D.optimalLineBreaking;
-  const isAvoidOrphansDefault = bodyText.avoidOrphans === avoidOrphansDefault;
-  const isOrphanMinLinesDefault = bodyText.orphanMinLines === D.orphanMinLines;
-  const isOrphanPenaltyDefault = bodyText.orphanPenalty === D.orphanPenalty;
-  const isAvoidOrphansInListsDefault = bodyText.avoidOrphansInLists === D.avoidOrphansInLists;
-  const isAvoidWidowsDefault = bodyText.avoidWidows === avoidWidowsDefault;
-  const isWidowMinLinesDefault = bodyText.widowMinLines === D.widowMinLines;
-  const isWidowPenaltyDefault = bodyText.widowPenalty === D.widowPenalty;
-  const isAvoidWidowsInListsDefault = bodyText.avoidWidowsInLists === D.avoidWidowsInLists;
-  const isSlackWeightDefault = bodyText.slackWeight === D.slackWeight;
-  const isAvoidRuntsDefault = bodyText.avoidRunts === D.avoidRunts;
-  const isRuntMinCharactersDefault = bodyText.runtMinCharacters === D.runtMinCharacters;
-  const isRuntPenaltyDefault = bodyText.runtPenalty === D.runtPenalty;
-  const isAvoidRuntsInListsDefault = bodyText.avoidRuntsInLists === D.avoidRuntsInLists;
-  const isKeepColonWithListDefault = bodyText.keepColonWithList === D.keepColonWithList;
-  const isColonListRoomDefault = bodyText.colonListRoom === D.colonListRoom;
-  const isShortListSplitDefault = bodyText.shortListSplit === D.shortListSplit;
-  const isShortListMaxItemsDefault = bodyText.shortListMaxItems === D.shortListMaxItems;
 
   // `*…*` is set in bold by default in a language written in Arabic script
   // (the engine's `defaultEmphasisFor`): Auto names what it gives.
@@ -121,18 +103,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
     { value: 'keep', label: labels.bodyTashkilKeep },
     { value: 'strip', label: labels.bodyTashkilStrip },
     { value: 'strip-vowels', label: labels.bodyTashkilStripVowels },
-  ];
-
-  const COLON_LIST_ROOM_OPTIONS = [
-    { value: 'item', label: labels.bodyColonListRoomItem },
-    { value: 'line', label: labels.bodyColonListRoomLine },
-  ];
-
-  // The three levels of a composition rule (#749).
-  const COMPOSITION_RULE_OPTIONS = [
-    { value: 'allow', label: labels.compositionRuleAllow },
-    { value: 'warn', label: labels.compositionRuleWarn },
-    { value: 'avoid', label: labels.compositionRuleAvoid },
   ];
 
   // In a right-to-left book `left` is the start: flush right, ragged left.
@@ -445,127 +415,14 @@ export const BodyTextSection = memo(function BodyTextSection() {
           />
         )}
       </FieldGroup>
-      <CollapsibleSection title={labels.bodyGroupLineControl} sectionId="bodyText-lineControl" variant="subsection">
-        <ToggleSwitch
-          label={labels.bodyAvoidOrphans}
-          checked={bodyText.avoidOrphans}
-          onChange={(checked) => updateBodyText({ avoidOrphans: checked })}
-          tooltip={labels.bodyAvoidOrphansTooltip}
-          isDefault={isAvoidOrphansDefault}
-          onReset={() => resetField('avoidOrphans')}
-        />
-        {bodyText.avoidOrphans && (
-          <OrphansSubsection
-            bodyText={bodyText}
-            isOrphanMinLinesDefault={isOrphanMinLinesDefault}
-            isOrphanPenaltyDefault={isOrphanPenaltyDefault}
-            isAvoidOrphansInListsDefault={isAvoidOrphansInListsDefault}
-            updateBodyText={updateBodyText}
-            resetField={resetField}
-            labels={labels}
-          />
-        )}
-        <ToggleSwitch
-          label={labels.bodyAvoidWidows}
-          checked={bodyText.avoidWidows}
-          onChange={(checked) => updateBodyText({ avoidWidows: checked })}
-          tooltip={labels.bodyAvoidWidowsTooltip}
-          isDefault={isAvoidWidowsDefault}
-          onReset={() => resetField('avoidWidows')}
-        />
-        {bodyText.avoidWidows && (
-          <WidowsSubsection
-            bodyText={bodyText}
-            isWidowMinLinesDefault={isWidowMinLinesDefault}
-            isWidowPenaltyDefault={isWidowPenaltyDefault}
-            isAvoidWidowsInListsDefault={isAvoidWidowsInListsDefault}
-            updateBodyText={updateBodyText}
-            resetField={resetField}
-            labels={labels}
-          />
-        )}
-        <ToggleSwitch
-          label={labels.bodyAvoidRunts}
-          checked={bodyText.avoidRunts}
-          onChange={(checked) => updateBodyText({ avoidRunts: checked })}
-          tooltip={labels.bodyAvoidRuntsTooltip}
-          isDefault={isAvoidRuntsDefault}
-          onReset={() => resetField('avoidRunts')}
-        />
-        {bodyText.avoidRunts && (
-          <RuntsSubsection
-            bodyText={bodyText}
-            isRuntMinCharactersDefault={isRuntMinCharactersDefault}
-            isRuntPenaltyDefault={isRuntPenaltyDefault}
-            isAvoidRuntsInListsDefault={isAvoidRuntsInListsDefault}
-            updateBodyText={updateBodyText}
-            resetField={resetField}
-            labels={labels}
-          />
-        )}
-        <ToggleSwitch
-          label={labels.bodyAvoidStacks}
-          checked={bodyText.avoidStacks}
-          onChange={(checked) => updateBodyText({ avoidStacks: checked })}
-          tooltip={labels.bodyAvoidStacksTooltip}
-          isDefault={bodyText.avoidStacks === D.avoidStacks}
-          onReset={() => resetField('avoidStacks')}
-        />
-        {bodyText.avoidStacks && <StacksSubsection bodyText={bodyText} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />}
-        <NumberInput
-          label={labels.bodySlackWeight}
-          value={bodyText.slackWeight}
-          onChange={(v) => updateBodyText({ slackWeight: v })}
-          min={0}
-          max={1000}
-          step={1}
-          tooltip={labels.bodySlackWeightTooltip}
-          isDefault={isSlackWeightDefault}
-          onReset={() => resetField('slackWeight')}
-        />
-        <ToggleSwitch
-          label={labels.bodyKeepColonWithList}
-          checked={bodyText.keepColonWithList}
-          onChange={(checked) => updateBodyText({ keepColonWithList: checked })}
-          tooltip={labels.bodyKeepColonWithListTooltip}
-          isDefault={isKeepColonWithListDefault}
-          onReset={() => resetField('keepColonWithList')}
-        />
-        {bodyText.keepColonWithList && (
-          <SelectInput
-            label={labels.bodyColonListRoom}
-            value={bodyText.colonListRoom}
-            options={COLON_LIST_ROOM_OPTIONS}
-            onChange={(value) => updateBodyText({ colonListRoom: value as ColonListRoom })}
-            tooltip={labels.bodyColonListRoomTooltip}
-            isDefault={isColonListRoomDefault}
-            onReset={() => resetField('colonListRoom')}
-          />
-        )}
-        {/* A short list kept whole (#749): off, reported, or applied. */}
-        <SelectInput
-          label={labels.bodyShortListSplit}
-          value={bodyText.shortListSplit}
-          options={COMPOSITION_RULE_OPTIONS}
-          onChange={(value) => updateBodyText({ shortListSplit: value as CompositionRule })}
-          tooltip={labels.bodyShortListSplitTooltip}
-          isDefault={isShortListSplitDefault}
-          onReset={() => resetField('shortListSplit')}
-        />
-        {bodyText.shortListSplit !== 'allow' && (
-          <NumberInput
-            label={labels.bodyShortListMaxItems}
-            value={bodyText.shortListMaxItems}
-            onChange={(v) => updateBodyText({ shortListMaxItems: Math.max(1, Math.round(v)) })}
-            min={1}
-            max={20}
-            step={1}
-            tooltip={labels.bodyShortListMaxItemsTooltip}
-            isDefault={isShortListMaxItemsDefault}
-            onReset={() => resetField('shortListMaxItems')}
-          />
-        )}
-      </CollapsibleSection>
+      <LineControlSubsection
+        bodyText={bodyText}
+        avoidOrphansDefault={avoidOrphansDefault}
+        avoidWidowsDefault={avoidWidowsDefault}
+        updateBodyText={updateBodyText}
+        resetField={resetField}
+        labels={labels}
+      />
       <BlockquoteSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
       <VerseSubsection bodyText={bodyText} raw={raw} updateBodyText={updateBodyText} labels={labels} />
       <CollapsibleSection title={labels.bodyGroupReferences} sectionId="bodyText-references" variant="subsection">

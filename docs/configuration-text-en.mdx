@@ -232,22 +232,22 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>Start the line after a break at a compound's hyphen with a hyphen too: <code>vencer-</code> · <code>-se</code>, as Portuguese spelling asks, and <code>léxico-</code> · <code>-semántico</code>, as the Spanish Academy's rules ask since 2010. The repeated hyphen is measured and painted with its line, which records it as <code>repeatedHyphen</code>; its <code>plainStart</code> and <code>sourceStart</code> point past it, so links, running heads and the Sandbox read the word as written. The PDF paints it under an <code>/ActualText</code> that leaves it out, so text copied or extracted from the PDF reads the word once. A web address never gets one. It applies to the running text, headings, lists, blockquotes and boxes; a paragraph without formatting that holds a compound is then broken by the breaker that sets formatted text.</td>
     </tr>
     <tr>
-      <td><code>avoidStacks</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Avoid stacks: two lines in a row of a paragraph that end on the same word, or on the same last <code>stackMinCharacters</code> characters, spaces included (<code>-ment</code> / <code>-ment</code>, <code>in the</code> / <code>of the</code>), or that start on the same word or the same first ones (<code>of the</code> / <code>of a</code>). The breaker sets the paragraph again to avoid them where the word spacing allows; how much a stack weighs is <code>stackPenalty</code>. Needs <code>optimalLineBreaking</code>. Accents do not count (“sól” is “sol”), and the same monosyllable (“a”, “and”, “of”, “the”) at the edge of two lines in a row is never allowed, whatever the stack penalty. Captions, notes and table cells avoid stacks too. Off by default, so a document set before it keeps its lines.</td>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Stacks: two lines in a row of a paragraph, in one column, that end on the same word, or on the same last <code>stackMinCharacters</code> characters, spaces included (<code>-ment</code> / <code>-ment</code>, <code>in the</code> / <code>of the</code>), or that start on the same word or the same first ones (<code>of the</code> / <code>of a</code>). <code>'allow'</code> sets the lines as the breaker finds them and reports nothing. <code>'warn'</code> sets them the same and reports each stack as a <code>stack</code> content warning, which the Sandbox lists in Review and marks on the page. <code>'avoid'</code> adds <code>stackPenalty</code> to the demerits of each stack, so the breaker sets the paragraph otherwise where the word spacing allows, and reports the stacks it keeps. Accents and case do not count (“sól” is “sol”). Words are compared only in scripts that separate them with spaces: Chinese, Japanese, Thai, Lao, Khmer, Myanmar and Tibetan text has no stacks. A formula, a chip or a swatch at a line's edge is never compared. Under <code>'avoid'</code> captions, notes and table cells, justified or ragged, are set by the Knuth–Plass breaker so they follow the rule too; a composed page's frame sets its story without it. Needs <code>optimalLineBreaking</code>. When porting a book, leave it at <code>'allow'</code> or use <code>'warn'</code> for proofs: the port reproduces the original's breaks.</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>Characters, spaces included, the same edge of two lines in a row must share to stack (<code>avoidStacks</code>). The punctuation at the very edge is not counted, and the same word always stacks.</td>
+      <td>Characters, spaces included, the same edge of two lines in a row must share to stack (<code>stacks</code>). The punctuation at the very edge is not counted, and the same word always stacks.</td>
     </tr>
     <tr>
       <td><code>stackPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>100000</code></td>
-      <td>Cost of a stack (two lines in a row that end or start on the same word or the same characters, which <code>avoidStacks</code> avoids), as equivalent badness: 100 is a line at the word-spacing limit; 1000 outweighs any line within it. The default, 100000, makes stacks a limit: it outweighs a line stretched past the spacing limits too, so a stack stays only where no setting of the paragraph avoids it. A repeated monosyllable is a limit whatever this value.</td>
+      <td><code>3000</code></td>
+      <td>What a stack costs the line breaker under <code>stacks: 'avoid'</code>, in demerits added to the paragraph's, on the scale of <code>consecutiveHyphenDemerit</code> (two hyphenated lines in a row cost 3000). A repeated monosyllable (“a”, “and”, “of”, with the vowels of the Latin, Greek and Cyrillic scripts) costs twice as much. A higher value avoids more stacks at the price of looser lines; 0 keeps every one.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

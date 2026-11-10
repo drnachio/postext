@@ -374,6 +374,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The list is cut where the column ends.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Two lines in a row of a paragraph, in one column, that end (<code>edge: 'end'</code>) or start (<code>'start'</code>) on the same word or the same <code>bodyText.stackMinCharacters</code> characters: <code>text</code> is what they repeat, as the first line prints it, and <code>lines</code> the two lines. Under <code>bodyText.stacks: 'warn'</code> every stack is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per stack; points at the two lines, with their page. Since postext 1.72.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>A block of the contents kept together (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), headed by <code>title</code>, set in <code>columns</code> columns: it is taller than a full column, or the column it starts in is short (under a page-span box, beside a float). One per block; points at the <code>:::toc</code> directive, with the page the block starts on. To clear it, list fewer levels (<code>levels="1"</code>), head the blocks with a lower level (<code>toc.groups.head: 2</code>), or make the entries smaller or tighter. Since postext 1.34.</td>
       <td>The block is cut; with <code>toc.groups.continuation</code> each column it goes on in opens with its head row and the continuation mark.</td>

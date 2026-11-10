@@ -34,7 +34,7 @@ interface LineBreakExports {
     hyphenationZone: number,
     flags: number,
   ): void;
-  lb_set_stacks(ctx: number, on: number, badness: number): void;
+  lb_set_stacks(ctx: number, on: number, demerits: number): void;
   lb_edges(ctx: number, count: number): number;
   lb_break(ctx: number): number;
   lb_breaks(ctx: number): number;
@@ -50,14 +50,20 @@ const WORD_SPACE = 8;
 
 export type Breaker = (items: KPItem[], options: KPOptions) => number[];
 
-/** The line edges of a paragraph as the module compares them: each text an
- *  id (0 for none), equal texts equal ids; a word's id carries in its low
- *  bit whether it is a monosyllable. Four rows of `n + 1`: end words and
- *  end characters by break, start words and start characters by break + 1
- *  (row 0: the paragraph's first line). */
-function writeEdges(rows: Uint32Array, items: KPItem[], minChars: number): void {
+/** Rows of the line edges the module reads (`lb_edges`), each `n + 1`
+ *  long. */
+const EDGE_ROWS = 9;
+
+/** The line edges of a paragraph as the module compares them (#1463):
+ *  each text an id (0 for none), equal texts equal ids, and a word's id
+ *  carries in its low bit whether it is a monosyllable. Nine rows of
+ *  `n + 1`: by break `k`, the end word, end characters and their reaches;
+ *  by `k + 1` (0: the paragraph's first line), the start word, start
+ *  characters and their reaches; and where item `k` starts in the
+ *  paragraph's text (`LineEdges.lineLength`). */
+function writeEdges(rows: Uint32Array, items: KPItem[], edges: LineEdges): void {
   const n = items.length;
-  const edges = new LineEdges(items, minChars);
+  const row = n + 1;
   const words = new Map<string, number>();
   const chars = new Map<string, number>();
   const wordId = (w: string): number => {
@@ -72,17 +78,22 @@ function writeEdges(rows: Uint32Array, items: KPItem[], minChars: number): void 
     if (id === undefined) chars.set(c, (id = chars.size + 1));
     return id;
   };
-  const row = n + 1;
+  rows.fill(0);
   for (let k = 0; k < n; k++) {
-    rows[k] = wordId(edges.endWord(k));
-    rows[row + k] = charsId(edges.endChars(k));
+    const e = edges.end(k);
+    rows[k] = wordId(e.word);
+    rows[row + k] = charsId(e.chars);
+    rows[2 * row + k] = e.wordReach;
+    rows[3 * row + k] = e.charsReach;
   }
-  rows[n] = 0;
-  rows[row + n] = 0;
   for (let k = -1; k < n; k++) {
-    rows[2 * row + k + 1] = wordId(edges.startWord(k));
-    rows[3 * row + k + 1] = charsId(edges.startChars(k));
+    const e = edges.start(k);
+    rows[4 * row + k + 1] = wordId(e.word);
+    rows[5 * row + k + 1] = charsId(e.chars);
+    rows[6 * row + k + 1] = e.wordReach;
+    rows[7 * row + k + 1] = e.charsReach;
   }
+  for (let k = 0; k <= n; k++) rows[8 * row + k] = edges.offset(k);
 }
 
 /** A line breaker over an instance of the module. */
@@ -154,9 +165,10 @@ export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
       options.hyphenationZone ?? -1,
       options.runtGraded ? 1 : 0,
     );
-    const stacks = options.stacks;
-    x.lb_set_stacks(ctx, stacks ? 1 : 0, stacks?.badness ?? 0);
-    if (stacks) writeEdges(u32(x.lb_edges(ctx, n), 4 * (n + 1)), items, stacks.minChars);
+    // A stack that costs nothing is not looked for (`lineEdgesFor`).
+    const stacks = options.stacks && options.stacks.demerits > 0 ? options.stacks : undefined;
+    x.lb_set_stacks(ctx, stacks ? 1 : 0, stacks?.demerits ?? 0);
+    if (stacks) writeEdges(u32(x.lb_edges(ctx, n), EDGE_ROWS * (n + 1)), items, new LineEdges(items, stacks.minChars));
     const count = x.lb_break(ctx);
     return Array.from(u32(x.lb_breaks(ctx), count));
   };

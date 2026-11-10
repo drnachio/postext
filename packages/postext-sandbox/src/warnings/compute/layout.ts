@@ -152,6 +152,17 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'stack') {
+      // Two lines in a row that end or start alike (#1463), by book page.
+      out.push({
+        id: `layout-stack-${w.sourceStart ?? 'x'}-${w.edge}-${i}`,
+        payload: { kind: 'stack', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), edge: w.edge, text: w.text, lines: w.lines },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'shortListSplit' || w.kind === 'openerFloat' || w.kind === 'tocGroupSplit') {
       // The composition rules (#749): a short list cut between columns, a
       // float on an opener page, a contents block cut (#850), each by its

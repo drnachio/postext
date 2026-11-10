@@ -132,6 +132,7 @@ export type WarningKind =
   | 'unplaced'
   | 'hereNotEmbedded'
   | 'shortListSplit'
+  | 'stack'
   | 'openerFloat'
   | 'tocGroupSplit'
   | 'codeOverflow'

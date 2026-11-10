@@ -5,7 +5,7 @@
 //! post width (`postWidth + postShift`), post chars. Line widths as f64,
 //! lines to avoid a hyphen at and fixed breaks as u32. Scalar options go
 //! through `lb_set_options`, stacks through `lb_set_stacks`, and the line
-//! edges stacks compare through `lb_edges`.
+//! edges stacks compare through `lb_edges` (#1463).
 
 use postext_linebreak::{Breaker, ItemKind, Items, LoosenessMode, Options};
 
@@ -116,20 +116,24 @@ pub extern "C" fn lb_set_options(
     o.hyphenation_zone = (hyphenation_zone >= 0.0).then_some(hyphenation_zone);
 }
 
-/// Stacks: avoided at `badness` when `on` is not 0 (a repeated monosyllable
-/// is always a limit).
+/// Stacks (#1463): each costs `demerits` (a repeated monosyllable twice)
+/// when `on` is not 0.
 #[unsafe(no_mangle)]
-pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, badness: f64) {
-    ctx(ptr).options.rules.stack_badness = (on != 0).then_some(badness);
+pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, demerits: f64) {
+    ctx(ptr).options.rules.stack_demerits = (on != 0).then_some(demerits);
 }
 
-/// Room for the line edges of a paragraph of `count` items, as four rows of
-/// `count + 1` ids: end words, end characters, start words, start
-/// characters (see `Rules`). Written only while stacks are on.
+/// Rows of `count + 1` the line edges take (see `Rules`).
+const EDGE_ROWS: usize = 9;
+
+/// Room for the line edges of a paragraph of `count` items, as nine rows of
+/// `count + 1`: end words, end characters and their reaches, start words,
+/// start characters and their reaches, and each item's offset in the
+/// paragraph's text (see `Rules`). Written only while stacks are on.
 #[unsafe(no_mangle)]
 pub extern "C" fn lb_edges(ptr: *mut LineBreakContext, count: usize) -> *mut u32 {
     let c = ctx(ptr);
-    c.staged_edges.resize(4 * (count + 1), 0);
+    c.staged_edges.resize(EDGE_ROWS * (count + 1), 0);
     c.staged_edges.as_mut_ptr()
 }
 
@@ -140,18 +144,25 @@ pub extern "C" fn lb_break(ptr: *mut LineBreakContext) -> usize {
     unstage(&c.staged_items, &mut c.items);
     c.options.avoid_hyphen_at_lines.clone_from(&c.staged_avoid);
     c.options.fixed_breaks.clone_from(&c.staged_fixed);
-    if c.options.rules.stack_badness.is_some() {
+    if c.options.rules.stack_demerits.is_some() {
         let row = c.items.len() + 1;
         let e = &c.staged_edges;
         let r = &mut c.options.rules;
-        r.end_word.clear();
-        r.end_word.extend_from_slice(&e[0..row]);
-        r.end_chars.clear();
-        r.end_chars.extend_from_slice(&e[row..2 * row]);
-        r.start_word.clear();
-        r.start_word.extend_from_slice(&e[2 * row..3 * row]);
-        r.start_chars.clear();
-        r.start_chars.extend_from_slice(&e[3 * row..4 * row]);
+        let rows = [
+            &mut r.end_word,
+            &mut r.end_chars,
+            &mut r.end_word_reach,
+            &mut r.end_chars_reach,
+            &mut r.start_word,
+            &mut r.start_chars,
+            &mut r.start_word_reach,
+            &mut r.start_chars_reach,
+            &mut r.offset,
+        ];
+        for (k, dst) in rows.into_iter().enumerate() {
+            dst.clear();
+            dst.extend_from_slice(&e[k * row..(k + 1) * row]);
+        }
     }
     let breaks = c.breaker.breakpoints(&c.items, &c.options);
     c.breaks.clear();

@@ -7,6 +7,7 @@ import type { Resource } from '../../types.js';
 import type { VDTDocument, ContentWarning, VDTDesignSlot } from '../../vdt.js';
 import { composedFrameBlockIds } from '../../composed/paint.js';
 import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js';
+import { findStacks } from '../../checks/stacks.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -101,6 +102,27 @@ export function raggedLineWarnings(doc: VDTDocument): ContentWarning[] {
     }
   }
   return out;
+}
+
+/** A `stack` warning for each stack of the running text (#1463,
+ *  `findStacks`), on the page it was placed on, under `bodyText.stacks:
+ *  'warn'` or `'avoid'` (the stacks the breaker kept); none under
+ *  `'allow'`. */
+export function stackWarnings(doc: VDTDocument): ContentWarning[] {
+  if (doc.config.bodyText.stacks === 'allow') return [];
+  return findStacks(doc).map((s) => {
+    const a = s.block.lines[s.line]!;
+    const b = s.block.lines[s.line + 1]!;
+    return {
+      kind: 'stack',
+      edge: s.edge,
+      text: s.text,
+      lines: [a.text, b.text],
+      ...(a.sourceStart !== undefined ? { sourceStart: a.sourceStart } : {}),
+      ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+      ...(s.block.pageIndex >= 0 ? { pageIndex: s.block.pageIndex } : {}),
+    };
+  });
 }
 
 /** The warning of a word cut to fit its line (#1150), by how it was cut. */

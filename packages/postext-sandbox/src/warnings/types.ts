@@ -443,6 +443,10 @@ export type WarningPayload =
    *  (`bodyText.shortListSplit`, #749), its first item on book page
    *  `page`. */
   | { kind: 'shortListSplit'; page: number; items: number }
+  /** Two lines in a row of a paragraph that end (`edge: 'end'`) or start
+   *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
+   *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
+  | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** A figure, a table (`resourceId`) or a floated box set on an opener
    *  page, book page `page` (`layout.openerFloats: 'warn'`, #749). */
   | { kind: 'openerFloat'; page: number; resourceId?: string }

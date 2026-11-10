@@ -32,7 +32,9 @@
         "$TURBO_ROOT$/docs/**",
         "$TURBO_ROOT$/cookbook/**",
         "$TURBO_ROOT$/plugins/**",
-        "$TURBO_ROOT$/scripts/**"
+        "$TURBO_ROOT$/scripts/**",
+        "$TURBO_ROOT$/rust/**",
+        "!$TURBO_ROOT$/rust/target/**"
       ],
       "env": [
         "EPUBCHECK",
