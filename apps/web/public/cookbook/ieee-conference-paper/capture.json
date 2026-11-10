@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "ieee-conference-paper",
-  "sourceHash": "a75c86de1a2791e598fad0b62883b042191f7c1d3ae01b1e04ac5322b2f4d881",
+  "sourceHash": "e8e3cf9b7736fa3e07bcd31a407bb12303704fbca61d573017485ee6a2a18ac9",
   "engine": {
-    "postext": "1.65.0",
-    "postextPdf": "1.65.0",
+    "postext": "1.70.5",
+    "postextPdf": "1.70.5",
     "source": "npm"
   },
-  "chrome": "156.0.8078.76",
-  "capturedAt": "2026-10-31T17:20:05.576Z",
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T08:58:23.214Z",
   "variants": {
     "en": {
-      "hash8": "ab0d1aa8",
+      "hash8": "4ab4c894",
       "vdtHash": "01c8f640ade75f1ea8026136b9228dfa03ce0318",
       "timings": {
-        "importMs": 2160,
-        "fontsMs": 34,
-        "buildMs": 127,
-        "totalMs": 3309,
+        "importMs": 5750,
+        "fontsMs": 50,
+        "buildMs": 164,
+        "totalMs": 6834,
         "builds": 1
       },
       "specimen": {
@@ -50,7 +50,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 183094,
+          "bytes": 183064,
           "alt": "Opening page 1: Optimal Line Breaking in the Browser: What It Costs and When It Pays."
         },
         {
@@ -61,7 +61,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 202062,
+          "bytes": 201992,
           "alt": "Page 2: III. METHOD."
         }
       ],
@@ -89,12 +89,12 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 81819,
+        "bytes": 81837,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 35413,
+        "bytes": 35409,
         "folio": "9f7fbdf3",
         "chapters": [
           {
@@ -319,6 +319,11 @@
         },
         "findings": [
           {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 157.0.8103.50, the committed capture used 156.0.8078.76: pixels may differ"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -332,13 +337,13 @@
       }
     },
     "es": {
-      "hash8": "27a7ad0e",
+      "hash8": "c92071db",
       "vdtHash": "87b2a02be4fbebf8fffe0bddb5ebc9af46ac8306",
       "timings": {
-        "importMs": 3060,
-        "fontsMs": 34,
-        "buildMs": 119,
-        "totalMs": 4343,
+        "importMs": 5799,
+        "fontsMs": 45,
+        "buildMs": 153,
+        "totalMs": 6854,
         "builds": 1
       },
       "specimen": {
@@ -371,7 +376,7 @@
           "h": 1294,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 183262,
+          "bytes": 183290,
           "alt": "Página de apertura 1: Corte óptimo de líneas en el navegador: cuánto cuesta y cuándo compensa."
         },
         {
@@ -382,7 +387,7 @@
           "h": 1294,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 234826,
+          "bytes": 234858,
           "alt": "Página 2: III. MÉTODO."
         }
       ],
@@ -410,12 +415,12 @@
       },
       "pdf": {
         "file": "ieee-conference-paper.pdf",
-        "bytes": 93848,
+        "bytes": 93846,
         "pages": 2
       },
       "sandbox": {
         "file": "ieee-conference-paper.postext",
-        "bytes": 35343,
+        "bytes": 35316,
         "folio": "9f7fbdf3",
         "chapters": [
           {
@@ -639,6 +644,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "chrome",
+            "severity": "warn",
+            "detail": "Chrome 157.0.8103.50, the committed capture used 156.0.8078.76: pixels may differ"
+          },
           {
             "check": "sandbox",
             "severity": "info",
