@@ -316,6 +316,18 @@ bodyText
                       prefixes (vos-altres), l·l breaks il- | lusió (the dot dropped, the line measured without it).
                       Type the dot as U+00B7 `·`: a PDF's `l.l`, `l•l`, `l∙l` (U+2219) or `ŀl` (U+0140) splits or
                       misses the word; normalise it when porting
+                      minWordLength / leftMin / rightMin (≥ 1.74): shortest word divided and letters kept before / carried after a
+                      break; unset = the language's own (hyphenationLanguageLimits(locale)); apostrophe words (fr, it, ca) obey them
+                      too. Port the source's "words with at least / after first / before last" settings here
+                      fewerHyphens 0–10 (≥ 1.74): + 50 penalty per step on every hyphen (a word's own hyphen too); 0 = as before
+                      ladders 'allow'|'warn'|'avoid' ('allow'), maxConsecutive 1, ladderPenalty 30000 (≥ 1.74): more than
+                      maxConsecutive hyphenated lines in a row; 'warn' = same layout + `hyphenLadder` warning; 'avoid' = ladderPenalty
+                      demerits per line past the limit (on top of consecutiveHyphenDemerit 3000), the ladders kept are reported.
+                      Port the source's "hyphen limit" (consecutive hyphens) as maxConsecutive with 'avoid'
+                      lastWord 'allow'|'warn'|'avoid' ('allow'), lastWordPenalty 30000 (≥ 1.74): the last line holds only the rest of
+                      a word divided on the line before; 'warn' = `lastWordDivided` warning; 'avoid' = lastWordPenalty demerits.
+                      Port "hyphenate last word" off as 'avoid'. All three: soft (demerits, never a hard limit), body text, lists
+                      and quotations only (not captions or cells), need optimalLineBreaking
 ```
 H&J / Knuth–Plass
 ```
