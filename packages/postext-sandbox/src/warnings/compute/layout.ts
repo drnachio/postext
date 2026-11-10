@@ -354,6 +354,13 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
   const pxPerMm = doc.config.page.dpi / 25.4;
   let idx = 0;
   for (const w of doc.warnings ?? []) {
+    if (w.kind === 'floatPinMissed') {
+      out.push({
+        id: `layout-${idx++}-pin-${w.resourceId}`,
+        payload: { kind: 'floatPinMissed', page: w.pageIndex + 1 + (doc.pageIndexOffset ?? 0), resourceId: w.resourceId },
+      });
+      continue;
+    }
     if (w.kind !== 'calloutOverflow') continue;
     out.push({
       id: `layout-${idx++}-${w.sourceStart ?? 'x'}`,

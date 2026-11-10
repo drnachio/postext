@@ -237,6 +237,25 @@ export interface ResourcePlacement {
    *  the type's `defaultPlacement`, then `layout.floatsAtCitingPage`, then
    *  `false`. */
   citingPage?: boolean;
+  /** Where the author set the float by hand (dragged in the canvas): a
+   *  slot on a page counted from the page that first cites it. The engine
+   *  tries that slot first and nothing else on that page; when it cannot
+   *  be taken (the float does not fit, or the slot comes before the
+   *  citation), the float is placed as usual and the layout reports it
+   *  (`floatPinMissed`). Floats only; paged outputs only. */
+  pin?: ResourcePin;
+}
+
+/** A float's hand-set slot (see `ResourcePlacement.pin`). */
+export interface ResourcePin {
+  /** Pages after the one that first cites the float: `0` is that page. */
+  page: number;
+  /** The text column, counted from 0 in reading order; unset for any
+   *  (a page-span float ignores it). */
+  column?: number;
+  /** The head or the foot of the column (of the page, for a page-span
+   *  float). */
+  slot: 'top' | 'bottom';
 }
 
 /** The side of its column a resource or a box sits on with text running

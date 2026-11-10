@@ -143,7 +143,7 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
-      <td><code>"auto"</code>（既定値）は、上端・下端を問わず参照の後にある最初の空き位置を取ります。<code>"top"</code> / <code>"bottom"</code>はその種類の位置だけを受け入れます。<code>"here"</code>はフロートをやめ、<code>::resource</code>ディレクティブの位置で本文中に埋め込みます（そこに置いた表は、段の残りに収まらなければ行の間で切られます。<a href="/ja/docs/configuration-resources#ページより高い表">ページより高い表</a>を参照）。 <code>"paragraph"</code>（このコピー独自）も本文に組み込みますが、<code>::resource</code> 行は不要で、最初に参照する段落の直後に置きます（リストの途中なら残りの項目の後、囲みの中の参照なら囲みの後）。その段落の後に置いた <code>"here"</code> とまったく同じに組まれ、回り込み、サイドコラムのキャプション、枠内の横キャプションも同様に効きます。</td>
+      <td><code>"auto"</code>（既定値）は、上端・下端を問わず参照の後にある最初の空き位置を取ります。<code>"top"</code> / <code>"bottom"</code>はその種類の位置だけを受け入れます。<code>"here"</code>はフロートをやめ、<code>::resource</code>ディレクティブの位置で本文中に埋め込みます（そこに置いた表は、段の残りに収まらなければ行の間で切られます。<a href="/ja/docs/configuration-resources#ページより高い表">ページより高い表</a>を参照）。 <code>"paragraph"</code>も本文に組み込みますが、<code>::resource</code> 行は不要で、最初に参照する段落の直後に置きます（リストの途中なら残りの項目の後、囲みの中の参照なら囲みの後）。その段落の後に置いた <code>"here"</code> とまったく同じに組まれ、回り込み、サイドコラムのキャプション、枠内の横キャプションも同様に効きます。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -194,6 +194,11 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
       <td><code>citingPage</code></td>
       <td><code>true</code> · <code>false</code>、既定値<code>false</code></td>
       <td><code>"top"</code>または<code>"auto"</code>のフロートを、LaTeXの<code>t</code>配置のように、最初に参照する行のあるページ（ページ幅のフロート）または段（段幅のフロート、<code>columns</code>で複数段にまたがるものも）の先頭に置きます。その行の後の最初の空き位置ではありません。参照より前の本文はフロートの下に送られます。次の条件をすべて満たすときに限ります：フロートが段の高さの<code>layout.maxTopFraction</code>（既定値0.7）以内に収まる、同じ番号系列の先行するフロートがすでに置かれている、明示的な改ページで始まるページ（章の最初のページ、部、<code>:::pagebreak</code>の後）ではなく、参照行より上にページ幅の要素がない、そしてそう置いたあとも参照行がそのページ（フロートが先頭を占める段）に残る。そうでなければフロートは通常の位置に置かれます。回転したフロート、サイド段のフロート、ページをまたいで分割された表の続きはこのように動きません。既定値：種類の<code>defaultPlacement</code>、次に<code>layout.floatsAtCitingPage</code>。postext 1.25以降。</td>
+    </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>手で置いたフロート（Sandbox のキャンバスでスロットにドラッグしたもの）：<code>page</code> は最初に参照したページから数えたページ（<code>0</code> がそのページ）、<code>column</code> は 0 から数えた本文の段（未指定ならどの段でも）、<code>slot</code> は <code>"top"</code> か <code>"bottom"</code>。フロートはそのページを待ち、そこではそのスロットだけに置かれます。収まらないときやスロットが参照より前にあるときは通常どおり配置され、<code>floatPinMissed</code> が報告されます。ページ出力のみ。</td>
     </tr>
   </tbody>
 </table>
@@ -338,6 +343,19 @@ VDTはトリミングをリソースのブロックに記録します。`bodySou
 
 レシピ集のNo. 116「[短い段を埋めるように伸びる写真](/ja/cookbook/photos-fill-short-columns)」は、2段組みの雑誌特集をセーフエリアなしとセーフエリアありの2回組むので、ページを並べて比べられます。
 
+
+### 手動トリミング
+
+ビットマップ、SVG、動画のポスターは手でトリミングすることもできます。`crop` はセーフエリアと同じ比率で、どのページでも図が常に見せる画像の部分です。図はすべての出力（キャンバス、PDF、HTML、両方の EPUB）でトリミングの縦横比をとり、セーフエリアがあればトリミングの内側で読まれ、ページが必要とするところでさらに切り詰めます。`bodySource` は両者の合成です。未指定なら画像全体です。Sandbox ではセーフエリアの横の「トリミング」で、ドラッグし、矢印キーで動かし、プレビューできる枠が開きます。
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // 中央の半分、上から下まで
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### 話者のアンカーと回避エリア
 

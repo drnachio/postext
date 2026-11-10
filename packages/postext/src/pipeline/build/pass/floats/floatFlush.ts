@@ -44,7 +44,10 @@ export interface FloatFlushDeps {
   availableAfterBand: (col: VDTColumn, position: FloatSlotPosition, probe: { need: number; y: number; measure: FloatMeasure; }, anchorToCap: boolean) => number;
   placeFloatInColumns: (page: VDTPage, f: PlannedFloat, targetCols: readonly VDTColumn[], position: FloatSlotPosition, pageSpan: boolean, mode: "fresh" | "strict", anchorToCap?: boolean, side?: boolean, refY?: number) => PlaceResult;
   settle: (i: number, r: PlaceResult) => number;
-  heldBack: (i: number) => boolean;
+  heldBack: (i: number, pageIndex?: number) => boolean;
+  pinOn: (f: PlannedFloat, pageIndex: number) => PlannedFloat['pin'];
+  pinnedColumn: (page: VDTPage, pin: NonNullable<PlannedFloat['pin']>) => VDTColumn | undefined;
+  dropMissedPins: (pageIndex: number) => void;
   positionsFor: (f: PlannedFloat) => FloatSlotPosition[];
   cursor: PlacementCursor;
   forcedBreakPages: Set<number>;
@@ -57,7 +60,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
     citingPageFloats, resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
-    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
+    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, pinnedColumn, dropMissedPins,
     positionsFor, cursor, forcedBreakPages, state, late
   } = deps;
   /** Reserve top/bottom bands on a freshly opened page and position as many
@@ -72,6 +75,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
    *  `afterPageSpan` runs once the page-span floats are set, before the
    *  column floats take their heads. */
   const flushPendingFloatsIntoPage = (page: VDTPage, afterPageSpan?: () => void): void => {
+    dropMissedPins(page.index);
     if (pendingFloats.length === 0) { late.flushSideBoxesIntoPage(page); return; }
     // A floated box heading the page goes first: the figures then take
     // the foot under it (a figure set first would claim the foot and push
@@ -138,25 +142,29 @@ export function createFloatFlush(deps: FloatFlushDeps) {
           const isPageSpan = (f.span === 'page' || (across > 1 && across === textCols.length)) && (textCols.length > 1 || sideCols.length > 0);
           const isSide = !isPageSpan && f.span === 'side' && sideCols.length > 0;
           const kind = isPageSpan ? 'page' : isSide ? 'side' : f.captionSide && sideCols.length > 0 ? 'aside' : 'column';
-          if (kind !== pass || heldBack(i)) { i++; continue; }
+          if (kind !== pass || heldBack(i, page.index)) { i++; continue; }
           // After the text a side float keeps behind the side boxes fenced
           // before its citation that still wait (#639).
           if (isSide && state.drainingAfterText && pendingSideBoxes.some((b) => b.startIdx < f.firstBlockIdx)) { i++; continue; }
+          const pin = pinOn(f, page.index);
           // A page-span rest never shares the page of its previous slice.
           if (isPageSpan && f.notBefore?.pageIndex === page.index) { i++; continue; }
           let r: PlaceResult = 'defer';
           if (isSide) {
             r = placeFloatInColumns(page, f, [sideCols[0]!], 'top', false, 'fresh', false, true);
           } else {
-            for (const pos of positionsFor(f)) {
+            // A float set by hand on this page: its slot and no other.
+            const pinCol = pin && !isPageSpan ? pinnedColumn(page, pin) : undefined;
+            for (const pos of pin ? [pin.slot] : positionsFor(f)) {
               if (!isPageSpan && across > 1) {
-                const group = leastReservedGroup(f, across, pos);
+                const from = pinCol ? textCols.indexOf(pinCol) : -1;
+                const group = pinCol ? (from + across <= textCols.length ? textCols.slice(from, from + across) : undefined) : leastReservedGroup(f, across, pos);
                 if (!group) continue;
                 r = placeFloatInColumns(page, f, group, pos, false, 'fresh');
                 if (r !== 'defer') break;
                 continue;
               }
-              const col = isPageSpan ? undefined : leastReserved(f);
+              const col = isPageSpan ? undefined : pinCol ?? leastReserved(f);
               if (!isPageSpan && !col) break;
               const cols = isPageSpan ? pageCols : [col!];
               r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
@@ -243,6 +251,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number, anyPosition = false): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
+    dropMissedPins(page.index);
     const box = nextBlockIdx !== undefined ? (keepTogetherBoxAt(nextBlockIdx) ?? late.shortListBoxAt(nextBlockIdx)) : null;
     for (let i = 0; i < pendingFloats.length;) {
       if (heldBack(i)) { i++; continue; }
@@ -268,7 +277,12 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       // there, above the box (`placeSpanFloatsAtCut`) — its only slot here
       // would be the band's foot, under the box.
       if (preferTop && f.span === 'page' && multiColumnBand(page)) { i++; continue; }
-      if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
+      // A float set by hand on this page: its slot and no other.
+      const pin = pinOn(f, page.index);
+      if (pin) {
+        const col = pinnedColumn(page, pin);
+        slots = slots.filter((s) => !s.side && s.position === pin.slot && (s.pageSpan || !col || s.cols[0] === col));
+      } else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
       for (const slot of slots) {
         if (slot.side) {
           r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);

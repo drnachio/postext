@@ -143,7 +143,7 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
-      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da coluna; veja <a href="/pt/docs/configuration-resources#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>). <code>"paragraph"</code> (desta cópia) também o insere no texto, logo depois do parágrafo que o cita pela primeira vez, sem linha <code>::resource</code>: depois do resto de uma lista, ou depois da caixa onde está a citação. É composto exatamente como um <code>"here"</code> posto depois desse parágrafo, com o texto que o contorna, a legenda na coluna lateral e a legenda ao lado dentro do seu espaço.</td>
+      <td><code>"auto"</code> (o padrão) ocupa o primeiro espaço livre depois da referência, no topo ou no pé; <code>"top"</code> / <code>"bottom"</code> só aceitam espaços desse tipo; <code>"here"</code> desativa a flutuação e insere o recurso em linha na diretiva <code>::resource</code> (uma tabela posicionada aí é cortada entre linhas quando não cabe no resto da coluna; veja <a href="/pt/docs/configuration-resources#tabelas-mais-altas-que-a-página">Tabelas mais altas que a página</a>). <code>"paragraph"</code> também o insere no texto, logo depois do parágrafo que o cita pela primeira vez, sem linha <code>::resource</code>: depois do resto de uma lista, ou depois da caixa onde está a citação. É composto exatamente como um <code>"here"</code> posto depois desse parágrafo, com o texto que o contorna, a legenda na coluna lateral e a legenda ao lado dentro do seu espaço.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -194,6 +194,11 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
       <td><code>citingPage</code></td>
       <td><code>true</code> · <code>false</code>, padrão <code>false</code></td>
       <td>Deixa um flutuante <code>"top"</code> ou <code>"auto"</code> ocupar o topo da página (um flutuante na largura da página) ou da coluna (um flutuante de coluna, também na largura de <code>columns</code>) onde cai a linha que o cita pela primeira vez, como faz o posicionamento <code>t</code> do LaTeX, em vez do primeiro espaço livre depois dessa linha. O texto acima da referência desce para baixo do flutuante. Só faz isso quando o flutuante cabe ali dentro de <code>layout.maxTopFraction</code> da coluna (0,7 por padrão), quando os flutuantes anteriores da mesma sequência de numeração já estão posicionados, quando nenhuma quebra explícita abre a página (a primeira página de um capítulo, uma parte, um <code>:::pagebreak</code>) e nada na largura da página fica acima da linha que o cita, e quando, assim posicionado, a linha que o cita continua caindo nessa página (numa coluna que o flutuante encabeça); senão, o flutuante ocupa o espaço habitual. Flutuantes girados, os da coluna lateral e o resto de uma tabela dividida entre páginas nunca se movem assim. Padrão: o <code>defaultPlacement</code> do tipo e depois <code>layout.floatsAtCitingPage</code>. Desde o postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Um flutuante posicionado à mão (arrastado para um espaço na tela do Sandbox): <code>page</code> conta as páginas a partir da que o cita primeiro (<code>0</code> é essa página), <code>column</code> a coluna de texto a partir de 0 (qualquer uma, se ausente), <code>slot</code> é <code>"top"</code> ou <code>"bottom"</code>. O flutuante espera por essa página e ocupa ali esse espaço e nenhum outro; se não couber, ou se o espaço vier antes da citação, é posicionado como de costume e o layout avisa com <code>floatPinMissed</code>. Só nas saídas paginadas.</td>
     </tr>
   </tbody>
 </table>
@@ -338,6 +343,19 @@ O VDT registra o recorte no bloco do recurso: `bodySource` é a parte da imagem 
 
 A receita Nº 116 das Receitas, [Fotos que crescem para preencher uma coluna curta](/pt/cookbook/photos-fill-short-columns), compõe uma reportagem de revista em duas colunas duas vezes, sem e com áreas seguras, para que você compare as páginas lado a lado.
 
+
+### Recorte manual
+
+Um bitmap, um SVG ou o pôster de um vídeo também podem ser recortados à mão: `crop`, nas mesmas frações da área segura, é a parte da imagem que a figura sempre mostra, seja qual for a página. A figura assume a proporção do recorte em todas as saídas (tela, PDF, HTML e os dois EPUB), a área segura, se houver, é lida dentro do recorte e pode cortar mais onde a página precisar, e `bodySource` é a composição das duas. Sem ele, a imagem inteira. No Sandbox, *Recorte*, ao lado da área segura, abre uma moldura para arrastar, ajustar com as setas e pré-visualizar.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // a metade central, de cima a baixo
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Âncoras de personagem e zonas a evitar
 

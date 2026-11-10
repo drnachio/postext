@@ -143,7 +143,7 @@ Ogni risorsa ha una **collocazione** che decide dove finisce il suo elemento flo
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
-      <td><code>"auto"</code> (il valore predefinito) prende il primo spazio libero dopo il rimando, in alto o in basso; <code>"top"</code> / <code>"bottom"</code> accettano solo spazi di quel tipo; <code>"here"</code> esclude la risorsa dagli elementi flottanti e la inserisce in linea nel punto della direttiva <code>::resource</code> (una tabella collocata lì viene tagliata tra due righe quando non entra nel resto della sua colonna, vedi <a href="/it/docs/configuration-resources#tabelle-più-alte-della-pagina">Tabelle più alte della pagina</a>). <code>"paragraph"</code> (di questa copia) la inserisce anch'essa nel testo, subito dopo il paragrafo che la cita per primo, senza riga <code>::resource</code>: dopo il resto di un elenco, o dopo il riquadro in cui si trova la citazione. È composta esattamente come un <code>"here"</code> posto dopo quel paragrafo, compresi lo scontornamento del testo, la didascalia nella colonna laterale e la didascalia accanto nel suo spazio.</td>
+      <td><code>"auto"</code> (il valore predefinito) prende il primo spazio libero dopo il rimando, in alto o in basso; <code>"top"</code> / <code>"bottom"</code> accettano solo spazi di quel tipo; <code>"here"</code> esclude la risorsa dagli elementi flottanti e la inserisce in linea nel punto della direttiva <code>::resource</code> (una tabella collocata lì viene tagliata tra due righe quando non entra nel resto della sua colonna, vedi <a href="/it/docs/configuration-resources#tabelle-più-alte-della-pagina">Tabelle più alte della pagina</a>). <code>"paragraph"</code> la inserisce anch'essa nel testo, subito dopo il paragrafo che la cita per primo, senza riga <code>::resource</code>: dopo il resto di un elenco, o dopo il riquadro in cui si trova la citazione. È composta esattamente come un <code>"here"</code> posto dopo quel paragrafo, compresi lo scontornamento del testo, la didascalia nella colonna laterale e la didascalia accanto nel suo spazio.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -194,6 +194,11 @@ Ogni risorsa ha una **collocazione** che decide dove finisce il suo elemento flo
       <td><code>citingPage</code></td>
       <td><code>true</code> · <code>false</code>, predefinito <code>false</code></td>
       <td>Consente a un elemento flottante <code>"top"</code> o <code>"auto"</code> di prendere la cima della pagina (un elemento flottante a tutta larghezza) o della colonna (un elemento flottante di colonna, anche esteso su <code>columns</code>) in cui finisce la riga che lo cita per la prima volta, come fa la collocazione <code>t</code> di LaTeX, invece del primo spazio libero dopo quella riga. Il testo sopra il rimando scende sotto l’elemento flottante. Lo fa solo quando l’elemento flottante vi entra entro <code>layout.maxTopFraction</code> della colonna (0,7 per impostazione predefinita), quando gli elementi flottanti precedenti della sua sequenza di numerazione sono già composti, quando nessuna interruzione esplicita apre la pagina (la prima pagina di un capitolo, una parte, un <code>:::pagebreak</code>) e nulla a tutta larghezza sta sopra la riga che lo cita, e quando, composta così, la riga che lo cita finisce ancora su quella pagina (nella colonna in cima alla quale sta l’elemento flottante); altrimenti l’elemento flottante prende il suo spazio abituale. Gli elementi flottanti ruotati, quelli della colonna laterale e il resto di una tabella divisa su più pagine non si spostano mai in questo modo. Predefinito: il <code>defaultPlacement</code> del tipo, poi <code>layout.floatsAtCitingPage</code>. Da postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Un flottante collocato a mano (trascinato in uno spazio nella tela del Sandbox): <code>page</code> conta le pagine da quella che lo richiama per prima (<code>0</code> è quella pagina), <code>column</code> la colonna di testo da 0 (qualsiasi, se manca), <code>slot</code> è <code>"top"</code> o <code>"bottom"</code>. Il flottante attende quella pagina e lì prende quello spazio e nessun altro; se non ci sta, o lo spazio viene prima del richiamo, viene collocato come di consueto e l'impaginazione lo segnala con <code>floatPinMissed</code>. Solo nelle uscite impaginate.</td>
     </tr>
   </tbody>
 </table>
@@ -338,6 +343,19 @@ Il VDT registra il ritaglio sul blocco della risorsa: `bodySource` è la parte d
 
 La ricetta Nº 116 del Ricettario, [Foto che crescono per riempire una colonna corta](/it/cookbook/photos-fill-short-columns), compone due volte un servizio di rivista a due colonne, senza e con zone sicure, così puoi confrontare le pagine una accanto all’altra.
 
+
+### Ritaglio manuale
+
+Una bitmap, un SVG o il poster di un video si possono anche ritagliare a mano: `crop`, nelle stesse frazioni della zona sicura, è la parte dell'immagine che la figura mostra sempre, qualunque sia la pagina. La figura prende il rapporto del ritaglio in tutte le uscite (tela, PDF, HTML, entrambi gli EPUB), la zona sicura, se c'è, si legge dentro il ritaglio e può tagliare ancora dove la pagina lo richiede, e `bodySource` è la composizione dei due. Senza, l'immagine intera. Nel Sandbox, *Ritaglio*, accanto alla zona sicura, apre una cornice da trascinare, spostare con le frecce e vedere in anteprima.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la metà centrale, dall'alto in basso
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Ancore dei personaggi e zone da evitare
 

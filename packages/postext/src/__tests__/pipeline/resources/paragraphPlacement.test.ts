@@ -4,7 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import type { PostextConfig, Resource, VDTColumn, VDTDocument } from '../../../index.js';
 
 // A resource placed after the paragraph that cites it (`position:
-// 'paragraph'`, this fork) is set as a `::resource` line right after that
+// 'paragraph'`) is set as a `::resource` line right after that
 // paragraph would set it (`position: 'here'`): text wrapped round it
 // (#627, #883) and its caption beside it (#729, #1106) included.
 

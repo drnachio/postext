@@ -151,7 +151,7 @@ describe('keep-together box in a column cut short by floats', () => {
     expect(frames(tall)).toHaveLength(1);
     expect(tall.warnings).toBeDefined();
     expect(tall.warnings![0]!.kind).toBe('calloutOverflow');
-    expect(tall.warnings![0]!.overflowPx).toBeGreaterThan(0);
+    expect((tall.warnings![0] as { overflowPx: number }).overflowPx).toBeGreaterThan(0);
     expect(tall.warnings![0]!.sourceStart).toBe(0);
   }, 30000);
 });

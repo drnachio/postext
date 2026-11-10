@@ -143,7 +143,7 @@ Each resource has a **placement** that decides where its float lands, resolved p
     <tr>
       <td><code>position</code></td>
       <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
-      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive (a table placed there is cut between rows when it does not fit the rest of its column, see <a href="/en/docs/configuration-resources#tables-taller-than-the-page">Tables taller than the page</a>). <code>"paragraph"</code> (this fork) sets it in the text too, right after the paragraph that first cites it, with no <code>::resource</code> line: after the rest of a list, or after the box the citation sits in. It is set exactly as a <code>"here"</code> embed after that paragraph, text wrap, a caption in the side column and a caption inside its slot included.</td>
+      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive (a table placed there is cut between rows when it does not fit the rest of its column, see <a href="/en/docs/configuration-resources#tables-taller-than-the-page">Tables taller than the page</a>). <code>"paragraph"</code> sets it in the text too, right after the paragraph that first cites it, with no <code>::resource</code> line: after the rest of a list, or after the box the citation sits in. It is set exactly as a <code>"here"</code> embed after that paragraph, text wrap, a caption in the side column and a caption inside its slot included.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -194,6 +194,11 @@ Each resource has a **placement** that decides where its float lands, resolved p
       <td><code>citingPage</code></td>
       <td><code>true</code> · <code>false</code>, default <code>false</code></td>
       <td>Let a <code>"top"</code> or <code>"auto"</code> float take the head of the page (a page-span float) or of the column (a column float, across <code>columns</code> too) where the line that first cites it lands, as LaTeX's <code>t</code> placement does, instead of the first free slot after that line. The text above the reference moves down under the float. It does so only when the float fits there within <code>layout.maxTopFraction</code> of the column (0.7 by default), when the earlier floats of its numbering sequence are already set, when no explicit break opens the page (a chapter's first page, a part, a <code>:::pagebreak</code>) and nothing spanning the page stands above the citing line, and when, with the float there, the citing line still lands on that page (or in the column the float heads); otherwise the float takes its usual slot. Turned floats, side-column floats and the rest of a table split across pages never move this way. Default: the type's <code>defaultPlacement</code>, then <code>layout.floatsAtCitingPage</code>. Since postext 1.25.</td>
+    </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>A float set by hand (dragged to a slot in the Sandbox canvas): <code>page</code> counts pages from the one that first cites it (<code>0</code> is that page), <code>column</code> the text column from 0 (any, when unset), <code>slot</code> is <code>"top"</code> or <code>"bottom"</code>. The float waits for that page and takes that slot and no other there; when it does not fit, or the slot comes before its citation, it is placed as usual and the layout reports <code>floatPinMissed</code>. Paged outputs only.</td>
     </tr>
   </tbody>
 </table>
@@ -338,6 +343,19 @@ The VDT records the crop on the resource block: `bodySource` is the part of the 
 
 Recipe Nº 116 in the Cookbook, [Photos that grow to fill a short column](/en/cookbook/photos-fill-short-columns), sets a two-column magazine feature twice, without and with safe areas, so you can compare the pages one beside the other.
 
+
+### Manual crop
+
+A bitmap, SVG or video poster can also be cropped by hand: `crop`, in the same fractions as the safe area, is the part of the picture the figure always shows, whatever the page. The figure takes the crop's ratio in every output (canvas, PDF, HTML, both EPUBs), the safe area, if any, is read inside the crop and may cut further where the page needs it, and `bodySource` is the composition of both. Unset, the whole picture. In the Sandbox, *Crop* beside the safe area opens a frame to drag, nudge with the arrows and preview.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // the middle half, top to bottom
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Speaker anchors and avoid zones
 

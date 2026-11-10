@@ -316,6 +316,10 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return labels.warningsCalloutOverflowDetail
         .replace('__page__', String(payload.page))
         .replace('__mm__', payload.overflowMm.toFixed(1));
+    case 'floatPinMissed':
+      return labels.warningsFloatPinMissedDetail
+        .replace('__id__', payload.resourceId)
+        .replace('__page__', String(payload.page));
     case 'headingDesignCut':
       return `H${payload.level} — ${labels.warningsHeadingDesignCutDetail
         .replace('__page__', String(payload.page))

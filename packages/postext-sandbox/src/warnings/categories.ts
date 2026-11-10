@@ -101,6 +101,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'kuntenExceedsLeading':
     case 'arabicMarksExceedLeading':
     case 'calloutOverflow':
+    case 'floatPinMissed':
     case 'alphaPdfOverflow':
     case 'chipOverlap':
     case 'lineNumberOverlap':

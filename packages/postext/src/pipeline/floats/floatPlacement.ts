@@ -26,6 +26,7 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourcePin,
   ResourcePlacement,
   ResourcePlateArea,
   ResourceRotation,
@@ -152,6 +153,18 @@ export interface PlannedFloat {
    *  index of its opening fence. `resourceId` is then the synthetic
    *  `callout:<startIdx>`; the build keeps the box's layouter by index. */
   callout?: { startIdx: number };
+  /** The slot the author set the float in (`ResourcePlacement.pin`),
+   *  cleaned; dropped by the build once its page is past. */
+  pin?: ResourcePin;
+}
+
+/** A hand-set slot as the build reads it, or `undefined` for a malformed
+ *  one: whole pages from 0 to 50, a whole column from 0. */
+export function cleanPin(pin: ResourcePin | undefined): ResourcePin | undefined {
+  if (!pin || (pin.slot !== 'top' && pin.slot !== 'bottom')) return undefined;
+  if (!Number.isInteger(pin.page) || pin.page < 0 || pin.page > 50) return undefined;
+  if (pin.column !== undefined && (!Number.isInteger(pin.column) || pin.column < 0)) return undefined;
+  return { page: pin.page, slot: pin.slot, ...(pin.column !== undefined ? { column: pin.column } : {}) };
 }
 
 /** The document default for `placement.shrink` (`layout.floatShrink`). */
@@ -293,6 +306,7 @@ export function computeFloatPlan(
         : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),
       ...(columns > 1 && span === 'column' && !rotate ? { columns } : {}),
+      ...(!rotate && cleanPin(resource.placement?.pin) ? { pin: cleanPin(resource.placement?.pin)! } : {}),
       ...(shrink !== 'never' && !upright ? { shrink, minScale } : {}),
       ...(citingPage ? { citingPage } : {}),
     });

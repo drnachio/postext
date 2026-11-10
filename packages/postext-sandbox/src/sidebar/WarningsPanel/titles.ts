@@ -191,6 +191,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsAlphaPdfOverflowTitle;
     case 'calloutOverflow':
       return labels.warningsCalloutOverflowTitle;
+    case 'floatPinMissed':
+      return labels.warningsFloatPinMissedTitle;
     case 'headingDesignCut':
       return labels.warningsHeadingDesignCutTitle;
     case 'headingClaimsColumn':
