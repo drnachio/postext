@@ -39,13 +39,14 @@ Els colors es desen amb una representació hexadecimal i amb el model de color d
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Els valors de quatricromia exactes d'un color definit en CMYK.
+  spot?: SpotColor;    // La tinta d'un color de tinta plana.
   paletteId?: string;  // L'entrada de colorPalette que segueix.
 }
 ```
 
-El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](#colors-definits-en-cmyk)).
+El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](#colors-definits-en-cmyk)). `'spot'` és una tinta plana, amb la seva tinta a `spot` (vegeu [Tintes planes](/ca/docs/configuration-pdf-output#tintes-planes)).
 
 Com que Postext busca una sortida de qualitat editorial, el color per defecte del text de cos és `model: 'cmyk'` (`#000000`). Els colors d'encapçalaments, negretes, cursives i llistes prenen per defecte el **Color principal** enllaçat a la paleta (`#295AA3`, `model: 'hex'`). El fons de pàgina i els indicadors d'interfície (retícula de base, marques de tall, indicadors de depuració) fan servir `model: 'hex'` per defecte. Si necessites un altre comportament en exportar, canvia `color.model` en qualsevol camp.
 
@@ -559,6 +560,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total d'àrea, en percentatge.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // La taula de tintes: noms, àlies, quadricromia.
 }
 
 interface CustomOutputProfile {

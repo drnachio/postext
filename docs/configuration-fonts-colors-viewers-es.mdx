@@ -39,13 +39,14 @@ Los colores se guardan con una representación hexadecimal y un modelo de color 
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
+  spot?: SpotColor;    // La tinta de un color de tinta plana.
   paletteId?: string;  // La entrada de colorPalette que sigue.
 }
 ```
 
-El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](#colores-definidos-en-cmyk)).
+El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](#colores-definidos-en-cmyk)). `'spot'` es una tinta plana, con su tinta en `spot` (ver [Tintas planas](/es/docs/configuration-pdf-output#tintas-planas)).
 
 Como Postext busca una salida de calidad editorial, el color por defecto del texto base viene con `model: 'cmyk'` (`#000000`). Los colores de los encabezados, las negritas, las cursivas y las listas toman por defecto el **Color principal** vinculado a la paleta (`#295AA3`, `model: 'hex'`). El fondo de la página y las ayudas visuales (la rejilla base, las marcas de corte, los indicadores de depuración) usan `model: 'hex'` por defecto. Cambia el `color.model` de cualquier campo si necesitas que se exporte de otra forma.
 
@@ -560,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total de tinta, en porcentaje.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // La tabla de tintas: nombres, alias, cuatricromía.
 }
 
 interface CustomOutputProfile {

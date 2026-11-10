@@ -172,10 +172,11 @@ Os grupos, na ordem de navegação:
     - um bloco de **design da abertura** diagramado em relação à caixa de refile da página. O seletor de marcadores dele acrescenta o conjunto do título: o título atual e o número dele em forma decimal, romana ou alfabética.
     - um **estilo do texto** para os blocos dentro da parte. Ele herda o texto do corpo e as cores das listas, e inclui as substituições das listas (formato de numeração e deslocamentos, margens, recuo deslocado e os campos das listas de tarefas).
 - **Exportação**
-  - *Preparação para impressão* (`print` e `page.cutLines`), em quatro grupos:
+  - *Preparação para impressão* (`print` e `page.cutLines`), em cinco grupos:
     - **Marcas de corte e sangria**: as marcas de corte, a sangria, o comprimento, o afastamento e a espessura das marcas, e a cor delas na tela.
     - **PDF/X e cor**: **Padrão PDF** (*Nenhum (PDF comum)*, *PDF/X-1a:2003*, *PDF/X-4*); **Perfil de saída**, entre os quinze perfis livres (FOGRA39 por padrão, FOGRA51 e FOGRA52 para as condições PSO v3, GRACoL, SWOP, papel jornal); **Enviar um perfil ICC** para o que a sua gráfica fornecer, com a **Condição de impressão** (o nome no registro que a condição de saída do PDF/X indica) e um botão que o remove; **Intenção de renderização**, **Compensação do ponto preto**, **Converter as imagens para CMYK** (oculto no PDF/X-1a, que sempre converte) e **Limite de tinta (%)**.
     - **Preto**: **Cinzas e preto só em K**, **Sobreimprimir o preto 100%**, **Preto composto em áreas grandes** com a receita C/M/Y/K e o tamanho a partir do qual uma área passa a preto composto.
+    - **Tabela de tintas** (`print.inks`): um cartão por tinta com **Nome da tinta**, **Apelidos**, **Nome da chapa no PDF**, **Impressa como**, **CMYK alternativo** e **Sobreimpressão**; **Tintas usadas pelas cores** oferece as tintas das cores do livro que faltam na tabela. Veja [Cores especiais › A tabela de tintas](/pt/docs/configuration-pdf-output#a-tabela-de-tintas).
     - **Preflight**: **Preflight em Verificações**, a resolução mínima e a crítica das imagens, a espessura mínima de fio, o corpo abaixo do qual o texto em várias tintas é sinalizado, a área de segurança, a distância abaixo da qual uma caixa deveria ir para a sangria, e **Verificar fontes dos PDFs inseridos**.
 
     Veja [Configuração › Produção gráfica](/pt/docs/configuration-fonts-colors-viewers#produção-gráfica-configuração).

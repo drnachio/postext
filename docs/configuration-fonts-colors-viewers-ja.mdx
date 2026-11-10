@@ -6,7 +6,7 @@ export const metadata = {
   description: '単位、色とカラーパレット、カスタムフォント、HTMLビューアー、PDFと入稿データ、Folioビューアー、そしてデバッグ用の表示',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '40分',
+  readingTime: '41分',
   order: 20,
   parent: 'configuration',
   plainSummary: "このページでは、本全体で共有する設定と、出力の種類ごとの設定を説明します。寸法と色の書き方と、パレットの色に名前を付ける方法を説明します。自分のフォントを追加する方法を示します。続いて、Web表示、PDFファイル、印刷会社に渡すファイル、3Dの本を扱います。最後の節では、作業を助けるガイド線と警告を表示する方法を説明します。",
@@ -39,13 +39,14 @@ interface Dimension {
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // 特色のインキ。
   paletteId?: string;  // 従うcolorPaletteのエントリー。
 }
 ```
 
-`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](#cmykで指定した色)を参照）。
+`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](#cmykで指定した色)を参照）。`'spot'`は特色で、そのインキを`spot`に持ちます（[特色](/ja/docs/configuration-pdf-output#特色)を参照）。
 
 Postextは出版品質の出力を目指しているため、本文の色の既定値は`model: 'cmyk'`（`#000000`）です。見出し、太字、イタリック、リストの色の既定値は、パレットに連動した**メインカラー**（`#295AA3`、`model: 'hex'`）です。ページの背景とUIのオーバーレイ（ベースライングリッド、トンボ、デバッグ表示）の既定値は`model: 'hex'`です。別の書き出しの扱いが必要なら、任意のフィールドで`color.model`を上書きしてください。
 
@@ -560,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

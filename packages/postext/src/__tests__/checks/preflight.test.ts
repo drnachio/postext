@@ -146,6 +146,94 @@ describe('preflightDocument', () => {
     if (issue?.kind === 'inkLimit') expect(issue.coverage).toBe(370);
   });
 
+  it('counts a spot colour as one ink, keeps it off the ink limit and lists the spot inks of the job', () => {
+    const pantone = { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } };
+    const doc = buildDocument({ markdown: 'Small spot text.' }, config({
+      bodyText: { fontSize: pt(7), color: { hex: '#1f3f99', model: 'spot', spot: pantone } },
+      // Defined, never painted: not one of the job's inks.
+      colorPalette: [{ id: 'gold', name: 'Gold', value: { hex: '#b08d3c', model: 'spot', spot: { name: 'PANTONE 871 C', cmyk: { c: 20, m: 30, y: 70, k: 15 } } } }],
+    }));
+    const issues = preflightDocument(doc, { transform: fogra39, cmyk: true });
+    expect(kinds(issues)).not.toContain('smallProcessText');
+    expect(kinds(issues)).not.toContain('inkLimit');
+    const inks = issues.find((i) => i.kind === 'spotInks');
+    expect(inks?.severity).toBe('info');
+    if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 286 C']);
+    // An RGB render has no plates to list.
+    expect(kinds(preflightDocument(doc, { transform: fogra39, cmyk: false }))).not.toContain('spotInks');
+  });
+
+  it('warns about one ink defined twice with different values', () => {
+    const doc = buildDocument({ markdown: 'Text.' }, config({
+      bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'Brand', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+      header: {
+        elements: [{ kind: 'box', id: 'b', placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: mm(40), height: mm(20) } }, style: { backgroundColor: { hex: '#2040a0', model: 'spot', spot: { name: 'Brand', cmyk: { c: 100, m: 60, y: 0, k: 0 } } } } } as never],
+      },
+    }));
+    const issue = preflightDocument(doc, { cmyk: true }).find((i) => i.kind === 'spotInkConflict');
+    expect(issue).toBeDefined();
+    if (issue?.kind === 'spotInkConflict') expect(issue.ink).toBe('Brand');
+  });
+
+  it('lists the inks under the names the ink table gives them, and warns about plate names a PDF cannot carry', () => {
+    const box = (id: string, edge: string, color: unknown) => ({ kind: 'box', id, placement: { anchor: { to: 'container', edge }, size: { width: mm(40), height: mm(10) } }, style: { backgroundColor: color } }) as never;
+    const doc = buildDocument({ markdown: 'Text.' }, config({
+      bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'Azul corporativo', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+      header: {
+        elements: [
+          box('a', 'top-left', { hex: '#e4002b', model: 'spot', spot: { name: 'PANTONE 185 C', cmyk: { c: 0, m: 100, y: 80, k: 0 } } }),
+          box('b', 'top-right', { hex: '#e4002c', model: 'spot', spot: { name: 'pantone  185 c', cmyk: { c: 0, m: 100, y: 80, k: 0 } } }),
+          box('c', 'bottom-left', { hex: '#f4f4ee', model: 'spot', spot: { name: 'None', cmyk: { c: 0, m: 0, y: 10, k: 0 } } }),
+        ],
+      },
+      print: { inks: [{ name: 'Azul corporativo', pdfName: 'PANTONE 286 C' }] },
+    }));
+    const issues = preflightDocument(doc, { cmyk: true });
+    const inks = issues.find((i) => i.kind === 'spotInks');
+    if (inks?.kind === 'spotInks') expect([...inks.inks].sort()).toEqual(['None', 'PANTONE 185 C', 'PANTONE 286 C', 'pantone  185 c']);
+    const name = issues.find((i) => i.kind === 'spotInkName');
+    expect(name).toMatchObject({ ink: 'None', problem: 'reserved', severity: 'warning' });
+    const similar = issues.find((i) => i.kind === 'spotInkSimilar');
+    expect(similar).toMatchObject({ inks: ['PANTONE 185 C', 'pantone  185 c'] });
+  });
+
+  it('drops the similar-names warning once an alias merges them, and an ink sent to process is no plate', () => {
+    const doc = buildDocument({ markdown: 'Text.' }, config({
+      bodyText: { color: { hex: '#e4002b', model: 'spot', spot: { name: 'PANTONE 185 C', cmyk: { c: 0, m: 100, y: 80, k: 0 } } } },
+      header: {
+        elements: [
+          { kind: 'box', id: 'b', placement: { anchor: { to: 'container', edge: 'top-left' }, size: { width: mm(40), height: mm(10) } }, style: { backgroundColor: { hex: '#e4002c', model: 'spot', spot: { name: 'Pantone 185C', cmyk: { c: 0, m: 100, y: 80, k: 0 } } } } } as never,
+          { kind: 'box', id: 'v', placement: { anchor: { to: 'container', edge: 'bottom-left' }, size: { width: mm(40), height: mm(10) } }, style: { backgroundColor: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 } } } } } as never,
+        ],
+      },
+      print: { inks: [{ name: 'PANTONE 185 C', aliases: ['Pantone 185C'] }, { name: 'varnish', output: 'process' }] },
+    }));
+    const issues = preflightDocument(doc, { cmyk: true });
+    expect(kinds(issues)).not.toContain('spotInkSimilar');
+    const inks = issues.find((i) => i.kind === 'spotInks');
+    if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 185 C']);
+  });
+
+  it('lists an ink an SVG names with the job\'s inks, and warns when no colour defines it', () => {
+    const svgFig = { id: 'dia', typeId: 'figure', kind: 'svg', createdAt: 0, updatedAt: 0, svg: { fileId: 'dia.svg', width: 100, height: 60 }, placement: { position: 'here' } } as Resource;
+    const doc = buildDocument({ markdown: 'Text.\n\n::resource{id="dia"}', resources: [svgFig] }, config({
+      bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+      print: { inks: [{ name: 'Gold', cmyk: { c: 20, m: 30, y: 70, k: 15 } }] },
+    }));
+    const svgInks = (id: string) => (id === 'dia.svg' ? ['pantone 286 c', 'PANTONE 185 C', 'Gold', 'None'] : undefined);
+    const issues = preflightDocument(doc, { cmyk: true, svgInks });
+    const inks = issues.find((i) => i.kind === 'spotInks');
+    // The palette's ink by its own name; the others as the SVG names them.
+    if (inks?.kind === 'spotInks') expect(inks.inks).toEqual(['PANTONE 286 C', 'PANTONE 185 C', 'Gold', 'None']);
+    const undefinedInks = issues.filter((i) => i.kind === 'spotInkUndefined').map((i) => (i.kind === 'spotInkUndefined' ? i.ink : ''));
+    // Gold has its CMYK in the ink table: defined.
+    expect(undefinedInks).toEqual(['PANTONE 185 C', 'None']);
+    expect(issues.find((i) => i.kind === 'spotInkUndefined')).toMatchObject({ fileId: 'dia.svg', resourceId: 'dia', severity: 'warning' });
+    expect(issues.find((i) => i.kind === 'spotInkName')).toMatchObject({ ink: 'None', problem: 'reserved', written: 'None ink' });
+    // Without the SVG's inks read, nothing about them.
+    expect(kinds(preflightDocument(doc, { cmyk: true }))).not.toContain('spotInkUndefined');
+  });
+
   it('does nothing when disabled', () => {
     const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [picture] }, config());
     expect(preflightDocument(doc, { print: resolvePrintConfig({ preflight: { enabled: false } }) })).toEqual([]);

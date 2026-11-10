@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '46 min',
+  readingTime: '47 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de figuras, tablas, diagramas y vídeos. Postext los llama recursos y numera cada tipo por separado. Decides el aspecto de las tablas: sus filetes, sus fondos, su tipografía y cómo se parten entre páginas. Decides cómo se escribe el pie de una figura o de una tabla. También puedes imprimir los diagramas a una sola tinta y elegir cómo aparece un vídeo en el papel.",
@@ -866,6 +866,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined cuando todo coincide con los valores por defecto
 ```
+
+**Tintas planas dentro de un SVG.** En un PDF de imprenta, un color de un SVG vectorial se imprime en una tinta plana solo en dos casos. Cuando nombra la tinta: un color seguido de `icc-named-color(…, "PANTONE 185 C")`, o un elemento con `data-spot="PANTONE 185 C"` (y `data-spot-tint="40"`, en porcentaje), se imprime en la plancha de esa tinta, con el equivalente de la paleta si la paleta tiene una tinta plana con ese nombre, y si no con el CMYK del propio color. Y cuando su hex es exactamente el de una tinta plana de la paleta: se imprime en la tinta de ese color, al tono de ese color. Cualquier otro color sigue en cuatricromía, aunque parezca un tono de una tinta sobre blanco, así que los grises de un dibujo nunca pasan a una plancha de tinta plana. Cada color se resuelve por separado, de modo que un diagrama puede mezclar varias tintas y colores de cuatricromía. `diagramStyle.singleInk` tiene prioridad: con un `inkColor` de tinta plana, el diagrama recoloreado se imprime en tonos de esa plancha. Una tinta que nombra un SVG y que no define ningún color de la paleta (ni una entrada de la tabla de tintas con `cmyk`) se imprime en una plancha propia, con el CMYK del color del SVG como equivalente; todos los SVG que la nombran comparten esa plancha, y el preflight avisa (`spotInkUndefined`). Muchos programas exportan una muestra como un color RGB sin más y pierden su nombre: añade a la paleta una tinta plana con exactamente ese `hex`, una por cada tono que use el dibujo, o marca los elementos con `data-spot`.
 
 ### Tinta única en canvas y en HTML
 

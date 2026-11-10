@@ -1,8 +1,9 @@
 // Lengths, colours and paints, and the style cascade of presentation
 // attributes and style declarations (#1276: split out of svgVector.ts).
 import { LineCapStyle, LineJoinStyle } from 'pdf-lib';
-import type { VectorPaint } from '../svgVector.js';
+import type { SvgInk, VectorPaint } from '../svgVector.js';
 import { unsupported } from './geometry.js';
+import { inkTintPercent, splitIccPaint } from 'postext';
 
 // ------------------------------------------------------------ styling
 
@@ -69,6 +70,16 @@ const NAMED_COLORS: Record<string, string> = {
 export type Paint = VectorPaint | 'none' | 'currentColor';
 
 function parsePaint(value: string): Paint {
+  // A colour followed by an ICC colour (SVG 1.1 `<paint>`): `#e4002b
+  // icc-named-color(profile, "PANTONE 185 C")` names a spot ink; `#e4002b
+  // icc-color(profile, 0, 1, 0.8, 0)` is a process colour, read as the
+  // sRGB colour before it. Split in one linear pass (`splitIccPaint`).
+  const icc = /icc-/i.test(value) ? splitIccPaint(value) : undefined;
+  if (icc) {
+    const base = parsePaint(icc.base);
+    if (base === 'none' || base === 'currentColor' || !icc.ink) return base;
+    return { ...base, ink: icc.ink };
+  }
   const v = value.trim();
   const lower = v.toLowerCase();
   if (lower === 'none') return 'none';
@@ -224,6 +235,9 @@ export function cascade(parent: Style, attrs: Record<string, string>): Style {
   }
   const fill = get('fill');
   if (fill !== undefined) next.fill = parsePaint(fill);
+  // `data-spot`: the element's own paints (and what its children inherit
+  // of them) are of that ink.
+  const spotName = attrs['data-spot']?.trim();
   const fillOpacity = get('fill-opacity');
   if (fillOpacity !== undefined) next.fillOpacity = Math.max(0, Math.min(1, parseNumberOrPercent(fillOpacity, 1)));
   const fillRule = get('fill-rule');
@@ -232,6 +246,14 @@ export function cascade(parent: Style, attrs: Record<string, string>): Style {
   if (clipRule !== undefined) next.clipEvenOdd = clipRule.trim() === 'evenodd';
   const stroke = get('stroke');
   if (stroke !== undefined) next.stroke = parsePaint(stroke);
+  if (spotName) {
+    const tintAttr = attrs['data-spot-tint'];
+    const tint = tintAttr !== undefined ? inkTintPercent(tintAttr) : undefined;
+    const ink: SvgInk = { name: spotName, ...(tint !== undefined ? { tint } : {}) };
+    const inked = (p: Paint): Paint => (p === 'none' || p === 'currentColor' ? p : { ...p, ink });
+    next.fill = inked(next.fill);
+    next.stroke = inked(next.stroke);
+  }
   const strokeOpacity = get('stroke-opacity');
   if (strokeOpacity !== undefined) next.strokeOpacity = Math.max(0, Math.min(1, parseNumberOrPercent(strokeOpacity, 1)));
   const strokeWidth = get('stroke-width');

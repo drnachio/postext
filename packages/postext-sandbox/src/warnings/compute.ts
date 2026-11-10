@@ -132,6 +132,7 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     cmyk,
     imageColor: inputs.imageColor,
     imageSize: inputs.imageSize,
+    svgInks: inputs.svgInks,
     ...(inputs.transform ? { transform: inputs.transform } : {}),
   });
   const offset = doc.pageIndexOffset ?? 0;

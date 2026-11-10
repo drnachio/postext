@@ -39,13 +39,14 @@ Farben werden mit einer Hex-Darstellung und einem Zielfarbmodell gespeichert:
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // Die Druckfarbe einer Sonderfarbe.
   paletteId?: string;  // Der Eintrag von colorPalette, dem sie folgt.
 }
 ```
 
-Das Feld `model` gibt den beabsichtigten Farbraum an. Für die Darstellung im Web sind `'hex'` oder `'rgb'` üblich. Für Druck-Workflows sagt `'cmyk'`, dass die Farbe in CMYK angegeben wurde, und `cmyk` bewahrt ihre Werte: Eine CMYK-Druckausgabe setzt sie unverändert, mit `hex` als ihrer Bildschirmdarstellung (siehe [In CMYK angelegte Farben](#in-cmyk-angelegte-farben)).
+Das Feld `model` gibt den beabsichtigten Farbraum an. Für die Darstellung im Web sind `'hex'` oder `'rgb'` üblich. Für Druck-Workflows sagt `'cmyk'`, dass die Farbe in CMYK angegeben wurde, und `cmyk` bewahrt ihre Werte: Eine CMYK-Druckausgabe setzt sie unverändert, mit `hex` als ihrer Bildschirmdarstellung (siehe [In CMYK angelegte Farben](#in-cmyk-angelegte-farben)). `'spot'` ist eine Sonderfarbe, mit ihrer Druckfarbe in `spot` (siehe [Sonderfarben](/de/docs/configuration-pdf-output#sonderfarben)).
 
 Weil Postext auf Ausgabe in Publikationsqualität zielt, wird die Standardfarbe des Grundtexts mit `model: 'cmyk'` (`#000000`) ausgeliefert. Die Farben von Überschriften, Fett, Kursiv und Listen sind standardmäßig an die Palettenfarbe **Main Color** (`#295AA3`, `model: 'hex'`) gekoppelt. Seitenhintergrund und Überlagerungen der Oberfläche (Grundlinienraster, Schnittmarken, Debug-Anzeigen) haben standardmäßig `model: 'hex'`. Überschreiben Sie `color.model` in einem beliebigen Feld, wenn Sie eine andere Bedeutung für den Export brauchen.
 
@@ -560,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

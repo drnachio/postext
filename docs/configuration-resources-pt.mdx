@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Os tipos de recurso e a numeração deles, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '44 min',
+  readingTime: '45 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes de figuras, tabelas, diagramas e vídeos. O Postext os chama de recursos e numera cada tipo separadamente. Você define a aparência das tabelas: fios, fundos, tipografia e como elas se dividem entre páginas. Define como se escreve a legenda de uma figura ou de uma tabela. Também pode imprimir os diagramas em uma só tinta e escolher como um vídeo aparece no papel.",
@@ -866,6 +866,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined quando tudo coincide com os padrões
 ```
+
+**Cores especiais dentro de um SVG.** Num PDF de impressão, uma cor de um SVG vetorial é impressa numa cor especial só em dois casos. Quando nomeia a tinta: uma cor seguida de `icc-named-color(…, "PANTONE 185 C")`, ou um elemento com `data-spot="PANTONE 185 C"` (e `data-spot-tint="40"`, em percentagem), é impressa na chapa dessa tinta, com o equivalente da paleta se a paleta tiver uma cor especial com esse nome, e senão com o CMYK da própria cor. E quando o seu hex é exatamente o de uma cor especial da paleta: é impressa na tinta dessa cor, na retícula dessa cor. Qualquer outra cor fica em quadricromia, mesmo que pareça uma retícula de uma tinta sobre branco, por isso os cinzentos de um desenho nunca passam para uma chapa de cor especial. Cada cor é resolvida à parte, de modo que um diagrama pode misturar várias tintas e cores de quadricromia. `diagramStyle.singleInk` tem prioridade: com um `inkColor` de cor especial, o diagrama recolorido é impresso em retículas dessa chapa. Uma tinta que um SVG nomeia e que nenhuma cor da paleta define (nem uma entrada da tabela de tintas com `cmyk`) é impressa numa chapa própria, com o CMYK da cor do SVG como equivalente; todos os SVG que a nomeiam partilham essa chapa, e o preflight avisa (`spotInkUndefined`). Muitos programas exportam uma amostra como uma simples cor RGB e perdem o seu nome: acrescente à paleta uma cor especial com exatamente esse `hex`, uma por cada retícula que o desenho usa, ou marque os elementos com `data-spot`.
 
 ### Tinta única no canvas e no HTML
 

@@ -172,10 +172,11 @@ Die Gruppen in der Reihenfolge des Durchblätterns:
     - ein Gestaltungsfeld **Gestaltung der Auftaktseite**, ausgerichtet am Endformat der Seite. Seine Platzhalterauswahl ergänzt die Überschriftengruppe: den aktuellen Titel und seine Nummer in dezimaler, römischer oder alphabetischer Form.
     - ein **Textstil** für die Blöcke innerhalb des Teils. Er erbt vom Fließtext und von den Listenfarben und umfasst abweichende Listeneinstellungen (Nummerierungsformat und Versätze, Ränder, hängender Einzug und die Felder der Aufgabenlisten).
 - **Export**
-  - *Druckvorbereitung* (`print` und `page.cutLines`), in vier Gruppen:
+  - *Druckvorbereitung* (`print` und `page.cutLines`), in fünf Gruppen:
     - **Schnittmarken und Anschnitt**: die Schnittlinien, der Anschnitt, Länge, Versatz und Stärke der Marken und ihre Bildschirmfarbe.
     - **PDF/X und Farbe**: **PDF-Standard** (*Keiner*, *PDF/X-1a:2003*, *PDF/X-4*); **Ausgabeprofil**, aus den fünfzehn freien Profilen (standardmäßig FOGRA39; FOGRA51 und FOGRA52 für die Bedingungen nach PSO v3; GRACoL, SWOP, Zeitungsdruck); **ICC-Profil hochladen** für das Profil, das Ihnen Ihre Druckerei gibt, mit seiner **Druckbedingung** (dem Registernamen, den der Output Intent nach PDF/X angibt) und einer Schaltfläche, die es entfernt; **Rendering Intent**, **Tiefenkompensierung**, **Bilder in CMYK umwandeln** (ausgeblendet bei PDF/X-1a, das immer umwandelt) und **Max. Farbauftrag**.
     - **Schwarz**: **Grau und Schwarz nur in K**, **100 % Schwarz überdrucken**, **Tiefschwarz für große Flächen** mit seiner C/M/Y/K-Mischung und der Größe, ab der eine Fläche tiefschwarz wird.
+    - **Farbtabelle** (`print.inks`): eine Karte pro Druckfarbe mit **Name der Druckfarbe**, **Aliasnamen**, **Plattenname im PDF**, **Druckt als**, **Ersatz-CMYK** und **Überdrucken**; **Druckfarben, die die Farben verwenden** bietet die Druckfarben der Buchfarben an, die in der Tabelle fehlen. Siehe [Sonderfarben › Die Druckfarbentabelle](/de/docs/configuration-pdf-output#die-druckfarbentabelle).
     - **Preflight**: **Preflight in Prüfungen**, die minimale und die kritische Bildauflösung, die minimale Linienstärke, die Größe, unter der Text in mehreren Druckfarben gemeldet wird, den Sicherheitsbereich, der Abstand, unter dem ein Kasten in den Anschnitt laufen sollte, und **Schriften platzierter PDFs prüfen**.
 
     Siehe [Konfiguration › Druckvorstufe](/de/docs/configuration-fonts-colors-viewers#druckvorstufe-konfiguration).

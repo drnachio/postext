@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -355,6 +355,16 @@ export async function renderToPdf(
 
   // Characters drawn with no glyph, once per face.
   for (const m of fontCache.missingGlyphs()) warn(missingGlyphWarning(m));
+  // This render's spot inks: tints that found no code printed in
+  // process, and plates written under another name.
+  if (printMode) {
+    for (const [ink, n] of printMode.inkRegistry.exhausted()) {
+      warn({ kind: 'spotTintsExhausted', message: `postext-pdf: too many distinct spot tints in this render; ${n} tint(s) of "${ink}" printed in process, off the ink's plate` });
+    }
+    for (const [ink, written] of printMode.inkRegistry.renamed()) {
+      warn({ kind: 'spotInkRenamed', message: `postext-pdf: a plate cannot be named "${ink}"; it is written as "${written}"` });
+    }
+  }
 
   // A face asked for but never drawn with is not written.
   fontCache.dropUnusedFonts();
@@ -411,8 +421,12 @@ async function printColorMode(
       ? { registryName: custom.registryName ?? 'Custom', condition: custom.name, name: profile.description || custom.name }
       : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
     const authored = new Map<string, CmykPercent>();
-    for (const doc of docs) authoredCmykColors(doc.config, authored);
-    return createPrintColorMode(profile, config, condition, authored);
+    const spots = new Map<string, Required<SpotColor>>();
+    for (const doc of docs) {
+      authoredCmykColors(doc.config, authored);
+      authoredSpotColors(doc.config, spots);
+    }
+    return createPrintColorMode(profile, config, condition, authored, spots);
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

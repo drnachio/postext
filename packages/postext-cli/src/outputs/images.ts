@@ -8,6 +8,7 @@ import { join } from 'node:path';
 import {
   applySingleInkToSvg,
   clearResourceImages,
+  screenSvgColors,
   formatWarning,
   createPrintPreview,
   outputTransform,
@@ -150,7 +151,7 @@ async function registerImages(book: Book, p: BookPage, reporter: Reporter): Prom
     const bytes = pictures.files.get(fileId)!;
     try {
       if (r.kind === 'svg') {
-        let svg = new TextDecoder().decode(bytes);
+        let svg = screenSvgColors(new TextDecoder().decode(bytes));
         if (pictures.inkHex) svg = applySingleInkToSvg(svg, pictures.inkHex);
         // Loaded as an SVG: Skia rasterises it at each size it is drawn at (#678).
         registerResourceImage(fileId, await loadSvgImage(svg) as unknown as CanvasImageSource, { vector: true, singleInk: false });

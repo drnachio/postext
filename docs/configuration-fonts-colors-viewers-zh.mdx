@@ -39,13 +39,14 @@ interface Dimension {
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000'、'transparent' 等
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // 以CMYK定义的颜色的准确印刷色数值。
+  spot?: SpotColor;    // 专色的油墨。
   paletteId?: string;  // 它所跟随的colorPalette条目。
 }
 ```
 
-`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。
+`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。`'spot'`是专色，其油墨在`spot`中（见[专色](/zh/docs/configuration-pdf-output#专色)）。
 
 Postext面向出版级输出，所以正文的默认颜色带有`model: 'cmyk'`（`#000000`）。标题、粗体、斜体和列表的颜色默认链接到调色板中的**主色**（`#295AA3`，`model: 'hex'`）。页面背景和界面叠加层（基线网格、裁切线、调试标记）默认为`model: 'hex'`。如果需要不同的导出语义，可以在任意字段上覆盖`color.model`。
 
@@ -560,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // 总墨量，百分比。
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // 油墨表：重命名、别名、四色印刷。
 }
 
 interface CustomOutputProfile {

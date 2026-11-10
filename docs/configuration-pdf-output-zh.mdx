@@ -6,7 +6,7 @@ export const metadata = {
   description: '用代码调用postext-pdf：安装、API、浏览器和Node中的字体提供函数、中日韩字体、资源字节、竖排文字、工作线程和可付印的文件',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '15分钟',
+  readingTime: '22分钟',
   order: 22,
   parent: 'configuration',
   plainSummary: "本页写给写代码、想得到PDF文件的人。它说明怎样安装PDF包，并用几行代码把排好的书变成文件。这个包需要字体文件，所以本页说明在浏览器或服务器上怎样把字体交给它。本页还讲中文、日文和韩文字体，图片，从上往下排的文字，以及链接。最后给出一个完整的例子，以及可以直接交给印刷厂的文件。",
@@ -37,7 +37,7 @@ npm install postext postext-pdf
 - **`PdfFontProvider`**：回调签名`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`，`renderToPdf`需要嵌入新的family/weight/style组合时，用它请求字体字节。`request.codePoints`包含页面中用该字体排出的字符；返回值是一个文件，或者合起来构成该字体的多个文件（见[中文、日文和韩文字体](#中文日文和韩文字体)）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**：一种字体的一个文件，并说明页面怎样声明它：它的`@font-face`规则的`unicode-range`，以及这条规则在声明顺序里的位置。`PdfFontFile`是带这两个可选属性的`Uint8Array`（见[中文、日文和韩文字体](#中文日文和韩文字体)）。postext-pdf 1.30起。
 - **`RenderToPdfOptions`**：`{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`设定表单域怎样书写数字（货币符号、它放在哪一侧、分隔符），以及显示值所用的字体（`font`；见[表单域](#表单域)）。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
-- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
+- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；`'spotTintsExhausted'`（`PdfPrintWarning`），一次渲染用完了区分专色浓度的代码（约2500万个），其余浓度改以四色印刷；`'spotInkRenamed'`（`PdfPrintWarning`），某种油墨的印版以另一个名称写出（见[专色](#专色)）；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)使用。
 - **`decompressWoff2(bytes): Uint8Array`**：辅助函数，把WOFF2文件转成TTF字节，`pdf-lib`可以直接嵌入这种格式。
 - **`createPdfWorker(options?)`**，来自`postext-pdf/worker`：在Web Worker上进行同样的渲染；见[在工作线程上渲染PDF](#在工作线程上渲染pdf)。
@@ -418,6 +418,58 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切线不反转）。适合对浅底深字的排版做印前检查。
+
+### 专色
+
+专色（Pantone、企业专用油墨、光油等）在单独的印版上印刷。`model: 'spot'` 的颜色在 `ColorValue.spot` 中携带其油墨：`name` 是印刷厂所用的印版名称，`cmyk` 是油墨在100 %时的外观（没有该油墨时PDF使用的替代值），`tint` 是百分比网点浓度（默认100），`overprint` 让油墨像光油一样叠印在下方内容上而不是镂空。`hex` 是其屏幕显示色。
+
+CMYK或PDF/X格式的PDF会把每种油墨写成以其命名的 `Separation` 色彩空间，并按各自的浓度绘制该油墨的每个颜色：`name` 相同的颜色共用一块印版。由此可覆盖常见的作业：双色（黑色加一种专色）、四色印刷中部分元素使用专色，以及在选定区域叠印光油。当 `diagramStyle.singleInk` 使用专色时，SVG图表以该印版的浓淡印刷。RGB格式的PDF和屏幕则以 `hex` 绘制。
+
+**SVG中的专色。** 见[单色模式的工作原理](/zh/docs/configuration-resources#单色模式的工作原理)。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+印前检查把专色计为一种油墨，不计入总墨量上限，并列出作业中使用的专色（`spotInks`），包括SVG图片按名称指定的油墨。在以下情况发出警告：同一油墨以不同数值定义两次（`spotInkConflict`；PDF使用第一个定义）；SVG指定的油墨既没有调色板颜色定义，也没有带 `cmyk` 的油墨表条目定义（`spotInkUndefined`；它印在单独的印版上，以SVG颜色的CMYK为替代值，每个名称一块印版）；PDF必须改写某个印版名称（`spotInkName`，见下文）；两个印版名称仅在大小写或空格上不同（`spotInkSimilar`：`PANTONE 185 C` 和 `Pantone  185 C` 会成为两块印版）。`preflightDocument` 通过 `svgInks(fileId)` 得知SVG指定了哪些油墨，这个函数返回 `svgSpotInks(markup)` 在文件中找到的名称；Sandbox的**检查**面板和 `postext check` 都会传入它。
+
+**印版名称。** 名称按输入原样写出：重音符号、符号和 `#` 以UTF-8写入PDF（`Rojo Médica` 写作 `/Rojo#20M#C3#A9dica`），Acrobat、RIP和印刷厂的印前检查都按此读取。印版无法使用的名称会改用另一个名称写出：`All`、`None`、`Cyan`、`Magenta`、`Yellow` 和 `Black`（不论大小写）后面加上单词 ink（`All ink`）；控制字符被删除；超过127个UTF-8字节的名称在字符边界处截断，并以一个短哈希结尾，因此开头相同的两个长名称仍是两块印版。印前检查的 `spotInkName` 说明原因（`problem`：`reserved`、`process`、`control` 或 `tooLong`）以及PDF写出的名称（`written`），渲染时每次改名都会通过 `onWarning` 报告（`spotInkRenamed`）。要自己选定名称，请在油墨表中为该油墨设置 `pdfName`。
+
+**一色一墨。** 印刷渲染以屏幕hex识别颜色，因此两个指定了印刷数值的颜色（两种油墨，或一种油墨和一个以CMYK定义的颜色）不能共用同一个hex。若共用，后一个会移到最近的空闲hex，只差一步，屏幕上看不出，各自印在自己的印版上。普通屏幕色（`model: 'hex'`）若与某专色hex相同，会按该专色印刷；将其链接到调色板条目即可明确这一点。被移动的颜色在屏幕上也会改变：在一个通道上差一步（1/255），先动蓝色通道，所有输出（Canvas、HTML、EPUB和RGB格式的PDF）都是如此。这远低于肉眼能分辨的差别，是印刷渲染按绘制出的hex读取油墨所付出的代价。保存的配置不会改变。
+
+#### 油墨表
+
+`print.inks` 规定作业中的油墨如何送到印刷厂，无论颜色、SVG和导入的文件如何称呼它们。表中未列出的油墨按其颜色的定义印刷。
+
+```ts
+interface PrintInk {
+  name: string;                    // spot.name或SVG所用的油墨名称。
+  aliases?: string[];              // 同一油墨的其他名称：印在此印版上。
+  pdfName?: string;                // PDF中的印版名称。默认为name。
+  output?: 'spot' | 'process';     // 'process'按替代值以CMYK印刷该油墨。
+  cmyk?: CmykPercent;              // 100 %时的替代值，优先于颜色自身的值。
+  overprint?: boolean;             // 优先于颜色自身的设置。
+}
+```
+
+名称和别名在比较时不区分大小写，也忽略连续的空格。无论多少颜色使用该油墨，重命名只需一行；别名把设计师色板、SVG（`data-spot`、`icc-named-color`）或旧调色板给同一油墨起的名称合并到一块印版上；当印刷机没有该油墨的色组时，`output: 'process'` 以CMYK印刷该油墨，所有网点浓度都包括在内。
+
+在Sandbox中，该表位于**设计 › 导出 › 印前准备 › 油墨表**：每种油墨一张卡片，包括**油墨名称**、**别名**、**PDF中的印版名称**、**印刷方式**、**替代CMYK**和**叠印**。**颜色所用的油墨**列出书中颜色用到、而表中缺少的油墨，每种都附有一个添加按钮。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### 参考实现
 

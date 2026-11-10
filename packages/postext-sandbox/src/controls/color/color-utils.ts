@@ -1,6 +1,6 @@
 import Color from 'colorjs.io';
 
-export type ColorMode = 'hex' | 'rgb' | 'cmyk' | 'hsl';
+export type ColorMode = 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot';
 export type RGB = { r: number; g: number; b: number };
 export type HSL = { h: number; s: number; l: number };
 export type HSV = { h: number; s: number; v: number };
@@ -192,6 +192,7 @@ export function formatColor(hex: string, mode: ColorMode): string {
 
   switch (mode) {
     case 'hex':
+    case 'spot':
       return hex === 'transparent' ? 'transparent' : `${hex6}${alphaStr}`;
     case 'rgb': {
       const { r, g, b } = hexToRgb(hex6);

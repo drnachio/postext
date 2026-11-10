@@ -172,10 +172,11 @@ Els grups, en ordre de navegació:
     - una zona de **disseny d'obertura** disposada sobre la caixa de tall de la pàgina. El seu selector de marcadors afegeix el joc de títols: el títol actual i el seu número en forma decimal, romana o alfabètica.
     - un **estil del cos** per als blocs dins de la part. Hereta el text de cos i els colors de les llistes, i inclou valors propis per a les llistes (format de numeració i desplaçaments, marges, sagnat francès i els camps de les llistes de tasques).
 - **Exportació**
-  - *Preparació per a impremta* (`print`, i `page.cutLines`), en quatre grups:
+  - *Preparació per a impremta* (`print`, i `page.cutLines`), en cinc grups:
     - **Marques de tall i sang**: les marques de tall, la sang, la longitud, el desplaçament i el gruix de les marques, i el color que tenen en pantalla.
     - **PDF/X i color**: **Norma PDF** (*Cap (PDF normal)*, *PDF/X-1a:2003*, *PDF/X-4*); **Perfil de sortida**, entre els quinze perfils lliures (FOGRA39 per defecte, FOGRA51 i FOGRA52 per a les condicions PSO v3, GRACoL, SWOP, paper de diari); **Puja un perfil ICC** per al que et doni la impremta, amb la **Condició d’impressió** (el nom del registre que identifica la condició de sortida del PDF/X) i un botó que el treu; **Propòsit de conversió**, **Compensació del punt negre**, **Converteix les imatges a CMYK** (amagat amb PDF/X-1a, que sempre converteix) i **Límit de tinta (%)**.
     - **Negre**: **Grisos i negre només en K**, **Sobreimprimeix el negre 100 %**, **Negre enriquit en masses grans** amb la recepta C/M/Y/K i la mida a partir de la qual una massa passa a negre enriquit.
+    - **Taula de tintes** (`print.inks`): una targeta per tinta amb **Nom de la tinta**, **Àlies**, **Nom de la planxa al PDF**, **S’imprimeix com a**, **CMYK alternatiu** i **Sobreimpressió**; **Tintes que fan servir els colors** ofereix les tintes dels colors del llibre que falten a la taula. Vegeu [Tintes planes › La taula de tintes](/ca/docs/configuration-pdf-output#la-taula-de-tintes).
     - **Preflight**: **Preflight a Revisió**, la resolució d'imatge mínima i la crítica, el gruix mínim de filet, la mida per sota de la qual es dona un avís per al text en diverses tintes, la zona de seguretat, la distància per sota de la qual una caixa hauria d'anar a sang, i **Revisa les fonts dels PDF col·locats**.
 
     Consulta [Configuració › Producció per a impremta](/ca/docs/configuration-fonts-colors-viewers#producció-per-a-impremta-configuració).

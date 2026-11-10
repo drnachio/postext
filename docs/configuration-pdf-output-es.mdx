@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se usa postext-pdf desde el código: la instalación y la API; los proveedores de fuentes en el navegador y en Node; las fuentes CJK, los bytes de los recursos y el texto vertical, y los workers y los archivos listos para imprenta',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '22 min',
+  readingTime: '27 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Esta página es para quienes escriben código y quieren un archivo PDF. Enseña a instalar el paquete de PDF y a convertir un libro compuesto en un archivo con unas pocas líneas. El paquete necesita los archivos de las fuentes, así que la página explica cómo dárselos, en un navegador o en un servidor. Trata las fuentes para chino, japonés y coreano, las imágenes, el texto que va de arriba abajo y los enlaces. Termina con un ejemplo completo y con archivos listos para la imprenta.",
@@ -37,7 +37,7 @@ El paquete expone un único punto de entrada y un puñado de tipos:
 - **`PdfFontProvider`**: la firma del callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que usa `renderToPdf` para pedir los bytes de una fuente cuando necesita incrustar una combinación nueva de familia, peso y estilo. `request.codePoints` contiene los caracteres que las páginas componen en esa variante; la respuesta es un archivo, o varios que juntos forman la variante (consulta [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas)).
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**: un archivo de una variante que registra cómo lo declaró la página: el `unicode-range` de su regla `@font-face` y su lugar en el orden de declaración. Un `PdfFontFile` es un `Uint8Array` con esas dos propiedades opcionales (véase [Fuentes chinas, japonesas y coreanas](#fuentes-chinas-japonesas-y-coreanas)). Desde postext-pdf 1.30.
 - **`RenderToPdfOptions`**: `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` fija cómo escriben los números los campos de formulario (moneda, su lado, separadores) y la fuente en que muestran sus valores (`font`; véase [Campos de formulario](#campos-de-formulario)). `outlines`, `accessible` y `colorSpace` toman el valor del `pdfGeneration` del documento cuando no se pasan (véase [Generación de PDF (configuración)](/es/docs/configuration-fonts-colors-viewers#generación-de-pdf-configuración)). `resourceBytes` se describe en [Bytes de recursos y másteres de impresión](#bytes-de-recursos-y-másteres-de-impresión); `onWarning`, en [Qué variantes se piden al proveedor](#qué-variantes-se-piden-al-proveedor) y en [Avisos del documento](/es/docs/configuration-programmatic-usage#avisos-del-documento). Con `characterGrid: true`, el PDF imprime la retícula que `cjk.grid.show` dibuja en pantalla y que, si no, deja fuera (véase [Retícula de caracteres](/es/docs/configuration-east-asian#retícula-de-caracteres)). `harfbuzzWasm` indica de dónde cargar el `harfbuzz.wasm` de HarfBuzz (una URL, relativa a la página, o los bytes del archivo) para un documento con texto de derecha a izquierda o de letras enlazadas; si no se pasa, postext-pdf prueba la copia que hay junto a su propio módulo y, después, la misma versión de harfbuzzjs en jsDelivr y en esm.sh. `print` recibe los ajustes de salida a imprenta (norma PDF/X, perfil de salida, negro, preflight) y, si no se pasa, toma el `print` del documento; con una norma PDF/X, o con `colorSpace: 'cmyk'`, cada color se separa con el perfil ICC de salida, cuyos bytes da `outputProfile` (si no, se descarga de `profileBaseUrl`, por defecto la copia de la carpeta `icc/` de postext en la CDN de npm). `date` (un `Date`, un tiempo en milisegundos o una fecha escrita, como el `mtime` de `createBundle`) es la fecha de creación y de modificación del archivo y, en un PDF/X, las fechas de su paquete XMP y el origen de su identificador de documento: el mismo documento, generado dos veces con un mismo `date`, da los mismos bytes. Si no se pasa, el archivo lleva la hora de la llamada. Una fecha no válida lanza un error.
-- **`PdfWarning`**: un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para los que ningún archivo de una variante tiene glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una fuente variable pedida con un peso distinto del de su instancia por defecto; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una fuente CFF de más de 2 MB incrustada entera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), texto de derecha a izquierda o de letras enlazadas dibujado sin HarfBuzz, que no se pudo cargar (`reason` dice dónde se buscó), así que las marcas del árabe quedan mal colocadas; `'outputProfileUnavailable'` (`PdfPrintWarning`), una salida CMYK cuyo perfil de salida no se pudo cargar y que se convirtió con la fórmula simple; `'pageNegativeIgnored'` (`PdfPrintWarning`), el negativo de página que se omite en un PDF/X-1a; o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, los avisos de fuentes van a `console.warn`).
+- **`PdfWarning`**: un problema no fatal que se notifica por `onWarning`; se distingue por `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variante compuesta con otro corte de su familia; `'missingGlyph'` (`PdfMissingGlyphWarning`), caracteres para los que ningún archivo de una variante tiene glifo; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una fuente variable pedida con un peso distinto del de su instancia por defecto; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una fuente CFF de más de 2 MB incrustada entera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), texto de derecha a izquierda o de letras enlazadas dibujado sin HarfBuzz, que no se pudo cargar (`reason` dice dónde se buscó), así que las marcas del árabe quedan mal colocadas; `'outputProfileUnavailable'` (`PdfPrintWarning`), una salida CMYK cuyo perfil de salida no se pudo cargar y que se convirtió con la fórmula simple; `'pageNegativeIgnored'` (`PdfPrintWarning`), el negativo de página que se omite en un PDF/X-1a; `'spotTintsExhausted'` (`PdfPrintWarning`), un render que se quedó sin códigos para tonos distintos de tinta plana (unos 25 millones) e imprimió el resto en cuatricromía; `'spotInkRenamed'` (`PdfPrintWarning`), una tinta cuya plancha se escribe con otro nombre (véase [Tintas planas](#tintas-planas)); o `'missingImage'`, una imagen sin bytes dibujada como marcador de posición (esta solo se notifica a un `onWarning` propio; sin él, los avisos de fuentes van a `console.warn`).
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**: lee la primera página de un máster de impresión en PDF e indica las fuentes que usa sin incrustarlas (`nonEmbeddedFonts`), si pinta en RGB (`rgb`) y si usa transparencias (`transparency`), para la [verificación previa](/es/docs/configuration-fonts-colors-viewers#preflight).
 - **`decompressWoff2(bytes): Uint8Array`**: función auxiliar que convierte un archivo WOFF2 en bytes TTF, que es el formato que `pdf-lib` puede incrustar directamente.
 - **`createPdfWorker(options?)`**, de `postext-pdf/worker`: la misma generación en un Web Worker; consulta [Renderizar el PDF en un worker](#renderizar-el-pdf-en-un-worker).
@@ -418,6 +418,58 @@ Para la producción de impresos, ajusta estas opciones de configuración antes d
 - **`page.dpi: 300`**: los px por pulgada de la maquetación; un mapa de bits sin resolución propia se imprime a esta resolución a su tamaño natural. La [verificación previa (preflight)](/es/docs/configuration-fonts-colors-viewers#preflight) avisa de las imágenes que quedan por debajo de 300 ppp a su tamaño impreso.
 - **`ColorValue.cmyk`**: un color definido en CMYK se imprime con sus valores exactos.
 - **`{ pageNegative: true }`** en `RenderToPdfOptions`: invierte el área de corte con un modo de fusión Diferencia (las marcas de corte no se invierten). Es útil en la verificación previa de tipografía oscura sobre fondo claro.
+
+### Tintas planas
+
+Una tinta plana (un Pantone, una tinta corporativa, un barniz) se imprime en su propia plancha. Un color con `model: 'spot'` lleva su tinta en `ColorValue.spot`: `name` es el nombre de la plancha tal como lo conoce la imprenta, `cmyk` es el aspecto de la tinta al 100 % (el equivalente que el PDF da a quien no tenga la tinta), `tint` es el tono en porcentaje (100 por defecto) y `overprint` hace que la tinta sobreimprima lo que tiene debajo en lugar de vaciarlo, como un barniz. `hex` es su representación en pantalla.
+
+Un PDF CMYK o PDF/X escribe cada tinta como un espacio de color `Separation` con su nombre, y cada color de esa tinta se pinta a su tono: los colores con el mismo `name` comparten plancha. Así caben las tres formas habituales de trabajar: dos tintas (negro y una plana), cuatricromía con algunos elementos en plana, y un barniz sobreimpreso en zonas concretas. Si `diagramStyle.singleInk` usa una tinta plana, los diagramas SVG se imprimen en tonos de esa plancha. En un PDF RGB y en pantalla, el color se pinta con su `hex`.
+
+**Tintas planas dentro de un SVG.** Véase [Cómo funciona la tinta única](/es/docs/configuration-resources#cómo-funciona-la-tinta-única).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+El preflight cuenta una tinta plana como una sola tinta, la deja fuera del límite de cobertura y enumera las tintas planas del trabajo (`spotInks`), también las que nombran las imágenes SVG. Avisa si una tinta se define dos veces con valores distintos (`spotInkConflict`; el PDF usa la primera definición), si un SVG nombra una tinta que no define ningún color de la paleta ni ninguna entrada de la tabla de tintas con `cmyk` (`spotInkUndefined`; se imprime en una plancha propia, con el CMYK del color del SVG como equivalente, una plancha por nombre), si el PDF tiene que escribir el nombre de una plancha de otra forma (`spotInkName`, véase más abajo) y si dos nombres de plancha solo difieren en mayúsculas o espacios (`spotInkSimilar`: `PANTONE 185 C` y `Pantone  185 C` serían dos planchas). `preflightDocument` sabe qué tintas nombra un SVG por `svgInks(fileId)`, una función que devuelve los nombres que `svgSpotInks(markup)` encuentra en el archivo; el panel **Revisión** del Sandbox y `postext check` se la pasan.
+
+**Nombres de plancha.** El nombre se escribe tal como se teclea: las tildes, los símbolos y `#` llegan al PDF en UTF-8 (`Rojo Médica` es `/Rojo#20M#C3#A9dica`), que es como lo leen Acrobat, un RIP y el preflight de la imprenta. Un nombre que una plancha no admite se escribe con otro: `All`, `None`, `Cyan`, `Magenta`, `Yellow` y `Black`, en mayúsculas o minúsculas, llevan detrás la palabra ink (`All ink`); los caracteres de control se quitan, y un nombre de más de 127 bytes en UTF-8 se corta entre dos caracteres y termina en un hash corto, de modo que dos nombres largos que empiezan igual siguen siendo dos planchas. El `spotInkName` del preflight dice el motivo (`problem`: `reserved`, `process`, `control` o `tooLong`) y el nombre que escribe el PDF (`written`), y el render avisa de cada cambio por `onWarning` (`spotInkRenamed`). Para elegir tú el nombre, da a la tinta un `pdfName` en la tabla de tintas.
+
+**Una tinta por color.** Un render de impresión reconoce un color por su hex de pantalla, así que dos colores que fijan sus valores de impresión —dos tintas, o una tinta y un color definido en CMYK— no pueden compartirlo. Si lo comparten, el segundo pasa al hex libre más cercano, a un paso e invisible en pantalla, y cada uno sale en su plancha. Un color de pantalla (`model: 'hex'`) con el hex de una tinta plana se imprime como esa tinta; enlázalo a la entrada de la paleta para dejarlo explícito. El color que se mueve también cambia en pantalla, un paso (1/255) en un solo canal, el azul primero, en todas las salidas (canvas, HTML, EPUB y PDF RGB). Queda muy por debajo de lo que el ojo distingue, y es el precio de un render de impresión que lee las tintas del hex pintado. La configuración guardada no cambia.
+
+#### La tabla de tintas
+
+`print.inks` dice cómo llegan a la imprenta las tintas del trabajo, las llamen como las llamen los colores, los SVG y los archivos importados. Una tinta que no aparece en la tabla se imprime como la definen sus colores.
+
+```ts
+interface PrintInk {
+  name: string;                    // La tinta tal como la nombra spot.name o un SVG.
+  aliases?: string[];              // Otros nombres de la misma tinta: salen en esta plancha.
+  pdfName?: string;                // El nombre de la plancha en el PDF. Por defecto, name.
+  output?: 'spot' | 'process';     // 'process' imprime la tinta en CMYK, con su equivalente.
+  cmyk?: CmykPercent;              // El equivalente al 100 %, por encima del de los colores.
+  overprint?: boolean;             // Por encima del de los colores.
+}
+```
+
+Los nombres y los alias se comparan sin distinguir mayúsculas ni espacios repetidos. Renombrar es una línea, la usen cuantos colores la usen; un alias junta en una plancha los nombres que una muestra del diseñador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior daban a la misma tinta; y `output: 'process'` imprime una tinta en CMYK cuando la máquina no tiene cuerpo para ella, con todos sus tonos.
+
+En el Sandbox, la tabla está en **Diseño › Exportación › Preparación para imprenta › Tabla de tintas**: una tarjeta por tinta con su **Nombre de la tinta**, **Alias**, **Nombre de la plancha en el PDF**, **Se imprime como**, **CMYK alternativo** y **Sobreimpresión**. **Tintas que usan los colores** enumera las tintas de los colores del libro que faltan en la tabla, cada una con un botón que la añade.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### Implementación de referencia
 
