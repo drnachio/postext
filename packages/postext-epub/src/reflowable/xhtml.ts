@@ -20,6 +20,8 @@ import type {
   WrapFloat,
 } from './model.js';
 import { bridgeLinks, formatKey, idOf, linkKey, wrapFormat, xmlAttr, xmlText } from './inline.js';
+import { relativeHref } from './href.js';
+import { calloutHeadXhtml } from './calloutHead.js';
 import { exerciseDataScript, staticKeyHtml } from '../shared/exerciseScript.js';
 
 /** Style id of a code listing's box (`postext` `CODE_BOX_STYLE_ID`). */
@@ -34,8 +36,9 @@ export interface SerializeContext {
   book: BookModel;
   /** The book's title (`<title>` of a document without heading). */
   bookTitle: string;
-  /** Href of a picture relative to the package document, or undefined. */
-  imageHref(fileId: string): string | undefined;
+  /** Href of a picture relative to the package document (`tint`: its copy
+   *  painted in that colour), or undefined. */
+  imageHref(fileId: string, tint?: string): string | undefined;
   /** The href of a self-hosted video's file (#454), when the book carries it. */
   videoHref?(fileId: string): string | undefined;
   /** Href of the stylesheet relative to the package document. */
@@ -45,15 +48,6 @@ export interface SerializeContext {
   /** What a reader's answers to the exercises are kept under (#1231):
    *  the book's. Default: each document's path. */
   exerciseKey?: string;
-}
-
-/** `to` (relative to the package document) seen from `from`'s folder. */
-export function relativeHref(from: string, to: string): string {
-  const a = from.split('/').slice(0, -1);
-  const b = to.split('/');
-  let i = 0;
-  while (i < a.length && i < b.length - 1 && a[i] === b[i]) i++;
-  return [...a.slice(i).map(() => '..'), ...b.slice(i)].join('/');
 }
 
 /** Cell alignments of a right-to-left book as logical values. */
@@ -389,7 +383,7 @@ class Writer {
         // An exercise (#1231): a group named by its number, with its key
         // for a reader with no script; a drawn box, its picture.
         if (node.exercise) return this.exercise(node, node.exercise);
-        const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
+        const title = calloutHeadXhtml(node, (id, tint) => this.ctx.imageHref(id, tint), this.file.href);
         // A frame of a composed page (#862): a block of the page's section
         // (the page's own text, not an aside), with its style's box.
         if (node.frame !== undefined) {
