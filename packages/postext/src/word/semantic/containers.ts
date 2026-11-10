@@ -177,7 +177,9 @@ function spacer(height: number, keepNext: boolean): string {
 function boxHeight(cell: string, lineTw: number): number {
   const paras = (cell.match(/<w:p[ >/]/g) ?? []).length;
   const rows = (cell.match(/<w:tr[ >]/g) ?? []).length;
-  const chars = cell.replace(/<[^>]*>/g, '').length;
+  // Letters counted inside the text runs, so no markup is stripped.
+  let chars = 0;
+  for (const m of cell.matchAll(/<w:t(?: [^>]*)?>([^<]*)<\/w:t>/g)) chars += m[1]!.length;
   let drawn = 0;
   for (const m of cell.matchAll(/<wp:extent cx="\d+" cy="(\d+)"/g)) drawn += Number(m[1]) / 635;
   return (paras + rows + chars / 70) * lineTw + drawn;
