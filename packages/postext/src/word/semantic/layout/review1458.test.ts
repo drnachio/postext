@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest';
 import { applyDocxEdits } from '../../roundtrip/index.js';
 import { exportDocx, exportProblems, levelSections, sectionsOf } from '../fixtures/harness.js';
+import { endsInTable } from './pageSpan.js';
 
 const gold = { hex: '#8f6408', model: 'hex', paletteId: 'band' };
 const para = (doc: string, s: string): string => new RegExp(`<w:p>(?:(?!<w:p>)[^])*?>${s}<(?:(?!</w:p>)[^])*</w:p>`).exec(doc)?.[0] ?? '';
@@ -65,6 +66,22 @@ describe('semantic docx: notes and sections', () => {
     // The second chapter ends the document either way; the first is
     // levelled only when it ends with text.
     expect(levelSections(plainEnd.doc) - levelSections(boxed.doc)).toBe(1);
+  });
+
+  it('sees a table at the end of a piece through the room under it and the controls around it', () => {
+    // A composed page's last frame: its table, the room it keeps under
+    // it, then the end of the page's own content control. LibreOffice
+    // cannot level columns that end in a row that does not split, and
+    // sent the levelling section after such a page to a blank one.
+    const close = '</w:sdtContent></w:sdt>';
+    const room = '<w:p><w:pPr><w:spacing w:before="0" w:after="0" w:line="141" w:lineRule="exact"/><w:ind w:firstLine="0"/><w:rPr><w:sz w:val="2"/><w:szCs w:val="2"/></w:rPr></w:pPr></w:p>';
+    const table = '<w:tbl><w:tr><w:tc><w:p><w:r><w:t>Keys</w:t></w:r></w:p></w:tc></w:tr></w:tbl>';
+    expect(endsInTable(`<w:sdt><w:sdtContent>${table}`)).toBe(true);
+    expect(endsInTable(`${table}${close}${room}`)).toBe(true);
+    expect(endsInTable(`<w:p><w:r><w:t>Title</w:t></w:r></w:p>${table}${close}${room}${room}${close}${close}`)).toBe(true);
+    // Text after the table: the columns end with lines that can be levelled.
+    expect(endsInTable(`${table}${close}<w:p><w:r><w:t>After.</w:t></w:r></w:p>${close}`)).toBe(false);
+    expect(endsInTable(`<w:p><w:r><w:t>Only text.</w:t></w:r></w:p>${room}`)).toBe(false);
   });
 
   it('ends a chapter with a paragraph one point tall and no empty room before it', async () => {

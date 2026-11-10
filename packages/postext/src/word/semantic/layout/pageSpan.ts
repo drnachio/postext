@@ -20,7 +20,7 @@ import { createHeadingLevelResolver, deriveSectionGeometryConfig, type HeadingLe
 import type { ContentBlock } from '../../../parse/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import type { WriterContext } from '../context.js';
-import { endsWithTable, joinBlocks, type Node } from '../blocks.js';
+import { joinBlocks, type Node } from '../blocks.js';
 import { headingFillsPage, multiColumn, pageGeometry, sectionXml, type PageGeometry, type SectionStart } from '../sections.js';
 import { styledSectionAt } from '../page/furniture.js';
 import { pPr, twips } from '../wml.js';
@@ -198,7 +198,26 @@ function chapterTitleStyle(ctx: WriterContext, pieces: readonly Piece[]): string
  *  blank page under the running head (#1444, #1458). */
 function endsWithListing(parts: readonly string[]): boolean {
   const last = [...parts].reverse().find((x) => x);
-  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>') || endsWithTable(last.replace(EMPTY_TAIL, '')));
+  return !!last && (last.includes('<w:tag w:val="ptx:index"/>') || last.includes('<w:tag w:val="ptx:toc"/>') || endsInTable(last));
+}
+
+const SDT_END = '</w:sdtContent></w:sdt>';
+
+/** Whether a piece ends in a table once the empty paragraphs after it
+ *  and the content controls around it are set aside, however they nest
+ *  (a composed page's last box, with its room under it, inside the
+ *  page's own control). */
+export function endsInTable(xml: string): boolean {
+  let tail = xml.slice(-8000);
+  for (;;) {
+    if (tail.endsWith(SDT_END)) tail = tail.slice(0, -SDT_END.length);
+    else {
+      const bare = tail.replace(EMPTY_TAIL, '');
+      if (bare === tail) break;
+      tail = bare;
+    }
+  }
+  return tail.endsWith('</w:tbl>');
 }
 
 /** The empty paragraphs a piece ends with (the room under a box). */
