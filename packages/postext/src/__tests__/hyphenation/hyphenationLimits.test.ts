@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { hyphenateText, hyphenationLanguageLimits, hyphenationLimitsId, setHyphenationLimits, setHyphenationRules } from '../../hyphenation/hyphenate.js';
+import { activeLimits } from '../../hyphenation/limits.js';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../defaults/text/bodyText.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig, VDTDocument } from '../../index.js';
@@ -46,6 +47,45 @@ describe('hyphenation limits', () => {
     setHyphenationLimits({ minWordLength: 7 });
     expect(parts('camisa')).toEqual(['camisa']);
     expect(parts('camiseta')).toEqual(['ca', 'mi', 'se', 'ta']);
+  });
+
+  it('count the letters about an apostrophe against them, in French, Italian and Catalan', () => {
+    const p = (w: string, l: string) => parts(w, l).join('-');
+    // The languages' own limits: as before.
+    expect(p('aujourd’hui', 'fr')).toBe('au-jourd’hui');
+    expect(p('l’oportunitat', 'ca')).toBe('l’o-por-tu-ni-tat');
+    expect(p('dell’acqua', 'it')).toBe('dell’ac-qua');
+    setHyphenationLimits({ leftMin: 3, rightMin: 3 });
+    expect(p('aujourd’hui', 'fr')).toBe('aujourd’hui');
+    expect(p('l’occasion', 'fr')).toBe('l’oc-ca-sion');
+    // The Catalan patterns count the apostrophe as a letter; the limits
+    // do not.
+    expect(p('l’oportunitat', 'ca')).toBe('l’opor-tu-ni-tat');
+    expect(p('d’aquesta', 'ca')).toBe('d’aquesta');
+    setHyphenationLimits({ leftMin: 2, rightMin: 4 });
+    expect(p('dell’acqua', 'it')).toBe('dell’acqua');
+    expect(p('un’altra', 'it')).toBe('un’altra');
+  });
+
+  it('keep the dictionaries of the last sets used, so two books alternating rebuild nothing', () => {
+    setHyphenationLimits({ leftMin: 3 });
+    parts('fisioterapeuta');
+    const a = activeLimits();
+    const patterns = a.hyphenators.get('es');
+    expect(patterns).toBeDefined();
+    setHyphenationLimits({ leftMin: 4 });
+    parts('fisioterapeuta');
+    expect(activeLimits()).not.toBe(a);
+    setHyphenationLimits({ leftMin: 3 });
+    expect(activeLimits()).toBe(a);
+    expect(activeLimits().hyphenators.get('es')).toBe(patterns);
+    expect(hyphenationLimitsId()).toBe(a.id);
+    // A set let go comes back with the same id, its dictionaries rebuilt.
+    for (let k = 5; k < 12; k++) setHyphenationLimits({ leftMin: k });
+    setHyphenationLimits({ leftMin: 3 });
+    expect(activeLimits()).not.toBe(a);
+    expect(hyphenationLimitsId()).toBe(a.id);
+    expect(parts('fisioterapeuta')).toEqual(['fisio', 'te', 'ra', 'peu', 'ta']);
   });
 
   it('leave capitalised words whole when capitalized is off, but for the exceptions', () => {
