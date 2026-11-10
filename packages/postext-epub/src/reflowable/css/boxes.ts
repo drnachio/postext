@@ -22,6 +22,13 @@ export interface BoxRulesDeps {
   out: (string | CssRule)[];
 }
 
+/** Whether a side of a box (a stripe's, a corner icon's) is the end of
+ *  its lines: `'right'`, `'end'`, or `'outer'`, which a book without pages
+ *  takes as a recto's. */
+function atLineEnd(side: string): boolean {
+  return side === 'right' || side === 'end' || side === 'outer';
+}
+
 export function createBoxRules(deps: BoxRulesDeps) {
   const {
     config, options, dpi, body, bodyPx, fam, em, lh, color, px, spacingEm, rtl, out
@@ -54,7 +61,9 @@ export function createBoxRules(deps: BoxRulesDeps) {
     const bPx = px(s.body.fontSize);
     const pad = s.padding;
     const stripe = s.stripe.enabled && px(s.stripe.width) > 0 ? `${round(px(s.stripe.width) * (96 / dpi))}px solid ${s.stripe.color.hex}` : undefined;
-    const side = s.stripe.side === 'top' ? 'border-block-start' : s.stripe.side === 'right' ? 'border-inline-end' : 'border-inline-start';
+    // `'right'` and `'end'` are the end of the box's lines, as the composed
+    // page reads them.
+    const side = s.stripe.side === 'top' ? 'border-block-start' : atLineEnd(s.stripe.side) ? 'border-inline-end' : 'border-inline-start';
     // A box's sides are the body flow's (#371): in a right-to-left book,
     // whose flow is mirrored, its left padding is on the page's right.
     const [padRight, padLeft] = rtl ? [pad.left, pad.right] : [pad.right, pad.left];
@@ -131,21 +140,31 @@ export function createBoxRules(deps: BoxRulesDeps) {
    *  the column), or as a badge hanging on a top corner (`position:
    *  'corner'`). A float whose margin box is zero wide, so the text keeps
    *  its measure; the box a formatting context of its own, so it holds an
-   *  icon taller than its text. */
+   *  icon taller than its text. A vertical book places it with logical
+   *  properties, along its lines: a reading system without logical floats
+   *  sets it as a block before the title. */
   function iconRules(s: ResolvedConfig['calloutStyles'][number], sel: string, under: (rest: string) => string, bPx: number, tPx: number): void {
     const ic = s.icon;
     const on = ic.kind === 'glyph' ? ic.glyph.length > 0 : ic.kind === 'resource' ? ic.resourceId.length > 0 : ic.kind === 'shape';
     if (!on) return;
     const size = px(ic.size, bPx);
     const w = ic.width ? Math.max(size, px(ic.width, bPx)) : size;
-    // Sides in the box's flow: a stripe or corner on the `'right'` /
-    // `'end'` / `'outer'` side is at the end.
-    const atEnd = (side: string) => side === 'right' || side === 'end' || side === 'outer';
-    const physical = (end: boolean) => ((end !== rtl) ? 'right' : 'left');
+    const vertical = options.vertical;
+    // The box's sides in its flow, by the keys its padding and borders are
+    // written with: a horizontal box puts `left` at the start of its lines
+    // in either direction (#371); a vertical one sets them physically, its
+    // lines running from its top, its blocks from its right.
+    const key = vertical
+      ? { start: 'top', end: 'bottom', head: 'right' } as const
+      : { start: 'left', end: 'right', head: 'top' } as const;
     const stripeW = s.stripe.enabled ? px(s.stripe.width) : 0;
+    const stripeEnd = atLineEnd(s.stripe.side);
     const sideStripe = stripeW > 0 && s.stripe.side !== 'top';
-    const borderW = (side: 'top' | 'left' | 'right') => {
-      const b = s.border.sides?.[side] ?? s.border;
+    const topStripe = stripeW > 0 && s.stripe.side === 'top';
+    // The width of the border on one of the box's sides, by its key: none
+    // where a stripe is drawn, which takes the border's place.
+    const borderW = (k: 'top' | 'right' | 'bottom' | 'left') => {
+      const b = s.border.sides?.[k] ?? s.border;
       return b.enabled ? px(b.width) : 0;
     };
     // The padding and the icon scale with the text (ems); the stripe and
@@ -160,44 +179,46 @@ export function createBoxRules(deps: BoxRulesDeps) {
     const decls: (string | false | undefined)[] = [];
     if (ic.position === 'corner') {
       // Centred on the corner's border, flush with the box's top edge.
-      end = atEnd(ic.cornerSide);
-      const flowSide = end ? 'right' : 'left';
-      const stripeHere = sideStripe && atEnd(s.stripe.side) === end ? stripeW : 0;
-      lead = -(px(s.padding[flowSide], bPx) + w / 2);
-      shift = stripeHere + borderW(physical(end));
-      top = -px(s.padding.top, bPx);
-      rise = (s.stripe.enabled && s.stripe.side === 'top' ? stripeW : 0) + borderW('top');
+      end = atLineEnd(ic.cornerSide);
+      const k = end ? key.end : key.start;
+      lead = -(px(s.padding[k], bPx) + w / 2);
+      shift = sideStripe && stripeEnd === end ? stripeW : borderW(k);
+      top = -px(s.padding[key.head], bPx);
+      rise = topStripe ? stripeW : borderW(key.head);
     } else if (sideStripe) {
       // Centred over the stripe.
-      end = atEnd(s.stripe.side);
-      lead = -(px(s.padding[end ? 'right' : 'left'], bPx) + w / 2);
+      end = stripeEnd;
+      lead = -(px(s.padding[end ? key.end : key.start], bPx) + w / 2);
       shift = stripeW / 2;
     } else {
       // A column of its own: the box's padding grows by it.
       end = false;
       const gap = px(s.titleStyle.gap, tPx);
       lead = -(w + gap);
-      decls.push(`padding-${physical(false)}: ${round((px(s.padding.left, bPx) + w + gap) / bPx)}em`);
+      decls.push(`padding-${vertical ? 'inline-start' : rtl ? 'right' : 'left'}: ${round((px(s.padding[key.start], bPx) + w + gap) / bPx)}em`);
     }
     out.push(rule(sel, [...decls, 'display: flow-root']));
     // A glyph's lengths are in ems of its own size.
     const glyph = ic.kind === 'glyph';
     const base = glyph ? size : bPx;
     const e = (v: number) => `${round(v / base)}em`;
-    const side = physical(end);
-    const other = physical(!end);
+    // The properties placing it: physical in a horizontal book (read by
+    // every reading system), logical in a vertical one.
+    const side = vertical ? (end ? 'inline-end' : 'inline-start') : end !== rtl ? 'right' : 'left';
+    const other = vertical ? (end ? 'inline-start' : 'inline-end') : end !== rtl ? 'left' : 'right';
+    const inset = vertical ? `inset-${side}` : side;
     out.push(rule(under('> .pt-callout-icon'), [
       'display: block',
       `float: ${side}`,
       glyph && `font-size: ${round(size / bPx)}em`,
-      `width: ${e(w)}`,
-      `height: ${e(size)}`,
+      `${vertical ? 'inline-size' : 'width'}: ${e(w)}`,
+      `${vertical ? 'block-size' : 'height'}: ${e(size)}`,
       `margin-${side}: ${e(lead)}`,
       `margin-${other}: ${e(-w - lead)}`,
-      top !== 0 && `margin-top: ${e(top)}`,
+      top !== 0 && `margin-${vertical ? 'block-start' : 'top'}: ${e(top)}`,
       (shift > 0 || rise > 0) && 'position: relative',
-      shift > 0 && `${side}: ${round(-(shift * 96) / dpi)}px`,
-      rise > 0 && `top: ${round(-(rise * 96) / dpi)}px`,
+      shift > 0 && `${inset}: ${round(-(shift * 96) / dpi)}px`,
+      rise > 0 && `${vertical ? 'inset-block-start' : 'top'}: ${round(-(rise * 96) / dpi)}px`,
       'text-indent: 0',
       ...(glyph
         ? [fam(ic.fontFamily), `font-weight: ${ic.fontWeight}`, 'font-style: normal', 'line-height: 1', 'text-align: center', color(ic.color)]

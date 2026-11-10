@@ -618,7 +618,8 @@ class Writer {
     const data = ex.data!;
     this.exercises ??= { data, records: [] };
     if (!this.exercises.records.includes(record)) this.exercises.records.push(record);
-    const title = node.title ? `<p class="pt-callout-title">${xmlText(node.title)}</p>\n` : '';
+    // Its box's head as any box's: the style's icon, then the title.
+    const title = calloutHeadXhtml(node, (id, tint) => this.ctx.imageHref(id, tint), this.file.href);
     const key = staticKeyHtml(record, data.words.showSolution);
     return `<div${this.classAttr(['pt-callout', node.styleId && idOf('pt-callout-', node.styleId), 'pt-exercise', 'pt-ex-box'])} role="group" aria-label="${xmlAttr(`${data.words.exercise} ${record.number}`)}" data-pt-box="${ex.box}" data-pt-ex="${ex.id}" data-pt-exercise="${ex.id}">\n${title}${this.nodes(node.children)}\n${key ? `${key}\n` : ''}</div>`;
   }
