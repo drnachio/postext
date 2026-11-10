@@ -213,9 +213,14 @@ describe('postext cli', () => {
     expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
     expect(report.files).toEqual(['chapters/02-two.md']);
     expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
-    // The same file again: the chapter changed since the export, so the
-    // edit is a conflict and the exit code says an edit was not applied.
+    // The same file again: the book already holds its edit, nothing to bring.
+    expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(0);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));
+    // The chapter changed another way since the export: the edit is a
+    // conflict and the exit code says an edit was not applied.
+    writeFileSync(chapter, before.replace('More text.', 'Other text.'));
     expect(run(['import-docx', 'fe.docx', 'proj', '-q'], dir).code).toBe(3);
+    expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Other text.'));
   }, 120_000);
 
   it('brings back a flow file that lost its export map, as Google Docs saves it (#1458)', async () => {
