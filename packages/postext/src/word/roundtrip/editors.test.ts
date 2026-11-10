@@ -169,6 +169,23 @@ describe('edits that left debris', () => {
       expect(r.resources!.find((x) => x.id === 't1')!.caption).toBe('Otro pie');
     });
 
+    it('takes a label whose look or spacing the editor changed as untouched', async () => {
+      const e = await exportDocx(MD, { resources: [TABLE] });
+      const bytes = edited(e, {
+        'word/document.xml': (x) => {
+          const at = x.indexOf('Lo que da cada uno');
+          const from = x.lastIndexOf('<w:p>', at) >= x.lastIndexOf('<w:p ', at) ? x.lastIndexOf('<w:p>', at) : x.lastIndexOf('<w:p ', at);
+          const start = x.lastIndexOf('<w:bookmarkStart', at);
+          const label = x.slice(from, start);
+          expect(label).toContain('<w:t');
+          const plain = label.replace(/<w:rPr>.*?<\/w:rPr>/gu, '<w:rPr><w:i/></w:rPr>').replaceAll(' xml:space="preserve"', '');
+          return `${x.slice(0, from)}${plain}${x.slice(start)}`;
+        },
+      });
+      const r = tableBack(bytes);
+      expect(r.edits).toEqual([]);
+    });
+
     it('leaves words typed after a generated label with the label when the caption still stands, in a paragraph of its own', async () => {
       const e = await exportDocx(MD, { resources: [TABLE] });
       const bytes = edited(e, {

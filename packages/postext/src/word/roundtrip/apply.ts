@@ -81,6 +81,9 @@ function mergeEdit(a: BlockView, b: BlockView, base: string): SourceEdit {
 
 const emptied = (v: BlockView): boolean => v.missing || (!/\S/.test(v.N.replaceAll(PARA_CHAR, '')) && !v.NT.some((t) => t !== undefined));
 
+/** A text without its white space. */
+const bare = (s: string): string => s.replace(/\s+/gu, '');
+
 interface BlockResult {
   edits: SourceEdit[];
   hunks: Hunk[];
@@ -88,7 +91,10 @@ interface BlockResult {
 
 function editsOfBlock(v: BlockView, base: string): BlockResult {
   if (v.target.kind === 'generated') {
-    const changed = v.O !== v.N || v.OK.some((k, i) => k !== v.NK[i]);
+    // The engine writes this text and its look: spacing or a look an
+    // editor changed on it (Word for the web takes the bold off an
+    // exercise number) is nothing to bring back or to report.
+    const changed = bare(v.O) !== bare(v.N);
     const edits: SourceEdit[] = changed ? [{ target: v.target, start: -1, end: -1, text: v.N.replaceAll(PARA_CHAR, '\n'), kind: 'text', reject: 'generated', before: v.O }] : [];
     return { edits, hunks: [] };
   }
