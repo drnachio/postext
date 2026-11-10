@@ -12,7 +12,7 @@ import { dirname, relative, resolve, sep } from 'node:path';
 import { applySingleInkToSvg, extractFrontmatter, metadataText } from 'postext';
 import { diagramInkHex } from 'postext/bundle';
 import {
-  formattedDocx,
+  facsimileDocx,
   parseTemplate,
   planWordFonts,
   readDocx,
@@ -202,7 +202,7 @@ export async function writeDocx(book: Book, job: DocxJob, reporter: Reporter, ou
   // and page numbers its first chapter counts on from, as in the layout.
   const flowStart = !facsimile && chapters[0] === book.chapters[0] ? book.start : undefined;
   const bytes = await reporter.time('docx', () => facsimile
-    ? formattedDocx({
+    ? facsimileDocx({
       ...common,
       docs: job.layout!.docs,
       onWarning: warn,
