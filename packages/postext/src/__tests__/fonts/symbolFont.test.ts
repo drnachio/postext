@@ -51,7 +51,7 @@ describe('the symbol font', () => {
 
   it('is quoted family by family in HTML', () => {
     expect(quoteFontString('700 12px Minion Pro, "STIX Two Math"')).toBe("700 12px 'Minion Pro', 'STIX Two Math'");
-    expect(quoteFontString('12px Lora, Simbolos')).toBe('12px Lora, Simbolos');
+    expect(quoteFontString('12px Lora, Simbolos')).toBe("12px 'Lora', 'Simbolos'");
     expect(quoteFontString('12px Minion Pro')).toBe("12px 'Minion Pro'");
   });
 

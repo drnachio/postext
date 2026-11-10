@@ -119,7 +119,8 @@ export async function layOut(
   // Characters a face lacks (#1105): each chapter's build found its own,
   // reported once per face for the book.
   if (docs.some((doc) => doc.contentWarnings?.some((w) => w.kind === 'glyphFallback'))) {
-    for (const g of glyphFallbacks(docs)) {
+    // What the book's symbol font draws needs no advice (#1460).
+    for (const g of glyphFallbacks(docs, { symbolFont: book.config.symbolFont?.trim() || undefined })) {
       reporter.warn({
         kind: 'glyphFallback',
         severity: 'warning',
