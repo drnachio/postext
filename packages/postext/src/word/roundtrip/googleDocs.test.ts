@@ -305,6 +305,67 @@ describe('edits made in Google Docs', () => {
   });
 });
 
+describe('the same file imported again, into the book that took its edits', () => {
+  const FIRST = 'The first paragraph says how water runs down a slope and gathers in a bed.';
+  const NEXT = 'The one after it tells where the river meets the sea, and what it leaves there on the way.';
+  const TWO = `# Rivers\n\nA line before them.\n\n${FIRST}\n\n${NEXT}\n\nA line after them.\n`;
+
+  /** Export, save as Google Docs does, edit, import, then import the
+   *  same file once more into what the first import gave. */
+  async function twice(edit: (xml: string) => string): Promise<{ first: DocxEditResult; again: DocxEditResult }> {
+    const e = await exportDocx([TWO], { config: CONFIG, design: 'plain', resources: [TABLE] });
+    const bytes = editPart(savedByGoogleDocs(e.bytes), 'word/document.xml', edit);
+    const run = async (chapters: string[]): Promise<DocxEditResult> => {
+      const target = book(chapters);
+      return applyDocxEdits(bytes, { chapters: target.chapters, resources: target.resources }, { rebuilt: (await rebuildExportMap(bytes, target))! });
+    };
+    const first = await run([TWO]);
+    return { first, again: await run(first.chapters.map((c) => c.markdown)) };
+  }
+
+  it('two paragraphs joined: the joined one keeps both halves', async () => {
+    const { first, again } = await twice((x) => {
+      // Backspace at the start of the second: its runs and its bookmark
+      // move into the first.
+      const pB = x.lastIndexOf('<w:p ', x.indexOf(NEXT));
+      const head = x.slice(pB, x.indexOf('</w:pPr>', pB) + 8);
+      const endA = x.lastIndexOf('</w:p>', pB);
+      return `${x.slice(0, endA)}<w:r><w:t xml:space="preserve"> </w:t></w:r>${x.slice(endA + 6, pB)}${x.slice(pB + head.length)}`;
+    });
+    const joined = TWO.replace(`${FIRST}\n\n${NEXT}`, `${FIRST} ${NEXT}`);
+    expect(first.chapters[0]!.markdown).toBe(joined);
+    expect(again.edits.filter((e) => e.status === 'applied')).toEqual([]);
+    expect(again.chapters[0]!.markdown).toBe(joined);
+  });
+
+  it('a paragraph split in two: neither half is written twice', async () => {
+    const { first, again } = await twice((x) => {
+      const at = x.indexOf(' and gathers in a bed.');
+      const run = x.slice(x.lastIndexOf('<w:r ', at), x.indexOf('<w:t', x.lastIndexOf('<w:r ', at)));
+      const p = x.slice(x.lastIndexOf('<w:p ', at), x.indexOf('</w:pPr>', x.lastIndexOf('<w:p ', at)) + 8);
+      return `${x.slice(0, at)}</w:t></w:r></w:p>${p}${run}<w:t xml:space="preserve">And gathers in a bed.${x.slice(at + ' and gathers in a bed.'.length)}`;
+    });
+    const split = TWO.replace(' and gathers in a bed.', '\n\nAnd gathers in a bed.');
+    expect(first.chapters[0]!.markdown).toBe(split);
+    expect(again.edits.filter((e) => e.status === 'applied')).toEqual([]);
+    expect(again.chapters[0]!.markdown).toBe(split);
+  });
+
+  it('a word changed, a paragraph deleted and one typed in: nothing more to bring', async () => {
+    const { first, again } = await twice((x) => {
+      const gone = x.indexOf('A line before them.');
+      const start = x.lastIndexOf('<w:bookmarkStart', x.lastIndexOf('<w:p ', gone));
+      const out = x.slice(0, start) + x.slice(x.indexOf('</w:p>', gone) + 6);
+      const end = out.indexOf('</w:p>', out.indexOf('A line after them.')) + 6;
+      return `${out.slice(0, end)}<w:p><w:pPr></w:pPr><w:r><w:t>A line typed at the end.</w:t></w:r></w:p>${out.slice(end)}`.replace('meets the sea', 'reaches the sea');
+    });
+    const want = TWO.replace('A line before them.\n\n', '').replace('meets', 'reaches').replace('A line after them.\n', 'A line after them.\n\nA line typed at the end.\n');
+    expect(first.chapters[0]!.markdown).toBe(want);
+    expect(again.edits.filter((e) => e.status === 'applied')).toEqual([]);
+    expect(again.chapters[0]!.markdown).toBe(want);
+  });
+});
+
 describe('a book that changed since the export', () => {
   const SECOND = '# Lakes\n\nStill water first.\n\nStill water second.\n';
   const THIRD = '# Seas\n\nSalt water first.\n\nSalt water second.\n';

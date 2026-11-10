@@ -4,7 +4,11 @@
 // paragraph added, a chapter rewritten) the names after the change shift,
 // so the fragments are matched by their text, in order: the ones that read
 // the same pair up, the ones between two such pairs pair up when they
-// still share most of their words, and the rest have no partner.
+// still share most of their words, and the rest have no partner. A
+// passage that pairs with only one half of itself (two paragraphs the book
+// joined and the file holds apart, or one the book cut in two) has no
+// partner either: changing it into its half would drop the other half, or
+// write it twice.
 
 import { diffTokens } from './diff.js';
 
@@ -44,6 +48,20 @@ function likeness(a: Set<string>, b: Set<string>): number {
   return common / Math.max(a.size, b.size);
 }
 
+/** The words of a text in their order. */
+const wordsInOrder = (text: string): string[] => looseText(text).match(/[\p{L}\p{N}]+/gu) ?? [];
+
+/** Whether `part` reads as the start (or the end) of `whole`: most of its
+ *  words stand there. One word alone says nothing. */
+function standsAt(part: readonly string[], whole: readonly string[], start: boolean): boolean {
+  if (part.length < 2 || part.length >= whole.length) return false;
+  const span = part.length + 2;
+  const there = new Set(start ? whole.slice(0, span) : whole.slice(-span));
+  let n = 0;
+  for (const w of part) if (there.has(w)) n++;
+  return n / part.length >= 0.8;
+}
+
 /** Two texts that share this much are the same passage, edited. */
 const SAME_PASSAGE = 0.5;
 
@@ -56,7 +74,11 @@ const SHORT_RUN = 3;
 function pairGap(r: readonly Named[], f: readonly Named[], out: Alignment, bounded: boolean): void {
   const rw = r.map((x) => words(x.text));
   const fw = f.map((x) => words(x.text));
-  const pair = (i: number, j: number): void => void out.ids.set(r[i]!.id, f[j]!.id);
+  const pairs: [number, number][] = [];
+  const pair = (i: number, j: number): void => {
+    out.ids.set(r[i]!.id, f[j]!.id);
+    pairs.push([i, j]);
+  };
   const used = new Set<number>();
   const taken = new Set<number>();
   if (r.length * f.length <= 250000) {
@@ -101,6 +123,22 @@ function pairGap(r: readonly Named[], f: readonly Named[], out: Alignment, bound
     }
     i = i1 + 1;
     j = j1 + 1;
+  }
+  // A pair whose one side is a half of the other, the other half standing
+  // right beside it without a partner: no pair.
+  const both = (a: Set<string>, b: Set<string>): Set<string> => new Set([...a, ...b]);
+  const halves = pairs.filter(([i, j]) => {
+    const like = likeness(rw[i]!, fw[j]!);
+    const whole = (k: number, start: boolean): boolean =>
+      k >= 0 && k < f.length && !taken.has(k) && standsAt(wordsInOrder(f[k]!.text), wordsInOrder(r[i]!.text), start) && likeness(rw[i]!, both(fw[j]!, fw[k]!)) > like;
+    const half = (k: number, start: boolean): boolean =>
+      k >= 0 && k < r.length && !used.has(k) && standsAt(wordsInOrder(r[k]!.text), wordsInOrder(f[j]!.text), start) && likeness(both(rw[i]!, rw[k]!), fw[j]!) > like;
+    return whole(j - 1, true) || whole(j + 1, false) || half(i - 1, true) || half(i + 1, false);
+  });
+  for (const [i, j] of halves) {
+    out.ids.delete(r[i]!.id);
+    used.delete(i);
+    taken.delete(j);
   }
   r.forEach((x, i) => {
     if (!used.has(i)) out.unplaced.add(x.id);
