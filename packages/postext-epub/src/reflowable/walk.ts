@@ -48,6 +48,7 @@ import type {
   WrapFloat,
 } from './model.js';
 import { figureLabelsOverlay } from './labels.js';
+import { calloutIcon, calloutTitle } from './calloutHead.js';
 import { CSS_PX_PER_PT, drawnBoxSvg } from './exercises.js';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline.js';
 
@@ -67,8 +68,10 @@ export interface BookModel {
    *  set. */
   pages: Map<number, { loc: Loc; label: string }>;
   notes: Map<string, Loc>;
-  /** Pictures the text places (figures, table-cell images). */
+  /** Pictures the text places (figures, table-cell images, box icons). */
   images: Set<string>;
+  /** Pictures painted in one colour (a box's tinted icon): their colours. */
+  tints?: Map<string, Set<string>>;
   /** Whether a picture has a text alternative / lacks one. */
   altText: boolean;
   missingAlt: boolean;
@@ -794,12 +797,9 @@ class DocWalker {
       own.wrap = wrap;
       this.book.wraps = true;
     }
-    if ((block.callout?.part ?? 0) === 0 && own.title === undefined) {
-      const title = (block.designOverlay?.blocks ?? [])
-        .flatMap((b) => (b.kind === 'text' && !b.artifact ? [b.lines.map((l) => l.text).join(' ')] : []))
-        .join(' ')
-        .replace(/\s+/g, ' ')
-        .trim();
+    if ((block.callout?.part ?? 0) === 0) {
+      own.icon ??= calloutIcon(this.config, block, own.styleId, this.book);
+      const title = own.title === undefined ? calloutTitle(block, own.icon) : '';
       if (title) own.title = title;
     }
     // The box's first content block starts its lists afresh.

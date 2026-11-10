@@ -11,7 +11,7 @@ import path from 'node:path';
 import { renderToEpub } from './index.js';
 import type { RenderToEpubOptions } from './types.js';
 import { page8Book, page8Bytes } from './__tests__/page8.js';
-import { AMIRI, LORA, MP4, PNG, arabicSampleBook, booktabsSampleBook, wrapSampleBook, comicSampleBook, composedSpreadSampleBook, exerciseSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook.js';
+import { AMIRI, LORA, MP4, PNG, RING_SVG, arabicSampleBook, boxIconsSampleBook, booktabsSampleBook, wrapSampleBook, comicSampleBook, composedSpreadSampleBook, exerciseSampleBook, sampleBook, stripCaptionSampleBook, stripSpreadSampleBook, videoSampleBook, japaneseSampleBook } from './__tests__/sampleBook.js';
 
 const available = process.env.EPUBCHECK === '1' && spawnSync('epubcheck', ['--version'], { encoding: 'utf8' }).status === 0;
 
@@ -73,6 +73,11 @@ const composed = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions =>
   metadata: { title: 'El dinero y la vida de cada día', creators: ['Postext'], language: 'es', modified: new Date(Date.UTC(2026, 9, 16)) },
   resourceBytes: page8Bytes,
 });
+/** The box icons sample (#1478): the ring picture its boxes paint. */
+const boxIcons = (layout: RenderToEpubOptions['layout']): RenderToEpubOptions => ({
+  ...base(layout),
+  resourceBytes: (fileId) => fileId === 'ring.svg' ? { bytes: new TextEncoder().encode(RING_SVG), mediaType: 'image/svg+xml' } : undefined,
+});
 const composedBook = async () => [(await page8Book('es')).doc];
 
 const samples: { name: string; options: RenderToEpubOptions; book?: () => ReturnType<typeof sampleBook> | Promise<ReturnType<typeof sampleBook>> }[] = [
@@ -114,6 +119,10 @@ const samples: { name: string; options: RenderToEpubOptions; book?: () => Return
   // Exercises of every kind (#1231): their records, the script, the key.
   { name: 'exercises-fixed', options: base('fixed'), book: exerciseSampleBook },
   { name: 'exercises-reflowable', options: base('reflowable'), book: exerciseSampleBook },
+  // Box icons (#1478): a picture painted in two colours (a copy of it
+  // each), a glyph, a drawn dot, an exercise's box.
+  { name: 'box-icons-fixed', options: boxIcons('fixed'), book: boxIconsSampleBook },
+  { name: 'box-icons-reflowable', options: boxIcons('reflowable'), book: boxIconsSampleBook },
 ];
 
 describe.skipIf(!available)('EPUBCheck', () => {

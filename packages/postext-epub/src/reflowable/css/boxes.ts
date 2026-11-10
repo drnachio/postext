@@ -22,6 +22,13 @@ export interface BoxRulesDeps {
   out: (string | CssRule)[];
 }
 
+/** Whether a side of a box (a stripe's, a corner icon's) is the end of
+ *  its lines: `'right'`, `'end'`, or `'outer'`, which a book without pages
+ *  takes as a recto's. */
+function atLineEnd(side: string): boolean {
+  return side === 'right' || side === 'end' || side === 'outer';
+}
+
 export function createBoxRules(deps: BoxRulesDeps) {
   const {
     config, options, dpi, body, bodyPx, fam, em, lh, color, px, spacingEm, rtl, out
@@ -54,7 +61,9 @@ export function createBoxRules(deps: BoxRulesDeps) {
     const bPx = px(s.body.fontSize);
     const pad = s.padding;
     const stripe = s.stripe.enabled && px(s.stripe.width) > 0 ? `${round(px(s.stripe.width) * (96 / dpi))}px solid ${s.stripe.color.hex}` : undefined;
-    const side = s.stripe.side === 'top' ? 'border-block-start' : s.stripe.side === 'right' ? 'border-inline-end' : 'border-inline-start';
+    // `'right'` and `'end'` are the end of the box's lines, as the composed
+    // page reads them.
+    const side = s.stripe.side === 'top' ? 'border-block-start' : atLineEnd(s.stripe.side) ? 'border-inline-end' : 'border-inline-start';
     // A box's sides are the body flow's (#371): in a right-to-left book,
     // whose flow is mirrored, its left padding is on the page's right.
     const [padRight, padLeft] = rtl ? [pad.left, pad.right] : [pad.right, pad.left];
@@ -122,6 +131,107 @@ export function createBoxRules(deps: BoxRulesDeps) {
       'text-indent: 0',
     ]));
     out.push(rule(under('li > .pt-lbl:first-child'), [color(s.lists.color)]));
+    iconRules(s, sel, under, bPx, tPx);
+  }
+
+  /** The rules of a box style's icon (`.pt-callout-icon`, first in the
+   *  box), placed as the composed page places it: centred over a side
+   *  stripe, in a column of its own before the content (the box padded by
+   *  the column), or as a badge hanging on a top corner (`position:
+   *  'corner'`). A float whose margin box is zero wide, so the text keeps
+   *  its measure; the box a formatting context of its own, so it holds an
+   *  icon taller than its text. A vertical book places it with logical
+   *  properties, along its lines: a reading system without logical floats
+   *  sets it as a block before the title. */
+  function iconRules(s: ResolvedConfig['calloutStyles'][number], sel: string, under: (rest: string) => string, bPx: number, tPx: number): void {
+    const ic = s.icon;
+    const on = ic.kind === 'glyph' ? ic.glyph.length > 0 : ic.kind === 'resource' ? ic.resourceId.length > 0 : ic.kind === 'shape';
+    if (!on) return;
+    const size = px(ic.size, bPx);
+    const w = ic.width ? Math.max(size, px(ic.width, bPx)) : size;
+    const vertical = options.vertical;
+    // The box's sides in its flow, by the keys its padding and borders are
+    // written with: a horizontal box puts `left` at the start of its lines
+    // in either direction (#371); a vertical one sets them physically, its
+    // lines running from its top, its blocks from its right.
+    const key = vertical
+      ? { start: 'top', end: 'bottom', head: 'right' } as const
+      : { start: 'left', end: 'right', head: 'top' } as const;
+    const stripeW = s.stripe.enabled ? px(s.stripe.width) : 0;
+    const stripeEnd = atLineEnd(s.stripe.side);
+    const sideStripe = stripeW > 0 && s.stripe.side !== 'top';
+    const topStripe = stripeW > 0 && s.stripe.side === 'top';
+    // The width of the border on one of the box's sides, by its key: none
+    // where a stripe is drawn, which takes the border's place.
+    const borderW = (k: 'top' | 'right' | 'bottom' | 'left') => {
+      const b = s.border.sides?.[k] ?? s.border;
+      return b.enabled ? px(b.width) : 0;
+    };
+    // The padding and the icon scale with the text (ems); the stripe and
+    // the border are written in CSS px, so the icon is moved past them by
+    // a relative offset in px (`shift`, `rise`) that leaves the layout as
+    // it is.
+    let end: boolean;
+    let lead: number;
+    let top = 0;
+    let shift = 0;
+    let rise = 0;
+    const decls: (string | false | undefined)[] = [];
+    if (ic.position === 'corner') {
+      // Centred on the corner's border, flush with the box's top edge.
+      end = atLineEnd(ic.cornerSide);
+      const k = end ? key.end : key.start;
+      lead = -(px(s.padding[k], bPx) + w / 2);
+      shift = sideStripe && stripeEnd === end ? stripeW : borderW(k);
+      top = -px(s.padding[key.head], bPx);
+      rise = topStripe ? stripeW : borderW(key.head);
+    } else if (sideStripe) {
+      // Centred over the stripe.
+      end = stripeEnd;
+      lead = -(px(s.padding[end ? key.end : key.start], bPx) + w / 2);
+      shift = stripeW / 2;
+    } else {
+      // A column of its own: the box's padding grows by it.
+      end = false;
+      const gap = px(s.titleStyle.gap, tPx);
+      lead = -(w + gap);
+      decls.push(`padding-${vertical ? 'inline-start' : rtl ? 'right' : 'left'}: ${round((px(s.padding[key.start], bPx) + w + gap) / bPx)}em`);
+    }
+    out.push(rule(sel, [...decls, 'display: flow-root']));
+    // A glyph's lengths are in ems of its own size.
+    const glyph = ic.kind === 'glyph';
+    const base = glyph ? size : bPx;
+    const e = (v: number) => `${round(v / base)}em`;
+    // The properties placing it: physical in a horizontal book (read by
+    // every reading system), logical in a vertical one.
+    const side = vertical ? (end ? 'inline-end' : 'inline-start') : end !== rtl ? 'right' : 'left';
+    const other = vertical ? (end ? 'inline-start' : 'inline-end') : end !== rtl ? 'left' : 'right';
+    const inset = vertical ? `inset-${side}` : side;
+    out.push(rule(under('> .pt-callout-icon'), [
+      'display: block',
+      `float: ${side}`,
+      glyph && `font-size: ${round(size / bPx)}em`,
+      `${vertical ? 'inline-size' : 'width'}: ${e(w)}`,
+      `${vertical ? 'block-size' : 'height'}: ${e(size)}`,
+      `margin-${side}: ${e(lead)}`,
+      `margin-${other}: ${e(-w - lead)}`,
+      top !== 0 && `margin-${vertical ? 'block-start' : 'top'}: ${e(top)}`,
+      (shift > 0 || rise > 0) && 'position: relative',
+      shift > 0 && `${inset}: ${round(-(shift * 96) / dpi)}px`,
+      rise > 0 && `${vertical ? 'inset-block-start' : 'top'}: ${round(-(rise * 96) / dpi)}px`,
+      'text-indent: 0',
+      ...(glyph
+        ? [fam(ic.fontFamily), `font-weight: ${ic.fontWeight}`, 'font-style: normal', 'line-height: 1', 'text-align: center', color(ic.color)]
+        : []),
+      ...(ic.kind === 'shape'
+        ? ic.shape === 'dot'
+          ? ['border-radius: 50%', color(ic.color, 'background-color')]
+          : ['border-radius: 50%', 'box-sizing: border-box', `border: ${round(((ic.strokeWidth ? px(ic.strokeWidth, bPx) : size / 8) * 96) / dpi)}px solid ${ic.color.hex}`]
+        : []),
+    ]));
+    if (ic.kind === 'resource') {
+      out.push(rule(under('> .pt-callout-icon > img'), ['display: block', 'width: 100%', 'height: 100%', 'object-fit: contain']));
+    }
   }
 
   // --- paragraph styles ----------------------------------------------------
