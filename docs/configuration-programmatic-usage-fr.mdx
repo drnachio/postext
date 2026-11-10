@@ -379,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>La liste est coupée là où la colonne se termine.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Deux lignes de suite d'un paragraphe, dans une même colonne, qui finissent (<code>edge: 'end'</code>) ou commencent (<code>'start'</code>) par le même mot ou les mêmes <code>bodyText.stackMinCharacters</code> caractères : <code>text</code> est ce qu'elles répètent, tel que la première ligne l'imprime, et <code>lines</code> les deux lignes. Sous <code>bodyText.stacks: 'warn'</code>, chaque répétition est signalée ; sous <code>'avoid'</code>, celles que l'algorithme a gardées. Un par répétition ; pointe sur les deux lignes, avec leur page. Depuis postext 1.72.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Un bloc de la table des matières à garder entier (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), ouvert par <code>title</code>, composé sur <code>columns</code> colonnes : il est plus haut qu’une colonne entière, ou la colonne où il commence est courte (sous un encadré sur toute la largeur de la page, à côté d’un flottant). Un par bloc ; pointe sur la directive <code>:::toc</code>, avec la page où commence le bloc. Pour le faire disparaître, listez moins de niveaux (<code>levels="1"</code>), ouvrez les blocs par un niveau inférieur (<code>toc.groups.head: 2</code>), ou rendez les entrées plus petites ou plus serrées. Depuis postext 1.34.</td>
       <td>Le bloc est coupé ; avec <code>toc.groups.continuation</code>, chaque colonne où il se poursuit s’ouvre sur sa tête et la marque de continuation.</td>

@@ -379,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Die Liste wird geteilt, wo die Spalte endet.</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>Zwei Zeilen hintereinander eines Absatzes in derselben Spalte, die auf dasselbe Wort oder dieselben <code>bodyText.stackMinCharacters</code> Zeichen enden (<code>edge: 'end'</code>) oder damit beginnen (<code>'start'</code>): <code>text</code> ist, was sie wiederholen, wie die erste Zeile es druckt, und <code>lines</code> sind die beiden Zeilen. Unter <code>bodyText.stacks: 'warn'</code> wird jede gemeldet; unter <code>'avoid'</code> die, die der Algorithmus behielt. Eine pro Wiederholung; verweist auf die beiden Zeilen, mit ihrer Seite. Seit postext 1.72.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>Ein zusammenzuhaltender Block des Inhaltsverzeichnisses (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), angeführt von <code>title</code>, gesetzt in <code>columns</code> Spalten: Er ist höher als eine ganze Spalte, oder die Spalte, in der er beginnt, ist kurz (unter einem seitenbreiten Kasten, neben einem Gleitobjekt). Eine pro Block; verweist auf die Direktive <code>:::toc</code>, mit der Seite, auf der der Block beginnt. Um sie zu beheben, führen Sie weniger Ebenen auf (<code>levels="1"</code>), lassen Sie die Blöcke von einer tieferen Ebene anführen (<code>toc.groups.head: 2</code>) oder setzen Sie die Einträge kleiner oder enger. Seit postext 1.34.</td>
       <td>Der Block wird geteilt; mit <code>toc.groups.continuation</code> beginnt jede Spalte, in der er weiterläuft, mit seiner Kopfzeile und dem Fortsetzungsvermerk.</td>

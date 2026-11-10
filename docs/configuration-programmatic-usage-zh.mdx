@@ -379,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>列表在栏结束处拆开。</td>
     </tr>
     <tr>
+      <td><code>stack</code></td>
+      <td>段落中同一栏内相邻的两行以同一个词或相同的<code>bodyText.stackMinCharacters</code>个字符结尾（<code>edge: 'end'</code>）或开头（<code>'start'</code>）：<code>text</code>是重复的内容（按第一行的写法），<code>lines</code>是这两行。设为<code>bodyText.stacks: 'warn'</code>时，每处重复都报告；设为<code>'avoid'</code>时，只报告断行器保留下来的。每处重复一条；指向这两行，并带其页码。postext 1.72起。</td>
+      <td>行照原样排。</td>
+    </tr>
+    <tr>
       <td><code>tocGroupSplit</code></td>
       <td>要求排在一起的目录组（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>），组首为<code>title</code>，排成<code>columns</code>栏：它比一整栏还高，或者它开始的那一栏较短（在通栏框下方，或在浮动体旁边）。每组一条；指向<code>:::toc</code>指令，并带该组开始的页码。要消除这条警告，可以少列几级（<code>levels="1"</code>），用更低的级别作组首（<code>toc.groups.head: 2</code>），或者把条目排得更小、更紧。postext 1.34起。</td>
       <td>该组被拆开；启用<code>toc.groups.continuation</code>时，它延续到的每一栏都以组首行和接续标记开头。</td>

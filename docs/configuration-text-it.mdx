@@ -231,22 +231,22 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Fa cominciare anche con un trattino la riga che segue un a capo sul trattino di una parola composta: <code>vencer-</code> · <code>-se</code>, come chiede l’ortografia portoghese, e <code>léxico-</code> · <code>-semántico</code>, come chiedono le regole della Real Academia Española dal 2010. Il trattino ripetuto viene misurato e disegnato con la sua riga, che lo registra come <code>repeatedHyphen</code>; i suoi <code>plainStart</code> e <code>sourceStart</code> puntano oltre il trattino, così i link, le testatine e la Sandbox leggono la parola così com’è scritta. Il PDF lo disegna sotto un <code>/ActualText</code> che lo esclude, quindi il testo copiato o estratto dal PDF riporta la parola con un solo trattino. Un indirizzo web non lo riceve mai. Si applica al testo corrente, ai titoli, agli elenchi, alle citazioni e ai riquadri; un paragrafo senza formattazione che contiene una parola composta viene allora diviso in righe dall’algoritmo che compone il testo formattato.</td>
     </tr>
     <tr>
-      <td><code>avoidStacks</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Evita le ripetizioni: due righe consecutive di un paragrafo che finiscono con la stessa parola, o con gli stessi <code>stackMinCharacters</code> ultimi caratteri, spazi compresi (<code>-mente</code> / <code>-mente</code>, <code>della</code> / <code>nella</code>), o che cominciano con la stessa parola o gli stessi primi caratteri (<code>di un</code> / <code>di una</code>). L'algoritmo ricompone il paragrafo per evitarle dove la spaziatura tra le parole lo consente; quanto pesa una ripetizione lo stabilisce <code>stackPenalty</code>. Richiede <code>optimalLineBreaking</code>. Gli accenti non contano («sól» è «sol»), e uno stesso monosillabo («a», «e», «di», «la») sul bordo di due righe consecutive non è mai ammesso, qualunque sia la penalità. Le evitano anche le didascalie, le note e le celle di tabella. Disattivato per impostazione predefinita, perché un documento composto prima conservi le sue righe.</td>
+      <td><code>stacks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Ripetizioni: due righe di seguito di un paragrafo, nella stessa colonna, che finiscono con la stessa parola, o con gli stessi <code>stackMinCharacters</code> ultimi caratteri, spazi compresi (<code>-mente</code> / <code>-mente</code>, <code>della</code> / <code>nella</code>), o che cominciano con la stessa parola o gli stessi primi caratteri (<code>di un</code> / <code>di una</code>). <code>'allow'</code> compone le righe come le trova l'algoritmo e non segnala nulla. <code>'warn'</code> le compone allo stesso modo e segnala ogni ripetizione con un avviso di contenuto <code>stack</code>, che il Sandbox elenca in Revisione e segna sulla pagina. <code>'avoid'</code> somma <code>stackPenalty</code> ai demeriti di ogni ripetizione, così l'algoritmo compone il paragrafo in altro modo dove la spaziatura tra le parole lo permette, e segnala le ripetizioni che tiene. Accenti e maiuscole non contano («sól» è «sol»). Le parole si confrontano solo nelle scritture che le separano con spazi: un testo cinese, giapponese, thai, lao, khmer, birmano o tibetano non ha ripetizioni. Una formula, un chip o un campione di colore al bordo di una riga non si confronta mai. Con <code>'avoid'</code>, didascalie, note e celle di tabella, giustificate o a bandiera, si dividono intere con Knuth–Plass per seguire la regola; la cornice di una pagina composta compone il suo testo senza. Richiede <code>optimalLineBreaking</code>. Nel port di un libro lasciala su <code>'allow'</code> o usa <code>'warn'</code> per le bozze: il port riproduce le divisioni dell'originale.</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
       <td><code>number</code></td>
       <td><code>3</code></td>
-      <td>Caratteri, spazi compresi, che lo stesso bordo di due righe consecutive deve condividere perché ci sia ripetizione (<code>avoidStacks</code>). La punteggiatura all'estremità non conta, e la stessa parola è sempre ripetizione.</td>
+      <td>Caratteri, spazi compresi, che lo stesso bordo di due righe di seguito deve condividere perché ci sia ripetizione (<code>stacks</code>). La punteggiatura all'estremità non conta, e la stessa parola è sempre ripetizione.</td>
     </tr>
     <tr>
       <td><code>stackPenalty</code></td>
       <td><code>number</code></td>
-      <td><code>100000</code></td>
-      <td>Costo di una ripetizione (due righe consecutive che finiscono o cominciano con la stessa parola o gli stessi caratteri, cosa che <code>avoidStacks</code> evita), in badness equivalente: 100 è una riga al limite della spaziatura tra le parole; 1000 pesa più di qualsiasi riga entro quel limite. Il valore predefinito, 100000, fa della ripetizione un limite: pesa più persino di una riga allargata oltre i limiti di spaziatura, così una ripetizione resta solo dove nessuna composizione del paragrafo la evita. Un monosillabo ripetuto è un limite qualunque sia questo valore.</td>
+      <td><code>3000</code></td>
+      <td>Quanto costa una ripetizione all'algoritmo con <code>stacks: 'avoid'</code>, in demeriti sommati a quelli del paragrafo, sulla scala di <code>consecutiveHyphenDemerit</code> (due righe di seguito con il trattino costano 3000). Un monosillabo ripetuto («a», «e», «di», con le vocali delle scritture latina, greca e cirillica) costa il doppio. Un valore più alto evita più ripetizioni a prezzo di righe più larghe; 0 le tiene tutte.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

@@ -6273,6 +6273,60 @@
       }
     }
   },
+  "stack": {
+    "source": "engine",
+    "label": {
+      "en": "Stack",
+      "es": "Repetición",
+      "ca": "Repetició",
+      "zh": "行首行尾重复",
+      "ar": "تكرار",
+      "ja": "行頭・行末の重複",
+      "pt": "Repetição",
+      "fr": "Répétition",
+      "de": "Wiederholung",
+      "it": "Ripetizione"
+    },
+    "cause": {
+      "en": "Two lines in a row of a paragraph, in one column, end on the same word or the same last bodyText.stackMinCharacters characters (3 by default, spaces included), or start alike: “…in the” over “…on the”. Accents and case do not count, and only scripts that separate words with spaces have stacks. With bodyText.stacks on 'warn' every stack is reported; on 'avoid', the ones the line breaker kept because no setting within the word spacing avoided them for less than bodyText.stackPenalty. The engine lists each in doc.contentWarnings with the repeated text, the edge (end or start), the two lines and their page.",
+      "es": "Dos líneas seguidas de un párrafo, en una misma columna, terminan con la misma palabra o los mismos últimos bodyText.stackMinCharacters caracteres (3 por defecto, espacios incluidos), o empiezan igual: «…en la» sobre «…de la». No cuentan las tildes ni las mayúsculas, y solo hay repeticiones en las escrituras que separan las palabras con espacios. Con bodyText.stacks en 'warn' se informa de todas; en 'avoid', de las que el corte de líneas mantuvo porque ninguna composición dentro del espaciado entre palabras las evitaba por menos que bodyText.stackPenalty. El motor anota cada una en doc.contentWarnings con el texto repetido, el extremo (final o comienzo), las dos líneas y su página.",
+      "ca": "Dues línies seguides d'un paràgraf, en una mateixa columna, acaben amb la mateixa paraula o els mateixos últims bodyText.stackMinCharacters caràcters (3 per defecte, espais inclosos), o comencen igual: «…en la» sobre «…de la». No compten els accents ni les majúscules, i només hi ha repeticions en les escriptures que separen les paraules amb espais. Amb bodyText.stacks a 'warn' s'informa de totes; a 'avoid', de les que el tall de línies va mantenir perquè cap composició dins l'espaiat entre paraules no les evitava per menys que bodyText.stackPenalty. El motor anota cadascuna a doc.contentWarnings amb el text repetit, l'extrem (final o començament), les dues línies i la seva pàgina.",
+      "zh": "段落中同一栏内相邻的两行以同一个词或相同的最后bodyText.stackMinCharacters个字符（默认3个，含空格）结尾，或以相同方式开头。不区分重音和大小写；只有用空格分词的文字才有重复。bodyText.stacks设为'warn'时报告每一处；设为'avoid'时，只报告断行保留下来的那些：在词距范围内没有代价低于bodyText.stackPenalty的排法能避开它们。引擎把每一处记入doc.contentWarnings，附上重复的文字、所在边（行尾或行首）、两行文字和页码。",
+      "ar": "سطران متتاليان من فقرة، في عمود واحد، ينتهيان بالكلمة نفسها أو بآخر bodyText.stackMinCharacters من الأحرف نفسها (3 افتراضيًا، والمسافات محسوبة)، أو يبدآن على النحو نفسه. لا تُحتسب الحركات ولا حالة الأحرف، ولا تكرار إلا في الكتابات التي تفصل الكلمات بمسافات. إذا كانت bodyText.stacks على 'warn' يُبلَّغ عن كل تكرار، وإذا كانت على 'avoid' فعن التكرارات التي أبقاها كسر الأسطر لأنه لم يكن ثمة تنضيد ضمن التباعد بين الكلمات يتجنّبها بأقل من bodyText.stackPenalty. ويُدرج المحرّك كلًّا منها في doc.contentWarnings مع النص المكرّر والطرف (النهاية أو البداية) والسطرين وصفحتهما.",
+      "ja": "段落の同じ段にある連続した2行が、同じ単語または同じ末尾のbodyText.stackMinCharacters文字（既定は3、スペースを含む）で終わるか、同じように始まっています。アクセントと大文字・小文字は区別せず、重複があるのは単語をスペースで区切る文字体系だけです。bodyText.stacksが'warn'ならすべてを報告し、'avoid'なら改行処理が残したもの、つまり語間の範囲内でbodyText.stackPenaltyより安く避ける組み方がなかったものを報告します。エンジンは各重複を、繰り返された文字列、端（行末か行頭）、2行の文字列、ページとともにdoc.contentWarningsに記録します。",
+      "pt": "Duas linhas seguidas de um parágrafo, na mesma coluna, terminam com a mesma palavra ou os mesmos últimos bodyText.stackMinCharacters caracteres (3 por padrão, espaços incluídos), ou começam igual: «…de um» sobre «…com um». Acentos e maiúsculas não contam, e só há repetições nas escritas que separam as palavras com espaços. Com bodyText.stacks em 'warn' todas são assinaladas; em 'avoid', as que a quebra de linha manteve porque nenhuma composição dentro do espaçamento entre palavras as evitava por menos que bodyText.stackPenalty. O motor regista cada uma em doc.contentWarnings com o texto repetido, a borda (fim ou início), as duas linhas e a página.",
+      "fr": "Deux lignes de suite d’un paragraphe, dans une même colonne, finissent sur le même mot ou les mêmes derniers bodyText.stackMinCharacters caractères (3 par défaut, espaces compris), ou commencent de même : « …de la » sous « …à la ». Les accents et la casse ne comptent pas, et seules les écritures qui séparent les mots par des espaces ont des répétitions. Avec bodyText.stacks sur 'warn', toutes sont signalées ; sur 'avoid', celles que la coupure des lignes a gardées parce qu’aucune composition dans l’espacement des mots ne les évitait pour moins que bodyText.stackPenalty. Le moteur note chacune dans doc.contentWarnings avec le texte répété, le bord (fin ou début), les deux lignes et leur page.",
+      "de": "Zwei Zeilen hintereinander eines Absatzes in derselben Spalte enden auf dasselbe Wort oder dieselben letzten bodyText.stackMinCharacters Zeichen (standardmäßig 3, Leerzeichen mitgezählt) oder beginnen gleich: „…in der“ über „…an der“. Akzente und Groß- und Kleinschreibung zählen nicht, und nur Schriften, die Wörter mit Leerzeichen trennen, haben Wiederholungen. Mit bodyText.stacks auf 'warn' wird jede gemeldet; auf 'avoid' die, die der Zeilenumbruch behielt, weil kein Satz innerhalb des Wortabstands sie für weniger als bodyText.stackPenalty vermied. Die Engine trägt jede in doc.contentWarnings ein, mit dem wiederholten Text, dem Rand (Ende oder Anfang), den beiden Zeilen und ihrer Seite.",
+      "it": "Due righe di seguito di un paragrafo, nella stessa colonna, finiscono con la stessa parola o gli stessi ultimi bodyText.stackMinCharacters caratteri (3 per impostazione predefinita, spazi compresi), o cominciano allo stesso modo: «…della» sopra «…nella». Accenti e maiuscole non contano, e hanno ripetizioni solo le scritture che separano le parole con spazi. Con bodyText.stacks su 'warn' si segnalano tutte; su 'avoid', quelle che la divisione in righe ha tenuto perché nessuna composizione entro la spaziatura tra le parole le evitava per meno di bodyText.stackPenalty. Il motore annota ciascuna in doc.contentWarnings con il testo ripetuto, il bordo (fine o inizio), le due righe e la loro pagina."
+    },
+    "fix": {
+      "en": "Set bodyText.stacks to 'avoid': the line breaker sets the paragraph otherwise where the word spacing allows. A stack that stays costs more to avoid than bodyText.stackPenalty: raise the penalty to trade looser lines for it, or reword one of the two lines. In a port of an existing book keep 'warn': the port reproduces the original's breaks.",
+      "es": "Pon bodyText.stacks en 'avoid': el corte de líneas compone el párrafo de otro modo donde el espaciado entre palabras lo permite. Una repetición que sigue cuesta más de evitar que bodyText.stackPenalty: sube la penalización para cambiarla por líneas más sueltas, o reescribe una de las dos líneas. En un port de un libro existente deja 'warn': el port reproduce los cortes del original.",
+      "ca": "Posa bodyText.stacks a 'avoid': el tall de línies compon el paràgraf d'una altra manera on l'espaiat entre paraules ho permet. Una repetició que es manté costa més d'evitar que bodyText.stackPenalty: apuja la penalització per canviar-la per línies més soltes, o reescriu una de les dues línies. En un port d'un llibre existent deixa 'warn': el port reprodueix els talls de l'original.",
+      "zh": "把bodyText.stacks设为'avoid'：断行会在词距允许的范围内重排段落。仍然保留的重复，避开它的代价高于bodyText.stackPenalty：调高惩罚值以换取更松的行，或改写两行中的一行。移植现有书籍时保持'warn'：移植要重现原书的断行。",
+      "ar": "اجعل bodyText.stacks على 'avoid': ينضّد كسر الأسطر الفقرة على نحو آخر حيث يسمح التباعد بين الكلمات. والتكرار الذي يبقى كلفة تجنّبه أعلى من bodyText.stackPenalty: ارفع العقوبة لتقبل أسطرًا أوسع تباعدًا مقابله، أو أعد صياغة أحد السطرين. وفي نقل كتاب قائم أبقِها على 'warn': فالنقل يعيد كسور الأسطر في الأصل.",
+      "ja": "bodyText.stacksを'avoid'にします。改行処理は語間の許す範囲で段落を組み直します。残った重複は、避けるコストがbodyText.stackPenaltyより高いものです。ペナルティを上げて行の緩みと引き換えにするか、2行のどちらかの文を書き換えます。既存の本の移植では'warn'のままにします。移植は原本の改行を再現するためです。",
+      "pt": "Ponha bodyText.stacks em 'avoid': a quebra de linha compõe o parágrafo de outro modo onde o espaçamento entre palavras permite. Uma repetição que fica custa mais a evitar que bodyText.stackPenalty: aumente a penalização para a trocar por linhas mais soltas, ou reescreva uma das duas linhas. Num port de um livro existente mantenha 'warn': o port reproduz as quebras do original.",
+      "fr": "Réglez bodyText.stacks sur 'avoid' : la coupure des lignes recompose le paragraphe là où l’espacement des mots le permet. Une répétition qui reste coûte plus à éviter que bodyText.stackPenalty : augmentez la pénalité pour l’échanger contre des lignes plus lâches, ou reformulez l’une des deux lignes. Dans le portage d’un livre existant, gardez 'warn' : le portage reproduit les coupures de l’original.",
+      "de": "Setzen Sie bodyText.stacks auf 'avoid': Der Zeilenumbruch setzt den Absatz anders, wo der Wortabstand es erlaubt. Eine Wiederholung, die bleibt, kostet mehr als bodyText.stackPenalty: Erhöhen Sie den Strafwert, um sie gegen lockerere Zeilen zu tauschen, oder formulieren Sie eine der beiden Zeilen um. Bei der Portierung eines bestehenden Buchs bleiben Sie bei 'warn': Die Portierung gibt die Umbrüche des Originals wieder.",
+      "it": "Imposta bodyText.stacks su 'avoid': la divisione in righe ricompone il paragrafo dove la spaziatura tra le parole lo permette. Una ripetizione che resta costa più di bodyText.stackPenalty da evitare: alza la penalità per scambiarla con righe più larghe, o riformula una delle due righe. Nel port di un libro esistente lascia 'warn': il port riproduce le divisioni dell’originale."
+    },
+    "docs": {
+      "slug": "configuration-text",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto base",
+        "ca": "Text de cos",
+        "zh": "正文",
+        "ar": "نص المتن",
+        "ja": "本文",
+        "pt": "Texto do corpo",
+        "fr": "Texte courant",
+        "de": "Fließtext",
+        "it": "Testo corrente"
+      }
+    }
+  },
   "openerFloat": {
     "source": "engine",
     "label": {
