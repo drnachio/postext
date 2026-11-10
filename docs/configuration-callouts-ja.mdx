@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '囲み',
   description: ':::calloutの囲みに付ける名前付きスタイル：枠線、背景、帯、タイトル、アイコン、外側のマーカー、ラベルのタブ、角ごとの半径・辺ごとの枠線・つながったタブによる囲みの形、番号付きの定理、囲みの中の文字組み、ページをまたいで分割された囲み、囲みの中に描くデザイン',
   lang: 'ja',
-  lastUpdated: '2026-10-20',
-  readingTime: '26分',
+  lastUpdated: '2026-11-10',
+  readingTime: '27分',
   order: 16,
   parent: 'configuration',
   plainSummary: "このページでは、注記、ヒント、警告、学習目標などを本文から切り離して見せる囲みを説明します。囲みの種類ごとに名前を付け、背景、枠線、色の帯、タイトル、アイコンといった見た目を決めます。教科書の定理や例題のように、囲みに番号を付けることもできます。囲みの中のフォントも選べます。長い囲みが次のページへ続くときは、その切れ目に何を示すかを選びます。",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td><code>bodyText</code>を継承。<code>italic</code>/<code>smallCaps</code>は<code>false</code></td>
-      <td>囲みの中の段落とリスト項目の文字組みです。未設定のフィールドはすべて本文テキストを継承します。<code>italicColor</code>はイタリックの部分の色を設定します（囲みの色でイタリックにした引用文など）。<code>fontWeight</code>/<code>boldFontWeight</code>は通常と太字の部分のウェイトを設定します。<code>italic</code>は囲み全体をイタリックにし、<code>*…*</code>の部分は正体に戻ります。<code>smallCaps</code>は囲み全体をスモールキャピタルにします。<code>tabStops</code>と<code>tabInterval</code>は囲みの中で本文のものを置き換えます（<a href="/ja/docs/configuration-text#タブ位置">タブ位置</a>を参照）。囲みのテキストがほかに何を引き継ぐかは<a href="#囲みの中の文字組み">囲みの中の文字組み</a>を参照してください。postext 1.42以降は、<code>letterSpacing</code>で囲みの段落とリスト項目の字間を調整できます。<code>em</code>は本文のサイズが基準で、負の値は字間を詰めます。字間は行の測定に含まれるので、数パーセント詰めて組んだ囲みは原稿と同じ位置で改行します。<code>:::paragraphs</code>ブロック内の段落は、そのスタイル自身の字間を保ちます。このスタイルを使う枠にも同じ設定が適用されます。</td>
+      <td>囲みの中の段落とリスト項目の文字組みです。未設定のフィールドはすべて本文テキストを継承します。<code>italicColor</code>はイタリックの部分の色を設定します（囲みの色でイタリックにした引用文など）。<code>fontWeight</code>/<code>boldFontWeight</code>は通常と太字の部分のウェイトを設定します。<code>italic</code>は囲み全体をイタリックにし、<code>*…*</code>の部分は正体に戻ります。<code>smallCaps</code>は囲み全体をスモールキャピタルにします。<code>tabStops</code>と<code>tabInterval</code>は囲みの中で本文のものを置き換えます（<a href="/ja/docs/configuration-text#タブ位置">タブ位置</a>を参照）。囲みのテキストがほかに何を引き継ぐかは<a href="#囲みの中の文字組み">囲みの中の文字組み</a>を参照してください。postext 1.42以降は、<code>letterSpacing</code>で囲みの段落とリスト項目の字間を調整できます。<code>em</code>は本文のサイズが基準で、負の値は字間を詰めます。字間は行の測定に含まれるので、数パーセント詰めて組んだ囲みは原稿と同じ位置で改行します。<code>:::paragraphs</code>ブロック内の段落は、そのスタイル自身の字間を保ちます。このスタイルを使う枠にも同じ設定が適用されます。postext 1.71以降は、<code>hangingIndent</code>で囲みの段落をぶら下げインデントにできます（<a href="#囲みの中の文字組み">囲みの中の文字組み</a>を参照）。長さを指定すると、段落スタイルの<code>hangingIndent</code>と同じく2行目以降をその距離まで下げます。<code>true</code>にすると、<code>bodyText.hangingIndent</code>と同じく<code>firstLineIndent</code>を1行目以外のすべての行のインデントとして読みます。</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ calloutStyles: [
 - **チップ**はチップのスタイルのままです。`em`のサイズは囲みの本文のサイズを基準に読みます。
 - **`:::space`のアキ**は囲みの本文の行で測ります（どこで省かれるかは[`:::space`](/ja/docs/document-format-directives#space)を参照）。
 - **入れ子の囲み**は自分のスタイルにすべて従います。`span`、`placement`、`floatBarrier`、`snapToGrid`は無視されます。
+
+<strong>ぶら下げの注記。</strong>表の下の注、番号付きの凡例、出典一覧では、記号を本文の前に突き出します。記号は囲みの内側の縁に置き、本文とその折り返しの行はすべて少し内側に下げます。`body.hangingIndent`（postext 1.71以降）は、このスタイルを使う囲みや枠のすべての段落をこの形に組みます。
+
+- <strong>長さ</strong>を指定すると、1行目以外のすべての行を囲みの内側の縁からその距離に置きます。段落スタイルの`hangingIndent`と同じです（[段落スタイル](/ja/docs/configuration-styles#段落スタイル)を参照）。1行目は縁から始まり、スタイル自身が`body.firstLineIndent`を設定していればその位置から始まります。`bodyText`から引き継いだ1行目の字下げは使われません。
+- <strong>`true`</strong>にすると、本文での`bodyText.hangingIndent`と同じく、`body.firstLineIndent`を1行目以外のすべての行のインデントとして読みます。本文がぶら下げインデントの本で囲みをぶら下げずに組むには`false`にします。未設定の場合、囲みは`bodyText.hangingIndent`に従います。
+
+同じ位置にタブ位置を置くと、記号の幅にかかわらず、記号の後の文字列が折り返しの行の縁にそろいます。
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	価格には市内への配送料が含まれます。
+
+\*\*	会員は半額です。この割引はほかの特典と併用できず、シーズン終了まで有効です。
+:::
+```
+
+注記はそれぞれ独立した段落にします。記号と本文の間にはタブ文字か`:tab`を入れます。行頭の`*`とタブは箇条書きの項目を始めるので、アスタリスクはエスケープしています。行はこの形で測られるので、canvas、PDF、ディスプレイリスト、EPUB（`padding-inline-start`と負の`text-indent`）は同じように組み、Wordへの書き出しも同じぶら下げを書き込みます。リスト項目は自分のインデント（`lists.indent`、`lists.gap`）を保ち、`:::paragraphs`ブロック内の段落はそのスタイルのインデントを保ちます。負の`firstLineIndent`はこれまでどおり`0`として扱います。1行目が囲みの内側余白の中から始まることはありません。囲みの中の引用は、`hangingIndent`が`true`なら囲みと一緒にぶら下がります。長さを指定した場合にぶら下がるのは囲み自身の段落だけです。
 
 ### 分割された囲みの目印
 

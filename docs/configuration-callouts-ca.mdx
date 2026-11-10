@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Requadres',
   description: "Com es defineixen estils amb nom per als requadres :::callout: el marc, el fons, la franja, el títol, la icona, el marcador i la pestanya d'etiqueta; formes de caixa amb un radi per cantonada, vores per costat i pestanyes unides; els enunciats numerats; la tipografia de dins del requadre; què passa quan un requadre es parteix entre pàgines, i els dissenys dibuixats dins d'un requadre",
   lang: 'ca',
-  lastUpdated: '2026-10-20',
-  readingTime: '28 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '29 min',
   order: 16,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina explica els requadres que separen del text una nota, un consell, una advertència o una llista d'objectius. Dones a cada classe de requadre un nom i un aspecte: el fons, la vora, una franja de color, un títol i una icona. Un requadre pot portar un número, com un teorema o un exemple en un llibre de text. Tries les lletres de dins del requadre. Quan un requadre llarg continua a la pàgina següent, tries com s'indica el tall.",
@@ -184,9 +184,9 @@ El vidre continua calent una hora després d'apagar la flama.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>hereta de <code>bodyText</code>; <code>italic</code> / <code>smallCaps</code> <code>false</code></td>
-      <td>Tipografia dels paràgrafs i dels elements de llista de dins de la caixa. Cada camp que no s'indica hereta el valor del text de cos; <code>italicColor</code> fixa el color de les cursives (una cita destacada en cursiva amb el color de la caixa). <code>fontWeight</code> / <code>boldFontWeight</code> fixen el pes dels trams normals i dels trams en negreta; <code>italic</code> compon la caixa en cursiva, amb els trams <code>*…*</code> en rodona, i <code>smallCaps</code>, en versaletes; <code>tabStops</code> i <code>tabInterval</code> substitueixen dins de la caixa els del text de cos (vegeu <a href="/ca/docs/configuration-text#tabulacions">Tabulacions</a>). Vegeu <a href="#tipografia-dins-dun-requadre">Tipografia dins d'un requadre</a> per saber què més agafa el text de la caixa. Des de postext 1.42, <code>letterSpacing</code> aplica espaiat entre lletres als paràgrafs i als elements de llista de la caixa. En <code>em</code>, es compta sobre el cos del text, i un valor negatiu l'estreny. Es té en compte en mesurar les línies, de manera que una caixa estreta uns quants punts percentuals talla les línies allà on les tallava l'original; un paràgraf dins d'un bloc <code>:::paragraphs</code> conserva l'espaiat del seu estil. Un marc amb aquest estil també l'aplica.</td>
+      <td>Tipografia dels paràgrafs i dels elements de llista de dins de la caixa. Cada camp que no s'indica hereta el valor del text de cos; <code>italicColor</code> fixa el color de les cursives (una cita destacada en cursiva amb el color de la caixa). <code>fontWeight</code> / <code>boldFontWeight</code> fixen el pes dels trams normals i dels trams en negreta; <code>italic</code> compon la caixa en cursiva, amb els trams <code>*…*</code> en rodona, i <code>smallCaps</code>, en versaletes; <code>tabStops</code> i <code>tabInterval</code> substitueixen dins de la caixa els del text de cos (vegeu <a href="/ca/docs/configuration-text#tabulacions">Tabulacions</a>). Vegeu <a href="#tipografia-dins-dun-requadre">Tipografia dins d'un requadre</a> per saber què més agafa el text de la caixa. Des de postext 1.42, <code>letterSpacing</code> aplica espaiat entre lletres als paràgrafs i als elements de llista de la caixa. En <code>em</code>, es compta sobre el cos del text, i un valor negatiu l'estreny. Es té en compte en mesurar les línies, de manera que una caixa estreta uns quants punts percentuals talla les línies allà on les tallava l'original; un paràgraf dins d'un bloc <code>:::paragraphs</code> conserva l'espaiat del seu estil. Un marc amb aquest estil també l'aplica. Des de postext 1.71, <code>hangingIndent</code> aplica sagnat francès als paràgrafs de la caixa (vegeu <a href="#tipografia-dins-dun-requadre">Tipografia dins d'un requadre</a>): una longitud porta les línies següents a aquesta distància, com el <code>hangingIndent</code> d'un estil de paràgraf, i <code>true</code> llegeix <code>firstLineIndent</code> com el sagnat de totes les línies llevat de la primera, igual que <code>bodyText.hangingIndent</code>.</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -501,6 +501,35 @@ Una caixa `:::callout` (un *requadre*, com en diuen el tauler Estils de requadre
 - **Els xips** conserven el seu estil de xip; una mida en `em` es mesura sobre el cos del text de la caixa.
 - **`:::space`** es mesura en línies del text de la caixa (vegeu [`:::space`](/ca/docs/document-format-directives#space) per saber quan es descarta).
 - **Una caixa niada** agafa tot el seu propi estil; el `span`, el `placement`, el `floatBarrier` i el `snapToGrid` no es tenen en compte.
+
+**Notes amb sagnat francès.** Les notes al peu d'una taula, una llegenda numerada o una llista de fonts pengen la marca davant del text: la marca a la vora interior de la caixa, i el text i totes les línies següents una mica més endins. `body.hangingIndent` (des de postext 1.71) ho fa amb tots els paràgrafs d'una caixa o d'un marc amb aquest estil:
+
+- **Una longitud** situa totes les línies llevat de la primera a aquesta distància de la vora interior de la caixa, com el `hangingIndent` d'un estil de paràgraf (vegeu [Estils de paràgraf](/ca/docs/configuration-styles#estils-de-paràgraf)). La primera línia comença a la vora, o a `body.firstLineIndent` si l'estil el fixa ell mateix; un sagnat de primera línia heretat de `bodyText` cedeix el lloc.
+- **`true`** llegeix `body.firstLineIndent` com el sagnat de totes les línies llevat de la primera, igual que `bodyText.hangingIndent` al text corrent; `false` compon la caixa sense sagnat francès en un llibre on el text de cos en porta. Sense valor, la caixa pren `bodyText.hangingIndent`.
+
+Una tabulació a la mateixa posició porta el text que segueix la marca fins a la vora de les línies següents, sigui quina sigui l'amplada de la marca:
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	Els preus inclouen el lliurament dins de la ciutat.
+
+\*\*	Els socis paguen la meitat; la rebaixa no se suma a altres ofertes i val fins al final de la temporada.
+:::
+```
+
+Cada nota és un paràgraf propi; entre la marca i el text hi va un caràcter de tabulació o `:tab`. L'asterisc va escapat, perquè `*` i una tabulació al principi d'una línia obren un element de llista. Les línies es mesuren així, de manera que el canvas, el PDF, la llista de visualització i l'EPUB (amb `padding-inline-start` i un `text-indent` negatiu) les componen igual, i l'exportació a Word escriu el mateix sagnat francès. Els elements de llista conserven el seu propi sagnat (`lists.indent`, `lists.gap`), i un paràgraf dins d'un bloc `:::paragraphs`, el del seu estil. Un `firstLineIndent` negatiu continua comptant com a `0`: la primera línia no pot començar dins del marge interior de la caixa. Una cita dins d'una caixa penja amb la caixa quan `hangingIndent` és `true`; amb una longitud, només porten sagnat francès els paràgrafs propis de la caixa.
 
 ### Marques d'un requadre partit
 

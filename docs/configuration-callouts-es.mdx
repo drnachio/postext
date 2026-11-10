@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recuadros',
   description: 'Los estilos con nombre de los recuadros :::callout (borde, fondo, franja, título, icono, marcador y pestaña de etiqueta), las formas del recuadro con un radio por esquina, bordes por lado y pestañas unidas, los enunciados numerados, la tipografía dentro del recuadro, los recuadros partidos entre páginas y los diseños dibujados en un recuadro',
   lang: 'es',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '29 min',
   order: 16,
   parent: 'configuration',
@@ -530,7 +530,7 @@ calloutStyles: [{
 :::
 ```
 
-Cada nota es un párrafo propio; entre la marca y el texto va un carácter de tabulación o `:tab`. El asterisco va escapado, porque `*` y una tabulación al principio de una línea abren un elemento de lista. Las líneas se miden así, de modo que el canvas, el PDF, la lista de visualización y el EPUB (con `padding-inline-start` y un `text-indent` negativo) las componen igual. Los elementos de lista conservan su propia sangría (`lists.indent`, `lists.gap`), y un párrafo dentro de un bloque `:::paragraphs`, la de su estilo. Un `firstLineIndent` negativo sigue contando como `0`: la primera línea no puede empezar dentro del relleno del recuadro.
+Cada nota es un párrafo propio; entre la marca y el texto va un carácter de tabulación o `:tab`. El asterisco va escapado, porque `*` y una tabulación al principio de una línea abren un elemento de lista. Las líneas se miden así, de modo que el canvas, el PDF, la lista de visualización y el EPUB (con `padding-inline-start` y un `text-indent` negativo) las componen igual, y la exportación a Word escribe la misma sangría francesa. Los elementos de lista conservan su propia sangría (`lists.indent`, `lists.gap`), y un párrafo dentro de un bloque `:::paragraphs`, la de su estilo. Un `firstLineIndent` negativo sigue contando como `0`: la primera línea no puede empezar dentro del relleno del recuadro. Una cita dentro de un recuadro cuelga con él cuando `hangingIndent` es `true`; con una longitud, solo llevan sangría francesa los párrafos propios del recuadro.
 
 ### Marcas de un recuadro partido
 

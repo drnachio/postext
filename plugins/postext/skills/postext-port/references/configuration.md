@@ -1252,7 +1252,12 @@ All em values = the callout body font size.
            textAlign: 'left'|'justify'|'start', hyphenation: boolean, paragraphSpacing, firstLineIndent,
            tabStops, tabInterval (≥ 1.23, §4a: replace the body's inside the box),
            letterSpacing (≥ 1.42: em of the body size, negative tightens; tracks the box's paragraphs and
-           list items, measured into the lines) }   → inherit bodyText
+           list items, measured into the lines),
+           hangingIndent: boolean|Dimension (≥ 1.71: true hangs as bodyText.hangingIndent does, pairing with
+           body.firstLineIndent as the turnover indent; a length hangs every line but the first that far
+           from the box's inner edge, as ParagraphStyleConfig.hangingIndent; for notes like `\*⇥Note…` in
+           boxes and frames, with a tab stop at the same length; a blockquote hangs too only with true) }
+                                                                              → inherit bodyText
          + italic = false, smallCaps = false   (paragraphs, list items and blockquotes of the box)
   lists = { bulletChar, color, indent, gap, itemSpacing, bulletFontSize?, bulletFontWeight?, bulletFontFamily?, marginTop?, marginBottom? }  → inherit unorderedLists (bulletFontFamily unset: the list level keeps its own face; margins unset: the document's, ordered lists too)
            (a set `color` also colours ordered-list numbers, even when equal to unorderedLists.color)

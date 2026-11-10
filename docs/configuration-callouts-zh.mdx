@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '标注框',
   description: '怎样为:::callout标注框定义命名样式：边框、底色、色条、标题、图标、框外标记和标签页签；逐角设定圆角、逐边设定边框、与框相连的页签等框形；怎样给命题编号；框内文字怎样排；框跨页拆分时怎样处理；怎样在框内绘制设计',
   lang: 'zh',
-  lastUpdated: '2026-10-20',
-  readingTime: '18分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '19分钟',
   order: 16,
   parent: 'configuration',
   plainSummary: "本页讲把提示、技巧、警告或学习目标与正文分开的框。你给每种框起一个名字，并设定它的样子：底色、边框、一条彩色色条、标题和图标。框可以带编号，就像教科书里的定理或例题。你可以选择框内的字体。一个长框延续到下一页时，你可以选择用什么标出断开的地方。",
@@ -184,9 +184,9 @@ The glass stays hot for an hour after the flame is out.
     </tr>
     <tr>
       <td><code>body</code></td>
-      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, tabStops, tabInterval &#125;</code></td>
+      <td><code>&#123; fontFamily, fontSize, lineHeight, color, boldColor, italicColor, fontWeight, boldFontWeight, italic, smallCaps, letterSpacing, textAlign, hyphenation, paragraphSpacing, firstLineIndent, hangingIndent, tabStops, tabInterval &#125;</code></td>
       <td>继承<code>bodyText</code>；<code>italic</code> / <code>smallCaps</code>为<code>false</code></td>
-      <td>框内段落和列表项的排版。每个字段未设置时都继承正文；<code>italicColor</code>设置斜体文字的颜色（例如用框的颜色排成斜体的引文）。<code>fontWeight</code> / <code>boldFontWeight</code>设置常规和粗体文字的字重；<code>italic</code>把整个框排成斜体，此时<code>*…*</code>内的文字改为正体；<code>smallCaps</code>把它排成小型大写字母；<code>tabStops</code>和<code>tabInterval</code>在框内替换正文的设置（见<a href="/zh/docs/configuration-text#制表位">制表位</a>）。框内文字还会采用哪些设置，见<a href="#框内的排版">框内的排版</a>。自postext 1.42起，<code>letterSpacing</code>为框内的段落和列表项设置字距。以<code>em</code>为单位时按正文字号计算，负值收紧。字距会计入行的测量，所以排得紧几个百分点的框会在原稿换行的地方换行；<code>:::paragraphs</code>块中的段落保留其样式自己的字距。模板页中采用这种样式的框也是如此。</td>
+      <td>框内段落和列表项的排版。每个字段未设置时都继承正文；<code>italicColor</code>设置斜体文字的颜色（例如用框的颜色排成斜体的引文）。<code>fontWeight</code> / <code>boldFontWeight</code>设置常规和粗体文字的字重；<code>italic</code>把整个框排成斜体，此时<code>*…*</code>内的文字改为正体；<code>smallCaps</code>把它排成小型大写字母；<code>tabStops</code>和<code>tabInterval</code>在框内替换正文的设置（见<a href="/zh/docs/configuration-text#制表位">制表位</a>）。框内文字还会采用哪些设置，见<a href="#框内的排版">框内的排版</a>。自postext 1.42起，<code>letterSpacing</code>为框内的段落和列表项设置字距。以<code>em</code>为单位时按正文字号计算，负值收紧。字距会计入行的测量，所以排得紧几个百分点的框会在原稿换行的地方换行；<code>:::paragraphs</code>块中的段落保留其样式自己的字距。模板页中采用这种样式的框也是如此。自postext 1.71起，<code>hangingIndent</code>为框内的段落设置悬挂缩进（见<a href="#框内的排版">框内的排版</a>）：设为长度时，像段落样式的<code>hangingIndent</code>一样把转行缩进到该距离；设为<code>true</code>时，像<code>bodyText.hangingIndent</code>一样把<code>firstLineIndent</code>作为除首行外每一行的缩进。</td>
     </tr>
     <tr>
       <td><code>lists</code></td>
@@ -502,6 +502,35 @@ calloutStyles: [
 - **行内标签**保留自己的标签样式；`em`字号按框的正文字号计算。
 - <strong>`:::space`</strong>以框的正文行为单位计量（它在哪些位置被丢弃，见[`:::space`](/zh/docs/document-format-directives#space)）。
 - **嵌套框**完整采用自己的样式；它的`span`、`placement`、`floatBarrier`和`snapToGrid`被忽略。
+
+<strong>悬挂的注释。</strong>表格下方的注、编号图例或资料来源列表，会把标记悬挂在文字前面：标记位于框的内边缘，文字及其所有转行稍向内缩。`body.hangingIndent`（自postext 1.71起）把采用该样式的框或模板页框中的每个段落都这样排：
+
+- <strong>长度</strong>：除首行外每一行都排在距框内边缘该距离处，与段落样式的`hangingIndent`相同（见[段落样式](/zh/docs/configuration-styles#段落样式)）。首行从边缘开始；样式自己设置了`body.firstLineIndent`时，从该值开始。从`bodyText`继承的首行缩进不再生效。
+- <strong>`true`</strong>：像正文中的`bodyText.hangingIndent`一样，把`body.firstLineIndent`作为除首行外每一行的缩进；在正文采用悬挂缩进的书中，`false`让框不悬挂。不设置时，框采用`bodyText.hangingIndent`。
+
+在同一位置设一个制表位，标记后面的文字就会对齐到转行的边缘，无论标记有多宽：
+
+```ts
+calloutStyles: [{
+  id: 'notes',
+  padding: { top: { value: 0, unit: 'mm' }, right: { value: 0, unit: 'mm' }, bottom: { value: 0, unit: 'mm' }, left: { value: 0, unit: 'mm' } },
+  body: {
+    fontSize: { value: 7, unit: 'pt' },
+    hangingIndent: { value: 4.5, unit: 'mm' },
+    tabStops: [{ position: { value: 4.5, unit: 'mm' } }],
+  },
+}],
+```
+
+```markdown
+:::callout{type="notes"}
+\*	价格包含市内配送。
+
+\*\*	会员半价；此折扣不与其他优惠同享，有效期至本季结束。
+:::
+```
+
+每条注释是一个独立的段落；标记和文字之间放一个制表符或`:tab`。星号要转义，因为行首的`*`加制表符会开始一个列表项。行是按这种方式测量的，所以画布、PDF、显示列表和EPUB（用`padding-inline-start`和负的`text-indent`）排得一样，Word导出也写入同样的悬挂缩进。列表项保留自己的缩进（`lists.indent`、`lists.gap`），`:::paragraphs`块中的段落保留其样式的缩进。负的`firstLineIndent`仍按`0`计算：首行不能从框的内边距里开始。`hangingIndent`为`true`时，框内的引用块随框一起悬挂；设为长度时，只有框自身的段落悬挂。
 
 ### 拆分框的标记
 

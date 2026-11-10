@@ -3,7 +3,7 @@
 // registers them; these only compute the paragraph and run properties.
 
 import type { ResolvedConfig } from '../../../vdt.js';
-import type { ResolvedParagraphStyleConfig, ResolvedTocEntryStyleConfig, TextAlign } from '../../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedParagraphStyleConfig, ResolvedTocEntryStyleConfig, TextAlign } from '../../../types.js';
 import { halfPoints, hex, px, twips, type ParaProps, type RunProps, type Units } from '../wml.js';
 
 const JC: Record<TextAlign, ParaProps['jc']> = { left: 'left', justify: 'both', center: 'center', right: 'right' };
@@ -43,6 +43,24 @@ export function paragraphStyleLook(u: Units, bodyPx: number, face: FaceOf, ps: R
       sz: halfPoints(u, ps.fontSize, bodyPx),
     },
   };
+}
+
+/** The indents of a box style's body paragraphs (#1451). Its
+ *  `hangingIndent` hangs as the engine does: `true` sets every line but the
+ *  first at the first-line indent and the first at the edge; a length sets
+ *  the turnovers at that length and the first line at the edge, or at the
+ *  style's own first-line indent (`ownFirstLineIndent`). Unset or `false`:
+ *  the first-line indent alone. */
+export function boxBodyIndent(u: Units, body: ResolvedCalloutStyleConfig['body'], size: number): NonNullable<ParaProps['ind']> {
+  const first = twips(u, body.firstLineIndent, size);
+  const hang = body.hangingIndent;
+  if (hang === true) return first > 0 ? { left: first, hanging: first } : { firstLine: 0 };
+  if (!hang) return { firstLine: first };
+  const turnover = Math.max(0, twips(u, hang, size));
+  const start = body.ownFirstLineIndent ? first : 0;
+  // Word sets the first line `w:hanging` out from `w:left`; a first line
+  // set deeper than the turnovers is a plain first-line indent from there.
+  return turnover > start ? { left: turnover, hanging: turnover - start } : { left: turnover, firstLine: start - turnover };
 }
 
 /** The entry style of contents level `level`: the config's own, or the

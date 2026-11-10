@@ -21,6 +21,7 @@ import { IconFields } from './iconFields.js';
 import { CalloutLabelFields, CalloutTitleStyleFields } from './labelFields.js';
 import { slugifyStyleId, type Group, type GroupConfig, CardButton, Field, inputClass, inputStyle, OFFSET_UNITS, SPACING_UNITS, STROKE_UNITS, ZERO_PT, MIN_HEIGHT_UNITS, FONT_SIZE_UNITS, LINE_HEIGHT_UNITS, TRACKING_UNITS } from './shared.js';
 import { CalloutNumberingFields } from './CalloutStyleCard/CalloutNumberingFields.js';
+import { CalloutBodyIndentFields } from './CalloutStyleCard/CalloutBodyIndentFields.js';
 import type { CalloutStyleCardProps } from './CalloutStyleCard/props.js';
 
 /** One callout style. Every control shows the resolved value and offers a
@@ -938,16 +939,7 @@ export function CalloutStyleCard({
           isDefault={groupUnset('body', 'paragraphSpacing')}
           onReset={() => resetGroupField('body', 'paragraphSpacing')}
         />
-        <DimensionInput
-          label={labels.bodyFirstLineIndent}
-          value={resolved.body.firstLineIndent}
-          onChange={(v) => body({ firstLineIndent: v })}
-          min={0}
-          step={0.1}
-          units={SPACING_UNITS}
-          isDefault={groupUnset('body', 'firstLineIndent')}
-          onReset={() => resetGroupField('body', 'firstLineIndent')}
-        />
+        <CalloutBodyIndentFields raw={style.body} resolved={resolved.body} onChange={body} onReset={(f) => resetGroupField('body', f)} />
         <TabStopsField
           inherits
           stops={style.body?.tabStops}
