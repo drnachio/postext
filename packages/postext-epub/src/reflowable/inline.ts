@@ -328,6 +328,7 @@ export function wrapFormat(inner: string, fmt: Format): string {
   else if (fmt.note === 'right') out = `<span class="pt-note-right">${out}</span>`;
   if (fmt.script) out = `<${fmt.script}>${out}</${fmt.script}>`;
   if (fmt.strike) out = `<s>${out}</s>`;
+  if (fmt.underline) out = `<u>${out}</u>`;
   if (fmt.italic) out = `<em>${out}</em>`;
   if (fmt.bold) out = `<strong>${out}</strong>`;
   if (fmt.lang) out = `<span lang="${xmlAttr(fmt.lang)}" xml:lang="${xmlAttr(fmt.lang)}">${out}</span>`;
@@ -348,15 +349,20 @@ function dropOffsets(text: string, offsets: readonly number[], start: number): s
   return out + text.slice(last);
 }
 
+/** The lines a segment's characters may carry: through them (`~~…~~`)
+ *  and under them (`++…++`). */
+const RULES = ['strike', 'underline'] as const;
+type Rule = (typeof RULES)[number];
+
 /** Whether the space at `i` lies between two words of one struck-through
- *  run (`VDTLineSegment.strike`). */
-function struckSpace(segs: readonly VDTLineSegment[], i: number): boolean {
+ *  (`VDTLineSegment.strike`) or underlined run (`underline`). */
+function ruledSpace(segs: readonly VDTLineSegment[], i: number, key: Rule): boolean {
   let a = i - 1;
   while (a >= 0 && segs[a]!.kind === 'space') a--;
   let b = i + 1;
   while (b < segs.length && segs[b]!.kind === 'space') b++;
-  const before = segs[a]?.strike;
-  const after = segs[b]?.strike;
+  const before = segs[a]?.[key];
+  const after = segs[b]?.[key];
   if (!before || !after || before.id !== after.id) return false;
   // The run goes on through the end of the word before and from the start
   // of the word after.
@@ -415,9 +421,10 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       // spacing, which a reading system makes itself.
       const aki = ctx.spaceAfterQuestion === true && seg.autospace === true && afterQuestion(segs, i) ? '\u3000' : '';
       const text = seg.labelTab ? ' ' : seg.text.length > 0 ? seg.text : seg.autospace ? aki : ' ';
-      // A space between two words of one struck-through run is struck
-      // with them: the run stays one `<s>`.
-      const fmt: Format = struckSpace(segs, i) ? { strike: true } : {};
+      // A space between two words of one struck-through or underlined run
+      // goes with them: the run stays one `<s>` or `<u>`.
+      const fmt: Format = {};
+      for (const key of RULES) if (ruledSpace(segs, i, key)) fmt[key] = true;
       if (text) out.push({ t: 'text', text, fmt, ...(link ? { link } : {}), ...lvlOf(seg) });
       continue;
     }
@@ -440,16 +447,26 @@ export function lineItems(line: VDTLine, ctx: InlineContext, segments = line.seg
       first = false;
       if (!text) continue;
       const fmt = formatOf(run, seg, ctx);
-      // Struck-through characters (`~~…~~`): all of the segment's, or
-      // `from`–`to` of them (a full stop glued to the run stays out).
-      if (seg.strike) {
-        const from = Math.max(0, (seg.strike.from ?? 0) - start);
-        const to = Math.min(run.text.length, (seg.strike.to ?? seg.text.length) - start);
-        if (from <= 0 && to >= run.text.length && text === run.text) {
-          fmt.strike = true;
-        } else if (from < to && text === run.text) {
-          const pieces: [string, Format][] = [[text.slice(0, from), fmt], [text.slice(from, to), { ...fmt, strike: true }], [text.slice(to), fmt]];
-          for (const [part, f] of pieces) if (part) out.push({ t: 'text', text: part, fmt: f, ...(link ? { link } : {}), ...lvlOf(seg) });
+      // Struck-through (`~~…~~`) and underlined (`++…++`) characters: all
+      // of the segment's, or `from`–`to` of them (a full stop glued to the
+      // run stays out).
+      const ruled = text === run.text
+        ? RULES.flatMap((key) => {
+          const r = seg[key];
+          return r ? [{ key, from: Math.max(0, (r.from ?? 0) - start), to: Math.min(text.length, (r.to ?? seg.text.length) - start) }] : [];
+        })
+        : [];
+      if (ruled.length > 0) {
+        if (ruled.every((r) => r.from <= 0 && r.to >= text.length)) {
+          for (const r of ruled) fmt[r.key] = true;
+        } else {
+          const cuts = [...new Set([0, text.length, ...ruled.flatMap((r) => [r.from, r.to]).filter((c) => c > 0 && c < text.length)])].sort((a, b) => a - b);
+          for (let c = 0; c + 1 < cuts.length; c++) {
+            const [a, b] = [cuts[c]!, cuts[c + 1]!];
+            const f: Format = { ...fmt };
+            for (const r of ruled) if (r.from <= a && b <= r.to) f[r.key] = true;
+            out.push({ t: 'text', text: text.slice(a, b), fmt: f, ...(link ? { link } : {}), ...lvlOf(seg) });
+          }
           continue;
         }
       }
@@ -582,6 +599,6 @@ export function formatKey(fmt: Format): string {
   return [
     fmt.bold ? 'b' : '', fmt.italic ? 'i' : '', fmt.script ?? '', fmt.smallCaps ? 'c' : '', fmt.label ? 'l' : '',
     fmt.dots ? `d${fmt.dotsStyle ?? ''}` : '', fmt.proper ? 'p' : '', fmt.book ? 'k' : '', fmt.side ? `s${fmt.side.style}${fmt.side.position}` : '', fmt.tcy ? 't' : '', fmt.orientation ?? '',
-    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '', fmt.strike ? 's' : '',
+    fmt.warichu ? 'w' : '', fmt.done ? 'x' : '', fmt.lang ?? '', fmt.strike ? 's' : '', fmt.underline ? 'u' : '',
   ].join('|');
 }

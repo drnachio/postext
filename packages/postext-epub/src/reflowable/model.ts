@@ -51,6 +51,8 @@ export interface Format {
   done?: boolean;
   /** Struck-through text (`~~…~~`), written as `<s>`. */
   strike?: boolean;
+  /** Underlined text (`++…++`), written as `<u>`. */
+  underline?: boolean;
   /** The language of the run when it differs from its document's: the
    *  one the author named on an inline isolate (`:ltr[…]{lang=en}`,
    *  `VDTLineSegment.lang`). */
