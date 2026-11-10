@@ -277,6 +277,7 @@ const PANEL_NOTED = [
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
+  [/^ChapterStyleConfig\.config$/, 'Design panel with the style in scope (sidebar/layers/ChapterStyleBar.tsx): every section writes into it'],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

@@ -2403,6 +2403,10 @@ export interface SandboxLabels {
   chapterStyleNone: string;
   chapterStyleUse: string;
   chapterStyleEditThis: string;
+  chapterStyleFieldOwn: string;
+  chapterStyleFieldBook: string;
+  chapterStyleFieldUseBook: string;
+  chapterStyleFieldToBook: string;
   chapterTitleLabel: string;
   chapterDelete: string;
   chapterDeleteConfirm: string;

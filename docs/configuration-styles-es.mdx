@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Los estilos con nombre de párrafos, chips, resaltados, listados de código y encabezados, y las páginas que abren cada parte',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '47 min',
+  readingTime: '50 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Esta página trata de los estilos con nombre, que defines una vez y usas muchas. Un estilo de párrafo da forma a un tipo de texto, como una bibliografía o un glosario. Un estilo de chip dibuja una pequeña etiqueta dentro de la línea, y un estilo de resaltado, una banda de color detrás de una frase o una línea por debajo de ella o que la atraviesa; un estilo de carácter compone unas pocas palabras en otra letra, otro cuerpo u otro color, y puede nombrar un estilo de resaltado que las acompañe. Los listados de código tienen su propia letra, su caja y sus colores. La página explica también las páginas que abren cada parte del libro y los estilos de los títulos especiales. Los recuadros tienen su propia página.",
@@ -1458,7 +1458,7 @@ El `config` de un estilo se fusiona sobre la configuración del libro igual que 
 
 La numeración de páginas, los contadores, las notas y el índice siguen corriendo a través del capítulo como en cualquier otro. Todas las salidas lo leen: el canvas, el PDF, el EPUB, el HTML y un paquete compuesto con `buildBundle`, y también un capítulo compuesto por separado con `buildDocument`, porque el motor aplica el estilo que nombra su texto. En un libro, solo el encabezado del primer capítulo es del libro; el de los siguientes se vacía salvo su línea `chapterStyle:`. El `{style="…"}` de un encabezado sigue sumándose al estilo del capítulo, para una sección.
 
-En el Sandbox, la barra «Estilo de capítulo» de lo alto del panel Diseño elige qué edita el panel: el libro o uno de sus estilos. Con un estilo elegido, el panel lo muestra sobre el libro, y lo que cambias se guarda en el estilo como su diferencia con el libro; la barra cambia el nombre del estilo, lo borra y vuelve al libro, y su botón + crea uno nuevo. Un capítulo toma un estilo desde su menú en el panel Capítulos, que escribe por él la línea `chapterStyle:`; su fila muestra el nombre del estilo.
+En el Sandbox, la barra «Estilo de capítulo» de lo alto del panel Diseño elige qué edita el panel: el libro o uno de sus estilos. Con un estilo elegido, el panel lo muestra sobre el libro, y lo que cambias se guarda en el estilo como su diferencia con el libro; la barra cambia el nombre del estilo, lo borra y vuelve al libro, y su botón + crea uno nuevo. Un capítulo toma un estilo desde su menú en el panel Capítulos, que escribe por él la línea `chapterStyle:`; su fila muestra el nombre del estilo. Mientras se edita un estilo, un campo que el estilo fija lleva su marca, cuyo menú recupera el valor del libro o hace del valor del estilo el del libro. En un libro en varios idiomas, los estilos se guardan en la capa que edita el panel: los ajustes de todos los idiomas o la edición en pantalla.
 
 ### Secciones dentro de un capítulo
 

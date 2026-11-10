@@ -35,6 +35,10 @@ export interface FieldLayerValue {
   /** Whether {@link useGeneralIn} can change edition `locale` from here
    *  (the one on screen, or one a project keeps aside). */
   canChange: (locale: string) => boolean;
+  /** The words of another kind of layer than a language's (a chapter
+   *  style): what its own value, the base value and their actions are
+   *  called, and the chip's mark. */
+  wording?: { own: string; general: string; useGeneral: string; promote: string; mark: string };
 }
 
 export const FieldLayerContext = createContext<FieldLayerValue | null>(null);
@@ -108,8 +112,8 @@ export function LayerDot({ state }: { state: FieldLayerState | null }) {
 /** What a row says about its layer, for screen readers, after its label. */
 export function layerText(state: FieldLayerState | null, labels: ReturnType<typeof useSandboxLabels>, ctx: FieldLayerValue | null): string | null {
   if (!state || !ctx) return null;
-  if (state.kind === 'own') return labels.configLayerOwn.replace('__language__', ctx.languageName(ctx.locale));
-  if (state.kind === 'general') return labels.configLayerGeneral;
+  if (state.kind === 'own') return ctx.wording?.own ?? labels.configLayerOwn.replace('__language__', ctx.languageName(ctx.locale));
+  if (state.kind === 'general') return ctx.wording?.general ?? labels.configLayerGeneral;
   if (state.keptBy.length > 0) return labels.configLayerKeptBy.replace('__languages__', state.keptBy.map(ctx.languageName).join(', '));
   return labels.configLayerGeneral;
 }
@@ -125,24 +129,24 @@ export function LayerChip({ state }: { state: FieldLayerState | null }) {
   const labels = useSandboxLabels();
   if (!ctx || !state) return null;
   if (state.kind === 'own') {
-    const name = ctx.languageName(ctx.locale);
+    const own = ctx.wording?.own ?? labels.configLayerOwn.replace('__language__', ctx.languageName(ctx.locale));
     return (
       <Menu
-        label={labels.configLayerOwn.replace('__language__', name)}
+        label={own}
         trigger={(
           <button
             type="button"
-            aria-label={`${labels.configLayerOwn.replace('__language__', name)}: ${labels.configLayerActions}`}
-            title={labels.configLayerOwn.replace('__language__', name)}
+            aria-label={`${own}: ${labels.configLayerActions}`}
+            title={own}
             className={cn(chipClass, 'border')}
             style={{ color: 'var(--edition, var(--brand))', borderColor: 'var(--edition, var(--brand))' }}
           >
-            {languageMark(ctx.locale)}
+            {ctx.wording?.mark ?? languageMark(ctx.locale)}
           </button>
         )}
       >
-        <MenuItem icon={<Link2 size={12} />} onClick={() => ctx.useGeneral(state.paths)}>{labels.configLayerUseGeneral}</MenuItem>
-        <MenuItem icon={<ArrowUpToLine size={12} />} onClick={() => ctx.promote(state.paths)}>{labels.configLayerPromote}</MenuItem>
+        <MenuItem icon={<Link2 size={12} />} onClick={() => ctx.useGeneral(state.paths)}>{ctx.wording?.useGeneral ?? labels.configLayerUseGeneral}</MenuItem>
+        <MenuItem icon={<ArrowUpToLine size={12} />} onClick={() => ctx.promote(state.paths)}>{ctx.wording?.promote ?? labels.configLayerPromote}</MenuItem>
       </Menu>
     );
   }

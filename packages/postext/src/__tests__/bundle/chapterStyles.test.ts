@@ -73,6 +73,20 @@ describe('chapter styles', () => {
     expect(doc.config.layout.layoutType).toBe('double');
   });
 
+  it('leave a book without them as it was: the same configuration and the same pages', () => {
+    const { chapterStyles: _styles, ...plain } = book;
+    void _styles;
+    expect(chapterConfig(plain, undefined)).toBe(plain);
+    expect(chapterConfig(plain, 'appendix')).toBe(plain);
+    expect(chapterConfig(book, 'unknown')).toBe(book);
+    const chapters = [{ markdown: `# One\n\n${filler(20)}` }, { markdown: `# Two\n\n${filler(20)}` }];
+    const pagesOf = (docs: ReturnType<typeof buildBundle>) =>
+      docs.map((d) => d.pages.map((p) => p.columns.map((c) => c.blocks.map((b) => [b.type, b.bbox.y, b.bbox.height]))));
+    // The same chapters with a front matter naming no style lay out alike.
+    const named = [{ markdown: `---\ntitle: One\n---\n# One\n\n${filler(20)}` }, chapters[1]!];
+    expect(pagesOf(buildBundle({ config: plain, resources: [], chapters: named })).slice(1))
+      .toEqual(pagesOf(buildBundle({ config: plain, resources: [], chapters })).slice(1));
+  });
   it('lay a book\'s chapter out in its own style, the numbering running on', () => {
     const docs = buildBundle({
       config: book,

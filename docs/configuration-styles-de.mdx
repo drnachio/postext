@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Benannte Stile für Absätze, Chips, Hervorhebungen, Code-Listings und Überschriften sowie die Seiten, die jeden Teil eröffnen',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '40 min',
+  readingTime: '43 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die benannten Stile, die Sie einmal festlegen und vielfach verwenden. Ein Absatzformat legt eine Textart fest, etwa ein Literaturverzeichnis oder ein Glossar. Ein Chip-Stil zeichnet ein kleines Etikett in eine Zeile, ein Hervorhebungsstil ein Farbband hinter eine Wortgruppe oder eine Linie darunter oder hindurch; ein Zeichenformat setzt einige Wörter in einer anderen Schrift, Größe oder Farbe und kann einen Hervorhebungsstil nennen, der zu ihnen gehört. Code-Listings haben ihre eigene Schrift, ihren eigenen Kasten und ihre eigenen Farben. Außerdem behandelt die Seite die Seiten, die jeden Teil eines Buchs eröffnen, und die Stile für besondere Überschriften. Kästen haben eine eigene Seite.",
@@ -1457,7 +1457,7 @@ Das `config` eines Stils wird über die Konfiguration des Buches gelegt wie die 
 
 Seitennummerierung, Zähler, Anmerkungen und Inhaltsverzeichnis laufen durch das Kapitel weiter wie durch jedes andere. Jede Ausgabe liest ihn: das Canvas, das PDF, das EPUB, das HTML und ein mit `buildBundle` gesetztes Paket, und auch ein einzeln mit `buildDocument` gesetztes Kapitel, denn die Engine wendet den Stil an, den sein Text nennt. In einem Buch ist nur das Frontmatter des ersten Kapitels das des Buches; das eines späteren Kapitels wird bis auf seine Zeile `chapterStyle:` geleert. Das `{style="…"}` einer Überschrift legt sich weiterhin über den Stil des Kapitels, für einen Abschnitt.
 
-In der Sandbox wählt die Leiste „Kapitelstil“ oben im Bedienfeld Gestaltung, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert; die Leiste benennt den Stil um, löscht ihn und kehrt zum Buch zurück, und ihre Schaltfläche + legt einen neuen an. Ein Kapitel erhält einen Stil über sein Menü im Bedienfeld Kapitel, das die Zeile `chapterStyle:` für es schreibt; sein Eintrag zeigt den Namen des Stils.
+In der Sandbox wählt die Leiste „Kapitelstil“ oben im Bedienfeld Gestaltung, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert; die Leiste benennt den Stil um, löscht ihn und kehrt zum Buch zurück, und ihre Schaltfläche + legt einen neuen an. Ein Kapitel erhält einen Stil über sein Menü im Bedienfeld Kapitel, das die Zeile `chapterStyle:` für es schreibt; sein Eintrag zeigt den Namen des Stils. Während ein Stil bearbeitet wird, trägt ein Feld, das der Stil festlegt, seine Markierung, deren Menü den Wert des Buches zurückholt oder den Wert des Stils zu dem des Buches macht. In einem Buch in mehreren Sprachen werden die Stile in der Ebene gespeichert, die das Bedienfeld bearbeitet: in den Einstellungen aller Sprachen oder in der angezeigten Ausgabe.
 
 ### Abschnitte in einem Kapitel
 

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Com es defineixen estils amb nom per a paràgrafs, xips, ressaltats, llistats de codi i encapçalaments, i com es dissenyen les pàgines que obren cada part del llibre',
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '46 min',
+  readingTime: '49 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els estils amb nom, que defineixes una vegada i fas servir tantes vegades com vulguis. Un estil de paràgraf dona aspecte a una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins de la línia, i un estil de ressaltat, una banda de color darrere d'una frase o una línia per sota o que la travessa; un estil de caràcter compon unes quantes paraules en una altra lletra, un altre cos o un altre color, i pot anomenar un estil de ressaltat que les acompanyi. Els llistats de codi tenen una lletra, una caixa i uns colors propis. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials. Els requadres tenen una pàgina pròpia.",
@@ -1456,7 +1456,7 @@ El `config` d'un estil es combina sobre la configuració del llibre igual que la
 
 La numeració de pàgines, els comptadors, les notes i el sumari continuen corrent a través del capítol com en qualsevol altre. Totes les sortides el llegeixen: el canvas, el PDF, l'EPUB, l'HTML i un paquet compost amb `buildBundle`, i també un capítol compost per separat amb `buildDocument`, perquè el motor aplica l'estil que anomena el seu text. En un llibre, només el frontmatter del primer capítol és el del llibre; el dels capítols posteriors es deixa en blanc llevat de la seva línia `chapterStyle:`. El `{style="…"}` d'un encapçalament continua sumant-se a l'estil del capítol, per a una secció.
 
-En el Sandbox, la barra «Estil de capítol» de la part superior del tauler Disseny tria què edita el tauler: el llibre o un dels seus estils. Amb un estil triat, el tauler el mostra sobre el llibre, i el que canvies es desa a l'estil com la seva diferència amb el llibre; la barra canvia el nom de l'estil, l'esborra i torna al llibre, i el seu botó + en crea un de nou. Un capítol pren un estil des del seu menú al tauler Capítols, que hi escriu la línia `chapterStyle:`; la seva fila mostra el nom de l'estil.
+En el Sandbox, la barra «Estil de capítol» de la part superior del tauler Disseny tria què edita el tauler: el llibre o un dels seus estils. Amb un estil triat, el tauler el mostra sobre el llibre, i el que canvies es desa a l'estil com la seva diferència amb el llibre; la barra canvia el nom de l'estil, l'esborra i torna al llibre, i el seu botó + en crea un de nou. Un capítol pren un estil des del seu menú al tauler Capítols, que hi escriu la línia `chapterStyle:`; la seva fila mostra el nom de l'estil. Mentre s'edita un estil, un camp que l'estil fixa porta la seva marca, el menú de la qual recupera el valor del llibre o fa del valor de l'estil el del llibre. En un llibre en diverses llengües, els estils es desen a la capa que edita el tauler: els ajustos de totes les llengües o l'edició en pantalla.
 
 ### Seccions dins d'un capítol
 

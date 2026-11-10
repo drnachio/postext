@@ -9,7 +9,8 @@
 import { useSyncExternalStore } from 'react';
 import { BookOpen, Plus, Trash2 } from 'lucide-react';
 import type { ChapterStyleConfig } from 'postext';
-import { useSandboxLabels, useSandboxStore } from '../../context/SandboxContext.js';
+import { useSandboxDispatch, useSandboxLabels, useSandboxStore } from '../../context/SandboxContext.js';
+import { scopedView } from '../../context/configScope.js';
 import { Button, cn } from '../../ui/index.js';
 import { newChapterStyle } from '../../editions/chapterStyleEdit.js';
 
@@ -18,13 +19,17 @@ const NONE: readonly ChapterStyleConfig[] = [];
 export function ChapterStyleBar() {
   const labels = useSandboxLabels();
   const store = useSandboxStore();
-  // The stored settings, not the panel's view of them (which is the style
-  // merged over the book, without the list of styles).
-  const styles = useSyncExternalStore(store.subscribe, () => store.getSnapshot().config.chapterStyles ?? NONE, () => store.getSnapshot().config.chapterStyles ?? NONE);
+  // The panel's dispatch: in a book in several languages, the styles go to
+  // the layer in scope (every language, or the edition on screen).
+  const dispatch = useSandboxDispatch();
+  // The settings in scope, not the panel's view of them (which is the
+  // style merged over the book, without the list of styles).
+  const read = () => scopedView(store.getSnapshot()).config.chapterStyles ?? NONE;
+  const styles = useSyncExternalStore(store.subscribe, read, read);
   const editing = useSyncExternalStore(store.subscribe, () => store.getSnapshot().editingChapterStyle, () => store.getSnapshot().editingChapterStyle);
   const style = editing ? styles.find((s) => s.id === editing) : undefined;
 
-  const setStyles = (next: ChapterStyleConfig[]) => store.dispatch({ type: 'UPDATE_CONFIG', payload: { chapterStyles: next.length > 0 ? next : undefined } });
+  const setStyles = (next: ChapterStyleConfig[]) => dispatch({ type: 'UPDATE_CONFIG', payload: { chapterStyles: next.length > 0 ? next : undefined } });
   const edit = (id: string | null) => store.dispatch({ type: 'SET_EDITING_CHAPTER_STYLE', payload: id });
   const create = () => {
     const made = newChapterStyle(styles, labels.chapterStyleDefaultName.replace('__n__', String(styles.length + 1)));

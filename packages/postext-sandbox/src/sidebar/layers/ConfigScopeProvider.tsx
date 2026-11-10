@@ -6,7 +6,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type Dispatch, type ReactNode } from 'react';
 import { diffConfigLayers, overridePaths, sameConfig, type ConfigOverride, type PostextConfig } from 'postext';
-import { useSandboxPresetProvider, useSandboxSelector, useSandboxStore, type SandboxAction } from '../../context/SandboxContext.js';
+import { useSandboxLabels, useSandboxPresetProvider, useSandboxSelector, useSandboxStore, type SandboxAction } from '../../context/SandboxContext.js';
 import { loadPresetEdition } from '../../editions/editionStore.js';
 import { BUILTIN_PRESET_ID } from '../../presets/builtin.js';
 import type { PresetProvider } from '../../presets/types.js';
@@ -14,7 +14,7 @@ import type { PresetDraftSummary } from '../../storage/presetDrafts.js';
 import { ScopedDispatchContext, StateViewContext, capturedInto, panelView, scopedView } from '../../context/configScope.js';
 import { chapterStyleView, writeChapterStyle } from '../../editions/chapterStyleEdit.js';
 import { FieldLayerContext, type FieldLayerValue } from '../../controls/fieldLayer.js';
-import { editionOverride, generalSettingsFrom, generalSettingsView, ownPathsAt, promoteFields, rebaseEdition, recordSharedConfig, withoutOwnFields } from '../../editions/configLayers.js';
+import { editionOverride, generalSettingsFrom, generalSettingsView, ownPathsAt, promoteFields, rebaseEdition, recordSharedConfig, removePaths, withoutOwnFields } from '../../editions/configLayers.js';
 import { getProject, toSummary, updateProject } from '../../storage/projects.js';
 import { localeDisplayName } from '../../presets/localeNames.js';
 
@@ -73,6 +73,7 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
   const store = useSandboxStore();
   const layers = useSandboxSelector((s) => s.configLayers);
   const editingStyle = useSandboxSelector((s) => s.editingChapterStyle);
+  const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const uiLocale = useSandboxSelector((s) => s.locale);
   const projectId = useSandboxSelector((s) => s.activeProjectId);
@@ -142,7 +143,10 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
   const panelDispatch = useCallback<Dispatch<SandboxAction>>((action) => {
     const s = store.getSnapshot();
     const id = s.editingChapterStyle;
-    if (capturedInto() || !id || (action.type !== 'UPDATE_CONFIG' && action.type !== 'SET_CONFIG') || (action.type === 'SET_CONFIG' && action.shared)) {
+    // The list of styles itself (the bar's writes) is the book's, not the
+    // style's.
+    const listOnly = action.type === 'UPDATE_CONFIG' && Object.keys(action.payload).every((k) => k === 'chapterStyles');
+    if (capturedInto() || !id || listOnly || (action.type !== 'UPDATE_CONFIG' && action.type !== 'SET_CONFIG') || (action.type === 'SET_CONFIG' && action.shared)) {
       dispatch(action);
       return;
     }
@@ -210,6 +214,47 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
     };
   }, [layers, locale, locales, uiLocale, config, overrides, store, setEdition]);
 
+  // A chapter style edited: its own fields marked like a language's, back
+  // to the book's value or made the book's from their chip.
+  const styleLayer = useMemo<FieldLayerValue | null>(() => {
+    if (!editingStyle) return null;
+    const s = store.getSnapshot();
+    const base = scopedView(s).config;
+    const style = base.chapterStyles?.find((st) => st.id === editingStyle);
+    if (!style) return null;
+    const name = style.name || style.id;
+    const setStyleConfig = (book: PostextConfig, own: ConfigOverride) =>
+      dispatch({ type: 'UPDATE_CONFIG', payload: { ...book === base ? {} : book, chapterStyles: (book.chapterStyles ?? []).map((st) => (st.id === style.id ? { ...st, config: own } : st)) } });
+    return {
+      scope: 'edition',
+      locale: style.id,
+      locales: [style.id],
+      languageName: () => name,
+      editConfig: chapterStyleView(base, style.id),
+      overrides: { [style.id]: style.config },
+      useGeneral: (paths) => setStyleConfig(base, removePaths(style.config, paths)),
+      useGeneralIn: (_tag, paths) => setStyleConfig(base, removePaths(style.config, paths)),
+      promote: (paths) => {
+        // The style's values at `paths` become the book's, and leave it.
+        const { chapterStyles, ...bookRest } = base;
+        const view = chapterStyleView(base, style.id);
+        const { chapterStyles: _v, ...viewRest } = view;
+        void _v;
+        const book = { ...promoteFields(bookRest as PostextConfig, viewRest as PostextConfig, paths), chapterStyles } as PostextConfig;
+        setStyleConfig(book, removePaths(style.config, paths));
+      },
+      canChange: () => true,
+      wording: {
+        own: labels.chapterStyleFieldOwn.replace('__name__', name),
+        general: labels.chapterStyleFieldBook,
+        useGeneral: labels.chapterStyleFieldUseBook,
+        promote: labels.chapterStyleFieldToBook,
+        mark: name.slice(0, 3).toUpperCase(),
+      },
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingStyle, config, layers, store, dispatch, labels]);
+
   const scope = useMemo<ConfigScopeValue>(() => ({ shadowed, dismissShadowed: () => setShadowed(null), layer }), [shadowed, layer]);
 
   if (!layers && !editingStyle) return <ConfigScopeContext value={scope}>{children}</ConfigScopeContext>;
@@ -217,7 +262,7 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
     <ConfigScopeContext value={scope}>
       <StateViewContext value={panelView}>
         <ScopedDispatchContext value={panelDispatch}>
-          <FieldLayerContext value={layer}>{children}</FieldLayerContext>
+          <FieldLayerContext value={styleLayer ?? layer}>{children}</FieldLayerContext>
         </ScopedDispatchContext>
       </StateViewContext>
     </ConfigScopeContext>
