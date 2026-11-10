@@ -51,7 +51,7 @@ import { figureLabelsOverlay } from './labels.js';
 import { calloutIcon, calloutTitle } from './calloutHead.js';
 import { CSS_PX_PER_PT, drawnBoxSvg } from './exercises.js';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline.js';
-import { cropOf, plainCaption } from './figures.js';
+import { cellImageOf, cropOf, plainCaption } from './figures.js';
 
 /** Where an id landed: its content document and element id. */
 export interface Loc {
@@ -1345,11 +1345,7 @@ class DocWalker {
         };
         if (cell.image) {
           const alt = cell.image.altText ?? '';
-          c.image = {
-            fileId: cell.image.fileId,
-            alt,
-            ...(cell.rect.width > 0 ? { width: Math.min(1, cell.image.rect.width / cell.rect.width) } : {}),
-          };
+          c.image = cellImageOf(cell, cell.image, alt);
           this.book.images.add(cell.image.fileId);
           if (alt) this.book.altText = true;
           else this.book.missingAlt = true;

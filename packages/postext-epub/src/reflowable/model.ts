@@ -239,7 +239,7 @@ export interface TableCellNode {
   align: string;
   verticalAlign: string;
   inl: InlineItem[];
-  image?: { fileId: string; alt: string; width?: number };
+  image?: { fileId: string; alt: string; width?: number; crop?: FigureNode['crop'] };
   background?: string;
   alternate?: boolean;
 }
