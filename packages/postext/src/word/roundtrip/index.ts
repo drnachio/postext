@@ -4,7 +4,7 @@
 // with whatever changed in the book since the export.
 
 export type { DocxEditSource, DocxEdit, DocxEditResult, DocxComment } from './types.js';
-export { isExportedDocx } from './read.js';
+export { exportMapLost, isExportedDocx } from './read.js';
 export { applyDocxEdits } from './apply.js';
 export { DocxReadError } from '../docxRead/parts.js';
 export { diffText, type Hunk } from './diff.js';

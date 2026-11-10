@@ -39,9 +39,11 @@ const copy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
  * them. An edition with its own wording (`localized.<lang>`, a language
  * other than the book's own) takes every edit made in it: a caption
  * corrected in the Spanish file must not reword the English book. The
- * book's own language writes onto the shared spec.
+ * book's own language writes onto the shared spec (`ownLanguage`: the
+ * edition is the block the manifest keeps for its own language, which
+ * takes an edit only to a field it already rewords).
  */
-export function updateSpec(specs: Spec[], edition: BundleLocaleOverrides | undefined, before: Resource, after: Resource): boolean {
+export function updateSpec(specs: Spec[], edition: BundleLocaleOverrides | undefined, before: Resource, after: Resource, ownLanguage = false): boolean {
   const own = specs.find((s) => s.id === after.id);
   let local = (edition?.resources as Spec[] | undefined)?.find((s) => s.id === after.id);
   if (!own && !local) return false;
@@ -52,11 +54,12 @@ export function updateSpec(specs: Spec[], edition: BundleLocaleOverrides | undef
     }
     return local;
   };
-  const target = (): Record<string, unknown> => (edition || !own ? editionSpec() : own) as Record<string, unknown>;
+  const shared = (field: string): boolean => ownLanguage && !!own && !(local && field in local);
+  const target = (field: string): Record<string, unknown> => (shared(field) ? own! : edition || !own ? editionSpec() : own) as Record<string, unknown>;
   let changed = false;
   for (const f of RESOURCE_FIELDS) {
     if (after[f] === before[f]) continue;
-    target()[f] = after[f];
+    target(f)[f] = after[f];
     changed = true;
   }
   const rowsAfter = after.table?.model.rows as CellRows | undefined;
@@ -69,7 +72,7 @@ export function updateSpec(specs: Spec[], edition: BundleLocaleOverrides | undef
     if (edits.length > 0) {
       // The table the edition shows: its own, else a copy of the shared
       // one it then keeps.
-      const t = target() as Spec;
+      const t = target('table') as Spec;
       if (!t.table && t !== own && own?.table) t.table = copy(own.table);
       const rows = t.table?.model?.rows as CellRows | undefined;
       for (const [r, c, content] of edits) {
@@ -116,8 +119,12 @@ function resourceChange(book: Book, result: DocxEditResult, opts: Options, readT
   }
   const specs = (loose ? data : (data as BundleManifest).resources ?? []) as Spec[];
   const edition = loose ? undefined : pickLocaleOverrides(data as BundleManifest, book.locale) ?? undefined;
+  // The block a manifest keeps for its own language rewords the config;
+  // a caption corrected in that language belongs to the shared resource.
+  const own = (data as BundleManifest).locale;
+  const ownLanguage = !loose && !!own && own.toLowerCase() === book.locale.toLowerCase();
   let any = false;
-  for (const r of changed) any = updateSpec(specs, edition, book.resources.find((b) => b.id === r.id)!, r) || any;
+  for (const r of changed) any = updateSpec(specs, edition, book.resources.find((b) => b.id === r.id)!, r, ownLanguage) || any;
   return any ? { path, before: text, after: jsonLike(text, data) } : undefined;
 }
 
@@ -156,7 +163,21 @@ const REASONS: Record<string, string> = {
   overlap: 'overlaps another edit',
   'format-crosses-markup': 'the formatting crosses Markdown markup',
   'format-partial': 'the formatting covers only part of a marked span',
+  moved: 'a paragraph moved in Word stays where it is in the book (move it in the Markdown)',
 };
+
+/** What an edit changed, in words a reader can follow: a paragraph mark
+ *  added or taken out is named, since its text is only white space. */
+function editWhat(e: { before: string; after: string; kind: string }): string {
+  const before = clip(e.before);
+  const after = clip(e.after);
+  if (!before && !after) {
+    if (/\n/.test(e.after) && !/\n/.test(e.before)) return 'paragraph break added';
+    if (/\n/.test(e.before) && !/\n/.test(e.after)) return 'paragraphs joined';
+    return e.before.length > e.after.length ? 'white space removed' : 'white space added';
+  }
+  return before && after ? `"${before}" → "${after}"` : after ? `+ "${after}"` : `- "${before}"`;
+}
 
 /**
  * Apply the edits of an exported Word file to the book at `project`.
@@ -218,7 +239,7 @@ export async function importWordEdits(bytes: Uint8Array, file: string, project: 
   reporter.data.files = changes.map((c) => c.path);
   const mark = { applied: style.green('applied'), conflict: style.yellow('conflict'), rejected: style.red('rejected') };
   for (const e of result.edits) {
-    const what = e.before && e.after ? `"${clip(e.before)}" → "${clip(e.after)}"` : e.after ? `+ "${clip(e.after)}"` : `- "${clip(e.before)}"`;
+    const what = editWhat(e);
     const why = e.reason ? style.dim(`  (${REASONS[e.reason] ?? e.reason})`) : '';
     reporter.info(`  ${mark[e.status]} ${editPlace(e, byId)} ${e.kind}: ${what}${why}`);
   }

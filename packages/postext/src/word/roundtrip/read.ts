@@ -7,7 +7,7 @@
 import { unzipSync } from 'fflate';
 import { attr, child, children, parseXml, textOf, type XmlElement } from '../xml.js';
 import { readCustomProp, readExportMap, xmlPartText, PROP_EXPORT_ID } from '../anchors/exportMap.js';
-import type { ExportMap } from '../anchors/types.js';
+import { BOOKMARK_PREFIX, type ExportMap } from '../anchors/types.js';
 import { DocxReadError } from '../docxRead/parts.js';
 import { PARA_CHAR, walkPart, type ParaProps, type Token } from './walk.js';
 import { readParaStyles, type ParaStyles } from './added.js';
@@ -59,6 +59,11 @@ export interface ReadDocx {
   map: ExportMap;
   fragments: Map<string, ReadFragment>;
   added: AddedParagraph[];
+  /** The text of every paragraph that stands outside the bookmarks, the
+   *  ones passed over as decoration too: a fragment whose bookmark is gone
+   *  while its paragraph still stands there word for word lost its
+   *  bookmark to the editor, and was not deleted (`apply.ts`). */
+  strays: string[];
   /** The paragraph styles of the file, to read an added paragraph's role. */
   styles: ParaStyles;
   comments: ReadComment[];
@@ -99,12 +104,28 @@ function linksOf(files: Files, part: string): Record<string, string> {
   return out;
 }
 
-/** Whether `bytes` is a .docx written by a postext Word exporter (it holds
- *  the export map and the custom property naming it). Never throws. */
+/** Whether `bytes` is a .docx written by a postext Word exporter: it holds
+ *  the export map. The custom property that names the export is not asked
+ *  for (an editor may drop the document properties and keep the map); when
+ *  it is there, the map must be the one it names. Never throws. */
 export function isExportedDocx(bytes: Uint8Array): boolean {
   try {
+    return readExportMap(unzipSync(bytes)) !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/** Whether `bytes` is a postext export an editor saved without its export
+ *  map: the property naming the export or the fragments' bookmarks are
+ *  still there, the map is not. Its edits cannot be placed. Never throws. */
+export function exportMapLost(bytes: Uint8Array): boolean {
+  try {
     const files = unzipSync(bytes);
-    return readCustomProp(files, PROP_EXPORT_ID) !== undefined && readExportMap(files) !== undefined;
+    if (readExportMap(files) !== undefined) return false;
+    if (readCustomProp(files, PROP_EXPORT_ID) !== undefined) return true;
+    const doc = files['word/document.xml'];
+    return !!doc && xmlPartText(doc).includes(`w:name="${BOOKMARK_PREFIX}`);
   } catch {
     return false;
   }
@@ -121,6 +142,7 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
    *  container they stand in. */
   let orphan: { chars: ReadChar[]; box: number; props?: ParaProps; afterSect: boolean }[] = [];
   const added: AddedParagraph[] = [];
+  const strays: string[] = [];
   /** A section ended since the last bookmark (semantic: a chapter end), so
    *  what follows opens the next chapter. */
   let sectSeen = false;
@@ -146,6 +168,10 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
   // The others go after the block before them, or before the block after
   // them when they open a chapter (or the document).
   const flushOrphans = (nextBox?: number, nextFid?: string): void => {
+    for (const o of orphan) {
+      const text = o.chars.map((c) => c.ch).join('').trim();
+      if (text) strays.push(text);
+    }
     const paras = orphan
       .filter((o) => boxesWithMarks.has(o.box) || o.box === nextBox)
       .filter((o) => o.chars.some((c) => c.ch.trim() !== '' || c.tex !== undefined));
@@ -157,11 +183,19 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
     }
   };
   const known = new Set(map.fragments.map((f) => f.id));
+  // A bookmark an editor renamed stands for its fragment when no bookmark
+  // keeps the fragment's own name, and only the first such one does.
+  const named = new Set<string>();
+  for (const tok of tokens) if (tok.t === 'bmStart' && !tok.renamed) named.add(tok.fid);
 
   for (const tok of tokens) {
     switch (tok.t) {
       case 'bmStart': {
         if (!known.has(tok.fid)) break;
+        if (tok.renamed) {
+          if (named.has(tok.fid)) break;
+          named.add(tok.fid);
+        }
         boxesWithMarks.add(tok.box);
         open.push({ wid: tok.wid, fid: tok.fid, depth: tok.depth });
         const f = frag(tok.fid);
@@ -239,8 +273,11 @@ function assign(tokens: Token[], map: ExportMap): Omit<ReadDocx, 'map' | 'commen
       }
     }
   }
+  // A paragraph still waiting when its part ends (a note without any
+  // bookmark) is a stray too.
+  if (pending && pending.chars.length) orphan.push({ chars: pending.chars, box: -1, afterSect: false });
   flushOrphans();
-  return { fragments, added, marks };
+  return { fragments, added, strays, marks };
 }
 
 function readComments(files: Files, marks: Map<string, ReadPosition>): ReadComment[] {
@@ -285,7 +322,7 @@ export function readExportedDocx(bytes: Uint8Array): ReadDocx {
       ({ nextPara: next, nextBox: box } = walkPart(note, links, tokens, next, box));
     }
   }
-  const { fragments, added, marks } = assign(tokens, map);
+  const { fragments, added, strays, marks } = assign(tokens, map);
   const holders = map.holders === true && noProof;
-  return { map, fragments, added, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
+  return { map, fragments, added, strays, styles: readParaStyles(files, (path) => xmlOf(files, path)), comments: readComments(files, marks), holders };
 }

@@ -18,7 +18,7 @@ export { semanticDocx, SEMANTIC_ENGINE, SEMANTIC_STYLE, preferredWordVariant } f
 export type { SemanticDocxOptions, SemanticDesign, WordChapterInput, SemanticWarning } from './semantic/index.js';
 export { facsimileDocx, FACSIMILE_ENGINE, formattedDocx, FORMATTED_ENGINE } from './formatted/index.js';
 export type { FacsimileDocxOptions, FacsimileWarning, FormattedDocxOptions, FormattedWarning } from './formatted/index.js';
-export { isExportedDocx, applyDocxEdits } from './roundtrip/index.js';
+export { exportMapLost, isExportedDocx, applyDocxEdits } from './roundtrip/index.js';
 export type { DocxEditSource, DocxEdit, DocxEditResult, DocxComment } from './roundtrip/index.js';
 export { planWordFonts, wordFontFor } from './fonts/index.js';
 export type { WordFontPlan, SourceFace, WordFontRef, FontWarning, PlanWordFontsOptions } from './fonts/index.js';

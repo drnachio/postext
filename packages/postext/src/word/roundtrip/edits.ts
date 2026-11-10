@@ -246,6 +246,9 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
     else if (v.O[i] === '-' || v.O[i] === '‐') hyphens++;
   }
   const ctx = splitKey(contextKey);
+  // Text that lives in an attribute (`title="…"`): the quote it stands in.
+  const opener = v.frags[0]?.role?.startsWith('attr:') ? base[v.range[0] - 1] : undefined;
+  const quote = opener === '"' || opener === "'" ? opener : undefined;
   // An equation the hunk replaces keeps its number (`\tag`) in the source.
   const at = h.a1 - h.a0 === 1 && v.O[h.a0] === OBJECT_CHAR ? v.atomOf[h.a0]! : -1;
   const replaced = at >= 0 ? base.slice(v.atoms[at]!.start, v.atoms[at]!.end) : undefined;
@@ -292,6 +295,11 @@ function insertText(v: BlockView, base: string, h: Hunk, contextKey: string, dis
       if (tex === undefined) continue;
       piece = mathSource(replaced !== undefined ? keepTag(replaced, tex) : tex, display);
       plain = false;
+    } else if (quote !== undefined && ch === quote) {
+      // The value's own quote typed inside it would end it: the
+      // typographic one stands for it.
+      const opens = j === 0 || /[\s([{\u2014\u2013-]/.test(v.N[j - 1] ?? ' ');
+      piece = quote === '"' ? (opens ? '\u201C' : '\u201D') : opens ? '\u2018' : '\u2019';
     } else piece = escapeTyped(ch);
     if (!plain) {
       flush();
@@ -315,10 +323,20 @@ function hunkKind(v: BlockView, h: Hunk): SourceEdit['kind'] {
   return 'text';
 }
 
+/** Whether the character at `at` is escaped by a backslash before it (an
+ *  odd run of them). */
+function escapeBefore(base: string, at: number): boolean {
+  let n = 0;
+  while (at - n - 1 >= 0 && base[at - n - 1] === '\\') n++;
+  return n % 2 === 1;
+}
+
 /** Source ranges of the characters a hunk deletes, joined where the markup
  *  between them may go too. */
 function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] {
   const units: [number, number][] = [];
+  let offsets: Set<number> | undefined;
+  const mapped = (): Set<number> => (offsets ??= new Set(v.M));
   const seen = new Set<number>();
   for (let i = h.a0; i < h.a1; i++) {
     const at = v.atomOf[i]!;
@@ -329,6 +347,8 @@ function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] 
     }
     if (v.M[i]! < 0) continue;
     let e = v.M[i]! + 1;
+    // The backslash that escapes the character goes with it.
+    const s = escapeBefore(base, v.M[i]!) && !mapped().has(v.M[i]! - 1) ? v.M[i]! - 1 : v.M[i]!;
     // A space stands for a run of source whitespace (a line end and the
     // next line's indent): it goes whole.
     if (isSpace(v.O[i])) {
@@ -336,7 +356,7 @@ function deletedRanges(v: BlockView, base: string, h: Hunk): [number, number][] 
       for (let j = i + 1; j < v.O.length; j++) if (v.M[j]! >= 0) { limit = v.M[j]!; break; }
       while (e < limit && /[ \t\r\n]/.test(base[e]!)) e++;
     }
-    units.push([v.M[i]!, e]);
+    units.push([s, e]);
   }
   if (!units.length) return [];
   units.sort((x, y) => x[0] - y[0]);
@@ -404,7 +424,7 @@ function touchesGenerated(v: BlockView, h: Hunk): boolean {
 }
 
 /** Atoms whose printed text the engine generates from the construct. */
-const LABEL_ATOMS = new Set(['ref', 'footnote']);
+const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
 
 /** Source edits for one changed hunk. */
 export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {

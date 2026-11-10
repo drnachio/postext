@@ -15,12 +15,12 @@ export const FLAG_MARKERS: Record<string, { open: string; close: string }[]> = {
 /** Flag letters in writing order (outermost first). */
 export const FLAG_ORDER = 'bicpsk';
 
-const DELIMITER_RE = /\*\*|__|\*|_|\^|~|`|:smallcaps\[|\]\([^()\s]*(?:\s+"[^"]*")?\)|\]|\[|\s+/gy;
+const DELIMITER_RE = /\*\*|__|\*|_|\^|~|`|:smallcaps\[|:index\{[^{}\n]*\}|:index\[|\]\{[^{}\n]*\}|\]\([^()\s]*(?:\s+"[^"]*")?\)|\]|\[|\\|\s+/gy;
 
 /** Whether the markup left between deleted characters may go with them:
- *  only whitespace and delimiters that pair up among themselves (a whole
- *  `**bold**` or `[link](url)` inside the deleted text). Index marks,
- *  attributes and anything else stay. */
+ *  only whitespace, delimiters that pair up among themselves (a whole
+ *  `**bold**`, `[link](url)` or `:index[word]{…}` inside the deleted
+ *  text), point index marks and escape backslashes. Anything else stays. */
 export function markupDeletable(gaps: readonly string[]): boolean {
   const counts = new Map<string, number>();
   let opens = 0;
@@ -35,7 +35,11 @@ export function markupDeletable(gaps: readonly string[]): boolean {
       pos = DELIMITER_RE.lastIndex;
       const tok = m[0];
       if (/^\s/.test(tok)) continue;
-      if (tok === '[' || tok === ':smallcaps[') opens++;
+      // A point index mark inside the deleted text goes with it (what it
+      // pointed at is gone), and so does the backslash that escaped a
+      // deleted character.
+      if (tok === '\\' || tok.startsWith(':index{')) continue;
+      if (tok === '[' || tok === ':smallcaps[' || tok === ':index[') opens++;
       else if (tok.startsWith(']')) closes++;
       else counts.set(tok, (counts.get(tok) ?? 0) + 1);
     }
@@ -150,8 +154,18 @@ export function splitKey(key: string): { flags: string; href?: string } {
   return bar < 0 ? { flags: key } : { flags: key.slice(0, bar), href: key.slice(bar + 1) };
 }
 
+/** A link to a site's root with or without its closing slash is the same
+ *  link (LibreOffice adds the slash when it saves). */
+const sameLink = (href: string): string => href.replace(/^([a-z][a-z0-9+.-]*:\/\/[^/?#]+)\/$/i, '$1');
+
 export function makeKey(flags: string, href?: string): string {
   let ordered = '';
   for (const l of FLAG_ORDER) if (flags.includes(l)) ordered += l;
-  return href && !href.startsWith('#') ? `${ordered}|${href}` : ordered;
+  return href && !href.startsWith('#') ? `${ordered}|${sameLink(href)}` : ordered;
+}
+
+/** `key` without its code flag. */
+export function withoutCode(key: string): string {
+  const { flags, href } = splitKey(key);
+  return flags.includes('k') ? makeKey(flags.replace('k', ''), href) : key;
 }

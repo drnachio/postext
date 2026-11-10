@@ -8,6 +8,9 @@
 // its source.
 
 import { isTexToOmmlReady, texToDisplayOmml, texToOmml } from '../ommlWrite/index.js';
+import { ommlToTex } from '../omml.js';
+import { parseXml, type XmlElement } from '../xml.js';
+import { looseTex } from './looseTex.js';
 
 /** The TeX inside a source equation (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`). */
 export function texOfSource(source: string): { tex: string; display: boolean } {
@@ -42,12 +45,39 @@ export const stripTag = (tex: string): string => tex.replace(TAG, '');
 const omml = (tex: string, display: boolean): string | null =>
   display ? (texToDisplayOmml(stripTag(tex))?.omml ?? null) : texToOmml(tex, false);
 
+/** The TeX the reader gives for the OMML the writer sets `tex` as. */
+function readBack(omml: string): string | undefined {
+  try {
+    const find = (el: XmlElement): XmlElement | undefined => {
+      if (el.name === 'm:oMath') return el;
+      for (const c of el.children) {
+        const hit = typeof c === 'string' ? undefined : find(c);
+        if (hit) return hit;
+      }
+      return undefined;
+    };
+    const math = find(parseXml(omml));
+    return math ? ommlToTex(math) : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export function mathUnchanged(source: string, tex: string): boolean {
   const orig = texOfSource(source);
   if (normalizeTex(stripTag(orig.tex)) === normalizeTex(stripTag(tex))) return true;
+  // An editor that wrote the equation out again in its own way (no thin
+  // spaces, `π` for `\pi`, a group round each side of a slash).
+  const read = looseTex(stripTag(tex));
+  if (looseTex(stripTag(orig.tex)) === read) return true;
   if (!isTexToOmmlReady()) return false;
   const a = omml(orig.tex, orig.display);
-  return a !== null && a === omml(tex, orig.display);
+  if (a === null) return false;
+  if (a === omml(tex, orig.display)) return true;
+  // The same reader on both sides: what it gives for the OMML the writer
+  // set the source as, against what it gave for the file's.
+  const back = readBack(a);
+  return back !== undefined && looseTex(stripTag(back)) === read;
 }
 
 /** The TeX of an equation edited in Word, given back the number its source

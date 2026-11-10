@@ -9,7 +9,7 @@
 // (`mc:Choice` only, so a text box with a VML fallback is read once).
 
 import { attr, child, children, localName, onOff, textOf, type XmlElement } from '../xml.js';
-import { fragmentIdOf } from '../anchors/bookmarks.js';
+import { fragmentIdOf, renamedFragmentIdOf } from '../anchors/bookmarks.js';
 import { ommlToTex } from '../omml.js';
 import { ommlHash } from '../anchors/ommlHash.js';
 
@@ -25,7 +25,7 @@ export const isHolderChar = (ch: string | undefined): boolean => ch === '\u00a0'
 export type Token =
   | { t: 'char'; ch: string; flags: string; href?: string; tex?: string; mathHash?: string; tracked?: boolean; holder?: true; para: number }
   | { t: 'para'; para: number; depth: number; box: number; props?: ParaProps }
-  | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number }
+  | { t: 'bmStart'; wid: string; fid: string; para: number; depth: number; box: number; renamed?: true }
   | { t: 'bmEnd'; wid: string; para: number }
   | { t: 'del'; para: number }
   | { t: 'cStart'; cid: string }
@@ -64,6 +64,8 @@ function paraProps(p: XmlElement): ParaProps | undefined {
 }
 
 interface RunCtx {
+  /** Inside a contents list or an index (their content control). */
+  listing?: boolean;
   href?: string;
   tracked?: boolean;
   deleted?: boolean;
@@ -95,6 +97,16 @@ interface WalkState {
 const curPara = (s: WalkState): number => s.paras[s.paras.length - 1] ?? -1;
 const curBox = (s: WalkState): number => s.boxes[s.boxes.length - 1] ?? -1;
 
+/** A monospaced face by its name. */
+const MONO_FACE = /mono|courier|consolas|menlo|typewriter/i;
+
+/** Paragraph styles of a contents list or an index: what Word builds from
+ *  the document, never text of the source. */
+const LISTING_STYLE = /^(?:TOC\d|Index\d|IndexHeading|TOCHeading|PostextTOC|PostextIndex)/i;
+
+/** Content controls that hold only what the writer generates. */
+const LISTING_TAG = /^ptx:(?:toc|index)$/;
+
 /** Run flags in a fixed order: b i c p s k. */
 function runFlags(rPr: XmlElement | undefined): string {
   if (!rPr) return '';
@@ -112,7 +124,10 @@ function runFlags(rPr: XmlElement | undefined): string {
   const va = attr(child(rPr, 'vertAlign'), 'val');
   if (va === 'superscript' || (va === undefined && /superscript/.test(style))) f += 'p';
   else if (va === 'subscript' || (va === undefined && /subscript/.test(style))) f += 's';
-  if (/code|verbatim/.test(style)) f += 'k';
+  // Code by its character style, or, in a file whose editor keeps no
+  // character styles (Google Docs sets the style's look on the run), by
+  // the monospaced face set on the run itself.
+  if (/code|verbatim/.test(style) || (!style && MONO_FACE.test(attr(child(rPr, 'rFonts'), 'ascii') ?? ''))) f += 'k';
   return f;
 }
 
@@ -318,8 +333,10 @@ function walkInline(s: WalkState, el: XmlElement, ctx: RunCtx): void {
         emit(s, OBJECT_CHAR, '', ctx, ommlToTex(c), ommlHash(c));
         break;
       case 'bookmarkStart': {
-        const fid = fragmentIdOf(attr(c, 'name') ?? '');
-        if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s) });
+        const bookmark = attr(c, 'name') ?? '';
+        const renamed = renamedFragmentIdOf(bookmark);
+        const fid = renamed ?? fragmentIdOf(bookmark);
+        if (fid !== undefined) s.out.push({ t: 'bmStart', wid: attr(c, 'id') ?? '', fid, para: curPara(s), depth: s.paras.length, box: curBox(s), ...(renamed !== undefined ? { renamed: true as const } : {}) });
         break;
       }
       case 'bookmarkEnd':
@@ -355,7 +372,18 @@ function walkParagraph(s: WalkState, p: XmlElement, ctx: RunCtx): void {
   walkInline(s, p, ctx);
   let own = false;
   for (let k = before; k < s.out.length && !own; k++) own = s.out[k]!.t !== 'cStart' && s.out[k]!.t !== 'cEnd';
-  const generatedOnly = s.touched === true && !own;
+  let generatedOnly = s.touched === true && !own;
+  // A line of a contents list or an index that an editor turned into
+  // plain text (the field gone, the style or the content control left):
+  // still the writer's, unless it holds a fragment of its own.
+  if (!generatedOnly && (ctx.listing || LISTING_STYLE.test(attr(child(child(p, 'pPr'), 'pStyle'), 'val') ?? ''))) {
+    let marked = false;
+    for (let k = before; k < s.out.length && !marked; k++) marked = s.out[k]!.t === 'bmStart' || s.out[k]!.t === 'bmEnd';
+    if (!marked) {
+      s.out.length = before;
+      generatedOnly = true;
+    }
+  }
   s.touched = outerTouched;
   const depth = s.paras.length;
   s.paras.pop();
@@ -376,7 +404,8 @@ function walkBlocks(s: WalkState, el: XmlElement, ctx: RunCtx): void {
     } else if (name === 'tbl') {
       for (const tr of children(c, 'tr')) for (const tc of children(tr, 'tc')) walkBlocks(s, tc, ctx);
     } else if (name === 'sdt') {
-      walkBlocks(s, child(c, 'sdtContent') ?? c, ctx);
+      const listing = LISTING_TAG.test(attr(child(child(c, 'sdtPr'), 'tag'), 'val') ?? '');
+      walkBlocks(s, child(c, 'sdtContent') ?? c, listing ? { ...ctx, listing } : ctx);
     } else if (name === 'customXml' || name === 'ins' || name === 'moveTo') {
       walkBlocks(s, c, name === 'customXml' ? ctx : { ...ctx, tracked: true });
     } else if (name === 'del' || name === 'moveFrom') {

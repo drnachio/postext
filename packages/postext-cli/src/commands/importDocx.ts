@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, extname, join } from 'node:path';
 import type { PostextConfig, Resource } from 'postext';
 import { bitmapInfo, bundleBaseConfig, createBundle, svgSize } from 'postext/bundle';
-import { analyzeDocx, applyStyleTracking, emptyTemplate, isExportedDocx, parseTemplate, pictureResolution, readDocx, wordStyleTracking, wordToPostext, type ImportResult } from 'postext/word';
+import { analyzeDocx, applyStyleTracking, emptyTemplate, exportMapLost, isExportedDocx, parseTemplate, pictureResolution, readDocx, wordStyleTracking, wordToPostext, type ImportResult } from 'postext/word';
 import { CliError, UsageError } from '../args';
 import type { CommandContext } from '../context';
 import { deepMerge } from '../input';
@@ -56,6 +56,9 @@ export default async function importDocx(ctx: CommandContext): Promise<void> {
   if (project) {
     // The edits are written into the book itself.
     if (opts.string('out')) throw new UsageError('-o converts a Word file into a new book: with a book named, the edits are written into it (--dry-run to see them first)');
+    // An export whose map the program it was saved from left out: the
+    // edits made in it have nothing to be placed by.
+    if (!exported && exportMapLost(bytes)) throw new CliError(`${file} comes from a postext export, but the program it was last saved from left the export map out, so the edits in it cannot be placed in the book. Make the corrections in a copy that keeps the map (Word and LibreOffice do)`);
     if (!exported) throw new CliError(`${file} was not exported by postext (it has no export map): import it without naming a book to convert it`);
     await importWordEdits(bytes, file, project, opts, reporter);
     return;
