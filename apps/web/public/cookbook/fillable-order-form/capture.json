@@ -1,0 +1,754 @@
+{
+  "schemaVersion": 1,
+  "slug": "fillable-order-form",
+  "sourceHash": "aedf4415066b88ec9522fc28f8c306acbceb8276fa29c8f59ac62e396b6a7200",
+  "engine": {
+    "postext": "1.73.0",
+    "postextPdf": "1.73.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T21:25:22.994Z",
+  "variants": {
+    "en": {
+      "hash8": "dd2910e7",
+      "vdtHash": "0b7c35ca60fdc76c7d071b1728e98dac4cf5b71b",
+      "timings": {
+        "importMs": 8959,
+        "fontsMs": 159,
+        "buildMs": 171,
+        "totalMs": 12905,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          270
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 9.5,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Barlow Semi Condensed",
+          "Libre Caslon Display",
+          "Libre Caslon Text"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 191674,
+          "alt": "Opening page 1: Seed List and Order Form."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 90126,
+          "alt": "Opening page 2: The 2027 List."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1286,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 71052,
+          "alt": "Page 3: WHAT YOU OWE."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 53704,
+          "alt": "Opening page 4: Your Details."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "fillable-order-form.pdf",
+        "bytes": 576263,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "fillable-order-form.postext",
+        "bytes": 372332,
+        "folio": "31a0037d",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "9380d5491dd2e6cd",
+            "lines": "dee20caf9a9091a3"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "formNumberStyle",
+          "formatFieldNumber",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.textAlign",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].minWidth",
+          "chipStyles[].paddingBottom",
+          "chipStyles[].paddingTop",
+          "chipStyles[].paddingX",
+          "chipStyles[].underline",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].position",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerBold",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.headerLetterSpacing",
+          "tableStyle.headerTextTransform",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 348,
+        "designElements": 8,
+        "directives": [
+          ":::columns",
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":chip",
+          ":tab"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "chips",
+          "citation-styles",
+          "form-fields",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "tab-stops",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.84
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "aa31516c",
+      "vdtHash": "f74d58304d8fc476d4424cbc9ad5e423f9b0dd5e",
+      "timings": {
+        "importMs": 8977,
+        "fontsMs": 143,
+        "buildMs": 181,
+        "totalMs": 12923,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          270
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Libre Caslon Text",
+          "sizePt": 9.5,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Barlow Semi Condensed",
+          "Libre Caslon Display",
+          "Libre Caslon Text"
+        ],
+        "pages": 4,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 201130,
+          "alt": "Página de apertura 1: Lista de semillas y hoja de pedido."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 88326,
+          "alt": "Página de apertura 2: La lista de 2027."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1286,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 75800,
+          "alt": "Página 3: LO QUE PAGAS."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1286,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 58956,
+          "alt": "Página de apertura 4: Tus datos."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "fillable-order-form.pdf",
+        "bytes": 577064,
+        "pages": 4
+      },
+      "sandbox": {
+        "file": "fillable-order-form.postext",
+        "bytes": 373497,
+        "folio": "31a0037d",
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "cd11524f9792d27b",
+            "lines": "b48768b05d63b98c"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "defaultResourceTypes",
+          "formNumberStyle",
+          "formatFieldNumber",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.textAlign",
+          "chipStyles",
+          "chipStyles[].background",
+          "chipStyles[].backgroundEnabled",
+          "chipStyles[].bold",
+          "chipStyles[].borderColor",
+          "chipStyles[].borderRadius",
+          "chipStyles[].borderWidth",
+          "chipStyles[].color",
+          "chipStyles[].fontFamily",
+          "chipStyles[].fontSize",
+          "chipStyles[].gap",
+          "chipStyles[].id",
+          "chipStyles[].minWidth",
+          "chipStyles[].paddingBottom",
+          "chipStyles[].paddingTop",
+          "chipStyles[].paddingX",
+          "chipStyles[].underline",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].letterSpacing",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].textTransform",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].tabStops",
+          "paragraphStyles[].tabStops[].position",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].namePlural",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel",
+          "tableStyle",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerBold",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.headerLetterSpacing",
+          "tableStyle.headerTextTransform",
+          "tableStyle.rules"
+        ],
+        "configSections": [
+          "bodyText",
+          "chipStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes",
+          "tableStyle"
+        ],
+        "configLeaves": 348,
+        "designElements": 8,
+        "directives": [
+          ":::columns",
+          "::resource",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":chip",
+          ":tab"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 2
+        },
+        "fonts": [
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Barlow Semi Condensed",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Display",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Libre Caslon Text",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "chips",
+          "citation-styles",
+          "form-fields",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "localised-labels",
+          "opener-design",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "tab-stops",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.86
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

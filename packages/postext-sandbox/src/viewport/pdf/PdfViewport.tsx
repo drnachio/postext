@@ -228,6 +228,9 @@ export function PdfViewport() {
         fontProvider: providerRef.current,
         pageNegative: debug.pageNegative.enabled,
         outlines: pdfGen.outlines,
+        // Out of the layout key (#1491): the live settings, not the ones a
+        // cached document was laid out with.
+        ...(pdfGen.forms ? { forms: pdfGen.forms } : {}),
         colorSpace,
         accessible: pdfGen.accessible,
         resourceBytes,

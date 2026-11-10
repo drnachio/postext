@@ -1,0 +1,802 @@
+{
+  "schemaVersion": 1,
+  "slug": "art-plates-to-the-bleed",
+  "sourceHash": "e7e16006a30ad591411130bebab5b3ff857d403221bcfcaabe75381a228dc106",
+  "engine": {
+    "postext": "1.73.0",
+    "postextPdf": "1.73.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T20:35:33.381Z",
+  "variants": {
+    "en": {
+      "hash8": "98cf96f7",
+      "vdtHash": "dab409d8bdd4b31081a578c5dca06798390f96ea",
+      "timings": {
+        "importMs": 966,
+        "fontsMs": 103,
+        "buildMs": 23,
+        "totalMs": 1991,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          160,
+          195
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.6,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Jost",
+          "Spectral"
+        ],
+        "pages": 7,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1192,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 64474,
+          "alt": "Opening page 1: A Window on the Left."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 57036,
+          "alt": "Page 2. Plate 1. Johannes Vermeer, The Milkmaid, c. 1660."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 110430,
+          "alt": "Page 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "plate",
+          "w": 1000,
+          "h": 1192,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 52490,
+          "alt": "Page 4. Plate 2. Johannes Vermeer, Young Woman with a Water Pitcher, c. 1662."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "plate",
+          "w": 1000,
+          "h": 1192,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 45368,
+          "alt": "Page 5. Plate 3. Johannes Vermeer, Woman Reading a Letter, c. 1663."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 32640,
+          "alt": "Page 6. Plate 4. Johannes Vermeer, Woman Holding a Balance, c. 1664."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 61170,
+          "alt": "Page 7: A note on the plates. Fig. 1. Detail of plate 4: the beam and its two empty pans. The 48 mm of canvas it shows print 60 mm wide, 1.25 times their size."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "art-plates-to-the-bleed.pdf",
+        "bytes": 1533463,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "art-plates-to-the-bleed.postext",
+        "bytes": 1481871,
+        "folio": "b54b554f",
+        "chapters": [
+          {
+            "pages": 7,
+            "hash": "5f1b50315d0ffdcb",
+            "lines": "2fd557b3d9f500d1"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.align",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.captionMeasure",
+          "resourceTypes[].defaultPlacement.captionSide",
+          "resourceTypes[].defaultPlacement.plate",
+          "resourceTypes[].defaultPlacement.width",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 230,
+        "designElements": 9,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "figure-citations",
+          "full-page-plates",
+          "heading-attributes",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.97
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "a3f2df28",
+      "vdtHash": "869be21fba8037796e1a80c140cb17e4dacfff69",
+      "timings": {
+        "importMs": 968,
+        "fontsMs": 134,
+        "buildMs": 31,
+        "totalMs": 2033,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          160,
+          195
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.6,
+          "leadingPt": 13.5
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Jost",
+          "Spectral"
+        ],
+        "pages": 7,
+        "ownLines": 177
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1192,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 64344,
+          "alt": "Página de apertura 1: Una ventana a la izquierda."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 57558,
+          "alt": "Página 2. Lámina 1. Johannes Vermeer, La lechera, h. 1660."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 105856,
+          "alt": "Página 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "plate",
+          "w": 1000,
+          "h": 1192,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 54186,
+          "alt": "Página 4. Lámina 2. Johannes Vermeer, Joven con una jarra de agua, h. 1662."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "plate",
+          "w": 1000,
+          "h": 1192,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 45686,
+          "alt": "Página 5. Lámina 3. Johannes Vermeer, Mujer leyendo una carta, h. 1663."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 33328,
+          "alt": "Página 6. Lámina 4. Johannes Vermeer, Mujer con una balanza, h. 1664."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1192,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 58864,
+          "alt": "Página 7: Nota sobre las láminas. Fig. 1. Detalle de la lámina 4: el astil y sus dos platillos vacíos. Los 48 mm de lienzo que muestra se imprimen a 60 mm, 1,25 veces su tamaño."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "spread"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "art-plates-to-the-bleed.pdf",
+        "bytes": 1535560,
+        "pages": 7
+      },
+      "sandbox": {
+        "file": "art-plates-to-the-bleed.postext",
+        "bytes": 1481943,
+        "folio": "b54b554f",
+        "chapters": [
+          {
+            "pages": 7,
+            "hash": "30389e1a79794778",
+            "lines": "771c7162d5b00ad8"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "captionStyle",
+          "captionStyle.align",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].defaultPlacement",
+          "resourceTypes[].defaultPlacement.align",
+          "resourceTypes[].defaultPlacement.captionMeasure",
+          "resourceTypes[].defaultPlacement.captionSide",
+          "resourceTypes[].defaultPlacement.plate",
+          "resourceTypes[].defaultPlacement.width",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "resourceTypes[].shortLabel"
+        ],
+        "configSections": [
+          "bodyText",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "resourceTypes"
+        ],
+        "configLeaves": 230,
+        "designElements": 9,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          "\\\\",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 5,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Jost",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Jost",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "figure-citations",
+          "full-page-plates",
+          "heading-attributes",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "title-line-breaks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.97
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+---
+title: "Art plates to the margins, the trim and the bleed"
+summary: "An exhibition essay on four Vermeer interiors: each painting a full-page plate inside the margins, to the trim or to the bleed, and a detail printed 60 mm wide."
+description: "A 160 × 195 mm art-book essay with four Vermeer plates set by placement.plate (content, trim, bleed), a detail at 60 mm and a print PDF with crop marks."
+plain: "Say how far each painting may reach on its page, inside the margins, to the cut edge or past it, and give a detail its width in millimetres. The pages make themselves."
+question: "How do I print a painting as a full-page plate, inside the margins, to the trim or to the bleed?"
+aliases: ["art book", "exhibition catalogue", "full-page plate", "full bleed painting", "detail at size", "width in millimetres"]
+---
+
+## What you'll build
+
+Seven pages of a small exhibition catalogue, 160 × 195 mm, on four interiors by Johannes Vermeer from the Rijksmuseum, the Met and the National Gallery of Art. The essay opens on a recto with a sunk title. Each painting it cites stands alone on the next whole page: *The Milkmaid* on <PageRef page={2}>page 2</PageRef> inside the margins, under its running head; the *Water Pitcher* and the *Letter* face each other on <PageRef page={4}>pages 4 and 5</PageRef>, one cut at the trim, the other running into the bleed past the crop marks, both without heads or folios. A detail of the balance prints 60 mm wide on <PageRef page={7}>page 7</PageRef>, its caption beside it. The PDF carries the marks, a TrimBox and a BleedBox.
+
+## Method
+
+### 1 · One type for the plates, one reach per painting
+
+The code is [the short answer](#the-short-answer) above. The plate type sets `plate: true` as its default placement, so a painting the essay cites goes to the first page it can have whole and grows to the content area with its caption under it. `REACH` overrides that per painting: `'trim'` and `'bleed'` cover the page and crop the picture about its centre, so pick paintings whose shape is close to the page's (these are 0.85 to 0.89 wide for a page of 0.82). `captionMeasure: 'body'` keeps the caption of an inner plate as wide as the picture.
+
+### 2 · Size each file for where it prints
+
+<Excerpt region="paintings" />
+
+The preflight counts the crop: a bleed plate here is 201 mm tall with the bleed, so its file needs 2,400 px to reach 300 ppi, and the two plates inside the margins need less. These print at 303 to 348 ppi. `page.cutLines` in the config gives the sheet its 3 mm of bleed; without it `'bleed'` stops at the trim like `'trim'`.
+
+### 3 · Running heads that leave the full plates alone
+
+<Excerpt region="running-heads" />
+
+A plate set to the trim or the bleed gives its page the `'plate'` role. These heads name `pages: 'body'`, so they print over the inner plates and drop on pages 4 and 5. An element that should print there anyway, a small credit in the corner for instance, names `'plate'` in its `pages`.
+
+### 4 · A detail at a size you can state
+
+The detail type sets `width: { value: 60, unit: 'mm' }` with `captionSide: 'inside'`. A length is measured against its slot rather than shared out of it, so the 48 mm of canvas the crop shows print at 60 mm, 1.25 times their size, in any column or edition, and the caption can say so.
+
+## Variations
+
+### Send every plate to the bleed
+
+Give every painting the same reach: each plate then covers its page, without heads or folio, and only the cropping changes.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### Print the detail at actual size
+
+Cut 60 mm of canvas from the museum file and keep the width: the caption then reads 1:1. At this painting's 1,666 ppi master any detail down to a few millimetres still clears 300 ppi.
+
+## Pitfalls
+
+- A plate cited in the same paragraph as another waits for the page after it, since a page already holding a float is passed over, three at most.
+- `pt` and `mm` widths work; `px` and `em` are not read as a length, and the figure takes its whole slot.
+- A painting much wider than the page loses its sides on a trim or bleed plate. Keep landscapes inside the margins, where the whole picture shows.

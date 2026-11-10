@@ -1373,7 +1373,9 @@ Inline `:chip[text]{style="id"}` (word banks, keys, tags). Chip without style �
 ```
 A chip with a `field` attribute (≥ 1.71) is a fillable PDF form field on its box: its style is the field's
 look, `minWidth` the room to type in (document-format.md §10.1). A chip style with `underline` draws a
-writing line, which is not the `:underline[…]` text mark.
+writing line, which is not the `:underline[…]` text mark. How number fields write numbers is
+`pdfGeneration.forms` (≥ 1.74): `{ currency?: '€', currencyBefore?: true, separatorStyle?: 0|1|2|3 (from the
+locale), font?: 'chip'|'helvetica'|{ family, weight?, style? } }`; set it from the source's currency and separators.
 
 ---------------------------------------------------------------------------------
 
@@ -1506,7 +1508,7 @@ span:     'column' (default) | 'page' | 'side' (float-only side column; else beh
                          one-column page it is an ordinary inline embed. `columns` does nothing for an inline embed
 rotate?:  'ccw' | 'cw'   (landscape: page-span float on its own page)
 width?:   0 < w < 1 fraction of column/page width (default whole), or a length {value, unit} in mm|cm|in|pt
-                         (#1461), measured against the slot it is set in (column, a column float's columns and gutters,
+                         (≥ 1.73, #1461), measured against the slot it is set in (column, a column float's columns and gutters,
                          content width, side column, a styled section's or a box's columns); ≥ the slot = whole slot;
                          a turned float is laid out at most that wide before turning. px/em are not read as a length
 align?:   'left' (default) | 'center' | 'right' | 'start' | 'end'   (start/end ≥ 1.15: logical sides; left/right are
@@ -1557,7 +1559,7 @@ citingPage?: boolean     ≥ 1.25, position top/auto, span column/page, not rota
                          break opens the page (chapter's first page, part, :::pagebreak), nothing page-wide stands above
                          the citing line, and the citing line stays on that page; else its usual slot. Falls back to
                          layout.floatsAtCitingPage. Read after its citation in tagged PDF / HTML
-plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pictures only (bitmap, svg, video poster),
+plate?:   boolean | 'content' | 'trim' | 'bleed'   (≥ 1.73, #1461) full-page plate, pictures only (bitmap, svg, video poster),
                          not 'here' or a vertical page: alone on a fresh page after its citation, scaled up or down to the
                          largest size the content area holds with caption + note, centred unless align. Waits for a page it
                          can have whole (no opener, other float or text yet), 3 pages at most, then takes the next as it is.
@@ -1565,7 +1567,8 @@ plate?:   boolean | 'content' | 'trim' | 'bleed'   (#1461) full-page plate, pict
                          'bleed' cover the page (bleed needs page.cutLines, else = trim), cropped about the centre, caption
                          at the content-area foot on a paper-colour band; that page has role 'plate' (no running heads,
                          folio or design elements unless pages:'plate'). false on a resource turns off its type's plate.
-                         An enlarged bitmap under print.preflight.minImageResolution = lowImageResolution (crop counted)
+                         An enlarged bitmap under print.preflight.minImageResolution (default 300 ppi) = preflight
+                         lowImageResolution (crop counted; books set up for print only); no plate warning of its own
 ```
 A type may leave fields out (≥ 1.38): the built-in type of the same id (`figure`, `table`, `video`, in the document's
 language) fills them, else `name` is the id, `shortLabel` and `captionPrefix` the `name`, `numberingTemplate`

@@ -1,0 +1,57 @@
+---
+title: "Signos de lógica y de conjuntos con una fuente de símbolos"
+summary: "Una cartilla de lógica en fuentes sin ∀, ∈ ni ℵ: symbolFont nombra Noto Sans Math, que dibuja esos signos y el griego en el lienzo y en el PDF."
+plain: "Un capítulo breve que enseña a leer los signos de la lógica y de la teoría de conjuntos. Las fuentes del libro no tienen esos signos, así que una segunda fuente los pone, en pantalla y en el PDF impreso."
+description: "Una cartilla de lógica en Postext con symbolFont: Noto Sans Math dibuja ∀, ∃, ∈, ℵ y el griego en todas las fuentes, en el lienzo y en el PDF, sin cajas vacías."
+question: "¿Cómo imprimo los signos de lógica y conjuntos (∀, ∈, ℵ) y el griego que mi fuente no tiene, sin cajas vacías?"
+aliases: ["fuente de símbolos", "symbolFont", "fuente de reserva", "glifos que faltan", "cajas vacías en el PDF", "tofu", "signos lógicos", "notación de conjuntos", "lógica de predicados", "Noto Sans Math", "glyphFallbackAt"]
+pageNotes: { "1": "La apertura del capítulo: una banda granate con el antetítulo CARTILLA DE LÓGICA · CAPÍTULO 1, el título Leer los signos y una línea de siete signos, ∀ ∃ → ∈ ∪ ∅ ℵ, en blanco y a gran tamaño; debajo, la introducción y la sección Enunciados y conectivas, con ¬p, p ∧ q, p ∨ q, p → q y p ↔ q en el texto corrido.", "2": "La tabla de verdad de las cinco conectivas bajo una fila de cabecera granate, después las leyes de De Morgan y la sección Cuantificadores: ∀ y ∃ con sus fórmulas destacadas, entre ellas ∀x (Hx → Mx).", "3": "Las metavariables griegas φ, ψ, Γ ⊢ φ, la sección Conjuntos con tres fórmulas destacadas para ⊆, ∪ y ∩, la paradoja de Russell y la sección Contar el infinito: ℵ.", "4": "La tabla de dónde vienen los signos: nueve filas, del ∈ de Peano de 1889 al ∅ de Weil de 1939, y el colofón." }
+---
+
+## Lo que vas a componer
+
+El primer capítulo de una cartilla de lógica de bolsillo, en una página de 155 × 235 mm: una banda granate con los signos del capítulo a gran tamaño y después cuatro secciones que leen en voz alta ∀, ∃, ∈, ∪, ∅ y ℵ, con las fórmulas en el texto corrido y destacadas entre párrafos. El libro va en Crimson Pro, los títulos en Cormorant Garamond y los rótulos en IBM Plex Sans Condensed. Ninguna de las tres tiene ∀, ∈ ni una letra griega en los archivos que sirve Fontsource. Un solo ajuste, `symbolFont`, pone Noto Sans Math detrás de cada una, así que todos los signos salen de la misma fuente en el cuerpo, los títulos, las cabeceras y las celdas de las tablas, y el PDF los imprime todos.
+
+## Elaboración
+
+### 1 · Una fuente de símbolos detrás de todas
+
+El código de este paso es la respuesta corta, más arriba. `symbolFont: 'Noto Sans Math'` ([fuente de símbolos](/es/docs/configuration-fonts-colors-viewers#fuente-de-símbolos)) coloca esa familia detrás de todas las que nombra la configuración: un carácter que la fuente no tiene se dibuja con Noto Sans Math, al tamaño y en el color de la fuente, y el resto de la línea sigue en la suya. Fontsource sirve Noto Sans Math entera en su archivo `latin`, con 3033 caracteres, pero el kit declara ese archivo solo para el rango latino, y el navegador no le pediría ∀. El `resolve` y el `pdfFonts` de la receta entregan el mismo archivo sin rango, en pantalla y a `renderToPdf`. Solo cambian de fuente los caracteres que faltan: Crimson Pro tiene ¬, así que la negación del texto sigue en Crimson Pro.
+
+### 2 · Una primera composición sin ella enseña lo que falta
+
+<Excerpt region="without" />
+
+La primera composición deja `symbolFont` vacío e imprime sus avisos `glyphFallbackAt`, uno por cada párrafo, título o tabla que lleva caracteres para los que su fuente no tiene glifo, con la página y los caracteres. La edición inglesa da dieciocho: catorce párrafos en Crimson Pro, tres títulos en Cormorant Garamond y la fila de cabecera de la tabla 1.1 en IBM Plex Sans Condensed negrita. Sin una familia que los dibuje, el lienzo toma los signos de una fuente del sistema del lector y el PDF imprime una caja vacía por cada uno. La segunda composición, con la fuente de símbolos, es la que se ve en la página; sus avisos nombran `"Noto Sans Math"` como la familia que los dibuja.
+
+### 3 · Los signos de la apertura son texto
+
+<Excerpt region="opener" />
+
+La línea de siete signos bajo el título es un texto de diseño en Cormorant Garamond a 30 pt, que toma su contenido del atributo `signs` del título. Cormorant Garamond no tiene ninguno, así que los siete salen de la fuente de símbolos, en el blanco de la banda. Un espaciado de 9 pt los reparte a lo ancho de la caja.
+
+### 4 · Las celdas y las cabeceras usan la misma fuente
+
+<Excerpt region="tables" />
+
+La tabla de verdad se construye con las propias conectivas: la cabecera de cada columna es la fórmula, y cada celda, lo que la fórmula da en esa fila. Las celdas de cabecera van en IBM Plex Sans Condensed negrita cursiva y las del cuerpo en Crimson Pro; la fuente de símbolos sirve a las dos. Su única variante redonda dibuja para todos los pesos e inclinaciones, de modo que el ∧ de la cabecera en negrita y el ∈ de una fórmula en cursiva son el mismo signo recto. La cabecera de la página impar imprime la sección en curso, `{firstMark.h2}`, y *CONJUNTOS: ∈, ∪, ∩ Y ∅*, en la página 3, también toma sus signos de Noto Sans Math.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Página 3: las fórmulas de conjuntos, en Crimson Pro cursiva, con todos los signos de Noto Sans Math." />
+
+## Variantes
+
+### Quita la primera composición
+
+Leídos los avisos, basta con una composición.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Errores frecuentes
+
+- Una fuente cuyos archivos de Fontsource incluyen el griego (Source Serif 4, Alegreya) compone φ y Γ por sí misma, y el kit carga ese archivo cuando el texto lleva griego: entonces solo los signos pasan a la fuente de símbolos. Crimson Pro no tiene archivo griego, así que su griego sale de Noto Sans Math.
+- La fuente de símbolos tiene una sola variante, redonda y regular. Un título en negrita o una fórmula en cursiva compone sus signos en esa variante, que es como los imprimen las matemáticas.

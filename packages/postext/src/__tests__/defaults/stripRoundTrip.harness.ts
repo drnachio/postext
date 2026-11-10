@@ -277,7 +277,7 @@ const RICH: PostextConfig = {
   diagramStyle: { singleInk: true },
   videoStyle: { qr: { enabled: false } },
   cjk: { compression: 'none' },
-  pdfGeneration: { colorSpace: 'cmyk' },
+  pdfGeneration: { colorSpace: 'cmyk', forms: { currency: '$', separatorStyle: 0 } },
   print: { black: { text: 'k' } },
   contrast: { level: 'AAA' },
   checks: { contentInConfig: { allow: ['Editorial Cometa'], maxWords: 3 } },

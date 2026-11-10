@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatFieldNumber, formNumberStyle, numberFieldText, documentLanguageOf } from '../../index.js';
+import { formatFieldNumber, formNumberStyle, formOptionsOf, numberFieldText, documentLanguageOf, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from '../../index.js';
 import { formFieldFromAttrs, formatFieldCalc, parseFieldCalc } from '../../parse/formFields.js';
 
 // #1445: the number rule every output shares (the PDF's printed values and
@@ -114,5 +114,23 @@ describe('numberFieldText (#1445)', () => {
     expect(numberFieldText({ name: 'q', kind: 'number', format: 'currency' }, ' ', de)).toBeUndefined();
     expect(numberFieldText({ name: 'n', kind: 'text' }, '120', de)).toBeUndefined();
     expect(numberFieldText(undefined, '120', de)).toBeUndefined();
+  });
+});
+
+describe('pdfGeneration.forms (#1491)', () => {
+  it('fills what the host leaves unset from the configuration, field by field', () => {
+    expect(formOptionsOf(undefined, { currency: 'USD' })).toEqual({ currency: 'USD' });
+    expect(formOptionsOf({ separatorStyle: 1 }, undefined)).toEqual({ separatorStyle: 1 });
+    expect(formOptionsOf({ currency: 'CHF', currencyBefore: undefined }, { currency: 'USD', currencyBefore: false })).toEqual({ currency: 'CHF', currencyBefore: false });
+    expect(formOptionsOf(undefined, undefined)).toBeUndefined();
+  });
+
+  it('resolves as set and strips the values the PDF writes unasked', () => {
+    expect(resolvePdfGenerationConfig({ forms: { currency: 'USD' } }).forms).toEqual({ currency: 'USD' });
+    expect(resolvePdfGenerationConfig({}).forms).toBeUndefined();
+    expect(stripPdfGenerationDefaults({ forms: { currency: '€', currencyBefore: true, font: 'chip' } })).toBeUndefined();
+    expect(stripPdfGenerationDefaults({ forms: { currency: '$', separatorStyle: 0, font: { family: 'Lora', weight: 700 } } })).toEqual({
+      forms: { currency: '$', separatorStyle: 0, font: { family: 'Lora', weight: 700 } },
+    });
   });
 });

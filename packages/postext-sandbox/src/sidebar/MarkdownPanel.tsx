@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Download, FileInput, FileOutput, Upload, RotateCcw } from 'lucide-react';
+import { BookDown, Download, FileInput, FileOutput, Upload, RotateCcw } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor.js';
 import { ChapterSwitcher } from '../editor/ChapterSwitcher.js';
 import { useSandbox, useSandboxPresets, useSandboxProjects } from '../context/SandboxContext.js';
@@ -11,6 +11,7 @@ import { ConfirmPopover, IconButton, PanelHeader, announce } from '../ui/index.j
 import { DocxReadError, readDocx } from 'postext/word';
 import { WordImportDialog, isolate, type WordImportFile } from '../word/WordImportDialog.js';
 import { WordExportDialog } from '../word/WordExportDialog.js';
+import { IdmlExportDialog } from '../idml/IdmlExportDialog.js';
 import { WordEditsDialog, type WordEditsFile } from '../word/WordEditsDialog.js';
 import { isWordExport } from '../word/wordEdits.js';
 
@@ -27,6 +28,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const [wordFile, setWordFile] = useState<WordImportFile | null>(null);
   const [wordEdits, setWordEdits] = useState<WordEditsFile | null>(null);
   const [wordExportOpen, setWordExportOpen] = useState(false);
+  const [idmlExportOpen, setIdmlExportOpen] = useState(false);
   const activeName = projects.find((p) => p.id === activeProjectId)?.name ?? '';
   // The Word file is named after the book: the project, or the sample.
   const bookTitle = activeName || (state.presetSummaries.find((p) => p.id === state.activePresetId)?.name ?? '');
@@ -127,6 +129,8 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
             />
             <IconButton label={state.labels.wordImport} icon={<FileInput size={14} />} onClick={() => wordRef.current?.click()} />
             <IconButton label={state.labels.wordExport} icon={<FileOutput size={14} />} onClick={() => setWordExportOpen(true)} />
+            {/* The whole book for InDesign (#1491), laid out as the PDF is. */}
+            <IconButton label={state.labels.idmlExport} icon={<BookDown size={14} />} onClick={() => setIdmlExportOpen(true)} />
             <input
               ref={wordRef}
               type="file"
@@ -146,6 +150,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
       <WordImportDialog file={wordFile} onClose={() => setWordFile(null)} />
       <WordEditsDialog file={wordEdits} onClose={() => setWordEdits(null)} />
       <WordExportDialog open={wordExportOpen} onClose={() => setWordExportOpen(false)} bookTitle={bookTitle} />
+      <IdmlExportDialog open={idmlExportOpen} onClose={() => setIdmlExportOpen(false)} bookTitle={bookTitle} />
     </div>
   );
 }

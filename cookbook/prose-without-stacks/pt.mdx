@@ -1,0 +1,80 @@
+---
+title: "Prosa justificada sem repetições nas bordas da linha"
+summary: "Uma página de Dickens composta duas vezes numa medida estreita: a primeira prova aponta e marca cada repetição, a segunda a pesa na quebra de linhas."
+plain: "Quando duas linhas seguidas terminam ou começam com a mesma palavra, o olho pode pular para a linha errada. O livro é composto duas vezes: uma mostra onde isso acontece, a outra quebra as linhas para que não aconteça."
+description: "bodyText.stacks em duas provas de bolso: 'warn' lista e marca cada repetição, 'avoid' soma stackPenalty aos deméritos de Knuth–Plass e as evita."
+question: "Como evito que duas linhas seguidas terminem ou comecem com a mesma palavra?"
+aliases: ["repetições", "palavras repetidas no fim da linha", "repetição no início da linha", "escadas", "stacks", "stackPenalty", "stackMinCharacters", "revisão de provas", "provas tipográficas", "Dickens", "Clarín"]
+pageNotes: { "2": "Primeira prova, página 2: faixas vermelho-claras sob sole e sole no fim de duas linhas, sob even e event no início das duas seguintes e sob The acima de the no início de um parágrafo.", "4": "A última página da primeira prova: o colofão e uma tira intitulada FIRST PROOF que lista cinco repetições por página.", "6": "Segunda prova, página 2: o mesmo texto quebrado de outro jeito; só even acima de event continua marcado.", "8": "A tira da segunda prova: resta uma repetição." }
+---
+
+## O que você vai compor
+
+Duas provas de uma página de bolso de 115 × 180 mm com o início de *A Christmas Carol*, justificado em Spectral numa medida de 83 mm. Uma medida estreita deixa poucas saídas para o algoritmo de quebra, e em cinco lugares duas linhas seguidas terminam ou começam com a mesma palavra: *sole* sobre *sole*, *his* sobre *his*, *No* sobre *No*. A primeira prova é composta com `stacks: 'warn'`. Ela não muda nenhuma quebra, aponta cada repetição, marca as duas palavras com uma faixa vermelho-clara e as lista numa tira depois do colofão. A segunda é composta com `'avoid'`, e quatro das cinco desaparecem. A edição espanhola compõe do mesmo jeito o início de *¡Adiós, Cordera!*, de Clarín.
+
+## Preparo
+
+### 1 · Primeiro apontar, depois pesar
+
+<Excerpt region="answer" />
+
+Há repetição quando duas linhas seguidas terminam com a mesma palavra ou com os mesmos últimos caracteres, ou começam igual. `stackMinCharacters` define quantos caracteres são necessários: três por padrão, contando os espaços, sem contar acentos nem maiúsculas, de modo que *The* sobre *the* conta. `'warn'` só aponta, e assim quem compõe vê onde um texto se repete. `'avoid'` soma `stackPenalty` aos deméritos de cada quebra que criaria uma repetição, e o algoritmo de Knuth–Plass procura outra forma de quebrar o parágrafo. Ele precisa de `optimalLineBreaking`: a quebra linha a linha não tem deméritos aos quais somar nada.
+
+Os manuais de composição em espanhol contam a repetição entre os vícios de composição, ao lado dos rios e das escadas de hifens. Ao voltar à margem esquerda, o olho pode se prender à palavra repetida na linha errada e ler uma linha duas vezes ou pular outra; na margem direita, a repetição soa como eco. A regra espanhola alcança também a sílaba repetida, não só a palavra, e por isso a edição espanhola fixa `stackMinCharacters` em 2.
+
+A penalidade padrão, 3000, é o que custam dois hifens seguidos, e uma palavra repetida de uma só sílaba custa o dobro. Nesta medida, 3000 deixava duas repetições em cada edição, porque a alternativa era uma linha mais aberta do que o algoritmo aceita. Com 10000 ele aceita essas linhas. `maxWordSpacing` fica no valor padrão, 2: com um limite mais apertado o algoritmo não tinha outra quebra para escolher e `'avoid'` não mudava nada.
+
+### 2 · Marcar as repetições no texto
+
+<Excerpt region="marks" />
+
+Cada aviso dá a posição da sua primeira linha no texto-fonte, então o script encontra essa linha e a seguinte no documento composto, pega a borda repetida de cada uma e envolve a palavra inteira em `:mark[…]`. Uma marca pinta uma faixa sob o texto comum e não mexe nas quebras. Só se marcam palavras inteiras: uma marca em parte de uma palavra muda a forma como essa palavra se divide, e aí as linhas já não quebram onde o aviso foi encontrado.
+
+<PageShot page={2} crop="0,0.04,1,0.32" caption="Primeira prova, página 2: sole sobre sole no fim da linha, depois even sobre event e The sobre the no início." />
+
+### 3 · Duas provas de um mesmo texto
+
+<Excerpt region="proofs" />
+
+Cada prova é composta duas vezes. A primeira composição encontra as repetições. A segunda compõe o mesmo texto com as marcas e uma tira acrescentada depois do colofão, que cai assim na última página. O pen deixa de fora das páginas publicadas a primeira composição de cada prova, o texto sem marcas: `capture.doc` lista as duas composições marcadas, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.04,1,0.32" caption="Segunda prova, página 2: os mesmos parágrafos quebrados de outro jeito. Só resta even sobre event." />
+
+A repetição que fica na edição inglesa é *even* sobre *event*: as duas palavras compartilham as três primeiras letras, e qualquer outra quebra daquele parágrafo custava mais. Em espanhol, com dois caracteres, a primeira prova encontra cinco repetições, entre elas *co* de *con* sobre *como* e *ar* de *levantar* sobre *vacilar*, e a segunda nenhuma.
+
+### 4 · A abertura sobre o texto
+
+<Excerpt region="opener" />
+
+O atributo `art` do título nomeia a pintura, então um só estilo serve às duas edições. `minHeight` reserva dezesseis linhas e o texto começa na décima sétima, na mesma grade das páginas seguintes.
+
+### 5 · Cabeços e fólio no pé
+
+<Excerpt region="heads" />
+
+O autor vai no verso e o título no recto, cada um ao lado do seu fólio. Na abertura os cabeços somem e o fólio desce para o pé.
+
+## Variações
+
+### Contar só palavras longas
+
+Três caracteres é o padrão. Com cinco, palavras curtas como *his* e *No* deixam de contar como repetição, e o algoritmo mantém em volta delas as quebras mais apertadas.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Compor o livro com a penalidade padrão
+
+O padrão mantém o espaçamento mais apertado e aceita duas repetições por edição onde evitá-las abriria mais uma linha.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Erros comuns
+
+- As repetições são procuradas nas linhas já quebradas. Se você mudar o formato, o corpo ou o texto, a primeira prova encontra outras: leia os avisos de cada composição e não copie posições de uma anterior.
+- As repetições são contadas dentro de um parágrafo e só em escritas que separam as palavras com espaços: dois parágrafos que começam com *Scrooge* não fazem repetição, e um texto em chinês ou japonês nunca aponta nenhuma.

@@ -1,0 +1,55 @@
+---
+title: "Tavole d’arte nei margini, al taglio e al vivo"
+summary: "Un saggio di mostra su quattro interni di Vermeer: ogni dipinto una tavola a piena pagina, dentro i margini, al taglio o al vivo, e un dettaglio largo 60 mm."
+description: "Libro d’arte di 160 × 195 mm: quattro tavole di Vermeer con placement.plate (gabbia, taglio, al vivo), un dettaglio a 60 mm e un PDF con segni di taglio."
+plain: "Di’ fin dove arriva ogni dipinto sulla sua pagina, dentro i margini, fino al taglio o oltre, e dai al dettaglio la sua larghezza in millimetri. Le pagine si compongono da sole."
+question: "Come stampo un dipinto come tavola a piena pagina, dentro i margini, al taglio o al vivo?"
+aliases: ["libro d’arte", "catalogo di mostra", "tavola a piena pagina", "dipinto al vivo", "dettaglio a misura fissa", "larghezza in millimetri"]
+---
+
+## Che cosa comporrai
+
+Sette pagine di un piccolo catalogo di mostra, 160 × 195 mm, su quattro interni di Johannes Vermeer del Rijksmuseum, del Met e della National Gallery of Art. Il saggio si apre su una pagina dispari con il titolo abbassato. Ogni dipinto che cita sta da solo sulla pagina intera successiva: *La lattaia* a <PageRef page={2}>pagina 2</PageRef>, dentro i margini e sotto la sua testatina; la *Giovane donna con brocca* e la *Donna che legge una lettera* si guardano alle <PageRef page={4}>pagine 4 e 5</PageRef>, l’una fermata al taglio, l’altra spinta nell’abbondanza oltre i segni di taglio, entrambe senza testatina né folio. Un dettaglio della bilancia è stampato largo 60 mm a <PageRef page={7}>pagina 7</PageRef>, con la didascalia accanto. Il PDF porta i segni, un TrimBox e un BleedBox.
+
+## Preparazione
+
+### 1 · Un tipo per le tavole, una portata per dipinto
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Il tipo delle tavole mette `plate: true` nella collocazione predefinita, quindi un dipinto citato dal saggio passa alla prima pagina che può avere intera e cresce fino alla gabbia, con la didascalia sotto. `REACH` lo cambia dipinto per dipinto: `'trim'` e `'bleed'` coprono la pagina e ritagliano l’immagine attorno al centro, perciò conviene scegliere dipinti di proporzioni vicine a quelle della pagina (questi sono larghi da 0,85 a 0,89 per 1 di altezza, la pagina 0,82). `captionMeasure: 'body'` dà alla didascalia di una tavola interna la larghezza dell’immagine.
+
+### 2 · Ogni file su misura per dove si stampa
+
+<Excerpt region="paintings" />
+
+Il controllo di stampa tiene conto del ritaglio: una tavola al vivo qui è alta 201 mm con l’abbondanza, quindi il suo file ha bisogno di 2.400 px per arrivare a 300 ppi, mentre le due tavole nei margini ne chiedono meno. Escono tra 303 e 348 ppi. `page.cutLines` dà al foglio i suoi 3 mm di abbondanza; senza, `'bleed'` si ferma al taglio come `'trim'`.
+
+### 3 · Testatine che lasciano libere le tavole piene
+
+<Excerpt region="running-heads" />
+
+Una tavola al taglio o al vivo dà alla sua pagina il ruolo `'plate'`. Queste testatine chiedono `pages: 'body'`, quindi si stampano sopra le tavole interne e spariscono alle pagine 4 e 5. Un elemento che deve comparire anche lì, per esempio un piccolo credito nell’angolo, nomina `'plate'` nel suo `pages`.
+
+### 4 · Un dettaglio di misura nota
+
+Il tipo del dettaglio mette `width: { value: 60, unit: 'mm' }` con `captionSide: 'inside'`. Una lunghezza si misura sullo spazio invece di prenderne una parte: i 48 mm di tela che il ritaglio mostra si stampano a 60 mm, 1,25 volte la loro misura, in qualunque colonna ed edizione, e la didascalia può dirlo.
+
+## Varianti
+
+### Tutte le tavole al vivo
+
+Dai a tutti i dipinti la stessa portata: ogni tavola copre allora la sua pagina, senza testatina né folio, e cambia solo il ritaglio.
+
+```diff
+-const REACH = { milkmaid: 'content', pitcher: 'trim', letter: 'bleed', balance: 'content' };
++const REACH = { milkmaid: 'bleed', pitcher: 'bleed', letter: 'bleed', balance: 'bleed' };
+```
+
+### Il dettaglio a grandezza naturale
+
+Ritaglia 60 mm di tela dal file del museo e lascia la larghezza com’è: la didascalia dirà allora 1:1. L’originale di questo dipinto ha 1.666 ppi, quindi anche un dettaglio di pochi millimetri supera i 300 ppi.
+
+## Errori frequenti
+
+- Una tavola citata nello stesso paragrafo di un’altra aspetta la pagina dopo, perché una pagina che ha già un mobile viene saltata, tre al massimo.
+- Le larghezze in `pt` e `mm` funzionano; `px` ed `em` non sono lette come lunghezza, e la figura prende tutto il suo spazio.
+- Un dipinto molto più largo della pagina perde i lati in una tavola al taglio o al vivo. Tieni i formati orizzontali dentro i margini, dove l’immagine si vede intera.

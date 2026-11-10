@@ -1,0 +1,77 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 181,
+  "status": "published",
+  "chapter": "output",
+  "order": 210,
+  "level": 2,
+  "genres": ["catalogue", "ephemera"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["form-fields", "chips"],
+    "also": [
+      "pdf-export",
+      "pdf-fonts",
+      "table-model",
+      "table-style",
+      "tab-stops",
+      "paragraph-styles",
+      "heading-styles",
+      "heading-attributes",
+      "opener-design",
+      "design-images",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "color-palette"
+    ]
+  },
+  "answers": ["Q214"],
+  "gotchas": [],
+  "explainsWarnings": [],
+  "related": ["accessible-tagged-pdf", "pdf-with-embedded-fonts", "print-ready-pdf"],
+  "engine": { "postext": "1.73.0", "postextPdf": "1.73.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": { "hero": 1, "card": "page", "expect": { "pages": [4, 4] } },
+  "downloads": { "pdf": true },
+  "folio": {
+    "paper": {"type": "uncoated", "grammage": 100},
+    "binding": {"type": "saddleStitch", "cover": "pages"},
+    "surface": {"type": "oak"},
+    "lighting": {"environment": "studio"}
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "The seed list, its notes on each variety and the order form",
+          "es": "La lista de semillas, las notas de cada variedad y la hoja de pedido"
+        },
+        "who": "Ignacio Ferro",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The still life of heirloom vegetables on the first page, a painting",
+          "es": "El bodegón de hortalizas tradicionales de la primera página, una pintura"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "seed-table-1440.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Libre Caslon Text", "license": "OFL-1.1" },
+      { "family": "Libre Caslon Display", "license": "OFL-1.1" },
+      { "family": "Barlow Semi Condensed", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-11-10",
+  "updated": "2026-11-10"
+}

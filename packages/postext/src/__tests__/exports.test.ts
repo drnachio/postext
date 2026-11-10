@@ -93,6 +93,8 @@ describe("package exports", () => {
       "renderToHtmlIndexed",
       "anchoredResourceIds",
       "HTML_TEXT_RESET",
+      "tintHex",
+      "tintFilterElement",
       "renderComicHtml",
       "comicPanelSvg",
       "dimensionToPx",
@@ -713,6 +715,8 @@ describe("package exports", () => {
       // The number rule of form fields, for every writer (#1445).
       "formatFieldNumber",
       "formNumberStyle",
+      // The host's form options over `pdfGeneration.forms` (#1491).
+      "formOptionsOf",
       "numberFieldText",
       "composedPages",
       "checkComposedSlots",

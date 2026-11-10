@@ -1,0 +1,80 @@
+---
+title: "Prosa giustificata senza ripetizioni ai margini della riga"
+summary: "Una pagina di Dickens composta due volte in una giustezza stretta: la prima bozza segnala e marca ogni ripetizione, la seconda la pesa nella divisione in righe."
+plain: "Quando due righe di seguito finiscono o cominciano con la stessa parola, l’occhio può saltare alla riga sbagliata. Il libro è composto due volte: una mostra dove succede, l’altra spezza le righe perché non succeda."
+description: "bodyText.stacks in due bozze tascabili: 'warn' elenca e marca ogni ripetizione, 'avoid' aggiunge stackPenalty ai demeriti di Knuth–Plass e le evita."
+question: "Come evito che due righe di seguito finiscano o comincino con la stessa parola?"
+aliases: ["ripetizioni", "parole ripetute a fine riga", "ripetizioni a inizio riga", "scalette", "stacks", "stackPenalty", "stackMinCharacters", "correzione di bozze", "bozze di stampa", "Dickens", "Clarín"]
+pageNotes: { "2": "Prima bozza, pagina 2: bande rosso pallido sotto sole e sole alla fine di due righe, sotto even ed event all’inizio delle due seguenti e sotto The sopra the all’inizio di un paragrafo.", "4": "L’ultima pagina della prima bozza: il colophon e un cartellino intitolato FIRST PROOF che elenca cinque ripetizioni per pagina.", "6": "Seconda bozza, pagina 2: lo stesso testo spezzato in un altro modo; resta marcato solo even sopra event.", "8": "Il cartellino della seconda bozza: resta una ripetizione." }
+---
+
+## Che cosa comporrai
+
+Due bozze di una pagina tascabile di 115 × 180 mm con l’inizio di *A Christmas Carol*, giustificato in Spectral su una giustezza di 83 mm. Una giustezza stretta lascia poche scelte all’algoritmo che divide le righe, e in cinque punti due righe di seguito finiscono o cominciano con la stessa parola: *sole* sopra *sole*, *his* sopra *his*, *No* sopra *No*. La prima bozza è composta con `stacks: 'warn'`. Non cambia nessuna interruzione, segnala ogni ripetizione, marca le due parole con una banda rosso pallido e le elenca su un cartellino dopo il colophon. La seconda è composta con `'avoid'`, e quattro delle cinque spariscono. L’edizione spagnola compone allo stesso modo l’inizio di *¡Adiós, Cordera!* di Clarín.
+
+## Preparazione
+
+### 1 · Prima segnalare, poi pesare
+
+<Excerpt region="answer" />
+
+C’è ripetizione quando due righe di seguito finiscono con la stessa parola o con gli stessi ultimi caratteri, o cominciano allo stesso modo. `stackMinCharacters` stabilisce quanti caratteri servono: tre per impostazione predefinita, spazi compresi, senza contare accenti e maiuscole, quindi *The* sopra *the* conta. `'warn'` si limita a segnalare, ed è così che il compositore vede dove un testo si ripete. `'avoid'` aggiunge `stackPenalty` ai demeriti di ogni interruzione che ne creerebbe una, e l’algoritmo di Knuth–Plass cerca un altro modo di spezzare il paragrafo. Serve `optimalLineBreaking`: la divisione riga per riga non ha demeriti a cui aggiungere qualcosa.
+
+I manuali di composizione spagnoli contano la ripetizione tra i difetti di composizione, accanto ai canaletti e alle scale di trattini. Tornando al margine sinistro, l’occhio può agganciarsi alla parola ripetuta sulla riga sbagliata e leggere due volte una riga o saltarne una; al margine destro la ripetizione suona come un’eco. La regola spagnola riguarda anche la sillaba ripetuta, non solo la parola, per questo l’edizione spagnola imposta `stackMinCharacters` a 2.
+
+La penalità predefinita, 3000, è il costo di due trattini di seguito, e una parola ripetuta di una sola sillaba costa il doppio. In questa giustezza 3000 lasciava due ripetizioni in ogni edizione, perché l’alternativa era una riga più larga di quanto l’algoritmo accetti. Con 10000 accetta quelle righe. `maxWordSpacing` resta al valore predefinito, 2: con un limite più stretto l’algoritmo non aveva un’altra interruzione da scegliere e `'avoid'` non cambiava nulla.
+
+### 2 · Marcare le ripetizioni nel testo
+
+<Excerpt region="marks" />
+
+Ogni avviso indica la posizione nel sorgente della sua prima riga: lo script trova quella riga e la successiva nel documento composto, prende il margine ripetuto di ciascuna e avvolge la parola intera in `:mark[…]`. Una marcatura dipinge una banda sotto il testo normale e non tocca le interruzioni. Si marcano solo parole intere: una marcatura su una parte di parola cambia il modo in cui quella parola si divide, e allora le righe non si spezzano più dove è stato trovato l’avviso.
+
+<PageShot page={2} crop="0,0.04,1,0.32" caption="Prima bozza, pagina 2: sole sopra sole a fine riga, poi even sopra event e The sopra the a inizio riga." />
+
+### 3 · Due bozze dallo stesso testo
+
+<Excerpt region="proofs" />
+
+Ogni bozza è composta due volte. La prima composizione trova le ripetizioni. La seconda compone lo stesso testo con le marcature e un cartellino aggiunto dopo il colophon, che cade quindi sull’ultima pagina. Il pen lascia fuori dalle pagine pubblicate la prima composizione di ogni bozza, il testo senza marcature: `capture.doc` elenca le due composizioni marcate, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.04,1,0.32" caption="Seconda bozza, pagina 2: gli stessi paragrafi spezzati in un altro modo. Resta solo even sopra event." />
+
+La ripetizione che resta nell’edizione inglese è *even* sopra *event*: le due parole hanno in comune le prime tre lettere, e ogni altra divisione di quel paragrafo costava di più. In spagnolo, con due caratteri, la prima bozza trova cinque ripetizioni, tra cui *co* di *con* sopra *como* e *ar* di *levantar* sopra *vacilar*, e la seconda nessuna.
+
+### 4 · L’apertura sopra il testo
+
+<Excerpt region="opener" />
+
+L’attributo `art` del titolo nomina il dipinto, così un solo stile serve a entrambe le edizioni. `minHeight` riserva sedici righe e il testo comincia alla diciassettesima, sulla stessa griglia delle pagine seguenti.
+
+### 5 · Testatine e folio al piede
+
+<Excerpt region="heads" />
+
+L’autore va sul verso e il titolo sul recto, ciascuno accanto al suo folio. Nella pagina d’apertura le testatine spariscono e il folio scende al piede.
+
+## Varianti
+
+### Conta solo le parole lunghe
+
+Tre caratteri è il valore predefinito. Con cinque, parole brevi come *his* e *No* non contano più come ripetizioni, e l’algoritmo mantiene intorno a esse le interruzioni più strette.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Componi il libro con la penalità predefinita
+
+Il valore predefinito tiene la spaziatura più stretta e accetta due ripetizioni per edizione dove evitarle allargherebbe di più una riga.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Errori frequenti
+
+- Le ripetizioni si cercano nelle righe già spezzate. Se cambi il formato, il corpo o il testo, la prima bozza ne trova altre: leggi gli avvisi di ogni composizione e non copiare le posizioni da una precedente.
+- Le ripetizioni si contano all’interno di un paragrafo e solo nelle scritture che separano le parole con spazi: due paragrafi che cominciano entrambi con *Scrooge* non fanno ripetizione, e un testo cinese o giapponese non ne segnala mai.

@@ -1,0 +1,59 @@
+---
+title: "Eine Änderung: Gestrichenes durch-, Neues unterstrichen"
+summary: "Eine Synopse zu einem Urheberrechtsgesetz: Gestrichenes durchgestrichen, Neues unterstrichen, danach der geänderte Text in einem Kasten mit hängenden Absätzen."
+plain: "Eine kurze parlamentarische Drucksache. Sie zeigt die alte Fassung eines Gesetzes, die gestrichenen Wörter durchgestrichen und die neuen unterstrichen, danach den ganzen geänderten Abschnitt in einem grauen Kasten."
+description: "Eine Synopse, gesetzt mit Postext: das alte Gesetz, Streichungen durchgestrichen und Einfügungen unterstrichen, dann der neue Abschnitt mit hängenden Absätzen."
+question: "Wie zeige ich eine Änderung, in der gestrichene Wörter durchgestrichen und eingefügte unterstrichen sind?"
+aliases: ["Synopse", "Gegenüberstellung", "Änderungsmodus", "Änderungsgesetz", "Gesetz", "Gesetzentwurf", "Errata", "durchgestrichen", "unterstrichen", "hängender Einzug", "Schutzdauer"]
+---
+
+## Was Sie setzen
+
+Eine Ausschussdrucksache, wie sie einen Gesetzentwurf begleitet: fünf Seiten, die zeigen, was Abschnitt 102 des Sonny Bono Copyright Term Extension Act von 1998 mit Titel 17 des United States Code gemacht hat. Das Gesetz sagt nur „streiche ‚fifty‘ und füge ‚70‘ ein“; diese Drucksache setzt das Gesetz in der alten Fassung, jede Änderung an ihrer Stelle markiert, Streichungen durchgestrichen und Einfügungen unterstrichen, unter der Legende, die Gesetzesredakteure in Bund und Bundesstaaten über solche Texte drucken, und danach Abschnitt 302 in der geänderten Fassung in einem getönten Kasten, jeder Buchstabe am Rand und seine Zeilen hängend unter dem Text. Die spanische Ausgabe tut dasselbe für die drei Reformen der spanischen Verfassung, veröffentlicht im BOE 1992, 2011 und 2024.
+
+## Zubereitung
+
+### 1 · Die Änderung dort markieren, wo sie geschieht
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. Die Markierungen stehen im Markdown: `~~fifty~~ :underline[70]` streicht das alte Wort durch und unterstreicht das neue ([durchgestrichener Text](/de/docs/document-format-inline#durchgestrichener-text), [unterstrichener Text](/de/docs/document-format-inline#unterstrichener-text)). Keine der beiden Linien braucht Platz: Eine durchgestrichene Klausel von sechs Zeilen wird ausgeschlossen und getrennt wie der Text um sie herum, und auf Seite 3 ist der ganze alte Unterabschnitt 304(b) durchgestrichen und sein Ersatz in einem einzigen Absatz unterstrichen. Jede Linie folgt den Werten für Durchstreichung und Unterstreichung der Schrift selbst, in der Farbe der Wörter, sodass die Kapitälchen einer Überschrift eine eigene Linie in eigener Höhe bekommen.
+
+### 2 · Die Klauseln im Kasten hängen lassen
+
+`body.hangingIndent` in einem Kastenstil lässt jeden Absatz des Kastens hängen ([Typografie im Kasten](/de/docs/configuration-callouts#typografie-im-kasten)): Die erste Zeile beginnt am inneren Rand, die Folgezeilen 7 mm weiter innen. Ein Tabulator an denselben 7 mm bringt den Text nach „(a)“ oder „(c)“ an diese Kante, wie breit der Buchstabe auch ist; im Markdown steht also `(a):tab In General.—…`. Die Klauseln des Gesetzes und der geänderte Abschnitt teilen die Typografie und unterscheiden sich nur im Rahmen: eine rote Linie über dem Gesetz, ein Farbton hinter dem geltenden Recht. Der Kasten des Gesetzes darf sich teilen (`keepTogether: false`), sodass Seite 1 mit seinen ersten beiden Klauseln endet.
+
+### 3 · Ein Band für den Auftakt
+
+<Excerpt region="opener" />
+
+Das marineblaue Band läuft oben und an beiden Seiten in den Anschnitt, Dachzeile und Vorspann kommen aus Attributen der Überschriftenzeile ([Attribute von Überschriften](/de/docs/document-format#attribute-von-überschriften)). `minHeight` legt fest, wo die Legende beginnt, wenige Millimeter unter dem Band.
+
+### 4 · Kolumnentitel nach Seitenparität
+
+<Excerpt region="running-heads" />
+
+Die linke Seite trägt den Titel der Drucksache, die rechte den Teil, in dem sie beginnt, gelesen aus der ersten Überschrift zweiter Ebene auf der Seite. `pages: 'body'` hält beide vom Auftakt fern, der stattdessen eine Seitenzahl am Fuß trägt.
+
+## Varianten
+
+### Einfügungen als `++Text++` schreiben
+
+Mit eingeschaltetem `plusUnderline` unterstreicht `++70++` wie `:underline[70]`, die Schreibweise, die Pandoc und markdown-it für eingefügten Text verwenden.
+
+```diff
+     textAlign: 'justify', firstLineIndent: mm(4.5), indentAfterHeading: false,
++    plusUnderline: true, // ++Text++ unterstreicht; C++ im Text wird dann C\+\+ geschrieben
+```
+
+### Die Klauseln des Gesetzes zusammenhalten
+
+Ohne `keepTogether: false` rückt der Kasten als Ganzes auf Seite 2, und Seite 1 endet mit der Zeile, die ihn ankündigt.
+
+```diff
+-    padding: pad(2.5, 0), body: clauses, keepTogether: false, // it may run on to the next page
++    padding: pad(2.5, 0), body: clauses,
+```
+
+## Häufige Fehler
+
+- Ein Absatz, der mit einer Zahl und einem Punkt beginnt (`2. Solamente…`), wird als Listeneintrag gelesen, und ein Backslash vor dem Punkt wird gedruckt. Die spanische Ausgabe setzt im Fließtext einen Wortverbinder (U+2060) zwischen Ziffer und Punkt und schreibt im Kasten den Tabulator direkt hinter den Punkt, `1.:tab`, was kein Listenzeichen ist.
+- Farbe allein überstünde keine Fotokopie, und so werden solche Drucksachen oft weitergegeben; Durchstreichung und Unterstreichung lesen sich auch in Schwarzweiß, und deshalb haben die Redakteure sie gewählt.

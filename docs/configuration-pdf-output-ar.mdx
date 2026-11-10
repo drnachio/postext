@@ -320,6 +320,16 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 
 ويرسم Canvas الحقل الرقمي بالطريقة نفسها، فتطابق المعاينةُ ملف PDF: مرّر إلى `renderPageToCanvas` (أو `renderPage` أو `renderToCanvas`) خيار `forms` نفسه الذي تمرّره إلى `renderToPdf`؛ وفي الحالتين تُؤخذ الفواصل افتراضيًا من `locale` المستند (وإلا فمن لغة تقطيع كلماته). وقاعدة واحدة تكتب الأرقام في كل مكان، ويصدّرها postext لمولّدات الإخراج الأخرى: يحلّ `formNumberStyle(forms, lang)` الخيارات، وينسّق `formatFieldNumber(value, format, style)` قيمةً (ويعيد undefined لنص ليس رقمًا)، ويعطي `numberFieldText(field, words, style)` ما يعرضه حقل رقمي مرسوم. وتحمل قائمة العرض الحقلَ على مقطع الشارة (`inline.field`، مع `sizePx` و`padPx` من التخطيط).
 
+يستطيع الكتاب أن يحفظ هذه الخيارات في إعداداته: تأخذ `pdfGeneration.forms` الحقول نفسها (`currency`، `currencyBefore`، `separatorStyle`، `font`). ويأخذ `renderToPdf` وCanvas كل حقل من خيار `forms` الخاص بهما أولًا، ثم من `pdfGeneration.forms` في المستند الأول، ثم من القيم الافتراضية. ولا يغيّر ذلك التنضيد، بل طريقة كتابة الحقول ورسمها فقط. وفي Sandbox هي مجموعة **حقول النماذج** في قسم PDF.
+
+```ts
+pdfGeneration: {
+  forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
+}
+```
+
+**عند الاستيراد من esm.sh في المتصفح**، استورد `https://esm.sh/postext-pdf?bundle`. فالبناء الافتراضي لمكتبة pdf-lib على esm.sh يضع أصناف التعليقات في وحدة مستقلة، فترفض pdf-lib عنصر كل حقل: تبقى المربعات في PDF لكنها تفقد التنسيقات والحسابات والخصائص، مع تحذير `formField` لكل حقل. أما `?bundle` فيبني pdf-lib وحدةً واحدة ويترك `postext` خارجها مشتركةً مع الصفحة. ولا يتأثر بذلك المجمِّع (Vite وwebpack وNext.js) ولا Node.
+
 ويكتب تصدير IDML الحقول نفسها حقولَ نماذج في InDesign (انظر [الاستخدام البرمجي › حزم InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postextidml)).
 
 ### الروابط في ملف PDF

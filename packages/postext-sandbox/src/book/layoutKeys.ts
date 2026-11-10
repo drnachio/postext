@@ -81,6 +81,13 @@ export function configKeyOf(config: PostextConfig): string {
     delete layout.contrast;
     delete layout.checks;
     delete layout.canvasViewer;
+    // Nor how the form fields write numbers (#1491): the canvas and the
+    // PDF take them from the live configuration.
+    if (layout.pdfGeneration?.forms) {
+      const pdfGeneration = { ...layout.pdfGeneration };
+      delete pdfGeneration.forms;
+      layout.pdfGeneration = pdfGeneration;
+    }
     // Nor which fit marks the Canvas draws over composed pages (#1160).
     if (layout.debug && ('fitMarks' in layout.debug || 'fitMarksMinScale' in layout.debug)) {
       const debug = { ...layout.debug };

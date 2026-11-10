@@ -442,11 +442,11 @@ Un valor que no sigui un enter de 0 a 200 es llegeix com l'enter més proper d'a
 
 ## Generació de PDF (configuració)
 
-La propietat `pdfGeneration` controla com genera el PDF final el generador de PDF. Aquests paràmetres els fa servir el paquet `postext-pdf` en el moment d'exportar; els visors canvas i HTML els ignoren.
+La propietat `pdfGeneration` controla com genera el PDF final el generador de PDF. Aquests paràmetres els fa servir el paquet `postext-pdf` en el moment d'exportar; els visors canvas i HTML els ignoren. `forms` és l'excepció: el canvas també el llegeix, de manera que els seus camps de formulari coincideixen amb els del PDF.
 
 `buildDocument` els passa al VDT, com a `doc.config.pdfGeneration`, i `renderToPdf` pren cada paràmetre del primer d'aquests llocs que el defineixi:
 
-1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`);
+1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `forms`);
 2. el `pdfGeneration` del primer document que rep (en un llibre, els paràmetres del primer capítol valen per a tot el fitxer);
 3. els valors per defecte: marcadors i etiquetatge activats, color RGB.
 
@@ -460,6 +460,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir tots els colors a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espai de destinació quan `forceColorSpace` és true.
   accessible?: boolean;        // Sortida etiquetada orientada a PDF/UA (arbre d'estructura, text alternatiu, llengua).
+  forms?: PdfFormsConfig;      // Camps de formulari: moneda, separadors, lletra.
 }
 ```
 
@@ -496,6 +497,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accessible i etiquetat, orientat a PDF/UA-1: un arbre d'estructura lògica en ordre de lectura (encapçalaments que mai no salten cap nivell, paràgrafs, llistes, cites, requadres, taules amb cel·les de capçalera, figures amb el seu text alternatiu i el seu peu, fórmules, referències com a enllaços, l'índex d'un `:::toc` com un sol `TOC` amb un `TOCI` per fila: el número de la fila com a `Lbl`, el seu títol i la seva pàgina com un `Reference` que conté l'enllaç), el títol i la llengua del document (el `locale` de primer nivell), la identificació PDF/UA a les metadades XMP, i tots els elements decoratius (fons de pàgina, filets, retícula de base, capçaleres i peus de pàgina, marques de tall, capçaleres de taula repetides, el títol repetit i la marca de continuació d'un requadre partit) marcats com a artefactes perquè els lectors de pantalla els ometin. Una figura sense `altText` fa servir el peu i, si no en té, l'etiqueta. Una figura o una taula flotant es llegeix just després del text que la cita per primera vegada, o del text anterior a la seva línia `::resource`, i un requadre flotant, després del text anterior a la seva línia d'obertura, encara que el flotant quedi en una pàgina posterior; una llista o un índex que continuen després d'un flotant queden en un sol element, i una llista dins d'un requadre flotant o ancorat a la pàgina (`placement: 'fixed'`) és una sola llista. Desactiva'l només en originals d'impremta on l'estructura addicional no calgui.</td>
+    </tr>
+    <tr>
+      <td><code>forms</code></td>
+      <td><code>PdfFormsConfig</code></td>
+      <td><code>undefined</code></td>
+      <td>Com escriuen els nombres els camps de formulari i en quina lletra mostren els valors: `currency` (per defecte `€`), `currencyBefore` (per defecte `true`), `separatorStyle` (de `0` a `3`; si no es fixa, segons l'idioma del document) i `font` (`'chip'`, el valor per defecte, `'helvetica'` o `{ family, weight?, style? }`). L'opció `forms` de `renderToPdf` i del canvas té prioritat camp a camp. Només afecta la sortida: no canvia la composició. Vegeu [Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari).</td>
     </tr>
   </tbody>
 </table>

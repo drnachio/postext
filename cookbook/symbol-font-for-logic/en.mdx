@@ -1,0 +1,57 @@
+---
+title: "Logic and set signs from a symbol font"
+summary: "A logic primer in faces with no ∀, ∈ or ℵ: symbolFont names Noto Sans Math, which draws those signs and the Greek on the canvas and in the PDF."
+plain: "A short chapter that teaches how to read the signs of logic and set theory. The book's typefaces have none of those signs, so a second typeface fills them in, on screen and in the printed PDF."
+description: "A logic primer set in Postext with symbolFont: Noto Sans Math draws ∀, ∃, ∈, ℵ and Greek in every face, on the canvas and in the PDF, with no empty boxes."
+question: "How do I print logic and set signs (∀, ∈, ℵ) and Greek that my text font lacks, without empty boxes?"
+aliases: ["symbol font", "symbolFont", "fallback font", "missing glyphs", "empty boxes in the PDF", "tofu", "logic symbols", "set notation", "predicate logic", "Noto Sans Math", "glyphFallbackAt"]
+pageNotes: { "1": "The chapter opener: a claret band with the kicker A POCKET PRIMER OF LOGIC · CHAPTER 1, the title Reading the Signs and a line of seven signs, ∀ ∃ → ∈ ∪ ∅ ℵ, set large in white; below, the introduction and the section Sentences and connectives, with ¬p, p ∧ q, p ∨ q, p → q and p ↔ q in the running text.", "2": "The truth table of the five connectives under a claret header row, then De Morgan's laws and the section Quantifiers: ∀ and ∃ with its displayed formulas, ∀x (Hx → Mx) among them.", "3": "Greek metavariables φ, ψ, Γ ⊢ φ, then the section Sets with three displayed formulas for ⊆, ∪ and ∩, Russell's paradox, and the section Counting the infinite: ℵ.", "4": "The table of where the signs come from: nine rows from Peano's ∈ of 1889 to Weil's ∅ of 1939, then the colophon." }
+---
+
+## What you'll build
+
+The first chapter of a pocket primer of logic, on a 155 × 235 mm page: a claret band with the chapter's signs set large, then four sections that read ∀, ∃, ∈, ∪, ∅ and ℵ aloud, with the formulas in the running text and displayed between paragraphs. The book is set in Crimson Pro, its headings in Cormorant Garamond and its labels in IBM Plex Sans Condensed. Not one of the three has ∀, ∈ or a Greek letter in the files Fontsource serves. One setting, `symbolFont`, lists Noto Sans Math after each of them, so every sign comes from the same face in the body, the headings, the running heads and the table cells, and the PDF prints them all.
+
+## Method
+
+### 1 · One symbol font behind every face
+
+The code of this step is the short answer above. `symbolFont: 'Noto Sans Math'` ([symbol font](/en/docs/configuration-fonts-colors-viewers#symbol-font)) puts the family after every family the config names, so a character the face lacks is drawn from Noto Sans Math at the face's size and colour, and the rest of the line stays in the face. Fontsource serves Noto Sans Math whole in its file called `latin`, 3,033 characters, but the kit declares that file for the Latin range only, and the browser would then not ask it for ∀. The pen's `resolve` and `pdfFonts` hand the same file over with no range, on screen and to `renderToPdf`. Only the characters a face lacks change face: Crimson Pro has ¬, so the negation in the text stays in Crimson Pro.
+
+### 2 · A first build without it shows what is missing
+
+<Excerpt region="without" />
+
+The first build leaves `symbolFont` empty and prints its `glyphFallbackAt` warnings, one for each paragraph, heading or table that sets characters its face has no glyph for, with the page and the characters. The English edition reports eighteen: fourteen paragraphs in Crimson Pro, three headings in Cormorant Garamond and the header row of Table 1.1 in IBM Plex Sans Condensed bold. Without a family that draws them, the canvas takes the signs from a font of the reader's system and the PDF prints an empty box for each. The second build, with the symbol font, is the one on the page; its warnings name `"Noto Sans Math"` as the family that draws them.
+
+### 3 · The signs on the opener are text
+
+<Excerpt region="opener" />
+
+The line of seven signs under the title is a design text in Cormorant Garamond at 30 pt, fed by the heading's `signs` attribute. Cormorant Garamond has none of them, so all seven come from the symbol font, in the band's white. The tracking of 9 pt spreads them across the measure.
+
+### 4 · Table cells and running heads take the same face
+
+<Excerpt region="tables" />
+
+The truth table is built from the connectives themselves: each column header is the formula, and each cell is what the formula gives for that row. The header cells are IBM Plex Sans Condensed bold italic and the body cells Crimson Pro; the symbol font serves both. Its one regular face draws for every weight and slant, so ∧ in the bold header and ∈ in an italic formula are the same upright sign. The recto running head prints the section in force, `{firstMark.h2}`, and *SETS: ∈, ∪, ∩ AND ∅* on page 3 takes its signs from Noto Sans Math as well.
+
+<PageShot page={3} crop="0.1,0.25,0.8,0.32" caption="Page 3: the set formulas, in Crimson Pro italic with every sign from Noto Sans Math." />
+
+## Variations
+
+### Leave out the first build
+
+Once the warnings are read, one build is enough.
+
+```diff
+-const bare = await buildDocumentWithFonts({ markdown, resources }, { ...config, symbolFont: '' },
+-  fonts);
+-console.info((bare.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt')
+-  .map(formatWarning).join('\n'));
+```
+
+## Pitfalls
+
+- A face whose Fontsource files include Greek (Source Serif 4, Alegreya) sets φ and Γ itself, and the kit loads that file when the text has Greek: only the signs go to the symbol font then. Crimson Pro has no Greek file, so its Greek comes from Noto Sans Math.
+- The symbol font has one upright regular face. A bold heading or an italic formula sets its signs in that face, which is how mathematics prints them.

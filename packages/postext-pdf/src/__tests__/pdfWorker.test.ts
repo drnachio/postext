@@ -90,6 +90,16 @@ describe('createPdfWorker (EF-52)', () => {
     expect(progress).toEqual(expect.arrayContaining(['prepare', 'pages', 'save']));
   });
 
+  it('takes the host\'s form options to the worker (#1491)', async () => {
+    const md = 'Price :chip[1234.5]{field="price" format="currency"}';
+    const doc = buildDocument({ markdown: md }, config);
+    const bytes = await pdf.render(doc, { fontProvider: async () => new Uint8Array(fontBytes), forms: { currency: 'USD', currencyBefore: false, separatorStyle: 1 } });
+    const { PDFDocument, PDFDict, PDFName, PDFString, PDFHexString } = await import('pdf-lib');
+    const field = (await PDFDocument.load(bytes)).getForm().getTextField('price');
+    const js = field.acroField.dict.lookupMaybe(PDFName.of('AA'), PDFDict)?.lookupMaybe(PDFName.of('F'), PDFDict)?.lookup(PDFName.of('JS'));
+    expect(js instanceof PDFString || js instanceof PDFHexString ? js.decodeText() : undefined).toBe('AFNumber_Format(2, 1, 0, 0, " USD", false);');
+  });
+
   it('forwards font fallback warnings to the host', async () => {
     const doc = buildDocument({ markdown: 'Some *italic* words.' }, config);
     const warnings: PdfFontFallbackWarning[] = [];
