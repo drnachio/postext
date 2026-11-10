@@ -5966,5 +5966,33 @@
       "ar": "تظليل مرمَّز بالألوان"
     },
     "theme": "type"
+  },
+  "Q215": {
+    "kind": "how",
+    "text": {
+      "en": "How do I show an amendment with the deleted words struck through and the inserted words underlined?",
+      "es": "¿Cómo muestro una modificación con las palabras suprimidas tachadas y las añadidas subrayadas?",
+      "ca": "Com mostro una modificació amb les paraules suprimides ratllades i les afegides subratllades?",
+      "fr": "Comment montrer une modification avec les mots supprimés barrés et les mots ajoutés soulignés ?",
+      "de": "Wie zeige ich eine Änderung, in der gestrichene Wörter durchgestrichen und eingefügte unterstrichen sind?",
+      "it": "Come mostro una modifica con le parole soppresse barrate e quelle aggiunte sottolineate?",
+      "pt": "Como mostro uma alteração com as palavras suprimidas tachadas e as acrescentadas sublinhadas?",
+      "zh": "怎样展示一项修正：删去的词加删除线，新增的词加下划线？",
+      "ja": "改正を、削る語に取り消し線、加える語に下線を引いて示すには？",
+      "ar": "كيف أعرض تعديلًا تكون فيه الكلمات المحذوفة مشطوبة والمضافة مسطَّرة؟"
+    },
+    "index": {
+      "en": "Amendments, struck and underlined",
+      "es": "Modificaciones, tachado y subrayado",
+      "ca": "Modificacions, ratllat i subratllat",
+      "fr": "Modifications, barré et souligné",
+      "de": "Änderungen, durchgestrichen und unterstrichen",
+      "it": "Modifiche, barrato e sottolineato",
+      "pt": "Alterações, tachado e sublinhado",
+      "zh": "修正，删除线与下划线",
+      "ja": "改正、取り消し線と下線",
+      "ar": "التعديلات، الشطب والتسطير"
+    },
+    "theme": "type"
   }
 }
