@@ -40,6 +40,12 @@ export function restoreLinkPaint(previous: LinkPaint | undefined): void {
   current = previous;
 }
 
+/** Whether links get their own line here: an underline's piece under a
+ *  link (`VDTLineMark.underLink`) then gives way to it. */
+export function linkUnderlinePainted(): boolean {
+  return current !== undefined && current.underline !== 'none';
+}
+
 /** The colour a link segment is painted in, or undefined when it is not a
  *  link or the style sets no colour here. */
 export function linkFill(seg: VDTLineSegment): string | undefined {

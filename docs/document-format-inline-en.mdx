@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Inline formatting and formulas',
   description: 'Marks inside a line: emphasis, links, chips, small capitals, tabs, vertical text, Chinese and Japanese marks, text direction, and LaTeX formulas',
   lang: 'en',
-  lastUpdated: '2026-11-06',
-  readingTime: '26 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '27 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "This page covers the marks you use inside a line of text. They make words bold or italic, add links, draw small labels, set small capitals and line text up at tab stops. Other marks are for Chinese and Japanese books, such as small readings above a character, or for a phrase in another direction, such as English in an Arabic book. The last section shows how to write mathematical formulas.",
@@ -59,6 +59,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>Strikethrough</td>
       <td><code>~~text~~</code></td>
       <td>A line through the text, which keeps its place: an old price beside the new one (<code>~~€ 165~~ € 129</code>). Two tildes on each side; a single pair is a subscript. See <a href="#strikethrough">Strikethrough</a> below.</td>
+    </tr>
+    <tr>
+      <td>Underline</td>
+      <td><code>++text++</code></td>
+      <td>A line under the text, which keeps its place: an instruction on a form (<code>Please ++sign all pages++.</code>). Two plus signs on each side; <code>C++</code> and <code>i++</code> stay as written. See <a href="#underline">Underline</a> below.</td>
     </tr>
     <tr>
       <td>Small caps</td>
@@ -220,6 +225,22 @@ The meeting moves ~~to Tuesday~~ to Thursday.
 - **No room taken.** The line is painted over the text, and the lines break exactly as they would without it. A run broken over a line end gets a line on each line, two runs side by side keep two lines, and a punctuation mark glued to the run (`~~165~~.`) stays out of it.
 - **The line.** It sits where the face puts its strikeout and is as thick as the face says (the `yStrikeoutPosition` and `yStrikeoutSize` of its OS/2 table, read from the font files the engine is given: `prepareFonts`, the layout worker, the command line), in the colour of the struck text; each face of a run on its own, so a bold word or another family in the run gets a line of its own that meets the next. A face whose file the engine has not read, or that sets no strikeout, takes 0.28 em above the baseline, about the middle of the lowercase letters, and 0.05 em. In Chinese and Japanese text, and on a vertical page, the line runs along the middle of the characters. A superscript or a subscript inside the run does not move it.
 - **Where.** Paragraphs, headings (while `headings.inlineMarks` is on), list items, blockquotes, callouts, footnotes, table cells, captions and notes, and the words of a chip (`:chip[~~old~~ new]`; `~~:chip[old]~~` strikes the chip's words). The canvas, the PDF and the HTML draw the line from the layout; in a tagged PDF it is a layout artifact, and the words stay text that is extracted and read as written. The HTML and the reflowable EPUB also wrap the words in `<s>`, and the Word export sets them struck through. A completed task item has a line of its own (`taskCompletedStrikethrough`).
+
+### Underline
+
+`++text++` draws a line under `text`, as a form underlines an instruction that must not be missed, or a letter a deadline its template asks for. It is the spelling of the inserted text of Pandoc and markdown-it-ins, set as the underline a word processor draws.
+
+```markdown
+Please ++sign all pages++ and return the form.
+
+The offer is valid ++until 30 June++.
+```
+
+- **Syntax.** Exactly two plus signs on each side, and the text starts and ends with a character that is neither a space nor a plus sign. A letter or digit right before the opening pair or right after the closing one keeps them literal, so `C++`, `g++`, `Notepad++` and `1 ++ 2` stay text; so does a pair whose text begins and ends with a one-character word, the increment operator at a variable (`use ++i rather than i++ here`). A Chinese or Japanese character beside a pair does not keep it literal, as those scripts set no spaces. Write `\+` for a literal plus sign. The text takes its own inline marks, links, chips and references, and may run over a soft line break of the source, not over a blank line.
+- **No room taken.** As with a strikethrough, the line is painted under the text and the lines break exactly as they would without it. A run broken over a line end gets a line on each line, and a punctuation mark glued to the run (`++Friday++.`) stays out of it.
+- **The line.** It sits where the face puts its underline and is as thick as the face says (the `underlinePosition` and `underlineThickness` of its `post` table, read from the same font files as the strikeout), in the colour of the underlined text, each face of a run on its own. A face whose file the engine has not read, or that sets no underline, takes 0.12 em under the baseline and 0.05 em. In Chinese and Japanese text it is drawn as a solid side line (`:sideline[…]`) in its default place: under the characters, and on their right on a vertical page. Text both struck through and underlined (`~~++text++~~`) gets both lines.
+- **Links.** When `links.style` underlines links, an underlined link (`++[the form](https://example.org)++`) gets one line, the link's, in every output the style lists; the underline gives way to it there and is drawn in the other outputs.
+- **Where.** The same places as a strikethrough, the words of a chip included (`:chip[++new++]`). The canvas, the PDF and the HTML draw the line from the layout; in a tagged PDF it is a layout artifact, and the words stay text. The HTML and the reflowable EPUB also wrap the words in `<u>`, and the Word export sets them underlined.
 
 ### Small capitals
 

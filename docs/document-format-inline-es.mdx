@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Formato en línea y fórmulas',
   description: 'Las marcas dentro de la línea: énfasis, enlaces, chips, versalitas, tabuladores, texto vertical, marcas chinas y japonesas, dirección del texto y fórmulas LaTeX',
   lang: 'es',
-  lastUpdated: '2026-11-06',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '31 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Esta página explica las marcas que se usan dentro de una línea de texto. Ponen palabras en negrita o en cursiva, añaden enlaces, dibujan etiquetas pequeñas, componen versalitas y alinean el texto en las tabulaciones. Otras marcas sirven para los libros en chino y en japonés, como las lecturas pequeñas que van sobre un carácter, o para una frase que va en otra dirección, como un texto en inglés dentro de un libro en árabe. La última sección enseña a escribir fórmulas matemáticas.",
@@ -59,6 +59,11 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
       <td>Tachado</td>
       <td><code>~~texto~~</code></td>
       <td>Una línea que atraviesa el texto sin moverlo de su sitio: el precio antiguo junto al nuevo (<code>~~165 €~~ 129 €</code>). Dos virgulillas a cada lado; un solo par es un subíndice. Consulta <a href="#tachado">Tachado</a> más abajo.</td>
+    </tr>
+    <tr>
+      <td>Subrayado</td>
+      <td><code>++texto++</code></td>
+      <td>Una línea bajo el texto, que no se mueve de su sitio: una indicación en un formulario (<code>Por favor, ++firme todas las páginas++.</code>). Dos signos más a cada lado; <code>C++</code> e <code>i++</code> se quedan como están. Consulta <a href="#subrayado">Subrayado</a> más abajo.</td>
     </tr>
     <tr>
       <td>Versalitas</td>
@@ -220,6 +225,22 @@ La reunión pasa ~~al martes~~ al jueves.
 - **No ocupa sitio.** La línea se pinta sobre el texto y las líneas se cortan exactamente igual que sin ella. Un tachado partido en un final de línea lleva una línea en cada renglón, dos tachados seguidos conservan dos líneas, y un signo de puntuación pegado al tachado (`~~165~~.`) se queda fuera.
 - **La línea.** Va donde la fuente pone su tachado y con el grosor que la fuente indica (los valores `yStrikeoutPosition` y `yStrikeoutSize` de su tabla OS/2, leídos de los archivos de fuente que recibe el motor: `prepareFonts`, el worker de composición, la línea de comandos), en el color del texto tachado; cada fuente de un tachado por su cuenta, de modo que una palabra en negrita u otra familia dentro del tachado lleva su propia línea, que empalma con la siguiente. Una fuente cuyo archivo el motor no ha leído, o que no indica tachado, toma 0,28 em por encima de la línea de base, más o menos a media altura de las minúsculas, y 0,05 em. En texto chino y japonés, y en una página vertical, la línea recorre el centro de los caracteres. Un superíndice o un subíndice dentro del tachado no la mueve.
 - **Dónde.** Párrafos, títulos (mientras `headings.inlineMarks` esté activado), elementos de lista, citas, recuadros, notas al pie, celdas de tabla, pies y notas, y las palabras de un chip (`:chip[~~antes~~ ahora]`; `~~:chip[antes]~~` tacha las palabras del chip). El lienzo, el PDF y el HTML dibujan la línea a partir de la composición; en un PDF etiquetado es un artefacto de maquetación, y las palabras siguen siendo texto que se extrae y se lee tal como está escrito. El HTML y el EPUB adaptable envuelven además las palabras en `<s>`, y la exportación a Word las marca como tachadas. Una tarea completada tiene su propia línea (`taskCompletedStrikethrough`).
+
+### Subrayado
+
+`++texto++` traza una línea bajo `texto`, como un formulario subraya una indicación que no debe pasarse por alto, o una carta un plazo que exige su plantilla. Es la escritura del texto insertado de Pandoc y markdown-it-ins, compuesta como el subrayado de un procesador de textos.
+
+```markdown
+Por favor, ++firme todas las páginas++ y devuelva el formulario.
+
+La oferta es válida ++hasta el 30 de junio++.
+```
+
+- **Sintaxis.** Exactamente dos signos más a cada lado, y el texto empieza y acaba con un carácter que no es ni un espacio ni un signo más. Una letra o una cifra justo antes del par de apertura o justo después del de cierre los deja tal cual, así que `C++`, `g++`, `Notepad++` y `1 ++ 2` siguen siendo texto; también un par cuyo texto empieza y acaba con una palabra de un solo carácter, el operador de incremento sobre una variable (`use ++i rather than i++ here`). Un carácter chino o japonés junto a un par no lo deja tal cual, porque esas escrituras no ponen espacios. Escribe `\+` para un signo más literal. El texto admite sus propias marcas en línea, enlaces, chips y referencias, y puede pasar por un salto de línea simple del original, no por una línea en blanco.
+- **No ocupa sitio.** Como en el tachado, la línea se pinta bajo el texto y las líneas se cortan exactamente igual que sin ella. Un subrayado partido en un final de línea lleva una línea en cada renglón, y un signo de puntuación pegado a él (`++viernes++.`) se queda fuera.
+- **La línea.** Va donde la fuente pone su subrayado y con el grosor que la fuente indica (los valores `underlinePosition` y `underlineThickness` de su tabla `post`, leídos de los mismos archivos de fuente que el tachado), en el color del texto subrayado, cada fuente por su cuenta. Una fuente cuyo archivo el motor no ha leído, o que no indica subrayado, toma 0,12 em por debajo de la línea de base y 0,05 em. En texto chino y japonés se dibuja como una línea lateral continua (`:sideline[…]`) en su lugar por defecto: bajo los caracteres, y a su derecha en una página vertical. Un texto tachado y subrayado a la vez (`~~++texto++~~`) lleva las dos líneas.
+- **Enlaces.** Cuando `links.style` subraya los enlaces, un enlace subrayado (`++[el formulario](https://example.org)++`) lleva una sola línea, la del enlace, en cada salida que lista el estilo; el subrayado le cede el sitio allí y se dibuja en las demás salidas.
+- **Dónde.** En los mismos lugares que el tachado, incluidas las palabras de un chip (`:chip[++nuevo++]`). El lienzo, el PDF y el HTML dibujan la línea a partir de la composición; en un PDF etiquetado es un artefacto de maquetación, y las palabras siguen siendo texto. El HTML y el EPUB adaptable envuelven además las palabras en `<u>`, y la exportación a Word las marca como subrayadas.
 
 ### Versalitas
 

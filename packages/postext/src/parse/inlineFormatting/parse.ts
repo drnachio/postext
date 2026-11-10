@@ -5,7 +5,7 @@ import type { InlineSpan, InlineLink } from '../types.js';
 import { stripAnnotations, type QueuedAnnotation, markAnnotations, applyAnnotationMarks } from '../annotations.js';
 import { dataRanges } from './breaks.js';
 import { replaceLinkSyntax, LINK_OPEN, LINK_CLOSE, stripNonEmphasisFormatting } from './links.js';
-import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries, starsOpen, starsClose, STRIKE_OPEN, STRIKE_CLOSE, markStrikethrough } from './markup.js';
+import { MARKUP_BOUNDARY, restoreEscapes, replaceMarkSyntax, protectEscapes, INLINE_SMALLCAPS_RE, unescapeBrackets, UNDERSCORE_BOLD_RE, UNDERSCORE_ITALIC_RE, SUPERSCRIPT_RE, SUBSCRIPT_RE, ESCAPE_BASE, MARK_OPEN, MARK_CLOSE, splitScriptSpans, underscores, underscoresClose, markSmallCaps, ESCAPED_RE, applySmallCapsMarks, dropMarkupBoundaries, starsOpen, starsClose, STRIKE_OPEN, STRIKE_CLOSE, markStrikethrough, UNDERLINE_OPEN, UNDERLINE_CLOSE, markUnderline } from './markup.js';
 
 const STAR_BOLD_RE = new RegExp(`${starsOpen(2)}(.+?)${starsClose(2)}`, 'gu');
 const STAR_ITALIC_RE = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}`, 'gu');
@@ -17,7 +17,7 @@ const STAR_ITALIC_RE = new RegExp(`${starsOpen(1)}(.+?)${starsClose(1)}`, 'gu');
 export function stripInlineFormatting(text: string): string {
   const b = MARKUP_BOUNDARY;
   const wrap = (_: string, inner: string): string => b + inner + b;
-  return restoreEscapes(markStrikethrough(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(replaceMarkSyntax(protectEscapes(text), (inner) => b + inner + b), b), true, () => b), false, (label) => b + label + b), b), (inner) => b + inner + b) // strikethrough, before the subscripts
+  return restoreEscapes(markUnderline(markStrikethrough(stripOrientationMarks(replaceLinkSyntax(replaceLinkSyntax(stripAnnotations(replaceMarkSyntax(protectEscapes(text), (inner) => b + inner + b), b), true, () => b), false, (label) => b + label + b), b), (inner) => b + inner + b), (inner) => b + inner + b) // strikethrough (before the subscripts) and underline
     .replace(INLINE_SMALLCAPS_RE, (_, inner: string) => b + unescapeBrackets(inner) + b) // small caps
     .replace(/`(.+?)`/g, wrap)               // inline code
     .replace(STAR_BOLD_RE, wrap)              // bold
@@ -63,11 +63,16 @@ function takeLinkMarks(spans: InlineSpan[], hrefs: readonly string[], markStyles
   let strike = 0;
   let nextStrike = 0;
   let strikeId = 0;
+  // The same for the underlined runs (`++…++`).
+  let under = 0;
+  let nextUnder = 0;
+  let underId = 0;
   for (const span of spans) {
     let text = '';
     let start = 0;
     let markStart = 0;
     let strikeStart = 0;
+    let underStart = 0;
     const links: InlineLink[] = [];
     const close = () => {
       if (open !== undefined && text.length > start) links.push({ start, end: text.length, href: open });
@@ -77,6 +82,9 @@ function takeLinkMarks(spans: InlineSpan[], hrefs: readonly string[], markStyles
     };
     const closeStrike = () => {
       if (strike > 0 && text.length > strikeStart) links.push({ start: strikeStart, end: text.length, href: '', strike: { id: strikeId } });
+    };
+    const closeUnder = () => {
+      if (under > 0 && text.length > underStart) links.push({ start: underStart, end: text.length, href: '', underline: { id: underId } });
     };
     for (let i = 0; i < span.text.length; i++) {
       const ch = span.text[i]!;
@@ -103,15 +111,25 @@ function takeLinkMarks(spans: InlineSpan[], hrefs: readonly string[], markStyles
       } else if (ch === STRIKE_CLOSE) {
         if (strike === 1) closeStrike();
         strike = Math.max(0, strike - 1);
+      } else if (ch === UNDERLINE_OPEN) {
+        if (under === 0) {
+          underStart = text.length;
+          underId = nextUnder++;
+        }
+        under++;
+      } else if (ch === UNDERLINE_CLOSE) {
+        if (under === 1) closeUnder();
+        under = Math.max(0, under - 1);
       } else {
         text += ch;
       }
     }
-    // A link, a mark or a struck-through run still open runs on into the
-    // next span.
+    // A link, a mark or a struck-through or underlined run still open runs
+    // on into the next span.
     close();
     closeMark();
     closeStrike();
+    closeUnder();
     if (text.length === 0) continue;
     out.push(links.length > 0 ? { ...span, text, links } : text === span.text ? span : { ...span, text });
   }
@@ -147,7 +165,7 @@ function splitItalicSpans(text: string, bold: boolean, forcedItalic: boolean, ou
 /**
  * Parse inline formatting to produce spans with bold and italic flags.
  * Recognizes ***bold italic***, **bold**, *italic* (and underscore equivalents),
- * `^sup^` / `~sub~`, `~~strikethrough~~` and `:smallcaps[…]`.
+ * `^sup^` / `~sub~`, `~~strikethrough~~`, `++underline++` and `:smallcaps[…]`.
  */
 export function parseInlineFormatting(text: string): InlineSpan[] {
   // Links keep their text between two marks while the emphasis scanners
@@ -170,10 +188,14 @@ export function parseInlineFormatting(text: string): InlineSpan[] {
   // Struck-through text (`~~…~~`) keeps its text between two marks too,
   // and becomes a range the same way; read before the single-tilde
   // subscripts, once link destinations are out of the text.
+  // Underlined text (`++…++`) likewise.
   let struck = false;
-  const cleaned = markStrikethrough(stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(highlighted)), annotations, restoreEscapes), hrefs), (inner) => {
+  const cleaned = markUnderline(markStrikethrough(stripNonEmphasisFormatting(markAnnotations(markOrientation(markSmallCaps(highlighted)), annotations, restoreEscapes), hrefs), (inner) => {
     struck = true;
     return STRIKE_OPEN + inner + STRIKE_CLOSE;
+  }), (inner) => {
+    struck = true;
+    return UNDERLINE_OPEN + inner + UNDERLINE_CLOSE;
   });
   const spans: InlineSpan[] = [];
 

@@ -9,11 +9,11 @@ import { parseDirectiveAttrs } from '../attrs.js';
  * Strip inline markdown formatting for plain-text extraction.
  * Handles bold, italic, code, links, and images.
  */
-/** Backslash escapes (CommonMark): `\*`, `\_`, `\^`, `\~` and `` \` `` set
+/** Backslash escapes (CommonMark): `\*`, `\_`, `\^`, `\~`, `\+` and `` \` `` set
  *  the character itself instead of opening a marker — a footnote asterisk
  *  in a table note, a literal caret. Protected behind private-use
  *  placeholders while the marker regexes run, restored in the spans. */
-const ESCAPE_RE = /\\([*_^~`@])/g;
+const ESCAPE_RE = /\\([*_^~+`@])/g;
 export const ESCAPE_BASE = 0xe100;
 export const ESCAPED_RE = /[\ue100-\ue17f]/g;
 /** The faces `^_^` and `^o^` (#181) stay text, protected like escapes so
@@ -37,7 +37,7 @@ export function restoreEscapes(text: string): string {
  *  instead of resolving a reference. Length-preserving, so source offsets
  *  hold. Runs first, before any inline pre-pass. */
 export const CODE_SPAN_RE = /(?<!\\)`([^`\n]+?)`/g;
-const CODE_LITERAL_RE = /[:$*_^~[\]{}\\@]/g;
+const CODE_LITERAL_RE = /[:$*_^~+[\]{}\\@]/g;
 export function protectCodeSpans(text: string): string {
   if (!text.includes('`')) return text;
   return text.replace(CODE_SPAN_RE, (_, inner: string) =>
@@ -147,6 +147,66 @@ export const STRIKE_RE = /(?<!~)~~(?=[^\s~])((?:[^~\n]|~(?!~)|\n(?!\n))+?)(?<=[^
 export function markStrikethrough(text: string, replace: (inner: string) => string = (inner) => STRIKE_OPEN + inner + STRIKE_CLOSE): string {
   if (!text.includes('~~')) return text;
   return text.replace(STRIKE_RE, (_, inner: string) => replace(inner));
+}
+
+/** Private-use marks bracketing underlined text (`++text++`) while the
+ *  emphasis scanners run; they become a range of the spans
+ *  (`InlineSpan.links`, with `underline`), as struck-through text does, and
+ *  are dropped. */
+export const UNDERLINE_OPEN = '\uE1B9';
+export const UNDERLINE_CLOSE = '\uE1BA';
+
+/** The sign written twice on each side of underlined text (`++text++`).
+ *  The one place the spelling lives: {@link UNDERLINE_RE} and
+ *  {@link markUnderline} are built from it. */
+export const UNDERLINE_SIGN = '+';
+const UNDERLINE_PAIR = UNDERLINE_SIGN + UNDERLINE_SIGN;
+const U = UNDERLINE_SIGN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/** `++text++`: underlined text (the inserted text of Pandoc and
+ *  markdown-it-ins, set as an underline as word processors do). Read like
+ *  `~~text~~`: exactly two plus signs on each side (a third one beside them
+ *  keeps the row literal: `C+++`), and the text starts and ends with a
+ *  character that is neither a space nor a plus sign; a letter or digit
+ *  right before the opening or after the closing pair keeps them literal,
+ *  so `C++ and C++`, `C++-Kurs und C++-Buch` and `1 ++ 2` stay text (a
+ *  Chinese or Japanese character beside them does not: `请++签名++。`). The text may hold other inline marks, single plus
+ *  signs included, and may run over a soft line break, not over a blank
+ *  line. `\+` sets a literal plus sign. */
+/** A letter or digit glued to a pair keeps it literal (`C++`); a Chinese
+ *  or Japanese character does not, as those scripts set no spaces. */
+const GLUED = `[${U}\\p{N}]|[^\\P{L}\\p{sc=Han}\\p{sc=Hiragana}\\p{sc=Katakana}]`;
+export const UNDERLINE_RE = new RegExp(
+  `(?<!${GLUED})${U}${U}(?=[^\\s${U}])((?:[^${U}\\n]|${U}(?!${U})|\\n(?!\\n))+?)(?<=[^\\s${U}])${U}${U}(?!${GLUED})`,
+  'gu',
+);
+
+/** A pair that only looks like an underline: its text begins and ends
+ *  with a one-character word, the increment operator written at a
+ *  variable on both sides (`use ++i rather than i++ here`). */
+const OPERATOR_FIRST = /^[\p{L}\p{N}_](?![\p{L}\p{N}_])/u;
+const OPERATOR_LAST = /(?<![\p{L}\p{N}_])[\p{L}\p{N}_]$/u;
+const operatorPair = (inner: string): boolean => /\s/u.test(inner) && OPERATOR_FIRST.test(inner) && OPERATOR_LAST.test(inner);
+
+/** Every `++text++` of `text` replaced by its text between
+ *  {@link UNDERLINE_OPEN} and {@link UNDERLINE_CLOSE}, or by what `replace`
+ *  makes of it; an increment operator's pair stays as written. */
+export function markUnderline(text: string, replace: (inner: string) => string = (inner) => UNDERLINE_OPEN + inner + UNDERLINE_CLOSE): string {
+  if (!text.includes(UNDERLINE_PAIR)) return text;
+  return text.replace(UNDERLINE_RE, (whole, inner: string) => (operatorPair(inner) ? whole : replace(inner)));
+}
+
+/** Where each `++text++` of `text` is, as the engine reads it (the
+ *  Sandbox editor marks them): `from`–`to` the whole of it, the text
+ *  `UNDERLINE_SIGN.length * 2` in from either end. */
+export function underlineRanges(text: string): Array<{ from: number; to: number; marker: number }> {
+  const out: Array<{ from: number; to: number; marker: number }> = [];
+  if (!text.includes(UNDERLINE_PAIR)) return out;
+  for (const m of text.matchAll(UNDERLINE_RE)) {
+    // `\++`: an escaped sign opens nothing.
+    if (!operatorPair(m[1]!) && text[m.index - 1] !== '\\') out.push({ from: m.index, to: m.index + m[0].length, marker: UNDERLINE_PAIR.length });
+  }
+  return out;
 }
 
 /** Replace every `:smallcaps[…]` by its text between the private-use marks. */
@@ -269,7 +329,7 @@ export function trimSpans(spans: InlineSpan[]): InlineSpan[] {
 }
 
 /** `spans` set plain: bold, italic, scripts, small capitals, links,
- *  strikethrough and the
+ *  strikethrough, underline and the
  *  Chinese and Japanese marks (emphasis dots, proper-name and book-title
  *  marks, side lines) dropped,
  *  adjacent text spans merged — a heading's spans as they were built before

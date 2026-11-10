@@ -13,6 +13,7 @@ import { mathHighlight, mathTheme } from './syntax/mathHighlight.js';
 import { chipHighlight, chipTheme } from './syntax/chipSyntax.js';
 import { markHighlight, markTheme } from './syntax/markSyntax.js';
 import { smallCapsHighlight, smallCapsTheme } from './syntax/smallCapsSyntax.js';
+import { underlineHighlight, underlineTheme } from './syntax/underlineSyntax.js';
 import { orientationHighlight, orientationTheme } from './syntax/orientationSyntax.js';
 import { verseHighlight, verseTheme } from './syntax/verseSyntax.js';
 import { hardBreakHighlight, hardBreakTheme } from './syntax/hardBreakSyntax.js';
@@ -152,6 +153,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       markHighlight,
       smallCapsTheme,
       smallCapsHighlight,
+      underlineTheme,
+      underlineHighlight,
       orientationTheme,
       orientationHighlight,
       verseTheme,

@@ -165,7 +165,7 @@ export function runProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOpti
   let cache = propsCache.get(ctx);
   if (!cache) propsCache.set(ctx, (cache = new Map()));
   // The font string carries a feature family's features (numForm).
-  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${run.strike ? 1 : 0}|${ctx.lang ?? ''}`;
+  const key = `${run.fontString}|${run.bold ? 1 : 0}${run.italic ? 1 : 0}|${run.color}|${opts.spacing ?? 0}|${opts.scale ?? ''}|${opts.rtl ? 1 : 0}${opts.holder ? 1 : 0}${opts.fitted ? 1 : 0}|${run.smallCaps ? 1 : 0}|${run.baselineShift ?? 0}|${run.script ?? ''}|${run.strike ? 1 : 0}${run.underline ? 1 : 0}|${ctx.lang ?? ''}`;
   let props = cache.get(key);
   if (props === undefined) {
     props = buildRunProps(ctx, run, opts);
@@ -201,6 +201,7 @@ function buildRunProps(ctx: WriterContext, run: DisplayRun, opts: RunPropsOption
   const shift = run.baselineShift ? Math.round(halfPoints(run.baselineShift, ctx.dpi)) : 0;
   if (shift) p.push(`<w:position w:val="${shift}"/>`);
   p.push(`<w:sz w:val="${f.sz}"/><w:szCs w:val="${f.sz}"/>`);
+  if (run.underline) p.push('<w:u w:val="single"/>');
   if (run.script && !run.baselineShift) p.push(`<w:vertAlign w:val="${run.script === 'sup' ? 'superscript' : 'subscript'}"/>`);
   if (opts.rtl) p.push('<w:rtl/>');
   if (ctx.lang) {
@@ -318,7 +319,7 @@ function spacedPieces(ctx: WriterContext, run: DisplayRun, text: string, fit: Fi
   return out;
 }
 
-const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'strike', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
+const STYLE_KEYS = ['fontString', 'color', 'bold', 'italic', 'smallCaps', 'strike', 'underline', 'tracking', 'script', 'baselineShift', 'href', 'footnoteId', 'pageLink', 'rtl', 'orientation', 'tcy'] as const;
 
 /** A run that may join its neighbour: plain text, no blank or tab. */
 const joinable = (r: DisplayRun): boolean => r.text.length > 0 && !r.blank && !r.padStart && !r.padEnd && !r.inline && !r.ruby && !r.warichu && !r.kunten && !r.space && !/^\s+$/.test(r.text);
