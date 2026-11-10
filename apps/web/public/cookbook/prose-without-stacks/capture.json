@@ -1,0 +1,837 @@
+{
+  "schemaVersion": 1,
+  "slug": "prose-without-stacks",
+  "sourceHash": "396f35b27b4379ec27e1c034ba48e14e33072ebe14f32d5065a3ca79fbf350db",
+  "engine": {
+    "postext": "1.73.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.50",
+  "capturedAt": "2026-11-10T20:45:16.389Z",
+  "variants": {
+    "en": {
+      "hash8": "74376510",
+      "vdtHash": "fb1109105e057946ce25b02d686fd44e75efedfa",
+      "timings": {
+        "importMs": 4392,
+        "fontsMs": 137,
+        "buildMs": 36,
+        "totalMs": 6424,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          115,
+          180
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.6,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Spectral",
+          "Spectral SC"
+        ],
+        "pages": 8,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1565,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 119272,
+          "alt": "Opening page 1: Marley’s Ghost."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 150130,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 146832,
+          "alt": "Page 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 38420,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1565,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 119272,
+          "alt": "Opening page 1: Marley’s Ghost."
+        },
+        {
+          "n": 6,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 149732,
+          "alt": "Page 2."
+        },
+        {
+          "n": 7,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 146114,
+          "alt": "Page 3."
+        },
+        {
+          "n": 8,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 34692,
+          "alt": "Page 4."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "prose-without-stacks.postext",
+        "bytes": 251349,
+        "folio": "f7cd2d3f",
+        "keep": "first",
+        "pages": 4,
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "36cedd1e4ee4b2d0",
+            "lines": "a8d88b84aff97864"
+          }
+        ],
+        "warnings": [
+          "stack sole",
+          "stack eve",
+          "stack The",
+          "stack his",
+          "stack No"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.stackMinCharacters",
+          "bodyText.stackPenalty",
+          "bodyText.stacks",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "markStyles",
+          "markStyles[].background",
+          "markStyles[].color",
+          "markStyles[].id",
+          "markStyles[].name",
+          "markStyles[].paddingBottom",
+          "markStyles[].paddingTop",
+          "markStyles[].paddingX",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "markStyles",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 209,
+        "designElements": 8,
+        "directives": [
+          ":::paragraphs",
+          ":::callout"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "highlight-marks",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "stacks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 4,
+          "share": 0.0299,
+          "worst": 2.03
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.25 MB, and the edition weighs 1.03 MB: state 1.05 MB"
+          },
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "4 of 134 justified lines (3.0 %) stretch past 2× (worst 2.03×); loosest: p. 2 2.03× “Scrooge! a squeezing, wrenching, grasping, scra…”, p. 6 2.03× “Scrooge! a squeezing, wrenching, grasping, scra…”, p. 2 2× “Scrooge Scrooge, and sometimes Marley, but he a…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es left out (the resources differ when read back)"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "5acadaf9",
+      "vdtHash": "cb1e97426edb21d6dcc69eefa8f14e214986efdd",
+      "timings": {
+        "importMs": 4424,
+        "fontsMs": 127,
+        "buildMs": 33,
+        "totalMs": 6507,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          115,
+          180
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Spectral",
+          "sizePt": 9.6,
+          "leadingPt": 13.4
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Spectral",
+          "Spectral SC"
+        ],
+        "pages": 8,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1565,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 140246,
+          "alt": "Página de apertura 1: ¡Adiós, Cordera!"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 151750,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 148728,
+          "alt": "Página 3."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 107888,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1565,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 140246,
+          "alt": "Página de apertura 1: ¡Adiós, Cordera!"
+        },
+        {
+          "n": 6,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 151348,
+          "alt": "Página 2."
+        },
+        {
+          "n": 7,
+          "label": "3",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 147620,
+          "alt": "Página 3."
+        },
+        {
+          "n": 8,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1565,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 101102,
+          "alt": "Página 4."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "prose-without-stacks.postext",
+        "bytes": 315918,
+        "folio": "f7cd2d3f",
+        "keep": "first",
+        "pages": 4,
+        "chapters": [
+          {
+            "pages": 4,
+            "hash": "67a7bf345ce7198a",
+            "lines": "1f862bd5b939aee5"
+          }
+        ],
+        "warnings": [
+          "stack co",
+          "stack lo",
+          "stack los",
+          "stack ar",
+          "stack io"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "registerResourceImage",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.maxWordSpacing",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.stackMinCharacters",
+          "bodyText.stackPenalty",
+          "bodyText.stacks",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.italicColor",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].id",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].title",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "headings.levels[].marginBottom",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "markStyles",
+          "markStyles[].background",
+          "markStyles[].color",
+          "markStyles[].id",
+          "markStyles[].name",
+          "markStyles[].paddingBottom",
+          "markStyles[].paddingTop",
+          "markStyles[].paddingX",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "markStyles",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 209,
+        "designElements": 8,
+        "directives": [
+          ":::paragraphs",
+          ":::callout"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral SC",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Spectral",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Spectral",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "heading-attributes",
+          "highlight-marks",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "resources",
+          "stacks"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.86
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en left out (the resources differ when read back)"
+          }
+        ]
+      }
+    }
+  }
+}

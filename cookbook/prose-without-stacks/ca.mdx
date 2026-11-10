@@ -1,0 +1,80 @@
+---
+title: "Prosa justificada sense repeticions als extrems de línia"
+summary: "Una pàgina de Clarín composta dues vegades en una mesura estreta: les primeres proves assenyalen cada repetició; les segones la pesen en el tall de línies."
+plain: "Quan dues línies seguides acaben o comencen amb la mateixa paraula, la vista pot saltar a la línia equivocada. El llibre es compon dues vegades: una ensenya on passa i l'altra talla les línies perquè no passi."
+description: "bodyText.stacks en dues proves de butxaca: 'warn' llista i marca cada repetició; 'avoid' suma stackPenalty als demèrits de Knuth–Plass i les evita."
+question: "Com evito que dues línies seguides acabin o comencin amb la mateixa paraula?"
+aliases: ["repeticions", "repetició de paraules", "repetició de síl·labes", "paraules repetides a final de línia", "vicis de composició", "stacks", "stackPenalty", "stackMinCharacters", "correcció de proves", "proves d'impremta", "Clarín", "Dickens"]
+pageNotes: { "2": "Primeres proves, pàgina 2: bandes vermell pàl·lid sota con i como al començament de dues línies i sota lo i los, al començament d'unes altres dues.", "3": "Primeres proves, pàgina 3: los sobre los al final de dues línies i levantar sobre vacilar, que acaben en ar.", "4": "L'última pàgina de les primeres proves: el colofó i una papereta titulada PRIMERAS PRUEBAS amb cinc repeticions per pàgina.", "8": "La papereta de les segones proves: zero repeticions." }
+---
+
+## Què compondràs
+
+Dues proves d'una pàgina de butxaca de 115 × 180 mm amb el començament d'*¡Adiós, Cordera!*, de Clarín, justificat en Spectral sobre una mesura de 83 mm. Una mesura estreta deixa al tallador de línies poques sortides, i en cinc llocs dues línies seguides acaben o comencen igual: *con* sobre *como*, *lo* sobre *los*, *levantar* sobre *vacilar*. Les primeres proves es componen amb `stacks: 'warn'`: no canvien cap tall, avisen de cada repetició, marquen les dues paraules amb una banda vermell pàl·lid i les llisten en una papereta després del colofó. Les segones es componen amb `'avoid'`, i les cinc desapareixen. L'edició anglesa compon de la mateixa manera el començament d'*A Christmas Carol*.
+
+## Elaboració
+
+### 1 · Primer avisar, després pesar
+
+<Excerpt region="answer" />
+
+Hi ha repetició quan dues línies seguides acaben en la mateixa paraula o en els mateixos últims caràcters, o comencen igual. `stackMinCharacters` fixa quants caràcters calen: tres per defecte, amb els espais, sense comptar accents ni majúscules, de manera que *Los* sobre *los* compta. `'warn'` només avisa, i així qui compon veu on es repeteix un text. `'avoid'` suma `stackPenalty` als demèrits de cada tall que produiria una repetició, i el tallador de Knuth–Plass busca una altra manera de partir el paràgraf. Necessita `optimalLineBreaking`: el tallador voraç no té demèrits als quals sumar res.
+
+Els manuals de composició en castellà compten la repetició entre els vicis de composició, al costat dels rius i les escales de guionets. En tornar al marge esquerre, la vista es pot enganxar a la paraula repetida a la línia equivocada i llegir dues vegades una línia o saltar-se'n una; al marge dret, la repetició sona a eco. La norma castellana arriba també a la síl·laba repetida, no només a la paraula, i per això l'edició castellana fixa `stackMinCharacters` en 2.
+
+La penalització per defecte, 3000, és el que costen dos guionets seguits, i una paraula repetida d'una sola síl·laba costa el doble. En aquesta mesura, 3000 deixava dues repeticions a cada edició, perquè l'alternativa era una línia més oberta del que el tallador accepta. Amb 10000 accepta aquestes línies. `maxWordSpacing` es queda en el valor per defecte, 2: amb un límit més estret el tallador no tenia cap altre tall per triar i `'avoid'` no canviava res.
+
+### 2 · Marcar les repeticions al text
+
+<Excerpt region="marks" />
+
+Cada avís dona la posició al text font de la primera línia, així que l'script busca aquesta línia i la següent al document compost, pren l'extrem repetit de cadascuna i embolica la paraula sencera amb `:mark[…]`. Una marca pinta una banda sota el text normal i no toca els talls. Només es marquen paraules senceres: una marca sobre mitja paraula canvia com es divideix aquella paraula, i aleshores les línies ja no es tallen on es va trobar l'avís.
+
+<PageShot page={2} crop="0,0.36,1,0.3" caption="Primeres proves, pàgina 2: con sobre como i lo sobre los, a començament de línia." />
+
+### 3 · Dues proves d'un mateix text
+
+<Excerpt region="proofs" />
+
+Cada prova es compon dues vegades. La primera composició troba les repeticions. La segona compon el mateix text amb les marques i una papereta afegida després del colofó, de manera que la papereta cau a l'última pàgina. El pen deixa fora de les pàgines publicades la primera composició de cada prova, el text sense marcar: `capture.doc` llista les dues composicions marcades, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.36,1,0.3" caption="Segones proves, pàgina 2: els mateixos paràgrafs tallats d'una altra manera, sense cap repetició." />
+
+A l'edició anglesa, amb tres caràcters, en queda una: *even* sobre *event*, que comparteixen les tres primeres lletres, perquè qualsevol altre tall d'aquell paràgraf costava més.
+
+### 4 · L'obertura sobre el text
+
+<Excerpt region="opener" />
+
+L'atribut `art` del títol anomena la pintura, així que un sol estil serveix a les dues edicions. `minHeight` reserva setze línies i el text comença a la dissetena, sobre la mateixa retícula que les pàgines següents.
+
+### 5 · Titolets i foli caigut
+
+<Excerpt region="heads" />
+
+L'autor va a la pàgina parella i el títol a la senar, cadascun al costat del seu foli. A l'obertura no hi ha titolets i el foli baixa al peu.
+
+## Variants
+
+### Comptar només paraules llargues
+
+Amb cinc caràcters, paraules curtes com *lo* o *los* deixen de comptar com a repetició, i el tallador manté els talls més estrets al seu voltant.
+
+```diff
+-  stackMinCharacters: t({ en: 3, es: 2 }),
++  stackMinCharacters: 5,
+```
+
+### Compondre amb la penalització per defecte
+
+La penalització per defecte estreny més l'espaiat i accepta dues repeticions per edició allà on evitar-les obriria més una línia.
+
+```diff
+-  stackPenalty: 10000,
++  stackPenalty: 3000,
+```
+
+## Errors freqüents
+
+- Les repeticions es busquen a les línies ja tallades. Si canvies el format, el cos o el text, les primeres proves en troben d'altres, així que llegeix els avisos de cada composició i no copiïs posicions d'una d'anterior.
+- Les repeticions es compten dins d'un paràgraf i només en escriptures que separen les paraules amb espais: dos paràgrafs que comencen amb *Rosa* no fan repetició, i un text en xinès o en japonès no avisa mai de cap.

@@ -6050,5 +6050,33 @@
       "ar": "رموز يفتقدها الخط"
     },
     "theme": "type"
+  },
+  "Q217": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep two lines in a row from ending or starting on the same word?",
+      "es": "¿Cómo evito que dos líneas seguidas terminen o empiecen con la misma palabra?",
+      "ca": "Com evito que dues línies seguides acabin o comencin amb la mateixa paraula?",
+      "fr": "Comment éviter que deux lignes consécutives finissent ou commencent par le même mot ?",
+      "de": "Wie verhindere ich, dass zwei aufeinanderfolgende Zeilen mit demselben Wort enden oder beginnen?",
+      "it": "Come evito che due righe consecutive finiscano o comincino con la stessa parola?",
+      "pt": "Como evito que duas linhas seguidas terminem ou comecem com a mesma palavra?",
+      "zh": "怎样避免相邻两行以同一个词结尾或开头？",
+      "ja": "連続する2行が同じ語で終わったり始まったりしないようにするには？",
+      "ar": "كيف أمنع سطرين متتاليين من أن ينتهيا أو يبدآ بالكلمة نفسها؟"
+    },
+    "index": {
+      "en": "Stacks, avoiding",
+      "es": "Repeticiones, evitar",
+      "ca": "Repeticions, evitar",
+      "fr": "Répétitions, éviter",
+      "de": "Wiederholungen, vermeiden",
+      "it": "Ripetizioni, evitare",
+      "pt": "Repetições, evitar",
+      "zh": "行首行尾重复，避免",
+      "ja": "行頭・行末の重複を避ける",
+      "ar": "التكرار في أطراف الأسطر، تجنّبه"
+    },
+    "theme": "type"
   }
 }

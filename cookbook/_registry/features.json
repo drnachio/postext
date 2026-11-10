@@ -2863,6 +2863,113 @@
       "HD-4"
     ]
   },
+  "stacks": {
+    "label": {
+      "en": "Stacks",
+      "es": "Repeticiones a principio y final de línea",
+      "ca": "Repeticions a principi i final de línia",
+      "zh": "行首行尾重复",
+      "ar": "التكرار في أوائل الأسطر وأواخرها",
+      "ja": "行頭・行末の重複",
+      "pt": "Repetições no início e no fim da linha",
+      "fr": "Répétitions en début et en fin de ligne",
+      "de": "Wiederholungen an Zeilenanfang und Zeilenende",
+      "it": "Ripetizioni a inizio e fine riga"
+    },
+    "definition": {
+      "en": "Finds two lines in a row that end or start on the same word or the same characters, and reports them (bodyText.stacks: 'warn') or makes the line breaker set the paragraph another way ('avoid', at the cost stackPenalty).",
+      "es": "Encuentra dos líneas seguidas que terminan o empiezan con la misma palabra o los mismos caracteres, y las señala (bodyText.stacks: 'warn') o hace que el corte de líneas componga el párrafo de otra manera ('avoid', al coste stackPenalty).",
+      "ca": "Troba dues línies seguides que acaben o comencen amb la mateixa paraula o els mateixos caràcters, i les assenyala (bodyText.stacks: 'warn') o fa que el tall de línies compongui el paràgraf d'una altra manera ('avoid', al cost stackPenalty).",
+      "zh": "找出相邻两行以同一个词或相同字符结尾或开头的情况，可以只报告（bodyText.stacks: 'warn'），也可以让断行器换一种方式排这一段（'avoid'，代价为 stackPenalty）。",
+      "ar": "تعثر على سطرين متتاليين ينتهيان أو يبدآن بالكلمة نفسها أو بالحروف نفسها، فتبلّغ عنهما (bodyText.stacks: 'warn') أو تجعل قاطع الأسطر يصفّ الفقرة على نحو آخر ('avoid'، بكلفة stackPenalty).",
+      "ja": "連続する2行が同じ語や同じ文字で終わる・始まる箇所を見つけ、報告する（bodyText.stacks: 'warn'）か、改行処理にその段落を別の組み方で組ませます（'avoid'、コストは stackPenalty）。",
+      "pt": "Encontra duas linhas seguidas que terminam ou começam com a mesma palavra ou os mesmos caracteres e as aponta (bodyText.stacks: 'warn') ou faz a quebra de linhas compor o parágrafo de outro jeito ('avoid', ao custo stackPenalty).",
+      "fr": "Repère deux lignes consécutives qui finissent ou commencent par le même mot ou les mêmes caractères, et les signale (bodyText.stacks: 'warn') ou fait composer le paragraphe autrement par la coupure des lignes ('avoid', au coût stackPenalty).",
+      "de": "Findet zwei aufeinanderfolgende Zeilen, die mit demselben Wort oder denselben Zeichen enden oder beginnen, und meldet sie (bodyText.stacks: 'warn') oder lässt den Zeilenumbruch den Absatz anders setzen ('avoid', zum Preis stackPenalty).",
+      "it": "Trova due righe consecutive che finiscono o cominciano con la stessa parola o gli stessi caratteri, e le segnala (bodyText.stacks: 'warn') o fa comporre il paragrafo in un altro modo all'interruzione di riga ('avoid', al costo stackPenalty)."
+    },
+    "aliases": {
+      "en": [
+        "stacks",
+        "stacked words",
+        "repeated line ends",
+        "same word at line end",
+        "ladders"
+      ],
+      "es": [
+        "repeticiones",
+        "palabras repetidas en líneas seguidas",
+        "calles",
+        "finales de línea iguales",
+        "repetición de sílabas"
+      ],
+      "ca": [
+        "repeticions",
+        "paraules repetides en línies seguides",
+        "finals de línia iguals"
+      ],
+      "zh": [
+        "行尾重复",
+        "行首重复",
+        "重复词",
+        "stacks"
+      ],
+      "ar": [
+        "تكرار الكلمات",
+        "أواخر الأسطر المتشابهة",
+        "stacks"
+      ],
+      "ja": [
+        "行末の重複",
+        "行頭の重複",
+        "同語の並び",
+        "stacks"
+      ],
+      "pt": [
+        "repetições",
+        "palavras repetidas em linhas seguidas",
+        "finais de linha iguais"
+      ],
+      "fr": [
+        "répétitions",
+        "mots répétés en fin de ligne",
+        "lézardes",
+        "échelles"
+      ],
+      "de": [
+        "Wiederholungen",
+        "gleiche Zeilenenden",
+        "gleiche Zeilenanfänge",
+        "Stapel"
+      ],
+      "it": [
+        "ripetizioni",
+        "parole ripetute a fine riga",
+        "fine riga uguali"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration-text",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto base",
+        "ca": "Text de cos",
+        "zh": "正文",
+        "ar": "نص المتن",
+        "ja": "本文",
+        "pt": "Texto do corpo",
+        "fr": "Texte courant",
+        "de": "Fließtext",
+        "it": "Testo corrente"
+      }
+    },
+    "detect": {
+      "config": [
+        "bodyText.stacks"
+      ]
+    }
+  },
   "paragraph-styles": {
     "label": {
       "en": "Paragraph styles",
