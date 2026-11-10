@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels.js';
 import type { PresetSourceSpec } from '../presets/types.js';
 
-export type PanelId = 'projects' | 'chapters' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
+export type PanelId = 'projects' | 'chapters' | 'markdown' | 'templates' | 'config' | 'resources' | 'fonts' | 'warnings';
 /** The preview tabs, in the order the bar shows them: Canvas, PDF, Folio,
  *  HTML, EPUB 3 and SCORM. */
 export type ViewportTab = 'canvas' | 'pdf' | 'folio' | 'html' | 'epub' | 'scorm';
