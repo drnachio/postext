@@ -64,28 +64,14 @@ export interface PageMargins {
 /** The baseline grid: lines one body line height apart from the top of
  *  the content area. The layout uses it whether or not it is drawn
  *  (headings, list ends, boxes, figures and display formulas snap the flow
- *  back onto it, unless their own `snapToGrid` is off); this config only
- *  draws it. */
+ *  back onto it, unless their own `snapToGrid` is off, and the styles whose
+ *  `snapTopToGrid` is on open on it); this config only draws it. */
 export interface BaselineGridConfig {
   /** Draw the grid lines over the pages (canvas and PDF renderers, the
    *  Sandbox views). Only the drawing: the layout is the same either way. */
   enabled: boolean;
   color?: ColorValue;
   lineWidth?: Dimension;
-  /** How a style's `snapToGrid` reaches the text after it. `false` (the
-   *  default, the rule up to now): a block that snaps sends the flow back
-   *  onto the grid under it, and one that does not leaves the flow off the
-   *  grid until the next block that snaps — the offset cascades. `true`:
-   *  each style decides for itself alone. A block whose style sits on the
-   *  grid opens on the next grid line, however the block before it ended;
-   *  one that does not keeps its exact spacing and sends nothing on to the
-   *  next. The styles that decide: heading levels and heading styles
-   *  (`snapToGrid`), the body text and the first paragraph after a heading
-   *  (`bodyText.snapToGrid`, `firstParagraphSnapToGrid`), paragraph and
-   *  callout styles (`snapToGrid`), lists (`snapTopToGrid`), display
-   *  formulas (`math.snapToGrid`) and figures and tables (their resource
-   *  type's `snapToGrid`). The top of a column is always on the grid. */
-  perStyle?: boolean;
 }
 
 /** Bleed and crop marks. When enabled, the sheet grows by
@@ -186,7 +172,7 @@ export interface ResolvedPageConfig {
   margins: Required<PageMargins>;
   dpi: number;
   cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
-  baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension; perStyle: boolean };
+  baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   pageNumbering: ResolvedPageNumberingConfig;
   /** `binding` resolved: `'auto'` is `'right'` in a vertical document, a
    *  right-to-left one and a comic book read right to left. */

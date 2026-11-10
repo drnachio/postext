@@ -9,8 +9,8 @@ import { lineInsetsAt } from '../../../../measure/types.js';
 import { resolvedDirection, arabicNumbersOf } from '../../../config.js';
 import { mirrorListMarker, directListMarker, listBulletPosition, listItemGapPx, listItemSpacingPx } from '../../../text/lists.js';
 import { measuringVertically } from '../../../../measure/vertical.js';
-import { nextNonMarkerBlock, prevNonMarkerBlock } from '../../../blocks/buildHelpers.js';
-import { verseSnaps } from '../../passHelpers.js';
+import { nextNonMarkerBlock } from '../../../blocks/buildHelpers.js';
+import { verseSnaps, verseSnapsTop } from '../../passHelpers.js';
 import { versesLineByLine } from '../../../text/verseLines.js';
 import { raggedLooseLines } from '../../../text/raggedLines.js';
 import { flowColumnsAfter } from '../../../blocks/placement.js';
@@ -154,30 +154,27 @@ export function createBlockLines(deps: BlockLinesDeps) {
       // A score's last system: the text after it goes back on the grid.
       (vdtType === 'score' && (rawBlock.score?.index ?? 0) === (rawBlock.score?.count ?? 1) - 1)
     );
-    /** Per-style grid: the block's own style sits on the grid, so it opens
-     *  on a grid line whatever ended above it. A list's first item is
-     *  handled with its `snapTopToGrid` below, in either rule. */
-    const sitsOnGrid = resolved.page.baselineGrid.perStyle && rawBlock.toc === undefined && rawBlock.index === undefined && (
+    /** The block's style opens it on a grid line (`snapTopToGrid`): the
+     *  space above it rounds up so its top sits on the grid. A list's first
+     *  item reads its own `snapTopToGrid` in the line room. */
+    const snapsTop = rawBlock.toc === undefined && rawBlock.index === undefined && (
       vdtType === 'heading'
-        ? (headingLevels.forBlock(rawBlock)?.snapToGrid ?? resolved.headings.snapToGrid)
+        ? (headingLevels.forBlock(rawBlock)?.snapTopToGrid ?? resolved.headings.snapTopToGrid)
         : vdtType === 'mathDisplay'
-          ? resolved.math.snapToGrid
+          ? resolved.math.snapTopToGrid
           : vdtType === 'blockquote'
-            ? resolved.bodyText.snapToGrid
+            ? blockMeasureCtx.resolved.bodyText.snapTopToGrid
             : vdtType === 'paragraph'
               ? (rawBlock.verse !== undefined
-                ? verseSnaps(rawBlock.verse.attrs.style, resolved)
+                // A poem: its style's, at its first stanza.
+                ? (rawBlock.verse.stanza?.index ?? 0) === 0 && verseSnapsTop(rawBlock.verse.attrs.style, resolved)
                 : paragraphContainer === undefined
-                  // The body text, and the first paragraph after a heading,
-                  // each by its own switch.
-                  ? (prevNonMarkerBlock(contentBlocks, blockTurn.blockIdx)?.type === 'heading'
-                    ? resolved.bodyText.firstParagraphSnapToGrid
-                    : resolved.bodyText.snapToGrid)
-                  // Inside a container only its first paragraph opens on the
-                  // grid; the rest follow the container's own leading.
+                  ? blockMeasureCtx.resolved.bodyText.snapTopToGrid
+                  // In a container only its first paragraph opens on the
+                  // grid; the rest keep the style's own leading.
                   : (contentBlocks[blockTurn.blockIdx - 1]?.type === 'containerStart'
                     && contentBlocks[blockTurn.blockIdx - 1]?.containerId === paragraphContainer.id
-                    && paragraphContainer.snapToGrid !== false))
+                    && paragraphContainer.snapTopToGrid === true))
               : false
     );
     /** A heading off the grid whose next block regains it. */
@@ -272,7 +269,7 @@ export function createBlockLines(deps: BlockLinesDeps) {
     blockTurn.itemGapPx = itemGapPx;
     blockTurn.nextIsHeading = nextIsHeading;
     blockTurn.shouldSnapToGrid = shouldSnapToGrid;
-    blockTurn.sitsOnGrid = sitsOnGrid;
+    blockTurn.snapsTop = snapsTop;
     blockTurn.regainGrid = regainGrid;
     blockTurn.canSplit = canSplit;
     blockTurn.guardedColumnEnds = guardedColumnEnds;

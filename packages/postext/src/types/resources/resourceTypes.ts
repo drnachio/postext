@@ -306,13 +306,19 @@ export interface ResourceType {
    *  Only the keys set here replace the resolved global `captionStyle`; the
    *  rest is inherited (see `mergeCaptionStyle`). */
   captionStyle?: CaptionStyleConfig;
-  /** Whether a figure or table of this type placed in the text sits on the
-   *  baseline grid: the flow snaps back onto it under the resource (and,
-   *  with `page.baselineGrid.perStyle`, the resource opens on a grid
-   *  line). `false` keeps the exact space the resource leaves. Floats set
-   *  in a band at the head or foot of a column are not affected. Default
-   *  `true`. */
+  /** Snap the flow back onto the baseline grid under a figure or table of
+   *  this type set in the text (`placement: 'here'`), the space under it
+   *  rounded up to whole grid lines. `false` keeps the exact space the
+   *  resource leaves: the text after it may sit off the grid until the
+   *  next block that snaps. Floats set in a band at the head or foot of a
+   *  column, and resources the text wraps round, are not affected.
+   *  Default `true`. */
   snapToGrid?: boolean;
+  /** Open a figure or table of this type set in the text on a grid line:
+   *  the space above it rounds up so its top sits on the baseline grid,
+   *  the float gap a minimum — the rule lists have in `snapTopToGrid`.
+   *  Floats and wrapped resources are not affected. Default `false`. */
+  snapTopToGrid?: boolean;
 }
 
 /** The concrete payload kind a `Resource` carries. */

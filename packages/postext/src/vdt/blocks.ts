@@ -119,8 +119,8 @@ export interface VDTBlock {
   dirty: boolean;
   snappedToGrid: boolean;
   /** A heading set off the grid whose next block regains it
-   *  (`HeadingLevelConfig.regainGrid`): column balancing adds no lines
-   *  above it. */
+   *  (`HeadingLevelConfig.regainGrid`): the block placed under it in its
+   *  column opens on a grid line. */
   regainsGrid?: boolean;
   headingLevel?: number;
   /** Heading attributes parsed from a trailing `{key="value" …}` on the

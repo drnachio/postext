@@ -87,6 +87,7 @@ export const DEFAULT_CALLOUT_STYLE_STATIC = {
   marginTop: EM(0.75),
   marginBottom: EM(0.75),
   snapToGrid: true,
+  snapTopToGrid: false,
   keepTogether: true,
   splitMinLines: 2,
   repeatTitle: false,

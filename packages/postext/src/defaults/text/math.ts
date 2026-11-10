@@ -21,6 +21,7 @@ export const DEFAULT_MATH_CONFIG: ResolvedMathConfig = {
   indentAfterDisplay: true,
   keepWithLeadIn: false,
   snapToGrid: true,
+  snapTopToGrid: false,
   equationNumbering: DEFAULT_EQUATION_NUMBERING,
 };
 
@@ -46,6 +47,7 @@ export function resolveMathConfig(partial?: MathConfig): ResolvedMathConfig {
     indentAfterDisplay: partial.indentAfterDisplay ?? DEFAULT_MATH_CONFIG.indentAfterDisplay,
     keepWithLeadIn: partial.keepWithLeadIn ?? DEFAULT_MATH_CONFIG.keepWithLeadIn,
     snapToGrid: partial.snapToGrid ?? DEFAULT_MATH_CONFIG.snapToGrid,
+    snapTopToGrid: partial.snapTopToGrid ?? DEFAULT_MATH_CONFIG.snapTopToGrid,
     equationNumbering: resolveEquationNumbering(partial.equationNumbering),
   };
   if (partial.color !== undefined) resolved.color = partial.color;
@@ -78,6 +80,10 @@ export function stripMathDefaults(math?: MathConfig): MathConfig | undefined {
   }
   if (math.snapToGrid !== undefined && math.snapToGrid !== DEFAULT_MATH_CONFIG.snapToGrid) {
     result.snapToGrid = math.snapToGrid;
+    hasOverride = true;
+  }
+  if (math.snapTopToGrid !== undefined && math.snapTopToGrid !== DEFAULT_MATH_CONFIG.snapTopToGrid) {
+    result.snapTopToGrid = math.snapTopToGrid;
     hasOverride = true;
   }
   if (math.indentAfterDisplay !== undefined && math.indentAfterDisplay !== DEFAULT_MATH_CONFIG.indentAfterDisplay) {

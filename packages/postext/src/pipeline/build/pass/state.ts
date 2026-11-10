@@ -22,10 +22,6 @@ export interface PassState {
   currentSection: ResolvedHeadingStyleConfig | undefined;
   blockIdCounter: number;
   pendingSpacing: number;
-  /** A heading set off the grid that regains it at the text after it
-   *  (`regainGrid`): its content index, until the next block is placed —
-   *  that block starts at the next grid line. */
-  regainAfter: number | null;
   inlineGapOwed: { afterIdx: number; pending: number; exact: number; container?: boolean } | null;
   registeredBand: { pageIndex: number; band: number } | null;
   bandStart: { contentIndex: number; part: number; visit: number } | null;

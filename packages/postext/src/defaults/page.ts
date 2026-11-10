@@ -48,7 +48,7 @@ export const DEFAULT_PAGE_CONFIG: ResolvedPageConfig = {
   margins: DEFAULT_PAGE_MARGINS,
   dpi: 300,
   cutLines: { ...DEFAULT_CUT_LINES },
-  baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' }, lineWidth: { value: 0.5, unit: 'pt' }, perStyle: false },
+  baselineGrid: { enabled: false, color: { hex: '#cccccc', model: 'hex' }, lineWidth: { value: 0.5, unit: 'pt' } },
   pageNumbering: { ...DEFAULT_PAGE_NUMBERING },
   binding: 'left',
 };
@@ -126,7 +126,6 @@ export function resolvePageConfig(partial?: PageConfig, locale?: string, writing
           enabled: partial.baselineGrid.enabled ?? DEFAULT_PAGE_CONFIG.baselineGrid.enabled,
           color: partial.baselineGrid.color ?? DEFAULT_PAGE_CONFIG.baselineGrid.color,
           lineWidth: partial.baselineGrid.lineWidth ?? DEFAULT_PAGE_CONFIG.baselineGrid.lineWidth,
-          perStyle: partial.baselineGrid.perStyle ?? DEFAULT_PAGE_CONFIG.baselineGrid.perStyle,
         }
       : { ...DEFAULT_PAGE_CONFIG.baselineGrid },
     pageNumbering: resolvePageNumbering(partial.pageNumbering, locale),
@@ -224,13 +223,11 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     const enabledOverride = page.baselineGrid.enabled !== undefined && page.baselineGrid.enabled !== DEFAULT_PAGE_CONFIG.baselineGrid.enabled;
     const colorOverride = page.baselineGrid.color !== undefined && !colorsEqual(page.baselineGrid.color, DEFAULT_PAGE_CONFIG.baselineGrid.color);
     const lineWidthOverride = page.baselineGrid.lineWidth !== undefined && !dimensionsEqual(page.baselineGrid.lineWidth, DEFAULT_PAGE_CONFIG.baselineGrid.lineWidth);
-    const perStyleOverride = page.baselineGrid.perStyle !== undefined && page.baselineGrid.perStyle !== DEFAULT_PAGE_CONFIG.baselineGrid.perStyle;
-    if (enabledOverride || colorOverride || lineWidthOverride || perStyleOverride) {
+    if (enabledOverride || colorOverride || lineWidthOverride) {
       result.baselineGrid = {
         enabled: page.baselineGrid.enabled ?? DEFAULT_PAGE_CONFIG.baselineGrid.enabled,
         ...(colorOverride ? { color: page.baselineGrid.color } : {}),
         ...(lineWidthOverride ? { lineWidth: page.baselineGrid.lineWidth } : {}),
-        ...(perStyleOverride ? { perStyle: page.baselineGrid.perStyle } : {}),
       };
       hasOverride = true;
     }

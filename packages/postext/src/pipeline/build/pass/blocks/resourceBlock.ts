@@ -12,7 +12,7 @@ import { type BlockMeasureContext, type MeasureContentBlockOptions, type Measure
 import type { InlineAside } from '../../passTypes.js';
 import { resolveResourceWrap, wrapGapPx, minTextWidthPx, columnCursorY } from '../../../floats/textWrap.js';
 import { widthShareIn } from '../../../floats/placementLength.js';
-import { onGridAbove, resourceOnGrid } from '../../passHelpers.js';
+import { onGridAbove, regainsUnder, resourceOnGrid, resourceSnapsTop } from '../../passHelpers.js';
 import type { ResourceType } from '../../../../types.js';
 
 /** What createResourceBlock takes from around the loop. */
@@ -121,9 +121,12 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
       // stands level with the next line's top instead.
       const typeOnGrid = resourceOnGrid(resourceBlock.resource.typeId, resourceTypeById);
       let spacingBefore = wraps ? state.pendingSpacing : Math.max(state.pendingSpacing, floatGapPx);
-      // Per-style grid: a figure whose type sits on the grid opens on a line.
-      if (resolved.page.baselineGrid.perStyle && typeOnGrid && !wraps && currentColumn(doc, cursor).blocks.length > 0) {
-        spacingBefore = onGridAbove(currentColumn(doc, cursor), spacingBefore, baselineGrid);
+      // The type opens its figures on a grid line (`snapTopToGrid`), or the
+      // heading above set off the grid regains the grid here (`regainGrid`).
+      const above = currentColumn(doc, cursor);
+      if (!wraps && above.blocks.length > 0
+        && (resourceSnapsTop(resourceBlock.resource.typeId, resourceTypeById) || regainsUnder(above))) {
+        spacingBefore = onGridAbove(above, spacingBefore, baselineGrid);
       }
       // An inline table that does not fit the room left in its column is
       // cut between rows (#634), by the rules of a floated one.

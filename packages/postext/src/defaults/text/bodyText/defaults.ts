@@ -118,8 +118,7 @@ export const DEFAULT_BODY_TEXT_CONFIG: ResolvedBodyTextConfig = {
   keepColonWithList: true,
   colonListRoom: 'item',
   hyphenateAcrossColumns: true,
-  snapToGrid: true,
-  firstParagraphSnapToGrid: true,
+  snapTopToGrid: false,
   paragraphContainerSpacing: 'collapse',
   paragraphStylesInBoxes: 'box',
 };

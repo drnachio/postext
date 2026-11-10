@@ -389,8 +389,6 @@ export function collectColumnGaps(
         if (
           b.type === 'heading'
           && b.headingLevel !== undefined
-          // Its space above is the one set (`regainGrid`).
-          && !b.regainsGrid
           && ((i >= 1 && !(opensColumn && closingBand)) || (underFloat && !closingBand))
           && i < col.blocks.length - 1
         ) {

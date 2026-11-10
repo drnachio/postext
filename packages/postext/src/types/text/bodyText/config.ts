@@ -465,16 +465,20 @@ export interface BodyTextConfig {
    *  filled). It moves fewer lines than
    *  `false`; in a single-column layout the two give the same lines. */
   hyphenateAcrossColumns?: boolean | 'withinPage';
-  /** Whether a body paragraph (and a blockquote) sits on the baseline
-   *  grid: with `page.baselineGrid.perStyle` it opens on the next grid line
-   *  however the block before it ended. `false` keeps it where the block
-   *  before left it. Default `true`. Read only with `perStyle`. */
-  snapToGrid?: boolean;
-  /** The same for the first paragraph after a heading, which a designer may
-   *  want to run on from the heading's own spacing while the rest of the
-   *  text keeps to the grid. Default `true`. Read only with
-   *  `page.baselineGrid.perStyle`. */
-  firstParagraphSnapToGrid?: boolean;
+  /** Open every body paragraph (and blockquote) on a grid line: the space
+   *  above it rounds up so its first line sits on the baseline grid, the
+   *  paragraph spacing a minimum — the rule lists have in `snapTopToGrid`.
+   *  It brings the text back onto the grid at once after a block that left
+   *  it (a group set in a paragraph style with `snapToGrid: false`, a box
+   *  or a figure off the grid), where otherwise the offset carries on to
+   *  the next block that snaps. A paragraph at the head of a column is on
+   *  the grid already. The paragraph right after a heading set off the
+   *  grid opens on it too; to keep the heading's exact space there, leave
+   *  this off and use the heading's `regainGrid` where the grid matters.
+   *  Paragraphs in a `:::paragraphs` container follow their style's
+   *  `snapTopToGrid`, and boxes, whose interiors are off the grid, are left
+   *  alone. Default `false`. */
+  snapTopToGrid?: boolean;
   /** The space under a `:::paragraphs` container that closes on a
    *  paragraph, between that paragraph and the block after it:
    *  - `'collapse'` (default): the larger of the style's `spaceBetween` and

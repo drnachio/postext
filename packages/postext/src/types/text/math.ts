@@ -42,11 +42,15 @@ export interface MathConfig {
    *  when `avoidWidows` is on). The carried line stands alone at the head
    *  of the next column. Default `false`: the formula alone moves on. */
   keepWithLeadIn?: boolean;
-  /** Whether a display formula sits on the baseline grid: the flow snaps
-   *  back onto it under the formula (and, with
-   *  `page.baselineGrid.perStyle`, the formula opens on a grid line).
-   *  `false` keeps its exact margins. Default `true`. */
+  /** Snap the flow back onto the baseline grid under a display formula,
+   *  `marginBottom` rounded up to whole grid lines. `false` keeps its exact
+   *  margin: the text after it may sit off the grid until the next block
+   *  that snaps. Default `true`. */
   snapToGrid?: boolean;
+  /** Open a display formula on a grid line: the space above it rounds up
+   *  so its top sits on the baseline grid, `marginTop` a minimum — the rule
+   *  lists have in `snapTopToGrid`. Default `false`. */
+  snapTopToGrid?: boolean;
   /** Number the display formulas that carry a `\label` (#530). */
   equationNumbering?: EquationNumberingConfig;
 }
@@ -93,5 +97,6 @@ export interface ResolvedMathConfig {
   indentAfterDisplay: boolean;
   keepWithLeadIn: boolean;
   snapToGrid: boolean;
+  snapTopToGrid: boolean;
   equationNumbering: ResolvedEquationNumberingConfig;
 }

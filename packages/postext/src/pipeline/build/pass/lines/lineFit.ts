@@ -134,9 +134,13 @@ export function createLineFit(deps: LineFitDeps) {
         const wouldUsedHeight =
           (curCol.bbox.height - curCol.availableHeight) + lineTurn.spacingBefore;
         const naturalBottom = wouldUsedHeight + lineTurn.effectiveRemainHeight + style.marginBottomPx;
-        // A heading that regains the grid at its text: the next block's
-        // rounding counts in the room too.
-        const snappedBottom = shouldSnapToGrid || blockTurn.regainGrid
+        // A heading that regains the grid at its text, or text that opens
+        // on a grid line by its own style (body text's `snapTopToGrid`):
+        // the next block's rounding counts in the room too.
+        const nextRaw = contentBlocks[blockTurn.blockIdx + 1];
+        const textSnapsTop = (nextRaw?.type === 'paragraph' || nextRaw?.type === 'blockquote')
+          && nextRaw.verse === undefined && blockMeasureCtx.resolved.bodyText.snapTopToGrid;
+        const snappedBottom = shouldSnapToGrid || blockTurn.regainGrid || textSnapsTop
           ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
           : naturalBottom;
         const remainAfterHeading = curCol.bbox.height - snappedBottom;
@@ -290,7 +294,6 @@ export function createLineFit(deps: LineFitDeps) {
         state.pendingSpacing = itemGapPx(listBullet!);
       } else {
         state.pendingSpacing = (shouldSnapToGrid && blockTurn.partIndex === 0) ? 0 : style.marginBottomPx;
-        if (blockTurn.regainGrid && blockTurn.partIndex === 0) state.regainAfter = blockTurn.blockIdx;
         // A collapsing container tail: the space the snap did not cover,
         // in whole grid lines, merges with the next block's own space
         // above (a heading's margin collapses with the exact rest).

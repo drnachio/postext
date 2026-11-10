@@ -184,6 +184,7 @@ function resolveCalloutStyleConfig(
     marginTop: partial.marginTop ?? d.marginTop,
     marginBottom: partial.marginBottom ?? d.marginBottom,
     snapToGrid: partial.snapToGrid ?? d.snapToGrid,
+    snapTopToGrid: partial.snapTopToGrid ?? d.snapTopToGrid,
     keepTogether: partial.keepTogether ?? d.keepTogether,
     splitMinLines: Number.isInteger(partial.splitMinLines) && partial.splitMinLines! >= 1
       ? partial.splitMinLines!

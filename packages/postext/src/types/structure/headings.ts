@@ -170,12 +170,19 @@ export interface HeadingLevelConfig {
   snapToGrid?: boolean;
   /** With {@link snapToGrid} off: the heading keeps its exact margins and
    *  its own leading, and the text after it goes back onto the grid — the
-   *  next block starts at the next grid line (the space it adds goes over
-   *  that block, not under the heading). The per-level form of
-   *  {@link HeadingsConfig.regainGrid}, which it inherits when unset. A
-   *  heading of this kind takes no extra lines from column balancing: its
-   *  space above stays the one set. */
+   *  next block (a paragraph, a list, a figure or table set in the text, a
+   *  box) starts at the next grid line, the space it adds going over that
+   *  block, not under the heading. Keep-with-next counts that space. The
+   *  per-level form of {@link HeadingsConfig.regainGrid}, which it inherits
+   *  when unset. */
   regainGrid?: boolean;
+  /** Open the heading on a grid line: the space above it rounds up so its
+   *  top sits on the baseline grid, its `marginTop` a minimum — the rule
+   *  lists have in `snapTopToGrid`. It matters where the text above it ran
+   *  off the grid (a box, a paragraph style or a heading set off it). The
+   *  per-level form of {@link HeadingsConfig.snapTopToGrid}, which it
+   *  inherits when unset; a heading style may set it too. */
+  snapTopToGrid?: boolean;
   /** 行取り (gyōdori, JLReq §4.1.6): the heading takes exactly this many
    *  lines of the body grid (N × the body line pitch), its text centred in
    *  them, in place of its `marginTop` and `marginBottom` — "3行取り" is
@@ -263,6 +270,8 @@ export interface ResolvedHeadingLevelConfig {
   snapToGrid: boolean;
   /** The level's own value, else `headings.regainGrid`. */
   regainGrid: boolean;
+  /** The level's own value, else `headings.snapTopToGrid`. */
+  snapTopToGrid: boolean;
   /** Absent unless set (see {@link HeadingLevelConfig.lineSpan}). */
   lineSpan?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
@@ -327,6 +336,10 @@ export interface HeadingsConfig {
    *  grid line. Default `false`. A level overrides it with
    *  {@link HeadingLevelConfig.regainGrid}. */
   regainGrid?: boolean;
+  /** Open every heading on a grid line, its `marginTop` a minimum (see
+   *  {@link HeadingLevelConfig.snapTopToGrid}). Default `false`. A level
+   *  overrides it. */
+  snapTopToGrid?: boolean;
   /** What a heading that snaps to the grid keeps of its space above when
    *  it opens a column (at the page's head, or under a float that heads
    *  the column), where its `marginTop` is dropped (#706):
@@ -386,6 +399,7 @@ export interface ResolvedHeadingsConfig {
   keepWithNextSplit: KeepWithNextSplit;
   snapToGrid: boolean;
   regainGrid: boolean;
+  snapTopToGrid: boolean;
   columnHeadSpace: ColumnHeadSpace;
   inlineMarks: boolean;
   balancing: {
