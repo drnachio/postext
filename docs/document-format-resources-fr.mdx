@@ -142,8 +142,8 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (la valeur par défaut) prend le premier emplacement libre après le renvoi, en haut ou en bas ; <code>"top"</code> / <code>"bottom"</code> n’acceptent que les emplacements de ce type ; <code>"here"</code> renonce au flottement et insère la ressource dans le texte à l’endroit de la directive <code>::resource</code> (un tableau placé là est coupé entre deux rangées quand il ne tient pas dans le reste de sa colonne, voir <a href="/fr/docs/configuration-resources#tableaux-plus-hauts-que-la-page">Tableaux plus hauts que la page</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (la valeur par défaut) prend le premier emplacement libre après le renvoi, en haut ou en bas ; <code>"top"</code> / <code>"bottom"</code> n’acceptent que les emplacements de ce type ; <code>"here"</code> renonce au flottement et insère la ressource dans le texte à l’endroit de la directive <code>::resource</code> (un tableau placé là est coupé entre deux rangées quand il ne tient pas dans le reste de sa colonne, voir <a href="/fr/docs/configuration-resources#tableaux-plus-hauts-que-la-page">Tableaux plus hauts que la page</a>). <code>"paragraph"</code> (de cette copie) l'insère aussi dans le texte, juste après le paragraphe qui le cite en premier, sans ligne <code>::resource</code> : après le reste d'une liste, ou après l'encadré où se trouve la citation. Il est composé exactement comme un <code>"here"</code> placé après ce paragraphe, habillage du texte, légende dans la colonne latérale et légende à côté dans son emplacement compris.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

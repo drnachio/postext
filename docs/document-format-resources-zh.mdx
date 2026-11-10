@@ -142,8 +142,8 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration-resources#比页面还高的表">比页面还高的表</a>）。</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code>（默认值）占用引用之后的第一个空位，顶部或底部均可；<code>"top"</code> / <code>"bottom"</code>只接受相应类型的空位；<code>"here"</code>取消浮动，在<code>::resource</code>指令处以行内方式嵌入（排在那里的表放不进本栏剩余空间时，在行与行之间切开，见<a href="/zh/docs/configuration-resources#比页面还高的表">比页面还高的表</a>）。 <code>"paragraph"</code>（本副本特有）同样把资源嵌入正文，但无需 <code>::resource</code> 行，而是放在首次引用它的段落之后（引用在列表中则放在列表其余项之后，在框内则放在框之后）。其排版与放在该段落之后的 <code>"here"</code> 完全相同，包括文字绕排、侧栏中的图注和槽内并排的图注。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

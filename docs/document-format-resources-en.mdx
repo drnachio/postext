@@ -142,8 +142,8 @@ Each resource has a **placement** that decides where its float lands, resolved p
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive (a table placed there is cut between rows when it does not fit the rest of its column, see <a href="/en/docs/configuration-resources#tables-taller-than-the-page">Tables taller than the page</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (the default) takes the first free slot after the reference, top or bottom; <code>"top"</code> / <code>"bottom"</code> only accept slots of that kind; <code>"here"</code> opts out of floating and embeds inline at the <code>::resource</code> directive (a table placed there is cut between rows when it does not fit the rest of its column, see <a href="/en/docs/configuration-resources#tables-taller-than-the-page">Tables taller than the page</a>). <code>"paragraph"</code> (this fork) sets it in the text too, right after the paragraph that first cites it, with no <code>::resource</code> line: after the rest of a list, or after the box the citation sits in. It is set exactly as a <code>"here"</code> embed after that paragraph, text wrap, a caption in the side column and a caption inside its slot included.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

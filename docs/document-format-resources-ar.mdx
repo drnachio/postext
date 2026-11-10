@@ -142,8 +142,8 @@ The keeper's quarters occupy the eastern wing.
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (القيمة الافتراضية) يأخذ أول موضع شاغر بعد الإحالة، علويًا كان أو سفليًا؛ و<code>"top"</code> / <code>"bottom"</code> لا يقبلان إلا مواضع من ذلك النوع؛ و<code>"here"</code> يلغي الطفو ويضمّن المورد داخل التدفق عند التوجيه <code>::resource</code> (والجدول الموضوع هناك يُقطع بين الصفوف حين لا يتسع له ما بقي من عموده، انظر <a href="/ar/docs/configuration-resources#الجداول-الأطول-من-الصفحة">الجداول الأطول من الصفحة</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (القيمة الافتراضية) يأخذ أول موضع شاغر بعد الإحالة، علويًا كان أو سفليًا؛ و<code>"top"</code> / <code>"bottom"</code> لا يقبلان إلا مواضع من ذلك النوع؛ و<code>"here"</code> يلغي الطفو ويضمّن المورد داخل التدفق عند التوجيه <code>::resource</code> (والجدول الموضوع هناك يُقطع بين الصفوف حين لا يتسع له ما بقي من عموده، انظر <a href="/ar/docs/configuration-resources#الجداول-الأطول-من-الصفحة">الجداول الأطول من الصفحة</a>). <code>"paragraph"</code> (خاص بهذه النسخة) يُدرج المورد في النص أيضًا، مباشرة بعد الفقرة التي تستشهد به أول مرة، دون سطر <code>::resource</code>: بعد بقية القائمة، أو بعد الإطار الذي يقع فيه الاستشهاد. ويُصفّ تمامًا كما يُصفّ <code>"here"</code> موضوعًا بعد تلك الفقرة، بما في ذلك التفاف النص، والتعليق في العمود الجانبي، والتعليق بجانبه داخل خانته.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

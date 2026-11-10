@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Pagina e impaginazione',
   description: 'Il formato della pagina, i margini e la griglia della linea di base; la numerazione delle pagine; le colonne e le intercolonne che le separano',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 5,
   parent: 'configuration',
@@ -445,6 +445,12 @@ La proprietà `layout` controlla come sono disposte le colonne all’interno del
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Nella pagina di chiusura di un capitolo (e del documento), le figure e le tabelle a tutta larghezza collocate sotto l’ultima fascia di testo salgono fino a una distanza di un intervallo da elemento flottante sotto di essa, impilate nel loro ordine: lì nulla le segue. <code>false</code> le lascia dove le ha messe la loro collocazione, così un elemento flottante <code>position: 'bottom'</code> finisce al piede della pagina nella pagina di chiusura come in ogni altra pagina; per esempio una scheda tecnica il cui contorno finisce alla stessa altezza in ogni pagina. Le pagine con una colonna laterale non li spostano mai.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Riporta sulla pagina che la cita una figura o tabella finita alla successiva: un'immagine con area sicura viene ritagliata al suo interno per restarci, altrimenti i paragrafi della pagina del richiamo si compongono una riga più corti dove la spaziatura lo consente. L'impaginazione si conserva solo se la figura arriva su quella pagina, senza una pagina in più né altre figure posticipate. Nel Sandbox, <em>Riportare le figure alla pagina del richiamo</em>, in Impaginazione.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

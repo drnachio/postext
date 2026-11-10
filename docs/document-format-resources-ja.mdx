@@ -142,8 +142,8 @@ SVGのリソースは、さらに`diagramStyle.singleInk`（既定値は`false`�
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code>（既定値）は、上端・下端を問わず参照の後にある最初の空き位置を取ります。<code>"top"</code> / <code>"bottom"</code>はその種類の位置だけを受け入れます。<code>"here"</code>はフロートをやめ、<code>::resource</code>ディレクティブの位置で本文中に埋め込みます（そこに置いた表は、段の残りに収まらなければ行の間で切られます。<a href="/ja/docs/configuration-resources#ページより高い表">ページより高い表</a>を参照）。</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code>（既定値）は、上端・下端を問わず参照の後にある最初の空き位置を取ります。<code>"top"</code> / <code>"bottom"</code>はその種類の位置だけを受け入れます。<code>"here"</code>はフロートをやめ、<code>::resource</code>ディレクティブの位置で本文中に埋め込みます（そこに置いた表は、段の残りに収まらなければ行の間で切られます。<a href="/ja/docs/configuration-resources#ページより高い表">ページより高い表</a>を参照）。 <code>"paragraph"</code>（このコピー独自）も本文に組み込みますが、<code>::resource</code> 行は不要で、最初に参照する段落の直後に置きます（リストの途中なら残りの項目の後、囲みの中の参照なら囲みの後）。その段落の後に置いた <code>"here"</code> とまったく同じに組まれ、回り込み、サイドコラムのキャプション、枠内の横キャプションも同様に効きます。</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Seite und Layout',
   description: 'Seitenformat, Ränder und Grundlinienraster, die Seitennummerierung sowie die Spalten und ihre Abstände',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '32 min',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ Die Eigenschaft `layout` steuert, wie die Spalten im Satzspiegel angeordnet werd
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Auf der Schlussseite eines Kapitels (und des Dokuments) rücken die unter dem letzten Textband gesetzten Abbildungen und Tabellen über die ganze Seitenbreite nach oben, bis sie einen Gleitobjektabstand darunter stehen, gestapelt in ihrer Reihenfolge: Dort folgt ihnen nichts mehr. <code>false</code> lässt sie, wo ihre Platzierung sie hingesetzt hat, sodass ein Gleitobjekt mit <code>position: 'bottom'</code> auf der Schlussseite wie auf jeder anderen Seite am Seitenfuß endet – etwa in einem Datenblatt, dessen Umriss auf jeder Seite auf derselben Höhe endet. Seiten mit einer Seitenspalte verschieben sie nie.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Holt eine Abbildung oder Tabelle, die auf die nächste Seite gerutscht ist, auf die Seite ihres Verweises zurück: Ein Bild mit Sicherheitsbereich wird darin beschnitten, damit es dort bleibt, sonst werden die Absätze der Verweisseite eine Zeile kürzer gesetzt, wo der Wortabstand es zulässt. Das Layout wird nur behalten, wenn die Abbildung dann auf dieser Seite landet, ohne zusätzliche Seite und ohne eine andere Abbildung zu verschieben. In der Sandbox <em>Abbildungen auf die Seite ihres Verweises holen</em> unter Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

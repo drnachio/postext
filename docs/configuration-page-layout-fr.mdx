@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Page et mise en page',
   description: 'Le format de la page, les marges et la grille de ligne de base, la numérotation des pages, les colonnes et leurs gouttières',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '37 min',
   order: 5,
   parent: 'configuration',
@@ -446,6 +446,12 @@ La propriété `layout` contrôle la disposition des colonnes dans la zone de co
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Sur la page de clôture d’un chapitre (et du document), les figures et tableaux sur toute la largeur placés sous la dernière bande de texte remontent pour se placer à un écart de flottant sous elle, empilés dans leur ordre : rien ne les suit à cet endroit. <code>false</code> les laisse là où leur placement les a mis : un flottant <code>position: 'bottom'</code> finit alors au pied de la page sur la page de clôture comme sur toutes les autres, par exemple dans une fiche technique dont le contour se termine à la même hauteur sur chaque page. Les pages qui ont une colonne latérale ne les déplacent jamais.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Ramène sur la page qui la cite une figure ou un tableau passé à la suivante : une image dotée d'une zone sûre est recadrée à l'intérieur de celle-ci pour y rester, sinon les paragraphes de la page de l'appel sont composés une ligne plus courts là où l'espacement le permet. La mise en page n'est gardée que si la figure arrive alors sur cette page, sans page de plus ni autre figure retardée. Dans le Sandbox, <em>Ramener les figures sur la page de leur appel</em>, sous Mise en page.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

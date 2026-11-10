@@ -142,8 +142,8 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (el valor predeterminado) toma el primer hueco libre después de la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> hace que el recurso no flote y lo inserta en el texto, en el lugar de la directiva <code>::resource</code> (si una tabla colocada ahí no cabe en lo que queda de su columna, se corta entre filas; véase <a href="/es/docs/configuration-resources#tablas-más-altas-que-la-página">Tablas más altas que la página</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (el valor predeterminado) toma el primer hueco libre después de la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> hace que el recurso no flote y lo inserta en el texto, en el lugar de la directiva <code>::resource</code> (si una tabla colocada ahí no cabe en lo que queda de su columna, se corta entre filas; véase <a href="/es/docs/configuration-resources#tablas-más-altas-que-la-página">Tablas más altas que la página</a>). <code>"paragraph"</code> (de esta copia) también lo inserta en el texto, justo después del párrafo que lo cita por primera vez, sin línea <code>::resource</code>: tras el resto de una lista, o tras el recuadro donde está la cita. Se compone exactamente como un <code>"here"</code> puesto tras ese párrafo, con el texto que lo rodea, el pie en la columna lateral y el pie al lado dentro de su hueco.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
