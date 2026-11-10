@@ -11,6 +11,8 @@
 import {
   COMIC_MIN_CELL_PERCENT,
   comicCropFeasibleRange,
+  normalizeSafeArea,
+  resourceCrop,
   pointInPolygon,
   polygonBBox,
   type Resource,
@@ -276,7 +278,8 @@ function centroid(poly: readonly VDTPoint[]): VDTPoint {
 }
 
 /** The size of a panel's picture and its safe area, when its resource
- *  has both. */
+ *  has both; with a manual crop (`Resource.crop`), the crop's size and the
+ *  safe area read inside it, as the engine crops the panel. */
 function pictureOf(resources: readonly Resource[] | null | undefined, panel: VDTComicPanel): { w: number; h: number; safeArea: NonNullable<Resource['safeArea']> } | null {
   const id = panel.art?.resourceId;
   const r = id ? resources?.find((x) => x.id === id) : undefined;
@@ -284,7 +287,15 @@ function pictureOf(resources: readonly Resource[] | null | undefined, panel: VDT
   const w = r.kind === 'bitmap' ? r.bitmap?.width : r.svg?.width;
   const h = r.kind === 'bitmap' ? r.bitmap?.height : r.svg?.height;
   if (!w || !h) return null;
-  return { w, h, safeArea: r.safeArea };
+  const crop = resourceCrop(r);
+  if (!crop) return { w, h, safeArea: r.safeArea };
+  const safeArea = normalizeSafeArea({
+    x: (r.safeArea.x - crop.x) / crop.width,
+    y: (r.safeArea.y - crop.y) / crop.height,
+    width: r.safeArea.width / crop.width,
+    height: r.safeArea.height / crop.height,
+  });
+  return safeArea ? { w: w * crop.width, h: h * crop.height, safeArea } : null;
 }
 
 /** Whether a cell `box` wide and high lets a cover crop keep the safe
