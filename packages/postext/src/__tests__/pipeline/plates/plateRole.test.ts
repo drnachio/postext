@@ -22,7 +22,7 @@ const element = (id: string, pages?: string) => ({
 });
 const withHead = (...elements: ReturnType<typeof element>[]): PostextConfig => ({ ...config, header: { elements } as never });
 const headIds = (doc: VDTDocument, index: number): string[] =>
-  (doc.pages[index]!.header?.blocks ?? []).map((b) => b.lines.map((l) => l.text).join('')).filter(Boolean);
+  (doc.pages[index]!.header?.blocks ?? []).flatMap((b) => (b.elementId ? [b.elementId] : []));
 
 describe('the plate page role', () => {
   it('admits on a plate page only the elements that name it', () => {

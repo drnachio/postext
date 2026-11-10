@@ -80,7 +80,7 @@ describe('a plate in the flow', () => {
   it('is set the same on mirrored pages, and on right-to-left ones', () => {
     const md = `${para(6)} See :ref{id="a"}. ${para(40)}`;
     const plain = floatOf(build(md, [svg('a', 300, 400)]), 'a')!;
-    const mirrored = floatOf(build(md, [svg('a', 300, 400)], { ...config, page: { ...config.page, margins: { ...config.page.margins, left: mm(20), right: mm(12), mirror: true } } } as PostextConfig), 'a')!;
+    const mirrored = floatOf(build(md, [svg('a', 300, 400)], { ...config, page: { ...config.page!, margins: { ...config.page!.margins, left: mm(20), right: mm(12), mirror: true } } } as PostextConfig), 'a')!;
     const rtl = floatOf(build(md, [svg('a', 300, 400)], { ...config, direction: 'rtl' } as PostextConfig), 'a')!;
     // The mirrored page is narrower (32 mm of margins): the plate is as
     // wide as its content area there, its proportions kept.
