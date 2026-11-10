@@ -5556,6 +5556,163 @@
       ]
     }
   },
+  "symbol-font": {
+    "label": {
+      "en": "Symbol font",
+      "es": "Fuente de símbolos",
+      "ca": "Font de símbols",
+      "zh": "符号字体",
+      "ar": "خط الرموز",
+      "ja": "記号フォント",
+      "pt": "Fonte de símbolos",
+      "fr": "Police des symboles",
+      "de": "Symbolschrift",
+      "it": "Font dei simboli"
+    },
+    "definition": {
+      "en": "symbolFont names a family that draws the characters the document's faces lack (logic and set signs, Greek, arrows) on the canvas, in the PDF, the HTML and the EPUB, instead of a system face or an empty box.",
+      "es": "symbolFont nombra una familia que dibuja los caracteres que no tienen las fuentes del documento (signos de lógica y de conjuntos, griego, flechas) en el lienzo, el PDF, el HTML y el EPUB, en lugar de una fuente del sistema o una caja vacía.",
+      "ca": "symbolFont anomena una família que dibuixa els caràcters que no tenen les fonts del document (signes de lògica i de conjunts, grec, fletxes) al llenç, al PDF, a l'HTML i a l'EPUB, en lloc d'una font del sistema o d'una caixa buida.",
+      "zh": "symbolFont 指定一个字体族，在画布、PDF、HTML 和 EPUB 中绘制文档字体缺少的字符（逻辑与集合符号、希腊字母、箭头），而不是交给系统字体或印成空框。",
+      "ar": "يسمّي symbolFont عائلة خطوط ترسم المحارف التي تفتقدها خطوط المستند (رموز المنطق والمجموعات، الحروف اليونانية، الأسهم) على اللوحة وفي PDF وHTML وEPUB، بدل خط من خطوط النظام أو مربع فارغ.",
+      "ja": "symbolFontは、文書の書体にない文字（論理記号や集合記号、ギリシャ文字、矢印）を描く書体を指定します。キャンバス、PDF、HTML、EPUBのどれでも、システムの書体や空の四角ではなくこの書体で描かれます。",
+      "pt": "symbolFont nomeia uma família que desenha os caracteres que faltam às fontes do documento (sinais de lógica e de conjuntos, grego, setas) na tela, no PDF, no HTML e no EPUB, em vez de uma fonte do sistema ou de uma caixa vazia.",
+      "fr": "symbolFont désigne une famille qui dessine les caractères absents des polices du document (signes de logique et d’ensembles, grec, flèches) sur le canevas, dans le PDF, le HTML et l’EPUB, au lieu d’une police du système ou d’une case vide.",
+      "de": "symbolFont nennt eine Schriftfamilie, die die Zeichen zeichnet, die den Schriften des Dokuments fehlen (Logik- und Mengenzeichen, Griechisch, Pfeile), auf der Leinwand, im PDF, im HTML und im EPUB, statt einer Systemschrift oder eines leeren Kästchens.",
+      "it": "symbolFont indica una famiglia che disegna i caratteri che mancano ai font del documento (segni di logica e di insiemi, greco, frecce) sul canvas, nel PDF, nell’HTML e nell’EPUB, invece di un font di sistema o di un riquadro vuoto."
+    },
+    "aliases": {
+      "en": [
+        "symbolFont",
+        "symbol font",
+        "fallback font",
+        "missing glyphs",
+        "empty boxes",
+        "tofu",
+        "logic symbols",
+        "set notation",
+        "Noto Sans Math",
+        "glyphFallbackAt"
+      ],
+      "es": [
+        "symbolFont",
+        "fuente de símbolos",
+        "fuente de reserva",
+        "glifos que faltan",
+        "cajas vacías",
+        "tofu",
+        "signos lógicos",
+        "notación de conjuntos",
+        "Noto Sans Math",
+        "glyphFallbackAt"
+      ],
+      "ca": [
+        "symbolFont",
+        "font de símbols",
+        "font de reserva",
+        "glifs que falten",
+        "caixes buides",
+        "signes lògics",
+        "notació de conjunts",
+        "Noto Sans Math"
+      ],
+      "zh": [
+        "symbolFont",
+        "符号字体",
+        "后备字体",
+        "缺字",
+        "空框",
+        "豆腐块",
+        "逻辑符号",
+        "集合符号",
+        "Noto Sans Math"
+      ],
+      "ar": [
+        "symbolFont",
+        "خط الرموز",
+        "خط احتياطي",
+        "محارف مفقودة",
+        "مربعات فارغة",
+        "رموز منطقية",
+        "Noto Sans Math"
+      ],
+      "ja": [
+        "symbolFont",
+        "記号フォント",
+        "代替フォント",
+        "欠けたグリフ",
+        "豆腐",
+        "論理記号",
+        "集合記号",
+        "Noto Sans Math"
+      ],
+      "pt": [
+        "symbolFont",
+        "fonte de símbolos",
+        "fonte de reserva",
+        "glifos ausentes",
+        "caixas vazias",
+        "tofu",
+        "símbolos lógicos",
+        "notação de conjuntos",
+        "Noto Sans Math"
+      ],
+      "fr": [
+        "symbolFont",
+        "police des symboles",
+        "police de secours",
+        "glyphes manquants",
+        "cases vides",
+        "tofu",
+        "symboles logiques",
+        "notation ensembliste",
+        "Noto Sans Math"
+      ],
+      "de": [
+        "symbolFont",
+        "Symbolschrift",
+        "Ersatzschrift",
+        "fehlende Glyphen",
+        "leere Kästchen",
+        "Tofu",
+        "Logikzeichen",
+        "Mengenschreibweise",
+        "Noto Sans Math"
+      ],
+      "it": [
+        "symbolFont",
+        "font dei simboli",
+        "font di riserva",
+        "glifi mancanti",
+        "riquadri vuoti",
+        "tofu",
+        "simboli logici",
+        "notazione insiemistica",
+        "Noto Sans Math"
+      ]
+    },
+    "group": "fonts",
+    "docs": {
+      "slug": "configuration-fonts-colors-viewers",
+      "heading": {
+        "en": "Symbol font",
+        "es": "Fuente de símbolos",
+        "ca": "Font de símbols",
+        "zh": "符号字体",
+        "ar": "خط الرموز",
+        "ja": "記号フォント",
+        "pt": "Fonte de símbolos",
+        "fr": "Police des symboles",
+        "de": "Symbolschrift",
+        "it": "Font dei simboli"
+      }
+    },
+    "detect": {
+      "config": [
+        "symbolFont"
+      ]
+    }
+  },
   "figure-styles": {
     "label": {
       "en": "Figure styles",

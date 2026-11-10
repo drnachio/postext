@@ -5966,5 +5966,33 @@
       "ar": "تظليل مرمَّز بالألوان"
     },
     "theme": "type"
+  },
+  "Q218": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print logic and set signs (∀, ∈, ℵ) and Greek that my text font lacks, instead of empty boxes in the PDF?",
+      "es": "¿Cómo imprimo los signos de lógica y de conjuntos (∀, ∈, ℵ) y el griego que no tiene mi fuente de texto, sin cajas vacías en el PDF?",
+      "ca": "Com imprimeixo els signes de lògica i de conjunts (∀, ∈, ℵ) i el grec que no té la meva font de text, sense caixes buides al PDF?",
+      "fr": "Comment imprimer les signes de logique et d’ensembles (∀, ∈, ℵ) et le grec que ma police de texte n’a pas, sans cases vides dans le PDF ?",
+      "de": "Wie drucke ich Logik- und Mengenzeichen (∀, ∈, ℵ) und Griechisch, die meiner Textschrift fehlen, ohne leere Kästchen im PDF?",
+      "it": "Come stampo i segni di logica e di insiemi (∀, ∈, ℵ) e il greco che il mio font di testo non ha, senza riquadri vuoti nel PDF?",
+      "pt": "Como imprimo os sinais de lógica e de conjuntos (∀, ∈, ℵ) e o grego que minha fonte de texto não tem, sem caixas vazias no PDF?",
+      "zh": "正文字体缺少逻辑与集合符号（∀、∈、ℵ）和希腊字母时，怎样让 PDF 印出它们而不是空框？",
+      "ja": "本文の書体にない論理記号・集合記号（∀、∈、ℵ）やギリシャ文字を、PDFで空の四角にせずに印刷するには？",
+      "ar": "كيف أطبع رموز المنطق والمجموعات (∀ و∈ وℵ) والحروف اليونانية التي يفتقدها خط النص، دون مربعات فارغة في PDF؟"
+    },
+    "index": {
+      "en": "Symbols the text font lacks",
+      "es": "Símbolos que la fuente no tiene",
+      "ca": "Símbols que la font no té",
+      "fr": "Symboles absents de la police",
+      "de": "Zeichen, die der Schrift fehlen",
+      "it": "Simboli che il font non ha",
+      "pt": "Símbolos que a fonte não tem",
+      "zh": "字体缺少的符号",
+      "ja": "書体にない記号",
+      "ar": "رموز يفتقدها الخط"
+    },
+    "theme": "type"
   }
 }
