@@ -432,6 +432,10 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsUnplacedDetail}`;
     case 'hereNotEmbedded':
       return `#${payload.resourceId} — ${labels.warningsHereNotEmbeddedDetail}`;
+    case 'paragraphCitedInNote':
+      return `#${payload.resourceId} — ${labels.warningsParagraphCitedInNoteDetail}`;
+    case 'floatCropped':
+      return `#${payload.resourceId} — ${labels.warningsFloatCroppedDetail.replace('__share__', String(Math.round(payload.share * 100)))}`;
     case 'stack':
       return (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
         .replace('__page__', String(payload.page))

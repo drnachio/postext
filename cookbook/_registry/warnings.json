@@ -5625,6 +5625,60 @@
       }
     }
   },
+  "floatCropped": {
+    "source": "engine",
+    "label": {
+      "en": "Picture cropped to stay on its page",
+      "es": "Imagen recortada para quedarse en su página",
+      "ca": "Imatge retallada per quedar-se a la seva pàgina",
+      "zh": "图片已裁剪以留在引用页",
+      "ar": "صورة مقصوصة لتبقى في صفحتها",
+      "ja": "引用ページに残すためトリミングした画像",
+      "pt": "Imagem recortada para ficar na sua página",
+      "fr": "Image recadrée pour rester sur sa page",
+      "de": "Bild beschnitten, um auf seiner Seite zu bleiben",
+      "it": "Immagine ritagliata per restare nella sua pagina"
+    },
+    "cause": {
+      "en": "layout.pullFloatsToCitation is on, and a floated picture with a safe area (Resource.safeArea) missed the page that first cites it by four body lines or fewer. Setting the paragraphs above the citation a line shorter did not bring it back, so the engine cropped the picture within its safe area, no more than its slot needed, to keep it on that page. share is the fraction of its height cropped.",
+      "es": "layout.pullFloatsToCitation está activado y una imagen flotante con zona segura (Resource.safeArea) se quedó fuera de la página que la cita por primera vez por cuatro líneas de texto o menos. Componer una línea más cortos los párrafos de encima de la cita no la devolvió, así que el motor recortó la imagen dentro de su zona segura, no más de lo que pedía su hueco, para dejarla en esa página. share es la fracción de su alto recortada.",
+      "ca": "layout.pullFloatsToCitation és activat i una imatge flotant amb zona segura (Resource.safeArea) va quedar fora de la pàgina que la cita per primer cop per quatre línies de text o menys. Compondre una línia més curts els paràgrafs de sobre la cita no la va tornar, de manera que el motor va retallar la imatge dins de la seva zona segura, no més del que demanava el seu espai, per deixar-la en aquella pàgina. share és la fracció de l'alçada retallada.",
+      "zh": "开启了layout.pullFloatsToCitation，且一张带安全区（Resource.safeArea）的浮动图片以不超过四行正文的差距错过了首次引用它的页面。把引用处之前的段落少排一行没能把它拉回，引擎于是在安全区内裁切图片，只裁到其位置所需为止，让它留在该页。share是被裁去的高度比例。",
+      "ar": "الخيار layout.pullFloatsToCitation مفعّل، وفاتت صورةً عائمة ذات منطقة آمنة (Resource.safeArea) الصفحةُ التي تحيل إليها أول مرة بأربعة أسطر من المتن أو أقل. ولم يُعِدها تنضيد الفقرات التي فوق الإحالة أقصر بسطر، فقصّ المحرّك الصورة داخل منطقتها الآمنة، بقدر ما يحتاجه موضعها لا أكثر، لتبقى في تلك الصفحة. وshare نسبة ما قُصّ من ارتفاعها.",
+      "ja": "layout.pullFloatsToCitationが有効で、セーフエリア（Resource.safeArea）のあるフロートの図版が、最初に参照したページを本文4行以内の差で外れました。参照より前の段落を1行短く組んでも戻らなかったため、エンジンは置き場所に必要な分だけセーフエリア内で図版をトリミングし、そのページに残しました。shareはトリミングした高さの比率です。",
+      "pt": "layout.pullFloatsToCitation está ativado e uma imagem flutuante com área segura (Resource.safeArea) ficou fora da página que a cita primeiro por quatro linhas de texto ou menos. Compor uma linha mais curtos os parágrafos acima da citação não a trouxe de volta; por isso, o motor recortou a imagem dentro da área segura, não mais do que a posição pedia, para mantê-la nessa página. share é a fração da altura recortada.",
+      "fr": "layout.pullFloatsToCitation est activé, et une image flottante dotée d’une zone de sécurité (Resource.safeArea) a manqué de quatre lignes de texte ou moins la page qui la cite en premier. Composer d’une ligne plus courts les paragraphes au-dessus de l’appel ne l’a pas ramenée : le moteur a recadré l’image à l’intérieur de sa zone de sécurité, pas plus que ne l’exigeait son emplacement, pour la garder sur cette page. share est la part de sa hauteur recadrée.",
+      "de": "layout.pullFloatsToCitation ist eingeschaltet, und ein gleitendes Bild mit Sicherheitsbereich (Resource.safeArea) hat die Seite seines ersten Verweises um höchstens vier Textzeilen verfehlt. Die Absätze über dem Verweis eine Zeile kürzer zu setzen, hat es nicht zurückgeholt, deshalb hat die Engine das Bild innerhalb seines Sicherheitsbereichs beschnitten, nicht mehr als sein Platz verlangte, damit es auf dieser Seite bleibt. share ist der beschnittene Anteil seiner Höhe.",
+      "it": "layout.pullFloatsToCitation è attivo e un’immagine flottante con zona sicura (Resource.safeArea) ha mancato di quattro righe di testo o meno la pagina che la cita per prima. Comporre di una riga più corti i paragrafi sopra il richiamo non l’ha riportata, quindi il motore ha ritagliato l’immagine dentro la sua zona sicura, non più di quanto chiedeva il suo spazio, per tenerla su quella pagina. share è la frazione della sua altezza ritagliata."
+    },
+    "fix": {
+      "en": "The crop never leaves the safe area, so the warning is information. pullFloatsToCitation is not recommended: it overrides the rule-based placement. To keep the picture whole, turn the option off and use placement.citingPage (or layout.floatsAtCitingPage), which sets the float at the head of the page its citing line lands on, or placement.shrink: 'slot', which sets the picture smaller, keeping its proportions, on the page that cites it.",
+      "es": "El recorte nunca sale de la zona segura, así que el aviso es informativo. No se recomienda pullFloatsToCitation: pasa por encima de la colocación por reglas. Para conservar la imagen entera, desactiva la opción y usa placement.citingPage (o layout.floatsAtCitingPage), que pone el flotante en la cabeza de la página en la que cae la línea que lo cita, o placement.shrink: 'slot', que compone la imagen más pequeña, sin cambiar sus proporciones, en la página que la cita.",
+      "ca": "El retall mai no surt de la zona segura, de manera que l'avís és informatiu. No es recomana pullFloatsToCitation: passa per sobre de la col·locació per regles. Per conservar la imatge sencera, desactiva l'opció i fes servir placement.citingPage (o layout.floatsAtCitingPage), que posa el flotant al capdamunt de la pàgina on cau la línia que el cita, o placement.shrink: 'slot', que compon la imatge més petita, sense canviar-ne les proporcions, a la pàgina que la cita.",
+      "zh": "裁切从不超出安全区，所以这条警告只是提示。不推荐使用pullFloatsToCitation：它会压过按规则的放置。想保留整张图片，就关闭该选项，改用placement.citingPage（或layout.floatsAtCitingPage），让浮动体占据引用行所在页的顶部；或用placement.shrink: 'slot'，在引用它的页面上按原比例缩小图片。",
+      "ar": "لا يتجاوز القصّ المنطقة الآمنة أبدًا، فالتحذير للعلم. والخيار pullFloatsToCitation غير مستحسن: فهو يتخطى الوضع القائم على القواعد. ولإبقاء الصورة كاملة، أوقف الخيار واستعمل placement.citingPage (أو layout.floatsAtCitingPage)، فيضع العنصر العائم في رأس الصفحة التي يقع فيها سطر الإحالة، أو placement.shrink: 'slot'، فيصفّ الصورة أصغر، مع حفظ نِسَبها، في الصفحة التي تحيل إليها.",
+      "ja": "トリミングはセーフエリアの外に出ないため、この警告は情報です。pullFloatsToCitationは非推奨で、規則による配置を押し切ります。図版を切らずに残すには、このオプションを切り、placement.citingPage（またはlayout.floatsAtCitingPage）で参照行のあるページの先頭にフロートを置くか、placement.shrink: 'slot'で縦横比を保ったまま参照ページに小さく組んでください。",
+      "pt": "O recorte nunca sai da área segura, por isso o aviso é informativo. pullFloatsToCitation não é recomendado: ele passa por cima do posicionamento por regras. Para manter a imagem inteira, desative a opção e use placement.citingPage (ou layout.floatsAtCitingPage), que põe o flutuante no topo da página onde cai a linha que o cita, ou placement.shrink: 'slot', que compõe a imagem menor, mantendo as proporções, na página que a cita.",
+      "fr": "Le recadrage ne sort jamais de la zone de sécurité : l’avertissement est informatif. pullFloatsToCitation est déconseillé, car il passe outre le placement par règles. Pour garder l’image entière, désactivez l’option et utilisez placement.citingPage (ou layout.floatsAtCitingPage), qui met le flottant en tête de la page où arrive la ligne qui le cite, ou placement.shrink: 'slot', qui compose l’image plus petite, en gardant ses proportions, sur la page qui la cite.",
+      "de": "Der Beschnitt verlässt nie den Sicherheitsbereich, die Warnung ist also ein Hinweis. pullFloatsToCitation wird nicht empfohlen, weil es die regelbasierte Platzierung übergeht. Um das Bild ganz zu behalten, schalten Sie die Option aus und nutzen Sie placement.citingPage (oder layout.floatsAtCitingPage), das das Gleitobjekt an den Kopf der Seite setzt, auf der die verweisende Zeile landet, oder placement.shrink: 'slot', das das Bild unter Wahrung seiner Proportionen auf der Seite seines Verweises kleiner setzt.",
+      "it": "Il ritaglio non esce mai dalla zona sicura, quindi l’avviso è informativo. pullFloatsToCitation è sconsigliato, perché scavalca la collocazione per regole. Per tenere l’immagine intera, disattiva l’opzione e usa placement.citingPage (o layout.floatsAtCitingPage), che mette l’elemento flottante in cima alla pagina in cui finisce la riga che lo cita, oppure placement.shrink: 'slot', che compone l’immagine più piccola, mantenendo le proporzioni, sulla pagina che la cita."
+    },
+    "docs": {
+      "slug": "configuration-page-layout",
+      "heading": {
+        "en": "Layout",
+        "es": "Disposición",
+        "ca": "Disposició",
+        "zh": "版式",
+        "ar": "التخطيط",
+        "ja": "レイアウト",
+        "pt": "Diagramação",
+        "fr": "Mise en page",
+        "de": "Layout",
+        "it": "Impaginazione"
+      }
+    }
+  },
   "pictureBelowPrintSize": {
     "source": "engine",
     "label": {
@@ -6148,6 +6202,60 @@
       "fr": "Insérez-la avec une ligne ::resource là où elle doit être, ou donnez-lui une position flottante (top, bottom ou auto) pour que le :ref la place dans le premier emplacement libre après la référence.",
       "de": "Betten Sie sie mit einer ::resource-Zeile dort ein, wo sie hingehört, oder geben Sie ihr eine gleitende Position (top, bottom oder auto), damit :ref sie in den ersten freien Platz nach dem Verweis setzt.",
       "it": "Inseriscila con una riga ::resource dove deve stare, oppure dalle una posizione flottante (top, bottom o auto) perché il :ref la collochi nel primo spazio libero dopo il riferimento."
+    },
+    "docs": {
+      "slug": "document-format-resources",
+      "heading": {
+        "en": "Placement",
+        "es": "Colocación",
+        "ca": "Col·locació",
+        "zh": "位置",
+        "ar": "الموضع",
+        "ja": "配置",
+        "pt": "Posicionamento",
+        "fr": "Placement",
+        "de": "Platzierung",
+        "it": "Collocazione"
+      }
+    }
+  },
+  "paragraphCitedInNote": {
+    "source": "engine",
+    "label": {
+      "en": "Cited only in a note",
+      "es": "Citado solo en una nota",
+      "ca": "Citat només en una nota",
+      "zh": "仅在注释中引用",
+      "ar": "محال إليه في حاشية فقط",
+      "ja": "注でしか参照されていません",
+      "pt": "Citado só numa nota",
+      "fr": "Appelé seulement dans une note",
+      "de": "Nur in einer Fußnote verwiesen",
+      "it": "Richiamato solo in una nota"
+    },
+    "cause": {
+      "en": "A resource whose placement is position: 'paragraph' is cited with :ref only inside footnote definitions (chapter-end notes included). A paragraph resource is set after the paragraph of the running text that first cites it, and a note is set apart from the flow, so a citation there does not count. With no :ref in the running text, no ::resource line and no earlier chapter that placed it (continuation.resourceNumbers), the resource is on no page. The engine lists it in doc.contentWarnings with the range of its first :ref in a note and no page.",
+      "es": "Un recurso cuya colocación es position: 'paragraph' solo se cita con :ref dentro de definiciones de notas al pie (también de notas de final de capítulo). Un recurso paragraph se compone tras el párrafo del texto corrido que lo cita por primera vez, y la nota se compone aparte del flujo, así que una cita en ella no cuenta. Sin :ref en el texto corrido, sin línea ::resource y sin un capítulo anterior que lo colocara (continuation.resourceNumbers), el recurso no está en ninguna página. El motor lo anota en doc.contentWarnings con el rango de su primer :ref dentro de una nota y sin página.",
+      "ca": "Un recurs amb la col·locació position: 'paragraph' només es cita amb :ref dins de definicions de notes al peu (també de notes de final de capítol). Un recurs paragraph es compon després del paràgraf del text corrent que el cita per primer cop, i la nota es compon a part del flux, de manera que una cita dins seu no compta. Sense cap :ref al text corrent, sense línia ::resource i sense cap capítol anterior que l'hagi col·locat (continuation.resourceNumbers), el recurs no és a cap pàgina. El motor ho anota a doc.contentWarnings amb el rang del seu primer :ref dins d'una nota i sense pàgina.",
+      "zh": "某个资源的位置是position: 'paragraph'，但只在脚注定义（包括章末注）中用:ref引用。paragraph资源排在正文中首次引用它的段落之后，而注释排在文本流之外，所以注释中的引用不算。正文中没有:ref、没有::resource行、前面各章也没有放置它（continuation.resourceNumbers）时，该资源不在任何页面上。引擎把它记在doc.contentWarnings中，带它在注释中第一个:ref的源码范围，不带页码。",
+      "ar": "مورد موضعه position: 'paragraph' لا يُستشهد به بـ :ref إلا داخل تعريفات الحواشي (ومنها تعليقات نهاية الفصل). فالمورد paragraph يُنضَّد بعد فقرة المتن التي تحيل إليه أول مرة، والحاشية تُنضَّد بمعزل عن التدفق، فلا تُحتسب الإحالة فيها. وإن لم يكن له :ref في المتن ولا سطر ::resource ولم يضعه فصل سابق (continuation.resourceNumbers)، فليس في أي صفحة. يسجّله المحرّك في doc.contentWarnings مع موضع أول :ref له في حاشية وبلا صفحة.",
+      "ja": "配置がposition: 'paragraph'のリソースが、脚注の定義（章末注を含む）の中でしか:refで参照されていません。paragraphのリソースは本文で最初に参照する段落の後に組まれますが、注は本文の流れとは別に組まれるため、注の中の参照は数えません。本文に:refがなく、::resource行もなく、前の章でも置かれていない（continuation.resourceNumbers）場合、そのリソースはどのページにもありません。エンジンはこれを注の中の最初の:refのソース範囲つき、ページなしでdoc.contentWarningsに記録します。",
+      "pt": "Um recurso cujo posicionamento é position: 'paragraph' só é citado com :ref dentro de definições de notas de rodapé (inclusive notas de fim de capítulo). Um recurso paragraph é composto depois do parágrafo do texto corrido que o cita primeiro, e a nota é composta à parte do fluxo, por isso uma citação nela não conta. Sem :ref no texto corrido, sem linha ::resource e sem um capítulo anterior que o tenha posicionado (continuation.resourceNumbers), o recurso não está em nenhuma página. O motor registra isso em doc.contentWarnings com o intervalo do primeiro :ref dele numa nota e sem página.",
+      "fr": "Une ressource dont le placement est position: 'paragraph' n’est citée avec :ref que dans des définitions de notes de bas de page (notes de fin de chapitre comprises). Une ressource paragraph est composée après le paragraphe du texte courant qui la cite en premier, et une note est composée à part du flux : un appel dans une note ne compte pas. Sans :ref dans le texte courant, sans ligne ::resource et sans chapitre précédent qui l’ait placée (continuation.resourceNumbers), la ressource ne figure sur aucune page. Le moteur la liste dans doc.contentWarnings avec la position de son premier :ref dans une note et sans page.",
+      "de": "Eine Ressource mit der Platzierung position: 'paragraph' wird mit :ref nur in Fußnotendefinitionen zitiert (Kapitelendnoten eingeschlossen). Eine paragraph-Ressource wird nach dem Absatz des Fließtexts gesetzt, der sie zuerst zitiert, und eine Fußnote wird abseits des Textflusses gesetzt, ein Verweis dort zählt also nicht. Ohne :ref im Fließtext, ohne ::resource-Zeile und ohne ein früheres Kapitel, das sie platziert hat (continuation.resourceNumbers), steht die Ressource auf keiner Seite. Die Engine führt sie mit dem Bereich ihres ersten :ref in einer Fußnote und ohne Seite in doc.contentWarnings auf.",
+      "it": "Una risorsa con collocazione position: 'paragraph' è citata con :ref solo dentro definizioni di note a piè di pagina (note di fine capitolo comprese). Una risorsa paragraph viene composta dopo il paragrafo del testo corrente che la cita per primo, e la nota si compone a parte rispetto al flusso, quindi un rimando lì non conta. Senza :ref nel testo corrente, senza riga ::resource e senza un capitolo precedente che l’abbia collocata (continuation.resourceNumbers), la risorsa non è su nessuna pagina. Il motore la elenca in doc.contentWarnings con l’intervallo del suo primo :ref in una nota e senza pagina."
+    },
+    "fix": {
+      "en": "Cite it in the running text too, so it follows that paragraph; embed it with a ::resource line where it belongs; or give it a floating position (top, bottom or auto) so the :ref in the note places it in the first free slot after the reference.",
+      "es": "Cítalo también en el texto corrido, para que vaya tras ese párrafo; insértalo con una línea ::resource donde le corresponde; o dale una posición flotante (top, bottom o auto) para que el :ref de la nota lo coloque en el primer hueco libre después de la referencia.",
+      "ca": "Cita'l també al text corrent, perquè vagi després d'aquest paràgraf; insereix-lo amb una línia ::resource on li toca; o dona-li una posició flotant (top, bottom o auto) perquè el :ref de la nota el col·loqui al primer espai lliure després de la referència.",
+      "zh": "在正文中也引用它，让它跟在那个段落之后；或在应放的位置用::resource行嵌入它；或给它一个浮动位置（top、bottom或auto），让注释中的:ref把它放进引用之后的第一个空位。",
+      "ar": "أحِل إليه في المتن أيضًا ليأتي بعد تلك الفقرة؛ أو ضمِّنه بسطر ::resource حيث ينبغي أن يكون؛ أو أعطه موضعًا عائمًا (top أو bottom أو auto) ليضعه :ref الذي في الحاشية في أول موضع فارغ بعد الإحالة.",
+      "ja": "本文でも参照してその段落の後に置くか、置くべき場所に::resource行で埋め込むか、フロートの配置（top、bottom、auto）にして、注の中の:refが参照の後の最初の空きに置くようにしてください。",
+      "pt": "Cite-o também no texto corrido, para que fique depois desse parágrafo; insira-o com uma linha ::resource onde ele deve ficar; ou dê a ele uma posição flutuante (top, bottom ou auto) para que o :ref da nota o coloque no primeiro espaço livre depois da referência.",
+      "fr": "Citez-la aussi dans le texte courant, pour qu’elle suive ce paragraphe ; insérez-la avec une ligne ::resource là où elle doit être ; ou donnez-lui une position flottante (top, bottom ou auto) pour que le :ref de la note la place dans le premier emplacement libre après la référence.",
+      "de": "Zitieren Sie sie auch im Fließtext, damit sie diesem Absatz folgt; betten Sie sie mit einer ::resource-Zeile dort ein, wo sie hingehört; oder geben Sie ihr eine gleitende Position (top, bottom oder auto), damit das :ref der Fußnote sie in den ersten freien Platz nach dem Verweis setzt.",
+      "it": "Citala anche nel testo corrente, perché segua quel paragrafo; inseriscila con una riga ::resource dove deve stare; oppure dalle una posizione flottante (top, bottom o auto) perché il :ref della nota la collochi nel primo spazio libero dopo il riferimento."
     },
     "docs": {
       "slug": "document-format-resources",

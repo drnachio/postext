@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Pàgina i disposició',
   description: "La mida de pàgina, els marges i la retícula de base, la numeració de les pàgines, i les columnes i l'espai que les separa",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '36 min',
   order: 5,
   parent: 'configuration',
@@ -444,6 +444,12 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>A la pàgina de tancament d'un capítol (i del document), les figures i les taules a l'amplada de la pàgina que queden sota l'última banda de text pugen fins a quedar-ne a la distància d'un espai de flotant, apilades per ordre: allà no les segueix res. Amb <code>false</code>, es queden on les ha posat la col·locació, de manera que un flotant <code>position: 'bottom'</code> acaba al peu de la pàgina de tancament com a qualsevol altra pàgina; per exemple, en una fitxa tècnica amb un contorn que acaba a la mateixa alçada a totes les pàgines. A les pàgines amb columna lateral no es mouen mai.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>No es recomana. Torna a la pàgina que el cita per primer cop un flotant que n'ha quedat fora per quatre línies de text o menys (mesurades amb la seva amplada al millor espai lliure d'aquella pàgina). Ho fa en dos passos, i cadascun només es manté si el flotant cau aleshores a la pàgina de la cita, sense cap pàgina més, sense endarrerir cap altre flotant, sense desfer cap igualació de columnes ja aconseguida i sense perdre cap flotant que encapçala la pàgina de la seva cita (<code>floatsAtCitingPage</code>): primer, als paràgrafs de la pàgina de la cita que són a sobre d'ella se'ls ofereix una línia menys (espaiat entre paraules més estret, mai entre lletres), només tantes línies com li falten al flotant, i el canvi es queda només a les pàgines on el flotant ha tornat; després, una imatge amb <a href="/ca/docs/document-format-resources#zona-segura">zona segura</a> que continua fora de la seva pàgina es retalla dins d'aquesta, no més del que demana l'espai, i cada retall s'avisa amb <code>floatCropped</code>. Les passades posteriors, com l'equilibrat de columnes, mantenen a la seva pàgina els flotants atrets. L'opció va en contra de la col·locació per regles: on les regles porten el flotant a l'espai següent, aquesta opció es queda la pàgina de la cita per força, compon paràgrafs més estrets del que va triar el tall de línies i retalla imatges. Per tenir els flotants a prop de la cita segons les regles, fes servir <code>floatsAtCitingPage</code> o <a href="/ca/docs/document-format-resources#collocació"><code>placement.citingPage</code></a> (el flotant encapçala la pàgina on cau la línia que el cita, i el text que hi ha damunt de la referència baixa sota seu) i <code>placement.shrink: 'slot'</code> (la imatge es compon més petita, sense canviar-ne les proporcions, per quedar-se a la pàgina que la cita). Al Sandbox, <em>Atreure les figures a la pàgina de la seva cita</em>, a Maquetació.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

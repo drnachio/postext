@@ -107,6 +107,7 @@ export function measureLooseParagraph(
   trackingLadder: readonly number[],
   looseOutcome: Map<number, number | null>,
   offGrid?: Set<number>,
+  untracked = false,
 ): MeasuredContentBlock | null {
   const base = measureContentBlock(rawBlock, blockIdx, columnWidth, ctx, { styleOverride });
   if (!base) return null;
@@ -128,8 +129,10 @@ export function measureLooseParagraph(
   // letters, and a line it breaks short may spread between its characters
   // no more than `maxTracking` (on a grid of whole cells that refuses any
   // line a character short, whose spread is an em over the line's gaps).
+  // Set a line shorter to pull a float back to its page (`untracked`,
+  // `layout.pullFloatsToCitation`), it takes no tracking either.
   const onGrid = ctx.resolved.cjk.grid.enabled && composesAsCjk(rawBlock.text);
-  const ladder = trackingLadder.length > 1 && (onGrid || mostlyJoiningScript(rawBlock.text)) ? trackingLadder.slice(0, 1) : trackingLadder;
+  const ladder = trackingLadder.length > 1 && ((untracked && extraLines < 0) || onGrid || mostlyJoiningScript(rawBlock.text)) ? trackingLadder.slice(0, 1) : trackingLadder;
   const gridCap = onGrid ? { gridTrackingEm: ctx.resolved.headings.balancing.maxTracking / 1000 } : {};
   // With `fillShortColumns` (#1236) the limit is the one the runt fix
   // keeps (EF-65): no justified line looser than `maxWordSpacing` or than

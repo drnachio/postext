@@ -138,6 +138,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
     case 'floatShrunk':
+    case 'floatCropped':
     case 'pictureBelowPrintSize':
     case 'emptyCaption':
     case 'resourceMoved':
@@ -145,6 +146,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'hereNotEmbedded':
+    case 'paragraphCitedInNote':
     case 'videoWithoutPoster':
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':

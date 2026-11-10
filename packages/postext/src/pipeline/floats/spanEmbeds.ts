@@ -14,7 +14,7 @@
 
 import type { ContentBlock } from '../../parse/index.js';
 import type { CalloutStyleConfig, Resource, ResourceType } from '../../types.js';
-import { resolveResourcePlacement } from './floatPlacement.js';
+import { isInlinePosition, resolveResourcePlacement } from './floatPlacement.js';
 import { comicStripPlacement } from '../../comics/strip.js';
 
 /** Style id of the frameless box that carries a page-span embed. Not a
@@ -70,7 +70,7 @@ function spansPage(
   const resource = resourceById.get(block.resourceId);
   if (!resource) return false;
   const placement = resolveResourcePlacement(resource, typeById.get(resource.typeId));
-  return placement.position === 'here' && placement.span === 'page';
+  return isInlinePosition(placement.position) && placement.span === 'page';
 }
 
 /**

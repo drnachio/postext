@@ -28,6 +28,7 @@ import { comicSourceWarnings } from '../../comics/warnings.js';
 import { comicFrameSourceWarnings, comicTextPanelsSupported } from '../../comics/textPanels.js';
 import { resolvedComics } from '../../defaults/comics.js';
 import { effectiveResourceTypes } from '../../defaults/resources/resourceTypes.js';
+import { isInlinePosition } from '../floats/floatPlacement.js';
 import { composedPages } from '../../composed/document.js';
 import { checkComposedSlots, checkFrameLookNames } from '../../composed/slotChecks.js';
 import type { ComposedPagesConfigKeys } from '../../composed/types.js';
@@ -454,7 +455,7 @@ export function collectContentWarnings(
     scanSnippet(r.note);
     // A vertical flow sets every resource upright: a turn asked for it is
     // not applied where the resource is first used in one (#188).
-    if (r.placement?.rotate && r.placement.position !== 'here' && verticalAt(firstUseBlock.get(id) ?? -1)) {
+    if (r.placement?.rotate && !isInlinePosition(r.placement.position) && verticalAt(firstUseBlock.get(id) ?? -1)) {
       out.push({ kind: 'rotateIgnoredVertical', resourceId: id, ...where });
     }
     if (r.kind === 'video') {

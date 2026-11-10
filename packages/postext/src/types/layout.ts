@@ -70,6 +70,12 @@ export interface LayoutConfig {
    *  the page foot on the closing page as on every other page. Pages with a
    *  side column never move them. */
   hugClosingFloats?: boolean;
+  /** Pull a float that missed the page citing it back onto that page: a
+   *  picture with a safe area is cropped within it to stay there, and else
+   *  the paragraphs of the citing page are set a line shorter where the
+   *  word spacing allows, the layout kept only where the float then lands
+   *  there, with no page more and no other float later. Default `false`. */
+  pullFloatsToCitation?: boolean;
   /** Under a page-span opener (a heading level or style with
    *  `span: 'page'`) set over two or more text columns, the head of the
    *  opener's own column, right under its band, is a slot for a `'top'` or
@@ -203,6 +209,7 @@ export interface ResolvedLayoutConfig {
   floatsAtCitingPage: boolean;
   maxTopFraction: number;
   hugClosingFloats: boolean;
+  pullFloatsToCitation: boolean;
   floatsUnderOpener: boolean;
   openerFloats: CompositionRule;
   inlineResourceGap: InlineResourceGap;
