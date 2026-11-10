@@ -45,6 +45,11 @@ export { preferredWordVariant } from './media/pages.js';
 export interface SemanticDocxOptions {
   chapters: WordChapterInput[];
   config: PostextConfig;
+  /** How the document looks (#1458). `book` (default): the book's design
+   *  as far as Word allows: page, columns, fonts, openers, boxes, running
+   *  heads. `plain`: content only, a neutral page and neutral styles whose
+   *  names still say what each paragraph is, for correcting the words. */
+  design?: SemanticDesign;
   resources?: Resource[];
   resourceBytes?: (fileId: string) => Uint8Array | undefined;
   rasterizeSvg?: (svg: string, widthPx: number, heightPx: number) => Promise<Uint8Array | undefined>;
@@ -60,6 +65,9 @@ export interface SemanticDocxOptions {
   start?: BookStart;
   onWarning?: (w: SemanticWarning) => void;
 }
+
+/** The look of the flow document: the book's design, or content only. */
+export type SemanticDesign = 'book' | 'plain';
 
 /** The map's `engine`: the writer and the configuration version it reads. */
 export const SEMANTIC_ENGINE = `postext-word-semantic/1 config/${CONFIG_VERSION}`;
