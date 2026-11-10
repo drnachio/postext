@@ -270,6 +270,12 @@ export function stripBodyTextDefaults(
     result.gradedRuntPenalty = bodyText.gradedRuntPenalty;
     hasOverride = true;
   }
+  for (const key of ['avoidStacks', 'stackMinCharacters', 'stackPenalty'] as const) {
+    if (bodyText[key] !== undefined && bodyText[key] !== DEFAULT_BODY_TEXT_CONFIG[key]) {
+      (result as Record<string, unknown>)[key] = bodyText[key];
+      hasOverride = true;
+    }
+  }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;
     hasOverride = true;

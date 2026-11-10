@@ -177,6 +177,7 @@ export function richTokensToItems(
           sourceIndex: t,
           meta: { ...meta, subStart: prevCharIndex, subEnd: breakPoint.charIndex },
           ...tracking(prevCharIndex, breakPoint.charIndex),
+          text: token.text.slice(prevCharIndex, breakPoint.charIndex),
         });
 
         // Penalty at the break: a soft hyphen adds one, a hard hyphen the
@@ -219,6 +220,7 @@ export function richTokensToItems(
         sourceIndex: t,
         meta: { ...meta, subStart: prevCharIndex, subEnd: token.text.length },
         ...tracking(prevCharIndex, token.text.length),
+        text: token.text.slice(prevCharIndex),
       });
     } else {
       // Simple text token without break points (an Arabic word has none:
@@ -229,6 +231,7 @@ export function richTokensToItems(
         sourceIndex: t,
         meta: { ...meta, subStart: 0, subEnd: token.text.length },
         ...tracking(0, token.text.length),
+        text: token.text,
         ...(token.kashida ? { stretch: token.kashida } : {}),
       });
     }

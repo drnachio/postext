@@ -9,7 +9,7 @@ import type { HeadingPlaceholderInfo } from '../../../../design/placeholders.js'
 import { resolvedLocale, arabicNumbersOf } from '../../../config.js';
 import { type FrameLayoutPass, type CalloutLayouter, makeCalloutLayouter as makeCalloutLayouterIn, frameCutRules, type CalloutCut, type CalloutFragment, splitCalloutFragment as splitCalloutFragmentIn, tallerThanColumn as tallerThanColumnIn } from '../../../callouts/frameLayout.js';
 import { isFlowColumnsStyle } from '../../../columns/flowColumns.js';
-import { FRAME_STYLE_ID } from '../../../../composed/wrap.js';
+import { FRAME_ATTR, FRAME_STYLE_ID } from '../../../../composed/wrap.js';
 import type { ResolvedCalloutStyleConfig, Resource, ResolvedHeadingStyleConfig } from '../../../../types.js';
 import { flowPageMirrored } from '../../../blocks/buildHelpers.js';
 import { CAPPED_OVERFLOW_PX } from '../../passTypes.js';
@@ -19,7 +19,7 @@ import type { ParagraphContainerPlan } from '../../../callouts/paragraphContaine
 import type { PartPlan } from '../../../sections/parts.js';
 import type { ComicPageSource } from '../../../../comics/types.js';
 import type { StripGeometry } from '../types.js';
-import type { BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
+import { composedFrameMeasureContext, type BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
 import type { PassState } from '../state.js';
 
 /** What createCalloutCommit takes from the pass. */
@@ -137,9 +137,14 @@ export function createCalloutCommit(deps: CalloutCommitDeps) {
     paragraphContainers,
     // A main-flow group's box sets its blocks as the text around it is
     // set: a styled section's or a part's body (#634).
-    measureCtxFor: (startIdx, style) => (isFlowColumnsStyle(style.id) || style.id === FRAME_STYLE_ID
-      ? (partPlan.byBlock[startIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[startIdx]))
-      : measureCtx),
+    // A composed page's frame sets its story without stack avoidance
+    // (`composedFrameMeasureContext`).
+    measureCtxFor: (startIdx, style) => {
+      const composedFrame = style.id === FRAME_STYLE_ID || contentBlocks[startIdx]?.containerAttrs?.[FRAME_ATTR] !== undefined;
+      if (!isFlowColumnsStyle(style.id) && style.id !== FRAME_STYLE_ID) return composedFrame ? composedFrameMeasureContext(measureCtx) : measureCtx;
+      const ctx = partPlan.byBlock[startIdx] ? partMeasureCtx : sectionMeasureCtx(sectionPlan.byBlock[startIdx]);
+      return composedFrame ? composedFrameMeasureContext(ctx) : ctx;
+    },
     stripBlock: calloutStripBlock,
     columnHeight: () => state.contentArea.height,
     headingDesign: (raw, blockIdx, heading, width) => boxHeadingDesign(raw, blockIdx, heading.lines, heading.numberPrefix, heading.headingNumber, width),

@@ -4,7 +4,8 @@
 //! 1 glue, 2 penalty), width, stretch, shrink, penalty, flags, chars,
 //! post width (`postWidth + postShift`), post chars. Line widths as f64,
 //! lines to avoid a hyphen at and fixed breaks as u32. Scalar options go
-//! through `lb_set_options`.
+//! through `lb_set_options`, stacks through `lb_set_stacks`, and the line
+//! edges stacks compare through `lb_edges`.
 
 use postext_linebreak::{Breaker, ItemKind, Items, LoosenessMode, Options};
 
@@ -18,6 +19,7 @@ pub struct LineBreakContext {
     staged_items: Vec<f64>,
     staged_avoid: Vec<u32>,
     staged_fixed: Vec<u32>,
+    staged_edges: Vec<u32>,
     breaks: Vec<u32>,
 }
 
@@ -30,6 +32,7 @@ pub extern "C" fn lb_new() -> *mut LineBreakContext {
         staged_items: Vec::new(),
         staged_avoid: Vec::new(),
         staged_fixed: Vec::new(),
+        staged_edges: Vec::new(),
         breaks: Vec::new(),
     }))
 }
@@ -113,6 +116,23 @@ pub extern "C" fn lb_set_options(
     o.hyphenation_zone = (hyphenation_zone >= 0.0).then_some(hyphenation_zone);
 }
 
+/// Stacks: avoided at `badness` when `on` is not 0 (a repeated monosyllable
+/// is always a limit).
+#[unsafe(no_mangle)]
+pub extern "C" fn lb_set_stacks(ptr: *mut LineBreakContext, on: u32, badness: f64) {
+    ctx(ptr).options.rules.stack_badness = (on != 0).then_some(badness);
+}
+
+/// Room for the line edges of a paragraph of `count` items, as four rows of
+/// `count + 1` ids: end words, end characters, start words, start
+/// characters (see `Rules`). Written only while stacks are on.
+#[unsafe(no_mangle)]
+pub extern "C" fn lb_edges(ptr: *mut LineBreakContext, count: usize) -> *mut u32 {
+    let c = ctx(ptr);
+    c.staged_edges.resize(4 * (count + 1), 0);
+    c.staged_edges.as_mut_ptr()
+}
+
 /// Breaks the staged paragraph; returns how many breaks `lb_breaks` holds.
 #[unsafe(no_mangle)]
 pub extern "C" fn lb_break(ptr: *mut LineBreakContext) -> usize {
@@ -120,6 +140,19 @@ pub extern "C" fn lb_break(ptr: *mut LineBreakContext) -> usize {
     unstage(&c.staged_items, &mut c.items);
     c.options.avoid_hyphen_at_lines.clone_from(&c.staged_avoid);
     c.options.fixed_breaks.clone_from(&c.staged_fixed);
+    if c.options.rules.stack_badness.is_some() {
+        let row = c.items.len() + 1;
+        let e = &c.staged_edges;
+        let r = &mut c.options.rules;
+        r.end_word.clear();
+        r.end_word.extend_from_slice(&e[0..row]);
+        r.end_chars.clear();
+        r.end_chars.extend_from_slice(&e[row..2 * row]);
+        r.start_word.clear();
+        r.start_word.extend_from_slice(&e[2 * row..3 * row]);
+        r.start_chars.clear();
+        r.start_chars.extend_from_slice(&e[3 * row..4 * row]);
+    }
     let breaks = c.breaker.breakpoints(&c.items, &c.options);
     c.breaks.clear();
     c.breaks.extend_from_slice(breaks);

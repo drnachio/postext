@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Text de cos',
   description: "La tipografia del text corregut: la font, la mida i l'interlineat, els colors, els sagnats, les cites, el vers, les tabulacions i les caplletres",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '27 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres del text principal d'un llibre. Hi tries la font, la mida i l'espai entre les línies, i el color de les paraules en negreta i en cursiva. També hi fixes el sagnat de la primera línia i l'espai entre paràgrafs. La pàgina també explica les cites separades del text, els poemes, les tabulacions per al text en columnes i la lletra gran amb què comencen alguns capítols. La partició de mots, els encapçalaments i les llistes tenen pàgines pròpies.",
@@ -230,6 +230,24 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Comença també amb un guionet la línia que segueix un tall al guionet d'un compost: <code>léxico-</code> · <code>-semántico</code>, com demanen les normes de la Real Academia Española des del 2010, i <code>vencer-</code> · <code>-se</code>, com demana l'ortografia portuguesa. El guionet repetit es mesura i es pinta amb la línia, que l'anota com a <code>repeatedHyphen</code>; el <code>plainStart</code> i el <code>sourceStart</code> de la línia apunten darrere del guionet, de manera que els enllaços, les capçaleres i el Sandbox llegeixen la paraula tal com està escrita. El PDF el pinta sota un <code>/ActualText</code> que l'omet, així que el text que es copia o s'extreu del PDF llegeix la paraula una sola vegada. Una adreça web mai no el porta. S'aplica al text corregut, els títols, les llistes, les cites i els requadres; un paràgraf sense format que conté un compost es talla llavors amb el divisor del text amb format.</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Evita les repeticions: dues línies seguides d'un paràgraf que acaben en la mateixa paraula, o en els mateixos <code>stackMinCharacters</code> últims caràcters, espais inclosos (<code>-ment</code> / <code>-ment</code>, <code>de la</code> / <code>a la</code>), o que comencen amb la mateixa paraula o els mateixos primers caràcters (<code>de la</code> / <code>de les</code>). L'algorisme torna a compondre el paràgraf per evitar-les on l'espaiat entre paraules ho permet; quant pesa una repetició ho fixa <code>stackPenalty</code>. Requereix <code>optimalLineBreaking</code>. Els accents no compten («sòl» és «sol»), i un mateix monosíl·lab («a», «i», «de», «la») a la vora de dues línies seguides no s’admet mai, sigui quina sigui la penalització. També s’eviten en peus de figura, notes i cel·les de taula. Desactivat per defecte, perquè un document compost abans conservi les seves línies.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caràcters, espais inclosos, que la mateixa vora de dues línies seguides ha de compartir perquè hi hagi repetició (<code>avoidStacks</code>). La puntuació de l'extrem no compta, i la mateixa paraula sempre és repetició.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>Cost d'una repetició (dues línies seguides que acaben o comencen amb la mateixa paraula o els mateixos caràcters, cosa que <code>avoidStacks</code> evita), en dolenteria equivalent: 100 és una línia al límit de l'espaiat entre paraules; 1000 pesa més que qualsevol línia dins d'aquest límit. El valor per defecte, 100000, fa de la repetició un límit: pesa més fins i tot que una línia estirada més enllà dels límits d'espaiat, de manera que una repetició només es manté on cap composició del paràgraf no l'evita. Un monosíl·lab repetit és un límit sigui quin sigui aquest valor.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

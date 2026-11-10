@@ -1441,6 +1441,12 @@ export interface SandboxLabels {
   bodyRuntPenaltyTooltip: string;
   bodyGradedRuntPenalty: string;
   bodyGradedRuntPenaltyTooltip: string;
+  bodyAvoidStacks: string;
+  bodyAvoidStacksTooltip: string;
+  bodyStackMinCharacters: string;
+  bodyStackMinCharactersTooltip: string;
+  bodyStackPenalty: string;
+  bodyStackPenaltyTooltip: string;
   bodyAvoidRuntsInLists: string;
   bodyAvoidRuntsInListsTooltip: string;
   bodyAvoidOrphansInLists: string;

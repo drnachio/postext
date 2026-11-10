@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Texto do corpo',
   description: 'A tipografia do texto corrido: fonte, tamanho e entrelinha, cores, recuos, citações, verso, paradas de tabulação e capitulares',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '26 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '27 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes do texto principal de um livro. Você escolhe a fonte, o tamanho e o espaço entre as linhas, e as cores das palavras em negrito e em itálico. Define o recuo da primeira linha e o espaço entre parágrafos. A página também trata das citações destacadas do texto, dos poemas, das paradas de tabulação para texto em colunas e da letra grande que abre alguns capítulos. A hifenização, os títulos e as listas têm páginas próprias.",
@@ -230,6 +230,24 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Começa também com um hífen a linha que vem depois de uma quebra no hífen de uma palavra composta: <code>vencer-</code> · <code>-se</code>, como pede a ortografia portuguesa, e <code>léxico-</code> · <code>-semántico</code>, como pedem as normas da Real Academia Espanhola desde 2010. O hífen repetido é medido e pintado com a linha, que o registra como <code>repeatedHyphen</code>; o <code>plainStart</code> e o <code>sourceStart</code> dela apontam para depois dele, de modo que os links, os cabeços e o Sandbox leem a palavra como foi escrita. O PDF o pinta sob um <code>/ActualText</code> que o deixa de fora; por isso, o texto copiado ou extraído do PDF lê a palavra uma vez só. Um endereço web nunca recebe hífen repetido. Vale para o texto corrido, títulos, listas, citações e boxes; um parágrafo sem formatação que contém uma palavra composta passa então a ser quebrado pelo algoritmo que compõe o texto formatado.</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Evita as repetições: duas linhas seguidas de um parágrafo que terminam na mesma palavra, ou nos mesmos <code>stackMinCharacters</code> últimos caracteres, espaços incluídos (<code>-mente</code> / <code>-mente</code>, <code>de um</code> / <code>em um</code>), ou que começam com a mesma palavra ou os mesmos primeiros caracteres (<code>de um</code> / <code>de uma</code>). O algoritmo de quebra recompõe o parágrafo para evitá-las onde o espaçamento entre palavras permite; quanto pesa uma repetição é <code>stackPenalty</code>. Requer <code>optimalLineBreaking</code>. Os acentos não contam («sól» é «sol»), e um mesmo monossílabo («a», «e», «de», «o») na margem de duas linhas seguidas nunca é admitido, seja qual for a penalização. Também se evitam em legendas, notas e células de tabela. Desligado por padrão, para que um documento composto antes mantenha suas linhas.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caracteres, espaços incluídos, que a mesma borda de duas linhas seguidas precisa compartilhar para haver repetição (<code>avoidStacks</code>). A pontuação na ponta não conta, e a mesma palavra sempre é repetição.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>Custo de uma repetição (duas linhas seguidas que terminam ou começam com a mesma palavra ou os mesmos caracteres, o que <code>avoidStacks</code> evita), em penalidade equivalente: 100 é uma linha no limite do espaçamento entre palavras; 1000 pesa mais do que qualquer linha dentro dele. O valor padrão, 100000, faz da repetição um limite: pesa mais até do que uma linha esticada além dos limites de espaçamento, de modo que uma repetição só fica onde nenhuma composição do parágrafo a evita. Um monossílabo repetido é um limite seja qual for este valor.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

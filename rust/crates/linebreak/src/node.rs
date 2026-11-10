@@ -26,6 +26,10 @@ pub(crate) struct Node {
     pub ragged: u32,
     pub total_word_spaces: f64,
     pub total_word_space_width: f64,
+    /// Limits the chain breaks (a stack at
+    /// [`HARD_RULE_BADNESS`](crate::HARD_RULE_BADNESS), a repeated
+    /// monosyllable).
+    pub hard: u32,
     pub previous: u32,
 }
 

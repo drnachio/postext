@@ -13,6 +13,7 @@ import { RaggedHyphenationSubsection } from './HyphenationFields.js';
 import { TypeSample } from '../../../settings/TypeSample.js';
 import { AlignPicture } from '../../../settings/pictures.js';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections.js';
+import { StacksSubsection } from './StacksSubsection.js';
 import { isArabicScriptLanguage } from '../../../../context/arabicDefaults.js';
 import { useRightToLeftFlow, flowSideLabels } from '../../../settings/flowSides.js';
 import { TabStopsField } from '../../../settings/TabStopsField.js';
@@ -511,6 +512,15 @@ export const BodyTextSection = memo(function BodyTextSection() {
             labels={labels}
           />
         )}
+        <ToggleSwitch
+          label={labels.bodyAvoidStacks}
+          checked={bodyText.avoidStacks}
+          onChange={(checked) => updateBodyText({ avoidStacks: checked })}
+          tooltip={labels.bodyAvoidStacksTooltip}
+          isDefault={bodyText.avoidStacks === D.avoidStacks}
+          onReset={() => resetField('avoidStacks')}
+        />
+        {bodyText.avoidStacks && <StacksSubsection bodyText={bodyText} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />}
         <NumberInput
           label={labels.bodySlackWeight}
           value={bodyText.slackWeight}

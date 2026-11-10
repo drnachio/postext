@@ -5,7 +5,7 @@ import type { ContentBlock } from '../../../parse/types.js';
 import { chainHead, FRAME_ATTR } from '../../../composed/wrap.js';
 import { repeatedFrames, repeatInstance } from '../../../composed/templates.js';
 import type { ResolvedPageTemplate } from '../../../composed/types.js';
-import type { BlockMeasureContext } from '../../blocks/measureContentBlock.js';
+import { composedFrameMeasureContext, type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
 import { computeOrderedListRunMetrics } from '../../text/lists.js';
 import { planParagraphContainers } from '../../callouts/paragraphContainers.js';
 import type { ImportedJumps, CarriedNumber } from '../../../composed/carry.js';
@@ -120,7 +120,9 @@ export function carriedPass(base: FrameLayoutPass, carried: ImportedJumps): Fram
     paragraphContainers,
     measureCtxFor: (startIdx, style) => {
       const ctx = base.measureCtxFor(startIdx, style);
-      return carried.stories.has(startIdx) ? carriedCtx(ctx, startIdx) : ctx;
+      // A carried story is a frame's story too: set as the base pass sets
+      // its frames (`composedFrameMeasureContext`).
+      return carried.stories.has(startIdx) ? carriedCtx(composedFrameMeasureContext(ctx), startIdx) : ctx;
     },
   };
 }

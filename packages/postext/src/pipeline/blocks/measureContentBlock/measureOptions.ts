@@ -80,6 +80,10 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     runtMinCharacters: runtActive ? resolved.bodyText.runtMinCharacters : 0,
     // Left undefined when off, so the common-case cache keys stay unchanged.
     runtGraded: runtActive && resolved.bodyText.gradedRuntPenalty ? true : undefined,
+    // Stacks: left undefined when off, so the cache keys stay unchanged.
+    stacks: resolved.bodyText.avoidStacks
+      ? { minChars: resolved.bodyText.stackMinCharacters, badness: resolved.bodyText.stackPenalty }
+      : undefined,
     avoidHyphenAtLines: opts?.avoidHyphenAtLines,
     ...(opts?.keepBreaks ? { keepBreaks: opts.keepBreaks } : {}),
     ...(opts?.restColumnWidths && opts.restColumnWidths.length > 0

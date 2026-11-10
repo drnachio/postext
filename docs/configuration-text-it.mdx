@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Testo corrente',
   description: 'La tipografia del testo corrente: font, corpo e interlinea, colori, rientri, citazioni in blocco, versi, tabulatori e capilettera',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '26 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '27 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega le impostazioni del testo principale di un libro. Puoi scegliere il carattere, la grandezza delle lettere e lo spazio tra le righe, oltre ai colori delle parole in grassetto e in corsivo. Stabilisci anche il rientro della prima riga e lo spazio tra i paragrafi. La pagina tratta anche le citazioni staccate dal testo, le poesie, i tabulatori per il testo in colonne e la grande lettera iniziale con cui si aprono alcuni capitoli. Sillabazione, titoli ed elenchi hanno pagine a parte.",
@@ -229,6 +229,24 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Fa cominciare anche con un trattino la riga che segue un a capo sul trattino di una parola composta: <code>vencer-</code> · <code>-se</code>, come chiede l’ortografia portoghese, e <code>léxico-</code> · <code>-semántico</code>, come chiedono le regole della Real Academia Española dal 2010. Il trattino ripetuto viene misurato e disegnato con la sua riga, che lo registra come <code>repeatedHyphen</code>; i suoi <code>plainStart</code> e <code>sourceStart</code> puntano oltre il trattino, così i link, le testatine e la Sandbox leggono la parola così com’è scritta. Il PDF lo disegna sotto un <code>/ActualText</code> che lo esclude, quindi il testo copiato o estratto dal PDF riporta la parola con un solo trattino. Un indirizzo web non lo riceve mai. Si applica al testo corrente, ai titoli, agli elenchi, alle citazioni e ai riquadri; un paragrafo senza formattazione che contiene una parola composta viene allora diviso in righe dall’algoritmo che compone il testo formattato.</td>
+    </tr>
+    <tr>
+      <td><code>avoidStacks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Evita le ripetizioni: due righe consecutive di un paragrafo che finiscono con la stessa parola, o con gli stessi <code>stackMinCharacters</code> ultimi caratteri, spazi compresi (<code>-mente</code> / <code>-mente</code>, <code>della</code> / <code>nella</code>), o che cominciano con la stessa parola o gli stessi primi caratteri (<code>di un</code> / <code>di una</code>). L'algoritmo ricompone il paragrafo per evitarle dove la spaziatura tra le parole lo consente; quanto pesa una ripetizione lo stabilisce <code>stackPenalty</code>. Richiede <code>optimalLineBreaking</code>. Gli accenti non contano («sól» è «sol»), e uno stesso monosillabo («a», «e», «di», «la») sul bordo di due righe consecutive non è mai ammesso, qualunque sia la penalità. Le evitano anche le didascalie, le note e le celle di tabella. Disattivato per impostazione predefinita, perché un documento composto prima conservi le sue righe.</td>
+    </tr>
+    <tr>
+      <td><code>stackMinCharacters</code></td>
+      <td><code>number</code></td>
+      <td><code>3</code></td>
+      <td>Caratteri, spazi compresi, che lo stesso bordo di due righe consecutive deve condividere perché ci sia ripetizione (<code>avoidStacks</code>). La punteggiatura all'estremità non conta, e la stessa parola è sempre ripetizione.</td>
+    </tr>
+    <tr>
+      <td><code>stackPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>100000</code></td>
+      <td>Costo di una ripetizione (due righe consecutive che finiscono o cominciano con la stessa parola o gli stessi caratteri, cosa che <code>avoidStacks</code> evita), in badness equivalente: 100 è una riga al limite della spaziatura tra le parole; 1000 pesa più di qualsiasi riga entro quel limite. Il valore predefinito, 100000, fa della ripetizione un limite: pesa più persino di una riga allargata oltre i limiti di spaziatura, così una ripetizione resta solo dove nessuna composizione del paragrafo la evita. Un monosillabo ripetuto è un limite qualunque sia questo valore.</td>
     </tr>
     <tr>
       <td><code>hardLineBreaks</code></td>

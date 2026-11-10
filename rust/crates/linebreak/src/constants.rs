@@ -14,3 +14,5 @@ pub const TRACKING_BADNESS: f64 = 100.0;
 pub const COLUMN_END_HYPHEN_BADNESS: f64 = 1000.0;
 /// Word spacing past this multiple of the normal space sets a line ragged.
 pub const RAGGED_SPACE_RATIO: f64 = 3.0;
+/// A limit broken (a stack that may not be, a repeated monosyllable).
+pub const HARD_RULE_BADNESS: f64 = 100000.0;

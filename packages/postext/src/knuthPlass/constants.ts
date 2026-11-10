@@ -1,6 +1,17 @@
 export const KP_INFINITY = 10000;
 export const HYPHEN_PENALTY = 50;
 export const DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT = 3000;
+/** Extra badness of a break against a rule set as a limit (a stack at this
+ *  cost, a repeated monosyllable): it outweighs any line the breaker can
+ *  set (a line stretched past the word-spacing limits included, up to some
+ *  seven times its stretch), so the rule gives way only where no setting
+ *  of the paragraph keeps it. */
+export const HARD_RULE_BADNESS = 100000;
+/** Default extra badness of a stack (`KPOptions.stacks`): dearer than a
+ *  hyphen or a loose line. */
+export const DEFAULT_STACK_BADNESS = 500;
+/** Default letters two words must share at a line's edge to stack. */
+export const DEFAULT_STACK_MIN_CHARS = 3;
 export const DEFAULT_FITNESS_CLASS_DEMERIT = 100;
 export const BADNESS_CAP = 10000;
 /** Extra badness for a line stretched beyond `maxWordSpacing` (adjustment

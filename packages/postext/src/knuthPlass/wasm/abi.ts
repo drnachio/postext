@@ -9,6 +9,7 @@
 
 import type { KPItem, KPOptions } from '../types.js';
 import { DEFAULT_CONSECUTIVE_HYPHEN_DEMERIT, DEFAULT_FITNESS_CLASS_DEMERIT } from '../constants.js';
+import { LineEdges, isMonosyllable } from '../breakpoints/edges.js';
 
 /** What the module exports (`rust/crates/wasm/src/linebreak.rs`). */
 interface LineBreakExports {
@@ -33,6 +34,8 @@ interface LineBreakExports {
     hyphenationZone: number,
     flags: number,
   ): void;
+  lb_set_stacks(ctx: number, on: number, badness: number): void;
+  lb_edges(ctx: number, count: number): number;
   lb_break(ctx: number): number;
   lb_breaks(ctx: number): number;
 }
@@ -46,6 +49,41 @@ const NO_TRACKING = 4;
 const WORD_SPACE = 8;
 
 export type Breaker = (items: KPItem[], options: KPOptions) => number[];
+
+/** The line edges of a paragraph as the module compares them: each text an
+ *  id (0 for none), equal texts equal ids; a word's id carries in its low
+ *  bit whether it is a monosyllable. Four rows of `n + 1`: end words and
+ *  end characters by break, start words and start characters by break + 1
+ *  (row 0: the paragraph's first line). */
+function writeEdges(rows: Uint32Array, items: KPItem[], minChars: number): void {
+  const n = items.length;
+  const edges = new LineEdges(items, minChars);
+  const words = new Map<string, number>();
+  const chars = new Map<string, number>();
+  const wordId = (w: string): number => {
+    if (w === '') return 0;
+    let id = words.get(w);
+    if (id === undefined) words.set(w, (id = ((words.size + 1) << 1) | (isMonosyllable(w) ? 1 : 0)));
+    return id;
+  };
+  const charsId = (c: string): number => {
+    if (c === '') return 0;
+    let id = chars.get(c);
+    if (id === undefined) chars.set(c, (id = chars.size + 1));
+    return id;
+  };
+  const row = n + 1;
+  for (let k = 0; k < n; k++) {
+    rows[k] = wordId(edges.endWord(k));
+    rows[row + k] = charsId(edges.endChars(k));
+  }
+  rows[n] = 0;
+  rows[row + n] = 0;
+  for (let k = -1; k < n; k++) {
+    rows[2 * row + k + 1] = wordId(edges.startWord(k));
+    rows[3 * row + k + 1] = charsId(edges.startChars(k));
+  }
+}
 
 /** A line breaker over an instance of the module. */
 export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
@@ -116,6 +154,9 @@ export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
       options.hyphenationZone ?? -1,
       options.runtGraded ? 1 : 0,
     );
+    const stacks = options.stacks;
+    x.lb_set_stacks(ctx, stacks ? 1 : 0, stacks?.badness ?? 0);
+    if (stacks) writeEdges(u32(x.lb_edges(ctx, n), 4 * (n + 1)), items, stacks.minChars);
     const count = x.lb_break(ctx);
     return Array.from(u32(x.lb_breaks(ctx), count));
   };
