@@ -328,6 +328,8 @@ pdfGeneration: {
 }
 ```
 
+**ブラウザーで esm.sh から読み込む場合**は `https://esm.sh/postext-pdf?bundle` をインポートしてください。esm.sh の既定ビルドでは pdf-lib の注釈クラスが別モジュールに分かれ、pdf-lib は各フィールドのウィジェットを受け付けません。PDF に枠は残りますが、書式・計算・属性が失われ、フィールドごとに `formField` 警告が出ます。`?bundle` は pdf-lib を一つのモジュールにまとめ、`postext` は外に残してページと共有します。バンドラー（Vite、webpack、Next.js）と Node には影響しません。
+
 IDMLの書き出しは、同じフィールドをInDesignのフォームフィールドとして書き出します（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照）。
 
 ### PDFのリンク

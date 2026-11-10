@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "fillable-order-form",
-  "sourceHash": "7fa009142462c3b5f8b5cd229abc0d4cf971085577e368595f024621624a315f",
+  "sourceHash": "aedf4415066b88ec9522fc28f8c306acbceb8276fa29c8f59ac62e396b6a7200",
   "engine": {
     "postext": "1.73.0",
     "postextPdf": "1.73.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.50",
-  "capturedAt": "2026-11-10T20:55:47.684Z",
+  "capturedAt": "2026-11-10T21:25:22.994Z",
   "variants": {
     "en": {
-      "hash8": "8df44aed",
+      "hash8": "dd2910e7",
       "vdtHash": "0b7c35ca60fdc76c7d071b1728e98dac4cf5b71b",
       "timings": {
-        "importMs": 2436,
-        "fontsMs": 75,
-        "buildMs": 311,
-        "totalMs": 3764,
+        "importMs": 8959,
+        "fontsMs": 159,
+        "buildMs": 171,
+        "totalMs": 12905,
         "builds": 1
       },
       "specimen": {
@@ -115,7 +115,7 @@
       },
       "pdf": {
         "file": "fillable-order-form.pdf",
-        "bytes": 536651,
+        "bytes": 576263,
         "pages": 4
       },
       "sandbox": {
@@ -368,11 +368,6 @@
         },
         "findings": [
           {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -386,13 +381,13 @@
       }
     },
     "es": {
-      "hash8": "8e702e23",
+      "hash8": "aa31516c",
       "vdtHash": "f74d58304d8fc476d4424cbc9ad5e423f9b0dd5e",
       "timings": {
-        "importMs": 2421,
-        "fontsMs": 62,
-        "buildMs": 342,
-        "totalMs": 3791,
+        "importMs": 8977,
+        "fontsMs": 143,
+        "buildMs": 181,
+        "totalMs": 12923,
         "builds": 1
       },
       "specimen": {
@@ -490,7 +485,7 @@
       },
       "pdf": {
         "file": "fillable-order-form.pdf",
-        "bytes": 537280,
+        "bytes": 577064,
         "pages": 4
       },
       "sandbox": {
@@ -742,11 +737,6 @@
           "count": 0
         },
         "findings": [
-          {
-            "check": "vdt",
-            "severity": "info",
-            "detail": "the layout changed since the committed capture"
-          },
           {
             "check": "sandbox",
             "severity": "info",

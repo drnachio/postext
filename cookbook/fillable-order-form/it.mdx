@@ -64,3 +64,5 @@ Le pagine catturate mostrano le caselle vuote, perché le parole di un campo son
 I totali sono script (`AFSimple_Calculate` ed espressioni brevi) che Acrobat, Foxit, Chrome e Firefox eseguono. Anteprima su macOS mostra i campi e salva ciò che si digita, ma non esegue script, e lì i totali restano vuoti.
 
 La casella del circolo ha `on="1"`, il valore che un calcolo legge quando è spuntata. Con il valore predefinito, `Yes`, `product(order.circle, 12)` darebbe sempre 0, e postext-pdf lo segnala.
+
+La ricetta importa `https://esm.sh/postext-pdf?bundle`. La build predefinita di pdf-lib su esm.sh mette le classi delle annotazioni in un modulo a parte, e pdf-lib rifiuta allora il widget di ogni campo: il PDF conserva le caselle, ma senza formato numerico, senza totali e senza campi di sola lettura, con un avviso `formField` nella console. `?bundle` compila pdf-lib in un solo modulo e lascia fuori `postext`, condiviso con il resto della pagina.

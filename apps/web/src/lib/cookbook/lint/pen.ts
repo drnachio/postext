@@ -2,7 +2,7 @@
 // kit calls, config and Markdown, and the engine pins and level-one breaks
 // it tests (#1276: split out of lint.ts).
 import { defineData } from '../compose.ts';
-import { scanJs, lineLookup, parseImports, isEngineUrl, POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_SCORM_URL, usedApis, configObjectRange, configKeys, CONFIG_KEYS, matchBracket, referencesIdentifier, malformedResourceEmbeds, markdownConstructs, configString, staticLevel } from '../detect.ts';
+import { scanJs, lineLookup, parseImports, isEngineUrl, POSTEXT_URL, POSTEXT_BUNDLE_URL, POSTEXT_PDF_URL, POSTEXT_PDF_BUNDLE_URL, POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_SCORM_URL, usedApis, configObjectRange, configKeys, CONFIG_KEYS, matchBracket, referencesIdentifier, malformedResourceEmbeds, markdownConstructs, configString, staticLevel } from '../detect.ts';
 import { type KitBlock, KIT_ORDER, type ComposedPen, type RecipeMeta, type RecipeSources, type Locale } from '../types.ts';
 import { unquotedFrontmatter, compareSemVer } from '../validate.ts';
 import { textLength, CJK_CHARS_PER_WORD, JAPANESE_CHARS_PER_WORD, styleMessages } from '../style.ts';
@@ -139,14 +139,22 @@ export function lintPen(
   if (math && !/\bawait\s+initMathEngine\s*\(\s*\)/.test(ownBare)) {
     fails.push(`script.js: math recipes \`await initMathEngine()\` before the first build`);
   }
-  const pdfImport = imports.find((imp) => imp.url === POSTEXT_PDF_URL);
+  const isPdfUrl = (url: string) => url === POSTEXT_PDF_URL || url === POSTEXT_PDF_BUNDLE_URL;
+  const pdfImport = imports.find((imp) => isPdfUrl(imp.url));
+  // Form fields need pdf-lib in one module: esm.sh's default build splits it
+  // and every widget fails pdf-lib's instance check, so the fields lose their
+  // formats and calculations (#1498).
+  const formFields = [...(meta.features?.primary ?? []), ...(meta.features?.also ?? [])].includes("form-fields");
+  if (formFields && pdfImport && pdfImport.url !== POSTEXT_PDF_BUNDLE_URL) {
+    fails.push(`script.js line ${pdfImport.line}: a pen with form fields imports ${POSTEXT_PDF_BUNDLE_URL} (esm.sh's default build splits pdf-lib and the fields lose their formats and calculations)`);
+  }
   const pdfOutput = meta.outputs?.includes("pdf") ?? false;
   const pdfKit = meta.kit?.includes("pdf") ?? false;
   // A config that names a symbolFont (#1460): the faces' missing characters are its.
   const symbolFont = /\bsymbolFont\s*:\s*(?!['"]{2}|undefined\b|null\b)\S/.test(ownCode);
   if (pdfOutput !== Boolean(pdfImport) || pdfOutput !== pdfKit) {
     fails.push(
-      `script.js: a "pdf" output, an import from ${POSTEXT_PDF_URL} and the "pdf" kit block go together ` +
+      `script.js: a "pdf" output, an import from ${POSTEXT_PDF_URL} (or ?bundle) and the "pdf" kit block go together ` +
         `(output ${pdfOutput ? "yes" : "no"}, import ${pdfImport ? "yes" : "no"}, kit ${pdfKit ? "yes" : "no"})`,
     );
   }
@@ -168,7 +176,7 @@ export function lintPen(
         `(output ${scormOutput ? "yes" : "no"}, import ${scormImport ? "yes" : "no"})`,
     );
   }
-  const pdfNames = new Set(imports.filter((imp) => imp.url === POSTEXT_PDF_URL).flatMap((imp) => imp.names));
+  const pdfNames = new Set(imports.filter((imp) => isPdfUrl(imp.url)).flatMap((imp) => imp.names));
   for (const block of meta.kit ?? []) {
     const need = KIT_IMPORTS[block];
     if (!need) continue;

@@ -328,6 +328,8 @@ pdfGeneration: {
 }
 ```
 
+**Über esm.sh im Browser** importieren Sie `https://esm.sh/postext-pdf?bundle`. Der Standard-Build von pdf-lib auf esm.sh legt die Annotationsklassen in ein eigenes Modul, und pdf-lib weist dann das Widget jedes Felds zurück: Das PDF behält die Kästchen, verliert aber Formate, Berechnungen und Merkmale, mit einer `formField`-Warnung je Feld. `?bundle` baut pdf-lib als ein Modul und lässt `postext` draußen, geteilt mit der Seite. Ein Bundler (Vite, webpack, Next.js) und Node sind nicht betroffen.
+
 Der IDML-Export schreibt dieselben Felder als InDesign-Formularfelder (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postextidml)).
 
 ### Links im PDF

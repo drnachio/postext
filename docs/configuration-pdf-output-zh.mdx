@@ -328,6 +328,8 @@ pdfGeneration: {
 }
 ```
 
+**在浏览器中通过 esm.sh 使用时**，请导入 `https://esm.sh/postext-pdf?bundle`。esm.sh 默认构建的 pdf-lib 把注释类放进单独的模块，pdf-lib 随后会拒绝每个字段的控件：PDF 里方框还在，但格式、计算和标记都会丢失，每个字段都有一条 `formField` 警告。`?bundle` 把 pdf-lib 构建成一个模块，`postext` 留在外面，与页面共用。打包工具（Vite、webpack、Next.js）和 Node 不受影响。
+
 IDML导出把同样的表单域写成InDesign表单域（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postextidml)）。
 
 ### PDF中的链接

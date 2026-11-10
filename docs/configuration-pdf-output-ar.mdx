@@ -328,6 +328,8 @@ pdfGeneration: {
 }
 ```
 
+**عند الاستيراد من esm.sh في المتصفح**، استورد `https://esm.sh/postext-pdf?bundle`. فالبناء الافتراضي لمكتبة pdf-lib على esm.sh يضع أصناف التعليقات في وحدة مستقلة، فترفض pdf-lib عنصر كل حقل: تبقى المربعات في PDF لكنها تفقد التنسيقات والحسابات والخصائص، مع تحذير `formField` لكل حقل. أما `?bundle` فيبني pdf-lib وحدةً واحدة ويترك `postext` خارجها مشتركةً مع الصفحة. ولا يتأثر بذلك المجمِّع (Vite وwebpack وNext.js) ولا Node.
+
 ويكتب تصدير IDML الحقول نفسها حقولَ نماذج في InDesign (انظر [الاستخدام البرمجي › حزم InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postextidml)).
 
 ### الروابط في ملف PDF
