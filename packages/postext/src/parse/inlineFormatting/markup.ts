@@ -128,8 +128,8 @@ export function replaceMarkSyntax(text: string, replace: (inner: string, style: 
  *  the emphasis scanners run; they become a range of the spans
  *  (`InlineSpan.links`, with `strike`), as a highlight mark does, and are
  *  dropped. */
-export const STRIKE_OPEN = '';
-export const STRIKE_CLOSE = '';
+export const STRIKE_OPEN = '\uE1AD';
+export const STRIKE_CLOSE = '\uE1AE';
 
 /** `~~text~~`: struck-through text (GitHub Flavored Markdown). Exactly two
  *  tildes on each side (a third one beside them keeps the row literal),

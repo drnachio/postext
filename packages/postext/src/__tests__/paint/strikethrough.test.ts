@@ -151,6 +151,12 @@ describe('strikethrough in the outputs', () => {
     const runs = list.flatMap((p) => p.items).flatMap((i) => (i.kind === 'text' ? i.lines.flatMap((l) => l.runs) : []));
     expect(runs.filter((r) => r.strike).map((r) => r.text)).toEqual(['old']);
   });
+
+  it('flags the spaces inside a struck run, not those around it', () => {
+    const list = documentDisplayList(build('Widget A ~~old price~~ new ~~one~~ ~~two~~ end.'));
+    const runs = list.flatMap((p) => p.items).flatMap((i) => (i.kind === 'text' ? i.lines.flatMap((l) => l.runs) : []));
+    expect(runs.filter((r) => r.strike).map((r) => r.text)).toEqual(['old', ' ', 'price', 'one', 'two']);
+  });
 });
 
 /** A 2D context that records the rectangles filled on it. */
