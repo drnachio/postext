@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '资源与表格',
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '30分钟',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ interface ResourceType {
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code>（可选）</td>
       <td>对该类型资源局部覆盖<a href="#题注样式">题注样式</a>。只有你设定的键会替换全局<code>captionStyle</code>，其余一律继承（覆盖了<code>color</code>时，标签和注释的颜色也随之改变，除非它们另有明确设定）。典型用法：表的题注放在上方的色条上，图的题注仍在下方。调色板引用与其他颜色一样解析。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>true</code>。放在正文中的此类型图或表是否对齐基线网格：资源下方的文字流重新对齐网格（在<code>page.baselineGrid.perStyle</code>下，资源也从网格线开始）。<code>false</code>保留资源留下的精确空白。不影响栏顶或栏底的浮动体。</td>
     </tr>
   </tbody>
 </table>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Risorse e tabelle',
   description: 'Come si definiscono i tipi di risorsa e la loro numerazione, gli stili delle tabelle e delle didascalie, i diagrammi stampati con un solo inchiostro e i video su carta',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '44 min',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ Un tipo può omettere dei campi (da postext 1.38): li completa il tipo integrato
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opzionale)</td>
       <td>Sostituzione parziale dello <a href="#stile-delle-didascalie">stile delle didascalie</a> per le risorse di questo tipo. Solo le chiavi che imposti sostituiscono il <code>captionStyle</code> globale; tutto il resto viene ereditato (un <code>color</code> sostituito determina anche i colori dell’etichetta e della nota, a meno che questi non siano impostati esplicitamente). Uso tipico: tabelle con didascalia <em>sopra</em> su una barra colorata, mentre le figure tengono la didascalia sotto. I riferimenti alla tavolozza si risolvono come qualsiasi altro colore.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>true</code>. Se una figura o una tabella di questo tipo posta nel testo si allinea alla griglia della linea di base: sotto la risorsa il flusso torna sulla griglia (e, con <code>page.baselineGrid.perStyle</code>, la risorsa inizia su una riga della griglia). <code>false</code> mantiene lo spazio esatto che lascia. Gli oggetti mobili in testa o al piede di una colonna non sono interessati.</td>
     </tr>
   </tbody>
 </table>

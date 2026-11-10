@@ -242,6 +242,16 @@ export const HeadingsSection = memo(function HeadingsSection() {
         isDefault={isSnapToGridDefault}
         onReset={() => resetField('snapToGrid')}
       />
+      {!headings.snapToGrid && (
+        <ToggleSwitch
+          label={labels.headingRegainGrid}
+          checked={headings.regainGrid}
+          onChange={(v) => updateHeadings({ regainGrid: v })}
+          tooltip={labels.headingRegainGridTooltip}
+          isDefault={!headings.regainGrid}
+          onReset={() => resetField('regainGrid')}
+        />
+      )}
 
       {someHeadingSnaps && (
         <SelectInput

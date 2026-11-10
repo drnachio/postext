@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '标题',
   description: '标题的默认值、各级覆盖、标题前分页、通栏的章首页，以及以文字书写的编号',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '22分钟',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>标题之下的文字流是否重新对齐基线网格。为<code>true</code>时，标题的<code>marginBottom</code>向上取整为整数个网格行；为<code>false</code>时保留精确的间距，标题下的文字可能偏离网格，直到下一个对齐点（列表结束处、<code>:::paragraphs</code>的末尾、行间公式）。许多书在标题下留一行半，就是这种排法。级别（<code>levels[].snapToGrid</code>）或标题样式可以设置自己的值，这里的值是它们继承的默认值。</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>仅在<code>snapToGrid</code>为<code>false</code>时读取：标题保持其精确的间距和自身行距，其后的正文从下一条网格线开始，使该栏在那里回到网格上，而不是一直偏离到下一个对齐点。栏平衡不会在这样的标题上方加行。级别（<code>levels[].regainGrid</code>）或标题样式可以设定自己的值。在Sandbox中：网格开关下方的<strong>在正文处回到网格</strong>。</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

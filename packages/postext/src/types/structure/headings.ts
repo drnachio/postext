@@ -168,6 +168,14 @@ export interface HeadingLevelConfig {
    *  a half above its text while an H3 stays on the grid. A heading style
    *  may set it too. */
   snapToGrid?: boolean;
+  /** With {@link snapToGrid} off: the heading keeps its exact margins and
+   *  its own leading, and the text after it goes back onto the grid — the
+   *  next block starts at the next grid line (the space it adds goes over
+   *  that block, not under the heading). The per-level form of
+   *  {@link HeadingsConfig.regainGrid}, which it inherits when unset. A
+   *  heading of this kind takes no extra lines from column balancing: its
+   *  space above stays the one set. */
+  regainGrid?: boolean;
   /** 行取り (gyōdori, JLReq §4.1.6): the heading takes exactly this many
    *  lines of the body grid (N × the body line pitch), its text centred in
    *  them, in place of its `marginTop` and `marginBottom` — "3行取り" is
@@ -253,6 +261,8 @@ export interface ResolvedHeadingLevelConfig {
   hidden: boolean;
   /** The level's own value, else `headings.snapToGrid`. */
   snapToGrid: boolean;
+  /** The level's own value, else `headings.regainGrid`. */
+  regainGrid: boolean;
   /** Absent unless set (see {@link HeadingLevelConfig.lineSpan}). */
   lineSpan?: number;
   /** Absent unless set (see {@link HeadingLevelConfig.indent}). */
@@ -312,6 +322,11 @@ export interface HeadingsConfig {
    *  tail, display math). A level overrides it with
    *  {@link HeadingLevelConfig.snapToGrid}. */
   snapToGrid?: boolean;
+  /** With `snapToGrid` off, regain the grid at the text after a heading:
+   *  the heading keeps its exact margins, the next block starts at the next
+   *  grid line. Default `false`. A level overrides it with
+   *  {@link HeadingLevelConfig.regainGrid}. */
+  regainGrid?: boolean;
   /** What a heading that snaps to the grid keeps of its space above when
    *  it opens a column (at the page's head, or under a float that heads
    *  the column), where its `marginTop` is dropped (#706):
@@ -370,6 +385,7 @@ export interface ResolvedHeadingsConfig {
   keepWithNextSpread?: boolean;
   keepWithNextSplit: KeepWithNextSplit;
   snapToGrid: boolean;
+  regainGrid: boolean;
   columnHeadSpace: ColumnHeadSpace;
   inlineMarks: boolean;
   balancing: {

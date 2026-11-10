@@ -12,6 +12,7 @@ import type { ContentBlock } from '../../../../parse/index.js';
 import type { ResolvedCalloutStyleConfig, CalloutSpan } from '../../../../types.js';
 import type { BandCapZone } from '../../../columns/bandCaps.js';
 import type { PassState } from '../state.js';
+import { onGridAbove } from '../../passHelpers.js';
 
 /** What createCalloutInline takes from the pass. */
 export interface CalloutInlineDeps {
@@ -239,7 +240,10 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
       const placed = fragment ? fragment.result : result;
       const to = fragment ? fragment.to : L.end;
       if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
-      const spacingBefore = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), placed.marginTopPx)) + balanceBefore;
+      let spacingBefore = atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), placed.marginTopPx);
+      // Per-style grid: a box whose style sits on the grid opens on a line.
+      if (resolved.page.baselineGrid.perStyle && style.snapToGrid && part === 0 && curCol.blocks.length > 0) spacingBefore = onGridAbove(curCol, spacingBefore, baselineGrid);
+      spacingBefore += balanceBefore;
       if (balanceBefore > 0) {
         addBalanceExtra(curCol, balanceBefore);
         placed.frame.balancing = { levers: ['trailingCallout'], spaceAbove: balanceBefore };

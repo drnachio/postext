@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Pàgina i disposició',
   description: "La mida de pàgina, els marges i la retícula de base, la numeració de les pàgines, i les columnes i l'espai que les separa",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '36 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '37 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres del full. Tries la mida de pàgina, els marges, el costat per on s'enquaderna el llibre i la retícula on s'assenten les línies de text. Decideixes com es compten i com s'escriuen els números de pàgina. També decideixes quantes columnes té la pàgina, quant d'espai les separa i si el text va en línies horitzontals o verticals. Les capçaleres i els peus de pàgina tenen una pàgina pròpia.",
@@ -75,7 +75,7 @@ La propietat `page` controla les dimensions físiques i l'aparença de la pàgin
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desactivat</td>
-      <td>Dibuixa la retícula de base sobre les pàgines, per comprovar el ritme vertical. La maquetació s'ajusta a la retícula tant si es dibuixa com si no. Vegeu més avall.</td>
+      <td>Dibuixa la retícula de base sobre les pàgines, per comprovar el ritme vertical. La maquetació s'ajusta a la retícula tant si es dibuixa com si no. <code>pdfGeneration.baselineGrid: false</code> la deixa fora del PDF. Vegeu més avall.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ La retícula de base és el ritme del text de cos: línies separades per l'inter
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Gruix de les línies de la retícula.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cada estil decideix per si mateix. <code>false</code>, la regla fins ara: un estil fora de la retícula (<code>snapToGrid: false</code>) deixa fora d'ella el text que el segueix fins al bloc següent que s'hi ajusta, de manera que el seu desfasament es propaga en cascada. <code>true</code>: un bloc amb un estil que va sobre la retícula comença a la línia següent de la retícula, acabi com acabi el bloc anterior, i un que va fora de la retícula conserva el seu espaiat exacte sense transmetre'l. Els estils que decideixen: els nivells i estils d'encapçalament, els estils de paràgraf, el text de cos (<code>bodyText.snapToGrid</code>) i el primer paràgraf després d'un encapçalament (<code>bodyText.firstParagraphSnapToGrid</code>), tots dos <code>true</code> per defecte i llegits només amb <code>perStyle</code>, els estils d'avís, les llistes (<code>snapTopToGrid</code>), les fórmules en bloc (<code>math.snapToGrid</code>) i les figures i taules (el <code>snapToGrid</code> del seu tipus de recurs). El començament d'una columna sempre és sobre la retícula. Al Sandbox: Columnes › <strong>Cada estil decideix per si mateix</strong>.</td>
     </tr>
   </tbody>
 </table>

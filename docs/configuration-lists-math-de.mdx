@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Listen und Mathematik',
   description: 'Aufzählungen und nummerierte Listen, ihre Listenzeichen, Einzüge und Verschachtelung, Aufgabenlisten sowie Größe, Farbe und Abstände mathematischer Formeln',
   lang: 'de',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '16 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,12 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Hält eine abgesetzte Formel in der Spalte der Zeile, die zu ihr hinführt – die Predisplay-Penalty von TeX. Passt die Formel nicht unter die letzte Zeile des Absatzes davor, geht diese Zeile mit der Formel in die nächste Spalte oder auf die nächste Seite; blieben weniger als <code>bodyText.widowMinLines</code> Zeilen zurück (weniger als eine, wenn <code>bodyText.avoidWidows</code> aus ist), rückt ein Absatz, der in dieser Spalte beginnt, ganz weiter (unter <code>headings.keepWithNext</code> mit den Überschriften, die die Spalte darüber schließen). Die mitgenommene Zeile steht allein am Kopf der nächsten Spalte, was auch immer die Waisenregel verlangt. Mit <code>false</code> rückt die Formel allein weiter, und die Zeile, die sie einleitet, kann die Spalte darüber schließen oder über einer Abbildung stehen, die am Kopf der nächsten Spalte steht.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Ob eine abgesetzte Formel im Grundlinienraster steht: Unter der Formel kehrt der Fluss ins Raster zurück (und mit <code>page.baselineGrid.perStyle</code> beginnt die Formel auf einer Rasterlinie). <code>false</code> behält ihre genauen Abstände.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

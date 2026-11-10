@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'نص المتن',
   description: 'تنضيد النص الجاري: الخط والحجم وتباعد الأسطر، والألوان، والإزاحات، والاقتباسات الكتلية، والشعر، ومواضع الجدولة، والحروف الاستهلالية',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '25 دقيقة',
   order: 7,
   parent: 'configuration',
@@ -62,6 +62,18 @@ export const metadata = {
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>المسافة بين فقرتين. تُدرج <code>true</code> سطرًا فارغًا (يساوي <code>lineHeight</code>) للفصل بين الفقرات على طريقة دور النشر، ويضع الطول مثل <code>&#123; value: 2, unit: 'mm' &#125;</code> أو <code>0.33em</code> من حجم النص هذا المقدار بالضبط، في النص الجاري وفي الصناديق وفي أطر الصفحات المركّبة. الطول الذي لا يساوي عددًا صحيحًا من الأسطر يُخرج الفقرات عن شبكة الأسطر، وتعيد الكتلة التالية التي تلتزم الشبكة (عنوان، آخر بند في قائمة، معادلة مستقلة) النص إليها. هي المسافة نفسها التي يضعها <code>paragraphStyles[].spaceBetween</code>، وهو الذي يحل محلها داخل حاوية <code>:::paragraphs</code>. ويضبط الصندوق مسافته في <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل تقع فقرة المتن (والاقتباس الكتلي) على شبكة خطوط الأساس: مع <code>page.baselineGrid.perStyle</code> تبدأ عند خط الشبكة التالي أيًّا كانت نهاية الكتلة التي قبلها؛ و<code>false</code> تُبقيها حيث تركتها الكتلة السابقة. لا يُقرأ إلا مع <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>الأمر نفسه لأول فقرة بعد العنوان، التي قد تتبع تباعد العنوان الخاص بينما يلتزم بقية النص بالشبكة. لا يُقرأ إلا مع <code>page.baselineGrid.perStyle</code>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

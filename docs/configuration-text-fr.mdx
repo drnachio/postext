@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Texte courant',
   description: 'La typographie du texte courant : police, corps et interlignage, couleurs, retraits, citations, vers, taquets de tabulation et lettrines',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '27 min',
   order: 7,
   parent: 'configuration',
@@ -61,6 +61,18 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>L’espace entre deux paragraphes. <code>true</code> insère une ligne blanche (égale à <code>lineHeight</code>), à la manière des éditeurs ; une longueur comme <code>&#123; value: 2, unit: 'mm' &#125;</code> ou <code>0.33em</code> du corps du texte met exactement cet espace, dans le texte courant, dans les encadrés et dans les blocs des pages composées. Une longueur qui n’est pas un nombre entier de lignes fait sortir les paragraphes de la grille de lignes ; le bloc suivant qui s’y cale (un titre, le dernier élément d’une liste, une formule centrée) y ramène le texte. C’est le même espace que <code>paragraphStyles[].spaceBetween</code>, qui le remplace dans un conteneur <code>:::paragraphs</code>. Un encadré fixe le sien dans <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si un paragraphe du texte courant (et une citation) s’aligne sur la grille de ligne de base : avec <code>page.baselineGrid.perStyle</code>, il commence à la ligne suivante de la grille, quelle que soit la fin du bloc précédent ; <code>false</code> le laisse là où le bloc précédent l’a laissé. Lu seulement avec <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>La même chose pour le premier paragraphe après un titre, qui peut suivre l’espacement propre du titre tandis que le reste du texte reste sur la grille. Lu seulement avec <code>page.baselineGrid.perStyle</code>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

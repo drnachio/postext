@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'العناوين',
   description: 'القيم الافتراضية للعناوين، والقيم الخاصة بكل مستوى، وبدء صفحة جديدة قبل العنوان، وصفحات افتتاح الفصول بعرض الصفحة كله، والأعداد المكتوبة بالحروف',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '32 دقيقة',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>هل يعود التدفق إلى شبكة خطوط الأساس تحت العنوان. مع <code>true</code> تُقرَّب قيمة <code>marginBottom</code> للعنوان صعودًا إلى عدد صحيح من أسطر الشبكة؛ ومع <code>false</code> يُحتفظ بالهامش الدقيق، وقد يقع النص تحت العنوان خارج الشبكة حتى نقطة الالتقاط التالية (نهاية قائمة، أو ذيل حاوية <code>:::paragraphs</code>، أو صيغة معروضة) — وهي الطريقة التي تضع بها كتب كثيرة سطرًا ونصف سطر تحت العنوان. يمكن لمستوى (<code>levels[].snapToGrid</code>) أو لنمط عنوان أن يحدد قيمته الخاصة؛ وهذه القيمة هي ما يرثانه.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>لا يُقرأ إلا حين تكون <code>snapToGrid</code> بقيمة <code>false</code>: يحتفظ العنوان بهوامشه الدقيقة وتباعد أسطره، ويبدأ النص الذي يليه عند خط الشبكة التالي، فيستعيد العمود الشبكة هناك بدل أن يبقى خارجها حتى نقطة الالتزام التالية. لا تضيف موازنة الأعمدة أسطرًا فوق عنوان كهذا. يمكن لمستوى (<code>levels[].regainGrid</code>) أو لنمط عنوان أن يحدد قيمته الخاصة. في Sandbox: <strong>استعادة الشبكة عند النص</strong> تحت مفتاح الشبكة.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

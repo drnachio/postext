@@ -111,3 +111,56 @@ describe('headings.levels[].snapToGrid (EF-22)', () => {
       .toEqual({ snapToGrid: false, levels: [{ level: 3, snapToGrid: true }] });
   });
 });
+
+describe('headings regainGrid: off the grid, regained at the text after', () => {
+  /** The paragraph before `h` in reading order. */
+  const textBefore = (doc: VDTDocument, h: VDTBlock): VDTBlock =>
+    doc.blocks.filter((b) => b.type === 'paragraph' && (b.contentIndex ?? -1) < (h.contentIndex ?? 0)).at(-1)!;
+  const bottom = (b: VDTBlock) => b.bbox.y + b.bbox.height;
+
+  it('inherits headings.regainGrid, off by default, and strips like snapToGrid', () => {
+    expect(resolveHeadingsConfig().levels.every((l) => !l.regainGrid)).toBe(true);
+    expect(resolveHeadingsConfig({ regainGrid: true }).levels.every((l) => l.regainGrid)).toBe(true);
+    expect(stripHeadingsDefaults({ regainGrid: false })).toBeUndefined();
+    expect(stripHeadingsDefaults({ regainGrid: true })).toMatchObject({ regainGrid: true });
+  });
+
+  it('keeps the heading’s exact margins and puts its text back on the grid', () => {
+    const doc = build(config({ levels: [{ level: 2, snapToGrid: false, regainGrid: true }] }));
+    const h2 = headingsOf(doc)[0]!;
+    expect(h2.snappedToGrid).toBe(false);
+    expect(h2.regainsGrid).toBe(true);
+    // Its space above is its own margin, exactly (14 pt; the paragraph
+    // before has no space under it).
+    const marginTop = 14 * doc.config.page.dpi / 72;
+    expect(h2.bbox.y - bottom(textBefore(doc, h2))).toBeCloseTo(marginTop, 1);
+    // And the text under it is on the grid, which off the grid it is not.
+    expect(onGrid(doc, textAfter(doc, h2))).toBe(true);
+    const off = build(config({ levels: [{ level: 2, snapToGrid: false }] }));
+    expect(onGrid(off, textAfter(off, headingsOf(off)[0]!))).toBe(false);
+  });
+
+  it('is ignored while the heading snaps to the grid', () => {
+    const doc = build(config({ levels: [{ level: 2, regainGrid: true }] }));
+    expect(headingsOf(doc)[0]!.regainsGrid).toBeUndefined();
+    expect(headingsOf(doc)[0]!.snappedToGrid).toBe(true);
+  });
+});
+
+describe('column balancing and regainGrid', () => {
+  const para = (i: number, n: number) => `Paragraph ${i} ` + 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(n);
+  const md = Array.from({ length: 24 }, (_, i) => (i % 4 === 0 ? `## Section ${i}\n\n` : '') + para(i, 2 + (i * 7) % 5)).join('\n\n');
+  const two = (levels: HeadingsConfig['levels']): PostextConfig => ({
+    page: { dpi: 96, sizePreset: '17x24' },
+    layout: { layoutType: 'double' },
+    bodyText: { fontSize: pt(10), lineHeight: pt(14) },
+    headings: { marginTop: pt(14), marginBottom: pt(7), levels: [{ level: 1, breakBefore: { enabled: false } }, ...(levels ?? [])] },
+  });
+  const levered = (doc: VDTDocument) => doc.blocks.filter((b) => b.type === 'heading' && b.balancing?.levers.includes('heading'));
+
+  it('never adds lines above a heading that regains the grid', () => {
+    const regained = buildDocument({ markdown: md }, two([{ level: 2, snapToGrid: false, regainGrid: true }]), createMeasurementCache());
+    expect(regained.blocks.some((b) => b.regainsGrid)).toBe(true);
+    expect(levered(regained).filter((b) => b.regainsGrid)).toEqual([]);
+  });
+});

@@ -170,6 +170,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
       : DEFAULT_BODY_TEXT_CONFIG.colonListRoom,
     // `false` and `'withinPage'` (#701) are kept; anything else reads `true`.
     hyphenateAcrossColumns: partial.hyphenateAcrossColumns === false || partial.hyphenateAcrossColumns === 'withinPage' ? partial.hyphenateAcrossColumns : DEFAULT_BODY_TEXT_CONFIG.hyphenateAcrossColumns,
+    snapToGrid: partial.snapToGrid ?? DEFAULT_BODY_TEXT_CONFIG.snapToGrid,
+    firstParagraphSnapToGrid: partial.firstParagraphSnapToGrid ?? DEFAULT_BODY_TEXT_CONFIG.firstParagraphSnapToGrid,
     paragraphContainerSpacing: partial.paragraphContainerSpacing === 'add' || partial.paragraphContainerSpacing === 'collapse'
       ? partial.paragraphContainerSpacing
       : DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing,

@@ -166,7 +166,9 @@ page
 │               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
 │               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
-├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
+├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
+│               perStyle=false: true = each style decides alone whether it opens on the grid (no offset cascades);
+│               reads bodyText.snapToGrid / firstParagraphSnapToGrid, math.snapToGrid, resourceTypes[].snapToGrid
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
 └─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl', the document is right to left, or its comics section reads right to left: a manga, a ja/zh-Hant edition, postext > 1.20.2)   postext ≥ 1.9
 ```
@@ -560,6 +562,8 @@ headings
 │                                  'fill' = as many lines as fit, however few go on (1.4; a preset without
 │                                  configVersion 8 whose chapters have a heading reads 'fill')
 ├─ snapToGrid    true              false = keep exact marginBottom (text may sit off-grid until next snap point)
+├─ regainGrid    false             with snapToGrid=false: exact margins, the text after starts on the next grid line
+│                                  (no balancing lines above it); levels[] and heading styles may set it
 ├─ columnHeadSpace 'none'          ('none' | 'remainder', ≥ 1.28) a snapping heading that opens a column: 'none' sets it on
 │                                  the column's first line and the snap adds the part of a line under it (its text then stands
 │                                  further from it than after a paragraph); 'remainder' keeps that part of a line above it, so
@@ -1487,7 +1491,8 @@ answers stay in the chapters (playbooks.md C7).
   counterFormat: 'decimal'|'roman-lower'|'roman-upper'|'alpha-lower'|'alpha-upper'
   captionPrefix: string       caption = "<prefix> <number>. <caption>" ('' for unlabelled photos)
   defaultPlacement?: ResourcePlacement
-  captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle }
+  captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle
+  snapToGrid?: boolean                default true: an inline figure/table of the type puts the flow back on the grid }
 ```
 ResourcePlacement, resolved field-by-field: resource.placement → type.defaultPlacement → built-in:
 ```
@@ -2592,7 +2597,7 @@ Sandbox: the **Figures** field next to each style's typeface in the Design panel
 
 ## 21. Output / viewer / debug
 
-`pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale) }`.
+`pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale), baselineGrid = true (draw page.baselineGrid in the PDF) }`.
 `renderToPdf` takes each setting from its own options, else from the first document's `pdfGeneration`
 (`colorSpace` only while `forceColorSpace` is on), else the defaults (bookmarks, tagged, RGB).
 `renderToPdf(docs, { date })` (postext-pdf ≥ 1.28.0; a `Date`, milliseconds or a date string) fixes

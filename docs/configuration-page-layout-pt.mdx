@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Página e diagramação',
   description: 'O tamanho da página, as margens e a grade de linhas de base, a numeração das páginas, e as colunas e as medianizes entre elas',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '35 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes da folha. Você escolhe o tamanho da página, as margens, o lado da encadernação e a grade em que as linhas de texto se apoiam. Define como as páginas são contadas e como os números de página são escritos. Define quantas colunas a página tem e quanto espaço fica entre elas, e se o texto corre em linhas horizontais ou verticais. Os cabeçalhos e rodapés têm uma página própria.",
@@ -75,7 +75,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desativado</td>
-      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. Veja abaixo.</td>
+      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. <code>pdfGeneration.baselineGrid: false</code> a deixa fora do PDF. Veja abaixo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ A grade de linhas de base é o ritmo do texto corrido: linhas separadas por uma 
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Espessura das linhas da grade.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Cada estilo decide por si. <code>false</code>, a regra até agora: um estilo fora da grade (<code>snapToGrid: false</code>) deixa fora dela o texto que vem depois, até o próximo bloco que se ajusta, de modo que o seu desvio se propaga em cascata. <code>true</code>: um bloco cujo estilo fica na grade começa na linha seguinte da grade, termine como terminar o bloco anterior, e um fora da grade mantém o seu espaçamento exato sem passá-lo adiante. Os estilos que decidem: os níveis e estilos de título, os estilos de parágrafo, o texto do corpo (<code>bodyText.snapToGrid</code>) e o primeiro parágrafo depois de um título (<code>bodyText.firstParagraphSnapToGrid</code>), ambos <code>true</code> por padrão e lidos só com <code>perStyle</code>, os estilos de boxe, as listas (<code>snapTopToGrid</code>), as fórmulas em destaque (<code>math.snapToGrid</code>) e as figuras e tabelas (o <code>snapToGrid</code> do seu tipo de recurso). O topo de uma coluna está sempre na grade. No Sandbox: Colunas › <strong>Cada estilo decide por si</strong>.</td>
     </tr>
   </tbody>
 </table>

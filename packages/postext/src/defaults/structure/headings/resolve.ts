@@ -30,6 +30,7 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
     ? partial.keepWithNextSplit!
     : DEFAULT_HEADINGS_CONFIG.keepWithNextSplit;
   const generalSnapToGrid = partial.snapToGrid ?? DEFAULT_HEADINGS_CONFIG.snapToGrid;
+  const generalRegainGrid = partial.regainGrid ?? DEFAULT_HEADINGS_CONFIG.regainGrid;
   // Any other value reads as the default.
   const columnHeadSpace: ColumnHeadSpace = partial.columnHeadSpace === 'remainder' ? 'remainder' : DEFAULT_HEADINGS_CONFIG.columnHeadSpace;
   const inlineMarks = partial.inlineMarks ?? DEFAULT_HEADINGS_CONFIG.inlineMarks;
@@ -105,13 +106,14 @@ export function resolveHeadingsConfig(partial?: HeadingsConfig): ResolvedHeading
       textTransform: override?.textTransform ?? def.textTransform,
       hidden: override?.hidden ?? def.hidden,
       snapToGrid: override?.snapToGrid ?? generalSnapToGrid,
+      regainGrid: override?.regainGrid ?? generalRegainGrid,
       // The Japanese heading fields (#424) stay absent unless set, so
       // every other configuration resolves as before.
       ...headingPlacementFields(override),
     };
   });
 
-  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, ...(keepWithNextSpread ? { keepWithNextSpread } : {}), keepWithNextSplit, snapToGrid: generalSnapToGrid, columnHeadSpace, inlineMarks, balancing, levels };
+  return { fontFamily: generalFont, lineHeight: generalLineHeight, color: generalColor, textAlign: generalTextAlign, fontWeight: generalFontWeight, marginTop: generalMarginTop, marginBottom: generalMarginBottom, keepWithNext: generalKeepWithNext, ...(keepWithNextSpread ? { keepWithNextSpread } : {}), keepWithNextSplit, snapToGrid: generalSnapToGrid, regainGrid: generalRegainGrid, columnHeadSpace, inlineMarks, balancing, levels };
 }
 
 /** A level's `lineSpan`, `indent` and `jidori` (#424) and its
@@ -164,6 +166,7 @@ export function resolveHeadingLevelOverrides(
   if (partial.textTransform !== undefined) out.textTransform = partial.textTransform;
   if (partial.hidden !== undefined) out.hidden = partial.hidden;
   if (partial.snapToGrid !== undefined) out.snapToGrid = partial.snapToGrid;
+  if (partial.regainGrid !== undefined) out.regainGrid = partial.regainGrid;
   // A style that sets one of them to nothing (`lineSpan: 0`, `indent: 0`)
   // takes it off its level's.
   if (partial.lineSpan !== undefined) out.lineSpan = headingPlacementFields(partial).lineSpan;

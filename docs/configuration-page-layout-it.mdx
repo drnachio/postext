@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Pagina e impaginazione',
   description: 'Il formato della pagina, i margini e la griglia della linea di base; la numerazione delle pagine; le colonne e le intercolonne che le separano',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '35 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Questa pagina riguarda le impostazioni del foglio stesso. Scegli il formato della pagina, i margini, il lato su cui il libro è rilegato e la griglia su cui poggiano le righe di testo. Stabilisci come si contano le pagine e come si scrive il loro numero. Stabilisci quante colonne ha una pagina e quanto spazio c’è tra di esse, e se il testo scorre in orizzontale o in verticale. Le intestazioni e i piè di pagina hanno una pagina a parte.",
@@ -75,7 +75,7 @@ La proprietà `page` controlla le dimensioni fisiche e l’aspetto della pagina.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disattivato</td>
-      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. Vedi sotto.</td>
+      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. <code>pdfGeneration.baselineGrid: false</code> la lascia fuori dal PDF. Vedi sotto.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -185,6 +185,12 @@ La griglia della linea di base è il ritmo del testo corrente: righe distanti un
       <td><code>Dimension</code></td>
       <td><code>0.5 pt</code></td>
       <td>Spessore delle linee della griglia.</td>
+    </tr>
+    <tr>
+      <td><code>perStyle</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Ogni stile decide per sé. <code>false</code>, la regola finora: uno stile fuori griglia (<code>snapToGrid: false</code>) lascia fuori dalla griglia il testo che lo segue fino al prossimo blocco che vi si allinea, quindi il suo scarto si propaga. <code>true</code>: un blocco il cui stile si allinea alla griglia inizia sulla riga successiva della griglia, comunque sia finito il blocco precedente, e uno stile fuori griglia mantiene la sua spaziatura esatta senza trasmetterla. Gli stili che decidono: livelli e stili dei titoli, stili di paragrafo, il testo corrente (<code>bodyText.snapToGrid</code>) e il primo paragrafo dopo un titolo (<code>bodyText.firstParagraphSnapToGrid</code>), entrambi <code>true</code> per impostazione predefinita e letti solo con <code>perStyle</code>, stili dei riquadri, elenchi (<code>snapTopToGrid</code>), formule in display (<code>math.snapToGrid</code>) e figure e tabelle (lo <code>snapToGrid</code> del loro tipo di risorsa). La testa di una colonna è sempre sulla griglia. Nel Sandbox: Colonne › <strong>Ogni stile decide per sé</strong>.</td>
     </tr>
   </tbody>
 </table>

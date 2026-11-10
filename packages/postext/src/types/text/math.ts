@@ -42,6 +42,11 @@ export interface MathConfig {
    *  when `avoidWidows` is on). The carried line stands alone at the head
    *  of the next column. Default `false`: the formula alone moves on. */
   keepWithLeadIn?: boolean;
+  /** Whether a display formula sits on the baseline grid: the flow snaps
+   *  back onto it under the formula (and, with
+   *  `page.baselineGrid.perStyle`, the formula opens on a grid line).
+   *  `false` keeps its exact margins. Default `true`. */
+  snapToGrid?: boolean;
   /** Number the display formulas that carry a `\label` (#530). */
   equationNumbering?: EquationNumberingConfig;
 }
@@ -87,5 +92,6 @@ export interface ResolvedMathConfig {
   marginBottom: Dimension;
   indentAfterDisplay: boolean;
   keepWithLeadIn: boolean;
+  snapToGrid: boolean;
   equationNumbering: ResolvedEquationNumberingConfig;
 }

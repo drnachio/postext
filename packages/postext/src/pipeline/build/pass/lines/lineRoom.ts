@@ -15,6 +15,7 @@ import { balanceKey } from '../../../columns/columnBalancing.js';
 import { columnCursorY, wrapInsetSteps, sameInsetsFrom, insetsBefore, settleColumnWraps } from '../../../floats/textWrap.js';
 import { raggedLooseLines } from '../../../text/raggedLines.js';
 import { headingLineSpanBand } from '../../../text/lineSpan.js';
+import { onGridAbove } from '../../passHelpers.js';
 
 /** What createLineRoom takes from around the loop. */
 export interface LineRoomDeps {
@@ -112,6 +113,7 @@ export function createLineRoom(deps: LineRoomDeps) {
         // like a heading's.
         lineTurn.spacingBefore = Math.max(lineTurn.spacingBefore, style.marginTopPx);
       }
+      if (blockTurn.sitsOnGrid && blockTurn.partIndex === 0) lineTurn.spacingBefore = onGridAbove(curCol, lineTurn.spacingBefore, baselineGrid);
       // Column balancing: extra grid lines above a non-heading balance
       // target — the first block after a list end. Heading targets are
       // handled inside the heading branch above (after margin collapsing).
@@ -127,6 +129,13 @@ export function createLineRoom(deps: LineRoomDeps) {
           const afterList = prev?.type === 'listItem' && prev.containerId === undefined;
           lineTurn.balancing = { levers: [afterList ? 'listEnd' : 'afterDisplay'], spaceAbove: extraPx };
         }
+      }
+      // The text after a heading set off the grid regains it
+      // (`regainGrid`): it starts at the next grid line, the heading
+      // keeping its exact margins.
+      if (blockTurn.partIndex === 0 && state.regainAfter !== null && blockTurn.blockIdx > state.regainAfter && vdtType !== 'heading') {
+        const usedHeight = curCol.bbox.height - curCol.availableHeight;
+        lineTurn.spacingBefore = Math.ceil((usedHeight + lineTurn.spacingBefore - 0.01) / baselineGrid) * baselineGrid - usedHeight;
       }
     } else if (openerHead !== undefined) {
       // The head of a column under a page-span opener (EF-139).
@@ -144,6 +153,9 @@ export function createLineRoom(deps: LineRoomDeps) {
         lineTurn.balancing = { levers: [vdtType === 'heading' ? 'heading' : 'afterFloat'], spaceAbove: extraPx };
       }
     }
+    // Whatever opened the next column, or took the rounding, the grid is
+    // regained once a block after the heading is placed.
+    if (state.regainAfter !== null && blockTurn.blockIdx > state.regainAfter) state.regainAfter = null;
     // A raised initial (#623) keeps its rise clear above the paragraph,
     // in whole grid lines.
     if (blockTurn.partIndex === 0 && blockTurn.capInfo && blockTurn.capInfo.rise > 0.5) {

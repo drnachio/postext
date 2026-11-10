@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos i taules',
   description: 'Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '46 min',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ Un tipus pot ometre camps (des de postext 1.38): els completa el tipus integrat 
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Canvis parcials a l'<a href="#estil-dels-peus-de-recurs">estil dels peus</a> per als recursos d'aquest tipus. Només les claus que indiquis substitueixen el <code>captionStyle</code> global; la resta s'hereta (si canvies el <code>color</code>, canvien també el de l'etiqueta i el de la nota, llevat que es fixin explícitament). Ús típic: taules amb el peu <em>a sobre</em>, damunt d'una barra de color, mentre les figures conserven el peu a sota. Les referències a la paleta es resolen com qualsevol altre color.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Per defecte, <code>true</code>. Si una figura o una taula d'aquest tipus col·locada al text va sobre la retícula de base: el flux torna a la retícula sota el recurs (i, amb <code>page.baselineGrid.perStyle</code>, el recurs comença en una línia de la retícula). <code>false</code> conserva l'espai exacte que deixa el recurs. No afecta els flotants al capdamunt o al peu d'una columna.</td>
     </tr>
   </tbody>
 </table>

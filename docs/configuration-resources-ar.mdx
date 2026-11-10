@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الموارد والجداول',
   description: 'أنواع الموارد وترقيمها، وأنماط الجداول والتعليقات، والمخططات بحبر واحد، والفيديو المطبوع',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '42 دقيقة',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ interface ResourceType {
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (اختياري)</td>
       <td>تجاوز جزئي لـ<a href="#نمط-التعليقات">نمط التعليق</a> لموارد هذا النوع. لا تحلّ محل <code>captionStyle</code> العام إلا الخصائص التي تضبطها؛ ويُورث كل ما عداها (و<code>color</code> المتجاوَز يحدّد أيضًا لونَي التسمية والملاحظة ما لم يُضبطا صراحة). الاستخدام المعتاد: جداول تعليقها <em>فوقها</em> على شريط ملوّن بينما تُبقي الأشكال تعليقها تحتها. وتُعامَل الإشارات إلى لوحة الألوان كأي لون آخر.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (اختياري)</td>
+      <td>الافتراضي <code>true</code>. هل يقع الشكل أو الجدول من هذا النوع، الموضوع داخل النص، على شبكة خطوط الأساس: يعود التدفق إلى الشبكة تحت المورد (ومع <code>page.baselineGrid.perStyle</code> يبدأ المورد عند خط من خطوط الشبكة). <code>false</code> تُبقي المسافة الدقيقة التي يتركها المورد. لا يتأثر بذلك العناصر العائمة في أعلى العمود أو أسفله.</td>
     </tr>
   </tbody>
 </table>

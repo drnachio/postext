@@ -284,6 +284,11 @@ export interface PdfGenerationConfig {
    *  marks) flagged as an artifact so assistive technology skips it.
    *  Defaults to true. */
   accessible?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) in the
+   *  PDF, as the canvas and HTML do on screen. `false` keeps the grid a
+   *  screen guide for checking the page, out of a file meant for print.
+   *  Defaults to true. */
+  baselineGrid?: boolean;
 }
 
 /** What goes into a generated PDF with every default filled in. */
@@ -292,4 +297,5 @@ export interface ResolvedPdfGenerationConfig {
   forceColorSpace: boolean;
   colorSpace: PdfColorSpace;
   accessible: boolean;
+  baselineGrid: boolean;
 }

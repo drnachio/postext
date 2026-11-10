@@ -1,7 +1,7 @@
 // Small helpers of the placement pass that need none of its state: float
 // pages, forced breaks, chapter numbers, loose paragraphs, verse snaps and
 // centred pages (#1276: split out of build.ts).
-import type { ResolvedHeadingLevelConfig } from '../../types.js';
+import type { ResolvedHeadingLevelConfig, ResourceType } from '../../types.js';
 import type { ContentBlock } from '../../parse/index.js';
 import type { VDTDocument, VDTPage, ResolvedConfig, VDTLine, VDTColumn, VDTBlock } from '../../vdt.js';
 import { versesLineByLine, verseLinesSettings } from '../text/verseLines.js';
@@ -259,4 +259,17 @@ export function centrePageText(page: VDTPage, reservedOf: (col: VDTColumn) => { 
       offsetBlock(b, 0, dy);
     }
   }
+}
+
+/** The space above a block, rounded up so the block opens on a grid line
+ *  of `col` (`page.baselineGrid.perStyle`: each style decides for itself
+ *  whether it sits on the grid; no block's offset carries on to the next). */
+export function onGridAbove(col: VDTColumn, spacing: number, baselineGrid: number): number {
+  const used = col.bbox.height - col.availableHeight;
+  return Math.ceil((used + spacing - 0.01) / baselineGrid) * baselineGrid - used;
+}
+
+/** Whether an inline figure or table of type `typeId` sits on the grid. */
+export function resourceOnGrid(typeId: string | undefined, resourceTypeById: ReadonlyMap<string, ResourceType>): boolean {
+  return (typeId !== undefined ? resourceTypeById.get(typeId)?.snapToGrid : undefined) !== false;
 }

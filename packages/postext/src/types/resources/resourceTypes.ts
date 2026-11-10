@@ -270,6 +270,13 @@ export interface ResourceType {
    *  Only the keys set here replace the resolved global `captionStyle`; the
    *  rest is inherited (see `mergeCaptionStyle`). */
   captionStyle?: CaptionStyleConfig;
+  /** Whether a figure or table of this type placed in the text sits on the
+   *  baseline grid: the flow snaps back onto it under the resource (and,
+   *  with `page.baselineGrid.perStyle`, the resource opens on a grid
+   *  line). `false` keeps the exact space the resource leaves. Floats set
+   *  in a band at the head or foot of a column are not affected. Default
+   *  `true`. */
+  snapToGrid?: boolean;
 }
 
 /** The concrete payload kind a `Resource` carries. */

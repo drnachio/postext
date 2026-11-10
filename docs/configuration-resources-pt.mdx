@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos e tabelas',
   description: 'Os tipos de recurso e a numeração deles, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '44 min',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ Um tipo pode omitir campos (desde o postext 1.38): o tipo integrado de mesmo id 
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Substituição parcial do <a href="#estilo-de-legenda">estilo de legenda</a> para os recursos deste tipo. Só as chaves que você define substituem o <code>captionStyle</code> global; todo o resto é herdado (uma <code>color</code> substituída também define as cores do rótulo e da nota, a menos que elas sejam definidas explicitamente). Uso típico: tabelas com legenda <em>em cima</em>, sobre uma barra colorida, enquanto as figuras mantêm a legenda embaixo. Referências à paleta são resolvidas como qualquer outra cor.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Padrão: <code>true</code>. Se uma figura ou tabela deste tipo colocada no texto fica na grade de linhas de base: o fluxo volta à grade abaixo do recurso (e, com <code>page.baselineGrid.perStyle</code>, o recurso começa numa linha da grade). <code>false</code> mantém o espaço exato que o recurso deixa. Não afeta os flutuantes no topo ou no pé de uma coluna.</td>
     </tr>
   </tbody>
 </table>

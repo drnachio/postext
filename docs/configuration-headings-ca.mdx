@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Encapçalaments',
   description: "Els valors per defecte dels encapçalaments, la configuració de cada nivell, els salts de pàgina abans d'un encapçalament, les obertures de capítol a tota l'amplada de la pàgina i els nombres escrits en lletres",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '35 min',
   order: 9,
   parent: 'configuration',
@@ -102,6 +102,12 @@ La propietat `headings` controla la tipografia de tots els nivells d'encapçalam
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Si el flux torna a la retícula de base sota un títol. Amb <code>true</code> el <code>marginBottom</code> del títol s'arrodoneix a línies senceres de la retícula; amb <code>false</code> es conserva el marge exacte i el text sota el títol pot quedar fora de la retícula fins al punt d'ajust següent (el final d'una llista, la cua d'un <code>:::paragraphs</code>, una equació), com molts llibres, que deixen línia i mitja sota el títol. Un nivell (<code>levels[].snapToGrid</code>) o un estil d'encapçalament poden fixar un valor propi; si no, hereten aquest.</td>
+    </tr>
+    <tr>
+      <td><code>regainGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Només es llegeix quan <code>snapToGrid</code> és <code>false</code>: el títol conserva els marges exactes i el seu propi interlineat, i el text que el segueix comença a la línia següent de la retícula, de manera que la columna hi recupera la retícula en lloc de continuar-ne fora fins al punt d’ajust següent. L’equilibrat de columnes no afegeix línies damunt d’un títol així. Un nivell (<code>levels[].regainGrid</code>) o un estil de títol poden fixar el seu propi valor. Al Sandbox: <strong>Recuperar la retícula al text</strong>, sota l’interruptor de la retícula.</td>
     </tr>
     <tr>
       <td><code>columnHeadSpace</code></td>

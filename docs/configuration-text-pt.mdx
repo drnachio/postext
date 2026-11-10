@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Texto do corpo',
   description: 'A tipografia do texto corrido: fonte, tamanho e entrelinha, cores, recuos, citações, verso, paradas de tabulação e capitulares',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '26 min',
   order: 7,
   parent: 'configuration',
@@ -62,6 +62,18 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>O espaço entre dois parágrafos. <code>true</code> insere uma linha em branco (igual a <code>lineHeight</code>), para uma separação no estilo editorial; uma medida como <code>&#123; value: 2, unit: 'mm' &#125;</code> ou <code>0.33em</code> do corpo do texto deixa exatamente esse espaço, no texto corrido, nas caixas e nos quadros das páginas compostas. Uma medida que não seja um número inteiro de linhas tira os parágrafos da grade de linhas; o bloco seguinte que se alinha a ela (um título, o último item de uma lista, uma fórmula em destaque) devolve o texto à grade. É o mesmo espaço de <code>paragraphStyles[].spaceBetween</code>, que o substitui dentro de um contêiner <code>:::paragraphs</code>. Uma caixa define o seu em <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Se um parágrafo do corpo (e uma citação) fica na grade de linhas de base: com <code>page.baselineGrid.perStyle</code> ele começa na linha seguinte da grade, termine como terminar o bloco anterior; <code>false</code> o deixa onde o bloco anterior o deixou. Só é lido com <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>O mesmo para o primeiro parágrafo depois de um título, que pode seguir o espaçamento próprio do título enquanto o resto do texto se mantém na grade. Só é lido com <code>page.baselineGrid.perStyle</code>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

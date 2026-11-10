@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos y tablas',
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '46 min',
   order: 14,
   parent: 'configuration',
@@ -141,6 +141,11 @@ Un tipo puede omitir campos (desde postext 1.38): los completa el tipo integrado
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Sustitución parcial del <a href="#estilo-de-pies-de-recurso">estilo de pies</a> para los recursos de este tipo. Solo las claves que indiques sustituyen al <code>captionStyle</code> global; el resto se hereda (un <code>color</code> cambiado arrastra también el color de la etiqueta y de la nota salvo que se fijen explícitamente). Uso típico: tablas con el pie <em>encima</em> sobre una barra de color mientras las figuras conservan su pie debajo. Las referencias a la paleta se resuelven como cualquier otro color.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Por defecto, <code>true</code>. Si una figura o tabla de este tipo colocada en el texto va sobre la rejilla base: el flujo vuelve a la rejilla bajo el recurso (y, con <code>page.baselineGrid.perStyle</code>, el recurso empieza en una línea de la rejilla). <code>false</code> conserva el espacio exacto que deja el recurso. No afecta a los flotantes en lo alto o al pie de una columna.</td>
     </tr>
   </tbody>
 </table>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Testo corrente',
   description: 'La tipografia del testo corrente: font, corpo e interlinea, colori, rientri, citazioni in blocco, versi, tabulatori e capilettera',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '26 min',
   order: 7,
   parent: 'configuration',
@@ -61,6 +61,18 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>Lo spazio tra due paragrafi. <code>true</code> inserisce una riga vuota (pari a <code>lineHeight</code>), per una separazione di tipo editoriale; una misura come <code>&#123; value: 2, unit: 'mm' &#125;</code> o <code>0.33em</code> del corpo del testo lascia esattamente quello spazio, nel testo corrente, nei riquadri e nelle cornici delle pagine composte. Una misura che non sia un numero intero di righe porta i paragrafi fuori dalla griglia di base; il blocco successivo che vi si allinea (un titolo, l’ultima voce di un elenco, una formula in display) riporta il testo sulla griglia. È lo stesso spazio di <code>paragraphStyles[].spaceBetween</code>, che lo sostituisce dentro un contenitore <code>:::paragraphs</code>. Un riquadro fissa il proprio in <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Se un paragrafo del testo corrente (e una citazione) si allinea alla griglia della linea di base: con <code>page.baselineGrid.perStyle</code> inizia sulla riga successiva della griglia, comunque sia finito il blocco precedente; <code>false</code> lo lascia dove l’ha lasciato il blocco precedente. Letto solo con <code>perStyle</code>.</td>
+    </tr>
+    <tr>
+      <td><code>firstParagraphSnapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Lo stesso per il primo paragrafo dopo un titolo, che può seguire la spaziatura propria del titolo mentre il resto del testo resta sulla griglia. Letto solo con <code>page.baselineGrid.perStyle</code>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>
