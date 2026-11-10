@@ -326,6 +326,22 @@ canviat mentre s'executava la importació es deixa com està, amb un avís
 `variant`, `exportId`, `edits` (cadascuna amb `status`, `reason`, `kind`,
 `before`, `after` i `at`), `comments`, `files` i, en una prova en sec, `diff`.
 
+Un fitxer editat a Google Docs i baixat com a `.docx` també torna. Docs no hi
+desa el mapa ni la còpia dels capítols; la importació torna a escriure el mapa a
+partir del llibre, i ho diu a l'informe. Com que aquest fitxer no porta cap
+còpia del text exportat, es compara amb el llibre tal com és ara. Si el llibre
+ha canviat des de l'exportació, l'informe n'avisa, i un canvi fet mentrestant al
+llibre pot aparèixer com una edició que el desfà. Importa un fitxer de Docs al
+llibre del qual es va exportar, abans de canviar aquest llibre; un fitxer desat
+per Word conserva el mapa i es combina amb els canvis posteriors del llibre.
+Docs també elimina el marcador ocult d'un text que se substitueix sencer (un
+títol, una cel·la de taula, un peu, el títol d'un requadre, una nota al peu). La
+importació troba aquest text pel lloc que ocupa entre els seus veïns, de manera
+que un títol continua sent un títol i un peu va al seu recurs. Quan això no es
+pot decidir, per exemple perquè també s'ha escrit un paràgraf al costat i res no
+els distingeix, l'informe mostra una supressió i una addició en lloc seu.
+Importar el mateix fitxer una segona vegada no porta res.
+
 Sense cap llibre, `import-docx` converteix qualsevol document de Word en un
 llibre nou: crea un capítol a cada títol de nivell 1 (amb `--no-split`, un de
 sol), converteix les imatges i les taules en recursos, i amb `--report`

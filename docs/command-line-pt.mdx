@@ -321,6 +321,23 @@ combina com um livro. Com `--json`, a resposta traz `variant`, `exportId`,
 `edits` (cada uma com `status`, `reason`, `kind`, `before`, `after` e `at`),
 `comments`, `files` e, num teste sem gravação, `diff`.
 
+Um arquivo editado no Google Docs e baixado como `.docx` também volta. O Docs
+não guarda o mapa nem a cópia dos capítulos; a importação grava o mapa de novo a
+partir do livro, e diz isso no relatório. Como esse arquivo não leva nenhuma
+cópia do texto exportado, ele é comparado com o livro como ele está agora. Se o
+livro mudou desde a exportação, o relatório avisa, e uma mudança feita no livro
+nesse meio-tempo pode aparecer como uma edição que a desfaz. Importe um arquivo
+do Docs no livro do qual ele foi exportado, antes de mudar esse livro; um
+arquivo salvo pelo Word mantém o mapa e é combinado com as mudanças posteriores
+do livro. O Docs também apaga o indicador oculto de um texto que é substituído
+por inteiro (um título, uma célula de tabela, uma legenda, o título de um boxe,
+uma nota de rodapé). A importação encontra esse texto pelo lugar dele entre os
+vizinhos, então um título continua sendo um título e uma legenda vai para o
+recurso dela. Quando isso não pode ser decidido, por exemplo porque um parágrafo
+também foi digitado ao lado e nada distingue um do outro, o relatório mostra uma
+exclusão e uma adição no lugar. Importar o mesmo arquivo uma segunda vez não
+traz nada.
+
 Sem um livro, o `import-docx` transforma qualquer documento do Word em livro
 novo: um capítulo a cada título de nível 1 (`--no-split` mantém um só),
 imagens e tabelas como recursos, e `--report` imprime o relatório de qualidade

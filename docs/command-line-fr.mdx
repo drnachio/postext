@@ -330,6 +330,23 @@ la réponse comporte `variant`, `exportId`, `edits` (chacune avec `status`,
 `reason`, `kind`, `before`, `after` et `at`), `comments`, `files` et, lors d’un
 essai à blanc, `diff`.
 
+Un fichier modifié dans Google Docs et téléchargé en `.docx` revient aussi. Docs
+n’y garde ni la carte ni la copie des chapitres ; l’importation réécrit la carte
+à partir du livre, et le dit dans le rapport. Comme ce fichier ne porte aucune
+copie du texte exporté, il est comparé au livre tel qu’il est maintenant. Si le
+livre a changé depuis l’export, le rapport le signale, et un changement fait
+entre-temps dans le livre peut apparaître comme une modification qui l’annule.
+Importez un fichier Docs dans le livre dont il a été exporté, avant de changer
+ce livre ; un fichier enregistré par Word garde sa carte et se fusionne avec les
+changements ultérieurs du livre. Docs supprime aussi le signet masqué d’un texte
+remplacé en entier (un titre, une cellule de tableau, une légende, le titre d’un
+encadré, une note de bas de page). L’importation retrouve ce texte par sa place
+entre ses voisins : un titre reste un titre et une légende va à sa ressource.
+Quand cela ne peut pas être décidé, par exemple parce qu’un paragraphe a aussi
+été tapé à côté et que rien ne les distingue, le rapport montre à la place une
+suppression et un ajout. Importer le même fichier une seconde fois n’apporte
+rien.
+
 Sans livre, `import-docx` transforme n’importe quel document Word en nouveau
 livre : un chapitre à chaque titre de niveau 1 (`--no-split` en garde un seul),
 les images et les tableaux comme ressources, et `--report` affiche le rapport

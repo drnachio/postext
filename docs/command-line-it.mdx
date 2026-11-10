@@ -317,6 +317,23 @@ l’importazione era in corso viene lasciato com’è, con un avviso
 `variant`, `exportId`, `edits` (ciascuna con `status`, `reason`, `kind`,
 `before`, `after` e `at`), `comments`, `files` e, in una prova a vuoto, `diff`.
 
+Anche un file modificato in Google Docs e scaricato come `.docx` torna. Docs non
+conserva la mappa né la copia dei capitoli; l’importazione riscrive la mappa a
+partire dal libro, e lo dice nel rapporto. Poiché quel file non porta con sé
+alcuna copia del testo esportato, viene confrontato con il libro così com’è ora.
+Se il libro è cambiato dopo l’esportazione, il rapporto lo segnala, e un
+cambiamento fatto nel frattempo nel libro può comparire come una modifica che lo
+annulla. Importa un file di Docs nel libro da cui è stato esportato, prima di
+cambiare quel libro; un file salvato da Word conserva la sua mappa e viene unito
+ai cambiamenti successivi del libro. Docs elimina anche il segnalibro nascosto
+di un testo sostituito per intero (un titolo, una cella di tabella, una
+didascalia, il titolo di un riquadro, una nota a piè di pagina). L’importazione
+ritrova quel testo dal suo posto tra i vicini, quindi un titolo resta un titolo
+e una didascalia va alla sua risorsa. Quando non si può decidere, per esempio
+perché accanto è stato scritto anche un paragrafo e nulla li distingue, il
+rapporto mostra al loro posto un’eliminazione e un’aggiunta. Importare lo stesso
+file una seconda volta non porta nulla.
+
 Senza un libro, `import-docx` trasforma qualsiasi documento Word in un nuovo
 libro: un capitolo a ogni titolo di livello 1 (`--no-split` ne tiene uno solo),
 immagini e tabelle come risorse, e `--report` stampa il rapporto di qualità che

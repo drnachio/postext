@@ -321,6 +321,23 @@ mientras corría la importación se deja como está, con un aviso
 `variant`, `exportId`, `edits` (cada una con `status`, `reason`, `kind`,
 `before`, `after` y `at`), `comments`, `files` y, en una prueba en seco, `diff`.
 
+Un archivo editado en Google Docs y descargado como `.docx` también vuelve. Docs
+no guarda el mapa ni la copia de los capítulos; la importación escribe el mapa
+de nuevo a partir del libro, y lo dice en el informe. Como ese archivo no lleva
+ninguna copia del texto exportado, se compara con el libro tal como está ahora.
+Si el libro cambió desde la exportación, el informe avisa de ello, y un cambio
+hecho entretanto en el libro puede aparecer como una edición que lo deshace.
+Importa un archivo de Docs en el libro del que se exportó, antes de cambiar ese
+libro; un archivo guardado por Word conserva su mapa y se combina con los
+cambios posteriores del libro. Docs elimina además el marcador oculto de un
+texto que se sustituye entero (un encabezado, una celda de tabla, un pie, el
+título de un recuadro, una nota al pie). La importación encuentra ese texto por
+su lugar entre sus vecinos, así que un encabezado sigue siendo un encabezado y
+un pie va a su recurso. Cuando eso no se puede decidir, por ejemplo porque
+también se escribió un párrafo a su lado y nada los distingue, el informe
+muestra una eliminación y una adición en su lugar. Importar el mismo archivo por
+segunda vez no trae nada.
+
 Sin un libro, `import-docx` convierte cualquier documento de Word en un libro
 nuevo: un capítulo en cada encabezado de nivel 1 (`--no-split` deja uno solo),
 las imágenes y las tablas como recursos, y `--report` imprime el informe de
