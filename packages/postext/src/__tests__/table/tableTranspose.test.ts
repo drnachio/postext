@@ -49,4 +49,39 @@ describe('transposeTable', () => {
     const t = transposeTable({ rows: [[{ content: 'a' }, { content: 'b' }], [{ content: 'c' }]] });
     expect(text(t)).toEqual([['a', 'c'], ['b', '']]);
   });
+
+  it('reads header rows counted by headerRowCount alone (a Word import) as header rows', () => {
+    // Word leaves the header row's cells without isHeader: the count says it.
+    const imported: TableModel = {
+      headerRowCount: 1,
+      rows: [
+        [{ content: 'Año' }, { content: 'Lluvia' }],
+        [{ content: '1990' }, { content: '410' }],
+        [{ content: '2000' }, { content: '395' }],
+      ],
+    };
+    const t = transposeTable(imported);
+    expect(t.rows.map((r) => r[0]!.isHeader)).toEqual([true, true]);
+    expect(t.rows.map((r) => r[1]!.isHeader)).toEqual([undefined, undefined]);
+    expect(t.headerRowCount).toBeUndefined();
+    const back = transposeTable(t);
+    expect(back.headerRowCount).toBe(1);
+    expect(text(back)).toEqual(text(imported));
+  });
+
+  it('pads a short header row with header cells', () => {
+    const t = transposeTable({ headerRowCount: 1, rows: [[{ content: 'a' }], [{ content: 'b' }, { content: 'c' }]] });
+    expect(t.rows[1]![0]).toEqual({ content: '', isHeader: true });
+  });
+
+  it('keeps a header row merged across columns a header when transposed back', () => {
+    const merged = mergeCells(
+      { headerRowCount: 1, rows: [[{ content: 'Medidas' }, { content: '' }], [{ content: '1' }, { content: '2' }]] },
+      { start: { row: 0, col: 0 }, end: { row: 0, col: 1 } },
+    );
+    const t = transposeTable(merged);
+    expect(t.rows[0]![0]!.rowSpan).toBe(2);
+    expect(t.rows[0]![0]!.isHeader).toBe(true);
+    expect(transposeTable(t).headerRowCount).toBe(1);
+  });
 });
