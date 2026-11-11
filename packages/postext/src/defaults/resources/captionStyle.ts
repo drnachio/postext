@@ -7,7 +7,7 @@ import type {
   ResolvedCaptionNoteStyleConfig,
   ResolvedBodyTextConfig,
 } from '../../types.js';
-import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor, startEndAsLeftRight } from '../shared.js';
+import { DEFAULT_MAIN_COLOR, colorsEqual, dimensionsEqual, resolveColor, startEndAsLeftRight, type TintPaper } from '../shared.js';
 import { isJapaneseLanguage } from '../../hyphenation/locale.js';
 import { withFigureStyle } from '../../fonts/figureStyle.js';
 
@@ -116,10 +116,11 @@ export function mergeCaptionStyle(
   base: ResolvedCaptionStyleConfig,
   override: CaptionStyleConfig | undefined,
   palette?: ColorPaletteEntry[],
+  paper?: TintPaper,
 ): ResolvedCaptionStyleConfig {
   if (!override) return base;
   const o = override;
-  const color = resolveColor(o.color, palette) ?? base.color;
+  const color = resolveColor(o.color, palette, paper) ?? base.color;
   const fontSize = o.fontSize ?? base.fontSize;
   // Label / note colours track the caption colour unless explicitly set.
   const labelFollows = colorsEqual(base.labelColor, base.color);
@@ -134,15 +135,15 @@ export function mergeCaptionStyle(
     gap: o.gap ?? base.gap,
     labelBold: o.labelBold ?? base.labelBold,
     labelItalic: o.labelItalic ?? base.labelItalic,
-    labelColor: resolveColor(o.labelColor, palette) ?? (labelFollows ? color : base.labelColor),
+    labelColor: resolveColor(o.labelColor, palette, paper) ?? (labelFollows ? color : base.labelColor),
     descriptionItalic: o.descriptionItalic ?? base.descriptionItalic,
     position: o.position ?? base.position,
     backgroundEnabled: o.backgroundEnabled ?? base.backgroundEnabled,
-    background: resolveColor(o.background, palette) ?? base.background,
+    background: resolveColor(o.background, palette, paper) ?? base.background,
     padding: o.padding ?? base.padding,
     note: {
       fontSize: n.fontSize ?? (noteSizeFollows ? defaultNoteFontSize(fontSize) : base.note.fontSize),
-      color: resolveColor(n.color, palette) ?? (noteColorFollows ? color : base.note.color),
+      color: resolveColor(n.color, palette, paper) ?? (noteColorFollows ? color : base.note.color),
       italic: n.italic ?? base.note.italic,
       gap: n.gap ?? base.note.gap,
       align: startEndAsLeftRight(n.align ?? base.note.align),

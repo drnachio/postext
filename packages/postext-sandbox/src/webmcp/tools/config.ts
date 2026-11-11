@@ -264,8 +264,11 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
             // count once another is on: the answer says what it made of
             // the value.
             const wanted = asked.get(path);
-            if (wanted !== undefined && (isDimension(wanted) || (!isRecord(wanted) && !Array.isArray(wanted))) && !same(is, wanted)) {
-              const holder = getAtPath(effective, formatPath(parsePath(path).slice(0, -1)));
+            const holder = getAtPath(effective, formatPath(parsePath(path).slice(0, -1)));
+            // A tint (#1471) is read into the colour's value: the resolved
+            // colour shows the tinted hex, not the strength.
+            const tintRead = path.endsWith('.tint') && isColor(holder);
+            if (wanted !== undefined && !tintRead && (isDimension(wanted) || (!isRecord(wanted) && !Array.isArray(wanted))) && !same(is, wanted)) {
               notes.push(isColor(holder) && holder.paletteId
                 ? `${path}: stored as ${JSON.stringify(wanted)}, but this colour follows the palette entry "${holder.paletteId}" and resolves to ${JSON.stringify(is)}. Change colorPalette[id=${holder.paletteId}].value, or set the whole colour (a hex text) to stop following it.`
                 : `${path}: stored as ${JSON.stringify(wanted)}, but the engine resolves ${JSON.stringify(is)} there — a limit of the setting, or a setting that only counts once another one is on.`);

@@ -14,7 +14,7 @@ import { parseInlineSnippetSpans } from '../../../parse/inlineSnippet.js';
 import { nestListItem, listDepth } from '../../../parse/listNesting.js';
 import { type ChipContext, fontSizePxOf } from '../../text/chips.js';
 import { withSnippetInlineCode } from '../../code/codeInline.js';
-import { startEndAsLeftRight, resolveColorValue } from '../../../defaults/shared.js';
+import { startEndAsLeftRight, resolveColorValue, type TintPaper } from '../../../defaults/shared.js';
 import { uppercasePreservingLength } from '../../blocks/buildBlockKind.js';
 import { lineTrailingTracking } from '../../../paint/lineInk.js';
 import type { ResourceNumberingMap } from '../resourceNumbering.js';
@@ -63,6 +63,8 @@ export interface TableLayoutStyle {
   listGapPx: number;
   /** Document palette, for palette-linked cell fills and swatch colours. */
   palette?: ColorPaletteEntry[];
+  /** The page a cell fill at a tint of a palette entry mixes over. */
+  tintPaper?: TintPaper;
   /** Chip styles, for inline `:chip[…]` in cells. */
   chips?: ChipContext;
   /** `codeStyle.inline`, for the inline code of cells; unset, inline code
@@ -395,7 +397,7 @@ function layoutTableIn(
       const stackHeight = image ? textY + textHeight : textHeight;
       const contentHeight = Math.max(set.lineHeightPx, stackHeight) + cellPaddingPx * 2;
       const background = cell.background && !cell.hiddenBy
-        ? resolveColorValue(cell.background, style.palette, cell.background).hex
+        ? resolveColorValue(cell.background, style.palette, cell.background, style.tintPaper).hex
         : undefined;
       measured.push({
         row: r,

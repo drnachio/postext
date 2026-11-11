@@ -145,16 +145,24 @@ const hex6 = (hex: string): string => hex.slice(0, 7).toLowerCase();
 /** What a colour that states its print values prints as: its ink (name,
  *  alternate, tint, overprint) or its CMYK. */
 function paintOf(v: unknown): string | undefined {
+  const over = (v as { overprint?: unknown }).overprint === true ? '|over' : '';
   if (isAuthoredSpot(v)) {
     const s = normalizeSpotColor(v.spot);
-    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}`;
+    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}${over}`;
   }
   if (isAuthoredCmyk(v)) {
     const c = v.cmyk;
-    return `cmyk|${c.c},${c.m},${c.y},${c.k}`;
+    return `cmyk|${c.c},${c.m},${c.y},${c.k}${over}`;
   }
+  // A screen colour that overprints states a print value too: it keeps a
+  // hex apart from colours that print otherwise.
+  if (over) return `hex${over}`;
   return undefined;
 }
+
+/** Whether a paint moves, or makes another move, when two share a hex: a
+ *  spot colour's, or a colour's that overprints. */
+const movable = (paint: string): boolean => paint.startsWith('spot|') || paint.endsWith('|over');
 
 const isPlain = (v: object): boolean => {
   const proto = Object.getPrototypeOf(v);
@@ -163,7 +171,7 @@ const isPlain = (v: object): boolean => {
 
 /** The nearest free screen colour to `hex`: a step in blue, then in green,
  *  then in red, up and down — invisible on screen. */
-function nearestFree(hex: string, taken: Set<string>): string {
+export function nearestFreeHex(hex: string, taken: ReadonlySet<string>): string {
   const rgb = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
   for (let step = 1; step < 256; step++) {
     for (const ch of [2, 1, 0]) {
@@ -181,20 +189,23 @@ function nearestFree(hex: string, taken: Set<string>): string {
 }
 
 /**
- * The configuration with every spot colour on a screen hex of its own,
- * apart from any other colour that states its print values (a spot colour,
- * a colour authored in CMYK).
+ * The configuration with every spot colour, and every colour that
+ * overprints, on a screen hex of its own, apart from any other colour that
+ * states its print values (a spot colour, a colour authored in CMYK, a
+ * colour that overprints).
  *
  * A print render knows a colour only by the hex the layout painted, so two
  * such colours sharing one (`PANTONE 286 C` and a 40 % tint of another ink,
  * or a spot and a CMYK colour picked to look alike) printed both as the
  * first. The later one moves to the nearest free hex, a step away on
  * screen; a colour linked to a palette entry follows the entry. Two CMYK
- * colours sharing a hex are left as they were: only a spot colour moves
- * or makes another colour move, so a book without spot colours keeps
- * every colour it had. A plain
- * screen colour (`model: 'hex'`) equal to one of them still prints as it,
- * the way an unlinked colour shares a palette colour's value. Returns the
+ * colours sharing a hex are left as they were: only a spot colour or a
+ * colour that overprints moves or makes another colour move, so a book
+ * without them keeps every colour it had. A plain
+ * screen colour (`model: 'hex'`) equal to a spot or CMYK colour still
+ * prints as it, the way an unlinked colour shares a palette colour's
+ * value; a colour that overprints moves off a plain colour's hex too, so
+ * the plain colour keeps knocking out. Returns the
  * configuration itself when nothing collides.
  *
  * This changes the screen colour of the colour that moves, on purpose: one
@@ -209,6 +220,8 @@ export function separatePrintColors<T extends PostextConfig | undefined>(config:
   const palette = new Set((config.colorPalette ?? []).map((e) => e.id));
   const taken = new Set<string>();
   const found: { value: object; hex: string; paint: string }[] = [];
+  /** Hexes of plain screen colours (no print values, no link). */
+  const plain = new Set<string>();
   const seen = new Set<object>();
   const walk = (v: unknown): void => {
     if (!v || typeof v !== 'object' || seen.has(v) || !isPlain(v)) return;
@@ -221,6 +234,7 @@ export function separatePrintColors<T extends PostextConfig | undefined>(config:
       const linked = typeof o.paletteId === 'string' && palette.has(o.paletteId);
       const paint = linked ? undefined : paintOf(v);
       if (paint) found.push({ value: v, hex, paint });
+      else if (!linked) plain.add(hex);
       return;
     }
     for (const child of Array.isArray(v) ? v : Object.values(v)) walk(child);
@@ -232,16 +246,21 @@ export function separatePrintColors<T extends PostextConfig | undefined>(config:
   const moves = new Map<object, string>();
   for (const { value, hex, paint } of found) {
     const held = owner.get(hex);
-    if (held === undefined) {
-      owner.set(hex, paint);
-      continue;
+    // A colour that overprints never shares its hex with a plain colour,
+    // which would overprint with it.
+    const overPlain = paint.endsWith('|over') && plain.has(hex);
+    if (!overPlain) {
+      if (held === undefined) {
+        owner.set(hex, paint);
+        continue;
+      }
+      if (held === paint) continue;
+      if (!movable(held) && !movable(paint)) continue;
     }
-    if (held === paint) continue;
-    if (!held.startsWith('spot|') && !paint.startsWith('spot|')) continue;
     const key = `${hex}|${paint}`;
     let next = movedTo.get(key);
     if (!next) {
-      next = nearestFree(hex, taken);
+      next = nearestFreeHex(hex, taken);
       taken.add(next);
       owner.set(next, paint);
       movedTo.set(key, next);

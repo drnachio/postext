@@ -318,7 +318,7 @@ Postext 按规则排版一本书：每个浮动体在其放置设置的范围内
 - **分辨率**。`bitmap.resolution`是图片在自然印刷尺寸下的ppi，所以无论页面是多少dpi，它的自然宽度都是`width × page.dpi / resolution`：`resolution: 300`的2400 px宽203.2 mm，页面按150 dpi还是300 dpi排版都一样。`layout.bitmapResolution`给所有没有自身分辨率的位图一个分辨率：一个数字（`300`），或者`'file'`，即文件标明的分辨率（`bitmap.fileResolution`：PNG的`pHYs`，JPEG的JFIF或EXIF密度，WebP的EXIF；从Word导入的图片则是它在Word中的打印尺寸）。相机、截图和网页导出的文件对印刷尺寸一无所知时，常常标为72或96 ppi，所以在`'file'`下这两个值算作未标明，图片仍按页面的dpi取像素；直接写在资源上的72则照写的用。默认的`'document'`就是第一种方式。
 - **占栏宽的比例**。`placement.width`把浮动体或行内嵌入收窄到所在栏（或页面）的一个比例，比这个宽度大的图片会缩小到这个宽度，与它有多少像素无关（见[位置](#位置)）。
 
-无论哪种方式，图片都受所在位置限制，保持宽高比，较小的图片从不放大。表格单元格中的图片和版面设计中尺寸为`'auto'`的`image`元素，也采用同样的自然尺寸。PDF原样嵌入文件，按放置的尺寸显示。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)检查每张图片印刷时的分辨率，沙盒的[资源面板](/zh/docs/sandbox#资源面板)为每张图片显示这个值。postext 1.24起。
+无论哪种方式，图片都受所在位置限制，保持宽高比，较小的图片从不放大。表格单元格中的图片和版面设计中尺寸为`'auto'`的`image`元素，也采用同样的自然尺寸。PDF原样嵌入文件，按放置的尺寸显示。[印前检查](/zh/docs/configuration-pdf-output#印前检查)检查每张图片印刷时的分辨率，沙盒的[资源面板](/zh/docs/sandbox#资源面板)为每张图片显示这个值。postext 1.24起。
 
 正文流中图片（`position: 'here'`或栏内浮动）的位置就是它所在的栏，而默认页面有两栏（`layout.layoutType: 'double'`）：按整页尺寸准备的图片在那里只有大约一半的印刷尺寸。可把这样的页面改为单栏（`layout.layoutType: 'single'`），让图片跨整页浮动（`placement: { position: 'top', span: 'page' }`），或把它放进[模板页](/zh/docs/composed-pages)的框。带印刷尺寸的位图（它自己的`resolution`，或`layout.bitmapResolution`中的数值）被比页面窄的栏压到一半以下时，排版给出`pictureBelowPrintSize`警告。自postext 1.37起。
 

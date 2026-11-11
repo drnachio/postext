@@ -168,7 +168,7 @@ export function coerceSetting(path: string, value: unknown, current: unknown): u
       return { hex: `#${full.toLowerCase()}`, model: 'hex' };
     }
     if (isRecord(value) && typeof value.hex === 'string') return { model: 'hex', ...value };
-    throw new ToolError(`${path} is a colour: give a hex text such as "#1f3a5f", or { "hex": "#1f3a5f", "model": "hex" } (with "paletteId" to follow an entry of colorPalette).`);
+    throw new ToolError(`${path} is a colour: give a hex text such as "#1f3a5f", or { "hex": "#1f3a5f", "model": "hex" } (with "paletteId" to follow an entry of colorPalette, "tint" 0–100 for that entry at a strength, "overprint": true to overprint in print).`);
   }
   const wrong = (takes: string): never => {
     throw new ToolError(`${path} takes ${takes}, and the value given is ${kindOf(value)}. It is ${JSON.stringify(current)} now.`);

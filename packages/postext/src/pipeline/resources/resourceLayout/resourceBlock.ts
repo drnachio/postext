@@ -13,7 +13,7 @@ import { dimensionToPx } from '../../../units.js';
 import { type BooktabsRuleSpec, booktabsStrokes } from '../../../table/booktabs.js';
 import { chipContextOf } from '../../text/chips.js';
 import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
-import { startEndAsLeftRight } from '../../../defaults/shared.js';
+import { startEndAsLeftRight, tintPaperOf } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
@@ -214,6 +214,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
+      tintPaper: tintPaperOf(resolved.page),
       chips: chipContextOf(resolved),
       ...(resolved.codeStyle?.inline ? { inlineCode: resolved.codeStyle.inline } : {}),
       ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}),

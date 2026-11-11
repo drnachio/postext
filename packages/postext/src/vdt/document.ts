@@ -1,7 +1,7 @@
 // The VDT document root and what it carries: the resolved config, the
 // bounding box every node uses, and the factory functions that create a
 // document, page, column and block (#1276: split out of vdt.ts).
-import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedLinksConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState } from '../types.js';
+import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedLinksConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState, ColorValue } from '../types.js';
 import type { StoryJump } from '../composed/carryTypes.js';
 import type { VDTBlock, VDTGridBalancing, VDTColumn, VDTBlockType, TextAlign } from './blocks.js';
 import type { ContentWarning } from './contentWarnings.js';
@@ -197,6 +197,13 @@ export interface VDTDocument {
    *  tells the two apart when the pages before the chapter shift. Absent
    *  when the count never restarts. */
   pageNumberRestarts?: number[];
+  /** Colours painted in this document that state print values its
+   *  configuration does not hold (#1471): a part's or a section's colour
+   *  for a palette entry that overprints (`ColorValue.overprint`), and a
+   *  resource's colour at a tint of a CMYK or spot entry. A print render
+   *  and the preflight read them beside `config`. Absent when there are
+   *  none. */
+  printColors?: ColorValue[];
   /** Chapters (level-1 headings) before this document, so `{chapterNumber}`
    *  keeps counting without a numbering template. */
   chapterOrdinalOffset?: number;

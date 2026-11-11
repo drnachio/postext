@@ -67,7 +67,7 @@ const CELL_SCHEMA: JsonSchema = {
     rowSpan: { type: 'integer', minimum: 1, description: 'Rows this cell takes, merged downwards.' },
     align: { type: 'string', enum: ['left', 'center', 'right', 'start', 'end'] },
     verticalAlign: { type: 'string', enum: ['top', 'middle', 'bottom'] },
-    background: { type: ['string', 'object'], description: 'The cell\'s fill: a hex colour ("#f4e9d8"), or { hex, model, paletteId } as the design stores a colour; { paletteId } alone follows that colour of the palette.' },
+    background: { type: ['string', 'object'], description: 'The cell\'s fill: a hex colour ("#f4e9d8"), or { hex, model, paletteId } as the design stores a colour; { paletteId } alone follows that colour of the palette, and { paletteId, tint: 15 } paints it at 15 % (a CMYK or spot entry stays on its inks); overprint: true makes the fill overprint in a print render.' },
     image: {
       type: 'object',
       description: 'A picture set in the cell above its text: a bitmap or SVG resource of the book.',
@@ -114,7 +114,7 @@ export function hasTableContent(input: TableInput): boolean {
 }
 
 const HEX_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-const COLOR_MODELS: readonly string[] = ['hex', 'rgb', 'cmyk', 'hsl'];
+const COLOR_MODELS: readonly string[] = ['hex', 'rgb', 'cmyk', 'hsl', 'spot'];
 
 function fillOf(value: string | Partial<ColorValue>, at: string, palette: readonly ColorPaletteEntry[]): ColorValue {
   const given: Partial<ColorValue> = typeof value === 'string' ? { hex: value } : value;
@@ -126,7 +126,19 @@ function fillOf(value: string | Partial<ColorValue>, at: string, palette: readon
   if (typeof hex !== 'string' || !HEX_RE.test(hex)) throw new ToolError(`${at}.background needs a hex colour such as "#f4e9d8"${typeof hex === 'string' ? `, not ${JSON.stringify(hex)}` : ''}.`);
   const model = given.model ?? entry?.value.model ?? 'hex';
   if (!COLOR_MODELS.includes(model)) throw new ToolError(`${at}.background.model must be one of ${COLOR_MODELS.join(', ')}.`);
-  return { hex, model, ...(given.cmyk ? { cmyk: given.cmyk } : {}), ...(given.paletteId !== undefined ? { paletteId: given.paletteId } : {}) };
+  const tint = given.tint;
+  if (tint !== undefined && (typeof tint !== 'number' || !Number.isFinite(tint) || tint < 0 || tint > 100 || given.paletteId === undefined)) {
+    throw new ToolError(`${at}.background.tint is the strength of the palette entry it follows (paletteId), a number from 0 to 100.`);
+  }
+  // A tint and overprint (#1471) travel with the fill; a spot ink too.
+  return {
+    hex, model,
+    ...(given.cmyk ? { cmyk: given.cmyk } : {}),
+    ...(given.spot ? { spot: given.spot } : {}),
+    ...(given.paletteId !== undefined ? { paletteId: given.paletteId } : {}),
+    ...(tint !== undefined && tint < 100 ? { tint } : {}),
+    ...(given.overprint === true ? { overprint: true } : {}),
+  };
 }
 
 /** One cell as the model stores it, without its merge (`colSpan`,

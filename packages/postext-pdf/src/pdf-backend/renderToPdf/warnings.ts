@@ -15,8 +15,10 @@ export interface PdfPrintWarning {
    *  instead of on their ink's plate. `spotInkRenamed`: an ink's name is
    *  one a plate cannot carry (`All`, `None`, a process plate, a control
    *  character, over 127 bytes), so its plate is written under another
-   *  (`printableInkName`). */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed';
+   *  (`printableInkName`). `overprintsExhausted`: the codes ran out before
+   *  every process colour that overprints (`ColorValue.overprint`) had one,
+   *  so those past them knocked out. */
+  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted';
   message: string;
 }
 

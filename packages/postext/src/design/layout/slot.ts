@@ -241,7 +241,7 @@ export function layoutDesignSlot(
   };
   const candidates = drawnOnFence(slot.elements, context.placeholders, context.elementAttrs)
     .filter((el) => pageMatchesParity(pageIndex, el.parity) && pageMatchesRole(el.pages, context.pageRole))
-    .map((el) => (overrides && Object.keys(overrides).length > 0 ? applyPaletteOverrides(el, overrides) : el))
+    .map((el) => (overrides && Object.keys(overrides).length > 0 ? applyPaletteOverrides(el, overrides, context.placeholders.page.background ?? context.placeholders.tintPaper) : el))
     // Start and end edges read as the physical ones of this page (#936).
     .map((el) => (el.kind !== 'connector' && isLogicalEdge(el.placement.anchor.edge) ? { ...el, placement: physicalPlacement(el.placement, context.startRight === true) } : el));
   // Connectors (#1056) are laid after every placed element, between the

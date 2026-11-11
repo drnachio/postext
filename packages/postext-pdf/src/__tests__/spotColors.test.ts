@@ -5,7 +5,7 @@ import { applySingleInkToSvg, buildDocument } from 'postext';
 import type { ColorValue, PostextConfig, PrintConfig, Resource } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
 import { inkStrength } from '../pdf-backend/vector/svgVector.js';
-import { SpotInkRegistry } from '../print/spot.js';
+import { SpotInkRegistry, type SpotPaint } from '../print/spot.js';
 
 // Spot colours: an ink of its own, written as a Separation colour space.
 
@@ -319,11 +319,11 @@ describe('the spot ink registry is one per render', () => {
     const one = new SpotInkRegistry();
     const two = new SpotInkRegistry();
     const c = one.standIn(spot, 1) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
-    expect(one.paintOf(c.cyan, c.magenta, c.yellow, c.key)?.plate.name).toBe('PANTONE 286 C');
+    expect((one.paintOf(c.cyan, c.magenta, c.yellow, c.key) as SpotPaint | undefined)?.plate.name).toBe('PANTONE 286 C');
     expect(two.paintOf(c.cyan, c.magenta, c.yellow, c.key)).toBeUndefined();
     // The same paint in the second registry gets its own code.
     const d = two.standIn(spot, 1) as unknown as { cyan: number; magenta: number; yellow: number; key: number };
-    expect(two.paintOf(d.cyan, d.magenta, d.yellow, d.key)?.tint).toBe(1);
+    expect((two.paintOf(d.cyan, d.magenta, d.yellow, d.key) as SpotPaint | undefined)?.tint).toBe(1);
   });
 
   it('counts the paints past its codes, which print in process, and uses the cyan channel past the first codes of black', () => {
@@ -343,7 +343,7 @@ describe('the spot ink registry is one per render', () => {
       const key = `${col.cyan}|${col.magenta}|${col.yellow}|${col.key}`;
       expect(seen.has(key)).toBe(false);
       seen.add(key);
-      expect(big.paintOf(col.cyan, col.magenta, col.yellow, col.key)?.tint).toBeCloseTo(i / 10000, 6);
+      expect((big.paintOf(col.cyan, col.magenta, col.yellow, col.key) as SpotPaint | undefined)?.tint).toBeCloseTo(i / 10000, 6);
     }
     expect(big.exhausted().size).toBe(0);
   });

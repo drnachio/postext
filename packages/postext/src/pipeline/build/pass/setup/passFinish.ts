@@ -14,6 +14,8 @@ import { fillPageMarks, stampCarriedSource, carriedByDoc } from '../../pageMarks
 import { buildLineNumbers } from '../../../text/lineNumbers.js';
 import { buildHeadersAndFooters } from '../../../pages/headerFooter.js';
 import { flowColorValues } from '../../../sections/partPalette.js';
+import { paletteTints, tintPaperOf } from '../../../../defaults/shared.js';
+import { addPrintColors, resourceTintColors } from '../../../sections/partPalette/printColors.js';
 import { leadingBoldText } from '../../../pages/placeholders.js';
 import { buildCodeLineNumbers } from '../../../code/codeLines.js';
 import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
@@ -210,11 +212,19 @@ export function createPassFinish(deps: PassFinishDeps) {
   // before the running heads (whose palettes recolour them).
   buildLineNumbers(doc, contentBlocks, continuation);
 
+  // A resource's colours at a tint of a CMYK or spot entry print as that
+  // entry's inks (#1471).
+  addPrintColors(doc, resourceTintColors(resources, setup.resolved.colorPalette, tintPaperOf(setup.resolved.page)));
+
   buildHeadersAndFooters(doc, resourceById, {
     // Where two palette entries share a base value, each kind of flow
     // colour follows its own settings under a part or section palette.
     // (The default resource types set no caption style of their own.)
     flowColorValues: (overrides) => flowColorValues(config, overrides, config?.resourceTypes),
+    // Tints the configuration and the resources (a table cell's ground)
+    // link to the palette at.
+    ...(config?.page?.backgroundColor?.paletteId ? { pageColorLink: config.page.backgroundColor } : {}),
+    paletteTints: [...new Set([...(config ? paletteTints(config) : []), ...paletteTints(resources)])],
     // `{firstMark.<style>}` / `{lastMark.<style>}`: a paragraph of a
     // `:::paragraphs` container marks the page with its leading bold run.
     paragraphMark: (idx) => {

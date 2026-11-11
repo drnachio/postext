@@ -772,6 +772,12 @@ export interface SandboxLabels {
   preflightSpotInkUndefinedDetail: string;
   preflightSpotInkSimilar: string;
   preflightSpotInkSimilarDetail: string;
+  colorOverprint: string;
+  colorOverprintHint: string;
+  colorPaletteTint: string;
+  colorPaletteTintHint: string;
+  preflightOverprintWhite: string;
+  preflightOverprintWhiteDetail: string;
   preflightRichBlackRecipe: string;
   preflightSafeZone: string;
   preflightSafeZoneDetail: string;

@@ -58,7 +58,7 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, overprint?: boolean, paletteId?: string, tint?: number }
 ```
 - `hex`: `#rrggbb`, `#rgb`, `#rgba`, `#rrggbbaa`, `rgb()` / `rgba()` (comma or space syntax, alpha as number or %), or `'transparent'`. Translucent colours paint the same on canvas, HTML and PDF (ExtGState alpha); PDF/X-1a flattens them.
 - `model` says how the colour was specified; screens draw `hex`.
@@ -79,6 +79,18 @@ Conversion at `page.dpi` (default 300):
   recoloured drawing in tints of that plate. An ink an SVG names that no palette colour (nor an
   `inks` entry with `cmyk`) defines prints on a plate of its own, alternate = the SVG colour's
   CMYK, one plate per name, and the preflight warns (`spotInkUndefined`).
+- `overprint: true` (any model): in a print render everything painted in the colour overprints
+  instead of knocking out (a process colour as it separates, a spot colour on its ink's plate even
+  where the same ink knocks out elsewhere; a 100 K black keeps rich black for large areas); RGB
+  output ignores it. Put it on the palette entry: every linked use and its tints overprint, a part's
+  or section's colour for that entry too (a link has no setting of its own). A colour that
+  overprints never shares a hex with one that knocks out (one moves 1/255). Never on paper white
+  (`overprintWhite`, critical). Map an InDesign swatch's "Overprint Fill" here.
+- `tint` (with `paletteId`, 0–100): the entry at that strength (a callout ground at 8 % of the main
+  colour), following the entry and part/section palettes everywhere (flow, page colour, line
+  numbers, table cells, designs, Word). It keeps the entry's model: CMYK inks scaled, a spot entry's
+  ink at that tint on its own plate, a screen colour mixed over `page.backgroundColor`. Use it for an
+  InDesign tint swatch of a palette colour instead of a fixed hex.
 - Screen hex of a spot colour: a print render knows colours by hex, so a spot colour that shares
   its hex with another ink or a CMYK colour moves one step (1/255, blue channel first) on every
   output; the stored config does not change. Give distinct inks distinct hexes anyway.
@@ -2742,7 +2754,7 @@ as a change. Left out, the file is stamped with the time of the call.
   `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
   name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
   `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
-  with `aliases`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
