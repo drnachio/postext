@@ -8,7 +8,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, X } from 'lucide-react';
-import type { IdmlWarning } from 'postext/idml';
+import type { IdmlWarning } from 'postext-idml';
 import { useBookPlan, useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
 import { layOutBookPrint } from '../book/printChain.js';
 import { ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';

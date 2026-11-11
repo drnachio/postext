@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
+import { readFileSync as readFile } from "node:fs";
 import * as postext from "../index.js";
+import * as writer from "../writer/index.js";
 import type {
   Resource,
   ResourceType,
@@ -93,6 +96,8 @@ describe("package exports", () => {
       "renderToHtmlIndexed",
       "anchoredResourceIds",
       "HTML_TEXT_RESET",
+      "tintHex",
+      "tintFilterElement",
       "renderComicHtml",
       "comicPanelSvg",
       "dimensionToPx",
@@ -1003,6 +1008,66 @@ describe("package exports", () => {
       "authoredCmykColors",
       "createPrintPreview",
       "proofPixels",
+    ]);
+  });
+});
+
+// The package's entries. The IDML export left the engine for the
+// `postext-idml` package (#1500), which is written on `postext/writer`.
+describe("package subpath exports", () => {
+  const manifest = JSON.parse(readFile(new URL("../../package.json", import.meta.url), "utf8") as string) as {
+    exports: Record<string, unknown>;
+  };
+
+  it("lists the entries of the package", () => {
+    expect(Object.keys(manifest.exports)).toEqual([
+      ".",
+      "./bundle",
+      "./word",
+      "./writer",
+      "./react",
+      "./worker",
+      "./worker/entry",
+      "./icc/*",
+      "./package.json",
+    ]);
+    expect(manifest.exports["./idml"]).toBeUndefined();
+    expect(manifest.exports["./writer"]).toEqual({
+      types: "./dist/writer/index.d.ts",
+      default: "./dist/writer/index.js",
+    });
+  });
+
+  it("exports from postext/writer what a writer outside the engine needs", () => {
+    expect(Object.keys(writer)).toEqual([
+      "resolveBodyStyle",
+      "resolveParagraphStyle",
+      "resolveHeadingStyle",
+      "resolveBlockquoteStyle",
+      "deriveCalloutResolvedConfig",
+      "resolvedLocale",
+      "resolveTabSettings",
+      "authoredCmykColors",
+      "parseColor",
+      "toHex",
+      "cssColor",
+      "parseFontString",
+      "findPxSize",
+      "withPxSize",
+      "fontStringFamilies",
+      "svgSize",
+      "bitmapInfo",
+      "formatFieldCalc",
+      "parseFieldCalc",
+      "CHIP_PLACEHOLDER",
+      "WORD_JOINER",
+      "LINE_BREAK",
+      "escapeText",
+      "guardLineStart",
+      "linkDestination",
+      "stripCaptionLabel",
+      "attrValue",
+      "slugify",
     ]);
   });
 });

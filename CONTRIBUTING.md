@@ -72,6 +72,7 @@ The repository is a pnpm + Turborepo monorepo with seven packages, the web app a
 - `packages/postext` — the core layout engine (parse, measurement, Knuth-Plass line breaking, pipeline, HTML/canvas backends, bundles, Word import and export).
 - `packages/postext-pdf` — the PDF rendering backend.
 - `packages/postext-epub` — the EPUB 3 writer (fixed layout and reflowable).
+- `packages/postext-idml` — InDesign Markup (IDML) export and import.
 - `packages/postext-folio` — the 3D book viewer (three.js).
 - `packages/postext-citeproc` — CSL citations and bibliographies (citeproc-js).
 - `packages/postext-cli` — the `postext` command line, compiled with Bun into self-contained executables.

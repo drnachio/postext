@@ -1,0 +1,73 @@
+# postext-idml
+
+InDesign Markup (IDML) for [Postext](https://postext.dev/) books, in both directions. It writes a book that `postext` has laid out as an IDML package, which InDesign opens with the pages as the PDF shows them, and it reads an IDML package into a typed model, from which the package's importer makes a Postext book. It runs in the browser or in Node, with no server and without InDesign.
+
+```bash
+npm install postext postext-idml
+```
+
+`postext` is a peer dependency: upgrade the two together.
+
+## From Postext to InDesign
+
+```ts
+import { buildBundle, openBundle } from 'postext';
+import { idmlDocument } from 'postext-idml';
+
+const bundle = await openBundle(bytes);
+const docs = buildBundle(bundle); // one VDTDocument per chapter, in book order
+
+const { bytes: idml, links, fonts } = idmlDocument({
+  docs,
+  resourceBytes: (fileId) => bundle.files.get(fileId),
+  images: 'link',
+  onWarning: (w) => console.warn(w.code, w.message),
+});
+```
+
+`idmlDocument(options)` returns `{ bytes, links, fonts }`: the `.idml` file, the linked pictures and the font files, the last two with a path relative to the IDML file for the caller to write beside it.
+
+- `docs`: the laid-out chapters, in book order.
+- `resourceBytes(fileId)`: the bytes of a picture.
+- `images`: `'embed'` (default) keeps the pictures inside the file; `'link'` links them to `Links/<name>` and returns them in `links`.
+- `lineBreaks`: `'keep'` (default) ends every line where Postext ended it, on the baseline Postext set it on, so InDesign shows the pages as the PDF does; `'reflow'` leaves the paragraphs to InDesign's composer, for a book that will be set again there.
+- `spreads`: `'facing'` puts the pages two to a spread about the spine, `'single'` one page to a spread. The default is `'facing'` for a book with mirrored margins.
+- `fontFile(family, weight, italic)`: the font file of a face (TrueType or OpenType bytes). With it a face is named as its file names it, which is how InDesign finds it, and the files come back in `fonts` as `Document fonts/<file>`.
+- `forms`: chips that carry a form field become InDesign form fields (default `true`).
+- `onWarning`: what could not be written as it is in the book (`{ code, message }`).
+
+Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and swatches are left out of the text, and right-to-left and vertical text is written left to right and horizontal; each case sends a warning.
+
+The command line writes the same package with `postext idml`.
+
+## From InDesign to Postext
+
+```ts
+import { inspectIdml, readIdml } from 'postext-idml';
+
+const doc = readIdml(bytes); // throws IdmlError for what is no IDML
+const summary = inspectIdml(doc);
+
+console.log(summary.pages, summary.readableStories, summary.fonts);
+for (const w of doc.warnings) console.warn(w.code, w.message);
+```
+
+- `readIdml(bytes, options?)` reads the package into an `IdmlDocument`: preferences, layers, swatches, fonts, styles, master spreads, spreads with their page items, and stories. Bytes that are no IDML, or a package that cannot be read at all, throw an `IdmlError` with a `code`; anything else the reader could not read as written is listed in the document's `warnings`. The options bound what is read (`maxPartBytes`, `maxTotalBytes`, `maxParts`, `maxDepth`).
+- `inspectIdml(doc)` returns a summary for the dialog a host shows before importing: pages and page sizes, masters, layers, stories and the main one, fonts, the styles in use, pictures (linked, embedded, missing), tables and notes, and a list of what will need a second look (`attention`).
+
+The same entry exports the helpers an importer works with: computed styles and formats, colours, the geometry of page items, master items and reading order.
+
+The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book.
+
+## Entries
+
+- `postext-idml`: everything above.
+- `postext-idml/export`: the writer alone.
+- `postext-idml/read`: the reader and its helpers alone.
+- `postext-idml/import`: the importer alone.
+
+Docs: [Programmatic usage](https://postext.dev/en/docs/configuration-programmatic-usage).
+
+## License
+
+MIT.

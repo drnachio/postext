@@ -20,3 +20,8 @@ export { CHIP_PLACEHOLDER } from '../parse/inlineFormatting/inlineDirectives.js'
 export type { VDTFrame } from '../vdt/pages/composed.js';
 export type { VDTDocument } from '../vdt/document.js';
 export type { VDTPathCommand, VDTPathStroke, VDTDesignBoxStyle } from '../vdt/design.js';
+// What a reader of another format (the IDML importer) shares with the
+// Word importer: the escaping of text that Postext's Markdown would read
+// as markup, and the small helpers of a conversion.
+export { WORD_JOINER, LINE_BREAK, escapeText, guardLineStart, linkDestination } from '../word/inline.js';
+export { stripCaptionLabel, attrValue, slugify } from '../word/toMarkdown/helpers.js';
