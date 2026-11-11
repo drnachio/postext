@@ -82,7 +82,7 @@ export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, se
 export type { CellPos, CellRange, ParseTSVOptions, TableGridIssue } from './table/model.js';
 export { collectContentWarnings, formatWarning } from './pipeline/contentWarnings.js';
 export { collectHeadingDesignCuts } from './pipeline/sections/headingDesignCuts.js';
-export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox } from './pipeline/resources/safeArea.js';
+export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox, resourceCrop } from './pipeline/resources/safeArea.js';
 export {
   parseComicSplit, serializeComicSplit, moveComicSplitLine, splitComicCell, mergeComicCells, comicSplitLines, comicSplitLeaves, comicSplitListAt, COMIC_MIN_CELL_PERCENT,
   parseComicScript, parseComicPoint, readBalloonText, parseComicFence, isComicFence, COMIC_FENCES,
@@ -212,7 +212,7 @@ export type {
   ResourceFloatPosition,
   ResourceFloatSpan,
   ResourceRotation,
-  ResourcePlacement, ResourcePlateArea,
+  ResourcePlacement, ResourcePlateArea, ResourcePin,
   ResourceSafeArea,
   ResourceContour,
   ContourTrace,

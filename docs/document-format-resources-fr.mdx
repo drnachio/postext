@@ -195,6 +195,11 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
       <td><code>true</code> · <code>false</code>, <code>false</code> par défaut</td>
       <td>Permettre à un flottant <code>"top"</code> ou <code>"auto"</code> de prendre la tête de la page (un flottant sur toute la largeur de la page) ou de la colonne (un flottant de colonne, y compris sur plusieurs <code>columns</code>) où arrive la ligne qui le cite pour la première fois, comme le fait le placement <code>t</code> de LaTeX, au lieu du premier emplacement libre après cette ligne. Le texte au-dessus du renvoi descend sous le flottant. Cela ne se produit que si le flottant y tient dans la limite de <code>layout.maxTopFraction</code> de la colonne (0,7 par défaut), si les flottants précédents de sa séquence de numérotation sont déjà placés, si aucun saut explicite n’ouvre la page (la première page d’un chapitre, une partie, un <code>:::pagebreak</code>) et que rien sur toute la largeur de la page ne se tient au-dessus de la ligne qui cite, et si, ainsi placée, la ligne qui cite arrive toujours sur cette page (pour un flottant de colonne, dans la colonne qu’il surmonte) ; sinon le flottant prend son emplacement habituel. Les flottants pivotés, les flottants de la colonne latérale et la suite d’un tableau scindé sur plusieurs pages ne se déplacent jamais ainsi. Par défaut : le <code>defaultPlacement</code> du type, puis <code>layout.floatsAtCitingPage</code>. Depuis postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Un flottant placé à la main (glissé vers un emplacement dans le canevas du Sandbox) : <code>page</code> compte les pages à partir de celle qui l'appelle en premier (<code>0</code> est cette page), <code>column</code> la colonne de texte à partir de 0 (n'importe laquelle si absent), <code>slot</code> vaut <code>"top"</code> ou <code>"bottom"</code>. Le flottant attend cette page et y prend cet emplacement et aucun autre ; s'il n'y tient pas, ou si l'emplacement précède son appel, il est placé comme d'habitude et la mise en page le signale par <code>floatPinMissed</code>. Sorties paginées seulement.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -338,6 +343,19 @@ Le VDT enregistre le recadrage sur le bloc de la ressource : `bodySource` est l
 
 La recette Nº 116 du livre de recettes, [Des photos qui grandissent pour remplir une colonne courte](/fr/cookbook/photos-fill-short-columns), compose deux fois un article de magazine sur deux colonnes, sans puis avec zones de sécurité, pour que vous puissiez comparer les pages côte à côte.
 
+
+### Recadrage manuel
+
+Un bitmap, un SVG ou l'affiche d'une vidéo peuvent aussi être recadrés à la main : `crop`, dans les mêmes fractions que la zone de sécurité, est la partie de l'image que la figure montre toujours, quelle que soit la page. La figure prend le rapport du recadrage dans toutes les sorties (canevas, PDF, HTML, les deux EPUB), la zone de sécurité, s’il y en a une, se lit à l'intérieur du recadrage et peut couper davantage là où la page l'exige, et `bodySource` est la composition des deux. Sans lui, l'image entière. Dans le Sandbox, *Recadrage*, à côté de la zone de sécurité, ouvre un cadre à faire glisser, à ajuster aux flèches et à prévisualiser.
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la moitié centrale, de haut en bas
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Ancres des personnages et zones à éviter
 

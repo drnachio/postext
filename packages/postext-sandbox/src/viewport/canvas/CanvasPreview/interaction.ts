@@ -5,6 +5,7 @@ import { type ResourceTextHit } from './resourceHit.js';
 import { createComicEditor, type BalloonTextPress } from '../../comics/comicEditing.js';
 import { createFrameTools } from '../../composed/frameTools.js';
 import { createLabelEditor } from '../../composed/labelAnchorEditor.js';
+import { createFloatDragger } from './floatDragUi.js';
 import { editModeNow } from '../../../editing/editMode.js';
 import { selectionChapters, clearPageSelection, setPageSelection } from '../../../selection/selectionStore.js';
 import { createSelectionApply } from '../../../selection/applySelection.js';
@@ -118,6 +119,18 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
     frames, selectionApply, state
   });
 
+  // A figure or table the layout floated is dragged by its body to another
+  // slot (`floatDragUi.ts`); a press let go in place opens it.
+  const floatDrag = resourcesRef
+    ? createFloatDragger({
+        docRef,
+        resourcesRef,
+        dispatchRef,
+        ...(opts.labelsRef ? { labelsRef: opts.labelsRef } : {}),
+        onClick: (id) => openResource(id),
+      })
+    : null;
+
   const DRAG_THRESHOLD_PX = 3;
   let dragAnchorOffset: number | null = null;
   let dragChapter: number | undefined;
@@ -160,6 +173,11 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
       return;
     }
+    if (floatDrag?.pointerDown(ev, at)) {
+      ev.preventDefault();
+      try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
+      return;
+    }
     comicPress = false;
     labelPress = false;
     if (labels?.pointerDown(ev, at)) {
@@ -188,6 +206,10 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   target.addEventListener('pointermove', (ev) => {
+    if (floatDrag?.active()) {
+      floatDrag.move(ev);
+      return;
+    }
     if (labels?.dragging()) {
       ev.preventDefault();
       labels.dragMove(ev, locate(ev));
@@ -205,6 +227,10 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
         return;
       }
       const over = locate(ev);
+      if (floatDrag?.over(over)) {
+        opts.setCursor('move');
+        return;
+      }
       if (labels && ev.pointerType !== 'touch' && labels.hover(over)) {
         opts.setCursor('grab');
         return;
@@ -253,6 +279,13 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   const endDrag = (ev: PointerEvent): void => {
+    if (floatDrag?.active()) {
+      try { target.releasePointerCapture(ev.pointerId); } catch { /* ignore */ }
+      floatDrag.up(ev, ev.type === 'pointercancel');
+      // The click that follows the press is the dragger's.
+      suppressNextClick = true;
+      return;
+    }
     if (labels?.dragging()) {
       labels.pointerUp(ev, ev.type === 'pointercancel');
       return;

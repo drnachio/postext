@@ -231,6 +231,7 @@ describe("package exports", () => {
       "safeAreaHeightRange",
       "safeAreaSource",
       "uncroppedPictureBox",
+      "resourceCrop",
       "parseComicSplit",
       "serializeComicSplit",
       "moveComicSplitLine",

@@ -30,6 +30,7 @@ const CODE_BOX_STYLE = '__postext-code';
  *  text (`postext` `FLOW_COLUMNS_STYLE_ID`, #634). */
 const FLOW_COLUMNS_STYLES: ReadonlySet<string> = new Set(['__postext-flow-columns', '__postext-flow-columns-page']);
 import type { BookModel, Loc } from './walk.js';
+import { croppedImg, scoreSystemSvg } from './figures.js';
 
 /** What a content document needs from the rest of the book. */
 export interface SerializeContext {
@@ -633,7 +634,7 @@ class Writer {
     // The words the print draws on the picture are drawn on it here, over
     // the image in a box that is as wide as the image (#955).
     const picture = (src: string): string => {
-      const img = `<img src="${xmlAttr(src)}" alt="${xmlAttr(node.alt)}"/>`;
+      const img = croppedImg(`src="${xmlAttr(src)}" alt="${xmlAttr(node.alt)}"`, node.crop);
       return node.labelsSvg ? `<span class="pt-labelled">${img}${node.labelsSvg}</span>` : img;
     };
     const body = (node.score
@@ -798,11 +799,4 @@ ${exercises}</body>
 /** A length in ems for a style attribute: at most three decimals. */
 function round2(v: number): string {
   return String(Math.round(v * 1000) / 1000);
-}
-
-/** A score system's SVG as the column's width (#1172): its own size goes,
- *  its view box keeps the proportions; hidden from assistive technology,
- *  the score's box being named. */
-function scoreSystemSvg(svg: string): string {
-  return svg.replace(/<svg\b([^>]*?) width="[^"]*" height="[^"]*"/, '<svg$1 width="100%" aria-hidden="true" class="pt-score-system"');
 }

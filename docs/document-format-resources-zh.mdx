@@ -195,6 +195,11 @@ SVG资源还可以通过`diagramStyle.singleInk`（默认为`false`）重新着�
       <td><code>true</code> · <code>false</code>，默认<code>false</code></td>
       <td>让<code>"top"</code>或<code>"auto"</code>浮动体像LaTeX的<code>t</code>位置那样，占据首次引用它的那一行所在页面（通栏浮动体）或栏（单栏浮动体，跨<code>columns</code>栏的也一样）的顶部，而不是该行之后的第一个空位。引用处之上的文字移到浮动体下方。只有在以下条件都满足时才这样放：浮动体在该处所占不超过栏高的<code>layout.maxTopFraction</code>（默认0.7）；同一编号序列中更早的浮动体都已排定；该页不是由显式分页开启的（一章的第一页、篇、<code>:::pagebreak</code>之后），引用行之上也没有通栏的内容；而且这样放之后，引用行仍落在该页（落在浮动体所占的栏中）。否则浮动体放在通常的位置。旋转的浮动体、侧栏浮动体以及跨页拆分的表格的后续部分都不会这样移动。默认值：类型的<code>defaultPlacement</code>，其次是<code>layout.floatsAtCitingPage</code>。自postext 1.25起。</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>手动放置的浮动体（在 Sandbox 画布中拖到某个位置）：<code>page</code> 从首次引用它的页面起计页（<code>0</code> 即该页），<code>column</code> 为从 0 起计的正文栏（未设时为任意栏），<code>slot</code> 为 <code>"top"</code> 或 <code>"bottom"</code>。浮动体会等到那一页，并在那里只占用该位置；放不下或该位置在引用之前时，按常规放置，并报告 <code>floatPinMissed</code>。仅用于分页输出。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -338,6 +343,19 @@ VDT把裁切记录在资源块上：`bodySource`是图片在`bodyRect`中显示�
 
 排版食谱第116号[长高以填满短栏的照片](/zh/cookbook/photos-fill-short-columns)把一篇双栏杂志报道排了两遍，一遍没有安全区，一遍有，可以把页面并排对照。
 
+
+### 手动裁切
+
+位图、SVG 或视频封面也可以手动裁切：`crop` 与安全区使用相同的比例，是该图在任何页面上始终显示的部分。图在所有输出中（画布、PDF、HTML、两种 EPUB）都采用裁切后的比例；如有安全区，则在裁切范围内读取，并可在页面需要时进一步裁切；`bodySource` 是两者的组合。未设置时显示整张图。在 Sandbox 中，安全区旁的*裁切*会打开一个可拖动、可用方向键微调并可预览的框。
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // 中间一半，从上到下
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### 说话人锚点与避让区
 

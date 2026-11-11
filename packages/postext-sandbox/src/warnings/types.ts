@@ -287,6 +287,7 @@ export type WarningPayload =
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }
   | { kind: 'calloutOverflow'; page: number; overflowMm: number }
+  | { kind: 'floatPinMissed'; page: number; resourceId: string }
   /** A heading design taller than its page can hold: text of the design
    *  laid out past the foot of the page (an opener) or of its column (an
    *  in-column design, clipped there by canvas and PDF), by `overflowMm`.
