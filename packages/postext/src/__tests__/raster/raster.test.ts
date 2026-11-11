@@ -4,8 +4,10 @@ import { readFileSync as readFile } from 'node:fs';
 import { decodePrintRaster, decodePsd, decodeTiff, printRasterFormat, rasterProfile, rasterToRgba } from '../../raster/index.js';
 
 // Fixtures: a 20 × 10 picture whose pixel (x, y) is (12x, 25y, 7x + 11y)
-// mod 256 — saved by macOS `sips` as TIFF and PSD and recompressed by
-// libtiff's `tiffcp` (LZW, Deflate with the predictor, PackBits, tiles);
+// mod 256 — saved by macOS `sips` as TIFF and PSD with postext's own sRGB
+// profile embedded (`srgbProfileBytes`, `sips --embedProfile`) and
+// recompressed by libtiff's `tiffcp` (`-c lzw`, `-c zip:2`, `-c packbits`,
+// `-t -w 16 -l 16 -c lzw:2`);
 // a CMYK TIFF (C 12x, M 25y, Y 40, K 200 in the first column) chunky and
 // planar; a 16-bit grey one (x × 3000).
 
