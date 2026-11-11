@@ -158,8 +158,8 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
       ...(sourceStart !== undefined ? { sourceStart, ...(sourceEnd !== undefined ? { sourceEnd } : {}) } : {}),
     });
   });
-  // Placed PDF masters.
-  for (const r of resources) {
+  // Placed PDF masters; a job on a few plates sets the SVG instead.
+  for (const r of print.plates.inks.length > 0 ? [] : resources) {
     const id = r.svg?.pdfFileId;
     const report = id ? inputs.masters.get(id) : undefined;
     if (!report) continue;

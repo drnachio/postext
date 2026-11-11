@@ -28,7 +28,7 @@ import type { OutputTransform } from '../color/transform.js';
 import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
 import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
-import { channelsOffPlates, jobPlates, plateOfSpot } from '../color/plates.js';
+import { platesIssues } from './preflightPlates.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -86,10 +86,15 @@ export type PreflightIssue = {
    *  its pictures print on, once per document (info). */
   | { kind: 'platesJob'; plates: string[]; images: string[] }
   /** A spot ink a colour of the book uses that the job does not print:
-   *  it would be projected onto the job's plates, the colour lost. */
-  | { kind: 'offPlateInk'; ink: string }
+   *  its colours are projected onto the job's plates, the ink lost.
+   *  `deltaE`: how far the farthest lands from its ink (CIE76), when the
+   *  output profile is known; information up to `PLATE_DELTA_E`. */
+  | { kind: 'offPlateInk'; ink: string; deltaE?: number }
   /** A colour authored in CMYK whose channels the job does not print. */
-  | { kind: 'offPlateCmyk'; color: string; channels: string[] }
+  | { kind: 'offPlateCmyk'; color: string; channels: string[]; deltaE?: number }
+  /** A screen colour the job's plates cannot come within `PLATE_DELTA_E`
+   *  of (a warning). */
+  | { kind: 'offPlateColor'; color: string; deltaE: number }
   /** A spot plate of the job that neither a colour nor the ink table
    *  defines: nothing says what it looks like (its alternate). */
   | { kind: 'plateUndefined'; plate: string }
@@ -549,22 +554,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     }
   }
 
-  // A job on a few plates: what the book asks of inks it does not print.
-  const plates = cmykJob ? jobPlates(print, spots.values()) : undefined;
-  if (plates) {
-    out.push({ kind: 'platesJob', severity: 'info', pageIndex: offset, plates: plates.map((p) => p.name), images: print.plates.images });
-    for (const plate of plates) {
-      if (!plate.cmyk) out.push({ kind: 'plateUndefined', severity: 'warning', pageIndex: offset, plate: plate.name });
-    }
-    const offInks = new Set<string>();
-    for (const spot of spots.values()) {
-      if (usedInks.has(spot.name) && !plateOfSpot(spot, plates)) offInks.add(spot.name);
-    }
-    for (const ink of offInks) out.push({ kind: 'offPlateInk', severity: 'critical', pageIndex: offset, ink });
-    for (const hex of usedAuthored) {
-      const channels = channelsOffPlates(authored.get(hex)!, plates);
-      if (channels.length > 0) out.push({ kind: 'offPlateCmyk', severity: 'critical', pageIndex: offset, color: hex, channels });
-    }
-  }
+  // A job on a few plates: the colours it moves onto them.
+  if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));
   return out;
 }

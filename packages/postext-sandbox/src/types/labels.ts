@@ -848,6 +848,9 @@ export interface SandboxLabels {
   preflightOffPlateInkDetail: string;
   preflightOffPlateCmyk: string;
   preflightOffPlateCmykDetail: string;
+  preflightOffPlateColor: string;
+  preflightOffPlateColorDetail: string;
+  preflightPlateDeltaE: string;
   preflightPlateUndefined: string;
   preflightPlateUndefinedDetail: string;
   preflightRichBlackRecipe: string;

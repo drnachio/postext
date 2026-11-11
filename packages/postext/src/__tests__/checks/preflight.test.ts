@@ -234,7 +234,7 @@ describe('preflightDocument', () => {
     expect(kinds(preflightDocument(doc, { cmyk: true }))).not.toContain('spotInkUndefined');
   });
 
-  it('in a job on two plates, blocks an ink and a CMYK colour the job does not print', () => {
+  it('in a job on two plates, reports the colours it projects by how far they land', () => {
     const box = (id: string, edge: string, color: unknown) => ({ kind: 'box', id, placement: { anchor: { to: 'container', edge }, size: { width: mm(40), height: mm(10) } }, style: { backgroundColor: color } }) as never;
     const doc = buildDocument({ markdown: 'Text.' }, config({
       bodyText: { color: { hex: '#1f3f99', model: 'spot', spot: { name: 'Azul corporativo', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
@@ -243,15 +243,27 @@ describe('preflightDocument', () => {
           box('a', 'top-left', { hex: '#e4002b', model: 'spot', spot: { name: 'PANTONE 185 C', cmyk: { c: 0, m: 100, y: 80, k: 0 } } }),
           box('b', 'top-right', { hex: '#00a0e0', model: 'cmyk', cmyk: { c: 80, m: 10, y: 0, k: 0 } }),
           box('c', 'bottom-left', { hex: '#4d4d4d', model: 'cmyk', cmyk: { c: 0, m: 0, y: 0, k: 70 } }),
+          box('d', 'bottom-right', { hex: '#2fa043', model: 'hex' }),
         ],
       },
-      print: { inks: [{ name: 'Azul corporativo', pdfName: 'PANTONE 286 C' }], plates: { inks: ['black', 'Azul corporativo', 'Oro'] } },
+      print: { inks: [{ name: 'Azul corporativo', pdfName: 'PANTONE 286 C' }], plates: { inks: ['black', 'Azul corporativo', 'Oro', 'PANTONE 286 C'], images: ['azul corporativo'] } },
     }));
-    const issues = preflightDocument(doc, { cmyk: true });
-    expect(issues.find((i) => i.kind === 'platesJob')).toMatchObject({ plates: ['Black', 'PANTONE 286 C', 'Oro'], images: ['Black'], severity: 'info' });
-    expect(issues.filter((i) => i.kind === 'offPlateInk')).toMatchObject([{ ink: 'PANTONE 185 C', severity: 'critical' }]);
-    expect(issues.filter((i) => i.kind === 'offPlateCmyk')).toMatchObject([{ color: '#00a0e0', channels: ['c', 'm'], severity: 'critical' }]);
-    expect(issues.filter((i) => i.kind === 'plateUndefined')).toMatchObject([{ plate: 'Oro' }]);
+    // Without the profile: the inks and CMYK off the plates, ΔE unknown.
+    const blind = preflightDocument(doc, { cmyk: true });
+    expect(blind.find((i) => i.kind === 'platesJob')).toMatchObject({ plates: ['Black', 'PANTONE 286 C', 'Oro'], images: ['PANTONE 286 C'], severity: 'info' });
+    expect(blind.filter((i) => i.kind === 'offPlateInk')).toMatchObject([{ ink: 'PANTONE 185 C', severity: 'warning' }]);
+    expect(blind.filter((i) => i.kind === 'offPlateCmyk')).toMatchObject([{ color: '#00a0e0', channels: ['c', 'm'], severity: 'warning' }]);
+    expect(blind.find((i) => i.kind === 'offPlateInk' && 'deltaE' in i)).toBeUndefined();
+    expect(blind.filter((i) => i.kind === 'plateUndefined')).toMatchObject([{ plate: 'Oro' }]);
+    expect(kinds(blind)).not.toContain('offPlateColor');
+    // With it: red is far from blue and black, the light blue close; a
+    // screen green lands far too.
+    const issues = preflightDocument(doc, { cmyk: true, transform: fogra39 });
+    const red = issues.find((i) => i.kind === 'offPlateInk');
+    expect(red).toMatchObject({ ink: 'PANTONE 185 C', severity: 'warning' });
+    expect(red?.kind === 'offPlateInk' && red.deltaE).toBeGreaterThan(6);
+    expect(issues.find((i) => i.kind === 'offPlateCmyk')).toHaveProperty('deltaE');
+    expect(issues.find((i) => i.kind === 'offPlateColor')).toMatchObject({ color: '#2fa043', severity: 'warning' });
   });
 
   it('does nothing when disabled', () => {
