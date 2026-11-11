@@ -160,10 +160,11 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 - <strong>`registerBundleImages(bundle)`</strong>为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。<strong>`bundleImageUrl(bundle)`</strong>是`renderToHtml`的`resourceImageUrl`解析器，<strong>`bundleVideoUrl(bundle)`</strong>则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色模式](/zh/docs/configuration-resources#canvas与html中的单色模式)）。两者还会在每个SVG中嵌入其文字指定的字面，先取文件包自己的字体，再取向引擎注册的字体（见[SVG文字中的字体](/zh/docs/configuration-resources#svg文字中的字体)）；`registerBundleImages(bundle, { onWarning })`和`bundleImageUrl(bundle, { onWarning })`会报告没有字面可用的字体族。
 - <strong>`buildBundle(bundle)`</strong>按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`、`metadata`（见下文）、每排完一章就调用的`onChapter(index, doc)`，以及`layoutCache`。把`createBundleLayoutCache()`创建的`layoutCache`交给同一本书的每次构建，就只重排输入有变化的章节，其余章节取自上一次构建；它的`stats.laidOut`列出重排了哪些章节（自postext 1.32起）。字体不在它比较的范围内：字体有变化时，把它和测量缓存一起丢弃。跳到靠后章节文件里某一页的文章（`overflow.continueIn: 'page:<id>'`，见[模板页 › 跳转到后面的页面](/zh/docs/composed-pages#跳转到后面的页面)）会在章节之间交接：每个章节排版时都知道它后面各章的页面id（`laterPageIds`），它送出的文章回到它的文档上（`pendingJumps`），有该页的章节接收它们（`continuation.jumps`），`resolveJumpMarks`再把页码写进指向另一章页面的标记（自postext 1.41起）。逐章排版的宿主用`pageFenceIds`和`laterPageIdsOf`做同样的事。
 - <strong>`bundleResourceBytes(bundle)`</strong>和<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong>分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](/zh/docs/configuration-pdf-output#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。对于写了`fallback`的字体族（自postext 1.42起），缺少文件的那种倾斜所需的字面，先取文件包中后备字体的字面，没有时再以后备字体的名称调用`fallback`，因此PDF会以授权字体族的名义嵌入开放字体。
+- <strong>`bundlePreviewBytes(bundle)`</strong>是`previewBytes`选项：每张带有 TIFF 或 Photoshop 原稿的图片的 PNG 预览图，原稿无法解码时用它印刷。
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
-  bundleResourceBytes, bundleFontProvider } from 'postext';
+  bundleResourceBytes, bundlePreviewBytes, bundleFontProvider } from 'postext';
 import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 const bundle = await openBundle(bytes);
@@ -176,6 +177,7 @@ const firstPage = renderPage(docs[0].pages[0], docs[0]); // 一个<canvas>
 const pdf = await renderToPdf(docs, {                    // 整本书
   fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
   resourceBytes: bundleResourceBytes(bundle),
+  previewBytes: bundlePreviewBytes(bundle),
 });
 ```
 

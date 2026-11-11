@@ -160,10 +160,11 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 - **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[CanvasとHTMLでの単色刷り](/ja/docs/configuration-resources#canvasとhtmlでの単色刷り)を参照）。どちらも、各SVGに文字が指定するフェイスを、まずバンドル自身のフォントから、次にエンジンに登録されたフェイスから埋め込みます（[SVGの文字のフォント](/ja/docs/configuration-resources#svgの文字のフォント)を参照）。`registerBundleImages(bundle, { onWarning })`と`bundleImageUrl(bundle, { onWarning })`は、フェイスのないファミリーを報告します。
 - **`buildBundle(bundle)`**：章を順に組み、章ごとに1つの`VDTDocument`を返します。各章は前の章を引き継ぎます。見出しとリソースのカウンター、開いている部、ページの奇偶、ノンブルです。目次（`:::toc`）や索引（`:::index`）を印字する章は、本全体のアウトラインを受け取ります。`buildDocument`と同じオプションに加えて、バンドルの設定を上書きする`config`、計測キャッシュを共有する`cache`、`metadata`（後述）、各章を組んだ後に呼ばれる`onChapter(index, doc)`、`layoutCache`を受け付けます。`createBundleLayoutCache()`で作った`layoutCache`を同じ本のすべてのビルドに渡すと、入力が変わった章だけを組み直し、ほかの章は前のビルドのものを使います。どの章を組んだかは、その`stats.laidOut`でわかります（postext 1.32以降）。フォントは比べる対象に入らないので、フェイスが変わったときは、計測キャッシュと一緒にこれも捨ててください。後ろの章ファイルのページへ飛ぶ記事（`overflow.continueIn: 'page:<id>'`、[テンプレートページ › 後ろのページへ飛ぶ](/ja/docs/composed-pages#後ろのページへ飛ぶ)を参照）は、その章に渡されます。各章は、自分より後ろの章のページid（`laterPageIds`）を知った上で組まれ、送り出す記事は自分の文書に返り（`pendingJumps`）、そのページのある章がそれを受け取り（`continuation.jumps`）、別の章のページを指すマークには`resolveJumpMarks`がページ番号を書き込みます（postext 1.41以降）。章を1つずつ組むホストは、`pageFenceIds`と`laterPageIdsOf`で同じことをします。
 - **`bundleResourceBytes(bundle)`**、**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**：`postext-pdf`の`renderToPdf`の`resourceBytes`オプションと`fontProvider`オプションです。フォントプロバイダーは、求められたスタイルのうち最も近いウェイトをバンドルから選びます。`.woff2`のフェイスには`decompressWoff2`が必要です。バンドルが収めていないファミリーについては、`request`を含むレンダラーの引数で`fallback`を呼び、その戻り値をそのまま渡します。ファミリーの`latin`ファイルだけを取得するフォールバックでは、バンドルが埋め込んでいない中国語のファミリーが空の四角として印字されます。[中国語・日本語・韓国語のフォント](/ja/docs/configuration-pdf-output#中国語日本語韓国語のフォント)の`sliceFontProvider`のようにスライスで応えるフォールバックなら、すべて印字されます。`fallback`を指定しているファミリー（postext 1.42以降）は、ファイルのない傾きの書体を、バンドルにある`fallback`の書体から、なければ`fallback`の名前で呼び出した`fallback`から受け取ります。そのためPDFには、ライセンスが必要なファミリーの名前のもとで、オープンな書体が埋め込まれます。
+- **`bundlePreviewBytes(bundle)`**：`previewBytes`オプションです。TIFF または Photoshop の原本を持つ各画像の PNG プレビューで、原本を復号できないときに印刷されます。
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
-  bundleResourceBytes, bundleFontProvider } from 'postext';
+  bundleResourceBytes, bundlePreviewBytes, bundleFontProvider } from 'postext';
 import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 const bundle = await openBundle(bytes);
@@ -176,6 +177,7 @@ const firstPage = renderPage(docs[0].pages[0], docs[0]); // a <canvas>
 const pdf = await renderToPdf(docs, {                    // the whole book
   fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
   resourceBytes: bundleResourceBytes(bundle),
+  previewBytes: bundlePreviewBytes(bundle),
 });
 ```
 

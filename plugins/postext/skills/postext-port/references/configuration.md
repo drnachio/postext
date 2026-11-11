@@ -2773,7 +2773,10 @@ as a change. Left out, the file is stamped with the time of the call.
 ```
 - A picture's own `printColor` (on the resource) takes the same `imageColor` fields over the book's.
   TIFF and Photoshop originals (`bitmap.printFileId`, `printFormat: 'tiff' | 'psd'`, a PNG preview in
-  `bitmap.fileId`) print from their own pixels; an Illustrator `.ai` saved PDF-compatible is a PDF print master.
+  `bitmap.fileId`) print from their own pixels; one that cannot be decoded prints its preview, with a
+  `pictureOriginalUnreadable` warning, when the host passes `previewBytes` (`bundlePreviewBytes`).
+  In the Sandbox the book's `imageColor` is Print preparation → Pictures. An Illustrator `.ai` saved
+  PDF-compatible is a PDF print master.
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
   intent and the bleed and prints a `suggested_config` (`print` + `page.cutLines`). Map the
   condition to the catalogue id; a condition the catalogue lacks needs the printer's `.icc` as
