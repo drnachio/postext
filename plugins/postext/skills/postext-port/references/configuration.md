@@ -2757,7 +2757,12 @@ as a change. Left out, the file is stamped with the time of the call.
   "inks": [                        // the ink table: spot inks as the printer gets them
     { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
     { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
-  ]                                // also "cmyk" (the alternate) and "overprint", over the colours' own
+  ],                               // also "cmyk" (the alternate) and "overprint", over the colours' own
+  "plates": {                      // two-ink printing: the only plates the job prints on (absent: all)
+    "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
+    "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
+    "curves": { "PANTONE 286 C": [[0, 0], [50, 35], [100, 70]] }   // [tone, ink] percent per picture plate
+  }
 }
 ```
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
@@ -2780,8 +2785,18 @@ as a change. Left out, the file is stamped with the time of the call.
   `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
   name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
   `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
-  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down), `platesJob` (info:
+  the job's `plates` and picture plates), `offPlateInk` / `offPlateCmyk` (a spot ink or CMYK colour the job does not
+  print: info when its projection lands within ΔE 6, a warning past it or with no profile), `offPlateColor` (warning:
+  a screen colour that lands past ΔE 6), `plateUndefined` (a spot plate no colour or `inks` entry defines: it prints
+  as black). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
+- With `plates`, a colour off the job's plates prints as the closest mix of one
+  plate or two (a `DeviceN` space for two); greys stay on Black; rich black is dropped unless every ink of the recipe
+  prints. `images` and `curves` may name a plate by an ink table name or alias. A figure's print master
+  (`svg.pdfFileId`) is not used in such a job (its SVG is set on the plates); a placed PDF page or an undecodable
+  picture keeps its own inks and the render warns `artworkOffPlates`. The Sandbox preview shows the book's colours,
+  not the plates: verify a two-ink port on the PDF (`inspectPrintPdf` lists its inks).
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

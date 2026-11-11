@@ -28,6 +28,7 @@ import type { OutputTransform } from '../color/transform.js';
 import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
 import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
+import { platesIssues } from './preflightPlates.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -81,6 +82,22 @@ export type PreflightIssue = {
   /** A colour that overprints (`ColorValue.overprint`) and puts no ink
    *  down (paper white, a spot at 0 %): on press it disappears. */
   | { kind: 'overprintWhite'; color: string }
+  /** The plates a restricted job prints on (`print.plates`), and those
+   *  its pictures print on, once per document (info). */
+  | { kind: 'platesJob'; plates: string[]; images: string[] }
+  /** A spot ink a colour of the book uses that the job does not print:
+   *  its colours are projected onto the job's plates, the ink lost.
+   *  `deltaE`: how far the farthest lands from its ink (CIE76), when the
+   *  output profile is known; information up to `PLATE_DELTA_E`. */
+  | { kind: 'offPlateInk'; ink: string; deltaE?: number }
+  /** A colour authored in CMYK whose channels the job does not print. */
+  | { kind: 'offPlateCmyk'; color: string; channels: string[]; deltaE?: number }
+  /** A screen colour the job's plates cannot come within `PLATE_DELTA_E`
+   *  of (a warning). */
+  | { kind: 'offPlateColor'; color: string; deltaE: number }
+  /** A spot plate of the job that neither a colour nor the ink table
+   *  defines: nothing says what it looks like (its alternate). */
+  | { kind: 'plateUndefined'; plate: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -195,6 +212,8 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const { spots, authored } = spotsThroughInkTable(authoredSpotColors([doc.config, doc.printColors]), authoredCmykColors([doc.config, doc.printColors]), print.inks);
   /** Spot inks painted somewhere in the document, by name. */
   const usedInks = new Set<string>();
+  /** Colours authored in CMYK painted somewhere, by hex. */
+  const usedAuthored = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
   const smallTextPx = dimensionToPx(pf.smallTextSize, dpi);
   const safePx = dimensionToPx(pf.safeZone, dpi);
@@ -213,7 +232,10 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       return spotColorCmyk(spot);
     }
     const exact = authored.get(hex);
-    if (exact) return exact;
+    if (exact) {
+      usedAuthored.add(hex);
+      return exact;
+    }
     if (!t) return undefined;
     const r = parseInt(hex.slice(1, 3), 16) / 255;
     const g = parseInt(hex.slice(3, 5), 16) / 255;
@@ -531,5 +553,8 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
     }
   }
+
+  // A job on a few plates: the colours it moves onto them.
+  if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));
   return out;
 }

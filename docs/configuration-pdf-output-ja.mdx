@@ -6,7 +6,7 @@ export const metadata = {
   description: 'コードから使うpostext-pdf：インストール、API、ブラウザーとNodeのフォントプロバイダー、CJKフォント、リソースのバイト列、縦組み、ワーカー、印刷入稿用のファイル',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '30分',
+  readingTime: '31分',
   order: 22,
   parent: 'configuration',
   plainSummary: "このページは、プログラムを書いてPDFファイルを作りたい人向けです。PDFのパッケージをインストールし、組み上がった本を数行でファイルにする方法を示します。このパッケージにはフォントのファイルが必要なので、ブラウザーでもサーバーでも、それを渡す方法を説明します。中国語、日本語、韓国語のフォント、画像、縦組みの文章、リンクも扱います。最後に、全体を通した例と、印刷所に渡せるファイルを示します。",
@@ -37,7 +37,7 @@ npm install postext postext-pdf
 - **`PdfFontProvider`** — `renderToPdf`が新しいファミリー・ウェイト・スタイルの組み合わせを埋め込む必要があるときに、フォントのバイト列を要求するために使うコールバックのシグネチャ`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`です。`request.codePoints`には、ページがそのフェイスで組む文字が入ります。返すのは1つのファイルか、合わせて1つのフェイスになる複数のファイルです（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ページでの宣言のしかたを記録したフェイスのファイルです。記録するのは、`@font-face`規則の`unicode-range`と、宣言順での位置です。`PdfFontFile`は、この2つの省略可能なプロパティを加えた`Uint8Array`です（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照。postext-pdf 1.30以降）。
 - **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
-- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
+- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'plateMixesApproximated'`と`'artworkOffPlates'`（`PdfPrintWarning`）は、少数の版で刷るジョブ（`print.plates`）がコードを使い切って残りの色をすでにコード化した最も近い掛け合わせで刷ったこと、または配置したPDFページや復号できない画像がそれ自身のインキのまま置かれたことを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)が使います。
 - **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`** — 完成したPDFを、印刷所のプリフライトと同じように全ページ読み直します。バージョンとページ数、PDF/Xの識別と出力インテント（そのプロファイルが埋め込まれているか）、仕上がりサイズと最小の塗り足し、仕上がりサイズが異なるページ、TrimBoxのないページ、ページボックスが4つの数値でないページ（`malformedBoxPages`。ボックスがないものとして読みます）、フォント（`fonts`：名前、埋め込みの有無、種類。埋め込みと非埋め込みの両方で使われたフォントは、それぞれ1回ずつ挙がります）、描画に使う色（CMYK、グレー、名前付きの特色、レジストレーション、そしてプロファイルのない`deviceRgb`とプロファイル付きの`iccRgb`に分けたRGB。どちらも`vector`の描画と`images`に分けます）、透明、オーバープリント、注釈、インタラクティブフォーム、タグ付きかどうかを報告します。ページのほかに、注釈の外観、フォームのフィールドと既定のリソース、パターン、Type 3グリフ、インライン画像も読みます。読むのは設定が求めた内容ではなく、ファイルに書かれている内容です。画像の解像度、総インキ量、細すぎる線、トラッピングは読みません。ページの走査は`inspectPrintMaster`と共通で、`inspectPrintMaster`はシェーディング、パターン、Type 3グリフ内のRGBも報告します。
 - **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
@@ -472,6 +472,36 @@ print: {
   ],
 },
 ```
+
+#### 2色刷り
+
+`print.plates` は作業で刷る版を指定し、それ以外の版には何も刷りません。墨と特色1色、特色2色、墨1色だけの本などです。プロセスの版は `Cyan`、`Magenta`、`Yellow`、`Black` です。特色の版は、PDFでの名前か、インキ表の名前または別名で指定します。
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // 版。空なら、通常どおりすべての版。
+  images?: string[];                              // 画像を刷る版。1つか2つ。
+  curves?: Record<string, Array<[number, number]>>; // 画像の版のカーブ。[階調, インキ]（%）。
+}
+```
+
+- 作業で刷るインキの色や、作業で刷るチャンネルだけを使うCMYKの色は、そのまま使われます。
+- それ以外の色は射影されます。出力プロファイルを通した見え方が最も近い、1版または2版の掛け合わせで刷られます。2つのインキの掛け合わせはPDFでは `DeviceN` 色空間になり、グレーは `Black` だけに残ります。リッチブラックは、作業でプロセス4色をすべて刷る場合を除いて使われません。
+- 画像は、1版ならモノトーン、2版ならダブルトーンで刷られます。各ピクセルの階調（明度）が各版のカーブを通ります。`images` の既定は `Black` で、作業で墨を刷らない場合は最初の版です。モノトーンのカーブは直線です。ダブルトーンは最初の版をシャドウに、2番目の版を中間調に置きます。`curves` はどちらのカーブも置き換えます。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+プリフライトはジョブの版と、射影で動く色をひとつずつ一覧にします。ジョブで刷らない特色やCMYKの色は、掛け合わせがΔE 6以内に収まれば情報、それを超えるとき、または出力プロファイルを読み込む前は警告です（`offPlateInk`、`offPlateCmyk`）。ΔE 6を超えて離れる画面の色も警告です（`offPlateColor`）。どの色にもインキ表のどのエントリーにも定義されていない特色の版は警告で、黒として刷られ、校正でも黒で表示されます。このようなジョブでは図の印刷用原稿は使わず、そのSVGを版の上に組みます。配置したPDFページや復号できない画像はそれ自身のインキを保ち、レンダリングが警告します（`artworkOffPlates`）。Sandboxでは版を「印刷の準備 → 版」で設定します。そのプレビューと印刷プレビューは本で定めた色を表示し、版で刷った色は表示しません。PDFを確認してください。印刷用に検査が使われているインキを一覧にします。
+
 
 ### CMYKで指定した色
 

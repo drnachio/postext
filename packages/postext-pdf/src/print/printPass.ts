@@ -22,7 +22,7 @@
  */
 
 import { PDFDict, PDFName, PDFNumber, PDFOperator, PDFOperatorNames, type PDFPage } from 'pdf-lib';
-import { dimensionToPx } from 'postext';
+import { channelsOffPlates, dimensionToPx } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
 import type { SpotPlate } from './spot.js';
 
@@ -36,9 +36,10 @@ export interface OverprintFlags {
  *  resources the operators run against, returning its name. */
 export type OverprintStateFactory = (flags: OverprintFlags) => PDFName;
 
-/** Registers (or reuses) the Separation colour space of a spot ink in the
- *  resources the operators run against, returning its name. */
-export type SeparationSpaceFactory = (plate: SpotPlate) => PDFName;
+/** Registers (or reuses) the colour space of spot inks — one ink's
+ *  Separation, a mix's DeviceN — in the resources the operators run
+ *  against, returning its name. */
+export type SeparationSpaceFactory = (plates: readonly SpotPlate[]) => PDFName;
 
 type Matrix = [number, number, number, number, number, number];
 
@@ -123,7 +124,9 @@ export function applyPrintPass(
 ): PDFOperator[] {
   const black = mode.config.black;
   const overprint = black.overprint;
-  const rich = black.richBlack && options.richBlack;
+  // A job on a few plates has rich black only when it prints every ink
+  // of the recipe.
+  const rich = black.richBlack && options.richBlack && (!mode.plates || channelsOffPlates(black.richBlackColor, mode.plates.plates).length === 0);
   const richColor = black.richBlackColor;
   // Minimum side in points (the dimension's own unit, through 72 dpi).
   const minSide = dimensionToPx(black.richBlackMinSize, 72) * (options.unitsPerPoint ?? 1);
@@ -154,11 +157,12 @@ export function applyPrintPass(
       // A K-only solid black keeps its rich-black handling.
       return { ops: [PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorCmyk : PDFOperatorNames.NonStrokingColorCmyk, paint.process.map((v) => PDFNumber.of(v)))], over: true, kOnly: isKOnlySolid(paint.process) };
     }
-    const space = options.spaceFor(paint.plate);
+    const mix = 'mix' in paint;
+    const space = options.spaceFor(mix ? paint.mix : [paint.plate]);
     return {
       ops: [
         PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorspace : PDFOperatorNames.NonStrokingColorspace, [space]),
-        PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorN : PDFOperatorNames.NonStrokingColorN, [PDFNumber.of(paint.tint)]),
+        PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorN : PDFOperatorNames.NonStrokingColorN, (mix ? paint.tints : [paint.tint]).map((t) => PDFNumber.of(t))),
       ],
       over: paint.overprint,
     };
@@ -333,13 +337,13 @@ export function runPagePrintPass(page: PDFPage, mode: PrintColorMode): void {
   for (const op of next) stream.operators.push(op);
 }
 
-/** Names spot inks' Separation colour spaces in a page's resources, one
- *  name per plate. */
+/** Names spot inks' colour spaces in a page's resources, one name per
+ *  plate or mix of plates. */
 function pageSpaceFactory(page: PDFPage, mode: PrintColorMode): SeparationSpaceFactory {
   const names = new Map<string, PDFName>();
-  return (plate) => {
+  return (plates) => {
     const context = page.doc.context;
-    const ref = mode.inkRegistry.separationSpace(context, plate);
+    const ref = mode.inkRegistry.inkSpace(context, plates);
     const key = ref.toString();
     let name = names.get(key);
     if (name) return name;

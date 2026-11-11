@@ -365,6 +365,14 @@ export async function renderToPdf(
     if (knockedOut > 0) {
       warn({ kind: 'overprintsExhausted', message: `postext-pdf: too many distinct colours in this render; ${knockedOut} colour(s) set to overprint were knocked out` });
     }
+    const approximated = printMode.inkRegistry.approximated();
+    if (approximated > 0) {
+      warn({ kind: 'plateMixesApproximated', message: `postext-pdf: too many distinct colours in this render; ${approximated} colour(s) were set as the nearest mix already on the job's plates` });
+    }
+    for (const [kind, n] of printMode.inkRegistry.offPlateArtwork()) {
+      const what = kind === 'pdf' ? 'placed PDF page(s)' : 'picture(s) that could not be decoded';
+      warn({ kind: 'artworkOffPlates', message: `postext-pdf: ${n} ${what} kept their own inks in a job on a few plates (print.plates)` });
+    }
     for (const [ink, written] of printMode.inkRegistry.renamed()) {
       warn({ kind: 'spotInkRenamed', message: `postext-pdf: a plate cannot be named "${ink}"; it is written as "${written}"` });
     }

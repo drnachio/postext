@@ -19,7 +19,7 @@
  */
 
 import { cmyk, type Color, PDFName, type PDFContext, type PDFRef } from 'pdf-lib';
-import { printableInkName, type CmykPercent, type SpotColor } from 'postext';
+import { mixAlternate, printableInkName, type CmykPercent, type ProcessChannel, type SpotColor } from 'postext';
 
 /** One ink, as the print pass writes it. */
 export interface SpotPlate {
@@ -27,6 +27,9 @@ export interface SpotPlate {
   /** Full-strength alternate, percent. */
   cmyk: CmykPercent;
   overprint: boolean;
+  /** A process plate (`Cyan` … `Black`) in a mix of a job on a few plates
+   *  (`print.plates`): named as it is, never renamed. */
+  process?: ProcessChannel;
 }
 
 /** A spot colour as painted: its ink, the tint (0..1), and whether it
@@ -38,6 +41,15 @@ export interface SpotPaint {
   overprint: boolean;
 }
 
+/** A mix of inks at a tint each (0..1), in a job on a few plates
+ *  (`print.plates`): painted in their DeviceN colour space. It overprints
+ *  when the colour does or every ink in it does. */
+export interface MixPaint {
+  mix: SpotPlate[];
+  tints: number[];
+  overprint: boolean;
+}
+
 /** A process colour that overprints (`ColorValue.overprint`): written
  *  back as this CMYK (0..1), under an overprinting state. */
 export interface OverprintPaint {
@@ -45,7 +57,7 @@ export interface OverprintPaint {
 }
 
 /** What a stand-in `k` / `K` is written back as. */
-export type StandInPaint = SpotPaint | OverprintPaint;
+export type StandInPaint = SpotPaint | MixPaint | OverprintPaint;
 
 /** Codes stay below half the grid step, so a code added to one grid value
  *  and one subtracted from the next can never meet. */
@@ -60,7 +72,7 @@ export const MAX_SPOT_CODES = PER_CHANNEL * (PER_CHANNEL + 1);
 const round4 = (n: number): number => Math.round(n * 10000) / 10000;
 
 function plateKey(p: SpotPlate): string {
-  return `${p.name}|${p.cmyk.c},${p.cmyk.m},${p.cmyk.y},${p.cmyk.k}|${p.overprint}`;
+  return `${p.process ? 'process:' : ''}${p.name}|${p.cmyk.c},${p.cmyk.m},${p.cmyk.y},${p.cmyk.k}|${p.overprint}`;
 }
 
 /** The key of four CMYK operands. */
@@ -89,9 +101,23 @@ export class SpotInkRegistry {
   private readonly fallbacks = new Map<string, number>();
   /** Process colours that overprint and found no code (knocked out). */
   private overprintFallbacks = 0;
+  /** In a job on a few plates: every coded paint's alternate, for the
+   *  nearest one past the codes; and how many paints took it. */
+  private readonly coded: Array<{ alt: [number, number, number, number]; color: Color }> = [];
+  private approximations = 0;
+  /** Pictures placed as they are in a job on a few plates, by kind. */
+  private readonly offPlates = new Map<string, number>();
 
-  /** `maxCodes` is for tests; a render uses {@link MAX_SPOT_CODES}. */
-  constructor(private readonly maxCodes: number = MAX_SPOT_CODES) {}
+  /**
+   * `maxCodes` is for tests; a render uses {@link MAX_SPOT_CODES}.
+   * `confined`: a job on a few plates (`print.plates`), where a paint past
+   * the codes takes the nearest coded one instead of printing in process,
+   * which would put it on plates the job does not print.
+   */
+  constructor(
+    private readonly maxCodes: number = MAX_SPOT_CODES,
+    private readonly confined = false,
+  ) {}
 
   /**
    * The pdf-lib colour that stands for `spot` at `tint` (0..1) until the
@@ -107,12 +133,55 @@ export class SpotInkRegistry {
     // One ink, two colours: one of them may overprint and the other not.
     const overprint = plate.overprint || spot.overprint;
     const key = `${plateKey(plate)}|${t}${overprint !== plate.overprint ? '|over' : ''}`;
+    return this.code(key, mixAlternate([plate], [t]), { plate, tint: t, overprint }, [plate]);
+  }
+
+  /**
+   * The pdf-lib colour that stands for a mix of `plates` at `tints` (0..1
+   * each) in a job on a few plates, until the print pass turns it into
+   * their DeviceN colour (one spot plate: its Separation). Process plates
+   * keep their names; a plate named twice is one, its tints summed.
+   */
+  mixStandIn(plates: readonly SpotPlate[], tints: readonly number[], overprint = false): Color {
+    const merged: SpotPlate[] = [];
+    const ts: number[] = [];
+    plates.forEach((p, i) => {
+      const plate = p.process ? p : this.plateOf({ name: p.name, cmyk: p.cmyk, overprint: p.overprint, tint: 100 });
+      const at = merged.findIndex((q) => q.name === plate.name);
+      const t = Math.max(0, Math.min(1, tints[i] ?? 0));
+      if (at >= 0) {
+        ts[at] = Math.min(1, ts[at]! + t);
+      } else {
+        merged.push(plate);
+        ts.push(t);
+      }
+    });
+    if (merged.length === 1 && !merged[0]!.process) {
+      const p = merged[0]!;
+      return this.standIn({ name: p.name, cmyk: p.cmyk, overprint: p.overprint || overprint, tint: 100 }, ts[0]!);
+    }
+    const t4 = ts.map(round4);
+    const over = overprint || merged.every((p) => p.overprint);
+    const key = `${merged.map(plateKey).join('+')}|${t4.join(',')}${over ? '|over' : ''}`;
+    return this.code(key, mixAlternate(merged, t4), { mix: merged, tints: t4, overprint: over }, merged);
+  }
+
+  /** The coded colour of a paint, registered under `key`; past the codes,
+   *  its alternate in process — or, confined to a job's plates, the
+   *  nearest coded paint. */
+  private code(key: string, alt: [number, number, number, number], paint: SpotPaint | MixPaint, plates: readonly SpotPlate[]): Color {
     const known = this.colorsByPaint.get(key);
     if (known) return known;
-    const [c, m, y, k] = [plate.cmyk.c, plate.cmyk.m, plate.cmyk.y, plate.cmyk.k].map((v) => round4(Math.min(1, (v / 100) * t))) as [number, number, number, number];
+    const [c, m, y, k] = alt;
     const index = this.colorsByPaint.size;
     if (index >= this.maxCodes) {
-      this.fallbacks.set(plate.name, (this.fallbacks.get(plate.name) ?? 0) + 1);
+      if (this.confined) {
+        this.approximations++;
+        const near = this.nearest(alt);
+        this.colorsByPaint.set(key, near);
+        return near;
+      }
+      for (const p of plates) this.fallbacks.set(p.name, (this.fallbacks.get(p.name) ?? 0) + 1);
       return cmyk(c, m, y, k);
     }
     // Black always carries a code (1 …), cyan the overflow (0 …).
@@ -120,8 +189,38 @@ export class SpotInkRegistry {
     const cc = nudge(c, Math.floor(index / PER_CHANNEL));
     const color = cmyk(cc, m, y, kc);
     this.colorsByPaint.set(key, color);
-    this.paintsByKey.set(operandKey(cc, m, y, kc), { plate, tint: t, overprint });
+    this.paintsByKey.set(operandKey(cc, m, y, kc), paint);
+    if (this.confined) this.coded.push({ alt, color });
     return color;
+  }
+
+  /** The coded paint whose alternate is closest to `alt` (paper when
+   *  none is). */
+  private nearest(alt: readonly number[]): Color {
+    let best: Color = cmyk(0, 0, 0, 0);
+    let bestD = Infinity;
+    for (const { alt: a, color } of this.coded) {
+      const d = (a[0] - alt[0]!) ** 2 + (a[1] - alt[1]!) ** 2 + (a[2] - alt[2]!) ** 2 + (a[3] - alt[3]!) ** 2;
+      if (d < bestD) [best, bestD] = [color, d];
+    }
+    return best;
+  }
+
+  /** How many paints of a job on a few plates took the nearest coded
+   *  paint for want of a code of their own. */
+  approximated(): number {
+    return this.approximations;
+  }
+
+  /** Notes artwork of a job on a few plates placed as it is (a PDF page,
+   *  a picture that does not decode): its inks were not moved onto them. */
+  noteOffPlates(kind: 'pdf' | 'image'): void {
+    this.offPlates.set(kind, (this.offPlates.get(kind) ?? 0) + 1);
+  }
+
+  /** Artwork placed off the job's plates, by kind. */
+  offPlateArtwork(): ReadonlyMap<string, number> {
+    return this.offPlates;
   }
 
   /**
@@ -195,10 +294,63 @@ export class SpotInkRegistry {
     if (!ref) {
       const { c, m, y, k } = plate.cmyk;
       const fn = context.obj({ FunctionType: 2, Domain: [0, 1], C0: [0, 0, 0, 0], C1: [c / 100, m / 100, y / 100, k / 100].map(round4), N: 1 });
-      ref = context.register(context.obj([PDFName.of('Separation'), inkPdfName(this.pdfNameOf(plate.name)), PDFName.of('DeviceCMYK'), fn]));
+      ref = context.register(context.obj([PDFName.of('Separation'), this.plateName(plate), PDFName.of('DeviceCMYK'), fn]));
       spaces.set(key, ref);
     }
     return ref;
+  }
+
+  /** The colour space of `plates` in `context`'s document: the Separation
+   *  of one, the DeviceN of several. */
+  inkSpace(context: PDFContext, plates: readonly SpotPlate[]): PDFRef {
+    return plates.length === 1 ? this.separationSpace(context, plates[0]!) : this.deviceNSpace(context, plates);
+  }
+
+  /**
+   * The DeviceN colour space of several inks in `context`'s document, one
+   * object per set: its tint transform samples the corners of the tint
+   * cube — every ink at 0 or 1 — each corner the sum of its inks'
+   * alternates, clipped, and interpolates between them. Each colorant
+   * once: a process plate under its own name, a spot plate under the name
+   * the render writes it as.
+   */
+  private deviceNSpace(context: PDFContext, plates: readonly SpotPlate[]): PDFRef {
+    let spaces = this.spaces.get(context);
+    if (!spaces) this.spaces.set(context, (spaces = new Map()));
+    const key = `N:${plates.map(plateKey).join('+')}`;
+    let ref = spaces.get(key);
+    if (ref) return ref;
+    const names = plates.map((p) => this.plateName(p));
+    if (new Set(names.map((n) => n.toString())).size !== names.length) throw new Error('postext-pdf: a DeviceN colour space names one plate twice');
+    const n = plates.length;
+    const samples = new Uint8Array((1 << n) * 4 * 2);
+    for (let corner = 0; corner < 1 << n; corner++) {
+      // The first input varies fastest.
+      const tints = plates.map((_, i) => (corner >> i) & 1);
+      mixAlternate(plates, tints).forEach((v, ch) => {
+        const u = Math.round(v * 65535);
+        samples[(corner * 4 + ch) * 2] = u >> 8;
+        samples[(corner * 4 + ch) * 2 + 1] = u & 255;
+      });
+    }
+    const fn = context.register(
+      context.stream(samples, {
+        FunctionType: 0,
+        Domain: plates.flatMap(() => [0, 1]),
+        Range: [0, 1, 0, 1, 0, 1, 0, 1],
+        Size: plates.map(() => 2),
+        BitsPerSample: 16,
+      }),
+    );
+    ref = context.register(context.obj([PDFName.of('DeviceN'), names, PDFName.of('DeviceCMYK'), fn]));
+    spaces.set(key, ref);
+    return ref;
+  }
+
+  /** The PDF name of a plate: a process plate's own, a spot plate's as
+   *  the render writes it ({@link pdfNameOf}). */
+  private plateName(plate: SpotPlate): PDFName {
+    return plate.process ? PDFName.of(plate.name) : inkPdfName(this.pdfNameOf(plate.name));
   }
 
   private plateOf(spot: Required<SpotColor>): SpotPlate {

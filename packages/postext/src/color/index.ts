@@ -45,3 +45,7 @@ export { inkEntry, inkKey, inkNameProblem, printableInkName, printedSpot, proces
 // Spot inks an SVG names (`icc-named-color`, `data-spot`).
 export { screenSvgColors, svgSpotInks, splitIccPaint, inkTintPercent, type SvgSpotInk, type IccPaint } from '../svg/spotPaints.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';
+export {
+  channelsOffPlates, jobImagePlates, jobPlateNamed, jobPlates, mixAlternate, plateMix, plateOfSpot, processChannel,
+  type JobPlate, type MixPlate, type PlateMix, type PlateTarget, type ProcessChannel,
+} from './plates.js';

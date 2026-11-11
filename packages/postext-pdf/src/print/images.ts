@@ -4,6 +4,8 @@
  * PDF/X-1a, which has no transparency, gets each picture composed over the
  * paper; PDF/X-4 keeps its alpha as a DeviceGray soft mask. CMYK and
  * grayscale JPEGs pass through untouched (they are already print data).
+ * A job on a few plates (`print.plates`) sets every picture as a monotone
+ * or duotone on its picture plates instead (see `plates.ts`).
  */
 
 import { PDFDocument, PDFImage, PDFName, PDFRef } from 'pdf-lib';
@@ -11,6 +13,7 @@ import UPNG from '@pdf-lib/upng';
 import { buildRgbLut, outputTransform, sampleRgbLut, type RgbLut } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
 import { rgbToCmyk, rgbToGrayscale } from '../colors.js';
+import { platePixels } from './plates.js';
 
 /** Decoded pixels, 8-bit RGBA, rows top-down. */
 export interface RgbaPixels {
@@ -174,8 +177,9 @@ export function embedCmykPixels(pdfDoc: PDFDocument, width: number, height: numb
 }
 
 /** Write device pixels (one byte a channel) as an image XObject, its alpha
- *  plane as a DeviceGray soft mask. */
-function embedDevicePixels(pdfDoc: PDFDocument, width: number, height: number, space: 'DeviceCMYK' | 'DeviceGray', pixels: Uint8Array, alpha?: Uint8Array): PDFImage {
+ *  plane as a DeviceGray soft mask; `space` a device space's name or a
+ *  colour space object. */
+function embedDevicePixels(pdfDoc: PDFDocument, width: number, height: number, space: 'DeviceCMYK' | 'DeviceGray' | PDFRef, pixels: Uint8Array, alpha?: Uint8Array): PDFImage {
   const context = pdfDoc.context;
   let smask: PDFRef | undefined;
   if (alpha) {
@@ -191,7 +195,9 @@ function embedDevicePixels(pdfDoc: PDFDocument, width: number, height: number, s
     ColorSpace: space,
     BitsPerComponent: 8,
   };
+  if (space instanceof PDFRef) delete dict.ColorSpace;
   const stream = context.flateStream(pixels, dict as never);
+  if (space instanceof PDFRef) stream.dict.set(PDFName.of('ColorSpace'), space);
   if (smask) stream.dict.set(PDFName.of('SMask'), smask);
   const ref = context.register(stream);
   return imageOf(pdfDoc, ref, width, height);
@@ -209,6 +215,16 @@ export async function embedPrintRaster(
   format: 'png' | 'jpeg',
   mode: PrintColorMode,
 ): Promise<PDFImage> {
+  if (mode.plates) {
+    // A job on a few plates: a monotone or duotone on its picture plates.
+    const px = await decodeRgba(bytes, format);
+    if (px) {
+      const { pixels, alpha } = platePixels(px, mode.plates, mode.flattenTransparency);
+      return embedDevicePixels(pdfDoc, px.width, px.height, mode.inkRegistry.inkSpace(pdfDoc.context, mode.plates.images), pixels, alpha);
+    }
+    // Not decoded: placed as it is, off the job's plates (a warning).
+    mode.inkRegistry.noteOffPlates('image');
+  }
   if (format === 'jpeg') {
     const channels = jpegComponents(bytes);
     if (channels !== 3 || !mode.convertImages) return pdfDoc.embedJpg(bytes);
