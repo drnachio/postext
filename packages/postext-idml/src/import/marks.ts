@@ -91,7 +91,9 @@ interface State {
   brackets: number;
 }
 
-const closers = (text: string): string => text.replace(/\]/g, '\\]');
+// The text is escaped Markdown already: a pair that opens with a backslash
+// is left as it is, a bare closing bracket is escaped.
+const closers = (text: string): string => text.replace(/\\[\s\S]|\]/g, (m) => (m === ']' ? '\\]' : m));
 
 function leaf(segs: Seg[], st: State): string {
   let out = '';

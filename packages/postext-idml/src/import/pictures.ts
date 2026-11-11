@@ -149,9 +149,9 @@ export function pictureResource(ctx: Context, item: IdmlPageItem, options: Pictu
  *  label and the rest; `Figures of speech` and `Table 5 is empty` give
  *  nothing. */
 export function captionLabel(text: string): { word: string; kind: 'figure' | 'table'; rest: string } | undefined {
-  const m = /^\s*(fig(?:ure|ura|\.)?|abb(?:ildung|\.)?|table(?:au)?|tabla|tab(?:elle|ella|\.)?|taula|illustration|ilustraci[oó]n|plate|l[aá]mina|chart|gr[aá]fico|map|mapa|图|表|図)\s*((?:[0-9]+|[IVXLC]+)(?:[.\-–][0-9]+)*)\s*(?:[.:—–|]\s+|[.:]?\s*$)/iu.exec(text);
+  const m = /^\s{0,8}(fig(?:ure|ura|\.)?|abb(?:ildung|\.)?|table(?:au)?|tabla|tab(?:elle|ella|\.)?|taula|illustration|ilustraci[oó]n|plate|l[aá]mina|chart|gr[aá]fico|map|mapa|图|表|図)\s{0,4}((?:[0-9]{1,6}|[IVXLC]{1,8})(?:[.\-–][0-9]{1,6}){0,4})\s{0,4}(?:[.:—–|]\s|[.:]?$)/iu.exec(text.trimEnd());
   if (!m) return undefined;
   const word = m[1]!;
   const kind = /^(?:tab|taula|表)/i.test(word) ? 'table' : 'figure';
-  return { word, kind, rest: text.slice(m[0].length) };
+  return { word, kind, rest: text.slice(m[0].length).trimStart() };
 }

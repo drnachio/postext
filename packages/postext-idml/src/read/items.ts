@@ -32,7 +32,9 @@ function base64(s: string): Uint8Array | undefined {
 }
 
 function linkName(uri: string): string {
-  let path = uri.replace(/^file:/i, '').replace(/[?#].*$/, '');
+  let path = uri.replace(/^file:/i, '');
+  const cut = path.search(/[?#]/);
+  if (cut >= 0) path = path.slice(0, cut);
   try {
     path = decodeURIComponent(path);
   } catch {

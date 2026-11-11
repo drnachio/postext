@@ -88,7 +88,9 @@ export function idOf(text: string, fallback: string): string {
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
+    // One hyphen at most at either end: runs were just made single.
+    .replace(/^-/, '')
+    .replace(/-$/, '')
     .slice(0, 48)
     .replace(/-+$/, '');
   return s || fallback;

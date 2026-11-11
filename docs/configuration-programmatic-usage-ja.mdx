@@ -788,9 +788,9 @@ console.log(result.report.verdict, result.report.findings);
 const { bytes: book } = await createBundle(importBundleInput(result));
 ```
 
-- **`idmlToPostext(bytes, options)`**は同期関数です。`layout`は`'pages'`（元の文書を1ページずつたどるテンプレートページ）、`'flow'`（流し込みの本）、`'auto'`（既定。インポーターが決め、その理由を`reason`で返します）のいずれかです。`linkBytes(link)`はリンク画像のバイト列を渡します（`link.name`、`link.uri`）。埋め込み画像はパッケージから読み込み、バイト列が渡されなかったリンクは`missingLinks`に並びます。結果には、`chapters`（`{ title, markdown }`）、`config`（文書が設定している項目だけ）、`resources`とその`files`、本に必要な`fonts`（名前だけです。`.idml`はフォントファイルを含みません）、`report`が入ります。`report`は`verdict`（`faithful`、`approximate`、`lossy`）と`findings`を持ち、各項目に`severity`（`info`、`warning`、`loss`）、`message`、`count`、`examples`があります。**`importBundleInput(result)`**は、`postext/bundle`の`createBundle`に渡す入力です。
+- <strong>`idmlToPostext(bytes, options)`</strong>は同期関数です。`layout`は`'pages'`（元の文書を1ページずつたどるテンプレートページ）、`'flow'`（流し込みの本）、`'auto'`（既定。インポーターが決め、その理由を`reason`で返します）のいずれかです。`linkBytes(link)`はリンク画像のバイト列を渡します（`link.name`、`link.uri`）。埋め込み画像はパッケージから読み込み、バイト列が渡されなかったリンクは`missingLinks`に並びます。結果には、`chapters`（`{ title, markdown }`）、`config`（文書が設定している項目だけ）、`resources`とその`files`、本に必要な`fonts`（名前だけです。`.idml`はフォントファイルを含みません）、`report`が入ります。`report`は`verdict`（`faithful`、`approximate`、`lossy`）と`findings`を持ち、各項目に`severity`（`info`、`warning`、`loss`）、`message`、`count`、`examples`があります。<strong>`importBundleInput(result)`</strong>は、`postext/bundle`の`createBundle`に渡す入力です。
 - 元の文書が強制改行で終えている行は、そのまま本の行になります。インポーターは`bodyText.justifyHardBreaks`を有効にします。Postextから書き出した本は、同じ行のまま戻ります。InDesignで作った文書の読み込みには欠落があり、レポートがそれを一覧します。Sandboxとコマンドラインには、まだ読み込みの入口がありません。InDesignの本の移植には、引き続き[エージェントスキル](/ja/docs/skill)を勧めます。
-- **`readIdml(bytes)`**と**`inspectIdml(doc)`**は、型付きのリーダーを単独で使うためのものです。前者はパッケージを`IdmlDocument`として読み、後者はその概要（ページ、ストーリー、フォント、使われているスタイル、画像）を返します。
+- <strong>`readIdml(bytes)`</strong>と<strong>`inspectIdml(doc)`</strong>は、型付きのリーダーを単独で使うためのものです。前者はパッケージを`IdmlDocument`として読み、後者はその概要（ページ、ストーリー、フォント、使われているスタイル、画像）を返します。
 
 ## Web Workerでレイアウトを実行する
 
