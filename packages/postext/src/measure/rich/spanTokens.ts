@@ -313,7 +313,6 @@ export function tokenSegment(t: RichToken): PendingSegment {
   if (t.orientation) seg.orientation = t.orientation;
   if (t.cjkMarks) seg.cjkMarks = t.cjkMarks;
   if (t.charStyle) seg.charStyle = t.charStyle;
-  if (t.charColor !== undefined) seg.color = t.charColor;
   if (t.charTracking !== undefined) seg.tracking = (seg.tracking ?? 0) + t.charTracking;
   if (t.inserted) seg.inserted = true;
   if (t.runs) seg.runs = t.runs;

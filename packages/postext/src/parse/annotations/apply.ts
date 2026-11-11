@@ -167,7 +167,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         case 'kunten':
           fields.kunten = f.kunten!;
           break;
-        case 'charstyle':
+        case 'span':
           // The innermost style: a span takes one.
           fields.charStyle = f.charStyle!;
           break;
@@ -212,7 +212,7 @@ export function applyAnnotationMarks(spans: InlineSpan[], queue: readonly Queued
         }
         if (kind === 'sideline') frame.sideline = sidelineOf(frame.id, entry.attrs);
         if (kind === 'kunten') frame.kunten = kuntenOf(frame.id, entry.attrs);
-        if (kind === 'charstyle') frame.charStyle = { id: frame.id, style: entry.attrs.style ?? '' };
+        if (kind === 'span') frame.charStyle = { id: frame.id, style: (entry.attrs.style ?? '').trim() };
         if (kind === 'ltr' || kind === 'rtl') {
           let outer: InlineDirection | undefined;
           for (let i = stack.length - 1; i >= 0 && !outer; i--) outer = stack[i]!.direction;

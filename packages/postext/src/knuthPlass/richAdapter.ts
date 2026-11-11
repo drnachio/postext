@@ -88,9 +88,8 @@ interface RichToken {
   chip?: VDTChip;
   /** Chinese marks on the token's text (#193). */
   cjkMarks?: VDTSegmentMarks;
-  /** A character style run, its colour and tracking (see `measure/rich.ts`). */
+  /** A character style run and its tracking (see `measure/rich.ts`). */
   charStyle?: VDTSegmentCharStyle;
-  charColor?: string;
   charTracking?: number;
   /** Characters the layout added (a book title's 《》). */
   inserted?: boolean;
@@ -407,7 +406,6 @@ export function reconstructRichLines(
           ...(token.orientation ? { orientation: token.orientation } : {}),
           ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
           ...(token.charStyle ? { charStyle: token.charStyle } : {}),
-          ...(token.charColor !== undefined ? { color: token.charColor } : {}),
           ...(token.charTracking !== undefined ? { tracking: token.charTracking } : {}),
           ...(token.inserted ? { inserted: true } : {}),
           ...(token.runs ? { runs: token.runs } : {}),

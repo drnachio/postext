@@ -143,12 +143,11 @@ export interface RichToken {
   dashJoin?: boolean;
   /** Chinese marks on the token's text (#193), for the segment. */
   cjkMarks?: VDTSegmentMarks;
-  /** The character style run (`[…]|id|`) the token's text belongs to, for
-   *  the segment (its decorations are drawn once the document is laid
-   *  out); `charColor` its text colour and `charTracking` the tracking it
-   *  adds, px after every character, when the style sets them. */
+  /** The character style run (`:span[…]{style}`) the token's text belongs
+   *  to, for the segment (its colour is painted once the document is laid
+   *  out); `charTracking` the tracking it adds, px after every character,
+   *  when the style sets one. */
   charStyle?: VDTSegmentCharStyle;
-  charColor?: string;
   charTracking?: number;
   /** Characters the layout added (a book title's 《》). */
   inserted?: boolean;
@@ -314,14 +313,13 @@ export function tokenFont(
 
 /** The script, small-caps and Chinese-mark fields a token derived from
  *  another (a split, a hyphenated head) carries on. */
-export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; charStyle?: VDTSegmentCharStyle; charColor?: string; charTracking?: number; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'charStyle' | 'charColor' | 'charTracking' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang'> {
+export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; charStyle?: VDTSegmentCharStyle; charTracking?: number; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'charStyle' | 'charTracking' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.faceFont ? { faceFont: t.faceFont } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
     ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
     ...(t.charStyle ? { charStyle: t.charStyle } : {}),
-    ...(t.charColor !== undefined ? { charColor: t.charColor } : {}),
     ...(t.charTracking !== undefined ? { charTracking: t.charTracking } : {}),
     ...(t.inserted ? { inserted: true } : {}),
     // The pieces of a word with no letter are shaped in its script (#725).

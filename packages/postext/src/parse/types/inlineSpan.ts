@@ -333,11 +333,11 @@ export interface InlineSpan {
    *  it as JIS X 4051 §5 sets them. Every span of one directive shares the
    *  object; the marks go with the last character of the last one. */
   kunten?: InlineKunten;
-  /** A named character style (`[some words]|style|`): the run is set in
-   *  the face, colour and decorations (underline, highlighter band,
-   *  strike-through) of the design's `characterStyles` entry the name
-   *  picks. Unlike a chip it breaks and hyphenates as the text around it.
-   *  Every span of one run shares the object. */
+  /** A named character style (`:span[some words]{style="id"}`): the run
+   *  is set in the face, size, weight, colour, tracking and case of the
+   *  design's `characterStyles` entry the id picks. Unlike a chip it breaks
+   *  and hyphenates as the text around it. Every span of one run shares
+   *  the object until the pipeline resolves its look. */
   charStyle?: InlineCharStyle;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the

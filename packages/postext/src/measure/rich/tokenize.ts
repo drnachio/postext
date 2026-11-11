@@ -27,17 +27,15 @@ function charStyleChangesFace(look: CharStyleLook | undefined): boolean {
 }
 
 /** The tokens of a character style's span (from `from` on): the run they
- *  belong to, and its colour and tracking. The tracking widens every
- *  character the token holds, spaces included, and moves its break points
- *  and its hyphen with it. */
+ *  belong to and its tracking. The tracking widens every character the
+ *  token holds, spaces included, and moves its break points and its
+ *  hyphen with it. */
 function applyCharStyle(tokens: RichToken[], from: number, run: NonNullable<InlineSpan['charStyle']>): void {
   const segRun: VDTSegmentCharStyle = { id: run.id, style: run.style };
-  const color = run.look?.color;
   const track = run.look?.letterSpacingPx ?? 0;
   for (let k = from; k < tokens.length; k++) {
     const t = tokens[k]!;
     t.charStyle = segRun;
-    if (color !== undefined) t.charColor = color;
     if (track === 0 || t.mathRender || t.swatch || t.chip) continue;
     t.charTracking = track;
     t.width += track * graphemeCount(t.text);
@@ -85,7 +83,7 @@ export function tokenizeSpans(
   /** The script fields of a span's tokens (font at the script size, shift). */
   // The span's own face: its style's, unslanted for the Arabic words of a
   // slanted style (`uprightArabic.ts`).
-  // A character style (`[…]|id|`) sets its run in a face of its own.
+  // A character style (`:span[…]{style}`) sets its run in a face of its own.
   const faceOf = (span: InlineSpan): string => {
     const look = span.charStyle?.look;
     const face = pickSpanFont(span.bold, span.italic || !!look?.italic, normalFont, boldFont, italicFont, boldItalicFont);

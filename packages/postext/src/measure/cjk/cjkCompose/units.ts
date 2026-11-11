@@ -104,13 +104,12 @@ export interface UnitStyle {
   marks?: VDTSegmentMarks;
   /** Characters the layout added (book-title and warichu brackets). */
   inserted?: boolean;
-  /** Colour of the unit's text (a warichu note's brackets, a character
-   *  style's run), hex. */
+  /** Colour of the unit's text (a warichu note's brackets), hex. */
   color?: string;
   /** The face of a character style's run, when it is not the text's:
    *  the segment is painted in it. */
   faceFont?: string;
-  /** The character style run (`[…]|id|`) the unit belongs to. */
+  /** The character style run (`:span[…]{style}`) the unit belongs to. */
   charStyle?: VDTSegmentCharStyle;
   /** The language the unit's isolate names (`:ltr[…]{lang=en}`), carried
    *  to its segment (`VDTLineSegment.lang`) in Japanese text: see
@@ -285,7 +284,7 @@ function spanLanguageHere(span: InlineSpan): string | undefined {
 
 export function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitStyle {
   const script = spanScriptFields(span, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
-  // A character style (`[…]|id|`) sets its run in a face of its own.
+  // A character style (`:span[…]{style}`) sets its run in a face of its own.
   const look = span.charStyle?.look;
   const plainFace = pickSpanFont(span.bold, span.italic || !!look?.italic, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic);
   const face = look ? charStyleFace(plainFace, look, span.bold) : plainFace;
@@ -294,7 +293,7 @@ export function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitS
   const lang = spanLanguageHere(span);
   const run = span.charStyle ? { id: span.charStyle.id, style: span.charStyle.style } : undefined;
   return {
-    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}${marksKey(marks, span.inserted)}${lang !== undefined ? `|lang:${lang}` : ''}${run ? `|cs:${run.id}:${look?.color ?? ''}` : ''}`,
+    key: `${span.bold ? 'b' : ''}${span.italic ? 'i' : ''}${span.captionLabel ? 'c' : ''}${span.smallCaps ? 's' : ''}|${script.script ?? ''}|${font}|${script.baselineShift ?? ''}${marksKey(marks, span.inserted)}${lang !== undefined ? `|lang:${lang}` : ''}${run ? `|cs:${run.id}` : ''}`,
     bold: span.bold,
     italic: span.italic,
     ...(span.captionLabel ? { captionLabel: true } : {}),
@@ -305,7 +304,6 @@ export function styleOf(span: InlineSpan, fonts: Fonts, vertical = false): UnitS
     ...(span.inserted ? { inserted: true } : {}),
     ...(lang !== undefined ? { lang } : {}),
     ...(run ? { charStyle: run } : {}),
-    ...(look?.color !== undefined ? { color: look.color } : {}),
     ...(!script.script && face !== plainFace ? { faceFont: face } : {}),
   };
 }

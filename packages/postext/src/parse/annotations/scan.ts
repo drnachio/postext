@@ -5,7 +5,7 @@ import { parseDirectiveAttrs } from '../attrs.js';
 import type { Frame } from './apply.js';
 
 /** The inline annotation directives, by name. */
-export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten', 'charstyle'] as const;
+export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten', 'span'] as const;
 export type AnnotationName = (typeof ANNOTATION_NAMES)[number];
 
 /** Private-use marks opening each kind of annotation while the emphasis
@@ -21,12 +21,13 @@ const OPEN: Record<AnnotationName, string> = {
   rtl: '',
   sideline: '',
   kunten: '',
-  charstyle: '',
+  // Not U+E1B9/U+E1BA: the underline's marks (`markup.ts`).
+  span: '',
 };
 export const CLOSE = '';
 export const KIND_OF_OPEN = new Map<string, AnnotationName>(ANNOTATION_NAMES.map((n) => [OPEN[n], n]));
-export const MARK_RE = /[-]/;
-const MARKS_RE = /[-]/g;
+export const MARK_RE = /[-]/;
+const MARKS_RE = /[-]/g;
 
 /** One annotation as written: its kind, its attributes, and (a compact
  *  ruby) its readings. Queued in the order of the marks in the text. */
@@ -37,38 +38,65 @@ export interface QueuedAnnotation {
   readings?: string[];
 }
 
-/** The name of a character style after the `]` of `[some words]|style|`:
- *  letters, digits, `-` and `_`, between two bars. */
-const CHAR_STYLE_NAME_RE = /\|([\p{L}\p{N}_-]+)\|/uy;
-
-/** `:dots[`, `:name[`… at the start of a match. */
-const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[/y;
+/** `:dots[`, `:name[`… at the start of a match. `:span[…]{style="id"}`
+ *  sets its words in a named character style. */
+const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[/y;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
 const RUBY_BASE_RE = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomofo}々〇]/u;
 
-/**
- * The index of the `]` closing the `[` at `open`, brackets nested inside
- * counting and a backslash escaping the character after it; -1 when the
- * line ends first (or `end` is reached).
- */
-export function closingBracket(text: string, open: number, end: number = text.length): number {
-  let depth = 0;
-  for (let i = open; i < end; i++) {
+/** What one pass over a text finds for the scanners below, so that a
+ *  line of a thousand openers that never close costs one pass, not a
+ *  thousand: the `]` closing each `[` (brackets nested inside counting, a
+ *  backslash escaping the character after it, -1 when the line ends
+ *  first), and where the next `:` or `{` is from each index (-1 for none).
+ *  Kept for the last text scanned: the parser asks about one text many
+ *  times in a row. */
+interface ScanTables {
+  text: string;
+  close: Int32Array;
+  next: Int32Array;
+}
+let lastTables: ScanTables | undefined;
+
+function scanTables(text: string): ScanTables {
+  if (lastTables && lastTables.text === text) return lastTables;
+  const n = text.length;
+  const close = new Int32Array(n).fill(-1);
+  const next = new Int32Array(n + 1).fill(-1);
+  const open: number[] = [];
+  for (let i = 0; i < n; i++) {
     const c = text[i]!;
-    if (c === '\n') return -1;
+    if (c === '\n') {
+      open.length = 0;
+      continue;
+    }
     if (c === '\\') {
       i++;
       continue;
     }
-    if (c === '[') depth++;
-    else if (c === ']') {
-      depth--;
-      if (depth === 0) return i;
-    }
+    if (c === '[') open.push(i);
+    else if (c === ']' && open.length > 0) close[open.pop()!] = i;
   }
-  return -1;
+  for (let i = n - 1; i >= 0; i--) {
+    const c = text[i]!;
+    next[i] = c === ':' || c === '{' ? i : next[i + 1]!;
+  }
+  lastTables = { text, close, next };
+  return lastTables;
+}
+
+/**
+ * The index of the `]` closing the `[` at `open`, brackets nested inside
+ * counting and a backslash escaping the character after it; -1 when the
+ * line ends first (or `end` is reached). Read from one pass over the text
+ * ({@link scanTables}), so asking for every `[` of a line stays linear.
+ */
+export function closingBracket(text: string, open: number, end: number = text.length): number {
+  if (text[open] !== '[') return -1;
+  const at = scanTables(text).close[open]!;
+  return at >= 0 && at < end ? at : -1;
 }
 
 /** The `{…}` attribute blob right after index `at` (`text[at] === '{'`),
@@ -131,34 +159,12 @@ export interface FoundAnnotation {
   end: number;
   attrs: string | undefined;
   compact?: boolean;
-  /** A character style's name (`[some words]|style|`). */
-  style?: string;
 }
 
-/** Where the next `:`, `{` or `[` of `text` at or after `from` is, -1
- *  when there is none: an annotation opens at one of them. */
+/** Where the next `:` or `{` of `text` at or after `from` is, -1 when
+ *  there is none: an annotation opens at one of them. */
 function nextOpening(text: string, from: number): number {
-  let best = -1;
-  for (const c of [':', '{', '[']) {
-    const at = text.indexOf(c, from);
-    if (at >= 0 && (best < 0 || at < best)) best = at;
-  }
-  return best;
-}
-
-/** A character style `[some words]|style|` opening at `at` (`text[at] ===
- *  '['`): where its text ends (the `]`), its end (past the second bar) and
- *  the style's name. A bracket a backslash escapes, a footnote marker or a
- *  citation (`[^`, `[@`), an empty text or a bar that does not follow the
- *  bracket leave it text. */
-function charStyleAt(text: string, at: number, end: number): { close: number; end: number; style: string } | undefined {
-  if (escapedAt(text, at) || text[at + 1] === '^' || text[at + 1] === '@') return undefined;
-  const close = closingBracket(text, at, end);
-  if (close < 0 || close === at + 1 || text[close + 1] !== '|') return undefined;
-  CHAR_STYLE_NAME_RE.lastIndex = close + 1;
-  const m = CHAR_STYLE_NAME_RE.exec(text);
-  if (!m || close + 1 + m[0].length > end) return undefined;
-  return { close, end: close + 1 + m[0].length, style: m[1]! };
+  return from >= text.length ? -1 : scanTables(text).next[from]!;
 }
 
 /** The next annotation of `text` at or after `from` (before `end`). Only
@@ -194,23 +200,11 @@ export function nextAnnotation(text: string, from: number, end: number): FoundAn
         return { name: 'ruby', start: i, contentStart: i + 1, contentEnd: ruby.bar, end: ruby.end, attrs: undefined, compact: true };
       }
     }
-    if (c === '[') {
-      const styled = charStyleAt(text, i, end);
-      if (styled) {
-        return { name: 'charstyle', start: i, contentStart: i + 1, contentEnd: styled.close, end: styled.end, attrs: undefined, style: styled.style };
-      }
-    }
   }
   return undefined;
 }
 
 const unescapeBrackets = (s: string): string => s.replace(/\\([[\]])/g, '$1');
-
-/** A backslash before a bracket that would open a character style
- *  (`\[some words]|style|`): it keeps the text literal, and prints no
- *  backslash. */
-export const ESCAPED_CHAR_STYLE_RE = /\\\[(?=[^\]\n]*\]\|[\p{L}\p{N}_-]+\|)/gu;
-const unescapeCharStyles = (s: string): string => (s.includes('\\[') ? s.replace(ESCAPED_CHAR_STYLE_RE, '[') : s);
 
 /** A brace group that a backslash kept from being a compact ruby
  *  (`\{紅|hóng}`, `{紅\|hóng}`): `\{` and `\|` in it print as `{` and `|`.
@@ -240,7 +234,7 @@ function splitReadings(s: string): string[] {
  * characters written.
  */
 export function markAnnotations(text: string, queue: QueuedAnnotation[], restore: (s: string) => string = (s) => s): string {
-  if (!text.includes(':') && !text.includes('{') && !text.includes(']|')) return text;
+  if (!text.includes(':') && !text.includes('{')) return text;
   const mark = (from: number, end: number, inside: boolean): string => {
     let out = '';
     let at = from;
@@ -248,11 +242,9 @@ export function markAnnotations(text: string, queue: QueuedAnnotation[], restore
       const found = nextAnnotation(text, at, end);
       if (!found) break;
       const between = text.slice(at, found.start);
-      out += unescapeCharStyles(unescapeRubyGroups(inside ? unescapeBrackets(between) : between));
+      out += unescapeRubyGroups(inside ? unescapeBrackets(between) : between);
       const entry: QueuedAnnotation = { name: found.name, attrs: {} };
-      if (found.style !== undefined) {
-        entry.attrs = { style: restore(found.style) };
-      } else if (found.compact) {
+      if (found.compact) {
         entry.readings = splitReadings(text.slice(found.contentEnd + 1, found.end - 1)).map((r) => restore(r).trim());
       } else if (found.attrs !== undefined) {
         const attrs = parseDirectiveAttrs(found.attrs);
@@ -265,7 +257,7 @@ export function markAnnotations(text: string, queue: QueuedAnnotation[], restore
       at = found.end;
     }
     const rest = text.slice(at, end);
-    return out + unescapeCharStyles(unescapeRubyGroups(inside ? unescapeBrackets(rest) : rest));
+    return out + unescapeRubyGroups(inside ? unescapeBrackets(rest) : rest);
   };
   return mark(0, text.length, false);
 }
@@ -274,7 +266,7 @@ export function markAnnotations(text: string, queue: QueuedAnnotation[], restore
  *  a running head, an index term, a contents row): `boundary` is left where
  *  each mark was. */
 export function stripAnnotations(text: string, boundary = ''): string {
-  if (!text.includes(':') && !text.includes('{') && !text.includes(']|')) return text;
+  if (!text.includes(':') && !text.includes('{')) return text;
   const marked = markAnnotations(text, []);
   return marked === text ? text : marked.replace(MARKS_RE, boundary);
 }
