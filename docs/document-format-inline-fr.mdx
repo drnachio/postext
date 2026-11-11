@@ -141,6 +141,11 @@ Le balisage en ligne est reconnu dans tout bloc de texte (titres, paragraphes, c
       <td>Une bande de couleur derrière des mots qui restent du texte ordinaire : ils se coupent, se divisent et se justifient comme d’habitude. Son style vient de <code>markStyles</code> ; voir <a href="#surlignages">Surlignages</a>.</td>
     </tr>
     <tr>
+      <td>Style de caractère</td>
+      <td><code>:span[quelques mots]&#123;style="id"&#125;</code></td>
+      <td>Les mots dans un style nommé de <code>characterStyles</code> : une police, un corps, une couleur, une approche, des capitales, et le style de surlignage qu’il nomme. Contrairement à une pastille, la suite passe à la ligne et se coupe comme le texte qui l’entoure. Voir <a href="#styles-de-caractère">Styles de caractère</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulation</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Envoie les mots qui la suivent au taquet de tabulation suivant : l’un des taquets du style du paragraphe, ou celui que fixent ses attributs. Un caractère de tabulation tapé dans le texte n’est une tabulation que là où le style définit des taquets. Voir <a href="#tabulations-et-taquets">Tabulations et taquets</a>.</td>
@@ -200,21 +205,20 @@ Une pastille avec `field` devient un champ de formulaire à remplir dans le PDF 
 
 ### Styles de caractère
 
-`[quelques mots]|id|` compose les mots entre les crochets dans le style de caractère `id` de `characterStyles` (voir [Configuration → Styles de caractère](/fr/docs/configuration-styles#styles-de-caractère)) : une police, une couleur, un soulignement, une bande de surligneur, un barré.
+`:span[quelques mots]{style="id"}` compose les mots entre les crochets dans le style de caractère `id` de `characterStyles` (voir [Configuration → Styles de caractère](/fr/docs/configuration-styles#styles-de-caractère)) : une police, un corps, une graisse, une couleur, une approche, des capitales et, quand le style en nomme un, la bande ou le trait d’un style de surlignage. La directive `:span` est le moyen de donner une apparence nommée à une suite de mots.
 
 ```markdown
-Le [traitement de première ligne]|marker| est la [metformine]|drug|.
+Le :span[traitement de première ligne]{style="marker"} est la :span[metformine]{style="drug"}.
 
-Une [suite avec du **gras** et un [style imbriqué]|accent|]|marker| à l’intérieur.
+Une :span[suite avec du **gras** et un :span[style imbriqué]{style="accent"}]{style="marker"} à l’intérieur.
 ```
 
-- **Du texte, pas une boîte.** Les mots restent dans la ligne : ils passent à la ligne, se coupent et se justifient comme le texte qui les entoure. Une décoration coupée sur deux lignes est tracée sur chacune ; sur une même ligne, elle continue sous les espaces entre les mots de la suite, jamais sous les espaces qui l’entourent.
-- **Les barres.** L’id suit immédiatement le crochet fermant, entre deux barres : lettres, chiffres, `-` et `_`. Une espace entre `]` et `|`, une seconde barre manquante ou des crochets vides laissent le texte tel qu’il est écrit. `\[a]|b|` imprime `[a]|b|`.
-- **Des crochets qui sont autre chose.** Un appel de note (`[^1]`), une citation (`[@clé]`) et un lien (`[texte](url)`) sont lus en premier et ne sont jamais un style.
+- **Du texte, pas une boîte.** Les mots restent dans la ligne : ils passent à la ligne, se coupent et se justifient comme le texte qui les entoure. Une bande ou un trait coupé sur deux lignes est tracé sur chacune ; sur une même ligne, il continue sous les espaces entre les mots de la suite, jamais sous les espaces qui l’entourent.
+- **La directive.** `style` nomme le style, entre guillemets (`style="drug"`) ou non (`style=drug`). Un `:span` sans `style` compose ses mots sans style, comme un id inconnu. Entre les crochets, `\]` est un crochet littéral. La forme `[mots]|id|` n’est pas une syntaxe Postext et s’imprime telle qu’elle est écrite.
 - **Imbrication.** Les mots admettent les autres marques en ligne et d’autres suites ; le style le plus intérieur l’emporte. Un id inconnu compose les mots comme le texte qui les entoure et est signalé (`unknownCharacterStyle`).
 - **Où.** Paragraphes, éléments de liste, citations, encadrés, notes de bas de page, légendes, notes et cellules de tableau, et titres tant que `headings.inlineMarks` est activé (désactivé, les mots sont composés sans style).
-- **Texte brut.** Les crochets, les barres et l’id n’impriment rien : la recherche, la table des matières, les titres courants, les ancres d’index et le texte copié ne lisent que les mots.
-- **Soulignement et surlignage seuls.** Un simple soulignement s’écrit `:underline[…]`, et un simple surlignage `:mark[…]` ; un style de caractère sert à un aspect propre (une police, une couleur, une bande tracée à la main, un trait tireté ou ondulé). Son soulignement et son barré se placent, par défaut, là où se placent ceux de `:underline[…]` et `~~…~~`.
+- **Texte brut.** La directive n’imprime rien : la recherche, la table des matières, les titres courants et les ancres d’index ne lisent que les mots, tels qu’ils sont écrits. Les capitales qu’impose un style se copient depuis le PDF telles que les mots ont été tapés.
+- **Un mécanisme pour chaque chose.** Un simple soulignement s’écrit `:underline[…]`, un simple barré `~~…~~` et un simple surlignage `:mark[…]`. Une bande ou un trait qui accompagne un style de caractère est un style de surlignage que ce style nomme (`mark`) : la bande et le trait suivent donc les mêmes règles que `:mark[…]`.
 
 ### Surlignages
 
@@ -229,7 +233,7 @@ Le soleil chauffe la mer et :mark[l’eau monte dans l’air sous forme de vapeu
 - **Coupures de ligne.** Une marque peut couvrir plusieurs mots et passer d’une ligne à l’autre ; chaque ligne reçoit sa propre bande. La marge horizontale et les coins arrondis ne sont dessinés qu’au vrai début et à la vraie fin de la phrase : là où la phrase se coupe, la bande s’arrête net à la dernière lettre de la ligne et reprend net à la première lettre de la suivante. Un style avec `decorationBreak: 'clone'` donne à chaque ligne une bande entière, avec la marge et les coins à ses deux bouts : un titre posé sur une bande de couleur coupée ligne par ligne.
 - **Aucune place prise.** La bande est peinte sous le texte, de 0,8 em au-dessus à 0,25 em au-dessous de la ligne de base, agrandie de la marge verticale, et sa marge horizontale empiète sur les espaces voisins de la phrase. Les lignes se coupent exactement comme sans la marque : marquer un livre déjà composé ne déplace aucune de ses pages.
 - **Texte.** Le texte marqué accepte ses propres marques en ligne (`:mark[le mot **clé**]`), des liens, des pastilles et des renvois. Les crochets s’y imbriquent (`:mark[voir [la carte]]`), `\]` écrit un crochet littéral et le texte peut franchir un retour à la ligne simple de la source. Une ponctuation collée à la phrase hors des crochets (`:mark[terre].`) reste hors de la bande ; la couleur de texte d’un style s’étend au mot entier qui la porte. Une marque dans une autre est composée comme son texte.
-- **Où.** Paragraphes, titres composés dans le texte, éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, en texte de gauche à droite et de droite à gauche, et en chinois et en japonais. Le canvas, le PDF et le HTML peignent la bande ; dans un PDF balisé, c’est un artefact de mise en page et les mots appartiennent à leur paragraphe. Un titre dessiné par une maquette (une ouverture) imprime les mots sans bande, comme la visionneuse HTML sur une page verticale.
+- **Où.** Paragraphes, titres composés dans le texte, éléments de liste, citations, encadrés, notes de bas de page, cellules de tableau, légendes et notes, en texte de gauche à droite et de droite à gauche, et en chinois et en japonais. Le canvas, le PDF et le HTML peignent la bande ; dans un PDF balisé, c’est un artefact de mise en page et les mots appartiennent à leur paragraphe. Un titre dessiné par une maquette (une ouverture) imprime les mots sans bande. Sur une page verticale, la bande descend le long de la colonne avec les caractères, dans la visionneuse HTML aussi.
 
 ### Texte barré
 

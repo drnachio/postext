@@ -9,7 +9,7 @@ export const metadata = {
   readingTime: '31分钟',
   order: 15,
   parent: 'configuration',
-  plainSummary: "本页讲命名样式：定义一次，就可以反复使用。段落样式规定某一类文字的样子，比如参考文献或术语表。行内标签样式在一行文字中间画出一个小标签，高亮样式在一个短语后面铺一条色带。代码清单有自己的字体、边框和颜色。本页还讲书中每一篇开头的那一页，以及特殊标题的样式。标注框另有一页说明。",
+  plainSummary: "本页讲命名样式：定义一次，就可以反复使用。段落样式规定某一类文字的样子，比如参考文献或术语表。行内标签样式在一行文字中间画出一个小标签，高亮样式在一个短语后面铺一条色带，或在它下方、穿过它画一条线；字符样式把几个词换成另一种字体、字号或颜色，还可以指定一个与之配套的高亮样式。代码清单有自己的字体、边框和颜色。本页还讲书中每一篇开头的那一页，以及特殊标题的样式。标注框另有一页说明。",
 };
 
 # 配置：样式与篇
@@ -494,16 +494,24 @@ const style = pickChipStyle(resolved, 'key');
 
 ## 字符样式
 
-`characterStyles`属性声明一段文字的具名样式，在正文中写作`[some words]|id|`：字体（字体族、字号、字重、倾斜）、颜色、字距、大写或小型大写字母，以及三种装饰——下划线、像荧光笔那样画在文字后面的荧光笔色带，和删除线。与行内标签不同，带样式的一段文字像周围文字一样跨行断开、断词；跨两行的装饰在每一行上各画一次。默认提供一个样式——`marker`（覆盖字母下半部的黄色荧光笔色带，带手绘边缘）——因此`[…]|marker|`无需任何配置即可使用（普通下划线写作`:underline[…]`，普通高亮写作`:mark[…]`）；声明`characterStyles`会替换这一列表，空列表则让书中没有任何字符样式。所用id未被任何样式声明的一段文字按周围文字排版，检查面板会报告它（*未知的字符样式*）。
+`characterStyles`属性声明一段文字的具名样式。用`:span`指令给一段文字指定样式：`:span[some words]{style="id"}`，这是给一段文字套用具名样式的唯一方式。字符样式只管文字本身：字体（字体族、字号、字重、倾斜）、颜色、字距、大写或小型大写字母。文字后面的色带，以及文字下方或穿过文字的线，属于[高亮样式](#高亮样式)，由字符样式用`mark`指定。与行内标签不同，带样式的一段文字像周围文字一样跨行断开、断词。默认不提供任何样式，书中在声明之前没有字符样式。所用id未被任何样式声明的一段文字按周围文字排版，检查面板会报告它（*未知的字符样式*）。
 
 ```ts
 const config: PostextConfig = {
-  characterStyles: [
+  markStyles: [
+    { id: 'mark' },
     {
-      id: 'marker',
-      name: 'Marker',
-      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+      id: 'pen',
+      name: 'Marker pen',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
     },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Marker', mark: 'pen' },
     {
       id: 'drug',
       name: 'Drug name',
@@ -512,16 +520,16 @@ const config: PostextConfig = {
       color: { hex: '#1f4e79', model: 'hex' },
       letterSpacing: { value: 0.02, unit: 'em' },
     },
-    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+    { id: 'wrong', name: 'Wrong answer', mark: 'struck' },
   ],
 };
 ```
 
 ```md
-The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}, never :span[insulin first]{style="wrong"}.
 ```
 
-文字属性（未设置的沿用周围文字）：
+属性（未设置的沿用周围文字）：
 
 <table>
   <thead>
@@ -537,7 +545,7 @@ The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first
       <td><code>id</code></td>
       <td><code>string</code></td>
       <td>必填</td>
-      <td>写在两条竖线之间的标识符：<code>[…]|id|</code>。由字母、数字、<code>-</code>和<code>_</code>组成。</td>
+      <td>写在指令中的标识符：<code>:span[…]&#123;style="id"&#125;</code>。由字母、数字、<code>-</code>和<code>_</code>组成。</td>
     </tr>
     <tr>
       <td><code>name</code></td>
@@ -573,7 +581,7 @@ The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td>周围文字</td>
-      <td>这段文字的颜色，包括其中的粗体和斜体词语。</td>
+      <td>这段文字的颜色，包括其中的粗体和斜体词语。只影响绘制，从不改变排版。自带文字颜色的高亮（样式的<code>mark</code>，或包住这段文字的<code>:mark[…]</code>）优先于它。</td>
     </tr>
     <tr>
       <td><code>letterSpacing</code></td>
@@ -585,7 +593,7 @@ The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first
       <td><code>textTransform</code></td>
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
-      <td><code>uppercase</code>把这段文字排成大写字母；原文的字母保持不变，所以搜索和源映射仍按书写的样子读取。</td>
+      <td><code>uppercase</code>按这段文字所属语言的规则把它排成大写字母（土耳其语的<em>i</em>变为<em>İ</em>，希腊语大写去掉重音）。源文本保持原来的字母：搜索和源映射按书写的样子读取，PDF把书写的词作为这些大写字母的文字（<code>/ActualText</code>），所以复制出来的是原来输入的词。HTML和EPUB中存的就是大写字母本身。</td>
     </tr>
     <tr>
       <td><code>smallCaps</code></td>
@@ -594,166 +602,30 @@ The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first
       <td>把这段文字排成小型大写字母，与<code>:smallcaps[…]</code>相同。</td>
     </tr>
     <tr>
-      <td><code>underline</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>关闭</td>
-      <td>这段文字下方的一条线（见下文）。</td>
-    </tr>
-    <tr>
-      <td><code>highlight</code></td>
-      <td><code>CharacterStyleHighlightConfig</code></td>
-      <td>关闭</td>
-      <td>这段文字后面的一条荧光笔色带（见下文）。</td>
-    </tr>
-    <tr>
-      <td><code>strike</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>关闭</td>
-      <td>穿过这段文字的一条线（见下文）。</td>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>无</td>
+      <td>随这段文字一起绘制的<a href="#高亮样式">高亮样式</a>的id：它的色带、它的线、它的文字颜色。没有任何高亮样式声明的id会被丢弃，这段文字就不带高亮。</td>
     </tr>
   </tbody>
 </table>
 
-`underline`和`strike`（em长度以这段文字自身的字号计）：
+**一件事一种机制。** 字符样式规定字母；高亮样式绘制与之配套的东西，色带或线，与`:mark[…]`相同。普通下划线仍写作`:underline[…]`，普通删除线写作`~~…~~`，普通高亮写作`:mark[…]`；字符样式用于书中命名并反复使用的外观。其他一些工具使用的方括号加竖线写法（`[words]|id|`）不是Postext语法：它保持原样，作为文字排出。
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>属性</th>
-      <th style={{ width: '180px' }}>类型</th>
-      <th style={{ width: '140px' }}>默认值</th>
-      <th>说明</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>画出这条线。</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td>这段文字的颜色</td>
-      <td>线的颜色。</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>100</code></td>
-      <td>百分比，0–100。</td>
-    </tr>
-    <tr>
-      <td><code>thickness</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.05em</code></td>
-      <td>线的粗细。</td>
-    </tr>
-    <tr>
-      <td><code>offset</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.12em</code>（下划线）、<code>0.28em</code>（删除线）</td>
-      <td>线的中心所在的位置：下划线在基线下方，删除线在基线上方。</td>
-    </tr>
-    <tr>
-      <td><code>style</code></td>
-      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
-      <td><code>'solid'</code></td>
-      <td>线的画法。</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>逐词绘制，空格处留白；关闭时，线在这段文字内部的空格下方连续画过（从不画到它两侧的空格下方）。</td>
-    </tr>
-  </tbody>
-</table>
+**嵌套。** 一段文字中可以含有其他行内标记（`:span[a **bold** word]{style="marker"}`、链接、引用、公式），也可以含有其他带样式的文字：最内层的样式优先（`:span[a :span[b]{style="drug"} c]{style="marker"}`）。一段文字不能跨越段落。
 
-`highlight`（边缘从基线量起，向上为正，以这段文字自身字号的em计）：
+**适用位置。** 段落、列表项、引用块、标注框、脚注、题注、注释和表格单元格，以及`headings.inlineMarks`开启时的标题。书眉、目录和索引条目只取文字，不带样式。在竖排页面上（竖排的中文和日文书），这段文字像周围文字一样排，其高亮的线画在字的右侧，作为旁线。
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>属性</th>
-      <th style={{ width: '180px' }}>类型</th>
-      <th style={{ width: '140px' }}>默认值</th>
-      <th>说明</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>画出色带。</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td><code>#ffe14d</code></td>
-      <td>色带的颜色。调色板中的专色会让色带印在该油墨的印版上。</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>70</code></td>
-      <td>百分比，0–100。色带画在文字后面，所以字母保持原来的颜色。</td>
-    </tr>
-    <tr>
-      <td><code>bottom</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>-0.2em</code></td>
-      <td>色带的起点（负值：在基线下方，位于降部之间）。</td>
-    </tr>
-    <tr>
-      <td><code>top</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.8em</code></td>
-      <td>色带的终点：约<code>0.45em</code>覆盖字母的下半部（一笔荧光笔），<code>0.8em</code>覆盖整个词，<code>0.05em</code>配合<code>bottom: -0.15em</code>得到一条粗下划线。</td>
-    </tr>
-    <tr>
-      <td><code>overhang</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>色带超出这段文字第一个和最后一个字母的距离。</td>
-    </tr>
-    <tr>
-      <td><code>radius</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>圆角半径，最大为色带高度的一半。</td>
-    </tr>
-    <tr>
-      <td><code>rough</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>0–100：<code>0</code>为整齐的色带；数值越高，色带的上下边缘越起伏，沿行方向略有漂移，两端斜切，像手画的荧光笔。起伏取决于由这段文字得出的种子，所以每次渲染都相同，在画布、PDF和HTML中也一样。</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>每个词一条色带。</td>
-    </tr>
-  </tbody>
-</table>
+**输出。** 画布、PDF、HTML和矢量输出（SVG、IDML）按照与每个`:mark[…]`相同的几何数据，绘制样式所指定的高亮。EPUB把每个样式写成一个类（`pt-cs-<id>`），带有它的字体、字号、字重、倾斜、颜色、字距和小型大写字母；它不画高亮，正如它不画`:mark[…]`。导出为Word时，每个样式成为一个名为*Postext Style: …*的Word字符样式，高亮的色带成为底纹，线成为Word中最接近的下划线或删除线；导入Word时，与书中某个样式同名的字符样式，或以本站任一语言命名为*Postext Style: …*的字符样式，会映射回该样式。
 
-**嵌套。** 一段文字中可以含有其他行内标记（`[a **bold** word]|marker|`、链接、引用、公式），也可以含有其他带样式的文字：最内层的样式优先（`[a [b]|drug| c]|marker|`）。一段文字不能跨越段落。
-
-**适用位置。** 段落、列表项、引用块、标注框、脚注、题注、注释和表格单元格，以及`headings.inlineMarks`开启时的标题。书眉、目录和索引条目只取文字，不带样式。
-
-**输出。** 画布、PDF和HTML依据同一套几何数据绘制装饰（`VDTLine.marks`，种类为`band`、`line`、`double`、`dotted`、`dashed`、`wavy`）：色带画在该行文字之前，线画在文字之后。在数字版PDF中，半透明的色带或线用透明度绘制；在印刷用PDF中（`pdfGeneration.colorSpace`为印刷配置文件），它按印在白纸上的效果排出——其颜色的浓淡，若为专色则印在该油墨自己的印版上——不使用透明度，所以PDF/X文件中从不出现透明。可重排的EPUB把每个样式写成一个类（`pt-cs-<id>`），配以CSS：字体、颜色，线用`text-decoration`，色带用渐变背景。导出为Word时，每个样式成为一个Word字符样式（`字符样式: <name>`），色带成为其颜色的底纹；导入Word时，与书中某个样式同名的字符样式——或以`字符样式: <name>`导出的字符样式——会映射回该样式。
-
-在VDT中，带样式的片段携带`charStyle: { id, style }`（这段文字和样式的id）；它的字体、颜色和字距已经写在`fontString`、`color`和`tracking`中。
+在VDT中，带样式的片段携带`charStyle: { id, style }`（这段文字和样式的id）；它的字体和字距已经写在`fontString`和`tracking`中，颜色写在`color`中，样式排成大写的片段在`sourceText`中保留书写的文字。
 
 ```ts
-const resolved = resolveCharacterStylesConfig(config.characterStyles);
-// => 未设置时为内置的`marker`；每个字段都已填入
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => 每个字段都已填入；丢弃指向不存在的高亮样式的`mark`
 
 const minimal  = stripCharacterStylesDefaults(config.characterStyles);
-// => 内置默认值时为undefined；去掉静态默认值；保留[]
+// => 去掉静态默认值；空列表时为undefined
 
 const style = pickCharacterStyle(resolved, 'drug');
 // => `drug`样式；没有该id的样式时为undefined
@@ -761,7 +633,7 @@ const style = pickCharacterStyle(resolved, 'drug');
 
 ## 高亮样式
 
-`markStyles`属性为行内的`:mark[文字]{style="…"}`声明命名样式。高亮是铺在短语底下的色带，就像课本给关键词划重点（语法和断行规则见文档格式参考）。默认自带一个样式`mark`（浅黄色色带，略超出短语，两端为直角，文字保持自身颜色），所以`:mark[…]`不做任何配置也能用；声明`markStyles`会替换这份默认列表。没有写`style`、或者写的id没有任何样式声明的高亮，套用第一个样式（Sandbox会标出未知的id）。
+`markStyles`属性为行内的`:mark[文字]{style="…"}`（以及字符样式用`mark`指定的高亮）声明命名样式。高亮是铺在短语底下的色带，以及短语下方或穿过短语的线，就像课本给关键词划重点（语法和断行规则见文档格式参考）。默认自带一个样式`mark`（浅黄色色带，略超出短语，两端为直角，文字保持自身颜色），所以`:mark[…]`不做任何配置也能用；声明`markStyles`会替换这份默认列表。没有写`style`、或者写的id没有任何样式声明的高亮，套用第一个样式（Sandbox会标出未知的id）。
 
 ```ts
 const config: PostextConfig = {
@@ -839,7 +711,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>、<code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>上方或下方的留白，分别取代<code>paddingY</code>。</td>
+      <td>上方或下方的留白，分别取代<code>paddingY</code>。两者都可以为负值：负的<code>paddingTop</code>把色带上缘压进字母（约<code>-0.35em</code>盖住字母的下半部，像荧光笔的一笔），负的<code>paddingBottom</code>把色带下缘抬到下伸部分之上。没有剩下高度的色带不画。</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>画出色带。设为<code>false</code>时样式只保留线和文字颜色，用于只加下划线或删除线的高亮。</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>色带的不透明度，百分比（0–100）。色带画在文字后面，所以字母保持原来的颜色。见下文关于透明的说明。</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100：<code>0</code>为整齐的色带；数值越高，色带的上下边缘越起伏，两端斜切，像手画的荧光笔。起伏取决于由高亮及其位置得出的种子，所以每次渲染都相同，在画布、PDF、HTML和矢量输出中也一样。Word画的是整齐的色带。</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>无</td>
+      <td>随高亮画出的一条线，在文字下方或穿过文字（见下文）。</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -850,7 +746,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-以em为单位的长度（`paddingX`、`paddingY`、`paddingTop`、`paddingBottom`、`borderRadius`）相对于被标记文字的字号。色带不占位置：文字的排法与没有高亮时相同，色带画在文字底下，留白伸进词间空白和行间。在VDT中，被标记词语的片段带有`mark`（`{ style, id, start?, end?, from?, to? }`），每一行把自己的色带存在`highlights`中（`{ x, y, width, height, color, radiusLeft, radiusRight }`，相对于该行的`bbox.x`和基线），画布、PDF和HTML后端先画色带，再画这一行的文字。
+`line`（em长度以被标记文字的字号计）：
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>在文字下方，即字体放下划线的位置，或穿过文字，即字体放删除线的位置。在中文和日文中，穿过文字的线位于字身框的中轴上；在竖排页面上，下方的线画在字的右侧，作为旁线。</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>线的画法。双线把第二道线移到离字母更远的一侧；点、短划和波浪的大小由粗细和文字字号决定。</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>被标记文字的颜色</td>
+      <td>线的颜色。</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>字体的</td>
+      <td>线的粗细；未设置时取字体自身的下划线或删除线粗细。</td>
+    </tr>
+  </tbody>
+</table>
+
+线在短语内部的词间空白下方连续画过，短语转到下一行时在该行最后一个字母处停止。所用的线与`:underline[…]`和`~~…~~`画的相同，所以高亮的线落在它们所在的位置。
+
+**透明。** 不透明度低于100 %的色带，在允许透明的画布、HTML、数字版PDF和PDF/X-4中是半透明的。PDF/X-1a不允许透明：色带在那里按印在白纸上的效果排出，即其颜色的浅色，若为专色则印在该油墨自己的印版上。Word导出和矢量输出（SVG、IDML）也按同样的方式在白底上设置；在有底色的页面上或图片上，这种浅色与半透明的色带不同。
+
+以em为单位的长度（`paddingX`、`paddingY`、`paddingTop`、`paddingBottom`、`borderRadius`）相对于被标记文字的字号。色带不占位置：文字的排法与没有高亮时相同，色带画在文字底下，留白伸进词间空白和行间。在VDT中，被标记词语的片段带有`mark`（`{ style, id, start?, end?, from?, to? }`），每一行把自己的色带存在`highlights`中（`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`，相对于该行的`bbox.x`和基线），画布、PDF和HTML后端先画色带，再画这一行的文字；线放在该行的`marks`中，标有`markLine`，在文字之后画出。
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

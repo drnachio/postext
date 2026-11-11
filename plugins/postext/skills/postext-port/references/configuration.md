@@ -99,7 +99,7 @@ Conversion at `page.dpi` (default 300):
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
 | `markStyles` | MarkStyleConfig[] | `[{id:'mark'}]` (pale yellow) | §13b inline `:mark[…]{style=…}`, postext ≥ 1.34.1 |
-| `characterStyles` | CharacterStyleConfig[] | `[{id:'marker',…}]` (yellow hand-drawn band) | §13b2 inline `[words]|id|` |
+| `characterStyles` | CharacterStyleConfig[] | `[]` (none) | §13b2 inline `:span[words]{style=…}` |
 | `exerciseStyles` | ExerciseStyleConfig[] | `[{id:'exercise'}]` | §13c `:::exercise{style=…}` — declaring replaces the default list |
 | `exercises` | ExercisesConfig | — | §13c edition (student/teacher), solutions placement, shuffle seed, screen editions |
 | `codeStyle` | CodeStyleConfig | §12b | code listings (```` ``` ```` / `~~~` fences, postext ≥ 1.23): face, box, tab width, long lines, line numbers, token colours, inline code |
@@ -1404,36 +1404,41 @@ style declares (`unknownMarkStyle`), takes the first style; declaring `markStyle
   holds glued punctuation), borderRadius = 0 (square ends, the print norm; 0.2em up to postext 1.51, which a config stored then keeps through the configVersion 18 pin when its text has a mark; write it to round a band's ends), paddingX = 0.15em (past the
   first and last letter, into the word spaces), paddingY = 0.05em, paddingTop?, paddingBottom? (each in place
   of paddingY), decorationBreak = 'slice' | 'clone' (postext ≥ 1.52.0; 'clone' gives every line piece of a wrapped
-  phrase a whole band, paddingX and corners on both ends: a heading on a colour band cut per line) }
+  phrase a whole band, paddingX and corners on both ends: a heading on a colour band cut per line),
+  backgroundEnabled = true (false: no band, only the line and the text colour), opacity = 100 (0–100; translucent
+  in canvas, HTML, digital PDF and PDF/X-4; a tint over white in PDF/X-1a, Word, SVG and IDML),
+  rough = 0 (0–100, hand-drawn edges, seeded: the same on every render; Word draws a clean band),
+  line?: { position = 'under' | 'through', style = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy',
+    color? (the marked text's), thickness? (the face's underline/strikeout) } }
 ```
+paddingTop/paddingBottom may be negative: `paddingTop: -0.35em` gives a marker stroke over the lower half of the
+letters. A line under sits where `:underline[…]` puts it (right of the characters down a vertical page), a line
+through where `~~…~~` does.
 The band takes no room: the lines break as they would without the mark, so marking a laid-out book moves no page.
 Port rule: one style per distinct highlight colour of the source, the highlight's text colour in the style's
 `color`; never a row of chips split by hand at the source's line ends, and never two chips for a translated phrase.
-Limits: a heading drawn by a design (an opener) prints the words without the band, and so does the HTML viewer on a
-vertical page. An engine older than the release that ships `:mark` prints `:mark[…]` literally (check `postext
+Limits: a heading drawn by a design (an opener) prints the words without the band. An engine older than the release that ships `:mark` prints `:mark[…]` literally (check `postext
 --version`).
 
 ---------------------------------------------------------------------------------
 
 ## 13b2. `characterStyles[]` — CharacterStyleConfig
 
-Inline `[some words]|id|`: a named look for a run of words — a face, a colour, tracking, capitals, and three
-decorations (underline, highlighter band behind the words, strike-through). The words stay ordinary text (they
-break, hyphenate and justify like the words round them; a decoration broken over two lines is drawn on each). The
-brackets, bars and id print nothing; `\[a]|b|` stays literal; `[^…]`, `[@…]` and `[text](url)` are never a style.
-An unknown id sets the words plain (`unknownCharacterStyle`). Declaring `characterStyles` replaces the built-in list.
+Inline `:span[some words]{style="id"}`, the one way to give a run of words a named look: a face, a size, a weight,
+a colour, tracking, capitals or small capitals, and (`mark`) a highlight style of §13b for a band or a line. The
+words stay ordinary text (they break, hyphenate and justify like the words round them). The directive prints
+nothing; `[words]|id|` is not Postext syntax and prints as written. An unknown id sets the words plain
+(`unknownCharacterStyle`). No style ships by default.
 ```
-{ id (REQUIRED), name?, fontFamily?, fontSize?: Dimension, fontWeight?, italic = false, color?: ColorValue,
-  letterSpacing?: Dimension, textTransform = 'none' | 'uppercase', smallCaps = false,
-  underline?: { enabled = false, color? (the run's), opacity = 100, thickness = 0.05em, offset = 0.12em (down),
-    style = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy', skipSpaces = false },
-  strike?: { same, offset = 0.28em (up) },
-  highlight?: { enabled = false, color = #ffe14d, opacity = 70, bottom = -0.2em, top = 0.8em (from the baseline),
-    overhang = 0.08em, radius = 0.08em, rough = 0 (0–100, hand-drawn edges), skipSpaces = false } }
+{ id (REQUIRED), name?, fontFamily?, fontSize?: Dimension, fontWeight?, italic = false,
+  color?: ColorValue (paint only; a highlight's text colour wins over it),
+  letterSpacing?: Dimension, textTransform = 'none' | 'uppercase' (by the language's rules; the PDF copies the
+  words as written), smallCaps = false, mark?: string (a markStyles id; an unknown id is dropped) }
 ```
-Port rule: a plain underline is `:underline[…]` and a plain highlight `:mark[…]`; a character style only for a look
-of its own (a face or colour on a run, a hand-drawn band, a dashed or wavy line) or a source character style that
-must come back as one in Word.
+Port rule: a plain underline is `:underline[…]`, a plain strike-through `~~…~~`, a plain highlight `:mark[…]`; a
+character style for a look the source names and reuses (a face or colour on a run, or a source character style that
+must come back as one in Word, exported as *Postext Style: <name>*). Its band or line is a `markStyles` entry the
+style names with `mark`, never a decoration of its own. The EPUB sets the text look only, no band or line.
 
 ## 13c. `exerciseStyles[]` and `exercises` — exercises
 

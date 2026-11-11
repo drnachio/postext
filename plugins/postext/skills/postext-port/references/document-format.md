@@ -626,7 +626,7 @@ piece of the phrase on its line (the padding and rounded corners are drawn at th
   as its text.
 - It takes no room: the lines break as they would without it. Works in paragraphs, headings set in the text, list
   items, quotes, callouts, footnotes, cells, captions and notes, in LTR, RTL, Chinese and Japanese. A heading drawn
-  by a design (an opener) prints the words without the band; the HTML viewer draws none on a vertical page.
+  by a design (an opener) prints the words without the band.
 - Porting map: "highlighted phrase / marker pen" becomes `:mark[…]{style}`, one style per distinct highlight
   colour of the source, never a row of chips split by hand at the source's line ends (a translation would need a
   different number of them). An engine older than the release that ships it prints `:mark[…]` literally.
@@ -635,6 +635,20 @@ piece of the phrase on its line (the padding and rounded corners are drawn at th
 The sun warms the sea and :mark[water rises into the air as vapour].
 
 - :mark[Evaporation]{style="key"}: water turns into vapour.
+```
+
+### 10.1c `:span[words]{style="…"}` (character style)
+
+The one way to give a run of words a named look: `characterStyles` (configuration.md §13b2) sets its face, size,
+weight, colour, tracking and case, and the highlight style it names (`mark`) draws a band or a line with it. The
+words stay ordinary text and break, hyphenate and justify as usual.
+- `style` names the style, quoted or not; without it, or with an unknown id, the words are set plain and a warning
+  says so (`unknownCharacterStyle`). `\]` is a literal bracket; runs nest and the innermost style wins.
+- `[words]|id|` is not Postext syntax (it prints as written); port a source's character style to `:span`.
+- A plain underline stays `:underline[…]`, a plain strike-through `~~…~~`, a plain highlight `:mark[…]`.
+
+```md
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}.
 ```
 
 ### 10.2 `:swatch{color="…"}` (colour key square)

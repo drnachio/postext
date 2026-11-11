@@ -4411,16 +4411,16 @@
       "it": "Stili di carattere"
     },
     "definition": {
-      "en": "Named styles for a run of words inside the line: a face, a colour, an underline, a highlighter band or a strike-through. Unlike a chip, the words break and hyphenate like the text around them.",
-      "es": "Estilos con nombre para un tramo de palabras dentro de la línea: una letra, un color, un subrayado, una banda de rotulador o un tachado. A diferencia de un chip, las palabras pasan de línea y se dividen como el texto que las rodea.",
-      "ca": "Estils amb nom per a un tram de paraules dins de la línia: una lletra, un color, un subratllat, una banda de retolador o un ratllat. A diferència d'un xip, les paraules passen de línia i es parteixen com el text que les envolta.",
-      "zh": "行内一段文字的命名样式：字体、颜色、下划线、荧光笔色带或删除线。与行内标签不同，这些文字像周围的正文一样换行、断词。",
-      "ar": "أنماط مسمّاة لمقطع من الكلمات داخل السطر: خط، أو لون، أو تسطير، أو شريط قلم تحديد، أو شطب. وخلافًا للشارة، تنتقل الكلمات من سطر إلى آخر وتُقسَّم بالواصلة كالنص المحيط بها.",
-      "ja": "行内の語句に付ける名前付きスタイルです。書体、色、下線、蛍光ペンの帯、取り消し線を指定できます。チップと違い、語句は周囲の本文と同じように行を移り、ハイフネーションされます。",
-      "pt": "Estilos nomeados para um trecho de palavras dentro da linha: uma fonte, uma cor, um sublinhado, uma faixa de marca-texto ou um tachado. Ao contrário de um chip, as palavras quebram de linha e se hifenizam como o texto ao redor.",
-      "fr": "Des styles nommés pour une suite de mots dans la ligne : une police, une couleur, un soulignement, une bande de surligneur ou un barré. Contrairement à une pastille, les mots passent à la ligne et se coupent comme le texte qui les entoure.",
-      "de": "Benannte Formate für eine Wortfolge innerhalb der Zeile: eine Schrift, eine Farbe, eine Unterstreichung, ein Textmarkerband oder eine Durchstreichung. Anders als bei einem Chip brechen die Wörter um und werden getrennt wie der umgebende Text.",
-      "it": "Stili con nome per una sequenza di parole dentro la riga: un carattere, un colore, una sottolineatura, una fascia di evidenziatore o un barrato. A differenza di un chip, le parole vanno a capo e si sillabano come il testo che le circonda."
+      "en": "Named looks for a run of words inside the line, given with :span[…]{style}: a face, a size, a colour, tracking, capitals, and a highlight style for a band or a line. Unlike a chip, the words break and hyphenate like the text around them.",
+      "es": "Aspectos con nombre para un tramo de palabras dentro de la línea, dados con :span[…]{style}: una letra, un tamaño, un color, el espaciado, las mayúsculas y un estilo de resaltado para una franja o una línea. A diferencia de un chip, las palabras pasan de línea y se dividen como el texto que las rodea.",
+      "ca": "Aspectes amb nom per a un tram de paraules dins de la línia, donats amb :span[…]{style}: una lletra, una mida, un color, l'espaiat, les majúscules i un estil de ressaltat per a una franja o una línia. A diferència d'un xip, les paraules passen de línia i es parteixen com el text que les envolta.",
+      "zh": "用 :span[…]{style} 给行内一段文字指定的命名样式：字体、字号、颜色、字距、大写，以及画色带或线条的高亮样式。与行内标签不同，这些文字像周围的正文一样换行、断词。",
+      "ar": "أنماط مسمّاة لمقطع من الكلمات داخل السطر تُعطى بـ :span[…]{style}: خط، وحجم، ولون، وتباعد بين الحروف، وحروف كبيرة، ونمط تظليل لشريط أو خط. وخلافًا للشارة، تنتقل الكلمات من سطر إلى آخر وتُقسَّم بالواصلة كالنص المحيط بها.",
+      "ja": ":span[…]{style} で行内の語句に付ける名前付きスタイルです。書体、サイズ、色、字間、大文字、帯や線を引くハイライトスタイルを指定できます。チップと違い、語句は周囲の本文と同じように行を移り、ハイフネーションされます。",
+      "pt": "Visuais nomeados para um trecho de palavras dentro da linha, dados com :span[…]{style}: uma fonte, um tamanho, uma cor, o espaçamento, as maiúsculas e um estilo de destaque para uma faixa ou uma linha. Ao contrário de um chip, as palavras quebram de linha e se hifenizam como o texto ao redor.",
+      "fr": "Des apparences nommées pour une suite de mots dans la ligne, données avec :span[…]{style} : une police, une taille, une couleur, l’interlettrage, les capitales et un style de surlignage pour une bande ou un trait. Contrairement à une pastille, les mots passent à la ligne et se coupent comme le texte qui les entoure.",
+      "de": "Benannte Formate für eine Wortfolge innerhalb der Zeile, vergeben mit :span[…]{style}: Schrift, Größe, Farbe, Laufweite, Versalien und ein Hervorhebungsstil für ein Band oder eine Linie. Anders als bei einem Chip brechen die Wörter um und werden getrennt wie der umgebende Text.",
+      "it": "Aspetti con nome per una sequenza di parole dentro la riga, dati con :span[…]{style}: un carattere, un corpo, un colore, la spaziatura, il maiuscolo e uno stile di evidenziazione per una fascia o una linea. A differenza di un chip, le parole vanno a capo e si sillabano come il testo che le circonda."
     },
     "aliases": {
       "en": [

@@ -9,7 +9,7 @@ export const metadata = {
   readingTime: '41 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a highlight style a coloured band behind a phrase; a character style sets a few words in another face or colour, or underlines, highlights or strikes them through. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings. Callout boxes have a page of their own.",
+  plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a highlight style a coloured band behind a phrase or a line under or through it; a character style sets a few words in another face, size or colour, and may name a highlight style to go with them. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings. Callout boxes have a page of their own.",
 };
 
 # Configuration: styles and parts
@@ -494,16 +494,24 @@ const style = pickChipStyle(resolved, 'key');
 
 ## Character styles
 
-The `characterStyles` property declares the named styles of a run of words, written `[some words]|id|` in the text: a face (family, size, weight, slant), a colour, tracking, capitals or small capitals, and three decorations — an underline, a highlighter band painted behind the words like a marker pen, and a strike-through. Unlike a chip, a styled run breaks across lines and hyphenates like the text around it; a decoration broken over two lines is drawn on each. One style ships by default — `marker`, a yellow highlighter over the lower half of the letters, with hand-drawn edges — so `[…]|marker|` works without any configuration (a plain underline is `:underline[…]`, a plain highlight `:mark[…]`); declaring `characterStyles` replaces that list, and an empty list leaves a book with none. A run whose id no style declares is set as the text around it, and the Review panel reports it (*Unknown character style*).
+The `characterStyles` property declares the named looks of a run of words. A run is given one with the `:span` directive, `:span[some words]{style="id"}`, which is the only way to give a run a named look. A character style sets the text: a face (family, size, weight, slant), a colour, tracking, capitals or small capitals. A band behind the words or a line under or through them belongs to a [highlight style](#highlight-styles), which the character style names with `mark`. Unlike a chip, a styled run breaks across lines and hyphenates like the text around it. No style ships by default, and a book has none until it declares them. A run whose id no style declares is set as the text around it, and the Review panel reports it (*Unknown character style*).
 
 ```ts
 const config: PostextConfig = {
-  characterStyles: [
+  markStyles: [
+    { id: 'mark' },
     {
-      id: 'marker',
-      name: 'Marker',
-      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+      id: 'pen',
+      name: 'Marker pen',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
     },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Marker', mark: 'pen' },
     {
       id: 'drug',
       name: 'Drug name',
@@ -512,16 +520,16 @@ const config: PostextConfig = {
       color: { hex: '#1f4e79', model: 'hex' },
       letterSpacing: { value: 0.02, unit: 'em' },
     },
-    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+    { id: 'wrong', name: 'Wrong answer', mark: 'struck' },
   ],
 };
 ```
 
 ```md
-The [first line of treatment]|marker| is [metformin]|drug|, never [insulin first]|wrong|.
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}, never :span[insulin first]{style="wrong"}.
 ```
 
-Text properties (unset ones keep the text's):
+Properties (unset ones keep the text's):
 
 <table>
   <thead>
@@ -537,7 +545,7 @@ Text properties (unset ones keep the text's):
       <td><code>id</code></td>
       <td><code>string</code></td>
       <td>required</td>
-      <td>Identifier written between the bars: <code>[…]|id|</code>. Letters, digits, <code>-</code> and <code>_</code>.</td>
+      <td>Identifier written in the directive: <code>:span[…]&#123;style="id"&#125;</code>. Letters, digits, <code>-</code> and <code>_</code>.</td>
     </tr>
     <tr>
       <td><code>name</code></td>
@@ -573,7 +581,7 @@ Text properties (unset ones keep the text's):
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td>the text's</td>
-      <td>Colour of the run, bold and italic words included.</td>
+      <td>Colour of the run, bold and italic words included. Paint only: it never changes the layout. A highlight that sets its own text colour (the style's <code>mark</code>, or a <code>:mark[…]</code> around the run) wins over it.</td>
     </tr>
     <tr>
       <td><code>letterSpacing</code></td>
@@ -585,7 +593,7 @@ Text properties (unset ones keep the text's):
       <td><code>textTransform</code></td>
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
-      <td><code>uppercase</code> sets the run in capitals; the text keeps its letters, so search and the source map still read it as written.</td>
+      <td><code>uppercase</code> sets the run in capitals by the rules of the language it is in (a Turkish <em>i</em> becomes <em>İ</em>, Greek capitals drop their accents). The source keeps its letters: search and the source map read it as written, and the PDF gives the capitals the written word as their text (<code>/ActualText</code>), so copying them gives the words as typed. The HTML and the EPUB hold the capitals themselves.</td>
     </tr>
     <tr>
       <td><code>smallCaps</code></td>
@@ -594,166 +602,30 @@ Text properties (unset ones keep the text's):
       <td>Set the run in small capitals, as <code>:smallcaps[…]</code> does.</td>
     </tr>
     <tr>
-      <td><code>underline</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>off</td>
-      <td>A line under the run (below).</td>
-    </tr>
-    <tr>
-      <td><code>highlight</code></td>
-      <td><code>CharacterStyleHighlightConfig</code></td>
-      <td>off</td>
-      <td>A highlighter band behind the run (below).</td>
-    </tr>
-    <tr>
-      <td><code>strike</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>off</td>
-      <td>A line through the run (below).</td>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>none</td>
+      <td>The id of a <a href="#highlight-styles">highlight style</a> drawn with the run: its band, its line, its text colour. An id no highlight style declares is dropped, so the run takes no highlight.</td>
     </tr>
   </tbody>
 </table>
 
-`underline` and `strike` (em lengths are of the run's own size):
+**One mechanism for each thing.** A character style sets the letters; a highlight style draws what goes with them, a band or a line, the same as for `:mark[…]`. A plain underline is still `:underline[…]`, a plain strike-through `~~…~~` and a plain highlight `:mark[…]`; a character style is for a look the book names and reuses. The bracket-and-bars form some other tools use (`[words]|id|`) is not Postext syntax: it stays text as written.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Property</th>
-      <th style={{ width: '180px' }}>Type</th>
-      <th style={{ width: '140px' }}>Default</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Draw the line.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td>the run's colour</td>
-      <td>Line colour.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>100</code></td>
-      <td>Percent, 0–100.</td>
-    </tr>
-    <tr>
-      <td><code>thickness</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.05em</code></td>
-      <td>Stroke width.</td>
-    </tr>
-    <tr>
-      <td><code>offset</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.12em</code> (underline), <code>0.28em</code> (strike)</td>
-      <td>Where the line's middle runs: below the baseline for an underline, above it for a strike-through.</td>
-    </tr>
-    <tr>
-      <td><code>style</code></td>
-      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
-      <td><code>'solid'</code></td>
-      <td>How the line is drawn.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Draw it word by word, the spaces left blank; off, it runs on under the spaces of the run (never under the spaces around it).</td>
-    </tr>
-  </tbody>
-</table>
+**Nesting.** A run may hold other inline marks (`:span[a **bold** word]{style="marker"}`, a link, a reference, a formula), and other runs: the innermost style wins (`:span[a :span[b]{style="drug"} c]{style="marker"}`). A run cannot cross a paragraph.
 
-`highlight` (edges measured from the baseline, positive up, in em of the run's own size):
+**Where.** Paragraphs, list items, quotations, callouts, footnotes, captions, notes and table cells, and headings while `headings.inlineMarks` is on. Running heads, the contents and index entries take the words without the style. Down a vertical page (Chinese and Japanese books set vertically) the run is set like the text around it, and the line of its highlight runs on the right of the characters, as a side line.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Property</th>
-      <th style={{ width: '180px' }}>Type</th>
-      <th style={{ width: '140px' }}>Default</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Paint the band.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td><code>#ffe14d</code></td>
-      <td>Band colour. A palette entry that is a spot colour prints the band on its ink's plate.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>70</code></td>
-      <td>Percent, 0–100. The band is painted behind the text, so the letters keep their colour.</td>
-    </tr>
-    <tr>
-      <td><code>bottom</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>-0.2em</code></td>
-      <td>Where the band starts (negative: below the baseline, among the descenders).</td>
-    </tr>
-    <tr>
-      <td><code>top</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.8em</code></td>
-      <td>Where the band ends: about <code>0.45em</code> covers the lower half of the letters (a marker stroke), <code>0.8em</code> the whole words, <code>0.05em</code> with <code>bottom: -0.15em</code> a thick underline.</td>
-    </tr>
-    <tr>
-      <td><code>overhang</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>How far the band reaches past the run's first and last letters.</td>
-    </tr>
-    <tr>
-      <td><code>radius</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Corner radius, clamped to half the band's height.</td>
-    </tr>
-    <tr>
-      <td><code>rough</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>0–100: <code>0</code> a clean band; higher values wobble its top and bottom edges, drift it slightly across the line and cut its ends on a slant, like a marker drawn by hand. The wobble follows a seed taken from the run, so it is the same on every render, in the canvas, the PDF and the HTML.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>One band per word.</td>
-    </tr>
-  </tbody>
-</table>
+**Output.** The canvas, the PDF, the HTML and the vector outputs (SVG, IDML) draw the highlight a style names from the same geometry as every `:mark[…]`. The EPUB sets each style as a class (`pt-cs-<id>`) with its face, size, weight, slant, colour, tracking and small capitals; it draws no highlight, as it draws no `:mark[…]`. A Word export makes each style a Word character style named *Postext Style: …*, with the highlight's band as shading and its line as Word's nearest underline or a strike-through, and a Word import maps a character style named like a book style, or *Postext Style: …* in any of the site's languages, back to it.
 
-**Nesting.** A run may hold other inline marks (`[a **bold** word]|marker|`, a link, a reference, a formula), and other runs: the innermost style wins (`[a [b]|drug| c]|marker|`). A run cannot cross a paragraph.
-
-**Where.** Paragraphs, list items, quotations, callouts, footnotes, captions, notes and table cells, and headings while `headings.inlineMarks` is on. Running heads, the contents and index entries take the words without the style.
-
-**Output.** The canvas, the PDF and the HTML draw the decorations from the same geometry (`VDTLine.marks`, kinds `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): the band before the line's text, the lines after it. In a digital PDF a translucent band or line is drawn with transparency; in a print PDF (`pdfGeneration.colorSpace` a print profile) it is set as it prints over white paper — a tint of its colour, on its ink's own plate when it is a spot colour — with no transparency, so a PDF/X file never carries it. The reflowable EPUB sets each style as a class (`pt-cs-<id>`) with CSS: font, colour, `text-decoration` for the lines and a gradient background for the band. A Word export makes each style a Word character style (`Character style: <name>`), the band as a shading of its colour, and a Word import maps a character style named like a book style — or exported as `Character style: <name>` — back to it.
-
-In the VDT a styled segment carries `charStyle: { id, style }` (the run and the style's id); its face, colour and tracking are already in `fontString`, `color` and `tracking`.
+In the VDT a styled segment carries `charStyle: { id, style }` (the run and the style's id); its face and tracking are already in `fontString` and `tracking`, its colour in `color`, and a segment the style set in capitals carries the written text in `sourceText`.
 
 ```ts
-const resolved = resolveCharacterStylesConfig(config.characterStyles);
-// => the built-in `marker` when unset; every field filled
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => every field filled; a `mark` that names no highlight style dropped
 
 const minimal  = stripCharacterStylesDefaults(config.characterStyles);
-// => undefined for the built-in default; static defaults dropped; [] kept
+// => static defaults dropped; undefined for an empty list
 
 const style = pickCharacterStyle(resolved, 'drug');
 // => the `drug` style, or undefined when no style has that id
@@ -761,7 +633,7 @@ const style = pickCharacterStyle(resolved, 'drug');
 
 ## Highlight styles
 
-The `markStyles` property declares the named styles of the inline `:mark[text]{style="…"}`: the coloured band behind a phrase, as a textbook highlights its key words (the syntax and its line-breaking rules are in the document format reference). One style, `mark`, ships by default (a pale yellow band reaching a little past the phrase, its ends square, the text in its own colour), so `:mark[…]` works without any configuration; declaring `markStyles` replaces that default list. A mark without `style`, or with an id no style declares, takes the first style (the Sandbox flags an unknown id).
+The `markStyles` property declares the named styles of the inline `:mark[text]{style="…"}` (and the highlights character styles name with `mark`): the coloured band behind a phrase, and a line under or through it, as a textbook highlights its key words (the syntax and its line-breaking rules are in the document format reference). One style, `mark`, ships by default (a pale yellow band reaching a little past the phrase, its ends square, the text in its own colour), so `:mark[…]` works without any configuration; declaring `markStyles` replaces that default list. A mark without `style`, or with an id no style declares, takes the first style (the Sandbox flags an unknown id).
 
 ```ts
 const config: PostextConfig = {
@@ -839,7 +711,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Room above and below, each in place of <code>paddingY</code>.</td>
+      <td>Room above and below, each in place of <code>paddingY</code>. Either may be negative: a negative <code>paddingTop</code> brings the band's top edge down into the letters (about <code>-0.35em</code> covers their lower half, as a marker stroke does), a negative <code>paddingBottom</code> lifts its bottom edge above the descenders. A band left with no height is not drawn.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Paint the band. <code>false</code> leaves the style its line and its text colour, for a mark that only underlines or strikes through.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>The band's opacity, percent (0–100). The band is painted behind the text, so the letters keep their colour. See the note on transparency below.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> a clean band; higher values wobble its top and bottom edges and cut its ends on a slant, like a marker drawn by hand. The wobble follows a seed taken from the mark and its place, so it is the same on every render, in the canvas, the PDF, the HTML and the vector outputs. Word draws a clean band.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>none</td>
+      <td>A line drawn with the mark, under the words or through them (below).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -850,7 +746,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-Em lengths (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) are relative to the marked text's size. The band takes no room: the text is laid out as it would be without the mark, the band is painted under it, and its padding reaches into the word spaces and the line gap. In the VDT the marked words' segments carry a `mark` (`{ style, id, start?, end?, from?, to? }`) and each line holds its bands in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relative to the line's `bbox.x` and baseline), which the canvas, PDF and HTML backends paint before the line's text.
+`line` (em lengths are of the marked text's size):
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Under the words, where the face puts its underline, or through them, where it puts its strikeout. In Chinese and Japanese text a line through runs on the central axis of the em box; down a vertical page a line under runs on the right of the characters, as a side line.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>How the line is drawn. A double line moves its second stroke away from the letters; dots, dashes and waves are sized from the thickness and the text's size.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>the marked text's</td>
+      <td>Line colour.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>the face's</td>
+      <td>Stroke width; unset, the face's own underline or strikeout thickness.</td>
+    </tr>
+  </tbody>
+</table>
+
+The line runs on under the word spaces of the phrase and stops at its last letter where the phrase breaks onto the next line. The same lines `:underline[…]` and `~~…~~` draw are used, so a mark line sits where those do.
+
+**Transparency.** A band under 100 % opacity is translucent in the canvas, the HTML, a digital PDF and a PDF/X-4, which allow transparency. A PDF/X-1a allows none: there the band is set as it prints over white paper, a tint of its colour, on its ink's own plate when it is a spot colour. The Word export and the vector outputs (SVG, IDML) set it the same way, over white; on a coloured page or over a picture that tint differs from the translucent band.
+
+Em lengths (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) are relative to the marked text's size. The band takes no room: the text is laid out as it would be without the mark, the band is painted under it, and its padding reaches into the word spaces and the line gap. In the VDT the marked words' segments carry a `mark` (`{ style, id, start?, end?, from?, to? }`) and each line holds its bands in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relative to the line's `bbox.x` and baseline), which the canvas, PDF and HTML backends paint before the line's text; the lines go into the line's `marks`, flagged `markLine`, and are painted after it.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

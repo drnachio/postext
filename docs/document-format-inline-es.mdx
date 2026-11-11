@@ -142,8 +142,8 @@ El marcado en línea se reconoce dentro de cualquier bloque de texto (encabezado
     </tr>
     <tr>
       <td>Estilo de carácter</td>
-      <td><code>[unas palabras]|id|</code></td>
-      <td>Las palabras en un estilo con nombre de <code>characterStyles</code>: una letra, un color y un subrayado, una mancha de rotulador o un tachado. A diferencia de un chip, se parte y admite guion como el texto que lo rodea. Véase <a href="#estilos-de-carácter">Estilos de carácter</a>.</td>
+      <td><code>:span[unas palabras]&#123;style="id"&#125;</code></td>
+      <td>Las palabras en un estilo con nombre de <code>characterStyles</code>: una letra, un cuerpo, un color, espaciado entre letras, mayúsculas y el estilo de resaltado que nombra. A diferencia de un chip, se parte y admite guion como el texto que lo rodea. Véase <a href="#estilos-de-carácter">Estilos de carácter</a>.</td>
     </tr>
     <tr>
       <td>Tabulador</td>
@@ -205,21 +205,20 @@ Un chip con `field` se convierte en un campo de formulario rellenable en el PDF 
 
 ### Estilos de carácter
 
-`[unas palabras]|id|` compone las palabras entre los corchetes en el estilo de carácter `id` de `characterStyles` (ver [Configuración › Estilos de carácter](/es/docs/configuration-styles#estilos-de-carácter)): una letra, un color, un subrayado, una mancha de rotulador, un tachado.
+`:span[unas palabras]{style="id"}` compone las palabras entre los corchetes en el estilo de carácter `id` de `characterStyles` (ver [Configuración › Estilos de carácter](/es/docs/configuration-styles#estilos-de-carácter)): una letra, un cuerpo, un peso, un color, espaciado entre letras, mayúsculas y, cuando el estilo nombra uno, la franja o la línea de un estilo de resaltado. La directiva `:span` es la forma de dar a un grupo un aspecto con nombre.
 
 ```markdown
-El [tratamiento de primera línea]|marker| es la [metformina]|drug|.
+El :span[tratamiento de primera línea]{style="marker"} es la :span[metformina]{style="drug"}.
 
-Un [grupo con **negrita** y un [estilo anidado]|accent|]|marker| dentro.
+Un :span[grupo con **negrita** y un :span[estilo anidado]{style="accent"}]{style="marker"} dentro.
 ```
 
-- **Texto, no una caja.** Las palabras se quedan en la línea: pasan de línea, se dividen con guion y se justifican como el texto que las rodea. Una decoración partida entre dos líneas se dibuja en cada una; dentro de una línea sigue bajo los espacios entre las palabras del grupo, nunca bajo los espacios que lo rodean.
-- **Las barras.** El id sigue de inmediato al corchete de cierre, entre dos barras: letras, cifras, `-` y `_`. Un espacio entre `]` y `|`, una segunda barra que falta o unos corchetes vacíos dejan el texto tal como está escrito. `\[a]|b|` imprime `[a]|b|`.
-- **Corchetes que son otra cosa.** Una llamada de nota (`[^1]`), una cita bibliográfica (`[@key]`) y un enlace (`[texto](url)`) se leen antes y nunca son un estilo.
+- **Texto, no una caja.** Las palabras se quedan en la línea: pasan de línea, se dividen con guion y se justifican como el texto que las rodea. Una franja o una línea partida entre dos líneas se dibuja en cada una; dentro de una línea sigue bajo los espacios entre las palabras del grupo, nunca bajo los espacios que lo rodean.
+- **La directiva.** `style` nombra el estilo, con comillas (`style="drug"`) o sin ellas (`style=drug`). Un `:span` sin `style` compone sus palabras sin estilo, igual que un id desconocido. Dentro de los corchetes, `\]` es un corchete literal. La forma `[palabras]|id|` no es sintaxis de Postext y se imprime tal como está escrita.
 - **Anidamiento.** Las palabras admiten las demás marcas en línea y otros grupos; gana el estilo más interior. Un id desconocido compone las palabras como el texto que las rodea y se señala (`unknownCharacterStyle`).
 - **Dónde.** Párrafos, elementos de lista, citas, recuadros, notas al pie, leyendas, notas y celdas de tabla, y encabezados mientras `headings.inlineMarks` esté activado (si se desactiva, las palabras se componen sin estilo).
-- **Texto plano.** Los corchetes, las barras y el id no imprimen nada: la búsqueda, el índice general, los titulillos, las anclas del índice y el texto copiado leen solo las palabras.
-- **Subrayado y resaltado solos.** Un subrayado sin más es `:underline[…]`, y un resaltado sin más, `:mark[…]`; un estilo de carácter es para un aspecto propio (una letra, un color, una mancha trazada a mano, una línea discontinua u ondulada). Su subrayado y su tachado se sitúan, por defecto, donde los de `:underline[…]` y `~~…~~`.
+- **Texto plano.** La directiva no imprime nada: la búsqueda, el índice general, los titulillos y las anclas del índice leen solo las palabras, tal como están escritas. Las mayúsculas que pone un estilo se copian del PDF tal como se teclearon las palabras.
+- **Un mecanismo para cada cosa.** Un subrayado sin más es `:underline[…]`, un tachado sin más `~~…~~` y un resaltado sin más `:mark[…]`. Una franja o una línea que acompaña a un estilo de carácter es un estilo de resaltado que el estilo de carácter nombra (`mark`), así que la franja y la línea siguen las mismas reglas que `:mark[…]`.
 
 ### Marcas de resaltado
 
@@ -234,7 +233,7 @@ El sol calienta el mar y :mark[el agua sube al aire en forma de vapor, donde se 
 - **Cortes de línea.** Una marca puede abarcar varias palabras y pasar de una línea a otra; cada línea lleva su propia franja. El relleno horizontal y las esquinas redondeadas solo se dibujan al principio y al final reales de la frase: donde la frase se corta, la franja termina en recto en la última letra de la línea y empieza en recto en la primera de la siguiente. Un estilo con `decorationBreak: 'clone'` da a cada línea una franja completa, con el relleno y las esquinas en sus dos extremos: un título sobre una banda de color cortada por líneas.
 - **No ocupa sitio.** La franja se pinta debajo del texto, de 0,8 em por encima a 0,25 em por debajo de la línea base, más el relleno vertical, y su relleno horizontal entra en los espacios que rodean la frase. Las líneas se cortan igual que sin la marca, así que marcar un libro ya compuesto no mueve ninguna de sus páginas.
 - **Texto.** El texto marcado admite sus propias marcas en línea (`:mark[la palabra **clave**]`), enlaces, chips y referencias. Los corchetes se anidan dentro (`:mark[ver [el mapa]]`), `\]` escribe un corchete literal y el texto puede cruzar un salto de línea suave del original. Un signo de puntuación pegado a la frase fuera de los corchetes (`:mark[tierra].`) queda fuera de la franja; el color de texto de un estilo alcanza la palabra entera que lo lleva. Una marca dentro de otra se compone como su texto.
-- **Dónde.** Párrafos, encabezados compuestos en el texto, elementos de lista, citas, recuadros, notas al pie, celdas de tabla, pies y notas, en texto de izquierda a derecha y de derecha a izquierda, y en chino y japonés. El canvas, el PDF y el HTML pintan la franja; en un PDF etiquetado es un artefacto de maquetación y las palabras pertenecen a su párrafo. Un encabezado que dibuja un diseño (una apertura) imprime las palabras sin franja, igual que el visor HTML en una página vertical.
+- **Dónde.** Párrafos, encabezados compuestos en el texto, elementos de lista, citas, recuadros, notas al pie, celdas de tabla, pies y notas, en texto de izquierda a derecha y de derecha a izquierda, y en chino y japonés. El canvas, el PDF y el HTML pintan la franja; en un PDF etiquetado es un artefacto de maquetación y las palabras pertenecen a su párrafo. Un encabezado que dibuja un diseño (una apertura) imprime las palabras sin franja. En una página vertical la franja baja por la columna con los caracteres, también en el visor HTML.
 
 ### Tachado
 

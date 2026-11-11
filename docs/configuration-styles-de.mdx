@@ -9,7 +9,7 @@ export const metadata = {
   readingTime: '40 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "Diese Seite behandelt die benannten Stile, die Sie einmal festlegen und vielfach verwenden. Ein Absatzformat legt eine Textart fest, etwa ein Literaturverzeichnis oder ein Glossar. Ein Chip-Stil zeichnet ein kleines Etikett in eine Zeile, ein Hervorhebungsstil ein Farbband hinter eine Wortgruppe. Code-Listings haben ihre eigene Schrift, ihren eigenen Kasten und ihre eigenen Farben. Außerdem behandelt die Seite die Seiten, die jeden Teil eines Buchs eröffnen, und die Stile für besondere Überschriften. Kästen haben eine eigene Seite.",
+  plainSummary: "Diese Seite behandelt die benannten Stile, die Sie einmal festlegen und vielfach verwenden. Ein Absatzformat legt eine Textart fest, etwa ein Literaturverzeichnis oder ein Glossar. Ein Chip-Stil zeichnet ein kleines Etikett in eine Zeile, ein Hervorhebungsstil ein Farbband hinter eine Wortgruppe oder eine Linie darunter oder hindurch; ein Zeichenformat setzt einige Wörter in einer anderen Schrift, Größe oder Farbe und kann einen Hervorhebungsstil nennen, der zu ihnen gehört. Code-Listings haben ihre eigene Schrift, ihren eigenen Kasten und ihre eigenen Farben. Außerdem behandelt die Seite die Seiten, die jeden Teil eines Buchs eröffnen, und die Stile für besondere Überschriften. Kästen haben eine eigene Seite.",
 };
 
 # Konfiguration: Stile und Teile
@@ -494,16 +494,24 @@ const style = pickChipStyle(resolved, 'key');
 
 ## Zeichenformate
 
-Die Eigenschaft `characterStyles` legt die benannten Formate einer Wortfolge fest, im Text `[einige Wörter]|id|` geschrieben: eine Schrift (Familie, Größe, Strichstärke, Neigung), eine Farbe, eine Laufweite, Versalien oder Kapitälchen und drei Auszeichnungen — eine Unterstreichung, ein Textmarkerband, das wie mit einem Marker hinter die Wörter gemalt wird, und eine Durchstreichung. Anders als ein Chip bricht eine formatierte Folge um und wird getrennt wie der umgebende Text; eine Auszeichnung, die über zwei Zeilen umbricht, wird auf jeder gezeichnet. Ein Format ist voreingestellt — `marker`, ein gelber Textmarker über der unteren Hälfte der Buchstaben, mit handgezeichneten Rändern —, sodass `[…]|marker|` ohne jede Konfiguration funktioniert (eine einfache Unterstreichung ist `:underline[…]`, eine einfache Hervorhebung `:mark[…]`); wer `characterStyles` angibt, ersetzt diese Liste, und eine leere Liste lässt ein Buch ohne Formate. Eine Folge, deren id kein Format angibt, wird wie der umgebende Text gesetzt, und der Prüfbereich meldet sie (*Unbekanntes Zeichenformat*).
+Die Eigenschaft `characterStyles` legt die benannten Formate einer Wortfolge fest. Eine Folge erhält eines mit der Direktive `:span`, `:span[einige Wörter]{style="id"}`; nur so bekommt eine Folge ein benanntes Format. Ein Zeichenformat bestimmt den Text: eine Schrift (Familie, Größe, Strichstärke, Neigung), eine Farbe, eine Laufweite, Versalien oder Kapitälchen. Ein Band hinter den Wörtern oder eine Linie unter oder durch sie gehört zu einem [Hervorhebungsstil](#hervorhebungsstile), den das Zeichenformat mit `mark` nennt. Anders als ein Chip bricht eine formatierte Folge um und wird getrennt wie der umgebende Text. Kein Format ist voreingestellt; ein Buch hat keines, bis es welche festlegt. Eine Folge, deren id kein Format angibt, wird wie der umgebende Text gesetzt, und der Prüfbereich meldet sie (*Unbekanntes Zeichenformat*).
 
 ```ts
 const config: PostextConfig = {
-  characterStyles: [
+  markStyles: [
+    { id: 'mark' },
     {
-      id: 'marker',
-      name: 'Marker',
-      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+      id: 'pen',
+      name: 'Marker pen',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
     },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Marker', mark: 'pen' },
     {
       id: 'drug',
       name: 'Drug name',
@@ -512,16 +520,16 @@ const config: PostextConfig = {
       color: { hex: '#1f4e79', model: 'hex' },
       letterSpacing: { value: 0.02, unit: 'em' },
     },
-    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+    { id: 'wrong', name: 'Wrong answer', mark: 'struck' },
   ],
 };
 ```
 
 ```md
-Die [Therapie der ersten Wahl]|marker| ist [Metformin]|drug|, nie [gleich Insulin]|wrong|.
+Die :span[Therapie der ersten Wahl]{style="marker"} ist :span[Metformin]{style="drug"}, nie :span[gleich Insulin]{style="wrong"}.
 ```
 
-Texteigenschaften (nicht gesetzte übernehmen die des Texts):
+Eigenschaften (nicht gesetzte übernehmen die des Texts):
 
 <table>
   <thead>
@@ -537,7 +545,7 @@ Texteigenschaften (nicht gesetzte übernehmen die des Texts):
       <td><code>id</code></td>
       <td><code>string</code></td>
       <td>Pflichtfeld</td>
-      <td>Kennung zwischen den senkrechten Strichen: <code>[…]|id|</code>. Buchstaben, Ziffern, <code>-</code> und <code>_</code>.</td>
+      <td>Kennung in der Direktive: <code>:span[…]&#123;style="id"&#125;</code>. Buchstaben, Ziffern, <code>-</code> und <code>_</code>.</td>
     </tr>
     <tr>
       <td><code>name</code></td>
@@ -573,7 +581,7 @@ Texteigenschaften (nicht gesetzte übernehmen die des Texts):
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td>die des Texts</td>
-      <td>Farbe der Folge, fette und kursive Wörter eingeschlossen.</td>
+      <td>Farbe der Folge, fette und kursive Wörter eingeschlossen. Nur Farbe: Sie ändert nie den Satz. Eine Hervorhebung mit eigener Textfarbe (das <code>mark</code> des Formats oder ein <code>:mark[…]</code> um die Folge) hat Vorrang vor ihr.</td>
     </tr>
     <tr>
       <td><code>letterSpacing</code></td>
@@ -585,7 +593,7 @@ Texteigenschaften (nicht gesetzte übernehmen die des Texts):
       <td><code>textTransform</code></td>
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
-      <td><code>uppercase</code> setzt die Folge in Versalien; der Text behält seine Buchstaben, sodass Suche und Quellenzuordnung ihn weiter so lesen, wie er geschrieben ist.</td>
+      <td><code>uppercase</code> setzt die Folge in Versalien nach den Regeln ihrer Sprache (ein türkisches <em>i</em> wird zu <em>İ</em>, griechische Versalien verlieren ihre Akzente). Die Quelle behält ihre Buchstaben: Suche und Quellenzuordnung lesen sie, wie sie geschrieben ist, und das PDF gibt den Versalien das geschriebene Wort als Text mit (<code>/ActualText</code>), sodass man beim Kopieren die Wörter so erhält, wie sie getippt wurden. HTML und EPUB enthalten die Versalien selbst.</td>
     </tr>
     <tr>
       <td><code>smallCaps</code></td>
@@ -594,166 +602,30 @@ Texteigenschaften (nicht gesetzte übernehmen die des Texts):
       <td>Setzt die Folge in Kapitälchen, wie <code>:smallcaps[…]</code>.</td>
     </tr>
     <tr>
-      <td><code>underline</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>aus</td>
-      <td>Eine Linie unter der Folge (siehe unten).</td>
-    </tr>
-    <tr>
-      <td><code>highlight</code></td>
-      <td><code>CharacterStyleHighlightConfig</code></td>
-      <td>aus</td>
-      <td>Ein Textmarkerband hinter der Folge (siehe unten).</td>
-    </tr>
-    <tr>
-      <td><code>strike</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>aus</td>
-      <td>Eine Linie durch die Folge (siehe unten).</td>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>keiner</td>
+      <td>Die id eines <a href="#hervorhebungsstile">Hervorhebungsstils</a>, der mit der Folge gezeichnet wird: sein Band, seine Linie, seine Textfarbe. Eine id, die kein Hervorhebungsstil angibt, entfällt, und die Folge erhält keine Hervorhebung.</td>
     </tr>
   </tbody>
 </table>
 
-`underline` und `strike` (em-Längen beziehen sich auf die Schriftgröße der Folge):
+**Ein Mechanismus für jede Sache.** Ein Zeichenformat bestimmt die Buchstaben; ein Hervorhebungsstil zeichnet, was zu ihnen gehört, ein Band oder eine Linie, genau wie bei `:mark[…]`. Eine einfache Unterstreichung bleibt `:underline[…]`, eine einfache Durchstreichung `~~…~~` und eine einfache Hervorhebung `:mark[…]`; ein Zeichenformat ist für ein Aussehen gedacht, das das Buch benennt und wiederverwendet. Die Form mit eckigen Klammern und senkrechten Strichen, die manche andere Werkzeuge verwenden (`[Wörter]|id|`), ist keine Postext-Syntax: Sie bleibt Text, so wie sie geschrieben ist.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Eigenschaft</th>
-      <th style={{ width: '180px' }}>Typ</th>
-      <th style={{ width: '140px' }}>Standard</th>
-      <th>Beschreibung</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Zeichnet die Linie.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td>die Farbe der Folge</td>
-      <td>Linienfarbe.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>100</code></td>
-      <td>Prozent, 0–100.</td>
-    </tr>
-    <tr>
-      <td><code>thickness</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.05em</code></td>
-      <td>Linienstärke.</td>
-    </tr>
-    <tr>
-      <td><code>offset</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.12em</code> (Unterstreichung), <code>0.28em</code> (Durchstreichung)</td>
-      <td>Wo die Mitte der Linie verläuft: unter der Grundlinie bei einer Unterstreichung, darüber bei einer Durchstreichung.</td>
-    </tr>
-    <tr>
-      <td><code>style</code></td>
-      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
-      <td><code>'solid'</code></td>
-      <td>Wie die Linie gezeichnet wird.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Zeichnet sie Wort für Wort und lässt die Leerzeichen frei; aus, läuft sie unter den Leerzeichen der Folge weiter (nie unter den Leerzeichen um sie herum).</td>
-    </tr>
-  </tbody>
-</table>
+**Verschachtelung.** Eine Folge kann andere Inline-Auszeichnungen enthalten (`:span[ein **fettes** Wort]{style="marker"}`, einen Link, einen Verweis, eine Formel) und andere Folgen: Das innerste Format gewinnt (`:span[a :span[b]{style="drug"} c]{style="marker"}`). Eine Folge kann keinen Absatz überspannen.
 
-`highlight` (Ränder von der Grundlinie aus gemessen, positiv nach oben, in em der Schriftgröße der Folge):
+**Wo.** Absätze, Listenpunkte, Zitate, Kästen, Fußnoten, Bildunterschriften, Anmerkungen und Tabellenzellen sowie Überschriften, solange `headings.inlineMarks` eingeschaltet ist. Kolumnentitel, das Inhaltsverzeichnis und Registereinträge übernehmen die Wörter ohne das Format. Auf einer vertikalen Seite (senkrecht gesetzte chinesische und japanische Bücher) wird die Folge wie der umgebende Text gesetzt, und die Linie ihrer Hervorhebung läuft rechts der Zeichen, als Seitenlinie.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Eigenschaft</th>
-      <th style={{ width: '180px' }}>Typ</th>
-      <th style={{ width: '140px' }}>Standard</th>
-      <th>Beschreibung</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Malt das Band.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td><code>#ffe14d</code></td>
-      <td>Farbe des Bands. Ein Paletteneintrag, der eine Sonderfarbe ist, druckt das Band auf der Platte seiner Druckfarbe.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>70</code></td>
-      <td>Prozent, 0–100. Das Band wird hinter den Text gemalt, sodass die Buchstaben ihre Farbe behalten.</td>
-    </tr>
-    <tr>
-      <td><code>bottom</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>-0.2em</code></td>
-      <td>Wo das Band beginnt (negativ: unter der Grundlinie, zwischen den Unterlängen).</td>
-    </tr>
-    <tr>
-      <td><code>top</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.8em</code></td>
-      <td>Wo das Band endet: etwa <code>0.45em</code> deckt die untere Hälfte der Buchstaben ab (ein Markerstrich), <code>0.8em</code> die ganzen Wörter, <code>0.05em</code> mit <code>bottom: -0.15em</code> eine dicke Unterstreichung.</td>
-    </tr>
-    <tr>
-      <td><code>overhang</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Wie weit das Band über den ersten und den letzten Buchstaben der Folge hinausreicht.</td>
-    </tr>
-    <tr>
-      <td><code>radius</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Eckenradius, auf die halbe Höhe des Bands begrenzt.</td>
-    </tr>
-    <tr>
-      <td><code>rough</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>0–100: <code>0</code> ein sauberes Band; höhere Werte lassen seine obere und untere Kante wellen, es leicht über die Zeile wandern und seine Enden schräg abschneiden, wie ein von Hand gezogener Marker. Das Wellen folgt einem aus der Folge gewonnenen Startwert, sodass es bei jedem Rendern gleich ist, im Canvas, im PDF und im HTML.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Ein Band pro Wort.</td>
-    </tr>
-  </tbody>
-</table>
+**Ausgabe.** Canvas, PDF, HTML und die Vektorausgaben (SVG, IDML) zeichnen die Hervorhebung, die ein Format nennt, aus derselben Geometrie wie jedes `:mark[…]`. Das EPUB setzt jedes Format als Klasse (`pt-cs-<id>`) mit Schrift, Größe, Strichstärke, Neigung, Farbe, Laufweite und Kapitälchen; es zeichnet keine Hervorhebung, wie es auch kein `:mark[…]` zeichnet. Ein Word-Export macht jedes Format zu einer Word-Zeichenformatvorlage namens *Postext Style: …*, das Band der Hervorhebung zu einer Schattierung und ihre Linie zur nächstliegenden Unterstreichung von Word oder zu einer Durchstreichung, und ein Word-Import ordnet eine Zeichenformatvorlage, die wie ein Format des Buchs heißt oder in einer der Sprachen der Website *Postext Style: …*, diesem wieder zu.
 
-**Verschachtelung.** Eine Folge kann andere Inline-Auszeichnungen enthalten (`[ein **fettes** Wort]|marker|`, einen Link, einen Verweis, eine Formel) und andere Folgen: Das innerste Format gewinnt (`[a [b]|drug| c]|marker|`). Eine Folge kann keinen Absatz überspannen.
-
-**Wo.** Absätze, Listenpunkte, Zitate, Kästen, Fußnoten, Bildunterschriften, Anmerkungen und Tabellenzellen sowie Überschriften, solange `headings.inlineMarks` eingeschaltet ist. Kolumnentitel, das Inhaltsverzeichnis und Registereinträge übernehmen die Wörter ohne das Format.
-
-**Ausgabe.** Canvas, PDF und HTML zeichnen die Auszeichnungen aus derselben Geometrie (`VDTLine.marks`, Arten `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): das Band vor dem Text der Zeile, die Linien danach. In einem digitalen PDF wird ein durchscheinendes Band oder eine durchscheinende Linie mit Transparenz gezeichnet; in einem Druck-PDF (`pdfGeneration.colorSpace` ein Druckprofil) wird es so gesetzt, wie es auf weißem Papier druckt — als Tonwert seiner Farbe, auf der Platte seiner Druckfarbe, wenn es eine Sonderfarbe ist — ohne Transparenz, sodass eine PDF/X-Datei sie nie enthält. Das umfließende EPUB setzt jedes Format als Klasse (`pt-cs-<id>`) mit CSS: Schrift, Farbe, `text-decoration` für die Linien und ein Verlaufshintergrund für das Band. Ein Word-Export macht jedes Format zu einer Word-Zeichenformatvorlage (`Character style: <name>`), das Band zu einer Schattierung in seiner Farbe, und ein Word-Import ordnet eine Zeichenformatvorlage, die wie ein Format des Buchs heißt — oder als `Character style: <name>` exportiert wurde —, diesem wieder zu.
-
-Im VDT trägt ein formatiertes Segment `charStyle: { id, style }` (die Folge und die id des Formats); Schrift, Farbe und Laufweite stehen bereits in `fontString`, `color` und `tracking`.
+Im VDT trägt ein formatiertes Segment `charStyle: { id, style }` (die Folge und die id des Formats); Schrift und Laufweite stehen bereits in `fontString` und `tracking`, die Farbe in `color`, und ein Segment, das das Format in Versalien gesetzt hat, trägt den geschriebenen Text in `sourceText`.
 
 ```ts
-const resolved = resolveCharacterStylesConfig(config.characterStyles);
-// => the built-in `marker` when unset; every field filled
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => every field filled; a `mark` that names no highlight style dropped
 
 const minimal  = stripCharacterStylesDefaults(config.characterStyles);
-// => undefined for the built-in default; static defaults dropped; [] kept
+// => static defaults dropped; undefined for an empty list
 
 const style = pickCharacterStyle(resolved, 'drug');
 // => the `drug` style, or undefined when no style has that id
@@ -761,7 +633,7 @@ const style = pickCharacterStyle(resolved, 'drug');
 
 ## Hervorhebungsstile
 
-Die Eigenschaft `markStyles` deklariert die benannten Stile des Inline-`:mark[Text]{style="…"}`: das farbige Band hinter einer Wendung, so wie ein Schulbuch seine Schlüsselwörter hervorhebt (die Syntax und ihre Umbruchregeln stehen in der Referenz zum Dokumentformat). Ein Stil, `mark`, ist vorgegeben (ein blassgelbes Band, das ein wenig über die Wendung hinausreicht, mit geraden Enden, der Text in seiner eigenen Farbe), sodass `:mark[…]` ohne jede Konfiguration funktioniert; wer `markStyles` deklariert, ersetzt diese Liste. Eine Markierung ohne `style` oder mit einer ID, die kein Stil deklariert, nimmt den ersten Stil (die Sandbox meldet die unbekannte ID).
+Die Eigenschaft `markStyles` deklariert die benannten Stile des Inline-`:mark[Text]{style="…"}` (und der Hervorhebungen, die Zeichenformate mit `mark` nennen): das farbige Band hinter einer Wendung und eine Linie darunter oder hindurch, so wie ein Schulbuch seine Schlüsselwörter hervorhebt (die Syntax und ihre Umbruchregeln stehen in der Referenz zum Dokumentformat). Ein Stil, `mark`, ist vorgegeben (ein blassgelbes Band, das ein wenig über die Wendung hinausreicht, mit geraden Enden, der Text in seiner eigenen Farbe), sodass `:mark[…]` ohne jede Konfiguration funktioniert; wer `markStyles` deklariert, ersetzt diese Liste. Eine Markierung ohne `style` oder mit einer ID, die kein Stil deklariert, nimmt den ersten Stil (die Sandbox meldet die unbekannte ID).
 
 ```ts
 const config: PostextConfig = {
@@ -839,7 +711,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Raum oben und unten, jeweils anstelle von <code>paddingY</code>.</td>
+      <td>Raum oben und unten, jeweils anstelle von <code>paddingY</code>. Beide dürfen negativ sein: Ein negatives <code>paddingTop</code> zieht die Oberkante des Bandes in die Buchstaben hinein (etwa <code>-0.35em</code> deckt ihre untere Hälfte, wie ein Strich mit dem Textmarker), ein negatives <code>paddingBottom</code> hebt seine Unterkante über die Unterlängen. Ein Band ohne verbleibende Höhe wird nicht gezeichnet.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Malt das Band. <code>false</code> lässt dem Stil seine Linie und seine Textfarbe, für eine Markierung, die nur unterstreicht oder durchstreicht.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Deckkraft des Bandes in Prozent (0–100). Das Band wird hinter den Text gemalt, sodass die Buchstaben ihre Farbe behalten. Siehe den Hinweis zur Transparenz weiter unten.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> ein sauberes Band; höhere Werte lassen seine Ober- und Unterkante wackeln und schneiden seine Enden schräg ab, wie ein von Hand geführter Textmarker. Das Wackeln folgt einem Startwert aus der Markierung und ihrer Stelle, sodass es bei jedem Rendern gleich ist, im Canvas, im PDF, im HTML und in den Vektorausgaben. Word zeichnet ein sauberes Band.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>keine</td>
+      <td>Eine Linie, die mit der Markierung gezeichnet wird, unter den Wörtern oder durch sie (siehe unten).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -850,7 +746,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-Em-Längen (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) beziehen sich auf die Größe des markierten Textes. Das Band nimmt keinen Platz ein: Der Text wird gesetzt wie ohne Markierung, das Band darunter gezeichnet, und sein Innenabstand reicht in die Wortzwischenräume und den Zeilenzwischenraum. Im VDT tragen die Segmente der markierten Wörter ein `mark` (`{ style, id, start?, end?, from?, to? }`), und jede Zeile enthält ihre Bänder in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relativ zu `bbox.x` und Grundlinie der Zeile), die das Canvas-, PDF- und HTML-Backend vor dem Text der Zeile zeichnen.
+`line` (Em-Längen beziehen sich auf die Größe des markierten Textes):
+
+<table>
+  <thead>
+    <tr>
+      <th>Eigenschaft</th>
+      <th>Typ</th>
+      <th>Standard</th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Unter den Wörtern, wo die Schrift ihre Unterstreichung setzt, oder durch sie, wo sie ihre Durchstreichung setzt. In chinesischem und japanischem Text läuft eine Linie hindurch auf der Mittelachse des Geviertes; auf einer vertikalen Seite läuft eine Linie darunter rechts der Zeichen, als Seitenlinie.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Wie die Linie gezeichnet wird. Eine Doppellinie setzt ihren zweiten Strich von den Buchstaben weg; Punkte, Striche und Wellen richten sich nach der Stärke und der Größe des Textes.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>die des markierten Textes</td>
+      <td>Farbe der Linie.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>die der Schrift</td>
+      <td>Strichstärke; ohne Angabe die eigene Unterstreichungs- oder Durchstreichungsstärke der Schrift.</td>
+    </tr>
+  </tbody>
+</table>
+
+Die Linie läuft unter den Wortzwischenräumen der Wendung weiter und endet an ihrem letzten Buchstaben, wo die Wendung in die nächste Zeile umbricht. Es sind dieselben Linien, die `:underline[…]` und `~~…~~` zeichnen, sodass eine Markierungslinie dort sitzt, wo auch diese sitzen.
+
+**Transparenz.** Ein Band unter 100 % Deckkraft ist durchscheinend im Canvas, im HTML, in einem digitalen PDF und in einem PDF/X-4, die Transparenz erlauben. Ein PDF/X-1a erlaubt keine: Dort wird das Band so gesetzt, wie es auf weißem Papier druckt, als Tonwert seiner Farbe, auf der Platte seiner Druckfarbe, wenn es eine Sonderfarbe ist. Der Word-Export und die Vektorausgaben (SVG, IDML) setzen es ebenso, auf Weiß; auf einer farbigen Seite oder über einem Bild weicht dieser Tonwert vom durchscheinenden Band ab.
+
+Em-Längen (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) beziehen sich auf die Größe des markierten Textes. Das Band nimmt keinen Platz ein: Der Text wird gesetzt wie ohne Markierung, das Band darunter gezeichnet, und sein Innenabstand reicht in die Wortzwischenräume und den Zeilenzwischenraum. Im VDT tragen die Segmente der markierten Wörter ein `mark` (`{ style, id, start?, end?, from?, to? }`), und jede Zeile enthält ihre Bänder in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relativ zu `bbox.x` und Grundlinie der Zeile), die das Canvas-, PDF- und HTML-Backend vor dem Text der Zeile zeichnen; die Linien kommen in die `marks` der Zeile, mit `markLine` gekennzeichnet, und werden nach ihm gezeichnet.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

@@ -141,6 +141,11 @@ Inline-Auszeichnungen werden in jedem Textblock erkannt (Überschriften, Absätz
       <td>Ein farbiges Band hinter Wörtern, die gewöhnlicher Text bleiben: Sie brechen um, werden getrennt und ausgeglichen wie sonst auch. Gestaltet über <code>markStyles</code>; siehe <a href="#hervorhebungen">Hervorhebungen</a>.</td>
     </tr>
     <tr>
+      <td>Zeichenformat</td>
+      <td><code>:span[einige Wörter]&#123;style="id"&#125;</code></td>
+      <td>Die Wörter in einem benannten Format aus <code>characterStyles</code>: eine Schrift, eine Größe, eine Farbe, eine Laufweite, Versalien und der Hervorhebungsstil, den es nennt. Anders als ein Chip bricht die Folge um und wird getrennt wie der umgebende Text. Siehe <a href="#zeichenformate">Zeichenformate</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulator</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Rückt die Wörter danach zum nächsten Tabstopp: einem der Tabstopps des Absatzformats oder dem, den seine Attribute festlegen. Ein im Text getippter Tabulator ist nur dort ein Tabulator, wo das Format Tabstopps setzt. Siehe <a href="#tabulatoren-und-tabstopps">Tabulatoren und Tabstopps</a>.</td>
@@ -200,21 +205,20 @@ Ein Chip mit `field` wird im PDF zu einem ausfüllbaren Formularfeld (siehe [PDF
 
 ### Zeichenformate
 
-`[einige Wörter]|id|` setzt die Wörter zwischen den eckigen Klammern im Zeichenformat `id` aus `characterStyles` (siehe [Konfiguration → Zeichenformate](/de/docs/configuration-styles#zeichenformate)): eine Schrift, eine Farbe, eine Unterstreichung, ein Textmarkerband, eine Durchstreichung.
+`:span[einige Wörter]{style="id"}` setzt die Wörter zwischen den eckigen Klammern im Zeichenformat `id` aus `characterStyles` (siehe [Konfiguration → Zeichenformate](/de/docs/configuration-styles#zeichenformate)): eine Schrift, eine Größe, eine Strichstärke, eine Farbe, eine Laufweite, Versalien und, wenn das Format einen nennt, das Band oder die Linie eines Hervorhebungsstils. Mit der Direktive `:span` bekommt eine Folge ein benanntes Format.
 
 ```markdown
-Die [Therapie der ersten Wahl]|marker| ist [Metformin]|drug|.
+Die :span[Therapie der ersten Wahl]{style="marker"} ist :span[Metformin]{style="drug"}.
 
-Eine [Folge mit **Fettem** und einem [verschachtelten Format]|accent|]|marker| darin.
+Eine :span[Folge mit **Fettem** und einem :span[verschachtelten Format]{style="accent"}]{style="marker"} darin.
 ```
 
-- **Text, kein Kasten.** Die Wörter bleiben in der Zeile: Sie brechen um, werden getrennt und ausgeschlossen wie der umgebende Text. Eine Auszeichnung, die über zwei Zeilen umbricht, wird auf jeder gezeichnet; innerhalb einer Zeile läuft sie unter den Leerzeichen zwischen den Wörtern der Folge weiter, nie unter den Leerzeichen um sie herum.
-- **Die Striche.** Die id folgt unmittelbar auf die schließende Klammer, zwischen zwei senkrechten Strichen: Buchstaben, Ziffern, `-` und `_`. Ein Leerzeichen zwischen `]` und `|`, ein fehlender zweiter Strich oder leere Klammern lassen den Text, wie er geschrieben ist. `\[a]|b|` druckt `[a]|b|`.
-- **Klammern, die etwas anderes sind.** Ein Fußnotenzeichen (`[^1]`), ein Zitat (`[@schlüssel]`) und ein Link (`[Text](url)`) werden zuerst gelesen und sind nie ein Format.
+- **Text, kein Kasten.** Die Wörter bleiben in der Zeile: Sie brechen um, werden getrennt und ausgeschlossen wie der umgebende Text. Ein Band oder eine Linie, die über zwei Zeilen umbricht, wird auf jeder gezeichnet; innerhalb einer Zeile läuft es unter den Leerzeichen zwischen den Wörtern der Folge weiter, nie unter den Leerzeichen um sie herum.
+- **Die Direktive.** `style` nennt das Format, mit Anführungszeichen (`style="drug"`) oder ohne (`style=drug`). Ein `:span` ohne `style` setzt seine Wörter ohne Format, wie eine unbekannte id. In den Klammern ist `\]` eine wörtliche Klammer. Die Form `[Wörter]|id|` ist keine Postext-Syntax und wird gedruckt, wie sie geschrieben ist.
 - **Verschachtelung.** Die Wörter nehmen die anderen Inline-Auszeichnungen und andere Folgen auf; das innerste Format gewinnt. Eine unbekannte id setzt die Wörter wie den umgebenden Text und wird gemeldet (`unknownCharacterStyle`).
 - **Wo.** Absätze, Listenpunkte, Zitate, Kästen, Fußnoten, Bildunterschriften, Anmerkungen und Tabellenzellen sowie Überschriften, solange `headings.inlineMarks` eingeschaltet ist (aus, werden die Wörter ohne Format gesetzt).
-- **Reiner Text.** Klammern, Striche und id drucken nichts: Suche, Inhaltsverzeichnis, Kolumnentitel, Registeranker und kopierter Text lesen nur die Wörter.
-- **Unterstreichen und Hervorheben allein.** Eine einfache Unterstreichung ist `:underline[…]`, eine einfache Hervorhebung `:mark[…]`; ein Zeichenformat dient einem eigenen Aussehen (Schrift, Farbe, ein von Hand gezogenes Band, eine gestrichelte oder gewellte Linie). Seine Unterstreichung und Durchstreichung sitzen standardmäßig dort, wo die von `:underline[…]` und `~~…~~` sitzen.
+- **Reiner Text.** Die Direktive druckt nichts: Suche, Inhaltsverzeichnis, Kolumnentitel und Registeranker lesen nur die Wörter, wie sie geschrieben sind. Versalien, die ein Format setzt, werden aus dem PDF so kopiert, wie die Wörter getippt wurden.
+- **Ein Mechanismus für jede Sache.** Eine einfache Unterstreichung ist `:underline[…]`, eine einfache Durchstreichung `~~…~~` und eine einfache Hervorhebung `:mark[…]`. Ein Band oder eine Linie zu einem Zeichenformat ist ein Hervorhebungsstil, den das Zeichenformat nennt (`mark`), sodass Band und Linie denselben Regeln folgen wie `:mark[…]`.
 
 ### Hervorhebungen
 
@@ -229,7 +233,7 @@ Die Sonne erwärmt das Meer, und :mark[das Wasser steigt als Dampf in die Luft, 
 - **Zeilenumbrüche.** Eine Markierung kann mehrere Wörter umfassen und über ein Zeilenende laufen; jede Zeile bekommt ihr eigenes Band. Der waagrechte Innenabstand und die abgerundeten Ecken entstehen nur am echten Anfang und Ende der Wendung: Wo die Wendung umbricht, endet das Band gerade am letzten Buchstaben der Zeile und beginnt gerade am ersten der nächsten. Ein Stil mit `decorationBreak: 'clone'` gibt jeder Zeile ein ganzes Band, mit Innenabstand und Ecken an beiden Enden: eine Überschrift auf einem zeilenweise geteilten Farbband.
 - **Kein Platzbedarf.** Das Band wird unter den Text gezeichnet, von 0,8 em über bis 0,25 em unter der Grundlinie, vergrößert um den senkrechten Innenabstand, und sein waagrechter Innenabstand reicht in die Wortzwischenräume neben der Wendung. Die Zeilen brechen genau wie ohne Markierung um; ein bereits gesetztes Buch zu markieren verschiebt keine seiner Seiten.
 - **Text.** Der markierte Text nimmt eigene Inline-Auszeichnungen (`:mark[das **Schlüssel**wort]`), Links, Chips und Verweise auf. Eckige Klammern lassen sich darin verschachteln (`:mark[siehe [die Karte]]`), `\]` schreibt eine wörtliche Klammer, und der Text darf über einen einfachen Zeilenumbruch der Quelle laufen. Ein Satzzeichen, das außerhalb der Klammern an der Wendung hängt (`:mark[Land].`), bleibt außerhalb des Bandes; die Textfarbe eines Stils erfasst das ganze Wort, zu dem es gehört. Eine Markierung in einer anderen wird als deren Text gesetzt.
-- **Wo.** Absätze, im Text gesetzte Überschriften, Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Legenden und Anmerkungen, in Text von links nach rechts und von rechts nach links sowie in Chinesisch und Japanisch. Canvas, PDF und HTML zeichnen das Band; in einem getaggten PDF ist es ein Layout-Artefakt, und die Wörter gehören zu ihrem Absatz. Eine Überschrift, die eine Gestaltung zeichnet (ein Kapitelauftakt), zeigt die Wörter ohne Band, ebenso der HTML-Betrachter auf einer Seite im senkrechten Satz.
+- **Wo.** Absätze, im Text gesetzte Überschriften, Listenpunkte, Zitate, Kästen, Fußnoten, Tabellenzellen, Legenden und Anmerkungen, in Text von links nach rechts und von rechts nach links sowie in Chinesisch und Japanisch. Canvas, PDF und HTML zeichnen das Band; in einem getaggten PDF ist es ein Layout-Artefakt, und die Wörter gehören zu ihrem Absatz. Eine Überschrift, die eine Gestaltung zeichnet (ein Kapitelauftakt), zeigt die Wörter ohne Band. Auf einer Seite im senkrechten Satz läuft das Band mit den Zeichen die Spalte hinab, auch im HTML-Betrachter.
 
 ### Durchgestrichener Text
 

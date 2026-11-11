@@ -9,7 +9,7 @@ export const metadata = {
   readingTime: '47 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "Esta página trata de los estilos con nombre, que defines una vez y usas muchas. Un estilo de párrafo da forma a un tipo de texto, como una bibliografía o un glosario. Un estilo de chip dibuja una pequeña etiqueta dentro de la línea, y un estilo de resaltado, una banda de color detrás de una frase. Los listados de código tienen su propia letra, su caja y sus colores. La página explica también las páginas que abren cada parte del libro y los estilos de los títulos especiales. Los recuadros tienen su propia página.",
+  plainSummary: "Esta página trata de los estilos con nombre, que defines una vez y usas muchas. Un estilo de párrafo da forma a un tipo de texto, como una bibliografía o un glosario. Un estilo de chip dibuja una pequeña etiqueta dentro de la línea, y un estilo de resaltado, una banda de color detrás de una frase o una línea por debajo de ella o que la atraviesa; un estilo de carácter compone unas pocas palabras en otra letra, otro cuerpo u otro color, y puede nombrar un estilo de resaltado que las acompañe. Los listados de código tienen su propia letra, su caja y sus colores. La página explica también las páginas que abren cada parte del libro y los estilos de los títulos especiales. Los recuadros tienen su propia página.",
 };
 
 # Configuración: estilos y partes
@@ -494,16 +494,24 @@ const style = pickChipStyle(resolved, 'key');
 
 ## Estilos de carácter
 
-La propiedad `characterStyles` declara los estilos con nombre de un grupo de palabras, escrito `[unas palabras]|id|` en el texto: una letra (familia, cuerpo, peso, inclinación), un color, espaciado entre letras, mayúsculas o versalitas, y tres decoraciones: un subrayado, una mancha de rotulador pintada detrás de las palabras como con un rotulador fluorescente, y un tachado. A diferencia de un chip, un grupo con estilo se parte entre líneas y admite guion como el texto que lo rodea; una decoración partida entre dos líneas se dibuja en cada una. Viene un estilo por defecto, `marker` (una mancha amarilla de rotulador sobre la mitad inferior de las letras, con los bordes trazados a mano), así que `[…]|marker|` funciona sin configurar nada (un subrayado sin más es `:underline[…]`, y un resaltado sin más, `:mark[…]`); declarar `characterStyles` sustituye esa lista, y una lista vacía deja el libro sin ninguno. Un grupo cuyo id no declara ningún estilo se compone como el texto que lo rodea, y el panel Revisión lo señala (*Estilo de carácter desconocido*).
+La propiedad `characterStyles` declara los aspectos con nombre de un grupo de palabras. Un grupo recibe uno con la directiva `:span`, `:span[unas palabras]{style="id"}`, que es la única forma de dar a un grupo un aspecto con nombre. Un estilo de carácter fija el texto: una letra (familia, cuerpo, peso, inclinación), un color, espaciado entre letras, mayúsculas o versalitas. Una franja detrás de las palabras, o una línea por debajo de ellas o que las atraviesa, pertenece a un [estilo de resaltado](#estilos-de-resaltado), al que el estilo de carácter nombra con `mark`. A diferencia de un chip, un grupo con estilo se parte entre líneas y admite guion como el texto que lo rodea. No viene ningún estilo por defecto, y un libro no tiene ninguno hasta que los declara. Un grupo cuyo id no declara ningún estilo se compone como el texto que lo rodea, y el panel Revisión lo señala (*Estilo de carácter desconocido*).
 
 ```ts
 const config: PostextConfig = {
-  characterStyles: [
+  markStyles: [
+    { id: 'mark' },
     {
-      id: 'marker',
-      name: 'Rotulador',
-      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+      id: 'pen',
+      name: 'Rotulador fluorescente',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
     },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Rotulador', mark: 'pen' },
     {
       id: 'drug',
       name: 'Nombre de fármaco',
@@ -512,16 +520,16 @@ const config: PostextConfig = {
       color: { hex: '#1f4e79', model: 'hex' },
       letterSpacing: { value: 0.02, unit: 'em' },
     },
-    { id: 'wrong', name: 'Respuesta incorrecta', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+    { id: 'wrong', name: 'Respuesta incorrecta', mark: 'struck' },
   ],
 };
 ```
 
 ```md
-El [tratamiento de primera línea]|marker| es la [metformina]|drug|, nunca [la insulina de entrada]|wrong|.
+El :span[tratamiento de primera línea]{style="marker"} es la :span[metformina]{style="drug"}, nunca :span[la insulina de entrada]{style="wrong"}.
 ```
 
-Propiedades del texto (las que no se fijan conservan las del texto):
+Propiedades (las que no se fijan conservan las del texto):
 
 <table>
   <thead>
@@ -537,7 +545,7 @@ Propiedades del texto (las que no se fijan conservan las del texto):
       <td><code>id</code></td>
       <td><code>string</code></td>
       <td>obligatorio</td>
-      <td>Identificador que se escribe entre las barras: <code>[…]|id|</code>. Letras, cifras, <code>-</code> y <code>_</code>.</td>
+      <td>Identificador que se escribe en la directiva: <code>:span[…]&#123;style="id"&#125;</code>. Letras, cifras, <code>-</code> y <code>_</code>.</td>
     </tr>
     <tr>
       <td><code>name</code></td>
@@ -573,7 +581,7 @@ Propiedades del texto (las que no se fijan conservan las del texto):
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td>el del texto</td>
-      <td>Color del grupo, también el de las palabras en negrita y en cursiva.</td>
+      <td>Color del grupo, también el de las palabras en negrita y en cursiva. Es solo pintura: nunca cambia la composición. Un resaltado que fija su propio color de texto (el <code>mark</code> del estilo, o un <code>:mark[…]</code> alrededor del grupo) prevalece sobre él.</td>
     </tr>
     <tr>
       <td><code>letterSpacing</code></td>
@@ -585,7 +593,7 @@ Propiedades del texto (las que no se fijan conservan las del texto):
       <td><code>textTransform</code></td>
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
-      <td><code>uppercase</code> compone el grupo en mayúsculas; el texto conserva sus letras, así que la búsqueda y el mapa de fuente lo siguen leyendo tal como está escrito.</td>
+      <td><code>uppercase</code> compone el grupo en mayúsculas según las reglas del idioma en que está (una <em>i</em> turca pasa a <em>İ</em>, las mayúsculas griegas pierden el acento). El texto escrito conserva sus letras: la búsqueda y el mapa de fuente lo leen tal como está escrito, y el PDF da a las mayúsculas la palabra escrita como texto (<code>/ActualText</code>), así que al copiarlas se obtienen las palabras tal como se teclearon. El HTML y el EPUB llevan las propias mayúsculas.</td>
     </tr>
     <tr>
       <td><code>smallCaps</code></td>
@@ -594,166 +602,30 @@ Propiedades del texto (las que no se fijan conservan las del texto):
       <td>Compone el grupo en versalitas, como hace <code>:smallcaps[…]</code>.</td>
     </tr>
     <tr>
-      <td><code>underline</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>desactivado</td>
-      <td>Una línea bajo el grupo (ver más abajo).</td>
-    </tr>
-    <tr>
-      <td><code>highlight</code></td>
-      <td><code>CharacterStyleHighlightConfig</code></td>
-      <td>desactivado</td>
-      <td>Una mancha de rotulador detrás del grupo (ver más abajo).</td>
-    </tr>
-    <tr>
-      <td><code>strike</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>desactivado</td>
-      <td>Una línea que atraviesa el grupo (ver más abajo).</td>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>ninguno</td>
+      <td>El id de un <a href="#estilos-de-resaltado">estilo de resaltado</a> que se dibuja con el grupo: su franja, su línea, su color de texto. Un id que no declara ningún estilo de resaltado se descarta, y el grupo se queda sin resaltado.</td>
     </tr>
   </tbody>
 </table>
 
-`underline` y `strike` (las longitudes en em son relativas al cuerpo del propio grupo):
+**Un mecanismo para cada cosa.** Un estilo de carácter fija las letras; un estilo de resaltado dibuja lo que va con ellas, una franja o una línea, igual que para `:mark[…]`. Un subrayado sin más sigue siendo `:underline[…]`, un tachado sin más `~~…~~` y un resaltado sin más `:mark[…]`; un estilo de carácter es para un aspecto al que el libro da nombre y que reutiliza. La forma de corchetes y barras que usan otras herramientas (`[palabras]|id|`) no es sintaxis de Postext: se queda como texto, tal como está escrita.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Propiedad</th>
-      <th style={{ width: '180px' }}>Tipo</th>
-      <th style={{ width: '140px' }}>Por defecto</th>
-      <th>Descripción</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Dibuja la línea.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td>el color del grupo</td>
-      <td>Color de la línea.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>100</code></td>
-      <td>Porcentaje, de 0 a 100.</td>
-    </tr>
-    <tr>
-      <td><code>thickness</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.05em</code></td>
-      <td>Grosor del trazo.</td>
-    </tr>
-    <tr>
-      <td><code>offset</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.12em</code> (subrayado), <code>0.28em</code> (tachado)</td>
-      <td>Por dónde pasa el centro de la línea: bajo la línea base en un subrayado, por encima de ella en un tachado.</td>
-    </tr>
-    <tr>
-      <td><code>style</code></td>
-      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
-      <td><code>'solid'</code></td>
-      <td>Cómo se dibuja la línea.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>La dibuja palabra a palabra y deja en blanco los espacios; desactivado, sigue bajo los espacios del grupo (nunca bajo los que lo rodean).</td>
-    </tr>
-  </tbody>
-</table>
+**Anidamiento.** Un grupo puede contener otras marcas en línea (`:span[una palabra en **negrita**]{style="marker"}`, un enlace, una referencia, una fórmula) y otros grupos: gana el estilo más interior (`:span[a :span[b]{style="drug"} c]{style="marker"}`). Un grupo no puede atravesar un párrafo.
 
-`highlight` (los bordes se miden desde la línea base, positivos hacia arriba, en em del cuerpo del propio grupo):
+**Dónde.** Párrafos, elementos de lista, citas, recuadros, notas al pie, leyendas, notas y celdas de tabla, y encabezados mientras `headings.inlineMarks` esté activado. Los titulillos, el índice general y las entradas del índice toman las palabras sin el estilo. En una página vertical (libros chinos y japoneses compuestos en vertical) el grupo se compone como el texto que lo rodea, y la línea de su resaltado va a la derecha de los caracteres, como una línea lateral.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Propiedad</th>
-      <th style={{ width: '180px' }}>Tipo</th>
-      <th style={{ width: '140px' }}>Por defecto</th>
-      <th>Descripción</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Pinta la mancha.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td><code>#ffe14d</code></td>
-      <td>Color de la mancha. Una entrada de la paleta que sea una tinta plana imprime la mancha en la plancha de su tinta.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>70</code></td>
-      <td>Porcentaje, de 0 a 100. La mancha se pinta detrás del texto, así que las letras conservan su color.</td>
-    </tr>
-    <tr>
-      <td><code>bottom</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>-0.2em</code></td>
-      <td>Dónde empieza la mancha (negativo: por debajo de la línea base, entre los descendentes).</td>
-    </tr>
-    <tr>
-      <td><code>top</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.8em</code></td>
-      <td>Dónde acaba la mancha: unos <code>0.45em</code> cubren la mitad inferior de las letras (un trazo de rotulador), <code>0.8em</code> las palabras enteras y <code>0.05em</code> con <code>bottom: -0.15em</code> da un subrayado grueso.</td>
-    </tr>
-    <tr>
-      <td><code>overhang</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Cuánto sobresale la mancha de la primera y la última letra del grupo.</td>
-    </tr>
-    <tr>
-      <td><code>radius</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Radio de las esquinas, limitado a la mitad de la altura de la mancha.</td>
-    </tr>
-    <tr>
-      <td><code>rough</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>De 0 a 100: <code>0</code> da una banda limpia; con valores más altos sus bordes superior e inferior ondulan, la mancha se desvía un poco a lo largo de la línea y sus extremos se cortan en diagonal, como un rotulador pasado a mano. La ondulación sigue una semilla tomada del grupo, así que es la misma en cada composición, en el canvas, el PDF y el HTML.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Una mancha por palabra.</td>
-    </tr>
-  </tbody>
-</table>
+**Salida.** El canvas, el PDF, el HTML y las salidas vectoriales (SVG, IDML) dibujan el resaltado que nombra un estilo con la misma geometría que cualquier `:mark[…]`. El EPUB compone cada estilo como una clase (`pt-cs-<id>`) con su letra, su cuerpo, su peso, su inclinación, su color, su espaciado entre letras y sus versalitas; no dibuja ningún resaltado, igual que no dibuja ningún `:mark[…]`. Una exportación a Word convierte cada estilo en un estilo de carácter de Word llamado *Postext Style: …*, con la franja del resaltado como sombreado y su línea como el subrayado de Word más parecido o un tachado, y una importación de Word asigna de vuelta al estilo del libro un estilo de carácter que se llame como él, o *Postext Style: …* en cualquiera de los idiomas del sitio.
 
-**Anidamiento.** Un grupo puede contener otras marcas en línea (`[una palabra en **negrita**]|marker|`, un enlace, una referencia, una fórmula) y otros grupos: gana el estilo más interior (`[a [b]|drug| c]|marker|`). Un grupo no puede atravesar un párrafo.
-
-**Dónde.** Párrafos, elementos de lista, citas, recuadros, notas al pie, leyendas, notas y celdas de tabla, y encabezados mientras `headings.inlineMarks` esté activado. Los titulillos, el índice general y las entradas del índice toman las palabras sin el estilo.
-
-**Salida.** El canvas, el PDF y el HTML dibujan las decoraciones a partir de la misma geometría (`VDTLine.marks`, de los tipos `band`, `line`, `double`, `dotted`, `dashed` y `wavy`): la mancha antes del texto de la línea y las líneas después. En un PDF digital, una mancha o una línea translúcida se dibuja con transparencia; en un PDF de imprenta (`pdfGeneration.colorSpace` con un perfil de impresión) se compone como se imprimiría sobre el papel blanco, como una trama de su color, en la plancha de su tinta si es una tinta plana, sin transparencia, así que un archivo PDF/X nunca la lleva. El EPUB fluido compone cada estilo como una clase (`pt-cs-<id>`) con CSS: la fuente, el color, `text-decoration` para las líneas y un fondo degradado para la mancha. Una exportación a Word convierte cada estilo en un estilo de carácter de Word (`Estilo de carácter: <name>`), con la mancha como un sombreado de su color, y una importación de Word asigna de vuelta al estilo del libro un estilo de carácter que se llame como él, o que se exportara como `Estilo de carácter: <name>`.
-
-En el VDT un segmento con estilo lleva `charStyle: { id, style }` (el grupo y el id del estilo); su letra, su color y su espaciado entre letras ya están en `fontString`, `color` y `tracking`.
+En el VDT un segmento con estilo lleva `charStyle: { id, style }` (el grupo y el id del estilo); su letra y su espaciado entre letras ya están en `fontString` y `tracking`, su color en `color`, y un segmento que el estilo compone en mayúsculas lleva el texto escrito en `sourceText`.
 
 ```ts
-const resolved = resolveCharacterStylesConfig(config.characterStyles);
-// => el integrado `marker` si no se declara; todos los campos rellenos
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => todos los campos rellenos; se descarta un `mark` que no nombra ningún estilo de resaltado
 
 const minimal  = stripCharacterStylesDefaults(config.characterStyles);
-// => undefined para el valor integrado; se eliminan los valores por defecto estáticos; [] se conserva
+// => se eliminan los valores por defecto estáticos; undefined para una lista vacía
 
 const style = pickCharacterStyle(resolved, 'drug');
 // => el estilo `drug`, o undefined si ningún estilo tiene ese id
@@ -761,7 +633,7 @@ const style = pickCharacterStyle(resolved, 'drug');
 
 ## Estilos de resaltado
 
-La propiedad `markStyles` declara los estilos con nombre del `:mark[texto]{style="…"}` en línea: la franja de color detrás de una frase, como cuando un libro de texto resalta sus palabras clave (la sintaxis y sus reglas de corte de línea se explican en la referencia del formato del documento). Hay un estilo predeterminado, `mark` (una franja amarillo pálido que sobresale un poco de la frase, con los extremos rectos y el texto en su propio color), así que `:mark[…]` funciona sin configurar nada; declarar `markStyles` sustituye esa lista predeterminada. Una marca sin `style`, o con un id que ningún estilo declara, usa el primer estilo (el Sandbox señala el id desconocido).
+La propiedad `markStyles` declara los estilos con nombre del `:mark[texto]{style="…"}` en línea (y de los resaltados que los estilos de carácter nombran con `mark`): la franja de color detrás de una frase, y una línea por debajo de ella o que la atraviesa, como cuando un libro de texto resalta sus palabras clave (la sintaxis y sus reglas de corte de línea se explican en la referencia del formato del documento). Hay un estilo predeterminado, `mark` (una franja amarillo pálido que sobresale un poco de la frase, con los extremos rectos y el texto en su propio color), así que `:mark[…]` funciona sin configurar nada; declarar `markStyles` sustituye esa lista predeterminada. Una marca sin `style`, o con un id que ningún estilo declara, usa el primer estilo (el Sandbox señala el id desconocido).
 
 ```ts
 const config: PostextConfig = {
@@ -839,7 +711,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Espacio por encima y por debajo; cada uno sustituye a <code>paddingY</code> en su lado.</td>
+      <td>Espacio por encima y por debajo; cada uno sustituye a <code>paddingY</code> en su lado. Cualquiera de los dos puede ser negativo: un <code>paddingTop</code> negativo baja el borde superior de la franja dentro de las letras (unos <code>-0.35em</code> cubren su mitad inferior, como un trazo de rotulador), y un <code>paddingBottom</code> negativo sube su borde inferior por encima de los descendentes. Una franja que se queda sin altura no se dibuja.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pinta la franja. <code>false</code> deja al estilo su línea y su color de texto, para una marca que solo subraya o tacha.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>La opacidad de la franja, en porcentaje (de 0 a 100). La franja se pinta detrás del texto, así que las letras conservan su color. Ver la nota sobre la transparencia más abajo.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>De 0 a 100: <code>0</code> da una franja limpia; con valores más altos sus bordes superior e inferior ondulan y sus extremos se cortan en diagonal, como un rotulador pasado a mano. La ondulación sigue una semilla tomada de la marca y de su lugar, así que es la misma en cada composición, en el canvas, el PDF, el HTML y las salidas vectoriales. Word dibuja una franja limpia.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>ninguna</td>
+      <td>Una línea que se dibuja con la marca, por debajo de las palabras o atravesándolas (ver más abajo).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -850,7 +746,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-Las longitudes en em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) son relativas al cuerpo del texto marcado. La franja no ocupa sitio: el texto se maqueta igual que sin la marca, la franja se pinta debajo y su relleno se extiende por los espacios entre palabras y por el espacio entre líneas. En el VDT, los segmentos de las palabras marcadas tienen un `mark` (`{ style, id, start?, end?, from?, to? }`) y cada línea guarda sus franjas en `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relativas al `bbox.x` y a la línea base de la línea), que los backends de canvas, PDF y HTML pintan antes del texto de la línea.
+`line` (las longitudes en em son relativas al cuerpo del texto marcado):
+
+<table>
+  <thead>
+    <tr>
+      <th>Propiedad</th>
+      <th>Tipo</th>
+      <th>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Por debajo de las palabras, donde la fuente pone su subrayado, o atravesándolas, donde pone su tachado. En el texto chino y japonés, una línea que atraviesa va por el eje central del cuadratín; en una página vertical, una línea por debajo va a la derecha de los caracteres, como una línea lateral.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Cómo se dibuja la línea. Una línea doble aparta su segundo trazo de las letras; los puntos, las rayas y las ondas se dimensionan a partir del grosor y del cuerpo del texto.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del texto marcado</td>
+      <td>Color de la línea.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>el de la fuente</td>
+      <td>Grosor del trazo; sin fijar, el grosor del subrayado o del tachado de la propia fuente.</td>
+    </tr>
+  </tbody>
+</table>
+
+La línea sigue por debajo de los espacios entre las palabras de la frase y se detiene en su última letra donde la frase pasa a la línea siguiente. Son las mismas líneas que dibujan `:underline[…]` y `~~…~~`, así que una línea de marca se sitúa donde se sitúan esas.
+
+**Transparencia.** Una franja con menos del 100 % de opacidad es translúcida en el canvas, el HTML, un PDF digital y un PDF/X-4, que admiten transparencia. Un PDF/X-1a no admite ninguna: ahí la franja se compone como se imprimiría sobre papel blanco, como un tono de su color, en la plancha de su tinta si es una tinta plana. La exportación a Word y las salidas vectoriales (SVG, IDML) la componen igual, sobre blanco; sobre una página de color o encima de una imagen, ese tono no coincide con la franja translúcida.
+
+Las longitudes en em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) son relativas al cuerpo del texto marcado. La franja no ocupa sitio: el texto se maqueta igual que sin la marca, la franja se pinta debajo y su relleno se extiende por los espacios entre palabras y por el espacio entre líneas. En el VDT, los segmentos de las palabras marcadas tienen un `mark` (`{ style, id, start?, end?, from?, to? }`) y cada línea guarda sus franjas en `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relativas al `bbox.x` y a la línea base de la línea), que los backends de canvas, PDF y HTML pintan antes del texto de la línea; las líneas van a los `marks` de la línea, señaladas con `markLine`, y se pintan después de él.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

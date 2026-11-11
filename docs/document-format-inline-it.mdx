@@ -141,6 +141,11 @@ Il markup in linea viene riconosciuto dentro qualsiasi blocco di testo (titoli, 
       <td>Una fascia colorata dietro parole che restano testo normale: vanno a capo, si dividono e si giustificano come sempre. Lo stile viene da <code>markStyles</code>; vedi <a href="#evidenziazioni">Evidenziazioni</a>.</td>
     </tr>
     <tr>
+      <td>Stile di carattere</td>
+      <td><code>:span[alcune parole]&#123;style="id"&#125;</code></td>
+      <td>Le parole in uno stile con nome di <code>characterStyles</code>: un carattere, un corpo, un colore, una spaziatura, le maiuscole e lo stile di evidenziazione che nomina. A differenza di un chip va a capo e si sillaba come il testo che lo circonda. Vedi <a href="#stili-di-carattere">Stili di carattere</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulazione</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Manda le parole che la seguono al tabulatore successivo: uno dei tabulatori dello stile del paragrafo, o quello impostato dai suoi attributi. Un carattere di tabulazione digitato nel testo è una tabulazione solo dove lo stile imposta dei tabulatori. Vedi <a href="#tabulazioni-e-tabulatori">Tabulazioni e tabulatori</a>.</td>
@@ -200,21 +205,20 @@ Un chip con `field` diventa un campo compilabile del modulo nel PDF (vedi [Outpu
 
 ### Stili di carattere
 
-`[alcune parole]|id|` compone le parole tra le parentesi quadre nello stile di carattere `id` di `characterStyles` (vedi [Configurazione → Stili di carattere](/it/docs/configuration-styles#stili-di-carattere)): un carattere, un colore, una sottolineatura, una fascia di evidenziatore, un barrato.
+`:span[alcune parole]{style="id"}` compone le parole tra le parentesi quadre nello stile di carattere `id` di `characterStyles` (vedi [Configurazione → Stili di carattere](/it/docs/configuration-styles#stili-di-carattere)): un carattere, un corpo, un peso, un colore, una spaziatura, le maiuscole e, quando lo stile ne nomina uno, la fascia o la linea di uno stile di evidenziazione. La direttiva `:span` è il modo per dare a una sequenza un aspetto con nome.
 
 ```markdown
-Il [trattamento di prima linea]|marker| è la [metformina]|drug|.
+Il :span[trattamento di prima linea]{style="marker"} è la :span[metformina]{style="drug"}.
 
-Una [sequenza con **grassetto** e uno [stile annidato]|accent|]|marker| dentro.
+Una :span[sequenza con **grassetto** e uno :span[stile annidato]{style="accent"}]{style="marker"} dentro.
 ```
 
-- **Testo, non un riquadro.** Le parole restano nella riga: vanno a capo, si sillabano e si giustificano come il testo che le circonda. Una decorazione spezzata su due righe viene tracciata su ciascuna; su una stessa riga prosegue sotto gli spazi tra le parole della sequenza, mai sotto gli spazi che la circondano.
-- **Le barre.** L’id segue subito la parentesi di chiusura, tra due barre: lettere, cifre, `-` e `_`. Uno spazio tra `]` e `|`, una seconda barra mancante o parentesi vuote lasciano il testo com’è scritto. `\[a]|b|` stampa `[a]|b|`.
-- **Parentesi che sono altro.** Un richiamo di nota (`[^1]`), una citazione (`[@chiave]`) e un link (`[testo](url)`) vengono letti per primi e non sono mai uno stile.
+- **Testo, non un riquadro.** Le parole restano nella riga: vanno a capo, si sillabano e si giustificano come il testo che le circonda. Una fascia o una linea spezzata su due righe viene tracciata su ciascuna; su una stessa riga prosegue sotto gli spazi tra le parole della sequenza, mai sotto gli spazi che la circondano.
+- **La direttiva.** `style` nomina lo stile, tra virgolette (`style="drug"`) o no (`style=drug`). Uno `:span` senza `style` compone le sue parole senza stile, come un id sconosciuto. Tra le parentesi, `\]` è una parentesi letterale. La forma `[parole]|id|` non è sintassi Postext e si stampa com’è scritta.
 - **Annidamento.** Le parole ammettono gli altri segni in linea e altre sequenze; vince lo stile più interno. Un id sconosciuto compone le parole come il testo che le circonda e viene segnalato (`unknownCharacterStyle`).
 - **Dove.** Paragrafi, voci di elenco, citazioni, riquadri, note a piè di pagina, didascalie, note e celle di tabella, e titoli finché `headings.inlineMarks` è attivo (disattivato, le parole sono composte senza stile).
-- **Testo semplice.** Le parentesi, le barre e l’id non stampano nulla: la ricerca, l’indice generale, le testatine, le ancore dell’indice analitico e il testo copiato leggono solo le parole.
-- **Sottolineatura ed evidenziazione da sole.** Una semplice sottolineatura è `:underline[…]`, e una semplice evidenziazione `:mark[…]`; uno stile di carattere serve per un aspetto proprio (un carattere, un colore, una banda tracciata a mano, una linea tratteggiata o ondulata). La sua sottolineatura e il suo barrato stanno, per impostazione predefinita, dove stanno quelli di `:underline[…]` e `~~…~~`.
+- **Testo semplice.** La direttiva non stampa nulla: la ricerca, l’indice generale, le testatine e le ancore dell’indice analitico leggono solo le parole, come sono scritte. Le maiuscole che uno stile impone si copiano dal PDF come le parole sono state digitate.
+- **Un meccanismo per ogni cosa.** Una semplice sottolineatura è `:underline[…]`, un semplice barrato `~~…~~` e una semplice evidenziazione `:mark[…]`. Una fascia o una linea che accompagna uno stile di carattere è uno stile di evidenziazione che lo stile di carattere nomina (`mark`), quindi fascia e linea seguono le stesse regole di `:mark[…]`.
 
 ### Evidenziazioni
 
@@ -229,7 +233,7 @@ Il sole scalda il mare e :mark[l’acqua sale nell’aria come vapore, dove si r
 - **A capo.** Un segno può comprendere più parole e passare da una riga all’altra; ogni riga riceve la sua fascia. La spaziatura interna orizzontale e gli angoli arrotondati si disegnano solo all’inizio e alla fine reali della frase: dove la frase va a capo, la fascia si interrompe con un taglio netto all’ultima lettera della riga e riprende allo stesso modo alla prima lettera della riga dopo. Uno stile con `decorationBreak: 'clone'` dà a ogni riga una fascia intera, con il margine e gli angoli alle due estremità: un titolo su una fascia di colore tagliata riga per riga.
 - **Nessuno spazio occupato.** La fascia si disegna sotto il testo, da 0,8 em sopra a 0,25 em sotto la linea di base, più la spaziatura interna verticale, e la spaziatura interna orizzontale entra negli spazi accanto alla frase. Le righe vanno a capo esattamente come senza il segno, quindi segnare un libro già impaginato non sposta nessuna delle sue pagine.
 - **Testo.** Il testo segnato accetta i propri segni in linea (`:mark[la parola **chiave**]`), link, chip e rimandi. Le parentesi quadre vi si annidano (`:mark[vedi [la mappa]]`), `\]` scrive una parentesi letterale e il testo può attraversare un a capo semplice della sorgente. Un segno di punteggiatura attaccato alla frase fuori dalle parentesi (`:mark[terra].`) resta fuori dalla fascia; il colore del testo di uno stile arriva all’intera parola che lo contiene. Un segno dentro un altro si compone come il suo testo.
-- **Dove.** Paragrafi, titoli composti nel testo, voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, in testo da sinistra a destra e da destra a sinistra e in cinese e giapponese. Il canvas, il PDF e l’HTML disegnano la fascia; in un PDF con tag è un artefatto di impaginazione e le parole appartengono al loro paragrafo. Un titolo disegnato da una grafica (un’apertura) stampa le parole senza fascia, come il visualizzatore HTML su una pagina verticale.
+- **Dove.** Paragrafi, titoli composti nel testo, voci di elenco, citazioni, riquadri, note a piè di pagina, celle di tabella, didascalie e note, in testo da sinistra a destra e da destra a sinistra e in cinese e giapponese. Il canvas, il PDF e l’HTML disegnano la fascia; in un PDF con tag è un artefatto di impaginazione e le parole appartengono al loro paragrafo. Un titolo disegnato da una grafica (un’apertura) stampa le parole senza fascia. In una pagina verticale la fascia scende lungo la colonna con i caratteri, anche nel visualizzatore HTML.
 
 ### Barrato
 

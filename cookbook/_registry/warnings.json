@@ -1581,16 +1581,16 @@
       "it": "Stile di carattere sconosciuto"
     },
     "cause": {
-      "en": "A `[…]|id|` names a style that characterStyles does not define, so the words are set as the text around them.",
-      "es": "Un `[…]|id|` nombra un estilo que characterStyles no define, así que las palabras se componen como el texto que las rodea.",
-      "ca": "Un `[…]|id|` anomena un estil que characterStyles no defineix, de manera que les paraules es componen com el text que les envolta.",
-      "zh": "某个`[…]|id|`指定的样式没有在characterStyles中定义，因此这些文字按周围的正文排。",
-      "ar": "مقطع `[…]|id|` يسمّي نمطًا لا تعرّفه characterStyles، فتُصفّ الكلمات كالنص المحيط بها.",
-      "ja": "`[…]|id|`が、characterStylesに定義されていないスタイルを指定しているため、その語句は周囲の本文と同じように組まれます。",
-      "pt": "Um `[…]|id|` cita um estilo que characterStyles não define, então as palavras são compostas como o texto ao redor.",
-      "fr": "Un `[…]|id|` nomme un style que characterStyles ne définit pas : les mots sont donc composés comme le texte qui les entoure.",
-      "de": "Ein `[…]|id|` nennt ein Format, das characterStyles nicht definiert, daher werden die Wörter wie der umgebende Text gesetzt.",
-      "it": "Un `[…]|id|` nomina uno stile che characterStyles non definisce, quindi le parole sono composte come il testo che le circonda."
+      "en": "A `:span[…]{style=\"id\"}` names a style that characterStyles does not define, so the words are set as the text around them.",
+      "es": "Un `:span[…]{style=\"id\"}` nombra un estilo que characterStyles no define, así que las palabras se componen como el texto que las rodea.",
+      "ca": "Un `:span[…]{style=\"id\"}` anomena un estil que characterStyles no defineix, de manera que les paraules es componen com el text que les envolta.",
+      "zh": "某个`:span[…]{style=\"id\"}`指定的样式没有在characterStyles中定义，因此这些文字按周围的正文排。",
+      "ar": "مقطع `:span[…]{style=\"id\"}` يسمّي نمطًا لا تعرّفه characterStyles، فتُصفّ الكلمات كالنص المحيط بها.",
+      "ja": "`:span[…]{style=\"id\"}`が、characterStylesに定義されていないスタイルを指定しているため、その語句は周囲の本文と同じように組まれます。",
+      "pt": "Um `:span[…]{style=\"id\"}` cita um estilo que characterStyles não define, então as palavras são compostas como o texto ao redor.",
+      "fr": "Un `:span[…]{style=\"id\"}` nomme un style que characterStyles ne définit pas : les mots sont donc composés comme le texte qui les entoure.",
+      "de": "Ein `:span[…]{style=\"id\"}` nennt ein Format, das characterStyles nicht definiert, daher werden die Wörter wie der umgebende Text gesetzt.",
+      "it": "Un `:span[…]{style=\"id\"}` nomina uno stile che characterStyles non definisce, quindi le parole sono composte come il testo che le circonda."
     },
     "fix": {
       "en": "Define the style in characterStyles or correct the id between the bars.",

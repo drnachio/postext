@@ -142,8 +142,8 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
     </tr>
     <tr>
       <td>Character style</td>
-      <td><code>[some words]|id|</code></td>
-      <td>The words in a named style of <code>characterStyles</code>: a face, a colour and an underline, a highlighter band or a strike-through. Unlike a chip it breaks and hyphenates like the text around it. See <a href="#character-styles">Character styles</a>.</td>
+      <td><code>:span[some words]&#123;style="id"&#125;</code></td>
+      <td>The words in a named style of <code>characterStyles</code>: a face, a size, a colour, tracking, capitals, and the highlight style it names. Unlike a chip it breaks and hyphenates like the text around it. See <a href="#character-styles">Character styles</a>.</td>
     </tr>
     <tr>
       <td>Tab</td>
@@ -205,21 +205,20 @@ A chip with `field` becomes a fillable form field in the PDF (see [PDF output �
 
 ### Character styles
 
-`[some words]|id|` sets the words between the brackets in the character style `id` of `characterStyles` (see [Configuration › Character styles](/en/docs/configuration-styles#character-styles)): a face, a colour, an underline, a highlighter band, a strike-through.
+`:span[some words]{style="id"}` sets the words between the brackets in the character style `id` of `characterStyles` (see [Configuration › Character styles](/en/docs/configuration-styles#character-styles)): a face, a size, a weight, a colour, tracking, capitals, and, when the style names one, a highlight style's band or line. The `:span` directive is the way to give a run a named look.
 
 ```markdown
-The [first line of treatment]|marker| is [metformin]|drug|.
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}.
 
-A [run with **bold** and a [nested style]|accent|]|marker| inside.
+A :span[run with **bold** and a :span[nested style]{style="accent"}]{style="marker"} inside.
 ```
 
-- **Text, not a box.** The words stay in the line: they break across lines, hyphenate and justify as the text around them does. A decoration broken over two lines is drawn on each; on one line it runs on under the spaces between the run's words, never under the spaces around it.
-- **The bars.** The id follows the closing bracket at once, between two bars: letters, digits, `-` and `_`. A space between `]` and `|`, a missing second bar or an empty bracket leave the text as written. `\[a]|b|` prints `[a]|b|`.
-- **Brackets that are something else.** A footnote marker (`[^1]`), a citation (`[@key]`) and a link (`[text](url)`) are read first and are never a style.
+- **Text, not a box.** The words stay in the line: they break across lines, hyphenate and justify as the text around them does. A band or line broken over two lines is drawn on each; on one line it runs on under the spaces between the run's words, never under the spaces around it.
+- **The directive.** `style` names the style; quoted (`style="drug"`) or not (`style=drug`). A `:span` with no `style` sets its words plain, as an unknown id does. Inside the brackets, `\]` is a literal bracket. The form `[words]|id|` is not Postext syntax and prints as written.
 - **Nesting.** The words admit the other inline marks and other runs; the innermost style wins. An unknown id sets the words as the text around them and is reported (`unknownCharacterStyle`).
 - **Where.** Paragraphs, list items, quotations, callouts, footnotes, captions, notes and table cells, and headings while `headings.inlineMarks` is on (off, the words are set plain).
-- **Plain text.** The brackets, bars and id print nothing: search, the contents, running heads, index anchors and copied text read the words alone.
-- **Underline and highlight on their own.** A plain underline is `:underline[…]` and a plain highlight `:mark[…]`; a character style is for a look of its own (a face, a colour, a hand-drawn band, a dashed or wavy line). Its underline and strike-through sit, by default, where those of `:underline[…]` and `~~…~~` do.
+- **Plain text.** The directive prints nothing: search, the contents, running heads and index anchors read the words alone, as written. Capitals a style sets copy from the PDF as the words were typed.
+- **One mechanism for each thing.** A plain underline is `:underline[…]`, a plain strike-through `~~…~~` and a plain highlight `:mark[…]`. A band or a line that goes with a character style is a highlight style the character style names (`mark`), so the band and the line follow the same rules as `:mark[…]`.
 
 ### Highlight marks
 
@@ -234,7 +233,7 @@ The sun warms the sea and :mark[water rises into the air as vapour, where it coo
 - **Line breaks.** A mark may hold several words and run over a line end; each line gets its own band. The horizontal padding and the rounded corners are drawn at the true start and end of the phrase only: where the phrase breaks, the band stops square at the last letter of the line and starts square at the first letter of the next. A style with `decorationBreak: 'clone'` gives each line a whole band instead, with the padding and the corners at both of its ends: a heading set on a colour band cut per line.
 - **No room taken.** The band is painted under the text, 0.8 em above and 0.25 em below the baseline, grown by the vertical padding, and its horizontal padding reaches into the word spaces beside the phrase. The lines break exactly as they would without the mark, so marking a laid-out book moves none of its pages.
 - **Text.** The marked text takes its own inline marks (`:mark[the **key** word]`), links, chips and references. Brackets nest inside it (`:mark[see [the map]]`), `\]` writes a literal bracket, and the text may run over a soft line break of the source. A punctuation mark glued to the phrase outside the brackets (`:mark[land].`) stays out of the band; a style's text colour reaches the whole word that holds it. A mark inside another is set as its text.
-- **Where.** Paragraphs, headings set in the text, list items, blockquotes, callouts, footnotes, table cells, captions and notes, in left-to-right and right-to-left text and in Chinese and Japanese. The canvas, the PDF and the HTML paint the band; in a tagged PDF it is a layout artifact and the words belong to their paragraph. A heading drawn by a design (an opener) prints the words without the band, and so does the HTML viewer on a vertical page.
+- **Where.** Paragraphs, headings set in the text, list items, blockquotes, callouts, footnotes, table cells, captions and notes, in left-to-right and right-to-left text and in Chinese and Japanese. The canvas, the PDF and the HTML paint the band; in a tagged PDF it is a layout artifact and the words belong to their paragraph. A heading drawn by a design (an opener) prints the words without the band. On a vertical page the band runs down the column with the characters, in the HTML viewer too.
 
 ### Strikethrough
 

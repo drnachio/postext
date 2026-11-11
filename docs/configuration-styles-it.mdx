@@ -9,7 +9,7 @@ export const metadata = {
   readingTime: '44 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "Questa pagina tratta gli stili con nome che definisci una volta e usi molte volte. Uno stile di paragrafo imposta un tipo di testo, come una bibliografia o un glossario. Uno stile di chip disegna una piccola etichetta dentro una riga, e uno stile di evidenziazione una fascia di colore dietro una frase. I listati di codice hanno un proprio carattere, un proprio riquadro e propri colori. La pagina tratta anche le pagine che aprono ogni parte di un libro e gli stili per i titoli speciali. I riquadri hanno una pagina a parte.",
+  plainSummary: "Questa pagina tratta gli stili con nome che definisci una volta e usi molte volte. Uno stile di paragrafo imposta un tipo di testo, come una bibliografia o un glossario. Uno stile di chip disegna una piccola etichetta dentro una riga, e uno stile di evidenziazione una fascia di colore dietro una frase o una linea sotto o attraverso di essa; uno stile di carattere compone alcune parole in un altro carattere, corpo o colore, e può nominare uno stile di evidenziazione che le accompagni. I listati di codice hanno un proprio carattere, un proprio riquadro e propri colori. La pagina tratta anche le pagine che aprono ogni parte di un libro e gli stili per i titoli speciali. I riquadri hanno una pagina a parte.",
 };
 
 # Configurazione: stili e parti
@@ -494,16 +494,24 @@ const style = pickChipStyle(resolved, 'key');
 
 ## Stili di carattere
 
-La proprietà `characterStyles` dichiara gli stili con nome di una sequenza di parole, scritta `[alcune parole]|id|` nel testo: un carattere (famiglia, corpo, peso, inclinazione), un colore, una spaziatura, maiuscole o maiuscoletto, e tre decorazioni — una sottolineatura, una fascia di evidenziatore dipinta dietro le parole come con un pennarello, e un barrato. A differenza di un chip, una sequenza con stile va a capo e si sillaba come il testo che la circonda; una decorazione spezzata su due righe viene tracciata su ciascuna. Uno stile è predefinito — `marker`, un evidenziatore giallo sulla metà inferiore delle lettere, con i bordi tracciati a mano —, così `[…]|marker|` funziona senza alcuna configurazione (una semplice sottolineatura è `:underline[…]`, una semplice evidenziazione `:mark[…]`); dichiarare `characterStyles` sostituisce questo elenco, e un elenco vuoto lascia il libro senza stili. Una sequenza il cui id non è dichiarato da nessuno stile viene composta come il testo che la circonda, e il pannello Revisione la segnala (*Stile di carattere sconosciuto*).
+La proprietà `characterStyles` dichiara gli aspetti con nome di una sequenza di parole. Una sequenza ne riceve uno con la direttiva `:span`, `:span[alcune parole]{style="id"}`, che è l’unico modo per dare a una sequenza un aspetto con nome. Uno stile di carattere imposta il testo: un carattere (famiglia, corpo, peso, inclinazione), un colore, una spaziatura, maiuscole o maiuscoletto. Una fascia dietro le parole o una linea sotto o attraverso di esse appartiene a uno [stile di evidenziazione](#stili-di-evidenziazione), che lo stile di carattere nomina con `mark`. A differenza di un chip, una sequenza con stile va a capo e si sillaba come il testo che la circonda. Nessuno stile è predefinito, e un libro non ne ha finché non li dichiara. Una sequenza il cui id non è dichiarato da nessuno stile viene composta come il testo che la circonda, e il pannello Revisione la segnala (*Stile di carattere sconosciuto*).
 
 ```ts
 const config: PostextConfig = {
-  characterStyles: [
+  markStyles: [
+    { id: 'mark' },
     {
-      id: 'marker',
-      name: 'Marker',
-      highlight: { enabled: true, color: { hex: '#ffe14d', model: 'hex' }, opacity: 70, bottom: { value: -0.12, unit: 'em' }, top: { value: 0.45, unit: 'em' }, rough: 30 },
+      id: 'pen',
+      name: 'Marker pen',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
     },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Marker', mark: 'pen' },
     {
       id: 'drug',
       name: 'Drug name',
@@ -512,16 +520,16 @@ const config: PostextConfig = {
       color: { hex: '#1f4e79', model: 'hex' },
       letterSpacing: { value: 0.02, unit: 'em' },
     },
-    { id: 'wrong', name: 'Wrong answer', strike: { enabled: true, color: { hex: '#b23a2a', model: 'hex' } } },
+    { id: 'wrong', name: 'Wrong answer', mark: 'struck' },
   ],
 };
 ```
 
 ```md
-Il [trattamento di prima linea]|marker| è la [metformina]|drug|, mai [l’insulina come primo passo]|wrong|.
+Il :span[trattamento di prima linea]{style="marker"} è la :span[metformina]{style="drug"}, mai :span[l’insulina come primo passo]{style="wrong"}.
 ```
 
-Proprietà del testo (quelle non indicate restano quelle del testo):
+Proprietà (quelle non indicate restano quelle del testo):
 
 <table>
   <thead>
@@ -537,7 +545,7 @@ Proprietà del testo (quelle non indicate restano quelle del testo):
       <td><code>id</code></td>
       <td><code>string</code></td>
       <td>obbligatorio</td>
-      <td>Identificatore scritto tra le barre: <code>[…]|id|</code>. Lettere, cifre, <code>-</code> e <code>_</code>.</td>
+      <td>Identificatore scritto nella direttiva: <code>:span[…]&#123;style="id"&#125;</code>. Lettere, cifre, <code>-</code> e <code>_</code>.</td>
     </tr>
     <tr>
       <td><code>name</code></td>
@@ -573,7 +581,7 @@ Proprietà del testo (quelle non indicate restano quelle del testo):
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td>quello del testo</td>
-      <td>Colore della sequenza, parole in grassetto e in corsivo comprese.</td>
+      <td>Colore della sequenza, parole in grassetto e in corsivo comprese. Solo pittura: non cambia mai l’impaginazione. Un’evidenziazione che imposta un proprio colore del testo (il <code>mark</code> dello stile, o un <code>:mark[…]</code> attorno alla sequenza) prevale su di esso.</td>
     </tr>
     <tr>
       <td><code>letterSpacing</code></td>
@@ -585,7 +593,7 @@ Proprietà del testo (quelle non indicate restano quelle del testo):
       <td><code>textTransform</code></td>
       <td><code>'none' | 'uppercase'</code></td>
       <td><code>'none'</code></td>
-      <td><code>uppercase</code> compone la sequenza in maiuscolo; il testo conserva le sue lettere, così la ricerca e la mappa della sorgente lo leggono ancora com’è scritto.</td>
+      <td><code>uppercase</code> compone la sequenza in maiuscolo secondo le regole della sua lingua (una <em>i</em> turca diventa <em>İ</em>, le maiuscole greche perdono gli accenti). La sorgente conserva le sue lettere: la ricerca e la mappa della sorgente la leggono com’è scritta, e il PDF dà alle maiuscole come testo la parola scritta (<code>/ActualText</code>), così copiandole si ottengono le parole come sono state digitate. L’HTML e l’EPUB contengono le maiuscole stesse.</td>
     </tr>
     <tr>
       <td><code>smallCaps</code></td>
@@ -594,166 +602,30 @@ Proprietà del testo (quelle non indicate restano quelle del testo):
       <td>Compone la sequenza in maiuscoletto, come <code>:smallcaps[…]</code>.</td>
     </tr>
     <tr>
-      <td><code>underline</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>disattivato</td>
-      <td>Una linea sotto la sequenza (vedi sotto).</td>
-    </tr>
-    <tr>
-      <td><code>highlight</code></td>
-      <td><code>CharacterStyleHighlightConfig</code></td>
-      <td>disattivato</td>
-      <td>Una fascia di evidenziatore dietro la sequenza (vedi sotto).</td>
-    </tr>
-    <tr>
-      <td><code>strike</code></td>
-      <td><code>CharacterStyleLineConfig</code></td>
-      <td>disattivato</td>
-      <td>Una linea attraverso la sequenza (vedi sotto).</td>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>nessuno</td>
+      <td>L’id di uno <a href="#stili-di-evidenziazione">stile di evidenziazione</a> disegnato con la sequenza: la sua fascia, la sua linea, il suo colore del testo. Un id che nessuno stile di evidenziazione dichiara viene scartato, e la sequenza resta senza evidenziazione.</td>
     </tr>
   </tbody>
 </table>
 
-`underline` e `strike` (le lunghezze in em si riferiscono al corpo della sequenza):
+**Un meccanismo per ogni cosa.** Uno stile di carattere imposta le lettere; uno stile di evidenziazione disegna ciò che le accompagna, una fascia o una linea, come per `:mark[…]`. Una semplice sottolineatura resta `:underline[…]`, un semplice barrato `~~…~~` e una semplice evidenziazione `:mark[…]`; uno stile di carattere serve per un aspetto che il libro nomina e riusa. La forma con parentesi quadre e barre usata da altri strumenti (`[parole]|id|`) non è sintassi Postext: resta testo così com’è scritto.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Proprietà</th>
-      <th style={{ width: '180px' }}>Tipo</th>
-      <th style={{ width: '140px' }}>Predefinito</th>
-      <th>Descrizione</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Traccia la linea.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td>il colore della sequenza</td>
-      <td>Colore della linea.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>100</code></td>
-      <td>Percentuale, 0–100.</td>
-    </tr>
-    <tr>
-      <td><code>thickness</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.05em</code></td>
-      <td>Spessore del tratto.</td>
-    </tr>
-    <tr>
-      <td><code>offset</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.12em</code> (sottolineatura), <code>0.28em</code> (barrato)</td>
-      <td>Dove passa il centro della linea: sotto la linea di base per una sottolineatura, sopra per un barrato.</td>
-    </tr>
-    <tr>
-      <td><code>style</code></td>
-      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
-      <td><code>'solid'</code></td>
-      <td>Come viene tracciata la linea.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>La traccia parola per parola, lasciando vuoti gli spazi; disattivato, prosegue sotto gli spazi della sequenza (mai sotto gli spazi che la circondano).</td>
-    </tr>
-  </tbody>
-</table>
+**Annidamento.** Una sequenza può contenere altri segni in linea (`:span[una parola in **grassetto**]{style="marker"}`, un link, un riferimento, una formula) e altre sequenze: vince lo stile più interno (`:span[a :span[b]{style="drug"} c]{style="marker"}`). Una sequenza non può attraversare un paragrafo.
 
-`highlight` (bordi misurati dalla linea di base, positivi verso l’alto, in em del corpo della sequenza):
+**Dove.** Paragrafi, voci di elenco, citazioni, riquadri, note a piè di pagina, didascalie, note e celle di tabella, e titoli finché `headings.inlineMarks` è attivo. Le testatine, l’indice generale e le voci dell’indice analitico prendono le parole senza lo stile. In una pagina verticale (libri cinesi e giapponesi composti in verticale) la sequenza si compone come il testo che la circonda, e la linea della sua evidenziazione corre a destra dei caratteri, come una linea laterale.
 
-<table>
-  <thead>
-    <tr>
-      <th style={{ width: '200px' }}>Proprietà</th>
-      <th style={{ width: '180px' }}>Tipo</th>
-      <th style={{ width: '140px' }}>Predefinito</th>
-      <th>Descrizione</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>enabled</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Dipinge la fascia.</td>
-    </tr>
-    <tr>
-      <td><code>color</code></td>
-      <td><code>ColorValue</code></td>
-      <td><code>#ffe14d</code></td>
-      <td>Colore della fascia. Una voce della tavolozza che è una tinta piatta stampa la fascia sulla lastra del suo inchiostro.</td>
-    </tr>
-    <tr>
-      <td><code>opacity</code></td>
-      <td><code>number</code></td>
-      <td><code>70</code></td>
-      <td>Percentuale, 0–100. La fascia è dipinta dietro il testo, così le lettere conservano il loro colore.</td>
-    </tr>
-    <tr>
-      <td><code>bottom</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>-0.2em</code></td>
-      <td>Dove inizia la fascia (negativo: sotto la linea di base, tra i discendenti).</td>
-    </tr>
-    <tr>
-      <td><code>top</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.8em</code></td>
-      <td>Dove finisce la fascia: circa <code>0.45em</code> copre la metà inferiore delle lettere (un tratto di pennarello), <code>0.8em</code> le parole intere, <code>0.05em</code> con <code>bottom: -0.15em</code> una sottolineatura spessa.</td>
-    </tr>
-    <tr>
-      <td><code>overhang</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Quanto la fascia sporge oltre la prima e l’ultima lettera della sequenza.</td>
-    </tr>
-    <tr>
-      <td><code>radius</code></td>
-      <td><code>Dimension</code></td>
-      <td><code>0.08em</code></td>
-      <td>Raggio degli angoli, limitato a metà dell’altezza della fascia.</td>
-    </tr>
-    <tr>
-      <td><code>rough</code></td>
-      <td><code>number</code></td>
-      <td><code>0</code></td>
-      <td>0–100: <code>0</code> una fascia netta; valori più alti fanno ondeggiare i bordi superiore e inferiore, la fanno scivolare leggermente lungo la riga e ne tagliano le estremità in obliquo, come un pennarello passato a mano. L’ondeggiamento segue un seme tratto dalla sequenza, quindi è lo stesso a ogni rendering, nel canvas, nel PDF e nell’HTML.</td>
-    </tr>
-    <tr>
-      <td><code>skipSpaces</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Una fascia per parola.</td>
-    </tr>
-  </tbody>
-</table>
+**Output.** Il canvas, il PDF, l’HTML e gli output vettoriali (SVG, IDML) disegnano l’evidenziazione che uno stile nomina dalla stessa geometria di ogni `:mark[…]`. L’EPUB imposta ogni stile come classe (`pt-cs-<id>`) con il suo carattere, corpo, peso, inclinazione, colore, spaziatura e maiuscoletto; non disegna alcuna evidenziazione, come non disegna i `:mark[…]`. Un’esportazione Word fa di ogni stile uno stile di carattere Word chiamato *Postext Style: …*, con la fascia dell’evidenziazione come ombreggiatura e la sua linea come la sottolineatura Word più vicina o un barrato, e un’importazione Word riconduce a esso uno stile di carattere che porta il nome di uno stile del libro, o *Postext Style: …* in una qualsiasi delle lingue del sito.
 
-**Annidamento.** Una sequenza può contenere altri segni in linea (`[una parola in **grassetto**]|marker|`, un link, un riferimento, una formula) e altre sequenze: vince lo stile più interno (`[a [b]|drug| c]|marker|`). Una sequenza non può attraversare un paragrafo.
-
-**Dove.** Paragrafi, voci di elenco, citazioni, riquadri, note a piè di pagina, didascalie, note e celle di tabella, e titoli finché `headings.inlineMarks` è attivo. Le testatine, l’indice generale e le voci dell’indice analitico prendono le parole senza lo stile.
-
-**Output.** Il canvas, il PDF e l’HTML tracciano le decorazioni dalla stessa geometria (`VDTLine.marks`, tipi `band`, `line`, `double`, `dotted`, `dashed`, `wavy`): la fascia prima del testo della riga, le linee dopo. In un PDF digitale una fascia o una linea traslucida è tracciata con trasparenza; in un PDF di stampa (`pdfGeneration.colorSpace` un profilo di stampa) è composta come si stampa su carta bianca — una tinta del suo colore, sulla lastra del suo inchiostro quando è una tinta piatta — senza trasparenza, quindi un file PDF/X non ne contiene mai. L’EPUB reflowable imposta ogni stile come classe (`pt-cs-<id>`) con CSS: carattere, colore, `text-decoration` per le linee e uno sfondo sfumato per la fascia. Un’esportazione Word fa di ogni stile uno stile di carattere Word (`Character style: <name>`), la fascia come ombreggiatura del suo colore, e un’importazione Word riconduce a esso uno stile di carattere che porta il nome di uno stile del libro — o esportato come `Character style: <name>`.
-
-Nel VDT un segmento con stile porta `charStyle: { id, style }` (la sequenza e l’id dello stile); carattere, colore e spaziatura sono già in `fontString`, `color` e `tracking`.
+Nel VDT un segmento con stile porta `charStyle: { id, style }` (la sequenza e l’id dello stile); carattere e spaziatura sono già in `fontString` e `tracking`, il colore in `color`, e un segmento che lo stile ha composto in maiuscolo porta il testo scritto in `sourceText`.
 
 ```ts
-const resolved = resolveCharacterStylesConfig(config.characterStyles);
-// => the built-in `marker` when unset; every field filled
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => every field filled; a `mark` that names no highlight style dropped
 
 const minimal  = stripCharacterStylesDefaults(config.characterStyles);
-// => undefined for the built-in default; static defaults dropped; [] kept
+// => static defaults dropped; undefined for an empty list
 
 const style = pickCharacterStyle(resolved, 'drug');
 // => the `drug` style, or undefined when no style has that id
@@ -761,7 +633,7 @@ const style = pickCharacterStyle(resolved, 'drug');
 
 ## Stili di evidenziazione
 
-La proprietà `markStyles` dichiara gli stili con nome del `:mark[testo]{style="…"}` in linea: la fascia colorata dietro una frase, come un libro di scuola evidenzia le sue parole chiave (la sintassi e le sue regole di a capo sono nella guida al formato del documento). Uno stile, `mark`, è fornito di serie (una fascia giallo pallido che sporge un poco dalla frase, con le estremità diritte e il testo nel suo colore), quindi `:mark[…]` funziona senza alcuna configurazione; dichiarare `markStyles` sostituisce questo elenco. Un segno senza `style`, o con un id che nessuno stile dichiara, prende il primo stile (il Sandbox segnala l’id sconosciuto).
+La proprietà `markStyles` dichiara gli stili con nome del `:mark[testo]{style="…"}` in linea (e delle evidenziazioni che gli stili di carattere nominano con `mark`): la fascia colorata dietro una frase, e una linea sotto o attraverso di essa, come un libro di scuola evidenzia le sue parole chiave (la sintassi e le sue regole di a capo sono nella guida al formato del documento). Uno stile, `mark`, è fornito di serie (una fascia giallo pallido che sporge un poco dalla frase, con le estremità diritte e il testo nel suo colore), quindi `:mark[…]` funziona senza alcuna configurazione; dichiarare `markStyles` sostituisce questo elenco. Un segno senza `style`, o con un id che nessuno stile dichiara, prende il primo stile (il Sandbox segnala l’id sconosciuto).
 
 ```ts
 const config: PostextConfig = {
@@ -839,7 +711,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Spazio sopra e sotto, ciascuno al posto di <code>paddingY</code>.</td>
+      <td>Spazio sopra e sotto, ciascuno al posto di <code>paddingY</code>. Entrambi possono essere negativi: un <code>paddingTop</code> negativo abbassa il bordo superiore della fascia dentro le lettere (circa <code>-0.35em</code> ne copre la metà inferiore, come un tratto di evidenziatore), un <code>paddingBottom</code> negativo alza il bordo inferiore sopra i discendenti. Una fascia rimasta senza altezza non viene disegnata.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dipinge la fascia. <code>false</code> lascia allo stile la sua linea e il suo colore del testo, per un segno che si limita a sottolineare o a barrare.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>Opacità della fascia, in percentuale (0–100). La fascia è dipinta dietro il testo, quindi le lettere mantengono il loro colore. Vedi la nota sulla trasparenza più sotto.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>0–100: <code>0</code> una fascia netta; valori più alti fanno ondeggiare i bordi superiore e inferiore e tagliano gli estremi in diagonale, come un evidenziatore passato a mano. L’ondeggiamento segue un seme ricavato dal segno e dalla sua posizione, quindi è lo stesso a ogni resa, nel canvas, nel PDF, nell’HTML e negli output vettoriali. Word disegna una fascia netta.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>nessuna</td>
+      <td>Una linea disegnata con il segno, sotto le parole o attraverso di esse (vedi sotto).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -850,7 +746,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-Le lunghezze in em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) si riferiscono al corpo del testo segnato. La fascia non occupa spazio: il testo si compone come senza il segno, la fascia si disegna sotto e la sua spaziatura interna entra negli spazi tra le parole e nell’interlinea. Nel VDT i segmenti delle parole segnate portano un `mark` (`{ style, id, start?, end?, from?, to? }`) e ogni riga tiene le sue fasce in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relative al `bbox.x` e alla linea di base della riga), che i motori canvas, PDF e HTML disegnano prima del testo della riga.
+`line` (le lunghezze in em si riferiscono al corpo del testo segnato):
+
+<table>
+  <thead>
+    <tr>
+      <th>Proprietà</th>
+      <th>Tipo</th>
+      <th>Predefinito</th>
+      <th>Descrizione</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Sotto le parole, dove il carattere mette la sua sottolineatura, o attraverso di esse, dove mette il suo barrato. Nel testo cinese e giapponese una linea attraverso corre sull’asse centrale del quadratone; in una pagina verticale una linea sotto corre a destra dei caratteri, come una linea laterale.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Come si disegna la linea. Una linea doppia allontana il secondo tratto dalle lettere; punti, trattini e onde si dimensionano in base allo spessore e al corpo del testo.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>quello del testo segnato</td>
+      <td>Colore della linea.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>quello del carattere</td>
+      <td>Spessore del tratto; se non impostato, lo spessore di sottolineatura o di barrato del carattere stesso.</td>
+    </tr>
+  </tbody>
+</table>
+
+La linea prosegue sotto gli spazi tra le parole della frase e si ferma alla sua ultima lettera dove la frase va a capo. Sono le stesse linee che disegnano `:underline[…]` e `~~…~~`, quindi una linea di segno sta dove stanno quelle.
+
+**Trasparenza.** Una fascia con opacità sotto il 100 % è traslucida nel canvas, nell’HTML, in un PDF digitale e in un PDF/X-4, che ammettono la trasparenza. Un PDF/X-1a non ne ammette: lì la fascia è composta come si stampa su carta bianca, una tinta del suo colore, sulla lastra del suo inchiostro quando è una tinta piatta. L’esportazione Word e gli output vettoriali (SVG, IDML) la compongono allo stesso modo, sul bianco; su una pagina colorata o sopra un’immagine quella tinta differisce dalla fascia traslucida.
+
+Le lunghezze in em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) si riferiscono al corpo del testo segnato. La fascia non occupa spazio: il testo si compone come senza il segno, la fascia si disegna sotto e la sua spaziatura interna entra negli spazi tra le parole e nell’interlinea. Nel VDT i segmenti delle parole segnate portano un `mark` (`{ style, id, start?, end?, from?, to? }`) e ogni riga tiene le sue fasce in `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relative al `bbox.x` e alla linea di base della riga), che i motori canvas, PDF e HTML disegnano prima del testo della riga; le linee vanno nei `marks` della riga, contrassegnate `markLine`, e si disegnano dopo di esso.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

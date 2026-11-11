@@ -142,8 +142,8 @@ A marcação em linha é reconhecida dentro de qualquer bloco de texto (títulos
     </tr>
     <tr>
       <td>Estilo de caractere</td>
-      <td><code>[algumas palavras]|id|</code></td>
-      <td>As palavras num estilo nomeado de <code>characterStyles</code>: uma fonte, uma cor e um sublinhado, uma faixa de marca-texto ou um tachado. Ao contrário de um chip, quebra e é hifenizado como o texto em volta. Veja <a href="#estilos-de-caractere">Estilos de caractere</a>.</td>
+      <td><code>:span[algumas palavras]&#123;style="id"&#125;</code></td>
+      <td>As palavras num estilo nomeado de <code>characterStyles</code>: uma fonte, um corpo, uma cor, um espaçamento entre letras, maiúsculas e o estilo de destaque que ele nomeia. Ao contrário de um chip, quebra e é hifenizado como o texto em volta. Veja <a href="#estilos-de-caractere">Estilos de caractere</a>.</td>
     </tr>
     <tr>
       <td>Tabulação</td>
@@ -205,21 +205,20 @@ Um chip com `field` vira um campo de formulário preenchível no PDF (veja [Saí
 
 ### Estilos de caractere
 
-`[algumas palavras]|id|` compõe as palavras entre os colchetes no estilo de caractere `id` de `characterStyles` (veja [Configuração › Estilos de caractere](/pt/docs/configuration-styles#estilos-de-caractere)): uma fonte, uma cor, um sublinhado, uma faixa de marca-texto, um tachado.
+`:span[algumas palavras]{style="id"}` compõe as palavras entre os colchetes no estilo de caractere `id` de `characterStyles` (veja [Configuração › Estilos de caractere](/pt/docs/configuration-styles#estilos-de-caractere)): uma fonte, um corpo, um peso, uma cor, um espaçamento entre letras, maiúsculas e, quando o estilo nomeia um, a faixa ou a linha de um estilo de destaque. A diretiva `:span` é a forma de dar a um trecho um visual nomeado.
 
 ```markdown
-The [first line of treatment]|marker| is [metformin]|drug|.
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}.
 
-A [run with **bold** and a [nested style]|accent|]|marker| inside.
+A :span[run with **bold** and a :span[nested style]{style="accent"}]{style="marker"} inside.
 ```
 
-- **Texto, não caixa.** As palavras ficam na linha: quebram entre linhas, são hifenizadas e justificadas como o texto em volta. Uma decoração partida em duas linhas é desenhada em cada uma; numa mesma linha, ela continua sob os espaços entre as palavras do trecho, nunca sob os espaços em volta dele.
-- **As barras.** O id vem logo depois do colchete de fechamento, entre duas barras: letras, algarismos, `-` e `_`. Um espaço entre `]` e `|`, a falta da segunda barra ou um colchete vazio deixam o texto como foi escrito. `\[a]|b|` imprime `[a]|b|`.
-- **Colchetes que são outra coisa.** Um marcador de nota de rodapé (`[^1]`), uma citação (`[@key]`) e um link (`[text](url)`) são lidos antes e nunca são um estilo.
+- **Texto, não caixa.** As palavras ficam na linha: quebram entre linhas, são hifenizadas e justificadas como o texto em volta. Uma faixa ou linha partida em duas linhas é desenhada em cada uma; numa mesma linha, ela continua sob os espaços entre as palavras do trecho, nunca sob os espaços em volta dele.
+- **A diretiva.** `style` nomeia o estilo, com aspas (`style="drug"`) ou sem elas (`style=drug`). Um `:span` sem `style` compõe as suas palavras sem estilo, como um id desconhecido. Dentro dos colchetes, `\]` é um colchete literal. A forma `[palavras]|id|` não é sintaxe do Postext e sai impressa como foi escrita.
 - **Aninhamento.** As palavras admitem as outras marcas em linha e outros trechos; vale o estilo mais interno. Um id desconhecido compõe as palavras como o texto em volta e é assinalado (`unknownCharacterStyle`).
 - **Onde.** Parágrafos, itens de lista, citações, boxes, notas de rodapé, legendas, notas e células de tabela, e títulos enquanto `headings.inlineMarks` estiver ativado (desativado, as palavras saem sem estilo).
-- **Texto simples.** Os colchetes, as barras e o id não imprimem nada: a busca, o sumário, os cabeços, as âncoras do índice remissivo e o texto copiado leem só as palavras.
-- **Sublinhado e realce sozinhos.** Um sublinhado simples é `:underline[…]`, e um realce simples, `:mark[…]`; um estilo de caractere serve para uma aparência própria (uma fonte, uma cor, uma faixa traçada à mão, uma linha tracejada ou ondulada). O sublinhado e o tachado dele ficam, por padrão, onde ficam os de `:underline[…]` e `~~…~~`.
+- **Texto simples.** A diretiva não imprime nada: a busca, o sumário, os cabeços e as âncoras do índice remissivo leem só as palavras, como foram escritas. As maiúsculas que um estilo aplica são copiadas do PDF como as palavras foram digitadas.
+- **Um mecanismo para cada coisa.** Um sublinhado simples é `:underline[…]`, um tachado simples `~~…~~` e um destaque simples `:mark[…]`. Uma faixa ou uma linha que acompanha um estilo de caractere é um estilo de destaque que o estilo de caractere nomeia (`mark`), então a faixa e a linha seguem as mesmas regras de `:mark[…]`.
 
 ### Destaques
 
@@ -234,7 +233,7 @@ O sol aquece o mar e :mark[a água sobe para o ar em forma de vapor, onde esfria
 - **Quebras de linha.** Uma marca pode abranger várias palavras e passar de uma linha para a outra; cada linha recebe sua própria faixa. O espaçamento horizontal e os cantos arredondados só aparecem no início e no fim reais da frase: onde a frase quebra, a faixa termina reta na última letra da linha e começa reta na primeira letra da linha seguinte. Um estilo com `decorationBreak: 'clone'` dá a cada linha uma faixa inteira, com o recuo e os cantos nas duas pontas: um título sobre uma faixa de cor cortada por linha.
 - **Não ocupa espaço.** A faixa é pintada sob o texto, de 0,8 em acima a 0,25 em abaixo da linha de base, aumentada pelo espaçamento vertical, e o espaçamento horizontal avança pelos espaços ao lado da frase. As linhas quebram exatamente como sem a marca; por isso, marcar um livro já diagramado não move nenhuma de suas páginas.
 - **Texto.** O texto marcado aceita suas próprias marcações em linha (`:mark[a palavra **chave**]`), links, chips e referências. Os colchetes se aninham dentro dele (`:mark[veja [o mapa]]`), `\]` escreve um colchete literal e o texto pode atravessar uma quebra de linha simples do texto de origem. Um sinal de pontuação colado à frase fora dos colchetes (`:mark[terra].`) fica fora da faixa; a cor de texto de um estilo alcança a palavra inteira que o contém. Uma marca dentro de outra é composta como texto dela.
-- **Onde.** Parágrafos, títulos compostos no texto, itens de lista, citações, boxes, notas de rodapé, células de tabela, legendas e notas, em texto da esquerda para a direita e da direita para a esquerda e em chinês e japonês. O canvas, o PDF e o HTML pintam a faixa; num PDF marcado ela é um artefato de layout e as palavras pertencem ao parágrafo. Um título desenhado por um design (uma abertura) imprime as palavras sem a faixa, assim como o visualizador HTML numa página vertical.
+- **Onde.** Parágrafos, títulos compostos no texto, itens de lista, citações, boxes, notas de rodapé, células de tabela, legendas e notas, em texto da esquerda para a direita e da direita para a esquerda e em chinês e japonês. O canvas, o PDF e o HTML pintam a faixa; num PDF marcado ela é um artefato de layout e as palavras pertencem ao parágrafo. Um título desenhado por um design (uma abertura) imprime as palavras sem a faixa. Numa página vertical a faixa desce pela coluna junto com os caracteres, também no visualizador HTML.
 
 ### Tachado
 

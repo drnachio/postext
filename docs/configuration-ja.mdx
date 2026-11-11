@@ -95,8 +95,8 @@ const document = buildDocument(content, {
 
 - [段落スタイル](/ja/docs/configuration-styles#段落スタイル)：`:::paragraphs`コンテナー用の名前付きスタイル。参考文献、用語集、注記などに使います。
 - [チップスタイル](/ja/docs/configuration-styles#チップスタイル)：`chipStyles`。行内の`:chip[…]`用の名前付きスタイル。語群の枠、キーボードのキー、タグなどに使います。
-- [文字スタイル](/ja/docs/configuration-styles#文字スタイル)：`characterStyles`。`[…]|id|`と書いた語句用の名前付きスタイル。書体、色、下線、蛍光ペンの帯、取り消し線などに使います。
-- [ハイライトのスタイル](/ja/docs/configuration-styles#ハイライトのスタイル)：`markStyles`。行内の`:mark[…]`用の名前付きスタイル。行をまたぐハイライトの語句の後ろに敷く帯です。
+- [文字スタイル](/ja/docs/configuration-styles#文字スタイル)：`characterStyles`。`:span[…]{style="id"}`と書いた語句用の名前付きスタイル。書体、サイズ、色、字間、大文字と、それに添えるハイライトのスタイルを決めます。
+- [ハイライトのスタイル](/ja/docs/configuration-styles#ハイライトのスタイル)：`markStyles`。行内の`:mark[…]`用の名前付きスタイル。行をまたぐハイライトの語句の後ろに敷く帯と、語句の下や語句を貫く線です。
 - [コードリスト](/ja/docs/configuration-styles#コードリスト)：`codeStyle`。```` ``` ````のコードリストの書体、枠、タブ幅、長い行、行番号、字句の色、構文の色分けとそのハイライターのフック、そしてコードの書体で組むインラインコード。
 - [部](/ja/docs/configuration-styles#部)：`:::part`コンテナー用の部扉ページ。奇偶、版面、扉のデザイン、本文の文字組み。
 - [見出しスタイル](/ja/docs/configuration-styles#見出しスタイル)：`{style="…"}`を付けた見出し用の名前付きスタイル。番号のない章、独自の柱を立てる前付け、ジオメトリーとパレット。

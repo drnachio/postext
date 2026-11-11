@@ -75,7 +75,7 @@ Both kinds are flowing text that Word and Google Docs open and edit. They are bu
 
 - Headings in Word's heading styles, or in a style for each heading style of the design (*Heading 2: Opener*). The design's paragraph styles become Word styles with the same names.
 - Lists become Word lists and footnotes Word footnotes. Links stay links, `:index` marks become Word index entries (XE fields), anchors become bookmarks, and page and column breaks become Word breaks.
-- Each character style (`[…]|id|`) becomes a Word character style named *Character style: …*, with its face, colour and tracking; the underline and the strike-through take Word's nearest line, and the highlighter band becomes a shading of its colour over white. In the formatted document the band and the lines are Word shapes.
+- Each character style (`:span[…]{style="id"}`) becomes a Word character style named *Postext Style: …*, with its face, size, colour, tracking and case; the highlight style it names gives the run a shading of its band's colour over white, and its line becomes Word's nearest underline or a strike-through. Word has no rough edge and no translucent shading.
 - A box becomes a content control around a shaded one-cell table, in a *Box:* style for its type; the control's tag (`ptx:box:note`) keeps the type. Parts and `:::paragraphs` groups are content controls too.
 - Figures and table resources become Word pictures and tables with their captions; the label and number of a caption (*Figure 3.*) are the book's.
 - Equations become Word equations, and code takes the *Postext Code* style.
