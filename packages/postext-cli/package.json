@@ -45,6 +45,7 @@
     "postext": "workspace:*",
     "postext-citeproc": "workspace:*",
     "postext-epub": "workspace:*",
+    "postext-idml": "workspace:*",
     "postext-pdf": "workspace:*",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.72.0"

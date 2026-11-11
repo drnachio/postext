@@ -758,23 +758,39 @@ const { chapters, pictures, tables } = wordToPostext(word, {
 - <strong>`wordStyleTracking(word, template, config)`</strong>と<strong>`applyStyleTracking(config, tracking)`</strong>：Wordのスタイルの文字間隔を、文字間隔を指定していない設定のスタイルに引き継ぎます。
 
 
-### InDesignパッケージ（`postext/idml`）
+### InDesignパッケージ（`postext-idml`）
 
-`postext/idml`サブパスは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。Word向けのページの複製と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.71以降。
+`postext-idml`パッケージは、組み上がったページをInDesign Markupのパッケージ（`.idml`）として書き出し、デザイナーがInDesignで本を仕上げられるようにします。また、`.idml`をPostextの本として読み込みます。書き出しは、Word向けのページの複製と同じく、ページのディスプレイリストをもとに作り、DOMを使いません。コマンドラインの`idml`は、これを土台にしています（[コマンドライン › idml](/ja/docs/command-line#idml)を参照）。postext 1.76から独立したパッケージになり（`npm install postext-idml`、JSRでは`@postext/idml`）、postext 1.76以降が必要です。postext 1.71から1.75までは、書き出しは`postext/idml`サブパスでした。このサブパスは1.76からありません。
 
 ```ts
 import { buildDocument } from 'postext';
-import { idmlDocument } from 'postext/idml';
+import { idmlDocument } from 'postext-idml';
 
 const docs = chapters.map((c) => buildDocument({ markdown: c.markdown, resources }, config));
 const { bytes, links } = idmlDocument({ docs, resourceBytes, images: 'embed', title: 'フィールドノート' });
 ```
 
 - **`idmlDocument(options)`**：パッケージのバイト列（`bytes`。`Uint8Array`）と、`images: 'link'`のときは隣に書き出す画像（`links`：`{ path, bytes }`。パスは`Links/photo.jpg`のような`.idml`からの相対パス）を返します。受け取るのは、`docs`（本の順に章ごと1つの`VDTDocument`）、画像のバイト列を返す`resourceBytes(fileId)`、`images`（既定の`'embed'`か`'link'`）、`title`、InDesignでの書体のスタイル名を返す`fontStyleName(family, weight, italic)`（既定ではウェイトと傾きから`Regular`、`Bold Italic`…を導きます。`Roman`のようにフォント自身のスタイル名が違う場合は、その名前を返してください）、テンプレートページの枠の外にあるテキストの段落スタイルを役割ごとに指定する`styleNames`（`body`、`heading`、`list`…）、`forms`（既定は`true`で、フォームフィールドを持つチップをInDesignのフォームフィールドにします）、`onWarning`（`{ code, message }`）です。
-- 各ページは仕上がりサイズの1ページだけの見開きになり、最初のページの裁ち落としが文書の裁ち落としになります。罫線、ボックス、パス、画像は、線、長方形、多角形、グラフィックフレームになります。作者が指定したCMYKの色はプロセスカラーのスウォッチになり、`colorPalette`が名前を付けていればパレットの名前を使います。
+- `lineBreaks`は`'keep'`（既定）または`'reflow'`です。`'keep'`では、各行はPostextが終えた位置で終わります。行末は強制改行になり、行のテキストには分割禁止が付き、行ごとに行送りを持つので、InDesignにはPDFと同じ行が表示されます。`'reflow'`では、InDesignのコンポーザーが段落を組み直します。枠、スタイル、文字、最初のベースラインはPostextのものですが、改行位置は変わることがあります。`spreads`は`'facing'`（背をはさんで2ページずつの見開き、最初のページは単独）または`'single'`（見開きごとに1ページ）です。既定は、見開きの余白（`page.margins.mirror`）を持つ本では`'facing'`、それ以外では`'single'`です。`fontFile(family, weight, italic)`は書体のフォントファイル（TrueTypeまたはOpenTypeのバイト列。WOFF2は先にデコードしたもの）を返します。これがあると、パッケージは各書体にファイルの名前テーブルどおりの名前を付けます。InDesignはこの名前でフォントを探します。結果には`fonts`（`{ path, bytes }`。`.idml`の隣に`Document fonts/<ファイル>`として書き出します）が加わります。`inlineObjects`（既定は`true`）は、行内の数式、楽譜、色見本をインラインのアンカー付きオブジェクトとして書き出します。`false`では書き出さず、`text.inline`の警告を出します。
+- ページは仕上がりサイズで、向かい合うページの見開き、または1ページだけの見開きに置かれます（`spreads`）。セクションにはノンブルのスタイル（アラビア数字またはローマ数字）と各系列の開始番号が入り、最初のページの裁ち落としが文書の裁ち落としになります。罫線、ボックス、パス、画像は、線、長方形、多角形、グラフィックフレームになります。作者が指定したCMYKの色はプロセスカラーのスウォッチになり、`colorPalette`が名前を付けていればパレットの名前を使います。
 - テンプレートページの各枠のテキストは、1つのストーリーを持つ1つのテキストフレームになり、枠の囲みスタイルの名前を持つ段落スタイルが付きます。`next`でつないだ枠は、連結したテキストフレームで1つのストーリーを共有し、枠の区切りで分かれた段落も1つの段落のままです。テンプレートページの枠の外にあるテキストは、ブロックごとに1つのテキストフレームになり、Postextが置いた位置に置かれます。フィットでテキストを縮めた枠（`fit.shrinkText`）は、縮めた文字サイズと行送りを保ち、インデント、タブ位置、段落間のアキもそれに合わせて縮みます（枠のパディングは縮みません）。リスト項目のマーカーは段落の先頭に置き、タブを続け、ぶら下げインデントにします。段落は、インデント（左、1行目、右。Postextが行を置いた位置から読み取ります）、揃えとリーダーを含むタブ位置、段落後のアキを保ちます。段落スタイルには最初の段落のこれらの値が入り、枠のパディングはテキストフレームのフレーム内マージンになります。強制改行は強制改行のままです。チップの文字はテキストに残り、チップの箱（塗りと線）はその後ろの長方形になります。空のチップは細いスペースで場所を空けます。
 - フォームフィールドを持つチップ（`field="…"`。[PDF出力 › フォームフィールド](/ja/docs/configuration-pdf-output#フォームフィールド)を参照）は、チップの箱の上に置くInDesignのフォームフィールドになり、チップの塗りと線で描かれます。テキストと数値はテキストフィールド（フィールドの名前、チップの文字サイズ、`multiline`、`readonly`、`required`、`tooltip`を持ちます）、選択肢はコンボボックス（選択肢付き）、チェックボックスは2つの表示状態を持つチェックボックス（値がそう示していれば、初期状態でチェックが入ります）になります。フィールドの文字はテキストに入れず、その場所は空けたままにします。InDesignのフォームフィールドには初期値、数値の書式、計算、揃えがないため、これらはフィールドのスクリプトラベル（`postext:value`、`postext:format`、そして`calc`属性と同じ書き方の`postext:calc`。数値や入れ子の計算も含みます）に入れ、`field.value`または`field.script`の警告を出します。`forms: false`にすると、こうしたチップもほかのチップと同じように書き出し、値はテキストになります。
-- InDesignは自身のコンポーザーでテキストを組み直します。枠、スタイル、文字、最初のベースラインはPostextのものですが、改行位置は変わることがあります。表、数式、楽譜、行内の色見本はまだ書き出しません。それぞれ警告になります（`table`、`text.inline`）。右から左へ書く文字と縦組みのテキストは、左から右への横組みのストーリーとして書き出し、`text.rtl`または`text.vertical`の警告を出します。SVG画像はSVGのまま配置します。InDesign 2020以降で読み込めます（`image.svg`）。
+- 表はInDesignの表になります。表の角丸の枠は直角で書き出します（`table.radius`）。行内の数式、楽譜、色見本は、その行のアンカー付きオブジェクトになります。リンクはInDesignのハイパーリンクになり、URLまたはページを指します。行を保つ場合、右から左へ書く文字は右から左のストーリーとして書き出します。`lineBreaks: 'reflow'`では左から右に書き出し、`text.rtl`の警告を出します。縦組みのテキストは横組みのストーリーとして書き出し、`text.vertical`の警告を出します。SVG画像はSVGのまま配置します。InDesign 2020以降で読み込めます（`image.svg`）。
+
+逆方向では、`idmlToPostext`が`.idml`を読み込み、Postextの本の章（Markdown）、設定、リソースを返します。読み込んだものと、Postextに相当するものがないものを記したレポートが付きます。
+
+```ts
+import { createBundle } from 'postext/bundle';
+import { idmlToPostext, importBundleInput } from 'postext-idml';
+
+const result = idmlToPostext(bytes, { layout: 'auto', linkBytes: (link) => pictures.get(link.name) });
+console.log(result.report.verdict, result.report.findings);
+const { bytes: book } = await createBundle(importBundleInput(result));
+```
+
+- <strong>`idmlToPostext(bytes, options)`</strong>は同期関数です。`layout`は`'pages'`（元の文書を1ページずつたどるテンプレートページ）、`'flow'`（流し込みの本）、`'auto'`（既定。インポーターが決め、その理由を`reason`で返します）のいずれかです。`linkBytes(link)`はリンク画像のバイト列を渡します（`link.name`、`link.uri`）。埋め込み画像はパッケージから読み込み、バイト列が渡されなかったリンクは`missingLinks`に並びます。結果には、`chapters`（`{ title, markdown }`）、`config`（文書が設定している項目だけ）、`resources`とその`files`、本に必要な`fonts`（名前だけです。`.idml`はフォントファイルを含みません）、`report`が入ります。`report`は`verdict`（`faithful`、`approximate`、`lossy`）と`findings`を持ち、各項目に`severity`（`info`、`warning`、`loss`）、`message`、`count`、`examples`があります。<strong>`importBundleInput(result)`</strong>は、`postext/bundle`の`createBundle`に渡す入力です。
+- 元の文書が強制改行で終えている行は、そのまま本の行になります。インポーターは`bodyText.justifyHardBreaks`を有効にします。Postextから書き出した本は、同じ行のまま戻ります。InDesignで作った文書の読み込みには欠落があり、レポートがそれを一覧します。Sandboxとコマンドラインには、まだ読み込みの入口がありません。InDesignの本の移植には、引き続き[エージェントスキル](/ja/docs/skill)を勧めます。
+- <strong>`readIdml(bytes)`</strong>と<strong>`inspectIdml(doc)`</strong>は、型付きのリーダーを単独で使うためのものです。前者はパッケージを`IdmlDocument`として読み、後者はその概要（ページ、ストーリー、フォント、使われているスタイル、画像）を返します。
 
 ## Web Workerでレイアウトを実行する
 

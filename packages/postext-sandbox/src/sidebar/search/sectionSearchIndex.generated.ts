@@ -1561,6 +1561,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'bodyIndentAfterHeadingTooltip',
       'bodyItalicColor',
       'bodyItalicColorTooltip',
+      'bodyJustifyHardBreaks',
+      'bodyJustifyHardBreaksTooltip',
       'bodyKashida',
       'bodyKashidaMaxLength',
       'bodyKashidaMaxLengthTooltip',

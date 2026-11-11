@@ -38,6 +38,7 @@ postext image book.postext --page 12 -o p12.png
 postext images book.postext --pages 1-10 -o pages/ --dpi 100 -f webp
 postext docx book.postext -o book.docx
 postext import-docx manuscript.docx -o manuscript/
+postext idml book.postext -o out/book.idml --fonts  # InDesign package, fonts beside it
 postext pack book/ -o book.postext
 postext unpack book.postext -o book/
 postext info book.postext --pages
@@ -50,6 +51,8 @@ A book is any of:
 - a `.postext` bundle, the file the [Sandbox](https://postext.dev/en/sandbox) exports and opens;
 - an unpacked book folder, with its `preset.json`, chapters, resources and fonts;
 - loose Markdown files, one chapter each, in the order given (a folder: its `.md` files by name), with an optional `--config` JSON, a `--resources` folder of pictures (each named by its file name, or described in a `resources.json`) and a `--fonts` folder.
+
+`postext idml` writes the laid-out pages as an InDesign Markup package with the [`postext-idml`](https://www.npmjs.com/package/postext-idml) package: `--images embed|link` keeps the pictures inside the file or puts them beside it in `Links/`, `--lines keep|reflow` ends every line where Postext ended it (`keep`, the default) or leaves the paragraphs to InDesign's composer, and `--fonts` writes the font files of the faces used beside the package, in `Document fonts/` (`-o` has to name a file; a family the book may not redistribute is left out, with a warning).
 
 `--set path=value` changes one setting without editing the book (`--set page.dpi=150`, `--set bodyText.fontFamily=Lora`), and `--chapters 2-4` lays out part of it.
 

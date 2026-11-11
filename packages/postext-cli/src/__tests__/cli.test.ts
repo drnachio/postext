@@ -65,7 +65,7 @@ describe('postext cli', () => {
     const r = run([], tmpdir());
     expect(r.code).toBe(0);
     expect(r.stdout).toContain('Usage');
-    for (const c of ['pdf', 'html', 'epub', 'image', 'images', 'pack', 'unpack', 'import-docx']) expect(r.stdout).toContain(c);
+    for (const c of ['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'unpack', 'import-docx']) expect(r.stdout).toContain(c);
   }, 30_000);
 
   // `pdf` with no input loads the whole engine before it reports the usage
@@ -342,6 +342,31 @@ describe('postext cli', () => {
     expect(stdout.code).toBe(2);
     expect(stdout.stderr).toContain('--images link');
   }, 60_000);
+
+  // #1500: the lines kept as Postext broke them or left to InDesign, and
+  // the font files beside the package.
+  it('takes --lines and --fonts for an IDML package', () => {
+    const dir = book();
+    const help = run(['idml', '--help'], dir);
+    expect(help.code).toBe(0);
+    for (const o of ['--images', '--lines', 'keep|reflow', '--fonts']) expect(help.stdout).toContain(o);
+    const kept = run(['idml', 'ch', '-o', 'kept.idml', '--offline', '-q'], dir);
+    expect(kept.code).toBe(0);
+    const reflow = run(['idml', 'ch', '--lines', 'reflow', '-o', 'reflow.idml', '--offline', '-q'], dir);
+    expect(reflow.code).toBe(0);
+    expect(readFileSync(join(dir, 'reflow.idml')).subarray(0, 2).toString()).toBe('PK');
+    // Kept lines are forced breaks in the stories: the two packages differ.
+    expect(readFileSync(join(dir, 'reflow.idml')).equals(readFileSync(join(dir, 'kept.idml')))).toBe(false);
+    const wrong = run(['idml', 'ch', '--lines', 'loose', '-o', 'x.idml', '--offline'], dir);
+    expect(wrong.code).toBe(2);
+    expect(wrong.stderr).toContain('--lines');
+    const fonts = run(['idml', 'ch', '--fonts', '-o', 'out/b.idml', '--offline', '-q'], dir);
+    expect(fonts.code).toBe(0);
+    expect(readdirSync(join(dir, 'out', 'Document fonts')).length).toBeGreaterThan(0);
+    const stdout = run(['idml', 'ch', '--fonts', '-o', '-', '--offline'], dir);
+    expect(stdout.code).toBe(2);
+    expect(stdout.stderr).toContain('--fonts');
+  }, 120_000);
 
   // #695: `preset.json`'s `start` says where a book that is part of a longer
   // one starts; every command lays the book out from there.

@@ -295,14 +295,23 @@ Gotchas:
 ## InDesign (IDML)
 
 - Export IDML and a print PDF from the same document.
-- The other way round, `postext idml my-book -o book.idml` (postext ≥ 1.71; `idmlDocument` from
-  `postext/idml` in code) writes the laid-out pages as an InDesign package: one page per spread, page
-  items for rules, boxes and pictures, one story per composed-page frame (`next` chains share one),
-  callout styles as paragraph styles, authored CMYK colours as swatches, form-field chips as InDesign
-  form fields. InDesign sets the text again, so line breaks can differ; tables, maths, music and
-  inline swatches are not written yet (`idml.*` warnings), and right-to-left or vertical text comes
-  out as horizontal left-to-right stories. Use it when the brief hands the port back to an InDesign
+- The other way round, `postext idml my-book -o book.idml` (postext ≥ 1.71; in code `idmlDocument`
+  from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml`
+  subpath) writes the laid-out pages as an InDesign package: page items for rules, boxes and
+  pictures, one story per composed-page frame (`next` chains share one), callout styles as paragraph
+  styles, authored CMYK colours as swatches, form-field chips as InDesign form fields. From 1.76
+  the pages stand in facing spreads for a book with mirrored margins (else one page per spread),
+  every line ends where Postext ended it (`--lines keep`, the default; `--lines reflow` leaves the
+  paragraphs to InDesign's composer, and line breaks can differ), tables are InDesign tables, inline
+  maths, music and swatches are anchored inline objects, links are hyperlinks and right-to-left text
+  comes out in right-to-left stories; vertical text still comes out horizontal, with an `idml.*`
+  warning. `--fonts` writes the font files beside the package in `Document fonts/` (families the
+  book may not redistribute are left out). Use it when the brief hands the port back to an InDesign
   studio, not as a way to check the port.
+- `postext-idml` also reads: `idmlToPostext(bytes, { layout })` returns chapters, configuration,
+  resources and a report (verdict, findings with counts) of what Postext has no equivalent for. It
+  is deterministic and brings a book that Postext exported back with the same lines; a document made
+  in InDesign comes through with the losses the report lists. For a port, keep to the steps below.
 - `idml_extract.py roles book.idml > map.json` lists the paragraph styles in
   use (resolved font, size, colour, sample) and the stories in page order.
   Map style names to roles; prefer the style names over geometry.

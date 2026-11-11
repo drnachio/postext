@@ -359,21 +359,31 @@ ficou de fora (`skipped`). Desde o postext 1.39.
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` diagrama o livro como o `pdf` faz e grava as páginas como um pacote
-InDesign Markup, para finalizar no InDesign: um spread por página, fios,
-boxes, traçados e imagens como itens de página, o texto de cada bloco de uma
+InDesign Markup, para finalizar no InDesign: as páginas em spreads dos dois
+lados da lombada em um livro com margens de páginas espelhadas (uma página por
+spread em qualquer outro), fios, boxes, traçados e imagens como itens de
+página, as tabelas como tabelas do InDesign, o texto de cada bloco de uma
 página composta como um quadro de texto com a sua própria matéria (os blocos
 encadeados por `next` compartilham uma), os estilos de boxe como estilos de
 parágrafo e as cores CMYK definidas pelo autor como amostras. Os chips com
-campo de formulário viram campos de formulário do InDesign. O InDesign compõe
-o texto de novo, então as quebras de linha podem ser diferentes das do PDF.
-`--images link` deixa as imagens ao lado do arquivo, em `Links/`, em vez de
-dentro dele. O que o pacote ainda não consegue levar (tabelas, fórmulas,
-música) é avisado como `idml.*`. Veja [Uso programático › Pacotes do
-InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postextidml).
-Desde o postext 1.71.
+campo de formulário viram campos de formulário do InDesign. `--lines keep` (o
+padrão) termina cada linha onde o Postext a terminou, então o InDesign mostra
+as mesmas linhas do PDF; `--lines reflow` deixa os parágrafos para o
+compositor do InDesign, e as quebras de linha podem variar. `--images link`
+deixa as imagens ao lado do arquivo, em `Links/`, em vez de dentro dele.
+`--fonts` grava os arquivos de fonte das variantes usadas ao lado do pacote,
+em `Document fonts/`, onde o InDesign os encontra para aquele documento;
+precisa que `-o` nomeie um arquivo, e uma família que o livro não pode
+redistribuir fica de fora, com um aviso. O que o pacote não consegue levar
+como está no livro (texto vertical, a moldura arredondada de uma tabela) é
+avisado como `idml.*`. O gerador é o pacote `postext-idml`: veja [Uso
+programático › Pacotes do
+InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postext-idml).
+Desde o postext 1.71; `--lines` e `--fonts`, desde o 1.76.
 
 ### pack e unpack
 

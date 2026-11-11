@@ -1413,6 +1413,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     bodyBreakAfterSlashesTooltip: t("bodyBreakAfterSlashesTooltip"),
     bodyHardLineBreaks: t("bodyHardLineBreaks"),
     bodyHardLineBreaksTooltip: t("bodyHardLineBreaksTooltip"),
+    bodyJustifyHardBreaks: t("bodyJustifyHardBreaks"),
+    bodyJustifyHardBreaksTooltip: t("bodyJustifyHardBreaksTooltip"),
     bodyPlusUnderline: t("bodyPlusUnderline"),
     bodyPlusUnderlineTooltip: t("bodyPlusUnderlineTooltip"),
     bodyScriptContext: t("bodyScriptContext"),

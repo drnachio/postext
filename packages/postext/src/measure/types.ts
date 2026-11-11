@@ -205,6 +205,12 @@ export interface MeasureBlockOptions {
    *  without a stop of its own (`:tab{at=…}`) is a word space. Joins the
    *  cache key only when set. */
   tabs?: import('./tabs.js').TabSettings;
+  /** Justify the line before a forced line break (#1502,
+   *  `BodyTextConfig.justifyHardBreaks`): in justified text it is set to
+   *  the measure like the lines the breaker ends, and the paragraph's own
+   *  last line alone at its natural width. Unset: the line before a break
+   *  is set as a last line. Joins the cache key only when set. */
+  justifyForcedBreaks?: boolean;
   /** Use Knuth-Plass optimal line breaking instead of greedy. */
   optimal?: boolean;
   /** Max space stretch ratio (for K-P glue model). Default 1.5. */
