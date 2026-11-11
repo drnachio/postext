@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Elenchi e matematica',
   description: 'Elenchi puntati e numerati, i loro marcatori, rientri e annidamenti, gli elenchi di attività, e dimensione, colore e spaziatura delle formule matematiche',
   lang: 'it',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '19 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Tiene una formula in display nella colonna della riga che la introduce: la penalità predisplay di TeX. Quando la formula non entra sotto l’ultima riga del paragrafo che la precede, quella riga passa con la formula alla colonna o alla pagina successiva; quando le righe lasciate indietro sarebbero meno di <code>bodyText.widowMinLines</code> (meno di una se <code>bodyText.avoidWidows</code> è disattivato), un paragrafo che si apre in quella colonna passa per intero alla successiva (insieme ai titoli che chiudono la colonna sopra di esso, secondo <code>headings.keepWithNext</code>). La riga spostata resta da sola in cima alla colonna successiva, qualunque cosa chieda la regola sulle orfane. Con <code>false</code> si sposta solo la formula, e la riga che la introduce può chiudere la colonna sopra, o stare sopra una figura che apre la successiva.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Se una formula in evidenza poggia sulla griglia di base: il flusso vi ritorna sotto la formula. <code>false</code> mantiene i suoi margini esatti. Nel Sandbox: <strong>Torna alla griglia dopo le formule</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare una formula in evidenza su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente. Spento per impostazione predefinita. Nel Sandbox: <strong>Inizia le formule su una riga della griglia</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

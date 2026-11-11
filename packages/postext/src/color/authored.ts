@@ -1,6 +1,6 @@
-import type { CmykPercent } from '../types.js';
+import type { CmykPercent, SpotColor } from '../types.js';
 
-function isAuthoredCmyk(v: unknown): v is { hex: string; model: 'cmyk'; cmyk: CmykPercent } {
+export function isAuthoredCmyk(v: unknown): v is { hex: string; model: 'cmyk'; cmyk: CmykPercent } {
   if (!v || typeof v !== 'object') return false;
   const o = v as { hex?: unknown; model?: unknown; cmyk?: unknown };
   return o.model === 'cmyk' && typeof o.hex === 'string' && !!o.cmyk && typeof o.cmyk === 'object';
@@ -26,4 +26,91 @@ export function authoredCmykColors(config: unknown, into: Map<string, CmykPercen
   };
   walk(config);
   return into;
+}
+
+export function isAuthoredSpot(v: unknown): v is { hex: string; model: 'spot'; spot: SpotColor } {
+  if (!v || typeof v !== 'object') return false;
+  const o = v as { hex?: unknown; model?: unknown; spot?: unknown };
+  if (o.model !== 'spot' || typeof o.hex !== 'string' || !o.spot || typeof o.spot !== 'object') return false;
+  const s = o.spot as { name?: unknown; cmyk?: unknown };
+  return typeof s.name === 'string' && s.name.trim() !== '' && !!s.cmyk && typeof s.cmyk === 'object';
+}
+
+const clampPercent = (n: unknown, fallback: number): number =>
+  typeof n === 'number' && Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : fallback;
+
+/** A spot colour with its name trimmed, its tint and CMYK clamped to
+ *  0..100 and its defaults filled in. */
+export function normalizeSpotColor(spot: SpotColor): Required<SpotColor> {
+  const c = spot.cmyk;
+  return {
+    name: spot.name.trim(),
+    cmyk: { c: clampPercent(c.c, 0), m: clampPercent(c.m, 0), y: clampPercent(c.y, 0), k: clampPercent(c.k, 0) },
+    tint: clampPercent(spot.tint, 100),
+    overprint: spot.overprint === true,
+  };
+}
+
+/** The CMYK a spot colour stands for at its tint (the ink's alternate
+ *  scaled by the tint), percent: its screen rendering, and what a press
+ *  without the ink would print. */
+export function spotColorCmyk(spot: SpotColor): CmykPercent {
+  const s = normalizeSpotColor(spot);
+  const t = s.tint / 100;
+  const r = (n: number) => Math.round(n * t * 100) / 100;
+  return { c: r(s.cmyk.c), m: r(s.cmyk.m), y: r(s.cmyk.y), k: r(s.cmyk.k) };
+}
+
+/**
+ * The spot colours of a configuration (`ColorValue.spot`), keyed by their
+ * screen hex (`#rrggbb`, lower case) like {@link authoredCmykColors}: a
+ * print render paints these on the ink's own plate. The first colour of a
+ * hex wins.
+ */
+export function authoredSpotColors(config: unknown, into: Map<string, Required<SpotColor>> = new Map()): Map<string, Required<SpotColor>> {
+  const seen = new Set<object>();
+  const walk = (v: unknown): void => {
+    if (!v || typeof v !== 'object' || seen.has(v)) return;
+    seen.add(v);
+    if (isAuthoredSpot(v)) {
+      const key = v.hex.slice(0, 7).toLowerCase();
+      if (/^#[0-9a-f]{6}$/.test(key) && !into.has(key)) into.set(key, normalizeSpotColor(v.spot));
+      return;
+    }
+    for (const child of Array.isArray(v) ? v : Object.values(v)) walk(child);
+  };
+  walk(config);
+  return into;
+}
+
+/** One ink of a job: its name, its full-strength CMYK, whether it
+ *  overprints, and the tints the configuration uses it at. */
+export interface SpotInk {
+  name: string;
+  cmyk: CmykPercent;
+  overprint: boolean;
+  tints: number[];
+}
+
+/**
+ * The inks of a set of spot colours, by name (the first colour naming an
+ * ink sets its CMYK and overprint), and the names that more than one
+ * colour defines differently — two plates the printer would be asked to
+ * make the same.
+ */
+export function spotInks(spots: Iterable<Required<SpotColor>>): { inks: SpotInk[]; conflicts: string[] } {
+  const byName = new Map<string, SpotInk>();
+  const conflicts = new Set<string>();
+  for (const s of spots) {
+    const ink = byName.get(s.name);
+    if (!ink) {
+      byName.set(s.name, { name: s.name, cmyk: { ...s.cmyk }, overprint: s.overprint, tints: [s.tint] });
+      continue;
+    }
+    const a = ink.cmyk;
+    const b = s.cmyk;
+    if (a.c !== b.c || a.m !== b.m || a.y !== b.y || a.k !== b.k || ink.overprint !== s.overprint) conflicts.add(s.name);
+    if (!ink.tints.includes(s.tint)) ink.tints.push(s.tint);
+  }
+  return { inks: [...byName.values()], conflicts: [...conflicts] };
 }

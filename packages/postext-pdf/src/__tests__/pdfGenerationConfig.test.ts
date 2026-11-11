@@ -93,3 +93,38 @@ describe('renderToPdf and config.pdfGeneration (EF-124)', () => {
     expect((await facts([second, first])).outlines).toBe(true);
   }, 60_000);
 });
+
+// The baseline grid (`page.baselineGrid`) is drawn in the PDF as on screen
+// unless `pdfGeneration.baselineGrid` (or the option) keeps it out.
+describe('baseline grid in the PDF', () => {
+  const gridConfig = (pdfGeneration?: PdfGenerationConfig): PostextConfig => {
+    const base = config(pdfGeneration);
+    return { ...base, page: { ...base.page, baselineGrid: { enabled: true } } };
+  };
+  const body = Array.from({ length: 6 }, () => 'Some body text that runs over a few lines of the page.').join(' ');
+
+  async function moves(doc: VDTDocument, options: Partial<RenderToPdfOptions> = {}): Promise<number> {
+    const pdf = await PDFDocument.load(await renderToPdf(doc, { fontProvider, accessible: false, ...options }));
+    const contents = pdf.getPage(0).node.Contents();
+    const streams = contents instanceof PDFArray ? contents.asArray().map((r) => pdf.context.lookup(r)) : [contents];
+    const content = streams
+      .map((s) => (s instanceof PDFRawStream ? Buffer.from(decodePDFRawStream(s).decode()).toString('latin1') : ''))
+      .join('\n');
+    return (content.match(/ m\n/g) ?? []).length;
+  }
+
+  it('is drawn by default, with the grid on in the page config, as before', async () => {
+    const plain = buildDocument({ markdown: body }, config());
+    const grid = buildDocument({ markdown: body }, gridConfig());
+    expect(await moves(grid)).toBeGreaterThan(await moves(plain));
+  }, 60_000);
+
+  it('is left out when the config or the option asks for it, and the option wins', async () => {
+    const plain = await moves(buildDocument({ markdown: body }, config()));
+    const out = buildDocument({ markdown: body }, gridConfig({ baselineGrid: false }));
+    expect(await moves(out)).toBe(plain);
+    expect(await moves(buildDocument({ markdown: body }, gridConfig()), { baselineGrid: false })).toBe(plain);
+    expect(await moves(out, { baselineGrid: true })).toBeGreaterThan(plain);
+  }, 60_000);
+});
+

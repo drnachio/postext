@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Página y disposición',
   description: 'El tamaño de página, los márgenes y la rejilla base; la numeración de las páginas, y las columnas y sus medianiles.',
   lang: 'es',
-  lastUpdated: '2026-10-19',
-  readingTime: '36 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '37 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de la propia hoja. Eliges el tamaño de página, los márgenes, el lado por el que se encuaderna el libro y la rejilla sobre la que se apoyan las líneas de texto. Decides cómo se cuentan y cómo se escriben los números de página. Decides cuántas columnas tiene la página y cuánto espacio las separa, y si el texto va en líneas horizontales o verticales. Las cabeceras y los pies de página se explican en otra página.",
@@ -75,7 +75,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desactivado</td>
-      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. Véase más abajo.</td>
+      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. <code>pdfGeneration.baselineGrid: false</code> la deja fuera del PDF. Véase más abajo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La rejilla base marca el ritmo del texto base: líneas separadas por el interlin
     </tr>
   </tbody>
 </table>
+
+Dónde empieza un bloque lo decide su estilo. Cada estilo que puede empezar en una línea de la rejilla tiene un interruptor `snapTopToGrid`, apagado por defecto: `headings` (y un nivel o un estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, las listas, `math` y `resourceTypes[]`. Encendido, el espacio sobre el bloque se redondea hasta la siguiente línea de la rejilla, termine como termine el bloque anterior. La cabeza de una columna está siempre en la rejilla.
 
 ```ts
 page: {
@@ -446,6 +448,12 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>En la última página de un capítulo (y del documento), las figuras y tablas a ancho de página que quedan por debajo de la última banda de texto suben hasta quedar a un hueco de flotante de ella, apiladas por orden: allí no las sigue nada. Con <code>false</code>, se quedan donde las puso su colocación, de modo que un flotante <code>position: 'bottom'</code> termina al pie de la última página igual que en todas las demás; por ejemplo, en una ficha técnica cuyo contorno termina a la misma altura en todas las páginas. En las páginas con columna lateral nunca se mueven.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>No se recomienda. Devuelve a la página que lo cita por primera vez un flotante que se ha quedado fuera de ella por cuatro líneas de texto o menos (medidas con su ancho en su mejor hueco de esa página). Lo hace en dos pasos, y cada uno se conserva solo si el flotante cae entonces en la página de su cita, sin una página más, sin retrasar otro flotante, sin perder ninguna igualación de columnas ya conseguida y sin perder ningún flotante que encabeza la página de su cita (<code>floatsAtCitingPage</code>): primero, a los párrafos de la página de la cita que están por encima de ella se les ofrece una línea menos (espaciado entre palabras más apretado, nunca entre letras), solo tantas líneas como le faltan al flotante, y el cambio se queda solo en las páginas cuyo flotante ha vuelto; después, una imagen con <a href="/es/docs/document-format-resources#zona-segura">zona segura</a> que sigue fuera de su página se recorta dentro de ella, no más de lo que pide el hueco, y cada recorte se avisa con <code>floatCropped</code>. Las pasadas posteriores, como el equilibrado de columnas, mantienen en su página los flotantes atraídos. La opción va en contra de la colocación por reglas: donde las reglas llevan el flotante al hueco siguiente, esta opción se queda con la página de la cita a la fuerza, compone párrafos más apretados de lo que eligió el corte de líneas y recorta imágenes. Para tener los flotantes junto a su cita según las reglas, usa <code>floatsAtCitingPage</code> o <a href="/es/docs/document-format-resources#colocación"><code>placement.citingPage</code></a> (el flotante encabeza la página en la que cae la línea que lo cita, y el texto que hay encima de la referencia baja por debajo de él) y <code>placement.shrink: 'slot'</code> (la imagen se compone más pequeña, sin cambiar sus proporciones, para quedarse en la página que la cita). En el Sandbox, <em>Atraer las figuras a la página de su cita</em>, en Maquetación.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

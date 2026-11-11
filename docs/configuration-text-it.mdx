@@ -63,6 +63,12 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Lo spazio tra due paragrafi. <code>true</code> inserisce una riga vuota (pari a <code>lineHeight</code>), per una separazione di tipo editoriale; una misura come <code>&#123; value: 2, unit: 'mm' &#125;</code> o <code>0.33em</code> del corpo del testo lascia esattamente quello spazio, nel testo corrente, nei riquadri e nelle cornici delle pagine composte. Una misura che non sia un numero intero di righe porta i paragrafi fuori dalla griglia di base; il blocco successivo che vi si allinea (un titolo, l’ultima voce di un elenco, una formula in display) riporta il testo sulla griglia. È lo stesso spazio di <code>paragraphStyles[].spaceBetween</code>, che lo sostituisce dentro un contenitore <code>:::paragraphs</code>. Un riquadro fissa il proprio in <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fa iniziare ogni paragrafo del corpo e ogni citazione su una riga della griglia: lo spazio sopra viene arrotondato fino alla successiva, comunque sia finito il blocco precedente (un titolo fuori griglia, un riquadro o una figura con margini esatti). <code>false</code> lascia il paragrafo dove l’ha lasciato il blocco precedente. Un paragrafo in un contenitore <code>:::paragraphs</code> segue invece lo <code>snapTopToGrid</code> del suo stile, e i versi quello del loro stile di paragrafo, o questo quando non ne hanno. Per ritrovare la griglia solo sotto un titolo fuori griglia, usa il <code>regainGrid</code> del titolo. Nel Sandbox: <strong>Inizia i paragrafi su una riga della griglia</strong>.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

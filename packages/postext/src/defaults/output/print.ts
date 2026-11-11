@@ -3,9 +3,11 @@ import type {
   Dimension,
   PrintBlackConfig,
   PrintConfig,
+  PrintInk,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
+  ResolvedPrintInk,
   ResolvedPrintPreflightConfig,
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
@@ -41,6 +43,7 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   inkLimit: 300,
   black: DEFAULT_PRINT_BLACK_CONFIG,
   preflight: DEFAULT_PRINT_PREFLIGHT_CONFIG,
+  inks: [],
 };
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
@@ -77,6 +80,24 @@ export function resolvePrintPreflightConfig(partial?: PrintPreflightConfig): Res
   };
 }
 
+/** The ink table with its names trimmed and its defaults filled in; an
+ *  entry without a name is dropped. */
+export function resolvePrintInks(partial?: PrintInk[]): ResolvedPrintInk[] {
+  if (!Array.isArray(partial)) return [];
+  const out: ResolvedPrintInk[] = [];
+  for (const ink of partial) {
+    const name = typeof ink?.name === 'string' ? ink.name.trim() : '';
+    if (!name) continue;
+    const pdfName = typeof ink.pdfName === 'string' && ink.pdfName.trim() ? ink.pdfName.trim() : name;
+    const aliases = Array.isArray(ink.aliases) ? ink.aliases.filter((a): a is string => typeof a === 'string' && a.trim() !== '').map((a) => a.trim()) : [];
+    const resolved: ResolvedPrintInk = { name, aliases, pdfName, output: ink.output === 'process' ? 'process' : 'spot' };
+    if (ink.cmyk) resolved.cmyk = resolveCmyk(ink.cmyk, { c: 0, m: 0, y: 0, k: 0 });
+    if (typeof ink.overprint === 'boolean') resolved.overprint = ink.overprint;
+    out.push(resolved);
+  }
+  return out;
+}
+
 /** The ink limit of the profile a config names (a custom profile's own,
  *  else the catalogue's), before any `inkLimit` override. */
 export function profileInkLimit(config?: PrintConfig): number {
@@ -102,6 +123,7 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     inkLimit: partial?.inkLimit ?? profileInkLimit({ ...partial, outputProfile }),
     black: resolvePrintBlackConfig(partial?.black),
     preflight: resolvePrintPreflightConfig(partial?.preflight),
+    inks: resolvePrintInks(partial?.inks),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -150,5 +172,6 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
   if (black) result.black = black;
   const preflight = stripSection(cfg.preflight, DEFAULT_PRINT_PREFLIGHT_CONFIG as unknown as Record<string, unknown>);
   if (preflight) result.preflight = preflight;
+  if (cfg.inks && cfg.inks.length > 0) result.inks = cfg.inks.map((ink) => ({ ...ink }));
   return Object.keys(result).length > 0 ? result : undefined;
 }

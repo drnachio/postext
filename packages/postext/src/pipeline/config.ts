@@ -1,6 +1,7 @@
 import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types.js';
 import { resolveExerciseStylesConfig, resolveExercisesConfig } from '../defaults/boxes/exercises.js';
 import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout.js';
+import { separatePrintColors } from '../color/inks.js';
 
 export { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN };
 export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault };
@@ -114,7 +115,10 @@ export function validateConfigCache(config: PostextConfig | undefined): void {
   fingerprints.set(config, fingerprint);
 }
 
-function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
+function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
+  // Spot colours keep a screen hex each: a print render finds a colour's
+  // ink by the hex the layout paints.
+  const rawConfig = separatePrintColors(givenConfig);
   // The character grid (`cjk.grid`) sets the margins and the gutter before
   // anything reads them (see `cjkGrid.ts`).
   const config = applyCjkGrid(applyPaletteToConfig(rawConfig));

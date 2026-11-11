@@ -54,6 +54,8 @@ function resolveParagraphStyleConfig(
     marginTop: partial.marginTop ?? ZERO,
     marginBottom: partial.marginBottom ?? ZERO,
     snapToGrid: partial.snapToGrid ?? true,
+    // Absent unless on, so styles without it resolve as before.
+    ...(partial.snapTopToGrid === true ? { snapTopToGrid: true as const } : {}),
     // Kept as written; absent, the containers follow the document (#715).
     ...(partial.containerSpacing === 'collapse' || partial.containerSpacing === 'add' ? { containerSpacing: partial.containerSpacing } : {}),
     textTransform: partial.textTransform === 'uppercase' ? 'uppercase' : 'none',
@@ -116,6 +118,7 @@ export function stripParagraphStylesDefaults(
     if (s.marginTop !== undefined && !isZero(s.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !isZero(s.marginBottom)) r.marginBottom = s.marginBottom;
     if (s.snapToGrid === false) r.snapToGrid = false;
+    if (s.snapTopToGrid === true) r.snapTopToGrid = true;
     // Kept even when it equals the document's value, which can change (#715).
     if (s.containerSpacing === 'collapse' || s.containerSpacing === 'add') r.containerSpacing = s.containerSpacing;
     if (s.textTransform !== undefined && s.textTransform !== 'none') r.textTransform = s.textTransform;

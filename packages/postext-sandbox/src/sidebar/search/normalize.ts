@@ -8,35 +8,21 @@
 // Chinese and Japanese labels have no spaces between words: every Han
 // character and every kana starts a word, so 位置 finds ルビの位置. Kana
 // keep their voicing marks: が is not か, ぱ not は (the dakuten and
-// handakuten tell words apart, they are not accents).
+// handakuten tell words apart, they are not accents). Every other mark goes,
+// ñ, ç, й and ё included, so "tamano" finds "tamaño": the loose rules of
+// ../../text/fold.ts (find and replace uses the strict ones).
 
-const charCache = new Map<string, string>();
-
-/** Hiragana and katakana (with their voiced forms), kept as they are. */
-const KANA = /[\p{Script=Hiragana}\p{Script=Katakana}]/u;
+import { foldUnits } from '../../text/fold.js';
 
 /** Characters that start a word wherever they stand. */
 const IDEOGRAPHIC = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u;
 
-function normalizeUnit(ch: string): string {
-  const cached = charCache.get(ch);
-  if (cached !== undefined) return cached;
-  if (KANA.test(ch)) {
-    charCache.set(ch, ch);
-    return ch;
-  }
-  let out = ch.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
-  if (out.length === 0) out = ' ';
-  else if (out.length > 1) out = out[0];
-  charCache.set(ch, out);
-  return out;
-}
+const FOLD = { accents: true, caseFold: true, loose: true } as const;
 
-/** Lowercase, accent-free copy of `s` with the same length. */
+/** Lowercase, accent-free copy of `s` with the same length (the loose
+ *  folding of ../../text/fold.ts). */
 export function normalizeText(s: string): string {
-  let out = '';
-  for (let i = 0; i < s.length; i++) out += normalizeUnit(s[i]);
-  return out;
+  return foldUnits(s, FOLD);
 }
 
 /** Search words of a query, normalized; empty query → no tokens. */

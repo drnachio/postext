@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyFindReplace, findInText, numberedLines } from './textEdits.js';
+import { applyFindReplace, numberedLines } from './textEdits.js';
 
 const text = '# Title\n\nOne fish, two fish.\nRed fish, blue fish.\n';
 
@@ -33,14 +33,5 @@ describe('numberedLines', () => {
     expect(numberedLines(text, 3, 4)).toEqual({ text: '3\tOne fish, two fish.\n4\tRed fish, blue fish.', from: 3, to: 4, total: 5 });
     expect(numberedLines('a\nb').text).toBe('1\ta\n2\tb');
     expect(numberedLines('a\nb', 9).from).toBe(2);
-  });
-});
-
-describe('findInText', () => {
-  it('finds every occurrence with its line', () => {
-    expect(findInText(text, 'FISH').map((m) => m.line)).toEqual([3, 3, 4, 4]);
-    expect(findInText(text, 'FISH', { matchCase: true })).toEqual([]);
-    expect(findInText(text, 'red')[0]).toEqual({ line: 4, offset: 29, text: 'Red fish, blue fish.' });
-    expect(findInText(text, 'fish', { limit: 2 })).toHaveLength(2);
   });
 });

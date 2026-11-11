@@ -195,6 +195,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>コンテナーの下で流れをベースライングリッドに戻します。下のアキは最小値になります。<code>false</code>では正確なアキを保ち、コンテナーの後のテキストは、次にグリッドに合わせるブロック（見出し、リストの終わり、別行立ての数式）までグリッドから外れたままになります。グリッドに沿わない文書や、独自の行送りで組むまとまりに使います。グリッドのない囲みの中では何も変わりません。</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>前のブロックがどこで終わっても、コンテナの最初の段落をグリッド線から始めます。<code>marginTop</code>は最小値になります。オフのときは、段落は前のブロックが残した位置から始まります。Sandboxでは<strong>グリッド線から始める</strong>です。</td>
+    </tr>
+    <tr>
       <td><code>containerSpacing</code></td>
       <td><code>'collapse' | 'add'</code></td>
       <td>未設定</td>
@@ -1362,7 +1368,7 @@ const config: PostextConfig = {
       <td>レベルのフィールド</td>
       <td><code>headings.levels[]</code>と同じ</td>
       <td>そのレベルの値</td>
-      <td><code>fontFamily</code>、<code>figureStyle</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。ここで指定した<code>figureStyle</code>は、そのスタイルを使うレベルのファミリーにかかります（[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照）。</td>
+      <td><code>fontFamily</code>、<code>figureStyle</code>、<code>fontSize</code>、<code>lineHeight</code>、<code>fontWeight</code>、<code>italic</code>、<code>color</code>、<code>marginTop</code>、<code>marginBottom</code>、<code>snapToGrid</code>、<code>regainGrid</code>、<code>snapTopToGrid</code>、<code>numberSeparator</code>、<code>numberPosition</code>、<code>breakBefore</code>、<code>span</code>、<code>spanBreak</code>、<code>advancedDesign</code>、<code>textTransform</code>、<code>letterSpacing</code>、<code>lineSpan</code>、<code>indent</code>、<code>firstLineIndent</code>、<code>jidori</code>、<code>dropCap</code>、<code>hidden</code>：設定したものはそれぞれ、このスタイルの見出しについて見出しのレベルの値を置き換えます（<code>dropCap: false</code>はレベルのドロップキャップを外します）。<code>breakBefore</code>はレベルの値にフィールドごとにマージされます。<code>parity</code>だけを設定したスタイルはレベルの<code>enabled</code>を保ち、<code>enabled: true</code>だけを設定したスタイルはレベルの奇偶を保ちます（postext 1.4までは、欠けたフィールドは改ページなしの既定値から取られていました）。ここで指定した<code>figureStyle</code>は、そのスタイルを使うレベルのファミリーにかかります（[数字のスタイル](/ja/docs/configuration-fonts-colors-viewers#数字のスタイル)を参照）。</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

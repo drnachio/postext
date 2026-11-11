@@ -64,6 +64,12 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>O espaço entre dois parágrafos. <code>true</code> insere uma linha em branco (igual a <code>lineHeight</code>), para uma separação no estilo editorial; uma medida como <code>&#123; value: 2, unit: 'mm' &#125;</code> ou <code>0.33em</code> do corpo do texto deixa exatamente esse espaço, no texto corrido, nas caixas e nos quadros das páginas compostas. Uma medida que não seja um número inteiro de linhas tira os parágrafos da grade de linhas; o bloco seguinte que se alinha a ela (um título, o último item de uma lista, uma fórmula em destaque) devolve o texto à grade. É o mesmo espaço de <code>paragraphStyles[].spaceBetween</code>, que o substitui dentro de um contêiner <code>:::paragraphs</code>. Uma caixa define o seu em <code>calloutStyles[].body.paragraphSpacing</code>.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Começa cada parágrafo do corpo e cada citação numa linha da grade: o espaço acima é arredondado até a próxima, seja qual for o fim do bloco anterior (um título fora da grade, um quadro ou uma figura com margens exatas). <code>false</code> deixa o parágrafo onde o bloco anterior o deixou. Um parágrafo num contêiner <code>:::paragraphs</code> segue em vez disso o <code>snapTopToGrid</code> do seu estilo, e o verso o do seu estilo de parágrafo, ou este quando não tem. Para recuperar a grade só sob um título fora dela, use o <code>regainGrid</code> do título. No Sandbox: <strong>Começar os parágrafos numa linha da grade</strong>.</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

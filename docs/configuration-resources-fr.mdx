@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les types de ressources et leur numérotation, les styles de tableau et de légende, les diagrammes en une seule encre et les vidéos imprimées',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '45 min',
+  readingTime: '46 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Cette page présente les réglages des figures, des tableaux, des diagrammes et des vidéos. Postext les appelle des ressources et numérote chaque genre séparément. Vous choisissez l’aspect des tableaux : leurs filets, leurs fonds, leur typographie et la façon dont ils se coupent d’une page à l’autre. Vous choisissez comment s’écrit la légende d’une figure ou d’un tableau. Vous pouvez aussi imprimer les diagrammes en une seule encre et décider de l’aspect d’une vidéo sur le papier.",
@@ -144,6 +144,16 @@ Un type peut omettre des champs (depuis postext 1.38) : le type intégré de m�
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (facultatif)</td>
       <td>Surcharge partielle du <a href="#style-de-légende">style de légende</a> pour les ressources de ce type. Seules les clés que vous définissez remplacent le <code>captionStyle</code> global ; tout le reste est hérité (une <code>color</code> surchargée détermine aussi les couleurs du libellé et de la note, sauf si celles-ci sont définies explicitement). Usage typique : des tableaux légendés <em>au-dessus</em>, sur une barre de couleur, tandis que les figures gardent leur légende en dessous. Les références à la palette se résolvent comme toute autre couleur.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>true</code>. Si une figure ou un tableau de ce type placé dans le texte repose sur la grille de base : le flux y revient sous la ressource. <code>false</code> garde l’espace exact que laisse la ressource. Les flottants en haut ou en bas d’une colonne ne sont pas concernés.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>false</code>. Fait commencer une figure ou un tableau de ce type placé dans le texte sur une ligne de la grille, quelle que soit la fin du bloc précédent. Les flottants en haut ou en bas d’une colonne, une figure habillée par le texte et celle qui ouvre une colonne ne sont pas concernés. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -855,6 +865,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Tons directs dans un SVG.** Dans un PDF d’impression, une couleur d’un SVG vectoriel s’imprime sur un ton direct dans deux cas seulement. Quand elle nomme l’encre : une couleur suivie de `icc-named-color(…, "PANTONE 185 C")`, ou un élément avec `data-spot="PANTONE 185 C"` (et `data-spot-tint="40"`, en pourcentage), s’imprime sur la plaque de cette encre, avec la couleur de substitution de la palette quand la palette a un ton direct de ce nom, sinon avec le CMJN propre à la couleur. Et quand son hex est exactement celui d’un ton direct de la palette : elle s’imprime sur l’encre de cette couleur, à la teinte de cette couleur. Toute autre couleur reste en quadrichromie, même si elle ressemble à une teinte d’une encre sur blanc, si bien que les gris d’un dessin ne passent jamais sur une plaque de ton direct. Chaque couleur est résolue séparément : un diagramme peut donc mêler plusieurs encres et des couleurs quadri. `diagramStyle.singleInk` garde la priorité : avec un `inkColor` en ton direct, le diagramme recoloré s’imprime en teintes de cette plaque. Une encre qu’un SVG nomme et qu’aucune couleur de la palette ne définit (ni une entrée de la table des encres avec `cmyk`) s’imprime sur une plaque à elle, avec le CMJN de la couleur du SVG comme couleur de substitution ; tous les SVG qui la nomment partagent cette plaque, et le contrôle en amont avertit (`spotInkUndefined`). Beaucoup de logiciels exportent une nuance comme une simple couleur RVB et perdent son nom : donnez à la palette un ton direct avec exactement ce `hex`, un par teinte utilisée dans le dessin, ou marquez les éléments avec `data-spot`.
 
 ### Encre unique sur le canvas et en HTML
 

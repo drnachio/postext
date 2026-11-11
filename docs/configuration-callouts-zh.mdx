@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>为<code>true</code>时，框之后的文字流回到基线网格上，因此框下方的间距是<code>marginBottom</code>向上取整到整数网格行。为<code>false</code>时，框保持精确的<code>marginBottom</code>，并与下一个块的上外边距合并：这种样式的两个相邻框之间恰好相距<code>max(marginBottom, marginTop)</code>；框之后的正文可能偏离网格，直到下一个对齐点（标题、列表结尾），与<code>headings.snapToGrid: false</code>的标题之后一样。适用于由一个个框叠成的文档（练习册、表单）。它只作用于文字流中的框；多栏版式中的通栏框，以及浮动框、固定框和侧栏框都保持网格，因为栏带和浮动区都是在网格上排布的。各栏齐底的调节手段不变：收尾某一栏的框仍会被推到该栏最后一个网格位置。</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让框从网格线开始：无论前一个块在哪里结束，上方间距都向上取整到下一条网格线，并计入这段间距来判断框能否放进本栏。默认关闭。只作用于正文流中的框；浮动、固定和侧边的框位于已经排在网格上的区带中。在Sandbox中：<strong>从网格线开始</strong>。</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

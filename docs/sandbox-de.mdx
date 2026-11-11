@@ -99,6 +99,28 @@ Die Kopfzeile des Bedienfelds ist ein **Kapitelwechsler**: Pfeile für vorherige
 - **Nach Word exportieren**: lädt das Kapitel oder das ganze Buch als `.docx` herunter, semantisch (der Inhalt allein, in schlichten Word-Formatvorlagen) oder gesetzt (derselbe bearbeitbare Text im Design des Buchs); die darin gemachten Korrekturen kommen über **Word-Dokument importieren** zurück
 - **Nach InDesign exportieren (IDML)**: setzt das ganze Buch wie das PDF und lädt es als `<Buch>.idml` herunter, zum Fertigstellen in InDesign (siehe [Export und Import](/de/docs/sandbox-books-saving#export-und-import))
 
+#### Suchen und ersetzen
+
+Die Schaltfläche **Suchen und ersetzen** in der Kopfzeile des Bedienfelds Text, die auch in den Werkzeugleisten von Canvas und PDF sitzt, öffnet eine Leiste über dem Editor. Sie durchsucht das Markdown des angezeigten Kapitels oder des ganzen Buchs samt Auszeichnungen, sodass sie genau das findet und ersetzt, was der Editor zeigt.
+
+- **Optionen**: **Groß-/Kleinschreibung beachten**, **Nur ganze Wörter**, **Akzente ignorieren** und **Regulärer Ausdruck**. Mit **Akzente ignorieren** findet *celula* auch *célula*, und ein arabisches Wort wird mit und ohne Vokalzeichen gefunden. Ñ, ç, й und ё bleiben eigene Buchstaben, und Kana behalten ihre Stimmhaftigkeitszeichen (が ist nicht か). Text, dessen Akzente als eigene Zeichen eingegeben wurden, wird gefunden, als wären sie mit dem Buchstaben verbunden. Im Chinesischen, Japanischen und Thailändischen, die Wörter nicht durch Leerzeichen trennen, folgt **Nur ganze Wörter** der Wortsegmentierung des Browsers.
+- **Kapitel** oder **Buch** legt den Bereich fest. Die Treffer stehen nach Kapiteln geordnet mit ihrer Zeilennummer in einer Liste. Ein Klick auf einen Treffer wählt ihn im Editor aus und öffnet sein Kapitel; der Fokus bleibt dabei in der Leiste.
+- **Reguläre Ausdrücke** sind die von JavaScript, mit Unicode gelesen, `^` und `$` an Zeilenenden. Im Ersatz schreiben `$1` bis `$99` eine Gruppe, `$<name>` eine benannte Gruppe, `$&` den ganzen Treffer und `$$` ein Dollarzeichen; `\n`, `\t` und `\\` schreiben einen Zeilenumbruch, einen Tabulator und einen Backslash. Alles andere wird so geschrieben, wie es eingegeben ist: Mit `^Note (\d+)` und `[^$1]` wird aus *Note 3* `[^3]`. Ohne die Option ist der Ersatz reiner Text.
+- **Alle ersetzen** über mehr als ein Kapitel fragt vorher nach. Die Ersetzungen sind ein einziger Schritt im Verlauf: Die Schaltfläche **Rückgängig**, die dann in der Leiste erscheint, Cmd/Strg+Z gleich danach in ihren Feldern oder Cmd/Strg+Z irgendwo in der Sandbox nimmt sie alle zurück.
+- Die Suche beginnt einen Moment, nachdem Sie aufgehört haben zu tippen, und läuft getrennt von der Seite, sodass ein langes Buch das Tippen nicht bremst. Ab 5000 Treffern oder wenn eine Suche zu lange dauert, hält sie an und meldet das, und **Alle ersetzen** bleibt aus, bis die Suche enger gefasst ist. Ein regulärer Ausdruck, der endlos zurückverfolgt, etwa `(a+)+$` auf einer langen Zeile, wird abgebrochen und gemeldet.
+- Im Modus **Gestaltung** ist der Text schreibgeschützt: Die Leiste findet, ihre Schaltflächen zum Ersetzen sind aus, und ein Hinweis bietet **Text bearbeiten** an.
+- Auf einem Telefon sitzt die Leiste oben im bildschirmfüllenden Bedienfeld Text.
+
+Die Tasten, im Editor und in der Leiste:
+
+- **Cmd/Strg+F**: im Kapitel suchen (eine Auswahl innerhalb einer Zeile wird zum Suchbegriff); **Cmd/Strg+Umschalt+F**: im Buch suchen; **Cmd/Strg+Alt+F**: suchen und ersetzen.
+- **Eingabe** und **Umschalt+Eingabe** im Suchfeld: nächster und vorheriger Treffer. Im Editor **Cmd/Strg+G** oder **F3**, mit Umschalt für den vorherigen.
+- **Eingabe** im Ersetzungsfeld: den aktuellen Treffer ersetzen und zum nächsten gehen; **Cmd/Strg+Alt+Eingabe**: alle ersetzen.
+- **Cmd/Strg+Z** direkt nach einer Ersetzung: sie zurücknehmen; **Umschalt+Cmd/Strg+Z**: sie wiederherstellen.
+- **Esc**: die Leiste schließen und zum Text zurückkehren.
+
+Solange eine Eingabemethode Zeichen zusammensetzt (Chinesisch, Japanisch, Koreanisch), gehören Eingabe und Esc ihr. Agenten führen dieselbe Suche mit `sandbox_search_text` und `sandbox_replace_text` aus.
+
 #### Bedienfeld Bücher
 
 Das erste Bedienfeld der Aktivitätsleiste: die Galerie Ihrer Bücher und der Beispielbücher, mit dem Menü **Neu**, dem Status der letzten Aktion und dem Banner eines Beispielbuchs, von dem es eine neue Version gibt. In Code und Speicher heißt ein Buch weiterhin *project* und ein Beispielbuch *preset*.

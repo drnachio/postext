@@ -195,6 +195,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>أعِد التدفق إلى شبكة خطوط الأساس تحت الحاوية، على أن تكون المسافة تحتها حدًّا أدنى. القيمة <code>false</code> تُبقي المسافة الدقيقة: يبقى النص بعد الحاوية خارج الشبكة حتى الكتلة التالية التي تُحاذى عليها (عنوان، أو نهاية قائمة، أو معادلة رياضية مستقلة)، وهذا لمستند يجري خارج الشبكة أو لمجموعة لها تباعد أسطر خاص بها. وداخل الإطار (callout)، الذي لا شبكة له، لا تغيّر شيئًا.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تبدأ الفقرة الأولى في الحاوية على خط من الشبكة، أيًّا كان موضع انتهاء الكتلة السابقة؛ وتصير <code>marginTop</code> حدًّا أدنى. حين يكون مطفأً تبدأ الفقرة حيث تركتها الكتلة السابقة. في Sandbox: <strong>البدء على خط من الشبكة</strong>.</td>
+    </tr>
+    <tr>
       <td><code>containerSpacing</code></td>
       <td><code>'collapse' | 'add'</code></td>
       <td>غير محدَّد</td>
@@ -1362,7 +1368,7 @@ const config: PostextConfig = {
       <td>حقول المستوى</td>
       <td>كما في <code>headings.levels[]</code></td>
       <td>قيم المستوى</td>
-      <td><code>fontFamily</code>، <code>figureStyle</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>numberSeparator</code>، <code>numberPosition</code>، <code>breakBefore</code>، <code>span</code>، <code>spanBreak</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا حُدِّد، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها). و<code>figureStyle</code> المضبوط هنا يُطبَّق على عائلة المستوى الذي يُستعمل عليه النمط (انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام)).</td>
+      <td><code>fontFamily</code>، <code>figureStyle</code>، <code>fontSize</code>، <code>lineHeight</code>، <code>fontWeight</code>، <code>italic</code>، <code>color</code>، <code>marginTop</code>، <code>marginBottom</code>، <code>snapToGrid</code>، <code>regainGrid</code>، <code>snapTopToGrid</code>، <code>numberSeparator</code>، <code>numberPosition</code>، <code>breakBefore</code>، <code>span</code>، <code>spanBreak</code>، <code>advancedDesign</code>، <code>textTransform</code>، <code>letterSpacing</code>، <code>lineSpan</code>، <code>indent</code>، <code>firstLineIndent</code>، <code>jidori</code>، <code>dropCap</code>، <code>hidden</code>: كلٌّ منها، إذا حُدِّد، يحلّ محلّ قيمة مستوى العنوان في عناوين هذا النمط (و<code>dropCap: false</code> يُسقط الحرف الاستهلالي الذي يضبطه المستوى). و<code>breakBefore</code> يُدمج حقلًا حقلًا فوق قيمة المستوى: النمط الذي لا يحدّد إلا <code>parity</code> يحتفظ بقيمة <code>enabled</code> الخاصة بالمستوى، والذي لا يحدّد إلا <code>enabled: true</code> يحتفظ بزوجية المستوى (حتى postext 1.4 كان الحقل الناقص يأتي بدلًا من ذلك من القيمة الافتراضية التي لا فاصل فيها). و<code>figureStyle</code> المضبوط هنا يُطبَّق على عائلة المستوى الذي يُستعمل عليه النمط (انظر [أنماط الأرقام](/ar/docs/configuration-fonts-colors-viewers#أنماط-الأرقام)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

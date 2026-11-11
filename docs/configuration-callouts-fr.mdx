@@ -219,6 +219,12 @@ The glass stays hot for an hour after the flame is out.
       <td>Avec <code>true</code>, le flux qui suit l’encadré revient sur la grille de ligne de base : l’espace en dessous vaut donc <code>marginBottom</code> arrondi à un nombre entier de lignes de la grille. Avec <code>false</code>, l’encadré garde son <code>marginBottom</code> exact, qui fusionne avec la marge supérieure du bloc suivant (deux encadrés consécutifs d’un tel style sont séparés d’exactement <code>max(marginBottom, marginTop)</code>), et le texte qui le suit peut se trouver hors de la grille jusqu’au point de recalage suivant (un titre, la fin d’une liste), comme après un titre avec <code>headings.snapToGrid: false</code>. Destiné aux documents faits d’encadrés empilés (fiches d’exercices, formulaires). Il s’applique aux encadrés dans le flux ; les encadrés sur toute la largeur de la page dans une mise en page à plusieurs colonnes, ainsi que les encadrés flottants, fixes et latéraux, gardent la grille, puisque les bandes de colonnes et les zones de flottants sont disposées sur elle. Les leviers d’équilibrage des colonnes ne changent pas : un encadré qui clôt une colonne est toujours repoussé jusqu’au dernier emplacement de grille de la colonne.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer l’encadré sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent, et l’encadré est ajusté à la colonne en comptant cet espace. Désactivé par défaut. Cela vaut pour les encadrés dans le flux ; les flottants, les fixes et les latéraux se placent dans des bandes déjà posées sur la grille. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

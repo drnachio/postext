@@ -14,6 +14,7 @@ import {
   TextInput,
   ToggleSwitch,
 } from '../../../controls/index.js';
+import { GridSnapFields } from '../../settings/GridSnapFields.js';
 import { counterFormatOptions, resetOnOptions } from '../../settings/counterOptions.js';
 
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -149,6 +150,12 @@ export const MathSection = memo(function MathSection() {
         tooltip={labels.mathKeepWithLeadInTooltip}
         isDefault={math.keepWithLeadIn === D.keepWithLeadIn}
         onReset={() => resetField('keepWithLeadIn')}
+      />
+      <GridSnapFields
+        kind="math"
+        value={{ snapToGrid: math.snapToGrid, snapTopToGrid: math.snapTopToGrid }}
+        set={(k, v) => (v === undefined ? resetField(k) : updateMath({ [k]: v }))}
+        unset={(k) => (k === 'snapTopToGrid' ? math.snapTopToGrid === D.snapTopToGrid : math.snapToGrid === D.snapToGrid)}
       />
       <ToggleSwitch
         label={labels.mathEquationNumbering}

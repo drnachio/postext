@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ملفات PDF',
   description: 'postext-pdf من الشيفرة: التثبيت، والواجهة البرمجية، ومزوّدو الخطوط في المتصفح وفي Node، وخطوط CJK، وبايتات الموارد، والنص العمودي، والتشغيل في عامل، والملفات الجاهزة للطباعة',
   lang: 'ar',
-  lastUpdated: '2026-11-06',
-  readingTime: '21 دقيقة',
+  lastUpdated: '2026-11-10',
+  readingTime: '25 دقيقة',
   order: 22,
   parent: 'configuration',
   plainSummary: "هذه الصفحة لمن يكتبون الشيفرة ويريدون ملف PDF. تبيّن كيف تثبّت حزمة PDF وتحوّل كتابًا مُخرَجًا إلى ملف ببضعة أسطر. وتحتاج الحزمة إلى ملفات الخطوط، فتشرح الصفحة كيف تعطيها إياها في المتصفح أو على الخادم. وتتناول خطوط الصينية واليابانية والكورية، والصور، والنص المكتوب من الأعلى إلى الأسفل، والروابط. وتنتهي بمثال كامل وبملفات جاهزة للمطبعة.",
@@ -36,8 +36,8 @@ npm install postext postext-pdf
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — تأخذ `VDTDocument` (أو فصول كتاب في مصفوفة منها) وتعيد بايتات PDF الخام.
 - **`PdfFontProvider`** — توقيع دالة الاستدعاء `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` التي تستخدمها `renderToPdf` لطلب بايتات الخط حين تحتاج إلى تضمين تركيبة جديدة من العائلة والوزن والنمط. ويتضمّن `request.codePoints` الحروف التي تنضّدها الصفحات بشكل الخط (face) ذاك؛ والجواب ملف واحد، أو عدة ملفات تؤلّف شكل الخط معًا (انظر [خطوط الصينية واليابانية والكورية](#خطوط-الصينية-واليابانية-والكورية)).
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ملف من ملفات شكل الخط يذكر كيف أعلنته الصفحة: قيمة `unicode-range` في قاعدته `@font-face` وموضعه في ترتيب الإعلان. و`PdfFontFile` هو `Uint8Array` فيه هاتان الخاصيتان الاختياريتان (انظر [خطوط الصينية واليابانية والكورية](#خطوط-الصينية-واليابانية-والكورية)). منذ postext-pdf 1.30.
-- **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. ويحدّد `forms` كيف تكتب حقول النماذج الأرقام (العملة وموضعها والفواصل) وشكل الخط الذي تعرض به قيمها (`font`؛ انظر [حقول النماذج](#حقول-النماذج)). تأخذ `outlines` و`accessible` و`colorSpace` قيمتها من `pdfGeneration` في المستند حين تُترك (انظر [إنتاج PDF (الإعدادات)](/ar/docs/configuration-fonts-colors-viewers#إنتاج-pdf-الإعدادات)). يُشرح `resourceBytes` في [بايتات الموارد والنسخ الأصلية للطباعة](#بايتات-الموارد-والنسخ-الأصلية-للطباعة)، و`onWarning` في [أشكال الخطوط التي يُسأل عنها المزوّد](#أشكال-الخطوط-التي-يُسأل-عنها-المزوّد) و[التحذيرات في المستند](/ar/docs/configuration-programmatic-usage#التحذيرات-في-المستند). يطبع `characterGrid: true` الشبكة التي يرسمها `cjk.grid.show` على الشاشة، والتي يُسقطها ملف PDF في غير ذلك (انظر [شبكة الحروف](/ar/docs/configuration-east-asian#شبكة-الحروف)). ويحدّد `harfbuzzWasm` المكان الذي يُحمَّل منه الملف `harfbuzz.wasm` الخاص بـHarfBuzz (عنوان URL نسبي إلى الصفحة، أو بايتات الملف) لمستند فيه نص من اليمين إلى اليسار أو نص متصل الحروف؛ وإن تُرك، جرّب postext-pdf النسخة الموجودة بجانب وحدته، ثم إصدار harfbuzzjs نفسه من jsDelivr ثم من esm.sh. يأخذ `print` إعدادات الإخراج للطباعة (معيار PDF/X، وملف التعريف اللوني للإخراج، والأسود، والفحص قبل الطباعة)، وإن لم يُمرَّر أُخذت قيمة `print` من المستند؛ ومع معيار PDF/X، أو مع `colorSpace: 'cmyk'`، يُفصَل كل لون عبر ملف ICC للإخراج، الذي تعطي `outputProfile` بايتاته (وإلا جُلب من `profileBaseUrl`، وافتراضيًا نسخة مجلد `icc/` من postext على شبكة npm). والخيار `date` (كائن `Date` أو زمن بالمللي ثانية أو تاريخ مكتوب، مثل `mtime` في `createBundle`) هو تاريخ إنشاء الملف وتاريخ تعديله، وفي ملف PDF/X هو أيضًا تواريخ حزمة XMP ومنه يُشتق معرّف المستند: المستند نفسه إذا وُلّد مرتين بقيمة `date` واحدة أعطى البايتات نفسها. وإذا تُرك، حمل الملف وقت الاستدعاء. والتاريخ غير الصالح يرمي خطأ.
-- **`PdfWarning`** — مشكلة غير قاتلة تصل عبر `onWarning`؛ ميّز نوعها بالحقل `kind`: `'fontFallback'` (`PdfFontFallbackWarning`)، شكل خط نُضّد بشكل آخر من عائلته؛ `'missingGlyph'` (`PdfMissingGlyphWarning`)، حروف لا يحوي أي ملف من ملفات شكل الخط رسمًا (glyph) لها؛ `'variableFontDefaultInstance'` (`PdfVariableFontWarning`)، خط متغيّر طُلب بوزن غير وزن نسخته الافتراضية؛ `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`)، شكل خط CFF يتجاوز 2 MB ضُمِّن كاملًا؛ `'complexShapingUnavailable'` (`PdfComplexShapingWarning`)، نص من اليمين إلى اليسار أو متصل الحروف رُسم دون HarfBuzz لتعذّر تحميله (يسرد `reason` الأماكن التي بُحث فيها عنه)، فتقع العلامات العربية في غير مواضعها؛ `'outputProfileUnavailable'` (`PdfPrintWarning`)، إنتاج بألوان CMYK تعذّر تحميل ملف تعريف الإخراج الخاص به، فحُوّلت ألوانه بالمعادلة البسيطة؛ `'pageNegativeIgnored'` (`PdfPrintWarning`)، الصفحة المعكوسة (page negative) التي أُسقطت من ملف PDF/X-1a؛ أو `'missingImage'`، صورة بلا بايتات رُسم مكانها عنصر نائب (لا يصل هذا التحذير إلا إلى `onWarning` تمرّره أنت؛ أما تحذيرات الخطوط فتذهب، في غيابها، إلى `console.warn`).
+- **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. ويحدّد `forms` كيف تكتب حقول النماذج الأرقام (العملة وموضعها والفواصل) وشكل الخط الذي تعرض به قيمها (`font`؛ انظر [حقول النماذج](#حقول-النماذج)). تأخذ `outlines` و`accessible` و`colorSpace` قيمتها من `pdfGeneration` في المستند حين تُترك (انظر [إنتاج PDF (الإعدادات)](/ar/docs/configuration-fonts-colors-viewers#إنتاج-pdf-الإعدادات)). يُشرح `resourceBytes` في [بايتات الموارد والنسخ الأصلية للطباعة](#بايتات-الموارد-والنسخ-الأصلية-للطباعة)، و`onWarning` في [أشكال الخطوط التي يُسأل عنها المزوّد](#أشكال-الخطوط-التي-يُسأل-عنها-المزوّد) و[التحذيرات في المستند](/ar/docs/configuration-programmatic-usage#التحذيرات-في-المستند). يطبع `characterGrid: true` الشبكة التي يرسمها `cjk.grid.show` على الشاشة، والتي يُسقطها ملف PDF في غير ذلك (انظر [شبكة الحروف](/ar/docs/configuration-east-asian#شبكة-الحروف)). ويحدّد `harfbuzzWasm` المكان الذي يُحمَّل منه الملف `harfbuzz.wasm` الخاص بـHarfBuzz (عنوان URL نسبي إلى الصفحة، أو بايتات الملف) لمستند فيه نص من اليمين إلى اليسار أو نص متصل الحروف؛ وإن تُرك، جرّب postext-pdf النسخة الموجودة بجانب وحدته، ثم إصدار harfbuzzjs نفسه من jsDelivr ثم من esm.sh. يأخذ `print` إعدادات الإخراج للطباعة (معيار PDF/X، وملف التعريف اللوني للإخراج، والأسود، والفحص قبل الطباعة)، وإن لم يُمرَّر أُخذت قيمة `print` من المستند؛ ومع معيار PDF/X، أو مع `colorSpace: 'cmyk'`، يُفصَل كل لون عبر ملف ICC للإخراج، الذي تعطي `outputProfile` بايتاته (وإلا جُلب من `profileBaseUrl`، وافتراضيًا نسخة مجلد `icc/` من postext على شبكة npm). والخيار `date` (كائن `Date` أو زمن بالمللي ثانية أو تاريخ مكتوب، مثل `mtime` في `createBundle`) هو تاريخ إنشاء الملف وتاريخ تعديله، وفي ملف PDF/X هو أيضًا تواريخ حزمة XMP ومنه يُشتق معرّف المستند: المستند نفسه إذا وُلّد مرتين بقيمة `date` واحدة أعطى البايتات نفسها. وإذا تُرك، حمل الملف وقت الاستدعاء. والتاريخ غير الصالح يرمي خطأ.
+- **`PdfWarning`** — مشكلة غير قاتلة تصل عبر `onWarning`؛ ميّز نوعها بالحقل `kind`: `'fontFallback'` (`PdfFontFallbackWarning`)، شكل خط نُضّد بشكل آخر من عائلته؛ `'missingGlyph'` (`PdfMissingGlyphWarning`)، حروف لا يحوي أي ملف من ملفات شكل الخط رسمًا (glyph) لها؛ `'variableFontDefaultInstance'` (`PdfVariableFontWarning`)، خط متغيّر طُلب بوزن غير وزن نسخته الافتراضية؛ `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`)، شكل خط CFF يتجاوز 2 MB ضُمِّن كاملًا؛ `'complexShapingUnavailable'` (`PdfComplexShapingWarning`)، نص من اليمين إلى اليسار أو متصل الحروف رُسم دون HarfBuzz لتعذّر تحميله (يسرد `reason` الأماكن التي بُحث فيها عنه)، فتقع العلامات العربية في غير مواضعها؛ `'outputProfileUnavailable'` (`PdfPrintWarning`)، إنتاج بألوان CMYK تعذّر تحميل ملف تعريف الإخراج الخاص به، فحُوّلت ألوانه بالمعادلة البسيطة؛ `'pageNegativeIgnored'` (`PdfPrintWarning`)، الصفحة المعكوسة (page negative) التي أُسقطت من ملف PDF/X-1a؛ `'spotTintsExhausted'` (`PdfPrintWarning`)، عرض نفدت فيه الرموز التي تميّز درجات الألوان الخاصة (نحو 25 مليونًا) فطبع الباقي بالألوان الرباعية؛ `'spotInkRenamed'` (`PdfPrintWarning`)، حبر يُكتب لوحه باسم آخر (انظر [الألوان الخاصة](#الألوان-الخاصة))؛ أو `'missingImage'`، صورة بلا بايتات رُسم مكانها عنصر نائب (لا يصل هذا التحذير إلا إلى `onWarning` تمرّره أنت؛ أما تحذيرات الخطوط فتذهب، في غيابها، إلى `console.warn`).
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — يقرأ الصفحة الأولى من نسخة أصلية للطباعة بصيغة PDF، ويذكر الخطوط التي تستعملها دون أن تضمّنها (`nonEmbeddedFonts`)، وهل ترسم بألوان RGB (`rgb`)، وهل تستعمل الشفافية (`transparency`)، من أجل [الفحص قبل الطباعة](/ar/docs/configuration-fonts-colors-viewers#الفحص-قبل-الطباعة).
 - **`decompressWoff2(bytes): Uint8Array`** — دالة مساعدة تحوّل ملف WOFF2 إلى بايتات TTF، وهي الصيغة التي تستطيع `pdf-lib` تضمينها مباشرةً.
 - **`createPdfWorker(options?)`**، من `postext-pdf/worker` — الإنتاج نفسه في عامل ويب؛ انظر [إنتاج ملف PDF في عامل](#إنتاج-ملف-pdf-في-عامل).
@@ -418,6 +418,58 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية التي ليست لها دقة خاصة بها تُطبع بهذه الدقة بمقاسها الطبيعي. ويُصدر [الفحص قبل الطباعة](/ar/docs/configuration-fonts-colors-viewers#الفحص-قبل-الطباعة) تحذيرًا بالصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
 - **`ColorValue.cmyk`** — يُطبع اللون المعرّف بقيم CMYK بقيمه الدقيقة.
 - **`{ pageNegative: true }`** في `RenderToPdfOptions` — يعكس منطقة حدّ القص باستخدام نمط الدمج Difference (وتبقى علامات القص غير معكوسة). مفيد لفحوص ما قبل الطباعة (preflight) على الطباعة الداكنة فوق الفاتح.
+
+### الألوان الخاصة
+
+اللون الخاص (Pantone، أو حبر مؤسسي، أو ورنيش) يُطبع على لوحه الخاص. يحمل اللون ذو `model: 'spot'` حبره في `ColorValue.spot`: `name` اسم اللوح كما تعرفه المطبعة، و`cmyk` مظهر الحبر بنسبة 100 % (البديل الذي يعطيه PDF لمن لا يملك الحبر)، و`tint` درجة الحبر بالنسبة المئوية (100 افتراضيًا)، و`overprint` يجعل الحبر يُطبع فوق ما تحته بدل تفريغه، كالورنيش. أما `hex` فهو تمثيله على الشاشة.
+
+يكتب ملف PDF بنظام CMYK أو PDF/X كل حبر فضاءَ ألوان `Separation` باسمه، ويرسم كل لون من هذا الحبر بدرجته: الألوان ذات `name` الواحد تتشارك لوحًا واحدًا. وبذلك تُغطّى الأعمال المعتادة: لونان (الأسود ولون خاص)، والطباعة الرباعية مع عناصر قليلة بلون خاص، وورنيش مطبوع فوق مناطق مختارة. وإذا استخدم `diagramStyle.singleInk` لونًا خاصًا، طُبعت مخططات SVG بدرجات ذلك اللوح. أما ملف PDF بنظام RGB والشاشة فيرسمان اللون بقيمة `hex`.
+
+**الألوان الخاصة داخل SVG.** انظر [كيف يعمل الحبر الواحد](/ar/docs/configuration-resources#كيف-يعمل-الحبر-الواحد).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+يعدّ الفحص قبل الطباعة اللون الخاص حبرًا واحدًا، ويستبعده من حد التغطية، ويسرد الألوان الخاصة في المهمة (`spotInks`)، ومنها الأحبار التي تسمّيها صور SVG. وينبّه إذا عُرّف الحبر نفسه مرتين بقيم مختلفة (`spotInkConflict`؛ يستخدم PDF التعريف الأول)، وإذا سمّى ملف SVG حبرًا لا يعرّفه أي لون في لوحة الألوان ولا أي مدخل في جدول الأحبار يحمل `cmyk` (`spotInkUndefined`؛ يُطبع على لوح خاص به، وقيم CMYK للون SVG بديلًا له، لوح واحد لكل اسم)، وإذا اضطر PDF إلى كتابة اسم لوح بصيغة أخرى (`spotInkName`، انظر أدناه)، وإذا اختلف اسما لوحين في حالة الأحرف أو المسافات فقط (`spotInkSimilar`: `PANTONE 185 C` و`Pantone  185 C` سيكونان لوحين). يعرف `preflightDocument` الأحبار التي يسمّيها ملف SVG من `svgInks(fileId)`، وهي دالة تعيد الأسماء التي يجدها `svgSpotInks(markup)` في الملف؛ وتمرّرها لوحة **الفحوص** في Sandbox و`postext check`.
+
+**أسماء الألواح.** يُكتب الاسم كما أُدخل: تصل الحروف المشكّلة والرموز و`#` إلى PDF بترميز UTF-8 (`Rojo Médica` يصبح `/Rojo#20M#C3#A9dica`)، وهكذا يقرؤه Acrobat وRIP والفحص قبل الطباعة لدى المطبعة. الاسم الذي لا يستطيع اللوح حمله يُكتب باسم آخر: `All` و`None` و`Cyan` و`Magenta` و`Yellow` و`Black`، بأي حالة أحرف، تُلحق بها كلمة ink (`All ink`)؛ وتُحذف محارف التحكم؛ والاسم الذي يتجاوز 127 بايت بترميز UTF-8 يُقطع عند حد محرف وينتهي ببصمة قصيرة (hash)، فيبقى الاسمان الطويلان اللذان يبدآن بالحروف نفسها لوحين. يذكر `spotInkName` في الفحص قبل الطباعة السبب (`problem`: `reserved` أو `process` أو `control` أو `tooLong`) والاسم الذي يكتبه PDF (`written`)، ويُبلغ العرض عن كل تغيير عبر `onWarning` (`spotInkRenamed`). ولتختار الاسم بنفسك، أعطِ الحبر `pdfName` في جدول الأحبار.
+
+**حبر واحد لكل لون.** يتعرّف عرض الطباعة على اللون من قيمة `hex` الخاصة به على الشاشة، لذا لا يجوز للونين يحددان قيم طباعتهما (حبران، أو حبر ولون معرَّف بنظام CMYK) أن يتشاركا القيمة نفسها. فإذا تشاركاها، انتقل اللاحق منهما إلى أقرب قيمة `hex` حرة، على بعد خطوة واحدة لا تُرى على الشاشة، وطُبع كل منهما على لوحه. أما لون الشاشة العادي (`model: 'hex'`) الذي يحمل قيمة `hex` للون خاص فيُطبع بذلك اللون الخاص؛ اربطه بمدخل لوحة الألوان لتجعل ذلك صريحًا. واللون الذي ينتقل يتغيّر على الشاشة أيضًا، خطوة واحدة (1/255) في قناة واحدة، الأزرق أولًا، في كل المخرجات (Canvas وHTML وEPUB وPDF بنظام RGB). وهذا أقل بكثير مما تميّزه العين، وهو ثمن عرض طباعة يقرأ الأحبار من قيمة `hex` المرسومة. ولا تتغيّر الإعدادات المحفوظة.
+
+#### جدول الأحبار
+
+يحدد `print.inks` كيف تصل أحبار المهمة إلى المطبعة، أيًّا كانت الأسماء التي تطلقها عليها الألوان وملفات SVG والملفات المستوردة. أما الحبر غير المدرج في الجدول فيُطبع كما تعرّفه ألوانه.
+
+```ts
+interface PrintInk {
+  name: string;                    // الحبر كما يسمّيه spot.name أو ملف SVG.
+  aliases?: string[];              // أسماء أخرى للحبر نفسه: تُطبع على هذا اللوح.
+  pdfName?: string;                // اسم اللوح في PDF. الافتراضي name.
+  output?: 'spot' | 'process';     // 'process' يطبع الحبر بنظام CMYK من بديله.
+  cmyk?: CmykPercent;              // البديل بنسبة 100 %، مقدَّم على بديل الألوان.
+  overprint?: boolean;             // مقدَّم على إعداد الألوان.
+}
+```
+
+تُطابَق الأسماء والأسماء البديلة دون تمييز حالة الأحرف ولا المسافات المتكررة. إعادة التسمية سطر واحد مهما كان عدد الألوان التي تستخدم الحبر؛ والاسم البديل يجمع على لوح واحد الأسماء التي أعطتها للحبر نفسه عيّنةُ المصمم أو ملف SVG (`data-spot`، `icc-named-color`) أو لوحة ألوان سابقة؛ و`output: 'process'` يطبع الحبر بنظام CMYK عندما لا تملك المطبعة وحدة له، بكل درجاته.
+
+في Sandbox، يوجد الجدول في **التصميم › التصدير › التجهيز للطباعة › جدول الأحبار**: بطاقة لكل حبر فيها **اسم الحبر** و**أسماء بديلة** و**اسم اللوح في PDF** و**يُطبع بوصفه** و**CMYK البديل** و**الطباعة الفوقية**. وتسرد **الأحبار التي تستعملها الألوان** أحبار ألوان الكتاب الغائبة عن الجدول، ولكل منها زر يضيفه.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
 
 ### التنفيذ المرجعي
 

@@ -206,6 +206,9 @@ export async function preloadResourceImages(
         if (fonts && needsComplexShaping(svgText)) await loadComplexShaper();
         const drawing = svgToVectorDrawing(svgText, { fonts });
         if (drawing) {
+          // A spot ink: its tints print on the ink's own plate.
+          const spot = inkHex ? printMode?.spots.get(inkHex.slice(0, 7).toLowerCase()) : undefined;
+          if (inkHex && spot) drawing.spotInk = { hex: inkHex, spot };
           // Pictures inside the drawing become image XObjects.
           for (const shape of drawing.shapes) {
             if (shape.kind !== 'image') continue;

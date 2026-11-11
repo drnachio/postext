@@ -99,6 +99,28 @@ La cabecera del panel es un **selector de capítulos**: las flechas de anterior 
 - **Exportar a Word**: descarga el capítulo o el libro entero como un `.docx`, semántico (solo el contenido, en estilos de Word sencillos) o maquetado (el mismo texto editable con el diseño del libro); las correcciones hechas en él vuelven con **Importar un documento de Word**
 - **Exportar a InDesign (IDML)**: maqueta el libro entero como lo hace el PDF y lo descarga como `<libro>.idml`, para terminarlo en InDesign (véase [Exportar e importar](/es/docs/sandbox-books-saving#exportar-e-importar))
 
+#### Buscar y reemplazar
+
+El botón **Buscar y reemplazar** de la cabecera del panel Texto, que también está en las barras de herramientas de Canvas y PDF, abre una barra encima del editor. Busca en el Markdown del capítulo en pantalla o del libro entero, marcas incluidas, de modo que lo que encuentra y reemplaza es lo que muestra el editor.
+
+- **Opciones**: **Distinguir mayúsculas y minúsculas**, **Solo palabras completas**, **Ignorar tildes** y **Expresión regular**. Con **Ignorar tildes**, *celula* encuentra *célula*, y una palabra árabe se encuentra con sus signos vocálicos o sin ellos. La ñ, la ç, la й y la ё siguen siendo letras propias, y los kana conservan sus marcas de sonorización (が no es か). El texto cuyas tildes se escribieron como signos aparte se encuentra como si estuvieran unidas a la letra. En chino, japonés y tailandés, que no separan las palabras con espacios, **Solo palabras completas** sigue la segmentación en palabras del navegador.
+- **Capítulo** o **Libro** fija el alcance. Las coincidencias se listan por capítulo con su número de línea. Un clic en una la selecciona en el editor y abre su capítulo, y el foco se queda en la barra.
+- Las **expresiones regulares** son las de JavaScript, leídas con Unicode, con `^` y `$` en los finales de línea. En el reemplazo, de `$1` a `$99` escriben un grupo, `$<nombre>` un grupo con nombre, `$&` la coincidencia entera y `$$` un signo de dólar; `\n`, `\t` y `\\` escriben un salto de línea, un tabulador y una barra invertida. Todo lo demás se escribe tal como se teclea: con `^Note (\d+)` y `[^$1]`, *Note 3* pasa a ser `[^3]`. Sin la opción, el reemplazo es texto literal.
+- **Reemplazar todo** en más de un capítulo pide confirmación antes. Los reemplazos son un solo paso del historial: el botón **Deshacer** que aparece en la barra, Cmd/Ctrl+Z en sus campos justo después o Cmd/Ctrl+Z en cualquier parte del Sandbox los deshace todos.
+- La búsqueda empieza un momento después de que dejas de escribir y se ejecuta aparte de la página, así que un libro largo no frena la escritura. Por encima de 5000 coincidencias, o cuando una búsqueda tarda demasiado, se detiene y lo indica, y **Reemplazar todo** queda desactivado hasta que se acota la búsqueda. Una expresión regular que retrocede sin fin, como `(a+)+$` sobre una línea larga, se detiene y se avisa.
+- En el modo **Diseño** el texto es de solo lectura: la barra busca, sus botones de reemplazo están desactivados y una nota ofrece **Editar el texto**.
+- En un teléfono, la barra se coloca arriba del panel Texto a pantalla completa.
+
+Las teclas, en el editor y en la barra:
+
+- **Cmd/Ctrl+F**: buscar en el capítulo (una selección dentro de una línea pasa a ser lo que se busca); **Cmd/Ctrl+Mayús+F**: buscar en el libro; **Cmd/Ctrl+Alt+F**: buscar y reemplazar.
+- **Intro** y **Mayús+Intro** en el campo de búsqueda: coincidencia siguiente y anterior. Desde el editor, **Cmd/Ctrl+G** o **F3**, con Mayús para la anterior.
+- **Intro** en el campo de reemplazo: reemplaza la coincidencia actual y pasa a la siguiente; **Cmd/Ctrl+Alt+Intro**: reemplazar todo.
+- **Cmd/Ctrl+Z** justo después de un reemplazo: lo deshace; **Mayús+Cmd/Ctrl+Z**: lo rehace.
+- **Esc**: cierra la barra y vuelve al texto.
+
+Mientras un método de entrada está componiendo (chino, japonés, coreano), Intro y Esc son suyos. Los agentes hacen la misma búsqueda con `sandbox_search_text` y `sandbox_replace_text`.
+
 #### Panel de libros
 
 El primer panel de la barra de actividades: la galería de tus libros y de los libros de ejemplo, con el menú **Nuevo**, el estado de la última operación y el aviso de un libro de ejemplo que tiene una versión nueva. En el código y en el almacenamiento, un libro se sigue llamando *proyecto* (*project*), y un libro de ejemplo, *preset*.

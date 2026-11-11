@@ -337,6 +337,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'hereNotEmbedded':
       text = `The resource "${w.resourceId}" is placed "here" and cited with :ref, but no ::resource line embeds it — it is on no page; embed it where it belongs or give it a floating position (top, bottom or auto)`;
       break;
+    case 'paragraphCitedInNote':
+      text = `The resource "${w.resourceId}" is placed after the paragraph that cites it, but only a note cites it: a note has no paragraph in the running text to follow, so it is on no page; cite it in the text too, embed it with ::resource or give it a floating position`;
+      break;
     case 'tocGroupSplit':
       text = `The contents block "${w.title}" is cut between ${w.columns} columns — it is taller than a full column, or its column is too short to hold it; list fewer levels (:::toc{levels="1"}), head the blocks with a lower level (toc.groups.head) or make the rows smaller`;
       break;
@@ -384,6 +387,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = w.overflowPx !== undefined
         ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
         : `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its size to fit the room left on its page`;
+      break;
+    case 'floatCropped':
+      text = `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, to stay on the page that cites it (layout.pullFloatsToCitation)`;
       break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;

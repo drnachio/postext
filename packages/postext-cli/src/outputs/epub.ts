@@ -3,7 +3,7 @@
 // first chapter's front matter, as in the Sandbox.
 
 import { readFileSync } from 'node:fs';
-import { applySingleInkToSvg } from 'postext';
+import { applySingleInkToSvg, screenSvgColors } from 'postext';
 import { diagramInkHex, mimeForFile } from 'postext/bundle';
 import { renderToEpub, type EpubCover, type EpubFontFile, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
 import { epubMetadataOf } from '../../../postext-sandbox/src/epub/metadata';
@@ -85,8 +85,12 @@ export async function writeEpub(book: Book, layout: Layout, fonts: FontSet, opts
     resourceBytes: (fileId) => {
       const bytes = book.files.get(fileId);
       if (!bytes) return undefined;
-      if (svgOf.has(fileId) && inkHex) {
-        return { bytes: new TextEncoder().encode(applySingleInkToSvg(new TextDecoder().decode(bytes), inkHex)), mediaType: 'image/svg+xml' };
+      if (svgOf.has(fileId)) {
+        // A spot ink named in a paint is the print PDF's: here, the colour.
+        const text = new TextDecoder().decode(bytes);
+        const svg = screenSvgColors(text);
+        if (inkHex) return { bytes: new TextEncoder().encode(applySingleInkToSvg(svg, inkHex)), mediaType: 'image/svg+xml' };
+        if (svg !== text) return { bytes: new TextEncoder().encode(svg), mediaType: 'image/svg+xml' };
       }
       return { bytes, mediaType: mimeForFile(fileId) };
     },

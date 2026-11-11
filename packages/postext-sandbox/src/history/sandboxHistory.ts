@@ -59,12 +59,12 @@ type ConfigStep = {
 };
 type ResourceStep = { kind: 'resource'; resourceId: string; before: Resource; after: Resource; at: number; open: boolean };
 /** Steps of several chapters and resources taken back and put back as one
- *  (#1397: the changes of an edited Word export). */
+ *  (#1397: an edited Word export's changes; a replace-all over the book). */
 type GroupStep = { kind: 'group'; source: HistoryGroupSource; steps: (TextStep | ResourceStep)[]; at: number };
 type Step = TextStep | ConfigStep | ResourceStep | GroupStep;
 
 /** What made a group of steps, for the words that name it. */
-export type HistoryGroupSource = 'word';
+export type HistoryGroupSource = 'word' | 'find';
 
 /** A group being gathered: see {@link SandboxHistory.group}. */
 export interface HistoryGroup {

@@ -15,6 +15,7 @@ import { balanceKey } from '../../../columns/columnBalancing.js';
 import { columnCursorY, wrapInsetSteps, sameInsetsFrom, insetsBefore, settleColumnWraps } from '../../../floats/textWrap.js';
 import { raggedLooseLines } from '../../../text/raggedLines.js';
 import { headingLineSpanBand } from '../../../text/lineSpan.js';
+import { onGridAbove, regainsUnder } from '../../passHelpers.js';
 
 /** What createLineRoom takes from around the loop. */
 export interface LineRoomDeps {
@@ -111,6 +112,13 @@ export function createLineRoom(deps: LineRoomDeps) {
         // margin (`toc.parts.marginTop`, the level's `marginTop`) applies
         // like a heading's.
         lineTurn.spacingBefore = Math.max(lineTurn.spacingBefore, style.marginTopPx);
+      }
+      // `snapTopToGrid` (the block's style), or the heading above it set
+      // off the grid regains the grid here (`regainGrid`): the space above
+      // rounds up so the block opens on a grid line, its margin a minimum.
+      // The heading's keep-with-next counted this rounding.
+      if (blockTurn.partIndex === 0 && (blockTurn.snapsTop || (vdtType !== 'heading' && regainsUnder(curCol)))) {
+        lineTurn.spacingBefore = onGridAbove(curCol, lineTurn.spacingBefore, baselineGrid);
       }
       // Column balancing: extra grid lines above a non-heading balance
       // target — the first block after a list end. Heading targets are

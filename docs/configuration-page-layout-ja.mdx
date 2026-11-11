@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ページとレイアウト',
   description: 'ページサイズ、余白、ベースライングリッド、ノンブル、段組みと段間',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
-  readingTime: '32分',
+  lastUpdated: '2026-11-10',
+  readingTime: '33分',
   order: 5,
   parent: 'configuration',
   plainSummary: "このページでは、紙面そのものの設定を説明します。ページの大きさ、余白、本を綴じる側、文字の行をそろえるグリッドを選びます。ページ番号の数え方と書き方を決めます。1ページを何段に分けるか、段と段のあいだをどれだけ空けるか、文字を横に組むか縦に組むかを決めます。各ページの上と下に印刷するものは、別のページで説明します。",
@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>無効</td>
-      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。後述します。</td>
+      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。<code>pdfGeneration.baselineGrid: false</code>にするとPDFには描きません。後述します。</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ export const metadata = {
     </tr>
   </tbody>
 </table>
+
+ブロックがどこから始まるかは、そのスタイルが決めます。グリッド線から始められるスタイルにはどれも `snapTopToGrid` スイッチがあり、既定ではオフです：`headings`（とレベルや見出しスタイル）、`bodyText`、`paragraphStyles[]`、`calloutStyles[]`、リスト、`math`、`resourceTypes[]`。オンにすると、前のブロックがどこで終わっても、ブロックの上の間隔が次のグリッド線まで切り上げられます。段の先頭は常にグリッド上にあります。
 
 ```ts
 page: {
@@ -446,6 +448,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>章の（そして文書の）最後のページでは、テキストの最後の帯の下に置かれたページ幅の図と表が上に移動し、フロートの間隔1つ分を空けてその下に順に積み重なります。そこではあとに何も続かないためです。<code>false</code>にすると配置どおりの位置に残るため、<code>position: 'bottom'</code>のフロートは、ほかのページと同じく最後のページでもページの下端で終わります。たとえば、すべてのページで輪郭が同じ高さで終わるデータシートに使えます。サイド段のあるページでは移動しません。</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>非推奨です。最初に参照したページを本文4行以内の差で外れたフロートを、そのページに引き戻します（差は、そのページで最もよい置き場所での幅で測ります）。処理は2段階で、各段階は、フロートが引用ページに収まり、ページが増えず、ほかのフロートが後ろにずれず、それまでにそろえた段がそろったままで、引用ページの先頭に立つフロート（<code>floatsAtCitingPage</code>）も失われない場合にだけ採用します。まず、引用ページで参照より前にある段落を1行短く組む案を試します（語間を詰めるだけで、字間は調整しません）。詰めるのはフロートに足りない行数までで、フロートが戻ったページでだけ採用します。次に、それでもページを外れている<a href="/ja/docs/document-format-resources#セーフエリア">セーフエリア</a>つきの画像を、置き場所に必要な分だけセーフエリア内でトリミングし、トリミングごとに<code>floatCropped</code>警告を出します。段そろえなど後の処理でも、引き戻したフロートは引用ページに残ります。このオプションは規則による配置に逆らいます。規則ならフロートを次の置き場所へ送るところを、行分割が選んだより段落を詰めて組み、画像をトリミングしてまで引用ページを確保するからです。規則どおりにフロートを参照の近くに置くには、<code>floatsAtCitingPage</code>または<a href="/ja/docs/document-format-resources#配置"><code>placement.citingPage</code></a>（参照行のあるページの先頭にフロートを置き、参照より前の本文をその下に送ります）と、<code>placement.shrink: 'slot'</code>（縦横比を保ったまま画像を小さく組み、参照ページに残します）を使ってください。Sandbox では「レイアウト」の<em>図を引用ページに引き寄せる</em>。</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

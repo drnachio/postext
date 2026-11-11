@@ -39,13 +39,14 @@ interface Dimension {
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000'、'transparent' 等
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // 以CMYK定义的颜色的准确印刷色数值。
+  spot?: SpotColor;    // 专色的油墨。
   paletteId?: string;  // 它所跟随的colorPalette条目。
 }
 ```
 
-`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。
+`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。`'spot'`是专色，其油墨在`spot`中（见[专色](/zh/docs/configuration-pdf-output#专色)）。
 
 Postext面向出版级输出，所以正文的默认颜色带有`model: 'cmyk'`（`#000000`）。标题、粗体、斜体和列表的颜色默认链接到调色板中的**主色**（`#295AA3`，`model: 'hex'`）。页面背景和界面叠加层（基线网格、裁切线、调试标记）默认为`model: 'hex'`。如果需要不同的导出语义，可以在任意字段上覆盖`color.model`。
 
@@ -447,7 +448,7 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 `buildDocument`把它们以`doc.config.pdfGeneration`的形式放进VDT；`renderToPdf`对每项设置，从下列来源中第一个给出该设置的地方取值：
 
-1. 它自己的选项（`outlines`、`accessible`、`colorSpace`、`forms`）；
+1. 它自己的选项（`outlines`、`accessible`、`colorSpace`、`baselineGrid`、`forms`）；
 2. 它渲染的第一个文档的`pdfGeneration`（对于一本书，第一章的设置作用于整个文件）；
 3. 默认值：开启书签和标签，RGB颜色。
 
@@ -461,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // 把所有颜色转换为`colorSpace`。
   colorSpace?: PdfColorSpace;  // `forceColorSpace`为true时使用的目标色彩空间。
   accessible?: boolean;        // 带标签、面向PDF/UA的输出（结构树、替代文字、语言）。
+  baselineGrid?: boolean;      // 在PDF中也画出`page.baselineGrid`的网格。
   forms?: PdfFormsConfig;      // 表单域：货币、分隔符、字体。
 }
 ```
@@ -498,6 +500,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>生成面向PDF/UA-1的无障碍、带标签的PDF：按阅读顺序排列的逻辑结构树（不跳级的标题、段落、列表、块引用、标注框、带表头单元格的表、带替代文字和题注的图、公式、作为链接的可点击引用；`:::toc`的内容作为一个`TOC`，每行一个`TOCI`，其中行的编号为`Lbl`，标题和页码为包含链接的`Reference`），文档标题和语言（顶层的`locale`），XMP元数据中的PDF/UA标识；所有装饰性标记（页面背景、线条、基线网格、页眉页脚、裁切线、重复的表头、拆开的标注框中重复出现的标题和接续标记）都标为artifact，屏幕阅读器会跳过它们。没有`altText`的图先改用题注，再改用标签。浮动的图或表紧接在首次引用它的文字之后阅读，或紧接在其`::resource`行之前的文字之后；浮动的框紧接在其开始行之前的文字之后阅读，即使浮动体排在后面的页面上也是如此；越过浮动体继续排下去的列表或目录仍是一个元素；浮动的框或锚定在页面上的框（`placement: 'fixed'`）里的列表也是一个列表。只有在不需要额外结构的印刷母版中才关闭它。</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>在<code>page.baselineGrid</code>开启时，把基线网格也画进PDF。默认开启，与以往相同；设为<code>false</code>时网格只作为在屏幕上检查页面的参照，不进入PDF，Canvas和HTML查看器仍会显示它。在Sandbox中是PDF部分的<strong>在PDF中显示基线网格</strong>。</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // 总墨量，百分比。
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // 油墨表：重命名、别名、四色印刷。
 }
 
 interface CustomOutputProfile {

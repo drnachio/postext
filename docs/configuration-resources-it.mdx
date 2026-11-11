@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Come si definiscono i tipi di risorsa e la loro numerazione, gli stili delle tabelle e delle didascalie, i diagrammi stampati con un solo inchiostro e i video su carta',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '44 min',
+  readingTime: '45 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega le impostazioni di figure, tabelle, diagrammi e video. Postext li chiama risorse e numera ogni tipo per conto suo. Stabilisci l’aspetto delle tabelle: le linee, i colori di sfondo, i caratteri e il modo in cui si dividono tra le pagine. Stabilisci come si scrive la didascalia di una figura o di una tabella. Puoi anche stampare i diagrammi con un solo colore d’inchiostro e scegliere come appare un video sulla carta.",
@@ -144,6 +144,16 @@ Un tipo può omettere dei campi (da postext 1.38): li completa il tipo integrato
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opzionale)</td>
       <td>Sostituzione parziale dello <a href="#stile-delle-didascalie">stile delle didascalie</a> per le risorse di questo tipo. Solo le chiavi che imposti sostituiscono il <code>captionStyle</code> globale; tutto il resto viene ereditato (un <code>color</code> sostituito determina anche i colori dell’etichetta e della nota, a meno che questi non siano impostati esplicitamente). Uso tipico: tabelle con didascalia <em>sopra</em> su una barra colorata, mentre le figure tengono la didascalia sotto. I riferimenti alla tavolozza si risolvono come qualsiasi altro colore.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>true</code>. Se una figura o tabella di questo tipo collocata nel testo poggia sulla griglia di base: il flusso vi ritorna sotto la risorsa. <code>false</code> mantiene lo spazio esatto che la risorsa lascia. I flottanti in testa o al piede di una colonna non sono interessati.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facoltativo)</td>
+      <td>Predefinito <code>false</code>. Fa iniziare una figura o tabella di questo tipo collocata nel testo su una riga della griglia, comunque sia finito il blocco precedente. I flottanti in testa o al piede di una colonna, una figura scontornata dal testo e quella che apre una colonna non sono interessati. Nel Sandbox: <strong>Inizia su una riga della griglia</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -855,6 +865,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Tinte piatte dentro un SVG.** In un PDF di stampa un colore di un SVG vettoriale si stampa su una tinta piatta solo in due casi. Quando nomina l’inchiostro: un colore seguito da `icc-named-color(…, "PANTONE 185 C")`, o un elemento con `data-spot="PANTONE 185 C"` (e `data-spot-tint="40"`, in percentuale), si stampa sulla lastra di quell’inchiostro, con il sostituto della tavolozza quando la tavolozza ha una tinta piatta con quel nome, altrimenti con il CMYK proprio del colore. E quando il suo hex è esattamente quello di una tinta piatta della tavolozza: si stampa sull’inchiostro di quel colore, alla tinta di quel colore. Ogni altro colore resta in quadricromia, anche se sembra una tinta di un inchiostro su bianco, quindi i grigi di un disegno non passano mai su una lastra di tinta piatta. Ogni colore è risolto per conto suo, per cui un diagramma può mescolare più inchiostri e colori di quadricromia. `diagramStyle.singleInk` ha la precedenza: con un `inkColor` in tinta piatta, il diagramma ricolorato si stampa in tinte di quella lastra. Un inchiostro che un SVG nomina e che nessun colore della tavolozza definisce (né una voce della tabella degli inchiostri con `cmyk`) si stampa su una lastra propria, con il CMYK del colore dell’SVG come sostituto; tutti gli SVG che lo nominano condividono quella lastra, e il preflight avverte (`spotInkUndefined`). Molti programmi esportano un campione come un semplice colore RGB e ne perdono il nome: date alla tavolozza una tinta piatta con esattamente quell’`hex`, una per ogni tinta che il disegno usa, o marcate gli elementi con `data-spot`.
 
 ### Inchiostro unico sul canvas e in HTML
 

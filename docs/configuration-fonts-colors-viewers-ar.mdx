@@ -39,13 +39,14 @@ interface Dimension {
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // حبر اللون الخاص.
   paletteId?: string;  // مدخل colorPalette الذي يتبعه.
 }
 ```
 
-يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)).
+يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)). `'spot'` على لون خاص، حبره في `spot` (انظر [الألوان الخاصة](/ar/docs/configuration-pdf-output#الألوان-الخاصة)).
 
 لأن Postext يستهدف مخرجات بجودة النشر، يأتي لون نص المتن الافتراضي بـ`model: 'cmyk'` (`#000000`). أما ألوان العناوين والنص العريض والمائل والقوائم فقيمتها الافتراضية مرتبطة بلوحة الألوان: **اللون الرئيسي** (Main Color) (`#295AA3`، `model: 'hex'`). وخلفية الصفحة وطبقات الواجهة (شبكة خطوط الأساس، علامات القص، مؤشرات التصحيح) قيمتها الافتراضية `model: 'hex'`. غيّر `color.model` في أي حقل إن احتجت دلالة تصدير مختلفة.
 
@@ -447,7 +448,7 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ينقلها `buildDocument` في VDT، باسم `doc.config.pdfGeneration`، ويأخذ `renderToPdf` كل إعداد من أول موضع يعطيه:
 
-1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`، `forms`)؛
+1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`، `baselineGrid`، `forms`)؛
 2. إعدادات `pdfGeneration` في أول مستند يعرضه (في الكتاب، تنطبق إعدادات الفصل الأول على الملف كله)؛
 3. القيم الافتراضية: الإشارات المرجعية والوسوم مفعّلة، والألوان بنموذج RGB.
 
@@ -461,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // ارسم شبكة `page.baselineGrid` في PDF أيضًا.
   forms?: PdfFormsConfig;      // حقول النماذج: العملة والفواصل والخط.
 }
 ```
@@ -498,6 +500,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>أصدِر ملف PDF موسومًا وميسَّر الوصول موجّهًا إلى PDF/UA-1: شجرة بنية منطقية بترتيب القراءة (عناوين لا تتخطّى مستوى أبدًا، وفقرات، وقوائم، واقتباسات كتلية، وأطر، وجداول بخلايا رأس، وأشكال بنصها البديل وتعليقاتها، وصيغ رياضية، وإحالات قابلة للنقر بوصفها روابط، ومحتويات `:::toc` بوصفها `TOC` واحدًا فيه `TOCI` لكل صف: رقم الصف `Lbl`، وعنوانه وصفحته `Reference` فيه الرابط)، وعنوان المستند ولغته (`locale` في المستوى الأعلى)، وتعريف PDF/UA في بيانات XMP الوصفية، وكل علامة زخرفية (خلفية الصفحة، والخطوط الفاصلة، وشبكة خطوط الأساس، والترويسات والتذييلات، وعلامات القص، ورؤوس الجداول المكرّرة، والعنوان المكرّر وعلامة الاستمرار في الإطار المقسوم) موسومة بوصفها عنصرًا زخرفيًا (artifact) لتتخطّاها قارئات الشاشة. والشكل الذي لا يملك `altText` يرجع إلى تعليقه، ثم إلى تسميته. ويُقرأ الشكل أو الجدول العائم مباشرة بعد النص الذي يستشهد به أولًا، أو النص الذي يسبق سطر `::resource` الخاص به، ويُقرأ الإطار العائم بعد النص الذي يسبق سطر فتحه، حتى حين يوضع العنصر العائم في صفحة لاحقة؛ والقائمة أو المحتويات التي تستمر بعد عنصر عائم تبقى عنصرًا واحدًا، والقائمة داخل إطار عائم أو مثبّت في الصفحة (`placement: 'fixed'`) قائمةٌ واحدة. لا تعطّله إلا في النسخ الأصلية للطباعة حيث لا تُرغب البنية الإضافية.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يرسم شبكة خطوط الأساس في PDF ما دامت <code>page.baselineGrid</code> مفعّلة. مفعّل افتراضيًا كما كان؛ ومع <code>false</code> تبقى الشبكة دليلًا لفحص الصفحة على الشاشة خارج PDF، ويظل Canvas وعارض HTML يعرضانها. في Sandbox هو <strong>شبكة خطوط الأساس في PDF</strong> في قسم PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
 }
 
 interface CustomOutputProfile {

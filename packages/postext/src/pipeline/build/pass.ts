@@ -108,8 +108,9 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
+  const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
   /** A side column that does not run the page's whole content height: a
@@ -246,7 +247,8 @@ function placeDocumentPass(
     offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
-    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf
+    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf,
+    bodyCropDelta
   } = createFloatMeasure({
     cache, balanceExtraPx, bandCaps, resolved: setup.resolved, dpi, baselineGrid, doc, pageIndexOffset,
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
@@ -273,7 +275,8 @@ function placeDocumentPass(
     tableOverflow, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved, reservedOf,
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
-    uncappedBottoms, openerHeadFloats, state, late
+    uncappedBottoms, openerHeadFloats, state, late,
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
   });
 
   const {
@@ -451,7 +454,7 @@ function placeDocumentPass(
     placeComicSpread, placeComicStrip, looseStripBoxes, placeComposedPage, placeComicText
   });
   const { measureBlock } = createBlockMeasure({
-    state, balanceLooseness, balanceLooseBudget, balanceExtraPx, resolved: setup.resolved, trackingLadder,
+    state, balanceLooseness, balanceUntracked, balanceLooseBudget, balanceExtraPx, resolved: setup.resolved, trackingLadder,
     looseOutcome, looseOffGrid, looseGained, headingLevels, dpi, doc, pageWidthPx, pageHeightPx,
     contentBlocks, paragraphContainers, partPlan, sectionPlan, cursor, openerPages, floatGapPx,
     uprightOn, onNewPage, partMeasureCtx, sectionMeasureCtx, measuredAcrossPage, atColumnHead,
@@ -462,7 +465,8 @@ function placeDocumentPass(
     state, resolved: setup.resolved, dpi, baselineGrid, doc, pageWidthPx, pageHeightPx, bodyOffset, bodyStyle, cursor,
     floatGapPx, offsetResourceBlockToAbsolute, textWrapNotes, movedNotes, wrapExclusionWidth,
     wrapContourOf, onAtomicNewPage, stampBlockExtras, addBalanceExtra, enterBand,
-    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices
+    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices,
+    resourceTypeById
   });
   const { prepareLines } = createBlockLines({
     resolved: setup.resolved, headingLevels, freshPageFlowColumns, contentBlocks, gateCitedFloats, measuredAcrossPage
@@ -533,7 +537,7 @@ function placeDocumentPass(
     citingPageProposals, citingPageRefused
   } = createPassFinish({
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -542,5 +546,5 @@ function placeDocumentPass(
     setup
   });
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls };
 }

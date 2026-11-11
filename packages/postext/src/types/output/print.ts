@@ -226,6 +226,38 @@ export interface CustomOutputProfile {
   inkLimit?: number;
 }
 
+/** One ink of the job's ink table (`print.inks`): what the plate of a spot
+ *  ink is called in the PDF and how it prints, whatever the colours, SVGs
+ *  and imports call it. */
+export interface PrintInk {
+  /** The ink as a colour's `spot.name` (or an SVG) names it. Matched
+   *  ignoring case and runs of spaces. */
+  name: string;
+  /** Other names of the same ink (`Pantone 286C`, `Corporate blue`):
+   *  colours naming any of them print on this ink's plate. */
+  aliases?: string[];
+  /** The name the plate carries in the PDF, the one the printer sees.
+   *  Defaults to `name`. */
+  pdfName?: string;
+  /** `'spot'` (default) prints the ink on its own plate; `'process'`
+   *  prints every colour of it in CMYK, from its alternate at the tint. */
+  output?: 'spot' | 'process';
+  /** The ink's alternate at full strength, percent, over the one the
+   *  colours give. */
+  cmyk?: CmykPercent;
+  /** Whether the ink overprints, over what the colours say. */
+  overprint?: boolean;
+}
+
+export interface ResolvedPrintInk {
+  name: string;
+  aliases: string[];
+  pdfName: string;
+  output: 'spot' | 'process';
+  cmyk?: CmykPercent;
+  overprint?: boolean;
+}
+
 /** Print production: the PDF/X standard, the output profile CMYK is
  *  separated with, how black prints, and the preflight thresholds. Layout
  *  ignores it; postext-pdf and the preflight read it. */
@@ -250,6 +282,9 @@ export interface PrintConfig {
   inkLimit?: number;
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  /** The ink table: renames, merges and process conversions of the job's
+   *  spot inks. An ink it does not list prints as its colours define it. */
+  inks?: PrintInk[];
 }
 
 /** Print production with every default filled in. */
@@ -264,6 +299,7 @@ export interface ResolvedPrintConfig {
   inkLimit: number;
   black: ResolvedPrintBlackConfig;
   preflight: ResolvedPrintPreflightConfig;
+  inks: ResolvedPrintInk[];
 }
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
@@ -284,6 +320,11 @@ export interface PdfGenerationConfig {
    *  marks) flagged as an artifact so assistive technology skips it.
    *  Defaults to true. */
   accessible?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) in the
+   *  PDF, as the canvas and HTML do on screen. `false` keeps the grid a
+   *  screen guide for checking the page, out of a file meant for print.
+   *  Defaults to true. */
+  baselineGrid?: boolean;
   /** How form fields (chips with a `field`) write numbers and the face
    *  they show values in. Output only: the layout does not read it. The
    *  host's own `forms` option of `renderToPdf` and of the canvas
@@ -317,6 +358,7 @@ export interface ResolvedPdfGenerationConfig {
   forceColorSpace: boolean;
   colorSpace: PdfColorSpace;
   accessible: boolean;
+  baselineGrid: boolean;
   /** As set (its defaults depend on the document language). */
   forms?: PdfFormsConfig;
 }

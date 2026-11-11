@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Listas e matemática',
   description: 'Listas com marcadores e listas numeradas (marcadores, recuos e aninhamento), listas de tarefas, e o tamanho, a cor e o espaçamento das fórmulas matemáticas',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '19 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Mantém uma fórmula em destaque na coluna da linha que a introduz: a penalidade predisplay do TeX. Quando a fórmula não cabe abaixo da última linha do parágrafo anterior, essa linha vai para a coluna ou página seguinte junto com a fórmula; quando as linhas deixadas para trás seriam menos que <code>bodyText.widowMinLines</code> (menos que uma quando <code>bodyText.avoidWidows</code> está desligado), um parágrafo que começa nessa coluna passa inteiro adiante (com os títulos que fecham a coluna acima dele, conforme <code>headings.keepWithNext</code>). A linha levada fica sozinha no alto da coluna seguinte, independentemente do que a regra de órfãs peça. Com <code>false</code> só a fórmula passa adiante, e a linha que a introduz pode fechar a coluna acima ou ficar sobre uma figura que encabeça a seguinte.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Se uma fórmula destacada assenta na grade de base: o fluxo volta a ela sob a fórmula. <code>false</code> mantém as margens exatas. No Sandbox: <strong>Voltar à grade após as fórmulas</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Começa uma fórmula destacada numa linha da grade: o espaço acima é arredondado até a próxima, seja qual for o fim do bloco anterior. Desligado por padrão. No Sandbox: <strong>Começar as fórmulas numa linha da grade</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

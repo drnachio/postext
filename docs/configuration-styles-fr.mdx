@@ -195,6 +195,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td>Recaler le flux sur la grille de ligne de base sous le conteneur, l’espace en dessous étant un minimum. <code>false</code> garde l’espace exact : le texte qui suit le conteneur reste hors de la grille jusqu’au prochain bloc qui se recale (un titre, la fin d’une liste, une formule hors texte), pour un document qui ne suit pas la grille ou un groupe qui a son propre interlignage. À l’intérieur d’un encadré, qui n’a pas de grille, cela ne change rien.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer le premier paragraphe du conteneur sur une ligne de la grille, quelle que soit la fin du bloc précédent ; <code>marginTop</code> devient un minimum. Désactivé, le paragraphe commence là où le bloc précédent l’a laissé. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
+    </tr>
+    <tr>
       <td><code>containerSpacing</code></td>
       <td><code>'collapse' | 'add'</code></td>
       <td>non défini</td>
@@ -1361,7 +1367,7 @@ const config: PostextConfig = {
       <td>champs de niveau</td>
       <td>comme dans <code>headings.levels[]</code></td>
       <td>les valeurs du niveau</td>
-      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code> : chacun, une fois défini, remplace la valeur du niveau de titre pour les titres de ce style (<code>dropCap: false</code> retire la lettrine du niveau). <code>breakBefore</code> se fusionne champ par champ avec celui du niveau : un style qui ne fixe que <code>parity</code> garde le <code>enabled</code> du niveau, et un style qui ne fixe que <code>enabled: true</code> garde sa parité (jusqu’à postext 1.4, le champ manquant venait plutôt de la valeur par défaut sans saut). Un <code>figureStyle</code> fixé ici s’applique à la famille du niveau sur lequel le style est employé (voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres)).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>regainGrid</code>, <code>snapTopToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code> : chacun, une fois défini, remplace la valeur du niveau de titre pour les titres de ce style (<code>dropCap: false</code> retire la lettrine du niveau). <code>breakBefore</code> se fusionne champ par champ avec celui du niveau : un style qui ne fixe que <code>parity</code> garde le <code>enabled</code> du niveau, et un style qui ne fixe que <code>enabled: true</code> garde sa parité (jusqu’à postext 1.4, le champ manquant venait plutôt de la valeur par défaut sans saut). Un <code>figureStyle</code> fixé ici s’applique à la famille du niveau sur lequel le style est employé (voir [Styles de chiffres](/fr/docs/configuration-fonts-colors-viewers#styles-de-chiffres)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

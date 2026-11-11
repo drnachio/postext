@@ -99,6 +99,28 @@ The panel header is a **chapter switcher**: previous/next arrows, the chapter's 
 - **Export to Word**: downloads the chapter or the whole book as a `.docx`, semantic (the content alone, in plain Word styles) or formatted (the same editable text with the book's design); the corrections made in it come back through **Import a Word document**
 - **Export to InDesign (IDML)**: lays the whole book out as the PDF does and downloads it as `<book>.idml`, for finishing in InDesign (see [Export and import](/en/docs/sandbox-books-saving#export-and-import))
 
+#### Find and replace
+
+The **Find and replace** button in the Text panel header, also in the Canvas and PDF toolbars, opens a bar above the editor. It searches the Markdown source of the chapter on screen or of the whole book, marks included, so what it finds and replaces is what the editor shows.
+
+- **Options**: **Match case**, **Whole words only**, **Ignore accents** and **Regular expression**. With **Ignore accents**, *celula* finds *célula* and an Arabic word is found with or without its vowel marks. Ñ, ç, й and ё stay letters of their own, and kana keep their voicing marks (が is not か). Text whose accents were typed as separate marks is found as if they were joined to the letter. In Chinese, Japanese and Thai, which do not put spaces between words, **Whole words only** follows the browser's word segmentation.
+- **Chapter** or **Book** sets the scope. The matches are listed by chapter with their line number. A click on one selects it in the editor and opens its chapter, while the focus stays in the bar.
+- **Regular expressions** are JavaScript's, read with Unicode, `^` and `$` at line ends. In the replacement, `$1` to `$99` write a group, `$<name>` a named group, `$&` the whole match and `$$` a dollar sign; `\n`, `\t` and `\\` write a line break, a tab and a backslash. Everything else is written as typed: with `^Note (\d+)` and `[^$1]`, *Note 3* becomes `[^3]`. Without the option the replacement is plain text.
+- **Replace all** over more than one chapter asks first. The replacements are one step of the history: the **Undo** button that appears in the bar, Cmd/Ctrl+Z in its fields right after, or Cmd/Ctrl+Z anywhere in the Sandbox takes them all back.
+- The search starts a moment after you stop typing, and runs apart from the page, so a long book does not slow typing down. Past 5,000 matches, or when a search takes too long, it stops and says so, and **Replace all** stays off until the search is narrowed. A regular expression that backtracks without end, such as `(a+)+$` on a long line, is stopped and reported.
+- In **Design** mode the text is read only: the bar finds, its replace buttons are off, and a note offers **Edit the text**.
+- On a phone the bar sits at the top of the full-screen Text panel.
+
+The keys, in the editor and in the bar:
+
+- **Cmd/Ctrl+F**: find in the chapter (a selection on one line becomes the query); **Cmd/Ctrl+Shift+F**: find in the book; **Cmd/Ctrl+Alt+F**: find and replace.
+- **Enter** and **Shift+Enter** in the search field: next and previous match. From the editor, **Cmd/Ctrl+G** or **F3**, with Shift for the previous one.
+- **Enter** in the replace field: replace the current match and go to the next; **Cmd/Ctrl+Alt+Enter**: replace all.
+- **Cmd/Ctrl+Z** right after a replacement: undo it; **Shift+Cmd/Ctrl+Z**: redo it.
+- **Esc**: close the bar and go back to the text.
+
+While an input method is composing (Chinese, Japanese, Korean), Enter and Esc belong to it. Agents run the same search with `sandbox_search_text` and `sandbox_replace_text`.
+
 #### Books panel
 
 The first panel in the activity bar: the gallery of your books and the sample books, with the **New** menu, the status of the last operation and the banner of a sample book that has a new version. In code and storage a book is still called a *project*, and a sample book a *preset*.

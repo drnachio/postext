@@ -39,13 +39,14 @@ Los colores se guardan con una representación hexadecimal y un modelo de color 
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
+  spot?: SpotColor;    // La tinta de un color de tinta plana.
   paletteId?: string;  // La entrada de colorPalette que sigue.
 }
 ```
 
-El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](#colores-definidos-en-cmyk)).
+El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](#colores-definidos-en-cmyk)). `'spot'` es una tinta plana, con su tinta en `spot` (ver [Tintas planas](/es/docs/configuration-pdf-output#tintas-planas)).
 
 Como Postext busca una salida de calidad editorial, el color por defecto del texto base viene con `model: 'cmyk'` (`#000000`). Los colores de los encabezados, las negritas, las cursivas y las listas toman por defecto el **Color principal** vinculado a la paleta (`#295AA3`, `model: 'hex'`). El fondo de la página y las ayudas visuales (la rejilla base, las marcas de corte, los indicadores de depuración) usan `model: 'hex'` por defecto. Cambia el `color.model` de cualquier campo si necesitas que se exporte de otra forma.
 
@@ -447,7 +448,7 @@ La propiedad `pdfGeneration` controla cómo genera el documento final el backend
 
 `buildDocument` los incluye en el VDT, como `doc.config.pdfGeneration`, y `renderToPdf` toma cada ajuste del primer sitio en el que lo encuentra:
 
-1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer documento que recibe (en un libro, los ajustes del primer capítulo valen para todo el archivo);
 3. los valores por defecto: marcadores y etiquetado activados, color RGB.
 
@@ -461,6 +462,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
   accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
+  baselineGrid?: boolean;      // Dibujar también en el PDF la rejilla base de `page.baselineGrid`.
   forms?: PdfFormsConfig;      // Campos de formulario: moneda, separadores, letra.
 }
 ```
@@ -498,6 +500,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (encabezados que nunca se saltan un nivel, párrafos, listas, citas, recuadros, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces y el índice de un `:::toc` como un solo `TOC` con un `TOCI` por fila: el número de la fila como `Lbl`, y su título y su página como un `Reference` que contiene el enlace), el título y el idioma del documento (el `locale` de primer nivel), la identificación PDF/UA en los metadatos XMP, y todas las marcas decorativas (fondo de página, filetes, rejilla base, titulillos y pies de página, marcas de corte, cabeceras de tabla repetidas, el título repetido y el indicador de continuación de un recuadro partido) marcadas como artefactos para que los lectores de pantalla las omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Una figura o una tabla flotante se lee justo después del texto que la cita por primera vez, o del texto anterior a su línea `::resource`, y un recuadro flotante, después del texto anterior a su línea de apertura, aunque el flotante quede en una página posterior; una lista o un índice que continúan después de un flotante siguen siendo un solo elemento, y una lista dentro de un recuadro flotante o fijo (`placement: 'fixed'`) es una sola lista. Desactívalo solo en los originales de imprenta en los que esa estructura adicional sobre.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuja en el PDF la rejilla base mientras <code>page.baselineGrid</code> está activada. Activado por defecto, como hasta ahora; con <code>false</code> la rejilla queda como guía para comprobar la página en pantalla, fuera del PDF, y el lienzo y el visor HTML la siguen mostrando. En el Sandbox es <strong>Rejilla base en el PDF</strong>, en la sección PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +561,7 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total de tinta, en porcentaje.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // La tabla de tintas: nombres, alias, cuatricromía.
 }
 
 interface CustomOutputProfile {

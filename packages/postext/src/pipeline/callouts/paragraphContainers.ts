@@ -36,6 +36,9 @@ export interface ParagraphContainer {
   /** The style's `snapToGrid`: whether the flow snaps back onto the
    *  baseline grid under the container's last paragraph (EF-184). */
   snapToGrid: boolean;
+  /** The style's `snapTopToGrid`: the container's first paragraph opens on
+   *  a grid line. Absent when off. */
+  snapTopToGrid?: true;
   /** The style's `containerSpacing` (#715): the rule the space under this
    *  container follows. Absent: `bodyText.paragraphContainerSpacing`. */
   spacing?: ParagraphContainerSpacing;
@@ -102,6 +105,7 @@ export function planParagraphContainers(
           marginTopPx: 0,
           marginBottomPx: 0,
           snapToGrid: outer?.snapToGrid ?? true,
+          ...(outer?.snapTopToGrid ? { snapTopToGrid: true as const } : {}),
           ...(outer?.spacing !== undefined ? { spacing: outer.spacing } : {}),
           ...(outer ? { layout, attrsOnly: true as const } : { overBody: layout }),
         };
@@ -154,6 +158,7 @@ function styledBase(styleId: string, resolved: ResolvedConfig): Omit<ParagraphCo
     marginTopPx: dimensionToPx(cfg.marginTop, dpi, style.fontSizePx),
     marginBottomPx,
     snapToGrid: cfg.snapToGrid,
+    ...(cfg.snapTopToGrid ? { snapTopToGrid: true as const } : {}),
     ...(cfg.containerSpacing !== undefined ? { spacing: cfg.containerSpacing } : {}),
   };
 }

@@ -440,6 +440,9 @@ export type WarningPayload =
   /** A resource placed `position: 'here'` that the text cites with `:ref`
    *  and never embeds with `::resource` (#1365): it is on no page. */
   | { kind: 'hereNotEmbedded'; resourceId: string }
+  /** A resource placed after the paragraph that cites it (`position:
+   *  'paragraph'`) that only notes cite (#1492): it is on no page. */
+  | { kind: 'paragraphCitedInNote'; resourceId: string }
   /** A short list of `items` items cut between two columns or pages
    *  (`bodyText.shortListSplit`, #749), its first item on book page
    *  `page`. */
@@ -471,6 +474,10 @@ export type WarningPayload =
    *  (`placement.shrink`, #626), at `scale` of its width; `overflowMm`:
    *  at its smallest scale it still runs that far past the text block. */
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowMm?: number }
+  /** A floated picture cropped within its safe area, by `share` of its
+   *  height, to stay on the page that cites it
+   *  (`layout.pullFloatsToCitation`, #1492). */
+  | { kind: 'floatCropped'; resourceId: string; share: number }
   /** A bitmap with a print size its column holds at under half of it, on
    *  a page whose text block is wider (#901): `scale` of its print width;
    *  the print, column and text block widths in mm. */

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Seite und Layout',
   description: 'Seitenformat, Ränder und Grundlinienraster, die Seitennummerierung sowie die Spalten und ihre Abstände',
   lang: 'de',
-  lastUpdated: '2026-10-19',
-  readingTime: '32 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '33 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für das Blatt selbst. Sie wählen das Seitenformat, die Ränder, die Seite, auf der das Buch gebunden wird, und das Raster, auf dem die Textzeilen stehen. Sie legen fest, wie die Seiten gezählt und wie ihre Nummern geschrieben werden. Sie bestimmen, wie viele Spalten eine Seite hat und wie viel Abstand zwischen ihnen liegt, und ob der Text quer über die Seite oder von oben nach unten läuft. Die Kopf- und Fußzeilen haben eine eigene Seite.",
@@ -75,7 +75,7 @@ Die Eigenschaft `page` steuert die physischen Maße und das Erscheinungsbild der
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>deaktiviert</td>
-      <td>Zeichnet das Grundlinienraster über die Seiten, um den vertikalen Rhythmus zu prüfen. Das Layout rastet im Raster ein, ob es gezeichnet wird oder nicht. Siehe unten.</td>
+      <td>Zeichnet das Grundlinienraster über die Seiten, um den vertikalen Rhythmus zu prüfen. Das Layout rastet im Raster ein, ob es gezeichnet wird oder nicht. <code>pdfGeneration.baselineGrid: false</code> lässt es aus dem PDF. Siehe unten.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ Das Grundlinienraster ist der Rhythmus des Fließtexts: Linien im Abstand einer 
     </tr>
   </tbody>
 </table>
+
+Wo ein Block beginnt, entscheidet sein Stil. Jeder Stil, der auf einer Rasterlinie beginnen kann, hat einen Schalter `snapTopToGrid`, standardmäßig aus: `headings` (und eine Ebene oder ein Überschriftenstil), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, die Listen, `math` und `resourceTypes[]`. Eingeschaltet wird der Abstand über dem Block bis zur nächsten Rasterlinie aufgerundet, wie auch immer der Block davor endete. Der Kopf einer Spalte liegt immer im Raster.
 
 ```ts
 page: {
@@ -446,6 +448,12 @@ Die Eigenschaft `layout` steuert, wie die Spalten im Satzspiegel angeordnet werd
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Auf der Schlussseite eines Kapitels (und des Dokuments) rücken die unter dem letzten Textband gesetzten Abbildungen und Tabellen über die ganze Seitenbreite nach oben, bis sie einen Gleitobjektabstand darunter stehen, gestapelt in ihrer Reihenfolge: Dort folgt ihnen nichts mehr. <code>false</code> lässt sie, wo ihre Platzierung sie hingesetzt hat, sodass ein Gleitobjekt mit <code>position: 'bottom'</code> auf der Schlussseite wie auf jeder anderen Seite am Seitenfuß endet – etwa in einem Datenblatt, dessen Umriss auf jeder Seite auf derselben Höhe endet. Seiten mit einer Seitenspalte verschieben sie nie.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Nicht empfohlen. Holt ein Gleitobjekt, das die Seite seines ersten Verweises um höchstens vier Textzeilen verfehlt hat (gemessen an seiner Breite im besten Platz dieser Seite), auf diese Seite zurück. Das geschieht in zwei Schritten, und jeder wird nur behalten, wenn das Gleitobjekt dann auf der Seite seines Verweises landet, ohne zusätzliche Seite, ohne ein anderes Gleitobjekt zu verschieben, ohne einen schon erreichten Spaltenausgleich aufzuheben und ohne ein Gleitobjekt am Kopf der Seite seines Verweises (<code>floatsAtCitingPage</code>) zu verlieren: Zuerst wird den Absätzen der Verweisseite über dem Verweis eine Zeile weniger angeboten (engerer Wortabstand, nie Sperrung), nur so viele Zeilen, wie dem Gleitobjekt fehlen, und die Änderung bleibt nur auf den Seiten, deren Gleitobjekt zurückgekommen ist; danach wird ein Bild mit <a href="/de/docs/document-format-resources#sicherheitsbereich">Sicherheitsbereich</a>, das noch nicht auf seiner Seite steht, innerhalb dieses Bereichs beschnitten, nicht mehr als der Platz verlangt, und jeder Beschnitt wird als Warnung <code>floatCropped</code> gemeldet. Spätere Durchgänge wie der Spaltenausgleich lassen die zurückgeholten Gleitobjekte auf ihrer Seite. Die Option arbeitet gegen die regelbasierte Platzierung: Wo die Regeln das Gleitobjekt auf den nächsten Platz schicken, erzwingt sie die Verweisseite, setzt Absätze enger, als der Zeilenumbruch sie gewählt hat, und beschneidet Bilder. Um Gleitobjekte nach den Regeln nahe am Verweis zu halten, nutzen Sie <code>floatsAtCitingPage</code> oder <a href="/de/docs/document-format-resources#platzierung"><code>placement.citingPage</code></a> (das Gleitobjekt steht am Kopf der Seite, auf der die verweisende Zeile landet, und der Text über dem Verweis rückt darunter) und <code>placement.shrink: 'slot'</code> (das Bild wird unter Wahrung seiner Proportionen kleiner gesetzt, damit es auf der Seite seines Verweises bleibt). In der Sandbox <em>Abbildungen auf die Seite ihres Verweises holen</em> unter Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

@@ -40,5 +40,8 @@ export {
   type OutputProfileInfo,
 } from './catalogue.js';
 export { srgbProfileBytes } from './srgbProfile.js';
-export { authoredCmykColors } from './authored.js';
+export { authoredCmykColors, authoredSpotColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
+export { inkEntry, inkKey, inkNameProblem, printableInkName, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
+// Spot inks an SVG names (`icc-named-color`, `data-spot`).
+export { screenSvgColors, svgSpotInks, splitIccPaint, inkTintPercent, type SvgSpotInk, type IccPaint } from '../svg/spotPaints.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';
