@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP: an agent at work in the Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'What an AI agent in the browser can do with the Sandbox through its 53 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
+  description: 'What an AI agent in the browser can do with the Sandbox through its 55 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '12 min',
   order: 50,
   plainSummary: "This page is for people who want an AI helper to work on a book in the Sandbox for them. While the Sandbox is open, it gives the helper a set of tools: to look at any page, change the design, edit the text, add pictures and tables, find problems and save files. You ask in your own words, for example \"make the text a little larger and check the book still fits in 40 pages\", and the helper uses the tools and shows you the pages. Everything stays in your browser. The page explains how to connect a helper, what it can do and how each tool is called.",
@@ -23,7 +23,7 @@ picture of page 12, sets `bodyText.fontSize` to 10.5 pt, sees that the chapter
 went from 18 to 19 pages, and puts it back. It does what you do by eye, and
 it does it with your book, in your browser.
 
-There are 53 tools whose names start with `sandbox_`, registered while the
+There are 55 tools whose names start with `sandbox_`, registered while the
 Sandbox is on screen, and 8 tools of the site, `site_*`, on every page of
 postext.dev. This page sorts them by what you would ask an agent to do, and
 gives the call for each one.
@@ -39,7 +39,7 @@ finds them there. Nothing has to be installed or set up on the Postext side.
 WebMCP is still a draft. Chrome offers it as an origin trial, and behind the
 flag `chrome://flags/#enable-webmcp-testing`. The tools follow the page: on
 the home page or in the docs the agent has the `site_*` tools; once the
-Sandbox is on screen, the 53 `sandbox_*` tools appear as well.
+Sandbox is on screen, the 55 `sandbox_*` tools appear as well.
 
 ### In any other browser: `window.postextWebMcp`
 
@@ -381,6 +381,20 @@ for `sandbox_undo_text`, which takes it back (`redo: true` puts it back).
 `sandbox_write_text` replaces a whole chapter, from `markdown` or from a `.md`
 file.
 
+For a change that runs through a chapter or the whole book, `sandbox_replace_text`
+does what Replace all does in the Text panel's find bar, with the same options
+(`matchCase`, `wholeWord`, `ignoreAccents`, `regex`). With `dryRun` it lists
+each replacement, before and after, and changes nothing. In regex mode the
+replacement reads `$1`, `$<name>`, `$&`, `$$`, `\n`, `\t` and `\\`, and
+writes everything else as given. Applied, the replacements are one step of the
+history, which `sandbox_undo` takes back. `sandbox_search_text` takes the same
+options and finds what the bar finds.
+
+```jsonc
+// sandbox_replace_text: decimal points to commas in the whole book, previewed
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 To show you a place in the text, `sandbox_select_text` opens the Text
 panel with that passage selected (by `text`, `line` or `offset`), as a click on
 a finding of the Checks panel does.
@@ -441,6 +455,15 @@ a caption, a table's cells, the placement, a picture's safe area. `newId`
 renames a resource and, by default, every reference to it in the book.
 `sandbox_list_resources` lists them, and with an `id` gives one in full (a
 table's cells with their formatting, an SVG's source).
+
+A picture's crop goes in `marks.crop` (`{ x, y, width, height }`, fractions of
+the whole picture, as the safe area; `null` shows the whole picture again): it
+works on a bitmap, an SVG and a video's poster, and the answer notes a safe area
+that reaches outside the crop. `placement.pin` (`{ page, column?, slot }`, `page`
+from 0 to 3) sets a float by hand and `null` gives it back to automatic
+placement; the tool's description says why pins are not recommended and names
+`position`, `citingPage`, `keepTogether` and `shrink` instead (see
+[Document format › Pins are not recommended](/en/docs/document-format-resources#pins-are-not-recommended)).
 
 A picture's `marks` also carry its anchors. For a map or a diagram they are the points its `::label` lines stand at: an `id`, `x` and `y` (fractions of the whole picture) and the label fields that a label placed there takes (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). The answer notes a label style the design lacks, and new marks on a resource are a step of the history (`sandbox_undo` answers `kind: "resource"`). On an SVG, `marks.svgSymbols` (`idPrefix`, `className`) adds an avoid zone over each element of the drawing it names, on top of the zones the call gives or the picture already has (since postext 1.43).
 
@@ -680,6 +703,7 @@ each one come with `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **The text**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **The design**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

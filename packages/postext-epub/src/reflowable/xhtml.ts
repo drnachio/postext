@@ -30,6 +30,7 @@ const CODE_BOX_STYLE = '__postext-code';
  *  text (`postext` `FLOW_COLUMNS_STYLE_ID`, #634). */
 const FLOW_COLUMNS_STYLES: ReadonlySet<string> = new Set(['__postext-flow-columns', '__postext-flow-columns-page']);
 import type { BookModel, Loc } from './walk.js';
+import { cellImageXhtml, croppedImg, croppedVideo, scoreSystemSvg } from './figures.js';
 
 /** What a content document needs from the rest of the book. */
 export interface SerializeContext {
@@ -561,7 +562,7 @@ class Writer {
    *  YouTube or Vimeo one, or an HLS stream, as its poster, linked to the
    *  video unless `videoStyle.linkPoster` is off (an EPUB may not embed a
    *  web page's player: EPUBCheck RSC-006, nor play an HLS playlist). */
-  private videoBody(video: VDTResourceVideo, posterSrc: string | undefined, alt: string): string {
+  private videoBody(video: VDTResourceVideo, posterSrc: string | undefined, alt: string, crop?: Parameters<typeof croppedImg>[1]): string {
     const label = alt || 'Video';
     if (video.source === 'file') {
       const own = video.fileId ? this.ctx.videoHref?.(video.fileId) : undefined;
@@ -583,11 +584,12 @@ class Writer {
         ].filter(Boolean).join('');
         const range = mediaFragment(video);
         const fallback = video.link ? `<a href="${xmlAttr(video.link)}">${xmlText(label)}</a>` : xmlText(label);
-        return `<video src="${xmlAttr(src + range)}"${attrs} aria-label="${xmlAttr(label)}">${fallback}</video>`;
+        // A poster cropped by the author (`Resource.crop`) frames the film too.
+        return croppedVideo(`src="${xmlAttr(src + range)}"${attrs} aria-label="${xmlAttr(label)}"`, fallback, crop);
       }
     }
     const picture = posterSrc
-      ? `<img src="${xmlAttr(posterSrc)}" alt="${xmlAttr(label)}"/>`
+      ? croppedImg(`src="${xmlAttr(posterSrc)}" alt="${xmlAttr(label)}"`, crop)
       : `<span class="pt-missing" role="img" aria-label="${xmlAttr(label)}">${xmlText(label)}</span>`;
     return video.linkPoster && video.link ? `<a class="pt-video-link" href="${xmlAttr(video.link)}">${picture}</a>` : picture;
   }
@@ -633,13 +635,13 @@ class Writer {
     // The words the print draws on the picture are drawn on it here, over
     // the image in a box that is as wide as the image (#955).
     const picture = (src: string): string => {
-      const img = `<img src="${xmlAttr(src)}" alt="${xmlAttr(node.alt)}"/>`;
+      const img = croppedImg(`src="${xmlAttr(src)}" alt="${xmlAttr(node.alt)}"`, node.crop);
       return node.labelsSvg ? `<span class="pt-labelled">${img}${node.labelsSvg}</span>` : img;
     };
     const body = (node.score
       ? `<div class="pt-score" role="img" aria-label="${xmlAttr(node.alt)}" style="color:${node.score.color}">${node.score.systems.map(scoreSystemSvg).join('')}</div>`
       : node.video
-      ? this.videoBody(node.video, href ? relativeHref(this.file.href, href) : undefined, node.alt)
+      ? this.videoBody(node.video, href ? relativeHref(this.file.href, href) : undefined, node.alt, node.crop)
       : href
         ? picture(relativeHref(this.file.href, href))
         : `<div class="pt-missing" role="img" aria-label="${xmlAttr(node.alt || '?')}">${xmlText(node.alt)}</div>`) + labels;
@@ -680,10 +682,7 @@ class Writer {
     let content = '';
     if (cell.image) {
       const href = this.ctx.imageHref(cell.image.fileId);
-      const width = cell.image.width !== undefined && cell.image.width < 1 ? ` style="width:${Math.round(cell.image.width * 100)}%"` : '';
-      content += href
-        ? `<img src="${xmlAttr(relativeHref(this.file.href, href))}" alt="${xmlAttr(cell.image.alt)}"${width}/>`
-        : `<span class="pt-missing" role="img" aria-label="${xmlAttr(cell.image.alt || '?')}"></span>`;
+      content += cellImageXhtml(href ? relativeHref(this.file.href, href) : undefined, cell.image);
       if (cell.inl.length > 0) content += '<br/>';
     }
     content += this.inline(cell.inl);
@@ -798,11 +797,4 @@ ${exercises}</body>
 /** A length in ems for a style attribute: at most three decimals. */
 function round2(v: number): string {
   return String(Math.round(v * 1000) / 1000);
-}
-
-/** A score system's SVG as the column's width (#1172): its own size goes,
- *  its view box keeps the proportions; hidden from assistive technology,
- *  the score's box being named. */
-function scoreSystemSvg(svg: string): string {
-  return svg.replace(/<svg\b([^>]*?) width="[^"]*" height="[^"]*"/, '<svg$1 width="100%" aria-hidden="true" class="pt-score-system"');
 }

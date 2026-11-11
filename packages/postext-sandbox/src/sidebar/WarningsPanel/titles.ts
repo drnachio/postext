@@ -191,6 +191,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsAlphaPdfOverflowTitle;
     case 'calloutOverflow':
       return labels.warningsCalloutOverflowTitle;
+    case 'floatPinMissed':
+      return labels.warningsFloatPinMissedTitle;
     case 'headingDesignCut':
       return labels.warningsHeadingDesignCutTitle;
     case 'headingClaimsColumn':
@@ -278,7 +280,7 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
     case 'paragraphCitedInNote':
       return labels.warningsParagraphCitedInNoteTitle;
     case 'floatCropped':
-      return labels.warningsFloatCroppedTitle;
+      return payload.reason === 'row' ? labels.warningsFloatRowCroppedTitle : labels.warningsFloatCroppedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
     case 'stack':

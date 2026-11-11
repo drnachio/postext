@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP: un agente al lavoro nella Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Che cosa può fare con la Sandbox un agente di IA nel browser tramite i suoi 53 strumenti WebMCP (guardare le pagine, cambiare qualunque impostazione, modificare il testo, aggiungere immagini, tabelle e font, eseguire le verifiche, esportare) e come si invoca ciascuno, con argomenti e risposte reali',
+  description: 'Che cosa può fare con la Sandbox un agente di IA nel browser tramite i suoi 55 strumenti WebMCP (guardare le pagine, cambiare qualunque impostazione, modificare il testo, aggiungere immagini, tabelle e font, eseguire le verifiche, esportare) e come si invoca ciascuno, con argomenti e risposte reali',
   lang: 'it',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '12 min',
   order: 50,
   plainSummary: "Questa pagina è per chi vuole che un assistente di intelligenza artificiale lavori al posto suo su un libro nella Sandbox. Mentre la Sandbox è aperta, dà all’assistente una serie di strumenti: per guardare qualunque pagina, cambiare la grafica, modificare il testo, aggiungere immagini e tabelle, trovare problemi e salvare file. Chiedi con parole tue, per esempio «ingrandisci un po’ il testo e controlla che il libro stia ancora in 40 pagine», e l’assistente usa gli strumenti e ti mostra le pagine. Tutto resta nel tuo browser. La pagina spiega come collegare un assistente, che cosa può fare e come si usa ogni strumento.",
@@ -23,7 +23,7 @@ della pagina 12, imposta `bodyText.fontSize` a 10,5 pt, vede che il capitolo
 è passato da 18 a 19 pagine e lo rimette com’era. Fa quello che tu fai a occhio, e
 lo fa con il tuo libro, nel tuo browser.
 
-Ci sono 53 strumenti il cui nome comincia con `sandbox_`, registrati mentre la
+Ci sono 55 strumenti il cui nome comincia con `sandbox_`, registrati mentre la
 Sandbox è sullo schermo, e 8 strumenti del sito, `site_*`, su ogni pagina di
 postext.dev. Questa pagina li raggruppa in base a ciò che chiederesti a un agente, e
 per ciascuno riporta la chiamata.
@@ -39,7 +39,7 @@ li trova lì. Dal lato di Postext non c’è nulla da installare o configurare.
 WebMCP è ancora una bozza. Chrome lo offre come origin trial e tramite il
 flag `chrome://flags/#enable-webmcp-testing`. Gli strumenti seguono la pagina: nella
 home page o nella documentazione l’agente ha gli strumenti `site_*`; quando la
-Sandbox è sullo schermo, compaiono anche i 53 strumenti `sandbox_*`.
+Sandbox è sullo schermo, compaiono anche i 55 strumenti `sandbox_*`.
 
 ### In qualunque altro browser: `window.postextWebMcp`
 
@@ -381,6 +381,21 @@ rifiutato con il consiglio di rileggere il capitolo. L’intera chiamata è un s
 per `sandbox_undo_text`, che la annulla (`redo: true` la ripristina).
 `sandbox_write_text` sostituisce un capitolo intero, da `markdown` o da un file `.md`.
 
+Per una modifica che attraversa un capitolo o l’intero libro,
+`sandbox_replace_text` fa quello che fa Sostituisci tutto nella barra di ricerca
+del pannello Testo, con le stesse opzioni (`matchCase`, `wholeWord`,
+`ignoreAccents`, `regex`). Con `dryRun` elenca ogni sostituzione, prima e dopo,
+e non cambia nulla. In modalità espressione regolare la sostituzione interpreta
+`$1`, `$<name>`, `$&`, `$$`, `\n`, `\t` e `\\`, e scrive tutto il resto così
+come lo riceve. Una volta applicate, le sostituzioni sono un solo passo della
+cronologia, che `sandbox_undo` annulla. `sandbox_search_text` accetta le stesse
+opzioni e trova ciò che trova la barra.
+
+```jsonc
+// sandbox_replace_text: punti decimali in virgole in tutto il libro, in anteprima
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Per mostrarti un punto del testo, `sandbox_select_text` apre il pannello Testo
 con quel passo selezionato (per `text`, `line` o `offset`), come fa un clic su
 un risultato del pannello Verifiche.
@@ -441,6 +456,15 @@ una didascalia, le celle di una tabella, la collocazione, la zona sicura di un�
 rinomina una risorsa e, per impostazione predefinita, ogni riferimento a essa nel libro.
 `sandbox_list_resources` le elenca e, con un `id`, ne dà una per intero (le celle di una
 tabella con la loro formattazione, il sorgente di un SVG).
+
+Il ritaglio di un'immagine va in `marks.crop` (`{ x, y, width, height }`, frazioni
+dell'immagine intera, come la zona sicura; `null` mostra di nuovo l'immagine
+intera): vale per una bitmap, un SVG e il poster di un video, e la risposta
+segnala una zona sicura che esce dal ritaglio. `placement.pin` (`{ page, column?, slot }`,
+`page` da 0 a 3) colloca a mano un flottante e `null` lo riporta alla collocazione
+automatica; la descrizione dello strumento spiega perché i pin sono sconsigliati e
+propone al loro posto `position`, `citingPage`, `keepTogether` e `shrink` (vedi
+[Formato del documento › Collocare a mano i flottanti è sconsigliato](/it/docs/document-format-resources#collocare-a-mano-i-flottanti-è-sconsigliato)).
 
 Le `marks` di un’immagine contengono anche le ancore. In una mappa o in uno schema sono i punti in cui si collocano le righe `::label`: un `id`, `x` e `y` (frazioni dell’immagine intera) e i campi che assume un’etichetta posta lì (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). La risposta segnala uno stile di etichetta che manca nella grafica, e i nuovi segni di una risorsa sono un passo della cronologia (`sandbox_undo` risponde `kind: "resource"`). Su un SVG, `marks.svgSymbols` (`idPrefix`, `className`) aggiunge una zona da evitare sopra ogni elemento del disegno indicato, oltre alle zone fornite dalla chiamata o già presenti nell’immagine (da postext 1.43).
 
@@ -682,6 +706,7 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **Il testo**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **La grafica**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

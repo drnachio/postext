@@ -14,11 +14,16 @@
  * whole picture covers on the page (`box`): renderers clip to the cell and
  * draw the picture at `box`, as they draw a cropped figure
  * (`uncroppedPictureBox`). A mirrored picture is flipped inside `box`.
+ *
+ * A picture with a manual crop (`Resource.crop`, #1494) is the crop: the
+ * window is chosen inside it as if it were the whole picture (its safe area
+ * and focus read inside the crop), then given back in fractions of the
+ * whole picture, so nothing outside the crop ever shows.
  */
 
 import type { ResourceAnchor, ResourceSafeArea } from '../types.js';
 import type { BoundingBox, VDTComicArt, VDTPoint } from '../vdt.js';
-import { normalizeSafeArea } from '../pipeline/resources/safeArea.js';
+import { composeSource, normalizeSafeArea, uncroppedPictureBox, withinCrop } from '../pipeline/resources/safeArea.js';
 
 export interface ComicCropInput {
   /** The picture's intrinsic size (any unit; only the ratio counts). */
@@ -34,6 +39,9 @@ export interface ComicCropInput {
   /** The picture is drawn flipped: the safe area and focus are read
    *  flipped. */
   mirrored?: boolean;
+  /** The resource's manual crop (`Resource.crop`, fractions of the picture
+   *  as stored): only this part of the picture is ever shown. */
+  crop?: ResourceSafeArea;
 }
 
 export interface ComicCrop {
@@ -86,6 +94,8 @@ function flipArea(area: ResourceSafeArea | undefined): ResourceSafeArea | undefi
 /** Which part of a picture shows in a cell, and where the whole picture
  *  goes. */
 export function comicArtCrop(input: ComicCropInput): ComicCrop {
+  const crop = normalizeSafeArea(input.crop);
+  if (crop) return croppedArtCrop(input, crop);
   const { width: iw, height: ih, cell } = input;
   const cw = Math.max(1e-6, cell.width);
   const ch = Math.max(1e-6, cell.height);
@@ -136,6 +146,29 @@ export function comicArtCrop(input: ComicCropInput): ComicCrop {
   if (input.mirrored) source = { ...source, x: 1 - source.x - source.width };
   const letterbox = ww > 1 + 1e-6 || wh > 1 + 1e-6;
   return { source, box, letterbox, fallback };
+}
+
+/** {@link comicArtCrop} for a picture with a manual crop: the window chosen
+ *  in the cropped picture, given back in the whole picture's terms. */
+function croppedArtCrop(input: ComicCropInput, crop: ResourceSafeArea): ComicCrop {
+  const safeArea = withinCrop(normalizeSafeArea(input.safeArea), crop);
+  const focus = input.focus
+    ? { x: (input.focus.x - crop.x) / crop.width, y: (input.focus.y - crop.y) / crop.height }
+    : undefined;
+  const inner = comicArtCrop({
+    width: input.width * crop.width,
+    height: input.height * crop.height,
+    cell: input.cell,
+    fit: input.fit,
+    ...(safeArea ? { safeArea } : {}),
+    ...(focus && focus.x >= 0 && focus.x <= 1 && focus.y >= 0 && focus.y <= 1 ? { focus } : {}),
+    ...(input.mirrored ? { mirrored: true } : {}),
+  });
+  // `inner.box` is where the cropped picture is drawn (flipped when
+  // mirrored, so the crop sits flipped in the whole picture's box).
+  const drawnCrop = input.mirrored ? { ...crop, x: 1 - crop.x - crop.width } : crop;
+  const box = uncroppedPictureBox(inner.box.x, inner.box.y, inner.box.width, inner.box.height, drawnCrop);
+  return { ...inner, source: composeSource(crop, inner.source)!, box };
 }
 
 /** Where a point of a panel's picture (`u`, `v`: fractions of the picture

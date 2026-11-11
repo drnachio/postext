@@ -449,6 +449,18 @@ La proprietà `layout` controlla come sono disposte le colonne all’interno del
       <td>Nella pagina di chiusura di un capitolo (e del documento), le figure e le tabelle a tutta larghezza collocate sotto l’ultima fascia di testo salgono fino a una distanza di un intervallo da elemento flottante sotto di essa, impilate nel loro ordine: lì nulla le segue. <code>false</code> le lascia dove le ha messe la loro collocazione, così un elemento flottante <code>position: 'bottom'</code> finisce al piede della pagina nella pagina di chiusura come in ogni altra pagina; per esempio una scheda tecnica il cui contorno finisce alla stessa altezza in ogni pagina. Le pagine con una colonna laterale non li spostano mai.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mette in fila i flottanti al piede di una pagina a più colonne: una figura o tabella richiamata dove la sua colonna ne ha già una al piede prende il piede della colonna vuota successiva, con la prima riga della didascalia all’altezza di quella della vicina, invece di impilarsi sopra (la fascia al piede del compositore). Un’immagine con area sicura viene ritagliata al suo interno verso l’altezza della vicina. Ogni ritaglio è segnalato in Controlli. Un flottante in fila mantiene il suo posto: quello che arriva dopo al piede di una delle sue colonne va sopra. Con tre colonne o più, la fila prosegue nella colonna successiva che non ha nulla al piede. Nel Sandbox, <em>Flottanti al piede in fila</em>, in Impaginazione.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Allinea tra le colonne le figure che condividono una fascia di pagina: al piede di colonne vicine, la prima riga delle didascalie (la didascalia più corta lascia il bianco sotto di sé); in testa, il bordo inferiore delle immagini (l’immagine più corta lascia il bianco sopra). Un’immagine che riempie la colonna dalla testa, senza testo sotto, allinea la didascalia a quelle al piede accanto. Si allinea solo una figura da sola nella sua colonna, dritta e intera: quella su più colonne, quella ruotata, quella con la didascalia a lato, una porzione di tabella e quella posizionata a mano (<code>placement.pin</code>) restano al loro posto. Il bianco si legge dalla posizione presa da ogni figura e si rilegge dopo l’ultimo passaggio dell’impaginazione, così una figura passata a un’altra pagina non conserva bianco per una vicina che non ha più. L’impaginazione richiede fino a due passaggi in più all’inizio e due alla fine. Funziona insieme a <code>footFloatRow</code>, che già allinea un flottante che si unisce al piede della colonna successiva. Nel Sandbox, <em>Allinea le figure tra le colonne</em>, in Impaginazione.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

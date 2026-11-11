@@ -42,7 +42,7 @@ import { presentTag } from '../hyphenation/locale.js';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, paletteTintHex, tintedEntryValue, tintPaperOf, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared.js';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page.js';
-export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, DEFAULT_FLOAT_MIN_SCALE, DEFAULT_MAX_TOP_FRACTION, DEFAULT_TEXT_WRAP, resolveLayoutConfig, stripLayoutDefaults } from './layout.js';
+export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, DEFAULT_FLOAT_MIN_SCALE, MAX_PIN_PAGE_OFFSET, DEFAULT_MAX_TOP_FRACTION, DEFAULT_TEXT_WRAP, resolveLayoutConfig, stripLayoutDefaults } from './layout.js';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, hyphenationEqual, avoidWidowsByDefault, avoidOrphansByDefault, resolveBodyTextConfig, stripBodyTextDefaults } from './text/bodyText.js';
 export { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './text/verse.js';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, balancingOnByDefault, resolveHeadingsConfig, stripHeadingsDefaults } from './structure/headings.js';

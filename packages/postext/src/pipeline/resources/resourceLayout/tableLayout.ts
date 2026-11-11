@@ -2,9 +2,10 @@
 // their cells, alignment, the grid painted, and the mirrored layout of a
 // right-to-left table (#1276: split out of resourceLayout.ts).
 import { bitmapLayoutSize } from '../../../bitmapResolution.js';
+import { croppedSize, resourceCrop } from '../safeArea.js';
 import { getMeasureDirection, setMeasureDirection, shiftLineX } from '../../../measure/rtl/bidiLines.js';
 import type { InlineSpan } from '../../../parse/index.js';
-import type { TableRules, ColorPaletteEntry, ResolvedInlineCodeStyleConfig, ResolvedMathConfig, TableCellAlign, TableCell, Resource, TableCellAlignKeyword, TableCellVerticalAlign, TableModel, ResourceType } from '../../../types.js';
+import type { TableRules, ColorPaletteEntry, ResolvedInlineCodeStyleConfig, ResolvedMathConfig, TableCellAlign, TableCell, Resource, TableCellAlignKeyword, TableCellVerticalAlign, TableModel, ResourceType, ResourceSafeArea } from '../../../types.js';
 import { type VDTLine, type VDTLineSegment, createBoundingBox, type VDTResourceTableLayout, type VDTResourceTableCell, type VDTResourceTableCellImage } from '../../../vdt.js';
 import { measureTextWidth, type MeasureBlockOptions } from '../../../measure/index.js';
 import { linkSegments } from '../../../measure/links.js';
@@ -174,6 +175,8 @@ interface FittedCellImage {
   format?: string;
   pdfFileId?: string;
   altText?: string;
+  /** The resource's manual crop (`Resource.crop`): the part shown. */
+  crop?: ResourceSafeArea;
   x: number;
   width: number;
   height: number;
@@ -207,12 +210,16 @@ function fitCellImage(
   let kind: 'bitmap' | 'svg';
   let width: number;
   let height: number;
+  // A manual crop (`Resource.crop`, #1494): the cell shows that part of
+  // the picture, at its ratio.
+  const crop = resourceCrop(resource);
   if (resource.kind === 'bitmap' && resource.bitmap) {
     kind = 'bitmap';
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
     // At its natural print size (#631), never enlarged.
-    const natural = bitmapLayoutSize(resource.bitmap, dpi);
+    const whole = bitmapLayoutSize(resource.bitmap, dpi);
+    const natural = croppedSize(whole.width, whole.height, crop);
     const fit = fitWidth(natural.width, natural.height, target);
     width = fit.width;
     height = fit.height;
@@ -220,8 +227,7 @@ function fitCellImage(
     kind = 'svg';
     fileId = resource.svg.fileId;
     pdfFileId = resource.svg.pdfFileId;
-    const iw = resource.svg.width ?? 0;
-    const ih = resource.svg.height ?? 0;
+    const { width: iw, height: ih } = croppedSize(resource.svg.width ?? 0, resource.svg.height ?? 0, crop);
     width = target;
     height = iw > 0 && ih > 0 ? target * (ih / iw) : target * 0.75;
   } else {
@@ -230,7 +236,7 @@ function fitCellImage(
   if (!fileId) return null;
   const x = align === 'center' ? (innerWidth - width) / 2 : align === 'right' ? innerWidth - width : 0;
   const altText = resource.altText ?? resource.caption;
-  return { resourceId: resource.id, kind, fileId, format, pdfFileId, altText, x: Math.max(0, x), width, height };
+  return { resourceId: resource.id, kind, fileId, format, pdfFileId, altText, ...(crop ? { crop } : {}), x: Math.max(0, x), width, height };
 }
 
 /**
@@ -484,6 +490,7 @@ function layoutTableIn(
           ...(m.image.format !== undefined ? { format: m.image.format } : {}),
           ...(m.image.altText !== undefined ? { altText: m.image.altText } : {}),
           ...(m.image.pdfFileId ? { pdfFileId: m.image.pdfFileId } : {}),
+          ...(m.image.crop ? { crop: { ...m.image.crop } } : {}),
           rect: createBoundingBox(x0 + cellPaddingPx + m.image.x, top, m.image.width, m.image.height),
         }
       : undefined;

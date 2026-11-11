@@ -2376,6 +2376,60 @@
       }
     }
   },
+  "floatPinMissed": {
+    "source": "engine",
+    "label": {
+      "en": "Figure not where it was set by hand",
+      "es": "Figura fuera del sitio donde se colocó a mano",
+      "ca": "Figura fora del lloc on es va col·locar a mà",
+      "zh": "图不在手动放置的位置",
+      "ar": "شكل ليس حيث وُضع يدويًا",
+      "ja": "図が手動配置した位置にありません",
+      "pt": "Figura fora do lugar onde foi colocada à mão",
+      "fr": "Figure absente de l’emplacement choisi à la main",
+      "de": "Abbildung nicht dort, wo sie von Hand gesetzt wurde",
+      "it": "Figura non dove è stata collocata a mano"
+    },
+    "cause": {
+      "en": "A float set by hand (placement.pin, in the Resources panel or moved in the Sandbox canvas) is not where its pin asks. reason says why: notTaken, the slot could not hold it (too tall for the room left, taken by another float, above its citation, or the chapter ended before that page), so it was placed as usual, on that page when a slot there held it; tooFar, the pin names more than 3 pages after the citing one; column, that page has no such column and another took it; unsupported, the resource is set in the text, in the side column, turned or a full-page plate, where a pin does nothing.",
+      "es": "Un flotante colocado a mano (placement.pin, en el panel Recursos o movido en el lienzo del Sandbox) no está donde pide su pin. reason dice por qué: notTaken, el hueco no pudo alojarlo (demasiado alto para el sitio que quedaba, ocupado por otro flotante, por encima de su cita, o el capítulo acabó antes de esa página), así que se colocó como de costumbre, en esa página si allí lo alojaba un hueco; tooFar, el pin nombra más de 3 páginas después de la que lo cita; column, esa página no tiene esa columna y otra lo tomó; unsupported, el recurso está colocado en el texto, en la columna lateral, girado o como lámina a página completa, donde un pin no hace nada.",
+      "ca": "Un flotant col·locat a mà (placement.pin, al tauler Recursos o mogut al llenç del Sandbox) no és on demana el seu pin. reason diu per què: notTaken, l'espai no el podia allotjar (massa alt per al lloc que quedava, ocupat per un altre flotant, per sobre de la cita, o el capítol s'ha acabat abans d'aquesta pàgina), així que s'ha col·locat com de costum, en aquesta pàgina si hi havia un espai que l'allotgés; tooFar, el pin anomena més de 3 pàgines després de la que el cita; column, aquesta pàgina no té aquesta columna i una altra l'ha pres; unsupported, el recurs està col·locat al text, a la columna lateral, girat o com a làmina a pàgina sencera, on un pin no fa res.",
+      "zh": "手动放置的浮动体（placement.pin，在资源面板中设置或在沙盒画布中移动）不在其固定位置要求的地方。reason说明原因：notTaken，该位置放不下它（对剩余空间来说太高、被另一个浮动体占用、在引用之上，或本章在那一页之前就结束了），因此按常规放置，若那一页有位置能放下就放在那一页；tooFar，固定位置指明的页比引用页晚超过3页；column，该页没有这一栏，由另一栏放置；unsupported，该资源排在正文中、在侧栏中、经过旋转或是整页图版，固定位置对它不起作用。",
+      "ar": "عنصر عائم وُضع يدويًا (placement.pin، في لوحة الموارد أو حُرّك في لوحة Sandbox) ليس حيث يطلب تثبيته. ويقول reason السبب: notTaken، لم يتسع له الموضع (أطول من المساحة الباقية، أو يشغله عنصر عائم آخر، أو فوق الإحالة إليه، أو انتهى الفصل قبل تلك الصفحة)، فوُضع في مكانه المعتاد، في تلك الصفحة إن اتسع له موضع فيها؛ tooFar، يسمّي التثبيت صفحة بعد الصفحة المحيلة بأكثر من 3 صفحات؛ column، لا عمود كهذا في تلك الصفحة فأخذه عمود آخر؛ unsupported، المورد موضوع في النص أو في العمود الجانبي أو مُدار أو لوحة بصفحة كاملة، حيث لا يفعل التثبيت شيئًا.",
+      "ja": "手で置いたフロート（placement.pin。リソースパネルで指定するか、Sandboxのキャンバスで動かしたもの）が指定どおりの場所にありません。reasonが理由を示します。notTaken：スロットに入らなかった（残りの高さに対して大きすぎる、別のフロートが使っている、参照より上にある、またはそのページより前に章が終わった）ため通常どおり配置され、そのページにスロットがあればそこに置かれました。tooFar：指定が参照するページから3ページより先を示しています。column：そのページにその段がなく、別の段に置かれました。unsupported：リソースが本文中、サイド段、回転、全面の図版ページとして置かれており、指定は何もしません。",
+      "pt": "Um flutuante posicionado à mão (placement.pin, no painel Recursos ou movido na tela do Sandbox) não está onde o pin pede. reason diz o porquê: notTaken, o espaço não pôde recebê-lo (alto demais para o lugar que restava, ocupado por outro flutuante, acima da citação, ou o capítulo acabou antes dessa página), então foi posicionado como de costume, nessa página se um espaço ali o recebia; tooFar, o pin nomeia mais de 3 páginas depois da que o cita; column, essa página não tem essa coluna e outra o recebeu; unsupported, o recurso está posicionado no texto, na coluna lateral, girado ou como prancha de página inteira, onde um pin não faz nada.",
+      "fr": "Un flottant placé à la main (placement.pin, dans le panneau Ressources ou déplacé dans le canevas du Sandbox) n'est pas là où son pin le demande. reason dit pourquoi : notTaken, l'emplacement ne pouvait pas le recevoir (trop haut pour la place restante, pris par un autre flottant, au-dessus de son appel, ou le chapitre s'est terminé avant cette page), il a donc été placé comme d'habitude, sur cette page si un emplacement l'y recevait ; tooFar, le pin désigne plus de 3 pages après celle qui l'appelle ; column, cette page n'a pas cette colonne et une autre l'a pris ; unsupported, la ressource est placée dans le texte, dans la colonne latérale, pivotée ou en planche pleine page, où un pin ne fait rien.",
+      "de": "Ein von Hand gesetztes Gleitobjekt (placement.pin, im Bedienfeld Ressourcen oder im Sandbox-Canvas verschoben) steht nicht dort, wo sein Pin es verlangt. reason sagt warum: notTaken, der Platz konnte es nicht aufnehmen (zu hoch für den verbleibenden Raum, von einem anderen Gleitobjekt belegt, über seinem Verweis, oder das Kapitel endete vor dieser Seite), deshalb wurde es wie üblich gesetzt, auf dieser Seite, wenn ein Platz dort es aufnahm; tooFar, der Pin nennt mehr als 3 Seiten nach der verweisenden; column, diese Seite hat keine solche Spalte und eine andere nahm es; unsupported, die Ressource ist im Text, in der Randspalte, gedreht oder als ganzseitige Tafel gesetzt, wo ein Pin nichts bewirkt.",
+      "it": "Un flottante collocato a mano (placement.pin, nel pannello Risorse o spostato nella tela del Sandbox) non è dove chiede il suo pin. reason dice perché: notTaken, lo spazio non poteva accoglierlo (troppo alto per il posto rimasto, occupato da un altro flottante, sopra il suo richiamo, o il capitolo è finito prima di quella pagina), quindi è stato collocato come di consueto, su quella pagina se lì uno spazio lo accoglieva; tooFar, il pin nomina più di 3 pagine dopo quella che lo richiama; column, quella pagina non ha quella colonna e un'altra l'ha preso; unsupported, la risorsa è collocata nel testo, nella colonna laterale, ruotata o come tavola a pagina intera, dove un pin non fa nulla."
+    },
+    "fix": {
+      "en": "Remove the pin (Back to automatic in Resources) and keep the figure near its text with the placement rules: position top or bottom, citingPage, a keepTogether box, shrink to fit. Pins are tied to one layout and are not recommended.",
+      "es": "Quita el pin (Volver a automática en Recursos) y mantén la figura cerca de su texto con las reglas de colocación: posición arriba o abajo, citingPage, una caja keepTogether, reducir para que quepa. Los pines están atados a una maquetación y no se recomiendan.",
+      "ca": "Treu el pin (Torna a automàtica a Recursos) i mantén la figura a prop del seu text amb les regles de col·locació: posició a dalt o a baix, citingPage, una caixa keepTogether, reduir perquè hi càpiga. Els pins estan lligats a una maquetació i no es recomanen.",
+      "zh": "移除固定位置（在资源中点“恢复为自动”），用放置规则让图靠近正文：位置设为顶部或底部、citingPage、keepTogether框、缩小以适应。固定位置绑定于某一次排版，不推荐使用。",
+      "ar": "أزل التثبيت (العودة إلى التلقائي في الموارد) وأبقِ الشكل قرب نصه بقواعد الموضع: الموضع في الأعلى أو الأسفل، وcitingPage، وإطار keepTogether، والتصغير ليتسع. التثبيت مربوط بتنضيد واحد وغير مستحسن.",
+      "ja": "指定を外し（リソースの「自動配置に戻す」）、配置の規則で図を本文の近くに保ってください：位置を上または下、citingPage、keepTogetherのボックス、縮小して収める。手動配置は一つの組版に結びついており、推奨しません。",
+      "pt": "Remova o pin (Voltar a automática em Recursos) e mantenha a figura perto do texto com as regras de posicionamento: posição no topo ou embaixo, citingPage, uma caixa keepTogether, reduzir para caber. Pins ficam presos a um layout e não são recomendados.",
+      "fr": "Retirez le pin (Revenir à l'automatique dans Ressources) et gardez la figure près de son texte avec les règles de placement : position en haut ou en bas, citingPage, un encadré keepTogether, réduction à la place disponible. Les pins sont liés à une mise en page et sont déconseillés.",
+      "de": "Entfernen Sie den Pin (Wieder automatisch unter Ressourcen) und halten Sie die Abbildung mit den Platzierungsregeln nahe an ihrem Text: Position oben oder unten, citingPage, ein Kasten mit keepTogether, Verkleinern auf den Platz. Pins hängen an einem Layout und werden nicht empfohlen.",
+      "it": "Togli il pin (Torna ad automatica in Risorse) e tieni la figura vicino al suo testo con le regole di collocazione: posizione in alto o in basso, citingPage, un riquadro keepTogether, riduzione allo spazio. I pin sono legati a un'impaginazione e sono sconsigliati."
+    },
+    "docs": {
+      "slug": "configuration-programmatic-usage",
+      "heading": {
+        "en": "Warnings in the document",
+        "es": "Avisos del documento",
+        "ca": "Avisos del document",
+        "zh": "文档中的警告",
+        "ar": "التحذيرات في المستند",
+        "ja": "文書の中の警告",
+        "pt": "Avisos no documento",
+        "fr": "Avertissements dans le document",
+        "de": "Warnungen im Dokument",
+        "it": "Avvisi nel documento"
+      }
+    }
+  },
   "headingDesignCut": {
     "source": "sandbox",
     "label": {
@@ -6378,6 +6432,114 @@
         "fr": "Texte courant",
         "de": "Fließtext",
         "it": "Testo corrente"
+      }
+    }
+  },
+  "hyphenLadder": {
+    "source": "engine",
+    "label": {
+      "en": "Hyphen ladder",
+      "es": "Escalera de guiones",
+      "ca": "Escala de guionets",
+      "zh": "连字符连行",
+      "ar": "سلّم شرطات",
+      "ja": "ハイフンの連続",
+      "pt": "Escada de hífenes",
+      "fr": "Échelle de césures",
+      "de": "Trennstrich-Treppe",
+      "it": "Scala di trattini"
+    },
+    "cause": {
+      "en": "More than bodyText.hyphenation.maxConsecutive lines in a row of a paragraph end on a hyphen (1 by default: no two hyphenated lines in a row). Body text, lists and quotations count; captions and table cells do not. With bodyText.hyphenation.ladders on 'warn' every ladder is reported; on 'avoid', the ones the line breaker kept because no setting within the word spacing avoided them for less than bodyText.hyphenation.ladderPenalty for each line past the limit. The rule needs optimal line breaking (Knuth–Plass, bodyText.optimalLineBreaking). The engine lists each in doc.contentWarnings with the number of lines, the limit, the lines and their page.",
+      "es": "Más de bodyText.hyphenation.maxConsecutive líneas seguidas de un párrafo terminan en guion (1 por defecto: nunca dos líneas divididas seguidas). Cuentan el texto base, las listas y las citas; no los pies ni las celdas de tabla. Con bodyText.hyphenation.ladders en 'warn' se informa de todas las escaleras; en 'avoid', de las que el corte de líneas mantuvo porque ninguna composición dentro del espaciado entre palabras las evitaba por menos que bodyText.hyphenation.ladderPenalty por cada línea que pasa del límite. La regla necesita el corte de líneas óptimo (Knuth–Plass, bodyText.optimalLineBreaking). El motor anota cada una en doc.contentWarnings con el número de líneas, el límite, las líneas y su página.",
+      "ca": "Més de bodyText.hyphenation.maxConsecutive línies seguides d'un paràgraf acaben en guionet (1 per defecte: mai dues línies partides seguides). Compten el text de cos, les llistes i les citacions; no els peus ni les cel·les de taula. Amb bodyText.hyphenation.ladders a 'warn' s'informa de totes les escales; a 'avoid', de les que el tall de línies va mantenir perquè cap composició dins l'espaiat entre paraules no les evitava per menys que bodyText.hyphenation.ladderPenalty per cada línia que passa del límit. La regla necessita el tall de línies òptim (Knuth–Plass, bodyText.optimalLineBreaking). El motor anota cadascuna a doc.contentWarnings amb el nombre de línies, el límit, les línies i la seva pàgina.",
+      "zh": "段落中连续以连字符结尾的行超过bodyText.hyphenation.maxConsecutive行（默认1：不允许两行连续断词）。正文、列表和引文计入，图注和表格单元格不计入。bodyText.hyphenation.ladders设为'warn'时报告每一处；设为'avoid'时，只报告断行保留下来的那些：在词距范围内，没有代价低于每超出一行bodyText.hyphenation.ladderPenalty的排法能避开它们。此规则需要最优断行（Knuth–Plass，bodyText.optimalLineBreaking）。引擎把每一处记入doc.contentWarnings，附上行数、上限、各行文字和页码。",
+      "ar": "أكثر من bodyText.hyphenation.maxConsecutive من الأسطر المتتالية في فقرة تنتهي بشرطة (1 افتراضيًا: لا سطران مقسومان متتاليان). يُحتسب نص المتن والقوائم والاقتباسات، ولا تُحتسب التعليقات على الصور وخلايا الجداول. إذا كانت bodyText.hyphenation.ladders على 'warn' يُبلَّغ عن كل سلّم، وإذا كانت على 'avoid' فعن السلالم التي أبقاها كسر الأسطر لأنه لم يكن ثمة تنضيد ضمن التباعد بين الكلمات يتجنّبها بأقل من bodyText.hyphenation.ladderPenalty عن كل سطر يتجاوز الحد. وتحتاج القاعدة إلى كسر الأسطر الأمثل (Knuth–Plass، bodyText.optimalLineBreaking). ويُدرج المحرّك كلًّا منها في doc.contentWarnings مع عدد الأسطر والحد والأسطر وصفحتها.",
+      "ja": "段落でハイフンで終わる行がbodyText.hyphenation.maxConsecutive行を超えて続いています（既定は1、つまり分割した行を2行続けない）。本文、リスト、引用が対象で、キャプションと表のセルは対象外です。bodyText.hyphenation.laddersが'warn'ならすべてを報告し、'avoid'なら改行処理が残したもの、つまり語間の範囲内で、上限を超える1行ごとのbodyText.hyphenation.ladderPenaltyより安く避ける組み方がなかったものを報告します。この規則には最適改行（Knuth–Plass、bodyText.optimalLineBreaking）が必要です。エンジンは各連続を、行数、上限、各行の文字列、ページとともにdoc.contentWarningsに記録します。",
+      "pt": "Mais de bodyText.hyphenation.maxConsecutive linhas seguidas de um parágrafo terminam em hífen (1 por padrão: nunca duas linhas divididas seguidas). Contam o texto do corpo, as listas e as citações; não as legendas nem as células de tabela. Com bodyText.hyphenation.ladders em 'warn' todas as escadas são assinaladas; em 'avoid', as que a quebra de linha manteve porque nenhuma composição dentro do espaçamento entre palavras as evitava por menos que bodyText.hyphenation.ladderPenalty por cada linha além do limite. A regra precisa da quebra de linha ótima (Knuth–Plass, bodyText.optimalLineBreaking). O motor regista cada uma em doc.contentWarnings com o número de linhas, o limite, as linhas e a página.",
+      "fr": "Plus de bodyText.hyphenation.maxConsecutive lignes de suite d’un paragraphe finissent sur un trait d’union (1 par défaut : jamais deux lignes coupées de suite). Le texte courant, les listes et les citations comptent ; les légendes et les cellules de tableau non. Avec bodyText.hyphenation.ladders sur 'warn', toutes les échelles sont signalées ; sur 'avoid', celles que la coupure des lignes a gardées parce qu’aucune composition dans l’espacement des mots ne les évitait pour moins que bodyText.hyphenation.ladderPenalty par ligne au-delà de la limite. La règle demande la coupure optimale des lignes (Knuth–Plass, bodyText.optimalLineBreaking). Le moteur note chacune dans doc.contentWarnings avec le nombre de lignes, la limite, les lignes et leur page.",
+      "de": "Mehr als bodyText.hyphenation.maxConsecutive Zeilen hintereinander eines Absatzes enden auf einen Trennstrich (standardmäßig 1: nie zwei getrennte Zeilen hintereinander). Fließtext, Listen und Zitate zählen, Bildunterschriften und Tabellenzellen nicht. Mit bodyText.hyphenation.ladders auf 'warn' wird jede Treppe gemeldet; auf 'avoid' die, die der Zeilenumbruch behielt, weil kein Satz innerhalb des Wortabstands sie für weniger als bodyText.hyphenation.ladderPenalty je Zeile über der Grenze vermied. Die Regel braucht den optimalen Zeilenumbruch (Knuth–Plass, bodyText.optimalLineBreaking). Die Engine trägt jede in doc.contentWarnings ein, mit der Zahl der Zeilen, der Grenze, den Zeilen und ihrer Seite.",
+      "it": "Più di bodyText.hyphenation.maxConsecutive righe di seguito di un paragrafo finiscono con un trattino (1 per impostazione predefinita: mai due righe divise di seguito). Contano il testo corrente, gli elenchi e le citazioni; non le didascalie né le celle di tabella. Con bodyText.hyphenation.ladders su 'warn' si segnalano tutte le scale; su 'avoid', quelle che la divisione in righe ha tenuto perché nessuna composizione entro la spaziatura tra le parole le evitava per meno di bodyText.hyphenation.ladderPenalty per ogni riga oltre il limite. La regola richiede la divisione in righe ottimale (Knuth–Plass, bodyText.optimalLineBreaking). Il motore annota ciascuna in doc.contentWarnings con il numero di righe, il limite, le righe e la loro pagina."
+    },
+    "fix": {
+      "en": "Set bodyText.hyphenation.ladders to 'avoid': the line breaker sets the paragraph otherwise where the word spacing allows. A ladder that stays costs more to avoid than bodyText.hyphenation.ladderPenalty: raise the penalty to trade looser lines for it, raise bodyText.hyphenation.maxConsecutive where the house style allows more hyphens in a row, or reword one of the lines. In a port of an existing book keep 'warn': the port reproduces the original's breaks.",
+      "es": "Pon bodyText.hyphenation.ladders en 'avoid': el corte de líneas compone el párrafo de otro modo donde el espaciado entre palabras lo permite. Una escalera que sigue cuesta más de evitar que bodyText.hyphenation.ladderPenalty: sube la penalización para cambiarla por líneas más sueltas, sube bodyText.hyphenation.maxConsecutive si las normas de la casa admiten más guiones seguidos, o reescribe una de las líneas. En un port de un libro existente deja 'warn': el port reproduce los cortes del original.",
+      "ca": "Posa bodyText.hyphenation.ladders a 'avoid': el tall de línies compon el paràgraf d'una altra manera on l'espaiat entre paraules ho permet. Una escala que es manté costa més d'evitar que bodyText.hyphenation.ladderPenalty: apuja la penalització per canviar-la per línies més soltes, apuja bodyText.hyphenation.maxConsecutive si les normes de la casa admeten més guionets seguits, o reescriu una de les línies. En un port d'un llibre existent deixa 'warn': el port reprodueix els talls de l'original.",
+      "zh": "把bodyText.hyphenation.ladders设为'avoid'：断行会在词距允许的范围内重排段落。仍然保留的连行，避开它的代价高于bodyText.hyphenation.ladderPenalty：调高惩罚值以换取更松的行；如果排版规范允许更多连续断词，调高bodyText.hyphenation.maxConsecutive；或改写其中一行。移植现有书籍时保持'warn'：移植要重现原书的断行。",
+      "ar": "اجعل bodyText.hyphenation.ladders على 'avoid': ينضّد كسر الأسطر الفقرة على نحو آخر حيث يسمح التباعد بين الكلمات. والسلّم الذي يبقى كلفة تجنّبه أعلى من bodyText.hyphenation.ladderPenalty: ارفع العقوبة لتقبل أسطرًا أوسع تباعدًا مقابله، أو ارفع bodyText.hyphenation.maxConsecutive إذا كانت قواعد الدار تسمح بمزيد من الشرطات المتتالية، أو أعد صياغة أحد الأسطر. وفي نقل كتاب قائم أبقِها على 'warn': فالنقل يعيد كسور الأسطر في الأصل.",
+      "ja": "bodyText.hyphenation.laddersを'avoid'にします。改行処理は語間の許す範囲で段落を組み直します。残った連続は、避けるコストがbodyText.hyphenation.ladderPenaltyより高いものです。ペナルティを上げて行の緩みと引き換えにするか、社内規定がより多くの連続を認めるならbodyText.hyphenation.maxConsecutiveを上げるか、いずれかの行の文を書き換えます。既存の本の移植では'warn'のままにします。移植は原本の改行を再現するためです。",
+      "pt": "Ponha bodyText.hyphenation.ladders em 'avoid': a quebra de linha compõe o parágrafo de outro modo onde o espaçamento entre palavras permite. Uma escada que fica custa mais a evitar que bodyText.hyphenation.ladderPenalty: aumente a penalização para a trocar por linhas mais soltas, aumente bodyText.hyphenation.maxConsecutive se as normas da casa admitem mais hífenes seguidos, ou reescreva uma das linhas. Num port de um livro existente mantenha 'warn': o port reproduz as quebras do original.",
+      "fr": "Réglez bodyText.hyphenation.ladders sur 'avoid' : la coupure des lignes recompose le paragraphe là où l’espacement des mots le permet. Une échelle qui reste coûte plus à éviter que bodyText.hyphenation.ladderPenalty : augmentez la pénalité pour l’échanger contre des lignes plus lâches, augmentez bodyText.hyphenation.maxConsecutive si les règles de la maison admettent plus de césures de suite, ou reformulez l’une des lignes. Dans le portage d’un livre existant, gardez 'warn' : le portage reproduit les coupures de l’original.",
+      "de": "Setzen Sie bodyText.hyphenation.ladders auf 'avoid': Der Zeilenumbruch setzt den Absatz anders, wo der Wortabstand es erlaubt. Eine Treppe, die bleibt, kostet mehr als bodyText.hyphenation.ladderPenalty: Erhöhen Sie den Strafwert, um sie gegen lockerere Zeilen zu tauschen, erhöhen Sie bodyText.hyphenation.maxConsecutive, wenn die Hausregeln mehr Trennungen hintereinander erlauben, oder formulieren Sie eine der Zeilen um. Bei der Portierung eines bestehenden Buchs bleiben Sie bei 'warn': Die Portierung gibt die Umbrüche des Originals wieder.",
+      "it": "Imposta bodyText.hyphenation.ladders su 'avoid': la divisione in righe ricompone il paragrafo dove la spaziatura tra le parole lo permette. Una scala che resta costa più di bodyText.hyphenation.ladderPenalty da evitare: alza la penalità per scambiarla con righe più larghe, alza bodyText.hyphenation.maxConsecutive se le norme della casa ammettono più trattini di seguito, o riformula una delle righe. Nel port di un libro esistente lascia 'warn': il port riproduce le divisioni dell’originale."
+    },
+    "docs": {
+      "slug": "configuration-language",
+      "heading": {
+        "en": "Hyphenation",
+        "es": "Separación silábica",
+        "ca": "Partició de mots",
+        "zh": "断词",
+        "ar": "تقسيم الكلمات بالواصلة",
+        "ja": "ハイフネーション",
+        "pt": "Hifenização",
+        "fr": "Césure",
+        "de": "Silbentrennung",
+        "it": "Sillabazione"
+      }
+    }
+  },
+  "lastWordDivided": {
+    "source": "engine",
+    "label": {
+      "en": "Last word divided",
+      "es": "Última palabra dividida",
+      "ca": "Última paraula partida",
+      "zh": "末词断开",
+      "ar": "كلمة أخيرة مقسومة",
+      "ja": "最後の単語の分割",
+      "pt": "Última palavra dividida",
+      "fr": "Dernier mot coupé",
+      "de": "Letztes Wort getrennt",
+      "it": "Ultima parola divisa"
+    },
+    "cause": {
+      "en": "The last word of a paragraph is divided: the line before the last ends on a hyphen and the last line holds only the rest of that word. A short last line with more words in it is a runt (bodyText.avoidRunts), not this. With bodyText.hyphenation.lastWord on 'warn' every one is reported; on 'avoid', the ones the line breaker kept because no setting within the word spacing kept the word whole for less than bodyText.hyphenation.lastWordPenalty. The rule needs optimal line breaking (Knuth–Plass, bodyText.optimalLineBreaking). The engine lists each in doc.contentWarnings with the divided word and its page.",
+      "es": "La última palabra de un párrafo está dividida: la penúltima línea termina en guion y la última solo lleva el resto de esa palabra. Una última línea corta con más palabras es una línea corta (bodyText.avoidRunts), no esto. Con bodyText.hyphenation.lastWord en 'warn' se informa de todas; en 'avoid', de las que el corte de líneas mantuvo porque ninguna composición dentro del espaciado entre palabras dejaba la palabra entera por menos que bodyText.hyphenation.lastWordPenalty. La regla necesita el corte de líneas óptimo (Knuth–Plass, bodyText.optimalLineBreaking). El motor anota cada una en doc.contentWarnings con la palabra dividida y su página.",
+      "ca": "L'última paraula d'un paràgraf està partida: la penúltima línia acaba en guionet i l'última només porta la resta d'aquesta paraula. Una última línia curta amb més paraules és una línia curta (bodyText.avoidRunts), no això. Amb bodyText.hyphenation.lastWord a 'warn' s'informa de totes; a 'avoid', de les que el tall de línies va mantenir perquè cap composició dins l'espaiat entre paraules no deixava la paraula sencera per menys que bodyText.hyphenation.lastWordPenalty. La regla necessita el tall de línies òptim (Knuth–Plass, bodyText.optimalLineBreaking). El motor anota cadascuna a doc.contentWarnings amb la paraula partida i la seva pàgina.",
+      "zh": "段落的最后一个词被断开：倒数第二行以连字符结尾，最后一行只有这个词的剩余部分。最后一行较短但含有更多词的是短末行（bodyText.avoidRunts），不属于此问题。bodyText.hyphenation.lastWord设为'warn'时报告每一处；设为'avoid'时，只报告断行保留下来的那些：在词距范围内，没有代价低于bodyText.hyphenation.lastWordPenalty的排法能让该词保持完整。此规则需要最优断行（Knuth–Plass，bodyText.optimalLineBreaking）。引擎把每一处记入doc.contentWarnings，附上被断开的词和页码。",
+      "ar": "الكلمة الأخيرة من فقرة مقسومة: السطر قبل الأخير ينتهي بشرطة والسطر الأخير لا يحمل إلا بقية تلك الكلمة. أما السطر الأخير القصير الذي فيه كلمات أخرى فهو سطر قصير معزول (bodyText.avoidRunts)، لا هذا. إذا كانت bodyText.hyphenation.lastWord على 'warn' يُبلَّغ عن كل حالة، وإذا كانت على 'avoid' فعن الحالات التي أبقاها كسر الأسطر لأنه لم يكن ثمة تنضيد ضمن التباعد بين الكلمات يُبقي الكلمة كاملة بأقل من bodyText.hyphenation.lastWordPenalty. وتحتاج القاعدة إلى كسر الأسطر الأمثل (Knuth–Plass، bodyText.optimalLineBreaking). ويُدرج المحرّك كلًّا منها في doc.contentWarnings مع الكلمة المقسومة وصفحتها.",
+      "ja": "段落の最後の単語が分割されています。最後から2行目がハイフンで終わり、最後の行にはその単語の残りしかありません。ほかの単語も含む短い最終行はラント（bodyText.avoidRunts）で、これとは別です。bodyText.hyphenation.lastWordが'warn'ならすべてを報告し、'avoid'なら改行処理が残したもの、つまり語間の範囲内でbodyText.hyphenation.lastWordPenaltyより安く単語を分割せずに組む方法がなかったものを報告します。この規則には最適改行（Knuth–Plass、bodyText.optimalLineBreaking）が必要です。エンジンは各分割を、分割された単語とページとともにdoc.contentWarningsに記録します。",
+      "pt": "A última palavra de um parágrafo está dividida: a penúltima linha termina em hífen e a última só leva o resto dessa palavra. Uma última linha curta com mais palavras é uma linha curta (bodyText.avoidRunts), não isto. Com bodyText.hyphenation.lastWord em 'warn' todas são assinaladas; em 'avoid', as que a quebra de linha manteve porque nenhuma composição dentro do espaçamento entre palavras mantinha a palavra inteira por menos que bodyText.hyphenation.lastWordPenalty. A regra precisa da quebra de linha ótima (Knuth–Plass, bodyText.optimalLineBreaking). O motor regista cada uma em doc.contentWarnings com a palavra dividida e a página.",
+      "fr": "Le dernier mot d’un paragraphe est coupé : l’avant-dernière ligne finit sur un trait d’union et la dernière ne porte que la suite de ce mot. Une dernière ligne courte qui contient d’autres mots est une ligne creuse (bodyText.avoidRunts), pas ce défaut. Avec bodyText.hyphenation.lastWord sur 'warn', tous sont signalés ; sur 'avoid', ceux que la coupure des lignes a gardés parce qu’aucune composition dans l’espacement des mots ne gardait le mot entier pour moins que bodyText.hyphenation.lastWordPenalty. La règle demande la coupure optimale des lignes (Knuth–Plass, bodyText.optimalLineBreaking). Le moteur note chacun dans doc.contentWarnings avec le mot coupé et sa page.",
+      "de": "Das letzte Wort eines Absatzes ist getrennt: Die vorletzte Zeile endet auf einen Trennstrich, und die letzte enthält nur den Rest dieses Wortes. Eine kurze letzte Zeile mit weiteren Wörtern ist eine zu kurze Ausgangszeile (bodyText.avoidRunts), nicht dieser Fehler. Mit bodyText.hyphenation.lastWord auf 'warn' wird jedes gemeldet; auf 'avoid' die, die der Zeilenumbruch behielt, weil kein Satz innerhalb des Wortabstands das Wort für weniger als bodyText.hyphenation.lastWordPenalty ganz ließ. Die Regel braucht den optimalen Zeilenumbruch (Knuth–Plass, bodyText.optimalLineBreaking). Die Engine trägt jedes in doc.contentWarnings ein, mit dem getrennten Wort und seiner Seite.",
+      "it": "L’ultima parola di un paragrafo è divisa: la penultima riga finisce con un trattino e l’ultima contiene solo il resto di quella parola. Un’ultima riga corta con altre parole è una riga finale corta (bodyText.avoidRunts), non questo difetto. Con bodyText.hyphenation.lastWord su 'warn' si segnalano tutte; su 'avoid', quelle che la divisione in righe ha tenuto perché nessuna composizione entro la spaziatura tra le parole lasciava la parola intera per meno di bodyText.hyphenation.lastWordPenalty. La regola richiede la divisione in righe ottimale (Knuth–Plass, bodyText.optimalLineBreaking). Il motore annota ciascuna in doc.contentWarnings con la parola divisa e la sua pagina."
+    },
+    "fix": {
+      "en": "Set bodyText.hyphenation.lastWord to 'avoid': the line breaker keeps the word whole where the word spacing allows. A divided word that stays costs more to keep whole than bodyText.hyphenation.lastWordPenalty: raise the penalty to trade looser lines for it, or reword the end of the paragraph. In a port of an existing book keep 'warn': the port reproduces the original's breaks.",
+      "es": "Pon bodyText.hyphenation.lastWord en 'avoid': el corte de líneas deja la palabra entera donde el espaciado entre palabras lo permite. Una palabra que sigue dividida cuesta más de dejar entera que bodyText.hyphenation.lastWordPenalty: sube la penalización para cambiarla por líneas más sueltas, o reescribe el final del párrafo. En un port de un libro existente deja 'warn': el port reproduce los cortes del original.",
+      "ca": "Posa bodyText.hyphenation.lastWord a 'avoid': el tall de línies deixa la paraula sencera on l'espaiat entre paraules ho permet. Una paraula que es manté partida costa més de deixar sencera que bodyText.hyphenation.lastWordPenalty: apuja la penalització per canviar-la per línies més soltes, o reescriu el final del paràgraf. En un port d'un llibre existent deixa 'warn': el port reprodueix els talls de l'original.",
+      "zh": "把bodyText.hyphenation.lastWord设为'avoid'：断行会在词距允许的范围内让该词保持完整。仍然断开的词，保持完整的代价高于bodyText.hyphenation.lastWordPenalty：调高惩罚值以换取更松的行，或改写段落结尾。移植现有书籍时保持'warn'：移植要重现原书的断行。",
+      "ar": "اجعل bodyText.hyphenation.lastWord على 'avoid': يُبقي كسر الأسطر الكلمة كاملة حيث يسمح التباعد بين الكلمات. والكلمة التي تبقى مقسومة كلفة إبقائها كاملة أعلى من bodyText.hyphenation.lastWordPenalty: ارفع العقوبة لتقبل أسطرًا أوسع تباعدًا مقابلها، أو أعد صياغة آخر الفقرة. وفي نقل كتاب قائم أبقِها على 'warn': فالنقل يعيد كسور الأسطر في الأصل.",
+      "ja": "bodyText.hyphenation.lastWordを'avoid'にします。改行処理は語間の許す範囲で単語を分割せずに組みます。分割が残った単語は、分割せずに組むコストがbodyText.hyphenation.lastWordPenaltyより高いものです。ペナルティを上げて行の緩みと引き換えにするか、段落の終わりの文を書き換えます。既存の本の移植では'warn'のままにします。移植は原本の改行を再現するためです。",
+      "pt": "Ponha bodyText.hyphenation.lastWord em 'avoid': a quebra de linha mantém a palavra inteira onde o espaçamento entre palavras permite. Uma palavra que fica dividida custa mais a manter inteira que bodyText.hyphenation.lastWordPenalty: aumente a penalização para a trocar por linhas mais soltas, ou reescreva o fim do parágrafo. Num port de um livro existente mantenha 'warn': o port reproduz as quebras do original.",
+      "fr": "Réglez bodyText.hyphenation.lastWord sur 'avoid' : la coupure des lignes garde le mot entier là où l’espacement des mots le permet. Un mot qui reste coupé coûte plus à garder entier que bodyText.hyphenation.lastWordPenalty : augmentez la pénalité pour l’échanger contre des lignes plus lâches, ou reformulez la fin du paragraphe. Dans le portage d’un livre existant, gardez 'warn' : le portage reproduit les coupures de l’original.",
+      "de": "Setzen Sie bodyText.hyphenation.lastWord auf 'avoid': Der Zeilenumbruch lässt das Wort ganz, wo der Wortabstand es erlaubt. Ein Wort, das getrennt bleibt, kostet mehr als bodyText.hyphenation.lastWordPenalty, um es ganz zu lassen: Erhöhen Sie den Strafwert, um es gegen lockerere Zeilen zu tauschen, oder formulieren Sie das Ende des Absatzes um. Bei der Portierung eines bestehenden Buchs bleiben Sie bei 'warn': Die Portierung gibt die Umbrüche des Originals wieder.",
+      "it": "Imposta bodyText.hyphenation.lastWord su 'avoid': la divisione in righe lascia la parola intera dove la spaziatura tra le parole lo permette. Una parola che resta divisa costa più di bodyText.hyphenation.lastWordPenalty da lasciare intera: alza la penalità per scambiarla con righe più larghe, o riformula la fine del paragrafo. Nel port di un libro esistente lascia 'warn': il port riproduce le divisioni dell’originale."
+    },
+    "docs": {
+      "slug": "configuration-language",
+      "heading": {
+        "en": "Hyphenation",
+        "es": "Separación silábica",
+        "ca": "Partició de mots",
+        "zh": "断词",
+        "ar": "تقسيم الكلمات بالواصلة",
+        "ja": "ハイフネーション",
+        "pt": "Hifenização",
+        "fr": "Césure",
+        "de": "Silbentrennung",
+        "it": "Sillabazione"
       }
     }
   },

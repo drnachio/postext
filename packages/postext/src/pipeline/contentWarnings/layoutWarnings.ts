@@ -274,7 +274,8 @@ export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlyS
  *  to fit the room of its slot (`placement.shrink`, #626), with how far it
  *  still runs past the text block's foot when even its smallest scale did
  *  not fit, and a `floatCropped` one for each cropped within its safe area
- *  to stay on the page citing it (`layout.pullFloatsToCitation`, #1492).
+ *  to stay on the page citing it (`layout.pullFloatsToCitation`, #1492)
+ *  or to match its neighbour in a row at the foot (`layout.footFloatRow`).
  *  `sourceRangeOf` gives the range of the content block that first cites
  *  it. */
 export function floatShrinkWarnings(
@@ -289,12 +290,17 @@ export function floatShrinkWarnings(
       const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
       // Cropped within its safe area to stay on its citing page (#1492):
       // the only lever that sets a float's body shorter than its ratio.
-      const crop = rb.bodyFlex && rb.bodyFlex.delta < -0.5 ? -rb.bodyFlex.delta / (rb.bodyRect.height - rb.bodyFlex.delta) : 0;
+      // A row at the foot (#1496) crops toward the neighbour's height,
+      // taller or shorter.
+      const row = rb.bodyFlex?.by === 'row';
+      const crop = rb.bodyFlex && (rb.bodyFlex.delta < -0.5 || (row && rb.bodyFlex.delta > 0.5))
+        ? Math.abs(rb.bodyFlex.delta) / (rb.bodyRect.height - rb.bodyFlex.delta) : 0;
       if (crop > 0) {
         out.push({
           kind: 'floatCropped',
           resourceId: rb.resource.id,
           share: Math.round(crop * 1000) / 1000,
+          ...(row ? { reason: 'row' as const } : {}),
           ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
           pageIndex: page.index,
         });

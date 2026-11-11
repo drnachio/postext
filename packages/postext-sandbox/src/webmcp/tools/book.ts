@@ -6,10 +6,9 @@ import type { SandboxAction, SandboxState } from '../../context/SandboxContext.j
 import { importMarkdownFile } from '../../storage/persistence.js';
 import { generateChapterId } from '../../storage/projects.js';
 import { chapterText, editChapter, stateReaches, undoChapterEdit } from '../chapterEdits.js';
-import { bookPagesSummary, chapterOf, dispatchAndWait, isSettled, layOutChapter, whenSettled, type SandboxToolHost } from '../host.js';
+import { bookPagesSummary, chapterOf, dispatchAndWait, isSettled, whenSettled, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
-import { pagesOfOffset } from '../pageText.js';
-import { applyFindReplace, findInText, numberedLines } from '../textEdits.js';
+import { applyFindReplace, numberedLines } from '../textEdits.js';
 import { describeRange, lineRange, occurrencesOf, positionOf } from '../textPositions.js';
 import { readFileInput, type FileInput } from './resources.js';
 import { viewState } from './view.js';
@@ -388,49 +387,6 @@ export function bookTools(host: SandboxToolHost): WebMcpTool[] {
     },
   };
 
-  const searchText: WebMcpTool = {
-    name: 'sandbox_search_text',
-    title: 'Sandbox: find text in the book',
-    description: 'Where a word or passage occurs in the Markdown source: the chapter, the line and the line itself, and, with pages set, the page each occurrence is set on (the chapters that hold one are laid out for it).',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        query: { type: 'string', description: 'The text to look for.' },
-        chapter: { ...CHAPTER_PARAM, description: 'Search this chapter only (position from 1, title or id). Every chapter when left out.' },
-        matchCase: { type: 'boolean' },
-        pages: { type: 'boolean', description: 'Also say which page each occurrence is set on.' },
-        limit: { type: 'integer', minimum: 1, maximum: 200, description: 'Most occurrences to list (default 40).' },
-      },
-      required: ['query'],
-      additionalProperties: false,
-    },
-    annotations: { readOnlyHint: true, untrustedContentHint: true },
-    execute: async (args, { signal }) => {
-      const s = store.getSnapshot();
-      const only = args.chapter === undefined ? null : chapterOf(s, args.chapter).index;
-      const limit = (args.limit as number | undefined) ?? 40;
-      const matches: Record<string, unknown>[] = [];
-      for (const [i, c] of s.chapters.entries()) {
-        if (only !== null && only !== i) continue;
-        const text = c.id === s.activeChapterId ? s.markdown : c.markdown;
-        const found = findInText(text, args.query as string, { matchCase: !!args.matchCase, limit: limit - matches.length });
-        if (found.length === 0) continue;
-        const doc = args.pages ? (await layOutChapter(host, c.id, signal)).doc : null;
-        for (const m of found) {
-          const on = doc ? pagesOfOffset(doc, m.offset) : [];
-          matches.push({
-            chapter: i + 1,
-            line: m.line,
-            text: m.text,
-            ...(doc ? { pagePositions: on, pageLabels: on.map((p) => doc.pages[p - 1]!.pageLabel) } : {}),
-          });
-        }
-        if (matches.length >= limit) break;
-      }
-      return { matches, ...(matches.length >= limit ? { more: true } : {}) };
-    },
-  };
-
   const manageChapters: WebMcpTool = {
     name: 'sandbox_manage_chapters',
     title: 'Sandbox: arrange the chapters',
@@ -528,5 +484,5 @@ export function bookTools(host: SandboxToolHost): WebMcpTool[] {
     },
   };
 
-  return [getState, readText, writeText, editText, undoText, selectText, searchText, manageChapters, removeChapter];
+  return [getState, readText, writeText, editText, undoText, selectText, manageChapters, removeChapter];
 }

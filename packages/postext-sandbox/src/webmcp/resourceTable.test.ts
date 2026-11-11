@@ -109,4 +109,18 @@ describe('a table built for a resource', () => {
     expect(() => buildTable({ columnWidths: [1] }, base, context)).toThrow(/has 1 width\(s\) and the table 2 column\(s\)/);
     expect(() => buildTable({ columnWidths: [1, 0] }, base, context)).toThrow(/columnWidths\[1\] must be a number above 0/);
   });
+
+  it('transposes a table, as the editor\'s button does', () => {
+    const existing = buildTable({ rows: [['Year', 'Rain'], ['1990', '410'], ['2000', '395']], columnWidths: [2, 1] }, undefined, context);
+    const turned = buildTable({ transpose: true }, existing, context);
+    expect(texts(turned.model)).toEqual([['Year', '1990', '2000'], ['Rain', '410', '395']]);
+    // The header row became a header column; the weights are dropped.
+    expect(turned.model.rows.map((row) => row[0]!.isHeader)).toEqual([true, true]);
+    expect(turned.model.headerRowCount).toBeUndefined();
+    expect(turned.model.columnWidths).toBeUndefined();
+    // New content is transposed after it is set; widths apply to the result.
+    const fresh = buildTable({ rows: [['a', 'b'], ['c', 'd']], headerRows: 0, transpose: true, columnWidths: [1, 3] }, undefined, context);
+    expect(texts(fresh.model)).toEqual([['a', 'c'], ['b', 'd']]);
+    expect(fresh.model.columnWidths).toEqual([1, 3]);
+  });
 });

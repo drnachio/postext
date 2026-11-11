@@ -149,7 +149,7 @@ describe('side boxes still waiting when the text ends (#639)', () => {
     const side = doc.pages[1]!.columns.find((c) => c.kind === 'side')!;
     expect(doc.warnings).toHaveLength(1);
     expect(doc.warnings![0]).toMatchObject({ kind: 'calloutOverflow', pageIndex: 1, columnIndex: side.index });
-    expect(doc.warnings![0]!.overflowPx).toBeGreaterThan(0);
+    expect((doc.warnings![0] as { overflowPx: number }).overflowPx).toBeGreaterThan(0);
     expect(md.slice(doc.warnings![0]!.sourceStart, doc.warnings![0]!.sourceEnd)).toContain('B1');
   });
 

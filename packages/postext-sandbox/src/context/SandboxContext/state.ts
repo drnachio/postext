@@ -28,6 +28,9 @@ export interface PendingEditorFocus {
    *  the preview: a chapter switch it causes keeps the viewer where it is
    *  (the reader is already looking at the chapter). */
   fromViewer?: boolean;
+  /** Place the selection without moving the focus into the editor (the
+   *  find bar keeps it, to go on to the next match). */
+  keepFocus?: boolean;
 }
 
 /** Which editable run of a resource a preview click / panel selection refers

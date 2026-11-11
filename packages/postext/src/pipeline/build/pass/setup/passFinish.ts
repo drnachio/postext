@@ -22,6 +22,7 @@ import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
 import { orientLinesToFrames } from '../../../blocks/mirrorFrame.js';
 import { stampFigureLabelRects } from '../../../../composed/labels.js';
 import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings } from '../../../contentWarnings.js';
+import { floatPinWarnings } from '../../../contentWarnings/floatPinWarnings.js';
 import type { PostextConfig, Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
 import type { VDTDocument } from '../../../../vdt/document.js';
 import type { LayoutContinuation } from '../../../../types/content.js';
@@ -57,6 +58,8 @@ export interface PassFinishDeps {
   paragraphContainers: ParagraphContainerPlan;
   calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
   pendingFloats: PlannedFloat[];
+  /** The resources the float plan kept a pin for (`placement.pin`). */
+  pinnedFloats: ReadonlySet<string>;
   pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; pageIndex: number; }[];
   openerFloatNotes: ContentWarning[];
   awaitingSideBoxes: { box: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }; pageIndex: number; band: number; column: VDTColumn; refY: number; }[];
@@ -90,7 +93,7 @@ export interface PassFinishDeps {
 export function createPassFinish(deps: PassFinishDeps) {
   const {
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats, pinnedFloats,
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -263,7 +266,12 @@ export function createPassFinish(deps: PassFinishDeps) {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
-  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely]);
+  // Floats set by hand that are not where their pin asks (#1494).
+  const pins = floatPinWarnings(doc, givenResources ?? [], pinnedFloats, (idx) => {
+    const b = contentBlocks[idx];
+    return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
+  });
+  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0 || pins.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely, ...pins]);
   if (textWrapNotes.length > 0 || columnsNotes.length > 0 || movedNotes.length > 0) textWrapWarningsByDoc.set(doc, [...textWrapNotes, ...columnsNotes, ...movedNotes]);
   // Composed pages (#855): frames whose content does not fit.
   if (composedNotes.length > 0) composedWarningsByDoc.set(doc, composedNotes);

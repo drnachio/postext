@@ -70,6 +70,24 @@ export interface LayoutConfig {
    *  the page foot on the closing page as on every other page. Pages with a
    *  side column never move them. */
   hugClosingFloats?: boolean;
+  /** Set floats at the foot of a multi-column page in a row: a figure or
+   *  table cited where the column already holds one at its foot takes the
+   *  foot of the next empty column, its caption level with its
+   *  neighbour's, rather than stacking over it in the same column — the
+   *  compositor's foot band (*faldón*). A picture with a safe area is
+   *  cropped within it toward its neighbour's height. Default `false`. */
+  footFloatRow?: boolean;
+  /** Line up the figures that share a band of a page across its columns:
+   *  at the foot of neighbouring columns, the first lines of their captions
+   *  (the shorter caption leaves the white under it); at their head, the
+   *  bottoms of their pictures (the shorter picture leaves the white above
+   *  it). A picture that fills its column from the head, with no text under
+   *  it, lines its caption up with the foot captions beside it. Only
+   *  figures set alone in a column, upright and whole, are lined up; one
+   *  placed by hand (`placement.pin`) keeps its place. The layout takes up
+   *  to two passes more at the start and two after the last one (the white
+   *  is read again from where the figures ended). Default `false`. */
+  alignFloatsAcrossColumns?: boolean;
   /** Pull a float that missed the page citing it back onto that page: a
    *  picture with a safe area is cropped within it to stay there, and else
    *  the paragraphs of the citing page are set a line shorter where the
@@ -209,6 +227,8 @@ export interface ResolvedLayoutConfig {
   floatsAtCitingPage: boolean;
   maxTopFraction: number;
   hugClosingFloats: boolean;
+  footFloatRow: boolean;
+  alignFloatsAcrossColumns: boolean;
   pullFloatsToCitation: boolean;
   floatsUnderOpener: boolean;
   openerFloats: CompositionRule;

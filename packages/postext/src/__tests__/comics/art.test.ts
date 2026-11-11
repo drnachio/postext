@@ -83,6 +83,47 @@ describe('comicArtCrop', () => {
   });
 });
 
+describe('comicArtCrop with a manual crop (Resource.crop)', () => {
+  // The left half of a 2:1 picture: a square.
+  const half = { x: 0, y: 0, width: 0.5, height: 1 };
+
+  it('contains: shows the crop whole, nothing outside it', () => {
+    const cell = { x: 0, y: 0, width: 400, height: 400 };
+    const crop = comicArtCrop({ width: 2000, height: 1000, cell, fit: 'contain', crop: half });
+    expect(crop.source).toEqual(half);
+    expect(crop.letterbox).toBe(false);
+    // The whole picture is drawn twice the cell's width, from the cell's left.
+    expect([crop.box.x, crop.box.y, crop.box.width, crop.box.height].map(r)).toEqual([0, 0, 800, 400]);
+  });
+
+  it('covers: the window is chosen inside the crop, the safe area read in it', () => {
+    const cell = { x: 0, y: 0, width: 400, height: 200 };
+    // Safe area: the top half of the crop.
+    const crop = comicArtCrop({ width: 2000, height: 1000, cell, fit: 'cover', crop: half, safeArea: { x: 0, y: 0, width: 0.5, height: 0.5 } });
+    expect(crop.fallback).toBe(false);
+    expect(r(crop.source.x)).toBe(0);
+    expect(r(crop.source.width)).toBe(0.5);
+    expect(r(crop.source.y)).toBe(0);
+    expect(r(crop.source.height)).toBe(0.5);
+    expect(crop.source.x + crop.source.width).toBeLessThanOrEqual(0.5 + 1e-9);
+  });
+
+  it('keeps the crop on a mirrored panel, flipped on the page', () => {
+    const cell = { x: 0, y: 0, width: 400, height: 400 };
+    const crop = comicArtCrop({ width: 2000, height: 1000, cell, fit: 'contain', crop: half, mirrored: true });
+    expect(crop.source).toEqual(half);
+    // The crop (the stored left half) is drawn at the right of the flipped
+    // picture: the whole box starts a cell's width to the left.
+    expect([crop.box.x, crop.box.width].map(r)).toEqual([-400, 800]);
+  });
+
+  it('changes nothing for a crop that keeps the whole picture', () => {
+    const cell = { x: 0, y: 0, width: 600, height: 400 };
+    const plain = comicArtCrop({ width: 3000, height: 1000, cell, fit: 'cover' });
+    expect(comicArtCrop({ width: 3000, height: 1000, cell, fit: 'cover', crop: { x: 0, y: 0, width: 1, height: 1 } })).toEqual(plain);
+  });
+});
+
 describe('anchors', () => {
   it('maps a picture point to the page, flipped for mirrored art, and tests visibility', () => {
     const cell = { x: 100, y: 100, width: 600, height: 400 };

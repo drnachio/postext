@@ -48,6 +48,7 @@ import { createPageSetup } from './pass/setup/pageSetup.js';
 import { createContentSetup } from './pass/setup/contentSetup.js';
 import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
+import type { PlacedSlot } from './floatPads.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -108,8 +109,9 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats, pullCrop } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
+  const floatSlots = new Map<string, PlacedSlot>();
   const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
@@ -254,7 +256,7 @@ function placeDocumentPass(
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
   });
 
   const {
@@ -267,7 +269,7 @@ function placeDocumentPass(
   });
 
   const {
-    placeFloatInColumns, settle, heldBack, positionsFor
+    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, releasePins, hasFoot
   } = createFloatPlace({
     captionUnderProposals, asideCutBy, shortSideColumn, resolved: setup.resolved, dpi, baselineGrid, bodyOffset,
     contentBlocks, resourceById, bodyStyle, pendingFloats, openerPages, openerFloatRule,
@@ -276,7 +278,7 @@ function placeDocumentPass(
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor
   });
 
   const {
@@ -287,7 +289,7 @@ function placeDocumentPass(
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
-    positionsFor, cursor, forcedBreakPages, state, late
+    positionsFor, cursor, forcedBreakPages, state, late, pinOn, releasePins, hasFoot
   });
 
   const {
@@ -538,6 +540,7 @@ function placeDocumentPass(
   } = createPassFinish({
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
     contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    pinnedFloats: new Set(floatPlan.filter((f) => f.pin).map((f) => f.resourceId)),
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -546,5 +549,5 @@ function placeDocumentPass(
     setup
   });
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }

@@ -25,6 +25,7 @@ import type { BlockStyle } from '../../../styles.js';
 import type { ComicPageSource } from '../../../../comics/types.js';
 import type { StripGeometry, FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types.js';
 import type { PassState } from '../state.js';
+import type { FloatPad } from '../../floatPads.js';
 
 /** What createFloatMeasure takes from the pass. */
 export interface FloatMeasureDeps {
@@ -56,6 +57,9 @@ export interface FloatMeasureDeps {
   buildComicStripBlock: (blockIdx: number, source: ComicPageSource, x: number, width: number, max: number, pageIndex: number, keep?: StripGeometry) => VDTBlock;
   cursor: PlacementCursor;
   uncappedBottoms: Map<VDTColumn, number>;
+  /** `layout.alignFloatsAcrossColumns`: the white each figure takes on
+   *  one page (see `proposeFloatPads`). */
+  floatPads: ReadonlyMap<string, FloatPad> | undefined;
   state: PassState;
 }
 
@@ -65,7 +69,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
   } = deps;
   /** Boxes laid out for a band, waiting for the band's `y` (built in
    *  `buildFloatBlock`, committed in `commitFloatBlock`). */
@@ -250,6 +254,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       ? { startRow: f.startRow, endRow: tableRowCount(f.resourceId), continues: false }
       : undefined;
 
+  const padKey = (pad: FloatPad | undefined): string => (pad ? `:pad${pad.above.toFixed(2)}-${pad.below.toFixed(2)}` : '');
+
   const sliceKey = (slice: TableSliceSpec | undefined): string =>
     slice ? `:${slice.startRow}-${slice.endRow}${slice.continues ? '+' : ''}` : '';
 
@@ -267,9 +273,14 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
+  /** The white a lined-up figure takes on the page being placed. */
+  const padOf = (resourceId: string): FloatPad | undefined => {
+    const pad = floatPads?.get(resourceId);
+    return pad && pad.page === cursor.pageIndex ? pad : undefined;
+  };
   const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap, sizing?: FloatSizing): FloatMeasure | null => {
     const cropDelta = bodyCropDelta.get(resourceId);
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}${cropDelta ? `:crop${cropDelta.toFixed(2)}` : ''}`;
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}${cropDelta ? `:crop${cropDelta.toFixed(2)}` : ''}${padKey(slice ? undefined : padOf(resourceId))}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
@@ -320,10 +331,15 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
         if (ln.bbox.y < bodyBottom - 0.5) continue;
         if (lastBaseline === undefined || ln.baseline > lastBaseline) lastBaseline = ln.baseline;
       }
+      // A lined-up figure's white (`floatPads`) counts in its height and
+      // its last baseline's distance to the block's foot, so a foot band
+      // still sets it on the grid.
+      const pad = slice ? undefined : padOf(resourceId);
+      const padded = pad ? pad.above + pad.below : 0;
       const picture = rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video';
       m = {
-        height: laid.totalHeight,
-        ...(lastBaseline !== undefined ? { lastCaptionBaseline: lastBaseline } : {}),
+        height: laid.totalHeight + padded,
+        ...(lastBaseline !== undefined ? { lastCaptionBaseline: lastBaseline + padded } : {}),
         ...(laid.asideHeight !== undefined ? { asideHeight: laid.asideHeight } : {}),
         ...(picture ? { body: { height: rb.bodyRect.height, scale: rb.shrinkScale ?? 1 } } : {}),
       };
@@ -367,7 +383,9 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     }
     const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap, sizing);
     if (!laid) return null;
-    const { block: rb, totalHeight } = laid;
+    const { block: rb } = laid;
+    const pad = slice || rb.rotation ? undefined : padOf(resourceId);
+    const totalHeight = laid.totalHeight + (pad ? pad.above + pad.below : 0);
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
     const blk = createVDTBlock(id, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);
     // A floated figure's labels, laid out on its picture as set (#860).
@@ -393,7 +411,10 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       rb.rotation.originX = rb.rotation.direction === 'ccw' ? left : left + used;
       rb.rotation.originY = rb.rotation.direction === 'ccw' ? totalHeight : 0;
     } else {
-      offsetResourceBlockToAbsolute(rb, x, 0);
+      // The white above a lined-up figure moves its lines down, and its
+      // picture (whose rectangle is block-relative).
+      offsetResourceBlockToAbsolute(rb, x, pad?.above ?? 0);
+      if (pad && pad.above > 0) rb.bodyRect = { ...rb.bodyRect, y: rb.bodyRect.y + pad.above };
     }
     return { block: blk, height: totalHeight };
   };

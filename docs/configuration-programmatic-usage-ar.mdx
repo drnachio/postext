@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُطبع الصورة مقصوصة، ولا يتجاوز القصّ منطقتها الآمنة أبدًا. الخيار <code>pullFloatsToCitation</code> غير مستحسن: <code>placement.citingPage</code> و<code>placement.shrink: 'slot'</code> يُبقيان الصورة قرب إحالتها دون قصّها.</td>
     </tr>
     <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>عنصر عائم وُضع يدويًا (<code>placement.pin</code>) ليس حيث يطلب تثبيته. <code>resourceId</code> يحدّده، و<code>pageIndex</code> الصفحة التي ذهب إليها، و<code>requestedPage</code> الصفحة التي يسمّيها التثبيت. <code>reason</code>: <code>notTaken</code> (لم يتسع له الموضع: أطول من المساحة الباقية، أو مشغول، أو فوق الإحالة إليه، أو انتهى الفصل قبله)، أو <code>tooFar</code> (أكثر من <code>MAX_PIN_PAGE_OFFSET</code>، أي 3، صفحات بعد الصفحة المحيلة)، أو <code>column</code> (لا عمود كهذا في تلك الصفحة)، أو <code>unsupported</code> (مورد موضوع في النص، أو عنصر عائم في العمود الجانبي أو مُدار، أو لوحة كاملة). يشير إلى الفقرة التي تحيل إليه أولًا.</td>
+      <td>يُوضع العنصر كما لو لم يكن مثبّتًا، في الصفحة التي يسمّيها التثبيت إن اتسع له موضع فيها. التثبيت غير مستحسن: <code>placement.citingPage</code> و<code>position</code> و<code>shrink</code> تُبقي الشكل قرب نصه في كل طبعة.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>صورة نقطية لها مقاس طباعة (دقّتها <code>bitmap.resolution</code>، أو رقم في <code>layout.bitmapResolution</code>؛ لا دقّة مقروءة من الملف) منضّدة في عمود يُبقيها دون نصف ذلك المقاس، في صفحة كتلة نصها أعرض من العمود. يحدّدها <code>resourceId</code>، و<code>scale</code> هي النسبة التي تبقى من عرض طباعتها، و<code>printWidthPx</code> و<code>widthPx</code> و<code>pageWidthPx</code> عروض الطباعة والعمود وكتلة النص. لا يصدر هذا التحذير عن صورة ضيّقها <code>placement.width</code> أو صُغّرت لتسع موضعها أو أُديرت أو وُضعت في خانة صفحة مركّبة. يشير إلى الفقرة التي تذكرها أولًا. منذ postext 1.37.</td>
       <td>تُطبع الصورة بعرض عمودها. الصورة في المتن لا تكون أعرض من عمودها أبدًا، وللصفحة الافتراضية عمودان (<code>layout.layoutType: 'double'</code>): نضّد الصفحة في عمود واحد، أو اجعل الصورة تطفو على عرض الصفحة (<code>placement.span: 'page'</code>)، أو ارفع دقّتها إن كان هذا المقاس هو المراد.</td>

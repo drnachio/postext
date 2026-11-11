@@ -10,6 +10,7 @@ import {
   parseTSV,
   removeColumn,
   removeRow,
+  transposeTable,
   type ColorPaletteEntry,
   type ColorValue,
   type Resource,
@@ -44,6 +45,7 @@ export interface TableInput {
   cells?: CellInput[][];
   headerRows?: number;
   headerColumns?: number;
+  transpose?: boolean;
   columnWidths?: number[] | null;
   style?: string | null;
   direction?: 'ltr' | 'rtl' | null;
@@ -90,6 +92,7 @@ export const TABLE_SCHEMA: JsonSchema = {
     cells: { type: 'array', description: 'Rows of cells, every row with a cell for every column.', items: { type: 'array', items: CELL_SCHEMA } },
     headerRows: { type: 'integer', minimum: 0, description: 'Rows at the top that are headers, repeated when the table continues on another page. A new table from rows or tsv has 1; one from cells, its leading rows of header cells.' },
     headerColumns: { type: 'integer', minimum: 0, description: 'Columns at the start whose cells are headers; the cells of the other columns then are not (header rows aside).' },
+    transpose: { type: 'boolean', description: 'true: swap the table\'s rows and columns, as the table editor\'s Transpose button does, after its content and headerRows are set. Each cell moves with its text and formatting, merges swap their spans, header rows become header columns and the leading header columns become header rows; the column widths are dropped. headerColumns and columnWidths then apply to the transposed table.' },
     columnWidths: { type: ['array', 'null'], description: 'Relative widths, one per column ([2, 1, 1] gives the first column half the table). null: equal widths.', items: { type: 'number' } },
     style: { type: ['string', 'null'], description: 'The id of one of the book\'s named table styles (the tableStyles setting). null: the document\'s table style.' },
     direction: { type: ['string', 'null'], enum: ['ltr', 'rtl', null], description: 'The direction the table runs in when it is not the document\'s. null: with the document.' },
@@ -265,6 +268,7 @@ export function buildTable(input: TableInput, existing: Table | undefined, conte
     model = before;
     if (input.headerRows !== undefined && input.headerRows !== (model.headerRowCount ?? 0)) model = setHeaderRows(model, input.headerRows);
   }
+  if (input.transpose) model = transposeTable(model);
   const columns = model.rows.reduce((max, row) => Math.max(max, row.length), 0);
   if (input.headerColumns !== undefined) {
     for (let c = 0; c < columns; c++) model = toggleHeaderColumn(model, c, c < input.headerColumns);

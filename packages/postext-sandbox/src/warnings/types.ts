@@ -287,6 +287,8 @@ export type WarningPayload =
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }
   | { kind: 'calloutOverflow'; page: number; overflowMm: number }
+  /** A float set by hand (`placement.pin`, #1494) not where its pin asks; `page`: where it went. */
+  | { kind: 'floatPinMissed'; resourceId: string; reason: 'notTaken' | 'tooFar' | 'column' | 'unsupported'; page?: number }
   /** A heading design taller than its page can hold: text of the design
    *  laid out past the foot of the page (an opener) or of its column (an
    *  in-column design, clipped there by canvas and PDF), by `overflowMm`.
@@ -475,8 +477,9 @@ export type WarningPayload =
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowMm?: number }
   /** A floated picture cropped within its safe area, by `share` of its
    *  height, to stay on the page that cites it
-   *  (`layout.pullFloatsToCitation`, #1492). */
-  | { kind: 'floatCropped'; resourceId: string; share: number }
+   *  (`layout.pullFloatsToCitation`, #1492); `reason: 'row'`, toward the
+   *  figure beside it in a foot row (`layout.footFloatRow`, #1496). */
+  | { kind: 'floatCropped'; resourceId: string; share: number; reason?: 'row' }
   /** A bitmap with a print size its column holds at under half of it, on
    *  a page whose text block is wider (#901): `scale` of its print width;
    *  the print, column and text block widths in mm. */

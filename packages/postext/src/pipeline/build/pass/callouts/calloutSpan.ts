@@ -200,7 +200,8 @@ export function createCalloutSpan(deps: CalloutSpanDeps) {
       for (let i = 0; i < pendingFloats.length;) {
         const f = pendingFloats[i]!;
         const cols = bandColumns(page, currentBand(page, cursor));
-        if (f.span !== 'page' || f.callout || cols.length < 2 || heldBack(i) || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
+        // A float set by hand (`placement.pin`) keeps to its slot.
+        if (f.span !== 'page' || f.callout || f.pin || cols.length < 2 || heldBack(i) || !((capActiveHere && !placedAny) || levelForBox(cols))) { i++; continue; }
         const width = page.contentArea.width;
         const slice = sliceOf(f);
         // On a vertical page the figure stands upright.
