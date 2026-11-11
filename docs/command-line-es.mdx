@@ -165,6 +165,7 @@ pida otro (`--locale en`).
     <tr><td><code>docx</code></td><td>Los capítulos como documento de Word: semántico (solo el contenido, en estilos de Word sencillos), maquetado (el mismo texto editable con el diseño del libro) o facsímil de páginas (cada línea en un cuadro de texto fijo).</td></tr>
     <tr><td><code>idml</code></td><td>Las páginas como paquete de InDesign (IDML), para terminarlas en InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Las correcciones hechas en un archivo de Word exportado, de vuelta en el libro; cualquier otro documento de Word, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
+    <tr><td><code>import-idml</code></td><td>Un documento de InDesign guardado como IDML, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de libro o Markdown suelto como un único archivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un archivo <code>.postext</code> como carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Los capítulos, idiomas, recursos y fuentes del libro y, con <code>--pages</code>, su número de páginas.</td></tr>
@@ -383,7 +384,20 @@ llevar como está en el libro (el texto vertical, el marco redondeado de una
 tabla) se notifica como aviso `idml.*`. El generador es el paquete
 `postext-idml`: véase [Uso programático › Paquetes de
 InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
+En `build`, `--idml ARCHIVO` escribe el mismo paquete, con `--idml-images`, `--idml-lines` y `--idml-fonts`.
 Desde postext 1.71; `--lines` y `--fonts`, desde 1.76.
+
+### import-idml
+
+```bash
+postext import-idml libro.idml -o libro/
+postext import-idml libro.idml -o libro.postext --layout flow --links pictures/
+postext import-idml libro.idml --report --json
+```
+
+`import-idml` lee un paquete de InDesign Markup y escribe un libro nuevo, en una carpeta o en un `.postext`: los capítulos en Markdown, la configuración que dan los estilos y las páginas del documento, y sus imágenes y tablas como recursos. Un `.indd` no se lee: guárdalo antes desde InDesign como InDesign Markup. `--layout pages` sigue el documento página a página con páginas compuestas, cada marco donde estaba; `--layout flow` escribe un libro de texto corrido, en orden de lectura y con los estilos del documento, para que Postext lo maquete de nuevo; `auto` (el valor por defecto) elige uno de los dos y dice por qué. Las imágenes enlazadas se leen de `--links` o, si no se indica, de la carpeta del archivo y de su `Links/`, y las que no aparecen se enumeran. También se enumeran las fuentes que nombra el documento: un paquete no lleva archivos de fuente, así que hay que darlos con `--font-dir` al generar el libro.
+
+Un libro exportado desde Postext vuelve con las mismas líneas. Un documento hecho en InDesign se lee con pérdidas: el comando imprime el veredicto (`faithful`, `approximate` o `lossy`), los recuentos y lo que se perdió o se aproximó; `--report` añade las notas y cómo se leyó cada estilo de párrafo, y `--json` lo lleva todo como datos. `--hidden`, `--pasteboard` y `--non-printing` leen también las capas y los objetos ocultos, la mesa de trabajo y los objetos no imprimibles; `--conditions all` lee todo el texto condicional, `--changes reject` lee los cambios registrados como si se hubieran rechazado y `--no-masters` deja fuera los elementos de las páginas maestras. `--name` y `--locale` dan el título y el idioma. El importador es `idmlToPostext`, del paquete `postext-idml`: véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
 
 ### pack y unpack
 
@@ -438,7 +452,7 @@ postext build chapters/ --pdf book.pdf --watch
 ```
 
 `build` maqueta el libro una vez y escribe todas las salidas que indiques (`--pdf`, `--html`,
-`--epub`, `--images`, `--docx`), con las opciones de cada comando. `--watch` sigue en marcha: cuando
+`--epub`, `--images`, `--docx`, `--idml`), con las opciones de cada comando. `--watch` sigue en marcha: cuando
 cambia un capítulo, la configuración o una imagen, el libro se vuelve a maquetar con las fuentes y
 el motor ya cargados (normalmente, en una fracción de segundo para un capítulo) y las salidas se
 reescriben. Si al guardar el libro queda roto, se muestra el error y se conservan los últimos

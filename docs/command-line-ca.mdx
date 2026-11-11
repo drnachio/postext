@@ -169,6 +169,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (només el contingut, en estils de Word senzills), maquetat (el mateix text editable amb el disseny del llibre) o facsímil de pàgines (cada línia en un quadre de text fix).</td></tr>
     <tr><td><code>idml</code></td><td>Les pàgines com un paquet d'InDesign (IDML), per acabar-les a InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
+    <tr><td><code>import-idml</code></td><td>Un document d'InDesign desat com a IDML, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Els capítols, les llengües, els recursos i les fonts del llibre, i amb <code>--pages</code> el nombre de pàgines.</td></tr>
@@ -388,7 +389,20 @@ redistribuir es deixa fora amb un avís. El que el paquet no pot portar tal com
 a avís `idml.*`. El generador és el paquet `postext-idml`: vegeu [Ús
 programàtic › Paquets
 d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
+A `build`, `--idml FITXER` escriu el mateix paquet, amb `--idml-images`, `--idml-lines` i `--idml-fonts`.
 Des de postext 1.71; `--lines` i `--fonts`, des de 1.76.
+
+### import-idml
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links pictures/
+postext import-idml book.idml --report --json
+```
+
+`import-idml` llegeix un paquet d'InDesign Markup i escriu un llibre nou, en una carpeta o en un `.postext`: els capítols en Markdown, la configuració que donen els estils i les pàgines del document, i les seves imatges i taules com a recursos. Un `.indd` no es llegeix: desa'l abans des d'InDesign com a InDesign Markup. `--layout pages` segueix el document pàgina a pàgina amb pàgines compostes, cada marc on era; `--layout flow` escriu un llibre de text seguit, en ordre de lectura i amb els estils del document, perquè Postext el torni a compondre; `auto` (el valor per defecte) en tria un i diu per què. Les imatges enllaçades es llegeixen de `--links` o, si no s'indica, de la carpeta del fitxer i del seu `Links/`, i les que no es troben s'enumeren. També s'enumeren les fonts que anomena el document: un paquet no porta fitxers de font, de manera que cal donar-los amb `--font-dir` en generar el llibre.
+
+Un llibre exportat des de Postext torna amb les mateixes línies. Un document fet a InDesign es llegeix amb pèrdues: l'ordre imprimeix el veredicte (`faithful`, `approximate` o `lossy`), els recomptes i el que s'ha perdut o aproximat; `--report` hi afegeix les notes i com s'ha llegit cada estil de paràgraf, i `--json` ho porta tot com a dades. `--hidden`, `--pasteboard` i `--non-printing` llegeixen també les capes i els objectes ocults, la taula de muntatge i els objectes no imprimibles; `--conditions all` llegeix tot el text condicional, `--changes reject` llegeix els canvis registrats com si s'haguessin rebutjat i `--no-masters` deixa fora els elements de les pàgines mestres. `--name` i `--locale` donen el títol i la llengua. L'importador és `idmlToPostext`, del paquet `postext-idml`: vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
 
 ### pack i unpack
 
@@ -448,7 +462,7 @@ postext build chapters/ --pdf book.pdf --watch
 ```
 
 `build` compon el llibre una vegada i escriu totes les sortides que indiquis
-(`--pdf`, `--html`, `--epub`, `--images`, `--docx`), amb les opcions de cada
+(`--pdf`, `--html`, `--epub`, `--images`, `--docx`, `--idml`), amb les opcions de cada
 ordre. `--watch` es queda en marxa: quan canvia un capítol, la configuració o
 una imatge, torna a compondre el llibre amb les fonts i el motor encara
 carregats, normalment en una fracció de segon per capítol, i torna a escriure

@@ -49,6 +49,7 @@ export function mainHelp(): string {
     '  postext build book/ --pdf book.pdf --epub book.epub --watch',
     '  postext check book.postext --json',
     '  postext docx book/ -o book.docx && postext import-docx book.docx book/ --dry-run',
+    '  postext import-idml book.idml -o book/ --report',
     '',
     style.bold('Book options') + ' (every command that reads a book)',
     ...optionLines(BOOK_OPTIONS),

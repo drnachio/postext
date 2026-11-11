@@ -171,6 +171,7 @@ sa propre langue, sauf si `--locale` en demande une autre (`--locale en`).
     <tr><td><code>docx</code></td><td>Les chapitres en document Word : sémantique (le contenu seul, dans des styles Word simples), mis en page (le même texte modifiable avec la maquette du livre) ou fac-similé des pages (chaque ligne dans une zone de texte fixe).</td></tr>
     <tr><td><code>idml</code></td><td>Les pages en paquet InDesign (IDML), à finir dans InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les corrections faites dans un fichier Word exporté, rapportées dans le livre ; tout autre document Word, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
+    <tr><td><code>import-idml</code></td><td>Un document InDesign enregistré en IDML, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Un dossier de livre ou des fichiers Markdown isolés réunis en un seul fichier <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fichier <code>.postext</code> décompressé dans un dossier.</td></tr>
     <tr><td><code>info</code></td><td>Les chapitres, les langues, les ressources et les polices du livre, et avec <code>--pages</code> son nombre de pages.</td></tr>
@@ -392,7 +393,20 @@ paquet ne peut pas porter tel que le livre l’a (le texte vertical, le cadre
 arrondi d’un tableau) est signalé par un avertissement `idml.*`. Le générateur
 est le paquet `postext-idml` : voir [Utilisation programmatique › Paquets
 InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml).
+Dans `build`, `--idml FICHIER` écrit le même paquet, avec `--idml-images`, `--idml-lines` et `--idml-fonts`.
 Depuis postext 1.71 ; `--lines` et `--fonts` depuis 1.76.
+
+### import-idml
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links pictures/
+postext import-idml book.idml --report --json
+```
+
+`import-idml` lit un paquet InDesign Markup et écrit un nouveau livre, dans un dossier ou dans un `.postext` : les chapitres en Markdown, la configuration que donnent les styles et les pages du document, et ses images et tableaux comme ressources. Un `.indd` n’est pas lu : enregistrez-le d’abord depuis InDesign au format InDesign Markup. `--layout pages` suit le document page par page avec des pages composées, chaque bloc là où il était ; `--layout flow` écrit un livre de texte courant, dans l’ordre de lecture et sous les styles du document, que Postext met de nouveau en page ; `auto` (par défaut) choisit l’un des deux et dit pourquoi. Les images liées sont lues dans `--links` ou, à défaut, dans le dossier du fichier et dans son `Links/`, et celles qui manquent sont listées. Les polices que nomme le document sont listées aussi : un paquet ne contient aucun fichier de police, il faut donc les donner avec `--font-dir` quand le livre est généré.
+
+Un livre exporté depuis Postext revient avec les mêmes lignes. Un document fait dans InDesign est lu avec des pertes : la commande affiche le verdict (`faithful`, `approximate` ou `lossy`), les décomptes et ce qui a été perdu ou approché ; `--report` ajoute les notes et la façon dont chaque style de paragraphe a été lu, et `--json` porte le tout comme données. `--hidden`, `--pasteboard` et `--non-printing` lisent aussi les calques et les objets masqués, la table de montage et les objets non imprimables ; `--conditions all` lit tout le texte conditionnel, `--changes reject` lit les modifications suivies comme refusées et `--no-masters` laisse de côté les éléments des gabarits. `--name` et `--locale` donnent le titre et la langue. L’importateur est `idmlToPostext`, du paquet `postext-idml` : voir [Utilisation programmatique › Paquets InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml).
 
 ### pack et unpack
 
@@ -452,7 +466,7 @@ postext build chapters/ --pdf book.pdf --watch
 ```
 
 `build` met le livre en page une fois et écrit chaque sortie que vous indiquez
-(`--pdf`, `--html`, `--epub`, `--images`, `--docx`), avec les options de chaque
+(`--pdf`, `--html`, `--epub`, `--images`, `--docx`, `--idml`), avec les options de chaque
 commande. `--watch` reste actif : quand un chapitre, la configuration ou une
 image change, le livre est remis en page avec les polices et le moteur toujours
 chargés, en général en une fraction de seconde pour un chapitre, et les sorties

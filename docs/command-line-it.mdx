@@ -166,6 +166,7 @@ configurazione del libro. Un pacchetto multilingue viene letto nella sua lingua,
     <tr><td><code>docx</code></td><td>I capitoli come documento Word: semantico (il solo contenuto, in stili Word semplici), impaginato (lo stesso testo modificabile con il progetto grafico del libro) o facsimile delle pagine (ogni riga in una casella di testo fissa).</td></tr>
     <tr><td><code>idml</code></td><td>Le pagine come pacchetto InDesign (IDML), da rifinire in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Le correzioni fatte in un file Word esportato, riportate nel libro; qualsiasi altro documento Word come nuovo libro (una cartella o un <code>.postext</code>).</td></tr>
+    <tr><td><code>import-idml</code></td><td>Un documento InDesign salvato come IDML, come nuovo libro (una cartella o un <code>.postext</code>).</td></tr>
     <tr><td><code>pack</code></td><td>Una cartella di libro o del Markdown sparso come un unico file <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un file <code>.postext</code> come cartella.</td></tr>
     <tr><td><code>info</code></td><td>I capitoli, le lingue, le risorse e i font del libro e, con <code>--pages</code>, il numero di pagine.</td></tr>
@@ -379,7 +380,20 @@ verticale, la cornice arrotondata di una tabella) viene segnalato con un
 avviso `idml.*`. Il generatore è il pacchetto `postext-idml`: vedi [Uso
 programmatico › Pacchetti
 InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postext-idml).
+In `build`, `--idml FILE` scrive lo stesso pacchetto, con `--idml-images`, `--idml-lines` e `--idml-fonts`.
 Da postext 1.71; `--lines` e `--fonts` da 1.76.
+
+### import-idml
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links pictures/
+postext import-idml book.idml --report --json
+```
+
+`import-idml` legge un pacchetto InDesign Markup e scrive un nuovo libro, in una cartella o in un `.postext`: i capitoli in Markdown, la configurazione che danno gli stili e le pagine del documento, e le sue immagini e tabelle come risorse. Un `.indd` non viene letto: salvalo prima da InDesign come InDesign Markup. `--layout pages` segue il documento pagina per pagina con pagine composte, ogni cornice dov’era; `--layout flow` scrive un libro di testo continuo, in ordine di lettura e con gli stili del documento, che Postext impagina di nuovo; `auto` (predefinito) sceglie uno dei due e dice perché. Le immagini collegate vengono lette da `--links` oppure, se manca, dalla cartella del file e dalla sua `Links/`, e quelle non trovate vengono elencate. Vengono elencati anche i font che il documento nomina: un pacchetto non contiene file di font, quindi vanno indicati con `--font-dir` quando si genera il libro.
+
+Un libro esportato da Postext torna con le stesse righe. Un documento fatto in InDesign viene letto con perdite: il comando stampa il verdetto (`faithful`, `approximate` o `lossy`), i conteggi e ciò che è andato perso o è stato approssimato; `--report` aggiunge le note e come è stato letto ogni stile di paragrafo, e `--json` porta tutto come dati. `--hidden`, `--pasteboard` e `--non-printing` leggono anche i livelli e gli oggetti nascosti, il tavolo di montaggio e gli oggetti non stampabili; `--conditions all` legge tutto il testo condizionale, `--changes reject` legge le revisioni come rifiutate e `--no-masters` lascia fuori gli elementi delle pagine mastro. `--name` e `--locale` danno il titolo e la lingua. L’importatore è `idmlToPostext`, del pacchetto `postext-idml`: vedi [Uso programmatico › Pacchetti InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postext-idml).
 
 ### pack e unpack
 
@@ -436,7 +450,7 @@ postext build chapters/ --pdf book.pdf --watch
 ```
 
 `build` impagina il libro una volta e scrive ogni output che indichi (`--pdf`,
-`--html`, `--epub`, `--images`, `--docx`), con le opzioni di ciascun comando.
+`--html`, `--epub`, `--images`, `--docx`, `--idml`), con le opzioni di ciascun comando.
 `--watch` resta in esecuzione: quando cambiano un capitolo, la configurazione o un’immagine,
 il libro viene impaginato di nuovo con i font e il motore ancora
 caricati, di solito in una frazione di secondo per un capitolo, e gli output vengono
