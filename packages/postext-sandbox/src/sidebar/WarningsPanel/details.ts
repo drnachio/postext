@@ -3,7 +3,7 @@
 // A warning's detail line in the Checks panel, by kind, with the design
 // slot, face and resource it names and the page-template details
 // (#1276: split out of WarningsPanel.tsx).
-import { KNOWN_DIRECTIVES, KNOWN_CONTAINERS, HYPHENATION_LOCALES, type PageTemplateWarningKind } from 'postext';
+import { KNOWN_DIRECTIVES, KNOWN_CONTAINERS, HYPHENATION_LOCALES, MAX_PIN_PAGE_OFFSET, type PageTemplateWarningKind } from 'postext';
 import type { WarningPayload } from '../../warnings/types.js';
 import type { SandboxLabels } from '../../types/index.js';
 import { preflightDetail } from '../../print/preflightText.js';
@@ -316,10 +316,13 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return labels.warningsCalloutOverflowDetail
         .replace('__page__', String(payload.page))
         .replace('__mm__', payload.overflowMm.toFixed(1));
-    case 'floatPinMissed':
-      return labels.warningsFloatPinMissedDetail
-        .replace('__id__', payload.resourceId)
-        .replace('__page__', String(payload.page));
+    case 'floatPinMissed': {
+      const detail = payload.reason === 'tooFar' ? labels.warningsFloatPinMissedTooFarDetail
+        : payload.reason === 'column' ? labels.warningsFloatPinMissedColumnDetail
+          : payload.reason === 'unsupported' ? labels.warningsFloatPinMissedUnsupportedDetail
+            : labels.warningsFloatPinMissedDetail;
+      return `#${payload.resourceId} — ${detail.replace('__page__', payload.page !== undefined ? String(payload.page) : '?').replace('__max__', String(MAX_PIN_PAGE_OFFSET))}`;
+    }
     case 'headingDesignCut':
       return `H${payload.level} — ${labels.warningsHeadingDesignCutDetail
         .replace('__page__', String(payload.page))
