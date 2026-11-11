@@ -31,7 +31,7 @@ const fileBase = (name: string): string => name.replace(/\.[^.]+$/, '');
  *  `mañana.docx` stays whole in an Arabic sentence and the other way round. */
 export const isolate = (s: string): string => `\u2068${s}\u2069`;
 
-function Section({ title, children, defaultOpen = true }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
+export function Section({ title, children, defaultOpen = true }: { title: string; children: ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <Collapsible.Root open={open} onOpenChange={setOpen} className="border-t border-(--pt-control-border)">

@@ -8,6 +8,7 @@ import { configTools } from './config.js';
 import { designItemTools } from './designItems.js';
 import { editionCheckTools } from './editionChecks.js';
 import { historyTools } from './history.js';
+import { idmlTools } from './idml.js';
 import { frameStyleTools } from './frameStyles.js';
 import { moduleTools } from './modules.js';
 import { labelTools } from './labels.js';
@@ -42,6 +43,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...libraryTools(host),
     ...wordTools(host),
     ...wordEditTools(host),
+    ...idmlTools(host),
     ...answerTools(host),
     ...checkTools(host),
     ...editionCheckTools(host),

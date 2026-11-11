@@ -3,9 +3,12 @@
 // The Manuscript panel's Export to InDesign (#1491): the whole book laid
 // out as the PDF is (every chapter after the ones before it), written as
 // an IDML package and downloaded as `<title>.idml`, with what the writer
-// says InDesign will show differently.
+// says InDesign will show differently. The reader chooses whether the
+// lines are kept, how the pages pair, whether pictures are linked and
+// whether the fonts travel with it; with linked pictures or fonts the
+// package is downloaded in a zip beside its folders.
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, X } from 'lucide-react';
 import type { IdmlWarning } from 'postext-idml';
@@ -14,12 +17,13 @@ import { layOutBookPrint } from '../book/printChain.js';
 import { ensureConfigFontsLoaded } from '../controls/fonts/fontLoader.js';
 import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import { downloadBytes } from '../storage/persistence.js';
-import { Button, IconButton, announce, usePortalContainer } from '../ui/index.js';
+import { Button, IconButton, Select, Switch, announce, usePortalContainer, type SelectOption } from '../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { useLayoutWorker } from '../worker/useLayoutWorker.js';
 import { counted } from '../word/sandboxImport.js';
 import { isolate } from '../word/WordImportDialog.js';
-import { IDML_MIME, buildIdmlExport, idmlFileName } from './idmlExport.js';
+import { DEFAULT_IDML_CHOICES, buildIdmlExport, type IdmlExportChoices } from './idmlExport.js';
+import { idmlFontWithheld, sandboxIdmlFaces } from './idmlFonts.js';
 
 export interface IdmlExportDialogProps {
   open: boolean;
@@ -36,7 +40,7 @@ export function IdmlExportDialog(props: IdmlExportDialogProps) {
 }
 
 /** Where an export stands: the chapters laid out, then the package. */
-type Progress = { phase: 'layout'; done: number; total: number } | { phase: 'write' };
+type Progress = { phase: 'layout'; done: number; total: number } | { phase: 'fonts' } | { phase: 'write' };
 
 function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
   const labels = useSandboxLabels();
@@ -48,6 +52,11 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
   const layoutWorker = useLayoutWorker('pdf');
   const container = usePortalContainer();
   const titleId = useId();
+  const fontsId = useId();
+  const fontsHelpId = useId();
+  const [choices, setChoices] = useState<IdmlExportChoices>(DEFAULT_IDML_CHOICES);
+  const choose = <K extends keyof IdmlExportChoices>(key: K, value: IdmlExportChoices[K]) => setChoices((c) => ({ ...c, [key]: value }));
+  const [withheld, setWithheld] = useState<string[]>([]);
   const downloadRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const [busy, setBusy] = useState(false);
@@ -68,9 +77,9 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
   const progressText = (p: Progress | null): string =>
     p?.phase === 'layout'
       ? labels.idmlExportLayout.replace('__current__', String(Math.min(p.total, p.done + 1))).replace('__total__', String(p.total))
-      : labels.idmlExportWriting;
+      : p?.phase === 'fonts' ? labels.idmlExportFontsGathering : labels.idmlExportWriting;
   const fraction = (p: Progress | null): number =>
-    !p ? 0 : p.phase === 'layout' ? (p.total > 0 ? (p.done / p.total) * 0.85 : 0) : 0.9;
+    !p ? 0 : p.phase === 'layout' ? (p.total > 0 ? (p.done / p.total) * 0.8 : 0) : p.phase === 'fonts' ? 0.85 : 0.92;
 
   const run = async () => {
     setBusy(true);
@@ -78,7 +87,7 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
     setNotes(null);
     setProgress(null);
     const found: IdmlWarning[] = [];
-    const name = idmlFileName(bookTitle);
+    setWithheld([]);
     try {
       const effective = withHyphenationLocale(config, locale);
       await ensureConfigFontsLoaded(effective, chapters.map((c) => c.markdown));
@@ -88,22 +97,33 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
         onChapter: (index, count) => { if (!closedRef.current) setProgress({ phase: 'layout', done: index, total: count }); },
       });
       if (closedRef.current) return;
+      // The font files the Sandbox has: with them a face is named as its
+      // file names it, whether or not the files travel with the package.
+      setProgress({ phase: 'fonts' });
+      const faces = await sandboxIdmlFaces(docs);
+      if (closedRef.current) return;
       setProgress({ phase: 'write' });
-      const bytes = await buildIdmlExport({
+      const file = await buildIdmlExport({
         docs,
         resources,
         config: effective,
+        choices,
+        faces,
+        withheld: idmlFontWithheld,
         ...(bookTitle ? { title: bookTitle } : {}),
         onWarning: (w) => found.push(w),
       });
       if (closedRef.current) return;
-      downloadBytes(bytes, name, IDML_MIME);
-      if (found.length === 0) {
+      const name = file.name;
+      downloadBytes(file.bytes, name, file.mime);
+      setWithheld(file.withheld);
+      if (found.length === 0 && file.withheld.length === 0) {
         announce(labels.idmlExportDone.replace('__file__', isolate(name)));
         onClose();
         return;
       }
-      announce(counted(labels, 'idmlExportDoneNotes', found.length).replace('__file__', isolate(name)));
+      announce(found.length === 0 ? labels.idmlExportDone.replace('__file__', isolate(name)) : counted(labels, 'idmlExportDoneNotes', found.length).replace('__file__', isolate(name)));
+      if (file.withheld.length > 0) announce(labels.idmlExportFontsWithheld.replace('__list__', () => file.withheld.map(isolate).join(labels.frameStylesListSeparator)));
       setNotes(found);
     } catch (err) {
       if (closedRef.current || (err instanceof DOMException && err.name === 'AbortError')) return;
@@ -118,6 +138,28 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
       }
     }
   };
+
+  const lineOptions: SelectOption<IdmlExportChoices['lineBreaks']>[] = [
+    { value: 'keep', label: labels.idmlExportLinesKeep, description: labels.idmlExportLinesKeepHelp },
+    { value: 'reflow', label: labels.idmlExportLinesReflow, description: labels.idmlExportLinesReflowHelp },
+  ];
+  const spreadOptions: SelectOption<IdmlExportChoices['spreads']>[] = [
+    { value: 'auto', label: labels.idmlExportSpreadsAuto, description: labels.idmlExportSpreadsAutoHelp },
+    { value: 'facing', label: labels.idmlExportSpreadsFacing },
+    { value: 'single', label: labels.idmlExportSpreadsSingle },
+  ];
+  const imageOptions: SelectOption<IdmlExportChoices['images']>[] = [
+    { value: 'embed', label: labels.idmlExportImagesEmbed },
+    { value: 'link', label: labels.idmlExportImagesLink },
+  ];
+  // Folders travel beside the package in a zip.
+  const zipped = choices.images === 'link' || choices.fonts;
+  const optionRow = (label: string, control: ReactNode) => (
+    <div className="flex flex-wrap items-center justify-between gap-2" style={{ minHeight: 44 }}>
+      <span className="text-xs">{label}</span>
+      {control}
+    </div>
+  );
 
   return (
     <Dialog.Portal container={container}>
@@ -140,6 +182,28 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
         <Dialog.Description className="text-xs text-(--slate)" style={{ margin: 0 }}>
           {labels.idmlExportIntro}
         </Dialog.Description>
+
+        {!notes && (
+          <div className="flex flex-col gap-2">
+            {optionRow(labels.idmlExportLines, (
+              <Select<IdmlExportChoices['lineBreaks']> size="sm" value={choices.lineBreaks} onValueChange={(v) => choose('lineBreaks', v)} options={lineOptions} ariaLabel={labels.idmlExportLines} disabled={busy} />
+            ))}
+            {optionRow(labels.idmlExportSpreads, (
+              <Select<IdmlExportChoices['spreads']> size="sm" value={choices.spreads} onValueChange={(v) => choose('spreads', v)} options={spreadOptions} ariaLabel={labels.idmlExportSpreads} disabled={busy} />
+            ))}
+            {optionRow(labels.idmlExportImages, (
+              <Select<IdmlExportChoices['images']> size="sm" value={choices.images} onValueChange={(v) => choose('images', v)} options={imageOptions} ariaLabel={labels.idmlExportImages} disabled={busy} />
+            ))}
+            <div className="flex items-center justify-between gap-2" style={{ minHeight: 44 }}>
+              <label htmlFor={fontsId} className="cursor-pointer text-xs">
+                {labels.idmlExportFonts}
+                <span id={fontsHelpId} className="block text-(--slate)">{labels.idmlExportFontsHelp}</span>
+              </label>
+              <Switch id={fontsId} checked={choices.fonts} onCheckedChange={(v) => choose('fonts', v)} ariaDescribedBy={fontsHelpId} disabled={busy} />
+            </div>
+            {zipped && <p role="status" className="m-0 text-xs text-(--slate)">{labels.idmlExportZipNote}</p>}
+          </div>
+        )}
 
         {busy && (
           <div className="flex flex-col gap-1.5">
@@ -168,7 +232,12 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
 
         {notes && (
           <div className="flex flex-col gap-2 border-t border-(--pt-control-border) pt-2">
-            <p className="m-0 text-[13px] font-semibold">{labels.idmlExportNotes}</p>
+            {withheld.length > 0 && (
+              <p className="m-0 text-xs" style={{ overflowWrap: 'anywhere' }}>
+                {labels.idmlExportFontsWithheld.replace('__list__', () => withheld.map(isolate).join(labels.frameStylesListSeparator))}
+              </p>
+            )}
+            {notes.length > 0 && <p className="m-0 text-[13px] font-semibold">{labels.idmlExportNotes}</p>}
             <ul className="m-0 flex list-none flex-col gap-1.5 p-0">
               {notes.map((n, i) => (
                 <li key={i} className="flex items-start gap-2 text-xs">
@@ -186,7 +255,7 @@ function IdmlExportPopup({ onClose, bookTitle }: IdmlExportDialogProps) {
           ) : (
             <>
               <Button variant="outline" size="sm" onClick={onClose}>{labels.wordCancel}</Button>
-              <Button ref={downloadRef} variant="primary" size="sm" onClick={() => void run()} disabled={busy}>{labels.idmlExportAction}</Button>
+              <Button ref={downloadRef} variant="primary" size="sm" onClick={() => void run()} disabled={busy}>{zipped ? labels.idmlExportActionZip : labels.idmlExportAction}</Button>
             </>
           )}
         </div>

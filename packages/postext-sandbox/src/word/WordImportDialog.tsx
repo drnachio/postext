@@ -4,7 +4,7 @@ import { Dialog } from '@base-ui/react/dialog';
 import { counted } from './sandboxImport.js';
 import { type WordImportFile, WordImportPopup } from './WordImportDialog/WordImportPopup.js';
 
-export { isolate } from './WordImportDialog/WordImportPopup.js';
+export { isolate, Section as DialogSection } from './WordImportDialog/WordImportPopup.js';
 export type { WordImportFile } from './WordImportDialog/WordImportPopup.js';
 
 export { counted };
