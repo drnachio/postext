@@ -9,6 +9,7 @@ import type { ResolvedPrintConfig, PdfColorSpace } from 'postext';
 import type { PrintPdfReport } from 'postext-pdf/worker';
 import type { SandboxLabels } from '../types/index.js';
 import { fill } from './fillTokens.js';
+import type { Warning } from '../warnings/types.js';
 
 export type PdfCheckSeverity = 'critical' | 'warning' | 'info' | 'ok';
 export type PdfCheckGroup = 'output' | 'fonts' | 'inks';
@@ -52,6 +53,19 @@ export function sortBySeverity<T extends { severity: PdfCheckSeverity }>(items: 
   return [...items].sort((a, b) => SEVERITY_RANK[a.severity] - SEVERITY_RANK[b.severity]);
 }
 
+/** A finding's severity: the preflight's own, and a font warning's. */
+export function findingSeverity(w: Warning): PdfCheckSeverity {
+  return w.payload.kind === 'preflight' ? w.payload.check.severity : 'warning';
+}
+
+/** The verdict over the file's items and the book's findings. `ok` and
+ *  `info` mean no problems in what was checked, never more: an unreadable
+ *  or stale file has its own item and never reaches them. */
+export function pdfCheckVerdict(items: readonly PdfCheckItem[], findings: readonly Warning[]): PdfCheckSeverity {
+  const worst = worstSeverity([...items.map((i) => i.severity), ...findings.map(findingSeverity)]);
+  return worst === 'info' ? 'ok' : worst;
+}
+
 const fmtMm = (n: number) => String(Math.round(n * 10) / 10);
 
 function sizeLabel(bytes: number): string {
@@ -69,7 +83,8 @@ export function pdfCheckItems(input: PdfCheckInput, labels: SandboxLabels): PdfC
   if (input.stale) add({ id: 'stale', group: 'output', severity: 'warning', title: labels.pdfCheckStale, detail: labels.pdfCheckStaleDetail });
   if (input.chapterOnly) add({ id: 'chapterOnly', group: 'output', severity: 'info', title: labels.pdfCheckChapterOnly, detail: labels.pdfCheckChapterOnlyDetail });
   if (!report) {
-    add({ id: 'unreadable', group: 'output', severity: 'warning', title: labels.pdfCheckUnreadable });
+    // Nothing checked is nothing passed.
+    add({ id: 'unreadable', group: 'output', severity: 'critical', title: labels.pdfCheckUnreadable });
     return items;
   }
   add({
@@ -97,6 +112,9 @@ export function pdfCheckItems(input: PdfCheckInput, labels: SandboxLabels): PdfC
   if (report.mixedTrimPages > 0) {
     add({ id: 'mixedTrim', group: 'output', severity: 'warning', title: fill(labels.pdfCheckMixedTrim, { pages: report.mixedTrimPages }) });
   }
+  if (report.malformedBoxPages > 0) {
+    add({ id: 'malformedBoxes', group: 'output', severity: pdfxAsked ? 'critical' : 'warning', title: fill(labels.pdfCheckMalformedBoxes, { pages: report.malformedBoxPages }) });
+  }
   if (report.pagesWithoutTrimBox > 0 && pdfxAsked) {
     add({ id: 'noTrimBox', group: 'output', severity: 'critical', title: fill(labels.pdfCheckNoTrimBox, { pages: report.pagesWithoutTrimBox }) });
   }
@@ -122,7 +140,7 @@ export function pdfCheckItems(input: PdfCheckInput, labels: SandboxLabels): PdfC
   // ---- Fonts.
   const missing = report.fonts.filter((f) => !f.embedded);
   for (const f of missing) {
-    add({ id: `font-${f.name}`, group: 'fonts', severity: 'critical', title: fill(labels.pdfCheckFontNotEmbedded, { font: f.name }) });
+    add({ id: `font-${f.name}-${f.type}`, group: 'fonts', severity: 'critical', title: fill(labels.pdfCheckFontNotEmbedded, { font: f.name }), detail: f.type });
   }
   if (report.fonts.length > 0 && missing.length === 0) {
     add({
@@ -130,7 +148,7 @@ export function pdfCheckItems(input: PdfCheckInput, labels: SandboxLabels): PdfC
       group: 'fonts',
       severity: 'ok',
       title: fill(labels.pdfCheckFontsEmbedded, { count: report.fonts.length }),
-      detail: report.fonts.map((f) => `${f.name} (${f.type}${f.subset ? `, ${labels.pdfCheckFontSubset}` : ''})`).join(' · '),
+      detail: report.fonts.map((f) => `${f.name} (${f.type})`).join(' · '),
     });
   }
 
@@ -147,15 +165,35 @@ export function pdfCheckItems(input: PdfCheckInput, labels: SandboxLabels): PdfC
       detail: plates.join(' + '),
     });
   }
-  if (report.color.rgb) {
-    const severity: PdfCheckSeverity = print.standard === 'pdfx1a' ? 'critical' : cmykAsked ? 'info' : 'warning';
-    add({
-      id: 'rgb',
-      group: 'inks',
-      severity,
-      title: labels.pdfCheckRgb,
-      detail: cmykAsked ? labels.pdfCheckRgbKeptDetail : labels.pdfCheckRgbDetail,
-    });
+  const where = (use: { vector: boolean; images: boolean }): string =>
+    use.vector && use.images ? labels.pdfCheckRgbBoth : use.images ? labels.pdfCheckRgbImages : labels.pdfCheckRgbVector;
+  const { deviceRgb, iccRgb } = report.color;
+  if (!cmykAsked) {
+    // An RGB file is for screens, whatever its RGB.
+    if (report.color.rgb) {
+      add({ id: 'rgb', group: 'inks', severity: 'warning', title: fill(labels.pdfCheckRgbDevice, { where: where({ vector: deviceRgb.vector || iccRgb.vector, images: deviceRgb.images || iccRgb.images }) }), detail: labels.pdfCheckRgbDetail });
+    }
+  } else {
+    if (deviceRgb.vector || deviceRgb.images) {
+      // No profile: its print colour is the RIP's guess, and PDF/X takes
+      // it only under an RGB output intent.
+      add({
+        id: 'rgbDevice',
+        group: 'inks',
+        severity: pdfxAsked ? 'critical' : 'warning',
+        title: fill(labels.pdfCheckRgbDevice, { where: where(deviceRgb) }),
+        detail: print.standard === 'pdfx1a' ? labels.pdfCheckRgbX1aDetail : labels.pdfCheckRgbDeviceDetail,
+      });
+    }
+    if (iccRgb.vector || iccRgb.images) {
+      add({
+        id: 'rgbIcc',
+        group: 'inks',
+        severity: print.standard === 'pdfx1a' ? 'critical' : 'info',
+        title: fill(labels.pdfCheckRgbIcc, { where: where(iccRgb) }),
+        detail: print.standard === 'pdfx1a' ? labels.pdfCheckRgbX1aDetail : labels.pdfCheckRgbKeptDetail,
+      });
+    }
   }
   const lostSpots = input.bookSpotInks.filter((ink) => !report.color.spots.includes(ink));
   if (lostSpots.length > 0) {

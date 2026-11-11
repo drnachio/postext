@@ -39,35 +39,38 @@ export interface PdfCheckData {
  *  resources it was rendered from, the preflight on its pages, and its
  *  font warnings. Worked out only while the check is open. */
 export function usePdfCheck(open: boolean, config: PostextConfig, resources: readonly Resource[], docs: readonly VDTDocument[], fontChecks: readonly PdfFontCheck[]): PdfCheckData | null {
-  return useMemo(() => {
-    if (!open) return null;
-    const print = resolvePrintConfig(config.print);
-    const pdfGen = resolvePdfGenerationConfig(config.pdfGeneration);
-    const colorSpace: PdfColorSpace = pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb';
-    const cutLines = docs[0]?.config.page.cutLines.enabled ?? false;
-    const preflightRan = print.preflight.enabled && (print.standard !== 'none' || colorSpace === 'cmyk' || cutLines);
-    const inputs = preflightInputs(config.print, resources);
-    const once = new Set<string>();
-    const findings: Warning[] = [];
-    for (const doc of docs) {
-      for (const w of collectPreflightWarnings(doc, config, resources, inputs)) {
-        if (w.payload.kind === 'preflight' && ONCE_PER_BOOK.has(w.payload.check.kind)) {
-          // Ink limits are per colour and page; the rich-black recipe's is
-          // the job's.
-          if (w.payload.check.kind !== 'inkLimit' || w.payload.check.color === 'rich-black') {
-            const key = JSON.stringify(w.payload.check);
-            if (once.has(key)) continue;
-            once.add(key);
-          }
+  return useMemo(() => (open ? pdfCheckData(config, resources, docs, fontChecks) : null), [open, config, resources, docs, fontChecks]);
+}
+
+/** {@link usePdfCheck}'s work, for a caller outside React (the WebMCP
+ *  check). */
+export function pdfCheckData(config: PostextConfig, resources: readonly Resource[], docs: readonly VDTDocument[], fontChecks: readonly PdfFontCheck[]): PdfCheckData {
+  const print = resolvePrintConfig(config.print);
+  const pdfGen = resolvePdfGenerationConfig(config.pdfGeneration);
+  const colorSpace: PdfColorSpace = pdfGen.forceColorSpace ? pdfGen.colorSpace : 'rgb';
+  const cutLines = docs[0]?.config.page.cutLines.enabled ?? false;
+  const preflightRan = print.preflight.enabled && (print.standard !== 'none' || colorSpace === 'cmyk' || cutLines);
+  const inputs = preflightInputs(config.print, resources);
+  const once = new Set<string>();
+  const findings: Warning[] = [];
+  for (const doc of docs) {
+    for (const w of collectPreflightWarnings(doc, config, resources, inputs)) {
+      if (w.payload.kind === 'preflight' && ONCE_PER_BOOK.has(w.payload.check.kind)) {
+        // Ink limits are per colour and page; the rich-black recipe's is
+        // the job's.
+        if (w.payload.check.kind !== 'inkLimit' || w.payload.check.color === 'rich-black') {
+          const key = JSON.stringify(w.payload.check);
+          if (once.has(key)) continue;
+          once.add(key);
         }
-        findings.push(w);
       }
+      findings.push(w);
     }
-    findings.push(...pdfFontWarnings(fontChecks));
-    // The inks the pages paint, as the preflight found them; without a
-    // preflight, the ones the configuration defines.
-    const used = findings.flatMap((w) => (w.payload.kind === 'preflight' && w.payload.check.kind === 'spotInks' ? w.payload.check.inks : []));
-    const bookSpotInks = preflightRan ? used : spotInks(spotsThroughInkTable(authoredSpotColors(config), new Map(), print.inks).spots.values()).inks.map((i) => i.name);
-    return { print, colorSpace, cutLines, preflightRan, findings, bookSpotInks };
-  }, [open, config, resources, docs, fontChecks]);
+  }
+  findings.push(...pdfFontWarnings(fontChecks));
+  // The inks the pages paint, as the preflight found them; without a
+  // preflight, the ones the configuration defines.
+  const used = findings.flatMap((w) => (w.payload.kind === 'preflight' && w.payload.check.kind === 'spotInks' ? w.payload.check.inks : []));
+  const bookSpotInks = preflightRan ? used : spotInks(spotsThroughInkTable(authoredSpotColors(config), new Map(), print.inks).spots.values()).inks.map((i) => i.name);
+  return { print, colorSpace, cutLines, preflightRan, findings, bookSpotInks };
 }

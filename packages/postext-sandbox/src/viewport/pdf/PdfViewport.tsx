@@ -13,7 +13,7 @@ import {
 } from 'postext';
 import { loadPrintProfile, outputProfileBaseUrl } from '../../print/printSetup.js';
 import { createPdfWorker, type PdfWorkerHandle, type PrintPdfReport, type RenderProgress } from 'postext-pdf/worker';
-import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxSelector, useLayoutSource } from '../../context/SandboxContext.js';
+import { useBookPages, useBookPlan, useChapterPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector, useLayoutSource } from '../../context/SandboxContext.js';
 import { composeBookMemo } from '../../book/compose.js';
 import { chapterLayoutFromDoc } from '../../book/pagination.js';
 import { layOutBookPrint } from '../../book/printChain.js';
@@ -35,13 +35,15 @@ import { useViewerControls } from '../viewerControls.js';
 import { announce } from '../../ui/announcer.js';
 import { isCancellation } from './cancellation.js';
 import { PdfCheckDialog } from './PdfCheckDialog.js';
-import { usePdfCheck } from './usePdfCheck.js';
+import { pdfCheckData, usePdfCheck } from './usePdfCheck.js';
+import { printCheckReport } from './printCheckReport.js';
 
 /** The PDF tab is the one place the whole book can be rendered as one
  *  continuous document; by default it shows the active chapter continued
  *  after the ones before it, like the other previews. */
 export function PdfViewport() {
   const dispatch = useSandboxDispatch();
+  const labels = useSandboxLabels();
   const chapterSource = useLayoutSource();
   const currentPlan = useChapterPlan(chapterSource.chapterId);
   const scope = useSandboxSelector((s) => s.pdfScope);
@@ -459,6 +461,13 @@ export function PdfViewport() {
     file: () => (bytesUrl && bytesRef.current ? { bytes: bytesRef.current, name: fileName(), mime: 'application/pdf' } : null),
     download: handleDownload,
     print: handlePrint,
+    checkForPrint: async () => {
+      const bytes = bytesRef.current;
+      if (!bytesUrl || !bytes) throw new Error('There is no PDF on screen.');
+      const read = report?.bytes === bytes ? report.report : await pdfWorker().inspect(bytes).catch(() => undefined);
+      const data = pdfCheckData(renderedConfigRef.current ?? effectiveConfig, renderedResourcesRef.current ?? resources, renderedDocsRef.current, renderedFontChecksRef.current);
+      return printCheckReport(read, data, { stale: dirty, chapterOnly: scope === 'chapter' }, labels);
+    },
   });
 
   return (
