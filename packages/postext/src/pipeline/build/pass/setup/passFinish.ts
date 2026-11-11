@@ -14,6 +14,7 @@ import { fillPageMarks, stampCarriedSource, carriedByDoc } from '../../pageMarks
 import { buildLineNumbers } from '../../../text/lineNumbers.js';
 import { buildHeadersAndFooters } from '../../../pages/headerFooter.js';
 import { flowColorValues } from '../../../sections/partPalette.js';
+import { paletteTints } from '../../../../defaults/shared.js';
 import { leadingBoldText } from '../../../pages/placeholders.js';
 import { buildCodeLineNumbers } from '../../../code/codeLines.js';
 import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
@@ -212,6 +213,7 @@ export function createPassFinish(deps: PassFinishDeps) {
     // colour follows its own settings under a part or section palette.
     // (The default resource types set no caption style of their own.)
     flowColorValues: (overrides) => flowColorValues(config, overrides, config?.resourceTypes),
+    paletteTints: config ? paletteTints(config) : [],
     // `{firstMark.<style>}` / `{lastMark.<style>}`: a paragraph of a
     // `:::paragraphs` container marks the page with its leading bold run.
     paragraphMark: (idx) => {

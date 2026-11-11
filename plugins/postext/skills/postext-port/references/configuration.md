@@ -58,7 +58,7 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, overprint?: boolean, paletteId?: string, tint?: number }
 ```
 - `hex`: `#rrggbb`, `#rgb`, `#rgba`, `#rrggbbaa`, `rgb()` / `rgba()` (comma or space syntax, alpha as number or %), or `'transparent'`. Translucent colours paint the same on canvas, HTML and PDF (ExtGState alpha); PDF/X-1a flattens them.
 - `model` says how the colour was specified; screens draw `hex`.
@@ -68,6 +68,11 @@ Conversion at `page.dpi` (default 300):
 - `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
   `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
   alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
+- `overprint: true` (any model): in a print render everything painted in the colour overprints
+  instead of knocking out (a process colour as it separates, a spot ink as `spot.overprint`); RGB
+  output ignores it. On the palette entry, every linked use overprints. Never on paper white.
+- `tint` (with `paletteId`, 0–100): the entry at that strength over the paper (a callout ground at
+  8 % of the main colour), following the entry and part/section palettes; a screen colour in print.
   A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
   (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
   here, on the palette entry. In the print PDF an SVG colour prints on an ink only when it names
@@ -2729,7 +2734,7 @@ as a change. Left out, the file is stamped with the time of the call.
   `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
   name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
   `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
-  with `aliases`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 

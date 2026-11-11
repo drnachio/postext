@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, type SpotColor } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -422,11 +422,13 @@ async function printColorMode(
       : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
     const authored = new Map<string, CmykPercent>();
     const spots = new Map<string, Required<SpotColor>>();
+    const overprints = new Set<string>();
     for (const doc of docs) {
       authoredCmykColors(doc.config, authored);
       authoredSpotColors(doc.config, spots);
+      overprintColors(doc.config, overprints);
     }
-    return createPrintColorMode(profile, config, condition, authored, spots);
+    return createPrintColorMode(profile, config, condition, authored, spots, overprints);
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

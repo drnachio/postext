@@ -166,7 +166,7 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
   });
   // The same overrides recolour the palette-linked colours of the flow,
   // and of the line numbers (#621).
-  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
+  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues, inputs.paletteTints);
   recolorLineNumbers(doc, partPaletteByPageIndex);
   // And the paper: a page whose overrides change the entry the page colour
   // links to paints that colour instead.

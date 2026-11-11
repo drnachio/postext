@@ -149,6 +149,10 @@ export function applyPrintPass(
     const [c, m, y, k] = args.map(num) as [number, number, number, number];
     const paint = mode.inkRegistry.paintOf(c, m, y, k);
     if (!paint) return undefined;
+    if ('process' in paint) {
+      // A process colour that overprints: its own values, overprinting.
+      return { ops: [PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorCmyk : PDFOperatorNames.NonStrokingColorCmyk, paint.process.map((v) => PDFNumber.of(v)))], over: true };
+    }
     const space = options.spaceFor(paint.plate);
     return {
       ops: [

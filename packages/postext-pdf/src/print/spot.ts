@@ -35,6 +35,15 @@ export interface SpotPaint {
   tint: number;
 }
 
+/** A process colour that overprints (`ColorValue.overprint`): written
+ *  back as this CMYK (0..1), under an overprinting state. */
+export interface OverprintPaint {
+  process: [number, number, number, number];
+}
+
+/** What a stand-in `k` / `K` is written back as. */
+export type StandInPaint = SpotPaint | OverprintPaint;
+
 /** Codes stay below half the grid step, so a code added to one grid value
  *  and one subtracted from the next can never meet. */
 const STEP = 1e-8;
@@ -65,7 +74,7 @@ const nudge = (v: number, code: number): number => (v >= 0.5 ? v - code * STEP :
  * is written under, and its Separation colour space in the document.
  */
 export class SpotInkRegistry {
-  private readonly paintsByKey = new Map<string, SpotPaint>();
+  private readonly paintsByKey = new Map<string, StandInPaint>();
   private readonly colorsByPaint = new Map<string, Color>();
   /** The first definition of each ink name: one name, one plate. */
   private readonly platesByName = new Map<string, SpotPlate>();
@@ -108,8 +117,29 @@ export class SpotInkRegistry {
     return color;
   }
 
-  /** The spot paint a `k` / `K` operator's operands stand for, if any. */
-  paintOf(c: number, m: number, y: number, k: number): SpotPaint | undefined {
+  /**
+   * The pdf-lib colour that stands for a process colour that overprints
+   * (`ColorValue.overprint`) until the print pass writes it back as it is,
+   * under an overprinting graphics state: coded like a spot colour's
+   * stand-in. Past the codes it prints knocked out, as any process colour.
+   */
+  overprintStandIn(c: number, m: number, y: number, k: number): Color {
+    const key = `over|${c},${m},${y},${k}`;
+    const known = this.colorsByPaint.get(key);
+    if (known) return known;
+    const index = this.colorsByPaint.size;
+    if (index >= this.maxCodes) return cmyk(c, m, y, k);
+    const kc = nudge(k, (index % PER_CHANNEL) + 1);
+    const cc = nudge(c, Math.floor(index / PER_CHANNEL));
+    const color = cmyk(cc, m, y, kc);
+    this.colorsByPaint.set(key, color);
+    this.paintsByKey.set(operandKey(cc, m, y, kc), { process: [c, m, y, k] });
+    return color;
+  }
+
+  /** The paint a `k` / `K` operator's operands stand for, if any: a spot
+   *  ink at a tint, or a process colour that overprints. */
+  paintOf(c: number, m: number, y: number, k: number): StandInPaint | undefined {
     return this.paintsByKey.get(operandKey(c, m, y, k));
   }
 

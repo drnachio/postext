@@ -22,6 +22,7 @@ import type { ColorPaletteEntry, ColorValue } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
 import { type FlowColorValues, withHash, type Remap } from './partPalette/colorKinds.js';
 import { type PageRemaps, recolorBlock, type KindGroups } from './partPalette/recolor.js';
+import { paletteTintHex } from '../../defaults/shared.js';
 
 export type { TextColorRole, TocColorRole, FrameColorRole, FlowColorKind, FlowColorValues } from './partPalette/colorKinds.js';
 export { flowColorValues, forgetFlowColorValues } from './partPalette/flowColors.js';
@@ -36,6 +37,7 @@ export function applyPartPalettesToFlow(
   palettes: readonly Record<string, string>[],
   basePalette: readonly ColorPaletteEntry[] | undefined,
   valuesFor?: (overrides: Readonly<Record<string, string>>) => FlowColorValues,
+  tints: readonly number[] = [],
 ): void {
   if (!basePalette || basePalette.length === 0) return;
   const baseHex = new Map(basePalette.map((e) => [e.id, e.value.hex.toLowerCase()]));
@@ -47,7 +49,12 @@ export function applyPartPalettesToFlow(
     for (const [id, hex] of Object.entries(overrides)) {
       const base = baseHex.get(id);
       const next = withHash(hex);
-      if (base && base !== next.toLowerCase()) map.set(base, next);
+      if (base && base !== next.toLowerCase()) {
+        map.set(base, next);
+        // A colour linked at a tint (`ColorValue.tint`) painted the entry at
+        // that strength: it takes the override at the same strength.
+        for (const t of tints) map.set(paletteTintHex(base, t).toLowerCase(), paletteTintHex(next, t));
+      }
     }
     const remaps = map.size === 0 ? null : pageRemaps(map, overrides, basePalette, valuesFor);
     cache.set(overrides, remaps);

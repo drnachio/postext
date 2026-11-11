@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '36 min',
+  readingTime: '37 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "This page covers the settings shared by the whole book and the settings for each kind of output. It explains how to write a measure and a colour, and how to name the colours of a palette. It shows how to add your own fonts. Then it covers the web view, the PDF file, the files a printing company asks for and the 3D book. The last section turns on the guides and warnings that help while you work.",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // The ink of a spot colour (see Spot colours).
   paletteId?: string;  // The colorPalette entry it follows (see Color Palette).
+  tint?: number;       // The strength of the entry over the paper, percent (with paletteId).
 }
 ```
 
@@ -266,6 +267,8 @@ const config: PostextConfig = {
 Any `ColorValue` in the configuration can carry an optional `paletteId` field pointing at an entry in `colorPalette`: page background, body text colors (the `:ref` colour included), heading colors, column rules, list colors, table, caption, chip and callout colors (box, stripe, icon, marker, label, title, body), cut-mark and baseline-grid colors, debug indicators, and every colour of a design — the running heads, the heading openers and in-column designs, the heading styles' designs and running heads, the part pages and the contents' part rows (text, rule, box fill and border, outline, drop cap). When present, the palette entry's `hex` / `model` win over the fallback `hex` / `model` stored alongside. The inline fallback is only used if the palette is missing, empty, or doesn't contain that id — useful when shipping a config that will be read by a tool that doesn't understand palettes.
 
 **Changed in postext 1.5.** Up to postext 1.4 the palette reached only a fixed list of settings. The others — the colours of the designs (running heads, openers, heading styles, parts, contents rows), `bodyText.referenceColor`, the callout label colours and the bold / italic colours of callout bodies — kept the `hex` stored beside their `paletteId`. A document whose stored value differs from the palette entry — every one edited in the Sandbox after the entry changed, and every `:ref` when the Main Color is not `#295AA3` — now prints the palette colour, as the link says. To keep a colour as it was, remove its `paletteId`.
+
+**A tint of a palette entry.** With `paletteId`, `tint` (0–100) paints the entry at that strength over the paper: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` is the main colour at 8 %, a callout ground that follows the main colour when the palette changes, a part's or a section's palette included. `hex` keeps the tinted value, the fallback without the entry. The tint is a screen colour: a print render separates it like any other, even when the entry is a spot ink. In the Sandbox, a linked colour's picker has a **Tint** field.
 
 ### How palettes are applied
 
@@ -772,6 +775,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### Colours that overprint
+
+Any colour can overprint in a print render: `overprint: true` on a `ColorValue` sets everything painted in it — text, rules, boxes, grounds — over what is under it instead of knocking it out, so a style set in that colour overprints wherever it is used. A process colour is written as it separates, under an overprinting graphics state; a spot colour's ink overprints as `spot.overprint` makes it do. Black at 100 % K overprints already (`black.overprint`). An RGB PDF and the screen ignore it. Set it on the palette entry to make every colour linked to it overprint.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+A colour that overprints and puts no ink down (paper white, an ink at 0 %) disappears on press: the preflight reports it as critical (`overprintWhite`). In the Sandbox, the colour picker's "Overprint in print" box sets it.
 
 ### Preflight
 

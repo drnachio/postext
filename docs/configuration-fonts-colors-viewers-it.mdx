@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Unità, colori e tavolozza; i font personalizzati; il visualizzatore HTML, il PDF e la produzione di stampa; il visualizzatore Folio e le sovrimpressioni di debug',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '40 min',
+  readingTime: '41 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Questa pagina tratta le impostazioni comuni a tutto il libro e quelle di ogni tipo di output. Spiega come scrivere una misura e un colore, e come dare un nome ai colori di una tavolozza. Mostra come aggiungere i tuoi font. Poi tratta la vista web, il file PDF, i file richiesti da una tipografia e il libro in 3D. L’ultima sezione attiva le guide e gli avvisi che aiutano mentre lavori.",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // L’inchiostro di una tinta piatta.
   paletteId?: string;  // La voce di colorPalette che segue.
+  tint?: number;       // L'intensità della voce sulla carta, in percentuale (con paletteId).
 }
 ```
 
@@ -266,6 +267,8 @@ const config: PostextConfig = {
 Qualsiasi `ColorValue` della configurazione può portare un campo facoltativo `paletteId` che punta a una voce di `colorPalette`: sfondo della pagina, colori del testo corrente (compreso il colore di `:ref`), colori dei titoli, filetti tra le colonne, colori degli elenchi, colori di tabelle, didascalie, chip e riquadri (riquadro, banda, icona, indicatore, etichetta, titolo, corpo), colori dei segni di taglio e della griglia della linea di base, indicatori di debug e ogni colore della grafica: le testatine, le aperture dei titoli e la grafica nella colonna, la grafica e le testatine degli stili dei titoli, le pagine di parte e le righe delle parti nell’indice (testo, filetto, riempimento e bordo del riquadro, contorno, capolettera). Quando è presente, `hex` / `model` della voce della tavolozza prevalgono sui valori di riserva `hex` / `model` memorizzati accanto. Il valore di riserva in linea si usa solo se la tavolozza manca, è vuota o non contiene quell’id: utile quando distribuisci una configurazione che verrà letta da uno strumento che non conosce le tavolozze.
 
 **Cambiato in postext 1.5.** Fino a postext 1.4 la tavolozza raggiungeva solo una lista fissa di impostazioni: i colori della grafica (testatine, aperture, stili dei titoli, parti, righe dell’indice), `bodyText.referenceColor`, i colori delle etichette dei riquadri e i colori del grassetto e del corsivo del corpo dei riquadri mantenevano l’`hex` memorizzato accanto al loro `paletteId`. Un documento il cui valore memorizzato è diverso dalla voce della tavolozza (ogni documento modificato nella Sandbox dopo che la voce è cambiata, e ogni `:ref` quando il Main Color non è `#295AA3`) ora stampa il colore della tavolozza, come prevede il collegamento. Per mantenere un colore com’era, rimuovi il suo `paletteId`.
+
+**Una tinta di una voce della tavolozza.** Con `paletteId`, `tint` (0–100) dipinge la voce a quell'intensità sulla carta: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` è il colore principale all'8 %, uno sfondo di riquadro che segue il colore principale quando cambia la tavolozza, anche quella di una parte o di una sezione. `hex` conserva il valore già tinto, quello di riserva senza la voce. La tinta è un colore da schermo: un'uscita di stampa la separa come qualsiasi altro, anche se la voce è un inchiostro spot. Nel Sandbox, il selettore di un colore collegato ha un campo **Tinta**.
 
 ### Come si applicano le tavolozze
 
@@ -772,6 +775,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### Colori in sovrastampa
+
+Qualsiasi colore può andare in sovrastampa in un rendering di stampa: `overprint: true` su un `ColorValue` fa stampare tutto ciò che si disegna con esso (testo, filetti, riquadri, fondi) sopra ciò che sta sotto invece di risparmiarlo, così uno stile in quel colore va in sovrastampa ovunque venga usato. Un colore di quadricromia si scrive così come si separa, sotto uno stato grafico di sovrastampa; l’inchiostro di una tinta piatta va in sovrastampa come stabilisce `spot.overprint`. Il nero al 100 % K va già in sovrastampa (`black.overprint`). Un PDF RGB e lo schermo lo ignorano. Impostalo sulla voce della tavolozza perché vada in sovrastampa ogni colore collegato a essa.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Un colore in sovrastampa che non deposita inchiostro (il bianco della carta, un inchiostro allo 0 %) scompare in stampa: il preflight lo segnala come critico (`overprintWhite`). Nella Sandbox lo imposta la casella «Sovrastampa in tipografia» del selettore di colore.
 
 ### Preflight
 

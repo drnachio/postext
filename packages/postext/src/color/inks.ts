@@ -145,16 +145,24 @@ const hex6 = (hex: string): string => hex.slice(0, 7).toLowerCase();
 /** What a colour that states its print values prints as: its ink (name,
  *  alternate, tint, overprint) or its CMYK. */
 function paintOf(v: unknown): string | undefined {
+  const over = (v as { overprint?: unknown }).overprint === true ? '|over' : '';
   if (isAuthoredSpot(v)) {
     const s = normalizeSpotColor(v.spot);
-    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}`;
+    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}${over}`;
   }
   if (isAuthoredCmyk(v)) {
     const c = v.cmyk;
-    return `cmyk|${c.c},${c.m},${c.y},${c.k}`;
+    return `cmyk|${c.c},${c.m},${c.y},${c.k}${over}`;
   }
+  // A screen colour that overprints states a print value too: it keeps a
+  // hex apart from colours that print otherwise.
+  if (over) return `hex${over}`;
   return undefined;
 }
+
+/** Whether a paint moves, or makes another move, when two share a hex: a
+ *  spot colour's, or a colour's that overprints. */
+const movable = (paint: string): boolean => paint.startsWith('spot|') || paint.endsWith('|over');
 
 const isPlain = (v: object): boolean => {
   const proto = Object.getPrototypeOf(v);
@@ -181,18 +189,19 @@ function nearestFree(hex: string, taken: Set<string>): string {
 }
 
 /**
- * The configuration with every spot colour on a screen hex of its own,
- * apart from any other colour that states its print values (a spot colour,
- * a colour authored in CMYK).
+ * The configuration with every spot colour, and every colour that
+ * overprints, on a screen hex of its own, apart from any other colour that
+ * states its print values (a spot colour, a colour authored in CMYK, a
+ * colour that overprints).
  *
  * A print render knows a colour only by the hex the layout painted, so two
  * such colours sharing one (`PANTONE 286 C` and a 40 % tint of another ink,
  * or a spot and a CMYK colour picked to look alike) printed both as the
  * first. The later one moves to the nearest free hex, a step away on
  * screen; a colour linked to a palette entry follows the entry. Two CMYK
- * colours sharing a hex are left as they were: only a spot colour moves
- * or makes another colour move, so a book without spot colours keeps
- * every colour it had. A plain
+ * colours sharing a hex are left as they were: only a spot colour or a
+ * colour that overprints moves or makes another colour move, so a book
+ * without them keeps every colour it had. A plain
  * screen colour (`model: 'hex'`) equal to one of them still prints as it,
  * the way an unlinked colour shares a palette colour's value. Returns the
  * configuration itself when nothing collides.
@@ -237,7 +246,7 @@ export function separatePrintColors<T extends PostextConfig | undefined>(config:
       continue;
     }
     if (held === paint) continue;
-    if (!held.startsWith('spot|') && !paint.startsWith('spot|')) continue;
+    if (!movable(held) && !movable(paint)) continue;
     const key = `${hex}|${paint}`;
     let next = movedTo.get(key);
     if (!next) {

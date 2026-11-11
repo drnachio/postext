@@ -17,6 +17,7 @@ export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): st
     case 'spotInkName': return labels.preflightSpotInkName;
     case 'spotInkSimilar': return labels.preflightSpotInkSimilar;
     case 'spotInkUndefined': return labels.preflightSpotInkUndefined;
+    case 'overprintWhite': return labels.preflightOverprintWhite;
     case 'safeZone': return labels.preflightSafeZone;
     case 'nearTrim': return labels.preflightNearTrim;
     case 'masterFonts': return labels.preflightMasterFonts;
@@ -72,6 +73,8 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
       return fill(labels.preflightSpotInkUndefinedDetail, { ink: check.ink, file: check.resourceId ?? check.fileId });
     case 'spotInkSimilar':
       return fill(labels.preflightSpotInkSimilarDetail, { inks: check.inks.map((i) => `“${i}”`).join(', ') });
+    case 'overprintWhite':
+      return fill(labels.preflightOverprintWhiteDetail, { color: check.color });
     case 'safeZone':
       return fill(labels.preflightSafeZoneDetail, { distance: check.distanceMm, zone: check.safeZoneMm, text: check.text });
     case 'nearTrim':

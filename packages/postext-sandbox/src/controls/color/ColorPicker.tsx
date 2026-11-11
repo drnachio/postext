@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
-import type { ColorValue, SpotColor } from 'postext';
+import { paletteTintHex, type ColorValue, type SpotColor } from 'postext';
 import { useSandbox } from '../../context/SandboxContext.js';
 import { FieldRow } from '../FieldRow.js';
 import { useFieldIds } from '../fieldContext.js';
@@ -57,9 +57,13 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
     setPopoverOpen(next);
   };
 
+  // A colour that overprints in print (`ColorValue.overprint`) keeps doing
+  // so whatever notation edits it.
+  const over = value.overprint ? { overprint: true } : {};
+
   const handleHexChange = (hex: string) => {
     // A colour picked another way is no longer an ink.
-    onChange({ hex, model: value.model === 'spot' ? 'hex' : value.model });
+    onChange({ hex, model: value.model === 'spot' ? 'hex' : value.model, ...over });
   };
 
   const handleModeChange = (newMode: ColorMode) => {
@@ -70,17 +74,18 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
       model: newMode === 'spot' && !value.spot ? value.model : newMode,
       ...(newMode === 'cmyk' && value.cmyk ? { cmyk: value.cmyk } : {}),
       ...(value.spot ? { spot: value.spot } : {}),
+      ...over,
     });
   };
 
   // A spot colour: an ink of its own, on its own plate.
   const handleSpotChange = (spot: SpotColor, hex: string) => {
-    onChange({ hex, model: 'spot', spot });
+    onChange({ hex, model: 'spot', spot, ...over });
   };
 
   // A colour set in the CMYK tab keeps its exact values (#604).
   const handleCmykChange = (cmyk: { c: number; m: number; y: number; k: number }, hex: string) => {
-    onChange({ hex, model: 'cmyk', cmyk });
+    onChange({ hex, model: 'cmyk', cmyk, ...over });
   };
 
   const linkToEntry = (paletteId: string) => {
@@ -96,15 +101,28 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
     onChange({ hex: source.hex, model: source.model, ...(source.cmyk ? { cmyk: source.cmyk } : {}), ...(source.spot ? { spot: source.spot } : {}) });
   };
 
+  // A linked colour at a tint (`ColorValue.tint`): the entry at that
+  // strength, which follows the entry when the palette changes.
+  const tint = isLinked && value.tint !== undefined && value.tint < 100 ? value.tint : undefined;
+  const setTint = (next: number) => {
+    if (!linkedEntry) return;
+    const { tint: _drop, ...rest } = value;
+    void _drop;
+    const t = Math.round(Math.min(100, Math.max(0, next)));
+    onChange(t >= 100
+      ? { ...rest, hex: linkedEntry.value.hex, model: linkedEntry.value.model }
+      : { ...rest, hex: paletteTintHex(linkedEntry.value.hex, t), model: 'hex', tint: t });
+  };
+
   const displayText = isLinked
-    ? linkedEntry!.name
+    ? `${linkedEntry!.name}${tint !== undefined ? ` ${tint} %` : ''}`
     : mode === 'cmyk' && value.cmyk
       ? `${value.cmyk.c} ${value.cmyk.m} ${value.cmyk.y} ${value.cmyk.k}`
       : mode === 'spot' && value.spot
         ? `${value.spot.name}${(value.spot.tint ?? 100) < 100 ? ` ${value.spot.tint} %` : ''}`
         : formatColor(value.hex, mode);
   const modeLabel = isLinked ? '' : mode === 'spot' ? state.labels.colorModeSpotShort : mode.toUpperCase();
-  const swatchHex = isLinked ? linkedEntry!.value.hex : value.hex;
+  const swatchHex = isLinked ? paletteTintHex(linkedEntry!.value.hex, tint) : value.hex;
   const alpha = hexAlpha(swatchHex);
   const hex6 = hexWithoutAlpha(swatchHex);
   // The colour's contrast with what the book sets it with (#748).
@@ -145,7 +163,29 @@ export function ColorPicker({ label, value: rawValue, onChange, tooltip, isDefau
         onLinkPalette={linkToEntry}
         onUnlinkPalette={unlink}
         unlinkLabel={unlinkLabel}
-        footer={contrast ? <ContrastDetails contrast={contrast} hex={swatchHex} labels={state.labels} /> : undefined}
+        footer={
+          <>
+            {!isLinked && value.hex !== 'transparent' && value.model !== 'spot' && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 10, color: 'var(--foreground)', cursor: 'pointer' }} title={state.labels.colorOverprintHint}>
+                <input type="checkbox" checked={!!value.overprint} onChange={(e) => {
+                  const { overprint: _drop, ...rest } = value;
+                  void _drop;
+                  onChange(e.target.checked ? { ...rest, overprint: true } : rest);
+                }} />
+                {state.labels.colorOverprint}
+              </label>
+            )}
+            {isLinked && (
+              <label style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 8, fontSize: 10, color: 'var(--foreground)' }} title={state.labels.colorPaletteTintHint}>
+                {state.labels.colorPaletteTint}
+                <input type="number" min={0} max={100} step={1} value={tint ?? 100} style={{ width: 48 }}
+                  onChange={(e) => { const n = Number(e.target.value); if (Number.isFinite(n)) setTint(n); }} />
+                %
+              </label>
+            )}
+            {contrast ? <ContrastDetails contrast={contrast} hex={swatchHex} labels={state.labels} /> : null}
+          </>
+        }
       />
     </div>
   );

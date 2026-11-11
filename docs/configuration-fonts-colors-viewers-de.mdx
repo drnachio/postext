@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Einheiten, Farben und die Palette, eigene Schriften, der HTML-Betrachter, PDF und Druckvorstufe, der Folio-Betrachter und die Debug-Überlagerungen',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '36 min',
+  readingTime: '37 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen, die für das ganze Buch gelten, und die Einstellungen für jede Art von Ausgabe. Sie erklärt, wie Sie ein Maß und eine Farbe angeben und wie Sie die Farben einer Palette benennen. Sie zeigt, wie Sie eigene Schriften hinzufügen. Danach geht es um die Webansicht, die PDF-Datei, die Dateien, die eine Druckerei verlangt, und das 3D-Buch. Der letzte Abschnitt schaltet die Hilfslinien und Warnungen ein, die Ihnen bei der Arbeit helfen.",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // Die Druckfarbe einer Sonderfarbe.
   paletteId?: string;  // Der Eintrag von colorPalette, dem sie folgt.
+  tint?: number;       // Die Stärke des Eintrags auf dem Papier in Prozent (mit paletteId).
 }
 ```
 
@@ -266,6 +267,8 @@ const config: PostextConfig = {
 Jeder `ColorValue` der Konfiguration kann ein optionales Feld `paletteId` haben, das auf einen Eintrag in `colorPalette` zeigt: Seitenhintergrund, Farben des Grundtexts (einschließlich der Farbe von `:ref`), Überschriftenfarben, Spaltenlinien, Listenfarben, die Farben von Tabellen, Legenden, Chips und Kästen (Kasten, Streifen, Symbol, Markierung, Etikett, Titel, Text), Farben von Schnittmarken und Grundlinienraster, Debug-Anzeigen und jede Farbe einer Gestaltung – die Kolumnentitel, die Überschriftenauftakte und Gestaltungen in der Spalte, Gestaltungen und Kolumnentitel der Überschriftenstile, die Teiltitelseiten und die Teilzeilen des Inhaltsverzeichnisses (Text, Linie, Kastenfläche und -kontur, Buchstabenkontur, Initiale). Ist es vorhanden, haben `hex` / `model` des Paletteneintrags Vorrang vor dem daneben gespeicherten Ersatzwert `hex` / `model`. Der eingebettete Ersatzwert wird nur verwendet, wenn die Palette fehlt, leer ist oder diese ID nicht enthält – nützlich, wenn Sie eine Konfiguration ausliefern, die ein Werkzeug ohne Palettenunterstützung lesen wird.
 
 **Geändert in postext 1.5.** Bis postext 1.4 erreichte die Palette nur eine feste Liste von Einstellungen: Die Farben der Gestaltungen (Kolumnentitel, Auftakte, Überschriftenstile, Teile, Zeilen des Inhaltsverzeichnisses), `bodyText.referenceColor`, die Etikettfarben der Kästen und die Farben für Fett und Kursiv im Kastentext behielten den `hex`, der neben ihrer `paletteId` gespeichert war. Ein Dokument, dessen gespeicherter Wert vom Paletteneintrag abweicht – jedes, das nach der Änderung des Eintrags in der Sandbox bearbeitet wurde, und jedes `:ref`, wenn die Main Color nicht `#295AA3` ist –, zeigt jetzt die Palettenfarbe, wie es die Verknüpfung verlangt. Um eine Farbe so zu behalten, wie sie war, entfernen Sie ihre `paletteId`.
+
+**Ein Tonwert eines Paletteneintrags.** Mit `paletteId` malt `tint` (0–100) den Eintrag in dieser Stärke auf das Papier: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` ist die Hauptfarbe zu 8 %, ein Kastengrund, der der Hauptfarbe folgt, wenn sich die Palette ändert, auch die eines Teils oder Abschnitts. `hex` hält den getönten Wert, den Ersatzwert ohne den Eintrag. Der Tonwert ist eine Bildschirmfarbe: eine Druckausgabe separiert ihn wie jede andere, auch wenn der Eintrag eine Sonderfarbe ist. In der Sandbox hat die Farbauswahl einer verknüpften Farbe ein Feld **Tonwert**.
 
 ### Wie Paletten angewendet werden
 
@@ -772,6 +775,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### Überdruckende Farben
+
+Jede Farbe kann in einer Druckausgabe überdrucken: `overprint: true` an einem `ColorValue` lässt alles, was in ihr gemalt wird (Text, Linien, Kästen, Flächen), das Darunterliegende überdrucken, statt es auszusparen; ein Stil in dieser Farbe überdruckt also überall, wo er verwendet wird. Eine Prozessfarbe wird so geschrieben, wie sie separiert, unter einem überdruckenden Grafikzustand; die Druckfarbe einer Sonderfarbe überdruckt so, wie `spot.overprint` es festlegt. Schwarz mit 100 % K überdruckt bereits (`black.overprint`). Ein RGB-PDF und der Bildschirm ignorieren es. Setzen Sie es am Paletteneintrag, damit jede mit ihm verknüpfte Farbe überdruckt.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Eine überdruckende Farbe, die keine Druckfarbe aufträgt (Papierweiß, eine Druckfarbe mit 0 %), verschwindet im Druck: Der Preflight meldet sie als kritisch (`overprintWhite`). In der Sandbox setzt das Kästchen „Im Druck überdrucken“ des Farbwählers diesen Wert.
 
 ### Preflight
 

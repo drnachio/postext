@@ -6,7 +6,7 @@ export const metadata = {
   description: '单位、颜色和调色板，自定义字体，HTML阅读器，PDF与印刷输出，Folio书页查看器，以及调试用的叠加层',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '28分钟',
+  readingTime: '29分钟',
   order: 20,
   parent: 'configuration',
   plainSummary: "本页讲整本书共用的设置，以及每种输出各自的设置。先说明尺寸和颜色怎样写，调色板里的颜色怎样命名。再介绍怎样加入你自己的字体。接着讲网页视图、PDF文件、印刷厂要的文件和3D书。最后一节讲怎样打开参考线和警告，它们在你工作时很有用。",
@@ -43,6 +43,7 @@ interface ColorValue {
   cmyk?: CmykPercent;  // 以CMYK定义的颜色的准确印刷色数值。
   spot?: SpotColor;    // 专色的油墨。
   paletteId?: string;  // 它所跟随的colorPalette条目。
+  tint?: number;       // 条目在纸上的浓度，百分比（与paletteId一起使用）。
 }
 ```
 
@@ -266,6 +267,8 @@ const config: PostextConfig = {
 配置中的任何`ColorValue`都可以带一个可选的`paletteId`字段，指向`colorPalette`中的某个条目：页面背景、正文颜色（包括`:ref`颜色）、标题颜色、栏间线、列表颜色，表、题注、行内标签和标注框的颜色（框、色条、图标、标记、页签、标题、正文），裁切线和基线网格的颜色，调试标记，以及版面设计中的所有颜色：书眉、标题的章首页设计和栏内设计、标题样式的版面设计和书眉、篇名页以及目录中的篇条目（文字、线条、框的填充和边框、轮廓、首字下沉）。存在`paletteId`时，调色板条目的`hex` / `model`优先于一起保存的备用`hex` / `model`。只有在调色板缺失、为空或不含该id时才会使用内联的备用值；如果配置要交给不理解调色板的工具读取，这一点很有用。
 
 **postext 1.5中的变更**。在postext 1.4及以前，调色板只作用于一份固定的设置清单。其余设置，即版面设计的颜色（书眉、章首页、标题样式、篇、目录条目）、`bodyText.referenceColor`、标注框页签的颜色以及标注框正文的粗体/斜体颜色，都沿用与`paletteId`一起保存的`hex`。保存的值与调色板条目不同的文档（凡是在条目改动后又在沙盒中编辑过的文档，以及主色不是`#295AA3`时的所有`:ref`），现在会照链接所指，印出调色板中的颜色。要让某个颜色保持原样，删除它的`paletteId`。
+
+**调色板条目的色调。** 与`paletteId`一起使用时，`tint`（0–100）以该浓度在纸上绘制条目：`{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }`是8 %的主色，一个在调色板改变时（包括部分或章节的调色板）跟随主色的框底色。`hex`保存已着色的值，即没有该条目时的后备值。色调是屏幕颜色：印刷输出会像其他颜色一样分色，即使条目是专色油墨。在Sandbox中，链接颜色的选择器有一个**色调**字段。
 
 ### 调色板如何生效
 
@@ -772,6 +775,18 @@ colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
 ],
 ```
+
+#### 叠印的颜色
+
+在印刷渲染中，任何颜色都可以叠印：在`ColorValue`上设置`overprint: true`，用它绘制的一切（文字、线条、框、底色）都会印在下方内容之上，而不是将其镂空；因此，使用这种颜色的样式无论用在哪里都会叠印。印刷色按其分色方式写出，并处于叠印的图形状态之下；专色的油墨按`spot.overprint`的设置叠印。100% K的黑色本来就叠印（`black.overprint`）。RGB PDF和屏幕会忽略它。把它设在调色板条目上，所有链接到该条目的颜色都会叠印。
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+叠印而又不着墨的颜色（纸白、0%的油墨）在印刷时会消失：印前检查把它报告为严重（`overprintWhite`）。在Sandbox中，由取色器的“印刷时叠印”复选框设置。
 
 ### 印前检查
 
