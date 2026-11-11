@@ -11,7 +11,8 @@ import { Button, IconButton, usePortalContainer } from '../../../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../../../ui/layout/surface.js';
 import { useBlobObjectUrl } from '../ResourcePreview.js';
 import { RectHandles } from './SafeAreaEditor/markHandles.js';
-import { dragRect, nudgeRect, type Handle, type Point } from './pictureMarks.js';
+import type { Handle, Point } from './pictureMarks.js';
+import { cropDragTo, cropEdit, cropFileId, cropNudge, cropPictureSize, cropPreviewStyle, cropPress, cropStart, cropToStore, cropUndo, croppedRatio, WHOLE_PICTURE, type CropDrag, type CropHistory } from './cropEdits.js';
 
 // ---------------------------------------------------------------------------
 // Manual crop of a picture (`Resource.crop`): the part of it the figure
@@ -22,25 +23,12 @@ import { dragRect, nudgeRect, type Handle, type Point } from './pictureMarks.js'
 // cropped figure. The safe area, if any, is read inside the crop.
 // ---------------------------------------------------------------------------
 
-/** Where a new crop starts: the picture less a tenth on every side. */
-const INITIAL_CROP: ResourceSafeArea = { x: 0.1, y: 0.1, width: 0.8, height: 0.8 };
 const PREVIEW_W = 220;
 const pct = (v: number) => Math.round(v * 1000) / 10;
 
 /** `rect` of the shown picture, in % of its box. */
 function boxStyle(r: ResourceSafeArea) {
   return { left: `${r.x * 100}%`, top: `${r.y * 100}%`, width: `${r.width * 100}%`, height: `${r.height * 100}%` };
-}
-
-/** The picture's own size, from the resource. */
-function sizeOf(resource: Resource): { width: number; height: number } | undefined {
-  const s = resource.kind === 'bitmap' ? resource.bitmap : resource.kind === 'svg' ? resource.svg : resource.video?.poster;
-  return s?.width && s.height ? { width: s.width, height: s.height } : undefined;
-}
-
-/** The file the picture is drawn from (a video's poster). */
-function fileIdOf(resource: Resource): string | undefined {
-  return resource.kind === 'bitmap' ? resource.bitmap?.fileId : resource.kind === 'video' ? resource.video?.poster?.fileId : resource.svg?.fileId;
 }
 
 interface CropFieldProps {
@@ -52,7 +40,7 @@ interface CropFieldProps {
 /** The "Crop" field of a bitmap, SVG or video poster. */
 export function CropField({ resource, onChange }: CropFieldProps) {
   const labels = useSandboxLabels();
-  const url = useBlobObjectUrl(fileIdOf(resource));
+  const url = useBlobObjectUrl(cropFileId(resource));
   const crop = normalizeSafeArea(resource.crop);
   const [open, setOpen] = useState(false);
   const uiLocale = useSandboxSelector((s) => s.locale);
@@ -94,7 +82,7 @@ export function CropField({ resource, onChange }: CropFieldProps) {
           onClose={() => setOpen(false)}
           onApply={(next) => {
             setOpen(false);
-            onChange(normalizeSafeArea(next));
+            onChange(cropToStore(next));
           }}
         />
       )}
@@ -113,28 +101,24 @@ interface CropDialogProps {
 function CropDialog({ open, url, resource, onClose, onApply }: CropDialogProps) {
   const labels = useSandboxLabels();
   const container = usePortalContainer();
-  const [rect, setRect] = useState<ResourceSafeArea>(INITIAL_CROP);
-  const [past, setPast] = useState<ResourceSafeArea[]>([]);
+  const [history, setHistory] = useState<CropHistory>({ rect: cropStart(resource), past: [] });
+  const { rect, past } = history;
   const [loaded, setLoaded] = useState<{ width: number; height: number } | undefined>();
   const stageRef = useRef<HTMLDivElement>(null);
   const rectRef = useRef(rect);
   rectRef.current = rect;
-  const drag = useRef<{ handle: Handle; from: ResourceSafeArea; origin: Point; before: ResourceSafeArea; moved: boolean } | null>(null);
+  const drag = useRef<CropDrag | null>(null);
 
   // Each opening starts from the saved crop, or a proposal.
   useEffect(() => {
     if (!open) return;
-    setRect(normalizeSafeArea(resource.crop) ?? INITIAL_CROP);
-    setPast([]);
+    setHistory({ rect: cropStart(resource), past: [] });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const record = (before: ResourceSafeArea) => setPast((p) => [...p, before]);
-  const undo = () => {
-    if (!past.length) return;
-    setRect(past[past.length - 1]!);
-    setPast(past.slice(0, -1));
-  };
+  /** One undoable step to `next`. */
+  const edit = (next: ResourceSafeArea) => setHistory((h) => cropEdit(h, next));
+  const undo = () => setHistory(cropUndo);
 
   const pointAt = (e: { clientX: number; clientY: number }): Point => {
     const box = stageRef.current!.getBoundingClientRect();
@@ -147,38 +131,32 @@ function CropDialog({ open, url, resource, onClose, onApply }: CropDialogProps) 
     const el = e.target as HTMLElement;
     const inside = el.closest('[data-crop]');
     const handle = (el.closest<HTMLElement>('[data-handle]')?.dataset.handle as Handle | undefined) ?? 'move';
-    const before = rectRef.current;
     // Outside the frame: a new one, stretched from the pointer.
-    drag.current = inside
-      ? { handle, from: before, origin: p, before, moved: false }
-      : { handle: 'se', from: { x: p.x, y: p.y, width: 0, height: 0 }, origin: p, before, moved: false };
+    drag.current = cropPress(rectRef.current, p, !!inside, handle);
     stageRef.current!.setPointerCapture(e.pointerId);
     e.preventDefault();
   };
   const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
     const d = drag.current;
     if (!d) return;
-    const p = pointAt(e);
-    d.moved = true;
-    setRect(dragRect(d.handle, d.from, p, { x: p.x - d.origin.x, y: p.y - d.origin.y }));
+    // The frame follows the pointer; the drag becomes one step on release.
+    const next = cropDragTo(d, pointAt(e));
+    setHistory((h) => ({ ...h, rect: next }));
   };
   const onPointerUp = () => {
     const d = drag.current;
     drag.current = null;
-    if (d?.moved) record(d.before);
+    if (d?.moved) setHistory((h) => ({ rect: h.rect, past: [...h.past, d.before] }));
   };
   const onKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-    if (!dir) return;
+    const next = cropNudge(rect, e.key, e.shiftKey);
+    if (!next) return;
     e.preventDefault();
-    record(rect);
-    setRect(nudgeRect(rect, dir[0]!, dir[1]!, e.shiftKey));
+    edit(next);
   };
 
-  const size = sizeOf(resource) ?? loaded;
   // The figure as it will print: the crop at its own ratio.
-  const ratio = size ? (rect.height * size.height) / (rect.width * size.width) : rect.height / rect.width;
-  const previewH = PREVIEW_W * ratio;
+  const previewH = PREVIEW_W * croppedRatio(rect, cropPictureSize(resource) ?? loaded);
 
   return (
     <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
@@ -249,13 +227,7 @@ function CropDialog({ open, url, resource, onClose, onApply }: CropDialogProps) 
                   alt=""
                   draggable={false}
                   className="absolute block"
-                  style={{
-                    maxWidth: 'none',
-                    width: `${100 / rect.width}%`,
-                    left: `${(-rect.x / rect.width) * 100}%`,
-                    top: `${(-rect.y / rect.height) * 100}%`,
-                    height: `${100 / rect.height}%`,
-                  }}
+                  style={{ maxWidth: 'none', ...cropPreviewStyle(rect) }}
                 />
               </div>
               <span className="text-xs text-(--slate)">
@@ -266,7 +238,7 @@ function CropDialog({ open, url, resource, onClose, onApply }: CropDialogProps) 
 
           <div className="flex flex-wrap items-center justify-end gap-2">
             <IconButton label={labels.resourceMarksUndo} icon={<Undo2 size={14} aria-hidden="true" />} onClick={undo} disabled={past.length === 0} />
-            <Button size="sm" variant="ghost" onClick={() => { record(rect); setRect({ x: 0, y: 0, width: 1, height: 1 }); }}>
+            <Button size="sm" variant="ghost" onClick={() => edit(WHOLE_PICTURE)}>
               {labels.resourceCropWhole}
             </Button>
             <Button size="sm" variant="ghost" onClick={onClose}>{labels.resourceSafeAreaCancel}</Button>

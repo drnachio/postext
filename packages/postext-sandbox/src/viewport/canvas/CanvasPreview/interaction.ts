@@ -6,6 +6,7 @@ import { createComicEditor, type BalloonTextPress } from '../../comics/comicEdit
 import { createFrameTools } from '../../composed/frameTools.js';
 import { createLabelEditor } from '../../composed/labelAnchorEditor.js';
 import { createFloatDragger } from './floatDragUi.js';
+import { armedFloat, armFloatMove, onArmedFloatChange } from '../../../editing/floatMove.js';
 import { editModeNow } from '../../../editing/editMode.js';
 import { selectionChapters, clearPageSelection, setPageSelection } from '../../../selection/selectionStore.js';
 import { createSelectionApply } from '../../../selection/applySelection.js';
@@ -120,7 +121,9 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   });
 
   // A figure or table the layout floated is dragged by its body to another
-  // slot (`floatDragUi.ts`); a press let go in place opens it.
+  // slot (`floatDragUi.ts`): with Alt (Option) held, or once «Move in the
+  // canvas» armed it (#1494); a press let go in place opens it. Any other
+  // press is the page's, as it was.
   const floatDrag = resourcesRef
     ? createFloatDragger({
         docRef,
@@ -130,6 +133,25 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
         onClick: (id) => openResource(id),
       })
     : null;
+  // While a float is armed a finger on the pages drags it instead of
+  // scrolling them, and Escape disarms it.
+  if (floatDrag) {
+    const touchAction = target.style.touchAction;
+    const onArmEscape = (ev: KeyboardEvent): void => {
+      if (ev.key === 'Escape' && armedFloat() !== null && !floatDrag.active()) armFloatMove(null);
+    };
+    const stop = onArmedFloatChange(() => {
+      if (!target.isConnected) {
+        stop();
+        window.removeEventListener('keydown', onArmEscape);
+        return;
+      }
+      const armed = armedFloat() !== null;
+      target.style.touchAction = armed ? 'none' : touchAction;
+      if (armed) window.addEventListener('keydown', onArmEscape);
+      else window.removeEventListener('keydown', onArmEscape);
+    });
+  }
 
   const DRAG_THRESHOLD_PX = 3;
   let dragAnchorOffset: number | null = null;
@@ -162,18 +184,24 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
   target.addEventListener('pointerdown', (ev) => {
     if (!on() || onPlayer(ev)) return;
     touchTap = ev.pointerType === 'touch' && !opts.touchSelects;
-    if (ev.button !== 0 || touchTap) return;
+    if (ev.button !== 0) return;
+    if (touchTap) {
+      // A finger moves the float «Move in the canvas» armed; otherwise it
+      // scrolls the pages and taps links.
+      const at = armedFloat() !== null ? locate(ev) : null;
+      if (at && floatDrag?.pointerDown(ev, at)) {
+        pageIndex = at.pageIndex;
+        ev.preventDefault();
+        try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
+      }
+      return;
+    }
     const at = locate(ev);
     if (!at) return;
     pageIndex = at.pageIndex;
     pressClient = { x: ev.clientX, y: ev.clientY };
     if (comic?.pointerDown(ev, at)) {
       comicPress = true;
-      ev.preventDefault();
-      try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
-      return;
-    }
-    if (floatDrag?.pointerDown(ev, at)) {
       ev.preventDefault();
       try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
       return;
@@ -185,6 +213,12 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
       ev.preventDefault();
       try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
       window.addEventListener('keydown', onLabelEscape, true);
+      return;
+    }
+    // After the figure labels (#970): a label over a float is the label's.
+    if (floatDrag?.pointerDown(ev, at)) {
+      ev.preventDefault();
+      try { target.setPointerCapture(ev.pointerId); } catch { /* ignore */ }
       return;
     }
     if (designFrameAt(at)) return;
@@ -227,12 +261,12 @@ export function attachPageInteraction(target: HTMLElement, opts: PageInteraction
         return;
       }
       const over = locate(ev);
-      if (floatDrag?.over(over)) {
-        opts.setCursor('move');
-        return;
-      }
       if (labels && ev.pointerType !== 'touch' && labels.hover(over)) {
         opts.setCursor('grab');
+        return;
+      }
+      if (floatDrag?.over(over, ev.altKey)) {
+        opts.setCursor('move');
         return;
       }
       if (over && designFrameAt(over)) {

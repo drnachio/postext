@@ -223,18 +223,7 @@ export type PageTemplateWarningKind =
  *  had to force ({@link CalloutOverflowWarning}), with the shape it has had
  *  since postext 1.4. What the source names wrongly is in
  *  {@link VDTDocument.contentWarnings} instead. */
-/** `floatPinMissed`: a float set by hand (`ResourcePlacement.pin`) could
- *  not take its slot on `pageIndex` — it did not fit, or the slot comes
- *  before the citation — and was placed as usual. */
-export interface FloatPinMissedWarning {
-  kind: 'floatPinMissed';
-  pageIndex: number;
-  resourceId: string;
-  sourceStart?: number;
-  sourceEnd?: number;
-}
-
-export type LayoutWarning = CalloutOverflowWarning | FloatPinMissedWarning;
+export type LayoutWarning = CalloutOverflowWarning;
 
 /** Reported by the renderers (canvas, HTML, PDF) through their `onWarning`
  *  option while they paint — never stored in the VDT, since what a host

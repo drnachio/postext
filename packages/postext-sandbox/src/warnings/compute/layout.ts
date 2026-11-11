@@ -64,7 +64,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'wordDividedByCharacter', 'wordDividedBySyllable', 'joiningScriptLetterSpacing',
   'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap', 'dropCap', 'codeOverflow', 'textWrap',
-  'columnsTooNarrow', 'hereNotEmbedded', 'paragraphCitedInNote', 'floatCropped',
+  'columnsTooNarrow', 'hereNotEmbedded', 'paragraphCitedInNote', 'floatCropped', 'floatPinMissed',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
@@ -91,6 +91,22 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
         payload: w.kind === 'emptyCaption'
           ? { kind: 'emptyCaption', resourceId: w.resourceId, label: w.label }
           : { kind: 'resourceMoved', resourceId: w.resourceId, page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), emptyMm: w.emptyMm },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
+    if (w.kind === 'floatPinMissed') {
+      // A float set by hand that is not where its pin asks (#1494).
+      out.push({
+        id: `layout-floatPinMissed-${w.resourceId}-${i}`,
+        payload: {
+          kind: 'floatPinMissed',
+          resourceId: w.resourceId,
+          reason: w.reason,
+          ...(w.pageIndex !== undefined ? { page: w.pageIndex + 1 + (doc.pageIndexOffset ?? 0) } : {}),
+        },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
@@ -367,13 +383,6 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
   const pxPerMm = doc.config.page.dpi / 25.4;
   let idx = 0;
   for (const w of doc.warnings ?? []) {
-    if (w.kind === 'floatPinMissed') {
-      out.push({
-        id: `layout-${idx++}-pin-${w.resourceId}`,
-        payload: { kind: 'floatPinMissed', page: w.pageIndex + 1 + (doc.pageIndexOffset ?? 0), resourceId: w.resourceId },
-      });
-      continue;
-    }
     if (w.kind !== 'calloutOverflow') continue;
     out.push({
       id: `layout-${idx++}-${w.sourceStart ?? 'x'}`,

@@ -457,6 +457,15 @@ renomme une ressource et, par défaut, toutes les références à celle-ci dans 
 `sandbox_list_resources` les liste et, avec un `id`, en donne une en entier (les
 cellules d’un tableau avec leur mise en forme, la source d’un SVG).
 
+Le recadrage d'une image va dans `marks.crop` (`{ x, y, width, height }`, fractions de
+l'image entière, comme la zone de sécurité ; `null` montre de nouveau l'image
+entière) : il vaut pour un bitmap, un SVG et l'affiche d'une vidéo, et la réponse
+signale une zone de sécurité qui sort du recadrage. `placement.pin` (`{ page, column?, slot }`,
+`page` de 0 à 3) place un flottant à la main et `null` le rend au placement
+automatique ; la description de l'outil explique pourquoi les pins sont
+déconseillés et propose à la place `position`, `citingPage`, `keepTogether` et
+`shrink` (voir [Format du document › Placer les flottants à la main est déconseillé](/fr/docs/document-format-resources#placer-les-flottants-à-la-main-est-déconseillé)).
+
 Les `marks` d’une image contiennent aussi ses ancres. Pour une carte ou un schéma, ce sont les points où se placent ses lignes `::label` : un `id`, `x` et `y` (fractions de l’image entière) et les champs d’étiquette que prend une étiquette placée là (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). La réponse signale un style d’étiquette absent de la maquette, et de nouvelles marques sur une ressource sont une étape de l’historique (`sandbox_undo` répond `kind: "resource"`). Sur un SVG, `marks.svgSymbols` (`idPrefix`, `className`) ajoute une zone à éviter sur chaque élément du dessin qu’il désigne, aux zones que donne l’appel ou que l’image a déjà (depuis postext 1.43).
 
 ```jsonc

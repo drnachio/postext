@@ -576,6 +576,7 @@ The keeper's quarters occupy the eastern wing.
   - A bitmap enlarged past its resolution is reported by the print preflight as `lowImageResolution` (under `print.preflight.minImageResolution`, default 300 ppi, at the size it prints with its crop counted), only for a book set up for print. Scan or export the plates at 300 ppi at the page size (bleed included) before the port. A plate has no resolution warning of its own.
   - Give a type of its own (`plate`, `lamina`) `defaultPlacement: { plate: "bleed" }` for a run of plates; `false` on a resource turns off a plate its type sets.
 - A resource's own placement falls back to its type's `defaultPlacement`, then to `auto`/`column`.
+- `pin` (a float set by hand in the Sandbox: a page offset, a column, a slot) is NOT for ports. It names a place in one layout, and the page, column and slot it names stop meaning the same thing when the text, the trim, the column count or the edition language changes. Reproduce where the source puts its figures with rules: `position: top|bottom`, `citingPage: true` / `layout.floatsAtCitingPage`, a `keepTogether` box holding the picture, `floatBarrier` box styles, `shrink: slot`, a safe area. A preset that carries pins raises `floatPinMissed` wherever the layout does not follow them.
 
 ### 9.5 Tables
 
@@ -1080,7 +1081,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow` (also a `span="side"` box taller than an empty side column, ≥ 1.25)
 - `afterText` (≥ 1.25: a side box or side figure set on a page with no text, after its chapter's text ended) and `unplaced` (≥ 1.25: a box or float on no page); `hereNotEmbedded` (a `here` resource cited but never embedded) and `paragraphCitedInNote` (a `paragraph` resource only footnotes cite: on no page)
-- `floatShrunk` (a picture scaled to its slot) and `floatCropped` (a picture cropped within its safe area by `layout.pullFloatsToCitation`, which is not recommended)
+- `floatShrunk` (a picture scaled to its slot), `floatCropped` (a picture cropped within its safe area by `layout.pullFloatsToCitation`, which is not recommended) and `floatPinMissed` (a `placement.pin` the layout did not follow; remove pins from a port)
 - `shortListSplit` (≥ 1.28, only with `bodyText.shortListSplit: 'warn' | 'avoid'`: a list of up to `shortListMaxItems` items cut between two columns) and `openerFloat` (≥ 1.28, only with `layout.openerFloats: 'warn'`: a float on a chapter or part opener page)
 - `stack` (≥ 1.73, only with `bodyText.stacks: 'warn' | 'avoid'`: two lines in a row of a paragraph that end (`edge: 'end'`) or start (`'start'`) on the same word or the same `stackMinCharacters` characters; `text` is what they repeat, `lines` the two lines; under `'avoid'`, the stacks the line breaker kept)
 - `unclosedCodeBlock` (≥ 1.23: a code fence with no closing fence; the rest of the chapter is code) and `codeOverflow` (a listing's line wider than its box, turned over, shrunk or cut, per `codeStyle.overflow`)

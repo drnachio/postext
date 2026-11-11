@@ -1,7 +1,8 @@
 // A figure's picture in the reflowable book: its alternative text, the
 // author's crop of it (`Resource.crop`), and a music example's systems.
-import { type Resource, resourceCrop } from 'postext';
-import type { FigureNode } from './model.js';
+import { type Resource, type VDTResourceTableCell, type VDTResourceTableCellImage, resourceCrop } from 'postext';
+import type { FigureNode, TableCellNode } from './model.js';
+import { xmlAttr } from './inline.js';
 
 /** A resource caption as plain text (its Markdown marks dropped). */
 export function plainCaption(caption: string | undefined): string {
@@ -67,6 +68,33 @@ export function cropOf(res: Resource): { crop?: FigureNode['crop'] } {
   return { crop: { ...crop, ratio: size.height / size.width } };
 }
 
+/** A table cell's picture for its cell node: its share of the cell's
+ *  width and the author's crop of it (`VDTResourceTableCellImage.crop`),
+ *  the whole picture's ratio read back from the rect the crop fills. */
+export function cellImageOf(cell: VDTResourceTableCell, image: VDTResourceTableCellImage, alt: string): NonNullable<TableCellNode['image']> {
+  const c = image.crop;
+  const crop = c && c.width > 0 && c.height > 0 && image.rect.width > 0
+    ? { ...c, ratio: (image.rect.height / c.height) / (image.rect.width / c.width) }
+    : undefined;
+  return {
+    fileId: image.fileId,
+    alt,
+    ...(cell.rect.width > 0 ? { width: Math.min(1, image.rect.width / cell.rect.width) } : {}),
+    ...(crop ? { crop } : {}),
+  };
+}
+
+/** A table cell's picture (`TableCellNode.image`) at `src` (none: a
+ *  missing file): at its share of the cell's width, cropped as the author
+ *  cropped it (`Resource.crop`). */
+export function cellImageXhtml(src: string | undefined, image: NonNullable<TableCellNode['image']>): string {
+  if (!src) return `<span class="pt-missing" role="img" aria-label="${xmlAttr(image.alt || '?')}"></span>`;
+  const share = image.width !== undefined && image.width < 1 ? image.width : undefined;
+  const attrs = `src="${xmlAttr(src)}" alt="${xmlAttr(image.alt)}"`;
+  if (image.crop) return croppedImg(attrs, image.crop, share ?? 1);
+  return `<img ${attrs}${share !== undefined ? ` style="width:${Math.round(share * 100)}%"` : ''}/>`;
+}
+
 /** Number for a style declaration: four decimals at most. */
 const pct = (n: number): string => `${Number(n.toFixed(4))}%`;
 
@@ -75,13 +103,28 @@ const pct = (n: number): string => `${Number(n.toFixed(4))}%`;
  * (`FigureNode.crop`): a box at the crop's ratio (its height set as a
  * share of its width, which every reading system lays out), and the
  * picture inside it at the size and offset that bring the crop into it.
- * Without a crop, the plain image.
+ * Without a crop, the plain image. `share`: the box's width, a share of
+ * its container's (a cell image narrower than its cell).
  */
-export function croppedImg(attrs: string, crop: FigureNode['crop']): string {
+export function croppedImg(attrs: string, crop: FigureNode['crop'], share = 1): string {
   if (!crop) return `<img ${attrs}/>`;
-  const box = `display:block;position:relative;overflow:hidden;width:100%;height:0;padding-top:${pct((crop.height * crop.ratio / crop.width) * 100)}`;
-  const img = `position:absolute;max-width:none;height:auto;width:${pct(100 / crop.width)};left:${pct(-crop.x / crop.width * 100)};top:${pct(-crop.y / crop.height * 100)}`;
-  return `<span class="pt-crop" style="${box}"><img ${attrs} style="${img}"/></span>`;
+  return `<span class="pt-crop" style="${cropBoxStyle(crop, share)}"><img ${attrs} style="${cropInnerStyle(crop)}"/></span>`;
+}
+
+/** A `<video>` (its attributes and fallback content) cropped as
+ *  {@link croppedImg} crops a picture: a video's crop is its poster's, and
+ *  the film plays in the same frame. */
+export function croppedVideo(attrs: string, content: string, crop: FigureNode['crop']): string {
+  if (!crop) return `<video ${attrs}>${content}</video>`;
+  return `<span class="pt-crop" style="${cropBoxStyle(crop, 1)}"><video ${attrs} style="${cropInnerStyle(crop)}">${content}</video></span>`;
+}
+
+function cropBoxStyle(crop: NonNullable<FigureNode['crop']>, share: number): string {
+  return `display:block;position:relative;overflow:hidden;width:${pct(share * 100)};height:0;padding-top:${pct((crop.height * crop.ratio / crop.width) * share * 100)}`;
+}
+
+function cropInnerStyle(crop: NonNullable<FigureNode['crop']>): string {
+  return `position:absolute;max-width:none;height:auto;width:${pct(100 / crop.width)};left:${pct(-crop.x / crop.width * 100)};top:${pct(-crop.y / crop.height * 100)}`;
 }
 
 /** A score system's SVG as the column's width (#1172): its own size goes,

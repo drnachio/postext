@@ -1,6 +1,6 @@
 // Placing a float in the columns of a page (placeFloatInColumns).
 // Part of the placement pass (pass.ts), split out of it in #1276.
-import type { VDTPage, VDTColumn, VDTExclusion, ResolvedConfig, VDTBlock, ContentWarning, ResolvedResourceBlock, BoundingBox, VDTExclusionContour, VDTDocument } from '../../../../vdt.js';
+import type { VDTPage, VDTColumn, VDTExclusion, ResolvedConfig, VDTBlock, ContentWarning, ResolvedResourceBlock, BoundingBox, VDTExclusionContour } from '../../../../vdt.js';
 import type { PlannedFloat } from '../../../floats/floatPlacement.js';
 import { type FloatSlotPosition, type FloatMeasure, measureFloatBand, trueBottom, measureSideStack, columnHasFloatBand, floatGapAbove, fitsStrict, type SideObstacle } from '../../../floats/floatSlots.js';
 import { columnCursorY, wrapGapPx, minTextWidthPx } from '../../../floats/textWrap.js';
@@ -75,7 +75,6 @@ export interface FloatPlaceDeps {
   /** The slot each figure set alone in a column took (`PassResult.floatSlots`). */
   floatSlots: Map<string, PlacedSlot>;
   cursor: PlacementCursor;
-  doc: VDTDocument;
 }
 
 export function createFloatPlace(deps: FloatPlaceDeps) {
@@ -87,7 +86,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor, doc
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
@@ -95,7 +94,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const rows = createFloatRows({ resolved, minTextPx, layoutFloat, bodyCropDelta, footStacks,
     floatReserved, reservedOf, uncappedBottoms });
   /** Floats set by hand in the canvas (`placement.pin`). */
-  const pins = createFloatPins(pendingFloats, doc);
+  const pins = createFloatPins(pendingFloats);
   /** The fresh pages each full-page plate waited past (#1461). */
   const plateWaitPages = new Map<string, Set<number>>();
   /**
@@ -561,6 +560,6 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
     placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: footStacks.hasFoot,
-    pinOn: pins.pinOn, pinnedColumn: pins.pinnedColumn, dropMissedPins: pins.dropMissedPins
+    pinOn: pins.pinOn, releasePins: pins.releasePins
   };
 }

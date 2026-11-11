@@ -478,6 +478,16 @@ Ressource um und standardmäßig auch jeden Verweis auf sie im Buch.
 vollständig (die Zellen einer Tabelle mit ihrer Formatierung, die Quelle eines
 SVG).
 
+Der Beschnitt eines Bilds steht in `marks.crop` (`{ x, y, width, height }`,
+Bruchteile des ganzen Bilds wie beim Sicherheitsbereich; `null` zeigt wieder das
+ganze Bild): Er gilt für eine Bitmap, ein SVG und das Posterbild eines Videos,
+und die Antwort meldet einen Sicherheitsbereich, der über den Beschnitt
+hinausreicht. `placement.pin` (`{ page, column?, slot }`, `page` von 0 bis 3)
+setzt ein Gleitobjekt von Hand, und `null` gibt es der automatischen Platzierung
+zurück; die Beschreibung des Werkzeugs sagt, warum Pins nicht empfohlen werden,
+und nennt stattdessen `position`, `citingPage`, `keepTogether` und `shrink`
+(siehe [Dokumentformat › Von Hand gesetzte Gleitobjekte werden nicht empfohlen](/de/docs/document-format-resources#von-hand-gesetzte-gleitobjekte-werden-nicht-empfohlen)).
+
 Die `marks` eines Bildes enthalten auch seine Anker. Bei einer Karte oder einem Schema sind das die Punkte, an denen seine `::label`-Zeilen stehen: eine `id`, `x` und `y` (Bruchteile des ganzen Bildes) und die Beschriftungsfelder, die eine dort gesetzte Beschriftung übernimmt (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). Die Antwort weist auf einen Beschriftungsstil hin, den die Gestaltung nicht hat, und neue Markierungen einer Ressource sind ein Schritt des Verlaufs (`sandbox_undo` antwortet `kind: "resource"`). Bei einem SVG legt `marks.svgSymbols` (`idPrefix`, `className`) eine Sperrzone über jedes Element der Zeichnung, das es benennt – zusätzlich zu den Zonen, die der Aufruf angibt oder die das Bild schon hat (seit postext 1.43).
 
 ```jsonc

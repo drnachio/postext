@@ -28,6 +28,8 @@ import { useResourceEdits } from './ResourceDetail/useResourceEdits.js';
 import { Field, inputClass, inputStyle, labelStyle } from './ResourceDetail/Field.js';
 import type { ResourceDetailProps } from './ResourceDetail/props.js';
 import { CropField } from './marks/CropEditor.js';
+import { PinFields } from './ResourceDetail/PinFields.js';
+import { pinApplies } from './pinEdits.js';
 
 /** Detail view: editable detail for the selected resource, with a back button. */
 export function ResourceDetail({
@@ -204,20 +206,6 @@ export function ResourceDetail({
                     : labels.resourcePlacementHintColumn}
             </div>
           </div>
-          {/* Set by hand: dragged to a slot in the canvas (`placement.pin`). */}
-          {!placementInline && currentPlacement.pin && (
-            <div className="flex flex-wrap items-center justify-between gap-2 rounded border border-(--rule) px-2 py-1.5 text-xs">
-              <span>
-                {labels.resourcePinned
-                  .replace('__page__', currentPlacement.pin.page === 0 ? '±0' : `+${currentPlacement.pin.page}`)
-                  .replace('__column__', String((currentPlacement.pin.column ?? 0) + 1))
-                  .replace('__slot__', currentPlacement.pin.slot === 'top' ? labels.resourcePinTop : labels.resourcePinBottom)}
-              </span>
-              <button type="button" className="rounded border border-(--rule) px-2 py-0.5 hover:bg-(--surface)" onClick={() => setPlacementKey('pin', undefined)}>
-                {labels.resourcePinRelease}
-              </button>
-            </div>
-          )}
           <SelectInput
             stacked
             label={labels.resourceTypePlacementPosition}
@@ -455,6 +443,13 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('captionMeasure', undefined)}
             />
           )}
+          {/* Set by hand (`placement.pin`, #1494): not recommended. */}
+          <PinFields
+            resource={resource}
+            applies={pinApplies({ inline: placementInline, span: placementSpan, rotated: placementRotated, plate: placementPlate })}
+            labels={labels}
+            onChange={onChange}
+          />
         </div>
 
         {/* Kind-specific controls */}

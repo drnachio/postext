@@ -20,6 +20,8 @@ import { ToolError, type JsonSchema } from './modelContext.js';
  *  kind of mark, `null` removes it, one left out stays as it is. */
 export interface MarksInput {
   safeArea?: ResourceSafeArea | null;
+  /** The manual crop (`Resource.crop`, #1494). */
+  crop?: ResourceSafeArea | null;
   anchors?: ResourceAnchor[] | null;
   avoid?: ResourceSafeArea[] | null;
   faces?: ResourceSafeArea[] | null;
@@ -45,6 +47,7 @@ export const MARKS_SCHEMA: JsonSchema = {
   description: 'The marks drawn over a picture, in fractions of it (0 to 1 from its top left corner; a rectangle is { x, y, width, height }). Each member given replaces that kind of mark whole, null removes it, one left out stays.',
   properties: {
     safeArea: { ...RECT_SCHEMA, type: ['object', 'null'], description: 'The part of the picture that must stay in view: the layout may crop what lies outside it to fit the page. null: the picture always shows whole. For a bitmap, an SVG or a video\'s poster.' },
+    crop: { ...RECT_SCHEMA, type: ['object', 'null'], description: 'The part of the picture the figure always shows, at that part\'s ratio, in every output (a manual crop). The safe area is read inside it: the layout may crop further, down to the safe area, where a page needs it. null: the whole picture. For a bitmap, an SVG or a video\'s poster.' },
     anchors: {
       type: ['array', 'null'],
       description: 'The named points of the picture. For a map or a diagram, the anchors its labels stand at: a :::figure{resource="…"} sets ::label[TEXT]{at="id"} at the anchor with that id, and the anchor\'s label fields (style, align, verticalAlign, rotate, width, writingMode, overlap) are what such a label takes unless it says otherwise. For a comic panel, the speakers: id is the key the script names (as in "ana: Hello"), x and y the mouth a speech balloon\'s tail points at, and optionally head (where a thought balloon points) and face (a rectangle no balloon covers).',
@@ -172,7 +175,20 @@ export function withMarks(resource: Resource, input: MarksInput, labelStyles?: r
     marks.anchors = anchors.map((a) => (a.style !== undefined ? { ...a, style: a.style.trim() } : a));
   }
   const next = applyMarks(resource, marks);
+  if (input.crop !== undefined) {
+    const crop = input.crop === null ? undefined : normalizeSafeArea(input.crop);
+    if (input.crop !== null && !crop) {
+      throw new ToolError('marks.crop must be a rectangle inside the picture, in fractions of it (0 to 1), smaller than the whole picture and not a sliver. null shows the whole picture.');
+    }
+    if (crop) next.crop = crop;
+    else delete next.crop;
+  }
   const notes: string[] = [];
+  const crop = next.crop;
+  const safe = next.safeArea;
+  if (crop && safe && (safe.x < crop.x - 1e-6 || safe.y < crop.y - 1e-6 || safe.x + safe.width > crop.x + crop.width + 1e-6 || safe.y + safe.height > crop.y + crop.height + 1e-6)) {
+    notes.push('The safe area reaches outside the crop: the safe area is read inside the crop, so only its part within the crop counts.');
+  }
   const hidden = (next.anchors ?? []).filter((a) => anchorOutsideSafeArea(a, next.safeArea)).map((a) => a.id);
   if (hidden.length > 0) notes.push(`${hidden.join(', ')} lie${hidden.length === 1 ? 's' : ''} outside the safe area: a crop may hide ${hidden.length === 1 ? 'it' : 'them'}.`);
   if (labelStyles && input.anchors) {

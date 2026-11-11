@@ -15,6 +15,7 @@ import type { ResolvedConfig, VDTPage, BoundingBox, VDTComicPage, ContentWarning
 import { dimensionToPx } from '../units.js';
 import { resolvedComics, pickPanelStyle } from '../defaults/comics.js';
 import { comicArtCrop } from './art.js';
+import { resourceCrop } from '../pipeline/resources/safeArea.js';
 import { comicGeometry } from './geometry.js';
 import { comicFrameSpecs, type ComicFrameSpec, comicBoxStyle, isComicTextPanel, comicFrameElementId, comicElementId, comicPanelFrame, comicBalloonElementId } from './frames.js';
 import { parseComicPoint } from './script.js';
@@ -181,13 +182,13 @@ export function layoutComicFrame(source: ComicPageSource, ctx: ComicFrameContext
       // cell as it is.
       const w = art.width > 0 && art.height > 0 ? art.width : cell.bbox.width;
       const h = art.width > 0 && art.height > 0 ? art.height : cell.bbox.height;
-      crop = comicArtCrop({ width: w, height: h, cell: cell.bbox, fit, ...(art.resource.safeArea ? { safeArea: art.resource.safeArea } : {}), ...(focus ? { focus } : {}), mirrored });
+      crop = comicArtCrop({ width: w, height: h, cell: cell.bbox, fit, ...(art.resource.safeArea ? { safeArea: art.resource.safeArea } : {}), ...(resourceCrop(art.resource) ? { crop: resourceCrop(art.resource) } : {}), ...(focus ? { focus } : {}), mirrored });
       panel.art = artOf(art, crop, mirrored);
       if (crop.fallback) warnings.push({ kind: 'comicPanelLetterbox', resourceId: art.resource.id, panel: index, sourceStart: panel.sourceStart, sourceEnd: (p?.lineEnd ?? source.sourceStart) + off, pageIndex: ctx.pageIndex });
     }
     const pop = pictureOf(resources, attrs.pop?.trim());
     if (pop) {
-      const popCrop = crop ?? comicArtCrop({ width: pop.width || cell.bbox.width, height: pop.height || cell.bbox.height, cell: cell.bbox, fit, ...(focus ? { focus } : {}), mirrored });
+      const popCrop = crop ?? comicArtCrop({ width: pop.width || cell.bbox.width, height: pop.height || cell.bbox.height, cell: cell.bbox, fit, ...(resourceCrop(pop.resource) ? { crop: resourceCrop(pop.resource) } : {}), ...(focus ? { focus } : {}), mirrored });
       panel.pop = artOf(pop, popCrop, mirrored);
     }
     const alt = attrs.alt ?? art?.resource.altText;

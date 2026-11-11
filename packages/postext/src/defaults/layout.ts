@@ -10,6 +10,10 @@ export const DEFAULT_COLUMN_RULE = {
 /** The smallest scale `placement.shrink` sets a picture at, when nothing
  *  says otherwise (#626). */
 export const DEFAULT_FLOAT_MIN_SCALE = 0.7;
+/** The most pages after the citing one a pin (`ResourcePlacement.pin`)
+ *  may name: the engine holds a float back no further. A pin past it is
+ *  ignored and reported (`floatPinMissed`, `'tooFar'`). */
+export const MAX_PIN_PAGE_OFFSET = 3;
 
 /** A `floatShrink.mode` / `placement.shrink` as written: one of the three
  *  words, else `undefined`. */
