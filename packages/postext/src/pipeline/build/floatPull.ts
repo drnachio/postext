@@ -27,7 +27,7 @@ interface OffCitation {
 }
 
 /** The floats of `doc` that landed on a later page than the first line
- *  citing them. */
+ *  citing them (pinned ones are where the author set them). */
 function floatsOffCitation(doc: VDTDocument): OffCitation[] {
   const cite = new Map<string, { page: number; index: number }>();
   for (const b of doc.blocks) {
@@ -40,7 +40,8 @@ function floatsOffCitation(doc: VDTDocument): OffCitation[] {
   const out: OffCitation[] = [];
   for (const [id, page] of floatPagesOf(doc)) {
     const c = cite.get(id);
-    if (c !== undefined && page > c.page) out.push({ resourceId: id, citePage: c.page, citeIndex: c.index, page });
+    const r = doc.pages[page]?.floats?.find((f) => f.resourceBlock?.resource.id === id)?.resourceBlock?.resource;
+    if (c !== undefined && page > c.page && !r?.placement?.pin) out.push({ resourceId: id, citePage: c.page, citeIndex: c.index, page });
   }
   return out;
 }

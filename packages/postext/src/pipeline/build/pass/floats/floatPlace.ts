@@ -4,7 +4,7 @@ import type { VDTPage, VDTColumn, VDTExclusion, ResolvedConfig, VDTBlock, Conten
 import type { PlannedFloat } from '../../../floats/floatPlacement.js';
 import { type FloatSlotPosition, type FloatMeasure, measureFloatBand, trueBottom, measureSideStack, columnHasFloatBand, floatGapAbove, fitsStrict, type SideObstacle } from '../../../floats/floatSlots.js';
 import { columnCursorY, wrapGapPx, minTextWidthPx } from '../../../floats/textWrap.js';
-import { sideUsedBottom, FIT_EPS } from '../../../blocks/placement.js';
+import { sideUsedBottom, FIT_EPS, type PlacementCursor } from '../../../blocks/placement.js';
 import { setAfterText } from '../../warnings.js';
 import type { ContentBlock } from '../../../../parse/index.js';
 import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
@@ -18,6 +18,7 @@ import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } f
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
 import { withCitationPull } from './citationPull.js';
+import { createFloatPins } from './floatPins.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
  *  whole before it takes the next as it is (#1461). */
@@ -69,6 +70,7 @@ export interface FloatPlaceDeps {
   layoutFloat: (resourceId: string, width: number) => { block: ResolvedResourceBlock } | null;
   pullShortfalls: Map<string, { page: number; px: number }>;
   pullCrop: ReadonlySet<string> | undefined;
+  cursor: PlacementCursor;
 }
 
 export function createFloatPlace(deps: FloatPlaceDeps) {
@@ -80,10 +82,12 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
+  /** Floats set by hand in the canvas (`placement.pin`). */
+  const pins = createFloatPins(pendingFloats);
   /** The fresh pages each full-page plate waited past (#1461). */
   const plateWaitPages = new Map<string, Set<number>>();
   /**
@@ -522,8 +526,11 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
    *  up: a waiting table lets a later figure through. A float whose citing
    *  line is not placed yet waits too (see `citationGates`), and holds back
    *  its sequence. */
-  const heldBack = (i: number): boolean => {
+  const heldBack = (i: number, pageIndex = cursor.pageIndex): boolean => {
     if (awaitsCitation(pendingFloats[i]!)) return true;
+    // A float set by hand waits for its page (and holds its sequence back).
+    const target = pins.pinPageOf(pendingFloats[i]!);
+    if (target !== undefined && pageIndex < target) return true;
     const typeId = resourceById.get(pendingFloats[i]!.resourceId)?.typeId;
     for (let j = 0; j < i; j++) {
       if (resourceById.get(pendingFloats[j]!.resourceId)?.typeId === typeId) return true;
@@ -536,6 +543,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
-    placeFloatInColumns, settle, heldBack, positionsFor
+    placeFloatInColumns, settle, heldBack, positionsFor,
+    pinOn: pins.pinOn, releasePins: pins.releasePins
   };
 }

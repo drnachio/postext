@@ -1,6 +1,7 @@
 // A one-line English message for any build, configuration, content or
 // render warning (#1276: split out of contentWarnings.ts).
 import { isGenericFamily } from '../../fonts/faces.js';
+import { MAX_PIN_PAGE_OFFSET } from '../../defaults/layout.js';
 import type { LayoutWarning, ContentWarning, ConfigWarning, RenderWarning } from '../../vdt.js';
 import type { HeadingDesignCut } from '../sections/headingDesignCuts.js';
 import { describeFitStep, describeFrameOverflowProposal, describeFrameCoverProposal, describeFrameOutsideProposal } from '../../composed/reflowLog.js';
@@ -384,6 +385,15 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = w.overflowPx !== undefined
         ? `The picture "${w.resourceId}" is set at its smallest scale, ${Math.round(w.scale * 100)} % of its size, and still runs ${w.overflowPx} px past the foot of the page's text block`
         : `The picture "${w.resourceId}" is set at ${Math.round(w.scale * 100)} % of its size to fit the room left on its page`;
+      break;
+    case 'floatPinMissed':
+      text = w.reason === 'tooFar'
+        ? `The pin of resource "${w.resourceId}" names a page more than ${MAX_PIN_PAGE_OFFSET} pages after the one citing it: it is placed as usual`
+        : w.reason === 'column'
+          ? `The pin of resource "${w.resourceId}" names a column its page does not have: another column took it`
+          : w.reason === 'unsupported'
+            ? `Resource "${w.resourceId}" has a pin, but only a figure or table floated to a column or across the page can have one: the pin is ignored`
+            : `Resource "${w.resourceId}" does not fit the slot it was set in by hand: it is placed as usual`;
       break;
     case 'floatCropped':
       text = `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, to stay on the page that cites it (layout.pullFloatsToCitation)`;

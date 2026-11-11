@@ -483,7 +483,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
           if (rulePx > 0 && Number.isFinite(rulePx)) checkRule(rulePx, table.borderColor, pageIndex, body);
           for (const cell of table.cells ?? []) {
             const img = cell.image;
-            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, 1, 1, pageIndex, body, img.resourceId, src);
+            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, img.crop?.width ?? 1, img.crop?.height ?? 1, pageIndex, body, img.resourceId, src);
           }
         }
       }

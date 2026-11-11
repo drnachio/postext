@@ -81,4 +81,16 @@ describe('the anchors of a map (#866)', () => {
     expect(() => withMarks(picture, { anchors: [{ id: 'a', x: 0.1, y: 0.1, width: 2 }] })).toThrow(/width is a fraction/);
     expect(() => withMarks(picture, { anchors: [{ id: 'a', x: 0.1, y: 0.1, rotate: Number.NaN }] })).toThrow(/rotate/);
   });
+
+  it('crop a picture, the safe area read inside the crop (#1494)', () => {
+    const cropped = withMarks(picture, { crop: { x: 0.25, y: 0.125, width: 0.5, height: 0.75 } });
+    expect(cropped.resource.crop).toEqual({ x: 0.25, y: 0.125, width: 0.5, height: 0.75 });
+    expect(cropped.notes).toEqual([]);
+    // A safe area reaching outside the crop counts only within it.
+    const both = withMarks(cropped.resource, { safeArea: { x: 0, y: 0, width: 0.5, height: 0.5 } });
+    expect(both.notes).toEqual(['The safe area reaches outside the crop: the safe area is read inside the crop, so only its part within the crop counts.']);
+    expect('crop' in withMarks(both.resource, { crop: null }).resource).toBe(false);
+    // Marks left out keep the crop.
+    expect(withMarks(cropped.resource, { anchors: [] }).resource.crop).toEqual(cropped.resource.crop);
+  });
 });

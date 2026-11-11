@@ -464,6 +464,15 @@ que en fa el llibre. `sandbox_list_resources` els llista i, amb un `id`, en
 dona un de complet (les cel·les d'una taula amb el format, el codi font
 d'un SVG).
 
+El retall d'una imatge va a `marks.crop` (`{ x, y, width, height }`, fraccions de
+la imatge sencera, com la zona segura; `null` torna a mostrar la imatge sencera):
+serveix en un mapa de bits, un SVG i el pòster d'un vídeo, i la resposta avisa
+d'una zona segura que surt del retall. `placement.pin` (`{ page, column?, slot }`,
+`page` de 0 a 3) col·loca un flotant a mà i `null` el torna a la col·locació
+automàtica; la descripció de l'eina explica per què no es recomanen els pins i
+proposa en el seu lloc `position`, `citingPage`, `keepTogether` i `shrink`
+(vegeu [Format de document › Col·locar flotants a mà no es recomana](/ca/docs/document-format-resources#collocar-flotants-a-mà-no-es-recomana)).
+
 Les `marks` d'una imatge també contenen les àncores. En un mapa o un esquema, són els punts on es col·loquen les línies `::label`: un `id`, `x` i `y` (fraccions de la imatge sencera) i els camps que rep el rètol que s'hi col·loca (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). La resposta avisa d'un estil de rètol que el disseny no té, i les marques noves d'un recurs són un pas de l'historial (`sandbox_undo` respon `kind: "resource"`). En un SVG, `marks.svgSymbols` (`idPrefix`, `className`) afegeix una zona lliure (on no hi pot anar cap bafarada) sobre cada element del dibuix que indica, a més de les zones que dona la crida o que ja té la imatge (des de postext 1.43).
 
 ```jsonc

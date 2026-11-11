@@ -159,7 +159,8 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
    *  caption as plain text; absent for a `decorative` element or a
    *  resource with neither. */
   altText?: string;
-  /** The part of the picture shown (a `fit: 'cover'` crop, #923). */
+  /** The part of the picture shown (a `fit: 'cover'` crop, #923, or the
+   *  resource's manual crop, #1494). */
   crop?: { x: number; y: number; width: number; height: number };
 }
 

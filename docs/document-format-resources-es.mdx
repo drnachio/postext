@@ -195,6 +195,11 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
       <td><code>true</code> · <code>false</code>, por defecto <code>false</code></td>
       <td>Permite que un flotante <code>"top"</code> o <code>"auto"</code> ocupe la cabeza de la página (un flotante a ancho de página) o de la columna (un flotante de columna, también si abarca varias con <code>columns</code>) en la que cae la línea que lo cita por primera vez, como hace la colocación <code>t</code> de LaTeX, en lugar del primer hueco libre después de esa línea. El texto que hay encima de la referencia baja por debajo del flotante. Solo lo hace si el flotante cabe allí sin pasar de <code>layout.maxTopFraction</code> de la columna (0,7 por defecto), si los flotantes anteriores de su secuencia de numeración ya están colocados, si ningún salto explícito abre la página (la primera página de un capítulo, una parte, un <code>:::pagebreak</code>) ni hay nada a ancho de página encima de la línea que lo cita, y si, con el flotante allí, la línea que lo cita sigue cayendo en esa página (o en la columna que el flotante encabeza); si no, el flotante toma su hueco habitual. Los flotantes girados, los de la columna lateral y el resto de una tabla partida entre páginas nunca se mueven así. Valor predeterminado: el <code>defaultPlacement</code> del tipo y, después, <code>layout.floatsAtCitingPage</code>. Desde postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>No se recomienda (véase <a href="#colocar-flotantes-a-mano-no-se-recomienda">Colocar flotantes a mano no se recomienda</a>). Un flotante colocado a mano, en el panel Recursos o moviéndolo en el lienzo del Sandbox: <code>page</code> cuenta las páginas desde la que lo cita por primera vez (<code>0</code> es esa página, <code>3</code> como mucho), <code>column</code> la columna de texto desde 0 en el orden de lectura (cualquiera, si falta; un flotante a ancho de página la ignora), <code>slot</code> es <code>"top"</code> o <code>"bottom"</code>. Un pin es una preferencia. El flotante espera a esa página y se le ofrece primero ese hueco; si el hueco no puede alojarlo (demasiado alto para el sitio que queda, ocupado por otro flotante o por encima de su cita), toma los huecos habituales de esa página, y después sigue como cualquier flotante. Un pin para una página posterior al final del capítulo se descarta allí, de modo que el flotante y los que le siguen en su secuencia de numeración se colocan antes de que acabe el capítulo. Los flotantes de la columna lateral, los girados, las láminas y los recursos colocados en el texto lo ignoran. Cada pin que la maquetación no sigue se avisa con <code>floatPinMissed</code>, con su motivo. Solo en las salidas paginadas.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -253,6 +258,19 @@ Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dib
 - En una maquetación de una sola columna, un flotante a ancho de página es un flotante de columna, y valen las mismas reglas: un flotante `top` citado en una página cae en la cabeza de la siguiente.
 - En un párrafo que pasa de una página a la siguiente también se cuenta desde la línea que contiene la referencia. Si el párrafo empieza al pie de la página 5 y la referencia cae en la 6 (o el párrafo entero pasa a la 6 porque al pie de la 5 no caben suficientes líneas), la referencia está en la 6: un flotante `top` abre la página 7, y uno `auto` ocupa el pie de la 6 si cabe. Lo mismo vale entre las columnas de una página y para un recuadro partido entre páginas: la figura que se cita en su segunda parte espera a esa parte.
 - **Cambio en postext 1.5.** Hasta postext 1.4, un flotante entraba en la cola cuando la maquetación llegaba al párrafo que lo cita, así que la página a la que pasaba ese párrafo (o a la que se trasladaba entero) podía abrirse con el flotante, por encima de la línea que contiene la referencia. Ahora esa figura cae una página más tarde, o al pie de la página si pide `auto`; el número de páginas puede cambiar.
+
+#### Colocar flotantes a mano no se recomienda
+
+Postext maqueta un libro por reglas: cada flotante ocupa el primer hueco libre después de su cita, dentro de los límites que fija su colocación, y el libro entero se vuelve a maquetar cuando cambian el texto, el tamaño de página, el número de columnas o el idioma de la edición. Un pin está atado a la geometría de una maquetación. Nombra una página contada desde la cita y una columna por su número, y ninguna de las dos significa lo mismo en cuanto el texto se mueve. Si se añade un párrafo, la cita pasa a otra página; si se traduce el libro, cambian los cortes de línea; si una edición se compone a una columna, la columna 1 deja de existir. El pin falla entonces, y la maquetación lo avisa, o deja el flotante en un sitio que ya no sirve a la página. El pin se guarda en el recurso, así que lo comparten todas las ediciones e idiomas del libro.
+
+Estas reglas mantienen una figura cerca de su texto en todas las ediciones:
+
+- `position: "top"` o `"bottom"` (en el recurso o en su tipo) limita los huecos de un flotante a cabezas o pies.
+- `citingPage: true`, o `layout.floatsAtCitingPage` para todo el libro, deja que un flotante superior o automático encabece la página o la columna en la que cae la línea que lo cita.
+- Una caja con `keepTogether` mantiene junto lo que contiene, incluida una imagen insertada en ella con `::resource`; `floatBarrier` en un estilo de caja deja de su lado los flotantes citados antes de ella.
+- `shrink: "slot"` (o `"page"`) deja que una imagen se reduzca al sitio que tiene su hueco, y una [zona segura](#zona-segura) deja que el motor la recorte para que quepa antes de reducirla.
+
+Si una página todavía necesita mover una figura, fíjala como último paso, para una edición terminada en un solo idioma, y revisa `floatPinMissed` en el panel Revisión cada vez que cambien el texto o el diseño.
 
 ### Ajuste del texto
 
@@ -338,6 +356,19 @@ El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la
 
 La receta n.º 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para que puedas comparar las páginas una junto a otra.
 
+
+### Recorte manual
+
+Un mapa de bits, un SVG o el póster de un vídeo también se pueden recortar a mano: `crop`, en las mismas fracciones que la zona segura, es la parte de la imagen que la figura muestra siempre, sea cual sea la página. La figura toma la proporción del recorte. La zona segura, si la hay, se lee dentro del recorte: el motor puede cortar más donde la página lo necesite, nunca fuera del recorte, y `bodySource` es la composición de ambos. Marca la zona segura dentro del recorte; la parte que quede fuera nunca se ve. Sin él, la imagen entera. El recorte llega a todas las salidas: el lienzo, el PDF, el visor HTML, los dos EPUB (un libro adaptable compone la imagen, o el póster de un vídeo y la película en su marco, en una caja con la proporción del recorte), el IDML y la exportación a Word con formato, una imagen en una celda de tabla, el dibujo de una viñeta de cómic (la ventana de la viñeta se elige dentro del recorte) y una imagen de diseño que muestra un recurso. La exportación semántica a Word inserta la imagen entera, como hace con la zona segura, y conserva el recorte en el libro. Las anclas de cómic solo se comprueban contra la zona segura (`comicAnchorOutsideSafeArea`): deja también a cada personaje dentro del recorte. En el Sandbox, *Recorte*, junto a la zona segura, abre un marco que se arrastra, se ajusta con las flechas y se previsualiza; un agente lo fija con `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la mitad central, de arriba abajo
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Anclas de personaje y zonas libres
 

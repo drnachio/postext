@@ -32,6 +32,11 @@ export interface VDTResourceTableCellImage {
   /** For an SVG with a print master (`Resource.svg.pdfFileId`): the
    *  master's id, which the PDF backend embeds in place of the SVG. */
   pdfFileId?: string;
+  /** The resource's manual crop (`Resource.crop`, #1494): the part of the
+   *  picture shown in `rect`, in fractions of the picture as stored.
+   *  Renderers draw the whole picture over `uncroppedPictureBox(rect,
+   *  crop)` clipped to `rect`. Absent: the whole picture fills `rect`. */
+  crop?: { x: number; y: number; width: number; height: number };
   /** Pixel rect of the image, in the same frame as the cell `rect`. */
   rect: BoundingBox;
 }

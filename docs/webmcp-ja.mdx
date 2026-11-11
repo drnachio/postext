@@ -339,6 +339,13 @@ await browser.close();
 
 応答には、保存されたレコードと、それを配置する行`::resource{id="prices"}`が入ります。エージェントはこの行を`sandbox_edit_text`で本文に書き込みます。既存の`id`に対して呼ぶと、渡したものだけが変わります。キャプション、表のセル、配置、画像のセーフエリアなどです。`newId`はリソースの名前を変え、既定では本の中のそのリソースへの参照もすべて書き換えます。`sandbox_list_resources`はリソースを一覧にし、`id`を渡すとその1つを詳しく返します（表なら書式付きのセル、SVGならそのソース）。
 
+画像のトリミングは `marks.crop`（`{ x, y, width, height }`、セーフエリアと同じく画像全体に対する割合。
+`null` で画像全体の表示に戻ります）に入れます。ビットマップ、SVG、動画のポスター画像に使え、
+トリミングからはみ出たセーフエリアがあれば応答が知らせます。`placement.pin`（`{ page, column?, slot }`、
+`page` は 0〜3）はフロートを手で置き、`null` で自動配置に戻します。ツールの説明には、手動配置を
+推奨しない理由と、代わりに使う `position`、`citingPage`、`keepTogether`、`shrink` が書かれています
+（[文書形式 › フロートの手動配置は推奨しません](/ja/docs/document-format-resources#フロートの手動配置は推奨しません)を参照）。
+
 画像の`marks`にはアンカーも含まれます。地図や図解では、`::label`の行を置く点のことで、`id`、`x`と`y`（画像全体に対する割合）、そこに置くラベルが引き継ぐラベル設定（`style`、`align`、`verticalAlign`、`rotate`、`width`、`writingMode`）からなります。デザインにないラベルスタイルは応答で指摘され、リソースに加えた新しいマークは履歴の1ステップになります（`sandbox_undo`は`kind: "resource"`を返します）。SVGでは`marks.svgSymbols`（`idPrefix`、`className`）が、指定した図の各要素の上に回避エリアを追加します。このエリアは、呼び出しで指定したエリアや画像にすでにあるエリアに加わります（postext 1.43以降）。
 
 ```jsonc

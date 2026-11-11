@@ -267,7 +267,7 @@ function placeDocumentPass(
   });
 
   const {
-    placeFloatInColumns, settle, heldBack, positionsFor
+    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, releasePins
   } = createFloatPlace({
     captionUnderProposals, asideCutBy, shortSideColumn, resolved: setup.resolved, dpi, baselineGrid, bodyOffset,
     contentBlocks, resourceById, bodyStyle, pendingFloats, openerPages, openerFloatRule,
@@ -276,7 +276,7 @@ function placeDocumentPass(
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor
   });
 
   const {
@@ -287,7 +287,7 @@ function placeDocumentPass(
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
-    positionsFor, cursor, forcedBreakPages, state, late
+    positionsFor, cursor, forcedBreakPages, state, late, pinOn, releasePins
   });
 
   const {
@@ -538,6 +538,7 @@ function placeDocumentPass(
   } = createPassFinish({
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
     contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    pinnedFloats: new Set(floatPlan.filter((f) => f.pin).map((f) => f.resourceId)),
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,

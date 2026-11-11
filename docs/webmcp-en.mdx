@@ -456,6 +456,15 @@ renames a resource and, by default, every reference to it in the book.
 `sandbox_list_resources` lists them, and with an `id` gives one in full (a
 table's cells with their formatting, an SVG's source).
 
+A picture's crop goes in `marks.crop` (`{ x, y, width, height }`, fractions of
+the whole picture, as the safe area; `null` shows the whole picture again): it
+works on a bitmap, an SVG and a video's poster, and the answer notes a safe area
+that reaches outside the crop. `placement.pin` (`{ page, column?, slot }`, `page`
+from 0 to 3) sets a float by hand and `null` gives it back to automatic
+placement; the tool's description says why pins are not recommended and names
+`position`, `citingPage`, `keepTogether` and `shrink` instead (see
+[Document format › Pins are not recommended](/en/docs/document-format-resources#pins-are-not-recommended)).
+
 A picture's `marks` also carry its anchors. For a map or a diagram they are the points its `::label` lines stand at: an `id`, `x` and `y` (fractions of the whole picture) and the label fields that a label placed there takes (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). The answer notes a label style the design lacks, and new marks on a resource are a step of the history (`sandbox_undo` answers `kind: "resource"`). On an SVG, `marks.svgSymbols` (`idPrefix`, `className`) adds an avoid zone over each element of the drawing it names, on top of the zones the call gives or the picture already has (since postext 1.43).
 
 ```jsonc
