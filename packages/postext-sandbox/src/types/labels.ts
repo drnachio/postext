@@ -755,6 +755,10 @@ export interface SandboxLabels {
   printPlatesImagesSecond: string;
   printPlatesImagesSecondTooltip: string;
   printPlatesImagesNone: string;
+  printPlateCyan: string;
+  printPlateMagenta: string;
+  printPlateYellow: string;
+  printPlateBlack: string;
   printPlatesCurve: string;
   printPlatesCurveTooltip: string;
   printPlatesProofNote: string;

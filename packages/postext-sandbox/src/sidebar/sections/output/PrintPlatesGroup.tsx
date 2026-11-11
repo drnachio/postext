@@ -17,6 +17,9 @@ import {
   withPlates,
 } from './plateEdits.js';
 
+/** Process plates keep their PDF names in every language; the labels
+ *  (`printPlateCyan` …) only let the settings search find them. */
+
 /** Print → Plates (`print.plates`, #1476): the plates a two-ink (or
  *  one-ink) book prints on, switched on one by one — the process plates and
  *  the spot inks the book and its ink table name — then the plates its
@@ -29,6 +32,7 @@ export const PrintPlatesGroup = memo(function PrintPlatesGroup() {
   const plates: PrintPlatesConfig | undefined = raw?.plates;
   const spots = useMemo(() => offeredSpotPlates(config), [config]);
   const on = (plates?.inks ?? []).length > 0;
+  const processLabels = { Cyan: labels.printPlateCyan, Magenta: labels.printPlateMagenta, Yellow: labels.printPlateYellow, Black: labels.printPlateBlack };
 
   const write = (next: PrintPlatesConfig | undefined) => dispatch({ type: 'UPDATE_CONFIG', payload: { print: withPlates(raw, next) } });
   const toggle = (plate: string) => (checked: boolean) => write(togglePlate(plates, plate, checked));
@@ -52,7 +56,7 @@ export const PrintPlatesGroup = memo(function PrintPlatesGroup() {
       <p className="mb-2 text-xs text-(--slate) [text-wrap:pretty]">{on ? labels.printPlatesIntro : labels.printPlatesEmpty}</p>
       <div className="mb-1 text-xs text-(--slate)">{labels.printPlatesProcess}</div>
       {PROCESS_PLATES.map((plate) => (
-        <ToggleSwitch key={plate} label={plate} checked={hasPlate(plates, plate)} onChange={toggle(plate)}
+        <ToggleSwitch key={plate} label={processLabels[plate]} checked={hasPlate(plates, plate)} onChange={toggle(plate)}
           tooltip={labels.printPlateTooltip} isDefault={!hasPlate(plates, plate)} />
       ))}
       {spots.length > 0 && <div className="mt-2 mb-1 text-xs text-(--slate)">{labels.printPlatesSpot}</div>}
