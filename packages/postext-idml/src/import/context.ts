@@ -51,6 +51,10 @@ export class Context {
   counts = { stories: 0, paragraphs: 0, characters: 0, pictures: 0, tables: 0, footnotes: 0, hyperlinks: 0, indexMarks: 0 };
   /** The word a typed caption label used, by kind of resource. */
   readonly labelWords = new Map<'figure' | 'table', string>();
+  /** The look of the first caption read: the captions' style follows it. */
+  captionLook?: import('./looks.js').Look;
+  /** That caption typed its label ("Figure 3.") in the caption's own weight. */
+  captionLabelPlain = false;
   /** A paragraph of a note, for the notes' type. */
   noteParagraph: IdmlParagraph | undefined;
   /** The document's index holds entries: the book prints one. */

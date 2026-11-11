@@ -67,15 +67,24 @@ const runLength = (r: IdmlRun): number => {
   return n;
 };
 
+/** What a run's characters look like, as a key: its character style and
+ *  its own attributes and properties. Runs cut apart by a link, a note or
+ *  a word set another way are one look when they are written alike. */
+function formatKey(r: IdmlRun): string {
+  const attrs = Object.keys(r.attrs).sort().map((k) => `${k}=${r.attrs[k]}`).join('\u0001');
+  const props = Object.keys(r.properties ?? {}).sort().map((k) => `${k}=${JSON.stringify(r.properties[k])}`).join('\u0001');
+  return `${r.characterStyle ?? ''}\u0002${attrs}\u0002${props}`;
+}
+
 /** The run most of the paragraph's text stands in. */
 export function dominantRun(para: IdmlParagraph): IdmlRun | undefined {
   let best: IdmlRun | undefined;
   let most = -1;
   // Runs that share one character range share its attributes: count them
   // together, so a paragraph cut in many runs by links is still its own.
-  const totals = new Map<object, { run: IdmlRun; n: number }>();
+  const totals = new Map<string, { run: IdmlRun; n: number }>();
   for (const r of para.runs) {
-    const key = r.characterStyle ? r : r.attrs;
+    const key = formatKey(r);
     const t = totals.get(key);
     if (t) t.n += runLength(r);
     else totals.set(key, { run: r, n: runLength(r) });
@@ -187,6 +196,8 @@ export class Looks {
     this.body = body;
     const size = body?.cf.pointSize ?? 12;
     const headings: Look[] = [];
+    // Headings whose style name states their level.
+    const levelled = new Set<Look>();
     for (const l of used) {
       const named = nameRole(l.name);
       if (l.pf.list) {
@@ -199,7 +210,10 @@ export class Looks {
         l.role = 'heading';
         l.reason = 'style name';
         const n = Number(named.slice(1));
-        if (n) l.level = n;
+        if (n) {
+          l.level = n;
+          levelled.add(l);
+        }
         headings.push(l);
       } else if (named === 'quote' || named === 'caption') {
         l.role = named;
@@ -225,6 +239,19 @@ export class Looks {
       last = l;
     }
     for (const l of headings) l.level = Math.min(6, Math.max(1, l.level ?? 1));
+    // Postext aligns every heading alike. A look taken for a heading by
+    // its size, or by a name that states no level, that is aligned another way than the headings with
+    // most text (the title of a title page, a display line) keeps its
+    // alignment as a paragraph style instead.
+    const byAlign = new Map<string, number>();
+    for (const l of headings) byAlign.set(l.pf.align, (byAlign.get(l.pf.align) ?? 0) + l.characters);
+    const usual = [...byAlign.entries()].sort((a, b) => b[1] - a[1])[0]?.[0];
+    for (const l of headings) {
+      if (levelled.has(l) || l.pf.align === usual) continue;
+      l.role = 'style';
+      l.level = undefined;
+      l.reason = 'set apart from the headings by its alignment';
+    }
   }
 }
 

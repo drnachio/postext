@@ -5,25 +5,69 @@ app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERAC
 var OUT = arguments[0];
 var LOG = [];
 function step(name, fn) { try { return fn(); } catch (e) { LOG.push(name + ": " + e); } }
+// Coordinates are measured in points from each page's own corner, so a
+// frame added to a right-hand page lands on that page.
 function newDoc(w, h, pages, facing) {
   var d = app.documents.add(false);
   d.documentPreferences.pageWidth = w; d.documentPreferences.pageHeight = h;
   d.documentPreferences.facingPages = facing; d.documentPreferences.pagesPerDocument = pages;
   d.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
   d.viewPreferences.verticalMeasurementUnits = MeasurementUnits.POINTS;
+  d.viewPreferences.rulerOrigin = RulerOrigin.PAGE_ORIGIN;
+  d.zeroPoint = [0, 0];
   return d;
 }
+// On facing pages `l` is the inside margin and `r` the outside one.
+function setMargins(page, t, b, l, r, cols, gutter) { var mp = page.marginPreferences; mp.top = t; mp.bottom = b; mp.left = l; mp.right = r; mp.columnCount = cols || 1; mp.columnGutter = gutter || 12; }
 function margins(d, t, b, l, r, cols, gutter) {
-  var all = [];
-  for (var i = 0; i < d.pages.length; i++) all.push(d.pages[i]);
-  for (var m = 0; m < d.masterSpreads.length; m++) for (var j = 0; j < d.masterSpreads[m].pages.length; j++) all.push(d.masterSpreads[m].pages[j]);
-  for (var k = 0; k < all.length; k++) { var mp = all[k].marginPreferences; mp.top = t; mp.bottom = b; mp.left = l; mp.right = r; mp.columnCount = cols || 1; mp.columnGutter = gutter || 12; }
+  for (var m = 0; m < d.masterSpreads.length; m++) for (var j = 0; j < d.masterSpreads[m].pages.length; j++) setMargins(d.masterSpreads[m].pages[j], t, b, l, r, cols, gutter);
+  for (var i = 0; i < d.pages.length; i++) setMargins(d.pages[i], t, b, l, r, cols, gutter);
+}
+// The type area of a page as geometric bounds [top, left, bottom, right].
+function typeArea(page) {
+  var mp = page.marginPreferences, b = page.bounds, w = b[3] - b[1], h = b[2] - b[0];
+  var left = page.side == PageSideOptions.LEFT_HAND;
+  return [mp.top, left ? mp.right : mp.left, h - mp.bottom, w - (left ? mp.left : mp.right)];
 }
 function frame(page, bounds, text) { var f = page.textFrames.add({ geometricBounds: bounds }); if (text !== undefined) f.contents = text; return f; }
+// Sets a story from a list of [text, paragraph style, key] and returns
+// the paragraph index of every key. A list never ends in an empty item.
+function setParagraphs(story, items) {
+  var t = [], at = {}, i;
+  for (i = 0; i < items.length; i++) { t.push(items[i][0]); if (items[i][2]) at[items[i][2]] = i; }
+  story.contents = t.join("\r");
+  for (i = 0; i < items.length; i++) if (items[i][1]) story.paragraphs[i].appliedParagraphStyle = items[i][1];
+  return at;
+}
+// The characters of the first occurrence of `sub` in a text.
+function find(text, sub) { var i = String(text.contents).indexOf(sub); if (i < 0) throw new Error("not found: " + sub); return text.characters.itemByRange(i, i + sub.length - 1); }
+// A process colour of the document's own (built-in swatch names follow
+// the application's language).
+function ink(d, name, cmyk) { return d.colors.add({ name: name, model: ColorModel.PROCESS, space: ColorSpace.CMYK, colorValue: cmyk }); }
+// Sets the cells of a row one by one.
+function fillRow(row, texts) { for (var i = 0; i < texts.length; i++) row.cells[i].contents = texts[i]; }
+// `n` body paragraphs as items for setParagraphs, the first in `first`.
+function lorem(n, first, body, key) { var L = [LOREM, LOREM2, LOREM3], out = []; for (var i = 0; i < n; i++) out.push([L[i % 3], i ? body : first, i ? null : key]); return out; }
 var LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+var LOREM2 = "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.";
+var LOREM3 = "Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet.";
+// The number of overset text frames (table cells included) goes into the
+// log, so the return value shows it.
+function overset(d) {
+  var n = 0, i, j, k;
+  d.recompose();
+  var o = d.textFrames.everyItem().overflows; for (i = 0; i < o.length; i++) if (o[i]) n++;
+  for (i = 0; i < d.stories.length; i++) {
+    var st = d.stories[i]; if (st.overflows && !st.textContainers[st.textContainers.length - 1].overflows) n++;
+    for (j = 0; j < st.tables.length; j++) { var c = st.tables[j].cells.everyItem().overflows; for (k = 0; k < c.length; k++) if (c[k]) n++; }
+  }
+  return n;
+}
 function finish(d, name) {
+  step("overset", function () { LOG.push("overset " + overset(d)); });
   d.exportFile(ExportFormat.INDESIGN_MARKUP, File(OUT + "/" + name + ".idml"));
   step("pdf", function () { d.exportFile(ExportFormat.PDF_TYPE, File(OUT + "/" + name + ".pdf"), false); });
+  var pages = d.pages.length;
   d.close(SaveOptions.NO);
-  return "ok " + LOG.join(" | ");
+  return "ok " + pages + " pages | " + LOG.join(" | ");
 }

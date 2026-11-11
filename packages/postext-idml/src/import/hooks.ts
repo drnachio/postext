@@ -50,7 +50,7 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
             }
             return undefined;
           }
-          const id = pictureResource(ctx, it, { placement: { position: 'here', span: 'column', align: beside?.side ?? 'left', ...(frame && boxWidth(frame) > 0 ? { width: pt(boxWidth(frame)) } : {}), ...(beside ? { wrap: beside.side } : {}) } });
+          const id = pictureResource(ctx, it, { placement: { position: 'here', span: 'column', align: beside?.side ?? (env.look.pf.align === 'center' ? 'center' : env.look.pf.align === 'right' ? 'right' : 'left'), ...(frame && boxWidth(frame) > 0 ? { width: pt(boxWidth(frame)) } : {}), ...(beside ? { wrap: beside.side } : {}) } });
           if (id) blocks.push(`::resource{id="${id}"}`);
           if (inline && where === 'InlinePosition') ctx.rep.add('inlinePicture', 'warning', 'A picture set in a line of running text stands on a line of its own right after its paragraph, at its own width: Postext sets pictures in a line only in table cells, captions and labels', name);
           else if (beside) ctx.rep.add('anchoredObjectBeside', 'warning', 'An object anchored beside its text (custom position) stands at that side of the column at the paragraph of its anchor, whose text runs beside it; one InDesign hangs out in the margin stands inside the column (layout: "pages" gives it a frame of its own where it stands)', name);

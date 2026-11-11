@@ -69,6 +69,9 @@ export interface PagesResult {
   chapters: { title: string; markdown: string }[];
 }
 
+/** The room under a plain text frame, in leadings (see where it is used). */
+const FOOT_ROOM = 0.2;
+
 export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): PagesResult {
   const doc = ctx.doc;
   const wanted = new Map(stories.map((e) => [e.story.self, e]));
@@ -248,6 +251,13 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
           ctx.rep.add('firstBaselineOff', 'warning', 'The first line of a frame with a fill or a stroke, or of a turned frame, stands lower than in InDesign: its first baseline is nearer the frame\'s edge than Postext sets a line, and the frame keeps its place', `${Math.round(-(top + shift) * 10) / 10} pt (page ${page.name})`);
           top = 0;
         }
+      }
+      // InDesign sets a line whose baseline and descenders are inside the
+      // frame; Postext needs the whole line box, a fifth of the leading
+      // under the baseline. A plain frame is that much taller, so the
+      // page keeps its last line.
+      if (slot.kind === 'text' && tf && entry && !slot.onPath && !slot.style && !slot.rotation && entry.story.orientation !== 'vertical') {
+        box = { ...box, bottom: box.bottom + FOOT_ROOM * (ctx.looks.body?.cf.leading ?? 12) };
       }
       const f: FrameConfig = { name: slot.name, placement: placeAt(box, 'container'), layer: 1 + zs.indexOf(slot.leaf.z), optional: true, pin: true };
       if (slot.rotation) f.rotate = Math.round(slot.rotation * 100) / 100;

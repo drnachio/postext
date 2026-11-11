@@ -59,9 +59,12 @@ function reportLook(ctx: Context, l: Look): void {
 
 /** The space above a paragraph of the look. InDesign adds a paragraph's
  *  space before to the space after of the one above it, where Postext
- *  takes the larger of the two: the look's space above is the sum it most
- *  often stood under, so the usual pair keeps its gap. */
+ *  takes the larger of the two. A look with no space before leaves the gap
+ *  to the paragraph above (its space after is that paragraph's margin, so
+ *  the larger of the two is the sum). A look with space of its own takes
+ *  the sum it most often stood under, so its usual pair keeps its gap. */
 function spaceAbove(l: Look): number {
+  if (!(l.pf.spaceBefore > 0)) return Math.max(0, l.pf.spaceBefore);
   let best = l.pf.spaceBefore;
   let most = 0;
   for (const [gap, n] of l.gaps ?? []) {
@@ -88,7 +91,9 @@ function paragraphStyle(ctx: Context, l: Look, id: string, body: Look | undefine
     endIndent: pt(l.pf.rightIndent),
     firstLineIndent: pt(Math.max(0, l.pf.firstLineIndent)),
     hangingIndent: pt(Math.max(0, -l.pf.firstLineIndent)),
-    spaceBetween: pt(l.pf.spaceBefore + l.pf.spaceAfter),
+    // Each paragraph of a spaced look is a group of its own (`blocks.ts`):
+    // the margins say all of its space.
+    spaceBetween: pt(0),
     marginTop: pt(spaceAbove(l)),
     marginBottom: pt(l.pf.spaceAfter),
     snapToGrid: false,

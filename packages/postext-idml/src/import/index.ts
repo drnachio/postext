@@ -144,6 +144,20 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
     const type = (id: string, name: string, word: string | undefined): ResourceType => ({ id, name, shortLabel: word ?? '', numberingTemplate: word ? '{n}' : '', resetOn: 'never', counterFormat: 'decimal', captionPrefix: word ?? '' });
     config.resourceTypes = [type('picture', 'Picture', undefined), type('grid', 'Table', undefined), type('figure', 'Figure', labels.get('figure') ?? 'Figure'), type('table', 'Numbered table', labels.get('table') ?? 'Table')];
   }
+  // Captions take the look of the document's own: its size, alignment and
+  // slant, with the label in the caption's weight (InDesign types it as
+  // part of the caption).
+  const cap = ctx.captionLook;
+  if (cap) {
+    config.captionStyle = {
+      fontSize: pt(cap.cf.pointSize),
+      align: cap.pf.align === 'justify' ? 'left' : cap.pf.align,
+      labelBold: cap.weight >= 600,
+      labelItalic: cap.italic,
+      descriptionItalic: cap.italic,
+      ...(cap.cf.fontFamily && cap.cf.fontFamily !== ctx.looks.body?.cf.fontFamily ? { fontFamily: cap.cf.fontFamily } : {}),
+    };
+  }
   const palette = ctx.palette.list();
   if (palette.length) config.colorPalette = palette;
 

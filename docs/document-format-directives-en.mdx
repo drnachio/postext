@@ -53,7 +53,7 @@ Directives are single-line control tags written as `:::name` or `:::name{attrs}`
     </tr>
     <tr>
       <td><code>:::columnbreak</code></td>
-      <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it.</td>
+      <td>End the current column here: the next block opens in the next column of the same page (or on a new page when the directive lands in the last column). A no-op in an empty column, so it never produces a blank column or page. The column it ends keeps its bottom gap — column balancing does not stretch it. In the text of a composed page's frame that goes on in another (the next frame of its chain, or another page), what follows the directive opens that frame, though it would fit in the first (postext 1.78); a frame that cannot go on sets its text through.</td>
     </tr>
     <tr>
       <td><code>:::space</code></td>

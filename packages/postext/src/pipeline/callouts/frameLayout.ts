@@ -201,6 +201,21 @@ export const makeCalloutLayouter = (
   return { children, childBase: startIdx + 1, realAt, end: { child: children.length, line: 0 }, layoutRange: through(false), peekRange: through(true), groups };
 };
 
+/** Whether child `k` of a frame's story follows a `:::columnbreak`
+ *  (#1512): the directive stands between it and the block before. In a
+ *  frame that can go on (the next frame of its chain, or another page)
+ *  the text is cut there, as a column of the flow ends at one; a frame
+ *  that cannot go on, and a box of the running text, set it through. */
+export const afterColumnBreak = (pass: FrameLayoutPass, L: CalloutLayouter, k: number): boolean => {
+  for (let j = k - 1; j >= 0; j--) {
+    const c = pass.contentBlocks[L.childBase + j];
+    if (!c) return false;
+    if (c.type === 'directive' && c.directiveName === 'columnbreak') return true;
+    if (L.realAt.includes(j)) return false;
+  }
+  return false;
+};
+
 /** The cut a page break between the parts of a contents puts in a box
  *  (`toc.parts.breakBefore`, #996): the head of the first part row after
  *  `from` that opens a page of its own, when something stands before it in
@@ -211,6 +226,9 @@ export const partBreakCut = (pass: FrameLayoutPass, L: CalloutLayouter, from: Ca
   for (let k = from.child; k < L.children.length; k++) {
     const toc = pass.contentBlocks[L.childBase + k]?.toc;
     if (real && k > from.child && toc?.kind === 'part' && toc.breakBefore && toc.group?.role !== 'continuation') return { child: k, line: 0 };
+    // A `:::columnbreak` in the frame's text (#1512): what follows it
+    // opens the next frame of the chain.
+    if (real && k > from.child && L.realAt.includes(k) && afterColumnBreak(pass, L, k)) return { child: k, line: 0 };
     if (L.realAt.includes(k) && !(toc?.group?.role === 'continuation' && k !== from.child)) real = true;
   }
   return undefined;
@@ -374,7 +392,9 @@ export const splitCalloutFragment = (
     /** The unit is a part row that opens a page of the contents (#996). */
     const opensPage = (u: CalloutUnit | undefined): boolean => {
       const toc = tocOf(u);
-      return toc?.kind === 'part' && toc.breakBefore === true && toc.group?.role !== 'continuation';
+      if (toc?.kind === 'part' && toc.breakBefore === true && toc.group?.role !== 'continuation') return true;
+      // What follows a `:::columnbreak` (#1512).
+      return u?.kind === 'block' && u.block.contentIndex !== undefined && afterColumnBreak(pass, L, u.block.contentIndex - L.childBase);
     };
     /** The block of the contents a cut after unit `i` falls inside. */
     const tocInside = (i: number): { id: number; minEntries: number } | undefined => {

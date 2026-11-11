@@ -59,7 +59,8 @@ describe('the first baseline of a frame', () => {
     const pad = (name: string): number | undefined => frames.find((f) => f.name === name)!.padding?.top?.value;
     // Ascent: 8.64 pt under the top, Postext sets 11.52 (0.8 of 14.4): up 2.9 pt, and as much taller.
     expect(y('t1')).toBeCloseTo(40 - 2.9, 1);
-    expect(frames[0]!.placement!.size!.height).toMatchObject({ value: 72.9 });
+    // And a fifth of a leading more at the foot (2.88 pt), the room Postext's last line box needs.
+    expect(frames[0]!.placement!.size!.height).toMatchObject({ value: 75.78 });
     expect(pad('t1')).toBeUndefined();
     // Leading: 14.4 under the top against 11.52: the frame stays, 2.9 pt of padding.
     expect(y('t4')).toBeCloseTo(340, 1);
