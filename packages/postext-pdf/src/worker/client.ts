@@ -14,7 +14,7 @@ import { rasterizeSvgWithDom, type SvgRasterizer } from '../pdf-backend/blocks/r
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol.js';
 import type { PrintPdfReport } from '../print/inspectPdf.js';
 
-export type { PrintPdfReport, PrintPdfFont } from '../print/inspectPdf.js';
+export type { PrintPdfReport, PrintPdfFont, PrintPdfRgbUse } from '../print/inspectPdf.js';
 
 export type {
   PdfWarning,

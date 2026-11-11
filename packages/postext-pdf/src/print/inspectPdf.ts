@@ -12,17 +12,24 @@
  */
 
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRef, PDFStream, PDFString, PDFHexString, type PDFObject } from 'pdf-lib';
-import { pdfNameOf as nameOf, pdfWalk } from './pdfWalk.js';
+import { pdfNameOf as nameOf, pdfWalk, type PdfPaintKind } from './pdfWalk.js';
 
 export interface PrintPdfFont {
-  /** The font's name without the subset tag. */
+  /** The font's name, without a subset tag (`ABCDEF+`) or the number
+   *  pdf-lib appends to each embedded face (`-1234`). */
   name: string;
-  /** Its font program is in the file. */
+  /** Its font program is in the file. A face used both embedded and not
+   *  is listed twice, once each way. */
   embedded: boolean;
-  /** Embedded as a subset (`ABCDEF+Name`). */
-  subset: boolean;
   /** `TrueType`, `OpenType CFF`, `Type 1`, `Type 3`… */
   type: string;
+}
+
+/** Where RGB is painted: in vector paint (fills, strokes, text, shadings,
+ *  patterns) and in images. */
+export interface PrintPdfRgbUse {
+  vector: boolean;
+  images: boolean;
 }
 
 export interface PrintPdfReport {
@@ -40,8 +47,11 @@ export interface PrintPdfReport {
   trimMm: { width: number; height: number };
   /** Pages whose trim size differs from the first page's. */
   mixedTrimPages: number;
-  /** Pages without a TrimBox. */
+  /** Pages without a TrimBox (or with one that is not four numbers). */
   pagesWithoutTrimBox: number;
+  /** Pages with a MediaBox, TrimBox or BleedBox that is not four numbers,
+   *  read as if it were missing. */
+  malformedBoxPages: number;
   /** The smallest bleed beyond the trim on any side of any page, mm (0
    *  when a page has no BleedBox or it equals the trim). */
   bleedMm: number;
@@ -50,8 +60,14 @@ export interface PrintPdfReport {
   color: {
     /** Process CMYK (DeviceCMYK, or a CMYK ICC space). */
     cmyk: boolean;
-    /** RGB (DeviceRGB, CalRGB, or an RGB ICC space). */
+    /** RGB of any kind: `deviceRgb` or `iccRgb`. */
     rgb: boolean;
+    /** DeviceRGB: RGB with no profile, whose print colour is the RIP's
+     *  guess. */
+    deviceRgb: PrintPdfRgbUse;
+    /** RGB with a profile (an RGB ICC space, or CalRGB): a PDF/X-4 RIP
+     *  converts it to the output intent. */
+    iccRgb: PrintPdfRgbUse;
     /** DeviceGray. */
     gray: boolean;
     /** Spot inks by name (Separation and DeviceN colorants), registration
@@ -66,6 +82,8 @@ export interface PrintPdfReport {
   overprint: boolean;
   /** Annotations (links, …) on the pages. */
   annotations: number;
+  /** The file has an interactive form (`AcroForm`). */
+  form: boolean;
   /** The file is tagged (`MarkInfo /Marked true`). */
   tagged: boolean;
 }
@@ -108,33 +126,50 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
   const tagged = markInfo instanceof PDFDict && lookup(markInfo.get(PDFName.of('Marked')))?.toString() === 'true';
 
   const fonts = new Map<string, PrintPdfFont>();
-  const color = { cmyk: false, rgb: false, gray: false, spots: new Set<string>(), registration: false };
+  const color = {
+    cmyk: false,
+    gray: false,
+    spots: new Set<string>(),
+    registration: false,
+    deviceRgb: { vector: false, images: false },
+    iccRgb: { vector: false, images: false },
+  };
   let overprint = false;
+  const rgb = (use: PrintPdfRgbUse, kind: PdfPaintKind): void => {
+    if (kind === 'image') use.images = true;
+    else use.vector = true;
+  };
 
-  const checkSpace = (cs: PDFObject | undefined): void => {
+  const checkSpace = (cs: PDFObject | undefined, kind: PdfPaintKind, res?: PDFDict, depth = 0): void => {
     const v = lookup(cs);
     const n = nameOf(v);
-    if (n === 'DeviceRGB' || n === 'CalRGB' || n === 'RGB') color.rgb = true;
-    if (n === 'DeviceCMYK' || n === 'CMYK') color.cmyk = true;
-    if (n === 'DeviceGray' || n === 'G') color.gray = true;
-    if (!(v instanceof PDFArray)) return;
-    const kind = nameOf(lookup(v.get(0)));
-    if (kind === 'CalRGB') color.rgb = true;
-    if (kind === 'ICCBased') {
+    if (n === 'DeviceRGB' || n === 'RGB') rgb(color.deviceRgb, kind);
+    else if (n === 'DeviceCMYK' || n === 'CMYK') color.cmyk = true;
+    else if (n === 'DeviceGray' || n === 'G') color.gray = true;
+    else if (n && res && depth < 4) {
+      // An inline image names a space of its resources.
+      const spaces = lookup(res.get(PDFName.of('ColorSpace')));
+      if (spaces instanceof PDFDict) checkSpace(spaces.get(PDFName.of(n)), kind, undefined, depth + 1);
+    }
+    if (!(v instanceof PDFArray) || depth >= 4) return;
+    const family = nameOf(lookup(v.get(0)));
+    if (family === 'CalRGB') rgb(color.iccRgb, kind);
+    if (family === 'ICCBased') {
       const s = lookup(v.get(1));
       const comps = s instanceof PDFStream ? lookup(s.dict.get(PDFName.of('N'))) : undefined;
       const n = comps instanceof PDFNumber ? comps.asNumber() : 0;
-      if (n === 3) color.rgb = true;
+      if (n === 3) rgb(color.iccRgb, kind);
       else if (n === 4) color.cmyk = true;
       else if (n === 1) color.gray = true;
     }
-    if (kind === 'Indexed') checkSpace(v.get(1));
-    if (kind === 'Separation') {
+    if (family === 'Indexed' || family === 'I') checkSpace(v.get(1), kind, res, depth + 1);
+    if (family === 'Pattern' && v.size() > 1) checkSpace(v.get(1), 'vector', res, depth + 1);
+    if (family === 'Separation') {
       const ink = nameOf(lookup(v.get(1)));
       if (ink === 'All') color.registration = true;
       else if (ink && ink !== 'None') color.spots.add(ink);
     }
-    if (kind === 'DeviceN') {
+    if (family === 'DeviceN') {
       const names = lookup(v.get(1));
       if (names instanceof PDFArray) {
         for (let i = 0; i < names.size(); i++) {
@@ -150,10 +185,10 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
 
   const noteFont = (font: PDFDict): void => {
     const base = nameOf(lookup(font.get(PDFName.of('BaseFont')))) ?? 'unnamed';
-    const subset = /^[A-Z]{6}\+/.test(base);
     // pdf-lib names each embedded face `Name-1234`: the number is not the
-    // font's, and one face sent in slices has one per slice.
-    const name = (subset ? base.slice(7) : base).replace(/-\d+$/, '');
+    // font's, and one face sent in slices has one per slice. Other
+    // writers tag a subset `ABCDEF+Name`.
+    const name = base.replace(/^[A-Z]{6}\+/, '').replace(/-\d+$/, '');
     let sub = nameOf(lookup(font.get(PDFName.of('Subtype'))));
     let desc = font;
     if (sub === 'Type0') {
@@ -174,9 +209,11 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
       : file === 'FontFile3' || sub === 'CIDFontType0' ? 'OpenType CFF'
       : sub === 'Type1' || sub === 'MMType1' ? 'Type 1'
       : sub ?? '?';
-    const known = fonts.get(name);
-    // One entry per face: embedded wins over a stray reference to it.
-    if (!known || (!known.embedded && embedded)) fonts.set(name, { name, embedded, subset, type });
+    // One entry per face and way it is used: the slices of one face are
+    // one entry, and a face also used without its program is listed again
+    // as such, never hidden behind its embedded copies.
+    const key = `${name}\u0000${embedded}\u0000${type}`;
+    if (!fonts.has(key)) fonts.set(key, { name, embedded, type });
   };
 
   const walk = pdfWalk(ctx, {
@@ -187,31 +224,61 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
     },
     // Colour set straight in a content stream: `rg`/`RG`, `k`/`K`, `g`/`G`.
     content: (text) => {
-      if (!color.rgb && /(^|[\s\]])(rg|RG)(?=\s|$)/.test(text)) color.rgb = true;
+      if (!color.deviceRgb.vector && /(^|[\s\]])(rg|RG)(?=\s|$)/.test(text)) color.deviceRgb.vector = true;
       if (!color.cmyk && /(^|[\s\]])(k|K)(?=\s|$)/.test(text)) color.cmyk = true;
       if (!color.gray && /(^|[\s\]])(g|G)(?=\s|$)/.test(text)) color.gray = true;
     },
   });
 
+  /** A page box; undefined when it is missing, and noted when it is not
+   *  four numbers (read as missing). */
+  let malformed = false;
   const box = (page: ReturnType<typeof pdf.getPage>, key: string): [number, number, number, number] | undefined => {
-    const v = page.node.lookup(PDFName.of(key));
-    if (!(v instanceof PDFArray) || v.size() !== 4) return undefined;
-    const n = v.asArray().map((o) => (lookup(o) as PDFNumber).asNumber());
+    let v: PDFObject | undefined;
+    try {
+      v = page.node.lookup(PDFName.of(key));
+    } catch {
+      malformed = true;
+      return undefined;
+    }
+    if (v === undefined) return undefined;
+    const n = v instanceof PDFArray && v.size() === 4 ? v.asArray().map((o) => lookup(o)).map((o) => (o instanceof PDFNumber ? o.asNumber() : NaN)) : [];
+    if (n.length !== 4 || !n.every(Number.isFinite) || n[0] === n[2] || n[1] === n[3]) {
+      malformed = true;
+      return undefined;
+    }
     return [Math.min(n[0]!, n[2]!), Math.min(n[1]!, n[3]!), Math.max(n[0]!, n[2]!), Math.max(n[1]!, n[3]!)];
+  };
+
+  /** A MediaBox the page inherits from its page tree; US Letter when
+   *  there is none that reads. */
+  const inheritedMedia = (page: ReturnType<typeof pdf.getPage>): [number, number, number, number] => {
+    try {
+      const w = page.getWidth();
+      const h = page.getHeight();
+      if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) return [0, 0, w, h];
+    } catch {
+      // Not four numbers anywhere up the tree.
+    }
+    malformed = true;
+    return [0, 0, 612, 792];
   };
 
   const pages = pdf.getPages();
   let trimMm = { width: 0, height: 0 };
   let mixedTrimPages = 0;
   let pagesWithoutTrimBox = 0;
+  let malformedBoxPages = 0;
   let bleedMm = Infinity;
   let annotations = 0;
   pages.forEach((page, i) => {
-    const media = box(page, 'MediaBox') ?? [0, 0, page.getWidth(), page.getHeight()];
+    malformed = false;
+    const media = box(page, 'MediaBox') ?? inheritedMedia(page);
     const trimBox = box(page, 'TrimBox');
     if (!trimBox) pagesWithoutTrimBox++;
     const trim = trimBox ?? media;
     const bleed = box(page, 'BleedBox') ?? trim;
+    if (malformed) malformedBoxPages++;
     const size = { width: round1((trim[2] - trim[0]) * MM_PER_PT), height: round1((trim[3] - trim[1]) * MM_PER_PT) };
     if (i === 0) trimMm = size;
     else if (Math.abs(size.width - trimMm.width) > 0.2 || Math.abs(size.height - trimMm.height) > 0.2) mixedTrimPages++;
@@ -221,6 +288,8 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
     if (annots instanceof PDFArray) annotations += annots.size();
     walk.page(page);
   });
+  walk.acroForm(pdf.catalog);
+  const form = lookup(pdf.catalog.get(PDFName.of('AcroForm'))) instanceof PDFDict;
 
   return {
     version,
@@ -231,12 +300,22 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
     trimMm,
     mixedTrimPages,
     pagesWithoutTrimBox,
+    malformedBoxPages,
     bleedMm: Number.isFinite(bleedMm) ? round1(bleedMm) : 0,
-    fonts: [...fonts.values()].sort((a, b) => a.name.localeCompare(b.name)),
-    color: { cmyk: color.cmyk, rgb: color.rgb, gray: color.gray, spots: [...color.spots].sort(), registration: color.registration },
+    fonts: [...fonts.values()].sort((a, b) => a.name.localeCompare(b.name) || Number(a.embedded) - Number(b.embedded)),
+    color: {
+      cmyk: color.cmyk,
+      rgb: color.deviceRgb.vector || color.deviceRgb.images || color.iccRgb.vector || color.iccRgb.images,
+      deviceRgb: color.deviceRgb,
+      iccRgb: color.iccRgb,
+      gray: color.gray,
+      spots: [...color.spots].sort(),
+      registration: color.registration,
+    },
     transparency: walk.transparency,
     overprint,
     annotations,
+    form,
     tagged,
   };
 }
