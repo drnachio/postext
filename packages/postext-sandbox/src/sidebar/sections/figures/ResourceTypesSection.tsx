@@ -36,6 +36,7 @@ import { CaptionStyleFields } from './CaptionStyleFields.js';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview.js';
 import { documentDigits, documentLanguage } from '../../../context/documentDirection.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides.js';
+import { GridSnapFields } from '../../settings/GridSnapFields.js';
 import { MULTIPLE_COLUMNS_MAX } from '../../settings/multipleColumns.js';
 
 function newTypeId(): string {
@@ -292,6 +293,12 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
+              <GridSnapFields
+                kind="resourceType"
+                value={{ snapToGrid: type.snapToGrid !== false, snapTopToGrid: type.snapTopToGrid === true }}
+                set={(k, v) => updateType(type.id, { [k]: v })}
+                unset={(k) => type[k] === undefined}
+              />
             </div>
 
             <div className="mt-2">

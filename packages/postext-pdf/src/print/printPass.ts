@@ -15,11 +15,16 @@
  * Working on the operators rather than at each painter catches every way
  * the backend paints (pdf-lib's `drawRectangle`/`drawSvgPath`, raw
  * operator runs, text objects) with one rule.
+ *
+ * - **Spot colours**: the CMYK stand-in of a spot colour (see `spot.ts`)
+ *   becomes its ink's Separation colour space at the tint, and the paint
+ *   overprints when the ink does (a varnish, an ink laid over process).
  */
 
-import { PDFName, PDFNumber, PDFOperator, PDFOperatorNames, type PDFPage } from 'pdf-lib';
+import { PDFDict, PDFName, PDFNumber, PDFOperator, PDFOperatorNames, type PDFPage } from 'pdf-lib';
 import { dimensionToPx } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
+import type { SpotPlate } from './spot.js';
 
 /** Overprint flags of a graphics state: fill (`op`) and stroke (`OP`). */
 export interface OverprintFlags {
@@ -31,12 +36,19 @@ export interface OverprintFlags {
  *  resources the operators run against, returning its name. */
 export type OverprintStateFactory = (flags: OverprintFlags) => PDFName;
 
+/** Registers (or reuses) the Separation colour space of a spot ink in the
+ *  resources the operators run against, returning its name. */
+export type SeparationSpaceFactory = (plate: SpotPlate) => PDFName;
+
 type Matrix = [number, number, number, number, number, number];
 
 interface GState {
   ctm: Matrix;
   fillK: boolean;
   strokeK: boolean;
+  /** The current fill / stroke colour is a spot ink that overprints. */
+  fillSpotOver: boolean;
+  strokeSpotOver: boolean;
   op: OverprintFlags;
   textMode: number;
 }
@@ -95,6 +107,9 @@ export interface PrintPassOptions {
   richBlack: boolean;
   /** User-space units per point at the identity CTM (1 for a page). */
   unitsPerPoint?: number;
+  /** Names the Separation colour spaces of spot colours; without it they
+   *  print in process, through their alternate. */
+  spaceFor?: SeparationSpaceFactory;
 }
 
 /** Run the black-handling pass over `ops`, returning the new operator
@@ -124,7 +139,25 @@ export function applyPrintPass(
 
   const out: PDFOperator[] = [];
   const stack: GState[] = [];
-  let gs: GState = { ctm: IDENTITY, fillK: false, strokeK: false, op: { fill: false, stroke: false }, textMode: 0 };
+  let gs: GState = { ctm: IDENTITY, fillK: false, strokeK: false, fillSpotOver: false, strokeSpotOver: false, op: { fill: false, stroke: false }, textMode: 0 };
+  /** Whether the current fill / stroke colour overprints. */
+  const fillOver = (): boolean => (overprint && gs.fillK) || gs.fillSpotOver;
+  const strokeOver = (): boolean => (overprint && gs.strokeK) || gs.strokeSpotOver;
+  /** The Separation operators of a `k` / `K` stand-in, if it is one. */
+  const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean } | undefined => {
+    if (!options.spaceFor || args.length !== 4) return undefined;
+    const [c, m, y, k] = args.map(num) as [number, number, number, number];
+    const paint = mode.inkRegistry.paintOf(c, m, y, k);
+    if (!paint) return undefined;
+    const space = options.spaceFor(paint.plate);
+    return {
+      ops: [
+        PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorspace : PDFOperatorNames.NonStrokingColorspace, [space]),
+        PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorN : PDFOperatorNames.NonStrokingColorN, [PDFNumber.of(paint.tint)]),
+      ],
+      over: paint.plate.overprint,
+    };
+  };
   let pathStart = -1;
   let box: [number, number, number, number] | null = null;
 
@@ -165,23 +198,30 @@ export function applyPrintPass(
       out.push(op);
       continue;
     }
-    if (name === 'k') {
-      gs.fillK = isKOnlySolid(args);
-      out.push(op);
-      continue;
-    }
-    if (name === 'K') {
-      gs.strokeK = isKOnlySolid(args);
-      out.push(op);
+    if (name === 'k' || name === 'K') {
+      const stroke = name === 'K';
+      const spot = spotOps(args, stroke);
+      const k = !spot && isKOnlySolid(args);
+      if (stroke) {
+        gs.strokeK = k;
+        gs.strokeSpotOver = !!spot?.over;
+      } else {
+        gs.fillK = k;
+        gs.fillSpotOver = !!spot?.over;
+      }
+      if (spot) out.push(...spot.ops);
+      else out.push(op);
       continue;
     }
     if (FILL_COLOR_OPS.has(name)) {
       gs.fillK = false;
+      gs.fillSpotOver = false;
       out.push(op);
       continue;
     }
     if (STROKE_COLOR_OPS.has(name)) {
       gs.strokeK = false;
+      gs.strokeSpotOver = false;
       out.push(op);
       continue;
     }
@@ -218,18 +258,16 @@ export function applyPrintPass(
         // Rich black, knocked out, inside its own state so the K-only
         // colour (and the overprint) come back after it.
         const saved = { ...gs, op: { ...gs.op } };
-        const pre = [PDFOperator.of(PDFOperatorNames.PushGraphicsState), ...switchTo({ fill: false, stroke: overprint && strokes && gs.strokeK }), ...richOps()];
+        const pre = [PDFOperator.of(PDFOperatorNames.PushGraphicsState), ...switchTo({ fill: false, stroke: strokes && strokeOver() }), ...richOps()];
         out.splice(at, 0, ...pre);
         out.push(op, PDFOperator.of(PDFOperatorNames.PopGraphicsState));
         gs = saved;
       } else {
-        const want = {
-          fill: overprint && (fills ? gs.fillK : gs.op.fill),
-          stroke: overprint && (strokes ? gs.strokeK : gs.op.stroke),
-        };
         // Only what this paint uses decides: keep the other flag.
-        if (!fills) want.fill = gs.op.fill && overprint;
-        if (!strokes) want.stroke = gs.op.stroke && overprint;
+        const want = {
+          fill: fills ? fillOver() : gs.op.fill,
+          stroke: strokes ? strokeOver() : gs.op.stroke,
+        };
         out.splice(at, 0, ...switchTo(want));
         out.push(op);
       }
@@ -250,8 +288,8 @@ export function applyPrintPass(
       const stroke = m === 1 || m === 2;
       out.push(
         ...switchTo({
-          fill: overprint && (fill ? gs.fillK : gs.op.fill),
-          stroke: overprint && (stroke ? gs.strokeK : gs.op.stroke),
+          fill: fill ? fillOver() : gs.op.fill,
+          stroke: stroke ? strokeOver() : gs.op.stroke,
         }),
         op,
       );
@@ -284,8 +322,31 @@ export function runPagePrintPass(page: PDFPage, mode: PrintColorMode): void {
     let name = states.get(key);
     if (!name) states.set(key, (name = page.node.newExtGState('GSo', page.doc.context.obj(overprintStateDict(flags)))));
     return name;
-  }, { richBlack: true });
+  }, { richBlack: true, spaceFor: pageSpaceFactory(page, mode) });
   // In place: pdf-lib serializes the stream from this array.
   stream.operators.length = 0;
   for (const op of next) stream.operators.push(op);
+}
+
+/** Names spot inks' Separation colour spaces in a page's resources, one
+ *  name per plate. */
+function pageSpaceFactory(page: PDFPage, mode: PrintColorMode): SeparationSpaceFactory {
+  const names = new Map<string, PDFName>();
+  return (plate) => {
+    const context = page.doc.context;
+    const ref = mode.inkRegistry.separationSpace(context, plate);
+    const key = ref.toString();
+    let name = names.get(key);
+    if (name) return name;
+    const { Resources } = page.node.normalizedEntries();
+    let spaces = Resources.lookupMaybe(PDFName.of('ColorSpace'), PDFDict);
+    if (!spaces) {
+      spaces = context.obj({});
+      Resources.set(PDFName.of('ColorSpace'), spaces);
+    }
+    name = spaces.uniqueKey('CSs');
+    spaces.set(name, ref);
+    names.set(key, name);
+    return name;
+  };
 }

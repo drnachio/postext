@@ -64,6 +64,12 @@ export const metadata = {
       <td>段落と段落の間のアキです。<code>true</code>は空行（<code>lineHeight</code>と同じ高さ）を挟み、出版物で見られるように段落を区切ります。<code>&#123; value: 2, unit: 'mm' &#125;</code>のような長さや本文サイズに対する<code>0.33em</code>を指定すると、本文でも囲みでも組版ページのフレームでも、その量どおりに入ります。行の整数倍でない長さでは段落がベースライングリッドから外れ、次にグリッドに揃うブロック（見出し、箇条書きの最後の項目、別行立ての数式）で本文はグリッドに戻ります。<code>paragraphStyles[].spaceBetween</code>と同じアキで、<code>:::paragraphs</code>コンテナーの中ではそちらが代わりに使われます。囲みは<code>calloutStyles[].body.paragraphSpacing</code>で独自の値を持てます。</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>本文の各段落と引用をグリッド線から始めます。前のブロックがどこで終わっても（グリッドから外れた見出し、正確な余白の囲みや図）、上の間隔を次のグリッド線まで切り上げます。<code>false</code>では、段落は前のブロックが残した位置に置かれます。<code>:::paragraphs</code>コンテナ内の段落は代わりにそのスタイルの<code>snapTopToGrid</code>に従い、詩行はその段落スタイルの設定に、段落スタイルがなければこの設定に従います。グリッドから外れた見出しの下だけでグリッドに戻すには、その見出しの<code>regainGrid</code>を使います。Sandboxでは<strong>段落をグリッド線から始める</strong>です。</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Ressourcentypen und ihre Nummerierung, Tabellen- und Legendenstile, einfarbige Diagramme und gedruckte Videos',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '39 min',
+  readingTime: '40 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für Abbildungen, Tabellen, Diagramme und Videos. Postext nennt sie Ressourcen und nummeriert jede Art für sich. Sie legen fest, wie Tabellen aussehen: ihre Linien, ihre Flächen, ihre Schrift und wie sie sich über Seiten verteilen. Sie legen fest, wie die Legende einer Abbildung oder Tabelle gesetzt wird. Außerdem können Sie Diagramme in einer einzigen Druckfarbe drucken und wählen, wie ein Video auf Papier erscheint.",
@@ -144,6 +144,16 @@ Ein Typ darf Felder weglassen (seit postext 1.38): Der eingebaute Typ mit dersel
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (optional)</td>
       <td>Teilweise Überschreibung des <a href="#legendenstil">Legendenstils</a> für Ressourcen dieses Typs. Nur die gesetzten Schlüssel ersetzen den globalen <code>captionStyle</code>; alles andere wird geerbt (eine überschriebene <code>color</code> bestimmt auch die Farben von Bezeichnung und Anmerkung, sofern diese nicht ausdrücklich gesetzt sind). Typischer Einsatz: Tabellen mit Legende <em>oben</em> auf einem farbigen Balken, während Abbildungen ihre Legende unten behalten. Palettenverweise werden wie jede andere Farbe aufgelöst.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>true</code>. Ob eine Abbildung oder Tabelle dieses Typs im Text auf dem Grundlinienraster steht: Der Fluss rastet unter der Ressource wieder ein. <code>false</code> behält den genauen Abstand, den die Ressource lässt. Schwebende Elemente am Kopf oder Fuß einer Spalte sind nicht betroffen.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>false</code>. Lässt eine Abbildung oder Tabelle dieses Typs im Text auf einer Rasterlinie beginnen, wie auch immer der Block davor endete. Schwebende Elemente am Kopf oder Fuß einer Spalte, eine vom Text umflossene Abbildung und eine am Spaltenkopf sind nicht betroffen. Im Sandbox: <strong>Auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -855,6 +865,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Sonderfarben in einem SVG.** In einem Druck-PDF druckt eine Farbe eines Vektor-SVG nur in zwei Fällen auf einer Sonderfarbe. Wenn sie die Druckfarbe nennt: Eine Farbe, auf die `icc-named-color(…, "PANTONE 185 C")` folgt, oder ein Element mit `data-spot="PANTONE 185 C"` (und `data-spot-tint="40"`, in Prozent) druckt auf der Platte dieser Druckfarbe, mit dem Ersatzwert der Palette, wenn die Palette eine Sonderfarbe dieses Namens hat, sonst mit dem eigenen CMYK der Farbe. Und wenn ihr Hex-Wert genau der einer Sonderfarbe der Palette ist: Dann druckt sie auf der Druckfarbe dieser Farbe, in deren Tonwert. Jede andere Farbe bleibt im Vierfarbdruck, auch wenn sie wie ein Tonwert einer Druckfarbe über Weiß aussieht; die Grautöne einer Zeichnung wandern also nie auf eine Sonderfarbenplatte. Jede Farbe wird für sich aufgelöst, sodass ein Diagramm mehrere Druckfarben und Prozessfarben mischen kann. `diagramStyle.singleInk` hat Vorrang: Mit einer Sonderfarbe als `inkColor` druckt das umgefärbte Diagramm in Tonwerten dieser Platte. Eine Druckfarbe, die ein SVG nennt und die keine Palettenfarbe definiert (auch kein Eintrag der Druckfarbentabelle mit `cmyk`), druckt auf einer eigenen Platte, mit dem CMYK der SVG-Farbe als Ersatzwert; alle SVGs, die sie nennen, teilen sich diese Platte, und der Preflight warnt (`spotInkUndefined`). Viele Programme exportieren ein Farbfeld als einfache RGB-Farbe und verlieren seinen Namen: Geben Sie der Palette eine Sonderfarbe mit genau diesem `hex`, eine pro Tonwert, den die Zeichnung verwendet, oder kennzeichnen Sie die Elemente mit `data-spot`.
 
 ### Einfarbmodus auf dem Canvas und in HTML
 

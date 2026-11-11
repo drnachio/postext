@@ -1,7 +1,7 @@
 // Small helpers of the placement pass that need none of its state: float
 // pages, forced breaks, chapter numbers, loose paragraphs, verse snaps and
 // centred pages (#1276: split out of build.ts).
-import type { ResolvedHeadingLevelConfig } from '../../types.js';
+import type { ResolvedHeadingLevelConfig, ResourceType } from '../../types.js';
 import type { ContentBlock } from '../../parse/index.js';
 import type { VDTDocument, VDTPage, ResolvedConfig, VDTLine, VDTColumn, VDTBlock } from '../../vdt.js';
 import { versesLineByLine, verseLinesSettings } from '../text/verseLines.js';
@@ -202,6 +202,13 @@ export function verseSnaps(styleId: string | undefined, resolved: ResolvedConfig
   return !key || resolved.paragraphStyles.find((s) => s.id === key)?.snapToGrid !== false;
 }
 
+/** Whether a poem set in paragraph style `styleId` opens on a grid line
+ *  (the style's `snapTopToGrid`); a poem in no style is body text. */
+export function verseSnapsTop(styleId: string | undefined, resolved: ResolvedConfig): boolean {
+  const key = styleId?.trim();
+  return key ? resolved.paragraphStyles.find((s) => s.id === key)?.snapTopToGrid === true : resolved.bodyText.snapTopToGrid;
+}
+
 /** `lines` (block-relative, as `resetLinePositions` sets them) moved `dy`
  *  px down their block: a 行取り heading's lines in its band (#424). */
 export function shiftLinesDown(lines: VDTLine[], dy: number): VDTLine[] {
@@ -262,4 +269,33 @@ export function centrePageText(page: VDTPage, reservedOf: (col: VDTColumn) => { 
       offsetBlock(b, 0, dy);
     }
   }
+}
+
+/** The space above a block, rounded up so the block opens on a grid line
+ *  of `col` (`snapTopToGrid`, `regainGrid`): the space is a minimum. */
+export function onGridAbove(col: VDTColumn, spacing: number, baselineGrid: number): number {
+  const used = col.bbox.height - col.availableHeight;
+  return Math.ceil((used + spacing - 0.01) / baselineGrid) * baselineGrid - used;
+}
+
+/** Whether the last block set in `col` is a heading off the grid whose
+ *  next block regains it (`regainGrid`): the block placed under it opens on
+ *  a grid line. Read from the column, so a block measured again in the same
+ *  column (a retry) still regains, and one that opens the next column, on
+ *  the grid already, does not. */
+export function regainsUnder(col: VDTColumn): boolean {
+  const last = col.blocks[col.blocks.length - 1];
+  return last?.type === 'heading' && last.regainsGrid === true;
+}
+
+/** Whether an inline figure or table of type `typeId` snaps the flow back
+ *  onto the grid under it (the type's `snapToGrid`, default on). */
+export function resourceOnGrid(typeId: string | undefined, resourceTypeById: ReadonlyMap<string, ResourceType>): boolean {
+  return (typeId !== undefined ? resourceTypeById.get(typeId)?.snapToGrid : undefined) !== false;
+}
+
+/** Whether an inline figure or table of type `typeId` opens on a grid line
+ *  (the type's `snapTopToGrid`, default off). */
+export function resourceSnapsTop(typeId: string | undefined, resourceTypeById: ReadonlyMap<string, ResourceType>): boolean {
+  return typeId !== undefined && resourceTypeById.get(typeId)?.snapTopToGrid === true;
 }

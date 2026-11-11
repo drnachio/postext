@@ -55,16 +55,21 @@ interface TextControlProps {
   onFocus?: () => void;
   onBlur?: () => void;
   className?: string;
+  /** id of the box outside a field row (a `<label htmlFor>` names it). */
+  id?: string;
+  /** id of a `<datalist>` of suggestions. */
+  list?: string;
 }
 
 /** Plain one-line text box, named by the enclosing field row. */
-export function TextControl({ value, onChange, placeholder, widthCh, muted, ariaLabel, onFocus, onBlur, className }: TextControlProps) {
+export function TextControl({ value, onChange, placeholder, widthCh, muted, ariaLabel, onFocus, onBlur, className, id, list }: TextControlProps) {
   const ids = useFieldIds();
   return (
     <input
       dir="auto"
       type="text"
-      id={ids?.controlId}
+      id={ids?.controlId ?? id}
+      list={list}
       aria-describedby={ids?.descriptionId}
       aria-label={ids ? undefined : ariaLabel}
       value={value}

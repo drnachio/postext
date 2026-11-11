@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'A interface do Sandbox: a barra de atividades, os painéis Texto, Livros, Capítulos, Recursos e Fontes, e a disposição da tela em celulares',
   lang: 'pt',
-  lastUpdated: '2026-11-04',
-  readingTime: '31 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '33 min',
   order: 40,
   plainSummary: "O Sandbox é uma ferramenta gratuita deste site para experimentar o Postext sem instalar nada. Você escreve o texto de um lado e vê as páginas prontas do outro, e elas mudam enquanto você digita. Esta página explica as partes da tela e os painéis em que você escreve o texto, organiza livros e capítulos, inclui imagens e escolhe fontes. Outras páginas tratam dos ajustes de design, das visualizações, de como salvar e importar, e de como colocar o Sandbox no seu próprio site.",
 };
@@ -98,6 +98,28 @@ O cabeçalho do painel é um **seletor de capítulos**: setas de anterior/próxi
 - **Importar um documento do Word**: abre um original `.docx` e mapeia os estilos do Word para estilos do Postext antes de mudar qualquer coisa, ou traz de volta as correções feitas num arquivo exportado do livro (veja [Documentos do Word](/pt/docs/sandbox-books-saving#documentos-do-word))
 - **Exportar para o Word**: baixa o capítulo ou o livro inteiro como um `.docx`, semântico (só o conteúdo, em estilos simples do Word) ou diagramado (o mesmo texto editável com o projeto gráfico do livro); as correções feitas nele voltam por **Importar um documento do Word**
 - **Exportar para o InDesign (IDML)**: diagrama o livro inteiro como o PDF faz e o baixa como `<livro>.idml`, para finalizar no InDesign (veja [Exportar e importar](/pt/docs/sandbox-books-saving#exportar-e-importar))
+
+#### Localizar e substituir
+
+O botão **Localizar e substituir** no cabeçalho do painel Texto, que também está nas barras de ferramentas do Canvas e do PDF, abre uma barra acima do editor. Ela procura no Markdown do capítulo na tela ou do livro inteiro, marcações incluídas, de modo que o que ela encontra e substitui é o que o editor mostra.
+
+- **Opções**: **Diferenciar maiúsculas e minúsculas**, **Somente palavras inteiras**, **Ignorar acentos** e **Expressão regular**. Com **Ignorar acentos**, *celula* encontra *célula*, e uma palavra árabe é encontrada com ou sem os sinais de vogal. Ñ, ç, й e ё continuam sendo letras próprias, e os kana mantêm as marcas de sonorização (が não é か). Um texto cujos acentos foram digitados como sinais separados é encontrado como se eles estivessem unidos à letra. Em chinês, japonês e tailandês, que não separam as palavras com espaços, **Somente palavras inteiras** segue a segmentação de palavras do navegador.
+- **Capítulo** ou **Livro** define o alcance. As ocorrências aparecem listadas por capítulo, com o número da linha. Um clique em uma delas a seleciona no editor e abre o capítulo dela, e o foco continua na barra.
+- As **expressões regulares** são as do JavaScript, lidas com Unicode, com `^` e `$` nos fins de linha. Na substituição, de `$1` a `$99` escrevem um grupo, `$<nome>` um grupo nomeado, `$&` a ocorrência inteira e `$$` um cifrão; `\n`, `\t` e `\\` escrevem uma quebra de linha, uma tabulação e uma barra invertida. Todo o resto é escrito como foi digitado: com `^Note (\d+)` e `[^$1]`, *Note 3* vira `[^3]`. Sem a opção, a substituição é texto literal.
+- **Substituir tudo** em mais de um capítulo pede confirmação antes. As substituições são um único passo do histórico: o botão **Desfazer** que aparece na barra, Cmd/Ctrl+Z nos campos dela logo em seguida ou Cmd/Ctrl+Z em qualquer lugar do Sandbox desfaz todas elas.
+- A busca começa um instante depois que você para de digitar e roda separada da página, então um livro longo não deixa a digitação lenta. Acima de 5.000 ocorrências, ou quando uma busca demora demais, ela para e avisa, e **Substituir tudo** fica desativado até a busca ser restringida. Uma expressão regular que retrocede sem fim, como `(a+)+$` numa linha longa, é interrompida e informada.
+- No modo **Design** o texto é somente leitura: a barra localiza, os botões de substituir ficam desativados e uma nota oferece **Editar o texto**.
+- No celular, a barra fica no topo do painel Texto em tela cheia.
+
+As teclas, no editor e na barra:
+
+- **Cmd/Ctrl+F**: localizar no capítulo (uma seleção dentro de uma linha vira o termo da busca); **Cmd/Ctrl+Shift+F**: localizar no livro; **Cmd/Ctrl+Alt+F**: localizar e substituir.
+- **Enter** e **Shift+Enter** no campo de busca: ocorrência seguinte e anterior. A partir do editor, **Cmd/Ctrl+G** ou **F3**, com Shift para a anterior.
+- **Enter** no campo de substituição: substitui a ocorrência atual e vai para a próxima; **Cmd/Ctrl+Alt+Enter**: substituir tudo.
+- **Cmd/Ctrl+Z** logo depois de uma substituição: desfaz; **Shift+Cmd/Ctrl+Z**: refaz.
+- **Esc**: fecha a barra e volta ao texto.
+
+Enquanto um método de entrada está compondo (chinês, japonês, coreano), Enter e Esc ficam com ele. Os agentes fazem a mesma busca com `sandbox_search_text` e `sandbox_replace_text`.
 
 #### Painel Livros
 

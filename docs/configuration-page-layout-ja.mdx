@@ -6,7 +6,7 @@ export const metadata = {
   description: 'ページサイズ、余白、ベースライングリッド、ノンブル、段組みと段間',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '32分',
+  readingTime: '33分',
   order: 5,
   parent: 'configuration',
   plainSummary: "このページでは、紙面そのものの設定を説明します。ページの大きさ、余白、本を綴じる側、文字の行をそろえるグリッドを選びます。ページ番号の数え方と書き方を決めます。1ページを何段に分けるか、段と段のあいだをどれだけ空けるか、文字を横に組むか縦に組むかを決めます。各ページの上と下に印刷するものは、別のページで説明します。",
@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>無効</td>
-      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。後述します。</td>
+      <td>ページの上にベースライングリッドを描き、縦のリズムを確認できるようにします。描くかどうかにかかわらず、レイアウトはグリッドに合わせられます。<code>pdfGeneration.baselineGrid: false</code>にするとPDFには描きません。後述します。</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ export const metadata = {
     </tr>
   </tbody>
 </table>
+
+ブロックがどこから始まるかは、そのスタイルが決めます。グリッド線から始められるスタイルにはどれも `snapTopToGrid` スイッチがあり、既定ではオフです：`headings`（とレベルや見出しスタイル）、`bodyText`、`paragraphStyles[]`、`calloutStyles[]`、リスト、`math`、`resourceTypes[]`。オンにすると、前のブロックがどこで終わっても、ブロックの上の間隔が次のグリッド線まで切り上げられます。段の先頭は常にグリッド上にあります。
 
 ```ts
 page: {

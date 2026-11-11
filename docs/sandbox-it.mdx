@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'L’interfaccia della Sandbox: la barra delle attività, i pannelli Testo, Libri, Capitoli, Risorse e Font, e la disposizione sui telefoni',
   lang: 'it',
-  lastUpdated: '2026-11-04',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '32 min',
   order: 40,
   plainSummary: "La Sandbox è uno strumento gratuito di questo sito per provare Postext senza installare nulla. Scrivi il testo da una parte e vedi le pagine finite dall’altra, e cambiano mentre scrivi. Questa pagina spiega le parti dello schermo e i pannelli in cui scrivi il testo, gestisci libri e capitoli, aggiungi immagini e scegli i font. Altre pagine trattano le impostazioni grafiche, le anteprime, il salvataggio e l’importazione, e l’inserimento della Sandbox nel tuo sito.",
 };
@@ -98,6 +98,28 @@ L’intestazione del pannello è un **selettore di capitoli**: frecce precedente
 - **Importa un documento Word**: apre un manoscritto `.docx` e fa corrispondere i suoi stili di Word agli stili di Postext prima che cambi qualunque cosa, oppure riporta le correzioni fatte in un file esportato dal libro (vedi [Documenti Word](/it/docs/sandbox-books-saving#documenti-word))
 - **Esporta in Word**: scarica il capitolo o l’intero libro come `.docx`, semantico (il solo contenuto, in stili Word semplici) o impaginato (lo stesso testo modificabile con il progetto grafico del libro); le correzioni fatte nel file tornano con **Importa un documento Word**
 - **Esporta in InDesign (IDML)**: impagina l’intero libro come fa il PDF e lo scarica come `<libro>.idml`, da rifinire in InDesign (vedi [Esportazione e importazione](/it/docs/sandbox-books-saving#esportazione-e-importazione))
+
+#### Trova e sostituisci
+
+Il pulsante **Trova e sostituisci** nell’intestazione del pannello Testo, presente anche nelle barre degli strumenti di Canvas e PDF, apre una barra sopra l’editor. Cerca nel Markdown del capitolo sullo schermo o dell’intero libro, marcatura compresa, così ciò che trova e sostituisce è ciò che l’editor mostra.
+
+- **Opzioni**: **Maiuscole/minuscole**, **Solo parole intere**, **Ignora gli accenti** ed **Espressione regolare**. Con **Ignora gli accenti**, *celula* trova *célula*, e una parola araba si trova con o senza i segni vocalici. Ñ, ç, й ed ё restano lettere a sé, e i kana conservano i segni di sonorizzazione (が non è か). Il testo i cui accenti sono stati digitati come segni separati si trova come se fossero uniti alla lettera. In cinese, giapponese e thai, che non separano le parole con spazi, **Solo parole intere** segue la segmentazione in parole del browser.
+- **Capitolo** o **Libro** stabilisce l’ambito. Le corrispondenze sono elencate per capitolo con il numero di riga. Un clic su una di esse la seleziona nell’editor e ne apre il capitolo, mentre il focus resta nella barra.
+- Le **espressioni regolari** sono quelle di JavaScript, lette con Unicode, con `^` e `$` a fine riga. Nella sostituzione, da `$1` a `$99` scrivono un gruppo, `$<nome>` un gruppo con nome, `$&` l’intera corrispondenza e `$$` il simbolo del dollaro; `\n`, `\t` e `\\` scrivono un a capo, una tabulazione e una barra rovesciata. Tutto il resto si scrive com’è stato digitato: con `^Note (\d+)` e `[^$1]`, *Note 3* diventa `[^3]`. Senza l’opzione la sostituzione è testo semplice.
+- **Sostituisci tutto** su più di un capitolo chiede prima conferma. Le sostituzioni sono un solo passo della cronologia: il pulsante **Annulla** che compare nella barra, Cmd/Ctrl+Z nei suoi campi subito dopo o Cmd/Ctrl+Z in qualunque punto della Sandbox le annulla tutte.
+- La ricerca parte un attimo dopo che hai smesso di scrivere e gira separata dalla pagina, così un libro lungo non rallenta la scrittura. Oltre 5000 corrispondenze, o quando una ricerca dura troppo, si ferma e lo dice, e **Sostituisci tutto** resta disattivato finché la ricerca non viene ristretta. Un’espressione regolare che torna indietro senza fine, come `(a+)+$` su una riga lunga, viene fermata e segnalata.
+- In modalità **Grafica** il testo è di sola lettura: la barra trova, i suoi pulsanti di sostituzione sono disattivati e una nota propone **Modifica il testo**.
+- Sul telefono la barra sta in cima al pannello Testo a schermo intero.
+
+I tasti, nell’editor e nella barra:
+
+- **Cmd/Ctrl+F**: cerca nel capitolo (una selezione all’interno di una riga diventa il testo da cercare); **Cmd/Ctrl+Maiusc+F**: cerca nel libro; **Cmd/Ctrl+Alt+F**: trova e sostituisci.
+- **Invio** e **Maiusc+Invio** nel campo di ricerca: corrispondenza successiva e precedente. Dall’editor, **Cmd/Ctrl+G** o **F3**, con Maiusc per la precedente.
+- **Invio** nel campo di sostituzione: sostituisce la corrispondenza corrente e passa alla successiva; **Cmd/Ctrl+Alt+Invio**: sostituisci tutto.
+- **Cmd/Ctrl+Z** subito dopo una sostituzione: la annulla; **Maiusc+Cmd/Ctrl+Z**: la ripete.
+- **Esc**: chiude la barra e torna al testo.
+
+Mentre un metodo di input sta componendo (cinese, giapponese, coreano), Invio ed Esc spettano a lui. Gli agenti eseguono la stessa ricerca con `sandbox_search_text` e `sandbox_replace_text`.
 
 #### Pannello Libri
 

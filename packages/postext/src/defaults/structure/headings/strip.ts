@@ -64,6 +64,14 @@ export function stripHeadingsDefaults(
     result.keepWithNextSplit = headings.keepWithNextSplit;
     hasOverride = true;
   }
+  if (headings.regainGrid !== undefined && headings.regainGrid !== DEFAULT_HEADINGS_CONFIG.regainGrid) {
+    result.regainGrid = headings.regainGrid;
+    hasOverride = true;
+  }
+  if (headings.snapTopToGrid !== undefined && headings.snapTopToGrid !== DEFAULT_HEADINGS_CONFIG.snapTopToGrid) {
+    result.snapTopToGrid = headings.snapTopToGrid;
+    hasOverride = true;
+  }
   if (headings.snapToGrid !== undefined && headings.snapToGrid !== DEFAULT_HEADINGS_CONFIG.snapToGrid) {
     result.snapToGrid = headings.snapToGrid;
     hasOverride = true;
@@ -213,6 +221,8 @@ export function stripHeadingsDefaults(
     // A level's `snapToGrid` inherits the headings-wide value, so it is
     // only an override where it differs from that one.
     const generalSnapToGrid = headings.snapToGrid ?? DEFAULT_HEADINGS_CONFIG.snapToGrid;
+    const generalRegainGrid = headings.regainGrid ?? DEFAULT_HEADINGS_CONFIG.regainGrid;
+    const generalSnapTopToGrid = headings.snapTopToGrid ?? DEFAULT_HEADINGS_CONFIG.snapTopToGrid;
     // So do its face, colour, leading, weight and margins (#691): a level
     // set back to the level default under headings that say otherwise (a
     // 700 under 800 headings) is an override, and dropping it left the
@@ -301,6 +311,14 @@ export function stripHeadingsDefaults(
       }
       if (level.snapToGrid !== undefined && level.snapToGrid !== generalSnapToGrid) {
         entry.snapToGrid = level.snapToGrid;
+        levelHasOverride = true;
+      }
+      if (level.regainGrid !== undefined && level.regainGrid !== generalRegainGrid) {
+        entry.regainGrid = level.regainGrid;
+        levelHasOverride = true;
+      }
+      if (level.snapTopToGrid !== undefined && level.snapTopToGrid !== generalSnapTopToGrid) {
+        entry.snapTopToGrid = level.snapTopToGrid;
         levelHasOverride = true;
       }
       const grid = headingPlacementFields(level);

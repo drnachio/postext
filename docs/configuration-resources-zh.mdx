@@ -6,7 +6,7 @@ export const metadata = {
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '30分钟',
+  readingTime: '31分钟',
   order: 14,
   parent: 'configuration',
   plainSummary: "本页讲图、表格、图示和视频的设置。Postext把它们称为资源，每一类各自编号。你可以设定表格的样子：线条、底色、字体，以及跨页时怎样拆分。你可以设定图和表格的题注怎样写。你还可以用一种油墨颜色印图示，并选择视频在纸上的呈现方式。",
@@ -144,6 +144,16 @@ interface ResourceType {
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code>（可选）</td>
       <td>对该类型资源局部覆盖<a href="#题注样式">题注样式</a>。只有你设定的键会替换全局<code>captionStyle</code>，其余一律继承（覆盖了<code>color</code>时，标签和注释的颜色也随之改变，除非它们另有明确设定）。典型用法：表的题注放在上方的色条上，图的题注仍在下方。调色板引用与其他颜色一样解析。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>true</code>。放在正文中的此类插图或表格是否落在基线网格上：资源下方的文字流回到网格。<code>false</code>保持资源留下的精确间距。栏顶或栏底的浮动体不受影响。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>false</code>。无论前一个块在哪里结束，都让放在正文中的此类插图或表格从网格线开始。栏顶或栏底的浮动体、文字环绕的插图以及位于栏顶的插图不受影响。在Sandbox中：<strong>从网格线开始</strong>。</td>
     </tr>
   </tbody>
 </table>
@@ -856,6 +866,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => 全部与默认值相同时为undefined
 ```
+
+**SVG中的专色。** 在印刷用PDF中，矢量SVG的颜色只在两种情况下印在专色上。一是颜色按名称指定了油墨：颜色后跟 `icc-named-color(…, "PANTONE 185 C")`，或元素带有 `data-spot="PANTONE 185 C"`（以及百分比的 `data-spot-tint="40"`）时，印在该油墨的印版上；若调色板中有同名专色，则使用其替代色，否则使用该颜色自身的CMYK。二是颜色的hex与调色板中某个专色完全相同：按该颜色的浓度印在该颜色的油墨上。其他颜色一律保持四色，即使看起来像某种油墨在白底上的浓淡也是如此，因此图中的灰色不会移到专色印版上。每个颜色单独判定，因此一张图表可以混用多种油墨和四色。`diagramStyle.singleInk` 优先：`inkColor` 为专色时，重新着色的图表以该印版的浓淡印刷。SVG按名称指定、但没有任何调色板颜色定义（也没有带 `cmyk` 的油墨表条目）的油墨，印在单独的印版上，以SVG颜色的CMYK为替代值；指定它的所有SVG共用这一块印版，印前检查会发出警告（`spotInkUndefined`）。许多软件把色板导出为普通RGB颜色并丢失其名称：请在调色板中加入 `hex` 与之完全相同的专色（图中用到的每种浓度各一个），或用 `data-spot` 标记元素。
 
 ### Canvas与HTML中的单色模式
 

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Seitenformat, Ränder und Grundlinienraster, die Seitennummerierung sowie die Spalten und ihre Abstände',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '32 min',
+  readingTime: '33 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für das Blatt selbst. Sie wählen das Seitenformat, die Ränder, die Seite, auf der das Buch gebunden wird, und das Raster, auf dem die Textzeilen stehen. Sie legen fest, wie die Seiten gezählt und wie ihre Nummern geschrieben werden. Sie bestimmen, wie viele Spalten eine Seite hat und wie viel Abstand zwischen ihnen liegt, und ob der Text quer über die Seite oder von oben nach unten läuft. Die Kopf- und Fußzeilen haben eine eigene Seite.",
@@ -75,7 +75,7 @@ Die Eigenschaft `page` steuert die physischen Maße und das Erscheinungsbild der
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>deaktiviert</td>
-      <td>Zeichnet das Grundlinienraster über die Seiten, um den vertikalen Rhythmus zu prüfen. Das Layout rastet im Raster ein, ob es gezeichnet wird oder nicht. Siehe unten.</td>
+      <td>Zeichnet das Grundlinienraster über die Seiten, um den vertikalen Rhythmus zu prüfen. Das Layout rastet im Raster ein, ob es gezeichnet wird oder nicht. <code>pdfGeneration.baselineGrid: false</code> lässt es aus dem PDF. Siehe unten.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ Das Grundlinienraster ist der Rhythmus des Fließtexts: Linien im Abstand einer 
     </tr>
   </tbody>
 </table>
+
+Wo ein Block beginnt, entscheidet sein Stil. Jeder Stil, der auf einer Rasterlinie beginnen kann, hat einen Schalter `snapTopToGrid`, standardmäßig aus: `headings` (und eine Ebene oder ein Überschriftenstil), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, die Listen, `math` und `resourceTypes[]`. Eingeschaltet wird der Abstand über dem Block bis zur nächsten Rasterlinie aufgerundet, wie auch immer der Block davor endete. Der Kopf einer Spalte liegt immer im Raster.
 
 ```ts
 page: {

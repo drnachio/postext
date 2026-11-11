@@ -6,7 +6,7 @@ export const metadata = {
   description: 'リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '44分',
+  readingTime: '45分',
   order: 14,
   parent: 'configuration',
   plainSummary: "このページでは、図、表、ダイアグラム、動画の設定を説明します。Postextはこれらをリソースと呼び、種類ごとに番号を付けます。罫線、塗り、文字、ページをまたぐときの分け方など、表の見た目を決めます。図や表に付けるキャプションの書き方を決めます。ダイアグラムを1色のインキで刷ることや、動画を紙の上でどう見せるかも選べます。",
@@ -144,6 +144,16 @@ interface ResourceType {
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code>（省略可）</td>
       <td>この種類のリソースに対する、<a href="#キャプションスタイル">キャプションのスタイル</a>の部分的な上書きです。設定したキーだけがグローバルの<code>captionStyle</code>を置き換え、それ以外はすべて継承されます（<code>color</code>を上書きすると、ラベルと注の色も明示的に設定されていない限りその色になります）。典型的な使い方は、表のキャプションを色付きの帯にして<em>上</em>に置き、図のキャプションは下のままにすることです。パレットの参照は、ほかの色と同じように解決されます。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（省略可）</td>
+      <td>既定は<code>true</code>。本文中に置いたこのタイプの図や表をベースライングリッドに載せるかどうか。リソースの下で流れがグリッドに戻ります。<code>false</code>ではリソースが残す正確な間隔を保ちます。段の先頭や末尾のフロートには影響しません。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code>（省略可）</td>
+      <td>既定は<code>false</code>。前のブロックがどこで終わっても、本文中に置いたこのタイプの図や表をグリッド線から始めます。段の先頭や末尾のフロート、本文が回り込む図、段の先頭にある図には影響しません。Sandboxでは<strong>グリッド線から始める</strong>です。</td>
     </tr>
   </tbody>
 </table>
@@ -856,6 +866,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**SVG内の特色。** 印刷用PDFでは、ベクターSVGの色が特色で刷られるのは次の2つの場合だけです。1つはインキを名前で指定している場合です。`icc-named-color(…, "PANTONE 185 C")` が続く色や、`data-spot="PANTONE 185 C"`（およびパーセントの `data-spot-tint="40"`）を持つ要素は、そのインキの版に刷られます。パレットに同じ名前の特色があればその代替色を、なければその色自体のCMYKを使います。もう1つは、色のhexがパレットの特色のhexと完全に一致する場合で、その色のインキにその色の濃度で刷られます。それ以外の色は、白地に対するインキの濃淡に見えてもプロセスカラーのままなので、図版のグレーが特色の版に移ることはありません。色はひとつずつ判定されるので、ひとつの図版で複数のインキとプロセスカラーを混ぜられます。`diagramStyle.singleInk` が優先され、`inkColor` が特色なら、色を置き換えた図版はその版の濃淡で刷られます。SVGが指定していて、パレットのどの色も（`cmyk` を持つインキ表のエントリーも）定義していないインキは、SVGの色のCMYKを代替値として専用の版に刷られます。そのインキを指定するSVGはすべてこの版を共有し、プリフライトが警告します（`spotInkUndefined`）。多くのソフトはスウォッチを名前のない普通のRGB色として書き出します。それとまったく同じ `hex` の特色を図版で使う濃度ごとに1つずつパレットに加えるか、要素に `data-spot` を付けてください。
 
 ### CanvasとHTMLでの単色刷り
 

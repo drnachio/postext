@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP: un agente trabajando en el Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 53 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
+  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 55 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
   lang: 'es',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '13 min',
   order: 50,
   plainSummary: "Esta página es para quien quiere que un asistente de inteligencia artificial trabaje por él en un libro del Sandbox. Mientras el Sandbox está abierto, le da al asistente un juego de herramientas para mirar cualquier página, cambiar el diseño, editar el texto, añadir imágenes y tablas, encontrar problemas y guardar archivos. Tú se lo pides con tus palabras, por ejemplo «sube un poco la letra y comprueba que el libro sigue cabiendo en 40 páginas», y el asistente usa las herramientas y te enseña las páginas. Todo se queda en tu navegador. La página explica cómo conectar un asistente, qué puede hacer y cómo se invoca cada herramienta.",
@@ -23,7 +23,7 @@ libro, pide una imagen de la página 12, pone `bodyText.fontSize` a 10,5 pt, ve
 que el capítulo ha pasado de 18 a 19 páginas y lo deja como estaba. Hace lo
 mismo que tú haces a ojo, con tu libro y en tu navegador.
 
-Hay 53 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
+Hay 55 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
 Sandbox está en pantalla, y 8 herramientas del sitio, `site_*`, en todas las
 páginas de postext.dev. Esta página las ordena según lo que le pedirías a un
 agente y muestra cómo se invoca cada una.
@@ -40,7 +40,7 @@ nada que instalar ni configurar.
 WebMCP sigue siendo un borrador. Chrome lo ofrece como prueba de origen (origin
 trial) y tras la marca experimental `chrome://flags/#enable-webmcp-testing`. Las herramientas dependen de
 la página: en la portada o en la documentación el agente tiene las herramientas
-`site_*`; cuando el Sandbox está en pantalla aparecen además las 53
+`site_*`; cuando el Sandbox está en pantalla aparecen además las 55
 herramientas `sandbox_*`.
 
 ### En cualquier otro navegador: `window.postextWebMcp`
@@ -389,6 +389,21 @@ capítulo. La llamada entera es un solo paso para `sandbox_undo_text`, que la
 deshace (`redo: true` la rehace). `sandbox_write_text` sustituye un capítulo
 entero, a partir de `markdown` o de un archivo `.md`.
 
+Para un cambio que recorre un capítulo o el libro entero, `sandbox_replace_text`
+hace lo mismo que Reemplazar todo en la barra de búsqueda del panel Texto, con
+las mismas opciones (`matchCase`, `wholeWord`, `ignoreAccents`, `regex`). Con
+`dryRun` lista cada reemplazo, con el antes y el después, y no cambia nada. En
+modo de expresión regular, el reemplazo entiende `$1`, `$<name>`, `$&`, `$$`,
+`\n`, `\t` y `\\`, y escribe todo lo demás tal como llega. Una vez aplicados,
+los reemplazos son un solo paso del historial, que `sandbox_undo` deshace.
+`sandbox_search_text` acepta las mismas opciones y encuentra lo mismo que la
+barra.
+
+```jsonc
+// sandbox_replace_text: puntos decimales a comas en todo el libro, en vista previa
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Para enseñarte un lugar del texto, `sandbox_select_text` abre el panel Texto
 con ese pasaje seleccionado (por `text`, `line` u `offset`), igual que un clic
 en un aviso del panel Revisión.
@@ -697,6 +712,7 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **El texto**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **El diseño**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

@@ -20,6 +20,7 @@ import { ParagraphSpacingField } from '../../../settings/ParagraphSpacingField.j
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
 import { DocumentLocalePointer } from './DocumentLocalePointer.js';
 import { SymbolFontField } from './SymbolFontField.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { createBodyTextWriters } from './writers.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
@@ -369,6 +370,12 @@ export const BodyTextSection = memo(function BodyTextSection() {
           onChange={(paragraphSpacing) => updateBodyText({ paragraphSpacing })}
           isDefault={isParagraphSpacingDefault}
           onReset={() => resetField('paragraphSpacing')}
+        />
+        <GridSnapFields
+          kind="body"
+          value={{ snapTopToGrid: bodyText.snapTopToGrid }}
+          set={(_, v) => (v === undefined ? resetField('snapTopToGrid') : updateBodyText({ snapTopToGrid: v }))}
+          unset={() => raw?.snapTopToGrid === undefined}
         />
         <TabStopsField
           stops={raw?.tabStops}

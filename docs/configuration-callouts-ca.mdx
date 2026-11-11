@@ -219,6 +219,12 @@ El vidre continua calent una hora després d'apagar la flama.
       <td>Amb <code>true</code>, el flux torna a la retícula de base després de la caixa, de manera que l'espai de sota és el <code>marginBottom</code> arrodonit cap amunt fins a un nombre enter de línies de la retícula. Amb <code>false</code>, la caixa conserva el <code>marginBottom</code> exacte, que es fusiona amb el marge superior del bloc següent (dues caixes seguides d'aquest estil queden exactament a <code>max(marginBottom, marginTop)</code>), i el text que ve després pot quedar fora de la retícula fins al punt d'ajust següent (un encapçalament, el final d'una llista), com després d'un encapçalament amb <code>headings.snapToGrid: false</code>. Està pensat per a documents fets de caixes apilades (fitxes, formularis). S'aplica a les caixes del flux; les caixes d'amplada de pàgina en una maquetació de diverses columnes, les flotants, les fixes i les laterals conserven la retícula, perquè les bandes de columnes i les zones de flotants s'hi organitzen al damunt. Les palanques d'equilibratge de columnes no canvien: una caixa que tanca una columna continua baixant fins a l'última línia de la retícula d'aquella columna.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Comença el requadre en una línia de la retícula: l’espai de damunt s’arrodoneix fins a la següent, acabi com acabi el bloc anterior, i el requadre s’ajusta a la columna comptant aquest espai. Apagat per defecte. S’aplica als requadres en el flux; els flotants, els fixos i els laterals van en bandes que ja es col·loquen sobre la retícula. Al Sandbox: <strong>Començar en una línia de la retícula</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

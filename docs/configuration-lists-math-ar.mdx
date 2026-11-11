@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'القوائم والصيغ الرياضية',
   description: 'القوائم المرقّمة وغير المرقّمة، وعلاماتها وإزاحاتها وتداخلها، وقوائم المهام، وحجم الصيغ الرياضية ولونها والمسافات حولها',
   lang: 'ar',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '18 دقيقة',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>يُبقي الصيغة المعروضة في عمود السطر الذي يمهّد لها، وهو ما يسميه TeX جزاء ما قبل الصيغة (predisplay penalty). حين لا تتسع الصيغة تحت السطر الأخير من الفقرة التي قبلها، ينتقل ذلك السطر مع الصيغة إلى العمود أو الصفحة التالية؛ وحين يكون عدد الأسطر المتروكة خلفه أقل من <code>bodyText.widowMinLines</code> (أقل من سطر واحد حين يكون <code>bodyText.avoidWidows</code> معطّلًا)، تنتقل الفقرة التي تبدأ في ذلك العمود كاملةً (مع العناوين التي تختم العمود فوقها، بحسب <code>headings.keepWithNext</code>). يقف السطر المنقول وحده في رأس العمود التالي، أيًّا كان ما تطلبه قاعدة الأسطر اليتيمة (orphans). ومع <code>false</code> تنتقل الصيغة وحدها، وقد يختم السطرُ الذي يقدّمها العمودَ السابق، أو يقع فوق شكل يتصدر العمود التالي.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>هل تستقر الصيغة المستقلة على شبكة خطوط الأساس: يعود مجرى النص إليها تحت الصيغة. مع <code>false</code> تحتفظ الصيغة بهوامشها الدقيقة. في Sandbox: <strong>العودة إلى الشبكة بعد المعادلات</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>تبدأ الصيغة المستقلة على خط من الشبكة: تُقرَّب المسافة فوقها صعودًا إلى الخط التالي، أيًّا كان موضع انتهاء الكتلة السابقة. مطفأ افتراضيًا. في Sandbox: <strong>بدء المعادلات على خط من الشبكة</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

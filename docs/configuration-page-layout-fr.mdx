@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Le format de la page, les marges et la grille de ligne de base, la numérotation des pages, les colonnes et leurs gouttières',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '37 min',
+  readingTime: '38 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Cette page réunit les réglages de la feuille elle-même. Vous choisissez le format de la page, les marges, le côté de la reliure et la grille sur laquelle reposent les lignes de texte. Vous fixez la façon dont les pages sont comptées et dont leur numéro s’écrit. Vous fixez le nombre de colonnes d’une page et l’espace qui les sépare, et vous décidez si le texte court en travers de la page ou de haut en bas. Les en-têtes et pieds de page ont leur propre page.",
@@ -75,7 +75,7 @@ La propriété `page` contrôle les dimensions physiques et l’apparence de la 
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>désactivée</td>
-      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. Voir ci-dessous.</td>
+      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. <code>pdfGeneration.baselineGrid: false</code> la laisse hors du PDF. Voir ci-dessous.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La grille de ligne de base est le rythme du texte courant : des lignes espacée
     </tr>
   </tbody>
 </table>
+
+L’endroit où un bloc commence dépend de son style. Chaque style qui peut commencer sur une ligne de la grille a un interrupteur `snapTopToGrid`, désactivé par défaut : `headings` (et un niveau ou un style de titre), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, les listes, `math` et `resourceTypes[]`. Activé, l’espace au-dessus du bloc est arrondi jusqu’à la ligne suivante de la grille, quelle que soit la fin du bloc précédent. Le haut d’une colonne est toujours sur la grille.
 
 ```ts
 page: {

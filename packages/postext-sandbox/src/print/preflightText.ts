@@ -12,6 +12,11 @@ export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): st
     case 'thinRule': return labels.preflightThinRule;
     case 'smallProcessText': return labels.preflightSmallProcessText;
     case 'inkLimit': return labels.preflightInkLimit;
+    case 'spotInks': return labels.preflightSpotInks;
+    case 'spotInkConflict': return labels.preflightSpotInkConflict;
+    case 'spotInkName': return labels.preflightSpotInkName;
+    case 'spotInkSimilar': return labels.preflightSpotInkSimilar;
+    case 'spotInkUndefined': return labels.preflightSpotInkUndefined;
     case 'safeZone': return labels.preflightSafeZone;
     case 'nearTrim': return labels.preflightNearTrim;
     case 'masterFonts': return labels.preflightMasterFonts;
@@ -50,6 +55,23 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
         coverage: check.coverage,
         limit: check.limit,
       });
+    case 'spotInks':
+      return fill(labels.preflightSpotInksDetail, { inks: check.inks.join(', ') });
+    case 'spotInkConflict':
+      return fill(labels.preflightSpotInkConflictDetail, { ink: check.ink });
+    case 'spotInkName': {
+      const detail = {
+        reserved: labels.preflightSpotInkNameReservedDetail,
+        process: labels.preflightSpotInkNameProcessDetail,
+        control: labels.preflightSpotInkNameControlDetail,
+        tooLong: labels.preflightSpotInkNameLongDetail,
+      }[check.problem];
+      return fill(detail, { ink: check.ink, written: check.written });
+    }
+    case 'spotInkUndefined':
+      return fill(labels.preflightSpotInkUndefinedDetail, { ink: check.ink, file: check.resourceId ?? check.fileId });
+    case 'spotInkSimilar':
+      return fill(labels.preflightSpotInkSimilarDetail, { inks: check.inks.map((i) => `“${i}”`).join(', ') });
     case 'safeZone':
       return fill(labels.preflightSafeZoneDetail, { distance: check.distanceMm, zone: check.safeZoneMm, text: check.text });
     case 'nearTrim':

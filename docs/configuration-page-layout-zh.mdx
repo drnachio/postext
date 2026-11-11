@@ -75,7 +75,7 @@ export const metadata = {
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>关闭</td>
-      <td>在页面上画出基线网格，用来检查纵向节奏。无论画不画出来，版面都会对齐到网格。详见下文。</td>
+      <td>在页面上画出基线网格，用来检查纵向节奏。无论画不画出来，版面都会对齐到网格。<code>pdfGeneration.baselineGrid: false</code>会让它不出现在PDF中。详见下文。</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ export const metadata = {
     </tr>
   </tbody>
 </table>
+
+块从哪里开始，由它的样式决定。每个可以从网格线开始的样式都有一个 `snapTopToGrid` 开关，默认关闭：`headings`（以及级别或标题样式）、`bodyText`、`paragraphStyles[]`、`calloutStyles[]`、列表、`math` 和 `resourceTypes[]`。打开后，无论前一个块在哪里结束，块上方的间距都会向上取整到下一条网格线。栏顶总在网格上。
 
 ```ts
 page: {

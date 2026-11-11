@@ -6,7 +6,7 @@ export const metadata = {
   description: 'O tamanho da página, as margens e a grade de linhas de base, a numeração das páginas, e as colunas e as medianizes entre elas',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '35 min',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes da folha. Você escolhe o tamanho da página, as margens, o lado da encadernação e a grade em que as linhas de texto se apoiam. Define como as páginas são contadas e como os números de página são escritos. Define quantas colunas a página tem e quanto espaço fica entre elas, e se o texto corre em linhas horizontais ou verticais. Os cabeçalhos e rodapés têm uma página própria.",
@@ -75,7 +75,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desativado</td>
-      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. Veja abaixo.</td>
+      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. <code>pdfGeneration.baselineGrid: false</code> a deixa fora do PDF. Veja abaixo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ A grade de linhas de base é o ritmo do texto corrido: linhas separadas por uma 
     </tr>
   </tbody>
 </table>
+
+Onde um bloco começa é decisão do seu estilo. Cada estilo que pode começar numa linha da grade tem um interruptor `snapTopToGrid`, desligado por padrão: `headings` (e um nível ou um estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, as listas, `math` e `resourceTypes[]`. Ligado, o espaço acima do bloco é arredondado até a próxima linha da grade, seja qual for o fim do bloco anterior. O topo de uma coluna está sempre na grade.
 
 ```ts
 page: {

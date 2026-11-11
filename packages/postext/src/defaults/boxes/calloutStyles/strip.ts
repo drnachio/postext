@@ -190,6 +190,7 @@ export function stripCalloutStylesDefaults(
     if (s.marginTop !== undefined && !dimensionsEqual(s.marginTop, d.marginTop)) r.marginTop = s.marginTop;
     if (s.marginBottom !== undefined && !dimensionsEqual(s.marginBottom, d.marginBottom)) r.marginBottom = s.marginBottom;
     if (s.snapToGrid !== undefined && s.snapToGrid !== d.snapToGrid) r.snapToGrid = s.snapToGrid;
+    if (s.snapTopToGrid !== undefined && s.snapTopToGrid !== d.snapTopToGrid) r.snapTopToGrid = s.snapTopToGrid;
     if (s.keepTogether !== undefined && s.keepTogether !== d.keepTogether) r.keepTogether = s.keepTogether;
     if (s.splitMinLines !== undefined && s.splitMinLines !== d.splitMinLines) r.splitMinLines = s.splitMinLines;
     if (s.repeatTitle !== undefined && s.repeatTitle !== d.repeatTitle) r.repeatTitle = s.repeatTitle;

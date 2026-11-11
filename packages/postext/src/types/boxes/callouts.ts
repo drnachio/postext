@@ -98,6 +98,13 @@ export interface CalloutStyleConfig {
    *  multi-column layout, floated, fixed and side boxes keep the grid:
    *  column bands and float zones are laid out on it. */
   snapToGrid?: boolean;
+  /** Open an in-flow box on a grid line: the space above it rounds up so
+   *  its top sits on the baseline grid, `marginTop` a minimum — the rule
+   *  lists have in `snapTopToGrid`. It matters where the text above ran off
+   *  the grid. The room the box needs counts that space, so a box that
+   *  does not fit with it moves on whole (or splits) as it would without
+   *  it. Default `false`. */
+  snapTopToGrid?: boolean;
   /** When `true` (default) the box is kept whole: a callout that does not
    *  fit the remaining space moves whole to the next column or page. Only
    *  a box (or the rest of one) taller than an empty, full column — a whole
@@ -417,6 +424,7 @@ export interface ResolvedCalloutStyleConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   snapToGrid: boolean;
+  snapTopToGrid: boolean;
   keepTogether: boolean;
   splitMinLines: number;
   repeatTitle: boolean;

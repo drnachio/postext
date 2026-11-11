@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Resource types and their numbering, table and caption styles, single-ink diagrams and printed videos',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '40 min',
+  readingTime: '41 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "This page covers the settings for figures, tables, diagrams and videos. Postext calls them resources and numbers each kind on its own. You set how tables look: their rules, their fills, their type and how they split across pages. You set how the caption of a figure or a table is written. You can also print diagrams in one ink colour and choose how a video appears on paper.",
@@ -144,6 +144,16 @@ A type may leave fields out (since postext 1.38): the built-in type of the same 
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (optional)</td>
       <td>Partial <a href="#caption-style">caption style</a> override for resources of this type. Only the keys you set replace the global <code>captionStyle</code>; everything else is inherited (an overridden <code>color</code> also drives the label and note colours unless those are set explicitly). Typical use: tables captioned <em>above</em> on a coloured bar while figures keep their caption below. Palette references resolve like any other colour.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Default <code>true</code>. Whether a figure or table of this type placed in the text sits on the baseline grid: the flow snaps back onto it under the resource. <code>false</code> keeps the exact space the resource leaves. Floats at the head or foot of a column are not affected.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Default <code>false</code>. Open a figure or table of this type placed in the text on a grid line, however the block before it ended. Floats at the head or foot of a column, a figure the text wraps around and one at the top of a column are not affected. In the Sandbox: <strong>Open on a grid line</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -856,6 +866,8 @@ const resolved = resolveDiagramStyleConfig(config.diagramStyle);
 const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
+
+**Spot inks inside an SVG.** In a print PDF a colour of a vector SVG prints on a spot ink in two cases only. When it names the ink: a colour followed by `icc-named-color(…, "PANTONE 185 C")`, or an element with `data-spot="PANTONE 185 C"` (and `data-spot-tint="40"`, percent), prints on that ink's plate, with the palette's alternate when the palette has a spot colour of that name, else with the colour's own CMYK. And when its hex is exactly that of a palette spot colour: it prints on that colour's ink at that colour's tint. Every other colour stays in process, even one that looks like a tint of an ink over white, so the greys of a drawing never move to a spot plate. Each colour is resolved on its own, so a diagram may mix several inks and process colours. `diagramStyle.singleInk` takes precedence: with a spot `inkColor`, the recoloured diagram prints in tints of that plate. An ink an SVG names that no palette colour defines (nor an entry of the ink table with `cmyk`) prints on a plate of its own, with the SVG colour's CMYK as alternate; every SVG that names it shares that plate, and the preflight warns (`spotInkUndefined`). Many programs export a swatch as a plain RGB colour and drop its name: give the palette a spot colour with exactly that `hex`, one per tint the drawing uses, or mark the elements with `data-spot`.
 
 ### Single ink on canvas and in HTML
 

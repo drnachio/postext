@@ -10,7 +10,7 @@ import { resolvedDirection, arabicNumbersOf } from '../../../config.js';
 import { mirrorListMarker, directListMarker, listBulletPosition, listItemGapPx, listItemSpacingPx } from '../../../text/lists.js';
 import { measuringVertically } from '../../../../measure/vertical.js';
 import { nextNonMarkerBlock } from '../../../blocks/buildHelpers.js';
-import { verseSnaps } from '../../passHelpers.js';
+import { verseSnaps, verseSnapsTop } from '../../passHelpers.js';
 import { versesLineByLine } from '../../../text/verseLines.js';
 import { raggedLooseLines } from '../../../text/raggedLines.js';
 import { flowColumnsAfter } from '../../../blocks/placement.js';
@@ -150,10 +150,37 @@ export function createBlockLines(deps: BlockLinesDeps) {
       // as the one block postext 1.22 set it in did not.
       (vdtType === 'paragraph' && rawBlock.verse !== undefined && verseSnaps(rawBlock.verse.attrs.style, resolved)
         && (rawBlock.verse.stanza === undefined || rawBlock.verse.stanza.last || versesLineByLine(rawBlock, resolved))) ||
-      vdtType === 'mathDisplay' ||
+      (vdtType === 'mathDisplay' && resolved.math.snapToGrid) ||
       // A score's last system: the text after it goes back on the grid.
       (vdtType === 'score' && (rawBlock.score?.index ?? 0) === (rawBlock.score?.count ?? 1) - 1)
     );
+    /** The block's style opens it on a grid line (`snapTopToGrid`): the
+     *  space above it rounds up so its top sits on the grid. A list's first
+     *  item reads its own `snapTopToGrid` in the line room. */
+    const snapsTop = rawBlock.toc === undefined && rawBlock.index === undefined && (
+      vdtType === 'heading'
+        ? (headingLevels.forBlock(rawBlock)?.snapTopToGrid ?? resolved.headings.snapTopToGrid)
+        : vdtType === 'mathDisplay'
+          ? resolved.math.snapTopToGrid
+          : vdtType === 'blockquote'
+            ? blockMeasureCtx.resolved.bodyText.snapTopToGrid
+            : vdtType === 'paragraph'
+              ? (rawBlock.verse !== undefined
+                // A poem: its style's, at its first stanza.
+                ? (rawBlock.verse.stanza?.index ?? 0) === 0 && verseSnapsTop(rawBlock.verse.attrs.style, resolved)
+                : paragraphContainer === undefined
+                  ? blockMeasureCtx.resolved.bodyText.snapTopToGrid
+                  // In a container only its first paragraph opens on the
+                  // grid; the rest keep the style's own leading.
+                  : (contentBlocks[blockTurn.blockIdx - 1]?.type === 'containerStart'
+                    && contentBlocks[blockTurn.blockIdx - 1]?.containerId === paragraphContainer.id
+                    && paragraphContainer.snapTopToGrid === true))
+              : false
+    );
+    /** A heading off the grid whose next block regains it. */
+    const regainGrid = !shouldSnapToGrid && vdtType === 'heading' && !nextIsHeading
+      && rawBlock.toc === undefined && rawBlock.index === undefined
+      && (headingLevels.forBlock(rawBlock)?.regainGrid ?? resolved.headings.regainGrid);
 
     // Place block, splitting across columns/pages if needed.
     // List items may split too — orphan/widow protection per-list is gated by
@@ -242,6 +269,8 @@ export function createBlockLines(deps: BlockLinesDeps) {
     blockTurn.itemGapPx = itemGapPx;
     blockTurn.nextIsHeading = nextIsHeading;
     blockTurn.shouldSnapToGrid = shouldSnapToGrid;
+    blockTurn.snapsTop = snapsTop;
+    blockTurn.regainGrid = regainGrid;
     blockTurn.canSplit = canSplit;
     blockTurn.guardedColumnEnds = guardedColumnEnds;
     blockTurn.wrapsBeside = wrapsBeside;

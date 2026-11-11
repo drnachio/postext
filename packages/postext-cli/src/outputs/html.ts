@@ -3,7 +3,7 @@
 // fonts as data URIs) or a folder (index.html beside assets/).
 
 import { join } from 'node:path';
-import { anchoredResourceIds, applySingleInkToSvg, EXERCISE_SCRIPT, exerciseDataOf, formatWarning, HTML_TEXT_RESET, renderToHtml, type RenderHtmlOptions } from 'postext';
+import { anchoredResourceIds, applySingleInkToSvg, EXERCISE_SCRIPT, exerciseDataOf, formatWarning, HTML_TEXT_RESET, renderToHtml, screenSvgColors, type RenderHtmlOptions } from 'postext';
 import { diagramInkHex, mimeForFile } from 'postext/bundle';
 import { UsageError, type Options } from '../args';
 import type { Face, FontSet } from '../fonts';
@@ -44,7 +44,10 @@ export async function writeHtml(book: Book, layout: Layout, fonts: FontSet, opts
     const fileId = r.kind === 'svg' ? r.svg?.fileId : r.kind === 'bitmap' ? r.bitmap?.fileId : r.kind === 'video' ? r.video?.poster?.fileId : undefined;
     const bytes = fileId ? book.files.get(fileId) : undefined;
     if (fileId && bytes && !urls.has(fileId)) {
-      const content = r.kind === 'svg' && inkHex ? applySingleInkToSvg(new TextDecoder().decode(bytes), inkHex) : bytes;
+      // A spot ink named in a paint is the print PDF's: here, the colour.
+      const text = r.kind === 'svg' ? new TextDecoder().decode(bytes) : undefined;
+      const svg = text !== undefined ? screenSvgColors(text) : undefined;
+      const content = svg !== undefined && (inkHex || svg !== text) ? (inkHex ? applySingleInkToSvg(svg, inkHex) : svg) : bytes;
       urls.set(fileId, asset(safeName(fileId), mimeForFile(fileId), content));
     }
     // Self-hosted videos go beside the page; embedded, they show their poster.

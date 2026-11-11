@@ -6,7 +6,7 @@ export const metadata = {
   description: 'The page size, margins and baseline grid, page numbering, and the columns and their gutters',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '32 min',
+  readingTime: '33 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "This page covers the settings for the sheet itself. You choose the page size, the margins, the side the book is bound on and the grid the lines of text sit on. You set how page numbers are counted and written. You set how many columns a page has and how much space runs between them, and whether the text runs across the page or down it. The running headers and footers have a page of their own.",
@@ -75,7 +75,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disabled</td>
-      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. See below.</td>
+      <td>Draw the baseline grid over the pages, to check the vertical rhythm. The layout snaps to the grid whether or not it is drawn. <code>pdfGeneration.baselineGrid: false</code> keeps it out of the PDF. See below.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ The baseline grid is the rhythm of the body text: lines one body line height apa
     </tr>
   </tbody>
 </table>
+
+Where a block opens is up to its style. Each style that can open on a grid line has a `snapTopToGrid` switch, off by default: `headings` (and a level or a heading style), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, the lists, `math` and `resourceTypes[]`. With it on, the space above the block is rounded up to the next grid line, however the block before it ended. The top of a column is always on the grid.
 
 ```ts
 page: {

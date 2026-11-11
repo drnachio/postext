@@ -5,6 +5,8 @@ import { DEFAULT_CHIP_STYLES, DEFAULT_MARK_STYLES, canonicalLocaleTag, defaultRe
 import { documentLanguage } from '../context/documentDirection.js';
 import { defaultDocumentLocale } from '../controls/language/hyphenation.js';
 import { useCodeMirror } from './useCodeMirror.js';
+import { showFindMatches } from './find/findHighlight.js';
+import { useFindHighlights } from './find/findStore.js';
 import { EditorToolbar } from './toolbar/EditorToolbar.js';
 import { useUiRtl } from '../ui/direction.js';
 import { useSandbox, useSandboxEditorStateRef, useSandboxStore } from '../context/SandboxContext.js';
@@ -137,13 +139,22 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
         head = word.to;
       }
     }
-    view.focus();
+    if (!pendingEditorFocus.keepFocus) view.focus();
     view.dispatch({
       selection: { anchor, head },
       scrollIntoView: true,
     });
     dispatch({ type: 'SET_PENDING_EDITOR_FOCUS', payload: null });
   }, [pendingEditorFocus, activeChapterId, dispatch, viewRef]);
+
+  // The find bar's matches in this chapter, painted in the text.
+  const findHighlights = useFindHighlights();
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+    const mine = findHighlights.chapterId === activeChapterId;
+    showFindMatches(view, mine ? findHighlights.ranges : [], mine ? findHighlights.current : -1);
+  }, [findHighlights, activeChapterId, viewRef]);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column' as const, flex: '1 1 0%', minHeight: 0 }}>

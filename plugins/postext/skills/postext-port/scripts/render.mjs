@@ -509,7 +509,12 @@ if (postext.preflightDocument && printConfig?.preflight.enabled
   const imageSize = postext.bitmapInfo
     ? (fileId) => { const b = blobs.get(fileId); const i = b ? postext.bitmapInfo(b) : undefined; return i ? { width: i.width, height: i.height } : undefined; }
     : undefined;
-  const issues = postext.preflightDocument(doc, { print: printConfig, resources, cmyk: printConfig.standard !== 'none' || cmykPdf, ...(imageSize ? { imageSize } : {}), ...(transform ? { transform } : {}) });
+  // The spot inks each SVG names (postext >= 1.74): listed with the job's
+  // inks, and reported when no colour defines them (spotInkUndefined).
+  const svgInks = postext.svgSpotInks
+    ? (fileId) => { const b = blobs.get(fileId); return b && /\.svg$/i.test(fileId) ? postext.svgSpotInks(new TextDecoder().decode(b)).map((i) => i.name) : undefined; }
+    : undefined;
+  const issues = postext.preflightDocument(doc, { print: printConfig, resources, cmyk: printConfig.standard !== 'none' || cmykPdf, ...(imageSize ? { imageSize } : {}), ...(svgInks ? { svgInks } : {}), ...(transform ? { transform } : {}) });
   for (const i of issues) {
     const { kind, severity, pageIndex, rect: _r, sourceStart, sourceEnd: _e, ...detail } = i;
     console.log(`PREFLIGHT ${severity} ${kind} page ${doc.pages[pageIndex]?.pageNumberValue ?? pageIndex + 1}${sourceStart != null ? ` at ${where(sourceStart)}` : ''}: ${JSON.stringify(detail)}`);

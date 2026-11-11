@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: "Com és la interfície del Sandbox: la barra d'activitats; els taulers Text, Llibres, Capítols, Recursos i Fonts, i la disposició de la pantalla als mòbils",
   lang: 'ca',
-  lastUpdated: '2026-11-04',
-  readingTime: '32 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '34 min',
   order: 40,
   plainSummary: "El Sandbox és una eina gratuïta d'aquest web per provar Postext sense instal·lar res. Escrius el text a una banda i veus les pàgines acabades a l'altra, i canvien mentre escrius. Aquesta pàgina explica les parts de la pantalla i els taulers on escrius el text, organitzes llibres i capítols, afegeixes imatges i tries els tipus de lletra. Altres pàgines expliquen els paràmetres de disseny, les previsualitzacions, com desar i importar, i com posar el Sandbox al teu web.",
 };
@@ -98,6 +98,28 @@ La capçalera del tauler és un **selector de capítols**: fletxes anterior/seg�
 - **Importar un document de Word**: obre un manuscrit `.docx` i n'assigna els estils de Word a estils de Postext abans que canviï res, o recupera les correccions fetes en un fitxer exportat des del llibre (consulta [Documents de Word](/ca/docs/sandbox-books-saving#documents-de-word))
 - **Exportar a Word**: baixa el capítol o tot el llibre com un `.docx`, semàntic (només el contingut, en estils de Word senzills) o maquetat (el mateix text editable amb el disseny del llibre); les correccions que s'hi facin tornen amb **Importar un document de Word**
 - **Exporta a InDesign (IDML)**: compon el llibre sencer com ho fa el PDF i el baixa com a `<llibre>.idml`, per acabar-lo a InDesign (vegeu [Exportar i importar](/ca/docs/sandbox-books-saving#exportar-i-importar))
+
+#### Cerca i reemplaça
+
+El botó **Cerca i reemplaça** de la capçalera del tauler Text, que també és a les barres d'eines de Canvas i PDF, obre una barra damunt de l'editor. Cerca en el Markdown del capítol que es veu o del llibre sencer, marques incloses, de manera que el que troba i reemplaça és el que mostra l'editor.
+
+- **Opcions**: **Distingeix majúscules i minúscules**, **Només paraules senceres**, **Ignora els accents** i **Expressió regular**. Amb **Ignora els accents**, *celula* troba *célula*, i una paraula àrab es troba amb els signes vocàlics o sense. La ñ, la ç, la й i la ё continuen sent lletres pròpies, i els kana conserven les marques de sonorització (が no és か). El text amb els accents escrits com a signes a part es troba com si estiguessin units a la lletra. En xinès, japonès i tailandès, que no separen les paraules amb espais, **Només paraules senceres** segueix la segmentació en paraules del navegador.
+- **Capítol** o **Llibre** fixa l'abast. Les coincidències es llisten per capítol amb el número de línia. Un clic en una la selecciona a l'editor i n'obre el capítol, mentre el focus es queda a la barra.
+- Les **expressions regulars** són les de JavaScript, llegides amb Unicode, amb `^` i `$` als finals de línia. Al reemplaçament, de `$1` a `$99` escriuen un grup, `$<nom>` un grup amb nom, `$&` la coincidència sencera i `$$` un signe de dòlar; `\n`, `\t` i `\\` escriuen un salt de línia, un tabulador i una barra inversa. Tota la resta s'escriu tal com s'ha teclejat: amb `^Note (\d+)` i `[^$1]`, *Note 3* esdevé `[^3]`. Sense l'opció, el reemplaçament és text literal.
+- **Reemplaça-ho tot** en més d'un capítol demana confirmació abans. Els reemplaçaments són un sol pas de l'historial: el botó **Desfer** que apareix a la barra, Cmd/Ctrl+Z als seus camps just després o Cmd/Ctrl+Z a qualsevol lloc del Sandbox els desfà tots.
+- La cerca comença un moment després que deixis d'escriure i s'executa a part de la pàgina, de manera que un llibre llarg no alenteix l'escriptura. Per sobre de 5.000 coincidències, o quan una cerca triga massa, s'atura i ho diu, i **Reemplaça-ho tot** queda desactivat fins que s'acota la cerca. Una expressió regular que fa marxa enrere sense fi, com ara `(a+)+$` sobre una línia llarga, s'atura i s'avisa.
+- En mode **Disseny** el text és només de lectura: la barra cerca, els botons de reemplaçar estan desactivats i una nota ofereix **Editar el text**.
+- En un telèfon, la barra se situa a dalt del tauler Text a pantalla completa.
+
+Les tecles, a l'editor i a la barra:
+
+- **Cmd/Ctrl+F**: cercar al capítol (una selecció dins d'una línia passa a ser el que es cerca); **Cmd/Ctrl+Maj+F**: cercar al llibre; **Cmd/Ctrl+Alt+F**: cercar i reemplaçar.
+- **Retorn** i **Maj+Retorn** al camp de cerca: coincidència següent i anterior. Des de l'editor, **Cmd/Ctrl+G** o **F3**, amb Maj per a l'anterior.
+- **Retorn** al camp de reemplaçament: reemplaça la coincidència actual i passa a la següent; **Cmd/Ctrl+Alt+Retorn**: reemplaçar-ho tot.
+- **Cmd/Ctrl+Z** just després d'un reemplaçament: el desfà; **Maj+Cmd/Ctrl+Z**: el refà.
+- **Esc**: tanca la barra i torna al text.
+
+Mentre un mètode d'entrada està component (xinès, japonès, coreà), Retorn i Esc són seus. Els agents fan la mateixa cerca amb `sandbox_search_text` i `sandbox_replace_text`.
 
 #### Tauler de llibres
 

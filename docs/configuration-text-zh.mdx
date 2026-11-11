@@ -64,6 +64,12 @@ export const metadata = {
       <td>两段之间的间距。<code>true</code>插入一个空行（高度等于<code>lineHeight</code>），即出版物常用的段间分隔方式；<code>&#123; value: 2, unit: 'mm' &#125;</code>这样的长度，或按正文字号计的<code>0.33em</code>，在正文、框和组版页面的版框中都按原值排。不是整行数的长度会让段落离开基线网格，下一个对齐网格的块（标题、列表的最后一项、独立公式）会把文字带回网格上。它与<code>paragraphStyles[].spaceBetween</code>是同一种间距，在<code>:::paragraphs</code>容器内由后者取代。框在<code>calloutStyles[].body.paragraphSpacing</code>中设置自己的间距。</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让每个正文段落和引文从网格线开始：无论前一个块在哪里结束（偏离网格的标题、边距精确的框或插图），上方间距都向上取整到下一条网格线。<code>false</code>让段落留在前一个块留下的位置。<code>:::paragraphs</code>容器中的段落改按其样式的<code>snapTopToGrid</code>，诗行按其段落样式的设定，没有段落样式时按此项。若只想在偏离网格的标题下方回到网格，请用该标题的<code>regainGrid</code>。在Sandbox中：<strong>段落从网格线开始</strong>。</td>
+    </tr>
+    <tr>
       <td><code>color</code></td>
       <td><code>ColorValue</code></td>
       <td><code>#000000</code></td>

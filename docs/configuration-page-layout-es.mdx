@@ -6,7 +6,7 @@ export const metadata = {
   description: 'El tamaño de página, los márgenes y la rejilla base; la numeración de las páginas, y las columnas y sus medianiles.',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '36 min',
+  readingTime: '37 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de la propia hoja. Eliges el tamaño de página, los márgenes, el lado por el que se encuaderna el libro y la rejilla sobre la que se apoyan las líneas de texto. Decides cómo se cuentan y cómo se escriben los números de página. Decides cuántas columnas tiene la página y cuánto espacio las separa, y si el texto va en líneas horizontales o verticales. Las cabeceras y los pies de página se explican en otra página.",
@@ -75,7 +75,7 @@ La propiedad `page` controla las dimensiones físicas y la apariencia de la pág
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desactivado</td>
-      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. Véase más abajo.</td>
+      <td>Dibuja la rejilla base sobre las páginas, para comprobar el ritmo vertical. La maquetación se ajusta a la rejilla tanto si se dibuja como si no. <code>pdfGeneration.baselineGrid: false</code> la deja fuera del PDF. Véase más abajo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La rejilla base marca el ritmo del texto base: líneas separadas por el interlin
     </tr>
   </tbody>
 </table>
+
+Dónde empieza un bloque lo decide su estilo. Cada estilo que puede empezar en una línea de la rejilla tiene un interruptor `snapTopToGrid`, apagado por defecto: `headings` (y un nivel o un estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, las listas, `math` y `resourceTypes[]`. Encendido, el espacio sobre el bloque se redondea hasta la siguiente línea de la rejilla, termine como termine el bloque anterior. La cabeza de una columna está siempre en la rejilla.
 
 ```ts
 page: {

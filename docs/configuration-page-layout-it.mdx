@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Il formato della pagina, i margini e la griglia della linea di base; la numerazione delle pagine; le colonne e le intercolonne che le separano',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '35 min',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Questa pagina riguarda le impostazioni del foglio stesso. Scegli il formato della pagina, i margini, il lato su cui il libro è rilegato e la griglia su cui poggiano le righe di testo. Stabilisci come si contano le pagine e come si scrive il loro numero. Stabilisci quante colonne ha una pagina e quanto spazio c’è tra di esse, e se il testo scorre in orizzontale o in verticale. Le intestazioni e i piè di pagina hanno una pagina a parte.",
@@ -75,7 +75,7 @@ La proprietà `page` controlla le dimensioni fisiche e l’aspetto della pagina.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disattivato</td>
-      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. Vedi sotto.</td>
+      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. <code>pdfGeneration.baselineGrid: false</code> la lascia fuori dal PDF. Vedi sotto.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La griglia della linea di base è il ritmo del testo corrente: righe distanti un
     </tr>
   </tbody>
 </table>
+
+Dove inizia un blocco lo decide il suo stile. Ogni stile che può iniziare su una riga della griglia ha un interruttore `snapTopToGrid`, spento per impostazione predefinita: `headings` (e un livello o uno stile di titolo), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, gli elenchi, `math` e `resourceTypes[]`. Acceso, lo spazio sopra il blocco viene arrotondato fino alla riga successiva della griglia, comunque sia finito il blocco precedente. La testa di una colonna è sempre sulla griglia.
 
 ```ts
 page: {
