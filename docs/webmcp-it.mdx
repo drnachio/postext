@@ -573,9 +573,13 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   `rename` con `thisLanguageOnly: true` dà il nome soltanto alla lingua sullo schermo;
   `set_cover` e `remove_cover` gli danno una copertina o gliela tolgono.
 - **Esportare.** `sandbox_export` scrive `pdf`, `epub`, `postext`, `docx`,
-  `markdown` o `config`. Per impostazione predefinita il browser scarica il
-  file; con `deliver: "data"` un PDF, un EPUB o un file Word torna all’agente
-  codificato in base64. Per `docx`, `variant` sceglie `formatted` (il valore
+  `idml`, `markdown` o `config`. Per impostazione predefinita il browser scarica
+  il file; con `deliver: "data"` un PDF, un EPUB, un file Word o un pacchetto
+  IDML torna all’agente codificato in base64. Per `idml`, `idmlLines` (`keep` o
+  `reflow`), `idmlSpreads` (`facing` o `single`), `idmlImages` (`embed` o
+  `link`) e `idmlFonts` sono le opzioni della finestra di esportazione; con le
+  immagini collegate o con i font il file è un `.zip`. Per `docx`, `variant`
+  sceglie `formatted` (il valore
   predefinito: testo modificabile con il progetto grafico del libro e i font
   incorporati) o `semantic` (il solo contenuto, in stili Word semplici):
 
@@ -585,6 +589,12 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
 
 - **Importare un file `.postext`** con `sandbox_import_book` (`inspect: true` dice
   quali lingue contiene senza importarlo).
+- **Creare un libro da un documento InDesign** con `sandbox_import_idml`. Con
+  `dryRun: true` non crea nulla e risponde con ciò che il `.idml` contiene e con
+  il rapporto di importazione: il layout che adotterebbe e perché, il verdetto,
+  i rilievi, i font di cui il libro ha bisogno e le immagini collegate ancora
+  mancanti. `layout` sceglie `pages` o `flow`, e `links` consegna le immagini
+  collegate, ciascuna abbinata in base al suo `fileName`.
 - **Importare un manoscritto Word** con `sandbox_import_word`. Eseguilo prima con
   `dryRun: true`: non cambia nulla e risponde con il rapporto di qualità, ogni
   stile di Word con ciò che diventerebbe, e i capitoli e le risorse che
@@ -721,6 +731,7 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **InDesign**: `sandbox_import_idml`.
 - **Domande**: `sandbox_answer`.
 - **Le verifiche**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

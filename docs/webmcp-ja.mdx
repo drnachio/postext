@@ -425,13 +425,14 @@ await browser.close();
 ### 本、ファイル、Word
 
 - **本を開いて保存する**：`sandbox_list_books`は見本の本とあなたのプロジェクトを一覧にし、`sandbox_open_book`はそのうちの1冊を開きます（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）。`sandbox_save_book`に`action: "copy_current"`を渡すと画面の本を自分のプロジェクトとして保存し、`new_blank`を渡すと空の本を始めます。プロジェクトでは、`language`（`"fr"`、`"zh-Hant"`）を付けた`add_language`が画面の言語をその言語の新しい版として複製して開き、`thisLanguageOnly: true`を付けた`rename`は画面の言語だけに名前を付けます。`set_cover`と`remove_cover`は表紙を付けたり外したりします。
-- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDF、EPUB、Wordファイルがbase64でエンコードされてエージェントに返ります。`docx`では、`variant`で`formatted`（既定。編集できるテキストを本のデザインで組み、フォントを埋め込みます）か`semantic`（内容だけを簡素なWordのスタイルで）を選びます。
+- **書き出す**：`sandbox_export`は`pdf`、`epub`、`postext`、`docx`、`idml`、`markdown`、`config`を書き出します。既定ではブラウザーがファイルをダウンロードします。`deliver: "data"`を渡すと、PDF、EPUB、Wordファイル、IDMLパッケージがbase64でエンコードされてエージェントに返ります。`idml`では、`idmlLines`（`keep`か`reflow`）、`idmlSpreads`（`facing`か`single`）、`idmlImages`（`embed`か`link`）、`idmlFonts`が書き出しダイアログのオプションにあたります。画像をリンクにしたとき、またはフォントを含めたときは、ファイルは`.zip`になります。`docx`では、`variant`で`formatted`（既定。編集できるテキストを本のデザインで組み、フォントを埋め込みます）か`semantic`（内容だけを簡素なWordのスタイルで）を選びます。
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
 - **`.postext`ファイルを読み込む**：`sandbox_import_book`を使います（`inspect: true`を渡すと、読み込まずに、どの言語が入っているかを返します）。
+- **InDesignの文書から本を作る**：`sandbox_import_idml`を使います。`dryRun: true`を渡すと何も作らずに、`.idml`の内容と読み込みレポートを返します。採用するレイアウトとその理由、判定、指摘、本に必要なフォント、まだ見つからないリンク画像です。`layout`で`pages`か`flow`を選び、`links`でリンク画像を渡します。画像はそれぞれ`fileName`で照合されます。
 - **Wordの原稿を取り込む**：`sandbox_import_word`を使います。最初に`dryRun: true`で実行してください。何も変えずに、品質レポート、Wordのスタイルごとに何になるか、作られる章とリソースを返します。そのあとで対応づけを直し、本番の読み込みを実行します。
 
   ```json
@@ -502,6 +503,7 @@ Sandboxが登録するときのまとまりで並べています。各ツール�
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **本とファイル**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
+- **InDesign**：`sandbox_import_idml`。
 - **確認**：`sandbox_answer`。
 - **検査**：`sandbox_get_warnings`、`sandbox_get_composed_checks`、`sandbox_apply_proposal`。
 
