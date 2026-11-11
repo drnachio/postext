@@ -33,6 +33,10 @@ export interface Look {
   italic: boolean;
   paragraphs: number;
   characters: number;
+  /** The space InDesign leaves above a paragraph of this look that follows
+   *  another in its story (the one's space after and its own space before,
+   *  which InDesign adds up), by how many times each was seen. */
+  gaps?: Map<number, number>;
   /** Paragraphs of the look that end a sentence (a full stop, a question
    *  mark): running text does, a title does not. */
   sentences: number;

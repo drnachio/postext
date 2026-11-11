@@ -78,6 +78,8 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
   const notes: string[] = [];
   const inner: InlineEnv = { ...env, snippetNotes: notes };
   const body = { size: new Map<number, number>(), family: new Map<string, number>() };
+  // The room about the text of a cell: what most cells take, every side counted.
+  const insets = new Map<number, number>();
   let headerBold = 0;
   let headerCells = 0;
   let headerFill: ColorValue | undefined;
@@ -85,6 +87,14 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
   const sample = `table of ${cols} × ${rows}`;
 
   for (const cell of table.cells) {
+    {
+      const cp = cellProps(ctx, table, cell);
+      for (const side of ['TextTopInset', 'TextBottomInset', 'TextLeftInset', 'TextRightInset']) {
+        const v = num(cp, side) ?? 4;
+        const k = Math.round(v * 10) / 10;
+        insets.set(k, (insets.get(k) ?? 0) + 1);
+      }
+    }
     if (cell.row < 0 || cell.col < 0 || cell.row >= rows || cell.col >= cols || !Number.isFinite(cell.row) || !Number.isFinite(cell.col)) {
       ctx.rep.add('tableCellOffGrid', 'loss', 'A table cell that stands outside its table\'s rows and columns is left out: the table has the cells of its grid only', sample);
       continue;
@@ -134,7 +144,18 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
     if (cell.type === 'graphic') {
       const item = cell.items.find((i) => i.graphic) ?? cell.items[0];
       const id = item?.graphic ? pictureResource(ctx, item) : undefined;
-      if (id) out.image = { resourceId: id, width: 1 };
+      if (id) {
+        // A graphic cell shows its picture inside the cell: as wide as the
+        // cell, or narrower when the cell's height is what holds it.
+        const res = ctx.resources.find((r) => r.id === id);
+        const pic = res?.kind === 'bitmap' ? res.bitmap : res?.kind === 'svg' ? res.svg : undefined;
+        const cellWidth = table.columns.slice(cell.col, cell.col + colSpan).reduce((a, c) => a + c.width, 0);
+        const cellHeight = table.rows.slice(cell.row, cell.row + rowSpan).reduce((a, r) => a + r.height, 0);
+        const pw = pic?.width ?? 0;
+        const ph = pic?.height ?? 0;
+        const fit = pw > 0 && ph > 0 && cellWidth > 0 && cellHeight > 0 ? (cellHeight * (pw / ph)) / cellWidth : 1;
+        out.image = { resourceId: id, width: Math.round(Math.max(0.05, Math.min(1, fit)) * 1000) / 1000 };
+      }
       else ctx.rep.add('emptyGraphicCell', 'info', 'A graphic cell that holds no picture is an empty cell', sample);
     }
     grid[cell.row]![cell.col] = out;
@@ -157,7 +178,8 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
   const border = num(tp, 'TopBorderStrokeWeight') ?? 0;
   const borderColour = border > 0 ? ctx.palette.colour(tp.attrs.TopBorderStrokeColor, num(tp, 'TopBorderStrokeTint'), 'table border') : undefined;
   const named = table.tableStyle ? ctx.doc.styles.table.get(table.tableStyle) : undefined;
-  const key = [named && !named.root ? named.self : '', size ?? '', family ?? '', border, borderColour?.hex ?? '', headerFill?.hex ?? '', headerCells ? headerBold * 2 >= headerCells : ''].join('|');
+  const inset = top(insets) as number | undefined;
+  const key = [named && !named.root ? named.self : '', size ?? '', family ?? '', inset ?? '', Math.min(...table.rows.map((r) => r.height).filter((h) => h > 0), 9999), border, borderColour?.hex ?? '', headerFill?.hex ?? '', headerCells ? headerBold * 2 >= headerCells : ''].join('|');
   let store = stores.get(ctx);
   if (!store) stores.set(ctx, (store = { byKey: new Map(), list: [] }));
   let styleId = store.byKey.get(key);
@@ -167,6 +189,20 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
     const style: NamedTableStyleConfig = { id: styleId, name: isNamed ? named.name : 'Table', borders: border > 0, headerBold: headerCells > 0 && headerBold * 2 >= headerCells, headerBackgroundEnabled: !!headerFill };
     if (size !== undefined) style.bodyFontSize = style.headerFontSize = pt(size);
     if (family) style.bodyFontFamily = style.headerFontFamily = family;
+    // A row of one line is as tall in InDesign as its text's ascent and
+    // descent and the cell's insets (4 pt unless it says otherwise); in
+    // Postext it is a line of the table's leading and the padding twice.
+    // The padding is what gives the row its height back, between half the
+    // insets and the insets (one padding serves both ways in Postext).
+    if (inset !== undefined) {
+      const heights = table.rows.map((r) => r.height).filter((h) => h > 0);
+      const row = heights.length ? Math.min(...heights) : undefined;
+      const bodyLook = ctx.looks.body;
+      const ratio = bodyLook && bodyLook.cf.pointSize > 0 ? bodyLook.cf.leading / bodyLook.cf.pointSize : 1.2;
+      const fit = row !== undefined && size !== undefined ? (row - size * ratio) / 2 : inset;
+      // Half the insets at least: text is not set against a rule.
+      style.cellPadding = pt(Math.round(Math.max(inset / 2, Math.min(inset, fit)) * 100) / 100);
+    }
     if (borderColour) style.borderColor = borderColour;
     if (border > 0) style.borderWidth = pt(border);
     if (headerFill) style.headerBackground = headerFill;

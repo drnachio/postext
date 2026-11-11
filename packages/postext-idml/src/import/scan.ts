@@ -60,9 +60,15 @@ export function countLooks(ctx: Context, stories: readonly OrderedStory[], main:
   const mainLooks = new Set<Look>();
   const seen = new Set<IdmlStory>();
   const walk = (paragraphs: readonly IdmlParagraph[], into: Set<Look> | undefined, depth: number): void => {
+    let before: Look | undefined;
     for (const p of paragraphs) {
       const look = ctx.looks.count(p);
       into?.add(look);
+      if (before) {
+        const gap = Math.round((before.pf.spaceAfter + look.pf.spaceBefore) * 100) / 100;
+        (look.gaps ??= new Map()).set(gap, (look.gaps.get(gap) ?? 0) + 1);
+      }
+      before = look;
       if (depth > 8) continue;
       for (const r of p.runs) {
         for (const i of r.content) {

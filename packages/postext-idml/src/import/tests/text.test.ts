@@ -178,3 +178,31 @@ describe('emphasis that ends in room', () => {
     expect(lead).toBe(' :tab  *page*');
   });
 });
+
+describe('room in tables and between paragraphs', () => {
+  const cell = (name: string, text: string, attrs = ''): string => `<Cell Self="c${name.replace(':', '_')}" Name="${name}" RowSpan="1" ColumnSpan="1" ${attrs}>${plain(text)}</Cell>`;
+  const table = (rowHeight: number, cellAttrs = ''): string => para(`<CharacterStyleRange><Table Self="t" HeaderRowCount="0" BodyRowCount="2">${`<Row Self="r" SingleRowHeight="${rowHeight}"/>`.repeat(2)}<Column Self="k" SingleColumnWidth="100"/>${cell('0:0', 'a', cellAttrs)}${cell('0:1', 'b', cellAttrs)}</Table></CharacterStyleRange>`);
+  const padding = (r: ReturnType<typeof importOne>): number => (r.config.tableStyles?.[0]?.cellPadding as { value: number }).value;
+
+  it('gives a table the padding that keeps its rows as tall as InDesign set them', () => {
+    // 12 pt text on a leading of 1.2: a row of 22.4 pt leaves 4 pt each way.
+    expect(padding(importOne(plain('Body text.') + table(22.4)))).toBeCloseTo(4, 1);
+    // A tight row: half the insets at least, so text is not set on a rule.
+    expect(padding(importOne(plain('Body text.') + table(15)))).toBe(2);
+    // A tall row: never more than the cell's own insets.
+    expect(padding(importOne(plain('Body text.') + table(60)))).toBe(4);
+    expect(padding(importOne(plain('Body text.') + table(60, 'TextTopInset="6" TextBottomInset="6" TextLeftInset="6" TextRightInset="6"')))).toBe(6);
+  });
+
+  it('adds the space after a paragraph to the space before the next, as InDesign does', () => {
+    const head = 'PointSize="20" FontStyle="Bold" SpaceAfter="13"';
+    const sub = 'PointSize="14" FontStyle="Bold" SpaceBefore="9" SpaceAfter="2"';
+    const r = importOne(para(run('Title'), head) + para(run('Section'), sub) + plain('Body one.') + plain('Body two.') + para(run('Section again'), sub) + plain('Body three.'));
+    const levels = r.config.headings?.levels ?? [];
+    const second = levels.find((l) => (l.fontSize as { value: number } | undefined)?.value === 14);
+    expect(second).toBeDefined();
+    // Under the title 13 + 9, under body text 0 + 9: once each, the larger is kept.
+    expect((second!.marginTop as { value: number }).value).toBe(22);
+    expect((second!.marginBottom as { value: number }).value).toBe(2);
+  });
+});
