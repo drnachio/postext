@@ -16,6 +16,7 @@ import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
 import { pinnedColumn, pinFirstPositions, pinFirstSlots } from './floatPins.js';
+import { footRowFirst } from './floatRows.js';
 
 /** What createFloatFlush takes from the pass. */
 export interface FloatFlushDeps {
@@ -289,15 +290,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       const pin = pinOn(f, page.index);
       if (pin) slots = pinFirstSlots(page, pin, slots);
       else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
-      // A row at the foot (`layout.footFloatRow`): where the cursor's column
-      // already holds a float at its foot, the foot of a later column with
-      // none comes first, so the two stand level instead of one over the
-      // other.
-      else if (resolved.layout.footFloatRow && !f.callout && hasFoot(page.columns[cursor.columnIndex]!)) {
-        const row = (s: (typeof slots)[number]) => !s.side && !s.pageSpan && s.position === 'bottom'
-          && s.cols[0]!.index > cursor.columnIndex && !hasFoot(s.cols[0]!);
-        slots = [...slots.filter(row), ...slots.filter((s) => !row(s))];
-      }
+      else if (resolved.layout.footFloatRow && !f.callout) slots = footRowFirst(slots, page.columns[cursor.columnIndex]!, hasFoot);
       for (const slot of slots) {
         if (slot.side) {
           r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);

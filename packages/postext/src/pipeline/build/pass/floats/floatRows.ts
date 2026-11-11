@@ -7,7 +7,7 @@
 // through them. Part of the placement pass, beside floatPlace.ts.
 import type { ResolvedConfig, ResolvedResourceBlock, VDTBlock, VDTColumn, VDTPage } from '../../../../vdt.js';
 import type { PlannedFloat } from '../../../floats/floatPlacement.js';
-import type { FloatSlotPosition } from '../../../floats/floatSlots.js';
+import type { FloatSlot, FloatSlotPosition } from '../../../floats/floatSlots.js';
 import type { PlaceResult } from '../types.js';
 import type { FootStacks } from './footStack.js';
 
@@ -25,6 +25,16 @@ export interface FloatRowsDeps {
   floatReserved: Map<VDTColumn, { top: number; bottom: number }>;
   reservedOf: (col: VDTColumn) => { top: number; bottom: number };
   uncappedBottoms: Map<VDTColumn, number>;
+}
+
+/** The slots of a page in the order a foot row (`layout.footFloatRow`)
+ *  tries them: where the cursor's column `at` already holds a float at its
+ *  foot, the foot of a later column with none comes first, so the two stand
+ *  level instead of one over the other. */
+export function footRowFirst<S extends FloatSlot>(slots: S[], at: VDTColumn, hasFoot: (col: VDTColumn) => boolean): S[] {
+  if (!hasFoot(at)) return slots;
+  const row = (s: S) => !s.side && !s.pageSpan && s.position === 'bottom' && s.cols[0]!.index > at.index && !hasFoot(s.cols[0]!);
+  return [...slots.filter(row), ...slots.filter((s) => !row(s))];
 }
 
 export function createFloatRows(deps: FloatRowsDeps) {

@@ -478,8 +478,7 @@ export type WarningPayload =
   /** A floated picture cropped within its safe area, by `share` of its
    *  height, to stay on the page that cites it
    *  (`layout.pullFloatsToCitation`, #1492); `reason: 'row'`, toward the
-   *  height of the figure beside it in a row at the foot
-   *  (`layout.footFloatRow`, #1496). */
+   *  figure beside it in a foot row (`layout.footFloatRow`, #1496). */
   | { kind: 'floatCropped'; resourceId: string; share: number; reason?: 'row' }
   /** A bitmap with a print size its column holds at under half of it, on
    *  a page whose text block is wider (#901): `scale` of its print width;
