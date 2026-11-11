@@ -2759,8 +2759,18 @@ as a change. Left out, the file is stamped with the time of the call.
   `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
   name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
   `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
-  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down), `platesJob` (info:
+  the job's `plates` and picture plates), `offPlateInk` / `offPlateCmyk` (a spot ink or CMYK colour the job does not
+  print: info when its projection lands within ΔE 6, a warning past it or with no profile), `offPlateColor` (warning:
+  a screen colour that lands past ΔE 6), `plateUndefined` (a spot plate no colour or `inks` entry defines: it prints
+  as black). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
+- With `plates`, a colour off the job's plates prints as the closest mix of one
+  plate or two (a `DeviceN` space for two); greys stay on Black; rich black is dropped unless every ink of the recipe
+  prints. `images` and `curves` may name a plate by an ink table name or alias. A figure's print master
+  (`svg.pdfFileId`) is not used in such a job (its SVG is set on the plates); a placed PDF page or an undecodable
+  picture keeps its own inks and the render warns `artworkOffPlates`. The Sandbox preview shows the book's colours,
+  not the plates: verify a two-ink port on the PDF (`inspectPrintPdf` lists its inks).
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:
