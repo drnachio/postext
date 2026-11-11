@@ -57,8 +57,8 @@ export interface FloatMeasureDeps {
   buildComicStripBlock: (blockIdx: number, source: ComicPageSource, x: number, width: number, max: number, pageIndex: number, keep?: StripGeometry) => VDTBlock;
   cursor: PlacementCursor;
   uncappedBottoms: Map<VDTColumn, number>;
-  /** `captionStyle.alignAcrossColumns`: the white each figure takes (see
-   *  `proposeFloatPads`). */
+  /** `layout.alignFloatsAcrossColumns`: the white each figure takes on
+   *  one page (see `proposeFloatPads`). */
   floatPads: ReadonlyMap<string, FloatPad> | undefined;
   state: PassState;
 }
@@ -254,6 +254,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       ? { startRow: f.startRow, endRow: tableRowCount(f.resourceId), continues: false }
       : undefined;
 
+  const padKey = (pad: FloatPad | undefined): string => (pad ? `:pad${pad.above.toFixed(2)}-${pad.below.toFixed(2)}` : '');
+
   const sliceKey = (slice: TableSliceSpec | undefined): string =>
     slice ? `:${slice.startRow}-${slice.endRow}${slice.continues ? '+' : ''}` : '';
 
@@ -271,9 +273,14 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   /** Height (and caption baseline) of a float at a given width, memoised —
    *  fit checks run for every pending float on every loop iteration. */
   const floatMeasureMemo = new Map<string, FloatMeasure | null>();
+  /** The white a lined-up figure takes on the page being placed. */
+  const padOf = (resourceId: string): FloatPad | undefined => {
+    const pad = floatPads?.get(resourceId);
+    return pad && pad.page === cursor.pageIndex ? pad : undefined;
+  };
   const measureFloat = (resourceId: string, width: number, slice?: TableSliceSpec, rotated?: FloatRotation, aside?: CaptionAside, cap?: BodyCap, sizing?: FloatSizing): FloatMeasure | null => {
     const cropDelta = bodyCropDelta.get(resourceId);
-    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}${cropDelta ? `:crop${cropDelta.toFixed(2)}` : ''}`;
+    const key = `${resourceId}:${width.toFixed(2)}${sliceKey(slice)}${rotationKey(rotated)}${asideKey(aside)}${capKey(cap)}${sizingKey(sizing)}${cropDelta ? `:crop${cropDelta.toFixed(2)}` : ''}${padKey(slice ? undefined : padOf(resourceId))}`;
     const memo = floatMeasureMemo.get(key);
     if (memo !== undefined) return memo;
     const strip = comicStripOf(resourceId);
@@ -327,7 +334,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       // A lined-up figure's white (`floatPads`) counts in its height and
       // its last baseline's distance to the block's foot, so a foot band
       // still sets it on the grid.
-      const pad = slice ? undefined : floatPads?.get(resourceId);
+      const pad = slice ? undefined : padOf(resourceId);
       const padded = pad ? pad.above + pad.below : 0;
       const picture = rb.kind === 'bitmap' || rb.kind === 'svg' || rb.kind === 'video';
       m = {
@@ -377,7 +384,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     const laid = layoutFloat(resourceId, width, slice, rotated, aside, cap, sizing);
     if (!laid) return null;
     const { block: rb } = laid;
-    const pad = slice || rb.rotation ? undefined : floatPads?.get(resourceId);
+    const pad = slice || rb.rotation ? undefined : padOf(resourceId);
     const totalHeight = laid.totalHeight + (pad ? pad.above + pad.below : 0);
     const id = slice && slice.startRow > 0 ? `float-${resourceId}-cont-${slice.startRow}` : `float-${resourceId}`;
     const blk = createVDTBlock(id, 'resource', bodyStyle.fontString, bodyStyle.color, bodyStyle.textAlign);

@@ -20,6 +20,7 @@ import { createFootStacks } from './footStack.js';
 import { withCitationPull } from './citationPull.js';
 import { createFloatRows } from './floatRows.js';
 import { createFloatPins } from './floatPins.js';
+import type { PlacedSlot } from '../../floatPads.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
  *  whole before it takes the next as it is (#1461). */
@@ -71,6 +72,8 @@ export interface FloatPlaceDeps {
   layoutFloat: (resourceId: string, width: number) => { block: ResolvedResourceBlock } | null;
   pullShortfalls: Map<string, { page: number; px: number }>;
   pullCrop: ReadonlySet<string> | undefined;
+  /** The slot each figure set alone in a column took (`PassResult.floatSlots`). */
+  floatSlots: Map<string, PlacedSlot>;
   cursor: PlacementCursor;
   doc: VDTDocument;
 }
@@ -84,7 +87,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor, doc
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor, doc
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
@@ -490,6 +493,11 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     const atY = level?.y ?? y;
     const floatsBefore = page.floats?.length ?? 0;
     commitFloatBlock(page, first, built, xLeft, atY, width, f.firstBlockIdx);
+    // A figure alone in its column, upright and whole: what figures lined
+    // up across columns (`layout.alignFloatsAcrossColumns`) read.
+    if (targetCols.length === 1 && !pageSpan && !rotated && !aside && !slice && built.block.resourceBlock) {
+      floatSlots.set(f.resourceId, { page: page.index, column: first.index, position });
+    }
     if (feet) {
       // A plain foot band joins the stack of its columns, which is laid
       // out again in reading order: this float under the earlier ones.

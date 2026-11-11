@@ -48,6 +48,7 @@ import { createPageSetup } from './pass/setup/pageSetup.js';
 import { createContentSetup } from './pass/setup/contentSetup.js';
 import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
+import type { PlacedSlot } from './floatPads.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -110,6 +111,7 @@ function placeDocumentPass(
   const late = {} as PassLate;
   const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
+  const floatSlots = new Map<string, PlacedSlot>();
   const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
@@ -276,7 +278,7 @@ function placeDocumentPass(
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor, doc
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor, doc
   });
 
   const {
@@ -546,5 +548,5 @@ function placeDocumentPass(
     setup
   });
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }

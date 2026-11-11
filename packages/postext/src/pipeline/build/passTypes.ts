@@ -5,7 +5,7 @@ import type { FontFaceSetLike } from '../../fonts/faces.js';
 import type { MeasuredContentBlock } from '../blocks/measureContentBlock.js';
 import type { LooseBudget } from '../columns/columnBalancing.js';
 import type { BandCap, BandPassReport } from '../columns/bandCaps.js';
-import type { FloatPad } from './floatPads.js';
+import type { FloatPad, PlacedSlot } from './floatPads.js';
 
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */
@@ -122,9 +122,10 @@ export interface PassHints {
   /** Trailing-cap passes: the page each floated resource took in the layout
    *  the caps level (see `proposeTrailingCap`). */
   floatPages?: ReadonlyMap<string, number>;
-  /** `captionStyle.alignAcrossColumns`: the white each figure (resource id)
-   *  takes above its picture (a head band) or under its caption (a foot
-   *  band) so that figures sharing a band line up (see `proposeFloatPads`). */
+  /** `layout.alignFloatsAcrossColumns`: the white each figure (resource
+   *  id) takes above its picture (a head band) or under its caption (a foot
+   *  band) on one page, so that figures sharing a band line up (see
+   *  `proposeFloatPads`). */
   floatPads?: ReadonlyMap<string, FloatPad>;
   /** Floats (resource ids) that head the page or column their citing line
    *  lands on (`placement.citingPage`, #633): an earlier pass found the line
@@ -174,6 +175,9 @@ export interface PassResult extends BandPassReport {
    *  or set there and the text it pushed down took the citing line to
    *  another page or column. With the reason, for the record. */
   citingPageRefused: Map<string, CitingPageRefusal>;
+  /** The slot each figure set alone in a column took in this pass: what
+   *  `layout.alignFloatsAcrossColumns` lines up (`proposeFloatPads`). */
+  floatSlots: Map<string, PlacedSlot>;
 }
 
 /** Why a float was not kept at the head of its citing page (#633). */

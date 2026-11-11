@@ -28,7 +28,6 @@ const STATIC_DEFAULTS = {
   padding: { value: 0.35, unit: 'em' as const },
   labelNumberGap: '\u00a0',
   labelSeparator: '. ',
-  alignAcrossColumns: false,
 } satisfies Partial<ResolvedCaptionStyleConfig>;
 
 /** What stands around a caption's number when the config sets nothing:
@@ -101,7 +100,6 @@ export function resolveCaptionStyleConfig(
     note: resolveNote(p.note, fontSize, color),
     labelNumberGap: typeof p.labelNumberGap === 'string' ? p.labelNumberGap : labels.labelNumberGap,
     labelSeparator: typeof p.labelSeparator === 'string' ? p.labelSeparator : labels.labelSeparator,
-    alignAcrossColumns: p.alignAcrossColumns ?? STATIC_DEFAULTS.alignAcrossColumns,
   };
 }
 
@@ -151,7 +149,6 @@ export function mergeCaptionStyle(
     },
     labelNumberGap: typeof o.labelNumberGap === 'string' ? o.labelNumberGap : base.labelNumberGap,
     labelSeparator: typeof o.labelSeparator === 'string' ? o.labelSeparator : base.labelSeparator,
-    alignAcrossColumns: o.alignAcrossColumns ?? base.alignAcrossColumns,
   };
 }
 
@@ -201,7 +198,6 @@ export function stripCaptionStyleDefaults(
   if (note) { r.note = note; has = true; }
   if (captionStyle.labelNumberGap !== undefined && captionStyle.labelNumberGap !== labels.labelNumberGap) { r.labelNumberGap = captionStyle.labelNumberGap; has = true; }
   if (captionStyle.labelSeparator !== undefined && captionStyle.labelSeparator !== labels.labelSeparator) { r.labelSeparator = captionStyle.labelSeparator; has = true; }
-  if (captionStyle.alignAcrossColumns !== undefined && captionStyle.alignAcrossColumns !== STATIC_DEFAULTS.alignAcrossColumns) { r.alignAcrossColumns = captionStyle.alignAcrossColumns; has = true; }
 
   return has ? r : undefined;
 }

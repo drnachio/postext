@@ -58,7 +58,6 @@ export const CaptionStyleSection = memo(function CaptionStyleSection() {
         update={update}
         resetField={resetField}
         sectionIdPrefix="captionStyle"
-        documentWide
         fieldIdPrefix="captionStyle"
       />
     </CollapsibleSection>

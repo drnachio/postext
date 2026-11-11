@@ -3,8 +3,10 @@ import { buildDocument } from '../../../pipeline/build.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import type { PostextConfig, Resource } from '../../../types.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
+import { resolveLayoutConfig } from '../../../defaults/layout.js';
+import { proposeFloatPads, type PlacedSlot } from '../../../pipeline/build/floatPads.js';
 
-// `captionStyle.alignAcrossColumns`: figures sharing a band of a page line
+// `layout.alignFloatsAcrossColumns`: figures sharing a band of a page line
 // up across its columns — at the foot, the first lines of their captions.
 // Our foot row (`layout.footFloatRow`) already lines up a float joining the
 // foot band of the next column, so the foot cases set it off to see the new
@@ -33,7 +35,7 @@ const figure = (id: string, caption: string, height: number, position: 'top' | '
 
 const words = (n: number) => Array.from({ length: n }, (_, i) => `palabra${i % 7}`).join(' ');
 
-function build(align: boolean, position: 'top' | 'bottom', footFloatRow = true, pinned = false): VDTDocument {
+function build(align: boolean, position: 'top' | 'bottom', footFloatRow = true, pinned = false, balancing = false): VDTDocument {
   const resources = [
     figure('a', `Un pie largo que ocupa varias líneas en la columna: ${words(40)}.`, 300, position, pinned),
     figure('b', 'Un pie corto.', 220, position),
@@ -41,10 +43,10 @@ function build(align: boolean, position: 'top' | 'bottom', footFloatRow = true, 
   const md = `${words(5)} :ref{id="a"} ${words(5)} :ref{id="b"} ${words(400)}`;
   const config: PostextConfig = {
     page: { width: mm(180), height: mm(250), dpi: 72, margins: { top: mm(15), bottom: mm(15), left: mm(15), right: mm(15) } },
-    layout: { layoutType: 'double', gutterWidth: mm(6), footFloatRow },
+    layout: { layoutType: 'double', gutterWidth: mm(6), footFloatRow, ...(align ? { alignFloatsAcrossColumns: true } : {}) },
     bodyText: { fontSize: pt(10), lineHeight: pt(13), firstLineIndent: pt(0) },
-    headings: { balancing: { enabled: false } },
-    captionStyle: { fontSize: pt(8), ...(align ? { alignAcrossColumns: true } : {}) },
+    headings: { balancing: { enabled: balancing } },
+    captionStyle: { fontSize: pt(8) },
   };
   return buildDocument({ markdown: md, resources }, config, createMeasurementCache());
 }
@@ -56,7 +58,7 @@ const floatsOf = (doc: VDTDocument): VDTBlock[] => {
 const captionTop = (b: VDTBlock) => b.resourceBlock!.captionLines[0]!.bbox.y;
 const bodyBottom = (b: VDTBlock) => b.bbox.y + b.resourceBlock!.bodyRect.y + b.resourceBlock!.bodyRect.height;
 
-describe('captionStyle.alignAcrossColumns', () => {
+describe('layout.alignFloatsAcrossColumns', () => {
   it('at the foot of the columns, sets the first lines of the captions level', () => {
     const [a, b] = floatsOf(build(false, 'bottom', false));
     expect(a!.columnIndex).not.toBe(b!.columnIndex);
@@ -94,10 +96,10 @@ describe('captionStyle.alignAcrossColumns', () => {
       const md = `${words(5)} :ref{id="a"} ${words(150)} :ref{id="b"} ${words(400)}`;
       const config: PostextConfig = {
         page: { width: mm(180), height: mm(250), dpi: 72, margins: { top: mm(15), bottom: mm(15), left: mm(15), right: mm(15) } },
-        layout: { layoutType: 'double', gutterWidth: mm(6) },
+        layout: { layoutType: 'double', gutterWidth: mm(6), ...(align ? { alignFloatsAcrossColumns: true } : {}) },
         bodyText: { fontSize: pt(10), lineHeight: pt(13), firstLineIndent: pt(0) },
         headings: { balancing: { enabled: false } },
-        captionStyle: { fontSize: pt(8), ...(align ? { alignAcrossColumns: true } : {}) },
+        captionStyle: { fontSize: pt(8) },
       };
       return floatsOf(buildDocument({ markdown: md, resources }, config, createMeasurementCache()));
     };
@@ -108,5 +110,42 @@ describe('captionStyle.alignAcrossColumns', () => {
     // With text left under the picture it stands in the head band only.
     const [a3, b3] = tall(true, 600);
     expect(Math.abs(captionTop(a3!) - captionTop(b3!))).toBeGreaterThan(5);
+  });
+
+  it('holds with column balancing on', () => {
+    for (const position of ['top', 'bottom'] as const) {
+      const doc = build(true, position, false, false, true);
+      const [a, b] = floatsOf(doc);
+      if (position === 'bottom') expect(captionTop(a!)).toBeCloseTo(captionTop(b!), 0);
+      else expect(bodyBottom(a!)).toBeCloseTo(bodyBottom(b!), 0);
+    }
+  });
+
+  it('is off by default', () => {
+    expect(resolveLayoutConfig().alignFloatsAcrossColumns).toBe(false);
+  });
+});
+
+describe('the pads read again after the last pass', () => {
+  it('gives no white to a figure whose neighbour left its band', () => {
+    // Laid out once with both figures at the foot: each pad lines one up
+    // with the other. Read again with the second figure gone from the page,
+    // the first asks for none.
+    const doc = build(false, 'bottom', false);
+    const [a, b] = floatsOf(doc);
+    const slot = (f: VDTBlock): PlacedSlot => ({ page: f.pageIndex!, column: f.columnIndex!, position: 'bottom' });
+    const pads = proposeFloatPads(doc, new Map([['a', slot(a!)], ['b', slot(b!)]]), new Map());
+    expect(pads.size).toBeGreaterThan(0);
+    const alone = proposeFloatPads(doc, new Map([['a', slot(a!)]]), pads);
+    expect(alone.size).toBe(0);
+  });
+
+  it('keys each pad to the page it was read on', () => {
+    const doc = build(true, 'bottom', false);
+    const [a] = floatsOf(doc);
+    // The pads a pass applied are read back without themselves: the same
+    // layout asks for the same pads, on the same page.
+    const settled = proposeFloatPads(doc, new Map([...floatsOf(doc)].map((f) => [f.resourceBlock!.resource.id, { page: f.pageIndex!, column: f.columnIndex!, position: 'bottom' as const }])), new Map());
+    for (const pad of settled.values()) expect(pad.page).toBe(a!.pageIndex);
   });
 });
