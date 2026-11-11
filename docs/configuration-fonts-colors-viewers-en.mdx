@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Units, colours and the palette, custom fonts, the HTML viewer, PDF and print production, the Folio viewer and the debug overlays',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '36 min',
+  readingTime: '37 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "This page covers the settings shared by the whole book and the settings for each kind of output. It explains how to write a measure and a colour, and how to name the colours of a palette. It shows how to add your own fonts. Then it covers the web view, the PDF file, the files a printing company asks for and the 3D book. The last section turns on the guides and warnings that help while you work.",
@@ -39,13 +39,16 @@ Colors are stored with both a hex representation and a target color model:
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // The ink of a spot colour (see Spot colours).
+  overprint?: boolean; // Overprints in a print render (see Colours that overprint).
   paletteId?: string;  // The colorPalette entry it follows (see Color Palette).
+  tint?: number;       // The strength of the entry over the page colour, percent (with paletteId).
 }
 ```
 
-The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` says the colour was specified in CMYK, and `cmyk` keeps its values: a CMYK print render sets them as they are, with `hex` as their screen rendering (see [Colours authored in CMYK](#colours-authored-in-cmyk)).
+The `model` field indicates the intended color space. For web rendering, `'hex'` or `'rgb'` are typical. For print workflows, `'cmyk'` says the colour was specified in CMYK, and `cmyk` keeps its values: a CMYK print render sets them as they are, with `hex` as their screen rendering (see [Colours authored in CMYK](/en/docs/configuration-pdf-output#colours-authored-in-cmyk)). `'spot'` is a spot colour, with its ink in `spot` (see [Spot colours](/en/docs/configuration-pdf-output#spot-colours)).
 
 Because Postext targets publication-grade output, the default body text color ships with `model: 'cmyk'` (`#000000`). Heading, bold, italic, and list colors default to the palette-linked **Main Color** (`#295AA3`, `model: 'hex'`). Page background and UI overlays (baseline grid, cut marks, debug indicators) default to `model: 'hex'`. Override `color.model` on any field if you need different export semantics.
 
@@ -266,6 +269,8 @@ Any `ColorValue` in the configuration can carry an optional `paletteId` field po
 
 **Changed in postext 1.5.** Up to postext 1.4 the palette reached only a fixed list of settings. The others — the colours of the designs (running heads, openers, heading styles, parts, contents rows), `bodyText.referenceColor`, the callout label colours and the bold / italic colours of callout bodies — kept the `hex` stored beside their `paletteId`. A document whose stored value differs from the palette entry — every one edited in the Sandbox after the entry changed, and every `:ref` when the Main Color is not `#295AA3` — now prints the palette colour, as the link says. To keep a colour as it was, remove its `paletteId`.
 
+**A tint of a palette entry.** With `paletteId`, `tint` (0–100) paints the entry at that strength: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` is the main colour at 8 %, a callout ground that follows the main colour when the palette changes. A part's or a section's palette keeps the strength everywhere it recolours: the flow, the page colour, the line numbers, table cells, the design slots and the Word export. The tint keeps the entry's model: a CMYK entry gives its inks scaled (10 % of `100 60 0 10` prints `10 6 0 1`), a spot entry gives a tint of the same ink on its own plate, and a screen colour mixes with the page colour (`page.backgroundColor`, white when unset; under a CMYK tint, a page colour authored in CMYK adds its own inks). `hex` keeps the tinted value, the fallback without the entry. A spot tint carries one ink only: over a coloured page it knocks the page colour out unless it overprints. In the Sandbox, a linked colour's picker has a **Tint** field.
+
 ### How palettes are applied
 
 `buildDocument` runs the palette in two places so referenced colors work both for overrides you spelled out and for defaults that are filled in later:
@@ -447,7 +452,7 @@ The `pdfGeneration` property controls how the PDF backend emits the final docume
 
 `buildDocument` carries them in the VDT, as `doc.config.pdfGeneration`, and `renderToPdf` takes each setting from the first place that gives it:
 
-1. its own options (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. its own options (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. the `pdfGeneration` of the first document it renders (in a book, the first chapter's settings apply to the whole file);
 3. the defaults: bookmarks and tagging on, RGB colour.
 
@@ -461,6 +466,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // Draw the `page.baselineGrid` grid in the PDF as well.
   forms?: PdfFormsConfig;      // Form fields: currency, separators, face.
 }
 ```
@@ -498,6 +504,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Emit an accessible, tagged PDF oriented to PDF/UA-1: a logical structure tree in reading order (headings that never skip a level, paragraphs, lists, block quotes, callouts, tables with header cells, figures with their alt text and captions, formulas, clickable refs as links, the contents of a `:::toc` as one `TOC` with a `TOCI` per row: the row's number as a `Lbl`, its title and page as a `Reference` holding the link), the document title and language (the top-level `locale`), the PDF/UA identification in the XMP metadata, and every decorative mark (page background, rules, baseline grid, running headers and footers, cut marks, repeated table headers, the repeated title and continuation marker of a split callout) flagged as an artifact so screen readers skip it. A figure without `altText` falls back to its caption, then to its label. A floated figure or table is read right after the text that first cites it, or the text before its `::resource` line, and a floated box after the text before its fence, even when the float is placed on a later page; a list or the contents that go on past a float stay one element, and a list inside a floated or fixed box (`placement: 'fixed'`) is one list. Turn off only for print masters where the extra structure is unwanted.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Draws the baseline grid in the PDF while <code>page.baselineGrid</code> is on. On by default, as before; <code>false</code> keeps the grid a guide for checking the page on screen, out of the PDF, while the canvas and the HTML viewer keep showing it. In the Sandbox it is <strong>Baseline grid in the PDF</strong>, in the PDF section.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +565,9 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
+  imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
 }
 
 interface CustomOutputProfile {
@@ -624,7 +639,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>see <a href="#preflight">Preflight</a></td>
+      <td>see <a href="/en/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>What the preflight checks and its thresholds.</td>
     </tr>
   </tbody>
@@ -753,73 +768,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Colours authored in CMYK
-
-A colour written in CMYK keeps its exact values: `ColorValue.cmyk` (percent) is set as it is in a print render, and `hex` is its screen rendering. A palette entry authored in CMYK covers every colour linked to it.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Property</th>
-      <th>Type</th>
-      <th>Default</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Run the checks.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>A placed bitmap under this many pixels per inch at its printed size, crop included, gets a warning: figures, table-cell pictures, design images, comic panels. A bitmap with no resolution of its own prints at `page.dpi` at its natural size, so a page laid out at 150 dpi prints every such picture at 150 ppi; one with a resolution (`bitmap.resolution`, `layout.bitmapResolution`) prints at that resolution at its natural size.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Under this the warning is critical. Never above `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Rules, borders, column rules, table rules and comic panel borders thinner than this.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text under this size set in more than one ink (a process colour, rich black): it blurs when the plates shift. Black text, K only, never counts.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text closer than this to the trim, where the guillotine may cut it.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>A box or picture that stops this close to the trim without reaching the bleed: run it into the bleed or pull it in.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Report fonts a placed PDF does not embed (the Sandbox inspects each print master with `inspectPrintMaster`). Postext embeds every font it sets.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` runs the checks on a laid-out document and returns a list of issues, each with a `kind`, a `severity` (`'critical'`, `'warning'` or `'info'`), the book-absolute `pageIndex`, the offending `rect` (page px) and, when the element has one, its source range. The kinds are `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` and `nearTrim`. Without a `transform` a neutral counts one ink and any other colour three, and coverage is not checked; with one, the counts and the coverage are exact. The resolution of a picture is worked out from the pixels its resource declares, or from the file's own when `imageSize(fileId)` gives them (`bitmapInfo` on the bytes, or the decoded image): a declaration more than a pixel away from the file is reported once as `declaredPixelsMismatch`, a warning when it claims more pixels than the file has. `placedImageResolutions(doc, { resources, imageSize })` lists every placed bitmap with its effective ppi, whether the preflight is on or not. The labels of a figure count as text for `smallProcessText`, `inkLimit` and `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Print preview
 

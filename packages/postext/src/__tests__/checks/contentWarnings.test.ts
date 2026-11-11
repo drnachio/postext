@@ -212,6 +212,7 @@ describe('doc.contentWarnings — unknown ids and markup', () => {
     expect(doc.warnings).toBeUndefined();
     expect(kinds(doc.contentWarnings)).toEqual(['unknownResourceId', 'unknownResourceId', 'unknownDirective']);
     for (const w of doc.warnings ?? []) {
+      if (w.kind !== 'calloutOverflow') continue;
       expect(typeof w.pageIndex).toBe('number');
       expect(typeof w.columnIndex).toBe('number');
       expect(w.overflowPx.toFixed(1)).toMatch(/^\d/);

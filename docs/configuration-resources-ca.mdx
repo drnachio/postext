@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos',
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '46 min',
+  readingTime: '47 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres de figures, taules, diagrames i vídeos. Postext els anomena recursos i numera cada tipus per separat. Hi pots decidir l'aspecte de les taules (els filets, els fons, la tipografia i com es parteixen entre pàgines) i com s'escriu el peu d'una figura o d'una taula. També pots imprimir els diagrames a una sola tinta i triar com apareix un vídeo sobre el paper.",
@@ -144,6 +144,16 @@ Un tipus pot ometre camps (des de postext 1.38): els completa el tipus integrat 
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Canvis parcials a l'<a href="#estil-dels-peus-de-recurs">estil dels peus</a> per als recursos d'aquest tipus. Només les claus que indiquis substitueixen el <code>captionStyle</code> global; la resta s'hereta (si canvies el <code>color</code>, canvien també el de l'etiqueta i el de la nota, llevat que es fixin explícitament). Ús típic: taules amb el peu <em>a sobre</em>, damunt d'una barra de color, mentre les figures conserven el peu a sota. Les referències a la paleta es resolen com qualsevol altre color.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Per defecte <code>true</code>. Si una figura o taula d’aquest tipus col·locada en el text s’assenta a la retícula de base: el flux hi torna sota el recurs. <code>false</code> conserva l’espai exacte que deixa el recurs. No afecta els flotants al capdamunt o al peu d’una columna.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Per defecte <code>false</code>. Comença una figura o taula d’aquest tipus col·locada en el text en una línia de la retícula, acabi com acabi el bloc anterior. No afecta els flotants al capdamunt o al peu d’una columna, una figura envoltada pel text ni la que obre una columna. Al Sandbox: <strong>Començar en una línia de la retícula</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -561,6 +571,8 @@ Les amplades de columna pertanyen al model de la taula, no a l'estil: `TableMode
 
 Un `TableModel` és una graella per files, i cada cel·la es maqueta segons la posició que hi ocupa: `rows[r][c]` ocupa la columna `c`. Per això una cel·la combinada conserva a la graella les cel·les que cobreix, cadascuna marcada amb un `hiddenBy` que apunta a la cel·la principal, a diferència d'una taula HTML, que les omet. Les funcions de model que exporta `postext` mantenen aquesta forma; són funcions pures que retornen un model nou: `mergeCells(model, { start, end })` i `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` i `setAlignment`. Les quatre funcions de files i columnes mantenen senceres les combinacions: una fila o columna afegida dins d'un bloc combinat l'eixampla, una afegida abans el desplaça i una que se n'elimina el redueix (un bloc que perd la primera fila o columna conserva el contingut a la nova cel·la superior esquerra), i cada `hiddenBy` continua apuntant a la cel·la principal.
 
+`transposeTable(model)` intercanvia files i columnes (el botó ⇄ de l'editor de taules del Sandbox): cada cel·la passa de `rows[r][c]` a `rows[c][r]` amb el seu contingut, la seva imatge, el seu emplenament i la seva alineació; una combinació conserva les seves cel·les amb les extensions intercanviades; les files de capçalera passen a ser columnes de capçalera, i les primeres columnes fetes només de cel·les de capçalera passen a `headerRowCount`; `columnWidths` es descarta. Una fila que compta `headerRowCount` i les cel·les de la qual no porten `isHeader` (així les deixa una importació de Word) és fila de capçalera igualment, i les seves cel·les queden marcades `isHeader` a la nova columna. Transposar dues vegades torna la taula original, amb les cel·les de les files de capçalera marcades `isHeader`.
+
 `parseTSV(text, options?)` construeix un model a partir de text separat per tabuladors (un rang enganxat des d'un full de càlcul): les files se separen per salts de línia, les cel·les per tabuladors, i les files curtes s'omplen perquè la graella sigui rectangular. `headerRows` converteix les files inicials en files de capçalera: les cel·les d'aquestes files reben `isHeader` i el model `headerRowCount`, de manera que una taula partida entre pàgines les repeteix.
 
 ```ts
@@ -856,6 +868,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined quan tot coincideix amb els valors per defecte
 ```
 
+**Tintes planes dins d’un SVG.** En un PDF d’impremta, un color d’un SVG vectorial s’imprimeix en una tinta plana només en dos casos. Quan anomena la tinta: un color seguit de `icc-named-color(…, "PANTONE 185 C")`, o un element amb `data-spot="PANTONE 185 C"` (i `data-spot-tint="40"`, en percentatge), s’imprimeix a la planxa d’aquesta tinta, amb l’equivalent de la paleta si la paleta té una tinta plana amb aquest nom, i si no amb el CMYK del mateix color. I quan el seu hex és exactament el d’una tinta plana de la paleta: s’imprimeix en la tinta d’aquest color, al to d’aquest color. Qualsevol altre color continua en quadricromia, encara que sembli un to d’una tinta sobre blanc, de manera que els grisos d’un dibuix no passen mai a una planxa de tinta plana. Cada color es resol per separat, així que un diagrama pot barrejar diverses tintes i colors de quadricromia. `diagramStyle.singleInk` té prioritat: amb un `inkColor` de tinta plana, el diagrama recolorit s’imprimeix en tons d’aquesta planxa. Una tinta que anomena un SVG i que no defineix cap color de la paleta (ni cap entrada de la taula de tintes amb `cmyk`) s’imprimeix en una planxa pròpia, amb el CMYK del color de l’SVG com a equivalent; tots els SVG que l’anomenen comparteixen aquesta planxa, i el preflight avisa (`spotInkUndefined`). Molts programes exporten una mostra com un color RGB sense més i en perden el nom: afegeix a la paleta una tinta plana amb exactament aquest `hex`, una per cada to que faci servir el dibuix, o marca els elements amb `data-spot`.
+
 ### Tinta única en canvas i en HTML
 
 Les sortides canvas i HTML reben les imatges ja descodificades (`registerResourceImage`) o com a URL (`resourceImageUrl`), no el marcatge SVG. Si els ho demanes, apliquen el mateix mapatge al que dibuixen:
@@ -1068,7 +1082,7 @@ Els estils de partitura amb nom (`scoreStyles`, `NamedScoreStyleConfig[]`) tenen
 
 ## Estil de vídeo
 
-La propietat `videoStyle` defineix com s'imprimeixen els [recursos de vídeo](/ca/docs/document-format-resources#vídeos) (la marca de reproducció i el codi QR sobre la portada, i si la portada enllaça amb el vídeo) i què ofereixen els reproductors al visor HTML i a l'EPUB.
+La propietat `videoStyle` defineix com s'imprimeixen els [recursos de vídeo](/ca/docs/document-format-videos#vídeos) (la marca de reproducció i el codi QR sobre la portada, i si la portada enllaça amb el vídeo) i què ofereixen els reproductors al visor HTML i a l'EPUB.
 
 ```ts
 const config: PostextConfig = {
@@ -1203,7 +1217,7 @@ El codi el codifica el mateix motor (`encodeQr(text, level)`: mode byte, UTF-8, 
 
 Un EPUB només conserva els atributs que admet el seu esquema: un fitxer es reprodueix amb <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> i <code>preload</code>, a més de la marca <code>data-pt-alongside</code>, i la resta la decideix el lector.
 
-Un vídeo que no és exclusiu porta `data-pt-alongside` a la sortida HTML. `coordinateVideoPlayback(root)` aplica la regla als reproductors que hi ha sota `root` (l'element que conté la sortida de `renderToHtml`): quan comença un vídeo exclusiu, es posen en pausa tots els altres que es reprodueixen, i quan en comença un que es reprodueix amb d'altres, només es posen en pausa els exclusius. Retorna una funció que deixa d'escoltar. `playsAlongside(el)` i `videosToPause(started, videos, alongside)` donen la mateixa regla a un amfitrió amb reproductors propis. A [Folio](/ca/docs/document-format-resources#vídeos-a-les-pàgines-de-folio), un vídeo que arrenca sol i es reprodueix amb d'altres (`autoplay` amb `exclusive: false`) comença, sense so, cada cop que apareix la seva pàgina i s'atura quan es passa la pàgina, diversos alhora, i `loop` el torna a començar en acabar. En un EPUB, la pàgina o el capítol amb vídeos per coordinar (dos o més, un d'ells exclusiu) enllaça la mateixa regla com un petit script, `scripts/videos.js` (l'exportació `VIDEO_PLAYBACK_SCRIPT`), i el paquet declara aquest document `scripted`. Un lector que executa scripts aplica la regla als vídeos d'aquest document, però no als de la pàgina del davant, que és un altre document; un que no els executa reprodueix cada vídeo segons les seves regles, com fan sempre els reproductors de YouTube i Vimeo.
+Un vídeo que no és exclusiu porta `data-pt-alongside` a la sortida HTML. `coordinateVideoPlayback(root)` aplica la regla als reproductors que hi ha sota `root` (l'element que conté la sortida de `renderToHtml`): quan comença un vídeo exclusiu, es posen en pausa tots els altres que es reprodueixen, i quan en comença un que es reprodueix amb d'altres, només es posen en pausa els exclusius. Retorna una funció que deixa d'escoltar. `playsAlongside(el)` i `videosToPause(started, videos, alongside)` donen la mateixa regla a un amfitrió amb reproductors propis. A [Folio](/ca/docs/document-format-videos#vídeos-a-les-pàgines-de-folio), un vídeo que arrenca sol i es reprodueix amb d'altres (`autoplay` amb `exclusive: false`) comença, sense so, cada cop que apareix la seva pàgina i s'atura quan es passa la pàgina, diversos alhora, i `loop` el torna a començar en acabar. En un EPUB, la pàgina o el capítol amb vídeos per coordinar (dos o més, un d'ells exclusiu) enllaça la mateixa regla com un petit script, `scripts/videos.js` (l'exportació `VIDEO_PLAYBACK_SCRIPT`), i el paquet declara aquest document `scripted`. Un lector que executa scripts aplica la regla als vídeos d'aquest document, però no als de la pàgina del davant, que és un altre document; un que no els executa reprodueix cada vídeo segons les seves regles, com fan sempre els reproductors de YouTube i Vimeo.
 
 El *resolver* i l'*stripper* funcionen com els de les altres seccions, juntament amb els tipus `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
 

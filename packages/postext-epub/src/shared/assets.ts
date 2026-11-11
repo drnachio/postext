@@ -1,6 +1,6 @@
 // Fonts, pictures and identity shared by both renditions.
 
-import { applySingleInkToSvg, chainSvgFontProviders, tintFilterElement, tintHex, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, type SvgFontProvider, type VDTDocument } from 'postext';
+import { applySingleInkToSvg, chainSvgFontProviders, tintFilterElement, tintHex, inlineSvgFontsDetailed, isHlsMimeType, parseUnicodeRange, resolveColorValue, screenSvgColors, type SvgFontProvider, type VDTDocument } from 'postext';
 import type { EpubFontFile, EpubItem, EpubMetadata, EpubResourceBytes, EpubSvgFontOptions, EpubWarning } from '../types.js';
 import { FONT_MEDIA_TYPES, IMAGE_EXTENSIONS, VIDEO_EXTENSIONS, sniffFontFormat, sniffImageType, sniffVideoType } from './media.js';
 import { uuidV5 } from './uuid.js';
@@ -272,7 +272,8 @@ export function svgAssetPreparer(
   };
   const toldWithheld = new Set<string>();
   return async (fileId, svgText) => {
-    let svg = ink ? applySingleInkToSvg(svgText, ink) : svgText;
+    // A spot ink named in a paint is the print PDF's: here, the colour.
+    let svg = ink ? applySingleInkToSvg(screenSvgColors(svgText), ink) : screenSvgColors(svgText);
     if (!keep || keep.has(fileId)) return svg;
     svg = (await inlineSvgFontsDetailed(svg, provider, {
       withhold,

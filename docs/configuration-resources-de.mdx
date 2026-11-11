@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Ressourcentypen und ihre Nummerierung, Tabellen- und Legendenstile, einfarbige Diagramme und gedruckte Videos',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '39 min',
+  readingTime: '40 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen für Abbildungen, Tabellen, Diagramme und Videos. Postext nennt sie Ressourcen und nummeriert jede Art für sich. Sie legen fest, wie Tabellen aussehen: ihre Linien, ihre Flächen, ihre Schrift und wie sie sich über Seiten verteilen. Sie legen fest, wie die Legende einer Abbildung oder Tabelle gesetzt wird. Außerdem können Sie Diagramme in einer einzigen Druckfarbe drucken und wählen, wie ein Video auf Papier erscheint.",
@@ -144,6 +144,16 @@ Ein Typ darf Felder weglassen (seit postext 1.38): Der eingebaute Typ mit dersel
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (optional)</td>
       <td>Teilweise Überschreibung des <a href="#legendenstil">Legendenstils</a> für Ressourcen dieses Typs. Nur die gesetzten Schlüssel ersetzen den globalen <code>captionStyle</code>; alles andere wird geerbt (eine überschriebene <code>color</code> bestimmt auch die Farben von Bezeichnung und Anmerkung, sofern diese nicht ausdrücklich gesetzt sind). Typischer Einsatz: Tabellen mit Legende <em>oben</em> auf einem farbigen Balken, während Abbildungen ihre Legende unten behalten. Palettenverweise werden wie jede andere Farbe aufgelöst.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>true</code>. Ob eine Abbildung oder Tabelle dieses Typs im Text auf dem Grundlinienraster steht: Der Fluss rastet unter der Ressource wieder ein. <code>false</code> behält den genauen Abstand, den die Ressource lässt. Schwebende Elemente am Kopf oder Fuß einer Spalte sind nicht betroffen.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (optional)</td>
+      <td>Standard <code>false</code>. Lässt eine Abbildung oder Tabelle dieses Typs im Text auf einer Rasterlinie beginnen, wie auch immer der Block davor endete. Schwebende Elemente am Kopf oder Fuß einer Spalte, eine vom Text umflossene Abbildung und eine am Spaltenkopf sind nicht betroffen. Im Sandbox: <strong>Auf einer Rasterlinie beginnen</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -562,6 +572,8 @@ Spaltenbreiten gehören zum Tabellenmodell, nicht zum Stil: `TableModel.columnWi
 
 Ein `TableModel` ist ein zeilenweises Raster, und jede Zelle wird nach ihrem Platz darin gesetzt: `rows[r][c]` steht in Spalte `c`. Eine verbundene Zelle behält die von ihr überdeckten Zellen daher im Raster, jede mit `hiddenBy` auf ihre Hauptzelle markiert – anders als eine HTML-Tabelle, die sie weglässt. Die aus `postext` exportierten Modellhelfer erhalten diese Form; es sind reine Funktionen, die ein neues Modell liefern: `mergeCells(model, { start, end })` und `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` und `setAlignment`. Die vier Helfer für Zeilen und Spalten erhalten Verbindungen: Eine innerhalb eines verbundenen Blocks hinzugefügte Zeile oder Spalte verbreitert ihn, eine davor hinzugefügte verschiebt ihn, eine daraus entfernte verkleinert ihn – ein Block, der seine erste Zeile oder Spalte verliert, behält seinen Inhalt in seiner neuen linken oberen Zelle –, und jedes `hiddenBy` zeigt weiterhin auf seine Hauptzelle.
 
+`transposeTable(model)` vertauscht Zeilen und Spalten (die ⇄-Schaltfläche des Tabelleneditors im Sandbox): Jede Zelle wandert von `rows[r][c]` nach `rows[c][r]`, mit Inhalt, Bild, Füllung und Ausrichtung; eine Verbindung behält ihre Zellen, mit vertauschten Spannen; die Kopfzeilen werden zu Kopfspalten, und die führenden Spalten, die nur aus Kopfzellen bestehen, werden zu `headerRowCount`; `columnWidths` entfällt. Eine Zeile, die `headerRowCount` mitzählt und deren Zellen kein `isHeader` tragen (so hinterlässt sie ein Word-Import), ist trotzdem eine Kopfzeile; ihre Zellen werden in der neuen Spalte mit `isHeader` markiert. Zweimal transponiert ergibt wieder die ursprüngliche Tabelle, die Zellen ihrer Kopfzeilen mit `isHeader` markiert.
+
 `parseTSV(text, options?)` baut ein Modell aus tabulatorgetrenntem Text – einem aus einer Tabellenkalkulation eingefügten Bereich: Zeilen werden an Zeilenumbrüchen getrennt, Zellen an Tabulatoren, und kurze Zeilen werden aufgefüllt, damit das Raster rechteckig ist. `headerRows` macht die führenden Zeilen zu Kopfzeilen: Ihre Zellen erhalten `isHeader` und das Modell `headerRowCount`, sodass eine über Seiten geteilte Tabelle sie wiederholt.
 
 ```ts
@@ -856,6 +868,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
 
+**Sonderfarben in einem SVG.** In einem Druck-PDF druckt eine Farbe eines Vektor-SVG nur in zwei Fällen auf einer Sonderfarbe. Wenn sie die Druckfarbe nennt: Eine Farbe, auf die `icc-named-color(…, "PANTONE 185 C")` folgt, oder ein Element mit `data-spot="PANTONE 185 C"` (und `data-spot-tint="40"`, in Prozent) druckt auf der Platte dieser Druckfarbe, mit dem Ersatzwert der Palette, wenn die Palette eine Sonderfarbe dieses Namens hat, sonst mit dem eigenen CMYK der Farbe. Und wenn ihr Hex-Wert genau der einer Sonderfarbe der Palette ist: Dann druckt sie auf der Druckfarbe dieser Farbe, in deren Tonwert. Jede andere Farbe bleibt im Vierfarbdruck, auch wenn sie wie ein Tonwert einer Druckfarbe über Weiß aussieht; die Grautöne einer Zeichnung wandern also nie auf eine Sonderfarbenplatte. Jede Farbe wird für sich aufgelöst, sodass ein Diagramm mehrere Druckfarben und Prozessfarben mischen kann. `diagramStyle.singleInk` hat Vorrang: Mit einer Sonderfarbe als `inkColor` druckt das umgefärbte Diagramm in Tonwerten dieser Platte. Eine Druckfarbe, die ein SVG nennt und die keine Palettenfarbe definiert (auch kein Eintrag der Druckfarbentabelle mit `cmyk`), druckt auf einer eigenen Platte, mit dem CMYK der SVG-Farbe als Ersatzwert; alle SVGs, die sie nennen, teilen sich diese Platte, und der Preflight warnt (`spotInkUndefined`). Viele Programme exportieren ein Farbfeld als einfache RGB-Farbe und verlieren seinen Namen: Geben Sie der Palette eine Sonderfarbe mit genau diesem `hex`, eine pro Tonwert, den die Zeichnung verwendet, oder kennzeichnen Sie die Elemente mit `data-spot`.
+
 ### Einfarbmodus auf dem Canvas und in HTML
 
 Die Canvas- und HTML-Ausgaben erhalten Bilder bereits dekodiert (`registerResourceImage`) oder als URLs (`resourceImageUrl`), nicht als SVG-Markup. Auf Anforderung wenden sie dieselbe Abbildung auf das an, was sie zeichnen:
@@ -1068,7 +1082,7 @@ Benannte Notenstile (`scoreStyles`, `NamedScoreStyleConfig[]`) haben dieselben F
 
 ## Videostil
 
-Die Eigenschaft `videoStyle` legt fest, wie [Video-Ressourcen](/de/docs/document-format-resources#videos) gedruckt werden – das Abspielzeichen und der QR-Code über dem Posterbild und ob das Posterbild auf das Video verlinkt – und was ihre Player im HTML-Betrachter und in EPUB anbieten.
+Die Eigenschaft `videoStyle` legt fest, wie [Video-Ressourcen](/de/docs/document-format-videos#videos) gedruckt werden – das Abspielzeichen und der QR-Code über dem Posterbild und ob das Posterbild auf das Video verlinkt – und was ihre Player im HTML-Betrachter und in EPUB anbieten.
 
 ```ts
 const config: PostextConfig = {
@@ -1203,7 +1217,7 @@ Der Code wird von der Engine selbst kodiert (`encodeQr(text, level)`: Byte-Modus
 
 Ein EPUB behält nur die Attribute, die sein Schema kennt: Eine Datei spielt mit <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> und <code>preload</code>, dazu der Markierung <code>data-pt-alongside</code>, und das Lesesystem entscheidet über den Rest.
 
-Ein Video, das nicht exklusiv ist, hat in der HTML-Ausgabe `data-pt-alongside`. `coordinateVideoPlayback(root)` hält die Player unter `root` (dem Element, das die Ausgabe von `renderToHtml` enthält) an die Regel: Der Start eines exklusiven Videos hält jedes andere laufende an, und der Start eines, das daneben läuft, hält nur die exklusiven an. Die Funktion liefert eine Funktion zurück, die die Überwachung beendet. `playsAlongside(el)` und `videosToPause(started, videos, alongside)` stellen dieselbe Regel einem Host mit eigenen Playern bereit. In [Folio](/de/docs/document-format-resources#videos-auf-den-seiten-von-folio) startet ein Video, das von selbst und neben den anderen läuft (`autoplay` mit `exclusive: false`), stumm, sobald seine Seite ins Bild kommt, und hält an, wenn die Seite weggeblättert wird, mehrere gleichzeitig, und `loop` spielt es erneut von vorn ab. Eine EPUB-Seite oder ein EPUB-Kapitel mit zu koordinierenden Videos (zwei oder mehr, eines davon exklusiv) verlinkt dieselbe Regel als kleines Skript, `scripts/videos.js` (der Export `VIDEO_PLAYBACK_SCRIPT`), und das Paket deklariert dieses Dokument als `scripted`. Ein Lesesystem, das Skripte ausführt, hält die Videos dieses Dokuments an die Regel, nicht aber die einer gegenüberliegenden Seite, die ein anderes Dokument ist; eines, das keine Skripte ausführt, spielt jedes Video nach dessen eigenen Bedingungen ab, wie es die Player von YouTube und Vimeo immer tun.
+Ein Video, das nicht exklusiv ist, hat in der HTML-Ausgabe `data-pt-alongside`. `coordinateVideoPlayback(root)` hält die Player unter `root` (dem Element, das die Ausgabe von `renderToHtml` enthält) an die Regel: Der Start eines exklusiven Videos hält jedes andere laufende an, und der Start eines, das daneben läuft, hält nur die exklusiven an. Die Funktion liefert eine Funktion zurück, die die Überwachung beendet. `playsAlongside(el)` und `videosToPause(started, videos, alongside)` stellen dieselbe Regel einem Host mit eigenen Playern bereit. In [Folio](/de/docs/document-format-videos#videos-auf-den-seiten-von-folio) startet ein Video, das von selbst und neben den anderen läuft (`autoplay` mit `exclusive: false`), stumm, sobald seine Seite ins Bild kommt, und hält an, wenn die Seite weggeblättert wird, mehrere gleichzeitig, und `loop` spielt es erneut von vorn ab. Eine EPUB-Seite oder ein EPUB-Kapitel mit zu koordinierenden Videos (zwei oder mehr, eines davon exklusiv) verlinkt dieselbe Regel als kleines Skript, `scripts/videos.js` (der Export `VIDEO_PLAYBACK_SCRIPT`), und das Paket deklariert dieses Dokument als `scripted`. Ein Lesesystem, das Skripte ausführt, hält die Videos dieses Dokuments an die Regel, nicht aber die einer gegenüberliegenden Seite, die ein anderes Dokument ist; eines, das keine Skripte ausführt, spielt jedes Video nach dessen eigenen Bedingungen ab, wie es die Player von YouTube und Vimeo immer tun.
 
 Auflöser und Bereiniger entsprechen denen der anderen Abschnitte, neben den Typen `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
 

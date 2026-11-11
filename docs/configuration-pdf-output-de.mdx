@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDF-Dateien',
   description: 'postext-pdf aus Code: Installation, API, Font-Provider im Browser und in Node, CJK-Schriften, Ressourcenbytes, vertikaler Text, Worker und druckfertige Dateien',
   lang: 'de',
-  lastUpdated: '2026-11-06',
-  readingTime: '20 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und eine PDF-Datei brauchen. Sie zeigt, wie Sie das PDF-Paket installieren und ein gesetztes Buch mit wenigen Zeilen in eine Datei verwandeln. Das Paket braucht die Schriftdateien, deshalb erklärt die Seite, wie Sie sie ihm übergeben, im Browser oder auf einem Server. Sie behandelt Schriften für Chinesisch, Japanisch und Koreanisch, Bilder, Text, der von oben nach unten läuft, und Links. Am Ende stehen ein vollständiges Beispiel und Dateien, die eine Druckerei übernehmen kann.",
@@ -36,9 +36,10 @@ Das Paket bietet einen einzigen Einstiegspunkt und eine Handvoll Typen:
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** – nimmt ein `VDTDocument` (oder die Kapitel eines Buches als Array solcher Dokumente) und gibt die rohen PDF-Bytes zurück.
 - **`PdfFontProvider`** – die Callback-Signatur `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`, mit der `renderToPdf` Schriftbytes anfordert, wenn es eine neue Kombination aus Familie, Stärke und Stil einbetten muss. `request.codePoints` enthält die Zeichen, die die Seiten in diesem Schnitt setzen; die Antwort ist eine Datei oder mehrere, die zusammen den Schnitt bilden (siehe [Chinesische, japanische und koreanische Schriften](#chinesische-japanische-und-koreanische-schriften)).
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** – eine Datei eines Schnitts, die angibt, wie die Seite sie deklariert hat: die `unicode-range` ihrer Regel `@font-face` und ihre Stelle in der Deklarationsreihenfolge. Ein `PdfFontFile` ist ein `Uint8Array` mit diesen beiden optionalen Eigenschaften (siehe [Chinesische, japanische und koreanische Schriften](#chinesische-japanische-und-koreanische-schriften)). Seit postext-pdf 1.30.
-- **`RenderToPdfOptions`** – `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` legt fest, wie Formularfelder Zahlen schreiben (Währung, auf welcher Seite sie steht, Trennzeichen), und in welchem Schnitt sie ihre Werte zeigen (`font`; siehe [Formularfelder](#formularfelder)). `outlines`, `accessible` und `colorSpace` fallen auf das `pdfGeneration` des Dokuments zurück, wenn sie fehlen (siehe [PDF-Erzeugung (Konfiguration)](/de/docs/configuration-fonts-colors-viewers#pdf-erzeugung-konfiguration)). `resourceBytes` ist unter [Ressourcenbytes und Druckoriginale](#ressourcenbytes-und-druckoriginale) beschrieben, `onWarning` unter [Welche Schnitte beim Provider angefragt werden](#welche-schnitte-beim-provider-angefragt-werden) und [Warnungen im Dokument](/de/docs/configuration-programmatic-usage#warnungen-im-dokument). `characterGrid: true` übernimmt das Raster, das `cjk.grid.show` auf dem Bildschirm zeichnet, auch ins PDF, das es sonst weglässt (siehe [Zeichenraster](/de/docs/configuration-east-asian#zeichenraster)). `harfbuzzWasm` gibt an, woher HarfBuzz’ `harfbuzz.wasm` geladen wird (eine URL, relativ zur Seite, oder die Bytes der Datei), für ein Dokument mit Text von rechts nach links oder verbundener Schrift; fehlt die Angabe, versucht postext-pdf zuerst die Kopie neben seinem eigenen Modul, dann dieselbe Version von harfbuzzjs von jsDelivr und esm.sh. `print` nimmt die Einstellungen der Druckproduktion (PDF/X-Standard, Ausgabeprofil, Schwarz, Preflight) und fällt auf das `print` des Dokuments zurück; mit einem PDF/X-Standard oder `colorSpace: 'cmyk'` wird jede Farbe über das ICC-Ausgabeprofil separiert, dessen Bytes `outputProfile` liefert (sonst wird es von `profileBaseUrl` abgerufen, standardmäßig von der Kopie des Ordners `icc/` von postext auf dem npm-CDN). `date` (ein `Date`, eine Zeit in Millisekunden oder ein Datumsstring, wie `mtime` von `createBundle`) ist das Erstellungs- und Änderungsdatum der Datei und in einer PDF/X-Datei auch das Datum ihres XMP-Pakets und die Quelle ihrer Dokument-ID: Dasselbe Dokument, zweimal mit demselben `date` gerendert, ergibt dieselben Bytes. Fehlt es, erhält die Datei den Zeitpunkt des Aufrufs. Ein ungültiges Datum wirft einen Fehler.
-- **`PdfWarning`** – ein nicht fatales Problem, gemeldet über `onWarning`; unterscheiden Sie nach `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), ein Schnitt, der in einem anderen Schnitt seiner Familie gesetzt wurde; `'missingGlyph'` (`PdfMissingGlyphWarning`), Zeichen, für die keine Datei eines Schnitts eine Glyphe hat; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), eine variable Schrift, die in einer anderen Stärke als ihrer Standardinstanz angefragt wurde; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), ein CFF-Schnitt über 2 MB, der ganz eingebettet wurde; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), Text von rechts nach links oder mit verbundener Schrift, gezeichnet ohne HarfBuzz, das nicht geladen werden konnte (`reason` nennt die durchsuchten Orte), sodass arabische Zeichen falsch platziert sind; `'outputProfileUnavailable'` (`PdfPrintWarning`), ein CMYK-Rendering, dessen Ausgabeprofil nicht geladen werden konnte und das mit der naiven Formel umgerechnet wurde; `'pageNegativeIgnored'` (`PdfPrintWarning`), das Seitennegativ, das in einer PDF/X-1a-Datei weggelassen wurde; oder `'missingImage'`, ein Bild ohne Bytes, als Platzhalter gezeichnet (nur an ein von Ihnen übergebenes `onWarning` gemeldet; die Schriftwarnungen gehen ohne ein solches an `console.warn`).
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** – liest die erste Seite eines PDF-Druckoriginals und meldet die Schriften, die es verwendet, ohne sie einzubetten (`nonEmbeddedFonts`), ob es in RGB malt (`rgb`) und ob es Transparenz verwendet (`transparency`), für den [Preflight](/de/docs/configuration-fonts-colors-viewers#preflight).
+- **`RenderToPdfOptions`** – `{ fontProvider, forms?, resourceBytes?, previewBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` legt fest, wie Formularfelder Zahlen schreiben (Währung, auf welcher Seite sie steht, Trennzeichen), und in welchem Schnitt sie ihre Werte zeigen (`font`; siehe [Formularfelder](#formularfelder)). `outlines`, `accessible` und `colorSpace` fallen auf das `pdfGeneration` des Dokuments zurück, wenn sie fehlen (siehe [PDF-Erzeugung (Konfiguration)](/de/docs/configuration-fonts-colors-viewers#pdf-erzeugung-konfiguration)). `resourceBytes` ist unter [Ressourcenbytes und Druckoriginale](#ressourcenbytes-und-druckoriginale) beschrieben, `onWarning` unter [Welche Schnitte beim Provider angefragt werden](#welche-schnitte-beim-provider-angefragt-werden) und [Warnungen im Dokument](/de/docs/configuration-programmatic-usage#warnungen-im-dokument). `characterGrid: true` übernimmt das Raster, das `cjk.grid.show` auf dem Bildschirm zeichnet, auch ins PDF, das es sonst weglässt (siehe [Zeichenraster](/de/docs/configuration-east-asian#zeichenraster)). `harfbuzzWasm` gibt an, woher HarfBuzz’ `harfbuzz.wasm` geladen wird (eine URL, relativ zur Seite, oder die Bytes der Datei), für ein Dokument mit Text von rechts nach links oder verbundener Schrift; fehlt die Angabe, versucht postext-pdf zuerst die Kopie neben seinem eigenen Modul, dann dieselbe Version von harfbuzzjs von jsDelivr und esm.sh. `print` nimmt die Einstellungen der Druckproduktion (PDF/X-Standard, Ausgabeprofil, Schwarz, Preflight) und fällt auf das `print` des Dokuments zurück; mit einem PDF/X-Standard oder `colorSpace: 'cmyk'` wird jede Farbe über das ICC-Ausgabeprofil separiert, dessen Bytes `outputProfile` liefert (sonst wird es von `profileBaseUrl` abgerufen, standardmäßig von der Kopie des Ordners `icc/` von postext auf dem npm-CDN). `date` (ein `Date`, eine Zeit in Millisekunden oder ein Datumsstring, wie `mtime` von `createBundle`) ist das Erstellungs- und Änderungsdatum der Datei und in einer PDF/X-Datei auch das Datum ihres XMP-Pakets und die Quelle ihrer Dokument-ID: Dasselbe Dokument, zweimal mit demselben `date` gerendert, ergibt dieselben Bytes. Fehlt es, erhält die Datei den Zeitpunkt des Aufrufs. Ein ungültiges Datum wirft einen Fehler.
+- **`PdfWarning`** – ein nicht fatales Problem, gemeldet über `onWarning`; unterscheiden Sie nach `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), ein Schnitt, der in einem anderen Schnitt seiner Familie gesetzt wurde; `'missingGlyph'` (`PdfMissingGlyphWarning`), Zeichen, für die keine Datei eines Schnitts eine Glyphe hat; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), eine variable Schrift, die in einer anderen Stärke als ihrer Standardinstanz angefragt wurde; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), ein CFF-Schnitt über 2 MB, der ganz eingebettet wurde; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), Text von rechts nach links oder mit verbundener Schrift, gezeichnet ohne HarfBuzz, das nicht geladen werden konnte (`reason` nennt die durchsuchten Orte), sodass arabische Zeichen falsch platziert sind; `'outputProfileUnavailable'` (`PdfPrintWarning`), ein CMYK-Rendering, dessen Ausgabeprofil nicht geladen werden konnte und das mit der naiven Formel umgerechnet wurde; `'pageNegativeIgnored'` (`PdfPrintWarning`), das Seitennegativ, das in einer PDF/X-1a-Datei weggelassen wurde; `'spotTintsExhausted'` (`PdfPrintWarning`), ein Rendering, dem die Codes für unterschiedliche Sonderfarben-Tonwerte ausgingen (rund 25 Millionen) und das den Rest im Vierfarbdruck druckte; `'spotInkRenamed'` (`PdfPrintWarning`), eine Druckfarbe, deren Platte unter einem anderen Namen geschrieben wird (siehe [Sonderfarben](#sonderfarben)); `'imageProfileUnavailable'` (`PdfPrintWarning`), das den RGB-Bildern zugewiesene Profil ließ sich nicht laden, also wurden ihre eigenen Profile verwendet; `'pictureOriginalUnreadable'` (`PdfPrintWarning`), ein TIFF- oder Photoshop-Original, das sich nicht dekodieren ließ, aus seiner Vorschau (`previewBytes`) oder als Platzhalter gedruckt; `'plateMixesApproximated'` und `'artworkOffPlates'` (`PdfPrintWarning`), ein Auftrag auf wenigen Platten (`print.plates`), dem die Codes ausgingen und der die übrigen Farben als nächstliegende bereits codierte Mischung setzte, oder der eine PDF-Seite oder ein nicht dekodierbares Bild mit dessen eigenen Druckfarben platzierte; oder `'missingImage'`, ein Bild ohne Bytes, als Platzhalter gezeichnet (nur an ein von Ihnen übergebenes `onWarning` gemeldet; die Schriftwarnungen gehen ohne ein solches an `console.warn`).
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** – liest die erste Seite eines PDF-Druckoriginals und meldet die Schriften, die es verwendet, ohne sie einzubetten (`nonEmbeddedFonts`), ob es in RGB malt (`rgb`) und ob es Transparenz verwendet (`transparency`), für den [Preflight](/de/docs/configuration-pdf-output#preflight).
+- **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`** – liest ein fertiges PDF zurück, wie es der Preflight einer Druckerei täte, alle Seiten: Version und Seitenzahl, PDF/X-Kennung und Ausgabebedingung (und ob ihr Profil eingebettet ist), Endformat und kleinsten Anschnitt, Seiten mit anderem Endformat, ohne TrimBox oder mit einer Seitenbox, die nicht aus vier Zahlen besteht (`malformedBoxPages`, als fehlend gelesen), die Schriften (`fonts`: Name, eingebettet oder nicht, Typ; eine Schrift, die eingebettet und nicht eingebettet vorkommt, wird für jede Form einmal aufgeführt), worin es malt (CMYK, Grau, Sonderfarben mit Namen, Passer sowie RGB, aufgeteilt in `deviceRgb` ohne Profil und `iccRgb` mit Profil, jeweils in `vector`-Malerei oder in `images`), Transparenz, Überdrucken, Anmerkungen, ein interaktives Formular und ob es getaggt ist. Neben den Seiten liest es die Erscheinungsbilder der Anmerkungen, die Felder und Standardressourcen des Formulars, Muster, Type-3-Glyphen und Inline-Bilder. Es liest, was die Datei sagt, nicht, was die Konfiguration verlangte, und es liest weder Bildauflösung noch Gesamtfarbauftrag, Haarlinien oder Überfüllung. Es geht die Seiten so durch wie `inspectPrintMaster`, das auch RGB in Verläufen, Mustern und Type-3-Glyphen meldet.
 - **`decompressWoff2(bytes): Uint8Array`** – Hilfsfunktion, die eine WOFF2-Datei in TTF-Bytes umwandelt, das Format, das `pdf-lib` direkt einbetten kann.
 - **`createPdfWorker(options?)`** aus `postext-pdf/worker` – dasselbe Rendering in einem Web Worker; siehe [Das PDF in einem Worker rendern](#das-pdf-in-einem-worker-rendern).
 
@@ -261,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF und WebP werden als Bilder eingebettet;
 - SVG-Markup wird als Vektorpfade gezeichnet, sein `text` als echter Text in den eingebetteten Schriften des Dokuments gesetzt, oder im Browser mit 600 dpi gerastert, wenn es Funktionen außerhalb der Vektorteilmenge verwendet. Ein `<style>`, das nur Regeln `@font-face` enthält (von einer Autorin oder einem Autor eingebettete Schnitte), wird übersprungen und lässt die Abbildung vektoriell (seit postext-pdf 1.25); jedes andere Stylesheet macht sie zu einem Rasterbild, das mit den Schnitten erzeugt wird, die ihr Text nennt, eingebettet aus `fontProvider` (sofern nicht `diagramStyle.inlineFonts` oder das `svg.inlineFonts` der Ressource `false` ist);
+- TIFF- und Photoshop-Dokumente (PSD, PSB) werden aus ihren eigenen Pixeln gedruckt: Graustufen, RGB oder CMYK, 8 oder 16 Bit, mit dem ICC-Profil und der Auflösung, die sie mitbringen. Ein CMYK-Dokument behält seine Druckfarben unverändert; Graustufen und RGB folgen `print.imageColor`. Ein Photoshop-Dokument wird aus dem zusammengesetzten Bild gelesen, das es mit „Kompatibilität maximieren“ speichert; JPEG-komprimiertes TIFF wird nicht gelesen;
 - bei einem PDF wird die erste Seite unverändert als Form-XObject eingebettet.
 
 Jedes Bild wird einmal in der Datei gespeichert, wie oft es auch gezeichnet wird. Ein als Vektorpfade gezeichnetes SVG wird zu einem Form-XObject, das jede Seite zeichnet, sodass ein Rahmen oder ein Logo in der Seitengestaltung eines dreißigseitigen Dokuments einmal geschrieben wird, nicht dreißigmal; jede weitere Seite fügt einige hundert Bytes hinzu. Bis postext-pdf 1.4 trug jede Seite ihre eigene Kopie der Pfade.
@@ -280,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Ein Host kann die Bytes des Originals auch für die eigene ID des SVG zurückgeben, wie es `bundleResourceBytes` tut; beide Wege funktionieren.
+
+Ein Browser kann weder ein TIFF noch ein Photoshop-Dokument anzeigen, deshalb behält eine daraus erzeugte Bitmap-Ressource zwei Dateien: `bitmap.fileId` ist eine PNG-Vorschau, die Canvas, HTML und EPUB zeigen, und `bitmap.printFileId` (mit `printFormat: 'tiff' | 'psd'`) ist das Original. Ein Host gibt für `bitmap.fileId` die Bytes des Originals zurück, wie es `bundleResourceBytes` und die Sandbox tun, und das PDF wird daraus gedruckt. Er gibt auch die Vorschau mit, als `previewBytes` (`bundlePreviewBytes` für ein Paket): Ein Original, das sich nicht dekodieren lässt, wird aus seiner Vorschau gedruckt, mit einer Warnung `pictureOriginalUnreadable`; ohne Vorschau bleibt ein Platzhalter. `decodePrintRaster(bytes)` und `rasterToRgba(raster)` in `postext` lesen das Original und erzeugen die Vorschau; die Sandbox erzeugt sie beim Import der Datei, und ein Paket speichert das Original als `resources/<name>.tif` oder `.psd` neben der Vorschau.
+
+Eine Adobe-Illustrator-Datei, die mit „PDF-kompatible Datei erstellen“ gespeichert wurde, ist ein PDF und kann wie jedes andere ein Druckoriginal sein (`.ai`). Ihre Farbfelder sind ihre eigenen Platten: Der Preflight listet die auf, die die Druckfarbentabelle umbenennt, die, die keine Farbe des Buchs definiert, und, in einem Auftrag auf eigenen Platten (`print.plates`), die, die der Auftrag nicht druckt, denn eine platzierte Datei wird so gedruckt, wie sie ist.
 
 ### Vertikaler Text im PDF
 
@@ -390,8 +396,9 @@ const bytes = await pdfWorker.render(docs, {
 pdfWorker.dispose();
 ```
 
-- `render(docs, options)` nimmt ein Dokument oder das Array der Kapiteldokumente eines Buches. Es nimmt die Optionen von `renderToPdf`, mit zwei Unterschieden. `resourceBytes` ist eine `Map<string, Uint8Array>`, deren Puffer übertragen werden; übergeben Sie also Kopien von Bytes, die Sie behalten. `rasterizeSvg` läuft, wenn angegeben, im Haupt-Thread; standardmäßig erledigen das eigene `Image` und das Canvas der Seite diese Aufgabe.
+- `render(docs, options)` nimmt ein Dokument oder das Array der Kapiteldokumente eines Buches. Es nimmt die Optionen von `renderToPdf`, mit zwei Unterschieden. `resourceBytes` (und `previewBytes`) ist eine `Map<string, Uint8Array>`, deren Puffer übertragen werden; übergeben Sie also Kopien von Bytes, die Sie behalten. `rasterizeSvg` läuft, wenn angegeben, im Haupt-Thread; standardmäßig erledigen das eigene `Image` und das Canvas der Seite diese Aufgabe.
 - Ein Handle rendert jeweils ein Dokument. `dispose()` beendet den Worker und weist jedes noch ausstehende Rendering mit einem `AbortError` (`DOMException`) zurück; behandeln Sie ihn als Abbruch. Liefert Ihr Provider nach `dispose()` noch eine Schrift oder ein Bild, wird die Antwort verworfen.
+- `inspect(bytes)` liest ein fertiges PDF im Worker zurück (`inspectPrintPdf`) und liefert seinen Bericht, oder `undefined`, wenn sich die Bytes nicht als PDF lesen lassen. Die Bytes werden kopiert, Ihre bleiben also nutzbar. Ohne Aufruf wird nichts gelesen.
 - `createPdfWorker({ worker })` nimmt einen `Worker`, den Sie selbst erzeugen, für Build-Werkzeuge, die die URLs von Workern kontrollieren. Dieser Worker muss `postext-pdf/worker/entry` ausführen.
 
 **Von einem CDN.** Standardmäßig wird das Worker-Skript von der eigenen URL des Pakets geladen (`new URL('./pdf.worker.js', import.meta.url)`). Eine Seite eines anderen Ursprungs darf es unter Umständen nicht starten: Aus `esm.sh` importiert, wirft `createPdfWorker()` den Fehler `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Starten Sie stattdessen einen Modul-Worker desselben Ursprungs, der den Einstieg importiert (wenn Sie eine Version festlegen, legen Sie in beiden URLs dieselbe fest):
@@ -415,9 +422,206 @@ Für produktive Druckabläufe stimmen Sie vor dem Rendern diese Konfigurationsop
 - **`page.cutLines.enabled: true`** – fügt um das Endformat einen Anschnittbereich und Schnittmarken hinzu und gibt jeder Seite eine TrimBox und eine BleedBox. Siehe [Schnittmarken](/de/docs/configuration-page-layout#schnittmarken).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (oder `'pdfx1a'`) – eine PDF/X-Datei mit dem Output Intent, der Kennung und den Boxen, die eine Druckerei prüft; jede Farbe und jedes RGB-Bild über das ICC-Profil separiert, 100 % K überdruckend und große schwarze Flächen in Tiefschwarz. Siehe [Druckvorstufe (Konfiguration)](/de/docs/configuration-fonts-colors-viewers#druckvorstufe-konfiguration).
 - **`colorSpace: 'cmyk'`** (oder `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) – dieselbe Separation ohne die PDF/X-Kennung (Schnittmarken stehen immer in Passerfarbe). PDF-Druckoriginale werden so eingebettet, wie sie sind.
-- **`page.dpi: 300`** – die px pro Zoll des Layouts: Eine Bitmap ohne eigene Auflösung wird in ihrer natürlichen Größe mit dieser Auflösung gedruckt. Der [Preflight](/de/docs/configuration-fonts-colors-viewers#preflight) meldet Bilder unter 300 ppi in ihrer gedruckten Größe.
+- **`page.dpi: 300`** – die px pro Zoll des Layouts: Eine Bitmap ohne eigene Auflösung wird in ihrer natürlichen Größe mit dieser Auflösung gedruckt. Der [Preflight](/de/docs/configuration-pdf-output#preflight) meldet Bilder unter 300 ppi in ihrer gedruckten Größe.
 - **`ColorValue.cmyk`** – eine in CMYK angelegte Farbe wird mit ihren genauen Werten gedruckt.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` – kehrt den Bereich des Endformats mit dem Mischmodus Differenz um (Schnittmarken bleiben unverändert). Nützlich für Preflight-Prüfungen bei dunkler Typografie auf hellem Grund.
+
+### Sonderfarben
+
+Eine Sonderfarbe (ein Pantone-Ton, eine Hausfarbe, ein Lack) druckt auf einer eigenen Platte. Eine Farbe mit `model: 'spot'` trägt ihre Druckfarbe in `ColorValue.spot`: `name` ist der Name der Platte, wie die Druckerei ihn kennt, `cmyk` das Aussehen der Druckfarbe bei 100 % (der Ersatzwert, den das PDF jedem gibt, der die Druckfarbe nicht hat), `tint` die Stärke in Prozent (Standard 100), und `overprint` lässt die Druckfarbe das Darunterliegende überdrucken, statt es auszusparen, wie ein Lack. `hex` ist ihre Bildschirmdarstellung.
+
+Ein CMYK- oder PDF/X-PDF schreibt jede Druckfarbe als Farbraum `Separation` mit ihrem Namen und malt jede Farbe dieser Druckfarbe in ihrem Tonwert: Farben mit demselben `name` teilen sich eine Platte. Das deckt die üblichen Aufträge ab: zweifarbig (Schwarz und eine Sonderfarbe), Vierfarbdruck mit einigen Elementen in einer Sonderfarbe und ein Lack, der auf ausgewählte Flächen überdruckt wird. Verwendet `diagramStyle.singleInk` eine Sonderfarbe, drucken SVG-Diagramme in Tonwerten dieser Platte. Ein RGB-PDF und der Bildschirm malen den `hex`-Wert der Farbe.
+
+**Sonderfarben in einem SVG.** Siehe [Wie der Einfarbmodus arbeitet](/de/docs/configuration-resources#wie-der-einfarbmodus-arbeitet).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+Der Preflight zählt eine Sonderfarbe als eine Druckfarbe, nimmt sie von der Flächendeckungsgrenze aus und listet die Sonderfarben des Auftrags auf (`spotInks`), auch die Druckfarben, die SVG-Bilder nennen. Er warnt, wenn eine Druckfarbe zweimal mit verschiedenen Werten definiert ist (`spotInkConflict`; das PDF verwendet die erste), wenn ein SVG eine Druckfarbe nennt, die weder eine Palettenfarbe noch ein Eintrag der Druckfarbentabelle mit `cmyk` definiert (`spotInkUndefined`; sie druckt auf einer eigenen Platte, mit dem CMYK der SVG-Farbe als Ersatzwert, eine Platte pro Name), wenn das PDF einen Plattennamen anders schreiben muss (`spotInkName`, siehe unten), und wenn sich zwei Plattennamen nur in Groß- und Kleinschreibung oder Leerzeichen unterscheiden (`spotInkSimilar`: `PANTONE 185 C` und `Pantone  185 C` wären zwei Platten). Welche Druckfarben ein SVG nennt, erfährt `preflightDocument` über `svgInks(fileId)`, eine Funktion, die die Namen zurückgibt, die `svgSpotInks(markup)` in der Datei findet; das Bedienfeld **Prüfungen** der Sandbox und `postext check` übergeben sie.
+
+**Plattennamen.** Der Name wird so geschrieben, wie er eingegeben wird: Akzente, Symbole und `#` gelangen in UTF-8 ins PDF (`Rojo Médica` wird zu `/Rojo#20M#C3#A9dica`), und so lesen ihn Acrobat, ein RIP und der Preflight der Druckerei. Einen Namen, den eine Platte nicht tragen kann, schreibt das PDF unter einem anderen: `All`, `None`, `Cyan`, `Magenta`, `Yellow` und `Black` bekommen in jeder Schreibweise das Wort ink angehängt (`All ink`); Steuerzeichen werden entfernt, und ein Name über 127 Byte in UTF-8 wird an einer Zeichengrenze gekürzt und endet mit einem kurzen Hash, sodass zwei lange Namen mit gleichem Anfang zwei Platten bleiben. `spotInkName` im Preflight nennt den Grund (`problem`: `reserved`, `process`, `control` oder `tooLong`) und den Namen, den das PDF schreibt (`written`), und das Rendering meldet jede Umbenennung über `onWarning` (`spotInkRenamed`). Um den Namen selbst zu wählen, geben Sie der Druckfarbe in der Druckfarbentabelle einen `pdfName`.
+
+**Eine Druckfarbe pro Farbe.** Ein Druck-Rendering erkennt eine Farbe an ihrem Bildschirm-Hex-Wert; zwei Farben, die ihre Druckwerte festlegen – zwei Druckfarben oder eine Druckfarbe und eine in CMYK angelegte Farbe –, dürfen sich daher keinen teilen. Tun sie es doch, rückt die spätere auf den nächsten freien Hex-Wert, einen Schritt entfernt und auf dem Bildschirm unsichtbar, und jede druckt auf ihrer eigenen Platte. Eine reine Bildschirmfarbe (`model: 'hex'`) mit dem Hex-Wert einer Sonderfarbe druckt als diese Sonderfarbe; verknüpfen Sie sie mit dem Paletteneintrag, um das ausdrücklich zu machen. Die verschobene Farbe ändert sich auch auf dem Bildschirm, um einen Schritt (1/255) in einem Kanal, zuerst im blauen, in jeder Ausgabe (Canvas, HTML, EPUB und RGB-PDF). Das liegt weit unter dem, was das Auge unterscheidet, und ist der Preis dafür, dass ein Druck-Rendering die Druckfarben aus dem gemalten Hex-Wert liest. Die gespeicherte Konfiguration ändert sich nicht.
+
+#### Die Druckfarbentabelle
+
+`print.inks` legt fest, wie die Druckfarben des Auftrags in die Druckerei gelangen, gleich wie die Farben, die SVGs und die importierten Dateien sie nennen. Eine Druckfarbe, die nicht in der Tabelle steht, druckt so, wie ihre Farben sie definieren.
+
+```ts
+interface PrintInk {
+  name: string;                    // Die Druckfarbe, wie spot.name oder ein SVG sie nennt.
+  aliases?: string[];              // Andere Namen derselben Druckfarbe: Sie drucken auf dieser Platte.
+  pdfName?: string;                // Der Name der Platte im PDF. Standard: name.
+  output?: 'spot' | 'process';     // 'process' druckt die Druckfarbe in CMYK, aus ihrem Ersatzwert.
+  cmyk?: CmykPercent;              // Der Ersatzwert bei 100 %, vor dem der Farben.
+  overprint?: boolean;             // Vor dem der Farben.
+}
+```
+
+Namen und Aliasse werden ohne Rücksicht auf Groß- und Kleinschreibung und mehrfache Leerzeichen verglichen. Umbenennen ist eine Zeile, gleich wie viele Farben die Druckfarbe verwenden; ein Alias führt die Namen, die ein Farbfeld des Gestalters, ein SVG (`data-spot`, `icc-named-color`) oder eine ältere Palette derselben Druckfarbe gaben, auf einer Platte zusammen; und `output: 'process'` druckt eine Druckfarbe in CMYK, wenn die Druckmaschine kein Druckwerk für sie hat, alle Tonwerte eingeschlossen.
+
+In der Sandbox liegt die Tabelle unter **Gestaltung › Export › Druckvorbereitung › Farbtabelle**: eine Karte pro Druckfarbe mit **Name der Druckfarbe**, **Aliasnamen**, **Plattenname im PDF**, **Druckt als**, **Ersatz-CMYK** und **Überdrucken**. **Druckfarben, die die Farben verwenden** listet die Druckfarben der Buchfarben auf, die in der Tabelle fehlen, jede mit einer Schaltfläche, die sie hinzufügt.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
+
+#### Zweifarbendruck
+
+`print.plates` nennt die Platten, auf denen der Auftrag druckt, und nichts anderes wird gedruckt: ein Buch in Schwarz und einer Sonderfarbe, in zwei Sonderfarben oder nur in Schwarz. Die Platten des Vierfarbdrucks heißen `Cyan`, `Magenta`, `Yellow` und `Black`; eine Sonderfarbenplatte wird so benannt, wie das PDF sie nennt, oder mit einem Namen oder Alias der Druckfarbentabelle.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Die Platten. Leer: alle Platten, wie üblich.
+  images?: string[];                              // Die Platten, auf denen Bilder drucken: eine oder zwei.
+  curves?: Record<string, Array<[number, number]>>; // Die Kurve einer Bildplatte: [Tonwert, Druckfarbe] in Prozent.
+}
+```
+
+- Eine Farbe einer Druckfarbe, die der Auftrag druckt, oder eine CMYK-Farbe, deren Kanäle er druckt, wird unverändert gesetzt.
+- Jede andere Farbe wird projiziert: Sie druckt als die Mischung aus einer oder zwei Platten, deren Aussehen über das Ausgabeprofil ihr am nächsten kommt. Eine Mischung aus zwei Druckfarben ist im PDF ein Farbraum `DeviceN`, und ein Grau bleibt allein auf `Black`. Tiefschwarz entfällt, außer der Auftrag druckt alle vier Prozessfarben.
+- Bilder drucken als Monoton auf einer Platte oder als Duplex auf zwei: Der Tonwert jedes Pixels (seine Helligkeit) läuft durch die Kurve jeder Platte. `images` ist standardmäßig `Black` oder, wenn der Auftrag kein Schwarz druckt, die erste Platte. Die Kurve eines Monotons ist eine Gerade; ein Duplex legt seine erste Platte auf die Tiefen und seine zweite auf die Mitteltöne. `curves` ersetzt jede der beiden.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+Der Preflight listet die Platten des Auftrags und jede Farbe auf, die die Projektion verschiebt. Eine Sonderfarbe oder CMYK-Farbe, die der Auftrag nicht druckt, ist ein Hinweis, wenn ihre Mischung innerhalb von ΔE 6 liegt, und eine Warnung darüber hinaus oder solange das Ausgabeprofil nicht geladen ist (`offPlateInk`, `offPlateCmyk`); eine Bildschirmfarbe, die mehr als ΔE 6 entfernt landet, ist ebenfalls eine Warnung (`offPlateColor`). Eine Sonderfarbenplatte, die keine Farbe und kein Eintrag der Druckfarbentabelle definiert, ist eine Warnung: Sie druckt und erscheint im Proof als Schwarz. In einem solchen Auftrag bleibt die Druckvorlage einer Abbildung außen vor und ihr SVG wird auf die Platten gesetzt; eine platzierte PDF-Seite oder ein Bild, das sich nicht dekodieren lässt, behält seine eigenen Druckfarben, und das Rendering warnt (`artworkOffPlates`). Im Sandbox werden die Platten unter Druckvorbereitung → Druckplatten gewählt. Seine Vorschauen und die Druckvorschau zeigen die Farben so, wie das Buch sie festlegt, nicht wie die Platten sie drucken: Prüfen Sie das PDF, in dem Für den Druck prüfen die verwendeten Druckfarben auflistet.
+
+### Farben der Bilder
+
+Ein Bild wird aus den Farben separiert, in denen es angelegt wurde. `print.imageColor` legt fest, wie seine Pixel gelesen werden:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+Die Standardwerte lassen Bilder so, wie frühere Versionen sie gedruckt haben: Jedes RGB-Bild wird als sRGB gelesen (`'ignore'`), Graustufenbilder werden wie jedes andere separiert (`'none'`) und ein CMYK-Bild behält seine Werte (`'keep'`). Jedes Verhalten der Liste schaltet sein Feld ein.
+
+- **Sein eigenes Profil.** Ein PNG (`iCCP`) oder JPEG (`ICC_PROFILE`), das ein Profil einbettet, wird über dieses Profil gelesen, sodass ein Foto in Adobe RGB oder Display P3 so separiert wird, wie es aussieht, und nicht, als wäre es sRGB. Ein Bild ohne Profil oder mit sRGB-Profil wird wie bisher als sRGB gelesen. `'ignore'` liest jedes Bild als sRGB.
+- **Ein zugewiesenes Profil.** `assignedRgbProfile` nennt eine gespeicherte `.icc`, über die jedes RGB-Bild gelesen wird, gleich welches Profil es einbettet: etwa für eine Reihe von Fotos, die ihr Profil verloren haben. Ihre Bytes kommen aus `resourceBytes`; fehlen sie, werden die eigenen Profile der Bilder verwendet, mit der Warnung `imageProfileUnavailable`.
+- **Für das RIP beibehalten.** In PDF/X-4 mit `convertImages: false` wird ein Bild mit einem anderen Profil als sRGB in seinen eigenen Farben geschrieben, mit diesem Profil als `ICCBased` gekennzeichnet, und das RIP der Druckerei rechnet es um.
+- **Graustufen.** Ein Graustufenbild (ein graues PNG oder JPEG oder eines mit Grauprofil) druckt allein mit Schwarz, nie als vierfarbiges Grau. Seine Tonwerte, über sein eigenes Profil gelesen (sonst so, wie der Bildschirm sie zeigt), werden an die Druckmaschine angepasst: `'profile'` über das Schwarz des Ausgabeprofils, dessen Tonwertzunahme die Druckbedingung bereits enthält; eine Zahl ist die Tonwertzunahme der Maschine im 50-%-Tonwert, in Prozent (typisch 10–30), die stattdessen ausgeglichen wird; `'none'` schreibt die Werte wie bisher unverändert.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Ein CMYK-Bild einer anderen Druckmaschine.** Ein CMYK-Bild, dessen eigenes Profil eine andere Druckbedingung ist (ein für SWOP oder für Zeitungspapier separiertes Foto in einem Buch für FOGRA), wird für die Druckbedingung der Ausgabe neu separiert (`cmykProfile: 'convert'`), und reines Schwarz bleibt reines Schwarz: ein TIFF- oder Photoshop-Bild aus seinen Pixeln; ein CMYK-JPEG, dessen Pixel nicht dekodiert werden, wird in PDF/X-4 mit seinem eigenen Profil als `ICCBased` gekennzeichnet, damit das RIP es umrechnet, und in PDF/X-1a, das eine solche Kennzeichnung nicht zulässt, unverändert durchgereicht; dort warnt der Preflight davor (`cmykImageForeign`), wenn der Host ihm das Profil des Bildes übergibt (`imageProfile`). In PDF/X-4 mit `convertImages: false` wird ein TIFF- oder Photoshop-Bild ebenso gekennzeichnet. `'keep'` druckt die Werte jedes CMYK-Bildes unverändert.
+
+**Einstellungen für ein einzelnes Bild.** Das `printColor` einer Ressource nimmt dieselben Felder wie das `print.imageColor` des Buches an, nur für dieses Bild: ein Foto, dessen Profil ignoriert werden soll, eines, das über ein zugewiesenes Profil gelesen wird, ein Graustufenbild mit einer anderen Tonwertzunahme. In der Sandbox legt die Karte eines Bildes fest, ob es über sein eigenes Profil gelesen wird („Farbe im Druck“), wie seine Grautöne auf die Druckmaschine abgestimmt werden („Graustufen im Druck“) und welches Profil ihm zugewiesen ist („Zugewiesenes Profil“, eine `.icc`-Datei); ein Paket trägt die zugewiesenen Profile, das des Buches und die der Bilder, in seinem Ordner `profiles/`. Die Einstellungen des Buchs stehen unter Druckvorbereitung → Bilder.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
+
+
+### In CMYK angelegte Farben
+
+Eine in CMYK geschriebene Farbe behält ihre exakten Werte: `ColorValue.cmyk` (Prozent) wird in einer Druckausgabe unverändert gesetzt, und `hex` ist ihre Bildschirmdarstellung. Ein in CMYK angelegter Paletteneintrag gilt für jede mit ihm verknüpfte Farbe.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Überdruckende Farben
+
+Jede Farbe kann in einer Druckausgabe überdrucken: `overprint: true` an einem `ColorValue` lässt alles, was in ihr gemalt wird (Text, Linien, Kästen, Flächen), das Darunterliegende überdrucken, statt es auszusparen. Eine Prozessfarbe wird so geschrieben, wie sie separiert, unter einem überdruckenden Grafikzustand; eine Sonderfarbe überdruckt auf der Platte ihrer Druckfarbe, auch dort, wo dieselbe Druckfarbe in einer anderen Farbe ausspart. Ein überdruckendes Schwarz mit 100 % K behält die Schwarzbehandlung: Große Flächen bekommen weiterhin Tiefschwarz (`black.richBlack`). Ein RGB-PDF und der Bildschirm ignorieren es. Setzen Sie es am Paletteneintrag, damit jede mit ihm verknüpfte Farbe überdruckt, seine Tonwerte eingeschlossen; eine verknüpfte Farbe übernimmt die Einstellung des Eintrags und hat keine eigene. Die Palette eines Teils oder Abschnitts behält sie bei: Auch Text in der Farbe des Teils überdruckt.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Eine Druckausgabe erkennt eine Farbe an dem Hex-Wert, den das Layout malt; eine überdruckende Farbe teilt ihren Hex-Wert daher nie mit einer aussparenden. Fallen beide zusammen, rückt die überdruckende um einen Schritt (1/255 in einem Kanal) ab, wie es Sonderfarben tun; die Teilfarbe eines überdruckenden Eintrags rückt auf dieselbe Weise von jeder aussparenden Farbe des Buches ab. Eine überdruckende Farbe, die keine Druckfarbe aufträgt (Papierweiß, eine Druckfarbe mit 0 %), verschwindet im Druck: Der Preflight meldet sie als kritisch (`overprintWhite`). Eine Ausgabe mit mehr unterschiedlichen Farben, als sie Codes hat (rund 25 Millionen), spart den Rest aus und warnt (`overprintsExhausted`). In der Sandbox setzt der Schalter „Im Druck überdrucken“ des Farbwählers diesen Wert.
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Eigenschaft</th>
+      <th>Typ</th>
+      <th>Standard</th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Führt die Prüfungen aus.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Eine platzierte Bitmap, die in ihrer Druckgröße, Beschnitt eingerechnet, unter so vielen Pixeln pro Zoll liegt, erhält eine Warnung: Abbildungen, Bilder in Tabellenzellen, Gestaltungsbilder, Comic-Panels. Eine Bitmap ohne eigene Auflösung druckt in ihrer natürlichen Größe mit `page.dpi`; eine Seite, die mit 150 dpi gesetzt ist, druckt jedes solche Bild also mit 150 ppi. Eine Bitmap mit Auflösung (`bitmap.resolution`, `layout.bitmapResolution`) druckt in ihrer natürlichen Größe mit dieser Auflösung.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Darunter ist die Warnung kritisch. Nie höher als `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Linien, Konturen, Spaltenlinien, Tabellenlinien und Randlinien von Comic-Panels, die dünner sind.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text unter dieser Größe, der in mehr als einer Druckfarbe gesetzt ist (eine Prozessfarbe, Tiefschwarz): Er verschwimmt, wenn sich die Platten verschieben. Schwarzer Text nur in K zählt nie.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text, der näher am Endformat steht, wo das Schneidemesser ihn treffen kann.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Ein Kasten oder Bild, das so nahe am Endformat endet, ohne den Anschnitt zu erreichen: Ziehen Sie es in den Anschnitt oder nach innen.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Meldet Schriften, die ein platziertes PDF nicht einbettet (die Sandbox untersucht jede Druckvorlage mit `inspectPrintMaster`). Postext bettet jede Schrift ein, die es setzt.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` führt die Prüfungen an einem gesetzten Dokument aus und gibt eine Liste von Befunden zurück, jeder mit einer `kind`, einer `severity` (`'critical'`, `'warning'` oder `'info'`), dem buchweiten `pageIndex`, dem betroffenen `rect` (Seitenpixel) und, wenn das Element einen hat, seinem Quellbereich. Die Arten sind `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` und `nearTrim`. Ohne `transform` zählt eine neutrale Farbe als eine Druckfarbe und jede andere als drei, und der Farbauftrag wird nicht geprüft; mit einem sind Zählung und Farbauftrag exakt. Die Auflösung eines Bildes wird aus den Pixeln berechnet, die seine Ressource angibt, oder aus denen der Datei selbst, wenn `imageSize(fileId)` sie liefert (`bitmapInfo` auf den Bytes oder das dekodierte Bild): Eine Angabe, die mehr als ein Pixel von der Datei abweicht, wird einmal als `declaredPixelsMismatch` gemeldet, als Warnung, wenn sie mehr Pixel behauptet, als die Datei hat. `placedImageResolutions(doc, { resources, imageSize })` listet jede platzierte Bitmap mit ihrer effektiven ppi-Zahl auf, ob der Preflight an ist oder nicht. Die Beschriftungen einer Abbildung zählen für `smallProcessText`, `inkLimit` und `safeZone` als Text.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
 
 ### Referenzimplementierung
 

@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Page et mise en page',
   description: 'Le format de la page, les marges et la grille de ligne de base, la numérotation des pages, les colonnes et leurs gouttières',
   lang: 'fr',
-  lastUpdated: '2026-10-19',
-  readingTime: '37 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '38 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Cette page réunit les réglages de la feuille elle-même. Vous choisissez le format de la page, les marges, le côté de la reliure et la grille sur laquelle reposent les lignes de texte. Vous fixez la façon dont les pages sont comptées et dont leur numéro s’écrit. Vous fixez le nombre de colonnes d’une page et l’espace qui les sépare, et vous décidez si le texte court en travers de la page ou de haut en bas. Les en-têtes et pieds de page ont leur propre page.",
@@ -63,7 +63,7 @@ La propriété `page` contrôle les dimensions physiques et l’apparence de la 
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>Le nombre de pixels par pouce dans lequel travaille la mise en page : la façon dont les unités physiques (cm, mm, in, pt) deviennent ses pixels. Une image matricielle sans résolution propre prend un pixel de mise en page par pixel d’image : elle s’imprime donc à cette résolution en ppp. Gardez 300 pour l’impression, ou donnez une résolution aux images (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code> ; voir [Format du document › Taille des bitmaps](/fr/docs/document-format-resources#taille-des-bitmaps)). Le [contrôle en amont](/fr/docs/configuration-fonts-colors-viewers#contrôle-en-amont) vérifie la résolution effective de chaque image.</td>
+      <td>Le nombre de pixels par pouce dans lequel travaille la mise en page : la façon dont les unités physiques (cm, mm, in, pt) deviennent ses pixels. Une image matricielle sans résolution propre prend un pixel de mise en page par pixel d’image : elle s’imprime donc à cette résolution en ppp. Gardez 300 pour l’impression, ou donnez une résolution aux images (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code> ; voir [Format du document › Taille des bitmaps](/fr/docs/document-format-resources#taille-des-bitmaps)). Le [contrôle en amont](/fr/docs/configuration-pdf-output#contrôle-en-amont) vérifie la résolution effective de chaque image.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -75,7 +75,7 @@ La propriété `page` contrôle les dimensions physiques et l’apparence de la 
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>désactivée</td>
-      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. Voir ci-dessous.</td>
+      <td>Dessiner la grille de ligne de base sur les pages, pour vérifier le rythme vertical. La mise en page s’aligne sur la grille, qu’elle soit dessinée ou non. <code>pdfGeneration.baselineGrid: false</code> la laisse hors du PDF. Voir ci-dessous.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La grille de ligne de base est le rythme du texte courant : des lignes espacée
     </tr>
   </tbody>
 </table>
+
+L’endroit où un bloc commence dépend de son style. Chaque style qui peut commencer sur une ligne de la grille a un interrupteur `snapTopToGrid`, désactivé par défaut : `headings` (et un niveau ou un style de titre), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, les listes, `math` et `resourceTypes[]`. Activé, l’espace au-dessus du bloc est arrondi jusqu’à la ligne suivante de la grille, quelle que soit la fin du bloc précédent. Le haut d’une colonne est toujours sur la grille.
 
 ```ts
 page: {
@@ -446,6 +448,24 @@ La propriété `layout` contrôle la disposition des colonnes dans la zone de co
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Sur la page de clôture d’un chapitre (et du document), les figures et tableaux sur toute la largeur placés sous la dernière bande de texte remontent pour se placer à un écart de flottant sous elle, empilés dans leur ordre : rien ne les suit à cet endroit. <code>false</code> les laisse là où leur placement les a mis : un flottant <code>position: 'bottom'</code> finit alors au pied de la page sur la page de clôture comme sur toutes les autres, par exemple dans une fiche technique dont le contour se termine à la même hauteur sur chaque page. Les pages qui ont une colonne latérale ne les déplacent jamais.</td>
+    </tr>
+    <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Place en rangée les flottants au pied d’une page à plusieurs colonnes : une figure ou un tableau appelé là où sa colonne en porte déjà un au pied prend le pied de la colonne vide suivante, la première ligne de sa légende au niveau de celle de son voisin, au lieu de s’empiler dessus (la bande de pied du compositeur). Une image avec zone de sécurité est recadrée à l’intérieur vers la hauteur de son voisin. Chaque recadrage est signalé dans Vérifications. Un flottant en rangée garde sa place : celui qui arrive ensuite au pied de l’une de ses colonnes se place au-dessus. Avec trois colonnes ou plus, la rangée continue dans la colonne suivante qui n’a rien à son pied. Dans le Sandbox, <em>Flottants au pied en rangée</em>, sous Mise en page.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Aligne d’une colonne à l’autre les figures qui partagent une bande d’une page : au pied de colonnes voisines, la première ligne de leurs légendes (la légende la plus courte laisse le blanc sous elle) ; en tête, le bas de leurs images (l’image la plus courte laisse le blanc au-dessus). Une image qui remplit sa colonne depuis la tête, sans texte dessous, aligne sa légende sur les légendes de pied voisines. Seule une figure seule dans sa colonne, droite et entière, est alignée : celle qui occupe plusieurs colonnes, la figure tournée, celle dont la légende est à côté, un morceau de tableau et la figure placée à la main (<code>placement.pin</code>) gardent leur place. Le blanc se lit à la position prise par chaque figure et se relit après la dernière passe de la mise en page, si bien qu’une figure passée sur une autre page ne garde pas de blanc pour une voisine qu’elle n’a plus. La mise en page fait jusqu’à deux passes de plus au début et deux à la fin. Fonctionne avec <code>footFloatRow</code>, qui aligne déjà un flottant rejoignant le pied de la colonne suivante. Dans le Sandbox, <em>Aligner les figures d’une colonne à l’autre</em>, sous Mise en page.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Déconseillé. Ramène sur la page qui le cite en premier un flottant qui l'a manquée de quatre lignes de texte ou moins (mesurées à sa largeur dans son meilleur emplacement sur cette page). Il le fait en deux étapes, chacune gardée seulement si le flottant arrive alors sur la page de son appel, sans page de plus, sans autre flottant retardé, sans défaire une égalisation de colonnes déjà obtenue et sans perdre un flottant placé en tête de la page de son appel (<code>floatsAtCitingPage</code>) : d'abord, les paragraphes de la page de l'appel situés au-dessus de celui-ci se voient proposer une ligne de moins (espaces entre les mots resserrés, jamais d'interlettrage), autant de lignes seulement qu'il en manque au flottant, et le changement ne reste que sur les pages dont le flottant est revenu ; ensuite, une image dotée d'une <a href="/fr/docs/document-format-resources#zone-de-sécurité">zone de sécurité</a> encore hors de sa page est recadrée à l'intérieur de celle-ci, pas plus que ne l'exige l'emplacement, et chaque recadrage est signalé par un avertissement <code>floatCropped</code>. Les passes suivantes, dont l'équilibrage des colonnes, gardent les flottants ramenés sur leur page. L'option va contre le placement par règles : là où les règles envoient le flottant à l'emplacement suivant, elle prend la page de l'appel de force, compose des paragraphes plus serrés que la coupure des lignes ne l'avait choisi et recadre des images. Pour garder les flottants près de leur appel selon les règles, utilisez <code>floatsAtCitingPage</code> ou <a href="/fr/docs/document-format-resources#placement"><code>placement.citingPage</code></a> (le flottant prend la tête de la page où arrive la ligne qui le cite, et le texte au-dessus du renvoi descend sous lui) et <code>placement.shrink: 'slot'</code> (l'image est composée plus petite, en gardant ses proportions, pour rester sur la page qui la cite). Dans le Sandbox, <em>Ramener les figures sur la page de leur appel</em>, sous Mise en page.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

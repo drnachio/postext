@@ -7,6 +7,7 @@ import {
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
   AlignVerticalJustifyStart,
+  ArrowRightLeft,
   ClipboardPaste,
   Columns,
   FileCode,
@@ -62,6 +63,8 @@ interface TableEditorToolbarProps {
   onSetAlign: (align: TableCellAlign) => void;
   onSetVerticalAlign: (verticalAlign: TableCellVerticalAlign) => void;
   onPasteTsv: () => void;
+  /** Swap the table's rows and columns (`transposeTable`). */
+  onTranspose: () => void;
   /** Bitmap / SVG resources offered for embedding in the active cell. */
   imageOptions: TableEditorImageOption[];
   /** Resource id of the image embedded in the active cell, if any. */
@@ -142,6 +145,7 @@ export function TableEditorToolbar({
   onSetAlign,
   onSetVerticalAlign,
   onPasteTsv,
+  onTranspose,
   imageOptions,
   activeImageId,
   onSetImage,
@@ -322,6 +326,9 @@ export function TableEditorToolbar({
       <Group>
         <Btn label={labels.tableEditorPasteAsTable} onClick={onPasteTsv}>
           <ClipboardPaste size={iconSize} aria-hidden="true" />
+        </Btn>
+        <Btn label={labels.tableEditorTranspose} onClick={onTranspose}>
+          <ArrowRightLeft size={iconSize} aria-hidden="true" />
         </Btn>
       </Group>
     </div>

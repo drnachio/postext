@@ -191,6 +191,35 @@ export function labToCmyk(profile: IccProfile, lab: Lab, intent: RenderingIntent
   return { c: clamp01(out[0]!), m: clamp01(out[1]!), y: clamp01(out[2]!), k: clamp01(out[3]!) };
 }
 
+/**
+ * A device colour (0..1 a channel) → D50 XYZ through a source profile, the
+ * way a picture's own profile reads its pixels: the matrix and tone curves
+ * of an RGB profile, the tone curve of a grey one, else its A2B table
+ * (relative, or `intent`). XYZ is media-relative: the profile's white is
+ * D50's.
+ */
+export function deviceToXyz(profile: IccProfile, intent: RenderingIntent = 'relative'): (channels: readonly number[]) => XYZ {
+  if (profile.matrixTrc) {
+    const { matrix: m, trc } = profile.matrixTrc;
+    return (ch) => {
+      const r = trc[0](clamp01(ch[0] ?? 0));
+      const g = trc[1](clamp01(ch[1] ?? 0));
+      const b = trc[2](clamp01(ch[2] ?? 0));
+      return { X: m[0]! * r + m[1]! * g + m[2]! * b, Y: m[3]! * r + m[4]! * g + m[5]! * b, Z: m[6]! * r + m[7]! * g + m[8]! * b };
+    };
+  }
+  if (profile.grayTrc) {
+    const curve = profile.grayTrc;
+    return (ch) => {
+      const y = curve(clamp01(ch[0] ?? 0));
+      return { X: D50.X * y, Y: y, Z: D50.Z * y };
+    };
+  }
+  const lut = pick(profile.aToB, intent === 'absolute' ? 'relative' : intent);
+  if (!lut) throw new Error('profile has no A2B table');
+  return (ch) => labToXyz(decodePcs(lut.run(ch.map(clamp01)), lut.pcsEncoding));
+}
+
 /** Total area coverage of a CMYK value, in percent (0..400). */
 export function totalAreaCoverage(cmyk: Cmyk): number {
   return (cmyk.c + cmyk.m + cmyk.y + cmyk.k) * 100;
@@ -213,6 +242,9 @@ export interface OutputTransform {
   profile: IccProfile;
   /** sRGB 0..1 → CMYK 0..1. */
   fromRgb(r: number, g: number, b: number): Cmyk;
+  /** D50 XYZ (a picture's colour through its own profile, say) → CMYK
+   *  0..1, with the transform's intent and black-point compensation. */
+  fromXyz(v: XYZ): Cmyk;
   /** CMYK → media-relative Lab (relative) or paper-simulating Lab. */
   toLab(cmyk: Cmyk, paper?: boolean): Lab;
   /** CMYK → screen sRGB 0..1, the soft proof of one colour. */
@@ -266,8 +298,7 @@ export function outputTransform(profile: IccProfile, options: OutputTransformOpt
   // The darkest K-only tone; neutrals darker than it get K 100 plus
   // nothing (we never build rich black for neutrals here: that is the
   // black-handling layer's job, for large areas only).
-  const sourceLab = (r: number, g: number, b: number): Lab => {
-    const v = srgbToXyz(r, g, b);
+  const sourceLab = (v: XYZ): Lab => {
     if (!bpc || intent !== 'relative') return xyzToLab(v);
     // Black-point compensation, source black = 0: v' = bp + v (1 - bp / wp).
     return xyzToLab({
@@ -292,7 +323,10 @@ export function outputTransform(profile: IccProfile, options: OutputTransformOpt
         const target = kSolid + (L / 100) * (100 - kSolid);
         return { c: 0, m: 0, y: 0, k: kOnlyFor(target) };
       }
-      return labToCmyk(profile, sourceLab(r, g, b), intent === 'absolute' ? 'relative' : intent);
+      return labToCmyk(profile, sourceLab(srgbToXyz(r, g, b)), intent === 'absolute' ? 'relative' : intent);
+    },
+    fromXyz(v) {
+      return labToCmyk(profile, sourceLab(v), intent === 'absolute' ? 'relative' : intent);
     },
     toLab(cmyk, paper = false) {
       return cmykToLab(profile, cmyk, paper ? 'absolute' : 'relative');

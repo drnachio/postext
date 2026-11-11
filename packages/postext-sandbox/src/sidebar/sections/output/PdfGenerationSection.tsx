@@ -60,6 +60,7 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
   const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
   const isOutlinesDefault = cfg.outlines === D.outlines;
   const isAccessibleDefault = cfg.accessible === D.accessible;
+  const isBaselineGridDefault = cfg.baselineGrid === D.baselineGrid;
   const isForceDefault = cfg.forceColorSpace === D.forceColorSpace;
   const isColorSpaceDefault = cfg.colorSpace === D.colorSpace;
 
@@ -94,6 +95,15 @@ export const PdfGenerationSection = memo(function PdfGenerationSection() {
         }
         isDefault={isAccessibleDefault}
         onReset={() => resetField('accessible')}
+      />
+
+      <ToggleSwitch
+        label={labels.pdfBaselineGrid}
+        checked={cfg.baselineGrid}
+        onChange={(v) => update({ baselineGrid: v })}
+        tooltip={labels.pdfBaselineGridTooltip}
+        isDefault={isBaselineGridDefault}
+        onReset={() => resetField('baselineGrid')}
       />
 
       <ToggleSwitch

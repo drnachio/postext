@@ -173,8 +173,10 @@ export interface ResolvedResourceBlock {
   /** For a picture with a safe area: how many px its body could still
    *  shrink or grow from the height it is set at, by cropping outside the
    *  safe area (the room the fit and balancing levers have), and the px
-   *  the levers already set it taller (`delta`, negative when shorter). */
-  bodyFlex?: { shrink: number; grow: number; delta: number };
+   *  the levers already set it taller (`delta`, negative when shorter).
+   *  `by: 'row'`: cropped toward its neighbour's height in a row at the
+   *  foot of the columns (`layout.footFloatRow`). */
+  bodyFlex?: { shrink: number; grow: number; delta: number; by?: 'row' };
   /** For a floated picture scaled to the room of its slot
    *  (`placement.shrink`, #626): the share of its width it keeps, below 1.
    *  Absent when the picture is set at its size (or only cropped within

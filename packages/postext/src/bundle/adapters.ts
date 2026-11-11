@@ -7,6 +7,7 @@ import type { SvgPictureFontWarning } from '../vdt.js';
 import { registerResourceImage } from '../canvas-backend/index.js';
 import { resolveColorValue, resolveDiagramStyleConfig } from '../defaults/index.js';
 import { applySingleInkToSvg } from '../svg/singleInk.js';
+import { screenSvgColors } from '../svg/spotPaints.js';
 import { chainSvgFontProviders, inlineSvgFontsDetailedSync, type SvgFontProvider, type SvgFontSyncProvider } from '../svg/fonts.js';
 import { registerFontBytes, registeredFontProvider, registeredFontSyncProvider } from '../svg/fontRegistry.js';
 import { decodeSvgImage, prepareSvgMarkup, svgPictureFontWarning } from '../svg/image.js';
@@ -93,7 +94,7 @@ export interface BundleImageOptions {
  *  single-ink is on, then with the bundle's fonts (and the registered
  *  ones held in memory) inlined. */
 function svgMarkupSync(bundle: BundleSource, r: Resource, bytes: Uint8Array, inkHex: string | null, options?: BundleImageOptions): string {
-  let text = new TextDecoder().decode(bytes);
+  let text = screenSvgColors(new TextDecoder().decode(bytes));
   if (inkHex) text = applySingleInkToSvg(text, inkHex);
   if (!svgInlinesFonts(bundle.config, r)) return text;
   const own = bundleSvgFontProvider({ fonts: bundle.fonts ?? [] });
@@ -265,7 +266,9 @@ export function bundleVideoUrl(bundle: BundleSource): ((fileId: string) => strin
 
 /** A `resourceBytes` resolver for `postext-pdf`'s `renderToPdf`: an SVG
  *  figure resolves to its vector print master (`svg.pdfFileId`) when it has
- *  one — unless single-ink is on, which recolours SVG markup only. The
+ *  one — unless single-ink is on, which recolours SVG markup only — and a
+ *  bitmap to the TIFF or Photoshop original it was imported from
+ *  (`bitmap.printFileId`) in place of its preview. The
  *  bytes are the bundle's own: the PDF backend recolours them once (it
  *  leaves markup `applySingleInkToSvg` marked as it is). */
 export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
@@ -273,7 +276,8 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
   const bytes = new Map<string, Uint8Array>();
   for (const r of bundle.resources) {
     if (r.kind === 'bitmap' && r.bitmap?.fileId) {
-      const data = bundle.files.get(r.bitmap.fileId);
+      const original = r.bitmap.printFileId ? bundle.files.get(r.bitmap.printFileId) : undefined;
+      const data = original ?? bundle.files.get(r.bitmap.fileId);
       if (data) bytes.set(r.bitmap.fileId, data);
     } else if (r.kind === 'video' && r.video?.poster?.fileId) {
       const data = bundle.files.get(r.video.poster.fileId);
@@ -283,6 +287,19 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
       const data = master ?? bundle.files.get(r.svg.fileId);
       if (data) bytes.set(r.svg.fileId, data);
     }
+  }
+  return (fileId) => bytes.get(fileId);
+}
+
+/** A `previewBytes` resolver for `postext-pdf`'s `renderToPdf`: the PNG
+ *  preview of each bitmap that has a TIFF or Photoshop original, by the
+ *  picture's `fileId`, printed when the original does not decode. */
+export function bundlePreviewBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
+  const bytes = new Map<string, Uint8Array>();
+  for (const r of bundle.resources) {
+    if (r.kind !== 'bitmap' || !r.bitmap?.fileId || !r.bitmap.printFileId) continue;
+    const data = bundle.files.get(r.bitmap.fileId);
+    if (data) bytes.set(r.bitmap.fileId, data);
   }
   return (fileId) => bytes.get(fileId);
 }

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-11-04',
   readingTime: '9分钟',
-  order: 45,
+  order: 46,
   parent: 'sandbox',
   plainSummary: "本页写给建网站或使用AI助手的人。在浏览器里运行的助手可以通过一组工具读取和修改沙盒里的书。你可以把沙盒当作一个组件放进自己的网站，本页列出它的选项和所需的样式。最后一节介绍示例书由哪些文件组成，沙盒可以打开这些文件。",
 };
@@ -22,7 +22,7 @@ export const metadata = {
 这些工具是为设计者凭眼睛反复调整的过程设计的：改一点，看看页面，再改。
 
 - **看**——`sandbox_get_state`、`sandbox_render_page`、`sandbox_inspect_pages`、`sandbox_inspect_point`、`sandbox_inspect_comic`、`sandbox_get_warnings`：这本书及其章节和页码范围，以及界面上的情况（选区、提示、等待回答的询问）；任意一页按指定宽度输出的JPEG、PNG或WebP，或裁出一部分细看，需要时带印刷预览；同一页的数据（各个块和行、每栏排了多满、哪些是松散行或以断词结尾）；页面上某一点是什么（对应的源文本行、链接及其去向、表格的单元格）；漫画页的分格和对白框；以及“检查”在任意一章或整本书里发现的问题，不论屏幕上是哪一章、哪个查看器。
-- **改**——`sandbox_set_config`、`sandbox_get_config`、`sandbox_find_setting`、`sandbox_rename_design_item`、`sandbox_remove_design_item`、`sandbox_language_defaults`、`sandbox_print_profile`、`sandbox_save_layout_as_template`、`sandbox_edit_text`、`sandbox_write_text`、`sandbox_read_text`、`sandbox_search_text`、`sandbox_select_text`、`sandbox_undo_text`、`sandbox_manage_chapters`、`sandbox_save_resource`、`sandbox_save_font`、`sandbox_edit_comic`、`sandbox_import_word`、`sandbox_apply_word_edits`：按路径修改任何设置（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）；用精确的查找替换修改文字，并可撤销；管理章节、图片、SVG图、视频、带格式的表格、字体，以及漫画的分格和对白框；导入Word文档并映射其样式。每次修改都会回报各项修改前后的值和每一章的页数；修改设置时还会回报引擎最终解析出的值，以及随之改变的其他设置；引擎无法解析的值会被拒绝，什么也不改。在多语言的书里，`scope`指明一项设置是在所有语言的通用设置中读写，还是只在屏幕上的版本中读写。
+- **改**——`sandbox_set_config`、`sandbox_get_config`、`sandbox_find_setting`、`sandbox_rename_design_item`、`sandbox_remove_design_item`、`sandbox_language_defaults`、`sandbox_print_profile`、`sandbox_save_layout_as_template`、`sandbox_edit_text`、`sandbox_write_text`、`sandbox_read_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_select_text`、`sandbox_undo_text`、`sandbox_manage_chapters`、`sandbox_save_resource`、`sandbox_save_font`、`sandbox_edit_comic`、`sandbox_import_word`、`sandbox_apply_word_edits`：按路径修改任何设置（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）；用精确的查找替换修改文字，并可撤销；管理章节、图片、SVG图、视频、带格式的表格、字体，以及漫画的分格和对白框；导入Word文档并映射其样式。每次修改都会回报各项修改前后的值和每一章的页数；修改设置时还会回报引擎最终解析出的值，以及随之改变的其他设置；引擎无法解析的值会被拒绝，什么也不改。在多语言的书里，`scope`指明一项设置是在所有语言的通用设置中读写，还是只在屏幕上的版本中读写。
 - **显示**——`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`：查看器标签页、侧栏、单章或整本书、缩放、适应方式和跨页显示、阅读字号、印刷预览、画在页面上的参考线、Folio的放大镜，以及屏幕上显示哪一页（按页码、按一段文字、按锚点或按EPUB目录的条目）；重新生成PDF或EPUB、打印、播放页面上的视频。
 - **保存**——`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_import_book`、`sandbox_export`、`sandbox_word_templates`、`sandbox_answer`：列出示例书和你的项目（带封面）；导入`.postext`文件；把这本书（或一本没有打开的书）导出为PDF、EPUB、`.postext`、Word、Markdown，或把设置导出为JSON；管理Word导入用的模板；回答沙盒提出的询问。
 

@@ -63,6 +63,7 @@ export function createPageHeads(deps: PageHeadsDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
       };
       pageTurn.page.header = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         headerSlot,
@@ -101,6 +102,7 @@ export function createPageHeads(deps: PageHeadsDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
         heading: {
           titleText: replaceTitleBreaks(title, '\n'),
           formattedNumber: number,
@@ -139,6 +141,7 @@ export function createPageHeads(deps: PageHeadsDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
         heading: {
           titleText: replaceTitleBreaks(title, '\n'),
           formattedNumber: number,

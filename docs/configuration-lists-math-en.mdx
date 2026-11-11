@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Lists and maths',
   description: 'Bulleted and numbered lists, their markers, indents and nesting, task lists, and the size, colour and spacing of mathematical formulas',
   lang: 'en',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '17 min',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Keep a display formula in the column of the line that leads into it — TeX's predisplay penalty. When the formula does not fit under the last line of the paragraph before it, that line goes to the next column or page with the formula; when the lines left behind would be fewer than <code>bodyText.widowMinLines</code> (fewer than one when <code>bodyText.avoidWidows</code> is off), a paragraph that opens in that column moves on whole (with the headings closing the column above it, under <code>headings.keepWithNext</code>). The line carried over stands alone at the head of the next column, whatever the orphan rule asks. With <code>false</code> the formula alone moves on, and the line that introduces it can close the column above, or sit above a figure at the head of the next one.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Whether a display formula sits on the baseline grid: the flow snaps back onto it under the formula. <code>false</code> keeps its exact margins. In the Sandbox: <strong>Snap back to the grid after formulas</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Open a display formula on a grid line: the space above it is rounded up to the next one, however the block before it ended. Off by default. In the Sandbox: <strong>Open formulas on a grid line</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

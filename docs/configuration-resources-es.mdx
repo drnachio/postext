@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '46 min',
+  readingTime: '47 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes de figuras, tablas, diagramas y vídeos. Postext los llama recursos y numera cada tipo por separado. Decides el aspecto de las tablas: sus filetes, sus fondos, su tipografía y cómo se parten entre páginas. Decides cómo se escribe el pie de una figura o de una tabla. También puedes imprimir los diagramas a una sola tinta y elegir cómo aparece un vídeo en el papel.",
@@ -144,6 +144,16 @@ Un tipo puede omitir campos (desde postext 1.38): los completa el tipo integrado
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Sustitución parcial del <a href="#estilo-de-pies-de-recurso">estilo de pies</a> para los recursos de este tipo. Solo las claves que indiques sustituyen al <code>captionStyle</code> global; el resto se hereda (un <code>color</code> cambiado arrastra también el color de la etiqueta y de la nota salvo que se fijen explícitamente). Uso típico: tablas con el pie <em>encima</em> sobre una barra de color mientras las figuras conservan su pie debajo. Las referencias a la paleta se resuelven como cualquier otro color.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Por defecto <code>true</code>. Si una figura o tabla de este tipo colocada en el texto se asienta en la rejilla de base: el flujo vuelve a ella bajo el recurso. <code>false</code> conserva el espacio exacto que deja el recurso. No afecta a los flotantes en la cabeza o el pie de una columna.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Por defecto <code>false</code>. Empieza una figura o tabla de este tipo colocada en el texto en una línea de la rejilla, termine como termine el bloque anterior. No afecta a los flotantes en la cabeza o el pie de una columna, a una figura rodeada por el texto ni a la que abre una columna. En el Sandbox: <strong>Empezar en una línea de la rejilla</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -562,6 +572,8 @@ Los anchos de columna pertenecen al modelo de la tabla, no al estilo: `TableMode
 
 Un `TableModel` es una cuadrícula por filas, y cada celda se maqueta según su posición en ella: `rows[r][c]` ocupa la columna `c`. Por eso una celda combinada conserva en la cuadrícula las celdas que cubre, cada una marcada con `hiddenBy` apuntando a su celda principal, a diferencia de una tabla HTML, que las omite. Las funciones de modelo que exporta `postext` mantienen esa forma; son funciones puras que devuelven un modelo nuevo: `mergeCells(model, { start, end })` y `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` y `setAlignment`. Las cuatro funciones de filas y columnas mantienen enteras las combinaciones: una fila o columna añadida dentro de un bloque combinado lo ensancha, una añadida antes lo desplaza y una eliminada de él lo reduce —un bloque que pierde su primera fila o columna conserva su contenido en su nueva celda superior izquierda—, y cada `hiddenBy` sigue apuntando a su celda principal.
 
+`transposeTable(model)` intercambia filas y columnas (el botón ⇄ del editor de tablas del Sandbox): cada celda pasa de `rows[r][c]` a `rows[c][r]` con su contenido, su imagen, su relleno y su alineación; una combinación conserva sus celdas con las extensiones intercambiadas; las filas de cabecera pasan a ser columnas de cabecera, y las primeras columnas formadas solo por celdas de cabecera pasan a `headerRowCount`; `columnWidths` se descarta. Una fila que cuenta `headerRowCount` y cuyas celdas no llevan `isHeader` (así las deja una importación de Word) es fila de cabecera igualmente, y sus celdas quedan marcadas `isHeader` en su nueva columna. Transponer dos veces devuelve la tabla original, con las celdas de sus filas de cabecera marcadas `isHeader`.
+
 `parseTSV(text, options?)` construye un modelo a partir de texto separado por tabuladores —un rango pegado desde una hoja de cálculo—: las filas se separan por saltos de línea, las celdas por tabuladores, y las filas cortas se rellenan para que la cuadrícula sea rectangular. `headerRows` convierte las filas iniciales en filas de cabecera: sus celdas reciben `isHeader` y el modelo `headerRowCount`, de modo que una tabla partida entre páginas las repite.
 
 ```ts
@@ -857,6 +869,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined cuando todo coincide con los valores por defecto
 ```
 
+**Tintas planas dentro de un SVG.** En un PDF de imprenta, un color de un SVG vectorial se imprime en una tinta plana solo en dos casos. Cuando nombra la tinta: un color seguido de `icc-named-color(…, "PANTONE 185 C")`, o un elemento con `data-spot="PANTONE 185 C"` (y `data-spot-tint="40"`, en porcentaje), se imprime en la plancha de esa tinta, con el equivalente de la paleta si la paleta tiene una tinta plana con ese nombre, y si no con el CMYK del propio color. Y cuando su hex es exactamente el de una tinta plana de la paleta: se imprime en la tinta de ese color, al tono de ese color. Cualquier otro color sigue en cuatricromía, aunque parezca un tono de una tinta sobre blanco, así que los grises de un dibujo nunca pasan a una plancha de tinta plana. Cada color se resuelve por separado, de modo que un diagrama puede mezclar varias tintas y colores de cuatricromía. `diagramStyle.singleInk` tiene prioridad: con un `inkColor` de tinta plana, el diagrama recoloreado se imprime en tonos de esa plancha. Una tinta que nombra un SVG y que no define ningún color de la paleta (ni una entrada de la tabla de tintas con `cmyk`) se imprime en una plancha propia, con el CMYK del color del SVG como equivalente; todos los SVG que la nombran comparten esa plancha, y el preflight avisa (`spotInkUndefined`). Muchos programas exportan una muestra como un color RGB sin más y pierden su nombre: añade a la paleta una tinta plana con exactamente ese `hex`, una por cada tono que use el dibujo, o marca los elementos con `data-spot`.
+
 ### Tinta única en canvas y en HTML
 
 Los backends canvas y HTML reciben las imágenes ya decodificadas (`registerResourceImage`) o como URL (`resourceImageUrl`), no el marcado SVG. Si se lo pides, aplican el mismo mapeo a lo que dibujan:
@@ -1069,7 +1083,7 @@ Los estilos de partitura con nombre (`scoreStyles`, `NamedScoreStyleConfig[]`) t
 
 ## Estilo de vídeo
 
-La propiedad `videoStyle` fija cómo se imprimen los [recursos de vídeo](/es/docs/document-format-resources#vídeos) —la marca de reproducción y el código QR sobre la portada, y si la portada enlaza con el vídeo— y qué ofrecen sus reproductores en el visor HTML y en EPUB.
+La propiedad `videoStyle` fija cómo se imprimen los [recursos de vídeo](/es/docs/document-format-videos#vídeos) —la marca de reproducción y el código QR sobre la portada, y si la portada enlaza con el vídeo— y qué ofrecen sus reproductores en el visor HTML y en EPUB.
 
 ```ts
 const config: PostextConfig = {
@@ -1204,7 +1218,7 @@ El propio motor codifica el código (`encodeQr(text, level)`: modo byte, UTF-8, 
 
 Un EPUB conserva solo los atributos que conoce su esquema: un archivo se reproduce con <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> y <code>preload</code>, además de la marca <code>data-pt-alongside</code>, y el sistema de lectura decide el resto.
 
-Un vídeo que no es exclusivo lleva `data-pt-alongside` en la salida HTML. `coordinateVideoPlayback(root)` aplica la regla a los reproductores que hay bajo `root` (el elemento que contiene la salida de `renderToHtml`): empezar un vídeo exclusivo pausa todos los demás que se reproducen, y empezar uno que se reproduce junto a otros pausa solo los exclusivos. Devuelve una función que deja de escuchar. `playsAlongside(el)` y `videosToPause(started, videos, alongside)` dan la misma regla a un anfitrión con reproductores propios. En [Folio](/es/docs/document-format-resources#vídeos-en-las-páginas-de-folio), un vídeo que arranca solo y se reproduce junto a otros (`autoplay` con `exclusive: false`) empieza, sin sonido, cada vez que su página aparece y se detiene cuando se pasa la página, varios a la vez, y `loop` lo vuelve a empezar al terminar. En un EPUB, la página o el capítulo con vídeos que coordinar (dos o más, uno de ellos exclusivo) enlaza la misma regla como un pequeño script, `scripts/videos.js` (la exportación `VIDEO_PLAYBACK_SCRIPT`), y el paquete declara ese documento `scripted`. Un sistema de lectura que ejecuta scripts aplica la regla a los vídeos de ese documento, aunque no a los de la página de enfrente, que es otro documento; uno que no los ejecuta reproduce cada vídeo según sus propias reglas, como hacen siempre los reproductores de YouTube y Vimeo.
+Un vídeo que no es exclusivo lleva `data-pt-alongside` en la salida HTML. `coordinateVideoPlayback(root)` aplica la regla a los reproductores que hay bajo `root` (el elemento que contiene la salida de `renderToHtml`): empezar un vídeo exclusivo pausa todos los demás que se reproducen, y empezar uno que se reproduce junto a otros pausa solo los exclusivos. Devuelve una función que deja de escuchar. `playsAlongside(el)` y `videosToPause(started, videos, alongside)` dan la misma regla a un anfitrión con reproductores propios. En [Folio](/es/docs/document-format-videos#vídeos-en-las-páginas-de-folio), un vídeo que arranca solo y se reproduce junto a otros (`autoplay` con `exclusive: false`) empieza, sin sonido, cada vez que su página aparece y se detiene cuando se pasa la página, varios a la vez, y `loop` lo vuelve a empezar al terminar. En un EPUB, la página o el capítulo con vídeos que coordinar (dos o más, uno de ellos exclusivo) enlaza la misma regla como un pequeño script, `scripts/videos.js` (la exportación `VIDEO_PLAYBACK_SCRIPT`), y el paquete declara ese documento `scripted`. Un sistema de lectura que ejecuta scripts aplica la regla a los vídeos de ese documento, aunque no a los de la página de enfrente, que es otro documento; uno que no los ejecuta reproduce cada vídeo según sus propias reglas, como hacen siempre los reproductores de YouTube y Vimeo.
 
 El resolutor y el depurador siguen el patrón de las demás secciones, junto a los tipos `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
 

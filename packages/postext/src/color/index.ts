@@ -20,6 +20,7 @@ export {
   linearToSrgb,
   cmykToLab,
   labToCmyk,
+  deviceToXyz,
   totalAreaCoverage,
   outputTransform,
   buildRgbLut,
@@ -40,5 +41,16 @@ export {
   type OutputProfileInfo,
 } from './catalogue.js';
 export { srgbProfileBytes } from './srgbProfile.js';
-export { authoredCmykColors } from './authored.js';
+export { authoredCmykColors, authoredSpotColors, overprintColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
+export { inkEntry, inkKey, inkNameProblem, printableInkName, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
+// Spot inks an SVG names (`icc-named-color`, `data-spot`).
+export { screenSvgColors, svgSpotInks, splitIccPaint, inkTintPercent, type SvgSpotInk, type IccPaint } from '../svg/spotPaints.js';
 export { createPrintPreview, proofPixels, type PrintPreview, type PrintPreviewOptions } from './softProof.js';
+export {
+  channelsOffPlates, jobImagePlates, jobPlateNamed, jobPlates, mixAlternate, placedInkProblems, plateMix, plateOfSpot, processChannel,
+  type JobPlate, type MixPlate, type PlacedInkProblems, type PlateMix, type PlateTarget, type ProcessChannel,
+} from './plates.js';
+export { embeddedIccProfile } from './imageProfile.js';
+// Print originals (TIFF, Photoshop): their pixels and the ICC profiles
+// they carry.
+export * from '../raster/index.js';

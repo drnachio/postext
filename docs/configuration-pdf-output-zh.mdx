@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'PDF文件',
   description: '用代码调用postext-pdf：安装、API、浏览器和Node中的字体提供函数、中日韩字体、资源字节、竖排文字、工作线程和可付印的文件',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
-  readingTime: '15分钟',
+  lastUpdated: '2026-11-10',
+  readingTime: '25分钟',
   order: 22,
   parent: 'configuration',
   plainSummary: "本页写给写代码、想得到PDF文件的人。它说明怎样安装PDF包，并用几行代码把排好的书变成文件。这个包需要字体文件，所以本页说明在浏览器或服务器上怎样把字体交给它。本页还讲中文、日文和韩文字体，图片，从上往下排的文字，以及链接。最后给出一个完整的例子，以及可以直接交给印刷厂的文件。",
@@ -36,9 +36,10 @@ npm install postext postext-pdf
 - **`renderToPdf(doc, options): Promise<Uint8Array>`**：接收一个`VDTDocument`（或一本书各章组成的数组），返回原始的PDF字节。
 - **`PdfFontProvider`**：回调签名`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`，`renderToPdf`需要嵌入新的family/weight/style组合时，用它请求字体字节。`request.codePoints`包含页面中用该字体排出的字符；返回值是一个文件，或者合起来构成该字体的多个文件（见[中文、日文和韩文字体](#中文日文和韩文字体)）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**：一种字体的一个文件，并说明页面怎样声明它：它的`@font-face`规则的`unicode-range`，以及这条规则在声明顺序里的位置。`PdfFontFile`是带这两个可选属性的`Uint8Array`（见[中文、日文和韩文字体](#中文日文和韩文字体)）。postext-pdf 1.30起。
-- **`RenderToPdfOptions`**：`{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`设定表单域怎样书写数字（货币符号、它放在哪一侧、分隔符），以及显示值所用的字体（`font`；见[表单域](#表单域)）。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
-- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)使用。
+- **`RenderToPdfOptions`**：`{ fontProvider, forms?, resourceBytes?, previewBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`设定表单域怎样书写数字（货币符号、它放在哪一侧、分隔符），以及显示值所用的字体（`font`；见[表单域](#表单域)）。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
+- **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；`'spotTintsExhausted'`（`PdfPrintWarning`），一次渲染用完了区分专色浓度的代码（约2500万个），其余浓度改以四色印刷；`'spotInkRenamed'`（`PdfPrintWarning`），某种油墨的印版以另一个名称写出（见[专色](#专色)）；`'imageProfileUnavailable'`（`PdfPrintWarning`），指派给 RGB 图片的特性文件无法加载，因而使用了图片自带的特性文件；`'pictureOriginalUnreadable'`（`PdfPrintWarning`），无法解码的 TIFF 或 Photoshop 原稿，改用其预览图（`previewBytes`）印刷，或绘制为占位框；`'plateMixesApproximated'`和`'artworkOffPlates'`（`PdfPrintWarning`），只印少数印版的作业（`print.plates`）用完了代码，把其余颜色印成已编码的最接近混合，或者置入的PDF页面、无法解码的图片保留了自己的油墨；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-pdf-output#印前检查)使用。
+- **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`**：像印刷厂的印前检查那样读回一个完成的PDF的全部页面：版本和页数、PDF/X标识与输出意图（及其配置文件是否嵌入）、成品尺寸和最小出血、成品尺寸不同、没有TrimBox或页面框不是四个数字的页面（`malformedBoxPages`，按缺失处理）、字体（`fonts`：名称、是否嵌入、类型；同一字体既有嵌入又有未嵌入的用法时，两种情况各列一次）、所用颜色（CMYK、灰度、按名称列出的专色、套准色，以及RGB：分为无配置文件的`deviceRgb`和有配置文件的`iccRgb`，各自再分`vector`矢量绘制和`images`图像）、透明、叠印、注释、交互式表单，以及是否带标签。除页面外，它还读取注释外观、表单的字段和默认资源、图案、Type 3字形和内联图像。它读取文件实际写了什么，而不是配置要求了什么，也不读取图像分辨率、总墨量、细线或陷印。它与`inspectPrintMaster`共用同一套页面遍历，后者还会报告渐变、图案和Type 3字形中的RGB。
 - **`decompressWoff2(bytes): Uint8Array`**：辅助函数，把WOFF2文件转成TTF字节，`pdf-lib`可以直接嵌入这种格式。
 - **`createPdfWorker(options?)`**，来自`postext-pdf/worker`：在Web Worker上进行同样的渲染；见[在工作线程上渲染PDF](#在工作线程上渲染pdf)。
 
@@ -261,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG、JPEG、GIF和WebP作为图像嵌入；
 - SVG标记绘制为矢量路径，其中的`text`作为真正的文字，用文档嵌入的字体排出；如果用到矢量子集之外的特性，则在浏览器中以600 dpi栅格化。只含`@font-face`规则的`<style>`（作者嵌入的字体）会被跳过，图仍保持矢量（自postext-pdf 1.25起）；其他任何样式表都会使图成为栅格图，生成时从`fontProvider`取来其文字指定的字体嵌入（除非`diagramStyle.inlineFonts`或资源的`svg.inlineFonts`为`false`）；
+- TIFF和Photoshop文档（PSD、PSB）用自身的像素印刷：灰度、RGB或CMYK，8位或16位，带有其自带的ICC配置文件和分辨率。CMYK的保持其油墨不变；灰度和RGB遵循`print.imageColor`。Photoshop文档读取的是它以“最大兼容”保存的合成图像；不读取JPEG压缩的TIFF；
 - PDF的第一页原样嵌入，作为一个表单XObject。
 
 每张图片在文件中只存一次，不论绘制多少次。绘制为矢量路径的SVG会成为一个表单XObject，由每一页绘制，所以一份三十页的文档，页面设计中的边框或标志只写入一次，而不是三十次；每多一页只增加几百字节。postext-pdf 1.4及以前，每一页都带着自己的一份路径。
@@ -280,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 宿主也可以像`bundleResourceBytes`那样，对SVG自己的id返回母版的字节；两种方式都可行。
+
+浏览器无法显示TIFF或Photoshop文档，所以由它们生成的位图资源保留两个文件：`bitmap.fileId`是PNG预览，Canvas、HTML和EPUB显示它；`bitmap.printFileId`（带`printFormat: 'tiff' | 'psd'`）是原稿。宿主对`bitmap.fileId`返回原稿的字节，`bundleResourceBytes`和Sandbox就是这样做的，PDF据此印刷。宿主还会以`previewBytes`传入预览图（包则用`bundlePreviewBytes`）：无法解码的原稿改用预览图印刷，并发出`pictureOriginalUnreadable`警告；没有预览图时则绘制占位框。`postext`中的`decodePrintRaster(bytes)`和`rasterToRgba(raster)`读取原稿并生成预览；Sandbox在导入文件时生成预览，文件包则把原稿以`resources/<名称>.tif`或`.psd`存放在预览旁边。
+
+用“创建PDF兼容文件”保存的Adobe Illustrator文件就是PDF，可以像其他PDF一样作为印刷母版（`.ai`）。它的色板就是它自己的印版：印前检查会列出油墨表改了名的、书中没有任何颜色定义的，以及在使用自有印版的作业（`print.plates`）中作业不印的，因为置入的文件按原样印刷。
 
 ### PDF中的竖排文字
 
@@ -390,8 +396,9 @@ const bytes = await pdfWorker.render(docs, {
 pdfWorker.dispose();
 ```
 
-- `render(docs, options)`接收一个文档，或一本书各章文档组成的数组。它接受`renderToPdf`的选项，有两处不同。`resourceBytes`是一个`Map<string, Uint8Array>`，其中的buffer会被转移，所以对你还要保留的字节，请传入副本。`rasterizeSvg`如果提供，在主线程上运行；默认由页面自己的`Image`和canvas完成这项工作。
+- `render(docs, options)`接收一个文档，或一本书各章文档组成的数组。它接受`renderToPdf`的选项，有两处不同。`resourceBytes`（以及`previewBytes`）是一个`Map<string, Uint8Array>`，其中的buffer会被转移，所以对你还要保留的字节，请传入副本。`rasterizeSvg`如果提供，在主线程上运行；默认由页面自己的`Image`和canvas完成这项工作。
 - 一个句柄一次渲染一个文档。`dispose()`终止工作线程，并以`AbortError`（`DOMException`）拒绝所有仍在进行的渲染，应把它当作取消来处理。`dispose()`之后提供函数才返回的字体或图片会被丢弃。
+- `inspect(bytes)`在工作线程中读回一个完成的PDF（`inspectPrintPdf`），并以其报告解析；字节无法作为PDF读取时为`undefined`。字节会被复制，你手中的仍可使用。不调用就不会读取任何内容。
 - `createPdfWorker({ worker })`接收你自己创建的`Worker`，适用于控制worker URL的构建工具。这个worker必须运行`postext-pdf/worker/entry`。
 
 **从CDN加载**。默认情况下，worker脚本从包自身的URL加载（`new URL('./pdf.worker.js', import.meta.url)`）。其他源上的页面可能无法启动它：从`esm.sh`导入时，`createPdfWorker()`会抛出`Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`。这时改为启动一个同源的模块worker，由它导入入口（如果固定了版本，两个URL要固定到同一个版本）：
@@ -415,9 +422,206 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切线，并给每一页设置TrimBox和BleedBox。见[裁切线](/zh/docs/configuration-page-layout#裁切线)。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（或`'pdfx1a'`）：写出PDF/X文件，带有印厂会检查的输出意图、标识和页面框；所有颜色和RGB图片都经ICC特性文件分色，100% K叠印，大面积黑色用复合黑。见[印刷输出（配置）](/zh/docs/configuration-fonts-colors-viewers#印刷输出配置)。
 - **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：同样的分色，但没有PDF/X标识（裁切线始终用套准色）。PDF印刷母版原样嵌入。
-- **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)会报告印刷尺寸下不足300 ppi的图片。
+- **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-pdf-output#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切线不反转）。适合对浅底深字的排版做印前检查。
+
+### 专色
+
+专色（Pantone、企业专用油墨、光油等）在单独的印版上印刷。`model: 'spot'` 的颜色在 `ColorValue.spot` 中携带其油墨：`name` 是印刷厂所用的印版名称，`cmyk` 是油墨在100 %时的外观（没有该油墨时PDF使用的替代值），`tint` 是百分比网点浓度（默认100），`overprint` 让油墨像光油一样叠印在下方内容上而不是镂空。`hex` 是其屏幕显示色。
+
+CMYK或PDF/X格式的PDF会把每种油墨写成以其命名的 `Separation` 色彩空间，并按各自的浓度绘制该油墨的每个颜色：`name` 相同的颜色共用一块印版。由此可覆盖常见的作业：双色（黑色加一种专色）、四色印刷中部分元素使用专色，以及在选定区域叠印光油。当 `diagramStyle.singleInk` 使用专色时，SVG图表以该印版的浓淡印刷。RGB格式的PDF和屏幕则以 `hex` 绘制。
+
+**SVG中的专色。** 见[单色模式的工作原理](/zh/docs/configuration-resources#单色模式的工作原理)。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+印前检查把专色计为一种油墨，不计入总墨量上限，并列出作业中使用的专色（`spotInks`），包括SVG图片按名称指定的油墨。在以下情况发出警告：同一油墨以不同数值定义两次（`spotInkConflict`；PDF使用第一个定义）；SVG指定的油墨既没有调色板颜色定义，也没有带 `cmyk` 的油墨表条目定义（`spotInkUndefined`；它印在单独的印版上，以SVG颜色的CMYK为替代值，每个名称一块印版）；PDF必须改写某个印版名称（`spotInkName`，见下文）；两个印版名称仅在大小写或空格上不同（`spotInkSimilar`：`PANTONE 185 C` 和 `Pantone  185 C` 会成为两块印版）。`preflightDocument` 通过 `svgInks(fileId)` 得知SVG指定了哪些油墨，这个函数返回 `svgSpotInks(markup)` 在文件中找到的名称；Sandbox的**检查**面板和 `postext check` 都会传入它。
+
+**印版名称。** 名称按输入原样写出：重音符号、符号和 `#` 以UTF-8写入PDF（`Rojo Médica` 写作 `/Rojo#20M#C3#A9dica`），Acrobat、RIP和印刷厂的印前检查都按此读取。印版无法使用的名称会改用另一个名称写出：`All`、`None`、`Cyan`、`Magenta`、`Yellow` 和 `Black`（不论大小写）后面加上单词 ink（`All ink`）；控制字符被删除；超过127个UTF-8字节的名称在字符边界处截断，并以一个短哈希结尾，因此开头相同的两个长名称仍是两块印版。印前检查的 `spotInkName` 说明原因（`problem`：`reserved`、`process`、`control` 或 `tooLong`）以及PDF写出的名称（`written`），渲染时每次改名都会通过 `onWarning` 报告（`spotInkRenamed`）。要自己选定名称，请在油墨表中为该油墨设置 `pdfName`。
+
+**一色一墨。** 印刷渲染以屏幕hex识别颜色，因此两个指定了印刷数值的颜色（两种油墨，或一种油墨和一个以CMYK定义的颜色）不能共用同一个hex。若共用，后一个会移到最近的空闲hex，只差一步，屏幕上看不出，各自印在自己的印版上。普通屏幕色（`model: 'hex'`）若与某专色hex相同，会按该专色印刷；将其链接到调色板条目即可明确这一点。被移动的颜色在屏幕上也会改变：在一个通道上差一步（1/255），先动蓝色通道，所有输出（Canvas、HTML、EPUB和RGB格式的PDF）都是如此。这远低于肉眼能分辨的差别，是印刷渲染按绘制出的hex读取油墨所付出的代价。保存的配置不会改变。
+
+#### 油墨表
+
+`print.inks` 规定作业中的油墨如何送到印刷厂，无论颜色、SVG和导入的文件如何称呼它们。表中未列出的油墨按其颜色的定义印刷。
+
+```ts
+interface PrintInk {
+  name: string;                    // spot.name或SVG所用的油墨名称。
+  aliases?: string[];              // 同一油墨的其他名称：印在此印版上。
+  pdfName?: string;                // PDF中的印版名称。默认为name。
+  output?: 'spot' | 'process';     // 'process'按替代值以CMYK印刷该油墨。
+  cmyk?: CmykPercent;              // 100 %时的替代值，优先于颜色自身的值。
+  overprint?: boolean;             // 优先于颜色自身的设置。
+}
+```
+
+名称和别名在比较时不区分大小写，也忽略连续的空格。无论多少颜色使用该油墨，重命名只需一行；别名把设计师色板、SVG（`data-spot`、`icc-named-color`）或旧调色板给同一油墨起的名称合并到一块印版上；当印刷机没有该油墨的色组时，`output: 'process'` 以CMYK印刷该油墨，所有网点浓度都包括在内。
+
+在Sandbox中，该表位于**设计 › 导出 › 印前准备 › 油墨表**：每种油墨一张卡片，包括**油墨名称**、**别名**、**PDF中的印版名称**、**印刷方式**、**替代CMYK**和**叠印**。**颜色所用的油墨**列出书中颜色用到、而表中缺少的油墨，每种都附有一个添加按钮。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
+
+#### 双色印刷
+
+`print.plates` 列出作业印刷所用的印版，其他印版一概不印：例如用黑色加一种专色、用两种专色或只用黑色印刷的书。四色印刷的印版名为 `Cyan`、`Magenta`、`Yellow` 和 `Black`；专色印版按PDF中的名称命名，或使用油墨表中的名称或别名。
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // 印版。为空：照常使用所有印版。
+  images?: string[];                              // 图像所用的印版：一块或两块。
+  curves?: Record<string, Array<[number, number]>>; // 图像印版的曲线：[阶调, 油墨]，百分比。
+}
+```
+
+- 作业所印油墨的颜色，或通道全都由作业印出的CMYK颜色，原样输出。
+- 其他颜色都会被投射：以一块或两块印版的混合来印刷，取经输出特性文件后外观与它最接近的组合。两种油墨的混合在PDF中是 `DeviceN` 色彩空间，灰色只留在 `Black` 上。除非作业印刷全部四种四色印刷油墨，否则不使用复合黑。
+- 图像在一块印版上印成单色调，在两块印版上印成双色调：每个像素的阶调（明度）经过每块印版的曲线。`images` 默认为 `Black`，作业不印黑色时为第一块印版。单色调的曲线是一条直线；双色调把第一块印版放在暗调，第二块放在中间调。`curves` 可替换其中任意一条。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+印前检查列出作业的印版，以及投射所移动的每种颜色。作业不印的专色或CMYK颜色，若其混合与原色相差在ΔE 6以内，记为提示；超过ΔE 6，或输出特性文件尚未加载时，记为警告（`offPlateInk`、`offPlateCmyk`）。相差超过ΔE 6的屏幕颜色也是警告（`offPlateColor`）。没有任何颜色、也没有任何油墨表条目定义的专色印版会引发警告：它以黑色印刷和打样。在这样的作业中，插图的印刷原稿被搁置，改将其SVG印在印版上；置入的PDF页面或无法解码的图片保留自己的油墨，渲染时会发出警告（`artworkOffPlates`）。在Sandbox中，印版在“印前准备 → 印版”中设置。它的预览和印刷预览按书中定义显示颜色，而不是按印版印出的样子：请查看PDF，印刷检查会列出其中使用的油墨。
+
+### 图片的颜色
+
+图片从它制作时所用的颜色分色。`print.imageColor`规定如何读取它的像素：
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // 图片自带的ICC特性文件。默认'ignore'。
+  assignedRgbProfile?: { name: string; fileId: string }; // 改用这个.icc读取所有RGB图片。
+  grayDotGain?: 'profile' | 'none' | number;           // 灰度图片只印在黑版上。默认'none'。
+  cmykProfile?: 'convert' | 'keep';                    // 另一台印刷机的CMYK图片。默认'keep'。
+}
+```
+
+默认值让图片保持旧版本的印刷方式：所有 RGB 图片都按 sRGB 读取（`'ignore'`），灰度图片像其他图片一样分色（`'none'`），CMYK 图片保留其数值（`'keep'`）。下面的每种行为都由相应字段开启。
+
+- **图片自带的特性文件。** 嵌入了特性文件的PNG（`iCCP`）或JPEG（`ICC_PROFILE`）通过该特性文件读取，因此Adobe RGB或Display P3的照片按它看上去的样子分色，而不是当作sRGB。没有特性文件或标为sRGB的图片仍按sRGB读取，与以前相同。`'ignore'`把所有图片都按sRGB读取。
+- **指定的特性文件。** `assignedRgbProfile`指定一个已存储的`.icc`，所有RGB图片无论嵌入了什么都通过它读取：例如一批丢失了特性文件的照片。它的字节来自`resourceBytes`；缺少时使用图片自带的特性文件，并给出`imageProfileUnavailable`警告。
+- **留给RIP。** 在PDF/X-4中，`convertImages: false`时，特性文件不是sRGB的图片按其自身的颜色写出，以该特性文件标为`ICCBased`，由印厂的RIP转换。
+- **灰度。** 灰度图片（灰色的PNG或JPEG，或带灰度特性文件的图片）只用黑墨印刷，绝不印成四色灰。它的阶调通过自带的特性文件读取（没有时按屏幕显示的样子），并与印刷机匹配：`'profile'`通过输出特性文件的黑色，其网点扩大已包含在印刷条件中；数值是印刷机在50 %阶调处的网点扩大，以百分比表示（通常为10–30），改为对它进行补偿；`'none'`按原样写出数值，与以前相同。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **另一台印刷机的CMYK图片。** 自带特性文件是另一种印刷条件的CMYK图片（例如为FOGRA印刷的书中一张按SWOP或新闻纸分色的照片）按输出的印刷条件重新分色（`cmykProfile: 'convert'`），只用黑墨的部分仍只用黑墨：TIFF或Photoshop图片从其像素重新分色；CMYK的JPEG不解码像素，在PDF/X-4中以自带的特性文件标为`ICCBased`，由RIP转换，在不允许这种标记的PDF/X-1a中则原样通过；此时若宿主向印前检查提供了图片的特性文件（`imageProfile`），印前检查会发出警告（`cmykImageForeign`）。在PDF/X-4中，`convertImages: false`时，TIFF或Photoshop图片也同样标记。`'keep'`按原样印出所有CMYK图片的值。
+
+**单张图片的设置。** 资源的`printColor`接受与书的`print.imageColor`相同的字段，只作用于这张图片：一张需要忽略其特性文件的照片、一张通过指定的特性文件读取的照片、一张网点扩大不同的灰度图片。在Sandbox中，图片的卡片决定是否通过它自带的特性文件读取（“印刷颜色”）、它的灰度如何适配印刷机（“印刷时的灰度”），以及为它指定的特性文件（“指定的特性文件”，一个`.icc`文件）；文件包把指定的特性文件，包括书的和图片的，放在它的`profiles/`文件夹中。全书的设置位于“印前准备 → 图片”。
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
+
+
+### 以CMYK定义的颜色
+
+用CMYK写的颜色保留准确的数值：印刷渲染原样使用`ColorValue.cmyk`（百分比），`hex`是它在屏幕上的呈现。以CMYK定义的调色板条目，作用于所有链接到它的颜色。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### 叠印的颜色
+
+在印刷渲染中，任何颜色都可以叠印：在`ColorValue`上设置`overprint: true`，用它绘制的一切（文字、线条、框、底色）都会印在下方内容之上，而不是将其镂空。印刷色按其分色方式写出，并处于叠印的图形状态之下；专色在其油墨的印版上叠印，即使同一油墨在另一种颜色中是镂空的。叠印的100% K黑色保留黑色的处理：大面积仍然用复合黑（`black.richBlack`）。RGB PDF和屏幕会忽略它。把它设在调色板条目上，所有链接到该条目的颜色都会叠印，包括它的色调；链接的颜色采用条目的设置，自己没有单独的设置。篇或章节的调色板会保留它：用篇的颜色排的文字也会叠印。
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+印刷渲染按版面绘制的hex识别颜色，所以叠印的颜色绝不会与镂空的颜色共用一个hex。两者相同时，叠印的那个移动一步（在一个通道上移动1/255），专色也是这样处理的；叠印条目的篇颜色也以同样方式避开书中任何镂空的颜色。叠印而又不着墨的颜色（纸白、0%的油墨）在印刷时会消失：印前检查把它报告为严重（`overprintWhite`）。一次渲染中不同颜色的数量超过可用编码（约2500万个）时，其余颜色改为镂空，并发出警告（`overprintsExhausted`）。在Sandbox中，由取色器的“印刷时叠印”开关设置。
+
+### 印前检查
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // 印刷尺寸下的ppi。
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>运行检查。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。没有自身分辨率的位图按自然尺寸以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷；设了分辨率（`bitmap.resolution`、`layout.bitmapResolution`）的位图按自然尺寸以该分辨率印刷。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>低于此值时，警告为严重。不会高于`minImageResolution`。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>比此值更细的线条、边框、栏线、表格线和漫画分格边框。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>小于此字号、用多于一种墨印刷的文字（印刷色、复合黑）：印版偏移时会发虚。只用K的黑色文字从不计入。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>离裁切线比此值更近的文字，裁切时可能被切掉。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>停在离裁切线这么近处、却没有延伸到出血的方框或图片：要么延伸到出血，要么内移。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>报告置入的PDF中未嵌入的字体（沙盒用`inspectPrintMaster`检查每个印刷母版）。Postext自己排的字体都会嵌入。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。图片的分辨率按资源声明的像素计算；`imageSize(fileId)`给出文件本身的像素时（对字节调用`bitmapInfo`，或取自解码后的图像），则按文件的像素计算：声明与文件相差超过一个像素时，报告一次`declaredPixelsMismatch`；如果声明的像素多于文件实有的像素，它的级别为警告。`placedImageResolutions(doc, { resources, imageSize })`列出每张放置的位图及其有效ppi，不论印前检查是否开启。图中的标注在`smallProcessText`、`inkLimit`和`safeZone`中按文字计算。
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // 位图的像素尺寸
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // 文件的实际像素
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray'，取自文件
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
 
 ### 参考实现
 

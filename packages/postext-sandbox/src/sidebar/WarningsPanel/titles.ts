@@ -148,6 +148,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsFigureWordsSharedTitle;
     case 'unknownChipStyle':
       return labels.warningsUnknownChipStyleTitle;
+    case 'unknownCharacterStyle':
+      return labels.warningsUnknownCharacterStyleTitle;
     case 'unknownMarkStyle':
       return labels.warningsUnknownMarkStyleTitle;
     case 'duplicateAnchor':
@@ -191,6 +193,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsAlphaPdfOverflowTitle;
     case 'calloutOverflow':
       return labels.warningsCalloutOverflowTitle;
+    case 'floatPinMissed':
+      return labels.warningsFloatPinMissedTitle;
     case 'headingDesignCut':
       return labels.warningsHeadingDesignCutTitle;
     case 'headingClaimsColumn':
@@ -275,10 +279,18 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsUnplacedTitle;
     case 'hereNotEmbedded':
       return labels.warningsHereNotEmbeddedTitle;
+    case 'paragraphCitedInNote':
+      return labels.warningsParagraphCitedInNoteTitle;
+    case 'floatCropped':
+      return payload.reason === 'row' ? labels.warningsFloatRowCroppedTitle : labels.warningsFloatCroppedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
     case 'stack':
       return labels.warningsStackTitle;
+    case 'hyphenLadder':
+      return labels.warningsHyphenLadderTitle;
+    case 'lastWordDivided':
+      return labels.warningsLastWordDividedTitle;
     case 'openerFloat':
       return labels.warningsOpenerFloatTitle;
     case 'tocGroupSplit':

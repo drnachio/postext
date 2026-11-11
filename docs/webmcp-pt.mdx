@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: um agente trabalhando no Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 53 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
+  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 55 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
   lang: 'pt',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '13 min',
-  order: 50,
+  order: 51,
   plainSummary: "Esta página é para quem quer que um assistente de inteligência artificial trabalhe por você em um livro no Sandbox. Enquanto o Sandbox está aberto, ele entrega ao assistente um conjunto de ferramentas para olhar qualquer página, mudar o design, editar o texto, adicionar imagens e tabelas, encontrar problemas e salvar arquivos. Você pede com suas próprias palavras, por exemplo “aumente um pouco a letra e confira se o livro continua cabendo em 40 páginas”, e o assistente usa as ferramentas e mostra as páginas para você. Tudo fica no seu navegador. A página explica como conectar um assistente, o que ele pode fazer e como cada ferramenta é chamada.",
 };
 
@@ -24,7 +24,7 @@ interface: ele lê o livro, pede uma imagem da página 12, define
 páginas e volta ao valor anterior. Ele faz o que você faz a olho, com o seu
 livro e no seu navegador.
 
-São 53 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
+São 55 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
 o Sandbox está na tela, e 8 ferramentas do site, `site_*`, em todas as páginas
 do postext.dev. Esta página as organiza pelo que você pediria a um agente e
 mostra a chamada de cada uma.
@@ -41,7 +41,7 @@ configurar nada do lado do Postext.
 O WebMCP ainda é um rascunho. O Chrome o oferece como teste de origem e atrás
 da flag `chrome://flags/#enable-webmcp-testing`. As ferramentas acompanham a
 página: na página inicial ou na documentação o agente tem as ferramentas
-`site_*`; quando o Sandbox está na tela, aparecem também as 53 ferramentas
+`site_*`; quando o Sandbox está na tela, aparecem também as 55 ferramentas
 `sandbox_*`.
 
 ### Em qualquer outro navegador: `window.postextWebMcp`
@@ -388,6 +388,21 @@ de novo. A chamada inteira conta como um passo para `sandbox_undo_text`, que a
 desfaz (`redo: true` a refaz). `sandbox_write_text` substitui um capítulo
 inteiro, a partir de `markdown` ou de um arquivo `.md`.
 
+Para uma mudança que percorre um capítulo ou o livro inteiro,
+`sandbox_replace_text` faz o que Substituir tudo faz na barra de busca do painel
+Texto, com as mesmas opções (`matchCase`, `wholeWord`, `ignoreAccents`,
+`regex`). Com `dryRun` ele lista cada substituição, com o antes e o depois, e
+não muda nada. No modo de expressão regular, a substituição entende `$1`,
+`$<name>`, `$&`, `$$`, `\n`, `\t` e `\\`, e escreve todo o resto como veio.
+Aplicadas, as substituições são um único passo do histórico, que `sandbox_undo`
+desfaz. `sandbox_search_text` aceita as mesmas opções e encontra o mesmo que a
+barra.
+
+```jsonc
+// sandbox_replace_text: pontos decimais viram vírgulas no livro inteiro, em prévia
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Para mostrar a você um lugar do texto, `sandbox_select_text` abre o painel
 Texto com aquele trecho selecionado (por `text`, `line` ou `offset`), como faz
 um clique em um achado do painel Verificações.
@@ -449,6 +464,15 @@ imagem. `newId` renomeia um recurso e, por padrão, todas as referências a ele
 no livro. `sandbox_list_resources` lista os recursos e, com um `id`, mostra um
 deles por inteiro (as células de uma tabela com a formatação, o código de
 um SVG).
+
+O recorte de uma imagem vai em `marks.crop` (`{ x, y, width, height }`, frações da
+imagem inteira, como a área segura; `null` volta a mostrar a imagem inteira):
+funciona num bitmap, num SVG e no pôster de um vídeo, e a resposta avisa quando
+a área segura sai do recorte. `placement.pin` (`{ page, column?, slot }`, `page`
+de 0 a 3) posiciona um flutuante à mão e `null` o devolve ao posicionamento
+automático; a descrição da ferramenta explica por que pins não são recomendados e
+indica no lugar `position`, `citingPage`, `keepTogether` e `shrink` (veja
+[Formato do documento › Posicionar flutuantes à mão não é recomendado](/pt/docs/document-format-resources#posicionar-flutuantes-à-mão-não-é-recomendado)).
 
 As `marks` de uma imagem também guardam as âncoras dela. Num mapa ou num esquema, são os pontos em que ficam as linhas `::label`: um `id`, `x` e `y` (frações da imagem inteira) e os campos de rótulo que um rótulo colocado ali herda (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). A resposta avisa quando falta no design um estilo de rótulo, e marcas novas num recurso são um passo do histórico (`sandbox_undo` responde `kind: "resource"`). Num SVG, `marks.svgSymbols` (`idPrefix`, `className`) acrescenta uma zona a evitar sobre cada elemento do desenho que ele indica, além das zonas dadas pela chamada ou das que a imagem já tem (desde o postext 1.43).
 
@@ -528,7 +552,7 @@ seções que o pacote leva (`scormPick`, ids da lista `contents` da aba).
 em `text`, uma `anchor` ou uma entrada `contents` de um EPUB.
 `sandbox_run_viewer` aperta um botão da barra de ferramentas: `regenerate`
 gera de novo o PDF, o EPUB ou o pacote SCORM e espera por ele, `print` abre a janela de
-impressão para você confirmar, `download` salva o PDF, o EPUB ou um pacote SCORM recém-gerado, e
+impressão para você confirmar, `check` lê de volta o PDF na tela como faz **Verificar para impressão** e responde com o veredicto, os itens e as constatações, `download` salva o PDF, o EPUB ou um pacote SCORM recém-gerado, e
 `play_video` e `stop_video` reproduzem e param um vídeo de uma página.
 
 ### Páginas de quadrinhos
@@ -696,6 +720,7 @@ cada uma vêm com `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **O texto**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **O design**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

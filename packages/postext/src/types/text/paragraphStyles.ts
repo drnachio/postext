@@ -183,6 +183,14 @@ export interface ParagraphStyleConfig {
    *  that runs off the grid, or a group whose leading is its own. Inside a
    *  callout, which has no grid, it changes nothing. Default `true`. */
   snapToGrid?: boolean;
+  /** Open the container on a grid line: the space above its first
+   *  paragraph rounds up so that paragraph's top sits on the baseline grid,
+   *  `marginTop` a minimum — the rule lists have in `snapTopToGrid`. The
+   *  paragraphs after the first keep the style's own leading and
+   *  `spaceBetween`. A poem set in the style opens on a grid line too.
+   *  Inside a callout, which has no grid, it changes nothing. Default
+   *  `false`. */
+  snapTopToGrid?: boolean;
   /** How the space under the `:::paragraphs` containers that name this
    *  style is worked out (#715): `'collapse'` or `'add'`, with the meaning
    *  of `bodyText.paragraphContainerSpacing`, in the running text and
@@ -305,6 +313,8 @@ export interface ResolvedParagraphStyleConfig {
   marginTop: Dimension;
   marginBottom: Dimension;
   snapToGrid: boolean;
+  /** Absent unless the style turns it on. */
+  snapTopToGrid?: true;
   /** Absent when the style sets none: its containers follow
    *  `bodyText.paragraphContainerSpacing`. */
   containerSpacing?: ParagraphContainerSpacing;

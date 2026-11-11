@@ -23,6 +23,8 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'cjkLooseLine':
     case 'raggedLine':
     case 'stack':
+    case 'hyphenLadder':
+    case 'lastWordDivided':
     case 'unbreakableWordOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':
@@ -95,6 +97,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'solutionOutside':
     case 'figureWordsShared':
     case 'unknownChipStyle':
+    case 'unknownCharacterStyle':
     case 'unknownMarkStyle':
     case 'duplicateAnchor':
     case 'unknownCitationKey':
@@ -116,6 +119,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'parityCascade':
     case 'alphaPdfOverflow':
     case 'calloutOverflow':
+    case 'floatPinMissed':
     case 'sideColumnPercentClamped':
     case 'columnCountClamped':
     case 'cjkGridClamped':
@@ -136,6 +140,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
     case 'floatShrunk':
+    case 'floatCropped':
     case 'pictureBelowPrintSize':
     case 'emptyCaption':
     case 'resourceMoved':
@@ -143,6 +148,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'unknownTableStyle':
     case 'raggedTableGrid':
     case 'hereNotEmbedded':
+    case 'paragraphCitedInNote':
     case 'videoWithoutPoster':
     case 'videoWithoutUrl':
     case 'videoUrlInvalid':

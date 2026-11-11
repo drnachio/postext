@@ -12,7 +12,7 @@
 // to exactly what the book resolved to before is the one the setting is
 // then written into.
 
-import { DEFAULT_CALLOUT_STYLES, DEFAULT_CHIP_STYLES, DEFAULT_EXERCISE_STYLES, DEFAULT_MARK_STYLES } from 'postext';
+import { DEFAULT_CALLOUT_STYLES, DEFAULT_CHARACTER_STYLES, DEFAULT_CHIP_STYLES, DEFAULT_EXERCISE_STYLES, DEFAULT_MARK_STYLES } from 'postext';
 import type { PostextConfig } from 'postext';
 import { coerceSetting, isWholeValue } from './configEffective.js';
 import { canonicalSteps, formatPath, getAtSteps, leafEntries, parsePath, setAtSteps, type Step } from './configPaths.js';
@@ -45,6 +45,7 @@ const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 const DESIGNED_LISTS: Record<string, unknown> = {
   calloutStyles: DEFAULT_CALLOUT_STYLES,
   chipStyles: DEFAULT_CHIP_STYLES,
+  characterStyles: DEFAULT_CHARACTER_STYLES,
   markStyles: DEFAULT_MARK_STYLES,
   exerciseStyles: DEFAULT_EXERCISE_STYLES,
 };

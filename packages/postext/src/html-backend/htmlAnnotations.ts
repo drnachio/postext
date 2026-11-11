@@ -16,6 +16,7 @@
 import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from '../vdt.js';
 import { dottedCentres, sesamePath, wavePoints } from '../canvas-backend/annotations.js';
 import { htmlLinkUnderlinePainted } from './linkPaint.js';
+import { bandOutline, dashedPieces, outlineToSvgPath } from '../marks/markGeometry.js';
 
 const HTML_ESCAPE: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 const esc = (s: string): string => s.replace(/[&<>"']/g, (c) => HTML_ESCAPE[c]!);
@@ -45,6 +46,9 @@ function markHtml(m: VDTLineMark, baseline: number, color: string, vertical = fa
     }
     case 'line':
       return `<span aria-hidden="true" style="position:absolute;left:${n(cx)}px;top:${n(cy - m.thickness / 2)}px;width:${n(m.length ?? 0)}px;height:${n(m.thickness)}px;background:${ink};"></span>`;
+    case 'dashed':
+      return dashedPieces(m).map((p) =>
+        `<span aria-hidden="true" style="position:absolute;left:${n(p.x)}px;top:${n(cy - m.thickness / 2)}px;width:${n(p.length)}px;height:${n(m.thickness)}px;background:${ink};"></span>`).join('');
     case 'double': {
       const half = (m.gap ?? 0) / 2;
       const rule = (y: number) => `<span aria-hidden="true" style="position:absolute;left:${n(cx)}px;top:${n(y - m.thickness / 2)}px;width:${n(m.length ?? 0)}px;height:${n(m.thickness)}px;background:${ink};"></span>`;
@@ -78,17 +82,28 @@ export function lineMarksHtml(line: VDTLine, color: string): string {
 
 /** The highlight bands of a line (`VDTLine.highlights`, `:mark[…]`, #888)
  *  as boxes inside its box, placed from its top left corner: the first
- *  markup of the line, so its text paints over them. '' when it has
+ *  markup of the line, so its text paints over them. A translucent band
+ *  takes the band's `opacity`, a rough one is the outline the canvas
+ *  traces (`bandOutline`). On a vertical page the box is the line's box
+ *  of the turned flow, which turns the bands with it. '' when it has
  *  none. */
 export function lineHighlightsHtml(line: VDTLine): string {
   const bands = line.highlights;
   if (!bands || bands.length === 0) return '';
   const baseline = line.baseline - line.bbox.y;
   return bands.map((b) => {
+    const alpha = b.opacity !== undefined && b.opacity < 1 ? `opacity:${n(b.opacity)};` : '';
+    if (b.rough) {
+      // The outline drawn from the band's own corner, with room for its
+      // wobble and slanted ends.
+      const pad = b.height;
+      const d = outlineToSvgPath(bandOutline({ ...b, x: pad, y: pad }));
+      return `<svg aria-hidden="true" width="${n(b.width + 2 * pad)}" height="${n(b.height + 2 * pad)}" style="position:absolute;left:${n(b.x - pad)}px;top:${n(baseline + b.y - pad)}px;overflow:visible;${alpha}"><path d="${d}" fill="${b.color}"/></svg>`;
+    }
     const radius = b.radiusLeft > 0 || b.radiusRight > 0
       ? `border-radius:${n(b.radiusLeft)}px ${n(b.radiusRight)}px ${n(b.radiusRight)}px ${n(b.radiusLeft)}px;`
       : '';
-    return `<span aria-hidden="true" style="position:absolute;left:${n(b.x)}px;top:${n(baseline + b.y)}px;width:${n(b.width)}px;height:${n(b.height)}px;background:${b.color};${radius}"></span>`;
+    return `<span aria-hidden="true" style="position:absolute;left:${n(b.x)}px;top:${n(baseline + b.y)}px;width:${n(b.width)}px;height:${n(b.height)}px;background:${b.color};${radius}${alpha}"></span>`;
   }).join('');
 }
 

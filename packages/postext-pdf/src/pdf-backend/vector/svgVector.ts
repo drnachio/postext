@@ -40,13 +40,14 @@
  */
 
 import { LineCapStyle, LineJoinStyle, type PDFFont, type PDFImage } from 'pdf-lib';
+import type { SpotColor } from 'postext';
 import { IDENTITY, Unsupported } from './svgVector/geometry.js';
 import { parseLength, ROOT_STYLE } from './svgVector/style.js';
 import { indexIds, parseAspect, type Walker, walk } from './svgVector/walk.js';
 import { parseXml, localName, type XmlEl } from './svgVector/xml.js';
 
 export { parsePathData } from './svgVector/geometry.js';
-export { drawVectorDrawing } from './svgVector/emit.js';
+export { drawVectorDrawing, inkStrength, svgSpotOf } from './svgVector/emit.js';
 
 // ---------------------------------------------------------------- IR types
 
@@ -54,6 +55,18 @@ export { drawVectorDrawing } from './svgVector/emit.js';
 export interface VectorPaint {
   hex: string;
   alpha: number;
+  /** A spot ink the SVG names for this paint — `#e4002b
+   *  icc-named-color(profile, "PANTONE 185 C")` or the Postext attribute
+   *  `data-spot="PANTONE 185 C"` (with `data-spot-tint="40"`, percent) —
+   *  which a print render paints on that ink's plate. */
+  ink?: SvgInk;
+}
+
+/** A spot ink named in an SVG (see {@link VectorPaint.ink}). */
+export interface SvgInk {
+  name: string;
+  /** Percent of the ink, 0–100; unset: 100. */
+  tint?: number;
 }
 
 export interface VectorStroke extends VectorPaint {
@@ -151,6 +164,10 @@ export interface VectorDrawing {
   /** Parsed `preserveAspectRatio`; `null` for `none`. */
   aspect: { xAlign: 0 | 0.5 | 1; yAlign: 0 | 0.5 | 1; slice: boolean } | null;
   shapes: VectorItem[];
+  /** Set on a drawing recoloured for a single ink that is a spot colour
+   *  (`diagramStyle.singleInk` with a spot `inkColor`): a print render
+   *  paints every tint of the ink on the ink's own plate. */
+  spotInk?: { hex: string; spot: Required<SpotColor> };
 }
 
 export interface SvgToVectorOptions {

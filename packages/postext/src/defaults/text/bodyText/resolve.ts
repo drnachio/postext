@@ -8,6 +8,10 @@ import { normalizeHyphenationExceptions } from '../../../hyphenation/hyphenation
 import { withFigureStyle } from '../../../fonts/figureStyle.js';
 import { arabicScript, emphasisAndTashkil, resolveKashida } from './arabic.js';
 import { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, DEFAULT_BODY_TEXT_CONFIG, shortListMaxItemsOf } from './defaults.js';
+import { cleanLimits } from '../../../hyphenation/limits.js';
+
+/** `n` when it is a finite number. */
+const finite = (n: number | undefined): number | undefined => (typeof n === 'number' && Number.isFinite(n) ? n : undefined);
 
 /** Tags of languages set without hyphenation (CJK, right-to-left scripts)
  *  already reported for hyphenation switched on without a pattern
@@ -52,7 +56,14 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
     zone: partial?.zone ?? D.zone,
     compounds: partial?.compounds ?? D.compounds,
     ...(exceptions ? { exceptions } : {}),
+    ...cleanLimits(partial),
     capitalized: partial?.capitalized ?? D.capitalized,
+    fewerHyphens: Math.min(10, Math.max(0, Math.round(finite(partial?.fewerHyphens) ?? D.fewerHyphens))),
+    ladders: compositionRuleOf(partial?.ladders) ?? D.ladders,
+    maxConsecutive: Math.max(1, Math.round(finite(partial?.maxConsecutive) ?? D.maxConsecutive)),
+    ladderPenalty: Math.max(0, finite(partial?.ladderPenalty) ?? D.ladderPenalty),
+    lastWord: compositionRuleOf(partial?.lastWord) ?? D.lastWord,
+    lastWordPenalty: Math.max(0, finite(partial?.lastWordPenalty) ?? D.lastWordPenalty),
   };
 }
 
@@ -173,6 +184,7 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
       : DEFAULT_BODY_TEXT_CONFIG.colonListRoom,
     // `false` and `'withinPage'` (#701) are kept; anything else reads `true`.
     hyphenateAcrossColumns: partial.hyphenateAcrossColumns === false || partial.hyphenateAcrossColumns === 'withinPage' ? partial.hyphenateAcrossColumns : DEFAULT_BODY_TEXT_CONFIG.hyphenateAcrossColumns,
+    snapTopToGrid: partial.snapTopToGrid ?? DEFAULT_BODY_TEXT_CONFIG.snapTopToGrid,
     paragraphContainerSpacing: partial.paragraphContainerSpacing === 'add' || partial.paragraphContainerSpacing === 'collapse'
       ? partial.paragraphContainerSpacing
       : DEFAULT_BODY_TEXT_CONFIG.paragraphContainerSpacing,

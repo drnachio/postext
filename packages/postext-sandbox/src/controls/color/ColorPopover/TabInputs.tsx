@@ -2,6 +2,8 @@
 
 import type { RGB, HSL, CMYK, ColorMode } from '../color-utils.js';
 import { SmallInput } from './SmallInput.js';
+import type { SpotColor, SpotInk } from 'postext';
+import { SpotInputs } from './SpotInputs.js';
 
 interface Props {
   activeTab: ColorMode;
@@ -17,6 +19,9 @@ interface Props {
   hexLabel: string;
   /** Why the last hex typed was not taken, with how to write one. */
   hexError: string | null;
+  spot: SpotColor | undefined;
+  knownInks: SpotInk[];
+  handleSpotChange: (spot: SpotColor) => void;
 }
 
 export function TabInputs({
@@ -32,6 +37,9 @@ export function TabInputs({
   handleCmykChange,
   hexLabel,
   hexError,
+  spot,
+  knownInks,
+  handleSpotChange,
 }: Props) {
   return (
     <div style={{ marginTop: 8 }}>
@@ -82,6 +90,10 @@ export function TabInputs({
           <SmallInput value={cmyk.y} onChange={(v) => handleCmykChange('y', v)} label="Y" max={100} />
           <SmallInput value={cmyk.k} onChange={(v) => handleCmykChange('k', v)} label="K" max={100} />
         </div>
+      )}
+
+      {activeTab === 'spot' && (
+        <SpotInputs spot={spot} fallbackCmyk={cmyk} knownInks={knownInks} onChange={handleSpotChange} />
       )}
 
       {activeTab === 'hsl' && (

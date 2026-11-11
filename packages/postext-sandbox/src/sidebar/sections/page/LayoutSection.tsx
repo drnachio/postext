@@ -527,6 +527,30 @@ export const LayoutSection = memo(function LayoutSection() {
         isDefault={layout.hugClosingFloats === D.hugClosingFloats}
         onReset={() => resetField('hugClosingFloats')}
       />
+      <ToggleSwitch
+        label={labels.footFloatRow}
+        checked={layout.footFloatRow}
+        onChange={(v) => updateLayout({ footFloatRow: v })}
+        tooltip={labels.footFloatRowTooltip}
+        isDefault={layout.footFloatRow === D.footFloatRow}
+        onReset={() => resetField('footFloatRow')}
+      />
+      <ToggleSwitch
+        label={labels.alignFloatsAcrossColumns}
+        checked={layout.alignFloatsAcrossColumns}
+        onChange={(v) => updateLayout({ alignFloatsAcrossColumns: v })}
+        tooltip={labels.alignFloatsAcrossColumnsTooltip}
+        isDefault={layout.alignFloatsAcrossColumns === D.alignFloatsAcrossColumns}
+        onReset={() => resetField('alignFloatsAcrossColumns')}
+      />
+      <ToggleSwitch
+        label={labels.pullFloatsToCitation}
+        checked={layout.pullFloatsToCitation}
+        onChange={(v) => updateLayout({ pullFloatsToCitation: v })}
+        tooltip={labels.pullFloatsToCitationTooltip}
+        isDefault={layout.pullFloatsToCitation === D.pullFloatsToCitation}
+        onReset={() => resetField('pullFloatsToCitation')}
+      />
     </CollapsibleSection>
   );
 });

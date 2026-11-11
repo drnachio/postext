@@ -60,19 +60,3 @@ export function numberedLines(text: string, from = 1, to = Infinity): { text: st
   };
 }
 
-/** Where `query` occurs in `text` (case-insensitive unless `matchCase`):
- *  the line, the offset and the line's own text. */
-export function findInText(text: string, query: string, options: { matchCase?: boolean; limit?: number } = {}): { line: number; offset: number; text: string }[] {
-  if (query === '') return [];
-  const hay = options.matchCase ? text : text.toLowerCase();
-  const needle = options.matchCase ? query : query.toLowerCase();
-  const limit = options.limit ?? 50;
-  const matches: { line: number; offset: number; text: string }[] = [];
-  for (let at = hay.indexOf(needle); at !== -1 && matches.length < limit; at = hay.indexOf(needle, at + needle.length)) {
-    const start = text.lastIndexOf('\n', at - 1) + 1;
-    const end = text.indexOf('\n', at);
-    const line = text.slice(start, end === -1 ? text.length : end);
-    matches.push({ line: lineOf(text, at), offset: at, text: line.length > 240 ? `${line.slice(0, 240)}…` : line });
-  }
-  return matches;
-}

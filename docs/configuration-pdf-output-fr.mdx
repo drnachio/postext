@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Fichiers PDF',
   description: 'postext-pdf depuis le code : installation, API, fournisseurs de polices dans le navigateur et dans Node, polices CJK, octets des ressources, texte vertical, workers et fichiers prêts pour l’impression',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Cette page s’adresse aux personnes qui écrivent du code et veulent un fichier PDF. Elle montre comment installer le paquet PDF et transformer en quelques lignes un livre mis en page en fichier. Le paquet a besoin des fichiers de police : la page explique comment les lui fournir, dans un navigateur ou sur un serveur. Elle traite des polices pour le chinois, le japonais et le coréen, des images, du texte écrit de haut en bas et des liens. Elle se termine par un exemple complet et par des fichiers prêts pour un imprimeur.",
@@ -36,9 +36,10 @@ Le paquet expose un seul point d’entrée et quelques types :
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** : prend un `VDTDocument` (ou les chapitres d’un livre sous forme de tableau de documents) et renvoie les octets bruts du PDF.
 - **`PdfFontProvider`** : la signature de rappel `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` utilise pour demander les octets d’une police quand il doit incorporer une nouvelle combinaison famille/graisse/style. `request.codePoints` contient les caractères que les pages composent dans cette fonte ; la réponse est un fichier, ou plusieurs qui forment ensemble la fonte (voir [Polices chinoises, japonaises et coréennes](#polices-chinoises-japonaises-et-coréennes)).
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** : un fichier de fonte qui indique comment la page l’a déclaré, c’est-à-dire l’`unicode-range` de sa règle `@font-face` et sa place dans l’ordre des déclarations. Un `PdfFontFile` est un `Uint8Array` doté de ces deux propriétés facultatives (voir [Polices chinoises, japonaises et coréennes](#polices-chinoises-japonaises-et-coréennes)). Depuis postext-pdf 1.30.
-- **`RenderToPdfOptions`** : `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` règle la façon dont les champs de formulaire écrivent les nombres (devise, côté où elle se place, séparateurs) et la fonte dans laquelle ils affichent leurs valeurs (`font` ; voir [Champs de formulaire](#champs-de-formulaire)). Omis, `outlines`, `accessible` et `colorSpace` reprennent le `pdfGeneration` du document (voir [Génération PDF (configuration)](/fr/docs/configuration-fonts-colors-viewers#génération-pdf-configuration)). `resourceBytes` est décrit dans [Octets des ressources et originaux d’impression](#octets-des-ressources-et-originaux-dimpression) ; `onWarning` dans [Quelles fontes sont demandées au fournisseur](#quelles-fontes-sont-demandées-au-fournisseur) et dans [Avertissements dans le document](/fr/docs/configuration-programmatic-usage#avertissements-dans-le-document). `characterGrid: true` imprime la grille que `cjk.grid.show` dessine à l’écran et que le PDF omet sinon (voir [Grille de caractères](/fr/docs/configuration-east-asian#grille-de-caractères)). `harfbuzzWasm` indique où charger le `harfbuzz.wasm` de HarfBuzz (une URL, relative à la page, ou les octets du fichier) pour un document contenant du texte de droite à gauche ou à liaisons ; omis, c’est la copie placée à côté du module de postext-pdf, puis la même version de harfbuzzjs sur jsDelivr et esm.sh. `print` reçoit les réglages de production pour l’impression (norme PDF/X, profil de sortie, noir, contrôle en amont) et reprend sinon le `print` du document ; avec une norme PDF/X, ou `colorSpace: 'cmyk'`, chaque couleur est séparée au moyen du profil ICC de sortie, dont `outputProfile` fournit les octets (sinon il est téléchargé depuis `profileBaseUrl`, par défaut la copie du dossier `icc/` de postext sur le CDN de npm). `date` (une `Date`, un temps en millisecondes ou une chaîne de date, comme le `mtime` de `createBundle`) est la date de création et de modification du fichier et, dans un fichier PDF/X, la date de son paquet XMP et la source de son identifiant de document : le même document rendu deux fois avec une même `date` donne les mêmes octets. Sans elle, le fichier prend l’heure de l’appel. Une date invalide lève une exception.
-- **`PdfWarning`** : un problème non bloquant signalé par `onWarning` ; distinguez-le par `kind` : `'fontFallback'` (`PdfFontFallbackWarning`), une fonte composée dans une autre coupe de sa famille ; `'missingGlyph'` (`PdfMissingGlyphWarning`), des caractères pour lesquels aucun fichier d’une fonte n’a de glyphe ; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), une police variable demandée à une graisse autre que son instance par défaut ; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), une fonte CFF de plus de 2 Mo incorporée en entier ; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), du texte de droite à gauche ou à liaisons dessiné sans HarfBuzz, qui n’a pas pu être chargé (`reason` liste où il a été cherché) : les signes diacritiques arabes sont alors mal placés ; `'outputProfileUnavailable'` (`PdfPrintWarning`), un rendu CMJN dont le profil de sortie n’a pas pu être chargé, converti avec la formule naïve ; `'pageNegativeIgnored'` (`PdfPrintWarning`), la page en négatif omise d’un fichier PDF/X-1a ; ou `'missingImage'`, une image sans octets dessinée sous forme d’emplacement vide (signalé uniquement à un `onWarning` que vous passez ; sans lui, les avertissements de polices vont à `console.warn`).
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** : lit la première page d’un original d’impression PDF et indique les polices qu’il utilise sans les incorporer (`nonEmbeddedFonts`), s’il peint en RVB (`rgb`) et s’il utilise de la transparence (`transparency`), pour le [contrôle en amont](/fr/docs/configuration-fonts-colors-viewers#contrôle-en-amont).
+- **`RenderToPdfOptions`** : `{ fontProvider, forms?, resourceBytes?, previewBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` règle la façon dont les champs de formulaire écrivent les nombres (devise, côté où elle se place, séparateurs) et la fonte dans laquelle ils affichent leurs valeurs (`font` ; voir [Champs de formulaire](#champs-de-formulaire)). Omis, `outlines`, `accessible` et `colorSpace` reprennent le `pdfGeneration` du document (voir [Génération PDF (configuration)](/fr/docs/configuration-fonts-colors-viewers#génération-pdf-configuration)). `resourceBytes` est décrit dans [Octets des ressources et originaux d’impression](#octets-des-ressources-et-originaux-dimpression) ; `onWarning` dans [Quelles fontes sont demandées au fournisseur](#quelles-fontes-sont-demandées-au-fournisseur) et dans [Avertissements dans le document](/fr/docs/configuration-programmatic-usage#avertissements-dans-le-document). `characterGrid: true` imprime la grille que `cjk.grid.show` dessine à l’écran et que le PDF omet sinon (voir [Grille de caractères](/fr/docs/configuration-east-asian#grille-de-caractères)). `harfbuzzWasm` indique où charger le `harfbuzz.wasm` de HarfBuzz (une URL, relative à la page, ou les octets du fichier) pour un document contenant du texte de droite à gauche ou à liaisons ; omis, c’est la copie placée à côté du module de postext-pdf, puis la même version de harfbuzzjs sur jsDelivr et esm.sh. `print` reçoit les réglages de production pour l’impression (norme PDF/X, profil de sortie, noir, contrôle en amont) et reprend sinon le `print` du document ; avec une norme PDF/X, ou `colorSpace: 'cmyk'`, chaque couleur est séparée au moyen du profil ICC de sortie, dont `outputProfile` fournit les octets (sinon il est téléchargé depuis `profileBaseUrl`, par défaut la copie du dossier `icc/` de postext sur le CDN de npm). `date` (une `Date`, un temps en millisecondes ou une chaîne de date, comme le `mtime` de `createBundle`) est la date de création et de modification du fichier et, dans un fichier PDF/X, la date de son paquet XMP et la source de son identifiant de document : le même document rendu deux fois avec une même `date` donne les mêmes octets. Sans elle, le fichier prend l’heure de l’appel. Une date invalide lève une exception.
+- **`PdfWarning`** : un problème non bloquant signalé par `onWarning` ; distinguez-le par `kind` : `'fontFallback'` (`PdfFontFallbackWarning`), une fonte composée dans une autre coupe de sa famille ; `'missingGlyph'` (`PdfMissingGlyphWarning`), des caractères pour lesquels aucun fichier d’une fonte n’a de glyphe ; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), une police variable demandée à une graisse autre que son instance par défaut ; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), une fonte CFF de plus de 2 Mo incorporée en entier ; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), du texte de droite à gauche ou à liaisons dessiné sans HarfBuzz, qui n’a pas pu être chargé (`reason` liste où il a été cherché) : les signes diacritiques arabes sont alors mal placés ; `'outputProfileUnavailable'` (`PdfPrintWarning`), un rendu CMJN dont le profil de sortie n’a pas pu être chargé, converti avec la formule naïve ; `'pageNegativeIgnored'` (`PdfPrintWarning`), la page en négatif omise d’un fichier PDF/X-1a ; `'spotTintsExhausted'` (`PdfPrintWarning`), un rendu à court de codes pour des teintes de ton direct distinctes (quelque 25 millions), qui a imprimé le reste en quadrichromie ; `'spotInkRenamed'` (`PdfPrintWarning`), une encre dont la plaque est écrite sous un autre nom (voir [Tons directs](#tons-directs)) ; `'imageProfileUnavailable'` (`PdfPrintWarning`), le profil attribué aux images RVB n’a pas pu être chargé et leurs propres profils ont servi ; `'pictureOriginalUnreadable'` (`PdfPrintWarning`), un original TIFF ou Photoshop qui n’a pas pu être décodé, imprimé depuis son aperçu (`previewBytes`) ou comme espace réservé ; `'plateMixesApproximated'` et `'artworkOffPlates'` (`PdfPrintWarning`), un travail sur quelques plaques (`print.plates`) à court de codes, qui a composé les couleurs restantes comme le mélange déjà codé le plus proche, ou qui a placé une page PDF ou une image impossible à décoder avec leurs propres encres ; ou `'missingImage'`, une image sans octets dessinée sous forme d’emplacement vide (signalé uniquement à un `onWarning` que vous passez ; sans lui, les avertissements de polices vont à `console.warn`).
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** : lit la première page d’un original d’impression PDF et indique les polices qu’il utilise sans les incorporer (`nonEmbeddedFonts`), s’il peint en RVB (`rgb`) et s’il utilise de la transparence (`transparency`), pour le [contrôle en amont](/fr/docs/configuration-pdf-output#contrôle-en-amont).
+- **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`** : relit un PDF terminé comme le ferait le contrôle en amont d’un imprimeur, toutes ses pages : la version et le nombre de pages, l’identification PDF/X et le mode de sortie (et si son profil est incorporé), le format rogné et le plus petit fond perdu, les pages d’un autre format, sans TrimBox ou dont une boîte de page n’est pas faite de quatre nombres (`malformedBoxPages`, lue comme absente), les polices (`fonts` : nom, incorporée ou non, type ; une police employée à la fois incorporée et non incorporée figure une fois sous chaque forme), ce dans quoi il peint (CMJN, gris, tons directs par leur nom, repérage, et RVB séparé en `deviceRgb`, sans profil, et `iccRgb`, avec profil, chacun en peinture `vector` ou en `images`), la transparence, la surimpression, les annotations, un formulaire interactif et s’il est balisé. Outre les pages, il lit les apparences des annotations, les champs et les ressources par défaut du formulaire, les motifs, les glyphes Type 3 et les images en ligne. Il lit ce que dit le fichier, non ce que demandait la configuration, et ne lit ni la résolution des images, ni l’encrage total, ni les filets trop fins, ni le grossi-maigri (*trapping*). Il parcourt les pages comme `inspectPrintMaster`, qui signale aussi le RVB dans les dégradés, les motifs et les glyphes Type 3.
 - **`decompressWoff2(bytes): Uint8Array`** : fonction utilitaire qui transforme un fichier WOFF2 en octets TTF, le format que `pdf-lib` sait incorporer directement.
 - **`createPdfWorker(options?)`**, depuis `postext-pdf/worker` : le même rendu dans un Web Worker ; voir [Rendre le PDF dans un worker](#rendre-le-pdf-dans-un-worker).
 
@@ -261,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF et WebP sont incorporés comme images ;
 - le balisage SVG est dessiné en tracés vectoriels, son `text` composé en texte réel dans les polices incorporées du document, ou bien rastérisé à 600 dpi dans le navigateur lorsqu’il emploie des fonctions hors du sous-ensemble vectoriel. Un `<style>` qui ne contient que des règles `@font-face` (des fontes qu’un auteur a incorporées) est ignoré et laisse la figure vectorielle (depuis postext-pdf 1.25) ; toute autre feuille de style en fait une image matricielle, produite avec les fontes que désigne son texte, insérées depuis `fontProvider` (sauf si `diagramStyle.inlineFonts` ou le `svg.inlineFonts` de la ressource vaut `false`) ;
+- les TIFF et les documents Photoshop (PSD, PSB) s’impriment à partir de leurs propres pixels : niveaux de gris, RVB ou CMJN, 8 ou 16 bits, avec le profil ICC et la résolution qu’ils portent. Un document CMJN garde ses encres telles quelles ; les niveaux de gris et le RVB suivent `print.imageColor`. D’un document Photoshop, on lit l’image composite qu’il enregistre avec « Maximiser la compatibilité » ; les TIFF à compression JPEG ne sont pas lus ;
 - un PDF voit sa première page incorporée telle quelle, sous forme de XObject de formulaire.
 
 Chaque image est stockée une seule fois dans le fichier, quel que soit le nombre de fois où elle est dessinée. Un SVG dessiné en tracés vectoriels devient un XObject de formulaire que chaque page peint : un cadre ou un logo dans la maquette de page d’un document de trente pages est écrit une fois, et non trente ; chaque page supplémentaire ajoute quelques centaines d’octets. Jusqu’à postext-pdf 1.4, chaque page contenait sa propre copie des tracés.
@@ -280,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un hôte peut aussi renvoyer les octets de l’original pour l’identifiant propre du SVG, comme le fait `bundleResourceBytes` ; les deux façons fonctionnent.
+
+Un navigateur ne sait pas afficher un TIFF ni un document Photoshop, si bien qu’une ressource bitmap créée à partir de l’un d’eux garde deux fichiers : `bitmap.fileId` est un aperçu PNG, qu’affichent le canvas, le HTML et l’EPUB, et `bitmap.printFileId` (avec `printFormat: 'tiff' | 'psd'`) est l’original. Un hôte renvoie les octets de l’original pour `bitmap.fileId`, comme le font `bundleResourceBytes` et le Sandbox, et le PDF s’imprime à partir de lui. Il passe aussi l’aperçu, comme `previewBytes` (`bundlePreviewBytes` pour un paquet) : un original qui ne se décode pas s’imprime depuis son aperçu, avec un avertissement `pictureOriginalUnreadable`, et sans aperçu il reste un espace réservé. `decodePrintRaster(bytes)` et `rasterToRgba(raster)` de `postext` lisent l’original et produisent l’aperçu ; le Sandbox le produit à l’importation du fichier, et un paquet stocke l’original sous `resources/<nom>.tif` ou `.psd` à côté de l’aperçu.
+
+Un fichier Adobe Illustrator enregistré avec « Créer un fichier compatible PDF » est un PDF, et il peut être un original d’impression comme un autre (`.ai`). Ses nuances sont ses propres plaques : le contrôle en amont énumère celles que la table des encres renomme, celles qu’aucune couleur du livre ne définit et, dans un travail sur ses propres plaques (`print.plates`), celles que le travail n’imprime pas, car un fichier placé s’imprime tel quel.
 
 ### Texte vertical dans le PDF
 
@@ -390,8 +396,9 @@ const bytes = await pdfWorker.render(docs, {
 pdfWorker.dispose();
 ```
 
-- `render(docs, options)` prend un document, ou le tableau des documents de chapitres d’un livre. Il accepte les options de `renderToPdf`, avec deux différences. `resourceBytes` est une `Map<string, Uint8Array>` dont les tampons sont transférés : passez des copies des octets que vous conservez. `rasterizeSvg`, s’il est fourni, s’exécute sur le fil principal ; par défaut, ce sont l’`Image` et le canvas de la page qui s’en chargent.
+- `render(docs, options)` prend un document, ou le tableau des documents de chapitres d’un livre. Il accepte les options de `renderToPdf`, avec deux différences. `resourceBytes` (et `previewBytes`) est une `Map<string, Uint8Array>` dont les tampons sont transférés : passez des copies des octets que vous conservez. `rasterizeSvg`, s’il est fourni, s’exécute sur le fil principal ; par défaut, ce sont l’`Image` et le canvas de la page qui s’en chargent.
 - Un même objet ne rend qu’un document à la fois. `dispose()` termine le worker et rejette tout rendu encore en attente avec une erreur `AbortError` (`DOMException`), à traiter comme une annulation. Si votre fournisseur répond avec une police ou une image après `dispose()`, la réponse est ignorée.
+- `inspect(bytes)` relit un PDF terminé dans le worker (`inspectPrintPdf`) et se résout avec son rapport, ou `undefined` si les octets ne se lisent pas comme un PDF. Les octets sont copiés : les vôtres restent utilisables. Rien n’est lu si vous ne l’appelez pas.
 - `createPdfWorker({ worker })` accepte un `Worker` que vous créez vous-même, pour les outils de build qui contrôlent les URL des workers. Ce worker doit exécuter `postext-pdf/worker/entry`.
 
 **Depuis un CDN.** Par défaut, le script du worker est chargé depuis l’URL propre du paquet (`new URL('./pdf.worker.js', import.meta.url)`). Une page d’une autre origine peut ne pas pouvoir le démarrer : importé depuis `esm.sh`, `createPdfWorker()` lève `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. Démarrez plutôt un worker de module de même origine qui importe le point d’entrée (si vous épinglez une version, épinglez la même dans les deux URL) :
@@ -415,9 +422,206 @@ Pour une chaîne de production imprimée, réglez ces options de configuration a
 - **`page.cutLines.enabled: true`** : ajoute la zone de fond perdu et les traits de coupe autour du format rogné, et donne à chaque page une TrimBox et une BleedBox. Voir [Traits de coupe](/fr/docs/configuration-page-layout#traits-de-coupe).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (ou `'pdfx1a'`) : un fichier PDF/X avec l’intention de sortie (output intent), l’identification et les boîtes que vérifie un imprimeur ; chaque couleur et chaque image RVB séparées au moyen du profil ICC, le noir 100 % K en surimpression et les grands aplats noirs en noir enrichi. Voir [Production pour l’impression (configuration)](/fr/docs/configuration-fonts-colors-viewers#production-pour-limpression-configuration).
 - **`colorSpace: 'cmyk'`** (ou `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) : la même séparation sans l’identification PDF/X (les traits de coupe sont toujours en couleur de repérage). Les originaux d’impression PDF sont incorporés tels quels.
-- **`page.dpi: 300`** : les px par pouce de la mise en page ; un bitmap sans résolution propre s’imprime à cette résolution à sa taille naturelle. Le [contrôle en amont](/fr/docs/configuration-fonts-colors-viewers#contrôle-en-amont) signale les images de moins de 300 ppp à leur taille imprimée.
+- **`page.dpi: 300`** : les px par pouce de la mise en page ; un bitmap sans résolution propre s’imprime à cette résolution à sa taille naturelle. Le [contrôle en amont](/fr/docs/configuration-pdf-output#contrôle-en-amont) signale les images de moins de 300 ppp à leur taille imprimée.
 - **`ColorValue.cmyk`** : une couleur définie en CMJN s’imprime avec ses valeurs exactes.
 - **`{ pageNegative: true }`** dans `RenderToPdfOptions` : inverse la zone rognée au moyen d’un mode de fusion Différence (les traits de coupe ne sont pas inversés). Utile pour les contrôles en amont d’une typographie sombre sur fond clair.
+
+### Tons directs
+
+Un ton direct (un Pantone, une encre d’entreprise, un vernis) s’imprime sur sa propre plaque. Une couleur avec `model: 'spot'` porte son encre dans `ColorValue.spot` : `name` est le nom de la plaque tel que l’imprimeur le connaît, `cmyk` l’aspect de l’encre à 100 % (la couleur de substitution que le PDF donne à qui n’a pas l’encre), `tint` la force en pourcentage (100 par défaut), et `overprint` fait surimprimer l’encre sur ce qui est dessous au lieu de le défoncer, comme un vernis. `hex` est son rendu à l’écran.
+
+Un PDF CMJN ou PDF/X écrit chaque encre comme un espace colorimétrique `Separation` qui porte son nom, et peint chaque couleur de cette encre à sa teinte : les couleurs de même `name` partagent une plaque. Cela couvre les travaux habituels : deux couleurs (le noir et un ton direct), la quadrichromie avec quelques éléments dans un ton direct, et un vernis surimprimé sur des zones choisies. Quand `diagramStyle.singleInk` utilise un ton direct, les diagrammes SVG s’impriment en teintes de cette plaque. Un PDF RVB et l’écran peignent le `hex` de la couleur.
+
+**Tons directs dans un SVG.** Voir [Fonctionnement de l’encre unique](/fr/docs/configuration-resources#fonctionnement-de-lencre-unique).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+Le contrôle en amont compte un ton direct comme une seule encre, le laisse hors de la limite d’encrage et énumère les tons directs du travail (`spotInks`), y compris les encres que nomment les images SVG. Il avertit quand une même encre est définie deux fois avec des valeurs différentes (`spotInkConflict` ; le PDF utilise la première), quand un SVG nomme une encre qu’aucune couleur de la palette ni aucune entrée de la table des encres avec `cmyk` ne définit (`spotInkUndefined` ; elle s’imprime sur une plaque à elle, avec le CMJN de la couleur du SVG comme couleur de substitution, une plaque par nom), quand le PDF doit écrire un nom de plaque autrement (`spotInkName`, voir plus bas), et quand deux noms de plaque ne diffèrent que par la casse ou les espaces (`spotInkSimilar` : `PANTONE 185 C` et `Pantone  185 C` feraient deux plaques). `preflightDocument` apprend quelles encres un SVG nomme par `svgInks(fileId)`, une fonction qui renvoie les noms que `svgSpotInks(markup)` trouve dans le fichier ; le panneau **Vérifications** du Sandbox et `postext check` la lui passent.
+
+**Noms de plaque.** Le nom est écrit tel qu’il est saisi : les accents, les symboles et `#` arrivent dans le PDF en UTF-8 (`Rojo Médica` devient `/Rojo#20M#C3#A9dica`), et c’est ainsi que le lisent Acrobat, un RIP et le contrôle en amont de l’imprimeur. Un nom qu’une plaque ne peut pas porter est écrit sous un autre : `All`, `None`, `Cyan`, `Magenta`, `Yellow` et `Black`, quelle que soit la casse, reçoivent le mot ink à leur suite (`All ink`) ; les caractères de contrôle sont retirés, et un nom de plus de 127 octets en UTF-8 est coupé entre deux caractères et se termine par un court hachage, si bien que deux noms longs qui commencent pareil restent deux plaques. Le `spotInkName` du contrôle en amont dit pourquoi (`problem` : `reserved`, `process`, `control` ou `tooLong`) et quel nom le PDF écrit (`written`), et le rendu signale chaque changement par `onWarning` (`spotInkRenamed`). Pour choisir le nom vous-même, donnez à l’encre un `pdfName` dans la table des encres.
+
+**Une encre par couleur.** Un rendu pour l’impression reconnaît une couleur à son hex d’écran : deux couleurs qui fixent leurs valeurs d’impression (deux encres, ou une encre et une couleur définie en CMJN) ne peuvent donc pas le partager. Si elles le partagent, la seconde passe au hex libre le plus proche, à un pas de distance et invisible à l’écran, et chacune s’imprime sur sa propre plaque. Une simple couleur d’écran (`model: 'hex'`) qui a le hex d’un ton direct s’imprime comme ce ton direct ; liez-la à l’entrée de la palette pour le rendre explicite. La couleur qui se déplace change aussi à l’écran, d’un pas (1/255) sur un seul canal, le bleu d’abord, dans toutes les sorties (canvas, HTML, EPUB et PDF RVB). C’est bien en dessous de ce que l’œil distingue, et c’est le prix d’un rendu pour l’impression qui lit les encres dans le hex peint. La configuration enregistrée ne change pas.
+
+#### La table des encres
+
+`print.inks` indique comment les encres du travail arrivent chez l’imprimeur, quel que soit le nom que leur donnent les couleurs, les SVG et les fichiers importés. Une encre absente de la table s’imprime comme ses couleurs la définissent.
+
+```ts
+interface PrintInk {
+  name: string;                    // L’encre telle que la nomme spot.name ou un SVG.
+  aliases?: string[];              // Autres noms de la même encre : ils s’impriment sur cette plaque.
+  pdfName?: string;                // Le nom de la plaque dans le PDF. Par défaut, name.
+  output?: 'spot' | 'process';     // 'process' imprime l’encre en CMJN, d’après sa substitution.
+  cmyk?: CmykPercent;              // La substitution à 100 %, prioritaire sur celle des couleurs.
+  overprint?: boolean;             // Prioritaire sur celui des couleurs.
+}
+```
+
+Les noms et les alias sont comparés sans tenir compte de la casse ni des espaces répétés. Renommer tient en une ligne, quel que soit le nombre de couleurs qui utilisent l’encre ; un alias réunit sur une seule plaque les noms qu’un nuancier du graphiste, un SVG (`data-spot`, `icc-named-color`) ou une palette antérieure donnaient à la même encre ; et `output: 'process'` imprime une encre en CMJN quand la presse n’a pas de groupe pour elle, toutes ses teintes comprises.
+
+Dans le Sandbox, la table se trouve dans **Maquette › Export › Préparation pour l’impression › Table des encres** : une carte par encre avec son **Nom de l’encre**, ses **Alias**, le **Nom de la plaque dans le PDF**, **S’imprime en**, le **CMJN de substitution** et la **Surimpression**. **Encres utilisées par les couleurs** énumère les encres des couleurs du livre absentes de la table, chacune avec un bouton qui l’ajoute.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
+
+#### Impression à deux encres
+
+`print.plates` nomme les plaques sur lesquelles le travail s’imprime, et rien d’autre n’est imprimé : un livre en noir et un ton direct, en deux tons directs, ou en noir seul. Les plaques de quadrichromie sont `Cyan`, `Magenta`, `Yellow` et `Black` ; une plaque de ton direct se nomme comme la nomme le PDF, ou par un nom ou un alias de la table des encres.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Les plaques. Vide : toutes, comme d’habitude.
+  images?: string[];                              // Les plaques des images : une ou deux.
+  curves?: Record<string, Array<[number, number]>>; // La courbe d’une plaque d’image : [ton, encre] en pourcentage.
+}
+```
+
+- Une couleur d’une encre que le travail imprime, ou une couleur CMJN dont il imprime les couches, est appliquée telle quelle.
+- Toute autre couleur est projetée : elle s’imprime comme le mélange d’une ou deux plaques dont l’aspect, à travers le profil de sortie, s’en approche le plus. Un mélange de deux encres est un espace colorimétrique `DeviceN` dans le PDF, et un gris reste sur `Black` seul. Le noir enrichi est abandonné, sauf si le travail imprime les quatre encres de quadrichromie.
+- Les images s’impriment en monotone sur une plaque, ou en bichromie sur deux : le ton de chaque pixel (sa luminosité) passe par la courbe de chaque plaque. `images` vaut par défaut `Black`, ou la première plaque quand le travail n’imprime pas de noir. La courbe d’un monotone est une droite ; une bichromie met sa première plaque dans les ombres et la seconde dans les tons moyens. `curves` remplace l’une ou l’autre.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+Le contrôle en amont énumère les plaques du travail et chaque couleur que la projection déplace. Un ton direct ou une couleur CMJN que le travail n'imprime pas est une information quand son mélange tombe à moins de ΔE 6, et un avertissement au-delà ou tant que le profil de sortie n'est pas chargé (`offPlateInk`, `offPlateCmyk`) ; une couleur d'écran qui tombe au-delà de ΔE 6 est aussi un avertissement (`offPlateColor`). Une plaque de ton direct qu'aucune couleur ni aucune entrée de la table des encres ne définit est un avertissement : elle s'imprime et apparaît en noir sur l'épreuve. Dans un tel travail, l'original d'impression d'une figure est mis de côté et son SVG est composé sur les plaques ; une page PDF placée, ou une image impossible à décoder, garde ses propres encres et le rendu avertit (`artworkOffPlates`). Dans le Sandbox, les plaques se choisissent dans Préparation pour l’impression → Plaques. Ses aperçus et l'aperçu d'impression montrent les couleurs telles que le livre les définit, non telles que les plaques les impriment : regardez le PDF, où Vérifier pour l'impression liste les encres qu'il utilise.
+
+### Couleurs des images
+
+Une image est séparée à partir des couleurs dans lesquelles elle a été créée. `print.imageColor` indique comment ses pixels sont lus :
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+Les valeurs par défaut laissent les images telles que les imprimaient les versions précédentes : toute image RVB est lue comme sRGB (`'ignore'`), les images en niveaux de gris sont séparées comme les autres (`'none'`) et une image CMJN garde ses valeurs (`'keep'`). Chaque comportement de la liste s’active avec son champ.
+
+- **Son propre profil.** Un PNG (`iCCP`) ou un JPEG (`ICC_PROFILE`) qui intègre un profil est lu à travers celui-ci, si bien qu’une photographie en Adobe RGB ou en Display P3 se sépare telle qu’elle apparaît et non comme si elle était en sRGB. Une image sans profil, ou avec un profil sRGB, est lue en sRGB, comme jusqu’ici. `'ignore'` lit toutes les images en sRGB.
+- **Un profil attribué.** `assignedRgbProfile` désigne un `.icc` enregistré à travers lequel toute image RVB est lue, quel que soit le profil qu’elle intègre : pour un lot de photographies qui ont perdu le leur, par exemple. Ses octets viennent de `resourceBytes` ; s’ils manquent, les profils propres aux images sont utilisés, avec un avertissement `imageProfileUnavailable`.
+- **Conservée pour le RIP.** En PDF/X-4 avec `convertImages: false`, une image dont le profil n’est pas sRGB est écrite dans ses propres couleurs, étiquetée `ICCBased` avec ce profil, et le RIP de l’imprimeur la convertit.
+- **Niveaux de gris.** Une image en niveaux de gris (un PNG ou un JPEG en gris, ou une image avec un profil de gris) s’imprime avec la seule encre noire, jamais en gris quadrichrome. Ses tons, lus à travers son propre profil (sinon tels que l’écran les affiche), sont ajustés à la presse : `'profile'` par le noir du profil de sortie, dont la condition inclut déjà l’engraissement ; un nombre est l’engraissement de la presse au ton de 50 %, en pourcentage (10 à 30 en général), qui est alors compensé ; `'none'` écrit les valeurs telles quelles, comme jusqu’ici.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Une image CMJN d’une autre presse.** Une image CMJN dont le profil propre est une autre condition d’impression (une photographie séparée pour SWOP ou pour le papier journal dans un livre pour FOGRA) est séparée de nouveau pour celle de la sortie (`cmykProfile: 'convert'`), le noir seul restant noir seul : une image TIFF ou Photoshop à partir de ses pixels ; un JPEG CMJN, dont les pixels ne sont pas décodés, est étiqueté `ICCBased` avec son propre profil en PDF/X-4 pour que le RIP le convertisse, et passe tel quel en PDF/X-1a, qui n’admet pas cette étiquette ; le contrôle en amont l’y signale (`cmykImageForeign`) quand l’hôte lui donne le profil de l’image (`imageProfile`). En PDF/X-4 avec `convertImages: false`, une image TIFF ou Photoshop est étiquetée de la même façon. `'keep'` imprime telles quelles les valeurs de toute image CMJN.
+
+**Les réglages d’une seule image.** Le `printColor` d’une ressource accepte les mêmes champs que le `print.imageColor` du livre, pour cette seule image : une photographie dont le profil doit être ignoré, une autre lue à travers un profil attribué, une image en gris avec un autre engraissement. Dans le Sandbox, la fiche d’une image indique si elle est lue à travers son propre profil (« Couleur à l’impression »), comment ses gris s’accordent à la presse (« Gris à l’impression ») et quel profil lui est attribué (« Profil attribué », un fichier `.icc`) ; un paquet porte les profils attribués, celui du livre et ceux des images, dans son dossier `profiles/`. Les réglages du livre sont dans Préparation pour l’impression → Images.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
+
+
+### Couleurs définies en CMJN
+
+Une couleur écrite en CMJN garde ses valeurs exactes : `ColorValue.cmyk` (en pourcentage) est appliqué tel quel dans un rendu d’impression, et `hex` est son rendu à l’écran. Une entrée de palette définie en CMJN couvre toutes les couleurs qui lui sont liées.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Couleurs en surimpression
+
+Toute couleur peut être en surimpression dans un rendu d’impression : `overprint: true` sur un `ColorValue` imprime tout ce qui est peint avec elle (texte, filets, boîtes, fonds) par-dessus ce qui est dessous au lieu de le défoncer. Une couleur quadri s’écrit telle qu’elle se sépare, sous un état graphique en surimpression ; un ton direct surimprime sur la plaque de son encre, même là où la même encre dans une autre couleur défonce. Un noir à 100 % K en surimpression garde le traitement du noir : les grands aplats passent toujours en noir enrichi (`black.richBlack`). Un PDF RVB et l’écran l’ignorent. Placez-le sur l’entrée de palette pour que toute couleur qui lui est liée soit en surimpression, ses teintes comprises ; une couleur liée prend le réglage de l’entrée et n’a pas le sien. La palette d’une partie ou d’une section le garde : le texte dans la couleur de la partie est lui aussi en surimpression.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Un rendu d’impression reconnaît une couleur au hex que peint la mise en page, si bien qu’une couleur en surimpression ne partage jamais son hex avec une couleur qui défonce. Quand elles coïncident, celle en surimpression se décale d’un cran (1/255 sur un canal), comme le font les tons directs ; la couleur d’une partie pour une entrée en surimpression s’écarte de la même façon de toute couleur du livre qui défonce. Une couleur en surimpression qui ne dépose aucune encre (le blanc du papier, une encre à 0 %) disparaît à l’impression : le contrôle en amont la signale comme critique (`overprintWhite`). Un rendu qui compte plus de couleurs distinctes qu’il n’a de codes (quelque 25 millions) défonce les autres et avertit (`overprintsExhausted`). Dans le Sandbox, l’interrupteur « Surimprimer à l’impression » du sélecteur de couleur l’active.
+
+### Contrôle en amont
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propriété</th>
+      <th>Type</th>
+      <th>Défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Exécute les contrôles.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Une image matricielle placée qui n’atteint pas ce nombre de pixels par pouce à sa taille imprimée, recadrage compris, reçoit un avertissement : figures, images de cellule de tableau, images de maquette, cases de bande dessinée. Une image sans résolution propre s’imprime à `page.dpi` à sa taille naturelle : une page mise en page à 150 dpi imprime donc chacune de ces images à 150 ppi ; une image qui a une résolution (`bitmap.resolution`, `layout.bitmapResolution`) s’imprime à cette résolution à sa taille naturelle.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>En dessous, l’avertissement devient critique. Jamais au-dessus de `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, bordures, filets de colonne, filets de tableau et bordures de case de bande dessinée plus fins que cette valeur.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texte de taille inférieure composé avec plus d’une encre (une couleur quadri, un noir enrichi) : il devient flou quand les plaques se décalent. Le texte noir, en K seul, n’est jamais compté.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texte plus proche de la coupe que cette distance, là où le massicot risque de le couper.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Une boîte ou une image qui s’arrête aussi près de la coupe sans atteindre le fond perdu : prolongez-la dans le fond perdu ou rentrez-la.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Signale les polices qu’un PDF placé n’intègre pas (le Sandbox examine chaque fichier maître d’impression avec `inspectPrintMaster`). Postext intègre toutes les polices qu’il compose.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` exécute les contrôles sur un document mis en page et renvoie une liste de problèmes, chacun avec un `kind`, une `severity` (`'critical'`, `'warning'` ou `'info'`), l’index de page `pageIndex` absolu dans le livre, le `rect` fautif (en px de page) et, quand l’élément en a une, sa position dans la source. Les types sont `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` et `nearTrim`. Sans `transform`, un neutre compte pour une encre et toute autre couleur pour trois, et l’encrage n’est pas vérifié ; avec une transformation, les décomptes et l’encrage sont exacts. La résolution d’une image est calculée à partir des pixels que déclare sa ressource, ou de ceux du fichier lui-même quand `imageSize(fileId)` les fournit (`bitmapInfo` sur les octets, ou l’image décodée) : une déclaration qui s’écarte de plus d’un pixel du fichier est signalée une fois comme `declaredPixelsMismatch`, un avertissement quand elle annonce plus de pixels que le fichier n’en a. `placedImageResolutions(doc, { resources, imageSize })` liste chaque image matricielle placée avec sa résolution effective en ppi, que le contrôle en amont soit activé ou non. Les étiquettes d’une figure comptent comme du texte pour `smallProcessText`, `inkLimit` et `safeZone`.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
 
 ### Implémentation de référence
 

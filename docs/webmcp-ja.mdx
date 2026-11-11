@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP：Sandboxで作業するエージェント',
   sidebarTitle: 'WebMCP',
-  description: 'ブラウザーで動くAIエージェントが53のWebMCPツールでSandboxに対してできること（ページを見る、どの設定でも変える、本文を編集する、画像・表・フォントを加える、検査する、書き出す）と、実際の引数と応答で示す各ツールの呼び出し方',
+  description: 'ブラウザーで動くAIエージェントが55のWebMCPツールでSandboxに対してできること（ページを見る、どの設定でも変える、本文を編集する、画像・表・フォントを加える、検査する、書き出す）と、実際の引数と応答で示す各ツールの呼び出し方',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '13分',
-  order: 50,
+  order: 51,
   plainSummary: "このページは、Sandboxでの本の作業をAIアシスタントに任せたい人のためのものです。Sandboxを開いている間、アシスタントには、ページを見る、デザインを変える、本文を直す、画像や表を加える、問題を見つける、ファイルを保存するための道具が渡されます。たとえば「本文を少し大きくして、本が40ページに収まるか確かめて」と普段の言葉で頼むと、アシスタントが道具を使い、そのページを見せてくれます。作業はすべてお使いのブラウザーの中で行われます。このページでは、アシスタントのつなぎ方、アシスタントにできること、各ツールの呼び出し方を説明します。",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 [Sandbox](/ja/docs/sandbox)は、[WebMCP](https://webmachinelearning.github.io/webmcp/)を通じてエージェントに専用のツールを渡します。WebMCPはWeb標準の草案で、ページがブラウザーとやり取りしているAIモデルにツールを渡せるようにするものです。エージェントはこのツールを使うので、画面をクリックしてたどる必要がありません。本を読み、12ページの画像を求め、`bodyText.fontSize`を10.5 ptにし、章が18ページから19ページに増えたのを見て、元に戻します。人が目で確かめながらすることを、あなたの本に対して、あなたのブラウザーの中で行います。
 
-ツールは、名前が`sandbox_`で始まるものが53個あり、Sandboxが画面にある間だけ登録されます。ほかに、postext.devのどのページにもあるサイトのツール`site_*`が8個あります。このページでは、エージェントに頼みたい内容ごとにツールを分け、それぞれの呼び出し方を示します。
+ツールは、名前が`sandbox_`で始まるものが55個あり、Sandboxが画面にある間だけ登録されます。ほかに、postext.devのどのページにもあるサイトのツール`site_*`が8個あります。このページでは、エージェントに頼みたい内容ごとにツールを分け、それぞれの呼び出し方を示します。
 
 ## エージェントをつなぐ
 
@@ -25,7 +25,7 @@ export const metadata = {
 
 ツールはSandboxがマウントされたときに`document.modelContext`に登録され、Sandboxを離れると取り下げられます。ブラウザーからページのツールを受け取るエージェントは、そこでツールを見つけます。Postext側でインストールや設定をするものはありません。
 
-WebMCPはまだ草案の段階です。Chromeではオリジントライアルとして、また`chrome://flags/#enable-webmcp-testing`のフラグで使えます。ツールはページに従います。ホームページやドキュメントでは、エージェントが使えるのは`site_*`のツールで、Sandboxが画面に出ると53個の`sandbox_*`のツールが加わります。
+WebMCPはまだ草案の段階です。Chromeではオリジントライアルとして、また`chrome://flags/#enable-webmcp-testing`のフラグで使えます。ツールはページに従います。ホームページやドキュメントでは、エージェントが使えるのは`site_*`のツールで、Sandboxが画面に出ると55個の`sandbox_*`のツールが加わります。
 
 ### そのほかのブラウザー：`window.postextWebMcp`
 
@@ -282,6 +282,13 @@ await browser.close();
 
 それぞれの`find`はソースと完全に一致し、`all`を指定しない限り1回だけ現れる必要があります。編集はすべて適用されるか、1つも適用されないかのどちらかです。見つからない一節があると、章を読み直すよう勧めるメッセージとともに拒否されます。1回の呼び出し全体が`sandbox_undo_text`の1ステップになり、このツールで取り消せます（`redo: true`でやり直せます）。`sandbox_write_text`は章全体を、`markdown`または`.md`ファイルの内容で置き換えます。
 
+章全体や本全体にわたる変更には`sandbox_replace_text`を使います。**本文**パネルの検索バーにある「すべて置換」と同じ働きをし、オプションも同じです（`matchCase`、`wholeWord`、`ignoreAccents`、`regex`）。`dryRun`を付けると、置換ごとに前後の文字を一覧にし、何も変更しません。正規表現モードでは、置換後の文字列で`$1`、`$<name>`、`$&`、`$$`、`\n`、`\t`、`\\`が解釈され、それ以外は渡したとおりに書き込まれます。適用した置換は履歴の1ステップになり、`sandbox_undo`で取り消せます。`sandbox_search_text`も同じオプションを受け付け、バーと同じ箇所を見つけます。
+
+```jsonc
+// sandbox_replace_text：本全体の小数点をコンマに置き換える（プレビュー）
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 本文のある場所をあなたに示すときは、`sandbox_select_text`が**本文**パネルを開き、その一節を選択します（`text`、`line`、`offset`で指定）。**検査**パネルで見つかった項目をクリックしたときと同じ動きです。
 
 ### 章を整理する
@@ -331,6 +338,13 @@ await browser.close();
 ```
 
 応答には、保存されたレコードと、それを配置する行`::resource{id="prices"}`が入ります。エージェントはこの行を`sandbox_edit_text`で本文に書き込みます。既存の`id`に対して呼ぶと、渡したものだけが変わります。キャプション、表のセル、配置、画像のセーフエリアなどです。`newId`はリソースの名前を変え、既定では本の中のそのリソースへの参照もすべて書き換えます。`sandbox_list_resources`はリソースを一覧にし、`id`を渡すとその1つを詳しく返します（表なら書式付きのセル、SVGならそのソース）。
+
+画像のトリミングは `marks.crop`（`{ x, y, width, height }`、セーフエリアと同じく画像全体に対する割合。
+`null` で画像全体の表示に戻ります）に入れます。ビットマップ、SVG、動画のポスター画像に使え、
+トリミングからはみ出たセーフエリアがあれば応答が知らせます。`placement.pin`（`{ page, column?, slot }`、
+`page` は 0〜3）はフロートを手で置き、`null` で自動配置に戻します。ツールの説明には、手動配置を
+推奨しない理由と、代わりに使う `position`、`citingPage`、`keepTogether`、`shrink` が書かれています
+（[文書形式 › フロートの手動配置は推奨しません](/ja/docs/document-format-resources#フロートの手動配置は推奨しません)を参照）。
 
 画像の`marks`にはアンカーも含まれます。地図や図解では、`::label`の行を置く点のことで、`id`、`x`と`y`（画像全体に対する割合）、そこに置くラベルが引き継ぐラベル設定（`style`、`align`、`verticalAlign`、`rotate`、`width`、`writingMode`）からなります。デザインにないラベルスタイルは応答で指摘され、リソースに加えた新しいマークは履歴の1ステップになります（`sandbox_undo`は`kind: "resource"`を返します）。SVGでは`marks.svgSymbols`（`idPrefix`、`className`）が、指定した図の各要素の上に回避エリアを追加します。このエリアは、呼び出しで指定したエリアや画像にすでにあるエリアに加わります（postext 1.43以降）。
 
@@ -392,7 +406,7 @@ await browser.close();
 { "anchor": "harbour" }
 ```
 
-`sandbox_set_view`では、ほかに、ビューアー（`canvas`、`pdf`、`folio`、`html`、`epub`、`scorm`）、内容モードかデザインモードか（`mode`）、サイドパネル、章か本全体か、拡大率、読者側の文字サイズ、印刷プレビュー、**デザイン**パネルのグループも選べます。SCORMタブでは、コンテンツ（`scormLayout`）、バージョン（`scormVersion`）、パッケージに入れる章と節（`scormPick`。IDはタブの`contents`から取ります）も選べます。`sandbox_go_to_page`は、`step`、`page`、`position`、本文の一節`text`、`anchor`、EPUBの目次の項目`contents`でページを移します。`sandbox_run_viewer`はツールバーのボタンを押します。`regenerate`はPDF、EPUB、SCORMパッケージを作り直してそれを待ち、`print`は印刷ダイアログを開いてあなたの確認を待ち、`download`はPDFかEPUB、または新しく作ったSCORMパッケージを保存し、`play_video`と`stop_video`はページ上の動画を再生・停止します。
+`sandbox_set_view`では、ほかに、ビューアー（`canvas`、`pdf`、`folio`、`html`、`epub`、`scorm`）、内容モードかデザインモードか（`mode`）、サイドパネル、章か本全体か、拡大率、読者側の文字サイズ、印刷プレビュー、**デザイン**パネルのグループも選べます。SCORMタブでは、コンテンツ（`scormLayout`）、バージョン（`scormVersion`）、パッケージに入れる章と節（`scormPick`。IDはタブの`contents`から取ります）も選べます。`sandbox_go_to_page`は、`step`、`page`、`position`、本文の一節`text`、`anchor`、EPUBの目次の項目`contents`でページを移します。`sandbox_run_viewer`はツールバーのボタンを押します。`regenerate`はPDF、EPUB、SCORMパッケージを作り直してそれを待ち、`print`は印刷ダイアログを開いてあなたの確認を待ち、`check`は**印刷用に検査**と同じように画面上のPDFを読み直して判定、項目、検出結果を返し、`download`はPDFかEPUB、または新しく作ったSCORMパッケージを保存し、`play_video`と`stop_video`はページ上の動画を再生・停止します。
 
 ### 漫画のページの編集
 
@@ -480,7 +494,7 @@ Sandboxが登録するときのまとまりで並べています。各ツール�
 
 - **開いているもの**：`sandbox_get_state`。
 - **ページ**：`sandbox_render_page`、`sandbox_inspect_pages`、`sandbox_inspect_point`。
-- **本文**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
+- **本文**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
 - **デザイン**：`sandbox_get_config`、`sandbox_set_config`、`sandbox_find_setting`、`sandbox_reset_to_original`、`sandbox_frame_styles`、`sandbox_merge_styles`。
 - **取り消し**：`sandbox_undo`。
 - **表示**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。

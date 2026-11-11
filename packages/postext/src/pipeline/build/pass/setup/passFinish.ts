@@ -4,6 +4,7 @@ import { type ContentWarning, type VDTColumn, pageIsVertical, pageIsMirrored } f
 import { unplacedByDoc, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, composedWarningsByDoc, compositionWarningsByDoc } from '../../warnings.js';
 import { centrePageText } from '../../passHelpers.js';
 import { hereResourcesNotEmbedded } from '../../../floats/hereNotEmbedded.js';
+import { paragraphResourcesCitedInNotes } from '../../../floats/paragraphEmbeds.js';
 import { effectiveResourceTypes } from '../../../../defaults/resources/resourceTypes.js';
 import { dimensionToPx } from '../../../../units.js';
 import { pageLayoutOf } from '../../../blocks/placement.js';
@@ -13,12 +14,15 @@ import { fillPageMarks, stampCarriedSource, carriedByDoc } from '../../pageMarks
 import { buildLineNumbers } from '../../../text/lineNumbers.js';
 import { buildHeadersAndFooters } from '../../../pages/headerFooter.js';
 import { flowColorValues } from '../../../sections/partPalette.js';
+import { paletteTints, tintPaperOf } from '../../../../defaults/shared.js';
+import { addPrintColors, resourceTintColors } from '../../../sections/partPalette/printColors.js';
 import { leadingBoldText } from '../../../pages/placeholders.js';
 import { buildCodeLineNumbers } from '../../../code/codeLines.js';
 import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
 import { orientLinesToFrames } from '../../../blocks/mirrorFrame.js';
 import { stampFigureLabelRects } from '../../../../composed/labels.js';
 import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings } from '../../../contentWarnings.js';
+import { floatPinWarnings } from '../../../contentWarnings/floatPinWarnings.js';
 import type { PostextConfig, Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
 import type { VDTDocument } from '../../../../vdt/document.js';
 import type { LayoutContinuation } from '../../../../types/content.js';
@@ -47,11 +51,15 @@ export interface PassFinishDeps {
   chapterEndNotes: boolean;
   codeBoxes: { blocks: ContentBlock[]; wrapped: boolean; };
   contentBlocks: ContentBlock[];
+  /** The footnotes' definitions, by id. */
+  footnoteDefs: Map<string, ContentBlock>;
   carried: ImportedJumps | undefined;
   resourceById: Map<string, Resource>;
   paragraphContainers: ParagraphContainerPlan;
   calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
   pendingFloats: PlannedFloat[];
+  /** The resources the float plan kept a pin for (`placement.pin`). */
+  pinnedFloats: ReadonlySet<string>;
   pendingSideBoxes: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; pageIndex: number; }[];
   openerFloatNotes: ContentWarning[];
   awaitingSideBoxes: { box: { startIdx: number; plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }; pageIndex: number; band: number; column: VDTColumn; refY: number; }[];
@@ -85,7 +93,7 @@ export interface PassFinishDeps {
 export function createPassFinish(deps: PassFinishDeps) {
   const {
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats, pinnedFloats,
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -115,6 +123,10 @@ export function createPassFinish(deps: PassFinishDeps) {
   const incorporated = new Set(Object.keys(continuation?.resourceNumbers ?? {}));
   for (const r of hereResourcesNotEmbedded(contentBlocks, resources, effectiveResourceTypes(config, resources), incorporated)) {
     unplaced.push({ kind: 'hereNotEmbedded', resourceId: r.resourceId, sourceStart: r.sourceStart + bodyOffset, sourceEnd: r.sourceEnd + bodyOffset });
+  }
+  // One placed after its citing paragraph that only notes cite (#1492).
+  for (const r of paragraphResourcesCitedInNotes(contentBlocks, footnoteDefs.values(), resources, effectiveResourceTypes(config, resources), incorporated)) {
+    unplaced.push({ kind: 'paragraphCitedInNote', resourceId: r.resourceId, sourceStart: r.sourceStart + bodyOffset, sourceEnd: r.sourceEnd + bodyOffset });
   }
   if (unplaced.length > 0) unplacedByDoc.set(doc, unplaced);
   // The notes, in the room the flow reserved for them.
@@ -200,11 +212,19 @@ export function createPassFinish(deps: PassFinishDeps) {
   // before the running heads (whose palettes recolour them).
   buildLineNumbers(doc, contentBlocks, continuation);
 
+  // A resource's colours at a tint of a CMYK or spot entry print as that
+  // entry's inks (#1471).
+  addPrintColors(doc, resourceTintColors(resources, setup.resolved.colorPalette, tintPaperOf(setup.resolved.page)));
+
   buildHeadersAndFooters(doc, resourceById, {
     // Where two palette entries share a base value, each kind of flow
     // colour follows its own settings under a part or section palette.
     // (The default resource types set no caption style of their own.)
     flowColorValues: (overrides) => flowColorValues(config, overrides, config?.resourceTypes),
+    // Tints the configuration and the resources (a table cell's ground)
+    // link to the palette at.
+    ...(config?.page?.backgroundColor?.paletteId ? { pageColorLink: config.page.backgroundColor } : {}),
+    paletteTints: [...new Set([...(config ? paletteTints(config) : []), ...paletteTints(resources)])],
     // `{firstMark.<style>}` / `{lastMark.<style>}`: a paragraph of a
     // `:::paragraphs` container marks the page with its leading bold run.
     paragraphMark: (idx) => {
@@ -246,7 +266,12 @@ export function createPassFinish(deps: PassFinishDeps) {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
-  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely]);
+  // Floats set by hand that are not where their pin asks (#1494).
+  const pins = floatPinWarnings(doc, givenResources ?? [], pinnedFloats, (idx) => {
+    const b = contentBlocks[idx];
+    return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
+  });
+  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0 || pins.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely, ...pins]);
   if (textWrapNotes.length > 0 || columnsNotes.length > 0 || movedNotes.length > 0) textWrapWarningsByDoc.set(doc, [...textWrapNotes, ...columnsNotes, ...movedNotes]);
   // Composed pages (#855): frames whose content does not fit.
   if (composedNotes.length > 0) composedWarningsByDoc.set(doc, composedNotes);

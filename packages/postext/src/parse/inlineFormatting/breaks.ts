@@ -254,7 +254,7 @@ export function applyTitleBreaks(title: string, breaks: readonly number[] | unde
  *  break: `:ref{…}`, `:swatch{…}`, a chip's `:chip[…]{…}`, an annotation's
  *  `:ruby[…]{…}` (read by {@link directiveAttrRanges}). */
 const DIRECTIVE_BRACED = ['ref', 'swatch'];
-const DIRECTIVE_BRACKETED = ['chip', 'icon', 'dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten'];
+const DIRECTIVE_BRACKETED = ['chip', 'icon', 'dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten', 'span'];
 
 /**
  * Turn the forced line breaks of a resource snippet ({@link SNIPPET_BREAK_RE})

@@ -3,7 +3,8 @@
 import { resolvedComics } from '../../../defaults/comics.js';
 import { setMeasureWritingMode } from '../../../measure/vertical.js';
 import { computeChapterTitles, computeChapterNumbers, computeChapterTitlesAtTop, computeChapterNumbersAtTop, computeChapterNumbersByBlock, computeChapterAttrs, type PageMarks, computePageMarks, markSourceOf, computePartValues } from '../placeholders.js';
-import { applyPartPalettesToFlow } from '../../sections/partPalette.js';
+import { applyPartPalettesToFlow, paperUnder } from '../../sections/partPalette.js';
+import { addPrintColors, overprintingOverrides } from '../../sections/partPalette/printColors.js';
 import { recolorLineNumbers } from '../../text/lineNumbers.js';
 import type { Resource, PageRole, DesignSlot, ResolvedDesignSlot } from '../../../types.js';
 import { type ResolvedConfig, type VDTDocument, type VDTBlock, type VDTPage, pageIsVertical, pageIsMirrored, flowRectToPage } from '../../../vdt.js';
@@ -158,19 +159,28 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
     const merged = { ...fromTemplate, ...fromFence };
     return Object.keys(merged).length > 0 ? merged : undefined;
   };
-  const partPaletteByPageIndex = partValues.partPaletteByPageIndex.map((palette, i) => {
+  const pagePalettes = partValues.partPaletteByPageIndex.map((palette, i) => {
     const section = sectionByPage[i];
     const base = section && Object.keys(section.palette).length > 0 ? { ...palette, ...section.palette } : palette;
     const own = composedPaletteOf(doc.pages[i]);
     return own ? { ...base, ...own } : base;
   });
+  // The page colour with its palette link, which tints mix over.
+  const link = inputs.pageColorLink;
+  const pageColor = link?.paletteId
+    ? { ...resolved.page.backgroundColor, paletteId: link.paletteId, ...(link.tint !== undefined ? { tint: link.tint } : {}) }
+    : resolved.page.backgroundColor;
+  // An entry that overprints keeps overprinting in a part's colour (#1471).
+  const basePaper = resolved.page.backgroundColor.hex;
+  const { palettes: partPaletteByPageIndex, printColors } = overprintingOverrides(pagePalettes, resolved, inputs.paletteTints ?? [], (o) => paperUnder(pageColor, o) ?? basePaper);
+  if (printColors.length > 0) addPrintColors(doc, printColors);
   // The same overrides recolour the palette-linked colours of the flow,
   // and of the line numbers (#621).
-  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues);
-  recolorLineNumbers(doc, partPaletteByPageIndex);
+  applyPartPalettesToFlow(doc, partPaletteByPageIndex, resolved.colorPalette, inputs.flowColorValues, inputs.paletteTints, pageColor);
+  recolorLineNumbers(doc, partPaletteByPageIndex, pageColor);
   // And the paper: a page whose overrides change the entry the page colour
   // links to paints that colour instead.
-  stampPageBackgrounds(doc, partPaletteByPageIndex, resolved.page.backgroundColor, resolved.colorPalette);
+  stampPageBackgrounds(doc, partPaletteByPageIndex, pageColor, resolved.colorPalette);
 
   /** Pages of a spread whose decoration is laid (#861). */
   const spreadDecorated = new Set<number>();

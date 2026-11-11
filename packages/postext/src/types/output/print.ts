@@ -226,6 +226,97 @@ export interface CustomOutputProfile {
   inkLimit?: number;
 }
 
+/** One ink of the job's ink table (`print.inks`): what the plate of a spot
+ *  ink is called in the PDF and how it prints, whatever the colours, SVGs
+ *  and imports call it. */
+export interface PrintInk {
+  /** The ink as a colour's `spot.name` (or an SVG) names it. Matched
+   *  ignoring case and runs of spaces. */
+  name: string;
+  /** Other names of the same ink (`Pantone 286C`, `Corporate blue`):
+   *  colours naming any of them print on this ink's plate. */
+  aliases?: string[];
+  /** The name the plate carries in the PDF, the one the printer sees.
+   *  Defaults to `name`. */
+  pdfName?: string;
+  /** `'spot'` (default) prints the ink on its own plate; `'process'`
+   *  prints every colour of it in CMYK, from its alternate at the tint. */
+  output?: 'spot' | 'process';
+  /** The ink's alternate at full strength, percent, over the one the
+   *  colours give. */
+  cmyk?: CmykPercent;
+  /** Whether the ink overprints, over what the colours say. */
+  overprint?: boolean;
+}
+
+export interface ResolvedPrintInk {
+  name: string;
+  aliases: string[];
+  pdfName: string;
+  output: 'spot' | 'process';
+  cmyk?: CmykPercent;
+  overprint?: boolean;
+}
+
+/** The plates a job prints on (`print.plates`): a two-ink (or one-ink)
+ *  book. Every colour is set on these plates only — a colour of another
+ *  ink is projected onto them, the closest mix of their tints — and
+ *  pictures print as monotones or duotones on `images`. */
+export interface PrintPlatesConfig {
+  /** The plates, as the PDF names them: `Cyan`, `Magenta`, `Yellow` and
+   *  `Black` for the process inks, a spot ink by its plate name (or a
+   *  name or alias the ink table gives it). Empty or absent: every
+   *  plate, as before. */
+  inks?: string[];
+  /** The plates pictures print on: one makes a monotone, two a duotone.
+   *  Defaults to `Black` when the job prints it, else to the first plate. */
+  images?: string[];
+  /** The tone curve of each picture plate, by plate name: points
+   *  `[tone, ink]` in percent, tone 0 the paper and 100 the darkest
+   *  shadow. A monotone defaults to a straight line; a duotone puts the
+   *  first plate on the shadows and the second on the middle tones. */
+  curves?: Record<string, Array<[number, number]>>;
+}
+
+export interface ResolvedPrintPlatesConfig {
+  inks: string[];
+  images: string[];
+  curves: Record<string, Array<[number, number]>>;
+}
+
+/** How pictures' colours are read and printed (`print.imageColor`). */
+export interface PrintImageColorConfig {
+  /** A picture's own ICC profile (a PNG's `iCCP`, a JPEG's `ICC_PROFILE`):
+   *  `'use'` reads its pixels through it, so an Adobe RGB or Display P3
+   *  photograph separates as it looks; `'ignore'` (default) reads every
+   *  RGB picture as sRGB. */
+  embeddedProfile?: 'use' | 'ignore';
+  /** A profile every RGB picture is read through instead of its own or
+   *  sRGB: a stored `.icc` (`fileId`, its bytes from `resourceBytes`). */
+  assignedRgbProfile?: { name: string; fileId: string };
+  /** How greyscale pictures print, on black alone: `'profile'` matches
+   *  their tones through the output profile's black, its dot gain
+   *  included; a number is the press's dot gain at the 50 % tone, percent
+   *  (10–30 typically), compensated instead; `'none'` (default) writes
+   *  their values as they are, as before. */
+  grayDotGain?: 'profile' | 'none' | number;
+  /** A CMYK picture whose own profile is another press condition's
+   *  (a photograph separated for SWOP in a FOGRA book): `'convert'`
+   *  separates it again for the output condition — a TIFF or Photoshop
+   *  picture from its pixels; a JPEG, whose CMYK pixels are not decoded
+   *  here, is tagged with its own profile in PDF/X-4 for the printer's
+   *  RIP to convert, and passed through in PDF/X-1a (the preflight says
+   *  so) — `'keep'` (default) prints its values as they are. */
+  cmykProfile?: 'convert' | 'keep';
+}
+
+export interface ResolvedPrintImageColorConfig {
+  embeddedProfile: 'use' | 'ignore';
+  assignedRgbProfile?: { name: string; fileId: string };
+  grayDotGain: 'profile' | 'none' | number;
+  cmykProfile: 'convert' | 'keep';
+}
+
 /** Print production: the PDF/X standard, the output profile CMYK is
  *  separated with, how black prints, and the preflight thresholds. Layout
  *  ignores it; postext-pdf and the preflight read it. */
@@ -250,6 +341,13 @@ export interface PrintConfig {
   inkLimit?: number;
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  /** The ink table: renames, merges and process conversions of the job's
+   *  spot inks. An ink it does not list prints as its colours define it. */
+  inks?: PrintInk[];
+  /** The plates the job prints on: two-ink printing. */
+  plates?: PrintPlatesConfig;
+  /** How pictures' colours are read: their profiles, greyscale. */
+  imageColor?: PrintImageColorConfig;
 }
 
 /** Print production with every default filled in. */
@@ -264,6 +362,9 @@ export interface ResolvedPrintConfig {
   inkLimit: number;
   black: ResolvedPrintBlackConfig;
   preflight: ResolvedPrintPreflightConfig;
+  inks: ResolvedPrintInk[];
+  plates: ResolvedPrintPlatesConfig;
+  imageColor: ResolvedPrintImageColorConfig;
 }
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it
@@ -284,6 +385,11 @@ export interface PdfGenerationConfig {
    *  marks) flagged as an artifact so assistive technology skips it.
    *  Defaults to true. */
   accessible?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) in the
+   *  PDF, as the canvas and HTML do on screen. `false` keeps the grid a
+   *  screen guide for checking the page, out of a file meant for print.
+   *  Defaults to true. */
+  baselineGrid?: boolean;
   /** How form fields (chips with a `field`) write numbers and the face
    *  they show values in. Output only: the layout does not read it. The
    *  host's own `forms` option of `renderToPdf` and of the canvas
@@ -317,6 +423,7 @@ export interface ResolvedPdfGenerationConfig {
   forceColorSpace: boolean;
   colorSpace: PdfColorSpace;
   accessible: boolean;
+  baselineGrid: boolean;
   /** As set (its defaults depend on the document language). */
   forms?: PdfFormsConfig;
 }

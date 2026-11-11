@@ -14,7 +14,7 @@ import { nextAnnotation, type FoundAnnotation } from './scan.js';
 export function annotationSourceSkips(markdown: string, from: number, end: number): Array<[number, number]> {
   const out: Array<[number, number]> = [];
   const slice = markdown.slice(from, end);
-  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\|/.test(slice)) return out;
+  if (!/:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[|\{[^{}\n|]*\|/.test(slice)) return out;
   // Inline code spans, which the parser protects.
   const code: Array<[number, number]> = [];
   const codeRe = /(?<!\\)`[^`\n]+?`/g;

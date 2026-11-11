@@ -219,6 +219,12 @@ El cristal sigue caliente una hora después de apagar la llama.
       <td>Con <code>true</code> el flujo vuelve a la rejilla base tras el recuadro, de modo que el espacio bajo él es <code>marginBottom</code> redondeado hacia arriba a líneas enteras de la rejilla. Con <code>false</code> el recuadro conserva su <code>marginBottom</code> exacto, que se funde con el margen superior del bloque siguiente (dos recuadros consecutivos de ese estilo quedan exactamente a <code>max(marginBottom, marginTop)</code>), y el texto que lo sigue puede quedar fuera de la rejilla hasta el siguiente punto de ajuste (un encabezado, el final de una lista), como tras un encabezado con <code>headings.snapToGrid: false</code>. Pensado para documentos hechos de recuadros apilados (fichas, formularios). Se aplica a los recuadros del flujo; los recuadros a ancho de página en una maquetación de varias columnas, los flotantes, los fijos y los laterales conservan la rejilla, porque las bandas de columnas y las zonas de flotantes se disponen sobre ella. Los mecanismos de equilibrado de columnas no cambian: un recuadro que cierra una columna sigue bajando hasta la última línea de la rejilla de esa columna.</td>
     </tr>
     <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Empieza el recuadro en una línea de la rejilla: el espacio de encima se redondea hasta la siguiente, termine como termine el bloque anterior, y el recuadro se ajusta a la columna contando ese espacio. Apagado por defecto. Se aplica a los recuadros en el flujo; los flotantes, los fijos y los laterales van en bandas que ya se colocan sobre la rejilla. En el Sandbox: <strong>Empezar en una línea de la rejilla</strong>.</td>
+    </tr>
+    <tr>
       <td><code>keepTogether</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

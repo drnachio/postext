@@ -71,10 +71,10 @@ export async function printPreviewFor(config: PostextConfig, resources: readonly
   const dpi = (config.page?.dpi as number | undefined) ?? 300;
   const base = previewFor({ print, loaded, transform }, dpi, true);
   if (!base) return undefined;
-  const { imageSize } = preflightInputs(config.print, resources);
+  const { imageSize, svgInks } = preflightInputs(config.print, resources);
   const byPage = new Map<number, BoundingBox[]>();
   const offset = doc.pageIndexOffset ?? 0;
-  for (const issue of preflightDocument(doc, { print, transform, resources: [...resources], imageSize, cmyk: true })) {
+  for (const issue of preflightDocument(doc, { print, transform, resources: [...resources], imageSize, svgInks, cmyk: true })) {
     if (!issue.rect) continue;
     const list = byPage.get(issue.pageIndex - offset) ?? [];
     list.push(issue.rect);

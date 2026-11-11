@@ -5,11 +5,11 @@ export const metadata = {
   sidebarTitle: 'Estils i parts',
   description: 'Com es defineixen estils amb nom per a paràgrafs, xips, ressaltats, llistats de codi i encapçalaments, i com es dissenyen les pàgines que obren cada part del llibre',
   lang: 'ca',
-  lastUpdated: '2026-10-19',
-  readingTime: '37 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '46 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "Aquesta pàgina reuneix els estils amb nom, que defineixes una vegada i fas servir tantes vegades com vulguis. Un estil de paràgraf dona aspecte a una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins de la línia, i un estil de ressaltat, una banda de color darrere d'una frase. Els llistats de codi tenen una lletra, una caixa i uns colors propis. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials. Els requadres tenen una pàgina pròpia.",
+  plainSummary: "Aquesta pàgina reuneix els estils amb nom, que defineixes una vegada i fas servir tantes vegades com vulguis. Un estil de paràgraf dona aspecte a una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins de la línia, i un estil de ressaltat, una banda de color darrere d'una frase o una línia per sota o que la travessa; un estil de caràcter compon unes quantes paraules en una altra lletra, un altre cos o un altre color, i pot anomenar un estil de ressaltat que les acompanyi. Els llistats de codi tenen una lletra, una caixa i uns colors propis. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials. Els requadres tenen una pàgina pròpia.",
 };
 
 # Configuració: estils i parts
@@ -193,6 +193,12 @@ Bringhurst, R. (2004). *The Elements of Typographic Style*. Hartley & Marks.
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Torna el flux a la retícula de base sota el contenidor, i l'espai de sota és un mínim. Amb <code>false</code>, es conserva l'espai exacte: el text que ve després del contenidor queda fora de la retícula fins al bloc següent que s'hi ajusta (un encapçalament, el final d'una llista, una fórmula en bloc); és útil en un document que no segueix la retícula o en un grup amb un interlineat propi. Dins d'un requadre, que no té retícula, no canvia res.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Comença el primer paràgraf del contenidor en una línia de la retícula, acabi com acabi el bloc anterior; <code>marginTop</code> passa a ser un mínim. Apagat, el paràgraf comença on l’ha deixat el bloc anterior. Al Sandbox: <strong>Començar en una línia de la retícula</strong>.</td>
     </tr>
     <tr>
       <td><code>containerSpacing</code></td>
@@ -492,9 +498,148 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## Estils de caràcter
+
+La propietat `characterStyles` declara els aspectes amb nom d'un grup de paraules. Un grup en rep un amb la directiva `:span`, `:span[unes paraules]{style="id"}`, que és l'única manera de donar a un grup un aspecte amb nom. Un estil de caràcter fixa el text: una lletra (família, cos, pes, inclinació), un color, un espaiat entre lletres, majúscules o versaletes. Una franja darrere de les paraules, o una línia per sota o que les travessa, pertany a un [estil de ressaltat](#estils-de-ressaltat), que l'estil de caràcter anomena amb `mark`. A diferència d'un xip, un grup amb estil es parteix entre línies i es divideix amb guionet com el text que l'envolta. No ve cap estil per defecte, i un llibre no en té cap fins que els declara. Un grup amb un id que cap estil no declara es compon com el text que l'envolta, i el Tauler de revisió en dona avís (*Estil de caràcter desconegut*).
+
+```ts
+const config: PostextConfig = {
+  markStyles: [
+    { id: 'mark' },
+    {
+      id: 'pen',
+      name: 'Retolador fluorescent',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
+    },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Retolador', mark: 'pen' },
+    {
+      id: 'drug',
+      name: 'Nom de fàrmac',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Resposta errònia', mark: 'struck' },
+  ],
+};
+```
+
+```md
+La :span[primera línia de tractament]{style="marker"} és :span[la metformina]{style="drug"}, mai :span[la insulina d'entrada]{style="wrong"}.
+```
+
+Propietats (les que no es fixen conserven les del text):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propietat</th>
+      <th style={{ width: '180px' }}>Tipus</th>
+      <th style={{ width: '140px' }}>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obligatori</td>
+      <td>Identificador que s'escriu a la directiva: <code>:span[…]&#123;style="id"&#125;</code>. Lletres, xifres, <code>-</code> i <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nom llegible, només per a interfícies d'edició.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>la del text</td>
+      <td>Família del grup.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del text</td>
+      <td>Cos del grup; <code>em</code> és relatiu al text que l'envolta. Un cos més gran no canvia mai l'interlineat: les línies mantenen la retícula, de manera que un cos molt més gran pot tocar la línia de sobre.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>el del text</td>
+      <td>Pes de les paraules redones del grup (100–900, arrodonit a la centena); les seves paraules en negreta conserven la negreta.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon el grup en cursiva.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del text</td>
+      <td>Color del grup, també el de les paraules en negreta i en cursiva. És només pintura: no canvia mai la composició. Un ressaltat que fixa el seu propi color de text (el <code>mark</code> de l'estil, o un <code>:mark[…]</code> al voltant del grup) hi preval.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>cap</td>
+      <td>Tracking que s'afegeix després de cada caràcter del grup (<code>em</code> del text que l'envolta; negatiu, l'estreny). Es mesura amb el grup, de manera que la línia es parteix allà on es pinta.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compon el grup en majúscules segons les regles de la llengua en què és (una <em>i</em> turca passa a <em>İ</em>, les majúscules gregues perden l'accent). El text escrit conserva les seves lletres: la cerca i el mapa de font el llegeixen tal com està escrit, i el PDF dona a les majúscules la paraula escrita com a text (<code>/ActualText</code>), de manera que en copiar-les s'obtenen les paraules tal com es van teclejar. L'HTML i l'EPUB porten les majúscules mateixes.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compon el grup en versaletes, com fa <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>cap</td>
+      <td>L'id d'un <a href="#estils-de-ressaltat">estil de ressaltat</a> que es dibuixa amb el grup: la seva franja, la seva línia, el seu color de text. Un id que cap estil de ressaltat no declara es descarta, i el grup es queda sense ressaltat.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Un mecanisme per a cada cosa.** Un estil de caràcter fixa les lletres; un estil de ressaltat dibuixa el que les acompanya, una franja o una línia, igual que per a `:mark[…]`. Un subratllat sense més continua sent `:underline[…]`, un ratllat sense més `~~…~~` i un ressaltat sense més `:mark[…]`; un estil de caràcter és per a un aspecte al qual el llibre dona nom i que fa servir més d'una vegada. La forma de claudàtors i barres que fan servir altres eines (`[paraules]|id|`) no és sintaxi de Postext: es queda com a text, tal com està escrita.
+
+**Imbricació.** Un grup pot contenir altres marques en línia (`:span[una paraula **negreta**]{style="marker"}`, un enllaç, una referència, una fórmula) i altres grups: guanya l'estil més intern (`:span[a :span[b]{style="drug"} c]{style="marker"}`). Un grup no pot travessar un paràgraf.
+
+**On.** Paràgrafs, elements de llista, cites, avisos, notes a peu de pàgina, peus, notes i cel·les de taula, i encapçalaments mentre `headings.inlineMarks` estigui activat. Les capçaleres, l'índex de continguts i les entrades de l'índex alfabètic prenen les paraules sense l'estil. En una pàgina vertical (llibres xinesos i japonesos compostos en vertical) el grup es compon com el text que l'envolta, i la línia del seu ressaltat va a la dreta dels caràcters, com una línia lateral.
+
+**Sortida.** El llenç, el PDF, l'HTML i les sortides vectorials (SVG, IDML) dibuixen el ressaltat que anomena un estil amb la mateixa geometria que qualsevol `:mark[…]`. L'EPUB compon cada estil com una classe (`pt-cs-<id>`) amb la seva lletra, el seu cos, el seu pes, la seva inclinació, el seu color, el seu espaiat entre lletres i les seves versaletes; no dibuixa cap ressaltat, de la mateixa manera que no dibuixa cap `:mark[…]`. Una exportació a Word converteix cada estil en un estil de caràcter de Word anomenat *Postext Style: …*, amb la franja del ressaltat com a ombrejat i la seva línia com el subratllat de Word més semblant o un ratllat, i una importació de Word fa correspondre a un estil del llibre l'estil de caràcter que es diu com ell, o *Postext Style: …* en qualsevol de les llengües del lloc.
+
+Al VDT un segment amb estil porta `charStyle: { id, style }` (el grup i l'id de l'estil); la seva lletra i el seu tracking ja són a `fontString` i `tracking`, el seu color a `color`, i un segment que l'estil compon en majúscules porta el text escrit a `sourceText`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => tots els camps plens; es descarta un `mark` que no anomena cap estil de ressaltat
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => s'eliminen els valors per defecte estàtics; undefined per a una llista buida
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => l'estil `drug`, o undefined si cap estil no té aquest id
+```
+
 ## Estils de ressaltat
 
-La propietat `markStyles` declara els estils amb nom de l'element en línia `:mark[text]{style="…"}`: la franja de color darrere d'una frase, com quan un llibre de text ressalta les paraules clau (la sintaxi i les regles de tall de línia són a la referència del format de document). Inclou un estil per defecte, `mark` (una franja groc pàl·lid que sobresurt una mica de la frase, amb els extrems rectes i el text amb el color habitual), de manera que `:mark[…]` funciona sense configurar res; si declares `markStyles`, substitueixes aquesta llista. Una marca sense `style`, o amb un id que cap estil no declara, agafa el primer estil (el Sandbox assenyala l'id desconegut).
+La propietat `markStyles` declara els estils amb nom de l'element en línia `:mark[text]{style="…"}` (i dels ressaltats que els estils de caràcter anomenen amb `mark`): la franja de color darrere d'una frase, i una línia per sota o que la travessa, com quan un llibre de text ressalta les paraules clau (la sintaxi i les regles de tall de línia són a la referència del format de document). Inclou un estil per defecte, `mark` (una franja groc pàl·lid que sobresurt una mica de la frase, amb els extrems rectes i el text amb el color habitual), de manera que `:mark[…]` funciona sense configurar res; si declares `markStyles`, substitueixes aquesta llista. Una marca sense `style`, o amb un id que cap estil no declara, agafa el primer estil (el Sandbox assenyala l'id desconegut).
 
 ```ts
 const config: PostextConfig = {
@@ -572,7 +717,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Espai per sobre i per sota, cadascun en lloc de <code>paddingY</code>.</td>
+      <td>Espai per sobre i per sota, cadascun en lloc de <code>paddingY</code>. Tots dos poden ser negatius: un <code>paddingTop</code> negatiu baixa la vora superior de la franja dins de les lletres (uns <code>-0.35em</code> en cobreixen la meitat inferior, com un traç de retolador), i un <code>paddingBottom</code> negatiu puja la vora inferior per sobre dels descendents. Una franja que es queda sense alçada no es dibuixa.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pinta la franja. <code>false</code> deixa a l'estil la seva línia i el seu color de text, per a una marca que només subratlla o ratlla.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>L'opacitat de la franja, en percentatge (de 0 a 100). La franja es pinta darrere del text, de manera que les lletres conserven el seu color. Vegeu la nota sobre la transparència més avall.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>De 0 a 100: <code>0</code> dona una franja neta; amb valors més alts les vores superior i inferior ondulen i els extrems es tallen en diagonal, com un retolador passat a mà. L'ondulació segueix una llavor presa de la marca i del seu lloc, de manera que és la mateixa a cada composició, al llenç, al PDF, a l'HTML i a les sortides vectorials. Word dibuixa una franja neta.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>cap</td>
+      <td>Una línia que es dibuixa amb la marca, per sota de les paraules o travessant-les (vegeu més avall).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -583,7 +752,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-Les longituds en em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) es mesuren amb la mida del text marcat. La franja no ocupa lloc: el text es compon igual que sense la marca, la franja es pinta a sota i el farciment s'estén pels espais entre paraules i per l'interlineat. Al VDT, els segments de les paraules marcades porten un `mark` (`{ style, id, start?, end?, from?, to? }`) i cada línia desa les seves franges a `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relatives al `bbox.x` i a la línia de base de la línia), que els renderitzadors de canvas, PDF i HTML pinten abans del text de la línia.
+`line` (les longituds en em es mesuren amb la mida del text marcat):
+
+<table>
+  <thead>
+    <tr>
+      <th>Propietat</th>
+      <th>Tipus</th>
+      <th>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Per sota de les paraules, on la lletra posa el seu subratllat, o travessant-les, on posa el seu ratllat. En el text xinès i japonès, una línia que travessa va per l'eix central del quadratí; en una pàgina vertical, una línia per sota va a la dreta dels caràcters, com una línia lateral.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Com es dibuixa la línia. Una línia doble aparta el segon traç de les lletres; els punts, les ratlles i les ones es dimensionen a partir del gruix i de la mida del text.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>el del text marcat</td>
+      <td>Color de la línia.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>el de la lletra</td>
+      <td>Gruix del traç; sense fixar, el gruix del subratllat o del ratllat de la mateixa lletra.</td>
+    </tr>
+  </tbody>
+</table>
+
+La línia continua per sota dels espais entre les paraules de la frase i s'atura a la seva última lletra on la frase passa a la línia següent. Són les mateixes línies que dibuixen `:underline[…]` i `~~…~~`, de manera que una línia de marca se situa on se situen aquelles.
+
+**Transparència.** Una franja amb menys del 100 % d'opacitat és translúcida al llenç, a l'HTML, en un PDF digital i en un PDF/X-4, que admeten transparència. Un PDF/X-1a no n'admet gens: allà la franja es compon tal com s'imprimeix sobre paper blanc, com un to del seu color, a la planxa de la seva tinta si és una tinta plana. L'exportació a Word i les sortides vectorials (SVG, IDML) la componen igual, sobre blanc; sobre una pàgina de color o damunt d'una imatge, aquest to no coincideix amb la franja translúcida.
+
+Les longituds en em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) es mesuren amb la mida del text marcat. La franja no ocupa lloc: el text es compon igual que sense la marca, la franja es pinta a sota i el farciment s'estén pels espais entre paraules i per l'interlineat. Al VDT, els segments de les paraules marcades porten un `mark` (`{ style, id, start?, end?, from?, to? }`) i cada línia desa les seves franges a `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relatives al `bbox.x` i a la línia de base de la línia), que els renderitzadors de canvas, PDF i HTML pinten abans del text de la línia; les línies van als `marks` de la línia, marcades amb `markLine`, i es pinten després del text.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);
@@ -1154,7 +1366,7 @@ const config: PostextConfig = {
       <td>camps de nivell</td>
       <td>com a <code>headings.levels[]</code></td>
       <td>els valors del nivell</td>
-      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada camp que es fixa substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp per camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la paritat del nivell (fins a postext 1.4, en canvi, el camp que faltava s'omplia amb el valor sense salt). Un <code>figureStyle</code> fixat aquí s'aplica a la família del nivell on es fa servir l'estil (vegeu [Estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres)).</td>
+      <td><code>fontFamily</code>, <code>figureStyle</code>, <code>fontSize</code>, <code>lineHeight</code>, <code>fontWeight</code>, <code>italic</code>, <code>color</code>, <code>marginTop</code>, <code>marginBottom</code>, <code>snapToGrid</code>, <code>regainGrid</code>, <code>snapTopToGrid</code>, <code>numberSeparator</code>, <code>numberPosition</code>, <code>breakBefore</code>, <code>span</code>, <code>spanBreak</code>, <code>advancedDesign</code>, <code>textTransform</code>, <code>letterSpacing</code>, <code>lineSpan</code>, <code>indent</code>, <code>firstLineIndent</code>, <code>jidori</code>, <code>dropCap</code>, <code>hidden</code>: cada camp que es fixa substitueix el valor del nivell per als encapçalaments d'aquest estil (<code>dropCap: false</code> treu la caplletra del nivell). <code>breakBefore</code> es combina camp per camp amb el del nivell: un estil que només fixa <code>parity</code> conserva l'<code>enabled</code> del nivell, i un que només fixa <code>enabled: true</code> conserva la paritat del nivell (fins a postext 1.4, en canvi, el camp que faltava s'omplia amb el valor sense salt). Un <code>figureStyle</code> fixat aquí s'aplica a la família del nivell on es fa servir l'estil (vegeu [Estils de xifres](/ca/docs/configuration-fonts-colors-viewers#estils-de-xifres)).</td>
     </tr>
     <tr>
       <td><code>numberingTemplate</code></td>

@@ -25,12 +25,14 @@ import { codeOverflowWarnings } from '../code/codeLines.js';
 import { lineNumberWarnings } from '../text/lineNumbers.js';
 import { connectorAnchorUnknownWarnings, pageFurnitureWarnings } from '../pages/headerFooter.js';
 import { drainPasses } from '../columns/bandCaps.js';
-import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
+import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
 import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
 import { strikeDocument } from '../../marks/strikethrough.js';
+import { colorCharacterStyles } from '../../marks/characterStyles.js';
 import { highlightDocument } from '../../marks/highlightMarks.js';
+import { markLineDocument } from '../../marks/markLines.js';
 import { underlineDocumentLinks } from '../../marks/linkUnderline.js';
 import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
@@ -132,7 +134,7 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
+  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...hyphenRuleWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
   // Side boxes and side floats set on pages after the text, and what the
   // layout could place nowhere (#639).
   loose.push(...afterTextWarnings(doc), ...(unplacedByDoc.get(doc) ?? []));
@@ -162,12 +164,17 @@ export function* buildDocumentGen(
   // for the column clip, and the paragraphs whose marks meet a
   // neighbouring line.
   const harakat = annotateArabicMarks(doc);
+  // The colour of the character styles (`:span[…]{style}`), paint only:
+  // before the lines below, which take the colour of their text.
+  colorCharacterStyles(doc);
   // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
   overlineEmphasis(doc);
   // The lines through struck-through text (`~~…~~`).
   strikeDocument(doc);
   // The bands of the highlight marks (`:mark[…]`, #888).
   highlightDocument(doc);
+  // Their lines (`markStyles[].line`), in the colour the text took above.
+  markLineDocument(doc);
   // The lines under the links (`links.style`, #1402).
   underlineDocumentLinks(doc);
   // Faces the text was set in that the font set could not give (#629).

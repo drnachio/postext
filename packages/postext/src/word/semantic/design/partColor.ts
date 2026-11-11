@@ -9,6 +9,9 @@
 
 import type { ContentBlock } from '../../../parse/types.js';
 import { applyPaletteOverrides } from '../../../design/layout.js';
+import { isTinted, paletteTints, paletteTintHex } from '../../../defaults/shared.js';
+import { paperUnder } from '../../../pipeline/sections/partPalette.js';
+import { withHash } from '../../../pipeline/sections/partPalette/colorKinds.js';
 import type { ColorValue, ResolvedDesignElement } from '../../../types.js';
 import type { WriterContext } from '../context.js';
 import { hex } from '../wml.js';
@@ -19,14 +22,25 @@ import { headingLevelOf, partPaletteAt } from './values.js';
  *  by its value when exactly one overridden entry has that base value. */
 export function partColor(ctx: WriterContext, color: ColorValue | undefined, palette: Readonly<Record<string, string>>): ColorValue | undefined {
   if (!color) return color;
+  const paper = ctx.resolved.page.backgroundColor.hex;
+  const under = paperUnder(ctx.config.page?.backgroundColor, palette) ?? paper;
   if (color.paletteId) {
     const own = palette[color.paletteId];
-    return own ? { ...color, hex: own } : color;
+    if (!own) return color;
+    // At a tint (`ColorValue.tint`), the part's colour at that strength.
+    return isTinted(color) ? { ...color, hex: paletteTintHex(withHash(own), color.tint, under) } : { ...color, hex: own };
   }
+  // A colour that kept no link: matched by value, at full strength or at a
+  // tint the configuration links to its palette.
   const value = color.hex.toLowerCase();
-  const entries = (ctx.resolved.colorPalette ?? []).filter((e) => e.value.hex.toLowerCase() === value);
-  const own = entries.length === 1 ? palette[entries[0]!.id] : undefined;
-  return own ? { ...color, hex: own } : color;
+  const tints = [100, ...paletteTints(ctx.config)];
+  const matches: [string, number][] = [];
+  for (const e of ctx.resolved.colorPalette ?? []) {
+    for (const t of tints) if (paletteTintHex(e.value.hex, t, paper).toLowerCase() === value) matches.push([e.id, t]);
+  }
+  const [id, t] = matches.length === 1 ? matches[0]! : [undefined, 100];
+  const own = id ? palette[id] : undefined;
+  return own ? { ...color, hex: t < 100 ? paletteTintHex(withHash(own), t, under) : own } : color;
 }
 
 /**
@@ -46,7 +60,8 @@ export function partInk(ctx: WriterContext, color: ColorValue | undefined): stri
 export function inPartColors(ctx: WriterContext, b: ContentBlock, elements: ResolvedDesignElement[]): ResolvedDesignElement[] {
   const palette = partPaletteAt(ctx, b);
   if (!Object.keys(palette).length) return elements;
-  return elements.map((el) => applyPaletteOverrides(el, palette));
+  const paper = paperUnder(ctx.config.page?.backgroundColor, palette) ?? ctx.resolved.page.backgroundColor.hex;
+  return elements.map((el) => applyPaletteOverrides(el, palette, paper));
 }
 
 /** The Word style of heading `b` in its part's colour: `style` itself

@@ -17,6 +17,7 @@ import { breakParityOptions } from '../HeadingsSection/breakParityOptions.js';
 import { useRightToLeftFlow, flowSideLabels } from '../../../settings/flowSides.js';
 import { DropCapFields } from '../../../settings/DropCapFields.js';
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
+import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { slugifyStyleId, type MarginSide, omit, infoStyle, Field, inputClass, inputStyle, TEXT_SIZE_UNITS, LINE_HEIGHT_UNITS, ZERO_PT, TRACKING_UNITS, MARGIN_UNITS, ZERO_EM, INDENT_UNITS, MIN_HEIGHT_UNITS, hasKeys } from './shared.js';
 
 export interface Baselines {
@@ -87,7 +88,7 @@ export function HeadingStyleCard({ style, otherIds, base, onChange, onRename, on
   };
   const headingFields: (keyof HeadingStyleConfig)[] = [
     'fontSize', 'lineHeight', 'fontFamily', 'figureStyle', 'fontWeight', 'color', 'italic', 'textTransform', 'letterSpacing',
-    'marginTop', 'marginBottom', 'snapToGrid', 'lineSpan', 'indent', 'firstLineIndent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
+    'marginTop', 'marginBottom', 'snapToGrid', 'regainGrid', 'snapTopToGrid', 'lineSpan', 'indent', 'firstLineIndent', 'jidori', 'dropCap', 'breakBefore', 'span', 'hidden', 'advancedDesign',
   ];
   const hasHeadingOverrides = headingFields.some((f) => style[f] !== undefined);
   const resetHeadingFields = () => {
@@ -450,14 +451,8 @@ export function HeadingStyleCard({ style, otherIds, base, onChange, onRename, on
           onReset={() => set('marginBottom', undefined)}
           units={MARGIN_UNITS}
         />
-        <ToggleSwitch
-          label={labels.headingLevelSnapToGrid}
-          checked={style.snapToGrid ?? lvl.snapToGrid}
-          onChange={(v) => set('snapToGrid', v)}
-          tooltip={labels.headingLevelSnapToGridTooltip}
-          isDefault={unset('snapToGrid')}
-          onReset={() => set('snapToGrid', undefined)}
-        />
+        <GridSnapFields kind="heading" set={set} unset={unset}
+          value={{ snapToGrid: style.snapToGrid ?? lvl.snapToGrid, regainGrid: style.regainGrid ?? lvl.regainGrid, snapTopToGrid: style.snapTopToGrid ?? lvl.snapTopToGrid }} />
         <NumberInput
           label={labels.headingLineSpan}
           value={style.lineSpan ?? lvl.lineSpan ?? 0}

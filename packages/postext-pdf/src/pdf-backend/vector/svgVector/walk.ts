@@ -119,7 +119,7 @@ function layoutText(w: Walker, el: XmlEl, m: Matrix, style: Style, clips: Vector
         if (fillPaint && alpha > 0 && ns.visible) {
           const run: VectorTextRun = {
             text, font: font!, size: ns.fontSize, x: pen.x, y: pen.y, matrix: nm,
-            fill: { hex: fillPaint.hex, alpha },
+            fill: { hex: fillPaint.hex, alpha, ...(fillPaint.ink ? { ink: fillPaint.ink } : {}) },
             ...(complex ? { base: ns.direction } : {}),
           };
           chunk!.runs.push(run);
@@ -298,11 +298,12 @@ export function walk(w: Walker, el: XmlEl, ctm: Matrix, parentStyle: Style, clip
     const strokeAlpha = strokePaint ? strokePaint.alpha * style.strokeOpacity * style.opacity : 0;
     const scale = lengthScale(m);
     const strokeWidth = style.strokeWidth * scale;
-    const fillOut = fillPaint && fillAlpha > 0 ? { hex: fillPaint.hex, alpha: fillAlpha } : null;
+    const fillOut = fillPaint && fillAlpha > 0 ? { hex: fillPaint.hex, alpha: fillAlpha, ...(fillPaint.ink ? { ink: fillPaint.ink } : {}) } : null;
     const strokeOut = strokePaint && strokeAlpha > 0 && strokeWidth > 0
       ? {
         hex: strokePaint.hex,
         alpha: strokeAlpha,
+        ...(strokePaint.ink ? { ink: strokePaint.ink } : {}),
         width: strokeWidth,
         cap: style.cap,
         join: style.join,

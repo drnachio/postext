@@ -65,7 +65,10 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
           }
           return spec;
         }
-        return r.pdfFile && missingPaths.has(r.pdfFile) ? { ...r, pdfFile: undefined } : r;
+        const spec = { ...r };
+        if (spec.pdfFile && missingPaths.has(spec.pdfFile)) spec.pdfFile = undefined;
+        if (spec.printFile && missingPaths.has(spec.printFile)) spec.printFile = undefined;
+        return spec;
       });
     const fonts = manifest.fonts
       ?.map((fam) => ({ ...fam, variants: fam.variants.filter((v) => !missingPaths.has(v.file)) }))
@@ -89,8 +92,10 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
               delete spec.width;
               delete spec.height;
               delete spec.pdfFile;
+              delete spec.printFile;
             }
             if (spec.pdfFile && missingPaths.has(spec.pdfFile)) delete spec.pdfFile;
+            if (spec.printFile && missingPaths.has(spec.printFile)) delete spec.printFile;
             return spec;
           })
           .filter((r) => Object.keys(r).length > 1);

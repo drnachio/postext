@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '配置',
   description: '什么是Postext配置，以及参考的二十个页面各讲哪一组设置',
   lang: 'zh',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '3分钟',
   order: 4,
   plainSummary: "本页是参考的入口，这份参考列出控制页面外观的所有设置。所有选择都放在一组设置里：页面大小、栏数、字体、字号、标题、框、颜色等等。每项设置都有合理的默认值，你只需写出想改的那几项。整份参考分为二十个页面。本页的列表链接到每一节，可以直接跳到需要的部分。",
@@ -95,7 +95,8 @@ const document = buildDocument(content, {
 
 - [段落样式](/zh/docs/configuration-styles#段落样式)：供`:::paragraphs`容器使用的命名样式，如参考文献、术语表、注释。
 - [行内标签样式](/zh/docs/configuration-styles#行内标签样式)：`chipStyles`，行内`:chip[…]`的命名样式，如词库里的词框、键帽、标签。
-- [高亮样式](/zh/docs/configuration-styles#高亮样式)：`markStyles`，行内`:mark[…]`的命名样式，即衬在高亮短语下面、可以跨行的色带。
+- [字符样式](/zh/docs/configuration-styles#字符样式)：`characterStyles`，写作`:span[…]{style="id"}`的一段文字的命名样式：字体、字号、颜色、字距、大写，以及与之配套的高亮样式。
+- [高亮样式](/zh/docs/configuration-styles#高亮样式)：`markStyles`，行内`:mark[…]`的命名样式，即衬在高亮短语下面、可以跨行的色带，以及短语下方或穿过短语的线。
 - [代码清单](/zh/docs/configuration-styles#代码清单)：`codeStyle`，即```` ``` ````清单的字体、框、制表符宽度、过长的行、行号和记号颜色，语法着色及其高亮器接口，以及用代码字体排的行内代码。
 - [篇](/zh/docs/configuration-styles#篇)：`:::part`容器生成的篇名页，包括奇偶页、版心、篇名页的设计、正文的字体排印。
 - [标题样式](/zh/docs/configuration-styles#标题样式)：供`{style="…"}`标题使用的命名样式，如不编号的章、带独立书眉的前辅文，以及页面几何和配色。

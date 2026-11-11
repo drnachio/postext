@@ -11,6 +11,7 @@
 import { renderToPdf } from '../pdf-backend/index.js';
 import { declaredFontFile } from '../fontCache.js';
 import type { PdfRequestMessage, PdfResponseMessage } from './protocol.js';
+import { inspectPrintPdf } from '../print/inspectPdf.js';
 
 const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -55,6 +56,7 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
     }
     case 'render': {
       const bytesById = new Map(msg.resourceBytes);
+      const previewsById = new Map(msg.previewBytes ?? []);
       try {
         const bytes = await renderToPdf(msg.docs, {
           ...msg.settings,
@@ -69,6 +71,7 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
             return answer instanceof Uint8Array ? answer : null;
           },
           resourceBytes: (fileId) => bytesById.get(fileId),
+          ...(previewsById.size > 0 ? { previewBytes: (fileId: string) => previewsById.get(fileId) } : {}),
           onProgress: (progress) => post({ kind: 'progress', id: msg.id, progress }),
           onWarning: (warning) => post({ kind: 'warning', id: msg.id, warning }),
         });
@@ -80,6 +83,15 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
           message: err instanceof Error ? err.message : String(err),
           ...(err instanceof Error && err.stack ? { stack: err.stack } : {}),
         });
+      }
+      return;
+    }
+    case 'inspect': {
+      try {
+        post({ kind: 'inspected', id: msg.id, report: await inspectPrintPdf(msg.bytes) });
+      } catch (err) {
+        // A file that cannot be read back is still the file: no report.
+        post({ kind: 'inspected', id: msg.id, message: err instanceof Error ? err.message : String(err) });
       }
       return;
     }

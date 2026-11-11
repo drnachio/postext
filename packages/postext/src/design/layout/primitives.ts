@@ -4,6 +4,7 @@
 import type { DesignTextAlign, VAlign, Resource, PageRole, PageParity, PageRoleFilter, ColorValue, ElementBoxStyle, ResolvedDesignElement } from '../../types.js';
 import type { VDTDesignBoxStyle, VDTPathCommand, VDTPathStroke, VDTPathMarker } from '../../vdt.js';
 import { parseInlineSnippetSpans } from '../../parse/inlineSnippet.js';
+import { isTinted, paletteTintHex } from '../../defaults/shared.js';
 import type { InlineSpan } from '../../parse/types.js';
 import type { DesignPlaceholderContext } from '../placeholders.js';
 import type { DesignTextRun } from '../richText.js';
@@ -159,7 +160,8 @@ export interface ResolvedImagePrimitive extends ResolvedElementGeometry {
    *  caption as plain text; absent for a `decorative` element or a
    *  resource with neither. */
   altText?: string;
-  /** The part of the picture shown (a `fit: 'cover'` crop, #923). */
+  /** The part of the picture shown (a `fit: 'cover'` crop, #923, or the
+   *  resource's manual crop, #1494). */
   crop?: { x: number; y: number; width: number; height: number };
 }
 
@@ -329,24 +331,30 @@ export function colorHex(c: ColorValue | undefined): string {
 }
 
 /** `c` with its hex replaced when its `paletteId` is overridden. */
-function overrideColor(c: ColorValue | undefined, overrides: Record<string, string>): ColorValue | undefined {
+function overrideColor(c: ColorValue | undefined, overrides: Record<string, string>, paper?: string): ColorValue | undefined {
   if (!c?.paletteId) return c;
   const hex = overrides[c.paletteId];
-  return hex ? { ...c, hex } : c;
+  if (!hex) return c;
+  if (!isTinted(c)) return { ...c, hex };
+  // At a tint, the override at the same strength over the page: a screen
+  // colour (the override names no inks).
+  const { cmyk: _c, spot: _s, ...rest } = c;
+  void _c; void _s;
+  return { ...rest, hex: paletteTintHex(hex.startsWith('#') ? hex : `#${hex}`, c.tint, paper && paper !== 'transparent' ? paper : undefined), model: 'hex' };
 }
 
-function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<string, string>): ElementBoxStyle | undefined {
+function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<string, string>, paper?: string): ElementBoxStyle | undefined {
   if (!style) return style;
   const sides = style.borderSides;
   return {
     ...style,
-    backgroundColor: overrideColor(style.backgroundColor, overrides),
-    borderColor: overrideColor(style.borderColor, overrides),
+    backgroundColor: overrideColor(style.backgroundColor, overrides, paper),
+    borderColor: overrideColor(style.borderColor, overrides, paper),
     // Each side's own colour too (#1059).
     ...(sides && typeof sides === 'object'
       ? {
           borderSides: Object.fromEntries(
-            Object.entries(sides).map(([k, v]) => [k, v && typeof v === 'object' && v.color ? { ...v, color: overrideColor(v.color, overrides) } : v]),
+            Object.entries(sides).map(([k, v]) => [k, v && typeof v === 'object' && v.color ? { ...v, color: overrideColor(v.color, overrides, paper) } : v]),
           ) as ElementBoxStyle['borderSides'],
         }
       : {}),
@@ -357,29 +365,29 @@ function overrideBoxStyle(style: ElementBoxStyle | undefined, overrides: Record<
  *  box background / border, outline, drop cap) that a `:::part` overrides taking the part's
  *  value — how a section recolours the running heads and opener bands of
  *  its pages without a second design. */
-export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Record<string, string>): ResolvedDesignElement {
+export function applyPaletteOverrides(el: ResolvedDesignElement, overrides: Record<string, string>, paper?: string): ResolvedDesignElement {
   switch (el.kind) {
     case 'text':
       return {
         ...el,
-        color: overrideColor(el.color, overrides) ?? el.color,
-        box: overrideBoxStyle(el.box, overrides),
-        ...(el.stroke ? { stroke: { ...el.stroke, color: overrideColor(el.stroke.color, overrides) } } : {}),
+        color: overrideColor(el.color, overrides, paper) ?? el.color,
+        box: overrideBoxStyle(el.box, overrides, paper),
+        ...(el.stroke ? { stroke: { ...el.stroke, color: overrideColor(el.stroke.color, overrides, paper) } } : {}),
         // The drop cap's own colour follows the palette too (EF-107).
-        ...(el.dropCap?.color ? { dropCap: { ...el.dropCap, color: overrideColor(el.dropCap.color, overrides) } } : {}),
+        ...(el.dropCap?.color ? { dropCap: { ...el.dropCap, color: overrideColor(el.dropCap.color, overrides, paper) } } : {}),
       };
     case 'rule':
-      return { ...el, color: overrideColor(el.color, overrides) ?? el.color };
+      return { ...el, color: overrideColor(el.color, overrides, paper) ?? el.color };
     case 'box':
-      return { ...el, style: overrideBoxStyle(el.style, overrides) ?? el.style };
+      return { ...el, style: overrideBoxStyle(el.style, overrides, paper) ?? el.style };
     case 'path':
       return {
         ...el,
-        ...(el.fill ? { fill: overrideColor(el.fill, overrides) } : {}),
-        ...(el.stroke ? { stroke: overrideColor(el.stroke, overrides) } : {}),
+        ...(el.fill ? { fill: overrideColor(el.fill, overrides, paper) } : {}),
+        ...(el.stroke ? { stroke: overrideColor(el.stroke, overrides, paper) } : {}),
       };
     case 'connector':
-      return { ...el, color: overrideColor(el.color, overrides) ?? el.color };
+      return { ...el, color: overrideColor(el.color, overrides, paper) ?? el.color };
     default:
       return el;
   }

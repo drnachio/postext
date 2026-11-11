@@ -1,9 +1,10 @@
 import type { VDTDocument } from 'postext';
 import type { PdfFontFileDeclaration } from '../fontCache.js';
 import type { PdfWarning, RenderProgress, RenderToPdfOptions } from '../pdf-backend/index.js';
+import type { PrintPdfReport } from '../print/inspectPdf.js';
 
 /** The render options that travel to the worker as data. */
-export type PdfRenderSettings = Pick<RenderToPdfOptions, 'forms' | 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible' | 'print' | 'outputProfile' | 'profileBaseUrl'> & {
+export type PdfRenderSettings = Pick<RenderToPdfOptions, 'forms' | 'pageNegative' | 'outlines' | 'colorSpace' | 'accessible' | 'baselineGrid' | 'print' | 'outputProfile' | 'profileBaseUrl'> & {
   /** `RenderToPdfOptions.harfbuzzWasm`, as data: a URL string (a `URL`
    *  does not survive `postMessage`) or the bytes. */
   harfbuzzWasm?: string | ArrayBuffer | Uint8Array;
@@ -17,6 +18,8 @@ export type PdfRequestMessage =
       settings: PdfRenderSettings;
       /** Resource bytes by file id (transferred). */
       resourceBytes: [string, Uint8Array][];
+      /** Previews of TIFF and Photoshop originals by file id (transferred). */
+      previewBytes?: [string, Uint8Array][];
     }
   | {
       /** The host's answer to a `font` or `rasterize` question: a font as
@@ -31,6 +34,9 @@ export type PdfRequestMessage =
       declared?: Array<PdfFontFileDeclaration | null>;
       error?: string;
     }
+  /** Read a finished PDF back (`inspectPrintPdf`); its bytes are
+   *  transferred. */
+  | { kind: 'inspect'; id: number; bytes: Uint8Array }
   | { kind: 'dispose' };
 
 export type PdfResponseMessage =
@@ -41,6 +47,8 @@ export type PdfResponseMessage =
   | { kind: 'warning'; id: number; warning: PdfWarning }
   | { kind: 'rendered'; id: number; bytes: Uint8Array }
   | { kind: 'error'; id: number; message: string; stack?: string }
+  /** What an `inspect` read; no report when the file could not be read. */
+  | { kind: 'inspected'; id: number; report?: PrintPdfReport; message?: string }
   /** The worker cannot reach fonts or decode SVG itself: it asks the host.
    *  `codePoints` are the characters the pages set in the face
    *  (`PdfFontRequest`). */

@@ -2,10 +2,10 @@
 // the tagged cells and the table drawn with its rules, fills and cell
 // images (#1276: split out of renderResourceBlock.ts).
 import type { Color } from 'pdf-lib';
-import { type ResolvedResourceBlock, altWithLabels, undrawnLabels, type VDTResourceTableCell, tableFrameOutline, tableCellFillRects } from 'postext';
+import { type ResolvedResourceBlock, altWithLabels, undrawnLabels, type VDTResourceTableCell, tableFrameOutline, tableCellFillRects, uncroppedPictureBox } from 'postext';
 import { LinkRegistry, refTarget } from '../../structure/links.js';
 import { FontCache } from '../../../fontCache.js';
-import { type PageCtx, colorFromHex, pushClipOutline, popClip, fillRectsPx, drawLinePx, strokeOutlinePx, fillRectPx } from '../../primitives.js';
+import { type PageCtx, colorFromHex, pushClipOutline, pushClipRect, popClip, fillRectsPx, drawLinePx, strokeOutlinePx, fillRectPx } from '../../primitives.js';
 import { type StructAttrs, type StructElem, tagArtifact, tagContent } from '../../structure/tagging.js';
 import type { ResourceImageMap } from '../renderResourceBlock.js';
 import { type PaintFonts, drawEmbeddedResource, paintLine } from './lines.js';
@@ -178,6 +178,14 @@ export function renderTable(
     if (!img) continue;
     const { x, y, width, height } = img.rect;
     const cellElem = cellElems?.get(cell);
+    const embedded = images.get(img.fileId);
+    // A picture with a manual crop (`Resource.crop`, #1494): the whole
+    // picture at its uncropped box, clipped to the image's rect (the
+    // content opened inside the clip); reflected on a mirrored page, as a
+    // figure's is.
+    let full = embedded && img.crop ? uncroppedPictureBox(x, y, width, height, img.crop) : null;
+    if (full && ctx.mirror) full = { ...full, x: 2 * x + width - full.x - full.width };
+    if (full) pushClipRect(ctx, x, y, width, height);
     if (cellElems) {
       if (cellElem) {
         tagContent(ctx, cellElem.child('Figure', {
@@ -188,8 +196,11 @@ export function renderTable(
         tagArtifact(ctx, { type: 'Layout' });
       }
     }
-    const embedded = images.get(img.fileId);
-    if (embedded) drawEmbeddedResource(ctx, embedded, x, y, width, height);
+    if (embedded && full) {
+      drawEmbeddedResource(ctx, embedded, full.x, full.y, full.width, full.height);
+      popClip(ctx);
+      if (cellElems) tagArtifact(ctx, { type: 'Layout' });
+    } else if (embedded) drawEmbeddedResource(ctx, embedded, x, y, width, height);
     else {
       ctx.onMissingImage?.(img.fileId, img.resourceId);
       fillRectPx(ctx, x, y, width, height, colorFromHex('#eeeeee', ctx.colorSpace));

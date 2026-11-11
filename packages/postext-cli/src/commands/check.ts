@@ -1,4 +1,4 @@
-import { attrPlaceholdersNeverSet, bitmapInfo, composedReflowLog, fenceAttributesSet, fenceConditionsNeverMet, markdownAttributesSet, parseMarkdown, contrastDocument, contrastMedia, outputTransform, parseIccProfile, preflightDocument, resolveContrastConfig, resolvePrintConfig, type ContrastIssue, type OutputTransform } from 'postext';
+import { attrPlaceholdersNeverSet, bitmapInfo, composedReflowLog, fenceAttributesSet, fenceConditionsNeverMet, markdownAttributesSet, parseMarkdown, contrastDocument, contrastMedia, outputTransform, parseIccProfile, preflightDocument, resolveContrastConfig, resolvePrintConfig, svgSpotInks, type ContrastIssue, type OutputTransform } from 'postext';
 import { iccProfile } from '../assets';
 import type { CommandContext } from '../context';
 import { pageLabelOf, sourceAt } from '../layout';
@@ -37,6 +37,15 @@ export default async function check(ctx: CommandContext): Promise<void> {
       }
       return sizes.get(fileId);
     };
+    // The spot inks each SVG names (#1468), read from its markup.
+    const inksOf = new Map<string, string[]>();
+    const svgInks = (fileId: string) => {
+      if (!inksOf.has(fileId)) {
+        const bytes = book.files.get(fileId);
+        inksOf.set(fileId, bytes ? svgSpotInks(new TextDecoder().decode(bytes)).map((i) => i.name) : []);
+      }
+      return inksOf.get(fileId);
+    };
     const value = (v: unknown): string => {
       if (typeof v === 'number') return String(Math.round(v * 100) / 100);
       if (v && typeof v === 'object' && 'width' in v && 'height' in v) return `${(v as { width: number }).width}×${(v as { height: number }).height}`;
@@ -44,7 +53,7 @@ export default async function check(ctx: CommandContext): Promise<void> {
     };
     let issues = 0;
     reporter.time('preflight', () => layout.docs.forEach((doc, i) => {
-      for (const issue of preflightDocument(doc, { print, resources: book.resources, imageSize, cmyk: print.standard !== 'none' || cmyk, ...(transform ? { transform } : {}) })) {
+      for (const issue of preflightDocument(doc, { print, resources: book.resources, imageSize, svgInks, cmyk: print.standard !== 'none' || cmyk, ...(transform ? { transform } : {}) })) {
         const { kind, severity, pageIndex, rect: _rect, sourceStart, sourceEnd: _end, ...detail } = issue;
         issues++;
         reporter.warn({

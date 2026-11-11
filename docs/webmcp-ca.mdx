@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: un agent treballant al Sandbox',
   sidebarTitle: 'WebMCP',
-  description: "Què pot fer un agent d'IA al navegador amb les 53 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
+  description: "Què pot fer un agent d'IA al navegador amb les 55 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '13 min',
-  order: 50,
+  order: 51,
   plainSummary: "Aquesta pàgina és per a qui vol que un assistent d'intel·ligència artificial li faci la feina en un llibre del Sandbox. Mentre el Sandbox és obert, dona a l'assistent un joc d'eines per mirar qualsevol pàgina, canviar el disseny, editar el text, afegir imatges i taules, trobar problemes i desar fitxers. Li demanes les coses amb les teves paraules, per exemple «fes la lletra una mica més grossa i comprova que el llibre encara cap en 40 pàgines», i l'assistent fa servir les eines i et mostra les pàgines. Tot es queda al teu navegador. La pàgina explica com connectar-hi un assistent, què pot fer i com es crida cada eina.",
 };
 
@@ -23,7 +23,7 @@ el llibre, demana una imatge de la pàgina 12, posa `bodyText.fontSize` a 10,5 p
 veu que el capítol ha passat de 18 a 19 pàgines i ho torna a deixar com estava.
 Fa el que tu fas a ull, i ho fa amb el teu llibre, al teu navegador.
 
-Hi ha 53 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
+Hi ha 55 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
 és a la pantalla, i 8 eines del lloc, `site_*`, a totes les pàgines de
 postext.dev. Aquesta pàgina les ordena segons el que demanaries a un agent i
 dona la crida de cadascuna.
@@ -39,7 +39,7 @@ pàgina les hi troba. A Postext no cal instal·lar ni configurar res.
 WebMCP encara és un esborrany. Chrome l'ofereix com a prova d'origen i darrere
 de l'indicador `chrome://flags/#enable-webmcp-testing`. Les eines depenen de la
 pàgina: a la pàgina d'inici o a la documentació, l'agent té les eines `site_*`;
-quan el Sandbox és a la pantalla, apareixen també les 53 eines `sandbox_*`.
+quan el Sandbox és a la pantalla, apareixen també les 55 eines `sandbox_*`.
 
 ### En qualsevol altre navegador: `window.postextWebMcp`
 
@@ -387,6 +387,21 @@ llegir el capítol. Tota la crida és un sol pas per a `sandbox_undo_text`, que
 la desfà (`redo: true` la refà). `sandbox_write_text` substitueix un capítol
 sencer, a partir de `markdown` o d'un fitxer `.md`.
 
+Per a un canvi que recorre un capítol o el llibre sencer, `sandbox_replace_text`
+fa el mateix que Reemplaça-ho tot a la barra de cerca del tauler Text, amb les
+mateixes opcions (`matchCase`, `wholeWord`, `ignoreAccents`, `regex`). Amb
+`dryRun` llista cada reemplaçament, amb l'abans i el després, i no canvia res.
+En mode d'expressió regular, el reemplaçament interpreta `$1`, `$<name>`, `$&`,
+`$$`, `\n`, `\t` i `\\`, i escriu tota la resta tal com arriba. Un cop aplicats,
+els reemplaçaments són un sol pas de l'historial, que `sandbox_undo` desfà.
+`sandbox_search_text` accepta les mateixes opcions i troba el mateix que la
+barra.
+
+```jsonc
+// sandbox_replace_text: punts decimals a comes a tot el llibre, en previsualització
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Per ensenyar-te un lloc del text, `sandbox_select_text` obre el tauler Text amb
 aquell passatge seleccionat (per `text`, `line` o `offset`), tal com fa un clic
 sobre una troballa del tauler Revisió.
@@ -448,6 +463,15 @@ d'una imatge. `newId` reanomena un recurs i, per defecte, totes les referències
 que en fa el llibre. `sandbox_list_resources` els llista i, amb un `id`, en
 dona un de complet (les cel·les d'una taula amb el format, el codi font
 d'un SVG).
+
+El retall d'una imatge va a `marks.crop` (`{ x, y, width, height }`, fraccions de
+la imatge sencera, com la zona segura; `null` torna a mostrar la imatge sencera):
+serveix en un mapa de bits, un SVG i el pòster d'un vídeo, i la resposta avisa
+d'una zona segura que surt del retall. `placement.pin` (`{ page, column?, slot }`,
+`page` de 0 a 3) col·loca un flotant a mà i `null` el torna a la col·locació
+automàtica; la descripció de l'eina explica per què no es recomanen els pins i
+proposa en el seu lloc `position`, `citingPage`, `keepTogether` i `shrink`
+(vegeu [Format de document › Col·locar flotants a mà no es recomana](/ca/docs/document-format-resources#collocar-flotants-a-mà-no-es-recomana)).
 
 Les `marks` d'una imatge també contenen les àncores. En un mapa o un esquema, són els punts on es col·loquen les línies `::label`: un `id`, `x` i `y` (fraccions de la imatge sencera) i els camps que rep el rètol que s'hi col·loca (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). La resposta avisa d'un estil de rètol que el disseny no té, i les marques noves d'un recurs són un pas de l'historial (`sandbox_undo` respon `kind: "resource"`). En un SVG, `marks.svgSymbols` (`idPrefix`, `className`) afegeix una zona lliure (on no hi pot anar cap bafarada) sobre cada element del dibuix que indica, a més de les zones que dona la crida o que ja té la imatge (des de postext 1.43).
 
@@ -527,7 +551,7 @@ seccions que entren al paquet (`scormPick`, ids de la llista `contents` de la pe
 de `text`, una `anchor` o una entrada `contents` del sumari d'un EPUB.
 `sandbox_run_viewer` prem un botó de la barra d'eines: `regenerate` torna a
 generar el PDF, l'EPUB o el paquet SCORM i n'espera el resultat, `print` obre el diàleg
-d'impressió perquè el confirmis tu, `download` desa el PDF, l'EPUB o un paquet SCORM acabat d'escriure, i
+d'impressió perquè el confirmis tu, `check` torna a llegir el PDF en pantalla com fa **Comprova per a impremta** i respon amb el veredicte, els punts i les troballes, `download` desa el PDF, l'EPUB o un paquet SCORM acabat d'escriure, i
 `play_video` i `stop_video` reprodueixen i aturen un vídeo d'una pàgina.
 
 ### Pàgines de còmic
@@ -695,6 +719,7 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **El text**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **El disseny**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

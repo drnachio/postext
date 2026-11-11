@@ -66,7 +66,7 @@ const REPEAT_KEYS = { gap: true, count: true } satisfies Record<keyof DesignText
 /** Every top-level key of a config. */
 export const CONFIG_KEYS = {
   page: true, layout: true, bodyText: true, headings: true, tableStyle: true, tableStyles: true, captionStyle: true,
-  diagramStyle: true, scoreStyle: true, scoreStyles: true, videoStyle: true, paragraphStyles: true, calloutStyles: true, chipStyles: true, markStyles: true,
+  diagramStyle: true, scoreStyle: true, scoreStyles: true, videoStyle: true, paragraphStyles: true, calloutStyles: true, chipStyles: true, characterStyles: true, markStyles: true,
   parts: true, headingStyles: true, toc: true, index: true, unorderedLists: true, orderedLists: true, math: true,
   footnotes: true, crossRefs: true, citations: true, links: true, cjk: true, lineNumbers: true, codeStyle: true, header: true,
   footer: true, locale: true, direction: true, numerals: true, debug: true, htmlViewer: true, canvasViewer: true,

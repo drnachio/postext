@@ -2,15 +2,18 @@
 
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type { DimensionUnit, MarkDecorationBreak, MarkStyleConfig, ResolvedBodyTextConfig, ResolvedMarkStyleConfig } from 'postext';
+import type { DimensionUnit, MarkDecorationBreak, MarkLineConfig, MarkLinePosition, MarkLineStyle, MarkStyleConfig, ResolvedBodyTextConfig, ResolvedMarkStyleConfig } from 'postext';
 import { DEFAULT_MARK_STYLES, resolveBodyTextConfig, resolveMarkStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
-import { CollapsibleSection, ItemCard, ItemCardListActions, moveCardState, openCard, ColorPicker, DimensionInput, SelectInput } from '../../../controls/index.js';
+import { CollapsibleSection, ItemCard, ItemCardListActions, moveCardState, openCard, ColorPicker, DimensionInput, NumberInput, SelectInput, ToggleSwitch } from '../../../controls/index.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
 import { FieldRow } from '../../../controls/FieldRow.js';
 import { SearchScope } from '../../search/SearchScope.js';
 
 const BOX_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
+
+/** The value of the line select that draws none. */
+const NO_LINE = 'none';
 
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
@@ -47,8 +50,10 @@ interface MarkStyleCardProps {
 }
 
 /** One highlight style (#888): id (renamed on blur / Enter, never to a
- *  colliding id), display name, the band (colour, corner radius, padding)
- *  and the colour of the marked words. */
+ *  colliding id), display name, the band (on or off, colour, opacity,
+ *  hand-drawn edges, corner radius, padding, negative at the top or bottom
+ *  for a band over part of the letters), the colour of the marked words and
+ *  the line drawn with them, under or through (#1488). */
 function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, onResetField, onRename, onRemove }: MarkStyleCardProps) {
   const labels = useSandboxLabels();
   const [idDraft, setIdDraft] = useState(style.id);
@@ -66,6 +71,15 @@ function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
   };
 
   const unset = (field: keyof MarkStyleConfig) => style[field] === undefined;
+  const line = style.line;
+  const lineUnset = (field: keyof MarkLineConfig) => line?.[field] === undefined;
+  /** Merge `partial` into the line; a field set to undefined is dropped,
+   *  and a line left with no field is removed. */
+  const setLine = (partial: Partial<MarkLineConfig>) => {
+    const next: MarkLineConfig = { ...(line ?? {}), ...partial };
+    for (const key of Object.keys(partial) as (keyof MarkLineConfig)[]) if (next[key] === undefined) delete next[key];
+    onChange({ line: Object.keys(next).length > 0 ? next : undefined });
+  };
 
   return (
     <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden={stored}>
@@ -122,6 +136,14 @@ function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
         </FieldRow>
       </div>
 
+      <ToggleSwitch
+        label={labels.markStyleBand}
+        tooltip={labels.markStyleBandTooltip}
+        checked={resolved.backgroundEnabled}
+        onChange={(v) => onChange({ backgroundEnabled: v ? undefined : false })}
+        isDefault={unset('backgroundEnabled')}
+        onReset={() => onResetField('backgroundEnabled')}
+      />
       <ColorPicker
         label={labels.markStyleBandColor}
         value={resolved.background}
@@ -138,6 +160,29 @@ function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
         isDefault={unset('color')}
         onReset={() => onResetField('color')}
         fieldId={`markStyle-${style.id}-color`}
+      />
+      <NumberInput
+        label={labels.markStyleOpacity}
+        tooltip={labels.markStyleOpacityTooltip}
+        value={resolved.opacity}
+        min={0}
+        max={100}
+        step={5}
+        suffix="%"
+        onChange={(v) => onChange({ opacity: Math.max(0, Math.min(100, v)) })}
+        isDefault={unset('opacity')}
+        onReset={() => onResetField('opacity')}
+      />
+      <NumberInput
+        label={labels.markStyleRough}
+        tooltip={labels.markStyleRoughTooltip}
+        value={resolved.rough}
+        min={0}
+        max={100}
+        step={5}
+        onChange={(v) => onChange({ rough: Math.max(0, Math.min(100, v)) })}
+        isDefault={unset('rough')}
+        onReset={() => onResetField('rough')}
       />
       <DimensionInput
         label={labels.chipStyleBorderRadius}
@@ -188,9 +233,10 @@ function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
         label={labels.chipStylePaddingTop}
         value={resolved.paddingTop ?? resolved.paddingY}
         onChange={(v) => onChange({ paddingTop: v })}
-        min={0}
+        min={-1}
         step={0.05}
         units={BOX_UNITS}
+        tooltip={labels.markStylePaddingTopTooltip}
         isDefault={unset('paddingTop')}
         onReset={() => onResetField('paddingTop')}
       />
@@ -198,13 +244,65 @@ function MarkStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, 
         label={labels.chipStylePaddingBottom}
         value={resolved.paddingBottom ?? resolved.paddingY}
         onChange={(v) => onChange({ paddingBottom: v })}
-        min={0}
+        min={-1}
         step={0.05}
         units={BOX_UNITS}
-        tooltip={labels.chipStylePaddingBottomTooltip}
+        tooltip={labels.markStylePaddingBottomTooltip}
         isDefault={unset('paddingBottom')}
         onReset={() => onResetField('paddingBottom')}
       />
+      <SelectInput
+        label={labels.markStyleLineStyle}
+        value={line ? (resolved.line?.style ?? 'solid') : NO_LINE}
+        options={[
+          { value: NO_LINE, label: labels.markStyleLineNone },
+          { value: 'solid', label: labels.markStyleLineSolid },
+          { value: 'double', label: labels.markStyleLineDouble },
+          { value: 'dotted', label: labels.markStyleLineDotted },
+          { value: 'dashed', label: labels.markStyleLineDashed },
+          { value: 'wavy', label: labels.markStyleLineWavy },
+        ]}
+        onChange={(v) => (v === NO_LINE ? onResetField('line') : setLine({ style: v as MarkLineStyle }))}
+        tooltip={labels.markStyleLineStyleTooltip}
+        isDefault={unset('line')}
+        onReset={() => onResetField('line')}
+      />
+      {line && (
+        <>
+          <SelectInput
+            label={labels.markStyleLinePosition}
+            value={resolved.line?.position ?? 'under'}
+            options={[
+              { value: 'under', label: labels.markStyleLineUnder },
+              { value: 'through', label: labels.markStyleLineThrough },
+            ]}
+            onChange={(v) => setLine({ position: v as MarkLinePosition })}
+            variant="segmented"
+            isDefault={lineUnset('position')}
+            onReset={() => setLine({ position: undefined })}
+          />
+          <ColorPicker
+            label={labels.markStyleLineColor}
+            value={resolved.line?.color ?? resolved.color ?? bodyText.color}
+            onChange={(v) => setLine({ color: v })}
+            tooltip={labels.markStyleLineColorTooltip}
+            isDefault={lineUnset('color')}
+            onReset={() => setLine({ color: undefined })}
+            fieldId={`markStyle-${style.id}-lineColor`}
+          />
+          <DimensionInput
+            label={labels.markStyleLineThickness}
+            value={resolved.line?.thickness ?? { value: 0.06, unit: 'em' }}
+            onChange={(v) => setLine({ thickness: v })}
+            min={0}
+            step={0.01}
+            units={BOX_UNITS}
+            tooltip={labels.markStyleLineThicknessTooltip}
+            isDefault={lineUnset('thickness')}
+            onReset={() => setLine({ thickness: undefined })}
+          />
+        </>
+      )}
     </ItemCard>
     </SearchScope>
   );

@@ -313,6 +313,21 @@ describe('sandbox_run_viewer', () => {
     expect((await run(host, { action: 'print' })).error).toMatch(/no PDF on screen: the last one could not be written \(A font is missing\)/);
   });
 
+  it('checks the PDF on screen for print, and only a PDF', async () => {
+    const { host } = harness({ activeViewport: 'pdf' });
+    const status: ViewerStatus = { generating: false, stale: true, error: null, fileSize: 1000, pageCount: 4 };
+    const check = { verdict: 'critical' as const, verdictText: 'Problems that will spoil the print', notChecked: 'Not read', items: [{ id: 'rgbDevice', group: 'inks', severity: 'critical', title: 'RGB with no profile (DeviceRGB) in pictures' }], findings: [], preflightRan: true };
+    fakeViewer('pdf', status, () => ({
+      file: () => ({ bytes: new Uint8Array(1000), name: 'Opening.pdf', mime: 'application/pdf' }),
+      checkForPrint: async () => check,
+    }));
+    const answer = await run(host, { action: 'check' });
+    expect(answer.check).toEqual(check);
+    expect(answer.note).toMatch(/regenerate, then check again/);
+    fakeViewer('canvas', { generating: false });
+    expect((await run(host, { viewer: 'canvas', action: 'check' })).error).toMatch(/check is a command of the pdf viewer/);
+  });
+
   it('plays and stops a video of the pages', async () => {
     const { host } = harness({ activeViewport: 'html' });
     const asked: ViewerVideoTarget[] = [];

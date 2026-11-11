@@ -9,8 +9,25 @@ export interface PdfPrintWarning {
   /** `outputProfileUnavailable`: the output profile could not be loaded, so
    *  CMYK was converted with the naive formula (no PDF/X was asked for;
    *  with one, the render fails instead). `pageNegativeIgnored`: PDF/X-1a
-   *  has no blend modes, so the debug page negative was left out. */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored';
+   *  has no blend modes, so the debug page negative was left out.
+   *  `spotTintsExhausted`: the render ran out of codes for distinct spot
+   *  tints (some 25 million), so the tints past them printed in process
+   *  instead of on their ink's plate. `spotInkRenamed`: an ink's name is
+   *  one a plate cannot carry (`All`, `None`, a process plate, a control
+   *  character, over 127 bytes), so its plate is written under another
+   *  (`printableInkName`). `overprintsExhausted`: the codes ran out before
+   *  every process colour that overprints (`ColorValue.overprint`) had one,
+   *  so those past them knocked out. `plateMixesApproximated`: in a job on
+   *  a few plates (`print.plates`) the codes ran out, so the colours past
+   *  them took the nearest mix already coded, still on the job's plates.
+   *  `artworkOffPlates`: in such a job a placed PDF page, or a picture that
+   *  could not be decoded, was embedded as it is, with its own inks.
+   *  `imageProfileUnavailable`: the profile assigned to RGB pictures could
+   *  not be loaded, so they were read through their own profiles.
+   *  `pictureOriginalUnreadable`: a TIFF or Photoshop original could not
+   *  be decoded, so its preview (`previewBytes`) was printed instead, or a
+   *  placeholder when it has none. */
+  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pictureOriginalUnreadable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates';
   message: string;
 }
 

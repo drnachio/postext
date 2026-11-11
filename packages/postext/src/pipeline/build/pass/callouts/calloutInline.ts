@@ -12,6 +12,7 @@ import type { ContentBlock } from '../../../../parse/index.js';
 import type { ResolvedCalloutStyleConfig, CalloutSpan } from '../../../../types.js';
 import type { BandCapZone } from '../../../columns/bandCaps.js';
 import type { PassState } from '../state.js';
+import { onGridAbove, regainsUnder } from '../../passHelpers.js';
 
 /** What createCalloutInline takes from the pass. */
 export interface CalloutInlineDeps {
@@ -132,6 +133,17 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
       }
     }
 
+    /** The space above the box (or the rest of it) in `col`, before any
+     *  balancing lever: none at the head of a column, else the pending
+     *  space and the box's margin, rounded up to a grid line when the style
+     *  opens the box on one (`snapTopToGrid`) or the heading above it
+     *  regains the grid (`regainGrid`). The fit check and the placement
+     *  read the same value, so a box that fits is placed in that room. */
+    const spaceAbove = (col: VDTColumn, part: number, marginTopPx: number): number => {
+      if (atColumnHead(col)) return 0;
+      const spacing = Math.max(pendingBeforeSelfSnapping(startIdx), marginTopPx);
+      return part === 0 && (style.snapTopToGrid || regainsUnder(col)) ? onGridAbove(col, spacing, baselineGrid) : spacing;
+    };
     let from: CalloutCut = CUT_START;
     let part = 0;
     let frameId = firstFrameId;
@@ -154,7 +166,7 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
       const balanceBefore = curCol.blocks.length > 0 || reservedOf(curCol).top > 0
         ? (balanceExtraPx?.get(balanceKey(startIdx, part)) ?? 0)
         : 0;
-      const spacing = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), result.marginTopPx)) + balanceBefore;
+      const spacing = spaceAbove(curCol, part, result.marginTopPx) + balanceBefore;
       const roomPx = curCol.availableHeight - spacing;
       // A page-span embed set in the flow of a one-column page: its picture
       // cropped within its safe area to stay in the room left (#1364).
@@ -239,7 +251,7 @@ export function createCalloutInline(deps: CalloutInlineDeps) {
       const placed = fragment ? fragment.result : result;
       const to = fragment ? fragment.to : L.end;
       if (part > 0 || fragment) markFragment(placed, part, fragment !== null);
-      const spacingBefore = (atColumnHead(curCol) ? 0 : Math.max(pendingBeforeSelfSnapping(startIdx), placed.marginTopPx)) + balanceBefore;
+      const spacingBefore = spaceAbove(curCol, part, placed.marginTopPx) + balanceBefore;
       if (balanceBefore > 0) {
         addBalanceExtra(curCol, balanceBefore);
         placed.frame.balancing = { levers: ['trailingCallout'], spaceAbove: balanceBefore };

@@ -1,7 +1,7 @@
 // Manifest entries to engine objects: custom fonts and resources.
 import type { CustomFontFamily, CustomFontFormat, Resource } from '../../types.js';
 import type { BundleFontFamilySpec, BundleResourceSpec, BundleImageSize } from '../types.js';
-import { fontFormatFromFile, fileBasename, isVideoFile, BITMAP_FORMAT_BY_EXT, fileExtension, VIDEO_FORMAT_BY_EXT, isSvgFile, isPdfFile } from './fileNames.js';
+import { fontFormatFromFile, fileBasename, isVideoFile, BITMAP_FORMAT_BY_EXT, fileExtension, VIDEO_FORMAT_BY_EXT, isSvgFile, isPdfFile, printFormatOfFile } from './fileNames.js';
 
 // ---------------------------------------------------------------------------
 // Manifest entries → engine objects
@@ -74,7 +74,7 @@ export function resourceFromSpec(
   fileIdFor: (file: string) => string = identity,
 ): Resource {
   const now = Date.now();
-  const { file, pdfFile, poster, width, height, resolution, fileResolution, inlineFonts, score, ...rest } = spec;
+  const { file, pdfFile, printFile, poster, width, height, resolution, fileResolution, inlineFonts, score, ...rest } = spec;
   // A score spec's notation (#1172): kept when it is whole (the codec has
   // read a notation file into it by now).
   const base: Resource = {
@@ -118,6 +118,8 @@ export function resourceFromSpec(
   }
   const format = BITMAP_FORMAT_BY_EXT[fileExtension(file)];
   if (format) {
+    const printFormat = printFile ? printFormatOfFile(printFile) : undefined;
+    const original = printFile && printFormat ? { printFileId: fileIdFor(printFile), printFormat } : {};
     return {
       ...base,
       kind: 'bitmap',
@@ -125,6 +127,7 @@ export function resourceFromSpec(
         fileId, format, width: w ?? 0, height: h ?? 0,
         ...(positive(resolution) ? { resolution } : {}),
         ...(positive(fileResolution) ? { fileResolution } : positive(size?.resolution?.x) ? { fileResolution: size!.resolution!.x } : {}),
+        ...original,
       },
     };
   }

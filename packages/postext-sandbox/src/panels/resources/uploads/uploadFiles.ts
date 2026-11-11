@@ -1,4 +1,4 @@
-import { bitmapInfo, scoreFormatOfFile, type Resource } from 'postext';
+import { bitmapInfo, decodePrintRaster, printRasterFormat, rasterToRgba, scoreFormatOfFile, type Resource } from 'postext';
 import { putBlob } from '../../../storage/blobStore.js';
 import { slugifyFilename, uniqueSlug } from '../slugify.js';
 import { isValidSvg, svgIntrinsicSize } from '../svg/svgIntrinsic.js';
@@ -11,6 +11,9 @@ const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
   'image/webp': 'webp',
   'image/gif': 'gif',
 };
+
+/** The media type a print original is stored under. */
+const PRINT_MIME = { tiff: 'image/tiff', psd: 'image/vnd.adobe.photoshop' } as const;
 
 /** Turn a single dropped/selected file into a stored Resource, or null if the
  *  file is not a supported image/SVG. `existingIds` is mutated so a batch of
@@ -104,7 +107,55 @@ export async function resourceFromFile(
     };
   }
 
+  // A TIFF or Photoshop original, known by its bytes (browsers give a PSD
+  // an empty or odd type): kept as it is for print, with an sRGB PNG
+  // preview for screens. One that does not decode is skipped.
+  const buffer = await file.arrayBuffer();
+  const printFormat = printRasterFormat(new Uint8Array(buffer));
+  if (printFormat) {
+    let raster;
+    try {
+      raster = decodePrintRaster(new Uint8Array(buffer));
+    } catch {
+      return null;
+    }
+    const preview = await pngPreview(rasterToRgba(raster), raster.width, raster.height);
+    const fileId = await putBlob(preview, 'image/png');
+    const printFileId = await putBlob(buffer, PRINT_MIME[printFormat]);
+    const id = uniqueSlug(slugifyFilename(file.name), existingIds, 'image');
+    existingIds.add(id);
+    return {
+      id,
+      typeId,
+      kind: 'bitmap',
+      bitmap: {
+        fileId, format: 'png', width: raster.width, height: raster.height,
+        ...(raster.resolution ? { fileResolution: raster.resolution } : {}),
+        printFileId, printFormat,
+      },
+      createdAt: now,
+      updatedAt: now,
+    };
+  }
+
   return null;
+}
+
+/** RGBA pixels as PNG bytes, through an OffscreenCanvas where there is one. */
+async function pngPreview(rgba: Uint8ClampedArray, width: number, height: number): Promise<ArrayBuffer> {
+  const image = new ImageData(rgba as Uint8ClampedArray<ArrayBuffer>, width, height);
+  if (typeof OffscreenCanvas !== 'undefined') {
+    const canvas = new OffscreenCanvas(width, height);
+    canvas.getContext('2d')!.putImageData(image, 0, 0);
+    return (await canvas.convertToBlob({ type: 'image/png' })).arrayBuffer();
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  canvas.getContext('2d')!.putImageData(image, 0, 0);
+  const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+  if (!blob) throw new Error('PNG preview failed');
+  return blob.arrayBuffer();
 }
 
 export interface UploadFilesResult {

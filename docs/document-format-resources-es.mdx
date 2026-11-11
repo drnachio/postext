@@ -1,18 +1,18 @@
 {/* docs/document-format-resources-es.mdx */}
 
 export const metadata = {
-  title: 'Formato del documento: imágenes, tablas y vídeos',
-  sidebarTitle: 'Imágenes, tablas y vídeos',
-  description: 'Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los vídeos',
+  title: 'Formato del documento: imágenes y tablas',
+  sidebarTitle: 'Imágenes y tablas',
+  description: 'Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los símbolos en los pies',
   lang: 'es',
-  lastUpdated: '2026-11-10',
-  readingTime: '44 min',
+  lastUpdated: '2026-11-11',
+  readingTime: '48 min',
   order: 30,
   parent: 'document-format',
-  plainSummary: "Esta página explica las imágenes, las tablas y los vídeos de un libro. Los añades una sola vez y los mencionas en el texto, y Postext coloca cada uno cerca del lugar donde se menciona por primera vez. Puedes elegir dónde va: arriba de una página, a lo ancho de todas las columnas o justo donde lo escribes. El texto puede rodear una imagen. Una imagen puede marcar la parte que siempre debe verse cuando se recorta para que quepa. Los vídeos se reproducen en la vista web y en los libros electrónicos, y en papel se sustituyen por una imagen.",
+  plainSummary: "Esta página explica las imágenes y las tablas de un libro. Las añades una sola vez y las mencionas en el texto, y Postext coloca cada una cerca del lugar donde se menciona por primera vez. Puedes elegir dónde va: arriba de una página, a lo ancho de todas las columnas o justo donde la escribes. El texto puede rodear una imagen. Una imagen puede marcar la parte que siempre debe verse cuando se recorta para que quepa. Los vídeos se colocan de la misma manera, y la página siguiente trata de ellos.",
 };
 
-# Formato del documento: imágenes, tablas y vídeos
+# Formato del documento: imágenes y tablas
 
 
 ## Recursos
@@ -142,8 +142,8 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (el valor predeterminado) toma el primer hueco libre después de la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> hace que el recurso no flote y lo inserta en el texto, en el lugar de la directiva <code>::resource</code> (si una tabla colocada ahí no cabe en lo que queda de su columna, se corta entre filas; véase <a href="/es/docs/configuration-resources#tablas-más-altas-que-la-página">Tablas más altas que la página</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (el valor predeterminado) toma el primer hueco libre después de la referencia, arriba o abajo; <code>"top"</code> / <code>"bottom"</code> solo aceptan huecos de ese tipo; <code>"here"</code> hace que el recurso no flote y lo inserta en el texto, en el lugar de la directiva <code>::resource</code> (si una tabla colocada ahí no cabe en lo que queda de su columna, se corta entre filas; véase <a href="/es/docs/configuration-resources#tablas-más-altas-que-la-página">Tablas más altas que la página</a>). <code>"paragraph"</code> también lo inserta en el texto, sin línea <code>::resource</code>, justo después del párrafo que lo cita por primera vez con <code>:ref</code>. Una cita en cualquier punto de un recuadro (<code>:::callout</code>) o de un grupo <code>:::paragraphs</code> / <code>:::columns</code> lo coloca tras el más exterior de esos contenedores, de vuelta en el flujo principal (con un recuadro dentro de otro, tras el exterior); una cita en un encabezado, tras el párrafo que ese encabezado abre (nunca entre un encabezado y su texto: tras la lista que lo sigue, si la hay, y pasados los subencabezados que vienen justo detrás); una cita en un elemento de lista, tras el final de la lista; un párrafo que continúa después de una fórmula destacada, tras esa continuación. Dos recursos citados en un mismo párrafo van ambos tras él, en el orden de las citas. Una cita en una nota al pie (también en una nota de final de capítulo) no cuenta, porque la nota se compone aparte del flujo: un recurso que solo citan notas, que ninguna línea <code>::resource</code> coloca y que ningún capítulo anterior colocó no está en ninguna página, y la composición lo avisa (<code>paragraphCitedInNote</code>) en su primera referencia dentro de una nota. Un recurso cuya primera referencia es su propia línea <code>::resource</code> se compone ahí, como haría <code>"here"</code>; las líneas <code>::resource</code> posteriores de ese recurso son solo referencias. Por lo demás se compone exactamente como un <code>"here"</code> puesto tras ese párrafo: con el texto que lo rodea, el pie en la columna lateral, el pie dentro de su hueco y <code>span: 'page'</code> cortando la banda. Nunca se gira, nunca es una lámina (<code>plate</code>) y nunca se reduce para caber en un hueco.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -195,6 +195,11 @@ Cada recurso tiene una **colocación** que decide dónde cae su flotante. Se res
       <td><code>true</code> · <code>false</code>, por defecto <code>false</code></td>
       <td>Permite que un flotante <code>"top"</code> o <code>"auto"</code> ocupe la cabeza de la página (un flotante a ancho de página) o de la columna (un flotante de columna, también si abarca varias con <code>columns</code>) en la que cae la línea que lo cita por primera vez, como hace la colocación <code>t</code> de LaTeX, en lugar del primer hueco libre después de esa línea. El texto que hay encima de la referencia baja por debajo del flotante. Solo lo hace si el flotante cabe allí sin pasar de <code>layout.maxTopFraction</code> de la columna (0,7 por defecto), si los flotantes anteriores de su secuencia de numeración ya están colocados, si ningún salto explícito abre la página (la primera página de un capítulo, una parte, un <code>:::pagebreak</code>) ni hay nada a ancho de página encima de la línea que lo cita, y si, con el flotante allí, la línea que lo cita sigue cayendo en esa página (o en la columna que el flotante encabeza); si no, el flotante toma su hueco habitual. Los flotantes girados, los de la columna lateral y el resto de una tabla partida entre páginas nunca se mueven así. Valor predeterminado: el <code>defaultPlacement</code> del tipo y, después, <code>layout.floatsAtCitingPage</code>. Desde postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>No se recomienda (véase <a href="#colocar-flotantes-a-mano-no-se-recomienda">Colocar flotantes a mano no se recomienda</a>). Un flotante colocado a mano, en el panel Recursos o moviéndolo en el lienzo del Sandbox: <code>page</code> cuenta las páginas desde la que lo cita por primera vez (<code>0</code> es esa página, <code>3</code> como mucho), <code>column</code> la columna de texto desde 0 en el orden de lectura (cualquiera, si falta; un flotante a ancho de página la ignora), <code>slot</code> es <code>"top"</code> o <code>"bottom"</code>. Un pin es una preferencia. El flotante espera a esa página y se le ofrece primero ese hueco; si el hueco no puede alojarlo (demasiado alto para el sitio que queda, ocupado por otro flotante o por encima de su cita), toma los huecos habituales de esa página, y después sigue como cualquier flotante. Un pin para una página posterior al final del capítulo se descarta allí, de modo que el flotante y los que le siguen en su secuencia de numeración se colocan antes de que acabe el capítulo. Los flotantes de la columna lateral, los girados, las láminas y los recursos colocados en el texto lo ignoran. Cada pin que la maquetación no sigue se avisa con <code>floatPinMissed</code>, con su motivo. Solo en las salidas paginadas.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -210,7 +215,7 @@ Las bandas de flotantes se ajustan a la rejilla base para que el texto que las r
 
 En la última página de un capítulo (y del documento), nada sigue a las figuras y tablas a ancho de página que quedan bajo la última banda de texto, así que suben hasta quedar a un espacio de flotante por debajo de ella, apiladas en su orden, en lugar de dejar un blanco entre el texto y una figura al pie de la página. También vale para un flotante `position: 'bottom'`. Para dejarlas al pie, como en cualquier otra página, pon `layout.hugClosingFloats: false` (consulta [Configuración › Disposición](/es/docs/configuration-page-layout#disposición)). En las páginas con columna lateral nunca se mueven.
 
-Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dibujan los recursos. En el backend HTML, las imágenes no van dentro del documento, así que la aplicación anfitriona las proporciona mediante la opción `resourceImageUrl(fileId)`; si esa función no existe (o no devuelve nada para un archivo), el recurso se dibuja como una caja neutra de relleno para que la maquetación no cambie. El archivo de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](#vídeos)).
+Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dibujan los recursos. En el backend HTML, las imágenes no van dentro del documento, así que la aplicación anfitriona las proporciona mediante la opción `resourceImageUrl(fileId)`; si esa función no existe (o no devuelve nada para un archivo), el recurso se dibuja como una caja neutra de relleno para que la maquetación no cambie. El archivo de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](/es/docs/document-format-videos#vídeos)).
 
 #### Dónde puede caer un flotante
 
@@ -253,6 +258,19 @@ Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dib
 - En una maquetación de una sola columna, un flotante a ancho de página es un flotante de columna, y valen las mismas reglas: un flotante `top` citado en una página cae en la cabeza de la siguiente.
 - En un párrafo que pasa de una página a la siguiente también se cuenta desde la línea que contiene la referencia. Si el párrafo empieza al pie de la página 5 y la referencia cae en la 6 (o el párrafo entero pasa a la 6 porque al pie de la 5 no caben suficientes líneas), la referencia está en la 6: un flotante `top` abre la página 7, y uno `auto` ocupa el pie de la 6 si cabe. Lo mismo vale entre las columnas de una página y para un recuadro partido entre páginas: la figura que se cita en su segunda parte espera a esa parte.
 - **Cambio en postext 1.5.** Hasta postext 1.4, un flotante entraba en la cola cuando la maquetación llegaba al párrafo que lo cita, así que la página a la que pasaba ese párrafo (o a la que se trasladaba entero) podía abrirse con el flotante, por encima de la línea que contiene la referencia. Ahora esa figura cae una página más tarde, o al pie de la página si pide `auto`; el número de páginas puede cambiar.
+
+#### Colocar flotantes a mano no se recomienda
+
+Postext maqueta un libro por reglas: cada flotante ocupa el primer hueco libre después de su cita, dentro de los límites que fija su colocación, y el libro entero se vuelve a maquetar cuando cambian el texto, el tamaño de página, el número de columnas o el idioma de la edición. Un pin está atado a la geometría de una maquetación. Nombra una página contada desde la cita y una columna por su número, y ninguna de las dos significa lo mismo en cuanto el texto se mueve. Si se añade un párrafo, la cita pasa a otra página; si se traduce el libro, cambian los cortes de línea; si una edición se compone a una columna, la columna 1 deja de existir. El pin falla entonces, y la maquetación lo avisa, o deja el flotante en un sitio que ya no sirve a la página. El pin se guarda en el recurso, así que lo comparten todas las ediciones e idiomas del libro.
+
+Estas reglas mantienen una figura cerca de su texto en todas las ediciones:
+
+- `position: "top"` o `"bottom"` (en el recurso o en su tipo) limita los huecos de un flotante a cabezas o pies.
+- `citingPage: true`, o `layout.floatsAtCitingPage` para todo el libro, deja que un flotante superior o automático encabece la página o la columna en la que cae la línea que lo cita.
+- Una caja con `keepTogether` mantiene junto lo que contiene, incluida una imagen insertada en ella con `::resource`; `floatBarrier` en un estilo de caja deja de su lado los flotantes citados antes de ella.
+- `shrink: "slot"` (o `"page"`) deja que una imagen se reduzca al sitio que tiene su hueco, y una [zona segura](#zona-segura) deja que el motor la recorte para que quepa antes de reducirla.
+
+Si una página todavía necesita mover una figura, fíjala como último paso, para una edición terminada en un solo idioma, y revisa `floatPinMissed` en el panel Revisión cada vez que cambien el texto o el diseño.
 
 ### Ajuste del texto
 
@@ -300,7 +318,7 @@ Un mapa de bits declara sus píxeles: `bitmap.width` y `bitmap.height` son los p
 - **Una resolución.** `bitmap.resolution` es la resolución en ppp de la imagen a su tamaño natural de impresión, así que su ancho natural es `width × page.dpi / resolution` en una página de cualquier resolución: 2400 px con `resolution: 300` miden 203,2 mm de ancho tanto en una página maquetada a 150 dpi como a 300. `layout.bitmapResolution` da una resolución a todos los mapas de bits que no tienen una propia: un número (`300`) o `'file'`, la resolución que indica su archivo (`bitmap.fileResolution`: el `pHYs` de un PNG, la densidad JFIF o EXIF de un JPEG, el EXIF de un WebP; en una imagen importada de Word, el tamaño al que Word la imprimía). Las cámaras, las capturas de pantalla y las exportaciones para la web suelen indicar 72 o 96 ppp cuando no saben nada del tamaño de impresión, así que con `'file'` esos dos valores cuentan como no indicados y la imagen conserva sus píxeles a los dpi de la página; en cambio, un 72 declarado en el propio recurso se respeta tal cual. `'document'`, el valor predeterminado, corresponde a la primera manera.
 - **Una parte de la columna.** `placement.width` estrecha un flotante o una inserción en línea a una fracción de su columna (o de la página), y una imagen más grande que esa parte se reduce hasta ella, tenga los píxeles que tenga (véase [Colocación](#colocación)).
 
-En todos los casos, el hueco limita la imagen, sin cambiar sus proporciones, y una imagen más pequeña nunca se amplía. El mismo tamaño natural vale para una imagen en una celda de tabla y para un elemento `image` de un diseño con tamaño `'auto'`. El PDF incrusta el archivo tal cual, al tamaño al que se coloca. El [preflight](/es/docs/configuration-fonts-colors-viewers#preflight) comprueba la resolución a la que se imprime cada imagen, y el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox la muestra para cada una. Desde postext 1.24.
+En todos los casos, el hueco limita la imagen, sin cambiar sus proporciones, y una imagen más pequeña nunca se amplía. El mismo tamaño natural vale para una imagen en una celda de tabla y para un elemento `image` de un diseño con tamaño `'auto'`. El PDF incrusta el archivo tal cual, al tamaño al que se coloca. El [preflight](/es/docs/configuration-pdf-output#preflight) comprueba la resolución a la que se imprime cada imagen, y el [panel Recursos](/es/docs/sandbox#panel-de-recursos) del Sandbox la muestra para cada una. Desde postext 1.24.
 
 El hueco de una imagen en el flujo (`position: 'here'` o un flotante de columna) es su columna, y la página predeterminada tiene dos (`layout.layoutType: 'double'`): una imagen dimensionada para toda la página sale ahí más o menos a la mitad de su tamaño de impresión. Compón esa página a una columna (`layout.layoutType: 'single'`), haz flotar la imagen a lo ancho de la página (`placement: { position: 'top', span: 'page' }`) o ponla en el marco de una [página compuesta](/es/docs/composed-pages). Si una columna más estrecha que la página deja por debajo de la mitad de su tamaño de impresión un mapa de bits que lo tiene (por su propio `resolution` o por un número en `layout.bitmapResolution`), la maquetación da el aviso `pictureBelowPrintSize`. Desde postext 1.37.
 
@@ -339,6 +357,19 @@ El VDT anota el recorte en el bloque del recurso: `bodySource` es la parte de la
 La receta n.º 116 del Recetario, [Fotos que crecen hasta llenar la columna](/es/cookbook/photos-fill-short-columns), compone dos veces un reportaje de revista a dos columnas, sin zonas seguras y con ellas, para que puedas comparar las páginas una junto a otra.
 
 
+### Recorte manual
+
+Un mapa de bits, un SVG o el póster de un vídeo también se pueden recortar a mano: `crop`, en las mismas fracciones que la zona segura, es la parte de la imagen que la figura muestra siempre, sea cual sea la página. La figura toma la proporción del recorte. La zona segura, si la hay, se lee dentro del recorte: el motor puede cortar más donde la página lo necesite, nunca fuera del recorte, y `bodySource` es la composición de ambos. Marca la zona segura dentro del recorte; la parte que quede fuera nunca se ve. Sin él, la imagen entera. El recorte llega a todas las salidas: el lienzo, el PDF, el visor HTML, los dos EPUB (un libro adaptable compone la imagen, o el póster de un vídeo y la película en su marco, en una caja con la proporción del recorte), el IDML y la exportación a Word con formato, una imagen en una celda de tabla, el dibujo de una viñeta de cómic (la ventana de la viñeta se elige dentro del recorte) y una imagen de diseño que muestra un recurso. La exportación semántica a Word inserta la imagen entera, como hace con la zona segura, y conserva el recorte en el libro. Las anclas de cómic solo se comprueban contra la zona segura (`comicAnchorOutsideSafeArea`): deja también a cada personaje dentro del recorte. En el Sandbox, *Recorte*, junto a la zona segura, abre un marco que se arrastra, se ajusta con las flechas y se previsualiza; un agente lo fija con `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la mitad central, de arriba abajo
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
+
 ### Anclas de personaje y zonas libres
 
 Una imagen que es el dibujo de una viñeta de cómic también puede indicar dónde están sus personajes, para la rotulación (consulta [Cómics](/es/docs/document-format-directives#cómics)). `anchors` enumera un punto por personaje, y `avoid`, las regiones que ningún bocadillo tapa, unos y otras en fracciones del dibujo, igual que la zona segura:
@@ -372,137 +403,3 @@ Un pie, una nota o una celda de tabla pueden llevar un símbolo pequeño en su l
 
 Los símbolos se leen en los pies, las notas, las celdas de tabla y los rótulos de figura (consulta [Páginas compuestas › Líneas de referencia, leyendas y símbolos](/es/docs/composed-pages-figures#líneas-de-referencia-leyendas-y-símbolos)); en el texto corrido y en los encabezados la directiva sigue siendo texto en esta versión. Desde postext 1.48.
 
-### Vídeos
-
-Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o de Vimeo, o un vídeo propio: un archivo guardado en el libro (MP4, WebM) o uno que está en una dirección web, ya sea un archivo en un servidor o un **flujo HLS** (una lista de reproducción `.m3u8`). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). Cada salida lo muestra como puede:
-
-<table>
-  <thead>
-    <tr>
-      <th>Salida</th>
-      <th>Qué muestra</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Canvas, PDF</td>
-      <td>La <strong>portada</strong>, un fotograma del vídeo, con una marca de reproducción y un código QR que abre el vídeo (<a href="/es/docs/configuration-resources#estilo-de-vídeo">Configuración › Estilo de vídeo</a>). En el PDF la portada es además un enlace al vídeo.</td>
-    </tr>
-    <tr>
-      <td>Folio</td>
-      <td>La portada, tal como se imprime. Un clic sobre ella reproduce el vídeo <strong>en la propia página</strong>, y el vídeo sigue reproduciéndose mientras se pasa la hoja (consulta <a href="#vídeos-en-las-páginas-de-folio">Vídeos en las páginas de Folio</a> más abajo). Los vídeos de YouTube y Vimeo se quedan en su portada.</td>
-    </tr>
-    <tr>
-      <td>Visor HTML</td>
-      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo o una dirección. Un flujo HLS se reproduce de forma nativa en Safari y en las versiones recientes de Chrome; en los demás navegadores, la aplicación anfitriona añade un reproductor como hls.js, igual que hace el Sandbox. Con <code>videoStyle.html: 'poster'</code>, muestra en su lugar la portada impresa.</td>
-    </tr>
-    <tr>
-      <td>EPUB</td>
-      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o de Vimeo se muestra como su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web. Un flujo HLS también se muestra como su portada enlazada: una lista de reproducción HLS no es ninguno de los tipos de medio que un EPUB puede reproducir. Si el sistema de lectura ejecuta scripts, los archivos de una misma página o capítulo respetan <code>player.exclusive</code>: al empezar uno se pausan los demás con los que no se reproduce a la vez.</td>
-    </tr>
-  </tbody>
-</table>
-
-```ts
-const charla: Resource = {
-  id: 'charla-farero', typeId: 'video', kind: 'video',
-  caption: 'El farero explica la lámpara.',
-  altText: 'Un farero junto a la lámpara',
-  createdAt: 0, updatedAt: 0,
-  video: {
-    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
-    url: 'https://youtu.be/aqz-KE-bpKQ',
-    poster: { fileId: 'charla.jpg', format: 'jpeg', width: 1280, height: 720 },
-    start: 30,                                // empieza en 0:30; el enlace impreso también
-  },
-};
-```
-
-El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime *Vídeo 1.1* y hace flotar la portada al primer hueco libre después de la referencia, y `::resource{id="charla-farero"}` con `placement.position: 'here'` la coloca dentro del texto. Los campos de `Resource.video` (`ResourceVideo`):
-
-<table>
-  <thead>
-    <tr>
-      <th>Campo</th>
-      <th>Tipo</th>
-      <th>Significado</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>source</code></td>
-      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>Desde dónde se reproduce el vídeo: una página de YouTube o de Vimeo, o un vídeo propio (<code>'file'</code>), subido o en una dirección web.</td>
-    </tr>
-    <tr>
-      <td><code>url</code></td>
-      <td><code>string</code></td>
-      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado. Un vídeo propio sin archivo se reproduce desde esta dirección: un MP4 o WebM en un servidor, o un flujo HLS (<code>…/master.m3u8</code>).</td>
-    </tr>
-    <tr>
-      <td><code>fileId</code>, <code>format</code></td>
-      <td><code>string</code></td>
-      <td>Un archivo: el vídeo subido, guardado aparte como un mapa de bits, y su formato: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>, o <code>'hls'</code> para un flujo HLS. Si no se indica, lo determina la extensión de la dirección (<code>.m3u8</code> es <code>'hls'</code>) y, en su defecto, es <code>'mp4'</code>.</td>
-    </tr>
-    <tr>
-      <td><code>poster</code></td>
-      <td><code>{'{ fileId, format, width, height }'}</code></td>
-      <td>El fotograma de portada, un mapa de bits.</td>
-    </tr>
-    <tr>
-      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
-      <td><code>number</code></td>
-      <td>El tamaño del fotograma del vídeo en px (su proporción cuando no hay portada) y su duración en segundos.</td>
-    </tr>
-    <tr>
-      <td><code>posterTime</code></td>
-      <td><code>number</code></td>
-      <td>El segundo del archivo cuyo fotograma se usa como portada; se guarda para poder volver a elegirlo.</td>
-    </tr>
-    <tr>
-      <td><code>start</code>, <code>end</code></td>
-      <td><code>number</code></td>
-      <td>Reproduce desde el segundo <code>start</code> hasta el <code>end</code>. El código QR y el enlace del PDF también empiezan en <code>start</code>.</td>
-    </tr>
-    <tr>
-      <td><code>player</code></td>
-      <td><code>VideoPlayerOptions</code></td>
-      <td>Las opciones de reproductor de este vídeo, que se aplican sobre <code>videoStyle.player</code>.</td>
-    </tr>
-  </tbody>
-</table>
-
-**La portada.** Se compone a la medida de su hueco (o a la fracción `placement.width` de ella), con su propia proporción y sea cual sea su tamaño en píxeles: un fotograma del tamaño de una pantalla se amplía en lugar de imprimirse pequeño. Como un mapa de bits, puede tener una [zona segura](#zona-segura) y seguir `placement.align`. Un vídeo sin portada imprime un recuadro oscuro con la proporción del vídeo (16:9 si no se indica otra) y sus elementos superpuestos, y da el aviso de contenido `videoWithoutPoster`. En el Sandbox, la portada de un vídeo de YouTube o de Vimeo se descarga de la plataforma al escribir su dirección, y la de un archivo es un fotograma que eliges en el vídeo.
-
-**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, a partir de `start`. Un archivo no tiene página: abren su dirección de producción, que es también desde donde se reproduce un vídeo sin archivo propio (un MP4 en un servidor, un flujo HLS). Si no la tiene, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no incluye el archivo muestra la portada. Una dirección de YouTube o de Vimeo que no corresponde a ningún vídeo de esa plataforma da el aviso `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
-
-**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, inicio sin sonido, repetición, precarga, inserción con privacidad mejorada) se fijan para todo el libro en `videoStyle.player` y para un solo vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration-resources#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams, hls }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html` (`hls`, para un vídeo que se reproduce desde una dirección HLS, sigue a `files` si no se indica); el generador de EPUB la usa. Un `<video>` que reproduce una dirección HLS lleva `data-pt-hls`, para que la aplicación anfitriona pueda darle un reproductor en los navegadores sin HLS nativo (Safari y las versiones recientes de Chrome lo reproducen tal cual). En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada no se reflejan, igual que una imagen, para que el código QR se pueda leer.
-
-**En el VDT.** El bloque de recurso de un vídeo tiene `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un mapa de bits) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o de Vimeo con las opciones del reproductor aplicadas, el `fileId` de un archivo, el `mimeType` de un vídeo propio (el de su archivo o, si solo tiene dirección, el de esta; `application/vnd.apple.mpegurl` para HLS), el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda de la imagen. Una aplicación anfitriona que dibuje los vídeos por su cuenta dispone de las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
-
-**En un paquete.** Un `.postext` incluye el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los indica en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor de `resourceVideoUrl` para los archivos de un paquete. Un vídeo que se reproduce solo desde una dirección no lleva archivo: su entrada tiene únicamente la portada. En un paquete bilingüe, cada idioma puede dar a un vídeo su propio `poster` y su propio `video` (otro montaje, en su propia dirección) en `localized[…].resources`.
-
-#### Vídeos en las páginas de Folio
-
-En el [libro en 3D](/es/docs/configuration-html-folio-epub#un-libro-en-3d-postext-folio), un vídeo propio se reproduce en la página en la que está impreso. Un clic en la portada lo pone en marcha ahí mismo, haga lo que haga el puntero sobre el libro (pasar páginas, orbitar la vista o seleccionar texto): el shader de la página dibuja los fotogramas del vídeo sobre la portada, de modo que la imagen se dobla y se curva con el papel al pasar la hoja, y el vídeo sigue reproduciéndose mientras tanto. Un clic en un vídeo en marcha lo pausa, otro en un vídeo en pausa lo reanuda, y la barra espaciadora o Intro hacen lo mismo con el primer vídeo de la doble página abierta. Al poner en marcha otro vídeo se detiene el que estaba sonando (vuelve a su portada), y un vídeo se detiene cuando el libro se queda quieto en una doble página donde ya no aparece, o al llegar a su `end`. Sobre un vídeo que puede reproducir, el puntero toma forma de mano; un arrastre que empieza sobre él sigue pasando la página o girando la vista. Un vídeo que debe reproducirse solo (`video.player.autoplay`) arranca por sí mismo la primera vez que el libro se queda quieto en su doble página, cuando el libro ya se ha asentado (también si la aplicación anfitriona lo maqueta por etapas), y no vuelve a hacerlo en ese visor.
-
-Un vídeo que se reproduce junto a otros (`video.player.exclusive: false`, desde postext 1.18) cambia las dos reglas. Al empezarlo solo se detienen los vídeos exclusivos, así que varios vídeos de este tipo pueden reproducirse a la vez; si se empieza un vídeo exclusivo, también este se detiene. Con `autoplay`, empieza sin sonido cada vez que el libro se detiene en su doble página, y se para cuando se pasa a otra: los bucles sin sonido (`loop`) de una página se reproducen juntos cada vez que el lector llega a ella.
-
-- **Qué se reproduce.** Un archivo (la aplicación anfitriona convierte su `fileId` en una URL con la opción `videoUrl`; en el Sandbox es una URL de objeto) o, si no lo hay, su dirección: MP4, WebM o un flujo HLS. Un flujo HLS se reproduce con [hls.js](https://github.com/video-dev/hls.js) en todo navegador que tenga Media Source Extensions (se carga la primera vez que se reproduce un vídeo; es una dependencia opcional, de tipo *peer*, de `postext-folio`), limitado a la variante más cercana al tamaño que tiene la imagen en pantalla, de modo que una imagen de unos cientos de píxeles de alto nunca descarga una variante 4K; si no, se recurre al HLS propio del navegador. Sus peticiones llevan un parámetro `pt-cors` propio, para que la caché del navegador nunca les entregue una copia que otro reproductor descargó sin CORS. YouTube y Vimeo se reproducen en iframes, que WebGL no puede dibujar: un clic en su portada pasa la página, como en cualquier otro punto.
-- **Lecturas entre orígenes.** WebGL solo dibuja un vídeo si su servidor permite leerlo (CORS, `Access-Control-Allow-Origin`). Un vídeo que no se puede leer se queda en su portada, y `onVideo` recibe `error`.
-- **Sonido.** El clic permite que el vídeo se reproduzca con sonido; si el navegador aun así lo impide, se reproduce silenciado. Un vídeo que arranca solo tiene sonido si el lector ya ha hecho clic o ha escrito en la página (llegar a ella pasando páginas cuenta); si no, empieza silenciado, y un clic sobre él le da sonido antes de que el siguiente lo pause. `video.player.muted` lo hace empezar sin sonido, `loop` lo repite, y `start` / `end` delimitan la parte que se reproduce.
-- **En cualquier página.** La imagen se dibuja donde la pone la maquetación: girada en un recurso girado, sin girar en una página vertical y sin reflejar en un libro de derecha a izquierda, igual que la portada. Si la portada se recorta dentro de su [zona segura](#zona-segura), el vídeo se recorta del mismo modo.
-- **Sin WebGL2**, o con la preferencia de movimiento reducido, el vídeo se reproduce en un `<video>` HTML colocado sobre la página.
-
-```ts
-const book = createFolioFromDocument(container, doc, {
-  // La URL reproducible de un vídeo subido (una URL de objeto sobre sus bytes).
-  videoUrl: (fileId) => urls.get(fileId),
-  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
-});
-book.stopVideo();
-```
-
-`videos: false` lo desactiva. `toggleVideoAt({ page, x, y })` hace lo mismo que un clic en ese punto, y `pageVideoSpots(page, doc)` indica dónde está cada vídeo de una página, para una aplicación anfitriona que dibuje sus propios controles.
-
-Dos recetas del Recetario incluyen vídeos: la n.º 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una tarjeta de título con la marca de reproducción y un código QR, y la n.º 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.

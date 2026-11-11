@@ -48,9 +48,27 @@ function markedExtent(seg: VDTLineSegment, width: number, font: string): [number
   return [measureTextWidth(seg.text.slice(0, m.from), font) * k, measureTextWidth(seg.text.slice(0, m.to), font) * k];
 }
 
-/** The highlight bands of a line, relative to it; empty when it holds no
- *  mark. */
-export function lineHighlights(line: VDTLine, block: BlockLike, styles: readonly ResolvedMarkStyleConfig[], dpi: number): VDTLineHighlight[] {
+/** One piece of a mark on a line: the marked words of one `:mark[…]` that
+ *  follow each other along it, with the spaces between them. `left` /
+ *  `right` are its edges in the frame; `leftI` / `rightI` the segments
+ *  there and `firstI` / `lastI` its first and last segments in reading
+ *  order (the line's own array order). */
+export interface MarkPiece {
+  id: number;
+  style: string;
+  left: number;
+  right: number;
+  /** The largest em of its segments. */
+  em: number;
+  leftI: number;
+  rightI: number;
+  firstI: number;
+  lastI: number;
+}
+
+/** The pieces of the marks on a line, in paint order; empty when it holds
+ *  no mark. */
+export function markPieces(line: VDTLine, block: BlockLike): MarkPiece[] {
   const segments = line.segments;
   if (!segments || !segments.some((s) => s.mark)) return [];
   const { xs, widths } = segmentPositions(line, block);
@@ -62,46 +80,11 @@ export function lineHighlights(line: VDTLine, block: BlockLike, styles: readonly
     at[i] = x;
     x += widths[i]!;
   }
-  const out: VDTLineHighlight[] = [];
-  // `left` / `right`: the piece's edges in the frame; `leftI` / `rightI`
-  // the segments there and `firstI` / `lastI` its first and last segments
-  // in reading order (the line's own array order).
-  type Piece = { id: number; style: string; left: number; right: number; em: number; leftI: number; rightI: number; firstI: number; lastI: number };
-  let piece: Piece | undefined;
+  const out: MarkPiece[] = [];
+  let piece: MarkPiece | undefined;
   const flush = (): void => {
-    const p = piece;
+    if (piece && piece.right > piece.left) out.push(piece);
     piece = undefined;
-    if (!p || !(p.right > p.left)) return;
-    const style = pickMarkStyle(styles, p.style || undefined);
-    if (!style) return;
-    const px = (d: Parameters<typeof dimensionToPx>[0]): number => Math.max(0, dimensionToPx(d, dpi, p.em));
-    const padTop = px(style.paddingTop ?? style.paddingY);
-    const padBottom = px(style.paddingBottom ?? style.paddingY);
-    const padX = px(style.paddingX);
-    // The phrase's true start and end, on whichever side of the piece its
-    // first and last segments in reading order are painted: the start on
-    // the right of a right-to-left line, on the left of one in a mirrored
-    // flow.
-    const isStart = (i: number) => i === p.firstI && segments[i]!.mark!.start === true;
-    const isEnd = (i: number) => i === p.lastI && segments[i]!.mark!.end === true;
-    // `decorationBreak: 'clone'`: every line piece is a whole band.
-    const clone = style.decorationBreak === 'clone';
-    const capLeft = clone || isStart(p.leftI) || isEnd(p.leftI);
-    const capRight = clone || isStart(p.rightI) || isEnd(p.rightI);
-    const left = p.left - (capLeft ? padX : 0);
-    const right = p.right + (capRight ? padX : 0);
-    const top = -(ASCENT * p.em + padTop);
-    const height = (ASCENT + DESCENT) * p.em + padTop + padBottom;
-    const radius = Math.min(px(style.borderRadius), height / 2);
-    out.push({
-      x: left - line.bbox.x,
-      y: top,
-      width: right - left,
-      height,
-      color: style.background.hex,
-      radiusLeft: capLeft ? radius : 0,
-      radiusRight: capRight ? radius : 0,
-    });
   };
   for (let k = 0; k < order.length; k++) {
     const i = order[k]!;
@@ -141,6 +124,56 @@ export function lineHighlights(line: VDTLine, block: BlockLike, styles: readonly
     piece = { id: mark.id, style: mark.style, left, right, em, leftI: i, rightI: i, firstI: i, lastI: i };
   }
   flush();
+  return out;
+}
+
+/** The highlight bands of a line, relative to it; empty when it holds no
+ *  mark. A style with `backgroundEnabled: false` paints none. */
+export function lineHighlights(line: VDTLine, block: BlockLike, styles: readonly ResolvedMarkStyleConfig[], dpi: number, pieces: readonly MarkPiece[] = markPieces(line, block)): VDTLineHighlight[] {
+  const segments = line.segments ?? [];
+  const out: VDTLineHighlight[] = [];
+  for (const p of pieces) {
+    const style = pickMarkStyle(styles, p.style || undefined);
+    if (!style || style.backgroundEnabled === false) continue;
+    const px = (d: Parameters<typeof dimensionToPx>[0]): number => Math.max(0, dimensionToPx(d, dpi, p.em));
+    // The top and bottom padding may be negative: a band narrower than
+    // the text, as a highlighter stroke under the lower half of the words.
+    const signed = (d: Parameters<typeof dimensionToPx>[0]): number => dimensionToPx(d, dpi, p.em);
+    const padTop = style.paddingTop ? signed(style.paddingTop) : px(style.paddingY);
+    const padBottom = style.paddingBottom ? signed(style.paddingBottom) : px(style.paddingY);
+    const padX = px(style.paddingX);
+    // The phrase's true start and end, on whichever side of the piece its
+    // first and last segments in reading order are painted: the start on
+    // the right of a right-to-left line, on the left of one in a mirrored
+    // flow.
+    const isStart = (i: number) => i === p.firstI && segments[i]!.mark!.start === true;
+    const isEnd = (i: number) => i === p.lastI && segments[i]!.mark!.end === true;
+    // `decorationBreak: 'clone'`: every line piece is a whole band.
+    const clone = style.decorationBreak === 'clone';
+    const capLeft = clone || isStart(p.leftI) || isEnd(p.leftI);
+    const capRight = clone || isStart(p.rightI) || isEnd(p.rightI);
+    const left = p.left - (capLeft ? padX : 0);
+    const right = p.right + (capRight ? padX : 0);
+    const top = -(ASCENT * p.em + padTop);
+    const height = (ASCENT + DESCENT) * p.em + padTop + padBottom;
+    if (!(height > 0)) continue;
+    const radius = Math.min(px(style.borderRadius), height / 2);
+    const opacity = (style.opacity ?? 100) / 100;
+    const rough = (style.rough ?? 0) / 100;
+    out.push({
+      x: left - line.bbox.x,
+      y: top,
+      width: right - left,
+      height,
+      color: style.background.hex,
+      radiusLeft: capLeft ? radius : 0,
+      radiusRight: capRight ? radius : 0,
+      ...(opacity < 1 ? { opacity } : {}),
+      // The wobble follows the mark and where the piece starts: the same
+      // on every render of the same page.
+      ...(rough > 0 ? { rough, seed: (p.id * 7919 + Math.round(left)) >>> 0 } : {}),
+    });
+  }
   return out;
 }
 

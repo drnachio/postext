@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Pagina e impaginazione',
   description: 'Il formato della pagina, i margini e la griglia della linea di base; la numerazione delle pagine; le colonne e le intercolonne che le separano',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '35 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Questa pagina riguarda le impostazioni del foglio stesso. Scegli il formato della pagina, i margini, il lato su cui il libro è rilegato e la griglia su cui poggiano le righe di testo. Stabilisci come si contano le pagine e come si scrive il loro numero. Stabilisci quante colonne ha una pagina e quanto spazio c’è tra di esse, e se il testo scorre in orizzontale o in verticale. Le intestazioni e i piè di pagina hanno una pagina a parte.",
@@ -63,7 +63,7 @@ La proprietà `page` controlla le dimensioni fisiche e l’aspetto della pagina.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>I pixel per pollice con cui lavora l’impaginazione: come le unità fisiche (cm, mm, in, pt) diventano i suoi pixel. Una bitmap senza una risoluzione propria prende un pixel di impaginazione per ogni pixel dell’immagine, quindi viene stampata a questi ppi: mantieni 300 per la stampa, oppure assegna una risoluzione alle immagini (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; vedi [Formato del documento › Dimensione delle bitmap](/it/docs/document-format-resources#dimensione-delle-bitmap)). Il [controllo preliminare](/it/docs/configuration-fonts-colors-viewers#preflight) verifica la risoluzione effettiva di ogni immagine.</td>
+      <td>I pixel per pollice con cui lavora l’impaginazione: come le unità fisiche (cm, mm, in, pt) diventano i suoi pixel. Una bitmap senza una risoluzione propria prende un pixel di impaginazione per ogni pixel dell’immagine, quindi viene stampata a questi ppi: mantieni 300 per la stampa, oppure assegna una risoluzione alle immagini (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; vedi [Formato del documento › Dimensione delle bitmap](/it/docs/document-format-resources#dimensione-delle-bitmap)). Il [controllo preliminare](/it/docs/configuration-pdf-output#preflight) verifica la risoluzione effettiva di ogni immagine.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -75,7 +75,7 @@ La proprietà `page` controlla le dimensioni fisiche e l’aspetto della pagina.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>disattivato</td>
-      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. Vedi sotto.</td>
+      <td>Disegna la griglia della linea di base sopra le pagine, per controllare il ritmo verticale. L’impaginazione si allinea alla griglia che sia disegnata o no. <code>pdfGeneration.baselineGrid: false</code> la lascia fuori dal PDF. Vedi sotto.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ La griglia della linea di base è il ritmo del testo corrente: righe distanti un
     </tr>
   </tbody>
 </table>
+
+Dove inizia un blocco lo decide il suo stile. Ogni stile che può iniziare su una riga della griglia ha un interruttore `snapTopToGrid`, spento per impostazione predefinita: `headings` (e un livello o uno stile di titolo), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, gli elenchi, `math` e `resourceTypes[]`. Acceso, lo spazio sopra il blocco viene arrotondato fino alla riga successiva della griglia, comunque sia finito il blocco precedente. La testa di una colonna è sempre sulla griglia.
 
 ```ts
 page: {
@@ -445,6 +447,24 @@ La proprietà `layout` controlla come sono disposte le colonne all’interno del
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Nella pagina di chiusura di un capitolo (e del documento), le figure e le tabelle a tutta larghezza collocate sotto l’ultima fascia di testo salgono fino a una distanza di un intervallo da elemento flottante sotto di essa, impilate nel loro ordine: lì nulla le segue. <code>false</code> le lascia dove le ha messe la loro collocazione, così un elemento flottante <code>position: 'bottom'</code> finisce al piede della pagina nella pagina di chiusura come in ogni altra pagina; per esempio una scheda tecnica il cui contorno finisce alla stessa altezza in ogni pagina. Le pagine con una colonna laterale non li spostano mai.</td>
+    </tr>
+    <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mette in fila i flottanti al piede di una pagina a più colonne: una figura o tabella richiamata dove la sua colonna ne ha già una al piede prende il piede della colonna vuota successiva, con la prima riga della didascalia all’altezza di quella della vicina, invece di impilarsi sopra (la fascia al piede del compositore). Un’immagine con area sicura viene ritagliata al suo interno verso l’altezza della vicina. Ogni ritaglio è segnalato in Controlli. Un flottante in fila mantiene il suo posto: quello che arriva dopo al piede di una delle sue colonne va sopra. Con tre colonne o più, la fila prosegue nella colonna successiva che non ha nulla al piede. Nel Sandbox, <em>Flottanti al piede in fila</em>, in Impaginazione.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Allinea tra le colonne le figure che condividono una fascia di pagina: al piede di colonne vicine, la prima riga delle didascalie (la didascalia più corta lascia il bianco sotto di sé); in testa, il bordo inferiore delle immagini (l’immagine più corta lascia il bianco sopra). Un’immagine che riempie la colonna dalla testa, senza testo sotto, allinea la didascalia a quelle al piede accanto. Si allinea solo una figura da sola nella sua colonna, dritta e intera: quella su più colonne, quella ruotata, quella con la didascalia a lato, una porzione di tabella e quella posizionata a mano (<code>placement.pin</code>) restano al loro posto. Il bianco si legge dalla posizione presa da ogni figura e si rilegge dopo l’ultimo passaggio dell’impaginazione, così una figura passata a un’altra pagina non conserva bianco per una vicina che non ha più. L’impaginazione richiede fino a due passaggi in più all’inizio e due alla fine. Funziona insieme a <code>footFloatRow</code>, che già allinea un flottante che si unisce al piede della colonna successiva. Nel Sandbox, <em>Allinea le figure tra le colonne</em>, in Impaginazione.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Sconsigliato. Riporta sulla pagina che lo cita per primo un elemento flottante che l’ha mancata di quattro righe di testo o meno (misurate alla sua larghezza nello spazio migliore di quella pagina). Lo fa in due passi, e ciascuno si conserva solo se l’elemento flottante finisce allora sulla pagina del richiamo, senza una pagina in più, senza posticipare altri elementi flottanti, senza disfare un pareggiamento delle colonne già ottenuto e senza perdere un elemento flottante in cima alla pagina del suo richiamo (<code>floatsAtCitingPage</code>): prima ai paragrafi della pagina del richiamo che stanno sopra di esso si offre una riga in meno (spaziatura tra le parole più stretta, mai tra le lettere), solo tante righe quante ne mancano all’elemento flottante, e la modifica resta solo nelle pagine il cui elemento flottante è tornato; poi un’immagine con <a href="/it/docs/document-format-resources#zona-sicura">zona sicura</a> ancora fuori dalla sua pagina viene ritagliata al suo interno, non più di quanto chiede lo spazio, e ogni ritaglio è segnalato con un avviso <code>floatCropped</code>. I passaggi successivi, come il bilanciamento delle colonne, lasciano sulla loro pagina gli elementi flottanti riportati. L’opzione va contro la collocazione per regole: dove le regole mandano l’elemento flottante allo spazio successivo, essa si prende la pagina del richiamo a forza, compone paragrafi più stretti di quanto abbia scelto la divisione in righe e ritaglia immagini. Per tenere gli elementi flottanti vicino al richiamo secondo le regole, usa <code>floatsAtCitingPage</code> o <a href="/it/docs/document-format-resources#collocazione"><code>placement.citingPage</code></a> (l’elemento flottante prende la cima della pagina in cui finisce la riga che lo cita, e il testo sopra il rimando scende sotto di esso) e <code>placement.shrink: 'slot'</code> (l’immagine è composta più piccola, mantenendo le proporzioni, per restare sulla pagina che la cita). Nel Sandbox, <em>Porta le figure nella pagina del richiamo</em>, in Impaginazione.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

@@ -13,7 +13,9 @@ interface PdfMasterUploaderProps {
   onRemoved: () => void;
 }
 
-const ACCEPT = 'application/pdf,.pdf';
+// An Illustrator file saved PDF-compatible is a PDF; one that is not is
+// turned away by its bytes like any other non-PDF.
+const ACCEPT = 'application/pdf,.pdf,application/illustrator,application/postscript,.ai';
 
 /** Attach / replace / remove the vector print master of an SVG resource: a
  *  single-page PDF the PDF export embeds verbatim in place of the SVG. */

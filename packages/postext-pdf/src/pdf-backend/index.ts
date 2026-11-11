@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type IccProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -62,6 +62,12 @@ export interface RenderToPdfOptions {
    *  master is missing or does not decode. When omitted, resource images
    *  are drawn as placeholders. */
   resourceBytes?: ResourceBytesProvider;
+  /** The screen preview of a picture whose `resourceBytes` are a TIFF or
+   *  Photoshop original (`Resource.bitmap.printFileId`), by the picture's
+   *  own `fileId`: printed when the original does not decode, with a
+   *  `pictureOriginalUnreadable` warning. Without it such a picture is a
+   *  placeholder. */
+  previewBytes?: ResourceBytesProvider;
   /** Emit an accessible, tagged PDF (PDF/UA-1 oriented): logical structure
    *  tree, alt text on figures, document language and title, decoration
    *  flagged as artifacts. When omitted, the first document's
@@ -71,6 +77,10 @@ export interface RenderToPdfOptions {
    *  the canvas and HTML do on screen. Default false: the grid is a
    *  screen aid and stays out of a file meant for print. */
   characterGrid?: boolean;
+  /** Draw the baseline grid (`page.baselineGrid`, while it is on) as the
+   *  canvas and HTML do on screen. When omitted, the first document's
+   *  `config.pdfGeneration.baselineGrid`, else true. */
+  baselineGrid?: boolean;
   /** Called as the render advances: after the fonts and resources are
    *  embedded, after every page, and before the file is written. */
   onProgress?: (progress: RenderProgress) => void;
@@ -151,14 +161,15 @@ export type { ResourceBytesProvider } from './blocks/renderResourceBlock.js';
  *  while its `forceColorSpace` is on), else the default — RGB, bookmarks
  *  and tagging on. */
 function pdfSettings(
-  options: Pick<RenderToPdfOptions, 'outlines' | 'accessible' | 'colorSpace'>,
+  options: Pick<RenderToPdfOptions, 'outlines' | 'accessible' | 'colorSpace' | 'baselineGrid'>,
   doc: VDTDocument | undefined,
-): { outlines: boolean; accessible: boolean; colorSpace: PdfColorSpace } {
+): { outlines: boolean; accessible: boolean; colorSpace: PdfColorSpace; baselineGrid: boolean } {
   const gen = doc?.config.pdfGeneration;
   return {
     outlines: options.outlines ?? gen?.outlines ?? true,
     accessible: options.accessible ?? gen?.accessible ?? true,
     colorSpace: options.colorSpace ?? (gen?.forceColorSpace ? gen.colorSpace : undefined) ?? 'rgb',
+    baselineGrid: options.baselineGrid ?? gen?.baselineGrid ?? true,
   };
 }
 
@@ -274,7 +285,7 @@ export async function renderToPdf(
   // is embedded once.
   const resourceImages: ResourceImageMap = new Map();
   for (const doc of docs) {
-    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace);
+    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace, { previewBytes: options.previewBytes, warn });
     // Music scores (#1172): each system a vector drawing, its words' faces
     // embedded.
     await preloadScoreDrawings(doc, fontCache);
@@ -314,7 +325,7 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false);
+      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false, settings.baselineGrid);
       // Black handling over the page's operators (overprint, rich black).
       if (printMode) runPagePrintPass(pdfDoc.getPage(pdfDoc.getPageCount() - 1), printMode);
       rendered++;
@@ -350,6 +361,28 @@ export async function renderToPdf(
 
   // Characters drawn with no glyph, once per face.
   for (const m of fontCache.missingGlyphs()) warn(missingGlyphWarning(m));
+  // This render's spot inks: tints that found no code printed in
+  // process, and plates written under another name.
+  if (printMode) {
+    for (const [ink, n] of printMode.inkRegistry.exhausted()) {
+      warn({ kind: 'spotTintsExhausted', message: `postext-pdf: too many distinct spot tints in this render; ${n} tint(s) of "${ink}" printed in process, off the ink's plate` });
+    }
+    const knockedOut = printMode.inkRegistry.overprintsExhausted();
+    if (knockedOut > 0) {
+      warn({ kind: 'overprintsExhausted', message: `postext-pdf: too many distinct colours in this render; ${knockedOut} colour(s) set to overprint were knocked out` });
+    }
+    const approximated = printMode.inkRegistry.approximated();
+    if (approximated > 0) {
+      warn({ kind: 'plateMixesApproximated', message: `postext-pdf: too many distinct colours in this render; ${approximated} colour(s) were set as the nearest mix already on the job's plates` });
+    }
+    for (const [kind, n] of printMode.inkRegistry.offPlateArtwork()) {
+      const what = kind === 'pdf' ? 'placed PDF page(s)' : 'picture(s) that could not be decoded';
+      warn({ kind: 'artworkOffPlates', message: `postext-pdf: ${n} ${what} kept their own inks in a job on a few plates (print.plates)` });
+    }
+    for (const [ink, written] of printMode.inkRegistry.renamed()) {
+      warn({ kind: 'spotInkRenamed', message: `postext-pdf: a plate cannot be named "${ink}"; it is written as "${written}"` });
+    }
+  }
 
   // A face asked for but never drawn with is not written.
   fontCache.dropUnusedFonts();
@@ -373,6 +406,24 @@ export async function renderToPdf(
   return bytes;
 }
 
+/** The profile `print.imageColor.assignedRgbProfile` names, from the
+ *  resource bytes; a warning, and the pictures' own profiles, when it is
+ *  missing or not an RGB profile. */
+function assignedRgbProfile(config: ResolvedPrintConfig, options: Pick<RenderToPdfOptions, 'resourceBytes'>, warn: (w: PdfWarning) => void): IccProfile | undefined {
+  const assigned = config.imageColor.assignedRgbProfile;
+  if (!assigned) return undefined;
+  try {
+    const bytes = options.resourceBytes?.(assigned.fileId);
+    if (!bytes) throw new Error('its file was not given (resourceBytes)');
+    const profile = parseIccProfile(bytes);
+    if (profile.colorSpace !== 'RGB') throw new Error('it is not an RGB profile');
+    return profile;
+  } catch (err) {
+    warn({ kind: 'imageProfileUnavailable', message: `postext-pdf: the picture profile "${assigned.name}" is unavailable (${(err as Error).message}); pictures are read through their own profiles` });
+    return undefined;
+  }
+}
+
 /** pdf-lib always writes `%PDF-1.7`; PDF/X-1a:2003 is PDF 1.4 and PDF/X-4
  *  PDF 1.6. The version has the same length, so no offset moves. */
 function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
@@ -387,7 +438,7 @@ function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
 async function printColorMode(
   config: ResolvedPrintConfig,
   colorSpace: PdfColorSpace,
-  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl'>,
+  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl' | 'resourceBytes'>,
   warn: (w: PdfWarning) => void,
   docs: readonly VDTDocument[],
 ): Promise<PrintColorMode | undefined> {
@@ -406,8 +457,14 @@ async function printColorMode(
       ? { registryName: custom.registryName ?? 'Custom', condition: custom.name, name: profile.description || custom.name }
       : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
     const authored = new Map<string, CmykPercent>();
-    for (const doc of docs) authoredCmykColors(doc.config, authored);
-    return createPrintColorMode(profile, config, condition, authored);
+    const spots = new Map<string, Required<SpotColor>>();
+    const overprints = new Set<string>();
+    for (const doc of docs) {
+      authoredCmykColors([doc.config, doc.printColors], authored);
+      authoredSpotColors([doc.config, doc.printColors], spots);
+      overprintColors([doc.config, doc.printColors], overprints);
+    }
+    return createPrintColorMode(profile, config, condition, authored, spots, overprints, assignedRgbProfile(config, options, warn));
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

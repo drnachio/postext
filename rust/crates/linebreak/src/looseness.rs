@@ -1,5 +1,6 @@
 //! Choosing the breaks: the natural setting, or the one with `looseness`
-//! lines more or fewer when one is good enough, under the document's stacks.
+//! lines more or fewer when one is good enough, under the document's
+//! composition rules.
 
 use crate::dp::{Pass, Search, gates_short};
 use crate::items::Items;
@@ -20,18 +21,19 @@ pub enum LoosenessMode {
     Single,
 }
 
-/// A longer setting's target: exactly `lines` lines, setting no more than
-/// `max_stacks` stacks.
+/// A longer setting's target: exactly `lines` lines, keeping no more than
+/// `max_faults` faults of the composition rules.
 #[derive(Clone, Copy)]
 struct Longer {
     lines: i64,
-    max_stacks: u32,
+    max_faults: u32,
 }
 
-/// What a search chose: how many stacks its breaks set and what they cost.
+/// What a search chose: how many faults of the composition rules its
+/// breaks keep and what they cost.
 #[derive(Clone, Copy)]
 struct Outcome {
-    stacks: u32,
+    faults: u32,
     demerits: f64,
 }
 
@@ -48,24 +50,25 @@ pub(crate) fn breakpoints(search: &mut Search, items: &Items, o: &Options, out: 
 }
 
 /// Natural breaks, then the cheapest chain `looseness` lines longer with no
-/// very loose line and no more stacks, when there is one.
+/// very loose line and no more faults, when there is one.
 fn two_pass(search: &mut Search, items: &Items, o: &Options, out: &mut Vec<u32>) {
     let Some(natural) = limited(search, items, o, 0, None, out) else { return };
     if out.is_empty() {
         return;
     }
-    let longer = Longer { lines: out.len() as i64 + o.looseness as i64, max_stacks: natural.stacks };
+    let longer = Longer { lines: out.len() as i64 + o.looseness as i64, max_faults: natural.faults };
     let mut alternative = Vec::new();
     if limited(search, items, o, o.looseness, Some(longer), &mut alternative).is_some() {
         out.clone_from(&alternative);
     }
 }
 
-/// [`one`] under the document's stacks (`limited` in TypeScript, #1463).
-/// Merging nodes by line and fitness alone forgets what a stack's cost
-/// depends on, so the chain kept may set a stack another one avoids for
-/// less; a paragraph whose setting keeps a stack is set again with that
-/// state kept apart, which is exact but dearer, and gives up past
+/// [`one`] under the document's composition rules (`limited` in
+/// TypeScript, #1463, #1466). Merging nodes by line and fitness alone
+/// forgets what a stack's cost depends on, and what a hyphen ladder longer
+/// than one line does, so the chain kept may keep a fault another one
+/// avoids for less; a paragraph whose setting keeps a fault is set again
+/// with that state kept apart, which is exact but dearer, and gives up past
 /// `EXACT_MAX_ACTIVE` active nodes. The exact setting is taken when it has
 /// as many lines and costs less. `None` when a longer setting found
 /// nothing.
@@ -78,7 +81,8 @@ fn limited(
     out: &mut Vec<u32>,
 ) -> Option<Outcome> {
     let first = one(search, items, o, looseness, longer, false, out)?;
-    if first.stacks == 0 || o.rules.stack_demerits.is_none() {
+    let long_ladders = o.rules.ladder_demerits > 0.0 && o.rules.ladder_run > 1;
+    if first.faults == 0 || !(o.rules.stack_demerits.is_some() || long_ladders) {
         return Some(first);
     }
     let mut exact_breaks = Vec::new();
@@ -114,7 +118,7 @@ fn one(
     let arena = &search.arena;
     let outcome = |id: u32| {
         let a = arena.get(id);
-        Outcome { stacks: a.stacks, demerits: a.total_demerits }
+        Outcome { faults: a.faults, demerits: a.total_demerits }
     };
     if let Some(l) = longer {
         if !ran {
@@ -122,7 +126,7 @@ fn one(
         }
         let id = cheapest(arena, &search.active, |id| {
             let a = arena.get(id);
-            a.position == last && a.line as i64 == l.lines && a.stacks <= l.max_stacks
+            a.position == last && a.line as i64 == l.lines && a.faults <= l.max_faults
         })?;
         arena.trace(id, out);
         return Some(outcome(id));
@@ -133,7 +137,7 @@ fn one(
                 arena.trace(id, out);
                 outcome(id)
             }
-            None => Outcome { stacks: 0, demerits: 0.0 },
+            None => Outcome { faults: 0, demerits: 0.0 },
         });
     };
     if looseness != 0 {
@@ -147,7 +151,7 @@ fn one(
                 && a.line as i64 == target
                 && (looseness < 0 || arena.within_stretch_limit(id))
                 && (!gate || (a.loosest <= loosest_allowed && a.ragged <= natural.ragged))
-                && a.stacks <= natural.stacks
+                && a.faults <= natural.faults
         });
         if let Some(id) = alternative {
             best = id;

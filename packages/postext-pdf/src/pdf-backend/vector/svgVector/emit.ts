@@ -1,11 +1,15 @@
 // Painting a vector drawing with PDF path operators, written once per
 // document as a form XObject (#1276: split out of svgVector.ts).
-import { PDFOperator, moveTo, lineTo, appendBezierCurve, closePath, type PDFFont, PDFName, PDFRef, PDFDict, PDFContext, setGraphicsState, pushGraphicsState, clipEvenOdd, clip, endPath, concatTransformationMatrix, drawObject, popGraphicsState, setFontAndSize, setFillingColor, beginText, setTextMatrix, endText, setStrokingColor, setLineWidth, setLineCap, setLineJoin, PDFOperatorNames, PDFNumber, setDashPattern, fillAndStroke, fill, stroke, PDFContentStream, rectangle } from 'pdf-lib';
+import { type Color, PDFOperator, moveTo, lineTo, appendBezierCurve, closePath, type PDFFont, PDFName, PDFRef, PDFDict, PDFContext, setGraphicsState, pushGraphicsState, clipEvenOdd, clip, endPath, concatTransformationMatrix, drawObject, popGraphicsState, setFontAndSize, setFillingColor, beginText, setTextMatrix, endText, setStrokingColor, setLineWidth, setLineCap, setLineJoin, PDFOperatorNames, PDFNumber, setDashPattern, fillAndStroke, fill, stroke, PDFContentStream, rectangle } from 'pdf-lib';
 import { type PageCtx, colorFromHex, textShows } from '../../primitives.js';
 import { isPrintMode, modeKey } from '../../../print/colorMode.js';
 import { applyPrintPass, overprintStateDict } from '../../../print/printPass.js';
 import { shapedSvgText } from '../../text/shapedText.js';
-import type { PathSeg, VectorDrawing } from '../svgVector.js';
+import type { PathSeg, SvgInk, VectorDrawing } from '../svgVector.js';
+import type { SpotInkRegistry, SpotPlate } from '../../../print/spot.js';
+import { mixColor, planMix } from '../../../print/plates.js';
+import { inkEntry, inkKey, type SpotColor } from 'postext';
+import { parseCssColor } from '../../../colors.js';
 import { mul } from './geometry.js';
 
 // ------------------------------------------------------------ emission
@@ -47,8 +51,10 @@ class FormResources {
   private readonly fontDict: Record<string, PDFRef> = {};
   private readonly gsDict: Record<string, PDFDict> = {};
   private readonly xobjectDict: Record<string, PDFRef> = {};
+  private readonly spaceDict: Record<string, PDFRef> = {};
+  private readonly spaces = new Map<string, PDFName>();
 
-  constructor(private readonly context: PDFContext) {}
+  constructor(private readonly context: PDFContext, private readonly inks?: SpotInkRegistry) {}
 
   font(font: PDFFont): PDFName {
     let name = this.fonts.get(font);
@@ -93,13 +99,97 @@ class FormResources {
     return name;
   }
 
+  /** Spot inks' colour space, one ink's Separation or a mix's DeviceN
+   *  (the print pass's). */
+  colorSpace(plates: readonly SpotPlate[]): PDFName {
+    const ref = this.inks!.inkSpace(this.context, plates);
+    const id = ref.toString();
+    let name = this.spaces.get(id);
+    if (!name) {
+      const key = `CSs${this.spaces.size + 1}`;
+      this.spaceDict[key] = ref;
+      name = PDFName.of(key);
+      this.spaces.set(id, name);
+    }
+    return name;
+  }
+
   dict(): PDFDict {
     const entries: Record<string, Record<string, PDFRef | PDFDict>> = {};
+    if (this.spaces.size > 0) entries.ColorSpace = this.spaceDict;
     if (this.fonts.size > 0) entries.Font = this.fontDict;
     if (this.alphas.size > 0) entries.ExtGState = this.gsDict;
     if (this.images.size > 0) entries.XObject = this.xobjectDict;
     return this.context.obj(entries);
   }
+}
+
+/** How strong a tint of `inkHex` the colour `hex` is (0 paper .. 1 the
+ *  full ink), when it is one: `applySingleInkToSvg` mixes the ink over
+ *  white, channel by channel. Undefined for a colour off that line (one
+ *  the recolouring left alone, such as the default black). */
+export function inkStrength(hex: string, inkHex: string): number | undefined {
+  const c = parseCssColor(hex);
+  const ink = parseCssColor(inkHex);
+  if (!c || !ink) return undefined;
+  const ch = [c.r, c.g, c.b].map((v) => v * 255);
+  const ik = [ink.r, ink.g, ink.b].map((v) => v * 255);
+  // The channel the ink darkens most measures the strength best.
+  let best = 0;
+  for (let i = 1; i < 3; i++) if (255 - ik[i]! > 255 - ik[best]!) best = i;
+  const span = 255 - ik[best]!;
+  if (span < 1) return ch.every((v) => v > 254) ? 0 : undefined;
+  const s = (255 - ch[best]!) / span;
+  if (s < -0.01 || s > 1.01) return undefined;
+  const strength = Math.max(0, Math.min(1, s));
+  for (let i = 0; i < 3; i++) {
+    if (Math.abs(255 + (ik[i]! - 255) * strength - ch[i]!) > 1.5) return undefined;
+  }
+  return Math.round(strength * 10000) / 10000;
+}
+
+/**
+ * The spot ink an SVG colour prints on in a print render, and at what tint
+ * (0–1), or undefined for a process colour:
+ *
+ * - an ink the SVG names (`icc-named-color`, `data-spot`): the palette's
+ *   spot colour of that name (its CMYK alternate), else an ink of its own
+ *   whose alternate is the colour's CMYK; at the named tint;
+ * - a colour whose hex is exactly one of the palette's spot colours: that
+ *   ink, at that colour's tint.
+ *
+ * Nothing else: a colour that only looks like a tint of an ink (a grey on
+ * the line from white to a dark ink) stays in process, so an SVG's greys
+ * never move to a spot plate by accident. A diagram recoloured to one ink
+ * (`diagramStyle.singleInk` with a spot `inkColor`) is the one exception,
+ * handled by the drawing's `spotInk`.
+ */
+export function svgSpotOf(
+  hex: string,
+  ink: SvgInk | undefined,
+  spots: ReadonlyMap<string, Required<SpotColor>>,
+  colorSpace: PageCtx['colorSpace'],
+): { spot: Required<SpotColor>; tint: number } | undefined {
+  if (ink) {
+    // Through the ink table: the SVG may name the ink by an alias, and an
+    // ink sent to process prints the SVG's own colour.
+    const entry = isPrintMode(colorSpace) ? inkEntry(ink.name, colorSpace.config.inks) : undefined;
+    if (entry?.output === 'process') return undefined;
+    const plateName = entry?.pdfName ?? ink.name;
+    const key = inkKey(plateName);
+    let spot = [...spots.values()].find((s) => inkKey(s.name) === key);
+    if (spot && spot.tint !== 100) spot = { ...spot, tint: 100 };
+    if (!spot) {
+      const c = parseCssColor(hex);
+      const k = c && isPrintMode(colorSpace) ? colorSpace.transform.fromRgb(c.r, c.g, c.b) : undefined;
+      const pct = (v: number) => Math.round(v * 1000) / 10;
+      const cmyk = entry?.cmyk ?? (k ? { c: pct(k.c), m: pct(k.m), y: pct(k.y), k: pct(k.k) } : { c: 0, m: 0, y: 0, k: 100 });
+      spot = { name: plateName, cmyk, tint: 100, overprint: entry?.overprint ?? false };
+    }
+    return { spot, tint: (ink.tint ?? 100) / 100 };
+  }
+  const exact = spots.get(hex.slice(0, 7).toLowerCase());
+  return exact ? { spot: exact, tint: exact.tint / 100 } : undefined;
 }
 
 /** `#rrggbb` with an alpha byte appended (`#rrggbbaa`). */
@@ -114,7 +204,28 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
   // PDF/X-1a has no transparency: a translucent paint is set as it would
   // print over the paper, and no alpha state is written.
   const flatten = isPrintMode(colorSpace) && colorSpace.flattenTransparency;
-  const paint = (hex: string, alpha: number) => colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
+  const spotInk = isPrintMode(colorSpace) ? drawing.spotInk : undefined;
+  const inks = isPrintMode(colorSpace) ? colorSpace.spots : undefined;
+  const registry = isPrintMode(colorSpace) ? colorSpace.inkRegistry : undefined;
+  // A job on a few plates sets an ink of another plate on its own.
+  const inkColor = (spot: Required<SpotColor>, tint: number): Color =>
+    isPrintMode(colorSpace) && colorSpace.plates
+      ? { ...mixColor(planMix(colorSpace.plates, { kind: 'spot', spot, tint }, colorSpace), registry!, spot.overprint) }
+      : { ...registry!.standIn(spot, tint) };
+  const paint = (hex: string, alpha: number, ink?: SvgInk): Color => {
+    const over = flatten && alpha < 1 ? alpha : 1;
+    const strength = spotInk ? inkStrength(hex, spotInk.hex) : undefined;
+    if (spotInk && strength !== undefined) {
+      // A tint of the single ink: on its plate, lighter over the paper
+      // when flattened.
+      return inkColor(spotInk.spot, strength * (spotInk.spot.tint / 100) * over);
+    }
+    if (inks) {
+      const spot = svgSpotOf(hex, ink, inks, colorSpace);
+      if (spot) return inkColor(spot.spot, spot.tint * over);
+    }
+    return colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
+  };
   const alphaState = (ca: number, CA: number) => (flatten ? null : res.alpha(ca, CA));
   for (const shape of drawing.shapes) {
     ops.push(pushGraphicsState());
@@ -155,7 +266,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
           body.push(show.op);
         }
         ops.push(
-          setFillingColor(paint(run.fill.hex, run.fill.alpha)),
+          setFillingColor(paint(run.fill.hex, run.fill.alpha, run.fill.ink)),
           beginText(),
           setFontAndSize(res.font(shows[0]!.font), round(run.size)),
           setTextMatrix(round(a), round(b), round(c), round(d), round(e), round(f)),
@@ -169,11 +280,11 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
     }
     const gs = alphaState(shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
     if (gs) ops.push(gs);
-    if (shape.fill) ops.push(setFillingColor(paint(shape.fill.hex, shape.fill.alpha)));
+    if (shape.fill) ops.push(setFillingColor(paint(shape.fill.hex, shape.fill.alpha, shape.fill.ink)));
     if (shape.stroke) {
       const st = shape.stroke;
       ops.push(
-        setStrokingColor(paint(st.hex, st.alpha)),
+        setStrokingColor(paint(st.hex, st.alpha, st.ink)),
         setLineWidth(round(st.width)),
         setLineCap(st.cap),
         setLineJoin(st.join),
@@ -218,7 +329,7 @@ function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
   const spaceKey = modeKey(ctx.colorSpace);
   let form = bySpace.get(spaceKey);
   if (!form) {
-    const res = new FormResources(context);
+    const res = new FormResources(context, isPrintMode(ctx.colorSpace) ? ctx.colorSpace.inkRegistry : undefined);
     let ops = drawingOps(drawing, res, ctx.colorSpace);
     if (isPrintMode(ctx.colorSpace)) {
       const states = new Map<string, PDFName>();
@@ -227,7 +338,7 @@ function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
         let name = states.get(key);
         if (!name) states.set(key, (name = res.extGState(context.obj(overprintStateDict(flags)))));
         return name;
-      });
+      }, { richBlack: false, spaceFor: (plates) => res.colorSpace(plates) });
     }
     const [vx, vy, vw, vh] = drawing.viewBox;
     const bbox: [number, number, number, number] = [vx, vy, vx + vw, vy + vh];

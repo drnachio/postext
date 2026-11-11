@@ -38,6 +38,7 @@ function paintPage(
   tree: StructTree | undefined,
   onMissingImage?: PageCtx['onMissingImage'],
   characterGrid = false,
+  baselineGrid = true,
 ): void {
   const scale = makeScale(doc.config.page.dpi);
   const pageWidthPt = vdtPage.width * scale;
@@ -135,7 +136,7 @@ function paintPage(
   enterFlow();
 
   tagArtifact(ctx, { type: 'Layout' });
-  if (doc.config.page.baselineGrid.enabled) {
+  if (baselineGrid && doc.config.page.baselineGrid.enabled) {
     // Bound the grid to the page's actual text: from the first text line to
     // the last (mirrors the canvas backend). Pages with no text draw no grid.
     const textExtent = computePageTextExtent(vdtPage);

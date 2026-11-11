@@ -3,11 +3,12 @@
 // width of a token's text (#1276: split out of rich.ts).
 import type { TabStopPx, TabLeaderPlacement } from '../tabs.js';
 import type { TabStopAlign } from '../../types.js';
-import type { VDTAnnotationRun, VDTSwatch, VDTChip, VDTSegmentMarks, VDTLineSegment, VDTLine } from '../../vdt.js';
+import type { VDTAnnotationRun, VDTSwatch, VDTChip, VDTSegmentMarks, VDTLineSegment, VDTLine, VDTSegmentCharStyle } from '../../vdt.js';
 import type { MathRender } from '../../math/types.js';
-import type { SwatchBox } from '../../parse/index.js';
+import type { SwatchBox, CharStyleLook } from '../../parse/index.js';
 import { getMeasureLanguage, withMeasureLanguage, measureTextWidth } from '../canvas.js';
-import { findPxSize, withPxSize } from '../fontString.js';
+import { findPxSize, withPxSize, splitAtFontSize } from '../fontString.js';
+import { quoteFamily } from '../font.js';
 import { graphemeCount } from '../graphemes.js';
 import { measuringVertically, mayHoldVerticalCell, verticalTextWidth } from '../vertical.js';
 import { type ScriptContext, pieceScriptContext, scriptAt, getMeasureScriptContext, faceReadsScript, rtlTextWidth, scriptTextWidth, isLetterless } from '../script.js';
@@ -142,6 +143,12 @@ export interface RichToken {
   dashJoin?: boolean;
   /** Chinese marks on the token's text (#193), for the segment. */
   cjkMarks?: VDTSegmentMarks;
+  /** The character style run (`:span[…]{style}`) the token's text belongs
+   *  to, for the segment (its colour is painted once the document is laid
+   *  out); `charTracking` the tracking it adds, px after every character,
+   *  when the style sets one. */
+  charStyle?: VDTSegmentCharStyle;
+  charTracking?: number;
   /** Characters the layout added (a book title's 《》). */
   inserted?: boolean;
   /** One word of a joining script set in more than one style
@@ -306,12 +313,14 @@ export function tokenFont(
 
 /** The script, small-caps and Chinese-mark fields a token derived from
  *  another (a split, a hyphenated head) carries on. */
-export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang'> {
+export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; charStyle?: VDTSegmentCharStyle; charTracking?: number; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'charStyle' | 'charTracking' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.faceFont ? { faceFont: t.faceFont } : {}),
     ...(t.smallCaps ? { smallCaps: true } : {}),
     ...(t.cjkMarks ? { cjkMarks: t.cjkMarks } : {}),
+    ...(t.charStyle ? { charStyle: t.charStyle } : {}),
+    ...(t.charTracking !== undefined ? { charTracking: t.charTracking } : {}),
     ...(t.inserted ? { inserted: true } : {}),
     // The pieces of a word with no letter are shaped in its script (#725).
     ...(t.scriptContext ? { scriptContext: t.scriptContext } : {}),
@@ -477,4 +486,19 @@ export function expandSmallCaps(
     line.segments = out;
     if (line.text === before) line.text = spelled(out);
   }
+}
+
+/** `face` (a CSS font shorthand) in the family, size and weight of a
+ *  character style's look; a bold run keeps the face's bold weight. */
+export function charStyleFace(face: string, look: CharStyleLook, bold: boolean): string {
+  if (look.fontFamily === undefined && look.fontSizePx === undefined && (look.fontWeight === undefined || bold)) return face;
+  const m = splitAtFontSize(face);
+  if (!m) return face;
+  let prefix = m.prefix;
+  if (look.fontWeight !== undefined && !bold) {
+    prefix = prefix.replace(/(?:^|\s)(?:bold|bolder|lighter|[1-9]00)(?=\s|$)/g, '').trim();
+    prefix = `${prefix ? `${prefix} ` : ''}${look.fontWeight === 400 ? '' : `${look.fontWeight} `}`;
+  }
+  const size = look.fontSizePx ?? parseFloat(findPxSize(face)?.value ?? '16');
+  return `${prefix}${size}px ${look.fontFamily ? quoteFamily(look.fontFamily) : m.family}`;
 }

@@ -7,13 +7,15 @@ import it from 'hyphenation.it';
 import pt from 'hyphenation.pt';
 import ca from 'hyphenation.ca';
 import nl from 'hyphenation.nl';
-import type { HyphenationLocale, LocaleTag } from '../types.js';
+import type { HyphenationLocale, LocaleTag, HyphenationLimits } from '../types.js';
 import { hyphenationLocaleFor } from './locale.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { normalizeHyphenationExceptions } from './hyphenationExceptions.js';
+import { activeLimits, onLimitsEvicted } from './limits.js';
 
 export { HYPHENATION_LOCALES, matchHyphenationLocale, hyphenationLocaleFor } from './locale.js';
 export { normalizeHyphenationExceptions } from './hyphenationExceptions.js';
+export { setHyphenationLimits, hyphenationLimitsId } from './limits.js';
 
 /** Catalan words the IEC divides at their prefix rather than by syllable
  *  (*Llibre d'estil*, VI § 2.7): `vos-altres`, not `vo-saltres`. */
@@ -40,15 +42,23 @@ const PATTERNS: Record<HyphenationLocale, HyphenationLanguage> = {
   'nl': nl,
 };
 
-const instances = new Map<HyphenationLocale, Hypher>();
-
+/** The patterns of `locale` under the limits in force. */
 function getHyphenator(locale: HyphenationLocale): Hypher {
-  let h = instances.get(locale);
+  const { hyphenators, limits } = activeLimits();
+  let h = hyphenators.get(locale);
   if (!h) {
-    h = new Hypher(PATTERNS[locale]);
-    instances.set(locale, h);
+    const base = PATTERNS[locale];
+    h = new Hypher({ ...base, leftmin: limits.leftMin ?? base.leftmin, rightmin: limits.rightMin ?? base.rightmin });
+    hyphenators.set(locale, h);
   }
   return h;
+}
+
+/** The letters a language's patterns leave, at least, before and after a
+ *  break, and the shortest word they divide: what {@link HyphenationLimits}
+ *  overrides. */
+export function hyphenationLanguageLimits(locale: HyphenationLocale): Required<HyphenationLimits> {
+  return { leftMin: PATTERNS[locale].leftmin, rightMin: PATTERNS[locale].rightmin, minWordLength: locale === 'ca' ? MIN_WORD_LENGTH : DEFAULT_MIN_WORD_LENGTH };
 }
 
 let currentLocale: HyphenationLocale = 'en-us';
@@ -69,9 +79,9 @@ export function getHyphenationLocale(): HyphenationLocale {
  *  same words come back in every paragraph, every pass and every chapter
  *  of a book; the trie walk is not cheap and its result never changes. */
 const WORD_MEMO_SLOTS = 50_000;
-const wordMemo = new Map<HyphenationLocale, Map<string, string>>();
 
 function memoFor(locale: HyphenationLocale): Map<string, string> {
+  const wordMemo = activeLimits().memo;
   let m = wordMemo.get(locale);
   if (!m) {
     m = new Map();
@@ -94,10 +104,11 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
   const rules = activeRules;
   if (!rules) return hyphenateByDictionary(text, locale);
   const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : currentLocale;
-  let memo = rules.memo.get(loc);
+  const memoKey = `${activeLimits().id}:${loc}`;
+  let memo = rules.memo.get(memoKey);
   if (!memo) {
     memo = new Map();
-    rules.memo.set(loc, memo);
+    rules.memo.set(memoKey, memo);
   }
   return eachToken(text, (word) => {
     let ruled = memo.get(word);
@@ -118,15 +129,21 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
 export function hyphenateByDictionary(text: string, locale?: LocaleTag): string {
   const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : currentLocale;
   const hyphenator = getHyphenator(loc);
+  const { limits } = activeLimits();
   const memo = memoFor(loc);
   return eachToken(text, (word) => {
     let hyphenated = memo.get(word);
     if (hyphenated === undefined) {
       // A word of a joining script (an Arabic word quoted in an English
       // book) is never divided: its letters connect (`measure/rtl/joining.ts`).
-      hyphenated = joiningScriptIn(word) ? word : loc === 'ca' ? hyphenateCatalan(hyphenator, word) : hyphenator.hyphenateText(word);
-      if (APOSTROPHE_LOCALES.has(loc) && APOSTROPHE_RE.test(word)) {
-        hyphenated = withoutApostropheBreaks(word, hyphenated, PATTERNS[loc].leftmin, PATTERNS[loc].rightmin, ELISION_LOCALES.has(loc));
+      hyphenated = joiningScriptIn(word) ? word : loc === 'ca' ? hyphenateCatalan(hyphenator, word, limits.minWordLength ?? MIN_WORD_LENGTH) : hyphenator.hyphenateText(word, (limits.minWordLength ?? DEFAULT_MIN_WORD_LENGTH) - 1);
+      // The letters about an apostrophe count against the document's
+      // limits, as every other break does. The Catalan patterns see the
+      // apostrophe as a letter of its run (`l'o-portunitat`): with limits
+      // of the document's own, the letters are counted again without it.
+      const catalanLimits = loc === 'ca' && (limits.leftMin !== undefined || limits.rightMin !== undefined);
+      if ((APOSTROPHE_LOCALES.has(loc) || catalanLimits) && APOSTROPHE_RE.test(word)) {
+        hyphenated = withoutApostropheBreaks(word, hyphenated, limits.leftMin ?? PATTERNS[loc].leftmin, limits.rightMin ?? PATTERNS[loc].rightmin, ELISION_LOCALES.has(loc));
       }
       if (memo.size >= WORD_MEMO_SLOTS) memo.clear();
       memo.set(word, hyphenated);
@@ -187,8 +204,9 @@ interface CompiledRules {
   keepCapitalised: boolean;
   /** The ruled form of each token under these rules, per locale: a book
    *  whose builds alternate between two sets (with and without the cited
-   *  names) keeps both. `wordMemo` holds the dictionary's own result. */
-  memo: Map<HyphenationLocale, Map<string, string>>;
+   *  names) keeps both, keyed by the limits' id and the locale. The
+   *  limit set's own memo holds the dictionary's result. */
+  memo: Map<string, Map<string, string>>;
 }
 
 const NO_POINTS: readonly number[] = [];
@@ -230,6 +248,14 @@ function compileRules(rules: HyphenationRules, id: number): CompiledRules {
 const internedRules = new Map<string, CompiledRules>();
 let nextRulesId = 1;
 let activeRules: CompiledRules | undefined;
+
+// A set of limits let go takes its ruled words with it.
+onLimitsEvicted((id) => {
+  const prefix = `${id}:`;
+  for (const rules of internedRules.values()) {
+    for (const key of [...rules.memo.keys()]) if (key.startsWith(prefix)) rules.memo.delete(key);
+  }
+});
 
 /**
  * Set the rules {@link hyphenateText} applies to the dictionary's result:
@@ -400,6 +426,9 @@ const CATALAN_WORD_RE = /(?:[\p{L}\p{M}'’\u00AD]|(?<=[lL])·(?=[lL]))+/gu;
 const CATALAN_VOWELS = 'aeiouàèéíïòóúüAEIOUÀÈÉÍÏÒÓÚÜ';
 /** hypher's default: shorter words are left whole. */
 const MIN_WORD_LENGTH = 4;
+/** The shortest word hypher divides in the other languages (its default
+ *  leaves words of four letters or fewer whole). */
+const DEFAULT_MIN_WORD_LENGTH = 5;
 
 /** `word` (one whitespace-free token) with soft hyphens at the Catalan
  *  syllable breaks the IEC accepts at a line end. Two vowels in hiatus stay
@@ -407,11 +436,11 @@ const MIN_WORD_LENGTH = 4;
  *  `u` is a consonant and opens its syllable (`fe-ia`, `ve-ient`). No
  *  break follows an apostrophe (`s'ha-via`). The
  *  break inside `l·l` is kept: the line breakers print it `l-` | `l`. */
-function hyphenateCatalan(hyphenator: Hypher, word: string): string {
+function hyphenateCatalan(hyphenator: Hypher, word: string, minWordLength: number): string {
   return word.replace(CATALAN_WORD_RE, (run) => {
     // A word with a soft hyphen its author typed gets no other point, as
     // under every other dictionary (#700).
-    if (run.length < MIN_WORD_LENGTH || run.includes(SOFT_HYPHEN)) return run;
+    if (run.length < minWordLength || run.includes(SOFT_HYPHEN)) return run;
     const parts = hyphenator.hyphenate(run);
     let out = parts[0] ?? '';
     for (let i = 1; i < parts.length; i++) {

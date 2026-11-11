@@ -2,6 +2,7 @@ import type { SandboxToolHost } from '../host.js';
 import type { WebMcpTool } from '../modelContext.js';
 import { bookTools } from './book.js';
 import { checkTools } from './checks.js';
+import { findTextTools } from './findText.js';
 import { comicTools } from './comics.js';
 import { configTools } from './config.js';
 import { designItemTools } from './designItems.js';
@@ -27,6 +28,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     getState!,
     ...pageTools(host),
     ...text,
+    ...findTextTools(host),
     ...configTools(host),
     ...designItemTools(host),
     ...historyTools(host),

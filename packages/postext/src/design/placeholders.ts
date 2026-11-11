@@ -109,6 +109,11 @@ export interface DesignPlaceholderContext {
    *  hex): every palette-linked colour of a design slot laid out on that
    *  page takes the part's value. Absent / empty = the document palette. */
   partPaletteByPageIndex?: Record<string, string>[];
+  /** The page colour (`page.backgroundColor`) a palette colour at a tint
+   *  (`ColorValue.tint`) mixes over under those overrides; white when
+   *  absent. A page whose own colour the overrides change mixes over that
+   *  (`VDTPage.background`). */
+  tintPaper?: string;
   /** Current chapter number per page index; backs `{chapterNumber}` in
    *  header/footer slots (heading slots use `heading.chapterNumber`). */
   chapterNumberByPageIndex?: string[];

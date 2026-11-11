@@ -6,7 +6,7 @@ export const metadata = {
   description: 'الوحدات والألوان ولوحة الألوان، والخطوط المخصّصة، وعارض HTML، وإنتاج PDF والإنتاج الطباعي، وعارض Folio، والتصحيح',
   lang: 'ar',
   lastUpdated: '2026-11-10',
-  readingTime: '39 دقيقة',
+  readingTime: '40 دقيقة',
   order: 20,
   parent: 'configuration',
   plainSummary: "تتناول هذه الصفحة الإعدادات المشتركة في الكتاب كله وإعدادات كل نوع من المُخرجات. تشرح طريقة كتابة القياس واللون، وطريقة تسمية الألوان في لوحة الألوان. وتبيّن كيف تضيف خطوطك الخاصة. ثم تتناول عرض الويب وملف PDF والملفات التي تطلبها المطبعة والكتاب ثلاثي الأبعاد. ويبيّن القسم الأخير كيف تُظهر الخطوط المساعدة والتحذيرات التي تعينك أثناء العمل.",
@@ -39,13 +39,16 @@ interface Dimension {
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
+  spot?: SpotColor;    // حبر اللون الخاص.
+  overprint?: boolean; // يُطبع فوق ما تحته في الإخراج الطباعي (انظر الألوان التي تُطبع فوق غيرها).
   paletteId?: string;  // مدخل colorPalette الذي يتبعه.
+  tint?: number;       // شدة المدخل فوق لون الصفحة، بالنسبة المئوية (مع paletteId).
 }
 ```
 
-يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)).
+يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](/ar/docs/configuration-pdf-output#الألوان-المعرّفة-بقيم-cmyk)). `'spot'` على لون خاص، حبره في `spot` (انظر [الألوان الخاصة](/ar/docs/configuration-pdf-output#الألوان-الخاصة)).
 
 لأن Postext يستهدف مخرجات بجودة النشر، يأتي لون نص المتن الافتراضي بـ`model: 'cmyk'` (`#000000`). أما ألوان العناوين والنص العريض والمائل والقوائم فقيمتها الافتراضية مرتبطة بلوحة الألوان: **اللون الرئيسي** (Main Color) (`#295AA3`، `model: 'hex'`). وخلفية الصفحة وطبقات الواجهة (شبكة خطوط الأساس، علامات القص، مؤشرات التصحيح) قيمتها الافتراضية `model: 'hex'`. غيّر `color.model` في أي حقل إن احتجت دلالة تصدير مختلفة.
 
@@ -266,6 +269,8 @@ const config: PostextConfig = {
 
 **تغيّر في postext 1.5.** حتى postext 1.4 كانت لوحة الألوان لا تبلغ إلا قائمة ثابتة من الإعدادات: ألوان التصاميم (الترويسات، وصفحات الافتتاح، وأنماط العناوين، والأجزاء، وصفوف المحتويات)، و`bodyText.referenceColor`، وألوان تسميات الأطر، وألوان النص العريض / المائل في نصوص الإطارات كانت تحتفظ بقيمة `hex` المخزّنة بجانب `paletteId` الخاص بها. والمستند الذي تختلف قيمته المخزّنة عن مدخل اللوحة (كل مستند عُدِّل في Sandbox بعد تغيّر المدخل، وكل `:ref` حين لا يكون اللون الرئيسي `#295AA3`) يطبع الآن لون اللوحة، كما يقتضي الربط. ولتُبقي لونًا كما كان، احذف `paletteId` الخاص به.
 
+**درجة من مدخل في اللوحة.** مع `paletteId`، يرسم `tint` (0–100) المدخل بتلك الشدة: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` هو اللون الرئيسي بنسبة 8 %، خلفية إطار تتبع اللون الرئيسي حين تتغير اللوحة. وتحتفظ لوحة الجزء أو القسم بالشدة في كل ما تعيد تلوينه: النص الجاري، ولون الصفحة، وأرقام الأسطر، وخلايا الجداول، وخانات التصميم، والتصدير إلى Word. وتحتفظ الدرجة بنموذج المدخل: فالمدخل بنظام CMYK يعطي أحباره مصغّرة بالنسبة نفسها (10 % من `100 60 0 10` تُطبع `10 6 0 1`)، والمدخل باللون الخاص يعطي درجة من الحبر نفسه على لوحه الخاص، ولون الشاشة يمتزج بلون الصفحة (`page.backgroundColor`، والأبيض إن لم يُضبط؛ وتحت درجة بنظام CMYK يضيف لون الصفحة المعرَّف بنظام CMYK أحباره). ويحتفظ `hex` بالقيمة بعد تطبيق الدرجة، وهي القيمة الاحتياطية بدون المدخل. ودرجة اللون الخاص لا تحمل إلا حبرًا واحدًا: فوق صفحة ملوّنة تُفرِّغ لون الصفحة ما لم تُطبع فوق ما تحتها. وفي Sandbox، يحتوي منتقي اللون المرتبط على حقل **الدرجة**.
+
 ### كيف تُطبَّق لوحات الألوان
 
 يشغّل `buildDocument` لوحة الألوان في موضعين، لتعمل الألوان المُحال إليها في القيم التي كتبتها صراحة وفي القيم الافتراضية التي تُملأ لاحقًا:
@@ -447,7 +452,7 @@ stripCanvasViewerDefaults({ pageGap: 24, rowGap: 24 });
 
 ينقلها `buildDocument` في VDT، باسم `doc.config.pdfGeneration`، ويأخذ `renderToPdf` كل إعداد من أول موضع يعطيه:
 
-1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`، `forms`)؛
+1. خياراته الخاصة (`outlines`، `accessible`، `colorSpace`، `baselineGrid`، `forms`)؛
 2. إعدادات `pdfGeneration` في أول مستند يعرضه (في الكتاب، تنطبق إعدادات الفصل الأول على الملف كله)؛
 3. القيم الافتراضية: الإشارات المرجعية والوسوم مفعّلة، والألوان بنموذج RGB.
 
@@ -461,6 +466,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convert every colour to `colorSpace`.
   colorSpace?: PdfColorSpace;  // Target space used when `forceColorSpace` is true.
   accessible?: boolean;        // Tagged, PDF/UA-oriented output (structure tree, alt text, language).
+  baselineGrid?: boolean;      // ارسم شبكة `page.baselineGrid` في PDF أيضًا.
   forms?: PdfFormsConfig;      // حقول النماذج: العملة والفواصل والخط.
 }
 ```
@@ -498,6 +504,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>أصدِر ملف PDF موسومًا وميسَّر الوصول موجّهًا إلى PDF/UA-1: شجرة بنية منطقية بترتيب القراءة (عناوين لا تتخطّى مستوى أبدًا، وفقرات، وقوائم، واقتباسات كتلية، وأطر، وجداول بخلايا رأس، وأشكال بنصها البديل وتعليقاتها، وصيغ رياضية، وإحالات قابلة للنقر بوصفها روابط، ومحتويات `:::toc` بوصفها `TOC` واحدًا فيه `TOCI` لكل صف: رقم الصف `Lbl`، وعنوانه وصفحته `Reference` فيه الرابط)، وعنوان المستند ولغته (`locale` في المستوى الأعلى)، وتعريف PDF/UA في بيانات XMP الوصفية، وكل علامة زخرفية (خلفية الصفحة، والخطوط الفاصلة، وشبكة خطوط الأساس، والترويسات والتذييلات، وعلامات القص، ورؤوس الجداول المكرّرة، والعنوان المكرّر وعلامة الاستمرار في الإطار المقسوم) موسومة بوصفها عنصرًا زخرفيًا (artifact) لتتخطّاها قارئات الشاشة. والشكل الذي لا يملك `altText` يرجع إلى تعليقه، ثم إلى تسميته. ويُقرأ الشكل أو الجدول العائم مباشرة بعد النص الذي يستشهد به أولًا، أو النص الذي يسبق سطر `::resource` الخاص به، ويُقرأ الإطار العائم بعد النص الذي يسبق سطر فتحه، حتى حين يوضع العنصر العائم في صفحة لاحقة؛ والقائمة أو المحتويات التي تستمر بعد عنصر عائم تبقى عنصرًا واحدًا، والقائمة داخل إطار عائم أو مثبّت في الصفحة (`placement: 'fixed'`) قائمةٌ واحدة. لا تعطّله إلا في النسخ الأصلية للطباعة حيث لا تُرغب البنية الإضافية.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>يرسم شبكة خطوط الأساس في PDF ما دامت <code>page.baselineGrid</code> مفعّلة. مفعّل افتراضيًا كما كان؛ ومع <code>false</code> تبقى الشبكة دليلًا لفحص الصفحة على الشاشة خارج PDF، ويظل Canvas وعارض HTML يعرضانها. في Sandbox هو <strong>شبكة خطوط الأساس في PDF</strong> في قسم PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +565,9 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
+  imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
 }
 
 interface CustomOutputProfile {
@@ -624,7 +639,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>انظر <a href="#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
+      <td>انظر <a href="/ar/docs/configuration-pdf-output#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
       <td>ما يتحقق منه الفحص قبل الطباعة، وعتباته.</td>
     </tr>
   </tbody>
@@ -753,73 +768,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### الألوان المعرّفة بقيم CMYK
-
-اللون المكتوب بقيم CMYK يحتفظ بقيمه الدقيقة: يُكتب `ColorValue.cmyk` (بالنسبة المئوية) كما هو في الإخراج الطباعي، ويكون `hex` صورته على الشاشة. ومدخل لوحة الألوان المعرّف بقيم CMYK يشمل كل لون مرتبط به.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### الفحص قبل الطباعة
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>الخاصية</th>
-      <th>النوع</th>
-      <th>القيمة الافتراضية</th>
-      <th>الوصف</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية التي ليست لها دقة خاصة بها تُطبع بمقاسها الطبيعي بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi؛ أما التي لها دقة (`bitmap.resolution`، `layout.bitmapResolution`) فتُطبع بمقاسها الطبيعي بتلك الدقة.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>النص الأقرب من هذا إلى خط القص، حيث قد تقطعه المقصلة.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>الصندوق أو الصورة الذي يتوقف على هذا القرب من خط القص من غير أن يبلغ النزف: مدّه إلى النزف أو اسحبه للداخل.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يُصدر تحذيرًا عن الخطوط التي لا يضمّنها ملف PDF موضوع في الكتاب (يفحص Sandbox كل نسخة أصلية للطباعة بـ`inspectPrintMaster`). ويضمّن Postext كل خط ينضّد به.</td></tr>
-  </tbody>
-</table>
-
-تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`declaredPixelsMismatch` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة. وتُحسب دقة الصورة من البكسلات التي يصرّح بها موردها، أو من بكسلات الملف نفسه حين يقدّمها `imageSize(fileId)` (`bitmapInfo` على البايتات، أو الصورة بعد فك ترميزها): والتصريح الذي يبتعد عن الملف بأكثر من بكسل واحد يصدر عنه مرة واحدة تحذير من النوع `declaredPixelsMismatch`، وهو تحذير حين يدّعي بكسلات أكثر مما في الملف. وتسرد `placedImageResolutions(doc, { resources, imageSize })` كل صورة نقطية موضوعة مع دقتها الفعلية بوحدة ppi، سواء كان الفحص قبل الطباعة مفعّلًا أم لا. تُحتسب تسميات الشكل نصًّا في `smallProcessText` و`inkLimit` و`safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### معاينة الطباعة
 

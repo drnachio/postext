@@ -16,6 +16,8 @@
  * - Rules, borders and strokes thinner than `minRuleWidth`.
  * - Text under `smallTextSize` set with more than one ink.
  * - Colours whose separation exceeds the ink limit.
+ * - Spot inks: the plates the job adds, from its colours and the inks its
+ *   SVGs name, and names a plate cannot carry (`preflightInks.ts`).
  * - Text inside the safe zone near the trim (a figure's labels too, #902), and boxes or pictures that
  *   stop short of the trim by less than `bleedSnap` without bleeding.
  */
@@ -23,7 +25,10 @@
 import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
-import { authoredCmykColors } from '../color/authored.js';
+import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
+import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
+import { spotInkIssues } from './preflightInks.js';
+import { platesIssues } from './preflightPlates.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -50,9 +55,53 @@ export type PreflightIssue = {
    *  placed; `warning` when the declaration exceeds the file. */
   | { kind: 'declaredPixelsMismatch'; fileId: string; resourceId?: string; declared: { width: number; height: number }; actual: { width: number; height: number } }
   | { kind: 'rgbImage'; fileId: string; resourceId?: string; converted: boolean }
+  /** A CMYK JPEG separated for another press condition (its profile) in a
+   *  PDF/X-1a job: its pixels are not decoded and PDF/X-1a allows no
+   *  ICC-based picture, so it prints its values as they are. */
+  | { kind: 'cmykImageForeign'; fileId: string; resourceId?: string; profile: string }
   | { kind: 'thinRule'; widthPt: number; minimumPt: number; color: string }
   | { kind: 'smallProcessText'; sizePt: number; inks: number; color: string; text: string }
   | { kind: 'inkLimit'; color: string; coverage: number; limit: number }
+  /** The spot inks the job prints with besides process, once per
+   *  document (info). */
+  | { kind: 'spotInks'; inks: string[] }
+  /** One ink defined twice with a different CMYK or overprint: the PDF
+   *  writes the first, and the printer would be asked for two plates of
+   *  one name. */
+  | { kind: 'spotInkConflict'; ink: string }
+  /** A plate name a PDF cannot carry as it is: `All` or `None` (every
+   *  plate, no plate), a process plate's name, a control character, or
+   *  longer than 127 bytes. The PDF writes it as `written` instead
+   *  (`printableInkName`). */
+  | { kind: 'spotInkName'; ink: string; problem: InkNameProblem; written: string }
+  /** An ink an SVG picture names (`icc-named-color`, `data-spot`) that no
+   *  colour of the configuration and no `print.inks` entry with a `cmyk`
+   *  defines: it prints on a plate of its own, with the SVG's colour as
+   *  its alternate. */
+  | { kind: 'spotInkUndefined'; ink: string; fileId: string; resourceId?: string }
+  /** Plate names that differ only in case or spacing: most likely one ink
+   *  the printer would get two plates of. An alias in `print.inks` merges
+   *  them. */
+  | { kind: 'spotInkSimilar'; inks: string[] }
+  /** A colour that overprints (`ColorValue.overprint`) and puts no ink
+   *  down (paper white, a spot at 0 %): on press it disappears. */
+  | { kind: 'overprintWhite'; color: string }
+  /** The plates a restricted job prints on (`print.plates`), and those
+   *  its pictures print on, once per document (info). */
+  | { kind: 'platesJob'; plates: string[]; images: string[] }
+  /** A spot ink a colour of the book uses that the job does not print:
+   *  its colours are projected onto the job's plates, the ink lost.
+   *  `deltaE`: how far the farthest lands from its ink (CIE76), when the
+   *  output profile is known; information up to `PLATE_DELTA_E`. */
+  | { kind: 'offPlateInk'; ink: string; deltaE?: number }
+  /** A colour authored in CMYK whose channels the job does not print. */
+  | { kind: 'offPlateCmyk'; color: string; channels: string[]; deltaE?: number }
+  /** A screen colour the job's plates cannot come within `PLATE_DELTA_E`
+   *  of (a warning). */
+  | { kind: 'offPlateColor'; color: string; deltaE: number }
+  /** A spot plate of the job that neither a colour nor the ink table
+   *  defines: nothing says what it looks like (its alternate). */
+  | { kind: 'plateUndefined'; plate: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -80,9 +129,17 @@ export interface PreflightOptions {
   imageSize?: (fileId: string) => { width: number; height: number } | undefined;
   /** Whether a picture's file is RGB, CMYK or gray (from its bytes). */
   imageColor?: (fileId: string) => 'rgb' | 'cmyk' | 'gray' | undefined;
+  /** The ICC profile a picture's file carries (its hash and name), when the
+   *  host has read it: with `transform`, a CMYK JPEG of another press
+   *  condition in a PDF/X-1a job is reported (`cmykImageForeign`). */
+  imageProfile?: (fileId: string) => { hash: string; name: string } | undefined;
   /** The job is CMYK (a PDF/X standard, or a CMYK PDF). Defaults to true
    *  when a PDF/X standard is set. */
   cmyk?: boolean;
+  /** The spot inks an SVG picture names, by its file id — `svgSpotInks`
+   *  on its markup, names only — once the host has read it: listed with
+   *  the job's inks, and reported when no colour defines them. */
+  svgInks?: (fileId: string) => readonly string[] | undefined;
 }
 
 const MM_PER_IN = 25.4;
@@ -159,7 +216,12 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const offset = doc.pageIndexOffset ?? 0;
   const cmykJob = options.cmyk ?? print.standard !== 'none';
   const sizes = bitmapSizes(doc, options.resources);
-  const authored = authoredCmykColors(doc.config);
+  // Spot inks as the ink table prints them: renamed, merged, or in process.
+  const { spots, authored } = spotsThroughInkTable(authoredSpotColors([doc.config, doc.printColors]), authoredCmykColors([doc.config, doc.printColors]), print.inks);
+  /** Spot inks painted somewhere in the document, by name. */
+  const usedInks = new Set<string>();
+  /** Colours authored in CMYK painted somewhere, by hex. */
+  const usedAuthored = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
   const smallTextPx = dimensionToPx(pf.smallTextSize, dpi);
   const safePx = dimensionToPx(pf.safeZone, dpi);
@@ -168,9 +230,20 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const out: PreflightIssue[] = [];
   const t = options.transform;
 
+  /** Colours painted somewhere, by hex. */
+  const usedColors = new Set<string>();
   const separation = (hex: string): CmykPercent | undefined => {
+    usedColors.add(hex);
+    const spot = spots.get(hex);
+    if (spot) {
+      usedInks.add(spot.name);
+      return spotColorCmyk(spot);
+    }
     const exact = authored.get(hex);
-    if (exact) return exact;
+    if (exact) {
+      usedAuthored.add(hex);
+      return exact;
+    }
     if (!t) return undefined;
     const r = parseInt(hex.slice(1, 3), 16) / 255;
     const g = parseInt(hex.slice(3, 5), 16) / 255;
@@ -179,6 +252,11 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     return { c: k.c * 100, m: k.m * 100, y: k.y * 100, k: k.k * 100 };
   };
   const inkCount = (hex: string): number => {
+    // A spot colour is one ink, whatever its alternate.
+    if (spots.has(hex)) {
+      usedInks.add(spots.get(hex)!.name);
+      return 1;
+    }
     const sep = separation(hex);
     if (sep) return [sep.c, sep.m, sep.y, sep.k].filter((v) => v > EPS).length;
     const neutral = hex.slice(1, 3) === hex.slice(3, 5) && hex.slice(3, 5) === hex.slice(5, 7);
@@ -191,6 +269,11 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     const hex = hex6(color);
     if (!hex || !cmykJob || coverageSeen.has(hex)) return;
     coverageSeen.add(hex);
+    // One plate at its tint: never over the limit.
+    if (spots.has(hex)) {
+      usedInks.add(spots.get(hex)!.name);
+      return;
+    }
     const sep = separation(hex);
     if (!sep) return;
     const coverage = sep.c + sep.m + sep.y + sep.k;
@@ -201,6 +284,8 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // The file's pixels against the declaration, once per file.
   const mismatchSeen = new Set<string>();
+  /** CMYK JPEGs of another press already reported. */
+  const foreignSeen = new Set<string>();
   const checkImage = (fileId: string | undefined, placedW: number, placedH: number, fracW: number, fracH: number, pageIndex: number, rect: BoundingBox, resourceId?: string, src?: { start?: number; end?: number }) => {
     if (!fileId) return;
     const declared = sizes.get(fileId);
@@ -234,6 +319,17 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
     if (pf.enabled && cmykJob && options.imageColor?.(fileId) === 'rgb') {
       const converted = print.standard === 'pdfx1a' || print.convertImages;
       out.push({ kind: 'rgbImage', severity: converted ? 'info' : 'warning', pageIndex, rect, fileId, converted, ...(rid ? { resourceId: rid } : {}), ...source });
+    }
+    if (pf.enabled && print.standard === 'pdfx1a' && t && options.imageColor?.(fileId) === 'cmyk') {
+      const resource = rid ? options.resources?.find((r) => r.id === rid) : undefined;
+      const own = resource?.printColor;
+      const jpeg = (resource?.bitmap?.format ?? '').toLowerCase().startsWith('jp') && !resource?.bitmap?.printFileId;
+      const profile = options.imageProfile?.(fileId);
+      const convert = (own?.cmykProfile ?? print.imageColor.cmykProfile) === 'convert' && (own?.embeddedProfile ?? print.imageColor.embeddedProfile) === 'use';
+      if (jpeg && convert && profile && profile.hash !== t.profile.hash && !foreignSeen.has(fileId)) {
+        foreignSeen.add(fileId);
+        out.push({ kind: 'cmykImageForeign', severity: 'warning', pageIndex, rect, fileId, profile: profile.name, ...(rid ? { resourceId: rid } : {}), ...source });
+      }
     }
   };
 
@@ -436,7 +532,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
           if (rulePx > 0 && Number.isFinite(rulePx)) checkRule(rulePx, table.borderColor, pageIndex, body);
           for (const cell of table.cells ?? []) {
             const img = cell.image;
-            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, 1, 1, pageIndex, body, img.resourceId, src);
+            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, img.crop?.width ?? 1, img.crop?.height ?? 1, pageIndex, body, img.resourceId, src);
           }
         }
       }
@@ -464,5 +560,22 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       out.push({ kind: 'inkLimit', severity: 'warning', pageIndex: offset, color: 'rich-black', coverage: Math.round(coverage), limit: print.inkLimit });
     }
   }
+
+  // Spot inks: the plates the job adds, and what is wrong with them.
+  if (cmykJob) out.push(...spotInkIssues({ doc, print, spots, usedInks, pageIndex: offset, ...(options.svgInks ? { svgInks: options.svgInks } : {}) }));
+
+  // Colours that overprint with no ink: they vanish on press.
+  if (cmykJob) {
+    for (const hex of overprintColors([doc.config, doc.printColors])) {
+      if (!usedColors.has(hex)) continue;
+      const spot = spots.get(hex);
+      const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
+      const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
+      if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
+    }
+  }
+
+  // A job on a few plates: the colours it moves onto them.
+  if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));
   return out;
 }

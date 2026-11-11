@@ -531,6 +531,7 @@ The Markdown only cites them.
 - Recognised in paragraphs, list items, blockquotes, **headings**, callouts, and in resource captions, notes and table cells.
 - **Not recognised inside `:chip[…]`** (stays literal).
 - **The first mention places the resource.** A floated resource (`placement.position` `auto`/`top`/`bottom`) goes into the first free slot **after** its first reference: the bottom of the current column, the top of the next, or a band of the next page. You do NOT embed it again.
+- **After the citing paragraph:** `placement.position: 'paragraph'` sets the resource inline, with no `::resource`, right after the paragraph that first cites it: after the outermost box or `:::paragraphs`/`:::columns` group the citation sits in, after the paragraph a citing heading opens, after the end of a citing list. A `:ref` in a footnote does not count (`paragraphCitedInNote` when only notes cite it).
 - **Head of the citing page** (≥ 1.25): `placement.citingPage: true` (or `layout.floatsAtCitingPage`) lets a `top`/`auto` float head the page (column) where its citing line lands instead; the text above the reference moves down under it. Cite where the text wants the reference, not earlier to pull a figure forward.
 - Floats of one type never overtake each other.
 - Floats are flushed at chapter openers (`breakBefore`), `:::part`, `floatBarrier` callouts, and the end of the document. `:::pagebreak` sends pending floats to the next page.
@@ -540,7 +541,7 @@ The Markdown only cites them.
 ### 9.2 Block embed `::resource{id="…"}` (inline placement)
 
 **Regex (strict):** `^::resource\s*\{id="([^"]+)"\}\s*$` on the trimmed line: the one attribute `id`, in **double quotes**. The only other key accepted is `slot` (postext ≥ 1.34, composed pages: `::resource{id="x" slot="photo"}`). `id='x'` or any other attribute makes it literal paragraph text with a `malformedEmbed` warning, and so does a well-formed embed glued under a paragraph line. Leading indentation is fine.
-- Renders the resource inline **only if** its resolved placement is `position: "here"`. For floated resources it counts as just another reference.
+- Renders the resource inline **only if** its resolved placement is `position: "here"`, or `"paragraph"` when this line is its first reference. For floated resources (and a `paragraph` one already placed) it counts as just another reference.
 - A `here` resource that is only `:ref`'d, never `::resource`'d, is numbered but **never placed**.
 - **Needs blank lines around it.** A glued line is swallowed into the previous paragraph (§3.1).
 - Typical use: ornaments, headpieces, a figure that must sit exactly at a point, or one inside a callout.
@@ -563,7 +564,7 @@ The keeper's quarters occupy the eastern wing.
 
 ### 9.4 Placement (resource JSON, not Markdown)
 
-`placement: { position: auto|top|bottom|here, span: column|page|side, rotate?: ccw|cw, width?: 0..1 | {value, unit: mm|cm|in|pt}, plate?: bool|content|trim|bleed, align?: left|center|right, captionSide?: bool|inside, columns?: int, wrap?: none|left|right|start|end|contour, wrapGap?: Dimension }`. `align` also takes `start|end` (≥ 1.15, logical sides). `position: here` with `span: page` (≥ 1.19) cuts a multi-column band like a page-span box. `wrap: contour` (≥ 1.36) runs the text round the picture's shape (`Resource.contour`). Other placement fields (`shrink`, `minScale`, `captionMeasure`, `citingPage`): configuration.md §15.
+`placement: { position: auto|top|bottom|here|paragraph, span: column|page|side, rotate?: ccw|cw, width?: 0..1 | {value, unit: mm|cm|in|pt}, plate?: bool|content|trim|bleed, align?: left|center|right, captionSide?: bool|inside, columns?: int, wrap?: none|left|right|start|end|contour, wrapGap?: Dimension }`. `align` also takes `start|end` (≥ 1.15, logical sides). `position: here` with `span: page` (≥ 1.19) cuts a multi-column band like a page-span box. `position: paragraph` is a `here` embed set after the paragraph that first cites it (box or group: after the outermost one; heading: after its paragraph; list item: after the list; a citation in a footnote does not count); never rotated, a plate or shrunk to a slot. `wrap: contour` (≥ 1.36) runs the text round the picture's shape (`Resource.contour`). Other placement fields (`shrink`, `minScale`, `captionMeasure`, `citingPage`): configuration.md §15.
 - `wrap` (≥ 1.24): text beside a picture narrower than its column. With `position: here` the text after the `::resource` line runs beside it and then under it (a paragraph may start beside it and end under it); on a one-column float at the head or foot of a column, the column's first or last lines. Headings, display maths, figures, tables, boxes and poems go under it. `width` defaults to `layout.wrap.defaultWidth` (0.45); `wrapGap` to one body line. This replaces a `:::columns{count=2 breaks=…}` group holding the text and the picture.
 - `columns` (≥ 1.18): a `span: column` float across that many adjacent columns (a newspaper picture across 2 of 5 columns); as many as the page has = page-wide; ignored for page/side spans, rotated resources and `here` embeds; `captionSide` only on 1-column floats.
 - `captionSide` (the float-only side column of `oneAndHalf`): a column float and, ≥ 1.28, a `here` embed one column wide. The embed's caption and note stand in the side column level with the body's top, its block is as tall as the body, and later side figures and boxes keep clear of the caption; where the side column is taken beside it the caption stays under the body. Not in a box, on a vertical page or with `wrap`. `layout.inlineCaptionSide: false` = floats only (1.27).
@@ -575,6 +576,7 @@ The keeper's quarters occupy the eastern wing.
   - A bitmap enlarged past its resolution is reported by the print preflight as `lowImageResolution` (under `print.preflight.minImageResolution`, default 300 ppi, at the size it prints with its crop counted), only for a book set up for print. Scan or export the plates at 300 ppi at the page size (bleed included) before the port. A plate has no resolution warning of its own.
   - Give a type of its own (`plate`, `lamina`) `defaultPlacement: { plate: "bleed" }` for a run of plates; `false` on a resource turns off a plate its type sets.
 - A resource's own placement falls back to its type's `defaultPlacement`, then to `auto`/`column`.
+- `pin` (a float set by hand in the Sandbox: a page offset, a column, a slot) is NOT for ports. It names a place in one layout, and the page, column and slot it names stop meaning the same thing when the text, the trim, the column count or the edition language changes. Reproduce where the source puts its figures with rules: `position: top|bottom`, `citingPage: true` / `layout.floatsAtCitingPage`, a `keepTogether` box holding the picture, `floatBarrier` box styles, `shrink: slot`, a safe area. A preset that carries pins raises `floatPinMissed` wherever the layout does not follow them.
 
 ### 9.5 Tables
 
@@ -584,6 +586,7 @@ Tables are `kind:"table"` resources with a `TableModel`:
 - `rows: TableCell[][]`, `headerRowCount`, `columnWidths` (relative weights).
 - Per cell: `content` (inline snippet), `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`, `background` (ColorValue), `image {resourceId, width}`, `hiddenBy` (a cell covered by a merge).
 - `table.styleId` names a `tableStyles` entry.
+- A source table set the other way round (its variables down the side where the target reads them across): build it as the source has it, then `transposeTable(model)` (postext ≥ 1.75; the Sandbox table editor's ⇄ button, `table.transpose` in `sandbox_save_resource`). Cells keep content and formatting, merges swap spans, header rows (by `headerRowCount` or `isHeader`) become header columns, `columnWidths` is dropped: set the weights after.
 
 **Snippet syntax** (cell content, caption, note):
 - Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, `~~strike~~`, `:underline[…]`, escapes, `:ref{…}`, `:swatch{…}`, `:chip[…]` and `:smallcaps[…]`.
@@ -626,7 +629,7 @@ piece of the phrase on its line (the padding and rounded corners are drawn at th
   as its text.
 - It takes no room: the lines break as they would without it. Works in paragraphs, headings set in the text, list
   items, quotes, callouts, footnotes, cells, captions and notes, in LTR, RTL, Chinese and Japanese. A heading drawn
-  by a design (an opener) prints the words without the band; the HTML viewer draws none on a vertical page.
+  by a design (an opener) prints the words without the band.
 - Porting map: "highlighted phrase / marker pen" becomes `:mark[…]{style}`, one style per distinct highlight
   colour of the source, never a row of chips split by hand at the source's line ends (a translation would need a
   different number of them). An engine older than the release that ships it prints `:mark[…]` literally.
@@ -635,6 +638,20 @@ piece of the phrase on its line (the padding and rounded corners are drawn at th
 The sun warms the sea and :mark[water rises into the air as vapour].
 
 - :mark[Evaporation]{style="key"}: water turns into vapour.
+```
+
+### 10.1c `:span[words]{style="…"}` (character style)
+
+The one way to give a run of words a named look: `characterStyles` (configuration.md §13b2) sets its face, size,
+weight, colour, tracking and case, and the highlight style it names (`mark`) draws a band or a line with it. The
+words stay ordinary text and break, hyphenate and justify as usual.
+- `style` names the style, quoted or not; without it, or with an unknown id, the words are set plain and a warning
+  says so (`unknownCharacterStyle`). `\]` is a literal bracket; runs nest and the innermost style wins.
+- `[words]|id|` is not Postext syntax (it prints as written); port a source's character style to `:span`.
+- A plain underline stays `:underline[…]`, a plain strike-through `~~…~~`, a plain highlight `:mark[…]`.
+
+```md
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}.
 ```
 
 ### 10.2 `:swatch{color="…"}` (colour key square)
@@ -1077,7 +1094,8 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 - `unknownResourceId` (embed or ref), `duplicateResourceId`, `danglingTypeRef`
 - `headingHierarchy`, `consecutiveHeadings`, `listAfterHeading`
 - `chapterFrontmatterIgnored`, `calloutOverflow` (also a `span="side"` box taller than an empty side column, ≥ 1.25)
-- `afterText` (≥ 1.25: a side box or side figure set on a page with no text, after its chapter's text ended) and `unplaced` (≥ 1.25: a box or float on no page)
+- `afterText` (≥ 1.25: a side box or side figure set on a page with no text, after its chapter's text ended) and `unplaced` (≥ 1.25: a box or float on no page); `hereNotEmbedded` (a `here` resource cited but never embedded) and `paragraphCitedInNote` (a `paragraph` resource only footnotes cite: on no page)
+- `floatShrunk` (a picture scaled to its slot), `floatCropped` (a picture cropped within its safe area by `layout.pullFloatsToCitation`, which is not recommended) and `floatPinMissed` (a `placement.pin` the layout did not follow; remove pins from a port)
 - `shortListSplit` (≥ 1.28, only with `bodyText.shortListSplit: 'warn' | 'avoid'`: a list of up to `shortListMaxItems` items cut between two columns) and `openerFloat` (≥ 1.28, only with `layout.openerFloats: 'warn'`: a float on a chapter or part opener page)
 - `stack` (≥ 1.73, only with `bodyText.stacks: 'warn' | 'avoid'`: two lines in a row of a paragraph that end (`edge: 'end'`) or start (`'start'`) on the same word or the same `stackMinCharacters` characters; `text` is what they repeat, `lines` the two lines; under `'avoid'`, the stacks the line breaker kept)
 - `unclosedCodeBlock` (≥ 1.23: a code fence with no closing fence; the rest of the chapter is code) and `codeOverflow` (a listing's line wider than its box, turned over, shrunk or cut, per `codeStyle.overflow`)
@@ -1144,7 +1162,7 @@ styles, malformed embeds and ragged table grids itself, in `doc.contentWarnings`
 | Sidebar / box / "Key points" | `:::callout{type="…" title="…" label="…"}`. Two columns inside use `:::columns`. |
 | Exercise, activity, test question (choice, true/false, gaps, matching, ordering, word search, crossword, operations, open answer) | `:::exercise{type=…}` with the answers in the Markdown (§7.6): `- [x]`, `[[answer]]`, `A -> B`; the worked answer in `:::solution`. Its look is an `exerciseStyles` entry (configuration.md §13c), its frame a callout style named by the style's `box`. Solutions placement and the teacher's edition are `exercises` settings. Never an answer box drawn as a nested callout or blank lines typed as `____`. |
 | Column bands in the running text (briefs in three columns, a poster's columns across a two-column page, a bilingual poem side by side) | `:::columns{count=3 span="page" rule}` … `:::` in the text (≥ 1.25); `breaks` + the default `flow="parallel"` for side-by-side streams that must stay level across pages. No frameless box needed. |
-| Figure / photo / diagram | A resource plus `:ref{id="…"}` in the sentence that first cites it (auto float). For an unnumbered ornament or a fixed spot: `placement.position:"here"` plus `::resource{id="…"}` on its own line. |
+| Figure / photo / diagram | A resource plus `:ref{id="…"}` in the sentence that first cites it (auto float). For an unnumbered ornament or a fixed spot: `placement.position:"here"` plus `::resource{id="…"}` on its own line. Set in the text right after its citing paragraph, no directive: `placement.position:"paragraph"`. |
 | Table | A table resource (`TableModel` JSON). Cite it with `:ref`. Inline `$…$` works in cells (postext ≥ 1.19); display maths does not. Text the source aligned with tab stops (a menu, a cast list, marks at the margin, a form) is not a table: paragraphs with tab stops (rows above). |
 | Cross-reference "see Fig. 3.2" | `see :ref{id="fig-x"}`. For "Figure 3.2" use `style="full"`; for "figure 3.2" add `case="lower"`; for a bare number use `style="number"`. |
 | Cross-reference to a section or page | `:ref{id="sec-method"}` to a heading with `{#sec-method}` (or `id="…"`) or to an anchor (`:anchor{#key}`, `[words]{#key}`), postext ≥ 1.12 (§10.6): *section 3.2* by default, `style=number` *3.2*, `style=title`, `style=page` *p. 12*, `style=pageNumber` *12*. Keep the source's words ("see section") outside the reference. Never type the number or page. |
