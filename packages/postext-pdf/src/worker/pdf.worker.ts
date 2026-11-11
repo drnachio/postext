@@ -56,6 +56,7 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
     }
     case 'render': {
       const bytesById = new Map(msg.resourceBytes);
+      const previewsById = new Map(msg.previewBytes ?? []);
       try {
         const bytes = await renderToPdf(msg.docs, {
           ...msg.settings,
@@ -70,6 +71,7 @@ ctx.addEventListener('message', async (event: MessageEvent<PdfRequestMessage>) =
             return answer instanceof Uint8Array ? answer : null;
           },
           resourceBytes: (fileId) => bytesById.get(fileId),
+          ...(previewsById.size > 0 ? { previewBytes: (fileId: string) => previewsById.get(fileId) } : {}),
           onProgress: (progress) => post({ kind: 'progress', id: msg.id, progress }),
           onWarning: (warning) => post({ kind: 'warning', id: msg.id, warning }),
         });

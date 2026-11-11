@@ -62,6 +62,12 @@ export interface RenderToPdfOptions {
    *  master is missing or does not decode. When omitted, resource images
    *  are drawn as placeholders. */
   resourceBytes?: ResourceBytesProvider;
+  /** The screen preview of a picture whose `resourceBytes` are a TIFF or
+   *  Photoshop original (`Resource.bitmap.printFileId`), by the picture's
+   *  own `fileId`: printed when the original does not decode, with a
+   *  `pictureOriginalUnreadable` warning. Without it such a picture is a
+   *  placeholder. */
+  previewBytes?: ResourceBytesProvider;
   /** Emit an accessible, tagged PDF (PDF/UA-1 oriented): logical structure
    *  tree, alt text on figures, document language and title, decoration
    *  flagged as artifacts. When omitted, the first document's
@@ -279,7 +285,7 @@ export async function renderToPdf(
   // is embedded once.
   const resourceImages: ResourceImageMap = new Map();
   for (const doc of docs) {
-    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace);
+    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace, { previewBytes: options.previewBytes, warn });
     // Music scores (#1172): each system a vector drawing, its words' faces
     // embedded.
     await preloadScoreDrawings(doc, fontCache);

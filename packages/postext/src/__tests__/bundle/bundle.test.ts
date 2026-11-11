@@ -6,6 +6,7 @@ import {
   buildBundle,
   bundleFontProvider,
   bundleResourceBytes,
+  bundlePreviewBytes,
   CONFIG_VERSION,
   createBundle,
   isBundleManifest,
@@ -554,6 +555,8 @@ describe('adapters', () => {
     const bundle = await openBundle(bytes);
     expect(bundle.resources[0]!.bitmap).toMatchObject({ fileId: 'resources/photo.png', format: 'png', printFileId: 'resources/photo.tif', printFormat: 'tiff' });
     expect(bundleResourceBytes(bundle)('resources/photo.png')).toEqual(tiff);
+    // Its preview stays at hand, for when the original does not decode.
+    expect(bundlePreviewBytes(bundle)('resources/photo.png')).toEqual(PNG);
     // One that is not what its name says only costs the original.
     const bad = zipSync({ 'preset.json': enc.encode(JSON.stringify({ ...manifest, resources: [{ ...manifest.resources![0]!, printFile: 'p.psd' }] })), 'chapters/01-prints.md': enc.encode('# Prints'), 'resources/photo.png': PNG, 'p.psd': tiff });
     const reopened = await openBundle(bad);

@@ -23,8 +23,11 @@ export interface PdfPrintWarning {
    *  `artworkOffPlates`: in such a job a placed PDF page, or a picture that
    *  could not be decoded, was embedded as it is, with its own inks.
    *  `imageProfileUnavailable`: the profile assigned to RGB pictures could
-   *  not be loaded, so they were read through their own profiles. */
-  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates';
+   *  not be loaded, so they were read through their own profiles.
+   *  `pictureOriginalUnreadable`: a TIFF or Photoshop original could not
+   *  be decoded, so its preview (`previewBytes`) was printed instead, or a
+   *  placeholder when it has none. */
+  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pictureOriginalUnreadable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates';
   message: string;
 }
 

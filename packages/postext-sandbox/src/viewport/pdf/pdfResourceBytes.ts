@@ -9,7 +9,8 @@
 // the recolouring pass only works on SVG markup — and the SVG source otherwise;
 // and which represents a bitmap: the TIFF or Photoshop original it was
 // imported from (`bitmap.printFileId`) when it has one, its PNG preview
-// otherwise.
+// otherwise, with the preview kept beside it (`previewBytes`) for when the
+// original does not decode.
 
 import type { PostextConfig, Resource } from 'postext';
 import { resolveDiagramStyleConfig } from 'postext';
@@ -17,13 +18,15 @@ import { getBlob } from '../../storage/blobStore.js';
 
 /** Pull every image-bearing resource's bytes from the blob store. Missing
  *  entries are simply absent — the PDF renderer falls back to a placeholder
- *  for those. */
+ *  for those. `previews` holds the PNG preview of each picture printed
+ *  from its original. */
 export async function buildPdfResourceBytes(
   resources: Resource[],
   config: PostextConfig,
-): Promise<Map<string, Uint8Array>> {
+): Promise<{ bytes: Map<string, Uint8Array>; previews: Map<string, Uint8Array> }> {
   const singleInk = resolveDiagramStyleConfig(config.diagramStyle).singleInk;
   const out = new Map<string, Uint8Array>();
+  const previews = new Map<string, Uint8Array>();
   const load = async (fileId: string): Promise<Uint8Array | null> => {
     const rec = await getBlob(fileId).catch(() => null);
     return rec ? new Uint8Array(rec.bytes) : null;
@@ -31,8 +34,10 @@ export async function buildPdfResourceBytes(
   for (const r of resources) {
     if (r.kind === 'bitmap' && r.bitmap?.fileId && !out.has(r.bitmap.fileId)) {
       const original = r.bitmap.printFileId ? await load(r.bitmap.printFileId) : null;
-      const bytes = original ?? await load(r.bitmap.fileId);
+      const preview = await load(r.bitmap.fileId);
+      const bytes = original ?? preview;
       if (bytes) out.set(r.bitmap.fileId, bytes);
+      if (original && preview) previews.set(r.bitmap.fileId, preview);
     } else if (r.kind === 'video' && r.video?.poster?.fileId && !out.has(r.video.poster.fileId)) {
       // A video prints as its poster (#454).
       const bytes = await load(r.video.poster.fileId);
@@ -43,5 +48,5 @@ export async function buildPdfResourceBytes(
       if (bytes) out.set(r.svg.fileId, bytes);
     }
   }
-  return out;
+  return { bytes: out, previews };
 }

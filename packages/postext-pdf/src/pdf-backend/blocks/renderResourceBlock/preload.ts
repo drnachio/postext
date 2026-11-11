@@ -10,6 +10,7 @@ import type { PrintColorMode } from '../../../print/colorMode.js';
 import { embedPrintRaster, embedDeviceRaster, embedPrintDecoded, embedDeviceDecoded } from '../../../print/images.js';
 import { alphaStencil } from '../../vector/tint.js';
 import type { ResourceBytesProvider, ResourceImageMap } from '../renderResourceBlock.js';
+import type { PdfWarning } from '../../renderToPdf/warnings.js';
 import { lineIcons } from './lines.js';
 import { type SvgRasterizer, rasterizeSvgWithDom, sniffBytes, collectSvgFontStrings, svgCodePoints, fontResolverFor, inlineSvgFontsForRaster, RASTER_DPI, webpToPng } from './rasterize.js';
 
@@ -87,6 +88,10 @@ export async function preloadResourceImages(
   /** The device colour space a render without a print mode is forced to
    *  (#800): its pictures are written in it, as its flat colours are. */
   deviceSpace?: PdfColorSpace,
+  /** A TIFF or Photoshop original that does not decode: its preview
+   *  (`RenderToPdfOptions.previewBytes`) is embedded instead, and `warn`
+   *  told (`pictureOriginalUnreadable`). */
+  fallback?: { previewBytes?: ResourceBytesProvider; warn?: (warning: PdfWarning) => void },
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = into ?? new Map();
   if (!bytesProvider) return out;
@@ -195,17 +200,29 @@ export async function preloadResourceImages(
   const embed = async (fileId: string, format: string | undefined): Promise<void> => {
     if (out.has(fileId)) return;
     if (await embedMaster(fileId)) return;
-    const bytes = bytesProvider(fileId);
+    let bytes = bytesProvider(fileId);
     if (!bytes) return;
     try {
       if (printRasterFormat(bytes)) {
-        // A TIFF or Photoshop original: printed from its own pixels.
-        const raster = decodePrintRaster(bytes);
-        const image = printMode
-          ? embedPrintDecoded(pdfDoc, raster, modeOf(fileId)!)
-          : embedDeviceDecoded(pdfDoc, raster, deviceSpace === 'grayscale' || deviceSpace === 'cmyk' ? deviceSpace : 'rgb');
-        out.set(fileId, { kind: 'image', image });
-        return;
+        // A TIFF or Photoshop original: printed from its own pixels, or
+        // from its preview when they cannot be read.
+        try {
+          const raster = decodePrintRaster(bytes);
+          const image = printMode
+            ? embedPrintDecoded(pdfDoc, raster, modeOf(fileId)!)
+            : embedDeviceDecoded(pdfDoc, raster, deviceSpace === 'grayscale' || deviceSpace === 'cmyk' ? deviceSpace : 'rgb');
+          out.set(fileId, { kind: 'image', image });
+          return;
+        } catch (err) {
+          const preview = fallback?.previewBytes?.(fileId);
+          const usable = preview && !printRasterFormat(preview) ? preview : undefined;
+          fallback?.warn?.({
+            kind: 'pictureOriginalUnreadable',
+            message: `postext-pdf: the original of "${fileId}" could not be read (${(err as Error).message}); ${usable ? 'its preview was printed instead' : 'it has no preview, so a placeholder was drawn'}`,
+          });
+          if (!usable) return;
+          bytes = usable;
+        }
       }
       const sniffed = sniffBytes(bytes);
       const fmt = sniffed !== 'unknown' ? sniffed : (format ?? '').toLowerCase().replace('jpg', 'jpeg');

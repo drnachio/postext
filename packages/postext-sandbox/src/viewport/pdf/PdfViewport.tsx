@@ -228,7 +228,7 @@ export function PdfViewport() {
         ? await loadPrintProfile(print).then((p) => p.bytes, () => undefined)
         : undefined;
       const bytesSpan = perfSpan('pdf.resourceBytes');
-      const resourceBytes = await buildPdfResourceBytes(snapshotResources, snapshotConfig);
+      const { bytes: resourceBytes, previews: previewBytes } = await buildPdfResourceBytes(snapshotResources, snapshotConfig);
       bytesSpan.end({ resources: resourceBytes.size });
       renderPhaseRef.current = null;
       const renderSpan = perfSpan('pdf.render', { pages: pageCount });
@@ -244,12 +244,13 @@ export function PdfViewport() {
         colorSpace,
         accessible: pdfGen.accessible,
         resourceBytes,
+        ...(previewBytes.size > 0 ? { previewBytes } : {}),
         ...(snapshotConfig.print ? { print: snapshotConfig.print } : {}),
         ...(outputProfile ? { outputProfile } : {}),
         profileBaseUrl: outputProfileBaseUrl(),
         onWarning: (w) => {
           if (isPdfFontCheck(w)) fontChecks.push(w);
-          else if (w.kind === 'fontFallback' || w.kind === 'outputProfileUnavailable' || w.kind === 'imageProfileUnavailable' || w.kind === 'pageNegativeIgnored') console.warn(w.message);
+          else if (w.kind === 'fontFallback' || w.kind === 'outputProfileUnavailable' || w.kind === 'imageProfileUnavailable' || w.kind === 'pictureOriginalUnreadable' || w.kind === 'pageNegativeIgnored') console.warn(w.message);
         },
         onProgress: (p) => {
           setRenderProgress(p);

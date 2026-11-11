@@ -4,7 +4,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { basename } from 'node:path';
 import { resolvePrintConfig, type PrintConfig } from 'postext';
-import { bundleResourceBytes } from 'postext/bundle';
+import { bundlePreviewBytes, bundleResourceBytes } from 'postext/bundle';
 import { renderToPdf, type RenderToPdfOptions } from 'postext-pdf';
 import { CliError, UsageError, type Options } from '../args';
 import { harfbuzzWasm, iccProfile, ICC_PROFILES } from '../assets';
@@ -21,6 +21,7 @@ export async function pdfOptions(book: Book, fonts: FontSet, opts: Options, repo
   const options: RenderToPdfOptions = {
     fontProvider: fonts.provider(),
     resourceBytes: bundleResourceBytes(book),
+    previewBytes: bundlePreviewBytes(book),
     harfbuzzWasm: harfbuzzWasm(),
     rasterizeSvg,
     onWarning: (w) => reporter.warn({ kind: `pdf.${w.kind}`, severity: 'warning', message: (w as { message?: string }).message ?? w.kind }),

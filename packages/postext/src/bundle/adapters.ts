@@ -291,6 +291,19 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
   return (fileId) => bytes.get(fileId);
 }
 
+/** A `previewBytes` resolver for `postext-pdf`'s `renderToPdf`: the PNG
+ *  preview of each bitmap that has a TIFF or Photoshop original, by the
+ *  picture's `fileId`, printed when the original does not decode. */
+export function bundlePreviewBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
+  const bytes = new Map<string, Uint8Array>();
+  for (const r of bundle.resources) {
+    if (r.kind !== 'bitmap' || !r.bitmap?.fileId || !r.bitmap.printFileId) continue;
+    const data = bundle.files.get(r.bitmap.fileId);
+    if (data) bytes.set(r.bitmap.fileId, data);
+  }
+  return (fileId) => bytes.get(fileId);
+}
+
 /** What `postext-pdf` tells a font provider about a face: the characters
  *  the pages set in it (its `PdfFontRequest`). */
 export interface BundleFontRequest {

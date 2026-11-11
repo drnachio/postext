@@ -965,6 +965,7 @@ describe("package exports", () => {
       "bundleImageUrl",
       "bundleVideoUrl",
       "bundleResourceBytes",
+      "bundlePreviewBytes",
       "bundleFontProvider",
       "bundleSvgFontProvider",
       "svgInlinesFonts",
