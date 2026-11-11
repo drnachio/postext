@@ -97,6 +97,13 @@ export function frameBox(w: Writer, frame: VDTFrame, vertical: boolean): { box: 
  *  spacing is in the ranges' tracking). */
 export const VERTICAL_KEPT = ' Composer="$ID/HL Single J" LeadingModel="LeadingModelRoman" AutoTcy="0" RotateSingleByteCharacters="false"';
 export const VERTICAL_KEPT_PROPS = '<KinsokuSet type="enumeration">Nothing</KinsokuSet><Mojikumi type="enumeration">Nothing</Mojikumi>';
+/** On every range of vertical text: no pair kerning. InDesign kerns kana
+ *  by the font's metrics (the styles' `KerningMethod`), which sets a line
+ *  of forty characters about a tenth shorter than Postext's whole cells
+ *  (seen in InDesign 2026); it is a character's attribute, and on the
+ *  paragraph it is not read. */
+export const VERTICAL_RANGE = ' KerningMethod="$ID/None"';
+export const unkerned = <T extends { extra?: string }>(run: T): T => ({ ...run, extra: (run.extra ?? '') + VERTICAL_RANGE });
 /** A paragraph of a vertical story left to InDesign's composer. */
 export const VERTICAL_REFLOW = ' Composer="$ID/HL Composer J" LeadingModel="LeadingModelRoman"';
 
@@ -148,7 +155,7 @@ function rubyAttrs(w: Writer, run: DisplayRun, text: string): string {
   const r = run.ruby!;
   const group = r.group || graphemesOf(text).length > 1;
   const size = parseCssFont(r.fontString).sizePx * w.k;
-  return ` RubyFlag="true" RubyString="${escapeAttr(r.text)}" RubyType="${group ? 'GroupRuby' : 'PerCharacterRuby'}" RubyPosition="${r.position === 'under' ? 'BelowLeft' : 'AboveRight'}"${size > 0 ? attr('RubyFontSize', size) : ''}`;
+  return ` RubyFlag="1" RubyString="${escapeAttr(r.text)}" RubyType="${group ? 'GroupRuby' : 'PerCharacterRuby'}" RubyPosition="${r.position === 'under' ? 'BelowLeft' : 'AboveRight'}"${size > 0 ? attr('RubyFontSize', size) : ''}`;
 }
 
 /** The pieces of a run of a vertical line, `text` being the run's words

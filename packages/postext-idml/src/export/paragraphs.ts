@@ -239,7 +239,15 @@ function roomAfter(w: Writer, out: TextRun[], px: number): boolean {
 /** Add a run's pieces to a line's (or a paragraph's) runs. */
 function pushPieces(w: Writer, out: TextRun[], pieces: VerticalPiece[], base: TextProps, link: RunLink | undefined): void {
   for (const piece of pieces) {
-    if (piece.pull && !roomAfter(w, out, piece.pull)) w.warn('text.vertical.spacing', `A bracket set on half a cell at the head of a line is written on a whole one: "${piece.text}"`);
+    // At the head of a line no character stands before the bracket to
+    // carry the pull: the bracket takes the font's proportional metrics,
+    // which leave out the blank half of its cell (seen in InDesign 2026;
+    // tracking on a zero-width space before it does nothing there).
+    const headPull = !!piece.pull && !roomAfter(w, out, piece.pull);
+    if (headPull) {
+      out.push({ text: piece.text, props: base, ...(link ? { link } : {}), extra: `${piece.extra ?? ''} OTFProportionalMetrics="true"` });
+      continue;
+    }
     const props = piece.track ? tracked(w, base, piece.track) : base;
     const last = out[out.length - 1];
     if (last && !last.object && !last.extra && !piece.extra && sameProps(last.props, props) && sameLink(last.link, link)) last.text += piece.text;

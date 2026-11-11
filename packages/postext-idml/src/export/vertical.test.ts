@@ -137,7 +137,9 @@ describe('idmlDocument: vertical text', () => {
   it('writes a ruby reading on its base', () => {
     const story = stories.find((s) => contents(s).includes('物語です。12'))!;
     const base = rangeOf(story, '物語')!;
-    expect(attr(base, 'RubyFlag')).toBe('true');
+    // InDesign 2026 reads the flag as a number: with `true` it drops the ruby.
+    expect(attr(base, 'RubyFlag')).toBe('1');
+    expect(attr(base, 'KerningMethod')).toBe('$ID/None');
     expect(attr(base, 'RubyString')).toBe('ものがたり');
     expect(attr(base, 'RubyType')).toBe('GroupRuby');
     expect(attr(base, 'RubyPosition')).toBe('AboveRight');

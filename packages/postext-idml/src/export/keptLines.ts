@@ -16,7 +16,7 @@ import { escapeXml } from '../xml/write.js';
 import { overrides, type LineStop, type TextRun } from './paragraphs.js';
 import { attr, num, type ParagraphFormat, type ParagraphStyleDef, type TextProps } from './parts.js';
 import type { StoryPara } from './story.js';
-import { VERTICAL_KEPT, VERTICAL_KEPT_PROPS } from './vertical.js';
+import { unkerned, VERTICAL_KEPT, VERTICAL_KEPT_PROPS, VERTICAL_RANGE } from './vertical.js';
 import type { StoryItem, Writer } from './writer.js';
 
 /** Characters InDesign shows as a missing glyph when the face lacks them
@@ -150,10 +150,10 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
       const last = i < b;
       // A line cannot break but where Postext broke it: InDesign's
       // composer, left a choice, ends a tightly set line a word early.
-      for (const r of runs) ranges += rangeXml(r, style.props, extra, true, w);
+      for (const r of runs) ranges += rangeXml(vertical ? unkerned(r) : r, style.props, extra, true, w);
       // The break is a range of its own (it must stay a place to break),
       // at its line's leading and size: an empty line still takes its room.
-      if (last) ranges += rangeXml({ text: FORCED_LINE_BREAK, props: runs[runs.length - 1]?.props ?? style.props }, style.props, extra);
+      if (last) ranges += rangeXml({ text: FORCED_LINE_BREAK, props: runs[runs.length - 1]?.props ?? style.props, ...(vertical ? { extra: VERTICAL_RANGE } : {}) }, style.props, extra);
     }
     if (!ranges) return;
     out.push({ style, attrs, format: fmt, ranges, ...(vertical ? { properties: VERTICAL_KEPT_PROPS } : {}), ...(g === 0 && c.spaceBefore !== undefined ? { spaceBefore: c.spaceBefore } : {}) });

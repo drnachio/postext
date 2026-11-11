@@ -23,7 +23,7 @@ import {
   type TabStopDef,
   type TextProps,
 } from './parts.js';
-import { isVertical, VERTICAL_REFLOW } from './vertical.js';
+import { isVertical, unkerned, VERTICAL_REFLOW } from './vertical.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 const STYLE_NAMES: Record<string, string> = { body: 'Body', heading: 'Heading', list: 'List', quote: 'Quote', caption: 'Caption', footnote: 'Footnote', header: 'Header', footer: 'Footer', design: 'Design' };
@@ -293,7 +293,7 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
     if (justification && style.justification !== justification) local += attr('Justification', justification);
     // Leading is a character's: every range says the paragraph's own.
     const ownLeading = Math.abs(style.leading - leading) >= 0.01 ? leading : undefined;
-    const ranges = runs.map((r) => rangeXml(r, style.props, ownLeading, false, w));
+    const ranges = runs.map((r) => rangeXml(isVertical(item) ? unkerned(r) : r, style.props, ownLeading, false, w));
     // Styles do not hyphenate (InDesign does by default); a paragraph the
     // composer hyphenated does.
     if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';
