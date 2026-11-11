@@ -54,7 +54,7 @@ describe('inspectPrintMaster reads what a placed master paints with', () => {
 
   it('a CMYK master stays clean', async () => {
     const r = await inspectPrintMaster(await onePage(() => ({}), '0 0 0 1 k 0 0 10 10 re f'));
-    expect(r).toEqual({ nonEmbeddedFonts: [], rgb: false, transparency: false });
+    expect(r).toEqual({ nonEmbeddedFonts: [], rgb: false, spotInks: [], transparency: false });
   });
 });
 
