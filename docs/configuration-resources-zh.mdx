@@ -6,7 +6,7 @@ export const metadata = {
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '30分钟',
+  readingTime: '31分钟',
   order: 14,
   parent: 'configuration',
   plainSummary: "本页讲图、表格、图示和视频的设置。Postext把它们称为资源，每一类各自编号。你可以设定表格的样子：线条、底色、字体，以及跨页时怎样拆分。你可以设定图和表格的题注怎样写。你还可以用一种油墨颜色印图示，并选择视频在纸上的呈现方式。",
@@ -144,6 +144,16 @@ interface ResourceType {
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code>（可选）</td>
       <td>对该类型资源局部覆盖<a href="#题注样式">题注样式</a>。只有你设定的键会替换全局<code>captionStyle</code>，其余一律继承（覆盖了<code>color</code>时，标签和注释的颜色也随之改变，除非它们另有明确设定）。典型用法：表的题注放在上方的色条上，图的题注仍在下方。调色板引用与其他颜色一样解析。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>true</code>。放在正文中的此类插图或表格是否落在基线网格上：资源下方的文字流回到网格。<code>false</code>保持资源留下的精确间距。栏顶或栏底的浮动体不受影响。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code>（可选）</td>
+      <td>默认<code>false</code>。无论前一个块在哪里结束，都让放在正文中的此类插图或表格从网格线开始。栏顶或栏底的浮动体、文字环绕的插图以及位于栏顶的插图不受影响。在Sandbox中：<strong>从网格线开始</strong>。</td>
     </tr>
   </tbody>
 </table>
@@ -562,6 +572,8 @@ const resource: Resource = {
 
 `TableModel`是按行优先排列的网格，每个单元格按它在网格中的位置排版：`rows[r][c]`位于第`c`列。因此合并单元格所覆盖的单元格仍留在网格中，每个都用`hiddenBy`指向其主单元格；这与HTML表格不同，HTML表格会把它们省去。从`postext`导出的模型辅助函数保持这种结构；它们都是纯函数，返回新模型：`mergeCells(model, { start, end })`和`unmergeCell(model, at)`、`addRow`、`addColumn`、`removeRow`、`removeColumn`、`setCellContent`、`setCellImage`、`setCellBackground`以及`setAlignment`。四个行列辅助函数保持合并区域完整：在合并块内部添加的行或列会使它变宽，在它之前添加的会使它移位，从中删除的会使它缩小（失去第一行或第一列的合并块把内容保留在新的左上角单元格中），每个`hiddenBy`始终指向其主单元格。
 
+`transposeTable(model)`互换行与列（Sandbox表格编辑器中的⇄按钮）：每个单元格连同内容、图片、填充与对齐从`rows[r][c]`移到`rows[c][r]`；合并区域保留其单元格并互换跨度；表头行变为表头列，开头全为表头单元格的列计入`headerRowCount`；`columnWidths`被丢弃。`headerRowCount`计入的行即使其单元格未标`isHeader`（Word导入的表常是如此）也按表头行处理，其单元格在新的列中标为`isHeader`。转置两次即恢复原表，其表头行的单元格标为`isHeader`。
+
 `parseTSV(text, options?)`从制表符分隔的文本构建模型，即从电子表格粘贴来的区域：按换行拆行，按制表符拆单元格，较短的行会补齐，使网格成为矩形。`headerRows`把开头几行变成表头行：其单元格获得`isHeader`，模型获得`headerRowCount`，这样跨页拆分的表会重复它们。
 
 ```ts
@@ -857,6 +869,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => 全部与默认值相同时为undefined
 ```
 
+**SVG中的专色。** 在印刷用PDF中，矢量SVG的颜色只在两种情况下印在专色上。一是颜色按名称指定了油墨：颜色后跟 `icc-named-color(…, "PANTONE 185 C")`，或元素带有 `data-spot="PANTONE 185 C"`（以及百分比的 `data-spot-tint="40"`）时，印在该油墨的印版上；若调色板中有同名专色，则使用其替代色，否则使用该颜色自身的CMYK。二是颜色的hex与调色板中某个专色完全相同：按该颜色的浓度印在该颜色的油墨上。其他颜色一律保持四色，即使看起来像某种油墨在白底上的浓淡也是如此，因此图中的灰色不会移到专色印版上。每个颜色单独判定，因此一张图表可以混用多种油墨和四色。`diagramStyle.singleInk` 优先：`inkColor` 为专色时，重新着色的图表以该印版的浓淡印刷。SVG按名称指定、但没有任何调色板颜色定义（也没有带 `cmyk` 的油墨表条目）的油墨，印在单独的印版上，以SVG颜色的CMYK为替代值；指定它的所有SVG共用这一块印版，印前检查会发出警告（`spotInkUndefined`）。许多软件把色板导出为普通RGB颜色并丢失其名称：请在调色板中加入 `hex` 与之完全相同的专色（图中用到的每种浓度各一个），或用 `data-spot` 标记元素。
+
 ### Canvas与HTML中的单色模式
 
 Canvas和HTML后端拿到的图片是已解码的（`registerResourceImage`）或URL（`resourceImageUrl`），而不是SVG标记。在你要求时，它们对所绘制的内容应用同样的映射：
@@ -1069,7 +1083,7 @@ const config: PostextConfig = {
 
 ## 视频样式
 
-`videoStyle`属性设定[视频资源](/zh/docs/document-format-resources#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML阅读器和EPUB中提供哪些功能。
+`videoStyle`属性设定[视频资源](/zh/docs/document-format-videos#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML阅读器和EPUB中提供哪些功能。
 
 ```ts
 const config: PostextConfig = {
@@ -1204,7 +1218,7 @@ const config: PostextConfig = {
 
 EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，另加<code>data-pt-alongside</code>标记，其余由阅读系统决定。
 
-不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format-resources#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB中，有视频需要协调的页面或章节（两段或以上，其中至少一段独占）以一个小脚本`scripts/videos.js`（即导出的`VIDEO_PLAYBACK_SCRIPT`）引入同一规则，EPUB包文档把该文档声明为`scripted`。运行脚本的阅读系统让该文档中的视频遵守这一规则，但对面的页面是另一个文档，不受影响；不运行脚本的阅读系统按自己的规则播放每段视频，YouTube和Vimeo播放器也始终如此。
+不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format-videos#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB中，有视频需要协调的页面或章节（两段或以上，其中至少一段独占）以一个小脚本`scripts/videos.js`（即导出的`VIDEO_PLAYBACK_SCRIPT`）引入同一规则，EPUB包文档把该文档声明为`scripted`。运行脚本的阅读系统让该文档中的视频遵守这一规则，但对面的页面是另一个文档，不受影响；不运行脚本的阅读系统按自己的规则播放每段视频，YouTube和Vimeo播放器也始终如此。
 
 解析函数和精简函数与其他各节一致，另有`VideoStyleConfig` / `ResolvedVideoStyleConfig`类型：
 

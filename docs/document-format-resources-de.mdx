@@ -1,18 +1,18 @@
 {/* docs/document-format-resources-de.mdx */}
 
 export const metadata = {
-  title: 'Dokumentformat: Bilder, Tabellen und Videos',
-  sidebarTitle: 'Bilder, Tabellen und Videos',
-  description: 'Ressourcen im Text: Verweise und Einbettungen, Nummerierung, Platzierung und wohin ein Gleitobjekt kommt, Textumfluss, Bitmap-Größe, Sicherheitsbereiche, Anker für Comics und Videos',
+  title: 'Dokumentformat: Bilder und Tabellen',
+  sidebarTitle: 'Bilder und Tabellen',
+  description: 'Ressourcen im Text: Verweise und Einbettungen, Nummerierung, Platzierung und wohin ein Gleitobjekt kommt, Textumfluss, Bitmap-Größe, Sicherheitsbereiche, Anker für Comics und Symbole in Bildunterschriften',
   lang: 'de',
-  lastUpdated: '2026-11-10',
-  readingTime: '38 min',
+  lastUpdated: '2026-11-11',
+  readingTime: '41 min',
   order: 30,
   parent: 'document-format',
-  plainSummary: "Diese Seite behandelt die Bilder, Tabellen und Videos eines Buchs. Sie fügen sie einmal hinzu und erwähnen sie im Text, und Postext stellt jedes in die Nähe der Stelle, an der es zuerst erwähnt wird. Sie können wählen, wohin es kommt: oben auf eine Seite, über alle Spalten oder genau dorthin, wo es im Text steht. Text kann um ein Bild herumfließen. Ein Bild kann den Teil kennzeichnen, der immer sichtbar bleiben muss, wenn es zugeschnitten wird. Videos laufen in der Webansicht und in E-Books, im Druck steht an ihrer Stelle ein Bild.",
+  plainSummary: "Diese Seite behandelt die Bilder und Tabellen eines Buchs. Sie fügen sie einmal hinzu und erwähnen sie im Text, und Postext stellt jedes Element in die Nähe der Stelle, an der es zuerst erwähnt wird. Sie können wählen, wohin es kommt: oben auf eine Seite, über alle Spalten oder genau dorthin, wo es im Text steht. Text kann um ein Bild herumfließen. Ein Bild kann den Teil kennzeichnen, der immer sichtbar bleiben muss, wenn es zugeschnitten wird. Videos werden genauso platziert; um sie geht es auf der nächsten Seite.",
 };
 
-# Dokumentformat: Bilder, Tabellen und Videos
+# Dokumentformat: Bilder und Tabellen
 
 
 ## Ressourcen
@@ -142,8 +142,8 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
   <tbody>
     <tr>
       <td><code>position</code></td>
-      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code></td>
-      <td><code>"auto"</code> (der Standard) nimmt den ersten freien Platz nach dem Verweis, oben oder unten; <code>"top"</code> / <code>"bottom"</code> nehmen nur Plätze dieser Art an; <code>"here"</code> schaltet das Gleiten ab und bettet die Ressource an der Direktive <code>::resource</code> im Text ein (eine dort platzierte Tabelle wird zwischen Zeilen geteilt, wenn sie nicht in den Rest ihrer Spalte passt, siehe <a href="/de/docs/configuration-resources#tabellen-die-höher-als-die-seite-sind">Tabellen, die höher als die Seite sind</a>).</td>
+      <td><code>"auto"</code> · <code>"top"</code> · <code>"bottom"</code> · <code>"here"</code> · <code>"paragraph"</code></td>
+      <td><code>"auto"</code> (der Standard) nimmt den ersten freien Platz nach dem Verweis, oben oder unten; <code>"top"</code> / <code>"bottom"</code> nehmen nur Plätze dieser Art an; <code>"here"</code> schaltet das Gleiten ab und bettet die Ressource an der Direktive <code>::resource</code> im Text ein (eine dort platzierte Tabelle wird zwischen Zeilen geteilt, wenn sie nicht in den Rest ihrer Spalte passt, siehe <a href="/de/docs/configuration-resources#tabellen-die-höher-als-die-seite-sind">Tabellen, die höher als die Seite sind</a>). <code>"paragraph"</code> setzt die Ressource ebenfalls in den Text, ohne <code>::resource</code>-Zeile, direkt nach dem Absatz, der sie zuerst mit <code>:ref</code> zitiert. Steht der Verweis irgendwo in einem Kasten (<code>:::callout</code>) oder einer Gruppe <code>:::paragraphs</code> / <code>:::columns</code>, kommt sie hinter den äußersten dieser Container, zurück in den Hauptfluss (bei einem Kasten in einem Kasten hinter den äußeren); steht er in einer Überschrift, hinter den Absatz, den diese Überschrift eröffnet (nie zwischen eine Überschrift und ihren Text: hinter eine folgende Liste, über direkt folgende Unterüberschriften hinweg); steht er in einem Listenpunkt, hinter das Ende der Liste; geht der Absatz nach einer abgesetzten Formel weiter, hinter diese Fortsetzung. Zwei Ressourcen, die ein Absatz zitiert, folgen beide auf ihn, in der Reihenfolge der Verweise. Ein Verweis in einer Fußnote (auch in einer Kapitelendnote) zählt nicht, weil eine Fußnote abseits des Textflusses gesetzt wird: Eine Ressource, die nur Fußnoten zitieren, die keine <code>::resource</code>-Zeile setzt und die kein früheres Kapitel platziert hat, steht auf keiner Seite, und der Satz meldet sie (<code>paragraphCitedInNote</code>) an ihrem ersten Verweis in einer Fußnote. Eine Ressource, deren erster Verweis ihre eigene <code>::resource</code>-Zeile ist, wird dort gesetzt, wie <code>"here"</code> es täte; spätere <code>::resource</code>-Zeilen für sie sind nur Verweise. Sonst wird sie genau wie ein <code>"here"</code> nach diesem Absatz gesetzt, einschließlich Textumfluss, Bildunterschrift in der Seitenspalte, Bildunterschrift im eigenen Platz und <code>span: 'page'</code>, das das Band teilt. Sie wird nie gedreht, ist nie eine Tafel (<code>plate</code>) und wird nie verkleinert, um in einen Platz zu passen.</td>
     </tr>
     <tr>
       <td><code>width</code>, <code>align</code></td>
@@ -195,6 +195,11 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
       <td><code>true</code> · <code>false</code>, Standard <code>false</code></td>
       <td>Ein <code>"top"</code>- oder <code>"auto"</code>-Gleitobjekt den Kopf der Seite (bei einem seitenbreiten Gleitobjekt) oder der Spalte (bei einem Spalten-Gleitobjekt, auch über <code>columns</code>) einnehmen lassen, auf der die Zeile steht, die es zuerst zitiert, wie es die Platzierung <code>t</code> in LaTeX tut, statt des ersten freien Platzes nach dieser Zeile. Der Text über dem Verweis rückt unter das Gleitobjekt nach unten. Das geschieht nur, wenn das Gleitobjekt dort innerhalb von <code>layout.maxTopFraction</code> der Spalte (standardmäßig 0.7) Platz findet, wenn die früheren Gleitobjekte seiner Nummernfolge bereits gesetzt sind, wenn kein ausdrücklicher Umbruch die Seite eröffnet (die erste Seite eines Kapitels, ein Teil, ein <code>:::pagebreak</code>) und nichts Seitenbreites über der zitierenden Zeile steht, und wenn die zitierende Zeile bei dieser Anordnung noch auf dieser Seite steht (in einer Spalte, die das Gleitobjekt anführt); andernfalls nimmt das Gleitobjekt seinen üblichen Platz. Gedrehte Gleitobjekte, Nebenspalten-Gleitobjekte und der Rest einer über Seiten geteilten Tabelle werden nie so verschoben. Standard: das <code>defaultPlacement</code> des Typs, dann <code>layout.floatsAtCitingPage</code>. Seit postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Nicht empfohlen (siehe <a href="#von-hand-gesetzte-gleitobjekte-werden-nicht-empfohlen">Von Hand gesetzte Gleitobjekte werden nicht empfohlen</a>). Ein von Hand gesetztes Gleitobjekt, im Bedienfeld Ressourcen oder durch Verschieben im Sandbox-Canvas: <code>page</code> zählt die Seiten ab der, die es zuerst zitiert (<code>0</code> ist diese Seite, höchstens <code>3</code>), <code>column</code> die Textspalte ab 0 in Lesereihenfolge (ohne Angabe beliebig; ein seitenbreites Objekt übergeht sie), <code>slot</code> ist <code>"top"</code> oder <code>"bottom"</code>. Ein Pin ist ein Wunsch. Das Objekt wartet auf diese Seite und bekommt dort zuerst diesen Platz angeboten; kann der Platz es nicht aufnehmen (zu hoch für den verbleibenden Raum, von einem anderen Gleitobjekt belegt oder über seinem Verweis), nimmt es die üblichen Plätze dieser Seite und geht danach weiter wie jedes Gleitobjekt. Ein Pin auf eine Seite nach dem Ende des Kapitels wird dort fallen gelassen, sodass das Objekt und die ihm in seiner Nummernfolge folgenden vor dem Kapitelende gesetzt werden. Gleitobjekte der Randspalte, gedrehte Objekte, Tafeln und im Text gesetzte Ressourcen übergehen ihn. Jeder Pin, dem das Layout nicht folgt, wird als <code>floatPinMissed</code> mit seinem Grund gemeldet. Nur in seitenbasierten Ausgaben.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -210,7 +215,7 @@ Die Bereiche der Gleitobjekte am Kopf und Fuß werden am Grundlinienraster ausge
 
 Auf der Schlussseite eines Kapitels – und des Dokuments – folgt den seitenbreiten Abbildungen und Tabellen unter dem letzten Spaltenbereich mit Text nichts mehr; sie rücken daher nach oben und stehen einen Gleitobjektabstand darunter, in ihrer Reihenfolge gestapelt, statt Weißraum zwischen dem Text und einer Abbildung am Seitenfuß zu lassen. Das gilt auch für ein Gleitobjekt mit `position: 'bottom'`. Um sie wie auf jeder anderen Seite am Fuß zu halten, setzen Sie `layout.hugClosingFloats: false` (siehe [Konfiguration › Layout](/de/docs/configuration-page-layout#layout)). Seiten mit Nebenspalte verschieben sie nie.
 
-Alle drei Backends – die Canvas-Vorschau, der HTML-Betrachter und die PDF-Ausgabe – rendern Ressourcen. Im HTML-Backend liegen die Bilddaten außerhalb des Dokuments, daher liefert der Host sie über die Resolver-Option `resourceImageUrl(fileId)`; fehlt der Resolver (oder liefert er für eine Datei nichts), wird die Ressource als neutraler Platzhalterkasten gerendert, damit das Layout stabil bleibt. Die eigene Datei eines Videos kommt auf dieselbe Weise über `resourceVideoUrl(fileId)` (siehe [Videos](#videos)).
+Alle drei Backends – die Canvas-Vorschau, der HTML-Betrachter und die PDF-Ausgabe – rendern Ressourcen. Im HTML-Backend liegen die Bilddaten außerhalb des Dokuments, daher liefert der Host sie über die Resolver-Option `resourceImageUrl(fileId)`; fehlt der Resolver (oder liefert er für eine Datei nichts), wird die Ressource als neutraler Platzhalterkasten gerendert, damit das Layout stabil bleibt. Die eigene Datei eines Videos kommt auf dieselbe Weise über `resourceVideoUrl(fileId)` (siehe [Videos](/de/docs/document-format-videos#videos)).
 
 #### Wo ein Gleitobjekt stehen kann
 
@@ -253,6 +258,19 @@ Alle drei Backends – die Canvas-Vorschau, der HTML-Betrachter und die PDF-Ausg
 - In einem einspaltigen Layout ist ein seitenbreites Gleitobjekt ein Spalten-Gleitobjekt, und es gelten dieselben Regeln: Ein `top`-Gleitobjekt, das auf einer Seite zitiert wird, kommt an den Kopf der nächsten.
 - Ein Absatz, der von einer Seite auf die nächste läuft, zählt ebenfalls ab seiner zitierenden Zeile. Beginnt der Absatz am Fuß von Seite 5 und fällt der Verweis auf Seite 6 – oder wandert der ganze Absatz auf Seite 6, weil am Fuß von Seite 5 nicht genug seiner Zeilen passen –, steht der Verweis auf Seite 6: Ein `top`-Gleitobjekt eröffnet Seite 7, und ein `auto`-Gleitobjekt nimmt den Fuß von Seite 6, wenn dort Platz ist. Dasselbe gilt zwischen den Spalten einer Seite und für einen über Seiten geteilten Kasten: Eine Abbildung, die sein zweiter Teil zitiert, wartet auf diesen Teil.
 - **Geändert in postext 1.5.** Bis postext 1.4 wurde ein Gleitobjekt eingereiht, sobald das Layout den zitierenden Absatz erreichte, sodass die Seite, auf die ein solcher Absatz lief (oder wanderte), mit dem Gleitobjekt beginnen konnte, über der Zeile mit dem Verweis. Eine solche Abbildung steht jetzt eine Seite später oder, wenn sie `auto` verlangt, am Fuß der Seite; die Seitenzahl kann sich dadurch ändern.
+
+#### Von Hand gesetzte Gleitobjekte werden nicht empfohlen
+
+Postext setzt ein Buch nach Regeln: Jedes Gleitobjekt nimmt den ersten freien Platz nach seinem Verweis, in den Grenzen seiner Platzierung, und das ganze Buch wird neu gesetzt, sobald sich der Text, das Seitenformat, die Zahl der Spalten oder die Sprache der Ausgabe ändern. Ein Pin hängt an der Geometrie eines Layouts. Er nennt eine vom Verweis aus gezählte Seite und eine Spalte nach ihrer Nummer, und beides bedeutet nicht mehr dasselbe, sobald sich der Text verschiebt. Kommt ein Absatz hinzu, rückt der Verweis auf eine andere Seite; wird das Buch übersetzt, ändern sich die Zeilenumbrüche; wird eine Ausgabe einspaltig gesetzt, gibt es Spalte 1 nicht mehr. Der Pin schlägt dann fehl, und das Layout meldet es, oder er stellt das Gleitobjekt an eine Stelle, die der Seite nicht mehr dient. Der Pin wird an der Ressource gespeichert; alle Ausgaben und Sprachen des Buchs teilen ihn.
+
+Diese Regeln halten eine Abbildung in jeder Ausgabe nahe an ihrem Text:
+
+- `position: "top"` oder `"bottom"` (an der Ressource oder ihrem Typ) beschränkt die Plätze eines Gleitobjekts auf Köpfe oder Füße.
+- `citingPage: true`, oder `layout.floatsAtCitingPage` für das ganze Buch, lässt ein oben oder automatisch platziertes Gleitobjekt die Seite oder Spalte eröffnen, auf der die verweisende Zeile steht.
+- Ein Kasten mit `keepTogether` hält zusammen, was er enthält, auch ein mit `::resource` darin eingefügtes Bild; `floatBarrier` an einem Kastenstil hält die vor ihm zitierten Gleitobjekte auf seiner Seite.
+- `shrink: "slot"` (oder `"page"`) lässt ein Bild auf den Raum seines Platzes schrumpfen, und ein [Sicherheitsbereich](#sicherheitsbereich) lässt die Engine es passend beschneiden, bevor sie es verkleinert.
+
+Braucht eine Seite dann noch eine verschobene Abbildung, pinnen Sie sie als letzten Schritt, für eine fertige Ausgabe in einer Sprache, und prüfen Sie `floatPinMissed` im Bedienfeld Prüfungen, sooft sich Text oder Gestaltung ändern.
 
 ### Textumfluss
 
@@ -300,7 +318,7 @@ Eine Bitmap gibt ihre Pixel an: `bitmap.width` und `bitmap.height` sind die Pixe
 - **Eine Auflösung.** `bitmap.resolution` ist die ppi-Zahl des Bildes bei seiner natürlichen Druckgröße, seine natürliche Breite ist also auf einer Seite beliebiger dpi-Zahl `width × page.dpi / resolution`: 2400 px bei `resolution: 300` sind 203,2 mm breit, ob die Seite mit 150 dpi oder mit 300 gesetzt wird. `layout.bitmapResolution` gibt jeder Bitmap ohne eigene Auflösung eine: eine Zahl (`300`) oder `'file'`, die Auflösung, die ihre Datei angibt (`bitmap.fileResolution`: das `pHYs` eines PNG, die JFIF- oder EXIF-Dichte eines JPEG, das EXIF eines WebP; bei einem aus Word importierten Bild die Größe, in der Word es gedruckt hat). Kameras, Bildschirmfotos und Web-Exporte geben oft 72 oder 96 ppi an, wenn sie nichts über eine Druckgröße wissen, daher gelten diese beiden Werte unter `'file'` als nicht gesetzt, und das Bild behält seine Pixel bei der dpi-Zahl der Seite; eine an der Ressource selbst angegebene 72 wird wörtlich genommen. `'document'`, der Standard, ist der erste Weg.
 - **Ein Anteil an der Spalte.** `placement.width` verengt ein Gleitobjekt oder eine Einbettung im Text auf einen Bruchteil ihrer Spalte (oder Seite), und ein Bild, das größer ist als dieser Anteil, wird unabhängig von seinen Pixeln darauf verkleinert (siehe [Platzierung](#platzierung)).
 
-In jedem Fall begrenzt der Platz das Bild unter Wahrung seiner Proportionen, und ein kleineres Bild wird nie vergrößert. Dieselbe natürliche Größe gilt für ein Bild in einer Tabellenzelle und für ein `image`-Element einer Gestaltung mit Größe `'auto'`. Das PDF bettet die Datei unverändert in ihrer platzierten Größe ein. Der [Preflight](/de/docs/configuration-fonts-colors-viewers#preflight) prüft die Auflösung, in der jedes Bild gedruckt wird, und das [Bedienfeld Ressourcen](/de/docs/sandbox#bedienfeld-ressourcen) der Sandbox zeigt sie für jedes Bild an. Seit postext 1.24.
+In jedem Fall begrenzt der Platz das Bild unter Wahrung seiner Proportionen, und ein kleineres Bild wird nie vergrößert. Dieselbe natürliche Größe gilt für ein Bild in einer Tabellenzelle und für ein `image`-Element einer Gestaltung mit Größe `'auto'`. Das PDF bettet die Datei unverändert in ihrer platzierten Größe ein. Der [Preflight](/de/docs/configuration-pdf-output#preflight) prüft die Auflösung, in der jedes Bild gedruckt wird, und das [Bedienfeld Ressourcen](/de/docs/sandbox#bedienfeld-ressourcen) der Sandbox zeigt sie für jedes Bild an. Seit postext 1.24.
 
 Der Platz eines Bildes im Fluss (`position: 'here'` oder ein Spalten-Gleitobjekt) ist seine Spalte, und die Standardseite hat zwei Spalten (`layout.layoutType: 'double'`): Ein Bild, das für die ganze Seite bemessen ist, kommt dort etwa in halber Druckgröße heraus. Setzen Sie eine solche Seite einspaltig (`layout.layoutType: 'single'`), setzen Sie das Bild als Gleitobjekt über die ganze Seite (`placement: { position: 'top', span: 'page' }`) oder setzen Sie es in den Rahmen einer [zusammengesetzten Seite](/de/docs/composed-pages). Hält eine Spalte, die schmaler als die Seite ist, eine Bitmap mit Druckgröße (eigenes `resolution` oder eine Zahl in `layout.bitmapResolution`) unter der Hälfte davon, meldet das Layout `pictureBelowPrintSize`. Seit postext 1.37.
 
@@ -339,6 +357,19 @@ Der VDT verzeichnet den Beschnitt am Ressourcenblock: `bodySource` ist der in `b
 Das Rezept Nº 116, [Fotos, die eine kurze Spalte füllen](/de/cookbook/photos-fill-short-columns), setzt eine zweispaltige Zeitschriftenreportage zweimal, ohne und mit Sicherheitsbereichen, sodass Sie die Seiten nebeneinander vergleichen können.
 
 
+### Manueller Beschnitt
+
+Eine Bitmap, ein SVG oder das Posterbild eines Videos lassen sich auch von Hand beschneiden: `crop`, in denselben Bruchteilen wie der Sicherheitsbereich, ist der Teil des Bilds, den die Abbildung immer zeigt, auf jeder Seite. Die Abbildung übernimmt das Seitenverhältnis des Beschnitts. Der Sicherheitsbereich, falls vorhanden, wird innerhalb des Beschnitts gelesen: Die Engine darf weiter schneiden, wo die Seite es verlangt, nie außerhalb des Beschnitts, und `bodySource` ist die Verkettung von beidem. Legen Sie den Sicherheitsbereich innerhalb des Beschnitts an; was davon außerhalb liegt, ist nie zu sehen. Ohne Beschnitt das ganze Bild. Der Beschnitt erreicht jede Ausgabe: den Canvas, das PDF, den HTML-Viewer, beide EPUBs (ein umfließendes Buch setzt das Bild, oder das Posterbild eines Videos und den Film in seinem Rahmen, in einen Kasten im Seitenverhältnis des Beschnitts), das IDML und den formatierten Word-Export, ein Bild in einer Tabellenzelle, die Zeichnung eines Comic-Panels (das Fenster des Panels wird innerhalb des Beschnitts gewählt) und ein Gestaltungsbild, das eine Ressource zeigt. Der semantische Word-Export fügt das ganze Bild ein, wie beim Sicherheitsbereich, und behält den Beschnitt im Buch. Comic-Sprecherpunkte werden nur gegen den Sicherheitsbereich geprüft (`comicAnchorOutsideSafeArea`): Halten Sie jeden Sprecher auch innerhalb des Beschnitts. In der Sandbox öffnet *Zuschnitt* neben dem Sicherheitsbereich einen Rahmen zum Ziehen, Verschieben mit den Pfeiltasten und zur Vorschau; ein Agent setzt ihn über `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // die mittlere Hälfte, von oben bis unten
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
+
 ### Sprecherpunkte und Sperrzonen
 
 Ein Bild, das die Zeichnung eines Comic-Panels ist, kann für das Lettering außerdem angeben, wo seine Figuren sind (siehe [Comics](/de/docs/document-format-directives#comics)). `anchors` listet einen Punkt je Sprecher und `avoid` die Bereiche, die keine Sprechblase verdeckt, beide in Bruchteilen des Bildes wie der Sicherheitsbereich:
@@ -372,137 +403,3 @@ Eine Legende, eine Anmerkung oder eine Tabellenzelle kann ein kleines Symbol in 
 
 Symbole werden in Legenden, Anmerkungen, Tabellenzellen und Beschriftungen von Abbildungen gelesen (siehe [Zusammengesetzte Seiten › Hinweislinien, Legenden und Symbole](/de/docs/composed-pages-figures#hinweislinien-legenden-und-symbole)); im Grundtext und in Überschriften bleibt die Direktive in dieser Version Text. Seit postext 1.48.
 
-### Videos
-
-Eine **Video**-Ressource (`kind: 'video'`) ist ein YouTube- oder Vimeo-Video oder ein eigenes Video: eine im Buch gespeicherte Datei (MP4, WebM) oder eine unter einer Webadresse, eine Datei auf einem Server oder ein **HLS-Stream** (eine `.m3u8`-Playlist). Es wird wie ein Bild platziert, beschriftet, als Gleitobjekt gesetzt und zitiert und in einer eigenen Folge nummeriert: Der eingebaute Typ `video` ergibt *Video 1.1*, *Video 1.2* … neben *Figure 1.1* und *Table 1.1* (siehe [Konfiguration › Ressourcentypen](/de/docs/configuration-resources#ressourcentypen)). Jedes Ausgabeformat zeigt es, so gut es kann:
-
-<table>
-  <thead>
-    <tr>
-      <th>Ausgabeformat</th>
-      <th>Was es zeigt</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Canvas, PDF</td>
-      <td>Das <strong>Posterbild</strong>, ein Einzelbild des Videos, mit einem Abspielzeichen und einem QR-Code, der das Video öffnet (<a href="/de/docs/configuration-resources#videostil">Konfiguration › Videostil</a>). Im PDF ist das Posterbild außerdem ein Link zum Video.</td>
-    </tr>
-    <tr>
-      <td>Folio</td>
-      <td>Das Posterbild, wie gedruckt. Ein Klick darauf spielt das Video <strong>auf der Seite selbst</strong> ab, und es läuft weiter, während das Blatt umgeblättert wird (siehe <a href="#videos-auf-den-seiten-von-folio">Videos auf den Seiten von Folio</a> unten). YouTube- und Vimeo-Videos bleiben Posterbilder.</td>
-    </tr>
-    <tr>
-      <td>HTML-Betrachter</td>
-      <td>Der <strong>Player</strong> des Videos: der von YouTube oder Vimeo oder der HTML5-Player des Browsers für eine Datei oder eine Adresse. Ein HLS-Stream läuft nativ in Safari und im aktuellen Chrome; anderswo bindet der Host einen Player wie hls.js ein, wie es die Sandbox tut. Mit <code>videoStyle.html: 'poster'</code> zeigt er stattdessen das gedruckte Posterbild.</td>
-    </tr>
-    <tr>
-      <td>EPUB</td>
-      <td>Eine Datei läuft im eigenen Player des Lesesystems, im Buch verpackt oder von ihrer Produktionsadresse gelesen. Ein YouTube- oder Vimeo-Video ist sein Posterbild, mit dem Video verlinkt: Ein EPUB darf den Player einer Webseite nicht einbetten. Ein HLS-Stream ist ebenfalls sein verlinktes Posterbild: Eine HLS-Playlist ist kein Medientyp, den ein EPUB abspielen darf. Wo das Lesesystem Skripte ausführt, halten sich die Dateien einer Seite oder eines Kapitels an <code>player.exclusive</code>: Das Starten einer Datei pausiert die anderen, mit denen sie nicht gleichzeitig läuft.</td>
-    </tr>
-  </tbody>
-</table>
-
-```ts
-const talk: Resource = {
-  id: 'keeper-talk', typeId: 'video', kind: 'video',
-  caption: 'The keeper explains the lamp.',
-  altText: 'A lighthouse keeper beside the lamp',
-  createdAt: 0, updatedAt: 0,
-  video: {
-    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
-    url: 'https://youtu.be/aqz-KE-bpKQ',
-    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
-    start: 30,                                // plays from 0:30; the printed link starts there too
-  },
-};
-```
-
-Der Text zitiert ein Video wie eine Abbildung: `:ref{id="keeper-talk"}` ergibt *Video 1.1* und setzt das Posterbild als Gleitobjekt an den ersten freien Platz nach dem Verweis, und `::resource{id="keeper-talk"}` mit `placement.position: 'here'` setzt es im Text. Die Felder von `Resource.video` (`ResourceVideo`):
-
-<table>
-  <thead>
-    <tr>
-      <th>Feld</th>
-      <th>Typ</th>
-      <th>Bedeutung</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>source</code></td>
-      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>Woher das Video abgespielt wird: von einer YouTube- oder Vimeo-Seite oder als eigenes Video (<code>'file'</code>), hochgeladen oder unter einer Adresse.</td>
-    </tr>
-    <tr>
-      <td><code>url</code></td>
-      <td><code>string</code></td>
-      <td>YouTube oder Vimeo: die Adresse des Videos in beliebiger Form (eine Watch-Seite, <code>youtu.be</code>, Shorts, ein Embed-Link, <code>youtube-nocookie.com</code>; eine Vimeo-Seite, Kanalseite oder ein nicht gelisteter Link mit seinem Hash). Eine Datei: ihre <strong>Produktionsadresse</strong>, unter der das veröffentlichte Buch sie findet. Ein eigenes Video ohne eigene Datei wird von dieser Adresse abgespielt: eine MP4- oder WebM-Datei auf einem Server oder ein HLS-Stream (<code>…/master.m3u8</code>).</td>
-    </tr>
-    <tr>
-      <td><code>fileId</code>, <code>format</code></td>
-      <td><code>string</code></td>
-      <td>Eine Datei: das hochgeladene Video, wie eine Bitmap außerhalb des Dokuments gespeichert, und sein Format: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code> oder <code>'hls'</code> für einen HLS-Stream. Ohne Format bestimmt es die Dateiendung der Adresse (<code>.m3u8</code> ist <code>'hls'</code>), sonst <code>'mp4'</code>.</td>
-    </tr>
-    <tr>
-      <td><code>poster</code></td>
-      <td><code>{'{ fileId, format, width, height }'}</code></td>
-      <td>Das Posterbild, eine Bitmap.</td>
-    </tr>
-    <tr>
-      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
-      <td><code>number</code></td>
-      <td>Die Bildgröße des Videos in px (sein Seitenverhältnis, wenn es kein Posterbild gibt) und seine Länge in Sekunden.</td>
-    </tr>
-    <tr>
-      <td><code>posterTime</code></td>
-      <td><code>number</code></td>
-      <td>Die Sekunde des Einzelbildes einer Datei, das als Posterbild dient, gespeichert, damit es erneut gewählt werden kann.</td>
-    </tr>
-    <tr>
-      <td><code>start</code>, <code>end</code></td>
-      <td><code>number</code></td>
-      <td>Von <code>start</code> bis <code>end</code> Sekunden abspielen. Der QR-Code und der PDF-Link beginnen ebenfalls bei <code>start</code>.</td>
-    </tr>
-    <tr>
-      <td><code>player</code></td>
-      <td><code>VideoPlayerOptions</code></td>
-      <td>Die Player-Optionen dieses Videos, über <code>videoStyle.player</code> gelegt.</td>
-    </tr>
-  </tbody>
-</table>
-
-**Das Posterbild.** Es wird in der Satzbreite seines Platzes gesetzt (oder im Anteil `placement.width` davon), in seinem eigenen Seitenverhältnis, unabhängig von seiner Pixelgröße: Ein bildschirmgroßes Einzelbild wird vergrößert, statt klein gedruckt zu werden. Wie eine Bitmap kann es einen [Sicherheitsbereich](#sicherheitsbereich) haben und `placement.align` folgen. Für ein Video ohne Posterbild erscheint ein dunkles Rechteck im Seitenverhältnis des Videos (16:9, wenn nichts anderes angegeben ist) mit seinen Überlagerungen, und das Video löst die Inhaltswarnung `videoWithoutPoster` aus. In der Sandbox wird das Posterbild eines YouTube- oder Vimeo-Videos von der Plattform geholt, sobald seine Adresse eingegeben wird, und das einer Datei ist ein Einzelbild, das Sie im Video auswählen.
-
-**Die Adresse.** Der QR-Code und der PDF-Link öffnen die Seite des Videos, `https://youtu.be/<id>` oder `https://vimeo.com/<id>`, ab `start`. Eine Datei hat keine Seite: Sie öffnen ihre Produktionsadresse, von der auch ein Video ohne eigene Datei abgespielt wird (eine MP4-Datei auf einem Server, ein HLS-Stream). Ohne eine solche Adresse erhält der Druck weder QR-Code noch Link (`videoWithoutUrl`), und eine HTML- oder EPUB-Ausgabe, die die Datei nicht mitführt, zeigt das Posterbild. Eine YouTube- oder Vimeo-Adresse, die kein Video dieser Plattform nennt, löst `videoUrlInvalid` aus; statt eines Players wird das Posterbild gezeigt.
-
-**Die Player.** Die Player-Optionen (Bedienelemente, Download-Schaltfläche, Vollbild, Geschwindigkeitsmenü, Bild-in-Bild, Casting, automatisches Abspielen, stummer Start, Schleife, Vorladen, datenschutzfreundliche Einbettung) werden für das ganze Buch in `videoStyle.player` und für ein einzelnes Video in `video.player` gesetzt; jeder Player berücksichtigt, was er kann (siehe [Konfiguration › Videostil](/de/docs/configuration-resources#videostil)). Das HTML-Backend erhält die abspielbare URL einer Datei über die Option `resourceVideoUrl(fileId)`, so wie es Bilder über `resourceImageUrl` erhält, und fällt auf die Produktionsadresse zurück. Seine Option `videos: { files, streams, hls }` wählt je Quelle zwischen Player und Posterbild, über `videoStyle.html` hinweg (`hls`, ein von einer HLS-Adresse abgespieltes Video, folgt ohne eigene Angabe `files`); der EPUB-Schreiber verwendet sie. Ein `<video>`, das eine HLS-Adresse abspielt, erhält `data-pt-hls`, sodass ein Host ihm in Browsern ohne natives HLS einen Player geben kann (Safari und das aktuelle Chrome spielen es unverändert ab). In einem Buch, das von rechts nach links läuft, werden der Player und die Überlagerungen des Posterbildes wie ein Bild zurückgedreht, damit der QR-Code lesbar bleibt.
-
-**Im VDT.** Der Ressourcenblock eines Videos hat `kind: 'video'`, sein Posterbild als `fileId` / `format` (wie eine Bitmap gezeichnet) und `video` (`VDTResourceVideo`): den `link`, zu dem ein Leser geschickt wird, die YouTube- oder Vimeo-`embedUrl` mit angewandten Player-Optionen, die `fileId` einer Datei, den `mimeType` eines eigenen Videos (seiner Datei oder nur seiner Adresse, `application/vnd.apple.mpegurl` für HLS), den Bereich `start` / `end`, den aufgelösten `player`, `linkPoster`, `html` und die Überlagerungen `playMark` und `qr` (die QR-Module als Zeilen aus `'0'` / `'1'`), mit Rechtecken relativ zur linken oberen Ecke des Inhalts. Ein Host, der Videos selbst zeichnet, kann die Hilfsfunktionen nutzen, die `postext` exportiert: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` und `qrModuleRuns`.
-
-**In einem Paket.** Eine `.postext`-Datei enthält eine Videodatei (`resources/<id>.mp4`) und das Posterbild (`resources/<id>.poster.jpg`): Der Manifesteintrag nennt sie in `file` und `poster`, gibt die Größe des Posterbildes in `width` / `height` an und hält den Rest ohne Datei-IDs in `video`. `bundleVideoUrl(bundle)` ist der `resourceVideoUrl`-Resolver über die Dateien eines Pakets. Ein Video, das nur von einer Adresse abgespielt wird, enthält keine Datei: Sein Eintrag hat nur das Posterbild. In einem zweisprachigen Paket kann eine Sprache einem Video in `localized[…].resources` ein eigenes `poster` und `video` geben (einen anderen Schnitt unter eigener Adresse).
-
-#### Videos auf den Seiten von Folio
-
-Im [3D-Buch](/de/docs/configuration-html-folio-epub#ein-3d-buch-postext-folio) spielt ein eigenes Video auf der Seite, auf der es gedruckt ist. Ein Klick auf das Posterbild startet es dort, was auch immer der Zeiger am Buch gerade tut (umblättern, die Ansicht drehen oder Text auswählen): Der Shader der Seite zeichnet die Einzelbilder des Videos über das Posterbild, sodass sich das Bild beim Umblättern mit dem Papier biegt und wölbt, und es läuft während des Umblätterns weiter. Ein Klick auf ein laufendes Video pausiert es, ein Klick auf ein pausiertes setzt es fort, und Leertaste oder Eingabetaste tun dasselbe für das erste Video der aufgeschlagenen Doppelseite. Das Starten eines anderen Videos stoppt das laufende (es kehrt zu seinem Posterbild zurück), und ein Video stoppt, wenn das Buch auf einer Doppelseite zur Ruhe kommt, die es nicht mehr zeigt, oder bei seinem `end`. Über einem Video, das er abspielen kann, wird der Zeiger zur Hand; ein Ziehen, das auf einem Video beginnt, blättert weiterhin die Seite um oder dreht die Ansicht. Ein Video, das von selbst startet (`video.player.autoplay`), beginnt von selbst, wenn das Buch zum ersten Mal auf seiner Doppelseite zur Ruhe kommt, sobald das Buch fertig aufgebaut ist (auch wenn ein Host es schrittweise setzt), und in diesem Betrachter nie wieder.
-
-Ein Video, das neben den anderen läuft (`video.player.exclusive: false`, seit postext 1.18), ändert beide Regeln. Sein Start stoppt nur die exklusiven Videos, sodass mehrere solche Videos gleichzeitig laufen; der Start eines exklusiven Videos stoppt es ebenfalls. Mit `autoplay` startet es stumm jedes Mal, wenn das Buch auf seiner Doppelseite zur Ruhe kommt, und stoppt, wenn die Doppelseite umgeblättert wird: Die stummen Schleifen (`loop`) einer Seite laufen jedes Mal gemeinsam, wenn der Leser sie aufschlägt.
-
-- **Was abgespielt wird.** Eine Datei (der Host macht aus ihrer `fileId` mit der Option `videoUrl` eine URL, in der Sandbox eine Object-URL) oder, ohne Datei, ihre Adresse: MP4, WebM oder ein HLS-Stream. Ein HLS-Stream läuft über [hls.js](https://github.com/video-dev/hls.js), wo immer der Browser Media Source Extensions hat (beim ersten Abspielen geladen; eine optionale Peer-Abhängigkeit von `postext-folio`), begrenzt auf die Variante, die der Bildgröße auf dem Bildschirm am nächsten kommt, sodass ein Bild von einigen hundert Pixeln Höhe nie eine 4K-Variante lädt; das eigene HLS des Browsers ist die Rückfallebene. Seine Anfragen erhalten einen eigenen Abfrageparameter `pt-cors`, sodass der Browser-Cache ihnen nie eine Kopie liefert, die ein anderer Player ohne CORS geholt hat. YouTube und Vimeo laufen in iframes, die WebGL nicht zeichnen kann: Ein Klick auf ihr Posterbild blättert die Seite um wie überall sonst.
-- **Ursprungsübergreifendes Lesen.** WebGL zeichnet ein Video nur, wenn sein Server das Lesen erlaubt (CORS, `Access-Control-Allow-Origin`). Ein Video, das nicht gelesen werden kann, bleibt ein Posterbild, und `onVideo` erhält `error`.
-- **Ton.** Der Klick lässt das Video mit Ton abspielen; ein Browser, der das trotzdem verweigert, spielt es stumm ab. Ein Video, das von selbst startet, hat Ton, sobald der Leser auf der Seite geklickt oder getippt hat (das Aufschlagen zählt); vorher startet es stumm, und ein Klick darauf schaltet den Ton ein, bevor der nächste es pausiert. `video.player.muted` startet es stumm, `loop` spielt es erneut ab, und `start` / `end` geben den abgespielten Teil an.
-- **Auf jeder Seite.** Das Bild wird dort gezeichnet, wo das Layout es hinsetzt: gedreht bei einer gedrehten Ressource, aufrecht auf einer Seite mit senkrechtem Satz und ungespiegelt in einem Buch, das von rechts nach links läuft, wie das Posterbild. Ein innerhalb seines [Sicherheitsbereichs](#sicherheitsbereich) beschnittenes Posterbild beschneidet das Video auf dieselbe Weise.
-- **Ohne WebGL2** oder mit reduzierter Bewegung läuft das Video in einem HTML-`<video>`, das über die Seite gelegt wird.
-
-```ts
-const book = createFolioFromDocument(container, doc, {
-  // An uploaded video's playable URL (an object URL over its bytes).
-  videoUrl: (fileId) => urls.get(fileId),
-  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
-});
-book.stopVideo();
-```
-
-`videos: false` schaltet es ab. `toggleVideoAt({ page, x, y })` tut, was ein Klick an dieser Stelle tut, und `pageVideoSpots(page, doc)` listet, wo jedes Video auf einer Seite liegt, für einen Host, der eigene Bedienelemente zeichnet.
-
-Zwei Rezepte setzen Videos: Nº 131, [Ein Filmclub-Programm mit QR-Codes auf den Postern](/de/cookbook/film-club-video-qr), druckt jeden Film als Titelkarte mit Abspielzeichen und QR-Code, und Nº 132, [Ein Laborblatt, dessen Clips auf dem Bildschirm und im EPUB laufen](/de/cookbook/pendulum-lab-video-players), setzt die Player-Optionen für die HTML-Ausgabe und verpackt seine eigenen Clips in einem EPUB mit festem Layout.

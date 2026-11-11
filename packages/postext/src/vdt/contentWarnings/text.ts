@@ -30,6 +30,17 @@ export type TextSettingWarning =
    *  lines. Found by the layout, so `collectContentWarnings` never returns
    *  it. */
   | { kind: 'stack'; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** A hyphen ladder (#1466, `bodyText.hyphenation.ladders: 'warn' |
+   *  'avoid'`): `lines` lines in a row of a paragraph end on a hyphen, more
+   *  than `max` (`hyphenation.maxConsecutive`). `text` is the ladder's
+   *  lines. Under `'avoid'`, the ladders the breaker kept. The source range
+   *  covers the ladder. Found by the layout. */
+  | { kind: 'hyphenLadder'; lines: number; max: number; text: string[] }
+  /** The last word of a paragraph divided (#1466, `hyphenation.lastWord:
+   *  'warn' | 'avoid'`): the line before the last ends on a hyphen and the
+   *  last line holds only the rest of that word. `word` is the word as the
+   *  two lines print it, hyphen included. Found by the layout. */
+  | { kind: 'lastWordDivided'; word: string }
   /** A word of a joining script (Arabic, Syriac, N'Ko…) wider than its
    *  line: such a word is never divided (its letters connect, and a piece
    *  would lose its joining forms), so it runs past the measure

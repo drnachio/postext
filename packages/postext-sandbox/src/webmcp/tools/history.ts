@@ -20,7 +20,7 @@ export function describeHistoryStep(state: SandboxState, step: HistoryStepInfo):
   if (step.kind === 'resource') return { kind: 'resource', resource: step.resourceId };
   if (step.kind === 'group') {
     const chapters = step.chapterIds.map((id) => state.chapters.findIndex((c) => c.id === id) + 1).filter((n) => n > 0);
-    return { kind: 'wordEdits', chapters, ...(step.resourceIds.length > 0 ? { resources: step.resourceIds } : {}) };
+    return { kind: step.source === 'find' ? 'replaceAll' : 'wordEdits', chapters, ...(step.resourceIds.length > 0 ? { resources: step.resourceIds } : {}) };
   }
   return { kind: 'design', settings: step.paths };
 }

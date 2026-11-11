@@ -12,6 +12,8 @@ import { type BlockMeasureContext, type MeasureContentBlockOptions, type Measure
 import type { InlineAside } from '../../passTypes.js';
 import { resolveResourceWrap, wrapGapPx, minTextWidthPx, columnCursorY } from '../../../floats/textWrap.js';
 import { widthShareIn } from '../../../floats/placementLength.js';
+import { onGridAbove, regainsUnder, resourceOnGrid, resourceSnapsTop } from '../../passHelpers.js';
+import type { ResourceType } from '../../../../types.js';
 
 /** What createResourceBlock takes from around the loop. */
 export interface ResourceBlockDeps {
@@ -38,6 +40,7 @@ export interface ResourceBlockDeps {
   flushPendingNumberingAtBoundary: () => void;
   measureInlineAside: (raw: ContentBlock, blockIdx: number, c: VDTColumn, page: VDTPage, ctx: BlockMeasureContext, base: MeasureContentBlockOptions, spacing: number) => InlineAside | null;
   markInlineAside: (blk: VDTBlock, sideCol: VDTColumn, asideHeight: number) => void;
+  resourceTypeById: Map<string, ResourceType>;
   placeInlineTableSlices: (raw: ContentBlock, blockIdx: number, blk: VDTBlock, ctx: BlockMeasureContext, styleOverride: BlockStyle | undefined, resource: Resource, wholeHeight: number, spacingBefore: number, asideWanted?: boolean) => "whole" | "dropped" | "placed";
 }
 
@@ -46,7 +49,8 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
     state, resolved, dpi, baselineGrid, doc, pageWidthPx, pageHeightPx, bodyOffset, bodyStyle,
     cursor, floatGapPx, offsetResourceBlockToAbsolute, textWrapNotes, movedNotes, wrapExclusionWidth,
     wrapContourOf, onAtomicNewPage, stampBlockExtras, addBalanceExtra, enterBand,
-    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices
+    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices,
+    resourceTypeById
   } = deps;
   /** Places a measured resource block; `continue` once it is placed. */
   const placeResourceBlock = (blockTurn: BlockIteration): StepJump => {
@@ -115,7 +119,15 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
       // An inline resource keeps the float gap (a line) above it, as a
       // float would, unless the block before asked for more. A wrapped one
       // stands level with the next line's top instead.
-      const spacingBefore = wraps ? state.pendingSpacing : Math.max(state.pendingSpacing, floatGapPx);
+      const typeOnGrid = resourceOnGrid(resourceBlock.resource.typeId, resourceTypeById);
+      let spacingBefore = wraps ? state.pendingSpacing : Math.max(state.pendingSpacing, floatGapPx);
+      // The type opens its figures on a grid line (`snapTopToGrid`), or the
+      // heading above set off the grid regains the grid here (`regainGrid`).
+      const above = currentColumn(doc, cursor);
+      if (!wraps && above.blocks.length > 0
+        && (resourceSnapsTop(resourceBlock.resource.typeId, resourceTypeById) || regainsUnder(above))) {
+        spacingBefore = onGridAbove(above, spacingBefore, baselineGrid);
+      }
       // An inline table that does not fit the room left in its column is
       // cut between rows (#634), by the rules of a floated one.
       const sliced = !wraps && !resourceBlock.rotation && resourceBlock.table && kind.resource
@@ -250,7 +262,10 @@ export function createResourceBlock(deps: ResourceBlockDeps) {
         const rCol = currentColumn(doc, cursor);
         const usedHeight = rCol.bbox.height - rCol.availableHeight;
         const naturalBottom = usedHeight + style.marginBottomPx;
-        const snappedBottom = Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid;
+        // A type off the grid (`snapToGrid: false`) keeps its exact space.
+        const snappedBottom = typeOnGrid
+          ? Math.ceil((naturalBottom - 0.01) / baselineGrid) * baselineGrid
+          : naturalBottom;
         rCol.availableHeight = Math.max(0, rCol.bbox.height - snappedBottom);
         const owed = resolved.layout.inlineResourceGap === 'above'
           ? 0

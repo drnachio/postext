@@ -16,7 +16,7 @@ interface HyphenationFieldProps {
 }
 
 /** Drop one field from the stored hyphenation settings. */
-function resetHyphenationField(
+export function resetHyphenationField(
   raw: BodyTextConfig | undefined,
   field: keyof HyphenationConfig,
   updateBodyText: (partial: Partial<BodyTextConfig>) => void,

@@ -42,6 +42,10 @@ export type BundleResourceSpec = Omit<Resource, 'createdAt' | 'updatedAt' | 'bit
    *  vectors, embedded verbatim by the PDF backend in place of the SVG
    *  (`Resource.svg.pdfFileId`). */
   pdfFile?: string;
+  /** Bitmap resources only: the TIFF or Photoshop original the picture
+   *  was imported from, which the PDF backend prints from in place of
+   *  `file`, the preview screens show (`Resource.bitmap.printFileId`). */
+  printFile?: string;
   /** SVG resources only (#630): `false` keeps the markup as stored when
    *  it is shown as an image, with no `@font-face` added for the families
    *  its text names (`Resource.svg.inlineFonts`). */
@@ -124,7 +128,7 @@ export interface BundleLocaleOverrides {
   /** Where this language's edition starts, in place of the manifest's
    *  `start` (a right-bound edition that opens on the other side). */
   start?: BundleStart;
-  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'poster' | 'video' | 'width' | 'height' | 'resolution' | 'fileResolution'>>)[];
+  resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'printFile' | 'poster' | 'video' | 'width' | 'height' | 'resolution' | 'fileResolution'>>)[];
 }
 
 /** Where the book of a bundle starts (#695): what its first chapter is

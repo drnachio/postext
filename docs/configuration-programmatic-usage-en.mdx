@@ -334,6 +334,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The picture is printed at that scale; past the text block only when <code>overflowPx</code> says so.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>A floated picture was cropped within its safe area (<code>Resource.safeArea</code>) to stay on the page that cites it, by <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> names it, <code>share</code> is the share of its height cropped, <code>pageIndex</code> the page. Points at the paragraph that first cites it.</td>
+      <td>The picture is printed cropped, never past its safe area. <code>pullFloatsToCitation</code> is not recommended: <code>placement.citingPage</code> and <code>placement.shrink: 'slot'</code> keep a picture by its citation without cropping it.</td>
+    </tr>
+    <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>A float set by hand (<code>placement.pin</code>) is not where its pin asks. <code>resourceId</code> names it, <code>pageIndex</code> is the page it went to and <code>requestedPage</code> the page the pin names. <code>reason</code>: <code>notTaken</code> (the slot could not hold it: too tall for the room left, taken, above its citation, or the chapter ended first), <code>tooFar</code> (more than <code>MAX_PIN_PAGE_OFFSET</code>, 3, pages after the citing one), <code>column</code> (that page has no such column) or <code>unsupported</code> (a resource set in the text, a side-column or turned float, a plate). Points at the paragraph that first cites it.</td>
+      <td>The float is placed as without the pin, on the page the pin names when a slot there holds it. Pins are not recommended: <code>placement.citingPage</code>, <code>position</code> and <code>shrink</code> keep a figure near its text in every edition.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>A bitmap with a print size (its own <code>bitmap.resolution</code>, or a number in <code>layout.bitmapResolution</code>; not a resolution read from the file) set in a column that holds it at less than half that size, on a page whose text block is wider than the column. <code>resourceId</code> names it, <code>scale</code> is the share of its print width it keeps, <code>printWidthPx</code>, <code>widthPx</code> and <code>pageWidthPx</code> the print, column and text block widths. A picture narrowed by <code>placement.width</code>, shrunk to its slot, turned or set in a composed page's frame is not reported. Points at the paragraph that first cites it. Since postext 1.37.</td>
       <td>The picture is printed at its column's width. A picture in the flow is never wider than its column and the default page has two (<code>layout.layoutType: 'double'</code>): set the page in one column, float it across the page (<code>placement.span: 'page'</code>), or raise its resolution if that size is the one wanted.</td>
@@ -369,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>It is on no page. Up to postext 1.24 it dropped out without a warning.</td>
     </tr>
     <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>A resource placed after the paragraph that cites it (<code>position: 'paragraph'</code>) that only footnotes cite, chapter-end notes included: no <code>:ref</code> in the running text, no <code>::resource</code> line, and no earlier chapter placed it. A note is set apart from the flow, so there is no paragraph to follow. <code>resourceId</code> names it. Points at its first <code>:ref</code> in a note; no page.</td>
+      <td>It is on no page. Cite it in the running text too, embed it with <code>::resource</code>, or give it a floating position.</td>
+    </tr>
+    <tr>
       <td><code>shortListSplit</code></td>
       <td>A list of <code>items</code> items, short by <code>bodyText.shortListMaxItems</code>, cut between two columns or pages. Under <code>bodyText.shortListSplit: 'warn'</code> every such list is reported; under <code>'avoid'</code>, only one no column could hold whole. One per list; points at the list, with the page of its first item. Since postext 1.28.</td>
       <td>The list is cut where the column ends.</td>
@@ -376,6 +391,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
     <tr>
       <td><code>stack</code></td>
       <td>Two lines in a row of a paragraph, in one column, that end (<code>edge: 'end'</code>) or start (<code>'start'</code>) on the same word or the same <code>bodyText.stackMinCharacters</code> characters: <code>text</code> is what they repeat, as the first line prints it, and <code>lines</code> the two lines. Under <code>bodyText.stacks: 'warn'</code> every stack is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per stack; points at the two lines, with their page. Since postext 1.73.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>More than <code>max</code> lines in a row of a paragraph ending on a hyphen (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> is how many, <code>text</code> the lines. Under <code>bodyText.hyphenation.ladders: 'warn'</code> every ladder is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per ladder; points at its lines, with the page of the first. Since postext 1.74.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>The last line of a paragraph holds only the rest of a word divided on the line before: <code>word</code> is the word as the two lines print it, hyphen included. Under <code>bodyText.hyphenation.lastWord: 'warn'</code> every one is reported; under <code>'avoid'</code>, the ones the line breaker kept. Points at the last two lines, with their page. Since postext 1.74.</td>
       <td>The lines are set as they are.</td>
     </tr>
     <tr>

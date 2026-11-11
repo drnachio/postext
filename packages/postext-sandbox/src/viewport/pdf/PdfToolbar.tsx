@@ -1,10 +1,11 @@
 'use client';
 
 import { memo, type FocusEventHandler } from 'react';
-import { ArrowRight, Download, Printer, RefreshCw } from 'lucide-react';
+import { ArrowRight, Download, Printer, RefreshCw, ShieldCheck } from 'lucide-react';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import {
+  FindToolbarButton,
   PinToolbarButton,
   ToolbarButton,
   ToolbarSeparator,
@@ -14,6 +15,8 @@ import {
 interface PdfToolbarProps {
   onRegenerate: () => void;
   onDownload: () => void;
+  /** Read the PDF back and set it against what a printer asks for. */
+  onCheck: () => void;
   onPrint: () => void;
   onTogglePin: () => void;
   canDownload: boolean;
@@ -31,6 +34,7 @@ interface PdfToolbarProps {
 export const PdfToolbar = memo(function PdfToolbar({
   onRegenerate,
   onDownload,
+  onCheck,
   onPrint,
   onTogglePin,
   canDownload,
@@ -98,6 +102,14 @@ export const PdfToolbar = memo(function PdfToolbar({
         unpinLabel={labels.toolbarUnpin}
       />
       <ToolbarSeparator />
+      <FindToolbarButton />
+      <ToolbarSeparator />
+      <ToolbarButton
+        icon={<ShieldCheck size={16} aria-hidden="true" />}
+        label={labels.pdfCheck}
+        onClick={onCheck}
+        disabled={!canDownload}
+      />
       <ToolbarButton
         icon={<Download size={16} aria-hidden="true" />}
         label={labels.pdfDownload}

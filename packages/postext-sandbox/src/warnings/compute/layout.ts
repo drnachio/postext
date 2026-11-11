@@ -64,7 +64,7 @@ const LAYOUT_CONTENT_KINDS: ReadonlySet<string> = new Set([
   'cjkMarksExceedLeading', 'rubyExceedsLeading', 'kuntenExceedsLeading', 'arabicMarksExceedLeading',
   'unbreakableWordOverflow', 'wordDividedByCharacter', 'wordDividedBySyllable', 'joiningScriptLetterSpacing',
   'comicPanelLetterbox', 'comicBalloonOverflow', 'lineNumberOverlap', 'dropCap', 'codeOverflow', 'textWrap',
-  'columnsTooNarrow', 'hereNotEmbedded',
+  'columnsTooNarrow', 'hereNotEmbedded', 'paragraphCitedInNote', 'floatCropped', 'floatPinMissed',
 ]);
 
 /** Warnings the layout itself raised (`doc.warnings`): a box the engine
@@ -91,6 +91,22 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
         payload: w.kind === 'emptyCaption'
           ? { kind: 'emptyCaption', resourceId: w.resourceId, label: w.label }
           : { kind: 'resourceMoved', resourceId: w.resourceId, page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), emptyMm: w.emptyMm },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
+    if (w.kind === 'floatPinMissed') {
+      // A float set by hand that is not where its pin asks (#1494).
+      out.push({
+        id: `layout-floatPinMissed-${w.resourceId}-${i}`,
+        payload: {
+          kind: 'floatPinMissed',
+          resourceId: w.resourceId,
+          reason: w.reason,
+          ...(w.pageIndex !== undefined ? { page: w.pageIndex + 1 + (doc.pageIndexOffset ?? 0) } : {}),
+        },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
@@ -157,6 +173,19 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       out.push({
         id: `layout-stack-${w.sourceStart ?? 'x'}-${w.edge}-${i}`,
         payload: { kind: 'stack', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), edge: w.edge, text: w.text, lines: w.lines },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
+    if (w.kind === 'hyphenLadder' || w.kind === 'lastWordDivided') {
+      // The hyphen rules (#1466): a ladder of hyphens, a last word divided,
+      // by book page.
+      const page = (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0);
+      out.push({
+        id: `layout-${w.kind}-${w.sourceStart ?? 'x'}-${i}`,
+        payload: w.kind === 'hyphenLadder' ? { kind: 'hyphenLadder', page, lines: w.lines, max: w.max } : { kind: 'lastWordDivided', page, word: w.word },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,

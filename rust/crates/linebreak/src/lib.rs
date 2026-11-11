@@ -14,6 +14,8 @@
 mod adjust;
 mod constants;
 mod dp;
+#[cfg(test)]
+mod hyphen_tests;
 mod items;
 mod looseness;
 mod node;

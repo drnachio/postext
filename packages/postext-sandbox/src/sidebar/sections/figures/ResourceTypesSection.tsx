@@ -28,6 +28,7 @@ import { CollapsibleSection, DimensionInput, ItemCard, ItemCardListActions, open
 import { wrapChoiceOf } from '../../settings/textWrap.js';
 import { captionSideOf, captionSideValue } from '../../settings/captionSide.js';
 import { PlacementWidthField } from '../../../panels/resources/PlacementWidthField.js';
+import { isInlinePosition } from '../../../panels/resources/inlinePosition.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
 import { FieldRow } from '../../../controls/FieldRow.js';
 import { SearchScope } from '../../search/SearchScope.js';
@@ -35,6 +36,7 @@ import { CaptionStyleFields } from './CaptionStyleFields.js';
 import { renderResourceTypePreview, resourceCounterFormat } from './resourceTypePreview.js';
 import { documentDigits, documentLanguage } from '../../../context/documentDirection.js';
 import { flowSideLabels, useRightToLeftFlow } from '../../settings/flowSides.js';
+import { GridSnapFields } from '../../settings/GridSnapFields.js';
 import { MULTIPLE_COLUMNS_MAX } from '../../settings/multipleColumns.js';
 
 function newTypeId(): string {
@@ -291,6 +293,12 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   style={inputStyle}
                 />
               </Field>
+              <GridSnapFields
+                kind="resourceType"
+                value={{ snapToGrid: type.snapToGrid !== false, snapTopToGrid: type.snapTopToGrid === true }}
+                set={(k, v) => updateType(type.id, { [k]: v })}
+                unset={(k) => type[k] === undefined}
+              />
             </div>
 
             <div className="mt-2">
@@ -320,6 +328,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                       <option value="top">{labels.resourceTypePlacementPositionTop}</option>
                       <option value="bottom">{labels.resourceTypePlacementPositionBottom}</option>
                       <option value="here">{labels.resourceTypePlacementPositionHere}</option>
+                      <option value="paragraph">{labels.resourceTypePlacementPositionParagraph}</option>
                     </select>
                   </Field>
                   <Field label={labels.resourceTypePlacementSpan} tooltip={labels.resourceTypePlacementSpanTooltip}>
@@ -351,7 +360,7 @@ export const ResourceTypesSection = memo(function ResourceTypesSection() {
                   )}
                   {/* Resources of this type may head the page (column) that
                       cites them (#633); the document's default otherwise. */}
-                  {type.defaultPlacement?.position !== 'bottom' && type.defaultPlacement?.position !== 'here' && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
+                  {type.defaultPlacement?.position !== 'bottom' && !isInlinePosition(type.defaultPlacement?.position) && type.defaultPlacement?.span !== 'side' && !type.defaultPlacement?.rotate && (
                     <ToggleSwitch
                       label={labels.resourceTypePlacementCitingPage}
                       checked={type.defaultPlacement?.citingPage ?? config.layout?.floatsAtCitingPage ?? false}

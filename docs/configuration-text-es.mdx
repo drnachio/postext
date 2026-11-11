@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se configura la tipografía del texto corrido: la fuente, el cuerpo y el interlineado, los colores, las sangrías, las citas, la poesía, las tabulaciones y las letras capitulares',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '29 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes del texto principal de un libro. Eliges su tipo de letra, su tamaño y el espacio entre sus líneas, y el color de las palabras en negrita y en cursiva. Fijas la sangría de la primera línea y el espacio entre párrafos. La página también explica las citas que se separan del texto, los poemas, las tabulaciones para el texto en columnas y la letra grande con la que empiezan algunos capítulos. La separación silábica, los encabezados y las listas tienen páginas propias.",
@@ -62,6 +62,12 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>El espacio entre dos párrafos. <code>true</code> inserta una línea en blanco (igual a <code>lineHeight</code>), como hacen algunas editoriales; una medida como <code>&#123; value: 2, unit: 'mm' &#125;</code> o <code>0.33em</code> del cuerpo del texto deja exactamente ese espacio, en el texto corrido, en los recuadros y en los marcos de las páginas compuestas. Una medida que no sea un número entero de líneas saca los párrafos de la rejilla base; el siguiente bloque que se ajusta a ella (un título, el último elemento de una lista, una fórmula destacada) devuelve el texto a la rejilla. Es el mismo espacio que <code>paragraphStyles[].spaceBetween</code>, que lo sustituye dentro de un contenedor <code>:::paragraphs</code>. Un recuadro fija el suyo en <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Empieza cada párrafo del cuerpo y cada cita en una línea de la rejilla: el espacio de encima se redondea hasta la siguiente, termine como termine el bloque anterior (un título fuera de la rejilla, un recuadro o una figura con márgenes exactos). <code>false</code> deja el párrafo donde lo dejó el bloque anterior. Un párrafo dentro de un contenedor <code>:::paragraphs</code> sigue en su lugar el <code>snapTopToGrid</code> de su estilo, y el verso el de su estilo de párrafo, o este cuando no tiene. Para recuperar la rejilla solo bajo un título fuera de ella, usa el <code>regainGrid</code> del título. En el Sandbox: <strong>Empezar los párrafos en una línea de la rejilla</strong>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

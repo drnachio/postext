@@ -1,6 +1,7 @@
 import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types.js';
 import { resolveExerciseStylesConfig, resolveExercisesConfig } from '../defaults/boxes/exercises.js';
 import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout.js';
+import { separatePrintColors } from '../color/inks.js';
 
 export { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN };
 export { balancingOnByDefault, avoidWidowsByDefault, avoidOrphansByDefault };
@@ -19,6 +20,7 @@ import {
   resolveParagraphStylesConfig,
   resolveCalloutStylesConfig,
   resolveChipStylesConfig,
+  resolveCharacterStylesConfig,
   resolveMarkStylesConfig,
   resolveUnorderedListsConfig,
   resolveOrderedListsConfig,
@@ -113,7 +115,10 @@ export function validateConfigCache(config: PostextConfig | undefined): void {
   fingerprints.set(config, fingerprint);
 }
 
-function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
+function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
+  // Spot colours keep a screen hex each: a print render finds a colour's
+  // ink by the hex the layout paints.
+  const rawConfig = separatePrintColors(givenConfig);
   // The character grid (`cjk.grid`) sets the margins and the gutter before
   // anything reads them (see `cjkGrid.ts`).
   const config = applyCjkGrid(applyPaletteToConfig(rawConfig));
@@ -143,6 +148,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   // the config names them; kept only when they are not the European ones,
   // so a Latin document resolves exactly as before.
   const numerals = resolveNumerals(config?.numerals, documentLocale);
+  const markStyles = resolveMarkStylesConfig(config?.markStyles);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -158,7 +164,8 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
     calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists, config?.locale),
     chipStyles: resolveChipStylesConfig(config?.chipStyles),
-    markStyles: resolveMarkStylesConfig(config?.markStyles),
+    markStyles,
+    characterStyles: resolveCharacterStylesConfig(config?.characterStyles, new Set(markStyles.map((s) => s.id))),
     unorderedLists,
     orderedLists,
     math: resolveMathConfig(config?.math),

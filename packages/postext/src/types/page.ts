@@ -2,7 +2,30 @@ import type { ArabicNumeralStyle, EastAsianNumeralStyle } from '../numerals/numb
 import type { CmykPercent } from './output/print.js';
 
 /** The colour model a colour was chosen in. */
-export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl';
+export type ColorModel = 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot';
+
+/** A spot colour (an ink of its own, printed on its own plate: a Pantone,
+ *  a corporate ink, a varnish). A CMYK print render (`print`, or a `'cmyk'`
+ *  PDF colour space through an output profile) writes it as a PDF
+ *  Separation colour space named after the ink; every other render paints
+ *  the colour's `hex`, its screen rendering. */
+export interface SpotColor {
+  /** The ink as the printer knows it (`PANTONE 286 C`, `Varnish`): the
+   *  name of its plate. Colours naming the same ink print on the same
+   *  plate, at their own tint. */
+  name: string;
+  /** What the ink looks like at full strength, in CMYK percent: the
+   *  alternate the PDF gives it (what a viewer, or a press without the
+   *  ink, shows). A tint scales it. */
+  cmyk: CmykPercent;
+  /** The strength of this colour, percent of the ink (0..100). Defaults to
+   *  100. */
+  tint?: number;
+  /** The ink overprints whatever is under it instead of knocking it out:
+   *  a varnish, or an ink laid over the process colours. Defaults to
+   *  false. */
+  overprint?: boolean;
+}
 
 /** A colour: its hex value, the model it was chosen in, and its CMYK or
  *  palette link when it has them. */
@@ -14,6 +37,25 @@ export interface ColorValue {
    *  colour space) sets them as they are instead of separating `hex`,
    *  which is their screen rendering. */
   cmyk?: CmykPercent;
+  /** The ink of a spot colour (`model: 'spot'`); `hex` is its screen
+   *  rendering (the ink's CMYK at the tint, soft-proofed). */
+  spot?: SpotColor;
+  /** In a print render (CMYK or PDF/X), the colour overprints what is
+   *  under it instead of knocking it out: a text or a rule in it over a
+   *  ground or a picture mixes with them on press, and a plate shifting
+   *  never opens a white halo. Every style set in the colour overprints.
+   *  A spot colour's ink overprints by `spot.overprint` as well. A colour
+   *  without ink (paper white) that overprints disappears: the preflight
+   *  reports it. */
+  overprint?: boolean;
+  /** With `paletteId`, the strength of the entry over the paper, percent
+   *  (0..100): a callout ground at `8` is the main colour at 8 %, and it
+   *  follows the entry when the palette changes, a part's or a section's
+   *  palette included. `hex` holds the tinted value (the fallback without
+   *  the entry). The tint is a screen colour (`model: 'hex'`): a print render
+   *  separates it like any other, a spot entry's ink included. Defaults to
+   *  100; ignored without `paletteId`. */
+  tint?: number;
   /** The `colorPalette` entry this colour follows, wherever it sits in the
    *  configuration (designs, callout labels and the `:ref` colour
    *  included): the entry's `hex` / `model` win, and the ones stored here
@@ -64,8 +106,8 @@ export interface PageMargins {
 /** The baseline grid: lines one body line height apart from the top of
  *  the content area. The layout uses it whether or not it is drawn
  *  (headings, list ends, boxes, figures and display formulas snap the flow
- *  back onto it, unless their own `snapToGrid` is off); this config only
- *  draws it. */
+ *  back onto it, unless their own `snapToGrid` is off, and the styles whose
+ *  `snapTopToGrid` is on open on it); this config only draws it. */
 export interface BaselineGridConfig {
   /** Draw the grid lines over the pages (canvas and PDF renderers, the
    *  Sandbox views). Only the drawing: the layout is the same either way. */

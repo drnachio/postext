@@ -107,6 +107,40 @@ export function uncroppedPictureBox(
   return { x: x - source.x * width, y: y - source.y * height, width, height };
 }
 
+/**
+ * Manual crop of a picture (`Resource.crop`): the part of it the figure
+ * shows, always — the frame the author chose, whatever the page. Its size
+ * replaces the picture's own in every measure (the figure takes the crop's
+ * ratio), the safe area is read inside it, and what the renderers draw is
+ * the composition of both (see {@link composeSource}).
+ */
+
+/** The resource's crop, clamped to the picture, or `undefined` when it has
+ *  none, it is not a picture, or the crop keeps the whole picture. */
+export function resourceCrop(resource: Resource): ResourceSafeArea | undefined {
+  const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || (resource.kind === 'video' && !!resource.video?.poster);
+  if (!picture) return undefined;
+  return normalizeSafeArea(resource.crop);
+}
+
+/** A picture's size once cropped. */
+export function croppedSize(iw: number, ih: number, crop: ResourceSafeArea | undefined): { width: number; height: number } {
+  return crop ? { width: iw * crop.width, height: ih * crop.height } : { width: iw, height: ih };
+}
+
+/** A rectangle of the whole picture (`area`, the safe area) in the
+ *  fractions of the crop, clipped to it; `undefined` when nothing of it is
+ *  left, or when it covers the whole crop. */
+export function withinCrop(area: ResourceSafeArea | undefined, crop: ResourceSafeArea | undefined): ResourceSafeArea | undefined {
+  if (!area || !crop) return area;
+  return normalizeSafeArea({
+    x: (area.x - crop.x) / crop.width,
+    y: (area.y - crop.y) / crop.height,
+    width: area.width / crop.width,
+    height: area.height / crop.height,
+  });
+}
+
 /** The part of the whole picture shown when `inner` (a rectangle of the
  *  shown part `crop`, in its fractions; `undefined` for all of it) is
  *  shown of it. `undefined` when the whole picture is shown. */

@@ -9,6 +9,7 @@ import { TASK_BOX_TICK } from '../taskBox.js';
 import { compose, placeShape, placeText, turnFrame, type Frame } from './frame.js';
 import { slotItems } from './design.js';
 import { highlightRects, placeBodyLine, sizeOf } from './lines.js';
+import { markLineItems } from './markItems.js';
 import { resourceItems } from './resource.js';
 import { lineQrItems } from './overlays.js';
 import { sourceOfPlain, type Atom } from './source.js';
@@ -176,6 +177,8 @@ function linesItems(block: VDTBlock, ctx: BlockContext): DisplayItem[] {
       const { dy, thickness } = leaderRuleGeometry(sizeOf(block.fontString));
       after.push(placeShape(ctx.frame, { kind: 'rule', x1: l.x, y1: line.baseline + dy, x2: l.x + l.width, y2: line.baseline + dy, color: block.color, widthPx: thickness }));
     }
+    // The lines of its highlight marks (`markStyles[].line`), over it.
+    for (const m of markLineItems(line, block.color)) after.push(placeShape(ctx.frame, m));
     // A link note's QR code (#1302), after the text.
     after.push(...lineQrItems(line, ctx.frame, block.color));
   }
@@ -261,5 +264,6 @@ export function stripCaptionItems(block: VDTBlock, ctx: BlockContext): DisplayIt
   const item: TextItem = { kind: 'text', role: 'caption', bbox: { x: x0, y: y0, width: x1 - x0, height: y1 - y0 }, lines, source, blockType: block.type };
   if (ctx.clip) item.clip = ctx.clip;
   items.push(placeText(ctx.frame, item));
+  for (const line of vdtLines) for (const m of markLineItems(line, block.color)) items.push(placeShape(ctx.frame, m));
   return items;
 }

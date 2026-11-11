@@ -21,6 +21,7 @@ export type {
   ResourceBytesProvider,
 } from './pdf-backend/index.js';
 export { inspectPrintMaster, type PrintMasterReport } from './print/inspectMaster.js';
+export { inspectPrintPdf, type PrintPdfReport, type PrintPdfFont, type PrintPdfRgbUse } from './print/inspectPdf.js';
 export { decompressWoff2 } from './woff2.js';
 export type { HarfBuzzWasmSource } from './harfbuzz.js';
 export { svgToVectorDrawing, type VectorDrawing } from './pdf-backend/vector/svgVector.js';

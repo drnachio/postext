@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sillabazione e lingua',
   description: 'I pattern e le eccezioni della sillabazione; il testo in bandiera; la lingua del documento, da cui dipendono le cifre e la direzione del testo; le scritture che Postext sa comporre',
   lang: 'it',
-  lastUpdated: '2026-10-19',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '23 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega come si dividono le parole a fine riga e come Postext capisce in che lingua è scritto un libro. Attivi o disattivi la sillabazione ed elenchi le parole che non vanno mai divise. Puoi lasciare irregolare il margine destro del testo invece che dritto. La lingua del documento decide le regole di sillabazione, i nomi delle figure e delle tabelle, le cifre e la direzione del testo. Le ultime sezioni spiegano quali sistemi di scrittura Postext sa comporre e come tratta il testo arabo.",
@@ -70,6 +70,60 @@ Quando l’allineamento del testo è impostato a `'justify'`, la sillabazione ev
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide le parole con l’iniziale maiuscola come tutte le altre. <code>false</code> tiene intera ogni parola che comincia con una maiuscola (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), compresa la prima parola di una frase. Vedi <a href="#parole-tenute-intere">Parole tenute intere</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>La parola più corta che viene divisa, in lettere. Se non è impostato: quello della lingua di sillabazione, che <code>hyphenationLanguageLimits(locale)</code> restituisce.</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>Lettere lasciate almeno prima di una divisione, all’inizio della parola. Se non è impostato: quelle della lingua.</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>quella della lingua</td>
+      <td>Lettere portate almeno dopo una divisione, alla riga seguente. Se non è impostato: quelle della lingua. I tre limiti valgono anche per le parole con l’apostrofo (le elisioni del francese, dell’italiano e del catalano).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>Da spaziatura migliore (<code>0</code>) a meno trattini (<code>10</code>): ogni passo aggiunge 50 alla penalità di ogni trattino, compreso il trattino proprio di una parola, così la divisione in righe divide una parola solo dove fa risparmiare più spaziatura. Con <code>0</code> i trattini pesano come prima. Solo con la divisione ottimale in righe.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Scale di trattini: più di <code>maxConsecutive</code> righe di seguito di un paragrafo che finiscono con un trattino. <code>'allow'</code> compone le righe come le trova la divisione in righe. <code>'warn'</code> le compone allo stesso modo e segnala ogni scala con un avviso di contenuto <code>hyphenLadder</code>, che il Sandbox elenca in Revisione. <code>'avoid'</code> aggiunge <code>ladderPenalty</code> ai demeriti di ogni riga oltre il limite, così la divisione in righe ricompone il paragrafo dove la spaziatura lo permette, e segnala le scale che restano. Testo corrente, elenchi e citazioni; didascalie e celle di tabella ne sono escluse. Solo con la divisione ottimale in righe.</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Numero massimo di righe di seguito che possono finire con un trattino, per <code>ladders</code>. Con <code>1</code> due righe sillabate non si seguono mai.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Quanto costa alla divisione in righe ogni riga oltre <code>maxConsecutive</code> con <code>ladders: 'avoid'</code>, in demeriti sommati a quelli del paragrafo, oltre a <code>consecutiveHyphenDemerit</code> (3000 per due righe sillabate di seguito). Il predefinito pesa più di qualsiasi composizione entro la spaziatura; un valore più basso lascia passare alcune scale in cambio di righe più strette; con <code>0</code> restano tutte.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>L’ultima parola di un paragrafo divisa: la penultima riga finisce con un trattino e l’ultima porta solo il resto di quella parola, senza spazi. <code>'warn'</code> segnala ogni caso con un avviso di contenuto <code>lastWordDivided</code>. <code>'avoid'</code> aggiunge <code>lastWordPenalty</code> ai demeriti del paragrafo, così la divisione in righe lascia la parola intera dove la spaziatura lo permette, e segnala quelle che restano divise. Un’ultima riga corta in generale riguarda <code>bodyText.avoidRunts</code>. Solo con la divisione ottimale in righe.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>Quanto costa alla divisione in righe un’ultima parola divisa con <code>lastWord: 'avoid'</code>, in demeriti sommati a quelli del paragrafo. Con <code>0</code> restano tutte.</td>
     </tr>
   </tbody>
 </table>

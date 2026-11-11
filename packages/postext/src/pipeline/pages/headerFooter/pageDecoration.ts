@@ -158,6 +158,7 @@ export function createPageDecoration(deps: PageDecorationDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
         ...(headingNumber !== undefined ? { headingNumber } : {}),
         ...(Object.keys(headingNumberByFrame).length > 0 ? { headingNumberByFrame } : {}),
       };

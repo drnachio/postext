@@ -22,6 +22,7 @@ import { measureLooseParagraph, headingSetsOwnBand } from '../../passHelpers.js'
 export interface BlockMeasureDeps {
   state: PassState;
   balanceLooseness: ReadonlyMap<number, number> | undefined;
+  balanceUntracked: ReadonlySet<number> | undefined;
   balanceLooseBudget: ReadonlyMap<number, LooseBudget> | undefined;
   balanceExtraPx: ReadonlyMap<number, number> | undefined;
   resolved: ResolvedConfig;
@@ -57,7 +58,7 @@ export interface BlockMeasureDeps {
 
 export function createBlockMeasure(deps: BlockMeasureDeps) {
   const {
-    state, balanceLooseness, balanceLooseBudget, balanceExtraPx, resolved, trackingLadder,
+    state, balanceLooseness, balanceUntracked, balanceLooseBudget, balanceExtraPx, resolved, trackingLadder,
     looseOutcome, looseOffGrid, looseGained, headingLevels, dpi, doc, pageWidthPx, pageHeightPx,
     contentBlocks, paragraphContainers, partPlan, sectionPlan, cursor, openerPages, floatGapPx,
     uprightOn, onNewPage, partMeasureCtx, sectionMeasureCtx, measuredAcrossPage, atColumnHead,
@@ -180,7 +181,7 @@ export function createBlockMeasure(deps: BlockMeasureDeps) {
     const figureGrowPx = rawBlock.type === 'resourceBlock' ? balanceExtraPx?.get(flexFigureKey(blockTurn.blockIdx)) ?? 0 : 0;
     const figureDelta = figureGrowPx > 0 ? { figureHeightDelta: figureGrowPx } : {};
     blockTurn.measuredBlock = tryLoose
-      ? measureLooseParagraph(rawBlock, blockTurn.blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome, looseOffGrid)
+      ? measureLooseParagraph(rawBlock, blockTurn.blockIdx, col.bbox.width, blockMeasureCtx, styleOverride, looseLines, trackingLadder, looseOutcome, looseOffGrid, balanceUntracked?.has(blockTurn.blockIdx))
       : measureContentBlock(rawBlock, blockTurn.blockIdx, measureWidth, blockMeasureCtx, { styleOverride, ...upright, ...figureDelta });
     // A resource set in the text with `captionSide` (#729): its caption and
     // note go to the band's side column when that is free beside it, and

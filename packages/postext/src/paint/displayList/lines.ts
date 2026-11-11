@@ -13,7 +13,8 @@ import { lineWordSegmentsInOrder } from '../wordPieces.js';
 import { lineTrailingTracking } from '../lineInk.js';
 import { lineSource, segmentShownText, type Atom, type SourceBlock } from './source.js';
 import { chipRuns, swatchPaint } from './inline.js';
-import type { DisplayAnnotation, DisplayItem, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
+import { highlightShapes } from './markItems.js';
+import type { DisplayAnnotation, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
 
 /** The faces and colours a line's segments pick from. */
 export interface LineStyle {
@@ -304,14 +305,7 @@ export function lineMeasure(line: VDTLine, block: Pick<VDTBlock, 'bbox'>): { x: 
 /** A line's highlight bands (`:mark[…]`, #888), unplaced: painted under
  *  its text, in body, caption, note and cell lines alike. A band is
  *  relative to the line (x from its `bbox.x`, y from its baseline), as
- *  the PDF's `paintLineHighlights` reads it. */
-export function highlightRects(line: VDTLine): Extract<DisplayItem, { kind: 'rect' }>[] {
-  return (line.highlights ?? []).map((h) => ({
-    kind: 'rect' as const,
-    rect: { x: line.bbox.x + h.x, y: line.baseline + h.y, width: h.width, height: h.height },
-    fill: h.color,
-    ...(h.radiusLeft || h.radiusRight ? { radius: Math.max(h.radiusLeft, h.radiusRight) } : {}),
-  }));
-}
+ *  the PDF's `paintLineHighlights` reads it (`markItems.ts`). */
+export const highlightRects = highlightShapes;
 
 export { sizeOf };

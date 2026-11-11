@@ -334,6 +334,16 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>La imatge s'imprimeix a aquesta escala; fora de la caixa de text només quan ho diu <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Una imatge flotant s'ha retallat dins de la seva zona segura (<code>Resource.safeArea</code>) per quedar-se a la pàgina que la cita, per <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> la identifica, <code>share</code> és la fracció de l'alçada retallada i <code>pageIndex</code>, la pàgina. L'avís indica el paràgraf que la cita per primer cop.</td>
+      <td>La imatge s'imprimeix retallada, mai més enllà de la seva zona segura. No es recomana <code>pullFloatsToCitation</code>: <code>placement.citingPage</code> i <code>placement.shrink: 'slot'</code> deixen la imatge a prop de la cita sense retallar-la.</td>
+    </tr>
+    <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>Un flotant col·locat a mà (<code>placement.pin</code>) no és on demana el seu pin. <code>resourceId</code> l'identifica, <code>pageIndex</code> és la pàgina on ha anat i <code>requestedPage</code> la pàgina que anomena el pin. <code>reason</code>: <code>notTaken</code> (l'espai no el podia allotjar: massa alt per al lloc que quedava, ocupat, per sobre de la cita, o el capítol s'ha acabat abans), <code>tooFar</code> (més de <code>MAX_PIN_PAGE_OFFSET</code>, 3, pàgines després de la que el cita), <code>column</code> (aquesta pàgina no té aquesta columna) o <code>unsupported</code> (un recurs col·locat al text, un flotant de la columna lateral o girat, una làmina). Apunta al paràgraf que el cita per primer cop.</td>
+      <td>El flotant es col·loca com sense el pin, a la pàgina que anomena el pin si hi ha un espai que l'allotgi. No es recomanen els pins: <code>placement.citingPage</code>, <code>position</code> i <code>shrink</code> mantenen una figura a prop del seu text en totes les edicions.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Un mapa de bits amb mida d'impressió (el seu <code>bitmap.resolution</code> o un nombre a <code>layout.bitmapResolution</code>; no una resolució llegida del fitxer) compost en una columna que el deixa per sota de la meitat d'aquesta mida, en una pàgina amb la caixa de text més ampla que la columna. <code>resourceId</code> la identifica, <code>scale</code> és la fracció de l'amplada d'impressió que conserva, i <code>printWidthPx</code>, <code>widthPx</code> i <code>pageWidthPx</code> són les amplades d'impressió, de columna i de caixa. No es dona cap avís per a una imatge estrenyida amb <code>placement.width</code>, reduïda a l'espai disponible, girada o col·locada al marc d'una pàgina composta. L'avís indica el paràgraf que la cita primer. Des de postext 1.37.</td>
       <td>La imatge s'imprimeix a l'amplada de la seva columna. Una imatge al flux mai no és més ampla que la seva columna i la pàgina per defecte en té dues (<code>layout.layoutType: 'double'</code>): compon la pàgina a una columna, fes flotar la imatge sobre tota la pàgina (<code>placement.span: 'page'</code>) o puja'n la resolució si aquesta és la mida que busques.</td>
@@ -369,6 +379,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>No és a cap pàgina. Fins a postext 1.24 desapareixia sense avís.</td>
     </tr>
     <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Un recurs col·locat després del paràgraf que el cita (<code>position: 'paragraph'</code>) que només citen notes al peu, també les de final de capítol: no hi ha cap <code>:ref</code> al text corrent ni cap línia <code>::resource</code>, i cap capítol anterior no l'ha col·locat. La nota es compon a part del flux, de manera que no hi ha cap paràgraf darrere del qual posar-lo. <code>resourceId</code> l'identifica. L'avís indica el seu primer <code>:ref</code> dins d'una nota; no té pàgina.</td>
+      <td>No és a cap pàgina. Cita'l també al text corrent, insereix-lo amb <code>::resource</code> o dona-li una posició flotant.</td>
+    </tr>
+    <tr>
       <td><code>shortListSplit</code></td>
       <td>Una llista de <code>items</code> elements, curta segons <code>bodyText.shortListMaxItems</code>, partida entre dues columnes o pàgines. Amb <code>bodyText.shortListSplit: 'warn'</code> es dona un avís per a totes; amb <code>'avoid'</code>, només per a les que no cabien senceres en cap columna. Un per llista; l'avís indica la llista, amb la pàgina del primer element. Des de postext 1.28.</td>
       <td>La llista es parteix on s'acaba la columna.</td>
@@ -376,6 +391,16 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
     <tr>
       <td><code>stack</code></td>
       <td>Dues línies seguides d'un paràgraf, en una mateixa columna, que acaben (<code>edge: 'end'</code>) o comencen (<code>'start'</code>) amb la mateixa paraula o els mateixos <code>bodyText.stackMinCharacters</code> caràcters: <code>text</code> és el que repeteixen, tal com l'imprimeix la primera línia, i <code>lines</code> les dues línies. Amb <code>bodyText.stacks: 'warn'</code> s'informa de totes; amb <code>'avoid'</code>, de les que va mantenir l'algorisme. Un per repetició; apunta a les dues línies, amb la seva pàgina. Des de postext 1.73.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Més de <code>max</code> línies seguides d'un paràgraf que acaben en guionet (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> és quantes i <code>text</code>, les línies. Amb <code>bodyText.hyphenation.ladders: 'warn'</code> s'informa de totes les escales; amb <code>'avoid'</code>, de les que va mantenir el tall de línies. Un per escala; apunta a les seves línies, amb la pàgina de la primera. Des de postext 1.74.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>L'última línia d'un paràgraf només porta la resta d'una paraula partida a la línia anterior: <code>word</code> és la paraula tal com la imprimeixen les dues línies, amb el guionet. Amb <code>bodyText.hyphenation.lastWord: 'warn'</code> s'informa de totes; amb <code>'avoid'</code>, de les que va mantenir el tall de línies. Apunta a les dues últimes línies, amb la seva pàgina. Des de postext 1.74.</td>
       <td>Les línies es componen tal com són.</td>
     </tr>
     <tr>

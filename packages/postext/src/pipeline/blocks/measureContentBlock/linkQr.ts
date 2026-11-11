@@ -6,7 +6,7 @@ import type { VDTLine } from '../../../vdt.js';
 import type { LineInsetStep } from '../../../measure/types.js';
 import type { ResolvedConfig } from '../../../vdt.js';
 import { DEFAULT_LINKS_CONFIG } from '../../../defaults/structure/links.js';
-import { resolveColor } from '../../../defaults/shared.js';
+import { resolveColor, tintPaperOf } from '../../../defaults/shared.js';
 import { encodeQr, type QrMatrix } from '../../../video/qr.js';
 import { dimensionToPx } from '../../../units.js';
 
@@ -37,7 +37,7 @@ export function linkQrSetting(block: ContentBlock, resolved: ResolvedConfig, col
   const side = Math.min(dimensionToPx(cfg.size, dpi, fontSizePx), columnWidth * QR_MAX_SHARE);
   const gap = Math.max(0, dimensionToPx(cfg.gap, dpi, fontSizePx));
   const room = side + gap;
-  const color = resolveColor(cfg.color, resolved.colorPalette)?.hex;
+  const color = resolveColor(cfg.color, resolved.colorPalette, tintPaperOf(resolved.page))?.hex;
   return {
     matrix,
     side,

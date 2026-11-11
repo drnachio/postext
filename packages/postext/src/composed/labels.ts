@@ -44,7 +44,7 @@ import type { ResourceNumberingMap } from '../pipeline/resources/resourceNumberi
 import { buildFontString } from '../measure/index.js';
 import { flowTextWidth, fontFamilyOf, measureCentralBaseline, withMeasureWritingMode } from '../measure/vertical.js';
 import { dimensionToPx } from '../units.js';
-import { resolveColorValue } from '../defaults/shared.js';
+import { resolveColorValue, tintPaperOf } from '../defaults/shared.js';
 import { layoutLabelLines } from '../pipeline/resources/resourceLayout.js';
 import { uppercasePreservingLength } from '../pipeline/blocks/buildBlockKind.js';
 import { firstStrongDirection } from '../design/bidiText.js';
@@ -94,7 +94,7 @@ export interface LabelLook {
 }
 
 const hexOf = (value: ColorValue | undefined, resolved: ResolvedConfig, fallback: ColorValue): string =>
-  resolveColorValue(value, resolved.colorPalette, fallback).hex;
+  resolveColorValue(value, resolved.colorPalette, fallback, tintPaperOf(resolved.page)).hex;
 
 const px = (dim: Dimension | undefined, dpi: number, em: number): number | undefined => {
   if (!dim || typeof dim.value !== 'number' || !Number.isFinite(dim.value)) return undefined;

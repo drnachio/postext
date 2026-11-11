@@ -8,6 +8,7 @@ import type { VDTDocument, ContentWarning, VDTDesignSlot } from '../../vdt.js';
 import { composedFrameBlockIds } from '../../composed/paint.js';
 import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js';
 import { findStacks } from '../../checks/stacks.js';
+import { findHyphenFaults } from '../../checks/hyphenRules.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -122,6 +123,27 @@ export function stackWarnings(doc: VDTDocument): ContentWarning[] {
       ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
       ...(s.block.pageIndex >= 0 ? { pageIndex: s.block.pageIndex } : {}),
     };
+  });
+}
+
+/** A `hyphenLadder` or `lastWordDivided` warning for each fault of the
+ *  hyphen rules in the running text (#1466, `findHyphenFaults`), on the
+ *  page it starts on, under `hyphenation.ladders` / `lastWord` at `'warn'`
+ *  or `'avoid'`; none under `'allow'`. */
+export function hyphenRuleWarnings(doc: VDTDocument): ContentWarning[] {
+  const h = doc.config.bodyText.hyphenation;
+  if (h.ladders === 'allow' && h.lastWord === 'allow') return [];
+  return findHyphenFaults(doc).map((f) => {
+    const first = f.lines[0]!;
+    const last = f.lines[f.lines.length - 1]!;
+    const where = {
+      ...(first.sourceStart !== undefined ? { sourceStart: first.sourceStart } : {}),
+      ...(last.sourceEnd !== undefined ? { sourceEnd: last.sourceEnd } : {}),
+      ...(f.block.pageIndex >= 0 ? { pageIndex: f.block.pageIndex } : {}),
+    };
+    if (f.kind === 'ladder') return { kind: 'hyphenLadder', lines: f.lines.length, max: h.maxConsecutive, text: f.lines.map((l) => l.text), ...where };
+    const head = first.text.trimEnd().split(/\s+/u).pop() ?? '';
+    return { kind: 'lastWordDivided', word: `${head}${last.text.trim()}`, ...where };
   });
 }
 
@@ -251,8 +273,11 @@ export function joiningLetterSpacingWarnings(doc: VDTDocument, blocks: ReadonlyS
 /** A `floatShrunk` warning for each floated picture the layout set smaller
  *  to fit the room of its slot (`placement.shrink`, #626), with how far it
  *  still runs past the text block's foot when even its smallest scale did
- *  not fit. `sourceRangeOf` gives the range of the content block that first
- *  cites it. */
+ *  not fit, and a `floatCropped` one for each cropped within its safe area
+ *  to stay on the page citing it (`layout.pullFloatsToCitation`, #1492)
+ *  or to match its neighbour in a row at the foot (`layout.footFloatRow`).
+ *  `sourceRangeOf` gives the range of the content block that first cites
+ *  it. */
 export function floatShrinkWarnings(
   doc: VDTDocument,
   sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
@@ -261,10 +286,28 @@ export function floatShrinkWarnings(
   for (const page of doc.pages) {
     for (const block of page.floats ?? []) {
       const rb = block.resourceBlock;
-      if (!rb || rb.shrinkScale === undefined) continue;
+      if (!rb) continue;
+      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
+      // Cropped within its safe area to stay on its citing page (#1492):
+      // the only lever that sets a float's body shorter than its ratio.
+      // A row at the foot (#1496) crops toward the neighbour's height,
+      // taller or shorter.
+      const row = rb.bodyFlex?.by === 'row';
+      const crop = rb.bodyFlex && (rb.bodyFlex.delta < -0.5 || (row && rb.bodyFlex.delta > 0.5))
+        ? Math.abs(rb.bodyFlex.delta) / (rb.bodyRect.height - rb.bodyFlex.delta) : 0;
+      if (crop > 0) {
+        out.push({
+          kind: 'floatCropped',
+          resourceId: rb.resource.id,
+          share: Math.round(crop * 1000) / 1000,
+          ...(row ? { reason: 'row' as const } : {}),
+          ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+          pageIndex: page.index,
+        });
+      }
+      if (rb.shrinkScale === undefined) continue;
       const foot = page.contentArea.y + page.contentArea.height;
       const overflowPx = Math.round(block.bbox.y + block.bbox.height - foot);
-      const range = block.contentIndex !== undefined ? sourceRangeOf?.(block.contentIndex) : undefined;
       out.push({
         kind: 'floatShrunk',
         resourceId: rb.resource.id,

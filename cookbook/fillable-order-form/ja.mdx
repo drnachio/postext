@@ -64,3 +64,5 @@ pageNotes: { "1": "表紙。ページの上半分を、木のテーブルに並�
 合計はスクリプト（`AFSimple_Calculate` と短い式）で、Acrobat、Foxit、Chrome、Firefoxが実行します。macOSのプレビューはフィールドを表示して入力内容を保存できますが、スクリプトを実行しないので、合計は空のままです。
 
 会のチェックボックスには `on="1"` を付けています。チェックしたときに計算式が読む値です。既定値の `Yes` のままだと `product(order.circle, 12)` は常に0になり、postext-pdfが警告を出します。
+
+このレシピは `https://esm.sh/postext-pdf?bundle` をインポートします。esm.sh の既定ビルドでは pdf-lib の注釈クラスが別モジュールに分かれ、pdf-lib は各フィールドのウィジェットを受け付けません。PDF に枠は残りますが、数値の書式も合計も読み取り専用の指定もなく、コンソールに `formField` 警告が出ます。`?bundle` は pdf-lib を一つのモジュールにまとめ、`postext` は外に残してページのほかの部分と共有します。

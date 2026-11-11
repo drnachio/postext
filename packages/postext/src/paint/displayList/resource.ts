@@ -9,6 +9,7 @@ import type { ResolvedResourceBlock } from '../../vdt/resources.js';
 import { tableCellFill } from '../../vdt/resourceTables.js';
 import { compose, mapRect, placeImage, placeShape, placeTable, placeText, rotationFrame, type Frame } from './frame.js';
 import { highlightRects, placeResourceLine, type LineStyle } from './lines.js';
+import { markLineItems } from './markItems.js';
 import { videoItems } from './overlays.js';
 import { figureLabelItems } from './labels.js';
 import { alignToSource, atomKind, segmentShownText, type Atom, type PaintedAtom } from './source.js';
@@ -90,6 +91,12 @@ function highlightItems(lines: readonly VDTLine[], frame: Frame): DisplayItem[] 
   return lines.flatMap((l) => highlightRects(l).map((h) => placeShape(frame, h)));
 }
 
+/** The lines of the highlight marks on resource lines, painted over the
+ *  text in `color` (`markStyles[].line`). */
+function markLinesOf(lines: readonly VDTLine[], frame: Frame, color: string): DisplayItem[] {
+  return lines.flatMap((l) => markLineItems(l, color).map((m) => placeShape(frame, m)));
+}
+
 function fontsOf(normal: string, bold: string, italic: string, boldItalic: string): Pick<LineStyle, 'fontString' | 'boldFontString' | 'italicFontString' | 'boldItalicFontString'> {
   return { fontString: normal, boldFontString: bold, italicFontString: italic, boldItalicFontString: boldItalic };
 }
@@ -113,6 +120,7 @@ function tableItem(rb: ResolvedResourceBlock, bx: number, by: number, ctx: Block
       const img: ImageItem = { kind: 'image', rect: { ...cell.image.rect }, fileId: cell.image.fileId, imageKind: cell.image.kind };
       if (cell.image.pdfFileId) img.pdfFileId = cell.image.pdfFileId;
       if (cell.image.altText) img.alt = cell.image.altText;
+      if (cell.image.crop) img.crop = { ...cell.image.crop };
       out.image = img;
     }
     return out;
@@ -130,7 +138,11 @@ function tableItem(rb: ResolvedResourceBlock, bx: number, by: number, ctx: Block
   if (t.frameRadii) table.frameRadii = [...t.frameRadii];
   // Cell highlight bands under the grid (a cell's own fill comes with the
   // table item), then the table.
-  const items: DisplayItem[] = [...t.cells.flatMap((c) => highlightItems(c.lines, frame)), placeTable(frame, table)];
+  const items: DisplayItem[] = [
+    ...t.cells.flatMap((c) => highlightItems(c.lines, frame)),
+    placeTable(frame, table),
+    ...t.cells.flatMap((c) => markLinesOf(c.lines, frame, c.isHeader ? t.headerColor : t.color)),
+  ];
   // Booktabs strokes (#625), each its own width.
   for (const s of t.strokes ?? []) {
     items.push(placeShape(frame, { kind: 'rule', x1: bx + s.x1, y1: by + s.y1, x2: bx + s.x2, y2: by + s.y2, color: t.borderColor, widthPx: s.widthPx }));
@@ -190,12 +202,12 @@ export function resourceItems(block: VDTBlock, ctx: BlockContext): DisplayItem[]
     ...(rb.slice?.continued ? { generated: true, reportEdits: true } : {}),
     resource: { resourceId: id, field: 'caption' },
   });
-  if (caption) items.push(...highlightItems(rb.captionLines, frame), caption);
+  if (caption) items.push(...highlightItems(rb.captionLines, frame), caption, ...markLinesOf(rb.captionLines, frame, rb.captionColor));
   const note = resourceText(rb.noteLines, noteStyle, 'note', ctx, frame, {
     blockKey: key, ...(rb.resource.note !== undefined ? { text: rb.resource.note } : {}),
     resource: { resourceId: id, field: 'note' },
   });
-  if (note) items.push(...highlightItems(rb.noteLines, frame), note);
+  if (note) items.push(...highlightItems(rb.noteLines, frame), note, ...markLinesOf(rb.noteLines, frame, rb.noteColor));
   const continues = resourceText(rb.continuesLines ?? [], noteStyle, 'continues', ctx, frame, { blockKey: key, generated: true });
   if (continues) items.push(continues);
   return items;

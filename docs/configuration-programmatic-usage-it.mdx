@@ -334,6 +334,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L’immagine viene stampata a quella scala; oltre la gabbia del testo solo quando lo dice <code>overflowPx</code>.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Un’immagine flottante è stata ritagliata dentro la sua zona sicura (<code>Resource.safeArea</code>) per restare sulla pagina che la cita, da <code>layout.pullFloatsToCitation</code>. <code>resourceId</code> la indica, <code>share</code> è la frazione della sua altezza ritagliata, <code>pageIndex</code> la pagina. Punta al paragrafo che la cita per primo.</td>
+      <td>L’immagine viene stampata ritagliata, mai oltre la sua zona sicura. <code>pullFloatsToCitation</code> è sconsigliato: <code>placement.citingPage</code> e <code>placement.shrink: 'slot'</code> tengono un’immagine vicino al suo richiamo senza ritagliarla.</td>
+    </tr>
+    <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>Un flottante collocato a mano (<code>placement.pin</code>) non è dove chiede il suo pin. <code>resourceId</code> lo indica, <code>pageIndex</code> è la pagina in cui è finito e <code>requestedPage</code> la pagina che il pin nomina. <code>reason</code>: <code>notTaken</code> (lo spazio non poteva accoglierlo: troppo alto per il posto rimasto, occupato, sopra il suo richiamo, o il capitolo è finito prima), <code>tooFar</code> (più di <code>MAX_PIN_PAGE_OFFSET</code>, 3, pagine dopo quella che lo richiama), <code>column</code> (quella pagina non ha quella colonna) o <code>unsupported</code> (una risorsa collocata nel testo, un flottante della colonna laterale o ruotato, una tavola). Punta al paragrafo che lo richiama per primo.</td>
+      <td>Il flottante viene collocato come senza il pin, sulla pagina che il pin nomina se lì uno spazio lo accoglie. I pin sono sconsigliati: <code>placement.citingPage</code>, <code>position</code> e <code>shrink</code> tengono una figura vicino al suo testo in ogni edizione.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Una bitmap con dimensione di stampa (il suo <code>bitmap.resolution</code> o un numero in <code>layout.bitmapResolution</code>; non una risoluzione letta dal file) composta in una colonna che la tiene sotto la metà di quella dimensione, su una pagina con la gabbia di testo più larga della colonna. <code>resourceId</code> la indica, <code>scale</code> è la parte della sua larghezza di stampa che conserva, <code>printWidthPx</code>, <code>widthPx</code> e <code>pageWidthPx</code> le larghezze di stampa, di colonna e di gabbia. Non si segnala un'immagine ristretta con <code>placement.width</code>, ridotta al suo spazio, ruotata o messa nella cornice di una pagina composta. Indica il paragrafo che la cita per primo. Da postext 1.37.</td>
       <td>L'immagine si stampa alla larghezza della sua colonna. Un'immagine nel flusso non è mai più larga della sua colonna e la pagina predefinita ne ha due (<code>layout.layoutType: 'double'</code>): componi la pagina su una colonna, fai flottare l'immagine su tutta la pagina (<code>placement.span: 'page'</code>) o alzane la risoluzione se quella è la dimensione voluta.</td>
@@ -369,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Non si trova su nessuna pagina. Fino a postext 1.24 spariva senza avviso.</td>
     </tr>
     <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Una risorsa collocata dopo il paragrafo che la cita (<code>position: 'paragraph'</code>) che solo le note a piè di pagina citano, note di fine capitolo comprese: nessun <code>:ref</code> nel testo corrente, nessuna riga <code>::resource</code>, e nessun capitolo precedente l’ha collocata. La nota si compone a parte rispetto al flusso, quindi non c’è un paragrafo da seguire. <code>resourceId</code> la indica. Punta al suo primo <code>:ref</code> in una nota; nessuna pagina.</td>
+      <td>Non si trova su nessuna pagina. Citala anche nel testo corrente, inseriscila con <code>::resource</code> oppure dalle una posizione flottante.</td>
+    </tr>
+    <tr>
       <td><code>shortListSplit</code></td>
       <td>Un elenco di <code>items</code> voci, breve secondo <code>bodyText.shortListMaxItems</code>, tagliato tra due colonne o pagine. Con <code>bodyText.shortListSplit: 'warn'</code> viene segnalato ogni elenco del genere; con <code>'avoid'</code>, solo quello che nessuna colonna poteva contenere intero. Uno per elenco; punta all’elenco, con la pagina della sua prima voce. Da postext 1.28.</td>
       <td>L’elenco viene tagliato dove finisce la colonna.</td>
@@ -376,6 +391,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
     <tr>
       <td><code>stack</code></td>
       <td>Due righe di seguito di un paragrafo, nella stessa colonna, che finiscono (<code>edge: 'end'</code>) o cominciano (<code>'start'</code>) con la stessa parola o gli stessi <code>bodyText.stackMinCharacters</code> caratteri: <code>text</code> è ciò che ripetono, come lo stampa la prima riga, e <code>lines</code> le due righe. Con <code>bodyText.stacks: 'warn'</code> si segnalano tutte; con <code>'avoid'</code>, quelle che l'algoritmo ha tenuto. Uno per ripetizione; punta alle due righe, con la loro pagina. Da postext 1.73.</td>
+      <td>Le righe si compongono come sono.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Più di <code>max</code> righe di seguito di un paragrafo che finiscono con un trattino (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> dice quante, <code>text</code> dà le righe. Con <code>bodyText.hyphenation.ladders: 'warn'</code> si segnalano tutte le scale; con <code>'avoid'</code>, quelle che la divisione in righe ha tenuto. Uno per scala; punta alle sue righe, con la pagina della prima. Da postext 1.74.</td>
+      <td>Le righe si compongono come sono.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>L’ultima riga di un paragrafo porta solo il resto di una parola divisa nella riga prima: <code>word</code> è la parola come la stampano le due righe, trattino compreso. Con <code>bodyText.hyphenation.lastWord: 'warn'</code> si segnalano tutte; con <code>'avoid'</code>, quelle che la divisione in righe ha tenuto. Punta alle ultime due righe, con la loro pagina. Da postext 1.74.</td>
       <td>Le righe si compongono come sono.</td>
     </tr>
     <tr>

@@ -2,13 +2,16 @@
 // with the balancing levers, in editorial order (#1276: split out of
 // build.ts).
 import type { PostextContent, PostextConfig } from '../../types.js';
-import type { VDTDocument, VDTBlock, VDTGridBalancing, BalanceLever } from '../../vdt.js';
+import type { VDTDocument, VDTBlock } from '../../vdt.js';
 import type { MeasurementCache } from '../../measure/index.js';
-import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES, GRID_LINE_LEVERS } from '../columns/columnBalancing.js';
+import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES } from '../columns/columnBalancing.js';
+import { type FloatAlignState, lineUpFloats, settleFloatPads, holdsSettled } from './floatAlign.js';
 import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.js';
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
 import { floatPagesOf } from './passHelpers.js';
+import { pullFloatsToCitation, withPull, pullHeld } from './floatPull.js';
+import { markGridRefusals } from './gridRefusals.js';
 import { type BuildDocumentOptions, type PassHints, type PassResult, BOX_ROOM_EPS_PX } from './passTypes.js';
 import { unplacedByDoc, SPLICED_WARNING_MAPS } from './warnings.js';
 
@@ -33,6 +36,9 @@ export function* buildDocumentBalanced(
   // Side captions moved under their figure (see `PassHints.captionUnder`):
   // once a pass asks for one, every later pass keeps it.
   const captionUnder = new Set<string>();
+  // Figures lined up across the columns of their band (floatAlign.ts):
+  // the pads every pass is placed with.
+  const align: FloatAlignState = { pads: new Map() };
   // Loose paragraphs any pass found would gain their line only off the
   // character grid (#632): the columns they leave short say so.
   const looseOffGrid = new Set<number>();
@@ -48,6 +54,7 @@ export function* buildDocumentBalanced(
     const result = buildDocumentPass(content, config, cache, passOptions, {
       ...hints,
       captionUnder,
+      ...(align.pads.size > 0 ? { floatPads: align.pads } : {}),
       ...(footnoteNumbers ? { footnoteNumbers } : {}),
       ...(citingPage.size > 0 ? { citingPageFloats: new Map(citingPage) } : {}),
     });
@@ -68,6 +75,10 @@ export function* buildDocumentBalanced(
     yield;
     if (captionUnder.size === before) break;
   }
+  // Figures sharing a band: pad them level, then place again; the passes
+  // below keep the pads, read again after the last one (`settleAlign`).
+  const aligning = initial.doc.config.layout.alignFloatsAcrossColumns;
+  if (aligning) initial = yield* lineUpFloats(initial, align, () => runPass());
 
   // --- Floats at the head of their citing page (#633) --------------------
   // A float that may head the page (column) its citing line lands on and
@@ -118,8 +129,23 @@ export function* buildDocumentBalanced(
   }
   let best = bands.result;
   const bandCaps = bands.bandCaps;
-  let passCount = bands.passCount;
+  // Floats pulled back to their citing page (`layout.pullFloatsToCitation`,
+  // #1492): every later pass carries what the pull settled, and keeps them
+  // there or is not kept.
+  const pull = yield* pullFloatsToCitation(best, bandCaps, runPass);
+  best = pull.result;
+  let passCount = bands.passCount + pull.passes;
   best.doc.iterationCount = passCount;
+  /** The lined-up figures' pads read again off `best`, placed again with
+   *  the driver's settled `hints` when they changed. */
+  const settleAlign = function* (hints: PassHints): Generator<void, void, void> {
+    if (!aligning) return;
+    const settled = yield* settleFloatPads(best, align, () => runPass({ ...hints, floatPages: floatPagesOf(best.doc) }),
+      (next) => holdsSettled(best, next, bandCaps, pull));
+    best = settled.result;
+    passCount += settled.passes;
+    best.doc.iterationCount = passCount;
+  };
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
@@ -152,6 +178,7 @@ export function* buildDocumentBalanced(
       : (balancing.gridLines === 'off' ? { gridLines: 'off' as const } : undefined))
     : undefined;
   if (!balancing.enabled) {
+    yield* settleAlign({ ...withPull(pull, new Map()), bandCaps });
     if (gridBalancing) best.doc.gridBalancing = gridBalancing;
     return best.doc;
   }
@@ -207,7 +234,7 @@ export function* buildDocumentBalanced(
     for (const [idx, n] of lines) if (n > 0) extraPx.set(idx, n * best.doc.baselineGrid);
     return {
       balanceExtraPx: extraPx,
-      balanceLooseness: loose,
+      ...withPull(pull, loose),
       ...(looseBudget ? { balanceLooseBudget: looseBudget } : {}),
       bandCaps,
     };
@@ -326,6 +353,7 @@ export function* buildDocumentBalanced(
       captionUnderProposals: new Set([...best.captionUnderProposals, ...next.captionUnderProposals]),
       citingPageProposals: best.citingPageProposals,
       citingPageRefused: best.citingPageRefused,
+      floatSlots: new Map([...[...best.floatSlots].filter(([, f]) => !taken(f.page)), ...[...next.floatSlots].filter(([, f]) => taken(f.page))]),
     };
   };
 
@@ -469,7 +497,8 @@ export function* buildDocumentBalanced(
         const capsDelivered = [...bandCaps.keys()].every((i) => !inRange(s.range, capPage.get(i)) || next.spanPlacedInBand.has(i));
         // So is one that loses a float heading its citing page (#633): the
         // levers pushed its citing line off it.
-        const citingKept = ![...next.citingPageRefused.keys()].some((id) => inRange(s.range, citingPage.get(id)?.pageIndex));
+        const citingKept = ![...next.citingPageRefused.keys()].some((id) => inRange(s.range, citingPage.get(id)?.pageIndex))
+          && pullHeld(pull, next.doc, (p) => inRange(s.range, p));
         const score = capsDelivered && citingKept && wholeIntact(next, s, si === segments.length - 1)
           ? gapLinesIn(nextGaps, s.range)
           : Infinity;
@@ -544,9 +573,9 @@ export function* buildDocumentBalanced(
       (caps) => runPass({ ...frozen, bandCaps: caps, floatPages: floatPagesOf(best.doc) }),
     );
     passCount += trailing.passCount;
-    // A cap that takes a citing line off the page its float heads (#633)
-    // is not kept.
-    if (trailing.result !== best && trailing.result.citingPageRefused.size === 0) {
+    // A cap that takes a citing line off the page its float heads (#633),
+    // or a pulled float off its citing page (#1492), is not kept.
+    if (trailing.result !== best && trailing.result.citingPageRefused.size === 0 && pullHeld(pull, trailing.result.doc)) {
       best = trailing.result;
       for (const [i, cap] of trailing.caps) bandCaps.set(i, cap);
       // The capped layout is a new problem: the polish round gets its own
@@ -560,40 +589,9 @@ export function* buildDocumentBalanced(
     }
   }
 
+  yield* settleAlign(hintsFrom(applied.lines, applied.loose));
   best.doc.iterationCount = passCount;
   best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
   if (onGrid) markGridRefusals(best.doc, best.forcedBreakPages, looseOffGrid, gridBalancing);
   return best.doc;
 }
-
-/**
- * Column balancing on a character grid (#632): stamp the document with why
- * its balancing is limited (`VDTDocument.gridBalancing`) and every column
- * still short with the levers the grid kept from it
- * (`VDTColumn.gridRefused`): the loose paragraphs that would have gained
- * their line off the grid (`offGrid`), and the whole-line levers under
- * `headings.balancing.gridLines: 'off'`.
- */
-function markGridRefusals(
-  doc: VDTDocument,
-  forcedBreakPages: ReadonlySet<number>,
-  offGrid: ReadonlySet<number>,
-  gridBalancing: VDTGridBalancing | undefined,
-): void {
-  if (gridBalancing) doc.gridBalancing = gridBalancing;
-  const noLines = gridBalancing?.gridLines === 'off';
-  for (const gap of collectColumnGaps(doc, forcedBreakPages)) {
-    if (gap.gapLines < 1) continue;
-    const refused = new Set<BalanceLever>();
-    for (const c of gap.candidates) {
-      if (noLines && GRID_LINE_LEVERS.includes(c.kind)) refused.add(c.kind);
-      else if (c.kind === 'looseParagraph' && offGrid.has(c.contentIndex)) refused.add(c.kind);
-    }
-    if (refused.size === 0) continue;
-    const col = doc.pages[gap.pageIndex]?.columns[gap.columnIndex];
-    if (col) col.gridRefused = BALANCE_LEVER_ORDER.filter((l) => refused.has(l));
-  }
-}
-
-/** The balancing levers in the order `BalanceLever` lists them. */
-const BALANCE_LEVER_ORDER: readonly BalanceLever[] = ['trailingCallout', 'flexFigure', 'heading', 'listEnd', 'afterDisplay', 'afterFloat', 'looseParagraph'];

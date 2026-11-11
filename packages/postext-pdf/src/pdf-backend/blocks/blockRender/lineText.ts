@@ -165,7 +165,9 @@ function segmentIsStyled(s: VDTLineSegment): boolean {
     || s.tcy !== undefined || s.orientation !== undefined || s.labelTab !== undefined || s.leader !== undefined
     // A word with no letter shaped in the script of its context (#725):
     // its line is painted word by word, each in its script.
-    || s.scriptContext !== undefined;
+    || s.scriptContext !== undefined
+    // A word a character style set in capitals reads as written (#1488).
+    || s.sourceText !== undefined;
 }
 
 /** {@link segmentIsStyled} for a line of the CJK composer or one down a

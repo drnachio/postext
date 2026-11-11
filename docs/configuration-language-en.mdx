@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Hyphenation and language',
   description: 'Hyphenation patterns and exceptions, ragged text, the document language and its digits and direction, and the scripts Postext sets',
   lang: 'en',
-  lastUpdated: '2026-10-19',
-  readingTime: '20 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '21 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "This page covers how words are split at the end of a line and how Postext knows the language of a book. You turn hyphenation on or off, and list the words that must never be split. You can leave the right edge of the text uneven instead of straight. The document language decides the hyphenation rules, the names of figures and tables, the digits and the direction of the text. The last sections say which writing systems Postext can set and how Arabic text is handled.",
@@ -70,6 +70,60 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Divide capitalised words like any other. <code>false</code> keeps every word that starts with a capital whole (<code>Alice</code>, <code>Ámsterdam</code>, <code>UNESCO</code>), the first word of a sentence included. See <a href="#words-kept-whole">Words kept whole</a>.</td>
+    </tr>
+    <tr>
+      <td><code>minWordLength</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>The shortest word divided, in letters. Unset: the hyphenation language's own, which <code>hyphenationLanguageLimits(locale)</code> returns.</td>
+    </tr>
+    <tr>
+      <td><code>leftMin</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>Letters left at least before a break, at the start of the word. Unset: the language's own.</td>
+    </tr>
+    <tr>
+      <td><code>rightMin</code></td>
+      <td><code>number</code></td>
+      <td>the language's own</td>
+      <td>Letters carried at least after a break, to the next line. Unset: the language's own. The three limits hold for words with an apostrophe too (French, Italian and Catalan elisions).</td>
+    </tr>
+    <tr>
+      <td><code>fewerHyphens</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>From better spacing (<code>0</code>) to fewer hyphens (<code>10</code>): each step adds 50 to the penalty of every hyphen, a word's own hyphen included, so the breaker divides a word only where that saves more word spacing. <code>0</code> weighs hyphens as before. Optimal line breaking only.</td>
+    </tr>
+    <tr>
+      <td><code>ladders</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Hyphen ladders: more than <code>maxConsecutive</code> lines in a row of a paragraph that end on a hyphen. <code>'allow'</code> sets the lines as the breaker finds them. <code>'warn'</code> sets them the same and reports each ladder as a <code>hyphenLadder</code> content warning, which the Sandbox lists in Review. <code>'avoid'</code> adds <code>ladderPenalty</code> to the demerits of every line past the limit, so the breaker sets the paragraph otherwise where the word spacing allows, and reports the ladders it keeps. Body text, lists and quotations; captions and table cells are not covered. Optimal line breaking only.</td>
+    </tr>
+    <tr>
+      <td><code>maxConsecutive</code></td>
+      <td><code>number</code></td>
+      <td><code>1</code></td>
+      <td>Most lines in a row that may end on a hyphen, for <code>ladders</code>. With <code>1</code> no two hyphenated lines follow each other.</td>
+    </tr>
+    <tr>
+      <td><code>ladderPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>What each line past <code>maxConsecutive</code> costs the line breaker under <code>ladders: 'avoid'</code>, in demerits added to the paragraph's, on top of <code>consecutiveHyphenDemerit</code> (3000 for two hyphenated lines in a row). The default outweighs any setting within the word spacing; a lower value lets some ladders through for tighter lines; <code>0</code> keeps every one.</td>
+    </tr>
+    <tr>
+      <td><code>lastWord</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>The last word of a paragraph divided: the line before the last ends on a hyphen and the last line holds only the rest of that word, with no word space. <code>'warn'</code> reports each as a <code>lastWordDivided</code> content warning. <code>'avoid'</code> adds <code>lastWordPenalty</code> to the paragraph's demerits, so the breaker keeps the word whole where the word spacing allows, and reports the ones it keeps divided. A short last line in general is the business of <code>bodyText.avoidRunts</code>. Optimal line breaking only.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>30000</code></td>
+      <td>What a divided last word costs the line breaker under <code>lastWord: 'avoid'</code>, in demerits added to the paragraph's. <code>0</code> keeps every one.</td>
     </tr>
   </tbody>
 </table>

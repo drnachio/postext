@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Com s’escriuen les unitats i els colors, la paleta, les fonts personalitzades, el visor HTML, el PDF i la producció per a impremta, el visor Folio i les ajudes de depuració',
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '42 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els paràmetres que comparteix tot el llibre i els de cada tipus de sortida. Explica com s'escriu una mida i un color, i com es dona nom als colors d'una paleta. Ensenya a afegir les teves pròpies fonts. Després tracta la vista web, el fitxer PDF, els fitxers que demana una impremta i el llibre en 3D. L'última secció explica com s'activen les guies i els avisos que t'ajuden mentre treballes.",
@@ -39,13 +39,16 @@ Els colors es desen amb una representació hexadecimal i amb el model de color d
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Els valors de quatricromia exactes d'un color definit en CMYK.
+  spot?: SpotColor;    // La tinta d'un color de tinta plana.
+  overprint?: boolean; // Sobreimprimeix en una sortida d'impremta (consulta Colors que sobreimprimeixen).
   paletteId?: string;  // L'entrada de colorPalette que segueix.
+  tint?: number;       // La intensitat de l'entrada sobre el color de la pàgina, en percentatge (amb paletteId).
 }
 ```
 
-El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](#colors-definits-en-cmyk)).
+El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](/ca/docs/configuration-pdf-output#colors-definits-en-cmyk)). `'spot'` és una tinta plana, amb la seva tinta a `spot` (vegeu [Tintes planes](/ca/docs/configuration-pdf-output#tintes-planes)).
 
 Com que Postext busca una sortida de qualitat editorial, el color per defecte del text de cos és `model: 'cmyk'` (`#000000`). Els colors d'encapçalaments, negretes, cursives i llistes prenen per defecte el **Color principal** enllaçat a la paleta (`#295AA3`, `model: 'hex'`). El fons de pàgina i els indicadors d'interfície (retícula de base, marques de tall, indicadors de depuració) fan servir `model: 'hex'` per defecte. Si necessites un altre comportament en exportar, canvia `color.model` en qualsevol camp.
 
@@ -265,6 +268,8 @@ Qualsevol `ColorValue` de la configuració pot portar un camp opcional `paletteI
 
 **Canvi a postext 1.5.** Fins a postext 1.4, la paleta només arribava a una llista fixa de paràmetres. Els altres (els colors dels dissenys, com capçaleres, obertures, estils d'encapçalament, parts i files de l'índex; `bodyText.referenceColor`; els colors de les etiquetes dels requadres, i els de la negreta i la cursiva del cos dels requadres) conservaven el `hex` desat al costat del `paletteId`. Un document amb un valor desat que no coincideix amb l'entrada de la paleta (tots els editats al Sandbox després de canviar l'entrada, i tots els `:ref` quan el color principal no és `#295AA3`) ara imprimeix el color de la paleta, tal com indica l'enllaç. Per conservar un color tal com era, treu-ne el `paletteId`.
 
+**Un tint d'una entrada de la paleta.** Amb `paletteId`, `tint` (0–100) pinta l'entrada a aquesta intensitat: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` és el color principal al 8 %, un fons de requadre que segueix el color principal quan canvia la paleta. La paleta d'una part o d'una secció manté la intensitat a tot arreu on canvia el color: el text corregut, el color de la pàgina, els números de línia, les cel·les de taula, les zones de disseny i l'exportació a Word. El tint conserva el model de l'entrada: una entrada CMYK dona les seves tintes escalades (el 10 % de `100 60 0 10` imprimeix `10 6 0 1`), una entrada de tinta plana dona un tint de la mateixa tinta a la seva pròpia planxa, i un color de pantalla es barreja amb el color de la pàgina (`page.backgroundColor`, blanc si no es defineix; sota un tint CMYK, un color de pàgina definit en CMYK hi afegeix les seves tintes). `hex` desa el valor ja tintat, el de reserva sense l'entrada. Un tint de tinta plana porta una sola tinta: sobre una pàgina de color, buida el color de la pàgina tret que sobreimprimeixi. Al Sandbox, el selector d'un color vinculat té un camp **Tint**.
+
 ### Com s'apliquen les paletes
 
 `buildDocument` aplica la paleta en dos moments perquè els colors enllaçats funcionin tant en els valors que hagis indicat tu com en els valors per defecte que s'afegeixen després:
@@ -446,7 +451,7 @@ La propietat `pdfGeneration` controla com genera el PDF final el generador de PD
 
 `buildDocument` els passa al VDT, com a `doc.config.pdfGeneration`, i `renderToPdf` pren cada paràmetre del primer d'aquests llocs que el defineixi:
 
-1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. les seves pròpies opcions (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer document que rep (en un llibre, els paràmetres del primer capítol valen per a tot el fitxer);
 3. els valors per defecte: marcadors i etiquetatge activats, color RGB.
 
@@ -460,6 +465,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir tots els colors a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espai de destinació quan `forceColorSpace` és true.
   accessible?: boolean;        // Sortida etiquetada orientada a PDF/UA (arbre d'estructura, text alternatiu, llengua).
+  baselineGrid?: boolean;      // Dibuixar també al PDF la retícula de base de `page.baselineGrid`.
   forms?: PdfFormsConfig;      // Camps de formulari: moneda, separadors, lletra.
 }
 ```
@@ -497,6 +503,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accessible i etiquetat, orientat a PDF/UA-1: un arbre d'estructura lògica en ordre de lectura (encapçalaments que mai no salten cap nivell, paràgrafs, llistes, cites, requadres, taules amb cel·les de capçalera, figures amb el seu text alternatiu i el seu peu, fórmules, referències com a enllaços, l'índex d'un `:::toc` com un sol `TOC` amb un `TOCI` per fila: el número de la fila com a `Lbl`, el seu títol i la seva pàgina com un `Reference` que conté l'enllaç), el títol i la llengua del document (el `locale` de primer nivell), la identificació PDF/UA a les metadades XMP, i tots els elements decoratius (fons de pàgina, filets, retícula de base, capçaleres i peus de pàgina, marques de tall, capçaleres de taula repetides, el títol repetit i la marca de continuació d'un requadre partit) marcats com a artefactes perquè els lectors de pantalla els ometin. Una figura sense `altText` fa servir el peu i, si no en té, l'etiqueta. Una figura o una taula flotant es llegeix just després del text que la cita per primera vegada, o del text anterior a la seva línia `::resource`, i un requadre flotant, després del text anterior a la seva línia d'obertura, encara que el flotant quedi en una pàgina posterior; una llista o un índex que continuen després d'un flotant queden en un sol element, i una llista dins d'un requadre flotant o ancorat a la pàgina (`placement: 'fixed'`) és una sola llista. Desactiva'l només en originals d'impremta on l'estructura addicional no calgui.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuixa al PDF la retícula de base mentre <code>page.baselineGrid</code> està activada. Activat per defecte, com fins ara; amb <code>false</code> la retícula queda com a guia per comprovar la pàgina a la pantalla, fora del PDF, i el llenç i el visor HTML la continuen mostrant. Al Sandbox és <strong>Retícula de base al PDF</strong>, a la secció PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -552,6 +564,9 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total d'àrea, en percentatge.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // La taula de tintes: noms, àlies, quadricromia.
+  plates?: PrintPlatesConfig;              // Les planxes del treball: impressió a dues tintes.
+  imageColor?: PrintImageColorConfig;      // Com es llegeixen les imatges: perfils, grisos.
 }
 
 interface CustomOutputProfile {
@@ -623,7 +638,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>vegeu <a href="#preflight">Preflight</a></td>
+      <td>vegeu <a href="/ca/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Què revisa el preflight i amb quins llindars.</td>
     </tr>
   </tbody>
@@ -752,73 +767,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Colors definits en CMYK
-
-Un color escrit en CMYK conserva els seus valors exactes: `ColorValue.cmyk` (en percentatge) s'aplica tal com és en una sortida d'impremta, i `hex` n'és la representació en pantalla. Una entrada de la paleta definida en CMYK val per a tots els colors enllaçats a ella.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // Píxels per polzada a la mida impresa.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Propietat</th>
-      <th>Tipus</th>
-      <th>Per defecte</th>
-      <th>Descripció</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa les revisions.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits col·locat per sota d'aquests píxels per polzada a la seva mida impresa, retall inclòs, rep un avís: figures, imatges de cel·les de taula, imatges de disseny, vinyetes de còmic. Un mapa de bits sense resolució pròpia s'imprimeix a `page.dpi` a la seva mida natural, així que una pàgina composta a 150 dpi imprimeix cadascuna d'aquestes imatges a 150 ppp; un amb resolució (`bitmap.resolution`, `layout.bitmapResolution`) s'imprimeix a aquesta resolució a la seva mida natural.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Per sota d'aquest valor l'avís és crític. Mai per sobre de `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, vores, filets de columna, filets de taula i vores de vinyeta de còmic més fins que això.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text per sota d'aquesta mida compost en més d'una tinta (un color de quatricromia, negre enriquit): s'emborrona quan les planxes es desplacen. El text negre, només K, no compta mai.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text més a prop del tall que aquesta distància, on la guillotina el pot tallar.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caixa o una imatge que s'atura així de prop del tall sense arribar a la sang: porta-la a sang o retira-la.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa de les fonts que no incrusta un PDF col·locat (el Sandbox revisa cada màster d'impressió amb `inspectPrintMaster`). Postext incrusta totes les fonts que compon.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` fa les revisions sobre un document maquetat i retorna una llista d'incidències, cadascuna amb un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absolut dins del llibre, el `rect` afectat (px de pàgina) i, quan l'element en té, el seu interval al text font. Els tipus són `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` i `nearTrim`. Sense `transform`, un neutre compta com una tinta i qualsevol altre color com tres, i la cobertura no es revisa; amb un `transform`, els recomptes i la cobertura són exactes. La resolució d'una imatge es calcula amb els píxels que declara el seu recurs, o amb els del fitxer mateix quan `imageSize(fileId)` els dona (`bitmapInfo` sobre els bytes, o la imatge descodificada): una declaració que es desvia més d'un píxel del fitxer genera una sola vegada un avís `declaredPixelsMismatch`, un avís quan declara més píxels dels que té el fitxer. `placedImageResolutions(doc, { resources, imageSize })` enumera cada mapa de bits col·locat amb els seus ppp efectius, tant si el preflight està activat com si no. Els rètols d'una figura compten com a text per a `smallProcessText`, `inkLimit` i `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // mides en píxels dels mapes de bits
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // els píxels reals dels fitxers
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', segons el fitxer
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Simulació de la impressió
 

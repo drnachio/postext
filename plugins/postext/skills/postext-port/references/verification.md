@@ -645,7 +645,15 @@ the page images instead of claiming the port is visually verified.
 
 - `postext check my-book --preflight` (or the PREFLIGHT lines of
   `render.mjs`): low-resolution pictures, hairlines, small text in several
-  inks, ink over the limit, text near the trim, page by page.
+  inks, ink over the limit, text near the trim, page by page; with spot
+  colours, the job's inks, an ink only an SVG names (`spotInkUndefined`) and
+  plate names the PDF has to rewrite (`spotInkName`).
+- The written file itself: `inspectPrintPdf(bytes)` (postext-pdf) or the
+  Sandbox's Check for print (`sandbox_run_viewer` action `check`) reads it
+  back: PDF/X and output intent, boxes and bleed, unembedded faces, plates,
+  DeviceRGB against tagged RGB (DeviceRGB is critical under PDF/X).
+  "No problems in what was checked" is not a pass on resolution, total ink,
+  hairlines or trapping: those come from `--preflight`.
 - `pdffonts out.pdf`: every face embedded. A `.otf` (CFF) face reads `CID Type 0C`
   (postext-pdf ≥ 1.70.5); `CID TrueType` for a CFF face means an older
   postext-pdf, or a CID-keyed face (Source Han, Noto CJK `.otf`): use its

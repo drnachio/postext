@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: ein Agent bei der Arbeit in der Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Was ein KI-Agent im Browser mit den 53 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
+  description: 'Was ein KI-Agent im Browser mit den 55 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '12 min',
-  order: 50,
+  order: 51,
   plainSummary: "Diese Seite ist für alle, die einen KI-Helfer für sich an einem Buch in der Sandbox arbeiten lassen möchten. Solange die Sandbox geöffnet ist, gibt sie dem Helfer eine Reihe von Werkzeugen: um jede Seite anzusehen, die Gestaltung zu ändern, den Text zu bearbeiten, Bilder und Tabellen hinzuzufügen, Probleme zu finden und Dateien zu speichern. Sie bitten mit Ihren eigenen Worten, zum Beispiel „mach die Schrift etwas größer und prüf, ob das Buch noch auf 40 Seiten passt“, und der Helfer setzt die Werkzeuge ein und zeigt Ihnen die Seiten. Alles bleibt in Ihrem Browser. Die Seite erklärt, wie Sie einen Helfer verbinden, was er tun kann und wie jedes Werkzeug aufgerufen wird.",
 };
 
@@ -24,7 +24,7 @@ Oberfläche: Er liest das Buch, fordert ein Bild von Seite 12 an, setzt
 gewachsen ist, und nimmt die Änderung zurück. Er tut, was Sie mit dem Auge tun,
 und er tut es mit Ihrem Buch, in Ihrem Browser.
 
-Solange die Sandbox auf dem Bildschirm ist, sind 53 Werkzeuge registriert,
+Solange die Sandbox auf dem Bildschirm ist, sind 55 Werkzeuge registriert,
 deren Namen mit `sandbox_` beginnen; dazu kommen auf jeder Seite von
 postext.dev 8 Werkzeuge der Website, `site_*`. Diese Seite ordnet sie nach den
 Aufgaben, die Sie einem Agenten stellen würden, und zeigt für jedes den Aufruf.
@@ -41,7 +41,7 @@ Postext muss nichts installiert oder eingerichtet werden.
 WebMCP ist noch ein Entwurf. Chrome bietet es als Origin Trial an, außerdem hinter
 dem Flag `chrome://flags/#enable-webmcp-testing`. Die Werkzeuge folgen der
 Seite: Auf der Startseite oder in der Dokumentation hat der Agent die
-Werkzeuge `site_*`; sobald die Sandbox auf dem Bildschirm ist, kommen die 53
+Werkzeuge `site_*`; sobald die Sandbox auf dem Bildschirm ist, kommen die 55
 Werkzeuge `sandbox_*` hinzu.
 
 ### In jedem anderen Browser: `window.postextWebMcp`
@@ -400,6 +400,21 @@ das Kapitel erneut zu lesen. Der ganze Aufruf ist ein Schritt für
 `sandbox_write_text` ersetzt ein ganzes Kapitel, aus `markdown` oder aus einer
 `.md`-Datei.
 
+Für eine Änderung, die sich durch ein Kapitel oder das ganze Buch zieht, tut
+`sandbox_replace_text` dasselbe wie Alle ersetzen in der Suchleiste des
+Bedienfelds Text, mit denselben Optionen (`matchCase`, `wholeWord`,
+`ignoreAccents`, `regex`). Mit `dryRun` listet es jede Ersetzung mit Vorher und
+Nachher auf und ändert nichts. Im Modus für reguläre Ausdrücke versteht der
+Ersatz `$1`, `$<name>`, `$&`, `$$`, `\n`, `\t` und `\\` und schreibt alles
+andere so, wie es übergeben wird. Angewandt sind die Ersetzungen ein einziger
+Schritt im Verlauf, den `sandbox_undo` zurücknimmt. `sandbox_search_text` nimmt
+dieselben Optionen an und findet, was die Leiste findet.
+
+```jsonc
+// sandbox_replace_text: Dezimalpunkte zu Kommas im ganzen Buch, als Vorschau
+{ "query": "(\\d)\\.(\\d)", "replace": "$1,$2", "regex": true, "scope": "book", "dryRun": true }
+```
+
 Um Ihnen eine Stelle im Text zu zeigen, öffnet `sandbox_select_text` das
 Bedienfeld Text und wählt diese Passage aus (über `text`, `line` oder
 `offset`), wie es ein Klick auf einen Befund im Bedienfeld Prüfungen tut.
@@ -462,6 +477,16 @@ Ressource um und standardmäßig auch jeden Verweis auf sie im Buch.
 `sandbox_list_resources` listet sie auf und liefert mit einer `id` eine davon
 vollständig (die Zellen einer Tabelle mit ihrer Formatierung, die Quelle eines
 SVG).
+
+Der Beschnitt eines Bilds steht in `marks.crop` (`{ x, y, width, height }`,
+Bruchteile des ganzen Bilds wie beim Sicherheitsbereich; `null` zeigt wieder das
+ganze Bild): Er gilt für eine Bitmap, ein SVG und das Posterbild eines Videos,
+und die Antwort meldet einen Sicherheitsbereich, der über den Beschnitt
+hinausreicht. `placement.pin` (`{ page, column?, slot }`, `page` von 0 bis 3)
+setzt ein Gleitobjekt von Hand, und `null` gibt es der automatischen Platzierung
+zurück; die Beschreibung des Werkzeugs sagt, warum Pins nicht empfohlen werden,
+und nennt stattdessen `position`, `citingPage`, `keepTogether` und `shrink`
+(siehe [Dokumentformat › Von Hand gesetzte Gleitobjekte werden nicht empfohlen](/de/docs/document-format-resources#von-hand-gesetzte-gleitobjekte-werden-nicht-empfohlen)).
 
 Die `marks` eines Bildes enthalten auch seine Anker. Bei einer Karte oder einem Schema sind das die Punkte, an denen seine `::label`-Zeilen stehen: eine `id`, `x` und `y` (Bruchteile des ganzen Bildes) und die Beschriftungsfelder, die eine dort gesetzte Beschriftung übernimmt (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). Die Antwort weist auf einen Beschriftungsstil hin, den die Gestaltung nicht hat, und neue Markierungen einer Ressource sind ein Schritt des Verlaufs (`sandbox_undo` antwortet `kind: "resource"`). Bei einem SVG legt `marks.svgSymbols` (`idPrefix`, `className`) eine Sperrzone über jedes Element der Zeichnung, das es benennt – zusätzlich zu den Zonen, die der Aufruf angibt oder die das Bild schon hat (seit postext 1.43).
 
@@ -545,7 +570,7 @@ Textpassage `text`, einen `anchor` oder einen Eintrag im Inhaltsverzeichnis
 eines EPUB (`contents`).
 `sandbox_run_viewer` betätigt eine Schaltfläche der Werkzeugleiste:
 `regenerate` erzeugt das PDF, das EPUB oder das SCORM-Paket neu und wartet darauf, `print` öffnet
-den Druckdialog, den Sie bestätigen, `download` speichert das PDF, das
+den Druckdialog, den Sie bestätigen, `check` liest das PDF auf dem Bildschirm zurück wie **Für den Druck prüfen** und antwortet mit Urteil, Punkten und Befunden, `download` speichert das PDF, das
 EPUB oder ein neu erzeugtes SCORM-Paket, und `play_video` und `stop_video` starten und stoppen ein Video auf
 einer Seite.
 
@@ -721,6 +746,7 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
   `sandbox_inspect_point`.
 - **Der Text**: `sandbox_read_text`, `sandbox_write_text`, `sandbox_edit_text`,
   `sandbox_undo_text`, `sandbox_select_text`, `sandbox_search_text`,
+  `sandbox_replace_text`,
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **Die Gestaltung**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,

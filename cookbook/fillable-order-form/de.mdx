@@ -64,3 +64,5 @@ Die erfassten Seiten zeigen die Kästchen leer, denn die Wörter eines Felds sin
 Die Summen sind Skripte (`AFSimple_Calculate` und kurze Ausdrücke), die Acrobat, Foxit, Chrome und Firefox ausführen. Vorschau unter macOS zeigt die Felder und speichert, was man eintippt, führt aber keine Skripte aus; dort bleiben die Summen leer.
 
 Das Kästchen für den Kreis hat `on="1"`, den Wert, den eine Berechnung liest, wenn es angekreuzt ist. Mit dem Standardwert `Yes` ergäbe `product(order.circle, 12)` immer 0, und postext-pdf warnt davor.
+
+Das Rezept importiert `https://esm.sh/postext-pdf?bundle`. Der Standard-Build von pdf-lib auf esm.sh legt die Annotationsklassen in ein eigenes Modul, und pdf-lib weist dann das Widget jedes Felds zurück: Das PDF behält die Kästchen, aber ohne Zahlenformat, ohne Summen und ohne schreibgeschützte Felder, mit einer `formField`-Warnung in der Konsole. `?bundle` baut pdf-lib als ein Modul und lässt `postext` draußen, geteilt mit dem Rest der Seite.

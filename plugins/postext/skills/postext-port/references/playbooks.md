@@ -893,7 +893,11 @@ move when a crop is tuned).
 
 ### D8. Diagrams in a single ink
 For a spot-colour book use `diagramStyle.singleInk: true` (every SVG
-recoloured to tints of `main-color`). This disables print masters.
+recoloured to tints of `main-color`). This disables print masters. With a
+spot `inkColor` the drawings print in tints of that plate. SVGs that keep
+several inks of their own print on them only by name (`data-spot`,
+`icc-named-color`) or by a palette spot colour of exactly their hex
+(configuration.md, ColorValue `spot`).
 
 ### D9. Tables
 - A table becomes a resource with a TableModel (`extract_tables.py`, pandoc

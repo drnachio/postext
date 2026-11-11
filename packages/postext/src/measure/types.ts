@@ -229,6 +229,11 @@ export interface MeasureBlockOptions {
   /** Stacks avoided (`KPOptions.stacks`, `bodyText.stacks: 'avoid'`,
    *  #1463). Joins the cache key only when set. */
   stacks?: { minChars: number; demerits: number };
+  /** The hyphen rules (#1466: `KPOptions.ladders`, `lastWordDemerits`,
+   *  `extraHyphenPenalty`). Each joins the cache key only when set. */
+  ladders?: { maxRun: number; demerits: number };
+  lastWordDemerits?: number;
+  extraHyphenPenalty?: number;
   /** Line numbers (1-based) that should not end on a hyphen: the lines a
    *  column or a page ends on (`BodyTextConfig.hyphenateAcrossColumns`).
    *  Knuth–Plass path only. Joins the cache key only when set. */

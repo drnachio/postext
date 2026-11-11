@@ -946,7 +946,7 @@
     }
   },
   "parseVideoUrl": {
-    "slug": "document-format-resources",
+    "slug": "document-format-videos",
     "heading": {
       "en": "Videos",
       "es": "Vídeos",
@@ -961,7 +961,7 @@
     }
   },
   "youtubePosterUrls": {
-    "slug": "document-format-resources",
+    "slug": "document-format-videos",
     "heading": {
       "en": "Videos",
       "es": "Vídeos",
@@ -976,7 +976,7 @@
     }
   },
   "resourceVideoLink": {
-    "slug": "document-format-resources",
+    "slug": "document-format-videos",
     "heading": {
       "en": "Videos",
       "es": "Vídeos",
@@ -991,7 +991,7 @@
     }
   },
   "videoWatchUrl": {
-    "slug": "document-format-resources",
+    "slug": "document-format-videos",
     "heading": {
       "en": "Videos",
       "es": "Vídeos",
@@ -1006,7 +1006,7 @@
     }
   },
   "bundleVideoUrl": {
-    "slug": "document-format-resources",
+    "slug": "document-format-videos",
     "heading": {
       "en": "Videos",
       "es": "Vídeos",

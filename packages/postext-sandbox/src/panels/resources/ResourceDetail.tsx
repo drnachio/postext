@@ -14,6 +14,7 @@ import { BitmapUploader } from './uploads/BitmapUploader.js';
 import { BitmapResolutionField } from './uploads/BitmapResolutionField.js';
 import { SvgUploader } from './svg/SvgUploader.js';
 import { PdfMasterUploader } from './uploads/PdfMasterUploader.js';
+import { PrintColorExtras } from './uploads/PrintColorExtras.js';
 import { SvgFontsField } from './svg/SvgFontsField.js';
 import { SafeAreaField } from './marks/SafeAreaEditor.js';
 import { applyMarks } from './marks/pictureMarks.js';
@@ -27,6 +28,9 @@ import { usePlacementFields } from './ResourceDetail/usePlacementFields.js';
 import { useResourceEdits } from './ResourceDetail/useResourceEdits.js';
 import { Field, inputClass, inputStyle, labelStyle } from './ResourceDetail/Field.js';
 import type { ResourceDetailProps } from './ResourceDetail/props.js';
+import { CropField } from './marks/CropEditor.js';
+import { PinFields } from './ResourceDetail/PinFields.js';
+import { pinApplies } from './pinEdits.js';
 
 /** Detail view: editable detail for the selected resource, with a back button. */
 export function ResourceDetail({
@@ -193,7 +197,7 @@ export function ResourceDetail({
             </div>
             <div className="mt-1 text-[0.66rem] leading-[1.35] text-(--slate)">
               {placementInline
-                ? labels.resourcePlacementHintHere
+                ? placementPosition === 'paragraph' ? labels.resourcePlacementHintParagraph : labels.resourcePlacementHintHere
                 : placementPlate
                   ? labels.resourcePlacementHintPlate
                 : placementRotated
@@ -211,6 +215,7 @@ export function ResourceDetail({
               { value: 'auto', label: labels.resourcePositionAuto },
               { value: 'top', label: labels.resourcePositionTop },
               { value: 'bottom', label: labels.resourcePositionBottom },
+              { value: 'paragraph', label: labels.resourcePositionParagraph },
               { value: 'here', label: labels.resourcePositionHere },
             ]}
             onChange={(v) => setPlacementKey('position', v as PlacementPosition)}
@@ -439,6 +444,13 @@ export function ResourceDetail({
               onReset={() => setPlacementKey('captionMeasure', undefined)}
             />
           )}
+          {/* Set by hand (`placement.pin`, #1494): not recommended. */}
+          <PinFields
+            resource={resource}
+            applies={pinApplies({ inline: placementInline, span: placementSpan, rotated: placementRotated, plate: placementPlate })}
+            labels={labels}
+            onChange={onChange}
+          />
         </div>
 
         {/* Kind-specific controls */}
@@ -460,18 +472,39 @@ export function ResourceDetail({
             <BitmapResolutionField bitmap={resource.bitmap} onChange={(bitmap) => onChange(touch({ bitmap }))} />
           </Field>
         )}
+        {/* How the picture's colours are read in print, over the book's
+            `print.imageColor`. */}
+        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
+          <PrintColorExtras resource={resource} onChange={(printColor) => {
+            const next = touch({});
+            if (printColor && Object.keys(printColor).length > 0) next.printColor = printColor;
+            else delete next.printColor;
+            onChange(next);
+          }} />
+        )}
         {resource.kind === 'svg' && (
           <Field label={labels.resourceSvgLabel}>
             <SvgUploader onUploaded={applySvg} compact={!!resource.svg} />
           </Field>
         )}
         {((resource.kind === 'bitmap' && resource.bitmap?.fileId) || (resource.kind === 'svg' && resource.svg?.fileId) || (resource.kind === 'video' && resource.video?.poster?.fileId)) && (
-          <SafeAreaField
-            resource={resource}
-            // Saved marks (anchors, safe area, lettering) are one step of the
-            // undo history (#866).
-            onChange={(marks) => dispatch({ type: 'UPSERT_RESOURCE', payload: applyMarks(touch({}), marks), history: { merge: false } })}
-          />
+          <>
+            <CropField
+              resource={resource}
+              onChange={(crop) => {
+                const next = touch({});
+                if (crop) next.crop = crop;
+                else delete next.crop;
+                onChange(next);
+              }}
+            />
+            <SafeAreaField
+              resource={resource}
+              // Saved marks (anchors, safe area, lettering) are one step of the
+              // undo history (#866).
+              onChange={(marks) => dispatch({ type: 'UPSERT_RESOURCE', payload: applyMarks(touch({}), marks), history: { merge: false } })}
+            />
+          </>
         )}
         {resource.kind === 'svg' && resource.svg?.fileId && (
           <Field label={labels.resourcePdfMasterLabel} hint={labels.resourcePdfMasterHint}>

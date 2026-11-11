@@ -334,6 +334,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>図版はその倍率で印刷されます。版面からはみ出すのは<code>overflowPx</code>があるときだけです。</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td><code>layout.pullFloatsToCitation</code>により、フロートの図版を参照ページに残すため、セーフエリア（<code>Resource.safeArea</code>）の範囲内でトリミングしました。<code>resourceId</code>はその図版、<code>share</code>はトリミングした高さの比率、<code>pageIndex</code>はページです。最初に参照している段落を指します。</td>
+      <td>図版はトリミングした形で印刷されますが、セーフエリアの外まで切ることはありません。<code>pullFloatsToCitation</code>は非推奨です。<code>placement.citingPage</code>と<code>placement.shrink: 'slot'</code>なら、トリミングせずに図版を参照の近くに置けます。</td>
+    </tr>
+    <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>手で置いたフロート（<code>placement.pin</code>）が指定どおりの場所にありません。<code>resourceId</code>はそのフロート、<code>pageIndex</code>は実際に置かれたページ、<code>requestedPage</code>は指定が示すページです。<code>reason</code>：<code>notTaken</code>（スロットに入らなかった：残りの高さに対して大きすぎる、使用中、参照より上、または章が先に終わった）、<code>tooFar</code>（参照するページから<code>MAX_PIN_PAGE_OFFSET</code>、つまり 3 ページより先）、<code>column</code>（そのページにその段がない）、<code>unsupported</code>（本文中に置くリソース、サイド段または回転したフロート、図版ページ）。最初に参照する段落を指します。</td>
+      <td>フロートは指定がない場合と同じように配置され、指定のページにスロットがあればそのページに置かれます。手動配置は推奨しません。<code>placement.citingPage</code>、<code>position</code>、<code>shrink</code>なら、どの版でも図を本文の近くに保てます。</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>印刷サイズが決まっているビットマップ（自身の<code>bitmap.resolution</code>、または<code>layout.bitmapResolution</code>の数値。ファイルから読んだ解像度は含みません）が、印刷サイズの半分未満にしか収まらない段に組まれ、そのページの版面は段より広い場合です。<code>resourceId</code>が画像を示し、<code>scale</code>は印刷幅のうち残る割合、<code>printWidthPx</code>、<code>widthPx</code>、<code>pageWidthPx</code>は印刷・段・版面の幅です。<code>placement.width</code>で狭めた画像、置き場所に合わせて縮小した画像、回転した画像、テンプレートページの枠に置いた画像は報告しません。最初に参照する段落を指します。postext 1.37以降。</td>
       <td>画像は段の幅で印刷されます。本文の流れの中の画像は段より広くならず、既定のページは2段です（<code>layout.layoutType: 'double'</code>）。ページを1段組みにするか、画像をページ全幅のフロートにする（<code>placement.span: 'page'</code>）か、そのサイズでよければ解像度を上げてください。</td>
@@ -369,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>どのページにもありません。postext 1.24までは、警告なしに消えていました。</td>
     </tr>
     <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>参照段落の後に置く（<code>position: 'paragraph'</code>）リソースが、脚注（章末注を含む）からしか参照されていません。本文に<code>:ref</code>がなく、<code>::resource</code>行もなく、前の章でも置かれていません。注は本文の流れとは別に組まれるため、後ろに付く段落がありません。<code>resourceId</code>はそのリソースです。注の中の最初の<code>:ref</code>を指します。ページはありません。</td>
+      <td>どのページにもありません。本文でも参照するか、<code>::resource</code>で埋め込むか、フロートの配置にしてください。</td>
+    </tr>
+    <tr>
       <td><code>shortListSplit</code></td>
       <td><code>bodyText.shortListMaxItems</code>の基準で短いリスト（<code>items</code>項目）が、2つの段またはページに分かれた場合です。<code>bodyText.shortListSplit: 'warn'</code>ではそうしたリストをすべて報告し、<code>'avoid'</code>では、どの段にも全体が収まらなかったリストだけを報告します。リストごとに1件。リストを指し、最初の項目のページが付きます。postext 1.28以降。</td>
       <td>リストは段の終わりで切られます。</td>
@@ -376,6 +391,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
     <tr>
       <td><code>stack</code></td>
       <td>段落の同じ段にある連続した2行が、同じ語または同じ<code>bodyText.stackMinCharacters</code>文字で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は繰り返された文字列（1行目の表記どおり）、<code>lines</code>は2行の文字列です。<code>bodyText.stacks: 'warn'</code>ではすべての重複を、<code>'avoid'</code>では改行処理が残したものを報告します。重複ごとに1件。2行を指し、そのページが付きます。postext 1.73以降。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>段落の中でハイフンで終わる行が <code>max</code> 行（<code>bodyText.hyphenation.maxConsecutive</code>）を超えて続いています。<code>lines</code> は行数、<code>text</code> はその行です。<code>bodyText.hyphenation.ladders: 'warn'</code> ではすべての連続を、<code>'avoid'</code> では改行処理が残した連続を報告します。連続ごとに1件で、その行を指し、最初の行のページを示します。postext 1.74 から。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>段落の最終行が、前の行で分割された語の残りだけになっています。<code>word</code> は2行に印刷されたとおりの語で、ハイフンを含みます。<code>bodyText.hyphenation.lastWord: 'warn'</code> ではすべてを、<code>'avoid'</code> では改行処理が残したものを報告します。最後の2行を指し、そのページを示します。postext 1.74 から。</td>
       <td>行はそのまま組まれます。</td>
     </tr>
     <tr>

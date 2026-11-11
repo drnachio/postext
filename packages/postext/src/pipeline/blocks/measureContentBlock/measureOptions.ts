@@ -15,6 +15,7 @@ import type { ContentBlock } from '../../../parse/index.js';
 import type { TabSettings } from '../../../measure/tabs.js';
 import type { PreparedDropCap } from '../../text/dropCap.js';
 import { stackBreaking } from '../../text/stacks.js';
+import { hyphenBreaking } from '../../text/hyphenRules.js';
 
 /** What createMeasureOptions takes from the pass. */
 export interface MeasureOptionsDeps {
@@ -84,6 +85,8 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     // Stacks avoided (#1463): left undefined otherwise (`'warn'` reads
     // them off the finished lines), so the cache keys stay unchanged.
     stacks: stackBreaking(resolved.bodyText),
+    // The hyphen rules (#1466): each only when it costs something.
+    ...hyphenBreaking(resolved.bodyText.hyphenation),
     avoidHyphenAtLines: opts?.avoidHyphenAtLines,
     ...(opts?.keepBreaks ? { keepBreaks: opts.keepBreaks } : {}),
     ...(opts?.restColumnWidths && opts.restColumnWidths.length > 0

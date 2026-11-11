@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Fitxers PDF',
   description: "postext-pdf des del codi: instal·lació, l'API, els proveïdors de fonts al navegador i a Node, les fonts CJK, els bytes de recursos, el text vertical, els workers i els fitxers a punt per a impremta",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
-  readingTime: '22 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina és per a qui escriu codi i vol un fitxer PDF. Explica com instal·lar el paquet de PDF i com convertir un llibre compost en un fitxer amb unes quantes línies de codi. El paquet necessita els fitxers de les fonts, i la pàgina explica d'on els pot treure, en un navegador o en un servidor. Tracta les fonts per al xinès, el japonès i el coreà, les imatges, el text que va de dalt a baix i els enllaços. Acaba amb un exemple complet i amb fitxers a punt per a la impremta.",
@@ -36,9 +36,10 @@ El paquet ofereix un únic punt d'entrada i uns quants tipus:
 - **`renderToPdf(doc, options): Promise<Uint8Array>`**: rep un `VDTDocument` (o els capítols d'un llibre, en forma de llista de documents) i retorna els bytes en brut del PDF.
 - **`PdfFontProvider`**: la signatura de callback `(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>` que `renderToPdf` fa servir per demanar els bytes d'una font quan ha d'incrustar una combinació nova de família, pes i estil. `request.codePoints` conté els caràcters que les pàgines componen en aquesta variant; la resposta és un fitxer, o diversos que junts formen la variant (consulta [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes)).
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**: un fitxer d'una variant que indica com el va declarar la pàgina: l'`unicode-range` de la regla `@font-face` i el lloc que ocupa en l'ordre de declaració. Un `PdfFontFile` és un `Uint8Array` amb aquestes dues propietats opcionals (vegeu [Fonts xineses, japoneses i coreanes](#fonts-xineses-japoneses-i-coreanes)). Des de postext-pdf 1.30.
-- **`RenderToPdfOptions`**: `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` fixa com escriuen els nombres els camps de formulari (moneda, el costat on va, separadors) i la font amb què mostren els valors (`font`; vegeu [Camps de formulari](#camps-de-formulari)). Si no es passen, `outlines`, `accessible` i `colorSpace` prenen el valor del `pdfGeneration` del document (vegeu [Generació de PDF (configuració)](/ca/docs/configuration-fonts-colors-viewers#generació-de-pdf-configuració)). `resourceBytes` es descriu a [Bytes de recursos i màsters d'impressió](#bytes-de-recursos-i-màsters-dimpressió); `onWarning`, a [Quines variants es demanen al proveïdor](#quines-variants-es-demanen-al-proveïdor) i a [Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document). Amb `characterGrid: true` el PDF imprimeix la retícula que `cjk.grid.show` dibuixa en pantalla i que altrament deixa fora (vegeu [Retícula de caràcters](/ca/docs/configuration-east-asian#retícula-de-caràcters)). `harfbuzzWasm` indica d'on carregar el `harfbuzz.wasm` de HarfBuzz (una URL, relativa a la pàgina, o els bytes del fitxer) per a un document amb text de dreta a esquerra o de lletres enllaçades; si no es passa, es prova la còpia que hi ha al costat del mòdul de postext-pdf i, després, la mateixa versió de harfbuzzjs a jsDelivr i a esm.sh. `print` rep els paràmetres de sortida per a impremta (norma PDF/X, perfil de sortida, negre, preflight) i, si no es passa, pren el `print` del document; amb una norma PDF/X, o amb `colorSpace: 'cmyk'`, cada color se separa amb el perfil ICC de sortida, que `outputProfile` proporciona en bytes (si no, es baixa de `profileBaseUrl`, per defecte la còpia de la carpeta `icc/` de postext a la CDN de npm). `date` (un `Date`, un temps en mil·lisegons o una data escrita, com el `mtime` de `createBundle`) és la data de creació i de modificació del fitxer i, en un PDF/X, les dates del paquet XMP i la base de l'identificador del document: el mateix document, generat dues vegades amb un mateix `date`, dona els mateixos bytes. Si no es passa, el fitxer porta l'hora de la crida. Una data no vàlida llança un error.
-- **`PdfWarning`**: un problema no fatal que es notifica per `onWarning`; es distingeix per `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variant composta amb un altre tall de la mateixa família; `'missingGlyph'` (`PdfMissingGlyphWarning`), caràcters per als quals cap fitxer d'una variant té glif; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una font variable demanada amb un pes diferent del de la instància per defecte; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una font CFF de més de 2 MB incrustada sencera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), text de dreta a esquerra o de lletres enllaçades dibuixat sense HarfBuzz, que no s'ha pogut carregar (`reason` diu on s'ha buscat), de manera que les marques de l'àrab queden mal col·locades; `'outputProfileUnavailable'` (`PdfPrintWarning`), una renderització CMYK amb un perfil de sortida que no s'ha pogut carregar, de manera que s'ha convertit amb la fórmula simple; `'pageNegativeIgnored'` (`PdfPrintWarning`), el negatiu de pàgina que s'omet en un PDF/X-1a; o `'missingImage'`, una imatge sense bytes dibuixada com a marcador de posició (aquesta només es notifica a un `onWarning` propi; sense ell, els avisos de fonts van a `console.warn`).
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**: llegeix la primera pàgina d'un màster d'impressió en PDF i informa de les fonts que fa servir sense incrustar-les (`nonEmbeddedFonts`), de si pinta en RGB (`rgb`) i de si fa servir transparències (`transparency`), per al [preflight](/ca/docs/configuration-fonts-colors-viewers#preflight).
+- **`RenderToPdfOptions`**: `{ fontProvider, forms?, resourceBytes?, previewBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. `forms` fixa com escriuen els nombres els camps de formulari (moneda, el costat on va, separadors) i la font amb què mostren els valors (`font`; vegeu [Camps de formulari](#camps-de-formulari)). Si no es passen, `outlines`, `accessible` i `colorSpace` prenen el valor del `pdfGeneration` del document (vegeu [Generació de PDF (configuració)](/ca/docs/configuration-fonts-colors-viewers#generació-de-pdf-configuració)). `resourceBytes` es descriu a [Bytes de recursos i màsters d'impressió](#bytes-de-recursos-i-màsters-dimpressió); `onWarning`, a [Quines variants es demanen al proveïdor](#quines-variants-es-demanen-al-proveïdor) i a [Avisos del document](/ca/docs/configuration-programmatic-usage#avisos-del-document). Amb `characterGrid: true` el PDF imprimeix la retícula que `cjk.grid.show` dibuixa en pantalla i que altrament deixa fora (vegeu [Retícula de caràcters](/ca/docs/configuration-east-asian#retícula-de-caràcters)). `harfbuzzWasm` indica d'on carregar el `harfbuzz.wasm` de HarfBuzz (una URL, relativa a la pàgina, o els bytes del fitxer) per a un document amb text de dreta a esquerra o de lletres enllaçades; si no es passa, es prova la còpia que hi ha al costat del mòdul de postext-pdf i, després, la mateixa versió de harfbuzzjs a jsDelivr i a esm.sh. `print` rep els paràmetres de sortida per a impremta (norma PDF/X, perfil de sortida, negre, preflight) i, si no es passa, pren el `print` del document; amb una norma PDF/X, o amb `colorSpace: 'cmyk'`, cada color se separa amb el perfil ICC de sortida, que `outputProfile` proporciona en bytes (si no, es baixa de `profileBaseUrl`, per defecte la còpia de la carpeta `icc/` de postext a la CDN de npm). `date` (un `Date`, un temps en mil·lisegons o una data escrita, com el `mtime` de `createBundle`) és la data de creació i de modificació del fitxer i, en un PDF/X, les dates del paquet XMP i la base de l'identificador del document: el mateix document, generat dues vegades amb un mateix `date`, dona els mateixos bytes. Si no es passa, el fitxer porta l'hora de la crida. Una data no vàlida llança un error.
+- **`PdfWarning`**: un problema no fatal que es notifica per `onWarning`; es distingeix per `kind`: `'fontFallback'` (`PdfFontFallbackWarning`), una variant composta amb un altre tall de la mateixa família; `'missingGlyph'` (`PdfMissingGlyphWarning`), caràcters per als quals cap fitxer d'una variant té glif; `'variableFontDefaultInstance'` (`PdfVariableFontWarning`), una font variable demanada amb un pes diferent del de la instància per defecte; `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`), una font CFF de més de 2 MB incrustada sencera; `'complexShapingUnavailable'` (`PdfComplexShapingWarning`), text de dreta a esquerra o de lletres enllaçades dibuixat sense HarfBuzz, que no s'ha pogut carregar (`reason` diu on s'ha buscat), de manera que les marques de l'àrab queden mal col·locades; `'outputProfileUnavailable'` (`PdfPrintWarning`), una renderització CMYK amb un perfil de sortida que no s'ha pogut carregar, de manera que s'ha convertit amb la fórmula simple; `'pageNegativeIgnored'` (`PdfPrintWarning`), el negatiu de pàgina que s'omet en un PDF/X-1a; `'spotTintsExhausted'` (`PdfPrintWarning`), un render que s'ha quedat sense codis per a tons diferents de tinta plana (uns 25 milions) i ha imprès la resta en quadricromia; `'spotInkRenamed'` (`PdfPrintWarning`), una tinta la planxa de la qual s'escriu amb un altre nom (vegeu [Tintes planes](#tintes-planes)); `'imageProfileUnavailable'` (`PdfPrintWarning`), el perfil assignat a les imatges RGB no s'ha pogut carregar i s'han fet servir els seus propis perfils; `'pictureOriginalUnreadable'` (`PdfPrintWarning`), un original TIFF o Photoshop que no s'ha pogut descodificar, imprès a partir de la previsualització (`previewBytes`) o com a marcador; `'plateMixesApproximated'` i `'artworkOffPlates'` (`PdfPrintWarning`), un treball en poques planxes (`print.plates`) que es va quedar sense codis i va compondre els colors restants com la barreja ja codificada més propera, o que va col·locar una pàgina PDF o una imatge que no va poder descodificar amb les seves pròpies tintes; o `'missingImage'`, una imatge sense bytes dibuixada com a marcador de posició (aquesta només es notifica a un `onWarning` propi; sense ell, els avisos de fonts van a `console.warn`).
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**: llegeix la primera pàgina d'un màster d'impressió en PDF i informa de les fonts que fa servir sense incrustar-les (`nonEmbeddedFonts`), de si pinta en RGB (`rgb`) i de si fa servir transparències (`transparency`), per al [preflight](/ca/docs/configuration-pdf-output#preflight).
+- **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`**: llegeix un PDF acabat com ho faria la comprovació prèvia d'una impremta, totes les pàgines: la versió i el nombre de pàgines, la identificació PDF/X i la intenció de sortida (i si el perfil hi va incrustat), el format final i la sang més petita, les pàgines amb un altre format final, sense TrimBox o amb una caixa de pàgina que no consta de quatre nombres (`malformedBoxPages`, que es llegeixen com si els faltés), les fonts (`fonts`: nom, incrustada o no, tipus; una font usada incrustada i sense incrustar hi surt una vegada de cada manera), en què pinta (CMYK, gris, tintes planes pel seu nom, registre, i RGB separat en `deviceRgb`, sense perfil, i `iccRgb`, amb perfil, cadascun en pintura `vector` o en `images`), transparències, sobreimpressió, anotacions, un formulari interactiu i si està etiquetat. A més de les pàgines, llegeix les aparences de les anotacions, els camps i els recursos per defecte del formulari, els motius (*patterns*), els glifs Type 3 i les imatges en línia. Llegeix el que diu el fitxer, no el que va demanar la configuració, i no llegeix la resolució de les imatges, la tinta total, els filets massa fins ni el reventat (*trapping*). Recorre les pàgines igual que `inspectPrintMaster`, que a més informa de l'RGB en ombrejats, motius i glifs Type 3.
 - **`decompressWoff2(bytes): Uint8Array`**: funció auxiliar que converteix un fitxer WOFF2 en bytes TTF, que és el format que `pdf-lib` pot incrustar directament.
 - **`createPdfWorker(options?)`**, de `postext-pdf/worker`: la mateixa renderització en un Web Worker; consulta [Renderitzar el PDF en un worker](#renderitzar-el-pdf-en-un-worker).
 
@@ -261,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF i WebP s'incrusten com a imatges;
 - el marcatge SVG es dibuixa com a traçats vectorials, amb el `text` compost com a text real amb les fonts incrustades del document, o es rasteritza a 600 ppp al navegador quan fa servir funcions que queden fora del subconjunt vectorial. Un `<style>` que només conté regles `@font-face` (variants que va incrustar l'autor) s'omet i la figura continua sent vectorial (des de postext-pdf 1.25); qualsevol altre full d'estil la converteix en mapa de bits, generat amb les variants que indica el text, incrustades des de `fontProvider` (llevat que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurs sigui `false`);
+- els TIFF i els documents de Photoshop (PSD, PSB) s'imprimeixen a partir dels seus propis píxels: gris, RGB o CMYK, de 8 o 16 bits, amb el perfil ICC i la resolució que porten. Un de CMYK conserva les tintes tal qual; el gris i l'RGB segueixen `print.imageColor`. D'un document de Photoshop se'n llegeix la imatge composta que desa amb «Maximize compatibility»; els TIFF amb compressió JPEG no es llegeixen;
 - d'un PDF s'incrusta tal qual la primera pàgina, com un XObject de formulari.
 
 Cada imatge es desa una sola vegada al fitxer, encara que es dibuixi moltes vegades. Un SVG dibuixat amb traçats vectorials es converteix en un XObject de formulari que pinta cada pàgina, de manera que un marc o un logotip en el disseny de pàgina d'un document de trenta pàgines s'escriu una vegada i no trenta; cada pàgina més afegeix uns centenars de bytes. Fins a postext-pdf 1.4, cada pàgina portava una còpia pròpia dels traçats.
@@ -280,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un amfitrió també pot retornar els bytes del màster per a l'identificador del mateix SVG, com fa `bundleResourceBytes`; les dues formes funcionen.
+
+Un navegador no pot mostrar un TIFF ni un document de Photoshop, de manera que un recurs de mapa de bits fet a partir d'un d'aquests desa dos fitxers: `bitmap.fileId` és una vista prèvia en PNG, que mostren el canvas, l'HTML i l'EPUB, i `bitmap.printFileId` (amb `printFormat: 'tiff' | 'psd'`) és l'original. Un amfitrió retorna els bytes de l'original per a `bitmap.fileId`, com fan `bundleResourceBytes` i el Sandbox, i el PDF s'imprimeix a partir d'aquest. També passa la previsualització, com a `previewBytes` (`bundlePreviewBytes` en un paquet): un original que no es pot descodificar s'imprimeix a partir de la seva previsualització, amb un avís `pictureOriginalUnreadable`, i sense previsualització queda un marcador. `decodePrintRaster(bytes)` i `rasterToRgba(raster)` de `postext` llegeixen l'original i fan la vista prèvia; el Sandbox la fa en importar el fitxer, i un paquet desa l'original com a `resources/<nom>.tif` o `.psd` al costat de la vista prèvia.
+
+Un fitxer d'Adobe Illustrator desat amb «Create PDF Compatible File» és un PDF, i pot ser un màster d'impressió com qualsevol altre (`.ai`). Les seves mostres són les seves pròpies planxes: el preflight enumera les que la taula de tintes reanomena, les que cap color del llibre no defineix i, en un treball amb planxes pròpies (`print.plates`), les que el treball no imprimeix, perquè un fitxer col·locat s'imprimeix tal qual.
 
 ### Text vertical en el PDF
 
@@ -327,6 +333,8 @@ pdfGeneration: {
   forms: { currency: 'USD', currencyBefore: true, separatorStyle: 0, font: { family: 'Lora', weight: 400 } },
 }
 ```
+
+**Des d'esm.sh en un navegador**, importa `https://esm.sh/postext-pdf?bundle`. La compilació per defecte de pdf-lib a esm.sh deixa les classes d'anotació en un mòdul a part, i pdf-lib rebutja llavors el widget de cada camp: el PDF conserva les caselles, però perd formats, càlculs i marques, amb un avís `formField` per camp. `?bundle` compila pdf-lib en un sol mòdul i deixa `postext` fora, compartit amb la pàgina. Un empaquetador (Vite, webpack, Next.js) i Node no se'n veuen afectats.
 
 L'exportació IDML escriu els mateixos camps com a camps de formulari d'InDesign (vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postextidml)).
 
@@ -388,8 +396,9 @@ const bytes = await pdfWorker.render(docs, {
 pdfWorker.dispose();
 ```
 
-- `render(docs, options)` accepta un document o la llista de documents dels capítols d'un llibre. Accepta les opcions de `renderToPdf`, amb dues diferències. `resourceBytes` és un `Map<string, Uint8Array>` amb buffers que es transfereixen al worker, així que passa còpies dels bytes que vulguis conservar. `rasterizeSvg`, si s'indica, s'executa al fil principal; per defecte ho fan l'`Image` i el canvas de la mateixa pàgina.
+- `render(docs, options)` accepta un document o la llista de documents dels capítols d'un llibre. Accepta les opcions de `renderToPdf`, amb dues diferències. `resourceBytes` (i `previewBytes`) és un `Map<string, Uint8Array>` amb buffers que es transfereixen al worker, així que passa còpies dels bytes que vulguis conservar. `rasterizeSvg`, si s'indica, s'executa al fil principal; per defecte ho fan l'`Image` i el canvas de la mateixa pàgina.
 - Cada objecte retornat renderitza un document cada vegada. `dispose()` atura el worker i rebutja qualsevol renderització que encara estigui pendent amb un `AbortError` (`DOMException`), que s'ha de tractar com una cancel·lació. Si el proveïdor respon amb una font o una imatge després de `dispose()`, la resposta es descarta.
+- `inspect(bytes)` torna a llegir un PDF acabat al worker (`inspectPrintPdf`) i es resol amb el seu informe, o amb `undefined` si els bytes no es poden llegir com a PDF. Els bytes es copien, de manera que els teus continuen servint. No es llegeix res si no el crides.
 - `createPdfWorker({ worker })` accepta un `Worker` que creïs tu, per a les eines de compilació que controlen les URL dels workers. Aquest worker ha d'executar `postext-pdf/worker/entry`.
 
 **Des d'un CDN.** Per defecte, l'script del worker es carrega des de la URL del mateix paquet (`new URL('./pdf.worker.js', import.meta.url)`). Una pàgina d'un altre origen pot no poder arrencar-lo: importat des d'`esm.sh`, `createPdfWorker()` llança `Failed to construct 'Worker': Script at 'https://esm.sh/postext-pdf@…/pdf.worker.js' cannot be accessed from origin …`. En lloc d'això, arrenca un worker de mòdul del mateix origen que importi l'entrada (si fixes una versió, fixa la mateixa a les dues URL):
@@ -413,9 +422,206 @@ Per a la producció d'impremta, fixa aquestes opcions de configuració abans de 
 - **`page.cutLines.enabled: true`**: afegeix sang i marques de tall al voltant del format final, i dona a cada pàgina una TrimBox i una BleedBox. Vegeu [Marques de tall](/ca/docs/configuration-page-layout#marques-de-tall).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (o `'pdfx1a'`): un fitxer PDF/X amb la condició de sortida, la identificació i les caixes que revisa una impremta; cada color i cada imatge RGB separats amb el perfil ICC, el 100 % K sobreimprès i les masses negres grans en negre enriquit. Vegeu [Producció per a impremta (configuració)](/ca/docs/configuration-fonts-colors-viewers#producció-per-a-impremta-configuració).
 - **`colorSpace: 'cmyk'`** (o `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`): la mateixa separació sense la identificació PDF/X (les marques de tall van sempre en color de registre). Els màsters d'impressió en PDF s'insereixen tal com són.
-- **`page.dpi: 300`**: els píxels per polzada de la maquetació. Un mapa de bits sense resolució pròpia s'imprimeix a aquesta resolució a la seva mida natural. El [preflight](/ca/docs/configuration-fonts-colors-viewers#preflight) avisa de les imatges per sota de 300 ppp a la seva mida impresa.
+- **`page.dpi: 300`**: els píxels per polzada de la maquetació. Un mapa de bits sense resolució pròpia s'imprimeix a aquesta resolució a la seva mida natural. El [preflight](/ca/docs/configuration-pdf-output#preflight) avisa de les imatges per sota de 300 ppp a la seva mida impresa.
 - **`ColorValue.cmyk`**: un color definit en CMYK s'imprimeix amb els seus valors exactes.
 - **`{ pageNegative: true }`** a `RenderToPdfOptions`: inverteix l'àrea del format final amb un mode de fusió Difference (les marques de tall no s'inverteixen). És útil per fer comprovacions de preflight sobre text fosc en fons clar.
+
+### Tintes planes
+
+Una tinta plana (un Pantone, una tinta corporativa, un vernís) s’imprimeix en la seva pròpia planxa. Un color amb `model: 'spot'` porta la seva tinta a `ColorValue.spot`: `name` és el nom de la planxa tal com el coneix la impremta, `cmyk` és l’aspecte de la tinta al 100 % (l’equivalent que el PDF dona a qui no tingui la tinta), `tint` és el to en percentatge (100 per defecte) i `overprint` fa que la tinta sobreimprimeixi el que té a sota en lloc de buidar-ho, com un vernís. `hex` és la seva representació en pantalla.
+
+Un PDF CMYK o PDF/X escriu cada tinta com un espai de color `Separation` amb el seu nom, i cada color d’aquesta tinta es pinta al seu to: els colors amb el mateix `name` comparteixen planxa. Hi caben les feines habituals: dues tintes (negre i una plana), quadricromia amb alguns elements en plana i un vernís sobreimprès en zones concretes. Si `diagramStyle.singleInk` fa servir una tinta plana, els diagrames SVG s’imprimeixen en tons d’aquesta planxa. En un PDF RGB i en pantalla, el color es pinta amb el seu `hex`.
+
+**Tintes planes dins d’un SVG.** Vegeu [Com funciona la tinta única](/ca/docs/configuration-resources#com-funciona-la-tinta-única).
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+],
+diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
+```
+
+El preflight compta una tinta plana com una sola tinta, la deixa fora del límit de cobertura i enumera les tintes planes del treball (`spotInks`), també les que anomenen les imatges SVG. Avisa si una tinta es defineix dues vegades amb valors diferents (`spotInkConflict`; el PDF fa servir la primera), si un SVG anomena una tinta que no defineix cap color de la paleta ni cap entrada de la taula de tintes amb `cmyk` (`spotInkUndefined`; s’imprimeix en una planxa pròpia, amb el CMYK del color de l’SVG com a equivalent, una planxa per nom), si el PDF ha d’escriure el nom d’una planxa d’una altra manera (`spotInkName`, vegeu més avall) i si dos noms de planxa només es diferencien en majúscules o espais (`spotInkSimilar`: `PANTONE 185 C` i `Pantone  185 C` serien dues planxes). `preflightDocument` sap quines tintes anomena un SVG per `svgInks(fileId)`, una funció que retorna els noms que `svgSpotInks(markup)` troba al fitxer; el tauler **Revisió** del Sandbox i `postext check` l’hi passen.
+
+**Noms de planxa.** El nom s’escriu tal com es tecleja: els accents, els símbols i `#` arriben al PDF en UTF-8 (`Rojo Médica` és `/Rojo#20M#C3#A9dica`), que és com el llegeixen Acrobat, un RIP i el preflight de la impremta. Un nom que una planxa no admet s’escriu amb un altre: `All`, `None`, `Cyan`, `Magenta`, `Yellow` i `Black`, en majúscules o minúscules, porten al darrere la paraula ink (`All ink`); els caràcters de control es treuen, i un nom de més de 127 bytes en UTF-8 es talla entre dos caràcters i acaba en un hash curt, de manera que dos noms llargs que comencen igual continuen sent dues planxes. L’`spotInkName` del preflight diu el motiu (`problem`: `reserved`, `process`, `control` o `tooLong`) i el nom que escriu el PDF (`written`), i el render avisa de cada canvi per `onWarning` (`spotInkRenamed`). Per triar tu el nom, dona a la tinta un `pdfName` a la taula de tintes.
+
+**Una tinta per color.** Un render d’impressió reconeix un color pel seu hex de pantalla, de manera que dos colors que fixen els seus valors d’impressió —dues tintes, o una tinta i un color definit en CMYK— no el poden compartir. Si el comparteixen, el segon passa a l’hex lliure més proper, a un pas i invisible en pantalla, i cadascun surt a la seva planxa. Un color de pantalla (`model: 'hex'`) amb l’hex d’una tinta plana s’imprimeix com aquesta tinta; enllaça’l a l’entrada de la paleta per deixar-ho explícit. El color que es mou també canvia en pantalla, un pas (1/255) en un sol canal, el blau primer, en totes les sortides (canvas, HTML, EPUB i PDF RGB). Queda molt per sota del que l’ull distingeix, i és el preu d’un render d’impressió que llegeix les tintes de l’hex pintat. La configuració desada no canvia.
+
+#### La taula de tintes
+
+`print.inks` diu com arriben a la impremta les tintes del treball, les anomenin com les anomenin els colors, els SVG i els fitxers importats. Una tinta que no és a la taula s’imprimeix tal com la defineixen els seus colors.
+
+```ts
+interface PrintInk {
+  name: string;                    // La tinta tal com l'anomena spot.name o un SVG.
+  aliases?: string[];              // Altres noms de la mateixa tinta: surten en aquesta planxa.
+  pdfName?: string;                // El nom de la planxa al PDF. Per defecte, name.
+  output?: 'spot' | 'process';     // 'process' imprimeix la tinta en CMYK, amb el seu equivalent.
+  cmyk?: CmykPercent;              // L'equivalent al 100 %, per sobre del dels colors.
+  overprint?: boolean;             // Per sobre del dels colors.
+}
+```
+
+Els noms i els àlies es comparen sense distingir majúscules ni espais repetits. Canviar el nom és una línia, la facin servir tants colors com vulguin; un àlies ajunta en una planxa els noms que una mostra del dissenyador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior donaven a la mateixa tinta; i `output: 'process'` imprimeix una tinta en CMYK quan la màquina no té cos per a ella, amb tots els seus tons.
+
+Al Sandbox, la taula és a **Disseny › Exportació › Preparació per a impremta › Taula de tintes**: una targeta per tinta amb el **Nom de la tinta**, els **Àlies**, el **Nom de la planxa al PDF**, **S’imprimeix com a**, el **CMYK alternatiu** i la **Sobreimpressió**. **Tintes que fan servir els colors** enumera les tintes dels colors del llibre que falten a la taula, cadascuna amb un botó que l’afegeix.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  inks: [
+    { name: 'Azul corporativo', pdfName: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Azul'] },
+    { name: 'Varnish', output: 'process' },
+  ],
+},
+```
+
+#### Impressió a dues tintes
+
+`print.plates` diu en quines planxes s’imprimeix el treball, i no s’imprimeix en cap altra: un llibre en negre i una tinta plana, en dues tintes planes o només en negre. Les planxes de quadricromia es diuen `Cyan`, `Magenta`, `Yellow` i `Black`; una planxa de tinta plana s’anomena com l’anomena el PDF, o amb un nom o un àlies de la taula de tintes.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Les planxes. Buit: totes, com sempre.
+  images?: string[];                              // Les planxes de les imatges: una o dues.
+  curves?: Record<string, Array<[number, number]>>; // La corba d'una planxa d'imatge: [to, tinta] en percentatge.
+}
+```
+
+- Un color d’una tinta que el treball imprimeix, o un color CMYK els canals del qual imprimeix, surt tal com és.
+- Qualsevol altre color es projecta: s’imprimeix amb la barreja d’una planxa o dues que, a través del perfil de sortida, més s’hi assembla. Una barreja de dues tintes és un espai de color `DeviceN` al PDF, i un gris es queda només a `Black`. El negre enriquit es descarta tret que el treball imprimeixi les quatre tintes de quadricromia.
+- Les imatges surten en monotò, en una planxa, o en duotò, en dues: el to de cada píxel (la seva lluminositat) passa per la corba de cada planxa. `images` és per defecte `Black`, o la primera planxa si el treball no imprimeix negre. La corba d’un monotò és una recta; un duotò posa la primera planxa a les ombres i la segona als tons mitjans. `curves` substitueix qualsevol de les dues.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+El preflight enumera les planxes del treball i cada color que la projecció desplaça. Una tinta plana o un color CMYK que el treball no imprimeix és informació quan la seva barreja queda a menys de ΔE 6, i un avís si queda més lluny o mentre no s'ha carregat el perfil de sortida (`offPlateInk`, `offPlateCmyk`); un color de pantalla que queda a més de ΔE 6 també és un avís (`offPlateColor`). Una planxa de tinta plana que cap color ni cap entrada de la taula de tintes no defineix és un avís: s'imprimeix i se simula com a negre. En un treball així es deixa de banda l'original d'impremta d'una figura i el seu SVG es compon a les planxes; una pàgina PDF col·locada, o una imatge que no es pot descodificar, conserva les seves pròpies tintes i el render avisa (`artworkOffPlates`). Al Sandbox les planxes es trien a Preparació per a impremta → Planxes. Les seves previsualitzacions i la vista d'impressió mostren els colors com els defineix el llibre, no com els imprimeixen les planxes: mira el PDF, on Comprova per a impremta enumera les tintes que fa servir.
+
+### Color de les imatges
+
+Una imatge se separa a partir dels colors en què es va fer. `print.imageColor` diu com es llegeixen els seus píxels:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // El perfil ICC de la mateixa imatge. Per defecte, 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Llegir tota imatge RGB amb aquest .icc.
+  grayDotGain?: 'profile' | 'none' | number;           // Imatges en gris, en negre. Per defecte, 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // Una imatge CMYK d'una altra màquina. Per defecte, 'keep'.
+}
+```
+
+Els valors per defecte deixen les imatges com les imprimien les versions anteriors: tota imatge RGB es llegeix com a sRGB (`'ignore'`), les imatges en gris se separen com qualsevol altra (`'none'`) i una imatge CMYK conserva els seus valors (`'keep'`). Cada comportament de la llista s'activa amb el seu camp.
+
+- **El seu propi perfil.** Un PNG (`iCCP`) o un JPEG (`ICC_PROFILE`) que incrusta un perfil es llegeix a través d'aquest perfil, de manera que una fotografia en Adobe RGB o Display P3 se separa tal com es veu i no com si fos sRGB. Una imatge sense perfil, o amb perfil sRGB, es llegeix com a sRGB, com fins ara. `'ignore'` llegeix totes les imatges com a sRGB.
+- **Un perfil assignat.** `assignedRgbProfile` anomena un `.icc` desat amb el qual es llegeix tota imatge RGB, porti el perfil que porti: per exemple, per a un lot de fotografies que han perdut el seu. Els seus bytes arriben per `resourceBytes`; si falten, es fan servir els perfils de les imatges, amb un avís `imageProfileUnavailable`.
+- **Conservada per al RIP.** En PDF/X-4 amb `convertImages: false`, una imatge amb un perfil diferent de sRGB s'escriu en els seus propis colors, etiquetada `ICCBased` amb aquest perfil, i la converteix el RIP de la impremta.
+- **Escala de grisos.** Una imatge en escala de grisos (un PNG o un JPEG en gris, o una amb perfil de gris) s'imprimeix només en negre, mai com un gris de quadricromia. Els seus tons, llegits a través del seu perfil (o com els mostra la pantalla), s'ajusten a la màquina: `'profile'`, amb el negre del perfil de sortida, el guany de punt del qual ja inclou la condició; un nombre és el guany de punt de la màquina al to del 50 %, en percentatge (entre 10 i 30, normalment), que es compensa en el seu lloc; `'none'` escriu els valors tal com són, com fins ara.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Una imatge CMYK d'una altra màquina.** Una imatge CMYK el perfil de la qual és una altra condició d'impressió (una fotografia separada per a SWOP o per a paper de diari en un llibre per a FOGRA) se separa de nou per a la de sortida (`cmykProfile: 'convert'`), i el negre sol continua sent negre sol: un TIFF o un document de Photoshop a partir dels seus píxels; un JPEG CMYK, els píxels del qual no es descomprimeixen, s'etiqueta `ICCBased` amb el seu propi perfil en PDF/X-4 perquè el converteixi el RIP, i passa tal com és en PDF/X-1a, que no admet aquesta etiqueta; allà el preflight n'avisa (`cmykImageForeign`) quan l'amfitrió li dona el perfil de la imatge (`imageProfile`). En PDF/X-4 amb `convertImages: false`, un TIFF o un document de Photoshop s'etiqueta igual. `'keep'` imprimeix els valors de tota imatge CMYK tal com són.
+
+**Els ajustos d'una sola imatge.** El `printColor` d'un recurs admet els mateixos camps que `print.imageColor` del llibre i els aplica només a aquella imatge: una fotografia el perfil de la qual cal ignorar, una altra que es llegeix amb un perfil assignat, una imatge en gris amb un altre guany de punt. Al Sandbox, la fitxa d'una imatge diu si es llegeix amb el seu propi perfil («Color a impremta»), com s'ajusten els seus grisos a la màquina («Grisos a impremta») i quin perfil se li assigna («Perfil assignat», un fitxer `.icc`); un paquet porta els perfils assignats, el del llibre i els de les imatges, a la seva carpeta `profiles/`. Els ajustos del llibre són a Preparació per a impremta → Imatges.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
+
+
+### Colors definits en CMYK
+
+Un color escrit en CMYK conserva els seus valors exactes: `ColorValue.cmyk` (en percentatge) s'aplica tal com és en una sortida d'impremta, i `hex` n'és la representació en pantalla. Una entrada de la paleta definida en CMYK val per a tots els colors enllaçats a ella.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### Colors que sobreimprimeixen
+
+Qualsevol color pot sobreimprimir en una sortida d'impremta: `overprint: true` en un `ColorValue` fa que tot el que es pinta amb ell (text, filets, caixes, fons) s'imprimeixi a sobre del que té a sota en lloc de buidar-ho. Un color de quatricromia s'escriu tal com se separa, amb un estat gràfic de sobreimpressió; una tinta plana sobreimprimeix a la planxa de la seva tinta, encara que la mateixa tinta en un altre color buidi. Un negre al 100 % K que sobreimprimeix conserva el tractament del negre: les masses grans continuen sortint en negre enriquit (`black.richBlack`). Un PDF en RGB i la pantalla ho ignoren. Posa-ho a l'entrada de la paleta perquè sobreimprimeixi tot color enllaçat a ella, també els seus tints; un color enllaçat pren el valor de l'entrada i no en té cap de propi. La paleta d'una part o d'una secció el conserva: el text en el color de la part també sobreimprimeix.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Títol', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+Una sortida d'impremta reconeix un color per l'hex que pinta la maquetació, així que un color que sobreimprimeix no comparteix mai l'hex amb un que buida. Quan coincideixen, el que sobreimprimeix es desplaça un pas (1/255 en un canal), com fan les tintes planes; el color d'una part per a una entrada que sobreimprimeix s'aparta de la mateixa manera de qualsevol color del llibre que buidi. Un color que sobreimprimeix i no diposita tinta (el blanc del paper, una tinta al 0 %) desapareix a la impremta: el preflight el marca com a crític (`overprintWhite`). Una sortida amb més colors diferents que codis disponibles (uns 25 milions) buida la resta i avisa (`overprintsExhausted`). Al Sandbox, ho activa l'interruptor «Sobreimprimir a impremta» del selector de color.
+
+### Preflight
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // Píxels per polzada a la mida impresa.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>Propietat</th>
+      <th>Tipus</th>
+      <th>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa les revisions.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits col·locat per sota d'aquests píxels per polzada a la seva mida impresa, retall inclòs, rep un avís: figures, imatges de cel·les de taula, imatges de disseny, vinyetes de còmic. Un mapa de bits sense resolució pròpia s'imprimeix a `page.dpi` a la seva mida natural, així que una pàgina composta a 150 dpi imprimeix cadascuna d'aquestes imatges a 150 ppp; un amb resolució (`bitmap.resolution`, `layout.bitmapResolution`) s'imprimeix a aquesta resolució a la seva mida natural.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Per sota d'aquest valor l'avís és crític. Mai per sobre de `minImageResolution`.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, vores, filets de columna, filets de taula i vores de vinyeta de còmic més fins que això.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text per sota d'aquesta mida compost en més d'una tinta (un color de quatricromia, negre enriquit): s'emborrona quan les planxes es desplacen. El text negre, només K, no compta mai.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text més a prop del tall que aquesta distància, on la guillotina el pot tallar.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caixa o una imatge que s'atura així de prop del tall sense arribar a la sang: porta-la a sang o retira-la.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa de les fonts que no incrusta un PDF col·locat (el Sandbox revisa cada màster d'impressió amb `inspectPrintMaster`). Postext incrusta totes les fonts que compon.</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)` fa les revisions sobre un document maquetat i retorna una llista d'incidències, cadascuna amb un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absolut dins del llibre, el `rect` afectat (px de pàgina) i, quan l'element en té, el seu interval al text font. Els tipus són `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` i `nearTrim`. Sense `transform`, un neutre compta com una tinta i qualsevol altre color com tres, i la cobertura no es revisa; amb un `transform`, els recomptes i la cobertura són exactes. La resolució d'una imatge es calcula amb els píxels que declara el seu recurs, o amb els del fitxer mateix quan `imageSize(fileId)` els dona (`bitmapInfo` sobre els bytes, o la imatge descodificada): una declaració que es desvia més d'un píxel del fitxer genera una sola vegada un avís `declaredPixelsMismatch`, un avís quan declara més píxels dels que té el fitxer. `placedImageResolutions(doc, { resources, imageSize })` enumera cada mapa de bits col·locat amb els seus ppp efectius, tant si el preflight està activat com si no. Els rètols d'una figura compten com a text per a `smallProcessText`, `inkLimit` i `safeZone`.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // mides en píxels dels mapes de bits
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // els píxels reals dels fitxers
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', segons el fitxer
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
+```
 
 ### Implementació de referència
 

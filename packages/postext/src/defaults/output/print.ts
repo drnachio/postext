@@ -3,9 +3,15 @@ import type {
   Dimension,
   PrintBlackConfig,
   PrintConfig,
+  PrintInk,
+  PrintPlatesConfig,
+  PrintImageColorConfig,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
+  ResolvedPrintInk,
+  ResolvedPrintPlatesConfig,
+  ResolvedPrintImageColorConfig,
   ResolvedPrintPreflightConfig,
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
@@ -41,6 +47,9 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   inkLimit: 300,
   black: DEFAULT_PRINT_BLACK_CONFIG,
   preflight: DEFAULT_PRINT_PREFLIGHT_CONFIG,
+  inks: [],
+  plates: { inks: [], images: [], curves: {} },
+  imageColor: { embeddedProfile: 'ignore', grayDotGain: 'none', cmykProfile: 'keep' },
 };
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
@@ -77,6 +86,76 @@ export function resolvePrintPreflightConfig(partial?: PrintPreflightConfig): Res
   };
 }
 
+/** The ink table with its names trimmed and its defaults filled in; an
+ *  entry without a name is dropped. */
+export function resolvePrintInks(partial?: PrintInk[]): ResolvedPrintInk[] {
+  if (!Array.isArray(partial)) return [];
+  const out: ResolvedPrintInk[] = [];
+  for (const ink of partial) {
+    const name = typeof ink?.name === 'string' ? ink.name.trim() : '';
+    if (!name) continue;
+    const pdfName = typeof ink.pdfName === 'string' && ink.pdfName.trim() ? ink.pdfName.trim() : name;
+    const aliases = Array.isArray(ink.aliases) ? ink.aliases.filter((a): a is string => typeof a === 'string' && a.trim() !== '').map((a) => a.trim()) : [];
+    const resolved: ResolvedPrintInk = { name, aliases, pdfName, output: ink.output === 'process' ? 'process' : 'spot' };
+    if (ink.cmyk) resolved.cmyk = resolveCmyk(ink.cmyk, { c: 0, m: 0, y: 0, k: 0 });
+    if (typeof ink.overprint === 'boolean') resolved.overprint = ink.overprint;
+    out.push(resolved);
+  }
+  return out;
+}
+
+const PROCESS_PLATES = ['Cyan', 'Magenta', 'Yellow', 'Black'];
+
+/** The plates of a job with their names trimmed (a process plate in its
+ *  PDF spelling, `black` as `Black`), each once; the picture plates are
+ *  among them (a spot plate maybe by an alias the ink table gives it),
+ *  `Black` or the first when none is given. */
+export function resolvePrintPlates(partial?: PrintPlatesConfig): ResolvedPrintPlatesConfig {
+  const names = (list: unknown): string[] => {
+    const out: string[] = [];
+    if (!Array.isArray(list)) return out;
+    for (const item of list) {
+      if (typeof item !== 'string' || !item.trim()) continue;
+      const name = item.trim();
+      const proc = PROCESS_PLATES.find((p) => p.toLowerCase() === name.toLowerCase());
+      const plate = proc ?? name;
+      if (!out.includes(plate)) out.push(plate);
+    }
+    return out;
+  };
+  const inks = names(partial?.inks);
+  if (inks.length === 0) return { inks: [], images: [], curves: {} };
+  // A spot plate may be named through the ink table (an alias): the
+  // render resolves it (`jobImagePlates`); a process plate must be printed.
+  let images = names(partial?.images).filter((n) => inks.includes(n) || !PROCESS_PLATES.includes(n)).slice(0, 2);
+  if (images.length === 0) images = [inks.includes('Black') ? 'Black' : inks[0]!];
+  const curves: Record<string, Array<[number, number]>> = {};
+  for (const [plate, points] of Object.entries(partial?.curves ?? {})) {
+    if (!Array.isArray(points)) continue;
+    const pts = points
+      .filter((p): p is [number, number] => Array.isArray(p) && Number.isFinite(p[0]) && Number.isFinite(p[1]))
+      .map(([x, y]) => [clampPct(x), clampPct(y)] as [number, number])
+      .sort((a, b) => a[0] - b[0]);
+    const name = names([plate])[0];
+    if (name && pts.length > 0) curves[name] = pts;
+  }
+  return { inks, images, curves };
+}
+
+/** How pictures' colours are read, with its defaults; a dot gain is
+ *  clamped to 0–50 %. */
+export function resolvePrintImageColor(partial?: PrintImageColorConfig): ResolvedPrintImageColorConfig {
+  const gain = partial?.grayDotGain;
+  const out: ResolvedPrintImageColorConfig = {
+    embeddedProfile: partial?.embeddedProfile === 'use' ? 'use' : 'ignore',
+    grayDotGain: typeof gain === 'number' && Number.isFinite(gain) ? Math.max(0, Math.min(50, gain)) : gain === 'profile' ? 'profile' : 'none',
+    cmykProfile: partial?.cmykProfile === 'convert' ? 'convert' : 'keep',
+  };
+  const assigned = partial?.assignedRgbProfile;
+  if (assigned && typeof assigned.fileId === 'string' && assigned.fileId) out.assignedRgbProfile = { name: assigned.name ?? assigned.fileId, fileId: assigned.fileId };
+  return out;
+}
+
 /** The ink limit of the profile a config names (a custom profile's own,
  *  else the catalogue's), before any `inkLimit` override. */
 export function profileInkLimit(config?: PrintConfig): number {
@@ -102,6 +181,9 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     inkLimit: partial?.inkLimit ?? profileInkLimit({ ...partial, outputProfile }),
     black: resolvePrintBlackConfig(partial?.black),
     preflight: resolvePrintPreflightConfig(partial?.preflight),
+    inks: resolvePrintInks(partial?.inks),
+    plates: resolvePrintPlates(partial?.plates),
+    imageColor: resolvePrintImageColor(partial?.imageColor),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -150,5 +232,14 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
   if (black) result.black = black;
   const preflight = stripSection(cfg.preflight, DEFAULT_PRINT_PREFLIGHT_CONFIG as unknown as Record<string, unknown>);
   if (preflight) result.preflight = preflight;
+  if (cfg.inks && cfg.inks.length > 0) result.inks = cfg.inks.map((ink) => ({ ...ink }));
+  if (cfg.plates && (cfg.plates.inks?.length ?? 0) > 0) result.plates = structuredClone(cfg.plates);
+  if (cfg.imageColor) {
+    const ic = { ...cfg.imageColor };
+    if (ic.embeddedProfile === 'ignore') delete ic.embeddedProfile;
+    if (ic.grayDotGain === 'none') delete ic.grayDotGain;
+    if (ic.cmykProfile === 'keep') delete ic.cmykProfile;
+    if (Object.keys(ic).length > 0) result.imageColor = ic;
+  }
   return Object.keys(result).length > 0 ? result : undefined;
 }

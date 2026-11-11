@@ -45,8 +45,10 @@ export type ResourceCounterReset = 'never' | 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 
  *  bottom of the next empty column on the same page, then the bands of the
  *  next page. `'top'` / `'bottom'` restrict the search to top or bottom
  *  slots. `'here'` opts out of floating and embeds the resource inline at
- *  the exact `::resource` directive position. */
-export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here';
+ *  the exact `::resource` directive position. `'paragraph'` embeds it inline
+ *  right after the paragraph that first cites it, no directive needed (after
+ *  the rest of a list, or the box, the citation sits in). */
+export type ResourceFloatPosition = 'auto' | 'top' | 'bottom' | 'here' | 'paragraph';
 
 /** How wide a floated resource is. `'column'` keeps it within a single column;
  *  `'page'` spans the full content width across all columns (a full-width
@@ -120,7 +122,8 @@ export interface ResourcePlacement {
    *  figure's top (its bottom for a bottom float). A page without such a
    *  column keeps the caption under the figure. For a column float, and
    *  for a resource set where its `::resource` line stands (`position:
-   *  'here'`, #729, `layout.inlineCaptionSide`): there the caption stands
+   *  'here'`, #729, `layout.inlineCaptionSide`) or after its citing
+   *  paragraph (`'paragraph'`): there the caption stands
    *  level with the body's top when the side column is free over its
    *  band, else under the body. Not for a page-span or rotated resource,
    *  one inside a box, or one text wraps round.
@@ -148,7 +151,7 @@ export interface ResourcePlacement {
    *  already stands is passed over, three at most, and the next one is
    *  taken as it is. Its `position`, `span`, `width`, `shrink`, `rotate`,
    *  `captionSide`, `wrap` and `citingPage` are not read; a resource set
-   *  in the text (`'here'`) or on a vertical page is no plate. `true` is
+   *  in the text (`'here'`, `'paragraph'`) or on a vertical page is no plate. `true` is
    *  `'content'`; `'trim'` and `'bleed'` set the picture over the whole
    *  page instead, to the trim or out to the bleed: it is enlarged to
    *  cover it and cropped about its centre, the caption and note stay at
@@ -195,7 +198,8 @@ export interface ResourcePlacement {
    *  pages `'left'` is the sheet's right); `'start'` / `'end'` are the
    *  same sides by their logical names. Applies to an inline embed
    *  (`position: 'here'`, the text after the `::resource` line runs beside
-   *  it) and to a `span: 'column'` float at the head or foot of one column
+   *  it; `'paragraph'` alike, the text after the citing paragraph) and to
+   *  a `span: 'column'` float at the head or foot of one column
    *  (the column's first or last lines run beside it); a page-span float,
    *  a float across several columns, a side-column float, a rotated one
    *  and anything in vertical text keep their whole band. The resource
@@ -233,6 +237,25 @@ export interface ResourcePlacement {
    *  the type's `defaultPlacement`, then `layout.floatsAtCitingPage`, then
    *  `false`. */
   citingPage?: boolean;
+  /** Where the author set the float by hand (dragged in the canvas): a
+   *  slot on a page counted from the page that first cites it. The engine
+   *  tries that slot first and nothing else on that page; when it cannot
+   *  be taken (the float does not fit, or the slot comes before the
+   *  citation), the float is placed as usual and the layout reports it
+   *  (`floatPinMissed`). Floats only; paged outputs only. */
+  pin?: ResourcePin;
+}
+
+/** A float's hand-set slot (see `ResourcePlacement.pin`). */
+export interface ResourcePin {
+  /** Pages after the one that first cites the float: `0` is that page. */
+  page: number;
+  /** The text column, counted from 0 in reading order; unset for any
+   *  (a page-span float ignores it). */
+  column?: number;
+  /** The head or the foot of the column (of the page, for a page-span
+   *  float). */
+  slot: 'top' | 'bottom';
 }
 
 /** The side of its column a resource or a box sits on with text running
@@ -306,6 +329,19 @@ export interface ResourceType {
    *  Only the keys set here replace the resolved global `captionStyle`; the
    *  rest is inherited (see `mergeCaptionStyle`). */
   captionStyle?: CaptionStyleConfig;
+  /** Snap the flow back onto the baseline grid under a figure or table of
+   *  this type set in the text (`placement: 'here'`), the space under it
+   *  rounded up to whole grid lines. `false` keeps the exact space the
+   *  resource leaves: the text after it may sit off the grid until the
+   *  next block that snaps. Floats set in a band at the head or foot of a
+   *  column, and resources the text wraps round, are not affected.
+   *  Default `true`. */
+  snapToGrid?: boolean;
+  /** Open a figure or table of this type set in the text on a grid line:
+   *  the space above it rounds up so its top sits on the baseline grid,
+   *  the float gap a minimum — the rule lists have in `snapTopToGrid`.
+   *  Floats and wrapped resources are not affected. Default `false`. */
+  snapTopToGrid?: boolean;
 }
 
 /** The concrete payload kind a `Resource` carries. */

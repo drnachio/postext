@@ -16,7 +16,7 @@ import type { LinksConfig } from './structure/links.js';
 import type { HeaderFooterSlot } from './structure/headerFooter.js';
 import type { HeadingsConfig } from './structure/headings.js';
 import type { HeadingStyleConfig } from './structure/headingStyles.js';
-import type { ChipStyleConfig, MarkStyleConfig } from './text/inlineStyles.js';
+import type { ChipStyleConfig, MarkStyleConfig, CharacterStyleConfig } from './text/inlineStyles.js';
 import type { LayoutConfig } from './layout.js';
 import type { OrderedListsConfig, UnorderedListsConfig } from './text/lists.js';
 import type { DocumentDirection, LocaleTag, NumeralsSetting } from './text/locale.js';
@@ -72,6 +72,11 @@ export interface PostextConfig {
   /** Named chip styles for the inline `:chip[text]{style="…"}`. Defaults
    *  to a single `chip` style when unset. */
   chipStyles?: ChipStyleConfig[];
+  /** Named character styles for the inline `:span[words]{style="…"}`: the
+   *  face, size, weight, colour, tracking and case of a run of words. A
+   *  style may name a highlight style (`mark`) for a band or a line.
+   *  None by default. */
+  characterStyles?: CharacterStyleConfig[];
   /** Named highlight styles for the inline `:mark[text]{style="…"}`
    *  (#888). Defaults to a single pale yellow `mark` style when unset. */
   markStyles?: MarkStyleConfig[];

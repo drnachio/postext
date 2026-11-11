@@ -6,7 +6,7 @@ export const metadata = {
   description: 'La typographie du texte courant : police, corps et interlignage, couleurs, retraits, citations, vers, taquets de tabulation et lettrines',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '29 min',
   order: 7,
   parent: 'configuration',
   plainSummary: "Cette page réunit les réglages du texte principal d’un livre. Vous choisissez sa police, sa taille et l’espace entre ses lignes, ainsi que la couleur des mots en gras et en italique. Vous réglez le retrait de première ligne et l’espace entre les paragraphes. La page traite aussi des citations mises à part du texte, des poèmes, des taquets de tabulation pour le texte en colonnes, et de la grande lettre qui ouvre certains chapitres. La césure, les titres et les listes ont leurs propres pages.",
@@ -61,6 +61,12 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td><code>boolean | Dimension</code></td>
       <td><code>false</code></td>
       <td>L’espace entre deux paragraphes. <code>true</code> insère une ligne blanche (égale à <code>lineHeight</code>), à la manière des éditeurs ; une longueur comme <code>&#123; value: 2, unit: 'mm' &#125;</code> ou <code>0.33em</code> du corps du texte met exactement cet espace, dans le texte courant, dans les encadrés et dans les blocs des pages composées. Une longueur qui n’est pas un nombre entier de lignes fait sortir les paragraphes de la grille de lignes ; le bloc suivant qui s’y cale (un titre, le dernier élément d’une liste, une formule centrée) y ramène le texte. C’est le même espace que <code>paragraphStyles[].spaceBetween</code>, qui le remplace dans un conteneur <code>:::paragraphs</code>. Un encadré fixe le sien dans <code>calloutStyles[].body.paragraphSpacing</code>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Fait commencer chaque paragraphe du corps et chaque citation sur une ligne de la grille : l’espace au-dessus est arrondi jusqu’à la suivante, quelle que soit la fin du bloc précédent (un titre hors de la grille, un encadré ou une figure aux marges exactes). <code>false</code> laisse le paragraphe là où le bloc précédent l’a laissé. Un paragraphe dans un conteneur <code>:::paragraphs</code> suit plutôt le <code>snapTopToGrid</code> de son style, et les vers celui de leur style de paragraphe, ou celui-ci quand ils n’en ont pas. Pour retrouver la grille seulement sous un titre hors grille, utilisez le <code>regainGrid</code> du titre. Dans le Sandbox : <strong>Commencer les paragraphes sur une ligne de la grille</strong>.</td>
     </tr>
     <tr>
       <td><code>color</code></td>

@@ -217,6 +217,10 @@ export interface Resource {
   createdAt: number;
   /** Last-modified timestamp (ms since epoch). */
   updatedAt: number;
+  /** How this picture's colours are read in print, over the book's
+   *  `print.imageColor`: a picture that must ignore its profile, take an
+   *  assigned one, or print its greys or its CMYK otherwise than the rest. */
+  printColor?: import('../output/print.js').PrintImageColorConfig;
   /** Present when `kind === 'bitmap'`. */
   bitmap?: {
     fileId: string;
@@ -236,6 +240,13 @@ export interface Resource {
      *  horizontal ppi. Used under `layout.bitmapResolution: 'file'`, where
      *  72 and 96 count as unset; shown by the Sandbox. */
     fileResolution?: number;
+    /** The original a TIFF or Photoshop picture was imported from: the
+     *  `fileId` of that file, whose own pixels, channels (CMYK included)
+     *  and profile the PDF backend prints, while `fileId` holds the PNG
+     *  preview the screens, the HTML and the EPUB show. */
+    printFileId?: string;
+    /** That original's format. */
+    printFormat?: 'tiff' | 'psd';
   };
   /** Present when `kind === 'svg'`. */
   svg?: {
@@ -303,6 +314,12 @@ export interface Resource {
    *  to their sizes and the safe area always stays in view. Without one the
    *  picture is always shown whole. Ignored for tables. */
   safeArea?: ResourceSafeArea;
+  /** Manual crop of a bitmap, SVG or video poster: the part of the picture
+   *  the figure shows, in fractions of it (0–1, top-left origin). The
+   *  figure takes the crop's ratio in every output; the safe area, if any,
+   *  is read inside it and may crop further where the page needs it.
+   *  Unset: the whole picture. Ignored for tables. */
+  crop?: ResourceSafeArea;
   /** The speakers and named points of a comic panel's picture (#557):
    *  balloon tails point at them, thought balloons at their `head`, and no
    *  balloon covers their `face`. Language-independent: every edition of

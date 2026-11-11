@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Marks inside a line: emphasis, links, chips, small capitals, tabs, vertical text, Chinese and Japanese marks, text direction, and LaTeX formulas',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '27 min',
+  readingTime: '29 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "This page covers the marks you use inside a line of text. They make words bold or italic, add links, draw small labels, set small capitals and line text up at tab stops. Other marks are for Chinese and Japanese books, such as small readings above a character, or for a phrase in another direction, such as English in an Arabic book. The last section shows how to write mathematical formulas.",
@@ -141,6 +141,11 @@ Inline markup is recognised inside any text block (headings, paragraphs, blockqu
       <td>A coloured band behind words that stay ordinary text: they break, hyphenate and justify as usual. Styled by <code>markStyles</code>; see <a href="#highlight-marks">Highlight marks</a>.</td>
     </tr>
     <tr>
+      <td>Character style</td>
+      <td><code>:span[some words]&#123;style="id"&#125;</code></td>
+      <td>The words in a named style of <code>characterStyles</code>: a face, a size, a colour, tracking, capitals, and the highlight style it names. Unlike a chip it breaks and hyphenates like the text around it. See <a href="#character-styles">Character styles</a>.</td>
+    </tr>
+    <tr>
       <td>Tab</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Sends the words after it to the next tab stop: one of the stops of the paragraph's style, or the one its attributes set. A tab character typed in the text is a tab only where the style sets stops. See <a href="#tabs-and-tab-stops">Tabs and tab stops</a>.</td>
@@ -198,6 +203,23 @@ Press :chip[Ctrl]{style="key"} + :chip[C]{style="key"} to copy.
 
 A chip with `field` becomes a fillable form field in the PDF (see [PDF output › Form fields](/en/docs/configuration-pdf-output#form-fields)).
 
+### Character styles
+
+`:span[some words]{style="id"}` sets the words between the brackets in the character style `id` of `characterStyles` (see [Configuration › Character styles](/en/docs/configuration-styles#character-styles)): a face, a size, a weight, a colour, tracking, capitals, and, when the style names one, a highlight style's band or line. The `:span` directive is the way to give a run a named look.
+
+```markdown
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}.
+
+A :span[run with **bold** and a :span[nested style]{style="accent"}]{style="marker"} inside.
+```
+
+- **Text, not a box.** The words stay in the line: they break across lines, hyphenate and justify as the text around them does. A band or line broken over two lines is drawn on each; on one line it runs on under the spaces between the run's words, never under the spaces around it.
+- **The directive.** `style` names the style; quoted (`style="drug"`) or not (`style=drug`). A `:span` with no `style` sets its words plain, as an unknown id does. Inside the brackets, `\]` is a literal bracket. The form `[words]|id|` is not Postext syntax and prints as written.
+- **Nesting.** The words admit the other inline marks and other runs; the innermost style wins. An unknown id sets the words as the text around them and is reported (`unknownCharacterStyle`).
+- **Where.** Paragraphs, list items, quotations, callouts, footnotes, captions, notes and table cells, and headings while `headings.inlineMarks` is on (off, the words are set plain).
+- **Plain text.** The directive prints nothing: search, the contents, running heads and index anchors read the words alone, as written. Capitals a style sets copy from the PDF as the words were typed.
+- **One mechanism for each thing.** A plain underline is `:underline[…]`, a plain strike-through `~~…~~` and a plain highlight `:mark[…]`. A band or a line that goes with a character style is a highlight style the character style names (`mark`), so the band and the line follow the same rules as `:mark[…]`.
+
 ### Highlight marks
 
 `:mark[text]` lays a coloured band behind `text`, the way a textbook highlights its key words. Unlike a chip, the marked words stay ordinary text: they break at line ends, hyphenate and justify like the words around them, and the band follows each piece of the phrase on its line. `:mark[text]{style="key"}` picks a named style from `markStyles` (see the configuration reference); without `style`, or with an id no style declares, the mark takes the first style (a built-in pale yellow `mark` when the configuration has none; the sandbox warns about an unknown id).
@@ -211,7 +233,7 @@ The sun warms the sea and :mark[water rises into the air as vapour, where it coo
 - **Line breaks.** A mark may hold several words and run over a line end; each line gets its own band. The horizontal padding and the rounded corners are drawn at the true start and end of the phrase only: where the phrase breaks, the band stops square at the last letter of the line and starts square at the first letter of the next. A style with `decorationBreak: 'clone'` gives each line a whole band instead, with the padding and the corners at both of its ends: a heading set on a colour band cut per line.
 - **No room taken.** The band is painted under the text, 0.8 em above and 0.25 em below the baseline, grown by the vertical padding, and its horizontal padding reaches into the word spaces beside the phrase. The lines break exactly as they would without the mark, so marking a laid-out book moves none of its pages.
 - **Text.** The marked text takes its own inline marks (`:mark[the **key** word]`), links, chips and references. Brackets nest inside it (`:mark[see [the map]]`), `\]` writes a literal bracket, and the text may run over a soft line break of the source. A punctuation mark glued to the phrase outside the brackets (`:mark[land].`) stays out of the band; a style's text colour reaches the whole word that holds it. A mark inside another is set as its text.
-- **Where.** Paragraphs, headings set in the text, list items, blockquotes, callouts, footnotes, table cells, captions and notes, in left-to-right and right-to-left text and in Chinese and Japanese. The canvas, the PDF and the HTML paint the band; in a tagged PDF it is a layout artifact and the words belong to their paragraph. A heading drawn by a design (an opener) prints the words without the band, and so does the HTML viewer on a vertical page.
+- **Where.** Paragraphs, headings set in the text, list items, blockquotes, callouts, footnotes, table cells, captions and notes, in left-to-right and right-to-left text and in Chinese and Japanese. The canvas, the PDF and the HTML paint the band; in a tagged PDF it is a layout artifact and the words belong to their paragraph. A heading drawn by a design (an opener) prints the words without the band. On a vertical page the band runs down the column with the characters, in the HTML viewer too.
 
 ### Strikethrough
 

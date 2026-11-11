@@ -64,3 +64,5 @@ Las páginas capturadas muestran las casillas vacías, porque las palabras de un
 Los totales son scripts (`AFSimple_Calculate` y expresiones breves) que ejecutan Acrobat, Foxit, Chrome y Firefox. Vista Previa de macOS muestra los campos y guarda lo que escribes, pero no ejecuta scripts, así que allí los totales se quedan vacíos.
 
 La casilla del círculo lleva `on="1"`, el valor que lee un cálculo cuando está marcada. Con el valor por defecto, `Yes`, `product(order.circle, 10)` daría siempre 0, y postext-pdf avisa de ello.
+
+La receta importa `https://esm.sh/postext-pdf?bundle`. La compilación por defecto de pdf-lib en esm.sh deja sus clases de anotación en un módulo aparte, y entonces pdf-lib rechaza el widget de cada campo: el PDF conserva las casillas, pero sin formato de número, sin totales y sin campos de solo lectura, con un aviso `formField` en la consola. `?bundle` compila pdf-lib en un solo módulo y deja `postext` fuera, compartido con el resto de la página.

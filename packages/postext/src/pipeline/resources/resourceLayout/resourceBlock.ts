@@ -4,7 +4,7 @@
 import { layoutScoreResource } from '../scoreBlocks.js';
 import { bitmapLayoutSize } from '../../../bitmapResolution.js';
 import { measuringVertically, withMeasureWritingMode } from '../../../measure/vertical.js';
-import { resourceSafeArea, safeAreaHeightRange, safeAreaSource } from '../safeArea.js';
+import { resourceSafeArea, safeAreaHeightRange, safeAreaSource, composeSource, croppedSize, resourceCrop, withinCrop } from '../safeArea.js';
 import { layoutVideo } from '../videoOverlay.js';
 import type { ResourceSafeArea } from '../../../types.js';
 import { type ResolvedResourceBlock, type VDTTableSlice, type VDTResourceTableLayout, createBoundingBox } from '../../../vdt.js';
@@ -13,7 +13,7 @@ import { dimensionToPx } from '../../../units.js';
 import { type BooktabsRuleSpec, booktabsStrokes } from '../../../table/booktabs.js';
 import { chipContextOf } from '../../text/chips.js';
 import { pickTableStyle } from '../../../defaults/resources/tableStyle.js';
-import { startEndAsLeftRight } from '../../../defaults/shared.js';
+import { startEndAsLeftRight, tintPaperOf } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import { FIT_EPS } from '../../blocks/placement.js';
 import { captionInsideShare } from '../captionInside.js';
@@ -119,14 +119,18 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   let fileId: string | undefined;
   let format: string | undefined;
   let scoreBody: ReturnType<typeof layoutScoreResource> | undefined;
+  // The author's crop (`Resource.crop`): the figure takes its size.
+  const crop = resourceCrop(resource);
 
   if (resource.kind === 'bitmap' && resource.bitmap) {
     fileId = resource.bitmap.fileId;
     format = resource.bitmap.format;
     // Its pixels at its own resolution (#631), else at `page.dpi`; the
-    // column caps it, a smaller picture keeps its size.
+    // column caps it, a smaller picture keeps its size. A crop shows part
+    // of them, at the crop's ratio.
     const natural = bitmapLayoutSize(resource.bitmap, dpi);
-    const fit = fitWidth(natural.width, natural.height, pictureMaxWidth);
+    const shown = croppedSize(natural.width, natural.height, crop);
+    const fit = fitWidth(shown.width, shown.height, pictureMaxWidth);
     bodyWidth = fit.width;
     bodyHeight = fit.height;
   } else if (resource.kind === 'svg' && resource.svg) {
@@ -134,8 +138,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     // SVGs are vector: fill the column width and derive height from the
     // intrinsic aspect ratio (viewBox / width:height). Fall back to a 4:3 box
     // only when no intrinsic size was captured.
-    const iw = resource.svg.width ?? 0;
-    const ih = resource.svg.height ?? 0;
+    const { width: iw, height: ih } = croppedSize(resource.svg.width ?? 0, resource.svg.height ?? 0, crop);
     bodyWidth = pictureMaxWidth;
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * 0.75;
   } else if (resource.kind === 'video') {
@@ -145,8 +148,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     const poster = resource.video?.poster;
     fileId = poster?.fileId;
     format = poster?.format;
-    const iw = poster?.width ?? resource.video?.width ?? 0;
-    const ih = poster?.height ?? resource.video?.height ?? 0;
+    const { width: iw, height: ih } = croppedSize(poster?.width ?? resource.video?.width ?? 0, poster?.height ?? resource.video?.height ?? 0, poster ? crop : undefined);
     bodyWidth = pictureMaxWidth;
     bodyHeight = iw > 0 && ih > 0 ? bodyWidth * (ih / iw) : bodyWidth * (9 / 16);
   } else if (resource.kind === 'score' && resource.score) {
@@ -212,6 +214,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       rules: ts.rules,
       listGapPx: dimensionToPx(resolved.unorderedLists.gap, dpi, bodyFontPx),
       palette,
+      tintPaper: tintPaperOf(resolved.page),
       chips: chipContextOf(resolved),
       ...(resolved.codeStyle?.inline ? { inlineCode: resolved.codeStyle.inline } : {}),
       ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}),
@@ -267,15 +270,16 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
   // is cut between rows by the placer instead).
   // Intrinsic size and safe area of a picture that may be cropped to make
   // it taller or shorter (#442); `flexRange` gives its body height range at
-  // a width.
-  const safeArea = resourceSafeArea(resource);
-  const intrinsic = resource.kind === 'bitmap' && resource.bitmap
+  // a width. Both measured inside the author's crop, when there is one.
+  const safeArea = withinCrop(resourceSafeArea(resource), crop);
+  const whole = resource.kind === 'bitmap' && resource.bitmap
     ? { width: resource.bitmap.width, height: resource.bitmap.height }
     : resource.kind === 'svg' && resource.svg?.width && resource.svg.height
       ? { width: resource.svg.width, height: resource.svg.height }
       : resource.kind === 'video' && resource.video?.poster
         ? { width: resource.video.poster.width, height: resource.video.poster.height }
         : undefined;
+  const intrinsic = whole ? croppedSize(whole.width, whole.height, crop) : undefined;
   const picture = resource.kind === 'bitmap' || resource.kind === 'svg' || resource.kind === 'video';
   const flexRange = safeArea && intrinsic && intrinsic.width > 0 && intrinsic.height > 0 && !rotate
     ? (w: number) => safeAreaHeightRange(intrinsic.width, intrinsic.height, safeArea, w)
@@ -358,6 +362,9 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
     bodySource = safeAreaSource(intrinsic.width, intrinsic.height, safeArea, bodyWidth, bodyHeight);
     bodyFlex = { shrink: Math.max(0, bodyHeight - range.min), grow: Math.max(0, max - bodyHeight), delta: bodyHeight - before };
   }
+  // What the renderers draw is a part of the whole picture: the safe area's
+  // cut, if any, taken inside the author's crop.
+  bodySource = composeSource(crop, bodySource);
 
   // A picture narrower than its slot whose caption takes its width
   // (`placement.captionMeasure: 'body'`): laid out again with the caption

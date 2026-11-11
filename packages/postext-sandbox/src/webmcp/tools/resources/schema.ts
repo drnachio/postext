@@ -1,9 +1,10 @@
 // The pieces the resource tools' input schemas and replies are built from:
 // sizes, table rows, resource types, the placement schema and settings
 // naming (#1276: split out of resources.ts).
-import { type Resource, type TableModel, type ResourceType, defaultResourceTypes, type ResourcePlacement, type PostextConfig, primaryFontFamily, type CustomFontVariant } from 'postext';
+import { type Resource, type TableModel, type ResourceType, type ResourcePin, MAX_PIN_PAGE_OFFSET, defaultResourceTypes, type ResourcePlacement, type PostextConfig, primaryFontFamily, type CustomFontVariant } from 'postext';
 import type { SandboxState } from '../../../context/SandboxContext.js';
 import { placementWith } from '../../../panels/resources/resourceEdits.js';
+import { cleanPinInput, pinProblem } from '../../../panels/resources/pinEdits.js';
 import { type JsonSchema, ToolError } from '../../modelContext.js';
 
 export const sizeOf = (r: Resource): { width: number; height: number } | null => {
@@ -36,7 +37,7 @@ export const PLACEMENT_SCHEMA: JsonSchema = {
   type: 'object',
   description: 'Where it goes on the page, merged into its placement key by key. A key set to null goes back to its resource type\'s default.',
   properties: {
-    position: nullable({ type: 'string', enum: ['auto', 'top', 'bottom', 'here'], description: 'A float at the head or the foot of a page or column near its first reference (auto lets the layout choose), or here: set in the text where its ::resource line stands.' }),
+    position: nullable({ type: 'string', enum: ['auto', 'top', 'bottom', 'here', 'paragraph'], description: 'A float at the head or the foot of a page or column near its first reference (auto lets the layout choose); here: set in the text where its ::resource line stands; paragraph: set in the text right after the paragraph that first cites it with :ref, no ::resource line needed (after the outermost box or group the citation stands in, after the paragraph a citing heading opens, after the rest of a list; a citation in a footnote does not count).' }),
     span: nullable({ type: 'string', enum: ['column', 'page', 'side'], description: 'A float as wide as its column, as the page, or in the side column of a column-and-a-half layout.' }),
     rotate: nullable({ type: 'string', enum: ['none', 'ccw', 'cw'], description: 'Turned a quarter turn on a page of its own (a landscape table in a portrait book).' }),
     width: nullable({ type: ['number', 'object'], description: 'How wide it is set: the share of its slot (column, columns, page or side column) it takes, above 0 and up to 1; or a length { value, unit } in mm, cm, in or pt, measured against the slot it lands in (as wide as the slot or wider takes the whole slot).' }),
@@ -50,6 +51,17 @@ export const PLACEMENT_SCHEMA: JsonSchema = {
     minScale: nullable({ type: 'number', description: 'The smallest scale shrink sets it at, above 0 and up to 1.' }),
     plate: nullable({ type: ['boolean', 'string'], enum: [true, false, 'content', 'trim', 'bleed'], description: 'A full-page plate (pictures and video posters): alone on a page of its own, as large as the content area holds with its caption ("content" or true), or covering the page to the trim or the bleed, cropped about its centre. false turns off a plate its resource type sets.' }),
     captionMeasure: nullable({ type: 'string', enum: ['slot', 'body'], description: 'A narrower picture\'s caption at the slot\'s measure, or as wide as the picture.' }),
+    pin: nullable({
+      type: 'object',
+      description: `Not recommended: a float set by hand, as dragging it in the canvas does. Postext places floats by rules and places them again when the text, the page size, the columns or the edition's language change; a pin names a page, a column and a slot of one layout, so it can stop holding or mean something else. Prefer position top/bottom, citingPage, keep-together boxes and shrink. page: pages after the one that first cites the float, 0 to ${MAX_PIN_PAGE_OFFSET}; column: the text column counted from 0 in reading order (left out: any); slot: top or bottom of that column (of the page, for a page-wide float). The pinned slot is tried first, then the page's usual slots, then later pages as usual; a pin the layout cannot follow is reported (floatPinMissed). Only for a float to a column or across the page, upright, not a plate. null: back to automatic.`,
+      properties: {
+        page: { type: 'integer', minimum: 0, maximum: MAX_PIN_PAGE_OFFSET },
+        column: { type: 'integer', minimum: 0 },
+        slot: { type: 'string', enum: ['top', 'bottom'] },
+      },
+      required: ['page', 'slot'],
+      additionalProperties: false,
+    }),
   },
   additionalProperties: false,
 };
@@ -74,6 +86,11 @@ export function withPlacement(placement: ResourcePlacement | undefined, patch: R
     if (key === 'wrapGap' && value !== undefined) {
       const gap = value as { value?: unknown; unit?: unknown };
       if (typeof gap.value !== 'number' || typeof gap.unit !== 'string') throw new ToolError('placement.wrapGap is a length: { value, unit } with a unit such as pt, mm or em.');
+    }
+    if (key === 'pin' && value !== undefined) {
+      const problem = pinProblem(value);
+      if (problem) throw new ToolError(`placement.pin: ${problem}, not ${JSON.stringify(given)}. null takes the float back to automatic.`);
+      value = cleanPinInput(value as ResourcePin);
     }
     next = placementWith(next, key, value as never);
   }

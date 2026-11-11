@@ -58,13 +58,42 @@ Conversion at `page.dpi` (default 300):
 
 ### ColorValue
 ```ts
-{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl', cmyk?: { c, m, y, k }, paletteId?: string }
+{ hex: string, model: 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot', cmyk?: { c, m, y, k }, spot?: SpotColor, overprint?: boolean, paletteId?: string, tint?: number }
 ```
 - `hex`: `#rrggbb`, `#rgb`, `#rgba`, `#rrggbbaa`, `rgb()` / `rgba()` (comma or space syntax, alpha as number or %), or `'transparent'`. Translucent colours paint the same on canvas, HTML and PDF (ExtGState alpha); PDF/X-1a flattens them.
 - `model` says how the colour was specified; screens draw `hex`.
 - `cmyk` (percent, postext ≥ 1.22): the exact process values of a colour authored in CMYK (an
   InDesign CMYK swatch, a brand colour). A CMYK print render (`print`, §21) sets them as they
   are; `hex` is their screen rendering. Put them on the palette entry: every linked use follows.
+- `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
+  `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
+  alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
+  A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
+  (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
+  here, on the palette entry. In the print PDF an SVG colour prints on an ink only when it names
+  it (`icc-named-color(…, "PANTONE 185 C")`, or `data-spot="NAME"` with optional
+  `data-spot-tint="40"`) or when its hex is exactly a palette spot colour's (that ink at that
+  colour's tint); any other colour stays in process, a grey that looks like a tint included.
+  A source SVG exported without swatch names: give the palette one spot colour per tint it uses,
+  with exactly that hex, or add `data-spot` to the elements. `diagramStyle.singleInk` with a spot `inkColor` still prints the
+  recoloured drawing in tints of that plate. An ink an SVG names that no palette colour (nor an
+  `inks` entry with `cmyk`) defines prints on a plate of its own, alternate = the SVG colour's
+  CMYK, one plate per name, and the preflight warns (`spotInkUndefined`).
+- `overprint: true` (any model): in a print render everything painted in the colour overprints
+  instead of knocking out (a process colour as it separates, a spot colour on its ink's plate even
+  where the same ink knocks out elsewhere; a 100 K black keeps rich black for large areas); RGB
+  output ignores it. Put it on the palette entry: every linked use and its tints overprint, a part's
+  or section's colour for that entry too (a link has no setting of its own). A colour that
+  overprints never shares a hex with one that knocks out (one moves 1/255). Never on paper white
+  (`overprintWhite`, critical). Map an InDesign swatch's "Overprint Fill" here.
+- `tint` (with `paletteId`, 0–100): the entry at that strength (a callout ground at 8 % of the main
+  colour), following the entry and part/section palettes everywhere (flow, page colour, line
+  numbers, table cells, designs, Word). It keeps the entry's model: CMYK inks scaled, a spot entry's
+  ink at that tint on its own plate, a screen colour mixed over `page.backgroundColor`. Use it for an
+  InDesign tint swatch of a palette colour instead of a fixed hex.
+- Screen hex of a spot colour: a print render knows colours by hex, so a spot colour that shares
+  its hex with another ink or a CMYK colour moves one step (1/255, blue channel first) on every
+  output; the stored config does not change. Give distinct inks distinct hexes anyway.
 - `paletteId`: link to `colorPalette[].id`. When the id exists, the palette entry's hex/model win;
   otherwise the inline hex is the fallback. Palette links are what `:::part{palette=…}` and
   `headingStyles[].palette` recolour (§14, §16). **Always write a sensible `hex` too.**
@@ -99,6 +128,7 @@ Conversion at `page.dpi` (default 300):
 | `calloutStyles` | CalloutStyleConfig[] | `[{id:'note',name:'Note'}]` | §12 `:::callout{type=…}` — declaring replaces the default list |
 | `chipStyles` | ChipStyleConfig[] | `[{id:'chip',name:'Chip'}]` | §13 inline `:chip[…]{style=…}` |
 | `markStyles` | MarkStyleConfig[] | `[{id:'mark'}]` (pale yellow) | §13b inline `:mark[…]{style=…}`, postext ≥ 1.34.1 |
+| `characterStyles` | CharacterStyleConfig[] | `[]` (none) | §13b2 inline `:span[words]{style=…}` |
 | `exerciseStyles` | ExerciseStyleConfig[] | `[{id:'exercise'}]` | §13c `:::exercise{style=…}` — declaring replaces the default list |
 | `exercises` | ExercisesConfig | — | §13c edition (student/teacher), solutions placement, shuffle seed, screen editions |
 | `codeStyle` | CodeStyleConfig | §12b | code listings (```` ``` ```` / `~~~` fences, postext ≥ 1.23): face, box, tab width, long lines, line numbers, token colours, inline code |
@@ -167,7 +197,10 @@ page
 │               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
 │               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
-├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY
+├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
+│               The grid is only defined here. Whether a block OPENS on a grid line is its style's
+│               snapTopToGrid (≥ 1.75, all default false): headings / levels[] / headingStyles[], bodyText
+│               (body paragraphs + blockquotes), paragraphStyles[], calloutStyles[], math, resourceTypes[], lists
 ├─ pageNumbering { format='decimal'|'lower-roman'|'upper-roman'|'lower-alpha'|'upper-alpha'|<East Asian style, §10>, startAt=1 }
 └─ binding      'auto'|'left'|'right', default 'auto' (= 'right' when layout.writingMode is 'vertical-rl', the document is right to left, or its comics section reads right to left: a manga, a ja/zh-Hant edition, postext > 1.20.2)   postext ≥ 1.9
 ```
@@ -213,6 +246,9 @@ layout
 ├─ floatsAtCitingPage boolean                                default false  ≥ 1.25 document default of placement.citingPage (see §ResourcePlacement)
 ├─ maxTopFraction     number                                 default 0.7    ≥ 1.25 largest share of the column a float heading its citing page takes (with the floats already there)
 ├─ hugClosingFloats   boolean                                default true   closing page: page-wide floats below the last text move up under it
+├─ pullFloatsToCitation boolean                              default false  NOT recommended: forces a float that missed its citing page by ≤ 4 body lines back onto it (citing page's paragraphs above the citation set a line tighter, then a safe-area picture cropped, each crop a floatCropped warning); kept only if it lands there with no extra page, no later float, no levelled band or citingPage float lost. Works against rule-based placement (paragraphs tighter than the line breaker chose, cropped pictures): use placement.citingPage / floatsAtCitingPage and placement.shrink:'slot' instead
+├─ footFloatRow     boolean                                 default false  ≥ 1.75 foot band (faldón): a float cited where its column holds one at the foot takes the next later column with an empty foot, first caption lines level (it rises, or its neighbour does while its column has the room); safe-area picture cropped toward the neighbour's height (floatCropped, reason 'row'); row members keep their place, a later float in their column goes above
+├─ alignFloatsAcrossColumns boolean                          default false  ≥ 1.75 one-column upright figures sharing a band line up across columns: foot = first caption lines level (white under the shorter caption), head = picture bottoms level (white above the shorter picture), a column-filling head picture lines up with the foot captions beside it; pinned/rotated/multi-column/side-caption/table slices left out; pads re-read after the last pass (up to 2+2 extra passes). Use it for textbooks with figures in both columns; don't fake it with empty lines
 ├─ floatsUnderOpener  boolean                                default true   ≥ 1.25 under a span:'page' opener over 2+ text columns, the head of column 1 is a top slot; false = floats land from column 2, as ≤ 1.24 (a preset below configVersion 11 that sets a page-span heading reads false)
 ├─ openerFloats       'allow' | 'warn' | 'avoid'             default 'allow'  ≥ 1.28 floats on an opener page (a part's page, the page a heading opens with breakBefore or span:'page', the first page of a document that starts with a heading): 'warn' = same layout + one `openerFloat` warning per float; 'avoid' = the page takes no float, each goes to the first slot after it (inline 'here' resources, 'fixed' and span:'side' boxes stay)
 ├─ inlineResourceGap  'around' | 'above'                     default 'around'  (a preset without configVersion ≥ 5 reads 'above')
@@ -300,6 +336,7 @@ bodyText
 ├─ tashkil           'keep'|'strip'|'strip-vowels'   'keep'      Arabic vowel marks out of the set text (strip-vowels keeps shadda)
 ├─ textAlign         'left'|'justify'|'center'|'right'|'start'|'end'   'justify'   left = the side a line STARTS on (the right of an Arabic paragraph); start/end are synonyms
 ├─ paragraphSpacing  boolean|Dimension  false        true = one full grid line between paragraphs; a length (≥ 1.52, #1115: {2,'mm'}, {0.33,'em'}) = exactly that, in the flow, boxes and frames; off-grid until the next heading/list tail snaps back. Same slot as paragraphStyles[].spaceBetween (which wins inside :::paragraphs); boxes: calloutStyles[].body.paragraphSpacing
+├─ snapTopToGrid     boolean         false        (≥ 1.75) every body paragraph and blockquote opens on a grid line, whatever ended before (an off-grid heading, an exact-margin box); :::paragraphs follow their style's, verse its paragraph style's (else this). Only under an off-grid heading: headings.regainGrid
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
@@ -316,6 +353,18 @@ bodyText
                       prefixes (vos-altres), l·l breaks il- | lusió (the dot dropped, the line measured without it).
                       Type the dot as U+00B7 `·`: a PDF's `l.l`, `l•l`, `l∙l` (U+2219) or `ŀl` (U+0140) splits or
                       misses the word; normalise it when porting
+                      minWordLength / leftMin / rightMin (≥ 1.74): shortest word divided and letters kept before / carried after a
+                      break; unset = the language's own (hyphenationLanguageLimits(locale)); apostrophe words (fr, it, ca) obey them
+                      too. Port the source's "words with at least / after first / before last" settings here
+                      fewerHyphens 0–10 (≥ 1.74): + 50 penalty per step on every hyphen (a word's own hyphen too); 0 = as before
+                      ladders 'allow'|'warn'|'avoid' ('allow'), maxConsecutive 1, ladderPenalty 30000 (≥ 1.74): more than
+                      maxConsecutive hyphenated lines in a row; 'warn' = same layout + `hyphenLadder` warning; 'avoid' = ladderPenalty
+                      demerits per line past the limit (on top of consecutiveHyphenDemerit 3000), the ladders kept are reported.
+                      Port the source's "hyphen limit" (consecutive hyphens) as maxConsecutive with 'avoid'
+                      lastWord 'allow'|'warn'|'avoid' ('allow'), lastWordPenalty 30000 (≥ 1.74): the last line holds only the rest of
+                      a word divided on the line before; 'warn' = `lastWordDivided` warning; 'avoid' = lastWordPenalty demerits.
+                      Port "hyphenate last word" off as 'avoid'. All three: soft (demerits, never a hard limit), body text, lists
+                      and quotations only (not captions or cells), need optimalLineBreaking
 ```
 H&J / Knuth–Plass
 ```
@@ -568,6 +617,11 @@ headings
 │                                  'fill' = as many lines as fit, however few go on (1.4; a preset without
 │                                  configVersion 8 whose chapters have a heading reads 'fill')
 ├─ snapToGrid    true              false = keep exact marginBottom (text may sit off-grid until next snap point)
+├─ regainGrid    false             with snapToGrid=false: exact margins, the block after (text, list, inline figure
+│                                  or box) starts on the next grid line; keepWithNext counts the rounding, balancing
+│                                  levers still apply; levels[] and heading styles may set it
+├─ snapTopToGrid false             (≥ 1.75) round the space above up so the heading opens on a grid line, whatever
+│                                  ended before it (marginTop = minimum); levels[] and heading styles may set it
 ├─ columnHeadSpace 'none'          ('none' | 'remainder', ≥ 1.28) a snapping heading that opens a column: 'none' sets it on
 │                                  the column's first line and the snap adds the part of a line under it (its text then stands
 │                                  further from it than after a paragraph); 'remainder' keeps that part of a line above it, so
@@ -584,7 +638,7 @@ headings
 ```
 { level: 1..6,                         REQUIRED
   fontSize: Dimension (abs)            defaults H1 18pt, H2 15, H3 12, H4 10, H5 9, H6 8
-  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid   → inherit general
+  lineHeight, fontFamily, color, fontWeight, marginTop, marginBottom, snapToGrid, regainGrid, snapTopToGrid → inherit general
   figureStyle: FigureStyle             → headings.figureStyle (§20a)
   italic: boolean                      false
   letterSpacing: Dimension             0 (tracking after every glyph, spaces and number prefix included;
@@ -777,7 +831,7 @@ running heads, margins, layout, body typography, palette.
   fontFamily, fontSize, lineHeight, color, fontWeight, marginTop, marginBottom, italic,
   letterSpacing, textTransform, breakBefore (merged field by field over the level's), span,
   figureStyle (§20a; applied to the family of the level the style is used on),
-  advancedDesign, spanBreak (≥ 1.19), hidden, snapToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
+  advancedDesign, spanBreak (≥ 1.19), hidden, snapToGrid, regainGrid, snapTopToGrid, lineSpan / indent / jidori (≥ 1.16; 0 clears the level's),
   firstLineIndent (≥ 1.24; 0 clears the level's),
   dropCap (≥ 1.23, §4b; false clears the level's: e.g. a preface style without the chapters' initial)
   header?: DesignSlot, footer?: DesignSlot      replace document running heads on the section's pages ({elements:[]} = none)
@@ -1182,6 +1236,7 @@ in another the outer list's `itemSpacing` applies on both sides. List margins of
                                  indent + hangingIndent); an inherited one gives way and line 1 starts at indent)
   spaceBetween = 0, marginTop = 0, marginBottom = 0 (minimum; flow snaps back to grid after)
   snapToGrid = true              (false = exact space under the container, flow stays off the grid)
+  snapTopToGrid = false          (≥ 1.75) the container's first paragraph opens on a grid line, whatever ended before
   containerSpacing?: 'collapse'|'add' (≥ 1.28; unset = bodyText.paragraphContainerSpacing; the rule under THIS
                                  style's containers, in the text and in a box: 'add' on a big figure or a
                                  reference list ends its groups on the style's own space, no paragraph-spacing
@@ -1274,6 +1329,7 @@ All em values = the callout body font size.
   columnGap = 1.5em                  for :::columns{count=N} groups inside the box (a fence `gap=` overrides it)
   marginTop = 0.75em, marginBottom = 0.75em (minimum; grid-snapped after)
   snapToGrid = true                  false = exact marginBottom (stacked-box worksheets)
+  snapTopToGrid = false              (≥ 1.75) an in-flow box opens on a grid line (space counted when fitting the column)
   keepTogether = true                false = may split between children / lines; continuation drops icon (its column stays, empty) (+ title unless repeatTitle)
   splitMinLines = 2                  fewest text lines on each side of a cut; a cut inside a paragraph or
                                      list item also keeps ≥ layout.boxChildSplitMinLines (2) of its lines
@@ -1392,16 +1448,41 @@ style declares (`unknownMarkStyle`), takes the first style; declaring `markStyle
   holds glued punctuation), borderRadius = 0 (square ends, the print norm; 0.2em up to postext 1.51, which a config stored then keeps through the configVersion 18 pin when its text has a mark; write it to round a band's ends), paddingX = 0.15em (past the
   first and last letter, into the word spaces), paddingY = 0.05em, paddingTop?, paddingBottom? (each in place
   of paddingY), decorationBreak = 'slice' | 'clone' (postext ≥ 1.52.0; 'clone' gives every line piece of a wrapped
-  phrase a whole band, paddingX and corners on both ends: a heading on a colour band cut per line) }
+  phrase a whole band, paddingX and corners on both ends: a heading on a colour band cut per line),
+  backgroundEnabled = true (false: no band, only the line and the text colour), opacity = 100 (0–100; translucent
+  in canvas, HTML, digital PDF and PDF/X-4; a tint over white in PDF/X-1a, Word, SVG and IDML),
+  rough = 0 (0–100, hand-drawn edges, seeded: the same on every render; Word draws a clean band),
+  line?: { position = 'under' | 'through', style = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy',
+    color? (the marked text's), thickness? (the face's underline/strikeout) } }
 ```
+paddingTop/paddingBottom may be negative: `paddingTop: -0.35em` gives a marker stroke over the lower half of the
+letters. A line under sits where `:underline[…]` puts it (right of the characters down a vertical page), a line
+through where `~~…~~` does.
 The band takes no room: the lines break as they would without the mark, so marking a laid-out book moves no page.
 Port rule: one style per distinct highlight colour of the source, the highlight's text colour in the style's
 `color`; never a row of chips split by hand at the source's line ends, and never two chips for a translated phrase.
-Limits: a heading drawn by a design (an opener) prints the words without the band, and so does the HTML viewer on a
-vertical page. An engine older than the release that ships `:mark` prints `:mark[…]` literally (check `postext
+Limits: a heading drawn by a design (an opener) prints the words without the band. An engine older than the release that ships `:mark` prints `:mark[…]` literally (check `postext
 --version`).
 
 ---------------------------------------------------------------------------------
+
+## 13b2. `characterStyles[]` — CharacterStyleConfig
+
+Inline `:span[some words]{style="id"}`, the one way to give a run of words a named look: a face, a size, a weight,
+a colour, tracking, capitals or small capitals, and (`mark`) a highlight style of §13b for a band or a line. The
+words stay ordinary text (they break, hyphenate and justify like the words round them). The directive prints
+nothing; `[words]|id|` is not Postext syntax and prints as written. An unknown id sets the words plain
+(`unknownCharacterStyle`). No style ships by default.
+```
+{ id (REQUIRED), name?, fontFamily?, fontSize?: Dimension, fontWeight?, italic = false,
+  color?: ColorValue (paint only; a highlight's text colour wins over it),
+  letterSpacing?: Dimension, textTransform = 'none' | 'uppercase' (by the language's rules; the PDF copies the
+  words as written), smallCaps = false, mark?: string (a markStyles id; an unknown id is dropped) }
+```
+Port rule: a plain underline is `:underline[…]`, a plain strike-through `~~…~~`, a plain highlight `:mark[…]`; a
+character style for a look the source names and reuses (a face or colour on a run, or a source character style that
+must come back as one in Word, exported as *Postext Style: <name>*). Its band or line is a `markStyles` entry the
+style names with `mark`, never a decoration of its own. The EPUB sets the text look only, no band or line.
 
 ## 13c. `exerciseStyles[]` and `exercises` — exercises
 
@@ -1497,11 +1578,21 @@ answers stay in the chapters (playbooks.md C7).
   counterFormat: 'decimal'|'roman-lower'|'roman-upper'|'alpha-lower'|'alpha-upper'
   captionPrefix: string       caption = "<prefix> <number>. <caption>" ('' for unlabelled photos)
   defaultPlacement?: ResourcePlacement
-  captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle }
+  captionStyle?: CaptionStyleConfig   partial override merged over the global captionStyle
+  snapToGrid?: boolean                default true: an inline figure/table of the type puts the flow back on the grid
+  snapTopToGrid?: boolean             (≥ 1.75) default false: an inline figure/table (not wrapped, not at a column top)
+                                      opens on a grid line }
 ```
 ResourcePlacement, resolved field-by-field: resource.placement → type.defaultPlacement → built-in:
 ```
 position: 'auto' (default) | 'top' | 'bottom' | 'here' (inline at ::resource directive)
+          | 'paragraph' (inline right after the paragraph that first cites it; no ::resource needed. Cited anywhere in a
+                         box or :::paragraphs/:::columns group: after the outermost such container; in a heading: after
+                         the paragraph it opens (and a list that follows); in a list item: after the list; after a display
+                         formula's continuation. Two cited in one paragraph: both after it, in citation order. A :ref in a
+                         footnote does not count: cited only in notes = on no page, paragraphCitedInNote warning. First
+                         referenced by its own ::resource = set there as 'here'. Else exactly a 'here' embed (wrap, side
+                         caption, captionSide inside, span 'page' cuts the band); never rotated, plate or shrunk to a slot)
 span:     'column' (default) | 'page' | 'side' (float-only side column; else behaves as 'column')
           span 'page' + position 'here' (≥ 1.19): on a multi-column page the ::resource line cuts the band like a
                          page-span box: the columns above close level (or the resource moves to the next page's head),
@@ -1570,7 +1661,18 @@ plate?:   boolean | 'content' | 'trim' | 'bleed'   (≥ 1.73, #1461) full-page p
                          folio or design elements unless pages:'plate'). false on a resource turns off its type's plate.
                          An enlarged bitmap under print.preflight.minImageResolution (default 300 ppi) = preflight
                          lowImageResolution (crop counted; books set up for print only); no plate warning of its own
+pin?: { page, column?, slot: 'top' | 'bottom' }   NOT recommended; never write one in a port. A float set by hand
+                         (Sandbox panel or canvas): page 0..3 counted from the citing one, column from 0 (any when
+                         unset; page-span floats ignore it). A preference: that slot first on that page, then that
+                         page's usual slots, then on as any float; dropped at a chapter's end. Ignored on side,
+                         turned, plate and in-text resources. Each pin not followed = floatPinMissed (reason notTaken |
+                         tooFar | column | unsupported). Tied to one layout's geometry: breaks when text, trim, columns
+                         or edition language change. Use position top/bottom, citingPage, keepTogether boxes, shrink
 ```
+Resource.crop?: { x, y, width, height } (fractions, like safeArea): the part of a bitmap / SVG / video poster always
+shown, at its ratio, in every output (canvas, PDF, HTML, both EPUBs, IDML, formatted Word, table cells, comic panel
+art, design images; the semantic Word export inserts the whole picture). The safe area is read inside the crop: mark
+it inside. Port a source's fixed crop (InDesign frame crop, LaTeX trim/clip) as `crop`, never by editing the file.
 A type may leave fields out (≥ 1.38): the built-in type of the same id (`figure`, `table`, `video`, in the document's
 language) fills them, else `name` is the id, `shortLabel` and `captionPrefix` the `name`, `numberingTemplate`
 `{h1}.{n}` (`{h1}-{n}` in Chinese, Japanese and Arabic), `resetOn` `'h1'`, `counterFormat` `'decimal'`; a `resetOn` that
@@ -1730,7 +1832,9 @@ video; a self-hosted file is packed under `media/` and plays in `<video>`.
 ## 19. `math`
 
 `{ enabled = true, fontSizeScale = 1.0, color? (= body), marginTop = 0.8em, marginBottom = 0.8em,
-indentAfterDisplay = true, keepWithLeadIn = false, equationNumbering }` (MathJax SVG).
+indentAfterDisplay = true, keepWithLeadIn = false, snapToGrid = true, snapTopToGrid = false, equationNumbering }`
+(MathJax SVG). `snapToGrid: false` keeps a display formula's exact margins (the flow stays off the grid after it);
+`snapTopToGrid: true` (≥ 1.75) opens it on a grid line.
 - `equationNumbering` (postext ≥ 1.19) `{ enabled = true, numberingTemplate = '{n}', resetOn = 'never',
   counterFormat = 'decimal', format = '({n})' }` numbers the formulas (rows) that carry `\label`;
   `'{h1}.{n}'` + `resetOn: 'h1'` gives (2.1). Counters carry across chapters in
@@ -2000,7 +2104,7 @@ Content warnings to expect: `cjkLooseLine` (a justified line needing more than �
 short; its Latin counterpart is `raggedLine`, ≥ 1.28.0: a justified line set ragged because its word spaces
 would pass 3×), `cjkMarksExceedLeading` / `rubyExceedsLeading` (line gap under ½ em with marks on one side, ⅝ with both;
 give annotated text more leading), `kuntenExceedsLeading` (送り仮名 need half an em on the reading side),
-`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`), `afterText` (≥ 1.25: a `span: 'side'` box or side figure set on a page with no text, because its chapter ended while it waited for the channel: fence it earlier or shorten it) `unplaced` (≥ 1.25: a box or float no page could take, e.g. a side box in a section with no side column; it is on no page) and `hereNotEmbedded` (a `position: 'here'` resource the text cites with `:ref` and never embeds with `::resource`: it is on no page; embed it or give it a floating position); config
+`indexReadingMissing` (a Japanese index entry with kanji and no `yomi`), `arabicMarksExceedLeading` (vowel marks of vocalised Arabic touch the line above; raise `lineHeight`, 1.7–2.1 em), `fullwidthMarkup`, `attributeKeyInvalid`, `rotateIgnoredVertical`, `textWrap` (≥ 1.24: a resource or box with wrap kept its band: `tooNarrow`, `fewLines`, `verticalText`, or an inline one `moved` to the next column), `floatShrunk` (≥ 1.24: a picture scaled to its slot; `overflowPx` when even `minScale` runs past the text block), `floatCropped` (a picture cropped within its safe area by `layout.pullFloatsToCitation` to stay on its citing page; `share` = fraction of its height cropped; the option is not recommended, use `placement.citingPage` / `shrink: 'slot'`), `paragraphCitedInNote` (a `position: 'paragraph'` resource cited only in footnotes: on no page; cite it in the running text, embed it or float it), `columnsFlowUnknown` (≥ 1.25: a `:::columns` flow other than snake/parallel; the default applies), `columnsTooNarrow` (≥ 1.25: sub-columns under six ems of their text: fewer columns or a smaller `gap`), `afterText` (≥ 1.25: a `span: 'side'` box or side figure set on a page with no text, because its chapter ended while it waited for the channel: fence it earlier or shorten it) `unplaced` (≥ 1.25: a box or float no page could take, e.g. a side box in a section with no side column; it is on no page), `floatPinMissed` (a `placement.pin` the layout did not follow, with `reason`; pins are not recommended: remove it and use the placement rules) and `hereNotEmbedded` (a `position: 'here'` resource the text cites with `:ref` and never embeds with `::resource`: it is on no page; embed it or give it a floating position); config
 warning `cjkGridClamped`; PDF warnings `missingGlyph`, `variableFontDefaultInstance`, `cffEmbeddedWhole`.
 
 ```json
@@ -2625,7 +2729,7 @@ Sandbox: the **Figures** field next to each style's typeface in the Design panel
 
 ## 21. Output / viewer / debug
 
-`pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale) }`.
+`pdfGeneration`: `{ outlines = true, forceColorSpace = false, colorSpace = 'cmyk'|'rgb'|'grayscale' ('cmyk'), accessible = true (tagged PDF/UA-1, lang = config.locale), baselineGrid = true (draw page.baselineGrid in the PDF) }`.
 `renderToPdf` takes each setting from its own options, else from the first document's `pdfGeneration`
 (`colorSpace` only while `forceColorSpace` is on), else the defaults (bookmarks, tagged, RGB).
 `renderToPdf(docs, { date })` (postext-pdf ≥ 1.28.0; a `Date`, milliseconds or a date string) fixes
@@ -2650,9 +2754,30 @@ as a change. Left out, the file is stamped with the time of the call.
              "richBlackColor": { "c": 60, "m": 40, "y": 40, "k": 100 }, "richBlackMinSize": { "value": 6, "unit": "mm" } },
   "preflight": { "enabled": true, "minImageResolution": 300, "criticalImageResolution": 150,
                  "minRuleWidth": { "value": 0.25, "unit": "pt" }, "smallTextSize": { "value": 9, "unit": "pt" },
-                 "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true }
+                 "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true },
+  "inks": [                        // the ink table: spot inks as the printer gets them
+    { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
+    { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
+  ],                               // also "cmyk" (the alternate) and "overprint", over the colours' own
+  "plates": {                      // two-ink printing: the only plates the job prints on (absent: all)
+    "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
+    "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
+    "curves": { "PANTONE 286 C": [[0, 0], [50, 35], [100, 70]] }   // [tone, ink] percent per picture plate
+  },
+  "imageColor": {                  // how pictures' colours are read; the defaults print them as before
+    "embeddedProfile": "ignore",   // ignore (sRGB) | use: a PNG iCCP / JPEG ICC_PROFILE read through its profile
+    "assignedRgbProfile": { "name": "Adobe RGB (1998)", "fileId": "profiles/adobergb.icc" },  // every RGB picture through it
+    "grayDotGain": "none",         // none (separated as any picture) | profile (on black, output black's gain) | 10–30 (% at 50 %)
+    "cmykProfile": "keep"          // keep | convert: a CMYK picture of another press separated again
+  }
 }
 ```
+- A picture's own `printColor` (on the resource) takes the same `imageColor` fields over the book's.
+  TIFF and Photoshop originals (`bitmap.printFileId`, `printFormat: 'tiff' | 'psd'`, a PNG preview in
+  `bitmap.fileId`) print from their own pixels; one that cannot be decoded prints its preview, with a
+  `pictureOriginalUnreadable` warning, when the host passes `previewBytes` (`bundlePreviewBytes`).
+  In the Sandbox the book's `imageColor` is Print preparation → Pictures. An Illustrator `.ai` saved
+  PDF-compatible is a PDF print master.
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
   intent and the bleed and prints a `suggested_config` (`print` + `page.cutLines`). Map the
   condition to the catalogue id; a condition the catalogue lacks needs the printer's `.icc` as
@@ -2666,7 +2791,26 @@ as a change. Left out, the file is stamped with the time of the call.
   critical under `criticalImageResolution`), `declaredPixelsMismatch` (≥ 1.24: declared width/height ≠ the file's),
   `rgbImage`, `thinRule` (< `minRuleWidth`), `smallProcessText` (< `smallTextSize` in more than one ink; K-only black
   never counts), `inkLimit` (TAC over the limit), `safeZone` (text within `safeZone` of the trim; figure labels
-  count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding). Fix the critical ones.
+  count), `nearTrim` (a box or picture ending within `bleedSnap` of the trim without bleeding), `spotInks` (info:
+  the job's spot inks, those the SVGs name included), `spotInkConflict` (one ink with two alternates),
+  `spotInkUndefined` (an ink only an SVG names, with no palette colour or `inks` entry with `cmyk`:
+  add one, or alias it to the palette's ink), `spotInkName` (`All`/`None`, a process plate name
+  `Cyan`/`Magenta`/`Yellow`/`Black` in any case, control characters, or over 127 UTF-8 bytes; `written` is the
+  name the PDF uses instead: `All ink`, control characters dropped, a long name cut with a short hash; set
+  `pdfName` in `inks` to choose it), `spotInkSimilar` (names that differ only in case or spacing: merge them
+  with `aliases`), `overprintWhite` (critical: a colour that overprints and puts no ink down), `platesJob` (info:
+  the job's `plates` and picture plates), `offPlateInk` / `offPlateCmyk` (a spot ink or CMYK colour the job does not
+  print: info when its projection lands within ΔE 6, a warning past it or with no profile), `offPlateColor` (warning:
+  a screen colour that lands past ΔE 6), `plateUndefined` (a spot plate no colour or `inks` entry defines: it prints
+  as black), `cmykImageForeign` (a CMYK JPEG of another press
+  condition in a PDF/X-1a job, with `imageColor.cmykProfile: 'convert'`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
+- With `plates`, a colour off the job's plates prints as the closest mix of one
+  plate or two (a `DeviceN` space for two); greys stay on Black; rich black is dropped unless every ink of the recipe
+  prints. `images` and `curves` may name a plate by an ink table name or alias. A figure's print master
+  (`svg.pdfFileId`) is not used in such a job (its SVG is set on the plates); a placed PDF page or an undecodable
+  picture keeps its own inks and the render warns `artworkOffPlates`. The Sandbox preview shows the book's colours,
+  not the plates: verify a two-ink port on the PDF (`inspectPrintPdf` lists its inks).
   `customProfile` may also carry `inkLimit` (percent) for the condition.
 
 `contrast` (postext ≥ 1.28; layout ignores it, out of the layout key) is the check that the text reads on its ground:

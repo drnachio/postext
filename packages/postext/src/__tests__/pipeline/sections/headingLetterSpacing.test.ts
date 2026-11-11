@@ -139,7 +139,7 @@ describe('unknown heading settings are reported (EF-83)', () => {
       level: 1, fontSize: pt(18), lineHeight: pt(22), fontFamily: 'Lora', figureStyle: 'lining', color: { hex: '#000000', model: 'hex' },
       fontWeight: 700, marginTop: pt(10), marginBottom: pt(5), numberingTemplate: '', numberSeparator: ' ', numberPosition: 'before', italic: false,
       letterSpacing: pt(0), breakBefore: { enabled: true }, span: 'column', spanBreak: true,
-      advancedDesign: { enabled: false, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true,
+      advancedDesign: { enabled: false, slot: { elements: [] } }, textTransform: 'none', hidden: false, snapToGrid: true, regainGrid: false, snapTopToGrid: false,
       lineSpan: 3, indent: pt(18), firstLineIndent: pt(20), jidori: 3, dropCap: { lines: 3 },
     };
     expect(collectConfigWarnings({

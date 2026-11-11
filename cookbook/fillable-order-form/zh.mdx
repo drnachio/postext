@@ -64,3 +64,5 @@ pageNotes: { "1": "封面：上半页是一幅木桌上的老品种蔬菜油画�
 合计是脚本（`AFSimple_Calculate` 和简短的表达式），Acrobat、Foxit、Chrome 和 Firefox 都会执行。macOS 的“预览”能显示表单域、保存输入的内容，但不执行脚本，所以在那里合计一直是空的。
 
 护种人协会的复选框带 `on="1"`，这是勾选后计算式读到的值。如果用默认值 `Yes`，`product(order.circle, 12)` 永远得 0，postext-pdf 会对此发出警告。
+
+示例导入的是 `https://esm.sh/postext-pdf?bundle`。esm.sh 默认构建的 pdf-lib 把注释类放进单独的模块，pdf-lib 随后会拒绝每个字段的控件：PDF 里方框还在，但没有数字格式、没有合计，也没有只读字段，控制台会出现 `formField` 警告。`?bundle` 把 pdf-lib 构建成一个模块，`postext` 留在外面，与页面其余部分共用。

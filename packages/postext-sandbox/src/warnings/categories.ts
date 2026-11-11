@@ -37,10 +37,13 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'danglingTypeRef':
     case 'bitmapTooSmall':
     case 'floatShrunk':
+    case 'floatCropped':
+    case 'floatPinMissed':
     case 'pictureBelowPrintSize':
     case 'emptyCaption':
     case 'resourceMoved':
     case 'hereNotEmbedded':
+    case 'paragraphCitedInNote':
     case 'textWrap':
     case 'unknownTableStyle':
     case 'raggedTableGrid':
@@ -111,6 +114,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'unplaced':
     case 'shortListSplit':
     case 'stack':
+    case 'hyphenLadder':
+    case 'lastWordDivided':
     case 'openerFloat':
     case 'tocGroupSplit':
     case 'parityCascade':

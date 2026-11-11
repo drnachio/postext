@@ -18,7 +18,7 @@ export type { JsLiteral, JsScan } from "./detect/scan.ts";
 /** Top-level keys of `PostextConfig` (packages/postext/src/types.ts). */
 export const CONFIG_KEYS: readonly string[] = [
   "page", "layout", "bodyText", "headings", "tableStyle", "tableStyles", "captionStyle",
-  "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "markStyles", "parts", "headingStyles", "toc",
+  "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "characterStyles", "markStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "links", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
   "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "symbolFont", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
   "pageTemplates", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises",
@@ -46,6 +46,10 @@ export const POSTEXT_URL = "https://esm.sh/postext";
  *  still import from this one, and no other recipe may. */
 export const POSTEXT_BUNDLE_URL = "https://esm.sh/postext?bundle";
 export const POSTEXT_PDF_URL = "https://esm.sh/postext-pdf";
+/** postext-pdf with pdf-lib in one module: esm.sh's default build splits
+ *  pdf-lib's annotation classes into a module of their own, and every form
+ *  field's widget fails its instance check (#1498). Pens with form fields. */
+export const POSTEXT_PDF_BUNDLE_URL = "https://esm.sh/postext-pdf?bundle";
 /** The citation engine (CSL styles; postext >= 1.12). */
 export const POSTEXT_CITEPROC_URL = "https://esm.sh/postext-citeproc";
 /** The 3D book viewer (Folio recipes). */

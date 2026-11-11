@@ -334,6 +334,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Das Bild wird in dieser Skalierung ausgegeben; über den Satzspiegel hinaus nur, wenn <code>overflowPx</code> gesetzt ist.</td>
     </tr>
     <tr>
+      <td><code>floatCropped</code></td>
+      <td>Ein gleitendes Bild wurde durch <code>layout.pullFloatsToCitation</code> innerhalb seines Sicherheitsbereichs (<code>Resource.safeArea</code>) beschnitten, damit es auf der Seite bleibt, die es zitiert. <code>resourceId</code> gibt es an, <code>share</code> ist der beschnittene Anteil seiner Höhe, <code>pageIndex</code> die Seite. Verweist auf den Absatz, der es zuerst zitiert.</td>
+      <td>Das Bild wird beschnitten ausgegeben, nie über seinen Sicherheitsbereich hinaus. <code>pullFloatsToCitation</code> wird nicht empfohlen: <code>placement.citingPage</code> und <code>placement.shrink: 'slot'</code> halten ein Bild nahe an seinem Verweis, ohne es zu beschneiden.</td>
+    </tr>
+    <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>Ein von Hand gesetztes Gleitobjekt (<code>placement.pin</code>) steht nicht dort, wo sein Pin es verlangt. <code>resourceId</code> gibt es an, <code>pageIndex</code> ist die Seite, auf die es kam, und <code>requestedPage</code> die Seite, die der Pin nennt. <code>reason</code>: <code>notTaken</code> (der Platz konnte es nicht aufnehmen: zu hoch für den verbleibenden Raum, belegt, über seinem Verweis, oder das Kapitel endete vorher), <code>tooFar</code> (mehr als <code>MAX_PIN_PAGE_OFFSET</code>, 3, Seiten nach der verweisenden), <code>column</code> (diese Seite hat keine solche Spalte) oder <code>unsupported</code> (eine im Text gesetzte Ressource, ein Gleitobjekt der Randspalte oder ein gedrehtes, eine Tafel). Zeigt auf den Absatz, der es zuerst zitiert.</td>
+      <td>Das Gleitobjekt wird gesetzt wie ohne den Pin, auf der vom Pin genannten Seite, wenn ein Platz dort es aufnimmt. Pins werden nicht empfohlen: <code>placement.citingPage</code>, <code>position</code> und <code>shrink</code> halten eine Abbildung in jeder Ausgabe nahe an ihrem Text.</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>Ein Bitmap mit Druckgröße (eigenes <code>bitmap.resolution</code> oder eine Zahl in <code>layout.bitmapResolution</code>; keine aus der Datei gelesene Auflösung), gesetzt in einer Spalte, die es unter der Hälfte dieser Größe hält, auf einer Seite, deren Satzspiegel breiter als die Spalte ist. <code>resourceId</code> gibt es an, <code>scale</code> ist der Anteil seiner Druckbreite, den es behält, <code>printWidthPx</code>, <code>widthPx</code> und <code>pageWidthPx</code> sind die Breiten von Druck, Spalte und Satzspiegel. Ein Bild, das <code>placement.width</code> schmaler macht, das auf seinen Platz verkleinert, gedreht oder in den Rahmen einer zusammengesetzten Seite gesetzt ist, wird nicht gemeldet. Zeigt auf den Absatz, der es zuerst zitiert. Seit postext 1.37.</td>
       <td>Das Bild wird in Spaltenbreite ausgegeben. Ein Bild im Fluss ist nie breiter als seine Spalte, und die Standardseite hat zwei (<code>layout.layoutType: 'double'</code>): Setzen Sie die Seite einspaltig, lassen Sie das Bild als seitenbreites Gleitobjekt setzen (<code>placement.span: 'page'</code>) oder erhöhen Sie seine Auflösung, wenn diese Größe gewollt ist.</td>
@@ -369,6 +379,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Es steht auf keiner Seite. Bis postext 1.24 fiel es ohne Warnung weg.</td>
     </tr>
     <tr>
+      <td><code>paragraphCitedInNote</code></td>
+      <td>Eine Ressource, die nach dem zitierenden Absatz steht (<code>position: 'paragraph'</code>), wird nur von Fußnoten zitiert, Kapitelendnoten eingeschlossen: kein <code>:ref</code> im Fließtext, keine <code>::resource</code>-Zeile, und kein früheres Kapitel hat sie platziert. Eine Fußnote wird abseits des Textflusses gesetzt, es gibt also keinen Absatz, dem sie folgen könnte. <code>resourceId</code> gibt sie an. Verweist auf ihr erstes <code>:ref</code> in einer Fußnote; keine Seite.</td>
+      <td>Sie steht auf keiner Seite. Zitieren Sie sie auch im Fließtext, betten Sie sie mit <code>::resource</code> ein oder geben Sie ihr eine gleitende Position.</td>
+    </tr>
+    <tr>
       <td><code>shortListSplit</code></td>
       <td>Eine Liste mit <code>items</code> Punkten, kurz im Sinne von <code>bodyText.shortListMaxItems</code>, die zwischen zwei Spalten oder Seiten geteilt wird. Unter <code>bodyText.shortListSplit: 'warn'</code> wird jede solche Liste gemeldet; unter <code>'avoid'</code> nur eine, die keine Spalte ganz aufnehmen konnte. Eine pro Liste; verweist auf die Liste, mit der Seite ihres ersten Punkts. Seit postext 1.28.</td>
       <td>Die Liste wird geteilt, wo die Spalte endet.</td>
@@ -376,6 +391,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
     <tr>
       <td><code>stack</code></td>
       <td>Zwei Zeilen hintereinander eines Absatzes in derselben Spalte, die auf dasselbe Wort oder dieselben <code>bodyText.stackMinCharacters</code> Zeichen enden (<code>edge: 'end'</code>) oder damit beginnen (<code>'start'</code>): <code>text</code> ist, was sie wiederholen, wie die erste Zeile es druckt, und <code>lines</code> sind die beiden Zeilen. Unter <code>bodyText.stacks: 'warn'</code> wird jede gemeldet; unter <code>'avoid'</code> die, die der Algorithmus behielt. Eine pro Wiederholung; verweist auf die beiden Zeilen, mit ihrer Seite. Seit postext 1.73.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
+      <td><code>hyphenLadder</code></td>
+      <td>Mehr als <code>max</code> Zeilen eines Absatzes hintereinander mit Trennstrich am Ende (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> sagt, wie viele, <code>text</code> enthält die Zeilen. Bei <code>bodyText.hyphenation.ladders: 'warn'</code> wird jede Treppe gemeldet; bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Eine pro Treppe; zeigt auf ihre Zeilen, mit der Seite der ersten. Seit postext 1.74.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
+      <td><code>lastWordDivided</code></td>
+      <td>Die letzte Zeile eines Absatzes trägt nur den Rest eines in der Zeile davor getrennten Wortes: <code>word</code> ist das Wort, wie die beiden Zeilen es drucken, mit Trennstrich. Bei <code>bodyText.hyphenation.lastWord: 'warn'</code> wird jeder Fall gemeldet; bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Zeigt auf die letzten zwei Zeilen, mit ihrer Seite. Seit postext 1.74.</td>
       <td>Die Zeilen werden gesetzt, wie sie sind.</td>
     </tr>
     <tr>

@@ -308,6 +308,43 @@ describe('planBundle (print masters)', () => {
     expect(loaded.blobs.find((b) => b.fileId === 'preset:brochure:resources-a-pdf')?.mime).toBe('application/pdf');
     expect(warnings.some((w) => w.includes('b.pdf'))).toBe(true);
   });
+
+  it('exports a bitmap\'s print original next to its preview and drops it when its bytes are gone', async () => {
+    const content = sampleContent();
+    const photo: Resource = { ...content.resources[1]!, bitmap: { fileId: 'b-png', format: 'png', width: 10, height: 5, printFileId: 'b-psd', printFormat: 'psd' } };
+    const next = { ...content, resources: [photo] };
+    const plan = planBundle({ id: 'p', name: 'P' }, next);
+    expect(plan.files.map((f) => f.path)).toEqual(['resources/fig-a.png', 'resources/fig-a.psd', 'fonts/body-regular.ttf']);
+    expect(plan.manifest.resources![0]).toMatchObject({ file: 'resources/fig-a.png', printFile: 'resources/fig-a.psd' });
+
+    const built = await buildBundleFiles({ id: 'p', name: 'P' }, next, {
+      readBlob: (id) => Promise.resolve(id === 'b-png' ? new Uint8Array([137, 80]).buffer : null),
+      readFont: () => Promise.resolve(null),
+    });
+    expect(built.manifest.resources![0]!.printFile).toBeUndefined();
+  });
+
+  it('loads a print original from a bundle and an Illustrator master only when it is a PDF', async () => {
+    const tiff = String.fromCharCode(0x49, 0x49, 42, 0, 8, 0, 0, 0);
+    const m = manifest({ resources: [
+      { id: 'p', typeId: 'figure', kind: 'bitmap', file: 'resources/p.png', printFile: 'resources/p.tif', width: 2, height: 1 },
+      { id: 'q', typeId: 'figure', kind: 'bitmap', file: 'resources/q.png', printFile: 'resources/q.tif', width: 2, height: 1 },
+      { id: 'a', typeId: 'figure', kind: 'svg', file: 'resources/a.svg', pdfFile: 'resources/a.ai' },
+      { id: 'b', typeId: 'figure', kind: 'svg', file: 'resources/b.svg', pdfFile: 'resources/b.ai' },
+    ] });
+    const warnings: string[] = [];
+    const loaded = await parseBundle(m, readerFrom({
+      'doc.md': '# Doc', 'resources/p.png': 'png', 'resources/p.tif': tiff, 'resources/q.png': 'png', 'resources/q.tif': 'not a tiff',
+      'resources/a.svg': SVG, 'resources/a.ai': '%PDF-1.5\n', 'resources/b.svg': SVG, 'resources/b.ai': '%!PS-Adobe-3.0\n',
+    }), { locale: 'en', summary, onWarning: (w) => warnings.push(w) });
+    expect(loaded.resources[0]!.bitmap).toMatchObject({ printFileId: 'preset:brochure:resources-p-tif', printFormat: 'tiff' });
+    expect(loaded.blobs.find((b) => b.fileId === 'preset:brochure:resources-p-tif')?.mime).toBe('image/tiff');
+    expect(loaded.resources[1]!.bitmap!.printFileId).toBeUndefined();
+    expect(loaded.resources[2]!.svg!.pdfFileId).toBe('preset:brochure:resources-a-ai');
+    expect(loaded.resources[3]!.svg!.pdfFileId).toBeUndefined();
+    expect(warnings.some((w) => w.includes('q.tif'))).toBe(true);
+    expect(warnings.some((w) => w.includes('b.ai'))).toBe(true);
+  });
 });
 
 describe('buildBundleFiles', () => {

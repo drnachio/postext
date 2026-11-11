@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les types de ressources et leur numérotation, les styles de tableau et de légende, les diagrammes en une seule encre et les vidéos imprimées',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '45 min',
+  readingTime: '46 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Cette page présente les réglages des figures, des tableaux, des diagrammes et des vidéos. Postext les appelle des ressources et numérote chaque genre séparément. Vous choisissez l’aspect des tableaux : leurs filets, leurs fonds, leur typographie et la façon dont ils se coupent d’une page à l’autre. Vous choisissez comment s’écrit la légende d’une figure ou d’un tableau. Vous pouvez aussi imprimer les diagrammes en une seule encre et décider de l’aspect d’une vidéo sur le papier.",
@@ -144,6 +144,16 @@ Un type peut omettre des champs (depuis postext 1.38) : le type intégré de m�
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (facultatif)</td>
       <td>Surcharge partielle du <a href="#style-de-légende">style de légende</a> pour les ressources de ce type. Seules les clés que vous définissez remplacent le <code>captionStyle</code> global ; tout le reste est hérité (une <code>color</code> surchargée détermine aussi les couleurs du libellé et de la note, sauf si celles-ci sont définies explicitement). Usage typique : des tableaux légendés <em>au-dessus</em>, sur une barre de couleur, tandis que les figures gardent leur légende en dessous. Les références à la palette se résolvent comme toute autre couleur.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>true</code>. Si une figure ou un tableau de ce type placé dans le texte repose sur la grille de base : le flux y revient sous la ressource. <code>false</code> garde l’espace exact que laisse la ressource. Les flottants en haut ou en bas d’une colonne ne sont pas concernés.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (facultatif)</td>
+      <td>Par défaut <code>false</code>. Fait commencer une figure ou un tableau de ce type placé dans le texte sur une ligne de la grille, quelle que soit la fin du bloc précédent. Les flottants en haut ou en bas d’une colonne, une figure habillée par le texte et celle qui ouvre une colonne ne sont pas concernés. Dans le Sandbox : <strong>Commencer sur une ligne de la grille</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -562,6 +572,8 @@ Les largeurs de colonne appartiennent au modèle du tableau, pas au style : `Ta
 
 Un `TableModel` est une grille rangée ligne par ligne, et chaque cellule est disposée selon sa place dans cette grille : `rows[r][c]` occupe la colonne `c`. Une cellule fusionnée garde donc dans la grille les cellules qu’elle couvre, chacune marquée `hiddenBy` avec sa cellule principale, contrairement à un tableau HTML, qui les omet. Les fonctions de modèle exportées par `postext` conservent cette forme ; ce sont des fonctions pures qui renvoient un nouveau modèle : `mergeCells(model, { start, end })` et `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` et `setAlignment`. Les quatre fonctions de lignes et de colonnes gardent les fusions entières : une ligne ou une colonne ajoutée à l’intérieur d’un bloc fusionné l’élargit, une ajoutée avant lui le déplace, une retirée de lui le rétrécit (un bloc qui perd sa première ligne ou sa première colonne garde son contenu dans sa nouvelle cellule en haut à gauche), et chaque `hiddenBy` continue de désigner sa cellule principale.
 
+`transposeTable(model)` échange lignes et colonnes (le bouton ⇄ de l’éditeur de tableaux du Sandbox) : chaque cellule passe de `rows[r][c]` à `rows[c][r]` avec son contenu, son image, son fond et son alignement ; une fusion garde ses cellules, ses étendues échangées ; les lignes d’en-tête deviennent des colonnes d’en-tête, et les premières colonnes faites uniquement d’en-têtes deviennent `headerRowCount` ; `columnWidths` est abandonné. Une ligne comptée par `headerRowCount` dont les cellules ne portent pas `isHeader` (c’est ainsi que les laisse une importation Word) est une ligne d’en-tête tout de même, et ses cellules sont marquées `isHeader` dans leur nouvelle colonne. Transposer deux fois rend le tableau d’origine, les cellules de ses lignes d’en-tête marquées `isHeader`.
+
 `parseTSV(text, options?)` construit un modèle à partir de texte séparé par des tabulations, comme une plage collée depuis un tableur : les lignes se séparent aux sauts de ligne, les cellules aux tabulations, et les lignes trop courtes sont complétées pour que la grille soit rectangulaire. `headerRows` fait des premières lignes des lignes d’en-tête : leurs cellules reçoivent `isHeader` et le modèle `headerRowCount` : un tableau coupé sur plusieurs pages les répète donc.
 
 ```ts
@@ -856,6 +868,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined when everything matches the defaults
 ```
 
+**Tons directs dans un SVG.** Dans un PDF d’impression, une couleur d’un SVG vectoriel s’imprime sur un ton direct dans deux cas seulement. Quand elle nomme l’encre : une couleur suivie de `icc-named-color(…, "PANTONE 185 C")`, ou un élément avec `data-spot="PANTONE 185 C"` (et `data-spot-tint="40"`, en pourcentage), s’imprime sur la plaque de cette encre, avec la couleur de substitution de la palette quand la palette a un ton direct de ce nom, sinon avec le CMJN propre à la couleur. Et quand son hex est exactement celui d’un ton direct de la palette : elle s’imprime sur l’encre de cette couleur, à la teinte de cette couleur. Toute autre couleur reste en quadrichromie, même si elle ressemble à une teinte d’une encre sur blanc, si bien que les gris d’un dessin ne passent jamais sur une plaque de ton direct. Chaque couleur est résolue séparément : un diagramme peut donc mêler plusieurs encres et des couleurs quadri. `diagramStyle.singleInk` garde la priorité : avec un `inkColor` en ton direct, le diagramme recoloré s’imprime en teintes de cette plaque. Une encre qu’un SVG nomme et qu’aucune couleur de la palette ne définit (ni une entrée de la table des encres avec `cmyk`) s’imprime sur une plaque à elle, avec le CMJN de la couleur du SVG comme couleur de substitution ; tous les SVG qui la nomment partagent cette plaque, et le contrôle en amont avertit (`spotInkUndefined`). Beaucoup de logiciels exportent une nuance comme une simple couleur RVB et perdent son nom : donnez à la palette un ton direct avec exactement ce `hex`, un par teinte utilisée dans le dessin, ou marquez les éléments avec `data-spot`.
+
 ### Encre unique sur le canvas et en HTML
 
 Les moteurs canvas et HTML reçoivent les images déjà décodées (`registerResourceImage`) ou sous forme d’URL (`resourceImageUrl`), et non le balisage SVG. Sur demande, ils appliquent la même conversion à ce qu’ils dessinent :
@@ -1068,7 +1082,7 @@ Les styles de partition nommés (`scoreStyles`, `NamedScoreStyleConfig[]`) prenn
 
 ## Style des vidéos
 
-La propriété `videoStyle` règle l’impression des [ressources vidéo](/fr/docs/document-format-resources#vidéos) (la marque de lecture et le code QR sur l’affiche, et le lien éventuel de l’affiche vers la vidéo) et ce que leurs lecteurs proposent dans la visionneuse HTML et en EPUB.
+La propriété `videoStyle` règle l’impression des [ressources vidéo](/fr/docs/document-format-videos#vidéos) (la marque de lecture et le code QR sur l’affiche, et le lien éventuel de l’affiche vers la vidéo) et ce que leurs lecteurs proposent dans la visionneuse HTML et en EPUB.
 
 ```ts
 const config: PostextConfig = {
@@ -1203,7 +1217,7 @@ Le code est encodé par le moteur lui-même (`encodeQr(text, level)` : mode oct
 
 Un EPUB ne garde que les attributs que connaît son schéma : un fichier se lit avec <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> et <code>preload</code>, plus l’attribut <code>data-pt-alongside</code>, et le système de lecture décide du reste.
 
-Une vidéo non exclusive porte `data-pt-alongside` dans la sortie HTML. `coordinateVideoPlayback(root)` fait respecter cette règle aux lecteurs placés sous `root` (l’élément qui contient la sortie de `renderToHtml`) : lancer une vidéo exclusive met en pause toutes les autres en cours de lecture, et lancer une vidéo qui joue en même temps que les autres ne met en pause que les exclusives. La fonction renvoie une fonction qui arrête l’écoute. `playsAlongside(el)` et `videosToPause(started, videos, alongside)` donnent la même règle à un hôte qui a ses propres lecteurs. Dans [Folio](/fr/docs/document-format-resources#les-vidéos-sur-les-pages-de-folio), une vidéo qui démarre d’elle-même et joue en même temps que les autres (`autoplay` avec `exclusive: false`) démarre, en sourdine, chaque fois que sa page apparaît, et s’arrête quand la page est tournée, plusieurs à la fois, et `loop` la reprend depuis le début. Une page ou un chapitre EPUB qui contient des vidéos à coordonner (deux ou plus, dont une exclusive) applique la même règle grâce à un petit script, `scripts/videos.js` (l’export `VIDEO_PLAYBACK_SCRIPT`), et le paquet déclare ce document `scripted`. Un système de lecture qui exécute les scripts fait respecter la règle aux vidéos de ce document, mais pas à celles d’une page en regard, qui est un autre document ; un système qui n’exécute pas les scripts lit chaque vidéo indépendamment, comme le font toujours les lecteurs YouTube et Vimeo.
+Une vidéo non exclusive porte `data-pt-alongside` dans la sortie HTML. `coordinateVideoPlayback(root)` fait respecter cette règle aux lecteurs placés sous `root` (l’élément qui contient la sortie de `renderToHtml`) : lancer une vidéo exclusive met en pause toutes les autres en cours de lecture, et lancer une vidéo qui joue en même temps que les autres ne met en pause que les exclusives. La fonction renvoie une fonction qui arrête l’écoute. `playsAlongside(el)` et `videosToPause(started, videos, alongside)` donnent la même règle à un hôte qui a ses propres lecteurs. Dans [Folio](/fr/docs/document-format-videos#les-vidéos-sur-les-pages-de-folio), une vidéo qui démarre d’elle-même et joue en même temps que les autres (`autoplay` avec `exclusive: false`) démarre, en sourdine, chaque fois que sa page apparaît, et s’arrête quand la page est tournée, plusieurs à la fois, et `loop` la reprend depuis le début. Une page ou un chapitre EPUB qui contient des vidéos à coordonner (deux ou plus, dont une exclusive) applique la même règle grâce à un petit script, `scripts/videos.js` (l’export `VIDEO_PLAYBACK_SCRIPT`), et le paquet déclare ce document `scripted`. Un système de lecture qui exécute les scripts fait respecter la règle aux vidéos de ce document, mais pas à celles d’une page en regard, qui est un autre document ; un système qui n’exécute pas les scripts lit chaque vidéo indépendamment, comme le font toujours les lecteurs YouTube et Vimeo.
 
 Le résolveur et la fonction de nettoyage suivent le modèle des autres sections, avec les types `VideoStyleConfig` / `ResolvedVideoStyleConfig` :
 

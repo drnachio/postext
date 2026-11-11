@@ -2,14 +2,15 @@
 // at the size of its largest placement, comic art included
 // (#1276: split out of renderResourceBlock.ts).
 import type { PDFDocument, PDFImage } from 'pdf-lib';
-import { type VDTDocument, type VDTBlock, type VDTPage, type VDTComicArt, pageComics, type PdfColorSpace, resourceBlockIcons, resolveColorValue, applySingleInkToSvg } from 'postext';
+import { type VDTDocument, type VDTBlock, type VDTPage, type VDTComicArt, pageComics, type PdfColorSpace, resourceBlockIcons, resolveColorValue, applySingleInkToSvg, decodePrintRaster, printRasterFormat, parseIccProfile, resolvePrintImageColor, type Resource } from 'postext';
 import { FontCache, type PdfFontProvider } from '../../../fontCache.js';
 import { type VectorFontResolver, svgToVectorDrawing } from '../../vector/svgVector.js';
 import { needsComplexShaping, loadComplexShaper } from '../../../complexShaping.js';
 import type { PrintColorMode } from '../../../print/colorMode.js';
-import { embedPrintRaster, embedDeviceRaster } from '../../../print/images.js';
+import { embedPrintRaster, embedDeviceRaster, embedPrintDecoded, embedDeviceDecoded } from '../../../print/images.js';
 import { alphaStencil } from '../../vector/tint.js';
 import type { ResourceBytesProvider, ResourceImageMap } from '../renderResourceBlock.js';
+import type { PdfWarning } from '../../renderToPdf/warnings.js';
 import { lineIcons } from './lines.js';
 import { type SvgRasterizer, rasterizeSvgWithDom, sniffBytes, collectSvgFontStrings, svgCodePoints, fontResolverFor, inlineSvgFontsForRaster, RASTER_DPI, webpToPng } from './rasterize.js';
 
@@ -28,7 +29,7 @@ function largestPlacements(doc: VDTDocument, blocks: VDTBlock[]): Map<string, { 
     // A cropped picture is drawn at its uncropped size.
     if (rb?.fileId) note(rb.fileId, rb.bodyRect.width / (rb.bodySource?.width ?? 1), rb.bodyRect.height / (rb.bodySource?.height ?? 1));
     for (const cell of rb?.table?.cells ?? []) {
-      if (cell.image) note(cell.image.fileId, cell.image.rect.width, cell.image.rect.height);
+      if (cell.image) note(cell.image.fileId, cell.image.rect.width / (cell.image.crop?.width ?? 1), cell.image.rect.height / (cell.image.crop?.height ?? 1));
     }
     const overlay = block.designOverlay;
     if (overlay) {
@@ -87,13 +88,32 @@ export async function preloadResourceImages(
   /** The device colour space a render without a print mode is forced to
    *  (#800): its pictures are written in it, as its flat colours are. */
   deviceSpace?: PdfColorSpace,
+  /** A TIFF or Photoshop original that does not decode: its preview
+   *  (`RenderToPdfOptions.previewBytes`) is embedded instead, and `warn`
+   *  told (`pictureOriginalUnreadable`). */
+  fallback?: { previewBytes?: ResourceBytesProvider; warn?: (warning: PdfWarning) => void },
 ): Promise<ResourceImageMap> {
   const out: ResourceImageMap = into ?? new Map();
   if (!bytesProvider) return out;
+  // A picture's own print colour settings (`Resource.printColor`), over
+  // the book's: a mode of its own for it.
+  const pictureModes = new Map<string, PrintColorMode>();
+  const modeOf = (fileId: string | undefined): PrintColorMode | undefined => {
+    if (!printMode || !fileId) return printMode;
+    return pictureModes.get(fileId) ?? printMode;
+  };
+  if (printMode) {
+    for (const block of [...doc.blocks, ...doc.pages.flatMap((p) => p.floats ?? [])]) {
+      const rb = block.resourceBlock;
+      const own = rb?.resource?.printColor;
+      if (!rb?.fileId || !own || pictureModes.has(rb.fileId)) continue;
+      pictureModes.set(rb.fileId, pictureMode(printMode, own, bytesProvider));
+    }
+  }
   /** A bitmap embedded as the render wants it. */
-  const embedRaster = (data: Uint8Array, format: 'png' | 'jpeg'): Promise<PDFImage> =>
+  const embedRaster = (data: Uint8Array, format: 'png' | 'jpeg', fileId?: string): Promise<PDFImage> =>
     printMode
-      ? embedPrintRaster(pdfDoc, data, format, printMode)
+      ? embedPrintRaster(pdfDoc, data, format, modeOf(fileId)!)
       : deviceSpace === 'grayscale' || deviceSpace === 'cmyk'
         ? embedDeviceRaster(pdfDoc, data, format, deviceSpace)
         : format === 'png' ? pdfDoc.embedPng(data) : pdfDoc.embedJpg(data);
@@ -160,6 +180,9 @@ export async function preloadResourceImages(
   /** Embed a print master for `fileId`; false when there is none, or it
    *  does not decode (the SVG is embedded instead). */
   const embedMaster = async (fileId: string): Promise<boolean> => {
+    // A job on a few plates sets the SVG on them: a master's inks would
+    // go on plates as they are.
+    if (printMode?.plates) return false;
     const masterId = masters.get(fileId);
     const bytes = masterId ? bytesProvider(masterId) : undefined;
     if (!bytes || sniffBytes(bytes) !== 'pdf') return false;
@@ -177,12 +200,35 @@ export async function preloadResourceImages(
   const embed = async (fileId: string, format: string | undefined): Promise<void> => {
     if (out.has(fileId)) return;
     if (await embedMaster(fileId)) return;
-    const bytes = bytesProvider(fileId);
+    let bytes = bytesProvider(fileId);
     if (!bytes) return;
     try {
+      if (printRasterFormat(bytes)) {
+        // A TIFF or Photoshop original: printed from its own pixels, or
+        // from its preview when they cannot be read.
+        try {
+          const raster = decodePrintRaster(bytes);
+          const image = printMode
+            ? embedPrintDecoded(pdfDoc, raster, modeOf(fileId)!)
+            : embedDeviceDecoded(pdfDoc, raster, deviceSpace === 'grayscale' || deviceSpace === 'cmyk' ? deviceSpace : 'rgb');
+          out.set(fileId, { kind: 'image', image });
+          return;
+        } catch (err) {
+          const preview = fallback?.previewBytes?.(fileId);
+          const usable = preview && !printRasterFormat(preview) ? preview : undefined;
+          fallback?.warn?.({
+            kind: 'pictureOriginalUnreadable',
+            message: `postext-pdf: the original of "${fileId}" could not be read (${(err as Error).message}); ${usable ? 'its preview was printed instead' : 'it has no preview, so a placeholder was drawn'}`,
+          });
+          if (!usable) return;
+          bytes = usable;
+        }
+      }
       const sniffed = sniffBytes(bytes);
       const fmt = sniffed !== 'unknown' ? sniffed : (format ?? '').toLowerCase().replace('jpg', 'jpeg');
       if (fmt === 'pdf') {
+        // Placed as it is: a job on a few plates warns of it.
+        if (printMode?.plates) printMode.inkRegistry.noteOffPlates('pdf');
         const [page] = await pdfDoc.embedPdf(bytes, [0]);
         if (page) out.set(fileId, { kind: 'page', page });
         return;
@@ -206,6 +252,9 @@ export async function preloadResourceImages(
         if (fonts && needsComplexShaping(svgText)) await loadComplexShaper();
         const drawing = svgToVectorDrawing(svgText, { fonts });
         if (drawing) {
+          // A spot ink: its tints print on the ink's own plate.
+          const spot = inkHex ? printMode?.spots.get(inkHex.slice(0, 7).toLowerCase()) : undefined;
+          if (inkHex && spot) drawing.spotInk = { hex: inkHex, spot };
           // Pictures inside the drawing become image XObjects.
           for (const shape of drawing.shapes) {
             if (shape.kind !== 'image') continue;
@@ -230,17 +279,17 @@ export async function preloadResourceImages(
       let data = bytes;
       let dataFormat: 'png' | 'jpeg' = 'png';
       if (fmt === 'jpeg') {
-        image = await embedRaster(bytes, 'jpeg');
+        image = await embedRaster(bytes, 'jpeg', fileId);
         dataFormat = 'jpeg';
       } else if (fmt === 'webp') {
         const png = await webpToPng(bytes);
         if (png) {
-          image = await embedRaster(png, 'png');
+          image = await embedRaster(png, 'png', fileId);
           data = png;
         }
       } else {
         // png / gif-first-frame / unknown all go through embedPng.
-        image = await embedRaster(bytes, 'png');
+        image = await embedRaster(bytes, 'png', fileId);
       }
       if (image) await setImage(fileId, image, data, dataFormat);
     } catch (err) {
@@ -284,4 +333,25 @@ export async function preloadResourceImages(
     for (const art of comicArts(page)) await embed(art.fileId, art.format);
   }
   return out;
+}
+
+/** The print mode of a picture with colour settings of its own
+ *  (`Resource.printColor`): the book's mode with them over its
+ *  `imageColor`, and the profile they assign read from the resource bytes
+ *  (the book's assigned one when theirs cannot be read). */
+function pictureMode(mode: PrintColorMode, own: NonNullable<Resource['printColor']>, bytesOf: ResourceBytesProvider): PrintColorMode {
+  const imageColor = resolvePrintImageColor({ ...mode.config.imageColor, ...own });
+  let assigned = mode.assignedRgbProfile;
+  if (own.assignedRgbProfile) {
+    try {
+      const bytes = bytesOf(own.assignedRgbProfile.fileId);
+      const profile = bytes ? parseIccProfile(bytes) : undefined;
+      if (profile?.colorSpace === 'RGB') assigned = profile;
+    } catch {
+      // The book's own stands.
+    }
+  }
+  const { assignedRgbProfile: _book, ...rest } = mode;
+  void _book;
+  return { ...rest, config: { ...mode.config, imageColor }, ...(assigned ? { assignedRgbProfile: assigned } : {}), key: `${mode.key}|picture:${JSON.stringify(imageColor)}:${assigned?.hash ?? ''}` };
 }

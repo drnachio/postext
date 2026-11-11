@@ -5,6 +5,7 @@ import type { FontFaceSetLike } from '../../fonts/faces.js';
 import type { MeasuredContentBlock } from '../blocks/measureContentBlock.js';
 import type { LooseBudget } from '../columns/columnBalancing.js';
 import type { BandCap, BandPassReport } from '../columns/bandCaps.js';
+import type { FloatPad, PlacedSlot } from './floatPads.js';
 
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */
@@ -97,6 +98,14 @@ export interface PassHints {
   balanceExtraPx?: ReadonlyMap<number, number>;
   /** Column balancing: K-P looseness per paragraph re-broken one line longer. */
   balanceLooseness?: ReadonlyMap<number, number>;
+  /** Paragraphs of `balanceLooseness` set a line short with no tracking:
+   *  the ones shortened to pull a float back to its citing page
+   *  (`layout.pullFloatsToCitation`, #1492). */
+  balanceUntracked?: ReadonlySet<number>;
+  /** Pictures the pass may crop within their safe area to keep them on
+   *  the page citing them (`layout.pullFloatsToCitation`, #1492): those
+   *  that setting the page tighter did not bring back. */
+  pullCrop?: ReadonlySet<string>;
   /** Column balancing: shared budget of the loose candidates offered together
    *  (the pass stops loosening a column once it gained what it needs). */
   balanceLooseBudget?: ReadonlyMap<number, LooseBudget>;
@@ -113,6 +122,11 @@ export interface PassHints {
   /** Trailing-cap passes: the page each floated resource took in the layout
    *  the caps level (see `proposeTrailingCap`). */
   floatPages?: ReadonlyMap<string, number>;
+  /** `layout.alignFloatsAcrossColumns`: the white each figure (resource
+   *  id) takes above its picture (a head band) or under its caption (a foot
+   *  band) on one page, so that figures sharing a band line up (see
+   *  `proposeFloatPads`). */
+  floatPads?: ReadonlyMap<string, FloatPad>;
   /** Floats (resource ids) that head the page or column their citing line
    *  lands on (`placement.citingPage`, #633): an earlier pass found the line
    *  there and the float on a later page or column. The page is opened
@@ -148,6 +162,9 @@ export interface PassResult extends BandPassReport {
    *  side float that had to overflow the side column: candidates for
    *  `PassHints.captionUnder` in the next pass. */
   captionUnderProposals: Set<string>;
+  /** Floats that missed the page citing them: on which page, and by how
+   *  many px they did not fit its best slot (`layout.pullFloatsToCitation`). */
+  pullShortfalls?: Map<string, { page: number; px: number }>;
   /** Floats that may head the page or column their citing line landed on
    *  in this pass (`placement.citingPage`, #633) and landed later:
    *  candidates for `PassHints.citingPageFloats`. */
@@ -158,6 +175,9 @@ export interface PassResult extends BandPassReport {
    *  or set there and the text it pushed down took the citing line to
    *  another page or column. With the reason, for the record. */
   citingPageRefused: Map<string, CitingPageRefusal>;
+  /** The slot each figure set alone in a column took in this pass: what
+   *  `layout.alignFloatsAcrossColumns` lines up (`proposeFloatPads`). */
+  floatSlots: Map<string, PlacedSlot>;
 }
 
 /** Why a float was not kept at the head of its citing page (#633). */

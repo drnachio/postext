@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Página e diagramação',
   description: 'O tamanho da página, as margens e a grade de linhas de base, a numeração das páginas, e as colunas e as medianizes entre elas',
   lang: 'pt',
-  lastUpdated: '2026-10-19',
-  readingTime: '35 min',
+  lastUpdated: '2026-11-10',
+  readingTime: '36 min',
   order: 5,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes da folha. Você escolhe o tamanho da página, as margens, o lado da encadernação e a grade em que as linhas de texto se apoiam. Define como as páginas são contadas e como os números de página são escritos. Define quantas colunas a página tem e quanto espaço fica entre elas, e se o texto corre em linhas horizontais ou verticais. Os cabeçalhos e rodapés têm uma página própria.",
@@ -63,7 +63,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>Os pixels por polegada com que a diagramação trabalha: como as unidades físicas (cm, mm, in, pt) viram pixels da diagramação. Um bitmap sem resolução própria ocupa um pixel da diagramação por pixel da imagem e, assim, é impresso com esse número de ppi: mantenha 300 para impressão, ou dê uma resolução às imagens (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; veja [Formato do documento › Tamanho do bitmap](/pt/docs/document-format-resources#tamanho-do-bitmap)). O [preflight](/pt/docs/configuration-fonts-colors-viewers#preflight) verifica a resolução efetiva de cada imagem.</td>
+      <td>Os pixels por polegada com que a diagramação trabalha: como as unidades físicas (cm, mm, in, pt) viram pixels da diagramação. Um bitmap sem resolução própria ocupa um pixel da diagramação por pixel da imagem e, assim, é impresso com esse número de ppi: mantenha 300 para impressão, ou dê uma resolução às imagens (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; veja [Formato do documento › Tamanho do bitmap](/pt/docs/document-format-resources#tamanho-do-bitmap)). O [preflight](/pt/docs/configuration-pdf-output#preflight) verifica a resolução efetiva de cada imagem.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -75,7 +75,7 @@ A propriedade `page` controla as dimensões físicas e a aparência da página.
       <td><code>baselineGrid</code></td>
       <td><code>BaselineGridConfig</code></td>
       <td>desativado</td>
-      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. Veja abaixo.</td>
+      <td>Desenha a grade de linhas de base sobre as páginas, para conferir o ritmo vertical. A diagramação se ajusta à grade quer ela seja desenhada, quer não. <code>pdfGeneration.baselineGrid: false</code> a deixa fora do PDF. Veja abaixo.</td>
     </tr>
     <tr>
       <td><code>pageNumbering</code></td>
@@ -188,6 +188,8 @@ A grade de linhas de base é o ritmo do texto corrido: linhas separadas por uma 
     </tr>
   </tbody>
 </table>
+
+Onde um bloco começa é decisão do seu estilo. Cada estilo que pode começar numa linha da grade tem um interruptor `snapTopToGrid`, desligado por padrão: `headings` (e um nível ou um estilo de título), `bodyText`, `paragraphStyles[]`, `calloutStyles[]`, as listas, `math` e `resourceTypes[]`. Ligado, o espaço acima do bloco é arredondado até a próxima linha da grade, seja qual for o fim do bloco anterior. O topo de uma coluna está sempre na grade.
 
 ```ts
 page: {
@@ -446,6 +448,24 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Na página que fecha um capítulo (e o documento), as figuras e tabelas na largura da página compostas abaixo da última faixa de texto sobem até ficar a um vão de flutuante dela, empilhadas na ordem delas: nada vem depois delas ali. <code>false</code> as deixa onde o posicionamento as colocou, de modo que um flutuante <code>position: 'bottom'</code> termina no pé da página também na página de fechamento, como em todas as outras (numa ficha técnica cujo contorno termina na mesma altura em todas as páginas, por exemplo). Páginas com coluna lateral nunca os movem.</td>
+    </tr>
+    <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Coloca em fila os flutuantes no pé de uma página de várias colunas: uma figura ou tabela citada onde sua coluna já tem outra no pé ocupa o pé da próxima coluna vazia, com a primeira linha da legenda na altura da da vizinha, em vez de se empilhar por cima (a faixa de pé do compositor). Uma imagem com área segura é recortada dentro dela em direção à altura da vizinha. Cada recorte aparece em Verificações. Um flutuante em fila mantém o seu lugar: o que chega depois ao pé de uma das suas colunas fica acima dele. Com três colunas ou mais, a fila continua na coluna seguinte que não tem nada no pé. No Sandbox, <em>Figuras no rodapé em fila</em>, em Diagramação.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinha entre colunas as figuras que compartilham uma faixa da página: no pé de colunas vizinhas, a primeira linha das legendas (a legenda mais curta deixa o branco embaixo dela); no topo, a borda inferior das imagens (a imagem mais curta deixa o branco acima dela). Uma imagem que preenche a sua coluna a partir do topo, sem texto embaixo, alinha a sua legenda com as legendas das figuras no pé das colunas ao lado. Só se alinha uma figura sozinha na sua coluna, em pé e inteira: a que ocupa várias colunas, a girada, a que tem a legenda ao lado, um trecho de tabela e a posicionada à mão (<code>placement.pin</code>) mantêm o seu lugar. O branco é lido da posição que cada figura tomou e lido de novo após a última passagem do layout, de modo que uma figura que passou para outra página não guarda branco para uma vizinha que já não tem. O layout faz até duas passagens a mais no início e duas no fim. Funciona junto com <code>footFloatRow</code>, que já alinha um flutuante que se junta ao pé da coluna seguinte. No Sandbox, <em>Alinhar as figuras entre colunas</em>, em Diagramação.</td>
+    </tr>
+    <tr>
+      <td><code>pullFloatsToCitation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Não recomendado. Traz de volta para a página que o cita primeiro um flutuante que ficou fora dela por quatro linhas de texto ou menos (medidas na largura dele na melhor posição daquela página). Faz isso em dois passos, e cada um só é mantido se o flutuante então cair na página da citação, sem uma página a mais, sem atrasar outro flutuante, sem desfazer um nivelamento de colunas já obtido e sem perder nenhum flutuante que abre a página da sua citação (<code>floatsAtCitingPage</code>): primeiro, os parágrafos da página da citação que ficam acima dela recebem a oferta de uma linha a menos (espaçamento entre palavras mais apertado, nunca entre letras), só tantas linhas quantas faltam ao flutuante, e a mudança fica só nas páginas cujo flutuante voltou; depois, uma imagem com <a href="/pt/docs/document-format-resources#área-segura">área segura</a> que continua fora da página é recortada dentro dela, não mais do que o espaço pede, e cada recorte é avisado com <code>floatCropped</code>. As passadas seguintes, como o balanceamento de colunas, mantêm na sua página os flutuantes trazidos. A opção vai contra o posicionamento por regras: onde as regras levam o flutuante para o espaço seguinte, ela toma a página da citação à força, compõe parágrafos mais apertados do que a quebra de linhas escolheu e recorta imagens. Para manter os flutuantes perto da citação pelas regras, use <code>floatsAtCitingPage</code> ou <a href="/pt/docs/document-format-resources#posicionamento"><code>placement.citingPage</code></a> (o flutuante abre a página onde cai a linha que o cita, e o texto acima da referência desce para baixo dele) e <code>placement.shrink: 'slot'</code> (a imagem é composta menor, mantendo as proporções, para ficar na página que a cita). No Sandbox, <em>Atrair as figuras para a página da citação</em>, em Layout.</td>
     </tr>
     <tr>
       <td><code>inlineResourceGap</code></td>

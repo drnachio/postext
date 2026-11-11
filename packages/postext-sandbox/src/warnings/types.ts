@@ -1,6 +1,8 @@
-import type { FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind, ContrastIssue, PreflightIssue, PreflightSeverity } from 'postext';
+import type { FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind } from 'postext';
+import type { ContrastCheck, PreflightCheck } from './types/checks.js';
 
 export type { WarningKind } from './types/kind.js';
+export type { ContrastCheck, PreflightCheck } from './types/checks.js';
 
 /** Which design slot a warning points at. `level` tags heading slots;
  *  the part opener is a single slot; `'box'` is a box style's design
@@ -243,10 +245,10 @@ export type WarningPayload =
    *  an earlier figure of the chapter already worded (#986): the pages show
    *  the first figure's. */
   | { kind: 'figureWordsShared'; resourceId: string; words: ('alt' | 'caption' | 'note')[] }
-  /** A `:chip[…]{style="…"}` names a style that is not in
-   *  `config.chipStyles`; the chip takes the first style. `inResource`
-   *  names the resource whose caption, note or cell holds the chip. */
+  /** A `:chip[…]{style}` naming no `config.chipStyles` entry takes the first style; a
+   *  `:span[…]{style}` naming no character style is plain. `inResource`: the resource. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  | { kind: 'unknownCharacterStyle'; style: string; inResource?: string }
   /** A `:mark[…]{style="…"}` names a style that is not in
    *  `config.markStyles` (#888); the mark takes the first style. */
   | { kind: 'unknownMarkStyle'; style: string; inResource?: string }
@@ -287,6 +289,8 @@ export type WarningPayload =
   | { kind: 'parityCascade'; runLength: number }
   | { kind: 'alphaPdfOverflow' }
   | { kind: 'calloutOverflow'; page: number; overflowMm: number }
+  /** A float set by hand (`placement.pin`, #1494) not where its pin asks; `page`: where it went. */
+  | { kind: 'floatPinMissed'; resourceId: string; reason: 'notTaken' | 'tooFar' | 'column' | 'unsupported'; page?: number }
   /** A heading design taller than its page can hold: text of the design
    *  laid out past the foot of the page (an opener) or of its column (an
    *  in-column design, clipped there by canvas and PDF), by `overflowMm`.
@@ -439,6 +443,9 @@ export type WarningPayload =
   /** A resource placed `position: 'here'` that the text cites with `:ref`
    *  and never embeds with `::resource` (#1365): it is on no page. */
   | { kind: 'hereNotEmbedded'; resourceId: string }
+  /** A resource placed after the paragraph that cites it (`position:
+   *  'paragraph'`) that only notes cite (#1492): it is on no page. */
+  | { kind: 'paragraphCitedInNote'; resourceId: string }
   /** A short list of `items` items cut between two columns or pages
    *  (`bodyText.shortListSplit`, #749), its first item on book page
    *  `page`. */
@@ -447,6 +454,13 @@ export type WarningPayload =
    *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
    *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
   | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** More lines in a row ending on a hyphen than `max`
+   *  (`hyphenation.ladders: 'warn' | 'avoid'`, #1466), by book page. */
+  | { kind: 'hyphenLadder'; page: number; lines: number; max: number }
+  /** A paragraph's last line holding only the rest of a word divided on the
+   *  line before (`hyphenation.lastWord: 'warn' | 'avoid'`, #1466); `word`
+   *  as printed, hyphen included. */
+  | { kind: 'lastWordDivided'; page: number; word: string }
   /** A figure, a table (`resourceId`) or a floated box set on an opener
    *  page, book page `page` (`layout.openerFloats: 'warn'`, #749). */
   | { kind: 'openerFloat'; page: number; resourceId?: string }
@@ -463,6 +477,11 @@ export type WarningPayload =
    *  (`placement.shrink`, #626), at `scale` of its width; `overflowMm`:
    *  at its smallest scale it still runs that far past the text block. */
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowMm?: number }
+  /** A floated picture cropped within its safe area, by `share` of its
+   *  height, to stay on the page that cites it
+   *  (`layout.pullFloatsToCitation`, #1492); `reason: 'row'`, toward the
+   *  figure beside it in a foot row (`layout.footFloatRow`, #1496). */
+  | { kind: 'floatCropped'; resourceId: string; share: number; reason?: 'row' }
   /** A bitmap with a print size its column holds at under half of it, on
    *  a page whose text block is wider (#901): `scale` of its print width;
    *  the print, column and text block widths in mm. */
@@ -547,19 +566,6 @@ export type WarningPayload =
    *  reversed text too fine for the press. `page` is the book page number
    *  of its first occurrence. */
   | { kind: 'contrast'; check: ContrastCheck; page?: number };
-
-/** `Omit` over each member of a union. */
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-
-/** One contrast finding as the Checks panel lists it. */
-export type ContrastCheck = DistributiveOmit<ContrastIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>;
-
-/** One preflight finding as the Checks panel lists it. */
-export type PreflightCheck =
-  | DistributiveOmit<PreflightIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>
-  | { kind: 'masterFonts'; severity: PreflightSeverity; name: string; fonts: string[] }
-  | { kind: 'masterRgb'; severity: PreflightSeverity; name: string }
-  | { kind: 'masterTransparency'; severity: PreflightSeverity; name: string; x1a: boolean };
 
 export interface Warning {
   id: string;

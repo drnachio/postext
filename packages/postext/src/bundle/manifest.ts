@@ -5,7 +5,7 @@
 export { hasValidShowcaseMeta, isBundleManifest } from './manifest/validation.js';
 export { pickMarkdownFile, pickLocaleOverrides, pickBundleMeta, pickBundleView, bundleStart, pickBundleStart, resolveBundleLocale, resolveBundleConfigLocale, pickChapterSpecs } from './manifest/locale.js';
 export type { BundleNames } from './manifest/locale.js';
-export { slugify, uniqueSlug, chapterFileName, fileExtension, fileBasename, mimeForFile, isBitmapFile, isVideoFile, bitmapFormatOf, isSvgFile, isPdfFile, fontFormatFromFile, extensionForImageMime, extensionForResource, extensionForVideo, extensionForBitmapFormat } from './manifest/fileNames.js';
+export { slugify, uniqueSlug, chapterFileName, fileExtension, fileBasename, mimeForFile, isBitmapFile, isVideoFile, bitmapFormatOf, isSvgFile, isPdfFile, isPrintRasterFile, printFormatOfFile, fontFormatFromFile, extensionForImageMime, extensionForResource, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat } from './manifest/fileNames.js';
 export { fontsToCustomFonts, resourceFromSpec } from './manifest/entries.js';
 export type { BundleFontFiles } from './manifest/entries.js';
 export { svgSize, bitmapSize, bitmapInfo } from './manifest/sizes.js';

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Llistes i matemàtiques',
   description: "Les llistes amb pics i les numerades (marques, sagnats i llistes imbricades), les llistes de tasques, i la mida, el color i l'espaiat de les fórmules matemàtiques",
   lang: 'ca',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '19 min',
   order: 11,
   parent: 'configuration',
@@ -476,6 +476,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Manté una fórmula en bloc a la columna de la línia que la introdueix, com la penalització <code>\predisplaypenalty</code> de TeX. Quan la fórmula no cap sota l'última línia del paràgraf anterior, aquesta línia passa amb la fórmula a la columna o pàgina següent; quan les línies que quedarien enrere són menys de <code>bodyText.widowMinLines</code> (menys d'una si <code>bodyText.avoidWidows</code> està desactivat), un paràgraf que comença en aquella columna passa sencer (amb els encapçalaments que tanquen la columna per damunt, segons <code>headings.keepWithNext</code>). La línia que passa queda sola a dalt de tot de la columna següent, digui el que digui la regla de les òrfenes. Amb <code>false</code>, la fórmula passa sola, i la línia que la introdueix pot tancar la columna de dalt o quedar sobre una figura que encapçala la següent.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Si una fórmula destacada s’assenta a la retícula de base: el flux hi torna sota la fórmula. <code>false</code> conserva els marges exactes. Al Sandbox: <strong>Tornar a la retícula després de les fórmules</strong>.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Comença una fórmula destacada en una línia de la retícula: l’espai de damunt s’arrodoneix fins a la següent, acabi com acabi el bloc anterior. Apagat per defecte. Al Sandbox: <strong>Començar les fórmules en una línia de la retícula</strong>.</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

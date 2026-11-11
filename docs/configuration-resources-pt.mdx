@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Os tipos de recurso e a numeração deles, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '44 min',
+  readingTime: '45 min',
   order: 14,
   parent: 'configuration',
   plainSummary: "Esta página reúne os ajustes de figuras, tabelas, diagramas e vídeos. O Postext os chama de recursos e numera cada tipo separadamente. Você define a aparência das tabelas: fios, fundos, tipografia e como elas se dividem entre páginas. Define como se escreve a legenda de uma figura ou de uma tabela. Também pode imprimir os diagramas em uma só tinta e escolher como um vídeo aparece no papel.",
@@ -144,6 +144,16 @@ Um tipo pode omitir campos (desde o postext 1.38): o tipo integrado de mesmo id 
       <td><code>captionStyle</code></td>
       <td><code>CaptionStyleConfig</code> (opcional)</td>
       <td>Substituição parcial do <a href="#estilo-de-legenda">estilo de legenda</a> para os recursos deste tipo. Só as chaves que você define substituem o <code>captionStyle</code> global; todo o resto é herdado (uma <code>color</code> substituída também define as cores do rótulo e da nota, a menos que elas sejam definidas explicitamente). Uso típico: tabelas com legenda <em>em cima</em>, sobre uma barra colorida, enquanto as figuras mantêm a legenda embaixo. Referências à paleta são resolvidas como qualquer outra cor.</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Padrão <code>true</code>. Se uma figura ou tabela deste tipo colocada no texto assenta na grade de base: o fluxo volta a ela sob o recurso. <code>false</code> mantém o espaço exato que o recurso deixa. Não afeta os flutuantes no topo ou no pé de uma coluna.</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code> (opcional)</td>
+      <td>Padrão <code>false</code>. Começa uma figura ou tabela deste tipo colocada no texto numa linha da grade, seja qual for o fim do bloco anterior. Não afeta os flutuantes no topo ou no pé de uma coluna, uma figura contornada pelo texto nem a que abre uma coluna. No Sandbox: <strong>Começar numa linha da grade</strong>.</td>
     </tr>
   </tbody>
 </table>
@@ -562,6 +572,8 @@ As larguras das colunas pertencem ao modelo da tabela, não ao estilo: `TableMod
 
 Um `TableModel` é uma grade organizada por linhas, e cada célula é diagramada pela posição nela: `rows[r][c]` fica na coluna `c`. Por isso, uma célula mesclada mantém na grade as células que cobre, cada uma marcada com `hiddenBy` apontando para a célula principal, ao contrário de uma tabela HTML, que as omite. As funções de modelo exportadas por `postext` preservam essa forma; são funções puras que devolvem um modelo novo: `mergeCells(model, { start, end })` e `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` e `setAlignment`. As quatro funções de linhas e colunas mantêm as mesclagens inteiras: uma linha ou coluna adicionada dentro de um bloco mesclado o alarga, uma adicionada antes dele o desloca, uma removida dele o encolhe (um bloco que perde a primeira linha ou coluna mantém o conteúdo na nova célula superior esquerda), e todo `hiddenBy` continua apontando para a célula principal.
 
+`transposeTable(model)` troca linhas e colunas (o botão ⇄ do editor de tabelas do Sandbox): cada célula passa de `rows[r][c]` para `rows[c][r]` com o seu conteúdo, imagem, preenchimento e alinhamento; uma mesclagem mantém as suas células com as extensões trocadas; as linhas de cabeçalho viram colunas de cabeçalho, e as primeiras colunas feitas só de células de cabeçalho passam a `headerRowCount`; `columnWidths` é descartado. Uma linha contada por `headerRowCount` cujas células não trazem `isHeader` (como as deixa uma importação do Word) é linha de cabeçalho do mesmo jeito, e as suas células ficam marcadas `isHeader` na nova coluna. Transpor duas vezes devolve a tabela original, com as células das linhas de cabeçalho marcadas `isHeader`.
+
 `parseTSV(text, options?)` monta um modelo a partir de texto separado por tabulações (um intervalo colado de uma planilha): as linhas se dividem nas quebras de linha, as células nas tabulações, e as linhas curtas são completadas para que a grade fique retangular. `headerRows` transforma as linhas iniciais em linhas de cabeçalho: as células delas recebem `isHeader` e o modelo recebe `headerRowCount`; por isso, uma tabela dividida entre páginas as repete.
 
 ```ts
@@ -857,6 +869,8 @@ const minimal  = stripDiagramStyleDefaults(config.diagramStyle);
 // => undefined quando tudo coincide com os padrões
 ```
 
+**Cores especiais dentro de um SVG.** Num PDF de impressão, uma cor de um SVG vetorial é impressa numa cor especial só em dois casos. Quando nomeia a tinta: uma cor seguida de `icc-named-color(…, "PANTONE 185 C")`, ou um elemento com `data-spot="PANTONE 185 C"` (e `data-spot-tint="40"`, em percentagem), é impressa na chapa dessa tinta, com o equivalente da paleta se a paleta tiver uma cor especial com esse nome, e senão com o CMYK da própria cor. E quando o seu hex é exatamente o de uma cor especial da paleta: é impressa na tinta dessa cor, na retícula dessa cor. Qualquer outra cor fica em quadricromia, mesmo que pareça uma retícula de uma tinta sobre branco, por isso os cinzentos de um desenho nunca passam para uma chapa de cor especial. Cada cor é resolvida à parte, de modo que um diagrama pode misturar várias tintas e cores de quadricromia. `diagramStyle.singleInk` tem prioridade: com um `inkColor` de cor especial, o diagrama recolorido é impresso em retículas dessa chapa. Uma tinta que um SVG nomeia e que nenhuma cor da paleta define (nem uma entrada da tabela de tintas com `cmyk`) é impressa numa chapa própria, com o CMYK da cor do SVG como equivalente; todos os SVG que a nomeiam partilham essa chapa, e o preflight avisa (`spotInkUndefined`). Muitos programas exportam uma amostra como uma simples cor RGB e perdem o seu nome: acrescente à paleta uma cor especial com exatamente esse `hex`, uma por cada retícula que o desenho usa, ou marque os elementos com `data-spot`.
+
 ### Tinta única no canvas e no HTML
 
 Os renderizadores de canvas e de HTML recebem as imagens já decodificadas (`registerResourceImage`) ou como URLs (`resourceImageUrl`), e não o código SVG. Quando você pede, eles aplicam o mesmo mapeamento ao que desenham:
@@ -1069,7 +1083,7 @@ Os estilos de partitura com nome (`scoreStyles`, `NamedScoreStyleConfig[]`) têm
 
 ## Estilo de vídeo
 
-A propriedade `videoStyle` define como os [recursos de vídeo](/pt/docs/document-format-resources#vídeos) são impressos (a marca de reprodução e o código QR sobre o pôster, e se o pôster é um link para o vídeo) e o que os players oferecem no visualizador HTML e no EPUB.
+A propriedade `videoStyle` define como os [recursos de vídeo](/pt/docs/document-format-videos#vídeos) são impressos (a marca de reprodução e o código QR sobre o pôster, e se o pôster é um link para o vídeo) e o que os players oferecem no visualizador HTML e no EPUB.
 
 ```ts
 const config: PostextConfig = {
@@ -1204,7 +1218,7 @@ O código é gerado pelo próprio motor (`encodeQr(text, level)`: modo byte, UTF
 
 Um EPUB mantém só os atributos que o esquema dele conhece: um arquivo toca com <code>controls</code>, <code>autoplay</code>, <code>muted</code>, <code>loop</code>, <code>playsinline</code> e <code>preload</code>, mais a marca <code>data-pt-alongside</code>, e o sistema de leitura decide o resto.
 
-Um vídeo que não é exclusivo leva `data-pt-alongside` na saída HTML. `coordinateVideoPlayback(root)` faz os players sob `root` (o elemento que contém a saída de `renderToHtml`) seguirem a regra: iniciar um vídeo exclusivo pausa todos os outros que estiverem tocando, e iniciar um que toca junto pausa só os exclusivos. Devolve uma função que para de escutar. `playsAlongside(el)` e `videosToPause(started, videos, alongside)` dão a mesma regra a um host com players próprios. No [Folio](/pt/docs/document-format-resources#vídeos-nas-páginas-do-folio), um vídeo que toca sozinho e junto com os outros (`autoplay` com `exclusive: false`) começa, sem som, cada vez que a página dele entra em vista e para quando a página é virada, vários ao mesmo tempo, e `loop` o faz tocar de novo desde o início. Uma página ou capítulo de EPUB com vídeos a coordenar (dois ou mais, um deles exclusivo) vincula a mesma regra como um pequeno script, `scripts/videos.js` (a exportação `VIDEO_PLAYBACK_SCRIPT`), e o pacote declara esse documento como `scripted`. Um sistema de leitura que executa scripts faz os vídeos desse documento seguirem a regra, mas não os de uma página oposta, que é outro documento; um que não executa scripts toca cada vídeo por conta própria, como os players do YouTube e do Vimeo sempre fazem.
+Um vídeo que não é exclusivo leva `data-pt-alongside` na saída HTML. `coordinateVideoPlayback(root)` faz os players sob `root` (o elemento que contém a saída de `renderToHtml`) seguirem a regra: iniciar um vídeo exclusivo pausa todos os outros que estiverem tocando, e iniciar um que toca junto pausa só os exclusivos. Devolve uma função que para de escutar. `playsAlongside(el)` e `videosToPause(started, videos, alongside)` dão a mesma regra a um host com players próprios. No [Folio](/pt/docs/document-format-videos#vídeos-nas-páginas-do-folio), um vídeo que toca sozinho e junto com os outros (`autoplay` com `exclusive: false`) começa, sem som, cada vez que a página dele entra em vista e para quando a página é virada, vários ao mesmo tempo, e `loop` o faz tocar de novo desde o início. Uma página ou capítulo de EPUB com vídeos a coordenar (dois ou mais, um deles exclusivo) vincula a mesma regra como um pequeno script, `scripts/videos.js` (a exportação `VIDEO_PLAYBACK_SCRIPT`), e o pacote declara esse documento como `scripted`. Um sistema de leitura que executa scripts faz os vídeos desse documento seguirem a regra, mas não os de uma página oposta, que é outro documento; um que não executa scripts toca cada vídeo por conta própria, como os players do YouTube e do Vimeo sempre fazem.
 
 O resolvedor e o redutor seguem o padrão das outras seções, junto com os tipos `VideoStyleConfig` / `ResolvedVideoStyleConfig`:
 

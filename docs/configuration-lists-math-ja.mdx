@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'リストと数式',
   description: '箇条書きリストと番号付きリスト、その行頭記号、字下げ、入れ子、タスクリスト、数式の大きさ、色、間隔',
   lang: 'ja',
-  lastUpdated: '2026-10-19',
+  lastUpdated: '2026-11-10',
   readingTime: '18分',
   order: 11,
   parent: 'configuration',
@@ -477,6 +477,18 @@ interface MathConfig {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>別行立て数式を、それを導入する行と同じ段に置きます。TeXのpredisplay penaltyに相当します。数式がその前の段落の最終行の下に収まらない場合、その行は数式と一緒に次の段またはページへ移ります。後に残る行が<code>bodyText.widowMinLines</code>未満になる場合（<code>bodyText.avoidWidows</code>がオフなら1行未満）は、その段で始まる段落が丸ごと次へ移ります（<code>headings.keepWithNext</code>により、その上で段を閉じている見出しも一緒に移ります）。持ち越された行は、オーファンの規則が何を求めていても、次の段の先頭に単独で置かれます。<code>false</code>の場合は数式だけが次へ移り、それを導入する行が上の段を閉じたり、次の段の先頭にある図の上に置かれたりすることがあります。</td>
+    </tr>
+    <tr>
+      <td><code>snapToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>別行立ての数式をベースライングリッドに載せるかどうか。数式の下で流れがグリッドに戻ります。<code>false</code>では正確な余白を保ちます。Sandboxでは<strong>数式の後でグリッドに戻す</strong>です。</td>
+    </tr>
+    <tr>
+      <td><code>snapTopToGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>別行立ての数式をグリッド線から始めます。前のブロックがどこで終わっても、上の間隔を次のグリッド線まで切り上げます。既定ではオフです。Sandboxでは<strong>数式をグリッド線から始める</strong>です。</td>
     </tr>
     <tr>
       <td><code>equationNumbering</code></td>

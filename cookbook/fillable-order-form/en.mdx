@@ -64,3 +64,5 @@ The captured pages show the boxes empty, because a field's words are its default
 The totals are scripts (`AFSimple_Calculate` and short expressions), which Acrobat, Foxit, Chrome and Firefox run. Preview on macOS shows the fields and saves what you type, but it runs no scripts, so the totals stay empty there.
 
 The seed circle's check box has `on="1"`, the value a calculation reads when it is ticked. With the default on value, `Yes`, `product(order.circle, 12)` would always give 0, and postext-pdf warns about it.
+
+The pen imports `https://esm.sh/postext-pdf?bundle`. esm.sh's default build of pdf-lib puts its annotation classes in a module of their own, and pdf-lib then refuses every field's widget: the PDF still has the boxes, but no number formats, no totals and no read-only fields, with a `formField` warning on the console. `?bundle` builds pdf-lib as one module and leaves `postext` outside it, shared with the rest of the page.

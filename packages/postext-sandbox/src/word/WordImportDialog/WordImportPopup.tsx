@@ -12,7 +12,7 @@ import { downloadBytes } from '../../storage/persistence.js';
 import { Collapsible, usePortalContainer, type SelectOption, Select, announce, IconButton, Button, ConfirmPopover, Switch } from '../../ui/index.js';
 import { POPUP_Z_INDEX, POPUP_SURFACE } from '../../ui/layout/surface.js';
 import { type WordDestination, counted, FINDING_LABEL, useWordTemplates, loadLastTemplateId, defaultWordDestination, wordTrackingPlan, trackingText, convertWordDocument, paragraphTargetByName, materializedTemplate, saveLastTemplateId, importedResources, wordImportActions } from '../sandboxImport.js';
-import { type WordDocument, type QualityReport, displayStyleName, parseTemplate, type WordTemplate, emptyTemplate, analyzeDocx, calloutStylesOf, chipStylesOf, type ParagraphTarget, type CharacterTarget, type WordImportOptions, type ParagraphTargetKind, type CharacterTargetKind, characterTargetOf, newTemplateId, templateFile } from 'postext/word';
+import { type WordDocument, type QualityReport, displayStyleName, parseTemplate, type WordTemplate, emptyTemplate, analyzeDocx, calloutStylesOf, chipStylesOf, characterStylesOf, type ParagraphTarget, type CharacterTarget, type WordImportOptions, type ParagraphTargetKind, type CharacterTargetKind, characterTargetOf, newTemplateId, templateFile } from 'postext/word';
 import type { SandboxLabels } from '../../types/index.js';
 
 export interface WordImportFile {
@@ -173,6 +173,7 @@ export function WordImportPopup({ file, onClose }: { file: WordImportFile; onClo
   const calloutStyles = calloutStylesOf(config);
   const headingStyles = config.headingStyles ?? [];
   const chipStyles = chipStylesOf(config);
+  const characterStyles = characterStylesOf(config);
 
   const setParagraph = (name: string, target: ParagraphTarget) => {
     setWorking((w) => ({ ...w, paragraphs: { ...w.paragraphs, [name]: target } }));
@@ -281,6 +282,7 @@ export function WordImportPopup({ file, onClose }: { file: WordImportFile; onClo
     { value: 'sup', label: labels.wordCharSup },
     { value: 'sub', label: labels.wordCharSub },
     ...(chipStyles.length ? [{ value: 'chip' as const, label: labels.wordCharChip }] : []),
+    ...(characterStyles.length ? [{ value: 'charStyle' as const, label: labels.wordCharCharStyle }] : []),
     { value: 'markup', label: labels.wordTargetMarkup },
     { value: 'drop', label: labels.wordTargetDrop },
   ];
@@ -293,13 +295,16 @@ export function WordImportPopup({ file, onClose }: { file: WordImportFile; onClo
         <Select<CharacterTargetKind>
           size="sm"
           value={t.kind}
-          onValueChange={(k) => setCharacter(name, k === 'chip' ? { kind: 'chip', style: chipStyles[0]?.id ?? '' } : { kind: k } as CharacterTarget)}
+          onValueChange={(k) => setCharacter(name, k === 'chip' ? { kind: 'chip', style: chipStyles[0]?.id ?? '' } : k === 'charStyle' ? { kind: 'charStyle', style: characterStyles[0]?.id ?? '' } : { kind: k } as CharacterTarget)}
           options={charKinds}
           ariaLabel={aria(labels.wordMapTo)}
           className="min-w-[180px] flex-1"
         />
         {t.kind === 'chip' && (
           <Select size="sm" value={t.style} onValueChange={(v) => setCharacter(name, { kind: 'chip', style: v })} options={named(chipStyles, t.style)} ariaLabel={aria(labels.wordCharChipStyle)} />
+        )}
+        {t.kind === 'charStyle' && (
+          <Select size="sm" value={t.style} onValueChange={(v) => setCharacter(name, { kind: 'charStyle', style: v })} options={named(characterStyles, t.style)} ariaLabel={aria(labels.wordCharCharStyleStyle)} />
         )}
       </>
     );

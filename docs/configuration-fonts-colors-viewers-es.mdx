@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Las unidades, los colores y la paleta; las fuentes personalizadas; el visor HTML, el PDF y la producción para imprenta; el visor Folio, y las ayudas de depuración.',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '42 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Esta página reúne los ajustes que comparte todo el libro y los de cada tipo de salida. Explica cómo se escribe una medida y un color, y cómo se da nombre a los colores de una paleta. Enseña a añadir tus propias fuentes. Después trata la vista web, el archivo PDF, los archivos que pide una imprenta y el libro en 3D. La última sección activa las guías y los avisos que ayudan mientras trabajas.",
@@ -39,13 +39,16 @@ Los colores se guardan con una representación hexadecimal y un modelo de color 
 ```ts
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
-  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl'
+  model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
+  spot?: SpotColor;    // La tinta de un color de tinta plana.
+  overprint?: boolean; // Sobreimprime en una salida para imprenta (ver Colores que sobreimprimen).
   paletteId?: string;  // La entrada de colorPalette que sigue.
+  tint?: number;       // La intensidad de la entrada sobre el color de la página, en porcentaje (con paletteId).
 }
 ```
 
-El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](#colores-definidos-en-cmyk)).
+El campo `model` indica el espacio de color previsto. Para la web, lo habitual es `'hex'` o `'rgb'`. En los flujos de impresión, `'cmyk'` indica que el color se definió en CMYK, y `cmyk` guarda sus valores: una salida CMYK para imprenta los usa tal cual, y `hex` es su representación en pantalla (véase [Colores definidos en CMYK](/es/docs/configuration-pdf-output#colores-definidos-en-cmyk)). `'spot'` es una tinta plana, con su tinta en `spot` (ver [Tintas planas](/es/docs/configuration-pdf-output#tintas-planas)).
 
 Como Postext busca una salida de calidad editorial, el color por defecto del texto base viene con `model: 'cmyk'` (`#000000`). Los colores de los encabezados, las negritas, las cursivas y las listas toman por defecto el **Color principal** vinculado a la paleta (`#295AA3`, `model: 'hex'`). El fondo de la página y las ayudas visuales (la rejilla base, las marcas de corte, los indicadores de depuración) usan `model: 'hex'` por defecto. Cambia el `color.model` de cualquier campo si necesitas que se exporte de otra forma.
 
@@ -266,6 +269,8 @@ Cualquier `ColorValue` de la configuración puede tener un campo opcional `palet
 
 **Cambio en postext 1.5.** Hasta postext 1.4, la paleta solo llegaba a una lista fija de ajustes. Los demás (los colores de los diseños: titulillos, aperturas, estilos de encabezado, partes, filas del índice; `bodyText.referenceColor`; los colores de las etiquetas de los recuadros y los de las negritas y cursivas de su contenido) conservaban el `hex` guardado junto a su `paletteId`. Un documento cuyo valor guardado no coincide con la entrada de la paleta (todos los editados en el Sandbox después de cambiar la entrada, y todos los `:ref` cuando el color principal no es `#295AA3`) imprime ahora el color de la paleta, como indica el vínculo. Para conservar un color tal como estaba, quita su `paletteId`.
 
+**Un tinte de una entrada de la paleta.** Con `paletteId`, `tint` (0–100) pinta la entrada a esa intensidad: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` es el color principal al 8 %, un fondo de recuadro que sigue al color principal cuando cambia la paleta. La paleta de una parte o de una sección mantiene la intensidad en todo lo que recolorea: el texto corrido, el color de la página, los números de línea, las celdas de tabla, las zonas de diseño y la exportación a Word. El tinte conserva el modelo de la entrada: una entrada CMYK da sus tintas escaladas (el 10 % de `100 60 0 10` imprime `10 6 0 1`), una entrada de tinta plana da un tinte de esa misma tinta en su propia plancha, y un color de pantalla se mezcla con el color de la página (`page.backgroundColor`, blanco si no se define; bajo un tinte CMYK, un color de página definido en CMYK añade sus propias tintas). `hex` guarda el valor ya tintado, el de reserva sin la entrada. Un tinte de tinta plana lleva una sola tinta: sobre una página de color, cala el color de la página salvo que sobreimprima. En el Sandbox, el selector de un color vinculado tiene un campo **Tinta**.
+
 ### Cómo se aplican las paletas
 
 `buildDocument` aplica la paleta en dos momentos, para que los colores vinculados funcionen tanto en los valores que hayas indicado tú como en los valores por defecto que se completan después:
@@ -447,7 +452,7 @@ La propiedad `pdfGeneration` controla cómo genera el documento final el backend
 
 `buildDocument` los incluye en el VDT, como `doc.config.pdfGeneration`, y `renderToPdf` toma cada ajuste del primer sitio en el que lo encuentra:
 
-1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `forms`);
+1. sus propias opciones (`outlines`, `accessible`, `colorSpace`, `baselineGrid`, `forms`);
 2. el `pdfGeneration` del primer documento que recibe (en un libro, los ajustes del primer capítulo valen para todo el archivo);
 3. los valores por defecto: marcadores y etiquetado activados, color RGB.
 
@@ -461,6 +466,7 @@ interface PdfGenerationConfig {
   forceColorSpace?: boolean;   // Convertir todos los colores a `colorSpace`.
   colorSpace?: PdfColorSpace;  // Espacio destino cuando `forceColorSpace` es true.
   accessible?: boolean;        // Salida etiquetada orientada a PDF/UA (árbol de estructura, texto alternativo, idioma).
+  baselineGrid?: boolean;      // Dibujar también en el PDF la rejilla base de `page.baselineGrid`.
   forms?: PdfFormsConfig;      // Campos de formulario: moneda, separadores, letra.
 }
 ```
@@ -498,6 +504,12 @@ interface PdfGenerationConfig {
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>Genera un PDF accesible y etiquetado, orientado a PDF/UA-1: un árbol de estructura lógica en orden de lectura (encabezados que nunca se saltan un nivel, párrafos, listas, citas, recuadros, tablas con celdas de cabecera, figuras con su texto alternativo y su pie, fórmulas, referencias como enlaces y el índice de un `:::toc` como un solo `TOC` con un `TOCI` por fila: el número de la fila como `Lbl`, y su título y su página como un `Reference` que contiene el enlace), el título y el idioma del documento (el `locale` de primer nivel), la identificación PDF/UA en los metadatos XMP, y todas las marcas decorativas (fondo de página, filetes, rejilla base, titulillos y pies de página, marcas de corte, cabeceras de tabla repetidas, el título repetido y el indicador de continuación de un recuadro partido) marcadas como artefactos para que los lectores de pantalla las omitan. Una figura sin `altText` usa su pie y, si no lo tiene, su etiqueta. Una figura o una tabla flotante se lee justo después del texto que la cita por primera vez, o del texto anterior a su línea `::resource`, y un recuadro flotante, después del texto anterior a su línea de apertura, aunque el flotante quede en una página posterior; una lista o un índice que continúan después de un flotante siguen siendo un solo elemento, y una lista dentro de un recuadro flotante o fijo (`placement: 'fixed'`) es una sola lista. Desactívalo solo en los originales de imprenta en los que esa estructura adicional sobre.</td>
+    </tr>
+    <tr>
+      <td><code>baselineGrid</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Dibuja en el PDF la rejilla base mientras <code>page.baselineGrid</code> está activada. Activado por defecto, como hasta ahora; con <code>false</code> la rejilla queda como guía para comprobar la página en pantalla, fuera del PDF, y el lienzo y el visor HTML la siguen mostrando. En el Sandbox es <strong>Rejilla base en el PDF</strong>, en la sección PDF.</td>
     </tr>
     <tr>
       <td><code>forms</code></td>
@@ -553,6 +565,9 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total de tinta, en porcentaje.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
+  inks?: PrintInk[];                       // La tabla de tintas: nombres, alias, cuatricromía.
+  plates?: PrintPlatesConfig;              // Las planchas del trabajo: impresión a dos tintas.
+  imageColor?: PrintImageColorConfig;      // Cómo se leen las imágenes: perfiles, grises.
 }
 
 interface CustomOutputProfile {
@@ -624,7 +639,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>véase <a href="#preflight">Preflight</a></td>
+      <td>véase <a href="/es/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Qué revisa la verificación previa y con qué umbrales.</td>
     </tr>
   </tbody>
@@ -753,73 +768,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Colores definidos en CMYK
-
-Un color escrito en CMYK conserva sus valores exactos: en una salida para imprenta, `ColorValue.cmyk` (en porcentaje) se usa tal cual, y `hex` es su representación en pantalla. Una entrada de la paleta definida en CMYK se aplica a todos los colores vinculados a ella.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppp al tamaño impreso.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Propiedad</th>
-      <th>Tipo</th>
-      <th>Por defecto</th>
-      <th>Descripción</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Ejecuta las comprobaciones.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits colocado que, a su tamaño impreso y con el recorte incluido, quede por debajo de esta cantidad de píxeles por pulgada recibe un aviso: figuras, imágenes de celdas de tabla, imágenes de diseño, viñetas de cómic. Un mapa de bits sin resolución propia se imprime a su tamaño natural a `page.dpi`, así que en una página maquetada a 150 dpi todas esas imágenes se imprimen a 150 ppp; uno con resolución propia (`bitmap.resolution`, `layout.bitmapResolution`) se imprime a su tamaño natural a esa resolución.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Por debajo de este valor, el aviso es crítico. Nunca puede superar `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filetes, bordes, filetes entre columnas, filetes de tabla y bordes de viñeta de cómic más finos que este valor.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texto con un cuerpo inferior a este valor y compuesto en más de una tinta (un color de cuatricromía, negro enriquecido): se emborrona cuando se desplazan las planchas. El texto negro, solo en K, nunca cuenta.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texto situado a menos de esta distancia del corte, donde la guillotina puede cortarlo.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caja o una imagen que se detiene a esta distancia del corte sin llegar al sangrado: llévala a sangre o apártala del corte.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Avisa de las fuentes que no incrusta un PDF colocado (el Sandbox revisa cada original de imprenta con `inspectPrintMaster`). Postext incrusta todas las fuentes con las que compone.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` ejecuta las comprobaciones sobre un documento maquetado y devuelve una lista de incidencias, cada una con un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absoluto en el libro, el `rect` afectado (en píxeles de página) y, cuando el elemento lo tiene, su rango en el texto de origen. Los tipos son `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` y `nearTrim`. Sin un `transform`, un color neutro cuenta como una tinta y cualquier otro como tres, y no se comprueba la cobertura; con él, los recuentos y la cobertura son exactos. La resolución de una imagen se calcula a partir de los píxeles que declara su recurso o, cuando `imageSize(fileId)` los proporciona (`bitmapInfo` sobre los bytes, o la imagen decodificada), de los del propio archivo: una declaración que difiere del archivo en más de un píxel se notifica una vez como `declaredPixelsMismatch`, con nivel de aviso cuando declara más píxeles de los que tiene el archivo. `placedImageResolutions(doc, { resources, imageSize })` enumera todos los mapas de bits colocados con su resolución efectiva en ppp, esté activada o no la verificación previa. Los rótulos de una figura cuentan como texto para `smallProcessText`, `inkLimit` y `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // tamaños en píxeles de los mapas de bits
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // los píxeles reales de los archivos
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', según el archivo
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Simulación de impresión
 

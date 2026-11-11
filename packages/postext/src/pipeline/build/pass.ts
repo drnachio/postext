@@ -6,6 +6,7 @@ import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
 import { setSymbolFont, symbolFont } from '../../measure/font.js';
+import { setHyphenationLimits } from '../../hyphenation/hyphenate.js';
 import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
 import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
 import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
@@ -47,6 +48,7 @@ import { createPageSetup } from './pass/setup/pageSetup.js';
 import { createContentSetup } from './pass/setup/contentSetup.js';
 import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
+import type { PlacedSlot } from './floatPads.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -107,8 +109,10 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
+  const floatSlots = new Map<string, PlacedSlot>();
+  const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
   const asideCutBy = new WeakMap<VDTColumn, string>();
   /** A side column that does not run the page's whole content height: a
@@ -158,6 +162,9 @@ function placeDocumentPass(
   // A line may end after a slash between two words wherever rich text is
   // measured (#1164), unless the configuration keeps the breaks of 1.51.
   setSlashBreaks(setup.resolved.bodyText.breakAfterSlashes !== false);
+  // And its limits (shortest word, letters before and after a break), set
+  // (or cleared) every build for the same reason.
+  setHyphenationLimits(setup.resolved.bodyText.hyphenation);
   // CJK text breaks at the document's level wherever it is measured (body,
   // captions, cells, notes, boxes), as it hyphenates in its language.
   setCjkLineBreak(setup.resolved.cjk.lineBreak);
@@ -242,13 +249,14 @@ function placeDocumentPass(
     offsetResourceBlockToAbsolute, layoutFloat, rotationFor, sizingFor, uprightOn, tableRowCount, tableOverflow,
     sliceOf, tableMetrics, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved,
     centredPages, reservedOf, wrapExclusionWidth, textWrapNotes, movedNotes, wrapContourOf,
-    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf
+    floatWraps, openFloatWraps, floatHeadOf, capOrigin, topFloatRefOf, capKindOf,
+    bodyCropDelta
   } = createFloatMeasure({
     cache, balanceExtraPx, bandCaps, resolved: setup.resolved, dpi, baselineGrid, doc, pageIndexOffset,
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
   });
 
   const {
@@ -261,7 +269,7 @@ function placeDocumentPass(
   });
 
   const {
-    placeFloatInColumns, settle, heldBack, positionsFor
+    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, releasePins, hasFoot
   } = createFloatPlace({
     captionUnderProposals, asideCutBy, shortSideColumn, resolved: setup.resolved, dpi, baselineGrid, bodyOffset,
     contentBlocks, resourceById, bodyStyle, pendingFloats, openerPages, openerFloatRule,
@@ -269,7 +277,8 @@ function placeDocumentPass(
     tableOverflow, measureFloat, buildFloatBlock, rotatedFlushEnd, floatReserved, reservedOf,
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
-    uncappedBottoms, openerHeadFloats, state, late
+    uncappedBottoms, openerHeadFloats, state, late,
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor
   });
 
   const {
@@ -280,7 +289,7 @@ function placeDocumentPass(
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
-    positionsFor, cursor, forcedBreakPages, state, late
+    positionsFor, cursor, forcedBreakPages, state, late, pinOn, releasePins, hasFoot
   });
 
   const {
@@ -447,7 +456,7 @@ function placeDocumentPass(
     placeComicSpread, placeComicStrip, looseStripBoxes, placeComposedPage, placeComicText
   });
   const { measureBlock } = createBlockMeasure({
-    state, balanceLooseness, balanceLooseBudget, balanceExtraPx, resolved: setup.resolved, trackingLadder,
+    state, balanceLooseness, balanceUntracked, balanceLooseBudget, balanceExtraPx, resolved: setup.resolved, trackingLadder,
     looseOutcome, looseOffGrid, looseGained, headingLevels, dpi, doc, pageWidthPx, pageHeightPx,
     contentBlocks, paragraphContainers, partPlan, sectionPlan, cursor, openerPages, floatGapPx,
     uprightOn, onNewPage, partMeasureCtx, sectionMeasureCtx, measuredAcrossPage, atColumnHead,
@@ -458,7 +467,8 @@ function placeDocumentPass(
     state, resolved: setup.resolved, dpi, baselineGrid, doc, pageWidthPx, pageHeightPx, bodyOffset, bodyStyle, cursor,
     floatGapPx, offsetResourceBlockToAbsolute, textWrapNotes, movedNotes, wrapExclusionWidth,
     wrapContourOf, onAtomicNewPage, stampBlockExtras, addBalanceExtra, enterBand,
-    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices
+    flushPendingNumberingAtBoundary, measureInlineAside, markInlineAside, placeInlineTableSlices,
+    resourceTypeById
   });
   const { prepareLines } = createBlockLines({
     resolved: setup.resolved, headingLevels, freshPageFlowColumns, contentBlocks, gateCitedFloats, measuredAcrossPage
@@ -529,7 +539,8 @@ function placeDocumentPass(
     citingPageProposals, citingPageRefused
   } = createPassFinish({
     config, givenResources, dpi, doc, continuation, bodyOffset, chapterEndNotes, codeBoxes,
-    contentBlocks, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    contentBlocks, footnoteDefs, carried, resourceById, paragraphContainers, calloutFloats, pendingFloats,
+    pinnedFloats: new Set(floatPlan.filter((f) => f.pin).map((f) => f.resourceId)),
     pendingSideBoxes, openerFloatNotes, awaitingSideBoxes, centredPages, reservedOf, textWrapNotes,
     movedNotes, settleCitingPageFloats, joiningLetterSpacing, dropCapNotes, reserveLeftoverNotes,
     dropChapterEndNotes, ruleChapterEndNotes, setColumnNotes, spanPlacedInBand, cappedBandColumns,
@@ -538,5 +549,5 @@ function placeDocumentPass(
     setup
   });
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }
