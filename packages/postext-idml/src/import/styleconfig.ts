@@ -197,7 +197,7 @@ export function styleConfig(ctx: Context): Pick<PostextConfig, 'bodyText' | 'hea
     reportLook(ctx, l);
   }
   if (styles.length) out.paragraphStyles = styles;
-  // InDesign justifies the line a forced line break ends (postext 1.74,
+  // InDesign justifies the line a forced line break ends (postext 1.76,
   // `bodyText.justifyHardBreaks`): the lines the source kept read as set.
   (out.bodyText ??= {}).justifyHardBreaks = true;
 

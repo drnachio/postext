@@ -6,8 +6,10 @@
 // each composed-page frame becomes one text frame with one story (frames
 // chained by `next` share one story), with the frame's callout style as
 // paragraph style. Chips that carry a form field become InDesign form
-// fields (`fields.ts`). InDesign sets the text again with its own composer:
-// frames, styles, text and first baselines match, line breaks may not.
+// fields (`fields.ts`). The lines Postext set are kept (`keptLines.ts`: a
+// forced break per line, no-break text, per-line leading), so InDesign
+// shows the pages as the PDF does; with `lineBreaks: 'reflow'` InDesign
+// sets the text again with its own composer and line breaks may differ.
 //
 // The writer's parts: `writer.ts` (its state, the options), `colours.ts`
 // (swatches), `geometry.ts`, `shapes.ts` (boxes, rules, paths, chips),

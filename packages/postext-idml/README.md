@@ -31,12 +31,12 @@ const { bytes: idml, links, fonts } = idmlDocument({
 - `resourceBytes(fileId)`: the bytes of a picture.
 - `images`: `'embed'` (default) keeps the pictures inside the file; `'link'` links them to `Links/<name>` and returns them in `links`.
 - `lineBreaks`: `'keep'` (default) ends every line where Postext ended it, on the baseline Postext set it on, so InDesign shows the pages as the PDF does; `'reflow'` leaves the paragraphs to InDesign's composer, for a book that will be set again there.
-- `spreads`: `'facing'` puts the pages two to a spread about the spine, `'single'` one page to a spread. The default is `'facing'` for a book with mirrored margins.
+- `spreads`: `'facing'` puts the pages two to a spread about the spine, `'single'` one page to a spread. The default is `'facing'` for a book with mirrored margins and `'single'` for any other.
 - `fontFile(family, weight, italic)`: the font file of a face (TrueType or OpenType bytes). With it a face is named as its file names it, which is how InDesign finds it, and the files come back in `fonts` as `Document fonts/<file>`.
 - `forms`: chips that carry a form field become InDesign form fields (default `true`).
 - `onWarning`: what could not be written as it is in the book (`{ code, message }`).
 
-Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and swatches are left out of the text, and right-to-left and vertical text is written left to right and horizontal; each case sends a warning.
+Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and colour swatches are anchored inline objects in their line (`inlineObjects: false` leaves them out, with a warning), links are InDesign hyperlinks, and with kept lines right-to-left text is written in right-to-left stories. Vertical text is written in horizontal stories, with a warning.
 
 The command line writes the same package with `postext idml`.
 
@@ -57,7 +57,7 @@ for (const w of doc.warnings) console.warn(w.code, w.message);
 
 The same entry exports the helpers an importer works with: computed styles and formats, colours, the geometry of page items, master items and reading order.
 
-The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book. Lines the document keeps (a forced line break at the end of each, as the export writes them) come back as the lines of the book: the importer turns on `bodyText.justifyHardBreaks` (postext 1.74), which justifies the line before a forced break as InDesign does, so a book exported from Postext and imported again sets the same lines.
+The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book. Lines the document keeps (a forced line break at the end of each, as the export writes them) come back as the lines of the book: the importer turns on `bodyText.justifyHardBreaks` (postext 1.76), which justifies the line before a forced break as InDesign does, so a book exported from Postext and imported again sets the same lines.
 
 ## Entries
 

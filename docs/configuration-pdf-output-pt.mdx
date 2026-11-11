@@ -336,7 +336,7 @@ pdfGeneration: {
 
 **Pelo esm.sh num navegador**, importe `https://esm.sh/postext-pdf?bundle`. O build padrão do pdf-lib no esm.sh coloca as classes de anotação num módulo à parte, e o pdf-lib então recusa o widget de cada campo: o PDF mantém as caixas, mas perde formatos, cálculos e atributos, com um aviso `formField` por campo. `?bundle` compila o pdf-lib num só módulo e deixa o `postext` de fora, compartilhado com a página. Um bundler (Vite, webpack, Next.js) e o Node não são afetados.
 
-A exportação IDML grava os mesmos campos como campos de formulário do InDesign (veja [Uso programático › Pacotes do InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postextidml)).
+A exportação IDML grava os mesmos campos como campos de formulário do InDesign (veja [Uso programático › Pacotes do InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postext-idml)).
 
 ### Links no PDF
 

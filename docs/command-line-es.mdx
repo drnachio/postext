@@ -359,20 +359,31 @@ estaba (`skipped`). Desde postext 1.39.
 ```bash
 postext idml libro/ -o libro.idml
 postext idml libro.postext -o libro.idml --images link
+postext idml libro/ -o out/libro.idml --lines reflow --fonts
 ```
 
 `idml` maqueta el libro como lo hace `pdf` y escribe las páginas como un
-paquete de InDesign Markup, para terminarlo en InDesign: una página por
-pliego, filetes, recuadros, trazados e imágenes como elementos de página, el
-texto de cada marco de una página compuesta como un marco de texto con su
-propia historia (los marcos encadenados con `next` comparten una), los estilos
-de recuadro como estilos de párrafo y los colores CMYK de autor como muestras. Los chips con campo de formulario pasan a ser campos de formulario de InDesign.
-InDesign vuelve a componer el texto, así que los cortes de línea pueden
-diferir de los del PDF. `--images link` deja las imágenes junto al archivo, en
-`Links/`, en lugar de dentro. Lo que el paquete todavía no puede llevar
-(tablas, fórmulas, música) se notifica como aviso `idml.*`. Véase
-[Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postextidml).
-Desde postext 1.71.
+paquete de InDesign Markup, para terminarlo en InDesign: las páginas en
+pliegos a ambos lados del lomo en un libro con márgenes simétricos (una página
+por pliego en cualquier otro), filetes, recuadros, trazados e imágenes como
+elementos de página, las tablas como tablas de InDesign, el texto de cada
+marco de una página compuesta como un marco de texto con su propia historia
+(los marcos encadenados con `next` comparten una), los estilos de recuadro
+como estilos de párrafo y los colores CMYK de autor como muestras. Los chips
+con campo de formulario pasan a ser campos de formulario de InDesign. `--lines
+keep` (el valor por defecto) termina cada línea donde la terminó Postext, así
+que InDesign muestra las mismas líneas que el PDF; `--lines reflow` deja los
+párrafos al componedor de InDesign, y los cortes de línea pueden variar.
+`--images link` deja las imágenes junto al archivo, en `Links/`, en lugar de
+dentro. `--fonts` escribe los archivos de fuente de las variantes usadas junto
+al paquete, en `Document fonts/`, donde InDesign los encuentra para ese
+documento; necesita que `-o` nombre un archivo, y una familia que el libro no
+puede redistribuir se deja fuera con un aviso. Lo que el paquete no puede
+llevar como está en el libro (el texto vertical, el marco redondeado de una
+tabla) se notifica como aviso `idml.*`. El generador es el paquete
+`postext-idml`: véase [Uso programático › Paquetes de
+InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
+Desde postext 1.71; `--lines` y `--fonts`, desde 1.76.
 
 ### pack y unpack
 

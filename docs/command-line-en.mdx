@@ -350,18 +350,28 @@ book already sets as it is. With `--json`, `styleTracking` lists what was set
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` lays the book out as `pdf` does and writes the pages as an InDesign
-Markup package, for finishing in InDesign: one page per spread, rules, boxes,
-paths and pictures as page items, each composed-page frame's text as a text
-frame with its own story (frames chained by `next` share one), callout styles
-as paragraph styles and authored CMYK colours as swatches. Chips that carry a form field become InDesign form fields. InDesign sets the
-text again, so line breaks may differ from the PDF's. `--images link` puts
-the pictures beside the file in `Links/` instead of inside it. What the
-package cannot carry yet (tables, maths, music) is reported as an `idml.*`
-warning. See [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postextidml).
-Since postext 1.71.
+Markup package, for finishing in InDesign: the pages in spreads about the
+spine for a book with facing-page margins (one page per spread for any other),
+rules, boxes, paths and pictures as page items, tables as InDesign tables,
+each composed-page frame's text as a text frame with its own story (frames
+chained by `next` share one), callout styles as paragraph styles and authored
+CMYK colours as swatches. Chips that carry a form field become InDesign form
+fields. `--lines keep` (the default) ends every line where Postext ended it,
+so InDesign shows the same lines as the PDF; `--lines reflow` leaves the
+paragraphs to InDesign's composer, and line breaks may differ. `--images link`
+puts the pictures beside the file in `Links/` instead of inside it. `--fonts`
+writes the font files of the faces used beside the package, in `Document
+fonts/`, where InDesign finds them for that document; it needs `-o` to name a
+file, and a family the book may not redistribute is left out with a warning.
+What the package cannot carry as the book has it (vertical text, a table's
+rounded frame) is reported as an `idml.*` warning. The writer is the
+`postext-idml` package: see [Programmatic usage › InDesign
+packages](/en/docs/configuration-programmatic-usage#indesign-packages-postext-idml).
+Since postext 1.71; `--lines` and `--fonts` since 1.76.
 
 ### pack and unpack
 

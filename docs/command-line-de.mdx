@@ -360,21 +360,31 @@ einen Zeichenabstand, den das Buch schon festlegt, lässt er unverändert. Mit `
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` setzt das Buch wie `pdf` und schreibt die Seiten als
-InDesign-Markup-Paket, zur Fertigstellung in InDesign: eine Seite je
-Druckbogen, Linien, Kästen, Pfade und Bilder als Seitenobjekte, der Text jedes
-Rahmens einer zusammengesetzten Seite als Textrahmen mit eigenem Textabschnitt
-(mit `next` verkettete Rahmen teilen sich einen), Kastenstile als
-Absatzformate und vom Autor angelegte CMYK-Farben als Farbfelder. Chips mit
-einem Formularfeld werden zu InDesign-Formularfeldern. InDesign setzt den Text
-neu, daher können die Zeilenumbrüche von denen des PDF abweichen. `--images
-link` legt die Bilder neben der Datei in `Links/` ab, statt sie in die Datei
-zu packen. Was das Paket noch nicht tragen kann (Tabellen, Formeln, Noten),
-wird als Warnung `idml.*` gemeldet. Siehe [Programmatische Nutzung ›
-InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postextidml).
-Seit postext 1.71.
+InDesign-Markup-Paket, zur Fertigstellung in InDesign: die Seiten in
+Druckbögen beiderseits des Rückens bei einem Buch mit Rändern für
+gegenüberliegende Seiten (sonst eine Seite je Druckbogen), Linien, Kästen,
+Pfade und Bilder als Seitenobjekte, Tabellen als InDesign-Tabellen, der Text
+jedes Rahmens einer zusammengesetzten Seite als Textrahmen mit eigenem
+Textabschnitt (mit `next` verkettete Rahmen teilen sich einen), Kastenstile
+als Absatzformate und vom Autor angelegte CMYK-Farben als Farbfelder. Chips
+mit einem Formularfeld werden zu InDesign-Formularfeldern. `--lines keep`
+(Standard) beendet jede Zeile dort, wo Postext sie beendet hat, sodass
+InDesign dieselben Zeilen zeigt wie das PDF; `--lines reflow` überlässt die
+Absätze dem Setzer von InDesign, und die Zeilenumbrüche können abweichen.
+`--images link` legt die Bilder neben der Datei in `Links/` ab, statt sie in
+die Datei zu packen. `--fonts` schreibt die Schriftdateien der verwendeten
+Schnitte neben das Paket, nach `Document fonts/`, wo InDesign sie für dieses
+Dokument findet; dafür muss `-o` eine Datei nennen, und eine Familie, die das
+Buch nicht weitergeben darf, bleibt mit einer Warnung draußen. Was das Paket
+nicht so tragen kann, wie es im Buch steht (senkrechter Text, der abgerundete
+Rahmen einer Tabelle), wird als Warnung `idml.*` gemeldet. Der Export ist das
+Paket `postext-idml`: siehe [Programmatische Nutzung ›
+InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml).
+Seit postext 1.71; `--lines` und `--fonts` seit 1.76.
 
 ### pack und unpack
 

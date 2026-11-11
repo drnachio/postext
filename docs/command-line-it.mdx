@@ -355,22 +355,31 @@ fuori (`skipped`). Da postext 1.39.
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` impagina il libro come fa `pdf` e scrive le pagine come pacchetto
-InDesign Markup, da rifinire in InDesign: uno spread per pagina, filetti,
-riquadri, tracciati e immagini come elementi di pagina, il testo di ogni
-cornice di una pagina composta come una cornice di testo con un proprio brano
-(le cornici concatenate con `next` ne condividono uno), gli stili di riquadro
-come stili di paragrafo e i colori CMYK dell’autore come campioni. I chip che
-portano un campo di modulo diventano campi di modulo di InDesign. InDesign
-compone di nuovo il testo, quindi gli a capo possono differire da quelli del
-PDF. `--images link` mette le immagini accanto al file, in `Links/`, invece
-che al suo interno. Ciò che il pacchetto non sa ancora portare (tabelle,
-formule, musica) viene segnalato con un avviso `idml.*`. Vedi [Uso
+InDesign Markup, da rifinire in InDesign: le pagine in spread ai lati del
+dorso per un libro con margini a pagine affiancate (una pagina per spread per
+ogni altro), filetti, riquadri, tracciati e immagini come elementi di pagina,
+le tabelle come tabelle di InDesign, il testo di ogni cornice di una pagina
+composta come una cornice di testo con un proprio brano (le cornici
+concatenate con `next` ne condividono uno), gli stili di riquadro come stili
+di paragrafo e i colori CMYK dell’autore come campioni. I chip che portano un
+campo di modulo diventano campi di modulo di InDesign. `--lines keep`
+(predefinito) chiude ogni riga dove l’ha chiusa Postext, quindi InDesign
+mostra le stesse righe del PDF; `--lines reflow` lascia i paragrafi al
+compositore di InDesign, e gli a capo possono cambiare. `--images link` mette
+le immagini accanto al file, in `Links/`, invece che al suo interno. `--fonts`
+scrive i file di font delle varianti usate accanto al pacchetto, in `Document
+fonts/`, dove InDesign li trova per quel documento; richiede che `-o` indichi
+un file, e una famiglia che il libro non può ridistribuire resta fuori, con un
+avviso. Ciò che il pacchetto non può portare com’è nel libro (il testo
+verticale, la cornice arrotondata di una tabella) viene segnalato con un
+avviso `idml.*`. Il generatore è il pacchetto `postext-idml`: vedi [Uso
 programmatico › Pacchetti
-InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postextidml).
-Da postext 1.71.
+InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postext-idml).
+Da postext 1.71; `--lines` e `--fonts` da 1.76.
 
 ### pack e unpack
 
