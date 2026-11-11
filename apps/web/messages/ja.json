@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "配置が `position: paragraph` なので参照する段落の後に組まれますが、参照しているのは注だけです。注は本文とは別に組まれ、後に続く段落がないため、どのページにも置かれません。本文でも参照するか、::resource 行で埋め込むか、フロートの位置（top、bottom、auto）を指定してください。",
     "warningsFloatCroppedTitle": "引用ページに残すためトリミングした画像",
     "warningsFloatCroppedDetail": "引用しているページに残すため、セーフエリアの内側で高さの __share__ % をトリミングしました（図を引用ページに引き寄せる）。",
+    "warningsFloatRowCroppedTitle": "隣の図にそろえるためトリミングした画像",
+    "warningsFloatRowCroppedDetail": "ページ下端で隣にある図の高さに近づけるため、セーフエリアの内側で高さの __share__ % をトリミングしました（下端の図版を横に並べる）。",
     "warningsShortListSplitTitle": "段をまたいで分かれた短いリスト",
     "warningsShortListSplitDetail": "__page__ページ · __items__項目のリストが2つの段またはページに分かれています。規則が「回避」のときは、リスト全体が入る段がなかったことを示します。",
     "warningsStackTitle": "行頭・行末の重複",

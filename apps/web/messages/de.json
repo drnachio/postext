@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "Seine Platzierung ist `position: paragraph`, es steht also nach dem Absatz, der darauf verweist, und nur eine Fußnote verweist darauf. Eine Fußnote wird abseits des Textes gesetzt, ohne Absatz, dem es folgen könnte, also steht es auf keiner Seite. Verweise auch im Text darauf, bette es mit einer ::resource-Zeile ein oder gib ihm eine gleitende Position (top, bottom oder auto).",
     "warningsFloatCroppedTitle": "Bild beschnitten, um auf seiner Seite zu bleiben",
     "warningsFloatCroppedDetail": "innerhalb seines sicheren Bereichs um __share__ % seiner Höhe beschnitten, um auf der verweisenden Seite zu bleiben (Abbildungen auf die Seite ihres Verweises holen).",
+    "warningsFloatRowCroppedTitle": "Bild beschnitten, um der Abbildung daneben zu entsprechen",
+    "warningsFloatRowCroppedDetail": "innerhalb seines sicheren Bereichs um __share__ % seiner Höhe beschnitten, um der Höhe der Abbildung daneben am Seitenfuß nahezukommen (Gleitobjekte am Fuß in einer Reihe).",
     "warningsShortListSplitTitle": "Kurze Liste über Spalten getrennt",
     "warningsShortListSplitDetail": "Seite __page__ · Eine Liste mit __items__ Punkten ist zwischen zwei Spalten oder Seiten getrennt. Mit der Regel auf „Vermeiden“ konnte keine Spalte sie ganz aufnehmen.",
     "warningsStackTitle": "Wiederholung",

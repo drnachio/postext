@@ -2913,6 +2913,8 @@
     "warningsParagraphCitedInNoteDetail": "A sua posição é `position: paragraph`, por isso é composto depois do parágrafo que o cita, e só uma nota o cita. A nota é composta à parte do texto, sem parágrafo a seguir, por isso não está em nenhuma página. Cite-o também no texto, insira-o com uma linha ::resource ou dê-lhe uma posição flutuante (top, bottom ou auto).",
     "warningsFloatCroppedTitle": "Imagem recortada para ficar na sua página",
     "warningsFloatCroppedDetail": "recortada dentro da sua zona segura em __share__ % da altura para ficar na página que a cita (Atrair as figuras para a página da citação).",
+    "warningsFloatRowCroppedTitle": "Imagem recortada para igualar a figura ao lado",
+    "warningsFloatRowCroppedDetail": "recortada dentro da sua zona segura em __share__ % da altura para se aproximar da altura da figura ao lado no rodapé da página (Figuras no rodapé em fila).",
     "warningsShortListSplitTitle": "Lista curta dividida entre colunas",
     "warningsShortListSplitDetail": "página __page__ · uma lista de __items__ itens ficou dividida entre duas colunas ou páginas. Com a regra em Evitar, nenhuma coluna podia recebê-la inteira.",
     "warningsStackTitle": "Repetição",

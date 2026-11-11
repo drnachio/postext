@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "它的位置是 `position: paragraph`，即排在引用它的段落之后，但只有注释引用了它。注释与正文分开排，没有可跟随的段落，所以它不在任何页面上。请在正文中也引用它，用 ::resource 行嵌入它，或给它一个浮动位置（top、bottom 或 auto）。",
     "warningsFloatCroppedTitle": "图片已裁剪以留在引用页",
     "warningsFloatCroppedDetail": "在安全区内裁去高度的 __share__ %，以留在引用它的页面上（将图拉回引用所在页）。",
+    "warningsFloatRowCroppedTitle": "图片已裁剪以与旁边的图等高",
+    "warningsFloatRowCroppedDetail": "在安全区内按高度的 __share__ % 裁剪，使其接近页脚处旁边那张图的高度（页脚图表并排）。",
     "warningsShortListSplitTitle": "短列表跨栏拆分",
     "warningsShortListSplitDetail": "第__page__页 · 共__items__项的列表被拆在两栏或两页之间。规则设为“避免”时，说明没有哪一栏放得下整个列表。",
     "warningsStackTitle": "行首行尾重复",

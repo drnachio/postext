@@ -2273,6 +2273,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsParagraphCitedInNoteDetail: t("warningsParagraphCitedInNoteDetail"),
     warningsFloatCroppedTitle: t("warningsFloatCroppedTitle"),
     warningsFloatCroppedDetail: t("warningsFloatCroppedDetail"),
+    warningsFloatRowCroppedTitle: t("warningsFloatRowCroppedTitle"),
+    warningsFloatRowCroppedDetail: t("warningsFloatRowCroppedDetail"),
     warningsShortListSplitTitle: t("warningsShortListSplitTitle"),
     warningsShortListSplitDetail: t("warningsShortListSplitDetail"),
     warningsStackTitle: t("warningsStackTitle"),

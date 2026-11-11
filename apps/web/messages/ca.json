@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "La seva col·locació és `position: paragraph`, així que es compon després del paràgraf que el cita, i només el cita una nota. La nota es compon a part del text, sense cap paràgraf a seguir, així que no és a cap pàgina. Cita'l també al text, insereix-lo amb una línia ::resource o dona-li una posició flotant (top, bottom o auto).",
     "warningsFloatCroppedTitle": "Imatge retallada per quedar-se a la seva pàgina",
     "warningsFloatCroppedDetail": "retallada dins la seva zona segura un __share__ % de la seva alçada per quedar-se a la pàgina que la cita (Atreure les figures a la pàgina de la seva cita).",
+    "warningsFloatRowCroppedTitle": "Imatge retallada per igualar la figura del costat",
+    "warningsFloatRowCroppedDetail": "retallada dins la seva zona segura un __share__ % de la seva alçada per acostar-se a l'alçada de la figura del costat al peu de la pàgina (Figures al peu en filera).",
     "warningsShortListSplitTitle": "Llista curta partida entre columnes",
     "warningsShortListSplitDetail": "pàgina __page__ · una llista de __items__ elements queda partida entre dues columnes o pàgines. Amb la regla a «Evitar», cap columna no la podia acollir sencera.",
     "warningsStackTitle": "Repetició",

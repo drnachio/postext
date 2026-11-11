@@ -2290,6 +2290,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsParagraphCitedInNoteDetail: "Its placement is `position: paragraph`, so it is set after the paragraph that cites it, and only a note cites it. A note is set apart from the text, with no paragraph for the figure to follow, so it is on no page. Cite it in the text too, embed it with a ::resource line, or give it a floating position (top, bottom or auto).",
   warningsFloatCroppedTitle: "Picture cropped to stay on its page",
   warningsFloatCroppedDetail: "cropped within its safe area by __share__ % of its height to stay on the page that cites it (Pull figures to their citation's page).",
+  warningsFloatRowCroppedTitle: "Picture cropped to match the figure beside it",
+  warningsFloatRowCroppedDetail: "cropped within its safe area by __share__ % of its height toward the height of the figure beside it at the foot of the page (Floats at the foot in a row).",
   warningsShortListSplitTitle: 'Short list cut between columns',
   warningsShortListSplitDetail: 'page __page__ · a list of __items__ items is cut between two columns or pages. With the rule on Avoid, no column could hold it whole.',
   warningsStackTitle: "Stack",

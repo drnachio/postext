@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "Il suo posizionamento è `position: paragraph`, quindi è composto dopo il paragrafo che lo richiama, e solo una nota lo richiama. Una nota è composta a parte dal testo, senza un paragrafo da seguire, perciò non è in nessuna pagina. Richiamalo anche nel testo, inseriscilo con una riga ::resource o dagli una posizione flottante (top, bottom o auto).",
     "warningsFloatCroppedTitle": "Immagine ritagliata per restare nella sua pagina",
     "warningsFloatCroppedDetail": "ritagliata nella sua zona sicura del __share__ % dell’altezza per restare nella pagina che la richiama (Porta le figure nella pagina del richiamo).",
+    "warningsFloatRowCroppedTitle": "Immagine ritagliata per pareggiare la figura accanto",
+    "warningsFloatRowCroppedDetail": "ritagliata nella sua zona sicura del __share__ % dell’altezza per avvicinarsi all’altezza della figura accanto al piede della pagina (Flottanti al piede in fila).",
     "warningsShortListSplitTitle": "Elenco breve diviso tra colonne",
     "warningsShortListSplitDetail": "pagina __page__ · un elenco di __items__ voci è diviso tra due colonne o pagine. Con la regola su Evita, nessuna colonna poteva contenerlo intero.",
     "warningsStackTitle": "Ripetizione",

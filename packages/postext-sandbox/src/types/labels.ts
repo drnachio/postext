@@ -2428,6 +2428,8 @@ export interface SandboxLabels {
   warningsParagraphCitedInNoteDetail: string;
   warningsFloatCroppedTitle: string;
   warningsFloatCroppedDetail: string;
+  warningsFloatRowCroppedTitle: string;
+  warningsFloatRowCroppedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
   warningsStackTitle: string;

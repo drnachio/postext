@@ -2916,6 +2916,8 @@
     "warningsParagraphCitedInNoteDetail": "موضعه `position: paragraph`، أي يُنضَّد بعد الفقرة التي تحيل إليه، ولا تحيل إليه إلا حاشية. والحاشية تُنضَّد بمعزل عن النص بلا فقرة يتبعها، فلا يظهر في أي صفحة. أحِل إليه في النص أيضًا، أو أدرجه بسطر ::resource، أو أعطه موضعًا عائمًا (top أو bottom أو auto).",
     "warningsFloatCroppedTitle": "صورة مقصوصة لتبقى في صفحتها",
     "warningsFloatCroppedDetail": "قُصَّت داخل منطقتها الآمنة بنسبة __share__ % من ارتفاعها لتبقى في الصفحة التي تحيل إليها (جذب الأشكال إلى صفحة الإحالة).",
+    "warningsFloatRowCroppedTitle": "صورة مقصوصة لتساوي الشكل المجاور لها",
+    "warningsFloatRowCroppedDetail": "قُصَّت داخل منطقتها الآمنة بنسبة __share__ % من ارتفاعها لتقترب من ارتفاع الشكل المجاور لها أسفل الصفحة (الأشكال في صف أسفل الصفحة).",
     "warningsShortListSplitTitle": "قائمة قصيرة مقسومة بين عمودين",
     "warningsShortListSplitDetail": "الصفحة __page__ · قائمة من __items__ بنود مقسومة بين عمودين أو صفحتين. وإذا كانت القاعدة على «تجنّب» فلا عمود يتّسع لها كاملة.",
     "warningsStackTitle": "تكرار",
