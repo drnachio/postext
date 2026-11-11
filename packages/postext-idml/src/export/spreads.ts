@@ -1,6 +1,7 @@
 // Spreads: one page per spread, its items in the display list's order, the
 // text of each composed frame (or chain of frames) in one text frame per
-// frame and one story per chain.
+// frame and one story per chain. Vertical text goes into vertical stories
+// (`vertical.ts`), each item in its own orientation.
 
 import type { DisplayPage, DisplayRect } from 'postext';
 import type { VDTFrame } from 'postext/writer';
@@ -10,6 +11,7 @@ import { asPainted, textScale } from './paragraphs.js';
 import { attr, DOM_VERSION, num, PKG_NS, XML_HEAD } from './parts.js';
 import { chipFields, chipRects, pathXml, rectXml, ruleXml } from './shapes.js';
 import { storyXml } from './story.js';
+import { asHorizontal, asLines, frameBox, frameIsVertical, hasEmphasisDots, isVertical, sheetRect } from './vertical.js';
 import { tableXml } from './tables.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
@@ -27,15 +29,25 @@ interface ChainLink {
 /** One text frame: a composed frame's text, or a single text item outside
  *  frames, with its own story or its chain's. The box is the frame's (or
  *  the item's), the left and right insets put the text where Postext set
- *  it, and a fixed first-baseline offset puts the first baseline exactly. */
+ *  it, and a fixed first-baseline offset puts the first baseline exactly.
+ *
+ *  Vertical text comes in the frame of lines (`asLines`), where all of
+ *  that is read as for horizontal text; its box goes back on the sheet
+ *  (`sheetRect`) and the insets turn with it: the first line stands at the
+ *  right, its baseline the fixed offset from the right inset, and the
+ *  lines start at the top inset. */
 function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined, link?: ChainLink): string {
   const withLines = items.filter((i) => i.lines.length);
   if (!withLines.length && !(link && frame)) return '';
   // A frame of a chain that holds no text of its own on this page.
-  const measured: { bbox: DisplayRect; lines: { baseline: number; lineHeight: number }[]; rotate?: number }[] = withLines.length ? withLines : [{ bbox: { ...frame!.rect }, lines: [{ baseline: frame!.rect.y, lineHeight: 0 }], rotate: 0 }];
+  const vertical = withLines.length ? withLines.some(isVertical) : frameIsVertical(w, frame!);
+  // A frame of vertical text, or of a vertical page: where it stands.
+  const placed = frame ? frameBox(w, frame, vertical) : undefined;
+  const own = placed?.box ?? frame?.rect;
+  const measured: { bbox: DisplayRect; lines: { baseline: number; lineHeight: number }[]; rotate?: number }[] = withLines.length ? withLines : [{ bbox: { ...own! }, lines: [{ baseline: own!.y, lineHeight: 0 }], rotate: 0 }];
   const text = union(measured.map((i) => i.bbox));
-  const box = frame ? { ...frame.rect } : { ...text };
-  const rotate = frame?.rotate ?? measured[0]!.rotate ?? 0;
+  const box = own ? { ...own } : { ...text };
+  const rotate = placed ? placed.rotate : (frame?.rotate ?? measured[0]!.rotate ?? 0);
   if (keepsLines(w) && !rotate && withLines.length) {
     // The text frame is not painted (a frame's box is a rectangle of its
     // own), so it may be larger than the text: room under the last
@@ -47,12 +59,14 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
     const tail = lastItem.lines[lastItem.lines.length - 1]!;
     const need = tail.baseline + tail.lineHeight * 0.75;
     if (need > box.y + box.height) box.height = need - box.y;
-    if (withLines.every((i) => i.lines.every((l) => l.align === 'left' && !l.rtl && !l.vertical))) box.width += 6 / w.k;
+    // (A vertical line may end in a stop Postext hung past the measure or
+    // set on half a cell: room for a whole cell.)
+    if (withLines.every((i) => i.lines.every((l) => l.align === 'left' && !l.rtl))) box.width += vertical ? Math.max(6 / w.k, ...withLines.flatMap((i) => i.lines.map((l) => l.lineHeight))) : 6 / w.k;
   } else if (!frame) {
     // Room below for InDesign's own composer.
     box.height += (measured[0]!.lines[0]?.lineHeight ?? 0) * 0.5;
   }
-  const g = boxGeometry(w, box, rotate);
+  const g = boxGeometry(w, vertical ? sheetRect(box) : box, rotate);
   const left = Math.max(0, (text.x - box.x) * w.k);
   const right = Math.max(0, (box.x + box.width - (text.x + text.width)) * w.k);
   const firstBaseline = measured[0]!.lines[0]!.baseline;
@@ -64,7 +78,7 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
     `<TextFrame${attr('Self', link?.self ?? w.next())}${attr('ParentStory', storyId)}${attr('PreviousTextFrame', link?.prev ?? 'n')}${attr('NextTextFrame', link?.next ?? 'n')} ContentType="TextType" ItemLayer="ulayer"` +
     `${attr('ItemTransform', g.transform)} AppliedObjectStyle="ObjectStyle/$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0"${attr('Name', frame ? frameName(frame.name) : undefined)}>` +
     g.geometry +
-    `<TextFramePreference TextColumnCount="1" FirstBaselineOffset="FixedHeight"${attr('MinimumFirstBaselineOffset', baselineOffset)} VerticalJustification="TopAlign"${attr('InsetSpacing', `${num(top)} ${num(left)} 0 ${num(right)}`)} AutoSizingType="Off" IgnoreWrap="false"/>` +
+    `<TextFramePreference TextColumnCount="1" FirstBaselineOffset="FixedHeight"${attr('MinimumFirstBaselineOffset', baselineOffset)} VerticalJustification="TopAlign"${attr('InsetSpacing', vertical ? `${num(left)} 0 ${num(right)} ${num(top)}` : `${num(top)} ${num(left)} 0 ${num(right)}`)} AutoSizingType="Off" IgnoreWrap="false"/>` +
     '</TextFrame>'
   );
 }
@@ -88,17 +102,37 @@ function chainOf(f: VDTFrame, frames: Map<string, VDTFrame>): VDTFrame[] {
 /** The items of one page, in its spread's frame (`w.px`, `w.ox`, `w.oy`). */
 export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>): string {
   const out: string[] = [];
-  // Stories are written horizontal and left to right (`storyXml`), once
-  // said for the whole package.
+  // Left to InDesign's composer, stories are written left to right
+  // (`storyXml`), once said for the whole package.
   const lines = page.items.flatMap((it) => (it.kind === 'text' ? it.lines : []));
   if (!keepsLines(w) && (page.rtl || lines.some((l) => l.rtl))) w.warn('text.rtl', 'Right-to-left text is written left to right, in horizontal stories: set the stories\' direction in InDesign');
-  if (page.vertical || lines.some((l) => l.vertical)) w.warn('text.vertical', 'Vertical text is written horizontal, left to right: set the stories\' orientation in InDesign');
+  // Vertical text is written in vertical stories (`vertical.ts`); what
+  // the display list does not carry of it is said.
+  if (lines.some((l) => l.vertical)) {
+    if (w.page && hasEmphasisDots(w.page)) w.warn('text.vertical.emphasisDots', 'Emphasis dots (:dots) are left out of vertical text: set them as kenten in InDesign');
+    if (w.opts.inlineObjects !== false && lines.some((l) => l.vertical && l.runs.some((r) => r.inline && r.inline.kind !== 'chip'))) w.warn('text.vertical.inline', 'Inline maths, music and swatches in vertical text are written as inline objects: check how they stand in their line');
+  }
+  // A vertical item in the frame of lines, with the item it was.
+  const origin = new Map<TextItem, TextItem>();
+  const lined = (it: TextItem): TextItem => {
+    if (!isVertical(it)) return it;
+    const out = asLines(it);
+    origin.set(out, it);
+    return out;
+  };
+  // A horizontal frame of a vertical page sets its lines horizontally,
+  // whatever the page's own setting says of them.
+  const framed = (it: TextItem, frame: VDTFrame): TextItem => (isVertical(it) && !frameIsVertical(w, frame) ? asHorizontal(it) : it);
+  // A vertical item's chips, told in the frame of lines, on the sheet (an
+  // item with a turn of its own beside the quarter turn keeps its old place).
+  const chipMap = (t: TextItem) => (origin.has(t) && !t.rotate ? sheetRect : undefined);
+  const chipItem = (t: TextItem) => (origin.has(t) && t.rotate ? origin.get(t)! : t);
   // The text of one frame (of one chain of frames) goes into one story,
   // written where its first item paints; the rest of the items keep the
   // display list's order.
   const byFrame = new Map<string, TextItem[]>();
   // A frame's items as painted, at its text scale.
-  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), asPainted(it, textScale(frames.get(it.frame)))]);
+  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), lined(framed(asPainted(it, textScale(frames.get(it.frame))), frames.get(it.frame)!))]);
   const done = new Set<string>();
   // Outside frames a list item's marker shares its item's text frame.
   const markerFor = new Map<TextItem, TextItem>();
@@ -131,14 +165,15 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
+          const t = lined(it);
           if (it.halo && it.halo.widthPx > 0) {
             // A halo: the same text under it, in the halo's ink, stroked
             // twice its width (half of a stroke lies inside the glyph).
             w.halo = { color: it.halo.color, weight: it.halo.widthPx * 2 * w.k };
-            out.push(textFrameXml(w, [it], undefined));
+            out.push(textFrameXml(w, [t], undefined));
             delete w.halo;
           }
-          out.push(...chipRects(w, it), textFrameXml(w, marker ? [marker, it] : [it], undefined), ...chipFields(w, it));
+          out.push(...chipRects(w, chipItem(t), chipMap(t)), textFrameXml(w, marker ? [lined(marker), t] : [t], undefined), ...chipFields(w, chipItem(t), chipMap(t)));
           break;
         }
         if (done.has(it.frame)) break;
@@ -146,9 +181,9 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         const own = chain.map((c) => byFrame.get(c.id) ?? []);
         for (const c of chain) done.add(c.id);
         // Chip boxes go behind all the chain's text.
-        for (const items of own) for (const t of items) out.push(...chipRects(w, t));
+        for (const items of own) for (const t of items) out.push(...chipRects(w, chipItem(t), chipMap(t)));
         // Form fields go over it.
-        const fields = () => own.flatMap((items) => items.flatMap((t) => chipFields(w, t)));
+        const fields = () => own.flatMap((items) => items.flatMap((t) => chipFields(w, chipItem(t), chipMap(t))));
         if (chain.length < 2) {
           out.push(textFrameXml(w, own[0]!, chain[0]), ...fields());
           break;

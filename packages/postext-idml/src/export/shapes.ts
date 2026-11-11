@@ -1,7 +1,7 @@
 // Shapes: boxes, rules and paths as native page items, and the boxes and
 // form fields of a text item's chips.
 
-import type { DisplayItem } from 'postext';
+import type { DisplayItem, DisplayRect } from 'postext';
 import type { VDTPathCommand } from 'postext/writer';
 import { CHIP_PLACEHOLDER } from 'postext/writer';
 import { swatch } from './colours.js';
@@ -38,12 +38,13 @@ function paintAttrs(w: Writer, fill: { ref: string } | undefined, stroke: { ref:
 /** The boxes of a text item's chips (a label's fill, an outline) as
  *  rectangles on the page, behind the text, which carries the chips'
  *  words (`paragraphRuns`). An underline-only chip is left to the text. */
-export function chipRects(w: Writer, item: TextItem): string[] {
+export function chipRects(w: Writer, item: TextItem, map?: (r: DisplayRect) => DisplayRect): string[] {
   const out: string[] = [];
   for (const line of item.lines) {
     for (const run of line.runs) {
       const b = run.inline?.kind === 'chip' ? run.inline.box : undefined;
-      const rect = chipRect(run, line);
+      const at = chipRect(run, line);
+      const rect = at && map ? map(at) : at;
       if (!b || !rect || (!b.fill && !(b.stroke && b.strokeWidthPx)) || isField(w, run)) continue;
       out.push(rectXml(w, { fill: b.fill, stroke: b.stroke, strokeWidthPx: b.strokeWidthPx, radius: b.radius, rect }));
     }
@@ -53,16 +54,17 @@ export function chipRects(w: Writer, item: TextItem): string[] {
 
 /** The form fields of a text item's chips, over the text (#1445). The
  *  field's value is the chip's words. */
-export function chipFields(w: Writer, item: TextItem): string[] {
+export function chipFields(w: Writer, item: TextItem, map?: (r: DisplayRect) => DisplayRect): string[] {
   const out: string[] = [];
   for (const line of item.lines) {
     line.runs.forEach((run, i) => {
       const field = run.inline?.kind === 'chip' ? run.inline.field : undefined;
       const b = run.inline?.box;
-      const rect = chipRect(run, line);
-      if (!field || !b || !rect || !isField(w, run)) return;
+      const at = chipRect(run, line);
+      if (!field || !b || !at || !isField(w, run)) return;
+      const rect = map ? map(at) : at;
       if (item.rotate) w.warn('field.rotated', `Form field "${field.name}" stands in turned text; it is written unturned`);
-      const end = rect.x + rect.width;
+      const end = at.x + at.width;
       const value = [run, ...line.runs.slice(i + 1).filter((r) => !r.inline && r.x < end - 0.01)].map((r) => r.text).join('').replaceAll(CHIP_PLACEHOLDER, '').trim();
       if (value && field.kind !== 'checkbox') w.warn('field.value', 'InDesign form fields have no default value: a field\'s value is kept as its script label postext:value');
       if (field.format || field.calc) w.warn('field.script', 'InDesign form fields have no number format or calculation: they are kept as the script labels postext:format and postext:calc');

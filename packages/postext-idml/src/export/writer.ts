@@ -3,6 +3,7 @@
 // spreads) reads and adds to as the pages are written.
 
 import type { DisplayItem, DisplayRun } from 'postext';
+import type { VDTPage } from 'postext';
 import type { VDTDocument } from 'postext/writer';
 import type { BlockStyle } from 'postext/writer';
 import type { ParagraphStyleDef, Swatch } from './parts.js';
@@ -97,6 +98,9 @@ export interface Writer {
   /** The document being written, and the engine's block styles of its
    *  paragraphs by frame style and paragraph style (`engineStyle`). */
   doc: VDTDocument;
+  /** The laid-out page being written (its flow frame places a vertical
+   *  page's composed frames). */
+  page?: VDTPage;
   blockStyles: Map<string, BlockStyle>;
   stories: { id: string; xml: string }[];
   media: Map<string, { path: string; bytes: Uint8Array }>;
