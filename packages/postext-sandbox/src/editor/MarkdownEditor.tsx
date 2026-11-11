@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useId, useMemo, useRef } from 'react';
-import { DEFAULT_CHARACTER_STYLES, DEFAULT_CHIP_STYLES, DEFAULT_MARK_STYLES, canonicalLocaleTag, defaultResourceTypes } from 'postext';
+import { DEFAULT_CHIP_STYLES, DEFAULT_MARK_STYLES, canonicalLocaleTag, defaultResourceTypes } from 'postext';
 import { documentLanguage } from '../context/documentDirection.js';
 import { defaultDocumentLocale } from '../controls/language/hyphenation.js';
 import { useCodeMirror } from './useCodeMirror.js';
@@ -42,7 +42,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     resources: state.resources,
     types,
     chipStyles: state.config.chipStyles ?? DEFAULT_CHIP_STYLES,
-    characterStyles: state.config.characterStyles ?? DEFAULT_CHARACTER_STYLES,
+    characterStyles: state.config.characterStyles ?? [],
     markStyles: state.config.markStyles ?? DEFAULT_MARK_STYLES,
     indexTerms: () => {
       const { chapters, activeId, markdown } = bookTextRef.current;

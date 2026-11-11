@@ -2,17 +2,8 @@
 
 import { memo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import type {
-  CharacterStyleConfig,
-  CharacterStyleHighlightConfig,
-  CharacterStyleLineConfig,
-  Dimension,
-  DimensionUnit,
-  ResolvedBodyTextConfig,
-  ResolvedCharacterStyleConfig,
-  ResolvedCharacterStyleLine,
-} from 'postext';
-import { DEFAULT_CHARACTER_STYLES, resolveBodyTextConfig, resolveCharacterStylesConfig } from 'postext';
+import type { CharacterStyleConfig, Dimension, DimensionUnit, ResolvedBodyTextConfig, ResolvedCharacterStyleConfig } from 'postext';
+import { DEFAULT_MARK_STYLES, resolveBodyTextConfig, resolveCharacterStylesConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import { CollapsibleSection, ColorPicker, DimensionInput, FontPicker, NumberInput, SelectInput, ToggleSwitch } from '../../../controls/index.js';
 import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
@@ -22,12 +13,15 @@ import { SearchScope } from '../../search/SearchScope.js';
 const SIZE_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const EM_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 
+/** The value of the highlight-style select that names none. */
+const NO_MARK = '';
+
 const inputClass = 'min-w-0 flex-1 rounded border bg-transparent px-1.5 py-1 text-xs';
 const inputStyle = { borderColor: 'var(--pt-control-border)', color: 'var(--foreground)' } as const;
 
 const em = (value: number): Dimension => ({ value, unit: 'em' });
 
-/** Turn free text into a `[…]|id|`-friendly id. */
+/** Turn free text into an id for `:span[…]{style="…"}`. */
 function slugifyStyleId(raw: string): string {
   return raw
     .trim()
@@ -45,17 +39,14 @@ function nextStyleId(existing: CharacterStyleConfig[]): string {
   return `style-${n}`;
 }
 
-type LineKey = 'underline' | 'strike';
-
 interface CharacterStyleCardProps {
   style: CharacterStyleConfig;
   resolved: ResolvedCharacterStyleConfig;
   /** The body text — what the inherited text fields show while unset. */
   bodyText: ResolvedBodyTextConfig;
   otherIds: Set<string>;
-  /** Whether the style is stored in the config (the built-in styles shown
-   *  while the config has no list are not overrides). */
-  stored: boolean;
+  /** The book's highlight styles, which a character style can name. */
+  marks: readonly { id: string; name?: string }[];
   onChange: (partial: Partial<CharacterStyleConfig>) => void;
   onResetField: (field: keyof CharacterStyleConfig) => void;
   onRename: (nextId: string) => void;
@@ -64,9 +55,10 @@ interface CharacterStyleCardProps {
 
 /** One character style: id (renamed on blur / Enter, never to a colliding
  *  id), display name, the text (family, size, weight, slant, colour,
- *  tracking, capitals — inherited from the surrounding text while unset),
- *  the underline, the highlighter band and the strike-through. */
-function CharacterStyleCard({ style, resolved, bodyText, otherIds, stored, onChange, onResetField, onRename, onRemove }: CharacterStyleCardProps) {
+ *  tracking, capitals — inherited from the surrounding text while unset)
+ *  and the highlight style it takes, if any (a band, a line under or
+ *  through the words: the Highlights panel's). */
+function CharacterStyleCard({ style, resolved, bodyText, otherIds, marks, onChange, onResetField, onRename, onRemove }: CharacterStyleCardProps) {
   const labels = useSandboxLabels();
   const [idDraft, setIdDraft] = useState(style.id);
   const draftSlug = slugifyStyleId(idDraft);
@@ -82,117 +74,15 @@ function CharacterStyleCard({ style, resolved, bodyText, otherIds, stored, onCha
     if (draftSlug !== style.id) onRename(draftSlug);
   };
 
-  // The built-in styles shown while the book stores none are no changes.
-  const unset = (field: keyof CharacterStyleConfig) => !stored || style[field] === undefined;
+  const unset = (field: keyof CharacterStyleConfig) => style[field] === undefined;
   const sectionId = `characterStyles.${style.id}`;
-
-  // A decoration's fields live in a nested object: set or drop one of them.
-  const setLine = (key: LineKey, partial: Partial<CharacterStyleLineConfig>) => onChange({ [key]: { ...style[key], ...partial } });
-  const resetLine = (key: LineKey, field: keyof CharacterStyleLineConfig) => {
-    const next = { ...style[key] };
-    delete next[field];
-    onChange({ [key]: Object.keys(next).length > 0 ? next : undefined });
-  };
-  const setBand = (partial: Partial<CharacterStyleHighlightConfig>) => onChange({ highlight: { ...style.highlight, ...partial } });
-  const resetBand = (field: keyof CharacterStyleHighlightConfig) => {
-    const next = { ...style.highlight };
-    delete next[field];
-    onChange({ highlight: Object.keys(next).length > 0 ? next : undefined });
-  };
-
-  const lineStyles = [
-    { value: 'solid', label: labels.charStyleLineSolid },
-    { value: 'double', label: labels.charStyleLineDouble },
-    { value: 'dotted', label: labels.charStyleLineDotted },
-    { value: 'dashed', label: labels.charStyleLineDashed },
-    { value: 'wavy', label: labels.charStyleLineWavy },
+  const markOptions = [
+    { value: NO_MARK, label: labels.charStyleMarkNone },
+    ...marks.map((m) => ({ value: m.id, label: m.name || m.id })),
   ];
 
-  const lineFields = (key: LineKey, line: ResolvedCharacterStyleLine) => {
-    const own = style[key] ?? {};
-    const lineUnset = (field: keyof CharacterStyleLineConfig) => !stored || own[field] === undefined;
-    return (
-      <>
-        <ToggleSwitch
-          label={labels.charStyleLineEnabled}
-          tooltip={key === 'underline' ? labels.charStyleUnderlineEnabledTooltip : labels.charStyleStrikeEnabledTooltip}
-          checked={line.enabled}
-          onChange={(v) => setLine(key, { enabled: v })}
-          isDefault={lineUnset('enabled')}
-          onReset={() => resetLine(key, 'enabled')}
-        />
-        {line.enabled && (
-          <>
-            <SelectInput
-              label={labels.charStyleLineStyle}
-              value={line.style}
-              options={lineStyles}
-              onChange={(v) => setLine(key, { style: v as CharacterStyleLineConfig['style'] })}
-              isDefault={lineUnset('style')}
-              onReset={() => resetLine(key, 'style')}
-            />
-            <ColorPicker
-              label={labels.colorLabel}
-              value={line.color ?? resolved.color ?? bodyText.color}
-              onChange={(v) => setLine(key, { color: v })}
-              tooltip={labels.charStyleLineColorTooltip}
-              isDefault={lineUnset('color')}
-              onReset={() => resetLine(key, 'color')}
-              fieldId={`charStyle-${style.id}-${key}-color`}
-            />
-            <NumberInput
-              label={labels.charStyleOpacity}
-              value={line.opacity}
-              onChange={(v) => setLine(key, { opacity: v })}
-              min={0}
-              max={100}
-              step={5}
-              suffix="%"
-              tooltip={labels.charStyleOpacityTooltip}
-              isDefault={lineUnset('opacity')}
-              onReset={() => resetLine(key, 'opacity')}
-            />
-            <DimensionInput
-              label={labels.charStyleThickness}
-              value={line.thickness}
-              onChange={(v) => setLine(key, { thickness: v })}
-              min={0.01}
-              step={0.01}
-              units={EM_UNITS}
-              isDefault={lineUnset('thickness')}
-              onReset={() => resetLine(key, 'thickness')}
-            />
-            <DimensionInput
-              label={key === 'underline' ? labels.charStyleUnderlineOffset : labels.charStyleStrikeOffset}
-              value={line.offset}
-              onChange={(v) => setLine(key, { offset: v })}
-              min={-2}
-              step={0.01}
-              units={EM_UNITS}
-              tooltip={key === 'underline' ? labels.charStyleUnderlineOffsetTooltip : labels.charStyleStrikeOffsetTooltip}
-              isDefault={lineUnset('offset')}
-              onReset={() => resetLine(key, 'offset')}
-            />
-            <ToggleSwitch
-              label={labels.charStyleSkipSpaces}
-              tooltip={labels.charStyleSkipSpacesTooltip}
-              checked={line.skipSpaces}
-              onChange={(v) => setLine(key, { skipSpaces: v })}
-              isDefault={lineUnset('skipSpaces')}
-              onReset={() => resetLine(key, 'skipSpaces')}
-            />
-          </>
-        )}
-      </>
-    );
-  };
-
-  const band = resolved.highlight;
-  const ownBand = style.highlight ?? {};
-  const bandUnset = (field: keyof CharacterStyleHighlightConfig) => !stored || ownBand[field] === undefined;
-
   return (
-    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden={stored}>
+    <SearchScope title={`${style.name ?? ''} ${style.id}`} overridden>
     <div className="mb-3 rounded border p-2" style={{ borderColor: 'var(--rule)' }}>
       <div className="mb-2 flex items-center justify-between gap-1">
         <span className="truncate text-xs font-medium" style={{ color: 'var(--foreground)' }} title={style.name ?? style.id}>
@@ -318,145 +208,39 @@ function CharacterStyleCard({ style, resolved, bodyText, otherIds, stored, onCha
         />
       </CollapsibleSection>
 
-      <CollapsibleSection title={labels.charStyleHighlightGroup} sectionId={`${sectionId}.highlight`} variant="subsection" hasOverrides={stored && style.highlight !== undefined}>
-        <ToggleSwitch
-          label={labels.charStyleLineEnabled}
-          tooltip={labels.charStyleHighlightEnabledTooltip}
-          checked={band.enabled}
-          onChange={(v) => setBand({ enabled: v })}
-          isDefault={bandUnset('enabled')}
-          onReset={() => resetBand('enabled')}
-        />
-        {band.enabled && (
-          <>
-            <div className="mb-2 flex flex-wrap gap-1">
-              <Button variant="outline" size="xs" onClick={() => setBand({ bottom: em(-0.12), top: em(0.45) })}>
-                {labels.charStyleHighlightPresetLow}
-              </Button>
-              <Button variant="outline" size="xs" onClick={() => setBand({ bottom: em(-0.2), top: em(0.8) })}>
-                {labels.charStyleHighlightPresetFull}
-              </Button>
-              <Button variant="outline" size="xs" onClick={() => setBand({ bottom: em(-0.15), top: em(0.05) })}>
-                {labels.charStyleHighlightPresetUnder}
-              </Button>
-            </div>
-            <ColorPicker
-              label={labels.colorLabel}
-              value={band.color}
-              onChange={(v) => setBand({ color: v })}
-              isDefault={bandUnset('color')}
-              onReset={() => resetBand('color')}
-              fieldId={`charStyle-${style.id}-highlight-color`}
-            />
-            <NumberInput
-              label={labels.charStyleOpacity}
-              value={band.opacity}
-              onChange={(v) => setBand({ opacity: v })}
-              min={0}
-              max={100}
-              step={5}
-              suffix="%"
-              tooltip={labels.charStyleHighlightOpacityTooltip}
-              isDefault={bandUnset('opacity')}
-              onReset={() => resetBand('opacity')}
-            />
-            <DimensionInput
-              label={labels.charStyleHighlightBottom}
-              value={band.bottom}
-              onChange={(v) => setBand({ bottom: v })}
-              min={-2}
-              step={0.01}
-              units={EM_UNITS}
-              tooltip={labels.charStyleHighlightBottomTooltip}
-              isDefault={bandUnset('bottom')}
-              onReset={() => resetBand('bottom')}
-            />
-            <DimensionInput
-              label={labels.charStyleHighlightTop}
-              value={band.top}
-              onChange={(v) => setBand({ top: v })}
-              min={-2}
-              step={0.01}
-              units={EM_UNITS}
-              tooltip={labels.charStyleHighlightTopTooltip}
-              isDefault={bandUnset('top')}
-              onReset={() => resetBand('top')}
-            />
-            <DimensionInput
-              label={labels.charStyleHighlightOverhang}
-              value={band.overhang}
-              onChange={(v) => setBand({ overhang: v })}
-              min={0}
-              step={0.01}
-              units={EM_UNITS}
-              tooltip={labels.charStyleHighlightOverhangTooltip}
-              isDefault={bandUnset('overhang')}
-              onReset={() => resetBand('overhang')}
-            />
-            <DimensionInput
-              label={labels.charStyleHighlightRadius}
-              value={band.radius}
-              onChange={(v) => setBand({ radius: v })}
-              min={0}
-              step={0.01}
-              units={EM_UNITS}
-              isDefault={bandUnset('radius')}
-              onReset={() => resetBand('radius')}
-            />
-            <NumberInput
-              label={labels.charStyleHighlightRough}
-              value={band.rough}
-              onChange={(v) => setBand({ rough: v })}
-              min={0}
-              max={100}
-              step={5}
-              tooltip={labels.charStyleHighlightRoughTooltip}
-              isDefault={bandUnset('rough')}
-              onReset={() => resetBand('rough')}
-            />
-            <ToggleSwitch
-              label={labels.charStyleSkipSpaces}
-              tooltip={labels.charStyleSkipSpacesTooltip}
-              checked={band.skipSpaces}
-              onChange={(v) => setBand({ skipSpaces: v })}
-              isDefault={bandUnset('skipSpaces')}
-              onReset={() => resetBand('skipSpaces')}
-            />
-          </>
-        )}
-      </CollapsibleSection>
-
-      <CollapsibleSection title={labels.charStyleUnderlineGroup} sectionId={`${sectionId}.underline`} variant="subsection" hasOverrides={stored && style.underline !== undefined}>
-        {lineFields('underline', resolved.underline)}
-      </CollapsibleSection>
-
-      <CollapsibleSection title={labels.charStyleStrikeGroup} sectionId={`${sectionId}.strike`} variant="subsection" hasOverrides={stored && style.strike !== undefined}>
-        {lineFields('strike', resolved.strike)}
-      </CollapsibleSection>
+      <SelectInput
+        label={labels.charStyleMark}
+        value={resolved.mark ?? NO_MARK}
+        options={markOptions}
+        onChange={(v) => (v === NO_MARK ? onResetField('mark') : onChange({ mark: v }))}
+        tooltip={labels.charStyleMarkTooltip}
+        isDefault={unset('mark')}
+        onReset={() => onResetField('mark')}
+      />
     </div>
     </SearchScope>
   );
 }
 
 /** Config-panel section for the named character styles set on a run of
- *  words with `[some words]|id|` (`config.characterStyles`). While the
- *  config has no list, the built-in styles are shown so they can be edited
- *  in place. */
+ *  words with `:span[some words]{style="id"}` (`config.characterStyles`,
+ *  #1488). The book has none until one is added. */
 export const CharacterStylesSection = memo(function CharacterStylesSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.characterStyles);
+  const markStyles = useSandboxSelector((s) => s.config.markStyles) ?? DEFAULT_MARK_STYLES;
   const bodyTextRaw = useSandboxSelector((s) => s.config.bodyText);
   const bodyText = resolveBodyTextConfig(bodyTextRaw);
-  const styles: CharacterStyleConfig[] = raw ?? DEFAULT_CHARACTER_STYLES;
-  const resolved = resolveCharacterStylesConfig(styles);
+  const styles: CharacterStyleConfig[] = raw ?? [];
+  const resolved = resolveCharacterStylesConfig(styles, new Set(markStyles.map((m) => m.id)));
 
   const write = (next: CharacterStyleConfig[]) => {
-    dispatch({ type: 'UPDATE_CONFIG', payload: { characterStyles: next } });
+    dispatch({ type: 'UPDATE_CONFIG', payload: { characterStyles: next.length > 0 ? next : undefined } });
   };
 
   const addStyle = () => {
-    write([...styles, { id: nextStyleId(styles), name: labels.charStyleNewName, highlight: { enabled: true } }]);
+    write([...styles, { id: nextStyleId(styles), name: labels.charStyleNewName }]);
   };
 
   const updateStyle = (id: string, partial: Partial<CharacterStyleConfig>) => {
@@ -507,7 +291,7 @@ export const CharacterStylesSection = memo(function CharacterStylesSection() {
           resolved={resolved[i] ?? resolveCharacterStylesConfig([style])[0]!}
           bodyText={bodyText}
           otherIds={new Set(styles.filter((s) => s.id !== style.id).map((s) => s.id))}
-          stored={raw !== undefined}
+          marks={markStyles}
           onChange={(partial) => updateStyle(style.id, partial)}
           onResetField={(field) => resetStyleField(style.id, field)}
           onRename={(nextId) => renameStyle(style.id, nextId)}

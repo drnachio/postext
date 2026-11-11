@@ -27,7 +27,7 @@ import {
   Shapes,
   Palette,
 } from 'lucide-react';
-import { DEFAULT_CHARACTER_STYLES, isCjkLanguage } from 'postext';
+import { isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
 import { useRef, useState, type ReactNode } from 'react';
 import { useSandbox } from '../../context/SandboxContext.js';
@@ -77,7 +77,7 @@ function ToolbarButton({
 function CharStyleMenu({ getView, label }: { getView: () => EditorView | null; label: string }) {
   const { state } = useSandbox();
   const { labels } = state;
-  const styles = state.config.characterStyles ?? DEFAULT_CHARACTER_STYLES;
+  const styles = state.config.characterStyles ?? [];
   return (
     <Menu
       align="start"
@@ -86,7 +86,7 @@ function CharStyleMenu({ getView, label }: { getView: () => EditorView | null; l
       <MenuItem heading>{labels.charStyleMenuHeader}</MenuItem>
       {styles.length === 0 && <MenuItem disabled>{labels.charStyleMenuEmpty}</MenuItem>}
       {styles.map((s) => (
-        <MenuItem key={s.id} title={`[…]|${s.id}|`} onClick={() => { const v = getView(); if (v) applyCharStyle(v, s.id); }}>
+        <MenuItem key={s.id} title={`:span[…]{style="${s.id}"}`} onClick={() => { const v = getView(); if (v) applyCharStyle(v, s.id); }}>
           <span className="flex min-w-0 items-center gap-2">
             <span className="min-w-0 truncate">{s.name || s.id}</span>
             <span className="shrink-0 text-[10px]" style={{ color: 'var(--slate)' }}>{s.id}</span>
@@ -263,7 +263,7 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
       label: labels.smallCapsInline,
       action: () => { const v = getView(); if (v) wrapSelection(v, ':smallcaps[', ']'); },
     },
-    // The book's character styles (`[…]|id|`), in a menu.
+    // The book's character styles (`:span[…]{style="id"}`), in a menu.
     {
       icon: <Highlighter size={16} aria-hidden="true" />,
       label: labels.charStyleInline,

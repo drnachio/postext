@@ -269,7 +269,7 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
     case 'unknownChipStyle':
       return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
     case 'unknownCharacterStyle':
-      return `${inResource(payload.inResource)}[…]|${payload.style}| — ${labels.warningsUnknownCharacterStyleDetail}`;
+      return `${inResource(payload.inResource)}:span[…]{style="${payload.style}"} — ${labels.warningsUnknownCharacterStyleDetail}`;
     case 'unknownMarkStyle':
       return `${inResource(payload.inResource)}:mark[…]{style="${payload.style}"} — ${labels.warningsUnknownMarkStyleDetail}`;
     case 'duplicateAnchor':

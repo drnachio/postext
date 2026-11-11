@@ -32,7 +32,7 @@ export interface RefCompletionContext {
   types: readonly ResourceType[];
   /** The chip styles offered inside `:chip[…]{style="…"}`. */
   chipStyles?: readonly ChipStyleOption[];
-  /** The character styles `]|` offers (`[words]|id|`). */
+  /** The character styles offered inside `:span[…]{style="…"}`. */
   characterStyles?: readonly CharStyleOption[];
   /** The highlight styles offered inside `:mark[…]{style="…"}` (#888). */
   markStyles?: readonly MarkStyleOption[];

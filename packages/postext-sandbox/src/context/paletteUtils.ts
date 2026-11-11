@@ -157,9 +157,6 @@ const CHIP_FIELDS: Fields = {
 
 const CHARACTER_FIELDS: Fields = {
   color: (l) => join(l.charStyleTextGroup, l.colorLabel),
-  'underline.color': (l) => join(l.charStyleUnderlineGroup, l.colorLabel),
-  'strike.color': (l) => join(l.charStyleStrikeGroup, l.colorLabel),
-  'highlight.color': (l) => join(l.charStyleHighlightGroup, l.colorLabel),
 };
 
 const PARAGRAPH_FIELDS: Fields = {
