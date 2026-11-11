@@ -24,13 +24,23 @@ const TAB_ALIGN: Record<string, PostextTabStop['align']> = { LeftAlign: 'start',
 
 function tabStops(l: Look): PostextTabStop[] | undefined {
   if (!l.pf.tabs.length) return undefined;
-  return l.pf.tabs.map((t) => {
+  const stops = l.pf.tabs.map((t) => {
     const stop: PostextTabStop = { position: pt(t.position), align: TAB_ALIGN[t.alignment] ?? 'start' };
     const leader = t.leader.trim() ? t.leader : '';
     if (leader) stop.leader = leader;
     if (t.alignment === 'CharacterAlign' && t.alignmentCharacter && t.alignmentCharacter !== '.') stop.decimalChar = t.alignmentCharacter;
     return stop;
   });
+  // In InDesign the left indent of a paragraph whose first line hangs
+  // out is a tab stop too: the tab after the label of a list or contents
+  // row goes there. Postext has no such stop of its own.
+  const left = l.pf.leftIndent;
+  if (l.pf.firstLineIndent < 0 && left > 0 && !l.pf.tabs.some((t) => t.position <= left + 0.5 && t.position > left + l.pf.firstLineIndent)) {
+    stops.push({ position: pt(left), align: 'start' });
+    const at = (stop: PostextTabStop): number => (typeof stop.position === 'object' && 'value' in stop.position ? stop.position.value : Infinity);
+    stops.sort((a, b) => at(a) - at(b));
+  }
+  return stops;
 }
 
 /** What Postext's styles cannot say of a look, counted by style. */

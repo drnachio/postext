@@ -167,3 +167,14 @@ describe('captions in the text', () => {
     expect(r.resources[0]).toMatchObject({ typeId: 'picture', caption: 'Figures of speech are no label.' });
   });
 });
+
+describe('emphasis that ends in room', () => {
+  it('leaves a tab or a space after bold outside its marks', async () => {
+    const { renderSegs } = await import('../marks.js');
+    const text = renderSegs([{ t: '1.1 ', b: true }, { t: ' :tab ', raw: true, b: true }, { t: 'Ice that flows' }] as never);
+    expect(text).toBe('**1.1**  :tab Ice that flows');
+    expect(text).not.toMatch(/\s\*\*(?!\w)/);
+    const lead = renderSegs([{ t: ' :tab ', raw: true, i: true }, { t: ' page', i: true }] as never);
+    expect(lead).toBe(' :tab  *page*');
+  });
+});
