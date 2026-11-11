@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { pageDisplayList } from 'postext';
 import type { PostextConfig } from 'postext';
 import { build, config, mm, LOREM } from './testing/kit.test-helper.js';
-import { idmlDocument, inspectIdml, plainText, readIdml, readingOrder } from './index.js';
+import { idmlDocument, idmlToPostext, inspectIdml, plainText, readIdml, readingOrder } from './index.js';
 
 const MD = `# First chapter\n\n${LOREM}\n\nA second paragraph with *italic* and **bold** words, and a [link](https://postext.dev/).\n\n- one\n- two\n\n## A section\n\n${Array(12).fill(LOREM).join('\n\n')}\n`;
 
@@ -60,5 +60,40 @@ describe('export → read', () => {
     expect(summary.pages).toBe(doc.pages.length);
     const styles = [...idml.styles.paragraph.values()].map((s) => s.name);
     expect(styles).toEqual(expect.arrayContaining(['Body', 'Heading 1', 'Heading 2', 'List']));
+  });
+});
+
+// Postext → IDML → Postext: the lines the export kept come back as the
+// lines of the imported book, justified as they were (postext 1.74,
+// `bodyText.justifyHardBreaks`).
+describe('export → import', () => {
+  const cfg = config({ page: { dpi: 72, width: mm(140), height: mm(200), margins: { top: mm(15), bottom: mm(20), left: mm(18), right: mm(12) } } } as unknown as Partial<PostextConfig>);
+  const source = build(`${Array(3).fill(LOREM).join('\n\n')}\n`, cfg);
+  const { bytes } = idmlDocument({ docs: [source], title: 'Kept lines' });
+  const result = idmlToPostext(bytes, { layout: 'pages' });
+
+  it('turns justified forced breaks on and reports nothing about them', () => {
+    expect(result.config.bodyText?.justifyHardBreaks).toBe(true);
+    expect(result.report.findings.map((f) => f.id)).not.toContain('forcedBreakInJustified');
+  });
+
+  it('writes kept lines with ordinary spaces', () => {
+    const markdown = result.chapters.map((c) => c.markdown).join('\n');
+    expect(markdown).toContain('\\\n');
+    expect(markdown).not.toContain('\u00a0');
+  });
+
+  it('sets the same lines, justified, when the imported book is laid out', () => {
+    const painted = (doc: ReturnType<typeof build>) => doc.pages
+      .flatMap((_, p) => pageDisplayList(doc, p).items)
+      .flatMap((i) => (i.kind === 'text' ? i.lines : []));
+    const before = painted(source).filter((l) => l.text.trim().split(' ').length > 3);
+    const again = build(result.chapters.map((c) => c.markdown).join('\n\n'), result.config as PostextConfig);
+    const after = painted(again).filter((l) => l.text.trim().split(' ').length > 3);
+    expect(after.map((l) => l.text.trim())).toEqual(before.map((l) => l.text.trim()));
+    // Every line but a paragraph's last fills the measure, as in the source.
+    const full = (lines: typeof before) => lines.filter((l) => !l.last).length;
+    expect(full(after)).toBe(full(before));
+    expect(full(after)).toBeGreaterThan(10);
   });
 });

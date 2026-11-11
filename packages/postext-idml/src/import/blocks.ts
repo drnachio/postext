@@ -135,7 +135,6 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     // first paragraph that can hold them.
     const carried = look.role === 'heading' ? '' : env.carry.splice(0).join('');
     const r = inlineOf(ctx, para, inline);
-    if (look.pf.align === 'justify' && r.text.includes('\u2028')) ctx.rep.add('forcedBreakInJustified', 'warning', 'A line ended by a forced break in justified text is spread to the measure by InDesign; Postext sets it at its natural width', ctx.sample(para), r.text.split('\u2028').length - 1);
     const text = r.text.trim();
     if (inline.before?.length) {
       space();

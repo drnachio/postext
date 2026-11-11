@@ -57,7 +57,7 @@ for (const w of doc.warnings) console.warn(w.code, w.message);
 
 The same entry exports the helpers an importer works with: computed styles and formats, colours, the geometry of page items, master items and reading order.
 
-The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book.
+The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book. Lines the document keeps (a forced line break at the end of each, as the export writes them) come back as the lines of the book: the importer turns on `bodyText.justifyHardBreaks` (postext 1.74), which justifies the line before a forced break as InDesign does, so a book exported from Postext and imported again sets the same lines.
 
 ## Entries
 

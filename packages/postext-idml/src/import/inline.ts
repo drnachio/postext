@@ -211,6 +211,11 @@ export function inlineOf(ctx: Context, para: IdmlParagraph, env: InlineEnv): Inl
   const raw = (t: string): void => {
     segs.push({ t, raw: true });
   };
+  // A paragraph none of whose words may break is set by its forced line
+  // breaks alone (lines kept from another setting): its words keep their
+  // ordinary spaces, which a justified line stretches. A no-break space
+  // is a fixed one in Postext.
+  const keptLines = hasText && para.runs.every((r) => !r.content.some((i) => i.kind === 'text' && i.text.trim()) || formatOf(ctx, para, r).noBreak);
   for (const run of para.runs) {
     if (!ctx.runShown(run, sample)) continue;
     const f = formatOf(ctx, para, run);
@@ -227,7 +232,7 @@ export function inlineOf(ctx: Context, para: IdmlParagraph, env: InlineEnv): Inl
         s = s.toLocaleUpperCase(f.languageTag);
         ctx.rep.add('allCapsRun', 'info', 'Words set in all capitals by a character setting are written in capitals', sample());
       }
-      if (f.noBreak) s = s.replace(/ /g, '\u00a0');
+      if (f.noBreak && !keptLines) s = s.replace(/ /g, '\u00a0');
       const n = s.trim().length;
       ctx.countFace(f.fontFamily, f.fontStyle, n);
       countLanguage(ctx, f, n);
