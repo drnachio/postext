@@ -104,8 +104,6 @@ export function paintLine(
   elem?: StructElem,
 ): void {
   const tracking = line.letterSpacing ?? 0;
-  // A highlighter band (a character style's) goes under the text.
-  if (line.marks) paintLineMarks(ctx, line, color, 'behind');
   // Highlight bands (`:mark[…]`, #888), under the text.
   if (line.highlights) paintLineHighlights(ctx, line);
   if (tracking !== 0) setTrackingPx(ctx, tracking);

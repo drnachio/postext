@@ -14,7 +14,7 @@ import { fillFlowText, verticalPaintActive, type TextPaintMode } from './vertica
 import type { MarkCutRule } from '../measure/cjk/markCuts.js';
 import { restoreContext, saveContext, setLetterSpacing } from './contextState.js';
 import { linkUnderlinePainted } from './blockRender/linkPaint.js';
-import { bandOutline, dashedPieces } from '../marks/markGeometry.js';
+import { bandOutline, dashedPieces, type OutlineCommand } from '../marks/markGeometry.js';
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -80,6 +80,17 @@ export function bandPath(ctx: Ctx, x: number, y: number, w: number, h: number, r
   ctx.closePath();
 }
 
+/** Trace an outline (`marks/markGeometry.ts`) as the current path. */
+function traceOutline(ctx: Ctx, outline: readonly OutlineCommand[]): void {
+  ctx.beginPath();
+  for (const c of outline) {
+    if (c.op === 'M') ctx.moveTo(c.x, c.y);
+    else if (c.op === 'L') ctx.lineTo(c.x, c.y);
+    else if (c.op === 'Q') ctx.quadraticCurveTo(c.cx, c.cy, c.x, c.y);
+    else ctx.closePath();
+  }
+}
+
 /** Paint the highlight bands of a line (`VDTLine.highlights`, #888), under
  *  its text: called before the line is painted. */
 export function paintLineHighlights(ctx: Ctx, line: VDTLine): void {
@@ -88,7 +99,9 @@ export function paintLineHighlights(ctx: Ctx, line: VDTLine): void {
   saveContext(ctx);
   for (const b of bands) {
     ctx.fillStyle = b.color;
-    bandPath(ctx, line.bbox.x + b.x, line.baseline + b.y, b.width, b.height, b.radiusLeft, b.radiusRight);
+    ctx.globalAlpha = b.opacity ?? 1;
+    if (b.rough) traceOutline(ctx, bandOutline(b, line.bbox.x, line.baseline));
+    else bandPath(ctx, line.bbox.x + b.x, line.baseline + b.y, b.width, b.height, b.radiusLeft, b.radiusRight);
     ctx.fill();
   }
   restoreContext(ctx);
@@ -96,10 +109,9 @@ export function paintLineHighlights(ctx: Ctx, line: VDTLine): void {
 
 /** Paint the marks of a line (`VDTLine.marks`) in `color` unless a mark
  *  has its own. On a vertical page a sesame turns back against the flow
- *  (see {@link sesamePath}). `layer` picks the marks painted under the
- *  text (`'behind'`: a highlighter band, before the text) or over it. */
-export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string, layer: 'over' | 'behind' = 'over'): void {
-  const marks = line.marks?.filter((m) => (layer === 'behind') === !!m.behind);
+ *  (see {@link sesamePath}). */
+export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string): void {
+  const marks = line.marks;
   if (!marks || marks.length === 0) return;
   const x0 = line.bbox.x;
   const y0 = line.baseline;
@@ -112,21 +124,9 @@ export function paintLineMarks(ctx: Ctx, line: VDTLine, color: string, layer: 'o
     ctx.fillStyle = ink;
     ctx.strokeStyle = ink;
     ctx.lineWidth = m.thickness;
-    ctx.globalAlpha = m.opacity !== undefined && m.opacity < 1 ? Math.max(0, m.opacity) : 1;
     const cx = x0 + m.x;
     const cy = y0 + m.y;
     switch (m.kind) {
-      case 'band': {
-        ctx.beginPath();
-        for (const c of bandOutline(m, x0, y0)) {
-          if (c.op === 'M') ctx.moveTo(c.x, c.y);
-          else if (c.op === 'L') ctx.lineTo(c.x, c.y);
-          else if (c.op === 'Q') ctx.quadraticCurveTo(c.cx, c.cy, c.x, c.y);
-          else ctx.closePath();
-        }
-        ctx.fill();
-        break;
-      }
       case 'dashed':
         for (const p of dashedPieces(m, x0)) ctx.fillRect(p.x, cy - m.thickness / 2, p.length, m.thickness);
         break;

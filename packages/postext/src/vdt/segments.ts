@@ -368,12 +368,16 @@ export interface VDTLineSegment {
    *  this to give the text its meaning (HTML wraps dotted text in `<em>`).
    *  Absent on unmarked text. */
   cjkMarks?: VDTSegmentMarks;
-  /** The character style run (`[some words]|id|`) the segment's text
-   *  belongs to: its decorations (underline, highlighter band,
-   *  strike-through) are set on the line as `VDTLine.marks` once the
-   *  document is laid out. Its face, colour and tracking are already in
-   *  {@link fontString}, {@link color} and {@link tracking}. */
+  /** The character style run (`:span[…]{style="id"}`) the segment's text
+   *  belongs to. Its face and tracking are already in {@link fontString}
+   *  and {@link tracking}; its colour is set in {@link color} once the
+   *  document is laid out (`marks/characterStyles.ts`). */
   charStyle?: VDTSegmentCharStyle;
+  /** The segment's text as written, when a character style painted it in
+   *  capitals (`textTransform: 'uppercase'`): the same length as
+   *  {@link text}. Copying, text extraction (the PDF's `/ActualText`) and
+   *  assistive technology read this. Absent otherwise. */
+  sourceText?: string;
   /** The segment is a ruby base (#194): its `text` is the base, painted at
    *  `x + inkOffset` when the reading is wider than it, and the reading's
    *  runs follow. Absent otherwise. */
@@ -445,7 +449,7 @@ export interface VDTLineSegment {
 
 /** The character style run of a segment (see {@link VDTLineSegment.charStyle}). */
 export interface VDTSegmentCharStyle {
-  /** Tells runs apart: two runs side by side get two decorations. */
+  /** Tells runs apart: two runs side by side stay two. */
   id: number;
   /** The style's id (`characterStyles`). */
   style: string;

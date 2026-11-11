@@ -11,7 +11,7 @@ import { graphemesOf, graphemeCount } from '../measure/graphemes.js';
 import { measureTextWidth, withMeasureLanguage } from '../measure/canvas.js';
 import { lineWordSegmentsInOrder } from '../paint/wordPieces.js';
 import { fontFamilyOf } from '../measure/vertical.js';
-import { RT_OPEN, verticalKuntenTateHtml, verticalLineMarksHtml } from './htmlAnnotations.js';
+import { RT_OPEN, lineHighlightsHtml, verticalKuntenTateHtml, verticalLineMarksHtml } from './htmlAnnotations.js';
 import { extractFontSizePx } from './design.js';
 import { renderSwatchSegment, renderChip, renderTaskBox } from './lines.js';
 import { shapedText, type HtmlPaint } from './render.js';
@@ -330,6 +330,8 @@ export function renderVerticalLine(line: VDTLine, block: VDTBlock, v: VerticalHt
     + (lineCjkDecl(line) || hasCJK(line.text) ? cjkTextDecl(lineTracking !== 0) : '');
   return (
     `<div class="pt-line" data-block="${esc(block.id)}" style="position:absolute;left:${line.bbox.x}px;top:${line.bbox.y}px;width:${width}px;height:${line.bbox.height}px;">` +
+    // Highlight bands (`:mark[…]`) under the text, in the turned flow.
+    lineHighlightsHtml(line) +
     uprightInner(width, line.bbox.height, decl, inner.join('')) +
     sideways.join('') +
     `</div>`

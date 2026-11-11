@@ -115,10 +115,30 @@ export interface MarkStyleConfig {
   paddingX?: Dimension;
   /** Room above and below the text band. Default `0.05em`. */
   paddingY?: Dimension;
-  /** Room above the text band, in place of {@link paddingY}. */
+  /** Room above the text band, in place of {@link paddingY}. A negative
+   *  value lowers the band's top edge into the letters: `-0.4em` leaves a
+   *  broad marker stroke under the lower half of the words. */
   paddingTop?: Dimension;
-  /** Room below the text band, in place of {@link paddingY}. */
+  /** Room below the text band, in place of {@link paddingY}; negative
+   *  raises its bottom edge. */
   paddingBottom?: Dimension;
+  /** Paint the band. Default `true`; `false` leaves the mark its
+   *  {@link line} and text colour alone. */
+  backgroundEnabled?: boolean;
+  /** The band's opacity, percent (0–100). Default `100`. Under 100 the
+   *  text and whatever lies under the band show through it; a print PDF
+   *  whose standard forbids transparency (PDF/X-1a) sets it as a
+   *  tint of its colour over white paper. */
+  opacity?: number;
+  /** How irregular the band's edges are, 0–100: `0` (default) a clean
+   *  band; higher values wobble its top and bottom edges and cut its ends
+   *  on a slant, as a highlighter drawn by hand. The wobble is the same on
+   *  every render. */
+  rough?: number;
+  /** A line drawn with the mark, under the words or through them, in one
+   *  of five styles: a wavy correction mark, a dashed strike-through. The
+   *  band and the line can be used together. Absent: no line. */
+  line?: MarkLineConfig;
   /** How the band of a phrase that wraps onto another line is cut (CSS
    *  `box-decoration-break`). `'slice'` (the default): one band cut where
    *  the line breaks, square at the cut, with the padding and the rounded
@@ -131,6 +151,37 @@ export interface MarkStyleConfig {
 
 /** `markStyles[].decorationBreak`. */
 export type MarkDecorationBreak = 'slice' | 'clone';
+
+/** `markStyles[].line`: the line of a highlight mark. It sits where the
+ *  face puts its underline or its strikeout (as `:underline[…]` and
+ *  `~~…~~` do), on the central axis in Chinese and Japanese text and down
+ *  a vertical page, and runs on under the word spaces of the phrase. */
+export interface MarkLineConfig {
+  /** `under` the words (default) or `through` them. */
+  position?: MarkLinePosition;
+  /** `solid` (default), `double`, `dotted`, `dashed` or `wavy`. */
+  style?: MarkLineStyle;
+  /** Line colour. Default the marked text's colour. */
+  color?: ColorValue;
+  /** Stroke width (em = the marked text). Default the face's own
+   *  underline or strikeout thickness. */
+  thickness?: Dimension;
+}
+
+/** `markStyles[].line.position`. */
+export type MarkLinePosition = 'under' | 'through';
+/** `markStyles[].line.style`. */
+export type MarkLineStyle = 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy';
+
+/** A mark line with its defaults filled in. */
+export interface ResolvedMarkLineConfig {
+  position: MarkLinePosition;
+  style: MarkLineStyle;
+  /** Unset: the marked text's colour. */
+  color?: ColorValue;
+  /** Unset: the face's own. */
+  thickness?: Dimension;
+}
 
 /** A highlight style with every default filled in. */
 export interface ResolvedMarkStyleConfig {
@@ -147,82 +198,31 @@ export interface ResolvedMarkStyleConfig {
   /** Unset: `paddingY`. */
   paddingBottom?: Dimension;
   decorationBreak: MarkDecorationBreak;
+  backgroundEnabled: boolean;
+  /** 0–100. */
+  opacity: number;
+  /** 0–100. */
+  rough: number;
+  /** Unset: no line. */
+  line?: ResolvedMarkLineConfig;
 }
 
 /**
- * A decoration line of a character style: an underline or a
- * strike-through (`CharacterStyleConfig.underline` / `strike`). Em lengths
- * are relative to the run's own size.
- */
-export interface CharacterStyleLineConfig {
-  /** Draw the line. Default `false`. */
-  enabled?: boolean;
-  /** Line colour. Default the run's text colour. */
-  color?: ColorValue;
-  /** Opacity, percent (0–100). Default `100`. A print PDF sets a line
-   *  under 100 as a tint of its colour over the paper, with no
-   *  transparency. */
-  opacity?: number;
-  /** Stroke width. Default `0.06em`. */
-  thickness?: Dimension;
-  /** Where the line runs, from the baseline: below it for an underline
-   *  (default `0.12em`), above it for a strike-through (default `0.3em`). */
-  offset?: Dimension;
-  /** `solid` (default) a rule, `double` two rules, `dotted` a row of
-   *  dots, `dashed` a row of dashes, `wavy` a wave. */
-  style?: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy';
-  /** Leave the word spaces of the run out: the line breaks at each space.
-   *  Default `false` (the line runs on under the spaces). */
-  skipSpaces?: boolean;
-}
-
-/**
- * The highlighter band of a character style (`CharacterStyleConfig.highlight`):
- * a band of colour painted behind the run, like a marker pen. Its edges are
- * measured from the baseline (positive: up), in em of the run: a band from
- * `-0.05em` to `0.35em` is a broad marker stroke under the lower half of the
- * letters; from `-0.2em` to `0.8em` it covers the words.
- */
-export interface CharacterStyleHighlightConfig {
-  /** Paint the band. Default `false`. */
-  enabled?: boolean;
-  /** Band colour. Default a highlighter yellow (`#ffe14d`). */
-  color?: ColorValue;
-  /** Opacity, percent (0–100). Default `70`. The band is painted behind
-   *  the text, so the letters keep their colour; a print PDF sets it as a
-   *  tint of its colour over the paper, with no transparency. */
-  opacity?: number;
-  /** Where the band starts, from the baseline (negative: below it).
-   *  Default `-0.2em`. */
-  bottom?: Dimension;
-  /** Where the band ends, from the baseline. Default `0.8em`. */
-  top?: Dimension;
-  /** How far the band reaches past the run's first and last letters.
-   *  Default `0.08em`. */
-  overhang?: Dimension;
-  /** Corner radius. Default `0.08em`. */
-  radius?: Dimension;
-  /** How irregular the band's edges are, 0–100: `0` (default) a clean
-   *  band; higher values wobble its top and bottom edges and slant its
-   *  ends, as a marker drawn by hand. The wobble is the same on every
-   *  render. */
-  rough?: number;
-  /** Leave the word spaces of the run out: one band per word. Default
-   *  `false`. */
-  skipSpaces?: boolean;
-}
-
-/**
- * A named character style, set on a run of text with `[some words]|id|`:
- * a face, a colour and decorations (an underline, a highlighter band, a
- * strike-through) for words inside a paragraph. Unlike a chip the run
- * breaks and hyphenates as the text around it does; a decoration broken
- * across two lines is drawn on each.
+ * A named character style, set on a run of words with the inline
+ * `:span[some words]{style="<id>"}`: the face, size, weight, slant,
+ * colour, tracking and case of the run, defined once in the design. Unlike
+ * a chip the run is text: it breaks, hyphenates and justifies as the words
+ * around it do.
+ *
+ * A style that should also be highlighted, underlined in a dashed or wavy
+ * line, or struck through names a highlight style ({@link mark}): the run
+ * takes that `markStyles` entry as if it were written inside
+ * `:mark[…]{style="<mark>"}`, so a decoration is defined in one place
+ * whichever way it reaches the words.
  *
  * An em `fontSize` and `letterSpacing` are relative to the text around the
- * run; the decorations' em lengths to the run's own size. A size larger
- * than the text's never changes the line spacing: the lines keep their
- * grid.
+ * run. A size larger than the text's never changes the line spacing: the
+ * lines keep their grid.
  */
 export interface CharacterStyleConfig {
   id: string;
@@ -237,44 +237,28 @@ export interface CharacterStyleConfig {
   fontWeight?: number;
   /** Set the run in italic. Default `false`. */
   italic?: boolean;
-  /** Text colour. Default the text's (bold and italic words keep their
-   *  emphasis colours). */
+  /** Text colour. Default the text's. Paint only: changing it never moves
+   *  a line. */
   color?: ColorValue;
   /** Tracking added after every character of the run (em = the text around
    *  it; negative tightens). Default none. */
   letterSpacing?: Dimension;
-  /** `uppercase` sets the run in capitals. Default `none`. */
-  textTransform?: 'none' | 'uppercase';
-  /** Set the run in small capitals. Default `false`. */
+  /** `uppercase` sets the run in capitals, by the case rules of the
+   *  document's language (a Turkish `i` becomes `İ`); the text keeps its
+   *  letters as written for search, copying and assistive technology.
+   *  Default `none`. */
+  textTransform?: CharacterStyleCase;
+  /** Set the run in small capitals (as `:smallcaps[…]`). Default `false`. */
   smallCaps?: boolean;
-  underline?: CharacterStyleLineConfig;
-  highlight?: CharacterStyleHighlightConfig;
-  strike?: CharacterStyleLineConfig;
+  /** The id of a highlight style (`markStyles`) the run also takes: its
+   *  band, its line, its text colour. Absent: none. */
+  mark?: string;
 }
 
-export interface ResolvedCharacterStyleLine {
-  enabled: boolean;
-  /** Unset: the run's text colour. */
-  color?: ColorValue;
-  opacity: number;
-  thickness: Dimension;
-  offset: Dimension;
-  style: 'solid' | 'double' | 'dotted' | 'dashed' | 'wavy';
-  skipSpaces: boolean;
-}
+/** `characterStyles[].textTransform`. */
+export type CharacterStyleCase = 'none' | 'uppercase';
 
-export interface ResolvedCharacterStyleHighlight {
-  enabled: boolean;
-  color: ColorValue;
-  opacity: number;
-  bottom: Dimension;
-  top: Dimension;
-  overhang: Dimension;
-  radius: Dimension;
-  rough: number;
-  skipSpaces: boolean;
-}
-
+/** A character style with every default filled in. */
 export interface ResolvedCharacterStyleConfig {
   id: string;
   name: string;
@@ -285,11 +269,10 @@ export interface ResolvedCharacterStyleConfig {
   italic: boolean;
   color?: ColorValue;
   letterSpacing?: Dimension;
-  textTransform: 'none' | 'uppercase';
+  textTransform: CharacterStyleCase;
   smallCaps: boolean;
-  underline: ResolvedCharacterStyleLine;
-  highlight: ResolvedCharacterStyleHighlight;
-  strike: ResolvedCharacterStyleLine;
+  /** A highlight style the run takes; only an id `markStyles` declares. */
+  mark?: string;
 }
 
 /** An inline chip style with every default filled in. */

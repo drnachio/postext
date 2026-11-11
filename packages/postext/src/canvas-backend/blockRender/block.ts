@@ -163,7 +163,6 @@ function renderStripCaption(ctx: CanvasRenderingContext2D, block: VDTBlock): voi
     refColor: block.refColor,
   };
   for (const line of block.lines.slice(caption.firstLine, caption.firstLine + caption.lineCount)) {
-    if (line.marks) paintLineMarks(ctx, line, block.color, 'behind');
     if (line.highlights) paintLineHighlights(ctx, line);
     renderLine(ctx, line, style, block.textAlign, block.bbox.width, block.bbox.x, lineTrailingTracking(line, line.letterSpacing ?? 0), line.letterSpacing ?? 0, false);
     if (line.marks) paintLineMarks(ctx, line, block.color);
@@ -244,8 +243,6 @@ function renderBlockUpright(
   const tocEntry = block.tocEntry !== undefined;
   for (const line of block.lines) {
     const tracking = (block.letterSpacing ?? 0) + (line.letterSpacing ?? 0);
-    // A highlighter band (a character style's) goes under the text.
-    if (line.marks) paintLineMarks(ctx, line, block.color, 'behind');
     // Highlight bands (`:mark[…]`, #888), under the text.
     if (line.highlights) paintLineHighlights(ctx, line);
     if (tracking !== 0) setLetterSpacing(ctx, tracking);

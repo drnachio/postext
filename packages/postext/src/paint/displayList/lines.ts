@@ -13,7 +13,8 @@ import { lineWordSegmentsInOrder } from '../wordPieces.js';
 import { lineTrailingTracking } from '../lineInk.js';
 import { lineSource, segmentShownText, type Atom, type SourceBlock } from './source.js';
 import { chipRuns, swatchPaint } from './inline.js';
-import type { DisplayAnnotation, DisplayItem, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
+import { highlightShapes } from './markItems.js';
+import type { DisplayAnnotation, DisplayLine, DisplayListOptions, DisplayRun, LineAlign } from './types.js';
 
 /** The faces and colours a line's segments pick from. */
 export interface LineStyle {
@@ -304,54 +305,7 @@ export function lineMeasure(line: VDTLine, block: Pick<VDTBlock, 'bbox'>): { x: 
 /** A line's highlight bands (`:mark[…]`, #888), unplaced: painted under
  *  its text, in body, caption, note and cell lines alike. A band is
  *  relative to the line (x from its `bbox.x`, y from its baseline), as
- *  the PDF's `paintLineHighlights` reads it. */
-export function highlightRects(line: VDTLine): Extract<DisplayItem, { kind: 'rect' }>[] {
-  return (line.highlights ?? []).map((h) => ({
-    kind: 'rect' as const,
-    rect: { x: line.bbox.x + h.x, y: line.baseline + h.y, width: h.width, height: h.height },
-    fill: h.color,
-    ...(h.radiusLeft || h.radiusRight ? { radius: Math.max(h.radiusLeft, h.radiusRight) } : {}),
-  }));
-}
-
-/** A hex colour at an opacity over white paper (Word draws no
- *  transparency): what the PDF prints for a mark under 1. */
-function overPaper(color: string, opacity: number): string {
-  const h = color.replace(/^#/, '');
-  if (!/^[0-9a-f]{6}$/i.test(h) || opacity >= 1) return color;
-  const a = Math.max(0, opacity);
-  return '#' + [0, 2, 4].map((i) => Math.round(parseInt(h.slice(i, i + 2), 16) * a + 255 * (1 - a)).toString(16).padStart(2, '0')).join('');
-}
-
-type Shape = Extract<DisplayItem, { kind: 'rule' | 'rect' }>;
-
-/** A line's character style decorations (`characterStyleMarks.ts`),
- *  unplaced: the highlighter bands under its text (`before`) and the
- *  underlines and strike-throughs over it (`after`). A wave is drawn as a
- *  straight rule and a double line as two. Horizontal lines only. */
-export function charStyleMarkItems(line: VDTLine, textColor: string): { before: Shape[]; after: Shape[] } {
-  const before: Shape[] = [];
-  const after: Shape[] = [];
-  for (const m of line.marks ?? []) {
-    if (!m.charStyle) continue;
-    const color = overPaper(m.color ?? textColor, m.opacity ?? 1);
-    const x = line.bbox.x + m.x;
-    const y = line.baseline + m.y;
-    const length = m.length ?? 0;
-    if (m.kind === 'band') {
-      before.push({ kind: 'rect', rect: { x, y, width: length, height: m.height ?? 0 }, fill: color, ...(m.size ? { radius: m.size } : {}) });
-      continue;
-    }
-    if (length <= 0) continue;
-    const rule = (dy: number, dash?: number[]): Shape => ({ kind: 'rule', x1: x, y1: y + dy, x2: x + length, y2: y + dy, color, widthPx: m.thickness, ...(dash ? { dash } : {}) });
-    if (m.kind === 'double') {
-      const half = (m.gap ?? m.thickness * 2) / 2;
-      after.push(rule(-half), rule(half));
-    } else if (m.kind === 'dashed') after.push(rule(0, [m.size ?? m.thickness * 3, m.gap ?? m.thickness * 2]));
-    else if (m.kind === 'dotted') after.push(rule(0, [m.thickness, Math.max(m.thickness, (m.gap ?? m.thickness * 2) - m.thickness)]));
-    else if (m.kind === 'line' || m.kind === 'wavy') after.push(rule(0));
-  }
-  return { before, after };
-}
+ *  the PDF's `paintLineHighlights` reads it (`markItems.ts`). */
+export const highlightRects = highlightShapes;
 
 export { sizeOf };

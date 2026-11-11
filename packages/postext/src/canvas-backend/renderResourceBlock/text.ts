@@ -69,8 +69,6 @@ function paintLineRuns(
 ): void {
   ctx.textBaseline = 'alphabetic';
   if (line.segments && line.segments.length > 0) {
-    // A highlighter band (a character style's) goes under the text.
-    if (line.marks) paintLineMarks(ctx, line, color, 'behind');
     let x = line.bbox.x;
     // A line of the CJK composer, or any line down a vertical page, paints
     // each segment through `fillSegmentText`; a line set word by word as

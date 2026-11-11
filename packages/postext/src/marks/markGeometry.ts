@@ -1,12 +1,13 @@
 /**
- * The shapes of the line marks every renderer draws alike: a character
- * style's highlighter band (`VDTLineMark` of kind `band`), clean or
- * wobbling like a marker drawn by hand, and the dashes of a dashed line.
- * The canvas, the PDF and the HTML backends all trace these outlines, so
- * the three outputs match.
+ * The shapes every renderer draws alike for the highlight marks
+ * (`markStyles`, #888, #1488): a band whose edges wobble like a
+ * highlighter drawn by hand (`VDTLineHighlight.rough`), and the dashes of
+ * a dashed line (`VDTLineMark` of kind `dashed`). The canvas, the PDF, the
+ * HTML and the display list all trace these outlines, so the outputs
+ * match.
  */
 
-import type { VDTLineMark } from '../vdt.js';
+import type { VDTLineHighlight, VDTLineMark } from '../vdt.js';
 
 /** One command of an outline: move, line or quadratic curve to a point
  *  (the curve through a control point). Coordinates are absolute. */
@@ -27,40 +28,40 @@ function seeded(seed: number): () => number {
   };
 }
 
-/** A rectangle with rounded corners (`r` clamped to half its sides). */
-function roundedRect(x: number, y: number, w: number, h: number, r: number): OutlineCommand[] {
-  const k = Math.max(0, Math.min(r, w / 2, h / 2));
-  if (k === 0) return [{ op: 'M', x, y }, { op: 'L', x: x + w, y }, { op: 'L', x: x + w, y: y + h }, { op: 'L', x, y: y + h }, { op: 'Z' }];
-  return [
-    { op: 'M', x: x + k, y },
-    { op: 'L', x: x + w - k, y },
-    { op: 'Q', cx: x + w, cy: y, x: x + w, y: y + k },
-    { op: 'L', x: x + w, y: y + h - k },
-    { op: 'Q', cx: x + w, cy: y + h, x: x + w - k, y: y + h },
-    { op: 'L', x: x + k, y: y + h },
-    { op: 'Q', cx: x, cy: y + h, x, y: y + h - k },
-    { op: 'L', x, y: y + k },
-    { op: 'Q', cx: x, cy: y, x: x + k, y },
-    { op: 'Z' },
-  ];
+/** A rectangle whose left and right ends are rounded by their own radii
+ *  (each clamped to half the height and half the width). */
+function roundedRect(x: number, y: number, w: number, h: number, rl: number, rr: number): OutlineCommand[] {
+  const l = Math.max(0, Math.min(rl, w / 2, h / 2));
+  const r = Math.max(0, Math.min(rr, w / 2, h / 2));
+  const out: OutlineCommand[] = [{ op: 'M', x: x + l, y }, { op: 'L', x: x + w - r, y }];
+  if (r > 0) out.push({ op: 'Q', cx: x + w, cy: y, x: x + w, y: y + r }, { op: 'L', x: x + w, y: y + h - r }, { op: 'Q', cx: x + w, cy: y + h, x: x + w - r, y: y + h });
+  else out.push({ op: 'L', x: x + w, y: y + h });
+  out.push({ op: 'L', x: x + l, y: y + h });
+  if (l > 0) out.push({ op: 'Q', cx: x, cy: y + h, x, y: y + h - l }, { op: 'L', x, y: y + l }, { op: 'Q', cx: x, cy: y, x: x + l, y });
+  else out.push({ op: 'L', x, y });
+  out.push({ op: 'Z' });
+  return out;
 }
 
+/** What {@link bandOutline} reads of a band. */
+export type BandShape = Pick<VDTLineHighlight, 'x' | 'y' | 'width' | 'height' | 'radiusLeft' | 'radiusRight' | 'rough' | 'seed'>;
+
 /**
- * The outline of a band mark painted from the line's start `x0` and
- * baseline `y0`. A clean band is a rounded rectangle; a rough one
- * (`mark.rough` > 0) wobbles along its top and bottom edges, drifts a
- * little across the line and has its ends cut on a slant, as a marker's
- * chisel tip leaves them. The wobble follows `mark.seed`.
+ * The outline of a highlight band painted from the line's start `x0` and
+ * baseline `y0`. A clean band is a rectangle with its ends rounded; a
+ * rough one (`band.rough` > 0) wobbles along its top and bottom edges,
+ * drifts a little across the line and has its ends cut on a slant, as a
+ * highlighter's chisel tip leaves them. The wobble follows `band.seed`.
  */
-export function bandOutline(mark: VDTLineMark, x0 = 0, y0 = 0): OutlineCommand[] {
-  const x = x0 + mark.x;
-  const y = y0 + mark.y;
-  const w = mark.length ?? 0;
-  const h = mark.height ?? 0;
-  const rough = Math.max(0, Math.min(1, mark.rough ?? 0));
-  if (w <= 0 || h <= 0) return [];
-  if (rough === 0) return roundedRect(x, y, w, h, mark.size ?? 0);
-  const rand = seeded(mark.seed ?? 1);
+export function bandOutline(band: BandShape, x0 = 0, y0 = 0): OutlineCommand[] {
+  const x = x0 + band.x;
+  const y = y0 + band.y;
+  const w = band.width;
+  const h = band.height;
+  const rough = Math.max(0, Math.min(1, band.rough ?? 0));
+  if (!(w > 0) || !(h > 0)) return [];
+  if (rough === 0) return roundedRect(x, y, w, h, band.radiusLeft, band.radiusRight);
+  const rand = seeded(band.seed ?? 1);
   const wobble = h * 0.1 * rough;
   const drift = (rand() - 0.5) * h * 0.16 * rough;
   const slant = h * 0.3 * rough;

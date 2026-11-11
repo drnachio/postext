@@ -16,6 +16,15 @@ export interface VDTLineHighlight {
   color: string;
   radiusLeft: number;
   radiusRight: number;
+  /** How much of the band shows, 0–1 (`markStyles[].opacity`); unset:
+   *  opaque. */
+  opacity?: number;
+  /** How irregular its edges are, 0–1 (`markStyles[].rough`), and the
+   *  seed that draws the same edges on every render; unset: a clean band.
+   *  Its outline is `marks/markGeometry.ts`'s `bandOutline`, which every
+   *  output traces. */
+  rough?: number;
+  seed?: number;
 }
 
 /** The line under a run of one link's words (#1402): from `x` (px from the
@@ -44,11 +53,9 @@ export interface VDTLinkUnderline {
  * against the page's quarter turn.
  */
 export interface VDTLineMark {
-  /** `band` is a character style's highlighter: a filled band behind the
-   *  text, `y` its top edge, {@link height} tall, {@link size} its corner
-   *  radius. `dashed` a row of dashes {@link size} long, {@link gap}
-   *  apart. */
-  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted' | 'dashed' | 'band';
+  /** `dashed` is a row of dashes {@link size} long, {@link gap} apart (a
+   *  highlight mark's line, `markStyles[].line`). */
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted' | 'dashed';
   /** A dot's centre; a line's start (`double`: midway between its two
    *  rules). */
   x: number;
@@ -77,21 +84,9 @@ export interface VDTLineMark {
    *  styled link: left out in an output whose link style draws the link's
    *  own line (`VDTLine.linkUnderlines`), so only one line shows there. */
   underLink?: true;
-  /** A band's height, px across the line. */
-  height?: number;
-  /** How much the mark lets through of what is under it, 0–1 (1 or unset:
-   *  opaque). A print PDF sets a mark under 1 as a tint of its colour over
-   *  the paper, with no transparency. */
-  opacity?: number;
-  /** A band's wobble, 0–1 (see `CharacterStyleHighlightConfig.rough`), and
-   *  the seed that makes it the same on every render. */
-  rough?: number;
-  seed?: number;
-  /** Painted before the line's text, under it (a highlighter band). */
-  behind?: true;
-  /** A character style's decoration (`characterStyleMarks.ts`), replaced
-   *  whenever the document is laid out again. */
-  charStyle?: true;
+  /** The line of a highlight mark (`markStyles[].line`), set again
+   *  whenever the document is laid out. */
+  markLine?: true;
 }
 
 /** A located anchor (see {@link VDTDocument.anchors}). */
