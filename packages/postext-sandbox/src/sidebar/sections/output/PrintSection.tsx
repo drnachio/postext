@@ -37,6 +37,7 @@ import { putBlob } from '../../../storage/blobStore.js';
 import { fill } from '../../../print/fillTokens.js';
 import { usePrintSetup } from '../../../print/printSetup.js';
 import { PrintInksGroup } from './PrintInksGroup.js';
+import { PrintPlatesGroup } from './PrintPlatesGroup.js';
 
 /** Print preparation (#607): crop marks and bleed, the PDF/X standard and
  *  output profile, black handling, the ink table and the preflight
@@ -277,6 +278,7 @@ export const PrintSection = memo(function PrintSection() {
       </CollapsibleSection>
 
       <PrintInksGroup />
+      <PrintPlatesGroup />
 
       <CollapsibleSection title={labels.printGroupPreflight} sectionId="print-preflight" variant="subsection">
         <ToggleSwitch label={labels.printPreflightEnabled} checked={cfg.preflight.enabled} onChange={(v) => updatePreflight({ enabled: v })}
