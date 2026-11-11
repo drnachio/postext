@@ -1,18 +1,18 @@
 {/* docs/document-format-resources-es.mdx */}
 
 export const metadata = {
-  title: 'Formato del documento: imágenes, tablas y vídeos',
-  sidebarTitle: 'Imágenes, tablas y vídeos',
-  description: 'Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los vídeos',
+  title: 'Formato del documento: imágenes y tablas',
+  sidebarTitle: 'Imágenes y tablas',
+  description: 'Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los símbolos en los pies',
   lang: 'es',
-  lastUpdated: '2026-11-10',
-  readingTime: '44 min',
+  lastUpdated: '2026-11-11',
+  readingTime: '48 min',
   order: 30,
   parent: 'document-format',
-  plainSummary: "Esta página explica las imágenes, las tablas y los vídeos de un libro. Los añades una sola vez y los mencionas en el texto, y Postext coloca cada uno cerca del lugar donde se menciona por primera vez. Puedes elegir dónde va: arriba de una página, a lo ancho de todas las columnas o justo donde lo escribes. El texto puede rodear una imagen. Una imagen puede marcar la parte que siempre debe verse cuando se recorta para que quepa. Los vídeos se reproducen en la vista web y en los libros electrónicos, y en papel se sustituyen por una imagen.",
+  plainSummary: "Esta página explica las imágenes y las tablas de un libro. Las añades una sola vez y las mencionas en el texto, y Postext coloca cada una cerca del lugar donde se menciona por primera vez. Puedes elegir dónde va: arriba de una página, a lo ancho de todas las columnas o justo donde la escribes. El texto puede rodear una imagen. Una imagen puede marcar la parte que siempre debe verse cuando se recorta para que quepa. Los vídeos se colocan de la misma manera, y la página siguiente trata de ellos.",
 };
 
-# Formato del documento: imágenes, tablas y vídeos
+# Formato del documento: imágenes y tablas
 
 
 ## Recursos
@@ -215,7 +215,7 @@ Las bandas de flotantes se ajustan a la rejilla base para que el texto que las r
 
 En la última página de un capítulo (y del documento), nada sigue a las figuras y tablas a ancho de página que quedan bajo la última banda de texto, así que suben hasta quedar a un espacio de flotante por debajo de ella, apiladas en su orden, en lugar de dejar un blanco entre el texto y una figura al pie de la página. También vale para un flotante `position: 'bottom'`. Para dejarlas al pie, como en cualquier otra página, pon `layout.hugClosingFloats: false` (consulta [Configuración › Disposición](/es/docs/configuration-page-layout#disposición)). En las páginas con columna lateral nunca se mueven.
 
-Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dibujan los recursos. En el backend HTML, las imágenes no van dentro del documento, así que la aplicación anfitriona las proporciona mediante la opción `resourceImageUrl(fileId)`; si esa función no existe (o no devuelve nada para un archivo), el recurso se dibuja como una caja neutra de relleno para que la maquetación no cambie. El archivo de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](#vídeos)).
+Los tres backends (la vista previa en canvas, el visor HTML y la salida PDF) dibujan los recursos. En el backend HTML, las imágenes no van dentro del documento, así que la aplicación anfitriona las proporciona mediante la opción `resourceImageUrl(fileId)`; si esa función no existe (o no devuelve nada para un archivo), el recurso se dibuja como una caja neutra de relleno para que la maquetación no cambie. El archivo de un vídeo llega del mismo modo mediante `resourceVideoUrl(fileId)` (consulta [Vídeos](/es/docs/document-format-videos#vídeos)).
 
 #### Dónde puede caer un flotante
 
@@ -403,137 +403,3 @@ Un pie, una nota o una celda de tabla pueden llevar un símbolo pequeño en su l
 
 Los símbolos se leen en los pies, las notas, las celdas de tabla y los rótulos de figura (consulta [Páginas compuestas › Líneas de referencia, leyendas y símbolos](/es/docs/composed-pages-figures#líneas-de-referencia-leyendas-y-símbolos)); en el texto corrido y en los encabezados la directiva sigue siendo texto en esta versión. Desde postext 1.48.
 
-### Vídeos
-
-Un recurso de **vídeo** (`kind: 'video'`) es un vídeo de YouTube o de Vimeo, o un vídeo propio: un archivo guardado en el libro (MP4, WebM) o uno que está en una dirección web, ya sea un archivo en un servidor o un **flujo HLS** (una lista de reproducción `.m3u8`). Se coloca, lleva pie, flota y se cita como una imagen, y se numera en una serie propia: el tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… junto a *Figura 1.1* y *Tabla 1.1* (consulta [Configuración › Tipos de recurso](/es/docs/configuration-resources#tipos-de-recurso)). Cada salida lo muestra como puede:
-
-<table>
-  <thead>
-    <tr>
-      <th>Salida</th>
-      <th>Qué muestra</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Canvas, PDF</td>
-      <td>La <strong>portada</strong>, un fotograma del vídeo, con una marca de reproducción y un código QR que abre el vídeo (<a href="/es/docs/configuration-resources#estilo-de-vídeo">Configuración › Estilo de vídeo</a>). En el PDF la portada es además un enlace al vídeo.</td>
-    </tr>
-    <tr>
-      <td>Folio</td>
-      <td>La portada, tal como se imprime. Un clic sobre ella reproduce el vídeo <strong>en la propia página</strong>, y el vídeo sigue reproduciéndose mientras se pasa la hoja (consulta <a href="#vídeos-en-las-páginas-de-folio">Vídeos en las páginas de Folio</a> más abajo). Los vídeos de YouTube y Vimeo se quedan en su portada.</td>
-    </tr>
-    <tr>
-      <td>Visor HTML</td>
-      <td>El <strong>reproductor</strong> del vídeo: el de YouTube o el de Vimeo, o el reproductor HTML5 del navegador para un archivo o una dirección. Un flujo HLS se reproduce de forma nativa en Safari y en las versiones recientes de Chrome; en los demás navegadores, la aplicación anfitriona añade un reproductor como hls.js, igual que hace el Sandbox. Con <code>videoStyle.html: 'poster'</code>, muestra en su lugar la portada impresa.</td>
-    </tr>
-    <tr>
-      <td>EPUB</td>
-      <td>Un archivo se reproduce en el reproductor del propio sistema de lectura, empaquetado en el libro o leído desde su dirección de producción. Un vídeo de YouTube o de Vimeo se muestra como su portada, enlazada con el vídeo: un EPUB no puede insertar el reproductor de una página web. Un flujo HLS también se muestra como su portada enlazada: una lista de reproducción HLS no es ninguno de los tipos de medio que un EPUB puede reproducir. Si el sistema de lectura ejecuta scripts, los archivos de una misma página o capítulo respetan <code>player.exclusive</code>: al empezar uno se pausan los demás con los que no se reproduce a la vez.</td>
-    </tr>
-  </tbody>
-</table>
-
-```ts
-const charla: Resource = {
-  id: 'charla-farero', typeId: 'video', kind: 'video',
-  caption: 'El farero explica la lámpara.',
-  altText: 'Un farero junto a la lámpara',
-  createdAt: 0, updatedAt: 0,
-  video: {
-    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
-    url: 'https://youtu.be/aqz-KE-bpKQ',
-    poster: { fileId: 'charla.jpg', format: 'jpeg', width: 1280, height: 720 },
-    start: 30,                                // empieza en 0:30; el enlace impreso también
-  },
-};
-```
-
-El texto cita un vídeo igual que una figura: `:ref{id="charla-farero"}` imprime *Vídeo 1.1* y hace flotar la portada al primer hueco libre después de la referencia, y `::resource{id="charla-farero"}` con `placement.position: 'here'` la coloca dentro del texto. Los campos de `Resource.video` (`ResourceVideo`):
-
-<table>
-  <thead>
-    <tr>
-      <th>Campo</th>
-      <th>Tipo</th>
-      <th>Significado</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>source</code></td>
-      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>Desde dónde se reproduce el vídeo: una página de YouTube o de Vimeo, o un vídeo propio (<code>'file'</code>), subido o en una dirección web.</td>
-    </tr>
-    <tr>
-      <td><code>url</code></td>
-      <td><code>string</code></td>
-      <td>YouTube o Vimeo: la dirección del vídeo, en cualquiera de sus formas (una página de reproducción, <code>youtu.be</code>, Shorts, un enlace de inserción, <code>youtube-nocookie.com</code>; una página de Vimeo, la de un canal o un enlace oculto con su hash). Un archivo: su <strong>dirección de producción</strong>, donde lo encontrará el libro publicado. Un vídeo propio sin archivo se reproduce desde esta dirección: un MP4 o WebM en un servidor, o un flujo HLS (<code>…/master.m3u8</code>).</td>
-    </tr>
-    <tr>
-      <td><code>fileId</code>, <code>format</code></td>
-      <td><code>string</code></td>
-      <td>Un archivo: el vídeo subido, guardado aparte como un mapa de bits, y su formato: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>, o <code>'hls'</code> para un flujo HLS. Si no se indica, lo determina la extensión de la dirección (<code>.m3u8</code> es <code>'hls'</code>) y, en su defecto, es <code>'mp4'</code>.</td>
-    </tr>
-    <tr>
-      <td><code>poster</code></td>
-      <td><code>{'{ fileId, format, width, height }'}</code></td>
-      <td>El fotograma de portada, un mapa de bits.</td>
-    </tr>
-    <tr>
-      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
-      <td><code>number</code></td>
-      <td>El tamaño del fotograma del vídeo en px (su proporción cuando no hay portada) y su duración en segundos.</td>
-    </tr>
-    <tr>
-      <td><code>posterTime</code></td>
-      <td><code>number</code></td>
-      <td>El segundo del archivo cuyo fotograma se usa como portada; se guarda para poder volver a elegirlo.</td>
-    </tr>
-    <tr>
-      <td><code>start</code>, <code>end</code></td>
-      <td><code>number</code></td>
-      <td>Reproduce desde el segundo <code>start</code> hasta el <code>end</code>. El código QR y el enlace del PDF también empiezan en <code>start</code>.</td>
-    </tr>
-    <tr>
-      <td><code>player</code></td>
-      <td><code>VideoPlayerOptions</code></td>
-      <td>Las opciones de reproductor de este vídeo, que se aplican sobre <code>videoStyle.player</code>.</td>
-    </tr>
-  </tbody>
-</table>
-
-**La portada.** Se compone a la medida de su hueco (o a la fracción `placement.width` de ella), con su propia proporción y sea cual sea su tamaño en píxeles: un fotograma del tamaño de una pantalla se amplía en lugar de imprimirse pequeño. Como un mapa de bits, puede tener una [zona segura](#zona-segura) y seguir `placement.align`. Un vídeo sin portada imprime un recuadro oscuro con la proporción del vídeo (16:9 si no se indica otra) y sus elementos superpuestos, y da el aviso de contenido `videoWithoutPoster`. En el Sandbox, la portada de un vídeo de YouTube o de Vimeo se descarga de la plataforma al escribir su dirección, y la de un archivo es un fotograma que eliges en el vídeo.
-
-**La dirección.** El código QR y el enlace del PDF abren la página del vídeo, `https://youtu.be/<id>` o `https://vimeo.com/<id>`, a partir de `start`. Un archivo no tiene página: abren su dirección de producción, que es también desde donde se reproduce un vídeo sin archivo propio (un MP4 en un servidor, un flujo HLS). Si no la tiene, la versión impresa no lleva código QR ni enlace (`videoWithoutUrl`), y una salida HTML o EPUB que no incluye el archivo muestra la portada. Una dirección de YouTube o de Vimeo que no corresponde a ningún vídeo de esa plataforma da el aviso `videoUrlInvalid`, y se muestra la portada en lugar de un reproductor.
-
-**Los reproductores.** Las opciones del reproductor (controles, botón de descarga, pantalla completa, menú de velocidad, imagen en imagen, envío a otra pantalla, reproducción automática, inicio sin sonido, repetición, precarga, inserción con privacidad mejorada) se fijan para todo el libro en `videoStyle.player` y para un solo vídeo en `video.player`; cada reproductor aplica las que puede (consulta [Configuración › Estilo de vídeo](/es/docs/configuration-resources#estilo-de-vídeo)). El backend HTML recibe la URL reproducible de un archivo mediante la opción `resourceVideoUrl(fileId)`, igual que recibe las imágenes mediante `resourceImageUrl`, y si no la tiene recurre a la dirección de producción. Su opción `videos: { files, streams, hls }` elige entre reproductor y portada según el origen, por encima de `videoStyle.html` (`hls`, para un vídeo que se reproduce desde una dirección HLS, sigue a `files` si no se indica); el generador de EPUB la usa. Un `<video>` que reproduce una dirección HLS lleva `data-pt-hls`, para que la aplicación anfitriona pueda darle un reproductor en los navegadores sin HLS nativo (Safari y las versiones recientes de Chrome lo reproducen tal cual). En un libro de derecha a izquierda, el reproductor y los elementos superpuestos de la portada no se reflejan, igual que una imagen, para que el código QR se pueda leer.
-
-**En el VDT.** El bloque de recurso de un vídeo tiene `kind: 'video'`, su portada como `fileId` / `format` (se dibuja como un mapa de bits) y `video` (`VDTResourceVideo`): el `link` al que se envía al lector, la `embedUrl` de YouTube o de Vimeo con las opciones del reproductor aplicadas, el `fileId` de un archivo, el `mimeType` de un vídeo propio (el de su archivo o, si solo tiene dirección, el de esta; `application/vnd.apple.mpegurl` para HLS), el intervalo `start` / `end`, el `player` resuelto, `linkPoster`, `html` y los elementos superpuestos `playMark` y `qr` (los módulos del QR como filas de `'0'` / `'1'`), con rectángulos relativos a la esquina superior izquierda de la imagen. Una aplicación anfitriona que dibuje los vídeos por su cuenta dispone de las funciones que exporta `postext`: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` y `qrModuleRuns`.
-
-**En un paquete.** Un `.postext` incluye el archivo (`resources/<id>.mp4`) y la portada (`resources/<id>.poster.jpg`): la entrada del manifiesto los indica en `file` y `poster`, da el tamaño de la portada en `width` / `height` y guarda el resto en `video`, sin ids de archivo. `bundleVideoUrl(bundle)` es el resolutor de `resourceVideoUrl` para los archivos de un paquete. Un vídeo que se reproduce solo desde una dirección no lleva archivo: su entrada tiene únicamente la portada. En un paquete bilingüe, cada idioma puede dar a un vídeo su propio `poster` y su propio `video` (otro montaje, en su propia dirección) en `localized[…].resources`.
-
-#### Vídeos en las páginas de Folio
-
-En el [libro en 3D](/es/docs/configuration-html-folio-epub#un-libro-en-3d-postext-folio), un vídeo propio se reproduce en la página en la que está impreso. Un clic en la portada lo pone en marcha ahí mismo, haga lo que haga el puntero sobre el libro (pasar páginas, orbitar la vista o seleccionar texto): el shader de la página dibuja los fotogramas del vídeo sobre la portada, de modo que la imagen se dobla y se curva con el papel al pasar la hoja, y el vídeo sigue reproduciéndose mientras tanto. Un clic en un vídeo en marcha lo pausa, otro en un vídeo en pausa lo reanuda, y la barra espaciadora o Intro hacen lo mismo con el primer vídeo de la doble página abierta. Al poner en marcha otro vídeo se detiene el que estaba sonando (vuelve a su portada), y un vídeo se detiene cuando el libro se queda quieto en una doble página donde ya no aparece, o al llegar a su `end`. Sobre un vídeo que puede reproducir, el puntero toma forma de mano; un arrastre que empieza sobre él sigue pasando la página o girando la vista. Un vídeo que debe reproducirse solo (`video.player.autoplay`) arranca por sí mismo la primera vez que el libro se queda quieto en su doble página, cuando el libro ya se ha asentado (también si la aplicación anfitriona lo maqueta por etapas), y no vuelve a hacerlo en ese visor.
-
-Un vídeo que se reproduce junto a otros (`video.player.exclusive: false`, desde postext 1.18) cambia las dos reglas. Al empezarlo solo se detienen los vídeos exclusivos, así que varios vídeos de este tipo pueden reproducirse a la vez; si se empieza un vídeo exclusivo, también este se detiene. Con `autoplay`, empieza sin sonido cada vez que el libro se detiene en su doble página, y se para cuando se pasa a otra: los bucles sin sonido (`loop`) de una página se reproducen juntos cada vez que el lector llega a ella.
-
-- **Qué se reproduce.** Un archivo (la aplicación anfitriona convierte su `fileId` en una URL con la opción `videoUrl`; en el Sandbox es una URL de objeto) o, si no lo hay, su dirección: MP4, WebM o un flujo HLS. Un flujo HLS se reproduce con [hls.js](https://github.com/video-dev/hls.js) en todo navegador que tenga Media Source Extensions (se carga la primera vez que se reproduce un vídeo; es una dependencia opcional, de tipo *peer*, de `postext-folio`), limitado a la variante más cercana al tamaño que tiene la imagen en pantalla, de modo que una imagen de unos cientos de píxeles de alto nunca descarga una variante 4K; si no, se recurre al HLS propio del navegador. Sus peticiones llevan un parámetro `pt-cors` propio, para que la caché del navegador nunca les entregue una copia que otro reproductor descargó sin CORS. YouTube y Vimeo se reproducen en iframes, que WebGL no puede dibujar: un clic en su portada pasa la página, como en cualquier otro punto.
-- **Lecturas entre orígenes.** WebGL solo dibuja un vídeo si su servidor permite leerlo (CORS, `Access-Control-Allow-Origin`). Un vídeo que no se puede leer se queda en su portada, y `onVideo` recibe `error`.
-- **Sonido.** El clic permite que el vídeo se reproduzca con sonido; si el navegador aun así lo impide, se reproduce silenciado. Un vídeo que arranca solo tiene sonido si el lector ya ha hecho clic o ha escrito en la página (llegar a ella pasando páginas cuenta); si no, empieza silenciado, y un clic sobre él le da sonido antes de que el siguiente lo pause. `video.player.muted` lo hace empezar sin sonido, `loop` lo repite, y `start` / `end` delimitan la parte que se reproduce.
-- **En cualquier página.** La imagen se dibuja donde la pone la maquetación: girada en un recurso girado, sin girar en una página vertical y sin reflejar en un libro de derecha a izquierda, igual que la portada. Si la portada se recorta dentro de su [zona segura](#zona-segura), el vídeo se recorta del mismo modo.
-- **Sin WebGL2**, o con la preferencia de movimiento reducido, el vídeo se reproduce en un `<video>` HTML colocado sobre la página.
-
-```ts
-const book = createFolioFromDocument(container, doc, {
-  // La URL reproducible de un vídeo subido (una URL de objeto sobre sus bytes).
-  videoUrl: (fileId) => urls.get(fileId),
-  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
-});
-book.stopVideo();
-```
-
-`videos: false` lo desactiva. `toggleVideoAt({ page, x, y })` hace lo mismo que un clic en ese punto, y `pageVideoSpots(page, doc)` indica dónde está cada vídeo de una página, para una aplicación anfitriona que dibuje sus propios controles.
-
-Dos recetas del Recetario incluyen vídeos: la n.º 131, [Programa de cineclub con códigos QR en las portadas](/es/cookbook/film-club-video-qr), imprime cada película como una tarjeta de título con la marca de reproducción y un código QR, y la n.º 132, [Hoja de prácticas con vídeos que se ven en pantalla y EPUB](/es/cookbook/pendulum-lab-video-players), fija las opciones del reproductor de la edición HTML y empaqueta sus propios vídeos en un EPUB de maquetación fija.
