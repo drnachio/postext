@@ -321,10 +321,13 @@ export function TableEditor({
     commit(setCellBackground(model, active, color));
   };
 
-  /** Rows become columns: the active cell follows its content. */
+  /** Rows become columns: the active cell follows its content, and a
+   *  selection range, which would no longer cover the same cells, ends. */
   const handleTranspose = () => {
-    commit(transposeTable(model));
-    setActive((a) => ({ row: a.col, col: a.row }));
+    const next = transposeTable(model);
+    commit(next);
+    setActive((a) => clampPos(next, { row: a.col, col: a.row }));
+    setAnchor(null);
   };
 
   const handlePasteTsv = async () => {
