@@ -789,7 +789,7 @@ const { bytes: book } = await createBundle(importBundleInput(result));
 ```
 
 - <strong>`idmlToPostext(bytes, options)`</strong>是同步的。`layout`取`'pages'`（逐页跟随原稿的模板页）、`'flow'`（连续排版的书）或`'auto'`（默认：由导入器决定，并在`reason`中说明理由）。`linkBytes(link)`提供链接图片的字节（`link.name`、`link.uri`）；嵌入的图片从包里读取，没有得到字节的链接列在`missingLinks`中。结果包含`chapters`（`{ title, markdown }`）、`config`（只含文档设定的内容）、`resources`及其`files`、书所需的`fonts`（只有名称：`.idml`不带字体文件）和`report`：一个`verdict`（`faithful`、`approximate`或`lossy`）和若干`findings`，每条带有`severity`（`info`、`warning`、`loss`）、`message`、`count`和`examples`。<strong>`importBundleInput(result)`</strong>是`postext/bundle`中`createBundle`的输入。
-- 原稿用强制换行结束的行仍是书里的行：导入器会开启`bodyText.justifyHardBreaks`。从Postext导出的书读回来时行不变。在InDesign中制作的文档读入时有损失，报告会逐项列出。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)导入；Sandbox暂时没有导入入口，移植InDesign的书仍建议使用[智能体技能](/zh/docs/skill)。
+- 原稿用强制换行结束的行仍是书里的行：导入器会开启`bodyText.justifyHardBreaks`。从Postext导出的书读回来时行不变。在InDesign中制作的文档读入时有损失，报告会逐项列出。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)导入，Sandbox从书库面板的[新建菜单](/zh/docs/sandbox-books-saving#导入indesign文档)导入；要重现原书的版式，仍建议使用[智能体技能](/zh/docs/skill)。
 - <strong>`readIdml(bytes)`</strong>和<strong>`inspectIdml(doc)`</strong>是可以单独使用的类型化读取器：前者把包读成`IdmlDocument`，后者给出它的摘要（页面、文章、字体、用到的样式、图片）。
 
 ## 在Web Worker中运行排版

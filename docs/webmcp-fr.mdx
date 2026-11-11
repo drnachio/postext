@@ -573,9 +573,13 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   `rename` avec `thisLanguageOnly: true` ne nomme que la langue à l’écran ;
   `set_cover` et `remove_cover` lui donnent une couverture ou la lui retirent.
 - **Exporter.** `sandbox_export` écrit `pdf`, `epub`, `postext`, `docx`,
-  `markdown` ou `config`. Par défaut, le navigateur télécharge le fichier ; avec
-  `deliver: "data"`, un PDF, un EPUB ou un fichier Word revient à l’agent encodé
-  en base64. Pour `docx`, `variant` choisit `formatted` (la valeur par défaut :
+  `idml`, `markdown` ou `config`. Par défaut, le navigateur télécharge le
+  fichier ; avec `deliver: "data"`, un PDF, un EPUB, un fichier Word ou un paquet
+  IDML revient à l’agent encodé en base64. Pour `idml`, `idmlLines` (`keep` ou
+  `reflow`), `idmlSpreads` (`facing` ou `single`), `idmlImages` (`embed` ou
+  `link`) et `idmlFonts` sont les options de la boîte de dialogue d’exportation ;
+  avec des images liées ou avec les polices, le fichier est un `.zip`. Pour
+  `docx`, `variant` choisit `formatted` (la valeur par défaut :
   texte modifiable avec la maquette du livre, polices incorporées) ou `semantic`
   (le contenu seul, dans des styles Word simples) :
 
@@ -585,6 +589,12 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
 
 - **Importer un fichier `.postext`** avec `sandbox_import_book` (`inspect: true` indique
   quelles langues il contient sans l’importer).
+- **Créer un livre à partir d’un document InDesign** avec `sandbox_import_idml`. Avec
+  `dryRun: true`, il ne crée rien et répond avec ce que contient le `.idml` et
+  le rapport d’importation : la mise en page qu’il retiendrait et pourquoi, le
+  verdict, les constats, les polices dont le livre a besoin et les images liées
+  encore manquantes. `layout` choisit `pages` ou `flow`, et `links` fournit les
+  images liées, chacune associée par son `fileName`.
 - **Faire entrer un manuscrit Word** avec `sandbox_import_word`. Lancez-le d’abord avec
   `dryRun: true` : il ne change rien et répond avec le rapport de qualité, chaque
   style Word avec ce qu’il deviendrait, et les chapitres et ressources qu’il
@@ -721,6 +731,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
 - **Word** : `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **InDesign** : `sandbox_import_idml`.
 - **Questions** : `sandbox_answer`.
 - **Les vérifications** : `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

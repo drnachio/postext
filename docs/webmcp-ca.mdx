@@ -582,9 +582,12 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   `rename` amb `thisLanguageOnly: true` dona nom només a la llengua en pantalla;
   `set_cover` i `remove_cover` li posen o li treuen una portada.
 - **Exportar.** `sandbox_export` escriu `pdf`, `epub`, `postext`, `docx`,
-  `markdown` o `config`. Per defecte, el navegador baixa el fitxer; amb
-  `deliver: "data"`, un PDF, un EPUB o un fitxer de Word torna a l'agent
-  codificat en base64. Amb `docx`, `variant` tria `formatted` (el valor per
+  `idml`, `markdown` o `config`. Per defecte, el navegador baixa el fitxer; amb
+  `deliver: "data"`, un PDF, un EPUB, un fitxer de Word o un paquet IDML torna
+  a l'agent codificat en base64. Amb `idml`, `idmlLines` (`keep` o `reflow`),
+  `idmlSpreads` (`facing` o `single`), `idmlImages` (`embed` o `link`) i
+  `idmlFonts` són les opcions del diàleg d'exportació; amb imatges enllaçades
+  o amb fonts, el fitxer és un `.zip`. Amb `docx`, `variant` tria `formatted` (el valor per
   defecte: text editable amb el disseny del llibre i les fonts incrustades) o
   `semantic` (només el contingut, en estils de Word senzills):
 
@@ -594,6 +597,13 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
 
 - **Importar un fitxer `.postext`** amb `sandbox_import_book` (`inspect: true`
   diu quins idiomes porta sense importar-lo).
+- **Fer un llibre a partir d'un document d'InDesign** amb
+  `sandbox_import_idml`. Amb `dryRun: true` no crea res i respon amb el que
+  conté el `.idml` i amb l'informe d'importació: la maquetació que prendria i
+  per què, el veredicte, les troballes, les fonts que necessita el llibre i
+  les imatges enllaçades que encara falten. `layout` tria `pages` o `flow`, i
+  `links` lliura les imatges enllaçades, cadascuna aparellada pel seu
+  `fileName`.
 - **Portar un manuscrit de Word** amb `sandbox_import_word`. Executa'l primer
   amb `dryRun: true`: no canvia res i respon amb l'informe de qualitat, cada
   estil de Word amb el que esdevindria, i els capítols i els recursos que
@@ -734,6 +744,7 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **InDesign**: `sandbox_import_idml`.
 - **Preguntes**: `sandbox_answer`.
 - **La revisió**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 
