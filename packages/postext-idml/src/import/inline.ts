@@ -371,7 +371,7 @@ function special(ctx: Context, inline: Extract<Inline, { kind: 'special' }>, env
       // Told by the paragraph's `breakAfter`.
       break;
     default:
-      ctx.rep.add('unknownSpecialCharacter', 'loss', 'A special character the importer does not know is left out', `code ${inline.code ?? '?'}: ${sample()}`);
+      ctx.rep.add('unknownSpecialCharacter', 'loss', 'A special character the importer does not know is left out: the text about it closes up', `code ${inline.code ?? '?'}: ${sample()}`);
   }
 }
 

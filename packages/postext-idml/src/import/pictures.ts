@@ -135,7 +135,7 @@ export function pictureResource(ctx: Context, item: IdmlPageItem, options: Pictu
       base.safeArea = { x: r(crop.x), y: r(crop.y), width: r(crop.width), height: r(crop.height) };
       ctx.rep.add('pictureCrop', 'warning', 'A picture its frame crops keeps the visible part as its safe area; Postext shows the whole picture unless the layout needs to crop it', name);
     }
-    if (Math.abs(crop.rotation) > 0.01 || crop.flipped) ctx.rep.add('pictureTurned', 'loss', 'A picture turned or mirrored inside its frame is set upright and unmirrored', name);
+    if (Math.abs(crop.rotation) > 0.01 || crop.flipped) ctx.rep.add('pictureTurned', 'loss', 'A picture turned or mirrored inside its frame is set upright and unmirrored, whole in its frame', name);
     if (Math.abs(crop.scaleX - crop.scaleY) > 0.005 * Math.max(crop.scaleX, crop.scaleY)) ctx.rep.add('pictureStretched', 'warning', 'A picture scaled unevenly keeps its own proportions', name);
   }
   if (g.clippingPath?.length) ctx.rep.add('clippingPath', 'warning', 'A clipping path on a picture is not carried', name);

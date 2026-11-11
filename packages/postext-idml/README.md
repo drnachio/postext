@@ -59,6 +59,16 @@ The same entry exports the helpers an importer works with: computed styles and f
 
 The importer, `idmlToPostext`, turns the document read this way into the chapters, configuration and resources of a Postext book. Lines the document keeps (a forced line break at the end of each, as the export writes them) come back as the lines of the book: the importer turns on `bodyText.justifyHardBreaks` (postext 1.76), which justifies the line before a forced break as InDesign does, so a book exported from Postext and imported again sets the same lines.
 
+What the importer does to keep the pages as the document has them:
+
+- A paragraph that goes on in another frame is one paragraph. A threaded story is written once and its frames are chained (`next` on a page, `overflow.continueIn` to a later one). Where a document cuts the paragraph in two stories (an export writes one story per block, the first piece justified to its last line), the pieces are joined and their frames chained, when both wear one style and the second opens the next column or page.
+- The first line of a frame stands where InDesign's rule puts it (`FirstBaselineOffset`: ascent, cap height, x-height, leading or a fixed height, never less than the minimum): the difference with Postext's rule (a baseline 0.8 of the leading under the top) goes to the frame's top padding or moves the frame up. Ascent, cap height and x-height are taken from typical proportions, since the importer has no font files; the report says so. Insets, the baseline rule and the vertical justification are read from the frame and from its object style.
+- Master items are carried per master: on composed pages each template holds the items of its page's masters (those of the masters it is based on under them); in a flowing book the main master gives the running heads of the body pages and the master of the chapter openers those of the opener pages.
+- An object anchored at a custom position gets a frame of its own where its rule puts it (composed pages), or hangs at its side of the column with the text beside it (flowing book). A picture typed in a line of a table cell or a caption is an inline symbol (`:icon`).
+- A cross-reference to a heading or an anchor of the book is written as `:ref` (its title, its page number), so it follows the book. In a flowing book with no heading style, top-level bookmarks cut the chapters and name them.
+
+Every difference is a finding of `result.report`, with a count and examples; a `loss` says what the book shows instead.
+
 ## Entries
 
 - `postext-idml`: everything above.

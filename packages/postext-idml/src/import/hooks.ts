@@ -60,11 +60,11 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
         if (it.textFrame?.story) {
           const story = ctx.doc.stories.get(it.textFrame.story);
           if (!story) {
-            ctx.rep.add('missingStory', 'loss', 'A text frame names a story the package does not hold', it.textFrame.story);
+            ctx.rep.add('missingStory', 'loss', 'A text frame names a story the package does not hold: the frame is left out', it.textFrame.story);
             return undefined;
           }
           if (depth >= 5) {
-            ctx.rep.add('deepAnchoring', 'loss', 'Frames anchored in frames more than five deep are left out', it.textFrame.story);
+            ctx.rep.add('deepAnchoring', 'loss', 'Frames anchored in frames more than five deep are left out: the text about them is set without them', it.textFrame.story);
             return undefined;
           }
           depth++;
@@ -89,7 +89,7 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
           const size = Math.round(Math.max(boxWidth(box), boxHeight(box)) * 100) / 100;
           return `:swatch{color="${look.fill.paletteId ?? look.fill.hex}" size=${size}pt border=none}`;
         }
-        ctx.rep.add('anchoredShape', 'loss', 'A shape anchored in the text (a line, an oval, an empty frame) is left out', it.kind);
+        ctx.rep.add('anchoredShape', 'loss', 'A shape anchored in the text (a line, an oval, an empty frame) is left out: the line it stood in closes up', it.kind);
         return undefined;
       };
       const mark = walk(item);

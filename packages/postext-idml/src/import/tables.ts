@@ -86,7 +86,7 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
 
   for (const cell of table.cells) {
     if (cell.row < 0 || cell.col < 0 || cell.row >= rows || cell.col >= cols || !Number.isFinite(cell.row) || !Number.isFinite(cell.col)) {
-      ctx.rep.add('tableCellOffGrid', 'loss', 'A table cell that stands outside its table\'s rows and columns is left out', sample);
+      ctx.rep.add('tableCellOffGrid', 'loss', 'A table cell that stands outside its table\'s rows and columns is left out: the table has the cells of its grid only', sample);
       continue;
     }
     if (grid[cell.row]![cell.col]) {
@@ -129,7 +129,7 @@ export function tableResource(ctx: Context, table: IdmlTable, env: InlineEnv, af
       if (t.family) body.family.set(t.family, (body.family.get(t.family) ?? 0) + 1);
     }
     if ((num(p, 'RotationAngle') ?? 0) !== 0) ctx.rep.add('rotatedCell', 'loss', 'Text turned inside a table cell is set upright: Postext turns whole tables, not cells', t.text.slice(0, 40) || sample);
-    if (p.attrs.TopLeftDiagonalLine === 'true' || p.attrs.TopRightDiagonalLine === 'true') ctx.rep.add('diagonalCellLines', 'loss', 'Diagonal lines across a table cell are not drawn', t.text.slice(0, 40) || sample);
+    if (p.attrs.TopLeftDiagonalLine === 'true' || p.attrs.TopRightDiagonalLine === 'true') ctx.rep.add('diagonalCellLines', 'loss', 'Diagonal lines across a table cell are not drawn: the cell is set without them', t.text.slice(0, 40) || sample);
     if (cell.paragraphs.some((para) => para.runs.some((r) => r.content.some((i) => i.kind === 'table')))) ctx.rep.add('nestedTable', 'warning', 'A table inside a table cell is set as a table of its own after the outer one', sample);
     if (cell.type === 'graphic') {
       const item = cell.items.find((i) => i.graphic) ?? cell.items[0];

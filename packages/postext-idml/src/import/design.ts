@@ -96,7 +96,7 @@ export function placeholderText(ctx: Context, paragraphs: readonly IdmlParagraph
             flush();
             line += '{totalPages}';
           } else pending += i.result;
-        } else if (i.kind !== 'special' && i.kind !== 'destination' && i.kind !== 'indexMark') ctx.rep.add('masterTextObjects', 'loss', 'A note, a table or an anchored object in master text is left out', i.kind);
+        } else if (i.kind !== 'special' && i.kind !== 'destination' && i.kind !== 'indexMark') ctx.rep.add('masterTextObjects', 'loss', 'A note, a table or an anchored object in the text of a master frame is left out: the running head prints the words about it only', i.kind);
       }
     }
     flush();
@@ -228,6 +228,6 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
       });
     }
   }
-  if (item.textPaths.length) ctx.rep.add('textOnPath', 'loss', 'Text set on a path is left out of master artwork', o.where);
+  if (item.textPaths.length) ctx.rep.add('masterTextOnPath', 'loss', 'Text set on a path of a master item is left out: the page shows the path\'s shape without its words', o.where);
   return out;
 }

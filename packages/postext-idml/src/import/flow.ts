@@ -166,15 +166,20 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
   const captions = new Set<OrderedStory>();
   const pictures: Leaf[] = [];
   let shapes = 0;
+  const shapePages = new Set<string>();
   for (const spread of doc.spreads) {
     for (const leaf of leavesOf(ctx, spread)) {
       const item = leaf.at.item;
-      if (item.graphic) pictures.push(leaf);
-      else if (!item.textFrame?.story && (item.attrs.FillColor || item.attrs.StrokeColor || item.kind === 'GraphicLine')) shapes++;
-      if (item.textPaths.length && !item.graphic) shapes++;
+      if (item.graphic) {
+        pictures.push(leaf);
+        continue;
+      }
+      const drawn = (!item.textFrame?.story && (item.attrs.FillColor || item.attrs.StrokeColor || item.kind === 'GraphicLine') ? 1 : 0) + (item.textPaths.length ? 1 : 0);
+      shapes += drawn;
+      if (drawn && leaf.g.page) shapePages.add(leaf.g.page.name);
     }
   }
-  if (shapes) ctx.rep.add('pageArtInFlow', 'loss', 'Shapes, rules and boxes drawn on the pages are not part of a flowing book (layout: "pages" keeps them where they stand)', undefined, shapes);
+  if (shapes) ctx.rep.add('pageArtInFlow', 'loss', 'Shapes, rules and boxes drawn on the pages are left out of a flowing book, whose pages show its text, its pictures and its running heads only (layout: "pages" keeps them where they stand)', `page ${[...shapePages].slice(0, 8).join(', ')}`, shapes);
   // A caption is the short story grouped with a picture or set right
   // under it.
   for (const leaf of pictures) {
