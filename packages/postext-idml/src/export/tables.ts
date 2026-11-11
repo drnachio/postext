@@ -47,7 +47,8 @@ function cellXml(w: Writer, t: TableItem, self: string, c: Cell): string {
     const right = Math.max(0, (r.x + r.width - (item.bbox.x + item.bbox.width)) * w.k);
     insets = ` TextTopInset="0"${attr('TextLeftInset', left)} TextBottomInset="0"${attr('TextRightInset', right)}`;
     baseline = ` FirstBaselineOffset="FixedHeight"${attr('MinimumFirstBaselineOffset', Math.max(0, (item.lines[0]!.baseline - r.y) * w.k))}`;
-    body = paragraphsXml(w, [{ ...item, frame: undefined }], undefined) || body;
+    // A cell's story is horizontal (`tableXml`): its lines as such.
+    body = paragraphsXml(w, [{ ...item, frame: undefined, lines: item.lines.map(({ vertical: _, ...l }) => l) }], undefined) || body;
   }
   return (
     `<Cell${attr('Self', `${self}i${c.col}_${c.row}`)}${attr('Name', `${c.col}:${c.row}`)}${attr('RowSpan', c.rowSpan)}${attr('ColumnSpan', c.colSpan)} AppliedCellStyle="CellStyle/$ID/[None]" AppliedCellStylePriority="0"` +
@@ -77,6 +78,7 @@ export function tableXml(w: Writer, t: TableItem, pageIndex: number): string {
     }
   }
   cells.sort((a, b) => a.row - b.row || a.col - b.col);
+  if (t.cells.some((c) => c.item?.lines.some((l) => l.vertical))) w.warn('text.vertical.table', `Page ${pageIndex + 1}: a table set vertically is written turned, its cells horizontal stories`);
   if (t.frameRadii?.some((r) => r > 0)) w.warn('table.radius', `Page ${pageIndex + 1}: a table's rounded frame is written square (InDesign tables have no corner radius)`);
   const table =
     `<Table${attr('Self', self)} HeaderRowCount="0" FooterRowCount="0"${attr('BodyRowCount', rows)}${attr('ColumnCount', cols)} AppliedTableStyle="TableStyle/$ID/[No table style]" TableDirection="LeftToRightDirection" SpaceBefore="0" SpaceAfter="0"` +

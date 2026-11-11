@@ -11,6 +11,7 @@ import { faceOf, parseCssFont } from './fonts.js';
 import { inlineObjectXml } from './inline.js';
 import { chipRect } from './geometry.js';
 import { textPropsAttrs, type TextProps } from './parts.js';
+import { verticalPieces, type VerticalPiece } from './vertical.js';
 import { isField, type TextItem, type Writer } from './writer.js';
 
 /** A frame's text scale (`fit.shrinkText`, #858), 1 when it has none. */
@@ -203,6 +204,47 @@ export interface TextRun {
   link?: RunLink;
   /** An inline object in place of text (its XML). */
   object?: string;
+  /** Attributes the range sets beside its look (vertical text: a
+   *  tate-chu-yoko cell, a ruby reading). Such a run joins no other. */
+  extra?: string;
+}
+
+/** A run's words as the pieces its line's setting cuts them in: one,
+ *  but in a vertical line (`vertical.ts`). */
+function piecesOf(w: Writer, line: DisplayLine, run: DisplayRun, text: string, spacing: boolean): VerticalPiece[] {
+  return line.vertical ? verticalPieces(w, line, run, text, spacing) : text ? [{ text }] : [];
+}
+
+/** `props` with `px` more advance after each character. */
+function tracked(w: Writer, props: TextProps, px: number): TextProps {
+  return props.size > 0 ? { ...props, tracking: Math.round((props.tracking + ((px * w.k) / props.size) * 1000) * 10) / 10 } : props;
+}
+
+/** `px` more (or less) room after the last character set: its tracking.
+ *  False when there is no character to carry it. */
+function roomAfter(w: Writer, out: TextRun[], px: number): boolean {
+  const last = out[out.length - 1];
+  if (!last || last.object || last.extra || !last.text) return false;
+  const chars = [...last.text];
+  const tail = chars.pop()!;
+  const props = tracked(w, last.props, px);
+  if (!chars.length) last.props = props;
+  else {
+    last.text = chars.join('');
+    out.push({ text: tail, props, ...(last.link ? { link: last.link } : {}) });
+  }
+  return true;
+}
+
+/** Add a run's pieces to a line's (or a paragraph's) runs. */
+function pushPieces(w: Writer, out: TextRun[], pieces: VerticalPiece[], base: TextProps, link: RunLink | undefined): void {
+  for (const piece of pieces) {
+    if (piece.pull && !roomAfter(w, out, piece.pull)) w.warn('text.vertical.spacing', `A bracket set on half a cell at the head of a line is written on a whole one: "${piece.text}"`);
+    const props = piece.track ? tracked(w, base, piece.track) : base;
+    const last = out[out.length - 1];
+    if (last && !last.object && !last.extra && !piece.extra && sameProps(last.props, props) && sameLink(last.link, link)) last.text += piece.text;
+    else out.push({ text: piece.text, props, ...(link ? { link } : {}), ...(piece.extra ? { extra: piece.extra } : {}) });
+  }
 }
 
 export const runLink = (run: DisplayRun): RunLink | undefined => (run.href ? { url: run.href } : run.pageLink !== undefined ? { page: run.pageLink } : undefined);
@@ -233,12 +275,13 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
           text = '\t';
         }
       }
-      if (!text) return;
-      const props = runProps(w, run);
-      const link = text === '\t' ? undefined : runLink(run);
-      const last = out[out.length - 1];
-      if (last && !last.object && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
-      else out.push({ text, props, ...(link ? { link } : {}) });
+      if (!text) {
+        // Room with no character (the quarter space beside a Latin word
+        // in a vertical line): on the character before it.
+        if (line.vertical && !run.inline && run.width > 0) roomAfter(w, out, run.width);
+        return;
+      }
+      pushPieces(w, out, piecesOf(w, line, run, text, true), runProps(w, run), text === '\t' ? undefined : runLink(run));
     });
     // A space at a line's end would take part in its justification.
     const tail = out[out.length - 1];
@@ -258,7 +301,7 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): Te
   const push = (text: string, props: TextProps, link?: RunLink) => {
     if (!text) return;
     const last = out[out.length - 1];
-    if (last && !last.object && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
+    if (last && !last.object && !last.extra && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
     else out.push({ text, props, ...(link ? { link } : {}) });
   };
   item.lines.forEach((line, li) => {
@@ -271,7 +314,8 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): Te
       let text = painted;
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
       if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐\u00ad]$/, '');
-      push(text, runProps(w, run), runLink(run));
+      if (line.vertical) pushPieces(w, out, piecesOf(w, line, run, text, false), runProps(w, run), runLink(run));
+      else push(text, runProps(w, run), runLink(run));
     });
     const next = item.lines[li + 1];
     if (!next || !runs.length) return;

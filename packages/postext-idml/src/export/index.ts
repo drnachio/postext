@@ -10,6 +10,8 @@
 // forced break per line, no-break text, per-line leading), so InDesign
 // shows the pages as the PDF does; with `lineBreaks: 'reflow'` InDesign
 // sets the text again with its own composer and line breaks may differ.
+// Vertical text (Chinese or Japanese set `vertical-rl`) is written in
+// vertical stories, a column of characters a line (`vertical.ts`).
 //
 // The writer's parts: `writer.ts` (its state, the options), `colours.ts`
 // (swatches), `geometry.ts`, `shapes.ts` (boxes, rules, paths, chips),
@@ -17,7 +19,7 @@
 // `spreads.ts`, and `parts.ts` for the package's fixed parts.
 
 import { strToU8, zipSync, type Zippable } from 'fflate';
-import { pageDisplayList } from 'postext';
+import { flowRectToPage, pageDisplayList, pageIsVertical } from 'postext';
 import { authoredCmykColors } from 'postext/writer';
 import { RESERVED_SWATCH_NAMES } from './colours.js';
 import {
@@ -103,9 +105,11 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
       w.pageH = trim.height * w.k;
       w.px = left ? -width : 0;
       // The margins the page's content area leaves (a page laid out in a
-      // turned or mirrored flow says them in that flow: left out).
+      // mirrored flow says them in that flow: left out).
       const vdt = doc.pages[p]!;
-      const area = vdt.flow ? undefined : vdt.contentArea;
+      // (A vertical page's area is told in its flow: where it stands on the sheet.)
+      w.page = vdt;
+      const area = pageIsVertical(vdt) ? flowRectToPage(vdt, vdt.contentArea) : vdt.flow ? undefined : vdt.contentArea;
       const l = area ? Math.max(0, (area.x - trim.x) * w.k) : 0;
       const r = area ? Math.max(0, (trim.x + trim.width - area.x - area.width) * w.k) : 0;
       const margins = area
