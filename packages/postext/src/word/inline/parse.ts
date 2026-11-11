@@ -160,13 +160,6 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
       continue;
     }
     if (c === '[') {
-      // A character style: `[words]|id|`, its words with no bracket.
-      const styled = text[i - 1] !== '\\' ? /^\[([^[\]\n]+)\]\|([\p{L}\p{N}_-]+)\|/u.exec(rest) : null;
-      if (styled && styled[1]![0] !== '^' && styled[1]![0] !== '@') {
-        add({ kind: 'charStyle', inner: styled[1]!, style: styled[2]! });
-        i += styled[0].length;
-        continue;
-      }
       const note = /^\[\^([\p{L}\p{N}_.:-]+)\]/u.exec(rest);
       if (note) {
         const id = note[1]!;
@@ -205,6 +198,16 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
         if (style !== undefined && !/[$`:[]/.test(chip[1]!)) add({ kind: 'chip', inner: chip[1]!, style });
         else add({ kind: 'raw', text: chip[0] });
         i += chip[0].length;
+        continue;
+      }
+      // A character style (`:span[words]{style="id"}`), read as a chip is.
+      const span = /^:span\[((?:\\.|[^\]\\\n])+)\](?:\{([^}\n]*)\})?/.exec(rest);
+      if (span) {
+        const attrs = span[2] ?? '';
+        const style = /^\s*style\s*=\s*"([^"]*)"\s*$/.exec(attrs)?.[1] ?? /^\s*style\s*=\s*([^\s"]+)\s*$/.exec(attrs)?.[1];
+        if (style && !/[$`:[]/.test(span[1]!)) add({ kind: 'charStyle', inner: span[1]!, style });
+        else add({ kind: 'raw', text: span[0] });
+        i += span[0].length;
         continue;
       }
       const sc = /^:smallcaps\[((?:\\.|[^\]\\\n])+)\]/.exec(rest);
@@ -340,7 +343,7 @@ export function parseInline(text: string, opts: ParseInlineOptions = {}): Inline
             for (const r of parseInline(atom.inner.replace(/\\([[\]])/g, '$1'), opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, smallCaps: true });
             return;
           case 'charStyle':
-            for (const r of parseInline(atom.inner, opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, charStyle: atom.style });
+            for (const r of parseInline(atom.inner.replace(/\\\]/g, ']'), opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, charStyle: atom.style });
             return;
         }
       }

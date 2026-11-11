@@ -13,6 +13,7 @@ import { atomEnd, chipText, refLabel } from './atoms.js';
 import type { WriterContext } from './context.js';
 import { FragmentBuilder, OBJECT_CHAR } from './fragments.js';
 import { chipGlyph } from './prose/chips.js';
+import { markRunLook } from './prose/characterStyle.js';
 import { partInk } from './design/partColor.js';
 import { STYLE } from './styles.js';
 import { fieldRuns, halfPoints, hex, rPr, textRuns, wordBookmarkName, type RunProps } from './wml.js';
@@ -79,7 +80,7 @@ interface Fmt {
   strike?: boolean;
   /** Underlined (`++…++`). */
   under?: boolean;
-  /** A character style's Word style (`[…]|id|`). */
+  /** A character style's Word style (`:span[…]{style="id"}`). */
   cs?: string;
 }
 
@@ -123,7 +124,8 @@ function markLook(ctx: WriterContext, style: string): { fill?: string; ink?: str
   const ms = style ? styles.find((m) => m.id === style) : undefined;
   if (!ms || ms === styles[0]) return {};
   const ink = hex(ms.color) ?? (hex(styles[0]?.color) ? 'auto' : undefined);
-  return { fill: hex(ms.background), ink };
+  // A style with no band (a line only) clears the first style's shading.
+  return { fill: markRunLook(ms).shd ?? 'auto', ink };
 }
 
 /** Base runs under their reading, as a Word ruby (furigana, pinyin,

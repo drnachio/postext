@@ -7,7 +7,6 @@ import { DEFAULT_CALLOUT_STYLES } from '../defaults/boxes/calloutStyles.js';
 import { DEFAULT_CHIP_STYLES } from '../defaults/text/chipStyles.js';
 import type { PostextConfig } from '../types.js';
 import type { WordDocument, WordStyle } from './model.js';
-import { DEFAULT_CHARACTER_STYLES } from '../defaults/text/characterStyles.js';
 
 /** What a Word paragraph style becomes in Postext. */
 export type ParagraphTarget =
@@ -37,7 +36,7 @@ export type CharacterTarget =
   | { kind: 'sup' }
   | { kind: 'sub' }
   | { kind: 'chip'; style: string }
-  /** A character style (`[…]|id|`). */
+  /** A character style (`:span[…]{style="id"}`). */
   | { kind: 'charStyle'; style: string }
   | { kind: 'markup' }
   | { kind: 'drop' };
@@ -111,8 +110,17 @@ const key = (name: string): string => name.trim().toLowerCase();
 export const calloutStylesOf = (config: PostextConfig) => config.calloutStyles ?? DEFAULT_CALLOUT_STYLES;
 /** The book's chip styles, or the engine's built-in one (`chip`). */
 export const chipStylesOf = (config: PostextConfig) => config.chipStyles ?? DEFAULT_CHIP_STYLES;
-/** The book's character styles, or the engine's built-in ones. */
-export const characterStylesOf = (config: PostextConfig) => config.characterStyles ?? DEFAULT_CHARACTER_STYLES;
+/** The book's character styles (none by default). */
+export const characterStylesOf = (config: PostextConfig) => config.characterStyles ?? [];
+
+/** The prefix of a Word character style the export names after a
+ *  character style (`Postext Style: Key term`), and the same words in the
+ *  ten languages of the site, for a document whose styles a translator or
+ *  an editor renamed. */
+const CHARACTER_STYLE_NAME = new RegExp(
+  '^(?:postext style|character style|estilo de car[aá]cter|estil de car[aà]cter|字符样式|文字スタイル|نمط الأحرف|نمط الحروف|estilo de caractere|style de caract[eè]re|zeichenformat|zeichenstil|stile (?:di )?carattere)\\s*[:：·]\\s*(\\S.*)$',
+  'iu',
+);
 
 /** A Word style name as Word shows it: built-in names are stored in lower
  *  case (`heading 1`, `caption`) and shown capitalised. */
@@ -277,8 +285,8 @@ export function guessCharacterTarget(name: string, config: PostextConfig, doc?: 
   const chip = findNamed(chipStylesOf(config), exportChip ? exportChip[1]! : name);
   if (chip) return { kind: 'chip', style: chip.id };
   // A character style of the book by its name or id, or as the export
-  // names it (`Character style: Marker`).
-  const exportStyle = /^(?:character style|estilo de car[aá]cter|estil de car[aà]cter|字符样式|文字スタイル|نمط الحروف|estilo de caractere)\s*[:·]\s*(\S.*)$/i.exec(name.trim());
+  // names it (`Postext Style: Key term`).
+  const exportStyle = CHARACTER_STYLE_NAME.exec(name.trim());
   const charStyle = findNamed(characterStylesOf(config), exportStyle ? exportStyle[1]! : name);
   if (charStyle) return { kind: 'charStyle', style: charStyle.id };
   if (k === 'strong' || k === 'intense emphasis' || k === 'book title') return { kind: 'bold' };

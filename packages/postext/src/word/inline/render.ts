@@ -14,7 +14,7 @@ export interface InlineRun {
   href?: string;
   /** Chip style id. */
   chip?: string;
-  /** Character style id (`[…]|id|`). */
+  /** Character style id (`:span[…]{style="id"}`). */
   charStyle?: string;
   /** Footnote marker (`[^id]`); `text` is empty. */
   note?: string;
@@ -283,10 +283,11 @@ export function renderInline(input: InlineRun[], opts: { collapseSpaces?: boolea
     }
     const first = g.runs[0]!;
     if (first.href === undefined && first.chip === undefined) {
-      // A character style: `[words]|id|`, the run's own marks inside.
+      // A character style: `:span[words]{style="id"}`, the run's own
+      // marks inside.
       const { lead, inner: body, trail } = edges(g.runs.map((r) => ({ ...r, charStyle: undefined })), ctx.tidy);
-      const text = escapeClosingBrackets(renderInline(body, { tidy: opts.tidy, collapseSpaces: false }));
-      const s = text ? `${lead}[${text}]|${first.charStyle}|${trail}` : lead + trail;
+      const text = escapeClosingBrackets(renderInline(body, { tidy: opts.tidy })).replace(/\s+/g, ' ');
+      const s = text ? `${lead}:span[${text}]{style="${first.charStyle}"}${trail}` : lead + trail;
       out += s;
       ctx.before += s;
       continue;
