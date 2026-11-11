@@ -119,6 +119,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'parityCascade':
     case 'alphaPdfOverflow':
     case 'calloutOverflow':
+    case 'floatPinMissed':
     case 'sideColumnPercentClamped':
     case 'columnCountClamped':
     case 'cjkGridClamped':

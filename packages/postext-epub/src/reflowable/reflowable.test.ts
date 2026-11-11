@@ -887,3 +887,64 @@ describe('reflowable rendition: :::columns in the running text (#634)', () => {
     expect(found).toEqual(Array.from({ length: 40 }, (_, i) => i));
   });
 });
+
+describe('a cropped picture (Resource.crop)', () => {
+  it('shows only its crop, at the crop’s ratio, at any width', async () => {
+    const cropped: Resource[] = [{ ...resources[0]!, crop: { x: 0.25, y: 0.1, width: 0.5, height: 0.6 } }];
+    const { pub, files, all } = await render([layOut(`See :ref{id=f1}.\n\n${para}`, baseConfig, cropped)]);
+    expectSound(pub, files);
+    // A box as tall as the crop (0.6 × 300 over 0.5 × 400 = 90 % of its
+    // width), and the picture twice the box wide, moved up and left.
+    expect(all).toContain('class="pt-crop"');
+    expect(all).toContain('padding-top:90%');
+    expect(all).toContain('width:200%;left:-50%;top:-16.6667%');
+  });
+
+  it('leaves an uncropped picture a plain image', async () => {
+    const { all } = await render([layOut(`See :ref{id=f1}.\n\n${para}`, baseConfig, resources)]);
+    expect(all).not.toContain('pt-crop');
+  });
+
+  const crop = { x: 0.25, y: 0.1, width: 0.5, height: 0.6 };
+  const poster = { fileId: 'f1.png', format: 'png', width: 400, height: 300 };
+  const video = (id: string, v: NonNullable<Resource['video']>, cropped: boolean): Resource => ({
+    id, typeId: 'video', kind: 'video', caption: 'A film.', altText: 'A film', createdAt: 0, updatedAt: 0, video: v, ...(cropped ? { crop } : {}),
+  } as Resource);
+
+  it('crops a video’s poster, and the film played in its frame', async () => {
+    const vids = (cropped: boolean) => [
+      video('talk', { source: 'youtube', url: 'https://youtu.be/dQw4w9WgXcQ', poster }, cropped),
+      video('remote', { source: 'file', url: 'https://cdn.example.org/keeper.mp4', poster }, cropped),
+    ];
+    const md = `See :ref{id=talk} and :ref{id=remote}.\n\n${para}`;
+    const { pub, files, all } = await render([layOut(md, baseConfig, vids(true))]);
+    expectSound(pub, files);
+    // The YouTube poster, an image in the crop's box.
+    expect(all).toMatch(/<span class="pt-crop" style="[^"]*padding-top:90%"><img [^>]*f1\.png[^>]*style="[^"]*width:200%;left:-50%;top:-16\.6667%"/);
+    // The file plays in the same frame.
+    expect(all).toMatch(/<span class="pt-crop" style="[^"]*padding-top:90%"><video [^>]*keeper\.mp4[^>]*style="[^"]*width:200%;left:-50%/);
+    const plain = (await render([layOut(md, baseConfig, vids(false))])).all;
+    expect(plain).not.toContain('pt-crop');
+    expect(plain).toMatch(/<video src="https:\/\/cdn\.example\.org\/keeper\.mp4"[^>]*>/);
+  });
+
+  it('crops a table cell’s picture in a box at the crop’s ratio, at its share of the cell', async () => {
+    const withCell = (cropped: boolean): Resource[] => [
+      { ...resources[0]!, ...(cropped ? { crop } : {}) },
+      { id: 't2', typeId: 'table', kind: 'table', caption: 'Pictures.', createdAt: 0, updatedAt: 0,
+        table: { model: { headerRowCount: 1, rows: [[{ content: 'Picture' }], [{ content: '', image: { resourceId: 'f1', width: 0.5 } }]] } } } as Resource,
+    ];
+    const md = `See :ref{id=t2}.\n\n${para}`;
+    const { pub, files, all } = await render([layOut(md, baseConfig, withCell(true))]);
+    expectSound(pub, files);
+    // The box at the picture's share of the cell (a bitmap is never set
+    // past its print size), as tall as the crop: 0.9 of its width.
+    const box = /<td[^>]*><span class="pt-crop" style="[^"]*width:([\d.]+)%;height:0;padding-top:([\d.]+)%"><img [^>]*f1\.png[^>]*style="[^"]*width:200%;left:-50%/.exec(all);
+    expect(box).not.toBeNull();
+    expect(Number(box![1])).toBeLessThanOrEqual(50);
+    expect(Number(box![2]) / Number(box![1])).toBeCloseTo(0.9, 3);
+    const plain = (await render([layOut(md, baseConfig, withCell(false))])).all;
+    expect(plain).toMatch(/<td[^>]*><img [^>]*f1\.png[^>]*\/>/);
+    expect(plain).not.toContain('pt-crop');
+  });
+});

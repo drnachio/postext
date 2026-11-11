@@ -82,3 +82,26 @@ describe('design images that cover their box (#923)', () => {
     expect(placed!.ppi).toBeCloseTo(2000 / (100 / 25.4), 0);
   });
 });
+
+describe('design images of a picture with a manual crop (Resource.crop, #1494)', () => {
+  // The left half of the photo: a square.
+  const half = { x: 0, y: 0, width: 0.5, height: 1 };
+
+  it('contain fits the crop inside the box, at its ratio, showing nothing else', () => {
+    const b = image(build(hero(), [photo({ crop: half })]));
+    expect(b.bbox.width).toBeCloseTo(100 * MM, 3);
+    expect(b.bbox.height).toBeCloseTo(100 * MM, 3);
+    expect(b.crop).toEqual(half);
+  });
+
+  it('cover chooses its window inside the crop', () => {
+    const tall: PageTemplate = { ...hero(), decoration: { elements: [{ kind: 'image', id: 'foto', resourceId: 'foto', fit: 'cover', placement: { anchor: { to: 'page', edge: 'top-left' }, size: { width: mm(50), height: mm(100) } } } as DesignElement] } };
+    const c = image(build(tall, [photo({ crop: half })])).crop!;
+    // A 1:2 box on the square crop: a quarter of the picture's width,
+    // centred in the crop's half.
+    expect(c.width).toBeCloseTo(0.25, 6);
+    expect(c.height).toBeCloseTo(1, 6);
+    expect(c.x).toBeCloseTo(0.125, 6);
+    expect(c.x + c.width).toBeLessThanOrEqual(0.5 + 1e-9);
+  });
+});

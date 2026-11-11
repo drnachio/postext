@@ -303,6 +303,12 @@ export interface Resource {
    *  to their sizes and the safe area always stays in view. Without one the
    *  picture is always shown whole. Ignored for tables. */
   safeArea?: ResourceSafeArea;
+  /** Manual crop of a bitmap, SVG or video poster: the part of the picture
+   *  the figure shows, in fractions of it (0–1, top-left origin). The
+   *  figure takes the crop's ratio in every output; the safe area, if any,
+   *  is read inside it and may crop further where the page needs it.
+   *  Unset: the whole picture. Ignored for tables. */
+  crop?: ResourceSafeArea;
   /** The speakers and named points of a comic panel's picture (#557):
    *  balloon tails point at them, thought balloons at their `head`, and no
    *  balloon covers their `face`. Language-independent: every edition of

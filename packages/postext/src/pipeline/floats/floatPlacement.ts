@@ -26,12 +26,13 @@ import type {
   ResourceType,
   ResourceFloatPosition,
   ResourceFloatSpan,
+  ResourcePin,
   ResourcePlacement,
   ResourcePlateArea,
   ResourceRotation,
 } from '../../types.js';
 import { floatColumnCount, startEndAsLeftRight } from '../../defaults/shared.js';
-import { DEFAULT_FLOAT_MIN_SCALE, floatMinScaleOf, floatShrinkModeOf } from '../../defaults/layout.js';
+import { DEFAULT_FLOAT_MIN_SCALE, MAX_PIN_PAGE_OFFSET, floatMinScaleOf, floatShrinkModeOf } from '../../defaults/layout.js';
 import { resolveResourceWrap } from './textWrap.js';
 import { captionInsideShare } from '../resources/captionInside.js';
 import { isWidthLength, isWidthShare, placementWidthOf } from './placementLength.js';
@@ -152,6 +153,19 @@ export interface PlannedFloat {
    *  index of its opening fence. `resourceId` is then the synthetic
    *  `callout:<startIdx>`; the build keeps the box's layouter by index. */
   callout?: { startIdx: number };
+  /** The slot the author set the float in (`ResourcePlacement.pin`),
+   *  cleaned; dropped by the build once its page is past. */
+  pin?: ResourcePin;
+}
+
+/** A hand-set slot as the build reads it, or `undefined` for a malformed
+ *  one or one past {@link MAX_PIN_PAGE_OFFSET}: whole pages from 0, a
+ *  whole column from 0. */
+export function cleanPin(pin: ResourcePin | undefined): ResourcePin | undefined {
+  if (!pin || (pin.slot !== 'top' && pin.slot !== 'bottom')) return undefined;
+  if (!Number.isInteger(pin.page) || pin.page < 0 || pin.page > MAX_PIN_PAGE_OFFSET) return undefined;
+  if (pin.column !== undefined && (!Number.isInteger(pin.column) || pin.column < 0)) return undefined;
+  return { page: pin.page, slot: pin.slot, ...(pin.column !== undefined ? { column: pin.column } : {}) };
 }
 
 /** The document default for `placement.shrink` (`layout.floatShrink`). */
@@ -269,6 +283,9 @@ export function computeFloatPlan(
     const upright = noRotationAt(blockIdx);
     const { position, span, rotate, widthFraction, widthLength, align, captionSide, columns, shrink, minScale, citingPage, plate } = resolveResourcePlacement(resource, type, upright, shrinkDefault, citingPageDefault);
     if (isInlinePosition(position)) return;
+    // A pin (`placement.pin`) moves an upright float of a column or of the
+    // page; the build reports one it cannot (`floatPinMissed`).
+    const pin = !rotate && span !== 'side' ? cleanPin(resource.placement?.pin) : undefined;
     // A full-page plate takes a page of its own (#1461).
     if (plate) {
       plan.push({ resourceId, firstBlockIdx: blockIdx, position: 'top', span: 'page', plate: true, align });
@@ -287,6 +304,7 @@ export function computeFloatPlan(
         ...(wrap.contour ? { contour: true as const } : {}),
         ...(shrink !== 'never' ? { shrink, minScale } : {}),
         ...(citingPage ? { citingPage } : {}),
+        ...(pin ? { pin } : {}),
       });
       return;
     }
@@ -302,6 +320,7 @@ export function computeFloatPlan(
         : upright && align !== 'left' ? { align } : {}),
       ...(captionSide && span === 'column' && columns === 1 ? { captionSide } : {}),
       ...(columns > 1 && span === 'column' && !rotate ? { columns } : {}),
+      ...(pin ? { pin } : {}),
       ...(shrink !== 'never' && !upright ? { shrink, minScale } : {}),
       ...(citingPage ? { citingPage } : {}),
     });

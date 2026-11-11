@@ -339,6 +339,12 @@ await browser.close();
 
 回答给出保存下来的记录，以及安放它的那一行`::resource{id="prices"}`，智能体随后用`sandbox_edit_text`把这一行写进文字。对已有的`id`，调用只改动它给出的部分：题注、表格的单元格、安放位置、图片的安全区。`newId`给资源改名，默认同时改掉书中对它的所有引用。`sandbox_list_resources`列出全部资源；给出`id`时，返回其中一个的完整内容（表格的单元格及其格式、SVG的源代码）。
 
+图片的裁切写在 `marks.crop` 中（`{ x, y, width, height }`，与安全区一样是整张图的比例；
+`null` 恢复显示整张图）：适用于位图、SVG 和视频的封面图，回答会指出超出裁切范围的安全区。
+`placement.pin`（`{ page, column?, slot }`，`page` 为 0 到 3）手动放置浮动体，`null`
+则让它回到自动放置；工具说明解释了为何不推荐固定位置，并改为推荐 `position`、
+`citingPage`、`keepTogether` 和 `shrink`（见[文档格式 › 不推荐手动放置浮动体](/zh/docs/document-format-resources#不推荐手动放置浮动体)）。
+
 图片的`marks`也包含它的锚点。对地图或示意图来说，锚点就是其`::label`行所在的位置：一个`id`，`x`和`y`（整张图片的比例），以及放在那里的标注所沿用的标注字段（`style`、`align`、`verticalAlign`、`rotate`、`width`、`writingMode`）。若版面设计中没有某个标注样式，回答会注明；资源的新标记算历史中的一步（`sandbox_undo`回答`kind: "resource"`）。对SVG，`marks.svgSymbols`（`idPrefix`、`className`）会在其所指的每个元素上添加一个避让区，叠加到调用给出的或图片已有的区域上（自postext 1.43起）。
 
 ```jsonc

@@ -25,7 +25,7 @@
 import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
-import { authoredCmykColors, authoredSpotColors, spotColorCmyk } from '../color/authored.js';
+import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
 import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
@@ -78,6 +78,9 @@ export type PreflightIssue = {
    *  the printer would get two plates of. An alias in `print.inks` merges
    *  them. */
   | { kind: 'spotInkSimilar'; inks: string[] }
+  /** A colour that overprints (`ColorValue.overprint`) and puts no ink
+   *  down (paper white, a spot at 0 %): on press it disappears. */
+  | { kind: 'overprintWhite'; color: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -189,7 +192,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const cmykJob = options.cmyk ?? print.standard !== 'none';
   const sizes = bitmapSizes(doc, options.resources);
   // Spot inks as the ink table prints them: renamed, merged, or in process.
-  const { spots, authored } = spotsThroughInkTable(authoredSpotColors(doc.config), authoredCmykColors(doc.config), print.inks);
+  const { spots, authored } = spotsThroughInkTable(authoredSpotColors([doc.config, doc.printColors]), authoredCmykColors([doc.config, doc.printColors]), print.inks);
   /** Spot inks painted somewhere in the document, by name. */
   const usedInks = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
@@ -200,7 +203,10 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const out: PreflightIssue[] = [];
   const t = options.transform;
 
+  /** Colours painted somewhere, by hex. */
+  const usedColors = new Set<string>();
   const separation = (hex: string): CmykPercent | undefined => {
+    usedColors.add(hex);
     const spot = spots.get(hex);
     if (spot) {
       usedInks.add(spot.name);
@@ -483,7 +489,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
           if (rulePx > 0 && Number.isFinite(rulePx)) checkRule(rulePx, table.borderColor, pageIndex, body);
           for (const cell of table.cells ?? []) {
             const img = cell.image;
-            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, 1, 1, pageIndex, body, img.resourceId, src);
+            if (img && img.kind === 'bitmap') checkImage(img.fileId, img.rect.width, img.rect.height, img.crop?.width ?? 1, img.crop?.height ?? 1, pageIndex, body, img.resourceId, src);
           }
         }
       }
@@ -514,5 +520,16 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // Spot inks: the plates the job adds, and what is wrong with them.
   if (cmykJob) out.push(...spotInkIssues({ doc, print, spots, usedInks, pageIndex: offset, ...(options.svgInks ? { svgInks: options.svgInks } : {}) }));
+
+  // Colours that overprint with no ink: they vanish on press.
+  if (cmykJob) {
+    for (const hex of overprintColors([doc.config, doc.printColors])) {
+      if (!usedColors.has(hex)) continue;
+      const spot = spots.get(hex);
+      const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
+      const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
+      if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
+    }
+  }
   return out;
 }

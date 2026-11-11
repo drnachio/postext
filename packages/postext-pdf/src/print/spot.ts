@@ -29,11 +29,23 @@ export interface SpotPlate {
   overprint: boolean;
 }
 
-/** A spot colour as painted: its ink, and the tint (0..1). */
+/** A spot colour as painted: its ink, the tint (0..1), and whether it
+ *  overprints (its ink's `overprint`, or the colour's own,
+ *  `ColorValue.overprint`). */
 export interface SpotPaint {
   plate: SpotPlate;
   tint: number;
+  overprint: boolean;
 }
+
+/** A process colour that overprints (`ColorValue.overprint`): written
+ *  back as this CMYK (0..1), under an overprinting state. */
+export interface OverprintPaint {
+  process: [number, number, number, number];
+}
+
+/** What a stand-in `k` / `K` is written back as. */
+export type StandInPaint = SpotPaint | OverprintPaint;
 
 /** Codes stay below half the grid step, so a code added to one grid value
  *  and one subtracted from the next can never meet. */
@@ -65,7 +77,7 @@ const nudge = (v: number, code: number): number => (v >= 0.5 ? v - code * STEP :
  * is written under, and its Separation colour space in the document.
  */
 export class SpotInkRegistry {
-  private readonly paintsByKey = new Map<string, SpotPaint>();
+  private readonly paintsByKey = new Map<string, StandInPaint>();
   private readonly colorsByPaint = new Map<string, Color>();
   /** The first definition of each ink name: one name, one plate. */
   private readonly platesByName = new Map<string, SpotPlate>();
@@ -75,6 +87,8 @@ export class SpotInkRegistry {
   private readonly spaces = new WeakMap<PDFContext, Map<string, PDFRef>>();
   /** Paints that found no code and printed in process, by ink. */
   private readonly fallbacks = new Map<string, number>();
+  /** Process colours that overprint and found no code (knocked out). */
+  private overprintFallbacks = 0;
 
   /** `maxCodes` is for tests; a render uses {@link MAX_SPOT_CODES}. */
   constructor(private readonly maxCodes: number = MAX_SPOT_CODES) {}
@@ -90,7 +104,9 @@ export class SpotInkRegistry {
   standIn(spot: Required<SpotColor>, tint: number): Color {
     const plate = this.plateOf(spot);
     const t = round4(Math.max(0, Math.min(1, tint)));
-    const key = `${plateKey(plate)}|${t}`;
+    // One ink, two colours: one of them may overprint and the other not.
+    const overprint = plate.overprint || spot.overprint;
+    const key = `${plateKey(plate)}|${t}${overprint !== plate.overprint ? '|over' : ''}`;
     const known = this.colorsByPaint.get(key);
     if (known) return known;
     const [c, m, y, k] = [plate.cmyk.c, plate.cmyk.m, plate.cmyk.y, plate.cmyk.k].map((v) => round4(Math.min(1, (v / 100) * t))) as [number, number, number, number];
@@ -104,13 +120,43 @@ export class SpotInkRegistry {
     const cc = nudge(c, Math.floor(index / PER_CHANNEL));
     const color = cmyk(cc, m, y, kc);
     this.colorsByPaint.set(key, color);
-    this.paintsByKey.set(operandKey(cc, m, y, kc), { plate, tint: t });
+    this.paintsByKey.set(operandKey(cc, m, y, kc), { plate, tint: t, overprint });
     return color;
   }
 
-  /** The spot paint a `k` / `K` operator's operands stand for, if any. */
-  paintOf(c: number, m: number, y: number, k: number): SpotPaint | undefined {
+  /**
+   * The pdf-lib colour that stands for a process colour that overprints
+   * (`ColorValue.overprint`) until the print pass writes it back as it is,
+   * under an overprinting graphics state: coded like a spot colour's
+   * stand-in. Past the codes it prints knocked out, as any process colour.
+   */
+  overprintStandIn(c: number, m: number, y: number, k: number): Color {
+    const key = `over|${c},${m},${y},${k}`;
+    const known = this.colorsByPaint.get(key);
+    if (known) return known;
+    const index = this.colorsByPaint.size;
+    if (index >= this.maxCodes) {
+      this.overprintFallbacks++;
+      return cmyk(c, m, y, k);
+    }
+    const kc = nudge(k, (index % PER_CHANNEL) + 1);
+    const cc = nudge(c, Math.floor(index / PER_CHANNEL));
+    const color = cmyk(cc, m, y, kc);
+    this.colorsByPaint.set(key, color);
+    this.paintsByKey.set(operandKey(cc, m, y, kc), { process: [c, m, y, k] });
+    return color;
+  }
+
+  /** The paint a `k` / `K` operator's operands stand for, if any: a spot
+   *  ink at a tint, or a process colour that overprints. */
+  paintOf(c: number, m: number, y: number, k: number): StandInPaint | undefined {
     return this.paintsByKey.get(operandKey(c, m, y, k));
+  }
+
+  /** How many process colours that overprint knocked out for want of a
+   *  code. */
+  overprintsExhausted(): number {
+    return this.overprintFallbacks;
   }
 
   /** How many paints of each ink printed in process for want of a code. */

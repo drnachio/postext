@@ -1,5 +1,10 @@
 import type { CaptionStyleConfig, ColorValue, ColorPaletteEntry, CompositionRule, Dimension, OrderedListsConfig, PartsBodyStyleConfig, PostextConfig, ResolvedTableStyleConfig, TableStyleConfig, UnorderedListsConfig } from '../types.js';
 import type { ResolvedConfig } from '../vdt.js';
+import { tintPaperOf } from './paletteTint.js';
+import { paletteById, relinkPaletteColors, resolveColor, resolveRequired, withPaper, type TintPaper } from './paletteResolve.js';
+
+export { isTinted, paletteTints, paletteTintHex, tintedEntryValue, tintPaperOf } from './paletteTint.js';
+export { resolveColor, resolveColorValue, type TintPaper } from './paletteResolve.js';
 
 export const DEFAULT_MAIN_COLOR_ID = 'main-color';
 export const DEFAULT_MAIN_COLOR_NAME = 'Main Color';
@@ -51,96 +56,10 @@ export function dimensionsEqual(a: Dimension, b: Dimension): boolean {
 }
 
 export function colorsEqual(a: ColorValue, b: ColorValue): boolean {
-  return a.hex === b.hex && a.model === b.model && a.paletteId === b.paletteId;
+  return a.hex === b.hex && a.model === b.model && a.paletteId === b.paletteId
+    && (a.overprint === true) === (b.overprint === true) && a.tint === b.tint;
 }
 
-export function resolveColorValue(
-  value: ColorValue | undefined,
-  palette: ColorPaletteEntry[] | undefined,
-  fallback: ColorValue,
-): ColorValue {
-  if (!value) return fallback;
-  if (value.paletteId) {
-    const entry = palette?.find((e) => e.id === value.paletteId);
-    if (entry) return { hex: entry.value.hex, model: entry.value.model, paletteId: value.paletteId };
-    return { hex: value.hex, model: value.model };
-  }
-  return value;
-}
-
-export function resolveColor(value: ColorValue | undefined, palette: ColorPaletteEntry[] | undefined): ColorValue | undefined {
-  if (!value || !value.paletteId) return value;
-  const entry = palette?.find((e) => e.id === value.paletteId);
-  if (!entry) return { hex: value.hex, model: value.model };
-  return { hex: entry.value.hex, model: entry.value.model };
-}
-
-function resolveRequired(value: ColorValue, palette: ColorPaletteEntry[] | undefined): ColorValue {
-  if (!value.paletteId) return value;
-  const entry = palette?.find((e) => e.id === value.paletteId);
-  if (!entry) return { hex: value.hex, model: value.model };
-  return { hex: entry.value.hex, model: entry.value.model };
-}
-
-/** Keys whose subtree the palette pass leaves alone: the palette itself, and
- *  the HTML viewer's overrides — a partial config that is merged (and then
- *  resolved against its own palette) only when the HTML viewer applies it. */
-const PALETTE_WALK_SKIP = new Set(['colorPalette', 'htmlViewer']);
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  if (typeof value !== 'object' || value === null) return false;
-  const proto = Object.getPrototypeOf(value);
-  return proto === Object.prototype || proto === null;
-}
-
-/**
- * `node` with every palette-linked colour in it — any `ColorValue` whose
- * `paletteId` names an entry of the palette (`byId`) — taking that entry's
- * value, wherever it sits: design slots (running heads, heading and part
- * openers, heading styles, contents rows), callout labels, reference
- * colours… The link is kept, so a part's or a styled section's palette
- * overrides still find the colour. A link to an entry that does not exist
- * keeps its stored value. Subtrees with nothing to change are returned as
- * they are (the same objects), so identity-keyed caches downstream hold.
- */
-function relinkPaletteColors<T>(node: T, byId: ReadonlyMap<string, ColorValue>, ancestors = new Set<object>()): T {
-  if (Array.isArray(node)) {
-    if (ancestors.has(node)) return node;
-    ancestors.add(node);
-    let out: unknown[] | undefined;
-    node.forEach((item, i) => {
-      const next = relinkPaletteColors(item, byId, ancestors);
-      if (next !== item) {
-        out ??= node.slice();
-        out[i] = next;
-      }
-    });
-    ancestors.delete(node);
-    return (out ?? node) as T;
-  }
-  if (!isPlainObject(node) || ancestors.has(node)) return node;
-  if (typeof node.hex === 'string' && typeof node.paletteId === 'string') {
-    const entry = byId.get(node.paletteId);
-    if (!entry || (entry.hex === node.hex && entry.model === node.model)) return node;
-    return { ...node, hex: entry.hex, model: entry.model } as T;
-  }
-  ancestors.add(node);
-  let out: Record<string, unknown> | undefined;
-  for (const [key, value] of Object.entries(node)) {
-    if (PALETTE_WALK_SKIP.has(key) || value === null || typeof value !== 'object') continue;
-    const next = relinkPaletteColors(value, byId, ancestors);
-    if (next !== value) {
-      out ??= { ...node };
-      out[key] = next;
-    }
-  }
-  ancestors.delete(node);
-  return (out ?? node) as T;
-}
-
-function paletteById(palette: ColorPaletteEntry[]): Map<string, ColorValue> {
-  return new Map(palette.map((e) => [e.id, e.value]));
-}
 
 /** A resolved table style (the document's or a named one) with its colours
  *  read through the palette. */
@@ -177,8 +96,9 @@ function paletteTableStyle<T extends TableStyleConfig>(ts: T, palette: ColorPale
 /** `node` with every palette-linked colour set to the palette's: for the
  *  styles a build adds after the configuration is resolved (the boxes an
  *  exercise is set in), whose defaults link to `main-color`. */
-export function relinkToPalette<T>(node: T, palette: ColorPaletteEntry[] | undefined): T {
-  return palette && palette.length > 0 ? relinkPaletteColors(node, paletteById(palette)) : node;
+export function relinkToPalette<T>(node: T, palette: ColorPaletteEntry[] | undefined, paper?: TintPaper): T {
+  if (!palette || palette.length === 0) return node;
+  return paper ? withPaper(paper, () => relinkPaletteColors(node, paletteById(palette))) : relinkPaletteColors(node, paletteById(palette));
 }
 
 export function applyPaletteToResolvedConfig(
@@ -186,7 +106,7 @@ export function applyPaletteToResolvedConfig(
   palette: ColorPaletteEntry[] | undefined,
 ): ResolvedConfig {
   if (!palette || palette.length === 0) return resolved;
-  return relinkPaletteColors(applyPaletteToListedResolvedColors(resolved, palette), paletteById(palette));
+  return withPaper(tintPaperOf(resolved.page), () => relinkPaletteColors(applyPaletteToListedResolvedColors(resolved, palette), paletteById(palette)));
 }
 
 function applyPaletteToListedResolvedColors(
@@ -374,7 +294,9 @@ export function applyPaletteToConfig(config: PostextConfig | undefined): Postext
   if (!config) return config;
   const palette = config.colorPalette;
   if (!palette || palette.length === 0) return config;
-  return relinkPaletteColors(applyPaletteToListedColors(config, palette), paletteById(palette));
+  // The page colour may itself follow the palette (untinted).
+  const page = config.page?.backgroundColor ? { backgroundColor: resolveColor(config.page.backgroundColor, palette, tintPaperOf(undefined)) } : undefined;
+  return withPaper(tintPaperOf(page), () => relinkPaletteColors(applyPaletteToListedColors(config, palette), paletteById(palette)));
 }
 
 function applyPaletteToListedColors(config: PostextConfig, palette: ColorPaletteEntry[]): PostextConfig {

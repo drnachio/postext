@@ -288,7 +288,8 @@ export interface VDTDesignImageBlock extends VDTDesignBlockOrigin {
    *  an artifact). */
   altText?: string;
   /** The part of the picture shown in `bbox` (fractions of the picture as
-   *  stored), for a `fit: 'cover'` element (#923): renderers draw the whole
+   *  stored), for a `fit: 'cover'` element (#923) or a picture with a
+   *  manual crop (`Resource.crop`, #1494): renderers draw the whole
    *  picture over `uncroppedPictureBox(bbox, crop)` clipped to `bbox`.
    *  Absent: the whole picture fills `bbox`. */
   crop?: { x: number; y: number; width: number; height: number };

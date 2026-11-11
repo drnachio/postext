@@ -239,3 +239,14 @@ describe('preflightDocument', () => {
     expect(preflightDocument(doc, { print: resolvePrintConfig({ preflight: { enabled: false } }) })).toEqual([]);
   });
 });
+
+describe('overprinting colours in the preflight', () => {
+  it('blocks a white that overprints, and lets an ink that overprints be', () => {
+    const doc = buildDocument({ markdown: '# Title\n\nText.' }, config({
+      bodyText: { color: { hex: '#ffffff', model: 'cmyk', cmyk: { c: 0, m: 0, y: 0, k: 0 }, overprint: true } },
+      headings: { color: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+    }));
+    const found = preflightDocument(doc, { cmyk: true }).filter((i) => i.kind === 'overprintWhite');
+    expect(found).toMatchObject([{ color: '#ffffff', severity: 'critical' }]);
+  });
+});

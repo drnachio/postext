@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Unités, couleurs et palette, polices personnalisées, visionneuse HTML, PDF et production pour l’impression, visionneuse Folio et calques de débogage',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '42 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Cette page présente les réglages communs à tout le livre et les réglages propres à chaque type de sortie. Elle explique comment écrire une mesure et une couleur, et comment nommer les couleurs d’une palette. Elle montre comment ajouter vos propres polices. Elle traite ensuite de la vue web, du fichier PDF, des fichiers que demande un imprimeur et du livre en 3D. La dernière section active les repères et les avertissements qui vous aident pendant le travail.",
@@ -42,11 +42,13 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // L’encre d’un ton direct.
+  overprint?: boolean; // Surimprime dans un rendu d’impression (voir Couleurs en surimpression).
   paletteId?: string;  // L’entrée de colorPalette qu’elle suit.
+  tint?: number;       // L’intensité de l’entrée sur la couleur de la page, en pourcentage (avec paletteId).
 }
 ```
 
-Le champ `model` indique l’espace colorimétrique visé. Pour le rendu web, `'hex'` ou `'rgb'` sont les valeurs habituelles. Pour les flux d’impression, `'cmyk'` indique que la couleur a été définie en CMJN, et `cmyk` conserve ses valeurs : un rendu d’impression en CMJN les applique telles quelles, `hex` servant de rendu à l’écran (voir [Couleurs définies en CMJN](#couleurs-définies-en-cmjn)). `'spot'` est un ton direct, avec son encre dans `spot` (voir [Tons directs](/fr/docs/configuration-pdf-output#tons-directs)).
+Le champ `model` indique l’espace colorimétrique visé. Pour le rendu web, `'hex'` ou `'rgb'` sont les valeurs habituelles. Pour les flux d’impression, `'cmyk'` indique que la couleur a été définie en CMJN, et `cmyk` conserve ses valeurs : un rendu d’impression en CMJN les applique telles quelles, `hex` servant de rendu à l’écran (voir [Couleurs définies en CMJN](/fr/docs/configuration-pdf-output#couleurs-définies-en-cmjn)). `'spot'` est un ton direct, avec son encre dans `spot` (voir [Tons directs](/fr/docs/configuration-pdf-output#tons-directs)).
 
 Comme Postext vise une sortie de qualité éditoriale, la couleur par défaut du texte courant est livrée avec `model: 'cmyk'` (`#000000`). Les couleurs des titres, du gras, de l’italique et des listes renvoient par défaut à la **Main Color** de la palette (`#295AA3`, `model: 'hex'`). Le fond de page et les calques d’interface (grille de ligne de base, traits de coupe, indicateurs de débogage) utilisent par défaut `model: 'hex'`. Remplacez `color.model` sur n’importe quel champ si vous avez besoin d’une autre sémantique à l’export.
 
@@ -266,6 +268,8 @@ const config: PostextConfig = {
 Toute `ColorValue` de la configuration peut avoir un champ facultatif `paletteId` qui pointe vers une entrée de `colorPalette` : fond de page, couleurs du texte courant (y compris la couleur de `:ref`), couleurs des titres, filets de colonne, couleurs des listes, couleurs des tableaux, des légendes, des pastilles et des encadrés (boîte, bande, icône, marqueur, étiquette, titre, corps), couleurs des traits de coupe et de la grille de ligne de base, indicateurs de débogage, et chaque couleur d’une maquette : titres courants, ouvertures de titre et maquettes en colonne, maquettes et titres courants des styles de titre, pages de partie et lignes de partie de la table des matières (texte, filet, fond et bordure de boîte, contour, lettrine). Quand il est présent, le `hex` / `model` de l’entrée de palette l’emporte sur le `hex` / `model` de repli stocké à côté. Ce repli en ligne ne sert que si la palette est absente, vide ou ne contient pas cet identifiant : pratique pour livrer une configuration qui sera lue par un outil ignorant les palettes.
 
 **Modifié dans postext 1.5.** Jusqu’à postext 1.4, la palette n’atteignait qu’une liste fixe de réglages : les couleurs des maquettes (titres courants, ouvertures, styles de titre, parties, lignes de la table des matières), `bodyText.referenceColor`, les couleurs des étiquettes d’encadré et les couleurs du gras et de l’italique dans le corps des encadrés gardaient le `hex` stocké à côté de leur `paletteId`. Un document dont la valeur stockée diffère de l’entrée de palette (tout document modifié dans le Sandbox après le changement de l’entrée, et chaque `:ref` quand la Main Color n’est pas `#295AA3`) imprime désormais la couleur de la palette, comme le lien l’indique. Pour garder une couleur telle qu’elle était, retirez son `paletteId`.
+
+**Une teinte d’une entrée de la palette.** Avec `paletteId`, `tint` (0–100) peint l’entrée à cette intensité : `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` est la couleur principale à 8 %, un fond d’encadré qui suit la couleur principale quand la palette change. La palette d’une partie ou d’une section garde l’intensité partout où elle recolore : le texte courant, la couleur de la page, les numéros de ligne, les cellules de tableau, les zones de maquette et l’export Word. La teinte garde le modèle de l’entrée : une entrée CMJN donne ses encres à l’échelle (10 % de `100 60 0 10` imprime `10 6 0 1`), une entrée en ton direct donne une teinte de la même encre sur sa propre plaque, et une couleur d’écran se mélange à la couleur de la page (`page.backgroundColor`, blanc s’il n’est pas défini ; sous une teinte CMJN, une couleur de page définie en CMJN ajoute ses propres encres). `hex` garde la valeur teintée, la valeur de repli sans l’entrée. Une teinte de ton direct ne porte qu’une encre : sur une page de couleur, elle défonce la couleur de la page sauf si elle est en surimpression. Dans le Sandbox, le sélecteur d’une couleur liée a un champ **Teinte**.
 
 ### Application des palettes
 
@@ -633,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>voir <a href="#contrôle-en-amont">Contrôle en amont</a></td>
+      <td>voir <a href="/fr/docs/configuration-pdf-output#contrôle-en-amont">Contrôle en amont</a></td>
       <td>Ce que vérifie le contrôle en amont, et ses seuils.</td>
     </tr>
   </tbody>
@@ -762,73 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Couleurs définies en CMJN
-
-Une couleur écrite en CMJN garde ses valeurs exactes : `ColorValue.cmyk` (en pourcentage) est appliqué tel quel dans un rendu d’impression, et `hex` est son rendu à l’écran. Une entrée de palette définie en CMJN couvre toutes les couleurs qui lui sont liées.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### Contrôle en amont
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Propriété</th>
-      <th>Type</th>
-      <th>Défaut</th>
-      <th>Description</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Exécute les contrôles.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Une image matricielle placée qui n’atteint pas ce nombre de pixels par pouce à sa taille imprimée, recadrage compris, reçoit un avertissement : figures, images de cellule de tableau, images de maquette, cases de bande dessinée. Une image sans résolution propre s’imprime à `page.dpi` à sa taille naturelle : une page mise en page à 150 dpi imprime donc chacune de ces images à 150 ppi ; une image qui a une résolution (`bitmap.resolution`, `layout.bitmapResolution`) s’imprime à cette résolution à sa taille naturelle.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>En dessous, l’avertissement devient critique. Jamais au-dessus de `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, bordures, filets de colonne, filets de tableau et bordures de case de bande dessinée plus fins que cette valeur.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texte de taille inférieure composé avec plus d’une encre (une couleur quadri, un noir enrichi) : il devient flou quand les plaques se décalent. Le texte noir, en K seul, n’est jamais compté.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texte plus proche de la coupe que cette distance, là où le massicot risque de le couper.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Une boîte ou une image qui s’arrête aussi près de la coupe sans atteindre le fond perdu : prolongez-la dans le fond perdu ou rentrez-la.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Signale les polices qu’un PDF placé n’intègre pas (le Sandbox examine chaque fichier maître d’impression avec `inspectPrintMaster`). Postext intègre toutes les polices qu’il compose.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` exécute les contrôles sur un document mis en page et renvoie une liste de problèmes, chacun avec un `kind`, une `severity` (`'critical'`, `'warning'` ou `'info'`), l’index de page `pageIndex` absolu dans le livre, le `rect` fautif (en px de page) et, quand l’élément en a une, sa position dans la source. Les types sont `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` et `nearTrim`. Sans `transform`, un neutre compte pour une encre et toute autre couleur pour trois, et l’encrage n’est pas vérifié ; avec une transformation, les décomptes et l’encrage sont exacts. La résolution d’une image est calculée à partir des pixels que déclare sa ressource, ou de ceux du fichier lui-même quand `imageSize(fileId)` les fournit (`bitmapInfo` sur les octets, ou l’image décodée) : une déclaration qui s’écarte de plus d’un pixel du fichier est signalée une fois comme `declaredPixelsMismatch`, un avertissement quand elle annonce plus de pixels que le fichier n’en a. `placedImageResolutions(doc, { resources, imageSize })` liste chaque image matricielle placée avec sa résolution effective en ppi, que le contrôle en amont soit activé ou non. Les étiquettes d’une figure comptent comme du texte pour `smallProcessText`, `inkLimit` et `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Aperçu d’impression
 

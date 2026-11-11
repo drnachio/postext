@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Einheiten, Farben und die Palette, eigene Schriften, der HTML-Betrachter, PDF und Druckvorstufe, der Folio-Betrachter und die Debug-Überlagerungen',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '36 min',
+  readingTime: '37 min',
   order: 20,
   parent: 'configuration',
   plainSummary: "Diese Seite behandelt die Einstellungen, die für das ganze Buch gelten, und die Einstellungen für jede Art von Ausgabe. Sie erklärt, wie Sie ein Maß und eine Farbe angeben und wie Sie die Farben einer Palette benennen. Sie zeigt, wie Sie eigene Schriften hinzufügen. Danach geht es um die Webansicht, die PDF-Datei, die Dateien, die eine Druckerei verlangt, und das 3D-Buch. Der letzte Abschnitt schaltet die Hilfslinien und Warnungen ein, die Ihnen bei der Arbeit helfen.",
@@ -42,11 +42,13 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // Die Druckfarbe einer Sonderfarbe.
+  overprint?: boolean; // Überdruckt in einer Druckausgabe (siehe Überdruckende Farben).
   paletteId?: string;  // Der Eintrag von colorPalette, dem sie folgt.
+  tint?: number;       // Die Stärke des Eintrags über der Seitenfarbe in Prozent (mit paletteId).
 }
 ```
 
-Das Feld `model` gibt den beabsichtigten Farbraum an. Für die Darstellung im Web sind `'hex'` oder `'rgb'` üblich. Für Druck-Workflows sagt `'cmyk'`, dass die Farbe in CMYK angegeben wurde, und `cmyk` bewahrt ihre Werte: Eine CMYK-Druckausgabe setzt sie unverändert, mit `hex` als ihrer Bildschirmdarstellung (siehe [In CMYK angelegte Farben](#in-cmyk-angelegte-farben)). `'spot'` ist eine Sonderfarbe, mit ihrer Druckfarbe in `spot` (siehe [Sonderfarben](/de/docs/configuration-pdf-output#sonderfarben)).
+Das Feld `model` gibt den beabsichtigten Farbraum an. Für die Darstellung im Web sind `'hex'` oder `'rgb'` üblich. Für Druck-Workflows sagt `'cmyk'`, dass die Farbe in CMYK angegeben wurde, und `cmyk` bewahrt ihre Werte: Eine CMYK-Druckausgabe setzt sie unverändert, mit `hex` als ihrer Bildschirmdarstellung (siehe [In CMYK angelegte Farben](/de/docs/configuration-pdf-output#in-cmyk-angelegte-farben)). `'spot'` ist eine Sonderfarbe, mit ihrer Druckfarbe in `spot` (siehe [Sonderfarben](/de/docs/configuration-pdf-output#sonderfarben)).
 
 Weil Postext auf Ausgabe in Publikationsqualität zielt, wird die Standardfarbe des Grundtexts mit `model: 'cmyk'` (`#000000`) ausgeliefert. Die Farben von Überschriften, Fett, Kursiv und Listen sind standardmäßig an die Palettenfarbe **Main Color** (`#295AA3`, `model: 'hex'`) gekoppelt. Seitenhintergrund und Überlagerungen der Oberfläche (Grundlinienraster, Schnittmarken, Debug-Anzeigen) haben standardmäßig `model: 'hex'`. Überschreiben Sie `color.model` in einem beliebigen Feld, wenn Sie eine andere Bedeutung für den Export brauchen.
 
@@ -266,6 +268,8 @@ const config: PostextConfig = {
 Jeder `ColorValue` der Konfiguration kann ein optionales Feld `paletteId` haben, das auf einen Eintrag in `colorPalette` zeigt: Seitenhintergrund, Farben des Grundtexts (einschließlich der Farbe von `:ref`), Überschriftenfarben, Spaltenlinien, Listenfarben, die Farben von Tabellen, Legenden, Chips und Kästen (Kasten, Streifen, Symbol, Markierung, Etikett, Titel, Text), Farben von Schnittmarken und Grundlinienraster, Debug-Anzeigen und jede Farbe einer Gestaltung – die Kolumnentitel, die Überschriftenauftakte und Gestaltungen in der Spalte, Gestaltungen und Kolumnentitel der Überschriftenstile, die Teiltitelseiten und die Teilzeilen des Inhaltsverzeichnisses (Text, Linie, Kastenfläche und -kontur, Buchstabenkontur, Initiale). Ist es vorhanden, haben `hex` / `model` des Paletteneintrags Vorrang vor dem daneben gespeicherten Ersatzwert `hex` / `model`. Der eingebettete Ersatzwert wird nur verwendet, wenn die Palette fehlt, leer ist oder diese ID nicht enthält – nützlich, wenn Sie eine Konfiguration ausliefern, die ein Werkzeug ohne Palettenunterstützung lesen wird.
 
 **Geändert in postext 1.5.** Bis postext 1.4 erreichte die Palette nur eine feste Liste von Einstellungen: Die Farben der Gestaltungen (Kolumnentitel, Auftakte, Überschriftenstile, Teile, Zeilen des Inhaltsverzeichnisses), `bodyText.referenceColor`, die Etikettfarben der Kästen und die Farben für Fett und Kursiv im Kastentext behielten den `hex`, der neben ihrer `paletteId` gespeichert war. Ein Dokument, dessen gespeicherter Wert vom Paletteneintrag abweicht – jedes, das nach der Änderung des Eintrags in der Sandbox bearbeitet wurde, und jedes `:ref`, wenn die Main Color nicht `#295AA3` ist –, zeigt jetzt die Palettenfarbe, wie es die Verknüpfung verlangt. Um eine Farbe so zu behalten, wie sie war, entfernen Sie ihre `paletteId`.
+
+**Ein Tonwert eines Paletteneintrags.** Mit `paletteId` malt `tint` (0–100) den Eintrag in dieser Stärke: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` ist die Hauptfarbe zu 8 %, ein Kastengrund, der der Hauptfarbe folgt, wenn sich die Palette ändert. Die Palette eines Teils oder Abschnitts behält die Stärke überall, wo sie umfärbt: im Fließtext, in der Seitenfarbe, in den Zeilennummern, in Tabellenzellen, in den Gestaltungsfeldern und im Word-Export. Der Tonwert behält das Modell des Eintrags: Ein CMYK-Eintrag gibt seine Druckfarben skaliert aus (10 % von `100 60 0 10` druckt `10 6 0 1`), ein Sonderfarben-Eintrag gibt einen Tonwert derselben Druckfarbe auf ihrer eigenen Platte, und eine Bildschirmfarbe mischt sich mit der Seitenfarbe (`page.backgroundColor`, ohne Angabe Weiß; unter einem CMYK-Tonwert fügt eine in CMYK angelegte Seitenfarbe ihre eigenen Druckfarben hinzu). `hex` hält den getönten Wert, den Ersatzwert ohne den Eintrag. Ein Sonderfarben-Tonwert trägt nur eine Druckfarbe: Auf einer farbigen Seite spart er die Seitenfarbe aus, es sei denn, er überdruckt. In der Sandbox hat die Farbauswahl einer verknüpften Farbe ein Feld **Tonwert**.
 
 ### Wie Paletten angewendet werden
 
@@ -633,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>siehe <a href="#preflight">Preflight</a></td>
+      <td>siehe <a href="/de/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Was der Preflight prüft und seine Schwellenwerte.</td>
     </tr>
   </tbody>
@@ -762,73 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### In CMYK angelegte Farben
-
-Eine in CMYK geschriebene Farbe behält ihre exakten Werte: `ColorValue.cmyk` (Prozent) wird in einer Druckausgabe unverändert gesetzt, und `hex` ist ihre Bildschirmdarstellung. Ein in CMYK angelegter Paletteneintrag gilt für jede mit ihm verknüpfte Farbe.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Eigenschaft</th>
-      <th>Typ</th>
-      <th>Standard</th>
-      <th>Beschreibung</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Führt die Prüfungen aus.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Eine platzierte Bitmap, die in ihrer Druckgröße, Beschnitt eingerechnet, unter so vielen Pixeln pro Zoll liegt, erhält eine Warnung: Abbildungen, Bilder in Tabellenzellen, Gestaltungsbilder, Comic-Panels. Eine Bitmap ohne eigene Auflösung druckt in ihrer natürlichen Größe mit `page.dpi`; eine Seite, die mit 150 dpi gesetzt ist, druckt jedes solche Bild also mit 150 ppi. Eine Bitmap mit Auflösung (`bitmap.resolution`, `layout.bitmapResolution`) druckt in ihrer natürlichen Größe mit dieser Auflösung.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Darunter ist die Warnung kritisch. Nie höher als `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Linien, Konturen, Spaltenlinien, Tabellenlinien und Randlinien von Comic-Panels, die dünner sind.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text unter dieser Größe, der in mehr als einer Druckfarbe gesetzt ist (eine Prozessfarbe, Tiefschwarz): Er verschwimmt, wenn sich die Platten verschieben. Schwarzer Text nur in K zählt nie.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text, der näher am Endformat steht, wo das Schneidemesser ihn treffen kann.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Ein Kasten oder Bild, das so nahe am Endformat endet, ohne den Anschnitt zu erreichen: Ziehen Sie es in den Anschnitt oder nach innen.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Meldet Schriften, die ein platziertes PDF nicht einbettet (die Sandbox untersucht jede Druckvorlage mit `inspectPrintMaster`). Postext bettet jede Schrift ein, die es setzt.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` führt die Prüfungen an einem gesetzten Dokument aus und gibt eine Liste von Befunden zurück, jeder mit einer `kind`, einer `severity` (`'critical'`, `'warning'` oder `'info'`), dem buchweiten `pageIndex`, dem betroffenen `rect` (Seitenpixel) und, wenn das Element einen hat, seinem Quellbereich. Die Arten sind `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` und `nearTrim`. Ohne `transform` zählt eine neutrale Farbe als eine Druckfarbe und jede andere als drei, und der Farbauftrag wird nicht geprüft; mit einem sind Zählung und Farbauftrag exakt. Die Auflösung eines Bildes wird aus den Pixeln berechnet, die seine Ressource angibt, oder aus denen der Datei selbst, wenn `imageSize(fileId)` sie liefert (`bitmapInfo` auf den Bytes oder das dekodierte Bild): Eine Angabe, die mehr als ein Pixel von der Datei abweicht, wird einmal als `declaredPixelsMismatch` gemeldet, als Warnung, wenn sie mehr Pixel behauptet, als die Datei hat. `placedImageResolutions(doc, { resources, imageSize })` listet jede platzierte Bitmap mit ihrer effektiven ppi-Zahl auf, ob der Preflight an ist oder nicht. Die Beschriftungen einer Abbildung zählen für `smallProcessText`, `inkLimit` und `safeZone` als Text.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Druckvorschau
 

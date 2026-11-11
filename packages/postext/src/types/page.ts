@@ -40,6 +40,22 @@ export interface ColorValue {
   /** The ink of a spot colour (`model: 'spot'`); `hex` is its screen
    *  rendering (the ink's CMYK at the tint, soft-proofed). */
   spot?: SpotColor;
+  /** In a print render (CMYK or PDF/X), the colour overprints what is
+   *  under it instead of knocking it out: a text or a rule in it over a
+   *  ground or a picture mixes with them on press, and a plate shifting
+   *  never opens a white halo. Every style set in the colour overprints.
+   *  A spot colour's ink overprints by `spot.overprint` as well. A colour
+   *  without ink (paper white) that overprints disappears: the preflight
+   *  reports it. */
+  overprint?: boolean;
+  /** With `paletteId`, the strength of the entry over the paper, percent
+   *  (0..100): a callout ground at `8` is the main colour at 8 %, and it
+   *  follows the entry when the palette changes, a part's or a section's
+   *  palette included. `hex` holds the tinted value (the fallback without
+   *  the entry). The tint is a screen colour (`model: 'hex'`): a print render
+   *  separates it like any other, a spot entry's ink included. Defaults to
+   *  100; ignored without `paletteId`. */
+  tint?: number;
   /** The `colorPalette` entry this colour follows, wherever it sits in the
    *  configuration (designs, callout labels and the `:ref` colour
    *  included): the entry's `hex` / `model` win, and the ones stored here

@@ -108,6 +108,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
     sources: ['color', 'dimension'],
     literals: ["ppi"],
     keys: [
+      'alignFloatsAcrossColumns',
+      'alignFloatsAcrossColumnsTooltip',
       'bitmapResolution',
       'bitmapResolutionDocument',
       'bitmapResolutionFile',
@@ -140,6 +142,8 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'floatsUnderOpenerTooltip',
       'flowColumns',
       'flowColumnsTooltip',
+      'footFloatRow',
+      'footFloatRowTooltip',
       'gutterWidth',
       'gutterWidthTooltip',
       'hugClosingFloats',

@@ -195,6 +195,11 @@ Chaque ressource a un **placement** qui décide où arrive son flottant. Il se r
       <td><code>true</code> · <code>false</code>, <code>false</code> par défaut</td>
       <td>Permettre à un flottant <code>"top"</code> ou <code>"auto"</code> de prendre la tête de la page (un flottant sur toute la largeur de la page) ou de la colonne (un flottant de colonne, y compris sur plusieurs <code>columns</code>) où arrive la ligne qui le cite pour la première fois, comme le fait le placement <code>t</code> de LaTeX, au lieu du premier emplacement libre après cette ligne. Le texte au-dessus du renvoi descend sous le flottant. Cela ne se produit que si le flottant y tient dans la limite de <code>layout.maxTopFraction</code> de la colonne (0,7 par défaut), si les flottants précédents de sa séquence de numérotation sont déjà placés, si aucun saut explicite n’ouvre la page (la première page d’un chapitre, une partie, un <code>:::pagebreak</code>) et que rien sur toute la largeur de la page ne se tient au-dessus de la ligne qui cite, et si, ainsi placée, la ligne qui cite arrive toujours sur cette page (pour un flottant de colonne, dans la colonne qu’il surmonte) ; sinon le flottant prend son emplacement habituel. Les flottants pivotés, les flottants de la colonne latérale et la suite d’un tableau scindé sur plusieurs pages ne se déplacent jamais ainsi. Par défaut : le <code>defaultPlacement</code> du type, puis <code>layout.floatsAtCitingPage</code>. Depuis postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Déconseillé (voir <a href="#placer-les-flottants-à-la-main-est-déconseillé">Placer les flottants à la main est déconseillé</a>). Un flottant placé à la main, dans le panneau Ressources ou en le déplaçant dans le canevas du Sandbox : <code>page</code> compte les pages à partir de celle qui l'appelle en premier (<code>0</code> est cette page, <code>3</code> au plus), <code>column</code> la colonne de texte à partir de 0 dans l'ordre de lecture (n'importe laquelle si absent ; un flottant sur toute la largeur de la page l'ignore), <code>slot</code> vaut <code>"top"</code> ou <code>"bottom"</code>. Un pin est une préférence. Le flottant attend cette page et s'y voit proposer cet emplacement en premier ; si l'emplacement ne peut pas le recevoir (trop haut pour la place restante, pris par un autre flottant, ou au-dessus de son appel), il prend les emplacements habituels de cette page, puis continue comme n'importe quel flottant. Un pin pour une page située après la fin du chapitre y est abandonné, si bien que le flottant et ceux qui le suivent dans sa séquence de numérotation sont placés avant la fin du chapitre. Les flottants de la colonne latérale, les flottants pivotés, les planches et les ressources placées dans le texte l'ignorent. Chaque pin que la mise en page ne suit pas est signalé par <code>floatPinMissed</code>, avec sa raison. Sorties paginées seulement.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -254,6 +259,19 @@ Les trois moteurs de rendu (l’aperçu canvas, la visionneuse HTML et la sortie
 - Un paragraphe qui court d’une page sur la suivante se compte lui aussi à partir de sa ligne qui cite. Quand le paragraphe commence au pied de la page 5 et que le renvoi tombe en page 6 (ou que tout le paragraphe passe en page 6, faute d’assez de place pour ses lignes au pied de la page 5), le renvoi est en page 6 : un flottant `top` ouvre la page 7, et un flottant `auto` prend le pied de la page 6 quand il y a la place. Il en va de même entre les colonnes d’une page, et pour un encadré scindé sur plusieurs pages : une figure que cite sa seconde partie attend cette partie.
 - **Modifié dans postext 1.5.** Jusqu’à postext 1.4, un flottant était mis en file d’attente quand la mise en page atteignait le paragraphe qui le cite ; la page sur laquelle ce paragraphe débordait (ou vers laquelle il passait) pouvait donc s’ouvrir sur le flottant, au-dessus de la ligne contenant le renvoi. Une telle figure arrive désormais une page plus loin, ou au pied de la page quand elle demande `auto` ; le nombre de pages peut s’en trouver modifié.
 
+#### Placer les flottants à la main est déconseillé
+
+Postext met un livre en page par règles : chaque flottant prend le premier emplacement libre après son appel, dans les limites que fixe son placement, et le livre entier est remis en page quand changent le texte, le format de page, le nombre de colonnes ou la langue de l'édition. Un pin est lié à la géométrie d'une mise en page. Il désigne une page comptée depuis l'appel et une colonne par son numéro, et ni l'une ni l'autre ne veut plus dire la même chose dès que le texte bouge. Ajoutez un paragraphe et l'appel passe sur une autre page ; traduisez le livre et les coupures de ligne changent ; composez une édition sur une colonne et la colonne 1 n'existe plus. Le pin échoue alors, et la mise en page le signale, ou il met le flottant à un endroit qui ne sert plus la page. Le pin est enregistré dans la ressource : toutes les éditions et toutes les langues du livre le partagent.
+
+Ces règles gardent une figure près de son texte dans toutes les éditions :
+
+- `position: "top"` ou `"bottom"` (sur la ressource ou sur son type) limite les emplacements d'un flottant aux têtes ou aux pieds.
+- `citingPage: true`, ou `layout.floatsAtCitingPage` pour tout le livre, permet à un flottant en haut ou automatique d'ouvrir la page ou la colonne où tombe la ligne qui l'appelle.
+- Un encadré avec `keepTogether` garde ensemble ce qu'il contient, y compris une image insérée avec `::resource` ; `floatBarrier` sur un style d'encadré garde de son côté les flottants appelés avant lui.
+- `shrink: "slot"` (ou `"page"`) laisse une image se réduire à la place de son emplacement, et une [zone de sécurité](#zone-de-sécurité) laisse le moteur la recadrer pour qu'elle tienne avant de la réduire.
+
+Si une page a encore besoin qu'une figure bouge, fixez-la en dernier, pour une édition terminée dans une seule langue, et surveillez `floatPinMissed` dans le panneau Vérifications chaque fois que le texte ou la maquette changent.
+
 ### Habillage du texte
 
 Une image, un tableau ou un encadré plus étroit que sa colonne peut se tenir d’un côté de celle-ci, le texte courant à côté de lui, comme dans un magazine ou une lettre d’information. Donnez à son placement un côté `wrap` et, si vous le souhaitez, une `width` :
@@ -300,7 +318,7 @@ Un bitmap déclare ses pixels : `bitmap.width` et `bitmap.height` sont les nomb
 - **Une résolution.** `bitmap.resolution` est la résolution de l’image en ppi à sa taille d’impression naturelle ; sa largeur naturelle est donc `width × page.dpi / resolution` sur une page de n’importe quelle résolution : 2 400 px à `resolution: 300` font 203,2 mm de large sur une page mise en page à 150 dpi comme à 300. `layout.bitmapResolution` donne une résolution à chaque bitmap qui n’a pas la sienne : un nombre (`300`), ou `'file'`, la résolution que déclare son fichier (`bitmap.fileResolution` : le `pHYs` d’un PNG, la densité JFIF ou EXIF d’un JPEG, l’EXIF d’un WebP ; pour une image importée de Word, la taille à laquelle Word l’imprimait). Les appareils photo, les captures d’écran et les exports web déclarent souvent 72 ou 96 ppi quand ils ignorent tout de la taille d’impression ; avec `'file'`, ces deux valeurs comptent donc comme absentes et l’image garde ses pixels à la résolution de la page ; un 72 déclaré sur la ressource elle-même est pris tel quel. `'document'`, la valeur par défaut, correspond à la première façon.
 - **Une part de la colonne.** `placement.width` réduit un flottant ou une insertion dans le texte à une fraction de sa colonne (ou de la page), et une image plus grande que cette part est réduite à celle-ci, quels que soient ses pixels (voir [Placement](#placement)).
 
-Dans tous les cas, l’emplacement plafonne l’image en gardant ses proportions, et une image plus petite n’est jamais agrandie. La même taille naturelle s’applique à une image dans une cellule de tableau et à un élément `image` de maquette de taille `'auto'`. Le PDF incorpore le fichier tel quel, à sa taille de placement. Le [contrôle en amont](/fr/docs/configuration-fonts-colors-viewers#contrôle-en-amont) vérifie la résolution à laquelle s’imprime chaque image, et le [panneau Ressources](/fr/docs/sandbox#panneau-ressources) du Sandbox l’affiche pour chaque image. Depuis postext 1.24.
+Dans tous les cas, l’emplacement plafonne l’image en gardant ses proportions, et une image plus petite n’est jamais agrandie. La même taille naturelle s’applique à une image dans une cellule de tableau et à un élément `image` de maquette de taille `'auto'`. Le PDF incorpore le fichier tel quel, à sa taille de placement. Le [contrôle en amont](/fr/docs/configuration-pdf-output#contrôle-en-amont) vérifie la résolution à laquelle s’imprime chaque image, et le [panneau Ressources](/fr/docs/sandbox#panneau-ressources) du Sandbox l’affiche pour chaque image. Depuis postext 1.24.
 
 L’emplacement d’une image dans le flux (`position: 'here'`, ou un flottant de colonne) est sa colonne, et la page par défaut en a deux (`layout.layoutType: 'double'`) : une image prévue pour toute la page y sort à peu près à la moitié de sa taille d’impression. Composez cette page sur une colonne (`layout.layoutType: 'single'`), faites flotter l’image sur toute la page (`placement: { position: 'top', span: 'page' }`) ou placez-la dans un bloc d’une [page composée](/fr/docs/composed-pages). Quand une colonne plus étroite que la page tient sous la moitié un bitmap doté d’une taille d’impression (son propre `resolution`, ou un nombre dans `layout.bitmapResolution`), la mise en page signale `pictureBelowPrintSize`. Depuis postext 1.37.
 
@@ -338,6 +356,19 @@ Le VDT enregistre le recadrage sur le bloc de la ressource : `bodySource` est l
 
 La recette Nº 116 du livre de recettes, [Des photos qui grandissent pour remplir une colonne courte](/fr/cookbook/photos-fill-short-columns), compose deux fois un article de magazine sur deux colonnes, sans puis avec zones de sécurité, pour que vous puissiez comparer les pages côte à côte.
 
+
+### Recadrage manuel
+
+Un bitmap, un SVG ou l'affiche d'une vidéo peuvent aussi être recadrés à la main : `crop`, dans les mêmes fractions que la zone de sécurité, est la partie de l'image que la figure montre toujours, quelle que soit la page. La figure prend les proportions du recadrage. La zone de sécurité, s'il y en a une, se lit à l'intérieur du recadrage : le moteur peut couper davantage là où la page le demande, jamais hors du recadrage, et `bodySource` est la composition des deux. Tracez la zone de sécurité à l'intérieur du recadrage ; la partie qui en sort ne se voit jamais. Sans recadrage, l'image entière. Le recadrage atteint toutes les sorties : le canevas, le PDF, la visionneuse HTML, les deux EPUB (un livre recomposable met l'image, ou l'affiche d'une vidéo et le film dans son cadre, dans une boîte aux proportions du recadrage), l'IDML et l'export Word mis en forme, une image dans une cellule de tableau, le dessin d'une case de bande dessinée (la fenêtre de la case est choisie dans le recadrage) et une image de maquette qui montre une ressource. L'export Word sémantique insère l'image entière, comme il le fait avec la zone de sécurité, et garde le recadrage dans le livre. Les ancres de bande dessinée ne sont vérifiées que par rapport à la zone de sécurité (`comicAnchorOutsideSafeArea`) : gardez aussi chaque personnage dans le recadrage. Dans le Sandbox, *Recadrage*, à côté de la zone de sécurité, ouvre un cadre que l'on fait glisser, ajuste aux flèches et prévisualise ; un agent le règle avec `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // la moitié centrale, de haut en bas
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Ancres des personnages et zones à éviter
 

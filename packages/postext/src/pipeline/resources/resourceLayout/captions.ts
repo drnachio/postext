@@ -10,6 +10,7 @@ import { parseInlineSnippetSpans } from '../../../parse/inlineSnippet.js';
 import { resolveChipSpans, chipContextOf } from '../../text/chips.js';
 import { withSnippetInlineCode } from '../../code/codeInline.js';
 import { mergeCaptionStyle } from '../../../defaults/resources/captionStyle.js';
+import { tintPaperOf } from '../../../defaults/shared.js';
 import { resolveBodyStyle } from '../../styles.js';
 import type { ResourceNumberingMap } from '../resourceNumbering.js';
 import { type CaptionCitations, resolveCitationSpans } from '../../references/citations.js';
@@ -85,6 +86,7 @@ function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
     resolved.captionStyle,
     resourceType?.captionStyle,
     resolved.colorPalette,
+    tintPaperOf(resolved.page),
   );
   const captionFontPx = dimensionToPx(cs.fontSize, dpi);
   const captionLineHeightPx = captionFontPx * lineHeightRatio;

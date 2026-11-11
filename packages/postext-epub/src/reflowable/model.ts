@@ -227,6 +227,10 @@ export interface FigureNode {
   /** A music example (#1172): its systems' SVG, drawn in place of a
    *  picture. */
   score?: { systems: string[]; color: string };
+  /** The author's crop of the picture (`Resource.crop`), in its fractions,
+   *  and the picture's own height over its width: the figure shows only
+   *  the crop, at the crop's ratio. */
+  crop?: { x: number; y: number; width: number; height: number; ratio: number };
 }
 
 export interface TableCellNode {
@@ -238,7 +242,7 @@ export interface TableCellNode {
   align: string;
   verticalAlign: string;
   inl: InlineItem[];
-  image?: { fileId: string; alt: string; width?: number };
+  image?: { fileId: string; alt: string; width?: number; crop?: FigureNode['crop'] };
   background?: string;
   alternate?: boolean;
 }

@@ -63,7 +63,7 @@ export const metadata = {
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。解像度の指定がないビットマップは、画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにするか、画像に解像度を指定してください（<code>Resource.bitmap.resolution</code>、<code>layout.bitmapResolution</code>。[文書形式 › ビットマップのサイズ](/ja/docs/document-format-resources#ビットマップのサイズ)を参照）。各画像の実効解像度は[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)で確認します。</td>
+      <td>レイアウトが扱う1インチあたりのピクセル数です。物理単位（cm、mm、in、pt）をレイアウトのピクセルに換算するときに使われます。解像度の指定がないビットマップは、画像の1ピクセルがレイアウトの1ピクセルになるため、この値のppiで印刷されます。印刷用には300のままにするか、画像に解像度を指定してください（<code>Resource.bitmap.resolution</code>、<code>layout.bitmapResolution</code>。[文書形式 › ビットマップのサイズ](/ja/docs/document-format-resources#ビットマップのサイズ)を参照）。各画像の実効解像度は[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)で確認します。</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -448,6 +448,18 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>章の（そして文書の）最後のページでは、テキストの最後の帯の下に置かれたページ幅の図と表が上に移動し、フロートの間隔1つ分を空けてその下に順に積み重なります。そこではあとに何も続かないためです。<code>false</code>にすると配置どおりの位置に残るため、<code>position: 'bottom'</code>のフロートは、ほかのページと同じく最後のページでもページの下端で終わります。たとえば、すべてのページで輪郭が同じ高さで終わるデータシートに使えます。サイド段のあるページでは移動しません。</td>
+    </tr>
+    <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>複数段のページで下端の図版を横に並べます。段の下端にすでに図版がある箇所で引用された図や表は、その上に積まず、次の空いた段の下端に置き、キャプションの1行目を隣のものと同じ高さにそろえます（組版の下端帯）。セーフエリアのある画像は、その範囲内で隣の高さに向けてトリミングされます。トリミングはそれぞれチェックに表示されます。並んだ図版は位置を保ち、あとからその段の下端に置かれる図版はその上に入ります。3段以上では、下端に何もない次の段へと並びが続きます。サンドボックスではレイアウトの<em>下端の図版を横に並べる</em>。</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>ページの同じ帯にある図を段をまたいでそろえます。隣り合う段の下端では、キャプションの1行目をそろえます（短いキャプションの下に余白が入ります）。段の上端では、画像の下端をそろえます（短い画像の上に余白が入ります）。段を上端から埋め、下に本文のない画像は、隣の段の下端にあるキャプションに自分のキャプションをそろえます。そろえるのは1段に単独で、正立したまま分割されずに置かれた図だけです。複数段にまたがる図、回転した図、キャプションを横に置く図、分割された表の一部、手で配置した図（<code>placement.pin</code>）は位置を保ちます。余白は各図が置かれた位置から読み取り、レイアウトの最後のパスのあとでもう一度読み取るので、別のページへ移った図が、もう隣にない図のための余白を残すことはありません。レイアウトのパスは最初に最大2回、最後に最大2回増えます。次の段の下端に加わるフロートをすでにそろえる<code>footFloatRow</code>と組み合わせて働きます。サンドボックスではレイアウトの<em>図を段をまたいで揃える</em>。</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

@@ -1,6 +1,8 @@
 // Painting a table resource: pixel-snapped fills, cells and frame.
 import { type ResolvedResourceBlock, tableFrameOutline, tableCellFill } from '../../vdt.js';
 import { saveContext, restoreContext } from '../contextState.js';
+import { uncroppedPictureBox } from '../../pipeline/resources/safeArea.js';
+import { mirroredPaintActive } from '../mirrorFrame.js';
 import { drawResourceImage } from './images.js';
 import { roundedOutlinePath, drawPlaceholder } from './overlays.js';
 import { paintLine } from './text.js';
@@ -121,9 +123,21 @@ export function renderTable(
     const img = cell.image;
     if (!img) continue;
     const { x, y, width, height } = img.rect;
-    if (!drawResourceImage(ctx, img.fileId, x, y, width, height, { inkHex, svg: img.kind === 'svg' }, img.resourceId)) {
-      drawPlaceholder(ctx, x, y, width, height, img.kind === 'svg' ? 'SVG' : 'Image');
+    // A picture with a manual crop (`Resource.crop`, #1494): the whole
+    // picture at its uncropped box, clipped to the image's rect; on a
+    // mirrored page that box is reflected about the rect, as the picture
+    // is turned back in it.
+    let full = img.crop ? uncroppedPictureBox(x, y, width, height, img.crop) : null;
+    if (full && mirroredPaintActive()) full = { ...full, x: 2 * x + width - full.x - full.width };
+    if (full) {
+      saveContext(ctx);
+      ctx.beginPath();
+      ctx.rect(x, y, width, height);
+      ctx.clip();
     }
+    const drawn = drawResourceImage(ctx, img.fileId, full?.x ?? x, full?.y ?? y, full?.width ?? width, full?.height ?? height, { inkHex, svg: img.kind === 'svg' }, img.resourceId);
+    if (full) restoreContext(ctx);
+    if (!drawn) drawPlaceholder(ctx, x, y, width, height, img.kind === 'svg' ? 'SVG' : 'Image');
   }
   for (const cell of t.cells) {
     const font = cell.isHeader ? t.headerFontString : t.fontString;

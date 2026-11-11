@@ -339,6 +339,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>图片按裁切后的样子印出，裁切从不超出安全区。不推荐使用<code>pullFloatsToCitation</code>：<code>placement.citingPage</code>和<code>placement.shrink: 'slot'</code>能让图片靠近引用处而不必裁切。</td>
     </tr>
     <tr>
+      <td><code>floatPinMissed</code></td>
+      <td>手动放置的浮动体（<code>placement.pin</code>）不在其固定位置要求的地方。<code>resourceId</code>指明是哪一个，<code>pageIndex</code>是它实际所在的页，<code>requestedPage</code>是固定位置指明的页。<code>reason</code>：<code>notTaken</code>（该位置放不下它：对剩余空间来说太高、已被占用、在引用之上，或本章先结束了），<code>tooFar</code>（比引用页晚超过 <code>MAX_PIN_PAGE_OFFSET</code>，即 3 页），<code>column</code>（该页没有这一栏）或 <code>unsupported</code>（排在正文中的资源、侧栏或旋转的浮动体、整页图版）。指向首次引用它的段落。</td>
+      <td>浮动体按没有固定位置时的方式放置；若固定位置指明的那一页有位置能放下它，就放在那一页。不推荐使用固定位置：<code>placement.citingPage</code>、<code>position</code>和<code>shrink</code>能让图在每个版本里都靠近正文。</td>
+    </tr>
+    <tr>
       <td><code>pictureBelowPrintSize</code></td>
       <td>带印刷尺寸的位图（它自己的<code>bitmap.resolution</code>，或<code>layout.bitmapResolution</code>中的数值；不是从文件读出的分辨率）排进一栏后，不到印刷尺寸的一半，而该页的版心比这一栏宽。<code>resourceId</code>指明图片，<code>scale</code>是保留的印刷宽度比例，<code>printWidthPx</code>、<code>widthPx</code>和<code>pageWidthPx</code>分别是印刷、栏和版心的宽度。用<code>placement.width</code>收窄的、为放进位置而缩小的、旋转过的或排在模板页的框里的图片不报告。指向第一次引用它的段落。postext 1.37起。</td>
       <td>图片按栏宽印出。正文流中的图片不会比所在栏更宽，而默认页面有两栏（<code>layout.layoutType: 'double'</code>）：把页面改为单栏，让图片跨整页浮动（<code>placement.span: 'page'</code>），或者如果想要这个尺寸，就提高它的分辨率。</td>

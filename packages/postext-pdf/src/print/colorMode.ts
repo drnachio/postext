@@ -44,6 +44,8 @@ export interface PrintColorMode {
    *  names they are written under. A new mode starts empty, so nothing one
    *  render registers reaches another. */
   inkRegistry: SpotInkRegistry;
+  /** Colours that overprint (`ColorValue.overprint`), by screen hex. */
+  overprints: ReadonlySet<string>;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -68,6 +70,7 @@ export function createPrintColorMode(
   condition: PrintColorMode['condition'],
   authored: ReadonlyMap<string, CmykPercent> = new Map(),
   spots: ReadonlyMap<string, Required<SpotColor>> = new Map(),
+  overprints: ReadonlySet<string> = new Set(),
 ): PrintColorMode {
   const transform = outputTransform(profile, {
     intent: config.renderingIntent,
@@ -80,7 +83,7 @@ export function createPrintColorMode(
   spots = onePlatePerInk(spots);
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}${overprints.size > 0 ? `:over=${[...overprints].sort().join(',')}` : ''}`,
     standard: config.standard,
     profile,
     transform,
@@ -91,6 +94,7 @@ export function createPrintColorMode(
     authored,
     spots,
     inkRegistry: new SpotInkRegistry(),
+    overprints,
   };
 }
 

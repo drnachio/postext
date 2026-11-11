@@ -95,6 +95,7 @@ export type WarningKind =
   | 'parityCascade'
   | 'alphaPdfOverflow'
   | 'calloutOverflow'
+  | 'floatPinMissed'
   | 'headingDesignCut'
   | 'headingClaimsColumn'
   | 'sideColumnPercentClamped'

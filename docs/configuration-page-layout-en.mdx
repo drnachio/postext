@@ -63,7 +63,7 @@ The `page` property controls the physical dimensions and appearance of the page.
       <td><code>dpi</code></td>
       <td><code>number</code></td>
       <td><code>300</code></td>
-      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. A bitmap without a resolution of its own takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print, or give the pictures a resolution (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; see [Document format › Bitmap size](/en/docs/document-format-resources#bitmap-size)). The [preflight](/en/docs/configuration-fonts-colors-viewers#preflight) checks each picture's effective resolution.</td>
+      <td>The pixels per inch the layout works in: how physical units (cm, mm, in, pt) become its pixels. A bitmap without a resolution of its own takes one layout pixel per image pixel, so it prints at this many ppi: keep 300 for print, or give the pictures a resolution (<code>Resource.bitmap.resolution</code>, <code>layout.bitmapResolution</code>; see [Document format › Bitmap size](/en/docs/document-format-resources#bitmap-size)). The [preflight](/en/docs/configuration-pdf-output#preflight) checks each picture's effective resolution.</td>
     </tr>
     <tr>
       <td><code>cutLines</code></td>
@@ -448,6 +448,18 @@ The `layout` property controls how columns are arranged within the content area.
       <td><code>boolean</code></td>
       <td><code>true</code></td>
       <td>On the closing page of a chapter (and of the document), the page-wide figures and tables set below the last band of text move up to sit one float gap under it, stacked in their order: nothing follows them there. <code>false</code> leaves them where their placement put them, so a <code>position: 'bottom'</code> float ends at the page foot on the closing page as on every other page — a datasheet whose outline ends at the same height on every page, say. Pages with a side column never move them.</td>
+    </tr>
+    <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set floats at the foot of a multi-column page in a row: a figure or table cited where its column already holds one at its foot takes the foot of the next empty column, the first line of its caption level with its neighbour's, instead of stacking over it (the compositor's foot band). A picture with a safe area is cropped within it toward its neighbour's height. Each crop is reported in Checks. A float in a row keeps its place: a float set later at the foot of one of its columns goes above it. With three columns or more, the row runs on to the next column with nothing at its foot. In the Sandbox, <em>Floats at the foot in a row</em> under Layout.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Line up the figures that share a band of a page across its columns: at the foot of neighbouring columns, the first lines of their captions (the shorter caption leaves the white under it); at their head, the bottoms of their pictures (the shorter picture leaves the white above it). A picture that fills its column from the head, with no text under it, lines its caption up with the foot captions beside it. Only a figure set alone in a column, upright and whole, is lined up: one across several columns, rotated, with its caption beside it, a table slice and a figure placed by hand (<code>placement.pin</code>) keep their place. The white is read from the slot each figure took and read again after the last pass of the layout, so a figure that moved to another page keeps no white for a neighbour it no longer has. The layout takes up to two passes more at the start and two at the end. It works with <code>footFloatRow</code>, which already lines up a float joining the foot of the next column. In the Sandbox, <em>Line up figures across columns</em> under Layout.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

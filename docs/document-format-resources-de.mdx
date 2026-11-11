@@ -195,6 +195,11 @@ Jede Ressource hat eine **Platzierung**, die bestimmt, wohin sie als Gleitobjekt
       <td><code>true</code> · <code>false</code>, Standard <code>false</code></td>
       <td>Ein <code>"top"</code>- oder <code>"auto"</code>-Gleitobjekt den Kopf der Seite (bei einem seitenbreiten Gleitobjekt) oder der Spalte (bei einem Spalten-Gleitobjekt, auch über <code>columns</code>) einnehmen lassen, auf der die Zeile steht, die es zuerst zitiert, wie es die Platzierung <code>t</code> in LaTeX tut, statt des ersten freien Platzes nach dieser Zeile. Der Text über dem Verweis rückt unter das Gleitobjekt nach unten. Das geschieht nur, wenn das Gleitobjekt dort innerhalb von <code>layout.maxTopFraction</code> der Spalte (standardmäßig 0.7) Platz findet, wenn die früheren Gleitobjekte seiner Nummernfolge bereits gesetzt sind, wenn kein ausdrücklicher Umbruch die Seite eröffnet (die erste Seite eines Kapitels, ein Teil, ein <code>:::pagebreak</code>) und nichts Seitenbreites über der zitierenden Zeile steht, und wenn die zitierende Zeile bei dieser Anordnung noch auf dieser Seite steht (in einer Spalte, die das Gleitobjekt anführt); andernfalls nimmt das Gleitobjekt seinen üblichen Platz. Gedrehte Gleitobjekte, Nebenspalten-Gleitobjekte und der Rest einer über Seiten geteilten Tabelle werden nie so verschoben. Standard: das <code>defaultPlacement</code> des Typs, dann <code>layout.floatsAtCitingPage</code>. Seit postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Nicht empfohlen (siehe <a href="#von-hand-gesetzte-gleitobjekte-werden-nicht-empfohlen">Von Hand gesetzte Gleitobjekte werden nicht empfohlen</a>). Ein von Hand gesetztes Gleitobjekt, im Bedienfeld Ressourcen oder durch Verschieben im Sandbox-Canvas: <code>page</code> zählt die Seiten ab der, die es zuerst zitiert (<code>0</code> ist diese Seite, höchstens <code>3</code>), <code>column</code> die Textspalte ab 0 in Lesereihenfolge (ohne Angabe beliebig; ein seitenbreites Objekt übergeht sie), <code>slot</code> ist <code>"top"</code> oder <code>"bottom"</code>. Ein Pin ist ein Wunsch. Das Objekt wartet auf diese Seite und bekommt dort zuerst diesen Platz angeboten; kann der Platz es nicht aufnehmen (zu hoch für den verbleibenden Raum, von einem anderen Gleitobjekt belegt oder über seinem Verweis), nimmt es die üblichen Plätze dieser Seite und geht danach weiter wie jedes Gleitobjekt. Ein Pin auf eine Seite nach dem Ende des Kapitels wird dort fallen gelassen, sodass das Objekt und die ihm in seiner Nummernfolge folgenden vor dem Kapitelende gesetzt werden. Gleitobjekte der Randspalte, gedrehte Objekte, Tafeln und im Text gesetzte Ressourcen übergehen ihn. Jeder Pin, dem das Layout nicht folgt, wird als <code>floatPinMissed</code> mit seinem Grund gemeldet. Nur in seitenbasierten Ausgaben.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -254,6 +259,19 @@ Alle drei Backends – die Canvas-Vorschau, der HTML-Betrachter und die PDF-Ausg
 - Ein Absatz, der von einer Seite auf die nächste läuft, zählt ebenfalls ab seiner zitierenden Zeile. Beginnt der Absatz am Fuß von Seite 5 und fällt der Verweis auf Seite 6 – oder wandert der ganze Absatz auf Seite 6, weil am Fuß von Seite 5 nicht genug seiner Zeilen passen –, steht der Verweis auf Seite 6: Ein `top`-Gleitobjekt eröffnet Seite 7, und ein `auto`-Gleitobjekt nimmt den Fuß von Seite 6, wenn dort Platz ist. Dasselbe gilt zwischen den Spalten einer Seite und für einen über Seiten geteilten Kasten: Eine Abbildung, die sein zweiter Teil zitiert, wartet auf diesen Teil.
 - **Geändert in postext 1.5.** Bis postext 1.4 wurde ein Gleitobjekt eingereiht, sobald das Layout den zitierenden Absatz erreichte, sodass die Seite, auf die ein solcher Absatz lief (oder wanderte), mit dem Gleitobjekt beginnen konnte, über der Zeile mit dem Verweis. Eine solche Abbildung steht jetzt eine Seite später oder, wenn sie `auto` verlangt, am Fuß der Seite; die Seitenzahl kann sich dadurch ändern.
 
+#### Von Hand gesetzte Gleitobjekte werden nicht empfohlen
+
+Postext setzt ein Buch nach Regeln: Jedes Gleitobjekt nimmt den ersten freien Platz nach seinem Verweis, in den Grenzen seiner Platzierung, und das ganze Buch wird neu gesetzt, sobald sich der Text, das Seitenformat, die Zahl der Spalten oder die Sprache der Ausgabe ändern. Ein Pin hängt an der Geometrie eines Layouts. Er nennt eine vom Verweis aus gezählte Seite und eine Spalte nach ihrer Nummer, und beides bedeutet nicht mehr dasselbe, sobald sich der Text verschiebt. Kommt ein Absatz hinzu, rückt der Verweis auf eine andere Seite; wird das Buch übersetzt, ändern sich die Zeilenumbrüche; wird eine Ausgabe einspaltig gesetzt, gibt es Spalte 1 nicht mehr. Der Pin schlägt dann fehl, und das Layout meldet es, oder er stellt das Gleitobjekt an eine Stelle, die der Seite nicht mehr dient. Der Pin wird an der Ressource gespeichert; alle Ausgaben und Sprachen des Buchs teilen ihn.
+
+Diese Regeln halten eine Abbildung in jeder Ausgabe nahe an ihrem Text:
+
+- `position: "top"` oder `"bottom"` (an der Ressource oder ihrem Typ) beschränkt die Plätze eines Gleitobjekts auf Köpfe oder Füße.
+- `citingPage: true`, oder `layout.floatsAtCitingPage` für das ganze Buch, lässt ein oben oder automatisch platziertes Gleitobjekt die Seite oder Spalte eröffnen, auf der die verweisende Zeile steht.
+- Ein Kasten mit `keepTogether` hält zusammen, was er enthält, auch ein mit `::resource` darin eingefügtes Bild; `floatBarrier` an einem Kastenstil hält die vor ihm zitierten Gleitobjekte auf seiner Seite.
+- `shrink: "slot"` (oder `"page"`) lässt ein Bild auf den Raum seines Platzes schrumpfen, und ein [Sicherheitsbereich](#sicherheitsbereich) lässt die Engine es passend beschneiden, bevor sie es verkleinert.
+
+Braucht eine Seite dann noch eine verschobene Abbildung, pinnen Sie sie als letzten Schritt, für eine fertige Ausgabe in einer Sprache, und prüfen Sie `floatPinMissed` im Bedienfeld Prüfungen, sooft sich Text oder Gestaltung ändern.
+
 ### Textumfluss
 
 Ein Bild, eine Tabelle oder ein Kasten, schmaler als die Spalte, kann an einer Seite davon stehen, während der Text daneben läuft, wie in einer Zeitschrift oder einem Newsletter. Geben Sie seiner Platzierung eine Umflussseite `wrap` und, wenn Sie möchten, eine `width`:
@@ -300,7 +318,7 @@ Eine Bitmap gibt ihre Pixel an: `bitmap.width` und `bitmap.height` sind die Pixe
 - **Eine Auflösung.** `bitmap.resolution` ist die ppi-Zahl des Bildes bei seiner natürlichen Druckgröße, seine natürliche Breite ist also auf einer Seite beliebiger dpi-Zahl `width × page.dpi / resolution`: 2400 px bei `resolution: 300` sind 203,2 mm breit, ob die Seite mit 150 dpi oder mit 300 gesetzt wird. `layout.bitmapResolution` gibt jeder Bitmap ohne eigene Auflösung eine: eine Zahl (`300`) oder `'file'`, die Auflösung, die ihre Datei angibt (`bitmap.fileResolution`: das `pHYs` eines PNG, die JFIF- oder EXIF-Dichte eines JPEG, das EXIF eines WebP; bei einem aus Word importierten Bild die Größe, in der Word es gedruckt hat). Kameras, Bildschirmfotos und Web-Exporte geben oft 72 oder 96 ppi an, wenn sie nichts über eine Druckgröße wissen, daher gelten diese beiden Werte unter `'file'` als nicht gesetzt, und das Bild behält seine Pixel bei der dpi-Zahl der Seite; eine an der Ressource selbst angegebene 72 wird wörtlich genommen. `'document'`, der Standard, ist der erste Weg.
 - **Ein Anteil an der Spalte.** `placement.width` verengt ein Gleitobjekt oder eine Einbettung im Text auf einen Bruchteil ihrer Spalte (oder Seite), und ein Bild, das größer ist als dieser Anteil, wird unabhängig von seinen Pixeln darauf verkleinert (siehe [Platzierung](#platzierung)).
 
-In jedem Fall begrenzt der Platz das Bild unter Wahrung seiner Proportionen, und ein kleineres Bild wird nie vergrößert. Dieselbe natürliche Größe gilt für ein Bild in einer Tabellenzelle und für ein `image`-Element einer Gestaltung mit Größe `'auto'`. Das PDF bettet die Datei unverändert in ihrer platzierten Größe ein. Der [Preflight](/de/docs/configuration-fonts-colors-viewers#preflight) prüft die Auflösung, in der jedes Bild gedruckt wird, und das [Bedienfeld Ressourcen](/de/docs/sandbox#bedienfeld-ressourcen) der Sandbox zeigt sie für jedes Bild an. Seit postext 1.24.
+In jedem Fall begrenzt der Platz das Bild unter Wahrung seiner Proportionen, und ein kleineres Bild wird nie vergrößert. Dieselbe natürliche Größe gilt für ein Bild in einer Tabellenzelle und für ein `image`-Element einer Gestaltung mit Größe `'auto'`. Das PDF bettet die Datei unverändert in ihrer platzierten Größe ein. Der [Preflight](/de/docs/configuration-pdf-output#preflight) prüft die Auflösung, in der jedes Bild gedruckt wird, und das [Bedienfeld Ressourcen](/de/docs/sandbox#bedienfeld-ressourcen) der Sandbox zeigt sie für jedes Bild an. Seit postext 1.24.
 
 Der Platz eines Bildes im Fluss (`position: 'here'` oder ein Spalten-Gleitobjekt) ist seine Spalte, und die Standardseite hat zwei Spalten (`layout.layoutType: 'double'`): Ein Bild, das für die ganze Seite bemessen ist, kommt dort etwa in halber Druckgröße heraus. Setzen Sie eine solche Seite einspaltig (`layout.layoutType: 'single'`), setzen Sie das Bild als Gleitobjekt über die ganze Seite (`placement: { position: 'top', span: 'page' }`) oder setzen Sie es in den Rahmen einer [zusammengesetzten Seite](/de/docs/composed-pages). Hält eine Spalte, die schmaler als die Seite ist, eine Bitmap mit Druckgröße (eigenes `resolution` oder eine Zahl in `layout.bitmapResolution`) unter der Hälfte davon, meldet das Layout `pictureBelowPrintSize`. Seit postext 1.37.
 
@@ -338,6 +356,19 @@ Der VDT verzeichnet den Beschnitt am Ressourcenblock: `bodySource` ist der in `b
 
 Das Rezept Nº 116, [Fotos, die eine kurze Spalte füllen](/de/cookbook/photos-fill-short-columns), setzt eine zweispaltige Zeitschriftenreportage zweimal, ohne und mit Sicherheitsbereichen, sodass Sie die Seiten nebeneinander vergleichen können.
 
+
+### Manueller Beschnitt
+
+Eine Bitmap, ein SVG oder das Posterbild eines Videos lassen sich auch von Hand beschneiden: `crop`, in denselben Bruchteilen wie der Sicherheitsbereich, ist der Teil des Bilds, den die Abbildung immer zeigt, auf jeder Seite. Die Abbildung übernimmt das Seitenverhältnis des Beschnitts. Der Sicherheitsbereich, falls vorhanden, wird innerhalb des Beschnitts gelesen: Die Engine darf weiter schneiden, wo die Seite es verlangt, nie außerhalb des Beschnitts, und `bodySource` ist die Verkettung von beidem. Legen Sie den Sicherheitsbereich innerhalb des Beschnitts an; was davon außerhalb liegt, ist nie zu sehen. Ohne Beschnitt das ganze Bild. Der Beschnitt erreicht jede Ausgabe: den Canvas, das PDF, den HTML-Viewer, beide EPUBs (ein umfließendes Buch setzt das Bild, oder das Posterbild eines Videos und den Film in seinem Rahmen, in einen Kasten im Seitenverhältnis des Beschnitts), das IDML und den formatierten Word-Export, ein Bild in einer Tabellenzelle, die Zeichnung eines Comic-Panels (das Fenster des Panels wird innerhalb des Beschnitts gewählt) und ein Gestaltungsbild, das eine Ressource zeigt. Der semantische Word-Export fügt das ganze Bild ein, wie beim Sicherheitsbereich, und behält den Beschnitt im Buch. Comic-Sprecherpunkte werden nur gegen den Sicherheitsbereich geprüft (`comicAnchorOutsideSafeArea`): Halten Sie jeden Sprecher auch innerhalb des Beschnitts. In der Sandbox öffnet *Zuschnitt* neben dem Sicherheitsbereich einen Rahmen zum Ziehen, Verschieben mit den Pfeiltasten und zur Vorschau; ein Agent setzt ihn über `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // die mittlere Hälfte, von oben bis unten
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Sprecherpunkte und Sperrzonen
 

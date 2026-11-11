@@ -42,11 +42,13 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // 特色のインキ。
+  overprint?: boolean; // 印刷用の描画でオーバープリントする（「オーバープリントする色」を参照）。
   paletteId?: string;  // 従うcolorPaletteのエントリー。
+  tint?: number;       // ページの色の上でのエントリーの濃度（パーセント、paletteIdと併用）。
 }
 ```
 
-`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](#cmykで指定した色)を参照）。`'spot'`は特色で、そのインキを`spot`に持ちます（[特色](/ja/docs/configuration-pdf-output#特色)を参照）。
+`model`フィールドは意図する色空間を示します。Web向けの描画では`'hex'`か`'rgb'`が一般的です。印刷のワークフローでは、`'cmyk'`はその色がCMYKで指定されたことを示し、`cmyk`がその値を保持します。CMYKの印刷用の描画ではこの値がそのまま使われ、`hex`は画面での表示に使われます（[CMYKで指定した色](/ja/docs/configuration-pdf-output#cmykで指定した色)を参照）。`'spot'`は特色で、そのインキを`spot`に持ちます（[特色](/ja/docs/configuration-pdf-output#特色)を参照）。
 
 Postextは出版品質の出力を目指しているため、本文の色の既定値は`model: 'cmyk'`（`#000000`）です。見出し、太字、イタリック、リストの色の既定値は、パレットに連動した**メインカラー**（`#295AA3`、`model: 'hex'`）です。ページの背景とUIのオーバーレイ（ベースライングリッド、トンボ、デバッグ表示）の既定値は`model: 'hex'`です。別の書き出しの扱いが必要なら、任意のフィールドで`color.model`を上書きしてください。
 
@@ -266,6 +268,8 @@ const config: PostextConfig = {
 設定内の任意の`ColorValue`は、`colorPalette`の項目を指す省略可能な`paletteId`フィールドを付けられます。対象は、ページの背景、本文の色（`:ref`の色を含む）、見出しの色、段間罫、リストの色、表・キャプション・チップ・囲みの色（ボックス、帯、アイコン、マーカー、ラベル、タイトル、本文）、トンボとベースライングリッドの色、デバッグ表示、そしてデザインのすべての色です。デザインの色には、柱、見出しの扉デザインと段内のデザイン、見出しスタイルのデザインと柱、部扉、目次の部の行（テキスト、罫線、ボックスの塗りと枠線、輪郭線、ドロップキャップ）が含まれます。このフィールドがあるときは、パレット項目の`hex` / `model`が、横に保存された予備の`hex` / `model`より優先されます。インラインの予備の値が使われるのは、パレットがない、空である、またはそのidを含まない場合だけです。パレットを理解しないツールが読む設定を配布するときに役立ちます。
 
 **postext 1.5での変更**。postext 1.4までは、パレットが届くのは決まった設定の一覧だけでした。デザインの色（柱、扉、見出しスタイル、部、目次の行）、`bodyText.referenceColor`、囲みのラベルの色、囲みの本文の太字／イタリックの色は、`paletteId`の横に保存された`hex`のままでした。保存された値がパレット項目と異なる文書（項目を変えたあとにSandboxで編集した文書すべてと、メインカラーが`#295AA3`でないときのすべての`:ref`）は、リンクのとおりパレットの色で印刷されるようになりました。色を元のままにするには、その`paletteId`を削除してください。
+
+**パレット項目の濃度。** `paletteId`と一緒に`tint`（0–100）を指定すると、その項目をその濃度で塗ります。`{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }`はメインカラーの8 %で、パレットが変わるとメインカラーに追従する囲みの地色になります。部やセクションのパレットは、色を差し替えるすべての場所で濃度を保ちます。本文、ページの色、行番号、表のセル、デザインスロット、Wordへの書き出しです。濃度は項目のカラーモデルを保ちます。CMYKの項目はインキを比例して減らし（`100 60 0 10`の10 %は`10 6 0 1`で刷られます）、特色の項目は同じインキの濃度として自分の版に乗り、画面色はページの色（`page.backgroundColor`、未設定なら白）と混ざります。CMYKの濃度の下では、CMYKで指定したページの色が自分のインキを加えます。`hex`には濃度を適用した値が入り、項目がない場合の代替値になります。特色の濃度はインキを1つしか持たないため、色のついたページの上では、オーバープリントしない限りページの色をノックアウトします。Sandboxでは、リンクされた色のピッカーに**濃度**欄があります。
 
 ### パレットの適用方法
 
@@ -633,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td><a href="#プリフライト">プリフライト</a>を参照</td>
+      <td><a href="/ja/docs/configuration-pdf-output#プリフライト">プリフライト</a>を参照</td>
       <td>プリフライトが検査する項目と、そのしきい値。</td>
     </tr>
   </tbody>
@@ -762,73 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### CMYKで指定した色
-
-CMYKで書いた色は、その値をそのまま保ちます。印刷用の描画では`ColorValue.cmyk`（%）がそのまま使われ、`hex`は画面での表示になります。CMYKで指定したパレットの項目は、それに連動するすべての色に適用されます。
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-### プリフライト
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>プロパティ</th>
-      <th>型</th>
-      <th>既定値</th>
-      <th>説明</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。解像度の指定がないビットマップは原寸では`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。解像度（`bitmap.resolution`、`layout.bitmapResolution`）を指定したビットマップは、原寸ではその解像度で印刷されます。</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>仕上がり線からこの距離より近い文字。断裁で切られるおそれがあります。</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>仕上がり線からこの距離の手前で止まり、塗り足しまで届いていないボックスや画像。塗り足しまで伸ばすか、内側に寄せてください。</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>配置したPDFが埋め込んでいないフォントを報告します（Sandboxは各印刷用マスターを`inspectPrintMaster`で調べます）。Postextは組んだフォントをすべて埋め込みます。</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題には、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素にあればそのソースの範囲が付きます。`kind`は`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。画像の解像度は、リソースが宣言するピクセル数から求めます。`imageSize(fileId)`がファイル自体のピクセル数を返すとき（バイト列に対する`bitmapInfo`、またはデコードした画像）は、そちらを使います。宣言がファイルと1ピクセルより大きく食い違うと`declaredPixelsMismatch`として1回報告され、ファイルにあるより多いピクセル数を宣言している場合は警告になります。`placedImageResolutions(doc, { resources, imageSize })`は、プリフライトの有効・無効にかかわらず、配置したすべてのビットマップをその実効ppiとともに一覧にします。図のラベルは、`smallProcessText`、`inkLimit`、`safeZone`では文字として数えます。
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### 印刷プレビュー
 

@@ -37,9 +37,14 @@ interface AlphaColor {
 export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
   // A spot colour's stand-in belongs to the render (its ink registry),
   // never to the shared cache.
-  if (isPrintMode(colorSpace) && colorSpace.spots.size > 0) {
-    const spot = colorSpace.spots.get(hex.slice(0, 7).toLowerCase());
-    if (spot) return spotColor(hex, spot, colorSpace);
+  if (isPrintMode(colorSpace) && (colorSpace.spots.size > 0 || colorSpace.overprints.size > 0)) {
+    const hex6 = hex.slice(0, 7).toLowerCase();
+    // A colour that overprints (`ColorValue.overprint`): its ink, or its
+    // process values, overprint whatever its paint is set on.
+    const overprints = colorSpace.overprints.has(hex6);
+    const found = colorSpace.spots.get(hex6);
+    if (found) return spotColor(hex, overprints && !found.overprint ? { ...found, overprint: true } : found, colorSpace);
+    if (overprints) return overprintColor(hex, colorSpace);
   }
   const key = `${modeKey(colorSpace)}|${hex}`;
   const cached = colorCache.get(key);
@@ -95,6 +100,22 @@ function spotColor(hex: string, spot: Required<SpotColor>, mode: PrintColorMode)
   const t = (spot.tint / 100) * (mode.flattenTransparency ? alpha : 1);
   const color: Color = { ...mode.inkRegistry.standIn(spot, t) };
   if (alpha < 1 && !mode.flattenTransparency) (color as AlphaColor).alpha = alpha;
+  cache.set(hex, color);
+  return color;
+}
+
+/** A process colour that overprints: its values under an overprinting
+ *  state (the print pass writes them back), coded per render. */
+function overprintColor(hex: string, mode: PrintColorMode): Color {
+  let cache = spotColorCache.get(mode.inkRegistry);
+  if (!cache) spotColorCache.set(mode.inkRegistry, (cache = new Map()));
+  const cached = cache.get(hex);
+  if (cached) return cached;
+  const plain = colorFromHex(hex, { ...mode, overprints: new Set() });
+  const [c4, m4, y4, k4] = plain.type === 'CMYK' ? [plain.cyan, plain.magenta, plain.yellow, plain.key] : [0, 0, 0, 0];
+  const color: Color = { ...mode.inkRegistry.overprintStandIn(c4, m4, y4, k4) };
+  const alpha = alphaOf(plain);
+  if (alpha < 1) (color as AlphaColor).alpha = alpha;
   cache.set(hex, color);
   return color;
 }

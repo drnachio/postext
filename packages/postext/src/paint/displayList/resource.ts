@@ -120,6 +120,7 @@ function tableItem(rb: ResolvedResourceBlock, bx: number, by: number, ctx: Block
       const img: ImageItem = { kind: 'image', rect: { ...cell.image.rect }, fileId: cell.image.fileId, imageKind: cell.image.kind };
       if (cell.image.pdfFileId) img.pdfFileId = cell.image.pdfFileId;
       if (cell.image.altText) img.alt = cell.image.altText;
+      if (cell.image.crop) img.crop = { ...cell.image.crop };
       out.image = img;
     }
     return out;

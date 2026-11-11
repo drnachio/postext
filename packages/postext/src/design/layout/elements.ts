@@ -3,6 +3,7 @@
 import { flowTextWidth, getMeasureWritingMode, withMeasureWritingMode } from '../../measure/vertical.js';
 import { bitmapLayoutSize } from '../../bitmapResolution.js';
 import { comicArtCrop } from '../../comics/art.js';
+import { croppedSize, resourceCrop } from '../../pipeline/resources/safeArea.js';
 import type { ResolvedDesignTextElement, ResolvedChipStyleConfig, ResolvedDesignRuleElement, ResolvedDesignImageElement, Resource, Dimension, ResolvedDesignPathElement, ResolvedDesignBoxElement } from '../../types.js';
 import { pictureTraits } from '../../vdt.js';
 import { pathViewBox, parseSvgPathCached, mapPath } from '../svgPath.js';
@@ -313,8 +314,12 @@ export function layoutImageElement(
   const own = resource?.bitmap ? bitmapLayoutSize(resource.bitmap, dpi) : payload;
   const picW = own?.width && own.width > 0 ? own.width : 1;
   const picH = own?.height && own.height > 0 ? own.height : 1;
-  const natW = upright ? picH : picW;
-  const natH = upright ? picW : picH;
+  // A manual crop (`Resource.crop`, #1494): the element shows that part
+  // of the picture, at its ratio.
+  const manual = resource ? resourceCrop(resource) : undefined;
+  const shown0 = croppedSize(picW, picH, manual);
+  const natW = upright ? shown0.height : shown0.width;
+  const natH = upright ? shown0.width : shown0.height;
   const widthSize = resolveFixedSize(el.placement.size?.width, dpi);
   const heightSize = resolveFixedSize(el.placement.size?.height, dpi);
   const fixedW = typeof widthSize === 'number' ? widthSize
@@ -335,7 +340,7 @@ export function layoutImageElement(
     // of a vertical flow (#946) is cropped as the sheet shows it: in its
     // own upright frame, where the box is `boxH` wide and `boxW` tall.
     const cell = upright ? { x: 0, y: 0, width: boxH, height: boxW } : { x: boxX, y: boxY, width: boxW, height: boxH };
-    const cut = comicArtCrop({ width: picW, height: picH, cell, fit: 'cover', ...(resource?.safeArea ? { safeArea: resource.safeArea } : {}), ...(el.focus ? { focus: el.focus } : {}) });
+    const cut = comicArtCrop({ width: picW, height: picH, cell, fit: 'cover', ...(resource?.safeArea ? { safeArea: resource.safeArea } : {}), ...(manual ? { crop: manual } : {}), ...(el.focus ? { focus: el.focus } : {}) });
     const x0 = Math.max(cell.x, cut.box.x);
     const y0 = Math.max(cell.y, cut.box.y);
     const x1 = Math.min(cell.x + cell.width, cut.box.x + cut.box.width);
@@ -373,6 +378,7 @@ export function layoutImageElement(
     fileId,
     ...(resource?.bitmap?.format ? { format: resource.bitmap.format } : {}),
     ...pictureTraits(resource, fileId),
+    ...(manual ? { crop: { ...manual } } : {}),
     ...(upright ? { upright: true as const } : {}),
     ...altTextOf(el, resource),
   };

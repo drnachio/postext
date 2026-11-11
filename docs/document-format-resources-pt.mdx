@@ -195,6 +195,11 @@ Cada recurso tem um **posicionamento** que decide onde o flutuante fica, resolvi
       <td><code>true</code> · <code>false</code>, padrão <code>false</code></td>
       <td>Deixa um flutuante <code>"top"</code> ou <code>"auto"</code> ocupar o topo da página (um flutuante na largura da página) ou da coluna (um flutuante de coluna, também na largura de <code>columns</code>) onde cai a linha que o cita pela primeira vez, como faz o posicionamento <code>t</code> do LaTeX, em vez do primeiro espaço livre depois dessa linha. O texto acima da referência desce para baixo do flutuante. Só faz isso quando o flutuante cabe ali dentro de <code>layout.maxTopFraction</code> da coluna (0,7 por padrão), quando os flutuantes anteriores da mesma sequência de numeração já estão posicionados, quando nenhuma quebra explícita abre a página (a primeira página de um capítulo, uma parte, um <code>:::pagebreak</code>) e nada na largura da página fica acima da linha que o cita, e quando, assim posicionado, a linha que o cita continua caindo nessa página (numa coluna que o flutuante encabeça); senão, o flutuante ocupa o espaço habitual. Flutuantes girados, os da coluna lateral e o resto de uma tabela dividida entre páginas nunca se movem assim. Padrão: o <code>defaultPlacement</code> do tipo e depois <code>layout.floatsAtCitingPage</code>. Desde o postext 1.25.</td>
     </tr>
+    <tr>
+      <td><code>pin</code></td>
+      <td><code>&#123; page, column?, slot &#125;</code></td>
+      <td>Não recomendado (veja <a href="#posicionar-flutuantes-à-mão-não-é-recomendado">Posicionar flutuantes à mão não é recomendado</a>). Um flutuante posicionado à mão, no painel Recursos ou movendo-o na tela do Sandbox: <code>page</code> conta as páginas a partir da que o cita primeiro (<code>0</code> é essa página, <code>3</code> no máximo), <code>column</code> a coluna de texto a partir de 0 na ordem de leitura (qualquer uma, se ausente; um flutuante na largura da página a ignora), <code>slot</code> é <code>"top"</code> ou <code>"bottom"</code>. Um pin é uma preferência. O flutuante espera por essa página e recebe primeiro esse espaço; se o espaço não puder recebê-lo (alto demais para o lugar que resta, ocupado por outro flutuante ou acima da citação), ele ocupa os espaços habituais dessa página e depois segue como qualquer flutuante. Um pin para uma página depois do fim do capítulo é descartado ali, para que o flutuante e os que vêm depois dele na sequência de numeração sejam posicionados antes do fim do capítulo. Flutuantes da coluna lateral, flutuantes girados, pranchas e recursos posicionados no texto o ignoram. Cada pin que o layout não segue é avisado com <code>floatPinMissed</code>, com o motivo. Só nas saídas paginadas.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -254,6 +259,19 @@ Os três renderizadores (a visualização no canvas, o visualizador HTML e a sa�
 - Um parágrafo que passa de uma página para a outra também conta a partir da linha que cita. Quando o parágrafo começa no pé da página 5 e a referência cai na página 6 (ou o parágrafo inteiro vai para a página 6, porque não cabem linhas suficientes dele no pé da página 5), a referência está na página 6: um flutuante `top` abre a página 7, e um `auto` ocupa o pé da página 6 quando há espaço para ele. O mesmo vale entre as colunas de uma página, e para um boxe dividido entre páginas: uma figura que a segunda parte dele cita espera por essa parte.
 - **Mudou no postext 1.5.** Até o postext 1.4, um flutuante entrava na fila quando o layout chegava ao parágrafo que o cita, de modo que a página para onde esse parágrafo continuava (ou para onde ia) podia abrir com o flutuante, acima da linha que contém a referência. Uma figura assim agora fica uma página depois, ou no pé da página quando pede `auto`; o número de páginas pode mudar.
 
+#### Posicionar flutuantes à mão não é recomendado
+
+O Postext diagrama um livro por regras: cada flutuante ocupa o primeiro espaço livre depois da citação, dentro dos limites do seu posicionamento, e o livro inteiro é diagramado de novo quando mudam o texto, o tamanho da página, o número de colunas ou o idioma da edição. Um pin está preso à geometria de um layout. Ele nomeia uma página contada a partir da citação e uma coluna pelo número, e nenhuma das duas quer dizer a mesma coisa assim que o texto se move. Acrescente um parágrafo e a citação vai para outra página; traduza o livro e as quebras de linha mudam; componha uma edição em uma coluna e a coluna 1 deixa de existir. O pin então falha, e o layout avisa, ou deixa o flutuante num lugar que já não serve à página. O pin fica guardado no recurso, então todas as edições e idiomas do livro o compartilham.
+
+Estas regras mantêm uma figura perto do texto em todas as edições:
+
+- `position: "top"` ou `"bottom"` (no recurso ou no tipo dele) limita os espaços de um flutuante a topos ou pés.
+- `citingPage: true`, ou `layout.floatsAtCitingPage` para o livro inteiro, deixa um flutuante no topo ou automático encabeçar a página ou a coluna onde cai a linha que o cita.
+- Uma caixa com `keepTogether` mantém junto o que contém, inclusive uma imagem inserida nela com `::resource`; `floatBarrier` num estilo de caixa mantém do lado dela os flutuantes citados antes.
+- `shrink: "slot"` (ou `"page"`) deixa uma imagem diminuir até o lugar que o espaço tem, e uma [área segura](#área-segura) deixa o motor recortá-la para caber antes de diminuí-la.
+
+Se uma página ainda precisar de uma figura em outro lugar, fixe-a como último passo, para uma edição pronta num só idioma, e confira `floatPinMissed` no painel Verificações sempre que o texto ou o design mudarem.
+
 ### Contorno de texto
 
 Uma imagem, uma tabela ou um boxe mais estreito que a coluna pode ficar de um lado dela com o texto composto ao lado, como numa revista ou num boletim. Dê ao posicionamento um lado de `wrap` e, se quiser, um `width`:
@@ -300,7 +318,7 @@ Um bitmap declara os pixels: `bitmap.width` e `bitmap.height` são as contagens 
 - **Uma resolução.** `bitmap.resolution` é o ppi da imagem no tamanho natural de impressão; por isso, a largura natural dela é `width × page.dpi / resolution` numa página de qualquer dpi: 2400 px com `resolution: 300` têm 203,2 mm de largura numa página diagramada a 150 dpi ou a 300. `layout.bitmapResolution` dá uma resolução a todo bitmap que não tem uma própria: um número (`300`), ou `'file'`, a resolução que o arquivo informa (`bitmap.fileResolution`: o `pHYs` de um PNG, a densidade JFIF ou EXIF de um JPEG, o EXIF de um WebP; numa imagem importada do Word, o tamanho com que o Word a imprimia). Câmeras, capturas de tela e exportações para a web costumam informar 72 ou 96 ppi quando não sabem nada do tamanho de impressão, por isso, com `'file'`, esses dois valores contam como não informados e a imagem mantém os pixels ao dpi da página; um 72 declarado no próprio recurso vale como está escrito. `'document'`, o padrão, é a primeira maneira.
 - **Uma parte da coluna.** `placement.width` estreita um flutuante ou uma inserção em linha a uma fração da coluna (ou página), e uma imagem maior que essa parte é reduzida a ela, sejam quais forem os pixels (veja [Posicionamento](#posicionamento)).
 
-Em todos os casos o espaço limita a imagem, mantendo as proporções, e uma imagem menor nunca é ampliada. O mesmo tamanho natural vale para uma imagem numa célula de tabela e para o elemento `image` de um design com tamanho `'auto'`. O PDF incorpora o arquivo como ele é, no tamanho em que foi colocado. O [preflight](/pt/docs/configuration-fonts-colors-viewers#preflight) verifica a resolução com que cada imagem é impressa, e o [painel Recursos](/pt/docs/sandbox#painel-recursos) do Sandbox a mostra para cada imagem. Desde o postext 1.24.
+Em todos os casos o espaço limita a imagem, mantendo as proporções, e uma imagem menor nunca é ampliada. O mesmo tamanho natural vale para uma imagem numa célula de tabela e para o elemento `image` de um design com tamanho `'auto'`. O PDF incorpora o arquivo como ele é, no tamanho em que foi colocado. O [preflight](/pt/docs/configuration-pdf-output#preflight) verifica a resolução com que cada imagem é impressa, e o [painel Recursos](/pt/docs/sandbox#painel-recursos) do Sandbox a mostra para cada imagem. Desde o postext 1.24.
 
 O espaço de uma imagem no fluxo (`position: 'here'` ou um flutuante de coluna) é a coluna dela, e a página padrão tem duas (`layout.layoutType: 'double'`): uma imagem dimensionada para a página inteira sai ali com mais ou menos metade do tamanho de impressão. Componha essa página numa coluna (`layout.layoutType: 'single'`), faça a imagem flutuar sobre toda a página (`placement: { position: 'top', span: 'page' }`) ou leve-a para o bloco de uma [página composta](/pt/docs/composed-pages). Quando uma coluna mais estreita que a página deixa abaixo da metade um bitmap com tamanho de impressão (um `resolution` próprio ou um número em `layout.bitmapResolution`), a diagramação gera o aviso `pictureBelowPrintSize`. Desde o postext 1.37.
 
@@ -338,6 +356,19 @@ O VDT registra o recorte no bloco do recurso: `bodySource` é a parte da imagem 
 
 A receita Nº 116 das Receitas, [Fotos que crescem para preencher uma coluna curta](/pt/cookbook/photos-fill-short-columns), compõe uma reportagem de revista em duas colunas duas vezes, sem e com áreas seguras, para que você compare as páginas lado a lado.
 
+
+### Recorte manual
+
+Um bitmap, um SVG ou o pôster de um vídeo também podem ser recortados à mão: `crop`, nas mesmas frações da área segura, é a parte da imagem que a figura sempre mostra, seja qual for a página. A figura assume a proporção do recorte. A área segura, se houver, é lida dentro do recorte: o motor pode cortar mais onde a página precisar, nunca fora do recorte, e `bodySource` é a composição dos dois. Marque a área segura dentro do recorte; a parte dela fora do recorte nunca aparece. Sem recorte, a imagem inteira. O recorte chega a todas as saídas: a tela, o PDF, o visualizador HTML, os dois EPUBs (um livro refluível compõe a imagem, ou o pôster de um vídeo e o filme no quadro dele, numa caixa com a proporção do recorte), o IDML e a exportação para Word formatada, uma imagem numa célula de tabela, o desenho de um quadro de quadrinhos (a janela do quadro é escolhida dentro do recorte) e uma imagem de design que mostra um recurso. A exportação semântica para Word insere a imagem inteira, como faz com a área segura, e mantém o recorte no livro. As âncoras de quadrinhos só são verificadas contra a área segura (`comicAnchorOutsideSafeArea`): mantenha cada personagem dentro do recorte também. No Sandbox, *Recorte*, ao lado da área segura, abre um quadro para arrastar, ajustar com as setas e pré-visualizar; um agente o define com `sandbox_save_resource` (`marks.crop`).
+
+```ts
+const portrait: Resource = {
+  /* … */
+  bitmap: { fileId: 'portrait.jpg', format: 'jpeg', width: 3000, height: 2000 },
+  // a metade central, de cima a baixo
+  crop: { x: 0.25, y: 0, width: 0.5, height: 1 },
+};
+```
 
 ### Âncoras de personagem e zonas a evitar
 

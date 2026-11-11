@@ -71,6 +71,7 @@ export function createPageOpener(deps: PageOpenerDeps) {
           partTitleByPageIndex,
           partNumberByPageIndex,
           partPaletteByPageIndex,
+          tintPaper: doc.config.page.backgroundColor?.hex,
           heading: {
             titleText: opener.title.titleText,
             ...markedTitleFields(opener.title, resolved.chipStyles),
@@ -149,6 +150,7 @@ export function createPageOpener(deps: PageOpenerDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
         heading: {
           titleText: title,
           ...markedTitleFields(read, resolved.chipStyles),
@@ -209,6 +211,7 @@ export function createPageOpener(deps: PageOpenerDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex: doc.pages.map((_, i) => (i === pageTurn.page.index ? palette : partPaletteByPageIndex[i] ?? {})),
+        tintPaper: doc.config.page.backgroundColor?.hex,
         heading: {
           titleText: tp.title,
           formattedNumber: tp.number,

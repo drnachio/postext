@@ -38,7 +38,7 @@ npm install postext postext-pdf
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ページでの宣言のしかたを記録したフェイスのファイルです。記録するのは、`@font-face`規則の`unicode-range`と、宣言順での位置です。`PdfFontFile`は、この2つの省略可能なプロパティを加えた`Uint8Array`です（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照。postext-pdf 1.30以降）。
 - **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
 - **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が使います。
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)が使います。
 - **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
 - **`createPdfWorker(options?)`**（`postext-pdf/worker`から） — 同じ描画をWeb Workerで行います。[ワーカーでPDFを描画する](#ワーカーでpdfを描画する)を参照してください。
 
@@ -415,7 +415,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`** — 仕上がり線の外側に塗り足し領域とトンボを加え、各ページにTrimBoxとBleedBoxを設定します。[トンボ](/ja/docs/configuration-page-layout#トンボ)を参照してください。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（または`'pdfx1a'`） — 印刷所が確認する出力インテント、識別情報、ボックスを備えたPDF/Xファイルを書き出します。すべての色とRGBの画像はICCプロファイルで分版され、K 100%はオーバープリントになり、大きな黒い面はリッチブラックで刷られます。[印刷出力（設定）](/ja/docs/configuration-fonts-colors-viewers#印刷出力設定)を参照してください。
 - **`colorSpace: 'cmyk'`**（または`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`） — PDF/Xの識別情報なしで、同じ分版を行います（トンボは常にレジストレーションカラーです）。PDFの印刷用マスターはそのまま埋め込まれます。
-- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](/ja/docs/configuration-fonts-colors-viewers#プリフライト)が報告します。
+- **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)が報告します。
 - **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
 
@@ -469,6 +469,85 @@ print: {
     { name: 'Varnish', output: 'process' },
   ],
 },
+```
+
+### CMYKで指定した色
+
+CMYKで書いた色は、その値をそのまま保ちます。印刷用の描画では`ColorValue.cmyk`（%）がそのまま使われ、`hex`は画面での表示になります。CMYKで指定したパレットの項目は、それに連動するすべての色に適用されます。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### オーバープリントする色
+
+印刷用の描画では、どの色もオーバープリントにできます。`ColorValue`に`overprint: true`を指定すると、その色で描くもの（文字、罫線、ボックス、地色）はすべて、下にあるものをノックアウトせず、その上に重ねて刷られます。プロセスカラーは分版されるとおりに、オーバープリントのグラフィックステートの下で書き出されます。特色は、同じインキを別の色がノックアウトしている場所でも、そのインキの版でオーバープリントします。オーバープリントするK 100%の黒は黒の扱いを保ち、大きな面は引き続きリッチブラックになります（`black.richBlack`）。RGBのPDFと画面はこれを無視します。パレットの項目に指定すると、それにリンクするすべての色が、その濃度も含めてオーバープリントします。リンクした色は項目の設定に従い、独自の設定は持ちません。部やセクションのパレットもこの設定を保つので、部の色の文字もオーバープリントします。
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+印刷用の描画は、レイアウトが塗るhexで色を見分けます。そのため、オーバープリントする色がノックアウトする色とhexを共有することはありません。一致した場合は、特色と同じように、オーバープリントする側が1段階（1つのチャンネルで1/255）ずれます。オーバープリントする項目の部の色も、同じようにして本のノックアウトする色から離れます。オーバープリントしてインキを載せない色（紙の白、0%のインキ）は、印刷すると消えてしまいます。プリフライトはこれを重大として報告します（`overprintWhite`）。使えるコード（約2,500万）より多くの異なる色を含む描画では、残りの色をノックアウトし、警告を出します（`overprintsExhausted`）。Sandboxでは、カラーピッカーの「印刷時にオーバープリント」スイッチで設定します。
+
+### プリフライト
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>プロパティ</th>
+      <th>型</th>
+      <th>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>検査を実行します。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>印刷サイズ（トリミングを含む）での1インチあたりの画素数がこれを下回る、配置したビットマップに警告を出します。対象は図、表のセルの画像、デザインの画像、漫画のコマです。解像度の指定がないビットマップは原寸では`page.dpi`で印刷されるので、150 dpiで組んだページでは、そうした画像はすべて150 ppiで印刷されます。解像度（`bitmap.resolution`、`layout.bitmapResolution`）を指定したビットマップは、原寸ではその解像度で印刷されます。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>これを下回ると、警告は重大になります。`minImageResolution`より大きくはなりません。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>これより細い罫線、枠、段間罫、表の罫、漫画のコマの枠。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>これより小さく、複数のインキ（プロセスカラー、リッチブラック）で刷る文字。版がずれるとにじみます。K版だけの黒い文字は対象になりません。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>仕上がり線からこの距離より近い文字。断裁で切られるおそれがあります。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>仕上がり線からこの距離の手前で止まり、塗り足しまで届いていないボックスや画像。塗り足しまで伸ばすか、内側に寄せてください。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>配置したPDFが埋め込んでいないフォントを報告します（Sandboxは各印刷用マスターを`inspectPrintMaster`で調べます）。Postextは組んだフォントをすべて埋め込みます。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`は組み上がった文書を検査し、問題の一覧を返します。各問題には、`kind`、`severity`（`'critical'`、`'warning'`、`'info'`）、本全体での`pageIndex`、問題のある`rect`（ページのpx）と、要素にあればそのソースの範囲が付きます。`kind`は`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`、`nearTrim`です。`transform`を渡さないときは、無彩色を1色、それ以外の色を3色と数え、インキ量は検査しません。渡すと、色数もインキ量も正確に求めます。画像の解像度は、リソースが宣言するピクセル数から求めます。`imageSize(fileId)`がファイル自体のピクセル数を返すとき（バイト列に対する`bitmapInfo`、またはデコードした画像）は、そちらを使います。宣言がファイルと1ピクセルより大きく食い違うと`declaredPixelsMismatch`として1回報告され、ファイルにあるより多いピクセル数を宣言している場合は警告になります。`placedImageResolutions(doc, { resources, imageSize })`は、プリフライトの有効・無効にかかわらず、配置したすべてのビットマップをその実効ppiとともに一覧にします。図のラベルは、`smallProcessText`、`inkLimit`、`safeZone`では文字として数えます。
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
 ```
 
 ### リファレンス実装

@@ -111,6 +111,26 @@ describe('the resource tools', () => {
     expect((await call('sandbox_save_resource', { id: 'map', placement: { plate: 'page' } })).error).toMatch(/placement\.plate/);
   });
 
+  it('set a float by hand and take it back to automatic, and crop a picture (#1494)', async () => {
+    const { call, get } = harness();
+    await call('sandbox_save_resource', { id: 'map', image: png(600, 400, 72), placement: { pin: { page: 1, column: 0, slot: 'top' } }, wait: false });
+    expect(get().resources[0]!.placement).toEqual({ pin: { page: 1, column: 0, slot: 'top' } });
+    // Any column: no column stored.
+    await call('sandbox_save_resource', { id: 'map', placement: { pin: { slot: 'bottom', page: 0 } }, wait: false });
+    expect(get().resources[0]!.placement).toEqual({ pin: { page: 0, slot: 'bottom' } });
+    await call('sandbox_save_resource', { id: 'map', placement: { pin: null }, wait: false });
+    expect('placement' in get().resources[0]!).toBe(false);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { pin: { page: 4, slot: 'top' } } })).error).toMatch(/placement\.pin\.page must be at most 3/);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { pin: { page: 0, slot: 'middle' } } })).error).toMatch(/placement\.pin\.slot/);
+    expect((await call('sandbox_save_resource', { id: 'map', placement: { pin: { page: 0, column: -1, slot: 'top' } } })).error).toMatch(/placement\.pin\.column/);
+
+    await call('sandbox_save_resource', { id: 'map', marks: { crop: { x: 0.25, y: 0, width: 0.5, height: 1 } }, wait: false });
+    expect(get().resources[0]!.crop).toEqual({ x: 0.25, y: 0, width: 0.5, height: 1 });
+    await call('sandbox_save_resource', { id: 'map', marks: { crop: null }, wait: false });
+    expect('crop' in get().resources[0]!).toBe(false);
+    expect((await call('sandbox_save_resource', { id: 'map', marks: { crop: { x: 0, y: 0, width: 1, height: 1 } } })).error).toMatch(/marks\.crop must be a rectangle inside the picture/);
+  });
+
   it('merge single fields, and take a placement key back to the type\'s', async () => {
     const { call, get } = harness();
     await call('sandbox_save_resource', { id: 'map', image: png(600, 400, 72), placement: { position: 'top', span: 'page', width: 0.5, rotate: 'cw' }, wait: false });
