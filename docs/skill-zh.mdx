@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-10-21',
   readingTime: '7分钟',
-  order: 49,
+  order: 50,
   plainSummary: "本页写给手里已有一本书或一份文档（比如PDF、Word或InDesign文件）、想把它转成Postext的人。只要给AI助手（也叫智能体）装上一个叫“技能”的小插件，它就能完成大部分工作。这个技能教智能体怎样复制文字，并按原样重建原书的设计。本页说明怎样安装它、怎样提要求，以及怎样检查结果。一段大约五分钟的视频演示了每一步。",
 };
 
@@ -169,6 +169,8 @@ mkdir -p ~/.local/bin && curl -fL -o ~/.local/bin/postext https://github.com/drn
 - *“把`course.docx`转换成一本Postext图书。样式‘Nota’和‘Actividad’是标注框。”*
 - *“把`deck.pptx`做成一份Postext讲义：幻灯片变成小节，演讲者备注变成正文。”*
 - *“我们有这本教材的InDesign文件包（IDML + 印刷PDF）。为第1章构建西班牙语和英语的Postext预设。”*
+
+对于InDesign书，把InDesign的<strong>文件 › 打包</strong>生成的文件夹（`.idml`、印刷PDF、字体和链接的美术文件）交给智能体。技能根据它们推断出版式规则，IDML导入器做不到这一点：[InDesign：导入、导出与移植](/zh/docs/indesign)比较了这两种方式。
 
 智能体按工作流程进行：
 

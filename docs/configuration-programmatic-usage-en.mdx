@@ -789,7 +789,7 @@ const { bytes: book } = await createBundle(importBundleInput(result));
 ```
 
 - **`idmlToPostext(bytes, options)`** is synchronous. `layout` is `'pages'` (composed pages that follow the source page for page), `'flow'` (a flowing book) or `'auto'` (the default; the result gives its `reason`). `linkBytes(link)` supplies a linked picture; links left without bytes are listed in `missingLinks`. The result holds `chapters`, `config`, `resources` with their `files`, the names of the `fonts` the book needs and `report`: a `verdict` (`faithful`, `approximate` or `lossy`) and `findings` with their `severity`, `message` and `count`. **`importBundleInput(result)`** is the input of `createBundle` from `postext/bundle`.
-- Lines the source ends with forced line breaks stay the lines of the book (the importer turns on `bodyText.justifyHardBreaks`), so a book exported from Postext comes back with the same lines. A document made in InDesign is read with losses, which the report lists. The [agent skill](/en/docs/skill) remains the recommended way to port an InDesign book.
+- Lines the source ends with forced line breaks stay the lines of the book (the importer turns on `bodyText.justifyHardBreaks`), so a book exported from Postext comes back with the same lines. A document made in InDesign is read with losses, which the report lists. To port an InDesign book, use the [agent skill](/en/docs/skill) (see [InDesign](/en/docs/indesign)). The command line takes `spreads` as `--spreads` since postext 1.78.
 - **`readIdml(bytes)`** and **`inspectIdml(doc)`** are the typed reader on its own.
 
 ## Running layout in a Web Worker

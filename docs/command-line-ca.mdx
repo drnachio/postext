@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-11-06',
   readingTime: '14 min',
-  order: 50,
+  order: 51,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
 };
 
@@ -380,6 +380,7 @@ de formulari passen a ser camps de formulari d'InDesign. `--lines keep` (el
 valor per defecte) acaba cada línia on la va acabar Postext, de manera que
 InDesign mostra les mateixes línies que el PDF; `--lines reflow` deixa els
 paràgrafs al compositor d'InDesign, i els salts de línia poden variar.
+`--spreads facing` o `--spreads single` aparella les pàgines, o no, diguin el que diguin els marges.
 `--images link` deixa les imatges al costat del fitxer, a `Links/`, en lloc de
 dins. `--fonts` escriu els fitxers de font de les variants usades al costat
 del paquet, a `Document fonts/`, on InDesign els troba per a aquell document;
@@ -389,8 +390,8 @@ redistribuir es deixa fora amb un avís. El que el paquet no pot portar tal com
 a avís `idml.*`. El generador és el paquet `postext-idml`: vegeu [Ús
 programàtic › Paquets
 d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
-A `build`, `--idml FITXER` escriu el mateix paquet, amb `--idml-images`, `--idml-lines` i `--idml-fonts`.
-Des de postext 1.71; `--lines` i `--fonts`, des de 1.76.
+A `build`, `--idml FITXER` escriu el mateix paquet, amb `--idml-images`, `--idml-lines`, `--idml-spreads` i `--idml-fonts`.
+Des de postext 1.71; `--lines` i `--fonts`, des de 1.76, i `--spreads`, des de 1.78.
 
 ### import-idml
 
@@ -402,7 +403,7 @@ postext import-idml book.idml --report --json
 
 `import-idml` llegeix un paquet d'InDesign Markup i escriu un llibre nou, en una carpeta o en un `.postext`: els capítols en Markdown, la configuració que donen els estils i les pàgines del document, i les seves imatges i taules com a recursos. Un `.indd` no es llegeix: desa'l abans des d'InDesign com a InDesign Markup. `--layout pages` segueix el document pàgina a pàgina amb pàgines compostes, cada marc on era; `--layout flow` escriu un llibre de text seguit, en ordre de lectura i amb els estils del document, perquè Postext el torni a compondre; `auto` (el valor per defecte) en tria un i diu per què. Les imatges enllaçades es llegeixen de `--links` o, si no s'indica, de la carpeta del fitxer i del seu `Links/`, i les que no es troben s'enumeren. També s'enumeren les fonts que anomena el document: un paquet no porta fitxers de font, de manera que cal donar-los amb `--font-dir` en generar el llibre.
 
-Un llibre exportat des de Postext torna amb les mateixes línies. Un document fet a InDesign es llegeix amb pèrdues: l'ordre imprimeix el veredicte (`faithful`, `approximate` o `lossy`), els recomptes i el que s'ha perdut o aproximat; `--report` hi afegeix les notes i com s'ha llegit cada estil de paràgraf, i `--json` ho porta tot com a dades. `--hidden`, `--pasteboard` i `--non-printing` llegeixen també les capes i els objectes ocults, la taula de muntatge i els objectes no imprimibles; `--conditions all` llegeix tot el text condicional, `--changes reject` llegeix els canvis registrats com si s'haguessin rebutjat i `--no-masters` deixa fora els elements de les pàgines mestres. `--name` i `--locale` donen el títol i la llengua. L'importador és `idmlToPostext`, del paquet `postext-idml`: vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
+Un llibre exportat des de Postext torna amb les mateixes línies. Un document fet a InDesign es llegeix amb pèrdues: l'ordre imprimeix el veredicte (`faithful`, `approximate` o `lossy`), els recomptes i el que s'ha perdut o aproximat; `--report` hi afegeix les notes i com s'ha llegit cada estil de paràgraf, i `--json` ho porta tot com a dades. `--hidden`, `--pasteboard` i `--non-printing` llegeixen també les capes i els objectes ocults, la taula de muntatge i els objectes no imprimibles; `--conditions all` llegeix tot el text condicional, `--changes reject` llegeix els canvis registrats com si s'haguessin rebutjat i `--no-masters` deixa fora els elements de les pàgines mestres. `--name` i `--locale` donen el títol i la llengua. L'importador és `idmlToPostext`, del paquet `postext-idml`: vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml). La importació copia el document tal com és; per portar un llibre que hagis de conservar, amb les regles de maquetació deduïdes, fes servir en lloc seu la skill per a agents (vegeu [InDesign: importar, exportar i portar](/ca/docs/indesign)).
 
 ### pack i unpack
 

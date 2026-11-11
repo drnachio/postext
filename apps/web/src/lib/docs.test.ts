@@ -40,10 +40,10 @@ const CHAPTER_PAGES: Record<string, string[]> = {
   "composed-pages": ["composed-pages-figures"],
 };
 
-/** The two guides of Part III (#880), after the Sandbox and its pages: a
- *  tutorial that builds a composed page and the how-to that moves an old
- *  book to composed pages. */
-const GUIDE_PAGES = ["composed-page-books", "migrating-to-composed-pages"];
+/** The three guides of Part III (#880, #1514), after the Sandbox and its pages: a
+ *  tutorial that builds a composed page, the how-to that moves an old
+ *  book to composed pages, and the routes in and out of InDesign. */
+const GUIDE_PAGES = ["composed-page-books", "migrating-to-composed-pages", "indesign"];
 
 /** The chapter a page belongs to ("" for a chapter). */
 const parentOf = (slug: string) =>
@@ -129,8 +129,8 @@ describe("docs table of contents", () => {
     for (const slug of ["contributing", "sandbox", ...CHAPTER_PAGES.sandbox!, ...GUIDE_PAGES, "skill", "command-line", "webmcp"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([40, 41, 49, 50, 51]);
-    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([47, 48]);
+    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([40, 41, 50, 51, 52]);
+    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([47, 48, 49]);
   });
 
   it("sets the pages of the Configuration reference under its entry page, in every language", () => {

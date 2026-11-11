@@ -57,6 +57,25 @@ function reportLook(ctx: Context, l: Look): void {
   if (l.pf.justification === 'CenterJustified' || l.pf.justification === 'RightJustified' || l.pf.justification === 'FullyJustified') ctx.rep.add('lastLineAlignment', 'info', 'Justified text whose last line is centred, flush right or spread is justified with its last line flush left', at, l.paragraphs);
 }
 
+/** The space above a paragraph of the look. InDesign adds a paragraph's
+ *  space before to the space after of the one above it, where Postext
+ *  takes the larger of the two. A look with no space before leaves the gap
+ *  to the paragraph above (its space after is that paragraph's margin, so
+ *  the larger of the two is the sum). A look with space of its own takes
+ *  the sum it most often stood under, so its usual pair keeps its gap. */
+function spaceAbove(l: Look): number {
+  if (!(l.pf.spaceBefore > 0)) return Math.max(0, l.pf.spaceBefore);
+  let best = l.pf.spaceBefore;
+  let most = 0;
+  for (const [gap, n] of l.gaps ?? []) {
+    if (n > most || (n === most && gap > best)) {
+      most = n;
+      best = gap;
+    }
+  }
+  return Math.max(best, l.pf.spaceBefore);
+}
+
 function paragraphStyle(ctx: Context, l: Look, id: string, body: Look | undefined): ParagraphStyleConfig {
   const s: ParagraphStyleConfig = {
     id,
@@ -72,8 +91,10 @@ function paragraphStyle(ctx: Context, l: Look, id: string, body: Look | undefine
     endIndent: pt(l.pf.rightIndent),
     firstLineIndent: pt(Math.max(0, l.pf.firstLineIndent)),
     hangingIndent: pt(Math.max(0, -l.pf.firstLineIndent)),
-    spaceBetween: pt(l.pf.spaceBefore + l.pf.spaceAfter),
-    marginTop: pt(l.pf.spaceBefore),
+    // Each paragraph of a spaced look is a group of its own (`blocks.ts`):
+    // the margins say all of its space.
+    spaceBetween: pt(0),
+    marginTop: pt(spaceAbove(l)),
     marginBottom: pt(l.pf.spaceAfter),
     snapToGrid: false,
   };
@@ -94,7 +115,7 @@ function headingFields(ctx: Context, l: Look): Omit<HeadingLevelConfig, 'level'>
     color: colourOf(ctx, l),
     fontWeight: l.weight,
     italic: l.italic,
-    marginTop: pt(l.pf.spaceBefore),
+    marginTop: pt(spaceAbove(l)),
     marginBottom: pt(l.pf.spaceAfter),
     numberingTemplate: '',
     snapToGrid: false,
@@ -217,7 +238,7 @@ export function styleConfig(ctx: Context): Pick<PostextConfig, 'bodyText' | 'hea
   if (bullets[0]) {
     const l = bullets[0];
     const list = l.pf.list!;
-    out.unorderedLists = { color: colourOf(ctx, l), indent: pt(Math.max(0, l.pf.leftIndent + l.pf.firstLineIndent)), gap: pt(Math.max(0, -l.pf.firstLineIndent)), marginTop: pt(l.pf.spaceBefore), marginBottom: pt(l.pf.spaceAfter), itemSpacing: pt(l.pf.spaceBefore + l.pf.spaceAfter) };
+    out.unorderedLists = { color: colourOf(ctx, l), indent: pt(Math.max(0, l.pf.leftIndent + l.pf.firstLineIndent)), gap: pt(Math.max(0, -l.pf.firstLineIndent)), marginTop: pt(spaceAbove(l)), marginBottom: pt(l.pf.spaceAfter), itemSpacing: pt(l.pf.spaceBefore + l.pf.spaceAfter) };
     if (list.bullet) out.unorderedLists.bulletChar = list.bullet;
     if (list.bulletGlyph !== undefined) ctx.rep.add('bulletGlyph', 'warning', 'A bullet taken from a font by glyph number is set as Postext\'s default bullet', `${l.path}: glyph ${list.bulletGlyph}${list.bulletFont ? ` of ${list.bulletFont}` : ''}`);
     const chars = new Set(bullets.map((b) => b.pf.list!.bullet).filter(Boolean));
@@ -226,7 +247,7 @@ export function styleConfig(ctx: Context): Pick<PostextConfig, 'bodyText' | 'hea
   if (numbers[0]) {
     const l = numbers[0];
     const list = l.pf.list!;
-    out.orderedLists = { indent: pt(Math.max(0, l.pf.leftIndent + l.pf.firstLineIndent)), fontWeight: l.weight, color: colourOf(ctx, l), marginTop: pt(l.pf.spaceBefore), marginBottom: pt(l.pf.spaceAfter), itemSpacing: pt(l.pf.spaceBefore + l.pf.spaceAfter) };
+    out.orderedLists = { indent: pt(Math.max(0, l.pf.leftIndent + l.pf.firstLineIndent)), fontWeight: l.weight, color: colourOf(ctx, l), marginTop: pt(spaceAbove(l)), marginBottom: pt(l.pf.spaceAfter), itemSpacing: pt(l.pf.spaceBefore + l.pf.spaceAfter) };
     const format = NUMBER_FORMATS.find(([re]) => re.test(list.numberFormat ?? '1,'))?.[1];
     if (format) out.orderedLists.numberFormat = format as NonNullable<PostextConfig['orderedLists']>['numberFormat'];
     else if (list.numberFormat) ctx.rep.add('numberFormat', 'warning', 'A numbered list in a number format Postext does not have is numbered in decimal', `${l.path}: ${list.numberFormat}`);

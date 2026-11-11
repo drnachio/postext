@@ -357,6 +357,11 @@ describe('postext cli', () => {
     expect(readFileSync(join(dir, 'reflow.idml')).subarray(0, 2).toString()).toBe('PK');
     // Kept lines are forced breaks in the stories: the two packages differ.
     expect(readFileSync(join(dir, 'reflow.idml')).equals(readFileSync(join(dir, 'kept.idml')))).toBe(false);
+    // #1514: spreads set whatever the margins say.
+    expect(help.stdout).toContain('--spreads');
+    const single = run(['idml', 'ch', '--spreads', 'single', '-o', 'single.idml', '--offline', '-q'], dir);
+    expect(single.code).toBe(0);
+    expect(run(['idml', 'ch', '--spreads', 'pairs', '-o', 'x.idml', '--offline'], dir).code).toBe(2);
     const wrong = run(['idml', 'ch', '--lines', 'loose', '-o', 'x.idml', '--offline'], dir);
     expect(wrong.code).toBe(2);
     expect(wrong.stderr).toContain('--lines');

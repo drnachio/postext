@@ -118,7 +118,7 @@ Word中没有对应结构的内容以源码形式随文件走：标记为`ptx:ra
 
 ### 导入InDesign文档
 
-<strong>书库</strong>面板<strong>新建</strong>菜单中的<strong>从 InDesign 文档（IDML）新建书</strong>在浏览器中读取一个`.idml`文件，并打开一个对话框。对话框列出文档的内容：页数和页面大小、文章、用到的字体、链接的和嵌入的图片，以及表。<strong>排版方式</strong>有两种：<strong>模板页</strong>让每一页的框架都留在文档中原来的位置，<strong>流式排版的书</strong>让文字顺着书的设计生成的页面排下去；<strong>自动</strong>把选择交给导入器，导入器会说明理由。`.idml`不带它所链接的图片：请选择这些文件，或选择它们所在的文件夹，每张图片按文件名匹配。导入报告随每一项选择更新：结论、各项计数，丢失、近似和备注三类情况（每类附数量和一个例子），这本书需要的字体，以及仍缺少的链接。<strong>创建这本书</strong>把结果加入你的书并打开它，原有的书保持不变。`.indd`文件会被拒绝，提示会说明要先在InDesign中把它存为IDML。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)做同样的导入。
+<strong>书库</strong>面板<strong>新建</strong>菜单中的<strong>从 InDesign 文档（IDML）新建书</strong>在浏览器中读取一个`.idml`文件，并打开一个对话框。对话框列出文档的内容：页数和页面大小、文章、用到的字体、链接的和嵌入的图片，以及表。<strong>排版方式</strong>有两种：<strong>模板页</strong>让每一页的框架都留在文档中原来的位置，<strong>流式排版的书</strong>让文字顺着书的设计生成的页面排下去；<strong>自动</strong>把选择交给导入器，导入器会说明理由。`.idml`不带它所链接的图片：请选择这些文件，或选择它们所在的文件夹，每张图片按文件名匹配。导入报告随每一项选择更新：结论、各项计数，丢失、近似和备注三类情况（每类附数量和一个例子），这本书需要的字体，以及仍缺少的链接。<strong>创建这本书</strong>把结果加入你的书并打开它，原有的书保持不变。`.indd`文件会被拒绝，提示会说明要先在InDesign中把它存为IDML。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)做同样的导入。导入得到的是文档页面的副本；对于你会长期保留的书，[智能体技能](/zh/docs/skill)会推断出它的版式规则（见[InDesign：导入、导出与移植](/zh/docs/indesign)）。
 
 
 ## 持久化

@@ -73,6 +73,7 @@ const DOC_PAGES: Record<string, string> = {
   "sandbox-embedding": "Sandbox-Agents-Embedding-and-Presets",
   "composed-page-books": "Composed-Page-Books",
   "migrating-to-composed-pages": "Moving-to-Composed-Pages",
+  indesign: "InDesign-Import-and-Export",
   skill: "Agent-Skill",
   "command-line": "Command-Line",
   webmcp: "WebMCP",

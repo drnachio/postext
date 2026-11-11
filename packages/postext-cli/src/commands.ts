@@ -140,12 +140,13 @@ export const COMMANDS: CommandSpec[] = [
   {
     name: 'idml',
     summary: 'The laid-out pages as an InDesign package (IDML)',
-    usage: 'postext idml <input…> [-o book.idml] [--images embed|link] [--lines keep|reflow] [--fonts]',
-    description: 'The PDF\'s pages as an InDesign Markup package: one page per spread, rules, boxes, paths and pictures as page items, each composed frame\'s text as a text frame with its own story, callout styles as paragraph styles, authored CMYK colours as swatches. InDesign sets the text again: frames, styles and first baselines match, line breaks may differ.',
+    usage: 'postext idml <input…> [-o book.idml] [--images embed|link] [--lines keep|reflow] [--spreads facing|single] [--fonts]',
+    description: 'The PDF\'s pages as an InDesign Markup package: facing spreads for a book with mirrored margins (else one page per spread), rules, boxes, paths and pictures as page items, each composed frame\'s text as a text frame with its own story, callout styles as paragraph styles, authored CMYK colours as swatches. Every line ends where Postext ended it unless --lines reflow leaves the paragraphs to InDesign\'s composer.',
     options: [
       OUT,
       { name: 'images', kind: 'string', arg: 'embed|link', help: 'Pictures inside the file (embed, default) or beside it in Links/ (link)' },
       { name: 'lines', kind: 'string', arg: 'keep|reflow', help: 'Lines as Postext broke them (keep, default) or left to InDesign\'s composer (reflow)' },
+      { name: 'spreads', kind: 'string', arg: 'facing|single', help: 'Facing spreads or one page to a spread, whatever the margins say (default: facing for mirrored margins)' },
       { name: 'fonts', kind: 'boolean', help: 'Write the font files beside the package, in Document fonts/' },
     ],
     examples: ['postext idml book/ -o book.idml', 'postext idml book/ -o out/book.idml --images link --fonts'],
@@ -261,6 +262,7 @@ export const COMMANDS: CommandSpec[] = [
       { name: 'idml', kind: 'string', arg: 'FILE', help: 'Write the InDesign package (IDML) here' },
       { name: 'idml-images', kind: 'string', arg: 'embed|link', help: 'With --idml: pictures inside the file (embed, default) or beside it in Links/ (link)' },
       { name: 'idml-lines', kind: 'string', arg: 'keep|reflow', help: 'With --idml: lines as Postext broke them (keep, default) or left to InDesign\'s composer (reflow)' },
+      { name: 'idml-spreads', kind: 'string', arg: 'facing|single', help: 'With --idml: facing spreads or one page to a spread, whatever the margins say' },
       { name: 'idml-fonts', kind: 'boolean', help: 'With --idml: write the font files beside the package, in Document fonts/' },
       { name: 'pages', short: 'p', kind: 'string', arg: 'LIST', help: `With --images: ${PAGES_HELP}` },
       { name: 'pattern', kind: 'string', arg: 'NAME', help: 'With --images: file name pattern (default "page-{n:03}")' },

@@ -1,0 +1,152 @@
+{/* docs/indesign-ca.mdx */}
+
+export const metadata = {
+  title: 'InDesign: importar, exportar i portar',
+  sidebarTitle: 'InDesign',
+  description: "Les dues vies per portar un llibre d'InDesign a Postext, l'importador d'IDML, que copia el que conté el document, i la skill per a agents, que en dedueix les regles de maquetació; quan fer servir cadascuna, i com l'exportador d'IDML torna un llibre a InDesign",
+  lang: 'ca',
+  lastUpdated: '2026-11-11',
+  readingTime: '9 min',
+  order: 49,
+  plainSummary: "Postext pot portar un llibre fet amb InDesign de dues maneres. L'importador copia el que conté el fitxer d'InDesign: cada pàgina, cada marc i cada estil tal com són. És ràpid, però el resultat és una còpia de les pàgines antigues, difícil de canviar i de traduir. La skill per a agents, en canvi, estudia el llibre: el fitxer, el PDF d'impremta, les fonts i les imatges. Esbrina les regles que va seguir el dissenyador i refà el llibre a partir d'aquestes regles, amb el text lliure per córrer, i així en surt un llibre millor, que és el que recomanem. Aquesta pàgina explica les dues maneres, quan convé cadascuna i com Postext torna un llibre acabat a InDesign.",
+};
+
+# InDesign: importar, exportar i portar
+
+**Un llibre fet amb InDesign pot entrar a Postext copiant-ne les pàgines o deduint-ne el disseny. Recomanem deduir el disseny.**
+
+Postext llegeix i escriu paquets d'InDesign Markup (`.idml`), el fitxer que InDesign desa amb **File › Save As › InDesign Markup (IDML)**. Els fan servir tres eines:
+
+- **l'importador**, que converteix un `.idml` en un llibre de Postext;
+- la **skill per a agents** [`postext-port`](/ca/docs/skill), que porta un llibre a partir de tots els seus originals, entre els quals hi ha el `.idml`;
+- **l'exportador**, que escriu un llibre de Postext com a `.idml` perquè un dissenyador l'acabi a InDesign.
+
+L'importador i la skill porten tots dos un llibre, i no en donen el mateix. Aquesta pàgina n'explica la diferència perquè puguis triar.
+
+## Dues vies per entrar a Postext
+
+Un document d'InDesign és un conjunt de pàgines que algú ha fet a mà. El dissenyador va seguir unes regles, com un cos de lletra, una retícula, la manera d'obrir un capítol, el lloc d'un requadre o com va un peu sota la seva figura. L'`.idml` guarda el resultat d'aplicar aquestes regles, marc a marc, i no registra les regles.
+
+**L'importador copia el resultat.** Llegeix el paquet i escriu el que hi troba: cada marc on era, cada estil amb els seus valors, cada imatge i cada taula com a recurs. No s'endevina res, i el mateix fitxer dona sempre el mateix llibre. Com l'HTML d'una pàgina web, la còpia mostra les pàgines sense el raonament que hi ha al darrere. Un marc col·locat a ull es queda a les seves coordenades, un títol baixat amb un paràgraf buit conserva el paràgraf buit i un ajust local continua sent un ajust local. El llibre s'assembla a l'original i n'arrossega l'ofici.
+
+**La skill dedueix les regles.** Un agent llegeix l'original sencer: l'`.idml`, el PDF d'impremta, les fonts i les il·lustracions. Mesura les pàgines i anota les regles que segueixen, com la mida i els marges, la retícula de base, les funcions tipogràfiques, les obertures, les capçaleres, les famílies de requadres i el lloc dels flotants. Després escriu el text com a Markdown que torna a córrer i no porta posicions de pàgina, i fixa el disseny a la configuració a partir d'aquestes regles. Postext compon les pàgines a partir de les regles, de manera que el llibre es pot editar, traduir i compondre a una altra mida, i continua semblant-se a l'original.
+
+<table>
+  <thead>
+    <tr><th></th><th>Importador</th><th>Skill per a agents</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Llegeix</td><td>L'<code>.idml</code> i les seves imatges enllaçades</td><td>L'<code>.idml</code>, el PDF d'impremta, les fonts i les il·lustracions enllaçades (<code>.ai</code>, <code>.psd</code>, <code>.eps</code>, <code>.tif</code>)</td></tr>
+    <tr><td>Mètode</td><td>Determinista: copia el que conté el document</td><td>Inferència: mesura les pàgines i en dedueix les regles</td></tr>
+    <tr><td>Text</td><td>Lligat als marcs del document (<code>--layout pages</code>) o seguit amb els seus estils (<code>--layout flow</code>)</td><td>Markdown que torna a córrer, amb directives i sense posicions de pàgina</td></tr>
+    <tr><td>Disseny</td><td>Els valors dels estils i els marcs del document</td><td>Una configuració de regles: retícula, funcions tipogràfiques, obertures, capçaleres, requadres, flotants, plantilles de pàgina per a pàgines compostes</td></tr>
+    <tr><td>Temps</td><td>Segons</td><td>Hores per a un llibre, amb un agent i comprovacions contra el PDF</td></tr>
+    <tr><td>Resultat</td><td>Una rèplica, amb un informe del que s'ha perdut</td><td>Un llibre de Postext que es comporta com l'original</td></tr>
+  </tbody>
+</table>
+
+**Fes servir la skill per defecte.** És la via adequada per a qualsevol llibre que hagis de conservar: un llibre que revisaràs, traduiràs, compondràs a una altra mida o publicaràs en EPUB a més d'en paper.
+
+**Fes servir l'importador** quan el que vols és una còpia:
+
+- **Un llibre que ha exportat Postext.** Un `.idml` escrit per Postext torna amb les mateixes línies i les mateixes pàgines, de manera que els canvis que faci un dissenyador a InDesign tornen al llibre.
+- **Una ullada ràpida.** L'informe d'importació enumera en segons les pàgines, els articles, els estils, les fonts, les imatges i les taules del document, abans de decidir res.
+- **Una pàgina fixa que es queda com és.** Un cartell, un formulari, una sola doble pàgina o un fullet curt que no s'editarà ni es tornarà a compondre.
+- **El primer pas d'una adaptació.** La mateixa skill pot executar l'importador per obtenir un inventari i un primer esborrany, i després corregir-lo; vegeu [més avall](#com-fa-servir-la-skill-limportador).
+
+## L'importador
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links Links/
+postext import-idml book.idml --report --json
+```
+
+La mateixa importació es fa al Sandbox, a **Llibres › Nou › Llibre nou a partir d'un document d'InDesign (IDML)** (vegeu [Sandbox › Importar un document d'InDesign](/ca/docs/sandbox-books-saving#importar-un-document-dindesign)), i des del codi amb `idmlToPostext`, del paquet `postext-idml` (vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml)). Totes les opcions de l'ordre són a [Línia d'ordres › import-idml](/ca/docs/command-line#import-idml).
+
+### Pàgines o text seguit
+
+- **`--layout pages`** segueix el document pàgina a pàgina. Cada pàgina es converteix en una [pàgina composta](/ca/docs/composed-pages) i cada marc es queda al seu lloc, amb la seva mida i el seu ordre; una cadena de marcs enllaçats continua sent una cadena. Fes-lo servir per a documents amb pàgines fetes a mà una per una.
+- **`--layout flow`** escriu els articles en ordre de lectura amb els estils de paràgraf del document, i Postext els compon a les pàgines que fa el disseny del llibre. Fes-lo servir per a text seguit, com una novel·la o un assaig, on les pàgines només contenen el text.
+- **`auto`**, el valor per defecte, en tria un a partir del document i en dona el motiu.
+
+### El que passa
+
+- Els estils de paràgraf i de caràcter es converteixen en els estils de paràgraf i de títol del llibre, amb la font, el cos, l'interlineat, els sagnats, l'espaiat, l'alineació, les tabulacions i el color.
+- El text amb l'èmfasi, els salts de línia forçats, els tabuladors, les notes al peu, els hipervincles, el ruby, els signes d'èmfasi i el tate-chu-yoko.
+- Les taules amb les cel·les combinades, les files de capçalera, els marges interiors i les imatges de les cel·les; les imatges, ancorades i col·locades; els filets, els rectangles i les mostres de color.
+- Les pàgines, la seva mida i els seus marges, els elements de les pàgines mestres i les seccions.
+
+### El que informa
+
+L'`.idml` no porta les fonts ni les imatges enllaçades. L'importador enumera les famílies de fonts que necessita el llibre, que després dones a la generació amb `--font-dir`. Llegeix les imatges enllaçades de `--links` o de la carpeta del fitxer, i enumera les que no troba.
+
+InDesign fa coses que no tenen equivalent a Postext, com el text en un traçat, una cel·la girada, una línia diagonal en una cel·la, els estils GREP i imbricats o els efectes de transparència. Cadascuna es converteix en una troballa de l'informe, amb un recompte i un exemple: una *pèrdua* quan es deixa fora, un *avís* quan es compon de manera semblant a l'original (les files de peu d'una taula, un degradat, un ajust al contorn). L'informe acaba amb un veredicte:
+
+- **`faithful`**: no s'ha perdut ni aproximat res (un llibre exportat des de Postext).
+- **`approximate`**: algunes coses s'han compost de manera semblant a l'original, i no s'ha deixat res fora.
+- **`lossy`**: s'ha deixat alguna cosa fora.
+
+### Fins a quin punt s'assembla la còpia
+
+L'IDML guarda el text i els marcs, no les línies en què InDesign els va tallar. Postext torna a tallar les línies amb el seu propi compositor, de manera que una línia d'un document fet amb InDesign poques vegades acaba en la mateixa paraula. El que ha de coincidir és quin text cau a quina pàgina. L'importador es prova amb un corpus de documents fets amb InDesign: un llibre de 15 pàgines, pàgines de revista, taules, enllaços i notes, japonès i àrab, objectes ancorats i estils. En els sis que s'han mesurat, entre el 87 i el 100 per cent de les paraules cauen a la mateixa pàgina que al PDF del mateix InDesign (des de postext 1.78).
+
+Un llibre que ha exportat Postext conserva les seves línies. Cada línia de l'exportació acaba amb un salt forçat, i l'importador activa [`bodyText.justifyHardBreaks`](/ca/docs/configuration-text) perquè aquestes línies continuïn justificades.
+
+## La skill
+
+La [skill per a agents](/ca/docs/skill) porta un llibre amb els passos que descriu aquella pàgina: un encàrrec, un inventari de l'original, un full de dades mesurades, la configuració, els capítols i la comprovació de cada pàgina contra l'original. Per a un llibre d'InDesign, dona-li tot el que té InDesign.
+
+### La carpeta de l'original
+
+A InDesign, **File › Package** reuneix les fonts i les imatges enllaçades del document en una carpeta; marca **Include IDML** i **Include PDF (Print)**. Posa aquesta carpeta al projecte com a `source/`:
+
+```
+my-book/
+  source/
+    Book.indd
+    Book.idml
+    Book.pdf
+    Document fonts/
+    Links/
+      cover.ai
+      map-01.ai
+      photo-12.psd
+```
+
+- **L'`.idml`** dona el text, els estils, les taules i les imatges ancorades en l'ordre dels articles. La skill el llegeix amb el seu propi `idml_extract.py`, que assigna una funció a cada estil de paràgraf.
+- **El PDF d'impremta** dona el que li falta a l'`.idml`: on ha caigut cada línia, cada requadre i cada figura a la pàgina impresa. La skill hi mesura la retícula, els marges i les obertures, i al final hi compara les seves pròpies pàgines.
+- **Les fonts** permeten a Postext compondre el text amb les lletres de l'original, de manera que les mesures es mantenen. Comprova que la llicència ho permet; la skill pregunta quan no ho pot saber.
+- **Les il·lustracions** de `Links/` es converteixen en les figures del llibre: els fitxers d'Illustrator com a SVG vectorial, i els de Photoshop i TIFF com a mapes de bits.
+
+Després demana-ho a l'agent, per exemple: *«Porta a Postext el llibre d'InDesign que hi ha a `source/`: primer els capítols 1 a 3, en castellà, per a impremta i EPUB.»*
+
+### Com fa servir la skill l'importador
+
+La skill pot executar `postext import-idml source/Book.idml --report --json` en començar. L'informe dona un inventari en segons: els estils en ús, els articles, les fonts, les imatges, les taules i el que no té equivalent. La skill en parteix, i no lliura la importació tal com és. Substitueix els marcs en llocs fixos per regles i plantilles, els paràgrafs buits i els ajustos locals per espaiats i estils, i les posicions de cada pàgina per flotants.
+
+## L'exportador
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link --fonts
+postext build book/ --pdf book.pdf --idml book.idml
+```
+
+L'exportador compon el llibre com ho fa el PDF i escriu les pàgines com un `.idml` perquè un dissenyador l'acabi a InDesign. S'executa des de la línia d'ordres ([`postext idml`](/ca/docs/command-line#idml), o `--idml` a `build`), des del Sandbox (**Exporta a InDesign (IDML)** a la capçalera del tauler Text; vegeu [Sandbox › Llibres i desament](/ca/docs/sandbox-books-saving)) i des del codi amb `idmlDocument`, de `postext-idml`.
+
+- **Pàgines i plecs.** Les pàgines van a la seva mida final, en plecs de pàgines enfrontades en un llibre amb marges de pàgines enfrontades i una pàgina per plec en els altres casos; `--spreads facing` o `--spreads single` les col·loca així diguin el que diguin els marges.
+- **Línies.** `--lines keep`, el valor per defecte, acaba cada línia on la va acabar Postext, de manera que InDesign mostra les mateixes línies que el PDF. `--lines reflow` deixa els paràgrafs al compositor d'InDesign, per a un llibre que s'hi tornarà a compondre.
+- **Text.** Cada marc d'una pàgina composta es converteix en un marc de text amb el seu propi article, i els marcs encadenats amb `next` en comparteixen un. Els estils de paràgraf porten els noms dels estils del llibre, els sagnats, les tabulacions i l'espaiat. Hi passen les notes al peu, els enllaços, el ruby, els signes d'èmfasi i els articles de dreta a esquerra i verticals.
+- **Elements de pàgina.** Els filets, els requadres, els traçats i les imatges es converteixen en elements de pàgina d'InDesign; les taules, en taules d'InDesign, i les fórmules en línia, la música i les mostres, en objectes ancorats. Els colors CMYK d'autor es converteixen en mostres de quadricromia, i els xips amb camp de formulari, en camps de formulari d'InDesign.
+- **Imatges i fonts.** `--images link` escriu les imatges a `Links/`, al costat del paquet, en lloc d'incrustar-les. `--fonts` escriu els fitxers de font a `Document fonts/`, on InDesign els troba, i deixa fora qualsevol família que el llibre no pugui redistribuir.
+- **Avisos.** El que InDesign no pot mostrar tal com ho va compondre Postext es notifica com a avís `idml.*`, com el marc arrodonit d'una taula o els punts d'èmfasi del text vertical.
+
+Exportar no és portar a la inversa. L'`.idml` conté les pàgines que va compondre Postext, i les regles que les van compondre es queden al llibre de Postext. Un canvi fet a InDesign torna a Postext per l'importador, com a còpia de la pàgina. Les regles que vulguis canviar, com el cos de lletra, val més canviar-les al llibre de Postext i tornar-lo a exportar.
+
+## En resum, quina triar
+
+- **Per conservar, editar o traduir un llibre fet amb InDesign**, porta'l amb la skill a partir d'una carpeta empaquetada.
+- **Per veure què conté un `.idml`**, o per recuperar un llibre que ha exportat Postext, fes servir l'importador.
+- **Per conservar tal com és una pàgina fixa solta**, importa-la amb `--layout pages`.
+- **Per enviar un llibre de Postext a un estudi que treballa amb InDesign**, exporta'l amb `postext idml`.

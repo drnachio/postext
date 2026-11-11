@@ -1,0 +1,152 @@
+{/* docs/indesign-de.mdx */}
+
+export const metadata = {
+  title: 'InDesign: Import, Export und Portierung',
+  sidebarTitle: 'InDesign',
+  description: 'Die zwei Wege, ein InDesign-Buch nach Postext zu bringen, der IDML-Import, der kopiert, was das Dokument enthält, und der Agenten-Skill, der seine Layoutregeln erschließt, wann welcher passt, und wie der IDML-Export ein Buch an InDesign zurückgibt',
+  lang: 'de',
+  lastUpdated: '2026-11-11',
+  readingTime: '10 min',
+  order: 49,
+  plainSummary: "Postext kann ein in InDesign gemachtes Buch auf zwei Wegen übernehmen. Der Import kopiert, was die InDesign-Datei enthält, jede Seite, jeden Rahmen und jedes Format so, wie es ist; das geht schnell, aber das Ergebnis ist eine Kopie der alten Seiten und schwer zu ändern und zu übersetzen. Der Agenten-Skill untersucht stattdessen das Buch: die Datei, das gedruckte PDF, die Schriften und die Bilder. Er findet die Regeln, denen die Gestalterin oder der Gestalter gefolgt ist, und baut das Buch nach diesen Regeln neu auf, mit frei fließendem Text. Das ergibt ein besseres Buch, darum empfehlen wir diesen Weg. Diese Seite erklärt beide Wege, wann welcher passt und wie Postext ein fertiges Buch an InDesign zurückgibt.",
+};
+
+# InDesign: Import, Export und Portierung
+
+**Ein in InDesign gemachtes Buch kommt nach Postext, indem man seine Seiten kopiert oder seine Gestaltung erschließt. Wir empfehlen, die Gestaltung zu erschließen.**
+
+Postext liest und schreibt InDesign-Markup-Pakete (`.idml`), die Datei, die InDesign mit **Datei › Speichern unter › InDesign Markup (IDML)** speichert. Drei Werkzeuge nutzen sie:
+
+- der **Import**, der eine `.idml` in ein Postext-Buch umwandelt;
+- der **Agenten-Skill** [`postext-port`](/de/docs/skill), der ein Buch aus all seinen Quellen überträgt, darunter die `.idml`;
+- der **Export**, der ein Postext-Buch als `.idml` schreibt, damit eine Gestalterin oder ein Gestalter es in InDesign fertigstellt.
+
+Import und Skill bringen beide ein Buch herein, und sie ergeben nicht dasselbe Buch. Diese Seite erklärt den Unterschied, damit Sie wählen können.
+
+## Zwei Wege nach Postext
+
+Ein InDesign-Dokument ist eine Reihe von Seiten, die jemand von Hand gemacht hat. Dabei galten Regeln, etwa ein Schriftgrad, ein Raster, die Art, wie ein Kapitel beginnt, wo ein Kasten steht und wie eine Bildunterschrift unter ihrer Abbildung sitzt. Die `.idml` hält das Ergebnis dieser Regeln fest, Rahmen für Rahmen, und speichert die Regeln selbst nicht.
+
+**Der Import kopiert das Ergebnis.** Er liest das Paket und schreibt, was er findet: jeden Rahmen dort, wo er stand, jedes Format mit seinen Werten, jedes Bild und jede Tabelle als Ressource. Nichts wird geraten, und dieselbe Datei ergibt immer dasselbe Buch. Wie das HTML einer Webseite zeigt die Kopie die Seiten ohne die Überlegungen dahinter. Ein nach Augenmaß gesetzter Rahmen bleibt an seinen Koordinaten, eine mit einem leeren Absatz nach unten geschobene Überschrift behält den leeren Absatz, und eine lokale Abweichung bleibt eine Abweichung. Das Buch sieht aus wie die Vorlage, samt den Handgriffen, mit denen sie gemacht wurde.
+
+**Der Skill erschließt die Regeln.** Ein Agent liest die ganze Quelle: die `.idml`, das Druck-PDF, die Schriften und die Grafiken. Er vermisst die Seiten und schreibt die Regeln auf, denen sie folgen, etwa Endformat und Ränder, Grundlinienraster, typografische Rollen, Kapitelauftakte, Kolumnentitel, Kastenfamilien und wohin Gleitobjekte kommen. Dann schreibt er den Text als umbrechbares Markdown ohne Seitenpositionen und legt die Gestaltung aus diesen Regeln in der Konfiguration fest. Postext setzt die Seiten nach den Regeln, sodass sich das Buch bearbeiten, übersetzen und in einem anderen Format setzen lässt und trotzdem aussieht wie das Original.
+
+<table>
+  <thead>
+    <tr><th></th><th>Import</th><th>Agenten-Skill</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Liest</td><td>Die <code>.idml</code> und ihre verknüpften Bilder</td><td>Die <code>.idml</code>, das Druck-PDF, die Schriften und die verknüpften Grafiken (<code>.ai</code>, <code>.psd</code>, <code>.eps</code>, <code>.tif</code>)</td></tr>
+    <tr><td>Methode</td><td>Deterministisch: kopiert, was das Dokument enthält</td><td>Ableitung: vermisst die Seiten und erschließt die Regeln</td></tr>
+    <tr><td>Text</td><td>An die Rahmen des Dokuments gebunden (<code>--layout pages</code>) oder fließend unter seinen Formaten (<code>--layout flow</code>)</td><td>Umbrechbares Markdown mit Direktiven, ohne Seitenpositionen</td></tr>
+    <tr><td>Gestaltung</td><td>Die Werte der Formate und Rahmen des Dokuments</td><td>Eine Konfiguration aus Regeln: Raster, typografische Rollen, Kapitelauftakte, Kolumnentitel, Kästen, Gleitobjekte, Seitenvorlagen für zusammengesetzte Seiten</td></tr>
+    <tr><td>Dauer</td><td>Sekunden</td><td>Stunden für ein Buch, mit einem Agenten und Abgleichen mit dem PDF</td></tr>
+    <tr><td>Ergebnis</td><td>Eine Nachbildung, mit einem Bericht über das Verlorene</td><td>Ein Postext-Buch, das sich wie das Original verhält</td></tr>
+  </tbody>
+</table>
+
+**Nehmen Sie im Normalfall den Skill.** Er ist der richtige Weg für jedes Buch, das Sie behalten: ein Buch, das Sie überarbeiten, übersetzen, in einem anderen Format setzen oder neben dem Druck auch als EPUB veröffentlichen.
+
+**Nehmen Sie den Import**, wenn eine Kopie das Ziel ist:
+
+- **Ein aus Postext exportiertes Buch.** Eine von Postext geschriebene `.idml` kommt mit denselben Zeilen und denselben Seiten zurück, sodass die Änderungen einer Gestalterin oder eines Gestalters in InDesign ins Buch zurückfinden.
+- **Ein schneller Überblick.** Der Importbericht listet in Sekunden die Seiten, Textabschnitte, Formate, Schriften, Bilder und Tabellen des Dokuments auf, bevor Sie etwas entscheiden.
+- **Eine feste Seite, die bleibt, wie sie ist.** Ein Plakat, ein Formular, ein einzelner Druckbogen oder eine kurze Broschüre, die weder bearbeitet noch neu umbrochen wird.
+- **Der erste Schritt einer Portierung.** Der Skill selbst kann den Import ausführen, um ein Inventar und einen ersten Entwurf zu bekommen, und ihn dann korrigieren; siehe [unten](#wie-der-skill-den-import-nutzt).
+
+## Der Import
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links Links/
+postext import-idml book.idml --report --json
+```
+
+Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus einem InDesign-Dokument (IDML)** (siehe [Sandbox › Ein InDesign-Dokument importieren](/de/docs/sandbox-books-saving#ein-indesign-dokument-importieren)) und im Code mit `idmlToPostext` aus dem Paket `postext-idml` (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml)). Alle Optionen des Befehls stehen unter [Kommandozeile › import-idml](/de/docs/command-line#import-idml).
+
+### Seiten oder Fließtext
+
+- **`--layout pages`** folgt dem Dokument Seite für Seite. Jede Seite wird zu einer [zusammengesetzten Seite](/de/docs/composed-pages), und jeder Rahmen behält Ort, Größe und Reihenfolge; eine Kette verketteter Rahmen bleibt eine Kette. Nehmen Sie es für Dokumente, deren Seiten jeweils von Hand gemacht sind.
+- **`--layout flow`** schreibt die Textabschnitte in Lesereihenfolge unter den Absatzformaten des Dokuments, und Postext setzt sie auf Seiten, die das Design des Buchs anlegt. Nehmen Sie es für fortlaufenden Text wie einen Roman oder einen Essay, bei dem die Seiten nur den Text tragen.
+- **`auto`**, der Standard, wählt eines nach dem Dokument aus und nennt den Grund.
+
+### Was übernommen wird
+
+- Absatz- und Zeichenformate werden zu den Absatz- und Überschriftenformaten des Buchs, mit Schrift, Schriftgrad, Zeilenabstand, Einzügen, Abständen, Ausrichtung, Tabulatoren und Farbe.
+- Text mit seinen Hervorhebungen, erzwungenen Zeilenumbrüchen, Tabulatoren, Fußnoten, Hyperlinks, Ruby, Betonungszeichen und Tate-chu-yoko.
+- Tabellen mit verbundenen Zellen, Kopfzeilen, Zellabständen und Bildern in Zellen; Bilder, verankert und platziert; Linien, Rechtecke und Farbfelder.
+- Seiten, ihre Größe und Ränder, Objekte der Musterseiten und Abschnitte.
+
+### Was der Bericht meldet
+
+Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Import listet die Schriftfamilien auf, die das Buch braucht und die Sie dem Build dann mit `--font-dir` geben. Verknüpfte Bilder liest er aus `--links` oder aus dem Ordner der Datei und listet die auf, die er nicht findet.
+
+InDesign kann Dinge, für die Postext keine Entsprechung hat, etwa Pfadtext, eine gedrehte Zelle, eine Diagonale in einer Zelle, GREP- und verschachtelte Formate oder Transparenzeffekte. Jedes davon wird zu einem Befund im Bericht, mit einer Anzahl und einem Beispiel: ein *Verlust*, wenn es wegfällt, eine *Warnung*, wenn es angenähert gesetzt wird (die Fußzeilen einer Tabelle, ein Verlauf, eine Konturenführung). Der Bericht endet mit einem Urteil:
+
+- **`faithful`**: nichts ging verloren oder wurde angenähert (ein aus Postext exportiertes Buch).
+- **`approximate`**: manches wurde angenähert gesetzt, und nichts fiel weg.
+- **`lossy`**: etwas fiel weg.
+
+### Wie nah die Kopie kommt
+
+IDML speichert den Text und die Rahmen, nicht die Zeilen, in die InDesign den Text umbrochen hat. Postext setzt die Zeilen mit seinem eigenen Setzer neu, deshalb endet eine Zeile eines in InDesign gemachten Dokuments selten auf demselben Wort. Übereinstimmen soll, welcher Text auf welche Seite fällt. Der Import wird an einem Korpus von in InDesign gemachten Dokumenten geprüft: ein Buch mit 15 Seiten, Zeitschriftenseiten, Tabellen, Links und Anmerkungen, Japanisch und Arabisch, verankerte Objekte und Formate. Bei den sechs gemessenen Dokumenten fallen 87 bis 100 Prozent der Wörter auf dieselbe Seite wie im PDF von InDesign selbst (seit postext 1.78).
+
+Ein aus Postext exportiertes Buch behält seine Zeilen. Jede Zeile des Exports endet mit einem erzwungenen Umbruch, und der Import schaltet [`bodyText.justifyHardBreaks`](/de/docs/configuration-text) ein, damit diese Zeilen im Blocksatz bleiben.
+
+## Der Skill
+
+Der [Agenten-Skill](/de/docs/skill) überträgt ein Buch in den Schritten, die jene Seite beschreibt: ein Auftrag, ein Inventar der Quelle, ein Datenblatt mit gemessenen Fakten, die Konfiguration, die Kapitel und der Abgleich jeder Seite mit dem Original. Geben Sie ihm für ein InDesign-Buch alles, was InDesign hat.
+
+### Der Quellordner
+
+In InDesign sammelt **Datei › Verpacken** die Schriften und verknüpften Bilder des Dokuments in einem Ordner; schalten Sie die Optionen ein, die IDML und das Druck-PDF beilegen (im englischen InDesign **Include IDML** und **Include PDF (Print)**). Legen Sie diesen Ordner als `source/` in das Projekt:
+
+```
+my-book/
+  source/
+    Book.indd
+    Book.idml
+    Book.pdf
+    Document fonts/
+    Links/
+      cover.ai
+      map-01.ai
+      photo-12.psd
+```
+
+- **Die `.idml`** liefert den Text, die Formate, die Tabellen und die verankerten Bilder in der Reihenfolge der Textabschnitte. Der Skill liest sie mit seinem eigenen `idml_extract.py`, das jedes Absatzformat einer Rolle zuordnet.
+- **Das Druck-PDF** liefert, was der `.idml` fehlt: wo jede Zeile, jeder Kasten und jede Abbildung auf der gedruckten Seite gelandet ist. Der Skill vermisst dort das Raster, die Ränder und die Kapitelauftakte und vergleicht am Ende seine eigenen Seiten damit.
+- **Die Schriften** lassen Postext den Text in den Schnitten des Originals setzen, sodass die Maße stimmen. Prüfen Sie, ob ihre Lizenz das erlaubt; der Skill fragt nach, wenn er es nicht erkennen kann.
+- **Die Grafiken** in `Links/` werden zu den Abbildungen des Buchs: Illustrator-Dateien als Vektor-SVG, Photoshop- und TIFF-Dateien als Bitmaps.
+
+Bitten Sie dann den Agenten, zum Beispiel: *„Übertrage das InDesign-Buch in `source/` nach Postext: zuerst die Kapitel 1 bis 3, auf Spanisch, für Druck und EPUB.“*
+
+### Wie der Skill den Import nutzt
+
+Der Skill kann zu Beginn `postext import-idml source/Book.idml --report --json` ausführen. Der Bericht liefert in Sekunden ein Inventar: die verwendeten Formate, die Textabschnitte, die Schriften, die Bilder, die Tabellen und was keine Entsprechung hat. Der Skill geht davon aus und liefert nicht den Import selbst ab. Er ersetzt Rahmen an festen Stellen durch Regeln und Vorlagen, leere Absätze und lokale Abweichungen durch Abstände und Formate und Positionen auf einzelnen Seiten durch Gleitobjekte.
+
+## Der Export
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link --fonts
+postext build book/ --pdf book.pdf --idml book.idml
+```
+
+Der Export setzt das Buch wie das PDF und schreibt die Seiten als `.idml`, damit eine Gestalterin oder ein Gestalter es in InDesign fertigstellt. Er läuft auf der Kommandozeile ([`postext idml`](/de/docs/command-line#idml) oder `--idml` in `build`), in der Sandbox (**Nach InDesign exportieren (IDML)** in der Kopfzeile des Bedienfelds Text; siehe [Sandbox › Bücher, Word-Dateien und Speichern](/de/docs/sandbox-books-saving)) und im Code mit `idmlDocument` aus `postext-idml`.
+
+- **Seiten und Druckbögen.** Die Seiten stehen in ihrem Endformat, in Druckbögen aus gegenüberliegenden Seiten bei einem Buch mit gespiegelten Rändern und sonst eine Seite je Druckbogen; `--spreads facing` oder `--spreads single` legt das fest, gleich was die Ränder sagen.
+- **Zeilen.** `--lines keep`, der Standard, beendet jede Zeile dort, wo Postext sie beendet hat, sodass InDesign dieselben Zeilen zeigt wie das PDF. `--lines reflow` überlässt die Absätze dem Setzer von InDesign, für ein Buch, das dort neu gesetzt wird.
+- **Text.** Jeder Rahmen einer zusammengesetzten Seite wird zu einem Textrahmen mit eigenem Textabschnitt, und mit `next` verkettete Rahmen teilen sich einen. Die Absatzformate tragen die Formatnamen, Einzüge, Tabulatoren und Abstände des Buchs. Fußnoten, Links, Ruby, Betonungszeichen sowie Textabschnitte von rechts nach links und senkrechte Textabschnitte kommen mit.
+- **Seitenobjekte.** Linien, Kästen, Pfade und Bilder werden zu InDesign-Seitenobjekten; Tabellen werden zu InDesign-Tabellen, und Formeln im Text, Noten und Farbmuster werden zu verankerten Objekten. Vom Autor angelegte CMYK-Farben werden zu Prozessfarbfeldern, und Chips mit Formularfeld werden zu InDesign-Formularfeldern.
+- **Bilder und Schriften.** `--images link` schreibt die Bilder nach `Links/` neben das Paket, statt sie einzubetten. `--fonts` schreibt die Schriftdateien nach `Document fonts/`, wo InDesign sie findet, und lässt jede Familie weg, die das Buch nicht weitergeben darf.
+- **Warnungen.** Was InDesign nicht so zeigen kann, wie Postext es gesetzt hat, wird als Warnung `idml.*` gemeldet, etwa der abgerundete Rahmen einer Tabelle oder Betonungspunkte in senkrechtem Text.
+
+Exportieren ist keine Portierung in umgekehrter Richtung. Die `.idml` enthält die Seiten, die Postext gesetzt hat, und die Regeln, nach denen sie gesetzt wurden, bleiben im Postext-Buch. Eine Änderung in InDesign kommt über den Import nach Postext zurück, als Kopie der Seite. Regeln, die Sie ändern, etwa den Schriftgrad, ändern Sie am besten im Postext-Buch und exportieren dann erneut.
+
+## Kurz gesagt
+
+- **Um ein in InDesign gemachtes Buch zu behalten, zu bearbeiten oder zu übersetzen**, übertragen Sie es mit dem Skill aus einem verpackten Quellordner.
+- **Um zu sehen, was eine `.idml` enthält**, oder um ein aus Postext exportiertes Buch zurückzuholen, nehmen Sie den Import.
+- **Um eine einzelne feste Seite genau so zu behalten, wie sie ist**, importieren Sie sie mit `--layout pages`.
+- **Um ein Postext-Buch an ein InDesign-Studio zu geben**, exportieren Sie es mit `postext idml`.

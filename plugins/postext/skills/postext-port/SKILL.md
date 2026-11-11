@@ -694,9 +694,17 @@ Pick the path per [sources.md](references/sources.md):
 - **DOCX / PPTX / ODT / EPUB / HTML / LaTeX / Markdown / JATS / DocBook**:
   `scripts/pandoc_to_postext.py SOURCE --dump-styles`, then
   `scripts/pandoc_to_postext.py SOURCE --out draft --lang es --style-map map.json --link-refs`.
-- **InDesign**: export IDML and a print PDF, then run
+- **InDesign**: ask for the folder InDesign's File › Package makes, with
+  Include IDML and Include PDF (Print) ticked: the `.idml`, the print PDF,
+  `Document fonts/` and `Links/` (`.ai`, `.psd`, `.eps`, `.tif`). Keep it as
+  `source/`. Run `postext import-idml source/Book.idml --report --json >
+  work/idml-report.json` first, as an inventory only (styles, stories,
+  fonts, pictures, tables, what has no equivalent); then
   `scripts/idml_extract.py roles book.idml > map.json` and
   `scripts/idml_extract.py markdown book.idml --map map.json --out draft`.
+  Never deliver the import as the port: it copies frames, overrides and
+  empty paragraphs as they stand, while the port works out the rules and
+  writes reflowable content (sources.md, "InDesign (IDML)").
 - **Scans**: `ocrmypdf` first, then the PDF path.
 - **Chinese sources**, vertical ones included: see sources.md, "Chinese,
   Japanese and Korean sources". `idml_extract.py` turns InDesign ruby,
@@ -1054,7 +1062,7 @@ outputs would ship too (`--exclude GLOB` leaves more out).
 When the brief asks for other files, write them from the delivered bundle:
 `postext epub` (fixed or reflowable, checked with EPUBCheck), `postext html`, a press
 `postext pdf` (`--pdfx`, `--profile`), `postext docx` for an editor who works in
-Word, and `postext idml` (postext ≥ 1.71; in code `idmlDocument` from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml` subpath) for a designer who finishes the pages in InDesign, so IDML is an output as well as a source. `postext-idml` also has `idmlToPostext`, a deterministic import of an `.idml` with a report of what it lost, and `postext import-idml file.idml -o book/ --report` runs it from the command line: a first import with its report, as a starting point that the port then corrects. A port still goes the way this skill describes, from the IDML and the print PDF; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
+Word, and `postext idml` (postext ≥ 1.71; in code `idmlDocument` from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml` subpath) for a designer who finishes the pages in InDesign, so IDML is an output as well as a source. `postext idml` also takes `--lines keep|reflow` (keep the PDF's lines, or leave them to InDesign's composer for a studio that will set the book again), `--spreads facing|single` (postext ≥ 1.78), `--images link` and `--fonts`, and `build --idml` writes it beside the PDF. `postext-idml` also has `idmlToPostext`, a deterministic import of an `.idml` with a report of what it lost, run by `postext import-idml file.idml -o book/ --report`: an inventory for the port, not the port. A port still goes the way this skill describes, from the IDML and the print PDF; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
 `postext-scorm` (configuration.md §21, "Delivering EPUB, HTML and PDF files"; sources.md § Word).
 
 Import it at https://postext.dev/en/sandbox (Books → New → Open a .postext file…). A

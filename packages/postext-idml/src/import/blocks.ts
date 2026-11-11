@@ -91,7 +91,13 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     const g = group;
     group = undefined;
     if (!g.items.length) return;
-    out.push({ kind: 'block', text: `:::paragraphs${attrs([g.look.id ? `style="${g.look.id}"` : undefined])}\n${g.items.join('\n\n')}\n:::` });
+    // A look that keeps space about its paragraphs gives each its own
+    // group: the space between two of them is then the margins', as it is
+    // between any two paragraphs, and none is left under the last (a
+    // group's `spaceBetween` would be, see `styleconfig.ts`).
+    const open = `:::paragraphs${attrs([g.look.id ? `style="${g.look.id}"` : undefined])}`;
+    if (g.look.pf.spaceBefore + g.look.pf.spaceAfter > 0) for (const item of g.items) out.push({ kind: 'block', text: `${open}\n${item}\n:::` });
+    else out.push({ kind: 'block', text: `${open}\n${g.items.join('\n\n')}\n:::` });
   };
   // Note definitions stand under the block that cites them, once a list
   // or a group has ended.
@@ -126,6 +132,7 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     if (isEmpty(para) && !para.runs.some((r) => r.content.some((i) => i.kind === 'table' || i.kind === 'item' || i.kind === 'footnote' || i.kind === 'endnote'))) {
       empties++;
       if (para.breakAfter && env.target === 'flow' && BREAKS[para.breakAfter]) push({ kind: 'break', text: BREAKS[para.breakAfter]! });
+    else if (para.breakAfter && env.target === 'frame' && BREAKS[para.breakAfter]) push({ kind: 'break', text: ':::columnbreak' });
       placed();
       return;
     }
@@ -133,6 +140,11 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     ctx.counts.characters += ownText(para).length;
     const start = look.pf.startParagraph;
     if (start && env.target === 'flow' && look.role !== 'heading' && BREAKS[start]) push({ kind: 'break', text: BREAKS[start]! });
+    // In a frame of a composed page, a paragraph that starts a new column,
+    // frame or page opens the next frame of its chain (postext 1.78: a
+    // column break cuts a frame that can go on). The first paragraph of a
+    // story needs none.
+    else if (start && env.target === 'frame' && BREAKS[start] && out.length > 0) push({ kind: 'break', text: ':::columnbreak' });
     const inline: InlineEnv = { where: look.role === 'heading' ? 'heading' : 'body', look, notes: env.notes, after: [], before: [], carry: env.carry, hooks: env.hooks, ...(env.pageName !== undefined ? { pageName: env.pageName } : {}) };
     const leadIn = nestedLeadIn(ctx, para, look);
     if (leadIn) inline.leadIn = leadIn;
@@ -152,6 +164,7 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     const under = look.role === 'caption' && !group && last ? /^::resource\{id="([^"]+)"\}$/.exec(last.text) : null;
     const resource = under ? ctx.resources.find((x) => x.id === under[1]) : undefined;
     if (resource && !resource.caption && text && !carried) {
+      ctx.captionLook ??= look;
       const plainText = ownText(para).trim();
       const label = captionLabel(plainText);
       const lead = label ? plainText.slice(0, plainText.length - label.rest.length) : '';
@@ -218,6 +231,7 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
       for (const b of inline.after) push({ kind: 'block', text: b });
     }
     if (para.breakAfter && env.target === 'flow' && BREAKS[para.breakAfter]) push({ kind: 'break', text: BREAKS[para.breakAfter]! });
+    else if (para.breakAfter && env.target === 'frame' && BREAKS[para.breakAfter]) push({ kind: 'break', text: ':::columnbreak' });
     else if (para.breakAfter && env.target !== 'flow') ctx.rep.add('breakInFrame', 'info', 'A column, frame or page break typed in the text of a placed frame is left to the frames', para.breakAfter);
     placed();
   });

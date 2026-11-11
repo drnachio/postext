@@ -16,6 +16,8 @@ export interface IdmlChoices {
   images: 'embed' | 'link';
   lineBreaks: 'keep' | 'reflow';
   packFonts: boolean;
+  /** Facing spreads or one page to a spread; unset follows the margins. */
+  spreads: 'facing' | 'single' | undefined;
 }
 
 /** What the options ask of the package; `prefix` is `idml-` in `build`. */
@@ -26,7 +28,8 @@ export function idmlChoices(opts: Options, prefix: string, out: string | undefin
   const lineBreaks = opts.choice(`${prefix}lines`, ['keep', 'reflow'] as const) ?? 'keep';
   const packFonts = opts.flag(`${prefix}fonts`) === true;
   if (packFonts && out === '-') throw new UsageError(`--${prefix}fonts writes the font files beside the package: give it a file`);
-  return { images, lineBreaks, packFonts };
+  const spreads = opts.choice(`${prefix}spreads`, ['facing', 'single'] as const);
+  return { images, lineBreaks, packFonts, spreads };
 }
 
 export async function writeIdml(book: Book, layout: Layout, fonts: FontSet, choices: IdmlChoices, reporter: Reporter, out: string): Promise<void> {
@@ -36,6 +39,7 @@ export async function writeIdml(book: Book, layout: Layout, fonts: FontSet, choi
       resourceBytes: (id) => book.files.get(id),
       images: choices.images,
       lineBreaks: choices.lineBreaks,
+      ...(choices.spreads ? { spreads: choices.spreads } : {}),
       // A face is named as its file names it, which is how InDesign finds it.
       fontFile: (family, weight, italic) => fonts.pick(family, weight, italic ? 'italic' : 'normal')?.bytes,
       title: book.name,

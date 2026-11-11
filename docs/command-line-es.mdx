@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'es',
   lastUpdated: '2026-11-06',
   readingTime: '14 min',
-  order: 50,
+  order: 51,
   plainSummary: "Esta página es para quien quiere hacer libros con Postext desde una terminal en lugar de desde la web. Descargas un único archivo para tu ordenador y lo ejecutas, sin instalar nada más. Le das tu libro, o unos cuantos archivos de texto, y te hace un PDF, una página web, un libro electrónico, imágenes de las páginas o un documento de Word. También puede revisar un libro en busca de problemas y juntar todos sus archivos en uno. Otros programas y los asistentes de inteligencia artificial también pueden usarlo, porque sabe responder en un formato que leen con facilidad.",
 };
 
@@ -375,6 +375,7 @@ con campo de formulario pasan a ser campos de formulario de InDesign. `--lines
 keep` (el valor por defecto) termina cada línea donde la terminó Postext, así
 que InDesign muestra las mismas líneas que el PDF; `--lines reflow` deja los
 párrafos al componedor de InDesign, y los cortes de línea pueden variar.
+`--spreads facing` o `--spreads single` empareja las páginas, o no, digan lo que digan los márgenes.
 `--images link` deja las imágenes junto al archivo, en `Links/`, en lugar de
 dentro. `--fonts` escribe los archivos de fuente de las variantes usadas junto
 al paquete, en `Document fonts/`, donde InDesign los encuentra para ese
@@ -384,8 +385,8 @@ llevar como está en el libro (los puntos de énfasis del texto vertical, el mar
 redondeado de una tabla) se notifica como aviso `idml.*`. El generador es el paquete
 `postext-idml`: véase [Uso programático › Paquetes de
 InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
-En `build`, `--idml ARCHIVO` escribe el mismo paquete, con `--idml-images`, `--idml-lines` y `--idml-fonts`.
-Desde postext 1.71; `--lines` y `--fonts`, desde 1.76.
+En `build`, `--idml ARCHIVO` escribe el mismo paquete, con `--idml-images`, `--idml-lines`, `--idml-spreads` y `--idml-fonts`.
+Desde postext 1.71; `--lines` y `--fonts`, desde 1.76, y `--spreads`, desde 1.78.
 
 ### import-idml
 
@@ -397,7 +398,7 @@ postext import-idml libro.idml --report --json
 
 `import-idml` lee un paquete de InDesign Markup y escribe un libro nuevo, en una carpeta o en un `.postext`: los capítulos en Markdown, la configuración que dan los estilos y las páginas del documento, y sus imágenes y tablas como recursos. Un `.indd` no se lee: guárdalo antes desde InDesign como InDesign Markup. `--layout pages` sigue el documento página a página con páginas compuestas, cada marco donde estaba; `--layout flow` escribe un libro de texto corrido, en orden de lectura y con los estilos del documento, para que Postext lo maquete de nuevo; `auto` (el valor por defecto) elige uno de los dos y dice por qué. Las imágenes enlazadas se leen de `--links` o, si no se indica, de la carpeta del archivo y de su `Links/`, y las que no aparecen se enumeran. También se enumeran las fuentes que nombra el documento: un paquete no lleva archivos de fuente, así que hay que darlos con `--font-dir` al generar el libro.
 
-Un libro exportado desde Postext vuelve con las mismas líneas. Un documento hecho en InDesign se lee con pérdidas: el comando imprime el veredicto (`faithful`, `approximate` o `lossy`), los recuentos y lo que se perdió o se aproximó; `--report` añade las notas y cómo se leyó cada estilo de párrafo, y `--json` lo lleva todo como datos. `--hidden`, `--pasteboard` y `--non-printing` leen también las capas y los objetos ocultos, la mesa de trabajo y los objetos no imprimibles; `--conditions all` lee todo el texto condicional, `--changes reject` lee los cambios registrados como si se hubieran rechazado y `--no-masters` deja fuera los elementos de las páginas maestras. `--name` y `--locale` dan el título y el idioma. El importador es `idmlToPostext`, del paquete `postext-idml`: véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
+Un libro exportado desde Postext vuelve con las mismas líneas. Un documento hecho en InDesign se lee con pérdidas: el comando imprime el veredicto (`faithful`, `approximate` o `lossy`), los recuentos y lo que se perdió o se aproximó; `--report` añade las notas y cómo se leyó cada estilo de párrafo, y `--json` lo lleva todo como datos. `--hidden`, `--pasteboard` y `--non-printing` leen también las capas y los objetos ocultos, la mesa de trabajo y los objetos no imprimibles; `--conditions all` lee todo el texto condicional, `--changes reject` lee los cambios registrados como si se hubieran rechazado y `--no-masters` deja fuera los elementos de las páginas maestras. `--name` y `--locale` dan el título y el idioma. El importador es `idmlToPostext`, del paquete `postext-idml`: véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml). La importación copia el documento tal como está; para portar un libro que vas a conservar, con sus reglas de maquetación deducidas, usa en su lugar la skill para agentes (véase [InDesign: importar, exportar y portar](/es/docs/indesign)).
 
 ### pack y unpack
 

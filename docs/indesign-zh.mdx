@@ -1,0 +1,152 @@
+{/* docs/indesign-zh.mdx */}
+
+export const metadata = {
+  title: 'InDesign：导入、导出与移植',
+  sidebarTitle: 'InDesign',
+  description: '把InDesign书籍带进Postext的两种方式：照搬文档内容的IDML导入器，和推断版式规则的智能体技能；各自适合什么情况，以及IDML导出器怎样把书交回InDesign',
+  lang: 'zh',
+  lastUpdated: '2026-11-11',
+  readingTime: '8分钟',
+  order: 49,
+  plainSummary: "用InDesign做的书可以用两种方式带进Postext。导入器照搬InDesign文件里的内容，每一页、每个框和每种样式都原样保留，速度很快，但得到的是旧页面的副本，不好修改，也不好翻译。智能体技能则研究这本书：文件、印刷PDF、字体和图片，找出设计者遵循的规则，再按这些规则重建这本书，文字可以自由排下去。这样得到的书更好，所以我们推荐这种方式。本页说明这两种方式、各自适合的情况，以及Postext怎样把做好的书交回InDesign。",
+};
+
+# InDesign：导入、导出与移植
+
+<strong>InDesign做的书进入Postext，可以照搬它的页面，也可以推断它的设计。我们推荐推断设计。</strong>
+
+Postext读写InDesign Markup包（`.idml`），也就是InDesign用<strong>文件 › 存储为 › InDesign Markup (IDML)</strong>保存的文件。有三个工具用到它：
+
+- <strong>导入器</strong>，把`.idml`变成一本Postext书；
+- <strong>智能体技能</strong>[`postext-port`](/zh/docs/skill)，根据一本书的全部源文件（包括`.idml`）移植这本书；
+- <strong>导出器</strong>，把Postext书写成`.idml`，交给设计者在InDesign中完成。
+
+导入器和技能都能把书带进来，但得到的不是同一本书。本页说明两者的区别，方便你选择。
+
+## 进入Postext的两种方式
+
+InDesign文档是一组由人手工做出的页面。设计者遵循一些规则，比如字号、网格、一章怎样开头、方框放在哪里、图注怎样放在图下面。`.idml`逐个框地保存应用这些规则的结果，并不记录规则本身。
+
+<strong>导入器照搬结果。</strong>它读取这个包，把找到的东西写出来：每个框留在原来的位置，每种样式带着它的值，每张图片和每个表格成为一个资源。它不做任何推测，同一个文件总是得到同一本书。就像网页的HTML一样，这份副本展示页面，却不展示页面背后的道理。凭眼睛摆放的框留在它的坐标上，用空段落往下推的标题保留那个空段落，局部覆盖仍是覆盖。这本书看起来和原书一样，也保留了原书的手工做法。
+
+<strong>技能推断规则。</strong>智能体读取全部源文件：`.idml`、印刷PDF、字体和美术文件。它测量页面，写下页面遵循的规则，比如成品尺寸和页边距、基线网格、字体角色、章首页、书眉、标注框类别以及浮动对象放在哪里。然后它把文字写成不带页面位置的可重排Markdown，并依据这些规则在配置中设定设计。Postext按规则排出页面，所以这本书可以修改、翻译，也可以换一种开本来排，看起来仍然和原书一样。
+
+<table>
+  <thead>
+    <tr><th></th><th>导入器</th><th>智能体技能</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>读取</td><td><code>.idml</code>及其链接的图片</td><td><code>.idml</code>、印刷PDF、字体和链接的美术文件（<code>.ai</code>、<code>.psd</code>、<code>.eps</code>、<code>.tif</code>）</td></tr>
+    <tr><td>方法</td><td>确定性的：照搬文档的内容</td><td>推断：测量页面，找出规则</td></tr>
+    <tr><td>文字</td><td>绑定在文档的框里（<code>--layout pages</code>），或沿用文档的样式连续排下去（<code>--layout flow</code>）</td><td>带指令的可重排Markdown，不带页面位置</td></tr>
+    <tr><td>设计</td><td>文档中样式和框的值</td><td>一套规则配置：网格、字体角色、章首页、书眉、标注框、浮动对象，以及模板页的页面模板</td></tr>
+    <tr><td>时间</td><td>几秒</td><td>一本书要几个小时，由智能体完成，并对照PDF检查</td></tr>
+    <tr><td>结果</td><td>一份复制品，附上丢失内容的报告</td><td>一本表现和原书一样的Postext书</td></tr>
+  </tbody>
+</table>
+
+<strong>默认使用技能。</strong>任何你要长期保留的书都应该走这条路：要修订、要翻译、要换开本，或者除了印刷还要出EPUB的书。
+
+需要的就是副本时，<strong>使用导入器</strong>：
+
+- <strong>Postext导出的书。</strong>Postext写出的`.idml`读回来时行和页都不变，所以设计者在InDesign中的修改能回到书里。
+- <strong>快速看一眼。</strong>导入报告几秒钟就列出文档的页面、文章、样式、字体、图片和表格，让你在做任何决定之前先了解它。
+- <strong>原样保留的固定页面。</strong>海报、表格、单个跨页或者一本短小的宣传册，不会再修改，也不会重排。
+- <strong>移植的第一步。</strong>技能本身可以先运行导入器，得到清单和初稿，再加以修正；见[下文](#技能怎样使用导入器)。
+
+## 导入器
+
+```bash
+postext import-idml book.idml -o book/
+postext import-idml book.idml -o book.postext --layout flow --links Links/
+postext import-idml book.idml --report --json
+```
+
+同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
+
+### 逐页还是连续排
+
+- <strong>`--layout pages`</strong>逐页照文档排。每一页成为一个[模板页](/zh/docs/composed-pages)，每个框保持原来的位置、大小和顺序，串接的框仍然串接。适合每一页都是手工做出来的文档。
+- <strong>`--layout flow`</strong>按阅读顺序写出各篇文章，沿用文档的段落样式，由Postext把它们排进书的设计生成的页面。适合小说、随笔这类连续的文字，页面只是用来容纳文字。
+- <strong>`auto`</strong>是默认值，它根据文档选一种，并说明理由。
+
+### 带过来的内容
+
+- 段落样式和字符样式成为书的段落样式和标题样式，连同字体、字号、行距、缩进、间距、对齐、制表位和颜色。
+- 文字连同强调、强制换行、制表符、脚注、超链接、注音、着重号和纵中横。
+- 表格连同合并单元格、表头行、内边距和单元格中的图片；锚定和置入的图片；线条、矩形和色板。
+- 页面及其尺寸和页边距、主页上的项目，以及章节。
+
+### 报告的内容
+
+`.idml`不带字体，也不带链接的图片。导入器列出这本书需要的字体家族，你再用`--font-dir`把它们交给构建。链接的图片从`--links`或文件旁边读取，找不到的会列出来。
+
+InDesign能做的有些事在Postext中没有对应，比如路径文字、旋转的单元格、单元格中的对角线、GREP样式和嵌套样式，或者透明效果。每一项都成为报告中的一条结果，附带数量和一个例子：省略的是<em>loss</em>，以接近原稿的方式排出的是<em>warning</em>（表格的表尾行、渐变、沿轮廓绕排）。报告最后给出结论：
+
+- <strong>`faithful`</strong>：没有丢失，也没有近似处理（Postext导出的书）。
+- <strong>`approximate`</strong>：有些内容以接近原稿的方式排出，没有省略任何内容。
+- <strong>`lossy`</strong>：有内容被省略。
+
+### 副本有多接近
+
+IDML保存的是文字和框，不是InDesign断出的行。Postext用自己的排版器重新断行，所以InDesign做的文档里，一行很少会在同一个词上结束。应该一致的是哪段文字落在哪一页。导入器用一组在InDesign中制作的文档做过测试：一本15页的书、杂志页面、表格、链接和注释、日文和阿拉伯文、锚定对象和样式。在测量过的其中六份文档中，87%到100%的词落在与InDesign自己的PDF相同的页上（自postext 1.78起）。
+
+Postext导出的书保留它的行。导出的每一行都以强制换行结束，导入器会开启[`bodyText.justifyHardBreaks`](/zh/docs/configuration-text)，让这些行保持两端对齐。
+
+## 技能
+
+[智能体技能](/zh/docs/skill)按那一页说明的步骤移植一本书：需求、源文件清单、一份实测数据的规格表、配置、各章，以及把每一页和原书对照检查。对于InDesign书，把InDesign有的东西都交给它。
+
+### 源文件夹
+
+在InDesign中，<strong>文件 › 打包</strong>会把文档的字体和链接的图片收进一个文件夹；勾选<strong>包括 IDML</strong>和<strong>包括 PDF（打印）</strong>。把这个文件夹作为`source/`放进项目：
+
+```
+my-book/
+  source/
+    Book.indd
+    Book.idml
+    Book.pdf
+    Document fonts/
+    Links/
+      cover.ai
+      map-01.ai
+      photo-12.psd
+```
+
+- <strong>`.idml`</strong>按文章顺序给出文字、样式、表格和锚定的图片。技能用它自带的`idml_extract.py`读取，把每种段落样式对应到一个角色。
+- <strong>印刷PDF</strong>给出`.idml`缺少的东西：每一行、每个方框、每幅图落在印刷页面的什么位置。技能在这里测量网格、页边距和章首页，最后也拿自己的页面和它比较。
+- <strong>字体</strong>让Postext用原书的字体排文字，测量结果才站得住。请确认字体许可允许这样做；技能无法判断时会问你。
+- `Links/`中的<strong>美术文件</strong>成为书中的图：Illustrator文件成为矢量SVG，Photoshop和TIFF文件成为位图。
+
+然后向智能体提出要求，例如：<em>“把`source/`里的InDesign书移植到Postext：先做第1到3章，西班牙语，用于印刷和EPUB。”</em>
+
+### 技能怎样使用导入器
+
+技能可以一开始就运行`postext import-idml source/Book.idml --report --json`。报告几秒钟就给出清单：用到的样式、文章、字体、图片、表格，以及没有对应的内容。技能从这份清单出发，但不会把导入的结果直接交付。它把固定位置上的框换成规则和模板，把空段落和覆盖换成间距和样式，把每页的位置换成浮动对象。
+
+## 导出器
+
+```bash
+postext idml book/ -o book.idml
+postext idml book.postext -o book.idml --images link --fonts
+postext build book/ --pdf book.pdf --idml book.idml
+```
+
+导出器像排PDF那样给书排版，再把页面写成`.idml`，交给设计者在InDesign中完成。它可以从命令行运行（[`postext idml`](/zh/docs/command-line#idml)，或`build`中的`--idml`），从Sandbox运行（正文面板标题栏中的<strong>导出到 InDesign</strong>（IDML）；见[沙盒 › 书、Word文件与保存](/zh/docs/sandbox-books-saving)），也可以在代码中用`postext-idml`的`idmlDocument`。
+
+- <strong>页面与跨页。</strong>页面按成品尺寸放置：设了对称页边距的书排成对页的跨页，否则每个跨页一页；`--spreads facing`或`--spreads single`不管页边距怎样设，都按指定的方式排。
+- <strong>行。</strong>默认的`--lines keep`让每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。`--lines reflow`把段落交给InDesign的排版器，用于要在InDesign中重新排版的书。
+- <strong>文字。</strong>模板页的每个框成为一个带有独立文章的文本框，用`next`串接的框共用一篇文章。段落样式带有书中的样式名、缩进、制表位和间距。脚注、链接、注音、着重号、从右到左的文章和竖排文章都会带过去。
+- <strong>页面项目。</strong>线条、方框、路径和图片成为InDesign页面项目；表格成为InDesign表格，行内公式、乐谱和色样成为锚定对象。作者定义的CMYK颜色成为印刷色色板，表单域标签成为InDesign表单域。
+- <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
+- <strong>警告。</strong>InDesign无法照Postext排出的样子显示的内容，以`idml.*`警告报告，比如表格的圆角外框或竖排文字里的着重号。
+
+导出不是反过来的移植。`.idml`保存的是Postext排出的页面，排出这些页面的规则留在Postext书里。在InDesign中做的修改，要通过导入器回到Postext，回来的是页面的副本。像字号这样的规则，最好在Postext书中修改，再重新导出。
+
+## 简要选择
+
+- <strong>要保留、修改或翻译InDesign做的书</strong>，用技能从打包好的源文件夹移植。
+- <strong>要看看一个`.idml`里有什么</strong>，或者要把Postext导出的书读回来，用导入器。
+- <strong>要把一次性的固定页面原样保留</strong>，用`--layout pages`导入。
+- <strong>要把Postext书交给InDesign工作室</strong>，用`postext idml`导出。
