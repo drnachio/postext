@@ -36,7 +36,7 @@ const { bytes: idml, links, fonts } = idmlDocument({
 - `forms`: chips that carry a form field become InDesign form fields (default `true`).
 - `onWarning`: what could not be written as it is in the book (`{ code, message }`).
 
-Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and colour swatches are anchored inline objects in their line (`inlineObjects: false` leaves them out, with a warning), links are InDesign hyperlinks, and with kept lines right-to-left text is written in right-to-left stories. Vertical text is written in horizontal stories, with a warning.
+Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and colour swatches are anchored inline objects in their line (`inlineObjects: false` leaves them out, with a warning), links are InDesign hyperlinks, and with kept lines right-to-left text is written in right-to-left stories. Vertical text (Chinese or Japanese set `vertical-rl`, a frame with a writing mode of its own) is written in vertical stories, each column of characters a line, with tate-chu-yoko cells, ruby readings and warichu notes on their ranges; what the package does not carry (emphasis dots, kanbun marks) is reported as a `text.vertical.*` warning.
 
 The command line writes the same package with `postext idml` and reads one into a new book with `postext import-idml`.
 
