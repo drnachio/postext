@@ -66,22 +66,35 @@ export function openIdml(input: Uint8Array | ArrayBuffer, options: OpenIdmlOptio
     throw new IdmlError('notZip', `The zip archive cannot be read: ${e instanceof Error ? e.message : String(e)}`);
   }
   const cache = new Map<string, Uint8Array>();
+  // The XML parts are many and small (a story each): they are uncompressed
+  // together, in one pass over the archive, the first time one is asked
+  // for. Pictures and other files are read one by one, when asked for.
+  let partsRead = false;
+  const isPart = (name: string) => /\.xml$/i.test(name) || name === 'mimetype';
+  const inflate = (pick: (stored: string) => boolean, part?: string): void => {
+    try {
+      const got = unzipSync(data, { filter: (f) => pick(f.name) });
+      for (const [stored, bytes] of Object.entries(got)) {
+        const name = safePath(stored);
+        if (name && infos.get(name)?.name === stored) cache.set(name, bytes);
+      }
+    } catch (e) {
+      throw new IdmlError('malformed', `${part ?? 'The package'} cannot be uncompressed: ${e instanceof Error ? e.message : String(e)}`, part);
+    }
+  };
   const bytes = (path: string): Uint8Array | undefined => {
     const key = safePath(path);
     if (!key) return undefined;
-    const hit = cache.get(key);
-    if (hit) return hit;
     const info = infos.get(key);
     if (!info) return undefined;
-    let out: Uint8Array | undefined;
-    try {
-      const got = unzipSync(data, { filter: (f) => f.name === info.name });
-      out = got[info.name];
-    } catch (e) {
-      throw new IdmlError('malformed', `${key} cannot be uncompressed: ${e instanceof Error ? e.message : String(e)}`, key);
+    if (!cache.has(key)) {
+      if (isPart(key) && !partsRead) {
+        partsRead = true;
+        const wanted = new Set([...infos].filter(([name]) => isPart(name)).map(([, f]) => f.name));
+        inflate((stored) => wanted.has(stored));
+      } else inflate((stored) => stored === info.name, key);
     }
-    if (out) cache.set(key, out);
-    return out;
+    return cache.get(key);
   };
   const text = (path: string): string | undefined => {
     const b = bytes(path);
