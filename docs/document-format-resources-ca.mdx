@@ -197,7 +197,7 @@ Cada recurs té una **col·locació** que decideix on va a parar el flotant. Es 
     <tr>
       <td><code>pin</code></td>
       <td><code>&#123; page, column?, slot &#125;</code></td>
-      <td>Un flotant col·locat a mà (arrossegat a un espai al llenç del Sandbox): <code>page</code> compta les pàgines des de la que el cita per primer cop (<code>0</code> és aquesta pàgina), <code>column</code> la columna de text des de 0 (qualsevol, si no hi és), <code>slot</code> és <code>"top"</code> o <code>"bottom"</code>. El flotant espera aquesta pàgina i hi pren aquest espai i cap altre; si no hi cap, o l'espai queda abans de la cita, es col·loca com sempre i la maquetació avisa amb <code>floatPinMissed</code>. Només a les sortides paginades.</td>
+      <td>No es recomana (vegeu <a href="#collocar-flotants-a-mà-no-es-recomana">Col·locar flotants a mà no es recomana</a>). Un flotant col·locat a mà, al tauler Recursos o movent-lo al llenç del Sandbox: <code>page</code> compta les pàgines des de la que el cita per primer cop (<code>0</code> és aquesta pàgina, <code>3</code> com a màxim), <code>column</code> la columna de text des de 0 en l'ordre de lectura (qualsevol, si no hi és; un flotant d'amplada de pàgina la ignora), <code>slot</code> és <code>"top"</code> o <code>"bottom"</code>. Un pin és una preferència. El flotant espera aquesta pàgina i se li ofereix primer aquest espai; si l'espai no el pot allotjar (massa alt per al lloc que queda, ocupat per un altre flotant o per sobre de la cita), pren els espais habituals d'aquesta pàgina, i després continua com qualsevol flotant. Un pin per a una pàgina posterior al final del capítol s'hi descarta, de manera que el flotant i els que el segueixen en la seva seqüència de numeració es col·loquen abans que acabi el capítol. Els flotants de la columna lateral, els girats, les làmines i els recursos col·locats al text l'ignoren. Cada pin que la maquetació no segueix s'avisa amb <code>floatPinMissed</code>, amb el motiu. Només a les sortides paginades.</td>
     </tr>
   </tbody>
 </table>
@@ -257,6 +257,19 @@ Els tres backends (la previsualització en canvas, el visor HTML i la sortida PD
 - En una disposició d'una sola columna, un flotant a amplada de pàgina és un flotant de columna, i s'hi apliquen les mateixes regles: un flotant `top` citat en una pàgina va a parar a la part de dalt de la següent.
 - Un paràgraf que passa d'una pàgina a la següent també compta a partir de la línia de la cita. Quan el paràgraf comença al peu de la pàgina 5 i la referència cau a la 6 (o el paràgraf sencer passa a la 6 perquè al peu de la 5 no n'hi caben prou línies), la referència és a la 6: un flotant `top` obre la pàgina 7, i un flotant `auto` ocupa el peu de la 6 si hi cap. El mateix passa entre les columnes d'una pàgina i en una caixa partida entre pàgines: la figura que es cita a la segona part espera aquesta part.
 - **Canvi a postext 1.5.** Fins a postext 1.4, un flotant entrava a la cua quan la maquetació arribava al paràgraf que el cita, així que la pàgina on passava aquest paràgraf (o on es traslladava sencer) podia començar amb el flotant, per sobre de la línia que conté la referència. Ara aquesta figura va a parar una pàgina més tard, o al peu de la pàgina si demana `auto`; el nombre de pàgines pot canviar.
+
+#### Col·locar flotants a mà no es recomana
+
+Postext maqueta un llibre per regles: cada flotant ocupa el primer espai lliure després de la cita, dins dels límits que fixa la seva col·locació, i tot el llibre es torna a maquetar quan canvien el text, la mida de pàgina, el nombre de columnes o la llengua de l'edició. Un pin està lligat a la geometria d'una maquetació. Anomena una pàgina comptada des de la cita i una columna pel seu número, i cap de les dues no vol dir el mateix tan bon punt el text es mou. Si s'afegeix un paràgraf, la cita passa a una altra pàgina; si es tradueix el llibre, canvien els talls de línia; si una edició es compon a una columna, la columna 1 deixa d'existir. Aleshores el pin falla, i la maquetació ho avisa, o deixa el flotant en un lloc que ja no serveix a la pàgina. El pin es desa al recurs, de manera que el comparteixen totes les edicions i llengües del llibre.
+
+Aquestes regles mantenen una figura a prop del seu text en totes les edicions:
+
+- `position: "top"` o `"bottom"` (al recurs o al seu tipus) limita els espais d'un flotant a capçaleres o peus.
+- `citingPage: true`, o `layout.floatsAtCitingPage` per a tot el llibre, deixa que un flotant superior o automàtic encapçali la pàgina o la columna on cau la línia que el cita.
+- Una caixa amb `keepTogether` manté junt el que conté, inclosa una imatge inserida amb `::resource`; `floatBarrier` en un estil de caixa deixa al seu costat els flotants citats abans d'ella.
+- `shrink: "slot"` (o `"page"`) deixa que una imatge es redueixi al lloc que té el seu espai, i una [zona segura](#zona-segura) deixa que el motor la retalli perquè hi càpiga abans de reduir-la.
+
+Si una pàgina encara necessita moure una figura, fixa-la com a últim pas, per a una edició acabada en una sola llengua, i revisa `floatPinMissed` al tauler Revisió cada vegada que canviïn el text o el disseny.
 
 ### Ajust del text
 
@@ -345,7 +358,7 @@ La recepta núm. 116 del Receptari, [Fotos que creixen fins a omplir la columna]
 
 ### Retall manual
 
-Un mapa de bits, un SVG o el pòster d'un vídeo també es poden retallar a mà: `crop`, en les mateixes fraccions que la zona segura, és la part de la imatge que la figura mostra sempre, sigui quina sigui la pàgina. La figura pren la proporció del retall a totes les sortides (llenç, PDF, HTML i els dos EPUB), la zona segura, si n'hi ha, es llegeix dins del retall i pot tallar més on la pàgina ho necessiti, i `bodySource` és la composició de tots dos. Sense, la imatge sencera. Al Sandbox, *Retall*, al costat de la zona segura, obre un marc que s'arrossega, s'ajusta amb les fletxes i es previsualitza.
+Un mapa de bits, un SVG o el pòster d'un vídeo també es poden retallar a mà: `crop`, en les mateixes fraccions que la zona segura, és la part de la imatge que la figura mostra sempre, sigui quina sigui la pàgina. La figura pren la proporció del retall. La zona segura, si n'hi ha, es llegeix dins del retall: el motor pot tallar més on la pàgina ho necessiti, mai fora del retall, i `bodySource` és la composició de tots dos. Marca la zona segura dins del retall; la part que en quedi fora no es veu mai. Sense retall, la imatge sencera. El retall arriba a totes les sortides: el llenç, el PDF, el visor HTML, els dos EPUB (un llibre adaptable compon la imatge, o el pòster d'un vídeo i la pel·lícula al seu marc, en una caixa amb la proporció del retall), l'IDML i l'exportació a Word amb format, una imatge en una cel·la de taula, el dibuix d'una vinyeta de còmic (la finestra de la vinyeta es tria dins del retall) i una imatge de disseny que mostra un recurs. L'exportació semàntica a Word insereix la imatge sencera, com fa amb la zona segura, i conserva el retall al llibre. Les àncores de còmic només es comproven contra la zona segura (`comicAnchorOutsideSafeArea`): deixa també cada personatge dins del retall. Al Sandbox, *Retall*, al costat de la zona segura, obre un marc que s'arrossega, s'ajusta amb les fletxes i es previsualitza; un agent el fixa amb `sandbox_save_resource` (`marks.crop`).
 
 ```ts
 const portrait: Resource = {

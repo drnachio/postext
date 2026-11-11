@@ -465,6 +465,15 @@ no livro. `sandbox_list_resources` lista os recursos e, com um `id`, mostra um
 deles por inteiro (as células de uma tabela com a formatação, o código de
 um SVG).
 
+O recorte de uma imagem vai em `marks.crop` (`{ x, y, width, height }`, frações da
+imagem inteira, como a área segura; `null` volta a mostrar a imagem inteira):
+funciona num bitmap, num SVG e no pôster de um vídeo, e a resposta avisa quando
+a área segura sai do recorte. `placement.pin` (`{ page, column?, slot }`, `page`
+de 0 a 3) posiciona um flutuante à mão e `null` o devolve ao posicionamento
+automático; a descrição da ferramenta explica por que pins não são recomendados e
+indica no lugar `position`, `citingPage`, `keepTogether` e `shrink` (veja
+[Formato do documento › Posicionar flutuantes à mão não é recomendado](/pt/docs/document-format-resources#posicionar-flutuantes-à-mão-não-é-recomendado)).
+
 As `marks` de uma imagem também guardam as âncoras dela. Num mapa ou num esquema, são os pontos em que ficam as linhas `::label`: um `id`, `x` e `y` (frações da imagem inteira) e os campos de rótulo que um rótulo colocado ali herda (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). A resposta avisa quando falta no design um estilo de rótulo, e marcas novas num recurso são um passo do histórico (`sandbox_undo` responde `kind: "resource"`). Num SVG, `marks.svgSymbols` (`idPrefix`, `className`) acrescenta uma zona a evitar sobre cada elemento do desenho que ele indica, além das zonas dadas pela chamada ou das que a imagem já tem (desde o postext 1.43).
 
 ```jsonc

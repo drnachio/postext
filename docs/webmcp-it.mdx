@@ -457,6 +457,15 @@ rinomina una risorsa e, per impostazione predefinita, ogni riferimento a essa ne
 `sandbox_list_resources` le elenca e, con un `id`, ne dà una per intero (le celle di una
 tabella con la loro formattazione, il sorgente di un SVG).
 
+Il ritaglio di un'immagine va in `marks.crop` (`{ x, y, width, height }`, frazioni
+dell'immagine intera, come la zona sicura; `null` mostra di nuovo l'immagine
+intera): vale per una bitmap, un SVG e il poster di un video, e la risposta
+segnala una zona sicura che esce dal ritaglio. `placement.pin` (`{ page, column?, slot }`,
+`page` da 0 a 3) colloca a mano un flottante e `null` lo riporta alla collocazione
+automatica; la descrizione dello strumento spiega perché i pin sono sconsigliati e
+propone al loro posto `position`, `citingPage`, `keepTogether` e `shrink` (vedi
+[Formato del documento › Collocare a mano i flottanti è sconsigliato](/it/docs/document-format-resources#collocare-a-mano-i-flottanti-è-sconsigliato)).
+
 Le `marks` di un’immagine contengono anche le ancore. In una mappa o in uno schema sono i punti in cui si collocano le righe `::label`: un `id`, `x` e `y` (frazioni dell’immagine intera) e i campi che assume un’etichetta posta lì (`style`, `align`, `verticalAlign`, `rotate`, `width`, `writingMode`). La risposta segnala uno stile di etichetta che manca nella grafica, e i nuovi segni di una risorsa sono un passo della cronologia (`sandbox_undo` risponde `kind: "resource"`). Su un SVG, `marks.svgSymbols` (`idPrefix`, `className`) aggiunge una zona da evitare sopra ogni elemento del disegno indicato, oltre alle zone fornite dalla chiamata o già presenti nell’immagine (da postext 1.43).
 
 ```jsonc
