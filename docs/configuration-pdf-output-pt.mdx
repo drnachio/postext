@@ -6,7 +6,7 @@ export const metadata = {
   description: 'O postext-pdf a partir do código: instalação, a API, provedores de fontes no navegador e no Node, fontes CJK, bytes de recursos, texto vertical, workers e arquivos prontos para impressão',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Esta página é para quem escreve código e quer um arquivo PDF. Mostra como instalar o pacote de PDF e transformar um livro diagramado em arquivo com poucas linhas. O pacote precisa dos arquivos das fontes; por isso, a página explica como entregá-los a ele, num navegador ou num servidor. Trata das fontes para chinês, japonês e coreano, das imagens, do texto escrito de cima para baixo e dos links. Termina com um exemplo completo e com arquivos prontos para a gráfica.",
@@ -262,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF e WebP são incorporados como imagens;
 - a marcação SVG é desenhada como caminhos vetoriais, com o `text` composto como texto real nas fontes incorporadas do documento, ou rasterizada a 600 dpi no navegador quando usa recursos fora do subconjunto vetorial. Um `<style>` que contém só regras `@font-face` (variantes que o autor incorporou) é ignorado e mantém a figura vetorial (desde o postext-pdf 1.25); qualquer outra folha de estilo a torna uma rasterização, feita com as variantes que o texto dela indica incorporadas a partir de `fontProvider` (a menos que `diagramStyle.inlineFonts` ou o `svg.inlineFonts` do recurso seja `false`);
+- os TIFF e os documentos do Photoshop (PSD, PSB) são impressos a partir dos próprios pixels: cinza, RGB ou CMYK, de 8 ou 16 bits, com o perfil ICC e a resolução que trazem. Um CMYK mantém as tintas como estão; o cinza e o RGB seguem `print.imageColor`. De um documento do Photoshop lê-se a imagem composta que ele salva com “Maximizar compatibilidade”; os TIFF com compressão JPEG não são lidos;
 - de um PDF, a primeira página é incorporada tal como está, como um form XObject.
 
 Cada imagem é guardada no arquivo uma única vez, por mais vezes que seja desenhada. Um SVG desenhado como caminhos vetoriais vira um form XObject que todas as páginas pintam, de modo que uma moldura ou um logotipo no design de página de um documento de trinta páginas é escrito uma vez, não trinta; cada página a mais acrescenta algumas centenas de bytes. Até o postext-pdf 1.4, cada página levava a própria cópia dos caminhos.
@@ -281,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Um hospedeiro também pode devolver os bytes da matriz para o id do próprio SVG, como faz `bundleResourceBytes`; as duas formas funcionam.
+
+Um navegador não consegue mostrar um TIFF nem um documento do Photoshop, por isso um recurso de bitmap feito a partir de um deles guarda dois arquivos: `bitmap.fileId` é uma pré-visualização em PNG, que o canvas, o HTML e o EPUB mostram, e `bitmap.printFileId` (com `printFormat: 'tiff' | 'psd'`) é o original. Um hospedeiro devolve os bytes do original para `bitmap.fileId`, como fazem `bundleResourceBytes` e o Sandbox, e o PDF é impresso a partir dele. `decodePrintRaster(bytes)` e `rasterToRgba(raster)` de `postext` leem o original e fazem a pré-visualização; o Sandbox a faz quando o arquivo é importado, e um pacote guarda o original como `resources/<nome>.tif` ou `.psd` ao lado da pré-visualização.
+
+Um arquivo do Adobe Illustrator salvo com “Criar arquivo compatível com PDF” é um PDF e pode ser uma matriz de impressão como qualquer outro (`.ai`). As amostras dele são as suas próprias chapas: o preflight enumera as que a tabela de tintas renomeia, as que nenhuma cor do livro define e, em um trabalho com chapas próprias (`print.plates`), as que o trabalho não imprime, porque um arquivo inserido é impresso tal como está.
 
 ### Texto vertical no PDF
 
@@ -501,6 +506,42 @@ print: {
 ```
 
 O preflight enumera as chapas do trabalho e cada cor que a projeção desloca. Uma cor especial ou uma cor CMYK que o trabalho não imprime é informação quando a sua mistura fica a menos de ΔE 6, e um aviso se fica mais longe ou enquanto o perfil de saída não foi carregado (`offPlateInk`, `offPlateCmyk`); uma cor de tela que fica a mais de ΔE 6 também é um aviso (`offPlateColor`). Uma chapa de cor especial que nenhuma cor nem nenhuma entrada da tabela de tintas define é um aviso: é impressa e simulada como preto. Num trabalho assim, o original de impressão de uma figura é posto de lado e o seu SVG é composto nas chapas; uma página PDF inserida, ou uma imagem que não pode ser decodificada, mantém as suas próprias tintas e o render avisa (`artworkOffPlates`). No Sandbox as chapas são escolhidas em Preparação para impressão → Chapas. As suas pré-visualizações e a pré-visualização de impressão mostram as cores como o livro as define, não como as chapas as imprimem: veja o PDF, onde Verificar para impressão lista as tintas que ele usa.
+
+### Cor das imagens
+
+Uma imagem é separada a partir das cores em que foi feita. `print.imageColor` diz como os seus pixels são lidos:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // O perfil ICC da própria imagem. Por padrão, 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Ler toda imagem RGB com este .icc.
+  grayDotGain?: 'profile' | 'none' | number;           // Imagens em cinza, no preto. Por padrão, 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // Uma imagem CMYK de outra máquina. Por padrão, 'keep'.
+}
+```
+
+Os valores padrão deixam as imagens como as versões anteriores as imprimiam: toda imagem RGB é lida como sRGB (`'ignore'`), as imagens em tons de cinza são separadas como qualquer outra (`'none'`) e uma imagem CMYK mantém seus valores (`'keep'`). Cada comportamento da lista é ativado pelo seu campo.
+
+- **O próprio perfil.** Um PNG (`iCCP`) ou um JPEG (`ICC_PROFILE`) que incorpora um perfil é lido por meio dele, de modo que uma fotografia em Adobe RGB ou Display P3 é separada como aparece, e não como se fosse sRGB. Uma imagem sem perfil, ou com perfil sRGB, é lida como sRGB, como antes. `'ignore'` lê todas as imagens como sRGB.
+- **Um perfil atribuído.** `assignedRgbProfile` indica um `.icc` armazenado pelo qual toda imagem RGB é lida, seja qual for o perfil que ela incorpore: por exemplo, para um lote de fotografias que perderam o seu. Os bytes dele vêm de `resourceBytes`; se faltarem, são usados os perfis das próprias imagens, com um aviso `imageProfileUnavailable`.
+- **Mantida para o RIP.** No PDF/X-4 com `convertImages: false`, uma imagem com um perfil diferente de sRGB é gravada nas suas próprias cores, marcada como `ICCBased` com esse perfil, e o RIP da gráfica a converte.
+- **Escala de cinza.** Uma imagem em escala de cinza (um PNG ou um JPEG em cinza, ou uma com perfil de cinza) é impressa só no preto, nunca como um cinza de quadricromia. Os seus tons, lidos pelo próprio perfil (ou como a tela os mostra), são ajustados à máquina: `'profile'`, pelo preto do perfil de saída, cujo ganho de ponto a condição já inclui; um número é o ganho de ponto da máquina no tom de 50 %, em porcentagem (entre 10 e 30, normalmente), que é compensado em seu lugar; `'none'` grava os valores como estão, como antes.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Uma imagem CMYK de outra máquina.** Uma imagem CMYK cujo perfil é outra condição de impressão (uma fotografia separada para SWOP ou para papel jornal em um livro para FOGRA) é separada de novo para a de saída (`cmykProfile: 'convert'`), e o que é só preto continua só preto: um TIFF ou um documento do Photoshop a partir dos seus pixels; um JPEG CMYK, cujos pixels não são descomprimidos, é marcado como `ICCBased` com o próprio perfil no PDF/X-4 para que o RIP o converta, e passa como está no PDF/X-1a, que não admite essa marcação; ali o preflight avisa disso (`cmykImageForeign`) quando o host lhe dá o perfil da imagem (`imageProfile`). No PDF/X-4 com `convertImages: false`, um TIFF ou um documento do Photoshop é marcado do mesmo modo. `'keep'` imprime os valores de toda imagem CMYK como estão.
+
+**Os ajustes de uma só imagem.** O `printColor` de um recurso aceita os mesmos campos que o `print.imageColor` do livro e os aplica só a essa imagem: uma fotografia cujo perfil deve ser ignorado, outra lida por um perfil atribuído, uma imagem em cinza com outro ganho de ponto. No Sandbox, o cartão de uma imagem define se ela é lida pelo próprio perfil (“Cor na impressão”), como os cinzas dela se ajustam à máquina (“Cinzas na impressão”) e que perfil lhe é atribuído (“Perfil atribuído”, um arquivo `.icc`); um pacote leva os perfis atribuídos, o do livro e os das imagens, na sua pasta `profiles/`.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 
 ### Cores definidas em CMYK

@@ -217,6 +217,10 @@ export interface Resource {
   createdAt: number;
   /** Last-modified timestamp (ms since epoch). */
   updatedAt: number;
+  /** How this picture's colours are read in print, over the book's
+   *  `print.imageColor`: a picture that must ignore its profile, take an
+   *  assigned one, or print its greys or its CMYK otherwise than the rest. */
+  printColor?: import('../output/print.js').PrintImageColorConfig;
   /** Present when `kind === 'bitmap'`. */
   bitmap?: {
     fileId: string;
@@ -236,6 +240,13 @@ export interface Resource {
      *  horizontal ppi. Used under `layout.bitmapResolution: 'file'`, where
      *  72 and 96 count as unset; shown by the Sandbox. */
     fileResolution?: number;
+    /** The original a TIFF or Photoshop picture was imported from: the
+     *  `fileId` of that file, whose own pixels, channels (CMYK included)
+     *  and profile the PDF backend prints, while `fileId` holds the PNG
+     *  preview the screens, the HTML and the EPUB show. */
+    printFileId?: string;
+    /** That original's format. */
+    printFormat?: 'tiff' | 'psd';
   };
   /** Present when `kind === 'svg'`. */
   svg?: {

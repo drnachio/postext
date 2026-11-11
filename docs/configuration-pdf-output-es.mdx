@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Cómo se usa postext-pdf desde el código: la instalación y la API; los proveedores de fuentes en el navegador y en Node; las fuentes CJK, los bytes de los recursos y el texto vertical, y los workers y los archivos listos para imprenta',
   lang: 'es',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Esta página es para quienes escriben código y quieren un archivo PDF. Enseña a instalar el paquete de PDF y a convertir un libro compuesto en un archivo con unas pocas líneas. El paquete necesita los archivos de las fuentes, así que la página explica cómo dárselos, en un navegador o en un servidor. Trata las fuentes para chino, japonés y coreano, las imágenes, el texto que va de arriba abajo y los enlaces. Termina con un ejemplo completo y con archivos listos para la imprenta.",
@@ -262,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF y WebP se incrustan como imágenes;
 - el marcado SVG se dibuja como trazados vectoriales, con su `text` compuesto como texto real con las fuentes incrustadas del documento, o se convierte en mapa de bits a 600 ppp en el navegador cuando usa funciones que quedan fuera del subconjunto vectorial. Un `<style>` que solo contiene reglas `@font-face` (variantes que incrustó el autor) se omite, y la figura sigue siendo vectorial (desde postext-pdf 1.25); cualquier otra hoja de estilo la convierte en mapa de bits, dibujado con las variantes que indica su texto, incrustadas desde `fontProvider` (salvo que `diagramStyle.inlineFonts` o el `svg.inlineFonts` del recurso sea `false`);
+- los TIFF y los documentos de Photoshop (PSD, PSB) se imprimen desde sus propios píxeles: gris, RGB o CMYK, de 8 o 16 bits, con el perfil ICC y la resolución que llevan. Uno CMYK conserva sus tintas tal cual; el gris y el RGB siguen `print.imageColor`. De un documento de Photoshop se lee la imagen compuesta que guarda con «Maximizar compatibilidad»; los TIFF con compresión JPEG no se leen;
 - de un PDF se incrusta tal cual su primera página, como un XObject de formulario.
 
 Cada imagen se guarda una sola vez en el archivo, aunque se dibuje muchas veces. Un SVG dibujado con trazados vectoriales se convierte en un XObject de formulario que pinta cada página, así que un marco o un logotipo en el diseño de página de un documento de treinta páginas se escribe una vez y no treinta; cada página más añade unos cientos de bytes. Hasta postext-pdf 1.4 cada página llevaba su propia copia de los trazados.
@@ -281,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un anfitrión también puede devolver los bytes del máster para el identificador del propio SVG, como hace `bundleResourceBytes`; las dos formas funcionan.
+
+Un navegador no puede mostrar un TIFF ni un documento de Photoshop, así que un recurso de mapa de bits hecho a partir de uno guarda dos archivos: `bitmap.fileId` es una vista previa en PNG, que muestran el canvas, el HTML y el EPUB, y `bitmap.printFileId` (con `printFormat: 'tiff' | 'psd'`) es el original. Un anfitrión devuelve los bytes del original para `bitmap.fileId`, como hacen `bundleResourceBytes` y el Sandbox, y el PDF se imprime desde él. `decodePrintRaster(bytes)` y `rasterToRgba(raster)` de `postext` leen el original y hacen la vista previa; el Sandbox la hace al importar el archivo, y un paquete guarda el original como `resources/<nombre>.tif` o `.psd` junto a la vista previa.
+
+Un archivo de Adobe Illustrator guardado con «Crear archivo compatible con PDF» es un PDF, y puede ser un máster de impresión como cualquier otro (`.ai`). Sus muestras son sus propias planchas: la comprobación previa enumera las que la tabla de tintas renombra, las que ningún color del libro define y, en un trabajo con planchas propias (`print.plates`), las que el trabajo no imprime, porque un archivo colocado se imprime tal cual.
 
 ### Texto vertical en el PDF
 
@@ -501,6 +506,42 @@ print: {
 ```
 
 La comprobación previa enumera las planchas del trabajo y cada color que la proyección desplaza. Una tinta plana o un color CMYK que el trabajo no imprime es información cuando su mezcla queda a menos de ΔE 6, y un aviso si queda más lejos o mientras no se ha cargado el perfil de salida (`offPlateInk`, `offPlateCmyk`); un color de pantalla que queda a más de ΔE 6 también es un aviso (`offPlateColor`). Una plancha de tinta plana que ningún color ni ninguna entrada de la tabla de tintas define es un aviso: se imprime y se simula como negro. En un trabajo así se deja de lado el original de imprenta de una figura y su SVG se compone en las planchas; una página PDF colocada, o una imagen que no se puede decodificar, conserva sus propias tintas y el render avisa (`artworkOffPlates`). En el Sandbox las planchas se eligen en Preparación para imprenta → Planchas. Sus vistas previas y la vista de impresión muestran los colores como los define el libro, no como los imprimen las planchas: mira el PDF, donde Comprobar para imprenta enumera las tintas que usa.
+
+### Color de las imágenes
+
+Una imagen se separa desde los colores en que se hizo. `print.imageColor` dice cómo se leen sus píxeles:
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // El perfil ICC de la propia imagen. Por defecto, 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Leer toda imagen RGB con este .icc.
+  grayDotGain?: 'profile' | 'none' | number;           // Imágenes en gris, en negro. Por defecto, 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // Una imagen CMYK de otra máquina. Por defecto, 'keep'.
+}
+```
+
+Los valores por defecto dejan las imágenes como las imprimían las versiones anteriores: toda imagen RGB se lee como sRGB (`'ignore'`), las imágenes en gris se separan como cualquier otra (`'none'`) y una imagen CMYK conserva sus valores (`'keep'`). Cada comportamiento de la lista se activa con su campo.
+
+- **Su propio perfil.** Un PNG (`iCCP`) o un JPEG (`ICC_PROFILE`) que incrusta un perfil se lee a través de él, de modo que una fotografía en Adobe RGB o Display P3 se separa como se ve y no como si fuera sRGB. Una imagen sin perfil, o con perfil sRGB, se lee como sRGB, como hasta ahora. `'ignore'` lee todas las imágenes como sRGB.
+- **Un perfil asignado.** `assignedRgbProfile` nombra un `.icc` guardado con el que se lee toda imagen RGB, lleve el perfil que lleve: por ejemplo, para un lote de fotografías que perdieron el suyo. Sus bytes llegan por `resourceBytes`; si faltan, se usan los perfiles de las imágenes, con un aviso `imageProfileUnavailable`.
+- **Conservada para el RIP.** En PDF/X-4 con `convertImages: false`, una imagen con un perfil distinto de sRGB se escribe en sus propios colores, etiquetada `ICCBased` con ese perfil, y la convierte el RIP de la imprenta.
+- **Escala de grises.** Una imagen en escala de grises (un PNG o un JPEG en gris, o una con perfil de gris) se imprime solo en negro, nunca como un gris de cuatricromía. Sus tonos, leídos a través de su perfil (o como los muestra la pantalla), se ajustan a la máquina: `'profile'`, con el negro del perfil de salida, cuya ganancia de punto ya incluye la condición; un número es la ganancia de punto de la máquina en el tono del 50 %, en porcentaje (entre 10 y 30, normalmente), que se compensa en su lugar; `'none'` escribe los valores tal cual, como hasta ahora.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Una imagen CMYK de otra máquina.** Una imagen CMYK cuyo perfil es otra condición de impresión (una fotografía separada para SWOP o para papel prensa en un libro para FOGRA) se separa de nuevo para la de salida (`cmykProfile: 'convert'`), y el negro solo sigue siendo negro solo: un TIFF o un documento de Photoshop desde sus píxeles; un JPEG CMYK, cuyos píxeles no se descomprimen, se etiqueta `ICCBased` con su propio perfil en PDF/X-4 para que lo convierta el RIP, y pasa tal cual en PDF/X-1a, que no admite esa etiqueta; ahí la comprobación previa avisa (`cmykImageForeign`) cuando el anfitrión le da el perfil de la imagen (`imageProfile`). En PDF/X-4 con `convertImages: false`, un TIFF o un documento de Photoshop se etiqueta igual. `'keep'` imprime los valores de toda imagen CMYK tal cual.
+
+**Los ajustes de una sola imagen.** El `printColor` de un recurso admite los mismos campos que `print.imageColor` del libro y los aplica solo a esa imagen: una fotografía cuyo perfil hay que ignorar, otra que se lee con un perfil asignado, una imagen en gris con otra ganancia de punto. En el Sandbox, la ficha de una imagen dice si se lee con su propio perfil («Color en imprenta»), cómo se ajustan sus grises a la máquina («Grises en imprenta») y qué perfil se le asigna («Perfil asignado», un archivo `.icc`); un paquete lleva los perfiles asignados, el del libro y los de las imágenes, en su carpeta `profiles/`.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 
 ### Colores definidos en CMYK

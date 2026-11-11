@@ -1,7 +1,9 @@
 /**
  * What a placed PDF (a print master, `Resource.svg.pdfFileId`) brings into
  * a print file that postext does not control (#605): fonts it does not
- * embed, RGB colour, and transparency (which PDF/X-1a forbids).
+ * embed, RGB colour, transparency (which PDF/X-1a forbids), and the spot
+ * inks it prints on — an Illustrator file saved PDF-compatible is a PDF,
+ * and its swatches are its own plates.
  */
 
 import { PDFArray, PDFDict, PDFDocument, PDFName, PDFNumber, PDFRef, PDFStream, type PDFObject } from 'pdf-lib';
@@ -15,7 +17,12 @@ export interface PrintMasterReport {
   /** The page uses transparency: alpha, soft masks, blend modes or
    *  transparency groups. */
   transparency: boolean;
+  /** The spot inks its Separation and DeviceN colour spaces name, as the
+   *  plates are called (process inks, `All` and `None` left out). */
+  spotInks: string[];
 }
+
+const PROCESS = new Set(['Cyan', 'Magenta', 'Yellow', 'Black', 'All', 'None']);
 
 /** Inspect the first page of a PDF's bytes (the page postext embeds). */
 export async function inspectPrintMaster(bytes: Uint8Array): Promise<PrintMasterReport> {
@@ -23,6 +30,13 @@ export async function inspectPrintMaster(bytes: Uint8Array): Promise<PrintMaster
   const lookup = (o: PDFObject | undefined): PDFObject | undefined => (o instanceof PDFRef ? pdf.context.lookup(o) : o);
   const fonts = new Set<string>();
   let rgb = false;
+  const inks = new Set<string>();
+  const inkName = (o: PDFObject | undefined): void => {
+    const n = lookup(o);
+    if (!(n instanceof PDFName)) return;
+    const ink = n.decodeText();
+    if (!PROCESS.has(ink)) inks.add(ink);
+  };
 
   const fontEmbedded = (font: PDFDict): boolean => {
     const sub = name(lookup(font.get(PDFName.of('Subtype'))));
@@ -52,6 +66,11 @@ export async function inspectPrintMaster(bytes: Uint8Array): Promise<PrintMaster
       // Indexed / Separation / DeviceN: their base or alternate space.
       if (kind === 'Indexed') checkSpace(v.get(1));
       if (kind === 'Separation' || kind === 'DeviceN') checkSpace(v.get(2));
+      if (kind === 'Separation') inkName(v.get(1));
+      if (kind === 'DeviceN') {
+        const names = lookup(v.get(1));
+        if (names instanceof PDFArray) for (let i = 0; i < names.size(); i++) inkName(names.get(i));
+      }
     }
   };
 
@@ -66,5 +85,5 @@ export async function inspectPrintMaster(bytes: Uint8Array): Promise<PrintMaster
     },
   });
   walk.page(pdf.getPage(0));
-  return { nonEmbeddedFonts: [...fonts].sort(), rgb, transparency: walk.transparency };
+  return { nonEmbeddedFonts: [...fonts].sort(), rgb, transparency: walk.transparency, spotInks: [...inks].sort() };
 }

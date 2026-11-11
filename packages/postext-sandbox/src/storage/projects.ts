@@ -322,6 +322,10 @@ export function referencedFileIds(content: { resources: Resource[]; config: Post
     if (fileId) blobIds.add(fileId);
     // An SVG's vector print master is a blob of its own.
     if (r.svg?.pdfFileId) blobIds.add(r.svg.pdfFileId);
+    // So is a bitmap's TIFF or Photoshop original.
+    if (r.bitmap?.printFileId) blobIds.add(r.bitmap.printFileId);
+    // And a picture's own assigned profile.
+    if (r.printColor?.assignedRgbProfile?.fileId) blobIds.add(r.printColor.assignedRgbProfile.fileId);
     // A video's file and its poster (#454).
     if (r.video?.fileId) blobIds.add(r.video.fileId);
     if (r.video?.poster?.fileId) blobIds.add(r.video.poster.fileId);

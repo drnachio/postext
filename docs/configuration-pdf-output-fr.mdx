@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf depuis le code : installation, API, fournisseurs de polices dans le navigateur et dans Node, polices CJK, octets des ressources, texte vertical, workers et fichiers prêts pour l’impression',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '28 min',
+  readingTime: '31 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Cette page s’adresse aux personnes qui écrivent du code et veulent un fichier PDF. Elle montre comment installer le paquet PDF et transformer en quelques lignes un livre mis en page en fichier. Le paquet a besoin des fichiers de police : la page explique comment les lui fournir, dans un navigateur ou sur un serveur. Elle traite des polices pour le chinois, le japonais et le coréen, des images, du texte écrit de haut en bas et des liens. Elle se termine par un exemple complet et par des fichiers prêts pour un imprimeur.",
@@ -262,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG, JPEG, GIF et WebP sont incorporés comme images ;
 - le balisage SVG est dessiné en tracés vectoriels, son `text` composé en texte réel dans les polices incorporées du document, ou bien rastérisé à 600 dpi dans le navigateur lorsqu’il emploie des fonctions hors du sous-ensemble vectoriel. Un `<style>` qui ne contient que des règles `@font-face` (des fontes qu’un auteur a incorporées) est ignoré et laisse la figure vectorielle (depuis postext-pdf 1.25) ; toute autre feuille de style en fait une image matricielle, produite avec les fontes que désigne son texte, insérées depuis `fontProvider` (sauf si `diagramStyle.inlineFonts` ou le `svg.inlineFonts` de la ressource vaut `false`) ;
+- les TIFF et les documents Photoshop (PSD, PSB) s’impriment à partir de leurs propres pixels : niveaux de gris, RVB ou CMJN, 8 ou 16 bits, avec le profil ICC et la résolution qu’ils portent. Un document CMJN garde ses encres telles quelles ; les niveaux de gris et le RVB suivent `print.imageColor`. D’un document Photoshop, on lit l’image composite qu’il enregistre avec « Maximiser la compatibilité » ; les TIFF à compression JPEG ne sont pas lus ;
 - un PDF voit sa première page incorporée telle quelle, sous forme de XObject de formulaire.
 
 Chaque image est stockée une seule fois dans le fichier, quel que soit le nombre de fois où elle est dessinée. Un SVG dessiné en tracés vectoriels devient un XObject de formulaire que chaque page peint : un cadre ou un logo dans la maquette de page d’un document de trente pages est écrit une fois, et non trente ; chaque page supplémentaire ajoute quelques centaines d’octets. Jusqu’à postext-pdf 1.4, chaque page contenait sa propre copie des tracés.
@@ -281,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 Un hôte peut aussi renvoyer les octets de l’original pour l’identifiant propre du SVG, comme le fait `bundleResourceBytes` ; les deux façons fonctionnent.
+
+Un navigateur ne sait pas afficher un TIFF ni un document Photoshop, si bien qu’une ressource bitmap créée à partir de l’un d’eux garde deux fichiers : `bitmap.fileId` est un aperçu PNG, qu’affichent le canvas, le HTML et l’EPUB, et `bitmap.printFileId` (avec `printFormat: 'tiff' | 'psd'`) est l’original. Un hôte renvoie les octets de l’original pour `bitmap.fileId`, comme le font `bundleResourceBytes` et le Sandbox, et le PDF s’imprime à partir de lui. `decodePrintRaster(bytes)` et `rasterToRgba(raster)` de `postext` lisent l’original et produisent l’aperçu ; le Sandbox le produit à l’importation du fichier, et un paquet stocke l’original sous `resources/<nom>.tif` ou `.psd` à côté de l’aperçu.
+
+Un fichier Adobe Illustrator enregistré avec « Créer un fichier compatible PDF » est un PDF, et il peut être un original d’impression comme un autre (`.ai`). Ses nuances sont ses propres plaques : le contrôle en amont énumère celles que la table des encres renomme, celles qu’aucune couleur du livre ne définit et, dans un travail sur ses propres plaques (`print.plates`), celles que le travail n’imprime pas, car un fichier placé s’imprime tel quel.
 
 ### Texte vertical dans le PDF
 
@@ -501,6 +506,42 @@ print: {
 ```
 
 Le contrôle en amont énumère les plaques du travail et chaque couleur que la projection déplace. Un ton direct ou une couleur CMJN que le travail n'imprime pas est une information quand son mélange tombe à moins de ΔE 6, et un avertissement au-delà ou tant que le profil de sortie n'est pas chargé (`offPlateInk`, `offPlateCmyk`) ; une couleur d'écran qui tombe au-delà de ΔE 6 est aussi un avertissement (`offPlateColor`). Une plaque de ton direct qu'aucune couleur ni aucune entrée de la table des encres ne définit est un avertissement : elle s'imprime et apparaît en noir sur l'épreuve. Dans un tel travail, l'original d'impression d'une figure est mis de côté et son SVG est composé sur les plaques ; une page PDF placée, ou une image impossible à décoder, garde ses propres encres et le rendu avertit (`artworkOffPlates`). Dans le Sandbox, les plaques se choisissent dans Préparation pour l’impression → Plaques. Ses aperçus et l'aperçu d'impression montrent les couleurs telles que le livre les définit, non telles que les plaques les impriment : regardez le PDF, où Vérifier pour l'impression liste les encres qu'il utilise.
+
+### Couleurs des images
+
+Une image est séparée à partir des couleurs dans lesquelles elle a été créée. `print.imageColor` indique comment ses pixels sont lus :
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+Les valeurs par défaut laissent les images telles que les imprimaient les versions précédentes : toute image RVB est lue comme sRGB (`'ignore'`), les images en niveaux de gris sont séparées comme les autres (`'none'`) et une image CMJN garde ses valeurs (`'keep'`). Chaque comportement de la liste s’active avec son champ.
+
+- **Son propre profil.** Un PNG (`iCCP`) ou un JPEG (`ICC_PROFILE`) qui intègre un profil est lu à travers celui-ci, si bien qu’une photographie en Adobe RGB ou en Display P3 se sépare telle qu’elle apparaît et non comme si elle était en sRGB. Une image sans profil, ou avec un profil sRGB, est lue en sRGB, comme jusqu’ici. `'ignore'` lit toutes les images en sRGB.
+- **Un profil attribué.** `assignedRgbProfile` désigne un `.icc` enregistré à travers lequel toute image RVB est lue, quel que soit le profil qu’elle intègre : pour un lot de photographies qui ont perdu le leur, par exemple. Ses octets viennent de `resourceBytes` ; s’ils manquent, les profils propres aux images sont utilisés, avec un avertissement `imageProfileUnavailable`.
+- **Conservée pour le RIP.** En PDF/X-4 avec `convertImages: false`, une image dont le profil n’est pas sRGB est écrite dans ses propres couleurs, étiquetée `ICCBased` avec ce profil, et le RIP de l’imprimeur la convertit.
+- **Niveaux de gris.** Une image en niveaux de gris (un PNG ou un JPEG en gris, ou une image avec un profil de gris) s’imprime avec la seule encre noire, jamais en gris quadrichrome. Ses tons, lus à travers son propre profil (sinon tels que l’écran les affiche), sont ajustés à la presse : `'profile'` par le noir du profil de sortie, dont la condition inclut déjà l’engraissement ; un nombre est l’engraissement de la presse au ton de 50 %, en pourcentage (10 à 30 en général), qui est alors compensé ; `'none'` écrit les valeurs telles quelles, comme jusqu’ici.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **Une image CMJN d’une autre presse.** Une image CMJN dont le profil propre est une autre condition d’impression (une photographie séparée pour SWOP ou pour le papier journal dans un livre pour FOGRA) est séparée de nouveau pour celle de la sortie (`cmykProfile: 'convert'`), le noir seul restant noir seul : une image TIFF ou Photoshop à partir de ses pixels ; un JPEG CMJN, dont les pixels ne sont pas décodés, est étiqueté `ICCBased` avec son propre profil en PDF/X-4 pour que le RIP le convertisse, et passe tel quel en PDF/X-1a, qui n’admet pas cette étiquette ; le contrôle en amont l’y signale (`cmykImageForeign`) quand l’hôte lui donne le profil de l’image (`imageProfile`). En PDF/X-4 avec `convertImages: false`, une image TIFF ou Photoshop est étiquetée de la même façon. `'keep'` imprime telles quelles les valeurs de toute image CMJN.
+
+**Les réglages d’une seule image.** Le `printColor` d’une ressource accepte les mêmes champs que le `print.imageColor` du livre, pour cette seule image : une photographie dont le profil doit être ignoré, une autre lue à travers un profil attribué, une image en gris avec un autre engraissement. Dans le Sandbox, la fiche d’une image indique si elle est lue à travers son propre profil (« Couleur à l’impression »), comment ses gris s’accordent à la presse (« Gris à l’impression ») et quel profil lui est attribué (« Profil attribué », un fichier `.icc`) ; un paquet porte les profils attribués, celui du livre et ceux des images, dans son dossier `profiles/`.
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 
 ### Couleurs définies en CMJN

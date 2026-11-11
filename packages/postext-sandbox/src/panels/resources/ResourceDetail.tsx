@@ -14,6 +14,7 @@ import { BitmapUploader } from './uploads/BitmapUploader.js';
 import { BitmapResolutionField } from './uploads/BitmapResolutionField.js';
 import { SvgUploader } from './svg/SvgUploader.js';
 import { PdfMasterUploader } from './uploads/PdfMasterUploader.js';
+import { PrintColorExtras } from './uploads/PrintColorExtras.js';
 import { SvgFontsField } from './svg/SvgFontsField.js';
 import { SafeAreaField } from './marks/SafeAreaEditor.js';
 import { applyMarks } from './marks/pictureMarks.js';
@@ -470,6 +471,40 @@ export function ResourceDetail({
           <Field label={labels.resourceBitmapSizeLabel}>
             <BitmapResolutionField bitmap={resource.bitmap} onChange={(bitmap) => onChange(touch({ bitmap }))} />
           </Field>
+        )}
+        {/* How the picture's colours are read in print, over the book's
+            `print.imageColor`: its own profile, or none. */}
+        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
+          <Field label={labels.resourcePrintColorLabel} hint={labels.resourcePrintColorHint}>
+            <select
+              value={resource.printColor?.embeddedProfile ?? ''}
+              onChange={(e) => {
+                const { embeddedProfile: _old, ...rest } = resource.printColor ?? {};
+                void _old;
+                const value = e.target.value as '' | 'use' | 'ignore';
+                const printColor = value ? { ...rest, embeddedProfile: value } : rest;
+                const next = touch({});
+                if (Object.keys(printColor).length > 0) next.printColor = printColor;
+                else delete next.printColor;
+                onChange(next);
+              }}
+              aria-label={labels.resourcePrintColorLabel}
+              className={inputClass}
+              style={inputStyle}
+            >
+              <option value="">{labels.resourcePrintColorBook}</option>
+              <option value="use">{labels.resourcePrintColorUse}</option>
+              <option value="ignore">{labels.resourcePrintColorIgnore}</option>
+            </select>
+          </Field>
+        )}
+        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
+          <PrintColorExtras resource={resource} onChange={(printColor) => {
+            const next = touch({});
+            if (printColor && Object.keys(printColor).length > 0) next.printColor = printColor;
+            else delete next.printColor;
+            onChange(next);
+          }} />
         )}
         {resource.kind === 'svg' && (
           <Field label={labels.resourceSvgLabel}>

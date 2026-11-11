@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { inkEntry, inkNameProblem, printableInkName, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames } from '../../color/inks.js';
-import { resolvePrintConfig, resolvePrintInks, resolvePrintPlates, stripPrintDefaults } from '../../defaults/output/print.js';
+import { resolvePrintConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults } from '../../defaults/output/print.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import { authoredCmykColors, authoredSpotColors } from '../../color/authored.js';
+import { placedInkProblems } from '../../color/plates.js';
 import type { ColorValue, PostextConfig } from '../../types.js';
 
 const spot = (hex: string, name: string, tint?: number): ColorValue => ({ hex, model: 'spot', spot: { name, cmyk: { c: 100, m: 66, y: 0, k: 2 }, ...(tint !== undefined ? { tint } : {}) } });
@@ -165,5 +166,30 @@ describe('resolvePrintPlates', () => {
 
   it('sorts and clamps a curve, under the plate\'s PDF spelling', () => {
     expect(resolvePrintPlates({ inks: ['Black'], curves: { black: [[100, 120], [0, -5], [50, 40]] } }).curves).toEqual({ Black: [[0, 0], [50, 40], [100, 100]] });
+  });
+});
+
+describe('resolvePrintImageColor', () => {
+  it('fills the defaults, clamps the dot gain and keeps only a usable assigned profile', () => {
+    // The defaults print pictures as earlier versions did.
+    expect(resolvePrintImageColor()).toEqual({ embeddedProfile: 'ignore', grayDotGain: 'none', cmykProfile: 'keep' });
+    expect(resolvePrintImageColor({ embeddedProfile: 'use', grayDotGain: 80 })).toEqual({ embeddedProfile: 'use', grayDotGain: 50, cmykProfile: 'keep' });
+    expect(resolvePrintImageColor({ grayDotGain: 'profile', assignedRgbProfile: { name: 'Adobe RGB', fileId: '' } })).toEqual({ embeddedProfile: 'ignore', grayDotGain: 'profile', cmykProfile: 'keep' });
+    expect(resolvePrintImageColor({ cmykProfile: 'convert' }).cmykProfile).toBe('convert');
+    expect(resolvePrintImageColor({ assignedRgbProfile: { name: 'Adobe RGB', fileId: 'a.icc' } }).assignedRgbProfile).toEqual({ name: 'Adobe RGB', fileId: 'a.icc' });
+  });
+});
+
+describe('placedInkProblems', () => {
+  const spots = [{ name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 100, overprint: false }];
+
+  it('flags inks of a placed file the table renames and the book does not define', () => {
+    const print = resolvePrintConfig({ inks: [{ name: 'Azul corporativo', pdfName: 'PANTONE 286 C' }] });
+    expect(placedInkProblems(['PANTONE 286 C', 'Azul corporativo', 'Oro'], print, spots)).toEqual({ offPlates: [], renamed: ['Azul corporativo'], unknown: ['Oro'] });
+  });
+
+  it('in a job on its own plates, flags every ink of the file outside them', () => {
+    const print = resolvePrintConfig({ plates: { inks: ['Black', 'PANTONE 286 C'] } });
+    expect(placedInkProblems(['pantone 286 c', 'PANTONE 185 C'], print, spots)).toEqual({ offPlates: ['PANTONE 185 C'], renamed: [], unknown: [] });
   });
 });

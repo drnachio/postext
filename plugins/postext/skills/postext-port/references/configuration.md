@@ -2762,9 +2762,18 @@ as a change. Left out, the file is stamped with the time of the call.
     "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
     "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
     "curves": { "PANTONE 286 C": [[0, 0], [50, 35], [100, 70]] }   // [tone, ink] percent per picture plate
+  },
+  "imageColor": {                  // how pictures' colours are read; the defaults print them as before
+    "embeddedProfile": "ignore",   // ignore (sRGB) | use: a PNG iCCP / JPEG ICC_PROFILE read through its profile
+    "assignedRgbProfile": { "name": "Adobe RGB (1998)", "fileId": "profiles/adobergb.icc" },  // every RGB picture through it
+    "grayDotGain": "none",         // none (separated as any picture) | profile (on black, output black's gain) | 10–30 (% at 50 %)
+    "cmykProfile": "keep"          // keep | convert: a CMYK picture of another press separated again
   }
 }
 ```
+- A picture's own `printColor` (on the resource) takes the same `imageColor` fields over the book's.
+  TIFF and Photoshop originals (`bitmap.printFileId`, `printFormat: 'tiff' | 'psd'`, a PNG preview in
+  `bitmap.fileId`) print from their own pixels; an Illustrator `.ai` saved PDF-compatible is a PDF print master.
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output
   intent and the bleed and prints a `suggested_config` (`print` + `page.cutLines`). Map the
   condition to the catalogue id; a condition the catalogue lacks needs the printer's `.icc` as
@@ -2789,7 +2798,8 @@ as a change. Left out, the file is stamped with the time of the call.
   the job's `plates` and picture plates), `offPlateInk` / `offPlateCmyk` (a spot ink or CMYK colour the job does not
   print: info when its projection lands within ΔE 6, a warning past it or with no profile), `offPlateColor` (warning:
   a screen colour that lands past ΔE 6), `plateUndefined` (a spot plate no colour or `inks` entry defines: it prints
-  as black). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  as black), `cmykImageForeign` (a CMYK JPEG of another press
+  condition in a PDF/X-1a job, with `imageColor.cmykProfile: 'convert'`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
 - With `plates`, a colour off the job's plates prints as the closest mix of one
   plate or two (a `DeviceN` space for two); greys stay on Black; rich black is dropped unless every ink of the recipe

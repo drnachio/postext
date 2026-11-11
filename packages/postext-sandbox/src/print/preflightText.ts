@@ -26,11 +26,13 @@ export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): st
     case 'offPlateCmyk': return labels.preflightOffPlateCmyk;
     case 'offPlateColor': return labels.preflightOffPlateColor;
     case 'plateUndefined': return labels.preflightPlateUndefined;
+    case 'cmykImageForeign': return labels.preflightCmykImageForeign;
     case 'safeZone': return labels.preflightSafeZone;
     case 'nearTrim': return labels.preflightNearTrim;
     case 'masterFonts': return labels.preflightMasterFonts;
     case 'masterRgb': return labels.preflightMasterRgb;
     case 'masterTransparency': return labels.preflightMasterTransparency;
+    case 'masterInks': return labels.preflightMasterInks;
   }
 }
 
@@ -98,6 +100,8 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
       return withDeltaE(fill(labels.preflightOffPlateColorDetail, { color: check.color }), check.deltaE, labels);
     case 'plateUndefined':
       return fill(labels.preflightPlateUndefinedDetail, { plate: check.plate });
+    case 'cmykImageForeign':
+      return fill(labels.preflightCmykImageForeignDetail, { file: check.resourceId ?? check.fileId, profile: check.profile });
     case 'safeZone':
       return fill(labels.preflightSafeZoneDetail, { distance: check.distanceMm, zone: check.safeZoneMm, text: check.text });
     case 'nearTrim':
@@ -108,5 +112,7 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
       return check.name;
     case 'masterTransparency':
       return fill(labels.preflightMasterDetail, { name: check.name, detail: labels.preflightMasterTransparencyX1a });
+    case 'masterInks':
+      return fill(check.problem === 'offPlates' ? labels.preflightMasterInksOffPlatesDetail : check.problem === 'renamed' ? labels.preflightMasterInksRenamedDetail : labels.preflightMasterInksUnknownDetail, { name: check.name, inks: check.inks.map((i) => `“${i}”`).join(', ') });
   }
 }

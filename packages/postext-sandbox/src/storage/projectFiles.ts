@@ -63,8 +63,15 @@ export function remapContentFileIds(content: ProjectContent, map: FileIdMapper):
     // An SVG's vector print master travels with it under its own id.
     const pdfFileId = r.svg?.pdfFileId;
     const nextPdf = pdfFileId ? remapBlob(pdfFileId, `${r.id}.pdf`) : undefined;
-    if (next === fileId && nextPdf === pdfFileId) return r;
-    if (r.bitmap) return { ...r, bitmap: { ...r.bitmap, fileId: next } };
+    // So does a bitmap's TIFF or Photoshop original.
+    const printFileId = r.bitmap?.printFileId;
+    const nextPrint = printFileId ? remapBlob(printFileId, `${r.id}.${r.bitmap?.printFormat === 'psd' ? 'psd' : 'tif'}`) : undefined;
+    // And a picture's own assigned profile (`printColor.assignedRgbProfile`).
+    const profile = r.printColor?.assignedRgbProfile;
+    const nextProfile = profile ? remapBlob(profile.fileId, `${r.id}.icc`) : undefined;
+    const printColor = profile && nextProfile !== profile.fileId ? { printColor: { ...r.printColor, assignedRgbProfile: { ...profile, fileId: nextProfile! } } } : {};
+    if (next === fileId && nextPdf === pdfFileId && nextPrint === printFileId && !('printColor' in printColor)) return r;
+    if (r.bitmap) return { ...r, ...printColor, bitmap: { ...r.bitmap, fileId: next, ...(nextPrint ? { printFileId: nextPrint } : {}) } };
     if (r.svg) return { ...r, svg: { ...r.svg, fileId: next, ...(nextPdf ? { pdfFileId: nextPdf } : {}) } };
     return r;
   });

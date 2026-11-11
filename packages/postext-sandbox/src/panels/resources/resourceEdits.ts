@@ -117,7 +117,10 @@ export function renameResource(
 }
 
 /** The fields of `resource` once a bitmap file takes its place. */
-export function bitmapReplaced(resource: Resource, r: Omit<BitmapUploadResult, 'filename'>): Partial<Resource> {
+export function bitmapReplaced(
+  resource: Resource,
+  r: Omit<BitmapUploadResult, 'filename'> & Pick<NonNullable<Resource['bitmap']>, 'printFileId' | 'printFormat'>,
+): Partial<Resource> {
   return {
     kind: 'bitmap',
     // A declared resolution is the author's and stays; the file's is
@@ -126,6 +129,8 @@ export function bitmapReplaced(resource: Resource, r: Omit<BitmapUploadResult, '
       fileId: r.fileId, format: r.format, width: r.width, height: r.height,
       ...(resource.bitmap?.resolution ? { resolution: resource.bitmap.resolution } : {}),
       ...(r.fileResolution ? { fileResolution: r.fileResolution } : {}),
+      // The new file's TIFF or Photoshop original, when it came from one.
+      ...(r.printFileId ? { printFileId: r.printFileId, printFormat: r.printFormat } : {}),
     },
     svg: undefined,
     table: undefined,
