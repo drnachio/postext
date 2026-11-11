@@ -536,6 +536,14 @@ export const LayoutSection = memo(function LayoutSection() {
         onReset={() => resetField('footFloatRow')}
       />
       <ToggleSwitch
+        label={labels.alignFloatsAcrossColumns}
+        checked={layout.alignFloatsAcrossColumns}
+        onChange={(v) => updateLayout({ alignFloatsAcrossColumns: v })}
+        tooltip={labels.alignFloatsAcrossColumnsTooltip}
+        isDefault={layout.alignFloatsAcrossColumns === D.alignFloatsAcrossColumns}
+        onReset={() => resetField('alignFloatsAcrossColumns')}
+      />
+      <ToggleSwitch
         label={labels.pullFloatsToCitation}
         checked={layout.pullFloatsToCitation}
         onChange={(v) => updateLayout({ pullFloatsToCitation: v })}

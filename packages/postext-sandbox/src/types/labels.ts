@@ -3370,8 +3370,6 @@ export interface SandboxLabels {
   captionDescriptionGroup: string;
   captionPosition: string;
   captionPositionTooltip: string;
-  captionAlignAcrossColumns: string;
-  captionAlignAcrossColumnsTooltip: string;
   captionPositionBelow: string;
   captionPositionAbove: string;
   captionBarGroup: string;
@@ -5136,6 +5134,8 @@ export interface SandboxLabels {
   pullFloatsToCitationTooltip: string;
   footFloatRow: string;
   footFloatRowTooltip: string;
+  alignFloatsAcrossColumns: string;
+  alignFloatsAcrossColumnsTooltip: string;
   inlineResourceGap: string;
   inlineResourceGapTooltip: string;
   inlineResourceGapAround: string;
