@@ -6,6 +6,7 @@
  * saved without the composite has nothing to read.
  */
 
+import { checkSize, guarded, within } from './limits.js';
 import { packBits } from './tiff.js';
 import { RasterDecodeError, colorChannels, type DecodedRaster, type RasterColor } from './types.js';
 
@@ -16,8 +17,15 @@ export function isPsd(bytes: Uint8Array): boolean {
 
 const MODES: Record<number, RasterColor> = { 1: 'gray', 3: 'rgb', 4: 'cmyk', 8: 'gray' };
 
+/** Decode a Photoshop document's composite image. Sizes, lengths and
+ *  offsets are checked against the file and the limits (`limits.ts`); a
+ *  file that breaks one, or is cut short, is a {@link RasterDecodeError}. */
 export function decodePsd(bytes: Uint8Array): DecodedRaster {
   if (!isPsd(bytes)) throw new RasterDecodeError('not a Photoshop document');
+  return guarded('Photoshop document', () => readPsd(bytes));
+}
+
+function readPsd(bytes: Uint8Array): DecodedRaster {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   const version = view.getUint16(4);
   if (version !== 1 && version !== 2) throw new RasterDecodeError(`Photoshop version ${version} is not supported`);
@@ -32,12 +40,15 @@ export function decodePsd(bytes: Uint8Array): DecodedRaster {
   if (depth !== 8 && depth !== 16) throw new RasterDecodeError(`Photoshop documents of ${depth} bits are not supported`);
   const ch = colorChannels(color);
   if (channels < ch) throw new RasterDecodeError('Photoshop document without its colour channels');
+  checkSize(width, height, channels, 'Photoshop document');
 
   let at = 26;
   // Colour mode data.
   at += 4 + view.getUint32(at);
+  within(bytes, at, 4, 'Photoshop document');
   // Image resources: the ICC profile (1039) and the resolution (1005).
   const resourcesEnd = at + 4 + view.getUint32(at);
+  within(bytes, at, resourcesEnd - at, 'Photoshop image resources');
   let icc: Uint8Array | undefined;
   let resolution: number | undefined;
   at += 4;
@@ -49,6 +60,7 @@ export function decodePsd(bytes: Uint8Array): DecodedRaster {
     const sizeAt = at + 6 + nameSize;
     const size = view.getUint32(sizeAt);
     const data = sizeAt + 4;
+    if (data + size > resourcesEnd) throw new RasterDecodeError('truncated Photoshop image resource');
     if (id === 1039) icc = bytes.slice(data, data + size);
     if (id === 1005 && size >= 16) {
       // Fixed 16.16 pixels per unit; unit 1 = per inch, 2 = per cm.
@@ -61,6 +73,7 @@ export function decodePsd(bytes: Uint8Array): DecodedRaster {
   at = resourcesEnd;
   // Layer and mask information: skipped.
   at += (big ? 8 : 4) + (big ? Number(view.getBigUint64(at)) : view.getUint32(at));
+  within(bytes, at, 2, 'Photoshop document');
 
   // The composite image, channel after channel.
   const compression = view.getUint16(at);
@@ -70,21 +83,25 @@ export function decodePsd(bytes: Uint8Array): DecodedRaster {
   const rowBytes = width * sampleBytes;
   const planes: Uint8Array[] = [];
   if (compression === 0) {
-    for (let c = 0; c < channels; c++) {
-      planes.push(bytes.subarray(at, at + rowBytes * height));
+    // Only the colour channels are read; the others may be cut off.
+    for (let c = 0; c < ch; c++) {
+      planes.push(within(bytes, at, rowBytes * height, 'Photoshop composite image'));
       at += rowBytes * height;
     }
   } else if (compression === 1) {
     // Every row's byte count, all channels, then the rows.
     const countSize = big ? 4 : 2;
+    within(bytes, at, channels * height * countSize, 'Photoshop row counts');
     const counts: number[] = [];
     for (let i = 0; i < channels * height; i++) counts.push(big ? view.getUint32(at + i * 4) : view.getUint16(at + i * 2));
     at += channels * height * countSize;
-    for (let c = 0; c < channels; c++) {
+    for (let c = 0; c < ch; c++) {
       const plane = new Uint8Array(rowBytes * height);
       for (let y = 0; y < height; y++) {
         const n = counts[c * height + y]!;
-        plane.set(packBits(bytes.subarray(at, at + n), rowBytes), y * rowBytes);
+        const row = packBits(within(bytes, at, n, 'Photoshop composite image'), rowBytes);
+        if (row.length < rowBytes) throw new RasterDecodeError('truncated Photoshop row');
+        plane.set(row, y * rowBytes);
         at += n;
       }
       planes.push(plane);

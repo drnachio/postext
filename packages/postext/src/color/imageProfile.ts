@@ -4,7 +4,7 @@
  * several, numbered). A picture without one is untagged.
  */
 
-import { unzlibSync } from 'fflate';
+import { MAX_ICC_BYTES, inflateBounded } from '../raster/limits.js';
 
 const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
 const ICC_MARKER = 'ICC_PROFILE\0';
@@ -27,8 +27,9 @@ function pngProfile(bytes: Uint8Array): Uint8Array | undefined {
       // Name (1–79 bytes), NUL, compression method (0), zlib stream.
       let nul = data;
       while (nul < data + length && bytes[nul] !== 0) nul++;
+      if (data + length > bytes.length) return undefined;
       try {
-        return unzlibSync(bytes.subarray(nul + 2, data + length));
+        return inflateBounded(bytes.subarray(nul + 2, data + length), MAX_ICC_BYTES, 'PNG profile');
       } catch {
         return undefined;
       }
@@ -57,6 +58,7 @@ function jpegProfile(bytes: Uint8Array): Uint8Array | undefined {
     }
     const length = (bytes[at + 2]! << 8) | bytes[at + 3]!;
     const data = at + 4;
+    if (at + 2 + length > bytes.length) break;
     if (marker === 0xe2 && length > 16) {
       let tag = '';
       for (let i = 0; i < 12; i++) tag += String.fromCharCode(bytes[data + i]!);
