@@ -144,14 +144,15 @@ export function applyPrintPass(
   const fillOver = (): boolean => (overprint && gs.fillK) || gs.fillSpotOver;
   const strokeOver = (): boolean => (overprint && gs.strokeK) || gs.strokeSpotOver;
   /** The Separation operators of a `k` / `K` stand-in, if it is one. */
-  const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean } | undefined => {
+  const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean; kOnly?: boolean } | undefined => {
     if (!options.spaceFor || args.length !== 4) return undefined;
     const [c, m, y, k] = args.map(num) as [number, number, number, number];
     const paint = mode.inkRegistry.paintOf(c, m, y, k);
     if (!paint) return undefined;
     if ('process' in paint) {
       // A process colour that overprints: its own values, overprinting.
-      return { ops: [PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorCmyk : PDFOperatorNames.NonStrokingColorCmyk, paint.process.map((v) => PDFNumber.of(v)))], over: true };
+      // A K-only solid black keeps its rich-black handling.
+      return { ops: [PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorCmyk : PDFOperatorNames.NonStrokingColorCmyk, paint.process.map((v) => PDFNumber.of(v)))], over: true, kOnly: isKOnlySolid(paint.process) };
     }
     const space = options.spaceFor(paint.plate);
     return {
@@ -159,7 +160,7 @@ export function applyPrintPass(
         PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorspace : PDFOperatorNames.NonStrokingColorspace, [space]),
         PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorN : PDFOperatorNames.NonStrokingColorN, [PDFNumber.of(paint.tint)]),
       ],
-      over: paint.plate.overprint,
+      over: paint.overprint,
     };
   };
   let pathStart = -1;
@@ -205,7 +206,7 @@ export function applyPrintPass(
     if (name === 'k' || name === 'K') {
       const stroke = name === 'K';
       const spot = spotOps(args, stroke);
-      const k = !spot && isKOnlySolid(args);
+      const k = spot ? spot.kOnly === true : isKOnlySolid(args);
       if (stroke) {
         gs.strokeK = k;
         gs.strokeSpotOver = !!spot?.over;

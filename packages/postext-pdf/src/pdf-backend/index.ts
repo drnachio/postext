@@ -361,6 +361,10 @@ export async function renderToPdf(
     for (const [ink, n] of printMode.inkRegistry.exhausted()) {
       warn({ kind: 'spotTintsExhausted', message: `postext-pdf: too many distinct spot tints in this render; ${n} tint(s) of "${ink}" printed in process, off the ink's plate` });
     }
+    const knockedOut = printMode.inkRegistry.overprintsExhausted();
+    if (knockedOut > 0) {
+      warn({ kind: 'overprintsExhausted', message: `postext-pdf: too many distinct colours in this render; ${knockedOut} colour(s) set to overprint were knocked out` });
+    }
     for (const [ink, written] of printMode.inkRegistry.renamed()) {
       warn({ kind: 'spotInkRenamed', message: `postext-pdf: a plate cannot be named "${ink}"; it is written as "${written}"` });
     }
@@ -424,9 +428,9 @@ async function printColorMode(
     const spots = new Map<string, Required<SpotColor>>();
     const overprints = new Set<string>();
     for (const doc of docs) {
-      authoredCmykColors(doc.config, authored);
-      authoredSpotColors(doc.config, spots);
-      overprintColors(doc.config, overprints);
+      authoredCmykColors([doc.config, doc.printColors], authored);
+      authoredSpotColors([doc.config, doc.printColors], spots);
+      overprintColors([doc.config, doc.printColors], overprints);
     }
     return createPrintColorMode(profile, config, condition, authored, spots, overprints);
   } catch (err) {
