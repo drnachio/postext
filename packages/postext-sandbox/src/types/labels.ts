@@ -762,6 +762,18 @@ export interface SandboxLabels {
   printPlatesCurve: string;
   printPlatesCurveTooltip: string;
   printPlatesProofNote: string;
+  printGroupPictures: string;
+  printPicturesIntro: string;
+  printPicturesOwnProfile: string;
+  printPicturesOwnProfileTooltip: string;
+  printPicturesAssigned: string;
+  printPicturesAssignedTooltip: string;
+  printPicturesGray: string;
+  printPicturesGrayTooltip: string;
+  printPicturesCmyk: string;
+  printPicturesCmykTooltip: string;
+  printPicturesCmykKeep: string;
+  printPicturesCmykConvert: string;
   warningsGroupPreflight: string;
   preflightCritical: string;
   preflightPage: string;

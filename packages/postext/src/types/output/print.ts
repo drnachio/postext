@@ -294,11 +294,11 @@ export interface PrintImageColorConfig {
   /** A profile every RGB picture is read through instead of its own or
    *  sRGB: a stored `.icc` (`fileId`, its bytes from `resourceBytes`). */
   assignedRgbProfile?: { name: string; fileId: string };
-  /** How greyscale pictures print, on black alone: `'profile'` (default)
-   *  matches their tones through the output profile's black, its dot gain
+  /** How greyscale pictures print, on black alone: `'profile'` matches
+   *  their tones through the output profile's black, its dot gain
    *  included; a number is the press's dot gain at the 50 % tone, percent
-   *  (10–30 typically), compensated instead; `'none'` writes their values
-   *  as they are, as before. */
+   *  (10–30 typically), compensated instead; `'none'` (default) writes
+   *  their values as they are, as before. */
   grayDotGain?: 'profile' | 'none' | number;
   /** A CMYK picture whose own profile is another press condition's
    *  (a photograph separated for SWOP in a FOGRA book): `'convert'`
