@@ -160,6 +160,9 @@ export async function preloadResourceImages(
   /** Embed a print master for `fileId`; false when there is none, or it
    *  does not decode (the SVG is embedded instead). */
   const embedMaster = async (fileId: string): Promise<boolean> => {
+    // A job on a few plates sets the SVG on them: a master's inks would
+    // go on plates as they are.
+    if (printMode?.plates) return false;
     const masterId = masters.get(fileId);
     const bytes = masterId ? bytesProvider(masterId) : undefined;
     if (!bytes || sniffBytes(bytes) !== 'pdf') return false;
@@ -183,6 +186,8 @@ export async function preloadResourceImages(
       const sniffed = sniffBytes(bytes);
       const fmt = sniffed !== 'unknown' ? sniffed : (format ?? '').toLowerCase().replace('jpg', 'jpeg');
       if (fmt === 'pdf') {
+        // Placed as it is: a job on a few plates warns of it.
+        if (printMode?.plates) printMode.inkRegistry.noteOffPlates('pdf');
         const [page] = await pdfDoc.embedPdf(bytes, [0]);
         if (page) out.set(fileId, { kind: 'page', page });
         return;

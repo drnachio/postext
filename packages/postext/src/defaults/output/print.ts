@@ -105,7 +105,8 @@ const PROCESS_PLATES = ['Cyan', 'Magenta', 'Yellow', 'Black'];
 
 /** The plates of a job with their names trimmed (a process plate in its
  *  PDF spelling, `black` as `Black`), each once; the picture plates are
- *  among them, `Black` or the first when none is given. */
+ *  among them (a spot plate maybe by an alias the ink table gives it),
+ *  `Black` or the first when none is given. */
 export function resolvePrintPlates(partial?: PrintPlatesConfig): ResolvedPrintPlatesConfig {
   const names = (list: unknown): string[] => {
     const out: string[] = [];
@@ -121,7 +122,9 @@ export function resolvePrintPlates(partial?: PrintPlatesConfig): ResolvedPrintPl
   };
   const inks = names(partial?.inks);
   if (inks.length === 0) return { inks: [], images: [], curves: {} };
-  let images = names(partial?.images).filter((n) => inks.includes(n)).slice(0, 2);
+  // A spot plate may be named through the ink table (an alias): the
+  // render resolves it (`jobImagePlates`); a process plate must be printed.
+  let images = names(partial?.images).filter((n) => inks.includes(n) || !PROCESS_PLATES.includes(n)).slice(0, 2);
   if (images.length === 0) images = [inks.includes('Black') ? 'Black' : inks[0]!];
   const curves: Record<string, Array<[number, number]>> = {};
   for (const [plate, points] of Object.entries(partial?.curves ?? {})) {

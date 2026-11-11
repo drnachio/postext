@@ -17,8 +17,12 @@ export interface PdfPrintWarning {
    *  character, over 127 bytes), so its plate is written under another
    *  (`printableInkName`). `overprintsExhausted`: the codes ran out before
    *  every process colour that overprints (`ColorValue.overprint`) had one,
-   *  so those past them knocked out. */
-  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted';
+   *  so those past them knocked out. `plateMixesApproximated`: in a job on
+   *  a few plates (`print.plates`) the codes ran out, so the colours past
+   *  them took the nearest mix already coded, still on the job's plates.
+   *  `artworkOffPlates`: in such a job a placed PDF page, or a picture that
+   *  could not be decoded, was embedded as it is, with its own inks. */
+  kind: 'outputProfileUnavailable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates';
   message: string;
 }
 
