@@ -15,6 +15,7 @@ import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js'
 import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
+import { pinnedColumn, pinFirstPositions, pinFirstSlots } from './floatPins.js';
 
 /** What createFloatFlush takes from the pass. */
 export interface FloatFlushDeps {
@@ -46,8 +47,7 @@ export interface FloatFlushDeps {
   settle: (i: number, r: PlaceResult) => number;
   heldBack: (i: number, pageIndex?: number) => boolean;
   pinOn: (f: PlannedFloat, pageIndex: number) => PlannedFloat['pin'];
-  pinnedColumn: (page: VDTPage, pin: NonNullable<PlannedFloat['pin']>) => VDTColumn | undefined;
-  dropMissedPins: (pageIndex: number) => void;
+  releasePins: (pageIndex: number, all?: boolean) => void;
   positionsFor: (f: PlannedFloat) => FloatSlotPosition[];
   cursor: PlacementCursor;
   forcedBreakPages: Set<number>;
@@ -60,7 +60,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
     citingPageFloats, resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
-    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, pinnedColumn, dropMissedPins,
+    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, releasePins,
     positionsFor, cursor, forcedBreakPages, state, late
   } = deps;
   /** Reserve top/bottom bands on a freshly opened page and position as many
@@ -75,7 +75,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
    *  `afterPageSpan` runs once the page-span floats are set, before the
    *  column floats take their heads. */
   const flushPendingFloatsIntoPage = (page: VDTPage, afterPageSpan?: () => void): void => {
-    dropMissedPins(page.index);
+    releasePins(page.index);
     if (pendingFloats.length === 0) { late.flushSideBoxesIntoPage(page); return; }
     // A floated box heading the page goes first: the figures then take
     // the foot under it (a figure set first would claim the foot and push
@@ -153,22 +153,28 @@ export function createFloatFlush(deps: FloatFlushDeps) {
           if (isSide) {
             r = placeFloatInColumns(page, f, [sideCols[0]!], 'top', false, 'fresh', false, true);
           } else {
-            // A float set by hand on this page: its slot and no other.
+            // A float set by hand on this page (`placement.pin`): its slot
+            // first (its column, when the page has it), then the usual ones
+            // of the page.
             const pinCol = pin && !isPageSpan ? pinnedColumn(page, pin) : undefined;
-            for (const pos of pin ? [pin.slot] : positionsFor(f)) {
-              if (!isPageSpan && across > 1) {
-                const from = pinCol ? textCols.indexOf(pinCol) : -1;
-                const group = pinCol ? (from + across <= textCols.length ? textCols.slice(from, from + across) : undefined) : leastReservedGroup(f, across, pos);
-                if (!group) continue;
-                r = placeFloatInColumns(page, f, group, pos, false, 'fresh');
-                if (r !== 'defer') break;
-                continue;
+            for (const pos of pinFirstPositions(pin, positionsFor(f))) {
+              const tries: VDTColumn[][] = [];
+              if (isPageSpan) tries.push(pageCols);
+              else {
+                if (pinCol && pos === pin!.slot) {
+                  const from = textCols.indexOf(pinCol);
+                  if (from >= 0 && from + across <= textCols.length) tries.push(textCols.slice(from, from + across));
+                }
+                const found = across > 1 ? leastReservedGroup(f, across, pos) : leastReserved(f);
+                const usual = found === undefined ? undefined : Array.isArray(found) ? found : [found];
+                if (usual && usual[0] !== tries[0]?.[0]) tries.push(usual);
               }
-              const col = isPageSpan ? undefined : pinCol ?? leastReserved(f);
-              if (!isPageSpan && !col) break;
-              const cols = isPageSpan ? pageCols : [col!];
-              r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
+              for (const cols of tries) {
+                r = placeFloatInColumns(page, f, cols, pos, isPageSpan, 'fresh');
+                if (r !== 'defer') break;
+              }
               if (r !== 'defer') break;
+              if (!isPageSpan && across <= 1 && tries.length === 0) break;
             }
           }
           i = settle(i, r);
@@ -251,7 +257,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   const tryPlacePendingFloatsOnCurrentPage = (preferTop = false, nextBlockIdx?: number, anyPosition = false): void => {
     if (pendingFloats.length === 0) return;
     const page = doc.pages[cursor.pageIndex]!;
-    dropMissedPins(page.index);
+    releasePins(page.index);
     const box = nextBlockIdx !== undefined ? (keepTogetherBoxAt(nextBlockIdx) ?? late.shortListBoxAt(nextBlockIdx)) : null;
     for (let i = 0; i < pendingFloats.length;) {
       if (heldBack(i)) { i++; continue; }
@@ -277,12 +283,11 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       // there, above the box (`placeSpanFloatsAtCut`) — its only slot here
       // would be the band's foot, under the box.
       if (preferTop && f.span === 'page' && multiColumnBand(page)) { i++; continue; }
-      // A float set by hand on this page: its slot and no other.
+      // A float set by hand on this page (`placement.pin`): its slot
+      // first, then the usual ones of the page.
       const pin = pinOn(f, page.index);
-      if (pin) {
-        const col = pinnedColumn(page, pin);
-        slots = slots.filter((s) => !s.side && s.position === pin.slot && (s.pageSpan || !col || s.cols[0] === col));
-      } else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
+      if (pin) slots = pinFirstSlots(page, pin, slots);
+      else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
       for (const slot of slots) {
         if (slot.side) {
           r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);
@@ -311,7 +316,8 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   if (citingPageFloats && citingPageFloats.size > 0) {
     for (const f of floatPlan) {
       const slot = citingPageFloats.get(f.resourceId);
-      if (!slot || !f.citingPage) continue;
+      // A float set by hand goes where its pin says, not to the head.
+      if (!slot || !f.citingPage || f.pin) continue;
       const list = citingHeadsByPage.get(slot.pageIndex);
       if (list) list.push(f);
       else citingHeadsByPage.set(slot.pageIndex, [f]);
@@ -416,7 +422,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
   const settleCitingPageFloats = (): { proposals: Map<string, CitingPageSlot>; refused: Map<string, CitingPageRefusal> } => {
     const proposals = new Map<string, CitingPageSlot>();
     const refused = new Map<string, CitingPageRefusal>();
-    const candidates = floatPlan.filter((f) => f.citingPage);
+    const candidates = floatPlan.filter((f) => f.citingPage && !f.pin);
     if (candidates.length === 0) return { proposals, refused };
     const byId = new Map(candidates.map((f) => [f.resourceId, f]));
     // Where each one's citation landed: the first line that cites it, or
@@ -549,6 +555,9 @@ export function createFloatFlush(deps: FloatFlushDeps) {
    *  (each force-places at least one float). The cursor is left on the last
    *  float page so the boundary's own page break opens AFTER them. */
   const drainPendingFloats = (): void => {
+    // Nothing waits past a chapter's end for a later page its pin names:
+    // the floats set by hand still pending take the usual slots before it.
+    releasePins(cursor.pageIndex, true);
     tryPlacePendingFloatsOnCurrentPage();
     // A float that would otherwise take a page of its own before the
     // boundary settles for a free slot of the current page — the foot of

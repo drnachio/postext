@@ -41,6 +41,21 @@ export type LayoutWarning =
    *  (`layout.pullFloatsToCitation`), by `share` of its height. Found by
    *  the layout; information, since the crop never leaves the safe area. */
   | { kind: 'floatCropped'; resourceId: string; share: number }
+  /** `floatPinMissed` (#1494): a float set by hand
+   *  (`ResourcePlacement.pin`) is not where the pin asks. `reason`:
+   *  `'notTaken'`, the slot could not hold it (too tall for the room left,
+   *  taken by another float, before its citation in reading order, or the
+   *  chapter ended before that page), and it was placed as usual, on that
+   *  page when a slot there held it; `'tooFar'`, the pin counts more pages
+   *  from the citing one than the engine waits
+   *  (`MAX_PIN_PAGE_OFFSET`); `'column'`, the page has no such column
+   *  and another of its columns took the float; `'unsupported'`, the
+   *  resource is no float a pin moves (set in the text, in the side
+   *  column, turned, a full-page plate). `pageIndex` is the page it went
+   *  to; `requestedPage` the page the pin names (counted in the
+   *  document's pages), when its citation was placed. Found by the
+   *  layout. Pins are not recommended: see the docs. */
+  | { kind: 'floatPinMissed'; resourceId: string; reason: 'notTaken' | 'tooFar' | 'column' | 'unsupported'; requestedPage?: number }
   /** `pictureBelowPrintSize` (#901): a bitmap with a print size (its own
    *  `bitmap.resolution`, or a number in `layout.bitmapResolution`) set in
    *  a column that holds it at under half of it, on a page whose text

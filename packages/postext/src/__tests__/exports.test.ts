@@ -376,6 +376,7 @@ describe("package exports", () => {
       "resolvePageConfig",
       "DEFAULT_LAYOUT_CONFIG",
       "DEFAULT_FLOAT_MIN_SCALE",
+      "MAX_PIN_PAGE_OFFSET",
       "DEFAULT_MAX_TOP_FRACTION",
       "DEFAULT_TEXT_WRAP",
       "DEFAULT_COLUMN_RULE",

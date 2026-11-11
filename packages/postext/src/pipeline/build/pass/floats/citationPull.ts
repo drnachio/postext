@@ -61,7 +61,8 @@ export function withCitationPull(place: FloatSlotPlacer, deps: CitationPullDeps)
   return (page, f, targetCols, position, pageSpan, mode, anchorToCap = false, side = false, refY) => {
     const r = place(page, f, targetCols, position, pageSpan, mode, anchorToCap, side, refY);
     if (r !== 'defer' || mode !== 'strict' || f.refPageIndex !== page.index) return r;
-    if (f.callout || f.rotate || f.plate || side || bodyCropDelta.has(f.resourceId)) return r;
+    // A float set by hand (`placement.pin`) is where its author put it.
+    if (f.callout || f.rotate || f.plate || f.pin || side || bodyCropDelta.has(f.resourceId)) return r;
     const first = targetCols[0];
     const probe = first ? probeFloatBand(page, f, targetCols, position, pageSpan, anchorToCap, side, refY) : null;
     if (!first || !probe) return r;
