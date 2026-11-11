@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // The ink of a spot colour (see Spot colours).
+  overprint?: boolean; // Overprints in a print render (see Colours that overprint).
   paletteId?: string;  // The colorPalette entry it follows (see Color Palette).
-  tint?: number;       // The strength of the entry over the paper, percent (with paletteId).
+  tint?: number;       // The strength of the entry over the page colour, percent (with paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Any `ColorValue` in the configuration can carry an optional `paletteId` field po
 
 **Changed in postext 1.5.** Up to postext 1.4 the palette reached only a fixed list of settings. The others — the colours of the designs (running heads, openers, heading styles, parts, contents rows), `bodyText.referenceColor`, the callout label colours and the bold / italic colours of callout bodies — kept the `hex` stored beside their `paletteId`. A document whose stored value differs from the palette entry — every one edited in the Sandbox after the entry changed, and every `:ref` when the Main Color is not `#295AA3` — now prints the palette colour, as the link says. To keep a colour as it was, remove its `paletteId`.
 
-**A tint of a palette entry.** With `paletteId`, `tint` (0–100) paints the entry at that strength over the paper: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` is the main colour at 8 %, a callout ground that follows the main colour when the palette changes, a part's or a section's palette included. `hex` keeps the tinted value, the fallback without the entry. The tint is a screen colour: a print render separates it like any other, even when the entry is a spot ink. In the Sandbox, a linked colour's picker has a **Tint** field.
+**A tint of a palette entry.** With `paletteId`, `tint` (0–100) paints the entry at that strength: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` is the main colour at 8 %, a callout ground that follows the main colour when the palette changes. A part's or a section's palette keeps the strength everywhere it recolours: the flow, the page colour, the line numbers, table cells, the design slots and the Word export. The tint keeps the entry's model: a CMYK entry gives its inks scaled (10 % of `100 60 0 10` prints `10 6 0 1`), a spot entry gives a tint of the same ink on its own plate, and a screen colour mixes with the page colour (`page.backgroundColor`, white when unset; under a CMYK tint, a page colour authored in CMYK adds its own inks). `hex` keeps the tinted value, the fallback without the entry. A spot tint carries one ink only: over a coloured page it knocks the page colour out unless it overprints. In the Sandbox, a linked colour's picker has a **Tint** field.
 
 ### How palettes are applied
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Colours that overprint
 
-Any colour can overprint in a print render: `overprint: true` on a `ColorValue` sets everything painted in it — text, rules, boxes, grounds — over what is under it instead of knocking it out, so a style set in that colour overprints wherever it is used. A process colour is written as it separates, under an overprinting graphics state; a spot colour's ink overprints as `spot.overprint` makes it do. Black at 100 % K overprints already (`black.overprint`). An RGB PDF and the screen ignore it. Set it on the palette entry to make every colour linked to it overprint.
+Any colour can overprint in a print render: `overprint: true` on a `ColorValue` sets everything painted in it (text, rules, boxes, grounds) over what is under it instead of knocking it out. A process colour is written as it separates, under an overprinting graphics state; a spot colour overprints on its ink's plate, even where the same ink in another colour knocks out. A 100 % K black that overprints keeps the black handling: large areas still get rich black (`black.richBlack`). An RGB PDF and the screen ignore it. Set it on the palette entry to make every colour linked to it overprint, its tints included; a linked colour takes the entry's setting, not one of its own. A part's or a section's palette keeps it: text in the part's colour overprints too.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-A colour that overprints and puts no ink down (paper white, an ink at 0 %) disappears on press: the preflight reports it as critical (`overprintWhite`). In the Sandbox, the colour picker's "Overprint in print" box sets it.
+A print render knows a colour by the hex the layout paints, so a colour that overprints never shares its hex with one that knocks out. When they coincide, the one that overprints moves one step (1/255 in one channel), as spot colours do; a part's colour for an entry that overprints moves the same way off any colour of the book that knocks out. A colour that overprints and puts no ink down (paper white, an ink at 0 %) disappears on press: the preflight reports it as critical (`overprintWhite`). A render with more distinct colours than it has codes for (some 25 million) knocks the rest out and warns (`overprintsExhausted`). In the Sandbox, the colour picker's **Overprint in print** switch sets it.
 
 ### Preflight
 

@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Los valores de cuatricromía exactos de un color definido en CMYK.
   spot?: SpotColor;    // La tinta de un color de tinta plana.
+  overprint?: boolean; // Sobreimprime en una salida para imprenta (ver Colores que sobreimprimen).
   paletteId?: string;  // La entrada de colorPalette que sigue.
-  tint?: number;       // La intensidad de la entrada sobre el papel, en porcentaje (con paletteId).
+  tint?: number;       // La intensidad de la entrada sobre el color de la página, en porcentaje (con paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Cualquier `ColorValue` de la configuración puede tener un campo opcional `palet
 
 **Cambio en postext 1.5.** Hasta postext 1.4, la paleta solo llegaba a una lista fija de ajustes. Los demás (los colores de los diseños: titulillos, aperturas, estilos de encabezado, partes, filas del índice; `bodyText.referenceColor`; los colores de las etiquetas de los recuadros y los de las negritas y cursivas de su contenido) conservaban el `hex` guardado junto a su `paletteId`. Un documento cuyo valor guardado no coincide con la entrada de la paleta (todos los editados en el Sandbox después de cambiar la entrada, y todos los `:ref` cuando el color principal no es `#295AA3`) imprime ahora el color de la paleta, como indica el vínculo. Para conservar un color tal como estaba, quita su `paletteId`.
 
-**Una tinta de una entrada de la paleta.** Con `paletteId`, `tint` (0–100) pinta la entrada a esa intensidad sobre el papel: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` es el color principal al 8 %, un fondo de recuadro que sigue al color principal cuando cambia la paleta, también la de una parte o una sección. `hex` guarda el valor ya tintado, el de reserva sin la entrada. La tinta es un color de pantalla: una salida de imprenta la separa como cualquier otro, aunque la entrada sea una tinta plana. En el Sandbox, el selector de un color vinculado tiene un campo **Tinta**.
+**Un tinte de una entrada de la paleta.** Con `paletteId`, `tint` (0–100) pinta la entrada a esa intensidad: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` es el color principal al 8 %, un fondo de recuadro que sigue al color principal cuando cambia la paleta. La paleta de una parte o de una sección mantiene la intensidad en todo lo que recolorea: el texto corrido, el color de la página, los números de línea, las celdas de tabla, las zonas de diseño y la exportación a Word. El tinte conserva el modelo de la entrada: una entrada CMYK da sus tintas escaladas (el 10 % de `100 60 0 10` imprime `10 6 0 1`), una entrada de tinta plana da un tinte de esa misma tinta en su propia plancha, y un color de pantalla se mezcla con el color de la página (`page.backgroundColor`, blanco si no se define; bajo un tinte CMYK, un color de página definido en CMYK añade sus propias tintas). `hex` guarda el valor ya tintado, el de reserva sin la entrada. Un tinte de tinta plana lleva una sola tinta: sobre una página de color, cala el color de la página salvo que sobreimprima. En el Sandbox, el selector de un color vinculado tiene un campo **Tinta**.
 
 ### Cómo se aplican las paletas
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Colores que sobreimprimen
 
-Cualquier color puede sobreimprimir en una salida para imprenta: `overprint: true` en un `ColorValue` hace que todo lo que se pinta con él (texto, filetes, cajas, fondos) se imprima encima de lo que tiene debajo en lugar de calarlo, así que un estilo con ese color sobreimprime allí donde se use. Un color de cuatricromía se escribe tal como se separa, con un estado gráfico de sobreimpresión; la tinta de un color plano sobreimprime como indica `spot.overprint`. El negro al 100 % K ya sobreimprime (`black.overprint`). Un PDF RGB y la pantalla lo ignoran. Ponlo en la entrada de la paleta para que sobreimprima todo color enlazado a ella.
+Cualquier color puede sobreimprimir en una salida para imprenta: `overprint: true` en un `ColorValue` hace que todo lo que se pinta con él (texto, filetes, cajas, fondos) se imprima encima de lo que tiene debajo en lugar de calarlo. Un color de cuatricromía se escribe tal como se separa, con un estado gráfico de sobreimpresión; un color plano sobreimprime en la plancha de su tinta, aunque esa misma tinta en otro color cale. Un negro al 100 % K que sobreimprime conserva el tratamiento del negro: las masas grandes siguen saliendo en negro enriquecido (`black.richBlack`). Un PDF RGB y la pantalla lo ignoran. Ponlo en la entrada de la paleta para que sobreimprima todo color enlazado a ella, también sus tintes; un color enlazado toma el ajuste de la entrada y no tiene uno propio. La paleta de una parte o de una sección lo conserva: el texto en el color de la parte también sobreimprime.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-Un color que sobreimprime y no deposita tinta (el blanco del papel, una tinta al 0 %) desaparece en imprenta: la comprobación previa lo marca como crítico (`overprintWhite`). En el Sandbox, lo activa la casilla «Sobreimprimir en imprenta» del selector de color.
+Una salida para imprenta reconoce un color por el hex que pinta la maquetación, así que un color que sobreimprime nunca comparte hex con uno que cala. Cuando coinciden, el que sobreimprime se desplaza un paso (1/255 en un canal), como hacen los colores planos; el color de una parte para una entrada que sobreimprime se aparta del mismo modo de cualquier color del libro que cale. Un color que sobreimprime y no deposita tinta (el blanco del papel, una tinta al 0 %) desaparece en imprenta: la comprobación previa lo marca como crítico (`overprintWhite`). Una salida con más colores distintos que códigos disponibles (unos 25 millones) cala el resto y avisa (`overprintsExhausted`). En el Sandbox, lo activa el interruptor «Sobreimprimir en imprenta» del selector de color.
 
 ### Preflight
 

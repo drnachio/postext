@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // Os valores exatos de quadricromia de uma cor definida em CMYK.
   spot?: SpotColor;    // A tinta de uma cor especial.
+  overprint?: boolean; // Sobreimprime numa renderização de impressão (veja Cores que sobreimprimem).
   paletteId?: string;  // A entrada de colorPalette que ela segue.
-  tint?: number;       // A intensidade da entrada sobre o papel, em percentagem (com paletteId).
+  tint?: number;       // A intensidade da entrada sobre a cor da página, em porcentagem (com paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Qualquer `ColorValue` da configuração pode levar um campo opcional `paletteId`
 
 **Mudou no postext 1.5.** Até o postext 1.4, a paleta chegava só a uma lista fixa de ajustes: as cores dos designs (cabeços, aberturas, estilos de título, partes, linhas do sumário), `bodyText.referenceColor`, as cores dos rótulos dos boxes e as cores de negrito / itálico do corpo dos boxes mantinham o `hex` guardado ao lado do `paletteId`. Um documento cujo valor guardado difere da entrada da paleta (todos os editados no Sandbox depois que a entrada mudou, e cada `:ref` quando a Cor principal não é `#295AA3`) agora imprime a cor da paleta, como o vínculo indica. Para manter uma cor como estava, remova o `paletteId` dela.
 
-**Um tom de uma entrada da paleta.** Com `paletteId`, `tint` (0–100) pinta a entrada nessa intensidade sobre o papel: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` é a cor principal a 8 %, um fundo de caixa que acompanha a cor principal quando a paleta muda, também a de uma parte ou de uma secção. `hex` guarda o valor já tingido, o de reserva sem a entrada. O tom é uma cor de ecrã: uma saída de impressão separa-o como qualquer outra, mesmo que a entrada seja uma tinta especial. No Sandbox, o seletor de uma cor ligada tem um campo **Tom**.
+**Um tom de uma entrada da paleta.** Com `paletteId`, `tint` (0–100) pinta a entrada nessa intensidade: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` é a cor principal a 8 %, um fundo de box que acompanha a cor principal quando a paleta muda. A paleta de uma parte ou de uma seção mantém a intensidade em tudo o que ela recolore: o texto corrido, a cor da página, os números de linha, as células de tabela, os espaços de design e a exportação para Word. O tom mantém o modelo da entrada: uma entrada CMYK dá as suas tintas em escala (10 % de `100 60 0 10` imprime `10 6 0 1`), uma entrada de cor especial dá um tom da mesma tinta na sua própria chapa, e uma cor de tela se mistura com a cor da página (`page.backgroundColor`, branco quando não definida; sob um tom CMYK, uma cor de página definida em CMYK soma as suas próprias tintas). `hex` guarda o valor já tingido, o de reserva sem a entrada. Um tom de cor especial leva uma tinta só: sobre uma página colorida, vaza a cor da página, a menos que sobreimprima. No Sandbox, o seletor de uma cor vinculada tem um campo **Tom**.
 
 ### Como as paletas são aplicadas
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Cores que sobreimprimem
 
-Qualquer cor pode sobreimprimir numa renderização de impressão: `overprint: true` num `ColorValue` faz com que tudo o que é pintado com ela (texto, fios, boxes, fundos) seja impresso sobre o que está por baixo em vez de o vazar, e assim um estilo nessa cor sobreimprime onde quer que seja usado. Uma cor de quadricromia é escrita como se separa, sob um estado gráfico de sobreimpressão; a tinta de uma cor especial sobreimprime como `spot.overprint` indica. O preto a 100 % K já sobreimprime (`black.overprint`). Um PDF em RGB e a tela o ignoram. Defina-o na entrada da paleta para que sobreimprima toda cor vinculada a ela.
+Qualquer cor pode sobreimprimir numa renderização de impressão: `overprint: true` num `ColorValue` faz com que tudo o que é pintado com ela (texto, fios, boxes, fundos) seja impresso sobre o que está por baixo em vez de o vazar. Uma cor de quadricromia é escrita como se separa, sob um estado gráfico de sobreimpressão; uma cor especial sobreimprime na chapa da sua tinta, mesmo onde a mesma tinta em outra cor vaza. Um preto a 100 % K que sobreimprime mantém o tratamento do preto: as áreas grandes continuam saindo em preto composto (`black.richBlack`). Um PDF em RGB e a tela o ignoram. Defina-o na entrada da paleta para que sobreimprima toda cor vinculada a ela, inclusive os seus tons; uma cor vinculada segue o ajuste da entrada e não tem um próprio. A paleta de uma parte ou de uma seção o mantém: o texto na cor da parte também sobreimprime.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-Uma cor que sobreimprime e não deposita tinta (o branco do papel, uma tinta a 0 %) desaparece na impressão: o preflight a marca como crítica (`overprintWhite`). No Sandbox, isso é definido pela caixa “Sobreimprimir na impressão” do seletor de cor.
+Uma renderização de impressão reconhece uma cor pelo hex que o layout pinta, por isso uma cor que sobreimprime nunca compartilha o hex com uma que vaza. Quando coincidem, a que sobreimprime se desloca um passo (1/255 num canal), como fazem as cores especiais; a cor de uma parte para uma entrada que sobreimprime se afasta da mesma forma de qualquer cor do livro que vaza. Uma cor que sobreimprime e não deposita tinta (o branco do papel, uma tinta a 0 %) desaparece na impressão: o preflight a marca como crítica (`overprintWhite`). Uma renderização com mais cores distintas do que códigos disponíveis (cerca de 25 milhões) vaza o restante e avisa (`overprintsExhausted`). No Sandbox, isso é definido pelo interruptor “Sobreimprimir na impressão” do seletor de cor.
 
 ### Preflight
 

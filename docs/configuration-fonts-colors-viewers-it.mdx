@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // L’inchiostro di una tinta piatta.
+  overprint?: boolean; // Va in sovrastampa in un rendering di stampa (vedi Colori in sovrastampa).
   paletteId?: string;  // La voce di colorPalette che segue.
-  tint?: number;       // L'intensità della voce sulla carta, in percentuale (con paletteId).
+  tint?: number;       // L’intensità della voce sul colore della pagina, in percentuale (con paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Qualsiasi `ColorValue` della configurazione può portare un campo facoltativo `p
 
 **Cambiato in postext 1.5.** Fino a postext 1.4 la tavolozza raggiungeva solo una lista fissa di impostazioni: i colori della grafica (testatine, aperture, stili dei titoli, parti, righe dell’indice), `bodyText.referenceColor`, i colori delle etichette dei riquadri e i colori del grassetto e del corsivo del corpo dei riquadri mantenevano l’`hex` memorizzato accanto al loro `paletteId`. Un documento il cui valore memorizzato è diverso dalla voce della tavolozza (ogni documento modificato nella Sandbox dopo che la voce è cambiata, e ogni `:ref` quando il Main Color non è `#295AA3`) ora stampa il colore della tavolozza, come prevede il collegamento. Per mantenere un colore com’era, rimuovi il suo `paletteId`.
 
-**Una tinta di una voce della tavolozza.** Con `paletteId`, `tint` (0–100) dipinge la voce a quell'intensità sulla carta: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` è il colore principale all'8 %, uno sfondo di riquadro che segue il colore principale quando cambia la tavolozza, anche quella di una parte o di una sezione. `hex` conserva il valore già tinto, quello di riserva senza la voce. La tinta è un colore da schermo: un'uscita di stampa la separa come qualsiasi altro, anche se la voce è un inchiostro spot. Nel Sandbox, il selettore di un colore collegato ha un campo **Tinta**.
+**Una tinta di una voce della tavolozza.** Con `paletteId`, `tint` (0–100) dipinge la voce a quell’intensità: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` è il colore principale all’8 %, uno sfondo di riquadro che segue il colore principale quando cambia la tavolozza. La tavolozza di una parte o di una sezione mantiene l’intensità ovunque ricolora: il testo corrente, il colore della pagina, i numeri di riga, le celle di tabella, gli spazi della grafica e l’esportazione in Word. La tinta mantiene il modello della voce: una voce CMYK dà i suoi inchiostri in proporzione (il 10 % di `100 60 0 10` stampa `10 6 0 1`), una voce in tinta piatta dà una percentuale dello stesso inchiostro sulla sua lastra, e un colore da schermo si mescola con il colore della pagina (`page.backgroundColor`, bianco se non è impostato; sotto una tinta CMYK, un colore di pagina definito in CMYK aggiunge i suoi inchiostri). `hex` conserva il valore già tinto, quello di riserva senza la voce. Applicata a una tinta piatta, la tinta porta un solo inchiostro: su una pagina colorata risparmia il colore della pagina, a meno che non vada in sovrastampa. Nella Sandbox, il selettore di un colore collegato ha un campo **Tinta**.
 
 ### Come si applicano le tavolozze
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Colori in sovrastampa
 
-Qualsiasi colore può andare in sovrastampa in un rendering di stampa: `overprint: true` su un `ColorValue` fa stampare tutto ciò che si disegna con esso (testo, filetti, riquadri, fondi) sopra ciò che sta sotto invece di risparmiarlo, così uno stile in quel colore va in sovrastampa ovunque venga usato. Un colore di quadricromia si scrive così come si separa, sotto uno stato grafico di sovrastampa; l’inchiostro di una tinta piatta va in sovrastampa come stabilisce `spot.overprint`. Il nero al 100 % K va già in sovrastampa (`black.overprint`). Un PDF RGB e lo schermo lo ignorano. Impostalo sulla voce della tavolozza perché vada in sovrastampa ogni colore collegato a essa.
+Qualsiasi colore può andare in sovrastampa in un rendering di stampa: `overprint: true` su un `ColorValue` fa stampare tutto ciò che si disegna con esso (testo, filetti, riquadri, fondi) sopra ciò che sta sotto invece di risparmiarlo. Un colore di quadricromia si scrive così come si separa, sotto uno stato grafico di sovrastampa; una tinta piatta va in sovrastampa sulla lastra del suo inchiostro, anche dove lo stesso inchiostro in un altro colore va in risparmio. Un nero al 100 % K in sovrastampa mantiene il trattamento del nero: le grandi superfici escono comunque in nero ricco (`black.richBlack`). Un PDF RGB e lo schermo lo ignorano. Impostalo sulla voce della tavolozza perché vada in sovrastampa ogni colore collegato a essa, comprese le sue tinte; un colore collegato prende l’impostazione della voce e non ne ha una propria. La tavolozza di una parte o di una sezione la mantiene: anche il testo nel colore della parte va in sovrastampa.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-Un colore in sovrastampa che non deposita inchiostro (il bianco della carta, un inchiostro allo 0 %) scompare in stampa: il preflight lo segnala come critico (`overprintWhite`). Nella Sandbox lo imposta la casella «Sovrastampa in tipografia» del selettore di colore.
+Un rendering di stampa riconosce un colore dall’hex che la composizione dipinge, quindi un colore in sovrastampa non condivide mai l’hex con uno che va in risparmio. Quando coincidono, quello in sovrastampa si sposta di un passo (1/255 in un canale), come fanno le tinte piatte; il colore di una parte per una voce in sovrastampa si allontana allo stesso modo da qualsiasi colore del libro che va in risparmio. Un colore in sovrastampa che non deposita inchiostro (il bianco della carta, un inchiostro allo 0 %) scompare in stampa: il preflight lo segnala come critico (`overprintWhite`). Un rendering con più colori distinti dei codici di cui dispone (circa 25 milioni) manda in risparmio il resto e avvisa (`overprintsExhausted`). Nella Sandbox lo imposta l’interruttore «Sovrastampa in tipografia» del selettore di colore.
 
 ### Preflight
 

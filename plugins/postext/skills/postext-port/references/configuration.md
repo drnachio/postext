@@ -68,11 +68,6 @@ Conversion at `page.dpi` (default 300):
 - `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
   `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
   alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
-- `overprint: true` (any model): in a print render everything painted in the colour overprints
-  instead of knocking out (a process colour as it separates, a spot ink as `spot.overprint`); RGB
-  output ignores it. On the palette entry, every linked use overprints. Never on paper white.
-- `tint` (with `paletteId`, 0–100): the entry at that strength over the paper (a callout ground at
-  8 % of the main colour), following the entry and part/section palettes; a screen colour in print.
   A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
   (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
   here, on the palette entry. In the print PDF an SVG colour prints on an ink only when it names
@@ -84,6 +79,18 @@ Conversion at `page.dpi` (default 300):
   recoloured drawing in tints of that plate. An ink an SVG names that no palette colour (nor an
   `inks` entry with `cmyk`) defines prints on a plate of its own, alternate = the SVG colour's
   CMYK, one plate per name, and the preflight warns (`spotInkUndefined`).
+- `overprint: true` (any model): in a print render everything painted in the colour overprints
+  instead of knocking out (a process colour as it separates, a spot colour on its ink's plate even
+  where the same ink knocks out elsewhere; a 100 K black keeps rich black for large areas); RGB
+  output ignores it. Put it on the palette entry: every linked use and its tints overprint, a part's
+  or section's colour for that entry too (a link has no setting of its own). A colour that
+  overprints never shares a hex with one that knocks out (one moves 1/255). Never on paper white
+  (`overprintWhite`, critical). Map an InDesign swatch's "Overprint Fill" here.
+- `tint` (with `paletteId`, 0–100): the entry at that strength (a callout ground at 8 % of the main
+  colour), following the entry and part/section palettes everywhere (flow, page colour, line
+  numbers, table cells, designs, Word). It keeps the entry's model: CMYK inks scaled, a spot entry's
+  ink at that tint on its own plate, a screen colour mixed over `page.backgroundColor`. Use it for an
+  InDesign tint swatch of a palette colour instead of a fixed hex.
 - Screen hex of a spot colour: a print render knows colours by hex, so a spot colour that shares
   its hex with another ink or a CMYK colour moves one step (1/255, blue channel first) on every
   output; the stored config does not change. Give distinct inks distinct hexes anyway.

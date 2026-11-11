@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // Die Druckfarbe einer Sonderfarbe.
+  overprint?: boolean; // Überdruckt in einer Druckausgabe (siehe Überdruckende Farben).
   paletteId?: string;  // Der Eintrag von colorPalette, dem sie folgt.
-  tint?: number;       // Die Stärke des Eintrags auf dem Papier in Prozent (mit paletteId).
+  tint?: number;       // Die Stärke des Eintrags über der Seitenfarbe in Prozent (mit paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Jeder `ColorValue` der Konfiguration kann ein optionales Feld `paletteId` haben,
 
 **Geändert in postext 1.5.** Bis postext 1.4 erreichte die Palette nur eine feste Liste von Einstellungen: Die Farben der Gestaltungen (Kolumnentitel, Auftakte, Überschriftenstile, Teile, Zeilen des Inhaltsverzeichnisses), `bodyText.referenceColor`, die Etikettfarben der Kästen und die Farben für Fett und Kursiv im Kastentext behielten den `hex`, der neben ihrer `paletteId` gespeichert war. Ein Dokument, dessen gespeicherter Wert vom Paletteneintrag abweicht – jedes, das nach der Änderung des Eintrags in der Sandbox bearbeitet wurde, und jedes `:ref`, wenn die Main Color nicht `#295AA3` ist –, zeigt jetzt die Palettenfarbe, wie es die Verknüpfung verlangt. Um eine Farbe so zu behalten, wie sie war, entfernen Sie ihre `paletteId`.
 
-**Ein Tonwert eines Paletteneintrags.** Mit `paletteId` malt `tint` (0–100) den Eintrag in dieser Stärke auf das Papier: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` ist die Hauptfarbe zu 8 %, ein Kastengrund, der der Hauptfarbe folgt, wenn sich die Palette ändert, auch die eines Teils oder Abschnitts. `hex` hält den getönten Wert, den Ersatzwert ohne den Eintrag. Der Tonwert ist eine Bildschirmfarbe: eine Druckausgabe separiert ihn wie jede andere, auch wenn der Eintrag eine Sonderfarbe ist. In der Sandbox hat die Farbauswahl einer verknüpften Farbe ein Feld **Tonwert**.
+**Ein Tonwert eines Paletteneintrags.** Mit `paletteId` malt `tint` (0–100) den Eintrag in dieser Stärke: `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` ist die Hauptfarbe zu 8 %, ein Kastengrund, der der Hauptfarbe folgt, wenn sich die Palette ändert. Die Palette eines Teils oder Abschnitts behält die Stärke überall, wo sie umfärbt: im Fließtext, in der Seitenfarbe, in den Zeilennummern, in Tabellenzellen, in den Gestaltungsfeldern und im Word-Export. Der Tonwert behält das Modell des Eintrags: Ein CMYK-Eintrag gibt seine Druckfarben skaliert aus (10 % von `100 60 0 10` druckt `10 6 0 1`), ein Sonderfarben-Eintrag gibt einen Tonwert derselben Druckfarbe auf ihrer eigenen Platte, und eine Bildschirmfarbe mischt sich mit der Seitenfarbe (`page.backgroundColor`, ohne Angabe Weiß; unter einem CMYK-Tonwert fügt eine in CMYK angelegte Seitenfarbe ihre eigenen Druckfarben hinzu). `hex` hält den getönten Wert, den Ersatzwert ohne den Eintrag. Ein Sonderfarben-Tonwert trägt nur eine Druckfarbe: Auf einer farbigen Seite spart er die Seitenfarbe aus, es sei denn, er überdruckt. In der Sandbox hat die Farbauswahl einer verknüpften Farbe ein Feld **Tonwert**.
 
 ### Wie Paletten angewendet werden
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Überdruckende Farben
 
-Jede Farbe kann in einer Druckausgabe überdrucken: `overprint: true` an einem `ColorValue` lässt alles, was in ihr gemalt wird (Text, Linien, Kästen, Flächen), das Darunterliegende überdrucken, statt es auszusparen; ein Stil in dieser Farbe überdruckt also überall, wo er verwendet wird. Eine Prozessfarbe wird so geschrieben, wie sie separiert, unter einem überdruckenden Grafikzustand; die Druckfarbe einer Sonderfarbe überdruckt so, wie `spot.overprint` es festlegt. Schwarz mit 100 % K überdruckt bereits (`black.overprint`). Ein RGB-PDF und der Bildschirm ignorieren es. Setzen Sie es am Paletteneintrag, damit jede mit ihm verknüpfte Farbe überdruckt.
+Jede Farbe kann in einer Druckausgabe überdrucken: `overprint: true` an einem `ColorValue` lässt alles, was in ihr gemalt wird (Text, Linien, Kästen, Flächen), das Darunterliegende überdrucken, statt es auszusparen. Eine Prozessfarbe wird so geschrieben, wie sie separiert, unter einem überdruckenden Grafikzustand; eine Sonderfarbe überdruckt auf der Platte ihrer Druckfarbe, auch dort, wo dieselbe Druckfarbe in einer anderen Farbe ausspart. Ein überdruckendes Schwarz mit 100 % K behält die Schwarzbehandlung: Große Flächen bekommen weiterhin Tiefschwarz (`black.richBlack`). Ein RGB-PDF und der Bildschirm ignorieren es. Setzen Sie es am Paletteneintrag, damit jede mit ihm verknüpfte Farbe überdruckt, seine Tonwerte eingeschlossen; eine verknüpfte Farbe übernimmt die Einstellung des Eintrags und hat keine eigene. Die Palette eines Teils oder Abschnitts behält sie bei: Auch Text in der Farbe des Teils überdruckt.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-Eine überdruckende Farbe, die keine Druckfarbe aufträgt (Papierweiß, eine Druckfarbe mit 0 %), verschwindet im Druck: Der Preflight meldet sie als kritisch (`overprintWhite`). In der Sandbox setzt das Kästchen „Im Druck überdrucken“ des Farbwählers diesen Wert.
+Eine Druckausgabe erkennt eine Farbe an dem Hex-Wert, den das Layout malt; eine überdruckende Farbe teilt ihren Hex-Wert daher nie mit einer aussparenden. Fallen beide zusammen, rückt die überdruckende um einen Schritt (1/255 in einem Kanal) ab, wie es Sonderfarben tun; die Teilfarbe eines überdruckenden Eintrags rückt auf dieselbe Weise von jeder aussparenden Farbe des Buches ab. Eine überdruckende Farbe, die keine Druckfarbe aufträgt (Papierweiß, eine Druckfarbe mit 0 %), verschwindet im Druck: Der Preflight meldet sie als kritisch (`overprintWhite`). Eine Ausgabe mit mehr unterschiedlichen Farben, als sie Codes hat (rund 25 Millionen), spart den Rest aus und warnt (`overprintsExhausted`). In der Sandbox setzt der Schalter „Im Druck überdrucken“ des Farbwählers diesen Wert.
 
 ### Preflight
 

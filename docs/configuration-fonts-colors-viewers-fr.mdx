@@ -42,8 +42,9 @@ interface ColorValue {
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
   cmyk?: CmykPercent;  // The exact process values of a colour authored in CMYK.
   spot?: SpotColor;    // L’encre d’un ton direct.
+  overprint?: boolean; // Surimprime dans un rendu d’impression (voir Couleurs en surimpression).
   paletteId?: string;  // L’entrée de colorPalette qu’elle suit.
-  tint?: number;       // L'intensité de l'entrée sur le papier, en pourcentage (avec paletteId).
+  tint?: number;       // L’intensité de l’entrée sur la couleur de la page, en pourcentage (avec paletteId).
 }
 ```
 
@@ -268,7 +269,7 @@ Toute `ColorValue` de la configuration peut avoir un champ facultatif `paletteId
 
 **Modifié dans postext 1.5.** Jusqu’à postext 1.4, la palette n’atteignait qu’une liste fixe de réglages : les couleurs des maquettes (titres courants, ouvertures, styles de titre, parties, lignes de la table des matières), `bodyText.referenceColor`, les couleurs des étiquettes d’encadré et les couleurs du gras et de l’italique dans le corps des encadrés gardaient le `hex` stocké à côté de leur `paletteId`. Un document dont la valeur stockée diffère de l’entrée de palette (tout document modifié dans le Sandbox après le changement de l’entrée, et chaque `:ref` quand la Main Color n’est pas `#295AA3`) imprime désormais la couleur de la palette, comme le lien l’indique. Pour garder une couleur telle qu’elle était, retirez son `paletteId`.
 
-**Une teinte d'une entrée de la palette.** Avec `paletteId`, `tint` (0–100) peint l'entrée à cette intensité sur le papier : `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` est la couleur principale à 8 %, un fond d'encadré qui suit la couleur principale quand la palette change, y compris celle d'une partie ou d'une section. `hex` garde la valeur teintée, la valeur de repli sans l'entrée. La teinte est une couleur d'écran : une sortie d'impression la sépare comme les autres, même si l'entrée est une encre d'accompagnement. Dans le Sandbox, le sélecteur d'une couleur liée a un champ **Teinte**.
+**Une teinte d’une entrée de la palette.** Avec `paletteId`, `tint` (0–100) peint l’entrée à cette intensité : `{ hex: '#eef2f8', model: 'hex', paletteId: 'main-color', tint: 8 }` est la couleur principale à 8 %, un fond d’encadré qui suit la couleur principale quand la palette change. La palette d’une partie ou d’une section garde l’intensité partout où elle recolore : le texte courant, la couleur de la page, les numéros de ligne, les cellules de tableau, les zones de maquette et l’export Word. La teinte garde le modèle de l’entrée : une entrée CMJN donne ses encres à l’échelle (10 % de `100 60 0 10` imprime `10 6 0 1`), une entrée en ton direct donne une teinte de la même encre sur sa propre plaque, et une couleur d’écran se mélange à la couleur de la page (`page.backgroundColor`, blanc s’il n’est pas défini ; sous une teinte CMJN, une couleur de page définie en CMJN ajoute ses propres encres). `hex` garde la valeur teintée, la valeur de repli sans l’entrée. Une teinte de ton direct ne porte qu’une encre : sur une page de couleur, elle défonce la couleur de la page sauf si elle est en surimpression. Dans le Sandbox, le sélecteur d’une couleur liée a un champ **Teinte**.
 
 ### Application des palettes
 
@@ -778,7 +779,7 @@ colorPalette: [
 
 #### Couleurs en surimpression
 
-Toute couleur peut être en surimpression dans un rendu d’impression : `overprint: true` sur un `ColorValue` imprime tout ce qui est peint avec elle (texte, filets, boîtes, fonds) par-dessus ce qui est dessous au lieu de le défoncer, si bien qu’un style dans cette couleur est en surimpression partout où il sert. Une couleur quadri s’écrit telle qu’elle se sépare, sous un état graphique en surimpression ; l’encre d’un ton direct surimprime comme le veut `spot.overprint`. Le noir à 100 % K est déjà en surimpression (`black.overprint`). Un PDF RVB et l’écran l’ignorent. Placez-le sur l’entrée de palette pour que toute couleur qui lui est liée soit en surimpression.
+Toute couleur peut être en surimpression dans un rendu d’impression : `overprint: true` sur un `ColorValue` imprime tout ce qui est peint avec elle (texte, filets, boîtes, fonds) par-dessus ce qui est dessous au lieu de le défoncer. Une couleur quadri s’écrit telle qu’elle se sépare, sous un état graphique en surimpression ; un ton direct surimprime sur la plaque de son encre, même là où la même encre dans une autre couleur défonce. Un noir à 100 % K en surimpression garde le traitement du noir : les grands aplats passent toujours en noir enrichi (`black.richBlack`). Un PDF RVB et l’écran l’ignorent. Placez-le sur l’entrée de palette pour que toute couleur qui lui est liée soit en surimpression, ses teintes comprises ; une couleur liée prend le réglage de l’entrée et n’a pas le sien. La palette d’une partie ou d’une section le garde : le texte dans la couleur de la partie est lui aussi en surimpression.
 
 ```ts
 colorPalette: [
@@ -786,7 +787,7 @@ colorPalette: [
 ],
 ```
 
-Une couleur en surimpression qui ne dépose aucune encre (le blanc du papier, une encre à 0 %) disparaît à l’impression : le contrôle en amont la signale comme critique (`overprintWhite`). Dans le Sandbox, la case « Surimprimer à l’impression » du sélecteur de couleur l’active.
+Un rendu d’impression reconnaît une couleur au hex que peint la mise en page, si bien qu’une couleur en surimpression ne partage jamais son hex avec une couleur qui défonce. Quand elles coïncident, celle en surimpression se décale d’un cran (1/255 sur un canal), comme le font les tons directs ; la couleur d’une partie pour une entrée en surimpression s’écarte de la même façon de toute couleur du livre qui défonce. Une couleur en surimpression qui ne dépose aucune encre (le blanc du papier, une encre à 0 %) disparaît à l’impression : le contrôle en amont la signale comme critique (`overprintWhite`). Un rendu qui compte plus de couleurs distinctes qu’il n’a de codes (quelque 25 millions) défonce les autres et avertit (`overprintsExhausted`). Dans le Sandbox, l’interrupteur « Surimprimer à l’impression » du sélecteur de couleur l’active.
 
 ### Contrôle en amont
 
