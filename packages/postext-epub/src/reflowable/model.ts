@@ -53,6 +53,9 @@ export interface Format {
   strike?: boolean;
   /** Underlined text (`++…++`), written as `<u>`. */
   underline?: boolean;
+  /** The character style (`:span[…]{style="id"}`) the run is set in: its id, written
+   *  as the class `pt-cs-<id>` the stylesheet styles. */
+  charStyle?: string;
   /** The language of the run when it differs from its document's: the
    *  one the author named on an inline isolate (`:ltr[…]{lang=en}`,
    *  `VDTLineSegment.lang`). */

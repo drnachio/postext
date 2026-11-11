@@ -1,6 +1,6 @@
 // InlineSpan, a run of styled text, with its maths, tabs, links, icons and
 // reference styles (#1276: split out of types.ts).
-import type { ChipBox, SwatchShape, SwatchBox, ExerciseHit, ExerciseGap, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten } from './spanMarks.js';
+import type { ChipBox, SwatchShape, SwatchBox, ExerciseHit, ExerciseGap, EmphasisMark, InlineRuby, InlineWarichu, InlineDirection, InlineSideline, InlineKunten, InlineCharStyle } from './spanMarks.js';
 
 /** Letter-case transform applied to the computed label of an inline `:ref`
  *  (never to the number, never to a `text=` override). */
@@ -333,6 +333,12 @@ export interface InlineSpan {
    *  it as JIS X 4051 §5 sets them. Every span of one directive shares the
    *  object; the marks go with the last character of the last one. */
   kunten?: InlineKunten;
+  /** A named character style (`:span[some words]{style="id"}`): the run
+   *  is set in the face, size, weight, colour, tracking and case of the
+   *  design's `characterStyles` entry the id picks. Unlike a chip it breaks
+   *  and hyphenates as the text around it. Every span of one run shares
+   *  the object until the pipeline resolves its look. */
+  charStyle?: InlineCharStyle;
   /** Characters the layout added that the source does not hold: the
    *  brackets `cjk.bookTitleMark: 'brackets'` sets around a title and the
    *  brackets of a warichu note. They are measured and painted, and never

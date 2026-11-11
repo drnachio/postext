@@ -392,6 +392,8 @@ export function composeLine(units: readonly Unit[], range: LineRange, li: number
       ...(u.stacked === 'first' ? { stacked: true } : {}),
       ...(s.smallCaps ? { smallCaps: true } : {}),
       ...(s.marks ? { cjkMarks: s.marks } : {}),
+      ...(s.charStyle ? { charStyle: s.charStyle } : {}),
+      ...(s.faceFont ? { fontString: s.faceFont } : {}),
       ...(s.inserted ? { inserted: true } : {}),
       ...(s.color ? { color: s.color } : {}),
       ...(s.lang !== undefined ? { lang: s.lang } : {}),

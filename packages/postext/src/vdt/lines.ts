@@ -16,6 +16,15 @@ export interface VDTLineHighlight {
   color: string;
   radiusLeft: number;
   radiusRight: number;
+  /** How much of the band shows, 0–1 (`markStyles[].opacity`); unset:
+   *  opaque. */
+  opacity?: number;
+  /** How irregular its edges are, 0–1 (`markStyles[].rough`), and the
+   *  seed that draws the same edges on every render; unset: a clean band.
+   *  Its outline is `marks/markGeometry.ts`'s `bandOutline`, which every
+   *  output traces. */
+  rough?: number;
+  seed?: number;
 }
 
 /** The line under a run of one link's words (#1402): from `x` (px from the
@@ -44,7 +53,9 @@ export interface VDTLinkUnderline {
  * against the page's quarter turn.
  */
 export interface VDTLineMark {
-  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted';
+  /** `dashed` is a row of dashes {@link size} long, {@link gap} apart (a
+   *  highlight mark's line, `markStyles[].line`). */
+  kind: 'dot' | 'circle' | 'sesame' | 'line' | 'wavy' | 'double' | 'dotted' | 'dashed';
   /** A dot's centre; a line's start (`double`: midway between its two
    *  rules). */
   x: number;
@@ -73,6 +84,9 @@ export interface VDTLineMark {
    *  styled link: left out in an output whose link style draws the link's
    *  own line (`VDTLine.linkUnderlines`), so only one line shows there. */
   underLink?: true;
+  /** The line of a highlight mark (`markStyles[].line`), set again
+   *  whenever the document is laid out. */
+  markLine?: true;
 }
 
 /** A located anchor (see {@link VDTDocument.anchors}). */

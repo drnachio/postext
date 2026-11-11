@@ -677,17 +677,45 @@
     }
   },
   "document-format-resources": {
-    "ar": {
-      "document-format-resources": "نقاط-ارتكاز-المتحدثين-ومناطق-التجنب>نقاط-ارتكاز-الشخصيات-ومناطق-التجنب"
+    "en": {
+      "document-format-resources": "document-format-pictures-tables-and-videos>document-format-pictures-and-tables",
+      "document-format-videos": "videos videos-on-folios-pages"
+    },
+    "es": {
+      "document-format-resources": "formato-del-documento-imágenes-tablas-y-vídeos>formato-del-documento-imágenes-y-tablas",
+      "document-format-videos": "vídeos vídeos-en-las-páginas-de-folio"
     },
     "ca": {
-      "document-format-resources": "on-pot-caure-un-flotant>on-pot-anar-a-parar-un-flotant"
+      "document-format-resources": "on-pot-caure-un-flotant>on-pot-anar-a-parar-un-flotant format-del-document-imatges-taules-i-vídeos>format-del-document-imatges-i-taules",
+      "document-format-videos": "vídeos vídeos-a-les-pàgines-de-folio"
     },
-    "de": {
-      "document-format-resources": "wo-ein-gleitobjekt-landen-kann>wo-ein-gleitobjekt-stehen-kann sprecheranker-und-sperrzonen>sprecherpunkte-und-sperrzonen"
+    "zh": {
+      "document-format-resources": "文档格式图片表格与视频>文档格式图片与表格",
+      "document-format-videos": "视频 folio视图中的视频"
+    },
+    "ar": {
+      "document-format-resources": "نقاط-ارتكاز-المتحدثين-ومناطق-التجنب>نقاط-ارتكاز-الشخصيات-ومناطق-التجنب صيغة-المستند-الصور-والجداول-ومقاطع-الفيديو>صيغة-المستند-الصور-والجداول",
+      "document-format-videos": "مقاطع-الفيديو مقاطع-الفيديو-على-صفحات-folio"
+    },
+    "ja": {
+      "document-format-resources": "文書形式画像表動画>文書形式画像と表",
+      "document-format-videos": "動画 folioのページで再生する動画"
     },
     "pt": {
-      "document-format-resources": "inserção-em-bloco-opcional-posicionamento-explícito-em-linha>inserção-em-bloco-opcional-posição-explícita-no-fluxo âncoras-de-falante-e-zonas-a-evitar>âncoras-de-personagem-e-zonas-a-evitar"
+      "document-format-resources": "inserção-em-bloco-opcional-posicionamento-explícito-em-linha>inserção-em-bloco-opcional-posição-explícita-no-fluxo âncoras-de-falante-e-zonas-a-evitar>âncoras-de-personagem-e-zonas-a-evitar formato-do-documento-imagens-tabelas-e-vídeos>formato-do-documento-imagens-e-tabelas",
+      "document-format-videos": "vídeos vídeos-nas-páginas-do-folio"
+    },
+    "fr": {
+      "document-format-resources": "format-du-document-images-tableaux-et-vidéos>format-du-document--images-et-tableaux",
+      "document-format-videos": "vidéos les-vidéos-sur-les-pages-de-folio"
+    },
+    "de": {
+      "document-format-resources": "wo-ein-gleitobjekt-landen-kann>wo-ein-gleitobjekt-stehen-kann sprecheranker-und-sperrzonen>sprecherpunkte-und-sperrzonen dokumentformat-bilder-tabellen-und-videos>dokumentformat-bilder-und-tabellen",
+      "document-format-videos": "videos videos-auf-den-seiten-von-folio"
+    },
+    "it": {
+      "document-format-resources": "formato-del-documento-immagini-tabelle-e-video>formato-del-documento-immagini-e-tabelle",
+      "document-format-videos": "video video-sulle-pagine-di-folio"
     }
   },
   "japanese-layout": {

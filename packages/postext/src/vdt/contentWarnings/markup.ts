@@ -43,6 +43,9 @@ export type MarkupWarning =
   /** `:chip[…]{style}` names no chip style: the chip takes the first one.
    *  `inResource` names the resource whose caption, note or cell holds it. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  /** A `:span[…]{style}` names no `characterStyles` entry: the words set
+   *  as the text around them. */
+  | { kind: 'unknownCharacterStyle'; style: string; inResource?: string }
   /** `:mark[…]{style}` (#888) names no highlight style: the mark takes the
    *  first one. `inResource` names the resource whose caption, note or
    *  cell holds it. */

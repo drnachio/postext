@@ -5,7 +5,7 @@ import { parseDirectiveAttrs } from '../attrs.js';
 import type { Frame } from './apply.js';
 
 /** The inline annotation directives, by name. */
-export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten'] as const;
+export const ANNOTATION_NAMES = ['dots', 'name', 'book', 'ruby', 'warichu', 'ltr', 'rtl', 'sideline', 'kunten', 'span'] as const;
 export type AnnotationName = (typeof ANNOTATION_NAMES)[number];
 
 /** Private-use marks opening each kind of annotation while the emphasis
@@ -21,11 +21,13 @@ const OPEN: Record<AnnotationName, string> = {
   rtl: '',
   sideline: '',
   kunten: '',
+  // Not U+E1B9/U+E1BA: the underline's marks (`markup.ts`).
+  span: '',
 };
 export const CLOSE = '';
 export const KIND_OF_OPEN = new Map<string, AnnotationName>(ANNOTATION_NAMES.map((n) => [OPEN[n], n]));
-export const MARK_RE = /[-]/;
-const MARKS_RE = /[-]/g;
+export const MARK_RE = /[-]/;
+const MARKS_RE = /[-]/g;
 
 /** One annotation as written: its kind, its attributes, and (a compact
  *  ruby) its readings. Queued in the order of the marks in the text. */
@@ -36,34 +38,65 @@ export interface QueuedAnnotation {
   readings?: string[];
 }
 
-/** `:dots[`, `:name[`… at the start of a match. */
-const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[/y;
+/** `:dots[`, `:name[`… at the start of a match. `:span[…]{style="id"}`
+ *  sets its words in a named character style. */
+const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[/y;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
 const RUBY_BASE_RE = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomofo}々〇]/u;
 
-/**
- * The index of the `]` closing the `[` at `open`, brackets nested inside
- * counting and a backslash escaping the character after it; -1 when the
- * line ends first (or `end` is reached).
- */
-export function closingBracket(text: string, open: number, end: number = text.length): number {
-  let depth = 0;
-  for (let i = open; i < end; i++) {
+/** What one pass over a text finds for the scanners below, so that a
+ *  line of a thousand openers that never close costs one pass, not a
+ *  thousand: the `]` closing each `[` (brackets nested inside counting, a
+ *  backslash escaping the character after it, -1 when the line ends
+ *  first), and where the next `:` or `{` is from each index (-1 for none).
+ *  Kept for the last text scanned: the parser asks about one text many
+ *  times in a row. */
+interface ScanTables {
+  text: string;
+  close: Int32Array;
+  next: Int32Array;
+}
+let lastTables: ScanTables | undefined;
+
+function scanTables(text: string): ScanTables {
+  if (lastTables && lastTables.text === text) return lastTables;
+  const n = text.length;
+  const close = new Int32Array(n).fill(-1);
+  const next = new Int32Array(n + 1).fill(-1);
+  const open: number[] = [];
+  for (let i = 0; i < n; i++) {
     const c = text[i]!;
-    if (c === '\n') return -1;
+    if (c === '\n') {
+      open.length = 0;
+      continue;
+    }
     if (c === '\\') {
       i++;
       continue;
     }
-    if (c === '[') depth++;
-    else if (c === ']') {
-      depth--;
-      if (depth === 0) return i;
-    }
+    if (c === '[') open.push(i);
+    else if (c === ']' && open.length > 0) close[open.pop()!] = i;
   }
-  return -1;
+  for (let i = n - 1; i >= 0; i--) {
+    const c = text[i]!;
+    next[i] = c === ':' || c === '{' ? i : next[i + 1]!;
+  }
+  lastTables = { text, close, next };
+  return lastTables;
+}
+
+/**
+ * The index of the `]` closing the `[` at `open`, brackets nested inside
+ * counting and a backslash escaping the character after it; -1 when the
+ * line ends first (or `end` is reached). Read from one pass over the text
+ * ({@link scanTables}), so asking for every `[` of a line stays linear.
+ */
+export function closingBracket(text: string, open: number, end: number = text.length): number {
+  if (text[open] !== '[') return -1;
+  const at = scanTables(text).close[open]!;
+  return at >= 0 && at < end ? at : -1;
 }
 
 /** The `{…}` attribute blob right after index `at` (`text[at] === '{'`),
@@ -131,9 +164,7 @@ export interface FoundAnnotation {
 /** Where the next `:` or `{` of `text` at or after `from` is, -1 when
  *  there is none: an annotation opens at one of them. */
 function nextOpening(text: string, from: number): number {
-  const colon = text.indexOf(':', from);
-  const brace = text.indexOf('{', from);
-  return colon < 0 ? brace : brace < 0 ? colon : Math.min(colon, brace);
+  return from >= text.length ? -1 : scanTables(text).next[from]!;
 }
 
 /** The next annotation of `text` at or after `from` (before `end`). Only

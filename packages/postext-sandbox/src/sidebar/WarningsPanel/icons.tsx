@@ -97,6 +97,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'solutionOutside':
     case 'figureWordsShared':
     case 'unknownChipStyle':
+    case 'unknownCharacterStyle':
     case 'unknownMarkStyle':
     case 'duplicateAnchor':
     case 'unknownCitationKey':

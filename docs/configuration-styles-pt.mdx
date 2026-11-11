@@ -6,10 +6,10 @@ export const metadata = {
   description: 'Como definir estilos nomeados para parágrafos, chips, destaques, listagens de código e títulos, e como configurar as páginas que abrem cada parte',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '37 min',
+  readingTime: '45 min',
   order: 15,
   parent: 'configuration',
-  plainSummary: "Esta página reúne os estilos nomeados, que você define uma vez e usa muitas. Um estilo de parágrafo define um tipo de texto, como uma bibliografia ou um glossário. Um estilo de chip desenha uma pequena caixa com texto dentro da linha, e um estilo de destaque, uma faixa de cor atrás de uma frase. As listagens de código têm fonte, caixa e cores próprias. A página também explica as páginas que abrem cada parte do livro e os estilos dos títulos especiais. Os boxes têm uma página própria.",
+  plainSummary: "Esta página reúne os estilos nomeados, que você define uma vez e usa muitas. Um estilo de parágrafo define um tipo de texto, como uma bibliografia ou um glossário. Um estilo de chip desenha uma pequena caixa com texto dentro da linha, e um estilo de destaque, uma faixa de cor atrás de uma frase ou uma linha por baixo dela ou atravessando-a; um estilo de caractere compõe algumas palavras em outra fonte, outro corpo ou outra cor, e pode nomear um estilo de destaque que as acompanhe. As listagens de código têm fonte, caixa e cores próprias. A página também explica as páginas que abrem cada parte do livro e os estilos dos títulos especiais. Os boxes têm uma página própria.",
 };
 
 # Configuração: estilos e partes
@@ -498,9 +498,148 @@ const style = pickChipStyle(resolved, 'key');
 ```
 
 
+## Estilos de caractere
+
+A propriedade `characterStyles` declara os visuais nomeados de um trecho de palavras. Um trecho recebe um deles com a diretiva `:span`, `:span[algumas palavras]{style="id"}`, que é a única forma de dar a um trecho um visual nomeado. Um estilo de caractere define o texto: uma fonte (família, corpo, peso, inclinação), uma cor, um espaçamento entre letras, maiúsculas ou versaletes. Uma faixa por trás das palavras, ou uma linha por baixo delas ou atravessando-as, pertence a um [estilo de destaque](#estilos-de-destaque), que o estilo de caractere nomeia com `mark`. Ao contrário de um chip, um trecho com estilo quebra entre linhas e é hifenizado como o texto em volta. Nenhum estilo vem por padrão, e um livro não tem nenhum até declará-los. Um trecho cujo id nenhum estilo declara é composto como o texto em volta, e o painel Verificações o assinala (*Estilo de caractere desconhecido*).
+
+```ts
+const config: PostextConfig = {
+  markStyles: [
+    { id: 'mark' },
+    {
+      id: 'pen',
+      name: 'Marker pen',
+      background: { hex: '#ffe14d', model: 'hex' },
+      opacity: 70,
+      paddingTop: { value: -0.35, unit: 'em' },
+      rough: 30,
+    },
+    { id: 'struck', backgroundEnabled: false, line: { position: 'through', color: { hex: '#b23a2a', model: 'hex' } } },
+  ],
+  characterStyles: [
+    { id: 'marker', name: 'Marker', mark: 'pen' },
+    {
+      id: 'drug',
+      name: 'Drug name',
+      fontFamily: 'Source Sans 3',
+      fontWeight: 600,
+      color: { hex: '#1f4e79', model: 'hex' },
+      letterSpacing: { value: 0.02, unit: 'em' },
+    },
+    { id: 'wrong', name: 'Wrong answer', mark: 'struck' },
+  ],
+};
+```
+
+```md
+The :span[first line of treatment]{style="marker"} is :span[metformin]{style="drug"}, never :span[insulin first]{style="wrong"}.
+```
+
+Propriedades (as não definidas mantêm as do texto):
+
+<table>
+  <thead>
+    <tr>
+      <th style={{ width: '200px' }}>Propriedade</th>
+      <th style={{ width: '180px' }}>Tipo</th>
+      <th style={{ width: '140px' }}>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>id</code></td>
+      <td><code>string</code></td>
+      <td>obrigatório</td>
+      <td>Identificador escrito na diretiva: <code>:span[…]&#123;style="id"&#125;</code>. Letras, algarismos, <code>-</code> e <code>_</code>.</td>
+    </tr>
+    <tr>
+      <td><code>name</code></td>
+      <td><code>string</code></td>
+      <td><code>id</code></td>
+      <td>Nome legível, só para interfaces de edição.</td>
+    </tr>
+    <tr>
+      <td><code>fontFamily</code></td>
+      <td><code>string</code></td>
+      <td>a do texto</td>
+      <td>Família do trecho.</td>
+    </tr>
+    <tr>
+      <td><code>fontSize</code></td>
+      <td><code>Dimension</code></td>
+      <td>o do texto</td>
+      <td>Corpo do trecho; <code>em</code> é relativo ao texto em volta. Um corpo maior nunca muda a entrelinha: as linhas mantêm a sua grade, então um corpo muito maior pode encostar na linha de cima.</td>
+    </tr>
+    <tr>
+      <td><code>fontWeight</code></td>
+      <td><code>number</code></td>
+      <td>o do texto</td>
+      <td>Peso das palavras regulares do trecho (100–900, arredondado à centena); as palavras em negrito mantêm o negrito.</td>
+    </tr>
+    <tr>
+      <td><code>italic</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe o trecho em itálico.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do texto</td>
+      <td>Cor do trecho, incluindo as palavras em negrito e itálico. É só pintura: nunca muda a composição. Um destaque que define a sua própria cor de texto (o <code>mark</code> do estilo, ou um <code>:mark[…]</code> em volta do trecho) prevalece sobre ela.</td>
+    </tr>
+    <tr>
+      <td><code>letterSpacing</code></td>
+      <td><code>Dimension</code></td>
+      <td>nenhum</td>
+      <td>Espaçamento acrescentado depois de cada caractere do trecho (<code>em</code> do texto em volta; negativo aperta). É medido com o trecho, então a linha quebra onde ele é pintado.</td>
+    </tr>
+    <tr>
+      <td><code>textTransform</code></td>
+      <td><code>'none' | 'uppercase'</code></td>
+      <td><code>'none'</code></td>
+      <td><code>uppercase</code> compõe o trecho em maiúsculas segundo as regras do idioma em que ele está (um <em>i</em> turco passa a <em>İ</em>, as maiúsculas gregas perdem o acento). O original mantém as suas letras: a busca e o mapa de origem o leem como foi escrito, e o PDF dá às maiúsculas a palavra escrita como texto (<code>/ActualText</code>), então ao copiá-las você obtém as palavras como foram digitadas. O HTML e o EPUB trazem as próprias maiúsculas.</td>
+    </tr>
+    <tr>
+      <td><code>smallCaps</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe o trecho em versaletes, como faz <code>:smallcaps[…]</code>.</td>
+    </tr>
+    <tr>
+      <td><code>mark</code></td>
+      <td><code>string</code></td>
+      <td>nenhum</td>
+      <td>O id de um <a href="#estilos-de-destaque">estilo de destaque</a> desenhado com o trecho: a sua faixa, a sua linha, a sua cor de texto. Um id que nenhum estilo de destaque declara é descartado, e o trecho fica sem destaque.</td>
+    </tr>
+  </tbody>
+</table>
+
+**Um mecanismo para cada coisa.** Um estilo de caractere define as letras; um estilo de destaque desenha o que vai com elas, uma faixa ou uma linha, do mesmo modo que para `:mark[…]`. Um sublinhado simples continua a ser `:underline[…]`, um tachado simples `~~…~~` e um destaque simples `:mark[…]`; um estilo de caractere serve para um visual que o livro nomeia e reutiliza. A forma de colchetes e barras que outras ferramentas usam (`[palavras]|id|`) não é sintaxe do Postext: fica como texto, tal como foi escrita.
+
+**Aninhamento.** Um trecho pode conter outras marcas em linha (`:span[a **bold** word]{style="marker"}`, um link, uma referência, uma fórmula) e outros trechos: vale o estilo mais interno (`:span[a :span[b]{style="drug"} c]{style="marker"}`). Um trecho não pode atravessar um parágrafo.
+
+**Onde.** Parágrafos, itens de lista, citações, boxes, notas de rodapé, legendas, notas e células de tabela, e títulos enquanto `headings.inlineMarks` estiver ativado. Os cabeços, o sumário e as entradas do índice remissivo recebem as palavras sem o estilo. Numa página vertical (livros chineses e japoneses compostos na vertical) o trecho é composto como o texto em volta, e a linha do seu destaque corre à direita dos caracteres, como uma linha lateral.
+
+**Saída.** O canvas, o PDF, o HTML e as saídas vetoriais (SVG, IDML) desenham o destaque que um estilo nomeia com a mesma geometria de qualquer `:mark[…]`. O EPUB compõe cada estilo como uma classe (`pt-cs-<id>`) com a sua fonte, corpo, peso, inclinação, cor, espaçamento entre letras e versaletes; não desenha nenhum destaque, assim como não desenha nenhum `:mark[…]`. Uma exportação para Word transforma cada estilo num estilo de caractere do Word chamado *Postext Style: …*, com a faixa do destaque como sombreamento e a sua linha como o sublinhado mais próximo do Word ou um tachado, e uma importação do Word associa de volta a um estilo do livro um estilo de caractere com o mesmo nome dele, ou *Postext Style: …* em qualquer um dos idiomas do site.
+
+Na VDT, um segmento com estilo leva `charStyle: { id, style }` (o trecho e o id do estilo); a sua fonte e o seu espaçamento entre letras já estão em `fontString` e `tracking`, a sua cor em `color`, e um segmento que o estilo compôs em maiúsculas traz o texto escrito em `sourceText`.
+
+```ts
+const resolved = resolveCharacterStylesConfig(config.characterStyles, new Set(['pen', 'struck']));
+// => todos os campos preenchidos; um `mark` que não nomeia nenhum estilo de destaque é descartado
+
+const minimal  = stripCharacterStylesDefaults(config.characterStyles);
+// => padrões estáticos descartados; undefined para uma lista vazia
+
+const style = pickCharacterStyle(resolved, 'drug');
+// => o estilo `drug`, ou undefined quando nenhum estilo tem esse id
+```
+
 ## Estilos de destaque
 
-A propriedade `markStyles` declara os estilos nomeados do `:mark[texto]{style="…"}` em linha: a faixa colorida atrás de uma frase, como um livro didático destaca suas palavras-chave (a sintaxe e suas regras de quebra de linha estão na referência do formato de documento). Um estilo, `mark`, vem por padrão (uma faixa amarelo-clara que passa um pouco da frase, com as pontas retas e o texto na própria cor); por isso, `:mark[…]` funciona sem nenhuma configuração; declarar `markStyles` substitui essa lista. Uma marca sem `style`, ou com um id que nenhum estilo declara, usa o primeiro estilo (o Sandbox aponta o id desconhecido).
+A propriedade `markStyles` declara os estilos nomeados do `:mark[texto]{style="…"}` em linha (e dos destaques que os estilos de caractere nomeiam com `mark`): a faixa colorida atrás de uma frase, e uma linha por baixo dela ou atravessando-a, como um livro didático destaca suas palavras-chave (a sintaxe e suas regras de quebra de linha estão na referência do formato de documento). Um estilo, `mark`, vem por padrão (uma faixa amarelo-clara que passa um pouco da frase, com as pontas retas e o texto na própria cor); por isso, `:mark[…]` funciona sem nenhuma configuração; declarar `markStyles` substitui essa lista. Uma marca sem `style`, ou com um id que nenhum estilo declara, usa o primeiro estilo (o Sandbox aponta o id desconhecido).
 
 ```ts
 const config: PostextConfig = {
@@ -578,7 +717,31 @@ The sun warms the sea and :mark[water rises into the air as vapour].
       <td><code>paddingTop</code>, <code>paddingBottom</code></td>
       <td><code>Dimension</code></td>
       <td><code>paddingY</code></td>
-      <td>Espaço acima e abaixo, cada um no lugar de <code>paddingY</code>.</td>
+      <td>Espaço acima e abaixo, cada um no lugar de <code>paddingY</code>. Qualquer um dos dois pode ser negativo: um <code>paddingTop</code> negativo baixa a borda superior da faixa para dentro das letras (cerca de <code>-0.35em</code> cobre a metade inferior delas, como um traço de marca-texto), e um <code>paddingBottom</code> negativo sobe a borda inferior acima dos descendentes. Uma faixa que fica sem altura não é desenhada.</td>
+    </tr>
+    <tr>
+      <td><code>backgroundEnabled</code></td>
+      <td><code>boolean</code></td>
+      <td><code>true</code></td>
+      <td>Pinta a faixa. <code>false</code> deixa ao estilo a sua linha e a sua cor de texto, para uma marca que só sublinha ou tacha.</td>
+    </tr>
+    <tr>
+      <td><code>opacity</code></td>
+      <td><code>number</code></td>
+      <td><code>100</code></td>
+      <td>A opacidade da faixa, em porcentagem (de 0 a 100). A faixa é pintada atrás do texto, então as letras mantêm a sua cor. Veja a nota sobre transparência abaixo.</td>
+    </tr>
+    <tr>
+      <td><code>rough</code></td>
+      <td><code>number</code></td>
+      <td><code>0</code></td>
+      <td>De 0 a 100: <code>0</code> dá uma faixa limpa; com valores mais altos as bordas superior e inferior ondulam e as pontas são cortadas na diagonal, como um marca-texto passado à mão. A ondulação segue uma semente tirada da marca e do seu lugar, então é a mesma em cada composição, no canvas, no PDF, no HTML e nas saídas vetoriais. O Word desenha uma faixa limpa.</td>
+    </tr>
+    <tr>
+      <td><code>line</code></td>
+      <td><code>MarkLineConfig</code></td>
+      <td>nenhuma</td>
+      <td>Uma linha desenhada com a marca, por baixo das palavras ou atravessando-as (abaixo).</td>
     </tr>
     <tr>
       <td><code>decorationBreak</code></td>
@@ -589,7 +752,50 @@ The sun warms the sea and :mark[water rises into the air as vapour].
   </tbody>
 </table>
 
-As medidas em em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) se referem ao tamanho do texto marcado. A faixa não ocupa espaço: o texto é composto como sem a marca, a faixa é pintada por baixo e o espaçamento interno dela avança pelos espaços entre palavras e pelo espaço entre as linhas. No VDT, os segmentos das palavras marcadas trazem um `mark` (`{ style, id, start?, end?, from?, to? }`) e cada linha guarda suas faixas em `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight }`, relativas ao `bbox.x` e à linha de base da linha), que os renderizadores de canvas, PDF e HTML pintam antes do texto da linha.
+`line` (as medidas em em se referem ao tamanho do texto marcado):
+
+<table>
+  <thead>
+    <tr>
+      <th>Propriedade</th>
+      <th>Tipo</th>
+      <th>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>position</code></td>
+      <td><code>'under' | 'through'</code></td>
+      <td><code>'under'</code></td>
+      <td>Por baixo das palavras, onde a fonte põe o seu sublinhado, ou atravessando-as, onde põe o seu tachado. No texto chinês e japonês, uma linha que atravessa corre pelo eixo central do quadratim; numa página vertical, uma linha por baixo corre à direita dos caracteres, como uma linha lateral.</td>
+    </tr>
+    <tr>
+      <td><code>style</code></td>
+      <td><code>'solid' | 'double' | 'dotted' | 'dashed' | 'wavy'</code></td>
+      <td><code>'solid'</code></td>
+      <td>Como a linha é desenhada. Uma linha dupla afasta o segundo traço das letras; os pontos, os traços e as ondas são dimensionados a partir da espessura e do tamanho do texto.</td>
+    </tr>
+    <tr>
+      <td><code>color</code></td>
+      <td><code>ColorValue</code></td>
+      <td>a do texto marcado</td>
+      <td>Cor da linha.</td>
+    </tr>
+    <tr>
+      <td><code>thickness</code></td>
+      <td><code>Dimension</code></td>
+      <td>a da fonte</td>
+      <td>Largura do traço; sem definir, a espessura de sublinhado ou de tachado da própria fonte.</td>
+    </tr>
+  </tbody>
+</table>
+
+A linha continua por baixo dos espaços entre as palavras da frase e para na sua última letra onde a frase passa para a linha seguinte. São as mesmas linhas que `:underline[…]` e `~~…~~` desenham, então uma linha de marca fica onde essas ficam.
+
+**Transparência.** Uma faixa com menos de 100 % de opacidade é translúcida no canvas, no HTML, num PDF digital e num PDF/X-4, que admitem transparência. Um PDF/X-1a não admite nenhuma: ali a faixa é composta como sai impressa sobre papel branco, um tom da sua cor, na chapa da sua própria tinta quando é uma cor especial. A exportação para Word e as saídas vetoriais (SVG, IDML) a compõem do mesmo modo, sobre branco; numa página colorida ou sobre uma imagem, esse tom difere da faixa translúcida.
+
+As medidas em em (`paddingX`, `paddingY`, `paddingTop`, `paddingBottom`, `borderRadius`) se referem ao tamanho do texto marcado. A faixa não ocupa espaço: o texto é composto como sem a marca, a faixa é pintada por baixo e o espaçamento interno dela avança pelos espaços entre palavras e pelo espaço entre as linhas. No VDT, os segmentos das palavras marcadas trazem um `mark` (`{ style, id, start?, end?, from?, to? }`) e cada linha guarda suas faixas em `highlights` (`{ x, y, width, height, color, radiusLeft, radiusRight, opacity?, rough?, seed? }`, relativas ao `bbox.x` e à linha de base da linha), que os renderizadores de canvas, PDF e HTML pintam antes do texto da linha; as linhas vão para os `marks` da linha, marcadas com `markLine`, e são pintadas depois dele.
 
 ```ts
 const resolved = resolveMarkStylesConfig(config.markStyles);

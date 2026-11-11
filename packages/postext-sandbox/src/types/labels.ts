@@ -4018,6 +4018,29 @@ export interface SandboxLabels {
   markStyleDecorationBreakSlice: string;
   markStyleDecorationBreakClone: string;
   markStyleDecorationBreakTooltip: string;
+  markStyleOpacity: string;
+  markStyleRough: string;
+  markStyleRoughTooltip: string;
+  markStyleLineStyle: string;
+  markStyleLineSolid: string;
+  markStyleLineDouble: string;
+  markStyleLineDotted: string;
+  markStyleLineDashed: string;
+  markStyleLineWavy: string;
+  markStyleLineColorTooltip: string;
+  markStyleBand: string;
+  markStyleBandTooltip: string;
+  markStyleOpacityTooltip: string;
+  markStyleLineStyleTooltip: string;
+  markStyleLineNone: string;
+  markStyleLinePosition: string;
+  markStyleLineUnder: string;
+  markStyleLineThrough: string;
+  markStyleLineColor: string;
+  markStyleLineThickness: string;
+  markStyleLineThicknessTooltip: string;
+  markStylePaddingTopTooltip: string;
+  markStylePaddingBottomTooltip: string;
   warningsUnknownMarkStyleTitle: string;
   warningsUnknownMarkStyleDetail: string;
   calloutStyleAdd: string;
@@ -5312,6 +5335,41 @@ export interface SandboxLabels {
   calloutStyleBodyItalicColor: string;
   calloutStyleBodyItalicColorTooltip: string;
   smallCapsInline: string;
+  characterStylesSection: string;
+  characterStylesIntro: string;
+  characterStylesEmpty: string;
+  characterStylesResetConfirm: string;
+  charStyleAdd: string;
+  charStyleNewName: string;
+  charStyleDelete: string;
+  charStyleDeleteConfirm: string;
+  charStyleIdAria: string;
+  charStyleIdHintDuplicate: string;
+  charStyleUsageHint: string;
+  charStyleNameLabel: string;
+  charStyleNameAria: string;
+  charStyleTextGroup: string;
+  charStyleFontSizeTooltip: string;
+  charStyleColorTooltip: string;
+  charStyleWeight: string;
+  charStyleWeightTooltip: string;
+  charStyleLetterSpacing: string;
+  charStyleLetterSpacingTooltip: string;
+  charStyleUppercase: string;
+  charStyleUppercaseTooltip: string;
+  charStyleSmallCaps: string;
+  charStyleSmallCapsTooltip: string;
+  charStyleMark: string;
+  charStyleMarkTooltip: string;
+  charStyleMarkNone: string;
+  charStyleInline: string;
+  charStyleMenuHeader: string;
+  charStyleRemove: string;
+  charStyleMenuEmpty: string;
+  warningsUnknownCharacterStyleTitle: string;
+  warningsUnknownCharacterStyleDetail: string;
+  wordCharCharStyle: string;
+  wordCharCharStyleStyle: string;
   rubyInline: string;
   tcyInline: string;
   textStyleFontWeightTooltip: string;
@@ -6017,4 +6075,10 @@ export interface SandboxLabels {
   taskBoxDrawn: string;
   taskBoxCharacter: string;
   taskBoxTooltip: string;
+
+  // InDesign (IDML) import . The note labels take `__count__`.
+  /** `__pages__`, `__paragraphs__`, `__tables__`, `__pictures__`, `__notes__`: the counts. */
+  /** `__found__` of `__total__` pictures. */
+  /** `__name__`: the new book. */
+  /** `__error__`: what failed. */
 }

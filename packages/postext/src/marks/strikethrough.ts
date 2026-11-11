@@ -52,9 +52,9 @@ import { styledLinkOf } from './linkUnderline.js';
 import { LINE_AT, STROKE } from './cjkMarks/geometry.js';
 
 /** Which line: through struck-through text or under underlined text. */
-type Rule = 'strike' | 'underline';
+export type Rule = 'strike' | 'underline';
 
-type BlockLike = Parameters<typeof segmentPositions>[1] & Partial<Pick<VDTBlock, 'boldColor' | 'italicColor'>>;
+export type BlockLike = Parameters<typeof segmentPositions>[1] & Partial<Pick<VDTBlock, 'boldColor' | 'italicColor'>>;
 
 /** Where the struck characters of a segment start and end, px from its
  *  start: all of it, or the part `from`–`to` of a left-to-right text
@@ -73,7 +73,7 @@ function struckExtent(seg: VDTLineSegment, width: number, font: string, rule: Ru
  *  (OS/2, `fonts/strikeout.ts`) when a file of the face was read, else
  *  {@link STRIKE_AT} and {@link STRIKE_STROKE}. Chinese and Japanese text
  *  and a vertical page put it on the central axis of the em box. */
-function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean, rule: Rule = 'strike'): { y: number; thickness: number } {
+export function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean, rule: Rule = 'strike'): { y: number; thickness: number } {
   const em = fontEm(font);
   const under = rule === 'underline';
   const face = under ? underlineOf(font) : strikeoutOf(font);
@@ -89,7 +89,7 @@ function strikeGeometry(seg: VDTLineSegment, font: string, vertical: boolean, ru
 }
 
 /** The colour a segment's text is painted in, when it is not the block's. */
-function colorOf(seg: VDTLineSegment, block: BlockLike): string | undefined {
+export function colorOf(seg: VDTLineSegment, block: BlockLike): string | undefined {
   if (seg.color) return seg.color;
   if (seg.bold && block.boldColor) return block.boldColor;
   if (seg.italic && block.italicColor) return block.italicColor;

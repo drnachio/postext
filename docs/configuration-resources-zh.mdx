@@ -1083,7 +1083,7 @@ const config: PostextConfig = {
 
 ## 视频样式
 
-`videoStyle`属性设定[视频资源](/zh/docs/document-format-resources#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML阅读器和EPUB中提供哪些功能。
+`videoStyle`属性设定[视频资源](/zh/docs/document-format-videos#视频)如何印出：封面上的播放标记和二维码，以及封面是否链接到视频；还设定它们的播放器在HTML阅读器和EPUB中提供哪些功能。
 
 ```ts
 const config: PostextConfig = {
@@ -1218,7 +1218,7 @@ const config: PostextConfig = {
 
 EPUB只保留其规范认识的属性：文件播放时带<code>controls</code>、<code>autoplay</code>、<code>muted</code>、<code>loop</code>、<code>playsinline</code>和<code>preload</code>，另加<code>data-pt-alongside</code>标记，其余由阅读系统决定。
 
-不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format-resources#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB中，有视频需要协调的页面或章节（两段或以上，其中至少一段独占）以一个小脚本`scripts/videos.js`（即导出的`VIDEO_PLAYBACK_SCRIPT`）引入同一规则，EPUB包文档把该文档声明为`scripted`。运行脚本的阅读系统让该文档中的视频遵守这一规则，但对面的页面是另一个文档，不受影响；不运行脚本的阅读系统按自己的规则播放每段视频，YouTube和Vimeo播放器也始终如此。
+不独占的视频在HTML输出中带有`data-pt-alongside`。`coordinateVideoPlayback(root)`让`root`（容纳`renderToHtml`输出的元素）下的播放器遵守这一规则：开始播放独占的视频会暂停其他所有正在播放的视频，开始播放同时播放的视频只暂停独占的视频。它返回一个停止监听的函数。`playsAlongside(el)`和`videosToPause(started, videos, alongside)`为自带播放器的宿主提供同样的规则。在[Folio](/zh/docs/document-format-videos#folio视图中的视频)中，自动播放且与其他视频同时播放的视频（`autoplay`加`exclusive: false`）每次翻到它所在的页面时都静音开始，翻走时停止，几段可以同时播放；`loop`让它播完后从头再播。EPUB中，有视频需要协调的页面或章节（两段或以上，其中至少一段独占）以一个小脚本`scripts/videos.js`（即导出的`VIDEO_PLAYBACK_SCRIPT`）引入同一规则，EPUB包文档把该文档声明为`scripted`。运行脚本的阅读系统让该文档中的视频遵守这一规则，但对面的页面是另一个文档，不受影响；不运行脚本的阅读系统按自己的规则播放每段视频，YouTube和Vimeo播放器也始终如此。
 
 解析函数和精简函数与其他各节一致，另有`VideoStyleConfig` / `ResolvedVideoStyleConfig`类型：
 

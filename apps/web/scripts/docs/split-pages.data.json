@@ -17,6 +17,7 @@
     "configuration-resources",
     "configuration-styles",
     "configuration-callouts",
+    "configuration-exercises",
     "configuration-comics",
     "configuration-composed-pages",
     "configuration-fonts-colors-viewers",
@@ -30,10 +31,13 @@
     "document-format-inline",
     "document-format-notes-references",
     "document-format-resources",
+    "document-format-videos",
     "chinese-layout",
     "arabic-layout",
     "japanese-layout",
     "comics",
+    "music",
+    "exercises",
     "composed-pages",
     "composed-pages-figures",
     "contributing",
@@ -1839,6 +1843,152 @@
               "description": "أشكال تضع كلمات على صورة: تسميات عند مراسي المورد، ونص بديل وتعليق وملاحظة خاصة بالشكل، وكيف تُنضَّد التسمية، وتسميات بعيدة عن نقطتها بخطوط إشارة، ومفاتيح الخرائط والرموز داخل السطر، وتحذيرات التسميات",
               "plainSummary": "كثيرًا ما تحمل خريطة أو مخطط في كتاب كلمات فوقه: أسماء البحار والمدن، وأجزاء آلة. ينضّد Postext هذه الكلمات نصًّا على الصورة، فيكون لكل لغة كلماتها. تشرح هذه الصفحة كيف تُكتب في Markdown، وكيف توضع كل واحدة وتُرسم، وكيف يقف اسم بعيدًا عن مكانه مع خط يشير إليه. وتتناول أيضًا مفاتيح الخرائط ذات الرموز، وتحذيرات التسميات التي لا تتسع أو التي تتلامس.",
               "intro": "تتناول هذه الصفحة أشكال الصفحة المركّبة، أو النص الجاري، التي تضع كلمات على صورتها. أما كيف تُكتب الصفحة المركّبة ففي [الصفحات المركّبة](/ar/docs/composed-pages)؛ وأنماط التسميات وحقول التسمية في المرساة في [الإعداد › الصفحات المركّبة](/ar/docs/configuration-composed-pages#أنماط-التسميات)."
+            }
+          }
+        }
+      ],
+      "done": true
+    },
+    {
+      "from": "document-format-resources",
+      "entry": {
+        "en": {
+          "title": "Document format: pictures and tables",
+          "sidebarTitle": "Pictures and tables",
+          "description": "Resources in the text: references and embeds, numbering, placement and where a float lands, text wrap, bitmap size, safe areas, comic anchors and symbols in captions",
+          "plainSummary": "This page covers the pictures and tables of a book. You add them once and mention them in the text, and Postext puts each one near the place where it is first mentioned. You can choose where it goes: at the top of a page, across all the columns, or exactly where it is written. Text can flow around a picture. A picture can mark the part that must always be seen when it is cut to fit. Videos are placed the same way, and the next page covers them."
+        },
+        "es": {
+          "title": "Formato del documento: imágenes y tablas",
+          "sidebarTitle": "Imágenes y tablas",
+          "description": "Cómo se usan los recursos en el texto: referencias e inserciones, numeración, colocación y dónde cae cada flotante; el texto que rodea las imágenes, el tamaño de los mapas de bits, las zonas seguras, las anclas de cómic y los símbolos en los pies",
+          "plainSummary": "Esta página explica las imágenes y las tablas de un libro. Las añades una sola vez y las mencionas en el texto, y Postext coloca cada una cerca del lugar donde se menciona por primera vez. Puedes elegir dónde va: arriba de una página, a lo ancho de todas las columnas o justo donde la escribes. El texto puede rodear una imagen. Una imagen puede marcar la parte que siempre debe verse cuando se recorta para que quepa. Los vídeos se colocan de la misma manera, y la página siguiente trata de ellos."
+        },
+        "ca": {
+          "title": "Format del document: imatges i taules",
+          "sidebarTitle": "Imatges i taules",
+          "description": "Com s'afegeixen imatges i taules al text: referències i insercions, numeració, col·locació i lloc on va a parar un flotant, text al voltant de les imatges, mida dels mapes de bits, zones segures, àncores de còmic i símbols als peus",
+          "plainSummary": "Aquesta pàgina explica les imatges i les taules d'un llibre. Les afegeixes una vegada, les esmentes en el text i Postext col·loca cadascuna a prop del lloc on s'esmenta per primera vegada. Pots triar on va: a dalt d'una pàgina, a tota l'amplada de les columnes o just allà on l'escrius. El text pot envoltar una imatge. Una imatge pot indicar quina part s'ha de veure sempre quan es retalla perquè hi càpiga. Els vídeos es col·loquen de la mateixa manera, i la pàgina següent en parla."
+        },
+        "zh": {
+          "title": "文档格式：图片与表格",
+          "sidebarTitle": "图片与表格",
+          "description": "正文中的资源：引用与嵌入、编号、位置与浮动体落在哪里、文字绕排、位图尺寸、安全区、漫画锚点和题注中的符号",
+          "plainSummary": "本页讲书中的图片和表格。你添加一次，在正文里提到它，Postext就把它放在第一次提到的地方附近。你可以选择它的位置：页面顶部、横跨所有栏，或者正好在写它的地方。文字可以绕着图片排。图片被裁切以适应版面时，你可以标出必须始终看得见的部分。视频也以同样的方式放置，下一页专门讲视频。"
+        },
+        "ar": {
+          "title": "صيغة المستند: الصور والجداول",
+          "sidebarTitle": "الصور والجداول",
+          "description": "الموارد في النص: الإحالة إليها وتضمينها، وترقيمها، وموضعها ومكان استقرار العنصر العائم، والتفاف النص حولها، ومقاس الصورة النقطية، والمناطق الآمنة، ونقاط الارتكاز في القصص المصورة، والرموز في التعليقات",
+          "plainSummary": "تتناول هذه الصفحة صور الكتاب وجداوله. تضيفها مرة واحدة وتذكرها في النص، فيضع Postext كلًّا منها قرب الموضع الذي ذُكر فيه أول مرة. ويمكنك أن تختار مكانها: أعلى الصفحة، أو بعرض كل الأعمدة، أو في الموضع الذي كُتبت فيه بالضبط. ويمكن أن يلتف النص حول الصورة. ويمكن أن تحدد في الصورة الجزء الذي يجب أن يظهر دائمًا حين تُقصّ لتناسب مكانها. وتوضع مقاطع الفيديو بالطريقة نفسها، وتتناولها الصفحة التالية."
+        },
+        "ja": {
+          "title": "文書形式：画像と表",
+          "sidebarTitle": "画像と表",
+          "description": "本文の中のリソース：参照と埋め込み、番号付け、配置とフロートが置かれる場所、回り込み、ビットマップのサイズ、セーフエリア、漫画のアンカー、キャプション中の記号",
+          "plainSummary": "このページでは、本の画像と表を説明します。一度追加して本文で触れれば、Postextはそれぞれを最初に触れた場所の近くに置きます。置く場所は、ページの上、すべての段にまたがる幅、書いたその場所などから選べます。画像のまわりに文章を回り込ませることもできます。画像を切り詰めて収めるとき、いつも見えていなければならない部分を指定できます。動画も同じように置かれ、次のページで説明します。"
+        },
+        "pt": {
+          "title": "Formato do documento: imagens e tabelas",
+          "sidebarTitle": "Imagens e tabelas",
+          "description": "Como pôr recursos no texto: referências e inserções, numeração, posicionamento e o lugar onde cada flutuante vai parar, contorno de texto, tamanho dos bitmaps, áreas seguras, âncoras de quadrinhos e símbolos nas legendas",
+          "plainSummary": "Esta página trata das imagens e tabelas de um livro. Você as inclui uma vez e as menciona no texto, e o Postext coloca cada uma perto do lugar onde é mencionada pela primeira vez. Você pode escolher onde ela fica: no alto de uma página, na largura de todas as colunas ou exatamente onde foi escrita. O texto pode contornar uma imagem. Uma imagem pode marcar a parte que sempre deve aparecer quando ela é cortada para caber. Os vídeos são posicionados do mesmo jeito, e a próxima página trata deles."
+        },
+        "fr": {
+          "title": "Format du document : images et tableaux",
+          "sidebarTitle": "Images et tableaux",
+          "description": "Les ressources dans le texte : renvois et insertions, numérotation, placement des flottants et endroit où ils arrivent, habillage du texte, taille des bitmaps, zones de sécurité, ancres des personnages et symboles dans les légendes",
+          "plainSummary": "Cette page traite des images et des tableaux d’un livre. Vous les ajoutez une fois et vous les citez dans le texte, et Postext place chacun près de l’endroit où il est cité pour la première fois. Vous pouvez choisir où il va : en haut d’une page, sur toutes les colonnes, ou exactement là où il est écrit. Le texte peut contourner une image. Une image peut indiquer la partie qui doit toujours rester visible quand on la recadre. Les vidéos se placent de la même façon, et la page suivante leur est consacrée."
+        },
+        "de": {
+          "title": "Dokumentformat: Bilder und Tabellen",
+          "sidebarTitle": "Bilder und Tabellen",
+          "description": "Ressourcen im Text: Verweise und Einbettungen, Nummerierung, Platzierung und wohin ein Gleitobjekt kommt, Textumfluss, Bitmap-Größe, Sicherheitsbereiche, Anker für Comics und Symbole in Bildunterschriften",
+          "plainSummary": "Diese Seite behandelt die Bilder und Tabellen eines Buchs. Sie fügen sie einmal hinzu und erwähnen sie im Text, und Postext stellt jedes Element in die Nähe der Stelle, an der es zuerst erwähnt wird. Sie können wählen, wohin es kommt: oben auf eine Seite, über alle Spalten oder genau dorthin, wo es im Text steht. Text kann um ein Bild herumfließen. Ein Bild kann den Teil kennzeichnen, der immer sichtbar bleiben muss, wenn es zugeschnitten wird. Videos werden genauso platziert; um sie geht es auf der nächsten Seite."
+        },
+        "it": {
+          "title": "Formato del documento: immagini e tabelle",
+          "sidebarTitle": "Immagini e tabelle",
+          "description": "Le risorse nel testo: rimandi e inserimenti, numerazione, collocazione e dove finisce un elemento flottante, testo intorno alle immagini, dimensione delle bitmap, zone sicure, ancore dei personaggi e simboli nelle didascalie",
+          "plainSummary": "Questa pagina riguarda le immagini e le tabelle di un libro. Le aggiungi una volta e le citi nel testo, e Postext mette ciascuna vicino al punto in cui è citata per la prima volta. Puoi scegliere dove va: in cima a una pagina, su tutte le colonne o esattamente dove è scritta. Il testo può scorrere intorno a un’immagine. Un’immagine può indicare la parte che deve restare sempre visibile quando viene ritagliata. I video si collocano allo stesso modo, e la pagina successiva è dedicata a loro."
+        }
+      },
+      "pages": [
+        {
+          "slug": "document-format-videos",
+          "sections": [
+            "Resources > Videos"
+          ],
+          "locales": {
+            "en": {
+              "title": "Document format: videos",
+              "sidebarTitle": "Videos",
+              "description": "Video resources: YouTube, Vimeo, files of your own and HLS streams, what each output shows, the fields of a video, its poster and address, the players, the VDT and bundles, and videos that play on Folio's pages",
+              "plainSummary": "This page covers the videos of a book. A video can come from YouTube or Vimeo, or be a file of your own. You cite it in the text like a picture, and it has a number of its own, like figures and tables. On paper and in a PDF it shows a still frame with a play mark and a QR code that opens the video. The web view and e-books play it. In the 3D book a click on the frame plays the video on the page itself, and it goes on playing while the page turns.",
+              "intro": "A video is a resource like a picture: it is declared once, cited in the text and floated to the first free slot after its reference. References, numbering, placement and text wrap are explained on [Document format: pictures and tables](/en/docs/document-format-resources); what follows is particular to videos."
+            },
+            "es": {
+              "title": "Formato del documento: vídeos",
+              "sidebarTitle": "Vídeos",
+              "description": "Los recursos de vídeo: YouTube, Vimeo, archivos propios y flujos HLS, lo que muestra cada salida, los campos de un vídeo, su portada y su dirección, los reproductores, el VDT y los paquetes, y los vídeos que se reproducen en las páginas de Folio",
+              "plainSummary": "Esta página explica los vídeos de un libro. Un vídeo puede venir de YouTube o de Vimeo, o ser un archivo propio. Se cita en el texto como una imagen y lleva una numeración propia, como las figuras y las tablas. En papel y en PDF muestra un fotograma con una marca de reproducción y un código QR que abre el vídeo. La vista web y los libros electrónicos lo reproducen. En el libro en 3D, un clic sobre el fotograma reproduce el vídeo en la misma página, y sigue en marcha mientras pasa la hoja.",
+              "intro": "Un vídeo es un recurso, como una imagen: se declara una vez, se cita en el texto y flota hasta el primer hueco libre después de su referencia. Las referencias, la numeración, la colocación y el ajuste del texto se explican en [Formato del documento: imágenes y tablas](/es/docs/document-format-resources); lo que sigue es propio de los vídeos."
+            },
+            "ca": {
+              "title": "Format del document: vídeos",
+              "sidebarTitle": "Vídeos",
+              "description": "Els recursos de vídeo: YouTube, Vimeo, fitxers propis i fluxos HLS, què mostra cada sortida, els camps d'un vídeo, la portada i l'adreça, els reproductors, el VDT i els paquets, i els vídeos que es reprodueixen a les pàgines de Folio",
+              "plainSummary": "Aquesta pàgina explica els vídeos d'un llibre. Un vídeo pot venir de YouTube o de Vimeo, o ser un fitxer propi. Es cita en el text com una imatge i té una numeració pròpia, com les figures i les taules. En paper i en PDF mostra un fotograma amb una marca de reproducció i un codi QR que obre el vídeo. La versió web i els llibres electrònics el reprodueixen. Al llibre en 3D, un clic sobre el fotograma reprodueix el vídeo a la mateixa pàgina, i continua mentre passa el full.",
+              "intro": "Un vídeo és un recurs, com una imatge: es declara una vegada, es cita en el text i flota fins al primer espai lliure després de la referència. Les referències, la numeració, la col·locació i l'ajust del text s'expliquen a [Format del document: imatges i taules](/ca/docs/document-format-resources); el que segueix és propi dels vídeos."
+            },
+            "zh": {
+              "title": "文档格式：视频",
+              "sidebarTitle": "视频",
+              "description": "视频资源：YouTube、Vimeo、你自己的文件和HLS流，各种输出显示什么，视频的字段、封面与网址，播放器，VDT与资源包，以及在Folio页面上播放的视频",
+              "plainSummary": "本页讲书中的视频。视频可以来自YouTube或Vimeo，也可以是你自己的文件。你在正文里像引用图片一样引用它，它和图、表一样有自己的编号。在纸上和PDF里，它显示为一帧画面，带一个播放标记和一个能打开视频的二维码。网页视图和电子书会播放它。在3D书本里，点一下画面，视频就在这一页上播放，翻页时也不会停。",
+              "intro": "视频和图片一样是资源：声明一次，在正文中引用，并浮动到引用之后第一个空位。引用、编号、位置和文字绕排的规则见[文档格式：图片与表格](/zh/docs/document-format-resources)；下面只讲视频特有的内容。"
+            },
+            "ar": {
+              "title": "صيغة المستند: مقاطع الفيديو",
+              "sidebarTitle": "الفيديو",
+              "description": "موارد الفيديو: يوتيوب وفيميو وملفاتك الخاصة وبث HLS، وما يعرضه كل مُخرَج، وحقول الفيديو، وصورة الغلاف والعنوان، والمشغّلات، وشجرة VDT والحِزم، ومقاطع الفيديو التي تعمل على صفحات Folio",
+              "plainSummary": "تتناول هذه الصفحة مقاطع الفيديو في الكتاب. قد يأتي الفيديو من يوتيوب أو فيميو، وقد يكون ملفًّا خاصًّا بك. تحيل إليه في النص كما تحيل إلى الصورة، وله ترقيم خاص به كالأشكال والجداول. وفي الورق وفي PDF يظهر لقطةً ثابتة عليها علامة تشغيل ورمز QR يفتح الفيديو. ويعمل الفيديو في عرض الويب وفي الكتب الإلكترونية. وفي الكتاب ثلاثي الأبعاد تكفي نقرة على اللقطة ليعمل الفيديو على الصفحة نفسها، ويستمر في العمل أثناء قلب الورقة.",
+              "intro": "الفيديو مورد كالصورة: يُعرَّف مرة واحدة، ويُحال إليه في النص، ويطفو إلى أول موضع شاغر بعد الإحالة إليه. وتشرح صفحة [صيغة المستند: الصور والجداول](/ar/docs/document-format-resources) الإحالات والترقيم والموضع والتفاف النص؛ وما يلي خاص بالفيديو."
+            },
+            "ja": {
+              "title": "文書形式：動画",
+              "sidebarTitle": "動画",
+              "description": "動画リソース：YouTube、Vimeo、自前のファイルとHLSストリーム、出力ごとの表示、動画のフィールド、ポスター画像とアドレス、プレイヤー、VDTとバンドル、Folioのページで再生する動画",
+              "plainSummary": "このページでは、本の動画を説明します。動画はYouTubeやVimeoのものでも、自前のファイルでもかまいません。本文では画像と同じように参照し、図や表と同じく独自の番号が付きます。紙とPDFでは、再生マークと、動画を開くQRコードの付いた1枚の静止画になります。Web表示と電子書籍では再生できます。3Dの本では、静止画をクリックするとそのページの上で動画が再生され、ページをめくる間も止まりません。",
+              "intro": "動画は画像と同じリソースです。一度宣言し、本文で参照すると、参照のあとの最初の空いた場所にフロートします。参照、番号付け、配置、回り込みについては[文書形式：画像と表](/ja/docs/document-format-resources)で説明しています。ここからは動画に固有の内容です。"
+            },
+            "pt": {
+              "title": "Formato do documento: vídeos",
+              "sidebarTitle": "Vídeos",
+              "description": "Os recursos de vídeo: YouTube, Vimeo, arquivos seus e streams HLS, o que cada saída mostra, os campos de um vídeo, o pôster e o endereço, os players, o VDT e os pacotes, e os vídeos que tocam nas páginas do Folio",
+              "plainSummary": "Esta página trata dos vídeos de um livro. Um vídeo pode vir do YouTube ou do Vimeo, ou ser um arquivo seu. Você o cita no texto como uma imagem, e ele tem numeração própria, como as figuras e as tabelas. No papel e no PDF ele mostra um quadro parado com uma marca de reprodução e um código QR que abre o vídeo. A visualização web e os livros digitais o reproduzem. No livro 3D, um clique no quadro toca o vídeo na própria página, e ele continua tocando enquanto a folha vira.",
+              "intro": "Um vídeo é um recurso, como uma imagem: é declarado uma vez, citado no texto e flutuado até o primeiro espaço livre depois da referência. Referências, numeração, posicionamento e contorno de texto são explicados em [Formato do documento: imagens e tabelas](/pt/docs/document-format-resources); o que vem a seguir é próprio dos vídeos."
+            },
+            "fr": {
+              "title": "Format du document : vidéos",
+              "sidebarTitle": "Vidéos",
+              "description": "Les ressources vidéo : YouTube, Vimeo, fichiers à vous et flux HLS, ce que montre chaque sortie, les champs d’une vidéo, son affiche et son adresse, les lecteurs, le VDT et les bundles, et les vidéos lues sur les pages de Folio",
+              "plainSummary": "Cette page traite des vidéos d’un livre. Une vidéo peut venir de YouTube ou de Vimeo, ou être un fichier à vous. Vous la citez dans le texte comme une image, et elle a sa propre numérotation, comme les figures et les tableaux. Sur papier et en PDF, elle montre une image fixe avec une marque de lecture et un code QR qui ouvre la vidéo. La vue web et les livres numériques la lisent. Dans le livre en 3D, un clic sur l’image lance la vidéo sur la page même, et elle continue pendant que la page tourne.",
+              "intro": "Une vidéo est une ressource comme une image : on la déclare une fois, on la cite dans le texte et elle flotte jusqu’au premier emplacement libre après le renvoi. Les renvois, la numérotation, le placement et l’habillage du texte sont expliqués dans [Format du document : images et tableaux](/fr/docs/document-format-resources) ; ce qui suit est propre aux vidéos."
+            },
+            "de": {
+              "title": "Dokumentformat: Videos",
+              "sidebarTitle": "Videos",
+              "description": "Video-Ressourcen: YouTube, Vimeo, eigene Dateien und HLS-Streams, was jede Ausgabe zeigt, die Felder eines Videos, Posterbild und Adresse, die Player, der VDT und Bundles sowie Videos, die auf den Seiten von Folio spielen",
+              "plainSummary": "Diese Seite behandelt die Videos eines Buchs. Ein Video kann von YouTube oder Vimeo kommen oder eine eigene Datei sein. Sie zitieren es im Text wie ein Bild, und es hat wie Abbildungen und Tabellen eine eigene Nummerierung. Auf Papier und im PDF zeigt es ein Standbild mit einem Abspielzeichen und einem QR-Code, der das Video öffnet. Die Webansicht und E-Books spielen es ab. Im 3D-Buch startet ein Klick auf das Standbild das Video auf der Seite selbst, und es läuft weiter, während die Seite umgeblättert wird.",
+              "intro": "Ein Video ist eine Ressource wie ein Bild: Es wird einmal angelegt, im Text zitiert und an die erste freie Stelle nach dem Verweis gesetzt. Verweise, Nummerierung, Platzierung und Textumfluss erklärt [Dokumentformat: Bilder und Tabellen](/de/docs/document-format-resources); was folgt, betrifft nur Videos."
+            },
+            "it": {
+              "title": "Formato del documento: video",
+              "sidebarTitle": "Video",
+              "description": "Le risorse video: YouTube, Vimeo, file tuoi e stream HLS, che cosa mostra ogni uscita, i campi di un video, il poster e l’indirizzo, i player, il VDT e i bundle, e i video che si riproducono sulle pagine di Folio",
+              "plainSummary": "Questa pagina riguarda i video di un libro. Un video può venire da YouTube o da Vimeo, oppure essere un file tuo. Lo citi nel testo come un’immagine, e ha una numerazione propria, come le figure e le tabelle. Su carta e nel PDF mostra un fotogramma fermo con un segno di riproduzione e un codice QR che apre il video. La vista web e gli e-book lo riproducono. Nel libro 3D un clic sul fotogramma avvia il video sulla pagina stessa, e continua mentre la pagina gira.",
+              "intro": "Un video è una risorsa come un’immagine: si dichiara una volta, si cita nel testo e flotta fino al primo spazio libero dopo il rimando. Rimandi, numerazione, collocazione e testo intorno alle immagini sono spiegati in [Formato del documento: immagini e tabelle](/it/docs/document-format-resources); quel che segue riguarda solo i video."
             }
           }
         }

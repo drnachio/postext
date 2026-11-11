@@ -210,7 +210,8 @@ describe(':mark[…] (#888)', () => {
   });
 
   it('resolves and strips its styles', () => {
-    expect(resolveMarkStylesConfig(undefined)).toEqual([{ id: 'mark', name: 'Mark', background: { hex: '#fff0a0', model: 'hex' }, borderRadius: { value: 0, unit: 'em' }, paddingX: { value: 0.15, unit: 'em' }, paddingY: { value: 0.05, unit: 'em' }, decorationBreak: 'slice' }]);
+    expect(resolveMarkStylesConfig(undefined)).toEqual([{ id: 'mark', name: 'Mark', background: { hex: '#fff0a0', model: 'hex' }, borderRadius: { value: 0, unit: 'em' }, paddingX: { value: 0.15, unit: 'em' }, paddingY: { value: 0.05, unit: 'em' }, decorationBreak: 'slice', backgroundEnabled: true, opacity: 100, rough: 0 }]);
+    expect(stripMarkStylesDefaults([{ id: 'mark', backgroundEnabled: true, opacity: 100, rough: 0 }])).toBeUndefined();
     expect(stripMarkStylesDefaults([{ id: 'mark', name: 'Mark' }])).toBeUndefined();
     expect(stripMarkStylesDefaults([{ id: 'mark', decorationBreak: 'slice' }])).toBeUndefined();
     expect(stripMarkStylesDefaults([{ id: 'k', decorationBreak: 'clone' }])).toEqual([{ id: 'k', decorationBreak: 'clone' }]);

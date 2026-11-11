@@ -13,6 +13,7 @@ type Atom =
   | { kind: 'note'; id: string }
   | { kind: 'link'; inner: string; dest: string }
   | { kind: 'chip'; inner: string; style: string }
+  | { kind: 'charStyle'; inner: string; style: string }
   | { kind: 'smallcaps'; inner: string };
 
 const PH_BASE = 0xe800;
@@ -199,6 +200,16 @@ function protect(text: string, opts: ParseInlineOptions): { s: string; atoms: At
         i += chip[0].length;
         continue;
       }
+      // A character style (`:span[words]{style="id"}`), read as a chip is.
+      const span = /^:span\[((?:\\.|[^\]\\\n])+)\](?:\{([^}\n]*)\})?/.exec(rest);
+      if (span) {
+        const attrs = span[2] ?? '';
+        const style = /^\s*style\s*=\s*"([^"]*)"\s*$/.exec(attrs)?.[1] ?? /^\s*style\s*=\s*([^\s"]+)\s*$/.exec(attrs)?.[1];
+        if (style && !/[$`:[]/.test(span[1]!)) add({ kind: 'charStyle', inner: span[1]!, style });
+        else add({ kind: 'raw', text: span[0] });
+        i += span[0].length;
+        continue;
+      }
       const sc = /^:smallcaps\[((?:\\.|[^\]\\\n])+)\]/.exec(rest);
       if (sc && !/[[:]/.test(sc[1]!)) {
         add({ kind: 'smallcaps', inner: sc[1]! });
@@ -331,6 +342,9 @@ export function parseInline(text: string, opts: ParseInlineOptions = {}): Inline
           case 'smallcaps':
             for (const r of parseInline(atom.inner.replace(/\\([[\]])/g, '$1'), opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, smallCaps: true });
             return;
+          case 'charStyle':
+            for (const r of parseInline(atom.inner.replace(/\\\]/g, ']'), opts)) push({ ...r, bold: r.bold || base.bold || undefined, italic: r.italic || base.italic || undefined, charStyle: atom.style });
+            return;
         }
       }
       // A marker character the scan left: verbatim, unless re-importing
@@ -359,6 +373,7 @@ export function parseInline(text: string, opts: ParseInlineOptions = {}): Inline
     if (r.raw) clean.raw = true;
     if (r.href !== undefined) clean.href = r.href;
     if (r.chip !== undefined) clean.chip = r.chip;
+    if (r.charStyle !== undefined) clean.charStyle = r.charStyle;
     if (r.note !== undefined) clean.note = r.note;
     return clean;
   });
