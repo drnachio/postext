@@ -38,14 +38,19 @@ function edgeAttrs(w: Writer, t: TableItem, c: Cell): string {
 function cellXml(w: Writer, t: TableItem, self: string, c: Cell): string {
   const fill = swatch(w, c.background);
   const item = c.item && c.item.lines.length ? c.item : undefined;
-  let insets = ' TextTopInset="0" TextLeftInset="0" TextBottomInset="0" TextRightInset="0"';
+  // InDesign 2026 writes a cell's insets as `Text…Inset` and reads them
+  // from `…Inset`: with the first alone it keeps its default 4 pt, and the
+  // text of a row of fixed height is overset. Both are written.
+  const insetAttrs = (left: number, right: number): string =>
+    ` TextTopInset="0"${attr('TextLeftInset', left)} TextBottomInset="0"${attr('TextRightInset', right)} TopInset="0"${attr('LeftInset', left)} BottomInset="0"${attr('RightInset', right)}`;
+  let insets = insetAttrs(0, 0);
   let baseline = '';
   let body = '<ParagraphStyleRange AppliedParagraphStyle="ParagraphStyle/$ID/NormalParagraphStyle"><CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"/></ParagraphStyleRange>';
   if (item) {
     const r: DisplayRect = c.rect;
     const left = Math.max(0, (item.bbox.x - r.x) * w.k);
     const right = Math.max(0, (r.x + r.width - (item.bbox.x + item.bbox.width)) * w.k);
-    insets = ` TextTopInset="0"${attr('TextLeftInset', left)} TextBottomInset="0"${attr('TextRightInset', right)}`;
+    insets = insetAttrs(left, right);
     baseline = ` FirstBaselineOffset="FixedHeight"${attr('MinimumFirstBaselineOffset', Math.max(0, (item.lines[0]!.baseline - r.y) * w.k))}`;
     body = paragraphsXml(w, [{ ...item, frame: undefined }], undefined) || body;
   }
