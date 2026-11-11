@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-10-21',
   readingTime: '10 min',
-  order: 49,
+  order: 50,
   plainSummary: "Esta página é para quem já tem um livro ou um documento em outro formato, como PDF, Word ou InDesign, e quer passá-lo para o Postext. Um assistente de inteligência artificial, chamado agente, pode fazer quase todo o trabalho se você der a ele um pequeno complemento chamado skill. A skill ensina o agente a copiar o texto e a refazer o design do original. A página explica como instalá-la, o que pedir e como conferir o resultado. Um vídeo de uns cinco minutos mostra cada passo.",
 };
 
@@ -230,6 +230,12 @@ Coloque os arquivos originais na sua pasta de trabalho e peça a conversão. Por
   as notas do apresentador viram o texto.”*
 - *“Temos o pacote do InDesign (IDML + PDF de impressão) deste livro didático.
   Monte a predefinição do Postext para o capítulo 1 em espanhol e em inglês.”*
+
+Para um livro do InDesign, dê ao agente a pasta que **Arquivo › Empacotar**
+cria no InDesign (o `.idml`, o PDF de impressão, as fontes e as ilustrações
+vinculadas). A skill deduz delas as regras de diagramação, o que o importador
+de IDML não faz: [InDesign: importar, exportar e portar](/pt/docs/indesign)
+compara os dois.
 
 O agente segue o fluxo de trabalho:
 

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ja',
   lastUpdated: '2026-11-06',
   readingTime: '14分',
-  order: 50,
+  order: 51,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
 };
 
@@ -227,7 +227,7 @@ postext idml book.postext -o book.idml --images link
 postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
-`idml`は`pdf`と同じように本を組み、ページをInDesign Markupのパッケージとして書き出します。InDesignで仕上げるためのものです。見開きの余白を持つ本では、ページを背をはさんだ見開きに置き（それ以外の本では見開きごとに1ページ）、罫線、ボックス、パス、画像はページアイテムに、表はInDesignの表に、テンプレートページの各枠のテキストは固有のストーリーを持つテキストフレームになります（`next`でつないだ枠は1つのストーリーを共有します）。囲みスタイルは段落スタイルに、作者が指定したCMYKの色はスウォッチになります。フォームフィールドを持つチップは、InDesignのフォームフィールドになります。`--lines keep`（既定）は各行をPostextが終えた位置で終えるので、InDesignにはPDFと同じ行が表示されます。`--lines reflow`は段落をInDesignのコンポーザーに任せるので、改行位置は変わることがあります。`--images link`を付けると、画像はファイルの中ではなく、隣の`Links/`に置かれます。`--fonts`は、使われている書体のフォントファイルをパッケージの隣の`Document fonts/`に書き出します。InDesignはそこからその文書のフォントを見つけます。`-o`でファイルを指定する必要があり、本が再配布できないファミリーは書き出さずに警告を出します。パッケージが本のとおりには扱えないもの（縦組みのテキストの圏点、表の角丸の枠）は、`idml.*`の警告で報告します。書き出しを行うのは`postext-idml`パッケージです。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。`build`では、`--idml FILE`が同じパッケージを書き出し、`--idml-images`、`--idml-lines`、`--idml-fonts`を併せて使えます。postext 1.71以降。`--lines`と`--fonts`は1.76以降。
+`idml`は`pdf`と同じように本を組み、ページをInDesign Markupのパッケージとして書き出します。InDesignで仕上げるためのものです。見開きの余白を持つ本では、ページを背をはさんだ見開きに置き（それ以外の本では見開きごとに1ページ）、罫線、ボックス、パス、画像はページアイテムに、表はInDesignの表に、テンプレートページの各枠のテキストは固有のストーリーを持つテキストフレームになります（`next`でつないだ枠は1つのストーリーを共有します）。囲みスタイルは段落スタイルに、作者が指定したCMYKの色はスウォッチになります。フォームフィールドを持つチップは、InDesignのフォームフィールドになります。`--lines keep`（既定）は各行をPostextが終えた位置で終えるので、InDesignにはPDFと同じ行が表示されます。`--lines reflow`は段落をInDesignのコンポーザーに任せるので、改行位置は変わることがあります。`--spreads facing`または`--spreads single`を付けると、余白の設定にかかわらず、ページを見開きに組むか組まないかを決められます。`--images link`を付けると、画像はファイルの中ではなく、隣の`Links/`に置かれます。`--fonts`は、使われている書体のフォントファイルをパッケージの隣の`Document fonts/`に書き出します。InDesignはそこからその文書のフォントを見つけます。`-o`でファイルを指定する必要があり、本が再配布できないファミリーは書き出さずに警告を出します。パッケージが本のとおりには扱えないもの（縦組みのテキストの圏点、表の角丸の枠）は、`idml.*`の警告で報告します。書き出しを行うのは`postext-idml`パッケージです。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。`build`では、`--idml FILE`が同じパッケージを書き出し、`--idml-images`、`--idml-lines`、`--idml-spreads`、`--idml-fonts`を併せて使えます。postext 1.71以降。`--lines`と`--fonts`は1.76以降、`--spreads`は1.78以降。
 
 ### import-idml
 
@@ -239,7 +239,7 @@ postext import-idml book.idml --report --json
 
 `import-idml`はInDesign Markupのパッケージを読み込み、新しい本をフォルダーまたは`.postext`として書き出します。章はMarkdownに、設定は文書のスタイルとページから得られるものに、画像と表はリソースになります。`.indd`は読み込めません。先にInDesignでInDesign Markupとして保存してください。`--layout pages`は、テンプレートページを使って文書を1ページずつそのままたどり、各枠を元の位置に置きます。`--layout flow`は、テキストを読む順に並べ、文書のスタイルを付けた流し込みの本を書き出し、Postextが組み直します。`auto`（既定）はどちらかを選び、その理由を示します。リンク画像は`--links`から読み込み、指定がなければファイルのあるフォルダーとその`Links/`から読み込みます。見つからなかったものは一覧に出します。文書が指定しているフォントも一覧に出します。パッケージにフォントファイルは入っていないので、本を作るときに`--font-dir`で渡してください。
 
-Postextから書き出した本は、同じ行のまま戻ります。InDesignで作った文書の読み込みには欠落があります。コマンドは判定（`faithful`、`approximate`、`lossy`のいずれか）、件数、失われたものと近似したものを出力します。`--report`を付けると、注記と、各段落スタイルをどう読んだかも加わり、`--json`はそのすべてをデータとして出力します。`--hidden`、`--pasteboard`、`--non-printing`を付けると、非表示のレイヤーとオブジェクト、ペーストボード上のもの、印刷しないオブジェクトも読み込みます。`--conditions all`は条件テキストをすべて読み込み、`--changes reject`は変更履歴を却下したものとして読み、`--no-masters`はマスターページのアイテムを除きます。`--name`と`--locale`は書名と言語を指定します。読み込みを行うのは`postext-idml`パッケージの`idmlToPostext`です。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。
+Postextから書き出した本は、同じ行のまま戻ります。InDesignで作った文書の読み込みには欠落があります。コマンドは判定（`faithful`、`approximate`、`lossy`のいずれか）、件数、失われたものと近似したものを出力します。`--report`を付けると、注記と、各段落スタイルをどう読んだかも加わり、`--json`はそのすべてをデータとして出力します。`--hidden`、`--pasteboard`、`--non-printing`を付けると、非表示のレイヤーとオブジェクト、ペーストボード上のもの、印刷しないオブジェクトも読み込みます。`--conditions all`は条件テキストをすべて読み込み、`--changes reject`は変更履歴を却下したものとして読み、`--no-masters`はマスターページのアイテムを除きます。`--name`と`--locale`は書名と言語を指定します。読み込みを行うのは`postext-idml`パッケージの`idmlToPostext`です。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。読み込みは文書をそのまま写します。手元に残す本を、レイアウトの規則を割り出して移植するなら、代わりにエージェントスキルを使ってください（[InDesign：読み込み、書き出し、移植](/ja/docs/indesign)を参照）。
 
 ### packとunpack
 

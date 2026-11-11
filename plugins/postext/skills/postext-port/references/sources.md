@@ -294,6 +294,55 @@ Gotchas:
 
 ## InDesign (IDML)
 
+### Importer or port
+
+Postext has two routes in, and they give different books
+(docs: https://postext.dev/en/docs/indesign):
+
+- **The importer** (`postext import-idml`, the Sandbox's *New book from an
+  InDesign document*, `idmlToPostext`) is deterministic and imperative: it
+  copies what the package holds, frames at their coordinates
+  (`--layout pages`) or stories under the document's styles
+  (`--layout flow`), local overrides, empty paragraphs used as space and
+  all. It infers no rules. The result replicates the craft of the pages.
+- **The port** (this skill) reads the whole source folder, measures the
+  print PDF, works out the rules (grid, type roles, openers, running heads,
+  box families, float habits, page-template kinds) and writes reflowable
+  Markdown free of page positions. It is the default for any book the user
+  will keep, revise, translate, reflow to another trim or publish as EPUB.
+
+The importer alone is right when the brief asks for a copy: an `.idml` that
+Postext itself exported (it comes back with the same lines), a one-off fixed
+page (poster, form, single spread), or a quick look at what a package holds.
+Say so in the brief and confirm with the user before choosing it over a
+port.
+
+Inside a port, use the importer as an inventory:
+`postext import-idml source/Book.idml --report --json > work/idml-report.json`
+lists the paragraph styles and how each was read, the stories, the fonts the
+book needs, linked pictures found and missing, tables, and findings with
+counts (`textOnPath`, `rotatedCell`, `nestedStyles`, `grepStyles`,
+`tableFooterRows`…), so the spec sheet can plan for them. Do not start the
+chapters from its Markdown: frames at fixed places become rules and
+templates, overrides become styles, empty paragraphs become spacing.
+
+### The source folder
+
+Ask for InDesign's File › Package output, with Include IDML and Include PDF
+(Print): the `.indd`, the `.idml`, the print PDF, `Document fonts/` and
+`Links/`. Keep it as the project's `source/` (`pack` leaves `source/` out of
+the bundle).
+
+- `.idml`: text, styles, tables, anchored pictures in story order.
+- Print PDF: where every line, box and figure landed; the measurements and
+  the final page-by-page comparison come from it.
+- `Document fonts/`: the original faces, so the measured line breaks hold.
+  Check the licence before shipping them (configuration.md, fonts).
+- `Links/`: the artwork. `.ai` and vector `.pdf`/`.eps` become SVG with
+  `convert_assets.py`; `.psd` and `.tif` become bitmaps with `images.py prep`.
+
+### Extraction
+
 - Export IDML and a print PDF from the same document.
 - The other way round, `postext idml my-book -o book.idml` (postext ≥ 1.71; in code `idmlDocument`
   from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml`
