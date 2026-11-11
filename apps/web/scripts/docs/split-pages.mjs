@@ -41,7 +41,7 @@ import GithubSlugger from "github-slugger";
 import { headings, bodyLines, fail, metaOf, trimEnd, readingTime, readingMinutes, metadataLines } from "./split-pages/read.mjs";
 
 const LOCALES = ["en", "es", "ca", "zh", "ar", "ja", "pt", "fr", "de", "it"];
-const LAST_UPDATED = "2026-10-20";
+const LAST_UPDATED = "2026-11-11";
 const ROOT = path.resolve(import.meta.dirname, "../../../..");
 const DOCS = path.join(ROOT, "docs");
 const COOKBOOK = path.join(ROOT, "cookbook");
@@ -484,9 +484,19 @@ write(CONFIG_ANCHORS, `${JSON.stringify(configAnchors, null, 2)}\n`);
 const MOVED = path.join(ROOT, "apps/web/src/lib/anchors/movedAnchors.json");
 const moved = fs.existsSync(MOVED) ? JSON.parse(fs.readFileSync(MOVED, "utf8")) : {};
 for (const split of SPLITS) {
+  // A page split before (or whose headings were renamed since) keeps its
+  // earlier redirects, carried to wherever their target heading is now.
+  const earlier = moved[split.from] ?? {};
   moved[split.from] = {};
   for (const l of LOCALES) {
     const table = {};
+    for (const [slug, ids] of Object.entries(earlier[l] ?? {})) {
+      for (const entry of ids.split(" ")) {
+        const [oldId, nowId = oldId] = entry.split(">");
+        const target = (slug === split.from ? anchors[l][split.from].get(nowId) : null) ?? { slug, id: nowId };
+        (table[target.slug] ??= []).push(oldId === target.id ? oldId : `${oldId}>${target.id}`);
+      }
+    }
     for (const [id, target] of anchors[l][split.from]) {
       if (target.slug === split.from && target.id === id) continue;
       (table[target.slug] ??= []).push(id === target.id ? id : `${id}>${target.id}`);

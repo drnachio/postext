@@ -1,18 +1,18 @@
 {/* docs/document-format-resources-pt.mdx */}
 
 export const metadata = {
-  title: 'Formato do documento: imagens, tabelas e vídeos',
-  sidebarTitle: 'Imagens, tabelas e vídeos',
-  description: 'Como pôr recursos no texto: referências e inserções, numeração, posicionamento e o lugar onde cada flutuante vai parar, contorno de texto, tamanho dos bitmaps, áreas seguras, âncoras de quadrinhos e vídeos',
+  title: 'Formato do documento: imagens e tabelas',
+  sidebarTitle: 'Imagens e tabelas',
+  description: 'Como pôr recursos no texto: referências e inserções, numeração, posicionamento e o lugar onde cada flutuante vai parar, contorno de texto, tamanho dos bitmaps, áreas seguras, âncoras de quadrinhos e símbolos nas legendas',
   lang: 'pt',
-  lastUpdated: '2026-11-10',
-  readingTime: '42 min',
+  lastUpdated: '2026-11-11',
+  readingTime: '45 min',
   order: 30,
   parent: 'document-format',
-  plainSummary: "Esta página trata das imagens, tabelas e vídeos de um livro. Você os inclui uma vez e os menciona no texto, e o Postext coloca cada um perto do lugar onde é mencionado pela primeira vez. Você pode escolher onde ele fica: no alto de uma página, na largura de todas as colunas ou exatamente onde foi escrito. O texto pode contornar uma imagem. Uma imagem pode marcar a parte que sempre deve aparecer quando ela é cortada para caber. Os vídeos tocam na visualização web e nos livros digitais, e no impresso mostram uma imagem.",
+  plainSummary: "Esta página trata das imagens e tabelas de um livro. Você as inclui uma vez e as menciona no texto, e o Postext coloca cada uma perto do lugar onde é mencionada pela primeira vez. Você pode escolher onde ela fica: no alto de uma página, na largura de todas as colunas ou exatamente onde foi escrita. O texto pode contornar uma imagem. Uma imagem pode marcar a parte que sempre deve aparecer quando ela é cortada para caber. Os vídeos são posicionados do mesmo jeito, e a próxima página trata deles.",
 };
 
-# Formato do documento: imagens, tabelas e vídeos
+# Formato do documento: imagens e tabelas
 
 
 ## Recursos
@@ -215,7 +215,7 @@ As faixas de flutuantes são corrigidas em relação à grade de linhas de base 
 
 Na página de fechamento de um capítulo, e do documento, nada vem depois das figuras e tabelas de página inteira compostas abaixo da última faixa de texto; por isso, elas sobem para ficar a um espaço de flutuante abaixo dela, empilhadas na ordem, em vez de deixar um vazio entre o texto e uma figura no pé da página. Isso vale também para um flutuante `position: 'bottom'`. Para mantê-las no pé, como em todas as outras páginas, defina `layout.hugClosingFloats: false` (veja [Configuração › Layout](/pt/docs/configuration-page-layout#diagramação)). Páginas com coluna lateral nunca as movem.
 
-Os três renderizadores (a visualização no canvas, o visualizador HTML e a saída PDF) renderizam recursos. No renderizador HTML, os dados das imagens ficam fora do documento; por isso, o aplicativo hospedeiro os fornece pela opção de resolvedor `resourceImageUrl(fileId)`; quando o resolvedor está ausente (ou não retorna nada para um arquivo), o recurso é renderizado como uma caixa neutra provisória para que o layout fique estável. O arquivo de um vídeo chega do mesmo modo por `resourceVideoUrl(fileId)` (veja [Vídeos](#vídeos)).
+Os três renderizadores (a visualização no canvas, o visualizador HTML e a saída PDF) renderizam recursos. No renderizador HTML, os dados das imagens ficam fora do documento; por isso, o aplicativo hospedeiro os fornece pela opção de resolvedor `resourceImageUrl(fileId)`; quando o resolvedor está ausente (ou não retorna nada para um arquivo), o recurso é renderizado como uma caixa neutra provisória para que o layout fique estável. O arquivo de um vídeo chega do mesmo modo por `resourceVideoUrl(fileId)` (veja [Vídeos](/pt/docs/document-format-videos#vídeos)).
 
 #### Onde um flutuante pode ficar
 
@@ -403,137 +403,3 @@ Uma legenda, uma nota ou uma célula de tabela pode trazer um pequeno símbolo n
 
 Os símbolos são lidos em legendas, notas, células de tabela e rótulos de figura (veja [Páginas compostas › Linhas de chamada, legendas de mapa e símbolos](/pt/docs/composed-pages-figures#linhas-de-chamada-legendas-de-mapa-e-símbolos)); no texto corrido e nos títulos, a diretiva continua sendo texto nesta versão. Desde o postext 1.48.
 
-### Vídeos
-
-Um recurso de **vídeo** (`kind: 'video'`) é um vídeo do YouTube ou do Vimeo, ou um vídeo seu: um arquivo guardado no livro (MP4, WebM) ou um que está num endereço da web, seja um arquivo num servidor ou um **stream HLS** (uma playlist `.m3u8`). Ele é posicionado, legendado, flutuado e citado como uma imagem, e numerado numa sequência própria: o tipo integrado `video` imprime *Vídeo 1.1*, *Vídeo 1.2*… ao lado de *Figura 1.1* e *Tabela 1.1* (veja [Configuração › Tipos de recurso](/pt/docs/configuration-resources#tipos-de-recurso)). Cada saída o mostra como pode:
-
-<table>
-  <thead>
-    <tr>
-      <th>Saída</th>
-      <th>O que mostra</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Canvas, PDF</td>
-      <td>O <strong>pôster</strong>, um quadro do vídeo, com uma marca de reprodução e um código QR que abre o vídeo (<a href="/pt/docs/configuration-resources#estilo-de-vídeo">Configuração › Estilo de vídeo</a>). No PDF, o pôster também é um link para o vídeo.</td>
-    </tr>
-    <tr>
-      <td>Folio</td>
-      <td>O pôster, tal como impresso. Um clique nele reproduz o vídeo <strong>na própria página</strong>, e ele continua tocando enquanto a folha vira (veja <a href="#vídeos-nas-páginas-do-folio">Vídeos nas páginas do Folio</a> mais abaixo). Os vídeos do YouTube e do Vimeo continuam sendo pôsteres.</td>
-    </tr>
-    <tr>
-      <td>Visualizador HTML</td>
-      <td>O <strong>player</strong> do vídeo: o do YouTube ou do Vimeo, ou o player HTML5 do navegador para um arquivo ou um endereço. Um stream HLS toca nativamente no Safari e nas versões recentes do Chrome; nos demais, o aplicativo hospedeiro anexa um player como o hls.js, como faz o Sandbox. Com <code>videoStyle.html: 'poster'</code>, mostra o pôster impresso no lugar do player.</td>
-    </tr>
-    <tr>
-      <td>EPUB</td>
-      <td>Um arquivo toca no player do próprio sistema de leitura, empacotado no livro ou lido do endereço de produção. Um vídeo do YouTube ou do Vimeo vira o pôster dele, com link para o vídeo: um EPUB não pode incorporar o player de uma página da web. Um stream HLS também vira o pôster com link: uma playlist HLS não é um tipo de mídia que um EPUB possa reproduzir. Onde o sistema de leitura executa scripts, os arquivos de uma mesma página ou capítulo respeitam <code>player.exclusive</code>: iniciar um pausa os outros com os quais ele não toca junto.</td>
-    </tr>
-  </tbody>
-</table>
-
-```ts
-const talk: Resource = {
-  id: 'keeper-talk', typeId: 'video', kind: 'video',
-  caption: 'The keeper explains the lamp.',
-  altText: 'A lighthouse keeper beside the lamp',
-  createdAt: 0, updatedAt: 0,
-  video: {
-    source: 'youtube',                        // 'youtube' | 'vimeo' | 'file'
-    url: 'https://youtu.be/aqz-KE-bpKQ',
-    poster: { fileId: 'talk.jpg', format: 'jpeg', width: 1280, height: 720 },
-    start: 30,                                // toca a partir de 0:30; o link impresso também começa aí
-  },
-};
-```
-
-O texto cita um vídeo como cita uma figura: `:ref{id="keeper-talk"}` imprime *Vídeo 1.1* e faz o pôster flutuar para o primeiro espaço livre depois da referência, e `::resource{id="keeper-talk"}` com `placement.position: 'here'` o coloca no fluxo do texto. Os campos de `Resource.video` (`ResourceVideo`):
-
-<table>
-  <thead>
-    <tr>
-      <th>Campo</th>
-      <th>Tipo</th>
-      <th>Significado</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><code>source</code></td>
-      <td><code>'youtube'</code> · <code>'vimeo'</code> · <code>'file'</code></td>
-      <td>De onde o vídeo é reproduzido: uma página do YouTube ou do Vimeo, ou um vídeo seu (<code>'file'</code>), enviado ou num endereço.</td>
-    </tr>
-    <tr>
-      <td><code>url</code></td>
-      <td><code>string</code></td>
-      <td>YouTube ou Vimeo: o endereço do vídeo, em qualquer forma (uma página de exibição, <code>youtu.be</code>, Shorts, um link de incorporação, <code>youtube-nocookie.com</code>; uma página do Vimeo, uma página de canal ou um link não listado com o hash). Um arquivo: o <strong>endereço de produção</strong>, onde o livro publicado vai encontrá-lo. Um vídeo seu sem arquivo próprio toca a partir desse endereço: um MP4 ou WebM num servidor, ou um stream HLS (<code>…/master.m3u8</code>).</td>
-    </tr>
-    <tr>
-      <td><code>fileId</code>, <code>format</code></td>
-      <td><code>string</code></td>
-      <td>Um arquivo: o vídeo enviado, guardado à parte como um bitmap, e o formato: <code>'mp4'</code>, <code>'webm'</code>, <code>'ogv'</code>, <code>'mov'</code>, ou <code>'hls'</code> para um stream HLS. Sem formato, a extensão do endereço o indica (<code>.m3u8</code> é <code>'hls'</code>); se não, <code>'mp4'</code>.</td>
-    </tr>
-    <tr>
-      <td><code>poster</code></td>
-      <td><code>{'{ fileId, format, width, height }'}</code></td>
-      <td>O quadro do pôster, um bitmap.</td>
-    </tr>
-    <tr>
-      <td><code>width</code>, <code>height</code>, <code>duration</code></td>
-      <td><code>number</code></td>
-      <td>O tamanho do quadro do vídeo em px (a proporção dele quando não há pôster) e a duração em segundos.</td>
-    </tr>
-    <tr>
-      <td><code>posterTime</code></td>
-      <td><code>number</code></td>
-      <td>O segundo do arquivo cujo quadro serve de pôster, guardado para poder ser escolhido de novo.</td>
-    </tr>
-    <tr>
-      <td><code>start</code>, <code>end</code></td>
-      <td><code>number</code></td>
-      <td>Reproduz de <code>start</code> a <code>end</code> segundos. O código QR e o link do PDF também começam em <code>start</code>.</td>
-    </tr>
-    <tr>
-      <td><code>player</code></td>
-      <td><code>VideoPlayerOptions</code></td>
-      <td>As opções de player deste vídeo, aplicadas por cima de <code>videoStyle.player</code>.</td>
-    </tr>
-  </tbody>
-</table>
-
-**O pôster.** Ele é composto na medida do espaço (ou na fração `placement.width` dela), na proporção própria, seja qual for o tamanho dele em pixels: um quadro do tamanho de uma tela é ampliado em vez de sair impresso pequeno. Como um bitmap, pode ter uma [área segura](#área-segura) e seguir `placement.align`. Um vídeo sem pôster imprime uma caixa escura na proporção do vídeo (16:9 quando nada a indica) com as sobreposições e gera um aviso de conteúdo `videoWithoutPoster`. No Sandbox, o pôster de um vídeo do YouTube ou do Vimeo é buscado na plataforma quando o endereço é digitado, e o de um arquivo é um quadro que você escolhe no vídeo.
-
-**O endereço.** O código QR e o link do PDF abrem a página do vídeo, `https://youtu.be/<id>` ou `https://vimeo.com/<id>`, a partir de `start`. Um arquivo não tem página: eles abrem o endereço de produção dele, que é também de onde toca um vídeo sem arquivo próprio (um MP4 num servidor, um stream HLS). Sem endereço, a impressão fica sem código QR e sem link (`videoWithoutUrl`), e uma saída HTML ou EPUB que não carrega o arquivo mostra o pôster. Um endereço do YouTube ou do Vimeo que não aponta para nenhum vídeo da plataforma gera `videoUrlInvalid`; o pôster aparece no lugar de um player.
-
-**Os players.** As opções de player (controles, botão de download, tela cheia, menu de velocidade, picture-in-picture, transmissão para outra tela, reprodução automática, início sem som, repetição, pré-carregamento, incorporações com privacidade reforçada) são definidas para o livro inteiro em `videoStyle.player` e para um vídeo em `video.player`; cada player respeita o que consegue (veja [Configuração › Estilo de vídeo](/pt/docs/configuration-resources#estilo-de-vídeo)). O renderizador HTML recebe a URL reproduzível de um arquivo pela opção `resourceVideoUrl(fileId)`, assim como recebe as imagens por `resourceImageUrl`, e na falta dela usa o endereço de produção. A opção `videos: { files, streams, hls }` dele escolhe entre player e pôster por origem, por cima de `videoStyle.html` (`hls`, um vídeo reproduzido a partir de um endereço HLS, segue `files` se não for definido); o gerador de EPUB a utiliza. Um `<video>` que reproduz um endereço HLS leva `data-pt-hls`, para que um aplicativo hospedeiro possa lhe dar um player nos navegadores sem HLS nativo (o Safari e as versões recentes do Chrome o reproduzem como está). Num livro da direita para a esquerda, o player e as sobreposições do pôster são desespelhados como uma imagem, para que o código QR possa ser lido.
-
-**No VDT.** O bloco de recurso de um vídeo tem `kind: 'video'`, o pôster como `fileId` / `format` (desenhado como um bitmap) e `video` (`VDTResourceVideo`): o `link` para onde o leitor é levado, o `embedUrl` do YouTube ou do Vimeo com as opções de player aplicadas, o `fileId` de um arquivo, o `mimeType` de um vídeo seu (do arquivo ou apenas do endereço, `application/vnd.apple.mpegurl` para HLS), o intervalo `start` / `end`, o `player` resolvido, `linkPoster`, `html` e as sobreposições `playMark` e `qr` (os módulos do QR como linhas de `'0'` / `'1'`), com retângulos relativos ao canto superior esquerdo do corpo. Um aplicativo hospedeiro que desenhe os vídeos por conta própria pode usar os auxiliares que o `postext` exporta: `parseVideoUrl`, `videoWatchUrl`, `resourceVideoLink`, `videoEmbedUrl`, `videoEmbedAllow`, `videoElementAttributes`, `mediaFragment`, `videoMimeType`, `videoFormatOfUrl`, `resourceVideoFormat`, `isHlsMimeType`, `HLS_MIME_TYPE`, `youtubePosterUrls`, `encodeQr`, `layoutVideo`, `playMarkTriangle` e `qrModuleRuns`.
-
-**Num pacote.** Um `.postext` carrega o arquivo (`resources/<id>.mp4`) e o pôster (`resources/<id>.poster.jpg`): a entrada do manifesto os indica em `file` e `poster`, informa o tamanho do pôster em `width` / `height` e guarda o resto em `video`, sem os ids de arquivo. `bundleVideoUrl(bundle)` é o resolvedor `resourceVideoUrl` sobre os arquivos de um pacote. Um vídeo reproduzido apenas a partir de um endereço não carrega arquivo: a entrada dele tem só o pôster. Num pacote bilíngue, um idioma pode dar a um vídeo `poster` e `video` próprios (outra edição, no próprio endereço) em `localized[…].resources`.
-
-#### Vídeos nas páginas do Folio
-
-No [livro 3D](/pt/docs/configuration-html-folio-epub#um-livro-em-3d-postext-folio), um vídeo seu toca na página em que está impresso. Um clique no pôster o inicia ali, seja qual for a função do ponteiro no livro (virar páginas, girar a vista ou selecionar texto): o shader da página desenha os quadros do vídeo sobre o pôster, de modo que a imagem se dobra e se curva com o papel enquanto a folha vira, e continua tocando durante a virada. Um clique num vídeo em reprodução o pausa, um clique num vídeo pausado o retoma, e Espaço ou Enter fazem o mesmo com o primeiro vídeo da página dupla aberta. Iniciar outro vídeo interrompe o que está tocando (ele volta ao pôster), e um vídeo para quando o livro se acomoda numa página dupla que já não o mostra, ou ao chegar ao `end`. O ponteiro vira uma mão sobre um vídeo que pode ser reproduzido; um arrasto que começa sobre ele continua virando a página ou a vista. Um vídeo configurado para tocar sozinho (`video.player.autoplay`) começa por conta própria na primeira vez que o livro se acomoda na página dupla dele, depois que o livro se estabiliza (inclusive quando um aplicativo hospedeiro o diagrama em etapas), e nunca mais nesse visualizador.
-
-Um vídeo que toca junto com os outros (`video.player.exclusive: false`, desde o postext 1.18) muda as duas regras. Iniciá-lo interrompe apenas os vídeos exclusivos, de modo que vários vídeos desse tipo tocam ao mesmo tempo; iniciar um vídeo exclusivo também o interrompe. Com `autoplay`, ele começa sem som cada vez que o livro se acomoda na página dupla dele e para quando a página dupla é virada: os loops silenciosos (`loop`) de uma página rodam juntos toda vez que o leitor chega a ela.
-
-- **O que toca.** Um arquivo (o aplicativo hospedeiro converte o `fileId` numa URL com a opção `videoUrl`; no Sandbox, uma URL de objeto) ou, na falta dele, o endereço: MP4, WebM ou um stream HLS. Um stream HLS toca pelo [hls.js](https://github.com/video-dev/hls.js) onde o navegador tiver Media Source Extensions (carregado na primeira reprodução; uma peer dependency opcional do `postext-folio`), limitado à variante mais próxima do tamanho da imagem na tela, para que uma imagem de algumas centenas de pixels de altura nunca puxe uma variante 4K; o HLS do próprio navegador é a alternativa. As requisições dele levam uma query `pt-cors` própria, para que o cache do navegador nunca lhes entregue uma cópia que outro player buscou sem CORS. O YouTube e o Vimeo tocam em iframes, que o WebGL não consegue desenhar: um clique no pôster deles vira a página como em qualquer outro ponto.
-- **Leituras entre origens.** O WebGL só desenha um vídeo quando o servidor permite a leitura (CORS, `Access-Control-Allow-Origin`). Um vídeo que não pode ser lido continua sendo um pôster, e `onVideo` recebe `error`.
-- **Som.** O clique permite que o vídeo toque com som; um navegador que ainda assim recuse o recebe sem som. Um vídeo que começa sozinho tem som depois que o leitor clicou ou digitou na página (virar até ela conta); antes disso, começa sem som, e um clique nele ativa o som antes que o clique seguinte o pause. `video.player.muted` o inicia sem som, `loop` o reproduz de novo, e `start` / `end` delimitam o trecho que toca.
-- **Em qualquer página.** A imagem é desenhada onde o layout a coloca: girada com um recurso girado, em pé numa página vertical e sem espelhamento num livro da direita para a esquerda, como o pôster. Um pôster recortado dentro da [área segura](#área-segura) recorta o vídeo da mesma forma.
-- **Sem WebGL2**, ou com movimento reduzido, o vídeo toca num `<video>` HTML sobreposto à página.
-
-```ts
-const book = createFolioFromDocument(container, doc, {
-  // A URL reproduzível de um vídeo enviado (uma URL de objeto sobre os seus bytes).
-  videoUrl: (fileId) => urls.get(fileId),
-  onVideo: ({ resourceId, state }) => console.log(resourceId, state), // playing | paused | stopped | error
-});
-book.stopVideo();
-```
-
-`videos: false` desativa isso. `toggleVideoAt({ page, x, y })` faz o que um clique naquele ponto faria, e `pageVideoSpots(page, doc)` lista onde fica cada vídeo numa página, para um aplicativo hospedeiro que desenhe os próprios controles.
-
-Duas receitas das Receitas compõem vídeos: a Nº 131, [Um programa de cineclube com códigos QR nos pôsteres](/pt/cookbook/film-club-video-qr), imprime cada filme como um cartão de título com uma marca de reprodução e um código QR, e a Nº 132, [Uma ficha de laboratório cujos clipes tocam na tela e no EPUB](/pt/cookbook/pendulum-lab-video-players), define as opções de player da edição HTML e empacota os próprios clipes num EPUB de layout fixo.

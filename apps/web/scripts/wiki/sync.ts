@@ -55,6 +55,7 @@ const DOC_PAGES: Record<string, string> = {
   "document-format-inline": "Document-Format-Inline-Formatting",
   "document-format-notes-references": "Document-Format-Notes-and-References",
   "document-format-resources": "Document-Format-Resources",
+  "document-format-videos": "Document-Format-Videos",
   "chinese-layout": "Chinese-Layout",
   "arabic-layout": "Arabic-Layout",
   "japanese-layout": "Japanese-Layout",

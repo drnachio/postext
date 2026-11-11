@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-11-10',
   readingTime: '31 min',
-  order: 40,
+  order: 41,
   plainSummary: "O Sandbox é uma ferramenta gratuita deste site para experimentar o Postext sem instalar nada. Você escreve o texto de um lado e vê as páginas prontas do outro, e elas mudam enquanto você digita. Esta página explica as partes da tela e os painéis em que você escreve o texto, organiza livros e capítulos, inclui imagens e escolhe fontes. Outras páginas tratam dos ajustes de design, das visualizações, de como salvar e importar, e de como colocar o Sandbox no seu próprio site.",
 };
 
@@ -243,7 +243,7 @@ Você também pode arrastar e soltar arquivos do disco no painel, incluindo arqu
   - **Contorno de texto**: para um recurso posto no texto ou um flutuante de uma coluna, *Nenhum* ou o lado da coluna em que ele fica com o texto ao lado (`placement.wrap`), e o **Espaço do contorno** (`placement.wrapGap`) quando há contorno; um recurso contornado sem largura própria mostra a fração padrão da diagramação. Os tipos de recurso oferecem os dois campos no posicionamento padrão. *Contorno*, para uma imagem, faz o texto contornar a forma dela no lado que o *Alinhamento* indica (`wrap: "contour"`): um bitmap mostra então **Forma pela transparência** (`contour.alpha`), o **Limite de opacidade** (`contour.threshold`) e a **Margem do contorno** (`contour.margin`), e o Sandbox traça o canal alfa a partir do arquivo salvo. Quando a forma de uma imagem não é conhecida, um aviso embaixo dos campos informa isso.
 - **Conteúdo**: campos de envio que substituem o arquivo bitmap ou SVG
 - **Tamanho e resolução**: num bitmap, os pixels, a resolução que o arquivo informa (*não informa*, ou 72 e 96 com a indicação de que valem como não informados), o tamanho natural em mm na resolução com que é diagramado e o ppi com que é impresso onde a diagramação atual o coloca (o menor, quando é colocado mais de uma vez). Abaixo do mínimo do preflight, aparece no estilo de aviso, e abaixo do crítico, no estilo crítico, com **Abrir em Verificações** num livro preparado para impressão. **Resolução** define o ppi próprio da imagem (`bitmap.resolution`; veja [Formato do documento › Tamanho do bitmap](/pt/docs/document-format-resources#tamanho-do-bitmap)), e **Usar os … ppi do arquivo** o preenche a partir do arquivo. Uma imagem enviada guarda a resolução que o arquivo informa (`bitmap.fileResolution`).
-- **Vídeo**: num recurso de vídeo ([Formato do documento › Vídeos](/pt/docs/document-format-resources#vídeos)):
+- **Vídeo**: num recurso de vídeo ([Formato do documento › Vídeos](/pt/docs/document-format-videos#vídeos)):
   - **Origem**: *YouTube*, *Vimeo* ou *Arquivo*.
   - **Endereço do vídeo** (YouTube, Vimeo): qualquer link do vídeo. Quando ele indica um vídeo novo, o pôster, o tamanho do quadro e o título são buscados na plataforma (o título vira o texto alternativo quando este está vazio); **Buscar o pôster de novo** repete a busca. Um link que não indica nenhum vídeo da plataforma é sinalizado sob o campo.
   - **Arquivo de vídeo** (Arquivo): o campo de envio de um arquivo MP4, WebM, Ogg ou QuickTime, com formato, tamanho e duração. Um primeiro pôster é tirado a um décimo do vídeo. **Quadro do pôster** reproduz o arquivo: pare ou arraste até o quadro que você quer impresso e pressione **Usar este quadro como pôster**. **Endereço de produção**: onde o vídeo publicado vai estar (`https://…`), aberto pelo código QR e pelo link do PDF; sem ele, o impresso não ganha código QR nem link.
