@@ -23,7 +23,8 @@ export function isTabStopAlign(value: unknown): value is TabStopAlign {
 /** A length written as text (`120mm`, `3.5cm`, `2em`; a bare number is in
  *  points), or undefined. */
 export function parseLengthText(text: string): Dimension | undefined {
-  const m = /^\s*(-?\d+(?:\.\d+)?|-?\.\d+)\s*(cm|mm|in|pt|px|em|rem)?\s*$/i.exec(text);
+  // Trimmed first: one run of spaces is left, between the number and its unit.
+  const m = /^(-?\d+(?:\.\d+)?|-?\.\d+)\s*(cm|mm|in|pt|px|em|rem)?$/i.exec(text.trim());
   if (!m) return undefined;
   const value = Number(m[1]);
   if (!Number.isFinite(value)) return undefined;
