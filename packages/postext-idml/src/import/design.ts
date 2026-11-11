@@ -15,6 +15,7 @@ import { apply, boxHeight, boxWidth, decompose, isRectangle, multiply, pathExten
 import { transformPaths } from '../resolve/geometry.js';
 import type { Context } from './context.js';
 import { attributeValue, cleanText } from './escape.js';
+import { firstLineShift, frameSetup, fromTop, openingLines } from './fidelity/baseline.js';
 import { boxLook, itemProps, radiusOf } from './objects.js';
 import { pictureResource } from './pictures.js';
 import { BLACK, pt } from './values.js';
@@ -95,7 +96,7 @@ export function placeholderText(ctx: Context, paragraphs: readonly IdmlParagraph
             flush();
             line += '{totalPages}';
           } else pending += i.result;
-        } else if (i.kind !== 'special' && i.kind !== 'destination' && i.kind !== 'indexMark') ctx.rep.add('masterTextObjects', 'loss', 'A note, a table or an anchored object in master text is left out', i.kind);
+        } else if (i.kind !== 'special' && i.kind !== 'destination' && i.kind !== 'indexMark') ctx.rep.add('masterTextObjects', 'loss', 'A note, a table or an anchored object in the text of a master frame is left out: the running head prints the words about it only', i.kind);
       }
     }
     flush();
@@ -165,6 +166,16 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
     ctx.rep.add('hiddenObjects', 'info', 'Hidden objects are left out (hiddenObjects: "include" keeps them)', o.where);
     return out;
   }
+  // A master item on a layer that is switched off, or set not to print,
+  // is left out as a page's own would be.
+  if (item.layer !== undefined && !ctx.opt.hiddenLayers && ctx.doc.layers.some((l) => l.self === item.layer && !l.visible)) {
+    ctx.rep.add('hiddenLayers', 'info', 'Text on hidden layers is left out (hiddenLayers: "include" keeps it)', o.where);
+    return out;
+  }
+  if (item.nonprinting && !ctx.opt.nonPrinting) {
+    ctx.rep.add('nonPrinting', 'info', 'Non-printing objects are left out (nonPrinting: "include" keeps them)', o.where);
+    return out;
+  }
   if (item.children.length) {
     item.children.forEach((c, n) => masterElements(ctx, c, { ...o, toPage: multiply(o.toPage, c.transform), id: `${o.id}-${n + 1}` }, out));
     return out;
@@ -187,10 +198,14 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
     const look = ctx.looks.of(first);
     const content = placeholderText(ctx, story.paragraphs, o.id.replace(/[^A-Za-z0-9]/g, ''), o.words);
     if (content) {
-      const [top, left, bottom, right] = item.textFrame!.inset;
+      const setup = frameSetup(ctx, item);
+      const [top, left, bottom, right] = setup.inset;
       const inner: Box = { left: box.left + left, top: box.top + top, right: box.right - right, bottom: box.bottom - bottom };
+      // The first baseline where the master has it (`fidelity/baseline`).
+      if (fromTop(setup)) inner.top += firstLineShift(ctx, setup, openingLines(ctx, story.paragraphs), o.where);
+      inner.bottom = Math.max(inner.bottom, inner.top + look.cf.leading);
       const colour: ColorValue = ctx.palette.colour(look.cf.fillColor, look.cf.fillTint, o.where) ?? BLACK;
-      const v = item.textFrame!.verticalJustification;
+      const v = setup.verticalJustification;
       out.push({
         kind: 'text',
         id: `${o.id}-text`,
@@ -213,6 +228,6 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
       });
     }
   }
-  if (item.textPaths.length) ctx.rep.add('textOnPath', 'loss', 'Text set on a path is left out of master artwork', o.where);
+  if (item.textPaths.length) ctx.rep.add('masterTextOnPath', 'loss', 'Text set on a path of a master item is left out: the page shows the path\'s shape without its words', o.where);
   return out;
 }

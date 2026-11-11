@@ -17,6 +17,9 @@ export interface Chunk {
   /** Heading level, and its plain title. */
   level?: number;
   title?: string;
+  /** A chapter of this title starts here (a bookmark of a document with
+   *  no headings): the chunk itself prints nothing. */
+  chapter?: string;
 }
 
 export interface BlockEnv {
@@ -32,14 +35,15 @@ export interface BlockEnv {
   counters?: Map<string, number[]>;
   /** Blocks set after a paragraph of the story, by its index: what
    *  stands beside it on the page. `-1`: before the first. */
-  insert?: Map<number, string[]>;
+  insert?: Map<number, (string | Chunk)[]>;
   /** Attributes every level-1 heading carries (the words of the running
    *  heads). */
   headingAttrs?: string[];
 }
 
-export function joinChunks(chunks: readonly Chunk[]): string {
+export function joinChunks(all: readonly Chunk[]): string {
   let out = '';
+  const chunks = all.filter((c) => c.chapter === undefined);
   chunks.forEach((c, n) => {
     if (n > 0) out += chunks[n - 1]!.kind === 'list' && c.kind === 'list' ? '\n' : '\n\n';
     out += c.text;
@@ -99,7 +103,8 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
     out.push(c);
     flushNotes();
   };
-  for (const b of env.insert?.get(-1) ?? []) push({ kind: 'block', text: b });
+  const inserted = (b: string | Chunk): Chunk => (typeof b === 'string' ? { kind: 'block', text: b } : b);
+  for (const b of env.insert?.get(-1) ?? []) push(inserted(b));
   // Empty paragraphs are space the designer typed.
   let empties = 0;
   let started = false;
@@ -115,7 +120,7 @@ export function blocksOf(ctx: Context, paragraphs: readonly IdmlParagraph[], env
 
   paragraphs.forEach((para, index) => {
     const placed = (): void => {
-      for (const b of env.insert?.get(index) ?? []) push({ kind: 'block', text: b });
+      for (const b of env.insert?.get(index) ?? []) push(inserted(b));
     };
     const look = ctx.looks.of(para);
     if (isEmpty(para) && !para.runs.some((r) => r.content.some((i) => i.kind === 'table' || i.kind === 'item' || i.kind === 'footnote' || i.kind === 'endnote'))) {

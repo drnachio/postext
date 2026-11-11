@@ -30,8 +30,10 @@ describe('the reference document as composed pages', () => {
     const r = asPages();
     const [p1, p2] = r.config.pageTemplates!;
     const t1 = p1!.frames!.find((f) => f.name === 't1')!;
-    // The first frame of the thread: 48 pt from the left, 54 from the top, two columns.
-    expect(t1.placement).toMatchObject({ anchor: { to: 'container', edge: 'top-left' }, offset: { x: { value: 48, unit: 'pt' }, y: { value: 54, unit: 'pt' } } });
+    // The first frame of the thread: 48 pt from the left, two columns. The document has it 54 pt
+    // from the top with its 22 pt title on the font's ascent (15.84 pt under the top); Postext
+    // sets a baseline 0.8 of the leading (26 pt) under the top, so the frame stands 5 pt higher.
+    expect(t1.placement).toMatchObject({ anchor: { to: 'container', edge: 'top-left' }, offset: { x: { value: 48, unit: 'pt' }, y: { value: 49, unit: 'pt' } } });
     expect(t1).toMatchObject({ columns: 2, columnGap: { value: 14, unit: 'pt' } });
     expect(t1.overflow?.continueIn).toBe('page:{attr.to_t1}#t1');
     expect(markdownOf(r)).toMatch(/::::page\{template="page-1" id="p1" to_t1="p2"\}/);
@@ -88,7 +90,7 @@ describe('the reference document as composed pages', () => {
 
   it('reports what it reads differently, by name', () => {
     const r = asPages();
-    for (const id of ['gradient', 'effects', 'opacity', 'textOnPath', 'grepStyles', 'nestedStyleApplied', 'hiddenLayers', 'hiddenObjects', 'nonPrinting', 'pasteboard', 'hiddenConditionalText', 'editorialNotes', 'textVariables', 'crossReferenceStatic', 'spotColour', 'bookmarks', 'bleed']) expect(finding(r, id), id).toBeDefined();
+    for (const id of ['gradient', 'effects', 'opacity', 'textOnPath', 'grepStyles', 'nestedStyleApplied', 'hiddenLayers', 'hiddenObjects', 'nonPrinting', 'pasteboard', 'hiddenConditionalText', 'editorialNotes', 'crossReferenceLive', 'anchoredObjectFrameEstimated', 'firstBaselineEstimated', 'spotColour', 'bookmarks', 'bleed']) expect(finding(r, id), id).toBeDefined();
     expect(r.report.verdict).toBe('lossy');
     expect(r.report.styles.find((s) => s.style === 'Heads/H1')).toMatchObject({ target: 'heading 1', reason: 'style name' });
     expect(r.report.styles.find((s) => s.style === 'Body')?.target).toBe('body text');
@@ -138,7 +140,7 @@ describe('the reference document as a flowing book', () => {
     expect(md).toMatch(/^- .*First bullet/m);
     expect(md).toMatch(/^3\. .*Step three/m);
     expect(md).toMatch(/:swatch\{color="[^"]+" size=10pt border=none\}/);
-    expect(md).toMatch(/:::callout\{type="[^"]+"\}\n[\s\S]*Anchored sidebar/);
+    expect(md).toMatch(/:::callout\{type="[^"]+" wrap="left" width=0.48\}\n[\s\S]*Anchored sidebar/);
     expect(parse(md).some((b) => b.type === 'heading')).toBe(true);
   });
 

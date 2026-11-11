@@ -36,9 +36,9 @@ function tabStops(l: Look): PostextTabStop[] | undefined {
 /** What Postext's styles cannot say of a look, counted by style. */
 function reportLook(ctx: Context, l: Look): void {
   const at = `${l.path}: ${l.sample}`;
-  if (l.pf.ruleAbove || l.pf.ruleBelow) ctx.rep.add('paragraphRules', 'loss', 'Paragraph rules (a line above or below a paragraph) are not drawn: Postext paragraph styles have no rules', at, l.paragraphs);
-  if (l.pf.shading) ctx.rep.add('paragraphShading', 'loss', 'Paragraph shading is not drawn: Postext shades boxes, not paragraphs', at, l.paragraphs);
-  if (l.pf.border) ctx.rep.add('paragraphBorder', 'loss', 'Paragraph borders are not drawn', at, l.paragraphs);
+  if (l.pf.ruleAbove || l.pf.ruleBelow) ctx.rep.add('paragraphRules', 'loss', 'Paragraph rules (a line above or below a paragraph) are not drawn: the paragraph is set without them, at the same place (Postext paragraph styles have no rules)', at, l.paragraphs);
+  if (l.pf.shading) ctx.rep.add('paragraphShading', 'loss', 'Paragraph shading is not drawn: the paragraph is set on the page\'s own ground (Postext shades boxes, not paragraphs)', at, l.paragraphs);
+  if (l.pf.border) ctx.rep.add('paragraphBorder', 'loss', 'Paragraph borders are not drawn: the paragraph is set without a frame about it', at, l.paragraphs);
   if (l.pf.spanColumns && l.role !== 'heading') ctx.rep.add('spanColumns', 'warning', 'A paragraph that spans the columns of its frame is set in its column (only headings span in Postext)', at, l.paragraphs);
   if (l.pf.lastLineIndent) ctx.rep.add('lastLineIndent', 'info', 'A last-line indent is not carried', at, l.paragraphs);
   if (l.cf.horizontalScale !== 100 || l.cf.verticalScale !== 100) ctx.rep.add('glyphScaling', 'warning', 'Horizontally or vertically scaled characters are set at their natural width', at, l.paragraphs);

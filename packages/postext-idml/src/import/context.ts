@@ -3,7 +3,7 @@
 // (resources, files, styles of inline marks).
 
 import type { ChipStyleConfig, ColorValue, MarkStyleConfig, Resource } from 'postext';
-import type { IdmlDestination, IdmlDocument, IdmlHyperlink, IdmlPage, IdmlParagraph, IdmlRun } from '../model/document.js';
+import type { IdmlDestination, IdmlDocument, IdmlHyperlink, IdmlPage, IdmlPageItem, IdmlParagraph, IdmlRun } from '../model/document.js';
 import { findOrdered, readingOrder, type OrderedStory } from '../resolve/order.js';
 import { Ids, idOf } from './escape.js';
 import { Looks } from './looks.js';
@@ -55,6 +55,15 @@ export class Context {
   noteParagraph: IdmlParagraph | undefined;
   /** The document's index holds entries: the book prints one. */
   hasIndexMarks = false;
+  /** The paragraph each text or paragraph destination of the text the
+   *  book sets stands in (`fidelity/crossref`). */
+  readonly destinationParagraph = new Map<string, IdmlParagraph>();
+  /** Stories joined to another (a paragraph that goes on in the next
+   *  frame), by their `Self`: the joined story. */
+  readonly alias = new Map<string, OrderedStory>();
+  /** Anchored objects set in a frame of their own on the page: the text
+   *  they are anchored in leaves them out. */
+  readonly placedAnchors = new Set<IdmlPageItem>();
 
   constructor(readonly doc: IdmlDocument, readonly options: IdmlImportOptions) {
     this.palette = new Palette(doc, this.rep);
@@ -127,6 +136,13 @@ export class Context {
       this.rep.add('conditionalText', 'info', 'Conditional text is set as ordinary text: Postext has no conditions', sample());
     }
     return true;
+  }
+
+  /** `runShown` without the report: whether the book prints the run. */
+  runPrinted(run: IdmlRun): boolean {
+    if (run.change && (this.opt.rejectChanges ? run.change === 'inserted' || run.change === 'moved' : run.change === 'deleted')) return false;
+    const off = run.hidden || run.conditions.some((c) => this.hiddenConditions.has(c));
+    return !off || this.opt.allConditions;
   }
 
   /** A mark style that only colours its text. */

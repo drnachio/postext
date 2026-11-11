@@ -1,12 +1,10 @@
-// The page of the book: size, margins, columns, binding, bleed, page
-// numbering, and the running heads the masters draw.
+// The page of the book: size, margins, columns, binding, bleed and page
+// numbering (the running heads the masters draw: `fidelity/masters`).
 
-import type { DesignElement, PageNumberingConfig, PostextConfig } from 'postext';
+import type { PageNumberingConfig, PostextConfig } from 'postext';
 import type { IdmlPage, IdmlSection, IdmlSpread } from '../model/document.js';
 import { pageSize } from '../resolve/geometry.js';
-import { masterItems } from '../resolve/masters.js';
 import type { Context } from './context.js';
-import { masterElements, type MasterWords } from './design.js';
 import { mm } from './values.js';
 
 export const allPages = (ctx: Context): IdmlPage[] => ctx.doc.spreads.flatMap((s) => s.pages);
@@ -105,32 +103,4 @@ export function parityOf(ctx: Context, page: IdmlPage): 'odd' | 'even' | undefin
   // Left-bound: the right page is the recto (odd). Right-bound: the left.
   const recto = ctx.doc.preferences.rightToLeft ? 'left' : 'right';
   return page.side === recto ? 'odd' : 'even';
-}
-
-/** Running heads and folios of a flowing book: what the main master
- *  draws on its pages, split between the head and the foot. */
-export function runningHeads(ctx: Context, words: MasterWords): Pick<PostextConfig, 'header' | 'footer'> {
-  const main = mainMaster(ctx);
-  if (!main || !ctx.opt.masterItems) return { header: { elements: [] }, footer: { elements: [] } };
-  const header: DesignElement[] = [];
-  const footer: DesignElement[] = [];
-  // One document page of each side shows what the master draws there.
-  const seen = new Set<string>();
-  for (const page of bodyPages(ctx)) {
-    if (seen.has(page.side)) continue;
-    seen.add(page.side);
-    const parity = parityOf(ctx, page);
-    const height = pageSize(page).height;
-    masterItems(ctx.doc, page).forEach((mi, n) => {
-      const where = `master ${main.name ?? ''}`;
-      const els = masterElements(ctx, mi.item, { toPage: mi.toPage, id: `m${page.side === 'left' ? 'l' : page.side === 'right' ? 'r' : ''}${n + 1}`, ...(parity ? { parity } : {}), words, where });
-      const mid = mi.box ? (mi.box.top + mi.box.bottom) / 2 : 0;
-      (mid > height / 2 ? footer : header).push(...els);
-    });
-  }
-  const others = new Set(allPages(ctx).map((p) => p.appliedMaster).filter((m) => m && m !== main.self));
-  if (others.size) ctx.rep.add('otherMasters', 'warning', 'In a flowing book every page takes the running heads and artwork of the main master; pages of other masters (and pages with none) are not told apart', [...others].map((m) => ctx.doc.masterSpreads.find((x) => x.self === m)?.name ?? m).join(', '));
-  // A document whose master draws nothing has no running heads: say so,
-  // or the book would print Postext's own.
-  return { header: { elements: header }, footer: { elements: footer } };
 }

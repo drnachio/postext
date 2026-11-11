@@ -151,6 +151,10 @@ export function pageItemOf(el: XmlElement, depth = 0): IdmlPageItem {
   const element = localName(el.name);
   const kind = SHAPES[element] ?? 'Other';
   const p = propsOf(el);
+  // What the frame sets of its text frame options itself, as written: the
+  // rest comes from its object style (`import/fidelity/baseline`).
+  const framePreference = child(el, 'TextFramePreference');
+  if (framePreference) p.properties.TextFramePreference = framePreference;
   const a = el.attrs;
   const ref = (v: string | undefined) => (v && v !== 'n' ? v : undefined);
   const item: IdmlPageItem = {
