@@ -136,6 +136,23 @@ export interface ViewerStatus extends ViewerSettings {
   videos?: ViewerVideo[];
 }
 
+/** PDF: the file on screen read back and set against what a printer
+ *  needs, as the Check for print dialog shows it (#1474). */
+export interface ViewerPrintCheck {
+  /** `critical`, `warning`, or `ok`: no problems in what was checked. */
+  verdict: 'critical' | 'warning' | 'ok';
+  verdictText: string;
+  /** What the check does not read from the file. */
+  notChecked: string;
+  /** The file read back: format, fonts, inks. */
+  items: { id: string; group: string; severity: string; title: string; detail?: string }[];
+  /** The preflight's findings on the rendered pages and the PDF's font
+   *  warnings. */
+  findings: { kind: string; severity: string; title: string; detail: string; page?: number }[];
+  /** The preflight ran (the book is set up for print). */
+  preflightRan: boolean;
+}
+
 export interface ViewerControls {
   status: () => ViewerStatus;
   set: (settings: ViewerSettings) => void;
@@ -155,6 +172,8 @@ export interface ViewerControls {
   file?: () => { bytes: Uint8Array; name: string; mime: string } | null;
   download?: () => void;
   print?: () => void;
+  /** PDF: read the file on screen back for print. */
+  checkForPrint?: () => Promise<ViewerPrintCheck>;
   /** Folio: the view the settings give, and the view on screen kept as
    *  the book's (`folio.tilt`, `folio.yaw`). */
   resetView?: () => void;
@@ -195,6 +214,7 @@ const OPTIONAL: Record<Exclude<keyof ViewerControls, 'status' | 'set' | 'regener
   file: true,
   download: true,
   print: true,
+  checkForPrint: true,
   resetView: true,
   saveView: true,
   setMagnification: true,

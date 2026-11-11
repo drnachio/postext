@@ -10,12 +10,13 @@ import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { MAX_STATUS_ENTRIES, compactStatus, whenViewerIdle } from '../viewerStatus.js';
 import { controlsOf } from './view.js';
 
-const ACTIONS = ['regenerate', 'print', 'download', 'play_video', 'stop_video'] as const;
+const ACTIONS = ['regenerate', 'print', 'download', 'check', 'play_video', 'stop_video'] as const;
 type ViewerAction = (typeof ACTIONS)[number];
 
 /** The viewers that take each action; every viewer when not listed. */
 const ACTION_VIEWERS: Partial<Record<ViewerAction, readonly ViewportTab[]>> = {
   print: ['pdf'],
+  check: ['pdf'],
   download: ['pdf', 'epub', 'scorm'],
   play_video: ['folio', 'html'],
   stop_video: ['folio', 'html'],
@@ -46,12 +47,12 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
   const runViewer: WebMcpTool = {
     name: 'sandbox_run_viewer',
     title: "Sandbox: run a viewer's command",
-    description: "Press a button of a viewer's toolbar, or play a video on its pages. regenerate lays the pages of the Canvas, Folio or HTML viewer out again, or writes the PDF, the EPUB or the SCORM package again, and waits for it: the answer carries the viewer's status (pages, file size, an EPUB's warnings). print opens the browser's print dialog on the PDF on screen, for the reader to confirm. download saves the PDF or EPUB on screen through the browser, as it is, even when the book has changed since (sandbox_export writes a fresh file and can hand its bytes back). On the SCORM tab, download writes the package of the chapters and sections ticked and saves it. play_video plays a video of the pages in the Folio (on the open spread) or the HTML viewer, as a click on it does: the one of a resource, on a page or at a point, or the first one on show; stop_video stops them. A viewer other than the one on screen is switched to first. sandbox_set_view changes a viewer's settings; sandbox_go_to_page turns its pages.",
+    description: "Press a button of a viewer's toolbar, or play a video on its pages. regenerate lays the pages of the Canvas, Folio or HTML viewer out again, or writes the PDF, the EPUB or the SCORM package again, and waits for it: the answer carries the viewer's status (pages, file size, an EPUB's warnings). print opens the browser's print dialog on the PDF on screen, for the reader to confirm. check reads the PDF on screen back from its bytes and answers with what the Check for print button shows: a verdict (critical, warning, or ok: no problems in what was checked, which is never a promise the printer will take it), the file's items (PDF/X and output intent, trim and bleed, fonts embedded, plates, RGB with and without a profile, transparency), the preflight's findings on the rendered pages and what the check does not read. download saves the PDF or EPUB on screen through the browser, as it is, even when the book has changed since (sandbox_export writes a fresh file and can hand its bytes back). On the SCORM tab, download writes the package of the chapters and sections ticked and saves it. play_video plays a video of the pages in the Folio (on the open spread) or the HTML viewer, as a click on it does: the one of a resource, on a page or at a point, or the first one on show; stop_video stops them. A viewer other than the one on screen is switched to first. sandbox_set_view changes a viewer's settings; sandbox_go_to_page turns its pages.",
     inputSchema: {
       type: 'object',
       properties: {
         viewer: { type: 'string', enum: VIEWPORT_TABS, description: 'The viewer tab to act in; the one on screen when left out. Another one is switched to.' },
-        action: { type: 'string', enum: ACTIONS, description: 'regenerate: every viewer. print: pdf. download: pdf, epub, scorm. play_video, stop_video: folio, html.' },
+        action: { type: 'string', enum: ACTIONS, description: 'regenerate: every viewer. print, check: pdf. download: pdf, epub, scorm. play_video, stop_video: folio, html.' },
         wait: { type: 'boolean', description: 'regenerate: wait until the pages are laid out or the file is written (default true; a PDF or an EPUB of a long book takes minutes). false answers at once, with the status as the work starts.' },
         resource: { type: 'string', description: 'play_video: the id of the video resource to play.' },
         page: { type: 'integer', description: 'play_video: the page the video is on, by the number printed on it.' },
@@ -117,6 +118,16 @@ export function viewerCommandTools(host: SandboxToolHost): WebMcpTool[] {
         return answer({
           printing: true,
           note: `The browser's print dialog opens on the PDF for the reader to confirm; nothing is printed from here.${stale ? ' The book changed since this PDF was written: regenerate first to print it as it is now.' : ''}`,
+        });
+      }
+
+      if (action === 'check') {
+        fileOnScreen('pdf', controls);
+        if (!controls.checkForPrint) throw new ToolError('The PDF viewer cannot check its file from here.');
+        const check = await controls.checkForPrint();
+        return answer({
+          check,
+          ...(controls.status().stale === true ? { note: 'The book changed since this PDF was written: regenerate, then check again.' } : {}),
         });
       }
 

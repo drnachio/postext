@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Previsualitzacions',
   description: "Les pestanyes Canvas, PDF, Folio, HTML, EPUB 3 i SCORM de l'àrea de previsualització: què mostra cadascuna i què s'hi pot fer",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '16 min',
   order: 43,
   parent: 'sandbox',
@@ -94,6 +94,7 @@ Una barra d'eines flotant a la cantonada inferior dreta de l'àrea ofereix:
 
 - **Regenerar** (icona `RefreshCw`): torna a generar el PDF a partir del Markdown i la configuració actuals. És útil després de canviar un paràmetre que no provoca una recomposició automàtica, o quan les fonts s'acaben de carregar.
 - **Baixar** (icona `Download`): desa el PDF actual al disc. El nom del fitxer surt del primer encapçalament H1 del document (amb `document.pdf` com a valor per defecte).
+- **Comprova per a impremta** (icona `ShieldCheck`): torna a llegir el PDF actual a partir dels seus propis bytes, al *worker*, i el compara amb el que demana una impremta: el fitxer (versió, pàgines, mida, norma PDF/X i condició de sortida, format final, sang, caixes de pàgina, marques de tall, un nombre de pàgines que no és múltiple de 4), les fonts (totes incrustades o quines no), les tintes (planxes CMYK i de tintes planes; RGB sense perfil i RGB amb perfil, en pintura vectorial o en imatges; transparències en PDF/X-1a; sobreimpressió) i els problemes de reproducció de la comprovació prèvia, agrupats per tipus amb les seves pàgines. A dalt, un veredicte diu si hi ha problemes que espatllaran la impressió, punts per revisar o cap problema en el que s'ha comprovat; a sota, el que la comprovació no llegeix del fitxer (resolució de les imatges, tinta total a les imatges, filets massa fins, reventat). Un fitxer que no s'ha pogut tornar a llegir mai no es dona per bo, ni tampoc un de desactualitzat. Des d'allà es baixa, es regenera un PDF desactualitzat o s'obre **Revisió**. **Baixar** continua desant el fitxer directament. Els agents fan la mateixa comprovació amb `sandbox_run_viewer` i l'acció `check`.
 - **Imprimir** (icona `Printer`): obre el diàleg d'impressió del navegador sobre el visor de PDF integrat, que en la majoria de navegadors permet imprimir o tornar a desar com a PDF.
 - **Capítol actual / Llibre complet** (selector a l'esquerra de la barra de pestanyes, en llibres amb més d'un capítol): genera tots els capítols com un únic PDF continu, en lloc del capítol actiu a continuació dels anteriors (l'opció per defecte). Si el canvies, el PDF es torna a generar. El canvas té el seu propi selector (consulta [Llibres i capítols](/ca/docs/sandbox-books-saving#llibres-i-capítols)).
 
