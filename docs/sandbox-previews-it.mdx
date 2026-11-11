@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Anteprime',
   description: 'Le schede Canvas, PDF, Folio, HTML, EPUB 3 e SCORM dell’area di visualizzazione principale: che cosa mostra ciascuna e che cosa permette di fare',
   lang: 'it',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-10',
   readingTime: '15 min',
   order: 43,
   parent: 'sandbox',
@@ -94,6 +94,7 @@ Una barra degli strumenti fluttuante in basso a destra nell’area di visualizza
 
 - **Ricalcola** (icona `RefreshCw`): ricostruisce il PDF dal markdown e dalla configurazione correnti. Utile dopo aver cambiato un’impostazione che non provoca da sola una ricostruzione, o quando i font hanno finito di caricarsi.
 - **Scarica** (icona `Download`): salva su disco il PDF corrente. Il nome del file deriva dal primo titolo H1 del documento (con `document.pdf` come ripiego).
+- **Verifica per la stampa** (icona `ShieldCheck`): rilegge il PDF corrente dai suoi stessi byte, nel *worker*, e lo confronta con ciò che chiede una tipografia: il file (versione, pagine, dimensione, norma PDF/X e condizione di output, formato rifilato, abbondanza, riquadri di pagina, segni di taglio, un numero di pagine non multiplo di 4), i font (tutti incorporati, o quali no), gli inchiostri (lastre CMYK e di tinte piatte; RGB senza profilo e RGB con profilo, in pittura vettoriale o nelle immagini; trasparenze in PDF/X-1a; sovrastampa) e i problemi di riproduzione del preflight, raggruppati per tipo con le loro pagine. In alto, un verdetto dice se ci sono problemi che rovineranno la stampa, punti da rivedere o nessun problema in ciò che è stato verificato; sotto, ciò che la verifica non legge dal file (risoluzione delle immagini, inchiostro totale nelle immagini, filetti troppo sottili, trapping). Un file che non è stato possibile rileggere non viene mai approvato, e nemmeno uno non aggiornato. Da lì lo si scarica, si rigenera un PDF non aggiornato o si apre **Verifiche**. **Scarica** continua a salvare il file direttamente. Gli agenti eseguono la stessa verifica con `sandbox_run_viewer` e l’azione `check`.
 - **Stampa** (icona `Printer`): apre la finestra di stampa del browser sul visualizzatore PDF incorporato, che nella maggior parte dei browser permette di stampare o di salvare di nuovo come PDF.
 - **Capitolo corrente / Libro intero** (selettore a sinistra della barra delle schede, nei libri con più di un capitolo): produce tutti i capitoli come un unico PDF continuo, invece del solo capitolo attivo, che prosegue dopo i precedenti (il comportamento predefinito). Cambiarlo rigenera il PDF. Il canvas ha un selettore tutto suo (vedi [Libri e capitoli](/it/docs/sandbox-books-saving#libri-e-capitoli)).
 
