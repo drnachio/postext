@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ChevronDown, Copy, FilePlus, Upload, X, Files, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, Copy, FilePlus, FileInput, Upload, X, Files, ChevronRight } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
@@ -16,6 +16,7 @@ import { presetCoverFor } from '../covers/autoCover.js';
 import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
+import { IdmlImportDialog, type IdmlPickedFile } from '../idml/IdmlImportDialog.js';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -65,6 +66,14 @@ export function ProjectsPanel() {
     void openBookThenShowChapters(open, { getPanel: () => activePanelRef.current, showChapters });
   };
   const importRef = useRef<HTMLInputElement>(null);
+  const idmlRef = useRef<HTMLInputElement>(null);
+  // An InDesign document picked for a new book: the dialog reads it.
+  const [idmlFile, setIdmlFile] = useState<IdmlPickedFile | null>(null);
+  const handleIdml = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (file) setIdmlFile({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+  };
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const [pendingImport, setPendingImport] = useState<{ bytes: Uint8Array; fileName: string; locales: string[]; own: string } | null>(null);
@@ -174,6 +183,7 @@ export function ProjectsPanel() {
               <MenuItem icon={<FilePlus size={13} />} onClick={() => { void create({ from: 'blank' }); }}>{labels.projectNewBlankShort}</MenuItem>
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
+              <MenuItem icon={<FileInput size={13} />} onClick={() => idmlRef.current?.click()}>{labels.idmlImport}</MenuItem>
             </Menu>
             {/* No `accept` filter (#1183): macOS gives `.postext` only a
                 dynamic type, and the picker greys the files out now and
@@ -186,8 +196,16 @@ export function ProjectsPanel() {
               className="hidden"
               aria-hidden="true"
             />
+            {/* No `accept` filter either: a file that is no IDML package
+                is named in the dialog, in the reader's words. */}
+            <input ref={idmlRef} type="file" onChange={handleIdml} className="hidden" aria-hidden="true" />
           </>
         }
+      />
+      <IdmlImportDialog
+        file={idmlFile}
+        onClose={() => setIdmlFile(null)}
+        onCreated={() => { if (activePanelRef.current === 'projects') showChapters(); }}
       />
       {stale && inPresetMode && (
         <div

@@ -17,6 +17,7 @@ import { bookIdentity, fileParam, pendingQuestion } from './book.js';
 import { readFileInput, type FileInput } from './resources.js';
 import { controlsOf } from './view.js';
 import { VARIANT_PARAM, exportWordFile } from './wordEdits.js';
+import { IDML_EXPORT_PARAMS, exportIdmlFile } from './idml.js';
 
 /** Largest file handed back inside a result, in bytes; larger ones are
  *  downloaded. */
@@ -415,15 +416,15 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
   const exportBook: WebMcpTool = {
     name: 'sandbox_export',
     title: 'Sandbox: export the book',
-    description: "Write the book on screen to a file: pdf (the chapter on screen or the whole book, print-ready), epub (reflowable, or fixed to the printed pages), postext (the whole project in one archive, to open again or hand to the postext command line), docx (Word or Google Docs, editable flowing text: semantic, content only in plain styles, or formatted, the same text with the book's design; edited there, it comes back through sandbox_apply_word_edits), markdown (the chapter's source) or config (the design settings as JSON). A postext archive can also be written of a book that is not on screen (book): a project as it was last saved, or a sample as it ships, in one of its languages. The file is downloaded by the reader's browser, or — pdf, epub and docx — handed back base64-encoded with deliver: \"data\". Exporting a pdf or an epub shows that viewer tab.",
+    description: "Write the book on screen to a file: pdf (the chapter on screen or the whole book, print-ready), epub (reflowable, or fixed to the printed pages), postext (the whole project in one archive, to open again or hand to the postext command line), docx (Word or Google Docs, editable flowing text: semantic, content only in plain styles, or formatted, the same text with the book's design; edited there, it comes back through sandbox_apply_word_edits), idml (the whole book as an InDesign Markup package, laid out as the PDF is: lines kept or left to InDesign, pictures embedded or linked, the fonts beside it on request), markdown (the chapter's source) or config (the design settings as JSON). A postext archive can also be written of a book that is not on screen (book): a project as it was last saved, or a sample as it ships, in one of its languages. The file is downloaded by the reader's browser, or — pdf, epub, docx and idml — handed back base64-encoded with deliver: \"data\". Exporting a pdf or an epub shows that viewer tab.",
     inputSchema: {
       type: 'object',
       properties: {
-        format: { type: 'string', enum: ['pdf', 'epub', 'postext', 'docx', 'markdown', 'config'] },
+        format: { type: 'string', enum: ['pdf', 'epub', 'postext', 'docx', 'idml', 'markdown', 'config'] },
         scope: { type: 'string', enum: ['chapter', 'book'], description: 'pdf, docx: the chapter on screen or the whole book (default: as the PDF tab stands; docx: book).' },
         epubLayout: { type: 'string', enum: ['reflowable', 'fixed'], description: 'epub: the rendition (default: as the EPUB tab stands).' },
         chapter: { type: ['integer', 'string'], description: 'markdown: the chapter (position from 1, title or id); the one on screen when left out.' },
-        deliver: { type: 'string', enum: ['download', 'data'], description: 'download (default) saves the file through the browser; data hands a pdf, an epub or a docx back in the result.' },
+        deliver: { type: 'string', enum: ['download', 'data'], description: 'download (default) saves the file through the browser; data hands a pdf, an epub, a docx or an idml back in the result.' },
         book: {
           type: 'object',
           description: 'postext: another book than the one on screen, exported without opening it, as its row of the Books panel does. A sample is exported as it ships, not with the reader\'s edits (open it, or duplicate it, to export those).',
@@ -436,6 +437,7 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
           additionalProperties: false,
         },
         variant: VARIANT_PARAM,
+        ...IDML_EXPORT_PARAMS,
       },
       required: ['format'],
       additionalProperties: false,
@@ -444,13 +446,15 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
       const s = store.getSnapshot();
       const format = args.format as string;
       const deliver = (args.deliver as string | undefined) ?? 'download';
-      if (deliver === 'data' && format !== 'pdf' && format !== 'epub' && format !== 'docx') {
-        throw new ToolError(`Only a pdf, an epub or a docx is handed back as data. The ${format} is downloaded; its content is also at hand through ${format === 'markdown' ? 'sandbox_read_text' : format === 'config' ? 'sandbox_get_config' : 'the download'}.`);
+      if (deliver === 'data' && format !== 'pdf' && format !== 'epub' && format !== 'docx' && format !== 'idml') {
+        throw new ToolError(`Only a pdf, an epub, a docx or an idml is handed back as data. The ${format} is downloaded; its content is also at hand through ${format === 'markdown' ? 'sandbox_read_text' : format === 'config' ? 'sandbox_get_config' : 'the download'}.`);
       }
       if (args.book !== undefined && format !== 'postext') {
         throw new ToolError(`"book" goes with format "postext". A ${format} is written of the book on screen: open the other one first with sandbox_open_book.`);
       }
       if (args.variant !== undefined && format !== 'docx') throw new ToolError('"variant" goes with format "docx".');
+      const stray = format === 'idml' ? undefined : Object.keys(IDML_EXPORT_PARAMS).find((k) => args[k] !== undefined);
+      if (stray) throw new ToolError(`"${stray}" goes with format "idml".`);
       if (format === 'pdf' || format === 'epub') {
         if (format === 'pdf' && args.scope !== undefined && args.scope !== s.pdfScope) await dispatchAndWait(host, { type: 'SET_PDF_SCOPE', payload: args.scope as 'chapter' | 'book' });
         if (format === 'epub' && args.epubLayout !== undefined && args.epubLayout !== s.epubLayout) await dispatchAndWait(host, { type: 'SET_EPUB_LAYOUT', payload: args.epubLayout as 'fixed' | 'reflowable' });
@@ -500,6 +504,8 @@ export function libraryTools(host: SandboxToolHost): WebMcpTool[] {
         }
         case 'docx':
           return exportWordFile(host, args, bookName(), MAX_DATA_BYTES);
+        case 'idml':
+          return exportIdmlFile(host, args, bookName(), MAX_DATA_BYTES, signal);
         case 'markdown': {
           const { chapter } = chapterOf(s, args.chapter);
           const file = `${slugify(chapter.title) || 'document'}.md`;

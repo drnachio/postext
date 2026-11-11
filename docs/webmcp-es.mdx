@@ -584,9 +584,12 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   `rename` con `thisLanguageOnly: true` pone nombre solo al idioma en pantalla,
   y `set_cover` y `remove_cover` le ponen o le quitan una portada.
 - **Exportar.** `sandbox_export` escribe `pdf`, `epub`, `postext`, `docx`,
-  `markdown` o `config`. Por defecto el navegador descarga el archivo; con
-  `deliver: "data"`, un PDF, un EPUB o un archivo de Word vuelve al agente
-  codificado en base64. Con `docx`, `variant` elige `formatted` (el valor por
+  `idml`, `markdown` o `config`. Por defecto el navegador descarga el archivo;
+  con `deliver: "data"`, un PDF, un EPUB, un archivo de Word o un paquete IDML
+  vuelve al agente codificado en base64. Con `idml`, `idmlLines` (`keep` o
+  `reflow`), `idmlSpreads` (`facing` o `single`), `idmlImages` (`embed` o
+  `link`) e `idmlFonts` son las opciones del diálogo de exportación; con
+  imágenes enlazadas o con fuentes, el archivo es un `.zip`. Con `docx`, `variant` elige `formatted` (el valor por
   defecto: texto editable con el diseño del libro y las fuentes incrustadas) o
   `semantic` (solo el contenido, en estilos de Word sencillos):
 
@@ -596,6 +599,13 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
 
 - **Importar un archivo `.postext`** con `sandbox_import_book` (`inspect: true`
   dice qué idiomas trae sin importarlo).
+- **Hacer un libro a partir de un documento de InDesign** con
+  `sandbox_import_idml`. Con `dryRun: true` no crea nada y responde con lo que
+  contiene el `.idml` y con el informe de importación: la maquetación que
+  tomaría y por qué, el veredicto, los hallazgos, las fuentes que necesita el
+  libro y las imágenes enlazadas que aún faltan. `layout` elige `pages` o
+  `flow`, y `links` entrega las imágenes enlazadas, cada una emparejada por su
+  `fileName`.
 - **Traer un manuscrito de Word** con `sandbox_import_word`. Ejecútalo primero
   con `dryRun: true`: no cambia nada y responde con el informe de calidad, cada
   estilo de Word con aquello en lo que se convertiría y los capítulos y
@@ -736,6 +746,7 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **InDesign**: `sandbox_import_idml`.
 - **Preguntas**: `sandbox_answer`.
 - **La revisión**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

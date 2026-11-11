@@ -8,7 +8,7 @@
 // is `type="string"`, which is how InDesign writes its own root styles
 // (`$ID/[No paragraph style]`).
 
-import { isElement, localName, textOf, type XmlElement } from '../xml/read.js';
+import { child, isElement, localName, textOf, type XmlElement } from '../xml/read.js';
 import type { IdmlStyle, IdmlWarning, StyleKind } from '../model/document.js';
 import { listRecords, plainName, propsOf } from './props.js';
 
@@ -54,6 +54,11 @@ function nestedOf(el: XmlElement): NonNullable<IdmlStyle['nested']> {
 
 function styleOf(el: XmlElement, element: string, kind: StyleKind, groups: string[]): IdmlStyle {
   const p = propsOf(el);
+  // An object style's text frame options (insets, first baseline,
+  // vertical justification) are a child of the style, not a property:
+  // kept with the properties, as written, for the frames that apply it.
+  const framePreference = kind === 'object' ? child(el, 'TextFramePreference') : undefined;
+  if (framePreference) p.properties.TextFramePreference = framePreference;
   const self = el.attrs.Self ?? '';
   const full = plainName(el.attrs.Name);
   // `Name` carries the group path; the style's own name is what follows it.

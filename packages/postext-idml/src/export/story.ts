@@ -23,6 +23,7 @@ import {
   type TabStopDef,
   type TextProps,
 } from './parts.js';
+import { isVertical, unkerned, VERTICAL_REFLOW } from './vertical.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 const STYLE_NAMES: Record<string, string> = { body: 'Body', heading: 'Heading', list: 'List', quote: 'Quote', caption: 'Caption', footnote: 'Footnote', header: 'Header', footer: 'Footer', design: 'Design' };
@@ -106,9 +107,11 @@ function textEdges(items: readonly TextItem[]): Map<string, { left: number; righ
  *  the first line's start past it the first-line indent, the room every
  *  line leaves before the right edge the right indent. A paragraph of one
  *  line takes `basePx` (where its style starts a turnover line) as its
- *  left indent, when known. Lines of right-to-left or vertical text are not read. */
+ *  left indent, when known. Lines of right-to-left text are not read; a
+ *  vertical item's lines are read in the frame of lines (`vertical.ts`),
+ *  where the left indent is the one at a line's head. */
 function lineIndents(w: Writer, item: TextItem, edge: { left: number; right: number }, basePx: number | undefined): { left: number; first: number; right: number } {
-  const lines = item.lines.filter((l) => !l.rtl && !l.vertical);
+  const lines = item.lines.filter((l) => !l.rtl);
   if (!lines.length) return { left: 0, first: 0, right: 0 };
   const starts = lines.map((l) => l.x - edge.left);
   const left = Math.max(0, lines.length > 1 ? Math.min(...starts.slice(1)) : (basePx ?? starts[0]!));
@@ -131,7 +134,9 @@ export interface StoryPara {
   joins?: boolean;
   /** The text after it starts in the next frame of the chain. */
   frameBreak?: boolean;
-
+  /** Properties the paragraph sets beside its tab stops (a vertical
+   *  paragraph's line-breaking and spacing sets). */
+  properties?: string;
 }
 
 /** A paragraph's range: its style, what it sets beyond it, its text, and
@@ -147,7 +152,8 @@ function paraXml(p: StoryPara, end: boolean): string {
     spaceAfter: own(p.format.spaceAfter, s.spaceAfter),
   });
   const tabs = tabListXml(p.format.tabs);
-  const props = tabs !== tabListXml(s.tabs) ? `<Properties>${tabs}</Properties>` : '';
+  const set = (p.properties ?? '') + (tabs !== tabListXml(s.tabs) ? tabs : '');
+  const props = set ? `<Properties>${set}</Properties>` : '';
   const ranges = end
     ? p.ranges
     : p.frameBreak
@@ -176,15 +182,16 @@ function paraXml(p: StoryPara, end: boolean): string {
 export function storyXml(w: Writer, id: string, items: StoryItem[], frame: VDTFrame | undefined): string {
   // A story whose lines run right to left is a right-to-left story.
   const rtl = items.some((i) => i.lines.some((l) => l.rtl));
-  return storyPartXml(id, paragraphsXml(w, items, frame), rtl);
+  // One whose lines run down the page is a vertical story (`vertical.ts`).
+  return storyPartXml(id, paragraphsXml(w, items, frame), rtl, items.some(isVertical));
 }
 
 /** A story part around its paragraphs. */
-export function storyPartXml(id: string, paragraphs: string, rtl = false): string {
+export function storyPartXml(id: string, paragraphs: string, rtl = false, vertical = false): string {
   return (
     `${XML_HEAD}<idPkg:Story xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
     `<Story${attr('Self', id)} AppliedTOCStyle="n" TrackChanges="false" StoryTitle="$ID/" AppliedNamedGrid="n">` +
-    `<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="Horizontal" StoryDirection="${rtl ? 'RightToLeftDirection' : 'LeftToRightDirection'}"/>` +
+    `<StoryPreference OpticalMarginAlignment="false" OpticalMarginSize="12" FrameType="TextFrameType" StoryOrientation="${vertical ? 'Vertical' : 'Horizontal'}" StoryDirection="${rtl ? 'RightToLeftDirection' : 'LeftToRightDirection'}"/>` +
     '<InCopyExportOption IncludeGraphicProxies="true" IncludeAllResources="false"/>' +
     paragraphs +
     '</Story></idPkg:Story>'
@@ -286,10 +293,14 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
     if (justification && style.justification !== justification) local += attr('Justification', justification);
     // Leading is a character's: every range says the paragraph's own.
     const ownLeading = Math.abs(style.leading - leading) >= 0.01 ? leading : undefined;
-    const ranges = runs.map((r) => rangeXml(r, style.props, ownLeading, false, w));
+    const ranges = runs.map((r) => rangeXml(isVertical(item) ? unkerned(r) : r, style.props, ownLeading, false, w));
     // Styles do not hyphenate (InDesign does by default); a paragraph the
     // composer hyphenated does.
     if (lines.some((l) => l.addedHyphen)) local += ' Hyphenation="true"';
+    if (isVertical(item)) {
+      local += VERTICAL_REFLOW;
+      w.warn('text.vertical.kinsoku', "Vertical text left to InDesign's composer takes the document's line-breaking (kinsoku) and spacing (mojikumi) sets: choose them in InDesign");
+    }
     paras.push({ style, attrs: local, format, ranges: ranges.join(''), ...(joins ? { joins } : {}), ...(spaceBefore !== undefined ? { spaceBefore } : {}) });
   });
   return paras.map((p, i) => paraXml(p, i === paras.length - 1 || !!paras[i + 1]!.joins)).join('');

@@ -8,6 +8,7 @@ import { characterFormat, type CharacterFormat } from '../resolve/format.js';
 import { runProps } from '../resolve/styles.js';
 import type { Context } from './context.js';
 import { attributeValue, cleanText, LINE_BREAK, WORD_JOINER } from './escape.js';
+import { crossReferences } from './fidelity/crossref.js';
 import type { Look } from './looks.js';
 import { renderSegs, withInlineBreaks, type Seg } from './marks.js';
 import { italicOf, sameColour, weightOf } from './values.js';
@@ -49,7 +50,7 @@ export interface InlineHooks {
   /** An object anchored in the text: Markdown set in the line where it
    *  stands, and blocks set after its paragraph. `inline` when the
    *  paragraph holds other text. */
-  item(item: IdmlPageItem, env: InlineEnv, inline: boolean): { inline?: string; blocks: string[] };
+  item(item: IdmlPageItem, env: InlineEnv, inline: boolean): { inline?: string; blocks: string[]; /** The blocks stand before the paragraph (a box its text runs beside). */ before?: boolean };
   /** The paragraphs of a note as one line of Markdown. */
   note(paragraphs: IdmlParagraph[], env: InlineEnv): string;
 }
@@ -216,14 +217,15 @@ export function inlineOf(ctx: Context, para: IdmlParagraph, env: InlineEnv): Inl
   // ordinary spaces, which a justified line stretches. A no-break space
   // is a fixed one in Postext.
   const keptLines = hasText && para.runs.every((r) => !r.content.some((i) => i.kind === 'text' && i.text.trim()) || formatOf(ctx, para, r).noBreak);
+  const references = para.runs.some((r) => r.crossReference) ? crossReferences(ctx, para, sample) : undefined;
   for (const run of para.runs) {
     if (!ctx.runShown(run, sample)) continue;
     const f = formatOf(ctx, para, run);
     let marks: Omit<Seg, 't'> | undefined;
     const marked = (): Omit<Seg, 't'> => (marks ??= marksOf(ctx, f, env.look, run, sample()));
-    const href = run.linkSource ? hrefOf(ctx, run, sample()) : undefined;
-    if (run.linkSource) ctx.counts.hyperlinks++;
-    if (run.crossReference) ctx.rep.add('crossReferenceStatic', 'info', 'A cross-reference keeps the text InDesign generated and links to its target; it does not update', sample());
+    const reference = references?.get(run);
+    let href = run.linkSource && reference === undefined ? hrefOf(ctx, run, sample()) : undefined;
+    if (run.linkSource && reference !== null) ctx.counts.hyperlinks++;
     if (run.tags.length) ctx.rep.add('xmlTags', 'info', 'XML tags on the text are not carried (Postext has no tagged structure of its own)', run.tags[run.tags.length - 1]);
     const text = (t: string): void => {
       let s = cleanText(t);
@@ -244,6 +246,18 @@ export function inlineOf(ctx: Context, para: IdmlParagraph, env: InlineEnv): Inl
       if (f.kenten && !(f.kenten.kind in KENTEN)) ctx.rep.add('kentenShape', 'warning', 'An emphasis mark of a shape Postext has not is set as the default mark', f.kenten.kind);
       segs.push(seg);
     };
+    // A cross-reference written as references of the book: its first run
+    // carries the pieces, the others are part of them.
+    if (reference !== undefined) {
+      for (const piece of reference ?? []) {
+        if ('raw' in piece) raw(piece.raw);
+        else {
+          href = piece.link ? hrefOf(ctx, run, sample()) : undefined;
+          text(piece.text);
+        }
+      }
+      continue;
+    }
     for (const inline of run.content) {
       switch (inline.kind) {
         case 'text': {
@@ -277,7 +291,7 @@ export function inlineOf(ctx: Context, para: IdmlParagraph, env: InlineEnv): Inl
         {
           const placed = env.hooks.item(inline.item, env, hasText);
           if (placed.inline) raw(placed.inline);
-          if (inline.item.anchored?.position === 'AboveLine' && env.before) env.before.push(...placed.blocks);
+          if ((inline.item.anchored?.position === 'AboveLine' || placed.before) && env.before) env.before.push(...placed.blocks);
           else env.after.push(...placed.blocks);
           break;
         }
@@ -357,7 +371,7 @@ function special(ctx: Context, inline: Extract<Inline, { kind: 'special' }>, env
       // Told by the paragraph's `breakAfter`.
       break;
     default:
-      ctx.rep.add('unknownSpecialCharacter', 'loss', 'A special character the importer does not know is left out', `code ${inline.code ?? '?'}: ${sample()}`);
+      ctx.rep.add('unknownSpecialCharacter', 'loss', 'A special character the importer does not know is left out: the text about it closes up', `code ${inline.code ?? '?'}: ${sample()}`);
   }
 }
 

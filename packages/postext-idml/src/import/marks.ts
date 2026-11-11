@@ -61,26 +61,58 @@ function tidy(input: Seg[]): Seg[] {
   return out;
 }
 
-/** Whitespace at the edges of a group, taken off its segments. */
+/** A raw piece that is only room: a tab (`:tab `, with or without a
+ *  stop of its own) or spaces. */
+const isRoom = (s: Seg): boolean => !!s.raw && (s.t.trim() === '' || /^ ?:tab(?:\{[^{}]{0,120}\})? ?$/.test(s.t));
+
+/** Whitespace at the edges of a group, taken off its segments: spaces,
+ *  forced breaks and tabs. A mark of emphasis that closes after a space or
+ *  a tab is not read (`**1.1 :tab **` prints its asterisks). */
 function edges(segs: Seg[]): { lead: string; inner: Seg[]; trail: string } {
   const inner = segs.map((s) => ({ ...s }));
   let lead = '';
   let trail = '';
-  const first = inner[0];
-  if (first && !first.raw) {
-    const m = /^[\s\u2028]+/.exec(first.t);
-    if (m) {
-      lead = m[0];
-      first.t = first.t.slice(lead.length);
+  for (;;) {
+    const first = inner[0];
+    if (!first) break;
+    if (isRoom(first)) {
+      lead += first.t;
+      inner.shift();
+      continue;
     }
+    if (!first.raw) {
+      const m = /^\s+/.exec(first.t);
+      if (m) {
+        lead += m[0];
+        first.t = first.t.slice(m[0].length);
+        if (!first.t) {
+          inner.shift();
+          continue;
+        }
+      }
+    }
+    break;
   }
-  const last = inner[inner.length - 1];
-  if (last && !last.raw) {
-    const m = /[\s\u2028]+$/.exec(last.t);
-    if (m) {
-      trail = m[0];
-      last.t = last.t.slice(0, -trail.length);
+  for (;;) {
+    const last = inner[inner.length - 1];
+    if (!last) break;
+    if (isRoom(last)) {
+      trail = last.t + trail;
+      inner.pop();
+      continue;
     }
+    if (!last.raw) {
+      const end = last.t.trimEnd().length;
+      if (end < last.t.length) {
+        trail = last.t.slice(end) + trail;
+        last.t = last.t.slice(0, end);
+        if (!last.t) {
+          inner.pop();
+          continue;
+        }
+      }
+    }
+    break;
   }
   return { lead, inner: inner.filter((s) => s.t), trail };
 }

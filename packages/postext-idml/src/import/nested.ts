@@ -69,9 +69,9 @@ function report(ctx: Context, style: IdmlStyle, list: Rule[]): void {
     const applied = r === list[0] && r.kind === 'nested' && rangeEnd('x', r) !== undefined && Object.keys(marksOfStyle(ctx, r.characterStyle).marks).length > 0;
     const what = `${stylePath(style)}: ${describe(ctx, r)}`;
     if (applied) ctx.rep.add('nestedStyleApplied', 'info', 'A nested style that opens the paragraph with bold, italic or small capitals up to a delimiter is applied to the text as marks', what);
-    else if (r.kind === 'grep') ctx.rep.add('grepStyles', 'loss', 'GREP styles are not applied: Postext has no rule that styles text by a pattern', what);
-    else if (r.kind === 'line') ctx.rep.add('lineStyles', 'loss', 'Line styles are not applied: Postext has no rule that styles the first lines of a paragraph (a drop cap\'s lead-in aside)', what);
-    else ctx.rep.add('nestedStyles', 'loss', 'Nested styles other than a plain lead-in are not applied', what);
+    else if (r.kind === 'grep') ctx.rep.add('grepStyles', 'loss', 'GREP styles are not applied: the text they would restyle keeps the look of its paragraph (Postext has no rule that styles text by a pattern)', what);
+    else if (r.kind === 'line') ctx.rep.add('lineStyles', 'loss', 'Line styles are not applied: the first lines of the paragraph are set as the rest of it (Postext has no rule that styles the first lines of a paragraph, a drop cap\'s lead-in aside)', what);
+    else ctx.rep.add('nestedStyles', 'loss', 'Nested styles other than a plain lead-in are not applied: the text they would restyle keeps the look of its paragraph', what);
   }
 }
 

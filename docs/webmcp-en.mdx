@@ -572,9 +572,12 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   `rename` with `thisLanguageOnly: true` names the language on screen alone;
   `set_cover` and `remove_cover` give it a cover or take it away.
 - **Export.** `sandbox_export` writes `pdf`, `epub`, `postext`, `docx`,
-  `markdown` or `config`. By default the browser downloads the file; with
-  `deliver: "data"` a PDF, an EPUB or a Word file comes back base64-encoded to
-  the agent. For `docx`, `variant` chooses `formatted` (the default: editable
+  `idml`, `markdown` or `config`. By default the browser downloads the file; with
+  `deliver: "data"` a PDF, an EPUB, a Word file or an IDML package comes back
+  base64-encoded to the agent. For `idml`, `idmlLines` (`keep` or `reflow`),
+  `idmlSpreads` (`facing` or `single`), `idmlImages` (`embed` or `link`) and
+  `idmlFonts` are the options of the export dialog; with linked pictures or
+  fonts the file is a `.zip`. For `docx`, `variant` chooses `formatted` (the default: editable
   text with the book's design, fonts embedded) or `semantic` (the content alone,
   in plain Word styles):
 
@@ -584,6 +587,12 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
 
 - **Import a `.postext` file** with `sandbox_import_book` (`inspect: true` says
   which languages it carries without importing it).
+- **Make a book from an InDesign document** with `sandbox_import_idml`. With
+  `dryRun: true` it creates nothing and answers with what the `.idml` holds and
+  the import report: the layout it would take and why, the verdict, the
+  findings, the fonts the book needs and the linked pictures still missing.
+  `layout` chooses `pages` or `flow`, and `links` hands over the linked
+  pictures, each matched by its `fileName`.
 - **Bring in a Word manuscript** with `sandbox_import_word`. Run it first with
   `dryRun: true`: it changes nothing and answers with the quality report, each
   Word style with what it would become, and the chapters and resources it
@@ -718,6 +727,7 @@ each one come with `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **InDesign**: `sandbox_import_idml`.
 - **Questions**: `sandbox_answer`.
 - **The checks**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.
 

@@ -474,14 +474,7 @@ describe('idmlDocument', () => {
     expect(latin).not.toContain('text.rtl');
     expect(latin).not.toContain('text.vertical');
   });
-
-  it('warns that vertical text is written horizontally', () => {
-    const warnings: { code: string; message: string }[] = [];
-    const cfg = { ...config(), locale: 'ja', layout: { layoutType: 'single', writingMode: 'vertical-rl' } } as unknown as PostextConfig;
-    idml('吾輩は猫である。名前はまだ無い。どこで生れたかとんと見当がつかぬ。', cfg, { onWarning: (w) => warnings.push(w) });
-    expect(warnings.filter((w) => w.code === 'text.vertical')).toHaveLength(1);
-    expect(warnings.find((w) => w.code === 'text.vertical')!.message).toMatch(/horizontal/);
-  });
+  // Vertical text: `vertical.test.ts`.
 });
 
 describe('idmlDocument: form fields (#1445)', () => {

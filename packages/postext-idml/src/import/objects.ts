@@ -6,6 +6,7 @@ import type { IdmlPageItem, Props } from '../model/document.js';
 import { computeStyle, mergeProps, stylePath } from '../resolve/styles.js';
 import type { Context } from './context.js';
 import { idOf } from './escape.js';
+import { frameSetup } from './fidelity/baseline.js';
 import { pt } from './values.js';
 
 export interface BoxLook {
@@ -40,12 +41,12 @@ export function boxLook(ctx: Context, item: IdmlPageItem, where: string): BoxLoo
   const options = new Set(['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'].map((c) => p.attrs[`${c}CornerOption`]).filter((o) => o && o !== 'None' && o !== 'RoundedCorner'));
   if (options.size) ctx.rep.add('cornerShapes', 'warning', 'Corner shapes other than rounded (bevel, inset, fancy) are set as rounded corners', [...options].join(', '));
   const type = p.properties.StrokeType ? '' : p.attrs.StrokeType ?? '';
-  const out: BoxLook = { strokeWeight: stroke ? weight : 0, radius: Math.max(0, ...rounded), corners: rounded as [number, number, number, number], inset: item.textFrame?.inset ?? [0, 0, 0, 0], dashed: /Dash|Dot/i.test(type) };
+  const out: BoxLook = { strokeWeight: stroke ? weight : 0, radius: Math.max(0, ...rounded), corners: rounded as [number, number, number, number], inset: item.textFrame ? frameSetup(ctx, item).inset : [0, 0, 0, 0], dashed: /Dash|Dot/i.test(type) };
   if (fill) out.fill = fill;
   if (stroke) out.stroke = stroke;
-  if (item.effects.length) ctx.rep.add('effects', 'loss', 'Effects on an object (drop shadow, glow, feather, bevel) are not drawn: Postext has no effects', `${item.effects.join(', ')} (${where})`);
+  if (item.effects.length) ctx.rep.add('effects', 'loss', 'Effects on an object (drop shadow, glow, feather, bevel) are not drawn: the object keeps its fill and stroke, flat (Postext has no effects)', `${item.effects.join(', ')} (${where})`);
   if (item.opacity < 100) ctx.rep.add('opacity', 'loss', 'A transparent object is drawn opaque: Postext frames and boxes have no opacity', `${item.opacity}% (${where})`);
-  if (item.blendMode && item.blendMode !== 'Normal') ctx.rep.add('blendMode', 'loss', 'A blending mode is not carried', `${item.blendMode} (${where})`);
+  if (item.blendMode && item.blendMode !== 'Normal') ctx.rep.add('blendMode', 'loss', 'A blending mode is not carried: the object is painted over what lies under it', `${item.blendMode} (${where})`);
   return out;
 }
 

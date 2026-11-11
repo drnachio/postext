@@ -16,6 +16,7 @@ import { escapeXml } from '../xml/write.js';
 import { overrides, type LineStop, type TextRun } from './paragraphs.js';
 import { attr, num, type ParagraphFormat, type ParagraphStyleDef, type TextProps } from './parts.js';
 import type { StoryPara } from './story.js';
+import { unkerned, VERTICAL_KEPT, VERTICAL_KEPT_PROPS, VERTICAL_RANGE } from './vertical.js';
 import type { StoryItem, Writer } from './writer.js';
 
 /** Characters InDesign shows as a missing glyph when the face lacks them
@@ -34,9 +35,9 @@ export function rangeXml(r: TextRun, style: TextProps, leading?: number, noBreak
   if (r.link && w) {
     const source = w.next();
     w.links.push({ source, ...(r.link.url !== undefined ? { url: r.link.url } : { page: w.pageBase + r.link.page! }) });
-    return `<HyperlinkTextSource${attr('Self', source)}${attr('Name', `Link ${w.links.length}`)} Hidden="false" AppliedCharacterStyle="n">${rangeXml({ text: r.text, props: r.props }, style, leading, noBreak)}</HyperlinkTextSource>`;
+    return `<HyperlinkTextSource${attr('Self', source)}${attr('Name', `Link ${w.links.length}`)} Hidden="false" AppliedCharacterStyle="n">${rangeXml({ text: r.text, props: r.props, ...(r.extra ? { extra: r.extra } : {}) }, style, leading, noBreak)}</HyperlinkTextSource>`;
   }
-  const o = overrides(r.props, style) + (noBreak ? ' NoBreak="true"' : '');
+  const o = overrides(r.props, style) + (r.extra ?? '') + (noBreak ? ' NoBreak="true"' : '');
   const props = (r.props.font !== style.font ? `<AppliedFont type="string">${escapeXml(r.props.font)}</AppliedFont>` : '') + (leading !== undefined ? leadingXml(leading) : '');
   const font = props ? `<Properties>${props}</Properties>` : '';
   const content = r.object ?? r.text.replace(NO_GLYPH, '').split(' ').map((t) => (t ? `<Content>${escapeXml(t)}</Content>` : '')).join('<Content> </Content>');
@@ -137,6 +138,10 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     let attrs = '';
     if (style.justification !== justification) attrs += attr('Justification', justification);
     if (rtl) attrs += ' ParagraphDirection="RightToLeftDirection" Composer="$ID/HL Single Optyca"';
+    // Lines that run down the page: the Japanese composer, with nothing
+    // left for it to space or break.
+    const vertical = group.some((l) => l.vertical);
+    if (vertical) attrs += VERTICAL_KEPT;
     let ranges = '';
     for (let i = a; i <= b; i++) {
       // Leading is a character's: every range of the line says it.
@@ -145,13 +150,13 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
       const last = i < b;
       // A line cannot break but where Postext broke it: InDesign's
       // composer, left a choice, ends a tightly set line a word early.
-      for (const r of runs) ranges += rangeXml(r, style.props, extra, true, w);
+      for (const r of runs) ranges += rangeXml(vertical ? unkerned(r) : r, style.props, extra, true, w);
       // The break is a range of its own (it must stay a place to break),
       // at its line's leading and size: an empty line still takes its room.
-      if (last) ranges += rangeXml({ text: FORCED_LINE_BREAK, props: runs[runs.length - 1]?.props ?? style.props }, style.props, extra);
+      if (last) ranges += rangeXml({ text: FORCED_LINE_BREAK, props: runs[runs.length - 1]?.props ?? style.props, ...(vertical ? { extra: VERTICAL_RANGE } : {}) }, style.props, extra);
     }
     if (!ranges) return;
-    out.push({ style, attrs, format: fmt, ranges, ...(g === 0 && c.spaceBefore !== undefined ? { spaceBefore: c.spaceBefore } : {}) });
+    out.push({ style, attrs, format: fmt, ranges, ...(vertical ? { properties: VERTICAL_KEPT_PROPS } : {}), ...(g === 0 && c.spaceBefore !== undefined ? { spaceBefore: c.spaceBefore } : {}) });
   });
   return out;
 }

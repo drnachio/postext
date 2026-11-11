@@ -114,7 +114,11 @@ Word中没有对应结构的内容以源码形式随文件走：标记为`ptx:ra
 
 **应用修改**把所有标为*导入*的修改作为一步写入，一次撤销即可全部取消。冲突和不导入的修改，请对照列表在文字中手动处理。
 
-本对话框不处理的转换（PDF、PowerPoint、EPUB或IDML原稿，或重现原稿的版式规则），请使用[智能体技能](/zh/docs/skill)。
+本对话框不处理的转换（PDF、PowerPoint或EPUB原稿，或重现原稿的版式规则），请使用[智能体技能](/zh/docs/skill)。
+
+### 导入InDesign文档
+
+<strong>书库</strong>面板<strong>新建</strong>菜单中的<strong>从 InDesign 文档（IDML）新建书</strong>在浏览器中读取一个`.idml`文件，并打开一个对话框。对话框列出文档的内容：页数和页面大小、文章、用到的字体、链接的和嵌入的图片，以及表。<strong>排版方式</strong>有两种：<strong>模板页</strong>让每一页的框架都留在文档中原来的位置，<strong>流式排版的书</strong>让文字顺着书的设计生成的页面排下去；<strong>自动</strong>把选择交给导入器，导入器会说明理由。`.idml`不带它所链接的图片：请选择这些文件，或选择它们所在的文件夹，每张图片按文件名匹配。导入报告随每一项选择更新：结论、各项计数，丢失、近似和备注三类情况（每类附数量和一个例子），这本书需要的字体，以及仍缺少的链接。<strong>创建这本书</strong>把结果加入你的书并打开它，原有的书保持不变。`.indd`文件会被拒绝，提示会说明要先在InDesign中把它存为IDML。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)做同样的导入。
 
 
 ## 持久化
@@ -180,7 +184,7 @@ Word中没有对应结构的内容以源码形式随文件走：标记为`ptx:ra
 
 `postext`包读写的也是这些文件（`openBundle`、`createBundle`、`buildBundle`；见[文件包](/zh/docs/configuration-bundles#文件包postext文件)）。在这里导出的书可以在你自己的程序中打开，你的程序写出的书也可以在这里打开。这样，沙盒就成了检查和微调程序排版结果的地方：从程序中导出，在这里导入，借助实时预览修改，再次导出，然后载回程序。[智能体技能](/zh/docs/skill)交付的移植结果也是`.postext`文件。
 
-正文面板标题栏中的**导出到 InDesign**（IDML）像PDF标签页处理整本书那样排好整本书（每一章接在前面各章之后），并下载为`<书名>.idml`，即一个可在InDesign中打开的InDesign Markup包。书设了对称页边距时，页面按对页排在跨页中，否则每个跨页一页；线条、方框和图片成为InDesign的页面对象，图片（以及SVG插图的PDF印刷母版）嵌入其中；每个框架的文字成为一篇文章，段落样式以书中样式的名称命名。每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。工作期间有进度条显示：先是已排好的章，然后是写入的包。如果写入时有需要说明的情况（缺少文件的图片、旧版InDesign无法置入的SVG、尺寸不同的页面），下载后对话框会保持打开，并在**InDesign 中显示不同之处**下列出。命令行（`postext idml`）和API（`postext-idml`）写出同样的包（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。
+正文面板标题栏中的**导出到 InDesign**（IDML）像PDF标签页处理整本书那样排好整本书（每一章接在前面各章之后），并下载为`<书名>.idml`，即一个可在InDesign中打开的InDesign Markup包。书设了对称页边距时，页面按对页排在跨页中，否则每个跨页一页；线条、方框和图片成为InDesign的页面对象，图片（以及SVG插图的PDF印刷母版）嵌入其中；每个框架的文字成为一篇文章，段落样式以书中样式的名称命名。每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。对话框有四个选项。<strong>行</strong>让每一行都在PDF中结束的位置结束，或把段落交给InDesign的排版器，适合要在InDesign中重新排版的书。<strong>跨页</strong>按页边距决定，或不管页边距如何都用对页或单页。<strong>图片</strong>嵌入文档，或链接并放在`Links`文件夹中。<strong>包含字体</strong>把书中各字体的字体文件放进`Document fonts`文件夹，InDesign会在那里找到它们；标为不可再分发的字体家族不放入，对话框会列出它的名称。选了链接图片或包含字体时，下载的是一个`.zip`，里面是`.idml`及其文件夹：请先解压，再打开文档。工作期间有进度条显示：先是已排好的章，然后是写入的包。如果写入时有需要说明的情况（缺少文件的图片、旧版InDesign无法置入的SVG、尺寸不同的页面），下载后对话框会保持打开，并在**InDesign 中显示不同之处**下列出。命令行（`postext idml`）和API（`postext-idml`）写出同样的包（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。
 
 正文和版面设计也可以分别从正文面板和版面设计面板的标题栏导出。
 

@@ -553,8 +553,11 @@ await browser.close();
   ويفتحها، ويسمّي `rename` مع `thisLanguageOnly: true` اللغة المعروضة وحدها،
   ويعطيه `set_cover` غلافًا ويزيله `remove_cover`.
 - **التصدير.** يكتب `sandbox_export` الصيغ `pdf` و`epub` و`postext` و`docx`
-  و`markdown` و`config`. افتراضيًا ينزّل المتصفح الملف، ومع `deliver: "data"`
-  يعود ملف PDF أو EPUB أو Word إلى الوكيل مرمّزًا بـbase64. ومع `docx` يختار
+  و`idml` و`markdown` و`config`. افتراضيًا ينزّل المتصفح الملف، ومع `deliver: "data"`
+  يعود ملف PDF أو EPUB أو Word أو حزمة IDML إلى الوكيل مرمّزًا بـbase64. ومع `idml`
+  تقابل `idmlLines` (`keep` أو `reflow`) و`idmlSpreads` (`facing` أو `single`)
+  و`idmlImages` (`embed` أو `link`) و`idmlFonts` خيارات حوار التصدير؛ ومع الصور
+  المرتبطة أو الخطوط يكون الملف `.zip`. ومع `docx` يختار
   `variant` بين `formatted` (الافتراضي: نص قابل للتعديل بتصميم الكتاب مع تضمين
   الخطوط) و`semantic` (المحتوى وحده بأنماط Word بسيطة):
 
@@ -564,6 +567,11 @@ await browser.close();
 
 - **استيراد ملف `.postext`** بـ`sandbox_import_book` (ومع `inspect: true` يذكر
   اللغات التي في الملف دون استيراده).
+- **إنشاء كتاب من مستند InDesign** بـ`sandbox_import_idml`. مع `dryRun: true` لا
+  ينشئ شيئًا، ويجيب بمحتويات ملف `.idml` وبتقرير الاستيراد: التخطيط الذي سيعتمده
+  وسببه، والحكم، والملاحظات، والخطوط التي يحتاجها الكتاب، والصور المرتبطة التي ما
+  زالت ناقصة. ويختار `layout` بين `pages` و`flow`، ويسلّم `links` الصور المرتبطة،
+  وتُطابَق كل صورة بـ`fileName` الخاص بها.
 - **إدخال مخطوطة Word** بـ`sandbox_import_word`. شغّله أولًا مع `dryRun: true`:
   لا يغيّر شيئًا، ويجيب بتقرير الجودة، وبكل نمط من أنماط Word وما سيصير إليه،
   وبالفصول والموارد التي سيصنعها. ثم صحّح المطابقة وشغّله فعلًا:
@@ -687,6 +695,7 @@ Sandbox، ويواصل العمل هناك بأدوات `sandbox_*`.
   و`sandbox_save_book`، و`sandbox_delete_book`، و`sandbox_import_book`،
   و`sandbox_export`.
 - **Word**: `sandbox_import_word`، و`sandbox_apply_word_edits`، و`sandbox_word_templates`.
+- **InDesign**: `sandbox_import_idml`.
 - **الأسئلة**: `sandbox_answer`.
 - **الفحوص**: `sandbox_get_warnings`، و`sandbox_get_composed_checks`، و`sandbox_apply_proposal`.
 

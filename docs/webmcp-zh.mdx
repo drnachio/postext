@@ -424,13 +424,14 @@ await browser.close();
 ### 书、文件和Word
 
 - **打开和保存书**。`sandbox_list_books`列出示例书和你的项目；`sandbox_open_book`打开其中一本（`{ "kind": "sample", "id": "postext-guide", "language": "es" }`）；`sandbox_save_book`加上`action: "copy_current"`把屏幕上的书保存为你自己的项目，加上`new_blank`则新建一本空书。对于项目，`add_language`加上`language`（`"fr"`、`"zh-Hant"`）会把屏幕上的语言复制成该语言的新版本并打开它，`rename`加上`thisLanguageOnly: true`只给屏幕上的语言命名；`set_cover`和`remove_cover`为它设置或去掉封面。
-- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF、EPUB或Word文件以base64编码返回给智能体。对于`docx`，`variant`选择`formatted`（默认：可编辑的文字，套用书的设计，嵌入字体）或`semantic`（只有内容，用朴素的Word样式）：
+- **导出**。`sandbox_export`写出`pdf`、`epub`、`postext`、`docx`、`idml`、`markdown`或`config`。默认由浏览器下载文件；加上`deliver: "data"`时，PDF、EPUB、Word文件或IDML包以base64编码返回给智能体。对于`idml`，`idmlLines`（`keep`或`reflow`）、`idmlSpreads`（`facing`或`single`）、`idmlImages`（`embed`或`link`）和`idmlFonts`对应导出对话框的各个选项；选了链接图片或字体时，文件是一个`.zip`。对于`docx`，`variant`选择`formatted`（默认：可编辑的文字，套用书的设计，嵌入字体）或`semantic`（只有内容，用朴素的Word样式）：
 
   ```json
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
 - **导入`.postext`文件**用`sandbox_import_book`（加上`inspect: true`只报告文件里有哪些语言，并不导入）。
+- <strong>从InDesign文档做一本书</strong>用`sandbox_import_idml`。加上`dryRun: true`时它什么都不创建，回答`.idml`的内容和导入报告：将采用的排版方式及理由、结论、发现的问题、这本书需要的字体，以及仍缺少的链接图片。`layout`选择`pages`或`flow`，`links`交上链接的图片，每张按其`fileName`匹配。
 - **导入Word书稿**用`sandbox_import_word`。先加上`dryRun: true`运行一次：它什么都不改，回答质量报告、每种Word样式会转换成什么，以及将会生成的章节和资源。然后修正对应关系，再正式运行：
 
   ```json
@@ -501,6 +502,7 @@ await browser.close();
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
+- **InDesign**：`sandbox_import_idml`。
 - **询问**：`sandbox_answer`。
 - **检查**：`sandbox_get_warnings`、`sandbox_get_composed_checks`、`sandbox_apply_proposal`。
 
