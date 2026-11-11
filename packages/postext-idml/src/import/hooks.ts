@@ -9,6 +9,7 @@ import { blocksOf, joinChunks, type BlockEnv } from './blocks.js';
 import type { Context } from './context.js';
 import { LINE_BREAK } from './escape.js';
 import { inlineOf, type InlineEnv, type InlineHooks } from './inline.js';
+import { besideColumn } from './fidelity/anchored.js';
 import { boxLook, calloutStyleFor } from './objects.js';
 import { pictureResource } from './pictures.js';
 import { tableResource } from './tables.js';
@@ -26,14 +27,34 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
 
     item(item, env, inline) {
       const blocks: string[] = [];
+      // A box at the side of the column stands before the paragraph of
+      // its anchor, whose text runs beside it.
+      let before = false;
       const walk = (it: IdmlPageItem): string | undefined => {
+        // Set in a frame of its own on the page (composed pages).
+        if (ctx.placedAnchors.has(it)) return undefined;
         const where = it.anchored?.position ?? 'InlinePosition';
+        // A custom-anchored object of a flowing text hangs at its side of
+        // the column, the text running beside it.
+        const beside = where === 'Anchored' && target === 'flow' && depth === 0 && env.where === 'body' ? besideColumn(ctx, it) : undefined;
+        if (beside) before = true;
         if (it.graphic) {
           const frame = pathExtent(it.paths);
-          const id = pictureResource(ctx, it, { placement: { position: 'here', span: 'column', align: 'left', ...(frame && boxWidth(frame) > 0 ? { width: pt(boxWidth(frame)) } : {}) } });
+          const name = it.graphic.link?.name ?? 'picture';
+          // In a table cell or a caption a small picture stands in its line.
+          if (inline && where === 'InlinePosition' && env.where === 'snippet' && frame && boxHeight(frame) > 0 && env.look.cf.pointSize > 0) {
+            const id = pictureResource(ctx, it);
+            if (id) {
+              ctx.rep.add('inlinePictureIcon', 'info', 'A picture set in a line of a table cell or a caption stands in its line as an inline symbol (:icon) of its height', name);
+              return `:icon[${(it.altText ?? '').replace(/[\[\]\\{}\n]/g, ' ').trim()}]{resource="${id}" size=${Math.max(0.1, Math.round((boxHeight(frame) / env.look.cf.pointSize) * 100) / 100)}}`;
+            }
+            return undefined;
+          }
+          const id = pictureResource(ctx, it, { placement: { position: 'here', span: 'column', align: beside?.side ?? 'left', ...(frame && boxWidth(frame) > 0 ? { width: pt(boxWidth(frame)) } : {}), ...(beside ? { wrap: beside.side } : {}) } });
           if (id) blocks.push(`::resource{id="${id}"}`);
-          if (inline && where === 'InlinePosition') ctx.rep.add('inlinePicture', 'warning', 'A picture set in a line of text stands on a line of its own after its paragraph: Postext sets pictures as blocks', it.graphic.link?.name ?? 'picture');
-          else if (where === 'Anchored') ctx.rep.add('anchoredObjectPosition', 'warning', 'An object anchored outside its text (in the margin, at an offset) is set in the text after the paragraph of its anchor', it.graphic.link?.name ?? 'picture');
+          if (inline && where === 'InlinePosition') ctx.rep.add('inlinePicture', 'warning', 'A picture set in a line of running text stands on a line of its own right after its paragraph, at its own width: Postext sets pictures in a line only in table cells, captions and labels', name);
+          else if (beside) ctx.rep.add('anchoredObjectBeside', 'warning', 'An object anchored beside its text (custom position) stands at that side of the column at the paragraph of its anchor, whose text runs beside it; one InDesign hangs out in the margin stands inside the column (layout: "pages" gives it a frame of its own where it stands)', name);
+          else if (where === 'Anchored') ctx.rep.add('anchoredObjectPosition', 'warning', 'An object anchored at a custom position that is as wide as its column, centred, or anchored in a box, a note or a table is set as a block of the text right after the paragraph of its anchor', name);
           return undefined;
         }
         if (it.textFrame?.story) {
@@ -51,8 +72,10 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
           const style = calloutStyleFor(ctx, it, boxLook(ctx, it, 'anchored frame'));
           const inner = blocksOf(ctx, story.paragraphs, { notes: env.notes, carry: env.carry, hooks, target: 'box', ...(env.pageName !== undefined ? { pageName: env.pageName } : {}) });
           depth--;
-          if (inner.length) blocks.push(`:::callout{type="${style}"}\n${joinChunks(inner)}\n:::`);
-          if (where === 'Anchored') ctx.rep.add('anchoredObjectPosition', 'warning', 'An object anchored outside its text (in the margin, at an offset) is set in the text after the paragraph of its anchor', 'text frame');
+          const sample = ctx.sample(story.paragraphs.find((p) => p.runs.length) ?? story.paragraphs[0] ?? { attrs: {}, properties: {}, runs: [] }) || 'text frame';
+          if (inner.length) blocks.push(`:::callout{type="${style}"${beside ? ` wrap="${beside.side}" width=${beside.share}` : ''}}\n${joinChunks(inner)}\n:::`);
+          if (beside) ctx.rep.add('anchoredObjectBeside', 'warning', 'An object anchored beside its text (custom position) stands at that side of the column at the paragraph of its anchor, whose text runs beside it; one InDesign hangs out in the margin stands inside the column (layout: "pages" gives it a frame of its own where it stands)', sample);
+          else if (where === 'Anchored') ctx.rep.add('anchoredObjectPosition', 'warning', 'An object anchored at a custom position that is as wide as its column, centred, or anchored in a box, a note or a table is set as a block of the text right after the paragraph of its anchor', sample);
           return undefined;
         }
         if (it.kind === 'Group' || it.children.length) {
@@ -70,14 +93,13 @@ export function makeHooks(ctx: Context, target: BlockEnv['target']): InlineHooks
         return undefined;
       };
       const mark = walk(item);
-      return mark ? { inline: mark, blocks } : { blocks };
+      return mark ? { inline: mark, blocks } : { blocks, ...(before ? { before } : {}) };
     },
 
     note(paragraphs, env) {
       return noteLine(ctx, paragraphs, env);
     },
   };
-  void target;
   return hooks;
 }
 

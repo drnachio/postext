@@ -18,6 +18,8 @@ import type { OrderedStory } from '../resolve/order.js';
 import { blocksOf, joinChunks, type Chunk } from './blocks.js';
 import type { Context } from './context.js';
 import { masterElements, placeAt, shapeElement, type MasterWords } from './design.js';
+import { customAnchors, type HostFrame } from './fidelity/anchorPlaces.js';
+import { firstLineShift, frameSetup, fromTop, openingLines, runningLines } from './fidelity/baseline.js';
 import { makeHooks } from './hooks.js';
 import { boxLook, calloutStyleFor } from './objects.js';
 import { numberingDirective } from './pagesetup.js';
@@ -70,6 +72,9 @@ export interface PagesResult {
 export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): PagesResult {
   const doc = ctx.doc;
   const wanted = new Map(stories.map((e) => [e.story.self, e]));
+  // The frames of a story joined to another (a paragraph that goes on in
+  // the next frame) hold the joined story.
+  for (const [self, e] of ctx.alias) wanted.set(self, e);
   const plans: PagePlan[] = [];
   const slotOf = new Map<string, Slot>();
 
@@ -100,7 +105,8 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
         }
         if (fb.flipped) ctx.rep.add('flippedFrame', 'warning', 'A mirrored frame is set unmirrored', where);
         if (leaf.g.box.right > size.width + 1 && leaf.g.box.left < size.width - 1 && spread.pages.length > 1) ctx.rep.add('acrossSpine', 'warning', 'An object that runs across the spine is set on the page that holds most of it', where);
-        const story = item.textFrame?.story;
+        const held = item.textFrame?.story;
+        const story = held && wanted.has(held) ? wanted.get(held)!.story.self : held;
         const base = { leaf, box: fb.box, rotation: fb.rotation, name: '', page: page.index };
         if (story && wanted.has(story) && hasContent(wanted.get(story)!.story)) {
           const slot: Slot = { ...base, kind: 'text', story };
@@ -151,6 +157,46 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
           plan.decoration.push(s.element);
         }
       }
+    }
+  }
+
+  // Objects anchored at a custom position get a frame of their own where
+  // their rule puts them, on the page of the frame their anchor stands in.
+  for (const e of stories) {
+    const hosts: (HostFrame & { slot: Slot })[] = [];
+    for (const fp of e.frames) {
+      const slot = slotOf.get(fp.item.self);
+      if (slot && !slot.rotation && !slot.onPath) hosts.push({ item: fp.item, box: slot.box, page: plans[slot.page]!.page, slot });
+    }
+    for (const a of customAnchors(ctx, e, hosts)) {
+      const host = hosts.find((h) => h.item === a.host)!.slot;
+      const plan = plans[host.page]!;
+      const leaf: Leaf = { at: { item: a.item, spread: host.leaf.at.spread, parents: [] }, g: host.leaf.g, z: host.leaf.z + 0.5 };
+      const where = `page ${plan.page.name}`;
+      const base = { leaf, box: a.box, rotation: 0, name: '', page: host.page };
+      const inner = a.item.textFrame?.story ? e.anchored.find((x) => x.item === a.item)?.entry : undefined;
+      if (inner && hasContent(inner.story) && !wanted.has(inner.story.self)) {
+        wanted.set(inner.story.self, inner);
+        const slot: Slot = { ...base, kind: 'text', story: inner.story.self };
+        const look = boxLook(ctx, a.item, where);
+        if (look.fill || look.stroke) slot.style = calloutStyleFor(ctx, a.item, look, false);
+        plan.slots.push(slot);
+      } else if (a.item.graphic) {
+        const id = pictureResource(ctx, a.item);
+        const slot: Slot = { ...base, kind: 'picture', ...(id ? { resource: id } : {}) };
+        const look = boxLook(ctx, a.item, where);
+        if (look.fill || look.stroke) slot.style = calloutStyleFor(ctx, a.item, look, false);
+        plan.slots.push(slot);
+      } else continue;
+      ctx.placedAnchors.add(a.item);
+      const what = a.item.graphic?.link?.name ?? (inner ? ctx.sample(inner.story.paragraphs[0]!) : 'object');
+      if (a.estimated) ctx.rep.add('anchoredObjectFrameEstimated', 'warning', 'An object anchored beside its text (custom position, level with a line) stands in a frame of its own: across the page where its rule puts it, down the page at the line of its anchor, which is estimated from the share of the story\'s text before it (IDML does not say where lines fall)', `${what} (${where})`);
+      else ctx.rep.add('anchoredObjectFrame', 'info', 'An object anchored to its frame or its page (custom position) stands in a frame of its own where its rule puts it', `${what} (${where})`);
+    }
+  }
+
+  for (const plan of plans) {
+    {
       // Slot names follow the place on the page, so pages laid alike name
       // their frames alike.
       const ordered = [...plan.slots].sort((a, b) => Math.round(a.box.top / 6) - Math.round(b.box.top / 6) || a.box.left - b.box.left || a.leaf.z - b.leaf.z);
@@ -182,27 +228,47 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
     const zs = [...new Set(plan.slots.map((s) => s.leaf.z))].sort((a, b) => a - b);
     for (const slot of plan.slots) {
       const item = slot.leaf.at.item;
-      const f: FrameConfig = { name: slot.name, placement: placeAt(slot.box, 'container'), layer: 1 + zs.indexOf(slot.leaf.z), optional: true, pin: true };
+      const tf = item.textFrame;
+      const entry = slot.kind === 'text' && slot.story ? wanted.get(slot.story) : undefined;
+      // Insets, and where the first line stands: the difference between
+      // InDesign's first baseline and Postext's goes to the top padding,
+      // or moves the frame up.
+      const setup = frameSetup(ctx, item);
+      const [, left, bottom, right] = setup.inset;
+      let top = setup.inset[0];
+      let box = slot.box;
+      if (slot.kind === 'text' && tf && entry && !slot.onPath && fromTop(setup) && entry.story.orientation !== 'vertical') {
+        const opens = !entry.frames.length || entry.frames[0]!.item === item;
+        const shift = firstLineShift(ctx, setup, opens ? openingLines(ctx, entry.story.paragraphs) : runningLines(ctx, entry.story.paragraphs), `page ${page.name}`);
+        if (top + shift >= 0) top += shift;
+        else if (!slot.style && !slot.rotation) {
+          box = { ...box, top: box.top + top + shift };
+          top = 0;
+        } else {
+          ctx.rep.add('firstBaselineOff', 'warning', 'The first line of a frame with a fill or a stroke, or of a turned frame, stands lower than in InDesign: its first baseline is nearer the frame\'s edge than Postext sets a line, and the frame keeps its place', `${Math.round(-(top + shift) * 10) / 10} pt (page ${page.name})`);
+          top = 0;
+        }
+      }
+      const f: FrameConfig = { name: slot.name, placement: placeAt(box, 'container'), layer: 1 + zs.indexOf(slot.leaf.z), optional: true, pin: true };
       if (slot.rotation) f.rotate = Math.round(slot.rotation * 100) / 100;
       if (slot.style) f.style = slot.style;
       if (plan.slots.some((o) => o !== slot && overlap(o.box, slot.box) > 1)) f.overlap = 'allow';
       if (item.wrap && item.wrap.mode !== 'None' && !(slot.kind === 'text' && item.textFrame?.ignoreWrap)) f.exclude = 'push';
-      const tf = item.textFrame;
       if (slot.kind === 'text' && tf && !slot.onPath) {
-        const [top, left, bottom, right] = tf.inset;
         if (top || left || bottom || right || slot.style) f.padding = { top: pt(top), left: pt(left), bottom: pt(bottom), right: pt(right) };
         if (tf.columns > 1) {
           f.columns = tf.columns;
           f.columnGap = pt(tf.gutter);
         }
-        const v = VERTICAL[tf.verticalJustification];
+        const v = VERTICAL[setup.verticalJustification];
         if (v) f.verticalAlign = v;
         const story = doc.stories.get(slot.story!);
         if (story?.orientation === 'vertical') f.writingMode = 'vertical-rl';
         if (story?.direction === 'rtl') f.direction = 'rtl';
         if (tf.autoSizing && tf.autoSizing !== 'Off') ctx.rep.add('autoSizeFrames', 'info', 'An auto-sizing text frame keeps the size it had when the document was saved', `page ${page.name}`);
         // The thread: on the same page a chain, on a later page a jump.
-        const next = tf.next ? slotOf.get(tf.next) : undefined;
+        const at = entry ? entry.frames.findIndex((fp) => fp.item === item) : -1;
+        const next = at >= 0 ? entry!.frames.slice(at + 1).map((fp) => slotOf.get(fp.item.self)).find((s) => s !== undefined && s !== slot) : undefined;
         if (next && next.page === slot.page) f.next = next.name;
         else if (next && next.page > slot.page) {
           f.overflow = { continueIn: `page:{attr.to_${slot.name}}#${next.name}`, mark: false };
@@ -215,7 +281,7 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
       // Content: a story where its thread starts, a picture in its frame.
       if (slot.kind === 'picture' && slot.resource) pieces.push(`::resource{id="${slot.resource}" slot="${slot.name}"}`);
       if (slot.kind === 'text' && slot.story && !written.has(slot.story)) {
-        const entry = wanted.get(slot.story)!;
+        if (!entry) continue;
         const first = entry.frames.map((fp) => slotOf.get(fp.item.self)).find((s) => s !== undefined);
         if (first && first !== slot && !slot.onPath) continue;
         written.add(slot.story);
@@ -275,7 +341,11 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
   for (const f of fences) {
     const section = sectionAt.get(f.plan.page.self);
     if (section !== undefined) {
-      const runsIn = f.plan.slots.some((s) => s.kind === 'text' && s.leaf.at.item.textFrame?.previous && slotOf.get(s.leaf.at.item.textFrame.previous) && slotOf.get(s.leaf.at.item.textFrame.previous)!.page < s.page);
+      const runsIn = f.plan.slots.some((s) => {
+        const e = s.kind === 'text' && s.story && !s.onPath ? wanted.get(s.story) : undefined;
+        const at = e ? e.frames.findIndex((fp) => fp.item === s.leaf.at.item) : -1;
+        return at > 0 && e!.frames.slice(0, at).some((fp) => (slotOf.get(fp.item.self)?.page ?? s.page) < s.page);
+      });
       if (!runsIn) flush();
       current.push(numberingDirective(ctx, doc.sections[section]!, f.plan.page.index));
     }

@@ -13,10 +13,13 @@ import { readIdml } from '../read/index.js';
 import { Context } from './context.js';
 import { decideLayout, mainStory } from './decide.js';
 import type { MasterWords } from './design.js';
+import { joinContinued } from './fidelity/continued.js';
+import { indexDestinations } from './fidelity/crossref.js';
 import { layoutFlow } from './flow.js';
 import { calloutStyles } from './objects.js';
 import { layoutPages } from './pages.js';
-import { allPages, pageConfig, runningHeads } from './pagesetup.js';
+import { runningHeads } from './fidelity/masters.js';
+import { allPages, pageConfig } from './pagesetup.js';
 import { countLooks, selectStories } from './scan.js';
 import { styleConfig } from './styleconfig.js';
 import { tableStyles } from './tables.js';
@@ -82,9 +85,10 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   const ctx = new Context(doc, options);
   for (const w of doc.warnings) ctx.rep.add(`reader.${w.code}`, 'warning', w.message, w.part);
 
-  const stories = selectStories(ctx);
+  const stories = joinContinued(ctx, selectStories(ctx));
   const main = mainStory(stories);
   ctx.looks.classify(countLooks(ctx, stories, main));
+  indexDestinations(ctx, stories);
   const { layout, reason } = decideLayout(ctx, stories, main);
   const styles = styleConfig(ctx);
   const config: PostextConfig = { ...pageConfig(ctx), ...styles };
@@ -100,7 +104,7 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   };
   const asFlow = (): void => {
     const words: MasterWords = { attrs: new Map() };
-    Object.assign(config, runningHeads(ctx, words));
+    Object.assign(config, runningHeads(ctx, words, stories));
     const r = layoutFlow(ctx, stories, main, words);
     chapters = r.chapters;
     void r.labels;
@@ -163,7 +167,7 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   const usedStyles = new Set([...ctx.looks.all.values()].filter((l) => l.paragraphs > 0).map((l) => l.style));
   const unused = [...doc.styles.paragraph.values()].filter((s) => !s.root && !usedStyles.has(s.self) && s.name !== 'NormalParagraphStyle');
   if (unused.length) ctx.rep.add('unusedStyles', 'info', 'Paragraph styles no text of the book is set in are not carried', unused.map((s) => s.name).slice(0, 5).join(', '), unused.length);
-  if (doc.bookmarks.length) ctx.rep.add('bookmarks', 'info', 'Bookmarks are not carried: the PDF outline of a Postext book comes from its headings', doc.bookmarks.map((b) => b.name).slice(0, 5).join(', '), doc.bookmarks.length);
+  if (doc.bookmarks.length && !ctx.rep.has('bookmarkChapters')) ctx.rep.add('bookmarks', 'info', 'Bookmarks are not carried as such: the outline of a Postext book (its PDF bookmarks, its contents) is made from its headings', doc.bookmarks.map((b) => b.name).slice(0, 5).join(', '), doc.bookmarks.length);
   if (ctx.doc.topics.size && !ctx.hasIndexMarks) ctx.rep.add('indexTopicsUnused', 'info', 'Index topics with no page reference in the text set are not carried', undefined, ctx.doc.topics.size);
   else if (ctx.hasIndexMarks && !chapters.some((c) => /^:::index$/m.test(c.markdown))) ctx.rep.add('indexNotPrinted', 'info', 'The text carries index marks and the document has no generated index story: add a chapter with :::index to print one', undefined);
 

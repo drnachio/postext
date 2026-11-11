@@ -16,6 +16,7 @@ import type { OrderedStory } from '../resolve/order.js';
 import { blocksOf, joinChunks, type BlockEnv, type Chunk } from './blocks.js';
 import type { Context } from './context.js';
 import type { MasterWords } from './design.js';
+import { bookmarkChapters } from './fidelity/bookmarks.js';
 import { makeHooks } from './hooks.js';
 import { indexTerm, inlineOf } from './inline.js';
 import { ownText } from './looks.js';
@@ -135,14 +136,31 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
   };
 
   // Pictures and shapes on the pages.
-  const insert = new Map<number, string[]>();
+  const insert = new Map<number, (string | Chunk)[]>();
   const front: { page: number; chunks: Chunk[] }[] = [];
   const back: { page: number; chunks: Chunk[] }[] = [];
-  const put = (where: number | 'before' | 'after', page: number, blocks: string[]): void => {
+  const put = (where: number | 'before' | 'after', page: number, blocks: (string | Chunk)[]): void => {
     if (!blocks.length) return;
-    if (where === 'before') front.push({ page, chunks: blocks.map((text) => ({ kind: 'block', text })) });
-    else if (where === 'after') back.push({ page, chunks: blocks.map((text) => ({ kind: 'block', text })) });
+    const chunks = (): Chunk[] => blocks.map((b) => (typeof b === 'string' ? { kind: 'block', text: b } : b));
+    if (where === 'before') front.push({ page, chunks: chunks() });
+    else if (where === 'after') back.push({ page, chunks: chunks() });
     else insert.set(where, [...(insert.get(where) ?? []), ...blocks]);
+  };
+  /** A story that stands above or below the main story's frames on a
+   *  page they share is part of the running text, in reading order: the
+   *  paragraph of the main story it goes before (`n - 1`) or after. */
+  const inSequence = (page: number, box: Box | undefined): number | undefined => {
+    const on = shares.filter((s) => s.page === page);
+    if (!on.length || !box) return undefined;
+    // Beside: it shares more than half of its height with a frame of the
+    // main story (frames set one under another may touch or lap a little).
+    const shared = on.some((s) => Math.min(s.box.bottom, box.bottom) - Math.max(s.box.top, box.top) > 0.5 * Math.max(1, boxHeight(box)));
+    if (shared) return undefined;
+    const middle = (box.top + box.bottom) / 2;
+    const above = on.filter((s) => (s.box.top + s.box.bottom) / 2 > middle);
+    // Above the main text of the page: before the paragraph it opens with.
+    if (above.length === on.length) return paragraphAt(on[0]!.from) - (on[0]!.from > 0 ? 0 : 1);
+    return paragraphAt(on[on.length - 1]!.to - 1);
   };
   const captionOf = new Map<Leaf, OrderedStory>();
   const captions = new Set<OrderedStory>();
@@ -249,6 +267,11 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
   };
   const usedAnchors = new Set<string>();
   const sides: OrderedStory[] = [];
+  let inOrder = 0;
+  bookmarkChapters(ctx, main, insert, (page) => {
+    const share = shares.find((s) => s.page === page);
+    return share ? paragraphAt(share.from) : undefined;
+  });
   for (const e of stories) {
     if (e === main || captions.has(e)) continue;
     const page = firstPage(e);
@@ -257,10 +280,17 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     if (where === 'before') front.push({ page, chunks: emit(e) });
     else if (where === 'after') back.push({ page, chunks: emit(e) });
     else {
+      const item = e.frames[0]!.item;
+      const dress = boxLook(ctx, item, 'side story');
+      const sequence = dress.fill || dress.stroke ? undefined : inSequence(page, box);
+      if (sequence !== undefined) {
+        inOrder++;
+        put(sequence, page, emit(e));
+        continue;
+      }
       // A story beside the main one is a box at the paragraph it faces.
       sides.push(e);
-      const item = e.frames[0]!.item;
-      const style = calloutStyleFor(ctx, item, boxLook(ctx, item, 'side story'));
+      const style = calloutStyleFor(ctx, item, dress);
       const inner = emit(e, { target: 'box' });
       const width = box ? boxWidth(box) : 0;
       const column = shares.find((s) => s.page === page)?.box;
@@ -270,7 +300,8 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
       if (inner.length) put(where, page, [`:::callout{type="${style}"${attrs}}\n${joinChunks(inner)}\n:::`]);
     }
   }
-  if (sides.length) ctx.rep.add('sideStories', 'info', 'Stories that stand beside the main text are boxes set at the paragraph of the main story the page geometry suggests', undefined, sides.length);
+  if (sides.length) ctx.rep.add('sideStories', 'info', 'Stories that stand beside the main text (or in a filled or stroked frame of their own) are boxes set at the paragraph of the main story the page geometry suggests', undefined, sides.length);
+  if (inOrder) ctx.rep.add('storiesInSequence', 'info', 'Stories set in plain frames above or below the main text on its pages are part of the running text, in reading order', undefined, inOrder);
   front.sort((a, b) => a.page - b.page);
   back.sort((a, b) => a.page - b.page);
   let lastPage = -1;
@@ -302,6 +333,11 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     title = undefined;
   };
   for (const c of chunks) {
+    if (c.chapter !== undefined) {
+      flush();
+      title = c.chapter;
+      continue;
+    }
     if (c.kind === 'heading' && c.level === 1) {
       // Breaks and numbering set right before a chapter open it.
       const lead: Chunk[] = [];

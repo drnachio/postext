@@ -15,6 +15,7 @@ import { apply, boxHeight, boxWidth, decompose, isRectangle, multiply, pathExten
 import { transformPaths } from '../resolve/geometry.js';
 import type { Context } from './context.js';
 import { attributeValue, cleanText } from './escape.js';
+import { firstLineShift, frameSetup, fromTop, openingLines } from './fidelity/baseline.js';
 import { boxLook, itemProps, radiusOf } from './objects.js';
 import { pictureResource } from './pictures.js';
 import { BLACK, pt } from './values.js';
@@ -165,6 +166,16 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
     ctx.rep.add('hiddenObjects', 'info', 'Hidden objects are left out (hiddenObjects: "include" keeps them)', o.where);
     return out;
   }
+  // A master item on a layer that is switched off, or set not to print,
+  // is left out as a page's own would be.
+  if (item.layer !== undefined && !ctx.opt.hiddenLayers && ctx.doc.layers.some((l) => l.self === item.layer && !l.visible)) {
+    ctx.rep.add('hiddenLayers', 'info', 'Text on hidden layers is left out (hiddenLayers: "include" keeps it)', o.where);
+    return out;
+  }
+  if (item.nonprinting && !ctx.opt.nonPrinting) {
+    ctx.rep.add('nonPrinting', 'info', 'Non-printing objects are left out (nonPrinting: "include" keeps them)', o.where);
+    return out;
+  }
   if (item.children.length) {
     item.children.forEach((c, n) => masterElements(ctx, c, { ...o, toPage: multiply(o.toPage, c.transform), id: `${o.id}-${n + 1}` }, out));
     return out;
@@ -187,10 +198,14 @@ export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptio
     const look = ctx.looks.of(first);
     const content = placeholderText(ctx, story.paragraphs, o.id.replace(/[^A-Za-z0-9]/g, ''), o.words);
     if (content) {
-      const [top, left, bottom, right] = item.textFrame!.inset;
+      const setup = frameSetup(ctx, item);
+      const [top, left, bottom, right] = setup.inset;
       const inner: Box = { left: box.left + left, top: box.top + top, right: box.right - right, bottom: box.bottom - bottom };
+      // The first baseline where the master has it (`fidelity/baseline`).
+      if (fromTop(setup)) inner.top += firstLineShift(ctx, setup, openingLines(ctx, story.paragraphs), o.where);
+      inner.bottom = Math.max(inner.bottom, inner.top + look.cf.leading);
       const colour: ColorValue = ctx.palette.colour(look.cf.fillColor, look.cf.fillTint, o.where) ?? BLACK;
-      const v = item.textFrame!.verticalJustification;
+      const v = setup.verticalJustification;
       out.push({
         kind: 'text',
         id: `${o.id}-text`,
