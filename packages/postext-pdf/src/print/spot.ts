@@ -149,8 +149,12 @@ export class SpotInkRegistry {
       const plate = p.process ? p : this.plateOf({ name: p.name, cmyk: p.cmyk, overprint: p.overprint, tint: 100 });
       const at = merged.findIndex((q) => q.name === plate.name);
       const t = Math.max(0, Math.min(1, tints[i] ?? 0));
-      if (at >= 0) ts[at] = Math.min(1, ts[at]! + t);
-      else (merged.push(plate), ts.push(t));
+      if (at >= 0) {
+        ts[at] = Math.min(1, ts[at]! + t);
+      } else {
+        merged.push(plate);
+        ts.push(t);
+      }
     });
     if (merged.length === 1 && !merged[0]!.process) {
       const p = merged[0]!;
