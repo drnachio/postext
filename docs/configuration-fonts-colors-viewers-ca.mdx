@@ -48,7 +48,7 @@ interface ColorValue {
 }
 ```
 
-El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](#colors-definits-en-cmyk)). `'spot'` és una tinta plana, amb la seva tinta a `spot` (vegeu [Tintes planes](/ca/docs/configuration-pdf-output#tintes-planes)).
+El camp `model` indica l'espai de color previst. Per a la renderització web, `'hex'` o `'rgb'` són els habituals. Per a fluxos de treball d'impressió, `'cmyk'` indica que el color es va especificar en CMYK, i `cmyk` en guarda els valors: una sortida d'impremta en CMYK els aplica tal com són, i `hex` n'és la representació en pantalla (vegeu [Colors definits en CMYK](/ca/docs/configuration-pdf-output#colors-definits-en-cmyk)). `'spot'` és una tinta plana, amb la seva tinta a `spot` (vegeu [Tintes planes](/ca/docs/configuration-pdf-output#tintes-planes)).
 
 Com que Postext busca una sortida de qualitat editorial, el color per defecte del text de cos és `model: 'cmyk'` (`#000000`). Els colors d'encapçalaments, negretes, cursives i llistes prenen per defecte el **Color principal** enllaçat a la paleta (`#295AA3`, `model: 'hex'`). El fons de pàgina i els indicadors d'interfície (retícula de base, marques de tall, indicadors de depuració) fan servir `model: 'hex'` per defecte. Si necessites un altre comportament en exportar, canvia `color.model` en qualsevol camp.
 
@@ -636,7 +636,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>vegeu <a href="#preflight">Preflight</a></td>
+      <td>vegeu <a href="/ca/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Què revisa el preflight i amb quins llindars.</td>
     </tr>
   </tbody>
@@ -765,85 +765,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Colors definits en CMYK
-
-Un color escrit en CMYK conserva els seus valors exactes: `ColorValue.cmyk` (en percentatge) s'aplica tal com és en una sortida d'impremta, i `hex` n'és la representació en pantalla. Una entrada de la paleta definida en CMYK val per a tots els colors enllaçats a ella.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-#### Colors que sobreimprimeixen
-
-Qualsevol color pot sobreimprimir en una sortida d'impremta: `overprint: true` en un `ColorValue` fa que tot el que es pinta amb ell (text, filets, caixes, fons) s'imprimeixi a sobre del que té a sota en lloc de buidar-ho. Un color de quatricromia s'escriu tal com se separa, amb un estat gràfic de sobreimpressió; una tinta plana sobreimprimeix a la planxa de la seva tinta, encara que la mateixa tinta en un altre color buidi. Un negre al 100 % K que sobreimprimeix conserva el tractament del negre: les masses grans continuen sortint en negre enriquit (`black.richBlack`). Un PDF en RGB i la pantalla ho ignoren. Posa-ho a l'entrada de la paleta perquè sobreimprimeixi tot color enllaçat a ella, també els seus tints; un color enllaçat pren el valor de l'entrada i no en té cap de propi. La paleta d'una part o d'una secció el conserva: el text en el color de la part també sobreimprimeix.
-
-```ts
-colorPalette: [
-  { id: 'title', name: 'Títol', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
-],
-```
-
-Una sortida d'impremta reconeix un color per l'hex que pinta la maquetació, així que un color que sobreimprimeix no comparteix mai l'hex amb un que buida. Quan coincideixen, el que sobreimprimeix es desplaça un pas (1/255 en un canal), com fan les tintes planes; el color d'una part per a una entrada que sobreimprimeix s'aparta de la mateixa manera de qualsevol color del llibre que buidi. Un color que sobreimprimeix i no diposita tinta (el blanc del paper, una tinta al 0 %) desapareix a la impremta: el preflight el marca com a crític (`overprintWhite`). Una sortida amb més colors diferents que codis disponibles (uns 25 milions) buida la resta i avisa (`overprintsExhausted`). Al Sandbox, ho activa l'interruptor «Sobreimprimir a impremta» del selector de color.
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // Píxels per polzada a la mida impresa.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Propietat</th>
-      <th>Tipus</th>
-      <th>Per defecte</th>
-      <th>Descripció</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa les revisions.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Un mapa de bits col·locat per sota d'aquests píxels per polzada a la seva mida impresa, retall inclòs, rep un avís: figures, imatges de cel·les de taula, imatges de disseny, vinyetes de còmic. Un mapa de bits sense resolució pròpia s'imprimeix a `page.dpi` a la seva mida natural, així que una pàgina composta a 150 dpi imprimeix cadascuna d'aquestes imatges a 150 ppp; un amb resolució (`bitmap.resolution`, `layout.bitmapResolution`) s'imprimeix a aquesta resolució a la seva mida natural.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Per sota d'aquest valor l'avís és crític. Mai per sobre de `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Filets, vores, filets de columna, filets de taula i vores de vinyeta de còmic més fins que això.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Text per sota d'aquesta mida compost en més d'una tinta (un color de quatricromia, negre enriquit): s'emborrona quan les planxes es desplacen. El text negre, només K, no compta mai.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Text més a prop del tall que aquesta distància, on la guillotina el pot tallar.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Una caixa o una imatge que s'atura així de prop del tall sense arribar a la sang: porta-la a sang o retira-la.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa de les fonts que no incrusta un PDF col·locat (el Sandbox revisa cada màster d'impressió amb `inspectPrintMaster`). Postext incrusta totes les fonts que compon.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` fa les revisions sobre un document maquetat i retorna una llista d'incidències, cadascuna amb un `kind`, una `severity` (`'critical'`, `'warning'` o `'info'`), el `pageIndex` absolut dins del llibre, el `rect` afectat (px de pàgina) i, quan l'element en té, el seu interval al text font. Els tipus són `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` i `nearTrim`. Sense `transform`, un neutre compta com una tinta i qualsevol altre color com tres, i la cobertura no es revisa; amb un `transform`, els recomptes i la cobertura són exactes. La resolució d'una imatge es calcula amb els píxels que declara el seu recurs, o amb els del fitxer mateix quan `imageSize(fileId)` els dona (`bitmapInfo` sobre els bytes, o la imatge descodificada): una declaració que es desvia més d'un píxel del fitxer genera una sola vegada un avís `declaredPixelsMismatch`, un avís quan declara més píxels dels que té el fitxer. `placedImageResolutions(doc, { resources, imageSize })` enumera cada mapa de bits col·locat amb els seus ppp efectius, tant si el preflight està activat com si no. Els rètols d'una figura compten com a text per a `smallProcessText`, `inkLimit` i `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // mides en píxels dels mapes de bits
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // els píxels reals dels fitxers
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', segons el fitxer
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Simulació de la impressió
 

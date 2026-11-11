@@ -48,7 +48,7 @@ interface ColorValue {
 }
 ```
 
-O campo `model` indica o espaço de cor pretendido. Para renderização na web, o normal é `'hex'` ou `'rgb'`. Em fluxos de impressão, `'cmyk'` diz que a cor foi especificada em CMYK, e `cmyk` guarda os valores dela: uma renderização de impressão em CMYK os aplica como estão, e `hex` é a forma como aparecem na tela (veja [Cores definidas em CMYK](#cores-definidas-em-cmyk)). `'spot'` é uma cor especial, com a sua tinta em `spot` (veja [Cores especiais](/pt/docs/configuration-pdf-output#cores-especiais)).
+O campo `model` indica o espaço de cor pretendido. Para renderização na web, o normal é `'hex'` ou `'rgb'`. Em fluxos de impressão, `'cmyk'` diz que a cor foi especificada em CMYK, e `cmyk` guarda os valores dela: uma renderização de impressão em CMYK os aplica como estão, e `hex` é a forma como aparecem na tela (veja [Cores definidas em CMYK](/pt/docs/configuration-pdf-output#cores-definidas-em-cmyk)). `'spot'` é uma cor especial, com a sua tinta em `spot` (veja [Cores especiais](/pt/docs/configuration-pdf-output#cores-especiais)).
 
 Como o Postext mira uma saída de qualidade editorial, a cor padrão do texto do corpo vem com `model: 'cmyk'` (`#000000`). As cores de títulos, negrito, itálico e listas usam por padrão a **Cor principal** vinculada à paleta (`#295AA3`, `model: 'hex'`). O fundo da página e as sobreposições da interface (grade de linhas de base, marcas de corte, indicadores de depuração) usam por padrão `model: 'hex'`. Substitua `color.model` em qualquer campo se precisar de outra semântica de exportação.
 
@@ -637,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>veja <a href="#preflight">Preflight</a></td>
+      <td>veja <a href="/pt/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>O que o preflight verifica e os limites dele.</td>
     </tr>
   </tbody>
@@ -766,85 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### Cores definidas em CMYK
-
-Uma cor escrita em CMYK mantém os valores exatos: `ColorValue.cmyk` (em porcentagem) é aplicado como está numa renderização de impressão, e `hex` é a forma como ela aparece na tela. Uma entrada da paleta definida em CMYK vale para todas as cores vinculadas a ela.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-#### Cores que sobreimprimem
-
-Qualquer cor pode sobreimprimir numa renderização de impressão: `overprint: true` num `ColorValue` faz com que tudo o que é pintado com ela (texto, fios, boxes, fundos) seja impresso sobre o que está por baixo em vez de o vazar. Uma cor de quadricromia é escrita como se separa, sob um estado gráfico de sobreimpressão; uma cor especial sobreimprime na chapa da sua tinta, mesmo onde a mesma tinta em outra cor vaza. Um preto a 100 % K que sobreimprime mantém o tratamento do preto: as áreas grandes continuam saindo em preto composto (`black.richBlack`). Um PDF em RGB e a tela o ignoram. Defina-o na entrada da paleta para que sobreimprima toda cor vinculada a ela, inclusive os seus tons; uma cor vinculada segue o ajuste da entrada e não tem um próprio. A paleta de uma parte ou de uma seção o mantém: o texto na cor da parte também sobreimprime.
-
-```ts
-colorPalette: [
-  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
-],
-```
-
-Uma renderização de impressão reconhece uma cor pelo hex que o layout pinta, por isso uma cor que sobreimprime nunca compartilha o hex com uma que vaza. Quando coincidem, a que sobreimprime se desloca um passo (1/255 num canal), como fazem as cores especiais; a cor de uma parte para uma entrada que sobreimprime se afasta da mesma forma de qualquer cor do livro que vaza. Uma cor que sobreimprime e não deposita tinta (o branco do papel, uma tinta a 0 %) desaparece na impressão: o preflight a marca como crítica (`overprintWhite`). Uma renderização com mais cores distintas do que códigos disponíveis (cerca de 25 milhões) vaza o restante e avisa (`overprintsExhausted`). No Sandbox, isso é definido pelo interruptor “Sobreimprimir na impressão” do seletor de cor.
-
-### Preflight
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi no tamanho impresso.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>Propriedade</th>
-      <th>Tipo</th>
-      <th>Padrão</th>
-      <th>Descrição</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Executa as verificações.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>Um bitmap colocado com menos pixels por polegada que isso no tamanho impresso, recorte incluído, recebe um aviso: figuras, imagens em células de tabela, imagens de design, quadros de quadrinhos. Um bitmap sem resolução própria é impresso com `page.dpi` no tamanho natural dele; por isso, uma página diagramada a 150 dpi imprime cada imagem assim a 150 ppi; um bitmap com resolução (`bitmap.resolution`, `layout.bitmapResolution`) é impresso com essa resolução no tamanho natural.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>Abaixo disso, o aviso é crítico. Nunca acima de `minImageResolution`.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>Fios, bordas, fios entre colunas, fios de tabela e bordas de quadros de quadrinhos mais finos que isso.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>Texto menor que isso composto em mais de uma tinta (uma cor de quadricromia, preto composto): fica borrado quando as chapas se deslocam. O texto preto, só em K, nunca conta.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>Texto mais perto do refile que isso, onde a guilhotina pode cortá-lo.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>Uma caixa ou imagem que para a essa distância do refile sem chegar à sangria: leve-a para a sangria ou recue-a.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>Informa as fontes que um PDF inserido não incorpora (o Sandbox inspeciona cada matriz de impressão com `inspectPrintMaster`). O Postext incorpora todas as fontes que compõe.</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)` executa as verificações num documento diagramado e devolve uma lista de problemas, cada um com um `kind`, uma `severity` (`'critical'`, `'warning'` ou `'info'`), o `pageIndex` absoluto no livro, o `rect` do elemento em questão (px da página) e, quando o elemento tem, o intervalo de origem dele. Os tipos são `lowImageResolution`, `declaredPixelsMismatch`, `rgbImage`, `thinRule`, `smallProcessText`, `inkLimit`, `safeZone` e `nearTrim`. Sem um `transform`, uma cor neutra conta como uma tinta e qualquer outra como três, e a cobertura não é verificada; com um, as contagens e a cobertura são exatas. A resolução de uma imagem é calculada a partir dos pixels que o recurso dela declara, ou dos do próprio arquivo quando `imageSize(fileId)` os fornece (`bitmapInfo` sobre os bytes, ou a imagem decodificada): uma declaração que se afasta do arquivo em mais de um pixel é informada uma vez como `declaredPixelsMismatch`, um aviso quando declara mais pixels do que o arquivo tem. `placedImageResolutions(doc, { resources, imageSize })` lista cada bitmap colocado com o ppi efetivo, com o preflight ligado ou não. Os rótulos de uma figura contam como texto para `smallProcessText`, `inkLimit` e `safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // tamanhos em pixels dos bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // os pixels reais dos arquivos
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', tirado do arquivo
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### Simulação de impressão
 

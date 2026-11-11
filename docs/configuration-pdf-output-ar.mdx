@@ -38,7 +38,7 @@ npm install postext postext-pdf
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ملف من ملفات شكل الخط يذكر كيف أعلنته الصفحة: قيمة `unicode-range` في قاعدته `@font-face` وموضعه في ترتيب الإعلان. و`PdfFontFile` هو `Uint8Array` فيه هاتان الخاصيتان الاختياريتان (انظر [خطوط الصينية واليابانية والكورية](#خطوط-الصينية-واليابانية-والكورية)). منذ postext-pdf 1.30.
 - **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`. ويحدّد `forms` كيف تكتب حقول النماذج الأرقام (العملة وموضعها والفواصل) وشكل الخط الذي تعرض به قيمها (`font`؛ انظر [حقول النماذج](#حقول-النماذج)). تأخذ `outlines` و`accessible` و`colorSpace` قيمتها من `pdfGeneration` في المستند حين تُترك (انظر [إنتاج PDF (الإعدادات)](/ar/docs/configuration-fonts-colors-viewers#إنتاج-pdf-الإعدادات)). يُشرح `resourceBytes` في [بايتات الموارد والنسخ الأصلية للطباعة](#بايتات-الموارد-والنسخ-الأصلية-للطباعة)، و`onWarning` في [أشكال الخطوط التي يُسأل عنها المزوّد](#أشكال-الخطوط-التي-يُسأل-عنها-المزوّد) و[التحذيرات في المستند](/ar/docs/configuration-programmatic-usage#التحذيرات-في-المستند). يطبع `characterGrid: true` الشبكة التي يرسمها `cjk.grid.show` على الشاشة، والتي يُسقطها ملف PDF في غير ذلك (انظر [شبكة الحروف](/ar/docs/configuration-east-asian#شبكة-الحروف)). ويحدّد `harfbuzzWasm` المكان الذي يُحمَّل منه الملف `harfbuzz.wasm` الخاص بـHarfBuzz (عنوان URL نسبي إلى الصفحة، أو بايتات الملف) لمستند فيه نص من اليمين إلى اليسار أو نص متصل الحروف؛ وإن تُرك، جرّب postext-pdf النسخة الموجودة بجانب وحدته، ثم إصدار harfbuzzjs نفسه من jsDelivr ثم من esm.sh. يأخذ `print` إعدادات الإخراج للطباعة (معيار PDF/X، وملف التعريف اللوني للإخراج، والأسود، والفحص قبل الطباعة)، وإن لم يُمرَّر أُخذت قيمة `print` من المستند؛ ومع معيار PDF/X، أو مع `colorSpace: 'cmyk'`، يُفصَل كل لون عبر ملف ICC للإخراج، الذي تعطي `outputProfile` بايتاته (وإلا جُلب من `profileBaseUrl`، وافتراضيًا نسخة مجلد `icc/` من postext على شبكة npm). والخيار `date` (كائن `Date` أو زمن بالمللي ثانية أو تاريخ مكتوب، مثل `mtime` في `createBundle`) هو تاريخ إنشاء الملف وتاريخ تعديله، وفي ملف PDF/X هو أيضًا تواريخ حزمة XMP ومنه يُشتق معرّف المستند: المستند نفسه إذا وُلّد مرتين بقيمة `date` واحدة أعطى البايتات نفسها. وإذا تُرك، حمل الملف وقت الاستدعاء. والتاريخ غير الصالح يرمي خطأ.
 - **`PdfWarning`** — مشكلة غير قاتلة تصل عبر `onWarning`؛ ميّز نوعها بالحقل `kind`: `'fontFallback'` (`PdfFontFallbackWarning`)، شكل خط نُضّد بشكل آخر من عائلته؛ `'missingGlyph'` (`PdfMissingGlyphWarning`)، حروف لا يحوي أي ملف من ملفات شكل الخط رسمًا (glyph) لها؛ `'variableFontDefaultInstance'` (`PdfVariableFontWarning`)، خط متغيّر طُلب بوزن غير وزن نسخته الافتراضية؛ `'cffEmbeddedWhole'` (`PdfCffEmbeddedWholeWarning`)، شكل خط CFF يتجاوز 2 MB ضُمِّن كاملًا؛ `'complexShapingUnavailable'` (`PdfComplexShapingWarning`)، نص من اليمين إلى اليسار أو متصل الحروف رُسم دون HarfBuzz لتعذّر تحميله (يسرد `reason` الأماكن التي بُحث فيها عنه)، فتقع العلامات العربية في غير مواضعها؛ `'outputProfileUnavailable'` (`PdfPrintWarning`)، إنتاج بألوان CMYK تعذّر تحميل ملف تعريف الإخراج الخاص به، فحُوّلت ألوانه بالمعادلة البسيطة؛ `'pageNegativeIgnored'` (`PdfPrintWarning`)، الصفحة المعكوسة (page negative) التي أُسقطت من ملف PDF/X-1a؛ `'spotTintsExhausted'` (`PdfPrintWarning`)، عرض نفدت فيه الرموز التي تميّز درجات الألوان الخاصة (نحو 25 مليونًا) فطبع الباقي بالألوان الرباعية؛ `'spotInkRenamed'` (`PdfPrintWarning`)، حبر يُكتب لوحه باسم آخر (انظر [الألوان الخاصة](#الألوان-الخاصة))؛ أو `'missingImage'`، صورة بلا بايتات رُسم مكانها عنصر نائب (لا يصل هذا التحذير إلا إلى `onWarning` تمرّره أنت؛ أما تحذيرات الخطوط فتذهب، في غيابها، إلى `console.warn`).
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — يقرأ الصفحة الأولى من نسخة أصلية للطباعة بصيغة PDF، ويذكر الخطوط التي تستعملها دون أن تضمّنها (`nonEmbeddedFonts`)، وهل ترسم بألوان RGB (`rgb`)، وهل تستعمل الشفافية (`transparency`)، من أجل [الفحص قبل الطباعة](/ar/docs/configuration-fonts-colors-viewers#الفحص-قبل-الطباعة).
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — يقرأ الصفحة الأولى من نسخة أصلية للطباعة بصيغة PDF، ويذكر الخطوط التي تستعملها دون أن تضمّنها (`nonEmbeddedFonts`)، وهل ترسم بألوان RGB (`rgb`)، وهل تستعمل الشفافية (`transparency`)، من أجل [الفحص قبل الطباعة](/ar/docs/configuration-pdf-output#الفحص-قبل-الطباعة).
 - **`decompressWoff2(bytes): Uint8Array`** — دالة مساعدة تحوّل ملف WOFF2 إلى بايتات TTF، وهي الصيغة التي تستطيع `pdf-lib` تضمينها مباشرةً.
 - **`createPdfWorker(options?)`**، من `postext-pdf/worker` — الإنتاج نفسه في عامل ويب؛ انظر [إنتاج ملف PDF في عامل](#إنتاج-ملف-pdf-في-عامل).
 
@@ -415,7 +415,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`** — يضيف منطقة النزف وعلامات القص حول حدّ القص، ويعطي كل صفحة TrimBox وBleedBox. انظر [خطوط القص](/ar/docs/configuration-page-layout#خطوط-القص).
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`** (أو `'pdfx1a'`) — ملف PDF/X فيه نية الإخراج (output intent) والتعريف والمربعات (boxes) التي تتحقق منها المطبعة؛ ويُفصَل كل لون وكل صورة RGB عبر ملف تعريف ICC، ويُطبع الأسود 100% K فوق الألوان، وتُطبع المساحات السوداء الكبيرة بالأسود الغني. انظر [الإنتاج الطباعي (الإعدادات)](/ar/docs/configuration-fonts-colors-viewers#الإنتاج-الطباعي-الإعدادات).
 - **`colorSpace: 'cmyk'`** (أو `pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`) — الفصل نفسه من غير تعريف PDF/X (وعلامات القص بلون التسجيل دائمًا). وتُضمَّن نسخ PDF الأصلية للطباعة كما هي.
-- **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية التي ليست لها دقة خاصة بها تُطبع بهذه الدقة بمقاسها الطبيعي. ويُصدر [الفحص قبل الطباعة](/ar/docs/configuration-fonts-colors-viewers#الفحص-قبل-الطباعة) تحذيرًا بالصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
+- **`page.dpi: 300`** — عدد بكسلات الإخراج في البوصة: الصورة النقطية التي ليست لها دقة خاصة بها تُطبع بهذه الدقة بمقاسها الطبيعي. ويُصدر [الفحص قبل الطباعة](/ar/docs/configuration-pdf-output#الفحص-قبل-الطباعة) تحذيرًا بالصور التي تقل دقتها عن 300 ppi بحجمها المطبوع.
 - **`ColorValue.cmyk`** — يُطبع اللون المعرّف بقيم CMYK بقيمه الدقيقة.
 - **`{ pageNegative: true }`** في `RenderToPdfOptions` — يعكس منطقة حدّ القص باستخدام نمط الدمج Difference (وتبقى علامات القص غير معكوسة). مفيد لفحوص ما قبل الطباعة (preflight) على الطباعة الداكنة فوق الفاتح.
 
@@ -469,6 +469,85 @@ print: {
     { name: 'Varnish', output: 'process' },
   ],
 },
+```
+
+### الألوان المعرّفة بقيم CMYK
+
+اللون المكتوب بقيم CMYK يحتفظ بقيمه الدقيقة: يُكتب `ColorValue.cmyk` (بالنسبة المئوية) كما هو في الإخراج الطباعي، ويكون `hex` صورته على الشاشة. ومدخل لوحة الألوان المعرّف بقيم CMYK يشمل كل لون مرتبط به.
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### الألوان التي تُطبع فوق غيرها
+
+يمكن لأي لون أن يُطبع فوق ما تحته في الإخراج الطباعي: يجعل `overprint: true` في `ColorValue` كل ما يُرسم به (النص، والخطوط الفاصلة، والصناديق، والخلفيات) يُطبع فوق ما تحته بدل تفريغه. ويُكتب اللون الرباعي كما يُفصَل، تحت حالة رسومية للطباعة الفوقية؛ ويُطبع اللون الخاص فوق ما تحته على لوح حبره، حتى حيث يُفرِّغ الحبرُ نفسه في لون آخر. والأسود بنسبة 100% K الذي يُطبع فوق ما تحته يحتفظ بمعالجة الأسود: فالمساحات الكبيرة تظل تُطبع بالأسود الغني (`black.richBlack`). ويتجاهل ذلك ملفُ PDF بنظام RGB والشاشة. اضبطه في مدخل لوحة الألوان ليُطبع فوق ما تحته كل لون مرتبط به، ودرجاته معه؛ فاللون المرتبط يأخذ ضبط المدخل ولا ضبط خاص به. وتحتفظ به لوحة الجزء أو القسم: فالنص المكتوب بلون الجزء يُطبع فوق ما تحته أيضًا.
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+يتعرّف الإخراج الطباعي على اللون من قيمة hex التي يرسمها التخطيط، فلا يشترك لون يُطبع فوق ما تحته في قيمته مع لون يُفرِّغ ما تحته أبدًا. وحين تتطابقان، يتزحزح اللون الذي يُطبع فوق ما تحته خطوة واحدة (1/255 في قناة واحدة)، كما تفعل الألوان الخاصة؛ ولون الجزء لمدخل يُطبع فوق ما تحته يبتعد بالطريقة نفسها عن أي لون في الكتاب يُفرِّغ ما تحته. واللون الذي يُطبع فوق ما تحته ولا يضع حبرًا (بياض الورق، أو حبر بنسبة 0%) يختفي في الطباعة: يعدّه الفحص قبل الطباعة حرجًا (`overprintWhite`). والإخراج الذي فيه ألوان مختلفة أكثر مما لديه من رموز (نحو 25 مليونًا) يُفرِّغ ما زاد منها ويحذّر (`overprintsExhausted`). وفي Sandbox، يضبطه مفتاح «طباعة فوقية عند الطباعة» في منتقي الألوان.
+
+### الفحص قبل الطباعة
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // ppi at the printed size.
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>الخاصية</th>
+      <th>النوع</th>
+      <th>القيمة الافتراضية</th>
+      <th>الوصف</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية التي ليست لها دقة خاصة بها تُطبع بمقاسها الطبيعي بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi؛ أما التي لها دقة (`bitmap.resolution`، `layout.bitmapResolution`) فتُطبع بمقاسها الطبيعي بتلك الدقة.</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>النص الأقرب من هذا إلى خط القص، حيث قد تقطعه المقصلة.</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>الصندوق أو الصورة الذي يتوقف على هذا القرب من خط القص من غير أن يبلغ النزف: مدّه إلى النزف أو اسحبه للداخل.</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يُصدر تحذيرًا عن الخطوط التي لا يضمّنها ملف PDF موضوع في الكتاب (يفحص Sandbox كل نسخة أصلية للطباعة بـ`inspectPrintMaster`). ويضمّن Postext كل خط ينضّد به.</td></tr>
+  </tbody>
+</table>
+
+تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`declaredPixelsMismatch` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة. وتُحسب دقة الصورة من البكسلات التي يصرّح بها موردها، أو من بكسلات الملف نفسه حين يقدّمها `imageSize(fileId)` (`bitmapInfo` على البايتات، أو الصورة بعد فك ترميزها): والتصريح الذي يبتعد عن الملف بأكثر من بكسل واحد يصدر عنه مرة واحدة تحذير من النوع `declaredPixelsMismatch`، وهو تحذير حين يدّعي بكسلات أكثر مما في الملف. وتسرد `placedImageResolutions(doc, { resources, imageSize })` كل صورة نقطية موضوعة مع دقتها الفعلية بوحدة ppi، سواء كان الفحص قبل الطباعة مفعّلًا أم لا. تُحتسب تسميات الشكل نصًّا في `smallProcessText` و`inkLimit` و`safeZone`.
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // pixel sizes of the bitmaps
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
 ```
 
 ### التنفيذ المرجعي

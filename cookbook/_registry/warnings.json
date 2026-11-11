@@ -5232,7 +5232,7 @@
       "it": "Fai clic sulla voce per aprirne la pagina: sostituisci o ingrandisci l’immagine, ispessisci il filetto, componi il testo piccolo in nero o in un solo inchiostro, sposta il testo all’interno della zona di sicurezza, estendi i riquadri fino all’abbondanza. Le soglie sono in print.preflight."
     },
     "docs": {
-      "slug": "configuration-fonts-colors-viewers",
+      "slug": "configuration-pdf-output",
       "heading": {
         "en": "Preflight",
         "es": "Preflight",

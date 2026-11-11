@@ -38,7 +38,7 @@ npm install postext postext-pdf
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`**：一种字体的一个文件，并说明页面怎样声明它：它的`@font-face`规则的`unicode-range`，以及这条规则在声明顺序里的位置。`PdfFontFile`是带这两个可选属性的`Uint8Array`（见[中文、日文和韩文字体](#中文日文和韩文字体)）。postext-pdf 1.30起。
 - **`RenderToPdfOptions`**：`{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`设定表单域怎样书写数字（货币符号、它放在哪一侧、分隔符），以及显示值所用的字体（`font`；见[表单域](#表单域)）。省略`outlines`、`accessible`和`colorSpace`时，取文档的`pdfGeneration`（见[PDF生成（配置）](/zh/docs/configuration-fonts-colors-viewers#pdf生成配置)）。`resourceBytes`的说明见[资源字节与印刷母版](#资源字节与印刷母版)；`onWarning`见[向字体提供函数请求哪些字体](#向字体提供函数请求哪些字体)和[文档中的警告](/zh/docs/configuration-programmatic-usage#文档中的警告)。`characterGrid: true`会把`cjk.grid.show`在屏幕上画的网格印进PDF，否则PDF不含这层网格（见[字符网格](/zh/docs/configuration-east-asian#字格)）。`harfbuzzWasm`指定含从右向左或连写文字的文档从哪里加载HarfBuzz的`harfbuzz.wasm`（URL，相对于页面；或文件字节）；省略时先找postext-pdf模块旁的副本，再依次找jsDelivr和esm.sh上同一版本的harfbuzzjs。`print`接收印刷输出设置（PDF/X标准、输出特性文件、黑色处理、印前检查），省略时取文档的`print`；设定PDF/X标准或`colorSpace: 'cmyk'`时，所有颜色都经ICC输出特性文件分色，其字节由`outputProfile`给出（否则从`profileBaseUrl`下载，默认是npm CDN上postext的`icc/`文件夹）。`date`（`Date`、毫秒时间戳或日期字符串，与`createBundle`的`mtime`同类型）是文件的创建日期和修改日期；在PDF/X文件中，它还是XMP数据包里的日期，文档标识也由它算出：同一份文档用同一个`date`生成两次，得到的字节完全相同。省略时，文件记下调用时的时间。日期无效时抛出错误。
 - **`PdfWarning`**：通过`onWarning`报告的非致命问题；按`kind`区分：`'fontFallback'`（`PdfFontFallbackWarning`），某个字体改用了同一家族的另一款字体；`'missingGlyph'`（`PdfMissingGlyphWarning`），字体的所有文件都没有字形的字符；`'variableFontDefaultInstance'`（`PdfVariableFontWarning`），以默认实例之外的字重请求可变字体；`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`），超过2 MB的CFF字体被整体嵌入；`'complexShapingUnavailable'`（`PdfComplexShapingWarning`），HarfBuzz未能加载（`reason`列出查找过的位置），从右向左或连写的文字没有经它成形，阿拉伯文的标音符号位置不对；`'outputProfileUnavailable'`（`PdfPrintWarning`），CMYK渲染无法加载输出特性文件，改用教科书公式换算；`'pageNegativeIgnored'`（`PdfPrintWarning`），PDF/X-1a文件中略去了页面负片；`'spotTintsExhausted'`（`PdfPrintWarning`），一次渲染用完了区分专色浓度的代码（约2500万个），其余浓度改以四色印刷；`'spotInkRenamed'`（`PdfPrintWarning`），某种油墨的印版以另一个名称写出（见[专色](#专色)）；或`'missingImage'`，没有字节、画成占位框的图像（只报告给你传入的`onWarning`；未传入时，字体类警告输出到`console.warn`）。
-- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)使用。
+- **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`**：读取PDF印刷母版的第一页，报告它用到但没有嵌入的字体（`nonEmbeddedFonts`）、它是否用RGB绘制（`rgb`），以及是否使用透明（`transparency`），供[印前检查](/zh/docs/configuration-pdf-output#印前检查)使用。
 - **`decompressWoff2(bytes): Uint8Array`**：辅助函数，把WOFF2文件转成TTF字节，`pdf-lib`可以直接嵌入这种格式。
 - **`createPdfWorker(options?)`**，来自`postext-pdf/worker`：在Web Worker上进行同样的渲染；见[在工作线程上渲染PDF](#在工作线程上渲染pdf)。
 
@@ -415,7 +415,7 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.cutLines.enabled: true`**：在成品尺寸周围加上出血区域和裁切线，并给每一页设置TrimBox和BleedBox。见[裁切线](/zh/docs/configuration-page-layout#裁切线)。
 - **`print: { standard: 'pdfx4', outputProfile: 'fogra51' }`**（或`'pdfx1a'`）：写出PDF/X文件，带有印厂会检查的输出意图、标识和页面框；所有颜色和RGB图片都经ICC特性文件分色，100% K叠印，大面积黑色用复合黑。见[印刷输出（配置）](/zh/docs/configuration-fonts-colors-viewers#印刷输出配置)。
 - **`colorSpace: 'cmyk'`**（或`pdfGeneration: { forceColorSpace: true, colorSpace: 'cmyk' }`）：同样的分色，但没有PDF/X标识（裁切线始终用套准色）。PDF印刷母版原样嵌入。
-- **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-fonts-colors-viewers#印前检查)会报告印刷尺寸下不足300 ppi的图片。
+- **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-pdf-output#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切线不反转）。适合对浅底深字的排版做印前检查。
 
@@ -469,6 +469,85 @@ print: {
     { name: 'Varnish', output: 'process' },
   ],
 },
+```
+
+### 以CMYK定义的颜色
+
+用CMYK写的颜色保留准确的数值：印刷渲染原样使用`ColorValue.cmyk`（百分比），`hex`是它在屏幕上的呈现。以CMYK定义的调色板条目，作用于所有链接到它的颜色。
+
+```ts
+colorPalette: [
+  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
+],
+```
+
+### 叠印的颜色
+
+在印刷渲染中，任何颜色都可以叠印：在`ColorValue`上设置`overprint: true`，用它绘制的一切（文字、线条、框、底色）都会印在下方内容之上，而不是将其镂空。印刷色按其分色方式写出，并处于叠印的图形状态之下；专色在其油墨的印版上叠印，即使同一油墨在另一种颜色中是镂空的。叠印的100% K黑色保留黑色的处理：大面积仍然用复合黑（`black.richBlack`）。RGB PDF和屏幕会忽略它。把它设在调色板条目上，所有链接到该条目的颜色都会叠印，包括它的色调；链接的颜色采用条目的设置，自己没有单独的设置。篇或章节的调色板会保留它：用篇的颜色排的文字也会叠印。
+
+```ts
+colorPalette: [
+  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
+],
+```
+
+印刷渲染按版面绘制的hex识别颜色，所以叠印的颜色绝不会与镂空的颜色共用一个hex。两者相同时，叠印的那个移动一步（在一个通道上移动1/255），专色也是这样处理的；叠印条目的篇颜色也以同样方式避开书中任何镂空的颜色。叠印而又不着墨的颜色（纸白、0%的油墨）在印刷时会消失：印前检查把它报告为严重（`overprintWhite`）。一次渲染中不同颜色的数量超过可用编码（约2500万个）时，其余颜色改为镂空，并发出警告（`overprintsExhausted`）。在Sandbox中，由取色器的“印刷时叠印”开关设置。
+
+### 印前检查
+
+```ts
+interface PrintPreflightConfig {
+  enabled?: boolean;
+  minImageResolution?: number;       // 印刷尺寸下的ppi。
+  criticalImageResolution?: number;
+  minRuleWidth?: Dimension;
+  smallTextSize?: Dimension;
+  safeZone?: Dimension;
+  bleedSnap?: Dimension;
+  checkFonts?: boolean;
+}
+```
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>运行检查。</td></tr>
+    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。没有自身分辨率的位图按自然尺寸以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷；设了分辨率（`bitmap.resolution`、`layout.bitmapResolution`）的位图按自然尺寸以该分辨率印刷。</td></tr>
+    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>低于此值时，警告为严重。不会高于`minImageResolution`。</td></tr>
+    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>比此值更细的线条、边框、栏线、表格线和漫画分格边框。</td></tr>
+    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>小于此字号、用多于一种墨印刷的文字（印刷色、复合黑）：印版偏移时会发虚。只用K的黑色文字从不计入。</td></tr>
+    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>离裁切线比此值更近的文字，裁切时可能被切掉。</td></tr>
+    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>停在离裁切线这么近处、却没有延伸到出血的方框或图片：要么延伸到出血，要么内移。</td></tr>
+    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>报告置入的PDF中未嵌入的字体（沙盒用`inspectPrintMaster`检查每个印刷母版）。Postext自己排的字体都会嵌入。</td></tr>
+  </tbody>
+</table>
+
+`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。图片的分辨率按资源声明的像素计算；`imageSize(fileId)`给出文件本身的像素时（对字节调用`bitmapInfo`，或取自解码后的图像），则按文件的像素计算：声明与文件相差超过一个像素时，报告一次`declaredPixelsMismatch`；如果声明的像素多于文件实有的像素，它的级别为警告。`placedImageResolutions(doc, { resources, imageSize })`列出每张放置的位图及其有效ppi，不论印前检查是否开启。图中的标注在`smallProcessText`、`inkLimit`和`safeZone`中按文字计算。
+
+```ts
+import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
+import { inspectPrintMaster } from 'postext-pdf';
+
+const print = resolvePrintConfig(config.print);
+const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
+const issues = preflightDocument(doc, {
+  print,
+  transform,
+  resources,                                    // 位图的像素尺寸
+  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // 文件的实际像素
+  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray'，取自文件
+});
+if (issues.some((i) => i.severity === 'critical')) process.exit(1);
+
+const master = await inspectPrintMaster(masterBytes);
+// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
 ```
 
 ### 参考实现

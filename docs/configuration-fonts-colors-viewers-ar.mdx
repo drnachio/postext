@@ -48,7 +48,7 @@ interface ColorValue {
 }
 ```
 
-يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](#الألوان-المعرّفة-بقيم-cmyk)). `'spot'` على لون خاص، حبره في `spot` (انظر [الألوان الخاصة](/ar/docs/configuration-pdf-output#الألوان-الخاصة)).
+يدلّ الحقل `model` على الفضاء اللوني المقصود. للعرض على الويب، القيمة المعتادة `'hex'` أو `'rgb'`. ولمسارات الطباعة، تعني `'cmyk'` أن اللون حُدِّد بقيم CMYK، ويحفظ `cmyk` تلك القيم: يكتبها الإخراج الطباعي بنظام CMYK كما هي، ويكون `hex` صورتها على الشاشة (انظر [الألوان المعرّفة بقيم CMYK](/ar/docs/configuration-pdf-output#الألوان-المعرّفة-بقيم-cmyk)). `'spot'` على لون خاص، حبره في `spot` (انظر [الألوان الخاصة](/ar/docs/configuration-pdf-output#الألوان-الخاصة)).
 
 لأن Postext يستهدف مخرجات بجودة النشر، يأتي لون نص المتن الافتراضي بـ`model: 'cmyk'` (`#000000`). أما ألوان العناوين والنص العريض والمائل والقوائم فقيمتها الافتراضية مرتبطة بلوحة الألوان: **اللون الرئيسي** (Main Color) (`#295AA3`، `model: 'hex'`). وخلفية الصفحة وطبقات الواجهة (شبكة خطوط الأساس، علامات القص، مؤشرات التصحيح) قيمتها الافتراضية `model: 'hex'`. غيّر `color.model` في أي حقل إن احتجت دلالة تصدير مختلفة.
 
@@ -637,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>انظر <a href="#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
+      <td>انظر <a href="/ar/docs/configuration-pdf-output#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
       <td>ما يتحقق منه الفحص قبل الطباعة، وعتباته.</td>
     </tr>
   </tbody>
@@ -766,85 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### الألوان المعرّفة بقيم CMYK
-
-اللون المكتوب بقيم CMYK يحتفظ بقيمه الدقيقة: يُكتب `ColorValue.cmyk` (بالنسبة المئوية) كما هو في الإخراج الطباعي، ويكون `hex` صورته على الشاشة. ومدخل لوحة الألوان المعرّف بقيم CMYK يشمل كل لون مرتبط به.
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-#### الألوان التي تُطبع فوق غيرها
-
-يمكن لأي لون أن يُطبع فوق ما تحته في الإخراج الطباعي: يجعل `overprint: true` في `ColorValue` كل ما يُرسم به (النص، والخطوط الفاصلة، والصناديق، والخلفيات) يُطبع فوق ما تحته بدل تفريغه. ويُكتب اللون الرباعي كما يُفصَل، تحت حالة رسومية للطباعة الفوقية؛ ويُطبع اللون الخاص فوق ما تحته على لوح حبره، حتى حيث يُفرِّغ الحبرُ نفسه في لون آخر. والأسود بنسبة 100% K الذي يُطبع فوق ما تحته يحتفظ بمعالجة الأسود: فالمساحات الكبيرة تظل تُطبع بالأسود الغني (`black.richBlack`). ويتجاهل ذلك ملفُ PDF بنظام RGB والشاشة. اضبطه في مدخل لوحة الألوان ليُطبع فوق ما تحته كل لون مرتبط به، ودرجاته معه؛ فاللون المرتبط يأخذ ضبط المدخل ولا ضبط خاص به. وتحتفظ به لوحة الجزء أو القسم: فالنص المكتوب بلون الجزء يُطبع فوق ما تحته أيضًا.
-
-```ts
-colorPalette: [
-  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
-],
-```
-
-يتعرّف الإخراج الطباعي على اللون من قيمة hex التي يرسمها التخطيط، فلا يشترك لون يُطبع فوق ما تحته في قيمته مع لون يُفرِّغ ما تحته أبدًا. وحين تتطابقان، يتزحزح اللون الذي يُطبع فوق ما تحته خطوة واحدة (1/255 في قناة واحدة)، كما تفعل الألوان الخاصة؛ ولون الجزء لمدخل يُطبع فوق ما تحته يبتعد بالطريقة نفسها عن أي لون في الكتاب يُفرِّغ ما تحته. واللون الذي يُطبع فوق ما تحته ولا يضع حبرًا (بياض الورق، أو حبر بنسبة 0%) يختفي في الطباعة: يعدّه الفحص قبل الطباعة حرجًا (`overprintWhite`). والإخراج الذي فيه ألوان مختلفة أكثر مما لديه من رموز (نحو 25 مليونًا) يُفرِّغ ما زاد منها ويحذّر (`overprintsExhausted`). وفي Sandbox، يضبطه مفتاح «طباعة فوقية عند الطباعة» في منتقي الألوان.
-
-### الفحص قبل الطباعة
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // ppi at the printed size.
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>الخاصية</th>
-      <th>النوع</th>
-      <th>القيمة الافتراضية</th>
-      <th>الوصف</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يشغّل الفحوص.</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>الصورة النقطية الموضوعة التي تقل عن هذا العدد من البكسلات في البوصة بحجمها المطبوع، مع القص، تتلقى تحذيرًا: الأشكال، وصور خلايا الجداول، وصور التصميم، وإطارات القصص المصورة. والصورة النقطية التي ليست لها دقة خاصة بها تُطبع بمقاسها الطبيعي بقيمة `page.dpi`، فالصفحة المُخرَجة بدقة 150 dpi تطبع كل صورة من هذا النوع بدقة 150 ppi؛ أما التي لها دقة (`bitmap.resolution`، `layout.bitmapResolution`) فتُطبع بمقاسها الطبيعي بتلك الدقة.</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>دونها يصبح التحذير حرجًا. ولا تتجاوز `minImageResolution` أبدًا.</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>الخطوط الفاصلة، والحدود، وفواصل الأعمدة، وخطوط الجداول، وحدود إطارات القصص المصورة الأرفع من هذا.</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>النص الأصغر من هذا الحجم المكتوب بأكثر من حبر (لون رباعي، أسود غني): يصبح ضبابيًا إذا انزاحت الألواح. ولا يُحسب النص الأسود بالأسود K وحده أبدًا.</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>النص الأقرب من هذا إلى خط القص، حيث قد تقطعه المقصلة.</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>الصندوق أو الصورة الذي يتوقف على هذا القرب من خط القص من غير أن يبلغ النزف: مدّه إلى النزف أو اسحبه للداخل.</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>يُصدر تحذيرًا عن الخطوط التي لا يضمّنها ملف PDF موضوع في الكتاب (يفحص Sandbox كل نسخة أصلية للطباعة بـ`inspectPrintMaster`). ويضمّن Postext كل خط ينضّد به.</td></tr>
-  </tbody>
-</table>
-
-تشغّل `preflightDocument(doc, options)` الفحوص على مستند مُخرَج وتعيد قائمة بالمشكلات، لكل منها `kind`، و`severity` (`'critical'` أو `'warning'` أو `'info'`)، و`pageIndex` المطلق في الكتاب، و`rect` العنصر المخالف (ببكسلات الصفحة)، ونطاقه في المصدر حين يكون له نطاق. والأنواع هي `lowImageResolution` و`declaredPixelsMismatch` و`rgbImage` و`thinRule` و`smallProcessText` و`inkLimit` و`safeZone` و`nearTrim`. ومن غير `transform` يُحسب اللون المحايد حبرًا واحدًا وأي لون آخر ثلاثة أحبار، ولا تُفحص التغطية؛ ومعه تكون الأعداد والتغطية دقيقة. وتُحسب دقة الصورة من البكسلات التي يصرّح بها موردها، أو من بكسلات الملف نفسه حين يقدّمها `imageSize(fileId)` (`bitmapInfo` على البايتات، أو الصورة بعد فك ترميزها): والتصريح الذي يبتعد عن الملف بأكثر من بكسل واحد يصدر عنه مرة واحدة تحذير من النوع `declaredPixelsMismatch`، وهو تحذير حين يدّعي بكسلات أكثر مما في الملف. وتسرد `placedImageResolutions(doc, { resources, imageSize })` كل صورة نقطية موضوعة مع دقتها الفعلية بوحدة ppi، سواء كان الفحص قبل الطباعة مفعّلًا أم لا. تُحتسب تسميات الشكل نصًّا في `smallProcessText` و`inkLimit` و`safeZone`.
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // pixel sizes of the bitmaps
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // the files' real pixels
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray', from the file
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### معاينة الطباعة
 

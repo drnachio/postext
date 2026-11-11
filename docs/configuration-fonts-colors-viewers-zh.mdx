@@ -48,7 +48,7 @@ interface ColorValue {
 }
 ```
 
-`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](#以cmyk定义的颜色)）。`'spot'`是专色，其油墨在`spot`中（见[专色](/zh/docs/configuration-pdf-output#专色)）。
+`model`字段指明预期的色彩空间。网页渲染通常用`'hex'`或`'rgb'`。印刷流程中，`'cmyk'`表明这个颜色是以CMYK定义的，`cmyk`保存它的数值：CMYK印刷渲染原样使用这些数值，`hex`是它们在屏幕上的呈现（见[以CMYK定义的颜色](/zh/docs/configuration-pdf-output#以cmyk定义的颜色)）。`'spot'`是专色，其油墨在`spot`中（见[专色](/zh/docs/configuration-pdf-output#专色)）。
 
 Postext面向出版级输出，所以正文的默认颜色带有`model: 'cmyk'`（`#000000`）。标题、粗体、斜体和列表的颜色默认链接到调色板中的**主色**（`#295AA3`，`model: 'hex'`）。页面背景和界面叠加层（基线网格、裁切线、调试标记）默认为`model: 'hex'`。如果需要不同的导出语义，可以在任意字段上覆盖`color.model`。
 
@@ -637,7 +637,7 @@ interface CustomOutputProfile {
     <tr>
       <td><code>preflight</code></td>
       <td><code>PrintPreflightConfig</code></td>
-      <td>见<a href="#印前检查">印前检查</a></td>
+      <td>见<a href="/zh/docs/configuration-pdf-output#印前检查">印前检查</a></td>
       <td>印前检查查哪些内容，以及它的阈值。</td>
     </tr>
   </tbody>
@@ -766,85 +766,6 @@ interface PrintBlackConfig {
     </tr>
   </tbody>
 </table>
-
-### 以CMYK定义的颜色
-
-用CMYK写的颜色保留准确的数值：印刷渲染原样使用`ColorValue.cmyk`（百分比），`hex`是它在屏幕上的呈现。以CMYK定义的调色板条目，作用于所有链接到它的颜色。
-
-```ts
-colorPalette: [
-  { id: 'brand', name: 'Brand', value: { hex: '#00a0e3', model: 'cmyk', cmyk: { c: 100, m: 0, y: 0, k: 0 } } },
-],
-```
-
-#### 叠印的颜色
-
-在印刷渲染中，任何颜色都可以叠印：在`ColorValue`上设置`overprint: true`，用它绘制的一切（文字、线条、框、底色）都会印在下方内容之上，而不是将其镂空。印刷色按其分色方式写出，并处于叠印的图形状态之下；专色在其油墨的印版上叠印，即使同一油墨在另一种颜色中是镂空的。叠印的100% K黑色保留黑色的处理：大面积仍然用复合黑（`black.richBlack`）。RGB PDF和屏幕会忽略它。把它设在调色板条目上，所有链接到该条目的颜色都会叠印，包括它的色调；链接的颜色采用条目的设置，自己没有单独的设置。篇或章节的调色板会保留它：用篇的颜色排的文字也会叠印。
-
-```ts
-colorPalette: [
-  { id: 'title', name: 'Title', value: { hex: '#c00020', model: 'cmyk', cmyk: { c: 0, m: 100, y: 80, k: 10 }, overprint: true } },
-],
-```
-
-印刷渲染按版面绘制的hex识别颜色，所以叠印的颜色绝不会与镂空的颜色共用一个hex。两者相同时，叠印的那个移动一步（在一个通道上移动1/255），专色也是这样处理的；叠印条目的篇颜色也以同样方式避开书中任何镂空的颜色。叠印而又不着墨的颜色（纸白、0%的油墨）在印刷时会消失：印前检查把它报告为严重（`overprintWhite`）。一次渲染中不同颜色的数量超过可用编码（约2500万个）时，其余颜色改为镂空，并发出警告（`overprintsExhausted`）。在Sandbox中，由取色器的“印刷时叠印”开关设置。
-
-### 印前检查
-
-```ts
-interface PrintPreflightConfig {
-  enabled?: boolean;
-  minImageResolution?: number;       // 印刷尺寸下的ppi。
-  criticalImageResolution?: number;
-  minRuleWidth?: Dimension;
-  smallTextSize?: Dimension;
-  safeZone?: Dimension;
-  bleedSnap?: Dimension;
-  checkFonts?: boolean;
-}
-```
-
-<table>
-  <thead>
-    <tr>
-      <th>属性</th>
-      <th>类型</th>
-      <th>默认值</th>
-      <th>说明</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr><td><code>enabled</code></td><td><code>boolean</code></td><td><code>true</code></td><td>运行检查。</td></tr>
-    <tr><td><code>minImageResolution</code></td><td><code>number</code></td><td><code>300</code></td><td>放置的位图在印刷尺寸下（含裁剪）每英寸像素数低于此值时给出警告，包括图、表格单元格中的图片、版面设计图像和漫画分格。没有自身分辨率的位图按自然尺寸以`page.dpi`印刷，所以以150 dpi排版的页面上，每张这样的图片都以150 ppi印刷；设了分辨率（`bitmap.resolution`、`layout.bitmapResolution`）的位图按自然尺寸以该分辨率印刷。</td></tr>
-    <tr><td><code>criticalImageResolution</code></td><td><code>number</code></td><td><code>150</code></td><td>低于此值时，警告为严重。不会高于`minImageResolution`。</td></tr>
-    <tr><td><code>minRuleWidth</code></td><td><code>Dimension</code></td><td><code>0.25pt</code></td><td>比此值更细的线条、边框、栏线、表格线和漫画分格边框。</td></tr>
-    <tr><td><code>smallTextSize</code></td><td><code>Dimension</code></td><td><code>9pt</code></td><td>小于此字号、用多于一种墨印刷的文字（印刷色、复合黑）：印版偏移时会发虚。只用K的黑色文字从不计入。</td></tr>
-    <tr><td><code>safeZone</code></td><td><code>Dimension</code></td><td><code>5mm</code></td><td>离裁切线比此值更近的文字，裁切时可能被切掉。</td></tr>
-    <tr><td><code>bleedSnap</code></td><td><code>Dimension</code></td><td><code>3mm</code></td><td>停在离裁切线这么近处、却没有延伸到出血的方框或图片：要么延伸到出血，要么内移。</td></tr>
-    <tr><td><code>checkFonts</code></td><td><code>boolean</code></td><td><code>true</code></td><td>报告置入的PDF中未嵌入的字体（沙盒用`inspectPrintMaster`检查每个印刷母版）。Postext自己排的字体都会嵌入。</td></tr>
-  </tbody>
-</table>
-
-`preflightDocument(doc, options)`对排好的文档运行这些检查，返回一个问题列表。每个问题带有`kind`、`severity`（`'critical'`、`'warning'`或`'info'`）、全书范围的页序`pageIndex`、出问题的`rect`（页面px），以及元素有源码范围时的源码范围。`kind`有`lowImageResolution`、`declaredPixelsMismatch`、`rgbImage`、`thinRule`、`smallProcessText`、`inkLimit`、`safeZone`和`nearTrim`。没有`transform`时，中性色算一种墨，其他颜色算三种，也不检查总墨量；给出`transform`时，墨数和总墨量都是准确的。图片的分辨率按资源声明的像素计算；`imageSize(fileId)`给出文件本身的像素时（对字节调用`bitmapInfo`，或取自解码后的图像），则按文件的像素计算：声明与文件相差超过一个像素时，报告一次`declaredPixelsMismatch`；如果声明的像素多于文件实有的像素，它的级别为警告。`placedImageResolutions(doc, { resources, imageSize })`列出每张放置的位图及其有效ppi，不论印前检查是否开启。图中的标注在`smallProcessText`、`inkLimit`和`safeZone`中按文字计算。
-
-```ts
-import { bitmapInfo, outputTransform, parseIccProfile, preflightDocument, resolvePrintConfig } from 'postext';
-import { inspectPrintMaster } from 'postext-pdf';
-
-const print = resolvePrintConfig(config.print);
-const transform = outputTransform(parseIccProfile(fogra51Bytes), { intent: print.renderingIntent });
-const issues = preflightDocument(doc, {
-  print,
-  transform,
-  resources,                                    // 位图的像素尺寸
-  imageSize: (fileId) => bitmapInfo(bytesOf(fileId)),  // 文件的实际像素
-  imageColor: (fileId) => colourOf(fileId),     // 'rgb' | 'cmyk' | 'gray'，取自文件
-});
-if (issues.some((i) => i.severity === 'critical')) process.exit(1);
-
-const master = await inspectPrintMaster(masterBytes);
-// => { nonEmbeddedFonts: ['Helvetica'], rgb: true, transparency: false }
-```
 
 ### 印刷预览
 
