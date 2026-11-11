@@ -1,6 +1,8 @@
-import type { FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind, ContrastIssue, PreflightIssue, PreflightSeverity } from 'postext';
+import type { FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind } from 'postext';
+import type { ContrastCheck, PreflightCheck } from './types/checks.js';
 
 export type { WarningKind } from './types/kind.js';
+export type { ContrastCheck, PreflightCheck } from './types/checks.js';
 
 /** Which design slot a warning points at. `level` tags heading slots;
  *  the part opener is a single slot; `'box'` is a box style's design
@@ -564,22 +566,6 @@ export type WarningPayload =
    *  reversed text too fine for the press. `page` is the book page number
    *  of its first occurrence. */
   | { kind: 'contrast'; check: ContrastCheck; page?: number };
-
-/** `Omit` over each member of a union. */
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-
-/** One contrast finding as the Checks panel lists it. */
-export type ContrastCheck = DistributiveOmit<ContrastIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>;
-
-/** One preflight finding as the Checks panel lists it. */
-export type PreflightCheck =
-  | DistributiveOmit<PreflightIssue, 'rect' | 'sourceStart' | 'sourceEnd' | 'pageIndex'>
-  | { kind: 'masterFonts'; severity: PreflightSeverity; name: string; fonts: string[] }
-  | { kind: 'masterRgb'; severity: PreflightSeverity; name: string }
-  | { kind: 'masterTransparency'; severity: PreflightSeverity; name: string; x1a: boolean }
-  /** Spot inks of a placed PDF (an Illustrator file) the job does not print
-   *  as they are named (`placedInkProblems`). */
-  | { kind: 'masterInks'; severity: PreflightSeverity; name: string; problem: 'offPlates' | 'renamed' | 'unknown'; inks: string[] };
 
 export interface Warning {
   id: string;

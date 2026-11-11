@@ -1,8 +1,9 @@
 'use client';
 
-// A picture's own print colour settings past its profile (#front A):
-// how its greys meet the press's dot gain, and a profile assigned to it
-// (an `.icc` file read in place of the one it carries).
+// A picture's own print colour settings (`Resource.printColor`, #1484):
+// whether it is read through its own profile, how its greys meet the
+// press's dot gain, and a profile assigned to it (an `.icc` file read in
+// place of the one it carries).
 
 import { useRef, useState } from 'react';
 import { X } from 'lucide-react';
@@ -44,6 +45,22 @@ export function PrintColorExtras({ resource, onChange }: { resource: Resource; o
 
   return (
     <>
+      <Field label={labels.resourcePrintColorLabel} hint={labels.resourcePrintColorHint}>
+        <select
+          value={own.embeddedProfile ?? ''}
+          onChange={(e) => {
+            const v = e.target.value;
+            onChange(v === 'use' || v === 'ignore' ? { ...own, embeddedProfile: v } : without('embeddedProfile'));
+          }}
+          aria-label={labels.resourcePrintColorLabel}
+          className={inputClass}
+          style={inputStyle}
+        >
+          <option value="">{labels.resourcePrintColorBook}</option>
+          <option value="use">{labels.resourcePrintColorUse}</option>
+          <option value="ignore">{labels.resourcePrintColorIgnore}</option>
+        </select>
+      </Field>
       <Field label={labels.resourcePrintGrayLabel}>
         <select
           value={gain === undefined ? '' : String(gain)}

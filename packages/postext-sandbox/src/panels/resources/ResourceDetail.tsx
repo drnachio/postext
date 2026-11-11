@@ -473,31 +473,7 @@ export function ResourceDetail({
           </Field>
         )}
         {/* How the picture's colours are read in print, over the book's
-            `print.imageColor`: its own profile, or none. */}
-        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
-          <Field label={labels.resourcePrintColorLabel} hint={labels.resourcePrintColorHint}>
-            <select
-              value={resource.printColor?.embeddedProfile ?? ''}
-              onChange={(e) => {
-                const { embeddedProfile: _old, ...rest } = resource.printColor ?? {};
-                void _old;
-                const value = e.target.value as '' | 'use' | 'ignore';
-                const printColor = value ? { ...rest, embeddedProfile: value } : rest;
-                const next = touch({});
-                if (Object.keys(printColor).length > 0) next.printColor = printColor;
-                else delete next.printColor;
-                onChange(next);
-              }}
-              aria-label={labels.resourcePrintColorLabel}
-              className={inputClass}
-              style={inputStyle}
-            >
-              <option value="">{labels.resourcePrintColorBook}</option>
-              <option value="use">{labels.resourcePrintColorUse}</option>
-              <option value="ignore">{labels.resourcePrintColorIgnore}</option>
-            </select>
-          </Field>
-        )}
+            `print.imageColor`. */}
         {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
           <PrintColorExtras resource={resource} onChange={(printColor) => {
             const next = touch({});
