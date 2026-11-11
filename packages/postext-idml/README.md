@@ -38,7 +38,7 @@ const { bytes: idml, links, fonts } = idmlDocument({
 
 Rules, boxes, paths and pictures are native page items, tables are InDesign tables, authored CMYK colours are process swatches, and the text of each composed frame is one story under a paragraph style named after its box style (chained frames share a story). Inline maths, music and colour swatches are anchored inline objects in their line (`inlineObjects: false` leaves them out, with a warning), links are InDesign hyperlinks, and with kept lines right-to-left text is written in right-to-left stories. Vertical text is written in horizontal stories, with a warning.
 
-The command line writes the same package with `postext idml`.
+The command line writes the same package with `postext idml` and reads one into a new book with `postext import-idml`.
 
 ## From InDesign to Postext
 

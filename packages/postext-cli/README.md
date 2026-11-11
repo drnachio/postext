@@ -39,6 +39,7 @@ postext images book.postext --pages 1-10 -o pages/ --dpi 100 -f webp
 postext docx book.postext -o book.docx
 postext import-docx manuscript.docx -o manuscript/
 postext idml book.postext -o out/book.idml --fonts  # InDesign package, fonts beside it
+postext import-idml book.idml -o book/ --report     # an InDesign document (IDML) as a new book
 postext pack book/ -o book.postext
 postext unpack book.postext -o book/
 postext info book.postext --pages
@@ -52,7 +53,9 @@ A book is any of:
 - an unpacked book folder, with its `preset.json`, chapters, resources and fonts;
 - loose Markdown files, one chapter each, in the order given (a folder: its `.md` files by name), with an optional `--config` JSON, a `--resources` folder of pictures (each named by its file name, or described in a `resources.json`) and a `--fonts` folder.
 
-`postext idml` writes the laid-out pages as an InDesign Markup package with the [`postext-idml`](https://www.npmjs.com/package/postext-idml) package: `--images embed|link` keeps the pictures inside the file or puts them beside it in `Links/`, `--lines keep|reflow` ends every line where Postext ended it (`keep`, the default) or leaves the paragraphs to InDesign's composer, and `--fonts` writes the font files of the faces used beside the package, in `Document fonts/` (`-o` has to name a file; a family the book may not redistribute is left out, with a warning).
+`postext idml` writes the laid-out pages as an InDesign Markup package with the [`postext-idml`](https://www.npmjs.com/package/postext-idml) package: `--images embed|link` keeps the pictures inside the file or puts them beside it in `Links/`, `--lines keep|reflow` ends every line where Postext ended it (`keep`, the default) or leaves the paragraphs to InDesign's composer, and `--fonts` writes the font files of the faces used beside the package, in `Document fonts/` (`-o` has to name a file; a family the book may not redistribute is left out, with a warning). `postext build --idml FILE` writes the same package beside the other outputs, with `--idml-images`, `--idml-lines` and `--idml-fonts`.
+
+`postext import-idml` reads an InDesign Markup package (an `.indd` is not read: save it as InDesign Markup first) and writes a new book, a folder or a `.postext`, as composed pages that follow the document or as a flowing book (`--layout auto|pages|flow`). A book exported from Postext comes back with the same lines; a document made in InDesign is read with losses, which the summary counts and `--report` lists. Linked pictures are read from `--links`, or from beside the file and its `Links/`.
 
 `--set path=value` changes one setting without editing the book (`--set page.dpi=150`, `--set bodyText.fontFamily=Lora`), and `--chapters 2-4` lays out part of it.
 

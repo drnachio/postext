@@ -65,7 +65,7 @@ describe('postext cli', () => {
     const r = run([], tmpdir());
     expect(r.code).toBe(0);
     expect(r.stdout).toContain('Usage');
-    for (const c of ['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'unpack', 'import-docx']) expect(r.stdout).toContain(c);
+    for (const c of ['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'unpack', 'import-docx', 'import-idml']) expect(r.stdout).toContain(c);
   }, 30_000);
 
   // `pdf` with no input loads the whole engine before it reports the usage
@@ -770,4 +770,45 @@ describe('postext cli', () => {
     expect(lost.warnings.find((w) => w.kind === 'continueTargetMissing')!.data!.target).toBe('nowhere');
     expect(lost.pages).toBeGreaterThan(3);
   }, 60_000);
+  it('imports an InDesign package as a book, and writes one from build (#1506)', () => {
+    const dir = book();
+    // The package `build` writes beside the PDF, from the same layout.
+    const built = run(['build', 'ch', '--idml', 'out/b.idml', '--pdf', 'out/b.pdf', '--offline', '--json'], dir);
+    expect(built.code).toBe(0);
+    expect(JSON.parse(built.stdout).outputs.map((o: { kind: string }) => o.kind).sort()).toEqual(['idml', 'pdf']);
+    expect(readFileSync(join(dir, 'out', 'b.idml')).subarray(0, 2).toString()).toBe('PK');
+    expect(run(['build', 'ch', '--idml', 'x.idml', '--idml-lines', 'loose', '--offline'], dir).code).toBe(2);
+    // The package as a book: an unpacked folder, with a report.
+    const folder = run(['import-idml', 'out/b.idml', '-o', 'back', '--json'], dir);
+    expect(folder.code).toBe(0);
+    const data = JSON.parse(folder.stdout);
+    expect(['pages', 'flow']).toContain(data.layout);
+    expect(data.report.counts.pages).toBeGreaterThan(0);
+    expect(['faithful', 'approximate', 'lossy']).toContain(data.report.verdict);
+    expect(data.chapters).toBeGreaterThan(0);
+    expect(existsSync(join(dir, 'back', 'preset.json'))).toBe(true);
+    const preset = JSON.parse(readFileSync(join(dir, 'back', 'preset.json'), 'utf8'));
+    expect(JSON.stringify(preset)).toContain('"justifyHardBreaks":true');
+    // The words of the book are in its chapters.
+    const words = run(['import-idml', 'out/b.idml', '-o', 'flow', '--layout', 'flow', '-q'], dir);
+    expect(words.code).toBe(0);
+    const chapters = readdirSync(join(dir, 'flow', 'chapters')).map((f) => readFileSync(join(dir, 'flow', 'chapters', f), 'utf8')).join('\n');
+    expect(chapters).toContain('More text.');
+    // The imported book builds.
+    expect(run(['pdf', 'back', '-o', 'back.pdf', '--offline', '-q'], dir).code).toBe(0);
+    expect(readFileSync(join(dir, 'back.pdf')).subarray(0, 4).toString()).toBe('%PDF');
+    // A bundle, the report printed.
+    const bundle = run(['import-idml', 'out/b.idml', '-o', 'back.postext', '--no-auto-thumbnail', '--report'], dir);
+    expect(bundle.code).toBe(0);
+    expect(bundle.stderr + bundle.stdout).toContain('Import:');
+    expect(readFileSync(join(dir, 'back.postext')).subarray(0, 2).toString()).toBe('PK');
+    // Wrong usage and files that are no package.
+    expect(run(['import-idml'], dir).code).toBe(2);
+    expect(run(['import-idml', 'out/b.idml', '--layout', 'grid'], dir).code).toBe(2);
+    expect(run(['import-idml', 'missing.idml'], dir).code).toBe(1);
+    writeFileSync(join(dir, 'not.idml'), 'not a package');
+    const bad = run(['import-idml', 'not.idml'], dir);
+    expect(bad.code).toBe(1);
+    expect(bad.stderr).toContain('not.idml');
+  }, 180_000);
 });

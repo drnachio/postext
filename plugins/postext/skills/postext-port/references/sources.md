@@ -311,7 +311,9 @@ Gotchas:
 - `postext-idml` also reads: `idmlToPostext(bytes, { layout })` returns chapters, configuration,
   resources and a report (verdict, findings with counts) of what Postext has no equivalent for. It
   is deterministic and brings a book that Postext exported back with the same lines; a document made
-  in InDesign comes through with the losses the report lists. For a port, keep to the steps below.
+  in InDesign comes through with the losses the report lists. `postext import-idml file.idml -o book/
+  --report` runs it from the command line and prints the report: a first import to start from, which
+  the port then corrects. For a port, keep to the steps below.
 - `idml_extract.py roles book.idml > map.json` lists the paragraph styles in
   use (resolved font, size, colour, sample) and the stories in page order.
   Map style names to roles; prefer the style names over geometry.

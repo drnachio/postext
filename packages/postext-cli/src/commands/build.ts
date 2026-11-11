@@ -13,12 +13,13 @@ import { sameBytes, sameFiles } from '../io';
 import { layOut, selectChapters } from '../layout';
 import { Reporter, style } from '../log';
 import { docxVariant, embedsFonts, needsLayout as docxNeedsLayout, writeDocx } from '../outputs/docx';
+import { idmlChoices, writeIdml } from '../outputs/idml';
 import { writeEpub } from '../outputs/epub';
 import { writeHtml } from '../outputs/html';
 import { writeImages } from '../outputs/images';
 import { writePdf } from '../outputs/pdf';
 
-const TARGETS = ['pdf', 'html', 'epub', 'images', 'docx'] as const;
+const TARGETS = ['pdf', 'html', 'epub', 'images', 'docx', 'idml'] as const;
 
 /** What the pages are painted and measured with besides the text and the
  *  settings: the book's files (pictures, fonts) and the faces resolved. */
@@ -57,6 +58,8 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
   const book = await reporter.time('read', () => loadBook(ctx.inputs, opts, reporter));
   const docx = opts.string('docx');
   const variant = docxVariant(opts, 'docx-variant');
+  const idml = opts.string('idml');
+  const idmlAsks = idmlChoices(opts, 'idml-', idml);
   // The facsimile Word file is written from the layout the others share;
   // the flow files need none, only the faces the formatted one embeds.
   const docxFromLayout = docxNeedsLayout(variant);
@@ -97,6 +100,7 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
     const previous = state.last?.docs;
     const repaint = previous ? (p: { doc: VDTDocument; chapter: number }) => p.doc !== previous[p.chapter - 1] : undefined;
     if (images) jobs.push(writeImages(book, layout, opts, reporter, images, opts.string('pages'), repaint));
+    if (idml) jobs.push(writeIdml(book, layout, fonts, idmlAsks, reporter, idml));
     if (docx && docxFromLayout) jobs.push(writeDocx(book, { variant, chapters: layout.chapters, layout, ...docxFonts }, reporter, docx));
     await Promise.all(jobs);
     state.last = { docs: layout.docs, assets };
@@ -107,7 +111,7 @@ async function buildOnce(ctx: CommandContext, state: BuildState): Promise<string
 
 export default async function build(ctx: CommandContext): Promise<void> {
   const { opts } = ctx;
-  if (!TARGETS.some((t) => opts.string(t))) throw new UsageError('Say what to write: --pdf, --html, --epub, --images and/or --docx');
+  if (!TARGETS.some((t) => opts.string(t))) throw new UsageError('Say what to write: --pdf, --html, --epub, --images, --docx and/or --idml');
   const state: BuildState = { cache: createMeasurementCache(), layouts: createBundleLayoutCache() };
   const paths = await buildOnce(ctx, state);
   if (!opts.flag('watch')) return;
