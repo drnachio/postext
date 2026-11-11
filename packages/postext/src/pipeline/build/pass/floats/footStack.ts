@@ -10,6 +10,11 @@
 // Only plain bands stack this way: a band beside a side column, under a
 // cap, with text wrapping round it, rotated, a comic strip or a box anchored
 // to a cap keeps its place and ends the stack of its columns.
+//
+// The stacks also know which floats stand at each column's foot, stacked
+// or not: a row at the foot (`layout.footFloatRow`, floatRows.ts) reads its
+// neighbour from here and moves it through here, so the two never disagree
+// on where a float stands.
 import type { VDTBlock, VDTColumn, VDTPage } from '../../../../vdt.js';
 import { type FloatMeasure, measureFloatBand, floatGapAbove } from '../../../floats/floatSlots.js';
 import { offsetBlock } from '../../../callouts/calloutLayout/geometry.js';
@@ -33,6 +38,15 @@ interface FootStack {
 export interface FootStacks {
   /** Each column's foot before a bottom band is reserved in it. */
   feetOf: (cols: readonly VDTColumn[]) => Map<VDTColumn, number>;
+  /** Whether a float stands at the foot of `col`. */
+  hasFoot: (col: VDTColumn) => boolean;
+  /** The blocks of the float at the foot of `col` when it is the only
+   *  one there and set in that column alone. */
+  onlyFoot: (col: VDTColumn) => readonly VDTBlock[] | undefined;
+  /** Move the only float at the foot of `col` up by `dy` px and end the
+   *  column's stack: a float joining that foot later goes above it, where
+   *  the column now ends, and never lays it out again from its old place. */
+  raise: (col: VDTColumn, dy: number) => void;
   /** Record a bottom float just committed to `cols` and lay out its
    *  stack again. `stackable` false ends the stack of those columns.
    *  Returns the extra room taken from each column (0 when nothing
@@ -51,6 +65,9 @@ export function createFootStacks(
   floatGapPx: number,
 ): FootStacks {
   const stacks = new Map<VDTColumn, FootStack>();
+  /** Every float set at each column's foot, and whether its band took
+   *  that column alone. */
+  const atFoot = new Map<VDTColumn, { entry: FootEntry; alone: boolean }[]>();
   const footOf = (col: VDTColumn): number => col.bbox.y + col.bbox.height;
 
   const feetOf = (cols: readonly VDTColumn[]): Map<VDTColumn, number> =>
@@ -73,6 +90,11 @@ export function createFootStacks(
 
   const add: FootStacks['add'] = (page, cols, feet, entry, stackable) => {
     const grown = new Map<VDTColumn, number>();
+    for (const c of cols) {
+      const list = atFoot.get(c) ?? [];
+      list.push({ entry, alone: cols.length === 1 });
+      atFoot.set(c, list);
+    }
     const key = `${page.index}:${cols.map((c) => c.index).join(',')}`;
     const current = stacks.get(cols[0]!);
     const same = current !== undefined && current.key === key && cols.every((c) => stacks.get(c) === current);
@@ -112,5 +134,20 @@ export function createFootStacks(
     return grown;
   };
 
-  return { feetOf, add };
+  const hasFoot = (col: VDTColumn): boolean => (atFoot.get(col)?.length ?? 0) > 0;
+
+  const only = (col: VDTColumn): FootEntry | undefined => {
+    const list = atFoot.get(col);
+    return list?.length === 1 && list[0]!.alone ? list[0]!.entry : undefined;
+  };
+
+  const raise: FootStacks['raise'] = (col, dy) => {
+    const entry = only(col);
+    if (!entry) return;
+    for (const b of entry.blocks) offsetBlock(b, 0, -dy);
+    entry.y -= dy;
+    stacks.delete(col);
+  };
+
+  return { feetOf, add, hasFoot, onlyFoot: (col) => only(col)?.blocks, raise };
 }

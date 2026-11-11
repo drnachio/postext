@@ -396,7 +396,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
             : `Resource "${w.resourceId}" does not fit the slot it was set in by hand: it is placed as usual`;
       break;
     case 'floatCropped':
-      text = `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, to stay on the page that cites it (layout.pullFloatsToCitation)`;
+      text = w.reason === 'row'
+        ? `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, toward the height of the figure beside it at the foot (layout.footFloatRow)`
+        : `The picture "${w.resourceId}" is cropped within its safe area, ${Math.round(w.share * 100)} % of its height, to stay on the page that cites it (layout.pullFloatsToCitation)`;
       break;
     case 'cjkMarksExceedLeading':
       text = `The paragraph "${w.text}" has emphasis dots or name and title lines in a line gap of ${w.gapEm} em — they need ${w.neededEm} em; set it with more leading`;

@@ -18,7 +18,9 @@ import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } f
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
 import { withCitationPull } from './citationPull.js';
+import { createFloatRows } from './floatRows.js';
 import { createFloatPins } from './floatPins.js';
+import type { PlacedSlot } from '../../floatPads.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
  *  whole before it takes the next as it is (#1461). */
@@ -70,6 +72,8 @@ export interface FloatPlaceDeps {
   layoutFloat: (resourceId: string, width: number) => { block: ResolvedResourceBlock } | null;
   pullShortfalls: Map<string, { page: number; px: number }>;
   pullCrop: ReadonlySet<string> | undefined;
+  /** The slot each figure set alone in a column took (`PassResult.floatSlots`). */
+  floatSlots: Map<string, PlacedSlot>;
   cursor: PlacementCursor;
 }
 
@@ -82,10 +86,13 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     wrapExclusionWidth, textWrapNotes, wrapContourOf, floatWraps, topFloatRefOf, splitTableFloat,
     sideObstacles, probeFloatBand, availableAfterBand, commitFloatBlock, shrinkToRoom,
     uncappedBottoms, openerHeadFloats, state, late,
-    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, cursor
+    bodyCropDelta, layoutFloat, pullShortfalls, pullCrop, floatSlots, cursor
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
+  /** A row at the foot (`layout.footFloatRow`), on the foot stacks. */
+  const rows = createFloatRows({ resolved, minTextPx, layoutFloat, bodyCropDelta, footStacks,
+    floatReserved, reservedOf, uncappedBottoms });
   /** Floats set by hand in the canvas (`placement.pin`). */
   const pins = createFloatPins(pendingFloats);
   /** The fresh pages each full-page plate waited past (#1461). */
@@ -479,16 +486,25 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
       }
     }
 
+    // A foot row (`layout.footFloatRow`): a float alone at its column's foot
+    // stands with its caption level with its neighbour's.
+    const level = position === 'bottom' && targetCols.length === 1 && !aside ? rows.levelInRow(page, first, built.block, y) : undefined;
+    const atY = level?.y ?? y;
     const floatsBefore = page.floats?.length ?? 0;
-    commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
+    commitFloatBlock(page, first, built, xLeft, atY, width, f.firstBlockIdx);
+    // A figure alone in its column, upright and whole: what figures lined
+    // up across columns (`layout.alignFloatsAcrossColumns`) read.
+    if (targetCols.length === 1 && !pageSpan && !rotated && !aside && !slice && built.block.resourceBlock) {
+      floatSlots.set(f.resourceId, { page: page.index, column: first.index, position });
+    }
     if (feet) {
       // A plain foot band joins the stack of its columns, which is laid
       // out again in reading order: this float under the earlier ones.
       const stackable = !rotated && !aside && !anchorToCap && !galleryFill && !built.block.comic
-        && !(wraps && !wrapRefused)
+        && !(wraps && !wrapRefused) && !level?.row
         && targetCols.every((c) => !uncappedBottoms.has(c) && !openerHeads.has(c));
       const blocks = (page.floats ?? []).slice(floatsBefore);
-      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y }, stackable);
+      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y: atY }, stackable);
       for (const [col, more] of grown) {
         if (more > 0) floatReserved.set(col, { ...reservedOf(col), bottom: reservedOf(col).bottom + more });
       }
@@ -498,9 +514,9 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     return rest ? { rest } : 'placed';
   };
 
-  /** {@link placeFloatInColumnsAt} with `layout.pullFloatsToCitation`'s
+  /** {@link placeFloatInColumnsAt} with a foot row's crop and with `layout.pullFloatsToCitation`'s
    *  shortfall record and safe-area crop (#1492). */
-  const placeFloatInColumns = withCitationPull(placeFloatInColumnsAt, {
+  const placeFloatInColumns = withCitationPull(rows.cropping(placeFloatInColumnsAt), {
     resolved, pullCrop, bodyCropDelta, pullShortfalls, layoutFloat, probeFloatBand,
   });
 
@@ -543,7 +559,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
-    placeFloatInColumns, settle, heldBack, positionsFor,
+    placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: footStacks.hasFoot,
     pinOn: pins.pinOn, releasePins: pins.releasePins
   };
 }

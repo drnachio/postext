@@ -16,6 +16,7 @@ import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types.js';
 import type { PassState, PassLate } from '../state.js';
 import { pinnedColumn, pinFirstPositions, pinFirstSlots } from './floatPins.js';
+import { footRowFirst } from './floatRows.js';
 
 /** What createFloatFlush takes from the pass. */
 export interface FloatFlushDeps {
@@ -48,6 +49,7 @@ export interface FloatFlushDeps {
   heldBack: (i: number, pageIndex?: number) => boolean;
   pinOn: (f: PlannedFloat, pageIndex: number) => PlannedFloat['pin'];
   releasePins: (pageIndex: number, all?: boolean) => void;
+  hasFoot: (col: VDTColumn) => boolean;
   positionsFor: (f: PlannedFloat) => FloatSlotPosition[];
   cursor: PlacementCursor;
   forcedBreakPages: Set<number>;
@@ -60,7 +62,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
     citingPageFloats, resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
-    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, releasePins,
+    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, releasePins, hasFoot,
     positionsFor, cursor, forcedBreakPages, state, late
   } = deps;
   /** Reserve top/bottom bands on a freshly opened page and position as many
@@ -288,6 +290,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       const pin = pinOn(f, page.index);
       if (pin) slots = pinFirstSlots(page, pin, slots);
       else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
+      else if (resolved.layout.footFloatRow && !f.callout) slots = footRowFirst(slots, page.columns[cursor.columnIndex]!, hasFoot);
       for (const slot of slots) {
         if (slot.side) {
           r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);

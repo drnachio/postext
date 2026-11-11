@@ -107,6 +107,8 @@ export const DEFAULT_LAYOUT_CONFIG: ResolvedLayoutConfig = {
   floatsAtCitingPage: false,
   maxTopFraction: DEFAULT_MAX_TOP_FRACTION,
   hugClosingFloats: true,
+  footFloatRow: false,
+  alignFloatsAcrossColumns: false,
   pullFloatsToCitation: false,
   floatsUnderOpener: true,
   openerFloats: 'allow',
@@ -142,6 +144,8 @@ export function resolveLayoutConfig(partial?: LayoutConfig): ResolvedLayoutConfi
     floatsAtCitingPage: partial.floatsAtCitingPage === true,
     maxTopFraction: maxTopFractionOf(partial.maxTopFraction) ?? DEFAULT_MAX_TOP_FRACTION,
     hugClosingFloats: partial.hugClosingFloats ?? DEFAULT_LAYOUT_CONFIG.hugClosingFloats,
+    footFloatRow: partial.footFloatRow ?? DEFAULT_LAYOUT_CONFIG.footFloatRow,
+    alignFloatsAcrossColumns: partial.alignFloatsAcrossColumns ?? DEFAULT_LAYOUT_CONFIG.alignFloatsAcrossColumns,
     pullFloatsToCitation: partial.pullFloatsToCitation ?? DEFAULT_LAYOUT_CONFIG.pullFloatsToCitation,
     floatsUnderOpener: partial.floatsUnderOpener ?? DEFAULT_LAYOUT_CONFIG.floatsUnderOpener,
     openerFloats: compositionRuleOf(partial.openerFloats) ?? DEFAULT_LAYOUT_CONFIG.openerFloats,
@@ -232,6 +236,14 @@ export function stripLayoutDefaults(layout?: LayoutConfig): LayoutConfig | undef
   }
   if (layout.hugClosingFloats !== undefined && layout.hugClosingFloats !== DEFAULT_LAYOUT_CONFIG.hugClosingFloats) {
     result.hugClosingFloats = layout.hugClosingFloats;
+    hasOverride = true;
+  }
+  if (layout.footFloatRow !== undefined && layout.footFloatRow !== DEFAULT_LAYOUT_CONFIG.footFloatRow) {
+    result.footFloatRow = layout.footFloatRow;
+    hasOverride = true;
+  }
+  if (layout.alignFloatsAcrossColumns !== undefined && layout.alignFloatsAcrossColumns !== DEFAULT_LAYOUT_CONFIG.alignFloatsAcrossColumns) {
+    result.alignFloatsAcrossColumns = layout.alignFloatsAcrossColumns;
     hasOverride = true;
   }
   if (layout.pullFloatsToCitation !== undefined && layout.pullFloatsToCitation !== DEFAULT_LAYOUT_CONFIG.pullFloatsToCitation) {

@@ -280,7 +280,7 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
     case 'paragraphCitedInNote':
       return labels.warningsParagraphCitedInNoteTitle;
     case 'floatCropped':
-      return labels.warningsFloatCroppedTitle;
+      return payload.reason === 'row' ? labels.warningsFloatRowCroppedTitle : labels.warningsFloatCroppedTitle;
     case 'shortListSplit':
       return labels.warningsShortListSplitTitle;
     case 'stack':

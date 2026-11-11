@@ -586,6 +586,7 @@ Tables are `kind:"table"` resources with a `TableModel`:
 - `rows: TableCell[][]`, `headerRowCount`, `columnWidths` (relative weights).
 - Per cell: `content` (inline snippet), `colSpan`, `rowSpan`, `isHeader`, `align`, `verticalAlign`, `background` (ColorValue), `image {resourceId, width}`, `hiddenBy` (a cell covered by a merge).
 - `table.styleId` names a `tableStyles` entry.
+- A source table set the other way round (its variables down the side where the target reads them across): build it as the source has it, then `transposeTable(model)` (postext ≥ 1.75; the Sandbox table editor's ⇄ button, `table.transpose` in `sandbox_save_resource`). Cells keep content and formatting, merges swap spans, header rows (by `headerRowCount` or `isHeader`) become header columns, `columnWidths` is dropped: set the weights after.
 
 **Snippet syntax** (cell content, caption, note):
 - Recognised: `**bold**`, `*italic*`, `^sup^`, `~sub~`, `~~strike~~`, `:underline[…]`, escapes, `:ref{…}`, `:swatch{…}`, `:chip[…]` and `:smallcaps[…]`.

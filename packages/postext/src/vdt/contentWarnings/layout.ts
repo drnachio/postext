@@ -38,9 +38,12 @@ export type LayoutWarning =
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowPx?: number }
   /** `floatCropped` (#1492): a floated picture was cropped within its safe
    *  area (`Resource.safeArea`) to stay on the page that cites it
-   *  (`layout.pullFloatsToCitation`), by `share` of its height. Found by
-   *  the layout; information, since the crop never leaves the safe area. */
-  | { kind: 'floatCropped'; resourceId: string; share: number }
+   *  (`layout.pullFloatsToCitation`), by `share` of its height; with
+   *  `reason: 'row'` (#1496), toward its neighbour's height in a row at the
+   *  foot of the columns (`layout.footFloatRow`), `share` of its height
+   *  taken or added. Found by the layout; information, since the crop never
+   *  leaves the safe area. */
+  | { kind: 'floatCropped'; resourceId: string; share: number; reason?: 'row' }
   /** `floatPinMissed` (#1494): a float set by hand
    *  (`ResourcePlacement.pin`) is not where the pin asks. `reason`:
    *  `'notTaken'`, the slot could not hold it (too tall for the room left,

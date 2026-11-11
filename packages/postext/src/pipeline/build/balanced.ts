@@ -5,6 +5,7 @@ import type { PostextContent, PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTBlock } from '../../vdt.js';
 import type { MeasurementCache } from '../../measure/index.js';
 import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES } from '../columns/columnBalancing.js';
+import { type FloatAlignState, lineUpFloats, settleFloatPads, holdsSettled } from './floatAlign.js';
 import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.js';
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
@@ -35,6 +36,9 @@ export function* buildDocumentBalanced(
   // Side captions moved under their figure (see `PassHints.captionUnder`):
   // once a pass asks for one, every later pass keeps it.
   const captionUnder = new Set<string>();
+  // Figures lined up across the columns of their band (floatAlign.ts):
+  // the pads every pass is placed with.
+  const align: FloatAlignState = { pads: new Map() };
   // Loose paragraphs any pass found would gain their line only off the
   // character grid (#632): the columns they leave short say so.
   const looseOffGrid = new Set<number>();
@@ -50,6 +54,7 @@ export function* buildDocumentBalanced(
     const result = buildDocumentPass(content, config, cache, passOptions, {
       ...hints,
       captionUnder,
+      ...(align.pads.size > 0 ? { floatPads: align.pads } : {}),
       ...(footnoteNumbers ? { footnoteNumbers } : {}),
       ...(citingPage.size > 0 ? { citingPageFloats: new Map(citingPage) } : {}),
     });
@@ -70,6 +75,10 @@ export function* buildDocumentBalanced(
     yield;
     if (captionUnder.size === before) break;
   }
+  // Figures sharing a band: pad them level, then place again; the passes
+  // below keep the pads, read again after the last one (`settleAlign`).
+  const aligning = initial.doc.config.layout.alignFloatsAcrossColumns;
+  if (aligning) initial = yield* lineUpFloats(initial, align, () => runPass());
 
   // --- Floats at the head of their citing page (#633) --------------------
   // A float that may head the page (column) its citing line lands on and
@@ -127,6 +136,16 @@ export function* buildDocumentBalanced(
   best = pull.result;
   let passCount = bands.passCount + pull.passes;
   best.doc.iterationCount = passCount;
+  /** The lined-up figures' pads read again off `best`, placed again with
+   *  the driver's settled `hints` when they changed. */
+  const settleAlign = function* (hints: PassHints): Generator<void, void, void> {
+    if (!aligning) return;
+    const settled = yield* settleFloatPads(best, align, () => runPass({ ...hints, floatPages: floatPagesOf(best.doc) }),
+      (next) => holdsSettled(best, next, bandCaps, pull));
+    best = settled.result;
+    passCount += settled.passes;
+    best.doc.iterationCount = passCount;
+  };
 
   // --- Column balancing (vertical justification) ------------------------
   // Iteratively re-place the document with extra grid lines above headings
@@ -159,6 +178,7 @@ export function* buildDocumentBalanced(
       : (balancing.gridLines === 'off' ? { gridLines: 'off' as const } : undefined))
     : undefined;
   if (!balancing.enabled) {
+    yield* settleAlign({ ...withPull(pull, new Map()), bandCaps });
     if (gridBalancing) best.doc.gridBalancing = gridBalancing;
     return best.doc;
   }
@@ -333,6 +353,7 @@ export function* buildDocumentBalanced(
       captionUnderProposals: new Set([...best.captionUnderProposals, ...next.captionUnderProposals]),
       citingPageProposals: best.citingPageProposals,
       citingPageRefused: best.citingPageRefused,
+      floatSlots: new Map([...[...best.floatSlots].filter(([, f]) => !taken(f.page)), ...[...next.floatSlots].filter(([, f]) => taken(f.page))]),
     };
   };
 
@@ -568,6 +589,7 @@ export function* buildDocumentBalanced(
     }
   }
 
+  yield* settleAlign(hintsFrom(applied.lines, applied.loose));
   best.doc.iterationCount = passCount;
   best.doc.converged = segments.every((s) => s.stable || s.bestScore === 0);
   if (onGrid) markGridRefusals(best.doc, best.forcedBreakPages, looseOffGrid, gridBalancing);

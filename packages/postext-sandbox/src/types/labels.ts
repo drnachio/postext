@@ -2446,6 +2446,8 @@ export interface SandboxLabels {
   warningsParagraphCitedInNoteDetail: string;
   warningsFloatCroppedTitle: string;
   warningsFloatCroppedDetail: string;
+  warningsFloatRowCroppedTitle: string;
+  warningsFloatRowCroppedDetail: string;
   warningsShortListSplitTitle: string;
   warningsShortListSplitDetail: string;
   warningsStackTitle: string;
@@ -3282,6 +3284,7 @@ export interface SandboxLabels {
   tableEditorAlignMiddle: string;
   tableEditorAlignBottom: string;
   tableEditorPasteAsTable: string;
+  tableEditorTranspose: string;
   tableEditorCellAria: string;
   tableEditorColumnWidths: string;
   tableEditorColumnWidthsHint: string;
@@ -5147,6 +5150,10 @@ export interface SandboxLabels {
   hugClosingFloatsTooltip: string;
   pullFloatsToCitation: string;
   pullFloatsToCitationTooltip: string;
+  footFloatRow: string;
+  footFloatRowTooltip: string;
+  alignFloatsAcrossColumns: string;
+  alignFloatsAcrossColumnsTooltip: string;
   inlineResourceGap: string;
   inlineResourceGapTooltip: string;
   inlineResourceGapAround: string;
