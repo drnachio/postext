@@ -572,7 +572,7 @@ const resource: Resource = {
 
 `TableModel`是按行优先排列的网格，每个单元格按它在网格中的位置排版：`rows[r][c]`位于第`c`列。因此合并单元格所覆盖的单元格仍留在网格中，每个都用`hiddenBy`指向其主单元格；这与HTML表格不同，HTML表格会把它们省去。从`postext`导出的模型辅助函数保持这种结构；它们都是纯函数，返回新模型：`mergeCells(model, { start, end })`和`unmergeCell(model, at)`、`addRow`、`addColumn`、`removeRow`、`removeColumn`、`setCellContent`、`setCellImage`、`setCellBackground`以及`setAlignment`。四个行列辅助函数保持合并区域完整：在合并块内部添加的行或列会使它变宽，在它之前添加的会使它移位，从中删除的会使它缩小（失去第一行或第一列的合并块把内容保留在新的左上角单元格中），每个`hiddenBy`始终指向其主单元格。
 
-`transposeTable(model)`互换行与列（Sandbox表格编辑器中的⇄按钮）：每个单元格连同内容、图片、填充与对齐从`rows[r][c]`移到`rows[c][r]`；合并区域保留其单元格并互换跨度；表头行变为表头列，开头全为表头单元格的列计入`headerRowCount`；`columnWidths`被丢弃。转置两次即恢复原表。
+`transposeTable(model)`互换行与列（Sandbox表格编辑器中的⇄按钮）：每个单元格连同内容、图片、填充与对齐从`rows[r][c]`移到`rows[c][r]`；合并区域保留其单元格并互换跨度；表头行变为表头列，开头全为表头单元格的列计入`headerRowCount`；`columnWidths`被丢弃。`headerRowCount`计入的行即使其单元格未标`isHeader`（Word导入的表常是如此）也按表头行处理，其单元格在新的列中标为`isHeader`。转置两次即恢复原表，其表头行的单元格标为`isHeader`。
 
 `parseTSV(text, options?)`从制表符分隔的文本构建模型，即从电子表格粘贴来的区域：按换行拆行，按制表符拆单元格，较短的行会补齐，使网格成为矩形。`headerRows`把开头几行变成表头行：其单元格获得`isHeader`，模型获得`headerRowCount`，这样跨页拆分的表会重复它们。
 
