@@ -131,8 +131,9 @@ export const attrValue = (v: string): string => `"${v.replace(/"/g, '”').repla
 export function slugify(text: string, fallback: string): string {
   const s = text.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
     .replace(/\.[a-z0-9]{2,4}$/, '')
-    .replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '')
-    .split('-').slice(0, 4).join('-').slice(0, 40).replace(/-+$/, '');
+    // Runs are single hyphens by now: one at most at either end.
+    .replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-/, '').replace(/-$/, '')
+    .split('-').slice(0, 4).join('-').slice(0, 40).replace(/-$/, '');
   return s || fallback;
 }
 
