@@ -1,0 +1,29 @@
+// Shared by the corpus generators. ASCII only: other scripts are written
+// as \uXXXX escapes. Every step runs in try/catch and its failure is
+// logged, so one unsupported call does not stop the document.
+app.scriptPreferences.userInteractionLevel = UserInteractionLevels.NEVER_INTERACT;
+var OUT = arguments[0];
+var LOG = [];
+function step(name, fn) { try { return fn(); } catch (e) { LOG.push(name + ": " + e); } }
+function newDoc(w, h, pages, facing) {
+  var d = app.documents.add(false);
+  d.documentPreferences.pageWidth = w; d.documentPreferences.pageHeight = h;
+  d.documentPreferences.facingPages = facing; d.documentPreferences.pagesPerDocument = pages;
+  d.viewPreferences.horizontalMeasurementUnits = MeasurementUnits.POINTS;
+  d.viewPreferences.verticalMeasurementUnits = MeasurementUnits.POINTS;
+  return d;
+}
+function margins(d, t, b, l, r, cols, gutter) {
+  var all = [];
+  for (var i = 0; i < d.pages.length; i++) all.push(d.pages[i]);
+  for (var m = 0; m < d.masterSpreads.length; m++) for (var j = 0; j < d.masterSpreads[m].pages.length; j++) all.push(d.masterSpreads[m].pages[j]);
+  for (var k = 0; k < all.length; k++) { var mp = all[k].marginPreferences; mp.top = t; mp.bottom = b; mp.left = l; mp.right = r; mp.columnCount = cols || 1; mp.columnGutter = gutter || 12; }
+}
+function frame(page, bounds, text) { var f = page.textFrames.add({ geometricBounds: bounds }); if (text !== undefined) f.contents = text; return f; }
+var LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.";
+function finish(d, name) {
+  d.exportFile(ExportFormat.INDESIGN_MARKUP, File(OUT + "/" + name + ".idml"));
+  step("pdf", function () { d.exportFile(ExportFormat.PDF_TYPE, File(OUT + "/" + name + ".pdf"), false); });
+  d.close(SaveOptions.NO);
+  return "ok " + LOG.join(" | ");
+}

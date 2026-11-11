@@ -54,6 +54,7 @@
     "postext-citeproc": "workspace:*",
     "postext-epub": "workspace:*",
     "postext-folio": "workspace:*",
+    "postext-idml": "workspace:*",
     "postext-pdf": "workspace:*",
     "postext-scorm": "workspace:*",
     "tailwind-merge": "^3.7.0",

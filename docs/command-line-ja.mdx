@@ -223,9 +223,10 @@ Googleドキュメントで編集して`.docx`でダウンロードしたファ�
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
-`idml`は`pdf`と同じように本を組み、ページをInDesign Markupのパッケージとして書き出します。InDesignで仕上げるためのものです。見開きごとに1ページを置き、罫線、ボックス、パス、画像はページアイテムに、テンプレートページの各枠のテキストは固有のストーリーを持つテキストフレームになります（`next`でつないだ枠は1つのストーリーを共有します）。囲みスタイルは段落スタイルに、作者が指定したCMYKの色はスウォッチになります。フォームフィールドを持つチップは、InDesignのフォームフィールドになります。InDesignはテキストを組み直すので、改行位置はPDFと違うことがあります。`--images link`を付けると、画像はファイルの中ではなく、隣の`Links/`に置かれます。パッケージがまだ扱えないもの（表、数式、楽譜）は、`idml.*`の警告で報告します。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostextidml)を参照してください。postext 1.71以降。
+`idml`は`pdf`と同じように本を組み、ページをInDesign Markupのパッケージとして書き出します。InDesignで仕上げるためのものです。見開きの余白を持つ本では、ページを背をはさんだ見開きに置き（それ以外の本では見開きごとに1ページ）、罫線、ボックス、パス、画像はページアイテムに、表はInDesignの表に、テンプレートページの各枠のテキストは固有のストーリーを持つテキストフレームになります（`next`でつないだ枠は1つのストーリーを共有します）。囲みスタイルは段落スタイルに、作者が指定したCMYKの色はスウォッチになります。フォームフィールドを持つチップは、InDesignのフォームフィールドになります。`--lines keep`（既定）は各行をPostextが終えた位置で終えるので、InDesignにはPDFと同じ行が表示されます。`--lines reflow`は段落をInDesignのコンポーザーに任せるので、改行位置は変わることがあります。`--images link`を付けると、画像はファイルの中ではなく、隣の`Links/`に置かれます。`--fonts`は、使われている書体のフォントファイルをパッケージの隣の`Document fonts/`に書き出します。InDesignはそこからその文書のフォントを見つけます。`-o`でファイルを指定する必要があり、本が再配布できないファミリーは書き出さずに警告を出します。パッケージが本のとおりには扱えないもの（縦組みのテキスト、表の角丸の枠）は、`idml.*`の警告で報告します。書き出しを行うのは`postext-idml`パッケージです。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。postext 1.71以降。`--lines`と`--fonts`は1.76以降。
 
 ### packとunpack
 

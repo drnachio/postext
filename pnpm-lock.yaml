@@ -442,6 +442,9 @@ importers:
       postext-epub:
         specifier: workspace:*
         version: link:../postext-epub
+      postext-idml:
+        specifier: workspace:*
+        version: link:../postext-idml
       postext-pdf:
         specifier: workspace:*
         version: link:../postext-pdf
@@ -503,6 +506,34 @@ importers:
       three:
         specifier: ^0.186.1
         version: 0.186.1
+      typescript:
+        specifier: ^6.0.3
+        version: 6.0.3
+      typescript-eslint:
+        specifier: ^8.72.0
+        version: 8.72.0(eslint@10.13.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@6.0.3)
+      vitest:
+        specifier: ^5.0.5
+        version: 5.0.5(@types/node@26.6.5)(msw@2.13.0(@types/node@26.6.5)(typescript@6.0.3))(vite@8.3.4(@types/node@26.6.5)(jiti@2.7.0)(yaml@2.9.0))
+
+  packages/postext-idml:
+    dependencies:
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
+    devDependencies:
+      '@postext/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.6.5
+        version: 26.6.5
+      eslint:
+        specifier: ^10.13.0
+        version: 10.13.0(jiti@2.7.0)(supports-color@7.2.0)
+      postext:
+        specifier: workspace:*
+        version: link:../postext
       typescript:
         specifier: ^6.0.3
         version: 6.0.3
@@ -612,6 +643,9 @@ importers:
       postext-folio:
         specifier: workspace:*
         version: link:../postext-folio
+      postext-idml:
+        specifier: workspace:*
+        version: link:../postext-idml
       postext-pdf:
         specifier: workspace:*
         version: link:../postext-pdf

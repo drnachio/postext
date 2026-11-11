@@ -1054,7 +1054,7 @@ outputs would ship too (`--exclude GLOB` leaves more out).
 When the brief asks for other files, write them from the delivered bundle:
 `postext epub` (fixed or reflowable, checked with EPUBCheck), `postext html`, a press
 `postext pdf` (`--pdfx`, `--profile`), `postext docx` for an editor who works in
-Word, and `postext idml` (postext ≥ 1.71; `idmlDocument` from `postext/idml` in code) for a designer who finishes the pages in InDesign, so IDML is an output as well as a source; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
+Word, and `postext idml` (postext ≥ 1.71; in code `idmlDocument` from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml` subpath) for a designer who finishes the pages in InDesign, so IDML is an output as well as a source. `postext-idml` also has `idmlToPostext`, a deterministic import of an `.idml` with a report of what it lost; a port still goes the way this skill describes, from the IDML and the print PDF; a SCORM package for a learning platform comes from the Sandbox's SCORM tab or
 `postext-scorm` (configuration.md §21, "Delivering EPUB, HTML and PDF files"; sources.md § Word).
 
 Import it at https://postext.dev/en/sandbox (Books → New → Open a .postext file…). A

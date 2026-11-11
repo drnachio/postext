@@ -261,6 +261,12 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td>Interprète une barre oblique inverse en fin de ligne source, et <code>{'\\\\'}</code> avant une espace, comme un saut de ligne forcé à l’intérieur d’un paragraphe, d’une citation ou d’un élément de liste (le saut de ligne dur de CommonMark) : les mots suivants commencent une nouvelle ligne du même paragraphe, et la ligne précédente est composée à sa largeur naturelle, comme une dernière ligne. Une barre oblique inverse qui termine le paragraphe s’imprime, et deux espaces en fin de ligne ne font pas de saut (voir <a href="/fr/docs/document-format-directives#sauts-de-ligne">Format du document › Sauts de ligne</a>). <code>false</code> conserve l’interprétation de la 1.22 : les barres obliques inverses s’impriment et les lignes se rejoignent par une espace ; les configurations enregistrées auparavant dont le texte contient une telle barre sont lues avec cette valeur (voir <a href="/fr/docs/configuration-bundles#paquets-écrits-par-postext-14-ou-antérieur">Paquets écrits par postext 1.4 ou antérieur</a>). Les titres, les légendes, les notes et les cellules de tableau coupent à <code>{'\\\\'}</code> dans tous les cas.</td>
     </tr>
     <tr>
+      <td><code>justifyHardBreaks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Dans un texte justifié, justifier la ligne qui précède un saut de ligne forcé, comme le font les logiciels de mise en page : elle est composée à la justification comme les lignes que coupe le moteur, et seule la dernière ligne du paragraphe à sa largeur naturelle. Un livre dont les lignes ont été décidées ailleurs (une importation qui conserve les sauts de ligne de l’original, une adaptation qui suit une édition imprimée ligne à ligne) se lit bien avec ce réglage. Une ligne trop courte pour ses espaces est laissée en drapeau et signalée, comme toute ligne justifiée que le moteur n’a pas pu remplir ; une ligne avec tabulation garde ses largeurs. Le texte en drapeau et le texte justifié entre les caractères (chinois, japonais) sont composés comme sans lui. Depuis postext 1.76.</td>
+    </tr>
+    <tr>
       <td><code>plusUnderline</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

@@ -14,7 +14,15 @@
  *   (`avoidHyphenAtLines`) and the kept breaks (`keepBreaks`) of lines
  *   `n`, `n + 1`…;
  * - the line before a break is set at its natural width, as a paragraph's
- *   last line is (`isLastLine`), and flagged `hardBreak`;
+ *   last line is (`isLastLine`), and flagged `hardBreak`; with
+ *   `justifyForcedBreaks` (#1502) a justified paragraph justifies it
+ *   instead, unless it holds a tab stop or a word wider than its measure.
+ *   A piece whose last line could not be justified (one word, or word
+ *   spaces past the ragged limit) is then set a line shorter when the
+ *   breaker can: without a runt penalty it would rather leave a word alone
+ *   on a line than shrink the spaces of the line before, which is right
+ *   before a line set short and wrong before one set to the measure. Lines
+ *   kept from another setting, each a piece, stay one line that way;
  * - the runt penalty and `lastLineRunt` are the last piece's, the
  *   paragraph's end; `looseness` is taken by the last piece that can take
  *   it, then the one before;
@@ -30,7 +38,9 @@ import type { InlineSpan } from '../parse/types.js';
 import { sliceSpan } from '../parse/links.js';
 import type { VDTLine } from '../vdt.js';
 import type { BreakTrace, LineWidthStep, MeasureBlockOptions, MeasuredBlock } from './types.js';
-import { lineIndentAt, lineMeasure, type LineInsetStep } from './types.js';
+import { lineIndentAt, lineMeasure, lineWidthAt, type LineInsetStep } from './types.js';
+import { justifiedSpaceRatios } from './spaceRatios.js';
+import { RAGGED_SPACE_RATIO } from '../knuthPlass/constants.js';
 
 /** The forced line break in a paragraph's text (`BREAK_PLACEHOLDER`). */
 export const FORCED_BREAK = ' ';
@@ -77,11 +87,12 @@ export function pieceOptions(
   last: boolean,
   looseness: number,
 ): MeasureBlockOptions {
-  const { firstLineIndentPx: _first, hangingIndent: _hanging, lineIndentsPx: _table, labelColumnPx, labelLength, numberSeams, restWidths, lineInsets, avoidHyphenAtLines, keepBreaks, looseness: _loose, runtPenalty, ...rest } = options ?? {};
+  const { firstLineIndentPx: _first, hangingIndent: _hanging, lineIndentsPx: _table, justifyForcedBreaks: _justify, labelColumnPx, labelLength, numberSeams, restWidths, lineInsets, avoidHyphenAtLines, keepBreaks, looseness: _loose, runtPenalty, ...rest } = options ?? {};
   void _first;
   void _hanging;
   void _table;
   void _loose;
+  void _justify;
   const out: MeasureBlockOptions = { ...rest };
   if (n === 0) {
     if (options?.firstLineIndentPx !== undefined) out.firstLineIndentPx = options.firstLineIndentPx;
@@ -146,12 +157,22 @@ export function measureForcedBreaks(
   lineHeightPx: number,
   options: MeasureBlockOptions | undefined,
   measurePiece: (piece: InlineSpan[], options: MeasureBlockOptions) => MeasuredBlock,
+  /** The regular word space (px, with the block's tracking): the unit of
+   *  a justified line's ratios. Asked only with `justifyForcedBreaks`. */
+  normalSpaceWidth?: () => number,
 ): MeasuredBlock {
   const pieces = splitAtForcedBreaks(spans);
   const lastPiece = pieces.length - 1;
   // A placeholder (a formula, a reference, a note marker) is no
   // whitespace: only a piece of spaces sets nothing.
   const blank = (piece: InlineSpan[]) => piece.every((s) => s.text.trim() === '');
+  const justifies = options?.justifyForcedBreaks === true && options.textAlign === 'justify' && normalSpaceWidth !== undefined;
+  /** Line `li` of the paragraph, the end of a piece, cannot be justified. */
+  const tooShort = (line: VDTLine, li: number): boolean => {
+    if (line.tabbed || line.wordOverflow || !line.segments) return false;
+    const ratio = justifiedSpaceRatios(line.segments, lineWidthAt(maxWidthPx, options, li), normalSpaceWidth!()).justifiedSpaceRatio;
+    return ratio === undefined || ratio > RAGGED_SPACE_RATIO;
+  };
   const measureAll = (loose: readonly number[]): { results: (MeasuredBlock | null)[]; starts: number[] } => {
     const results: (MeasuredBlock | null)[] = [];
     const starts: number[] = [];
@@ -162,7 +183,13 @@ export function measureForcedBreaks(
         results.push(null);
         return;
       }
-      const r = measurePiece(piece, pieceOptions(options, maxWidthPx, k, n, k === lastPiece, loose[k] ?? 0));
+      let r = measurePiece(piece, pieceOptions(options, maxWidthPx, k, n, k === lastPiece, loose[k] ?? 0));
+      // A piece that ends on a line too short to justify (#1502): a line
+      // shorter, when the breaker can set it so.
+      if (justifies && k < lastPiece && r.lines.length > 1 && tooShort(r.lines[r.lines.length - 1]!, n + r.lines.length - 1)) {
+        const tighter = measurePiece(piece, pieceOptions(options, maxWidthPx, k, n, false, (loose[k] ?? 0) - 1));
+        if (tighter.lines.length > 0 && tighter.lines.length < r.lines.length) r = tighter;
+      }
       results.push(r);
       n += r.lines.length;
     });
@@ -201,7 +228,14 @@ export function measureForcedBreaks(
       const { justifiedSpaceRatio: _ratio, justifiedSpaceLimitRatio: _limit, ...ragged } = end;
       void _ratio;
       void _limit;
-      placed[placed.length - 1] = { ...ragged, isLastLine: true, hardBreak: true };
+      // Justified (#1502): the line takes the measure of its place in the
+      // paragraph, its ratios as a line the breaker ended carries them.
+      const justified = justifies && !end.tabbed && !end.wordOverflow && end.segments
+        ? justifiedSpaceRatios(end.segments, lineWidthAt(maxWidthPx, options, lines.length + placed.length - 1), normalSpaceWidth!())
+        : undefined;
+      placed[placed.length - 1] = justified?.justifiedSpaceRatio !== undefined
+        ? { ...ragged, ...justified, isLastLine: false, hardBreak: true }
+        : { ...ragged, isLastLine: true, hardBreak: true };
     }
     lines.push(...placed);
     totalHeight += r.totalHeight;

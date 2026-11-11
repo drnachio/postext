@@ -181,7 +181,9 @@ export interface VDTLine {
   isLastLine?: boolean;
   /** The line ends at a forced line break the author typed inside the
    *  paragraph (#620: a backslash ending a source line, or `\\`): it is set
-   *  at its natural width like a last line ({@link isLastLine} is set), the
+   *  at its natural width like a last line ({@link isLastLine} is set; with
+   *  `bodyText.justifyHardBreaks`, #1502, justified text justifies it and
+   *  `isLastLine` is `false`), the
    *  paragraph goes on on the next line, copied text takes a line feed
    *  there, the reflowable EPUB a `<br/>`. Absent otherwise. */
   hardBreak?: true;

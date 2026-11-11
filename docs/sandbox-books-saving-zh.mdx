@@ -180,7 +180,7 @@ Word中没有对应结构的内容以源码形式随文件走：标记为`ptx:ra
 
 `postext`包读写的也是这些文件（`openBundle`、`createBundle`、`buildBundle`；见[文件包](/zh/docs/configuration-bundles#文件包postext文件)）。在这里导出的书可以在你自己的程序中打开，你的程序写出的书也可以在这里打开。这样，沙盒就成了检查和微调程序排版结果的地方：从程序中导出，在这里导入，借助实时预览修改，再次导出，然后载回程序。[智能体技能](/zh/docs/skill)交付的移植结果也是`.postext`文件。
 
-正文面板标题栏中的**导出到 InDesign**（IDML）像PDF标签页处理整本书那样排好整本书（每一章接在前面各章之后），并下载为`<书名>.idml`，即一个可在InDesign中打开的InDesign Markup包。每一页成为只有一页的跨页；线条、方框和图片成为InDesign的页面对象，图片（以及SVG插图的PDF印刷母版）嵌入其中；每个框架的文字成为一篇文章，段落样式以书中样式的名称命名。InDesign会用自己的排版器重新排行，因此断行位置可能与PDF不同。工作期间有进度条显示：先是已排好的章，然后是写入的包。如果写入时有需要说明的情况（缺少文件的图片、旧版InDesign无法置入的SVG、尺寸不同的页面），下载后对话框会保持打开，并在**InDesign 中显示不同之处**下列出。命令行（`postext idml`）和API（`postext/idml`）写出同样的包（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postextidml)）。
+正文面板标题栏中的**导出到 InDesign**（IDML）像PDF标签页处理整本书那样排好整本书（每一章接在前面各章之后），并下载为`<书名>.idml`，即一个可在InDesign中打开的InDesign Markup包。书设了对称页边距时，页面按对页排在跨页中，否则每个跨页一页；线条、方框和图片成为InDesign的页面对象，图片（以及SVG插图的PDF印刷母版）嵌入其中；每个框架的文字成为一篇文章，段落样式以书中样式的名称命名。每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。工作期间有进度条显示：先是已排好的章，然后是写入的包。如果写入时有需要说明的情况（缺少文件的图片、旧版InDesign无法置入的SVG、尺寸不同的页面），下载后对话框会保持打开，并在**InDesign 中显示不同之处**下列出。命令行（`postext idml`）和API（`postext-idml`）写出同样的包（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。
 
 正文和版面设计也可以分别从正文面板和版面设计面板的标题栏导出。
 

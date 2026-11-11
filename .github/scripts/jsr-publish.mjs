@@ -34,6 +34,7 @@ const PACKAGES = {
   'postext-folio': '@postext/folio',
   'postext-citeproc': '@postext/citeproc',
   'postext-scorm': '@postext/scorm',
+  'postext-idml': '@postext/idml',
 };
 
 const manifests = Object.fromEntries(

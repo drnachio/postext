@@ -97,7 +97,8 @@ function measureRichText(
   // (`measure/hardBreaks.ts`).
   if (plainText.includes(FORCED_BREAK)) {
     return measureForcedBreaks(spans, maxWidthPx, lineHeightPx, options, (piece, opts) =>
-      measureRichText(piece, piece.map((s) => s.text).join(''), normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts));
+      measureRichText(piece, piece.map((s) => s.text).join(''), normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, opts),
+    () => normalSpaceWidthFor(normalFont) + (options?.letterSpacingPx ?? 0));
   }
   // Tabs (#622) are word spaces in vertical text.
   if (measuringVertically() && spans.some((sp) => sp.tab)) spans = tabsAsSpaces(spans);

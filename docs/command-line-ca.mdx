@@ -364,21 +364,31 @@ s'ha deixat (`skipped`). Des de postext 1.39.
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` compon el llibre com ho fa `pdf` i escriu les pàgines com un paquet
-d'InDesign Markup, per acabar-lo a InDesign: una pàgina per plec, filets,
-requadres, traçats i imatges com a elements de pàgina, el text de cada marc
-d'una pàgina composta com un marc de text amb la seva pròpia història (els
-marcs encadenats amb `next` en comparteixen una), els estils de requadre com a
+d'InDesign Markup, per acabar-lo a InDesign: les pàgines en plecs a banda i
+banda del llom en un llibre amb marges de pàgines enfrontades (una pàgina per
+plec en qualsevol altre), filets, requadres, traçats i imatges com a elements
+de pàgina, les taules com a taules d'InDesign, el text de cada marc d'una
+pàgina composta com un marc de text amb la seva pròpia història (els marcs
+encadenats amb `next` en comparteixen una), els estils de requadre com a
 estils de paràgraf i els colors CMYK d'autor com a mostres. Els xips amb camp
-de formulari passen a ser camps de formulari d'InDesign. InDesign torna a
-compondre el text, així que els salts de línia poden diferir dels del PDF.
+de formulari passen a ser camps de formulari d'InDesign. `--lines keep` (el
+valor per defecte) acaba cada línia on la va acabar Postext, de manera que
+InDesign mostra les mateixes línies que el PDF; `--lines reflow` deixa els
+paràgrafs al compositor d'InDesign, i els salts de línia poden variar.
 `--images link` deixa les imatges al costat del fitxer, a `Links/`, en lloc de
-dins. El que el paquet encara no pot portar (taules, fórmules, música) es
-notifica com a avís `idml.*`. Vegeu [Ús programàtic › Paquets
-d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postextidml).
-Des de postext 1.71.
+dins. `--fonts` escriu els fitxers de font de les variants usades al costat
+del paquet, a `Document fonts/`, on InDesign els troba per a aquell document;
+necessita que `-o` anomeni un fitxer, i una família que el llibre no pot
+redistribuir es deixa fora amb un avís. El que el paquet no pot portar tal com
+és al llibre (el text vertical, el marc arrodonit d'una taula) es notifica com
+a avís `idml.*`. El generador és el paquet `postext-idml`: vegeu [Ús
+programàtic › Paquets
+d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
+Des de postext 1.71; `--lines` i `--fonts`, des de 1.76.
 
 ### pack i unpack
 

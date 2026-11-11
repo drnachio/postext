@@ -368,22 +368,31 @@ et ce qui a été laissé (`skipped`). Depuis postext 1.39.
 ```bash
 postext idml book/ -o book.idml
 postext idml book.postext -o book.idml --images link
+postext idml book/ -o out/book.idml --lines reflow --fonts
 ```
 
 `idml` met le livre en page comme `pdf` et écrit les pages en paquet InDesign
-Markup, à finir dans InDesign : une page par planche, filets, encadrés, tracés
-et images comme objets de page, le texte de chaque bloc d’une page composée
+Markup, à finir dans InDesign : les pages en planches de part et d’autre du
+dos pour un livre aux marges de pages en regard (une page par planche pour
+tout autre), filets, encadrés, tracés et images comme objets de page, les
+tableaux comme tableaux InDesign, le texte de chaque bloc d’une page composée
 comme un bloc de texte avec son propre article (les blocs chaînés par `next`
 en partagent un), les styles d’encadré comme styles de paragraphe et les
 couleurs CMJN définies par l’auteur comme nuances. Les pastilles qui portent
-un champ de formulaire deviennent des champs de formulaire InDesign. InDesign
-recompose le texte, si bien que les fins de ligne peuvent différer de celles
-du PDF. `--images link` place les images à côté du fichier, dans `Links/`, au
-lieu de les y inclure. Ce que le paquet ne sait pas encore porter (tableaux,
-formules, musique) est signalé par un avertissement `idml.*`. Voir
-[Utilisation programmatique › Paquets
-InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postextidml).
-Depuis postext 1.71.
+un champ de formulaire deviennent des champs de formulaire InDesign. `--lines
+keep` (par défaut) finit chaque ligne là où Postext l’a finie, si bien
+qu’InDesign affiche les mêmes lignes que le PDF ; `--lines reflow` laisse les
+paragraphes au compositeur d’InDesign, et les fins de ligne peuvent changer.
+`--images link` place les images à côté du fichier, dans `Links/`, au lieu de
+les y inclure. `--fonts` écrit les fichiers de police des variantes utilisées
+à côté du paquet, dans `Document fonts/`, où InDesign les trouve pour ce
+document ; il faut que `-o` nomme un fichier, et une famille que le livre ne
+peut pas redistribuer est laissée de côté, avec un avertissement. Ce que le
+paquet ne peut pas porter tel que le livre l’a (le texte vertical, le cadre
+arrondi d’un tableau) est signalé par un avertissement `idml.*`. Le générateur
+est le paquet `postext-idml` : voir [Utilisation programmatique › Paquets
+InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml).
+Depuis postext 1.71 ; `--lines` et `--fonts` depuis 1.76.
 
 ### pack et unpack
 

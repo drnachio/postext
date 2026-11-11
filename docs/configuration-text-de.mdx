@@ -261,6 +261,12 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Liest einen Backslash am Ende einer Quellzeile und <code>{'\\\\'}</code> vor einem Leerzeichen als erzwungenen Zeilenumbruch innerhalb eines Absatzes, eines Zitats oder eines Listenpunkts (der harte Umbruch von CommonMark): Die folgenden Wörter beginnen eine neue Zeile desselben Absatzes, und die Zeile davor wird wie eine letzte Zeile in ihrer natürlichen Breite gesetzt. Ein Backslash am Ende des Absatzes erscheint im Text, und zwei Leerzeichen am Zeilenende sind kein Umbruch (siehe <a href="/de/docs/document-format-directives#zeilenumbrüche">Dokumentformat › Zeilenumbrüche</a>). <code>false</code> behält die Lesart von 1.22: Die Backslashes erscheinen im Text, und die Zeilen werden mit einem Leerzeichen verbunden; früher gespeicherte Konfigurationen, deren Text einen solchen Backslash enthält, werden damit gelesen (siehe <a href="/de/docs/configuration-bundles#pakete-die-postext-14-oder-früher-geschrieben-hat">Pakete, die postext 1.4 oder früher geschrieben hat</a>). Titel, Legenden, Anmerkungen und Tabellenzellen brechen in jedem Fall bei <code>{'\\\\'}</code> um.</td>
     </tr>
     <tr>
+      <td><code>justifyHardBreaks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Im Blocksatz die Zeile vor einem erzwungenen Zeilenumbruch ausschließen, wie es Layoutprogramme tun: Sie wird auf Satzbreite gesetzt wie die Zeilen, die der Umbruch selbst beendet, und nur die letzte Zeile des Absatzes in ihrer natürlichen Breite. Ein Buch, dessen Zeilen anderswo festgelegt wurden (ein Import, der die Zeilenumbrüche der Vorlage behält, eine Übertragung, die einer gedruckten Ausgabe Zeile für Zeile folgt), wird damit richtig gesetzt. Eine Zeile, die für ihre Wortabstände zu kurz ist, wird im Flattersatz gesetzt und gemeldet, wie jede Blocksatzzeile, die der Umbruch nicht füllen konnte; eine Zeile mit Tabulator behält ihre Breiten. Flattersatz und zwischen den Zeichen ausgeschlossener Text (Chinesisch, Japanisch) werden wie ohne die Einstellung gesetzt. Seit postext 1.76.</td>
+    </tr>
+    <tr>
       <td><code>plusUnderline</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
