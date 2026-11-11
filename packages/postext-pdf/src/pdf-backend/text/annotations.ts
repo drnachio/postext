@@ -28,7 +28,8 @@ import {
   type PDFFont,
   type PDFOperator,
 } from 'pdf-lib';
-import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
+import { bandOutline, dashedPieces } from 'postext';
+import type { VDTAnnotationRun, VDTKunten, VDTLine, VDTLineHighlight, VDTLineMark, VDTLineSegment, VDTRuby, VDTWarichu } from 'postext';
 import { parseFontString } from '../../fontString.js';
 import type { FontCache } from '../../fontCache.js';
 import { type PageCtx, alphaOf, alphaStateOp, colorFromHex, drawTextPx, fillOutlinePx } from '../primitives.js';
@@ -93,6 +94,15 @@ function markOps(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number): { ops:
     }
     case 'line':
       return { ops: [moveTo(X(cx), Y(cy)), lineTo(X(cx + (m.length ?? 0)), Y(cy))], filled: false };
+    case 'dashed': {
+      // Each dash a filled bar, as the canvas fills them.
+      const half = m.thickness / 2;
+      const ops: PDFOperator[] = [];
+      for (const p of dashedPieces(m, xPx)) {
+        ops.push(moveTo(X(p.x), Y(cy - half)), lineTo(X(p.x + p.length), Y(cy - half)), lineTo(X(p.x + p.length), Y(cy + half)), lineTo(X(p.x), Y(cy + half)), closePath());
+      }
+      return { ops, filled: true };
+    }
     case 'double': {
       const half = (m.gap ?? 0) / 2;
       const end = cx + (m.length ?? 0);
@@ -131,6 +141,42 @@ function markOps(ctx: PageCtx, m: VDTLineMark, xPx: number, yPx: number): { ops:
   }
 }
 
+/** The colour of a band at its opacity: translucent where the PDF allows
+ *  transparency, as it prints over white paper under PDF/X-1a, which has no
+ *  transparency (`colorFromHex` flattens there), a tint of an authored spot or process
+ *  mix when the colour is one. */
+function bandColor(ctx: PageCtx, b: VDTLineHighlight): Color {
+  const opacity = b.opacity ?? 1;
+  if (!(opacity < 1)) return colorFromHex(b.color, ctx.colorSpace);
+  const alpha = Math.round(Math.max(0, opacity) * 255).toString(16).padStart(2, '0');
+  return colorFromHex(`${b.color.slice(0, 7)}${alpha}`, ctx.colorSpace);
+}
+
+/** A rough band's outline (`bandOutline`, the canvas's), its quadratic
+ *  curves raised to cubic ones, filled. */
+function fillRoughBand(ctx: PageCtx, b: VDTLineHighlight, line: VDTLine, color: Color): void {
+  const { scale, pageHeightPt } = ctx;
+  const X = (px: number) => px * scale;
+  const Y = (px: number) => pageHeightPt - px * scale;
+  const ops: PDFOperator[] = [];
+  let at = { x: 0, y: 0 };
+  for (const c of bandOutline(b, line.bbox.x, line.baseline)) {
+    if (c.op === 'Z') {
+      ops.push(closePath());
+      continue;
+    }
+    if (c.op === 'Q') {
+      const c1 = { x: at.x + (2 / 3) * (c.cx - at.x), y: at.y + (2 / 3) * (c.cy - at.y) };
+      const c2 = { x: c.x + (2 / 3) * (c.cx - c.x), y: c.y + (2 / 3) * (c.cy - c.y) };
+      ops.push(appendBezierCurve(X(c1.x), Y(c1.y), X(c2.x), Y(c2.y), X(c.x), Y(c.y)));
+    } else ops.push(c.op === 'M' ? moveTo(X(c.x), Y(c.y)) : lineTo(X(c.x), Y(c.y)));
+    at = { x: c.x, y: c.y };
+  }
+  const alpha = alphaOf(color);
+  const gs = alpha < 1 ? alphaStateOp(ctx, alpha) : null;
+  ctx.page.pushOperators(pushGraphicsState(), ...(gs ? [gs] : []), setFillingColor(color), ...ops, fill(), popGraphicsState());
+}
+
 /** Draw the highlight bands of a line (`VDTLine.highlights`, `:mark[…]`,
  *  #888) as artifacts, under its text: called before the line is
  *  painted. */
@@ -139,13 +185,18 @@ export function paintLineHighlights(ctx: PageCtx, line: VDTLine): void {
   if (!bands || bands.length === 0) return;
   tagArtifact(ctx, { type: 'Layout' });
   for (const b of bands) {
+    const color = bandColor(ctx, b);
+    if (b.rough) {
+      fillRoughBand(ctx, b, line, color);
+      continue;
+    }
     fillOutlinePx(ctx, {
       x: line.bbox.x + b.x,
       y: line.baseline + b.y,
       width: b.width,
       height: b.height,
       radii: [b.radiusLeft, b.radiusRight, b.radiusRight, b.radiusLeft],
-    }, colorFromHex(b.color, ctx.colorSpace));
+    }, color);
   }
 }
 

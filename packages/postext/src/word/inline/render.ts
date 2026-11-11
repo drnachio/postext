@@ -14,6 +14,8 @@ export interface InlineRun {
   href?: string;
   /** Chip style id. */
   chip?: string;
+  /** Character style id (`:span[…]{style="id"}`). */
+  charStyle?: string;
   /** Footnote marker (`[^id]`); `text` is empty. */
   note?: string;
 }
@@ -82,10 +84,10 @@ export function linkDestination(url: string): string {
   return out;
 }
 
-type Flags = Pick<InlineRun, 'bold' | 'italic' | 'smallCaps' | 'script' | 'raw' | 'href' | 'chip' | 'note'>;
+type Flags = Pick<InlineRun, 'bold' | 'italic' | 'smallCaps' | 'script' | 'raw' | 'href' | 'chip' | 'charStyle' | 'note'>;
 export const sameFlags = (a: Flags, b: Flags): boolean =>
   !!a.bold === !!b.bold && !!a.italic === !!b.italic && !!a.smallCaps === !!b.smallCaps && a.script === b.script
-  && !!a.raw === !!b.raw && a.href === b.href && a.chip === b.chip && a.note === undefined && b.note === undefined;
+  && !!a.raw === !!b.raw && a.href === b.href && a.chip === b.chip && a.charStyle === b.charStyle && a.note === undefined && b.note === undefined;
 
 function merge(runs: InlineRun[]): InlineRun[] {
   const out: InlineRun[] = [];
@@ -102,7 +104,7 @@ const NEUTRAL_RE = /^\s*$/u;
 const WORD_RE = '(?:(?![\\u3040-\\u30ff\\u3100-\\u312f\\u31a0-\\u31ff\\u3400-\\u4dbf\\u4e00-\\u9fff\\uf900-\\ufaff])[\\p{L}\\p{N}_])+';
 const WORD_TAIL = new RegExp(`(${WORD_RE})$`, 'u');
 const WORD_HEAD = new RegExp(`^(${WORD_RE})`, 'u');
-const plainRun = (r: InlineRun): boolean => !r.raw && !r.script && !r.chip && r.note === undefined && !r.href;
+const plainRun = (r: InlineRun): boolean => !r.raw && !r.script && !r.chip && r.charStyle === undefined && r.note === undefined && !r.href;
 
 /** Style boundaries on word boundaries: spaces and punctuation between two
  *  runs of one style take that style; a style change inside a word moves to
@@ -268,17 +270,28 @@ function renderEmphasis(runs: InlineRun[], ctx: RenderContext): string {
   }).join('');
 }
 
-/** Postext inline Markdown for runs. Links and chips wrap their own runs. */
+/** Postext inline Markdown for runs. Links, chips and character styles
+ *  wrap their own runs. */
 export function renderInline(input: InlineRun[], opts: { collapseSpaces?: boolean; tidy?: boolean } = {}): string {
   const runs = normaliseRuns(input, opts.tidy ?? true);
   const ctx: RenderContext = { before: '', tidy: opts.tidy ?? true };
   let out = '';
-  for (const g of groups(runs, (r) => (r.href !== undefined ? `h:${r.href}` : r.chip !== undefined ? `c:${r.chip}` : null))) {
+  for (const g of groups(runs, (r) => (r.href !== undefined ? `h:${r.href}` : r.chip !== undefined ? `c:${r.chip}` : r.charStyle !== undefined ? `s:${r.charStyle}` : null))) {
     if (g.key === null) {
       out += renderEmphasis(g.runs, ctx);
       continue;
     }
     const first = g.runs[0]!;
+    if (first.href === undefined && first.chip === undefined) {
+      // A character style: `:span[words]{style="id"}`, the run's own
+      // marks inside.
+      const { lead, inner: body, trail } = edges(g.runs.map((r) => ({ ...r, charStyle: undefined })), ctx.tidy);
+      const text = escapeClosingBrackets(renderInline(body, { tidy: opts.tidy })).replace(/\s+/g, ' ');
+      const s = text ? `${lead}:span[${text}]{style="${first.charStyle}"}${trail}` : lead + trail;
+      out += s;
+      ctx.before += s;
+      continue;
+    }
     const inner = g.runs.map((r) => ({ ...r, href: undefined, chip: undefined }));
     if (first.href !== undefined) {
       const { lead, inner: body, trail } = edges(inner, ctx.tidy);

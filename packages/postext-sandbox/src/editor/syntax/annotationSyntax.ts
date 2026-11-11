@@ -11,7 +11,9 @@ import { inFencedCode } from './codeFences.js';
  * #421, #430): `:dots[…]`, `:name[…]`, `:book[…]`, `:sideline[…]{…}`,
  * `:ruby[…]{rt="…"}`, the compact ruby `{紅樓|hóng|lóu}`,
  * `:warichu[…]{…}` and the kanbun marks `:kunten[…]{kaeri okuri}`; and
- * the directional isolates `:rtl[…]` / `:ltr[…]` (#367). The highlighter
+ * the directional isolates `:rtl[…]` / `:ltr[…]` (#367); and the
+ * character styles `:span[…]{style="id"}` (#1488; their commands and
+ * style completion are in `charStyleSyntax.ts`). The highlighter
  * marks each directive's brackets and attributes and shows its text the
  * way the mark reads (dots under it, a straight or wavy line, a note in a
  * smaller size); the completion source offers the directives after `:do`,
@@ -29,10 +31,11 @@ const TEXT_MARKS: Record<AnnotationName, Decoration> = {
   rtl: Decoration.mark({ class: 'cm-annotation-isolate' }),
   sideline: Decoration.mark({ class: 'cm-annotation-sideline' }),
   kunten: Decoration.mark({ class: 'cm-annotation-kunten' }),
+  span: Decoration.mark({ class: 'cm-annotation-span' }),
 };
 
 /** Openers the highlighter looks for before reading a line. */
-const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten)\[|\{[^{}\n|]*\|/;
+const HINT_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[|\{[^{}\n|]*\|/;
 
 /** The decoration ranges of every annotation on a line, relative to it and
  *  sorted: the opener and closer (`delim`) and the text between. A nested
@@ -128,6 +131,10 @@ export const annotationTheme = Prec.highest(
       backgroundColor: 'color-mix(in srgb, var(--brand) 10%, transparent)',
       borderBottom: '1px solid var(--brand)',
     },
+    // A named look, not a highlight: a quiet line under the words.
+    '.cm-annotation-span': {
+      borderBottom: '1px dashed color-mix(in srgb, var(--brand) 70%, transparent)',
+    },
     '.cm-annotation-isolate': {
       textDecoration: 'underline dotted',
       textDecorationColor: 'var(--brand)',
@@ -147,6 +154,7 @@ const DIRECTIVES: ReadonlyArray<{ name: AnnotationName; prefix: RegExp; insert: 
   { name: 'kunten', prefix: /:ku(?:n(?:t(?:en?)?)?)?$/, insert: ':kunten[]{kaeri="" okuri=""}', caret: 8 },
   { name: 'rtl', prefix: /:rtl?$/, insert: ':rtl[]', caret: 5 },
   { name: 'ltr', prefix: /:ltr?$/, insert: ':ltr[]', caret: 5 },
+  { name: 'span', prefix: /(?<!:):sp(?:an?)?$/, insert: ':span[]{style=""}', caret: 6 },
 ];
 
 /** The completion source: an annotation directive after its first letters. */

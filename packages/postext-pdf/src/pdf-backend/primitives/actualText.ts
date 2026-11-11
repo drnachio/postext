@@ -150,7 +150,7 @@ function lineTextState(ctx: PageCtx, state: LineTextState): PDFOperator[] {
  *  it), a warichu note's part (read once, upper row first) or a character
  *  with kanbun marks (read with its 送り仮名, {@link readText}); else
  *  undefined. */
-export function cjkLineText(segments: readonly { text: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean; ruby?: unknown; warichu?: unknown; kunten?: { okuri?: string } }[]): string | undefined {
+export function cjkLineText(segments: readonly { text: string; sourceText?: string; tracking?: number; autospace?: boolean; inkOffset?: number; hangs?: boolean; ruby?: unknown; warichu?: unknown; kunten?: { okuri?: string } }[]): string | undefined {
   return segments.some((s) => s.autospace || s.tracking !== undefined || s.inkOffset !== undefined || s.hangs || s.ruby || s.warichu || s.kunten)
     ? segments.map(readText).join('')
     : undefined;
@@ -159,8 +159,9 @@ export function cjkLineText(segments: readonly { text: string; tracking?: number
 /** A segment's text as it is read: a character with kanbun marks (#430)
  *  is followed by its 送り仮名 (`學ビテ`, as kanbun is typed with them);
  *  its 返り点 are reading-order marks, left out. */
-export function readText(s: { text: string; kunten?: { okuri?: string } }): string {
-  return s.kunten?.okuri ? s.text + s.kunten.okuri : s.text;
+export function readText(s: { text: string; sourceText?: string; kunten?: { okuri?: string } }): string {
+  const text = s.sourceText ?? s.text;
+  return s.kunten?.okuri ? text + s.kunten.okuri : text;
 }
 
 /**

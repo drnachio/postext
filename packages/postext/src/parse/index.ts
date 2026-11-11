@@ -38,6 +38,8 @@ export type {
   InlineWarichu,
   InlineDirection,
   InlineSideline,
+  InlineCharStyle,
+  CharStyleLook,
   InlineKunten,
   ComposedPageFence,
   BlockSlot,

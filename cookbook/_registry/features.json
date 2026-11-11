@@ -4397,6 +4397,133 @@
       ]
     }
   },
+  "character-styles": {
+    "label": {
+      "en": "Character styles",
+      "es": "Estilos de carácter",
+      "ca": "Estils de caràcter",
+      "zh": "字符样式",
+      "ar": "أنماط الحروف",
+      "ja": "文字スタイル",
+      "pt": "Estilos de caractere",
+      "fr": "Styles de caractère",
+      "de": "Zeichenformate",
+      "it": "Stili di carattere"
+    },
+    "definition": {
+      "en": "Named looks for a run of words inside the line, given with :span[…]{style}: a face, a size, a colour, tracking, capitals, and a highlight style for a band or a line. Unlike a chip, the words break and hyphenate like the text around them.",
+      "es": "Aspectos con nombre para un tramo de palabras dentro de la línea, dados con :span[…]{style}: una letra, un tamaño, un color, el espaciado, las mayúsculas y un estilo de resaltado para una franja o una línea. A diferencia de un chip, las palabras pasan de línea y se dividen como el texto que las rodea.",
+      "ca": "Aspectes amb nom per a un tram de paraules dins de la línia, donats amb :span[…]{style}: una lletra, una mida, un color, l'espaiat, les majúscules i un estil de ressaltat per a una franja o una línia. A diferència d'un xip, les paraules passen de línia i es parteixen com el text que les envolta.",
+      "zh": "用 :span[…]{style} 给行内一段文字指定的命名样式：字体、字号、颜色、字距、大写，以及画色带或线条的高亮样式。与行内标签不同，这些文字像周围的正文一样换行、断词。",
+      "ar": "أنماط مسمّاة لمقطع من الكلمات داخل السطر تُعطى بـ :span[…]{style}: خط، وحجم، ولون، وتباعد بين الحروف، وحروف كبيرة، ونمط تظليل لشريط أو خط. وخلافًا للشارة، تنتقل الكلمات من سطر إلى آخر وتُقسَّم بالواصلة كالنص المحيط بها.",
+      "ja": ":span[…]{style} で行内の語句に付ける名前付きスタイルです。書体、サイズ、色、字間、大文字、帯や線を引くハイライトスタイルを指定できます。チップと違い、語句は周囲の本文と同じように行を移り、ハイフネーションされます。",
+      "pt": "Visuais nomeados para um trecho de palavras dentro da linha, dados com :span[…]{style}: uma fonte, um tamanho, uma cor, o espaçamento, as maiúsculas e um estilo de destaque para uma faixa ou uma linha. Ao contrário de um chip, as palavras quebram de linha e se hifenizam como o texto ao redor.",
+      "fr": "Des apparences nommées pour une suite de mots dans la ligne, données avec :span[…]{style} : une police, une taille, une couleur, l’interlettrage, les capitales et un style de surlignage pour une bande ou un trait. Contrairement à une pastille, les mots passent à la ligne et se coupent comme le texte qui les entoure.",
+      "de": "Benannte Formate für eine Wortfolge innerhalb der Zeile, vergeben mit :span[…]{style}: Schrift, Größe, Farbe, Laufweite, Versalien und ein Hervorhebungsstil für ein Band oder eine Linie. Anders als bei einem Chip brechen die Wörter um und werden getrennt wie der umgebende Text.",
+      "it": "Aspetti con nome per una sequenza di parole dentro la riga, dati con :span[…]{style}: un carattere, un corpo, un colore, la spaziatura, il maiuscolo e uno stile di evidenziazione per una fascia o una linea. A differenza di un chip, le parole vanno a capo e si sillabano come il testo che le circonda."
+    },
+    "aliases": {
+      "en": [
+        "character style",
+        "text style",
+        "highlighter",
+        "marker",
+        "underline",
+        "strike-through",
+        "span style"
+      ],
+      "es": [
+        "estilo de carácter",
+        "estilo de texto",
+        "rotulador",
+        "resaltado",
+        "subrayado",
+        "tachado"
+      ],
+      "ca": [
+        "estil de caràcter",
+        "estil de text",
+        "retolador",
+        "ressaltat",
+        "subratllat",
+        "ratllat"
+      ],
+      "zh": [
+        "字符样式",
+        "文字样式",
+        "荧光笔",
+        "高亮",
+        "下划线",
+        "删除线"
+      ],
+      "ar": [
+        "نمط الحروف",
+        "نمط النص",
+        "قلم تحديد",
+        "تظليل",
+        "تسطير",
+        "شطب"
+      ],
+      "ja": [
+        "文字スタイル",
+        "文字書式",
+        "蛍光ペン",
+        "ハイライト",
+        "下線",
+        "取り消し線"
+      ],
+      "pt": [
+        "estilo de caractere",
+        "estilo de texto",
+        "marca-texto",
+        "destaque",
+        "sublinhado",
+        "tachado"
+      ],
+      "fr": [
+        "style de caractère",
+        "style de texte",
+        "surligneur",
+        "soulignement",
+        "barré"
+      ],
+      "de": [
+        "Zeichenformat",
+        "Textstil",
+        "Textmarker",
+        "Unterstreichung",
+        "Durchstreichung"
+      ],
+      "it": [
+        "stile di carattere",
+        "stile del testo",
+        "evidenziatore",
+        "sottolineatura",
+        "barrato"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "document-format-inline",
+      "heading": {
+        "en": "Character styles",
+        "es": "Estilos de carácter",
+        "ca": "Estils de caràcter",
+        "zh": "字符样式",
+        "ar": "أنماط الحروف",
+        "ja": "文字スタイル",
+        "pt": "Estilos de caractere",
+        "fr": "Styles de caractère",
+        "de": "Zeichenformate",
+        "it": "Stili di carattere"
+      }
+    },
+    "detect": {
+      "markdown": [
+        "\\]\\|[A-Za-z0-9_-]+\\|"
+      ]
+    }
+  },
   "highlight-marks": {
     "label": {
       "en": "Highlight marks",

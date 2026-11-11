@@ -6,13 +6,15 @@
 
 import type { ResolvedConfig } from '../../vdt.js';
 import type { ColorValue } from '../../types.js';
-import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedChipStyleConfig, ResolvedHeadingLevelConfig, TextAlign } from '../../types.js';
+import type { ResolvedCalloutStyleConfig, ResolvedCaptionStyleConfig, ResolvedHeadingLevelConfig, TextAlign } from '../../types.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import type { WordFontPlan } from '../fonts/types.js';
 import { wordFontFor } from '../fonts/plan.js';
 import { escapeAttr } from '../xml.js';
 import { paleOnWhite } from './design/ink.js';
 import { plainStyleDef } from './plain/styles.js';
+import { characterStyleRun, markRunLook } from './prose/characterStyle.js';
+import { chipLine } from './prose/chips.js';
 import { captionLook, sameCaptionLook } from './prose/caption.js';
 import { boxBodyIndent, paragraphStyleLook, tocLevelLook, type TocLevelNumbering } from './prose/paragraphStyle.js';
 import { styleLeadings } from './prose/leading.js';
@@ -237,7 +239,7 @@ export class StyleRegistry {
     // The band of a mark as run shading in the mark style's colour:
     // LibreOffice drops a highlight set in a character style.
     const mark = r.markStyles?.[0];
-    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: { color: hex(mark?.color), shd: hex(mark?.background) ?? 'FFF0A0' } });
+    this.add(STYLE.mark, { type: 'character', name: 'Postext Mark', custom: true, rPr: mark ? markRunLook(mark) : { shd: 'FFF0A0' } });
     this.add(STYLE.chip, { type: 'character', name: 'Postext Chip', custom: true, rPr: { shd: 'E7E6E6' } });
     const code = resolvedCodeStyle(r);
     const codePx = px(u, code.fontSize, bodyPx);
@@ -322,7 +324,7 @@ export class StyleRegistry {
         i: cs.italic || undefined,
         color: hex(cs.color),
         sz: cs.fontSize ? halfPoints(u, cs.fontSize, this.bodyPx) : undefined,
-        ...this.chipLine(cs),
+        ...chipLine(cs, u, this.bodyPx),
         // A white fill is the paper's: as run shading it would only show
         // as a box over a shaded cell or band (#1444).
         shd: cs.backgroundEnabled && hex(cs.background) !== 'FFFFFF' ? hex(cs.background) : 'auto',
@@ -337,18 +339,6 @@ export class StyleRegistry {
     const { id, fresh } = this.idFor(key, prefix, name);
     if (fresh) this.add(id, make());
     return id;
-  }
-
-  /** A chip's outline as Word draws a run's (#1444): a line round its
-   *  characters (Word has no rounded or circled run, so a round chip is a
-   *  square one), or the line under them of an underline chip. */
-  private chipLine(cs: ResolvedChipStyleConfig): Pick<RunProps, 'bdr' | 'u'> {
-    const u = this.units;
-    const pt = (px(u, cs.borderWidth, this.bodyPx) * 72) / u.dpi;
-    if (!(pt > 0)) return {};
-    if (cs.underline) return { u: cs.underline === 'solid' ? true : cs.underline === 'dashed' ? 'dash' : 'dotted' };
-    // Eighths of a point, in the range Word reads (2 to 96).
-    return { bdr: { color: hex(cs.borderColor) ?? 'auto', sz: Math.min(96, Math.max(2, Math.round(pt * 8))) } };
   }
 
   private headingProps(level: ResolvedHeadingLevelConfig, align: TextAlign): { pPr: ParaProps; rPr: RunProps } {
@@ -491,6 +481,20 @@ export class StyleRegistry {
     // keys styles by name and would merge them.
     const n = id.slice(`Postext${slug(name)}`.length);
     if (fresh) this.add(id, { type: 'paragraph', name: `Postext ${name}${n ? ` ${n}` : ''}`, custom: true, basedOn: STYLE.normal, next: STYLE.normal, ...make() });
+    return id;
+  }
+
+  /** The Word character style of a character style
+   *  (`:span[…]{style="id"}`), named `Postext Style: <name>` in every
+   *  language, as the importer reads it back; undefined when the book has
+   *  no style of that id (the run sets as the text around it, as on the
+   *  page). */
+  characterStyle(styleId: string): string | undefined {
+    const cs = this.resolved.characterStyles?.find((s) => s.id === styleId);
+    if (!cs) return undefined;
+    const mark = cs.mark !== undefined ? this.resolved.markStyles?.find((m) => m.id === cs.mark) : undefined;
+    const { id, fresh } = this.idFor(`char:${cs.id}`, 'PostextCharStyle', cs.id);
+    if (fresh) this.add(id, { type: 'character', name: `Postext Style: ${cs.name || cs.id}`, custom: true, rPr: characterStyleRun(cs, mark, this.units, this.bodyPx, (f, w, i) => this.font(f, w, i)) });
     return id;
   }
 

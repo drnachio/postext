@@ -523,3 +523,30 @@ describe('details found in the browser', () => {
     expect(displayStyleName('Box Text')).toBe('Box Text');
   });
 });
+
+describe('character styles in Word', () => {
+  const styled = { ...config, characterStyles: [{ id: 'rotulador', name: 'Rotulador' }, { id: 'sub', name: 'Subrayado' }] } as unknown as PostextConfig;
+  it('maps a Word character style named like a book style to it, in every language', () => {
+    expect(guessCharacterTarget('Rotulador', styled)).toEqual({ kind: 'charStyle', style: 'rotulador' });
+    for (const name of [
+      'Postext Style: Subrayado',
+      'Character style: Subrayado',
+      'Estilo de carácter: Subrayado',
+      'Estil de caràcter: Subrayado',
+      '字符样式：Subrayado',
+      '文字スタイル: Subrayado',
+      'نمط الأحرف: Subrayado',
+      'Estilo de caractere: Subrayado',
+      'Style de caractère : Subrayado',
+      'Zeichenformat: Subrayado',
+      'Stile carattere: Subrayado',
+    ]) expect(guessCharacterTarget(name, styled)).toEqual({ kind: 'charStyle', style: 'sub' });
+  });
+
+  it('reads and writes the directive in inline runs, and leaves the bar form as text', () => {
+    const runs = parseInline('a :span[b *c*]{style="x"} d');
+    expect(runs.filter((r) => r.charStyle === 'x').map((r) => [r.text, !!r.italic])).toEqual([['b ', false], ['c', true]]);
+    expect(renderInline(runs)).toBe('a :span[b *c*]{style="x"} d');
+    expect(parseInline('a [b]|x| d').some((r) => r.charStyle !== undefined)).toBe(false);
+  });
+});

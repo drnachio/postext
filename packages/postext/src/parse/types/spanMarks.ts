@@ -21,6 +21,36 @@ export interface InlineDirection {
   outer?: InlineDirection;
 }
 
+/** The character style a span belongs to (see {@link InlineSpan.charStyle}). */
+export interface InlineCharStyle {
+  /** Tells runs apart: two runs set side by side keep two decorations.
+   *  Ids count from 1 in each parse of a text. */
+  id: number;
+  /** The style's id (`:span[…]{style="id"}`; `''` when it names none). */
+  style: string;
+  /** The style resolved for measurement, filled in by the pipeline
+   *  (`pipeline/text/chips.ts`) before the text is measured; a run without
+   *  it (an unknown style) sets as the text around it. */
+  look?: CharStyleLook;
+  /** The span's text as written, when the style set it in capitals: the
+   *  segments read it back (`VDTLineSegment.sourceText`). */
+  source?: string;
+}
+
+/** What a character style changes in the face of its run, in px and hex
+ *  (see {@link InlineCharStyle.look}). Unset fields keep the text's. */
+export interface CharStyleLook {
+  fontFamily?: string;
+  fontSizePx?: number;
+  /** CSS weight (100–900). */
+  fontWeight?: number;
+  italic?: boolean;
+  /** Tracking added after every character, px. */
+  letterSpacingPx?: number;
+  smallCaps?: boolean;
+  uppercase?: boolean;
+}
+
 /** The side line a span belongs to (see {@link InlineSpan.sideline}). */
 export interface InlineSideline {
   /** Tells lines apart: two lines set side by side are two runs. Ids

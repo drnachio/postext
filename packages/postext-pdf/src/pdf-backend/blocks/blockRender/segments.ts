@@ -348,8 +348,9 @@ export function renderSegments(
     // A ruby base is the `RB` of a `Ruby` whose `RT` holds its reading (#194).
     const holder = link ?? pageElem ?? uriElem ?? textElem;
     const rubyElem = composed && seg.ruby && holder ? holder.child('Ruby') : undefined;
-    // The hyphen repeated from the line before is painted but not read.
-    let actualText = i === repeatedAt ? seg.text.slice(1) : undefined;
+    // The hyphen repeated from the line before is painted but not read; a
+    // run a character style set in capitals reads as it was written.
+    let actualText = i === repeatedAt ? seg.text.slice(1) : seg.sourceText;
     let capHolder: StructElem | undefined;
     if (capPrefix !== undefined || capRest > 0) {
       const at = Math.min(capRest, seg.text.length);

@@ -155,6 +155,10 @@ const CHIP_FIELDS: Fields = {
   borderColor: (l) => l.chipStyleBorderColor,
 };
 
+const CHARACTER_FIELDS: Fields = {
+  color: (l) => join(l.charStyleTextGroup, l.colorLabel),
+};
+
 const PARAGRAPH_FIELDS: Fields = {
   color: (l) => l.colorLabel,
   boldColor: (l) => l.bodyBoldColor,
@@ -231,6 +235,7 @@ const LABELLED_PATHS: [RegExp, Describe][] = [
   // Styles.
   [/^calloutStyles\[(\d+)\]\.(.+)$/, (l, m, c) => scoped(CALLOUT_FIELDS, l, m[2], l.calloutStylesSection, itemName(c.calloutStyles, num(m, 1)))],
   [/^chipStyles\[(\d+)\]\.(.+)$/, (l, m, c) => scoped(CHIP_FIELDS, l, m[2], l.chipStylesSection, itemName(c.chipStyles, num(m, 1)))],
+  [/^characterStyles\[(\d+)\]\.(.+)$/, (l, m, c) => scoped(CHARACTER_FIELDS, l, m[2], l.characterStylesSection, itemName(c.characterStyles, num(m, 1)))],
   [/^paragraphStyles\[(\d+)\]\.(.+)$/, (l, m, c) => scoped(PARAGRAPH_FIELDS, l, m[2], l.paragraphStylesSection, itemName(c.paragraphStyles, num(m, 1)))],
   [/^headingStyles\[(\d+)\]\.color$/, (l, m, c) => join(l.headingStylesSection, itemName(c.headingStyles, num(m, 1)), l.headingColor)],
   [/^headingStyles\[(\d+)\]\.layout\.columnRule\.color$/, (l, m, c) => join(l.headingStylesSection, itemName(c.headingStyles, num(m, 1)), l.columnRuleColor)],

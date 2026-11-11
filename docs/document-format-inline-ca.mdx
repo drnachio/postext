@@ -6,7 +6,7 @@ export const metadata = {
   description: "Com es marca el text dins d'una línia: èmfasi, enllaços, xips, versaletes, tabuladors, text vertical, marques xineses i japoneses, direcció del text i fórmules LaTeX",
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  readingTime: '32 min',
   order: 28,
   parent: 'document-format',
   plainSummary: "Aquesta pàgina explica les marques que es fan servir dins d'una línia de text. Serveixen per posar paraules en negreta o en cursiva, afegir enllaços, dibuixar etiquetes petites, compondre versaletes i alinear el text a les tabulacions. Altres marques serveixen per als llibres en xinès i en japonès, com les lectures petites que van damunt d'un caràcter, o per a una frase que va en una altra direcció, com un text en anglès dins d'un llibre en àrab. L'última secció ensenya a escriure fórmules matemàtiques.",
@@ -141,6 +141,11 @@ El marcatge en línia es reconeix dins de qualsevol bloc de text (encapçalament
       <td>Una banda de color darrere de paraules que continuen sent text normal: es tallen, es divideixen i es justifiquen com sempre. L'estil el dona <code>markStyles</code>; vegeu <a href="#marques-de-ressaltat">Marques de ressaltat</a>.</td>
     </tr>
     <tr>
+      <td>Estil de caràcter</td>
+      <td><code>:span[unes paraules]&#123;style="id"&#125;</code></td>
+      <td>Les paraules en un estil amb nom de <code>characterStyles</code>: una lletra, un cos, un color, un espaiat entre lletres, majúscules i l'estil de ressaltat que anomena. A diferència d'un xip, es parteix i es divideix amb guionet com el text que l'envolta. Vegeu <a href="#estils-de-caràcter">Estils de caràcter</a>.</td>
+    </tr>
+    <tr>
       <td>Tabulador</td>
       <td><code>:tab</code>, <code>:tab&#123;at=120mm align=end leader="."&#125;</code></td>
       <td>Porta les paraules que el segueixen fins a la tabulació següent: una de les tabulacions de l'estil del paràgraf, o la que fixen els seus atributs. Un caràcter de tabulació escrit al text només funciona com a tabulador on l'estil fixa tabulacions. Vegeu <a href="#tabuladors-i-tabulacions">Tabuladors i tabulacions</a>.</td>
@@ -198,6 +203,23 @@ Prem :chip[Ctrl]{style="tecla"} + :chip[C]{style="tecla"} per copiar.
 
 Un xip amb `field` es converteix en un camp de formulari emplenable al PDF (vegeu [Sortida PDF › Camps de formulari](/ca/docs/configuration-pdf-output#camps-de-formulari)).
 
+### Estils de caràcter
+
+`:span[unes paraules]{style="id"}` compon les paraules d'entre els claudàtors en l'estil de caràcter `id` de `characterStyles` (vegeu [Configuració › Estils de caràcter](/ca/docs/configuration-styles#estils-de-caràcter)): una lletra, un cos, un pes, un color, un espaiat entre lletres, majúscules i, quan l'estil n'anomena un, la franja o la línia d'un estil de ressaltat. La directiva `:span` és la manera de donar a un grup un aspecte amb nom.
+
+```markdown
+La :span[primera línia de tractament]{style="marker"} és :span[la metformina]{style="drug"}.
+
+Un :span[grup amb **negreta** i un :span[estil niat]{style="accent"}]{style="marker"} a dins.
+```
+
+- **Text, no una caixa.** Les paraules es queden a la línia: es parteixen entre línies, es divideixen amb guionet i es justifiquen com el text que les envolta. Una franja o una línia partida entre dues línies es dibuixa a cadascuna; dins d'una mateixa línia continua sota els espais entre les paraules del grup, mai sota els espais que l'envolten.
+- **La directiva.** `style` anomena l'estil, amb cometes (`style="drug"`) o sense (`style=drug`). Un `:span` sense `style` compon les seves paraules sense estil, igual que un id desconegut. Dins dels claudàtors, `\]` és un claudàtor literal. La forma `[paraules]|id|` no és sintaxi de Postext i s'imprimeix tal com està escrita.
+- **Imbricació.** Les paraules admeten les altres marques en línia i altres grups; guanya l'estil més intern. Un id desconegut compon les paraules com el text que les envolta i se n'avisa (`unknownCharacterStyle`).
+- **On.** Paràgrafs, elements de llista, cites, avisos, notes a peu de pàgina, peus, notes i cel·les de taula, i encapçalaments mentre `headings.inlineMarks` estigui activat (desactivat, les paraules es componen sense estil).
+- **Text pla.** La directiva no imprimeix res: la cerca, l'índex de continguts, les capçaleres i les àncores de l'índex alfabètic només llegeixen les paraules, tal com estan escrites. Les majúscules que posa un estil es copien del PDF tal com es van teclejar les paraules.
+- **Un mecanisme per a cada cosa.** Un subratllat sense més és `:underline[…]`, un ratllat sense més `~~…~~` i un ressaltat sense més `:mark[…]`. Una franja o una línia que acompanya un estil de caràcter és un estil de ressaltat que l'estil de caràcter anomena (`mark`), de manera que la franja i la línia segueixen les mateixes regles que `:mark[…]`.
+
 ### Marques de ressaltat
 
 `:mark[text]` posa una franja de color darrere de `text`, com quan un llibre de text ressalta les paraules clau. A diferència d'un xip, les paraules marcades continuen sent text corregut: es tallen al final de la línia, es parteixen amb guionet i es justifiquen com les del voltant, i la franja acompanya cada tros de la frase a la seva línia. `:mark[text]{style="clau"}` tria un estil amb nom de `markStyles` (vegeu la referència de configuració); sense `style`, o amb un id que cap estil no declara, la marca agafa el primer estil (un `mark` groc pàl·lid integrat si la configuració no en té cap; el Sandbox avisa d'un id desconegut).
@@ -211,7 +233,7 @@ El sol escalfa el mar i :mark[l'aigua puja a l'aire en forma de vapor, on es ref
 - **Talls de línia.** Una marca pot abastar diverses paraules i passar d'una línia a l'altra; cada línia porta la seva franja. El farciment horitzontal i les cantonades arrodonides només es dibuixen al començament i al final reals de la frase: on la frase es talla, la franja acaba en recte a l'última lletra de la línia i comença en recte a la primera de la següent. Un estil amb `decorationBreak: 'clone'` dona a cada línia una franja completa, amb el farciment i les cantonades als dos extrems: un títol sobre una banda de color tallada per línies.
 - **No ocupa lloc.** La franja es pinta sota el text, des de 0,8 em per sobre fins a 0,25 em per sota de la línia de base, més el farciment vertical, i el farciment horitzontal s'estén pels espais del costat de la frase. Les línies es tallen igual que sense la marca, de manera que marcar un llibre ja compost no en mou cap pàgina.
 - **Text.** El text marcat admet marques en línia pròpies (`:mark[la paraula **clau**]`), enllaços, xips i referències. Els claudàtors es poden niar (`:mark[vegeu [el mapa]]`), `\]` escriu un claudàtor literal i el text pot passar per sobre d'un salt de línia simple de l'original. Un signe de puntuació enganxat a la frase però fora dels claudàtors (`:mark[terra].`) queda fora de la franja; el color de text d'un estil s'aplica a tota la paraula que el té. Una marca dins d'una altra es compon com el text que la conté.
-- **On.** Paràgrafs, títols compostos dins del text, elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, en text d'esquerra a dreta i de dreta a esquerra i en xinès i japonès. El canvas, el PDF i l'HTML pinten la franja; en un PDF etiquetat, és un artefacte de maquetació i les paraules pertanyen al paràgraf. Un títol que dibuixa un disseny (una portadella) imprimeix les paraules sense franja, igual que el visor HTML en una pàgina vertical.
+- **On.** Paràgrafs, títols compostos dins del text, elements de llista, cites, requadres, notes a peu de pàgina, cel·les de taula, peus i notes, en text d'esquerra a dreta i de dreta a esquerra i en xinès i japonès. El canvas, el PDF i l'HTML pinten la franja; en un PDF etiquetat, és un artefacte de maquetació i les paraules pertanyen al paràgraf. Un títol que dibuixa un disseny (una portadella) imprimeix les paraules sense franja. En una pàgina vertical la franja baixa per la columna amb els caràcters, també al visor HTML.
 
 ### Ratllat
 

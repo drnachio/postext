@@ -10,7 +10,7 @@ import type { InlineSpan } from '../../../parse/types.js';
 import type { ResolvedChipStyleConfig } from '../../../types.js';
 import { chipText } from '../atoms.js';
 import type { WriterContext } from '../context.js';
-import { halfPoints, hex, px, type RunProps } from '../wml.js';
+import { halfPoints, hex, px, type RunProps, type Units } from '../wml.js';
 
 /** The circled form of one letter or number (1–20), plain or negative;
  *  undefined when Unicode has none. */
@@ -57,4 +57,15 @@ export function chipGlyph(ctx: WriterContext, chip: NonNullable<InlineSpan['chip
   // A plain bubble's ring is its outline's colour; a filled one's disc
   // its fill.
   return { text: glyph, props: { ...face, b: cs.bold || undefined, color: filled ? fill : (hex(cs.borderColor) ?? hex(cs.color)) } };
+}
+
+/** A chip's outline as Word draws a run's (#1444): a line round its
+ *  characters (Word has no rounded or circled run, so a round chip is a
+ *  square one), or the line under them of an underline chip. */
+export function chipLine(cs: ResolvedChipStyleConfig, u: Units, bodyPx: number): Pick<RunProps, 'bdr' | 'u'> {
+  const pt = (px(u, cs.borderWidth, bodyPx) * 72) / u.dpi;
+  if (!(pt > 0)) return {};
+  if (cs.underline) return { u: cs.underline === 'solid' ? true : cs.underline === 'dashed' ? 'dash' : 'dotted' };
+  // Eighths of a point, in the range Word reads (2 to 96).
+  return { bdr: { color: hex(cs.borderColor) ?? 'auto', sz: Math.min(96, Math.max(2, Math.round(pt * 8))) } };
 }

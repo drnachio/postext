@@ -10,6 +10,7 @@ import {
   calloutStylesOf,
   characterTargetOf,
   chipStylesOf,
+  characterStylesOf,
   emptyTemplate,
   lookup,
   newTemplateId,
@@ -106,6 +107,7 @@ function checkTargets(mapping: Pick<WordTemplate, 'paragraphs' | 'characters'>, 
   }
   for (const [name, t] of Object.entries(mapping.characters)) {
     if (t.kind === 'chip') need(name, t.style, ids(chipStylesOf(config)), 'chip style');
+    if (t.kind === 'charStyle') need(name, t.style, ids(characterStylesOf(config)), 'character style');
   }
 }
 

@@ -44,6 +44,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     resources: state.resources,
     types,
     chipStyles: state.config.chipStyles ?? DEFAULT_CHIP_STYLES,
+    characterStyles: state.config.characterStyles ?? [],
     markStyles: state.config.markStyles ?? DEFAULT_MARK_STYLES,
     indexTerms: () => {
       const { chapters, activeId, markdown } = bookTextRef.current;

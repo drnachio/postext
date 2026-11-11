@@ -44,6 +44,8 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
       return config.calloutStyles !== undefined;
     case 'chipStyles':
       return config.chipStyles !== undefined;
+    case 'characterStyles':
+      return config.characterStyles !== undefined;
     case 'markStyles':
       return config.markStyles !== undefined;
     case 'exerciseStyles':

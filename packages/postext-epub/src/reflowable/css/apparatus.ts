@@ -87,6 +87,24 @@ export function createApparatusRules(deps: ApparatusRulesDeps) {
       c.italic && 'font-style: italic',
     ]));
   }
+  // Character styles (`:span[…]{style="id"}`, #1488): the face, size,
+  // weight, slant, colour and tracking of the run (its capitals are in
+  // its text, set by the engine in the book's language). Every value was
+  // checked when the configuration was resolved (a hex colour, a length,
+  // a weight in steps of 100) and the family is quoted. The highlight style a character style names is a mark, which
+  // the reflowable book does not draw, as it draws no `:mark[…]`.
+  for (const s of config.characterStyles ?? []) {
+    const sPx = s.fontSize ? px(s.fontSize) : bodyPx;
+    out.push(rule(`.${idOf('pt-cs-', s.id)}`, [
+      s.fontFamily && fam(s.fontFamily),
+      s.fontSize && `font-size: ${round(sPx / bodyPx)}em`,
+      s.fontWeight !== undefined && `font-weight: ${s.fontWeight}`,
+      s.italic && 'font-style: italic',
+      s.color && color(s.color),
+      s.letterSpacing && `letter-spacing: ${round(px(s.letterSpacing) / sPx)}em`,
+      s.smallCaps && 'font-variant: small-caps',
+    ]));
+  }
   // Exercises (#1231): a blank holds its input, a drawn box its picture
   // (and, the script running, the controls laid over it); the answer key
   // for a reader with no script follows the exercise.

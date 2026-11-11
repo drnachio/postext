@@ -6,7 +6,7 @@ export const metadata = {
   description: 'L’interfaccia della Sandbox: la barra delle attività, i pannelli Testo, Libri, Capitoli, Risorse e Font, e la disposizione sui telefoni',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '32 min',
+  readingTime: '30 min',
   order: 40,
   plainSummary: "La Sandbox è uno strumento gratuito di questo sito per provare Postext senza installare nulla. Scrivi il testo da una parte e vedi le pagine finite dall’altra, e cambiano mentre scrivi. Questa pagina spiega le parti dello schermo e i pannelli in cui scrivi il testo, gestisci libri e capitoli, aggiungi immagini e scegli i font. Altre pagine trattano le impostazioni grafiche, le anteprime, il salvataggio e l’importazione, e l’inserimento della Sandbox nel tuo sito.",
 };
@@ -81,7 +81,7 @@ Un editor CodeMirror 6 per il Markdown del capitolo. I lettori di schermo lo ann
 - **Numeri di riga** ed evidenziazione della riga attiva
 - **A capo automatico** per i paragrafi lunghi
 - **Righe da destra a sinistra**: una riga il cui testo comincia con una lettera araba o ebraica scorre da destra a sinistra, e il cursore e i tasti freccia la seguono. Il markup al suo interno (attributi `{…}`, etichette `[^id]`, il nome di una direttiva, un intero `:ref[fig-1]`, la matematica, il codice, le destinazioni dei link) resta da sinistra a destra, così si legge come è stato digitato. I blocchi di codice, il front matter e le righe che cominciano con una parola latina restano da sinistra a destra come prima.
-- **Barra degli strumenti**: comincia con **Annulla / Ripeti**, seguiti da grassetto, corsivo, titoli di livello 1–3, link, codice in linea, **chip** (avvolge la selezione in `:chip[…]`), **maiuscoletto** (la avvolge in `:smallcaps[…]`), in un libro cinese, giapponese o coreano **Lettura ruby** (`:ruby[…]`) e **In orizzontale nel testo verticale** (`:tcy[…]`), citazione, elenchi numerati e puntati, più cinque inseritori:
+- **Barra degli strumenti**: comincia con **Annulla / Ripeti**, seguiti da grassetto, corsivo, titoli di livello 1–3, link, codice in linea, **chip** (avvolge la selezione in `:chip[…]`), **maiuscoletto** (la avvolge in `:smallcaps[…]`), **Stile di carattere** (`:span[…]{style="id"}`, un’icona di evidenziatore: un menu degli stili di carattere del libro; sceglierne uno avvolge la selezione in uno `:span` o, con la selezione dentro una sequenza, ne cambia lo stile, e **Rimuovi stile di carattere** riporta la sequenza a parole semplici; digitare dentro lo `style="…"` di uno `:span` propone gli id degli stili), in un libro cinese, giapponese o coreano **Lettura ruby** (`:ruby[…]`) e **In orizzontale nel testo verticale** (`:tcy[…]`), citazione, elenchi numerati e puntati, più cinque inseritori:
   - `:::pagebreak`
   - `:::space`: una riga di spazio verticale (`:::space{lines=N}` per averne di più)
   - **Colonne**: un gruppo `:::columns{count=2}` a due colonne, con il cursore sulla sua prima riga, nel testo o in un riquadro (da postext 1.25)

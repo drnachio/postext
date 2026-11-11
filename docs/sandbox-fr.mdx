@@ -6,7 +6,7 @@ export const metadata = {
   description: 'L’interface du Sandbox : la barre d’activité, les panneaux Texte, Livres, Chapitres, Ressources et Polices, et l’affichage sur téléphone',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '34 min',
+  readingTime: '32 min',
   order: 40,
   plainSummary: "Le Sandbox est un outil gratuit de ce site pour essayer Postext sans rien installer. Vous écrivez votre texte d’un côté et, de l’autre, vous voyez les pages terminées changer à mesure que vous tapez. Cette page présente les parties de l’écran et les panneaux où vous écrivez le texte, gérez les livres et les chapitres, ajoutez des images et choisissez les polices. D’autres pages traitent des réglages de maquette, des aperçus, de l’enregistrement et de l’import, et de l’intégration du Sandbox dans votre propre site.",
 };
@@ -81,7 +81,7 @@ Un éditeur CodeMirror 6 pour le Markdown du chapitre. Les lecteurs d’écran l
 - **Numéros de ligne** et mise en évidence de la ligne active
 - **Retour à la ligne automatique** pour les longs paragraphes
 - **Lignes de droite à gauche** : une ligne dont le texte commence par une lettre arabe ou hébraïque se lit de droite à gauche, et le curseur et les touches fléchées la suivent. Le balisage qu’elle contient (attributs `{…}`, étiquettes `[^id]`, nom d’une directive, un `:ref[fig-1]` entier, formules, code, cibles de liens) reste de gauche à droite, pour se lire tel qu’il a été tapé. Les délimiteurs, l’en-tête YAML et les lignes qui commencent par un mot latin restent de gauche à droite, comme avant.
-- **Barre d’outils** : elle commence par **Annuler / Rétablir**, suivis du gras, de l’italique, des niveaux de titre 1 à 3, du lien, du code en ligne, de la **pastille** (entoure la sélection de `:chip[…]`), des **petites capitales** (l’entoure de `:smallcaps[…]`), dans un livre en chinois, en japonais ou en coréen de **Lecture ruby** (`:ruby[…]`) et de **En travers dans le texte vertical** (`:tcy[…]`), de la citation, des listes numérotées et à puces, plus cinq boutons d’insertion :
+- **Barre d’outils** : elle commence par **Annuler / Rétablir**, suivis du gras, de l’italique, des niveaux de titre 1 à 3, du lien, du code en ligne, de la **pastille** (entoure la sélection de `:chip[…]`), des **petites capitales** (l’entoure de `:smallcaps[…]`), du **style de caractère** (`:span[…]{style="id"}`, une icône de surligneur : un menu des styles de caractère du livre ; en choisir un entoure la sélection d’un `:span` ou, si la sélection est dans une suite déjà stylée, change son style, et **Retirer le style de caractère** rend la suite à des mots simples ; taper dans le `style="…"` d’un `:span` propose les id des styles), dans un livre en chinois, en japonais ou en coréen de **Lecture ruby** (`:ruby[…]`) et de **En travers dans le texte vertical** (`:tcy[…]`), de la citation, des listes numérotées et à puces, plus cinq boutons d’insertion :
   - `:::pagebreak`
   - `:::space` : une ligne d’espace vertical (`:::space{lines=N}` pour davantage)
   - **Colonnes** : un groupe `:::columns{count=2}` à deux colonnes, le curseur sur sa première ligne, dans le texte ou dans un encadré (depuis postext 1.25)

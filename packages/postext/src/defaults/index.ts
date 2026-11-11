@@ -39,6 +39,7 @@ import { stripLabelStylesDefaults, stripPageTemplatesDefaults } from '../compose
 import { stripLineNumbersDefaults } from './text/lineNumbers.js';
 import { stripCodeStyleDefaults } from './text/codeStyle.js';
 import { presentTag } from '../hyphenation/locale.js';
+import { stripCharacterStylesDefaults } from './text/characterStyles.js';
 
 export { dimensionsEqual, colorsEqual, resolveColorValue, paletteTintHex, tintedEntryValue, tintPaperOf, applyPaletteToConfig, applyPaletteToResolvedConfig, DEFAULT_COLOR_PALETTE, DEFAULT_MAIN_COLOR, DEFAULT_MAIN_COLOR_ID, DEFAULT_MAIN_COLOR_NAME, DEFAULT_MAIN_COLOR_HEX, cloneDefaultColorPalette, isDefaultColorPalette } from './shared.js';
 export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE_NUMBERING, resolvePageConfig, stripPageDefaults } from './page.js';
@@ -63,6 +64,7 @@ export { DEFAULT_CALLOUT_STYLES, DEFAULT_CALLOUT_STYLE_STATIC, resolveCalloutSty
 export { DEFAULT_CHIP_STYLES, DEFAULT_CHIP_STYLE_STATIC, resolveChipStylesConfig, stripChipStylesDefaults, pickChipStyle } from './text/chipStyles.js';
 export { DEFAULT_EXERCISE_STYLES, exerciseWords, resolveExerciseStylesConfig, resolveExercisesConfig, stripExerciseStylesDefaults, stripExercisesDefaults } from './boxes/exercises.js';
 export type { ExerciseWords, ResolvedExerciseStyle, ResolvedExerciseNumber, ResolvedExercisesConfig } from './boxes/exercises.js';
+export { DEFAULT_CHARACTER_STYLES, DEFAULT_CHARACTER_STYLE_STATIC, resolveCharacterStylesConfig, stripCharacterStylesDefaults, pickCharacterStyle } from './text/characterStyles.js';
 export { DEFAULT_MARK_STYLES, DEFAULT_MARK_STYLE_STATIC, resolveMarkStylesConfig, stripMarkStylesDefaults, pickMarkStyle } from './text/markStyles.js';
 export { DEFAULT_UNORDERED_LISTS_STATIC, resolveUnorderedListsConfig, stripUnorderedListsDefaults } from './text/unorderedLists.js';
 export { DEFAULT_ORDERED_LISTS_STATIC, resolveOrderedListsConfig, stripOrderedListsDefaults } from './text/orderedLists.js';
@@ -212,6 +214,13 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
   } else {
     delete result.exercises;
   }
+  const strippedCharacterStyles = stripCharacterStylesDefaults(config.characterStyles);
+  if (strippedCharacterStyles) {
+    result.characterStyles = strippedCharacterStyles;
+  } else {
+    delete result.characterStyles;
+  }
+
   const strippedMarkStyles = stripMarkStylesDefaults(config.markStyles);
   if (strippedMarkStyles) {
     result.markStyles = strippedMarkStyles;

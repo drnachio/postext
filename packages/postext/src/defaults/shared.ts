@@ -195,10 +195,15 @@ function applyPaletteToListedResolvedColors(
       borderColor: resolveRequired(s.borderColor, palette),
       ...(s.color ? { color: resolveRequired(s.color, palette) } : {}),
     })),
+    characterStyles: resolved.characterStyles.map((s) => ({
+      ...s,
+      ...(s.color ? { color: resolveRequired(s.color, palette) } : {}),
+    })),
     markStyles: resolved.markStyles.map((s) => ({
       ...s,
       background: resolveRequired(s.background, palette),
       ...(s.color ? { color: resolveRequired(s.color, palette) } : {}),
+      ...(s.line?.color ? { line: { ...s.line, color: resolveRequired(s.line.color, palette) } } : {}),
     })),
     parts: {
       ...resolved.parts,
@@ -390,11 +395,18 @@ function applyPaletteToListedColors(config: PostextConfig, palette: ColorPalette
     }));
   }
 
+  if (config.characterStyles) {
+    next.characterStyles = config.characterStyles.map((s) => ({
+      ...s,
+      color: resolveColor(s.color, palette),
+    }));
+  }
   if (config.markStyles) {
     next.markStyles = config.markStyles.map((s) => ({
       ...s,
       background: resolveColor(s.background, palette),
       color: resolveColor(s.color, palette),
+      ...(s.line ? { line: { ...s.line, color: resolveColor(s.line.color, palette) } } : {}),
     }));
   }
 

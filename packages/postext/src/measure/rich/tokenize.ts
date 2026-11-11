@@ -2,7 +2,8 @@
 // words, cuts at bidi levels, dash joins and stacked scripts
 // (#1276: split out of rich.ts).
 import { uprightFace } from '../../writing/uprightArabic.js';
-import type { InlineSpan } from '../../parse/index.js';
+import type { InlineSpan, CharStyleLook } from '../../parse/index.js';
+import type { VDTSegmentCharStyle } from '../../vdt.js';
 import { getMeasureLanguage, setMeasureLanguage, measureTextWidth } from '../canvas.js';
 import { spanShapingLanguage } from '../spanLanguage.js';
 import { hasCJK } from '../cjk/cjk.js';
@@ -16,8 +17,32 @@ import { type BidiParagraph, type BidiIsolate, spanIsolates } from '../../writin
 import { getMeasureScriptContext, type ScriptContext, faceReadsScript, isLetterless, wordPieceScript, isDoubledMark, resolveScriptContext, scriptTextWidth, rtlTextWidth, scriptContextUntracked, cutDoubledMarks } from '../script.js';
 import { withFace, applyChipGaps } from './chips.js';
 import { refLabelTokens, atomicSpanToken } from './spanTokens.js';
-import { type RichToken, pickSpanFont, scriptMetrics, textWidth, type RichBreakPoint, tokenFont, rtlWordWidth, stackedScriptPairs } from './tokens.js';
+import { type RichToken, pickSpanFont, scriptMetrics, textWidth, type RichBreakPoint, tokenFont, rtlWordWidth, stackedScriptPairs, charStyleFace } from './tokens.js';
 import { compoundMask, URL_LIKE_RE, urlBreakIndices, syllabify, dropZeroWidthSpaces, wordBreakPoints } from './wordBreaks.js';
+
+/** Whether a character style's look sets its run in another face than
+ *  the text's (a family, a size, a weight or the italic). */
+function charStyleChangesFace(look: CharStyleLook | undefined): boolean {
+  return !!look && (look.fontFamily !== undefined || look.fontSizePx !== undefined || look.fontWeight !== undefined || !!look.italic);
+}
+
+/** The tokens of a character style's span (from `from` on): the run they
+ *  belong to and its tracking. The tracking widens every character the
+ *  token holds, spaces included, and moves its break points and its
+ *  hyphen with it. */
+function applyCharStyle(tokens: RichToken[], from: number, run: NonNullable<InlineSpan['charStyle']>): void {
+  const segRun: VDTSegmentCharStyle = { id: run.id, style: run.style };
+  const track = run.look?.letterSpacingPx ?? 0;
+  for (let k = from; k < tokens.length; k++) {
+    const t = tokens[k]!;
+    t.charStyle = segRun;
+    if (track === 0 || t.mathRender || t.swatch || t.chip) continue;
+    t.charTracking = track;
+    t.width += track * graphemeCount(t.text);
+    if (t.hyphenWidth !== undefined) t.hyphenWidth += track;
+    if (t.breakPoints) t.breakPoints = t.breakPoints.map((bp) => ({ ...bp, widthBefore: bp.widthBefore + track * graphemeCount(t.text.slice(0, bp.charIndex)) }));
+  }
+}
 
 export function tokenizeSpans(
   spans: InlineSpan[],
@@ -58,12 +83,15 @@ export function tokenizeSpans(
   /** The script fields of a span's tokens (font at the script size, shift). */
   // The span's own face: its style's, unslanted for the Arabic words of a
   // slanted style (`uprightArabic.ts`).
+  // A character style (`:span[…]{style}`) sets its run in a face of its own.
   const faceOf = (span: InlineSpan): string => {
-    const face = pickSpanFont(span.bold, span.italic, normalFont, boldFont, italicFont, boldItalicFont);
-    return span.upright ? uprightFace(face) : face;
+    const look = span.charStyle?.look;
+    const face = pickSpanFont(span.bold, span.italic || !!look?.italic, normalFont, boldFont, italicFont, boldItalicFont);
+    const styled = look ? charStyleFace(face, look, span.bold) : face;
+    return span.upright ? uprightFace(styled) : styled;
   };
   const scriptFieldsOf = (span: InlineSpan): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont'> => {
-    if (!span.script) return span.upright ? { faceFont: faceOf(span) } : {};
+    if (!span.script) return span.upright || charStyleChangesFace(span.charStyle?.look) ? { faceFont: faceOf(span) } : {};
     const m = scriptMetrics(faceOf(span), span.script);
     return { script: span.script, scriptFont: m.font, baselineShift: m.baselineShift };
   };
@@ -307,6 +335,7 @@ export function tokenizeSpans(
         setMeasureLanguage(languageBefore);
         if (ownLanguage !== languageBefore) for (let k = spanTokensFrom; k < tokens.length; k++) tokens[k]!.lang = ownLanguage;
       }
+      if (span.charStyle) applyCharStyle(tokens, spanTokensFrom, span.charStyle);
     }
   }
 
@@ -327,7 +356,7 @@ export function tokenizeSpans(
 function isStyledRunPart(t: RichToken | undefined): t is RichToken {
   return t !== undefined && t.kind === 'text' && !t.mathRender && !t.swatch && !t.chip && t.refResourceId === undefined
     && t.footnoteId === undefined && !t.labelTab && !t.script && !t.stacked && !t.smallCaps && !t.tcy && !t.orientation
-    && !t.cjkMarks && !t.inserted && !t.runs;
+    && !t.cjkMarks && !t.charStyle && !t.inserted && !t.runs;
 }
 
 /** Whether two runs that touch (no space between) are pieces of one word

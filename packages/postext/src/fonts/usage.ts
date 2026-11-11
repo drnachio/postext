@@ -94,6 +94,10 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   for (const style of config.chipStyles ?? []) {
     if (style.fontFamily) families.add(style.fontFamily);
   }
+  // Character styles (`:span[…]{style}`): a family of their own, else the text's.
+  for (const style of config.characterStyles ?? []) {
+    if (style.fontFamily) families.add(style.fontFamily);
+  }
   // Line numbers (#621): a face of their own; unset, the body family.
   if (config.lineNumbers?.fontFamily) families.add(config.lineNumbers.fontFamily);
   // Paragraph styles (`:::paragraphs`): a face of their own; unset, the
@@ -491,6 +495,13 @@ function addBoldWeights(
   for (const style of config.chipStyles ?? []) {
     const family = named(style.fontFamily);
     if (family && typeof (style as { fontWeight?: unknown }).fontWeight !== 'number') bold(family, bodyBold, ['normal', 'italic']);
+  }
+  // A character style with a family of its own: its regular weight (its
+  // own, else the body's) and the body's bold for its bold words.
+  for (const style of config.characterStyles ?? []) {
+    const family = named(style.fontFamily);
+    if (typeof style.fontWeight === 'number') bold(family ?? bodyFamily, style.fontWeight, ['normal', 'italic']);
+    if (family) bold(family, bodyBold, ['normal', 'italic']);
   }
 
   // Headings, contents and index entries: the heavier of their own weight

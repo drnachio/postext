@@ -1,4 +1,4 @@
 export type { ContentBlockType, DirectiveAttrs, DirectiveName, ContainerName, ListKind, ParseIssueKind, UnclosedMathIssue, UnclosedContainerIssue, UnclosedCodeBlockIssue, StrayFenceIssue, ParseIssue, ParseOptions, ContentBlock } from './types/contentBlock.js';
 export type { VerseInfo, VerseStanza, VerseLineInfo, ScoreBlockInfo, CodeBlockInfo, ComposedPageFence, ComposedModuleFence, BlockSlot, FigureLabel, FigureInfo, FigureWordKind, FigureWord, TocBlockInfo, TocGroupInfo, IndexMark, AnchorMark, IndexBlockInfo } from './types/blockInfo.js';
 export type { RefCase, RefStyle, MathMeta, InlineTab, InlineLink, InlineIcon, InlineSpan, TextSpan, MathSpan } from './types/inlineSpan.js';
-export type { InlineDirection, InlineSideline, InlineKunten, EmphasisMark, InlineRuby, InlineWarichu, SwatchShape, ExerciseHit, ExerciseGap, SwatchBox, ChipBox } from './types/spanMarks.js';
+export type { InlineDirection, InlineSideline, InlineKunten, EmphasisMark, InlineRuby, InlineWarichu, SwatchShape, ExerciseHit, ExerciseGap, SwatchBox, ChipBox, InlineCharStyle, CharStyleLook } from './types/spanMarks.js';

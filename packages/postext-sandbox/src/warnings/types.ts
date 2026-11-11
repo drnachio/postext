@@ -243,10 +243,10 @@ export type WarningPayload =
    *  an earlier figure of the chapter already worded (#986): the pages show
    *  the first figure's. */
   | { kind: 'figureWordsShared'; resourceId: string; words: ('alt' | 'caption' | 'note')[] }
-  /** A `:chip[…]{style="…"}` names a style that is not in
-   *  `config.chipStyles`; the chip takes the first style. `inResource`
-   *  names the resource whose caption, note or cell holds the chip. */
+  /** A `:chip[…]{style}` naming no `config.chipStyles` entry takes the first style; a
+   *  `:span[…]{style}` naming no character style is plain. `inResource`: the resource. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }
+  | { kind: 'unknownCharacterStyle'; style: string; inResource?: string }
   /** A `:mark[…]{style="…"}` names a style that is not in
    *  `config.markStyles` (#888); the mark takes the first style. */
   | { kind: 'unknownMarkStyle'; style: string; inResource?: string }
