@@ -5,11 +5,13 @@ import type {
   PrintConfig,
   PrintInk,
   PrintPlatesConfig,
+  PrintImageColorConfig,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
   ResolvedPrintInk,
   ResolvedPrintPlatesConfig,
+  ResolvedPrintImageColorConfig,
   ResolvedPrintPreflightConfig,
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
@@ -47,6 +49,7 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   preflight: DEFAULT_PRINT_PREFLIGHT_CONFIG,
   inks: [],
   plates: { inks: [], images: [], curves: {} },
+  imageColor: { embeddedProfile: 'ignore', grayDotGain: 'none', cmykProfile: 'keep' },
 };
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
@@ -139,6 +142,20 @@ export function resolvePrintPlates(partial?: PrintPlatesConfig): ResolvedPrintPl
   return { inks, images, curves };
 }
 
+/** How pictures' colours are read, with its defaults; a dot gain is
+ *  clamped to 0–50 %. */
+export function resolvePrintImageColor(partial?: PrintImageColorConfig): ResolvedPrintImageColorConfig {
+  const gain = partial?.grayDotGain;
+  const out: ResolvedPrintImageColorConfig = {
+    embeddedProfile: partial?.embeddedProfile === 'use' ? 'use' : 'ignore',
+    grayDotGain: typeof gain === 'number' && Number.isFinite(gain) ? Math.max(0, Math.min(50, gain)) : gain === 'profile' ? 'profile' : 'none',
+    cmykProfile: partial?.cmykProfile === 'convert' ? 'convert' : 'keep',
+  };
+  const assigned = partial?.assignedRgbProfile;
+  if (assigned && typeof assigned.fileId === 'string' && assigned.fileId) out.assignedRgbProfile = { name: assigned.name ?? assigned.fileId, fileId: assigned.fileId };
+  return out;
+}
+
 /** The ink limit of the profile a config names (a custom profile's own,
  *  else the catalogue's), before any `inkLimit` override. */
 export function profileInkLimit(config?: PrintConfig): number {
@@ -166,6 +183,7 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     preflight: resolvePrintPreflightConfig(partial?.preflight),
     inks: resolvePrintInks(partial?.inks),
     plates: resolvePrintPlates(partial?.plates),
+    imageColor: resolvePrintImageColor(partial?.imageColor),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -216,5 +234,12 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
   if (preflight) result.preflight = preflight;
   if (cfg.inks && cfg.inks.length > 0) result.inks = cfg.inks.map((ink) => ({ ...ink }));
   if (cfg.plates && (cfg.plates.inks?.length ?? 0) > 0) result.plates = structuredClone(cfg.plates);
+  if (cfg.imageColor) {
+    const ic = { ...cfg.imageColor };
+    if (ic.embeddedProfile === 'ignore') delete ic.embeddedProfile;
+    if (ic.grayDotGain === 'none') delete ic.grayDotGain;
+    if (ic.cmykProfile === 'keep') delete ic.cmykProfile;
+    if (Object.keys(ic).length > 0) result.imageColor = ic;
+  }
   return Object.keys(result).length > 0 ? result : undefined;
 }

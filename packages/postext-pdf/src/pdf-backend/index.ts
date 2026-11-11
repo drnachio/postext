@@ -7,7 +7,7 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type SpotColor } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type IccProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
@@ -62,6 +62,12 @@ export interface RenderToPdfOptions {
    *  master is missing or does not decode. When omitted, resource images
    *  are drawn as placeholders. */
   resourceBytes?: ResourceBytesProvider;
+  /** The screen preview of a picture whose `resourceBytes` are a TIFF or
+   *  Photoshop original (`Resource.bitmap.printFileId`), by the picture's
+   *  own `fileId`: printed when the original does not decode, with a
+   *  `pictureOriginalUnreadable` warning. Without it such a picture is a
+   *  placeholder. */
+  previewBytes?: ResourceBytesProvider;
   /** Emit an accessible, tagged PDF (PDF/UA-1 oriented): logical structure
    *  tree, alt text on figures, document language and title, decoration
    *  flagged as artifacts. When omitted, the first document's
@@ -279,7 +285,7 @@ export async function renderToPdf(
   // is embedded once.
   const resourceImages: ResourceImageMap = new Map();
   for (const doc of docs) {
-    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace);
+    await preloadResourceImages(pdfDoc, doc, options.resourceBytes, fontCache, fontProvider, resourceImages, options.rasterizeSvg, printMode, printMode ? undefined : settings.colorSpace, { previewBytes: options.previewBytes, warn });
     // Music scores (#1172): each system a vector drawing, its words' faces
     // embedded.
     await preloadScoreDrawings(doc, fontCache);
@@ -400,6 +406,24 @@ export async function renderToPdf(
   return bytes;
 }
 
+/** The profile `print.imageColor.assignedRgbProfile` names, from the
+ *  resource bytes; a warning, and the pictures' own profiles, when it is
+ *  missing or not an RGB profile. */
+function assignedRgbProfile(config: ResolvedPrintConfig, options: Pick<RenderToPdfOptions, 'resourceBytes'>, warn: (w: PdfWarning) => void): IccProfile | undefined {
+  const assigned = config.imageColor.assignedRgbProfile;
+  if (!assigned) return undefined;
+  try {
+    const bytes = options.resourceBytes?.(assigned.fileId);
+    if (!bytes) throw new Error('its file was not given (resourceBytes)');
+    const profile = parseIccProfile(bytes);
+    if (profile.colorSpace !== 'RGB') throw new Error('it is not an RGB profile');
+    return profile;
+  } catch (err) {
+    warn({ kind: 'imageProfileUnavailable', message: `postext-pdf: the picture profile "${assigned.name}" is unavailable (${(err as Error).message}); pictures are read through their own profiles` });
+    return undefined;
+  }
+}
+
 /** pdf-lib always writes `%PDF-1.7`; PDF/X-1a:2003 is PDF 1.4 and PDF/X-4
  *  PDF 1.6. The version has the same length, so no offset moves. */
 function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
@@ -414,7 +438,7 @@ function setHeaderVersion(bytes: Uint8Array, version: '1.4' | '1.6'): void {
 async function printColorMode(
   config: ResolvedPrintConfig,
   colorSpace: PdfColorSpace,
-  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl'>,
+  options: Pick<RenderToPdfOptions, 'outputProfile' | 'profileBaseUrl' | 'resourceBytes'>,
   warn: (w: PdfWarning) => void,
   docs: readonly VDTDocument[],
 ): Promise<PrintColorMode | undefined> {
@@ -440,7 +464,7 @@ async function printColorMode(
       authoredSpotColors([doc.config, doc.printColors], spots);
       overprintColors([doc.config, doc.printColors], overprints);
     }
-    return createPrintColorMode(profile, config, condition, authored, spots, overprints);
+    return createPrintColorMode(profile, config, condition, authored, spots, overprints, assignedRgbProfile(config, options, warn));
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

@@ -200,10 +200,21 @@ describe('resourceFromSpec', () => {
     const r = resourceFromSpec('b', { id: 'x', typeId: 'figure', kind: 'svg', file: 'x.svg', pdfFile: 'x.pdf' });
     expect(r.svg).toEqual({ fileId: 'preset:b:x-svg', pdfFileId: 'preset:b:x-pdf' });
     expect((r as unknown as { pdfFile?: string }).pdfFile).toBeUndefined();
-    const notPdf = resourceFromSpec('b', { id: 'y', typeId: 'figure', kind: 'svg', file: 'y.svg', pdfFile: 'y.ai' });
+    const notPdf = resourceFromSpec('b', { id: 'y', typeId: 'figure', kind: 'svg', file: 'y.svg', pdfFile: 'y.eps' });
     expect(notPdf.svg).toEqual({ fileId: 'preset:b:y-svg' });
+    // An Illustrator file is a PDF when saved PDF-compatible (its bytes are
+    // checked on reading).
+    const ai = resourceFromSpec('b', { id: 'z', typeId: 'figure', kind: 'svg', file: 'z.svg', pdfFile: 'z.ai' });
+    expect(ai.svg).toEqual({ fileId: 'preset:b:z-svg', pdfFileId: 'preset:b:z-ai' });
     const png = resourceFromSpec('b', { id: 'p', typeId: 'figure', kind: 'bitmap', file: 'p.png', pdfFile: 'p.pdf' });
     expect(png.svg).toBeUndefined();
+  });
+
+  it('attaches a TIFF or Photoshop print original to a bitmap', () => {
+    const r = resourceFromSpec('b', { id: 'p', typeId: 'figure', kind: 'bitmap', file: 'p.png', printFile: 'p.psd', width: 2, height: 1 });
+    expect(r.bitmap).toMatchObject({ fileId: 'preset:b:p-png', format: 'png', printFileId: 'preset:b:p-psd', printFormat: 'psd' });
+    const svg = resourceFromSpec('b', { id: 's', typeId: 'figure', kind: 'svg', file: 's.svg', printFile: 's.tif' });
+    expect(svg.svg).toEqual({ fileId: 'preset:b:s-svg' });
   });
 
   it('maps a bitmap file, preferring explicit dimensions', () => {

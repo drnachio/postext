@@ -284,6 +284,39 @@ export interface ResolvedPrintPlatesConfig {
   curves: Record<string, Array<[number, number]>>;
 }
 
+/** How pictures' colours are read and printed (`print.imageColor`). */
+export interface PrintImageColorConfig {
+  /** A picture's own ICC profile (a PNG's `iCCP`, a JPEG's `ICC_PROFILE`):
+   *  `'use'` reads its pixels through it, so an Adobe RGB or Display P3
+   *  photograph separates as it looks; `'ignore'` (default) reads every
+   *  RGB picture as sRGB. */
+  embeddedProfile?: 'use' | 'ignore';
+  /** A profile every RGB picture is read through instead of its own or
+   *  sRGB: a stored `.icc` (`fileId`, its bytes from `resourceBytes`). */
+  assignedRgbProfile?: { name: string; fileId: string };
+  /** How greyscale pictures print, on black alone: `'profile'` matches
+   *  their tones through the output profile's black, its dot gain
+   *  included; a number is the press's dot gain at the 50 % tone, percent
+   *  (10–30 typically), compensated instead; `'none'` (default) writes
+   *  their values as they are, as before. */
+  grayDotGain?: 'profile' | 'none' | number;
+  /** A CMYK picture whose own profile is another press condition's
+   *  (a photograph separated for SWOP in a FOGRA book): `'convert'`
+   *  separates it again for the output condition — a TIFF or Photoshop
+   *  picture from its pixels; a JPEG, whose CMYK pixels are not decoded
+   *  here, is tagged with its own profile in PDF/X-4 for the printer's
+   *  RIP to convert, and passed through in PDF/X-1a (the preflight says
+   *  so) — `'keep'` (default) prints its values as they are. */
+  cmykProfile?: 'convert' | 'keep';
+}
+
+export interface ResolvedPrintImageColorConfig {
+  embeddedProfile: 'use' | 'ignore';
+  assignedRgbProfile?: { name: string; fileId: string };
+  grayDotGain: 'profile' | 'none' | number;
+  cmykProfile: 'convert' | 'keep';
+}
+
 /** Print production: the PDF/X standard, the output profile CMYK is
  *  separated with, how black prints, and the preflight thresholds. Layout
  *  ignores it; postext-pdf and the preflight read it. */
@@ -313,6 +346,8 @@ export interface PrintConfig {
   inks?: PrintInk[];
   /** The plates the job prints on: two-ink printing. */
   plates?: PrintPlatesConfig;
+  /** How pictures' colours are read: their profiles, greyscale. */
+  imageColor?: PrintImageColorConfig;
 }
 
 /** Print production with every default filled in. */
@@ -329,6 +364,7 @@ export interface ResolvedPrintConfig {
   preflight: ResolvedPrintPreflightConfig;
   inks: ResolvedPrintInk[];
   plates: ResolvedPrintPlatesConfig;
+  imageColor: ResolvedPrintImageColorConfig;
 }
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it

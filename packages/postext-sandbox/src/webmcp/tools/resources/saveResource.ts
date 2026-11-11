@@ -152,7 +152,7 @@ export function createSaveResource(deps: SaveResourceDeps) {
         const file = await readFileInput(args.image as FileInput, signal);
         if (videoFormatOf(file)) throw new ToolError(`"${file.name}" is a video file: hand it over as video: { file }.`);
         const made = await resourceFromFile(file, '', new Set());
-        if (!made || (made.kind !== 'bitmap' && made.kind !== 'svg')) throw new ToolError(`That file is not a picture the Sandbox takes (${file.type || 'unknown type'}): PNG, JPEG, WebP, GIF or SVG.`);
+        if (!made || (made.kind !== 'bitmap' && made.kind !== 'svg')) throw new ToolError(`That file is not a picture the Sandbox takes (${file.type || 'unknown type'}): PNG, JPEG, WebP, GIF, TIFF, Photoshop or SVG.`);
         stale = existing?.bitmap?.fileId ?? existing?.svg?.fileId;
         base = defined({ ...base, ...(made.bitmap ? bitmapReplaced(base, made.bitmap) : svgReplaced(base, made.svg!)) });
         if (base.svg) base.svg = defined(base.svg);

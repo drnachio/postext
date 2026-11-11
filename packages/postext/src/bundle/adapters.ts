@@ -266,7 +266,9 @@ export function bundleVideoUrl(bundle: BundleSource): ((fileId: string) => strin
 
 /** A `resourceBytes` resolver for `postext-pdf`'s `renderToPdf`: an SVG
  *  figure resolves to its vector print master (`svg.pdfFileId`) when it has
- *  one — unless single-ink is on, which recolours SVG markup only. The
+ *  one — unless single-ink is on, which recolours SVG markup only — and a
+ *  bitmap to the TIFF or Photoshop original it was imported from
+ *  (`bitmap.printFileId`) in place of its preview. The
  *  bytes are the bundle's own: the PDF backend recolours them once (it
  *  leaves markup `applySingleInkToSvg` marked as it is). */
 export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
@@ -274,7 +276,8 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
   const bytes = new Map<string, Uint8Array>();
   for (const r of bundle.resources) {
     if (r.kind === 'bitmap' && r.bitmap?.fileId) {
-      const data = bundle.files.get(r.bitmap.fileId);
+      const original = r.bitmap.printFileId ? bundle.files.get(r.bitmap.printFileId) : undefined;
+      const data = original ?? bundle.files.get(r.bitmap.fileId);
       if (data) bytes.set(r.bitmap.fileId, data);
     } else if (r.kind === 'video' && r.video?.poster?.fileId) {
       const data = bundle.files.get(r.video.poster.fileId);
@@ -284,6 +287,19 @@ export function bundleResourceBytes(bundle: BundleSource): (fileId: string) => U
       const data = master ?? bundle.files.get(r.svg.fileId);
       if (data) bytes.set(r.svg.fileId, data);
     }
+  }
+  return (fileId) => bytes.get(fileId);
+}
+
+/** A `previewBytes` resolver for `postext-pdf`'s `renderToPdf`: the PNG
+ *  preview of each bitmap that has a TIFF or Photoshop original, by the
+ *  picture's `fileId`, printed when the original does not decode. */
+export function bundlePreviewBytes(bundle: BundleSource): (fileId: string) => Uint8Array | undefined {
+  const bytes = new Map<string, Uint8Array>();
+  for (const r of bundle.resources) {
+    if (r.kind !== 'bitmap' || !r.bitmap?.fileId || !r.bitmap.printFileId) continue;
+    const data = bundle.files.get(r.bitmap.fileId);
+    if (data) bytes.set(r.bitmap.fileId, data);
   }
   return (fileId) => bytes.get(fileId);
 }

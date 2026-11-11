@@ -11,7 +11,7 @@ export { buildBundle } from './book.js';
 export type { BuildBundleOptions } from './book.js';
 export { createBundleLayoutCache } from './layoutCache.js';
 export type { BundleLayoutCache, BundleLayoutStats } from './layoutCache.js';
-export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters.js';
+export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters.js';
 export type { BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions } from './adapters.js';
 
 // Low-level codec, for hosts that store or serve bundles their own way.

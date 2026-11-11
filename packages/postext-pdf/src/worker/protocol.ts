@@ -18,6 +18,8 @@ export type PdfRequestMessage =
       settings: PdfRenderSettings;
       /** Resource bytes by file id (transferred). */
       resourceBytes: [string, Uint8Array][];
+      /** Previews of TIFF and Photoshop originals by file id (transferred). */
+      previewBytes?: [string, Uint8Array][];
     }
   | {
       /** The host's answer to a `font` or `rasterize` question: a font as

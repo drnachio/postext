@@ -58,6 +58,14 @@ describe('remapContentFileIds', () => {
     expect(config.customFonts![0].variants[0].fileId).toBe('font-a');
   });
 
+  it('carries a bitmap\'s print original under an id of its own', () => {
+    const photo: Resource = { id: 'photo', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'blob-4', format: 'png', width: 1, height: 1, printFileId: 'blob-5', printFormat: 'tiff' } };
+    expect([...referencedFileIds({ resources: [photo], config }).blobIds]).toEqual(['blob-4', 'blob-5']);
+    const out = remapContentFileIds({ ...book, config, resources: [photo] }, (_old, kind, hint) => (kind === 'blob' ? projectFileId('p1', hint) : projectFontFileId('p1', hint)));
+    expect(out.content.resources[0].bitmap).toMatchObject({ fileId: 'project:p1:photo-png', printFileId: 'project:p1:photo-tif', printFormat: 'tiff' });
+    expect(out.blobPairs).toContainEqual(['blob-5', 'project:p1:photo-tif']);
+  });
+
   it('leaves untouched ids alone and emits no pairs', () => {
     const out = remapContentFileIds({ ...book, config, resources }, (old) => old);
     expect(out.blobPairs).toEqual([]);
@@ -78,5 +86,14 @@ describe('toSummary', () => {
       thumbnail: { fileId: 'blob-cover', mime: 'image/jpeg' },
       createdAt: 1, updatedAt: 2, chapterCount: 1,
     });
+  });
+});
+
+describe('a picture\'s assigned profile in a project', () => {
+  it('is kept alive and moves with the picture', () => {
+    const withProfile: Resource[] = [{ id: 'pic', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'blob-1', format: 'png', width: 1, height: 1 }, printColor: { assignedRgbProfile: { name: 'Camera', fileId: 'blob-icc' } } }];
+    expect([...referencedFileIds({ resources: withProfile, config }).blobIds]).toContain('blob-icc');
+    const out = remapContentFileIds({ ...book, config, resources: withProfile }, (_old, kind, hint) => (kind === 'blob' ? projectFileId('p1', hint) : projectFontFileId('p1', hint)));
+    expect(out.content.resources[0].printColor?.assignedRgbProfile).toEqual({ name: 'Camera', fileId: 'project:p1:pic-icc' });
   });
 });

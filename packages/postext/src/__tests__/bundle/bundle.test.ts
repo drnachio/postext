@@ -6,6 +6,7 @@ import {
   buildBundle,
   bundleFontProvider,
   bundleResourceBytes,
+  bundlePreviewBytes,
   CONFIG_VERSION,
   createBundle,
   isBundleManifest,
@@ -539,6 +540,49 @@ describe('adapters', () => {
     expect(await provider('House Serif', 700, 'italic')).toEqual(FONT);
     expect(await provider('Open Sans', 700, 'normal')).toEqual(new Uint8Array([9]));
     await expect(bundleFontProvider(bundle)('Open Sans', 400, 'normal')).rejects.toThrow(/not in the bundle/);
+  });
+
+  it('carries a bitmap print original and prints from it', async () => {
+    const tiff = new Uint8Array([0x49, 0x49, 42, 0, 8, 0, 0, 0, 0, 0]);
+    const photo: Resource = {
+      id: 'photo', typeId: 'figure', kind: 'bitmap', createdAt: 1, updatedAt: 1,
+      bitmap: { fileId: 'preview', format: 'png', width: 3, height: 2, printFileId: 'original', printFormat: 'tiff' },
+    };
+    const { bytes, manifest } = await createBundle({
+      name: 'Prints', markdown: '# Prints\n\n::resource{id=photo}\n', resources: [photo], files: { preview: PNG, original: tiff },
+    });
+    expect(manifest.resources?.[0]).toMatchObject({ file: 'resources/photo.png', printFile: 'resources/photo.tif' });
+    const bundle = await openBundle(bytes);
+    expect(bundle.resources[0]!.bitmap).toMatchObject({ fileId: 'resources/photo.png', format: 'png', printFileId: 'resources/photo.tif', printFormat: 'tiff' });
+    expect(bundleResourceBytes(bundle)('resources/photo.png')).toEqual(tiff);
+    // Its preview stays at hand, for when the original does not decode.
+    expect(bundlePreviewBytes(bundle)('resources/photo.png')).toEqual(PNG);
+    // One that is not what its name says only costs the original.
+    const bad = zipSync({ 'preset.json': enc.encode(JSON.stringify({ ...manifest, resources: [{ ...manifest.resources![0]!, printFile: 'p.psd' }] })), 'chapters/01-prints.md': enc.encode('# Prints'), 'resources/photo.png': PNG, 'p.psd': tiff });
+    const reopened = await openBundle(bad);
+    expect(reopened.resources[0]!.bitmap?.printFileId).toBeUndefined();
+    expect(reopened.warnings).toEqual([expect.stringContaining('is not a Photoshop document')]);
+  });
+
+  it('carries the profiles assigned to the book\'s pictures and to one picture', async () => {
+    const book = new Uint8Array([1, 2, 3]);
+    const own = new Uint8Array([4, 5, 6]);
+    const photo: Resource = {
+      id: 'photo', typeId: 'figure', kind: 'bitmap', createdAt: 1, updatedAt: 1,
+      bitmap: { fileId: 'preview', format: 'png', width: 3, height: 2 },
+      printColor: { assignedRgbProfile: { name: 'Camera', fileId: 'camera' } },
+    };
+    const { bytes, manifest } = await createBundle({
+      name: 'Profiles', markdown: '# Profiles\n\n::resource{id=photo}\n', resources: [photo], files: { preview: PNG, adobe: book, camera: own },
+      config: { print: { imageColor: { assignedRgbProfile: { name: 'Adobe RGB', fileId: 'adobe' } } } },
+    });
+    expect(manifest.config?.print?.imageColor?.assignedRgbProfile?.fileId).toBe('profiles/adobe-rgb.icc');
+    expect(manifest.resources?.[0]?.printColor?.assignedRgbProfile?.fileId).toBe('profiles/photo.icc');
+    const bundle = await openBundle(bytes);
+    const bookId = bundle.config.print?.imageColor?.assignedRgbProfile?.fileId;
+    const ownId = bundle.resources[0]!.printColor?.assignedRgbProfile?.fileId;
+    expect(bundle.files.get(bookId!)).toEqual(book);
+    expect(bundle.files.get(ownId!)).toEqual(own);
   });
 
   it('hands the fallback the characters of the face and passes several files through', async () => {

@@ -255,3 +255,36 @@ function search<P>(plates: P[], start: number[], cost: (p: P[], t: number[]) => 
   }
   return [tints, best];
 }
+
+/** What the spot inks of a placed PDF (an Illustrator file, a print
+ *  master) mean for the job, which prints the file as it is. */
+export interface PlacedInkProblems {
+  /** Inks the job's plates (`print.plates`) leave out: nothing projects
+   *  them, and the printer gets a plate the job does not have. */
+  offPlates: string[];
+  /** Inks the ink table renames or sends to process: the file keeps its
+   *  own name, so they print on a plate of their own. */
+  renamed: string[];
+  /** Inks no colour of the book and no ink table entry defines: a plate
+   *  the job adds without saying so. */
+  unknown: string[];
+}
+
+/** Sort the spot inks a placed file prints on (`inks`) by what the job
+ *  makes of them; `spots` are the book's spot colours. */
+export function placedInkProblems(inks: readonly string[], print: ResolvedPrintConfig, spots: Iterable<Required<SpotColor>>): PlacedInkProblems {
+  const spotList = [...spots];
+  const plates = jobPlates(print, spotList);
+  const out: PlacedInkProblems = { offPlates: [], renamed: [], unknown: [] };
+  for (const ink of inks) {
+    const key = inkKey(ink);
+    if (plates && !plates.some((p) => inkKey(p.name) === key)) {
+      out.offPlates.push(ink);
+      continue;
+    }
+    const entry = inkEntry(ink, print.inks);
+    if (entry && (entry.output === 'process' || inkKey(entry.pdfName) !== key)) out.renamed.push(ink);
+    else if (!entry && !plates && !spotList.some((s) => inkKey(s.name) === key)) out.unknown.push(ink);
+  }
+  return out;
+}

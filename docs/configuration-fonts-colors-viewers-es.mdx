@@ -567,6 +567,7 @@ interface PrintConfig {
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // La tabla de tintas: nombres, alias, cuatricromía.
   plates?: PrintPlatesConfig;              // Las planchas del trabajo: impresión a dos tintas.
+  imageColor?: PrintImageColorConfig;      // Cómo se leen las imágenes: perfiles, grises.
 }
 
 interface CustomOutputProfile {

@@ -567,6 +567,7 @@ interface PrintConfig {
   preflight?: PrintPreflightConfig;
   inks?: PrintInk[];                       // The ink table: renames, aliases, process.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
+  imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
 }
 
 interface CustomOutputProfile {

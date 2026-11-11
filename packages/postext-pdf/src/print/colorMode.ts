@@ -50,6 +50,9 @@ export interface PrintColorMode {
   inkRegistry: SpotInkRegistry;
   /** Colours that overprint (`ColorValue.overprint`), by screen hex. */
   overprints: ReadonlySet<string>;
+  /** The profile every RGB picture is read through
+   *  (`print.imageColor.assignedRgbProfile`), when it could be loaded. */
+  assignedRgbProfile?: IccProfile;
 }
 
 export type ColorMode = PdfColorSpace | PrintColorMode;
@@ -75,6 +78,7 @@ export function createPrintColorMode(
   authored: ReadonlyMap<string, CmykPercent> = new Map(),
   spots: ReadonlyMap<string, Required<SpotColor>> = new Map(),
   overprints: ReadonlySet<string> = new Set(),
+  assignedRgbProfile?: IccProfile,
 ): PrintColorMode {
   const transform = outputTransform(profile, {
     intent: config.renderingIntent,
@@ -88,7 +92,7 @@ export function createPrintColorMode(
   const plates = platePlan(config, spots.values());
   return {
     kind: 'print',
-    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}${overprints.size > 0 ? `:over=${[...overprints].sort().join(',')}` : ''}${plates ? `:plates=${plates.key}` : ''}`,
+    key: `print:${profile.hash}:${config.renderingIntent}:${config.blackPointCompensation}:${config.black.kOnlyNeutrals}:${flattenTransparency}:${authoredKey(authored)}${spots.size > 0 ? `:${spotsKey(spots)}` : ''}${overprints.size > 0 ? `:over=${[...overprints].sort().join(',')}` : ''}${plates ? `:plates=${plates.key}` : ''}${imagesKey(config.imageColor, assignedRgbProfile)}`,
     standard: config.standard,
     profile,
     transform,
@@ -101,11 +105,20 @@ export function createPrintColorMode(
     inkRegistry: new SpotInkRegistry(undefined, !!plates),
     overprints,
     ...(plates ? { plates } : {}),
+    ...(assignedRgbProfile ? { assignedRgbProfile } : {}),
   };
 }
 
 function spotsKey(spots: ReadonlyMap<string, Required<SpotColor>>): string {
   return [...spots].map(([hex, s]) => `${hex}=${s.name}/${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}/${s.tint}/${s.overprint}`).join(';');
+}
+
+/** How pictures' colours are read (`print.imageColor`), for the mode's
+ *  key: empty while every field keeps its default, so the key of a book
+ *  that does not set them stays as it was. */
+function imagesKey(ic: ResolvedPrintConfig['imageColor'], assigned: IccProfile | undefined): string {
+  if (ic.embeddedProfile === 'ignore' && ic.grayDotGain === 'none' && ic.cmykProfile === 'keep' && !assigned) return '';
+  return `:images=${ic.embeddedProfile}/${ic.grayDotGain}/${ic.cmykProfile}/${assigned?.hash ?? ''}`;
 }
 
 function authoredKey(authored: ReadonlyMap<string, CmykPercent>): string {

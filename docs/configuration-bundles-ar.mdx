@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'حزم .postext',
   description: 'فتح ملفات .postext وإخراجها ورسمها وإنشاؤها من الشيفرة، والحزم الثنائية اللغة، وملفات الإصدارات القديمة، والواجهة البرمجية منخفضة المستوى',
   lang: 'ar',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '27 دقيقة',
   order: 24,
   parent: 'configuration',
@@ -160,10 +160,11 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 - **`registerBundleImages(bundle)`** يفكّ ترميز الصور لمُخرِج Canvas (`renderPage` و`renderToCanvas`)، ومنها أغلفة مقاطع الفيديو. و<strong>`bundleImageUrl(bundle)`</strong> هو المحلِّل `resourceImageUrl` الذي يحتاجه `renderToHtml`، و<strong>`bundleVideoUrl(bundle)`</strong> محلِّله `resourceVideoUrl` لملفات الفيديو الموجودة في الحزمة. وكلاهما يعيد تلوين أشكال SVG حين يكون `diagramStyle.singleInk` مفعَّلًا، مرة واحدة: يعيدان تلوين الشيفرة ويعلّمان الصور كي لا يلوّنها أي مُخرِج مرة أخرى (انظر [الحبر الواحد على Canvas وفي HTML](/ar/docs/configuration-resources#الحبر-الواحد-في-canvas-وفي-html)). ويضمّن كلاهما أيضًا في كل SVG أشكال الخطوط التي يذكرها نصه، من خطوط الحزمة نفسها أولًا، ثم من الأشكال المسجّلة في المحرّك (انظر [الخطوط في نصوص SVG](/ar/docs/configuration-resources#الخطوط-في-نصوص-svg))؛ ويُصدر `registerBundleImages(bundle, { onWarning })` و`bundleImageUrl(bundle, { onWarning })` تحذيرًا عن العائلة التي لا شكل لها.
 - **`buildBundle(bundle)`** يُخرج الفصول بالترتيب ويعيد `VDTDocument` لكل فصل. كل فصل يتابع ما قبله: عدّادات العناوين والموارد، والجزء المفتوح، وزوجية الصفحة، وترقيم الصفحات. والفصل الذي يطبع المحتويات (`:::toc`) أو الفهرس الأبجدي (`:::index`) يتلقى مخطط الكتاب كله. ويقبل الخيارات نفسها التي يقبلها `buildDocument`، إضافةً إلى `config` لتجاوز إعدادات الحزمة، و`cache` لمشاركة ذاكرة تخزين مؤقت للقياسات، و`metadata` (انظر أدناه)، و`onChapter(index, doc)` الذي يُستدعى بعد إخراج كل فصل، و`layoutCache`. و`layoutCache` الذي يعيده `createBundleLayoutCache()`، إذا مُرِّر إلى كل بناء للكتاب نفسه، لا يُعيد إخراج إلا الفصول التي تغيّرت مدخلاتها ويأخذ البقية من البناء السابق؛ ويذكر `stats.laidOut` فيه الفصول التي أُخرجت (منذ postext 1.32). والخطوط ليست مما يقارنه: تخلّص منه مع ذاكرة القياسات المؤقتة حين تتغيّر أشكال الخطوط. المقال الذي يقفز إلى صفحة في ملف فصل لاحق (`overflow.continueIn: 'page:<id>'`، انظر [الصفحات المركّبة › القفز إلى صفحة لاحقة](/ar/docs/composed-pages#القفز-إلى-صفحة-لاحقة)) يُسلَّم إلى ذلك الفصل: يُرتَّب كل فصل وهو يعرف معرّفات صفحات الفصول التي بعده (`laterPageIds`)، وتعود المقالات التي يرسلها على مستنده (`pendingJumps`)، ويستلمها الفصل الذي فيه الصفحة (`continuation.jumps`)، ويكتب `resolveJumpMarks` أرقام الصفحات في العلامات التي تشير إلى صفحة من فصل آخر (منذ postext 1.41). والمضيف الذي يرتّب الفصول واحدًا واحدًا يفعل الشيء نفسه بـ`pageFenceIds` و`laterPageIdsOf`.
 - **`bundleResourceBytes(bundle)`** و<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong> هما الخياران `resourceBytes` و`fontProvider` للدالة `renderToPdf` في `postext-pdf`. يختار مزوّد الخطوط من الحزمة أقرب وزن للنمط المطلوب. ويحتاج لشكل `.woff2` إلى `decompressWoff2`، وللعائلة التي ليست في الحزمة يستدعي `fallback` بمعاملات المُخرِج، بما فيها `request`، ويمرّر ما تعيده كما هو. والبديل الذي لا يجلب إلا ملف `latin` للعائلة يطبع العائلة الصينية التي لا تضمّنها الحزمة مربعاتٍ فارغة؛ أما البديل الذي يجيب بشرائح، مثل `sliceFontProvider` في [خطوط الصينية واليابانية والكورية](/ar/docs/configuration-pdf-output#خطوط-الصينية-واليابانية-والكورية)، فيطبعها كاملة. والعائلة التي تذكر `fallback` (منذ postext 1.42) تأخذ أشكال الميلان الذي لا ملف لها فيه من أشكال الخط البديل في الحزمة، وإلا من `fallback` تُستدعى باسم الخط البديل، فيُضمّن ملف PDF الشكل المفتوح بدل المرخَّص.
+- **`bundlePreviewBytes(bundle)`** هي خيار `previewBytes`: معاين PNG لكل صورة لها أصل TIFF أو Photoshop، ويُطبع حين يتعذّر فكّ الأصل.
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
-  bundleResourceBytes, bundleFontProvider } from 'postext';
+  bundleResourceBytes, bundlePreviewBytes, bundleFontProvider } from 'postext';
 import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 const bundle = await openBundle(bytes);
@@ -176,6 +177,7 @@ const firstPage = renderPage(docs[0].pages[0], docs[0]); // a <canvas>
 const pdf = await renderToPdf(docs, {                    // the whole book
   fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
   resourceBytes: bundleResourceBytes(bundle),
+  previewBytes: bundlePreviewBytes(bundle),
 });
 ```
 
@@ -242,7 +244,7 @@ const { bytes, manifest, warnings } = await createBundle({
     <tr><td><code>name</code>، <code>id</code>، <code>description</code>، <code>locale</code></td><td>البيانات الوصفية للبيان. القيمة الافتراضية لـ<code>id</code> صيغة مختصرة (slug) من <code>name</code>.</td></tr>
     <tr><td><code>chapters</code> أو <code>markdown</code></td><td>الكتاب، <code>&#123; title?, markdown &#125;</code> لكل فصل، أو مستند واحد.</td></tr>
     <tr><td><code>config</code></td><td>إعدادات <code>PostextConfig</code>. القيم المساوية للقيم الافتراضية لا تُكتب في البيان.</td></tr>
-    <tr><td><code>resources</code></td><td>الموارد. تذكر الصورة ملفها بـ<code>bitmap.fileId</code> / <code>svg.fileId</code> (و<code>svg.pdfFileId</code> لنسخة الطباعة الأصلية).</td></tr>
+    <tr><td><code>resources</code></td><td>الموارد. تذكر الصورة ملفها بـ<code>bitmap.fileId</code> / <code>svg.fileId</code> (و<code>svg.pdfFileId</code> لنسخة الطباعة الأصلية، و<code>bitmap.printFileId</code> لأصل TIFF أو Photoshop لصورة يكون <code>bitmap.fileId</code> فيها معاينتها بصيغة PNG، ويُخزَّن باسم <code>resources/&lt;name&gt;.tif</code> أو <code>.psd</code>).</td></tr>
     <tr><td><code>files</code></td><td>الملفات حسب <code>fileId</code> (كائن أو <code>Map</code>): الصور التي تشير إليها الموارد، وملفات الخطوط التي تشير إليها متغيرات <code>config.customFonts</code>. يمكن أن تكون القيم <code>Uint8Array</code> أو <code>ArrayBuffer</code> أو <code>Blob</code> أو سلسلة نصية (شيفرة SVG).</td></tr>
     <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>: صورة غلاف (PNG أو JPEG أو WebP أو GIF أو SVG).</td></tr>
     <tr><td><code>canvasScope</code></td><td>القيمة <code>'book'</code> تطلب من العارضين إخراج الكتاب كله في Canvas واحد.</td></tr>
@@ -289,7 +291,7 @@ const es = await openBundle(bytes, { locale: 'es' });   // Spanish chapters, con
 
 - **`chapters`**: الكتاب بتلك اللغة. تذهب ملفات الفصول إلى مجلد لكل لغة (`chapters/en/01-dusk.md`، `chapters/es/01-anochecer.md`) ويصبح `chapters` في البيان خريطة من اللغة إلى الفصول. اللغة التي لا `chapters` لها تقرأ الفصول الأساسية؛ وإذا لم يكن لأي لغة فصول خاصة بها، تبقى قائمة واحدة.
 - **`config`**: الإعدادات لتلك اللغة. تحلّ كل خاصية من المستوى الأعلى تمرّرها محل الخاصية المشتركة في تلك اللغة، فـ`headings` أعلاه يحلّ محل كائن `headings` كله. والخصائص المُغفلة، أو المساوية للمشتركة، مشتركة، فتمرير إعدادات اللغة كاملة يصلح كما يصلح تمرير الخصائص القليلة التي تتغير. ولا يخزّن البيان إلا الفرق: يحوي `localized[…].config` الحقول التي تضبطها اللغة على غير ما في `config` المشترك، ويُدمج فوقه حقلًا حقلًا حين تُقرأ الحزمة (انظر [الإعدادات العامة والإعدادات الخاصة بكل لغة](#الإعدادات-العامة-والإعدادات-الخاصة-بكل-لغة)). والخاصية المضبوطة على قيمها الافتراضية بينما المشتركة ليست كذلك (`layout: {}`) تعيد ضبط القيمة المشتركة في تلك اللغة. الخطوط مشتركة: تنضم عائلات `customFonts` الخاصة بلغة ما إلى `fonts` في الحزمة.
-- **`resources`**: صياغة الموارد المشتركة، مطابَقةً بـ`id`: `caption` و`note` و`altText` و`table` في الجدول. والصورة التي فيها كلمات يمكن أن يكون لها عملها الفني الخاص: يذكر `bitmap.fileId` أو `svg.fileId` (و`svg.pdfFileId`) ملفًا آخر في `files`، يُكتب على شكل `resources/es/lantern.svg`. أما الحقول الأخرى، كالنوع أو الموضع، فمشتركة. والمعرّف غير الموجود بين `resources` يُستبعد مع تحذير، والصورة المفقودة للغةٍ ما تُبقي تلك اللغة على الصورة المشتركة، مع تحذير أيضًا.
+- **`resources`**: صياغة الموارد المشتركة، مطابَقةً بـ`id`: `caption` و`note` و`altText` و`table` في الجدول. والصورة التي فيها كلمات يمكن أن يكون لها عملها الفني الخاص: يذكر `bitmap.fileId` أو `svg.fileId` (و`svg.pdfFileId` أو `bitmap.printFileId`) ملفًا آخر في `files`، يُكتب على شكل `resources/es/lantern.svg`. أما الحقول الأخرى، كالنوع أو الموضع، فمشتركة. والمعرّف غير الموجود بين `resources` يُستبعد مع تحذير، والصورة المفقودة للغةٍ ما تُبقي تلك اللغة على الصورة المشتركة، مع تحذير أيضًا.
 - **`name`**، **`description`**: عنوان الكتاب ووصفه بتلك اللغة، ويُكتبان في `localized[…].name` و`description` حين يختلفان عن المشتركَين. يعيدهما `openBundle` بتلك اللغة في `bundle.name` و`bundle.description`، ويعرض Sandbox الطبعة بهذا العنوان عند الاستيراد وفي مكتبته، ويطبعهما `postext info` و`postext check`. ويمكن لمُدخَل في `index.json` لمصدر قوالب أن ينسخهما في `localized` (`localized.ca.name`) لتعرض المكتبة كل طبعة بعنوانها قبل فتحها. واللغة التي لا تذكرهما تحتفظ بـ`name` و`description` الواردين في البيان.
 
 يسرد البيان كل لغة في `locales` (`['en', 'es']`)، ويحتفظ باللغة الأساسية في `locale` ويخزّن البقية تحت `localized`. ويقرأ `openBundle` دون لغةٍ اللغةَ الأساسية.

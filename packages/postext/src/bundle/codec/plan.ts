@@ -3,7 +3,7 @@
 import type { PostextConfig, Resource } from '../../types.js';
 import { stripConfigDefaults } from '../../defaults/index.js';
 import { type ConfigOverride, leastConfigOverride } from '../../defaults/configLayers.js';
-import { uniqueSlug, slugify, extensionForVideo, extensionForBitmapFormat, extensionForResource, extensionForImageMime, chapterFileName, bundleStart } from '../manifest.js';
+import { uniqueSlug, slugify, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat, extensionForResource, extensionForImageMime, chapterFileName, bundleStart } from '../manifest.js';
 import { CONFIG_VERSION } from '../configVersion.js';
 import { type TraceContourOptions, contourWantsAlpha, contourRowsOf, traceResourceContour, withContourTrace } from '../../contour/index.js';
 import type { BundleStart, BundleCanvasScope, BundleManifestV2, BundleBlob, BundleResourceSpec, BundleFontFamilySpec, BundleChapterSpec, BundleLocaleOverrides } from '../types.js';
@@ -185,6 +185,14 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   for (const r of content.resources) {
     const { bitmap, svg } = r;
     const rest = omitStorageFields(r);
+    // A picture's own assigned profile (`printColor.assignedRgbProfile`)
+    // travels as a file, named by its path.
+    const ownProfile = rest.printColor?.assignedRgbProfile;
+    if (ownProfile) {
+      const path = `profiles/${slugify(r.id) || 'picture'}.icc`;
+      files.push({ path, fileId: ownProfile.fileId, kind: 'blob', owner: r.id });
+      rest.printColor = { ...rest.printColor, assignedRgbProfile: { ...ownProfile, fileId: path } };
+    }
     if (r.kind === 'video' && r.video) {
       // A video (#454): its file (self-hosted) and its poster, side by side.
       const { fileId: videoFileId, poster, ...video } = r.video;
@@ -223,12 +231,18 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       pdfFile = `resources/${name}.pdf`;
       files.push({ path: pdfFile, fileId: svg.pdfFileId, kind: 'blob', owner: r.id });
     }
+    let printFile: string | undefined;
+    if (bitmap?.printFileId) {
+      printFile = `resources/${name}.${extensionForPrintFormat(bitmap.printFormat)}`;
+      files.push({ path: printFile, fileId: bitmap.printFileId, kind: 'blob', owner: r.id });
+    }
     const width = bitmap?.width ?? svg?.width;
     const height = bitmap?.height ?? svg?.height;
     resources.push({
       ...rest,
       file: path,
       ...(pdfFile ? { pdfFile } : {}),
+      ...(printFile ? { printFile } : {}),
       ...(svg?.inlineFonts === false ? { inlineFonts: false as const } : {}),
       ...(width ? { width } : {}),
       ...(height ? { height } : {}),
@@ -295,6 +309,14 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     files.push({ path, fileId: profile.fileId, kind: 'blob', owner: 'print' });
     configWithoutFonts.print = { ...configWithoutFonts.print, customProfile: { ...profile, fileId: path } };
   }
+  // The profile assigned to the book's RGB pictures, likewise.
+  const assigned = configWithoutFonts.print?.imageColor?.assignedRgbProfile;
+  if (assigned) {
+    let path = `profiles/${slugify(assigned.name) || 'picture-profile'}.icc`;
+    if (files.some((f) => f.path === path && f.fileId !== assigned.fileId)) path = path.replace(/\.icc$/, '-pictures.icc');
+    if (!files.some((f) => f.path === path)) files.push({ path, fileId: assigned.fileId, kind: 'blob', owner: 'print' });
+    configWithoutFonts.print = { ...configWithoutFonts.print, imageColor: { ...configWithoutFonts.print!.imageColor, assignedRgbProfile: { ...assigned, fileId: path } } };
+  }
 
   // Chapter files: `chapters/01-intro.md`, or one folder per locale when
   // any locale has chapters of its own (`chapters/es/01-intro.md`).
@@ -359,8 +381,10 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       const pdfFileId = r.svg?.pdfFileId;
       const ownFile = !!ext && !!fileId && fileId !== (base.bitmap?.fileId ?? base.svg?.fileId);
       const ownMaster = !!pdfFileId && pdfFileId !== base.svg?.pdfFileId && merged.kind === 'svg';
+      const printFileId = r.bitmap?.printFileId;
+      const ownOriginal = !!printFileId && printFileId !== base.bitmap?.printFileId && merged.kind === 'bitmap';
       let name = resourceNames.get(r.id);
-      if ((ownFile || ownMaster) && name === undefined) {
+      if ((ownFile || ownMaster || ownOriginal) && name === undefined) {
         name = uniqueSlug(slugify(r.id), takenResourceNames, 'resource');
         takenResourceNames.add(name);
         resourceNames.set(r.id, name);
@@ -378,6 +402,10 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       if (ownMaster) {
         spec.pdfFile = `resources/${localeFolder(locale)}/${name}.pdf`;
         files.push({ path: spec.pdfFile, fileId: pdfFileId!, kind: 'blob', owner: r.id, locale });
+      }
+      if (ownOriginal) {
+        spec.printFile = `resources/${localeFolder(locale)}/${name}.${extensionForPrintFormat(r.bitmap?.printFormat)}`;
+        files.push({ path: spec.printFile, fileId: printFileId!, kind: 'blob', owner: r.id, locale });
       }
       if (Object.keys(spec).length > 1) wording.push(spec);
     }

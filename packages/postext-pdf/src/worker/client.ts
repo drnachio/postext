@@ -28,10 +28,13 @@ export type {
 
 /** Options of a render on the worker: those of `renderToPdf`, with image
  *  bytes, SVG rasterizing and fonts in the form that crosses to the worker. */
-export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resourceBytes' | 'rasterizeSvg'> {
+export interface PdfWorkerRenderOptions extends Omit<RenderToPdfOptions, 'resourceBytes' | 'previewBytes' | 'rasterizeSvg'> {
   /** Resource bytes by file id. Their buffers are transferred: pass copies
    *  if the caller keeps them. */
   resourceBytes?: Map<string, Uint8Array>;
+  /** Previews of TIFF and Photoshop originals by file id (`previewBytes`),
+   *  transferred too. */
+  previewBytes?: Map<string, Uint8Array>;
   /** How the host rasterises an SVG for the worker; the document's `Image`
    *  by default. */
   rasterizeSvg?: SvgRasterizer;
@@ -166,8 +169,9 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
         pending.set(id, entry);
         current = entry;
         const resourceBytes = [...(renderOptions.resourceBytes ?? new Map<string, Uint8Array>())];
+        const previewBytes = [...(renderOptions.previewBytes ?? new Map<string, Uint8Array>())];
         const buffers = new Set<ArrayBuffer>();
-        for (const [, bytes] of resourceBytes) {
+        for (const [, bytes] of [...resourceBytes, ...previewBytes]) {
           if (bytes.buffer instanceof ArrayBuffer) buffers.add(bytes.buffer);
         }
         const { forms, pageNegative, outlines, colorSpace, accessible, baselineGrid, print, profileBaseUrl } = renderOptions;
@@ -191,7 +195,7 @@ export function createPdfWorker(options?: CreatePdfWorkerOptions): PdfWorkerHand
               ...(outputProfile ? { outputProfile } : {}),
               ...(profileBase ? { profileBaseUrl: profileBase } : {}),
               ...(harfbuzzWasm ? { harfbuzzWasm } : {}),
-            }, resourceBytes }, [...buffers]);
+            }, resourceBytes, ...(previewBytes.length > 0 ? { previewBytes } : {}) }, [...buffers]);
         } catch (err) {
           pending.delete(id);
           current = null;

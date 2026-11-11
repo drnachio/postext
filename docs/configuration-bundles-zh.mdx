@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postext文件包',
   description: '怎样用代码打开、排版、渲染和创建.postext文件，怎样制作双语文件包，旧版本写出的文件怎样读取，以及底层API',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '20分钟',
   order: 24,
   parent: 'configuration',
@@ -160,10 +160,11 @@ migrateConfig(config, CONFIG_VERSION); // 现行规则：返回`config`本身
 - <strong>`registerBundleImages(bundle)`</strong>为Canvas后端（`renderPage`、`renderToCanvas`）解码图片，包括视频封面。<strong>`bundleImageUrl(bundle)`</strong>是`renderToHtml`的`resourceImageUrl`解析器，<strong>`bundleVideoUrl(bundle)`</strong>则是它的`resourceVideoUrl`解析器，用于文件包携带的视频文件。开启`diagramStyle.singleInk`时，两者都会对SVG图重新着色一次：它们改写标记本身并给图片打上标记，任何后端都不会再次着色（见[Canvas与HTML中的单色模式](/zh/docs/configuration-resources#canvas与html中的单色模式)）。两者还会在每个SVG中嵌入其文字指定的字面，先取文件包自己的字体，再取向引擎注册的字体（见[SVG文字中的字体](/zh/docs/configuration-resources#svg文字中的字体)）；`registerBundleImages(bundle, { onWarning })`和`bundleImageUrl(bundle, { onWarning })`会报告没有字面可用的字体族。
 - <strong>`buildBundle(bundle)`</strong>按顺序排版各章，每章返回一个`VDTDocument`。每一章都接续前一章：标题和资源的计数器、当前所在的篇、页的奇偶和页码。印出目录（`:::toc`）或索引（`:::index`）的章会拿到整本书的大纲。它接受与`buildDocument`相同的选项，另加用来覆盖文件包配置的`config`、共享测量缓存的`cache`、`metadata`（见下文）、每排完一章就调用的`onChapter(index, doc)`，以及`layoutCache`。把`createBundleLayoutCache()`创建的`layoutCache`交给同一本书的每次构建，就只重排输入有变化的章节，其余章节取自上一次构建；它的`stats.laidOut`列出重排了哪些章节（自postext 1.32起）。字体不在它比较的范围内：字体有变化时，把它和测量缓存一起丢弃。跳到靠后章节文件里某一页的文章（`overflow.continueIn: 'page:<id>'`，见[模板页 › 跳转到后面的页面](/zh/docs/composed-pages#跳转到后面的页面)）会在章节之间交接：每个章节排版时都知道它后面各章的页面id（`laterPageIds`），它送出的文章回到它的文档上（`pendingJumps`），有该页的章节接收它们（`continuation.jumps`），`resolveJumpMarks`再把页码写进指向另一章页面的标记（自postext 1.41起）。逐章排版的宿主用`pageFenceIds`和`laterPageIdsOf`做同样的事。
 - <strong>`bundleResourceBytes(bundle)`</strong>和<strong>`bundleFontProvider(bundle, { decodeWoff2, fallback })`</strong>分别对应`postext-pdf`的`renderToPdf`的`resourceBytes`和`fontProvider`选项。字体提供器从文件包中为所请求的样式挑选最接近的字重。对`.woff2`字面，它需要`decompressWoff2`；对文件包没有携带的字体族，它以渲染器传来的参数（包括`request`）调用`fallback`，并原样转交其返回值。如果后备函数只获取某个家族的`latin`文件，文件包没有嵌入的中文字体就会印成空方框；如果它按分片应答，例如[中文、日文和韩文字体](/zh/docs/configuration-pdf-output#中文日文和韩文字体)中的`sliceFontProvider`，就能完整印出。对于写了`fallback`的字体族（自postext 1.42起），缺少文件的那种倾斜所需的字面，先取文件包中后备字体的字面，没有时再以后备字体的名称调用`fallback`，因此PDF会以授权字体族的名义嵌入开放字体。
+- <strong>`bundlePreviewBytes(bundle)`</strong>是`previewBytes`选项：每张带有 TIFF 或 Photoshop 原稿的图片的 PNG 预览图，原稿无法解码时用它印刷。
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
-  bundleResourceBytes, bundleFontProvider } from 'postext';
+  bundleResourceBytes, bundlePreviewBytes, bundleFontProvider } from 'postext';
 import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 const bundle = await openBundle(bytes);
@@ -176,6 +177,7 @@ const firstPage = renderPage(docs[0].pages[0], docs[0]); // 一个<canvas>
 const pdf = await renderToPdf(docs, {                    // 整本书
   fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
   resourceBytes: bundleResourceBytes(bundle),
+  previewBytes: bundlePreviewBytes(bundle),
 });
 ```
 
@@ -242,7 +244,7 @@ const { bytes, manifest, warnings } = await createBundle({
     <tr><td><code>name</code>、<code>id</code>、<code>description</code>、<code>locale</code></td><td>清单的元数据。<code>id</code>默认取<code>name</code>的slug。</td></tr>
     <tr><td><code>chapters</code>或<code>markdown</code></td><td>书的内容，每章一个<code>&#123; title?, markdown &#125;</code>，或者单个文档。</td></tr>
     <tr><td><code>config</code></td><td><code>PostextConfig</code>。与默认值相同的值不写入清单。</td></tr>
-    <tr><td><code>resources</code></td><td>各个资源。图片通过<code>bitmap.fileId</code> / <code>svg.fileId</code>指明其数据文件（印刷母版用<code>svg.pdfFileId</code>）。</td></tr>
+    <tr><td><code>resources</code></td><td>各个资源。图片通过<code>bitmap.fileId</code> / <code>svg.fileId</code>指明其数据文件（印刷母版用<code>svg.pdfFileId</code>；<code>bitmap.fileId</code>为PNG预览的图片，其TIFF或Photoshop原稿用<code>bitmap.printFileId</code>，存为<code>resources/&lt;名称&gt;.tif</code>或<code>.psd</code>）。</td></tr>
     <tr><td><code>files</code></td><td>按<code>fileId</code>给出的数据文件（对象或<code>Map</code>）：资源引用的图片，以及<code>config.customFonts</code>各变体引用的字体文件。值可以是<code>Uint8Array</code>、<code>ArrayBuffer</code>、<code>Blob</code>或字符串（SVG标记）。</td></tr>
     <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>：封面图片（PNG、JPEG、WebP、GIF或SVG）。</td></tr>
     <tr><td><code>canvasScope</code></td><td><code>'book'</code>要求查看器把整本书排成一张画布。</td></tr>
@@ -289,7 +291,7 @@ const es = await openBundle(bytes, { locale: 'es' });   // 西班牙语的章节
 
 - **`chapters`**：该语言的书。章节文件按语言分文件夹存放（`chapters/en/01-dusk.md`、`chapters/es/01-anochecer.md`），清单的`chapters`变成语言 → 章节的映射。没有`chapters`的语言读取主要语言的章节；如果没有任何语言有自己的章节，它们就仍是单一列表。
 - **`config`**：该语言的配置。传入的每个顶层键在该语言中取代共享的同名键，所以上例中的`headings`会取代整个`headings`对象。省略的键或与共享值相同的键视为共享，因此传入该语言的完整配置和只传入少数改动的键效果一样。清单只保存差异：`localized[…].config`只包含该语言与共享`config`不同的字段，读取文件包时逐字段合并到共享配置之上（见[通用设置与各语言覆盖](#通用设置与各语言覆盖)）。如果某个键设为默认值而共享的键不是（`layout: {}`），就会在该语言中重置共享值。字体是共享的：某种语言`customFonts`中的字体族会并入文件包的`fonts`。
-- **`resources`**：共享资源的文字，按`id`对应：`caption`、`note`、`altText`以及表格的`table`。含有文字的图片可以有自己的图稿：`bitmap.fileId`或`svg.fileId`（以及`svg.pdfFileId`）指向`files`中的另一个数据文件，写为`resources/es/lantern.svg`。其他字段，如类型或位置，都是共享的。不在`resources`中的id会被略去并给出警告；缺少某种语言的图片时，该语言沿用共享的图片，同样给出警告。
+- **`resources`**：共享资源的文字，按`id`对应：`caption`、`note`、`altText`以及表格的`table`。含有文字的图片可以有自己的图稿：`bitmap.fileId`或`svg.fileId`（以及`svg.pdfFileId`或`bitmap.printFileId`）指向`files`中的另一个数据文件，写为`resources/es/lantern.svg`。其他字段，如类型或位置，都是共享的。不在`resources`中的id会被略去并给出警告；缺少某种语言的图片时，该语言沿用共享的图片，同样给出警告。
 - **`name`**、**`description`**：该语言版本的书名和简介，与共享的不同时写为`localized[…].name`和`description`。以该语言读取时，`openBundle`把它们作为`bundle.name`和`bundle.description`返回；沙盒在导入时和书库中以这个书名列出该版本；`postext info`和`postext check`也会打印它们。预设源`index.json`中的条目可以把它们复制到`localized`（`localized.ca.name`），书库在打开之前就能用各版本自己的书名列出它们。没有给出的语言沿用清单的`name`和`description`。
 
 清单在`locales`中列出所有语言（`['en', 'es']`），把主要语言保存为`locale`，其余的保存在`localized`下。不指定语言时，`openBundle`读取主要语言。

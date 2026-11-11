@@ -151,7 +151,7 @@ export type {
   ChipUnderline,
   FigureStyle,
 } from './types.js';
-export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './defaults/index.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './defaults/index.js';
 export type { FolioPaperStock } from './defaults/index.js';
@@ -479,7 +479,7 @@ export type {
   PrintRenderingIntent,
   CmykPercent, SpotColor,
   PrintBlackConfig,
-  ResolvedPrintBlackConfig, PrintInk, ResolvedPrintInk, PrintPlatesConfig, ResolvedPrintPlatesConfig,
+  ResolvedPrintBlackConfig, PrintInk, ResolvedPrintInk, PrintPlatesConfig, ResolvedPrintPlatesConfig, PrintImageColorConfig, ResolvedPrintImageColorConfig,
   PrintPreflightConfig,
   ResolvedPrintPreflightConfig,
   CustomOutputProfile,
@@ -831,7 +831,7 @@ export type { RegisterSvgImageOptions, PrepareSvgOptions } from './svg/image.js'
 
 // `.postext` bundles. The `postext/bundle` subpath carries the same API plus
 // the low-level manifest helpers.
-export { openBundle, createBundle, buildBundle, createBundleLayoutCache, loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, readBundle, traceBundleContours, planBundle, resolveBundleFiles, openBundleZip, zipBundle, isBundleManifest, pickBundleMeta, POSTEXT_EXTENSION } from './bundle/index.js';
+export { openBundle, createBundle, buildBundle, createBundleLayoutCache, loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, readBundle, traceBundleContours, planBundle, resolveBundleFiles, openBundleZip, zipBundle, isBundleManifest, pickBundleMeta, POSTEXT_EXTENSION } from './bundle/index.js';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData, BuildBundleOptions, BundleLayoutCache, BundleLayoutStats, BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions, BundleManifest, BundleManifestV1, BundleManifestV2, BundleStart, BundleChapter, BundleFontFile, ReadBundleOptions, ReadBundleResult, ZipBundleOptions } from './bundle/index.js';
 
 // Citations (#267–#272): the engine registry and the data model a citation

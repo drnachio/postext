@@ -6,7 +6,7 @@ export const metadata = {
   description: 'コードから使うpostext-pdf：インストール、API、ブラウザーとNodeのフォントプロバイダー、CJKフォント、リソースのバイト列、縦組み、ワーカー、印刷入稿用のファイル',
   lang: 'ja',
   lastUpdated: '2026-11-10',
-  readingTime: '31分',
+  readingTime: '34分',
   order: 22,
   parent: 'configuration',
   plainSummary: "このページは、プログラムを書いてPDFファイルを作りたい人向けです。PDFのパッケージをインストールし、組み上がった本を数行でファイルにする方法を示します。このパッケージにはフォントのファイルが必要なので、ブラウザーでもサーバーでも、それを渡す方法を説明します。中国語、日本語、韓国語のフォント、画像、縦組みの文章、リンクも扱います。最後に、全体を通した例と、印刷所に渡せるファイルを示します。",
@@ -36,8 +36,8 @@ npm install postext postext-pdf
 - **`renderToPdf(doc, options): Promise<Uint8Array>`** — `VDTDocument`（または本の章を並べたその配列）を受け取り、PDFの生のバイト列を返します。
 - **`PdfFontProvider`** — `renderToPdf`が新しいファミリー・ウェイト・スタイルの組み合わせを埋め込む必要があるときに、フォントのバイト列を要求するために使うコールバックのシグネチャ`(family, weight, style, request?) => Promise<Uint8Array | Uint8Array[]>`です。`request.codePoints`には、ページがそのフェイスで組む文字が入ります。返すのは1つのファイルか、合わせて1つのフェイスになる複数のファイルです（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照）。
 - **`declaredFontFile(bytes, { unicodeRange?, order? }): PdfFontFile`** — ページでの宣言のしかたを記録したフェイスのファイルです。記録するのは、`@font-face`規則の`unicode-range`と、宣言順での位置です。`PdfFontFile`は、この2つの省略可能なプロパティを加えた`Uint8Array`です（[中国語・日本語・韓国語のフォント](#中国語日本語韓国語のフォント)を参照。postext-pdf 1.30以降）。
-- **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
-- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'plateMixesApproximated'`と`'artworkOffPlates'`（`PdfPrintWarning`）は、少数の版で刷るジョブ（`print.plates`）がコードを使い切って残りの色をすでにコード化した最も近い掛け合わせで刷ったこと、または配置したPDFページや復号できない画像がそれ自身のインキのまま置かれたことを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
+- **`RenderToPdfOptions`** — `{ fontProvider, forms?, resourceBytes?, previewBytes?, outlines?, accessible?, colorSpace?, pageNegative?, characterGrid?, baselineGrid?, onProgress?, onWarning?, rasterizeSvg?, harfbuzzWasm?, print?, outputProfile?, profileBaseUrl?, date? }`。`forms`は、フォームフィールドでの数値の書き方（通貨、その位置、区切り記号）と、値を表示するフェイス（`font`）を指定します（[フォームフィールド](#フォームフィールド)を参照）。`outlines`、`accessible`、`colorSpace`は、省略するとドキュメントの`pdfGeneration`の値になります（[PDF生成（設定）](/ja/docs/configuration-fonts-colors-viewers#pdf生成設定)を参照）。`resourceBytes`は[リソースのバイト列と印刷用マスター](#リソースのバイト列と印刷用マスター)で、`onWarning`は[プロバイダーに要求されるフェイス](#プロバイダーに要求されるフェイス)と[文書の中の警告](/ja/docs/configuration-programmatic-usage#文書の中の警告)で説明します。`characterGrid: true`は、`cjk.grid.show`が画面に描くグリッドを印刷します。指定しなければPDFには含まれません（[文字グリッド](/ja/docs/configuration-east-asian#文字グリッド)を参照）。`harfbuzzWasm`は、右から左に書く文字や連結する文字を含むドキュメントのために、HarfBuzzの`harfbuzz.wasm`をどこから読み込むかを指定します（ページからの相対URL、またはファイルのバイト列）。省略すると、postext-pdfのモジュールの隣にあるコピー、次にjsDelivrとesm.shにある同じharfbuzzjsのリリースを使います。`print`は印刷出力の設定（PDF/X規格、出力プロファイル、黒の扱い、プリフライト）を受け取り、省略時は文書の`print`を使います。PDF/X規格、または`colorSpace: 'cmyk'`を指定すると、すべての色がICC出力プロファイルで分版されます。プロファイルのバイト列は`outputProfile`で渡し、省略時は`profileBaseUrl`（既定はnpm CDN上のpostextの`icc/`フォルダー）から取得します。`date`（`Date`、ミリ秒の時刻、または日付の文字列。`createBundle`の`mtime`と同じ型）は、ファイルの作成日と更新日になります。PDF/XではXMPパケットの日付にもなり、文書IDもここから求めます。同じ文書を同じ`date`で2回書き出すと、バイト列は一致します。省略時は呼び出した時刻が入ります。無効な日付はエラーになります。
+- **`PdfWarning`** — `onWarning`で報告される致命的でない問題です。`kind`で絞り込みます。`'fontFallback'`（`PdfFontFallbackWarning`）はフェイスがファミリーの別のカットで組まれたこと、`'missingGlyph'`（`PdfMissingGlyphWarning`）はフェイスのどのファイルにもグリフがない文字、`'variableFontDefaultInstance'`（`PdfVariableFontWarning`）は可変フォントが既定のインスタンス以外のウェイトで要求されたこと、`'cffEmbeddedWhole'`（`PdfCffEmbeddedWholeWarning`）は2 MBを超えるCFFフェイスが丸ごと埋め込まれたこと、`'complexShapingUnavailable'`（`PdfComplexShapingWarning`）はHarfBuzzを読み込めず（`reason`に探した場所が並びます）、右から左に書く文字や連結する文字がHarfBuzzなしで描かれたため、アラビア文字の記号の位置がずれることを示します。`'outputProfileUnavailable'`（`PdfPrintWarning`）は、CMYKでの描画で出力プロファイルを読み込めず、単純な計算式で変換したこと、`'pageNegativeIgnored'`（`PdfPrintWarning`）は、PDF/X-1aのファイルでページのネガ反転を省いたことを示します。`'spotTintsExhausted'`（`PdfPrintWarning`）は、レンダリングが特色の濃度を区別するコード（約2,500万）を使い切り、残りをプロセスカラーで刷ったことを示します。`'spotInkRenamed'`（`PdfPrintWarning`）は、インキの版を別の名前で書き出したことを示します（[特色](#特色)を参照）。`'imageProfileUnavailable'`（`PdfPrintWarning`）は、RGB 画像に割り当てたプロファイルを読み込めず、画像自身のプロファイルを使ったことを示します。`'pictureOriginalUnreadable'`（`PdfPrintWarning`）は、TIFF または Photoshop の原本を復号できず、プレビュー（`previewBytes`）から、またはプレースホルダーとして印刷したことを示します。`'plateMixesApproximated'`と`'artworkOffPlates'`（`PdfPrintWarning`）は、少数の版で刷るジョブ（`print.plates`）がコードを使い切って残りの色をすでにコード化した最も近い掛け合わせで刷ったこと、または配置したPDFページや復号できない画像がそれ自身のインキのまま置かれたことを示します。`'missingImage'`は、バイト列のない画像がプレースホルダーとして描かれたことを示します（これは渡した`onWarning`にだけ報告されます。それがないとき、フォントの警告は`console.warn`に出ます）。
 - **`inspectPrintMaster(bytes): Promise<PrintMasterReport>`** — PDFの印刷用マスターの1ページ目を読み、埋め込まずに使っているフォント（`nonEmbeddedFonts`）、RGBで描いているか（`rgb`）、透明効果を使っているか（`transparency`）を報告します。[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)が使います。
 - **`inspectPrintPdf(bytes): Promise<PrintPdfReport>`** — 完成したPDFを、印刷所のプリフライトと同じように全ページ読み直します。バージョンとページ数、PDF/Xの識別と出力インテント（そのプロファイルが埋め込まれているか）、仕上がりサイズと最小の塗り足し、仕上がりサイズが異なるページ、TrimBoxのないページ、ページボックスが4つの数値でないページ（`malformedBoxPages`。ボックスがないものとして読みます）、フォント（`fonts`：名前、埋め込みの有無、種類。埋め込みと非埋め込みの両方で使われたフォントは、それぞれ1回ずつ挙がります）、描画に使う色（CMYK、グレー、名前付きの特色、レジストレーション、そしてプロファイルのない`deviceRgb`とプロファイル付きの`iccRgb`に分けたRGB。どちらも`vector`の描画と`images`に分けます）、透明、オーバープリント、注釈、インタラクティブフォーム、タグ付きかどうかを報告します。ページのほかに、注釈の外観、フォームのフィールドと既定のリソース、パターン、Type 3グリフ、インライン画像も読みます。読むのは設定が求めた内容ではなく、ファイルに書かれている内容です。画像の解像度、総インキ量、細すぎる線、トラッピングは読みません。ページの走査は`inspectPrintMaster`と共通で、`inspectPrintMaster`はシェーディング、パターン、Type 3グリフ内のRGBも報告します。
 - **`decompressWoff2(bytes): Uint8Array`** — WOFF2ファイルを、`pdf-lib`がそのまま埋め込める形式であるTTFのバイト列に変換するヘルパーです。
@@ -262,6 +262,7 @@ export const localFontProvider: PdfFontProvider = async (family, weight, style) 
 
 - PNG、JPEG、GIF、WebPは画像として埋め込まれます
 - SVGのマークアップはベクターのパスとして描かれ、その`text`は文書に埋め込んだフォントで実際のテキストとして組まれます。ベクターのサブセットにない機能を使っている場合は、ブラウザーで600 dpiでラスタライズされます。`@font-face`規則だけを含む`<style>`（作者が埋め込んだフェイス）は読み飛ばされ、図はベクターのままです（postext-pdf 1.25以降）。それ以外のスタイルシートがあると図はラスターになり、そのラスターは、文字が指定するフェイスを`fontProvider`から得て埋め込んでから作られます（`diagramStyle.inlineFonts`またはリソースの`svg.inlineFonts`が`false`の場合を除きます）
+- TIFFとPhotoshopのドキュメント（PSD、PSB）は、それ自身のピクセルから印刷されます。グレー、RGB、CMYKの8ビットまたは16ビットで、持っているICCプロファイルと解像度を使います。CMYKのものはインキをそのまま保ち、グレーとRGBは`print.imageColor`に従います。Photoshopのドキュメントは、「互換性を優先」で保存される統合画像から読みます。JPEG圧縮のTIFFは読めません
 - PDFは最初のページがそのまま、フォームXObjectとして埋め込まれます
 
 各画像は、何回描かれてもファイルには1回だけ格納されます。ベクターのパスとして描かれるSVGは、すべてのページが描画するフォームXObjectになるので、30ページのドキュメントで、ページデザインにある枠やロゴは、30回ではなく1回だけ書き込まれます。ページが1つ増えるごとに増えるのは数百バイトです。postext-pdf 1.4までは、各ページがパスのコピーをそれぞれ持っていました。
@@ -281,6 +282,10 @@ const pdf = await renderToPdf(buildDocument({ markdown, resources }, config), {
 ```
 
 ホストは、`bundleResourceBytes`のように、SVG自身のidに対してマスターのバイト列を返すこともできます。どちらの方法でも動作します。
+
+ブラウザーはTIFFやPhotoshopのドキュメントを表示できないので、それから作ったビットマップのリソースは2つのファイルを持ちます。`bitmap.fileId`はPNGのプレビューで、Canvas、HTML、EPUBはこれを表示します。`bitmap.printFileId`（`printFormat: 'tiff' | 'psd'`付き）は原本です。ホストは、`bundleResourceBytes`やSandboxのように、`bitmap.fileId`に対して原本のバイト列を返し、PDFはそこから印刷します。プレビューも`previewBytes`として渡します（バンドルなら`bundlePreviewBytes`）。原本を復号できないときはプレビューから印刷して`pictureOriginalUnreadable`警告を出し、プレビューがなければプレースホルダーになります。`postext`の`decodePrintRaster(bytes)`と`rasterToRgba(raster)`は原本を読み、プレビューを作ります。Sandboxはファイルを読み込むときにプレビューを作り、バンドルは原本をプレビューの隣に`resources/<名前>.tif`または`.psd`として格納します。
+
+Adobe Illustratorで「PDF互換ファイルを作成」を有効にして保存したファイルはPDFなので、ほかのPDFと同じように印刷用マスターにできます（`.ai`）。そのスウォッチはそれ自身の版です。プリフライトは、インキ表が名前を変えるもの、本のどの色にも定義されていないもの、そして独自の版で刷る作業（`print.plates`）では作業で刷らないものを一覧にします。配置したファイルはそのまま印刷されるためです。
 
 ### PDFの縦組み
 
@@ -391,7 +396,7 @@ const bytes = await pdfWorker.render(docs, {
 pdfWorker.dispose();
 ```
 
-- `render(docs, options)`は、1つのドキュメント、または本の章のドキュメントの配列を受け取ります。オプションは`renderToPdf`のものですが、違いが2つあります。`resourceBytes`は`Map<string, Uint8Array>`で、そのバッファーは転送されるため、手元に残すバイト列はコピーを渡してください。`rasterizeSvg`は、指定した場合はメインスレッドで実行されます。指定しなければ、ページ自身の`Image`とcanvasが処理します。
+- `render(docs, options)`は、1つのドキュメント、または本の章のドキュメントの配列を受け取ります。オプションは`renderToPdf`のものですが、違いが2つあります。`resourceBytes`（と`previewBytes`）は`Map<string, Uint8Array>`で、そのバッファーは転送されるため、手元に残すバイト列はコピーを渡してください。`rasterizeSvg`は、指定した場合はメインスレッドで実行されます。指定しなければ、ページ自身の`Image`とcanvasが処理します。
 - 1つのハンドルが描画するドキュメントは一度に1つです。`dispose()`はワーカーを終了し、保留中の描画をすべて`AbortError`（`DOMException`）で拒否（reject）します。これはキャンセルとして扱ってください。`dispose()`のあとにプロバイダーが返したフォントや画像は破棄されます。
 - `inspect(bytes)`は完成したPDFをワーカー上で読み直し（`inspectPrintPdf`）、そのレポートで解決します。バイト列をPDFとして読めないときは`undefined`です。バイト列はコピーされるので、手元のものはそのまま使えます。呼ばない限り何も読みません。
 - `createPdfWorker({ worker })`は、自分で作成した`Worker`を受け取ります。ワーカーのURLを制御するビルドツール向けです。そのワーカーでは`postext-pdf/worker/entry`を実行する必要があります。
@@ -501,6 +506,42 @@ print: {
 ```
 
 プリフライトはジョブの版と、射影で動く色をひとつずつ一覧にします。ジョブで刷らない特色やCMYKの色は、掛け合わせがΔE 6以内に収まれば情報、それを超えるとき、または出力プロファイルを読み込む前は警告です（`offPlateInk`、`offPlateCmyk`）。ΔE 6を超えて離れる画面の色も警告です（`offPlateColor`）。どの色にもインキ表のどのエントリーにも定義されていない特色の版は警告で、黒として刷られ、校正でも黒で表示されます。このようなジョブでは図の印刷用原稿は使わず、そのSVGを版の上に組みます。配置したPDFページや復号できない画像はそれ自身のインキを保ち、レンダリングが警告します（`artworkOffPlates`）。Sandboxでは版を「印刷の準備 → 版」で設定します。そのプレビューと印刷プレビューは本で定めた色を表示し、版で刷った色は表示しません。PDFを確認してください。印刷用に検査が使われているインキを一覧にします。
+
+### 画像の色
+
+画像は、それが作られたときの色から分版されます。`print.imageColor`は、画像のピクセルの読み方を指定します。
+
+```ts
+interface PrintImageColorConfig {
+  embeddedProfile?: 'use' | 'ignore';                  // A picture's own ICC profile. Default 'ignore'.
+  assignedRgbProfile?: { name: string; fileId: string }; // Read every RGB picture through this .icc instead.
+  grayDotGain?: 'profile' | 'none' | number;           // Greyscale pictures on black. Default 'none'.
+  cmykProfile?: 'convert' | 'keep';                    // A CMYK picture of another press. Default 'keep'.
+}
+```
+
+既定値では、画像は以前のバージョンと同じように印刷されます。RGB 画像はすべて sRGB として読み込まれ（`'ignore'`）、グレースケール画像はほかの画像と同様に分版され（`'none'`）、CMYK 画像は値をそのまま保ちます（`'keep'`）。以下の各動作は、それぞれのフィールドで有効になります。
+
+- **画像自身のプロファイル。** プロファイルを埋め込んだPNG（`iCCP`）やJPEG（`ICC_PROFILE`）は、そのプロファイルを通して読みます。そのため、Adobe RGBやDisplay P3の写真は、sRGBとしてではなく見えるとおりに分版されます。プロファイルのない画像やsRGBのプロファイルを持つ画像は、これまでどおりsRGBとして読みます。`'ignore'`はすべての画像をsRGBとして読みます。
+- **割り当てたプロファイル。** `assignedRgbProfile`は保存済みの`.icc`を指定し、RGBの画像は何を埋め込んでいてもすべてそれを通して読みます。たとえば、プロファイルが失われた一連の写真に使います。そのバイト列は`resourceBytes`から渡します。渡されなければ画像自身のプロファイルを使い、`imageProfileUnavailable`の警告を出します。
+- **RIPに任せる。** PDF/X-4で`convertImages: false`のとき、sRGB以外のプロファイルを持つ画像は元の色のまま書き出され、そのプロファイルで`ICCBased`としてタグ付けされ、印刷所のRIPが変換します。
+- **グレースケール。** グレースケールの画像（グレーのPNGやJPEG、またはグレーのプロファイルを持つ画像）は墨インキだけで刷られ、4色グレーにはなりません。その階調は、画像自身のプロファイルを通して（なければ画面に表示されるとおりに）読まれ、印刷機に合わせられます。`'profile'`は出力プロファイルの黒を通します。そのドットゲインは印刷条件にすでに含まれています。数値は50 %の網点での印刷機のドットゲイン（パーセント、通常は10–30）で、代わりにそれを補正します。`'none'`はこれまでどおり値をそのまま書き出します。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  imageColor: { grayDotGain: 20 },
+},
+```
+
+- **別の印刷機のCMYK画像。** 画像自身のプロファイルが別の印刷条件であるCMYKの画像（FOGRA向けの本に入った、SWOPや新聞用紙向けに分版された写真など）は、出力の印刷条件に合わせて分版し直されます（`cmykProfile: 'convert'`）。墨だけの部分は墨だけのまま残ります。TIFFやPhotoshopの画像はピクセルから分版し直します。CMYKのJPEGはピクセルをデコードしないので、PDF/X-4では画像自身のプロファイルで`ICCBased`としてタグ付けされ、RIPが変換します。そのようなタグを許さないPDF/X-1aでは、そのまま渡されます。その場合、ホストが画像のプロファイル（`imageProfile`）を渡していれば、プリフライトが警告します（`cmykImageForeign`）。PDF/X-4で`convertImages: false`のときは、TIFFやPhotoshopの画像も同じようにタグ付けされます。`'keep'`は、すべてのCMYKの画像の値をそのまま刷ります。
+
+**1枚の画像だけの設定。** リソースの`printColor`は、本の`print.imageColor`と同じフィールドを受け取り、その画像だけに適用します。たとえば、プロファイルを無視すべき写真、割り当てたプロファイルを通して読む写真、ドットゲインの異なるグレーの画像です。Sandboxでは、画像のカードで、画像自身のプロファイルを通して読むかどうか（「印刷時の色」）、グレーを印刷機にどう合わせるか（「印刷時のグレー」）、画像に割り当てるプロファイル（「割り当てプロファイル」、`.icc`ファイル）を指定します。バンドルは、本と画像に割り当てたプロファイルを`profiles/`フォルダーに収めます。本全体の設定は「印刷の準備 → 画像」にあります。
+
+```ts
+{ id: 'archive-photo', kind: 'bitmap', bitmap: { fileId: 'photo.jpg', format: 'jpeg', width: 2400, height: 1600 },
+  printColor: { embeddedProfile: 'ignore' } }
+```
 
 
 ### CMYKで指定した色

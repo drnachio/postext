@@ -1,4 +1,4 @@
-import { type PostextConfig, type VDTDocument, type Resource, type SvgFontFaceReport, extractFrontmatter, type OutputTransform, resolveContrastConfig, contrastDocument, resolvePrintConfig, resolvePdfGenerationConfig, preflightDocument } from 'postext';
+import { type PostextConfig, type VDTDocument, type Resource, type SvgFontFaceReport, extractFrontmatter, type OutputTransform, resolveContrastConfig, contrastDocument, resolvePrintConfig, resolvePdfGenerationConfig, preflightDocument, authoredSpotColors, placedInkProblems, spotsThroughInkTable, type SpotColor } from 'postext';
 import type { Warning, ContrastCheck, PreflightCheck, WarningPayload } from './types.js';
 import type { PdfFontCheck } from '../controls/fonts/pdfFontWarnings.js';
 import type { PreflightInputs } from '../print/preflightInputs.js';
@@ -131,6 +131,7 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     resources,
     cmyk,
     imageColor: inputs.imageColor,
+    imageProfile: inputs.imageProfile,
     imageSize: inputs.imageSize,
     svgInks: inputs.svgInks,
     ...(inputs.transform ? { transform: inputs.transform } : {}),
@@ -159,6 +160,7 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     });
   });
   // Placed PDF masters; a job on a few plates sets the SVG instead.
+  let spots: ReadonlyMap<string, Required<SpotColor>> | undefined;
   for (const r of print.plates.inks.length > 0 ? [] : resources) {
     const id = r.svg?.pdfFileId;
     const report = id ? inputs.masters.get(id) : undefined;
@@ -172,6 +174,16 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     }
     if (print.standard === 'pdfx1a' && report.transparency) {
       out.push({ id: `preflight-masterTransparency-${r.id}`, payload: { kind: 'preflight', check: { kind: 'masterTransparency', severity: 'critical', name, x1a: true } } });
+    }
+    if (cmyk && report.spotInks.length > 0) {
+      // Its inks, as the file names them, against the table and the plates.
+      spots ??= spotsThroughInkTable(authoredSpotColors(config), new Map(), print.inks).spots;
+      const problems = placedInkProblems(report.spotInks, print, spots.values());
+      for (const problem of ['offPlates', 'renamed', 'unknown'] as const) {
+        const inks = problems[problem];
+        if (inks.length === 0) continue;
+        out.push({ id: `preflight-masterInks-${problem}-${r.id}`, payload: { kind: 'preflight', check: { kind: 'masterInks', severity: problem === 'offPlates' ? 'critical' : 'warning', name, problem, inks } } });
+      }
     }
   }
   return out;

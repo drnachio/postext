@@ -14,6 +14,7 @@ import { BitmapUploader } from './uploads/BitmapUploader.js';
 import { BitmapResolutionField } from './uploads/BitmapResolutionField.js';
 import { SvgUploader } from './svg/SvgUploader.js';
 import { PdfMasterUploader } from './uploads/PdfMasterUploader.js';
+import { PrintColorExtras } from './uploads/PrintColorExtras.js';
 import { SvgFontsField } from './svg/SvgFontsField.js';
 import { SafeAreaField } from './marks/SafeAreaEditor.js';
 import { applyMarks } from './marks/pictureMarks.js';
@@ -470,6 +471,16 @@ export function ResourceDetail({
           <Field label={labels.resourceBitmapSizeLabel}>
             <BitmapResolutionField bitmap={resource.bitmap} onChange={(bitmap) => onChange(touch({ bitmap }))} />
           </Field>
+        )}
+        {/* How the picture's colours are read in print, over the book's
+            `print.imageColor`. */}
+        {resource.kind === 'bitmap' && resource.bitmap?.fileId && (
+          <PrintColorExtras resource={resource} onChange={(printColor) => {
+            const next = touch({});
+            if (printColor && Object.keys(printColor).length > 0) next.printColor = printColor;
+            else delete next.printColor;
+            onChange(next);
+          }} />
         )}
         {resource.kind === 'svg' && (
           <Field label={labels.resourceSvgLabel}>

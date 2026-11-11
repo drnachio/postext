@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postextバンドル',
   description: 'コードから.postextファイルを開き、組み、描画し、作成する方法。多言語のバンドル、古いバージョンが書き出したファイル、低レベルのAPI',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-10',
   readingTime: '29分',
   order: 24,
   parent: 'configuration',
@@ -160,10 +160,11 @@ migrateConfig(config, CONFIG_VERSION); // today's rules: `config` itself
 - **`registerBundleImages(bundle)`**：canvasバックエンド（`renderPage`、`renderToCanvas`）のために画像をデコードします。動画のポスターも含みます。`renderToHtml`のリゾルバーは2つあり、**`bundleImageUrl(bundle)`**（`resourceImageUrl`）は画像を、**`bundleVideoUrl(bundle)`**（`resourceVideoUrl`）はバンドルが収める動画ファイルを解決します。どちらも`diagramStyle.singleInk`が有効な場合はSVGの図を一度だけ色替えします。マークアップを色替えし、画像に印を付けて、どのバックエンドも重ねて色を付けないようにします（[CanvasとHTMLでの単色刷り](/ja/docs/configuration-resources#canvasとhtmlでの単色刷り)を参照）。どちらも、各SVGに文字が指定するフェイスを、まずバンドル自身のフォントから、次にエンジンに登録されたフェイスから埋め込みます（[SVGの文字のフォント](/ja/docs/configuration-resources#svgの文字のフォント)を参照）。`registerBundleImages(bundle, { onWarning })`と`bundleImageUrl(bundle, { onWarning })`は、フェイスのないファミリーを報告します。
 - **`buildBundle(bundle)`**：章を順に組み、章ごとに1つの`VDTDocument`を返します。各章は前の章を引き継ぎます。見出しとリソースのカウンター、開いている部、ページの奇偶、ノンブルです。目次（`:::toc`）や索引（`:::index`）を印字する章は、本全体のアウトラインを受け取ります。`buildDocument`と同じオプションに加えて、バンドルの設定を上書きする`config`、計測キャッシュを共有する`cache`、`metadata`（後述）、各章を組んだ後に呼ばれる`onChapter(index, doc)`、`layoutCache`を受け付けます。`createBundleLayoutCache()`で作った`layoutCache`を同じ本のすべてのビルドに渡すと、入力が変わった章だけを組み直し、ほかの章は前のビルドのものを使います。どの章を組んだかは、その`stats.laidOut`でわかります（postext 1.32以降）。フォントは比べる対象に入らないので、フェイスが変わったときは、計測キャッシュと一緒にこれも捨ててください。後ろの章ファイルのページへ飛ぶ記事（`overflow.continueIn: 'page:<id>'`、[テンプレートページ › 後ろのページへ飛ぶ](/ja/docs/composed-pages#後ろのページへ飛ぶ)を参照）は、その章に渡されます。各章は、自分より後ろの章のページid（`laterPageIds`）を知った上で組まれ、送り出す記事は自分の文書に返り（`pendingJumps`）、そのページのある章がそれを受け取り（`continuation.jumps`）、別の章のページを指すマークには`resolveJumpMarks`がページ番号を書き込みます（postext 1.41以降）。章を1つずつ組むホストは、`pageFenceIds`と`laterPageIdsOf`で同じことをします。
 - **`bundleResourceBytes(bundle)`**、**`bundleFontProvider(bundle, { decodeWoff2, fallback })`**：`postext-pdf`の`renderToPdf`の`resourceBytes`オプションと`fontProvider`オプションです。フォントプロバイダーは、求められたスタイルのうち最も近いウェイトをバンドルから選びます。`.woff2`のフェイスには`decompressWoff2`が必要です。バンドルが収めていないファミリーについては、`request`を含むレンダラーの引数で`fallback`を呼び、その戻り値をそのまま渡します。ファミリーの`latin`ファイルだけを取得するフォールバックでは、バンドルが埋め込んでいない中国語のファミリーが空の四角として印字されます。[中国語・日本語・韓国語のフォント](/ja/docs/configuration-pdf-output#中国語日本語韓国語のフォント)の`sliceFontProvider`のようにスライスで応えるフォールバックなら、すべて印字されます。`fallback`を指定しているファミリー（postext 1.42以降）は、ファイルのない傾きの書体を、バンドルにある`fallback`の書体から、なければ`fallback`の名前で呼び出した`fallback`から受け取ります。そのためPDFには、ライセンスが必要なファミリーの名前のもとで、オープンな書体が埋め込まれます。
+- **`bundlePreviewBytes(bundle)`**：`previewBytes`オプションです。TIFF または Photoshop の原本を持つ各画像の PNG プレビューで、原本を復号できないときに印刷されます。
 
 ```ts
 import { openBundle, loadBundleFonts, registerBundleImages, buildBundle, renderPage,
-  bundleResourceBytes, bundleFontProvider } from 'postext';
+  bundleResourceBytes, bundlePreviewBytes, bundleFontProvider } from 'postext';
 import { renderToPdf, decompressWoff2 } from 'postext-pdf';
 
 const bundle = await openBundle(bytes);
@@ -176,6 +177,7 @@ const firstPage = renderPage(docs[0].pages[0], docs[0]); // a <canvas>
 const pdf = await renderToPdf(docs, {                    // the whole book
   fontProvider: bundleFontProvider(bundle, { decodeWoff2: decompressWoff2, fallback: fontsource }),
   resourceBytes: bundleResourceBytes(bundle),
+  previewBytes: bundlePreviewBytes(bundle),
 });
 ```
 
@@ -242,7 +244,7 @@ const { bytes, manifest, warnings } = await createBundle({
     <tr><td><code>name</code>, <code>id</code>, <code>description</code>, <code>locale</code></td><td>マニフェストのメタデータ。<code>id</code>の既定値は<code>name</code>のスラッグです。</td></tr>
     <tr><td><code>chapters</code>または<code>markdown</code></td><td>本の内容。章ごとに1つの<code>&#123; title?, markdown &#125;</code>、または1つの文書です。</td></tr>
     <tr><td><code>config</code></td><td><code>PostextConfig</code>。既定値と同じ値はマニフェストに書き出しません。</td></tr>
-    <tr><td><code>resources</code></td><td>リソース。画像は<code>bitmap.fileId</code> / <code>svg.fileId</code>（印刷用マスターは<code>svg.pdfFileId</code>）でデータ本体を指定します。</td></tr>
+    <tr><td><code>resources</code></td><td>リソース。画像は<code>bitmap.fileId</code> / <code>svg.fileId</code>（印刷用マスターは<code>svg.pdfFileId</code>、<code>bitmap.fileId</code>がPNGのプレビューである画像のTIFFまたはPhotoshopの原本は<code>bitmap.printFileId</code>で、<code>resources/&lt;名前&gt;.tif</code>または<code>.psd</code>として格納します）でデータ本体を指定します。</td></tr>
     <tr><td><code>files</code></td><td><code>fileId</code>ごとのデータ本体（オブジェクトまたは<code>Map</code>）。リソースが参照する画像と、<code>config.customFonts</code>のバリアントが参照するフォントファイルです。値は<code>Uint8Array</code>、<code>ArrayBuffer</code>、<code>Blob</code>、文字列（SVGのマークアップ）のいずれかです。</td></tr>
     <tr><td><code>thumbnail</code></td><td><code>&#123; data, mime &#125;</code>：表紙画像（PNG、JPEG、WebP、GIF、SVG）。</td></tr>
     <tr><td><code>canvasScope</code></td><td><code>'book'</code>にすると、本全体を1つのキャンバスとして組むようビューアーに求めます。</td></tr>
@@ -289,7 +291,7 @@ const es = await openBundle(bytes, { locale: 'es' });   // Spanish chapters, con
 
 - **`chapters`**：その言語での本。章のファイルはロケールごとに1つのフォルダーに入り（`chapters/en/01-dusk.md`、`chapters/es/01-anochecer.md`）、マニフェストの`chapters`はロケール → 章のマップになります。`chapters`のないロケールは主言語の章を読みます。独自の章のあるロケールが1つもなければ、章は1つのリストのままです。
 - **`config`**：その言語の設定。渡したトップレベルの各キーは、その言語について共有のキーを置き換えます。上の例の`headings`は`headings`オブジェクト全体を置き換えます。省略したキーや共有のものと同じキーは共有されます。そのため、ロケールの設定全体を渡しても、変わる数個のキーだけを渡しても同じように動きます。マニフェストに保存されるのは差分だけです。`localized[…].config`には、その言語が共有の`config`と異なる値にしたフィールドが入り、バンドルを読むときに共有の設定の上へフィールド単位でマージされます（[共通設定と言語ごとの上書き](#共通設定と言語ごとの上書き)を参照）。共有のキーが既定値でないのにロケール側を既定値にしたキー（`layout: {}`）は、その言語について共有の値をリセットします。フォントは共有です。ロケールの`customFonts`のファミリーはバンドルの`fonts`に加わります。
-- **`resources`**：共有のリソースの文言で、`id`で対応づけます。`caption`、`note`、`altText`、表の`table`です。文字を含む画像は、言語ごとに別の画像を用意できます。`bitmap.fileId`や`svg.fileId`（と`svg.pdfFileId`）で`files`内の別のデータ本体を指定すると、`resources/es/lantern.svg`として書き出されます。タイプや配置などほかのフィールドは共有です。`resources`にないidは警告を出して除外し、ロケールの画像が欠けている場合も、警告を出してそのロケールは共有の画像を使います。
+- **`resources`**：共有のリソースの文言で、`id`で対応づけます。`caption`、`note`、`altText`、表の`table`です。文字を含む画像は、言語ごとに別の画像を用意できます。`bitmap.fileId`や`svg.fileId`（と`svg.pdfFileId`、`bitmap.printFileId`）で`files`内の別のデータ本体を指定すると、`resources/es/lantern.svg`として書き出されます。タイプや配置などほかのフィールドは共有です。`resources`にないidは警告を出して除外し、ロケールの画像が欠けている場合も、警告を出してそのロケールは共有の画像を使います。
 - **`name`**、**`description`**：その言語での書名と説明。共有の値と異なるときに`localized[…].name`と`description`として書き出されます。その言語で読むと`openBundle`はこれを`bundle.name`と`bundle.description`として返し、Sandboxは読み込み時とライブラリーでその版をこの書名で表示し、`postext info`と`postext check`もこれを出力します。プリセット配信元の`index.json`のエントリーに`localized`（`localized.ca.name`）として写しておくと、ライブラリーは開く前から各版をそれぞれの書名で示します。指定のない言語はマニフェストの`name`と`description`を使います。
 
 マニフェストは`locales`にすべての言語を並べ（`['en', 'es']`）、主言語を`locale`に残し、それ以外を`localized`に格納します。ロケールを指定しない`openBundle`は主言語を読みます。

@@ -282,3 +282,20 @@ describe('overprinting colours in the preflight', () => {
     expect(found).toMatchObject([{ color: '#ffffff', severity: 'critical' }]);
   });
 });
+
+describe('CMYK JPEGs of another press', () => {
+  it('are reported in a PDF/X-1a job, not in PDF/X-4 nor when they carry the output profile', () => {
+    const jpeg = { ...picture, bitmap: { ...picture.bitmap!, format: 'jpeg' } };
+    const doc = buildDocument({ markdown: '::resource{id="pic"}', resources: [jpeg] }, config());
+    const imageColor = () => 'cmyk' as const;
+    const imageProfile = () => ({ hash: 'snap2007', name: 'SNAP 2007' });
+    const x1a = preflightDocument(doc, { resources: [jpeg], imageColor, imageProfile, transform: fogra39, print: resolvePrintConfig({ standard: 'pdfx1a', imageColor: { embeddedProfile: 'use', cmykProfile: 'convert' } }) });
+    expect(x1a.filter((i) => i.kind === 'cmykImageForeign')).toMatchObject([{ profile: 'SNAP 2007', severity: 'warning' }]);
+    const x4 = preflightDocument(doc, { resources: [jpeg], imageColor, imageProfile, transform: fogra39, print: resolvePrintConfig({ standard: 'pdfx4', imageColor: { embeddedProfile: 'use', cmykProfile: 'convert' } }) });
+    expect(kinds(x4)).not.toContain('cmykImageForeign');
+    const byDefault = preflightDocument(doc, { resources: [jpeg], imageColor, imageProfile, transform: fogra39, print: resolvePrintConfig({ standard: 'pdfx1a' }) });
+    expect(kinds(byDefault)).not.toContain('cmykImageForeign');
+    const same = preflightDocument(doc, { resources: [jpeg], imageColor, imageProfile: () => ({ hash: fogra39.profile.hash, name: 'FOGRA39' }), transform: fogra39, print: resolvePrintConfig({ standard: 'pdfx1a', imageColor: { embeddedProfile: 'use', cmykProfile: 'convert' } }) });
+    expect(kinds(same)).not.toContain('cmykImageForeign');
+  });
+});
