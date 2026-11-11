@@ -285,10 +285,12 @@ export function createFloatFlush(deps: FloatFlushDeps) {
         slots = slots.filter((s) => !s.side && s.position === pin.slot && (s.pageSpan || !col || s.cols[0] === col));
       } else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
       // A row at the foot (`layout.footFloatRow`): where the cursor's column
-      // already holds a float at its foot, the foot of a later empty column
-      // comes first, so the two stand level instead of one over the other.
+      // already holds a float at its foot, the foot of a later column with
+      // none comes first, so the two stand level instead of one over the
+      // other.
       else if (resolved.layout.footFloatRow && !f.callout && hasFoot(page.columns[cursor.columnIndex]!)) {
-        const row = (s: (typeof slots)[number]) => !s.side && !s.pageSpan && s.position === 'bottom' && s.cols[0]!.index !== cursor.columnIndex;
+        const row = (s: (typeof slots)[number]) => !s.side && !s.pageSpan && s.position === 'bottom'
+          && s.cols[0]!.index > cursor.columnIndex && !hasFoot(s.cols[0]!);
         slots = [...slots.filter(row), ...slots.filter((s) => !row(s))];
       }
       for (const slot of slots) {

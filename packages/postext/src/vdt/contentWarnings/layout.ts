@@ -38,9 +38,12 @@ export type LayoutWarning =
   | { kind: 'floatShrunk'; resourceId: string; scale: number; overflowPx?: number }
   /** `floatCropped` (#1492): a floated picture was cropped within its safe
    *  area (`Resource.safeArea`) to stay on the page that cites it
-   *  (`layout.pullFloatsToCitation`), by `share` of its height. Found by
-   *  the layout; information, since the crop never leaves the safe area. */
-  | { kind: 'floatCropped'; resourceId: string; share: number }
+   *  (`layout.pullFloatsToCitation`), by `share` of its height; with
+   *  `reason: 'row'` (#1496), toward its neighbour's height in a row at the
+   *  foot of the columns (`layout.footFloatRow`), `share` of its height
+   *  taken or added. Found by the layout; information, since the crop never
+   *  leaves the safe area. */
+  | { kind: 'floatCropped'; resourceId: string; share: number; reason?: 'row' }
   /** `pictureBelowPrintSize` (#901): a bitmap with a print size (its own
    *  `bitmap.resolution`, or a number in `layout.bitmapResolution`) set in
    *  a column that holds it at under half of it, on a page whose text

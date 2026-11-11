@@ -88,7 +88,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
-  const rows = createFloatRows({ resolved, minTextPx, layoutFloat, bodyCropDelta,
+  /** A row at the foot (`layout.footFloatRow`), on the foot stacks. */
+  const rows = createFloatRows({ resolved, minTextPx, layoutFloat, bodyCropDelta, footStacks,
     floatReserved, reservedOf, uncappedBottoms });
   /** Floats set by hand in the canvas (`placement.pin`). */
   const pins = createFloatPins(pendingFloats, doc);
@@ -485,15 +486,15 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
 
     // A foot row (`layout.footFloatRow`): a float alone at its column's foot
     // stands with its caption level with its neighbour's.
-    const atY = position === 'bottom' && targetCols.length === 1 && !aside ? rows.levelInRow(page, first, built.block, y) : y;
+    const level = position === 'bottom' && targetCols.length === 1 && !aside ? rows.levelInRow(page, first, built.block, y) : undefined;
+    const atY = level?.y ?? y;
     const floatsBefore = page.floats?.length ?? 0;
     commitFloatBlock(page, first, built, xLeft, atY, width, f.firstBlockIdx);
-    if (position === 'bottom') rows.noteFoot(targetCols, built.block);
     if (feet) {
       // A plain foot band joins the stack of its columns, which is laid
       // out again in reading order: this float under the earlier ones.
       const stackable = !rotated && !aside && !anchorToCap && !galleryFill && !built.block.comic
-        && !(wraps && !wrapRefused) && Math.abs(atY - y) < 0.01
+        && !(wraps && !wrapRefused) && !level?.row
         && targetCols.every((c) => !uncappedBottoms.has(c) && !openerHeads.has(c));
       const blocks = (page.floats ?? []).slice(floatsBefore);
       const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y: atY }, stackable);
@@ -551,7 +552,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
-    placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: rows.hasFoot,
+    placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: footStacks.hasFoot,
     pinOn: pins.pinOn, pinnedColumn: pins.pinnedColumn, dropMissedPins: pins.dropMissedPins
   };
 }
