@@ -572,6 +572,8 @@ Les largeurs de colonne appartiennent au modèle du tableau, pas au style : `Ta
 
 Un `TableModel` est une grille rangée ligne par ligne, et chaque cellule est disposée selon sa place dans cette grille : `rows[r][c]` occupe la colonne `c`. Une cellule fusionnée garde donc dans la grille les cellules qu’elle couvre, chacune marquée `hiddenBy` avec sa cellule principale, contrairement à un tableau HTML, qui les omet. Les fonctions de modèle exportées par `postext` conservent cette forme ; ce sont des fonctions pures qui renvoient un nouveau modèle : `mergeCells(model, { start, end })` et `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` et `setAlignment`. Les quatre fonctions de lignes et de colonnes gardent les fusions entières : une ligne ou une colonne ajoutée à l’intérieur d’un bloc fusionné l’élargit, une ajoutée avant lui le déplace, une retirée de lui le rétrécit (un bloc qui perd sa première ligne ou sa première colonne garde son contenu dans sa nouvelle cellule en haut à gauche), et chaque `hiddenBy` continue de désigner sa cellule principale.
 
+`transposeTable(model)` échange lignes et colonnes (le bouton ⇄ de l’éditeur de tableaux du Sandbox) : chaque cellule passe de `rows[r][c]` à `rows[c][r]` avec son contenu, son image, son fond et son alignement ; une fusion garde ses cellules, ses étendues échangées ; les lignes d’en-tête deviennent des colonnes d’en-tête, et les premières colonnes faites uniquement d’en-têtes deviennent `headerRowCount` ; `columnWidths` est abandonné. Transposer deux fois rend le tableau d’origine.
+
 `parseTSV(text, options?)` construit un modèle à partir de texte séparé par des tabulations, comme une plage collée depuis un tableur : les lignes se séparent aux sauts de ligne, les cellules aux tabulations, et les lignes trop courtes sont complétées pour que la grille soit rectangulaire. `headerRows` fait des premières lignes des lignes d’en-tête : leurs cellules reçoivent `isHeader` et le modèle `headerRowCount` : un tableau coupé sur plusieurs pages les répète donc.
 
 ```ts
@@ -731,6 +733,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td><code>'. '</code> ; <code>'　'</code> dans un document japonais</td>
       <td>Ce qui suit le numéro, avant la description : <em>Figure 1.7. Une légende</em>. Les légendes chinoises prennent une espace idéographique, <code>'　'</code> (图1-1　标题), et les japonaises aussi, par défaut (図1-1　東京の地図, JLReq §4.3). Un libellé sans numéro garde sa propre règle : un point, sauf si le préfixe se termine déjà par un point.</td>
+    </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Aligne d’une colonne à l’autre les figures qui partagent une bande d’une page : les flottants au pied de colonnes voisines mettent la première ligne de leurs légendes au même niveau (la légende la plus courte laisse le blanc sous elle), et ceux en tête le bas de leurs images (l’image la plus courte laisse le blanc au-dessus). Une image qui remplit sa colonne depuis la tête, sans texte dessous, aligne sa légende sur les légendes de pied voisines. Une figure placée à la main (<code>placement.pin</code>) garde sa place et reste à l’écart. La mise en page fait une passe de plus. Seulement dans le style de légende du document, pas dans celui d’un type de ressource.</td>
     </tr>
   </tbody>
 </table>

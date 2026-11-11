@@ -450,6 +450,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // same as 
       <td>章の（そして文書の）最後のページでは、テキストの最後の帯の下に置かれたページ幅の図と表が上に移動し、フロートの間隔1つ分を空けてその下に順に積み重なります。そこではあとに何も続かないためです。<code>false</code>にすると配置どおりの位置に残るため、<code>position: 'bottom'</code>のフロートは、ほかのページと同じく最後のページでもページの下端で終わります。たとえば、すべてのページで輪郭が同じ高さで終わるデータシートに使えます。サイド段のあるページでは移動しません。</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>複数段のページで下端の図版を横に並べます。段の下端にすでに図版がある箇所で引用された図や表は、その上に積まず、次の空いた段の下端に置き、キャプションの1行目を隣のものと同じ高さにそろえます（組版の下端帯）。セーフエリアのある画像は、その範囲内で隣の高さに向けてトリミングされます。サンドボックスではレイアウトの<em>下端の図版を横に並べる</em>。</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

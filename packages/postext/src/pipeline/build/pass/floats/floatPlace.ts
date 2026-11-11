@@ -18,6 +18,7 @@ import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } f
 import type { PassState, PassLate } from '../state.js';
 import { createFootStacks } from './footStack.js';
 import { withCitationPull } from './citationPull.js';
+import { createFloatRows } from './floatRows.js';
 import { createFloatPins } from './floatPins.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
@@ -87,6 +88,8 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   } = deps;
   /** The floats at each column's foot, kept in reading order (#1437). */
   const footStacks = createFootStacks(baselineGrid, floatGapPx);
+  const rows = createFloatRows({ resolved, minTextPx, layoutFloat, bodyCropDelta,
+    floatReserved, reservedOf, uncappedBottoms });
   /** Floats set by hand in the canvas (`placement.pin`). */
   const pins = createFloatPins(pendingFloats, doc);
   /** The fresh pages each full-page plate waited past (#1461). */
@@ -480,16 +483,20 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
       }
     }
 
+    // A foot row (`layout.footFloatRow`): a float alone at its column's foot
+    // stands with its caption level with its neighbour's.
+    const atY = position === 'bottom' && targetCols.length === 1 && !aside ? rows.levelInRow(page, first, built.block, y) : y;
     const floatsBefore = page.floats?.length ?? 0;
-    commitFloatBlock(page, first, built, xLeft, y, width, f.firstBlockIdx);
+    commitFloatBlock(page, first, built, xLeft, atY, width, f.firstBlockIdx);
+    if (position === 'bottom') rows.noteFoot(targetCols, built.block);
     if (feet) {
       // A plain foot band joins the stack of its columns, which is laid
       // out again in reading order: this float under the earlier ones.
       const stackable = !rotated && !aside && !anchorToCap && !galleryFill && !built.block.comic
-        && !(wraps && !wrapRefused)
+        && !(wraps && !wrapRefused) && Math.abs(atY - y) < 0.01
         && targetCols.every((c) => !uncappedBottoms.has(c) && !openerHeads.has(c));
       const blocks = (page.floats ?? []).slice(floatsBefore);
-      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y }, stackable);
+      const grown = footStacks.add(page, targetCols, feet, { blocks, measure, y: atY }, stackable);
       for (const [col, more] of grown) {
         if (more > 0) floatReserved.set(col, { ...reservedOf(col), bottom: reservedOf(col).bottom + more });
       }
@@ -499,9 +506,9 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
     return rest ? { rest } : 'placed';
   };
 
-  /** {@link placeFloatInColumnsAt} with `layout.pullFloatsToCitation`'s
+  /** {@link placeFloatInColumnsAt} with a foot row's crop and with `layout.pullFloatsToCitation`'s
    *  shortfall record and safe-area crop (#1492). */
-  const placeFloatInColumns = withCitationPull(placeFloatInColumnsAt, {
+  const placeFloatInColumns = withCitationPull(rows.cropping(placeFloatInColumnsAt), {
     resolved, pullCrop, bodyCropDelta, pullShortfalls, layoutFloat, probeFloatBand,
   });
 
@@ -544,7 +551,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const positionsFor = (f: PlannedFloat): FloatSlotPosition[] =>
     f.rotate || f.plate ? ['top'] : f.position === 'auto' ? ['top', 'bottom'] : [f.position];
   return {
-    placeFloatInColumns, settle, heldBack, positionsFor,
+    placeFloatInColumns, settle, heldBack, positionsFor, hasFoot: rows.hasFoot,
     pinOn: pins.pinOn, pinnedColumn: pins.pinnedColumn, dropMissedPins: pins.dropMissedPins
   };
 }

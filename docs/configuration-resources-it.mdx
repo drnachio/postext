@@ -572,6 +572,8 @@ Le larghezze delle colonne appartengono al modello della tabella, non allo stile
 
 Un `TableModel` è una griglia ordinata per righe, e ogni cella viene impaginata in base alla sua posizione: `rows[r][c]` sta nella colonna `c`. Una cella unita mantiene quindi nella griglia le celle che copre, ciascuna marcata `hiddenBy` con la sua cella principale, a differenza di una tabella HTML, che le omette. Le funzioni di supporto per il modello esportate da `postext` mantengono questa forma; sono funzioni pure che restituiscono un nuovo modello: `mergeCells(model, { start, end })` e `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` e `setAlignment`. Le quattro funzioni per righe e colonne mantengono intere le unioni: una riga o una colonna aggiunta dentro un blocco unito lo allarga, una aggiunta prima lo sposta, una rimossa da esso lo restringe (un blocco che perde la sua prima riga o colonna mantiene il contenuto nella sua nuova cella in alto a sinistra) e ogni `hiddenBy` continua a puntare alla sua cella principale.
 
+`transposeTable(model)` scambia righe e colonne (il pulsante ⇄ dell’editor di tabelle del Sandbox): ogni cella passa da `rows[r][c]` a `rows[c][r]` con contenuto, immagine, riempimento e allineamento; un’unione conserva le sue celle, con le estensioni scambiate; le righe di intestazione diventano colonne di intestazione, e le prime colonne fatte solo di intestazioni diventano `headerRowCount`; `columnWidths` viene scartato. Trasporre due volte restituisce la tabella di partenza.
+
 `parseTSV(text, options?)` costruisce un modello da un testo separato da tabulazioni, come un intervallo incollato da un foglio di calcolo: le righe si separano agli a capo, le celle alle tabulazioni, e le righe corte vengono completate perché la griglia sia rettangolare. `headerRows` trasforma le righe iniziali in righe d’intestazione: le loro celle ricevono `isHeader` e il modello `headerRowCount`, così una tabella divisa tra più pagine le ripete.
 
 ```ts
@@ -731,6 +733,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td><code>'. '</code>; <code>'　'</code> in un documento giapponese</td>
       <td>Che cosa segue il numero, prima della descrizione: <em>Figura 1.7. Una didascalia</em>. Le didascalie cinesi prendono uno spazio ideografico, <code>'　'</code> (图1-1　标题), e così quelle giapponesi, per impostazione predefinita (図1-1　東京の地図, JLReq §4.3). Un’etichetta senza numero segue la propria regola: un punto, a meno che il prefisso non termini già con uno.</td>
+    </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Allinea tra le colonne le figure che condividono una fascia di pagina: i flottanti al piede di colonne vicine mettono alla stessa altezza la prima riga delle didascalie (la didascalia più corta lascia il bianco sotto di sé), quelli in testa il bordo inferiore delle immagini (l’immagine più corta lascia il bianco sopra). Un’immagine che riempie la colonna dalla testa, senza testo sotto, allinea la didascalia a quelle al piede accanto. Una figura posizionata a mano (<code>placement.pin</code>) resta al suo posto ed è esclusa. L’impaginazione richiede un passaggio in più. Solo nello stile delle didascalie del documento, non in quello di un tipo di risorsa.</td>
     </tr>
   </tbody>
 </table>

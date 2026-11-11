@@ -450,6 +450,12 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td>En la última página de un capítulo (y del documento), las figuras y tablas a ancho de página que quedan por debajo de la última banda de texto suben hasta quedar a un hueco de flotante de ella, apiladas por orden: allí no las sigue nada. Con <code>false</code>, se quedan donde las puso su colocación, de modo que un flotante <code>position: 'bottom'</code> termina al pie de la última página igual que en todas las demás; por ejemplo, en una ficha técnica cuyo contorno termina a la misma altura en todas las páginas. En las páginas con columna lateral nunca se mueven.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Coloca en fila las figuras al pie de una página de varias columnas: una figura o tabla citada donde su columna ya tiene otra al pie ocupa el pie de la siguiente columna vacía, con la primera línea de su pie a la altura de la de su vecina, en lugar de apilarse encima (el faldón del compositor). Una imagen con zona segura se recorta dentro de ella hacia la altura de su vecina. En el Sandbox, <em>Figuras al pie en fila</em>, en Maquetación.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

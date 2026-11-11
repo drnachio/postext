@@ -70,6 +70,13 @@ export interface LayoutConfig {
    *  the page foot on the closing page as on every other page. Pages with a
    *  side column never move them. */
   hugClosingFloats?: boolean;
+  /** Set floats at the foot of a multi-column page in a row: a figure or
+   *  table cited where the column already holds one at its foot takes the
+   *  foot of the next empty column, its caption level with its
+   *  neighbour's, rather than stacking over it in the same column — the
+   *  compositor's foot band (*faldón*). A picture with a safe area is
+   *  cropped within it toward its neighbour's height. Default `false`. */
+  footFloatRow?: boolean;
   /** Pull a float that missed the page citing it back onto that page: a
    *  picture with a safe area is cropped within it to stay there, and else
    *  the paragraphs of the citing page are set a line shorter where the
@@ -209,6 +216,7 @@ export interface ResolvedLayoutConfig {
   floatsAtCitingPage: boolean;
   maxTopFraction: number;
   hugClosingFloats: boolean;
+  footFloatRow: boolean;
   pullFloatsToCitation: boolean;
   floatsUnderOpener: boolean;
   openerFloats: CompositionRule;

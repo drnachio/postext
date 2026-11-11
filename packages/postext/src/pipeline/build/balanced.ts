@@ -5,6 +5,7 @@ import type { PostextContent, PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTBlock } from '../../vdt.js';
 import type { MeasurementCache } from '../../measure/index.js';
 import { type PageRange, collectColumnGaps, pageSegments, gapLinesIn, boxRoomIn, type LooseBudget, type ColumnGap, candidateKey, firstDivergentColumn, MAX_BALANCING_PASSES_PER_DOCUMENT, proposeBalanceLines, boxLeverKeys, MAX_BALANCING_PASSES } from '../columns/columnBalancing.js';
+import { type FloatPad, proposeFloatPads, samePads } from './floatPads.js';
 import { resolveBandCapsGen, resolveTrailingCapsGen } from '../columns/bandCaps.js';
 import { type CitingPageState, now, MAX_CITING_PAGE_ROUNDS } from './drivers.js';
 import { buildDocumentPass } from './pass.js';
@@ -35,6 +36,9 @@ export function* buildDocumentBalanced(
   // Side captions moved under their figure (see `PassHints.captionUnder`):
   // once a pass asks for one, every later pass keeps it.
   const captionUnder = new Set<string>();
+  // Figures lined up across the columns of their band (see
+  // `proposeFloatPads`): every later pass keeps the pads.
+  let floatPads: ReadonlyMap<string, FloatPad> = new Map();
   // Loose paragraphs any pass found would gain their line only off the
   // character grid (#632): the columns they leave short say so.
   const looseOffGrid = new Set<number>();
@@ -50,6 +54,7 @@ export function* buildDocumentBalanced(
     const result = buildDocumentPass(content, config, cache, passOptions, {
       ...hints,
       captionUnder,
+      ...(floatPads.size > 0 ? { floatPads } : {}),
       ...(footnoteNumbers ? { footnoteNumbers } : {}),
       ...(citingPage.size > 0 ? { citingPageFloats: new Map(citingPage) } : {}),
     });
@@ -69,6 +74,17 @@ export function* buildDocumentBalanced(
     initial = runPass();
     yield;
     if (captionUnder.size === before) break;
+  }
+  // Figures sharing a band: pad them level, then place again (a padded
+  // figure can move another, hence the short loop).
+  if (initial.doc.config.captionStyle.alignAcrossColumns) {
+    for (let round = 0; round < 3; round++) {
+      const next = proposeFloatPads(initial.doc, floatPads, initial.doc.baselineGrid);
+      if (samePads(next, floatPads)) break;
+      floatPads = next;
+      initial = runPass();
+      yield;
+    }
   }
 
   // --- Floats at the head of their citing page (#633) --------------------

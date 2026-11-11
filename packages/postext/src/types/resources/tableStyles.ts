@@ -291,6 +291,14 @@ export interface CaptionStyleConfig {
    *  space (`'　'`: 图1-1　标题). A label without a number keeps its own rule
    *  (a stop unless the prefix ends in one). */
   labelSeparator?: string;
+  /** Line up figures that share a band of a page across its columns:
+   *  floats at the foot of neighbouring columns set the first line of their
+   *  captions level (the shorter caption leaves the white under it), and
+   *  floats at their head set the bottom edges of their pictures level (the
+   *  shorter picture leaves the white above it). A figure placed by hand
+   *  (`placement.pin`) keeps its place and is left out. The layout takes
+   *  one more pass for it. Default `false`. */
+  alignAcrossColumns?: boolean;
 }
 
 /** The look of a caption with every default filled in. */
@@ -311,4 +319,5 @@ export interface ResolvedCaptionStyleConfig {
   note: ResolvedCaptionNoteStyleConfig;
   labelNumberGap: string;
   labelSeparator: string;
+  alignAcrossColumns: boolean;
 }

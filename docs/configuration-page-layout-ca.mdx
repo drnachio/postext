@@ -448,6 +448,12 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td>A la pàgina de tancament d'un capítol (i del document), les figures i les taules a l'amplada de la pàgina que queden sota l'última banda de text pugen fins a quedar-ne a la distància d'un espai de flotant, apilades per ordre: allà no les segueix res. Amb <code>false</code>, es queden on les ha posat la col·locació, de manera que un flotant <code>position: 'bottom'</code> acaba al peu de la pàgina de tancament com a qualsevol altra pàgina; per exemple, en una fitxa tècnica amb un contorn que acaba a la mateixa alçada a totes les pàgines. A les pàgines amb columna lateral no es mouen mai.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Col·loca en filera les figures al peu d'una pàgina de diverses columnes: una figura o taula citada on la seva columna ja en té una al peu ocupa el peu de la columna buida següent, amb la primera línia del seu peu a l'altura de la de la veïna, en lloc d'apilar-s'hi a sobre (el faldó del compositor). Una imatge amb zona segura es retalla dins d'ella cap a l'altura de la veïna. Al Sandbox, <em>Figures al peu en filera</em>, a Maquetació.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

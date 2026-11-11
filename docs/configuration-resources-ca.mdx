@@ -571,6 +571,8 @@ Les amplades de columna pertanyen al model de la taula, no a l'estil: `TableMode
 
 Un `TableModel` és una graella per files, i cada cel·la es maqueta segons la posició que hi ocupa: `rows[r][c]` ocupa la columna `c`. Per això una cel·la combinada conserva a la graella les cel·les que cobreix, cadascuna marcada amb un `hiddenBy` que apunta a la cel·la principal, a diferència d'una taula HTML, que les omet. Les funcions de model que exporta `postext` mantenen aquesta forma; són funcions pures que retornen un model nou: `mergeCells(model, { start, end })` i `unmergeCell(model, at)`, `addRow`, `addColumn`, `removeRow`, `removeColumn`, `setCellContent`, `setCellImage`, `setCellBackground` i `setAlignment`. Les quatre funcions de files i columnes mantenen senceres les combinacions: una fila o columna afegida dins d'un bloc combinat l'eixampla, una afegida abans el desplaça i una que se n'elimina el redueix (un bloc que perd la primera fila o columna conserva el contingut a la nova cel·la superior esquerra), i cada `hiddenBy` continua apuntant a la cel·la principal.
 
+`transposeTable(model)` intercanvia files i columnes (el botó ⇄ de l'editor de taules del Sandbox): cada cel·la passa de `rows[r][c]` a `rows[c][r]` amb el seu contingut, la seva imatge, el seu emplenament i la seva alineació; una combinació conserva les seves cel·les amb les extensions intercanviades; les files de capçalera passen a ser columnes de capçalera, i les primeres columnes fetes només de cel·les de capçalera passen a `headerRowCount`; `columnWidths` es descarta. Transposar dues vegades torna la taula original.
+
 `parseTSV(text, options?)` construeix un model a partir de text separat per tabuladors (un rang enganxat des d'un full de càlcul): les files se separen per salts de línia, les cel·les per tabuladors, i les files curtes s'omplen perquè la graella sigui rectangular. `headerRows` converteix les files inicials en files de capçalera: les cel·les d'aquestes files reben `isHeader` i el model `headerRowCount`, de manera que una taula partida entre pàgines les repeteix.
 
 ```ts
@@ -730,6 +732,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td><code>'. '</code>; <code>'　'</code> en un document japonès</td>
       <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题), i els japonesos també, per defecte (図1-1　東京の地図, JLReq §4.3). Una etiqueta sense número té una regla pròpia: un punt, llevat que el prefix ja acabi en punt.</td>
+    </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinea entre columnes les figures que comparteixen una franja de la pàgina: al peu de columnes veïnes, la primera línia dels seus peus (el peu més curt deixa el blanc a sota); al capdamunt, la vora inferior de les seves imatges (la imatge més curta deixa el blanc a sobre). Una imatge que omple la seva columna des de dalt, sense text a sota, alinea el seu peu amb els peus de les figures al peu de les columnes del costat. Una figura col·locada a mà (<code>placement.pin</code>, arrossegada al llenç del Sandbox) conserva el seu lloc i en queda fora. Funciona juntament amb <code>layout.footFloatRow</code>, que ja alinea un flotant que s'uneix a la franja del peu de la columna següent. Val per a tot el document: l'estil de peus d'un tipus de recurs no el fixa. La maquetació fa una passada més.</td>
     </tr>
   </tbody>
 </table>

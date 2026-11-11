@@ -449,6 +449,12 @@ La proprietà `layout` controlla come sono disposte le colonne all’interno del
       <td>Nella pagina di chiusura di un capitolo (e del documento), le figure e le tabelle a tutta larghezza collocate sotto l’ultima fascia di testo salgono fino a una distanza di un intervallo da elemento flottante sotto di essa, impilate nel loro ordine: lì nulla le segue. <code>false</code> le lascia dove le ha messe la loro collocazione, così un elemento flottante <code>position: 'bottom'</code> finisce al piede della pagina nella pagina di chiusura come in ogni altra pagina; per esempio una scheda tecnica il cui contorno finisce alla stessa altezza in ogni pagina. Le pagine con una colonna laterale non li spostano mai.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mette in fila i flottanti al piede di una pagina a più colonne: una figura o tabella richiamata dove la sua colonna ne ha già una al piede prende il piede della colonna vuota successiva, con la prima riga della didascalia all’altezza di quella della vicina, invece di impilarsi sopra (la fascia al piede del compositore). Un’immagine con area sicura viene ritagliata al suo interno verso l’altezza della vicina. Nel Sandbox, <em>Flottanti al piede in fila</em>, in Impaginazione.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

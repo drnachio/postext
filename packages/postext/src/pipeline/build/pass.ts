@@ -108,7 +108,7 @@ function placeDocumentPass(
   const setup = {} as PassSetupState;
   const state = {} as PassState;
   const late = {} as PassLate;
-  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, citingPageFloats, pullCrop } = hints;
+  const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats, pullCrop } = hints;
   const captionUnderProposals = new Set<string>();
   const pullShortfalls = new Map<string, { page: number; px: number }>();
   /** Side columns whose foot a figure's side caption has cut, by the figure. */
@@ -254,7 +254,7 @@ function placeDocumentPass(
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
   });
 
   const {
@@ -267,7 +267,7 @@ function placeDocumentPass(
   });
 
   const {
-    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, pinnedColumn, dropMissedPins
+    placeFloatInColumns, settle, heldBack, positionsFor, pinOn, pinnedColumn, dropMissedPins, hasFoot
   } = createFloatPlace({
     captionUnderProposals, asideCutBy, shortSideColumn, resolved: setup.resolved, dpi, baselineGrid, bodyOffset,
     contentBlocks, resourceById, bodyStyle, pendingFloats, openerPages, openerFloatRule,
@@ -287,7 +287,7 @@ function placeDocumentPass(
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
     capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack,
-    positionsFor, cursor, forcedBreakPages, state, late, pinOn, pinnedColumn, dropMissedPins
+    positionsFor, cursor, forcedBreakPages, state, late, pinOn, pinnedColumn, dropMissedPins, hasFoot
   });
 
   const {

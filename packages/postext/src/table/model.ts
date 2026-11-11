@@ -29,10 +29,10 @@ export type VAlign = TableCellVerticalAlign;
 // ---------------------------------------------------------------------------
 
 /** Number of columns in the model (taken from the widest row). */
-const columnCount = (m: TableModel): number =>
+export const columnCount = (m: TableModel): number =>
   m.rows.reduce((max, row) => Math.max(max, row.length), 0);
 
-const makeEmptyCell = (isHeader?: boolean): TableCell =>
+export const makeEmptyCell = (isHeader?: boolean): TableCell =>
   isHeader ? { content: '', isHeader: true } : { content: '' };
 
 const cloneImage = (image: TableCellImage): TableCellImage =>
@@ -41,7 +41,7 @@ const cloneImage = (image: TableCellImage): TableCellImage =>
     : { resourceId: image.resourceId };
 
 /** Shallow-clone a single cell, returning a brand-new object. */
-const cloneCell = (cell: TableCell): TableCell => {
+export const cloneCell = (cell: TableCell): TableCell => {
   const next: TableCell = { content: cell.content };
   if (cell.colSpan !== undefined) next.colSpan = cell.colSpan;
   if (cell.rowSpan !== undefined) next.rowSpan = cell.rowSpan;
@@ -57,7 +57,7 @@ const cloneCell = (cell: TableCell): TableCell => {
 };
 
 /** Deep-clone the grid so callers may mutate the copy before returning it. */
-const cloneRows = (m: TableModel): TableCell[][] =>
+export const cloneRows = (m: TableModel): TableCell[][] =>
   m.rows.map((row) => row.map(cloneCell));
 
 /** Build a new model from a (freshly produced) grid, preserving extra fields. */

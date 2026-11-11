@@ -450,6 +450,12 @@ resourceTypes: [{ id: 'plate', counterFormat: 'upper-roman', … }], // 等同�
       <td>在章（以及文档）的最后一页，排在最后一段文字下方的整页宽图和表会上移，按原顺序叠放在文字下方，只隔一个浮动体间距，因为后面已没有别的内容。设为<code>false</code>则让它们留在原来的位置，于是<code>position: 'bottom'</code>浮动体在最后一页也像在其他各页一样止于页脚，比如数据手册的每页轮廓都要在同一高度结束。带侧栏的页面从不移动它们。</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在多栏页面中把页脚处的浮动对象排成一行：当某栏底部已有一个图表时，在此处引用的图表放到下一个空栏的底部，其题注第一行与相邻题注齐平，而不是叠在它上面（排版中的页脚带）。有安全区的图片在安全区内向相邻图片的高度裁切。沙盒中位于版式下的<em>页脚图表排成一行</em>。</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

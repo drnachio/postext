@@ -450,6 +450,12 @@ Die Eigenschaft `layout` steuert, wie die Spalten im Satzspiegel angeordnet werd
       <td>Auf der Schlussseite eines Kapitels (und des Dokuments) rücken die unter dem letzten Textband gesetzten Abbildungen und Tabellen über die ganze Seitenbreite nach oben, bis sie einen Gleitobjektabstand darunter stehen, gestapelt in ihrer Reihenfolge: Dort folgt ihnen nichts mehr. <code>false</code> lässt sie, wo ihre Platzierung sie hingesetzt hat, sodass ein Gleitobjekt mit <code>position: 'bottom'</code> auf der Schlussseite wie auf jeder anderen Seite am Seitenfuß endet – etwa in einem Datenblatt, dessen Umriss auf jeder Seite auf derselben Höhe endet. Seiten mit einer Seitenspalte verschieben sie nie.</td>
     </tr>
     <tr>
+      <td><code>footFloatRow</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Setzt Gleitobjekte am Fuß einer mehrspaltigen Seite in eine Reihe: Eine Abbildung oder Tabelle, auf die dort verwiesen wird, wo ihre Spalte am Fuß schon eine trägt, nimmt den Fuß der nächsten leeren Spalte, die erste Zeile ihrer Legende auf Höhe der des Nachbarn, statt sich darüber zu stapeln (das Fußband des Setzers). Ein Bild mit sicherem Bereich wird darin zur Höhe des Nachbarn hin beschnitten. Im Sandbox: <em>Gleitobjekte am Fuß in einer Reihe</em> unter Layout.</td>
+    </tr>
+    <tr>
       <td><code>pullFloatsToCitation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

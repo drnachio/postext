@@ -528,6 +528,14 @@ export const LayoutSection = memo(function LayoutSection() {
         onReset={() => resetField('hugClosingFloats')}
       />
       <ToggleSwitch
+        label={labels.footFloatRow}
+        checked={layout.footFloatRow}
+        onChange={(v) => updateLayout({ footFloatRow: v })}
+        tooltip={labels.footFloatRowTooltip}
+        isDefault={layout.footFloatRow === D.footFloatRow}
+        onReset={() => resetField('footFloatRow')}
+      />
+      <ToggleSwitch
         label={labels.pullFloatsToCitation}
         checked={layout.pullFloatsToCitation}
         onChange={(v) => updateLayout({ pullFloatsToCitation: v })}

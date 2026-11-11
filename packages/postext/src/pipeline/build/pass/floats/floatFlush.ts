@@ -48,6 +48,7 @@ export interface FloatFlushDeps {
   pinOn: (f: PlannedFloat, pageIndex: number) => PlannedFloat['pin'];
   pinnedColumn: (page: VDTPage, pin: NonNullable<PlannedFloat['pin']>) => VDTColumn | undefined;
   dropMissedPins: (pageIndex: number) => void;
+  hasFoot: (col: VDTColumn) => boolean;
   positionsFor: (f: PlannedFloat) => FloatSlotPosition[];
   cursor: PlacementCursor;
   forcedBreakPages: Set<number>;
@@ -60,7 +61,7 @@ export function createFloatFlush(deps: FloatFlushDeps) {
     citingPageFloats, resolved, doc, pageWidthPx, pageHeightPx, contentBlocks, resourceById,
     calloutStyles, calloutPlan, floatPlan, pendingFloats, pendingSideBoxes, multiColumnBand,
     dpi, enqueuedFloatIds, citationGates, awaitsCitation, floatGapPx, minTextPx, measureFloat, reservedOf,
-    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, pinnedColumn, dropMissedPins,
+    capKindOf, probeFloatBand, availableAfterBand, placeFloatInColumns, settle, heldBack, pinOn, pinnedColumn, dropMissedPins, hasFoot,
     positionsFor, cursor, forcedBreakPages, state, late
   } = deps;
   /** Reserve top/bottom bands on a freshly opened page and position as many
@@ -283,6 +284,13 @@ export function createFloatFlush(deps: FloatFlushDeps) {
         const col = pinnedColumn(page, pin);
         slots = slots.filter((s) => !s.side && s.position === pin.slot && (s.pageSpan || !col || s.cols[0] === col));
       } else if (preferTop) slots = [...slots.filter((s) => s.position === 'top'), ...slots.filter((s) => s.position !== 'top')];
+      // A row at the foot (`layout.footFloatRow`): where the cursor's column
+      // already holds a float at its foot, the foot of a later empty column
+      // comes first, so the two stand level instead of one over the other.
+      else if (resolved.layout.footFloatRow && !f.callout && hasFoot(page.columns[cursor.columnIndex]!)) {
+        const row = (s: (typeof slots)[number]) => !s.side && !s.pageSpan && s.position === 'bottom' && s.cols[0]!.index !== cursor.columnIndex;
+        slots = [...slots.filter(row), ...slots.filter((s) => !row(s))];
+      }
       for (const slot of slots) {
         if (slot.side) {
           r = placeFloatInColumns(page, f, slot.cols, slot.position, false, 'strict', false, true, slot.refY);

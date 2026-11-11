@@ -572,6 +572,8 @@ const resource: Resource = {
 
 `TableModel`是按行优先排列的网格，每个单元格按它在网格中的位置排版：`rows[r][c]`位于第`c`列。因此合并单元格所覆盖的单元格仍留在网格中，每个都用`hiddenBy`指向其主单元格；这与HTML表格不同，HTML表格会把它们省去。从`postext`导出的模型辅助函数保持这种结构；它们都是纯函数，返回新模型：`mergeCells(model, { start, end })`和`unmergeCell(model, at)`、`addRow`、`addColumn`、`removeRow`、`removeColumn`、`setCellContent`、`setCellImage`、`setCellBackground`以及`setAlignment`。四个行列辅助函数保持合并区域完整：在合并块内部添加的行或列会使它变宽，在它之前添加的会使它移位，从中删除的会使它缩小（失去第一行或第一列的合并块把内容保留在新的左上角单元格中），每个`hiddenBy`始终指向其主单元格。
 
+`transposeTable(model)`互换行与列（Sandbox表格编辑器中的⇄按钮）：每个单元格连同内容、图片、填充与对齐从`rows[r][c]`移到`rows[c][r]`；合并区域保留其单元格并互换跨度；表头行变为表头列，开头全为表头单元格的列计入`headerRowCount`；`columnWidths`被丢弃。转置两次即恢复原表。
+
 `parseTSV(text, options?)`从制表符分隔的文本构建模型，即从电子表格粘贴来的区域：按换行拆行，按制表符拆单元格，较短的行会补齐，使网格成为矩形。`headerRows`把开头几行变成表头行：其单元格获得`isHeader`，模型获得`headerRowCount`，这样跨页拆分的表会重复它们。
 
 ```ts
@@ -731,6 +733,12 @@ const config: PostextConfig = {
       <td><code>string</code></td>
       <td><code>'. '</code>；日文文档中为<code>'　'</code></td>
       <td>编号之后、描述之前的内容：<em>Figure 1.7. A caption</em>。中文题注用一个全角空格<code>'　'</code>（图1-1　标题），日文题注默认也是如此（図1-1　東京の地図，JLReq §4.3）。没有编号的标签仍按自己的规则：加句点，除非前缀已以句点结尾。</td>
+    </tr>
+    <tr>
+      <td><code>alignAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>让同一页中处于同一带区的图跨栏对齐：在相邻各栏的栏底，对齐题注的第一行（较短的题注在其下方留白）；在栏顶，对齐图片的下边缘（较矮的图片在其上方留白）。从栏顶起占满本栏、下方没有正文的图片，会把题注与旁边栏底的题注对齐。手动放置的图（<code>placement.pin</code>，在Sandbox画布中拖动的图）保持原位，不参与对齐。它与<code>layout.footFloatRow</code>配合使用，后者已经会对齐加入下一栏栏底带区的浮动体。作用于整篇文档：资源类型的题注样式不能设置它。排版会多进行一轮。</td>
     </tr>
   </tbody>
 </table>
