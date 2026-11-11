@@ -94,7 +94,7 @@ export function configFontFamilies(config: PostextConfig, markdown?: FontContent
   for (const style of config.chipStyles ?? []) {
     if (style.fontFamily) families.add(style.fontFamily);
   }
-  // Character styles (`[…]|id|`): a family of their own, else the text's.
+  // Character styles (`:span[…]{style}`): a family of their own, else the text's.
   for (const style of config.characterStyles ?? []) {
     if (style.fontFamily) families.add(style.fontFamily);
   }

@@ -144,6 +144,7 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
   // the config names them; kept only when they are not the European ones,
   // so a Latin document resolves exactly as before.
   const numerals = resolveNumerals(config?.numerals, documentLocale);
+  const markStyles = resolveMarkStylesConfig(config?.markStyles);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -159,8 +160,8 @@ function resolveAllConfigUncached(rawConfig?: PostextConfig): ResolvedConfig {
     paragraphStyles: resolveParagraphStylesConfig(config?.paragraphStyles, bodyText),
     calloutStyles: resolveCalloutStylesConfig(config?.calloutStyles, bodyText, headings, unorderedLists, config?.locale),
     chipStyles: resolveChipStylesConfig(config?.chipStyles),
-    characterStyles: resolveCharacterStylesConfig(config?.characterStyles),
-    markStyles: resolveMarkStylesConfig(config?.markStyles),
+    markStyles,
+    characterStyles: resolveCharacterStylesConfig(config?.characterStyles, new Set(markStyles.map((s) => s.id))),
     unorderedLists,
     orderedLists,
     math: resolveMathConfig(config?.math),

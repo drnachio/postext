@@ -72,10 +72,10 @@ export interface PostextConfig {
   /** Named chip styles for the inline `:chip[text]{style="…"}`. Defaults
    *  to a single `chip` style when unset. */
   chipStyles?: ChipStyleConfig[];
-  /** Named character styles for the inline `[some words]|id|`: a face, a
-   *  colour and decorations (underline, highlighter band, strike-through)
-   *  for a run of words. Defaults to a highlighter (`marker`) and an
-   *  underline (`underline`) when unset. */
+  /** Named character styles for the inline `:span[words]{style="…"}`: the
+   *  face, size, weight, colour, tracking and case of a run of words. A
+   *  style may name a highlight style (`mark`) for a band or a line.
+   *  None by default. */
   characterStyles?: CharacterStyleConfig[];
   /** Named highlight styles for the inline `:mark[text]{style="…"}`
    *  (#888). Defaults to a single pale yellow `mark` style when unset. */

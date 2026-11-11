@@ -76,6 +76,20 @@ function strikesByChar(spans: readonly InlineSpan[], key: 'strike' | 'underline'
   return out;
 }
 
+/** The characters of the spans' joined text as written, where a
+ *  character style set some of them in capitals (`InlineCharStyle.source`);
+ *  null when none did. */
+function sourcesByChar(spans: readonly InlineSpan[]): string[] | null {
+  if (!spans.some((s) => s.charStyle?.source !== undefined)) return null;
+  const out: string[] = [];
+  for (const span of spans) {
+    const source = span.charStyle?.source;
+    const written = source !== undefined && source.length === span.text.length ? source : span.text;
+    for (let i = 0; i < span.text.length; i++) out.push(written[i]!);
+  }
+  return out;
+}
+
 /**
  * Stamp the Markdown link targets of `spans` on the segments of `lines`
  * measured from them. The segments are matched character by character
@@ -101,7 +115,10 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
   const strikes = strikesByChar(written);
   // And underlined text (`VDTLineSegment.underline`).
   const unders = strikesByChar(written, 'underline');
-  if (hrefs.length === 0 && !marks && !strikes && !unders) return lines;
+  // And, where a character style set words in capitals, the letters as
+  // written (`VDTLineSegment.sourceText`).
+  const sources = sourcesByChar(written);
+  if (hrefs.length === 0 && !marks && !strikes && !unders && !sources) return lines;
   const text = written.map((s) => s.text).join('');
   // Each mark's first and last character in the text.
   const markEdges = new Map<number, { first: number; last: number }>();
@@ -119,6 +136,8 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
    *  consumed. */
   let chunkStrike: VDTSegmentStrike | undefined;
   let chunkUnder: VDTSegmentStrike | undefined;
+  /** The chunk last consumed as written (see {@link sourcesByChar}). */
+  let chunkSource = '';
   /** The first run of a chunk's characters of `byChar` (struck through or
    *  underlined): fed each matched character, it gives the chunk's
    *  {@link VDTSegmentStrike}. */
@@ -151,6 +170,7 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
     chunkMark = undefined;
     chunkStrike = undefined;
     chunkUnder = undefined;
+    chunkSource = '';
     // The first run of struck and of underlined characters of the chunk.
     const struck = runOf(strikes);
     const underlined = runOf(unders);
@@ -164,6 +184,7 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
         href ??= hrefs[p];
         struck.add(p, i);
         underlined.add(p, i);
+        if (sources) chunkSource += sources[p]!;
         const m = marks?.[p];
         if (m && (markId < 0 || m.id === markId)) {
           if (markId < 0) {
@@ -181,8 +202,12 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       // A break opportunity the measurer inserted (a zero-width space
       // inside a URL), or the hyphen a break (dictionary or emergency
       // split) adds.
-      if (INVISIBLE.test(c)) continue;
+      if (INVISIBLE.test(c)) {
+        if (sources) chunkSource += c;
+        continue;
+      }
       if (c === '-' && i === chunk.length - 1) {
+        if (sources) chunkSource += c;
         // The hyphen of a break inside an `l·l` stands for the middle dot.
         if (text[p] === GEMINATE_DOT && endsInsideGeminate(text.slice(p - 1, p + 1))) p++;
         continue;
@@ -230,11 +255,14 @@ export function linkSegments(lines: VDTLine[], spans: readonly InlineSpan[]): VD
       const mark = chunkMark ? markOf(chunkMark, skip, written === seg.text) : undefined;
       const strike = chunkStrike ? markOf(chunkStrike, skip, written === seg.text) : undefined;
       const underline = chunkUnder ? markOf(chunkUnder, skip, written === seg.text) : undefined;
-      if (href === undefined && !mark && !strike && !underline) {
+      // A word set in capitals reads as written; only where the text is
+      // the one painted (no tatweel, no repeated hyphen).
+      const sourceText = sources && skip === 0 && written === seg.text && chunkSource.length === seg.text.length && chunkSource !== seg.text ? chunkSource : undefined;
+      if (href === undefined && !mark && !strike && !underline && sourceText === undefined) {
         segments.push(seg);
         continue;
       }
-      segments.push({ ...seg, ...(href !== undefined ? { href } : {}), ...(mark ? { mark } : {}), ...(strike ? { strike } : {}), ...(underline ? { underline } : {}) });
+      segments.push({ ...seg, ...(href !== undefined ? { href } : {}), ...(mark ? { mark } : {}), ...(strike ? { strike } : {}), ...(underline ? { underline } : {}), ...(sourceText !== undefined ? { sourceText } : {}) });
       lineChanged = true;
     }
     out.push(lineChanged ? { ...line, segments } : line);

@@ -30,8 +30,9 @@ import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
 import { strikeDocument } from '../../marks/strikethrough.js';
-import { decorateCharacterStyles } from '../../marks/characterStyleMarks.js';
+import { colorCharacterStyles } from '../../marks/characterStyles.js';
 import { highlightDocument } from '../../marks/highlightMarks.js';
+import { markLineDocument } from '../../marks/markLines.js';
 import { underlineDocumentLinks } from '../../marks/linkUnderline.js';
 import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
@@ -163,15 +164,17 @@ export function* buildDocumentGen(
   // for the column clip, and the paragraphs whose marks meet a
   // neighbouring line.
   const harakat = annotateArabicMarks(doc);
+  // The colour of the character styles (`:span[…]{style}`), paint only:
+  // before the lines below, which take the colour of their text.
+  colorCharacterStyles(doc);
   // The rules over `*…*` runs under `bodyText.emphasis: 'overline'`.
   overlineEmphasis(doc);
   // The lines through struck-through text (`~~…~~`).
   strikeDocument(doc);
-  // The underlines, highlighter bands and strike-throughs of the
-  // character styles (`[…]|id|`).
-  decorateCharacterStyles(doc);
   // The bands of the highlight marks (`:mark[…]`, #888).
   highlightDocument(doc);
+  // Their lines (`markStyles[].line`), in the colour the text took above.
+  markLineDocument(doc);
   // The lines under the links (`links.style`, #1402).
   underlineDocumentLinks(doc);
   // Faces the text was set in that the font set could not give (#629).

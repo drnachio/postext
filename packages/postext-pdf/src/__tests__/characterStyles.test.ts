@@ -5,9 +5,11 @@ import { buildDocument } from 'postext';
 import type { ColorValue, PostextConfig, PrintConfig } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
 
-// Character styles (`[…]|id|`) in the PDF: the highlighter band behind the
-// text, translucent in a digital PDF, a tint with no transparency in a
-// print one.
+// Highlight styles with an opacity (#1488), as a character style
+// (`:span[…]{style}`) names them, in the PDF: the band behind the text,
+// translucent wherever the PDF allows transparency (a digital PDF, PDF/X-4),
+// a tint over the paper in a PDF/X-1a, which has none. The words of the
+// run copy as they were written when the style sets them in capitals.
 
 const fontBytes = fs.readFileSync(new URL('../../../../apps/web/public/fonts/Lora-Regular.ttf', import.meta.url));
 const fogra39 = new Uint8Array(fs.readFileSync(new URL('../../../postext/icc/fogra39.icc', import.meta.url)));
@@ -33,7 +35,8 @@ function config(color: ColorValue): PostextConfig {
     bodyText: { fontFamily: 'Lora' },
     header: { elements: [] },
     footer: { elements: [] },
-    characterStyles: [{ id: 'm', highlight: { enabled: true, color, opacity: 50 } }],
+    markStyles: [{ id: 'mark' }, { id: 'pen', background: color, opacity: 50 }],
+    characterStyles: [{ id: 'm', mark: 'pen' }, { id: 'caps', textTransform: 'uppercase' }],
   };
 }
 
@@ -43,7 +46,7 @@ function streamText(pdf: PDFDocument, obj: PDFObject | undefined): string {
 }
 
 async function render(color: ColorValue, print?: PrintConfig) {
-  const doc = buildDocument({ markdown: 'Un [texto marcado]|m| en la página.' }, config(color));
+  const doc = buildDocument({ markdown: 'Un :span[texto marcado]{style="m"} en la :span[página]{style="caps"}.' }, config(color));
   const bytes = await renderToPdf(doc, {
     fontProvider: async () => new Uint8Array(fontBytes),
     outputProfile: fogra39,
@@ -74,8 +77,21 @@ describe('character styles in the PDF', () => {
     expect(alphas.map(Number).some((a) => Math.abs(a - 0.5) < 0.01)).toBe(true);
   });
 
-  it('sets the band as a tint with no transparency in a print PDF', async () => {
+  it('keeps the band translucent in a PDF/X-4, which allows transparency', async () => {
     const { alphas } = await render(yellow, { standard: 'pdfx4' });
+    expect(alphas.map(Number).some((a) => Math.abs(a - 0.5) < 0.01)).toBe(true);
+  });
+
+  it('sets the band as a tint with no transparency in a PDF/X-1a', async () => {
+    const { alphas } = await render(yellow, { standard: 'pdfx1a' });
     expect(alphas.filter((a) => a !== '1')).toEqual([]);
+  });
+
+  it('gives the words set in capitals their written text', async () => {
+    const { content } = await render(yellow);
+    // The capitals are painted; ActualText reads the word as written,
+    // UTF-16BE: "página".
+    const written = ['feff', ...[...'página'].map((c) => c.charCodeAt(0).toString(16).padStart(4, '0'))].join('');
+    expect(content.toLowerCase()).toContain(written);
   });
 });

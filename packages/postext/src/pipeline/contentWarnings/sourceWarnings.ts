@@ -16,7 +16,6 @@ import { tableGridIssues } from '../../table/model.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { ContentWarning } from '../../vdt.js';
 import { DEFAULT_CHIP_STYLES } from '../../defaults/text/chipStyles.js';
-import { DEFAULT_CHARACTER_STYLES } from '../../defaults/text/characterStyles.js';
 import { DEFAULT_MARK_STYLES } from '../../defaults/text/markStyles.js';
 import { DEFAULT_PARAGRAPH_STYLES } from '../../defaults/text/paragraphStyles.js';
 import { DEFAULT_HEADING_STYLES } from '../../defaults/structure/headingStyles.js';
@@ -176,7 +175,7 @@ export function collectContentWarnings(
   // a type is only wrong once there are styles to pick from.
   const calloutStyles = new Set((config?.calloutStyles ?? []).map((s) => s.id));
   const chipStyles = new Set((config?.chipStyles ?? DEFAULT_CHIP_STYLES).map((s) => s.id));
-  const characterStyles = new Set((config?.characterStyles ?? DEFAULT_CHARACTER_STYLES).map((s) => s.id));
+  const characterStyles = new Set((config?.characterStyles ?? []).map((s) => s.id));
   // A style run spreads over several spans: reported once.
   const reportedRuns = new Set<string>();
   const markStyles = new Set((config?.markStyles ?? DEFAULT_MARK_STYLES).map((s) => s.id));

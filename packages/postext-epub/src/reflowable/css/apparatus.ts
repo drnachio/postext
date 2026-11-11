@@ -87,22 +87,14 @@ export function createApparatusRules(deps: ApparatusRulesDeps) {
       c.italic && 'font-style: italic',
     ]));
   }
-  // Character styles (`[…]|id|`): the face, the colour and the
-  // decorations. A highlighter band is a gradient across the run's inline
-  // box, taken to run from 0.25 em under the baseline to 0.95 em over it.
-  const rgba = (hex: string, opacity: number): string => {
-    if (opacity >= 100) return hex;
-    const h = hex.replace('#', '');
-    const [r, g, b] = [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
-    return `rgba(${r}, ${g}, ${b}, ${round(opacity / 100)})`;
-  };
-  const emOf = (d: Dimension, basePx: number): number => round(px(d, basePx) / basePx);
+  // Character styles (`:span[…]{style="id"}`, #1488): the face, size,
+  // weight, slant, colour and tracking of the run (its capitals are in
+  // its text, set by the engine in the book's language). Every value was
+  // checked when the configuration was resolved (a hex colour, a length,
+  // a weight in steps of 100) and the family is quoted. The highlight style a character style names is a mark, which
+  // the reflowable book does not draw, as it draws no `:mark[…]`.
   for (const s of config.characterStyles ?? []) {
     const sPx = s.fontSize ? px(s.fontSize) : bodyPx;
-    const lines = [s.underline.enabled && 'underline', s.strike.enabled && 'line-through'].filter(Boolean).join(' ');
-    const line = s.underline.enabled ? s.underline : s.strike;
-    const band = s.highlight;
-    const at = (d: Dimension): string => `${round(Math.max(0, Math.min(100, ((emOf(d, sPx) + 0.25) / 1.2) * 100)))}%`;
     out.push(rule(`.${idOf('pt-cs-', s.id)}`, [
       s.fontFamily && fam(s.fontFamily),
       s.fontSize && `font-size: ${round(sPx / bodyPx)}em`,
@@ -110,18 +102,7 @@ export function createApparatusRules(deps: ApparatusRulesDeps) {
       s.italic && 'font-style: italic',
       s.color && color(s.color),
       s.letterSpacing && `letter-spacing: ${round(px(s.letterSpacing) / sPx)}em`,
-      s.textTransform === 'uppercase' && 'text-transform: uppercase',
       s.smallCaps && 'font-variant: small-caps',
-      lines && `text-decoration-line: ${lines}`,
-      lines && line.style !== 'solid' && `text-decoration-style: ${line.style}`,
-      lines && line.color && `text-decoration-color: ${rgba(line.color.hex, line.opacity)}`,
-      lines && `text-decoration-thickness: ${emOf(line.thickness, sPx)}em`,
-      s.underline.enabled && `text-underline-offset: ${emOf(s.underline.offset, sPx)}em`,
-      lines && 'text-decoration-skip-ink: none',
-      band.enabled && `background-image: linear-gradient(to top, transparent ${at(band.bottom)}, ${rgba(band.color.hex, band.opacity)} ${at(band.bottom)}, ${rgba(band.color.hex, band.opacity)} ${at(band.top)}, transparent ${at(band.top)})`,
-      band.enabled && `padding: 0 ${emOf(band.overhang, sPx)}em`,
-      band.enabled && 'box-decoration-break: clone',
-      band.enabled && '-webkit-box-decoration-break: clone',
     ]));
   }
   // Exercises (#1231): a blank holds its input, a drawn box its picture
