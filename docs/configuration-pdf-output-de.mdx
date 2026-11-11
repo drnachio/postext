@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf aus Code: Installation, API, Font-Provider im Browser und in Node, CJK-Schriften, Ressourcenbytes, vertikaler Text, Worker und druckfertige Dateien',
   lang: 'de',
   lastUpdated: '2026-11-10',
-  readingTime: '24 min',
+  readingTime: '25 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Diese Seite richtet sich an Menschen, die Code schreiben und eine PDF-Datei brauchen. Sie zeigt, wie Sie das PDF-Paket installieren und ein gesetztes Buch mit wenigen Zeilen in eine Datei verwandeln. Das Paket braucht die Schriftdateien, deshalb erklärt die Seite, wie Sie sie ihm übergeben, im Browser oder auf einem Server. Sie behandelt Schriften für Chinesisch, Japanisch und Koreanisch, Bilder, Text, der von oben nach unten läuft, und Links. Am Ende stehen ein vollständiges Beispiel und Dateien, die eine Druckerei übernehmen kann.",
@@ -472,6 +472,36 @@ print: {
   ],
 },
 ```
+
+#### Zweifarbendruck
+
+`print.plates` nennt die Platten, auf denen der Auftrag druckt, und nichts anderes wird gedruckt: ein Buch in Schwarz und einer Sonderfarbe, in zwei Sonderfarben oder nur in Schwarz. Die Platten des Vierfarbdrucks heißen `Cyan`, `Magenta`, `Yellow` und `Black`; eine Sonderfarbenplatte wird so benannt, wie das PDF sie nennt, oder mit einem Namen oder Alias der Druckfarbentabelle.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Die Platten. Leer: alle Platten, wie üblich.
+  images?: string[];                              // Die Platten, auf denen Bilder drucken: eine oder zwei.
+  curves?: Record<string, Array<[number, number]>>; // Die Kurve einer Bildplatte: [Tonwert, Druckfarbe] in Prozent.
+}
+```
+
+- Eine Farbe einer Druckfarbe, die der Auftrag druckt, oder eine CMYK-Farbe, deren Kanäle er druckt, wird unverändert gesetzt.
+- Jede andere Farbe wird projiziert: Sie druckt als die Mischung aus einer oder zwei Platten, deren Aussehen über das Ausgabeprofil ihr am nächsten kommt. Eine Mischung aus zwei Druckfarben ist im PDF ein Farbraum `DeviceN`, und ein Grau bleibt allein auf `Black`. Tiefschwarz entfällt, außer der Auftrag druckt alle vier Prozessfarben.
+- Bilder drucken als Monoton auf einer Platte oder als Duplex auf zwei: Der Tonwert jedes Pixels (seine Helligkeit) läuft durch die Kurve jeder Platte. `images` ist standardmäßig `Black` oder, wenn der Auftrag kein Schwarz druckt, die erste Platte. Die Kurve eines Monotons ist eine Gerade; ein Duplex legt seine erste Platte auf die Tiefen und seine zweite auf die Mitteltöne. `curves` ersetzt jede der beiden.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+Der Preflight listet die Platten des Auftrags auf und blockiert (kritisch) eine Sonderfarbe oder eine CMYK-Farbe des Buchs, die der Auftrag nicht druckt, denn beim Projizieren geht die Farbe verloren, die der Gestalter gewählt hat. Er warnt vor einer Sonderfarbenplatte, die keine Farbe und kein Eintrag der Druckfarbentabelle definiert und die dann im Proof als Schwarz erscheint. Platzierte PDFs behalten ihre eigenen Druckfarben.
+
 
 ### In CMYK angelegte Farben
 

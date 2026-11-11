@@ -28,6 +28,7 @@ import type { OutputTransform } from '../color/transform.js';
 import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
 import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
+import { channelsOffPlates, jobPlates, plateOfSpot } from '../color/plates.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -81,6 +82,17 @@ export type PreflightIssue = {
   /** A colour that overprints (`ColorValue.overprint`) and puts no ink
    *  down (paper white, a spot at 0 %): on press it disappears. */
   | { kind: 'overprintWhite'; color: string }
+  /** The plates a restricted job prints on (`print.plates`), and those
+   *  its pictures print on, once per document (info). */
+  | { kind: 'platesJob'; plates: string[]; images: string[] }
+  /** A spot ink a colour of the book uses that the job does not print:
+   *  it would be projected onto the job's plates, the colour lost. */
+  | { kind: 'offPlateInk'; ink: string }
+  /** A colour authored in CMYK whose channels the job does not print. */
+  | { kind: 'offPlateCmyk'; color: string; channels: string[] }
+  /** A spot plate of the job that neither a colour nor the ink table
+   *  defines: nothing says what it looks like (its alternate). */
+  | { kind: 'plateUndefined'; plate: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
 );
@@ -195,6 +207,8 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const { spots, authored } = spotsThroughInkTable(authoredSpotColors([doc.config, doc.printColors]), authoredCmykColors([doc.config, doc.printColors]), print.inks);
   /** Spot inks painted somewhere in the document, by name. */
   const usedInks = new Set<string>();
+  /** Colours authored in CMYK painted somewhere, by hex. */
+  const usedAuthored = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
   const smallTextPx = dimensionToPx(pf.smallTextSize, dpi);
   const safePx = dimensionToPx(pf.safeZone, dpi);
@@ -213,7 +227,10 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       return spotColorCmyk(spot);
     }
     const exact = authored.get(hex);
-    if (exact) return exact;
+    if (exact) {
+      usedAuthored.add(hex);
+      return exact;
+    }
     if (!t) return undefined;
     const r = parseInt(hex.slice(1, 3), 16) / 255;
     const g = parseInt(hex.slice(3, 5), 16) / 255;
@@ -529,6 +546,24 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
       const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
       if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
+    }
+  }
+
+  // A job on a few plates: what the book asks of inks it does not print.
+  const plates = cmykJob ? jobPlates(print, spots.values()) : undefined;
+  if (plates) {
+    out.push({ kind: 'platesJob', severity: 'info', pageIndex: offset, plates: plates.map((p) => p.name), images: print.plates.images });
+    for (const plate of plates) {
+      if (!plate.cmyk) out.push({ kind: 'plateUndefined', severity: 'warning', pageIndex: offset, plate: plate.name });
+    }
+    const offInks = new Set<string>();
+    for (const spot of spots.values()) {
+      if (usedInks.has(spot.name) && !plateOfSpot(spot, plates)) offInks.add(spot.name);
+    }
+    for (const ink of offInks) out.push({ kind: 'offPlateInk', severity: 'critical', pageIndex: offset, ink });
+    for (const hex of usedAuthored) {
+      const channels = channelsOffPlates(authored.get(hex)!, plates);
+      if (channels.length > 0) out.push({ kind: 'offPlateCmyk', severity: 'critical', pageIndex: offset, color: hex, channels });
     }
   }
   return out;

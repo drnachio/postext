@@ -842,6 +842,14 @@ export interface SandboxLabels {
   colorPaletteTintHint: string;
   preflightOverprintWhite: string;
   preflightOverprintWhiteDetail: string;
+  preflightPlatesJob: string;
+  preflightPlatesJobDetail: string;
+  preflightOffPlateInk: string;
+  preflightOffPlateInkDetail: string;
+  preflightOffPlateCmyk: string;
+  preflightOffPlateCmykDetail: string;
+  preflightPlateUndefined: string;
+  preflightPlateUndefinedDetail: string;
   preflightRichBlackRecipe: string;
   preflightSafeZone: string;
   preflightSafeZoneDetail: string;

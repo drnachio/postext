@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf depuis le code : installation, API, fournisseurs de polices dans le navigateur et dans Node, polices CJK, octets des ressources, texte vertical, workers et fichiers prêts pour l’impression',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '27 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Cette page s’adresse aux personnes qui écrivent du code et veulent un fichier PDF. Elle montre comment installer le paquet PDF et transformer en quelques lignes un livre mis en page en fichier. Le paquet a besoin des fichiers de police : la page explique comment les lui fournir, dans un navigateur ou sur un serveur. Elle traite des polices pour le chinois, le japonais et le coréen, des images, du texte écrit de haut en bas et des liens. Elle se termine par un exemple complet et par des fichiers prêts pour un imprimeur.",
@@ -472,6 +472,36 @@ print: {
   ],
 },
 ```
+
+#### Impression à deux encres
+
+`print.plates` nomme les plaques sur lesquelles le travail s’imprime, et rien d’autre n’est imprimé : un livre en noir et un ton direct, en deux tons directs, ou en noir seul. Les plaques de quadrichromie sont `Cyan`, `Magenta`, `Yellow` et `Black` ; une plaque de ton direct se nomme comme la nomme le PDF, ou par un nom ou un alias de la table des encres.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Les plaques. Vide : toutes, comme d’habitude.
+  images?: string[];                              // Les plaques des images : une ou deux.
+  curves?: Record<string, Array<[number, number]>>; // La courbe d’une plaque d’image : [ton, encre] en pourcentage.
+}
+```
+
+- Une couleur d’une encre que le travail imprime, ou une couleur CMJN dont il imprime les couches, est appliquée telle quelle.
+- Toute autre couleur est projetée : elle s’imprime comme le mélange d’une ou deux plaques dont l’aspect, à travers le profil de sortie, s’en approche le plus. Un mélange de deux encres est un espace colorimétrique `DeviceN` dans le PDF, et un gris reste sur `Black` seul. Le noir enrichi est abandonné, sauf si le travail imprime les quatre encres de quadrichromie.
+- Les images s’impriment en monotone sur une plaque, ou en bichromie sur deux : le ton de chaque pixel (sa luminosité) passe par la courbe de chaque plaque. `images` vaut par défaut `Black`, ou la première plaque quand le travail n’imprime pas de noir. La courbe d’un monotone est une droite ; une bichromie met sa première plaque dans les ombres et la seconde dans les tons moyens. `curves` remplace l’une ou l’autre.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+Le contrôle en amont énumère les plaques du travail et bloque (critique) un ton direct ou une couleur CMJN du livre que le travail n’imprime pas, car la projeter fait perdre la couleur choisie par le graphiste. Il avertit d’une plaque de ton direct qu’aucune couleur ni aucune entrée de la table des encres ne définit, et qui apparaît alors en noir sur l’épreuve. Les PDF placés gardent leurs propres encres.
+
 
 ### Couleurs définies en CMJN
 

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'postext-pdf dal codice: installazione, API, provider di font nel browser e in Node, font CJK, byte delle risorse, testo verticale, worker e file pronti per la stampa',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '27 min',
+  readingTime: '28 min',
   order: 22,
   parent: 'configuration',
   plainSummary: "Questa pagina è per chi scrive codice e vuole un file PDF. Mostra come installare il pacchetto PDF e trasformare un libro impaginato in un file con poche righe. Il pacchetto ha bisogno dei file dei font, quindi la pagina spiega come fornirglieli, in un browser o su un server. Tratta i font per cinese, giapponese e coreano, le immagini, il testo scritto dall’alto in basso e i link. Si chiude con un esempio completo e con file pronti per la tipografia.",
@@ -472,6 +472,36 @@ print: {
   ],
 },
 ```
+
+#### Stampa a due inchiostri
+
+`print.plates` nomina le lastre su cui si stampa il lavoro, e nient’altro viene stampato: un libro in nero e una tinta piatta, in due tinte piatte o solo in nero. Le lastre di quadricromia sono `Cyan`, `Magenta`, `Yellow` e `Black`; una lastra di tinta piatta si nomina come la nomina il PDF, o con un nome o un alias della tabella degli inchiostri.
+
+```ts
+interface PrintPlatesConfig {
+  inks?: string[];                                // Le lastre. Vuoto: tutte, come sempre.
+  images?: string[];                              // Le lastre delle immagini: una o due.
+  curves?: Record<string, Array<[number, number]>>; // La curva di una lastra d’immagine: [tono, inchiostro] in percentuale.
+}
+```
+
+- Un colore di un inchiostro che il lavoro stampa, o un colore CMYK di cui stampa i canali, viene impostato così com’è.
+- Qualsiasi altro colore viene proiettato: si stampa come la miscela di una o due lastre il cui aspetto, attraverso il profilo di output, gli si avvicina di più. Una miscela di due inchiostri è uno spazio colore `DeviceN` nel PDF, e un grigio resta solo su `Black`. Il nero ricco viene scartato, a meno che il lavoro non stampi tutti e quattro gli inchiostri di quadricromia.
+- Le immagini si stampano in monotono su una lastra, o in bicromia su due: il tono di ogni pixel (la sua luminosità) passa per la curva di ciascuna lastra. `images` è per impostazione predefinita `Black`, o la prima lastra quando il lavoro non stampa il nero. La curva di un monotono è una retta; una bicromia mette la sua prima lastra sulle ombre e la seconda sui mezzitoni. `curves` sostituisce l’una o l’altra.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  plates: {
+    inks: ['Black', 'PANTONE 286 C'],
+    images: ['Black', 'PANTONE 286 C'],
+    curves: { 'PANTONE 286 C': [[0, 0], [50, 35], [100, 70]] },
+  },
+},
+```
+
+Il preflight elenca le lastre del lavoro e blocca (critico) una tinta piatta o un colore CMYK del libro che il lavoro non stampa, perché proiettarlo fa perdere il colore scelto dal grafico. Avverte di una lastra di tinta piatta che nessun colore e nessuna voce della tabella degli inchiostri definisce, e che quindi nella prova appare nera. I PDF collocati mantengono i propri inchiostri.
+
 
 ### Colori definiti in CMYK
 

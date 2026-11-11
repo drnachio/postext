@@ -2731,7 +2731,12 @@ as a change. Left out, the file is stamped with the time of the call.
   "inks": [                        // the ink table: spot inks as the printer gets them
     { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
     { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
-  ]                                // also "cmyk" (the alternate) and "overprint", over the colours' own
+  ],                               // also "cmyk" (the alternate) and "overprint", over the colours' own
+  "plates": {                      // two-ink printing: the only plates the job prints on (absent: all)
+    "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
+    "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
+    "curves": { "PANTONE 286 C": [[0, 0], [50, 35], [100, 70]] }   // [tone, ink] percent per picture plate
+  }
 }
 ```
 - A source printed as PDF/X keeps its standard and condition: `inventory.py` reads the output

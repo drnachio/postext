@@ -2,9 +2,10 @@
 // the pixel scale (#1276: split out of primitives.ts).
 import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, setGraphicsState } from 'pdf-lib';
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
-import type { SpotColor } from 'postext';
+import type { PlateTarget, SpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
+import { mixColor, planMix } from '../../print/plates.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -35,6 +36,8 @@ interface AlphaColor {
  * its opacity along (see {@link alphaOf}); malformed input paints black.
  */
 export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
+  // A job on a few plates sets every colour on them.
+  if (isPrintMode(colorSpace) && colorSpace.plates) return plateColor(hex, colorSpace);
   // A spot colour's stand-in belongs to the render (its ink registry),
   // never to the shared cache.
   if (isPrintMode(colorSpace) && (colorSpace.spots.size > 0 || colorSpace.overprints.size > 0)) {
@@ -115,6 +118,35 @@ function overprintColor(hex: string, mode: PrintColorMode): Color {
   const [c4, m4, y4, k4] = plain.type === 'CMYK' ? [plain.cyan, plain.magenta, plain.yellow, plain.key] : [0, 0, 0, 0];
   const color: Color = { ...mode.inkRegistry.overprintStandIn(c4, m4, y4, k4) };
   const alpha = alphaOf(plain);
+  if (alpha < 1) (color as AlphaColor).alpha = alpha;
+  cache.set(hex, color);
+  return color;
+}
+
+/** A colour of a job on a few plates (`print.plates`): its spot ink, its
+ *  CMYK or its screen colour set on the job's plates. Flattened over the
+ *  paper, a translucent colour is a lighter tint of the same mix. */
+function plateColor(hex: string, mode: PrintColorMode): Color {
+  let cache = spotColorCache.get(mode.inkRegistry);
+  if (!cache) spotColorCache.set(mode.inkRegistry, (cache = new Map()));
+  const cached = cache.get(hex);
+  if (cached) return cached;
+  const hex6 = hex.slice(0, 7).toLowerCase();
+  let alpha = colorAlpha(hex);
+  const over = mode.flattenTransparency ? alpha : 1;
+  if (mode.flattenTransparency) alpha = 1;
+  const spot = mode.spots.get(hex6);
+  const exact = mode.authored.get(hex6);
+  let target: PlateTarget;
+  if (spot) target = { kind: 'spot', spot, tint: (spot.tint / 100) * over };
+  else if (exact) target = { kind: 'cmyk', cmyk: { c: exact.c * over, m: exact.m * over, y: exact.y * over, k: exact.k * over } };
+  else {
+    const c = hexToRgb(hex);
+    const [r, g, b] = over < 1 ? overPaper(c.r, c.g, c.b, over) : [c.r, c.g, c.b];
+    target = { kind: 'rgb', r, g, b };
+  }
+  const overprints = mode.overprints.has(hex6) || !!spot?.overprint;
+  const color: Color = { ...mixColor(planMix(mode.plates!, target, mode), mode.inkRegistry, overprints) };
   if (alpha < 1) (color as AlphaColor).alpha = alpha;
   cache.set(hex, color);
   return color;

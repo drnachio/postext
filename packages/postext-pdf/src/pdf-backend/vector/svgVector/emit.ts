@@ -7,6 +7,7 @@ import { applyPrintPass, overprintStateDict } from '../../../print/printPass.js'
 import { shapedSvgText } from '../../text/shapedText.js';
 import type { PathSeg, SvgInk, VectorDrawing } from '../svgVector.js';
 import type { SpotInkRegistry, SpotPlate } from '../../../print/spot.js';
+import { mixColor, planMix } from '../../../print/plates.js';
 import { inkEntry, inkKey, type SpotColor } from 'postext';
 import { parseCssColor } from '../../../colors.js';
 import { mul } from './geometry.js';
@@ -98,9 +99,10 @@ class FormResources {
     return name;
   }
 
-  /** A spot ink's Separation colour space (the print pass's). */
-  colorSpace(plate: SpotPlate): PDFName {
-    const ref = this.inks!.separationSpace(this.context, plate);
+  /** Spot inks' colour space, one ink's Separation or a mix's DeviceN
+   *  (the print pass's). */
+  colorSpace(plates: readonly SpotPlate[]): PDFName {
+    const ref = this.inks!.inkSpace(this.context, plates);
     const id = ref.toString();
     let name = this.spaces.get(id);
     if (!name) {
@@ -205,17 +207,22 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
   const spotInk = isPrintMode(colorSpace) ? drawing.spotInk : undefined;
   const inks = isPrintMode(colorSpace) ? colorSpace.spots : undefined;
   const registry = isPrintMode(colorSpace) ? colorSpace.inkRegistry : undefined;
+  // A job on a few plates sets an ink of another plate on its own.
+  const inkColor = (spot: Required<SpotColor>, tint: number): Color =>
+    isPrintMode(colorSpace) && colorSpace.plates
+      ? { ...mixColor(planMix(colorSpace.plates, { kind: 'spot', spot, tint }, colorSpace), registry!, spot.overprint) }
+      : { ...registry!.standIn(spot, tint) };
   const paint = (hex: string, alpha: number, ink?: SvgInk): Color => {
     const over = flatten && alpha < 1 ? alpha : 1;
     const strength = spotInk ? inkStrength(hex, spotInk.hex) : undefined;
     if (spotInk && strength !== undefined) {
       // A tint of the single ink: on its plate, lighter over the paper
       // when flattened.
-      return { ...registry!.standIn(spotInk.spot, strength * (spotInk.spot.tint / 100) * over) };
+      return inkColor(spotInk.spot, strength * (spotInk.spot.tint / 100) * over);
     }
     if (inks) {
       const spot = svgSpotOf(hex, ink, inks, colorSpace);
-      if (spot) return { ...registry!.standIn(spot.spot, spot.tint * over) };
+      if (spot) return inkColor(spot.spot, spot.tint * over);
     }
     return colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
   };
@@ -331,7 +338,7 @@ function vectorForm(ctx: PageCtx, drawing: VectorDrawing): VectorForm {
         let name = states.get(key);
         if (!name) states.set(key, (name = res.extGState(context.obj(overprintStateDict(flags)))));
         return name;
-      }, { richBlack: false, spaceFor: (plate) => res.colorSpace(plate) });
+      }, { richBlack: false, spaceFor: (plates) => res.colorSpace(plates) });
     }
     const [vx, vy, vw, vh] = drawing.viewBox;
     const bbox: [number, number, number, number] = [vx, vy, vx + vw, vy + vh];
