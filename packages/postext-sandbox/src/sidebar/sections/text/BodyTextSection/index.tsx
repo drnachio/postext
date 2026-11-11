@@ -291,6 +291,18 @@ export const BodyTextSection = memo(function BodyTextSection() {
           isDefault={bodyText.hardLineBreaks === D.hardLineBreaks}
           onReset={() => resetField('hardLineBreaks')}
         />
+        {/* The line before a forced break justified (#1502): justified
+            text only. */}
+        {bodyText.textAlign === 'justify' && (
+          <ToggleSwitch
+            label={labels.bodyJustifyHardBreaks}
+            checked={bodyText.justifyHardBreaks === true}
+            onChange={(checked) => updateBodyText({ justifyHardBreaks: checked })}
+            tooltip={labels.bodyJustifyHardBreaksTooltip}
+            isDefault={bodyText.justifyHardBreaks !== true}
+            onReset={() => resetField('justifyHardBreaks')}
+          />
+        )}
         {/* `++text++` as underlined text (#1465): off unless the
             configuration turns it on; `:underline[…]` is always read. */}
         <ToggleSwitch

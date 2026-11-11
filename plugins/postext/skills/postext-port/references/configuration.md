@@ -331,6 +331,7 @@ H&J / Knuth–Plass
 │                        a word wider than its line is divided after a slash first; a typed U+200B is a break with no width either way;
 │                        false = 1.51 breaks, after a slash only inside a URL (a preset below configVersion 19 reads false)
 ├─ repeatHyphen         boolean  false  the line after a break at a compound's hyphen opens with a hyphen too (vencer- | -se; Portuguese, Spanish RAE 2010); line.repeatedHyphen; never in a URL
+├─ justifyHardBreaks    boolean  false  (≥ 1.74) justified text justifies the line before a forced line break (as InDesign and QuarkXPress set one); only the paragraph's last line stays short. Turn it on for a port that keeps the source's lines (`line one\` + newline per kept line); a line too short to justify is set ragged with a `raggedLine` warning
 ├─ hardLineBreaks       boolean  true   (≥ 1.23) a backslash ending a source line, or `\\` + space, is a forced line break in paragraphs, quotes, list items;
 │                        false = 1.22: the backslashes print (a preset below configVersion 9 whose chapters end a line with `\` reads false)
 ├─ scriptContext        boolean  true   (≥ 1.28) a word with no letter (`46.`, `1367)`, `».`) is shaped in the script of the text around it: nearest letter

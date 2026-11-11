@@ -256,6 +256,12 @@ export const metadata = {
       <td>把源文本行末的反斜杠，以及后跟空格的<code>{'\\\\'}</code>，读作段落、引文或列表项内部的强制换行（CommonMark的硬换行）：后面的文字在同一段落中另起一行，换行前的一行按自然宽度排，与末行相同。段落末尾的反斜杠照样印出，行末两个空格不算换行（见<a href="/zh/docs/document-format-directives#段落内的换行">文档格式 › 段落内的换行</a>）。<code>false</code>保留1.22的读法：反斜杠照样印出，各行用空格连接；更早保存、文字中有这种反斜杠的配置按此读取（见<a href="/zh/docs/configuration-bundles#postext-14及更早版本写出的文件包">postext 1.4及更早版本写出的文件包</a>）。标题、题注、注释和表格单元格在两种设置下都在<code>{'\\\\'}</code>处换行。</td>
     </tr>
     <tr>
+      <td><code>justifyHardBreaks</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>在两端对齐的文字里，强制换行之前的一行也两端对齐，与排版软件的做法相同：它像引擎断开的行一样排满版心，只有段落的最后一行按自然宽度排。行已在别处定好的书（保留原稿换行的导入、逐行跟随印刷版的移植）用它才排得对。词间空隙不够用的过短行不对齐并给出提示，与引擎填不满的其他对齐行一样；带制表位的行保持原有宽度。不对齐的文字，以及在字间调整对齐的文字（中文、日文），与不开启时相同。自postext 1.74起。</td>
+    </tr>
+    <tr>
       <td><code>plusUnderline</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>

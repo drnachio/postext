@@ -173,6 +173,11 @@ export function stripBodyTextDefaults(
     result.breakAfterSlashes = false;
     hasOverride = true;
   }
+  // Off by default, and resolved only when on (#1502).
+  if (bodyText.justifyHardBreaks === true) {
+    result.justifyHardBreaks = true;
+    hasOverride = true;
+  }
   // Off by default, and resolved only when on (#1465).
   if (bodyText.plusUnderline === true) {
     result.plusUnderline = true;

@@ -188,6 +188,17 @@ export interface BodyTextConfig {
    *  `pinLegacyHardBreaks`). Titles (`\\` in a heading), captions, notes
    *  and table cells break at `\\` either way. */
   hardLineBreaks?: boolean;
+  /** Justify the line before a forced line break (#1502): in justified
+   *  text the line a backslash ends is set to the measure, like the lines
+   *  the breaker ends, and only the paragraph's last line at its natural
+   *  width, as page-layout programs set a forced break. A book whose lines
+   *  were decided elsewhere (an import that keeps its source's lines)
+   *  reads right with it. A line too short for its word spaces is set
+   *  ragged and reported, as any justified line the breaker could not
+   *  fill; a line with a tab stop keeps its widths. Ragged text, and text
+   *  justified between characters, are set as without it. Default
+   *  `false`. */
+  justifyHardBreaks?: boolean;
   /** Read `++text++` as underlined text, beside `:underline[text]`, which
    *  is always read (#1465). Every pair of two plus signs on each side
    *  underlines, `use ++i rather than i++` too; `\+\+` sets a literal pair,

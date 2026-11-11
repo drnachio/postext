@@ -1246,6 +1246,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   bodyPlusUnderline: 'Underline with ++',
   bodyPlusUnderlineTooltip: 'Read ++text++ as underlined text, beside :underline[text], which is always read. Every pair underlines, ++i … i++ too; write \\+\\+ for a literal pair. A letter or digit glued to the signs keeps them as text (C++), and inline code and code blocks never underline. Off: the plus signs print.',
   bodyHardLineBreaksTooltip: 'Read a backslash at the end of a line of Markdown, or \\\\ before a space, as a line break inside the paragraph, quotation or list item: the next words start a new line, and the line before it is set at its natural width. Off: the backslashes print, as up to postext 1.22. Books saved before postext 1.23 that have such a backslash open with it off.',
+  bodyJustifyHardBreaks: "Justify Forced Breaks",
+  bodyJustifyHardBreaksTooltip: "In justified text, justify the line a forced line break ends, like the lines the breaker ends; only the paragraph's last line is set at its natural width. For a book whose lines were decided elsewhere, such as an import that keeps its source's lines. A line too short to justify is set ragged and reported in Checks. Off: the line before a break is set at its natural width.",
   bodyScriptContext: 'Script of Words With No Letter',
   bodyScriptContextTooltip: 'Shape a word of digits or punctuation alone (46., 1367), ».) in the script of the text around it: Latin forms in a Latin note, Arabic ones in an Arabic sentence. It acts in faces that draw their punctuation by script, such as Amiri; any other face is set as before. Off, such a word is shaped alone, as up to postext 1.27, and each browser and the PDF may pick another form.',
   tabStops: 'Tab stops',

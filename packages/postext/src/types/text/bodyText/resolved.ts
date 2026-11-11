@@ -45,6 +45,9 @@ export interface ResolvedBodyTextConfig {
   breakAfterHyphens: boolean;
   hardLineBreaks: boolean;
   /** Present only when switched on (see
+   *  {@link BodyTextConfig.justifyHardBreaks}). */
+  justifyHardBreaks?: true;
+  /** Present only when switched on (see
    *  {@link BodyTextConfig.plusUnderline}). */
   plusUnderline?: true;
   /** Present only when switched off (see

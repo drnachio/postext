@@ -109,6 +109,9 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     // Breaks after a closed dash (EF-141) and Knuth–Plass on ragged running
     // text (EF-147): left undefined when off, the 1.4 breaks.
     breakAfterDashes: resolved.bodyText.breakAfterDashes ? true : undefined,
+    // The line before a forced break justified (#1502): undefined when
+    // off or on ragged text, so those cache keys are unchanged.
+    justifyForcedBreaks: resolved.bodyText.justifyHardBreaks && style.textAlign === 'justify' ? true : undefined,
     // A compound's hyphen on every path (EF-186), compounds the dictionary
     // leaves whole (EF-169) and the repeated hyphen: left undefined when
     // they keep the 1.4 breaks.

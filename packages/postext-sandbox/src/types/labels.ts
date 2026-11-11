@@ -1330,6 +1330,8 @@ export interface SandboxLabels {
   bodyBreakAfterSlashesTooltip: string;
   bodyHardLineBreaks: string;
   bodyHardLineBreaksTooltip: string;
+  bodyJustifyHardBreaks: string;
+  bodyJustifyHardBreaksTooltip: string;
   bodyPlusUnderline: string;
   bodyPlusUnderlineTooltip: string;
   bodyScriptContext: string;

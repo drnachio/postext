@@ -135,6 +135,8 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     // Present only when off (#1164), as the script context.
     ...(partial.breakAfterSlashes === false ? { breakAfterSlashes: false as const } : {}),
     ...(partial.scriptContext === false ? { scriptContext: false as const } : {}),
+    // Present only when on (#1502): a forced break sets its line short.
+    ...(partial.justifyHardBreaks === true ? { justifyHardBreaks: true as const } : {}),
     // Present only when on (#1465): `++text++` is text by default.
     ...(partial.plusUnderline === true ? { plusUnderline: true as const } : {}),
     // Present only for the host's language (#764): a document shaped in
