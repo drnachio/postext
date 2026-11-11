@@ -733,12 +733,6 @@ const config: PostextConfig = {
       <td><code>'. '</code>; <code>'　'</code> en un document japonès</td>
       <td>El que segueix el número, abans de la descripció: <em>Figura 1.7. Un peu</em>. Els peus xinesos porten un espai ideogràfic, <code>'　'</code> (图1-1　标题), i els japonesos també, per defecte (図1-1　東京の地図, JLReq §4.3). Una etiqueta sense número té una regla pròpia: un punt, llevat que el prefix ja acabi en punt.</td>
     </tr>
-    <tr>
-      <td><code>alignAcrossColumns</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Alinea entre columnes les figures que comparteixen una franja de la pàgina: al peu de columnes veïnes, la primera línia dels seus peus (el peu més curt deixa el blanc a sota); al capdamunt, la vora inferior de les seves imatges (la imatge més curta deixa el blanc a sobre). Una imatge que omple la seva columna des de dalt, sense text a sota, alinea el seu peu amb els peus de les figures al peu de les columnes del costat. Una figura col·locada a mà (<code>placement.pin</code>, arrossegada al llenç del Sandbox) conserva el seu lloc i en queda fora. Funciona juntament amb <code>layout.footFloatRow</code>, que ja alinea un flotant que s'uneix a la franja del peu de la columna següent. Val per a tot el document: l'estil de peus d'un tipus de recurs no el fixa. La maquetació fa una passada més.</td>
-    </tr>
   </tbody>
 </table>
 

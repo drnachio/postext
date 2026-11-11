@@ -453,7 +453,13 @@ La propiedad `layout` controla cómo se organizan las columnas dentro del área 
       <td><code>footFloatRow</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Coloca en fila las figuras al pie de una página de varias columnas: una figura o tabla citada donde su columna ya tiene otra al pie ocupa el pie de la siguiente columna vacía, con la primera línea de su pie a la altura de la de su vecina, en lugar de apilarse encima (el faldón del compositor). Una imagen con zona segura se recorta dentro de ella hacia la altura de su vecina. En el Sandbox, <em>Figuras al pie en fila</em>, en Maquetación.</td>
+      <td>Coloca en fila las figuras al pie de una página de varias columnas: una figura o tabla citada donde su columna ya tiene otra al pie ocupa el pie de la siguiente columna vacía, con la primera línea de su pie a la altura de la de su vecina, en lugar de apilarse encima (el faldón del compositor). Una imagen con zona segura se recorta dentro de ella hacia la altura de su vecina. Cada recorte se señala en Comprobaciones. Un flotante en fila conserva su sitio: el que llega después al pie de una de sus columnas se coloca encima. Con tres columnas o más, la fila sigue en la siguiente columna que no tiene nada al pie. En el Sandbox, <em>Figuras al pie en fila</em>, en Maquetación.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinea entre columnas las figuras que comparten una franja de la página: al pie de columnas vecinas, la primera línea de sus pies (el pie más corto deja el blanco debajo); en lo alto, el borde inferior de sus imágenes (la imagen más corta deja el blanco encima). Una imagen que llena su columna desde lo alto, sin texto debajo, alinea su pie con los pies de las figuras al pie de las columnas de al lado. Solo se alinea una figura sola en su columna, derecha y entera: la que ocupa varias columnas, la girada, la que lleva el pie al lado, un tramo de tabla y la colocada a mano (<code>placement.pin</code>) conservan su sitio. El blanco se lee de la posición que tomó cada figura y se vuelve a leer tras la última pasada de la maquetación, de modo que una figura que pasó a otra página no guarda blanco para una vecina que ya no tiene. La maquetación hace hasta dos pasadas más al principio y dos al final. Funciona junto con <code>footFloatRow</code>, que ya alinea un flotante que se une al pie de la columna siguiente. En el Sandbox, <em>Alinear las figuras entre columnas</em>, en Maquetación.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

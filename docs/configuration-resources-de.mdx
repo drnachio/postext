@@ -734,12 +734,6 @@ const config: PostextConfig = {
       <td><code>'. '</code>; <code>'　'</code> in einem japanischen Dokument</td>
       <td>Was der Nummer folgt, vor der Beschreibung: <em>Figure 1.7. A caption</em>. Chinesische Legenden nehmen ein ideografisches Leerzeichen, <code>'　'</code> (图1-1　标题), japanische standardmäßig ebenso (図1-1　東京の地図, JLReq §4.3). Eine Bezeichnung ohne Nummer behält ihre eigene Regel: ein Punkt, es sei denn, das Präfix endet bereits mit einem.</td>
     </tr>
-    <tr>
-      <td><code>alignAcrossColumns</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Richtet Abbildungen, die sich ein Band einer Seite teilen, über die Spalten hinweg aus: Gleitobjekte am Fuß benachbarter Spalten setzen die erste Zeile ihrer Legenden auf eine Höhe (die kürzere Legende lässt den Weißraum darunter), Gleitobjekte an ihrem Kopf die Unterkanten ihrer Bilder (das kürzere Bild lässt den Weißraum darüber). Ein Bild, das seine Spalte vom Kopf an füllt, ohne Text darunter, richtet seine Legende an den Fußlegenden daneben aus. Eine von Hand platzierte Abbildung (<code>placement.pin</code>) behält ihren Platz und bleibt außen vor. Das Layout braucht dafür einen Durchgang mehr. Nur in der Legendengestaltung des Dokuments, nicht in der eines Ressourcentyps.</td>
-    </tr>
   </tbody>
 </table>
 

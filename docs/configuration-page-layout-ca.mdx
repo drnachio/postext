@@ -451,7 +451,13 @@ La propietat `layout` controla com s'organitzen les columnes dins de l'àrea de 
       <td><code>footFloatRow</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Col·loca en filera les figures al peu d'una pàgina de diverses columnes: una figura o taula citada on la seva columna ja en té una al peu ocupa el peu de la columna buida següent, amb la primera línia del seu peu a l'altura de la de la veïna, en lloc d'apilar-s'hi a sobre (el faldó del compositor). Una imatge amb zona segura es retalla dins d'ella cap a l'altura de la veïna. Al Sandbox, <em>Figures al peu en filera</em>, a Maquetació.</td>
+      <td>Col·loca en filera les figures al peu d'una pàgina de diverses columnes: una figura o taula citada on la seva columna ja en té una al peu ocupa el peu de la columna buida següent, amb la primera línia del seu peu a l'altura de la de la veïna, en lloc d'apilar-s'hi a sobre (el faldó del compositor). Una imatge amb zona segura es retalla dins d'ella cap a l'altura de la veïna. Cada retall s’indica a Comprovacions. Un flotant en filera conserva el seu lloc: el que arriba després al peu d’una de les seves columnes es col·loca a sobre. Amb tres columnes o més, la filera continua a la columna següent que no té res al peu. Al Sandbox, <em>Figures al peu en filera</em>, a Maquetació.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinea entre columnes les figures que comparteixen una franja de la pàgina: al peu de columnes veïnes, la primera línia dels seus peus (el peu més curt deixa el blanc a sota); al capdamunt, la vora inferior de les seves imatges (la imatge més curta deixa el blanc a sobre). Una imatge que omple la seva columna des de dalt, sense text a sota, alinea el seu peu amb els peus de les figures al peu de les columnes del costat. Només s’alinea una figura sola a la seva columna, dreta i sencera: la que ocupa diverses columnes, la girada, la que porta el peu al costat, un tram de taula i la col·locada a mà (<code>placement.pin</code>) conserven el seu lloc. El blanc es llegeix de la posició que va prendre cada figura i es torna a llegir després de l’última passada de la maquetació, de manera que una figura que ha passat a una altra pàgina no guarda blanc per a una veïna que ja no té. La maquetació fa fins a dues passades més al principi i dues al final. Funciona juntament amb <code>footFloatRow</code>, que ja alinea un flotant que s’uneix al peu de la columna següent. Al Sandbox, <em>Alinear les figures entre columnes</em>, a Maquetació.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

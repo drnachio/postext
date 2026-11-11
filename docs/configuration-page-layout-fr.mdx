@@ -453,7 +453,13 @@ La propriété `layout` contrôle la disposition des colonnes dans la zone de co
       <td><code>footFloatRow</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Place en rangée les flottants au pied d’une page à plusieurs colonnes : une figure ou un tableau appelé là où sa colonne en porte déjà un au pied prend le pied de la colonne vide suivante, la première ligne de sa légende au niveau de celle de son voisin, au lieu de s’empiler dessus (la bande de pied du compositeur). Une image avec zone de sécurité est recadrée à l’intérieur vers la hauteur de son voisin. Dans le Sandbox, <em>Flottants au pied en rangée</em>, sous Mise en page.</td>
+      <td>Place en rangée les flottants au pied d’une page à plusieurs colonnes : une figure ou un tableau appelé là où sa colonne en porte déjà un au pied prend le pied de la colonne vide suivante, la première ligne de sa légende au niveau de celle de son voisin, au lieu de s’empiler dessus (la bande de pied du compositeur). Une image avec zone de sécurité est recadrée à l’intérieur vers la hauteur de son voisin. Chaque recadrage est signalé dans Vérifications. Un flottant en rangée garde sa place : celui qui arrive ensuite au pied de l’une de ses colonnes se place au-dessus. Avec trois colonnes ou plus, la rangée continue dans la colonne suivante qui n’a rien à son pied. Dans le Sandbox, <em>Flottants au pied en rangée</em>, sous Mise en page.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Aligne d’une colonne à l’autre les figures qui partagent une bande d’une page : au pied de colonnes voisines, la première ligne de leurs légendes (la légende la plus courte laisse le blanc sous elle) ; en tête, le bas de leurs images (l’image la plus courte laisse le blanc au-dessus). Une image qui remplit sa colonne depuis la tête, sans texte dessous, aligne sa légende sur les légendes de pied voisines. Seule une figure seule dans sa colonne, droite et entière, est alignée : celle qui occupe plusieurs colonnes, la figure tournée, celle dont la légende est à côté, un morceau de tableau et la figure placée à la main (<code>placement.pin</code>) gardent leur place. Le blanc se lit à la position prise par chaque figure et se relit après la dernière passe de la mise en page, si bien qu’une figure passée sur une autre page ne garde pas de blanc pour une voisine qu’elle n’a plus. La mise en page fait jusqu’à deux passes de plus au début et deux à la fin. Fonctionne avec <code>footFloatRow</code>, qui aligne déjà un flottant rejoignant le pied de la colonne suivante. Dans le Sandbox, <em>Aligner les figures d’une colonne à l’autre</em>, sous Mise en page.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

@@ -453,7 +453,13 @@ Die Eigenschaft `layout` steuert, wie die Spalten im Satzspiegel angeordnet werd
       <td><code>footFloatRow</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Setzt Gleitobjekte am Fuß einer mehrspaltigen Seite in eine Reihe: Eine Abbildung oder Tabelle, auf die dort verwiesen wird, wo ihre Spalte am Fuß schon eine trägt, nimmt den Fuß der nächsten leeren Spalte, die erste Zeile ihrer Legende auf Höhe der des Nachbarn, statt sich darüber zu stapeln (das Fußband des Setzers). Ein Bild mit sicherem Bereich wird darin zur Höhe des Nachbarn hin beschnitten. Im Sandbox: <em>Gleitobjekte am Fuß in einer Reihe</em> unter Layout.</td>
+      <td>Setzt Gleitobjekte am Fuß einer mehrspaltigen Seite in eine Reihe: Eine Abbildung oder Tabelle, auf die dort verwiesen wird, wo ihre Spalte am Fuß schon eine trägt, nimmt den Fuß der nächsten leeren Spalte, die erste Zeile ihrer Legende auf Höhe der des Nachbarn, statt sich darüber zu stapeln (das Fußband des Setzers). Ein Bild mit sicherem Bereich wird darin zur Höhe des Nachbarn hin beschnitten. Jeder Beschnitt wird unter Prüfungen gemeldet. Ein Gleitobjekt in einer Reihe behält seinen Platz: Was später an den Fuß einer seiner Spalten kommt, steht darüber. Bei drei oder mehr Spalten setzt sich die Reihe in der nächsten Spalte fort, an deren Fuß nichts steht. Im Sandbox: <em>Gleitobjekte am Fuß in einer Reihe</em> unter Layout.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Richtet Abbildungen, die sich ein Band einer Seite teilen, über die Spalten hinweg aus: am Fuß benachbarter Spalten die ersten Zeilen ihrer Legenden (die kürzere Legende lässt den Weißraum darunter), an ihrem Kopf die Unterkanten ihrer Bilder (das kürzere Bild lässt den Weißraum darüber). Ein Bild, das seine Spalte vom Kopf an füllt, ohne Text darunter, richtet seine Legende an den Fußlegenden daneben aus. Ausgerichtet wird nur eine Abbildung, die allein, aufrecht und ungeteilt in ihrer Spalte steht: eine über mehrere Spalten, eine gedrehte, eine mit seitlicher Legende, ein Tabellenteil und eine von Hand platzierte Abbildung (<code>placement.pin</code>) behalten ihren Platz. Der Weißraum wird an der Stelle gemessen, die jede Abbildung eingenommen hat, und nach dem letzten Durchgang des Layouts erneut gemessen, sodass eine auf eine andere Seite gewanderte Abbildung keinen Weißraum für eine Nachbarin behält, die sie nicht mehr hat. Das Layout braucht bis zu zwei Durchgänge mehr am Anfang und zwei am Ende. Arbeitet mit <code>footFloatRow</code> zusammen, das ein Gleitobjekt am Fuß der nächsten Spalte bereits ausrichtet. Im Sandbox: <em>Abbildungen über Spalten hinweg ausrichten</em> unter Layout.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

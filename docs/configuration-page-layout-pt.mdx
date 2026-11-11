@@ -453,7 +453,13 @@ A propriedade `layout` controla como as colunas se dispõem dentro da área de c
       <td><code>footFloatRow</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Coloca em fila os flutuantes no pé de uma página de várias colunas: uma figura ou tabela citada onde sua coluna já tem outra no pé ocupa o pé da próxima coluna vazia, com a primeira linha da legenda na altura da da vizinha, em vez de se empilhar por cima (a faixa de pé do compositor). Uma imagem com área segura é recortada dentro dela em direção à altura da vizinha. No Sandbox, <em>Figuras no pé em fila</em>, em Diagramação.</td>
+      <td>Coloca em fila os flutuantes no pé de uma página de várias colunas: uma figura ou tabela citada onde sua coluna já tem outra no pé ocupa o pé da próxima coluna vazia, com a primeira linha da legenda na altura da da vizinha, em vez de se empilhar por cima (a faixa de pé do compositor). Uma imagem com área segura é recortada dentro dela em direção à altura da vizinha. Cada recorte aparece em Verificações. Um flutuante em fila mantém o seu lugar: o que chega depois ao pé de uma das suas colunas fica acima dele. Com três colunas ou mais, a fila continua na coluna seguinte que não tem nada no pé. No Sandbox, <em>Figuras no rodapé em fila</em>, em Diagramação.</td>
+    </tr>
+    <tr>
+      <td><code>alignFloatsAcrossColumns</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Alinha entre colunas as figuras que compartilham uma faixa da página: no pé de colunas vizinhas, a primeira linha das legendas (a legenda mais curta deixa o branco embaixo dela); no topo, a borda inferior das imagens (a imagem mais curta deixa o branco acima dela). Uma imagem que preenche a sua coluna a partir do topo, sem texto embaixo, alinha a sua legenda com as legendas das figuras no pé das colunas ao lado. Só se alinha uma figura sozinha na sua coluna, em pé e inteira: a que ocupa várias colunas, a girada, a que tem a legenda ao lado, um trecho de tabela e a posicionada à mão (<code>placement.pin</code>) mantêm o seu lugar. O branco é lido da posição que cada figura tomou e lido de novo após a última passagem do layout, de modo que uma figura que passou para outra página não guarda branco para uma vizinha que já não tem. O layout faz até duas passagens a mais no início e duas no fim. Funciona junto com <code>footFloatRow</code>, que já alinha um flutuante que se junta ao pé da coluna seguinte. No Sandbox, <em>Alinhar as figuras entre colunas</em>, em Diagramação.</td>
     </tr>
     <tr>
       <td><code>pullFloatsToCitation</code></td>

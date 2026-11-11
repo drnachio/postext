@@ -734,12 +734,6 @@ const config: PostextConfig = {
       <td><code>'. '</code>；日文文档中为<code>'　'</code></td>
       <td>编号之后、描述之前的内容：<em>Figure 1.7. A caption</em>。中文题注用一个全角空格<code>'　'</code>（图1-1　标题），日文题注默认也是如此（図1-1　東京の地図，JLReq §4.3）。没有编号的标签仍按自己的规则：加句点，除非前缀已以句点结尾。</td>
     </tr>
-    <tr>
-      <td><code>alignAcrossColumns</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>让同一页中处于同一带区的图跨栏对齐：在相邻各栏的栏底，对齐题注的第一行（较短的题注在其下方留白）；在栏顶，对齐图片的下边缘（较矮的图片在其上方留白）。从栏顶起占满本栏、下方没有正文的图片，会把题注与旁边栏底的题注对齐。手动放置的图（<code>placement.pin</code>，在Sandbox画布中拖动的图）保持原位，不参与对齐。它与<code>layout.footFloatRow</code>配合使用，后者已经会对齐加入下一栏栏底带区的浮动体。作用于整篇文档：资源类型的题注样式不能设置它。排版会多进行一轮。</td>
-    </tr>
   </tbody>
 </table>
 
