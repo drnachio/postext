@@ -266,12 +266,9 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `${payload.resourceId} — ${labels.warningsFigureWordsSharedDetail
         .replace('__resource__', payload.resourceId)
         .replace('__words__', payload.words.map((k) => (k === 'alt' ? labels.warningsFigureWordsSharedAlt : k === 'caption' ? labels.warningsFigureWordsSharedCaption : labels.warningsFigureWordsSharedNote)).join(', '))}`;
-    case 'unknownChipStyle':
-      return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
-    case 'unknownCharacterStyle':
-      return `${inResource(payload.inResource)}:span[…]{style="${payload.style}"} — ${labels.warningsUnknownCharacterStyleDetail}`;
-    case 'unknownMarkStyle':
-      return `${inResource(payload.inResource)}:mark[…]{style="${payload.style}"} — ${labels.warningsUnknownMarkStyleDetail}`;
+    case 'unknownChipStyle': return `${inResource(payload.inResource)}:chip[…]{style="${payload.style}"} — ${labels.warningsUnknownChipStyleDetail}`;
+    case 'unknownCharacterStyle': return `${inResource(payload.inResource)}:span[…]{style="${payload.style}"} — ${labels.warningsUnknownCharacterStyleDetail}`;
+    case 'unknownMarkStyle': return `${inResource(payload.inResource)}:mark[…]{style="${payload.style}"} — ${labels.warningsUnknownMarkStyleDetail}`;
     case 'duplicateAnchor':
       return `{#${payload.anchorId}} — ${labels.warningsDuplicateAnchorDetail}`;
     case 'unknownCitationKey':
