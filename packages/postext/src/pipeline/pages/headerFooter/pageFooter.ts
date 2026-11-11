@@ -91,6 +91,7 @@ export function createPageFooter(deps: PageFooterDeps) {
         partTitleByPageIndex,
         partNumberByPageIndex,
         partPaletteByPageIndex,
+        tintPaper: doc.config.page.backgroundColor?.hex,
       };
       pageTurn.page.footer = asFurniture(withMeasureWritingMode('horizontal-tb', () => layoutSlotToVdt(
         footerSlot,

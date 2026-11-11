@@ -449,6 +449,8 @@ describe("package exports", () => {
       "colorsEqual",
       "resolveColorValue",
       "paletteTintHex",
+      "tintedEntryValue",
+      "tintPaperOf",
       "applyPaletteToConfig",
       "applyPaletteToResolvedConfig",
       "DEFAULT_COLOR_PALETTE",

@@ -192,7 +192,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
   const cmykJob = options.cmyk ?? print.standard !== 'none';
   const sizes = bitmapSizes(doc, options.resources);
   // Spot inks as the ink table prints them: renamed, merged, or in process.
-  const { spots, authored } = spotsThroughInkTable(authoredSpotColors(doc.config), authoredCmykColors(doc.config), print.inks);
+  const { spots, authored } = spotsThroughInkTable(authoredSpotColors([doc.config, doc.printColors]), authoredCmykColors([doc.config, doc.printColors]), print.inks);
   /** Spot inks painted somewhere in the document, by name. */
   const usedInks = new Set<string>();
   const minRulePx = dimensionToPx(pf.minRuleWidth, dpi);
@@ -523,7 +523,7 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // Colours that overprint with no ink: they vanish on press.
   if (cmykJob) {
-    for (const hex of overprintColors(doc.config)) {
+    for (const hex of overprintColors([doc.config, doc.printColors])) {
       if (!usedColors.has(hex)) continue;
       const spot = spots.get(hex);
       const ink = spot ? spotColorCmyk(spot) : authored.get(hex);

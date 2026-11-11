@@ -22,7 +22,10 @@
 // whose fence sets `lineStart=N`.
 
 import type { ContentBlock } from '../../parse/index.js';
-import type { LayoutContinuation, ResolvedLineNumbersConfig } from '../../types.js';
+import type { ColorValue, LayoutContinuation, ResolvedLineNumbersConfig } from '../../types.js';
+import { isTinted, paletteTintHex } from '../../defaults/shared.js';
+import { paperUnder } from '../sections/partPalette.js';
+import { withHash } from '../sections/partPalette/colorKinds.js';
 import {
   type ResolvedConfig,
   createBoundingBox,
@@ -428,12 +431,17 @@ function placeNumbers(page: VDTPage, pending: readonly PendingNumber[], ctx: Pla
 
 /** Recolour the numbers of the pages whose part or section palette
  *  overrides the entry `lineNumbers.color` links to. */
-export function recolorLineNumbers(doc: VDTDocument, palettes: readonly (Record<string, string> | undefined)[]): void {
-  const linked = doc.config.lineNumbers?.color.paletteId;
+export function recolorLineNumbers(doc: VDTDocument, palettes: readonly (Record<string, string> | undefined)[], pageColor: ColorValue = doc.config.page.backgroundColor): void {
+  const color = doc.config.lineNumbers?.color;
+  const linked = color?.paletteId;
   if (!linked) return;
   for (const page of doc.pages) {
-    const hex = palettes[page.index]?.[linked];
-    if (!hex || !page.lineNumbers) continue;
+    const overrides = palettes[page.index];
+    const raw = overrides?.[linked];
+    if (!raw || !page.lineNumbers) continue;
+    // At a tint (`ColorValue.tint`), the override at the same strength
+    // over the page.
+    const hex = isTinted(color) ? paletteTintHex(withHash(raw), color!.tint, paperUnder(pageColor, overrides) ?? pageColor.hex) : raw;
     for (const b of page.lineNumbers.blocks) if (b.kind === 'text') b.color = hex;
   }
 }

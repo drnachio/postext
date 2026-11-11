@@ -22,7 +22,7 @@ import type { ColorPaletteEntry, ColorValue } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
 import { type FlowColorValues, withHash, type Remap } from './partPalette/colorKinds.js';
 import { type PageRemaps, recolorBlock, type KindGroups } from './partPalette/recolor.js';
-import { paletteTintHex } from '../../defaults/shared.js';
+import { isTinted, paletteTintHex } from '../../defaults/shared.js';
 
 export type { TextColorRole, TocColorRole, FrameColorRole, FlowColorKind, FlowColorValues } from './partPalette/colorKinds.js';
 export { flowColorValues, forgetFlowColorValues } from './partPalette/flowColors.js';
@@ -38,25 +38,31 @@ export function applyPartPalettesToFlow(
   basePalette: readonly ColorPaletteEntry[] | undefined,
   valuesFor?: (overrides: Readonly<Record<string, string>>) => FlowColorValues,
   tints: readonly number[] = [],
+  pageColor?: ColorValue,
 ): void {
   if (!basePalette || basePalette.length === 0) return;
   const baseHex = new Map(basePalette.map((e) => [e.id, e.value.hex.toLowerCase()]));
+  const basePaper = paperHex(pageColor?.hex);
   const cache = new Map<Record<string, string>, PageRemaps | null>();
   const remapsOf = (overrides: Record<string, string>): PageRemaps | null => {
     const hit = cache.get(overrides);
     if (hit !== undefined) return hit;
     const map = new Map<string, string>();
+    // The page under the tints: a page whose palette changes the entry
+    // the page colour links to has that colour under them.
+    const paper = paperUnder(pageColor, overrides) ?? basePaper;
     for (const [id, hex] of Object.entries(overrides)) {
       const base = baseHex.get(id);
       const next = withHash(hex);
       if (base && base !== next.toLowerCase()) {
         map.set(base, next);
         // A colour linked at a tint (`ColorValue.tint`) painted the entry at
-        // that strength: it takes the override at the same strength.
-        for (const t of tints) map.set(paletteTintHex(base, t).toLowerCase(), paletteTintHex(next, t));
+        // that strength over the page: it takes the override at the same
+        // strength.
+        for (const t of tints) map.set(paletteTintHex(base, t, basePaper).toLowerCase(), paletteTintHex(next, t, paper));
       }
     }
-    const remaps = map.size === 0 ? null : pageRemaps(map, overrides, basePalette, valuesFor);
+    const remaps = map.size === 0 ? null : pageRemaps(map, overrides, basePalette, valuesFor, paper);
     cache.set(overrides, remaps);
     return remaps;
   };
@@ -75,6 +81,7 @@ function pageRemaps(
   overrides: Readonly<Record<string, string>>,
   basePalette: readonly ColorPaletteEntry[],
   valuesFor: ((overrides: Readonly<Record<string, string>>) => FlowColorValues) | undefined,
+  paper: string,
 ): PageRemaps {
   const byValue: Remap = (hex) => (hex ? map.get(hex.toLowerCase()) ?? hex : hex);
   // Base values two entries share and the page gives two values.
@@ -93,12 +100,21 @@ function pageRemaps(
     const entry = basePalette.find((e) => e.id === source.paletteId);
     if (!entry) return undefined;
     const o = overrides[entry.id];
-    return o ? withHash(o) : entry.value.hex;
+    const hex = o ? withHash(o) : entry.value.hex;
+    // A cell ground at a tint of the entry keeps its strength.
+    return isTinted(source) ? paletteTintHex(hex, source.tint, paper) : hex;
+  };
+  /** Whether a cell's fill starts from a base value two entries share
+   *  (a tint of one included): only its own link says which. */
+  const clashes = (hex: string, source: ColorValue | undefined): boolean => {
+    if (!isTinted(source)) return ambiguous.has(hex.toLowerCase());
+    const entry = basePalette.find((e) => e.id === source!.paletteId);
+    return !!entry && ambiguous.has(entry.value.hex.toLowerCase());
   };
   if (!values) {
     return {
       by: () => byValue,
-      cellFill: (hex, source) => (ambiguous.has(hex.toLowerCase()) ? linked(source) : undefined) ?? byValue(hex) ?? hex,
+      cellFill: (hex, source) => (clashes(hex, source) ? linked(source) : undefined) ?? byValue(hex) ?? hex,
     };
   }
   const by = (groups: KindGroups): Remap => (hex) => {
@@ -125,6 +141,21 @@ function pageRemaps(
     by,
     // A cell fill with no link of its own (a colour written out) is told
     // apart from the table's fills by value only.
-    cellFill: (hex, source, groups) => (ambiguous.has(hex.toLowerCase()) ? linked(source) : undefined) ?? by(groups)(hex) ?? hex,
+    cellFill: (hex, source, groups) => (clashes(hex, source) ? linked(source) : undefined) ?? by(groups)(hex) ?? hex,
   };
+}
+
+/** `#rrggbb` of a page colour, white for none or `transparent`. */
+function paperHex(hex: string | undefined): string {
+  return hex && /^#[0-9a-f]{6}/i.test(hex) ? hex.slice(0, 7) : '#ffffff';
+}
+
+/** The page colour on a page whose palette overrides the entry
+ *  `pageColor` links to, if it does. */
+export function paperUnder(pageColor: ColorValue | undefined, overrides: Readonly<Record<string, string>> | undefined): string | undefined {
+  const id = pageColor?.paletteId;
+  const hex = id ? overrides?.[id] : undefined;
+  if (!hex) return undefined;
+  const base = paperHex(withHash(hex));
+  return isTinted(pageColor) ? paletteTintHex(base, pageColor!.tint) : base;
 }

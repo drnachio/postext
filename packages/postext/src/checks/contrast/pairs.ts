@@ -73,9 +73,9 @@ export function contrastPairs(doc: VDTDocument, options: ContrastOptions = {}): 
   const pxToPt = (px: number) => (px / dpi) * 72;
   const offset = doc.pageIndexOffset ?? 0;
   const printContext: PrintContrastContext | undefined = options.transform
-    ? { transform: options.transform, authored: authoredCmykColors(doc.config) }
+    ? { transform: options.transform, authored: authoredCmykColors([doc.config, doc.printColors]) }
     : undefined;
-  const authored = printContext?.authored ?? authoredCmykColors(doc.config);
+  const authored = printContext?.authored ?? authoredCmykColors([doc.config, doc.printColors]);
   const reversedCfg = contrast.reversedText;
   const minPt = pxToPt(dimensionToPx(reversedCfg.minSize, dpi));
   const minFinePt = pxToPt(dimensionToPx(reversedCfg.minFineSize, dpi));

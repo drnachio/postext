@@ -3,6 +3,7 @@
 // backgrounds of palette overrides, the blocks running marks read (#1276: split out of headerFooter.ts).
 import { getMeasureWritingMode, setMeasureWritingMode } from '../../../measure/vertical.js';
 import type { PartPageInfo } from '../placeholders.js';
+import { isTinted, paletteTintHex } from '../../../defaults/shared.js';
 import type { FlowColorValues } from '../../sections/partPalette.js';
 import type { Resource, ResolvedDesignSlot, ColorValue, ColorPaletteEntry } from '../../../types.js';
 import type { VDTDocument, VDTFrame, ContentWarning, VDTBlock } from '../../../vdt.js';
@@ -45,6 +46,9 @@ export interface HeaderFooterInputs {
    *  a palette override recolours each of them as well. The resolved
    *  configuration no longer says, so they come from the authored one. */
   paletteTints?: readonly number[];
+  /** The page colour as the configuration links it (`page.backgroundColor`
+   *  with its `paletteId` and `tint`): the resolved one keeps neither. */
+  pageColorLink?: ColorValue;
 }
 
 /**
@@ -139,7 +143,9 @@ export function stampPageBackgrounds(
     if (!overrides) continue;
     const id = linked && overrides[linked] !== undefined ? linked : sameValue.find((e) => overrides[e] !== undefined);
     if (!id) continue;
-    const hex = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;
+    const own = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;
+    // A page colour at a tint of its entry keeps its strength.
+    const hex = linked && id === linked && isTinted(pageColor) ? paletteTintHex(own, pageColor.tint) : own;
     if (hex.toLowerCase() !== base) page.background = hex;
   }
 }
