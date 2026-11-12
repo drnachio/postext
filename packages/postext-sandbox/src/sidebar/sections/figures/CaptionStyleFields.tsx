@@ -4,6 +4,7 @@ import type {
   CaptionNoteStyleConfig,
   CaptionPosition,
   CaptionStyleConfig,
+  Dimension,
   DimensionUnit,
   ResolvedCaptionStyleConfig,
   TextAlign,
@@ -60,11 +61,13 @@ export function CaptionStyleFields({
   const labels = useSandboxLabels();
   const side = flowSideLabels(useRightToLeftFlow(), labels.alignLeft, labels.alignRight);
   const unset = (field: keyof CaptionStyleConfig) => raw?.[field] === undefined;
-  // The leading a caption takes when it sets none: the body's, in proportion.
+  // The leading a caption or a note takes when it sets none: the body's,
+  // in proportion to its size.
   const bodyText = useSandboxSelector((s) => s.config.bodyText);
   const body = resolveBodyTextConfig(bodyText);
   const bodyFontPx = dimensionToPx(body.fontSize, 96);
   const bodyRatio = bodyFontPx > 0 ? dimensionToPx(body.lineHeight, 96, bodyFontPx) / bodyFontPx : 1.4;
+  const naturalLeading: Dimension = { value: Math.round(bodyRatio * 100) / 100, unit: 'em' };
 
   const updateNote = (partial: Partial<CaptionNoteStyleConfig>) => {
     update({ note: { ...raw?.note, ...partial } });
@@ -115,7 +118,7 @@ export function CaptionStyleFields({
       <DimensionInput
         label={labels.captionLineHeight}
         tooltip={labels.captionLineHeightTooltip}
-        value={cs.lineHeight ?? { value: Math.round(bodyRatio * 100) / 100, unit: 'em' }}
+        value={cs.lineHeight ?? naturalLeading}
         onChange={(v) => update({ lineHeight: v })}
         min={0.5}
         step={0.05}
@@ -132,12 +135,12 @@ export function CaptionStyleFields({
         onReset={() => resetField('align')}
       />
       <ToggleSwitch
-        label={labels.captionBodyBreaking}
-        tooltip={labels.captionBodyBreakingTooltip}
-        checked={cs.bodyBreaking}
-        onChange={(v) => update({ bodyBreaking: v })}
-        isDefault={unset('bodyBreaking')}
-        onReset={() => resetField('bodyBreaking')}
+        label={labels.bodyHyphenation}
+        tooltip={labels.captionHyphenationTooltip}
+        checked={cs.hyphenation}
+        onChange={(v) => update({ hyphenation: v })}
+        isDefault={unset('hyphenation')}
+        onReset={() => resetField('hyphenation')}
       />
       <SelectInput
         label={labels.captionPosition}
@@ -269,6 +272,17 @@ export function CaptionStyleFields({
           isDefault={noteUnset('fontSize')}
           onReset={() => resetNoteField('fontSize')}
         />
+        <DimensionInput
+          label={labels.captionLineHeight}
+          tooltip={labels.captionLineHeightTooltip}
+          value={cs.note.lineHeight ?? naturalLeading}
+          onChange={(v) => updateNote({ lineHeight: v })}
+          min={0.5}
+          step={0.05}
+          units={LINE_HEIGHT_UNITS}
+          isDefault={noteUnset('lineHeight')}
+          onReset={() => resetNoteField('lineHeight')}
+        />
         <ColorPicker
           label={labels.colorLabel}
           value={cs.note.color}
@@ -293,12 +307,12 @@ export function CaptionStyleFields({
           onReset={() => resetNoteField('align')}
         />
         <ToggleSwitch
-          label={labels.captionBodyBreaking}
-          tooltip={labels.captionBodyBreakingTooltip}
-          checked={cs.note.bodyBreaking}
-          onChange={(v) => updateNote({ bodyBreaking: v })}
-          isDefault={noteUnset('bodyBreaking')}
-          onReset={() => resetNoteField('bodyBreaking')}
+          label={labels.bodyHyphenation}
+          tooltip={labels.captionHyphenationTooltip}
+          checked={cs.note.hyphenation}
+          onChange={(v) => updateNote({ hyphenation: v })}
+          isDefault={noteUnset('hyphenation')}
+          onReset={() => resetNoteField('hyphenation')}
         />
         <DimensionInput
           label={labels.captionGap}

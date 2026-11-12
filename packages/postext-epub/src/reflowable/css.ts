@@ -65,7 +65,7 @@ export function bookStylesheet(config: ResolvedConfig, fontFaces: string, option
   });
 
   createFigureRules({
-    config, options, dpi, bodyPx, fam, em, color, px, out
+    config, options, dpi, bodyPx, fam, em, lh, color, px, out
   });
 
   createBoxRules({

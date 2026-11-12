@@ -6162,5 +6162,33 @@
       "ar": "الملاحق، تصميم آخر لها"
     },
     "theme": "structure"
+  },
+  "Q221": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep justified captions in a narrow column from opening wide gaps between words?",
+      "es": "¿Cómo evito que los pies justificados de una columna estrecha abran huecos grandes entre palabras?",
+      "ca": "Com evito que els peus justificats d’una columna estreta obrin forats grans entre paraules?",
+      "fr": "Comment éviter que les légendes justifiées d’une colonne étroite ouvrent de grands blancs entre les mots ?",
+      "de": "Wie verhindere ich, dass Bildunterschriften im Blocksatz in einer schmalen Spalte große Lücken zwischen den Wörtern reißen?",
+      "it": "Come evito che le didascalie giustificate di una colonna stretta aprano grandi spazi tra le parole?",
+      "pt": "Como evito que legendas justificadas numa coluna estreita abram grandes espaços entre as palavras?",
+      "zh": "怎样避免窄栏里两端对齐的图注在词与词之间拉出大空隙？",
+      "ja": "狭い段で両端そろえのキャプションの語間が大きく空かないようにするには？",
+      "ar": "كيف أمنع التعليقات المضبوطة على الجانبين في عمود ضيق من فتح فراغات واسعة بين الكلمات؟"
+    },
+    "index": {
+      "en": "Captions, hyphenated",
+      "es": "Pies con separación silábica",
+      "ca": "Peus amb partició de mots",
+      "fr": "Légendes, césure des",
+      "de": "Bildunterschriften, Silbentrennung",
+      "it": "Didascalie, sillabazione delle",
+      "pt": "Legendas, hifenização de",
+      "zh": "图注，断词",
+      "ja": "キャプションのハイフネーション",
+      "ar": "التعليقات، تقسيم الكلمات فيها"
+    },
+    "theme": "figures"
   }
 }

@@ -10,6 +10,7 @@ import { isBlankText } from '../../../measure/spaces.js';
 import { stackBreaking } from '../../text/stacks.js';
 import { spaceBreaking } from '../../text/spaceBreaks.js';
 import { hyphenBreaking } from '../../text/hyphenRules.js';
+import { hyphenationFor } from '../../styles.js';
 import { linkSegments } from '../../../measure/links.js';
 import { sliceSpan } from '../../../parse/links.js';
 import { indentColumn } from '../../../parse/listNesting.js';
@@ -117,53 +118,47 @@ export function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarke
   return { marker: { text, ws, column: indentColumn(indent) }, spans: stripped };
 }
 
-/**
- * How a caption, a note or a table cell set in `align` is broken while a
- * composition rule of the line breaker is avoided: stacks (`bodyText.
- * stacks: 'avoid'`, #1463), a citation or a lone operator at a line edge
- * (`citationBreaks`, `operatorBreaks: 'avoid'`, #1519). The line-by-line
- * breaker cannot look back to avoid one, so the text is broken whole on
- * Knuth–Plass, justified within the word-spacing limits, ragged with the
- * right-hand glue ragged running text gets (`optimalRagged`, whether or not
- * the body text asks for it). Empty, line by line as before, under any
- * other level of the rules or without `optimalLineBreaking`.
- */
-export function snippetRuleBreaking(align: TextAlign, resolved: ResolvedConfig): MeasureBlockOptions {
-  const body = resolved.bodyText;
-  const stacks = stackBreaking(body);
-  const spaceBreaks = spaceBreaking(body);
-  if ((!stacks && !spaceBreaks) || !body.optimalLineBreaking) return {};
-  const rules = { ...(stacks ? { stacks } : {}), ...(spaceBreaks ? { spaceBreaks } : {}) };
-  if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, ...rules };
-  return { optimal: true, optimalRagged: true, ...rules };
+/** A caption, a note or a table whose style sets `hyphenation: true`,
+ *  and the size its text is set in (the hyphenation zone of ragged text is
+ *  measured in its ems). */
+export interface SnippetHyphenation {
+  fontSizePx: number;
 }
 
 /**
- * How a caption or a note set in `align` is broken. With `bodyBreaking`
- * (`captionStyle.bodyBreaking`, `note.bodyBreaking`) it is broken as the
- * body text is: on the optimal breaker when the body uses it, within the
- * body's word-spacing limits when justified and with the ragged right-hand
- * glue otherwise, its words divided when the body's hyphenation is on, and
- * under the body's hyphenation and stack rules. Without it, as before:
- * line by line with no word divided, or broken whole while stacks are
- * avoided ({@link snippetRuleBreaking}).
+ * How a caption, a note or a table cell set in `align` is broken. Line by
+ * line with no word divided, as before 1.80, unless its style hyphenates
+ * (`hyphenation`, see {@link SnippetHyphenation}) or a composition rule of
+ * the line breaker is avoided: stacks (`bodyText.stacks: 'avoid'`, #1463),
+ * a citation or a lone operator at a line edge (`citationBreaks`,
+ * `operatorBreaks: 'avoid'`, #1519). The line-by-line breaker cannot look
+ * back to weigh one, so the text is then broken whole on Knuth–Plass,
+ * justified within the word-spacing limits, ragged with the right-hand glue
+ * ragged running text gets (`optimalRagged`, whether or not the body text
+ * asks for it). A style that hyphenates divides words where a paragraph
+ * style with `hyphenation: true` does (justified; ragged when
+ * `bodyText.hyphenation.ragged` is on, within its zone), under the body's
+ * hyphen rules. Without `optimalLineBreaking` it stays line by line, its
+ * words divided all the same.
  */
-export function snippetBreaking(align: TextAlign, bodyBreaking: boolean, resolved: ResolvedConfig): MeasureBlockOptions {
-  if (!bodyBreaking) return snippetRuleBreaking(align, resolved);
+export function snippetRuleBreaking(align: TextAlign, resolved: ResolvedConfig, hyphenation?: SnippetHyphenation): MeasureBlockOptions {
   const body = resolved.bodyText;
   const stacks = stackBreaking(body);
   const spaceBreaks = spaceBreaking(body);
-  return {
-    ...(body.hyphenation.enabled ? { hyphenate: true } : {}),
-    ...(body.optimalLineBreaking
-      ? align === 'justify'
-        ? { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing }
-        : { optimal: true, optimalRagged: true }
-      : {}),
-    ...(stacks ? { stacks } : {}),
-    ...(spaceBreaks ? { spaceBreaks } : {}),
-    ...hyphenBreaking(body.hyphenation),
-  };
+  if (!stacks && !spaceBreaks && !hyphenation) return {};
+  const divides = hyphenation ? hyphenationFor(true, align, resolved, hyphenation.fontSizePx) : undefined;
+  const hyphens: MeasureBlockOptions = divides?.hyphenate
+    ? {
+      hyphenate: true,
+      ...(divides.hyphenationZonePx !== undefined ? { hyphenationZonePx: divides.hyphenationZonePx } : {}),
+      ...(body.hyphenation.compounds ? {} : { hyphenateCompounds: false }),
+      ...hyphenBreaking(body.hyphenation),
+    }
+    : {};
+  if (!body.optimalLineBreaking) return hyphens;
+  const rules = { ...(stacks ? { stacks } : {}), ...(spaceBreaks ? { spaceBreaks } : {}), ...hyphens };
+  if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, ...rules };
+  return { optimal: true, optimalRagged: true, ...rules };
 }
 
 /** The measurement cache of the resource block being laid out, if its

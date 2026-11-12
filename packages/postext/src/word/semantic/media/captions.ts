@@ -62,7 +62,7 @@ function noteStyleId(ctx: WriterContext, typeId: string | undefined): string {
     const notePx = px(u, cs.note.fontSize, capPx) || capPx;
     return {
       basedOn: ctx.styles.caption(cs, type?.id ?? typeId ?? ''),
-      pPr: { before: twips(u, cs.note.gap, notePx), jc: JC[cs.note.align] },
+      pPr: { before: twips(u, cs.note.gap, notePx), jc: JC[cs.note.align], ...(cs.note.lineHeight ? { line: { twips: Math.max(1, twips(u, cs.note.lineHeight, notePx)), rule: 'atLeast' as const } } : {}) },
       rPr: { i: cs.note.italic, color: hex(cs.note.color), sz: halfPoints(u, cs.note.fontSize, capPx) },
     };
   });

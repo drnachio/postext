@@ -220,7 +220,7 @@ function layoutResourceBlockIn(input: ResourceLayoutInput): ResourceBlockLayout 
       ...(resolved.bodyText.plusUnderline ? { plusUnderline: true } : {}),
       annotations: { cjk: resolved.cjk, dpi },
       math: resolved.math,
-      breaking: snippetRuleBreaking('left', resolved),
+      breaking: snippetRuleBreaking('left', resolved, ts.hyphenation ? { fontSizePx: bodyFontPx } : undefined),
     };
     const { layout, height, metrics } = layoutTable(
       resource.table.model,

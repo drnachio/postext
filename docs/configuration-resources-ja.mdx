@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
       <td>そのマーカーの文字列で、部分の下に注記の書体で右そろえに組みます（<a href="#キャプションスタイル">キャプションスタイル</a>を参照）。既定値は文書の言語に従います（各言語の既定値は<a href="/ja/docs/configuration-language#文書の言語">文書の言語</a>を参照）。</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td><code>captionStyle.hyphenation</code> がキャプションを組むのと同じく、セルを本文のように組みます。各セルは最適な行分割で全体をまとめて分割します。セルは行末不ぞろいで組むため、単語を分割するのは <code>bodyText.hyphenation.ragged</code> がオンのときだけです。<code>false</code> では 1 行ずつ分割し、単語を分割しません（postext 1.80以降）。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,16 +669,16 @@ const config: PostextConfig = {
       <td>キャプションの行の水平方向のそろえです。<code>'justify'</code>は最後の行以外を全幅に広げます。キャプションの帯の上では、行は帯の内側余白の内側でそろい、横に置くキャプションは自身の幅の中でそろいます。</td>
     </tr>
     <tr>
-      <td><code>bodyBreaking</code></td>
+      <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>キャプションを本文と同じ方法で行分割します。同じ行分割アルゴリズムを使い、両端揃えでは本文の語間の上限内に収め、本文がハイフネーションするときは単語を分割し、本文のハイフネーションと階段の規則（<code>bodyText.hyphenation</code>、<code>bodyText.stacks</code>）に従います。番号ラベルは分割しません。オフ：1 行ずつ、単語を分割しません。</td>
+      <td><code>hyphenation: true</code> の段落スタイルと同じようにキャプションをハイフネーションします。両端揃えのとき、および <code>bodyText.hyphenation.ragged</code> がオンなら行末不ぞろいのときも、本文の辞書とハイフネーション規則で単語を分割します。<code>bodyText.hyphenation.enabled</code> がオフでも同じです。このときキャプションは最適な行分割（<code>bodyText.optimalLineBreaking</code>）で全体をまとめて分割し、両端揃えでは本文の語間の上限内に収め、本文の階段と行頭・行末の規則（<code>bodyText.stacks</code>、<code>citationBreaks</code>、<code>operatorBreaks</code>）に従います。番号ラベルは分割しません。<code>false</code> では 1 行ずつ分割し、単語を分割しません（postext 1.80以降）。</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>本文の行送りに比例</td>
-      <td>キャプションの行送り。<code>em</code> はキャプション自身の文字サイズ基準です。</td>
+      <td>キャプションの行送り。<code>em</code> はキャプション自身の文字サイズ基準です（postext 1.80以降）。</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -792,10 +798,16 @@ const config: PostextConfig = {
       <td>注記の行の水平方向のそろえ。キャプションの<code>align</code>と同じです。</td>
     </tr>
     <tr>
-      <td><code>note.bodyBreaking</code></td>
+      <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>注をキャプションの <code>bodyBreaking</code> と同じく本文の方法で行分割します。</td>
+      <td>キャプションの <code>hyphenation</code> と同じく注記をハイフネーションします（postext 1.80以降）。</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文の行送りに比例</td>
+      <td>注記の行送り。<code>em</code> は注記自身の文字サイズ基準です（postext 1.80以降）。</td>
     </tr>
   </tbody>
 </table>
