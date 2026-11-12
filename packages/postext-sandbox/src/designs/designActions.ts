@@ -50,7 +50,7 @@ export interface DesignHost {
 
 /** The book's design as a design reads and writes it: the general
  *  settings of a book in several languages, else its configuration. */
-export function bookDesignConfig(s: SandboxState): PostextConfig {
+export function bookDesignConfig(s: Pick<SandboxState, 'config' | 'configLayers'>): PostextConfig {
   return s.configLayers ? generalSettingsView(s.configLayers.shared, s.config) : s.config;
 }
 

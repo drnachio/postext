@@ -14,7 +14,7 @@ let bytes: Uint8Array;
 
 beforeAll(async () => {
   const config = {
-    page: { sizePreset: '17x24' },
+    page: { sizePreset: '21x28' },
     bodyText: { fontSize: pt(12) },
     paragraphStyles: [{ id: 'quote', name: 'Quote', italic: true }],
     headings: { textAlign: 'end' },
@@ -44,7 +44,7 @@ describe('the design tools', () => {
     const tried = await call('sandbox_try_design', { design: 'builtin:lean' });
     expect(tried.ok).toBe(true);
     expect(tried.trying).toMatchObject({ design: 'builtin:lean', parts: ['page', 'text'], missingStyles: [] });
-    expect(get().config.page?.sizePreset).toBe('17x24');
+    expect(get().config.page?.sizePreset).toBe('21x28');
     expect(get().config.bodyText?.fontSize).toEqual(pt(12));
     // Named styles merge by id; headings are not a part of this design.
     expect(get().config.paragraphStyles?.map((s) => s.id)).toEqual(['aside', 'quote']);
@@ -85,7 +85,7 @@ describe('the design tools', () => {
     const done = await call('sandbox_apply_design', { design: 'builtin:lean' });
     expect(done).toMatchObject({ applied: 'builtin:lean', parts: ['page', 'text'] });
     expect(get().configLayers?.shared.bodyText?.fontSize).toEqual(pt(12));
-    expect(get().configLayers?.shared.page?.sizePreset).toBe('17x24');
+    expect(get().configLayers?.shared.page?.sizePreset).toBe('21x28');
     // The edition keeps what it sets itself.
     expect(get().config.bodyText?.fontFamily).toBe('Amiri');
     expect(get().config.locale).toBe('ar');
@@ -101,7 +101,7 @@ describe('the design tools', () => {
   it('say what was wrong', async () => {
     const { call } = harness({ activePresetId: 'wrong' });
     expect((await call('sandbox_try_design', { design: 'builtin:none' })).error).toMatch(/No design "builtin:none"/);
-    expect((await call('sandbox_try_design', { design: 'builtin:lean', parts: ['typography'] })).error).toMatch(/No part "typography"/);
+    expect((await call('sandbox_try_design', { design: 'builtin:lean', parts: ['typography'] })).error).toMatch(/parts\[0\]/);
     expect((await call('sandbox_apply_design', { design: 'builtin:lean', asChapterStyle: {} })).error).toMatch(/an id .* or a name/);
     expect((await call('sandbox_delete_design', { design: 'builtin:lean' })).error).toMatch(/Only a saved design/);
   });

@@ -32,11 +32,15 @@ function missingList(missing: readonly MissingStyle[]): string {
 export function DesignsPage() {
   const labels = useSandboxLabels();
   const host = useDesignHost();
-  const state = useSandboxSelector((s) => s);
+  // Only what the page shows: the whole state would draw it again on every keystroke.
+  const config = useSandboxSelector((s) => s.config);
+  const configLayers = useSandboxSelector((s) => s.configLayers);
+  const activeProjectId = useSandboxSelector((s) => s.activeProjectId);
+  const activePresetId = useSandboxSelector((s) => s.activePresetId);
+  const projects = useSandboxSelector((s) => s.projects);
   const entries = useDesignEntries(host);
-  const trial = useDesignTrial(state);
-  const book = trial?.before ?? bookDesignConfig(state);
-  const projects = state.projects;
+  const trial = useDesignTrial({ activeProjectId, activePresetId });
+  const book = trial?.before ?? bookDesignConfig({ config, configLayers });
   const [from, setFrom] = useState<string>(THIS_BOOK);
   const [name, setName] = useState('');
   const [parts, setParts] = useState<DesignPart[]>([...DESIGN_PARTS]);
@@ -44,7 +48,7 @@ export function DesignsPage() {
 
   const fromOptions: SelectOption[] = [
     { value: THIS_BOOK, label: labels.designsThisBook },
-    ...projects.filter((p) => p.id !== state.activeProjectId).map((p) => ({ value: p.id, label: p.name })),
+    ...projects.filter((p) => p.id !== activeProjectId).map((p) => ({ value: p.id, label: p.name })),
   ];
 
   const busyRun = async (work: () => Promise<void>, failed: string) => {
@@ -100,7 +104,7 @@ export function DesignsPage() {
       {trial && (
         <div role="status" className="flex flex-col gap-2 rounded-md border border-(--brand) p-2 text-xs">
           <span>{fill(labels.designsTrying, { name: trial.name })}</span>
-          {state.configLayers && <span className="text-(--slate)">{labels.designsMultilingual}</span>}
+          {configLayers && <span className="text-(--slate)">{labels.designsMultilingual}</span>}
           {trial.missing.length > 0 && <span>{fill(labels.designsMissing, { list: missingList(trial.missing) })}</span>}
           <div className="flex justify-end gap-2">
             <Button variant="outline" size="sm" onClick={discard}>{labels.designsDiscard}</Button>

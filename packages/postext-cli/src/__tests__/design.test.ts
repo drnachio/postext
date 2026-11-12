@@ -33,7 +33,7 @@ function books(): string {
   }
   writeFileSync(join(dir, 'a.json'), JSON.stringify({
     locale: 'es',
-    page: { sizePreset: '17x24' },
+    page: { sizePreset: '21x28' },
     bodyText: { fontSize: { value: 12, unit: 'pt' } },
     headings: { textAlign: 'center' },
   }));
@@ -67,7 +67,7 @@ describe('postext design', () => {
     // Another book in the whole design, or in some of its parts.
     const info = (args: string[]) => JSON.parse(run(['info', 'b', '--json', '--offline', ...args], dir).stdout);
     expect(info([]).book.pageSize).toBeUndefined();
-    expect(info(['--design', 'all.postext']).book.pageSize).toBe('17x24');
+    expect(info(['--design', 'all.postext']).book.pageSize).toBe('21x28');
     expect(info(['--design', 'all.postext', '--design-parts', 'text']).book.pageSize).toBeUndefined();
     expect(run(['pdf', 'b', '--design', 'all.postext', '-o', 'b.pdf', '-q', '--offline'], dir).code).toBe(0);
     expect(readFileSync(join(dir, 'b.pdf')).subarray(0, 4).toString()).toBe('%PDF');
