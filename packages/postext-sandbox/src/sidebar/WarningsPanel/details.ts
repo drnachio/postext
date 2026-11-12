@@ -11,6 +11,7 @@ import { contrastDetail } from '../../contrast/contrastText.js';
 import { frameOverflowDetail } from '../../warnings/frameOverflowText.js';
 import { frameCoveredDetail, frameOutsideDetail, repeatOverflowDetail } from '../../warnings/frameOverlapText.js';
 import { localNumber } from '../../viewport/composed/reflowText.js';
+import { pdfFontDetail } from './fontDetails.js';
 
 /** Where a design warning points: the slot (`header`, `part`, `H2`); for
  *  a heading style its `{style="…"}` and, for the running heads of its
@@ -27,18 +28,6 @@ function slotWhere(payload: { slot: string; level?: number; styleId?: string; co
 
 /** How many missing characters a warning lists before "…". */
 const LISTED_GLYPHS = 12;
-
-/** `"Noto Serif TC" 700 italic`: the face a PDF font warning is about. */
-function faceLabel(payload: { family: string; weight: number; style: 'normal' | 'italic' }): string {
-  return `"${payload.family}" ${payload.weight}${payload.style === 'italic' ? ' italic' : ''}`;
-}
-
-/** A PDF font warning's detail: the face, what happened, and a note when
- *  the book has changed since that PDF. */
-function pdfFontDetail(payload: { family: string; weight: number; style: 'normal' | 'italic'; stale?: true }, labels: SandboxLabels, detail: string): string {
-  const text = `${faceLabel(payload)} — ${detail}`;
-  return payload.stale ? `${text} ${labels.warningsPdfFontStale}` : text;
-}
 
 /** `pagebreak`, `numbering`, `callout`, … — every fence name the parser
  *  accepts, for the unknown-directive detail string. */

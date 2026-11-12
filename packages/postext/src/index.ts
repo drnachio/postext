@@ -81,7 +81,7 @@ export { parseMarkdown } from './parse/index.js';
 export { addRow, addColumn, removeRow, removeColumn, mergeCells, unmergeCell, setCellContent, setCellImage, setCellBackground, setAlignment, parseTSV, tableGridIssues, transposeTable } from './table/index.js';
 export type { CellPos, CellRange, ParseTSVOptions, TableGridIssue } from './table/index.js';
 export { collectContentWarnings, formatWarning } from './pipeline/contentWarnings.js';
-export { collectHeadingDesignCuts } from './pipeline/sections/headingDesignCuts.js';
+export { collectHeadingDesignCuts, type HeadingDesignCut } from './pipeline/sections/headingDesignCuts.js';
 export { normalizeSafeArea, resourceSafeArea, safeAreaHeightRange, safeAreaSource, uncroppedPictureBox, resourceCrop } from './pipeline/resources/safeArea.js';
 export {
   parseComicSplit, serializeComicSplit, moveComicSplitLine, splitComicCell, mergeComicCells, comicSplitLines, comicSplitLeaves, comicSplitListAt, COMIC_MIN_CELL_PERCENT,
@@ -117,7 +117,6 @@ export type { ExerciseGridInfo, ExerciseRecord, ExerciseSlot, ExerciseSlotKind }
 export type { QrMatrix, QrErrorCorrection } from './video/qr.js';
 export { parseVideoUrl, videoWatchUrl, resourceVideoLink, videoEmbedUrl, videoEmbedAllow, videoElementAttributes, mediaFragment, videoMimeType, videoFormatOfUrl, resourceVideoFormat, isHlsMimeType, HLS_MIME_TYPE, youtubePosterUrls } from './video/url.js';
 export type { ParsedVideoUrl } from './video/url.js';
-export type { HeadingDesignCut } from './pipeline/sections/headingDesignCuts.js';
 export { extractFrontmatter, metadataText } from './parse/frontmatter.js';
 export type { FrontmatterError, ParsedFrontmatter } from './parse/frontmatter.js';
 export { styledLinkOf, lineLinkUnderlines } from './marks/linkUnderline.js';
