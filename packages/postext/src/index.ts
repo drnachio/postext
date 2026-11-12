@@ -828,11 +828,11 @@ export { invalidateConfig } from './pipeline/config.js';
 export { stableStringify, stableHash, hashString, hashStringWide } from './util/stableHash.js';
 export { registerSvgImage, prepareSvgMarkup, decodeSvgImage } from './svg/image.js';
 export type { RegisterSvgImageOptions, PrepareSvgOptions } from './svg/image.js';
-
+export * from './designs/index.js'; // Designs (#1523): the parts of a book's design, saved, applied and taken back.
 // `.postext` bundles. The `postext/bundle` subpath carries the same API plus
 // the low-level manifest helpers.
-export { openBundle, createBundle, buildBundle, createBundleLayoutCache, loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, readBundle, traceBundleContours, planBundle, resolveBundleFiles, openBundleZip, zipBundle, isBundleManifest, pickBundleMeta, POSTEXT_EXTENSION } from './bundle/index.js';
-export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData, BuildBundleOptions, BundleLayoutCache, BundleLayoutStats, BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions, BundleManifest, BundleManifestV1, BundleManifestV2, BundleStart, BundleChapter, BundleFontFile, ReadBundleOptions, ReadBundleResult, ZipBundleOptions } from './bundle/index.js';
+export { openBundle, createBundle, createDesignBundle, openDesignBundle, buildBundle, createBundleLayoutCache, loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, readBundle, traceBundleContours, planBundle, resolveBundleFiles, openBundleZip, zipBundle, isBundleManifest, pickBundleMeta, POSTEXT_EXTENSION } from './bundle/index.js';
+export type { PostextBundle, OpenBundleOptions, CreateBundleInput, DesignBundleInput, OpenedDesign, OpenDesignOptions, BundleDesignSpec, CreateBundleLocale, CreatedBundle, BundleFileData, BuildBundleOptions, BundleLayoutCache, BundleLayoutStats, BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions, BundleManifest, BundleManifestV1, BundleManifestV2, BundleStart, BundleChapter, BundleFontFile, ReadBundleOptions, ReadBundleResult, ZipBundleOptions } from './bundle/index.js';
 
 // Citations (#267–#272): the engine registry and the data model a citation
 // processor (`postext-citeproc`) implements.

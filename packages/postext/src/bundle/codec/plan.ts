@@ -6,7 +6,7 @@ import { type ConfigOverride, leastConfigOverride } from '../../defaults/configL
 import { uniqueSlug, slugify, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat, extensionForResource, extensionForImageMime, chapterFileName, bundleStart } from '../manifest.js';
 import { CONFIG_VERSION } from '../configVersion.js';
 import { type TraceContourOptions, contourWantsAlpha, contourRowsOf, traceResourceContour, withContourTrace } from '../../contour/index.js';
-import type { BundleStart, BundleCanvasScope, BundleManifestV2, BundleBlob, BundleResourceSpec, BundleFontFamilySpec, BundleChapterSpec, BundleLocaleOverrides } from '../types.js';
+import type { BundleStart, BundleCanvasScope, BundleDesignSpec, BundleManifestV2, BundleBlob, BundleResourceSpec, BundleFontFamilySpec, BundleChapterSpec, BundleLocaleOverrides } from '../types.js';
 
 // ---------------------------------------------------------------------------
 // Writing
@@ -63,6 +63,8 @@ export interface BundleContent {
   resources: readonly Resource[];
   /** Written as the manifest's `view` when it is not the default. */
   canvasScope?: BundleCanvasScope;
+  /** A design bundle's marker (#1523): `chapters` is then empty. */
+  design?: BundleDesignSpec;
   /** The cover picture, carried as the manifest's `thumbnail`. */
   thumbnail?: { fileId: string; mime: string };
   /** Where the book starts, for a bundle that holds part of a longer one:
@@ -437,6 +439,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     ...(thumbnailPath ? { thumbnail: thumbnailPath } : {}),
     ...(content.canvasScope === 'book' ? { view: { canvasScope: 'book' as const } } : {}),
     ...(start ? { start } : {}),
+    ...(content.design ? { design: { parts: [...content.design.parts] } } : {}),
     chapters: chapterSpecs,
     config: configWithoutFonts as PostextConfig,
     ...(resources.length > 0 ? { resources } : {}),
