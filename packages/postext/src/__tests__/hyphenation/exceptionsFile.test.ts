@@ -103,4 +103,13 @@ describe('lists in the configuration', () => {
     expect(keyed.hyphenation).toEqual({ enabled: true, exceptions: ['Alice', 'Bob'], exceptionsByLanguage: { es: ['ca-mi-no'], 'en-US': ['ta-ble'] } });
     expect(keyed).toMatchObject({ added: 2, replaced: 0, dropped: 2, unknownLanguages: ['el'] });
   });
+
+  it('reads long runs of hyphens and escaped percent signs in linear time (CodeQL #347, #348)', () => {
+    const hyphens = '-'.repeat(50_000);
+    const started = performance.now();
+    expect(parseHyphenationExceptionsFile(`${hyphens}a${hyphens}b${hyphens}`).words).toEqual(['a-b']);
+    const tex = `\\hyphenation{ta-ble}\n%${'\\%'.repeat(50_000)}\nwith\\% % comment`;
+    expect(parseHyphenationExceptionsFile(tex).words).toEqual(['ta-ble']);
+    expect(performance.now() - started).toBeLessThan(1000);
+  });
 });

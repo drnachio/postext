@@ -39,7 +39,25 @@ const TEX_BLOCK = /\\hyphenation\s*\{([^}]*)\}/g;
 function readEntry(raw: string): string {
   const entry = raw.trim();
   if (entry.startsWith('~')) return entry.replace(/[~­‧‐=-]+/g, '');
-  return entry.replace(/~+/g, '-').replace(BREAK_MARKS, '-').replace(/-{2,}/g, '-').replace(/^-+|-+$/g, '');
+  return trimHyphens(entry.replace(/~+/g, '-').replace(BREAK_MARKS, '-').replace(/-{2,}/g, '-'));
+}
+
+/** `text` without the hyphens at its ends (a scan: a pattern anchored at
+ *  the end is quadratic on a long run of hyphens). */
+function trimHyphens(text: string): string {
+  let start = 0;
+  let end = text.length;
+  while (start < end && text[start] === '-') start++;
+  while (end > start && text[end - 1] === '-') end--;
+  return text.slice(start, end);
+}
+
+/** `line` up to its first unescaped `%`, where a TeX comment begins. */
+function texCodeOf(line: string): string {
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '%' && (i === 0 || line[i - 1] !== '\\')) return line.slice(0, i);
+  }
+  return line;
 }
 
 /** The entries of a plain list, or of the `\hyphenation{…}` blocks of a
@@ -47,7 +65,7 @@ function readEntry(raw: string): string {
 function textEntries(text: string): string[] {
   if (/\\hyphenation\s*\{/.test(text)) {
     // TeX comments run from an unescaped % to the end of the line.
-    const code = text.replace(/(^|[^\\])%.*$/gm, '$1');
+    const code = text.split('\n').map(texCodeOf).join('\n');
     return [...code.matchAll(TEX_BLOCK)].flatMap((m) => m[1]!.split(/[\s,;]+/));
   }
   return text.split(/\r?\n/).filter((line) => !COMMENT_LINE.test(line)).join('\n').split(/[\s,;]+/);
