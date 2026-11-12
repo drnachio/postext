@@ -19,8 +19,9 @@
 // the PDF and EPUB tabs lay it out (`layOutBookPrint`), and written with
 // the options those tabs write with (`pdfWriterSettings`,
 // `epubWriterOptions`); the HTML is the command line's page
-// (`renderHtmlBook`). What only the page can do — rasterize an SVG for
-// the PDF, paint the first page as the EPUB's cover — is asked of it.
+// (`renderHtmlBook`). The page is asked only for what a worker cannot do:
+// an SVG rasterized for the PDF, the first page painted as the EPUB's
+// cover.
 
 import { metadataText, htmlBookFiles, renderHtmlBook, type HtmlBookFontNote, type HtmlBookWarning, type PostextConfig, type Resource, type VDTDocument } from 'postext';
 import { diagramInkHex } from 'postext/bundle';
