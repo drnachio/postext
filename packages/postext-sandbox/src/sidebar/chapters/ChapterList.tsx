@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Check, GripVertical, MoreHorizontal, Palette, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { chapterStyleOf, isCjkLanguage } from 'postext';
+import { chapterStyleIdOf, chapterStyleOf, isCjkLanguage } from 'postext';
 import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps.js';
 import { chapterPageLabels } from '../../book/pagination.js';
@@ -89,6 +89,7 @@ export function ChapterList() {
               number={anyNumbered ? plan.byId[c.id]?.number ?? null : undefined}
               pages={plan.bookPages[c.id] ?? null}
               part={partStarts.get(i)}
+              partStyle={plan.byId[c.id]?.continuation?.part?.style}
               dragging={drag?.id === c.id}
               handleProps={handleProps(c.id, i)}
             />
@@ -120,12 +121,15 @@ interface ChapterRowProps {
   pages: ChapterPages | null;
   /** The part this chapter opens in the list (its header text), if any. */
   part?: string;
+  /** The chapter style of the part the chapter belongs to (`:::part{style}`
+   *  of an earlier chapter), if any. */
+  partStyle?: string;
   /** Whether this row is the one being dragged (drawn faded). */
   dragging: boolean;
   handleProps: RowDragHandleProps;
 }
 
-function ChapterRow({ chapter, index, total, isActive, number, pages, part, dragging, handleProps }: ChapterRowProps) {
+function ChapterRow({ chapter, index, total, isActive, number, pages, part, partStyle, dragging, handleProps }: ChapterRowProps) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const [editing, setEditing] = useState(false);
@@ -158,16 +162,19 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  // The chapter style its front matter names (`chapterStyle:`), and the
-  // book's styles to choose from.
+  // The chapter style its front matter names (`chapterStyle:`), the one it
+  // is set in (its own, else its part's), and the book's styles to choose
+  // from.
   const styleId = useMemo(() => chapterStyleOf(chapter.markdown), [chapter.markdown]);
+  const setIn = useMemo(() => chapterStyleIdOf(chapter.markdown, partStyle), [chapter.markdown, partStyle]);
   const styles = useSandboxSelector((s) => s.config.chapterStyles);
-  const style = styleId ? styles?.find((st) => st.id === styleId) : undefined;
+  const style = setIn ? styles?.find((st) => st.id === setIn) : undefined;
+  const ofPart = !styleId && setIn ? style?.name ?? setIn : undefined;
   const setStyle = (id: string | undefined) => {
     const change = minimalChange(chapter.markdown, setChapterStyle(chapter.markdown, id));
     if (change) dispatch({ type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: chapter.id, changes: [change], baseLength: chapter.markdown.length } });
   };
-  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', formatNumber(words, uiLocale))}${styleId ? ` · ${style?.name ?? styleId}` : ''}`;
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', formatNumber(words, uiLocale))}${setIn ? ` · ${style?.name ?? setIn}` : ''}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });
@@ -260,7 +267,7 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
                   {(styles?.length ?? 0) > 0 && (
                     <>
                       <MenuSeparator />
-                      <MenuItem icon={styleId ? <span style={{ width: 13 }} /> : <Check size={13} />} onClick={() => setStyle(undefined)}>{labels.chapterStyleNone}</MenuItem>
+                      <MenuItem icon={styleId ? <span style={{ width: 13 }} /> : <Check size={13} />} onClick={() => setStyle(undefined)}>{ofPart ? labels.chapterStyleOfPart.replace('__name__', ofPart) : labels.chapterStyleNone}</MenuItem>
                       {styles!.map((st) => (
                         <MenuItem key={st.id} icon={st.id === styleId ? <Check size={13} /> : <span style={{ width: 13 }} />} onClick={() => setStyle(st.id)}>
                           {labels.chapterStyleUse.replace('__name__', st.name ?? st.id)}

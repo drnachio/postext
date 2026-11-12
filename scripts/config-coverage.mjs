@@ -168,7 +168,7 @@ function fieldList(rev) {
     const ctx = [name, ...parentNames(name)];
     for (const field of types.get(name).fields.keys()) {
       const inner = field.split('.').slice(0, -1);
-      out.push({ owner: name, field, file: types.get(name).file, context: [...ctx, ...inner] });
+      out.push({ owner: name, field, file: types.get(name).file, context: [...ctx, ...inner], refs: [...types.get(name).fields.get(field)] });
     }
   }
   return out;
@@ -253,7 +253,13 @@ const moduleGroup = (p) => {
   const isModule = facades.length > 0 || panelSet.has(`${d}/index.ts`) || panelSet.has(`${d}/index.tsx`);
   return isModule ? [...panelFiles.filter((q) => dirname(q) === d), ...facades] : [p];
 };
+// A field holding a layer of the configuration (`ConfigOverride`: a chapter
+// style's settings, #1521) is edited by the whole Design panel with that
+// layer in scope (context/configScope.ts, `panelView`): every section of
+// the panel writes into it, so it counts as covered while the scope exists.
+const layerScoped = /export function panelView\b/.test(readFileSync(join(ROOT, 'packages/postext-sandbox/src/context/configScope.ts'), 'utf8'));
 const panelHit = (f) => {
+  if (layerScoped && f.refs.includes('ConfigOverride')) return true;
   const name = f.field.split('.').pop();
   const group = new Set(panelFiles.filter((_, i) => word(f.owner).test(panelSources[i])).flatMap(moduleGroup));
   const owners = panelSources.filter((_, i) => group.has(panelFiles[i]));
@@ -277,7 +283,6 @@ const PANEL_NOTED = [
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
-  [/^ChapterStyleConfig\.config$/, 'Design panel with the style in scope (sidebar/layers/ChapterStyleBar.tsx): every section writes into it'],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

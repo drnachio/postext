@@ -164,6 +164,10 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return labels.warningsTabInVerticalTextDetail;
     case 'unknownParagraphStyle':
       return `:::paragraphs{style="${payload.style}"} — ${labels.warningsUnknownParagraphStyleDetail}`;
+    case 'chapterStyleUnknown':
+      return `${payload.source === 'part' ? `:::part{style="${payload.style}"}` : `chapterStyle: ${payload.style}`} — ${labels.warningsChapterStyleUnknownDetail}`;
+    case 'partStyleMidChapter':
+      return `:::part{style="${payload.style}"} — ${labels.warningsPartStyleMidChapterDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;
     case 'exerciseUnknownType':
@@ -487,6 +491,8 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       const detail = payload.kind === 'calloutStyleExtendsUnknown' ? labels.warningsCalloutStyleExtendsUnknownDetail : labels.warningsCalloutStyleExtendsCycleDetail;
       return `${payload.path}: "${payload.value}" — ${detail}${payload.suggestion ? ` ${labels.warningsUnknownConfigKeySuggestion.replace('__suggestion__', payload.suggestion)}` : ''}`;
     }
+    case 'chapterStyleBookSetting':
+      return `${payload.path} — ${labels.warningsChapterStyleBookSettingDetail}`;
     case 'templateDuplicate':
     case 'templateExtendsCycle':
     case 'templateExtendsUnknown':

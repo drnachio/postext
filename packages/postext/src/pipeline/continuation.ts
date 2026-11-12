@@ -14,7 +14,7 @@ import { effectiveResourceTypes } from '../defaults/index.js';
 import { documentLocale } from '../defaults/resources/resourceTypes.js';
 import type { HeadingCounters, LayoutContinuation, OutlineEntry, PartState, PostextConfig, PostextContent } from '../types.js';
 import { computeHeadingContext, computeResourceNumberingState } from './resources/resourceNumbering.js';
-import { planParts } from './sections/parts.js';
+import { partHasPage, planParts } from './sections/parts.js';
 import { resolveAllConfig } from './config.js';
 import { exerciseCounterEntries, exerciseCountersAfter, exerciseOutline, hasBookSolutions, nameExerciseAnchors } from '../exercises/build.js';
 import { codeParseOptions } from './code/codeBlocks.js';
@@ -38,7 +38,7 @@ export function continuationAfter(
   config?: PostextConfig,
   before?: LayoutContinuation,
 ): LayoutContinuation {
-  if (config) config = chapterConfigOf(config, content.markdown);
+  if (config) config = chapterConfigOf(config, content.markdown, before?.part?.style);
   const body = extractFrontmatter(content.markdown).content;
   const resolved = resolveAllConfig(config);
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
@@ -58,6 +58,7 @@ export function continuationAfter(
   );
   // The last part opened in `content` (its fence may well have closed —
   // a part stays in effect until the next one), else the inherited one.
+  // Its style sets the chapters after it (#1521).
   let part: PartState | undefined = before?.part;
   const parts = planParts(blocks);
   for (const planned of parts.byStart.values()) {
@@ -65,9 +66,11 @@ export function continuationAfter(
       number: planned.number,
       title: planned.title,
       ...(Object.keys(planned.palette).length > 0 ? { palette: planned.palette } : {}),
+      ...(planned.style ? { style: planned.style } : {}),
     };
   }
-  const afterPartPage = resolved.parts.page && endsWithPart(blocks, parts.byEnd.keys());
+  const last = lastPartEnd(blocks, parts.byEnd.keys());
+  const afterPartPage = last !== undefined && partHasPage(parts.byEnd.get(last), resolved.parts.page);
   // Notes numbered through the book go on from the last one printed.
   let footnoteNumber = before?.footnoteNumber ?? 0;
   if (resolved.footnotes.numbering === 'document') {
@@ -100,21 +103,22 @@ export function continuationAfter(
   };
 }
 
-/** Whether a part's closing fence ends `blocks`: nothing after it but
- *  directives that neither place anything nor break a column or page
- *  (`:::numbering`, `:::space`). The part's pages are then the last of
- *  the content, and the break the part owes falls to what follows. */
-function endsWithPart(blocks: readonly ContentBlock[], partEnds: Iterable<number>): boolean {
+/** The closing fence of the part that ends `blocks`, if one does: nothing
+ *  after it but directives that neither place anything nor break a column
+ *  or page (`:::numbering`, `:::space`). The part's pages are then the
+ *  last of the content, and the break the part owes falls to what
+ *  follows. */
+function lastPartEnd(blocks: readonly ContentBlock[], partEnds: Iterable<number>): number | undefined {
   let last = -1;
   for (const end of partEnds) last = Math.max(last, end);
-  if (last < 0) return false;
+  if (last < 0) return undefined;
   for (let i = last + 1; i < blocks.length; i++) {
     const b = blocks[i]!;
-    if (b.type !== 'directive' || b.directiveName === 'pagebreak' || b.directiveName === 'columnbreak') return false;
+    if (b.type !== 'directive' || b.directiveName === 'pagebreak' || b.directiveName === 'columnbreak') return undefined;
     // The contents and the index expand into text.
-    if (b.directiveName === 'toc' || b.directiveName === 'index') return false;
+    if (b.directiveName === 'toc' || b.directiveName === 'index') return undefined;
   }
-  return true;
+  return last;
 }
 
 /** The outline of `content` on its own — every heading and part, numbered
@@ -127,7 +131,7 @@ export function contentOutline(
   config?: PostextConfig,
   before?: LayoutContinuation,
 ): { outline: OutlineEntry[]; hasToc: boolean; hasIndex: boolean; hasRefs: boolean } {
-  if (config) config = chapterConfigOf(config, content.markdown);
+  if (config) config = chapterConfigOf(config, content.markdown, before?.part?.style);
   const body = extractFrontmatter(content.markdown).content;
   const resolved = resolveAllConfig(config);
   const blocks = parseMarkdownMemo(body, codeParseOptions(resolved));
@@ -146,10 +150,11 @@ export function contentOutline(
  *  in order, whose template the configuration has (#943): what a story of
  *  an earlier chapter can jump to (`overflow.continueIn: 'page:<id>'`). A
  *  host collects them chapter by chapter into `PostextContent.laterPageIds`
- *  (see `laterPageIdsOf`). */
-export function pageFenceIds(markdown: string, config?: PostextConfig): string[] {
+ *  (see `laterPageIdsOf`). `before` is what the chapter inherits: the
+ *  style of the part it belongs to sets its templates. */
+export function pageFenceIds(markdown: string, config?: PostextConfig, before?: LayoutContinuation): string[] {
   if (!markdown.includes('id=')) return [];
-  if (config) config = chapterConfigOf(config, markdown);
+  if (config) config = chapterConfigOf(config, markdown, before?.part?.style);
   const resolved = resolveAllConfig(config);
   const source = { pageTemplates: resolved.pageTemplates, calloutStyles: resolved.calloutStyles };
   const blocks = parseMarkdownMemo(extractFrontmatter(markdown).content, codeParseOptions(resolved));

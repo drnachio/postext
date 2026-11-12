@@ -104,8 +104,10 @@ export function countersKey(c: LayoutContinuation | undefined): string {
   const numbers = c.resourceNumbers
     ? Object.keys(c.resourceNumbers).sort().map((id) => `${id}=${c.resourceNumbers![id]!.number}`).join(',')
     : '';
+  // The part's chapter style (#1521) sets the chapter's settings: appended
+  // only when set, as below.
   const part = c.part
-    ? `${c.part.number}/${c.part.title}/${Object.entries(c.part.palette ?? {}).sort().map(([k, v]) => `${k}=${v}`).join(',')}`
+    ? `${c.part.number}/${c.part.title}/${Object.entries(c.part.palette ?? {}).sort().map(([k, v]) => `${k}=${v}`).join(',')}${c.part.style ? `/style=${c.part.style}` : ''}`
     : '';
   // A part page closing the chapter before owes its break to this one,
   // which can move its pages. Appended only when set, so the key of every

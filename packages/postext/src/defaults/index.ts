@@ -48,7 +48,7 @@ export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOT
 export { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './text/verse.js';
 export { BOOK_PAGE_KEYS, BOOK_WIDE_KEYS, BOOK_OWN_KEYS, isBookWideKey, isBookOwnKey, isBookPageKey } from './bookKeys.js';
 export type { BookWideKey, BookOwnKey } from './bookKeys.js';
-export { CHAPTER_STYLE_KEY, blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf } from './chapterStyles.js';
+export { CHAPTER_STYLE_KEY, blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf, chapterStyleIdOf, openingPart, bookSettingsOf } from './chapterStyles.js';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, balancingOnByDefault, resolveHeadingsConfig, stripHeadingsDefaults } from './structure/headings.js';
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './resources/tableStyle.js';
 export { resolveCaptionStyleConfig, stripCaptionStyleDefaults, mergeCaptionStyle, defaultCaptionLabels } from './resources/captionStyle.js';

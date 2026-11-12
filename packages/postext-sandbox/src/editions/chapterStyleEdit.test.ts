@@ -23,11 +23,23 @@ describe('editing a chapter style', () => {
     // Two columns are the default: the style takes the book's one out.
     expect(own.layout === null || (own.layout as { layoutType?: string }).layoutType === 'double').toBe(true);
     expect(own.page).toBeUndefined();
-    // The book itself is left as it was.
+    // The book itself keeps its own settings; the trim, which the whole
+    // book shares, is the book's change.
     expect(next.bodyText).toEqual(book.bodyText);
+    expect(next.page?.width).toEqual(pt(500));
+    expect(next.page?.margins).toEqual(book.page!.margins);
     // Setting a field back to the book's value takes it out of the style.
     const back = writeChapterStyle(next, 'appendix', { ...chapterStyleView(next, 'appendix'), layout: { layoutType: 'single' } });
     expect(back.chapterStyles![0]!.config).toEqual({ bodyText: { fontSize: pt(9) } });
+  });
+
+  it('gives the book a setting the whole book shares, written while the style is shown', () => {
+    const view = chapterStyleView(book, 'appendix');
+    const next = writeChapterStyle(book, 'appendix', { ...view, locale: 'fr', symbolFont: 'Noto Sans Symbols' });
+    expect(next.locale).toBe('fr');
+    expect(next.symbolFont).toBe('Noto Sans Symbols');
+    expect(next.chapterStyles![0]!.config.locale).toBeUndefined();
+    expect(next.chapterStyles![0]!.config.symbolFont).toBeUndefined();
   });
 
   it('names a new style with an id the book does not use', () => {

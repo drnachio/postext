@@ -258,4 +258,8 @@ export interface PartState {
   title: string;
   /** Palette id → hex colour. */
   palette?: Record<string, string>;
+  /** The chapter style the fence names (`style="appendix"`, #1521): the
+   *  part's chapters are set in it until the next part, but for a chapter
+   *  that names its own (`chapterStyle:`). */
+  style?: string;
 }

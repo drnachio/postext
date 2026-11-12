@@ -65,6 +65,14 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownParagraphStyle':
       text = `Unknown paragraph style "${w.style}" — the paragraphs are set as body text`;
       break;
+    case 'chapterStyleUnknown':
+      text = w.source === 'part'
+        ? `The part names the chapter style "${w.style}", which the book does not define — its chapters are set in the book's settings`
+        : `The chapter names the chapter style "${w.style}", which the book does not define — it is set in the book's settings`;
+      break;
+    case 'partStyleMidChapter':
+      text = `The part with the chapter style "${w.style}" stands after text of its chapter — the style starts with the next chapter; open a chapter with the fence to set it from there`;
+      break;
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;
       break;
@@ -488,6 +496,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     // Box styles based on another (#905).
     case 'calloutStyleExtendsUnknown':
       text = `${w.path}: no box style has the id "${w.value}"${w.suggestion ? ` (did you mean "${w.suggestion}"?)` : ''} — the style stands alone`;
+      break;
+    case 'chapterStyleBookSetting':
+      text = `${w.path}: a chapter style cannot change ${w.value}, which the whole book shares — its chapters keep the book's`;
       break;
     case 'calloutStyleExtendsCycle':
       text = `${w.path}: the box styles extend each other in a loop (${w.value}) — the style stands alone`;

@@ -84,6 +84,10 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsStrayFenceTitle;
     case 'unknownParagraphStyle':
       return labels.warningsUnknownParagraphStyleTitle;
+    case 'chapterStyleUnknown':
+      return labels.warningsChapterStyleUnknownTitle;
+    case 'partStyleMidChapter':
+      return labels.warningsPartStyleMidChapterTitle;
     case 'unknownCalloutType':
       return labels.warningsUnknownCalloutTypeTitle;
     case 'exerciseUnknownType':
@@ -303,6 +307,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsCalloutStyleExtendsUnknownTitle;
     case 'calloutStyleExtendsCycle':
       return labels.warningsCalloutStyleExtendsCycleTitle;
+    case 'chapterStyleBookSetting':
+      return labels.warningsChapterStyleBookSettingTitle;
     case 'templateDuplicate':
       return labels.warningsTemplateDuplicateTitle;
     case 'templateExtendsCycle':

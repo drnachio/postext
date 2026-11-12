@@ -1,6 +1,7 @@
 import type { SandboxToolHost } from '../host.js';
 import type { WebMcpTool } from '../modelContext.js';
 import { bookTools } from './book.js';
+import { chapterStyleTools } from './chapterStyles.js';
 import { checkTools } from './checks.js';
 import { findTextTools } from './findText.js';
 import { comicTools } from './comics.js';
@@ -31,6 +32,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...text,
     ...findTextTools(host),
     ...configTools(host),
+    ...chapterStyleTools(host),
     ...designItemTools(host),
     ...historyTools(host),
     ...frameStyleTools(host),

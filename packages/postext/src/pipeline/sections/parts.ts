@@ -34,6 +34,26 @@ export interface PlannedPart {
   /** `palette` attribute parsed: palette id → hex colour (see
    *  {@link parsePartPalette}); empty when absent. */
   palette: Record<string, string>;
+  /** `style` attribute (#1521): the chapter style the part's chapters are
+   *  set in; undefined when absent or empty. */
+  style?: string;
+  /** `page` attribute: `false` (`page=false`, `no`, `0`, `off`) sets this
+   *  part without its divider page, in a book whose parts have one
+   *  (`parts.page`); undefined otherwise. */
+  page?: false;
+}
+
+/** A fence's `page` attribute: `false` when it turns the divider page off,
+ *  else undefined. */
+export function partPageAttr(attr: string | undefined): false | undefined {
+  const v = attr?.trim().toLowerCase();
+  return v === 'false' || v === 'no' || v === '0' || v === 'off' ? false : undefined;
+}
+
+/** Whether `part` opens a divider page: the book's `parts.page`, unless its
+ *  fence says `page=false`. */
+export function partHasPage(part: Pick<PlannedPart, 'page'> | undefined, bookDefault: boolean): boolean {
+  return bookDefault && part?.page !== false;
 }
 
 export interface PartPlan {
@@ -63,6 +83,8 @@ export function planParts(contentBlocks: readonly ContentBlock[]): PartPlan {
         number: (attrs.number ?? '').trim(),
         title: (attrs.title ?? '').trim(),
         palette: parsePartPalette(attrs.palette),
+        ...(attrs.style?.trim() ? { style: attrs.style.trim() } : {}),
+        ...(partPageAttr(attrs.page) === false ? { page: false as const } : {}),
       };
       open = { part, depth: 0 };
       continue;
