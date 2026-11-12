@@ -3560,8 +3560,7 @@ export interface SandboxLabels {
   captionGap: string;
   captionLineHeight: string;
   captionLineHeightTooltip: string;
-  captionBodyBreaking: string;
-  captionBodyBreakingTooltip: string;
+  captionHyphenationTooltip: string;
   captionLabelGroup: string;
   captionLabelNumberGap: string;
   captionLabelNumberGapTooltip: string;
@@ -5528,6 +5527,7 @@ export interface SandboxLabels {
   resourceTypePlacementColumnsTooltip: string;
   resourceTypePlacementRotateTooltip: string;
   tableBodyFillTooltip: string;
+  tableHyphenationTooltip: string;
   tableHeaderFillTooltip: string;
   tableBordersTooltip: string;
   tableContinuesMarkerEnabledTooltip: string;
