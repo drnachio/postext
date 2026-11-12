@@ -1,0 +1,75 @@
+---
+title: "Citazioni e statistiche lontane dai margini della riga"
+summary: "Un articolo a due colonne composto due volte: la prima bozza segnala ogni richiamo o segno al margine della riga, la seconda penalizza quelle interruzioni."
+plain: "In una colonna giustificata stretta un richiamo come [2, 3] può aprire da solo una riga, e p < 0,05 può spezzarsi dopo il segno. L’articolo è composto due volte: una mostra dove succede, l’altra spezza le righe perché non succeda quasi più."
+description: "citationBreaks e operatorBreaks in due bozze di un articolo clinico: 'warn' elenca e marca ogni interruzione, 'avoid' la penalizza nei demeriti di Knuth–Plass."
+question: "Come evito che un richiamo bibliografico o una statistica come p < 0,05 si spezzi a fine riga?"
+aliases: ["interruzioni di citazione", "richiamo bibliografico a inizio riga", "richiamo isolato", "statistiche spezzate", "valore p spezzato", "segno di uguale a fine riga", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "articolo clinico", "correzione di bozze"]
+pageNotes: { "1": "Prima bozza, pagina 211: bande ambra pallido sotto = 0.09, spezzato tra due righe dell’abstract, e sotto first, alla fine di una riga la cui seguente comincia con [2, 3].", "3": "L’ultima pagina della prima bozza: LR− = marcato a fine riga, la bibliografia e un cartellino intitolato FIRST PROOF: QUERIES che elenca tre interruzioni.", "6": "L’ultima pagina della seconda bozza: LR− = 0.09 ora su una sola riga, e il cartellino elenca l’unica interruzione rimasta, first sopra [2, 3] a pagina 211." }
+---
+
+## Che cosa comporrai
+
+Tre pagine di una rivista di pediatria di 170 × 240 mm, su due colonne giustificate di 66 mm in STIX Two Text: uno studio originale sull’ecografia polmonare nella polmonite del bambino, con una bibliografia numerata in stile Vancouver. Una colonna così stretta lascia poche scelte all’algoritmo che divide le righe, e in tre punti il testo inglese si spezza male. Un richiamo, *[2, 3]*, apre da solo una riga, lontano dalla parola a cui si riferisce, e due volte il rapporto di verosimiglianza *LR− = 0.09* si spezza dopo il segno di uguale. La prima bozza è composta con `citationBreaks` e `operatorBreaks` a `'warn'`. Non cambia nessuna interruzione, marca ciascuna con una banda ambra pallido e le elenca su un cartellino dopo la bibliografia. La seconda è composta con `'avoid'`, e delle tre ne resta una. L’edizione spagnola compone lo stesso studio con la virgola decimale.
+
+## Preparazione
+
+### 1 · Un prezzo per due tipi di interruzione
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. C’è un’interruzione di citazione quando una riga comincia con un richiamo numerato, o con la seconda metà di un richiamo, come *5]* dopo *[4,*. C’è un’interruzione di operatore quando una riga finisce o comincia con un segno tra due spazi: `=`, `<`, `±`, `×`, il meno. `'warn'` segnala entrambe e lascia le righe come sono. `'avoid'` aggiunge una penalità ai demeriti di quelle interruzioni, e l’algoritmo di Knuth–Plass cerca un altro modo di spezzare il paragrafo. Serve `optimalLineBreaking`: la divisione riga per riga non ha demeriti a cui aggiungere qualcosa.
+
+La penalità predefinita, 10000, è il costo di una riga allargata fino al limite dello spazio tra le parole, quindi l’algoritmo non apre mai una riga oltre quel limite per tenere un richiamo accanto alla sua parola. In questa colonna 10000 lasciava due interruzioni in ogni edizione. Con 30000 l’algoritmo accetta righe più larghe, sempre entro `maxWordSpacing`, e in ogni edizione ne resta una. Un valore più alto non cambiava più nulla: l’ultima interruzione non ha alternative entro il limite.
+
+### 2 · Marcare le interruzioni nel testo
+
+<Excerpt region="marks" />
+
+Ogni avviso riporta il suo tipo, il richiamo o il segno, il testo delle due righe, la posizione della prima nel sorgente e la pagina. Lo script trova quelle due righe nel documento composto e avvolge l’interruzione in `:mark[…]`: la parola prima del richiamo e il richiamo, oppure il segno e il numero dall’altra parte. Una marcatura dipinge una banda sotto il testo e lascia le interruzioni dov’erano. La banda non arriva al numero generato dallo stile delle citazioni, quindi sulla pagina è marcata solo la parola che lo precede.
+
+<PageShot page={1} crop="0,0.33,1,0.72" caption="Prima bozza, pagina 211: LR− = 0.09 spezzato nell’abstract, e first a fine riga con [2, 3] all’inizio della riga seguente." />
+
+### 3 · Due bozze e un cartellino di quesiti
+
+<Excerpt region="proofs" />
+
+Ogni bozza è composta due volte. La prima composizione trova le interruzioni; la seconda compone l’articolo con le marcature e un cartellino dopo la bibliografia, che cade quindi sull’ultima pagina. È così che un compositore restituisce le bozze con i suoi quesiti. Le righe del cartellino uniscono le parole con spazi indivisibili, così non aggiungono interruzioni proprie. `capture.doc` pubblica le due composizioni marcate, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.62,1,0.78" caption="Seconda bozza, pagina 213: il cartellino elenca un’interruzione rimasta nell’articolo." />
+
+L’interruzione che resta in inglese è *first* sopra *[2, 3]*, a pagina 211. In spagnolo la prima bozza ne trova quattro, tra cui *CP+* sopra *= 19,19* e *[4,* sopra *5]*, dove si spezza il richiamo stesso, e la seconda ne tiene una, *anteriores [4,* sopra *5]*.
+
+### 4 · Richiami numerati tra parentesi quadre
+
+<Excerpt region="citations" />
+
+Il processore delle citazioni compone ogni `[@key]` come un numero tra parentesi quadre dopo uno spazio e raggruppa le serie come *[4–6]*. Lo spazio prima della parentesi e quello dopo una virgola al suo interno sono entrambi punti in cui una riga può spezzarsi: per questo una colonna stretta con molte citazioni ha bisogno della regola.
+
+### 5 · La testata e il blocco dell’articolo
+
+<Excerpt region="title" />
+
+Lo stile del titolo disegna la fascia della rivista, il tipo di articolo, il titolo, gli autori con i numeri di affiliazione e una nota, tutto a partire da attributi dell’H1. Le due edizioni condividono lo stile, e il testo resta nel Markdown.
+
+## Varianti
+
+### Segnala le interruzioni senza cambiare nulla
+
+Una rivista che controlla le bozze a mano può lasciare la regola a `'warn'`: la Sandbox elenca ogni interruzione tra i suoi avvisi, e le righe restano come le ha spezzate l’algoritmo.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Tieni la penalità predefinita
+
+Con 10000 la spaziatura resta un po’ più stretta e in ogni edizione restano due interruzioni invece di una.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Errori frequenti
+
+- Le interruzioni si cercano nelle righe già spezzate. Un cambio di formato, di corpo o di testo le sposta: leggi gli avvisi di ogni composizione e non copiare le posizioni da una precedente.
+- Per tenere un richiamo preciso accanto alla sua parola in qualunque colonna, scrivi uno spazio indivisibile prima di esso nel Markdown. Al resto dell’articolo pensa la regola.

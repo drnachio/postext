@@ -1,0 +1,75 @@
+---
+title: "Literaturverweise und Statistikwerte nicht am Zeilenrand"
+summary: "Ein zweispaltiger Fachartikel, zweimal gesetzt: Die erste Korrektur meldet jeden Verweis und jedes Zeichen am Zeilenrand, die zweite verteuert diese Umbrüche."
+plain: "In einer schmalen Spalte im Blocksatz kann ein Verweis wie [2, 3] allein eine Zeile beginnen und p < 0,05 nach dem Zeichen umbrechen. Der Artikel wird zweimal gesetzt: einmal mit markierten Stellen, einmal so, dass es kaum noch vorkommt."
+description: "citationBreaks und operatorBreaks in zwei Korrekturen eines Fachartikels: 'warn' listet und markiert jeden Umbruch, 'avoid' erhöht seine Knuth–Plass-Kosten."
+question: "Wie verhindere ich, dass ein Literaturverweis oder ein Wert wie p < 0,05 am Zeilenende umbricht?"
+aliases: ["Verweisumbruch", "Literaturverweis am Zeilenanfang", "Verweisnummer allein in der Zeile", "getrennter Statistikwert", "p-Wert umbrochen", "Gleichheitszeichen am Zeilenende", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "klinischer Fachartikel", "Korrekturlesen"]
+pageNotes: { "1": "Erste Korrektur, Seite 211: blasse bernsteinfarbene Bänder unter = 0.09, über zwei Zeilen des Abstracts getrennt, und unter first am Ende einer Zeile, deren nächste mit [2, 3] beginnt.", "3": "Die letzte Seite der ersten Korrektur: LR− = am Zeilenende markiert, das Literaturverzeichnis und ein Zettel mit dem Titel FIRST PROOF: QUERIES, der drei Umbrüche auflistet.", "6": "Die letzte Seite der zweiten Korrektur: LR− = 0.09 steht jetzt in einer Zeile, und der Zettel listet den einen verbliebenen Umbruch, first über [2, 3] auf Seite 211." }
+---
+
+## Was Sie setzen
+
+Drei Seiten einer pädiatrischen Fachzeitschrift im Format 170 × 240 mm, zweispaltig im Blocksatz mit 66 mm Spaltenbreite aus der STIX Two Text: eine Originalarbeit über Lungenultraschall bei Pneumonie mit nummeriertem Literaturverzeichnis nach Vancouver. Eine so schmale Spalte lässt dem Zeilenumbruch wenig Spielraum, und an drei Stellen bricht der englische Text schlecht um. Ein Verweis, *[2, 3]*, steht allein am Anfang einer Zeile, getrennt von dem Wort, auf das er sich bezieht, und zweimal bricht der negative Likelihood-Quotient *LR− = 0.09* nach dem Gleichheitszeichen um. Die erste Korrektur wird mit `citationBreaks` und `operatorBreaks` auf `'warn'` gesetzt. Sie ändert keinen Umbruch, markiert jeden mit einem blassen bernsteinfarbenen Band und listet sie auf einem Zettel nach dem Literaturverzeichnis. Die zweite wird mit `'avoid'` gesetzt, und einer der drei bleibt. Die spanische Ausgabe setzt dieselbe Studie mit Dezimalkomma.
+
+## Zubereitung
+
+### 1 · Ein Preis für zwei Arten von Umbruch
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Ein Verweisumbruch liegt vor, wenn eine Zeile mit einem nummerierten Verweis beginnt oder mit der zweiten Hälfte eines Verweises, etwa *5]* nach *[4,*. Ein Zeichenumbruch liegt vor, wenn eine Zeile mit einem Zeichen zwischen Leerzeichen endet oder beginnt: `=`, `<`, `±`, `×` oder dem Minus. `'warn'` meldet beide und lässt die Zeilen, wie sie sind. `'avoid'` schlägt eine Strafe auf die Kosten dieser Umbrüche, und der Knuth–Plass-Umbruch sucht einen anderen Weg durch den Absatz. Dafür braucht es `optimalLineBreaking`: Der zeilenweise Umbruch hat keine Kosten, auf die sich etwas aufschlagen ließe.
+
+Die voreingestellte Strafe, 10000, entspricht den Kosten einer Zeile, die bis an die Grenze des Wortabstands gedehnt ist. Der Umbruch öffnet also nie eine Zeile über diese Grenze hinaus, um einen Verweis bei seinem Wort zu halten. In dieser Spalte ließ 10000 in jeder Ausgabe zwei Umbrüche stehen. Bei 30000 nimmt der Umbruch lockerere Zeilen in Kauf, immer innerhalb von `maxWordSpacing`, und in jeder Ausgabe bleibt einer. Ein höherer Wert änderte nichts mehr: Für den letzten Umbruch gibt es innerhalb der Grenze keine Alternative.
+
+### 2 · Die Umbrüche im Text markieren
+
+<Excerpt region="marks" />
+
+Jede Warnung enthält ihre Art, den Verweis oder das Zeichen, den Text der beiden Zeilen, die Position der ersten im Quelltext und die Seite. Das Skript sucht diese beiden Zeilen im gesetzten Dokument und umschließt den Umbruch mit `:mark[…]`: das Wort vor dem Verweis und den Verweis, oder das Zeichen und die Zahl auf seiner anderen Seite. Eine Markierung malt ein Band unter den Text und lässt die Umbrüche, wo sie waren. Das Band reicht nicht bis zu der Nummer, die der Zitierstil erzeugt; auf der Seite ist deshalb nur das Wort davor markiert.
+
+<PageShot page={1} crop="0,0.33,1,0.72" caption="Erste Korrektur, Seite 211: LR− = 0.09 im Abstract getrennt, und first am Zeilenende, während [2, 3] die nächste Zeile eröffnet." />
+
+### 3 · Zwei Korrekturen und ein Zettel mit Rückfragen
+
+<Excerpt region="proofs" />
+
+Jede Korrektur wird zweimal gesetzt. Der erste Durchgang findet die Umbrüche; der zweite setzt den Artikel mit den Markierungen und einem Zettel nach dem Literaturverzeichnis, der so auf die letzte Seite fällt. So schickt auch ein Setzer seine Korrekturabzüge mit Rückfragen zurück. Die Zeilen des Zettels verbinden ihre Wörter mit geschützten Leerzeichen und erzeugen so keine eigenen Umbrüche. `capture.doc` veröffentlicht die beiden markierten Durchgänge, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.62,1,0.78" caption="Zweite Korrektur, Seite 213: Der Zettel listet einen verbliebenen Umbruch im Artikel." />
+
+Der Umbruch, der im Englischen bleibt, ist *first* über *[2, 3]* auf Seite 211. Im Spanischen findet die erste Korrektur vier, darunter *CP+* über *= 19,19* und *[4,* über *5]*, wo der Verweis selbst getrennt wird, und die zweite behält einen, *anteriores [4,* über *5]*.
+
+### 4 · Nummerierte Verweise in eckigen Klammern
+
+<Excerpt region="citations" />
+
+Der Zitierprozessor setzt jedes `[@key]` als Nummer in eckigen Klammern nach einem Wortzwischenraum und fasst Folgen wie *[4–6]* zusammen. Der Zwischenraum vor der Klammer und der nach einem Komma in ihr sind beides Stellen, an denen eine Zeile umbrechen kann. Deshalb braucht eine schmale Spalte mit vielen Verweisen die Regel.
+
+### 5 · Zeitschriftenkopf und Artikelblock
+
+<Excerpt region="title" />
+
+Der Überschriftenstil zeichnet das Band der Zeitschrift, die Artikelart, den Titel, die Autoren mit ihren Affiliationsnummern und eine Anmerkung, alles aus Attributen der H1. Beide Ausgaben teilen den Stil, und der Text bleibt im Markdown.
+
+## Varianten
+
+### Umbrüche melden und nichts ändern
+
+Eine Zeitschrift, die ihre Korrekturen von Hand prüft, kann die Regel auf `'warn'` lassen: Die Sandbox listet jeden Umbruch unter ihren Warnungen, und die Zeilen bleiben, wie der Umbruch sie gesetzt hat.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Die voreingestellte Strafe behalten
+
+Bei 10000 bleibt der Satz etwas enger, und in jeder Ausgabe bleiben zwei Umbrüche statt einem.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Häufige Fehler
+
+- Die Umbrüche werden in den fertig umbrochenen Zeilen gesucht. Eine Änderung von Format, Schriftgrad oder Text verschiebt sie. Lesen Sie die Warnungen jedes Durchgangs und übernehmen Sie keine Positionen aus einem früheren.
+- Um einen bestimmten Verweis in jeder Spalte bei seinem Wort zu halten, tippen Sie im Markdown ein geschütztes Leerzeichen davor. Den Rest des Artikels übernimmt die Regel.
