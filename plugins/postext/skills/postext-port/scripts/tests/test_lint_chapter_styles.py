@@ -51,3 +51,18 @@ class ChapterStyleLint(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Shapes178(unittest.TestCase):
+    """What postext 1.78.0 shipped and 1.79 reads another way (#1532)."""
+
+    def test_section_line(self):
+        self.assertTrue(any("::section" in m for m in messages('# A\n\nText.\n\n::section{style="appendix"}\n\nMore.\n')))
+        self.assertFalse(any("::section" in m for m in messages('# A\n\n```\n::section{style="appendix"}\n```\n')))
+
+    def test_binding_keys(self):
+        rep = lp.Report()
+        lp.check_legacy_178({"bodyText": {"bindCitations": True},
+                             "chapterStyles": [{"id": "a", "config": {"bodyText": {"bindOperators": True}}}]}, "config", rep)
+        found = [w for _, w, _ in rep.items]
+        self.assertEqual(found, ["config.bodyText.bindCitations", "config.chapterStyles[0].config.bodyText.bindOperators"])

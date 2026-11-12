@@ -370,6 +370,8 @@ those lines, or run the script.
   the page trim (configuration.md §19g2), which the style cannot change: move it to the book's config.
   `partStyleMidChapter` with `source: 'section'` is a `::section{style}` line written for postext 1.78: no longer
   read, its text stays in the chapter; make that text a chapter inside `:::part{style}` or give it `chapterStyle:`.
+  `bodyText.bindCitations` / `bindOperators: true` (also 1.78) read as `citationBreaks` / `operatorBreaks: 'avoid'`;
+  `lint_project.py` warns on both 1.78 shapes so the port writes the 1.79 ones.
 - `WARN dropCap` reason `inBox` (postext ≥ 1.38): a drop cap asked inside a `:::callout` is not set (a frame
   of a composed page is running text and takes it). Reason `split` (≥ 1.39): a paragraph whose piece with the
   initial has fewer lines than the initial sinks and goes on in another piece: the frame is too short for the
