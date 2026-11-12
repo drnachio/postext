@@ -592,7 +592,10 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   the import report: the layout it would take and why, the verdict, the
   findings, the fonts the book needs and the linked pictures still missing.
   `layout` chooses `pages` or `flow`, and `links` hands over the linked
-  pictures, each matched by its `fileName`.
+  pictures, each matched by its `fileName`. `file` may also be a zipped
+  InDesign package: its linked pictures and fonts go into the book
+  (`linksFromPackage`, `fontsFromPackage`), and `document` names the IDML to
+  import when it holds several (`documents` in the answer lists them).
 - **Bring in a Word manuscript** with `sandbox_import_word`. Run it first with
   `dryRun: true`: it changes nothing and answers with the quality report, each
   Word style with what it would become, and the chapters and resources it

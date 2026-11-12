@@ -1443,9 +1443,9 @@
     z-index: 40;
     display: block;
     padding: 0.5rem 1rem calc(0.5rem + env(safe-area-inset-bottom));
-    background: rgb(21 23 28 / 0.94);
+    /* Opaque, no backdrop filter: the page scrolls under it (#1534). */
+    background: rgb(21 23 28);
     color: var(--foreground);
-    backdrop-filter: blur(10px);
   }
   .cb-action-bar-row {
     display: flex;

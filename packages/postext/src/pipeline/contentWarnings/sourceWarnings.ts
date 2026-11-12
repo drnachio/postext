@@ -1,6 +1,7 @@
 // The warnings read from the source and the configuration alone: unknown
 // resource ids, :::name lines, style ids, full-width markup and ragged table
 // grids (#1276: split out of contentWarnings.ts).
+import { sectionBreaks } from '../../defaults/chapterStyles.js';
 import { parseVideoUrl } from '../../video/url.js';
 import { unprefixedId, resourceRefId } from '../references/crossRefs.js';
 import { citationIssues } from '../references/citations.js';
@@ -144,6 +145,9 @@ export function collectContentWarnings(
    *  of its chapters; its own references count either way. */
   bookCitationKeys?: ReadonlySet<string>,
 ): ContentWarning[] {
+  // A section break (`::section{style="…"}`) is no embed of an unknown
+  // kind: its line is read as blank.
+  markdown = sectionBreaks(markdown).reduce((md, b) => md.slice(0, b.start) + ' '.repeat(b.end - b.start) + md.slice(b.end), markdown);
   const fm = extractFrontmatter(markdown);
   const body = fm.content;
   const offset = fm.contentOffset;

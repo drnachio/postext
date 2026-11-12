@@ -594,7 +594,10 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   le rapport d’importation : la mise en page qu’il retiendrait et pourquoi, le
   verdict, les constats, les polices dont le livre a besoin et les images liées
   encore manquantes. `layout` choisit `pages` ou `flow`, et `links` fournit les
-  images liées, chacune associée par son `fileName`.
+  images liées, chacune associée par son `fileName`. `file` peut aussi être un
+  assemblage InDesign compressé : ses images liées et ses polices entrent dans le
+  livre (`linksFromPackage`, `fontsFromPackage`), et `document` nomme l’IDML à
+  importer quand il en contient plusieurs (`documents`, dans la réponse, les liste).
 - **Faire entrer un manuscrit Word** avec `sandbox_import_word`. Lancez-le d’abord avec
   `dryRun: true` : il ne change rien et répond avec le rapport de qualité, chaque
   style Word avec ce qu’il deviendrait, et les chapitres et ressources qu’il

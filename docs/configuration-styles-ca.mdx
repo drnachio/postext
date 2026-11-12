@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Com es defineixen estils amb nom per a paràgrafs, xips, ressaltats, llistats de codi i encapçalaments, i com es dissenyen les pàgines que obren cada part del llibre',
   lang: 'ca',
   lastUpdated: '2026-11-10',
-  readingTime: '46 min',
+  readingTime: '49 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina reuneix els estils amb nom, que defineixes una vegada i fas servir tantes vegades com vulguis. Un estil de paràgraf dona aspecte a una classe de text, com ara una bibliografia o un glossari. Un estil de xip dibuixa una etiqueta petita dins de la línia, i un estil de ressaltat, una banda de color darrere d'una frase o una línia per sota o que la travessa; un estil de caràcter compon unes quantes paraules en una altra lletra, un altre cos o un altre color, i pot anomenar un estil de ressaltat que les acompanyi. Els llistats de codi tenen una lletra, una caixa i uns colors propis. La pàgina també explica les pàgines que obren cada part del llibre i els estils dels títols especials. Els requadres tenen una pàgina pròpia.",
@@ -1422,6 +1422,70 @@ headingStyles: [
 
 …
 ```
+
+## Estils de capítol
+
+Un llibre els capítols del qual no són tots iguals (apèndixs a dues columnes i amb lletra més petita, una part impresa en un altre color, un glossari amb les seves pròpies capçaleres) declara **estils de capítol**, i un capítol en pren un anomenant-lo al seu frontmatter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // El que anomena el frontmatter d'un capítol.
+  name?: string;           // Un nom per mostrar-lo.
+  config: ConfigOverride;  // Els ajustos que canvia.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Apèndix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Apèndix A
+```
+
+El `config` d'un estil es combina sobre la configuració del llibre igual que la capa d'una llengua (vegeu `mergeConfigLayers`): els objectes, clau per clau; un color o una longitud, sencers; les llistes d'estils, entrada per entrada pel seu `id`; i `null` treu un valor del llibre. Així, les columnes i els marges, la tipografia i els estils de paràgraf, d'encapçalament i de caixa, els colors i les tintes, les capçaleres i el format dels folis poden canviar d'un capítol a l'altre, i el que l'estil no anomena continua sent del llibre. La mida de pàgina, la resolució, les marques de tall i l'enquadernació continuen sent del llibre: un estil que les anomeni s'hi ignora.
+
+La numeració de pàgines, els comptadors, les notes i el sumari continuen corrent a través del capítol com en qualsevol altre. Totes les sortides el llegeixen: el canvas, el PDF, l'EPUB, l'HTML i un paquet compost amb `buildBundle`, i també un capítol compost per separat amb `buildDocument`, perquè el motor aplica l'estil que anomena el seu text. En un llibre, només el frontmatter del primer capítol és el del llibre; el dels capítols posteriors es deixa en blanc llevat de la seva línia `chapterStyle:`. El `{style="…"}` d'un encapçalament continua sumant-se a l'estil del capítol, per a una secció.
+
+En el Sandbox, la barra «Estil de capítol» de la part superior del tauler Disseny tria què edita el tauler: el llibre o un dels seus estils. Amb un estil triat, el tauler el mostra sobre el llibre, i el que canvies es desa a l'estil com la seva diferència amb el llibre; la barra canvia el nom de l'estil, l'esborra i torna al llibre, i el seu botó + en crea un de nou. Un capítol pren un estil des del seu menú al tauler Capítols, que hi escriu la línia `chapterStyle:`; la seva fila mostra el nom de l'estil. Mentre s'edita un estil, un camp que l'estil fixa porta la seva marca, el menú de la qual recupera el valor del llibre o fa del valor de l'estil el del llibre. En un llibre en diverses llengües, els estils es desen a la capa que edita el tauler: els ajustos de totes les llengües o l'edició en pantalla.
+
+### Seccions dins d'un capítol
+
+Dins d'un capítol, un salt de secció en una línia pròpia compon el que segueix amb un estil de capítol, des d'una pàgina nova, fins al salt següent o el final del capítol; `::section` sol torna als ajustos del mateix capítol:
+
+```markdown
+# Resultats
+
+Els ajustos del mateix capítol.
+
+::section{style="appendix"}
+
+## Taules de resultats
+
+Amb l'estil de l'apèndix, des d'una pàgina nova.
+
+::section
+
+## Discussió
+
+De tornada als ajustos del capítol, des d'una pàgina nova.
+```
+
+L'estil es combina sobre els ajustos del capítol (el seu propi estil de capítol inclòs), així que una secció només canvia el que el seu estil anomena. La numeració de pàgines, els comptadors i les notes continuen corrent a través de les seccions com a través dels capítols. Un salt dins d'un bloc de codi és text.
 
 La pàgina de la portada no imprimeix capçaleres, i des de *La sala del llum* les pàgines tornen a prendre la capçalera i el peu del document. Amb el valor per defecte, `'level'`, la secció de la portada duraria fins al següent encapçalament de nivell 1, que aquest llibre no té, i cap de les seves pàgines no portaria capçalera.
 

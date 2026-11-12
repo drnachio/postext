@@ -273,6 +273,18 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td><code>++Text++</code> als unterstrichenen Text lesen, zusätzlich zu <code>:underline[Text]</code>, das immer gelesen wird. Jedes Paar aus zwei Pluszeichen auf jeder Seite unterstreicht, auch <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> setzt ein wörtliches Paar, ein Buchstabe oder eine Ziffer direkt an den Zeichen lässt sie als Text stehen (<code>C++</code>, <code>g++</code>), und Inline-Code und Codeblöcke werden nie unterstrichen. Es gilt überall, wo Inline-Auszeichnungen gelesen werden: im Fließtext, in Überschriften, Listen, Legenden, Tabellenzellen, Anmerkungen und Chips. <code>false</code>: Die Pluszeichen erscheinen als Text. Siehe <a href="/de/docs/document-format-inline#unterstrichener-text">Dokumentformat › Unterstrichener Text</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hält einen nummerierten Verweis in eckigen oder runden Klammern beim vorangehenden Wort (oder dem Satzzeichen, das es abschließt), und zwar ungeteilt: Das Leerzeichen davor und die Leerzeichen darin werden geschützte Leerzeichen (<code>Autoren [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Nie nach einer Zahl: <code>2016 (3)</code> ist ein Jahr und ein Heft, kein Verweis. Nur in horizontal gesetzten Absätzen, Listenpunkten und Zitaten; ein Block mit Text von rechts nach links oder CJK bleibt, wie er ist.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hält ein Relations- oder Rechenzeichen zwischen Leerzeichen (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) bei den Wörtern auf beiden Seiten: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Keine Zeile endet oder beginnt mit dem Zeichen. Gleicher Geltungsbereich wie <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

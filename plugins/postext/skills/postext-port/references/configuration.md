@@ -166,6 +166,7 @@ Conversion at `page.dpi` (default 300):
 | `checks` | `{ contentInConfig?: { enabled?, allow?, maxWords?, maxChars? } }` | §19h | the `contentInConfig` check of design texts (postext 1.34; read by `preset_kit.py lint` on any version); out of the layout key; an older engine ignores the key |
 | `pageTemplates` | PageTemplate[] | §19g | composed-page templates (read and checked from 1.34.0, laid out from 1.34.1, groups and spreads from 1.35.0, `fit` from 1.36.0, continuation from 1.37.0, continue-before-shrink, `page:` jumps, ruled frames, vertical spreads from 1.38.0; frame `writingMode`/`direction`, label checks from 1.39.0; label styles that switch off a borrowed italic, frames in their own mode on right-to-left pages from 1.40.0; connectors, path elements, box shapes, repeating grids, modules and the overlap checks from 1.48.0; round 2, composed-pages.md) |
 | `labelStyles` | LabelStyle[] | §19g | styles of `::label` words on pictures (read from 1.34.0, drawn from 1.37.0, vertical and checked from 1.39.0; `fontStyle` / `textTransform` left unset follow a borrowed paragraph style from 1.40.0; leaders, keys (`kind: 'legend'`), plates with outlines from 1.48.0) |
+| `chapterStyles` | ChapterStyleConfig[] | §19g2 | named designs a chapter takes over the book's settings: `{ id, name, config }`, `config` a partial `PostextConfig` (page, typography, colours, running heads). A chapter names one in its front matter (`chapterStyle: <id>`); `::section{style="<id>"}` sets what follows in that style, from a new page |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
 `span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
@@ -340,6 +341,8 @@ bodyText
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
+├─ bindCitations     boolean         false           (≥ 1.73) the space before a numbered citation in brackets/parentheses (`autores [12]`, `(12–15)`) and the spaces in it become no-break spaces; never after a number (`2016 (3)`). Paragraphs, list items, quotes set horizontally; RTL/CJK blocks untouched
+├─ bindOperators     boolean         false           (≥ 1.73) a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ −` between spaces stays with both terms (`p < 0.05`): no line ends on it nor starts with it. Same scope as bindCitations
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true (false in an Arabic-script document, ≥ 1.15), indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
@@ -2554,6 +2557,24 @@ LabelStyle  { id, name? (Sandbox only), paragraphStyle? (borrows its type; the f
 - Scripts: `resolvePageTemplate(config, id, { parity: 'recto'|'verso' })` returns the merged
   template with defaults (`configPath`, per-field `fieldPaths`); `validatePageTemplates(config,
   { resources })` returns the warnings (verification.md, "Composed pages").
+
+## 19g2. `chapterStyles[]` — chapter styles
+
+A book can hold named designs, and a chapter is laid out with one of them over the book's settings:
+
+```jsonc
+"chapterStyles": [
+  { "id": "appendix", "name": "Appendix", "config": {
+      "page": { "margins": { "top": { "value": 25, "unit": "mm" } } },
+      "bodyText": { "fontSize": { "value": 9, "unit": "pt" } } } }
+]
+```
+
+- `id` is what a chapter names in its front matter (`chapterStyle: appendix`); `name` is shown in the Sandbox.
+- `config` is a partial `PostextConfig` merged over the book's (as an edition's override is): only what differs.
+- Inside a chapter, `::section{style="appendix"}` sets what follows in that style, from a new page.
+- The page's trim, `dpi`, cut lines and binding stay the book's whatever the style says.
+- A chapter or section naming an unknown id is laid out with the book's settings.
 
 ## 19h. `checks` — the `contentInConfig` check (postext 1.34)
 

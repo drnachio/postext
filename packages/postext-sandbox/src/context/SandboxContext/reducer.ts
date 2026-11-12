@@ -196,6 +196,9 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       };
     case 'SET_PANEL':
       return { ...state, activePanel: action.payload };
+    case 'SET_EDITING_CHAPTER_STYLE':
+      if (state.editingChapterStyle === action.payload) return state;
+      return { ...state, editingChapterStyle: action.payload };
     case 'SET_SIDEBAR_PERCENT':
       return { ...state, sidebarPercent: action.payload };
     case 'SET_SIDEBAR_DRAGGING':
@@ -361,7 +364,7 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return { ...state, presetUpdatedAt: action.payload };
     case 'SET_ACTIVE_PROJECT': {
       if (action.payload.id === null) {
-        return state.activeProjectId === null ? state : { ...state, activeProjectId: null, configLayers: null };
+        return state.activeProjectId === null ? state : { ...state, activeProjectId: null, configLayers: null, editingChapterStyle: null };
       }
       // A project's baseline is the preset it came from (Reset restores it);
       // preset bookkeeping — applied snapshot, staleness, notices — is preset

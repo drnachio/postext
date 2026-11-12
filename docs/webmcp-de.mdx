@@ -626,7 +626,11 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   Grund dafür, dem Urteil, den Befunden, den Schriften, die das Buch braucht,
   und den verknüpften Bildern, die noch fehlen. `layout` wählt `pages` oder
   `flow`, und `links` übergibt die verknüpften Bilder, jedes über seinen
-  `fileName` zugeordnet.
+  `fileName` zugeordnet. `file` kann auch ein gezipptes InDesign-Paket sein:
+  Seine verknüpften Bilder und Schriften gehen in das Buch ein
+  (`linksFromPackage`, `fontsFromPackage`), und `document` nennt die zu
+  importierende IDML, wenn es mehrere enthält (`documents` in der Antwort
+  listet sie auf).
 - **Ein Word-Manuskript übernehmen** mit `sandbox_import_word`. Führen Sie es
   zuerst mit `dryRun: true` aus: Es ändert nichts und antwortet mit dem
   Qualitätsbericht, mit jeder Word-Formatvorlage und dem, was daraus würde, und

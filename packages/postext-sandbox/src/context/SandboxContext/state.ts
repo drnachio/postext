@@ -117,6 +117,11 @@ export interface SandboxState {
    *  the Design panel writes to them or to the edition on screen alone.
    *  Null for a book in one language. */
   configLayers: ConfigLayers | null;
+  /** The chapter style (`config.chapterStyles[].id`) the Design panel
+   *  edits, or null for the book's own settings: while set, the panel
+   *  shows the style merged over the book and writes what changes into
+   *  the style. */
+  editingChapterStyle: string | null;
   /** User-managed resources (images, SVGs, tables). Loaded asynchronously on
    *  init from IndexedDB (NOT localStorage) and persisted via an effect. */
   resources: Resource[];
@@ -231,6 +236,7 @@ export type SandboxAction =
   | { type: 'UPDATE_CONFIG'; payload: Partial<PostextConfig>; history?: ConfigHistoryMeta }
   | { type: 'TOGGLE_PANEL'; payload: PanelId }
   | { type: 'SET_PANEL'; payload: PanelId | null }
+  | { type: 'SET_EDITING_CHAPTER_STYLE'; payload: string | null }
   | { type: 'SET_SIDEBAR_PERCENT'; payload: number }
   | { type: 'SET_SIDEBAR_DRAGGING'; payload: boolean }
   | { type: 'SET_VIEWPORT'; payload: ViewportTab }

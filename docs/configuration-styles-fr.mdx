@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les styles nommés des paragraphes, des pastilles, des surlignages, des listings de code et des titres, et les pages qui ouvrent chaque partie',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '47 min',
+  readingTime: '50 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Cette page présente les styles nommés que vous définissez une fois et utilisez autant de fois que nécessaire. Un style de paragraphe règle un genre de texte, comme une bibliographie ou un glossaire. Un style de pastille dessine une petite étiquette dans une ligne, et un style de surlignage une bande de couleur derrière une expression ou un trait sous elle ou à travers elle ; un style de caractère compose quelques mots dans une autre police, un autre corps ou une autre couleur, et peut nommer un style de surlignage qui les accompagne. Les listings de code ont leur propre police, leur cadre et leurs couleurs. La page traite aussi des pages qui ouvrent chaque partie d’un livre, et des styles des titres particuliers. Les encadrés ont leur propre page.",
@@ -1423,6 +1423,70 @@ headingStyles: [
 
 …
 ```
+
+## Styles de chapitre
+
+Un livre dont les chapitres n’ont pas tous la même allure (des annexes sur deux colonnes en caractères plus petits, une partie imprimée dans une autre couleur, un glossaire avec ses propres titres courants) déclare des **styles de chapitre**, et un chapitre en prend un en le nommant dans son en-tête YAML :
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+Le `config` d’un style se fusionne sur la configuration du livre comme la couche d’une langue (voir `mergeConfigLayers`) : les objets clé par clé, une couleur ou une longueur en bloc, les listes de styles entrée par entrée sur leur `id`, et `null` retire une valeur du livre. Ainsi, les colonnes et les marges, la typographie et les styles de paragraphe, de titre et d’encadré, les couleurs et les encres, les titres courants et les formats de folio peuvent changer d’un chapitre à l’autre, tandis que ce que le style ne nomme pas reste au livre. Le format, la résolution, les traits de coupe et la reliure restent ceux du livre : un style qui les nomme est ignoré sur ces points.
+
+La numérotation des pages, les compteurs, les notes et la table des matières se poursuivent à travers le chapitre comme pour n’importe quel autre. Toutes les sorties le lisent : le canvas, le PDF, l’EPUB, le HTML et un paquet composé avec `buildBundle`, ainsi qu’un chapitre composé seul avec `buildDocument`, puisque le moteur applique le style que nomme son texte. Dans un livre, seul l’en-tête YAML du premier chapitre est celui du livre ; celui d’un chapitre ultérieur est effacé, sauf sa ligne `chapterStyle:`. Le `{style="…"}` d’un titre se superpose toujours au style du chapitre, pour une section.
+
+Dans le Sandbox, la barre « Style de chapitre » en haut du panneau Maquette choisit ce que le panneau modifie : le livre ou l’un de ses styles. Quand un style est choisi, le panneau l’affiche par-dessus le livre, et ce que vous modifiez est conservé dans le style comme sa différence avec le livre ; la barre renomme le style, le supprime et revient au livre, et son bouton + en crée un nouveau. Un chapitre prend un style depuis son menu dans le panneau Chapitres, qui écrit pour lui la ligne `chapterStyle:` ; son entrée affiche le nom du style. Pendant qu’un style est modifié, un champ que le style fixe porte sa marque, dont le menu reprend la valeur du livre ou fait de celle du style celle du livre. Dans un livre en plusieurs langues, les styles sont conservés dans la couche que modifie le panneau : les réglages de toutes les langues ou l’édition à l’écran.
+
+### Sections dans un chapitre
+
+Dans un chapitre, un saut de section sur une ligne à part compose la suite dans un style de chapitre, à partir d’une nouvelle page, jusqu’au saut suivant ou à la fin du chapitre ; `::section` seul revient aux réglages propres du chapitre :
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+Le style se fusionne sur les réglages du chapitre (son propre style de chapitre compris), si bien qu’une section ne change que ce que son style nomme. La numérotation des pages, les compteurs et les notes se poursuivent à travers les sections comme à travers les chapitres. Un saut à l’intérieur d’un bloc de code est du texte.
 
 La page de la couverture n’imprime aucun titre courant, et à partir de *La chambre de la lanterne* les pages reprennent l’en-tête et le pied de page du document. Avec la valeur par défaut, `'level'`, la section de la couverture durerait jusqu’au titre de niveau 1 suivant, que ce livre n’a pas, et aucune de ses pages ne porterait de titre courant.
 

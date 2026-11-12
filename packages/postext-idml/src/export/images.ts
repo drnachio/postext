@@ -47,11 +47,11 @@ export function imageXml(w: Writer, item: Extract<DisplayItem, { kind: 'image' }
   const transform = `${num(item.flipH ? -sx : sx)} 0 0 ${num(sy)} ${num(tx)} ${num(ty)}`;
 
   // A picture given as a data: URL (one the host prepared) has no file
-  // name: it is numbered, with the extension of its type.
+  // name: it is numbered. Every linked file ends in the extension of its
+  // format, read from its bytes, so it opens once the folder is unzipped.
   const dataType = /^data:image\/([a-z+]+)[;,]/i.exec(fileId)?.[1]?.toLowerCase();
-  const name = dataType
-    ? `picture-${w.media.size + 1}.${dataType === 'jpeg' ? 'jpg' : dataType === 'svg+xml' ? 'svg' : dataType}`
-    : (fileId.split('/').pop() ?? fileId).replace(/[^\w.\-]+/g, '_');
+  const base = dataType ? `picture-${w.media.size + 1}` : (fileId.split('/').pop() ?? fileId).replace(/[^\w.\-]+/g, '_');
+  const name = withExtension(base, linkExtension(bytes) ?? (usePdf ? 'pdf' : item.imageKind === 'svg' ? 'svg' : dataType && (DATA_EXTENSIONS[dataType] ?? dataType)));
   let media = w.media.get(fileId);
   if (!media) {
     let path = `Links/${name}`;
@@ -68,6 +68,42 @@ export function imageXml(w: Writer, item: Extract<DisplayItem, { kind: 'image' }
       ? `<PDF${attr('Self', w.next())}${attr('ItemTransform', transform)}><Properties>${contents}${graphicBounds}</Properties><PDFAttribute PageNumber="1" PDFCrop="CropContentVisibleLayers" TransparentBackground="true"/>${link}</PDF>`
       : `<Image${attr('Self', w.next())}${attr('ItemTransform', transform)}><Properties>${contents}${graphicBounds}</Properties>${link}</Image>`;
   return `${frameOpen}${inner}</Rectangle>`;
+}
+
+const DATA_EXTENSIONS: Record<string, string> = { jpeg: 'jpg', 'svg+xml': 'svg', tiff: 'tif' };
+
+/** Names a file may already end in for each extension a link is given. */
+const ALIASES: Record<string, string[]> = { jpg: ['jpg', 'jpeg', 'jpe'], tif: ['tif', 'tiff'], eps: ['eps', 'ps'] };
+
+const startsWith = (bytes: Uint8Array, sig: readonly number[], at = 0): boolean =>
+  bytes.length >= at + sig.length && sig.every((b, i) => bytes[at + i] === b);
+const ascii = (s: string): number[] => [...s].map((c) => c.charCodeAt(0));
+
+/** The file extension of a linked picture's format, read from its bytes:
+ *  PDF, PNG, JPEG, GIF, WebP, TIFF, BMP, Photoshop, EPS or SVG. */
+export function linkExtension(bytes: Uint8Array): string | undefined {
+  if (startsWith(bytes, ascii('%PDF'))) return 'pdf';
+  if (startsWith(bytes, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return 'png';
+  if (startsWith(bytes, [0xff, 0xd8, 0xff])) return 'jpg';
+  if (startsWith(bytes, ascii('GIF87a')) || startsWith(bytes, ascii('GIF89a'))) return 'gif';
+  if (startsWith(bytes, ascii('RIFF')) && startsWith(bytes, ascii('WEBP'), 8)) return 'webp';
+  if (startsWith(bytes, [0x49, 0x49, 0x2a, 0x00]) || startsWith(bytes, [0x4d, 0x4d, 0x00, 0x2a])) return 'tif';
+  if (startsWith(bytes, ascii('8BPS'))) return 'psd';
+  if (startsWith(bytes, ascii('%!PS')) || startsWith(bytes, [0xc5, 0xd0, 0xd3, 0xc6])) return 'eps';
+  if (startsWith(bytes, ascii('BM'))) return 'bmp';
+  // SVG: markup (after a BOM, an XML declaration, comments or a doctype)
+  // whose root is <svg.
+  const head = new TextDecoder().decode(bytes.subarray(0, 4096)).replace(/^\uFEFF/, '');
+  if (/^\s*</.test(head) && /<svg[\s>]/i.test(head)) return 'svg';
+  return undefined;
+}
+
+/** `name` ending in `ext`, kept as it is when it already ends in it (or in
+ *  another spelling of it, as .jpeg for jpg). */
+export function withExtension(name: string, ext: string | undefined): string {
+  if (!ext) return name;
+  const own = /\.([a-z0-9]{1,5})$/i.exec(name)?.[1]?.toLowerCase();
+  return own && (ALIASES[ext] ?? [ext]).includes(own) ? name : `${name}.${ext}`;
 }
 
 function base64(bytes: Uint8Array): string {

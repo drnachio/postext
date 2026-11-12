@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowDown, ArrowUp, GripVertical, MoreHorizontal, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
-import { isCjkLanguage } from 'postext';
+import { ArrowDown, ArrowUp, Check, GripVertical, MoreHorizontal, Palette, Pencil, Plus, Scissors, Trash2, Merge } from 'lucide-react';
+import { chapterStyleOf, isCjkLanguage } from 'postext';
 import { useBookContent, useBookPlan, useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { h1Count, newChapter, wordCount } from '../../book/chapterOps.js';
 import { chapterPageLabels } from '../../book/pagination.js';
 import { chapterMenuEntries, partLabel } from '../../book/chapterMenu.js';
 import type { Chapter, ChapterPages } from '../../book/types.js';
+import { setChapterStyle } from '../../book/frontmatter.js';
+import { minimalChange } from '../../book/textChanges.js';
 import { generateChapterId } from '../../storage/projects.js';
 import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
 import { formatNumber } from '../../controls/inputs/units.js';
@@ -156,7 +158,16 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
     ? labels.chapterPages.replace('__from__', range.from).replace('__to__', range.to)
     : labels.chapterPagesUnknown;
   const numberText = number === null ? '–' : number === undefined ? '' : String(number);
-  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', formatNumber(words, uiLocale))}`;
+  // The chapter style its front matter names (`chapterStyle:`), and the
+  // book's styles to choose from.
+  const styleId = useMemo(() => chapterStyleOf(chapter.markdown), [chapter.markdown]);
+  const styles = useSandboxSelector((s) => s.config.chapterStyles);
+  const style = styleId ? styles?.find((st) => st.id === styleId) : undefined;
+  const setStyle = (id: string | undefined) => {
+    const change = minimalChange(chapter.markdown, setChapterStyle(chapter.markdown, id));
+    if (change) dispatch({ type: 'EDIT_CHAPTER_MARKDOWN', payload: { chapterId: chapter.id, changes: [change], baseLength: chapter.markdown.length } });
+  };
+  const subtitle = `${pagesText} · ${(cjk ? labels.chapterCharacters : labels.chapterWords).replace('__n__', formatNumber(words, uiLocale))}${styleId ? ` · ${style?.name ?? styleId}` : ''}`;
 
   const ask = (message: string, action: () => void) => {
     setConfirm({ message, action });
@@ -246,6 +257,28 @@ function ChapterRow({ chapter, index, total, isActive, number, pages, part, drag
                   <MenuItem icon={<ArrowDown size={13} />} disabled={index >= total - 1} onClick={() => dispatch({ type: 'MOVE_CHAPTER', payload: { id: chapter.id, to: index + 1 } })}>
                     {labels.chapterMoveDown}
                   </MenuItem>
+                  {(styles?.length ?? 0) > 0 && (
+                    <>
+                      <MenuSeparator />
+                      <MenuItem icon={styleId ? <span style={{ width: 13 }} /> : <Check size={13} />} onClick={() => setStyle(undefined)}>{labels.chapterStyleNone}</MenuItem>
+                      {styles!.map((st) => (
+                        <MenuItem key={st.id} icon={st.id === styleId ? <Check size={13} /> : <span style={{ width: 13 }} />} onClick={() => setStyle(st.id)}>
+                          {labels.chapterStyleUse.replace('__name__', st.name ?? st.id)}
+                        </MenuItem>
+                      ))}
+                      {style && (
+                        <MenuItem
+                          icon={<Palette size={13} />}
+                          onClick={() => {
+                            dispatch({ type: 'SET_EDITING_CHAPTER_STYLE', payload: style.id });
+                            dispatch({ type: 'SET_PANEL', payload: 'config' });
+                          }}
+                        >
+                          {labels.chapterStyleEditThis}
+                        </MenuItem>
+                      )}
+                    </>
+                  )}
                   <MenuSeparator />
                   <MenuItem
                     icon={<Scissors size={13} />}

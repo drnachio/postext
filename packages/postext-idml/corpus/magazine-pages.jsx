@@ -1,7 +1,7 @@
 // magazine-pages: a free layout over four facing pages. The article runs
 // through three threaded frames: page 1, the top of page 2, and the jump
 // on page 4.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("210mm", "280mm", 4, true);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 40, 40, 36, 36, 3, 12);

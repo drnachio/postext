@@ -10,6 +10,11 @@ The one argument is the output folder; it must hold a copy of
 includes `lib.jsxinc`, which is looked up beside it. Run one script at a
 time.
 
+The include is written `//@include "lib.jsxinc"`, the comment form of
+ExtendScript's `#include`: InDesign reads it the same way, and to any
+other JavaScript parser (CodeQL's among them) it is a comment, so the
+scripts stay valid JavaScript.
+
 The scripts are ASCII: text in other scripts is written as `\uXXXX`
 escapes. They name no built-in style, swatch, variable or cross-reference
 format, because those names follow the language of the application; each

@@ -9,6 +9,7 @@ import { createContext, type Dispatch } from 'react';
 import type { PostextConfig } from 'postext';
 import type { SandboxAction, SandboxState } from './SandboxContext.js';
 import { generalSettingsView } from '../editions/configLayers.js';
+import { chapterStyleView } from '../editions/chapterStyleEdit.js';
 
 /** How the hooks under it see the store's state. */
 export const StateViewContext = createContext<((s: SandboxState) => SandboxState) | null>(null);
@@ -66,4 +67,21 @@ export function captureWrites(run: () => void): SandboxAction[] {
  *  goes). */
 export function capturedInto(): SandboxAction[] | null {
   return capturing;
+}
+
+const styleViews = new WeakMap<SandboxState, SandboxState>();
+
+/** The state as the Design panel reads it while it edits a chapter style
+ *  (`editingChapterStyle`): the style merged over the settings in scope.
+ *  The same object for the same state. */
+export function panelView(s: SandboxState): SandboxState {
+  const scoped = scopedView(s);
+  const id = s.editingChapterStyle;
+  if (!id || !scoped.config.chapterStyles?.some((st) => st.id === id)) return scoped;
+  let view = styleViews.get(s);
+  if (!view) {
+    view = { ...scoped, config: chapterStyleView(scoped.config, id) };
+    styleViews.set(s, view);
+  }
+  return view;
 }

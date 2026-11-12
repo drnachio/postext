@@ -16,6 +16,7 @@ import type { MasterWords } from './design.js';
 import { joinContinued } from './fidelity/continued.js';
 import { indexDestinations } from './fidelity/crossref.js';
 import { layoutFlow } from './flow.js';
+import { carryFonts } from './fonts.js';
 import { calloutStyles } from './objects.js';
 import { layoutPages } from './pages.js';
 import { runningHeads } from './fidelity/masters.js';
@@ -26,7 +27,7 @@ import { tableStyles } from './tables.js';
 import type { IdmlImportOptions, IdmlImportResult, ImportedFont } from './types.js';
 import { italicOf, pt, weightOf } from './values.js';
 
-export type { IdmlImportOptions, IdmlImportResult, IdmlLink, ImportedFont, ImportFinding, ImportReport, FindingSeverity, StyleMapping } from './types.js';
+export type { IdmlFontFile, IdmlImportOptions, IdmlImportResult, IdmlLink, ImportedFont, ImportFinding, ImportReport, FindingSeverity, StyleMapping } from './types.js';
 export { captionLabel } from './pictures.js';
 export { escapeStory, guardBlockStart } from './escape.js';
 
@@ -186,6 +187,10 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   else if (ctx.hasIndexMarks && !chapters.some((c) => /^:::index$/m.test(c.markdown))) ctx.rep.add('indexNotPrinted', 'info', 'The text carries index marks and the document has no generated index story: add a chapter with :::index to print one', undefined);
 
   const fonts = fontsOf(ctx);
+  if (options.fontFiles?.length) {
+    const custom = carryFonts(ctx, fonts, options.fontFiles);
+    if (custom.length) config.customFonts = custom;
+  }
   const report = ctx.rep.build({ pages: allPages(ctx).length, ...ctx.counts, templates });
   if (options.onWarning) {
     for (const f of report.findings) {

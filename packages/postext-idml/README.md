@@ -69,6 +69,26 @@ What the importer does to keep the pages as the document has them:
 
 Every difference is a finding of `result.report`, with a count and examples; a `loss` says what the book shows instead.
 
+### A zipped InDesign package
+
+A publisher usually hands over the folder InDesign's **File › Package** makes, zipped: the document (as `.idml` when **Include IDML** is ticked), its fonts in `Document fonts/` and its linked pictures in `Links/`. `openIdmlArchive` reads that zip:
+
+```ts
+import { idmlToPostext, openIdmlArchive } from 'postext-idml';
+
+const archive = openIdmlArchive(zipBytes); // throws IdmlError for what is no zip
+const path = archive.documents[0]; // the IDML documents, those nearest the root first
+const result = idmlToPostext(archive.document(path), {
+  linkBytes: (link) => archive.linkBytes(link, path),
+  fontFiles: archive.fontFiles(),
+});
+```
+
+- `documents` lists the IDML documents (`''` when the zip is itself an IDML package), `indd` the `.indd` documents it holds and cannot be read, and `fonts` the font files. macOS's `__MACOSX/` and `._` entries are left out. Files are uncompressed when asked for.
+- `linkBytes(link, document)` finds a linked picture by its file name; between files of the same name it takes the one whose folders match the link's path most, then the one nearest the document.
+- `fontFiles` (an option of `idmlToPostext`) puts the package's fonts into the book. Each face the text is set in is matched to a file by the PostScript name the document records, else by family and style; the book names the matched files, and the other faces of their families in the package, in `config.customFonts`, with the files in `result.files`. Each face of `result.fonts` carries the `file` it was matched to. A face with no file (`fontNotInPackage`), a file the book cannot carry (`fontFile.type1`, `fontFile.collection`, `fontFile.suitcase`, `fontFile.woff`) and a face whose licence bits forbid embedding (`fontRestricted`) are findings of the report.
+- `readFontFace(name, bytes)` reads the names, weight and slant of a TrueType or OpenType file.
+
 ## Entries
 
 - `postext-idml`: everything above.

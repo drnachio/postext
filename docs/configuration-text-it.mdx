@@ -273,6 +273,18 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Leggi <code>++testo++</code> come testo sottolineato, oltre a <code>:underline[testo]</code>, che si legge sempre. Ogni coppia di due segni più per lato sottolinea, anche <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> scrive una coppia letterale, una lettera o una cifra attaccata ai segni li lascia come testo (<code>C++</code>, <code>g++</code>), e il codice in linea e i blocchi di codice non si sottolineano mai. Vale ovunque si leggano i segni in linea: il testo corrente, i titoli, gli elenchi, le didascalie, le celle di tabella, le note e i chip. <code>false</code>: i segni più si stampano. Vedi <a href="/it/docs/document-format-inline#sottolineato">Formato del documento › Sottolineato</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Tiene un richiamo numerato tra parentesi quadre o tonde unito alla parola (o alla punteggiatura che la chiude) che lo precede, e intero: lo spazio prima e quelli all’interno diventano spazi indivisibili (<code>autori [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Mai dopo un numero: <code>2016 (3)</code> è un anno e un fascicolo, non un richiamo. Solo nei paragrafi, negli elementi di elenco e nelle citazioni composti in orizzontale; un blocco con testo da destra a sinistra o CJK resta com’è.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Tiene una relazione o un operatore tra spazi (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unito alle parole da entrambi i lati: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Nessuna riga termina né comincia con il segno. Stesso ambito di <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

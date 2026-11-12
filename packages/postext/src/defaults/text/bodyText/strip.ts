@@ -183,6 +183,13 @@ export function stripBodyTextDefaults(
     result.plusUnderline = true;
     hasOverride = true;
   }
+  // Off by default, and resolved only when on.
+  for (const key of ['bindCitations', 'bindOperators'] as const) {
+    if (bodyText[key] === true) {
+      result[key] = true;
+      hasOverride = true;
+    }
+  }
   // On by default, and resolved only when off (#725).
   if (bodyText.scriptContext === false) {
     result.scriptContext = false;

@@ -36,7 +36,7 @@ export function CookieBanner() {
       ref={bannerRef}
       role="dialog"
       aria-label={t("ariaLabel")}
-      className="fixed inset-x-0 bottom-0 z-50 bg-surface/95 p-4 font-sans shadow-[0_-12px_40px_-20px_rgba(0,0,0,0.5)] backdrop-blur-md sm:p-6"
+      className="fixed inset-x-0 bottom-0 z-50 bg-surface p-4 font-sans shadow-[0_-12px_40px_-20px_rgba(0,0,0,0.5)] sm:p-6"
     >
       <div aria-hidden="true" className="tri-stripe absolute inset-x-0 top-0 h-[3px]" />
       <div className="mx-auto max-w-5xl">

@@ -274,6 +274,18 @@ export const metadata = {
       <td><code>++text++</code> を下線付きのテキストとして読みます。<code>:underline[text]</code> は常に読まれます。両側にプラス記号を2つずつ書いた組はすべて下線になり、<code>use ++i rather than i++</code> も同じです。<code>{'\\+\\+'}</code> と書けば記号の組をそのまま組み、記号に英字や数字が続く場合は文字のまま残ります（<code>C++</code>、<code>g++</code>）。インラインコードとコードブロックには下線を引きません。インライン記法を読むすべての場所、つまり本文、見出し、リスト、キャプション、表のセル、注、チップに適用されます。<code>false</code> ではプラス記号がそのまま印字されます。<a href="/ja/docs/document-format-inline#下線">ドキュメント形式 › 下線</a>を参照。</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>角括弧や丸括弧に入った番号付きの引用を、直前の語（または語を閉じる句読点）と一緒に、分割せずに保ちます。引用の前のスペースと中のスペースはノーブレークスペースになります（<code>autores [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>）。数字の後では適用しません。<code>2016 (3)</code>は年と号であり、引用ではありません。横組みの段落、リスト項目、引用だけが対象です。右から左へ書く文字やCJKの文字を含むブロックはそのままにします。</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>スペースで囲まれた記号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>）を両側の語と一緒に保ちます（<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>）。記号で行が終わったり始まったりすることはありません。対象は<code>bindCitations</code>と同じです。</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

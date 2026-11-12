@@ -1,7 +1,7 @@
 // cjk-rtl: a Japanese story with ruby, tate-chu-yoko and kenten; an
 // Arabic right-to-left story; a line of mixed direction. Text of other
 // scripts is written as \uXXXX escapes so the file stays ASCII.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("148mm", "210mm", 2, false);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 48, 48, 42, 42, 1, 12);

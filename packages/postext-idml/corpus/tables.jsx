@@ -1,6 +1,6 @@
 // tables: every kind of cell on one page. Cells are addressed by name,
 // "column:row", which stays true after a merge.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("210mm", "297mm", 1, false);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 54, 54, 54, 54, 1, 12);

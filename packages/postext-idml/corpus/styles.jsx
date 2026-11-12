@@ -1,6 +1,6 @@
 // styles: deep based-on chains, style groups, nested, GREP and line
 // styles, local overrides on top.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("170mm", "240mm", 1, false);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 54, 54, 48, 48, 1, 12);

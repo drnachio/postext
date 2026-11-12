@@ -60,9 +60,10 @@ InDesignの文書は、人が手で作ったページの集まりです。デザ
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
-同じ読み込みは、Sandboxの<strong>本 › 新規 › InDesign 文書（IDML）から新しい本を作る</strong>でも（[Sandbox › InDesignの文書を読み込む](/ja/docs/sandbox-books-saving#indesignの文書を読み込む)を参照）、コードでは`postext-idml`パッケージの`idmlToPostext`でも行えます（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照）。コマンドのすべてのオプションは[コマンドライン › import-idml](/ja/docs/command-line#import-idml)にあります。
+同じ読み込みは、Sandboxの<strong>本 › 新規 › InDesign 文書（IDML）から新しい本を作る</strong>でも（[Sandbox › InDesignの文書を読み込む](/ja/docs/sandbox-books-saving#indesignの文書を読み込む)を参照。zipにしたInDesignパッケージも<strong>InDesign パッケージ（.zip）から新しい本を作る</strong>で開け、そのフォントとリンク画像が取り込まれます）、コードでは`postext-idml`パッケージの`idmlToPostext`でも行えます（[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照）。コマンドのすべてのオプションは[コマンドライン › import-idml](/ja/docs/command-line#import-idml)にあります。
 
 ### ページか流し込みか
 
@@ -79,7 +80,7 @@ postext import-idml book.idml --report --json
 
 ### 報告されるもの
 
-`.idml`はフォントもリンク画像も持っていません。インポーターは本に必要なフォントファミリーを一覧にするので、それを`--font-dir`でビルドに渡します。リンク画像は`--links`から、またはファイルの隣から読み込み、見つからないものを一覧にします。
+`.idml`はフォントもリンク画像も持っていません。インポーターは本に必要なフォントファミリーを一覧にするので、それを`--font-dir`でビルドに渡します。リンク画像は`--links`から、またはファイルの隣から読み込み、見つからないものを一覧にします。zipにしたパッケージには両方が入っています。コマンドライン（`postext import-idml package.zip`）でも、Sandboxでも、コードで`openIdmlArchive`を使う場合も、インポーターは画像をその`Links`フォルダーから取り込み、`Document fonts`フォルダーのフォントファイルを本に入れます。
 
 InDesignには、Postextに相当するものがない機能があります。パス上文字、回転したセル、セル内の斜線、正規表現スタイルや先頭文字スタイル、透明効果などです。これらはそれぞれ、件数と例を添えてレポートの項目になります。省いたものは<em>loss</em>、元に近い形で組んだもの（表のフッター行、グラデーション、輪郭に沿ったテキストの回り込み）は<em>warning</em>です。レポートの最後には判定が付きます。
 
@@ -139,7 +140,7 @@ postext build book/ --pdf book.pdf --idml book.idml
 - <strong>行。</strong>既定の`--lines keep`は、各行をPostextが終えた位置で終えるので、InDesignにはPDFと同じ行が表示されます。`--lines reflow`は段落をInDesignのコンポーザーに任せます。InDesignで組み直す本に使います。
 - <strong>テキスト。</strong>テンプレートページの各フレームは、固有のストーリーを持つテキストフレームになり、`next`でつないだフレームは1つのストーリーを共有します。段落スタイルは、本のスタイル名、インデント、タブ位置、アキを持ちます。脚注、リンク、ルビ、圏点、右から左のストーリー、縦組みのストーリーも引き継がれます。
 - <strong>ページアイテム。</strong>罫線、囲み、パス、画像はInDesignのページアイテムに、表はInDesignの表に、インラインの数式、楽譜、スウォッチはアンカー付きオブジェクトになります。作者が指定したCMYKの色はプロセスカラーのスウォッチに、フォームフィールドのチップはInDesignのフォームフィールドになります。
-- <strong>画像とフォント。</strong>`--images link`は、画像を埋め込まずにパッケージの隣の`Links/`に書き出します。`--fonts`は、InDesignが見つけられる`Document fonts/`にフォントファイルを書き出し、本が再配布できないファミリーは除きます。
+- <strong>画像とフォント。</strong>`--images link`は、画像を埋め込まずにパッケージの隣の`Links/`に書き出します。各ファイルには形式に応じた拡張子（`.svg`、`.png`、`.jpg`、`.pdf`など）が付くので、展開後にそれぞれのアプリで開けます。`--fonts`は、InDesignが見つけられる`Document fonts/`にフォントファイルを書き出し、本が再配布できないファミリーは除きます。
 - <strong>警告。</strong>Postextが組んだとおりにInDesignで表せないものは、`idml.*`の警告で報告します。表の角丸の枠や、縦組みのテキストの圏点などです。
 
 書き出しは、移植を逆にたどるものではありません。`.idml`が持つのはPostextが組んだページで、ページを組んだ規則はPostextの本に残ります。InDesignで加えた変更は、インポーターを通じて、ページの写しとしてPostextに戻ります。文字サイズのような規則を変えるなら、Postextの本で変えて、もう一度書き出すのがよい方法です。

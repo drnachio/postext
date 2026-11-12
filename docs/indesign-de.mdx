@@ -60,9 +60,10 @@ Ein InDesign-Dokument ist eine Reihe von Seiten, die jemand von Hand gemacht hat
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
-Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus einem InDesign-Dokument (IDML)** (siehe [Sandbox › Ein InDesign-Dokument importieren](/de/docs/sandbox-books-saving#ein-indesign-dokument-importieren)) und im Code mit `idmlToPostext` aus dem Paket `postext-idml` (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml)). Alle Optionen des Befehls stehen unter [Kommandozeile › import-idml](/de/docs/command-line#import-idml).
+Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus einem InDesign-Dokument (IDML)** (siehe [Sandbox › Ein InDesign-Dokument importieren](/de/docs/sandbox-books-saving#ein-indesign-dokument-importieren)), die unter **Neues Buch aus einem InDesign-Paket (.zip)** auch ein gezipptes InDesign-Paket öffnet und daraus seine Schriften und verknüpften Bilder übernimmt, und im Code mit `idmlToPostext` aus dem Paket `postext-idml` (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml)). Alle Optionen des Befehls stehen unter [Kommandozeile › import-idml](/de/docs/command-line#import-idml).
 
 ### Seiten oder Fließtext
 
@@ -79,7 +80,7 @@ Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus
 
 ### Was der Bericht meldet
 
-Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Import listet die Schriftfamilien auf, die das Buch braucht und die Sie dem Build dann mit `--font-dir` geben. Verknüpfte Bilder liest er aus `--links` oder aus dem Ordner der Datei und listet die auf, die er nicht findet.
+Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Import listet die Schriftfamilien auf, die das Buch braucht und die Sie dem Build dann mit `--font-dir` geben. Verknüpfte Bilder liest er aus `--links` oder aus dem Ordner der Datei und listet die auf, die er nicht findet. Ein gezipptes Paket enthält beides: Auf der Kommandozeile (`postext import-idml package.zip`), in der Sandbox und im Code mit `openIdmlArchive` nimmt der Import die Bilder aus seinem Ordner `Links` und übernimmt die Schriftdateien seines Ordners `Document fonts` in das Buch.
 
 InDesign kann Dinge, für die Postext keine Entsprechung hat, etwa Pfadtext, eine gedrehte Zelle, eine Diagonale in einer Zelle, GREP- und verschachtelte Formate oder Transparenzeffekte. Jedes davon wird zu einem Befund im Bericht, mit einer Anzahl und einem Beispiel: ein *Verlust*, wenn es wegfällt, eine *Warnung*, wenn es angenähert gesetzt wird (die Fußzeilen einer Tabelle, ein Verlauf, eine Konturenführung). Der Bericht endet mit einem Urteil:
 
@@ -139,7 +140,7 @@ Der Export setzt das Buch wie das PDF und schreibt die Seiten als `.idml`, damit
 - **Zeilen.** `--lines keep`, der Standard, beendet jede Zeile dort, wo Postext sie beendet hat, sodass InDesign dieselben Zeilen zeigt wie das PDF. `--lines reflow` überlässt die Absätze dem Setzer von InDesign, für ein Buch, das dort neu gesetzt wird.
 - **Text.** Jeder Rahmen einer zusammengesetzten Seite wird zu einem Textrahmen mit eigenem Textabschnitt, und mit `next` verkettete Rahmen teilen sich einen. Die Absatzformate tragen die Formatnamen, Einzüge, Tabulatoren und Abstände des Buchs. Fußnoten, Links, Ruby, Betonungszeichen sowie Textabschnitte von rechts nach links und senkrechte Textabschnitte kommen mit.
 - **Seitenobjekte.** Linien, Kästen, Pfade und Bilder werden zu InDesign-Seitenobjekten; Tabellen werden zu InDesign-Tabellen, und Formeln im Text, Noten und Farbmuster werden zu verankerten Objekten. Vom Autor angelegte CMYK-Farben werden zu Prozessfarbfeldern, und Chips mit Formularfeld werden zu InDesign-Formularfeldern.
-- **Bilder und Schriften.** `--images link` schreibt die Bilder nach `Links/` neben das Paket, statt sie einzubetten. `--fonts` schreibt die Schriftdateien nach `Document fonts/`, wo InDesign sie findet, und lässt jede Familie weg, die das Buch nicht weitergeben darf.
+- **Bilder und Schriften.** `--images link` schreibt die Bilder nach `Links/` neben das Paket, statt sie einzubetten. Jede Datei trägt die Endung ihres Formats (`.svg`, `.png`, `.jpg`, `.pdf` …) und öffnet sich nach dem Entpacken im passenden Programm. `--fonts` schreibt die Schriftdateien nach `Document fonts/`, wo InDesign sie findet, und lässt jede Familie weg, die das Buch nicht weitergeben darf.
 - **Warnungen.** Was InDesign nicht so zeigen kann, wie Postext es gesetzt hat, wird als Warnung `idml.*` gemeldet, etwa der abgerundete Rahmen einer Tabelle oder Betonungspunkte in senkrechtem Text.
 
 Exportieren ist keine Portierung in umgekehrter Richtung. Die `.idml` enthält die Seiten, die Postext gesetzt hat, und die Regeln, nach denen sie gesetzt wurden, bleiben im Postext-Buch. Eine Änderung in InDesign kommt über den Import nach Postext zurück, als Kopie der Seite. Regeln, die Sie ändern, etwa den Schriftgrad, ändern Sie am besten im Postext-Buch und exportieren dann erneut.

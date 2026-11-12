@@ -1,7 +1,7 @@
 // book-flow: a facing-pages book. The main story runs through one frame
 // per page, threaded in page order; the master carries the running head
 // and the folio.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("148mm", "210mm", 16, true);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 54, 60, 54, 42, 1, 12);

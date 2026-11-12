@@ -2,7 +2,7 @@
 // bookmarks, text variables, conditions, tracked changes. Page 1 holds
 // the story, page 2 is the page a link points at; InDesign adds the page
 // of endnotes itself.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("170mm", "240mm", 2, false);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 54, 54, 48, 48, 1, 12);

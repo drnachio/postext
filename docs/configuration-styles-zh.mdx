@@ -6,7 +6,7 @@ export const metadata = {
   description: '段落、行内标签、高亮、代码清单和标题的命名样式，以及每一篇开头的篇名页',
   lang: 'zh',
   lastUpdated: '2026-11-10',
-  readingTime: '31分钟',
+  readingTime: '34分钟',
   order: 15,
   parent: 'configuration',
   plainSummary: "本页讲命名样式：定义一次，就可以反复使用。段落样式规定某一类文字的样子，比如参考文献或术语表。行内标签样式在一行文字中间画出一个小标签，高亮样式在一个短语后面铺一条色带，或在它下方、穿过它画一条线；字符样式把几个词换成另一种字体、字号或颜色，还可以指定一个与之配套的高亮样式。代码清单有自己的字体、边框和颜色。本页还讲书中每一篇开头的那一页，以及特殊标题的样式。标注框另有一页说明。",
@@ -1424,6 +1424,70 @@ headingStyles: [
 
 …
 ```
+
+## 章样式
+
+如果一本书的各章外观不尽相同（附录排成双栏、字号更小，某一篇用另一种颜色印刷，词汇表有自己的书眉），就声明**章样式**，各章在自己的前置元数据中写出样式名来选用其一：
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // 章的前置元数据所写的名称。
+  name?: string;           // 用于显示的名称。
+  config: ConfigOverride;  // 它所改变的设置。
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+样式的`config`像语言的层一样合并到全书的配置之上（见`mergeConfigLayers`）：对象逐键合并，颜色或长度整体取代，样式列表按`id`逐条合并，`null`去掉全书的某个值。因此，栏与页边距、排印以及段落、标题和方框样式、颜色与油墨、书眉与页码格式都可以逐章改变，而样式没有写到的部分仍沿用全书的设置。成品尺寸、分辨率、裁切线和装订始终沿用全书的设置：样式中写了这些也会被忽略。
+
+页码、计数器、注释和目录照常贯穿该章，与其他章无异。所有输出都会读取它：Canvas、PDF、EPUB、HTML、用`buildBundle`排出的文件包，以及用`buildDocument`单独排出的一章，因为引擎会应用正文所写的样式。在一本书中，只有第一章的前置元数据是全书的；后面各章的前置元数据会被清空，只留下其中的`chapterStyle:`行。标题的`{style="…"}`仍然叠加在章样式之上，作用于一个区段。
+
+在Sandbox中，版面设计面板顶部的“章样式”栏决定面板编辑什么：整本书，或书的某个样式。选中一个样式时，面板把它叠在整本书之上显示，你做的修改作为它与整本书的差异保存在该样式中；这一栏可以重命名样式、删除样式并回到整本书，它的+按钮用来新建样式。一章可以从章节面板里它的菜单选用样式，菜单会替它写入`chapterStyle:`行；该章的那一行会显示样式的名称。编辑样式时，样式设定的字段带有它的标记，标记的菜单可以取回整本书的值，或把样式的值设为整本书的值。在多语言的书中，样式保存在面板所编辑的那一层：所有语言的设置，或屏幕上的版本。
+
+### 章内的区段
+
+在一章之内，单独占一行的区段分隔符会让其后的内容按某种章样式、从新的一页起排，直到下一个分隔符或该章结束；单独的`::section`则回到该章自身的设置：
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+样式合并到该章的设置（包括该章自身的章样式）之上，所以区段只改变其样式写到的部分。页码、计数器和注释贯穿各区段，与贯穿各章一样。代码块中的分隔符是文本。
 
 封面页不印书眉，从“灯室”起，各页重新采用文档的页眉和页脚。若取默认值`'level'`，封面的区段会延续到下一个一级标题，而这本书没有下一个一级标题，于是全书没有一页带书眉。
 
