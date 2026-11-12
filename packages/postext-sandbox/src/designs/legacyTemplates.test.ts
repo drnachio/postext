@@ -92,7 +92,8 @@ describe('1.78 design templates as designs (#1532)', () => {
     expect(t.name).toBe('House style');
     expect(t.config.bodyText).toEqual({ operatorBreaks: 'avoid' });
     expect([...new Uint8Array(t.fonts[0]!.buffer)]).toEqual([...new Uint8Array(FONT)]);
-    expect(designOfTemplate(t.config, t.parts).parts).toEqual(['text']);
+    // Its typography held a composition rule alone (#1540).
+    expect(designOfTemplate(t.config, t.parts).parts).toEqual(['composition']);
     expect(legacyTemplateFromFile({ type: 'postext-config', version: 1, config: {} })).toBeNull();
     expect(legacyTemplateFromFile({ ...file, version: 2 })).toBeNull();
   });

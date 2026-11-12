@@ -26,6 +26,12 @@ describe('the shipped designs on the guide', () => {
     expect(alone.part?.solid).toBeGreaterThan(0);
   });
 
+  it('ships the five composition conventions as designs of the composition part alone (#1540)', async () => {
+    const conventions = (await shippedDesigns({ conventions: true })).filter((d) => d.id.startsWith('composition-'));
+    expect(conventions.map((d) => d.id)).toEqual(['composition-de', 'composition-en-gb', 'composition-en-us', 'composition-es', 'composition-fr']);
+    for (const { id, design } of conventions) expect(design.parts, id).toEqual(['composition']);
+  });
+
   it('keeps the guide\'s breaks under each design, and paints no page more', () => {
     for (const { id, design } of designs) {
       const config = applyDesign(guide.config, design);
