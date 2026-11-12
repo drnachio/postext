@@ -63,7 +63,8 @@ export interface StyleDef {
 }
 
 export class StyleRegistry {
-  private readonly defs = new Map<string, StyleDef>();
+  /** The styles defined, by id (a chapter style's are read beside the book's, #1521). */
+  readonly defs = new Map<string, StyleDef>();
   private readonly byKey = new Map<string, string>();
   private readonly chipIds = new Map<string, string>();
   /** The face each paragraph style sets its text in (#1444). */

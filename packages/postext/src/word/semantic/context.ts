@@ -119,6 +119,12 @@ export interface WriterContext {
   citations?: BookCitations;
   /** The book's outline, computed on first use (see `fields.ts`). */
   outline?: OutlineEntry[];
+  /** The chapter style of the chapter being written (#1521): its styles
+   *  are the style's registry's until the document is put together
+   *  (`chapterStyles/looks.ts`). */
+  look?: string;
+  /** The chapter style each header or footer part was written in. */
+  partLooks?: Map<string, string>;
 }
 
 export interface PreparedPicture {

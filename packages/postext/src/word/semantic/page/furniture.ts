@@ -263,14 +263,16 @@ function variant(ctx: WriterContext, slots: { header: ResolvedDesignSlot; footer
 const partIds = new WeakMap<WriterContext, Map<string, string>>();
 
 /** The id a header or footer part is registered under: one part per
- *  distinct content. */
+ *  distinct content, and per chapter style (its styles are named apart
+ *  once the document is put together, #1521). */
 function partId(ctx: WriterContext, kind: Target, xml: string): string {
   let ids = partIds.get(ctx);
   if (!ids) partIds.set(ctx, (ids = new Map()));
-  const key = `${kind}\u0000${xml}`;
+  const key = ctx.look ? `${kind}\u0000${ctx.look}\u0000${xml}` : `${kind}\u0000${xml}`;
   let id = ids.get(key);
   if (!id) {
     id = `${kind === 'header' ? 'h' : 'f'}${ids.size + 1}`;
+    if (ctx.look) (ctx.partLooks ??= new Map()).set(id, ctx.look);
     ids.set(key, id);
     (kind === 'header' ? ctx.headers : ctx.footers)[id] = xml;
   }
