@@ -868,7 +868,7 @@ Der Editor behält auch das Buch im Blick. Sein Kapitelmenü listet jedes Kapite
 
 ## Konfiguration
 
-Das Bedienfeld **Gestaltung** bearbeitet die gesamte Konfiguration – mehr als fünfhundert Felder – in Gruppen: Seite und Spalten, Schriftsystem, Farben, Typografie, Überschriften und Inhaltsverzeichnis, Listen, Abbildungen und Tabellen, Kästen, Übungen, Comics, Kopf- und Fußzeilen, Teile, Export, Folio (das Buch in 3D) und erweiterte Einstellungen. Ein Suchfeld findet jede Option über ihren Namen, und der Filter **Geändert** zeigt, was von den Standardwerten abweicht. Jedes Feld und jeder Abschnitt lässt sich einzeln zurücksetzen, und die Konfiguration kann als Datei exportiert und importiert werden. In einem Buch mit mehreren Sprachen wählt ein Schalter am Kopf des Bedienfelds zwischen den Einstellungen, die alle Ausgaben teilen, und denen der Ausgabe auf dem Bildschirm, wie :ref{id="languages"} erklärt.
+Das Bedienfeld **Gestaltung** bearbeitet die gesamte Konfiguration – mehr als fünfhundert Felder – in Gruppen: Seite und Spalten, Schriftsystem, Farben, Typografie, Satzregeln, Überschriften und Inhaltsverzeichnis, Listen, Abbildungen und Tabellen, Kästen, Übungen, Comics, Kopf- und Fußzeilen, Teile, Export, Folio (das Buch in 3D) und erweiterte Einstellungen. Ein Suchfeld findet jede Option über ihren Namen, und der Filter **Geändert** zeigt, was von den Standardwerten abweicht. Jedes Feld und jeder Abschnitt lässt sich einzeln zurücksetzen, und die Konfiguration kann als Datei exportiert und importiert werden. In einem Buch mit mehreren Sprachen wählt ein Schalter am Kopf des Bedienfelds zwischen den Einstellungen, die alle Ausgaben teilen, und denen der Ausgabe auf dem Bildschirm, wie :ref{id="languages"} erklärt.
 
 ## Die sechs Ansichten
 
