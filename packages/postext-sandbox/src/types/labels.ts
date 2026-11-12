@@ -2493,6 +2493,10 @@ export interface SandboxLabels {
   projectLanguageDefaults: string;
   projectRenameEditionOnly: string;
   projectExport: string;
+  /** Books panel › ⋯: the whole book compiled to a file and downloaded. */
+  projectCompilePdf: string;
+  projectCompileHtml: string;
+  projectCompileEpub: string;
   projectActivate: string;
   projectRename: string;
   projectNameLabel: string;

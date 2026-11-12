@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
-import { resolveColorValue, resolveDiagramStyleConfig, type PostextConfig, type Resource, type VDTDocument } from 'postext';
-import { renderToEpub, type EpubCover, type EpubLayout, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
+import type { PostextConfig, Resource, VDTDocument } from 'postext';
+import { renderToEpub, type EpubLayout, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
 import { createEpubWorker, EpubWorkerError, type EpubWorkerHandle } from 'postext-epub/worker';
 import { useBookPlan, useSandboxSelector, useSandboxStateGetter } from '../../context/SandboxContext.js';
 import { composeBookMemo } from '../../book/compose.js';
@@ -10,9 +10,8 @@ import { layOutBookPrint } from '../../book/printChain.js';
 import type { Chapter } from '../../book/types.js';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../../controls/fonts/fontLoader.js';
 import { withHyphenationLocale } from '../../controls/language/hyphenation.js';
-import { ensureResourceImages } from '../../controls/media/resourceImages.js';
-import { renderCoverImage } from '../../covers/useAutoCover.js';
-import { bookCoverPicture, collectEpubFonts, epubResourceBytes, epubSvgFonts, RENDERED_COVER_WIDTH, usableCover } from '../../epub/inputs.js';
+import { epubCoverOf } from '../../epub/cover.js';
+import { collectEpubFonts, epubResourceBytes, epubSvgFonts } from '../../epub/inputs.js';
 import { epubFileName, epubMetadataOf, type EpubBookIdentity } from '../../epub/metadata.js';
 import { downloadBytes } from '../../storage/persistence.js';
 import { dockedToolbarReserve } from '../../epub/viewer.js';
@@ -380,29 +379,4 @@ function useHeight(ref: MutableRefObject<HTMLElement | null>, active: boolean): 
     return () => ro.disconnect();
   }, [ref, active]);
   return height;
-}
-
-/** The cover: the book's own picture when it is a bitmap large enough,
- *  else its first page painted at {@link RENDERED_COVER_WIDTH}. Either is a
- *  picture of the first page (the Sandbox's covers are captures of it), so
- *  the fixed layout keeps it as the cover image without a page of its own. */
-async function epubCoverOf(
-  first: VDTDocument,
-  snapshot: { config: PostextConfig; resources: Resource[] },
-  title: string,
-  source: Parameters<typeof bookCoverPicture>[0],
-): Promise<EpubCover | null> {
-  const picture = await bookCoverPicture(source);
-  const own = picture ? await usableCover(picture.bytes, picture.mime, title) : null;
-  if (own) return { ...own, showsFirstPage: true };
-  const page = first.pages[0];
-  if (!page) return null;
-  // The page's pictures as the canvas paints them.
-  const ds = resolveDiagramStyleConfig(snapshot.config.diagramStyle);
-  const ink = ds.singleInk ? resolveColorValue(ds.inkColor, snapshot.config.colorPalette, ds.inkColor).hex : null;
-  await ensureResourceImages(snapshot.resources, ink, { inlineFonts: ds.inlineFonts }).catch(() => false);
-  if (typeof document !== 'undefined' && document.fonts) await document.fonts.ready;
-  const image = await renderCoverImage(page, first, true, { width: RENDERED_COVER_WIDTH, trimmed: true });
-  if (!image || image === 'missing') return null;
-  return { bytes: new Uint8Array(image.bytes), mediaType: 'image/jpeg', alt: title, showsFirstPage: true };
 }
