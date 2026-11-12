@@ -1,3 +1,4 @@
+// @ts-expect-error -- a Node built-in: the package compiles without @types/node.
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { zipSync, strToU8 } from 'fflate';
