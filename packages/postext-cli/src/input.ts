@@ -25,7 +25,7 @@ import {
   type CreateBundleInput,
 } from 'postext/bundle';
 import { CliError, UsageError, type Options } from './args';
-import { applyDesignFile, parseDesignParts } from './design';
+import { applyCompositionConvention, applyDesignFile, parseDesignParts } from './design';
 import { applyExceptionFiles, parseExceptionsSpec } from './hyphenation';
 import { fontBytes, readFontMeta } from './fonts';
 import type { Reporter } from './log';
@@ -410,6 +410,9 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
     await applyDesignFile(book, designPath, designParts, warn);
     book.watchPaths.push(designPath);
   }
+  // A language's composition rules (#1540), over the design.
+  const composition = opts.string('composition');
+  if (composition) applyCompositionConvention(book, composition);
   // --config over a book's own settings (loose Markdown has it already).
   const configPath = opts.string('config');
   if (configPath && kind !== 'markdown') book.config = deepMerge(book.config, readConfigFile(configPath));

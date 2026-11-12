@@ -5,6 +5,7 @@ import { PageSection } from './page/PageSection.js';
 import { LayoutSection } from './page/LayoutSection.js';
 import { HeaderFooterSection } from './running/HeaderFooterSection/index.js';
 import { BodyTextSection } from './text/BodyTextSection/index.js';
+import { CompositionSection } from './composition/CompositionSection.js';
 import { HeadingsSection } from './headings/HeadingsSection/index.js';
 import { HeadingStylesSection } from './headings/HeadingStylesSection.js';
 import { TocSection } from './headings/TocSection.js';
@@ -93,6 +94,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'frameLooks': FrameLooksSection,
   'exerciseStyles': ExerciseStylesSection,
   'exercises': ExercisesSection,
+  'composition': CompositionSection,
   'chipStyles': ChipStylesSection,
   'characterStyles': CharacterStylesSection,
   'markStyles': MarkStylesSection,

@@ -160,6 +160,12 @@ describe("links and inline HTML", () => {
       ].join("\n")
     );
   });
+
+  it("keeps a <code> element that holds backticks whole, with no placeholder left in the text", () => {
+    const md = mdxToMarkdown("Write <code>`x`</code> or `a <code>b</code>`.", "en", PAGE);
+    expect(md).not.toContain("\u0000");
+    expect(md).toBe("Write `` `x` `` or `a <code>b</code>`.");
+  });
 });
 
 describe("llms.txt", () => {

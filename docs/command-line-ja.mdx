@@ -258,6 +258,13 @@ postext pdf other/ --design novel.postext -o other.pdf
 
 `--design FILE`は本を読むすべてのコマンドのオプションで、`--config`と`--set`の前に、デザインファイルまたは別の本のデザインを本に適用します。パーツの設定が本のものを置き換え、名前付きスタイルはidで統合され、デザインのフォントが本のフォントに加わります。`--design-parts`で一部のパーツだけを使います。Sandboxのデザインパネルも同じファイルを読み込み・書き出しします。
 
+`--composition TAG`も本を読むすべてのコマンドのオプションで、`--design`の後に、ある言語の伝統の組版規則を設定します（postext 1.80以降）。`es`、`en-US`（または`en`）、`en-GB`、`fr`、`de`のいずれか、または本の言語を使う`auto`を指定します。慣習の規則が本の規則を置き換え、ほかの規則は既定値に戻ります。文字組みはそのままです。[組版の慣習](/ja/docs/configuration-text#組版の慣習)を参照してください。
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### packとunpack
 
 ```bash
@@ -305,6 +312,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--set PATH=VALUE</code></td><td>この実行に限って、1つの設定をドット区切りのパスで変えます：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。値は、読めるときはJSONとして（数値、trueとfalse、オブジェクト）、そうでなければテキストとして読みます。繰り返し指定できます。</td></tr>
     <tr><td><code>--config FILE</code></td><td>ばらのMarkdownのための設定（または<code>preset.json</code>）。本の場合は本自身の設定の上に統合されます。</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>デザインファイル（<code>postext design</code>またはSandboxで作成）や別の本の<code>.postext</code>のデザインを、<code>--config</code>と<code>--set</code>の前に本に適用します。<code>--design-parts LIST</code>で一部のパーツだけを使います。</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>ある言語の伝統の組版規則（<code>es</code>、<code>en-US</code>、<code>en-GB</code>、<code>fr</code>、<code>de</code>。<code>auto</code>は本の言語）を<code>--design</code>の後に設定します。postext 1.80以降。</td></tr>
     <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>この実行に限り、分割しない語のファイルを本のリストに統合します。<code>--config</code>の後、<code>--set</code>の前に適用されます。SandboxのImportと同じファイル（<a href="/ja/docs/configuration-language#分割しない語">分割しない語</a>）を読みます。単純なリスト、TeXファイルの<code>{'\\hyphenation{…}'}</code>ブロック、JSONです。単純なリストは<code>LANG</code>のリストに、言語の指定がなければ全言語のリストに入ります。JSONオブジェクトは言語ごとにリストを埋め、キー<code>"*"</code>は全言語のリストです。繰り返し指定できます。postext 1.80以降。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>ばらのMarkdownのための画像、フォント、タイトル。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>本に含まれないフォントを探すフォルダー。繰り返し指定できます。</td></tr>
@@ -383,10 +391,10 @@ for warning in report.warnings:
 pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
-- **コマンドごとに1つの関数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`import_docx`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書きます（`color_space`、`font_dirs`、`dry_run`）。`set`は辞書、`config`はファイルか辞書、`chapters`は数値、リスト、`range`、`"1,3-5"`のいずれかを受け取ります。
-- **レポートはオブジェクト**。各関数はコマンドを`--json`付きで実行し、レポートを返します。`outputs`、`pages`、`timings`、そして`warnings`で、警告はそれぞれ`kind`、`severity`、`message`、`at`、`page`を持つ`Diagnostic`です。`info`は`chapters`、`resources`、`fonts`を、`check`は`passed`、`error_count`、`warning_count`を加えます。
+- **コマンドごとに1つの関数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`idml`、`import_docx`、`import_idml`、`design`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書きます（`color_space`、`font_dirs`、`dry_run`）。`set`は辞書、`config`はファイルか辞書、`chapters`は数値、リスト、`range`、`"1,3-5"`のいずれかを受け取ります。本を読む関数はすべて、デザインファイルをパスかバイト列で渡す`design=`と、リストか`"page,text"`で渡す`design_parts=`、言語タグか`"auto"`で渡す`composition=`を受け取ります。
+- **レポートはオブジェクト**。各関数はコマンドを`--json`付きで実行し、レポートを返します。`outputs`、`pages`、`timings`、そして`warnings`で、警告はそれぞれ`kind`、`severity`、`message`、`at`、`page`を持つ`Diagnostic`です。`info`は`chapters`、`resources`、`fonts`を、`check`は`passed`、`error_count`、`warning_count`を、`design`は`name`と`parts`を、`import_idml`は`layout`、`reason`、`chapters`、`quality`、`fonts`、`missing_links`、`package`を加えます。
 - **エラーは例外**。失敗すると`PostextError`、オプションの誤りは`UsageError`になります。`check`がエラーを見つけると`ProblemsFound`を送出し、その`report`に一覧があります。`raise_on_problems=False`を渡すとレポートを返します。
-- **バイト列**。本は`.postext`バンドルのバイト列でも渡せます。`out="-"`ではファイルが`report.content`に入って戻り、`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`pack_bytes`はそれを直接返します。
+- **バイト列**。本は`.postext`バンドルのバイト列でも渡せます。`out="-"`ではファイルが`report.content`に入って戻り、`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`idml_bytes`、`pack_bytes`、`design_bytes`はそれを直接返します。
 - `postext.Postext(binary, cwd=…, timeout=…)`は指定した実行ファイルを使い、`python -m postext …`はコマンドラインそのものです。
 
 呼び出しのたびに実行ファイルを起動し直します。すべてのオプションはパッケージの[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)にあります。

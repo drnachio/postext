@@ -21,7 +21,11 @@ const PRESET_SOURCES: { url: string; private?: boolean }[] = [
 
 /** The designs the Designs gallery ships with (#1523), written by
  *  `pnpm --filter web designs` (scripts/designs/build.ts). */
-const SHIPPED_DESIGNS = ["novel", "manual", "magazine", "two-colour"].map((id) => `/designs/${id}.postext`);
+const SHIPPED_DESIGNS = [
+  "novel", "manual", "magazine", "two-colour",
+  // A language's composition rules alone (#1540).
+  "composition-es", "composition-en-us", "composition-en-gb", "composition-fr", "composition-de",
+].map((id) => `/designs/${id}.postext`);
 
 /** The guide's text for each interface language: the Chinese interface
  *  opens its Simplified Chinese edition, the Japanese one its Japanese

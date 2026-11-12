@@ -139,7 +139,6 @@ export function RaggedHyphenationSubsection(
           <HyphenationLocaleField {...props} />
           <HyphenationZoneField {...props} />
           <HyphenateCompoundsField {...props} />
-          <HyphenateCapitalizedField {...props} />
           <HyphenationExceptionsField {...props} />
         </>
       )}

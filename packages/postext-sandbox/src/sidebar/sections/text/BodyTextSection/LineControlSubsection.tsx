@@ -1,14 +1,13 @@
 'use client';
 
 // The Line control group of the Body text section: orphans, widows, runts,
-// stacks, the slack weight and the composition rules of lists (#1463: split
-// out of index.tsx).
+// the slack weight and the composition rules of lists (#1463: split out of
+// index.tsx). The stacks and the citation and operator breaks are edited in
+// the Composition rules section (#1540).
 import { DEFAULT_BODY_TEXT_CONFIG, type BodyTextConfig, type ResolvedBodyTextConfig, type ColonListRoom, type CompositionRule } from 'postext';
 import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections.js';
-import { StacksSubsection } from './StacksSubsection.js';
-import { SpaceBreaksSubsection } from './SpaceBreaksSubsection.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -113,8 +112,6 @@ export function LineControlSubsection({ bodyText, avoidOrphansDefault, avoidWido
           labels={labels}
         />
       )}
-      <StacksSubsection bodyText={bodyText} options={COMPOSITION_RULE_OPTIONS} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
-      <SpaceBreaksSubsection bodyText={bodyText} options={COMPOSITION_RULE_OPTIONS} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
       <NumberInput
         label={labels.bodySlackWeight}
         value={bodyText.slackWeight}

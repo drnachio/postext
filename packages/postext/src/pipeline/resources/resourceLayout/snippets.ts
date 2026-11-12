@@ -7,8 +7,7 @@ import { type ResolvedConfig, type VDTLine, createBoundingBox } from '../../../v
 import { type MeasurementCache, type MeasureBlockOptions, cachedMeasureRichSnippet } from '../../../measure/index.js';
 import { measureRichSnippet } from '../../../measure/rich.js';
 import { isBlankText } from '../../../measure/spaces.js';
-import { stackBreaking } from '../../text/stacks.js';
-import { spaceBreaking } from '../../text/spaceBreaks.js';
+import { lineEdgeBreaking } from '../../text/lineEdgeRules.js';
 import { hyphenBreaking } from '../../text/hyphenRules.js';
 import { hyphenationFor } from '../../styles.js';
 import { linkSegments } from '../../../measure/links.js';
@@ -127,26 +126,22 @@ export interface SnippetHyphenation {
 
 /**
  * How a caption, a note or a table cell set in `align` is broken. Line by
- * line with no word divided, as before 1.80, unless its style hyphenates
- * (`hyphenation`, see {@link SnippetHyphenation}) or a composition rule of
- * the line breaker is avoided: stacks (`bodyText.stacks: 'avoid'`, #1463),
- * a citation or a lone operator at a line edge (`citationBreaks`,
- * `operatorBreaks: 'avoid'`, #1519). The line-by-line breaker cannot look
- * back to weigh one, so the text is then broken whole on Knuth–Plass,
- * justified within the word-spacing limits, ragged with the right-hand glue
- * ragged running text gets (`optimalRagged`, whether or not the body text
- * asks for it). A style that hyphenates divides words where a paragraph
- * style with `hyphenation: true` does (justified; ragged when
- * `bodyText.hyphenation.ragged` is on, within its zone), under the body's
- * hyphen rules. Without `optimalLineBreaking` it stays line by line, its
- * words divided all the same.
+ * line with no word divided, as before 1.80, unless a line-edge rule is
+ * avoided ({@link lineEdgeBreaking}: stacks, a citation or a lone operator
+ * at a line edge) or its style hyphenates (`hyphenation`, see
+ * {@link SnippetHyphenation}). A style that hyphenates breaks the text whole
+ * on Knuth–Plass, justified within the body's word-spacing limits, ragged
+ * with the right-hand glue ragged running text gets (`optimalRagged`), and
+ * divides words where a paragraph style with `hyphenation: true` does
+ * (justified; ragged when `bodyText.hyphenation.ragged` is on, within its
+ * zone), under the body's hyphen rules. Without `optimalLineBreaking` it
+ * stays line by line, its words divided all the same.
  */
 export function snippetRuleBreaking(align: TextAlign, resolved: ResolvedConfig, hyphenation?: SnippetHyphenation): MeasureBlockOptions {
+  const edge = lineEdgeBreaking(align, resolved);
+  if (!hyphenation) return edge;
   const body = resolved.bodyText;
-  const stacks = stackBreaking(body);
-  const spaceBreaks = spaceBreaking(body);
-  if (!stacks && !spaceBreaks && !hyphenation) return {};
-  const divides = hyphenation ? hyphenationFor(true, align, resolved, hyphenation.fontSizePx) : undefined;
+  const divides = hyphenationFor(true, align, resolved, hyphenation.fontSizePx);
   const hyphens: MeasureBlockOptions = divides?.hyphenate
     ? {
       hyphenate: true,
@@ -155,10 +150,11 @@ export function snippetRuleBreaking(align: TextAlign, resolved: ResolvedConfig, 
       ...hyphenBreaking(body.hyphenation),
     }
     : {};
-  if (!body.optimalLineBreaking) return hyphens;
-  const rules = { ...(stacks ? { stacks } : {}), ...(spaceBreaks ? { spaceBreaks } : {}), ...hyphens };
-  if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, ...rules };
-  return { optimal: true, optimalRagged: true, ...rules };
+  if (!body.optimalLineBreaking) return { ...edge, ...hyphens };
+  const breaker: MeasureBlockOptions = align === 'justify'
+    ? { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing }
+    : { optimal: true, optimalRagged: true };
+  return { ...breaker, ...edge, ...hyphens };
 }
 
 /** The measurement cache of the resource block being laid out, if its

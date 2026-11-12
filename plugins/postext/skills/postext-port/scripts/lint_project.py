@@ -413,6 +413,24 @@ def check_chapter_styles(cfg: dict, where: str, rep: Report) -> None:
                             "shares: the style keeps the book's value (move them to the book's config)")
 
 
+LEGACY_BINDING = {"bindCitations": "citationBreaks", "bindOperators": "operatorBreaks"}
+
+
+def check_legacy_178(cfg: dict, where: str, rep: Report) -> None:
+    """Keys postext 1.78.0 shipped and 1.79 renamed: `bodyText.bindCitations` /
+    `bindOperators: true` still read as `citationBreaks` / `operatorBreaks: 'avoid'`."""
+    bodies = [("bodyText", cfg.get("bodyText"))]
+    for i, st in enumerate(cfg.get("chapterStyles") or []):
+        if isinstance(st, dict) and isinstance(st.get("config"), dict):
+            bodies.append((f"chapterStyles[{i}].config.bodyText", st["config"].get("bodyText")))
+    for path, body in bodies:
+        if not isinstance(body, dict):
+            continue
+        for old, new in LEGACY_BINDING.items():
+            if old in body:
+                rep.warn(f"{where}.{path}.{old}", f"postext 1.78 key: write {new}: 'avoid' (or 'warn'), "
+                                                   f"which postext >= 1.79 prices in the line breaker")
+
 def check_code_style(cfg: dict, where: str, rep: Report) -> None:
     """`codeStyle` (postext >= 1.23): keys, values the resolver drops, token
     kinds and inline code."""
@@ -2196,6 +2214,15 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     rep.error(f"{name}:{i + 1}", f"chapterStyleUnknown: chapterStyle {v.strip()!r} is not in "
                                                  f"chapterStyles {sorted(ids.get('chapter', set()))}")
             n = end + 1
+    fence: str | None = None
+    for i in range(n, len(lines)):
+        m = re.match(r"\s*(`{3,}|~{3,})", lines[i])
+        if m:
+            fence = None if fence and m.group(1).startswith(fence) else (fence or m.group(1))
+        elif fence is None and re.match(r"\s*::section(\{|\s*$)", lines[i]):
+            rep.warn(f"{name}:{i + 1}", "::section (postext 1.78) is read as a blank line from 1.79 "
+                                        "(partStyleMidChapter): make that text a chapter with chapterStyle: in its "
+                                        "front matter, or open it with :::part{style=\"…\"}")
     stack: list[tuple[str, int]] = []
     prev_nonblank = False
     prev_kind = ""
@@ -3210,6 +3237,7 @@ def main() -> None:
         check_code_style(cfg, f"config ({lang})", rep)
         check_callout_extends(cfg, f"config ({lang})", rep)
         check_chapter_styles(cfg, f"config ({lang})", rep)
+        check_legacy_178(cfg, f"config ({lang})", rep)
         ids = style_ids(cfg)
         for r in resources:
             if r.get("typeId") and r["typeId"] not in ids["types"]:

@@ -170,6 +170,9 @@ export interface VerseLinesInput {
   /** `bodyText.minWordSpacing`: how far a word space may tighten, as a
    *  share of its natural width. */
   minWordSpacing: number;
+  /** How a line that turns over is broken while a line-edge rule is
+   *  avoided (`lineEdgeBreaking`, #1542): its turnovers weighed whole. */
+  rules?: MeasureBlockOptions;
   cache?: MeasurementCache;
 }
 
@@ -237,7 +240,7 @@ export function measureVerseLines(input: VerseLinesInput): MeasuredBlock {
     const rest = settings.turnover === 'right'
       ? Math.min(markSeg().width + space, room / 2)
       : Math.min(settings.hangPx, room / 2);
-    return measureSpans(spans, room, { ...base, lineIndentsPx: [0, rest] });
+    return measureSpans(spans, room, { ...base, ...input.rules, lineIndentsPx: [0, rest] });
   };
   /** Where a too-wide line's last turnover ends, from the poem's start. */
   const endOfTurnover = (spans: InlineSpan[], indent: number): number => {

@@ -864,7 +864,7 @@ L’editor tiene d’occhio anche il libro. Il suo menu dei capitoli elenca ogni
 
 ## Configurazione
 
-Il pannello **Grafica** modifica l’intera configurazione (più di cinquecento campi) per gruppi: pagina e colonne, sistema di scrittura, colori, tipografia, titoli e indice, elenchi, figure e tabelle, riquadri, esercizi, fumetti, intestazioni e piè di pagina, parti, esportazione, Folio (il libro in 3D) e impostazioni avanzate. Una casella di ricerca trova qualsiasi opzione per nome, e il filtro **Modificate** mostra ciò che differisce dai valori predefiniti. Ogni campo e ogni sezione si possono reimpostare singolarmente, e la configurazione si può esportare e importare come file. In un libro con più lingue, un selettore in cima al pannello sceglie tra le impostazioni che tutte le edizioni condividono e quelle dell’edizione sullo schermo, come spiega il :ref{id="languages"}.
+Il pannello **Grafica** modifica l’intera configurazione (più di cinquecento campi) per gruppi: pagina e colonne, sistema di scrittura, colori, tipografia, composizione, titoli e indice, elenchi, figure e tabelle, riquadri, esercizi, fumetti, intestazioni e piè di pagina, parti, esportazione, Folio (il libro in 3D) e impostazioni avanzate. Una casella di ricerca trova qualsiasi opzione per nome, e il filtro **Modificate** mostra ciò che differisce dai valori predefiniti. Ogni campo e ogni sezione si possono reimpostare singolarmente, e la configurazione si può esportare e importare come file. In un libro con più lingue, un selettore in cima al pannello sceglie tra le impostazioni che tutte le edizioni condividono e quelle dell’edizione sullo schermo, come spiega il :ref{id="languages"}.
 
 ## Le sei viste
 

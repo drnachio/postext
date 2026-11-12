@@ -241,7 +241,7 @@ export const metadata = {
       <td><code>stacks</code></td>
       <td><code>'allow' | 'warn' | 'avoid'</code></td>
       <td><code>'allow'</code></td>
-      <td>行頭・行末の重複です。段落の同じ段にある連続した2行が、同じ語、または同じ末尾の<code>stackMinCharacters</code>文字（スペースを含む）で終わること（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>）、あるいは同じ語や同じ先頭の文字で始まること（<code>of the</code> / <code>of a</code>）を指します。<code>'allow'</code>は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code>は同じように組み、重複を1つずつコンテンツ警告<code>stack</code>として報告します。Sandboxはこれを「確認」に挙げ、ページに印を付けます。<code>'avoid'</code>は重複ごとに<code>stackPenalty</code>をデメリットに加え、語間の許す範囲で段落を別の組み方にさせ、残した重複を報告します。アクセントと大文字・小文字は区別しません（「sól」は「sol」）。語を比べるのは単語をスペースで区切る文字体系だけで、中国語、日本語、タイ語、ラオ語、クメール語、ビルマ語、チベット語の文には重複がありません。行の端にある数式、チップ、色見本は比べません。<code>'avoid'</code>のとき、キャプション、注、表のセルは、揃えでも成り行きでも、規則に従うためKnuth–Plassで全体をまとめて改行します。コンポーズドページのフレームは規則なしで本文を組みます。<code>optimalLineBreaking</code>が必要です。本を移植するときは<code>'allow'</code>のままにするか、校正用に<code>'warn'</code>を使います。移植は原本の改行を再現するためです。</td>
+      <td>行頭・行末の重複です。段落の同じ段にある連続した2行が、同じ語、または同じ末尾の<code>stackMinCharacters</code>文字（スペースを含む）で終わること（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>）、あるいは同じ語や同じ先頭の文字で始まること（<code>of the</code> / <code>of a</code>）を指します。<code>'allow'</code>は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code>は同じように組み、重複を1つずつコンテンツ警告<code>stack</code>として報告します。Sandboxはこれを「確認」に挙げ、ページに印を付けます。<code>'avoid'</code>は重複ごとに<code>stackPenalty</code>をデメリットに加え、語間の許す範囲で段落を別の組み方にさせ、残した重複を報告します。アクセントと大文字・小文字は区別しません（「sól」は「sol」）。語を比べるのは単語をスペースで区切る文字体系だけで、中国語、日本語、タイ語、ラオ語、クメール語、ビルマ語、チベット語の文には重複がありません。行の端にある数式、チップ、色見本は比べません。<code>'avoid'</code>のとき、キャプション、注、表のセルは、揃えでも成り行きでも、規則に従うためKnuth–Plassで全体をまとめて改行します。コンポーズドページのフレームは規則なしで本文を組みます。この規則は、折り返す詩行と、複数行になる目次・索引の項目にも同じ方法で適用され、<code>optimalRagged</code>なしの成り行き組みの本文にも適用されます。Knuth–Plassが行長内に組めない段落（段より幅の広い語があるもの）と、<code>optimalLineBreaking</code>をオフにしたすべての文は1行ずつ組まれます。この改行処理は、上の行と同じ語や文字で行が終わってしまう場合、短くなる行の語間が<code>maxWordSpacing</code>の範囲内に収まる限り（成り行き組みでは行長の半分以上）、それより前の語間で改行します。<code>'warn'</code>と<code>'avoid'</code>は、キャプション、注、表のセルの重複も、そのリソースと箇所を示して報告します。本を移植するときは<code>'allow'</code>のままにするか、校正用に<code>'warn'</code>を使います。移植は原本の改行を再現するためです。</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
@@ -259,7 +259,7 @@ export const metadata = {
       <td><code>citationBreaks</code></td>
       <td><code>'allow' | 'warn' | 'avoid'</code></td>
       <td><code>'allow'</code></td>
-      <td>語の後に置かれた角かっこや丸かっこの番号付き引用、またはその一部で始まる行です（<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>、番号式のスタイルが <code>[@key]</code> に付ける番号 <code>[3, p. 12]</code> も含みます）。数字の後は対象外で、<code>2016 (3)</code> は年と号です。<code>'allow'</code> は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code> は同じように組み、該当する改行を内容警告 <code>citationBreak</code> として報告します。Sandbox は「確認」に挙げます。<code>'avoid'</code> は引用の前のスペースや引用の中での改行のデメリットに <code>citationBreakPenalty</code> を加え、語間の範囲内で段落を組み直させ、残った改行を報告します。スペースは語間のままで、ほかの語間と同じように伸びます。本文は変わりません。横組みの段落、リスト、引用、ボックス、注、キャプション、表のセルが対象です。引用はそれぞれ周りの文字体系で読み、右から左に書く文と CJK の文はそのままです。<code>'avoid'</code> のとき、不揃い組み、キャプション、注、セルも Knuth–Plass で組み、規則に従います。組版ページのフレームはこの規則なしで組みます。<code>optimalLineBreaking</code> が必要です。規則にかかわらず特定の2語を離したくないときは、ノーブレークスペースを入力してください。</td>
+      <td>語の後に置かれた角かっこや丸かっこの番号付き引用、またはその一部で始まる行です（<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>、番号式のスタイルが <code>[@key]</code> に付ける番号 <code>[3, p. 12]</code> も含みます）。数字の後は対象外で、<code>2016 (3)</code> は年と号です。<code>'allow'</code> は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code> は同じように組み、該当する改行を内容警告 <code>citationBreak</code> として報告します。Sandbox は「確認」に挙げます。<code>'avoid'</code> は引用の前のスペースや引用の中での改行のデメリットに <code>citationBreakPenalty</code> を加え、語間の範囲内で段落を組み直させ、残った改行を報告します。スペースは語間のままで、ほかの語間と同じように伸びます。本文は変わりません。横組みの段落、リスト、引用、ボックス、注、キャプション、表のセルが対象です。引用はそれぞれ周りの文字体系で読み、右から左に書く文と CJK の文はそのままです。<code>'avoid'</code> のとき、不揃い組み、キャプション、注、セルも Knuth–Plass で組み、規則に従います。組版ページのフレームはこの規則なしで組みます。この規則は、折り返す詩行と、複数行になる目次・索引の項目にも同じ方法で適用されます。Knuth–Plassが行長内に組めない段落（段より幅の広い語があるもの）と、<code>optimalLineBreaking</code>をオフにしたすべての文は1行ずつ組まれます。この改行処理は、引用番号や孤立した演算子が行の端に来てしまう場合、短くなる行の語間が<code>maxWordSpacing</code>の範囲内に収まる限り（成り行き組みでは行長の半分以上）、それより前の語間で改行します。<code>'warn'</code>と<code>'avoid'</code>は、キャプション、注、表のセルでのこうした改行も、そのリソースと箇所を示して報告します。規則にかかわらず特定の2語を離したくないときは、ノーブレークスペースを入力してください。</td>
     </tr>
     <tr>
       <td><code>citationBreakPenalty</code></td>
@@ -335,6 +335,25 @@ export const metadata = {
     </tr>
   </tbody>
 </table>
+
+### 組版の慣習
+
+`bodyText`の組版規則（ハイフネーションの規則、`stacks`、`citationBreaks`、`operatorBreaks`、`hyphenateAcrossColumns`と、それぞれの上限とペナルティ）は既定ではオフなので、どの本も変わりません。ある組版の伝統に従う本は、これらをまとめて設定できます。エンジンは5つの伝統の規則を組版の慣習として備えています（postext 1.80以降）。慣習は`composition`パーツだけを持つデザインです（[デザインファイル](/ja/docs/configuration-bundles#デザインファイル)を参照）。どの慣習も、伝統が定めている規則だけを設定します。ほかの規則は既定値のままで、ペナルティはエンジンの値です。
+
+<table>
+  <thead>
+    <tr><th>慣習</th><th>規則</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>スペイン語（伝統的）、<code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 1</code>）、<code>hyphenation.lastWord: 'avoid'</code>、<code>stacks: 'avoid'</code>、<code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>英語（米国）、<code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>英語（英国）、<code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 2</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>フランス語、<code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>ドイツ語、<code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）</td></tr>
+  </tbody>
+</table>
+
+慣習はそれだけでは何も変えません。Sandboxでは5つともデザインのギャラリーにあり、組版規則グループが本の言語の慣習を示します（[デザインパネル](/ja/docs/sandbox-design-checks)を参照）。コマンドラインでは`--composition`で設定します（[コマンドライン](/ja/docs/command-line#design)を参照）。コードでは`applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`です。慣習を適用すると、その規則が設定され、ほかの組版規則は既定値に戻ります。文字組み、ハイフネーションの言語、単語の例外はそのままです。カタルーニャ語、イタリア語、ポルトガル語の慣習はまだありません。
 
 ### 引用ブロック
 

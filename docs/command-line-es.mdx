@@ -428,6 +428,13 @@ Un archivo de diseño guarda el diseño de un libro y nada de su texto: los ajus
 
 `--design ARCHIVO`, una opción de todas las órdenes que leen un libro, pone el libro en un archivo de diseño o en el diseño de otro libro, antes de `--config` y `--set`: los ajustes de sus partes sustituyen a los del libro, los estilos con nombre se combinan por id y las fuentes del diseño se suman a las del libro. `--design-parts` toma solo algunas de sus partes. El panel Diseño del Sandbox importa y exporta los mismos archivos.
 
+`--composition ETIQUETA`, también una opción de todas las órdenes que leen un libro, pone las reglas de composición de la tradición de un idioma después de `--design` (desde postext 1.80): `es`, `en-US` (o `en`), `en-GB`, `fr` o `de`, o `auto` para el idioma del libro. Las reglas de la convención sustituyen a las del libro y las demás vuelven a sus valores por defecto; la tipografía se queda como está. Véase [Convenciones de composición](/es/docs/configuration-text#convenciones-de-composición).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack y unpack
 
 ```bash
@@ -499,6 +506,7 @@ archivos correctos.
     <tr><td><code>--set PATH=VALUE</code></td><td>Cambia un ajuste para esta ejecución, indicado como ruta con puntos: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. El valor se lee como JSON cuando es posible (números, true y false, objetos) y, si no, como texto. Se puede repetir.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Una configuración (o un <code>preset.json</code>) para Markdown suelto, o que se combina con la del propio libro, por encima de ella.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Pone el libro en el diseño de un archivo de diseño (de <code>postext design</code> o del Sandbox) o del <code>.postext</code> de otro libro, antes de <code>--config</code> y <code>--set</code>. <code>--design-parts LISTA</code> toma solo algunas de sus partes.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Pone las reglas de composición de la tradición de un idioma (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: el idioma del libro) después de <code>--design</code>. Desde postext 1.80.</td></tr>
     <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Combina un archivo de palabras que no se dividen con las listas del libro para esta ejecución, después de <code>--config</code> y antes de <code>--set</code>. Lee los mismos archivos que Importar del Sandbox (<a href="/es/docs/configuration-language#palabras-que-no-se-dividen">palabras que no se dividen</a>): una lista sencilla, los bloques <code>{'\\hyphenation{…}'}</code> de un archivo TeX o JSON. Una lista sencilla va a la lista de <code>LANG</code>, o a la de todos los idiomas si no se indica; un objeto JSON llena una lista por idioma, y su clave <code>"*"</code> es la de todos los idiomas. Repetible. Desde postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imágenes, fuentes y título para Markdown suelto.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Una carpeta en la que buscar las fuentes que el libro no incluye. Se puede repetir.</td></tr>
@@ -618,23 +626,28 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Una función por comando**: `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` y `build`. Las
-  opciones conservan su nombre, con guiones bajos (`color_space`, `font_dirs`,
-  `dry_run`). `set` recibe un diccionario, `config` un archivo o un
-  diccionario, `chapters` un número, una lista, un `range` o `"1,3-5"`.
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` y `build`. Las opciones conservan su nombre, con guiones
+  bajos (`color_space`, `font_dirs`, `dry_run`). `set` recibe un diccionario,
+  `config` un archivo o un diccionario, `chapters` un número, una lista, un
+  `range` o `"1,3-5"`. Toda función que lee un libro admite `design=`, un
+  archivo de diseño como ruta o como bytes, `design_parts=`, una lista o
+  `"page,text"`, y `composition=`, una etiqueta de idioma o `"auto"`.
 - **Informes como objetos.** Cada función ejecuta su comando con `--json` y
   devuelve el informe: `outputs`, `pages`, `timings` y `warnings`, cada aviso
   un `Diagnostic` con `kind`, `severity`, `message`, `at` y `page`. `info`
   añade `chapters`, `resources` y `fonts`; `check` añade `passed`,
-  `error_count` y `warning_count`.
+  `error_count` y `warning_count`; `design` añade `name` y `parts`;
+  `import_idml` añade `layout`, `reason`, `chapters`, `quality`, `fonts`,
+  `missing_links` y `package`.
 - **Errores como excepciones.** Un fallo lanza `PostextError`; una opción
   equivocada, `UsageError`. Cuando `check` encuentra errores lanza
   `ProblemsFound`, cuyo `report` los enumera; con `raise_on_problems=False`
   devuelve el informe.
 - **Bytes.** Un libro puede darse como los bytes de un paquete `.postext`. Con
   `out="-"` el archivo vuelve en `report.content`; `pdf_bytes`, `html_bytes`,
-  `epub_bytes`, `image_bytes`, `docx_bytes` y `pack_bytes` lo devuelven
-  directamente.
+  `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`, `pack_bytes` y
+  `design_bytes` lo devuelven directamente.
 - `postext.Postext(binary, cwd=…, timeout=…)` usa un ejecutable concreto, y
   `python -m postext …` es la propia línea de comandos.
 

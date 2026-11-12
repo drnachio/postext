@@ -33,6 +33,7 @@ export const BOOK_OPTIONS: OptionSpec[] = [
   { name: 'set', short: 's', kind: 'list', arg: 'PATH=VALUE', help: 'Change one setting, e.g. --set page.dpi=300 --set bodyText.fontSize.value=11 (repeatable)' },
   { name: 'design', kind: 'string', arg: 'FILE', help: 'Set the book in the design of a design file (.postext from "postext design" or the Sandbox), or of another book' },
   { name: 'design-parts', kind: 'string', arg: 'LIST', help: 'With --design: only these parts, e.g. "page,text,headings"' },
+  { name: 'composition', kind: 'string', arg: 'TAG|auto', help: 'Set the composition rules of a language\'s tradition (es, en-US, en-GB, fr, de; auto: the book\'s language), after --design' },
   { name: 'config', kind: 'string', arg: 'FILE', help: 'Configuration JSON for loose Markdown (or merged over a book\'s)' },
   { name: 'hyphenation-exceptions', kind: 'list', arg: '[LANG=]FILE', help: 'Merge a list of words kept whole (text, TeX \\hyphenation, JSON) into the book\'s for this run: every language\'s list, or LANG\'s; a JSON object of lists by language fills each (repeatable)' },
   { name: 'resources', kind: 'string', arg: 'DIR', help: 'Pictures for loose Markdown; ids are file names without extension' },
@@ -73,7 +74,7 @@ export const IMAGE_OPTIONS: OptionSpec[] = [
 
 /** The parts of a design, as the engine's DESIGN_PARTS lists them (a test
  *  pins the two together; the help loads no engine). */
-export const DESIGN_PART_NAMES = ['page', 'writing', 'colors', 'text', 'headings', 'lists', 'figures', 'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced'];
+export const DESIGN_PART_NAMES = ['page', 'writing', 'colors', 'text', 'composition', 'headings', 'lists', 'figures', 'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced'];
 
 const PAGES_HELP = 'Pages as printed ("3", "7-9", "iv") or by position ("#1", "#10-#20"), comma separated';
 

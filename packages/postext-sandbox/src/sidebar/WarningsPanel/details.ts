@@ -439,7 +439,10 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
     case 'stack':
     case 'citationBreak':
     case 'operatorBreak':
-      return (payload.kind === 'citationBreak' ? labels.warningsCitationBreakDetail
+      return (payload.place ? `#${payload.place.resourceId} · ${(payload.place.part === 'caption' ? labels.warningsPartCaption
+        : payload.place.part === 'note' ? labels.warningsPartNote
+        : labels.warningsPartCell.replace('__row__', String((payload.place.cell?.row ?? 0) + 1)).replace('__col__', String((payload.place.cell?.col ?? 0) + 1)))} — ` : '')
+        + (payload.kind === 'citationBreak' ? labels.warningsCitationBreakDetail
         : payload.kind === 'stack' ? (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
         : payload.edge === 'end' ? labels.warningsOperatorBreakEndDetail : labels.warningsOperatorBreakStartDetail)
         .replace('__page__', String(payload.page))

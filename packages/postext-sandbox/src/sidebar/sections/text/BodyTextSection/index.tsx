@@ -22,6 +22,7 @@ import { DocumentLocalePointer } from './DocumentLocalePointer.js';
 import { SymbolFontField } from './SymbolFontField.js';
 import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { createBodyTextWriters } from './writers.js';
+import { compositionOnly, holdsBodyText } from '../../composition/compositionSlots.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -58,7 +59,8 @@ export const BodyTextSection = memo(function BodyTextSection() {
     dispatch, raw, effectiveDocumentLocale
   });
 
-  const hasOverrides = raw !== undefined && Object.keys(raw).length > 0;
+  // The composition rules are their own section's (#1540).
+  const hasOverrides = holdsBodyText({ bodyText: raw });
   // The resolved family carries the figures (#1237): compare the family.
   const isFontDefault = baseFontFamily(bodyText.fontFamily) === D.fontFamily;
   const isSizeDefault = dimensionsEqual(bodyText.fontSize, D.fontSize);
@@ -208,7 +210,9 @@ export const BodyTextSection = memo(function BodyTextSection() {
             if (!raw) return;
             const next = { ...raw };
             delete next.textAlign;
-            delete next.hyphenation;
+            const kept = compositionOnly({ hyphenation: raw.hyphenation })?.hyphenation;
+            if (kept) next.hyphenation = kept;
+            else delete next.hyphenation;
             dispatch({ type: 'UPDATE_CONFIG', payload: { bodyText: Object.keys(next).length > 0 ? next : undefined } });
           }}
         />

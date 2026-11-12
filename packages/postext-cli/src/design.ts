@@ -3,7 +3,7 @@
 // a book.
 
 import { readFileSync } from 'node:fs';
-import { DESIGN_PARTS, applyDesign, designFileIds, isDesignPart, type Design, type DesignPart } from 'postext';
+import { COMPOSITION_CONVENTIONS, DESIGN_PARTS, applyDesign, compositionConventionDesign, compositionConventionFor, designFileIds, isDesignPart, type Design, type DesignPart } from 'postext';
 import { openDesignBundle } from 'postext/bundle';
 import { CliError, UsageError } from './args';
 import type { Book } from './input';
@@ -47,6 +47,19 @@ export async function applyDesignFile(book: Book, path: string, parts: DesignPar
   const carried = new Set(book.fonts.map((f) => f.fileId));
   for (const f of opened.fonts) if (!carried.has(f.fileId)) book.fonts.push(f);
   for (const [id, data] of opened.files) book.files.set(id, data);
+}
+
+/** `--composition es` (or `auto`, the book's language): the composition
+ *  rules of a language's tradition (#1540) over the book's, as the
+ *  Sandbox's composition hint applies them. */
+export function applyCompositionConvention(book: Book, spec: string): void {
+  const tag = spec === 'auto' ? book.config.locale ?? book.locale : spec;
+  const convention = compositionConventionFor(tag);
+  if (!convention) {
+    const known = COMPOSITION_CONVENTIONS.map((c) => c.locale).join(', ');
+    throw new UsageError(`--composition: no composition rules for "${tag}" (there are rules for ${known})`);
+  }
+  book.config = applyDesign(book.config, compositionConventionDesign(convention));
 }
 
 /** The bytes of the files a design names, from the book. */

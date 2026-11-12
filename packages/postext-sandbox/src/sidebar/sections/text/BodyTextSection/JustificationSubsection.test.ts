@@ -1,5 +1,5 @@
-// Where "Hyphenate across columns" shows: under hyphenation for a justified
-// body, under optimal ragged breaking for a ragged one (round-5 review).
+// "Hyphenate across columns": a composition rule since #1540, shown in the
+// Composition group whatever the body's alignment.
 
 import { createElement as h } from 'react';
 import { renderToString } from 'react-dom/server';
@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { resolveBodyTextConfig, type BodyTextConfig } from 'postext';
 import { SandboxStoreContext } from '../../../../context/SandboxContext.js';
 import { DEFAULT_LABELS } from '../../../../types/defaultLabels.js';
-import { JustificationSubsection, RaggedBreakingSubsection, acrossColumnsChoice, acrossColumnsValue } from './JustificationSubsection.js';
+import { HyphenateAcrossColumnsSwitch, JustificationSubsection, RaggedBreakingSubsection, acrossColumnsChoice, acrossColumnsValue } from './JustificationSubsection.js';
 
 const LABEL = DEFAULT_LABELS.bodyHyphenateAcrossColumns;
 
@@ -40,24 +40,16 @@ function justified(raw: BodyTextConfig): string {
   }));
 }
 
+function across(raw: BodyTextConfig): string {
+  const bodyText = resolveBodyTextConfig(raw);
+  return wrap(h(HyphenateAcrossColumnsSwitch, { bodyText, updateBodyText: () => {}, resetField: () => {}, labels: DEFAULT_LABELS }));
+}
+
 describe('Hyphenate across columns', () => {
-  it('shows under a ragged body while Knuth–Plass sets it', () => {
-    expect(ragged({})).toContain(LABEL);
-    expect(ragged({ hyphenateAcrossColumns: false })).toContain(LABEL);
-  });
-
-  it('hides under a ragged body set line by line, where the engine does not re-break', () => {
-    expect(ragged({ optimalRagged: false })).not.toContain(LABEL);
-    expect(ragged({ optimalLineBreaking: false })).not.toContain(LABEL);
-  });
-
-  it('shows under a justified body with hyphenation on, once', () => {
-    // A switch names itself more than once (its label and the control's).
-    const count = (html: string) => html.split(LABEL).length - 1;
-    const one = count(ragged({}));
-    expect(one).toBeGreaterThan(0);
-    expect(count(justified({ hyphenation: { enabled: true } }))).toBe(one);
-    expect(justified({ hyphenation: { enabled: false } })).not.toContain(LABEL);
+  it('lives in the Composition rules, not under the body’s line breaking (#1540)', () => {
+    expect(ragged({})).not.toContain(LABEL);
+    expect(justified({ hyphenation: { enabled: true } })).not.toContain(LABEL);
+    expect(across({})).toContain(LABEL);
   });
 
   it('has three states and stores the default as no value (#701)', () => {
@@ -68,8 +60,8 @@ describe('Hyphenate across columns', () => {
     expect(acrossColumnsValue('withinPage')).toBe('withinPage');
     expect(acrossColumnsValue('never')).toBe(false);
     // The control shows the state the document is in.
-    expect(ragged({})).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsAlways);
-    expect(ragged({ hyphenateAcrossColumns: 'withinPage' })).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsWithinPage);
-    expect(ragged({ hyphenateAcrossColumns: false })).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsNever);
+    expect(across({})).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsAlways);
+    expect(across({ hyphenateAcrossColumns: 'withinPage' })).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsWithinPage);
+    expect(across({ hyphenateAcrossColumns: false })).toContain(DEFAULT_LABELS.bodyHyphenateAcrossColumnsNever);
   });
 });

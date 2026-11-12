@@ -50,8 +50,10 @@ export function stubCanvas(): void {
 }
 
 /** The designs the site ships, by file name. */
-export async function shippedDesigns(): Promise<{ id: string; design: Design }[]> {
-  const files = list(at('designs/')).filter((f) => f.endsWith('.postext')).sort();
+export async function shippedDesigns({ conventions = false } = {}): Promise<{ id: string; design: Design }[]> {
+  // The composition conventions (#1540) hold line-breaking rules alone and
+  // paint nothing, so the page checks leave them out unless asked.
+  const files = list(at('designs/')).filter((f) => f.endsWith('.postext') && (conventions || !f.startsWith('composition-'))).sort();
   return Promise.all(files.map(async (f) => ({ id: f.replace(/\.postext$/, ''), design: (await openDesignBundle(new Uint8Array(readBytes(at('designs', f))))).design })));
 }
 

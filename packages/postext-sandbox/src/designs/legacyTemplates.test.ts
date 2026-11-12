@@ -51,8 +51,9 @@ describe('1.78 design templates as designs (#1532)', () => {
     const t = legacyTemplateFromRecord(record())!;
     const design = designOfTemplate(t.config, t.parts);
     // 1.78's page held the binding (today's writing part); its typography
-    // the headings (a part of their own now).
-    expect(design.parts).toEqual(['page', 'writing', 'colors', 'text', 'headings', 'running']);
+    // the headings (a part of their own now) and the composition rules
+    // (#1540: the citation breaks below).
+    expect(design.parts).toEqual(['page', 'writing', 'colors', 'text', 'composition', 'headings', 'running']);
     expect(design.config.page).toEqual({ binding: 'right', margins: { top: { value: 20, unit: 'mm' } } });
     expect(design.config.customFonts?.map((f) => f.name)).toEqual(['House Serif']);
     // The 1.78 line binding is read as today's setting.
@@ -91,7 +92,8 @@ describe('1.78 design templates as designs (#1532)', () => {
     expect(t.name).toBe('House style');
     expect(t.config.bodyText).toEqual({ operatorBreaks: 'avoid' });
     expect([...new Uint8Array(t.fonts[0]!.buffer)]).toEqual([...new Uint8Array(FONT)]);
-    expect(designOfTemplate(t.config, t.parts).parts).toEqual(['text']);
+    // Its typography held a composition rule alone (#1540).
+    expect(designOfTemplate(t.config, t.parts).parts).toEqual(['composition']);
     expect(legacyTemplateFromFile({ type: 'postext-config', version: 1, config: {} })).toBeNull();
     expect(legacyTemplateFromFile({ ...file, version: 2 })).toBeNull();
   });

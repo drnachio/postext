@@ -319,3 +319,52 @@ class UnpackReport(Report):
     @classmethod
     def _extra(cls, d: Mapping[str, Any]) -> Dict[str, Any]:
         return {"files": _int(d.get("files"))}
+
+
+@dataclass(frozen=True)
+class DesignReport(Report):
+    """``design``: the design file's ``name`` and the ``parts`` it took
+    (``page``, ``text``, ``headings``…)."""
+
+    name: Optional[str] = None
+    parts: List[str] = field(default_factory=list)
+
+    @classmethod
+    def _extra(cls, d: Mapping[str, Any]) -> Dict[str, Any]:
+        design = _dict(d.get("design"))
+        return {"name": _str(design.get("name")), "parts": [str(p) for p in _list(design.get("parts"))]}
+
+
+@dataclass(frozen=True)
+class ImportIdmlReport(Report):
+    """``import_idml``: whether the book was set as composed pages or as a
+    flowing book (``layout``: ``pages`` or ``flow``) and why (``reason``),
+    the number of ``chapters``, the importer's ``quality`` report (its
+    counts, findings and how each paragraph style was read), the ``fonts``
+    the document names, the linked pictures not found (``missing_links``:
+    ``name``, ``uri``, ``uses``) and, for a zipped InDesign package,
+    ``package`` (the document taken, the pictures and font files read from
+    it)."""
+
+    layout: Optional[str] = None
+    reason: Optional[str] = None
+    chapters: Optional[int] = None
+    quality: Optional[Dict[str, Any]] = None
+    fonts: List[Dict[str, Any]] = field(default_factory=list)
+    missing_links: List[Dict[str, Any]] = field(default_factory=list)
+    package: Optional[Dict[str, Any]] = None
+
+    @classmethod
+    def _extra(cls, d: Mapping[str, Any]) -> Dict[str, Any]:
+        def dicts(key: str) -> List[Dict[str, Any]]:
+            return [x for x in _list(d.get(key)) if isinstance(x, dict)]
+
+        return {
+            "layout": _str(d.get("layout")),
+            "reason": _str(d.get("reason")),
+            "chapters": _int(d.get("chapters")),
+            "quality": d.get("report") if isinstance(d.get("report"), dict) else None,
+            "fonts": dicts("fonts"),
+            "missing_links": dicts("missingLinks"),
+            "package": d.get("package") if isinstance(d.get("package"), dict) else None,
+        }
