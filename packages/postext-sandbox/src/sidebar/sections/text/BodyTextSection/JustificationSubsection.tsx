@@ -180,7 +180,6 @@ export function JustificationSubsection({
             bodyText={bodyText}
             raw={raw}
             updateBodyText={updateBodyText}
-            updateHyphenation={updateHyphenation}
             labels={labels}
           />
           {/* Where hyphens may fall: optimal line breaking only. */}

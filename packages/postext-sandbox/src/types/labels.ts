@@ -1498,7 +1498,12 @@ export interface SandboxLabels {
   bodyHyphenationExceptionsImport: string;
   bodyHyphenationExceptionsImportTooltip: string;
   bodyHyphenationExceptionsExport: string;
-  bodyHyphenationExceptionsImported: string;
+  bodyHyphenationExceptionsImportResult: string;
+  bodyHyphenationExceptionsImportUnknown: string;
+  bodyHyphenationExceptionsImportFailed: string;
+  bodyHyphenationExceptionsList: string;
+  bodyHyphenationExceptionsListTooltip: string;
+  bodyHyphenationExceptionsAllLanguages: string;
   bodyFirstLineIndent: string;
   bodyFirstLineIndentTooltip: string;
   bodyHangingIndent: string;

@@ -298,3 +298,24 @@ describe('the ink table', () => {
     expect((await call('sandbox_get_config', { path: 'print.inks' })).effective).toEqual([]);
   });
 });
+
+// #1530: the lists of words kept whole by language, which the Words kept
+// whole field writes, keyed by dictionary once resolved; a language with no
+// patterns of its own keeps no list.
+describe('the lists of words kept whole by language', () => {
+  it('are written, read back by dictionary and cleared through the config tools', async () => {
+    const { call } = harness(book());
+    const path = 'bodyText.hyphenation.exceptionsByLanguage';
+    const lists = { 'es-ES': ['ca-mi-no', 'Ma-drid'], en: ['ta-ble'], el: ['λέ-ξη'] };
+    const done = await call('sandbox_set_config', { changes: [{ path, value: lists }], wait: false });
+    expect(done.ok, text(done)).toBe(true);
+    expect((await call('sandbox_get_config', { path, effective: false })).set).toEqual(lists);
+    expect((await call('sandbox_get_config', { path })).effective).toEqual({ es: ['Ma-drid', 'ca-mi-no'], 'en-us': ['ta-ble'] });
+    const changed = await call('sandbox_set_config', { changes: [{ path: `${path}.en`, value: ['Alice'] }], wait: false });
+    expect(changed.ok, text(changed)).toBe(true);
+    expect((await call('sandbox_get_config', { path })).effective).toEqual({ es: ['Ma-drid', 'ca-mi-no'], 'en-us': ['Alice'] });
+    const cleared = await call('sandbox_set_config', { changes: [{ path, value: null }], wait: false });
+    expect(cleared.ok, text(cleared)).toBe(true);
+    expect((await call('sandbox_get_config', { path })).effective ?? {}).toEqual({});
+  });
+});
