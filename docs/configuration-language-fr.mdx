@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Les motifs de césure et les exceptions, le texte en drapeau, la langue du document avec ses chiffres et son sens d’écriture, et les écritures que compose Postext',
   lang: 'fr',
   lastUpdated: '2026-11-12',
-  readingTime: '23 min',
+  readingTime: '24 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Cette page explique comment les mots sont coupés en fin de ligne et comment Postext connaît la langue d’un livre. Vous activez ou désactivez la césure, et vous listez les mots qui ne doivent jamais être coupés. Vous pouvez laisser le bord droit du texte irrégulier au lieu de l’aligner. La langue du document décide des règles de césure, du nom des figures et des tableaux, des chiffres et du sens du texte. Les dernières sections indiquent les systèmes d’écriture que Postext sait composer et la façon dont il traite l’arabe.",
@@ -64,6 +64,12 @@ Quand l’alignement du texte vaut `'justify'`, la césure évite un espacement 
       <td><code>string[]</code></td>
       <td>aucune</td>
       <td>Mots que le dictionnaire ne doit pas couper, ou seulement là où l’entrée l’indique : <code>'Alice'</code> n’est jamais coupé, <code>'You-Tube'</code> seulement à son trait d’union. Voir <a href="#mots-gardés-entiers">Mots gardés entiers</a>.</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>aucune</td>
+      <td>Des listes d'une langue chacune, par son étiquette : lues comme <code>exceptions</code>, appliquées seulement au texte coupé avec le dictionnaire de cette langue, et prioritaires sur le même mot dans <code>exceptions</code>. Voir <a href="#mots-gardés-entiers">Mots gardés entiers</a>.</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -149,6 +155,8 @@ Un dictionnaire coupe un nom comme n’importe quel mot : `Al-ice`, `Áms-ter-d
 `hyphenation.exceptions` est une liste de mots, comme le `\hyphenation{…}` de TeX. Une entrée écrite sans trait d’union n’est jamais coupée ; une entrée écrite avec des traits d’union n’est coupée qu’à ces endroits : `'You-Tube'` donne `You-` · `Tube` et rien d’autre. Une entrée correspond à une suite de lettres, quels que soient les caractères qui l’entourent : `'Alice'` couvre `(Alice,` et `Alice’s`, et un composé est comparé partie par partie (`Blender-based` correspond à `'Blender'`). Une forme fléchie est un autre mot et demande sa propre entrée. Une entrée en minuscules correspond au mot quelle que soit sa casse (`'blender'` couvre `Blender` et `BLENDER`) ; une entrée à capitale initiale ne correspond qu’aux occurrences qui commencent par une capitale : `'Rose'` garde le nom entier et laisse `rose` au dictionnaire. Les entrées ne contiennent que des lettres et des traits d’union ; tout le reste est supprimé.
 
 Dans le Sandbox, **Importer**, sous la liste, lit un fichier et en ajoute les mots : texte avec un mot par ligne ou séparés par des virgules, des points-virgules ou des espaces, avec des lignes de commentaire commençant par `#`, `%` ou `//` ; un bloc `\hyphenation{…}` de TeX ; ou une liste JSON (des listes par langue, toutes sont prises). Une coupure peut être marquée par un trait d'union, un trait d'union conditionnel, un point de césure (`‧`), `=` ou `~` (les tildes qu'écrivent certains logiciels de mise en page ; un `~` en tête garde le mot entier). Un mot déjà dans la liste prend la forme du fichier. **Exporter** enregistre la liste dans un fichier texte, un mot par ligne, qu'un autre livre importe tel quel.
+
+`hyphenation.exceptionsByLanguage` réunit des listes d'une langue chacune, par son étiquette (`{ es: ['ca-mi-no'], en: ['Alice'] }`), pour un livre en plusieurs langues : chaque liste se lit comme `exceptions` et ne s'applique qu'au texte coupé avec le dictionnaire de cette langue, celui du document ou celui d'un chapitre ou d'un passage dans une autre langue. Une entrée de cette liste l'emporte sur le même mot dans `exceptions`. Les étiquettes qui partagent un dictionnaire partagent une liste.
 
 `hyphenation.capitalized: false` garde entier tout mot qui commence par une capitale : les noms, les sigles, et aussi le premier mot de chaque phrase. Cela équivaut à désactiver l’option « Césure des mots en majuscules » d’InDesign, ou au `\uchyph=0` de TeX. Une entrée de `exceptions` avec des traits d’union coupe toujours son mot à ces endroits. L’allemand met une capitale à tous les noms : avec cette option, un texte allemand n’aurait presque plus de mots à couper. Listez plutôt les mots dans `exceptions`, ou utilisez `citations.hyphenateNames`.
 

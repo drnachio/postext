@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Hyphenation patterns and exceptions, ragged text, the document language and its digits and direction, and the scripts Postext sets',
   lang: 'en',
   lastUpdated: '2026-11-12',
-  readingTime: '21 min',
+  readingTime: '22 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "This page covers how words are split at the end of a line and how Postext knows the language of a book. You turn hyphenation on or off, and list the words that must never be split. You can leave the right edge of the text uneven instead of straight. The document language decides the hyphenation rules, the names of figures and tables, the digits and the direction of the text. The last sections say which writing systems Postext can set and how Arabic text is handled.",
@@ -64,6 +64,12 @@ When text alignment is set to `'justify'`, hyphenation prevents excessive word s
       <td><code>string[]</code></td>
       <td>none</td>
       <td>Words the dictionary must not divide, or may divide only where the entry says: <code>'Alice'</code> is never divided, <code>'You-Tube'</code> only at its hyphen. See <a href="#words-kept-whole">Words kept whole</a>.</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>none</td>
+      <td>Lists of one language each, keyed by its tag: read as <code>exceptions</code>, applied only to text divided with that language's dictionary, and winning over the same word in <code>exceptions</code>. See <a href="#words-kept-whole">Words kept whole</a>.</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -149,6 +155,8 @@ A dictionary divides a name as it divides any word: `Al-ice`, `Áms-ter-dam`, `Y
 `hyphenation.exceptions` is a list of words, as in TeX's `\hyphenation{…}`. An entry written without a hyphen is never divided; an entry written with hyphens is divided only there, so `'You-Tube'` gives `You-` · `Tube` and nothing else. An entry matches a run of letters, whatever stands around it: `'Alice'` covers `(Alice,` and `Alice’s`, and a compound is matched part by part (`Blender-based` matches `'Blender'`). An inflected form is another word and needs its own entry. An entry in lower case matches the word in any case (`'blender'` covers `Blender` and `BLENDER`); an entry with an initial capital matches only the occurrences that start with a capital, so `'Rose'` keeps the name whole and leaves `rose` to the dictionary. Entries hold letters and hyphens only; anything else is dropped.
 
 In the Sandbox, **Import** under the list reads a file and merges its words in: plain text with one word per line or separated by commas, semicolons or spaces, with `#`, `%` or `//` comment lines; a TeX `\hyphenation{…}` block; or a JSON list (lists keyed by language are all taken). A break may be marked with a hyphen, a soft hyphen, a hyphenation point (`‧`), `=` or `~` (the tildes some page-layout programs write; a leading `~` keeps the word whole). A word already in the list takes the file's form. **Export** writes the list as a text file, one word per line, that another book imports as it is.
+
+`hyphenation.exceptionsByLanguage` holds lists of one language each, keyed by its tag (`{ es: ['ca-mi-no'], en: ['Alice'] }`), for a book in several languages: a list is read as `exceptions` is and applies only to text divided with that language's dictionary, the document's or the one of a chapter or a passage in another language. An entry there wins over the same word in `exceptions`. Tags that share a dictionary share one list.
 
 `hyphenation.capitalized: false` keeps every word that starts with a capital whole: names, acronyms, and the first word of each sentence too. It is the "Hyphenate Capitalized Words" switch of InDesign turned off, and TeX's `\uchyph=0`. An entry of `exceptions` with hyphens still divides its word at them. German capitalises every noun, so the switch would leave a German text with hardly a word to divide: name the words in `exceptions` there, or use `citations.hyphenateNames`.
 

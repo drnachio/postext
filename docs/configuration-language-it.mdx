@@ -6,7 +6,7 @@ export const metadata = {
   description: 'I pattern e le eccezioni della sillabazione; il testo in bandiera; la lingua del documento, da cui dipendono le cifre e la direzione del testo; le scritture che Postext sa comporre',
   lang: 'it',
   lastUpdated: '2026-11-12',
-  readingTime: '23 min',
+  readingTime: '24 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Questa pagina spiega come si dividono le parole a fine riga e come Postext capisce in che lingua è scritto un libro. Attivi o disattivi la sillabazione ed elenchi le parole che non vanno mai divise. Puoi lasciare irregolare il margine destro del testo invece che dritto. La lingua del documento decide le regole di sillabazione, i nomi delle figure e delle tabelle, le cifre e la direzione del testo. Le ultime sezioni spiegano quali sistemi di scrittura Postext sa comporre e come tratta il testo arabo.",
@@ -64,6 +64,12 @@ Quando l’allineamento del testo è impostato a `'justify'`, la sillabazione ev
       <td><code>string[]</code></td>
       <td>nessuna</td>
       <td>Parole che il dizionario non deve dividere, o può dividere solo dove indica la voce: <code>'Alice'</code> non viene mai divisa, <code>'You-Tube'</code> solo al suo trattino. Vedi <a href="#parole-tenute-intere">Parole tenute intere</a>.</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>nessuno</td>
+      <td>Elenchi di una lingua ciascuno, per il suo tag: letti come <code>exceptions</code>, applicati solo al testo diviso con il dizionario di quella lingua, e prevalgono sulla stessa parola in <code>exceptions</code>. Vedi <a href="#parole-tenute-intere">Parole tenute intere</a>.</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -149,6 +155,8 @@ Un dizionario divide un nome come divide qualsiasi parola: `Al-ice`, `Áms-ter-d
 `hyphenation.exceptions` è un elenco di parole, come il `\hyphenation{…}` di TeX. Una voce scritta senza trattino non viene mai divisa; una voce scritta con trattini viene divisa solo lì, quindi `'You-Tube'` dà `You-` · `Tube` e nient’altro. Una voce corrisponde a una sequenza di lettere, qualunque cosa la circondi: `'Alice'` copre `(Alice,` e `Alice’s`, e un composto viene confrontato parte per parte (`Blender-based` corrisponde a `'Blender'`). Una forma flessa è un’altra parola e ha bisogno di una voce propria. Una voce in minuscolo corrisponde alla parola in qualsiasi combinazione di maiuscole (`'blender'` copre `Blender` e `BLENDER`); una voce con l’iniziale maiuscola corrisponde solo alle occorrenze che cominciano con una maiuscola, quindi `'Rose'` tiene intero il nome e lascia `rose` al dizionario. Le voci contengono solo lettere e trattini; tutto il resto viene scartato.
 
 Nel Sandbox, **Importa**, sotto l'elenco, legge un file e ne aggiunge le parole: testo con una parola per riga o separate da virgole, punti e virgola o spazi, con righe di commento che iniziano con `#`, `%` o `//`; un blocco `\hyphenation{…}` di TeX; o un elenco JSON (degli elenchi per lingua si prendono tutti). Un punto di divisione può essere segnato con un trattino, un trattino morbido, un punto di sillabazione (`‧`), `=` o `~` (le tilde che scrivono alcuni programmi di impaginazione; una `~` iniziale lascia la parola intera). Una parola già nell'elenco prende la forma del file. **Esporta** salva l'elenco in un file di testo, una parola per riga, che un altro libro importa così com'è.
+
+`hyphenation.exceptionsByLanguage` raccoglie elenchi di una lingua ciascuno, per il suo tag (`{ es: ['ca-mi-no'], en: ['Alice'] }`), per un libro in più lingue: ogni elenco si legge come `exceptions` e si applica solo al testo diviso con il dizionario di quella lingua, quello del documento o quello di un capitolo o di un passo in un'altra lingua. Una voce lì prevale sulla stessa parola in `exceptions`. I tag che condividono un dizionario condividono un elenco.
 
 `hyphenation.capitalized: false` tiene intera ogni parola che comincia con una maiuscola: nomi propri, sigle, e anche la prima parola di ogni frase. Corrisponde all’opzione «Sillaba parole in maiuscolo» di InDesign disattivata, e al `\uchyph=0` di TeX. Una voce di `exceptions` con trattini continua a dividere la sua parola in quei punti. Il tedesco scrive in maiuscolo ogni sostantivo, quindi l’opzione lascerebbe a un testo tedesco quasi nessuna parola da dividere: in tedesco elenca piuttosto le parole in `exceptions`, oppure usa `citations.hyphenateNames`.
 

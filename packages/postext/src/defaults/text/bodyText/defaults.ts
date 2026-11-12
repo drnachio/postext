@@ -4,7 +4,8 @@ import type { ResolvedBodyTextConfig, PostextConfig, ResolvedBlockquoteConfig, H
 import { cjkRegionOfConfig } from '../cjk.js';
 import { DEFAULT_MAIN_COLOR, dimensionsEqual } from '../../shared.js';
 import { DEFAULT_VERSE_CONFIG } from '../verse.js';
-import { normalizeHyphenationExceptions } from '../../../hyphenation/hyphenationExceptions.js';
+import { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from '../../../hyphenation/hyphenationExceptions.js';
+import { hyphenationLocaleFor } from '../../../hyphenation/locale.js';
 
 export const DEFAULT_HYPHENATION_CONFIG: ResolvedBodyTextConfig['hyphenation'] = {
   enabled: true,
@@ -147,5 +148,11 @@ export function hyphenationEqual(a: HyphenationConfig | undefined, b: Hyphenatio
     && (a.lastWord ?? D.lastWord) === (b.lastWord ?? D.lastWord)
     && (a.lastWordPenalty ?? D.lastWordPenalty) === (b.lastWordPenalty ?? D.lastWordPenalty)
     // A list that names no valid word is no list.
-    && (normalizeHyphenationExceptions(a.exceptions) ?? []).join('\x00') === (normalizeHyphenationExceptions(b.exceptions) ?? []).join('\x00');
+    && (normalizeHyphenationExceptions(a.exceptions) ?? []).join('\x00') === (normalizeHyphenationExceptions(b.exceptions) ?? []).join('\x00')
+    && JSON.stringify(byLanguageOf(a.exceptionsByLanguage) ?? {}) === JSON.stringify(byLanguageOf(b.exceptionsByLanguage) ?? {});
+}
+
+/** The per-language lists as the engine reads them, for comparing. */
+function byLanguageOf(record: unknown): Record<string, string[]> | undefined {
+  return normalizeExceptionsByLanguage(record, (tag) => hyphenationLocaleFor(tag, false));
 }

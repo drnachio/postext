@@ -269,6 +269,7 @@ const panelHit = (f) => {
 const PANEL_NOTED = [
   [/^(ComicsConfig\.viewerLeaf|ComicViewerLeafConfig\.|PostextConfig\.composedViewerLeaf|ComposedViewerLeafConfig\.)/, 'host only: the HTML viewer sets it, never saved with a document'],
   [/^PostextConfig\.customFonts$/, 'Fonts panel (sidebar/FontsPanel.tsx)'],
+  [/^HyphenationConfig\.exceptionsByLanguage$/, 'written in the configuration; the per-language lists have no panel yet'],
   [/^CustomFontVariant\.format$/, 'Fonts panel: read from the uploaded file name'],
   [/^CustomOutputProfile\.fileId$/, 'Print section: written by the ICC profile upload'],
   [/^Design\w+Element\.(when|unless)$/, 'FenceConditionFields.tsx, shared by every element editor'],

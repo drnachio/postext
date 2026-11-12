@@ -56,7 +56,7 @@ export interface ContentSetupDeps {
   content: PostextContent;
   config: PostextConfig | undefined;
   hints: PassHints;
-  hyphenationRules: { exceptions: string[] | undefined; capitalized: boolean; };
+  hyphenationRules: { exceptions: string[] | undefined; exceptionsByLanguage: Record<string, string[]> | undefined; capitalized: boolean; };
   doc: VDTDocument;
   continuation: LayoutContinuation | undefined;
   pageMetrics: PageMetrics;
