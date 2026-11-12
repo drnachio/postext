@@ -1749,6 +1749,8 @@ splitInline = true   (≥ 1.25) overflow applies to `here` tables too: one that 
   next column at its width; < 5 body rows never cut); 'clip'/'hide' for one taller than a column; not inside boxes
   or on vertical pages. false = 1.24 (moves whole); a preset below configVersion 11 embedding a resource reads false
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
+hyphenation = false  (≥ 1.80) true breaks each cell whole on the optimal breaker; cells are ragged, so words are
+  divided only with bodyText.hyphenation.ragged. Set true when the source hyphenates its table cells as its text.
 ```
 tableStyles[]: `{ id (REQUIRED), name?, …any tableStyle field }` — unset fields inherit
 `tableStyle`, then body. Picked per table by `resource.table.styleId`.
@@ -1769,10 +1771,11 @@ heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink)
 fontFamily, fontSize, color  → body text (label and description share family+size: engine limit)
 figureStyle                  label and description (§20a); unset = the body's figures when in the body family
 align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
-bodyBreaking = false: true breaks the caption as the body (optimal breaker, word-spacing limits,
-   hyphenated when the body is, the body's hyphenation and stack rules; the label never divided).
-   Port a source whose captions are justified and hyphenated as its text with true.
-lineHeight (unset = the body's leading in proportion to the caption size; em = caption size)
+hyphenation = false (≥ 1.80): true hyphenates as a paragraph style's `hyphenation: true` (justified; ragged only
+   with bodyText.hyphenation.ragged; also when bodyText.hyphenation.enabled is off), broken whole on the optimal
+   breaker within the body's word spacing, under its hyphen, stack and citation/operator rules; label never divided.
+   Set true when the source hyphenates its captions as its text (narrow justified captions with hyphens).
+lineHeight (≥ 1.80; unset = the body's leading in proportion to the caption size; em = caption size)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
@@ -1781,9 +1784,9 @@ descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
 note = { fontSize = 0.85×caption size, color = caption color, italic = false, gap = 0.35em, align = 'left',
-         bodyBreaking = false }
+         hyphenation = false, lineHeight (unset = body leading in proportion; em = note size) }   (≥ 1.80 for the last two)
 ```
-Per-type: `resourceTypes[].captionStyle` partial (e.g. tables `{position:'above'}`).
+Per-type: `resourceTypes[].captionStyle` partial (e.g. tables `{position:'above'}`; `hyphenation`, `lineHeight` and `note` too).
 Caption text supports inline markdown; a bold lead sentence is written as `**…**` in the caption.
 
 ---------------------------------------------------------------------------------
