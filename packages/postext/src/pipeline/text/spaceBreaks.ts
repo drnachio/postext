@@ -4,7 +4,7 @@
 // measurement cache keys stay as they were; nor under `'avoid'` with a
 // penalty of 0, where such a break costs nothing.
 import type { ResolvedBodyTextConfig } from '../../types.js';
-import type { SpaceBreakCosts } from '../../measure/spaceBreaks.js';
+import type { SpaceBreakCosts } from '../../knuthPlass/spaceBreaks.js';
 
 type Rules = Pick<ResolvedBodyTextConfig, 'citationBreaks' | 'citationBreakPenalty' | 'operatorBreaks' | 'operatorBreakPenalty'>;
 

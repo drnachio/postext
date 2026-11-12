@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/build.js';
-import { ruledSpaces, spaceBreakDemerits } from '../../../measure/spaceBreaks.js';
+import { ruledSpaces, spaceBreakDemerits } from '../../../knuthPlass/spaceBreaks.js';
 import { spaceBreaking } from '../../../pipeline/text/spaceBreaks.js';
 import { findSpaceBreaks } from '../../../checks/spaceBreaks.js';
+import { paragraphLines } from '../../../checks/paragraphLines.js';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../../defaults/index.js';
 import { collectConfigWarnings } from '../../../checks/configWarnings.js';
 import type { PostextConfig, VDTDocument } from '../../../index.js';
@@ -181,5 +182,40 @@ describe('citations and signs in captions and table cells', () => {
       expect(faults(cellOf(on)), `cell ${w}`).toBe(0);
     }
     expect(seen).toBeGreaterThan(0);
+  });
+});
+
+describe('a break where a paragraph runs on in the next column', () => {
+  // Two columns of `col` px and `rows` lines: the paragraph runs on from
+  // column to column and page to page.
+  const twoColumns = (col: number, rows: number, bodyText: PostextConfig['bodyText']): PostextConfig => ({
+    ...config(2 * col + 14, bodyText),
+    page: { dpi: 72, width: pt(2 * col + 14), height: pt(rows * 14), margins: { top: pt(0), bottom: pt(0), left: pt(0), right: pt(0) } },
+    layout: { layoutType: 'double', gutterWidth: pt(14) },
+  });
+  const pairs = (doc: VDTDocument) => paragraphLines(doc).flatMap((lines) => lines.slice(1).map((b, i) => ({ a: lines[i]!, b })));
+  const fault = (a: string, b: string) => faults([a, b]);
+
+  it("is reported under 'warn', on the page of the line after it, and priced under 'avoid'", () => {
+    let across = 0;
+    for (const col of [140, 147, 154, 161, 168]) {
+      for (const rows of [3, 4, 5, 6, 7]) {
+        const doc = buildDocument({ markdown: MD }, twoColumns(col, rows, { citationBreaks: 'warn', operatorBreaks: 'warn' }));
+        const all = pairs(doc).filter(({ a, b }) => fault(a.at.text, b.at.text) > 0);
+        const warned = (doc.contentWarnings ?? []).filter((w) => w.kind === 'citationBreak' || w.kind === 'operatorBreak');
+        expect(warned.length, `${col}×${rows}`).toBe(pairs(doc).reduce((n, { a, b }) => n + fault(a.at.text, b.at.text), 0));
+        for (const { a, b } of all.filter((p) => p.a.block !== p.b.block)) {
+          across++;
+          const w = warned.find((x) => (x.kind === 'citationBreak' || x.kind === 'operatorBreak') && x.lines[0] === a.at.text && x.lines[1] === b.at.text);
+          expect(w, `${col}×${rows}: ${a.at.text} | ${b.at.text}`).toBeDefined();
+          expect(w!.pageIndex).toBe(b.block.pageIndex);
+        }
+        // The line breaker weighs the whole paragraph: no break left at a
+        // column's head or foot either.
+        const dear = buildDocument({ markdown: MD }, twoColumns(col, rows, DEAR));
+        expect(pairs(dear).reduce((n, { a, b }) => n + fault(a.at.text, b.at.text), 0), `${col}×${rows}`).toBe(0);
+      }
+    }
+    expect(across).toBeGreaterThan(0);
   });
 });
