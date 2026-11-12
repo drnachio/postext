@@ -274,8 +274,10 @@ export function useRelayout(deps: UseRelayoutDeps) {
           markdown: currentSource.markdown,
           metadata: currentSource.metadata,
           resources: resourcesRef.current,
+          // The whole book says where each chapter lies: each is set in its
+          // own chapter style, as the paged outputs set it (#1521).
           ...(currentWholeBook
-            ? (bookStartRef.current ? { continuation: bookStartRef.current } : {})
+            ? { chapters: currentWholeBook.segments.map(({ start, end }) => ({ start, end })), ...(bookStartRef.current ? { continuation: bookStartRef.current } : {}) }
             : { continuation: currentLayout.continuation, ...planContent(currentLayout.plan) }),
         },
         configOverride,

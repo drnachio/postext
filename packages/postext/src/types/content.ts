@@ -63,6 +63,20 @@ export interface PostextContent {
    *  that chapter (`LayoutContinuation.jumps`). Absent: every `page:<id>`
    *  names a page of this chapter. */
   laterPageIds?: Record<string, number>;
+  /** A whole book laid out as one document (#1521): where each chapter's
+   *  text lies in `markdown`, in order. Each chapter is set in its own
+   *  chapter style (its `chapterStyle:`, the part fence it opens with, or
+   *  the part it is in), as a book laid out chapter by chapter sets it:
+   *  the chapters of one style are laid out together, and those of
+   *  another style from a new page. Absent: the document is one chapter. */
+  chapters?: readonly BookChapterRange[];
+}
+
+/** Where one chapter lies in a whole book's source (`PostextContent.chapters`):
+ *  the offset of its first character and the one after its last. */
+export interface BookChapterRange {
+  start: number;
+  end: number;
 }
 
 /** An index mark as the book outline carries it (see

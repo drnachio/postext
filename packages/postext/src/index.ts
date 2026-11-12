@@ -174,6 +174,7 @@ export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesig
 export type { DesignSlotKind } from './defaults/structure/headerFooter.js';
 export type {
   PostextContent,
+  BookChapterRange,
   LayoutContinuation,
   OutlineEntry,
   HeadingStyleConfig,

@@ -14,7 +14,7 @@ import { directiveAttrRanges, MARK_OPENER, readMarkAt } from '../../parse/inline
 import { parsePaperAttrs } from '../pages/paper.js';
 import { extractFrontmatter } from '../../parse/frontmatter.js';
 import { tableGridIssues } from '../../table/model.js';
-import type { PostextConfig, Resource } from '../../types.js';
+import type { BookChapterRange, PostextConfig, Resource } from '../../types.js';
 import type { ContentWarning } from '../../vdt.js';
 import { DEFAULT_CHIP_STYLES } from '../../defaults/text/chipStyles.js';
 import { DEFAULT_MARK_STYLES } from '../../defaults/text/markStyles.js';
@@ -144,6 +144,9 @@ export function collectContentWarnings(
   /** The reference keys of the whole book (#268), when the document is one
    *  of its chapters; its own references count either way. */
   bookCitationKeys?: ReadonlySet<string>,
+  /** Where each chapter lies, for a whole book laid out as one document
+   *  (`PostextContent.chapters`). */
+  chapters?: readonly BookChapterRange[],
 ): ContentWarning[] {
   const fm = extractFrontmatter(markdown);
   const body = fm.content;
@@ -155,7 +158,7 @@ export function collectContentWarnings(
   // metadata.
   if (fm.error) out.push({ kind: 'invalidFrontmatter', message: fm.error.message, sourceStart: fm.error.sourceStart, sourceEnd: fm.error.sourceEnd });
   // The chapter styles it names (#1521).
-  out.push(...chapterStyleWarnings(markdown, fm, blocks, config?.chapterStyles));
+  out.push(...chapterStyleWarnings(markdown, fm, blocks, config?.chapterStyles, chapters));
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
   const byId = new Map<string, Resource>();
