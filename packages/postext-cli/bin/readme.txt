@@ -1,4 +1,4 @@
-postext command line 1.78.0
+postext command line 1.79.0
 ===========================
 
 One self-contained executable per system: no installation, no runtime and
@@ -22,7 +22,7 @@ Download the latest (every release of postext publishes them):
 
   e.g. https://github.com/drnachio/postext/releases/latest/download/postext-linux-x64
 
-or a given version: https://github.com/drnachio/postext/releases/tag/v1.78.0
+or a given version: https://github.com/drnachio/postext/releases/tag/v1.79.0
 SHA256SUMS lists the checksum of each file.
 
 Install
@@ -74,8 +74,6 @@ Use
   postext import-docx draft.docx -o draft/  Word to a postext book
   postext pack book/ -o book.postext        folder (or Markdown files) to a bundle
   postext unpack book.postext -o book/      bundle to a folder
-  postext design book.postext -o d.postext  the book's design as a design file
-  postext pdf other/ --design d.postext     another book in that design
   postext info book.postext                 chapters, fonts, resources
   postext check book.postext --json         problems, as JSON for scripts and agents
   postext build book/ --pdf b.pdf --html b.html --watch   several outputs, rebuild on change
