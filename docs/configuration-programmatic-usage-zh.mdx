@@ -149,6 +149,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>这些段落按正文排出。</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code></td>
+      <td>章的前置元数据中的<code>chapterStyle:</code>或<code>:::part{'{'}style{'}'}</code>所写的样式不在<code>chapterStyles</code>中。</td>
+      <td>该章采用全书的设置。</td>
+    </tr>
+    <tr>
+      <td><code>partStyleMidChapter</code></td>
+      <td>写了样式的<code>:::part{'{'}style{'}'}</code>位于该章正文开始之后。</td>
+      <td>样式从下一章开始生效。</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code>指定的名称不在<code>calloutStyles</code>中；只有配置了标注框样式后才会触发。</td>
       <td>该框采用第一个标注框样式。</td>

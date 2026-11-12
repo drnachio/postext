@@ -248,6 +248,8 @@ await browser.close();
 
 写入通用设置，会作用于所有没有自行设置该字段的版本。`keptBy`列出自行设置了该字段、因而保留自己取值的语言。要连它们一起改，就逐个打开（`sandbox_open_book`加上`language`），以`scope: "edition"`写入该路径：与通用值相同的取值不再属于该版本自己。在只有一种语言的书里，`scope: "all"`会被拒绝，因为它的所有设置都是自己的。
 
+各章外观不尽相同的书有[章样式](/zh/docs/configuration-styles#章样式)。`sandbox_chapter_styles`列出这些样式、每个样式改变的设置和采用它的章，并说明每章的样式从哪里来：前置元数据（`chapter`）、章开头的`:::part`行（`part`）或所属的篇（`partBefore`）。它还可以新建、重命名和删除样式。`sandbox_get_config`和`sandbox_set_config`接受`chapterStyle`：带上它就读写该样式的设置，与版面设计面板选中该样式时一样。全书共用的路径（`page.width`、`locale`、字体、印制）写入全书，`notes`会说明。`sandbox_set_chapter_style`写入章的`chapterStyle:`行，为章指定样式；`style: null`去掉这一行。要让一篇的所有章采用同一个样式，用`sandbox_edit_text`在该篇的`:::part`行写上`style="…"`。
+
 字体也是设置：`sandbox_list_fonts`加上`search: "Garamond"`在开放字体目录中查找字族，把字族名写进某个`fontFamily`设置，字体就会加载。
 
 标注框样式有自己的样式库：`sandbox_frame_styles`列出每种样式在书中用到的地方（模板框、模板页、各章的`:::callout`标注框），以及它建议合并的相近样式，与“版面设计 › 标注框 › 框样式库”相同。`sandbox_merge_styles`接受`groups`（`{ keep, merge }`）或`all: true`，把每个写着被合并样式的框和标记改成保留的样式；加上`lookOnly: true`时，位置不同的框的样式也参与比较。这样的样式会只保留自己的位置，并基于保留样式（`extends`），它的框不会移动，回答在`keptForTheirPlace`中列出它；设为`keepPlaces: false`时则完全合并，这些框会移动。
@@ -495,7 +497,7 @@ await browser.close();
 - **打开的内容**：`sandbox_get_state`。
 - **页面**：`sandbox_render_page`、`sandbox_inspect_pages`、`sandbox_inspect_point`。
 - **文字**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
-- **版面设计**：`sandbox_get_config`、`sandbox_set_config`、`sandbox_find_setting`、`sandbox_reset_to_original`、`sandbox_frame_styles`、`sandbox_merge_styles`。
+- **版面设计**：`sandbox_get_config`、`sandbox_set_config`、`sandbox_find_setting`、`sandbox_reset_to_original`、`sandbox_frame_styles`、`sandbox_merge_styles`、`sandbox_chapter_styles`、`sandbox_set_chapter_style`。
 - **撤销**：`sandbox_undo`。
 - **显示方式**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。
 - **资源和字体**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。

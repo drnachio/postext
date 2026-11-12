@@ -149,6 +149,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The paragraphs are set as body text.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code></td>
+      <td><code>chapterStyle:</code> in a chapter's front matter, or a <code>:::part{'{'}style{'}'}</code>, names none of the <code>chapterStyles</code>.</td>
+      <td>The chapter is set in the book's settings.</td>
+    </tr>
+    <tr>
+      <td><code>partStyleMidChapter</code></td>
+      <td>A <code>:::part{'{'}style{'}'}</code> that names a style stands after the chapter's text has started.</td>
+      <td>The style starts with the next chapter.</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> names none of the <code>calloutStyles</code> — only raised once some are configured.</td>
       <td>The box takes the first callout style.</td>

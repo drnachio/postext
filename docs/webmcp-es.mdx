@@ -336,6 +336,8 @@ con `language`) y escribe la ruta con `scope: "edition"`: un valor igual al
 general deja de ser propio de la edición. En un libro en un solo idioma se
 rechaza `scope: "all"`, porque todos sus ajustes son propios.
 
+Un libro cuyos capítulos no son todos iguales tiene [estilos de capítulo](/es/docs/configuration-styles#estilos-de-capítulo). `sandbox_chapter_styles` los lista con los ajustes que cambia cada uno y los capítulos compuestos en él, y dice de dónde le viene a cada capítulo su estilo: de su preámbulo (`chapter`), de la línea `:::part` con la que empieza (`part`) o de la parte a la que pertenece (`partBefore`). También crea, renombra y elimina estilos. `sandbox_get_config` y `sandbox_set_config` aceptan `chapterStyle`: con él leen y escriben los ajustes de ese estilo, como hace el panel Diseño mientras el estilo está elegido. Una ruta que comparte todo el libro (`page.width`, `locale`, las fuentes, la imprenta) se escribe en el libro, y `notes` lo dice. `sandbox_set_chapter_style` da a un capítulo su estilo escribiendo su línea `chapterStyle:`, y `style: null` la quita. Para componer todos los capítulos de una parte en un estilo, se escribe `style="…"` en la línea `:::part` de la parte con `sandbox_edit_text`.
+
 Las fuentes también son ajustes: `sandbox_list_fonts` con `search: "Garamond"`
 busca familias en el catálogo abierto, y escribir el nombre en un ajuste
 `fontFamily` la carga.
@@ -735,7 +737,8 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **El diseño**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
 - **Deshacer**: `sandbox_undo`.
 - **Cómo se muestra**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

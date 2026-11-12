@@ -260,6 +260,7 @@ Diagnósticos ao vivo, recalculados a partir do texto, do design, das figuras e 
   - *Formato de numeração desconhecido*: um formato de número de lista, de página ou de tipo de recurso que o motor não conhece, e que numera em decimal;
   - *Configuração desconhecida*: uma chave que os títulos, um nível de título, um estilo de título ou uma parada de tabulação não têm (um `letterSpacng` com erro de digitação), e que o motor ignora; a entrada sugere a configuração mais próxima, quando há uma.
   - *Estilo de boxe baseado num estilo que não existe* e *Estilos de boxe baseados uns nos outros em círculo*: um estilo de boxe cujo **Baseado em** (`extends`) não corresponde a nenhum estilo, ou que volta a si mesmo através de outros estilos; o estilo fica sozinho (`calloutStyleExtendsUnknown`, `calloutStyleExtendsCycle`).
+  - *Configuração do livro em um estilo de capítulo* (`chapterStyleBookSetting`): um estilo de capítulo que define o tamanho da página, o idioma, as fontes, a impressão ou outro ajuste que o livro inteiro compartilha, e que o estilo não pode mudar.
   - *Sem numeração de linhas em texto vertical*: a numeração de linhas ligada num documento vertical, que não recebe nenhuma.
 
   As entradas que tratam de uma configuração e não do texto, como *Lista de fontes numa família*, indicam o caminho da configuração, e clicar numa delas não move o editor.

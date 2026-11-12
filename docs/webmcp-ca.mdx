@@ -334,6 +334,8 @@ que conserven el seu valor. Per canviar-les també, obre cadascuna
 valor igual al general deixa de ser propi de l'edició. En un llibre en una sola
 llengua, `scope: "all"` es rebutja, perquè tots els seus ajustos són propis.
 
+Un llibre els capítols del qual no són tots iguals té [estils de capítol](/ca/docs/configuration-styles#estils-de-capítol). `sandbox_chapter_styles` els llista amb els ajustos que canvia cadascun i els capítols compostos en ell, i diu d'on ve l'estil de cada capítol: del seu preàmbul (`chapter`), de la línia `:::part` amb què comença (`part`) o de la part a què pertany (`partBefore`). També crea, reanomena i elimina estils. `sandbox_get_config` i `sandbox_set_config` accepten `chapterStyle`: amb aquest paràmetre llegeixen i escriuen els ajustos d'aquell estil, com fa el tauler Disseny mentre l'estil està triat. Una ruta que comparteix tot el llibre (`page.width`, `locale`, les fonts, la impremta) s'escriu al llibre, i `notes` ho diu. `sandbox_set_chapter_style` dona a un capítol el seu estil escrivint-ne la línia `chapterStyle:`, i `style: null` la treu. Per compondre tots els capítols d'una part en un estil, s'escriu `style="…"` a la línia `:::part` de la part amb `sandbox_edit_text`.
+
 Les fonts també són paràmetres: `sandbox_list_fonts` amb `search: "Garamond"`
 troba famílies al catàleg obert, i n'hi ha prou d'escriure'n el nom en un
 paràmetre `fontFamily` perquè es carregui.
@@ -733,7 +735,8 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **El disseny**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
 - **Desfer**: `sandbox_undo`.
 - **Com es mostra**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

@@ -166,7 +166,7 @@ Conversion at `page.dpi` (default 300):
 | `checks` | `{ contentInConfig?: { enabled?, allow?, maxWords?, maxChars? } }` | §19h | the `contentInConfig` check of design texts (postext 1.34; read by `preset_kit.py lint` on any version); out of the layout key; an older engine ignores the key |
 | `pageTemplates` | PageTemplate[] | §19g | composed-page templates (read and checked from 1.34.0, laid out from 1.34.1, groups and spreads from 1.35.0, `fit` from 1.36.0, continuation from 1.37.0, continue-before-shrink, `page:` jumps, ruled frames, vertical spreads from 1.38.0; frame `writingMode`/`direction`, label checks from 1.39.0; label styles that switch off a borrowed italic, frames in their own mode on right-to-left pages from 1.40.0; connectors, path elements, box shapes, repeating grids, modules and the overlap checks from 1.48.0; round 2, composed-pages.md) |
 | `labelStyles` | LabelStyle[] | §19g | styles of `::label` words on pictures (read from 1.34.0, drawn from 1.37.0, vertical and checked from 1.39.0; `fontStyle` / `textTransform` left unset follow a borrowed paragraph style from 1.40.0; leaders, keys (`kind: 'legend'`), plates with outlines from 1.48.0) |
-| `chapterStyles` | ChapterStyleConfig[] | §19g2 | named designs a chapter takes over the book's settings: `{ id, name, config }`, `config` a partial `PostextConfig` (page, typography, colours, running heads). A chapter names one in its front matter (`chapterStyle: <id>`); `::section{style="<id>"}` sets what follows in that style, from a new page |
+| `chapterStyles` | ChapterStyleConfig[] | §19g2 | named designs a chapter takes over the book's settings: `{ id, name, config }`, `config` a partial `PostextConfig` (page, typography, colours, running heads). A chapter names one in its front matter (`chapterStyle: <id>`); `:::part{style="<id>"}` sets every chapter of the part in it. Book-wide keys and the page trim are ignored in a style (`chapterStyleBookSetting`) |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
 `span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
@@ -2572,9 +2572,19 @@ A book can hold named designs, and a chapter is laid out with one of them over t
 
 - `id` is what a chapter names in its front matter (`chapterStyle: appendix`); `name` is shown in the Sandbox.
 - `config` is a partial `PostextConfig` merged over the book's (as an edition's override is): only what differs.
-- Inside a chapter, `::section{style="appendix"}` sets what follows in that style, from a new page.
-- The page's trim, `dpi`, cut lines and binding stay the book's whatever the style says.
-- A chapter or section naming an unknown id is laid out with the book's settings.
+- A part gives its chapters a style: `:::part{number="IV" title="Appendices" style="appendix"}` at the top of
+  the part's first chapter sets that chapter and every chapter after it, until the next part, in the style.
+  A chapter's own `chapterStyle:` wins over its part's; a part with no `style` returns to the book's settings.
+  A styled fence after the chapter's text has started raises `partStyleMidChapter` and takes effect from the
+  next chapter. A chapter laid out alone reads its part's style from `continuation.part.style`.
+- What the whole book shares stays the book's whatever the style says: `page.sizePreset`/`width`/`height`/
+  `dpi`/`cutLines`/`binding` (`BOOK_PAGE_KEYS`) and `locale`, `direction`, `numerals`, `customFonts`,
+  `symbolFont`, `resourceTypes`, `print`, `pdfGeneration`, `htmlViewer`, `canvasViewer`, `folio`, `debug`,
+  `checks`, `contrast`, `chapterStyles`, `composedViewerLeaf` (`BOOK_WIDE_KEYS`). A style that sets one raises
+  the config warning `chapterStyleBookSetting` (path `chapterStyles[i].config.<key>`).
+- A `chapterStyle:` or part `style` naming an unknown id raises `chapterStyleUnknown`; the chapter is laid out
+  with the book's settings.
+- There is no style for part of a chapter: split the chapter, or use a heading style (§19g) for one section.
 
 ## 19h. `checks` — the `contentInConfig` check (postext 1.34)
 

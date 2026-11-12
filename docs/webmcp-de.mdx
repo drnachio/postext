@@ -345,6 +345,8 @@ ihren Wert behalten. Um auch sie zu ändern, öffnen Sie jede einzeln
 eigener Wert der Ausgabe mehr. In einem Buch in nur einer Sprache wird
 `scope: "all"` abgewiesen, da alle seine Einstellungen seine eigenen sind.
 
+Ein Buch, dessen Kapitel nicht alle gleich aussehen, hat [Kapitelstile](/de/docs/configuration-styles#kapitelstile). `sandbox_chapter_styles` listet sie mit den Einstellungen, die jeder ändert, und den Kapiteln, die darin gesetzt sind, und sagt, woher der Stil jedes Kapitels kommt: aus seinem Front Matter (`chapter`), aus der Zeile `:::part`, mit der es beginnt (`part`), oder aus dem Teil, zu dem es gehört (`partBefore`). Es legt Stile auch an, benennt sie um und entfernt sie. `sandbox_get_config` und `sandbox_set_config` nehmen `chapterStyle`: Damit lesen und schreiben sie die Einstellungen dieses Stils, wie das Design-Bedienfeld, solange der Stil gewählt ist. Ein Pfad, den das ganze Buch teilt (`page.width`, `locale`, die Schriften, der Druck), wird in das Buch geschrieben, und `notes` sagt es. `sandbox_set_chapter_style` gibt einem Kapitel seinen Stil, indem es dessen Zeile `chapterStyle:` schreibt; `style: null` nimmt die Zeile heraus. Um alle Kapitel eines Teils in einem Stil zu setzen, schreibt man `style="…"` mit `sandbox_edit_text` in die Zeile `:::part` des Teils.
+
 Auch Schriften sind Einstellungen: `sandbox_list_fonts` mit
 `search: "Garamond"` findet Familien im offenen Katalog, und wenn Sie den Namen in eine
 Einstellung `fontFamily` schreiben, wird die Schrift geladen.
@@ -761,7 +763,8 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **Die Gestaltung**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
 - **Rückgängig**: `sandbox_undo`.
 - **Die Anzeige**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

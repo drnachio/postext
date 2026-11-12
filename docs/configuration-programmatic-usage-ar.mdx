@@ -149,6 +149,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُنضَّد الفقرات بنمط نص المتن.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code></td>
+      <td>لا يسمّي <code>chapterStyle:</code> في مقدّمة الفصل، أو <code>:::part{'{'}style{'}'}</code>، أيًّا من <code>chapterStyles</code>.</td>
+      <td>يُصفّ الفصل بإعدادات الكتاب.</td>
+    </tr>
+    <tr>
+      <td><code>partStyleMidChapter</code></td>
+      <td>يقع <code>:::part{'{'}style{'}'}</code> الذي يسمّي نمطًا بعد أن بدأ نص الفصل.</td>
+      <td>يبدأ النمط من الفصل التالي.</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> لا يذكر أيًا من <code>calloutStyles</code>، ولا يُطلَق إلا بعد ضبط بعضها.</td>
       <td>يأخذ الإطار أول نمط إطار.</td>

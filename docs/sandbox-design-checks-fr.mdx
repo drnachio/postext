@@ -260,6 +260,7 @@ Des diagnostics en direct, recalculés à partir du texte, de la maquette, des f
   - *Format de numéro inconnu* : un format de numéro de liste, de page ou de type de ressource que le moteur ne connaît pas, et qui numérote donc en décimal ;
   - *Réglage inconnu* : une clé que n’ont ni les titres, ni un niveau de titre, ni un style de titre, ni un taquet de tabulation (un `letterSpacng` mal orthographié), et que le moteur ignore ; l’entrée suggère le réglage le plus proche, quand il y en a un.
   - *Style d’encadré basé sur un style inconnu* et *Styles d’encadré basés les uns sur les autres en boucle* : un style d’encadré dont le **Basé sur** (`extends`) ne désigne aucun style, ou qui revient à lui-même par d’autres styles ; le style reste seul (`calloutStyleExtendsUnknown`, `calloutStyleExtendsCycle`).
+  - *Réglage du livre dans un style de chapitre* (`chapterStyleBookSetting`) : un style de chapitre qui fixe le format, la langue, les polices, l’impression ou un autre réglage que tout le livre partage, et que le style ne peut pas changer.
   - *Pas de numéros de ligne en texte vertical* : des numéros de ligne activés dans un document vertical, qui n’en reçoit aucun.
 
   Les entrées qui portent sur un réglage et non sur le texte, comme *Liste de polices dans une famille*, indiquent le chemin du réglage, et cliquer sur l’une d’elles ne déplace pas l’éditeur.

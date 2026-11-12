@@ -1463,6 +1463,7 @@ debug: {
 - **竖排文字中的行号**：竖排文档（`layout.writingMode: 'vertical-rl'`）中写了`lineNumbers.enabled: true`。竖排页面不标行号，`used`为`false`（`lineNumbersUnsupported`；见[行号](/zh/docs/configuration-notes-references#行号)）。
 - **竖排中的文字绕排**：竖排文档中资源类型的`defaultPlacement.wrap`。竖排页面不在图旁排正文，`used`为`none`（`wrapUnsupported`；见[文档格式 › 文字绕排](/zh/docs/document-format-resources#文字绕排)）。不指明一侧的`wrap`是未知的设置值。
 - **基于其他样式的标注框样式**：标注框样式的`extends`指向`calloutStyles`中不存在的样式（`calloutStyleExtendsUnknown`，`suggestion`给出最接近的id），或沿`extends`追溯会回到它自己（`calloutStyleExtendsCycle`，`value`为环`a → b → a`）。该样式单独成立，未设置的项使用内置默认值（见[基于其他样式的样式](/zh/docs/configuration-callouts#基于其他样式的样式)）。
+- **章样式中的全书设置**：章样式的`config`写了全书共用的设置（`page`的成品尺寸、分辨率、裁切线或装订，语言，注册的字体，印制设置，PDF生成，查看器或检查）。该样式在这些地方沿用全书的值；`path`指向该设置（`chapterStyles[0].config.locale`），`value`是它的名称（`chapterStyleBookSetting`；见[章样式](/zh/docs/configuration-styles#章样式)）。
 - **页面模板和标注样式**：`pageTemplates`或`labelStyles`中的问题，包括id或名称重复，`extends`、锚定或框接续成环，样式、框或模板不存在，最小值大于最大值，锚点的标注样式不在`labelStyles`中（传入资源时检查：`collectConfigWarnings(config, { resources })`）。这些警告的`path`是JSON指针（`/pageTemplates/3/frames/2/style`）；每种警告的原因和解决办法见[页面模板警告](/zh/docs/configuration-composed-pages#页面模板警告)。
 - **设计中的正文**：设计文字元素在占位符之外的文字超过一个简短标签的长度，也就是把书的正文存放在了配置中。每个设置（某个标题样式、页眉、某个篇的设计）一条警告，附每条文字的路径（`contentInConfig`；见[正文检查](#正文检查配置)）。与其他警告不同，它可以关闭：`checks.contentInConfig.enabled: false`。
 
