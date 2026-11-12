@@ -635,8 +635,9 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   Unterstrichen (`color_space`, `font_dirs`, `dry_run`). `set` nimmt ein
   Dictionary, `config` eine Datei oder ein Dictionary, `chapters` eine Zahl,
   eine Liste, ein `range` oder `"1,3-5"`. Jede Funktion, die ein Buch liest,
-  nimmt `design=`, eine Gestaltungsdatei als Pfad oder als Bytes, und
-  `design_parts=`, eine Liste oder `"page,text"`.
+  nimmt `design=`, eine Gestaltungsdatei als Pfad oder als Bytes,
+  `design_parts=`, eine Liste oder `"page,text"`, und `composition=`, ein
+  Sprachkürzel oder `"auto"`.
 - **Berichte als Objekte.** Jede Funktion führt ihren Befehl mit `--json` aus
   und gibt den Bericht zurück: `outputs`, `pages`, `timings` und `warnings`,
   jede Warnung ein `Diagnostic` mit `kind`, `severity`, `message`, `at` und

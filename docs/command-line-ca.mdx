@@ -647,8 +647,8 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   (`color_space`, `font_dirs`, `dry_run`). `set` rep un diccionari, `config` un
   fitxer o un diccionari, `chapters` un número, una llista, un `range` o
   `"1,3-5"`. Tota funció que llegeix un llibre admet `design=`, un fitxer de
-  disseny com a camí o com a bytes, i `design_parts=`, una llista o
-  `"page,text"`.
+  disseny com a camí o com a bytes, `design_parts=`, una llista o
+  `"page,text"`, i `composition=`, una etiqueta de llengua o `"auto"`.
 - **Informes com a objectes.** Cada funció executa la seva ordre amb `--json` i
   retorna l'informe: `outputs`, `pages`, `timings` i `warnings`, cada avís un
   `Diagnostic` amb `kind`, `severity`, `message`, `at` i `page`. `info` hi

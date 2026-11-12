@@ -638,7 +638,8 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   `font_dirs`, `dry_run`). `set` recebe um dicionário, `config` um arquivo ou
   um dicionário, `chapters` um número, uma lista, um `range` ou `"1,3-5"`. Toda
   função que lê um livro aceita `design=`, um arquivo de projeto como caminho
-  ou como bytes, e `design_parts=`, uma lista ou `"page,text"`.
+  ou como bytes, `design_parts=`, uma lista ou `"page,text"`, e
+  `composition=`, uma etiqueta de idioma ou `"auto"`.
 - **Relatórios como objetos.** Cada função executa o seu comando com `--json` e
   devolve o relatório: `outputs`, `pages`, `timings` e `warnings`, cada aviso
   um `Diagnostic` com `kind`, `severity`, `message`, `at` e `page`. `info`

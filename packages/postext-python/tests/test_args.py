@@ -101,6 +101,8 @@ def test_design_book_options(tmp_path: Path):
         args = client._book_args({"design": b"PK\x03\x04", "design_parts": "headings"}, temp)
         assert Path(args[1]).read_bytes() == b"PK\x03\x04" and args[1].endswith(".postext")
         assert args[2:] == ["--design-parts", "headings"] and not temp.used
+        args = client._book_args({"design": tmp_path / "novel.postext", "composition": "auto"}, temp)
+        assert args[2:] == ["--composition", "auto"]
 
 
 class _Calls:

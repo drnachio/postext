@@ -581,7 +581,7 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   و`dry_run`). يأخذ `set` قاموسًا، و`config` ملفًا أو قاموسًا، و`chapters`
   رقمًا أو قائمة أو `range` أو `"1,3-5"`. وكل دالة تقرأ كتابًا تأخذ `design=`،
   وهو ملف تصميم يُعطى مسارًا أو بايتات، و`design_parts=`، قائمةً أو
-  `"page,text"`.
+  `"page,text"`، و`composition=`، وهو رمز لغة أو `"auto"`.
 - **التقارير كائنات.** تنفّذ كل دالة أمرها مع `--json` وتعيد التقرير: `outputs`
   و`pages` و`timings` و`warnings`، وكل تحذير فيه `Diagnostic` له `kind`
   و`severity` و`message` و`at` و`page`. ويضيف `info` الحقول `chapters`

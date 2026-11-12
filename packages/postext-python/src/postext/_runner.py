@@ -96,6 +96,8 @@ class Runner:
             args += ["--design", temp.file(design, "design.postext")]
         if opts.get("design_parts") is not None:
             args += ["--design-parts", parts_arg(opts["design_parts"])]
+        if opts.get("composition") is not None:
+            args += ["--composition", str(opts["composition"])]
         config = opts.get("config")
         if isinstance(config, Mapping):
             config = temp.write("config.json", json.dumps(config, ensure_ascii=False).encode("utf-8"))

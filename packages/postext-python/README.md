@@ -83,6 +83,7 @@ postext.pdf(
     offline=True,                      # --offline: never download fonts
     design="novel.postext",            # --design: a design file (a path or bytes), or another book
     design_parts=["page", "text"],     # --design-parts page,text
+    composition="auto",                # --composition: the composition rules of the book's language (or "es", "en-GB"…)
 )
 ```
 

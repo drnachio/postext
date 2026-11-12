@@ -620,7 +620,8 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   (`color_space`, `font_dirs`, `dry_run`). `set` takes a dict, `config` a file
   or a dict, `chapters` a number, a list, a `range` or `"1,3-5"`. Every
   function that reads a book takes `design=`, a design file as a path or as
-  bytes, and `design_parts=`, a list or `"page,text"`.
+  bytes, `design_parts=`, a list or `"page,text"`, and `composition=`, a
+  language tag or `"auto"`.
 - **Reports as objects.** Each function runs its command with `--json` and
   returns the report: `outputs`, `pages`, `timings` and `warnings`, each a
   `Diagnostic` with `kind`, `severity`, `message`, `at` and `page`. `info` adds

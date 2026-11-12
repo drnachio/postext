@@ -53,6 +53,8 @@ if TYPE_CHECKING:
         """A design file (``.postext`` from ``design`` or the Sandbox), or another book, whose design the book is set in."""
         design_parts: Union[str, Sequence[str]]
         """With ``design``: only these parts, ``"page,text,headings"`` or ``["page", "text"]``."""
+        composition: str
+        """A language's composition rules, applied after ``design``: ``"es"``, ``"en-GB"``…, or ``"auto"`` for the book's language."""
         config: Union[PathLike, Mapping[str, Any]]
         """Configuration JSON (a file, or a dict) for loose Markdown, or merged over a book's."""
         resources: PathLike
@@ -79,6 +81,7 @@ BOOK_KEYS = (
     "set",
     "design",
     "design_parts",
+    "composition",
     "config",
     "resources",
     "fonts",
