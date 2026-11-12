@@ -73,6 +73,21 @@ describe('postext design', () => {
     expect(readFileSync(join(dir, 'b.pdf')).subarray(0, 4).toString()).toBe('%PDF');
   }, 120_000);
 
+  it('sets a language\'s composition rules with --composition (#1540)', async () => {
+    const dir = books();
+    expect(run(['design', 'b', '--composition', 'es', '--parts', 'composition', '-o', 'es.postext', '-q', '--offline'], dir).code).toBe(0);
+    const es = await manifestOf(join(dir, 'es.postext'));
+    expect(es.design?.parts).toEqual(['composition']);
+    expect(es.config.bodyText).toEqual({ hyphenation: { ladders: 'avoid', maxConsecutive: 1, lastWord: 'avoid' }, stacks: 'avoid', hyphenateAcrossColumns: false });
+    // auto: the book's language (a.json says Spanish); the type stays.
+    expect(run(['design', 'a', '--config', 'a.json', '--composition', 'auto', '--parts', 'text,composition', '-o', 'auto.postext', '-q', '--offline'], dir).code).toBe(0);
+    const auto = await manifestOf(join(dir, 'auto.postext'));
+    expect(auto.config.bodyText).toMatchObject({ fontSize: { value: 12, unit: 'pt' }, stacks: 'avoid' });
+    const none = run(['info', 'b', '--composition', 'it', '--offline'], dir);
+    expect(none.code).toBe(2);
+    expect(none.stderr).toContain('en-GB');
+  }, 60_000);
+
   it('says what was wrong with the parts or the file', () => {
     const dir = books();
     expect(run(['design', 'a', '--parts', 'typography', '-o', 'x.postext'], dir).code).toBe(2);
