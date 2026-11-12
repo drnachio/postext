@@ -65,12 +65,17 @@ function inlineMarkdown(
   const code = finish.code ?? ((s: string) => s);
   const spans: string[] = [];
   const hold = (s: string) => `\u0000${spans.push(s) - 1}\u0000`;
+  // One left-to-right pass, so a `<code>` element that holds backticks
+  // (`<code>`code`</code>`) and a backtick span that holds `<code>` each
+  // stay whole, and no placeholder ends up inside another.
   const out = line
-    .replace(/(`+)[\s\S]*?\1/g, (s) => hold(text(s)))
-    .replace(/<code>([\s\S]*?)<\/code>/g, (_, c: string) => {
-      const s = code(c);
-      const tick = s.includes("`") ? "``" : "`";
-      return hold(`${tick}${s}${tick}`);
+    .replace(/<code>([\s\S]*?)<\/code>|(`+)[\s\S]*?\2/g, (s, c: string | undefined) => {
+      if (c === undefined) return hold(text(s));
+      const k = code(c);
+      const longest = Math.max(0, ...(k.match(/`+/g) ?? []).map((r) => r.length));
+      const tick = "`".repeat(longest + 1);
+      const pad = k.startsWith("`") || k.endsWith("`") ? " " : "";
+      return hold(`${tick}${pad}${k}${pad}${tick}`);
     })
     .replace(/<strong>([\s\S]*?)<\/strong>/g, "**$1**")
     .replace(/<em>([\s\S]*?)<\/em>/g, "*$1*")
@@ -84,7 +89,11 @@ function inlineMarkdown(
 
 /** Inline HTML inside a table cell → inline Markdown on one line. */
 function inlineHtmlToMarkdown(html: string, pageUrl: string): string {
-  const flat = unwrapJsxStrings(html.replace(/\s*\n\s*/g, " ").trim());
+  // `<code>{`…`}</code>`: a template literal without `${…}` is a plain string too.
+  const flat = unwrapJsxStrings(html.replace(/\s*\n\s*/g, " ").trim()).replace(
+    /<code>\{`((?:[^`\\$]|\\.|\$(?!\{))*)`\}<\/code>/g,
+    (_, c: string) => `<code>${c.replace(/\\(.)/g, "$1")}</code>`
+  );
   // Code and prose each decode and escape their own pipes, so the GFM row
   // stays intact. Prose escapes its backslashes first (a literal `\` before
   // a pipe would otherwise eat the pipe's escape); a code span shows
