@@ -56,6 +56,7 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     })()
     : undefined;
   const spaceBreaks = spaceBreaking(resolved.bodyText);
+  const stacks = stackBreaking(resolved.bodyText);
   const measureOptions = {
     ...(contentBlock.direction !== undefined ? { direction: contentBlock.direction } : {}),
     textAlign: style.textAlign,
@@ -86,7 +87,7 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     runtGraded: runtActive && resolved.bodyText.gradedRuntPenalty ? true : undefined,
     // Stacks avoided (#1463): left undefined otherwise (`'warn'` reads
     // them off the finished lines), so the cache keys stay unchanged.
-    stacks: stackBreaking(resolved.bodyText),
+    stacks,
     // Breaks before a citation or beside a lone operator avoided (#1519):
     // left undefined otherwise, as stacks.
     spaceBreaks,
@@ -126,10 +127,10 @@ export function createMeasureOptions(deps: MeasureOptionsDeps) {
     breakAfterHyphens: resolved.bodyText.breakAfterHyphens ? true : undefined,
     hyphenateCompounds: resolved.bodyText.hyphenation.compounds ? undefined : false,
     repeatHyphen: resolved.bodyText.repeatHyphen ? true : undefined,
-    // Ragged running text is broken whole on Knuth–Plass while a citation
-    // or operator break is avoided (#1519), as captions, notes and cells
-    // are: the line-by-line breaker cannot weigh one.
-    optimalRagged: (resolved.bodyText.optimalRagged || spaceBreaks !== undefined) && style.textAlign !== 'justify'
+    // Ragged running text is broken whole on Knuth–Plass while a stack, a
+    // citation or an operator break is avoided (#1519, #1542), as captions,
+    // notes and cells are: the line-by-line breaker cannot weigh one.
+    optimalRagged: (resolved.bodyText.optimalRagged || spaceBreaks !== undefined || stacks !== undefined) && style.textAlign !== 'justify'
       && (vdtType === 'paragraph' || vdtType === 'blockquote' || vdtType === 'listItem')
       ? true
       : undefined,

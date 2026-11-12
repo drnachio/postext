@@ -42,5 +42,9 @@ describe('design parts and the Design panel', () => {
     expect(designPartOf('page', 'margins')).toBe('page');
     expect(designPartOf('layout', 'writingMode')).toBe('writing');
     expect(designPartOf('layout', 'gutterWidth')).toBe('page');
+    // The composition rules (#1540) are the Composition group's.
+    expect(designPartOf('bodyText')).toBe('text');
+    expect(designPartOf('bodyText', 'stacks')).toBe('composition');
+    expect(designPartOf('bodyText', 'hyphenation.ladders')).toBe('composition');
   });
 });

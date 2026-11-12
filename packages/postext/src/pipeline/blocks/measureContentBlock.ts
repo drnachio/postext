@@ -16,6 +16,7 @@ import { runMeasurement } from './buildMeasurement.js';
 import { linkSegments } from '../../measure/links.js';
 import { kashidaMeasureOptions } from '../../measure/rtl/kashida.js';
 import { measureVerse } from '../text/verse.js';
+import { lineEdgeBreaking } from '../text/lineEdgeRules.js';
 import { versesLineByLine, measureVerseLines, verseLinesSettings } from '../text/verseLines.js';
 import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 import { measuringVertically } from '../../measure/vertical.js';
@@ -263,6 +264,7 @@ export function measureContentBlock(
       direction,
       frameDirection: getMeasureDirection(),
       minWordSpacing: resolved.bodyText.minWordSpacing,
+      rules: lineEdgeBreaking('left', resolved),
       ...(cache ? { cache } : {}),
     });
     if (measured.lines.length === 0) return null;
@@ -285,6 +287,7 @@ export function measureContentBlock(
       kashida: kashidaMeasureOptions(resolved.bodyText, style.fontString, style.fontSizePx),
       direction,
       frameDirection: getMeasureDirection(),
+      rules: lineEdgeBreaking('left', resolved),
       ...(cache ? { cache } : {}),
     });
     if (measured.lines.length === 0) return null;

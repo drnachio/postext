@@ -6,8 +6,8 @@ describe('settings registry', () => {
   it('lists every section exactly once', () => {
     const ids = SETTINGS_SECTIONS.map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(55);
-    expect(SETTINGS_GROUPS).toHaveLength(15);
+    expect(ids).toHaveLength(56);
+    expect(SETTINGS_GROUPS).toHaveLength(16);
   });
   it('puts the writing system right after the page, with its two sections', () => {
     expect(SETTINGS_GROUPS.map((g) => g.id).slice(0, 3)).toEqual(['page', 'writing', 'colors']);

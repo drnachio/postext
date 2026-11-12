@@ -1102,7 +1102,12 @@ describe("package exports", () => {
       "usedFontFamilies",
       "designFileIds",
       "readDesignParts",
+      "designPartsWithComposition",
       "designMissingStyles",
+      "COMPOSITION_CONVENTIONS",
+      "compositionConventionFor",
+      "compositionConventionDesign",
+      "followsCompositionConvention",
     ]);
   });
 });

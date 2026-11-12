@@ -1,5 +1,6 @@
 /**
- * Writes the designs the Sandbox ships (#1523) as design files:
+ * Writes the designs the Sandbox ships (#1523) as design files, the
+ * composition conventions (#1540) among them:
  *
  *   pnpm --filter web designs
  *
@@ -16,7 +17,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { extractDesign, type ColorValue, type DesignPart, type PostextConfig } from "postext";
+import { COMPOSITION_CONVENTIONS, extractDesign, type ColorValue, type DesignPart, type PostextConfig } from "postext";
 import { createDesignBundle } from "postext/bundle";
 
 const OUT = path.join(path.dirname(fileURLToPath(import.meta.url)), "../../public/designs");
@@ -151,6 +152,81 @@ const TWO_COLOUR_NAMES: Names = {
   ar: { name: "كتاب بلونين", description: "الأسود وPANTONE 286 C: العناوين والمخططات على لوح اللون الخاص، PDF/X-4 مع تجاوز قص 3 مم." },
 };
 
+/** The composition conventions (#1540): designs holding the composition
+ *  part alone, a language's rules from the engine's COMPOSITION_CONVENTIONS. */
+const COMPOSITION_SPANISH_NAMES: Names = {
+  en: { name: "Spanish (traditional)", description: "Composition rules: no two hyphenated lines in a row, no divided last word, no stacks, no column ending on a hyphen." },
+  es: { name: "Español (tradicional)", description: "Reglas de composición: ninguna línea con guion seguida de otra, ni última palabra partida, ni repeticiones en los extremos de línea, ni columna que acabe en guion." },
+  ca: { name: "Castellà (tradicional)", description: "Regles de composició: cap línia amb guionet seguida d’una altra, ni última paraula partida, ni repeticions als extrems de línia, ni columna que acabi en guionet." },
+  de: { name: "Spanisch (traditionell)", description: "Satzregeln: keine zwei Trennungen in Folge, kein getrenntes letztes Wort, keine Wiederholungen am Zeilenrand, keine Spalte, die mit einer Trennung endet." },
+  fr: { name: "Espagnol (traditionnel)", description: "Règles de composition : jamais deux lignes de suite coupées, ni dernier mot coupé, ni répétitions en bout de ligne, ni colonne finissant sur une coupure." },
+  it: { name: "Spagnolo (tradizionale)", description: "Regole di composizione: mai due righe di seguito con il trattino, né ultima parola divisa, né ripetizioni ai bordi della riga, né colonna che finisca con un trattino." },
+  pt: { name: "Espanhol (tradicional)", description: "Regras de composição: nunca duas linhas seguidas com hífen, nem última palavra dividida, nem repetições nas pontas da linha, nem coluna que termine em hífen." },
+  ja: { name: "スペイン語（伝統的）", description: "組版ルール：ハイフンで終わる行を2行続けない、段落最後の語を分割しない、行頭・行末の重複を避ける、段末をハイフンで終えない。" },
+  zh: { name: "西班牙语（传统）", description: "排版规则：不允许连续两行以连字符结尾，段末单词不断开，避免行首行尾重复，栏末不以连字符结尾。" },
+  ar: { name: "الإسبانية (التقليدية)", description: "قواعد التنضيد: لا سطران متتاليان ينتهيان بواصلة، ولا كلمة أخيرة مقسومة، ولا تكرار في أطراف الأسطر، ولا عمود ينتهي بواصلة." },
+};
+
+const COMPOSITION_ENGLISH_US_NAMES: Names = {
+  en: { name: "English (US)", description: "Composition rules: at most three hyphenated lines in a row; the last word of a paragraph kept whole." },
+  es: { name: "Inglés (EE. UU.)", description: "Reglas de composición: como mucho tres líneas seguidas con guion; la última palabra del párrafo, entera." },
+  ca: { name: "Anglès (EUA)", description: "Regles de composició: com a màxim tres línies seguides amb guionet; l’última paraula del paràgraf, sencera." },
+  de: { name: "Englisch (USA)", description: "Satzregeln: höchstens drei Trennungen in Folge; das letzte Wort eines Absatzes bleibt ganz." },
+  fr: { name: "Anglais (États-Unis)", description: "Règles de composition : trois lignes coupées de suite au plus ; le dernier mot du paragraphe entier." },
+  it: { name: "Inglese (USA)", description: "Regole di composizione: al massimo tre righe di seguito con il trattino; l’ultima parola del paragrafo intera." },
+  pt: { name: "Inglês (EUA)", description: "Regras de composição: no máximo três linhas seguidas com hífen; a última palavra do parágrafo inteira." },
+  ja: { name: "英語（米国）", description: "組版ルール：ハイフンで終わる行は連続3行まで。段落最後の語は分割しない。" },
+  zh: { name: "英语（美国）", description: "排版规则：最多连续三行以连字符结尾；段落最后一个单词不断开。" },
+  ar: { name: "الإنجليزية (الولايات المتحدة)", description: "قواعد التنضيد: ثلاثة أسطر متتالية بواصلة على الأكثر؛ وتبقى الكلمة الأخيرة من الفقرة كاملة." },
+};
+
+const COMPOSITION_ENGLISH_UK_NAMES: Names = {
+  en: { name: "English (UK)", description: "Composition rules: at most two hyphenated lines in a row; the last word of a paragraph kept whole." },
+  es: { name: "Inglés (Reino Unido)", description: "Reglas de composición: como mucho dos líneas seguidas con guion; la última palabra del párrafo, entera." },
+  ca: { name: "Anglès (Regne Unit)", description: "Regles de composició: com a màxim dues línies seguides amb guionet; l’última paraula del paràgraf, sencera." },
+  de: { name: "Englisch (Vereinigtes Königreich)", description: "Satzregeln: höchstens zwei Trennungen in Folge; das letzte Wort eines Absatzes bleibt ganz." },
+  fr: { name: "Anglais (Royaume-Uni)", description: "Règles de composition : deux lignes coupées de suite au plus ; le dernier mot du paragraphe entier." },
+  it: { name: "Inglese (Regno Unito)", description: "Regole di composizione: al massimo due righe di seguito con il trattino; l’ultima parola del paragrafo intera." },
+  pt: { name: "Inglês (Reino Unido)", description: "Regras de composição: no máximo duas linhas seguidas com hífen; a última palavra do parágrafo inteira." },
+  ja: { name: "英語（英国）", description: "組版ルール：ハイフンで終わる行は連続2行まで。段落最後の語は分割しない。" },
+  zh: { name: "英语（英国）", description: "排版规则：最多连续两行以连字符结尾；段落最后一个单词不断开。" },
+  ar: { name: "الإنجليزية (المملكة المتحدة)", description: "قواعد التنضيد: سطران متتاليان بواصلة على الأكثر؛ وتبقى الكلمة الأخيرة من الفقرة كاملة." },
+};
+
+const COMPOSITION_FRENCH_NAMES: Names = {
+  en: { name: "French", description: "Composition rules: at most three hyphenated lines in a row; the last word of a paragraph kept whole." },
+  es: { name: "Francés", description: "Reglas de composición: como mucho tres líneas seguidas con guion; la última palabra del párrafo, entera." },
+  ca: { name: "Francès", description: "Regles de composició: com a màxim tres línies seguides amb guionet; l’última paraula del paràgraf, sencera." },
+  de: { name: "Französisch", description: "Satzregeln: höchstens drei Trennungen in Folge; das letzte Wort eines Absatzes bleibt ganz." },
+  fr: { name: "Français", description: "Règles de composition : trois lignes coupées de suite au plus ; le dernier mot du paragraphe entier." },
+  it: { name: "Francese", description: "Regole di composizione: al massimo tre righe di seguito con il trattino; l’ultima parola del paragrafo intera." },
+  pt: { name: "Francês", description: "Regras de composição: no máximo três linhas seguidas com hífen; a última palavra do parágrafo inteira." },
+  ja: { name: "フランス語", description: "組版ルール：ハイフンで終わる行は連続3行まで。段落最後の語は分割しない。" },
+  zh: { name: "法语", description: "排版规则：最多连续三行以连字符结尾；段落最后一个单词不断开。" },
+  ar: { name: "الفرنسية", description: "قواعد التنضيد: ثلاثة أسطر متتالية بواصلة على الأكثر؛ وتبقى الكلمة الأخيرة من الفقرة كاملة." },
+};
+
+const COMPOSITION_GERMAN_NAMES: Names = {
+  en: { name: "German", description: "Composition rules: at most three hyphenated lines in a row." },
+  es: { name: "Alemán", description: "Reglas de composición: como mucho tres líneas seguidas con guion." },
+  ca: { name: "Alemany", description: "Regles de composició: com a màxim tres línies seguides amb guionet." },
+  de: { name: "Deutsch", description: "Satzregeln: höchstens drei Trennungen in Folge." },
+  fr: { name: "Allemand", description: "Règles de composition : trois lignes coupées de suite au plus." },
+  it: { name: "Tedesco", description: "Regole di composizione: al massimo tre righe di seguito con il trattino." },
+  pt: { name: "Alemão", description: "Regras de composição: no máximo três linhas seguidas com hífen." },
+  ja: { name: "ドイツ語", description: "組版ルール：ハイフンで終わる行は連続3行まで。" },
+  zh: { name: "德语", description: "排版规则：最多连续三行以连字符结尾。" },
+  ar: { name: "الألمانية", description: "قواعد التنضيد: ثلاثة أسطر متتالية بواصلة على الأكثر." },
+};
+
+const CONVENTION_NAMES: Record<string, Names> = {
+  "composition-es": COMPOSITION_SPANISH_NAMES,
+  "composition-en-us": COMPOSITION_ENGLISH_US_NAMES,
+  "composition-en-gb": COMPOSITION_ENGLISH_UK_NAMES,
+  "composition-fr": COMPOSITION_FRENCH_NAMES,
+  "composition-de": COMPOSITION_GERMAN_NAMES,
+};
+
 const TYPE: DesignPart[] = ["page", "colors", "text", "headings"];
 
 const DESIGNS: { id: string; names: Names; parts: DesignPart[]; config: PostextConfig }[] = [
@@ -158,6 +234,7 @@ const DESIGNS: { id: string; names: Names; parts: DesignPart[]; config: PostextC
   { id: "manual", names: MANUAL_NAMES, parts: TYPE, config: MANUAL },
   { id: "magazine", names: MAGAZINE_NAMES, parts: TYPE, config: MAGAZINE },
   { id: "two-colour", names: TWO_COLOUR_NAMES, parts: [...TYPE, "figures", "output"], config: TWO_COLOUR },
+  ...COMPOSITION_CONVENTIONS.map((c) => ({ id: c.id, names: CONVENTION_NAMES[c.id]!, parts: ["composition"] as DesignPart[], config: c.config })),
 ];
 
 fs.mkdirSync(OUT, { recursive: true });

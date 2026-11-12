@@ -258,6 +258,13 @@ postext pdf other/ --design novel.postext -o other.pdf
 
 `--design FILE`是所有读取书的命令都有的选项，在`--config`和`--set`之前，把书设为某个设计文件或另一本书的设计：其各部分的设置替换书中的设置，命名样式按id合并，设计的字体加入书的字体。`--design-parts`只取其中部分。沙盒的版面设计面板也导入和导出同样的文件。
 
+`--composition TAG`同样是所有读取书的命令都有的选项，在`--design`之后设置某种语言的排版传统规则（自postext 1.80起）：`es`、`en-US`（或`en`）、`en-GB`、`fr`或`de`，或用`auto`取书的语言。惯例的规则替换书中的规则，其他规则回到默认值；字体排印保持不变。见[排版惯例](/zh/docs/configuration-text#排版惯例)。
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack和unpack
 
 ```bash
@@ -305,6 +312,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--set PATH=VALUE</code></td><td>在本次运行中改变一项设置，用点号分隔的路径表示：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。能按JSON读取的值就按JSON读取（数字、true和false、对象），否则当作文本。可以重复使用。</td></tr>
     <tr><td><code>--config FILE</code></td><td>用于零散Markdown的配置（或<code>preset.json</code>），或合并到书本身配置之上的配置。</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>在<code>--config</code>和<code>--set</code>之前，把书设为某个设计文件（来自<code>postext design</code>或沙盒）或另一本书的<code>.postext</code>的设计。<code>--design-parts LIST</code>只取其中部分。</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>在<code>--design</code>之后设置某种语言的排版传统规则（<code>es</code>、<code>en-US</code>、<code>en-GB</code>、<code>fr</code>、<code>de</code>；<code>auto</code>：书的语言）。自postext 1.80起。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>零散Markdown的图片、字体和书名。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>到这个文件夹里查找书中没有自带的字体。可以重复使用。</td></tr>
     <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>
@@ -382,10 +390,10 @@ for warning in report.warnings:
 pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
-- **每个命令一个函数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`import_docx`、`pack`、`unpack`、`info`、`check`和`build`。选项沿用原名，改用下划线（`color_space`、`font_dirs`、`dry_run`）。`set`接受字典，`config`接受文件或字典，`chapters`接受数字、列表、`range`或`"1,3-5"`。
-- **报告即对象**。每个函数都用`--json`执行对应命令并返回报告：`outputs`、`pages`、`timings`和`warnings`，每条警告是一个`Diagnostic`，含`kind`、`severity`、`message`、`at`和`page`。`info`另有`chapters`、`resources`和`fonts`；`check`另有`passed`、`error_count`和`warning_count`。
+- **每个命令一个函数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`idml`、`import_docx`、`import_idml`、`design`、`pack`、`unpack`、`info`、`check`和`build`。选项沿用原名，改用下划线（`color_space`、`font_dirs`、`dry_run`）。`set`接受字典，`config`接受文件或字典，`chapters`接受数字、列表、`range`或`"1,3-5"`。凡是读取书的函数都接受`design=`（设计文件，路径或字节均可）、`design_parts=`（列表或`"page,text"`）和`composition=`（语言标签或`"auto"`）。
+- **报告即对象**。每个函数都用`--json`执行对应命令并返回报告：`outputs`、`pages`、`timings`和`warnings`，每条警告是一个`Diagnostic`，含`kind`、`severity`、`message`、`at`和`page`。`info`另有`chapters`、`resources`和`fonts`；`check`另有`passed`、`error_count`和`warning_count`；`design`另有`name`和`parts`；`import_idml`另有`layout`、`reason`、`chapters`、`quality`、`fonts`、`missing_links`和`package`。
 - **错误即异常**。执行失败抛出`PostextError`，选项有误抛出`UsageError`。`check`发现错误时抛出`ProblemsFound`，其`report`列出这些错误；传入`raise_on_problems=False`则改为返回报告。
-- **字节**。书可以直接以`.postext`包的字节给出。使用`out="-"`时，文件放在`report.content`中返回；`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`和`pack_bytes`直接返回这些字节。
+- **字节**。书可以直接以`.postext`包的字节给出。使用`out="-"`时，文件放在`report.content`中返回；`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`idml_bytes`、`pack_bytes`和`design_bytes`直接返回这些字节。
 - `postext.Postext(binary, cwd=…, timeout=…)`使用指定的可执行文件，`python -m postext …`就是命令行本身。
 
 每次调用都会重新启动可执行文件。包的[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)列出了全部选项。

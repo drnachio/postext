@@ -4,8 +4,7 @@ import { DEFAULT_BODY_TEXT_CONFIG } from 'postext';
 import type { BodyTextConfig, HyphenationConfig, KashidaPatterns, ResolvedBodyTextConfig } from 'postext';
 import { NestedGroup, NumberInput, SelectInput, ToggleSwitch } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
-import { HyphenateCapitalizedField, HyphenateCompoundsField, HyphenationExceptionsField, HyphenationLocaleField, RaggedHyphenationFields } from './HyphenationFields.js';
-import { HyphenationLimitsFields, HyphenDistributionFields } from './HyphenRulesFields.js';
+import { HyphenateCompoundsField, HyphenationExceptionsField, HyphenationLocaleField, RaggedHyphenationFields } from './HyphenationFields.js';
 
 interface Props {
   bodyText: ResolvedBodyTextConfig;
@@ -41,10 +40,9 @@ export function OptimalRaggedSwitch({
   );
 }
 
-/** "Hyphenate across columns" (`bodyText.hyphenateAcrossColumns`): under
- *  hyphenation for a justified body, under optimal ragged breaking for a
- *  ragged one, since that is when the engine re-breaks ragged text. Three
- *  states (#701): everywhere (`true`, stored as no value), between the
+/** "Hyphenate across columns" (`bodyText.hyphenateAcrossColumns`): a
+ *  composition rule, edited in the Composition rules section (#1540).
+ *  Three states (#701): everywhere (`true`, stored as no value), between the
  *  columns of one page (`'withinPage'`), never (`false`). */
 export type AcrossColumnsChoice = 'always' | 'withinPage' | 'never';
 
@@ -58,7 +56,7 @@ export function acrossColumnsValue(choice: string): BodyTextConfig['hyphenateAcr
   return choice === 'never' ? false : choice === 'withinPage' ? 'withinPage' : undefined;
 }
 
-function HyphenateAcrossColumnsSwitch({
+export function HyphenateAcrossColumnsSwitch({
   bodyText,
   updateBodyText,
   resetField,
@@ -86,8 +84,8 @@ function HyphenateAcrossColumnsSwitch({
   );
 }
 
-/** Line breaking of a ragged body: optimal breaking, whether ragged text
- *  takes it, and, when it does, whether a column may end on a hyphen. */
+/** Line breaking of a ragged body: optimal breaking, and whether ragged
+ *  text takes it. */
 export function RaggedBreakingSubsection({
   bodyText,
   updateBodyText,
@@ -107,9 +105,6 @@ export function RaggedBreakingSubsection({
       {bodyText.optimalLineBreaking && (
         <OptimalRaggedSwitch bodyText={bodyText} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
       )}
-      {bodyText.optimalLineBreaking && bodyText.optimalRagged && (
-        <HyphenateAcrossColumnsSwitch bodyText={bodyText} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
-      )}
     </NestedGroup>
   );
 }
@@ -128,13 +123,6 @@ export function JustificationSubsection({
   resetField,
   labels,
 }: Props) {
-  const ruleProps = { bodyText, raw, updateBodyText, updateHyphenation, labels };
-  // The three levels of a composition rule (#749).
-  const ruleOptions = [
-    { value: 'allow', label: labels.compositionRuleAllow },
-    { value: 'warn', label: labels.compositionRuleWarn },
-    { value: 'avoid', label: labels.compositionRuleAvoid },
-  ];
   return (
     <NestedGroup>
       <ToggleSwitch
@@ -161,15 +149,7 @@ export function JustificationSubsection({
             effectiveHyphenationLocale={effectiveHyphenationLocale}
             isHyphenationLocaleDefault={isHyphenationLocaleDefault}
           />
-          <HyphenationLimitsFields {...ruleProps} />
           <HyphenateCompoundsField
-            bodyText={bodyText}
-            raw={raw}
-            updateBodyText={updateBodyText}
-            updateHyphenation={updateHyphenation}
-            labels={labels}
-          />
-          <HyphenateCapitalizedField
             bodyText={bodyText}
             raw={raw}
             updateBodyText={updateBodyText}
@@ -183,8 +163,6 @@ export function JustificationSubsection({
             updateHyphenation={updateHyphenation}
             labels={labels}
           />
-          {/* Where hyphens may fall: optimal line breaking only. */}
-          {bodyText.optimalLineBreaking && <HyphenDistributionFields {...ruleProps} options={ruleOptions} />}
           <RaggedHyphenationFields
             bodyText={bodyText}
             raw={raw}
@@ -192,7 +170,6 @@ export function JustificationSubsection({
             updateHyphenation={updateHyphenation}
             labels={labels}
           />
-          <HyphenateAcrossColumnsSwitch bodyText={bodyText} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
         </>
       )}
 

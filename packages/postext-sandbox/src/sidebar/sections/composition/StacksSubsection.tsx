@@ -3,8 +3,8 @@
 import { DEFAULT_BODY_TEXT_CONFIG, type CompositionRule } from 'postext';
 
 import type { BodyTextConfig, ResolvedBodyTextConfig } from 'postext';
-import { NestedGroup, NumberInput, SelectInput } from '../../../../controls/index.js';
-import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
+import { NestedGroup, NumberInput, SelectInput } from '../../../controls/index.js';
+import type { useSandboxLabels } from '../../../context/SandboxContext.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 

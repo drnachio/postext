@@ -14,6 +14,7 @@ import type { OutlineEntry } from '../../types.js';
 import type { ResolvedConfig, ContentWarning, VDTLine, VDTLineSegment, VDTDocument, VDTBlock } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
 import { buildFontString, measureRichBlock } from '../../measure/index.js';
+import { lineEdgeBreaking } from '../text/lineEdgeRules.js';
 import { linkSegments } from '../../measure/links.js';
 import type { BlockStyle } from '../styles.js';
 import type { BlockMeasureContext, MeasuredContentBlock } from '../blocks/measureContentBlock.js';
@@ -106,6 +107,8 @@ export function measureIndexBlock(
   };
 
   const turnoverPx = dimensionToPx(cfg.turnoverIndent, dpi, fontSizePx);
+  // The line-edge rules (#1542): an entry that turns over is weighed whole.
+  const rules = lineEdgeBreaking('left', resolved);
   /** The lines of one entry at its level's indent, turnover lines hung. */
   const entryLines = (written: InlineSpan[], level: number): VDTLine[] => {
     // A book title in a term takes the document's book-title mark (#193).
@@ -114,7 +117,7 @@ export function measureIndexBlock(
     const measured = measureRichBlock(
       spans, fontString, boldFontString, italicFontString, boldItalicFontString,
       Math.max(1, columnWidth - indentPx), lineHeightPx,
-      { textAlign: 'left', hyphenate: false, firstLineIndentPx: turnoverPx, hangingIndent: true },
+      { textAlign: 'left', hyphenate: false, firstLineIndentPx: turnoverPx, hangingIndent: true, ...rules },
     );
     const out = pageLinks(linkSegments(measured.lines, spans));
     for (const line of out) line.bbox.x += indentPx;

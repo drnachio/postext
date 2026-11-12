@@ -2,9 +2,9 @@
 
 import { DEFAULT_HYPHENATION_CONFIG, hyphenationLanguageLimits } from 'postext';
 import type { BodyTextConfig, CompositionRule, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
-import { NestedGroup, NumberInput, SelectInput } from '../../../../controls/index.js';
-import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
-import { resetHyphenationField } from './HyphenationFields.js';
+import { NestedGroup, NumberInput, SelectInput } from '../../../controls/index.js';
+import type { useSandboxLabels } from '../../../context/SandboxContext.js';
+import { resetHyphenationField } from '../text/BodyTextSection/HyphenationFields.js';
 
 const D = DEFAULT_HYPHENATION_CONFIG;
 

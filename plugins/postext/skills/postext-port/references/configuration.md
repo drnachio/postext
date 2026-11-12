@@ -428,15 +428,23 @@ H&J / Knuth–Plass
 │                        starting on the same word or the same last/first stackMinCharacters characters (spaces included, accents and case
 │                        ignored; none in Chinese, Japanese, Thai, Lao, Khmer, Myanmar, Tibetan): 'warn' = same layout + a `stack` warning per
 │                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
-│                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
+│                        the stacks kept are reported. Captions, notes, table cells too, and (≥ 1.80) verse turnovers, contents and index
+│                        entries, ragged text without optimalRagged; a paragraph Knuth–Plass cannot fit (a word wider than the column) or
+│                        any text with optimalLineBreaking off is set line by line, ending a line one word space earlier when it would end
+│                        as the line above does and the shorter line stays within maxWordSpacing (ragged: ≥ half the measure). Stacks in
+│                        captions, notes and cells are reported (≥ 1.80) with resourceId, part and cell. A port leaves it 'allow'
 │                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
 ├─ citationBreaks     'allow'; citationBreakPenalty 10000   ≥ 1.79 a line that starts with a numbered citation after a word, or a piece
 │                        of one (`autores [12]`, `[14, 16]`, `(12–15)`, the `[3, p. 12]` a numbered style sets for `[@key, p. 12]`; never after
 │                        a number: `2016 (3)`): 'warn' = same layout + a `citationBreak` warning per break; 'avoid' = citationBreakPenalty
 │                        demerits on a break at the space before the citation or inside it (the space stays a stretching word space; the
 │                        default weighs one line stretched to the word-spacing limit), the breaks kept are reported. Paragraphs, lists,
-│                        quotes, boxes, notes, captions, table cells set horizontally; RTL and CJK left alone; under 'avoid' ragged text
-│                        is set by Knuth–Plass too; composed frames ignore it; needs optimalLineBreaking. A port leaves it 'allow' (or
+│                        quotes, boxes, notes, captions, table cells set horizontally, and (≥ 1.80) verse turnovers, contents and index
+│                        entries; RTL and CJK left alone; under 'avoid' ragged text is set by Knuth–Plass too; composed frames ignore it.
+│                        A paragraph Knuth–Plass cannot fit, or any text with optimalLineBreaking off, is set line by line and ends a line
+│                        at an earlier word space rather than at a ruled one when the shorter line stays within maxWordSpacing (ragged:
+│                        ≥ half the measure). Breaks in captions, notes and cells are reported (≥ 1.80) with resourceId, part and cell.
+│                        A port leaves it 'allow' (or
 │                        'warn' for proofs) unless the original keeps citations with their word, then 'avoid'; to bind one pair whatever
 │                        the rule, write a no-break space in the Markdown
 ├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.79 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
@@ -2918,8 +2926,9 @@ designs run across the spread, so the Canvas shows the spread as one (Sandbox: D
 ### Delivering EPUB, HTML and PDF files
 
 `postext design my-book -o house.postext` writes the book's design as a design file (no chapters; `--parts page,text,…`
-for some of the Design panel's groups), and every command takes `--design house.postext` to set a book in one
-(project-format.md §7, Design files).
+for some of the Design panel's groups, `composition` for the composition rules alone, ≥ 1.80), and every command takes
+`--design house.postext` to set a book in one and `--composition es|en-US|en-GB|fr|de|auto` (≥ 1.80) to set a
+language's composition convention (project-format.md §7, Design files).
 
 The `postext` command line writes every output from the project folder or the `.postext`; `build` takes
 the same options and lays the book out once for all of them

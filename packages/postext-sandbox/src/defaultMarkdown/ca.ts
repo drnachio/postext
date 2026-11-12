@@ -861,7 +861,7 @@ A més, l'editor vigila el llibre sencer. El seu menú de capítols llista cada 
 
 ## Configuració
 
-El tauler **Disseny** edita la configuració completa —més de cinc-cents camps— per grups: pàgina i columnes, escriptura, colors, tipografia, títols i índex, llistes, figures i taules, requadres, exercicis, còmic, capçaleres i peus, parts, exportació, Folio (el llibre en 3D) i el grup Avançat. Un cercador troba qualsevol opció pel nom, i el filtre **Canviats** mostra el que difereix dels valors per defecte. Cada camp i cada secció es poden restablir per separat, i la configuració es pot exportar i importar com a fitxer. En un llibre amb diverses llengües, un interruptor a la capçalera del tauler tria entre els ajustos que comparteixen totes les edicions i els de l'edició que hi ha en pantalla, com explica :ref{id="languages"}.
+El tauler **Disseny** edita la configuració completa —més de cinc-cents camps— per grups: pàgina i columnes, escriptura, colors, tipografia, composició, títols i índex, llistes, figures i taules, requadres, exercicis, còmic, capçaleres i peus, parts, exportació, Folio (el llibre en 3D) i el grup Avançat. Un cercador troba qualsevol opció pel nom, i el filtre **Canviats** mostra el que difereix dels valors per defecte. Cada camp i cada secció es poden restablir per separat, i la configuració es pot exportar i importar com a fitxer. En un llibre amb diverses llengües, un interruptor a la capçalera del tauler tria entre els ajustos que comparteixen totes les edicions i els de l'edició que hi ha en pantalla, com explica :ref{id="languages"}.
 
 ## Les sis vistes
 

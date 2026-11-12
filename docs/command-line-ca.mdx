@@ -433,6 +433,13 @@ Un fitxer de disseny guarda el disseny d'un llibre i res del seu text: els ajust
 
 `--design FITXER`, una opció de totes les ordres que llegeixen un llibre, posa el llibre en un fitxer de disseny o en el disseny d'un altre llibre, abans de `--config` i `--set`: els ajustos de les seves parts substitueixen els del llibre, els estils amb nom es combinen per id i les fonts del disseny se sumen a les del llibre. `--design-parts` en pren només algunes parts. El tauler Disseny del Sandbox importa i exporta els mateixos fitxers.
 
+`--composition ETIQUETA`, també una opció de totes les ordres que llegeixen un llibre, posa les regles de composició de la tradició d'una llengua després de `--design` (des de postext 1.80): `es`, `en-US` (o `en`), `en-GB`, `fr` o `de`, o `auto` per a la llengua del llibre. Les regles de la convenció substitueixen les del llibre i les altres tornen als seus valors per defecte; la tipografia es queda com està. Vegeu [Convencions de composició](/ca/docs/configuration-text#convencions-de-composició).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack i unpack
 
 ```bash
@@ -510,6 +517,7 @@ les sortides. Si en desar el llibre queda trencat, imprimeix l'error i conserva 
     <tr><td><code>--set PATH=VALUE</code></td><td>Canvia un paràmetre per a aquesta execució, indicat com una ruta amb punts: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. El valor es llegeix com a JSON quan és possible (números, true i false, objectes) i, si no, com a text. Es pot repetir.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Una configuració (o un <code>preset.json</code>) per a Markdown solt, o que es combina amb la del llibre i hi té prioritat.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Posa el llibre en el disseny d'un fitxer de disseny (de <code>postext design</code> o del Sandbox) o del <code>.postext</code> d'un altre llibre, abans de <code>--config</code> i <code>--set</code>. <code>--design-parts LLISTA</code> en pren només algunes parts.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Posa les regles de composició de la tradició d'una llengua (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: la llengua del llibre) després de <code>--design</code>. Des de postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imatges, fonts i títol per a Markdown solt.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Una carpeta on buscar les fonts que el llibre no porta. Es pot repetir.</td></tr>
     <tr><td><code>--offline</code></td><td>No baixa mai fonts.</td></tr>
@@ -634,23 +642,27 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Una funció per ordre**: `pdf`, `html`, `epub`, `image`, `images`, `docx`,
-  `import_docx`, `pack`, `unpack`, `info`, `check` i `build`. Les opcions
-  conserven el nom, amb guions baixos (`color_space`, `font_dirs`, `dry_run`).
-  `set` rep un diccionari, `config` un fitxer o un diccionari, `chapters` un
-  número, una llista, un `range` o `"1,3-5"`.
-- **Informes com a objectes.** Cada funció executa la seva ordre amb `--json`
-  i retorna l'informe: `outputs`, `pages`, `timings` i `warnings`, cada avís un
+  `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`, `info`,
+  `check` i `build`. Les opcions conserven el nom, amb guions baixos
+  (`color_space`, `font_dirs`, `dry_run`). `set` rep un diccionari, `config` un
+  fitxer o un diccionari, `chapters` un número, una llista, un `range` o
+  `"1,3-5"`. Tota funció que llegeix un llibre admet `design=`, un fitxer de
+  disseny com a camí o com a bytes, `design_parts=`, una llista o
+  `"page,text"`, i `composition=`, una etiqueta de llengua o `"auto"`.
+- **Informes com a objectes.** Cada funció executa la seva ordre amb `--json` i
+  retorna l'informe: `outputs`, `pages`, `timings` i `warnings`, cada avís un
   `Diagnostic` amb `kind`, `severity`, `message`, `at` i `page`. `info` hi
   afegeix `chapters`, `resources` i `fonts`; `check`, `passed`, `error_count` i
-  `warning_count`.
+  `warning_count`; `design`, `name` i `parts`; `import_idml`, `layout`,
+  `reason`, `chapters`, `quality`, `fonts`, `missing_links` i `package`.
 - **Errors com a excepcions.** Una fallada llança `PostextError`; una opció
   equivocada, `UsageError`. Quan `check` troba errors llança `ProblemsFound`,
   el `report` del qual els enumera; amb `raise_on_problems=False` retorna
   l'informe.
 - **Bytes.** Un llibre es pot donar com els bytes d'un paquet `.postext`. Amb
   `out="-"` el fitxer torna a `report.content`; `pdf_bytes`, `html_bytes`,
-  `epub_bytes`, `image_bytes`, `docx_bytes` i `pack_bytes` el retornen
-  directament.
+  `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`, `pack_bytes` i
+  `design_bytes` el retornen directament.
 - `postext.Postext(binary, cwd=…, timeout=…)` fa servir un executable concret,
   i `python -m postext …` és la mateixa línia d'ordres.
 

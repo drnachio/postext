@@ -16,29 +16,44 @@
  * - `layout`: the writing mode belongs to the writing system; the rest of
  *   `layout` (columns, gutters, floats, balancing) is the page part.
  *
- * A dotted entry (`page.binding`) claims that one field; the whole-key
- * entry (`page`) takes every field the dotted entries leave.
+ * - `bodyText`: the composition rules (#1540) — where hyphens may fall,
+ *   the letters a hyphen leaves, the stacks, the citation and operator
+ *   breaks, a hyphen at a column's foot — are the composition part, the
+ *   rest is the text part. So the rules of a language's tradition are
+ *   saved and applied apart from the type they are set in.
+ *
+ * A dotted entry (`page.binding`, `bodyText.hyphenation.ladders`) claims
+ * that one field, however deep; the whole-key entry (`page`) takes every
+ * field the dotted entries leave.
  */
 
 import type { PostextConfig } from '../types.js';
 import type { PageConfig } from '../types/page.js';
 import type { LayoutConfig } from '../types/layout.js';
+import type { BodyTextConfig } from '../types/text/bodyText/config.js';
+import type { HyphenationConfig } from '../types/text/locale.js';
 import type { BookOwnKey } from '../defaults/bookKeys.js';
 
 /** A part of a design: a group of the Design panel. */
 export type DesignPart =
-  | 'page' | 'writing' | 'colors' | 'text' | 'headings' | 'lists' | 'figures'
+  | 'page' | 'writing' | 'colors' | 'text' | 'composition' | 'headings' | 'lists' | 'figures'
   | 'callouts' | 'exercises' | 'comics' | 'running' | 'parts' | 'output'
   | 'folio' | 'advanced';
 
 /** Every part, in the Design panel's order. */
 export const DESIGN_PARTS: readonly DesignPart[] = [
-  'page', 'writing', 'colors', 'text', 'headings', 'lists', 'figures',
+  'page', 'writing', 'colors', 'text', 'composition', 'headings', 'lists', 'figures',
   'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced',
 ];
 
-/** A top-level setting, or one field of `page` or `layout`. */
-export type DesignKeyPath = keyof PostextConfig | `page.${keyof PageConfig & string}` | `layout.${keyof LayoutConfig & string}`;
+/** A top-level setting, or one field of `page`, `layout` or `bodyText`
+ *  (`bodyText.hyphenation` one level further). */
+export type DesignKeyPath =
+  | keyof PostextConfig
+  | `page.${keyof PageConfig & string}`
+  | `layout.${keyof LayoutConfig & string}`
+  | `bodyText.${keyof BodyTextConfig & string}`
+  | `bodyText.hyphenation.${keyof HyphenationConfig & string}`;
 
 /** The settings of each part. */
 export const DESIGN_PART_KEYS = {
@@ -48,6 +63,16 @@ export const DESIGN_PART_KEYS = {
   text: [
     'bodyText', 'paragraphStyles', 'chipStyles', 'characterStyles', 'markStyles', 'codeStyle',
     'math', 'footnotes', 'links', 'lineNumbers', 'citations', 'symbolFont',
+  ],
+  composition: [
+    'bodyText.hyphenation.minWordLength', 'bodyText.hyphenation.leftMin', 'bodyText.hyphenation.rightMin',
+    'bodyText.hyphenation.capitalized', 'bodyText.hyphenation.fewerHyphens',
+    'bodyText.hyphenation.ladders', 'bodyText.hyphenation.maxConsecutive', 'bodyText.hyphenation.ladderPenalty',
+    'bodyText.hyphenation.lastWord', 'bodyText.hyphenation.lastWordPenalty',
+    'bodyText.hyphenateAcrossColumns',
+    'bodyText.stacks', 'bodyText.stackMinCharacters', 'bodyText.stackPenalty',
+    'bodyText.citationBreaks', 'bodyText.citationBreakPenalty',
+    'bodyText.operatorBreaks', 'bodyText.operatorBreakPenalty',
   ],
   headings: ['headings', 'headingStyles', 'toc', 'index', 'crossRefs'],
   lists: ['unorderedLists', 'orderedLists'],
@@ -80,9 +105,9 @@ void everySettingPlaced;
 export interface DesignPartSlot {
   part: DesignPart;
   key: keyof PostextConfig;
-  /** One field of `key`. */
+  /** One field of `key`, dotted when it is deeper (`hyphenation.ladders`). */
   field?: string;
-  /** The fields of `key` that belong to other parts. */
+  /** The fields of `key` that belong to other parts (dotted as `field`). */
   except?: readonly string[];
 }
 
@@ -144,15 +169,39 @@ type Json = Record<string, unknown>;
 
 const isObject = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
 
+/** The value at the dotted `path` of `node`, or undefined. */
+function getAt(node: unknown, path: string): unknown {
+  let at: unknown = node;
+  for (const k of path.split('.')) {
+    if (!isObject(at)) return undefined;
+    at = at[k];
+  }
+  return at;
+}
+
+/** `node` (an object, or nothing) with the dotted `path` set to `value`,
+ *  or removed when it is undefined; the objects on the way are copied, and
+ *  one left with no field goes too (undefined when `node` is left empty). */
+function setAt(node: unknown, path: readonly string[], value: unknown): Json | undefined {
+  const [k, ...rest] = path;
+  const out: Json = isObject(node) ? { ...node } : {};
+  const child = rest.length === 0 ? value : setAt(out[k!], rest, value);
+  if (child === undefined) delete out[k!];
+  else out[k!] = child;
+  return Object.keys(out).length > 0 ? out : undefined;
+}
+
 /** The value of `slot` in `config` (an override works as well): undefined
  *  when it is unset (an object slot left with no field counts as unset). */
 export function readDesignSlot(config: object, slot: DesignPartSlot): unknown {
   const value = (config as Json)[slot.key];
-  if (slot.field !== undefined) return isObject(value) ? value[slot.field] : undefined;
+  if (slot.field !== undefined) return getAt(value, slot.field);
   if (!slot.except || !isObject(value)) return value;
-  const rest: Json = {};
-  for (const [k, v] of Object.entries(value)) if (!slot.except.includes(k)) rest[k] = v;
-  return Object.keys(rest).length > 0 ? rest : undefined;
+  let rest: Json | undefined = value;
+  for (const path of slot.except) {
+    if (getAt(rest, path) !== undefined) rest = setAt(rest, path.split('.'), undefined);
+  }
+  return rest;
 }
 
 /** `config` with `slot` set to `value` (unset when undefined), the other
@@ -161,23 +210,19 @@ export function readDesignSlot(config: object, slot: DesignPartSlot): unknown {
 export function writeDesignSlot<T extends object>(config: T, slot: DesignPartSlot, value: unknown): T {
   const next: Json = { ...(config as Json) };
   const current = next[slot.key];
+  let written: unknown;
   if (slot.field !== undefined) {
-    const obj: Json = isObject(current) ? { ...current } : {};
-    if (value === undefined) delete obj[slot.field];
-    else obj[slot.field] = value;
-    if (Object.keys(obj).length > 0) next[slot.key] = obj;
-    else delete next[slot.key];
-    return next as T;
+    written = setAt(current, slot.field.split('.'), value);
+  } else if (!slot.except) {
+    written = value;
+  } else {
+    // The design's value, less any field of another part it carries, with
+    // the book's fields of the other parts put back.
+    let merged: Json | undefined = isObject(value) ? value : undefined;
+    for (const path of slot.except) merged = setAt(merged, path.split('.'), getAt(current, path));
+    written = merged;
   }
-  if (!slot.except) {
-    if (value === undefined) delete next[slot.key];
-    else next[slot.key] = value;
-    return next as T;
-  }
-  const kept: Json = {};
-  if (isObject(current)) for (const k of slot.except) if (current[k] !== undefined) kept[k] = current[k];
-  const merged: Json = { ...(isObject(value) ? value : {}), ...kept };
-  if (Object.keys(merged).length > 0) next[slot.key] = merged;
-  else delete next[slot.key];
+  if (written === undefined) delete next[slot.key];
+  else next[slot.key] = written;
   return next as T;
 }

@@ -2607,6 +2607,11 @@ export interface SandboxLabels {
   warningsOperatorBreakTitle: string;
   warningsOperatorBreakEndDetail: string;
   warningsOperatorBreakStartDetail: string;
+  /** Where a stack, citation or operator break lies in a resource (#1542). */
+  warningsPartCaption: string;
+  warningsPartNote: string;
+  /** `__row__`, `__col__`: from 1. */
+  warningsPartCell: string;
   warningsHyphenLadderTitle: string;
   warningsHyphenLadderDetail: string;
   warningsLastWordDividedTitle: string;
@@ -4984,6 +4989,18 @@ export interface SandboxLabels {
   settingsGroupOutputDescription: string;
   settingsGroupFolio: string;
   settingsGroupFolioDescription: string;
+  settingsGroupComposition: string;
+  settingsGroupCompositionDescription: string;
+  compositionSection: string;
+  compositionGroupWordDivision: string;
+  compositionGroupHyphens: string;
+  compositionGroupLineEdges: string;
+  compositionHyphensNeedOptimal: string;
+  compositionHintAvailable: string;
+  compositionHintApply: string;
+  compositionHintApplied: string;
+  compositionHintUndo: string;
+  compositionHintUndone: string;
   pageTemplatesGroupBox: string;
   pageTemplatesGroupBoxUnion: string;
   pageTemplatesGroupBoxTooltip: string;

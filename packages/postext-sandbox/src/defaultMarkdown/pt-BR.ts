@@ -864,7 +864,7 @@ O editor também fica de olho no livro inteiro. O menu de capítulos lista cada 
 
 ## Configuração
 
-O painel **Design** edita a configuração inteira (mais de quinhentos campos) por grupos: página e colunas, sistema de escrita, cores, tipografia, títulos e sumário, listas, figuras e tabelas, boxes, exercícios, quadrinhos, cabeçalhos e rodapés, partes, exportação, Folio (o livro em 3D) e configurações de nível avançado. Uma caixa de busca encontra qualquer opção pelo nome, e o filtro **Alteradas** mostra o que difere dos valores padrão. Cada campo e cada seção podem ser restaurados separadamente, e a configuração pode ser exportada e importada como arquivo. Num livro com vários idiomas, uma chave no alto do painel escolhe entre as configurações que todas as edições compartilham e as da edição que está na tela, como explica o :ref{id="languages"}.
+O painel **Design** edita a configuração inteira (mais de quinhentos campos) por grupos: página e colunas, sistema de escrita, cores, tipografia, composição, títulos e sumário, listas, figuras e tabelas, boxes, exercícios, quadrinhos, cabeçalhos e rodapés, partes, exportação, Folio (o livro em 3D) e configurações de nível avançado. Uma caixa de busca encontra qualquer opção pelo nome, e o filtro **Alteradas** mostra o que difere dos valores padrão. Cada campo e cada seção podem ser restaurados separadamente, e a configuração pode ser exportada e importada como arquivo. Num livro com vários idiomas, uma chave no alto do painel escolhe entre as configurações que todas as edições compartilham e as da edição que está na tela, como explica o :ref{id="languages"}.
 
 ## As seis visualizações
 

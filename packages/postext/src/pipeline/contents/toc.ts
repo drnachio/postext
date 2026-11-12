@@ -23,6 +23,7 @@ import type { OutlineEntry, ResolvedTocEntryStyleConfig, TocGroupHead } from '..
 import type { VDTBlock, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
 import { buildFontString, measureRichBlock } from '../../measure/index.js';
+import { lineEdgeBreaking } from '../text/lineEdgeRules.js';
 import type { ResolvedConfig } from '../../vdt.js';
 import type { BlockStyle } from '../styles.js';
 import type { BlockMeasureContext, MeasuredContentBlock } from '../blocks/measureContentBlock.js';
@@ -470,9 +471,11 @@ export function measureTocBlock(
   const leaderColor = leaderFace.color?.hex ?? labelColor;
   const labelW = label.length > 0 ? flowTextWidth(label, labelFont) : 0;
 
+  // The line-edge rules (#1542): a title that wraps is weighed whole.
+  const rules = lineEdgeBreaking('left', resolved);
   const measureTitle = (maxW: number) => measureRichBlock(
     rawBlock.spans, fontString, boldFontString, italicFontString, boldItalicFontString,
-    maxW, lineHeightPx, { textAlign: 'left', hyphenate: false },
+    maxW, lineHeightPx, { textAlign: 'left', hyphenate: false, ...rules },
   );
   let measured = measureTitle(availableW);
   if (measured.lines.length === 0) return null;
@@ -524,7 +527,7 @@ export function measureTocBlock(
     const subIndentPx = dimensionToPx(sub.indent, dpi, fontSizePx);
     const subMeasured = measureRichBlock(
       [{ text: info.subtitle, bold: false, italic: false }], subFont, subFont, subFont, subFont,
-      Math.max(1, availableW - subIndentPx), lineHeightPx, { textAlign: 'left', hyphenate: false },
+      Math.max(1, availableW - subIndentPx), lineHeightPx, { textAlign: 'left', hyphenate: false, ...rules },
     );
     for (const line of subMeasured.lines) {
       for (const seg of segmentsOf(line)) {

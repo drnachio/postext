@@ -1,8 +1,8 @@
 """Postext from Python.
 
 Typesets books with the self-contained ``postext`` command line: PDF, HTML,
-EPUB, page images and Word from a ``.postext`` book, a book folder or loose
-Markdown. The executable of this system is downloaded from the GitHub
+EPUB, page images, Word and InDesign (IDML) from a ``.postext`` book, a book
+folder or loose Markdown. The executable of this system is downloaded from the GitHub
 Release of this package's version on first use, checked against its SHA256
 and cached; ``POSTEXT_BIN`` points at one already installed.
 
@@ -27,10 +27,12 @@ from ._report import (
     BookSummary,
     ChapterInfo,
     CheckReport,
+    DesignReport,
     Diagnostic,
     FontInfo,
     ImageReport,
     ImportDocxReport,
+    ImportIdmlReport,
     InfoReport,
     Output,
     PageRef,
@@ -47,8 +49,11 @@ epub = _default.epub
 image = _default.image
 images = _default.images
 docx = _default.docx
+idml = _default.idml
 import_docx = _default.import_docx
+import_idml = _default.import_idml
 pack = _default.pack
+design = _default.design
 unpack = _default.unpack
 info = _default.info
 check = _default.check
@@ -59,7 +64,9 @@ html_bytes = _default.html_bytes
 epub_bytes = _default.epub_bytes
 image_bytes = _default.image_bytes
 docx_bytes = _default.docx_bytes
+idml_bytes = _default.idml_bytes
 pack_bytes = _default.pack_bytes
+design_bytes = _default.design_bytes
 
 run = _default.run
 
@@ -82,8 +89,11 @@ __all__ = [
     "image",
     "images",
     "docx",
+    "idml",
     "import_docx",
+    "import_idml",
     "pack",
+    "design",
     "unpack",
     "info",
     "check",
@@ -93,7 +103,9 @@ __all__ = [
     "epub_bytes",
     "image_bytes",
     "docx_bytes",
+    "idml_bytes",
     "pack_bytes",
+    "design_bytes",
     "run",
     # executable
     "binary",
@@ -108,7 +120,9 @@ __all__ = [
     "CheckReport",
     "ImageReport",
     "ImportDocxReport",
+    "ImportIdmlReport",
     "UnpackReport",
+    "DesignReport",
     "Output",
     "Diagnostic",
     "BookSummary",

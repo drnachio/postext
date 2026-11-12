@@ -429,6 +429,13 @@ Eine Gestaltungsdatei enthält die Gestaltung eines Buchs und nichts von seinem 
 
 `--design DATEI`, eine Option jedes Befehls, der ein Buch liest, setzt das Buch in einer Gestaltungsdatei oder in der Gestaltung eines anderen Buchs, vor `--config` und `--set`: die Einstellungen ihrer Teile ersetzen die des Buchs, benannte Stile werden nach ID zusammengeführt, und die Schriften der Gestaltung kommen zu denen des Buchs. `--design-parts` nimmt nur einige ihrer Teile. Das Bedienfeld Gestaltung der Sandbox importiert und exportiert dieselben Dateien.
 
+`--composition TAG`, ebenfalls eine Option jedes Befehls, der ein Buch liest, setzt nach `--design` die Satzregeln der Tradition einer Sprache (seit postext 1.80): `es`, `en-US` (oder `en`), `en-GB`, `fr` oder `de`, oder `auto` für die Sprache des Buchs. Die Regeln der Konvention ersetzen die des Buchs, und die übrigen kehren zu ihren Standardwerten zurück; die Typografie bleibt, wie sie ist. Siehe [Satzkonventionen](/de/docs/configuration-text#satzkonventionen).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack und unpack
 
 ```bash
@@ -502,6 +509,7 @@ und die zuletzt fehlerfreien Dateien bleiben erhalten.
     <tr><td><code>--set PATH=VALUE</code></td><td>Ändert eine Einstellung für diesen Lauf, als Pfad mit Punkten: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. Der Wert wird als JSON gelesen, wenn das geht (Zahlen, true und false, Objekte), sonst als Text. Wiederholbar.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Eine Konfiguration (oder eine <code>preset.json</code>) für lose Markdown-Dateien, oder über die eigene eines Buchs gelegt.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Setzt das Buch in der Gestaltung einer Gestaltungsdatei (aus <code>postext design</code> oder der Sandbox) oder der <code>.postext</code> eines anderen Buchs, vor <code>--config</code> und <code>--set</code>. <code>--design-parts LISTE</code> nimmt nur einige ihrer Teile.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Setzt die Satzregeln der Tradition einer Sprache (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: die Sprache des Buchs) nach <code>--design</code>. Seit postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Bilder, Schriften und Titel für lose Markdown-Dateien.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Ein Ordner, in dem nach Schriften gesucht wird, die das Buch nicht mitbringt. Wiederholbar.</td></tr>
     <tr><td><code>--offline</code></td><td>Nie Schriften herunterladen.</td></tr>
@@ -622,23 +630,29 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Eine Funktion pro Befehl**: `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` und `build`. Die
-  Optionen behalten ihre Namen, mit Unterstrichen (`color_space`, `font_dirs`,
-  `dry_run`). `set` nimmt ein Dictionary, `config` eine Datei oder ein
-  Dictionary, `chapters` eine Zahl, eine Liste, ein `range` oder `"1,3-5"`.
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` und `build`. Die Optionen behalten ihre Namen, mit
+  Unterstrichen (`color_space`, `font_dirs`, `dry_run`). `set` nimmt ein
+  Dictionary, `config` eine Datei oder ein Dictionary, `chapters` eine Zahl,
+  eine Liste, ein `range` oder `"1,3-5"`. Jede Funktion, die ein Buch liest,
+  nimmt `design=`, eine Gestaltungsdatei als Pfad oder als Bytes,
+  `design_parts=`, eine Liste oder `"page,text"`, und `composition=`, ein
+  Sprachkürzel oder `"auto"`.
 - **Berichte als Objekte.** Jede Funktion führt ihren Befehl mit `--json` aus
   und gibt den Bericht zurück: `outputs`, `pages`, `timings` und `warnings`,
   jede Warnung ein `Diagnostic` mit `kind`, `severity`, `message`, `at` und
   `page`. `info` ergänzt `chapters`, `resources` und `fonts`, `check` ergänzt
-  `passed`, `error_count` und `warning_count`.
+  `passed`, `error_count` und `warning_count`, `design` ergänzt `name` und
+  `parts`, `import_idml` ergänzt `layout`, `reason`, `chapters`, `quality`,
+  `fonts`, `missing_links` und `package`.
 - **Fehler als Ausnahmen.** Ein Fehlschlag löst `PostextError` aus, eine
   falsche Option `UsageError`. Findet `check` Fehler, löst es `ProblemsFound`
   aus, dessen `report` sie auflistet; mit `raise_on_problems=False` gibt es
   den Bericht zurück.
 - **Bytes.** Ein Buch kann als Bytes eines `.postext`-Pakets übergeben werden.
   Mit `out="-"` kommt die Datei in `report.content` zurück; `pdf_bytes`,
-  `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes` und `pack_bytes`
-  geben sie direkt zurück.
+  `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`,
+  `pack_bytes` und `design_bytes` geben sie direkt zurück.
 - `postext.Postext(binary, cwd=…, timeout=…)` verwendet eine bestimmte
   ausführbare Datei, und `python -m postext …` ist die Kommandozeile selbst.
 

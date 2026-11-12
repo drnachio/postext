@@ -388,6 +388,13 @@ postext pdf other/ --design novel.postext -o other.pdf
 
 `--design FILE` خيار لكل أمر يقرأ كتابًا، يضع الكتاب في ملف تصميم أو في تصميم كتاب آخر، قبل `--config` و`--set`: تحل إعدادات أجزائه محل إعدادات الكتاب، وتُدمج الأنماط المسمّاة بالمعرّف، وتنضم خطوط التصميم إلى خطوط الكتاب. ويأخذ `--design-parts` بعض أجزائه فقط. وتستورد لوحة التصميم في Sandbox الملفات نفسها وتصدّرها.
 
+`--composition TAG` خيار آخر لكل أمر يقرأ كتابًا، يضبط بعد `--design` قواعد التنضيد في تقليد لغة ما (منذ postext 1.80): `es` أو `en-US` (أو `en`) أو `en-GB` أو `fr` أو `de`، أو `auto` للغة الكتاب. تحل قواعد العُرف محل قواعد الكتاب، وتعود القواعد الأخرى إلى قيمها الافتراضية؛ وتبقى الطباعة كما هي. انظر [أعراف التنضيد](/ar/docs/configuration-text#أعراف-التنضيد).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack وunpack
 
 ```bash
@@ -456,6 +463,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--set PATH=VALUE</code></td><td>يغيّر إعدادًا واحدًا لهذا التشغيل، بمسار تفصل النقاط بين أجزائه: <code>--set page.dpi=150</code> و<code>--set bodyText.fontFamily=Lora</code> و<code>--set headings.levels.0.italic=true</code>. تُقرأ القيمة بصيغة JSON حين يمكن ذلك (الأعداد، وtrue وfalse، والكائنات)، وإلا فنصًا. يمكن تكراره.</td></tr>
     <tr><td><code>--config FILE</code></td><td>إعدادات (أو ملف <code>preset.json</code>) لملفات Markdown المنفردة، أو تُدمج فوق إعدادات الكتاب نفسه.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>يضع الكتاب في تصميم ملف تصميم (من <code>postext design</code> أو من Sandbox) أو في تصميم ملف <code>.postext</code> لكتاب آخر، قبل <code>--config</code> و<code>--set</code>. ويأخذ <code>--design-parts LIST</code> بعض أجزائه فقط.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>يضبط قواعد التنضيد في تقليد لغة ما (<code>es</code>، <code>en-US</code>، <code>en-GB</code>، <code>fr</code>، <code>de</code>؛ <code>auto</code>: لغة الكتاب) بعد <code>--design</code>. منذ postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code> و<code>--fonts DIR</code> و<code>--name TEXT</code></td><td>الصور والخطوط والعنوان لملفات Markdown المنفردة.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>مجلد يُبحث فيه عن الخطوط التي لا يتضمّنها الكتاب. يمكن تكراره.</td></tr>
     <tr><td><code>--offline</code></td><td>لا ينزّل الخطوط أبدًا.</td></tr>
@@ -567,22 +575,27 @@ for warning in report.warnings:
 pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
-- **دالة لكل أمر**: `pdf` و`html` و`epub` و`image` و`images` و`docx`
-  و`import_docx` و`pack` و`unpack` و`info` و`check` و`build`. تحتفظ الخيارات
-  بأسمائها، بشرطات سفلية (`color_space` و`font_dirs` و`dry_run`). يأخذ `set`
-  قاموسًا، و`config` ملفًا أو قاموسًا، و`chapters` رقمًا أو قائمة أو `range`
-  أو `"1,3-5"`.
-- **التقارير كائنات.** تنفّذ كل دالة أمرها مع `--json` وتعيد التقرير:
-  `outputs` و`pages` و`timings` و`warnings`، وكل تحذير فيه `Diagnostic` له
-  `kind` و`severity` و`message` و`at` و`page`. ويضيف `info` الحقول `chapters`
+- **دالة لكل أمر**: `pdf` و`html` و`epub` و`image` و`images` و`docx` و`idml`
+  و`import_docx` و`import_idml` و`design` و`pack` و`unpack` و`info` و`check`
+  و`build`. تحتفظ الخيارات بأسمائها، بشرطات سفلية (`color_space` و`font_dirs`
+  و`dry_run`). يأخذ `set` قاموسًا، و`config` ملفًا أو قاموسًا، و`chapters`
+  رقمًا أو قائمة أو `range` أو `"1,3-5"`. وكل دالة تقرأ كتابًا تأخذ `design=`،
+  وهو ملف تصميم يُعطى مسارًا أو بايتات، و`design_parts=`، قائمةً أو
+  `"page,text"`، و`composition=`، وهو رمز لغة أو `"auto"`.
+- **التقارير كائنات.** تنفّذ كل دالة أمرها مع `--json` وتعيد التقرير: `outputs`
+  و`pages` و`timings` و`warnings`، وكل تحذير فيه `Diagnostic` له `kind`
+  و`severity` و`message` و`at` و`page`. ويضيف `info` الحقول `chapters`
   و`resources` و`fonts`، ويضيف `check` الحقول `passed` و`error_count`
-  و`warning_count`.
+  و`warning_count`، ويضيف `design` الحقلين `name` و`parts`، ويضيف `import_idml`
+  الحقول `layout` و`reason` و`chapters` و`quality` و`fonts` و`missing_links`
+  و`package`.
 - **الأخطاء استثناءات.** الإخفاق يطلق `PostextError`، والخيار الخاطئ
   `UsageError`. وإذا وجد `check` أخطاء أطلق `ProblemsFound`، ويسردها `report`
   الخاص به؛ ومع `raise_on_problems=False` يعيد التقرير بدلًا من ذلك.
 - **البايتات.** يمكن تمرير الكتاب على هيئة بايتات حزمة `.postext`. ومع
   `out="-"` يعود الملف في `report.content`؛ وتعيده `pdf_bytes` و`html_bytes`
-  و`epub_bytes` و`image_bytes` و`docx_bytes` و`pack_bytes` مباشرة.
+  و`epub_bytes` و`image_bytes` و`docx_bytes` و`idml_bytes` و`pack_bytes`
+  و`design_bytes` مباشرة.
 - يشغّل `postext.Postext(binary, cwd=…, timeout=…)` ملفًا تنفيذيًا محددًا،
   و`python -m postext …` هو سطر الأوامر نفسه.
 

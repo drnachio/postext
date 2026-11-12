@@ -11,6 +11,7 @@ export type SettingsGroupId =
   | 'writing'
   | 'colors'
   | 'text'
+  | 'composition'
   | 'headings'
   | 'lists'
   | 'figures'
@@ -32,6 +33,7 @@ export type SettingsSectionId =
   | 'headerFooter'
   | 'parts'
   | 'bodyText'
+  | 'composition'
   | 'headings'
   | 'headingStyles'
   | 'toc'
@@ -105,6 +107,8 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'writing', labelKey: 'settingsGroupWriting', descriptionKey: 'settingsGroupWritingDescription' },
   { id: 'colors', labelKey: 'settingsGroupColors', descriptionKey: 'settingsGroupColorsDescription' },
   { id: 'text', labelKey: 'settingsGroupText', descriptionKey: 'settingsGroupTextDescription' },
+  // A typesetting tradition's rules (#1540): the design part `composition`.
+  { id: 'composition', labelKey: 'settingsGroupComposition', descriptionKey: 'settingsGroupCompositionDescription' },
   { id: 'headings', labelKey: 'settingsGroupHeadings', descriptionKey: 'settingsGroupHeadingsDescription' },
   { id: 'lists', labelKey: 'settingsGroupLists', descriptionKey: 'settingsGroupListsDescription' },
   { id: 'figures', labelKey: 'settingsGroupFigures', descriptionKey: 'settingsGroupFiguresDescription' },
@@ -143,6 +147,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'links', group: 'text', labelKey: 'linksSection', configKeys: ['links'] },
   { id: 'lineNumbers', group: 'text', labelKey: 'lineNumbersSection', configKeys: ['lineNumbers'] },
   { id: 'citations', group: 'text', labelKey: 'citationsSection', configKeys: ['citations'] },
+  // The composition rules inside `bodyText` (see `sectionHasOverrides`).
+  { id: 'composition', group: 'composition', labelKey: 'compositionSection', configKeys: ['bodyText'] },
   { id: 'headings', group: 'headings', labelKey: 'headings', configKeys: ['headings'] },
   { id: 'headingStyles', group: 'headings', labelKey: 'headingStylesSection', configKeys: ['headingStyles'] },
   { id: 'toc', group: 'headings', labelKey: 'tocSection', configKeys: ['toc'] },

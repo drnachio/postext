@@ -241,7 +241,7 @@ export const metadata = {
       <td><code>stacks</code></td>
       <td><code>'allow' | 'warn' | 'avoid'</code></td>
       <td><code>'allow'</code></td>
-      <td>行首行尾重复：段落中同一栏内相邻的两行以同一个词结尾，或以相同的最后<code>stackMinCharacters</code>个字符（含空格）结尾（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>），或以同一个词或相同的开头字符开头（<code>of the</code> / <code>of a</code>）。<code>'allow'</code>按断行器找到的样子排行，不作报告。<code>'warn'</code>照样排行，并把每处重复报告为内容警告<code>stack</code>，Sandbox在“检查”中列出并在页面上标出。<code>'avoid'</code>为每处重复加上<code>stackPenalty</code>缺陷值，让断行器在词距允许的范围内换一种排法，并报告保留下来的重复。不区分重音和大小写（“sól”即“sol”）。只在用空格分词的文字中比较词：中文、日文、泰文、藏文等不以空格分词的文字没有重复。行边缘的公式、标签或色块从不比较。设为<code>'avoid'</code>时，图注、注释和表格单元格（两端对齐或左对齐）都用Knuth–Plass整体断行以遵循此规则；组版页面的框架排其文字时不用此规则。需要<code>optimalLineBreaking</code>。移植书籍时请保持<code>'allow'</code>，或在校样时使用<code>'warn'</code>：移植要重现原书的断行。</td>
+      <td>行首行尾重复：段落中同一栏内相邻的两行以同一个词结尾，或以相同的最后<code>stackMinCharacters</code>个字符（含空格）结尾（<code>-ment</code> / <code>-ment</code>、<code>of the</code> / <code>in the</code>），或以同一个词或相同的开头字符开头（<code>of the</code> / <code>of a</code>）。<code>'allow'</code>按断行器找到的样子排行，不作报告。<code>'warn'</code>照样排行，并把每处重复报告为内容警告<code>stack</code>，Sandbox在“检查”中列出并在页面上标出。<code>'avoid'</code>为每处重复加上<code>stackPenalty</code>缺陷值，让断行器在词距允许的范围内换一种排法，并报告保留下来的重复。不区分重音和大小写（“sól”即“sol”）。只在用空格分词的文字中比较词：中文、日文、泰文、藏文等不以空格分词的文字没有重复。行边缘的公式、标签或色块从不比较。设为<code>'avoid'</code>时，图注、注释和表格单元格（两端对齐或左对齐）都用Knuth–Plass整体断行以遵循此规则；组版页面的框架排其文字时不用此规则。此规则同样适用于转行的诗行和占多行的目录、索引条目（排法相同），以及未开启<code>optimalRagged</code>的左对齐正文。Knuth–Plass无法在行宽内排好的段落（有比栏还宽的词），以及关闭<code>optimalLineBreaking</code>的所有文字，都逐行排：若断行会让本行以与上一行相同的词或字符结尾，只要较短的一行词距仍在<code>maxWordSpacing</code>以内（左对齐时至少半个行宽），就改在前面的词间空格处断行。<code>'warn'</code>和<code>'avoid'</code>也会报告图注、注释和表格单元格中的重复，并注明所在的资源和部分。移植书籍时请保持<code>'allow'</code>，或在校样时使用<code>'warn'</code>：移植要重现原书的断行。</td>
     </tr>
     <tr>
       <td><code>stackMinCharacters</code></td>
@@ -259,7 +259,7 @@ export const metadata = {
       <td><code>citationBreaks</code></td>
       <td><code>'allow' | 'warn' | 'avoid'</code></td>
       <td><code>'allow'</code></td>
-      <td>以词后方括号或圆括号中的编号引用开头的行，或以其中一部分开头的行：<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>，以及编号式样式为 <code>[@key]</code> 印出的编号（<code>[3, p. 12]</code>）。数字之后的不算：<code>2016 (3)</code> 是年份和期号。<code>'allow'</code> 按断行算法找到的样子排行，不作报告。<code>'warn'</code> 照样排行，并把每处这样的断行报告为内容警告 <code>citationBreak</code>，Sandbox 在“检查”中列出。<code>'avoid'</code> 把 <code>citationBreakPenalty</code> 加到引用前空格处或引用内部断行的缺陷值上，让算法在词距允许的范围内重排段落，并报告保留下来的断行。该空格仍是词距，与其他词距一同伸缩；正文不作改动。适用于横排的段落、列表、引文、框、注释、图注和表格单元格；每处引用按其周围的文字判断，从右向左的文字和中日韩文字不受影响。为 <code>'avoid'</code> 时，齐左文字、图注、注释和单元格都用 Knuth–Plass 算法排，也遵循此规则；组版页面的框排其文字时不用此规则。需要 <code>optimalLineBreaking</code>。无论规则如何都要让两个词不分开时，请输入不换行空格。</td>
+      <td>以词后方括号或圆括号中的编号引用开头的行，或以其中一部分开头的行：<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>，以及编号式样式为 <code>[@key]</code> 印出的编号（<code>[3, p. 12]</code>）。数字之后的不算：<code>2016 (3)</code> 是年份和期号。<code>'allow'</code> 按断行算法找到的样子排行，不作报告。<code>'warn'</code> 照样排行，并把每处这样的断行报告为内容警告 <code>citationBreak</code>，Sandbox 在“检查”中列出。<code>'avoid'</code> 把 <code>citationBreakPenalty</code> 加到引用前空格处或引用内部断行的缺陷值上，让算法在词距允许的范围内重排段落，并报告保留下来的断行。该空格仍是词距，与其他词距一同伸缩；正文不作改动。适用于横排的段落、列表、引文、框、注释、图注和表格单元格；每处引用按其周围的文字判断，从右向左的文字和中日韩文字不受影响。为 <code>'avoid'</code> 时，齐左文字、图注、注释和单元格都用 Knuth–Plass 算法排，也遵循此规则；组版页面的框排其文字时不用此规则。此规则同样适用于转行的诗行和占多行的目录、索引条目（排法相同）。Knuth–Plass无法在行宽内排好的段落（有比栏还宽的词），以及关闭<code>optimalLineBreaking</code>的所有文字，都逐行排：若断行会把引用编号或单独的运算符留在行边，只要较短的一行词距仍在<code>maxWordSpacing</code>以内（左对齐时至少半个行宽），就改在前面的词间空格处断行。<code>'warn'</code>和<code>'avoid'</code>也会报告图注、注释和表格单元格中的这类断行，并注明所在的资源和部分。无论规则如何都要让两个词不分开时，请输入不换行空格。</td>
     </tr>
     <tr>
       <td><code>citationBreakPenalty</code></td>
@@ -335,6 +335,25 @@ export const metadata = {
     </tr>
   </tbody>
 </table>
+
+### 排版惯例
+
+`bodyText`的排版规则（断词规则、`stacks`、`citationBreaks`、`operatorBreaks`、`hyphenateAcrossColumns`及其限度和惩罚）默认关闭，所以任何书都不会改变。按某种排版传统排的书可以一次采用这些规则：引擎以排版惯例的形式提供五种传统的规则（自postext 1.80起），它们是只含`composition`部分的设计（见[设计文件](/zh/docs/configuration-bundles#设计文件)）。每种惯例只设置该传统明确规定的规则；其他规则保持默认值，惩罚值取引擎的值。
+
+<table>
+  <thead>
+    <tr><th>惯例</th><th>规则</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>西班牙语（传统）、<code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 1</code>）、<code>hyphenation.lastWord: 'avoid'</code>、<code>stacks: 'avoid'</code>、<code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>英语（美国）、<code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>英语（英国）、<code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 2</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>法语、<code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>德语、<code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）</td></tr>
+  </tbody>
+</table>
+
+惯例本身不会改变任何东西。在沙盒中，五种惯例都在设计图库里，排版规则组会提供书的语言对应的惯例（见[版面设计面板](/zh/docs/sandbox-design-checks)）；命令行用`--composition`设置（见[命令行](/zh/docs/command-line#design)）；在代码中写作`applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`。应用一种惯例会设置它的规则，并把其他排版规则恢复为默认值；字体排印、断词语言和单词例外保持不变。加泰罗尼亚语、意大利语和葡萄牙语还没有惯例。
 
 ### 引用块
 
