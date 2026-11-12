@@ -17,6 +17,7 @@ import { presetCoverFor } from '../covers/autoCover.js';
 import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
+import { CompileStatus } from './ProjectsPanel/compile.js';
 import { IdmlImportDialog, type IdmlPickedFile } from '../idml/IdmlImportDialog.js';
 import { NewBookWithDesign } from './designs/NewBookWithDesign.js';
 import { IdmlPackageDialog } from '../idml/IdmlPackageDialog.js';
@@ -367,6 +368,7 @@ export function ProjectsPanel() {
             </div>
           </div>
         )}
+        <CompileStatus />
         {notice && (
           <div
             role="status"
@@ -407,7 +409,7 @@ export function ProjectsPanel() {
                 canAddLanguage={languagesLeft(takenOf(project)).length > 0}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
                 onExport={() => { void exportProject({ kind: 'project', id: project.id }); }}
-                onCompile={(format) => { void compileProject(project.id, format); }}
+                onCompile={(format, locale) => { void compileProject(project.id, format, locale); }}
                 onSetThumbnail={(file) => { void setThumbnail(project.id, file); }}
                 onDelete={() => { void remove(project.id); }}
               />

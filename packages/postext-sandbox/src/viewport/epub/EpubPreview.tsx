@@ -101,7 +101,13 @@ export function progressFraction(progress: EpubGenerationProgress | null): { fra
 }
 
 export function ProgressBar({ progress, label }: { progress: EpubGenerationProgress | null; label: string }) {
-  const { fraction, pulse } = progressFraction(progress);
+  return <ProgressMeter {...progressFraction(progress)} label={label} />;
+}
+
+/** The bar of a generation: `fraction` of it done, pulsing while a step
+ *  that reports no count runs. The EPUB tab's, and the Books panel's
+ *  while a book compiles (#1526). */
+export function ProgressMeter({ fraction, pulse, label }: { fraction: number; pulse: boolean; label: string }) {
   return (
     <div
       role="progressbar"
