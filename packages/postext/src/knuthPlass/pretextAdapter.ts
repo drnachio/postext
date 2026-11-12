@@ -17,7 +17,7 @@ import { lineTracking, trackSegments } from './tracking.js';
 import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
-import { spaceBreakDemerits, type SpaceBreakCosts } from '../measure/spaces.js';
+import { spaceBreakDemerits, type SpaceBreakCosts } from './spaceBreaks.js';
 
 /** The room the dot of an `l·l` takes at the end of `piece`: a width, or
  *  what the caller's measurer says for that piece. */

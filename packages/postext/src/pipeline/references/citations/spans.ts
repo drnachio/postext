@@ -15,8 +15,18 @@ export function resolveCitationSpans(spans: InlineSpan[], formatted: readonly (I
     if (!span.citation) return [span];
     const text = formatted?.[k++];
     if (!text) return [plain(span.citation.raw, span)];
-    return text.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
+    return decorated(text.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) })), span);
   });
+}
+
+/** `spans`, the formatted text of the citation `base`, with the highlight,
+ *  strike-through and underline over the citation (`:mark[… [@k]]`,
+ *  `~~[@k]~~`) over each of them whole: the citation's span is replaced,
+ *  and its ranges would go with it (#1519 review). */
+export function decorated(spans: InlineSpan[], base: InlineSpan): InlineSpan[] {
+  const over = base.links?.filter((l) => l.mark || l.strike || l.underline);
+  if (!over || over.length === 0) return spans;
+  return spans.map((s) => (s.text.length > 0 ? { ...s, links: [...(s.links ?? []), ...over.map((l) => ({ ...l, start: 0, end: s.text.length }))] } : s));
 }
 
 /** The ids of the isolates citations are set in ({@link isolated}): clear
@@ -71,12 +81,13 @@ export function withoutFinalStop(spans: InlineSpan[]): InlineSpan[] {
 
 /** The spans of a plain text with the emphasis of the text around it. */
 export function plain(text: string, base: InlineSpan): InlineSpan {
-  return { text, bold: base.bold, italic: base.italic, ...(base.smallCaps ? { smallCaps: true } : {}) };
+  return decorated([{ text, bold: base.bold, italic: base.italic, ...(base.smallCaps ? { smallCaps: true } : {}) }], base)[0]!;
 }
 
-/** `spans` linked to `href`, each over its whole text. */
+/** `spans` linked to `href`, each over its whole text (a span with a link
+ *  of its own keeps it). */
 export function linked(spans: InlineSpan[], href: string): InlineSpan[] {
-  return spans.map((s) => (s.links && s.links.length > 0 ? s : { ...s, links: [{ start: 0, end: s.text.length, href }] }));
+  return spans.map((s) => (s.links?.some((l) => l.href !== '') ? s : { ...s, links: [...(s.links ?? []), { start: 0, end: s.text.length, href }] }));
 }
 
 /** A block whose spans are `spans`, its plain text and source map rebuilt:

@@ -17,7 +17,7 @@ import { graphemeCount } from '../measure/graphemes.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { pieceScriptContext } from '../measure/script.js';
-import { spaceBreakDemerits, type SpaceBreakCosts } from '../measure/spaces.js';
+import { spaceBreakDemerits, type SpaceBreakCosts } from './spaceBreaks.js';
 
 interface RichBreakPoint {
   charIndex: number;

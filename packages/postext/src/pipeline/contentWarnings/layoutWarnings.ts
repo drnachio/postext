@@ -129,17 +129,18 @@ export function stackWarnings(doc: VDTDocument): ContentWarning[] {
 
 /** A `citationBreak` or `operatorBreak` warning for each line of the
  *  running text that starts with a numbered citation, or ends or starts on
- *  a lone operator (#1519, `findSpaceBreaks`), on the page it was placed
- *  on, under `bodyText.citationBreaks` / `operatorBreaks` at `'warn'` or
- *  `'avoid'` (the breaks the breaker kept); none under `'allow'`. */
+ *  a lone operator (#1519, `findSpaceBreaks`), across the columns and pages
+ *  a paragraph runs over, on the page of the line after the break, under
+ *  `bodyText.citationBreaks` / `operatorBreaks` at `'warn'` or `'avoid'`
+ *  (the breaks the breaker kept); none under `'allow'`. */
 export function spaceBreakWarnings(doc: VDTDocument): ContentWarning[] {
   return findSpaceBreaks(doc).map((f) => {
     const a = f.block.lines[f.line]!;
-    const b = f.block.lines[f.line + 1]!;
+    const b = f.nextBlock.lines[f.nextLine]!;
     const where = {
       ...(a.sourceStart !== undefined ? { sourceStart: a.sourceStart } : {}),
       ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
-      ...(f.block.pageIndex >= 0 ? { pageIndex: f.block.pageIndex } : {}),
+      ...(f.nextBlock.pageIndex >= 0 ? { pageIndex: f.nextBlock.pageIndex } : {}),
     };
     const lines: [string, string] = [a.text, b.text];
     return f.rule === 'citation'

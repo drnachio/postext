@@ -5,12 +5,14 @@ import { annotationFields } from './annotations.js';
 /** `span` struck through as a whole when `strike` is set (`~~…~~` around
  *  a formula, a swatch, a reference, a note marker): its text, or a chip's
  *  words (a chip holds no character of the text itself). Underlined the
- *  same way when `underline` is set (`++…++`). */
-function struckSpan(span: InlineSpan, strike: { id: number } | undefined, underline?: { id: number }): InlineSpan {
-  if (!strike && !underline) return span;
+ *  same way when `underline` is set (`++…++`), and highlighted when `mark`
+ *  is (`:mark[…]` around a citation or a reference, #1519 review). */
+function struckSpan(span: InlineSpan, strike: { id: number } | undefined, underline?: { id: number }, mark?: { style: string; id: number }): InlineSpan {
+  if (!strike && !underline && !mark) return span;
   const ranges = (n: number) => [
     ...(strike ? [{ start: 0, end: n, href: '', strike: { ...strike } }] : []),
     ...(underline ? [{ start: 0, end: n, href: '', underline: { ...underline } }] : []),
+    ...(mark ? [{ start: 0, end: n, href: '', mark: { ...mark } }] : []),
   ];
   const whole = (s: InlineSpan): InlineSpan =>
     s.text.length > 0 ? { ...s, links: [...(s.links ?? []), ...ranges(s.text.length)] } : s;
@@ -72,7 +74,8 @@ export function injectPlaceholderSpans<T>(
       const at = from;
       const strike = span.links?.find((l) => l.strike && l.start <= at && l.end > at)?.strike;
       const underline = span.links?.find((l) => l.underline && l.start <= at && l.end > at)?.underline;
-      if (item) out.push(struckSpan({ ...makeSpan(item, span.bold, span.italic), ...sc, ...placeholderMarks }, strike, underline));
+      const mark = span.links?.find((l) => l.mark && l.start <= at && l.end > at)?.mark;
+      if (item) out.push(struckSpan({ ...makeSpan(item, span.bold, span.italic), ...sc, ...placeholderMarks }, strike, underline, mark));
       last = from + placeholder.length;
       from = span.text.indexOf(placeholder, last);
     }

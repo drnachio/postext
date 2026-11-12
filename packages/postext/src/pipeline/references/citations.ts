@@ -16,7 +16,7 @@ import { citationEngine } from '../../citations/registry.js';
 import { htmlToSpans, decodeEntities, stripTags } from '../../citations/html.js';
 import { narrativeName } from './citations/markers.js';
 import { type ProcessedCitations, BIBLIOGRAPHY_ANCHOR_PREFIX, BIBLIOGRAPHY_CONTAINER_BASE, BIBLIOGRAPHY_STYLE_ID, defaultBibliographyTitle, citationLocale, WARICHU_ID_BASE, CITATION_NOTE_PREFIX } from './citations/process.js';
-import { isolated, linked, plain, CLOSING_CJK, withoutFinalStop, withSpans } from './citations/spans.js';
+import { decorated, isolated, linked, plain, CLOSING_CJK, withoutFinalStop, withSpans } from './citations/spans.js';
 
 export { BIBLIOGRAPHY_STYLE_ID, BIBLIOGRAPHY_ANCHOR_PREFIX, CITATION_NOTE_PREFIX, defaultBibliographyTitle, citationLocale, processCitations, bibliographyParagraphStyle, withBibliographyStyle } from './citations/process.js';
 export type { ProcessedCitations } from './citations/process.js';
@@ -111,7 +111,7 @@ export function applyCitations(
     const href = cfg.link && willList(target) ? `#${BIBLIOGRAPHY_ANCHOR_PREFIX}${target}` : undefined;
     // The citation takes the emphasis of the text around it.
     const styled = spans.map((s) => ({ ...s, bold: s.bold || span.bold, italic: s.italic !== span.italic, ...(span.smallCaps ? { smallCaps: true } : {}) }));
-    const linkedText = href ? linked(styled, href) : styled;
+    const linkedText = decorated(href ? linked(styled, href) : styled, span);
     // A key no reference defines, in a citation of several works: set in
     // bold after it, as written, so the missing work shows on the page
     // and not only among the warnings.

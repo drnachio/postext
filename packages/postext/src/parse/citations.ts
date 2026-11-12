@@ -174,6 +174,9 @@ function parseItems(inner: string): CitationItemInput[] | undefined {
   return items.length > 0 ? items : undefined;
 }
 
+/** A text directive's name right before its brackets (`:mark`, `:chip`). */
+const DIRECTIVE_OPEN = /(?<![\p{L}\p{N}_\\]):[A-Za-z][\w-]*$/u;
+
 /** Index of the `]` closing the `[` at `open`, on brackets not escaped. */
 function closingBracket(text: string, open: number): number {
   let depth = 0;
@@ -199,6 +202,9 @@ export function extractInlineCitations(text: string, fallbackStart: number): { c
   // footnote or a span with attributes.
   for (let i = text.indexOf('['); i >= 0; i = text.indexOf('[', i + 1)) {
     if (i > 0 && (text[i - 1] === '\\' || text[i - 1] === '!' || text[i - 1] === ']')) continue;
+    // The brackets of a directive (`:mark[see [@k]]`) hold its text: a
+    // citation may sit inside them, they are none.
+    if (DIRECTIVE_OPEN.test(text.slice(Math.max(0, i - 40), i))) continue;
     const close = closingBracket(text, i);
     if (close < 0) break;
     const inner = text.slice(i + 1, close);
