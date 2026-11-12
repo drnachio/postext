@@ -30,7 +30,6 @@ Una franja estreta a la vora esquerra té un botó per tauler. Cada botó mostra
 - **Llibres** (icona `Files`): els teus llibres i els llibres d'exemple
 - **Capítols** (icona `BookOpen`): el llibre obert i els seus capítols
 - **Text** (icona `FileCode`): escriu i corregeix el text del capítol actual
-- **Plantilles** (icona `LayoutTemplate`): plantilles de disseny per provar al llibre, desar, importar i exportar
 - **Recursos** (icona `FolderOpen`): imatges, dibuixos SVG i taules que fa servir el llibre
 - **Fonts** (icona `Type`): els tipus de lletra que fa servir el llibre i els teus propis fitxers de font
 - **Disseny** (icona `Settings2`): paràmetres de pàgina, tipografia, encapçalaments, figures, requadres i exportació
@@ -134,6 +133,7 @@ Si fas clic en un llibre (o en una de les etiquetes de llengua d'un llibre d'exe
     - **Còpia del llibre obert** copia el llibre obert, les seves figures i les seves fonts en un llibre nou.
     - **Llibre en blanc** en comença un de buit.
     - **Obrir un fitxer .postext…** importa un fitxer.
+    - **Amb el disseny de…** en comença un de buit amb un disseny de la galeria (vegeu [Dissenys](#dissenys)).
 
   També pots duplicar qualsevol fila. Mentre no tinguis llibres propis, el grup mostra un missatge de llista buida amb la mateixa drecera. Cada fila té un sol menú **⋯** amb nom accessible (*Més accions de «…»*) amb **Canviar el nom…**, **Afegir una llengua…** (vegeu [Un llibre en diverses llengües](/ca/docs/sandbox-books-saving#exportar-i-importar)), **Duplicar**, **Baixar (.postext)** i **Suprimir…**. Suprimir demana confirmació just al costat del botó ⋯.
 
@@ -209,15 +209,18 @@ El llibre d'exemple obert determina, a més, què restauren els botons **Restabl
 
 Un preset que estava obert en una sessió anterior però que ja no llista cap origen (normalment un preset privat en una compilació que no el serveix) continua apareixent, atenuat com a *No disponible en aquesta compilació*. El Sandbox conserva el contingut carregat en lloc de substituir-lo sense avisar per l'exemple integrat. L'id del preset obert es desa sota la clau `postext-sandbox-preset` (consulta [Persistència](/ca/docs/sandbox-books-saving#persistència)). El format del paquet es descriu a l'apèndix [Format de paquet de preset](/ca/docs/sandbox-embedding#format-de-paquet-de-preset).
 
-#### Tauler de plantilles
+#### Dissenys
 
-El tauler **Plantilles**, entre Text i Recursos, és el pas previ al disseny: triar de quin disseny parteix el llibre. Una plantilla desa el disseny (pàgina i columnes, tipografia i estils, colors, capçaleres i peus, impremta), mai el text, l’idioma ni els tipus de recurs, i porta còpia de les seves fonts pròpies i del seu perfil ICC.
+Un disseny és l'aspecte d'un llibre i res del que diu: la pàgina i les columnes, la tipografia i els estils, els colors, les capçaleres i els peus, la configuració d'impressió. No guarda mai el text, els recursos ni els ajustos que pertanyen al llibre sencer (idioma, direcció, xifres, tipus de recurs, comprovacions). Els dissenys són al **tauler Disseny**: la fila **Dissenys** del seu resum els obre, i la seva capçalera exporta i importa fitxers de disseny.
 
-- **Galeria.** Les plantilles desades i les quatre de sèrie (*Novel·la*, *Manual tècnic*, *Revista a dues columnes* i *Llibre a dues tintes*), cadascuna amb un dibuix de la seva pàgina, la tipografia i els colors.
-- **Prova.** Tries quines parts substituir i la plantilla es posa al llibre. Una barra *Provant «…»* ofereix **Mantén** (la deixa posada) i **Descarta** (torna al disseny que tenies). Pots provar-ne diverses seguides: cadascuna es posa sobre el disseny de partida, i Descarta hi torna. El que la plantilla no fixa torna al valor per defecte.
-- **Desar un disseny com a plantilla**, des d’aquest llibre o des de qualsevol altre llibre del Sandbox, triant quines parts inclou.
-- **Com a estil de capítol**. Les parts triades d'una plantilla (pàgina i columnes, tipografia, colors, capçaleres) passen a un estil de capítol del llibre, nou o un que ja tingui: només el que canvien respecte al llibre, amb la mida de pàgina i la impremta del llibre. S'assigna als capítols que necessitin aquell disseny (un annex, els casos clínics) a **Capítols**, o amb `chapterStyle:` al seu preàmbul, i a una part d'un capítol, des d'una pàgina nova, amb `::section{style="…"}`; la resta del llibre conserva el seu.
-- **Importa** (a la capçalera del tauler) i **Exporta** (a cada plantilla) fitxers `.postext-template.json` per compartir-les; les fonts que no són redistribuïbles no hi viatgen. Les plantilles desades es poden eliminar; les de sèrie, no.
+- **Parts.** Un disseny es talla pels grups del tauler Disseny (pàgina i columnes, sistema d'escriptura, colors, text, títols…). En desar-lo, provar-lo, aplicar-lo o exportar-lo, tries quins grups porta.
+- **Galeria.** Els teus dissenys desats, els quatre que porta el Sandbox (*Novel·la*, *Manual tècnic*, *Revista a dues columnes*, *Llibre a dues tintes*) i el disseny de cada llibre d'exemple, cadascun amb un dibuix de la seva pàgina i les parts que conté.
+- **Provar.** Les parts triades substitueixen les del llibre. Una barra ofereix **Conserva** i **Descarta**: Descarta torna només els ajustos que el disseny va substituir, i qualsevol altre canvi fet mentrestant es queda. Provar un altre disseny substitueix el primer. La prova pertany al llibre on va començar, i obrir un altre llibre la deixa. La barra enumera els estils que el text anomena (de paràgraf, de títol, de caixa, d'etiqueta, de caràcter, de marca i de taula) i que el disseny no defineix, perquè els vegis abans de conservar-lo. Provar, conservar, descartar i aplicar són passos de l'historial (⌘Z / Ctrl+Z).
+- **Els estils amb nom** es combinen per id: un estil del disseny substitueix l'estil del llibre amb el mateix id, i els altres estils del llibre es queden. Les fonts es combinen per família, i els colors de la paleta que anomenen els ajustos del disseny hi vénen amb ell.
+- **Un llibre en diversos idiomes** rep el disseny en els seus ajustos generals, mostri el que mostri el selector de la part superior del tauler; cada idioma conserva els seus propis ajustos.
+- **Desar** el disseny d'aquest llibre, o de qualsevol altre llibre teu, amb les parts que triïs.
+- **Com a estil de capítol.** Les parts triades esdevenen un [estil de capítol](/ca/docs/configuration-styles#estils-de-capítol) del llibre, nou o un que ja tingui, amb només el que canvien respecte al llibre. Dona'l als capítols a **Capítols** o amb `chapterStyle:` a la capçalera, i als capítols d’una part amb `:::part{style="…"}`.
+- **Exportar i importar.** Un fitxer de disseny és un `.postext` sense capítols (vegeu [Fitxers de disseny](/ca/docs/configuration-bundles#fitxers-de-disseny)) que porta els fitxers de font i el perfil de color que anomenen les seves parts; les fonts que no són redistribuïbles no hi viatgen. Importar també llegeix el `.postext` d'un llibre sencer (el seu disseny) i els `postext-config.json` de versions anteriors. La línia d'ordres crea i llegeix els mateixos fitxers ([`postext design`](/ca/docs/command-line#design)). Els dissenys desats es poden eliminar; els inclosos i els dels llibres d'exemple, no. Les plantilles que va desar postext 1.78 passen als teus dissenys desats la primera vegada que s'obre la galeria, i Importa llegeix els seus fitxers `.postext-template.json` com a dissenys.
 
 #### Tauler de recursos
 

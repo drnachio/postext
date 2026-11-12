@@ -1,7 +1,7 @@
 // The warnings read from the source and the configuration alone: unknown
 // resource ids, :::name lines, style ids, full-width markup and ragged table
 // grids (#1276: split out of contentWarnings.ts).
-import { sectionBreaks } from '../../defaults/chapterStyles.js';
+import { chapterStyleWarnings } from './chapterStyleWarnings.js';
 import { parseVideoUrl } from '../../video/url.js';
 import { unprefixedId, resourceRefId } from '../references/crossRefs.js';
 import { citationIssues } from '../references/citations.js';
@@ -14,7 +14,7 @@ import { directiveAttrRanges, MARK_OPENER, readMarkAt } from '../../parse/inline
 import { parsePaperAttrs } from '../pages/paper.js';
 import { extractFrontmatter } from '../../parse/frontmatter.js';
 import { tableGridIssues } from '../../table/model.js';
-import type { PostextConfig, Resource } from '../../types.js';
+import type { BookChapterRange, PostextConfig, Resource } from '../../types.js';
 import type { ContentWarning } from '../../vdt.js';
 import { DEFAULT_CHIP_STYLES } from '../../defaults/text/chipStyles.js';
 import { DEFAULT_MARK_STYLES } from '../../defaults/text/markStyles.js';
@@ -144,10 +144,10 @@ export function collectContentWarnings(
   /** The reference keys of the whole book (#268), when the document is one
    *  of its chapters; its own references count either way. */
   bookCitationKeys?: ReadonlySet<string>,
+  /** Where each chapter lies, for a whole book laid out as one document
+   *  (`PostextContent.chapters`). */
+  chapters?: readonly BookChapterRange[],
 ): ContentWarning[] {
-  // A section break (`::section{style="…"}`) is no embed of an unknown
-  // kind: its line is read as blank.
-  markdown = sectionBreaks(markdown).reduce((md, b) => md.slice(0, b.start) + ' '.repeat(b.end - b.start) + md.slice(b.end), markdown);
   const fm = extractFrontmatter(markdown);
   const body = fm.content;
   const offset = fm.contentOffset;
@@ -157,6 +157,8 @@ export function collectContentWarnings(
   // Front matter that does not parse: the document is set without its
   // metadata.
   if (fm.error) out.push({ kind: 'invalidFrontmatter', message: fm.error.message, sourceStart: fm.error.sourceStart, sourceEnd: fm.error.sourceEnd });
+  // The chapter styles it names (#1521).
+  out.push(...chapterStyleWarnings(markdown, fm, blocks, config?.chapterStyles, chapters));
   const abs = (r: SourceRange) => ({ sourceStart: r.start + offset, sourceEnd: r.end + offset });
 
   const byId = new Map<string, Resource>();

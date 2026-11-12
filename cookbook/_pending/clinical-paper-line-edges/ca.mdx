@@ -1,0 +1,75 @@
+---
+title: "Cites i estadístics fora de les vores de línia"
+summary: "Un article a dues columnes compost dues vegades: les primeres proves avisen de cada cita o signe a la vora d'una línia; les segones encareixen aquests talls."
+plain: "En una columna justificada estreta, una crida com [2, 3] pot quedar sola a principi de línia, i p < 0,05 es pot partir després del signe. L'article es compon dues vegades: una ensenya on passa i l'altra ho evita gairebé sempre."
+description: "citationBreaks i operatorBreaks en dues proves d'un article clínic: 'warn' llista i marca cada tall; 'avoid' l'encareix en els demèrits de Knuth–Plass."
+question: "Com evito que una crida bibliogràfica o un estadístic com p < 0,05 es parteixi al final d'una línia?"
+aliases: ["talls de cita", "crida bibliogràfica a principi de línia", "cita sola a la línia", "estadístics partits", "valor p partit", "signe igual a final de línia", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "article clínic", "correcció de proves"]
+pageNotes: { "1": "Primeres proves, pàgina 211: una banda ambre pàl·lid sota específica, al final d'una línia on la cita [4, 5] queda partida entre aquesta línia i la següent.", "2": "Primeres proves, pàgina 212: kappa al final d'una línia i = 0,84 al principi de la següent, marcats.", "3": "L'última pàgina de les primeres proves: anteriores i CP+ marcats a la discussió, la bibliografia i una papereta titulada PRIMERAS PRUEBAS: CONSULTAS amb quatre talls.", "6": "L'última pàgina de les segones proves: CP+ = 19,19 ja en una sola línia, i la papereta llista l'únic tall que queda, anteriores [4, sobre 5], a la pàgina 213." }
+---
+
+## Què compondràs
+
+Tres pàgines d'una revista de pediatria de 170 × 240 mm, a dues columnes justificades de 66 mm en STIX Two Text: un estudi original sobre l'ecografia pulmonar en la pneumònia infantil, amb la bibliografia numerada en estil Vancouver. Una columna tan estreta deixa al tallador de línies poques sortides, i en quatre llocs el text en castellà es talla malament. Dues vegades la crida *[4, 5]* es parteix entre dues línies, lluny de la paraula a què es refereix, i dues vegades un estadístic se separa del seu signe: *kappa* sobre *= 0,84*, *CP+* sobre *= 19,19*. Les primeres proves es componen amb `citationBreaks` i `operatorBreaks` en `'warn'`: no canvien cap tall, marquen cadascun amb una banda ambre pàl·lid i els llisten en una papereta després de la bibliografia. Les segones es componen amb `'avoid'`, i en queda un dels quatre. L'edició anglesa compon el mateix estudi amb punt decimal.
+
+## Elaboració
+
+### 1 · Un preu per a dues classes de tall
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Hi ha tall de cita quan una línia comença amb una crida numerada o amb la segona meitat d'una, com *5]* després de *[4,*. Hi ha tall de signe quan una línia acaba o comença amb un signe entre espais: `=`, `<`, `±`, `×`, el menys. `'warn'` avisa de tots dos i deixa les línies com són. `'avoid'` suma una penalització als demèrits d'aquests talls, i el tallador de Knuth–Plass busca una altra manera de partir el paràgraf. Necessita `optimalLineBreaking`: el tallador voraç no té demèrits als quals sumar res.
+
+La penalització per defecte, 10000, és el que costa una línia estirada fins al límit de l'espai entre paraules, de manera que el tallador no obre mai una línia més enllà d'aquest límit per deixar una cita al costat de la seva paraula. En aquesta columna, 10000 deixava dos talls a cada edició. Amb 30000 el tallador accepta línies més obertes, sempre dins de `maxWordSpacing`, i en queda un a cada edició. Un valor més alt ja no canviava res: l'últim tall no té alternativa dins del límit.
+
+### 2 · Marcar els talls al text
+
+<Excerpt region="marks" />
+
+Cada avís porta la seva classe, la cita o el signe, el text de les dues línies, la posició al text font de la primera i la pàgina. L'script busca aquestes dues línies al document compost i embolica el tall amb `:mark[…]`: la paraula anterior a la cita i la cita, o el signe i el número de l'altra banda. Una marca pinta una banda sota el text i deixa els talls on eren. La banda no arriba al número que genera l'estil de cites, així que a la pàgina només es marca la paraula anterior.
+
+<PageShot page={2} crop="0,0.58,1,0.9" caption="Primeres proves, pàgina 212: kappa al final d'una línia i = 0,84 al principi de la següent." />
+
+### 3 · Dues proves i una papereta de consultes
+
+<Excerpt region="proofs" />
+
+Cada prova es compon dues vegades. La primera composició troba els talls; la segona compon l'article amb les marques i una papereta després de la bibliografia, de manera que la papereta cau a l'última pàgina. Així torna un caixista les proves amb les seves consultes. Les línies de la papereta uneixen les paraules amb espais de no separació, per no afegir-hi talls propis. `capture.doc` publica les dues composicions marcades, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.7,1,0.82" caption="Segones proves, pàgina 213: la papereta llista un tall en tot l'article." />
+
+El tall que queda en castellà és *anteriores [4,* sobre *5]*, a la pàgina 213. A l'edició anglesa les primeres proves en troben tres, entre els quals *LR− =* sobre *0.09* dues vegades, i les segones en deixen un, *first* sobre *[2, 3]*.
+
+### 4 · Crides numerades entre claudàtors
+
+<Excerpt region="citations" />
+
+El processador de cites compon cada `[@clave]` com un número entre claudàtors després d'un espai i agrupa les sèries com *[4–6]*. L'espai anterior al claudàtor i el que segueix una coma dins seu són llocs on una línia es pot tallar; per això una columna estreta amb moltes cites necessita la regla.
+
+### 5 · La capçalera i el bloc de l'article
+
+<Excerpt region="title" />
+
+L'estil del títol dibuixa la banda de la revista, el tipus d'article, el títol, els autors amb els seus números de filiació i una nota, tot a partir d'atributs de l'H1. Les dues edicions comparteixen l'estil, i el text es queda al Markdown.
+
+## Variants
+
+### Avisar dels talls sense canviar res
+
+Una revista que revisa les proves a mà pot deixar la regla en `'warn'`: el Sandbox llista cada tall entre els seus avisos i les línies es queden com les va compondre el tallador.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Mantenir la penalització per defecte
+
+Amb 10000 l'espaiat queda una mica més ajustat i queden dos talls per edició en lloc d'un.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Errors freqüents
+
+- Els talls es busquen a les línies tal com han quedat. Si canvien el format, el cos o el text, canvien de lloc, així que cal llegir els avisos de cada composició i no copiar posicions d'una d'anterior.
+- Per mantenir una cita concreta al costat de la seva paraula en qualsevol columna, escriu un espai de no separació al davant, al Markdown. La regla s'ocupa de la resta de l'article.

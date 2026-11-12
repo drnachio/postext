@@ -149,6 +149,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Os parágrafos são compostos como texto corrido.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code>, <code>partStyleMidChapter</code></td>
+      <td><a href="/pt/docs/configuration-styles#estilos-de-capítulo">Estilos de capítulo</a></td>
+      <td>—</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> não cita nenhum dos <code>calloutStyles</code>; só é gerado quando há algum configurado.</td>
       <td>O boxe recebe o primeiro estilo de boxe.</td>
@@ -389,8 +394,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>A lista é dividida onde a coluna termina.</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>Duas linhas seguidas de um parágrafo, na mesma coluna, que terminam (<code>edge: 'end'</code>) ou começam (<code>'start'</code>) com a mesma palavra ou os mesmos <code>bodyText.stackMinCharacters</code> caracteres: <code>text</code> é o que repetem, como a primeira linha o imprime, e <code>lines</code> as duas linhas. Com <code>bodyText.stacks: 'warn'</code> todas são assinaladas; com <code>'avoid'</code>, as que o algoritmo manteve. Um por repetição; aponta para as duas linhas, com a página delas. Desde postext 1.73.</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>Duas linhas seguidas de um parágrafo, na mesma coluna, que terminam (<code>edge: 'end'</code>) ou começam (<code>'start'</code>) com a mesma palavra ou os mesmos <code>bodyText.stackMinCharacters</code> caracteres (<code>stack</code>, desde postext 1.73); uma linha que começa com uma citação numerada depois de uma palavra, ou com um pedaço dela (<code>citationBreak</code>, 1.79); uma linha que termina ou começa com um sinal solto entre espaços, <code>=</code> ou <code>±</code> (<code>operatorBreak</code>, 1.79). <code>text</code> é o que se repete, a citação ou o sinal, e <code>lines</code> as duas linhas. Com <code>'warn'</code> (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>) todos são informados; com <code>'avoid'</code>, os que a quebra de linha manteve. Um por quebra; aponta para as duas linhas, com a sua página.</td>
       <td>As linhas são compostas como estão.</td>
     </tr>
     <tr>
@@ -405,7 +410,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>Um bloco do sumário que deve ficar junto (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), aberto por <code>title</code>, composto em <code>columns</code> colunas: ele é mais alto que uma coluna inteira, ou a coluna em que começa é curta (sob um boxe de página inteira, ao lado de um flutuante). Um por bloco; aponta para a diretiva <code>:::toc</code>, com a página em que o bloco começa. Para eliminá-lo, liste menos níveis (<code>levels="1"</code>), abra os blocos com um nível inferior (<code>toc.groups.head: 2</code>) ou deixe as entradas menores ou mais compactas. Desde o postext 1.34.</td>
+      <td>Um bloco do sumário que deve ficar junto (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), aberto por <code>title</code>, composto em <code>columns</code> colunas: ele é mais alto que uma coluna inteira, ou a coluna em que começa é curta (sob um boxe de página inteira, ao lado de um flutuante). Um por bloco; aponta para a diretiva <code>:::toc</code>, com a página em que o bloco começa. Desde o postext 1.34.</td>
       <td>O bloco é dividido; com <code>toc.groups.continuation</code>, cada coluna em que ele continua abre com a linha de cabeça e a marca de continuação.</td>
     </tr>
     <tr>

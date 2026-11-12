@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ChevronDown, Copy, FilePlus, FileInput, FileArchive, Upload, X, Files, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, Copy, FilePlus, FileInput, LayoutTemplate, FileArchive, Upload, X, Files, ChevronRight } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
@@ -17,6 +17,7 @@ import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
 import { IdmlImportDialog, type IdmlPickedFile } from '../idml/IdmlImportDialog.js';
+import { NewBookWithDesign } from './designs/NewBookWithDesign.js';
 import { IdmlPackageDialog } from '../idml/IdmlPackageDialog.js';
 import { readIdmlPackage, type IdmlPackageFile } from '../idml/sandboxIdmlImport.js';
 import { isolate } from '../word/WordImportDialog.js';
@@ -69,6 +70,8 @@ export function ProjectsPanel() {
     void openBookThenShowChapters(open, { getPanel: () => activePanelRef.current, showChapters });
   };
   const importRef = useRef<HTMLInputElement>(null);
+  const newAnchor = useRef<HTMLSpanElement>(null);
+  const [withDesign, setWithDesign] = useState(false);
   const idmlRef = useRef<HTMLInputElement>(null);
   const idmlPackageRef = useRef<HTMLInputElement>(null);
   // An InDesign document picked for a new book: the dialog reads it.
@@ -196,6 +199,7 @@ export function ProjectsPanel() {
         title={labels.navBooks}
         actions={
           <>
+            <span ref={newAnchor} className="inline-flex">
             <Menu
               trigger={
                 <Button variant="outline" size="xs" icon={<Plus size={12} />} trailingIcon={<ChevronDown size={12} />} disabled={busy}>
@@ -205,12 +209,15 @@ export function ProjectsPanel() {
             >
               <MenuItem icon={<Copy size={13} />} onClick={() => { void create({ from: 'current' }); }}>{labels.projectNewFromCurrentShort}</MenuItem>
               <MenuItem icon={<FilePlus size={13} />} onClick={() => { void create({ from: 'blank' }); }}>{labels.projectNewBlankShort}</MenuItem>
+              <MenuItem icon={<LayoutTemplate size={13} />} onClick={() => setWithDesign(true)}>{labels.projectNewWithDesign}</MenuItem>
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
               <MenuItem icon={<FileInput size={13} />} onClick={() => idmlRef.current?.click()}>{labels.idmlImport}</MenuItem>
               <MenuItem icon={<FileArchive size={13} />} onClick={() => idmlPackageRef.current?.click()}>{labels.idmlPackageImport}</MenuItem>
             </Menu>
-            {/* Each picker offers the files its item names (#1537). Chrome
+            </span>
+            <NewBookWithDesign open={withDesign} onOpenChange={setWithDesign} anchor={newAnchor} onCreate={(design) => create({ from: 'blank', design })} />
+                        {/* Each picker offers the files its item names (#1537). Chrome
                 on macOS matches them by extension, and its picker keeps an
                 All files entry: a file of another kind picked there is
                 refused by the import in its own words. (#1183 had dropped

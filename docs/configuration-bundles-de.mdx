@@ -394,6 +394,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle` gibt die zusammengeführte `config` der gelieferten Ausgabe zurück. `readBundle` gibt für ein Paket mit Einträgen in `localized` außerdem `sharedConfig` zurück, die allgemeinen Einstellungen, nach denselben Regeln und mit denselben Schriften gelesen. `planBundle` nimmt `sharedConfig` in seinem Inhalt entgegen: Die `config` des Manifests wird dann daraus geschrieben und jede Ausgabe, die primäre eingeschlossen, als Abweichung in `localized`.
 
+### Gestaltungsdateien
+
+Eine Gestaltungsdatei ist ein Bundle ohne Kapitel: eine Gestaltung, wie ein Buch aussieht, und nichts von dem, was es sagt. Ihr Manifest kennzeichnet sie mit `design: { parts: [...] }` und einem leeren `chapters`, ihr `config` enthält nur die Einstellungen dieser Teile, und sie bringt die Schriftdateien (`fonts/`) und das Farbprofil (`profiles/`) mit, die die Einstellungen nennen, wie jedes Bundle; eine mit `redistributable: false` gekennzeichnete Familie bleibt zurück. Das Bedienfeld Gestaltung der Sandbox und `postext design` schreiben diese Dateien, und sie werden mit demselben Leser gelesen wie ein Buch, samt Migration nach `configVersion`. Die Sandbox von postext 1.78 speicherte Gestaltungen als Vorlagen (`.postext-template.json`), nicht als Bundles; die heutige Sandbox liest sie als Gestaltungen.
+
+Die Teile sind die Gruppen des Bedienfelds Gestaltung, aufgezählt in `DESIGN_PARTS`: `page`, `writing`, `colors`, `text`, `headings`, `lists`, `figures`, `callouts`, `exercises`, `comics`, `running`, `parts`, `output`, `folio`, `advanced`. `DESIGN_PART_KEYS` sagt, welche Einstellungen jeder Teil enthält. Eine Einstellung, die mehrere Gruppen teilen, wird nach Feld aufgeteilt: `page.binding` und `layout.writingMode` gehören zu `writing`, `page.cutLines` zu `output`, `page.baselineGrid` zu `advanced`, der Rest von `page` und `layout` zu `page`. Die eigenen Schriften, die die Teile verwenden, und die Kapitelstile (auf die Teile zugeschnitten) kommen mit. Die Einstellungen des ganzen Buchs (`BOOK_OWN_KEYS`: Sprache, Schreibrichtung, Ziffern, Ressourcentypen, Prüfungen, Debug) gehören nie zu einer Gestaltung; die Typen sorgen dafür, dass jeder Schlüssel von `PostextConfig` zu einem Teil oder zu dieser Liste gehört.
+
+- `extractDesign(config, parts?)` nimmt die Gestaltung eines Buchs, ohne Standardwerte.
+- `applyDesign(config, design, parts?)` setzt ein Buch darin: eine Einstellung, die die Gestaltung offen lässt, kehrt zu ihrem Standardwert zurück, benannte Stile werden nach ID zusammengeführt (die übrigen Stile des Buchs bleiben), Schriften nach Familie, und die Palettenfarben, die die Gestaltung nennt, kommen mit.
+- `revertDesign(current, before, applied)` nimmt sie wieder ab und stellt nur die Einstellungen wieder her, die sie ersetzt hat.
+- `designMissingStyles(chapters, before, after, resources)` nennt die Stil-IDs, die der Text verwendet und die eine Gestaltung nicht festlegt.
+- `createDesignBundle({ name, design, files, locale, localized })` schreibt eine Gestaltungsdatei; `openDesignBundle(bytes, { locale, maxBytes })` liest eine (standardmäßig höchstens 64 MB, gepackt wie entpackt; außer dem Manifest nur Schriften und Profile) oder die Gestaltung des Bundles eines ganzen Buchs (`fromBook: true`).
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// Die Gestaltung eines Buchs, drei ihrer Teile, als Gestaltungsdatei.
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// Lesen und ein anderes Buch darin setzen.
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### Live-Beispiel: ein Paket erstellen
 
 Der Pen baut ein zweikapiteliges Buch mit einer SVG-Abbildung und listet die Dateien auf, die `createBundle` geschrieben hat, zusammen mit dem Manifest. Er bietet das Archiv zum Download an, öffnet es dann mit `openBundle` wieder und zeichnet seine erste Seite: der vollständige Hin- und Rückweg in wenigen Zeilen. Importieren Sie die heruntergeladene Datei in die Sandbox, um dort daran weiterzuarbeiten.

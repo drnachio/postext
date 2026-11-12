@@ -2970,6 +2970,121 @@
       ]
     }
   },
+  "citation-sign-breaks": {
+    "label": {
+      "en": "Citations and signs at line edges",
+      "es": "Citas y signos en los bordes de línea",
+      "ca": "Cites i signes als extrems de línia",
+      "zh": "行首的引用编号与行边的运算符号",
+      "ar": "الإحالات والرموز عند حواف الأسطر",
+      "ja": "行頭の引用番号と行端の演算記号",
+      "pt": "Citações e sinais nas bordas da linha",
+      "fr": "Appels de référence et signes en bord de ligne",
+      "de": "Zitate und Zeichen am Zeilenrand",
+      "it": "Citazioni e segni ai margini della riga"
+    },
+    "definition": {
+      "en": "Finds lines that start with a numbered citation ([12], (12–15)) or end or start on a sign set between spaces (p < 0.05, LR+ = 19.19), and reports them (bodyText.citationBreaks / operatorBreaks: 'warn') or makes the line breaker set the paragraph another way ('avoid', at the cost citationBreakPenalty / operatorBreakPenalty).",
+      "es": "Encuentra las líneas que empiezan con una cita numerada ([12], (12–15)) o que terminan o empiezan con un signo entre espacios (p < 0,05, CP+ = 19,19), y las señala (bodyText.citationBreaks / operatorBreaks: 'warn') o hace que el corte de líneas componga el párrafo de otra manera ('avoid', al coste citationBreakPenalty / operatorBreakPenalty).",
+      "ca": "Troba les línies que comencen amb una cita numerada ([12], (12–15)) o que acaben o comencen amb un signe entre espais (p < 0,05, CP+ = 19,19), i les assenyala (bodyText.citationBreaks / operatorBreaks: 'warn') o fa que el tall de línies compongui el paràgraf d'una altra manera ('avoid', al cost citationBreakPenalty / operatorBreakPenalty).",
+      "zh": "找出以编号引用开头的行（[12]、(12–15)），以及以两侧带空格的符号结尾或开头的行（p < 0.05、LR+ = 19.19），可以只报告（bodyText.citationBreaks / operatorBreaks: 'warn'），也可以让断行器换一种方式排这一段（'avoid'，代价为 citationBreakPenalty / operatorBreakPenalty）。",
+      "ar": "تعثر على الأسطر التي تبدأ بإحالة مرقّمة ([12]، (12–15)) أو تنتهي أو تبدأ برمز بين مسافتين (p < 0.05، LR+ = 19.19)، فتبلّغ عنها (bodyText.citationBreaks / operatorBreaks: 'warn') أو تجعل قاطع الأسطر يصفّ الفقرة على نحو آخر ('avoid'، بكلفة citationBreakPenalty / operatorBreakPenalty).",
+      "ja": "番号付きの引用（[12]、(12–15)）で始まる行や、前後に空白のある記号（p < 0.05、LR+ = 19.19）で終わる・始まる行を見つけ、報告する（bodyText.citationBreaks / operatorBreaks: 'warn'）か、改行処理にその段落を別の組み方で組ませます（'avoid'、コストは citationBreakPenalty / operatorBreakPenalty）。",
+      "pt": "Encontra as linhas que começam com uma citação numerada ([12], (12–15)) ou que terminam ou começam com um sinal entre espaços (p < 0,05, RV+ = 19,19) e as aponta (bodyText.citationBreaks / operatorBreaks: 'warn') ou faz a quebra de linhas compor o parágrafo de outro jeito ('avoid', ao custo citationBreakPenalty / operatorBreakPenalty).",
+      "fr": "Repère les lignes qui commencent par un appel de référence numéroté ([12], (12–15)) ou qui finissent ou commencent par un signe entre espaces (p < 0,05, RV+ = 19,19), et les signale (bodyText.citationBreaks / operatorBreaks : 'warn') ou fait composer le paragraphe autrement par la coupure des lignes ('avoid', au coût citationBreakPenalty / operatorBreakPenalty).",
+      "de": "Findet Zeilen, die mit einem nummerierten Zitat beginnen ([12], (12–15)) oder mit einem Zeichen zwischen Leerzeichen enden oder beginnen (p < 0,05, LR+ = 19,19), und meldet sie (bodyText.citationBreaks / operatorBreaks: 'warn') oder lässt den Zeilenumbruch den Absatz anders setzen ('avoid', zum Preis citationBreakPenalty / operatorBreakPenalty).",
+      "it": "Trova le righe che cominciano con una citazione numerata ([12], (12–15)) o che finiscono o cominciano con un segno tra spazi (p < 0,05, RV+ = 19,19), e le segnala (bodyText.citationBreaks / operatorBreaks: 'warn') o fa comporre il paragrafo in un altro modo all'interruzione di riga ('avoid', al costo citationBreakPenalty / operatorBreakPenalty)."
+    },
+    "aliases": {
+      "en": [
+        "citation at line start",
+        "citation number on a new line",
+        "p < 0.05 split",
+        "operator at line end",
+        "statistics across a line break",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "es": [
+        "cita a principio de línea",
+        "número de cita en otra línea",
+        "signo a final de línea",
+        "estadísticos partidos",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "ca": [
+        "cita a principi de línia",
+        "signe a final de línia",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "zh": [
+        "行首引用",
+        "行尾运算符",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "ar": [
+        "إحالة في أول السطر",
+        "رمز في آخر السطر",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "ja": [
+        "行頭の引用番号",
+        "行末の演算記号",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "pt": [
+        "citação no início da linha",
+        "sinal no fim da linha",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "fr": [
+        "appel en début de ligne",
+        "signe en fin de ligne",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "de": [
+        "Zitat am Zeilenanfang",
+        "Operator am Zeilenende",
+        "citationBreaks",
+        "operatorBreaks"
+      ],
+      "it": [
+        "citazione a inizio riga",
+        "segno a fine riga",
+        "citationBreaks",
+        "operatorBreaks"
+      ]
+    },
+    "group": "text",
+    "docs": {
+      "slug": "configuration-text",
+      "heading": {
+        "en": "Body text",
+        "es": "Texto base",
+        "ca": "Text de cos",
+        "zh": "正文",
+        "ar": "نص المتن",
+        "ja": "本文",
+        "pt": "Texto do corpo",
+        "fr": "Texte courant",
+        "de": "Fließtext",
+        "it": "Testo corrente"
+      }
+    },
+    "detect": {
+      "config": [
+        "bodyText.citationBreaks",
+        "bodyText.operatorBreaks"
+      ]
+    }
+  },
   "paragraph-styles": {
     "label": {
       "en": "Paragraph styles",
@@ -14520,6 +14635,124 @@
       ],
       "config": [
         "headingStyles[].palette"
+      ]
+    }
+  },
+  "chapter-styles": {
+    "label": {
+      "en": "Chapter styles",
+      "es": "Estilos de capítulo",
+      "ca": "Estils de capítol",
+      "zh": "章样式",
+      "ar": "أنماط الفصول",
+      "ja": "章スタイル",
+      "pt": "Estilos de capítulo",
+      "fr": "Styles de chapitre",
+      "de": "Kapitelstile",
+      "it": "Stili dei capitoli"
+    },
+    "definition": {
+      "en": "Named sets of settings (config.chapterStyles) that a chapter takes with chapterStyle: in its front matter, or every chapter of a part with :::part{style=\"…\"}: columns, margins, type, headings and running heads change, while the trim, the language and the other book-wide settings stay the book's.",
+      "es": "Conjuntos de ajustes con nombre (config.chapterStyles) que un capítulo toma con chapterStyle: en su cabecera YAML, o todos los capítulos de una parte con :::part{style=\"…\"}: cambian las columnas, los márgenes, la letra, los títulos y las cabeceras, y el formato, el idioma y los demás ajustes de todo el libro siguen siendo los del libro.",
+      "ca": "Conjunts d'ajustos amb nom (config.chapterStyles) que un capítol pren amb chapterStyle: a la seva capçalera YAML, o tots els capítols d'una part amb :::part{style=\"…\"}: canvien les columnes, els marges, la lletra, els títols i les capçaleres, i el format, la llengua i els altres ajustos de tot el llibre continuen sent els del llibre.",
+      "zh": "带名字的设置组（config.chapterStyles）：某一章在前置元数据里写 chapterStyle: 就采用它，或者用 :::part{style=\"…\"} 让一篇里的所有章采用它。分栏、页边距、字体、标题和书眉都可以改变，而开本、语言和其他全书设置仍属于整本书。",
+      "ar": "مجموعات إعدادات مسمّاة (config.chapterStyles) يأخذها الفصل بكتابة chapterStyle: في بياناته الأمامية، أو تأخذها كل فصول الجزء بـ :::part{style=\"…\"}: تتغيّر الأعمدة والهوامش والخط والعناوين والترويسات، ويبقى المقاس واللغة وسائر إعدادات الكتاب كله للكتاب.",
+      "ja": "名前つきの設定のまとまり（config.chapterStyles）です。章はフロントマターの chapterStyle: で、部のすべての章は :::part{style=\"…\"} でそれを使います。段組み、余白、書体、見出し、柱は変えられ、判型や言語など本全体の設定は本のままです。",
+      "pt": "Conjuntos de ajustes com nome (config.chapterStyles) que um capítulo adota com chapterStyle: no seu front matter, ou todos os capítulos de uma parte com :::part{style=\"…\"}: mudam as colunas, as margens, a letra, os títulos e os cabeços, e o formato, o idioma e os outros ajustes do livro inteiro continuam sendo os do livro.",
+      "fr": "Des ensembles de réglages nommés (config.chapterStyles) qu’un chapitre prend avec chapterStyle: dans son en-tête YAML, ou tous les chapitres d’une partie avec :::part{style=\"…\"} : colonnes, marges, caractères, titres et titres courants changent, tandis que le format, la langue et les autres réglages du livre entier restent ceux du livre.",
+      "de": "Benannte Gruppen von Einstellungen (config.chapterStyles), die ein Kapitel mit chapterStyle: im Front Matter übernimmt, oder alle Kapitel eines Teils mit :::part{style=\"…\"}: Spalten, Ränder, Schrift, Überschriften und Kolumnentitel ändern sich, während Format, Sprache und die übrigen Einstellungen des ganzen Buches beim Buch bleiben.",
+      "it": "Insiemi di impostazioni con un nome (config.chapterStyles) che un capitolo adotta con chapterStyle: nel front matter, o tutti i capitoli di una parte con :::part{style=\"…\"}: cambiano colonne, margini, caratteri, titoli e testatine, mentre il formato, la lingua e le altre impostazioni di tutto il libro restano quelle del libro."
+    },
+    "aliases": {
+      "en": [
+        "appendix design",
+        "appendices in two columns",
+        "chapter design",
+        "part style",
+        "back matter design",
+        "chapterStyle",
+        "chapterStyles"
+      ],
+      "es": [
+        "diseño de los apéndices",
+        "apéndices a dos columnas",
+        "diseño por capítulo",
+        "estilo de parte",
+        "chapterStyle",
+        "chapterStyles"
+      ],
+      "ca": [
+        "disseny dels apèndixs",
+        "apèndixs a dues columnes",
+        "estil de part",
+        "chapterStyle"
+      ],
+      "zh": [
+        "附录版式",
+        "附录双栏",
+        "篇的样式",
+        "chapterStyle"
+      ],
+      "ar": [
+        "تصميم الملاحق",
+        "ملاحق في عمودين",
+        "نمط الجزء",
+        "chapterStyle"
+      ],
+      "ja": [
+        "付録のデザイン",
+        "付録を2段組みに",
+        "部のスタイル",
+        "chapterStyle"
+      ],
+      "pt": [
+        "design dos apêndices",
+        "apêndices em duas colunas",
+        "estilo de parte",
+        "chapterStyle"
+      ],
+      "fr": [
+        "maquette des annexes",
+        "annexes sur deux colonnes",
+        "style de partie",
+        "chapterStyle"
+      ],
+      "de": [
+        "Anhang zweispaltig",
+        "Gestaltung des Anhangs",
+        "Stil eines Teils",
+        "chapterStyle"
+      ],
+      "it": [
+        "impaginazione delle appendici",
+        "appendici su due colonne",
+        "stile di parte",
+        "chapterStyle"
+      ]
+    },
+    "group": "structure",
+    "docs": {
+      "slug": "configuration-styles",
+      "heading": {
+        "en": "Chapter styles",
+        "es": "Estilos de capítulo",
+        "ca": "Estils de capítol",
+        "zh": "章样式",
+        "ar": "أنماط الفصول",
+        "ja": "章スタイル",
+        "pt": "Estilos de capítulo",
+        "fr": "Styles de chapitre",
+        "de": "Kapitelstile",
+        "it": "Stili dei capitoli"
+      }
+    },
+    "detect": {
+      "config": [
+        "chapterStyles"
+      ],
+      "markdown": [
+        "^chapterStyle:",
+        "^:::part\\{[^}]*style="
       ]
     }
   },

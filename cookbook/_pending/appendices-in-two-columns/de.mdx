@@ -1,0 +1,75 @@
+---
+title: "Anhänge zweispaltig in kleinerem Schriftgrad"
+summary: "Ein einspaltiges Obstbau-Handbuch mit Anhängen in anderer Gestaltung: Ein Teil nennt einen Kapitelstil, ein Anhang seinen eigenen, das Nachwort kehrt zurück."
+plain: "Die Kapitel des Buchs stehen in einer breiten Spalte. Ab den Anhängen läuft der Text in zwei Spalten kleinerer Schrift, ein Anhang in drei. Seitenformat und Sprache des Buchs bleiben überall gleich."
+description: "chapterStyles mit :::part{style=…} und dem eigenen chapterStyle: eines Kapitels, in einem Buch aus sechs Dokumenten, und ein Teil mit page=false im Buchdesign."
+question: "Wie setze ich die Anhänge eines Buchs in einer anderen Gestaltung, etwa zweispaltig in kleinerer Schrift?"
+aliases: ["Kapitelstile", "chapterStyle", "Gestaltung der Anhänge", "Anhang zweispaltig", "Anhänge in zwei Spalten", "Teilstil", "andere Gestaltung pro Kapitel", "Teil ohne Teiltitel", "page=false", "Gestaltungsdatei", "postext design", "Gestaltung wiederverwenden"]
+pageNotes: { "1": "Die Teiltitelseite von Teil I: ein grünes Band über die obere Hälfte der Seite mit der Ziffer I und dem Titel The orchard.", "7": "Anhang A in zwei Spalten im Flattersatz und kleinerem Schriftgrad, jede Unterlage mit ihrem Namen in Fett, unter einem kleineren Titel als bei den Kapiteln.", "9": "Anhang C in drei Spalten einer serifenlosen Schrift, die Sortennamen in Rostbraun: der eigene Stil des Kapitels.", "10": "Das Nachwort wieder in einer Spalte im Blocksatz, ohne Teiltitelseite davor, und das Kolophon in kleiner serifenloser Schrift." }
+---
+
+## Was Sie setzen
+
+Ein kleines Handbuch für Apfelbauern in einem kalten Tal, im Format 150 × 220 mm, geschrieben als sechs Markdown-Dokumente und als ein Buch gesetzt. Die beiden Kapitel von Teil I stehen in einer Spalte im Blocksatz aus der Source Serif 4. Teil II, die Anhänge, wechselt die Gestaltung: eine Tabelle der Unterlagen und ein Kalender Monat für Monat in zwei Spalten im Flattersatz und kleinerem Schriftgrad, Stoff, den man im Schuppen liest, das Buch aufgeschlagen auf der Werkbank, und eine Sortenliste in drei Spalten einer serifenlosen Schrift. Das Nachwort kehrt ohne Teiltitelseite zur Gestaltung des Buchs zurück. Format, Ränder, Silbentrennung und Sprache sind auf jeder Seite dieselben.
+
+## Zubereitung
+
+### 1 · Ein Stil enthält nur, was sich ändert
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Ein Kapitelstil hat eine id, einen Namen für die Sandbox und eine `config`, die wie eine Sprachebene über die Einstellungen des Buchs gelegt wird. Objekte werden Schlüssel für Schlüssel zusammengeführt, Listen Eintrag für Eintrag über ihre `id` oder ihr `level`. So benennt `smallOpener` ein einzelnes Element des Kapitelauftakts, den Titel, und gibt ihm einen kleineren Grad; die Linie darunter und alles andere bleiben, wie das Buch sie festlegt. Der Anhangstil legt zwei Spalten fest, einen kleineren Grundschriftgrad, Flattersatz und Abstand zwischen den Einträgen, sonst nichts.
+
+Manche Einstellungen gelten für das ganze Buch: Format, Auflösung und Bindung unter `page`, Sprache und Schreibrichtung, Ziffern, Schriften, Druck- und PDF-Ausgabe. Setzt ein Stil eine davon, wird sie dort ignoriert und löst eine Warnung `chapterStyleBookSetting` aus. Die Anhänge behalten daher das Format von 150 mm und die britisch-englische Silbentrennung der Kapitel.
+
+### 2 · Der Teil nennt den Stil
+
+<Excerpt region="chapters" />
+
+Das dritte Dokument beginnt mit `:::part{number="II" title="Appendices" style="appendix"}`, und jedes Kapitel von dort bis zum nächsten Teil wird im Anhangstil gesetzt. Das fünfte nennt in seinem Front Matter einen eigenen Stil, `chapterStyle: "reference"`, der Vorrang vor dem des Teils hat. In einem Buch gehört nur das Front Matter des ersten Dokuments zum Buch; ein späteres behält nur seine Zeile `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Anhang C: der eigene Stil des Kapitels, drei Spalten serifenlos, statt der zwei des Teils." />
+
+### 3 · Eine Teiltitelseite, und ein Teil ohne
+
+<Excerpt region="parts" />
+
+Jeder `:::part` öffnet eine Teiltitelseite mit Nummer und Titel des Teils auf einem grünen Band. Das Nachwort beginnt mit `:::part{title="Afterword" page=false}`: Es wird keine Teiltitelseite gedruckt, und da der Teil keinen Stil nennt, wird sein Kapitel wieder mit den Einstellungen des Buchs gesetzt. Ein Teil mit `page=false` eignet sich für Schlussteile, die ohne Einschnitt auf die Anhänge folgen.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="Die Teiltitelseite von Teil II." />
+
+### 4 · Ein Kapitelauftakt in zwei Größen
+
+<Excerpt region="opener" />
+
+Der Auftakt reicht über die ganze Seitenbreite. In den Anhängen läuft er deshalb über beide Spalten, und der Text beginnt darunter zweispaltig. Der Anhang- und der Referenzstil verkleinern über die id des Elements den Titel auf 16 pt und die Absenkung auf 24 mm: Der Stoff am Ende des Buchs braucht weniger Platz, und seine Titel bleiben deutlich größer als der Text.
+
+### 5 · Kolumnentitel aus dem Buch
+
+<Excerpt region="running-heads" />
+
+Der Buchtitel steht auf der linken Seite, der Kapiteltitel auf der rechten. Kein Stil ändert sie, also sehen die Kolumnentitel in allen Teilen des Buchs gleich aus.
+
+## Varianten
+
+### Einen Stil nach einer Einstellung des ganzen Buchs fragen
+
+Ein Stil, der Format oder Sprache festlegt, wird für diese Schlüssel ignoriert. Der Satz meldet für jeden eine Warnung `chapterStyleBookSetting`, und die Anhänge behalten das Format des Buchs.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Die Gestaltung in einem anderen Buch verwenden
+
+Das Kommandozeilenwerkzeug schreibt die Gestaltung eines Buchs samt Kapitelstilen in eine Gestaltungsdatei und setzt mit `--design` ein anderes Buch darin. Siehe [den Befehl design](/de/docs/command-line#design).
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## Häufige Fehler
+
+- Die Zeile `:::part` muss das Kapitel eröffnen, vor seiner Überschrift. Eine Teilzeile, die nach dem Beginn des Kapiteltexts steht, löst `partStyleMidChapter` aus, und der Stil gilt erst ab dem nächsten Kapitel.
+- Ein Stilname, den `chapterStyles` nicht enthält, löst `chapterStyleUnknown` aus, und dieses Kapitel wird mit den Einstellungen des Buchs gesetzt.

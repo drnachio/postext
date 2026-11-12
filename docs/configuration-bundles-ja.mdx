@@ -395,6 +395,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle`は、読み込んだ版のマージ済みの`config`を返します。`localized`の項目を持つバンドルでは、`readBundle`は`sharedConfig`も返します。同じ規則と同じフォントで読んだ共通設定です。`planBundle`は内容の中で`sharedConfig`を受け取ります。その場合、マニフェストの`config`はそこから書かれ、主言語を含むすべての版が`localized`の上書きとして書かれます。
 
+### デザインファイル
+
+デザインファイルは章のないバンドルで、本の見た目だけを持ち、内容は持ちません。マニフェストには`design: { parts: [...] }`と空の`chapters`があり、`config`にはそのパーツの設定だけが入り、設定が参照するフォントファイル（`fonts/`）とカラープロファイル（`profiles/`）をほかのバンドルと同じように含みます。`redistributable: false`のファミリーは含みません。Sandboxのデザインパネルと`postext design`がこのファイルを書き、本と同じリーダーで（`configVersion`の移行も含めて）読み込みます。postext 1.78 の Sandbox はデザインをバンドルではなくテンプレート（`.postext-template.json`）として保存していました。現在の Sandbox はそれをデザインとして読み込みます。
+
+パーツはデザインパネルのグループで、`DESIGN_PARTS`に並んでいます：`page`、`writing`、`colors`、`text`、`headings`、`lists`、`figures`、`callouts`、`exercises`、`comics`、`running`、`parts`、`output`、`folio`、`advanced`。各パーツがどの設定を持つかは`DESIGN_PART_KEYS`にあります。複数のグループが共有する設定はフィールド単位で分かれます。`page.binding`と`layout.writingMode`は`writing`、`page.cutLines`は`output`、`page.baselineGrid`は`advanced`、`page`と`layout`の残りは`page`です。パーツが使うカスタムフォントと、パーツに絞った章スタイルも一緒に入ります。本全体の設定（`BOOK_OWN_KEYS`：言語、組み方向、数字、リソースの種類、チェック、デバッグ）はデザインに含まれません。型によって、`PostextConfig`のすべてのキーはいずれかのパーツかこの一覧に属します。
+
+- `extractDesign(config, parts?)`は既定値を除いて本のデザインを取り出します。
+- `applyDesign(config, design, parts?)`は本にデザインを適用します。デザインが設定しない項目は既定値に戻り、名前付きスタイルはidで統合され（本のほかのスタイルは残る）、フォントはファミリーで統合され、デザインが参照するパレットの色も入ります。
+- `revertDesign(current, before, applied)`はデザインを外し、置き換えた設定だけを戻します。
+- `designMissingStyles(chapters, before, after, resources)`は本文が使っているのにデザインが定義していないスタイルidを挙げます。
+- `createDesignBundle({ name, design, files, locale, localized })`はデザインファイルを書き、`openDesignBundle(bytes, { locale, maxBytes })`はそれを読みます（既定では圧縮時・展開時とも最大64 MB、マニフェストのほかはフォントとプロファイルのみ）。本全体のバンドルならそのデザインを読みます（`fromBook: true`）。
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// 本のデザインのうち3つのパーツをデザインファイルにする。
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// 読み込んで、別の本に適用する。
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### ライブサンプル：バンドルを作成する
 
 このCodePenのサンプルは、SVGの図を含む2章の本を作り、`createBundle`が書き出したファイルとマニフェストを一覧表示します。アーカイブをダウンロードできるようにしてから、`openBundle`で開き直して最初のページを描画します。数行で往復のすべてを行うサンプルです。ダウンロードしたファイルをSandboxで読み込めば、そこで作業を続けられます。

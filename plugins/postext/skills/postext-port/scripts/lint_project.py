@@ -380,6 +380,39 @@ def check_callout_extends(cfg: dict, where: str, rep: Report) -> None:
                           + "; those styles stand alone")
 
 
+BOOK_PAGE_KEYS = {"sizePreset", "width", "height", "dpi", "cutLines", "binding"}
+BOOK_WIDE_KEYS = {"locale", "direction", "numerals", "customFonts", "symbolFont", "resourceTypes", "print",
+                  "pdfGeneration", "htmlViewer", "canvasViewer", "folio", "debug", "checks", "contrast",
+                  "chapterStyles", "composedViewerLeaf"}
+
+
+def check_chapter_styles(cfg: dict, where: str, rep: Report) -> None:
+    """`chapterStyles[]` (postext >= 1.79): ids, and the settings a style cannot change
+    (chapterStyleBookSetting: the book's value is kept)."""
+    styles = cfg.get("chapterStyles")
+    if styles is None:
+        return
+    if not isinstance(styles, list):
+        rep.error(where, "chapterStyles must be a list of { id, name?, config }")
+        return
+    seen: set[str] = set()
+    for i, st in enumerate(styles):
+        if not isinstance(st, dict) or not isinstance(st.get("id"), str) or not st["id"]:
+            rep.error(where, f"chapterStyles[{i}] needs an id")
+            continue
+        if st["id"] in seen:
+            rep.error(where, f"chapterStyles id {st['id']!r} is used twice")
+        seen.add(st["id"])
+        c = st.get("config") or {}
+        book = sorted(k for k in c if k in BOOK_WIDE_KEYS)
+        page = c.get("page")
+        if isinstance(page, dict):
+            book += [f"page.{k}" for k in sorted(page) if k in BOOK_PAGE_KEYS]
+        if book:
+            rep.warn(where, f"chapterStyleBookSetting: chapterStyles {st['id']!r} sets {book}, which the whole book "
+                            "shares: the style keeps the book's value (move them to the book's config)")
+
+
 def check_code_style(cfg: dict, where: str, rep: Report) -> None:
     """`codeStyle` (postext >= 1.23): keys, values the resolver drops, token
     kinds and inline code."""
@@ -1998,6 +2031,7 @@ def style_ids(cfg: dict) -> dict[str, set[str]]:
         "palette": ids("colorPalette", {"main-color"}),
         "types": ids("resourceTypes", {"figure", "table"}),
         "tables": ids("tableStyles", set()),
+        "chapter": ids("chapterStyles", set()),
         "smallChip": small_cap_chip_styles(cfg),
     }
 
@@ -2154,8 +2188,13 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
     if lines and lines[0].strip() == "---":
         end = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
         if end is not None:
-            if idx > 0:
+            if idx > 0 and not any(x.split(":", 1)[0].strip() == "chapterStyle" for x in lines[1:end]):
                 rep.warn(f"{name}:1", "front matter only counts in the first chapter; this one is ignored")
+            for i in range(1, end):
+                k, _, v = lines[i].partition(":")
+                if k.strip() == "chapterStyle" and v.strip().strip("\"'") not in ids.get("chapter", set()):
+                    rep.error(f"{name}:{i + 1}", f"chapterStyleUnknown: chapterStyle {v.strip()!r} is not in "
+                                                 f"chapterStyles {sorted(ids.get('chapter', set()))}")
             n = end + 1
     stack: list[tuple[str, int]] = []
     prev_nonblank = False
@@ -2516,6 +2555,10 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                     elif s and s not in ids["paragraphs"]:
                         rep.error(where, f"paragraph style {s!r} is not in paragraphStyles {sorted(ids['paragraphs'])}")
                 elif fname == "part":
+                    s = attrs.get("style")
+                    if s and s not in ids.get("chapter", set()):
+                        rep.error(where, f"chapterStyleUnknown: part style {s!r} is not in chapterStyles "
+                                         f"{sorted(ids.get('chapter', set()))}")
                     for pid in re.findall(r"([A-Za-z0-9_-]+)\s*[=:]\s*#?[0-9a-fA-F]{3,8}", attrs.get("palette", "")):
                         if pid not in ids["palette"]:
                             rep.warn(where, f"part palette id {pid!r} is not in colorPalette (nothing will be recoloured)")
@@ -3166,6 +3209,7 @@ def main() -> None:
         check_line_numbers(cfg, f"config ({lang})", rep)
         check_code_style(cfg, f"config ({lang})", rep)
         check_callout_extends(cfg, f"config ({lang})", rep)
+        check_chapter_styles(cfg, f"config ({lang})", rep)
         ids = style_ids(cfg)
         for r in resources:
             if r.get("typeId") and r["typeId"] not in ids["types"]:

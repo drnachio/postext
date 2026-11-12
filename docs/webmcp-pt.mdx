@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: um agente trabalhando no Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 55 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
+  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 64 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
   lang: 'pt',
   lastUpdated: '2026-11-10',
   readingTime: '13 min',
@@ -24,7 +24,7 @@ interface: ele lê o livro, pede uma imagem da página 12, define
 páginas e volta ao valor anterior. Ele faz o que você faz a olho, com o seu
 livro e no seu navegador.
 
-São 55 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
+São 64 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
 o Sandbox está na tela, e 8 ferramentas do site, `site_*`, em todas as páginas
 do postext.dev. Esta página as organiza pelo que você pediria a um agente e
 mostra a chamada de cada uma.
@@ -336,6 +336,8 @@ valor deles. Para mudá-los também, abra cada um (`sandbox_open_book` com
 deixa de ser próprio da edição. Num livro em um só idioma, `scope: "all"` é
 recusado, porque todos os ajustes dele são próprios.
 
+Um livro cujos capítulos não são todos iguais tem [estilos de capítulo](/pt/docs/configuration-styles#estilos-de-capítulo). `sandbox_chapter_styles` lista esses estilos com os ajustes que cada um muda e os capítulos compostos nele, e diz de onde vem o estilo de cada capítulo: do preâmbulo dele (`chapter`), da linha `:::part` com que ele começa (`part`) ou da parte a que pertence (`partBefore`). Também cria, renomeia e remove estilos. `sandbox_get_config` e `sandbox_set_config` aceitam `chapterStyle`: com ele, leem e gravam os ajustes desse estilo, como faz o painel Design enquanto o estilo está escolhido. Um caminho que o livro inteiro compartilha (`page.width`, `locale`, as fontes, a impressão) é gravado no livro, e `notes` avisa. `sandbox_set_chapter_style` dá a um capítulo o seu estilo gravando a linha `chapterStyle:` dele, e `style: null` tira a linha. Para compor todos os capítulos de uma parte em um estilo, escreva `style="…"` na linha `:::part` da parte com `sandbox_edit_text`.
+
 As fontes também são ajustes: `sandbox_list_fonts` com `search: "Garamond"`
 encontra famílias no catálogo aberto, e escrever o nome em um ajuste
 `fontFamily` a carrega.
@@ -643,6 +645,8 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
   `sandbox_import_word` recusa um arquivo assim e indica esta ferramenta. Desde
   o postext 1.68.
 
+- **Projetos gráficos.** `sandbox_list_designs` lista a galeria do painel Design (projetos salvos, os que vêm com o Sandbox e os dos livros de exemplo) com suas partes. `sandbox_save_design` salva o projeto de um livro, `sandbox_try_design` experimenta um no livro na tela e `sandbox_end_design_trial` o mantém ou descarta (Descartar traz de volta só o que o projeto substituiu), `sandbox_apply_design` aplica um de uma vez ou como estilo de capítulo, `sandbox_import_design` e `sandbox_export_design` leem e escrevem arquivos de projeto, e `sandbox_delete_design` exclui um salvo. Todas aceitam `parts`, os grupos do painel Design, e respondem com os estilos que o texto nomeia e que faltam ao projeto.
+
 ### Perguntas e mensagens
 
 Quando um link abre um livro do qual você já tem uma versão própria, o Sandbox
@@ -737,7 +741,9 @@ cada uma vêm com `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **O design**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
+- **Projetos gráficos**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Desfazer**: `sandbox_undo`.
 - **Como é mostrado**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

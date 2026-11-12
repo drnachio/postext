@@ -25,7 +25,7 @@ import { codeOverflowWarnings } from '../code/codeLines.js';
 import { lineNumberWarnings } from '../text/lineNumbers.js';
 import { connectorAnchorUnknownWarnings, pageFurnitureWarnings } from '../pages/headerFooter.js';
 import { drainPasses } from '../columns/bandCaps.js';
-import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
+import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, spaceBreakWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
 import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
@@ -38,8 +38,8 @@ import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
 import { type CitingPageSlot, type BuildDocumentOptions, BuildCancelledError } from './passTypes.js';
 import { indexWarnings, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, compositionWarningsByDoc, composedWarningsByDoc, afterTextWarnings, unplacedByDoc } from './warnings.js';
-import { chapterConfigOf, sectionBreaks, sectionConfig, type SectionBreak } from '../../defaults/chapterStyles.js';
-import { mergeSectionDocuments, nextSectionContinuation, sectionRanges, sectionSource } from './sectionMerge.js';
+import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js';
+import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
@@ -122,16 +122,17 @@ export function* buildDocumentGen(
   const fontSet = options?.fontSet === undefined ? defaultFontSet() : options.fontSet;
   if (fontSet) syncFontSet(fontSet);
   // A chapter in a style of the book's (`chapterStyle:` in its front
-  // matter) is laid out with that style over the book's settings.
-  const styles = config?.chapterStyles;
-  if (config) config = chapterConfigOf(config, content.markdown);
+  // matter, or the `style` of the part it opens or belongs to) is laid
+  // out with that style over the book's settings.
+  // A whole book in one document sets each chapter in its own style
+  // (`content.chapters`): chapters of one style together, from a new page.
+  const runs = config?.chapterStyles?.length && content.chapters?.length ? chapterRuns(content.markdown, content.chapters, config, content.continuation) : undefined;
+  const book = config;
+  if (config) config = runs ? chapterConfig(config, runs[0]?.style) : chapterConfigOf(config, content.markdown, content.continuation?.part?.style);
   validateConfigCache(config);
-  // Sections in a style of their own (`::section{style="…"}`), each from a
-  // new page.
-  const breaks = config ? sectionBreaks(content.markdown) : [];
-  const doc = breaks.length > 0
-    ? yield* buildSections(content, config!, styles, breaks, cache, options)
-    : yield* buildDocumentRounds(content, config, cache, options);
+  const doc = runs && runs.length > 1 ? yield* buildChapterRuns(content, book!, runs, cache, options) : yield* buildDocumentRounds(content, config, cache, options);
+  // The warnings below read the book's settings and where each chapter lies.
+  if (runs && runs.length > 1) config = book;
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
   markTurnedBoxes(doc);
@@ -140,13 +141,13 @@ export function* buildDocumentGen(
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
   const bookAnchors = content.outline ? new Set(anchorOutline(content.outline).map((e) => e.anchorId!)) : undefined;
   const bookCitationKeys = content.citations ? new Set(content.citations.items.map((i) => i.id)) : undefined;
-  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys), ...(indexWarnings.get(doc) ?? [])];
+  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys, content.chapters),...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
   // Justified CJK lines the composer could not fill within its tracking
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...hyphenRuleWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
+  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...spaceBreakWarnings(doc), ...hyphenRuleWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
   // Side boxes and side floats set on pages after the text, and what the
   // layout could place nowhere (#639).
   loose.push(...afterTextWarnings(doc), ...(unplacedByDoc.get(doc) ?? []));
@@ -216,39 +217,6 @@ export function* buildDocumentGen(
   return doc;
 }
 
-/** A chapter set in sections (`::section{style="…"}`): each section laid
- *  out from a new page in its style, after the ones before it, and the
- *  documents joined into the chapter's. */
-function* buildSections(
-  content: PostextContent,
-  config: PostextConfig,
-  styles: PostextConfig['chapterStyles'],
-  breaks: readonly SectionBreak[],
-  cache?: MeasurementCache,
-  options?: BuildDocumentOptions,
-): Generator<void, VDTDocument, void> {
-  const md = content.markdown;
-  const bodyStart = md.length - extractFrontmatter(md).content.length;
-  const ranges = sectionRanges(md, breaks, bodyStart);
-  if (ranges.length === 0) return yield* buildDocumentRounds(content, config, cache, options);
-  const docs: VDTDocument[] = [];
-  let continuation = content.continuation;
-  let metadata = content.metadata;
-  for (const [i, range] of ranges.entries()) {
-    const sectionCfg = range.inherit ? config : sectionConfig(config, styles, range.style);
-    const markdown = sectionSource(md, range.from, range.to);
-    const { jumps: _jumps, ...rest } = continuation ?? {};
-    void _jumps;
-    // The stories sent to the chapter arrive at its first section.
-    const sent = i === 0 ? continuation : Object.keys(rest).length > 0 ? rest : undefined;
-    const doc = yield* buildDocumentRounds({ ...content, markdown, ...(metadata ? { metadata } : {}), ...(sent ? { continuation: sent } : {}) }, sectionCfg, cache, options);
-    docs.push(doc);
-    if (i === 0) metadata = doc.metadata;
-    continuation = nextSectionContinuation(doc, continuationAfter({ markdown, resources: content.resources }, sectionCfg, sent), content);
-  }
-  return mergeSectionDocuments(docs);
-}
-
 /** {@link buildDocumentGen} before the document-wide warnings: the
  *  contents rounds around the balanced build. */
 function* buildDocumentRounds(
@@ -287,6 +255,44 @@ function* buildDocumentRounds(
     }
   }
   return withIndexMarks(yield* buildDocumentNumbered(content, config, cache, options, 0, citing), content);
+}
+
+/** A whole book whose chapters are set in more than one style: each run
+ *  of chapters of one style laid out in it, after the runs before it, and
+ *  the documents joined (`bookChapters.ts`). A book printing its contents
+ *  or its index is laid out again while the page labels they print move. */
+function* buildChapterRuns(
+  content: PostextContent,
+  book: PostextConfig,
+  runs: readonly ChapterRun[],
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): Generator<void, VDTDocument, void> {
+  const resolved = resolveAllConfig(chapterConfig(book, runs[0]!.style));
+  const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content, codeParseOptions(resolved));
+  const lists = content.outline === undefined && (hasTocDirective(parsed) || hasIndexDirective(parsed) || hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id))));
+  let outline = lists ? ownOutline(parsed, resolved, content.continuation) : content.outline;
+  const { chapters: _chapters, ...rest } = content;
+  void _chapters;
+  for (let round = 0; ; round++) {
+    const docs: VDTDocument[] = [];
+    let continuation = content.continuation;
+    for (const run of runs) {
+      const config = chapterConfig(book, run.style);
+      const markdown = runSource(content.markdown, run);
+      // The stories sent to the book arrive at its first run: the
+      // continuation of a later one carries none (`nextRunContinuation`).
+      const sent = continuation;
+      const doc = yield* buildDocumentRounds({ ...rest, markdown, ...(docs[0] ? { metadata: docs[0].metadata } : {}), ...(outline ? { outline } : {}), ...(sent ? { continuation: sent } : {}) }, config, cache, options);
+      docs.push(doc);
+      continuation = nextRunContinuation(doc, continuationAfter({ markdown, ...(content.resources ? { resources: content.resources } : {}) }, config, sent), content);
+    }
+    const doc = mergeRunDocuments(docs);
+    if (!lists || round >= MAX_TOC_ROUNDS) return doc;
+    const after = outlineFromDoc(doc, outline!);
+    if (sameOutline(after, outline!)) return doc;
+    outline = after;
+  }
 }
 
 /** A document's own outline, its exercises' anchors named as a reference

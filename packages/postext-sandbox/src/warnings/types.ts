@@ -114,6 +114,10 @@ export type WarningPayload =
   /** A `:::paragraphs{style="…"}` container names a style id that is not in
    *  `config.paragraphStyles`; the paragraphs render as body text. */
   | { kind: 'unknownParagraphStyle'; style: string }
+  /** #1521: a `chapterStyle:` or `:::part{style}` (`source`) naming no chapter style;
+   *  a `:::part{style}` after text of its chapter, or 1.78's `::section` (#1532). */
+  | { kind: 'chapterStyleUnknown'; style: string; source: 'frontmatter' | 'part' }
+  | { kind: 'partStyleMidChapter'; style: string; source?: 'section' }
   /** A `:::callout{type="…"}` container names a type that is not in
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }
@@ -454,6 +458,11 @@ export type WarningPayload =
    *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
    *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
   | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** A line that starts with the citation `text`, or ends (`edge`) or
+   *  starts on the operator `text` (`bodyText.citationBreaks` /
+   *  `operatorBreaks`, #1519), on book page `page`. */
+  | { kind: 'citationBreak'; page: number; text: string; lines: [string, string] }
+  | { kind: 'operatorBreak'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** More lines in a row ending on a hyphen than `max`
    *  (`hyphenation.ladders: 'warn' | 'avoid'`, #1466), by book page. */
   | { kind: 'hyphenLadder'; page: number; lines: number; max: number }
@@ -507,6 +516,8 @@ export type WarningPayload =
    *  (`suggestion` the closest id), or that comes back to it (`value` the
    *  loop): the style stands alone. */
   | { kind: 'calloutStyleExtendsUnknown' | 'calloutStyleExtendsCycle'; path: string; value: string; used: string; suggestion?: string }
+  /** A chapter style sets what the whole book shares (#1521): `path`. */
+  | { kind: 'chapterStyleBookSetting'; path: string; value: string; used: string }
   /** A page template problem (#853), from the engine's
    *  `validatePageTemplates`: `path` is a JSON pointer
    *  (`/pageTemplates/3/frames/2/style`), `value` the id, name, loop or

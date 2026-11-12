@@ -394,6 +394,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle` renvoie la `config` fusionnée de l’édition servie. Pour un paquet qui a des entrées `localized`, `readBundle` renvoie aussi `sharedConfig`, les réglages généraux lus selon les mêmes règles et avec les mêmes polices. `planBundle` accepte `sharedConfig` dans son contenu : la `config` du manifeste est alors écrite à partir de lui, et chaque édition, la principale comprise, sous forme de surcharge dans `localized`.
 
+### Fichiers de maquette
+
+Un fichier de maquette est un paquet sans chapitres : une maquette, l’aspect d’un livre et rien de ce qu’il dit. Son manifeste le marque avec `design: { parts: [...] }` et un `chapters` vide, son `config` ne garde que les réglages de ces parties, et il emporte les fichiers de police (`fonts/`) et le profil de couleur (`profiles/`) que nomment les réglages, comme tout paquet ; une famille marquée `redistributable: false` reste derrière. Le panneau Maquette du Sandbox et `postext design` écrivent ces fichiers, et ils se lisent avec le même lecteur qu’un livre, migration de `configVersion` comprise. Le Sandbox de postext 1.78 gardait les maquettes comme modèles (`.postext-template.json`), pas comme paquets ; le Sandbox actuel les lit comme des maquettes.
+
+Les parties sont les groupes du panneau Maquette, listés dans `DESIGN_PARTS` : `page`, `writing`, `colors`, `text`, `headings`, `lists`, `figures`, `callouts`, `exercises`, `comics`, `running`, `parts`, `output`, `folio`, `advanced`. `DESIGN_PART_KEYS` dit quels réglages chacune contient. Un réglage partagé par plusieurs groupes se répartit par champ : `page.binding` et `layout.writingMode` vont avec `writing`, `page.cutLines` avec `output`, `page.baselineGrid` avec `advanced`, et le reste de `page` et `layout` avec `page`. Les polices personnalisées qu’utilisent les parties et les styles de chapitre (réduits aux parties) les accompagnent. Les réglages du livre entier (`BOOK_OWN_KEYS` : langue, sens d’écriture, chiffres, types de ressource, vérifications, débogage) ne font jamais partie d’une maquette ; les types obligent chaque clé de `PostextConfig` à appartenir à une partie ou à cette liste.
+
+- `extractDesign(config, parts?)` prend la maquette d’un livre, sans les valeurs par défaut.
+- `applyDesign(config, design, parts?)` y met un livre : un réglage que la maquette laisse vide revient à sa valeur par défaut, les styles nommés se fusionnent par identifiant (les autres styles du livre restent), les polices par famille, et les couleurs de la palette que nomme la maquette viennent avec elle.
+- `revertDesign(current, before, applied)` la retire et rétablit seulement les réglages qu’elle a remplacés.
+- `designMissingStyles(chapters, before, after, resources)` énumère les identifiants de style que nomme le texte et qu’une maquette laisse sans définition.
+- `createDesignBundle({ name, design, files, locale, localized })` écrit un fichier de maquette ; `openDesignBundle(bytes, { locale, maxBytes })` en lit un (64 Mo au plus par défaut, compressé ou non ; seulement des polices et des profils en plus du manifeste), ou la maquette du paquet d’un livre entier (`fromBook: true`).
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// La maquette d’un livre, trois de ses parties, en fichier de maquette.
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// La lire et y mettre un autre livre.
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### Exemple en direct : créer un paquet
 
 L’exemple CodePen construit un livre de deux chapitres avec une figure SVG et liste les fichiers que `createBundle` a écrits, ainsi que le manifeste. Il propose l’archive en téléchargement, puis la rouvre avec `openBundle` et peint sa première page : l’aller-retour complet en quelques lignes. Importez le fichier téléchargé dans le Sandbox pour continuer à y travailler.

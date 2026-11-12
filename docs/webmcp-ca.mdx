@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: un agent treballant al Sandbox',
   sidebarTitle: 'WebMCP',
-  description: "Què pot fer un agent d'IA al navegador amb les 55 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
+  description: "Què pot fer un agent d'IA al navegador amb les 64 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
   lastUpdated: '2026-11-10',
   readingTime: '13 min',
@@ -23,7 +23,7 @@ el llibre, demana una imatge de la pàgina 12, posa `bodyText.fontSize` a 10,5 p
 veu que el capítol ha passat de 18 a 19 pàgines i ho torna a deixar com estava.
 Fa el que tu fas a ull, i ho fa amb el teu llibre, al teu navegador.
 
-Hi ha 55 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
+Hi ha 64 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
 és a la pantalla, i 8 eines del lloc, `site_*`, a totes les pàgines de
 postext.dev. Aquesta pàgina les ordena segons el que demanaries a un agent i
 dona la crida de cadascuna.
@@ -334,6 +334,8 @@ que conserven el seu valor. Per canviar-les també, obre cadascuna
 valor igual al general deixa de ser propi de l'edició. En un llibre en una sola
 llengua, `scope: "all"` es rebutja, perquè tots els seus ajustos són propis.
 
+Un llibre els capítols del qual no són tots iguals té [estils de capítol](/ca/docs/configuration-styles#estils-de-capítol). `sandbox_chapter_styles` els llista amb els ajustos que canvia cadascun i els capítols compostos en ell, i diu d'on ve l'estil de cada capítol: del seu preàmbul (`chapter`), de la línia `:::part` amb què comença (`part`) o de la part a què pertany (`partBefore`). També crea, reanomena i elimina estils. `sandbox_get_config` i `sandbox_set_config` accepten `chapterStyle`: amb aquest paràmetre llegeixen i escriuen els ajustos d'aquell estil, com fa el tauler Disseny mentre l'estil està triat. Una ruta que comparteix tot el llibre (`page.width`, `locale`, les fonts, la impremta) s'escriu al llibre, i `notes` ho diu. `sandbox_set_chapter_style` dona a un capítol el seu estil escrivint-ne la línia `chapterStyle:`, i `style: null` la treu. Per compondre tots els capítols d'una part en un estil, s'escriu `style="…"` a la línia `:::part` de la part amb `sandbox_edit_text`.
+
 Les fonts també són paràmetres: `sandbox_list_fonts` amb `search: "Garamond"`
 troba famílies al catàleg obert, i n'hi ha prou d'escriure'n el nom en un
 paràmetre `fontFamily` perquè es carregui.
@@ -640,6 +642,8 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   reverteix sencer. `sandbox_import_word` rebutja un fitxer així i indica
   aquesta eina. Des de postext 1.68.
 
+- **Dissenys.** `sandbox_list_designs` enumera la galeria del tauler Disseny (dissenys desats, els que porta el Sandbox i els dels llibres d'exemple) amb les seves parts. `sandbox_save_design` desa el disseny d'un llibre, `sandbox_try_design` en prova un al llibre en pantalla i `sandbox_end_design_trial` el conserva o el descarta (Descarta torna només el que el disseny va substituir), `sandbox_apply_design` n'aplica un de cop o com a estil de capítol, `sandbox_import_design` i `sandbox_export_design` llegeixen i escriuen fitxers de disseny, i `sandbox_delete_design` n'elimina un de desat. Totes accepten `parts`, els grups del tauler Disseny, i responen amb els estils que el text anomena i que al disseny li falten.
+
 ### Preguntes i avisos
 
 Quan un enllaç obre un llibre que ja tens en una versió pròpia, el Sandbox et
@@ -736,7 +740,9 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **El disseny**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
+- **Dissenys**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Desfer**: `sandbox_undo`.
 - **Com es mostra**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

@@ -6106,5 +6106,61 @@
       "ar": "رموز يفتقدها الخط"
     },
     "theme": "type"
+  },
+  "Q219": {
+    "kind": "how",
+    "text": {
+      "en": "How do I keep a citation number or a statistic such as p < 0.05 from breaking at the end of a line?",
+      "es": "¿Cómo evito que un número de cita o un estadístico como p < 0,05 queden partidos al final de una línea?",
+      "ca": "Com evito que un número de cita o un estadístic com p < 0,05 quedin partits al final d’una línia?",
+      "fr": "Comment éviter qu’un appel de référence ou une statistique comme p < 0,05 soit coupé en fin de ligne ?",
+      "de": "Wie verhindere ich, dass eine Zitatnummer oder eine Angabe wie p < 0,05 am Zeilenende getrennt wird?",
+      "it": "Come evito che un numero di citazione o una statistica come p < 0,05 vengano spezzati a fine riga?",
+      "pt": "Como evito que um número de citação ou uma estatística como p < 0,05 se partam no fim de uma linha?",
+      "zh": "怎样避免引用编号或 p < 0.05 这样的统计量在行尾被拆开？",
+      "ja": "引用番号や p < 0.05 のような統計量が行末で分かれないようにするには？",
+      "ar": "كيف أمنع رقم الإحالة أو قيمة إحصائية مثل p < 0.05 من الانقسام عند آخر السطر؟"
+    },
+    "index": {
+      "en": "Citations and signs at line edges, avoiding",
+      "es": "Citas y signos en los bordes de línea, evitar",
+      "ca": "Cites i signes als extrems de línia, evitar",
+      "fr": "Appels et signes en bord de ligne, éviter",
+      "de": "Zitate und Zeichen am Zeilenrand, vermeiden",
+      "it": "Citazioni e segni ai margini della riga, evitare",
+      "pt": "Citações e sinais nas bordas da linha, evitar",
+      "zh": "行首引用与行边符号，避免",
+      "ja": "行頭の引用番号・行端の記号を避ける",
+      "ar": "الإحالات والرموز عند حواف الأسطر، تجنّبها"
+    },
+    "theme": "type"
+  },
+  "Q220": {
+    "kind": "how",
+    "text": {
+      "en": "How do I set a book’s appendices, or one of its parts, in another design, such as two columns of smaller type?",
+      "es": "¿Cómo compongo los apéndices de un libro, o una de sus partes, con otro diseño, por ejemplo a dos columnas y en un cuerpo menor?",
+      "ca": "Com componc els apèndixs d’un llibre, o una de les seves parts, amb un altre disseny, per exemple a dues columnes i en un cos més petit?",
+      "fr": "Comment composer les annexes d’un livre, ou l’une de ses parties, dans une autre maquette, par exemple sur deux colonnes en corps plus petit ?",
+      "de": "Wie setze ich den Anhang eines Buches oder einen seiner Teile anders, etwa zweispaltig in kleinerer Schrift?",
+      "it": "Come compongo le appendici di un libro, o una delle sue parti, con un’altra impaginazione, per esempio su due colonne in corpo minore?",
+      "pt": "Como componho os apêndices de um livro, ou uma de suas partes, com outro design, por exemplo em duas colunas e em corpo menor?",
+      "zh": "怎样让一本书的附录或其中一篇换一种版式，比如双栏、字号更小？",
+      "ja": "本の付録や一つの部を、2段組みで小さい文字など別のデザインで組むには？",
+      "ar": "كيف أصفّ ملاحق الكتاب، أو جزءًا منه، بتصميم آخر، كعمودين بخط أصغر؟"
+    },
+    "index": {
+      "en": "Appendices, another design for",
+      "es": "Apéndices, otro diseño para los",
+      "ca": "Apèndixs, un altre disseny per als",
+      "fr": "Annexes, autre maquette pour les",
+      "de": "Anhang, eigene Gestaltung",
+      "it": "Appendici, un’altra impaginazione per le",
+      "pt": "Apêndices, outro design para os",
+      "zh": "附录，另一种版式",
+      "ja": "付録を別のデザインで組む",
+      "ar": "الملاحق، تصميم آخر لها"
+    },
+    "theme": "structure"
   }
 }

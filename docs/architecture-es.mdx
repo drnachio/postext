@@ -142,6 +142,7 @@ interface PostextContent {
   outline?: OutlineEntry[];    // los encabezados del libro con su página, para :::toc / :::index
   citations?: CitationContext; // la parte de las citas del libro que toca a este capítulo
   laterPageIds?: Record<string, number>; // bloques de página de capítulos posteriores donde puede seguir una historia
+  chapters?: { start: number; end: number }[]; // un libro entero como un solo documento: dónde está cada capítulo, cada uno en su estilo de capítulo
 }
 
 interface Resource {

@@ -43,6 +43,8 @@ postext import-idml book.idml -o book/ --report     # an InDesign document (IDML
 postext import-idml package.zip -o book.postext     # a zipped InDesign package, with its fonts and pictures
 postext pack book/ -o book.postext
 postext unpack book.postext -o book/
+postext design book.postext -o house.postext      # the book's design, no chapters
+postext pdf other/ --design house.postext         # another book in that design
 postext info book.postext --pages
 postext check book.postext --json
 postext build book/ --pdf out/book.pdf --html out/book.html --watch

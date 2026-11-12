@@ -393,6 +393,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle` retorna la `config` combinada de l'edició servida. `readBundle` també retorna `sharedConfig`, els ajustos generals llegits amb les mateixes regles i les mateixes fonts, per a un paquet amb entrades a `localized`. `planBundle` accepta `sharedConfig` al seu contingut: llavors la `config` del manifest s'escriu a partir d'aquests ajustos, i cada edició, la principal inclosa, com a ajustos propis a `localized`.
 
+### Fitxers de disseny
+
+Un fitxer de disseny és un paquet sense capítols: un disseny, l'aspecte d'un llibre i res del que diu. El seu manifest el marca amb `design: { parts: [...] }` i un `chapters` buit, el seu `config` guarda només els ajustos d'aquestes parts, i porta els fitxers de font (`fonts/`) i el perfil de color (`profiles/`) que anomenen els ajustos, com qualsevol paquet; una família marcada `redistributable: false` no hi viatja. El tauler Disseny del Sandbox i `postext design` escriuen aquests fitxers, i es llegeixen amb el mateix lector que un llibre, migració de `configVersion` inclosa. El Sandbox de postext 1.78 desava els dissenys com a plantilles (`.postext-template.json`), no com a paquets; el Sandbox actual els llegeix com a dissenys.
+
+Les parts són els grups del tauler Disseny, llistats a `DESIGN_PARTS`: `page`, `writing`, `colors`, `text`, `headings`, `lists`, `figures`, `callouts`, `exercises`, `comics`, `running`, `parts`, `output`, `folio`, `advanced`. `DESIGN_PART_KEYS` diu quins ajustos conté cadascuna. Un ajust compartit per diversos grups es reparteix per camp: `page.binding` i `layout.writingMode` van amb `writing`, `page.cutLines` amb `output`, `page.baselineGrid` amb `advanced`, i la resta de `page` i `layout` amb `page`. Les fonts pròpies que fan servir les parts i els estils de capítol (retallats a les parts) hi van. Els ajustos del llibre sencer (`BOOK_OWN_KEYS`: idioma, direcció, xifres, tipus de recurs, comprovacions, depuració) no formen mai part d'un disseny; els tipus obliguen que cada clau de `PostextConfig` pertanyi a una part o a aquesta llista.
+
+- `extractDesign(config, parts?)` pren el disseny d'un llibre, sense els valors per defecte.
+- `applyDesign(config, design, parts?)` hi posa un llibre: un ajust que el disseny no fixa torna al seu valor per defecte, els estils amb nom es combinen per id (els altres estils del llibre es queden), les fonts es combinen per família i els colors de la paleta que anomena el disseny hi vénen.
+- `revertDesign(current, before, applied)` el treu de nou i torna només els ajustos que va substituir.
+- `designMissingStyles(chapters, before, after, resources)` enumera els ids d'estil que el text anomena i que un disseny deixa sense definir.
+- `createDesignBundle({ name, design, files, locale, localized })` escriu un fitxer de disseny; `openDesignBundle(bytes, { locale, maxBytes })` en llegeix un (64 MB com a màxim per defecte, comprimit o no; només fonts i perfils a més del manifest), o el disseny del paquet d'un llibre sencer (`fromBook: true`).
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// El disseny d'un llibre, tres de les seves parts, com a fitxer de disseny.
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// Llegir-lo i posar-hi un altre llibre.
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### Exemple en directe: crear un paquet
 
 El pen compon un llibre de dos capítols amb una figura SVG i llista els fitxers que ha escrit `createBundle` juntament amb el manifest. Ofereix el fitxer per baixar-lo, el torna a obrir amb `openBundle` i en pinta la primera pàgina: l'anada i tornada completa en poques línies. Importa el fitxer baixat al Sandbox per continuar-hi treballant.

@@ -394,6 +394,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle` restituisce il `config` unito dell’edizione servita. Per un pacchetto con voci `localized`, `readBundle` restituisce anche `sharedConfig`, cioè le impostazioni generali lette con le stesse regole e con gli stessi font. `planBundle` accetta `sharedConfig` nel suo contenuto: il `config` del manifesto viene allora scritto a partire da esso, e ogni edizione, compresa quella principale, come impostazioni proprie in `localized`.
 
+### File di progetto grafico
+
+Un file di progetto grafico è un pacchetto senza capitoli: un progetto, l’aspetto di un libro e niente di quello che dice. Il suo manifesto lo segna con `design: { parts: [...] }` e un `chapters` vuoto, il suo `config` contiene solo le impostazioni di quelle parti, e porta i file dei font (`fonts/`) e il profilo colore (`profiles/`) che le impostazioni nominano, come ogni pacchetto; una famiglia segnata `redistributable: false` resta indietro. Il pannello Grafica della Sandbox e `postext design` scrivono questi file, e si leggono con lo stesso lettore di un libro, migrazione di `configVersion` compresa. La Sandbox di postext 1.78 salvava i progetti come modelli (`.postext-template.json`), non come pacchetti; la Sandbox attuale li legge come progetti.
+
+Le parti sono i gruppi del pannello Grafica, elencati in `DESIGN_PARTS`: `page`, `writing`, `colors`, `text`, `headings`, `lists`, `figures`, `callouts`, `exercises`, `comics`, `running`, `parts`, `output`, `folio`, `advanced`. `DESIGN_PART_KEYS` dice quali impostazioni contiene ciascuna. Un’impostazione condivisa da più gruppi si divide per campo: `page.binding` e `layout.writingMode` vanno con `writing`, `page.cutLines` con `output`, `page.baselineGrid` con `advanced`, e il resto di `page` e `layout` con `page`. I font personalizzati usati dalle parti e gli stili di capitolo (ridotti alle parti) le accompagnano. Le impostazioni del libro intero (`BOOK_OWN_KEYS`: lingua, direzione, cifre, tipi di risorsa, controlli, debug) non fanno mai parte di un progetto; i tipi obbligano ogni chiave di `PostextConfig` ad appartenere a una parte o a quella lista.
+
+- `extractDesign(config, parts?)` prende il progetto di un libro, senza i valori predefiniti.
+- `applyDesign(config, design, parts?)` vi compone un libro: un’impostazione che il progetto lascia vuota torna al suo valore predefinito, gli stili con nome si uniscono per id (gli altri stili del libro restano), i font per famiglia, e i colori della tavolozza che il progetto nomina arrivano con esso.
+- `revertDesign(current, before, applied)` lo toglie di nuovo e ripristina solo le impostazioni che ha sostituito.
+- `designMissingStyles(chapters, before, after, resources)` elenca gli id di stile che il testo nomina e che un progetto lascia senza definizione.
+- `createDesignBundle({ name, design, files, locale, localized })` scrive un file di progetto; `openDesignBundle(bytes, { locale, maxBytes })` ne legge uno (al massimo 64 MB per impostazione predefinita, compresso o no; solo font e profili oltre al manifesto), o il progetto del pacchetto di un libro intero (`fromBook: true`).
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// Il progetto di un libro, tre delle sue parti, come file di progetto.
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// Leggerlo e comporvi un altro libro.
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### Esempio dal vivo: creare un pacchetto
 
 Il pen costruisce un libro di due capitoli con una figura SVG ed elenca i file che `createBundle` ha scritto insieme al manifesto. Offre l’archivio da scaricare, poi lo riapre con `openBundle` e ne disegna la prima pagina: il giro completo in poche righe. Importa il file scaricato nella Sandbox per continuare a lavorarci lì.

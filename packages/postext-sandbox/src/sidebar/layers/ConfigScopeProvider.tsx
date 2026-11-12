@@ -158,7 +158,7 @@ export function ConfigScopeProvider({ children }: { children: ReactNode }) {
       return;
     }
     const after = action.type === 'SET_CONFIG' ? action.payload : { ...chapterStyleView(base, id), ...action.payload };
-    const next = writeChapterStyle(base, id, Object.fromEntries(Object.entries(after).filter(([, v]) => v !== undefined)) as PostextConfig);
+    const next = writeChapterStyle(base, id, Object.fromEntries(Object.entries(after).filter(([, v]) => v !== undefined)) as PostextConfig, { toBook: true });
     stylePending.current = { base: scoped, next };
     dispatch({ type: 'SET_CONFIG', payload: next, ...(action.history !== undefined ? { history: action.history } : {}) });
   }, [store, dispatch]);

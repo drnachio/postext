@@ -1,11 +1,13 @@
 import type { SandboxToolHost } from '../host.js';
 import type { WebMcpTool } from '../modelContext.js';
 import { bookTools } from './book.js';
+import { chapterStyleTools } from './chapterStyles.js';
 import { checkTools } from './checks.js';
 import { findTextTools } from './findText.js';
 import { comicTools } from './comics.js';
 import { configTools } from './config.js';
 import { designItemTools } from './designItems.js';
+import { designTools } from './designs.js';
 import { editionCheckTools } from './editionChecks.js';
 import { historyTools } from './history.js';
 import { idmlTools } from './idml.js';
@@ -31,7 +33,9 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...text,
     ...findTextTools(host),
     ...configTools(host),
+    ...chapterStyleTools(host),
     ...designItemTools(host),
+    ...designTools(host),
     ...historyTools(host),
     ...frameStyleTools(host),
     ...moduleTools(host),

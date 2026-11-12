@@ -25,6 +25,7 @@ export const metadata = {
 - **改**——`sandbox_set_config`、`sandbox_get_config`、`sandbox_find_setting`、`sandbox_rename_design_item`、`sandbox_remove_design_item`、`sandbox_language_defaults`、`sandbox_print_profile`、`sandbox_save_layout_as_template`、`sandbox_edit_text`、`sandbox_write_text`、`sandbox_read_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_select_text`、`sandbox_undo_text`、`sandbox_manage_chapters`、`sandbox_save_resource`、`sandbox_save_font`、`sandbox_edit_comic`、`sandbox_import_word`、`sandbox_apply_word_edits`：按路径修改任何设置（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）；用精确的查找替换修改文字，并可撤销；管理章节、图片、SVG图、视频、带格式的表格、字体，以及漫画的分格和对白框；导入Word文档并映射其样式。每次修改都会回报各项修改前后的值和每一章的页数；修改设置时还会回报引擎最终解析出的值，以及随之改变的其他设置；引擎无法解析的值会被拒绝，什么也不改。在多语言的书里，`scope`指明一项设置是在所有语言的通用设置中读写，还是只在屏幕上的版本中读写。
 - **显示**——`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`：查看器标签页、侧栏、单章或整本书、缩放、适应方式和跨页显示、阅读字号、印刷预览、画在页面上的参考线、Folio的放大镜，以及屏幕上显示哪一页（按页码、按一段文字、按锚点或按EPUB目录的条目）；重新生成PDF或EPUB、打印、播放页面上的视频。
 - **保存**——`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_import_book`、`sandbox_import_idml`、`sandbox_export`、`sandbox_word_templates`、`sandbox_answer`：列出示例书和你的项目（带封面）；导入`.postext`文件；把InDesign文档（IDML）读成一本新书；把这本书（或一本没有打开的书）导出为PDF、EPUB、`.postext`、Word、IDML、Markdown，或把设置导出为JSON；管理Word导入用的模板；回答沙盒提出的询问。
+- **设计**——`sandbox_list_designs`、`sandbox_save_design`、`sandbox_try_design`、`sandbox_end_design_trial`、`sandbox_apply_design`、`sandbox_import_design`、`sandbox_export_design`、`sandbox_delete_design`：版面设计面板的图库，保存、试用并保留或放弃设计，直接或作为章节样式应用，读写设计文件。
 
 修改书的工具会等排版完成，所以下一张截图拍到的总是新的页面；无论屏幕上是哪个标签页，页面都会为工具单独排版并绘制。无法撤回的操作（删除章节、资源或项目，恢复原版，用Word文档覆盖文字，替换你自己的那份副本）会标为“有后果”，浏览器可以先征得你的同意。和使用界面时一样，一切都留在你的浏览器里：沙盒本身访问不到的东西，工具也访问不到。
 
@@ -111,6 +112,11 @@ function App() {
       <td><code>outputProfileBaseUrl</code></td>
       <td><code>string</code></td>
       <td>印刷输出特性文件的获取位置，形式为<code>&lt;base&gt;/&lt;id&gt;.icc</code>（即<code>postext</code>包<code>icc/</code>文件夹中的文件）。默认使用npm CDN上的副本<code>https://cdn.jsdelivr.net/npm/postext/icc/</code>；网站从<code>/icc/</code>提供自己的副本</td>
+    </tr>
+    <tr>
+      <td><code>designUrls</code></td>
+      <td><code>readonly string[]</code></td>
+      <td>版面设计面板<strong>设计</strong>图库内置的设计文件：同源的<code>.postext</code>设计文件URL，按导入的设计同样读取。网站传入它写在<code>public/designs/</code>中的四个文件。省略时，图库只显示已保存的设计和示例书的设计</td>
     </tr>
     <tr>
       <td><code>onConfigChange</code></td>

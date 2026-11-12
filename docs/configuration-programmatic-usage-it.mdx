@@ -149,6 +149,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>I paragrafi vengono composti come testo corrente.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code>, <code>partStyleMidChapter</code></td>
+      <td><a href="/it/docs/configuration-styles#stili-dei-capitoli">Stili dei capitoli</a></td>
+      <td>—</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> non indica nessuno dei <code>calloutStyles</code>; viene segnalato solo quando ne è configurato almeno uno.</td>
       <td>Il riquadro prende il primo stile di riquadro.</td>
@@ -389,8 +394,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>L’elenco viene tagliato dove finisce la colonna.</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>Due righe di seguito di un paragrafo, nella stessa colonna, che finiscono (<code>edge: 'end'</code>) o cominciano (<code>'start'</code>) con la stessa parola o gli stessi <code>bodyText.stackMinCharacters</code> caratteri: <code>text</code> è ciò che ripetono, come lo stampa la prima riga, e <code>lines</code> le due righe. Con <code>bodyText.stacks: 'warn'</code> si segnalano tutte; con <code>'avoid'</code>, quelle che l'algoritmo ha tenuto. Uno per ripetizione; punta alle due righe, con la loro pagina. Da postext 1.73.</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>Due righe di seguito di un paragrafo, nella stessa colonna, che finiscono (<code>edge: 'end'</code>) o cominciano (<code>'start'</code>) con la stessa parola o gli stessi <code>bodyText.stackMinCharacters</code> caratteri (<code>stack</code>, da postext 1.73); una riga che comincia con una citazione numerata dopo una parola, o con un pezzo di essa (<code>citationBreak</code>, 1.79); una riga che finisce o comincia con un segno isolato tra spazi, <code>=</code> o <code>±</code> (<code>operatorBreak</code>, 1.79). <code>text</code> è ciò che si ripete, la citazione o il segno, e <code>lines</code> le due righe. Con <code>'warn'</code> (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>) si segnalano tutti; con <code>'avoid'</code>, quelli che la divisione in righe ha tenuto. Uno per interruzione; punta alle due righe, con la loro pagina.</td>
       <td>Le righe si compongono come sono.</td>
     </tr>
     <tr>
@@ -405,7 +410,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>Un blocco dell’indice da tenere unito (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), aperto da <code>title</code>, composto in <code>columns</code> colonne: è più alto di una colonna intera, oppure la colonna in cui comincia è corta (sotto un riquadro a tutta larghezza, accanto a un elemento flottante). Uno per blocco; punta alla direttiva <code>:::toc</code>, con la pagina in cui comincia il blocco. Per eliminarlo, elenca meno livelli (<code>levels="1"</code>), apri i blocchi con un livello inferiore (<code>toc.groups.head: 2</code>) oppure rendi le voci più piccole o più strette. Da postext 1.34.</td>
+      <td>Un blocco dell’indice da tenere unito (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), aperto da <code>title</code>, composto in <code>columns</code> colonne: è più alto di una colonna intera, oppure la colonna in cui comincia è corta (sotto un riquadro a tutta larghezza, accanto a un elemento flottante). Uno per blocco; punta alla direttiva <code>:::toc</code>, con la pagina in cui comincia il blocco. Da postext 1.34.</td>
       <td>Il blocco viene tagliato; con <code>toc.groups.continuation</code> ogni colonna in cui prosegue si apre con la sua riga di testa e la dicitura di continuazione.</td>
     </tr>
     <tr>

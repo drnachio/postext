@@ -256,6 +256,30 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>O que uma repetição custa ao algoritmo com <code>stacks: 'avoid'</code>, em deméritos somados aos do parágrafo, na escala de <code>consecutiveHyphenDemerit</code> (duas linhas seguidas com hífen custam 3000). Um monossílabo repetido («a», «e», «de», com as vogais das escritas latina, grega e cirílica) custa o dobro. Um valor mais alto evita mais repetições ao preço de linhas mais soltas; 0 mantém todas.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Uma linha que começa com uma citação numerada entre colchetes ou parênteses posta depois de uma palavra, ou com um pedaço dela: <code>autores [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, e a chamada que um estilo numérico põe para <code>[@chave]</code> (<code>[3, p. 12]</code>). Nunca depois de um número: <code>2016 (3)</code> é um ano e um fascículo. <code>'allow'</code> compõe as linhas como o algoritmo as encontra e não informa nada. <code>'warn'</code> compõe-nas igual e informa cada quebra assim com um aviso de conteúdo <code>citationBreak</code>, que o Sandbox lista em Revisão. <code>'avoid'</code> soma <code>citationBreakPenalty</code> aos deméritos de uma quebra no espaço antes da citação ou dentro dela, de modo que o algoritmo compõe o parágrafo de outra forma onde o espaçamento entre palavras permite, e informa as quebras que mantém. O espaço continua a ser um espaço entre palavras e estica com os outros; o texto não muda. Parágrafos, listas, citações, caixas, notas, legendas e células de tabela compostos na horizontal; cada citação é lida na escrita que a rodeia, e o texto da direita para a esquerda e o CJK ficam como estão. Com <code>'avoid'</code> o texto alinhado à esquerda, as legendas, as notas e as células são compostos pelo algoritmo de Knuth–Plass para seguirem também a regra; o quadro de uma página composta compõe o seu texto sem ela. Precisa de <code>optimalLineBreaking</code>. Para manter juntas duas palavras precisas seja qual for a regra, escreva um espaço não separável.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>O que custa ao algoritmo, com <code>citationBreaks: 'avoid'</code>, uma quebra antes de uma citação ou dentro dela, em deméritos somados aos do parágrafo. Por padrão, o mesmo que uma linha esticada até o limite do espaçamento, de modo que o algoritmo nunca passa desse limite para manter uma citação com a sua palavra. Um valor maior mantém mais citações ao preço de linhas mais soltas; 0 deixa passar todas as quebras.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Uma linha que termina ou começa com um sinal de relação ou de operação posto entre espaços (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>): <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Os níveis são os de <code>citationBreaks</code>, o aviso é <code>operatorBreak</code> (com a borda, fim ou início) e <code>'avoid'</code> põe preço nos espaços dos dois lados do sinal, nos mesmos blocos. Uma configuração do postext 1.78 com <code>bindCitations: true</code> ou <code>bindOperators: true</code> é lida como <code>'avoid'</code> na regra correspondente.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>O que custa ao algoritmo, com <code>operatorBreaks: 'avoid'</code>, uma quebra junto a um sinal solto, em deméritos somados aos do parágrafo, na escala de <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Lê <code>++texto++</code> como texto sublinhado, além de <code>:underline[texto]</code>, que é sempre lido. Cada par de dois sinais de mais de cada lado sublinha, também <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escreve um par literal, uma letra ou um algarismo colado aos sinais os mantém como texto (<code>C++</code>, <code>g++</code>), e o código em linha e os blocos de código nunca são sublinhados. Vale onde as marcas em linha são lidas: o texto corrido, os títulos, as listas, as legendas, as células de tabela, as notas e os chips. <code>false</code>: os sinais de mais são impressos. Veja <a href="/pt/docs/document-format-inline#sublinhado">Formato do documento › Sublinhado</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Mantém uma citação numerada entre colchetes ou parênteses unida à palavra anterior (ou ao sinal de pontuação que a fecha) e inteira: o espaço antes dela e os de dentro passam a ser espaços não separáveis (<code>autores [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Nunca depois de um número: <code>2016 (3)</code> é um ano e um fascículo, não uma citação. Só nos parágrafos, itens de lista e citações compostos na horizontal; um bloco com texto da direita para a esquerda ou CJK fica como está.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Mantém um sinal entre espaços (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unido às palavras dos dois lados: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Nenhuma linha termina nem começa com o sinal. Mesmo alcance de <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

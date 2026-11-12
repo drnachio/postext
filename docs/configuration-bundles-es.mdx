@@ -394,6 +394,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle` devuelve el `config` combinado de la edición servida. `readBundle` devuelve además `sharedConfig`, los ajustes generales leídos con las mismas reglas y las mismas fuentes, en un paquete con entradas `localized`. `planBundle` acepta `sharedConfig` en su contenido: entonces el `config` del manifiesto se escribe a partir de él, y cada edición, la principal incluida, como ajustes propios en `localized`.
 
+### Archivos de diseño
+
+Un archivo de diseño es un paquete sin capítulos: un diseño, el aspecto de un libro y nada de lo que dice. Su manifiesto lo marca con `design: { parts: [...] }` y un `chapters` vacío, su `config` guarda solo los ajustes de esas partes, y lleva los archivos de fuente (`fonts/`) y el perfil de color (`profiles/`) que nombran los ajustes, como cualquier paquete; una familia marcada `redistributable: false` se queda fuera. El panel Diseño del Sandbox y `postext design` escriben estos archivos, y se leen con el mismo lector que un libro, migración de `configVersion` incluida. El Sandbox de postext 1.78 guardaba los diseños como plantillas (`.postext-template.json`), no como paquetes; el Sandbox actual los lee como diseños.
+
+Las partes son los grupos del panel Diseño, listados en `DESIGN_PARTS`: `page`, `writing`, `colors`, `text`, `headings`, `lists`, `figures`, `callouts`, `exercises`, `comics`, `running`, `parts`, `output`, `folio`, `advanced`. `DESIGN_PART_KEYS` dice qué ajustes contiene cada una. Un ajuste compartido por varios grupos se reparte por campo: `page.binding` y `layout.writingMode` van con `writing`, `page.cutLines` con `output`, `page.baselineGrid` con `advanced`, y el resto de `page` y `layout` con `page`. Las fuentes propias que usan las partes y los estilos de capítulo (recortados a las partes) van con ellas. Los ajustes del libro entero (`BOOK_OWN_KEYS`: idioma, dirección, cifras, tipos de recurso, comprobaciones, depuración) nunca forman parte de un diseño; los tipos obligan a que cada clave de `PostextConfig` pertenezca a una parte o a esa lista.
+
+- `extractDesign(config, parts?)` toma el diseño de un libro, sin los valores por defecto.
+- `applyDesign(config, design, parts?)` pone un libro en él: un ajuste que el diseño no fija vuelve a su valor por defecto, los estilos con nombre se combinan por id (los demás estilos del libro se quedan), las fuentes se combinan por familia y los colores de la paleta que nombra el diseño vienen con él.
+- `revertDesign(current, before, applied)` lo quita de nuevo y devuelve solo los ajustes que sustituyó.
+- `designMissingStyles(chapters, before, after, resources)` enumera los ids de estilo que nombra el texto y que un diseño deja sin definir.
+- `createDesignBundle({ name, design, files, locale, localized })` escribe un archivo de diseño; `openDesignBundle(bytes, { locale, maxBytes })` lee uno (64 MB como máximo por defecto, comprimido o no; solo fuentes y perfiles además del manifiesto), o el diseño del paquete de un libro entero (`fromBook: true`).
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// El diseño de un libro, tres de sus partes, como archivo de diseño.
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// Leerlo y poner otro libro en él.
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### Ejemplo en vivo: crear un paquete
 
 El ejemplo crea un libro de dos capítulos con una figura SVG y enumera los archivos que ha escrito `createBundle`, junto con el manifiesto. Ofrece el archivo para descargarlo, vuelve a abrirlo con `openBundle` y pinta su primera página: el viaje completo de ida y vuelta en unas pocas líneas. Importa el archivo descargado en el Sandbox para seguir trabajando en él allí.

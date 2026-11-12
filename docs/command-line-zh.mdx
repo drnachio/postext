@@ -130,6 +130,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>idml</code></td><td>把页面生成为InDesign包（IDML），供在InDesign中完成后续制作。</td></tr>
     <tr><td><code>import-docx</code></td><td>把在导出的Word文件中做的校改带回书中；其他Word文档则转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>import-idml</code></td><td>把存为IDML的InDesign文档或压缩成zip的InDesign打包文件转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
+    <tr><td><code>design</code></td><td>把一本书的设计（部分或全部）写成设计文件，即没有章节的<code>.postext</code>。</td></tr>
     <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
     <tr><td><code>unpack</code></td><td>把<code>.postext</code>文件解包成文件夹。</td></tr>
     <tr><td><code>info</code></td><td>列出书的各章、语言、资源和字体，加上<code>--pages</code>时还给出页数。</td></tr>
@@ -245,6 +246,18 @@ postext import-idml package.zip --document Book/Book.idml -o book/
 
 从Postext导出的书读回来时行不变。在InDesign中制作的文档读入时有损失：命令会打印结论（`faithful`、`approximate`或`lossy`）、各项计数，以及丢失和近似处理的内容；`--report`再加上各条说明和每种段落样式的读法，`--json`把这些都作为数据输出。`--hidden`、`--pasteboard`和`--non-printing`分别把隐藏的图层和对象、粘贴板上的内容、非打印对象也读进来；`--conditions all`读入全部条件文本，`--changes reject`按拒绝修订来读，`--no-masters`不读主页上的项目。`--name`和`--locale`指定书名和语言。导入器是`postext-idml`包的`idmlToPostext`，见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)。导入是照原样复制文档；要移植一本你会长期保留的书，并推断出它的版式规则，请改用智能体技能（见[InDesign：导入、导出与移植](/zh/docs/indesign)）。
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+设计文件只保存一本书的设计，不含正文：所选部分（版面设计面板的分组，见[设计文件](/zh/docs/configuration-bundles#设计文件)）的设置，以及它们引用的字体文件和颜色配置文件。标记为不可再分发的字体不包含在内。`--parts`只取逗号分隔的部分分组；`--design-name`、`--id`和`--description`为设计命名。同一本书总是得到相同的字节。
+
+`--design FILE`是所有读取书的命令都有的选项，在`--config`和`--set`之前，把书设为某个设计文件或另一本书的设计：其各部分的设置替换书中的设置，命名样式按id合并，设计的字体加入书的字体。`--design-parts`只取其中部分。沙盒的版面设计面板也导入和导出同样的文件。
+
 ### pack和unpack
 
 ```bash
@@ -291,6 +304,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--chapters LIST</code></td><td>只排版部分章节：<code>2</code>、<code>1,3-5</code>、<code>4-</code>。长书这样更快；这些章的页码从它们自己的第一页开始。</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>在本次运行中改变一项设置，用点号分隔的路径表示：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。能按JSON读取的值就按JSON读取（数字、true和false、对象），否则当作文本。可以重复使用。</td></tr>
     <tr><td><code>--config FILE</code></td><td>用于零散Markdown的配置（或<code>preset.json</code>），或合并到书本身配置之上的配置。</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>在<code>--config</code>和<code>--set</code>之前，把书设为某个设计文件（来自<code>postext design</code>或沙盒）或另一本书的<code>.postext</code>的设计。<code>--design-parts LIST</code>只取其中部分。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>零散Markdown的图片、字体和书名。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>到这个文件夹里查找书中没有自带的字体。可以重复使用。</td></tr>
     <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>

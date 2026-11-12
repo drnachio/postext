@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: an agent at work in the Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'What an AI agent in the browser can do with the Sandbox through its 55 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
+  description: 'What an AI agent in the browser can do with the Sandbox through its 64 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
   lastUpdated: '2026-11-10',
   readingTime: '12 min',
@@ -23,7 +23,7 @@ picture of page 12, sets `bodyText.fontSize` to 10.5 pt, sees that the chapter
 went from 18 to 19 pages, and puts it back. It does what you do by eye, and
 it does it with your book, in your browser.
 
-There are 55 tools whose names start with `sandbox_`, registered while the
+There are 64 tools whose names start with `sandbox_`, registered while the
 Sandbox is on screen, and 8 tools of the site, `site_*`, on every page of
 postext.dev. This page sorts them by what you would ask an agent to do, and
 gives the call for each one.
@@ -329,6 +329,8 @@ the path with `scope: "edition"`: a value equal to the general one stops being
 the edition's own. In a book in one language `scope: "all"` is refused, since
 all its settings are its own.
 
+A book whose chapters do not all look alike has [chapter styles](/en/docs/configuration-styles#chapter-styles). `sandbox_chapter_styles` lists them with the settings each one changes and the chapters set in it, and says where each chapter's style comes from: its front matter (`chapter`), the `:::part` line it opens with (`part`) or the part it belongs to (`partBefore`). It also makes, renames and removes a style. `sandbox_get_config` and `sandbox_set_config` take `chapterStyle`: with it they read and write that style's settings, as the Design panel does while the style is chosen. A path the whole book shares (`page.width`, `locale`, the fonts, print) is written to the book, and `notes` says so. `sandbox_set_chapter_style` gives a chapter its style by writing its `chapterStyle:` line, and `style: null` takes the line out. To set every chapter of a part in a style, write `style="…"` on the part's `:::part` line with `sandbox_edit_text`.
+
 Fonts are settings too: `sandbox_list_fonts` with `search: "Garamond"` finds
 families in the open catalogue, and writing the name into a `fontFamily`
 setting loads it.
@@ -628,6 +630,8 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   one step that `sandbox_undo` takes back whole. `sandbox_import_word` refuses
   such a file and names this tool. Since postext 1.68.
 
+- **Designs.** `sandbox_list_designs` lists the gallery of the Design panel (saved designs, the ones the Sandbox ships and the sample books' designs) with their parts. `sandbox_save_design` saves the design of a book, `sandbox_try_design` tries one on the book on screen and `sandbox_end_design_trial` keeps or discards it (Discard brings back only what the design replaced), `sandbox_apply_design` applies one at once or as a chapter style, `sandbox_import_design` and `sandbox_export_design` read and write design files, and `sandbox_delete_design` deletes a saved one. Each takes `parts`, the Design panel's groups, and answers with the styles the text names that the design lacks.
+
 ### Questions and notices
 
 When a link opens a book you already have your own version of, the Sandbox
@@ -719,7 +723,9 @@ each one come with `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **The design**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
+- **Designs**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Undo**: `sandbox_undo`.
 - **How it is shown**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

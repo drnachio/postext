@@ -30,7 +30,6 @@ Une bande étroite sur le bord gauche comporte un bouton par panneau. Chaque bou
 - **Livres** (icône `Files`) : vos livres et les livres d’exemple
 - **Chapitres** (icône `BookOpen`) : le livre ouvert et ses chapitres
 - **Texte** (icône `FileCode`) : écrire et modifier le texte du chapitre courant
-- **Modèles** (icône `LayoutTemplate`) : modèles de design à essayer sur le livre, enregistrer, importer et exporter
 - **Ressources** (icône `FolderOpen`) : images, dessins SVG et tableaux utilisés dans le livre
 - **Polices** (icône `Type`) : les caractères qu’utilise le livre, et vos propres fichiers de police
 - **Maquette** (icône `Settings2`) : réglages de la page, de la typographie, des titres, des figures, des encadrés et de l’export
@@ -134,6 +133,7 @@ Cliquer sur un livre (ou sur l’une des étiquettes de langue d’un livre d’
     - **Copie du livre ouvert** copie le livre ouvert, ses figures et ses polices dans un nouveau livre.
     - **Livre vierge** en commence un vide.
     - **Ouvrir un fichier .postext…** importe un fichier.
+    - **Avec la maquette de…** en commence un vide dans une maquette de la galerie (voir [Maquettes](#maquettes)).
 
   Vous pouvez aussi dupliquer n’importe quelle ligne. Tant que vous n’avez aucun livre à vous, le groupe affiche un état vide avec le même raccourci. Chaque ligne a un menu **⋯** étiqueté (*Autres actions pour « … »*) avec **Renommer…**, **Ajouter une langue…** (voir [Un livre en plusieurs langues](/fr/docs/sandbox-books-saving#export-et-import)), **Dupliquer**, **Télécharger (.postext)** et **Supprimer…**. Supprimer demande confirmation juste à côté du bouton ⋯.
 
@@ -209,15 +209,18 @@ Le livre d’exemple ouvert définit aussi ce que restaurent les boutons **Réin
 
 Un préréglage ouvert lors d’une session précédente mais qu’aucune source ne liste plus (typiquement un préréglage privé dans une version qui ne le sert pas) apparaît encore, grisé, avec la mention *Indisponible dans cette version*. Le Sandbox garde le contenu chargé au lieu de le remplacer en silence par l’exemple intégré. L’identifiant du préréglage ouvert est conservé sous la clé `postext-sandbox-preset` (voir [Persistance](/fr/docs/sandbox-books-saving#persistance)). Le format des paquets est décrit dans l’annexe [Format des paquets de préréglage](/fr/docs/sandbox-embedding#format-des-paquets-de-préréglage).
 
-#### Panneau Modèles
+#### Maquettes
 
-Le panneau **Modèles**, entre Texte et Ressources, est l’étape avant le design : choisir de quel design part le livre. Un modèle garde le design (page et colonnes, typographie et styles, couleurs, titres courants et pieds, impression), jamais le texte, la langue ni les types de ressources, et emporte des copies de ses polices et de son profil ICC.
+Une maquette, c’est l’aspect d’un livre et rien de ce qu’il dit : la page et les colonnes, la typographie et les styles, les couleurs, les titres courants, les réglages d’impression. Elle ne garde jamais le texte, les ressources ni les réglages qui appartiennent au livre entier (langue, sens d’écriture, chiffres, types de ressource, vérifications). Les maquettes se trouvent dans le **panneau Maquette** : la ligne **Maquettes** de sa vue d’ensemble les ouvre, et son en-tête exporte et importe des fichiers de maquette.
 
-- **Galerie.** Les modèles enregistrés et les quatre fournis (*Roman*, *Manuel technique*, *Magazine à deux colonnes* et *Livre en deux couleurs*), chacun avec un dessin de sa page, sa typographie et ses couleurs.
-- **Essayer.** On choisit les parties à remplacer et le modèle s’applique au livre. Une barre *Essai de « … »* propose **Conserver** et **Abandonner** (retour au design d’avant). Ce que le modèle laisse non défini revient à sa valeur par défaut.
-- **Comme style de chapitre.** Les parties choisies d’un modèle (page et colonnes, typographie, couleurs, titres courants) deviennent un style de chapitre du livre, nouveau ou existant : seulement ce qu’elles changent par rapport au livre, le format de page et l’impression restant ceux du livre. On l’attribue aux chapitres qui demandent ce design (une annexe, les cas cliniques) dans **Chapitres**, ou avec `chapterStyle:` dans leur en-tête, et à une partie d’un chapitre, à partir d’une nouvelle page, avec `::section{style="…"}` ; le reste du livre garde le sien.
-- **Enregistrer un design comme modèle**, depuis ce livre ou un autre livre du Sandbox, en choisissant les parties qu’il contient.
-- **Importer** (dans l’en-tête du panneau) et **Exporter** (sur chaque modèle) des fichiers `.postext-template.json` pour les partager ; les polices non redistribuables restent derrière. Les modèles enregistrés peuvent être supprimés, pas ceux fournis.
+- **Parties.** Une maquette se découpe selon les groupes du panneau Maquette (page et colonnes, système d’écriture, couleurs, texte, titres…). Pour l’enregistrer, l’essayer, l’appliquer ou l’exporter, tu choisis les groupes qu’elle emporte.
+- **Galerie.** Tes maquettes enregistrées, les quatre que fournit le Sandbox (*Roman*, *Manuel technique*, *Magazine à deux colonnes*, *Livre en deux couleurs*) et la maquette de chaque livre d’exemple, chacune avec un dessin de sa page et les parties qu’elle contient.
+- **Essayer.** Les parties choisies remplacent celles du livre. Une barre propose **Garder** et **Abandonner** : Abandonner rétablit seulement les réglages que la maquette a remplacés, et toute autre modification faite entre-temps reste. Essayer une autre maquette remplace la première. L’essai appartient au livre où il a commencé, et ouvrir un autre livre l’arrête. La barre énumère les styles que nomme le texte (de paragraphe, de titre, d’encadré, d’étiquette, de caractère, de marque et de tableau) et que la maquette ne définit pas, pour que tu les voies avant de la garder. Essayer, garder, abandonner et appliquer sont des étapes de l’historique (⌘Z / Ctrl+Z).
+- **Les styles nommés** se fusionnent par identifiant : un style de la maquette remplace le style du livre de même identifiant, et les autres styles du livre restent. Les polices se fusionnent par famille, et les couleurs de la palette que nomment les réglages de la maquette viennent avec elle.
+- **Un livre en plusieurs langues** reçoit la maquette dans ses réglages généraux, quel que soit ce qu’affiche le sélecteur en haut du panneau ; chaque langue garde ses propres réglages.
+- **Enregistrer** la maquette de ce livre, ou de n’importe quel autre de tes livres, avec les parties choisies.
+- **Comme style de chapitre.** Les parties choisies deviennent un [style de chapitre](/fr/docs/configuration-styles#styles-de-chapitre) du livre, nouveau ou existant, avec seulement ce qu’elles changent par rapport au livre. Donne-le à des chapitres dans **Chapitres** ou avec `chapterStyle:` dans leur en-tête, et aux chapitres d’une partie avec `:::part{style="…"}`.
+- **Exporter et importer.** Un fichier de maquette est un `.postext` sans chapitres (voir [Fichiers de maquette](/fr/docs/configuration-bundles#fichiers-de-maquette)) qui emporte les fichiers de police et le profil de couleur que nomment ses parties ; les polices non redistribuables restent derrière. L’import lit aussi le `.postext` d’un livre entier (sa maquette) et les `postext-config.json` des versions antérieures. La ligne de commande écrit et lit les mêmes fichiers ([`postext design`](/fr/docs/command-line#design)). Les maquettes enregistrées peuvent être supprimées ; celles fournies et celles des livres d’exemple, non. Les modèles enregistrés par postext 1.78 rejoignent vos maquettes enregistrées à la première ouverture de la galerie, et l’import lit ses fichiers `.postext-template.json` comme des maquettes.
 
 #### Panneau Ressources
 

@@ -193,14 +193,6 @@ El paquet `postext` llegeix i escriu aquests mateixos fitxers (`openBundle`, `cr
 
 El text i el disseny també s'exporten per separat des de les capçaleres dels taulers Text i Disseny.
 
-La capçalera del **tauler Disseny** baixa `postext-config.json` amb els valors per defecte eliminats:
+La capçalera del **tauler Disseny** exporta el disseny del llibre com a fitxer de disseny, un `.postext` sense capítols (vegeu [Fitxers de disseny](/ca/docs/configuration-bundles#fitxers-de-disseny)), i n'importa un, el disseny del `.postext` d'un llibre sencer o un `postext-config.json` escrit per versions anteriors (vegeu [Dissenys](/ca/docs/sandbox#dissenys)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-La capçalera del **tauler Text** baixa el capítol actiu en un fitxer `.md`, i el botó **Importar** substitueix el capítol actiu pel contingut d'un fitxer `.md`. El botó **Importar** del tauler Disseny obre un selector de fitxers `.json`, que es validen segons el `type` i la `version` esperats; els fitxers no vàlids s'ignoren sense cap avís. L'embolcall `postext-markdown.json` i el format combinat `postext-sandbox.json` de versions anteriors ja no existeixen.
+La capçalera del **tauler Text** baixa el capítol actiu en un fitxer `.md`, i el botó **Importar** substitueix el capítol actiu pel contingut d'un fitxer `.md`. L'embolcall `postext-markdown.json` i el format combinat `postext-sandbox.json` de versions anteriors ja no existeixen.

@@ -77,7 +77,7 @@ export interface TableLayoutStyle {
   annotations: AnnotationScope;
   /** The document's maths settings, for the formulas of cells (#541). */
   math?: ResolvedMathConfig;
-  /** How cell text is broken (see `snippetStackBreaking`). */
+  /** How cell text is broken (see `snippetRuleBreaking`). */
   breaking?: MeasureBlockOptions;
 }
 

@@ -170,6 +170,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>idml</code></td><td>Les pàgines com un paquet d'InDesign (IDML), per acabar-les a InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Un document d'InDesign desat com a IDML, o un paquet d'InDesign comprimit, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
+    <tr><td><code>design</code></td><td>El disseny d'un llibre (algunes de les seves parts, o totes) com a fitxer de disseny, un <code>.postext</code> sense capítols.</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Els capítols, les llengües, els recursos i les fonts del llibre, i amb <code>--pages</code> el nombre de pàgines.</td></tr>
@@ -420,6 +421,18 @@ postext import-idml package.zip --document Book/Book.idml -o book/
 
 Un llibre exportat des de Postext torna amb les mateixes línies. Un document fet a InDesign es llegeix amb pèrdues: l'ordre imprimeix el veredicte (`faithful`, `approximate` o `lossy`), els recomptes i el que s'ha perdut o aproximat; `--report` hi afegeix les notes i com s'ha llegit cada estil de paràgraf, i `--json` ho porta tot com a dades. `--hidden`, `--pasteboard` i `--non-printing` llegeixen també les capes i els objectes ocults, la taula de muntatge i els objectes no imprimibles; `--conditions all` llegeix tot el text condicional, `--changes reject` llegeix els canvis registrats com si s'haguessin rebutjat i `--no-masters` deixa fora els elements de les pàgines mestres. `--name` i `--locale` donen el títol i la llengua. L'importador és `idmlToPostext`, del paquet `postext-idml`: vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml). La importació copia el document tal com és; per portar un llibre que hagis de conservar, amb les regles de maquetació deduïdes, fes servir en lloc seu la skill per a agents (vegeu [InDesign: importar, exportar i portar](/ca/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+Un fitxer de disseny guarda el disseny d'un llibre i res del seu text: els ajustos de les parts demanades (els grups del tauler Disseny, vegeu [Fitxers de disseny](/ca/docs/configuration-bundles#fitxers-de-disseny)) amb els fitxers de font i el perfil de color que anomenen. Una font marcada com a no redistribuïble no hi viatja. `--parts` en pren només algunes parts, separades per comes; `--design-name`, `--id` i `--description` donen nom al disseny. El mateix llibre dona sempre els mateixos bytes.
+
+`--design FITXER`, una opció de totes les ordres que llegeixen un llibre, posa el llibre en un fitxer de disseny o en el disseny d'un altre llibre, abans de `--config` i `--set`: els ajustos de les seves parts substitueixen els del llibre, els estils amb nom es combinen per id i les fonts del disseny se sumen a les del llibre. `--design-parts` en pren només algunes parts. El tauler Disseny del Sandbox importa i exporta els mateixos fitxers.
+
 ### pack i unpack
 
 ```bash
@@ -496,6 +509,7 @@ les sortides. Si en desar el llibre queda trencat, imprimeix l'error i conserva 
     <tr><td><code>--chapters LIST</code></td><td>Compon només alguns capítols: <code>2</code>, <code>1,3-5</code>, <code>4-</code>. És més ràpid en un llibre llarg; les pàgines es numeren a partir de la primera pàgina d'aquests capítols.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>Canvia un paràmetre per a aquesta execució, indicat com una ruta amb punts: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. El valor es llegeix com a JSON quan és possible (números, true i false, objectes) i, si no, com a text. Es pot repetir.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Una configuració (o un <code>preset.json</code>) per a Markdown solt, o que es combina amb la del llibre i hi té prioritat.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Posa el llibre en el disseny d'un fitxer de disseny (de <code>postext design</code> o del Sandbox) o del <code>.postext</code> d'un altre llibre, abans de <code>--config</code> i <code>--set</code>. <code>--design-parts LLISTA</code> en pren només algunes parts.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imatges, fonts i títol per a Markdown solt.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Una carpeta on buscar les fonts que el llibre no porta. Es pot repetir.</td></tr>
     <tr><td><code>--offline</code></td><td>No baixa mai fonts.</td></tr>

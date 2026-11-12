@@ -256,6 +256,30 @@ export const metadata = {
       <td><code>stacks: 'avoid'</code>のとき、重複1つが改行処理に加えるデメリット（段落のデメリットに加算）。尺度は<code>consecutiveHyphenDemerit</code>と同じです（ハイフンで終わる行が2行続くと3000）。繰り返される単音節語（ラテン文字、ギリシア文字、キリル文字の母音で数えます）は2倍になります。値を上げると行が緩むかわりに重複が減り、0ではすべて残ります。</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>語の後に置かれた角かっこや丸かっこの番号付き引用、またはその一部で始まる行です（<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>、番号式のスタイルが <code>[@key]</code> に付ける番号 <code>[3, p. 12]</code> も含みます）。数字の後は対象外で、<code>2016 (3)</code> は年と号です。<code>'allow'</code> は改行処理が見つけたとおりに行を組み、何も報告しません。<code>'warn'</code> は同じように組み、該当する改行を内容警告 <code>citationBreak</code> として報告します。Sandbox は「確認」に挙げます。<code>'avoid'</code> は引用の前のスペースや引用の中での改行のデメリットに <code>citationBreakPenalty</code> を加え、語間の範囲内で段落を組み直させ、残った改行を報告します。スペースは語間のままで、ほかの語間と同じように伸びます。本文は変わりません。横組みの段落、リスト、引用、ボックス、注、キャプション、表のセルが対象です。引用はそれぞれ周りの文字体系で読み、右から左に書く文と CJK の文はそのままです。<code>'avoid'</code> のとき、不揃い組み、キャプション、注、セルも Knuth–Plass で組み、規則に従います。組版ページのフレームはこの規則なしで組みます。<code>optimalLineBreaking</code> が必要です。規則にかかわらず特定の2語を離したくないときは、ノーブレークスペースを入力してください。</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td><code>citationBreaks: 'avoid'</code> のとき、引用の前や中での改行1つが改行処理に加えるデメリット（段落に加算）。既定値は語間の上限まで伸ばした1行と同じで、引用を前の語に付けるために上限を超える行を組むことはありません。値を上げると行が緩むかわりに引用が離れにくくなり、0ではすべての改行を通します。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>スペースで囲まれた関係記号や演算記号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>、<code>+</code>、<code>·</code>、<code>→</code>）で終わる行、または始まる行です（<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>）。段階は <code>citationBreaks</code> と同じで、警告は <code>operatorBreak</code>（行末か行頭かを示します）、<code>'avoid'</code> は同じブロックで記号の両側のスペースにコストを付けます。postext 1.78 の設定にある <code>bindCitations: true</code>、<code>bindOperators: true</code> は、対応する規則の <code>'avoid'</code> として読まれます。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td><code>operatorBreaks: 'avoid'</code> のとき、単独の記号の隣での改行1つが改行処理に加えるデメリット（段落に加算）。尺度は <code>citationBreakPenalty</code> と同じです。</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td><code>++text++</code> を下線付きのテキストとして読みます。<code>:underline[text]</code> は常に読まれます。両側にプラス記号を2つずつ書いた組はすべて下線になり、<code>use ++i rather than i++</code> も同じです。<code>{'\\+\\+'}</code> と書けば記号の組をそのまま組み、記号に英字や数字が続く場合は文字のまま残ります（<code>C++</code>、<code>g++</code>）。インラインコードとコードブロックには下線を引きません。インライン記法を読むすべての場所、つまり本文、見出し、リスト、キャプション、表のセル、注、チップに適用されます。<code>false</code> ではプラス記号がそのまま印字されます。<a href="/ja/docs/document-format-inline#下線">ドキュメント形式 › 下線</a>を参照。</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>角括弧や丸括弧に入った番号付きの引用を、直前の語（または語を閉じる句読点）と一緒に、分割せずに保ちます。引用の前のスペースと中のスペースはノーブレークスペースになります（<code>autores [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>）。数字の後では適用しません。<code>2016 (3)</code>は年と号であり、引用ではありません。横組みの段落、リスト項目、引用だけが対象です。右から左へ書く文字やCJKの文字を含むブロックはそのままにします。</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>スペースで囲まれた記号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>）を両側の語と一緒に保ちます（<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>）。記号で行が終わったり始まったりすることはありません。対象は<code>bindCitations</code>と同じです。</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

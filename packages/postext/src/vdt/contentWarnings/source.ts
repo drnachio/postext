@@ -35,6 +35,21 @@ export type SourceWarning =
   /** `:::paragraphs{style}` names no paragraph style: the paragraphs are set
    *  as body text. */
   | { kind: 'unknownParagraphStyle'; style: string }
+  /** A chapter's front matter (`chapterStyle: <id>`, `source:
+   *  'frontmatter'`) or a `:::part{style="<id>"}` fence (`source: 'part'`)
+   *  names a chapter style `chapterStyles` does not define: the chapter is
+   *  set in the book's settings. */
+  | { kind: 'chapterStyleUnknown'; style: string; source: 'frontmatter' | 'part' }
+  /** A `:::part{style}` fence after text of its chapter: the chapter it
+   *  stands in keeps its own settings, and the style starts with the next
+   *  chapter. Open the chapter with the fence (or move it to a chapter of
+   *  its own) to set the part's first pages in its style. With `source:
+   *  'section'`, a `::section{style}` line of postext 1.78 (#1532), no
+   *  longer read: the text after it stays in the chapter, in the chapter's
+   *  settings (`style` is empty for a bare `::section`). Make that text a
+   *  chapter of its own inside a `:::part{style}`, or give its chapter
+   *  `chapterStyle:` in its front matter. */
+  | { kind: 'partStyleMidChapter'; style: string; source?: 'section' }
   /** `:::callout{type}` names none of the configured callout styles: the box
    *  takes the first one. Not raised while `calloutStyles` is unset or
    *  empty (every type is then the built-in plain box). */

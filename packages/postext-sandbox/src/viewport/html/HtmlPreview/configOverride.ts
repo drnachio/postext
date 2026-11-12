@@ -5,6 +5,7 @@ import { defaultDocumentLocale } from '../../../controls/language/hyphenation.js
 import { configShapingLanguage } from '../../../controls/language/measureLanguage.js';
 import { viewerHeadingDesign, partTitleFace, countTitleLines, viewerPartDesign, paintsPage, withoutColors, widthIn } from './configOverride/designs.js';
 import { type LeafGeometry, turnedLeaf } from './configOverride/leaf.js';
+import { viewerChapterStyles } from './configOverride/chapterStyles.js';
 
 /** Layout config for one HTML viewer pass. `base` is the document config as
  *  the viewer sees it — pass it through `applyHtmlViewerOverrides` first so
@@ -67,6 +68,9 @@ export function buildHtmlConfigOverride(
   // Single-column mode: disable widow/orphan/runt avoidance (no column breaks
   // to protect — the whole document lives on one tall, scrollable page).
   const disableParagraphRules = columnMode === 'single';
+  // The book's chapter styles, each passed through the viewer as the book
+  // is (#1521).
+  const chapterStyles = viewerChapterStyles(base, layoutType, columnMode === 'single', (styled, own) => buildHtmlConfigOverride(styled, { ...opts, layoutType: own }));
 
   // Page height: single-column mode needs one very tall page so content never
   // flows to a second. Multi-column mode uses the viewport inner height, so
@@ -234,7 +238,8 @@ export function buildHtmlConfigOverride(
       levels: headingLevels,
     },
     parts,
-    ...(opts.comicWidthPx ? { comics: comicsViewerLeaf(base, leafPage, opts.comicWidthPx, columnMode === 'single' ? undefined : pageHeightPx) } : {}),
+    ...(chapterStyles ? { chapterStyles } : {}),
+    ...(opts.comicWidthPx ?{ comics: comicsViewerLeaf(base, leafPage, opts.comicWidthPx, columnMode === 'single' ? undefined : pageHeightPx) } : {}),
     // A composed page is fixed geometry, like a comic page: its frames
     // stand where the template puts them on the leaf, so it is laid out on
     // the leaf, never on a screen-sized page (whose foot is a scroll away

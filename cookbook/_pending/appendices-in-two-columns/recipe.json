@@ -1,0 +1,98 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 187,
+  "status": "draft",
+  "chapter": "structure",
+  "order": 270,
+  "level": 2,
+  "genres": [
+    "manual"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "chapter-styles",
+      "part-dividers"
+    ],
+    "also": [
+      "multi-chapter-books",
+      "column-layouts",
+      "multiple-columns",
+      "opener-design",
+      "running-heads",
+      "section-running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "design-elements",
+      "widows-orphans-runts",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q220",
+    "Q38"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.79.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 7,
+    "card": "page",
+    "pages": [
+      1,
+      2,
+      4,
+      6,
+      7,
+      8,
+      9,
+      10
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Sans 3",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-12",
+  "updated": "2026-11-12",
+  "related": [
+    "parts-in-colour",
+    "book-from-chapters",
+    "thesis-back-matter"
+  ]
+}

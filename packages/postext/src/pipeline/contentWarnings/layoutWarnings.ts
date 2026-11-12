@@ -9,6 +9,7 @@ import { composedFrameBlockIds } from '../../composed/paint.js';
 import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js';
 import { findStacks } from '../../checks/stacks.js';
 import { findHyphenFaults } from '../../checks/hyphenRules.js';
+import { findSpaceBreaks } from '../../checks/spaceBreaks.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -123,6 +124,28 @@ export function stackWarnings(doc: VDTDocument): ContentWarning[] {
       ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
       ...(s.block.pageIndex >= 0 ? { pageIndex: s.block.pageIndex } : {}),
     };
+  });
+}
+
+/** A `citationBreak` or `operatorBreak` warning for each line of the
+ *  running text that starts with a numbered citation, or ends or starts on
+ *  a lone operator (#1519, `findSpaceBreaks`), across the columns and pages
+ *  a paragraph runs over, on the page of the line after the break, under
+ *  `bodyText.citationBreaks` / `operatorBreaks` at `'warn'` or `'avoid'`
+ *  (the breaks the breaker kept); none under `'allow'`. */
+export function spaceBreakWarnings(doc: VDTDocument): ContentWarning[] {
+  return findSpaceBreaks(doc).map((f) => {
+    const a = f.block.lines[f.line]!;
+    const b = f.nextBlock.lines[f.nextLine]!;
+    const where = {
+      ...(a.sourceStart !== undefined ? { sourceStart: a.sourceStart } : {}),
+      ...(b.sourceEnd !== undefined ? { sourceEnd: b.sourceEnd } : {}),
+      ...(f.nextBlock.pageIndex >= 0 ? { pageIndex: f.nextBlock.pageIndex } : {}),
+    };
+    const lines: [string, string] = [a.text, b.text];
+    return f.rule === 'citation'
+      ? { kind: 'citationBreak', text: f.text, lines, ...where }
+      : { kind: 'operatorBreak', edge: f.edge, text: f.text, lines, ...where };
   });
 }
 

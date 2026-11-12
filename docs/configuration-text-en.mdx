@@ -256,6 +256,30 @@ The `bodyText` property controls the typography of all paragraph text.
       <td>What a stack costs the line breaker under <code>stacks: 'avoid'</code>, in demerits added to the paragraph's, on the scale of <code>consecutiveHyphenDemerit</code> (two hyphenated lines in a row cost 3000). A repeated monosyllable (“a”, “and”, “of”, with the vowels of the Latin, Greek and Cyrillic scripts) costs twice as much. A higher value avoids more stacks at the price of looser lines; 0 keeps every one.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>A line that starts with a numbered citation in square brackets or parentheses after a word, or with a piece of one: <code>authors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, and the marker a numbered style sets for <code>[@key]</code> (<code>[3, p. 12]</code>). Never after a number: <code>2016 (3)</code> is a year and an issue. <code>'allow'</code> sets the lines as the breaker finds them and reports nothing. <code>'warn'</code> sets them the same and reports each such break as a <code>citationBreak</code> content warning, which the Sandbox lists in Review. <code>'avoid'</code> adds <code>citationBreakPenalty</code> to the demerits of a break at the space before a citation or inside it, so the breaker sets the paragraph otherwise where the word spacing allows, and reports the breaks it keeps. The space stays a word space and stretches with the others; nothing in the text changes. Paragraphs, lists, quotations, boxes, notes, captions and table cells set horizontally; each citation is read in the script around it, and right-to-left and CJK text is left as it is. Under <code>'avoid'</code> ragged text, captions, notes and cells are set by the Knuth–Plass breaker so they follow the rule too; a composed page's frame sets its story without it. Needs <code>optimalLineBreaking</code>. To keep one particular pair together whatever the rule, type a no-break space.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>What a break before or inside a citation costs the line breaker under <code>citationBreaks: 'avoid'</code>, in demerits added to the paragraph's. At the default as much as a line stretched to the word-spacing limit, so the breaker never sets a line past that limit to keep a citation with its word. A higher value keeps more citations at the price of looser lines; 0 lets every break through.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>A line that ends or starts on a relation or operator set between spaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>): <code>LR+ = 18.29</code>, <code>p &lt; 0.05</code>. The levels are those of <code>citationBreaks</code>, the warning an <code>operatorBreak</code> one (with the edge, end or start), and <code>'avoid'</code> prices the spaces on either side of the sign, in the same blocks. A configuration from postext 1.78 with <code>bindCitations: true</code> or <code>bindOperators: true</code> reads as <code>'avoid'</code> in the matching rule.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>What a break beside a lone operator costs the line breaker under <code>operatorBreaks: 'avoid'</code>, in demerits added to the paragraph's, on the scale of <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ The `bodyText` property controls the typography of all paragraph text.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Read <code>++text++</code> as underlined text, beside <code>:underline[text]</code>, which is always read. Every pair of two plus signs on each side underlines, <code>use ++i rather than i++</code> included; <code>{'\\+\\+'}</code> sets a literal pair, a letter or digit glued to the signs keeps them as text (<code>C++</code>, <code>g++</code>), and inline code and code blocks never underline. It applies wherever inline marks are read: the running text, headings, lists, captions, table cells, notes and chips. <code>false</code>: the plus signs print. See <a href="/en/docs/document-format-inline#underline">Document format › Underline</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Keeps a numbered citation in square brackets or parentheses with the word (or the punctuation ending a word) before it, and whole: the space before it and the spaces inside it become no-break spaces (<code>authors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Never after a number: <code>2016 (3)</code> is a year and an issue, not a citation. Paragraphs, list items and quotations set horizontally only; a block holding right-to-left or CJK text is left as it is.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Keeps a relation or operator set between spaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) with the words on both sides: <code>LR+ = 18.29</code>, <code>p &lt; 0.05</code>. A line never ends on one nor starts with one. Same scope as <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

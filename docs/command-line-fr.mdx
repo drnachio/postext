@@ -172,6 +172,7 @@ sa propre langue, sauf si `--locale` en demande une autre (`--locale en`).
     <tr><td><code>idml</code></td><td>Les pages en paquet InDesign (IDML), à finir dans InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Les corrections faites dans un fichier Word exporté, rapportées dans le livre ; tout autre document Word, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Un document InDesign enregistré en IDML, ou un assemblage InDesign compressé, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
+    <tr><td><code>design</code></td><td>La maquette d’un livre (certaines de ses parties, ou toutes) en fichier de maquette, un <code>.postext</code> sans chapitres.</td></tr>
     <tr><td><code>pack</code></td><td>Un dossier de livre ou des fichiers Markdown isolés réunis en un seul fichier <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fichier <code>.postext</code> décompressé dans un dossier.</td></tr>
     <tr><td><code>info</code></td><td>Les chapitres, les langues, les ressources et les polices du livre, et avec <code>--pages</code> son nombre de pages.</td></tr>
@@ -424,6 +425,18 @@ postext import-idml package.zip --document Book/Book.idml -o book/
 
 Un livre exporté depuis Postext revient avec les mêmes lignes. Un document fait dans InDesign est lu avec des pertes : la commande affiche le verdict (`faithful`, `approximate` ou `lossy`), les décomptes et ce qui a été perdu ou approché ; `--report` ajoute les notes et la façon dont chaque style de paragraphe a été lu, et `--json` porte le tout comme données. `--hidden`, `--pasteboard` et `--non-printing` lisent aussi les calques et les objets masqués, la table de montage et les objets non imprimables ; `--conditions all` lit tout le texte conditionnel, `--changes reject` lit les modifications suivies comme refusées et `--no-masters` laisse de côté les éléments des gabarits. `--name` et `--locale` donnent le titre et la langue. L’importateur est `idmlToPostext`, du paquet `postext-idml` : voir [Utilisation programmatique › Paquets InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml). L’import copie le document tel qu’il est ; pour porter un livre que vous garderez, avec ses règles de mise en page dégagées, utilisez plutôt le skill pour agents (voir [InDesign : import, export et portage](/fr/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+Un fichier de maquette garde la maquette d’un livre et rien de son texte : les réglages des parties demandées (les groupes du panneau Maquette, voir [Fichiers de maquette](/fr/docs/configuration-bundles#fichiers-de-maquette)) avec les fichiers de police et le profil de couleur qu’ils nomment. Une police marquée comme non redistribuable reste derrière. `--parts` ne prend que certaines parties, séparées par des virgules ; `--design-name`, `--id` et `--description` nomment la maquette. Le même livre donne toujours les mêmes octets.
+
+`--design FICHIER`, une option de toutes les commandes qui lisent un livre, met le livre dans un fichier de maquette ou dans la maquette d’un autre livre, avant `--config` et `--set` : les réglages de ses parties remplacent ceux du livre, les styles nommés se fusionnent par identifiant et les polices de la maquette s’ajoutent à celles du livre. `--design-parts` n’en prend que certaines parties. Le panneau Maquette du Sandbox importe et exporte les mêmes fichiers.
+
 ### pack et unpack
 
 ```bash
@@ -500,6 +513,7 @@ les derniers fichiers valides.
     <tr><td><code>--chapters LIST</code></td><td>Ne met en page que certains chapitres : <code>2</code>, <code>1,3-5</code>, <code>4-</code>. Plus rapide sur un long livre ; leurs pages sont numérotées à partir de leur propre première page.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>Modifie un réglage le temps de cette exécution, sous forme de chemin pointé : <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. La valeur est lue comme du JSON quand c’est possible (nombres, true et false, objets), sinon comme du texte. Répétable.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Une configuration (ou un <code>preset.json</code>) pour des fichiers Markdown isolés, ou fusionnée par-dessus celle d’un livre.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Met le livre dans la maquette d’un fichier de maquette (de <code>postext design</code> ou du Sandbox) ou du <code>.postext</code> d’un autre livre, avant <code>--config</code> et <code>--set</code>. <code>--design-parts LISTE</code> n’en prend que certaines parties.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Images, polices et titre pour des fichiers Markdown isolés.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Un dossier où chercher les polices que le livre ne porte pas. Répétable.</td></tr>
     <tr><td><code>--offline</code></td><td>Ne jamais télécharger de polices.</td></tr>

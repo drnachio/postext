@@ -23,7 +23,7 @@ export function ChapterStyleBar() {
   // the layer in scope (every language, or the edition on screen).
   const dispatch = useSandboxDispatch();
   // The settings in scope, not the panel's view of them (which is the
-  // style merged over the book, without the list of styles).
+  // style merged over the book).
   const read = () => scopedView(store.getSnapshot()).config.chapterStyles ?? NONE;
   const styles = useSyncExternalStore(store.subscribe, read, read);
   const editing = useSyncExternalStore(store.subscribe, () => store.getSnapshot().editingChapterStyle, () => store.getSnapshot().editingChapterStyle);

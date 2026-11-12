@@ -219,7 +219,7 @@ Els grups, en ordre de navegació:
 
 Els controls depenen del context. L'amplada de l'espai entre columnes només apareix en disposicions de diverses columnes, els paràmetres de justificació només apareixen quan el text és justificat (el text en bandera mostra en el seu lloc **Partició de mots en bandera**, i un estil de paràgraf o un requadre mostra el seu interruptor de partició de mots quan és justificat o quan la partició en bandera està activada), i el percentatge de la columna lateral només apareix a la disposició de columna i mitja. Els canvis es veuen immediatament a l'àrea de previsualització. Per a una referència completa de totes les opcions de configuració i els seus valors per defecte, consulta la pàgina de [Configuració](/ca/docs/configuration).
 
-La capçalera del tauler ofereix, a més, **Restablir** (demana confirmació; només apareix quan el disseny difereix del del llibre d'exemple obert, i restaura el disseny d'aquest exemple, fonts incloses), **Exportar** i **Importar**. Consulta [Exportar i importar](/ca/docs/sandbox-books-saving#exportar-i-importar).
+La capçalera del tauler ofereix, a més, **Restablir** (demana confirmació; només apareix quan el disseny difereix del del llibre d'exemple obert, i restaura el disseny d'aquest exemple, fonts incloses), **Exportar** i **Importar**. Consulta [Exportar i importar](/ca/docs/sandbox-books-saving#exportar-i-importar). **Exporta** i **Importa** hi escriuen i llegeixen fitxers de disseny, amb la tria de parts (vegeu [Dissenys](/ca/docs/sandbox#dissenys)).
 
 
 ## Tauler de revisió
@@ -260,6 +260,7 @@ Diagnòstics en viu, recalculats a partir del text, el disseny, les figures i l'
   - *Format de numeració desconegut*: un format de numeració de llista, de pàgina o de tipus de recurs que el motor no coneix, i que numera en decimal;
   - *Ajust desconegut*: una clau que no existeix als títols, en un nivell de títol, en un estil de títol o en una tabulació (un `letterSpacng` mal escrit), i que el motor ignora; l'entrada suggereix el paràmetre que s'hi assembla més, quan n'hi ha.
   - *Estil de requadre basat en un que no existeix* i *Estils de requadre basats els uns en els altres en bucle*: un estil de requadre amb un **Basat en** (`extends`) que no correspon a cap estil, o que torna a si mateix a través d'altres; l'estil queda sol (`calloutStyleExtendsUnknown`, `calloutStyleExtendsCycle`).
+  - *Configuració del llibre en un estil de capítol* (`chapterStyleBookSetting`): un estil de capítol que fixa la mida de pàgina, la llengua, les fonts, la impremta o un altre ajust que comparteix tot el llibre, i que l'estil no pot canviar.
   - *Sense numeració de línies en text vertical*: la numeració de línies activada en un document vertical, que no en porta cap.
 
   Les entrades que parlen d'un paràmetre i no del text, com *Llista de fonts en una família*, indiquen la ruta del paràmetre, i en fer-hi clic l'editor no es mou.
@@ -287,6 +288,8 @@ Diagnòstics en viu, recalculats a partir del text, el disseny, les figures i l'
   - *No és a cap pàgina*: un requadre o un flotant que encara esperava un espai lliure quan es va acabar la composició i no és a cap pàgina (`unplaced`);
   - *Llista curta partida entre columnes*: una llista de pocs elements composta en dues columnes o pàgines; apareix quan **Text de cos → Llistes curtes partides entre columnes** és a *Avisar*, i a *Evitar* per a la llista que cap columna no podia acollir sencera (`shortListSplit`);
   - *Repetició*: dues línies seguides que acaben o comencen amb la mateixa paraula o els mateixos caràcters; apareix, marcada a la pàgina, quan **Text de cos → Repeticions** és a *Avisar*, i a *Evitar* per a les repeticions que va mantenir el tall de línies (`stack`);
+  - *Cita a l'inici de línia*: una línia que comença amb una cita numerada, o amb un tros d'una, posada després d'una paraula; apareix quan **Text de cos → Cita a l'inici de línia** és a *Avisar*, i a *Evitar* per als talls que va mantenir el tall de línies (`citationBreak`);
+  - *Signe a la vora de la línia*: una línia que acaba o comença amb un signe solt entre espais, com `=`, `<` o `±`; apareix quan **Text de cos → Signe a la vora de la línia** és a *Avisar*, i a *Evitar* per als talls que va mantenir el tall de línies (`operatorBreak`);
   - *Escala de guionets*: més línies seguides acabades en guionet de les que permet **Guionets seguits**; apareix quan **Text de cos → Escales de guionets** és a *Avisar*, i a *Evitar* per a les escales que va mantenir el tall de línies (`hyphenLadder`);
   - *Última paraula partida*: un paràgraf l'última línia del qual només porta la resta d'una paraula partida a l'anterior; apareix quan **Text de cos → Última paraula partida** és a *Avisar*, i a *Evitar* per a les paraules que el tall de línies va mantenir partides (`lastWordDivided`);
   - *Bloc de l'índex general partit entre columnes*: un bloc de l'índex que havia d'anar junt i ocupa dues columnes o més, perquè és més alt que una columna o perquè la columna és curta; la fila obre la pàgina de l'índex i selecciona la línia `:::toc` (`tocGroupSplit`);

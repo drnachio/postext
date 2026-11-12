@@ -17,6 +17,7 @@ import { graphemeCount } from '../measure/graphemes.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { pieceScriptContext } from '../measure/script.js';
+import { spaceBreakDemerits, type SpaceBreakCosts } from './spaceBreaks.js';
 
 interface RichBreakPoint {
   charIndex: number;
@@ -126,10 +127,14 @@ export function richTokensToItems(
   /** Give each box the text it paints (`KPBox.text`), for stacks (#1463):
    *  only while they are avoided, so the common path allocates nothing. */
   withText = false,
+  /** What a break costs at a word space before a numbered citation or
+   *  around a lone operator (#1519): only while one is avoided. */
+  spaceCosts?: SpaceBreakCosts,
 ): KPItem[] {
   const items: KPItem[] = [];
   const stretchPerSpace = normalSpaceWidth * (maxStretchRatio - 1);
   const shrinkPerSpace = normalSpaceWidth * (1 - minShrinkRatio);
+  const ruled = spaceCosts ? spaceBreakDemerits(tokens.map((t) => t.text), (t) => tokens[t]!.kind === 'space' && !tokens[t]!.fixedGlue, spaceCosts) : undefined;
 
   for (let t = 0; t < tokens.length; t++) {
     const token = tokens[t]!;
@@ -148,6 +153,7 @@ export function richTokensToItems(
         shrink: token.fixedGlue ? 0 : shrinkPerSpace,
         sourceIndex: t,
         meta: { ...meta },
+        ...(ruled?.has(t) ? { breakDemerits: ruled.get(t)! } : {}),
       });
       continue;
     }

@@ -1,10 +1,9 @@
 'use client';
 
 import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, LayoutTemplate, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
 import {
-  useSandboxDispatch,
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
@@ -12,14 +11,12 @@ import {
   useSandboxSelector,
 } from '../context/SandboxContext.js';
 import {
-  exportConfigToJson,
-  importConfigFromJson,
   loadSettingsGroup,
   loadSettingsHelpMode,
   saveSettingsGroup,
   saveSettingsHelpMode,
 } from '../storage/persistence.js';
-import { ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, announce, cn } from '../ui/index.js';
+import { ConfirmPopover, EmptyState, IconButton, PanelBody, PanelHeader, cn } from '../ui/index.js';
 import { HelpModeContext } from '../controls/fieldContext.js';
 import { SettingsSearchContext, useSettingsSearch, type SettingsSearchState } from './search/SearchContext.js';
 import { MatchScopeProvider, useScopeCounts } from './search/MatchScope.js';
@@ -34,7 +31,9 @@ import {
 } from './sections/registry.js';
 import { groupOverrideCounts } from './sections/sectionOverrides.js';
 import { GROUP_ICONS } from './settings/groupIcons.js';
-import { DesignSummary } from './settings/DesignSummary.js';
+import { SettingsHome } from './settings/SettingsHome.js';
+import { DesignsPage } from './designs/DesignsPage.js';
+import { DesignImportButton } from './designs/DesignImportButton.js';
 import { PageGroupPreview } from './settings/PageGroupPreview.js';
 import { PreviewHighlightProvider } from './settings/previewHighlight.js';
 import { OpenSettingsGroupContext, onSettingsGroupRequest, onSettingsSectionRequest, onSettingsSwitchesRequest, pendingSettingsGroup, reportSettingsChangedOnly, takeSettingsFocus, takeSettingsSection } from '../context/settingsNavigation.js';
@@ -61,14 +60,12 @@ export function ConfigPanel() {
 }
 
 function ConfigPanelBody() {
-  const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const presetConfig = useSandboxSelector((s) => s.presetConfig);
   const resources = useSandboxResources();
   const { reload } = useSandboxPresets();
   const { hasResetBaseline } = useSandboxProjects();
-  const importRef = useRef<HTMLInputElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const groupButtons = useRef(new Map<SettingsGroupId, HTMLButtonElement>());
   const groupHeadingRef = useRef<HTMLHeadingElement>(null);
@@ -94,9 +91,12 @@ function ConfigPanelBody() {
     return isSettingsGroupId(saved) ? saved : null;
   });
   const [helpMode, setHelpMode] = useState(loadSettingsHelpMode);
+  // The designs (#1523), a page of the panel as a group is.
+  const [designs, setDesigns] = useState(false);
 
   const openGroup = (id: SettingsGroupId | null) => {
     pendingFocus.current = id === null ? group : 'heading';
+    setDesigns(false);
     setGroup(id);
     saveSettingsGroup(id);
     bodyRef.current?.scrollTo({ top: 0 });
@@ -107,6 +107,7 @@ function ConfigPanelBody() {
   const openGroupFromSection = useCallback((id: SettingsGroupId) => {
     setQuery('');
     setOverriddenOnly(false);
+    setDesigns(false);
     pendingFocus.current = 'heading';
     setGroup(id);
     saveSettingsGroup(id);
@@ -152,20 +153,6 @@ function ConfigPanelBody() {
 
   const overrideCounts = useMemo(() => groupOverrideCounts(config), [config]);
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const data = await importConfigFromJson(file);
-      dispatch({ type: 'SET_CONFIG', payload: data.config });
-      announce(labels.importConfigDone.replace('__file__', file.name));
-    } catch {
-      // Said in words, with what to try instead (WCAG 3.3.1, 3.3.3).
-      announce(labels.importConfigFailed.replace('__file__', file.name));
-    }
-    e.target.value = '';
-  };
-
   // "Overrides" means the config differs from the active preset's. When the
   // preset config is unknown (hydrated from an earlier session), fall back
   // to comparing against the engine defaults.
@@ -180,7 +167,14 @@ function ConfigPanelBody() {
     saveSettingsHelpMode(next);
   };
 
-  const view: 'search' | 'group' | 'home' = search.active ? 'search' : group ? 'group' : 'home';
+  const openDesigns = () => {
+    setQuery('');
+    setOverriddenOnly(false);
+    setDesigns(true);
+    bodyRef.current?.scrollTo({ top: 0 });
+  };
+
+  const view: 'search' | 'designs' | 'group' | 'home' = search.active ? 'search' : designs ? 'designs' : group ? 'group' : 'home';
 
   // Built only while searching: labels resolved in the viewer's language
   // plus the words the book itself puts in the rows.
@@ -213,22 +207,9 @@ function ConfigPanelBody() {
                 )}
               </ConfirmPopover>
             )}
-            <IconButton label={labels.exportFile} icon={<Download size={14} />} onClick={() => exportConfigToJson(config)} />
-            {/* Importing replaces the whole design: it asks first (WCAG 3.3.6). */}
-            <ConfirmPopover message={labels.importConfigConfirm} confirmLabel={labels.importFileConfirmAction} onConfirm={() => importRef.current?.click()}>
-              {({ open }) => (
-                <IconButton label={labels.importFile} icon={<Upload size={14} />} onClick={open} />
-              )}
-            </ConfirmPopover>
-            <input
-              ref={importRef}
-              type="file"
-              accept=".json"
-              onChange={handleImport}
-              className="hidden"
-              aria-hidden="true"
-              tabIndex={-1}
-            />
+            {/* Design files (#1523): the book's design out, a design into the gallery. */}
+            <IconButton label={labels.designsExport} icon={<Download size={14} />} onClick={openDesigns} />
+            <DesignImportButton onImported={openDesigns} />
           </>
         }
       />
@@ -256,11 +237,11 @@ function ConfigPanelBody() {
         </button>
       </div>
 
-      {view === 'group' && group && (
+      {(view === 'designs' || (view === 'group' && group)) && (
         <nav aria-label={labels.settingsBreadcrumb} className="flex h-9 pt-large:min-h-12 shrink-0 items-center gap-1 border-b border-(--rule) px-1.5">
           <button
             type="button"
-            onClick={() => openGroup(null)}
+            onClick={() => (view === 'designs' ? setDesigns(false) : openGroup(null))}
             className={cn(
               'inline-flex h-7 pt-large:h-11 cursor-pointer items-center gap-1 rounded-md px-1.5 pt-large:px-2 text-xs text-(--slate) transition-colors',
               'hover:bg-(--surface) hover:text-(--foreground) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
@@ -271,7 +252,7 @@ function ConfigPanelBody() {
           </button>
           <ChevronRight size={12} aria-hidden="true" className="text-(--slate) opacity-60 rtl:-scale-x-100" />
           <span aria-current="page" className="min-w-0 truncate text-xs font-medium text-(--foreground)">
-            {String(labels[SETTINGS_GROUPS.find((g) => g.id === group)!.labelKey])}
+            {view === 'designs' ? labels.designsRow : String(labels[SETTINGS_GROUPS.find((g) => g.id === group)!.labelKey])}
           </span>
         </nav>
       )}
@@ -282,8 +263,9 @@ function ConfigPanelBody() {
           <MatchScopeProvider id="root">
             <PanelBody ref={bodyRef}>
               {view === 'home' && (
-                <SettingsHome counts={overrideCounts} onOpen={openGroup} buttonRefs={groupButtons.current} />
+                <SettingsHome counts={overrideCounts} onOpen={openGroup} onOpenDesigns={openDesigns} buttonRefs={groupButtons.current} />
               )}
+              {view === 'designs' && <DesignsPage />}
               {view === 'group' && group && (
                 <GroupPage id={group} headingRef={groupHeadingRef} onOpen={openGroup} sectionAsk={sectionAsk} />
               )}
@@ -294,79 +276,6 @@ function ConfigPanelBody() {
         </OpenSettingsGroupContext>
       </HelpModeContext>
     </div>
-  );
-}
-
-function SettingsHome({ counts, onOpen, buttonRefs }: {
-  counts: Record<SettingsGroupId, number>;
-  onOpen: (id: SettingsGroupId) => void;
-  buttonRefs: Map<SettingsGroupId, HTMLButtonElement>;
-}) {
-  const labels = useSandboxLabels();
-  const dispatch = useSandboxDispatch();
-  return (
-    <>
-      <DesignSummary onOpenGroup={onOpen} />
-      <div className="px-1.5 pt-2">
-        <button
-          type="button"
-          onClick={() => dispatch({ type: 'SET_PANEL', payload: 'templates' })}
-          className={cn(
-            'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-start transition-colors',
-            'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
-          )}
-        >
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-(--rule) bg-(--surface) text-(--brand)">
-            <LayoutTemplate size={16} aria-hidden="true" />
-          </span>
-          <span className="flex min-w-0 flex-1 flex-col">
-            <span className="text-[0.8rem] leading-[1.35] font-medium text-(--foreground)">{labels.designTemplates}</span>
-            <span className="text-[0.68rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">{labels.designTemplatesHint}</span>
-          </span>
-          <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) transition-transform group-hover/row:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover/row:-translate-x-0.5" />
-        </button>
-      </div>
-      <h3 className="px-3 pt-4 pb-1.5 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
-        {labels.settingsGroupsHeading}
-      </h3>
-      <ul className="flex flex-col px-1.5 pb-3">
-        {SETTINGS_GROUPS.map((g) => {
-          const Icon = GROUP_ICONS[g.id];
-          const count = counts[g.id];
-          return (
-            <li key={g.id}>
-              <button
-                type="button"
-                ref={(el) => { if (el) buttonRefs.set(g.id, el); else buttonRefs.delete(g.id); }}
-                onClick={() => onOpen(g.id)}
-                className={cn(
-                  'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-start transition-colors',
-                  'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
-                )}
-              >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-(--rule) bg-(--surface) text-(--brand)">
-                  <Icon size={16} aria-hidden="true" />
-                </span>
-                <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-[0.8rem] leading-[1.35] font-medium text-(--foreground)">{String(labels[g.labelKey])}</span>
-                  <span className="text-[0.68rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">{String(labels[g.descriptionKey])}</span>
-                </span>
-                {count > 0 && (
-                  <span className="inline-flex shrink-0 items-center gap-1 text-[0.66rem] text-(--brand) tabular-nums">
-                    <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-(--brand)" />
-                    <span aria-hidden="true">{count}</span>
-                    <span className="sr-only">
-                      {(count === 1 ? labels.settingsGroupModifiedOne : labels.settingsGroupModifiedMany).replace('__count__', String(count))}
-                    </span>
-                  </span>
-                )}
-                <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) transition-transform group-hover/row:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover/row:-translate-x-0.5" />
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </>
   );
 }
 

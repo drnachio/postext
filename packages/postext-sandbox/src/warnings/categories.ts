@@ -76,6 +76,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'unknownConfigValue':
     case 'calloutStyleExtendsUnknown':
     case 'calloutStyleExtendsCycle':
+    case 'chapterStyleBookSetting':
     case 'templateDuplicate':
     case 'templateExtendsCycle':
     case 'templateExtendsUnknown':
@@ -114,6 +115,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'unplaced':
     case 'shortListSplit':
     case 'stack':
+    case 'citationBreak':
+    case 'operatorBreak':
     case 'hyphenLadder':
     case 'lastWordDivided':
     case 'openerFloat':

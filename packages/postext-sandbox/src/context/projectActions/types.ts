@@ -1,6 +1,7 @@
 // What the project actions take from the provider and what they give
 // back (#1276: split out of projectActions.ts).
 import type { Dispatch } from 'react';
+import type { Design } from 'postext';
 import type { PresetProvider, PresetApplyParts } from '../../presets/index.js';
 import type { ChapterLayout } from '../../book/types.js';
 import type { SandboxAction, SandboxState } from '../SandboxContext.js';
@@ -44,7 +45,9 @@ export type DuplicateSource = {
 
 export interface ProjectActions {
   activate: (id: string) => Promise<void>;
-  create: (opts: { from: 'current' | 'blank'; name?: string }) => Promise<string>;
+  /** A new book: a copy of the one on screen, or a blank one, with
+   *  `design` applied to its settings (#1523; its files already stored). */
+  create: (opts: { from: 'current' | 'blank'; name?: string; design?: Design }) => Promise<string>;
   duplicate: (source: DuplicateSource) => Promise<string>;
   /** Rename a project; `description` replaces its description when given
    *  (blank clears it). On a book in several languages the title is the

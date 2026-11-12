@@ -65,6 +65,18 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unknownParagraphStyle':
       text = `Unknown paragraph style "${w.style}" — the paragraphs are set as body text`;
       break;
+    case 'chapterStyleUnknown':
+      text = w.source === 'part'
+        ? `The part names the chapter style "${w.style}", which the book does not define — its chapters are set in the book's settings`
+        : `The chapter names the chapter style "${w.style}", which the book does not define — it is set in the book's settings`;
+      break;
+    case 'partStyleMidChapter':
+      text = w.source === 'section'
+        ? (w.style
+          ? `The line ::section{style="${w.style}"} of postext 1.78 is no longer read — the text after it stays in the chapter, in the chapter's settings; make that text a chapter of its own inside :::part{style="${w.style}"}, or give that chapter chapterStyle: ${w.style} in its front matter`
+          : 'The line ::section of postext 1.78 is no longer read — the chapter goes on in its own settings; the line can go')
+        : `The part with the chapter style "${w.style}" stands after text of its chapter — the style starts with the next chapter; open a chapter with the fence to set it from there`;
+      break;
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;
       break;
@@ -353,6 +365,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'stack':
       text = `Two lines in a row ${w.edge === 'end' ? 'end' : 'start'} on "${w.text}", a stack. With bodyText.stacks: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
       break;
+    case 'citationBreak':
+      text = `A line starts with the citation "${w.text}" — with bodyText.citationBreaks: "avoid" the line breaker keeps it with the word before it where the word spacing allows`;
+      break;
+    case 'operatorBreak':
+      text = `A line ${w.edge === 'end' ? 'ends on' : 'starts with'} "${w.text}", set between spaces — with bodyText.operatorBreaks: "avoid" the line breaker keeps it with its terms where the word spacing allows`;
+      break;
     case 'shortListSplit':
       text = `A list of ${w.items} ${w.items === 1 ? 'item' : 'items'} is cut between two columns — bodyText.shortListSplit: "avoid" sets a short list whole when a column can hold it`;
       break;
@@ -488,6 +506,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     // Box styles based on another (#905).
     case 'calloutStyleExtendsUnknown':
       text = `${w.path}: no box style has the id "${w.value}"${w.suggestion ? ` (did you mean "${w.suggestion}"?)` : ''} — the style stands alone`;
+      break;
+    case 'chapterStyleBookSetting':
+      text = `${w.path}: a chapter style cannot change ${w.value}, which the whole book shares — its chapters keep the book's`;
       break;
     case 'calloutStyleExtendsCycle':
       text = `${w.path}: the box styles extend each other in a loop (${w.value}) — the style stands alone`;

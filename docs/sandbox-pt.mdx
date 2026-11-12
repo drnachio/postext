@@ -30,7 +30,6 @@ Uma faixa estreita na borda esquerda tem um botão por painel. Cada botão mostr
 - **Livros** (ícone `Files`): seus livros e os livros de exemplo
 - **Capítulos** (ícone `BookOpen`): o livro aberto e os capítulos dele
 - **Texto** (ícone `FileCode`): escrever e editar o texto do capítulo atual
-- **Modelos** (ícone `LayoutTemplate`): modelos de design para experimentar no livro, guardar, importar e exportar
 - **Recursos** (ícone `FolderOpen`): imagens, desenhos SVG e tabelas usados no livro
 - **Fontes** (ícone `Type`): as famílias tipográficas que o livro usa e seus próprios arquivos de fonte
 - **Design** (ícone `Settings2`): configurações de página, tipografia, títulos, figuras, boxes e exportação
@@ -134,6 +133,7 @@ Clicar num livro (ou numa das etiquetas de idioma de um livro de exemplo) o abre
     - **Cópia do livro aberto** copia o livro aberto, suas figuras e suas fontes para um livro novo.
     - **Livro em branco** começa um livro vazio.
     - **Abrir um arquivo .postext…** importa um arquivo.
+    - **Com o projeto de…** começa um livro vazio com um projeto gráfico da galeria (veja [Projetos gráficos](#projetos-gráficos)).
 
   Você também pode duplicar qualquer linha. Enquanto você não tem livros próprios, o grupo mostra um estado vazio com o mesmo atalho. Cada linha tem um único menu **⋯** rotulado (*Mais ações de “…”*) com **Renomear…**, **Adicionar um idioma…** (veja [Um livro em vários idiomas](/pt/docs/sandbox-books-saving#exportar-e-importar)), **Duplicar**, **Baixar (.postext)** e **Excluir…**. Excluir pede confirmação ali mesmo, ao lado do botão ⋯.
 
@@ -209,15 +209,18 @@ O livro de exemplo aberto também define o que os botões **Redefinir** dos outr
 
 Uma predefinição que estava aberta numa sessão anterior mas que nenhuma origem lista mais (normalmente uma predefinição privada numa versão que não a serve) continua aparecendo, em cinza, como *Indisponível nesta versão*. O Sandbox mantém o conteúdo carregado em vez de trocá-lo em silêncio pelo exemplo embutido. O id da predefinição aberta fica guardado na chave `postext-sandbox-preset` (veja [Persistência](/pt/docs/sandbox-books-saving#persistência)). O formato do pacote está descrito no apêndice [Formato do pacote de predefinição](/pt/docs/sandbox-embedding#formato-do-pacote-de-predefinição).
 
-#### Painel Modelos
+#### Projetos gráficos
 
-O painel **Modelos**, entre Texto e Recursos, é o passo anterior ao design: escolher de que design parte o livro. Um modelo guarda o design (página e colunas, tipografia e estilos, cores, cabeçalhos e rodapés, impressão), nunca o texto, a língua nem os tipos de recurso, e leva cópia das suas fontes próprias e do seu perfil ICC.
+Um projeto gráfico é a aparência de um livro e nada do que ele diz: a página e as colunas, a tipografia e os estilos, as cores, os cabeçalhos e rodapés, as configurações de impressão. Ele nunca guarda o texto, os recursos nem as configurações que pertencem ao livro inteiro (idioma, direção, algarismos, tipos de recurso, verificações). Os projetos ficam no **painel Design**: a linha **Projetos gráficos** da visão geral os abre, e o cabeçalho exporta e importa arquivos de projeto.
 
-- **Galeria.** Os modelos guardados e os quatro de origem (*Romance*, *Manual técnico*, *Revista a duas colunas* e *Livro a duas cores*), cada um com um desenho da sua página, a tipografia e as cores.
-- **Experimentar.** Escolhes que partes substituir e o modelo é aplicado ao livro. Uma barra *A experimentar «…»* oferece **Manter** (fica aplicado) e **Descartar** (volta ao design que tinhas). Podes experimentar vários seguidos: cada um é aplicado sobre o design de partida, e Descartar volta a ele. O que o modelo não fixa volta ao valor por omissão.
-- **Guardar um design como modelo**, a partir deste livro ou de qualquer outro livro do Sandbox, escolhendo que partes inclui.
-- **Como estilo de capítulo**. As partes escolhidas de um modelo (página e colunas, tipografia, cores, cabeçalhos) passam a um estilo de capítulo do livro, novo ou um que já tenha: só o que mudam em relação ao livro, com o tamanho de página e a impressão do livro. Atribui-se aos capítulos que precisem desse design (um anexo, os casos clínicos) em **Capítulos**, ou com `chapterStyle:` no seu preâmbulo, e a uma parte de um capítulo, a partir de uma página nova, com `::section{style="…"}`; o resto do livro mantém o seu.
-- **Importar** (no cabeçalho do painel) e **Exportar** (em cada modelo) ficheiros `.postext-template.json` para os partilhar; as fontes não redistribuíveis ficam de fora. Os modelos guardados podem eliminar-se; os de origem, não.
+- **Partes.** Um projeto é cortado pelos grupos do painel Design (página e colunas, sistema de escrita, cores, texto, títulos…). Ao salvar, experimentar, aplicar ou exportar, você escolhe quais grupos ele leva.
+- **Galeria.** Seus projetos salvos, os quatro que vêm com o Sandbox (*Romance*, *Manual técnico*, *Revista a duas colunas*, *Livro a duas cores*) e o projeto de cada livro de exemplo, cada um com um desenho da página e as partes que contém.
+- **Experimentar.** As partes escolhidas substituem as do livro. Uma barra oferece **Manter** e **Descartar**: Descartar traz de volta só as configurações que o projeto substituiu, e qualquer outra edição feita nesse meio-tempo fica. Experimentar outro projeto substitui o primeiro. A experiência pertence ao livro em que começou, e abrir outro livro a encerra. A barra lista os estilos que o texto nomeia (de parágrafo, de título, de caixa, de etiqueta, de caractere, de marca e de tabela) e que o projeto não define, para que você os veja antes de mantê-lo. Experimentar, manter, descartar e aplicar são passos do histórico (⌘Z / Ctrl+Z).
+- **Os estilos com nome** se combinam por id: um estilo do projeto substitui o estilo do livro com o mesmo id, e os outros estilos do livro ficam. As fontes se combinam por família, e as cores da paleta que as configurações do projeto nomeiam vêm com ele.
+- **Um livro em vários idiomas** recebe o projeto nas configurações gerais, seja qual for o escopo que o seletor no alto do painel mostra; cada idioma mantém suas próprias configurações.
+- **Salvar** o projeto deste livro, ou de qualquer outro livro seu, com as partes que você escolher.
+- **Como estilo de capítulo.** As partes escolhidas viram um [estilo de capítulo](/pt/docs/configuration-styles#estilos-de-capítulo) do livro, novo ou um que ele já tenha, com só o que mudam em relação ao livro. Dê-o a capítulos em **Capítulos** ou com `chapterStyle:` no cabeçalho, e aos capítulos de uma parte com `:::part{style="…"}`.
+- **Exportar e importar.** Um arquivo de projeto é um `.postext` sem capítulos (veja [Arquivos de projeto gráfico](/pt/docs/configuration-bundles#arquivos-de-projeto-gráfico)) que leva os arquivos de fonte e o perfil de cor que suas partes nomeiam; fontes não redistribuíveis ficam de fora. A importação também lê o `.postext` de um livro inteiro (o seu projeto) e os `postext-config.json` de versões anteriores. A linha de comando escreve e lê os mesmos arquivos ([`postext design`](/pt/docs/command-line#design)). Projetos salvos podem ser excluídos; os incluídos e os dos livros de exemplo, não. Os modelos que o postext 1.78 salvou passam para os seus projetos salvos na primeira vez que a galeria se abre, e a importação lê os arquivos `.postext-template.json` dele como projetos.
 
 #### Painel Recursos
 

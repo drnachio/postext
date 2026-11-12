@@ -149,6 +149,11 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُنضَّد الفقرات بنمط نص المتن.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code>, <code>partStyleMidChapter</code></td>
+      <td><a href="/ar/docs/configuration-styles#أنماط-الفصول">أنماط الفصول</a></td>
+      <td>—</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> لا يذكر أيًا من <code>calloutStyles</code>، ولا يُطلَق إلا بعد ضبط بعضها.</td>
       <td>يأخذ الإطار أول نمط إطار.</td>
@@ -389,8 +394,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُقسم القائمة حيث ينتهي العمود.</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>سطران متتاليان من فقرة، في عمود واحد، ينتهيان (<code>edge: 'end'</code>) أو يبدآن (<code>'start'</code>) بالكلمة نفسها أو بـ<code>bodyText.stackMinCharacters</code> من الأحرف نفسها: <code>text</code> ما يكرّرانه كما يطبعه السطر الأول، و<code>lines</code> السطران. مع <code>bodyText.stacks: 'warn'</code> يُبلَّغ عن كل تكرار؛ ومع <code>'avoid'</code>، عن التكرارات التي أبقتها الخوارزمية. تحذير لكل تكرار؛ يشير إلى السطرين، مع صفحتهما. منذ postext 1.73.</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>سطران متتاليان من فقرة، في عمود واحد، ينتهيان (<code>edge: 'end'</code>) أو يبدآن (<code>'start'</code>) بالكلمة نفسها أو بـ<code>bodyText.stackMinCharacters</code> من الأحرف نفسها (<code>stack</code>، منذ postext 1.73)؛ سطر يبدأ بإحالة مرقّمة بعد كلمة أو بجزء منها (<code>citationBreak</code>، 1.79)؛ سطر ينتهي أو يبدأ بعلامة منفردة بين مسافتين مثل <code>=</code> أو <code>±</code> (<code>operatorBreak</code>، 1.79). <code>text</code> هو المكرَّر أو الإحالة أو العلامة، و<code>lines</code> السطران. مع <code>'warn'</code> (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>) يُبلَّغ عن كل حالة، ومع <code>'avoid'</code> عمّا أبقاه كسر الأسطر. واحد لكل كسر؛ يشير إلى السطرين مع صفحتهما.</td>
       <td>تُنضّد الأسطر كما هي.</td>
     </tr>
     <tr>
@@ -405,7 +410,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>مجموعة من المحتويات يُطلب إبقاؤها معًا (<code>toc.groups.keepTogether</code>، <code>:::toc{'{keep="…"}'}</code>)، يتصدّرها <code>title</code>، ومنضّدة في <code>columns</code> من الأعمدة: إما أنها أطول من عمود كامل، وإما أن العمود الذي تبدأ فيه قصير (تحت إطار يمتد بعرض الصفحة، أو بجوار عنصر عائم). تحذير لكل مجموعة؛ يشير إلى التوجيه <code>:::toc</code>، مع الصفحة التي تبدأ فيها المجموعة. ولإزالته، أدرِج مستويات أقل (<code>levels="1"</code>)، أو اجعل رأس المجموعات مستوى أدنى (<code>toc.groups.head: 2</code>)، أو صغّر المداخل أو ضيّق تباعدها. منذ postext 1.34.</td>
+      <td>مجموعة من المحتويات يُطلب إبقاؤها معًا (<code>toc.groups.keepTogether</code>، <code>:::toc{'{keep="…"}'}</code>)، يتصدّرها <code>title</code>، ومنضّدة في <code>columns</code> من الأعمدة: إما أنها أطول من عمود كامل، وإما أن العمود الذي تبدأ فيه قصير (تحت إطار يمتد بعرض الصفحة، أو بجوار عنصر عائم). تحذير لكل مجموعة؛ يشير إلى التوجيه <code>:::toc</code>، مع الصفحة التي تبدأ فيها المجموعة. منذ postext 1.34.</td>
       <td>تُقسم المجموعة؛ ومع <code>toc.groups.continuation</code> يُفتتح كل عمود تستمر فيه بصف رأسها وعلامة الاستمرار.</td>
     </tr>
     <tr>

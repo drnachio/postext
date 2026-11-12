@@ -1270,6 +1270,8 @@ parts: {
 
 Eine Zeile `:::part{number="…" title="…"}` öffnet den Teil, ein bloßes `:::` schließt ihn; beide Attribute sind optional (Standard ist `''`). Die Blöcke dazwischen – typischerweise die Kapitelliste – fließen mit `bodyStyle` in der einzigen Spalte der Teiltitelseite, beginnend bei `margins.top`; ein Inhalt, der länger als die Seite ist, geht auf gewöhnlichen Seiten weiter. Die Seite wird als `role: 'part'` eingestuft (`VDTPage.partInfo` enthält Nummer und Titel), sodass Elemente der Kopf- und Fußzeile sie mit `pages: 'part'` / `pages: 'body'` ansteuern oder auslassen können; die PDF-Ausgabe fügt den Teil der Gliederung über seinen Kapiteln hinzu. Ein leerer Inhalt (`:::part{…}` direkt gefolgt von `:::`) ist der übliche Fall und erzeugt trotzdem die Seite – aufeinanderfolgende Teile teilen sich nie eine. Ein in einem anderen Teil verschachteltes `:::part` wird in den äußeren eingeebnet.
 
+Zwei weitere Attribute wirken auf die Kapitel des Teils. `style="<id>"` setzt sie in einem der Kapitelstile des Buches (siehe *Ein Teil in einem Kapitelstil* weiter unten). `page=false` (auch `no`, `0` oder `off`) druckt für diesen Teil keine Teilseite, wie es `parts.page: false` für alle Teile tut: Der Inhalt des Containers wird nicht gesetzt, und Nummer, Titel, Palette und Stil des Teils gelten ab dem nächsten Inhalt, ohne eigenen Umbruch. Das passt zu einem Teil, der ohne Trennseite weiterläuft, etwa dem Anhang eines Buches, dessen andere Teile eine haben. Das Attribut kann die Seite nur abschalten: Ist `parts.page` `false`, öffnet keine `:::part`-Zeile eine.
+
 Ein drittes Attribut, `palette="<id>=<hex>[, <id>=<hex>…]"`, gibt dem Teil eigene Farben: Auf der Teiltitelseite und auf jeder folgenden Seite – bis zum nächsten Teil – nimmt jede Gestaltungsfarbe (Kopfzeile, Fußzeile, Auftaktband, Teil- und Rückseitengestaltung), die an eine dieser Paletten-IDs gebunden ist, den Wert des Teils statt den der Dokumentpalette an. So färben die Abschnitte eines Buchs das Etikett in der Ecke, den Punkt im Kolumnentitel und das Band des Kapitelauftakts ohne zweite Gestaltung um: `:::part{number="II" title="…" palette="band=#f6c297"}`. Der Textfluss folgt ebenfalls: Auf denselben Seiten nimmt jede Flussfarbe, die dem Grundwert eines überschriebenen Paletteneintrags gleicht – Farben von Überschriften, Fettem, Kursivem und Verweisen, Aufzählungszeichen und Listennummern, Legendenbezeichnungen und Legendenbalken, Tabellentext, Tabellenlinien und -flächen (Kopf, Inhalt, Zebrastreifen und die eigene Fläche einer Zelle), Kästen (Hintergrund, Kontur, Streifen, Titel) und Chips (Fläche, Umrisslinie und Text) –, den Wert des Teils an, sodass ein an `band` gebundenes `headings.levels[1].color` die Überschriften jedes Abschnitts in dessen eigener Farbe setzt. Inline-Farbfelder behalten die in ihnen geschriebene Farbe. Paare werden durch Kommas, Semikolons oder Leerzeichen getrennt, `=` oder `:` verbindet ID und Farbe, das `#` ist optional. Ein Teil bleibt wirksam, nachdem sein Block geschlossen ist: `{partTitle}`, `{partNumber}` und die Palette folgen dem Fluss in die Kapitel danach und – über `continuation.part`, das `continuationAfter()` meldet – in einzeln gesetzte Kapitel, sodass das zweite Kapitel eines Abschnitts den Abschnitt in seinen Kolumnentiteln genau wie das erste zeigt.
 
 Zwei Paletteneinträge können denselben Grundwert haben und in einem Teil dennoch unterschiedliche Werte annehmen, wenn der Teil den einen überschreibt und den anderen nicht oder ihnen verschiedene Farben gibt. Der Wert allein sagt nicht, aus welchem Eintrag eine Flussfarbe stammt; daher wird jede Farbe des Flusses mit den Einstellungen abgeglichen, aus denen sie stammen kann, und nimmt den Wert an, an den diese Einstellungen gebunden sind. Unterschieden werden:
@@ -1424,70 +1426,6 @@ headingStyles: [
 …
 ```
 
-## Kapitelstile
-
-Ein Buch, dessen Kapitel nicht alle gleich aussehen (Anhänge zweispaltig in kleinerer Schrift, ein Teil in einer anderen Farbe gedruckt, ein Glossar mit eigenen Kolumnentiteln), deklariert **Kapitelstile**, und ein Kapitel übernimmt einen davon, indem es ihn in seinem Frontmatter nennt:
-
-```ts
-interface ChapterStyleConfig {
-  id: string;              // What a chapter's front matter names.
-  name?: string;           // A name to show for it.
-  config: ConfigOverride;  // The settings it changes.
-}
-```
-
-```ts
-chapterStyles: [
-  {
-    id: 'appendix',
-    name: 'Appendix',
-    config: {
-      layout: { layoutType: 'double' },
-      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
-      bodyText: { fontSize: { value: 9, unit: 'pt' } },
-      header: { elements: [] },
-    },
-  },
-],
-```
-
-```markdown
----
-chapterStyle: appendix
----
-# Appendix A
-```
-
-Das `config` eines Stils wird über die Konfiguration des Buches gelegt wie die Ebene einer Sprache (siehe `mergeConfigLayers`): Objekte Schlüssel für Schlüssel, eine Farbe oder eine Länge als Ganzes, Listen von Stilen Eintrag für Eintrag über ihre `id`, und `null` nimmt einen Wert des Buches heraus. So können Spalten und Ränder, Typografie sowie Absatz-, Überschriften- und Kastenstile, Farben und Druckfarben, Kolumnentitel und Formate der Seitenzahlen von einem Kapitel zum nächsten wechseln, während alles, was der Stil nicht nennt, beim Buch bleibt. Format, Auflösung, Schnittmarken und Bindung bleiben beim Buch: Ein Stil, der sie nennt, wird darin ignoriert.
-
-Seitennummerierung, Zähler, Anmerkungen und Inhaltsverzeichnis laufen durch das Kapitel weiter wie durch jedes andere. Jede Ausgabe liest ihn: das Canvas, das PDF, das EPUB, das HTML und ein mit `buildBundle` gesetztes Paket, und auch ein einzeln mit `buildDocument` gesetztes Kapitel, denn die Engine wendet den Stil an, den sein Text nennt. In einem Buch ist nur das Frontmatter des ersten Kapitels das des Buches; das eines späteren Kapitels wird bis auf seine Zeile `chapterStyle:` geleert. Das `{style="…"}` einer Überschrift legt sich weiterhin über den Stil des Kapitels, für einen Abschnitt.
-
-In der Sandbox wählt die Leiste „Kapitelstil“ oben im Bedienfeld Gestaltung, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert; die Leiste benennt den Stil um, löscht ihn und kehrt zum Buch zurück, und ihre Schaltfläche + legt einen neuen an. Ein Kapitel erhält einen Stil über sein Menü im Bedienfeld Kapitel, das die Zeile `chapterStyle:` für es schreibt; sein Eintrag zeigt den Namen des Stils. Während ein Stil bearbeitet wird, trägt ein Feld, das der Stil festlegt, seine Markierung, deren Menü den Wert des Buches zurückholt oder den Wert des Stils zu dem des Buches macht. In einem Buch in mehreren Sprachen werden die Stile in der Ebene gespeichert, die das Bedienfeld bearbeitet: in den Einstellungen aller Sprachen oder in der angezeigten Ausgabe.
-
-### Abschnitte in einem Kapitel
-
-Innerhalb eines Kapitels setzt ein Abschnittswechsel in einer eigenen Zeile das Folgende in einem Kapitelstil, ab einer neuen Seite, bis zum nächsten Wechsel oder zum Ende des Kapitels; `::section` allein kehrt zu den eigenen Einstellungen des Kapitels zurück:
-
-```markdown
-# Results
-
-The chapter's own settings.
-
-::section{style="appendix"}
-
-## Tables of results
-
-Set in the appendix style, from a new page.
-
-::section
-
-## Discussion
-
-Back to the chapter's settings, from a new page.
-```
-
-Der Stil wird über die Einstellungen des Kapitels gelegt (dessen eigener Kapitelstil eingeschlossen), sodass ein Abschnitt nur ändert, was sein Stil nennt. Seitennummerierung, Zähler und Anmerkungen laufen durch die Abschnitte weiter wie durch die Kapitel. Ein Wechsel innerhalb eines Codeblocks ist Text.
-
 Die Seite des Umschlags druckt keine Kolumnentitel, und ab *Die Laternenstube* übernehmen die Seiten wieder Kopf- und Fußzeile des Dokuments. Mit dem Standardwert `'level'` dauerte der Abschnitt des Umschlags bis zur nächsten Überschrift der Ebene 1, die dieses Buch nicht hat, und keine seiner Seiten trüge einen Kolumnentitel.
 
 **Ein Seitenumbruch ersetzt nicht den eigenen Umbruch der Überschrift.** Ein Stil erbt das `breakBefore` seiner Ebene (der Standard für Ebene 1 ist `{ enabled: true, parity: 'always-odd' }`), und eine Überschrift wendet es an, wo immer sie steht, auch direkt nach einem `:::pagebreak`. Der Seitenumbruch eröffnet eine neue Seite, und die Überschrift verlangt dann trotzdem ihre Seite der Doppelseite. Mit `parity: 'odd'` folgt auf einen Umbruch, der auf eine linke Seite fällt, eine Vakatseite, sodass die Überschrift auf der nächsten rechten Seite beginnt. Mit `'always-odd'` kommt auch die trennende Vakatseite hinzu, und der Seitenumbruch ändert nichts, da die Überschrift diese Seite ohnehin eröffnet hätte. Ein Stil, der auf der Seite beginnen soll, die ein manueller Umbruch eröffnet, etwa eine Inhaltsseite nach der Titelseite, schaltet seinen eigenen Umbruch aus:
@@ -1548,3 +1486,57 @@ const minimal = stripHeadingStylesDefaults(config.headingStyles);
 // => undefined when no style remains
 ```
 
+## Kapitelstile
+
+Ein Buch, dessen Kapitel nicht alle gleich aussehen (Anhänge zweispaltig in kleinerer Schrift, ein Teil in einer anderen Farbe gedruckt, ein Glossar mit eigenen Kolumnentiteln), deklariert **Kapitelstile**, und ein Kapitel übernimmt einen davon, indem es ihn in seinem Frontmatter nennt:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+Das `config` eines Stils wird über die Konfiguration des Buches gelegt wie die Ebene einer Sprache (siehe `mergeConfigLayers`): Objekte Schlüssel für Schlüssel, eine Farbe oder eine Länge als Ganzes, Listen von Stilen Eintrag für Eintrag über ihre `id`, und `null` nimmt einen Wert des Buches heraus. So können Spalten und Ränder, Typografie sowie Absatz-, Überschriften- und Kastenstile, Farben und Druckfarben, Kolumnentitel und Formate der Seitenzahlen von einem Kapitel zum nächsten wechseln, während alles, was der Stil nicht nennt, beim Buch bleibt. Was das ganze Buch teilt, bleibt beim Buch: von `page` Format, Auflösung, Schnittmarken und Bindung, dazu Sprache und Schreibrichtung, Ziffern, registrierte Schriften und Symbolschrift, Ressourcentypen, Druckvorstufe, PDF-Erzeugung, Viewer und Prüfungen. Ein Stil, der eine dieser Einstellungen setzt, wird darin ignoriert, und die Konfigurationswarnungen melden es als `chapterStyleBookSetting`. In der Sandbox geht eine Änderung an einer dieser Einstellungen, die beim Bearbeiten eines Stils gemacht wird, an das Buch.
+
+Seitennummerierung, Zähler, Anmerkungen und Inhaltsverzeichnis laufen durch das Kapitel weiter wie durch jedes andere. Jede Ausgabe liest ihn: das Canvas, das PDF, das EPUB, das HTML und ein mit `buildBundle` gesetztes Paket, und auch ein einzeln mit `buildDocument` gesetztes Kapitel, denn die Engine wendet den Stil an, den sein Text nennt. In einem Buch ist nur das Frontmatter des ersten Kapitels das des Buches; das eines späteren Kapitels wird bis auf seine Zeile `chapterStyle:` geleert. Das `{style="…"}` einer Überschrift legt sich weiterhin über den Stil des Kapitels, für einen Abschnitt.
+
+Auch der Word-Export liest ihn. Im gesetzten Dokument ist jedes Kapitel ein Word-Abschnitt mit den Rändern, Spalten und der Seitennummerierung seines Stils, und jede Absatz- oder Zeichenformatvorlage, deren Text der Kapitelstil ändert, bekommt eine eigene Fassung, die nach ihm benannt ist (*Normal (Appendix)*) und eine Rundreise durch Word übersteht; die `chapterStyle:`-Zeilen und die `:::part`-Zeilen kommen aus Word zurück, wie sie waren. Das semantische Dokument behält seine schlichte A4-Seite und benennt nur die Formatvorlagen gesondert, die das schlichte Design weiterhin anders setzt. In der Sandbox setzt auch der HTML-Betrachter, wenn er das ganze Buch liest, jedes Kapitel in seinem Stil. Ein Programm, das ein ganzes Buch als ein Dokument setzt, gibt an, wo jedes Kapitel liegt (`content.chapters`): Die Engine setzt die Kapitel eines Stils zusammen und die des nächsten Stils ab einer neuen Seite.
+
+In der Sandbox wählt die Leiste „Kapitelstil“ oben im Bedienfeld Gestaltung, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert; die Leiste benennt den Stil um, löscht ihn und kehrt zum Buch zurück, und ihre Schaltfläche + legt einen neuen an. Ein Kapitel erhält einen Stil über sein Menü im Bedienfeld Kapitel, das die Zeile `chapterStyle:` für es schreibt; sein Eintrag zeigt den Namen des Stils. Während ein Stil bearbeitet wird, trägt ein Feld, das der Stil festlegt, seine Markierung, deren Menü den Wert des Buches zurückholt oder den Wert des Stils zu dem des Buches macht. In einem Buch in mehreren Sprachen werden die Stile in der Ebene gespeichert, die das Bedienfeld bearbeitet: in den Einstellungen aller Sprachen oder in der angezeigten Ausgabe. Ein Kapitel im Stil seines Teils zeigt diesen Stil in seiner Zeile, und der erste Eintrag seines Menüs lautet „Stil des Teils: …“.
+
+### Ein Teil in einem Kapitelstil
+
+Ein Teil kann alle seine Kapitel in einem Stil setzen: Die Zeile `:::part` nennt ihn mit `style`, und das Kapitel, das diese Zeile eröffnet, und alle folgenden bis zum nächsten Teil werden darin gesetzt.
+
+```markdown
+:::part{number="IV" title="Anhänge" style="appendix"}
+:::
+
+# Anhang A
+```
+
+Das eigene `chapterStyle:` eines Kapitels hat Vorrang vor dem seines Teils, und ein Teil, der keinen Stil nennt, setzt seine Kapitel in den Einstellungen des Buches. Die Zeile `:::part` steht am Anfang des Kapitels, das den Teil eröffnet, vor seiner Überschrift: Nennt sie einen Stil, nachdem der Text des Kapitels begonnen hat, gibt es eine Warnung `partStyleMidChapter`, und der Stil beginnt mit dem nächsten Kapitel. Ein für sich gesetztes Kapitel übernimmt den Stil seines Teils aus der Fortsetzung (`continuation.part.style`, die `continuationAfter()` liefert), wie Titel und Palette des Teils. Ein Stil, den `chapterStyles` nicht hat und den `chapterStyle:` oder ein Teil nennt, gibt eine Warnung `chapterStyleUnknown`, und das Kapitel wird in den Einstellungen des Buches gesetzt. Die Zeile `::section{style="…"}` aus postext 1.78, die den Stil innerhalb eines Kapitels wechselte, wird nicht mehr gelesen: Ihr Text bleibt im Kapitel, mit dessen Einstellungen, und die Zeile löst eine Warnung `partStyleMidChapter` aus; machen Sie diesen Text zu einem eigenen Kapitel in einem Teil mit diesem Stil, oder geben Sie ihm `chapterStyle:`.

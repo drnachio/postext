@@ -3,7 +3,7 @@
 
 import type { PostextConfig, Resource } from '../types.js';
 import { readBundle, planBundle, resolveBundleFiles } from './codec.js';
-import type { BundleCanvasScope, BundleChapter, BundleFontFile, BundleManifest, BundleManifestV2, BundleStart } from './types.js';
+import type { BundleCanvasScope, BundleChapter, BundleDesignSpec, BundleFontFile, BundleManifest, BundleManifestV2, BundleStart } from './types.js';
 import { mimeForFile, pickBundleMeta, pickBundleView, slugify } from './manifest.js';
 import { openBundleZip, zipBundle } from './zip.js';
 
@@ -47,6 +47,9 @@ export interface PostextBundle {
    *  (#695): the `continuation` of its first chapter, which `buildBundle`
    *  lays it out with. Absent for a book that starts at its beginning. */
   start?: BundleStart;
+  /** A design bundle's marker (#1523): the parts of the design `config`
+   *  holds. A design bundle has no chapters. */
+  design?: BundleDesignSpec;
   /** Non-fatal problems met while reading (unsupported font files, a
    *  missing print master). */
   warnings: string[];
@@ -96,6 +99,7 @@ export async function openBundle(
     ...(manifest.thumbnail && zip.files.has(manifest.thumbnail) ? { thumbnail: manifest.thumbnail } : {}),
     ...(view?.canvasScope ? { canvasScope: view.canvasScope } : {}),
     ...(read.start ? { start: read.start } : {}),
+    ...(manifest.design ? { design: { parts: [...manifest.design.parts] } } : {}),
     warnings,
   };
 }
@@ -218,6 +222,10 @@ export interface CreateBundleInput {
    *  them. `chapters`, `config` and `resources` above are then the content
    *  of `locale`, which is required. */
   localized?: Record<string, CreateBundleLocale>;
+  /** Write a design bundle (#1523): `config` is a design of these parts,
+   *  and the bundle holds no chapters (`chapters` and `markdown` are left
+   *  out). */
+  design?: BundleDesignSpec;
 }
 
 /** One more language of a bundle (see {@link CreateBundleInput.localized}). */
@@ -271,7 +279,8 @@ const THUMBNAIL_ID = '\u0000thumbnail';
  *  resources and the payloads they reference. */
 export async function createBundle(input: CreateBundleInput): Promise<CreatedBundle> {
   const source = input.chapters ?? (input.markdown !== undefined ? [{ markdown: input.markdown }] : []);
-  if (source.length === 0) throw new Error('createBundle: give `chapters` or `markdown`');
+  if (input.design && source.length > 0) throw new Error('createBundle: a design bundle holds no chapters');
+  if (!input.design && source.length === 0) throw new Error('createBundle: give `chapters` or `markdown`');
   const titled = (list: readonly { title?: string; markdown: string }[]) =>
     list.map((c, i) => ({ title: c.title || chapterTitle(c.markdown, i + 1), markdown: c.markdown }));
   const chapters = titled(source);
@@ -299,6 +308,7 @@ export async function createBundle(input: CreateBundleInput): Promise<CreatedBun
       ...(input.sharedConfig ? { sharedConfig: input.sharedConfig } : {}),
       resources: input.resources ?? [],
       ...(input.canvasScope ? { canvasScope: input.canvasScope } : {}),
+      ...(input.design ? { design: input.design } : {}),
       ...(input.start ? { start: input.start } : {}),
       ...(input.thumbnail ? { thumbnail: { fileId: THUMBNAIL_ID, mime: input.thumbnail.mime } } : {}),
       ...(localized ? { localized } : {}),

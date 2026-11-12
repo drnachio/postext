@@ -193,14 +193,6 @@ The same files are read and written by the `postext` package (`openBundle`, `cre
 
 The text and the design also export separately from the Text and Design panel headers.
 
-The **Design panel** header downloads `postext-config.json` with defaults stripped:
+The **Design panel** header exports the book's design as a design file, a `.postext` with no chapters (see [Design bundles](/en/docs/configuration-bundles#design-bundles)), and imports one, the design of a whole book's `.postext`, or a `postext-config.json` written by earlier versions (see [Designs](/en/docs/sandbox#designs)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-The **Text panel** header downloads the active chapter as a plain `.md` file and its **Import** button replaces the active chapter with a `.md` file's contents. The Design panel's **Import** button opens a file picker for `.json` files validated against the expected `type` and `version`; invalid files are silently ignored. The `postext-markdown.json` wrapper and the combined `postext-sandbox.json` format from earlier versions no longer exist.
+The **Text panel** header downloads the active chapter as a plain `.md` file and its **Import** button replaces the active chapter with a `.md` file's contents. The `postext-markdown.json` wrapper and the combined `postext-sandbox.json` format from earlier versions no longer exist.

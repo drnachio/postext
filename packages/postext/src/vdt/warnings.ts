@@ -114,9 +114,16 @@ export interface ConfigWarning {
    *  owner, `value` the start of the first text (40 characters at most),
    *  `used` is empty, and `count`, `chars` and `elements` say how many
    *  texts, how many letters and where. The fix is to move the text into
-   *  the Markdown and keep only placeholders in the design. */
+   *  the Markdown and keep only placeholders in the design.
+   *
+   *  `chapterStyleBookSetting` (#1521): a chapter style sets a setting the
+   *  book has one value for (`BOOK_WIDE_KEYS`, and the page's
+   *  `BOOK_PAGE_KEYS`: trim, resolution, cut lines, binding); the style's
+   *  chapters keep the book's. `path` is the setting
+   *  (`chapterStyles[1].config.page.width`), `value` the key as the style
+   *  names it (`page.width`), `used` is empty. */
   kind: 'unknownNumberFormat' | 'fontFamilyStack' | 'sideColumnPercentClamped' | 'columnCountClamped' | 'unknownConfigKey' | 'cjkGridClamped' | 'unknownConfigValue' | 'unknownNumerals' | 'lineNumbersUnsupported' | 'wrapUnsupported' | 'contentInConfig'
-    | 'calloutStyleExtendsUnknown' | 'calloutStyleExtendsCycle'
+    | 'calloutStyleExtendsUnknown' | 'calloutStyleExtendsCycle' | 'chapterStyleBookSetting'
     | PageTemplateWarningKind;
   /** Where the value sits in the config, e.g.
    *  `orderedLists.levels[1].numberFormat`, `header.elements[0].fontFamily`,

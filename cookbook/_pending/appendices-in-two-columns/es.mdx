@@ -1,0 +1,75 @@
+---
+title: "Apéndices a dos columnas en cuerpo menor"
+summary: "Un manual a una columna cuyos apéndices cambian de diseño: una parte nombra un estilo de capítulo, un apéndice nombra el suyo y el epílogo vuelve."
+plain: "Los capítulos del libro van a una columna ancha. Desde los apéndices, el texto corre a dos columnas de letra más pequeña, y un apéndice a tres. El tamaño de página y el idioma del libro no cambian en ningún momento."
+description: "chapterStyles con :::part{style=…} y el chapterStyle: de un capítulo, en un libro de seis documentos, y una parte con page=false que vuelve al diseño del libro."
+question: "¿Cómo compongo los apéndices o una parte de un libro con otro diseño, como dos columnas en cuerpo menor?"
+aliases: ["estilos de capítulo", "chapterStyle", "diseño de apéndices", "apéndices a dos columnas", "diseño de las páginas finales", "estilo de parte", "maqueta distinta por capítulo", "parte sin portadilla", "page=false", "paquete de diseño", "postext design", "reutilizar un diseño"]
+pageNotes: { "1": "La portadilla de la parte I: una banda verde en la mitad superior de la página con el numeral I y el título El huerto.", "7": "El apéndice A a dos columnas en bandera de cuerpo menor, cada patrón con su nombre en negrita, bajo un título más pequeño que el de los capítulos.", "9": "El apéndice C a tres columnas de palo seco con los nombres de las variedades en rojizo: el estilo propio del capítulo.", "10": "El epílogo de nuevo a una columna justificada, sin portadilla delante, y el colofón en palo seco pequeño." }
+---
+
+## Lo que vas a componer
+
+Un pequeño manual para quien cultiva manzanos en un valle frío, de 150 × 220 mm, escrito en seis documentos Markdown y compuesto como un solo libro. Los dos capítulos de la parte I van a una columna justificada de Source Serif 4. La parte II, los apéndices, cambia de diseño: una tabla de patrones y un calendario mes a mes a dos columnas en bandera y cuerpo menor, materia que se consulta en el cobertizo con el libro abierto sobre el banco, y una lista de variedades a tres columnas de palo seco. El epílogo vuelve al diseño propio del libro sin portadilla. El formato, los márgenes, la división de palabras y el idioma son los mismos en todas las páginas.
+
+## Elaboración
+
+### 1 · Un estilo guarda solo lo que cambia
+
+El código está en [la respuesta corta](#la-respuesta-corta). Un estilo de capítulo tiene un id, un nombre para el Sandbox y un `config` que se fusiona sobre los ajustes del libro como lo hace la capa de un idioma. Los objetos se fusionan clave a clave y las listas entrada a entrada por su `id` o su `level`, de modo que `smallOpener` nombra un elemento de la apertura, el título, y le da un cuerpo menor; el filete de debajo y todo lo demás se quedan como los tiene el libro. El estilo de apéndice fija dos columnas, un cuerpo de texto menor, líneas en bandera y espacio entre entradas, y nada más.
+
+Algunos ajustes son del libro entero: el formato, la resolución y la encuadernación de `page`, el idioma y la dirección de escritura, las cifras, las fuentes, la impresión y el PDF. Un estilo que fije alguno se ignora en ese punto y da un aviso `chapterStyleBookSetting`, así que los apéndices conservan el formato de 150 mm y la división de palabras en español de los capítulos.
+
+### 2 · La parte nombra el estilo
+
+<Excerpt region="chapters" />
+
+El tercer documento empieza con `:::part{number="II" title="Apéndices" style="appendix"}`, y todos los capítulos desde ese hasta la parte siguiente se componen con el estilo de apéndice. El quinto nombra su propio estilo en su front matter, `chapterStyle: "reference"`, que pesa más que el de la parte. En un libro, solo el front matter del primer documento es del libro; uno posterior conserva únicamente su línea `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Apéndice C: el estilo propio del capítulo, tres columnas de palo seco, sobre las dos de la parte." />
+
+### 3 · Una portadilla, y una parte sin ella
+
+<Excerpt region="parts" />
+
+Cada `:::part` abre una portadilla con el número y el título de la parte sobre una banda verde. El epílogo empieza con `:::part{title="Epílogo" page=false}`: no se imprime portadilla y, como la parte no nombra estilo, su capítulo se compone otra vez con los ajustes del libro. Una parte con `page=false` sirve para las páginas finales que siguen a los apéndices sin corte.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="La portadilla de la parte II." />
+
+### 4 · Una apertura en dos tamaños
+
+<Excerpt region="opener" />
+
+La apertura ocupa todo el ancho de la página, así que en los apéndices pasa por encima de las dos columnas y el texto empieza debajo, a dos. Los estilos de apéndice y de lista de consulta reducen el título a 16 pt y el hundido a 24 mm a través del id del elemento: la materia del final del libro ocupa menos, y sus títulos siguen claramente por encima del texto.
+
+### 5 · Titulillos del libro
+
+<Excerpt region="running-heads" />
+
+El título del libro va en la página par y el del capítulo en la impar. Ningún estilo los cambia, así que los titulillos son iguales en todas las partes del libro.
+
+## Variantes
+
+### Pedir a un estilo un ajuste del libro
+
+Un estilo que fija el formato o el idioma se ignora en esas claves. La composición da un aviso `chapterStyleBookSetting` por cada una, y los apéndices conservan el formato del libro.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Usar el diseño en otro libro
+
+La herramienta de línea de órdenes escribe el diseño de un libro, con sus estilos de capítulo, en un paquete de diseño, y compone otro libro con él mediante `--design`. Consulta [la orden design](/es/docs/command-line#design).
+
+```bash
+postext design manzanos.postext -o manual.postext
+postext pdf perales/ --design manual.postext -o perales.pdf
+```
+
+## Errores frecuentes
+
+- La línea `:::part` tiene que abrir el capítulo, antes de su título. Una línea de parte puesta después de que haya empezado el texto del capítulo da el aviso `partStyleMidChapter`, y el estilo empieza en el capítulo siguiente.
+- Un nombre de estilo que no está en `chapterStyles` da el aviso `chapterStyleUnknown`, y ese capítulo se compone con los ajustes del libro.

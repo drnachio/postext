@@ -166,7 +166,7 @@ Conversion at `page.dpi` (default 300):
 | `checks` | `{ contentInConfig?: { enabled?, allow?, maxWords?, maxChars? } }` | §19h | the `contentInConfig` check of design texts (postext 1.34; read by `preset_kit.py lint` on any version); out of the layout key; an older engine ignores the key |
 | `pageTemplates` | PageTemplate[] | §19g | composed-page templates (read and checked from 1.34.0, laid out from 1.34.1, groups and spreads from 1.35.0, `fit` from 1.36.0, continuation from 1.37.0, continue-before-shrink, `page:` jumps, ruled frames, vertical spreads from 1.38.0; frame `writingMode`/`direction`, label checks from 1.39.0; label styles that switch off a borrowed italic, frames in their own mode on right-to-left pages from 1.40.0; connectors, path elements, box shapes, repeating grids, modules and the overlap checks from 1.48.0; round 2, composed-pages.md) |
 | `labelStyles` | LabelStyle[] | §19g | styles of `::label` words on pictures (read from 1.34.0, drawn from 1.37.0, vertical and checked from 1.39.0; `fontStyle` / `textTransform` left unset follow a borrowed paragraph style from 1.40.0; leaders, keys (`kind: 'legend'`), plates with outlines from 1.48.0) |
-| `chapterStyles` | ChapterStyleConfig[] | §19g2 | named designs a chapter takes over the book's settings: `{ id, name, config }`, `config` a partial `PostextConfig` (page, typography, colours, running heads). A chapter names one in its front matter (`chapterStyle: <id>`); `::section{style="<id>"}` sets what follows in that style, from a new page |
+| `chapterStyles` | ChapterStyleConfig[] | §19g2 | named designs a chapter takes over the book's settings: `{ id, name, config }`, `config` a partial `PostextConfig` (page, typography, colours, running heads). A chapter names one in its front matter (`chapterStyle: <id>`); `:::part{style="<id>"}` sets every chapter of the part in it. Book-wide keys and the page trim are ignored in a style (`chapterStyleBookSetting`) |
 
 Not configurable (no config exists — don't look for it): margin notes (emulate with
 `span:'side'` callouts; footnotes and endnotes are `footnotes`, §19a), a blockquote's own family, size,
@@ -341,8 +341,6 @@ bodyText
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
-├─ bindCitations     boolean         false           (≥ 1.73) the space before a numbered citation in brackets/parentheses (`autores [12]`, `(12–15)`) and the spaces in it become no-break spaces; never after a number (`2016 (3)`). Paragraphs, list items, quotes set horizontally; RTL/CJK blocks untouched
-├─ bindOperators     boolean         false           (≥ 1.73) a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ −` between spaces stays with both terms (`p < 0.05`): no line ends on it nor starts with it. Same scope as bindCitations
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true (false in an Arabic-script document, ≥ 1.15), indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
@@ -432,6 +430,19 @@ H&J / Knuth–Plass
 │                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
 │                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
 │                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
+├─ citationBreaks     'allow'; citationBreakPenalty 10000   ≥ 1.79 a line that starts with a numbered citation after a word, or a piece
+│                        of one (`autores [12]`, `[14, 16]`, `(12–15)`, the `[3, p. 12]` a numbered style sets for `[@key, p. 12]`; never after
+│                        a number: `2016 (3)`): 'warn' = same layout + a `citationBreak` warning per break; 'avoid' = citationBreakPenalty
+│                        demerits on a break at the space before the citation or inside it (the space stays a stretching word space; the
+│                        default weighs one line stretched to the word-spacing limit), the breaks kept are reported. Paragraphs, lists,
+│                        quotes, boxes, notes, captions, table cells set horizontally; RTL and CJK left alone; under 'avoid' ragged text
+│                        is set by Knuth–Plass too; composed frames ignore it; needs optimalLineBreaking. A port leaves it 'allow' (or
+│                        'warn' for proofs) unless the original keeps citations with their word, then 'avoid'; to bind one pair whatever
+│                        the rule, write a no-break space in the Markdown
+├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.79 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
+│                        set between spaces (`p < 0.05`): same levels, an `operatorBreak` warning (edge 'end'|'start'), 'avoid' prices the
+│                        spaces on both sides of the sign, same blocks. 1.78's `bindCitations` / `bindOperators: true`
+│                        read as 'avoid' (write the new keys)
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word
@@ -2572,9 +2583,27 @@ A book can hold named designs, and a chapter is laid out with one of them over t
 
 - `id` is what a chapter names in its front matter (`chapterStyle: appendix`); `name` is shown in the Sandbox.
 - `config` is a partial `PostextConfig` merged over the book's (as an edition's override is): only what differs.
-- Inside a chapter, `::section{style="appendix"}` sets what follows in that style, from a new page.
-- The page's trim, `dpi`, cut lines and binding stay the book's whatever the style says.
-- A chapter or section naming an unknown id is laid out with the book's settings.
+- A part gives its chapters a style: `:::part{number="IV" title="Appendices" style="appendix"}` at the top of
+  the part's first chapter sets that chapter and every chapter after it, until the next part, in the style.
+  A chapter's own `chapterStyle:` wins over its part's; a part with no `style` returns to the book's settings.
+  A styled fence after the chapter's text has started raises `partStyleMidChapter` and takes effect from the
+  next chapter. A chapter laid out alone reads its part's style from `continuation.part.style`.
+- What the whole book shares stays the book's whatever the style says: `page.sizePreset`/`width`/`height`/
+  `dpi`/`cutLines`/`binding` (`BOOK_PAGE_KEYS`) and `locale`, `direction`, `numerals`, `customFonts`,
+  `symbolFont`, `resourceTypes`, `print`, `pdfGeneration`, `htmlViewer`, `canvasViewer`, `folio`, `debug`,
+  `checks`, `contrast`, `chapterStyles`, `composedViewerLeaf` (`BOOK_WIDE_KEYS`). A style that sets one raises
+  the config warning `chapterStyleBookSetting` (path `chapterStyles[i].config.<key>`).
+- A `chapterStyle:` or part `style` naming an unknown id raises `chapterStyleUnknown`; the chapter is laid out
+  with the book's settings.
+- There is no style for part of a chapter: split the chapter, or use a heading style (§19g) for one section.
+  1.78's `::section{style="…"}` line is no longer read (its text stays in the chapter, `partStyleMidChapter`
+  with `source: 'section'`).
+- The Word export reads the styles too: in the formatted `.docx` each chapter is a Word section with its
+  style's margins, columns and page numbering, and a paragraph or character style the chapter style sets
+  otherwise gets a version named after it (`Normal (Appendix)`, id `NormalCs1`); the round trip gives back
+  the `chapterStyle:` lines and part fences as they were. A host laying the whole book out as one document
+  passes `content.chapters` (`{ start, end }` source ranges): the chapters of one style are laid out
+  together, the next style's from a new page (the Sandbox HTML viewer's whole-book mode does this).
 
 ## 19h. `checks` — the `contentInConfig` check (postext 1.34)
 
@@ -2887,6 +2916,10 @@ book out again or changes the PDF, HTML or EPUB. Set `"canvasViewer": { "pageGap
 designs run across the spread, so the Canvas shows the spread as one (Sandbox: Design › Export › Canvas).
 
 ### Delivering EPUB, HTML and PDF files
+
+`postext design my-book -o house.postext` writes the book's design as a design file (no chapters; `--parts page,text,…`
+for some of the Design panel's groups), and every command takes `--design house.postext` to set a book in one
+(project-format.md §7, Design files).
 
 The `postext` command line writes every output from the project folder or the `.postext`; `build` takes
 the same options and lays the book out once for all of them

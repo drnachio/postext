@@ -15,7 +15,7 @@ import { resolveBodyStyle } from '../../styles.js';
 import type { ResourceNumberingMap } from '../resourceNumbering.js';
 import { type CaptionCitations, resolveCitationSpans } from '../../references/citations.js';
 import { captionLabelText, annotatedSpans, resolveSwatchSpans, resolveRefSpans } from './refSpans.js';
-import { withSnippetCache, snippetMathSpans, measureSnippetLines, snippetStackBreaking, type SnippetFonts } from './snippets.js';
+import { withSnippetCache, snippetMathSpans, measureSnippetLines, snippetRuleBreaking, type SnippetFonts } from './snippets.js';
 
 /**
  * Measure a resource block (image / svg / table) plus its caption into a
@@ -144,7 +144,7 @@ function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
       [captionFontString, captionBoldFontString, captionItalicFontString, captionBoldItalicFontString],
       Math.max(1, input.width - captionPaddingPx * 2),
       captionLineHeightPx,
-      { textAlign: cs.align, ...snippetStackBreaking(cs.align, resolved) },
+      { textAlign: cs.align, ...snippetRuleBreaking(cs.align, resolved) },
     );
   }
   const captionTextHeight = measuredCaption.length * captionLineHeightPx;

@@ -1,0 +1,75 @@
+---
+title: "Appendici su due colonne in corpo minore"
+summary: "Un manuale di frutticoltura a una colonna con appendici di altro progetto: una parte nomina uno stile di capitolo, un’appendice il suo, la postfazione torna."
+plain: "I capitoli del libro sono composti su una colonna larga. Dalle appendici in poi il testo scorre su due colonne di carattere più piccolo, e un’appendice su tre. Il formato della pagina e la lingua del libro non cambiano mai."
+description: "chapterStyles con :::part{style=…} e il chapterStyle: proprio di un capitolo, in un libro di sei documenti, e una parte con page=false che torna al libro."
+question: "Come do alle appendici di un libro un altro progetto grafico, ad esempio due colonne in corpo minore?"
+aliases: ["stili di capitolo", "chapterStyle", "impaginazione delle appendici", "appendici su due colonne", "progetto grafico delle pagine finali", "stile di parte", "impaginazione diversa per capitolo", "parte senza pagina di parte", "page=false", "file di progetto", "postext design", "riutilizzare un progetto grafico"]
+pageNotes: { "1": "La pagina di parte della parte I: una banda verde sulla metà superiore della pagina con il numero I e il titolo The orchard.", "7": "L’appendice A su due colonne in bandiera e in corpo minore, ogni portinnesto aperto dal suo nome in neretto, sotto un titolo più piccolo di quello dei capitoli.", "9": "L’appendice C su tre colonne in un carattere senza grazie, con i nomi delle varietà in rosso ruggine: lo stile proprio del capitolo.", "10": "La postfazione di nuovo su una colonna giustificata, senza pagina di parte davanti, e il colophon in un piccolo carattere senza grazie." }
+---
+
+## Che cosa comporrai
+
+Un piccolo manuale per chi coltiva meli in una valle fredda, di 150 × 220 mm, scritto in sei documenti Markdown e impaginato come un solo libro. I due capitoli della parte I sono composti su una colonna giustificata in Source Serif 4. La parte II, le appendici, cambia progetto grafico: una tabella dei portinnesti e un calendario mese per mese su due colonne in bandiera e in corpo minore, materia che si legge nel capanno con il libro aperto sul banco da lavoro, e un elenco di varietà su tre colonne in un carattere senza grazie. La postfazione torna al progetto del libro senza pagina di parte. Formato, margini, sillabazione e lingua sono gli stessi in ogni pagina.
+
+## Preparazione
+
+### 1 · Uno stile contiene solo ciò che cambia
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Uno stile di capitolo ha un id, un nome per il Sandbox e un `config` che si fonde con le impostazioni del libro come fa il livello di una lingua. Gli oggetti si fondono chiave per chiave e le liste voce per voce, in base al loro `id` o `level`: così `smallOpener` nomina un solo elemento dell’apertura, il titolo, e gli dà un corpo più piccolo; il filetto sotto e tutto il resto restano come li ha il libro. Lo stile di appendice fissa due colonne, un corpo del testo più piccolo, righe in bandiera e spazio tra le voci, e nient’altro.
+
+Alcune impostazioni appartengono al libro intero: formato, risoluzione e legatura di `page`, lingua e direzione di scrittura, cifre, font, stampa e PDF. Uno stile che ne fissa una viene ignorato su quel punto e solleva un avviso `chapterStyleBookSetting`: le appendici mantengono così il formato di 150 mm e la sillabazione in inglese britannico dei capitoli.
+
+### 2 · La parte nomina lo stile
+
+<Excerpt region="chapters" />
+
+Il terzo documento si apre con `:::part{number="II" title="Appendices" style="appendix"}`, e ogni capitolo da lì fino alla parte successiva è composto nello stile di appendice. Il quinto nomina un proprio stile nel suo front matter, `chapterStyle: "reference"`, che prevale su quello della parte. In un libro solo il front matter del primo documento vale per il libro; uno successivo conserva soltanto la riga `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Appendice C: lo stile proprio del capitolo, tre colonne senza grazie, al posto delle due della parte." />
+
+### 3 · Una pagina di parte, e una parte senza
+
+<Excerpt region="parts" />
+
+Ogni `:::part` apre una pagina di parte con il numero e il titolo della parte su una banda verde. La postfazione si apre con `:::part{title="Afterword" page=false}`: non viene stampata nessuna pagina di parte e, poiché la parte non nomina uno stile, il suo capitolo torna a essere composto con le impostazioni del libro. Una parte con `page=false` si presta alle pagine finali che seguono le appendici senza stacco.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="La pagina di parte della parte II." />
+
+### 4 · Un’apertura in due misure
+
+<Excerpt region="opener" />
+
+L’apertura occupa tutta la larghezza della pagina, quindi nelle appendici passa sopra le due colonne e il testo comincia sotto, su due. Gli stili di appendice e di consultazione riducono il titolo a 16 pt e l’abbassamento a 24 mm tramite l’id dell’elemento: la materia in fondo al libro occupa meno spazio, e i suoi titoli restano ben più grandi del testo.
+
+### 5 · Testatine dal libro
+
+<Excerpt region="running-heads" />
+
+Il titolo del libro va sul verso e quello del capitolo sul recto. Nessuno stile le cambia, quindi le testatine sono uguali in ogni parte del libro.
+
+## Varianti
+
+### Chiedere a uno stile un’impostazione del libro
+
+Uno stile che fissa il formato o la lingua viene ignorato per quelle chiavi. La composizione solleva un avviso `chapterStyleBookSetting` per ciascuna, e le appendici mantengono il formato del libro.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Riusare il progetto grafico in un altro libro
+
+Lo strumento a riga di comando scrive il progetto grafico di un libro, stili di capitolo compresi, in un file di progetto, e con `--design` compone un altro libro secondo quel progetto. Vedi [il comando design](/it/docs/command-line#design).
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## Errori frequenti
+
+- La riga `:::part` deve aprire il capitolo, prima del suo titolo. Una riga di parte messa dopo l’inizio del testo del capitolo solleva `partStyleMidChapter`, e lo stile parte dal capitolo successivo.
+- Un nome di stile che `chapterStyles` non contiene solleva `chapterStyleUnknown`, e quel capitolo è composto con le impostazioni del libro.

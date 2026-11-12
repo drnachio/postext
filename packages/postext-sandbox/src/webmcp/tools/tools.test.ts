@@ -14,7 +14,7 @@ describe('the Sandbox tools', () => {
     }
     // What cannot be taken back says so.
     expect([...tools.values()].filter((t) => t.annotations?.consequentialHint).map((t) => t.name).sort()).toEqual([
-      'sandbox_answer', 'sandbox_delete_book', 'sandbox_delete_resource', 'sandbox_import_word', 'sandbox_remove_chapter', 'sandbox_reset_to_original',
+      'sandbox_answer', 'sandbox_delete_book', 'sandbox_delete_design', 'sandbox_delete_resource', 'sandbox_import_word', 'sandbox_remove_chapter', 'sandbox_reset_to_original',
     ]);
   });
 

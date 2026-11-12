@@ -219,7 +219,7 @@ Os grupos, na ordem de navegação:
 
 Os controles dependem do contexto. A largura da medianiz só aparece em diagramações de várias colunas, as configurações de justificação só aparecem quando o texto é justificado (o texto em bandeira mostra **Hifenizar texto em bandeira** no lugar, e um estilo de parágrafo ou um boxe mostra a chave de hifenização quando é justificado ou quando a hifenização do texto em bandeira está ativada), e a porcentagem da coluna lateral só aparece na diagramação em coluna e meia. As alterações têm efeito imediato na visualização. Para uma referência completa de cada opção de configuração e do padrão dela, veja a página [Configuração](/pt/docs/configuration).
 
-O cabeçalho do painel também oferece **Redefinir** (pede confirmação; só aparece quando o design difere do livro de exemplo aberto, e restaura o design desse exemplo, fontes incluídas), **Exportar** e **Importar**. Veja [Exportar e importar](/pt/docs/sandbox-books-saving#exportar-e-importar).
+O cabeçalho do painel também oferece **Redefinir** (pede confirmação; só aparece quando o design difere do livro de exemplo aberto, e restaura o design desse exemplo, fontes incluídas), **Exportar** e **Importar**. Veja [Exportar e importar](/pt/docs/sandbox-books-saving#exportar-e-importar). **Exportar** e **Importar** escrevem e leem arquivos de projeto, com a escolha das partes (veja [Projetos gráficos](/pt/docs/sandbox#projetos-gráficos)).
 
 
 ## Painel Verificações
@@ -260,6 +260,7 @@ Diagnósticos ao vivo, recalculados a partir do texto, do design, das figuras e 
   - *Formato de numeração desconhecido*: um formato de número de lista, de página ou de tipo de recurso que o motor não conhece, e que numera em decimal;
   - *Configuração desconhecida*: uma chave que os títulos, um nível de título, um estilo de título ou uma parada de tabulação não têm (um `letterSpacng` com erro de digitação), e que o motor ignora; a entrada sugere a configuração mais próxima, quando há uma.
   - *Estilo de boxe baseado num estilo que não existe* e *Estilos de boxe baseados uns nos outros em círculo*: um estilo de boxe cujo **Baseado em** (`extends`) não corresponde a nenhum estilo, ou que volta a si mesmo através de outros estilos; o estilo fica sozinho (`calloutStyleExtendsUnknown`, `calloutStyleExtendsCycle`).
+  - *Configuração do livro em um estilo de capítulo* (`chapterStyleBookSetting`): um estilo de capítulo que define o tamanho da página, o idioma, as fontes, a impressão ou outro ajuste que o livro inteiro compartilha, e que o estilo não pode mudar.
   - *Sem numeração de linhas em texto vertical*: a numeração de linhas ligada num documento vertical, que não recebe nenhuma.
 
   As entradas que tratam de uma configuração e não do texto, como *Lista de fontes numa família*, indicam o caminho da configuração, e clicar numa delas não move o editor.
@@ -287,6 +288,8 @@ Diagnósticos ao vivo, recalculados a partir do texto, do design, das figuras e 
   - *Não está em nenhuma página*: um boxe ou um flutuante que ainda esperava um espaço quando a diagramação terminou e não está em nenhuma página (`unplaced`);
   - *Lista curta dividida entre colunas*: uma lista de poucos itens composta em duas colunas ou páginas; aparece quando **Texto do corpo → Listas curtas divididas entre colunas** está em *Aviso*, e em *Evitar* para a lista que nenhuma coluna podia receber inteira (`shortListSplit`);
   - *Repetição*: duas linhas seguidas que terminam ou começam com a mesma palavra ou os mesmos caracteres; aparece, marcada na página, quando **Texto do corpo → Repetições** está em *Aviso*, e em *Evitar* para as repetições que a quebra de linha manteve (`stack`);
+  - *Citação no início da linha*: uma linha que começa com uma citação numerada, ou um pedaço dela, posta depois de uma palavra; aparece quando **Texto do corpo → Citação no início da linha** está em *Aviso*, e em *Evitar* para as quebras que a quebra de linha manteve (`citationBreak`);
+  - *Sinal na borda da linha*: uma linha que termina ou começa com um sinal solto entre espaços, como `=`, `<` ou `±`; aparece quando **Texto do corpo → Sinal na borda da linha** está em *Aviso*, e em *Evitar* para as quebras que a quebra de linha manteve (`operatorBreak`);
   - *Escada de hífenes*: mais linhas seguidas terminadas em hífen do que **Hífenes seguidos** permite; aparece quando **Texto do corpo → Escadas de hífenes** está em *Aviso*, e em *Evitar* para as escadas que a quebra de linha manteve (`hyphenLadder`);
   - *Última palavra dividida*: um parágrafo cuja última linha só leva o resto de uma palavra dividida na anterior; aparece quando **Texto do corpo → Última palavra dividida** está em *Aviso*, e em *Evitar* para as palavras que a quebra de linha manteve divididas (`lastWordDivided`);
   - *Bloco do sumário dividido entre colunas*: um bloco do sumário mantido junto que ocupa duas ou mais colunas, porque é mais alto que uma coluna ou a coluna dele é curta; a linha abre a página do sumário e seleciona a linha `:::toc` (`tocGroupSplit`);

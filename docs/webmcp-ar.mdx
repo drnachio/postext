@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: وكيل يعمل في Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'ما يستطيع وكيل ذكاء اصطناعي في المتصفح أن يفعله في Sandbox بأدوات WebMCP، وعددها 55 أداة: أن ينظر إلى الصفحات، ويغيّر أي إعداد، ويحرّر النص، ويضيف الصور والجداول والخطوط، ويشغّل الفحوص، ويصدّر الكتاب، مع طريقة استدعاء كل أداة بوسائط وأجوبة حقيقية',
+  description: 'ما يستطيع وكيل ذكاء اصطناعي في المتصفح أن يفعله في Sandbox بأدوات WebMCP، وعددها 64 أداة: أن ينظر إلى الصفحات، ويغيّر أي إعداد، ويحرّر النص، ويضيف الصور والجداول والخطوط، ويشغّل الفحوص، ويصدّر الكتاب، مع طريقة استدعاء كل أداة بوسائط وأجوبة حقيقية',
   lang: 'ar',
   lastUpdated: '2026-11-10',
   readingTime: '12 دقيقة',
@@ -23,7 +23,7 @@ export const metadata = {
 بعد أن كان 18، فيعيد القيمة كما كانت. يفعل ما تفعله أنت حين تنظر وتقارن،
 ويفعله بكتابك أنت وفي متصفحك.
 
-هناك 55 أداة تبدأ أسماؤها بـ`sandbox_`، تُسجَّل ما دام Sandbox على الشاشة، و8
+هناك 64 أداة تبدأ أسماؤها بـ`sandbox_`، تُسجَّل ما دام Sandbox على الشاشة، و8
 أدوات للموقع، `site_*`، في كل صفحة من postext.dev. وترتّب هذه الصفحة الأدوات
 بحسب ما قد تطلبه من الوكيل، وتعطي طريقة استدعاء كل واحدة منها.
 
@@ -317,6 +317,8 @@ await browser.close();
 فالقيمة المساوية للقيمة العامة لا تبقى خاصة بالطبعة. وفي الكتاب ذي اللغة
 الواحدة يُرفض `scope: "all"`، لأن كل إعداداته خاصة به.
 
+الكتاب الذي لا تتشابه فصوله كلها له [أنماط فصول](/ar/docs/configuration-styles#أنماط-الفصول). يسرد `sandbox_chapter_styles` هذه الأنماط مع الإعدادات التي يغيّرها كل نمط والفصول المصفوفة به، ويذكر من أين يأتي نمط كل فصل: من مقدّمته (`chapter`)، أو من سطر `:::part` الذي يبدأ به (`part`)، أو من الجزء الذي ينتمي إليه (`partBefore`). وهو ينشئ الأنماط ويعيد تسميتها ويحذفها أيضًا. ويقبل `sandbox_get_config` و`sandbox_set_config` المعامل `chapterStyle`: فيقرآن به إعدادات ذلك النمط ويكتبانها، كما تفعل لوحة التصميم ما دام النمط مختارًا. والمسار الذي يشترك فيه الكتاب كله (`page.width`، و`locale`، والخطوط، والطباعة) يُكتب في الكتاب، ويذكر ذلك `notes`. ويعطي `sandbox_set_chapter_style` الفصلَ نمطه بكتابة سطر `chapterStyle:` فيه، ويحذف `style: null` هذا السطر. ولصفّ كل فصول جزء بنمط واحد، اكتب `style="…"` في سطر `:::part` الخاص بالجزء بواسطة `sandbox_edit_text`.
+
 والخطوط إعدادات أيضًا: يجد `sandbox_list_fonts` مع `search: "Garamond"`
 العائلات في فهرس الخطوط المفتوحة، وكتابة الاسم في إعداد `fontFamily` تحمّل
 الخط.
@@ -604,6 +606,8 @@ await browser.close();
   `sandbox_undo` كلها. ويرفض `sandbox_import_word` ملفًا كهذا ويشير إلى هذه
   الأداة. منذ postext 1.68.
 
+- **التصاميم.** يسرد `sandbox_list_designs` معرض لوحة التصميم (التصاميم المحفوظة والمضمَّنة في Sandbox وتصاميم الكتب النموذجية) مع أجزائها. ويحفظ `sandbox_save_design` تصميم كتاب، ويجرّب `sandbox_try_design` تصميمًا على الكتاب المعروض، ويبقي `sandbox_end_design_trial` عليه أو يتجاهله (يعيد التجاهل ما استبدله التصميم وحده)، ويطبّق `sandbox_apply_design` تصميمًا مباشرة أو كنمط فصل، ويقرأ `sandbox_import_design` و`sandbox_export_design` ملفات التصميم ويكتبانها، ويحذف `sandbox_delete_design` تصميمًا محفوظًا. وكلها تأخذ `parts`، أي مجموعات لوحة التصميم، وتجيب بالأنماط التي يسمّيها النص وتنقص التصميم.
+
 ### الأسئلة والإشعارات
 
 حين يفتح رابطٌ كتابًا لديك منه نسخة خاصة بك، يسألك Sandbox هل يستبدل نسختك،
@@ -687,7 +691,8 @@ Sandbox، ويواصل العمل هناك بأدوات `sandbox_*`.
   و`sandbox_replace_text`،
   و`sandbox_manage_chapters`، و`sandbox_remove_chapter`.
 - **التصميم**: `sandbox_get_config`، و`sandbox_set_config`،
-  و`sandbox_find_setting`، و`sandbox_reset_to_original`، و`sandbox_frame_styles`، و`sandbox_merge_styles`.
+  و`sandbox_find_setting`، و`sandbox_reset_to_original`، و`sandbox_frame_styles`، و`sandbox_merge_styles`، و`sandbox_chapter_styles`، و`sandbox_set_chapter_style`.
+- **التصاميم**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **التراجع**: `sandbox_undo`.
 - **طريقة العرض**: `sandbox_set_view`، و`sandbox_go_to_page`،
   و`sandbox_run_viewer`.

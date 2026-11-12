@@ -7,6 +7,7 @@ import { stripVerseDefaults } from '../verse.js';
 import { isArabicScriptLanguage, DEFAULT_KASHIDA_CONFIG } from './arabic.js';
 import { DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual } from './defaults.js';
 import { stripBlockquoteDefaults } from './resolve.js';
+import { legacyBindingRule } from './legacyBinding.js';
 
 /** Whether `hyphenation` names patterns other than the ones a document in
  *  `documentLocale` takes when it names none (`resolveHyphenation`):
@@ -183,13 +184,6 @@ export function stripBodyTextDefaults(
     result.plusUnderline = true;
     hasOverride = true;
   }
-  // Off by default, and resolved only when on.
-  for (const key of ['bindCitations', 'bindOperators'] as const) {
-    if (bodyText[key] === true) {
-      result[key] = true;
-      hasOverride = true;
-    }
-  }
   // On by default, and resolved only when off (#725).
   if (bodyText.scriptContext === false) {
     result.scriptContext = false;
@@ -298,6 +292,15 @@ export function stripBodyTextDefaults(
   if (bodyText.stackPenalty !== undefined && bodyText.stackPenalty !== DEFAULT_BODY_TEXT_CONFIG.stackPenalty) {
     result.stackPenalty = bodyText.stackPenalty;
     hasOverride = true;
+  }
+  // The citation and operator break rules (#1519).
+  // 1.78's `bindCitations` / `bindOperators: true` are kept as 'avoid' (#1532).
+  for (const key of ['citationBreaks', 'citationBreakPenalty', 'operatorBreaks', 'operatorBreakPenalty'] as const) {
+    const value = key === 'citationBreaks' || key === 'operatorBreaks' ? bodyText[key] ?? legacyBindingRule(bodyText, key) : bodyText[key];
+    if (value !== undefined && value !== DEFAULT_BODY_TEXT_CONFIG[key]) {
+      (result as Record<string, unknown>)[key] = value;
+      hasOverride = true;
+    }
   }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;

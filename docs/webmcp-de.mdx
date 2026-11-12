@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: ein Agent bei der Arbeit in der Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Was ein KI-Agent im Browser mit den 55 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
+  description: 'Was ein KI-Agent im Browser mit den 64 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
   lastUpdated: '2026-11-10',
   readingTime: '12 min',
@@ -24,7 +24,7 @@ Oberfläche: Er liest das Buch, fordert ein Bild von Seite 12 an, setzt
 gewachsen ist, und nimmt die Änderung zurück. Er tut, was Sie mit dem Auge tun,
 und er tut es mit Ihrem Buch, in Ihrem Browser.
 
-Solange die Sandbox auf dem Bildschirm ist, sind 55 Werkzeuge registriert,
+Solange die Sandbox auf dem Bildschirm ist, sind 64 Werkzeuge registriert,
 deren Namen mit `sandbox_` beginnen; dazu kommen auf jeder Seite von
 postext.dev 8 Werkzeuge der Website, `site_*`. Diese Seite ordnet sie nach den
 Aufgaben, die Sie einem Agenten stellen würden, und zeigt für jedes den Aufruf.
@@ -344,6 +344,8 @@ ihren Wert behalten. Um auch sie zu ändern, öffnen Sie jede einzeln
 `scope: "edition"`: Ein Wert, der dem allgemeinen gleicht, ist dann kein
 eigener Wert der Ausgabe mehr. In einem Buch in nur einer Sprache wird
 `scope: "all"` abgewiesen, da alle seine Einstellungen seine eigenen sind.
+
+Ein Buch, dessen Kapitel nicht alle gleich aussehen, hat [Kapitelstile](/de/docs/configuration-styles#kapitelstile). `sandbox_chapter_styles` listet sie mit den Einstellungen, die jeder ändert, und den Kapiteln, die darin gesetzt sind, und sagt, woher der Stil jedes Kapitels kommt: aus seinem Front Matter (`chapter`), aus der Zeile `:::part`, mit der es beginnt (`part`), oder aus dem Teil, zu dem es gehört (`partBefore`). Es legt Stile auch an, benennt sie um und entfernt sie. `sandbox_get_config` und `sandbox_set_config` nehmen `chapterStyle`: Damit lesen und schreiben sie die Einstellungen dieses Stils, wie das Design-Bedienfeld, solange der Stil gewählt ist. Ein Pfad, den das ganze Buch teilt (`page.width`, `locale`, die Schriften, der Druck), wird in das Buch geschrieben, und `notes` sagt es. `sandbox_set_chapter_style` gibt einem Kapitel seinen Stil, indem es dessen Zeile `chapterStyle:` schreibt; `style: null` nimmt die Zeile heraus. Um alle Kapitel eines Teils in einem Stil zu setzen, schreibt man `style="…"` mit `sandbox_edit_text` in die Zeile `:::part` des Teils.
 
 Auch Schriften sind Einstellungen: `sandbox_list_fonts` mit
 `search: "Garamond"` findet Familien im offenen Katalog, und wenn Sie den Namen in eine
@@ -666,6 +668,8 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   `sandbox_import_word` lehnt eine solche Datei ab und nennt dieses Werkzeug.
   Seit postext 1.68.
 
+- **Gestaltungen.** `sandbox_list_designs` listet die Galerie des Bedienfelds Gestaltung (gespeicherte Gestaltungen, die mitgelieferten und die der Beispielbücher) mit ihren Teilen. `sandbox_save_design` speichert die Gestaltung eines Buchs, `sandbox_try_design` probiert eine am Buch auf dem Bildschirm aus und `sandbox_end_design_trial` behält oder verwirft sie (Verwerfen bringt nur zurück, was die Gestaltung ersetzt hat), `sandbox_apply_design` wendet eine sofort oder als Kapitelstil an, `sandbox_import_design` und `sandbox_export_design` lesen und schreiben Gestaltungsdateien, und `sandbox_delete_design` löscht eine gespeicherte. Alle nehmen `parts`, die Gruppen des Bedienfelds Gestaltung, und antworten mit den Stilen, die der Text verwendet und die der Gestaltung fehlen.
+
 ### Rückfragen und Hinweise
 
 Öffnet ein Link ein Buch, von dem Sie bereits eine eigene Fassung haben, fragt
@@ -765,7 +769,9 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **Die Gestaltung**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
+- **Gestaltungen**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Rückgängig**: `sandbox_undo`.
 - **Die Anzeige**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

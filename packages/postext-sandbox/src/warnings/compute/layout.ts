@@ -179,6 +179,20 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'citationBreak' || w.kind === 'operatorBreak') {
+      // A citation or a lone operator at a line edge (#1519), by book page.
+      const page = (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0);
+      out.push({
+        id: `layout-${w.kind}-${w.sourceStart ?? 'x'}-${i}`,
+        payload: w.kind === 'citationBreak'
+          ? { kind: 'citationBreak', page, text: w.text, lines: w.lines }
+          : { kind: 'operatorBreak', page, edge: w.edge, text: w.text, lines: w.lines },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'hyphenLadder' || w.kind === 'lastWordDivided') {
       // The hyphen rules (#1466): a ladder of hyphens, a last word divided,
       // by book page.

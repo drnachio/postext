@@ -25,6 +25,7 @@ pub mod flag {
 /// the line breaks there (a hyphen); `stretch` of a box is an Arabic word's
 /// kashida give; `post_width` is what a break at a penalty adds at the start
 /// of the next line (`postWidth + postShift`), `post_chars` its characters.
+/// `penalty` of a glue is the demerits a break there costs (#1519).
 #[derive(Default, Clone, Debug)]
 pub struct Items {
     pub kind: Vec<ItemKind>,

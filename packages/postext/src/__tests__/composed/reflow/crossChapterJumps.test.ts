@@ -330,3 +330,24 @@ describe('the source of the carried text is its own chapter (#943)', () => {
     expect(performance.now() - start).toBeLessThan(2_000);
   });
 });
+
+describe('a jump page set in the style of the part it is in (#1521)', () => {
+  // The jump page's template is the appendix style's own: the chapter that
+  // has the page names no style, it is in the part the chapter before it
+  // opens with `style="appendix"`.
+  const styled: PostextConfig = {
+    ...BASE,
+    pageTemplates: [ARTICULO, OTRA],
+    chapterStyles: [{ id: 'appendix', config: { pageTemplates: [ARTICULO, OTRA, SALTO] } }],
+  };
+  const chapters = [article('p-salto'), `:::part{number="I" title="Anexos" style="appendix"}\n:::\n\n${other()}`, jumpPage()];
+  const docs = buildBundle({ chapters: chapters.map((markdown) => ({ markdown })), config: styled, resources: RESOURCES }, { cache: createMeasurementCache() });
+
+  it('finds the page in the chapter that inherits the style', () => {
+    expect(docs[0]!.pendingJumps?.[0]).toMatchObject({ target: 'p-salto' });
+    const target = composedPages(docs[2]!).find((p) => p.composed!.template === 'salto');
+    expect(target).toBeDefined();
+    expect(frameOn(target!, 'resto').continuedFromChapter).toBe(0);
+    for (const d of docs) expect(warningsOf(d, 'continueTargetMissing')).toEqual([]);
+  });
+});

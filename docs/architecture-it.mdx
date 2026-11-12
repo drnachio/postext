@@ -142,6 +142,7 @@ interface PostextContent {
   outline?: OutlineEntry[];    // the book's headings with their page labels, for :::toc / :::index
   citations?: CitationContext; // this chapter's share of the book's citations
   laterPageIds?: Record<string, number>; // page fences of later chapters a story may continue on
+  chapters?: { start: number; end: number }[]; // a whole book as one document: where each chapter lies, each set in its own chapter style
 }
 
 interface Resource {

@@ -2,14 +2,13 @@
 
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PostextSandboxProps } from './types/index.js';
-import { SandboxProvider, useSandboxSelector, useSandboxDispatch, useSandboxProjects } from './context/SandboxContext.js';
+import { SandboxProvider, useSandboxSelector, useSandboxDispatch, useSandboxProjects, useSandboxStore } from './context/SandboxContext.js';
 import { LayoutServiceProvider } from './worker/LayoutServiceContext.js';
 import { configFontFamilies } from 'postext';
 import { preloadConfigFonts } from './controls/fonts/fontLoader.js';
 import { ActivityBar, MobileNavBar } from './sidebar/ActivityBar.js';
 import { SidebarPanel } from './sidebar/SidebarPanel.js';
 import { ConfigPanel } from './sidebar/ConfigPanel.js';
-import { TemplatesPanel } from './templates/design/TemplatesPanel.js';
 import { ResourcesPanel } from './sidebar/ResourcesPanel.js';
 import { MarkdownPanel } from './sidebar/MarkdownPanel.js';
 import { WarningsPanel } from './sidebar/WarningsPanel.js';
@@ -36,6 +35,8 @@ import { LargeTargetsToggle } from './ui/LargeTargetsToggle.js';
 import { FolioLoading } from './viewport/folio/FolioLoading.js';
 import type { PanelId } from './types/index.js';
 import { setOutputProfileBaseUrl } from './print/printSetup.js';
+import { setDesignUrls } from './designs/designSources.js';
+import { watchDesignTrial } from './designs/designTrial.js';
 import { SandboxWebMcp } from './webmcp/SandboxWebMcp.js';
 
 // three.js loads with the Folio tab, not with the sandbox.
@@ -44,11 +45,10 @@ const FolioViewport = lazy(() => import('./viewport/folio/FolioViewport.js').the
 const EpubViewport = lazy(() => import('./viewport/epub/EpubViewport.js').then((m) => ({ default: m.EpubViewport })));
 const ScormViewport = lazy(() => import('./viewport/ScormViewport.js').then((m) => ({ default: m.ScormViewport })));
 
-const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navTemplates' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
+const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
   chapters: 'navChapters',
   markdown: 'navManuscript',
-  templates: 'navTemplates',
   resources: 'navResources',
   fonts: 'navFonts',
   config: 'navDesign',
@@ -80,6 +80,9 @@ function SandboxLayout({
   homeLink?: React.ReactNode;
 }) {
   const dispatch = useSandboxDispatch();
+  const store = useSandboxStore();
+  // A design being tried belongs to its book (#1523).
+  useEffect(() => watchDesignTrial(store), [store]);
   const config = useSandboxSelector((s) => s.config);
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const sidebarPercent = useSandboxSelector((s) => s.sidebarPercent);
@@ -172,8 +175,6 @@ function SandboxLayout({
 
   const renderPanel = () => {
     switch (activePanel) {
-      case 'templates':
-        return <TemplatesPanel />;
       case 'config':
         return <ConfigPanel />;
       case 'resources':
@@ -376,6 +377,7 @@ export function PostextSandbox({
   locale,
   presetSources,
   outputProfileBaseUrl,
+  designUrls,
   hashBundles,
   hashBundleEditions,
   onConfigChange,
@@ -388,6 +390,7 @@ export function PostextSandbox({
 }: PostextSandboxProps) {
   // Before any child asks for a profile.
   setOutputProfileBaseUrl(outputProfileBaseUrl);
+  setDesignUrls(designUrls);
   const isDark = typeof document !== 'undefined'
     ? document.documentElement.classList.contains('dark')
     : true;

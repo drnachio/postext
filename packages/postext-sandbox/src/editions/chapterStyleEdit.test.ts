@@ -17,17 +17,38 @@ describe('editing a chapter style', () => {
 
   it('keeps what the panel writes as the style\'s difference from the book, without the book\'s page settings', () => {
     const view = chapterStyleView(book, 'appendix');
-    const next = writeChapterStyle(book, 'appendix', { ...view, bodyText: { fontSize: pt(9) }, page: { ...view.page, width: pt(500) } });
+    const next = writeChapterStyle(book, 'appendix', { ...view, bodyText: { fontSize: pt(9) }, page: { ...view.page, width: pt(500) } }, { toBook: true });
     const own = next.chapterStyles![0]!.config;
     expect(own.bodyText).toEqual({ fontSize: pt(9) });
     // Two columns are the default: the style takes the book's one out.
     expect(own.layout === null || (own.layout as { layoutType?: string }).layoutType === 'double').toBe(true);
     expect(own.page).toBeUndefined();
-    // The book itself is left as it was.
+    // The book itself keeps its own settings; the trim, which the whole
+    // book shares, is the book's change.
     expect(next.bodyText).toEqual(book.bodyText);
+    expect(next.page?.width).toEqual(pt(500));
+    expect(next.page?.margins).toEqual(book.page!.margins);
     // Setting a field back to the book's value takes it out of the style.
     const back = writeChapterStyle(next, 'appendix', { ...chapterStyleView(next, 'appendix'), layout: { layoutType: 'single' } });
     expect(back.chapterStyles![0]!.config).toEqual({ bodyText: { fontSize: pt(9) } });
+  });
+
+  it('gives the book a setting the whole book shares, written while the style is shown', () => {
+    const view = chapterStyleView(book, 'appendix');
+    const next = writeChapterStyle(book, 'appendix', { ...view, locale: 'fr', symbolFont: 'Noto Sans Symbols' }, { toBook: true });
+    expect(next.locale).toBe('fr');
+    expect(next.symbolFont).toBe('Noto Sans Symbols');
+    expect(next.chapterStyles![0]!.config.locale).toBeUndefined();
+    expect(next.chapterStyles![0]!.config.symbolFont).toBeUndefined();
+  });
+
+  it('leaves the book its own shared settings when not told to write them there', () => {
+    const view = chapterStyleView(book, 'appendix');
+    const next = writeChapterStyle(book, 'appendix', { ...view, locale: 'fr', page: { ...view.page, width: pt(500) } });
+    expect(next.locale).toBe(book.locale);
+    expect(next.page).toEqual(book.page);
+    expect(next.chapterStyles![0]!.config.locale).toBeUndefined();
+    expect(next.chapterStyles![0]!.config.page).toBeUndefined();
   });
 
   it('names a new style with an id the book does not use', () => {

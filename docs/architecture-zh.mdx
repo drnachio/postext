@@ -141,6 +141,7 @@ interface PostextContent {
   outline?: OutlineEntry[];    // 全书标题及其页码标签，供:::toc / :::index使用
   citations?: CitationContext; // 全书引文中属于本章的部分
   laterPageIds?: Record<string, number>; // 后续各章中可续排文字的页面块
+  chapters?: { start: number; end: number }[]; // 整本书作为一个文档：各章所在的位置，每章按自己的章节样式排版
 }
 
 interface Resource {

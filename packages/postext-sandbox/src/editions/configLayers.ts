@@ -233,3 +233,29 @@ export function rebaseEditions<E extends { config: PostextConfig }>(before: Post
   if (sameConfig(before, after)) return editions;
   return Object.fromEntries(Object.entries(editions).map(([k, e]) => [k, { ...e, config: rebaseEdition(before, after, e.config) }]));
 }
+
+/** The general settings with the words `edition` gives the design texts
+ *  they leave without any: a book in several languages keeps a text
+ *  element's `content` (a kicker, a running title) in each edition, so its
+ *  general settings hold the element without words. A design is taken
+ *  from these (#1523), so it holds no text element the engine cannot set.
+ *  Entries of a list are matched on their `id` (heading levels on
+ *  `level`), as the layers match them. */
+export function generalSettingsWithWording(shared: PostextConfig, edition: PostextConfig): PostextConfig {
+  const keyOf = (e: unknown): unknown => (isPlainObject(e) ? e.id ?? e.level : undefined);
+  const walk = (node: unknown, own: unknown): unknown => {
+    if (Array.isArray(node)) {
+      const list: unknown[] = Array.isArray(own) ? own : [];
+      return node.map((e, i) => {
+        const k = keyOf(e);
+        return walk(e, k !== undefined ? list.find((o) => keyOf(o) === k) : list[i]);
+      });
+    }
+    if (!isPlainObject(node)) return node;
+    const out: Json = {};
+    for (const [k, v] of Object.entries(node)) out[k] = walk(v, isPlainObject(own) ? own[k] : undefined);
+    if (node.kind === 'text' && node.content === undefined && isPlainObject(own) && typeof own.content === 'string') out.content = own.content;
+    return out;
+  };
+  return walk(shared, edition) as PostextConfig;
+}

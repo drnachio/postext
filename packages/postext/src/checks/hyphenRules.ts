@@ -4,6 +4,7 @@
 // the line breaker weighs them under `'avoid'`. What `'warn'` and `'avoid'`
 // report, and what the Sandbox lists in Review.
 import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
+import { paragraphLines, type ParagraphLine } from './paragraphLines.js';
 
 /** A fault of the hyphen rules. */
 export interface HyphenFault {
@@ -37,9 +38,6 @@ export interface FindHyphenFaultsOptions {
   pageIndex?: number;
 }
 
-/** The blocks whose lines are running text set by the line breaker. */
-const TEXT_BLOCKS: ReadonlySet<string> = new Set(['paragraph', 'listItem', 'blockquote', 'footnoteRef']);
-
 /** The line ends on a hyphen: a divided word, or a word's own hyphen (a
  *  break after a dash or at a URL joint is no hyphen). */
 export function endsOnHyphen(line: VDTLine): boolean {
@@ -54,26 +52,6 @@ function oneWord(line: VDTLine): boolean {
   return !/\s/u.test(line.text.trim());
 }
 
-/** The paragraphs of a document in reading order, each the lines of all
- *  its fragments: a paragraph cut between columns has a block per column,
- *  every one with its `contentIndex`. */
-function paragraphs(doc: VDTDocument): { block: VDTBlock; line: number; at: VDTLine }[][] {
-  const out: { block: VDTBlock; line: number; at: VDTLine }[][] = [];
-  let key: string | undefined;
-  for (const block of doc.blocks) {
-    if (!TEXT_BLOCKS.has(block.type) || block.lines.length === 0) {
-      key = undefined;
-      continue;
-    }
-    const k = block.contentIndex !== undefined ? `${block.sourceChapter ?? ''}:${block.contentIndex}:${block.type}` : undefined;
-    if (k === undefined || k !== key) out.push([]);
-    key = k;
-    const lines = out[out.length - 1]!;
-    block.lines.forEach((at, line) => lines.push({ block, line, at }));
-  }
-  return out;
-}
-
 /**
  * The hyphen ladders and the divided last words of a laid-out document, in
  * reading order (#1466). A ladder is reported once, with all its lines; a
@@ -85,12 +63,12 @@ export function findHyphenFaults(doc: VDTDocument, options: FindHyphenFaultsOpti
   const lastWord = options.lastWord ?? h.lastWord !== 'allow';
   const max = Math.max(1, Math.round(options.maxConsecutive ?? h.maxConsecutive));
   const out: HyphenFault[] = [];
-  const push = (kind: HyphenFault['kind'], run: { block: VDTBlock; line: number; at: VDTLine }[]) => {
+  const push = (kind: HyphenFault['kind'], run: ParagraphLine[]) => {
     const first = run[0]!;
     if (options.pageIndex !== undefined && first.block.pageIndex !== options.pageIndex) return;
     out.push({ kind, block: first.block, line: first.line, lines: run.map((r) => r.at), lastBlock: run[run.length - 1]!.block });
   };
-  for (const lines of paragraphs(doc)) {
+  for (const lines of paragraphLines(doc)) {
     if (ladders) {
       let start = 0;
       for (let i = 0; i <= lines.length; i++) {

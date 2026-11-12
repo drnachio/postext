@@ -38,6 +38,7 @@ import { prepareCitations } from './prose/citations.js';
 import { FragmentLog } from './fragments.js';
 import { Numbering } from './numbering.js';
 import { pageSettings } from './page/settings.js';
+import { chapterLook, chapterStyleIds, enterLook, lookState, settleLooks, type ChapterLook, type WrittenChapter } from './chapterStyles/looks.js';
 import { plainConfig, plainResourceTypes } from './plain/config.js';
 import { multiColumn, pageGeometry } from './sections.js';
 import { StyleRegistry } from './styles.js';
@@ -144,7 +145,16 @@ async function writeSemantic(options: SemanticDocxOptions): Promise<SemanticExpo
   const geo = pageGeometry(resolved, units);
   const resources = new Map((options.resources ?? []).map((r) => [r.id, r]));
   // Numbers as the engine prints them (captions, `:ref`s, headings).
-  const numbers = bookNumbers(parsed, options.config, book, options.resources ?? [], options.start?.headings);
+  // The chapter style each chapter is set in (#1521), and the settings of
+  // each style the book uses.
+  const styleIds = chapterStyleIds(options.chapters, options.config);
+  const looks = new Map<string, ChapterLook>();
+  for (const id of styleIds) if (id && !looks.has(id)) looks.set(id, chapterLook(options.config, id, plain, fonts));
+  const lookOf = (i: number): ChapterLook | undefined => looks.get(styleIds[i] ?? '');
+  const numbers = bookNumbers(parsed, options.config, book, options.resources ?? [], options.start?.headings, (i) => {
+    const look = lookOf(i);
+    return look ? (look.state.plain?.book ?? look.state.resolved) : book;
+  });
   const resourceTypes = plain ? plainResourceTypes(numbers.resourceTypes) : numbers.resourceTypes;
   // Resources shown as blocks or floated by a `:ref`, whose pictures go
   // into the package.
@@ -208,16 +218,25 @@ async function writeSemantic(options: SemanticDocxOptions): Promise<SemanticExpo
   await prepareScores(ctx, parsed);
   prepareExercises(ctx, parsed);
 
-  let body = '';
   // The fragment each chapter starts at: with it a chapter that did not
   // change since the export is found again whatever the others did.
   const firstFragments: number[] = [];
+  // Each chapter in the settings of its chapter style, its section's page
+  // and its text's styles (chapterStyles/looks.ts).
+  const own = lookState(ctx);
+  const written: WrittenChapter[] = [];
   parsed.forEach((pc, i) => {
     chapterId = pc.input.id;
     firstFragments.push(ctx.log.body.length + ctx.log.notes.length);
-    body += renderChapter(ctx, pc, i, geo, i === parsed.length - 1);
+    const look = lookOf(i);
+    enterLook(ctx, own, look);
+    const notes = ctx.footnotes.length;
+    const xml = renderChapter(ctx, pc, i, look?.geo ?? geo, i === parsed.length - 1);
+    written.push({ xml, notes: [notes, ctx.footnotes.length], ...(look ? { look } : {}) });
   });
+  enterLook(ctx, own, undefined);
   chapterId = undefined;
+  let body = looks.size ? settleLooks(ctx, ctx.styles, [...looks.values()], written) : written.map((c) => c.xml).join('');
   if (!parsed.length) body = `<w:p/>${'<w:sectPr/>'}`;
 
   const createdAt = options.date ?? new Date().toISOString();

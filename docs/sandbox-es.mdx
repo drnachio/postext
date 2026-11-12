@@ -30,7 +30,6 @@ Una franja estrecha en el borde izquierdo tiene un botón por panel. Cada botón
 - **Libros** (icono `Files`): tus libros y los libros de ejemplo
 - **Capítulos** (icono `BookOpen`): el libro abierto y sus capítulos
 - **Texto** (icono `FileCode`): escribe y corrige el texto del capítulo actual
-- **Plantillas** (icono `LayoutTemplate`): plantillas de diseño para probar en el libro, guardar, importar y exportar
 - **Recursos** (icono `FolderOpen`): imágenes, dibujos SVG y tablas que usa el libro
 - **Fuentes** (icono `Type`): los tipos de letra que usa el libro y tus propios archivos de fuente
 - **Diseño** (icono `Settings2`): ajustes de página, tipografía, títulos, figuras, recuadros y exportación
@@ -134,6 +133,7 @@ Al pulsar un libro (o una de las etiquetas de idioma de un libro de ejemplo), se
     - **Copia del libro abierto** copia el libro abierto, sus figuras y sus fuentes en un libro nuevo.
     - **Libro en blanco** empieza uno vacío.
     - **Abrir un archivo .postext…** importa un archivo.
+    - **Con el diseño de…** empieza uno vacío con un diseño de la galería (véase [Diseños](#diseños)).
 
   También puedes duplicar cualquier fila. Mientras no tengas libros propios, el grupo muestra un mensaje con el mismo atajo. Cada fila tiene un único menú **⋯** con su propia etiqueta (*Más acciones de «…»*), con **Cambiar nombre…**, **Añadir un idioma…** (véase [Un libro en varios idiomas](/es/docs/sandbox-books-saving#exportar-e-importar)), **Duplicar**, **Descargar (.postext)** y **Eliminar…**. Eliminar pide confirmación justo al lado del botón ⋯.
 
@@ -209,15 +209,18 @@ El libro de ejemplo abierto determina además qué restauran los botones **Resta
 
 Un preset que estuvo abierto en una sesión anterior, pero que ya no aparece en ningún origen (normalmente, un preset privado en una compilación que no lo sirve), sigue apareciendo, atenuado y con la indicación *No disponible en esta compilación*. El Sandbox conserva el contenido cargado en lugar de sustituirlo sin avisar por el ejemplo integrado. El id del preset abierto se guarda con la clave `postext-sandbox-preset` (véase [Persistencia](/es/docs/sandbox-books-saving#persistencia)). El formato del paquete se describe en el apéndice [Formato de paquete de preset](/es/docs/sandbox-embedding#formato-de-paquete-de-preset).
 
-#### Panel de plantillas
+#### Diseños
 
-El panel **Plantillas**, entre Texto y Recursos, es el paso previo al diseño: elegir de qué diseño parte el libro. Una plantilla guarda el diseño (página y columnas, tipografía y estilos, colores, cabeceras y pies, imprenta), nunca el texto, el idioma ni los tipos de recurso, y lleva copia de sus fuentes propias y de su perfil ICC.
+Un diseño es el aspecto de un libro y nada de lo que dice: la página y las columnas, la tipografía y los estilos, los colores, las cabeceras y los pies, la configuración de impresión. Nunca guarda el texto, los recursos ni los ajustes que pertenecen al libro entero (idioma, dirección, cifras, tipos de recurso, comprobaciones). Los diseños están en el **panel Diseño**: la fila **Diseños** de su resumen los abre, y su cabecera exporta e importa archivos de diseño.
 
-- **Galería.** Las plantillas guardadas y las cuatro que vienen de serie (*Novela*, *Manual técnico*, *Revista a dos columnas* y *Libro a dos tintas*), cada una con un dibujo de su página, su tipografía y sus colores.
-- **Probar.** Eliges qué partes sustituir y la plantilla se pone en el libro. Una barra *Probando «…»* ofrece **Mantener** (la deja puesta) y **Descartar** (vuelve al diseño que tenías). Puedes probar varias seguidas: cada una se pone sobre el diseño de partida, y Descartar vuelve a él. Lo que la plantilla no fija vuelve a su valor por defecto.
-- **Guardar un diseño como plantilla**, desde este libro o desde cualquier otro libro del Sandbox, eligiendo qué partes incluye.
-- **Como estilo de capítulo**. Las partes elegidas de una plantilla (página y columnas, tipografía, colores, cabeceras) pasan a un [estilo de capítulo](/es/docs/configuration-styles#estilos-de-capítulo) del libro, nuevo o uno que ya tenga: solo lo que cambian respecto al libro, con el tamaño de página y la imprenta del libro. Se asigna a los capítulos que necesiten ese diseño (un anexo, los casos clínicos) en **Capítulos**, o con `chapterStyle:` en su preámbulo, y a una parte de un capítulo, desde una página nueva, con `::section{style="…"}`; el resto del libro conserva el suyo.
-- **Importar** (en la cabecera del panel) y **Exportar** (en cada plantilla) archivos `.postext-template.json` para compartirlas; las fuentes que no son redistribuibles no viajan. Las plantillas guardadas se pueden eliminar; las de serie, no.
+- **Partes.** Un diseño se corta por los grupos del panel Diseño (página y columnas, sistema de escritura, colores, texto, títulos…). Al guardarlo, probarlo, aplicarlo o exportarlo eliges qué grupos lleva.
+- **Galería.** Tus diseños guardados, los cuatro que trae el Sandbox (*Novela*, *Manual técnico*, *Revista a dos columnas*, *Libro a dos tintas*) y el diseño de cada libro de ejemplo, cada uno con un dibujo de su página y las partes que contiene.
+- **Probar.** Las partes elegidas sustituyen a las del libro. Una barra ofrece **Conservar** y **Descartar**: Descartar devuelve solo los ajustes que el diseño sustituyó, y cualquier otro cambio hecho entretanto se queda. Probar otro diseño sustituye al primero. La prueba pertenece al libro en que empezó, y abrir otro libro la deja. La barra enumera los estilos que nombra el texto (de párrafo, de título, de caja, de etiqueta, de carácter, de marca y de tabla) y que el diseño no define, para que los veas antes de conservarlo. Probar, conservar, descartar y aplicar son pasos del historial (⌘Z / Ctrl+Z).
+- **Los estilos con nombre** se combinan por id: un estilo del diseño sustituye al estilo del libro con el mismo id, y los demás estilos del libro se quedan. Las fuentes se combinan por familia, y los colores de la paleta que nombran los ajustes del diseño vienen con él.
+- **Un libro en varios idiomas** recibe el diseño en sus ajustes generales, muestre lo que muestre el selector de la parte superior del panel; cada idioma conserva sus propios ajustes.
+- **Guardar** el diseño de este libro, o de cualquier otro libro tuyo, con las partes que elijas.
+- **Como estilo de capítulo.** Las partes elegidas pasan a ser un [estilo de capítulo](/es/docs/configuration-styles#estilos-de-capítulo) del libro, nuevo o uno que ya tenga, con solo lo que cambian respecto al libro. Dáselo a los capítulos en **Capítulos** o con `chapterStyle:` en su cabecera, y a los capítulos de una parte con `:::part{style="…"}`.
+- **Exportar e importar.** Un archivo de diseño es un `.postext` sin capítulos (véase [Archivos de diseño](/es/docs/configuration-bundles#archivos-de-diseño)) que lleva los archivos de fuente y el perfil de color que nombran sus partes; las fuentes que no son redistribuibles se quedan fuera. Importar también lee el `.postext` de un libro entero (su diseño) y los `postext-config.json` de versiones anteriores. La línea de órdenes crea y lee los mismos archivos ([`postext design`](/es/docs/command-line#design)). Los diseños guardados se pueden eliminar; los incluidos y los de los libros de ejemplo, no. Las plantillas que guardó postext 1.78 pasan a tus diseños guardados la primera vez que se abre la galería, e Importar lee sus archivos `.postext-template.json` como diseños.
 
 #### Panel de recursos
 

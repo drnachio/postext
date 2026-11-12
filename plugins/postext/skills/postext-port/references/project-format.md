@@ -546,3 +546,26 @@ const { bytes: out, warnings } = await createBundle({
 - Under plain Node the dists need the extension-retrying resolve hook that
   `render.mjs` registers.
 
+
+### Design files (≥ 1.79)
+
+A design file is a `.postext` with no chapters: a book's design without its text. The manifest says
+`design: { parts: [...] }` and `chapters: []`; `config` holds only the settings of those parts, with the
+font files (`fonts/`) and the colour profile (`profiles/`) they name. The parts are the Sandbox Design
+panel's groups (`DESIGN_PARTS`: page, writing, colors, text, headings, lists, figures, callouts, exercises,
+comics, running, parts, output, folio, advanced; `DESIGN_PART_KEYS` maps each to its settings). The book's
+own settings (`BOOK_OWN_KEYS`: locale, direction, numerals, resourceTypes, checks, debug) never go in one.
+
+```js
+import { extractDesign, applyDesign } from 'postext';
+import { createDesignBundle, openDesignBundle } from 'postext/bundle';
+const design = extractDesign(book.config, ['page', 'text', 'headings']);
+const { bytes } = await createDesignBundle({ name: 'House style', locale: 'es', design, files });
+const opened = await openDesignBundle(bytes);           // or a whole book's .postext: fromBook: true
+const config = applyDesign(other.config, opened.design); // named styles merge by id, fonts by family
+```
+
+- From the command line: `postext design my-book -o house.postext [--parts page,text,headings]`, and any
+  command takes `--design house.postext [--design-parts …]` to set the book in it before `--config`/`--set`.
+- When a publisher's titles share a house design, port it once as a design file and give each title only
+  what it changes; the Sandbox's Design panel imports the same file (Designs).

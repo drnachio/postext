@@ -8,6 +8,7 @@ import { CollapsibleSection, NumberInput, SelectInput, ToggleSwitch } from '../.
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { OrphansSubsection, WidowsSubsection, RuntsSubsection } from './OrphansWidowsRuntsSubsections.js';
 import { StacksSubsection } from './StacksSubsection.js';
+import { SpaceBreaksSubsection } from './SpaceBreaksSubsection.js';
 
 const D = DEFAULT_BODY_TEXT_CONFIG;
 
@@ -113,6 +114,7 @@ export function LineControlSubsection({ bodyText, avoidOrphansDefault, avoidWido
         />
       )}
       <StacksSubsection bodyText={bodyText} options={COMPOSITION_RULE_OPTIONS} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
+      <SpaceBreaksSubsection bodyText={bodyText} options={COMPOSITION_RULE_OPTIONS} updateBodyText={updateBodyText} resetField={resetField} labels={labels} />
       <NumberInput
         label={labels.bodySlackWeight}
         value={bodyText.slackWeight}

@@ -1,0 +1,75 @@
+---
+title: "Citations et statistiques hors des bords de ligne"
+summary: "Un article clinique à deux colonnes composé deux fois : la première épreuve signale chaque appel ou signe en bord de ligne, la seconde pénalise ces coupures."
+plain: "Dans une colonne justifiée étroite, un appel comme [2, 3] peut ouvrir seul une ligne, et p < 0,05 peut se couper après le signe. L’article est composé deux fois : l’une montre où cela arrive, l’autre l’évite presque partout."
+description: "citationBreaks et operatorBreaks en deux épreuves d’un article clinique : 'warn' liste et marque chaque coupure, 'avoid' l’ajoute aux démérites de Knuth–Plass."
+question: "Comment empêcher qu’un appel de citation ou une statistique comme p < 0,05 se coupe en fin de ligne ?"
+aliases: ["coupure de citation", "appel de citation en début de ligne", "appel bibliographique isolé", "statistique coupée", "valeur p coupée", "signe égal en fin de ligne", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "article clinique", "correction d’épreuves"]
+pageNotes: { "1": "Première épreuve, page 211 : des bandes ambre pâle sous = 0.09, coupé entre deux lignes du résumé, et sous first, en fin d’une ligne dont la suivante commence par [2, 3].", "3": "La dernière page de la première épreuve : LR− = marqué en fin de ligne, la bibliographie et un bulletin intitulé FIRST PROOF: QUERIES qui liste trois coupures.", "6": "La dernière page de la seconde épreuve : LR− = 0.09 tient désormais sur une ligne, et le bulletin liste la coupure restante, first au-dessus de [2, 3], page 211." }
+---
+
+## Ce que vous allez composer
+
+Trois pages d’une revue de pédiatrie de 170 × 240 mm, sur deux colonnes justifiées de 66 mm en STIX Two Text : une étude originale sur l’échographie pulmonaire dans la pneumonie de l’enfant, avec une bibliographie numérotée en style Vancouver. Une colonne aussi étroite laisse peu de choix à l’algorithme de coupure, et à trois endroits le texte anglais se coupe mal. Un appel, *[2, 3]*, ouvre seul une ligne, loin du mot auquel il se rapporte, et deux fois le rapport de vraisemblance *LR− = 0.09* se coupe après le signe égal. La première épreuve est composée avec `citationBreaks` et `operatorBreaks` à `'warn'`. Elle ne change aucune coupure, marque chacune d’une bande ambre pâle et les liste sur un bulletin après la bibliographie. La seconde est composée avec `'avoid'`, et il en reste une sur trois. L’édition espagnole compose la même étude avec la virgule décimale.
+
+## Préparation
+
+### 1 · Un prix pour deux sortes de coupure
+
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. Il y a coupure de citation quand une ligne commence par un appel numéroté, ou par la seconde moitié d’un appel, comme *5]* après *[4,*. Il y a coupure d’opérateur quand une ligne finit ou commence par un signe placé entre deux espaces : `=`, `<`, `±`, `×`, le signe moins. `'warn'` signale les deux et laisse les lignes telles quelles. `'avoid'` ajoute une pénalité aux démérites de ces coupures, et l’algorithme de Knuth–Plass cherche une autre façon de couper le paragraphe. Il faut `optimalLineBreaking` : la coupure gloutonne n’a pas de démérites auxquels ajouter quoi que ce soit.
+
+La pénalité par défaut, 10000, est ce que coûte une ligne étirée jusqu’à la limite de l’espacement entre les mots : l’algorithme n’ouvre donc jamais une ligne au-delà de cette limite pour garder un appel avec son mot. Dans cette colonne, 10000 laissait deux coupures dans chaque édition. À 30000, l’algorithme accepte des lignes plus lâches, toujours dans la limite de `maxWordSpacing`, et il en reste une dans chaque édition. Une valeur plus haute ne changeait plus rien : la dernière coupure n’a pas d’autre solution dans la limite.
+
+### 2 · Marquer les coupures dans le texte
+
+<Excerpt region="marks" />
+
+Chaque avertissement indique sa sorte, l’appel ou le signe, le texte des deux lignes, la position de la première dans la source et la page. Le script retrouve ces deux lignes dans le document composé et enveloppe la coupure dans `:mark[…]` : le mot qui précède l’appel et l’appel, ou le signe et le nombre de l’autre côté. Une marque peint une bande sous le texte et laisse les coupures où elles étaient. La bande n’atteint pas le numéro que produit le style de citation : sur la page, seul le mot qui le précède est marqué.
+
+<PageShot page={1} crop="0,0.33,1,0.72" caption="Première épreuve, page 211 : LR− = 0.09 coupé dans le résumé, et first en fin de ligne, avec [2, 3] au début de la suivante." />
+
+### 3 · Deux épreuves et un bulletin de questions
+
+<Excerpt region="proofs" />
+
+Chaque épreuve est composée deux fois. La première composition trouve les coupures ; la seconde compose l’article avec les marques et un bulletin après la bibliographie, qui tombe donc sur la dernière page. C’est ainsi qu’un compositeur renvoie ses épreuves avec ses questions. Les lignes du bulletin lient leurs mots par des espaces insécables pour ne pas créer de coupures à leur tour. `capture.doc` publie les deux compositions marquées, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.62,1,0.78" caption="Seconde épreuve, page 213 : le bulletin liste une coupure restante dans l’article." />
+
+La coupure qui reste en anglais est *first* au-dessus de *[2, 3]*, page 211. En espagnol, la première épreuve en trouve quatre, dont *CP+* au-dessus de *= 19,19* et *[4,* au-dessus de *5]*, où l’appel lui-même se coupe, et la seconde en garde une, *anteriores [4,* au-dessus de *5]*.
+
+### 4 · Des appels numérotés entre crochets
+
+<Excerpt region="citations" />
+
+Le processeur de citations compose chaque `[@key]` sous la forme d’un numéro entre crochets après une espace et regroupe les suites comme *[4–6]*. L’espace avant le crochet et celle qui suit une virgule à l’intérieur sont deux endroits où une ligne peut se couper : c’est pourquoi une colonne étroite chargée de citations a besoin de la règle.
+
+### 5 · Le bandeau de la revue et le bloc de l’article
+
+<Excerpt region="title" />
+
+Le style de titre dessine le bandeau de la revue, le type d’article, le titre, les auteurs avec leurs numéros d’affiliation et une note, le tout à partir d’attributs du H1. Les deux éditions partagent ce style, et le texte reste dans le Markdown.
+
+## Variantes
+
+### Signaler les coupures sans rien changer
+
+Une revue qui vérifie ses épreuves à la main peut laisser la règle à `'warn'` : le Sandbox liste chaque coupure parmi ses avertissements, et les lignes restent telles que l’algorithme les a coupées.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Garder la pénalité par défaut
+
+À 10000, l’espacement reste un peu plus serré et il reste deux coupures par édition au lieu d’une.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Erreurs fréquentes
+
+- Les coupures se cherchent dans les lignes déjà coupées. Un changement de format, de corps ou de texte les déplace : lisez les avertissements de chaque composition au lieu de recopier les positions d’une composition antérieure.
+- Pour garder un appel précis avec son mot quelle que soit la colonne, tapez une espace insécable devant lui dans le Markdown. La règle s’occupe du reste de l’article.

@@ -256,6 +256,30 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>El que costa una repetició a l'algorisme amb <code>stacks: 'avoid'</code>, en demèrits que se sumen als del paràgraf, en l'escala de <code>consecutiveHyphenDemerit</code> (dues línies seguides amb guionet costen 3000). Un monosíl·lab repetit («a», «i», «de», amb les vocals de les escriptures llatina, grega i ciríl·lica) costa el doble. Un valor més alt evita més repeticions a canvi de línies més soltes; amb 0 es mantenen totes.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Una línia que comença amb una cita numerada entre claudàtors o parèntesis posada després d'una paraula, o amb un tros d'una: <code>autors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, i la marca que un estil numèric posa per a <code>[@clau]</code> (<code>[3, p. 12]</code>). Mai després d'un número: <code>2016 (3)</code> és un any i un número de revista. <code>'allow'</code> compon les línies tal com les troba l'algorisme i no informa de res. <code>'warn'</code> les compon igual i informa de cada tall així amb un avís de contingut <code>citationBreak</code>, que el Sandbox llista a Revisió. <code>'avoid'</code> suma <code>citationBreakPenalty</code> als demèrits d'un tall a l'espai anterior a la cita o dins d'ella, de manera que l'algorisme compon el paràgraf d'una altra forma on l'espaiat entre paraules ho permet, i informa dels talls que manté. L'espai continua sent un espai entre paraules i s'estira amb els altres; el text no canvia. Paràgrafs, llistes, cites, caixes, notes, peus i cel·les de taula compostos en horitzontal; cada cita es llegeix en l'escriptura que l'envolta, i el text de dreta a esquerra i el CJK queden com són. Amb <code>'avoid'</code> el text en bandera, els peus, les notes i les cel·les es componen amb l'algorisme de Knuth–Plass perquè també segueixin la regla; el marc d'una pàgina composta compon el seu text sense ella. Necessita <code>optimalLineBreaking</code>. Per mantenir juntes dues paraules concretes sigui quina sigui la regla, escriu un espai indivisible.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>El que costa a l'algorisme, amb <code>citationBreaks: 'avoid'</code>, un tall abans d'una cita o dins d'ella, en demèrits que se sumen als del paràgraf. Per defecte, el mateix que una línia estirada fins al límit de l'espaiat, de manera que l'algorisme mai no passa aquest límit per deixar una cita amb la seva paraula. Un valor més alt manté més cites a canvi de línies més soltes; 0 deixa passar tots els talls.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Una línia que acaba o comença amb un signe de relació o d'operació posat entre espais (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>): <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Els nivells són els de <code>citationBreaks</code>, l'avís és <code>operatorBreak</code> (amb la vora, final o inici) i <code>'avoid'</code> posa preu als espais de tots dos costats del signe, en els mateixos blocs. Una configuració de postext 1.78 amb <code>bindCitations: true</code> o <code>bindOperators: true</code> es llegeix com a <code>'avoid'</code> a la regla corresponent.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>El que costa a l'algorisme, amb <code>operatorBreaks: 'avoid'</code>, un tall al costat d'un signe solt, en demèrits que se sumen als del paràgraf, en l'escala de <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Llegeix <code>++text++</code> com a text subratllat, a més de <code>:underline[text]</code>, que es llegeix sempre. Cada parell de dos signes més a cada banda subratlla, també <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escriu un parell literal, una lletra o una xifra enganxada als signes els deixa com a text (<code>C++</code>, <code>g++</code>), i el codi en línia i els blocs de codi no se subratllen mai. S'aplica on es llegeixen les marques en línia: el text corregut, els títols, les llistes, els peus, les cel·les de taula, les notes i els xips. <code>false</code>: els signes més s'imprimeixen. Vegeu <a href="/ca/docs/document-format-inline#subratllat">Format del document › Subratllat</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Manté una cita numerada entre claudàtors o parèntesis unida a la paraula anterior (o al signe de puntuació que la tanca) i sencera: l'espai del davant i els de dins passen a ser espais de no separació (<code>autors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Mai després d'un nombre: <code>2016 (3)</code> és un any i un fascicle, no una cita. Només als paràgrafs, els elements de llista i les cites compostos en horitzontal; un bloc amb text de dreta a esquerra o CJK es deixa tal com és.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Manté un signe posat entre espais (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unit a les paraules de tots dos costats: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Cap línia no acaba ni comença amb el signe. Mateix abast que <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

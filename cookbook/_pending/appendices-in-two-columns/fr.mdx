@@ -1,0 +1,75 @@
+---
+title: "Annexes sur deux colonnes en petit corps"
+summary: "Un manuel d’arboriculture à une colonne dont les annexes changent de maquette : une partie nomme un style de chapitre, une annexe le sien, la postface revient."
+plain: "Les chapitres du livre sont composés sur une large colonne. À partir des annexes, le texte passe sur deux colonnes en plus petits caractères, et une annexe sur trois. Le format et la langue du livre ne changent jamais."
+description: "chapterStyles avec :::part{style=…} et le chapterStyle: propre à un chapitre, dans un livre de six documents, et une partie page=false qui retrouve la maquette."
+question: "Comment donner aux annexes d’un livre une autre maquette, par exemple deux colonnes en petit corps ?"
+aliases: ["styles de chapitre", "chapterStyle", "maquette des annexes", "annexes sur deux colonnes", "maquette des pages de fin", "style de partie", "mise en page différente par chapitre", "partie sans page de partie", "page=false", "fichier de maquette", "postext design", "réutiliser une maquette"]
+pageNotes: { "1": "La page de partie de la partie I : une bande verte sur la moitié supérieure de la page, avec le chiffre I et le titre The orchard.", "7": "L’annexe A sur deux colonnes en drapeau et en petit corps, chaque porte-greffe ouvert par son nom en gras, sous un titre plus petit que celui des chapitres.", "9": "L’annexe C sur trois colonnes en linéale, avec les noms des variétés en brun-roux : le style propre au chapitre.", "10": "La postface revenue à une colonne justifiée, sans page de partie devant elle, et le colophon en petite linéale." }
+---
+
+## Ce que vous allez composer
+
+Un petit manuel pour les arboriculteurs d’une vallée froide, au format 150 × 220 mm, écrit en six documents Markdown et mis en pages comme un seul livre. Les deux chapitres de la partie I sont composés sur une colonne justifiée en Source Serif 4. La partie II, les annexes, change de maquette : un tableau des porte-greffes et un calendrier mois par mois sur deux colonnes en drapeau et en petit corps, de quoi lire dans la remise, le livre ouvert sur l’établi, puis une liste des variétés sur trois colonnes en linéale. La postface revient à la maquette du livre sans page de partie. Le format, les marges, la césure et la langue sont les mêmes sur toutes les pages.
+
+## Préparation
+
+### 1 · Un style ne contient que ce qui change
+
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. Un style de chapitre a un identifiant, un nom pour le Sandbox et un `config` fusionné avec les réglages du livre, comme l’est une couche de langue. Les objets fusionnent clé par clé et les listes entrée par entrée, sur leur `id` ou leur `level` : `smallOpener` désigne donc un seul élément de l’ouverture, le titre, et lui donne un corps plus petit ; le filet qui le suit et tout le reste restent tels que le livre les définit. Le style d’annexe fixe deux colonnes, un corps de texte plus petit, des lignes en drapeau et un espace entre les entrées, rien de plus.
+
+Certains réglages appartiennent au livre entier : le format, la résolution et la reliure de `page`, la langue et le sens d’écriture, les chiffres, les polices, l’impression et le PDF. Un style qui en fixe un est ignoré sur ce point et déclenche un avertissement `chapterStyleBookSetting` : les annexes gardent ainsi le format de 150 mm et la césure en anglais britannique des chapitres.
+
+### 2 · La partie nomme le style
+
+<Excerpt region="chapters" />
+
+Le troisième document commence par `:::part{number="II" title="Appendices" style="appendix"}`, et chaque chapitre, de celui-ci jusqu’à la partie suivante, est composé dans le style d’annexe. Le cinquième nomme son propre style dans son front matter, `chapterStyle: "reference"`, qui l’emporte sur celui de la partie. Dans un livre, seul le front matter du premier document vaut pour le livre ; un document suivant n’en garde que la ligne `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Annexe C : le style propre au chapitre, trois colonnes en linéale, à la place des deux de la partie." />
+
+### 3 · Une page de partie, et une partie sans
+
+<Excerpt region="parts" />
+
+Chaque `:::part` ouvre une page de partie qui porte le numéro et le titre de la partie sur une bande verte. La postface commence par `:::part{title="Afterword" page=false}` : aucune page de partie n’est imprimée et, comme la partie ne nomme aucun style, son chapitre est de nouveau composé avec les réglages du livre. Une partie `page=false` convient aux pages de fin qui suivent les annexes sans rupture.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="La page de partie de la partie II." />
+
+### 4 · Une ouverture en deux tailles
+
+<Excerpt region="opener" />
+
+L’ouverture s’étend sur toute la largeur de la page : dans les annexes, elle passe au-dessus des deux colonnes et le texte commence dessous, sur deux. Les styles d’annexe et de référence ramènent le titre à 16 pt et l’abaissement à 24 mm par l’identifiant de l’élément : les pages de fin du livre prennent moins de place, et leurs titres restent nettement plus grands que leur texte.
+
+### 5 · Des titres courants venus du livre
+
+<Excerpt region="running-heads" />
+
+Le titre du livre va sur le verso et celui du chapitre sur le recto. Aucun style ne les modifie : les titres courants sont les mêmes dans toutes les parties du livre.
+
+## Variantes
+
+### Demander à un style un réglage du livre
+
+Un style qui fixe le format ou la langue est ignoré pour ces clés. La composition déclenche un avertissement `chapterStyleBookSetting` pour chacune, et les annexes gardent le format du livre.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Réutiliser la maquette dans un autre livre
+
+L’outil en ligne de commande écrit la maquette d’un livre, styles de chapitre compris, dans un fichier de maquette, puis compose un autre livre avec elle grâce à `--design`. Voir [la commande design](/fr/docs/command-line#design).
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## Erreurs fréquentes
+
+- La ligne `:::part` doit ouvrir le chapitre, avant son titre. Une ligne de partie placée après le début du texte du chapitre déclenche `partStyleMidChapter`, et le style ne s’applique qu’à partir du chapitre suivant.
+- Un nom de style absent de `chapterStyles` déclenche `chapterStyleUnknown`, et ce chapitre est composé avec les réglages du livre.

@@ -30,6 +30,19 @@ export type TextSettingWarning =
    *  lines. Found by the layout, so `collectContentWarnings` never returns
    *  it. */
   | { kind: 'stack'; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** A line that starts with a numbered citation, or a piece of one
+   *  (#1519, `bodyText.citationBreaks: 'warn' | 'avoid'`): the line before
+   *  it ends at the space before the citation or inside it. `text` is the
+   *  citation and `lines` the two lines' texts. Under `'avoid'`, the breaks
+   *  the breaker kept. The source range covers both lines. Found by the
+   *  layout. */
+  | { kind: 'citationBreak'; text: string; lines: [string, string] }
+  /** A line that ends (`edge: 'end'`) or starts (`'start'`) on a relation
+   *  or operator set between spaces (#1519, `bodyText.operatorBreaks:
+   *  'warn' | 'avoid'`). `text` is the sign and `lines` the two lines'
+   *  texts. Under `'avoid'`, the breaks the breaker kept. Found by the
+   *  layout. */
+  | { kind: 'operatorBreak'; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** A hyphen ladder (#1466, `bodyText.hyphenation.ladders: 'warn' |
    *  'avoid'`): `lines` lines in a row of a paragraph end on a hyphen, more
    *  than `max` (`hyphenation.maxConsecutive`). `text` is the ladder's

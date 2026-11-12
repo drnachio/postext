@@ -149,6 +149,11 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Els paràgrafs es componen com a text de cos.</td>
     </tr>
     <tr>
+      <td><code>chapterStyleUnknown</code>, <code>partStyleMidChapter</code></td>
+      <td><a href="/ca/docs/configuration-styles#estils-de-capítol">Estils de capítol</a></td>
+      <td>—</td>
+    </tr>
+    <tr>
       <td><code>unknownCalloutType</code></td>
       <td><code>:::callout{'{'}type{'}'}</code> no correspon a cap dels <code>calloutStyles</code>; només es registra quan n'hi ha algun de configurat.</td>
       <td>La caixa pren el primer estil de requadre.</td>
@@ -389,8 +394,8 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>La llista es parteix on s'acaba la columna.</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>Dues línies seguides d'un paràgraf, en una mateixa columna, que acaben (<code>edge: 'end'</code>) o comencen (<code>'start'</code>) amb la mateixa paraula o els mateixos <code>bodyText.stackMinCharacters</code> caràcters: <code>text</code> és el que repeteixen, tal com l'imprimeix la primera línia, i <code>lines</code> les dues línies. Amb <code>bodyText.stacks: 'warn'</code> s'informa de totes; amb <code>'avoid'</code>, de les que va mantenir l'algorisme. Un per repetició; apunta a les dues línies, amb la seva pàgina. Des de postext 1.73.</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>Dues línies seguides d'un paràgraf, en una mateixa columna, que acaben (<code>edge: 'end'</code>) o comencen (<code>'start'</code>) amb la mateixa paraula o els mateixos <code>bodyText.stackMinCharacters</code> caràcters (<code>stack</code>, des de postext 1.73); una línia que comença amb una cita numerada després d'una paraula, o amb un tros d'una (<code>citationBreak</code>, 1.79); una línia que acaba o comença amb un signe solt entre espais, <code>=</code> o <code>±</code> (<code>operatorBreak</code>, 1.79). <code>text</code> és el que es repeteix, la cita o el signe, i <code>lines</code> les dues línies. Amb <code>'warn'</code> (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>) s'informa de tots; amb <code>'avoid'</code>, dels que va mantenir l'algorisme. Un per tall; apunta a les dues línies, amb la seva pàgina.</td>
       <td>Les línies es componen tal com són.</td>
     </tr>
     <tr>
@@ -405,7 +410,7 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>Un bloc de l'índex que ha d'anar junt (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), encapçalat per <code>title</code> i compost en <code>columns</code> columnes: és més alt que una columna sencera, o la columna on comença és curta (sota un bloc d'amplada de pàgina, al costat d'un flotant). Un per bloc; l'avís indica la directiva <code>:::toc</code>, amb la pàgina on comença el bloc. Per eliminar-lo, llista menys nivells (<code>levels="1"</code>), encapçala els blocs amb un nivell inferior (<code>toc.groups.head: 2</code>) o fes les entrades més petites o més atapeïdes. Des de postext 1.34.</td>
+      <td>Un bloc de l'índex que ha d'anar junt (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), encapçalat per <code>title</code> i compost en <code>columns</code> columnes: és més alt que una columna sencera, o la columna on comença és curta (sota un bloc d'amplada de pàgina, al costat d'un flotant). Un per bloc; l'avís indica la directiva <code>:::toc</code>, amb la pàgina on comença el bloc. Des de postext 1.34.</td>
       <td>El bloc es parteix; amb <code>toc.groups.continuation</code>, cada columna on continua s'obre amb la seva fila de capçalera i la marca de continuació.</td>
     </tr>
     <tr>

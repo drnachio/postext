@@ -11,6 +11,7 @@
     "test": "vitest run",
     "cookbook": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/cookbook/cli.ts",
     "wiki": "pnpm dlx --allow-build=esbuild tsx scripts/wiki/sync.ts",
+    "designs": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/designs/build.ts",
     "fonts:cjk": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/fonts/cjk.ts"
   },
   "dependencies": {
