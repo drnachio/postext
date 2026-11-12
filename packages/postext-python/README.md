@@ -1,8 +1,8 @@
 # postext for Python
 
 Typeset books from Python with [Postext](https://postext.dev/): a print-ready
-PDF, HTML pages, an EPUB, page images or a Word document from a `.postext`
-book, a book folder or loose Markdown files.
+PDF, HTML pages, an EPUB, page images, a Word document or an InDesign package
+from a `.postext` book, a book folder or loose Markdown files.
 
 ```bash
 pip install postext
@@ -57,10 +57,13 @@ Every command of the command line is a function. Each runs the command with
 | `images(book, out="pages/", pages=…, pattern=…)` | `postext images` | `Report` |
 | `docx(book, out=…, variant=…)` | `postext docx` | `Report` |
 | `import_docx(docx, book=None, out=…, dry_run=…)` | `postext import-docx` | `ImportDocxReport` |
+| `idml(book, out=…, images=…, lines=…, spreads=…, fonts=…)` | `postext idml` | `Report` |
+| `import_idml(idml, out=…, layout=…, links=…, document=…)` | `postext import-idml` | `ImportIdmlReport` |
 | `pack(book, out=…)` / `unpack(bundle, out=…)` | `postext pack` / `unpack` | `Report` / `UnpackReport` |
+| `design(book, out=…, parts=…, design_name=…)` | `postext design` | `DesignReport` |
 | `info(book, pages=True)` | `postext info` | `InfoReport` |
 | `check(book, strict=True)` | `postext check` | `CheckReport` |
-| `build(book, pdf=…, html=…, epub=…, images=…, docx=…)` | `postext build` | `Report` |
+| `build(book, pdf=…, html=…, epub=…, images=…, docx=…, idml=…)` | `postext build` | `Report` |
 
 `book` is a path (a `.postext` file, a book folder, a Markdown file), a list
 of Markdown files (the chapters, in order), or the bytes of a `.postext`
@@ -78,8 +81,17 @@ postext.pdf(
     resources="img/", fonts="fonts/",  # --resources, --fonts
     font_dirs=["~/Fonts"],             # --font-dir
     offline=True,                      # --offline: never download fonts
+    design="novel.postext",            # --design: a design file (a path or bytes), or another book
+    design_parts=["page", "text"],     # --design-parts page,text
 )
 ```
+
+`design(book, out="novel.postext", parts=["page", "text", "headings"])`
+takes a book's design into a design file, and `design=` puts it on any
+other book. In `idml`, `fonts=True` is the switch that writes the font
+files beside the package, not the book option. `import_idml` reads a bare
+`.idml` or a zipped InDesign package, as a path or as bytes (then give
+`out`, and `links` for the linked pictures).
 
 ### Reports and warnings
 
@@ -88,13 +100,17 @@ A `Report` has `ok`, `command`, `version`, `exit_code`, `pages`, `book`
 pages), `warnings` (`Diagnostic`: kind, message, severity, at, page, data),
 `timings` and `raw`, the whole JSON object. `InfoReport` adds `chapters`,
 `resources` and `fonts`; `CheckReport` adds `passed`, `error_count`,
-`warning_count`, `contrast`, `reflow` and `preflight`.
+`warning_count`, `contrast`, `reflow` and `preflight`; `DesignReport` adds
+`name` and `parts`; `ImportIdmlReport` adds `layout` (`pages` or `flow`),
+`reason`, `chapters`, `quality` (the import report), `fonts`,
+`missing_links` and `package`.
 
 ### Bytes out
 
 `out="-"` (or `postext.STDOUT`) writes to stdout and returns the bytes in
 `report.content`; `pdf_bytes`, `html_bytes`, `epub_bytes`, `image_bytes`,
-`docx_bytes` and `pack_bytes` return them directly. A book given as bytes
+`docx_bytes`, `idml_bytes`, `pack_bytes` and `design_bytes` return them
+directly (`idml` with linked pictures or `fonts=True` needs a file). A book given as bytes
 with no `out` comes back as bytes.
 
 ### Errors

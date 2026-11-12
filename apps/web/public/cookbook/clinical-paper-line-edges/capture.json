@@ -1,0 +1,840 @@
+{
+  "schemaVersion": 1,
+  "slug": "clinical-paper-line-edges",
+  "sourceHash": "9eeb00f5dc4eacb932cd909e8626bb345f3ee97f729ec8d96051f3b1bdaabb2b",
+  "engine": {
+    "postext": "1.79.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-12T20:58:10.246Z",
+  "variants": {
+    "en": {
+      "hash8": "56d4126e",
+      "vdtHash": "f8445d835638d1dfb6bde024fcc8e3a2268377af",
+      "timings": {
+        "importMs": 14224,
+        "fontsMs": 6,
+        "buildMs": 153,
+        "totalMs": 20858,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "STIX Two Text",
+          "sizePt": 9.5,
+          "leadingPt": 12.8
+        },
+        "families": [
+          "IBM Plex Sans",
+          "IBM Plex Sans Condensed",
+          "STIX Two Text"
+        ],
+        "pages": 6,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "211",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 150408,
+          "alt": "Opening page 211: Point-of-care lung ultrasound for community- acquired pneumonia in children: a prospective diagnostic accuracy study."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 196798,
+          "alt": "Page 212: Index test."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 154894,
+          "alt": "Page 213: Article information."
+        },
+        {
+          "n": 6,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 152364,
+          "alt": "Page 213: Article information."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          null,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "clinical-paper-line-edges.postext",
+        "bytes": 30918,
+        "folio": "0544856f",
+        "keep": "last",
+        "pages": 3,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "56c416935f5c8da1",
+            "lines": "15bf524b18fc27cf"
+          }
+        ],
+        "warnings": [
+          "citationBreak [2, 3]"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocumentWithFonts",
+          "createCiteprocEngine",
+          "registerCitationEngine",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.citationBreakPenalty",
+          "bodyText.citationBreaks",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.operatorBreakPenalty",
+          "bodyText.operatorBreaks",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "checks",
+          "checks.contentInConfig",
+          "checks.contentInConfig.allow",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.labelAlign",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.collapseRanges",
+          "citations.locale",
+          "citations.marker",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "markStyles",
+          "markStyles[].background",
+          "markStyles[].color",
+          "markStyles[].id",
+          "markStyles[].name",
+          "markStyles[].paddingBottom",
+          "markStyles[].paddingTop",
+          "markStyles[].paddingX",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "checks",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "markStyles",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 365,
+        "designElements": 13,
+        "directives": [
+          ":::callout",
+          ":::paragraphs",
+          ":::bibliography",
+          ":::references"
+        ],
+        "inline": [
+          "^…^",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "STIX Two Text",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citation-sign-breaks",
+          "citation-styles",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-styles",
+          "highlight-marks",
+          "off-grid-spacing",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "roman-front-matter",
+          "super-subscripts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 5,
+        "looseLines": {
+          "count": 8,
+          "share": 0.036,
+          "worst": 2.16
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 4,
+          "tracked": 4,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "8 of 222 justified lines (3.6 %) stretch past 2× (worst 2.16×); loosest: p. 1 2.16× “We measured the accuracy of lung ultra-”, p. 4 2.16× “We measured the accuracy of lung ultra-”, p. 2 2.14× “Two radiologists who did not know the ul-”"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "4 paragraphs set a line short with tracking (worst −10‰, the cap): p. 3 −10‰ “The scan suits the place where the decision is t…”, p. 6 −10‰ “The scan suits the place where the decision is t…”, p. 1 −5‰ “From 1 October 2024 to 30 November 2025 we appro…”, p. 4 −5‰ “From 1 October 2024 to 30 November 2025 we appro…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 2 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "112a1714",
+      "vdtHash": "76ad7dd2ade0bfd30f42183db1fb11568e0c3379",
+      "timings": {
+        "importMs": 13235,
+        "fontsMs": 13,
+        "buildMs": 37,
+        "totalMs": 18248,
+        "builds": 4
+      },
+      "specimen": {
+        "trimMm": [
+          170,
+          240
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 6,
+        "mirror": true,
+        "body": {
+          "family": "STIX Two Text",
+          "sizePt": 9.5,
+          "leadingPt": 12.8
+        },
+        "families": [
+          "IBM Plex Sans",
+          "IBM Plex Sans Condensed",
+          "STIX Two Text"
+        ],
+        "pages": 6,
+        "ownLines": 180
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "211",
+          "role": "opener",
+          "w": 1000,
+          "h": 1412,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 158068,
+          "alt": "Página de apertura 211: Ecografía pulmonar a pie de cama para la neumonía adquirida en la comunidad en niños: estudio prospectivo de precisión diagnóstica."
+        },
+        {
+          "n": 2,
+          "label": "212",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 197766,
+          "alt": "Página 212: Prueba en estudio."
+        },
+        {
+          "n": 3,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 177774,
+          "alt": "Página 213: Discusión."
+        },
+        {
+          "n": 6,
+          "label": "213",
+          "role": "body",
+          "w": 1000,
+          "h": 1412,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 173414,
+          "alt": "Página 213: Discusión."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          null,
+          3
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "clinical-paper-line-edges.postext",
+        "bytes": 31542,
+        "folio": "0544856f",
+        "keep": "last",
+        "pages": 3,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "e0811c9277c60f42",
+            "lines": "8af846dd54c518c7"
+          }
+        ],
+        "warnings": [
+          "citationBreak [4, 5]"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "LOCALES",
+          "STYLES",
+          "buildDocumentWithFonts",
+          "createCiteprocEngine",
+          "registerCitationEngine",
+          "renderPageToCanvas"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.citationBreakPenalty",
+          "bodyText.citationBreaks",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.operatorBreakPenalty",
+          "bodyText.operatorBreaks",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceBold",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.paragraphSpacing",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].border",
+          "calloutStyles[].border.enabled",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].snapToGrid",
+          "calloutStyles[].stripe",
+          "calloutStyles[].stripe.color",
+          "calloutStyles[].stripe.enabled",
+          "calloutStyles[].stripe.side",
+          "calloutStyles[].stripe.width",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "checks",
+          "checks.contentInConfig",
+          "checks.contentInConfig.allow",
+          "citations",
+          "citations.bibliography",
+          "citations.bibliography.doi",
+          "citations.bibliography.entrySpacing",
+          "citations.bibliography.fontSize",
+          "citations.bibliography.labelAlign",
+          "citations.bibliography.labelWidth",
+          "citations.bibliography.lineHeight",
+          "citations.collapseRanges",
+          "citations.locale",
+          "citations.marker",
+          "citations.style",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].color",
+          "headingStyles[].fontFamily",
+          "headingStyles[].fontSize",
+          "headingStyles[].fontWeight",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontFamily",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "markStyles",
+          "markStyles[].background",
+          "markStyles[].color",
+          "markStyles[].id",
+          "markStyles[].name",
+          "markStyles[].paddingBottom",
+          "markStyles[].paddingTop",
+          "markStyles[].paddingX",
+          "page",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.pageNumbering",
+          "page.pageNumbering.startAt",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "checks",
+          "citations",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "markStyles",
+          "page",
+          "paragraphStyles"
+        ],
+        "configLeaves": 365,
+        "designElements": 13,
+        "directives": [
+          ":::callout",
+          ":::paragraphs",
+          ":::bibliography",
+          ":::references"
+        ],
+        "inline": [
+          "^…^",
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans Condensed",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "STIX Two Text",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-styles",
+          "citation-sign-breaks",
+          "citation-styles",
+          "generated-bibliography",
+          "heading-attributes",
+          "heading-styles",
+          "highlight-marks",
+          "off-grid-spacing",
+          "opener-design",
+          "page-role-filters",
+          "paragraph-styles",
+          "roman-front-matter",
+          "super-subscripts",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 2 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

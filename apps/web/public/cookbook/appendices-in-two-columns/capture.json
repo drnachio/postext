@@ -1,0 +1,841 @@
+{
+  "schemaVersion": 1,
+  "slug": "appendices-in-two-columns",
+  "sourceHash": "39cbbc0312f4969d7be22737d7fe8bd62fecf22b1015f9f63c5e29a1a2922101",
+  "engine": {
+    "postext": "1.79.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-12T20:55:56.400Z",
+  "variants": {
+    "en": {
+      "hash8": "a5470155",
+      "vdtHash": "165775993139676126dea54476787e5c4bb87553",
+      "timings": {
+        "importMs": 40347,
+        "fontsMs": 2542,
+        "buildMs": 315,
+        "totalMs": 49935,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          220
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10.5,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 10,
+        "ownLines": 122
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "part",
+          "w": 1000,
+          "h": 1467,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 6190,
+          "alt": "Part title page 1: I The orchard."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 115794,
+          "alt": "Opening page 2: Choosing the ground."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 111806,
+          "alt": "Opening page 4: Rootstocks and spacing."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "part",
+          "w": 1000,
+          "h": 1467,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 6622,
+          "alt": "Part title page 6: II Appendices."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 131512,
+          "alt": "Opening page 7: Appendix A · Rootstocks at a glance."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 130022,
+          "alt": "Opening page 8: Appendix B · The orchard year."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 86026,
+          "alt": "Opening page 9: Appendix C · Varieties for a short season."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 92276,
+          "alt": "Opening page 10: The valley in March."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          null
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "appendices-in-two-columns.postext",
+        "bytes": 31591,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "d53af64305de37db",
+            "lines": "0790bad15ace3241"
+          },
+          {
+            "pages": 2,
+            "hash": "1edbc51f26213825",
+            "lines": "70a28e3efb2cf612"
+          },
+          {
+            "pages": 2,
+            "hash": "c7881900fad90628",
+            "lines": "f8c6f66c8c6b9408"
+          },
+          {
+            "pages": 1,
+            "hash": "709f5b204bc02238",
+            "lines": "4037d1d9e867aed1"
+          },
+          {
+            "pages": 1,
+            "hash": "3cbb87d7e5749de3",
+            "lines": "328a65f9f6ff9239"
+          },
+          {
+            "pages": 1,
+            "hash": "3de92b2cd9add368",
+            "lines": "ebe8c51523d865fb"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "prepareFonts",
+          "renderPageToCanvas",
+          "withLoadedFonts"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "chapterStyles",
+          "chapterStyles[].config",
+          "chapterStyles[].config.bodyText",
+          "chapterStyles[].config.headings",
+          "chapterStyles[].config.layout",
+          "chapterStyles[].id",
+          "chapterStyles[].name",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.breakBefore",
+          "parts.breakBefore.parity",
+          "parts.design",
+          "parts.design.elements"
+        ],
+        "configSections": [
+          "bodyText",
+          "chapterStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "parts"
+        ],
+        "configLeaves": 260,
+        "designElements": 12,
+        "directives": [
+          ":::part",
+          ":::paragraphs"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "chapter-styles",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-dividers"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.92
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 2,
+          "tracked": 2,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 49.9 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 7 −10‰ “Antonovka seedling. Full size and the hardiest o…”, p. 9 −5‰ “Honeycrisp. Minnesota, released in 1991. Very cr…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "d54c099b",
+      "vdtHash": "b25eb26ccdac2e18235380a37f982cf769d68015",
+      "timings": {
+        "importMs": 38802,
+        "fontsMs": 1276,
+        "buildMs": 322,
+        "totalMs": 47137,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          220
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 10.5,
+          "leadingPt": 14
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 10,
+        "ownLines": 122
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "part",
+          "w": 1000,
+          "h": 1467,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 5444,
+          "alt": "Portadilla de parte 1: I El huerto."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 117056,
+          "alt": "Página de apertura 2: Elegir el terreno."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 121090,
+          "alt": "Página de apertura 4: Patrones y marcos de plantación."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "part",
+          "w": 1000,
+          "h": 1467,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 6444,
+          "alt": "Portadilla de parte 6: II Apéndices."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 149206,
+          "alt": "Página de apertura 7: Apéndice A · Los patrones de un vistazo."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 148346,
+          "alt": "Página de apertura 8: Apéndice B · El año en el huerto."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 100762,
+          "alt": "Página de apertura 9: Apéndice C · Variedades para un verano corto."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1467,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 100518,
+          "alt": "Página de apertura 10: El valle en marzo."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          null
+        ],
+        [
+          2,
+          null
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "sandbox": {
+        "file": "appendices-in-two-columns.postext",
+        "bytes": 33008,
+        "chapters": [
+          {
+            "pages": 3,
+            "hash": "027f36c40d14583e",
+            "lines": "144c0c2c77014be6"
+          },
+          {
+            "pages": 2,
+            "hash": "247ffd87630c845f",
+            "lines": "a01e01e883c8812e"
+          },
+          {
+            "pages": 2,
+            "hash": "8a32f4d768a786cb",
+            "lines": "b1b5f79258539da8"
+          },
+          {
+            "pages": 1,
+            "hash": "c1ec1938af820798",
+            "lines": "9e211d939114db39"
+          },
+          {
+            "pages": 1,
+            "hash": "f157ebbe1fbe4b32",
+            "lines": "48acf324559e07ac"
+          },
+          {
+            "pages": 1,
+            "hash": "4ec1e61cbd607204",
+            "lines": "8b14c42f87964e27"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildBundle",
+          "prepareFonts",
+          "renderPageToCanvas",
+          "withLoadedFonts"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "chapterStyles",
+          "chapterStyles[].config",
+          "chapterStyles[].config.bodyText",
+          "chapterStyles[].config.headings",
+          "chapterStyles[].config.layout",
+          "chapterStyles[].id",
+          "chapterStyles[].name",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "parts",
+          "parts.breakBefore",
+          "parts.breakBefore.parity",
+          "parts.design",
+          "parts.design.elements"
+        ],
+        "configSections": [
+          "bodyText",
+          "chapterStyles",
+          "colorPalette",
+          "footer",
+          "header",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "parts"
+        ],
+        "configLeaves": 260,
+        "designElements": 12,
+        "directives": [
+          ":::part",
+          ":::paragraphs"
+        ],
+        "inline": [],
+        "resources": {
+          "svg": 0,
+          "bitmap": 0,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "chapter-styles",
+          "multi-chapter-books",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-dividers"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 3,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.69
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 2,
+          "tracked": 2,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C21",
+            "severity": "warn",
+            "detail": "the pen took 47.1 s to finish (warning at 30 s)"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 7 −10‰ “Las alturas son las de un árbol adulto en un sue…”, p. 7 −10‰ “M25. Muy vigoroso, seis metros y más: un árbol d…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

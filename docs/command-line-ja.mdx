@@ -390,10 +390,10 @@ for warning in report.warnings:
 pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
-- **コマンドごとに1つの関数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`import_docx`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書きます（`color_space`、`font_dirs`、`dry_run`）。`set`は辞書、`config`はファイルか辞書、`chapters`は数値、リスト、`range`、`"1,3-5"`のいずれかを受け取ります。
-- **レポートはオブジェクト**。各関数はコマンドを`--json`付きで実行し、レポートを返します。`outputs`、`pages`、`timings`、そして`warnings`で、警告はそれぞれ`kind`、`severity`、`message`、`at`、`page`を持つ`Diagnostic`です。`info`は`chapters`、`resources`、`fonts`を、`check`は`passed`、`error_count`、`warning_count`を加えます。
+- **コマンドごとに1つの関数**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`idml`、`import_docx`、`import_idml`、`design`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書きます（`color_space`、`font_dirs`、`dry_run`）。`set`は辞書、`config`はファイルか辞書、`chapters`は数値、リスト、`range`、`"1,3-5"`のいずれかを受け取ります。本を読む関数はすべて、デザインファイルをパスかバイト列で渡す`design=`と、リストか`"page,text"`で渡す`design_parts=`を受け取ります。
+- **レポートはオブジェクト**。各関数はコマンドを`--json`付きで実行し、レポートを返します。`outputs`、`pages`、`timings`、そして`warnings`で、警告はそれぞれ`kind`、`severity`、`message`、`at`、`page`を持つ`Diagnostic`です。`info`は`chapters`、`resources`、`fonts`を、`check`は`passed`、`error_count`、`warning_count`を、`design`は`name`と`parts`を、`import_idml`は`layout`、`reason`、`chapters`、`quality`、`fonts`、`missing_links`、`package`を加えます。
 - **エラーは例外**。失敗すると`PostextError`、オプションの誤りは`UsageError`になります。`check`がエラーを見つけると`ProblemsFound`を送出し、その`report`に一覧があります。`raise_on_problems=False`を渡すとレポートを返します。
-- **バイト列**。本は`.postext`バンドルのバイト列でも渡せます。`out="-"`ではファイルが`report.content`に入って戻り、`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`pack_bytes`はそれを直接返します。
+- **バイト列**。本は`.postext`バンドルのバイト列でも渡せます。`out="-"`ではファイルが`report.content`に入って戻り、`pdf_bytes`、`html_bytes`、`epub_bytes`、`image_bytes`、`docx_bytes`、`idml_bytes`、`pack_bytes`、`design_bytes`はそれを直接返します。
 - `postext.Postext(binary, cwd=…, timeout=…)`は指定した実行ファイルを使い、`python -m postext …`はコマンドラインそのものです。
 
 呼び出しのたびに実行ファイルを起動し直します。すべてのオプションはパッケージの[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)にあります。
