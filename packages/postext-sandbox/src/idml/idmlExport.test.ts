@@ -91,7 +91,7 @@ describe('the Sandbox IDML export (#1491)', () => {
     expect(file.links).toHaveLength(1);
     const zip = unzipSync(file.bytes);
     expect(Object.keys(zip).sort()).toEqual(['Atlas.idml', file.links[0]!].sort());
-    expect(file.links[0]).toMatch(/^Links\//);
+    expect(file.links[0]).toMatch(/^Links\/.+\.png$/);
     expect(strFromU8(unzipSync(zip['Atlas.idml']!)['mimetype']!)).toBe('application/vnd.adobe.indesign-idml-package');
     const embedded = await buildIdmlExport({ docs, resources, config, title: 'Atlas' });
     expect(embedded.zipped).toBe(false);
