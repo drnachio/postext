@@ -25,6 +25,7 @@ import {
   type CreateBundleInput,
 } from 'postext/bundle';
 import { CliError, UsageError, type Options } from './args';
+import { applyDesignFile, parseDesignParts } from './design';
 import { fontBytes, readFontMeta } from './fonts';
 import type { Reporter } from './log';
 
@@ -399,6 +400,14 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
     book = bookOfBundle(opened, kind, watchPaths);
     // Loose Markdown: warnings name the files given, not the bundle's paths.
     if (kind === 'markdown') book.chapters = book.chapters.map((c, i) => ({ ...c, file: looseFiles[i] ?? c.file }));
+  }
+  // A design file over the book's settings (#1523), before --config and --set.
+  const designPath = opts.string('design');
+  const designParts = parseDesignParts(opts.string('design-parts'), 'design-parts');
+  if (designParts && !designPath) throw new UsageError('--design-parts goes with --design');
+  if (designPath) {
+    await applyDesignFile(book, designPath, designParts, warn);
+    book.watchPaths.push(designPath);
   }
   // --config over a book's own settings (loose Markdown has it already).
   const configPath = opts.string('config');

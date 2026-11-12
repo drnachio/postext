@@ -31,6 +31,8 @@ export const BOOK_OPTIONS: OptionSpec[] = [
   { name: 'locale', short: 'l', kind: 'string', arg: 'TAG', help: 'Language to read a multilingual book in (es, en, pt-BR…)' },
   { name: 'chapters', short: 'c', kind: 'string', arg: 'LIST', help: 'Chapters to lay out, 1-based: "1,3-5" (page numbers restart)' },
   { name: 'set', short: 's', kind: 'list', arg: 'PATH=VALUE', help: 'Change one setting, e.g. --set page.dpi=300 --set bodyText.fontSize.value=11 (repeatable)' },
+  { name: 'design', kind: 'string', arg: 'FILE', help: 'Set the book in the design of a design file (.postext from "postext design" or the Sandbox), or of another book' },
+  { name: 'design-parts', kind: 'string', arg: 'LIST', help: 'With --design: only these parts, e.g. "page,text,headings"' },
   { name: 'config', kind: 'string', arg: 'FILE', help: 'Configuration JSON for loose Markdown (or merged over a book\'s)' },
   { name: 'resources', kind: 'string', arg: 'DIR', help: 'Pictures for loose Markdown; ids are file names without extension' },
   { name: 'fonts', kind: 'string', arg: 'DIR', help: 'Font files bundled with loose Markdown' },
@@ -67,6 +69,10 @@ export const IMAGE_OPTIONS: OptionSpec[] = [
   { name: 'quality', kind: 'number', arg: '1-100', help: 'JPEG / WebP quality (default 90)' },
   { name: 'print-preview', kind: 'boolean', help: 'Show the trim and bleed as a printer sees them' },
 ];
+
+/** The parts of a design, as the engine's DESIGN_PARTS lists them (a test
+ *  pins the two together; the help loads no engine). */
+export const DESIGN_PART_NAMES = ['page', 'writing', 'colors', 'text', 'headings', 'lists', 'figures', 'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced'];
 
 const PAGES_HELP = 'Pages as printed ("3", "7-9", "iv") or by position ("#1", "#10-#20"), comma separated';
 
@@ -218,6 +224,21 @@ export const COMMANDS: CommandSpec[] = [
     run: () => import('./commands/pack'),
   },
   {
+    name: 'design',
+    summary: 'Take a book\'s design into a design file',
+    usage: 'postext design <input…> [-o design.postext] [--parts LIST]',
+    description: `A design file is a .postext with no chapters: the settings of the parts asked for (the Design panel's groups: ${DESIGN_PART_NAMES.join(', ')}), with the font files and colour profile they name. A font marked as not redistributable is left out. The text, the resources and the settings that belong to the book as a whole (language, direction, numerals, resource types, checks) are not part of a design. Give it to any book with --design, or import it in the Sandbox's Design panel.`,
+    options: [
+      { ...OUT, help: 'The design file (default: <book>.design.postext)' },
+      { name: 'parts', kind: 'string', arg: 'LIST', help: 'The parts to take, comma separated (default: all)' },
+      { name: 'design-name', kind: 'string', arg: 'TEXT', help: 'The design\'s name (default: the book\'s)' },
+      { name: 'id', kind: 'string', arg: 'ID', help: 'The design\'s id (default: a slug of the name)' },
+      { name: 'description', kind: 'string', arg: 'TEXT', help: 'A line on what the design is for' },
+    ],
+    examples: ['postext design book.postext -o novel.postext', 'postext design book/ --parts page,text,headings -o type.postext', 'postext pdf other/ --design novel.postext -o other.pdf'],
+    run: () => import('./commands/design'),
+  },
+  {
     name: 'unpack',
     summary: 'Extract a .postext bundle into a folder',
     usage: 'postext unpack <book.postext> [-o folder/]',
@@ -280,7 +301,7 @@ export const COMMANDS: CommandSpec[] = [
 ];
 
 /** Commands that read a book (and take BOOK_OPTIONS). */
-export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'info', 'check', 'build']);
+export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'design', 'info', 'check', 'build']);
 
 export function findCommand(name: string): CommandSpec | undefined {
   return COMMANDS.find((c) => c.name === name);

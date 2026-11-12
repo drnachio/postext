@@ -22,7 +22,7 @@ const BOOK: PostextConfig = {
   bodyText: { fontFamily: 'Lora', fontSize: { value: 11, unit: 'pt' } } as PostextConfig['bodyText'],
   paragraphStyles: [{ id: 'quote', name: 'Quote' }, { id: 'aside', name: 'Aside' }] as PostextConfig['paragraphStyles'],
   colorPalette: [{ id: 'main', name: 'Main', value: { model: 'hex', hex: '#112233' } }] as PostextConfig['colorPalette'],
-  header: { enabled: true } as PostextConfig['header'],
+  header: { enabled: true } as unknown as PostextConfig['header'],
   customFonts: [font('Lora'), font('Unused')] as PostextConfig['customFonts'],
   resourceTypes: [],
   chapterStyles: [{ id: 'appendix', name: 'Appendix', config: { layout: { columnCount: 1 }, header: { enabled: false } } }],
@@ -126,7 +126,7 @@ describe('revertDesign', () => {
     const applied = applyDesign(BOOK, design);
     // Edits made while trying: one outside the design, one over a setting
     // the design set.
-    const edited: PostextConfig = { ...applied, header: { enabled: false } as PostextConfig['header'], layout: { ...applied.layout, columnCount: 4 } as PostextConfig['layout'] };
+    const edited: PostextConfig = { ...applied, header: { enabled: false } as unknown as PostextConfig['header'], layout: { ...applied.layout, columnCount: 4 } as PostextConfig['layout'] };
     const out = revertDesign(edited, BOOK, applied);
     expect(out.bodyText).toEqual(BOOK.bodyText);
     expect(out.paragraphStyles).toEqual(BOOK.paragraphStyles);

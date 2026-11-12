@@ -4,7 +4,6 @@ import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, use
 import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
 import {
-  useSandboxDispatch,
   useSandboxLabels,
   useSandboxPresets,
   useSandboxProjects,
@@ -61,7 +60,6 @@ export function ConfigPanel() {
 }
 
 function ConfigPanelBody() {
-  const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
   const config = useSandboxSelector((s) => s.config);
   const presetConfig = useSandboxSelector((s) => s.presetConfig);
