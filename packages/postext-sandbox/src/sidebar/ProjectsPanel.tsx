@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ChevronDown, Copy, FilePlus, FileInput, Upload, X, Files, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, Copy, FilePlus, FileInput, LayoutTemplate, Upload, X, Files, ChevronRight } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
@@ -17,6 +17,7 @@ import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
 import { IdmlImportDialog, type IdmlPickedFile } from '../idml/IdmlImportDialog.js';
+import { NewBookWithDesign } from './designs/NewBookWithDesign.js';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -66,6 +67,8 @@ export function ProjectsPanel() {
     void openBookThenShowChapters(open, { getPanel: () => activePanelRef.current, showChapters });
   };
   const importRef = useRef<HTMLInputElement>(null);
+  const newAnchor = useRef<HTMLSpanElement>(null);
+  const [withDesign, setWithDesign] = useState(false);
   const idmlRef = useRef<HTMLInputElement>(null);
   // An InDesign document picked for a new book: the dialog reads it.
   const [idmlFile, setIdmlFile] = useState<IdmlPickedFile | null>(null);
@@ -172,6 +175,7 @@ export function ProjectsPanel() {
         title={labels.navBooks}
         actions={
           <>
+            <span ref={newAnchor} className="inline-flex">
             <Menu
               trigger={
                 <Button variant="outline" size="xs" icon={<Plus size={12} />} trailingIcon={<ChevronDown size={12} />} disabled={busy}>
@@ -181,10 +185,13 @@ export function ProjectsPanel() {
             >
               <MenuItem icon={<Copy size={13} />} onClick={() => { void create({ from: 'current' }); }}>{labels.projectNewFromCurrentShort}</MenuItem>
               <MenuItem icon={<FilePlus size={13} />} onClick={() => { void create({ from: 'blank' }); }}>{labels.projectNewBlankShort}</MenuItem>
+              <MenuItem icon={<LayoutTemplate size={13} />} onClick={() => setWithDesign(true)}>{labels.projectNewWithDesign}</MenuItem>
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
               <MenuItem icon={<FileInput size={13} />} onClick={() => idmlRef.current?.click()}>{labels.idmlImport}</MenuItem>
             </Menu>
+            </span>
+            <NewBookWithDesign open={withDesign} onOpenChange={setWithDesign} anchor={newAnchor} onCreate={(design) => create({ from: 'blank', design })} />
             {/* No `accept` filter (#1183): macOS gives `.postext` only a
                 dynamic type, and the picker greys the files out now and
                 then. The import reads the archive and reports a file that

@@ -128,7 +128,7 @@ export function savePanel(panel: string | null): void {
   getStorage()?.setItem(PANEL_KEY, panel ?? '__closed__');
 }
 
-const PANEL_IDS: readonly PanelId[] = ['projects', 'chapters', 'markdown', 'templates', 'resources', 'fonts', 'config', 'warnings'];
+const PANEL_IDS: readonly PanelId[] = ['projects', 'chapters', 'markdown', 'resources', 'fonts', 'config', 'warnings'];
 
 /** The side panel left open: a panel id, null when the sidebar was closed,
  *  undefined when nothing (or nothing known) is stored. */

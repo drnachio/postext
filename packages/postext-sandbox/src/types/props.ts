@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { SandboxLabels } from './labels.js';
 import type { PresetSourceSpec } from '../presets/types.js';
 
-export type PanelId = 'projects' | 'chapters' | 'markdown' | 'templates' | 'config' | 'resources' | 'fonts' | 'warnings';
+export type PanelId = 'projects' | 'chapters' | 'markdown' | 'config' | 'resources' | 'fonts' | 'warnings';
 /** The preview tabs, in the order the bar shows them: Canvas, PDF, Folio,
  *  HTML, EPUB 3 and SCORM. */
 export type ViewportTab = 'canvas' | 'pdf' | 'folio' | 'html' | 'epub' | 'scorm';
@@ -37,6 +37,10 @@ export interface PostextSandboxProps {
   /** Where the print output profiles are fetched from (`<base>/<id>.icc`,
    *  the files of postext's `icc/` folder). Defaults to the npm CDN copy. */
   outputProfileBaseUrl?: string;
+  /** Design files the Designs gallery ships with (#1523): same-origin
+   *  URLs of `.postext` design bundles, e.g. `['/designs/novel.postext']`,
+   *  read the same way as a design file the reader imports. */
+  designUrls?: readonly string[];
   /** Books the host links to by a fragment key of its own, e.g.
    *  `{ recipe: (slug, lang) => \`/cookbook/${slug}/${lang}/${slug}.postext\` }`
    *  for `#recipe=<slug>&lang=es`. The bundle is fetched (same origin only)

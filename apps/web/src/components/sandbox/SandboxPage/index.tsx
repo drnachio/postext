@@ -19,6 +19,10 @@ const PRESET_SOURCES: { url: string; private?: boolean }[] = [
   ...(process.env.NODE_ENV === "production" ? [] : [{ url: "/api/private-presets", private: true }]),
 ];
 
+/** The designs the Designs gallery ships with (#1523), written by
+ *  `pnpm --filter web designs` (scripts/designs/build.ts). */
+const SHIPPED_DESIGNS = ["novel", "manual", "magazine", "two-colour"].map((id) => `/designs/${id}.postext`);
+
 /** The guide's text for each interface language: the Chinese interface
  *  opens its Simplified Chinese edition, the Japanese one its Japanese
  *  edition (set vertically), the Portuguese one its Brazilian edition, the
@@ -60,6 +64,7 @@ export function SandboxPage() {
       locale={locale}
       presetSources={PRESET_SOURCES}
       outputProfileBaseUrl="/icc/"
+      designUrls={SHIPPED_DESIGNS}
       hashBundles={HASH_BUNDLES}
       hashBundleEditions={HASH_BUNDLE_EDITIONS}
       themeToggle={<ThemeToggle compact />}
