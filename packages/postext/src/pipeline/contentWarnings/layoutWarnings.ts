@@ -10,6 +10,7 @@ import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js
 import { findStacks } from '../../checks/stacks.js';
 import { findHyphenFaults } from '../../checks/hyphenRules.js';
 import { findSpaceBreaks } from '../../checks/spaceBreaks.js';
+import { findSnippetEdgeFaults } from '../../checks/snippetEdges.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -146,6 +147,31 @@ export function spaceBreakWarnings(doc: VDTDocument): ContentWarning[] {
     return f.rule === 'citation'
       ? { kind: 'citationBreak', text: f.text, lines, ...where }
       : { kind: 'operatorBreak', edge: f.edge, text: f.text, lines, ...where };
+  });
+}
+
+/** A `stack`, `citationBreak` or `operatorBreak` warning for each fault of
+ *  the line-edge rules in a caption, a note or a table cell (#1542,
+ *  `findSnippetEdgeFaults`), with the resource and the part it lies in, on
+ *  the page the resource was first placed on; `sourceRangeOf` gives the
+ *  range of the content block citing or embedding it. Under the rules at
+ *  `'warn'` or `'avoid'` (the faults the breaker kept). */
+export function snippetEdgeWarnings(
+  doc: VDTDocument,
+  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
+): ContentWarning[] {
+  return findSnippetEdgeFaults(doc).map((f) => {
+    const range = f.block.contentIndex !== undefined ? sourceRangeOf?.(f.block.contentIndex) : undefined;
+    const where = {
+      resourceId: f.resourceId,
+      part: f.part,
+      ...(f.cell ? { cell: f.cell } : {}),
+      ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+      pageIndex: f.pageIndex,
+    };
+    return f.kind === 'citationBreak'
+      ? { kind: 'citationBreak', text: f.text, lines: f.lines, ...where }
+      : { kind: f.kind, edge: f.edge, text: f.text, lines: f.lines, ...where };
   });
 }
 

@@ -65,18 +65,26 @@ export function findSpaceBreaks(doc: VDTDocument, options: FindSpaceBreaksOption
       const b = lines[i + 1]!;
       if (options.pageIndex !== undefined && b.block.pageIndex !== options.pageIndex) continue;
       if (vertical(a.block) || vertical(b.block)) continue;
-      // Broken at a word space: the line before keeps no hyphen, and both
-      // lines have text at the break.
-      const head = a.at.text.trimEnd();
-      const tail = b.at.text.trimStart();
-      if (head === '' || tail === '' || /[-\u00AD\u2010]$/u.test(head)) continue;
-      const joined = `${head} ${tail}`;
-      const at = head.length;
-      const hit = ruledSpaces(joined, rules).find((s) => s.at === at);
-      if (!hit) continue;
-      const edge = hit.rule === 'citation' || joined.startsWith(hit.text, at + 1) ? 'start' : 'end';
-      out.push({ block: a.block, line: a.line, nextBlock: b.block, nextLine: b.line, rule: hit.rule, edge, text: hit.text });
+      const hit = spaceBreakBetween(a.at.text, b.at.text, rules);
+      if (hit) out.push({ block: a.block, line: a.line, nextBlock: b.block, nextLine: b.line, ...hit });
     }
   }
   return out;
+}
+
+/** The fault of the break between two consecutive lines of one text whose
+ *  texts are `before` and `after`, if they were broken at a ruled space
+ *  (#1519): also those of a caption, a note or a table cell (#1542). */
+export function spaceBreakBetween(before: string, after: string, rules: { citations: boolean; operators: boolean }): Pick<SpaceBreakFault, 'rule' | 'edge' | 'text'> | undefined {
+  // Broken at a word space: the line before keeps no hyphen, and both
+  // lines have text at the break.
+  const head = before.trimEnd();
+  const tail = after.trimStart();
+  if (head === '' || tail === '' || /[-\u00AD\u2010]$/u.test(head)) return undefined;
+  const joined = `${head} ${tail}`;
+  const at = head.length;
+  const hit = ruledSpaces(joined, rules).find((s) => s.at === at);
+  if (!hit) return undefined;
+  const edge = hit.rule === 'citation' || joined.startsWith(hit.text, at + 1) ? 'start' : 'end';
+  return { rule: hit.rule, edge, text: hit.text };
 }

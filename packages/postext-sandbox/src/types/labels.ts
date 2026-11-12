@@ -2607,6 +2607,11 @@ export interface SandboxLabels {
   warningsOperatorBreakTitle: string;
   warningsOperatorBreakEndDetail: string;
   warningsOperatorBreakStartDetail: string;
+  /** Where a stack, citation or operator break lies in a resource (#1542). */
+  warningsPartCaption: string;
+  warningsPartNote: string;
+  /** `__row__`, `__col__`: from 1. */
+  warningsPartCell: string;
   warningsHyphenLadderTitle: string;
   warningsHyphenLadderDetail: string;
   warningsLastWordDividedTitle: string;
