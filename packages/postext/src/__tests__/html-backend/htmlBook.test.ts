@@ -30,8 +30,8 @@ const config: PostextConfig = {
 
 const svg = (fill: string) => `<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"><rect width="10" height="10" fill="${fill}"/></svg>`;
 const resources: Resource[] = [
-  { id: 'chart', kind: 'svg', typeId: 'figure', title: 'Chart', svg: { fileId: 'chart.svg', width: 10, height: 10 } } as Resource,
-  { id: 'photo', kind: 'bitmap', typeId: 'figure', title: 'Photo', bitmap: { fileId: 'photo.png', width: 10, height: 10 } } as Resource,
+  { id: 'chart', kind: 'svg', typeId: 'figure', title: 'Chart', createdAt: 0, updatedAt: 0, svg: { fileId: 'chart.svg', width: 10, height: 10 } } as Resource,
+  { id: 'photo', kind: 'bitmap', typeId: 'figure', title: 'Photo', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'photo.png', format: 'png', width: 10, height: 10 } } as Resource,
 ];
 const files = new Map<string, Uint8Array>([
   ['chart.svg', new TextEncoder().encode(svg('#ff0000'))],
