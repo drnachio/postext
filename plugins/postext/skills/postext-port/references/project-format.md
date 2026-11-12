@@ -552,9 +552,14 @@ const { bytes: out, warnings } = await createBundle({
 A design file is a `.postext` with no chapters: a book's design without its text. The manifest says
 `design: { parts: [...] }` and `chapters: []`; `config` holds only the settings of those parts, with the
 font files (`fonts/`) and the colour profile (`profiles/`) they name. The parts are the Sandbox Design
-panel's groups (`DESIGN_PARTS`: page, writing, colors, text, headings, lists, figures, callouts, exercises,
-comics, running, parts, output, folio, advanced; `DESIGN_PART_KEYS` maps each to its settings). The book's
+panel's groups (`DESIGN_PARTS`: page, writing, colors, text, composition, headings, lists, figures, callouts,
+exercises, comics, running, parts, output, folio, advanced; `DESIGN_PART_KEYS` maps each to its settings). The book's
 own settings (`BOOK_OWN_KEYS`: locale, direction, numerals, resourceTypes, checks, debug) never go in one.
+≥ 1.80 `composition` holds the composition rules inside `bodyText` (hyphenation minWordLength, leftMin, rightMin,
+capitalized, fewerHyphens, ladders, maxConsecutive, ladderPenalty, lastWord, lastWordPenalty; hyphenateAcrossColumns,
+stacks, stackMinCharacters, stackPenalty, citationBreaks, citationBreakPenalty, operatorBreaks, operatorBreakPenalty);
+`text` keeps the rest of `bodyText`, so a design's type and its rules apply apart. A 1.79 design whose `text` holds
+some of those rules reads with `composition` too.
 
 ```js
 import { extractDesign, applyDesign } from 'postext';
@@ -566,6 +571,13 @@ const config = applyDesign(other.config, opened.design); // named styles merge b
 ```
 
 - From the command line: `postext design my-book -o house.postext [--parts page,text,headings]`, and any
-  command takes `--design house.postext [--design-parts …]` to set the book in it before `--config`/`--set`.
+  command takes `--design house.postext [--design-parts …]` to set the book in it before `--config`/`--set`,
+  and (≥ 1.80) `--composition es|en-US|en-GB|fr|de|auto` to set a language's composition convention after it.
+- Composition conventions (≥ 1.80): `COMPOSITION_CONVENTIONS`, `compositionConventionFor(tag)`,
+  `compositionConventionDesign(c)` (a design for `applyDesign`), `followsCompositionConvention(config, c)`. Spanish:
+  ladders 'avoid' + maxConsecutive 1, lastWord 'avoid', stacks 'avoid', hyphenateAcrossColumns false; en-US and fr:
+  ladders 'avoid' + 3, lastWord 'avoid'; en-GB: ladders 'avoid' + 2, lastWord 'avoid'; de: ladders 'avoid' + 3.
+  A port keeps the original's breaks: leave the rules off (or 'warn' for proofs) unless the publisher asks for its
+  house rules on new titles; then ship them as a composition-only design file.
 - When a publisher's titles share a house design, port it once as a design file and give each title only
   what it changes; the Sandbox's Design panel imports the same file (Designs).
