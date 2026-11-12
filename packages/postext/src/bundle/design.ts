@@ -8,7 +8,7 @@
 import type { PostextConfig } from '../types.js';
 import { BOOK_OWN_KEYS } from '../defaults/bookKeys.js';
 import { DESIGN_PARTS, type DesignPart } from '../designs/parts.js';
-import { designFileIds, extractDesign, readDesignParts, type Design } from '../designs/design.js';
+import { designFileIds, designPartsWithComposition, extractDesign, readDesignParts, type Design } from '../designs/design.js';
 import { createBundle, type BundleFileData, type CreatedBundle } from './api.js';
 import { readBundle } from './codec.js';
 import { pickBundleMeta } from './manifest.js';
@@ -130,12 +130,13 @@ export async function openDesignBundle(bytes: Uint8Array, options: OpenDesignOpt
     onWarning: (w) => warnings.push(w),
   });
   const { manifest } = read;
-  const parts: DesignPart[] = isDesign ? readDesignParts(manifest.design?.parts) : [...DESIGN_PARTS];
-  if (parts.length === 0) throw new Error('The design file names no part');
+  const named: DesignPart[] = isDesign ? readDesignParts(manifest.design?.parts) : [...DESIGN_PARTS];
+  if (named.length === 0) throw new Error('The design file names no part');
   // A book's configuration (or a design's, read with the book's rules):
   // the book's own settings are left out, as in any design.
   const source: PostextConfig = { ...(read.sharedConfig ?? read.config) };
   for (const key of BOOK_OWN_KEYS) delete source[key];
+  const parts = designPartsWithComposition(named, source);
   const locale = manifest.locale ?? read.config.locale;
   const design = extractDesign(locale !== undefined ? { ...source, locale } : source, parts);
   const meta = pickBundleMeta(manifest, options.locale ?? manifest.locale ?? read.locale);

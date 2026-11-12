@@ -215,6 +215,17 @@ export function designFileIds(config: PostextConfig): { fontIds: string[]; blobI
   return { fontIds, blobIds };
 }
 
+/** The parts a design file holds, read as this version reads them: a
+ *  design saved before the composition rules were a part of their own
+ *  (#1540: the designs of 1.79, the templates of 1.78) keeps them in its
+ *  text part, so it holds the composition part as well and applying it
+ *  sets the rules it was saved with. */
+export function designPartsWithComposition(parts: readonly DesignPart[], config: object): DesignPart[] {
+  if (!parts.includes('text') || parts.includes('composition')) return [...parts];
+  const holds = designPartSlots(['composition']).some((slot) => readDesignSlot(config, slot) !== undefined);
+  return holds ? partsInOrder([...parts, 'composition']) : [...parts];
+}
+
 /** `parts` read from outside (a manifest, a tool call, a command line,
  *  `page,text`): the known ones, in panel order. */
 export function readDesignParts(parts: unknown): DesignPart[] {
