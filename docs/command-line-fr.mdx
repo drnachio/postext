@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ligne de commande',
   description: 'Un exécutable autonome pour macOS, Linux et Windows qui transforme un livre .postext, un dossier de livre ou des fichiers Markdown isolés en PDF, HTML, EPUB, images de pages et Word, crée des paquets et vérifie des livres, avec une sortie JSON pour les scripts et les agents',
   lang: 'fr',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '14 min',
   order: 51,
   plainSummary: "Cette page s’adresse à ceux qui veulent faire des livres avec Postext depuis un terminal plutôt que depuis le site. Vous téléchargez un seul fichier pour votre ordinateur et vous le lancez, sans rien installer. Vous lui donnez votre livre, ou quelques fichiers texte, et il produit un PDF, une page web, un livre numérique, des images des pages ou un document Word. Il peut aussi vérifier qu’un livre n’a pas de problème et réunir ses fichiers en un seul. Les programmes et les assistants d’IA peuvent l’utiliser eux aussi, car il sait répondre dans un format qu’ils lisent facilement.",
@@ -514,6 +514,7 @@ les derniers fichiers valides.
     <tr><td><code>--set PATH=VALUE</code></td><td>Modifie un réglage le temps de cette exécution, sous forme de chemin pointé : <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. La valeur est lue comme du JSON quand c’est possible (nombres, true et false, objets), sinon comme du texte. Répétable.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Une configuration (ou un <code>preset.json</code>) pour des fichiers Markdown isolés, ou fusionnée par-dessus celle d’un livre.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Met le livre dans la maquette d’un fichier de maquette (de <code>postext design</code> ou du Sandbox) ou du <code>.postext</code> d’un autre livre, avant <code>--config</code> et <code>--set</code>. <code>--design-parts LISTE</code> n’en prend que certaines parties.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Fusionne un fichier de mots gardés entiers avec les listes du livre pour cette exécution, après <code>--config</code> et avant <code>--set</code>. Lit les mêmes fichiers qu’Importer dans le Sandbox (<a href="/fr/docs/configuration-language#mots-gardés-entiers">mots gardés entiers</a>) : une simple liste, les blocs <code>{'\\hyphenation{…}'}</code> d’un fichier TeX, ou du JSON. Une simple liste va dans la liste de <code>LANG</code>, ou dans celle de toutes les langues sans langue indiquée ; un objet JSON remplit une liste par langue, et sa clé <code>"*"</code> est celle de toutes les langues. Répétable. Depuis postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Images, polices et titre pour des fichiers Markdown isolés.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Un dossier où chercher les polices que le livre ne porte pas. Répétable.</td></tr>
     <tr><td><code>--offline</code></td><td>Ne jamais télécharger de polices.</td></tr>

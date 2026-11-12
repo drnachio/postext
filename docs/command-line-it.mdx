@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Riga di comando',
   description: 'Un unico eseguibile autonomo per macOS, Linux e Windows. Trasforma un libro .postext, una cartella di libro o file Markdown sparsi in PDF, HTML, EPUB, immagini delle pagine e Word; crea pacchetti, controlla i libri e fornisce un output JSON per script e agenti',
   lang: 'it',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '14 min',
   order: 51,
   plainSummary: "Questa pagina è per chi vuole fare libri con Postext da un terminale invece che dal sito. Scarichi un solo file per il tuo computer e lo esegui, senza installare nulla. Gli dai il tuo libro, o qualche file di testo, e il programma produce un PDF, una pagina web, un e-book, immagini delle pagine o un documento Word. Può anche cercare problemi in un libro e riunire i suoi file in uno solo. Lo possono usare anche i programmi e gli assistenti di intelligenza artificiale, perché sa rispondere in un formato che leggono facilmente.",
@@ -499,6 +499,7 @@ file validi.
     <tr><td><code>--set PATH=VALUE</code></td><td>Cambia un’impostazione per questa esecuzione, come percorso puntato: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. Il valore viene letto come JSON quando possibile (numeri, true e false, oggetti), altrimenti come testo. Ripetibile.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Una configurazione (o un <code>preset.json</code>) per il Markdown sparso, oppure unita sopra quella del libro.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Compone il libro nel progetto di un file di progetto (da <code>postext design</code> o dalla Sandbox) o del <code>.postext</code> di un altro libro, prima di <code>--config</code> e <code>--set</code>. <code>--design-parts ELENCO</code> ne prende solo alcune parti.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Unisce un file di parole tenute intere alle liste del libro per questa esecuzione, dopo <code>--config</code> e prima di <code>--set</code>. Legge gli stessi file di Importa nella Sandbox (<a href="/it/docs/configuration-language#parole-tenute-intere">parole tenute intere</a>): un elenco semplice, i blocchi <code>{'\\hyphenation{…}'}</code> di un file TeX, oppure JSON. Un elenco semplice va nella lista di <code>LANG</code>, o in quella di tutte le lingue se manca; un oggetto JSON riempie una lista per lingua, e la sua chiave <code>"*"</code> è quella di tutte le lingue. Ripetibile. Da postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Immagini, font e titolo per il Markdown sparso.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Una cartella in cui cercare i font che il libro non porta con sé. Ripetibile.</td></tr>
     <tr><td><code>--offline</code></td><td>Non scarica mai font.</td></tr>

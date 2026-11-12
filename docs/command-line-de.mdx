@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Kommandozeile',
   description: 'Eine eigenständige ausführbare Datei für macOS, Linux und Windows. Sie wandelt ein .postext-Buch, einen Buchordner oder lose Markdown-Dateien in PDF, HTML, EPUB, Seitenbilder und Word um, packt Pakete, prüft Bücher und liefert JSON-Ausgabe für Skripte und Agenten',
   lang: 'de',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '13 min',
   order: 51,
   plainSummary: "Diese Seite richtet sich an alle, die Bücher mit Postext im Terminal statt auf der Website machen wollen. Sie laden eine einzige Datei für Ihren Computer herunter und führen sie aus, ohne etwas zu installieren. Sie geben ihr Ihr Buch oder ein paar Textdateien, und sie erzeugt ein PDF, eine Webseite, ein E-Book, Bilder der Seiten oder ein Word-Dokument. Sie kann ein Buch auch auf Probleme prüfen und seine Dateien zu einer einzigen packen. Auch Programme und KI-Assistenten können sie nutzen, denn sie kann in einem Format antworten, das diese leicht lesen.",
@@ -502,6 +502,7 @@ und die zuletzt fehlerfreien Dateien bleiben erhalten.
     <tr><td><code>--set PATH=VALUE</code></td><td>Ändert eine Einstellung für diesen Lauf, als Pfad mit Punkten: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. Der Wert wird als JSON gelesen, wenn das geht (Zahlen, true und false, Objekte), sonst als Text. Wiederholbar.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Eine Konfiguration (oder eine <code>preset.json</code>) für lose Markdown-Dateien, oder über die eigene eines Buchs gelegt.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Setzt das Buch in der Gestaltung einer Gestaltungsdatei (aus <code>postext design</code> oder der Sandbox) oder der <code>.postext</code> eines anderen Buchs, vor <code>--config</code> und <code>--set</code>. <code>--design-parts LISTE</code> nimmt nur einige ihrer Teile.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Führt für diesen Lauf eine Datei mit ungetrennten Wörtern mit den Listen des Buchs zusammen, nach <code>--config</code> und vor <code>--set</code>. Liest dieselben Dateien wie Importieren in der Sandbox (<a href="/de/docs/configuration-language#ungetrennte-wörter">ungetrennte Wörter</a>): eine einfache Liste, die <code>{'\\hyphenation{…}'}</code>-Blöcke einer TeX-Datei oder JSON. Eine einfache Liste kommt in die Liste von <code>LANG</code>, ohne Sprache in die Liste aller Sprachen; ein JSON-Objekt füllt eine Liste je Sprache, sein Schlüssel <code>"*"</code> ist die Liste aller Sprachen. Wiederholbar. Seit postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Bilder, Schriften und Titel für lose Markdown-Dateien.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Ein Ordner, in dem nach Schriften gesucht wird, die das Buch nicht mitbringt. Wiederholbar.</td></tr>
     <tr><td><code>--offline</code></td><td>Nie Schriften herunterladen.</td></tr>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'コマンドライン',
   description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力',
   lang: 'ja',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '14分',
   order: 51,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
@@ -305,6 +305,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--set PATH=VALUE</code></td><td>この実行に限って、1つの設定をドット区切りのパスで変えます：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。値は、読めるときはJSONとして（数値、trueとfalse、オブジェクト）、そうでなければテキストとして読みます。繰り返し指定できます。</td></tr>
     <tr><td><code>--config FILE</code></td><td>ばらのMarkdownのための設定（または<code>preset.json</code>）。本の場合は本自身の設定の上に統合されます。</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>デザインファイル（<code>postext design</code>またはSandboxで作成）や別の本の<code>.postext</code>のデザインを、<code>--config</code>と<code>--set</code>の前に本に適用します。<code>--design-parts LIST</code>で一部のパーツだけを使います。</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>この実行に限り、分割しない語のファイルを本のリストに統合します。<code>--config</code>の後、<code>--set</code>の前に適用されます。SandboxのImportと同じファイル（<a href="/ja/docs/configuration-language#分割しない語">分割しない語</a>）を読みます。単純なリスト、TeXファイルの<code>{'\\hyphenation{…}'}</code>ブロック、JSONです。単純なリストは<code>LANG</code>のリストに、言語の指定がなければ全言語のリストに入ります。JSONオブジェクトは言語ごとにリストを埋め、キー<code>"*"</code>は全言語のリストです。繰り返し指定できます。postext 1.80以降。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>ばらのMarkdownのための画像、フォント、タイトル。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>本に含まれないフォントを探すフォルダー。繰り返し指定できます。</td></tr>
     <tr><td><code>--offline</code></td><td>フォントをダウンロードしません。</td></tr>
