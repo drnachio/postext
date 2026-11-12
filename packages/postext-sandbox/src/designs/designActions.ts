@@ -29,7 +29,7 @@ import {
 } from 'postext';
 import { createDesignBundle } from 'postext/bundle';
 import type { SandboxAction, SandboxState } from '../context/SandboxContext.js';
-import { generalSettingsFrom, generalSettingsView, rebaseEdition, recordSharedConfig } from '../editions/configLayers.js';
+import { generalSettingsFrom, generalSettingsView, generalSettingsWithWording, rebaseEdition, recordSharedConfig } from '../editions/configLayers.js';
 import { chapterStyleView, newChapterStyle, writeChapterStyle } from '../editions/chapterStyleEdit.js';
 import { getFontFile, putFontFiles } from '../storage/fontStorage.js';
 import { getBlob, putBlobsAt } from '../storage/blobStore.js';
@@ -173,11 +173,13 @@ export async function designAsChapterStyle(
 async function sourceConfig(s: SandboxState, from: string | undefined): Promise<{ config: PostextConfig; name?: string }> {
   if (!from || from === s.activeProjectId) {
     const name = s.activeProjectId ? s.projects.find((p) => p.id === s.activeProjectId)?.name : s.presetSummaries.find((p) => p.id === s.activePresetId)?.name;
-    return { config: { ...bookDesignConfig(s), ...(s.config.locale ? { locale: s.config.locale } : {}) }, ...(name ? { name } : {}) };
+    const config = s.configLayers ? generalSettingsWithWording(bookDesignConfig(s), s.config) : s.config;
+    return { config: { ...config, ...(s.config.locale ? { locale: s.config.locale } : {}) }, ...(name ? { name } : {}) };
   }
   const record = await getProject(from);
   if (!record) throw new Error(`No stored book "${from}"`);
-  const config = recordSharedConfig(record) ?? record.config;
+  const shared = recordSharedConfig(record);
+  const config = shared ? generalSettingsWithWording(shared, record.config) : record.config;
   return { config: { ...config, ...(record.config.locale ? { locale: record.config.locale } : {}) }, name: record.name };
 }
 

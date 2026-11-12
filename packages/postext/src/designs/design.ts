@@ -18,6 +18,7 @@ import type { ChapterStyleConfig, ColorPaletteEntry, CustomFontFamily, PostextCo
 import { stripConfigDefaults } from '../defaults/index.js';
 import { sameConfig } from '../defaults/configLayers.js';
 import { DESIGN_PARTS, DESIGN_PART_SLOTS, designPartSlots, isDesignPart, readDesignSlot, writeDesignSlot, type DesignPart, type DesignPartSlot } from './parts.js';
+import { slotsPaintBlankPages, withPageBreaksOf } from './pageBreaks.js';
 
 /** A design: the configuration of its parts, and which parts it holds. */
 export interface Design {
@@ -126,7 +127,10 @@ export function extractDesign(config: PostextConfig, parts: readonly DesignPart[
  * removed. Palette entries the applied parts link to and the book lacks
  * are added when the colours themselves are not applied. Chapter styles
  * merge on their `id`: a style the book has takes the design's settings of
- * the applied parts and keeps its others.
+ * the applied parts and keeps its others. The page breaks go with the
+ * elements shown on blank pages (see `pageBreaks.ts`): the book's when it
+ * keeps such an element from a part the design leaves, the design's when
+ * only the design brings one.
  */
 export function applyDesign(book: PostextConfig, design: Design, parts: readonly DesignPart[] = design.parts): PostextConfig {
   const chosen = partsInOrder(parts.filter((p) => design.parts.includes(p)));
@@ -138,6 +142,9 @@ export function applyDesign(book: PostextConfig, design: Design, parts: readonly
     else if (value === undefined && isIdList(readDesignSlot(next, slot))) continue;
     else next = writeDesignSlot(next, slot, value === undefined ? undefined : structuredClone(value));
   }
+  const left = DESIGN_PART_SLOTS.filter((s) => !slots.includes(s));
+  if (slotsPaintBlankPages(book, left)) next = withPageBreaksOf(next, book);
+  else if (slotsPaintBlankPages(design.config, slots)) next = withPageBreaksOf(next, design.config);
   const applied = overrideOfParts(design.config, slots);
   const styles = design.config.chapterStyles ?? [];
   const styleParts: Json[] = [];
