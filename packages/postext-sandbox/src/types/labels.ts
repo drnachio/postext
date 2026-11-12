@@ -1518,6 +1518,10 @@ export interface SandboxLabels {
   bodyBreakAfterHyphensTooltip: string;
   bodyBreakAfterSlashes: string;
   bodyBreakAfterSlashesTooltip: string;
+  bodyBindCitations: string;
+  bodyBindCitationsTooltip: string;
+  bodyBindOperators: string;
+  bodyBindOperatorsTooltip: string;
   bodyHardLineBreaks: string;
   bodyHardLineBreaksTooltip: string;
   bodyJustifyHardBreaks: string;
@@ -5408,6 +5412,7 @@ export interface SandboxLabels {
   warningsUnknownCharacterStyleDetail: string;
   wordCharCharStyle: string;
   wordCharCharStyleStyle: string;
+  keepTogetherInline: string;
   rubyInline: string;
   tcyInline: string;
   textStyleFontWeightTooltip: string;

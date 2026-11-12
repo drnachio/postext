@@ -150,6 +150,9 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     ...(partial.justifyHardBreaks === true ? { justifyHardBreaks: true as const } : {}),
     // Present only when on (#1465): `++text++` is text by default.
     ...(partial.plusUnderline === true ? { plusUnderline: true as const } : {}),
+    // Present only when on: a document resolves as before.
+    ...(partial.bindCitations === true ? { bindCitations: true as const } : {}),
+    ...(partial.bindOperators === true ? { bindOperators: true as const } : {}),
     // Present only for the host's language (#764): a document shaped in
     // its own, the default since postext 1.30 (#770), resolves as before.
     ...(partial.shapingLanguage === 'host' ? { shapingLanguage: 'host' as const } : {}),

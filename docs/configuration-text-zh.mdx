@@ -274,6 +274,18 @@ export const metadata = {
       <td>把 <code>++text++</code> 读作加下划线的文字；<code>:underline[text]</code> 始终有效。两边各两个加号的每一对都加下划线，<code>use ++i rather than i++</code> 也是；写 <code>{'\\+\\+'}</code> 原样印出一对加号，紧贴加号的字母或数字使其保持为文字（<code>C++</code>、<code>g++</code>），行内代码和代码块从不加下划线。凡是读取行内标记的地方都适用：正文、标题、列表、图注、表格单元格、注释和标签。<code>false</code>：加号照样印出。见<a href="/zh/docs/document-format-inline#下划线">文档格式 › 下划线</a>。</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>将方括号或圆括号中的编号引用与前面的词（或结束该词的标点）保持在一起，且不拆分：引用前的空格和其中的空格都变为不换行空格（<code>autores [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>）。数字之后从不适用：<code>2016 (3)</code>是年份和期号，不是引用。仅适用于横排的段落、列表项和引文；含有从右到左文本或CJK文本的文本块保持不变。</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>将前后有空格的符号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>）与两侧的词保持在一起（<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>）。行尾和行首都不会出现该符号。适用范围与<code>bindCitations</code>相同。</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

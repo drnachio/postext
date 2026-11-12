@@ -18,6 +18,7 @@ import { orientationHighlight, orientationTheme } from './syntax/orientationSynt
 import { verseHighlight, verseTheme } from './syntax/verseSyntax.js';
 import { hardBreakHighlight, hardBreakTheme } from './syntax/hardBreakSyntax.js';
 import { tabHighlight, tabTheme } from './syntax/tabSyntax.js';
+import { noBreakHighlight, noBreakTheme } from './syntax/noBreakSyntax.js';
 import { comicHighlight, comicTheme } from './syntax/comicSyntax.js';
 import { composedHighlight, composedTheme } from './syntax/composedSyntax.js';
 import { annotationHighlight, annotationTheme } from './syntax/annotationSyntax.js';
@@ -168,6 +169,8 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       hardBreakHighlight,
       tabTheme,
       tabHighlight,
+      noBreakTheme,
+      noBreakHighlight,
       comicTheme,
       comicHighlight,
       composedTheme,

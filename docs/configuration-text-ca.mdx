@@ -274,6 +274,18 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
       <td>Llegeix <code>++text++</code> com a text subratllat, a més de <code>:underline[text]</code>, que es llegeix sempre. Cada parell de dos signes més a cada banda subratlla, també <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escriu un parell literal, una lletra o una xifra enganxada als signes els deixa com a text (<code>C++</code>, <code>g++</code>), i el codi en línia i els blocs de codi no se subratllen mai. S'aplica on es llegeixen les marques en línia: el text corregut, els títols, les llistes, els peus, les cel·les de taula, les notes i els xips. <code>false</code>: els signes més s'imprimeixen. Vegeu <a href="/ca/docs/document-format-inline#subratllat">Format del document › Subratllat</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Manté una cita numerada entre claudàtors o parèntesis unida a la paraula anterior (o al signe de puntuació que la tanca) i sencera: l'espai del davant i els de dins passen a ser espais de no separació (<code>autors [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Mai després d'un nombre: <code>2016 (3)</code> és un any i un fascicle, no una cita. Només als paràgrafs, els elements de llista i les cites compostos en horitzontal; un bloc amb text de dreta a esquerra o CJK es deixa tal com és.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Manté un signe posat entre espais (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unit a les paraules de tots dos costats: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Cap línia no acaba ni comença amb el signe. Mateix abast que <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

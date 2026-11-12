@@ -274,6 +274,18 @@ export const metadata = {
       <td>اقرأ <code>++text++</code> نصًّا مسطَّرًا، إلى جانب <code>:underline[text]</code> الذي يُقرأ دائمًا. كل زوج من علامتَي جمع على كل جانب يسطِّر، ومنه <code>use ++i rather than i++</code>؛ ويكتب <code>{'\\+\\+'}</code> زوجًا حرفيًّا، والحرف أو الرقم الملاصق للعلامتين يبقيهما نصًّا (<code>C++</code> و<code>g++</code>)، ولا يُسطَّر الكود المضمَّن ولا كتل الكود أبدًا. ويسري حيث تُقرأ العلامات المضمَّنة: النص الجاري والعناوين والقوائم والتعليقات التوضيحية وخلايا الجداول والحواشي والشارات. <code>false</code>: تُطبع علامات الجمع كما هي. انظر <a href="/ar/docs/document-format-inline#التسطير">صيغة المستند › التسطير</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يُبقي الإحالة المرقّمة بين قوسين معقوفين أو هلاليين ملتصقة بالكلمة التي قبلها (أو بعلامة الترقيم التي تُنهيها) وكاملة: تصبح المسافة قبلها والمسافات داخلها مسافات غير فاصلة (<code>autores [12]</code>، <code>[14, 16]</code>، <code>(12–15)</code>). لا يحدث ذلك أبدًا بعد رقم: <code>2016 (3)</code> سنة وعدد، لا إحالة. في الفقرات وعناصر القوائم والاقتباسات المنضَّدة أفقيًا فقط؛ ويُترك كما هو كلُّ مقطع يحوي نصًا من اليمين إلى اليسار أو نصًا CJK.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يُبقي الرمز المحاط بمسافات (<code>=</code>، <code>&lt;</code>، <code>&gt;</code>، <code>≤</code>، <code>≥</code>، <code>±</code>، <code>×</code>، <code>≈</code>، <code>≠</code>، <code>÷</code>، <code>−</code>) ملتصقًا بالكلمتين على جانبيه: <code>LR+ = 18,29</code>، <code>p &lt; 0.05</code>. لا ينتهي أي سطر بالرمز ولا يبدأ به. النطاق نفسه الذي لـ<code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>

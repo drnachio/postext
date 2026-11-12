@@ -274,6 +274,18 @@ A propriedade `bodyText` controla a tipografia de todo o texto dos parágrafos.
       <td>Lê <code>++texto++</code> como texto sublinhado, além de <code>:underline[texto]</code>, que é sempre lido. Cada par de dois sinais de mais de cada lado sublinha, também <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> escreve um par literal, uma letra ou um algarismo colado aos sinais os mantém como texto (<code>C++</code>, <code>g++</code>), e o código em linha e os blocos de código nunca são sublinhados. Vale onde as marcas em linha são lidas: o texto corrido, os títulos, as listas, as legendas, as células de tabela, as notas e os chips. <code>false</code>: os sinais de mais são impressos. Veja <a href="/pt/docs/document-format-inline#sublinhado">Formato do documento › Sublinhado</a>.</td>
     </tr>
     <tr>
+      <td><code>bindCitations</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mantém uma citação numerada entre colchetes ou parênteses unida à palavra anterior (ou ao sinal de pontuação que a fecha) e inteira: o espaço antes dela e os de dentro passam a ser espaços não separáveis (<code>autores [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Nunca depois de um número: <code>2016 (3)</code> é um ano e um fascículo, não uma citação. Só nos parágrafos, itens de lista e citações compostos na horizontal; um bloco com texto da direita para a esquerda ou CJK fica como está.</td>
+    </tr>
+    <tr>
+      <td><code>bindOperators</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Mantém um sinal entre espaços (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unido às palavras dos dois lados: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Nenhuma linha termina nem começa com o sinal. Mesmo alcance de <code>bindCitations</code>.</td>
+    </tr>
+    <tr>
       <td><code>scriptContext</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
