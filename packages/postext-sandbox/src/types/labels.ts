@@ -6090,6 +6090,12 @@ export interface SandboxLabels {
   wordEditReasonChangedSinceExport: string;
   wordEditReasonOverlap: string;
   wordEditReasonOther: string;
+  wordEditReasonCitation: string;
+  wordEditReasonCitationPart: string;
+  wordEditCitation: string;
+  wordEditCitationPrefix: string;
+  wordEditCitationLocator: string;
+  wordEditCitationSuffix: string;
   wordEditCommentUnsigned: string;
   wordEditsUndoHint: string;
   wordEditsApply: string;

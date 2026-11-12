@@ -179,11 +179,14 @@ describe('postext cli', () => {
     expect(JSON.parse(semantic.stdout).outputs[0]).toMatchObject({ variant: 'semantic' });
     expect(boxed('s.docx')).toBe(false);
     expect(embedded('s.docx')).toBe(false);
-    // Neither flow file, unedited, has anything to apply.
-    for (const file of ['d.docx', 's.docx']) {
+    // Neither flow file, unedited, has anything to apply; each names
+    // itself as the user chose it, the writer as its properties do (#1517).
+    for (const [file, variant] of [['d.docx', 'formatted'], ['s.docx', 'semantic']] as const) {
       const same = run(['import-docx', file, 'proj', '--dry-run', '--json'], dir);
       expect(same.code).toBe(0);
-      expect(JSON.parse(same.stdout).edits).toEqual([]);
+      expect(JSON.parse(same.stdout)).toMatchObject({ edits: [], variant, writer: 'semantic' });
+      expect(run(['import-docx', file, 'proj', '--dry-run'], dir).stderr).toContain(`${file} (${variant}): 0 applied`);
+      expect(new TextDecoder().decode(entries(file)['docProps/custom.xml'])).toMatch(new RegExp(`postext\\.export">\\s*<vt:lpwstr>${variant}<`));
     }
     // The PDF's pages in text boxes.
     const facsimile = run(['docx', 'proj', '--variant', 'facsimile', '-o', 'f.docx', '--offline', '--json'], dir);
@@ -209,7 +212,7 @@ describe('postext cli', () => {
     const real = run(['import-docx', 'fe.docx', 'proj', '--json'], dir);
     expect(real.code).toBe(0);
     const report = JSON.parse(real.stdout);
-    expect(report.variant).toBe('formatted');
+    expect(report).toMatchObject({ variant: 'facsimile', writer: 'formatted' });
     expect(report.edits.map((e: { status: string; at: string }) => [e.status, e.at])).toEqual([['applied', 'chapters/02-two.md:3']]);
     expect(report.files).toEqual(['chapters/02-two.md']);
     expect(readFileSync(chapter, 'utf8')).toBe(before.replace('More text.', 'Much text.'));

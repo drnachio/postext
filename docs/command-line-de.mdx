@@ -307,8 +307,18 @@ gemeldet:
 - `conflict`: Der Text hat sich seit dem Export auch im Buch geändert, das
   Kapitel oder die Ressource gibt es nicht mehr, oder zwei Korrekturen
   überschneiden sich;
-- `rejected`: Text, den das Buch selbst erzeugt (Nummern, Legendenbezeichnungen),
-  oder Formatierung, die über Postext-Markup hinwegläuft.
+- `rejected`: Text, den das Buch selbst erzeugt (Nummern, Legendenbezeichnungen,
+  was ein Zitierstil aus dem Literaturverzeichnis schreibt), oder Formatierung,
+  die über Postext-Markup hinwegläuft.
+
+Eine Korrektur in einer Zitation geht in sie zurück, wenn sie in einen Teil
+fällt, den der Autor geschrieben hat: die Fundstelle oder die Wörter vor oder
+nach dem Werk. In `[see also @simmons1991, 346–47]` wird ein Seitenbereich, der
+in Word zu `346–48` korrigiert wurde, zu `[see also @simmons1991, 346–48]`. Die
+Zeile nennt die Zitation (`citation simmons1991: locator "7" → "8"`). Eine
+Änderung am Namen des Autors, am Titel oder an *Ibid.* wird abgelehnt, und ein
+Teil, der anders gedruckt wird, als er geschrieben ist (`346--47` gedruckt als
+`346–47`), wird mit seiner Stelle im Buch abgelehnt, um dort geändert zu werden.
 
 Nachverfolgte Änderungen gelten als angenommen, und Kommentare werden mit
 Autor und Stelle aufgeführt, aber nicht geschrieben. Der Exit-Code ist 3, wenn
@@ -318,9 +328,11 @@ Jede Datei wird neben ihr Ziel geschrieben und darüber umbenannt, sodass ein
 abgebrochener Lauf nie ein halbes Kapitel hinterlässt; eine Kapiteldatei, die
 sich während des Imports geändert hat, bleibt mit einer Warnung
 `docx.fileChanged` unangetastet. `-o` passt nicht zu einem Buch. Mit `--json`
-enthält die Antwort `variant`, `exportId`, `edits` (jeweils mit `status`,
-`reason`, `kind`, `before`, `after` und `at`), `comments`, `files` und bei
-einem Probelauf `diff`.
+enthält die Antwort `variant` (der Export, der die Datei ist: `formatted`,
+`semantic` oder `facsimile`), `writer` (der Schreiber, den ihre Eigenschaften
+nennen), `exportId`, `edits` (jeweils mit `status`, `reason`, `kind`, `before`,
+`after` und `at`, in einer Zitation auch `citation` und `citationPart`),
+`comments`, `files` und bei einem Probelauf `diff`.
 
 Auch eine Datei, die in Google Docs bearbeitet und als `.docx` heruntergeladen
 wurde, kommt zurück. Docs lässt die Karte und die Kopie der Kapitel weg; der

@@ -162,8 +162,21 @@ export function editReasonText(labels: SandboxLabels, reason: string | undefined
     case 'no-snapshot': return labels.wordEditReasonNoSnapshot;
     case 'changed-since-export': return labels.wordEditReasonChangedSinceExport;
     case 'overlap': return labels.wordEditReasonOverlap;
+    case 'citation': return labels.wordEditReasonCitation;
+    case 'citation-part': return labels.wordEditReasonCitationPart;
     default: return labels.wordEditReasonOther;
   }
+}
+
+/** The citation an edit falls in (#1516), and the part of it the author
+ *  wrote, in words; empty for an edit outside citations. */
+export function editCitationText(labels: SandboxLabels, e: Pick<DocxEdit, 'citation' | 'citationPart'>): string {
+  if (e.citation === undefined) return '';
+  const label = e.citationPart === 'prefix' ? labels.wordEditCitationPrefix
+    : e.citationPart === 'locator' ? labels.wordEditCitationLocator
+    : e.citationPart === 'suffix' ? labels.wordEditCitationSuffix
+    : labels.wordEditCitation;
+  return label.replace('__keys__', e.citation);
 }
 
 /** What the import says about the file as a whole, in words. */

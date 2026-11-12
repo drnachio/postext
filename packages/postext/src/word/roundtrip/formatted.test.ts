@@ -39,7 +39,7 @@ describe('round trip, formatted text boxes', () => {
 
   it('reads each text box once and leaves an unedited file byte-identical', () => {
     const r = applyDocxEdits(fixture().bytes, { chapters: [{ id: 'c', markdown: MD }] });
-    expect(r.variant).toBe('formatted');
+    expect(r).toMatchObject({ variant: 'facsimile', writer: 'formatted' });
     expect(r.edits).toEqual([]);
     expect(r.chapters[0]!.markdown).toBe(MD);
   });

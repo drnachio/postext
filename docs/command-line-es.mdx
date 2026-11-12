@@ -308,8 +308,18 @@ que se exportó el archivo, y la corrección del texto de un recurso va al bloqu
 - `applied`, con el archivo y la línea a los que fue;
 - `conflict`: el texto también cambió en el libro desde la exportación, el
   capítulo o el recurso ya no existe, o dos correcciones se solapan;
-- `rejected`: texto que genera el propio libro (números, etiquetas de pie) o un
-  formato que cruza el marcado de Postext.
+- `rejected`: texto que genera el propio libro (números, etiquetas de pie, lo
+  que un estilo de cita escribe a partir de la bibliografía) o un formato que
+  cruza el marcado de Postext.
+
+Una corrección dentro de una cita vuelve a ella cuando cae en una parte que
+escribió el autor: el localizador, o las palabras antes o después de la obra.
+En `[véase también @simmons1991, 346–47]`, un intervalo de páginas corregido a
+`346–48` en Word queda `[véase también @simmons1991, 346–48]`. La línea
+nombra la cita (`citation simmons1991: locator "7" → "8"`). Un cambio en el
+nombre del autor, el título o *Ibid.* se rechaza, y una parte que se imprime
+de otro modo que como está escrita (`346--47` impreso `346–47`) se rechaza con
+su lugar en el libro, para cambiarla allí.
 
 Los cambios con control de cambios se toman como aceptados, y los comentarios se
 enumeran con su autor y su lugar, pero no se escriben. El código de salida es 3
@@ -319,8 +329,11 @@ escribe junto a su destino y se renombra encima, así que una ejecución
 interrumpida nunca deja medio capítulo; un archivo de capítulo que cambió
 mientras corría la importación se deja como está, con un aviso
 `docx.fileChanged`. `-o` no va con un libro. Con `--json`, la respuesta lleva
-`variant`, `exportId`, `edits` (cada una con `status`, `reason`, `kind`,
-`before`, `after` y `at`), `comments`, `files` y, en una prueba en seco, `diff`.
+`variant` (la exportación que es el archivo: `formatted`, `semantic` o
+`facsimile`), `writer` (el generador que nombran sus propiedades), `exportId`,
+`edits` (cada una con `status`, `reason`, `kind`, `before`, `after` y `at`, y
+dentro de una cita `citation` y `citationPart`), `comments`, `files` y, en una
+prueba en seco, `diff`.
 
 Un archivo editado en Google Docs y descargado como `.docx` también vuelve. Docs
 no guarda el mapa ni la copia de los capítulos; la importación escribe el mapa

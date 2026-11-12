@@ -10,6 +10,7 @@ import { diffText, type Hunk } from './diff.js';
 import type { BlockView } from './blocks.js';
 import { escapeTyped, markupDeletable, splitKey, widenOverDelimiters, wrapFlags } from './markup.js';
 import { keepTag, mathUnchanged, mathSource } from './math.js';
+import { citationEdits } from './citations.js';
 import { isHolderChar, OBJECT_CHAR, PARA_CHAR } from './walk.js';
 
 export interface SourceEdit {
@@ -25,6 +26,10 @@ export interface SourceEdit {
   note?: string;
   /** For a rejected edit to text without a source: what Word holds. */
   before?: string;
+  /** An edit inside a printed citation: the keys of its works (#1516). */
+  cite?: string;
+  /** The part of the citation the author wrote that the edit is in. */
+  citePart?: 'prefix' | 'locator' | 'suffix';
 }
 
 /** The space the writer indents a line of verse with. */
@@ -442,7 +447,7 @@ function touchesGenerated(v: BlockView, h: Hunk): boolean {
 }
 
 /** Atoms whose printed text the engine generates from the construct. */
-const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation']);
+const LABEL_ATOMS = new Set(['ref', 'footnote', 'citation', 'citation-note']);
 
 const CLOSERS_RE = /^(?:[*_^~`]|\]\([^()\s]*(?:\s+"[^"]*")?\)|\])+/;
 
@@ -491,6 +496,10 @@ export function hunkEdits(v: BlockView, base: string, h: Hunk): SourceEdit[] {
     const side = v.N[h.b0 - 1] === OBJECT_CHAR && v.NNote[h.b0 - 1] !== undefined ? -1 : v.N[h.b1] === OBJECT_CHAR && v.NNote[h.b1] !== undefined ? 1 : 0;
     if (side) h = { ...h, a0: h.a0 + side, a1: h.a1 + side, b0: h.b0 + side, b1: h.b1 + side };
   }
+  // A change inside a printed citation: the author's parts of it come
+  // back into its source (#1516).
+  const cited = citationEdits(v, base, h);
+  if (cited) return cited;
   const kind = hunkKind(v, h);
   if (touchesGenerated(v, h)) {
     // Generated text has no source to change: report it, apply nothing.

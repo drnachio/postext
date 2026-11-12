@@ -3,6 +3,7 @@
 
 import type { Resource } from '../../types/resources/resources.js';
 import type { WordChapterInput } from '../semantic/types.js';
+import type { ExportName } from '../anchors/types.js';
 
 /** The book as it stands now, which the edits are merged into. */
 export interface DocxEditSource {
@@ -35,6 +36,18 @@ export interface DocxEdit {
    *  read from the text most like it among the unmarked text that stands
    *  around its place (the rest comes in as added). */
   reason?: string;
+  /** An edit inside a printed citation (#1516): the keys of the works it
+   *  cites (`simmons1991`, `a; b`). `reason` `citation`: a change to the
+   *  text the processor writes from the bibliography (the author's name,
+   *  the title, "Ibid."); `citation-part`: a change to a part the author
+   *  wrote (a locator, a prefix, a suffix) that is printed otherwise than
+   *  it is written, so it cannot go into the source as typed: `start`,
+   *  `end` are that part's range in the source, `before` and `after` the
+   *  part as printed and as corrected. */
+  citation?: string;
+  /** Which part the author wrote the edit is in: `prefix` ("see also"),
+   *  `locator` ("346–47") or `suffix` ("emphasis added"). */
+  citationPart?: 'prefix' | 'locator' | 'suffix';
 }
 
 /** A Word comment, with the text it was made on. */
@@ -81,7 +94,17 @@ export interface DocxImportNote {
 /** What `applyDocxEdits` returns: the chapters and resources with the edits
  *  in, the edits and the comments. */
 export interface DocxEditResult {
-  variant: 'semantic' | 'formatted';
+  /** The export the file is, by the name the user chose it by (#1517):
+   *  `formatted` (the flow document with the book's design), `semantic`
+   *  (content only) or `facsimile` (the pages, placed). */
+  variant: ExportName;
+  /** The writer that made the file, as its properties name it: the flow
+   *  writer (`semantic`, whatever its design) or the page facsimile
+   *  (`formatted`, its name before #1458). */
+  writer: 'semantic' | 'formatted';
+  /** The design of a flow document (absent in files written before
+   *  #1458, and in the facsimile). */
+  design?: 'book' | 'plain';
   exportId: string;
   /** Every chapter of the source, edits applied. */
   chapters: WordChapterInput[];

@@ -27,9 +27,9 @@ export type { WordFontPlan, SourceFace, WordFontRef, FontWarning, PlanWordFontsO
 export { texToOmml, initTexToOmml, isTexToOmmlReady, setTexToOmmlConverter } from './ommlWrite/index.js';
 export { createDocxPackage, validateDocxPackage } from './ooxml/index.js';
 export type { DocxPackageBuilder, DocxPackageInput, DocxCoreProps, DocxSettings, EmbeddedFontFace } from './ooxml/index.js';
-export { readExportMap, readExportTrace, EXPORT_MAP_NS, EXPORT_MAP_ROOT, BOOKMARK_PREFIX } from './anchors/index.js';
+export { readExportMap, readExportTrace, exportVariantName, EXPORT_MAP_NS, EXPORT_MAP_ROOT, BOOKMARK_PREFIX } from './anchors/index.js';
 export type { ExportTrace, TraceChapter } from './anchors/index.js';
-export type { ExportMap, ExportVariant, ExportSnapshot, MapChapter, MapFragment, MapFormat, FragmentTarget } from './anchors/index.js';
+export type { ExportMap, ExportVariant, ExportName, ExportSnapshot, MapChapter, MapFragment, MapFormat, FragmentTarget } from './anchors/index.js';
 
 export { readDocx, DocxReadError, TEMPLATE_XML_ROOT, TEMPLATE_XML_NS } from './docxRead.js';
 export { wordToPostext, pictureResolution, paragraphTargetOf, characterTargetOf, stripCaptionLabel, tableModel } from './toMarkdown.js';

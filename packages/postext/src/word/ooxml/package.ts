@@ -4,7 +4,7 @@
 // the export map and a deterministic zip (fixed timestamps, fixed order).
 
 import { strToU8, zipSync, type Zippable } from 'fflate';
-import { encodeExportMap, PROP_EXPORT_ID, PROP_VARIANT, PROP_VERSION } from '../anchors/exportMap.js';
+import { encodeExportMap, exportVariantName, PROP_EXPORT, PROP_EXPORT_ID, PROP_VARIANT, PROP_VERSION } from '../anchors/exportMap.js';
 import { guidFrom, hashBytes } from '../anchors/hash.js';
 import { CONTENT_TYPE, DEFAULT_TYPES, REL, type Rel, relsXml, WORDML_NAMESPACES, W_NAMESPACES, XML_DECL } from './constants.js';
 import { fontTable } from './fonts.js';
@@ -179,7 +179,7 @@ export function assemble(input: DocxPackageInput, c: Collected): Map<string, Uin
     put('customXml/itemProps1.xml', itemPropsXml(guidFrom(`postext-map:${map.exportId}`)), CONTENT_TYPE.customXmlProps);
     put('customXml/_rels/item1.xml.rels', relsXml([{ id: 'rId1', type: REL.customXmlProps, target: 'itemProps1.xml' }]));
     rel('rIdMap', REL.customXml, '../customXml/item1.xml');
-    customProps.push([PROP_EXPORT_ID, map.exportId], [PROP_VARIANT, map.variant], [PROP_VERSION, map.engine]);
+    customProps.push([PROP_EXPORT_ID, map.exportId], [PROP_VARIANT, map.variant], [PROP_EXPORT, exportVariantName(map)], [PROP_VERSION, map.engine]);
   }
   for (const [k, v] of Object.entries(input.customProps ?? {})) {
     const at = customProps.findIndex(([name]) => name === k);
