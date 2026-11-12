@@ -1,0 +1,75 @@
+---
+title: "Apêndices em duas colunas com corpo menor"
+summary: "Um manual de fruticultura em uma coluna cujos apêndices mudam de projeto: uma parte nomeia um estilo de capítulo, um apêndice nomeia o seu e o posfácio volta."
+plain: "Os capítulos do livro são compostos em uma coluna larga. A partir dos apêndices, o texto corre em duas colunas de letra menor, e um apêndice em três. O tamanho da página e o idioma do livro não mudam em nenhum momento."
+description: "chapterStyles com :::part{style=…} e o chapterStyle: próprio de um capítulo, num livro de seis documentos, e uma parte com page=false que volta ao livro."
+question: "Como dou aos apêndices de um livro outro projeto gráfico, como duas colunas em corpo menor?"
+aliases: ["estilos de capítulo", "chapterStyle", "projeto dos apêndices", "apêndices em duas colunas", "projeto das páginas finais", "estilo de parte", "diagramação diferente por capítulo", "parte sem página divisória", "page=false", "arquivo de projeto", "postext design", "reaproveitar um projeto gráfico"]
+pageNotes: { "1": "A página divisória da parte I: uma faixa verde na metade superior da página com o numeral I e o título The orchard.", "7": "O apêndice A em duas colunas em bandeira e corpo menor, cada porta-enxerto aberto pelo nome em negrito, sob um título menor que o dos capítulos.", "9": "O apêndice C em três colunas sem serifa com os nomes das variedades em castanho-avermelhado: o estilo próprio do capítulo.", "10": "O posfácio de volta a uma coluna justificada, sem página divisória antes, e o colofão em letra sem serifa pequena." }
+---
+
+## O que você vai compor
+
+Um pequeno manual para quem cultiva macieiras num vale frio, de 150 × 220 mm, escrito em seis documentos Markdown e diagramado como um só livro. Os dois capítulos da parte I são compostos em uma coluna justificada de Source Serif 4. A parte II, os apêndices, muda de projeto: uma tabela de porta-enxertos e um calendário mês a mês em duas colunas em bandeira e corpo menor, matéria que o produtor lê no galpão com o livro aberto sobre a bancada, e uma lista de variedades em três colunas sem serifa. O posfácio volta ao projeto do próprio livro sem página divisória. Formato, margens, hifenização e idioma são os mesmos em todas as páginas.
+
+## Preparo
+
+### 1 · Um estilo guarda só o que muda
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Um estilo de capítulo tem um id, um nome para o Sandbox e um `config` que é mesclado sobre as configurações do livro, como acontece com a camada de um idioma. Os objetos se mesclam chave a chave e as listas entrada a entrada, pelo `id` ou pelo `level`. Assim, `smallOpener` nomeia um único elemento da abertura, o título, e lhe dá um corpo menor; o fio abaixo dele e todo o resto ficam como o livro os define. O estilo de apêndice define duas colunas, um corpo de texto menor, linhas em bandeira e espaço entre as entradas, e nada mais.
+
+Algumas configurações pertencem ao livro inteiro: o formato, a resolução e a encadernação de `page`, o idioma e a direção da escrita, os algarismos, as fontes, a impressão e a saída em PDF. Um estilo que defina alguma delas é ignorado nesse ponto e gera um aviso `chapterStyleBookSetting`, de modo que os apêndices mantêm o formato de 150 mm e a hifenização em inglês britânico dos capítulos.
+
+### 2 · A parte nomeia o estilo
+
+<Excerpt region="chapters" />
+
+O terceiro documento começa com `:::part{number="II" title="Appendices" style="appendix"}`, e todos os capítulos dali até a parte seguinte são compostos no estilo de apêndice. O quinto nomeia seu próprio estilo no front matter, `chapterStyle: "reference"`, que prevalece sobre o da parte. Num livro, só o front matter do primeiro documento vale para o livro; um documento posterior mantém apenas a linha `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Apêndice C: o estilo próprio do capítulo, três colunas sem serifa, no lugar das duas da parte." />
+
+### 3 · Uma página divisória, e uma parte sem ela
+
+<Excerpt region="parts" />
+
+Cada `:::part` abre uma página divisória com o número e o título da parte sobre uma faixa verde. O posfácio começa com `:::part{title="Afterword" page=false}`: nenhuma página divisória é impressa e, como a parte não nomeia estilo, seu capítulo volta a ser composto com as configurações do livro. Uma parte com `page=false` serve para as páginas finais que seguem os apêndices sem interrupção.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="A página divisória da parte II." />
+
+### 4 · Uma abertura em dois tamanhos
+
+<Excerpt region="opener" />
+
+A abertura ocupa toda a largura da página; nos apêndices, portanto, ela passa por cima das duas colunas e o texto começa embaixo, em duas. Os estilos de apêndice e de consulta reduzem o título a 16 pt e o rebaixamento a 24 mm pelo id do elemento: a matéria do fim do livro ocupa menos espaço, e seus títulos continuam bem maiores que o texto.
+
+### 5 · Cabeços do livro
+
+<Excerpt region="running-heads" />
+
+O título do livro vai na página par e o do capítulo na ímpar. Nenhum estilo os altera, então os cabeços são iguais em todas as partes do livro.
+
+## Variações
+
+### Pedir a um estilo uma configuração do livro
+
+Um estilo que define o formato ou o idioma é ignorado nessas chaves. A composição gera um aviso `chapterStyleBookSetting` para cada uma, e os apêndices mantêm o formato do livro.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Reaproveitar o projeto em outro livro
+
+A ferramenta de linha de comando grava o projeto gráfico de um livro, com os estilos de capítulo, num arquivo de projeto, e compõe outro livro com ele usando `--design`. Veja [o comando design](/pt/docs/command-line#design).
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## Erros comuns
+
+- A linha `:::part` precisa abrir o capítulo, antes do título. Uma linha de parte colocada depois que o texto do capítulo já começou gera `partStyleMidChapter`, e o estilo só começa no capítulo seguinte.
+- Um nome de estilo que não existe em `chapterStyles` gera `chapterStyleUnknown`, e aquele capítulo é composto com as configurações do livro.

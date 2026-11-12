@@ -1,0 +1,75 @@
+---
+title: "附录改排小字号双栏"
+summary: "一本单栏排的果农手册，附录换了一套设计：篇指定一种章样式，其中一篇附录指定自己的样式，后记再回到全书的设计。"
+plain: "全书各章排成一栏宽栏。从附录开始，正文改成两栏较小的字，其中一篇附录排成三栏。全书的开本和语言始终不变。"
+description: "六个文档的书：用 :::part{style=…} 套用 chapterStyles，用章自己的 chapterStyle: 覆盖，page=false 的篇回到全书设计。"
+question: "怎样让书的附录或其中一篇换一套设计，比如改排小字号双栏？"
+aliases: ["章样式", "chapterStyle", "附录设计", "附录双栏", "书后部分的设计", "篇样式", "每章不同版式", "没有篇名页的篇", "page=false", "设计文件", "postext design", "复用设计"]
+pageNotes: { "1": "第一篇的篇名页：页面上半部一条绿色色带，上面是数字 I 和篇名 The orchard。", "7": "附录 A 排成两栏齐左的小字，每种砧木以粗体名称开头，标题比各章的小。", "9": "附录 C 排成三栏无衬线字，品种名用赤褐色：这是该章自己的样式。", "10": "后记回到一栏两端对齐，前面没有篇名页，版本记录用小号无衬线字。" }
+---
+
+## 成品一览
+
+一本写给寒冷山谷中苹果种植者的小手册，开本 150 × 220 mm，由六个 Markdown 文档写成，排成一本书。第一篇的两章排成一栏两端对齐的 Source Serif 4。第二篇是附录，换了一套设计：砧木表和逐月农事历排成两栏齐左的小字，果农会在工具棚里把书摊在工作台上查这类内容；品种表则排成三栏无衬线字。后记不加篇名页，回到全书自己的设计。开本、页边距、断词和语言在每一页都相同。
+
+## 做法
+
+### 1 · 样式只写要改的部分
+
+代码见上文[简短回答](#简短回答)。章样式有一个 id、一个在 Sandbox 里显示的名称，以及一份 `config`，它像语言层一样合并到全书的设置之上。对象逐键合并，列表按 `id` 或 `level` 逐项合并，所以 `smallOpener` 只点名章首的一个元素，也就是标题，把它的字号改小；标题下的线条和其他一切都保持全书的设置。附录样式只设定双栏、较小的正文字号、齐左排的行和条目间距，别的都不动。
+
+有些设置属于整本书：`page` 中的开本、分辨率和装订，语言和书写方向，数字，字体，印刷和 PDF 输出。样式里设了其中任何一项，这一项都会被忽略，并发出 `chapterStyleBookSetting` 警告。所以附录仍是 150 mm 宽的开本，也仍按英式英语断词，与各章相同。
+
+### 2 · 由篇指定样式
+
+<Excerpt region="chapters" />
+
+第三个文档以 `:::part{number="II" title="Appendices" style="appendix"}` 开头，从这一章到下一篇之前的每一章都按附录样式排。第五个文档在自己的 front matter 里写了 `chapterStyle: "reference"`，指定自己的样式，它优先于篇的样式。在一本书里，只有第一个文档的 front matter 属于全书；之后的文档只保留其中的 `chapterStyle:` 一行。
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="附录 C：该章自己的样式是三栏无衬线字，取代了篇的双栏。" />
+
+### 3 · 有篇名页的篇，和没有篇名页的篇
+
+<Excerpt region="parts" />
+
+每个 `:::part` 都会开出一张篇名页，篇号和篇名印在一条绿色色带上。后记以 `:::part{title="Afterword" page=false}` 开头：不印篇名页；这一篇也没有指定样式，所以它的章又按全书的设置来排。`page=false` 的篇适合紧接在附录之后的书后内容。
+
+<PageShot page={6} crop="0,0,1,0.45" caption="第二篇的篇名页。" />
+
+### 4 · 一种章首，两种尺寸
+
+<Excerpt region="opener" />
+
+章首横跨整个版面，所以在附录里它跨过两栏，正文从它下方开始分两栏排。附录样式和参考样式通过元素的 id，把标题缩到 16 pt，把章首下沉缩到 24 mm：书后的内容占地更少，标题仍比正文大得多。
+
+### 5 · 书眉沿用全书
+
+<Excerpt region="running-heads" />
+
+左页书眉是书名，右页书眉是章名。没有哪个样式改动它们，所以书中各篇的书眉都一样。
+
+## 变化
+
+### 让样式改整本书的设置
+
+样式若设了开本或语言，这些键会被忽略。每个键都会引发一条 `chapterStyleBookSetting` 警告，附录仍保持全书的开本。
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### 在另一本书中复用这套设计
+
+命令行工具可以把一本书的设计连同章样式写进一个设计文件，再用 `--design` 让另一本书按这套设计排版。见 [design 命令](/zh/docs/command-line#design)。
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## 常见问题
+
+- `:::part` 这一行必须放在章的开头、标题之前。章的正文开始之后才出现的篇行会引发 `partStyleMidChapter`，样式要到下一章才生效。
+- `chapterStyles` 中没有的样式名会引发 `chapterStyleUnknown`，该章按全书的设置排。

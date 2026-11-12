@@ -1,0 +1,75 @@
+---
+title: "Appendices in two columns of smaller type"
+summary: "A growers' handbook set in one column whose appendices change design: a part names a chapter style, one appendix names its own, and the afterword goes back."
+plain: "The chapters of the book are set in one wide column. From the appendices on, the text runs in two columns of smaller type, and one appendix in three. The book's page size and language stay the same throughout."
+description: "chapterStyles with :::part{style=…} and a chapter's own chapterStyle: in a book of six documents, and a part with page=false back in the book's design."
+question: "How do I set a book's appendices, or one of its parts, in another design, such as two columns of smaller type?"
+aliases: ["chapter styles", "chapterStyle", "appendix design", "appendices in two columns", "back matter design", "part style", "different layout per chapter", "part without divider", "page=false", "design bundle", "postext design", "reuse a design"]
+pageNotes: { "1": "Part I's divider: a green band across the top half of the page with the numeral I and the title The orchard.", "7": "Appendix A in two ragged columns of smaller type, each rootstock opening with its name in bold, under a smaller title than the chapters have.", "9": "Appendix C in three columns of sans serif with the variety names in russet: the chapter's own style.", "10": "The afterword back in one justified column with no divider page before it, and the colophon in small sans serif." }
+---
+
+## What you'll build
+
+A small handbook for apple growers in a cold valley, 150 × 220 mm, written as six Markdown documents and laid out as one book. The two chapters of Part I are set in a single justified column of Source Serif 4. Part II, the appendices, changes design: a table of rootstocks and a month-by-month calendar in two ragged columns of smaller type, the kind of matter a grower reads in the shed with the book open on the bench, and a list of varieties in three columns of sans serif. The afterword returns to the book's own design without a divider page. Trim, margins, hyphenation and language are the same on every page.
+
+## Method
+
+### 1 · A style holds only what changes
+
+The code is [the short answer](#the-short-answer) above. A chapter style has an id, a name for the Sandbox and a `config` that is merged over the book's settings the way a language layer is. Objects merge key by key, and lists merge entry by entry on their `id` or `level`, so `smallOpener` names one element of the opener, the title, and gives it a smaller size; the rule under it and everything else stay as the book has them. The appendix style sets two columns, a smaller body size, ragged lines and space between entries, and nothing more.
+
+Some settings belong to the whole book: the trim, resolution and binding of `page`, the language and writing direction, the numerals, the fonts, print and PDF output. A style that sets one is ignored there and raises a `chapterStyleBookSetting` warning, so the appendices keep the 150 mm trim and the British English hyphenation of the chapters.
+
+### 2 · The part names the style
+
+<Excerpt region="chapters" />
+
+The third document opens with `:::part{number="II" title="Appendices" style="appendix"}`, and every chapter from that one to the next part is set in the appendix style. The fifth names its own style in its front matter, `chapterStyle: "reference"`, which wins over the part's. In a book only the first document's front matter belongs to the book; a later one keeps just its `chapterStyle:` line.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Appendix C: the chapter's own style, three columns of sans serif, over the part's two." />
+
+### 3 · A divider page, and a part without one
+
+<Excerpt region="parts" />
+
+Each `:::part` opens a divider page with the part's number and title on a green band. The afterword opens with `:::part{title="Afterword" page=false}`: no divider page is printed, and since the part names no style, its chapter is set in the book's settings again. A part with `page=false` suits back matter that runs on after the appendices.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="Part II's divider page." />
+
+### 4 · One opener at two sizes
+
+<Excerpt region="opener" />
+
+The opener spans the page, so in the appendices it runs across both columns and the text starts under it in two. The appendix and reference styles shrink the title to 16 pt and the sink to 24 mm through the element's id: the matter at the back of the book takes less room, and its titles stay well above its text in size.
+
+### 5 · Running heads from the book
+
+<Excerpt region="running-heads" />
+
+The book's title goes on the verso and the chapter's on the recto. No style changes them, so the heads look the same in every part of the book.
+
+## Variations
+
+### Ask a style for a book-wide setting
+
+A style that sets the trim or the language is ignored for those keys. The build raises a `chapterStyleBookSetting` warning for each one, and the appendices keep the book's trim.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Reuse the design in another book
+
+The command-line tool writes a book's design, chapter styles included, to a design bundle, and sets another book in it with `--design`. See [the design command](/en/docs/command-line#design).
+
+```bash
+postext design apples.postext -o handbook.postext
+postext pdf pears/ --design handbook.postext -o pears.pdf
+```
+
+## Pitfalls
+
+- The `:::part` line must open the chapter, before its heading. A part line after the chapter's text has started raises `partStyleMidChapter`, and the style starts with the next chapter.
+- A style name that `chapterStyles` does not have raises `chapterStyleUnknown`, and that chapter is set in the book's settings.
