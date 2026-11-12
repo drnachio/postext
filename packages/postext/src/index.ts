@@ -10,10 +10,10 @@ export { formatFootnoteNumber, footnoteFormatOf, footnoteSymbol, DEFAULT_FOOTNOT
 export type { FootnoteFormat } from './pipeline/references/footnotes.js';
 export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './canvas-backend/index.js';
 export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions, VerticalAlternatesFace } from './canvas-backend/index.js';
-export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement } from './html-backend/html-backend.js';
+export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement, renderHtmlBook, htmlBookFiles, htmlFontFaceRule, redistributableFaces, fontNoteWarning } from './html-backend/html-backend.js';
 export { renderComicHtml, comicPanelSvg } from './html-backend/htmlComic.js';
 export type { ComicHtmlPaint, ComicPanelSvgOptions } from './html-backend/htmlComic.js';
-export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage } from './html-backend/html-backend.js';
+export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage, RenderHtmlBookOptions, HtmlBookFace, HtmlBookFile, HtmlBookFontNote, HtmlBookWarning } from './html-backend/html-backend.js';
 export { dimensionToPx } from './units.js';
 export { computePageTextExtent } from './vdt.js';
 export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './paint/columnRule.js';
