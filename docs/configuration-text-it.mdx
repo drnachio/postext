@@ -255,6 +255,30 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td>Quanto costa una ripetizione all'algoritmo con <code>stacks: 'avoid'</code>, in demeriti sommati a quelli del paragrafo, sulla scala di <code>consecutiveHyphenDemerit</code> (due righe di seguito con il trattino costano 3000). Un monosillabo ripetuto («a», «e», «di», con le vocali delle scritture latina, greca e cirillica) costa il doppio. Un valore più alto evita più ripetizioni a prezzo di righe più larghe; 0 le tiene tutte.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Una riga che comincia con una citazione numerata tra parentesi quadre o tonde posta dopo una parola, o con un pezzo di una: <code>autori [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, e il richiamo che uno stile numerico mette per <code>[@chiave]</code> (<code>[3, p. 12]</code>). Mai dopo un numero: <code>2016 (3)</code> è un anno e un fascicolo. <code>'allow'</code> compone le righe come le trova l'algoritmo e non segnala nulla. <code>'warn'</code> le compone allo stesso modo e segnala ogni a capo del genere con un avviso di contenuto <code>citationBreak</code>, che il Sandbox elenca in Revisione. <code>'avoid'</code> somma <code>citationBreakPenalty</code> ai demeriti di un a capo nello spazio prima della citazione o al suo interno, così l'algoritmo compone il paragrafo in altro modo dove la spaziatura tra le parole lo permette, e segnala gli a capo che tiene. Lo spazio resta uno spazio tra parole e si allarga con gli altri; il testo non cambia. Paragrafi, elenchi, citazioni, riquadri, note, didascalie e celle di tabella composti in orizzontale; ogni citazione si legge nella scrittura che la circonda, e il testo da destra a sinistra e il CJK restano come sono. Con <code>'avoid'</code> il testo a bandiera, le didascalie, le note e le celle sono composti dall’algoritmo di Knuth–Plass perché seguano anch’essi la regola; la cornice di una pagina composta compone il suo testo senza. Richiede <code>optimalLineBreaking</code>. Per tenere insieme due parole precise qualunque sia la regola, scrivete uno spazio indivisibile.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Quanto costa all'algoritmo, con <code>citationBreaks: 'avoid'</code>, un a capo prima di una citazione o al suo interno, in demeriti sommati a quelli del paragrafo. Per impostazione predefinita quanto una riga allargata fino al limite della spaziatura, così l'algoritmo non supera mai quel limite per tenere una citazione con la sua parola. Un valore più alto tiene più citazioni a prezzo di righe più larghe; 0 lascia passare ogni a capo.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Una riga che finisce o comincia con un segno di relazione o di operazione messo tra spazi (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>): <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. I livelli sono quelli di <code>citationBreaks</code>, l’avviso è <code>operatorBreak</code> (con il bordo, fine o inizio) e <code>'avoid'</code> dà un prezzo agli spazi ai due lati del segno, negli stessi blocchi.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Quanto costa all'algoritmo, con <code>operatorBreaks: 'avoid'</code>, un a capo accanto a un segno isolato, in demeriti sommati a quelli del paragrafo, sulla scala di <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -271,18 +295,6 @@ La proprietà `bodyText` controlla la tipografia di tutto il testo dei paragrafi
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Leggi <code>++testo++</code> come testo sottolineato, oltre a <code>:underline[testo]</code>, che si legge sempre. Ogni coppia di due segni più per lato sottolinea, anche <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> scrive una coppia letterale, una lettera o una cifra attaccata ai segni li lascia come testo (<code>C++</code>, <code>g++</code>), e il codice in linea e i blocchi di codice non si sottolineano mai. Vale ovunque si leggano i segni in linea: il testo corrente, i titoli, gli elenchi, le didascalie, le celle di tabella, le note e i chip. <code>false</code>: i segni più si stampano. Vedi <a href="/it/docs/document-format-inline#sottolineato">Formato del documento › Sottolineato</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Tiene un richiamo numerato tra parentesi quadre o tonde unito alla parola (o alla punteggiatura che la chiude) che lo precede, e intero: lo spazio prima e quelli all’interno diventano spazi indivisibili (<code>autori [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Mai dopo un numero: <code>2016 (3)</code> è un anno e un fascicolo, non un richiamo. Solo nei paragrafi, negli elementi di elenco e nelle citazioni composti in orizzontale; un blocco con testo da destra a sinistra o CJK resta com’è.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Tiene una relazione o un operatore tra spazi (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) unito alle parole da entrambi i lati: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Nessuna riga termina né comincia con il segno. Stesso ambito di <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

@@ -136,6 +136,8 @@ export type WarningKind =
   | 'paragraphCitedInNote'
   | 'shortListSplit'
   | 'stack'
+  | 'citationBreak'
+  | 'operatorBreak'
   | 'hyphenLadder'
   | 'lastWordDivided'
   | 'openerFloat'

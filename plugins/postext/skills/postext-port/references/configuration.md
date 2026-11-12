@@ -341,8 +341,6 @@ bodyText
 ├─ firstLineIndent   Dimension       1.5 em          set {0,'mm'} for block paragraphs
 ├─ hangingIndent     boolean         false           indent all lines but the first
 ├─ plusUnderline     boolean         false           (≥ 1.72) `++…++` underlines, as `:underline[…]` does; when on, EVERY pair does (`i++ … ++j` too), `\+\+` is a literal pair, code never underlines. Off: `++` is text
-├─ bindCitations     boolean         false           (≥ 1.73) the space before a numbered citation in brackets/parentheses (`autores [12]`, `(12–15)`) and the spaces in it become no-break spaces; never after a number (`2016 (3)`). Paragraphs, list items, quotes set horizontally; RTL/CJK blocks untouched
-├─ bindOperators     boolean         false           (≥ 1.73) a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ −` between spaces stays with both terms (`p < 0.05`): no line ends on it nor starts with it. Same scope as bindCitations
 ├─ indentAfterHeading boolean        true            false = first paragraph after a heading unindented (classic book style)
 ├─ blockquote        { color=#666666, italic=true (false in an Arabic-script document, ≥ 1.15), indent=0, firstLineIndent=<body's> }   how `> …` quotes are set (colour palette-linkable; indent = every line, first line counted from it)
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
@@ -432,6 +430,18 @@ H&J / Knuth–Plass
 │                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
 │                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
 │                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
+├─ citationBreaks     'allow'; citationBreakPenalty 10000   ≥ 1.78 a line that starts with a numbered citation after a word, or a piece
+│                        of one (`autores [12]`, `[14, 16]`, `(12–15)`, the `[3, p. 12]` a numbered style sets for `[@key, p. 12]`; never after
+│                        a number: `2016 (3)`): 'warn' = same layout + a `citationBreak` warning per break; 'avoid' = citationBreakPenalty
+│                        demerits on a break at the space before the citation or inside it (the space stays a stretching word space; the
+│                        default weighs one line stretched to the word-spacing limit), the breaks kept are reported. Paragraphs, lists,
+│                        quotes, boxes, notes, captions, table cells set horizontally; RTL and CJK left alone; under 'avoid' ragged text
+│                        is set by Knuth–Plass too; composed frames ignore it; needs optimalLineBreaking. A port leaves it 'allow' (or
+│                        'warn' for proofs) unless the original keeps citations with their word, then 'avoid'; to bind one pair whatever
+│                        the rule, write a no-break space in the Markdown
+├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.78 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
+│                        set between spaces (`p < 0.05`): same levels, an `operatorBreak` warning (edge 'end'|'start'), 'avoid' prices the
+│                        spaces on both sides of the sign, same blocks
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word

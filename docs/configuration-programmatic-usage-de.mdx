@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Die Zeilen werden gesetzt, wie sie sind.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Eine Zeile eines Absatzes, die mit einem nummerierten Zitat nach einem Wort beginnt oder mit einem Stück davon (<code>Autoren [12]</code>, <code>[14, 16]</code>): <code>text</code> ist das Zitat, <code>lines</code> die beiden Zeilen um den Umbruch. Bei <code>bodyText.citationBreaks: 'warn'</code> wird jeder solche Umbruch gemeldet, bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Einer pro Umbruch; zeigt auf die beiden Zeilen mit ihrer Seite. Seit postext 1.78.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Eine Zeile eines Absatzes, die auf ein einzelnes Zeichen zwischen Leerzeichen endet (<code>edge: 'end'</code>) oder damit beginnt (<code>'start'</code>), eines von <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> ist das Zeichen, <code>lines</code> die beiden Zeilen. Bei <code>bodyText.operatorBreaks: 'warn'</code> wird jeder solche Umbruch gemeldet, bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Einer pro Umbruch, eine Zeile, die mit einem Zeichen beginnt und endet, ergibt also zwei. Seit postext 1.78.</td>
+      <td>Die Zeilen werden gesetzt, wie sie sind.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Mehr als <code>max</code> Zeilen eines Absatzes hintereinander mit Trennstrich am Ende (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> sagt, wie viele, <code>text</code> enthält die Zeilen. Bei <code>bodyText.hyphenation.ladders: 'warn'</code> wird jede Treppe gemeldet; bei <code>'avoid'</code> die, die der Zeilenumbruch behielt. Eine pro Treppe; zeigt auf ihre Zeilen, mit der Seite der ersten. Seit postext 1.74.</td>
       <td>Die Zeilen werden gesetzt, wie sie sind.</td>

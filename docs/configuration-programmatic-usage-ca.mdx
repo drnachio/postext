@@ -394,6 +394,16 @@ console.log(`El document té ${vdt.pages.length} pàgines`);
       <td>Les línies es componen tal com són.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Una línia d'un paràgraf que comença amb una cita numerada posada després d'una paraula, o amb un tros d'una (<code>autors [12]</code>, <code>[14, 16]</code>): <code>text</code> és la cita i <code>lines</code> les dues línies a banda i banda del tall. Amb <code>bodyText.citationBreaks: 'warn'</code> s'informa de tots; amb <code>'avoid'</code>, dels que va mantenir l'algorisme. Un per tall; apunta a les dues línies, amb la seva pàgina. Des de postext 1.78.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Una línia d'un paràgraf que acaba (<code>edge: 'end'</code>) o comença (<code>'start'</code>) amb un signe solt entre espais, un de <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> és el signe i <code>lines</code> les dues línies. Amb <code>bodyText.operatorBreaks: 'warn'</code> s'informa de tots; amb <code>'avoid'</code>, dels que va mantenir l'algorisme. Un per tall, de manera que una línia que comença i acaba amb un signe en dona dos. Des de postext 1.78.</td>
+      <td>Les línies es componen tal com són.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Més de <code>max</code> línies seguides d'un paràgraf que acaben en guionet (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> és quantes i <code>text</code>, les línies. Amb <code>bodyText.hyphenation.ladders: 'warn'</code> s'informa de totes les escales; amb <code>'avoid'</code>, de les que va mantenir el tall de línies. Un per escala; apunta a les seves línies, amb la pàgina de la primera. Des de postext 1.74.</td>
       <td>Les línies es componen tal com són.</td>

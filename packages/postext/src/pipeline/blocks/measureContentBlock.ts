@@ -16,7 +16,6 @@ import { runMeasurement } from './buildMeasurement.js';
 import { linkSegments } from '../../measure/links.js';
 import { kashidaMeasureOptions } from '../../measure/rtl/kashida.js';
 import { measureVerse } from '../text/verse.js';
-import { withBoundSpaces } from '../text/boundSpaces.js';
 import { versesLineByLine, measureVerseLines, verseLinesSettings } from '../text/verseLines.js';
 import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 import { measuringVertically } from '../../measure/vertical.js';
@@ -45,15 +44,18 @@ export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureCon
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
 
 /** The measure context a composed page's frame (#855) sets its story
- *  with: `ctx` with stacks allowed (`bodyText.stacks`, #1463). Its reflow
- *  ladder measures what fits the frame, step by step, and a rule that
- *  moves breaks would make each step's heights depend on it. */
+ *  with: `ctx` with the rules that move breaks allowed (`bodyText.stacks`,
+ *  #1463; `citationBreaks` and `operatorBreaks`, #1519). Its reflow ladder
+ *  measures what fits the frame, step by step, and a rule that moves
+ *  breaks would make each step's heights depend on it. */
 const composedFrameCtxs = new WeakMap<BlockMeasureContext, BlockMeasureContext>();
 export function composedFrameMeasureContext(ctx: BlockMeasureContext): BlockMeasureContext {
-  if (ctx.resolved.bodyText.stacks !== 'avoid') return ctx;
+  const body = ctx.resolved.bodyText;
+  if (body.stacks !== 'avoid' && body.citationBreaks !== 'avoid' && body.operatorBreaks !== 'avoid') return ctx;
   let out = composedFrameCtxs.get(ctx);
   if (!out) {
-    out = { ...ctx, resolved: { ...ctx.resolved, bodyText: { ...ctx.resolved.bodyText, stacks: 'allow' } } };
+    const allowed = { stacks: 'allow', citationBreaks: 'allow', operatorBreaks: 'allow' } as const;
+    out = { ...ctx, resolved: { ...ctx.resolved, bodyText: { ...body, ...allowed } } };
     composedFrameCtxs.set(ctx, out);
   }
   return out;
@@ -77,13 +79,6 @@ export function measureContentBlock(
   if (rawBlock.toc) return measureTocBlock(rawBlock, columnWidth, ctx);
   // A block of an expanded `:::index`: an entry and its page numbers.
   if (rawBlock.index) return measureIndexBlock(rawBlock, columnWidth, ctx);
-  // Citations kept with their word, operators with their terms
-  // (`bodyText.bindCitations`, `bindOperators`): no-break spaces, one for
-  // one, so every offset still holds. Running text set horizontally only.
-  const { bindCitations, bindOperators } = resolved.bodyText;
-  if ((bindCitations || bindOperators) && (rawBlock.type === 'paragraph' || rawBlock.type === 'listItem' || rawBlock.type === 'blockquote') && !measuringVertically()) {
-    rawBlock = withBoundSpaces(rawBlock, { citations: bindCitations === true, operators: bindOperators === true });
-  }
 
   const kind = resolveBlockKind(rawBlock, {
     ...ctx,

@@ -443,14 +443,16 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
     case 'floatCropped':
       return `#${payload.resourceId} — ${(payload.reason === 'row' ? labels.warningsFloatRowCroppedDetail : labels.warningsFloatCroppedDetail).replace('__share__', String(Math.round(payload.share * 100)))}`;
     case 'stack':
-      return (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
+    case 'citationBreak':
+    case 'operatorBreak':
+      return (payload.kind === 'citationBreak' ? labels.warningsCitationBreakDetail
+        : payload.kind === 'stack' ? (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
+        : payload.edge === 'end' ? labels.warningsOperatorBreakEndDetail : labels.warningsOperatorBreakStartDetail)
         .replace('__page__', String(payload.page))
         .replace('__text__', payload.text);
     case 'hyphenLadder':
-      return labels.warningsHyphenLadderDetail
-        .replace('__page__', String(payload.page))
-        .replace('__lines__', String(payload.lines))
-        .replace('__max__', String(payload.max));
+      return labels.warningsHyphenLadderDetail.replace('__page__', String(payload.page))
+        .replace('__lines__', String(payload.lines)).replace('__max__', String(payload.max));
     case 'lastWordDivided':
       return labels.warningsLastWordDividedDetail.replace('__page__', String(payload.page)).replace('__text__', payload.word);
     case 'shortListSplit':
@@ -458,10 +460,8 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
     case 'openerFloat':
       return `${payload.resourceId !== undefined ? `#${payload.resourceId} — ` : ''}${labels.warningsOpenerFloatDetail.replace('__page__', String(payload.page))}`;
     case 'tocGroupSplit':
-      return labels.warningsTocGroupSplitDetail
-        .replace('__page__', String(payload.page))
-        .replace('__title__', payload.title)
-        .replace('__columns__', String(payload.columns));
+      return labels.warningsTocGroupSplitDetail.replace('__page__', String(payload.page))
+        .replace('__title__', payload.title).replace('__columns__', String(payload.columns));
     case 'codeOverflow': {
       const detail = payload.mode === 'wrap' ? labels.warningsCodeOverflowWrap
         : payload.mode === 'clip' ? labels.warningsCodeOverflowClip

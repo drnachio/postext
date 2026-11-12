@@ -394,6 +394,16 @@ console.log(`El documento tiene ${vdt.pages.length} páginas`);
       <td>Las líneas se componen como están.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Una línea de un párrafo que empieza con una cita numerada puesta tras una palabra, o con un trozo de ella (<code>autores [12]</code>, <code>[14, 16]</code>): <code>text</code> es la cita y <code>lines</code> las dos líneas a ambos lados del corte. Con <code>bodyText.citationBreaks: 'warn'</code> se informa de todos; con <code>'avoid'</code>, de los que mantuvo el algoritmo. Uno por corte; apunta a las dos líneas, con su página. Desde postext 1.78.</td>
+      <td>Las líneas se componen como están.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Una línea de un párrafo que termina (<code>edge: 'end'</code>) o empieza (<code>'start'</code>) con un signo suelto entre espacios, uno de <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> es el signo y <code>lines</code> las dos líneas. Con <code>bodyText.operatorBreaks: 'warn'</code> se informa de todos; con <code>'avoid'</code>, de los que mantuvo el algoritmo. Uno por corte, así que una línea que empieza y termina con un signo da dos. Desde postext 1.78.</td>
+      <td>Las líneas se componen como están.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Más de <code>max</code> líneas seguidas de un párrafo que terminan en guion (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> es cuántas y <code>text</code>, las líneas. Con <code>bodyText.hyphenation.ladders: 'warn'</code> se informa de todas las escaleras; con <code>'avoid'</code>, de las que mantuvo el corte de líneas. Uno por escalera; apunta a sus líneas, con la página de la primera. Desde postext 1.74.</td>
       <td>Las líneas se componen como están.</td>

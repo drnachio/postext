@@ -17,6 +17,7 @@ import { lineTracking, trackSegments } from './tracking.js';
 import { breaksAfterDash, breaksAfterHardHyphen, isDash } from '../measure/breakRules.js';
 import { endsInsideGeminate, withLineEndHyphen } from '../measure/geminate.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
+import { spaceBreakDemerits, type SpaceBreakCosts } from '../measure/spaceBreaks.js';
 
 /** The room the dot of an `l·l` takes at the end of `piece`: a width, or
  *  what the caller's measurer says for that piece. */
@@ -106,9 +107,13 @@ export function pretextSegmentsToItems(
   /** Give each box the text it paints (`KPBox.text`), for stacks (#1463):
    *  only while they are avoided, so the common path allocates nothing. */
   withText = false,
+  /** What a break costs at a word space before a numbered citation or
+   *  around a lone operator (#1519): only while one is avoided. */
+  spaceCosts?: SpaceBreakCosts,
 ): KPItem[] {
   const items: KPItem[] = [];
   const { segments, widths, kinds } = prepared;
+  const ruled = spaceCosts ? spaceBreakDemerits(segments, (i) => kinds[i] === 'space', spaceCosts) : undefined;
 
   const stretchPerSpace = normalSpaceWidth * (maxStretchRatio - 1);
   const shrinkPerSpace = normalSpaceWidth * (1 - minShrinkRatio);
@@ -152,6 +157,7 @@ export function pretextSegmentsToItems(
           stretch: stretchPerSpace,
           shrink: shrinkPerSpace,
           sourceIndex: i,
+          ...(ruled?.has(i) ? { breakDemerits: ruled.get(i)! } : {}),
         });
         break;
       case 'soft-hyphen':

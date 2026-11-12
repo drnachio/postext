@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The lines are set as they are.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>A line of a paragraph that starts with a numbered citation set after a word, or with a piece of one (<code>autores [12]</code>, <code>[14, 16]</code>): <code>text</code> is the citation and <code>lines</code> the two lines around the break. Under <code>bodyText.citationBreaks: 'warn'</code> every such break is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per break; points at the two lines, with their page. Since postext 1.78.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>A line of a paragraph that ends (<code>edge: 'end'</code>) or starts (<code>'start'</code>) on a lone sign set between spaces, one of <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> is the sign and <code>lines</code> the two lines. Under <code>bodyText.operatorBreaks: 'warn'</code> every such break is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per break, so a line that starts and ends on a sign gives two. Since postext 1.78.</td>
+      <td>The lines are set as they are.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>More than <code>max</code> lines in a row of a paragraph ending on a hyphen (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> is how many, <code>text</code> the lines. Under <code>bodyText.hyphenation.ladders: 'warn'</code> every ladder is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per ladder; points at its lines, with the page of the first. Since postext 1.74.</td>
       <td>The lines are set as they are.</td>

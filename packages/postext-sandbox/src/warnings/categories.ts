@@ -114,6 +114,8 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'unplaced':
     case 'shortListSplit':
     case 'stack':
+    case 'citationBreak':
+    case 'operatorBreak':
     case 'hyphenLadder':
     case 'lastWordDivided':
     case 'openerFloat':

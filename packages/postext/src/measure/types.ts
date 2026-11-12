@@ -1,4 +1,5 @@
 import type { VDTLine } from '../vdt.js';
+import type { SpaceBreakCosts } from './spaceBreaks.js';
 import type { CjkWordBreak, TextAlign, WritingMode } from '../types.js';
 import type { CjkLineBreakLevel } from './cjk/cjkClasses.js';
 import type { CjkComposition } from './cjk/cjkPunctuation.js';
@@ -229,6 +230,10 @@ export interface MeasureBlockOptions {
   /** Stacks avoided (`KPOptions.stacks`, `bodyText.stacks: 'avoid'`,
    *  #1463). Joins the cache key only when set. */
   stacks?: { minChars: number; demerits: number };
+  /** Breaks before a numbered citation or around a lone operator avoided
+   *  (#1519, `bodyText.citationBreaks` and `operatorBreaks: 'avoid'`):
+   *  the demerits of each, 0 when free. Joins the cache key only when set. */
+  spaceBreaks?: SpaceBreakCosts;
   /** The hyphen rules (#1466: `KPOptions.ladders`, `lastWordDemerits`,
    *  `extraHyphenPenalty`). Each joins the cache key only when set. */
   ladders?: { maxRun: number; demerits: number };

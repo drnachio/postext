@@ -208,19 +208,6 @@ export interface BodyTextConfig {
    *  table cells, notes, chips and design text. Default `false`: the plus
    *  signs are text. */
   plusUnderline?: boolean;
-  /** Keep a numbered citation in brackets or parentheses with the word
-   *  before it, and whole: the space before "[12]", "[12, 14]" or
-   *  "(12–15)", and the spaces inside it, become no-break spaces, so a line
-   *  never starts with one nor divides it. Not after a number: "2016 (3)"
-   *  is a year and an issue. Paragraphs, list items and quotations set
-   *  horizontally, in scripts that break at spaces (right-to-left and CJK
-   *  text is left as it is). Default `false`. */
-  bindCitations?: boolean;
-  /** Keep a relation or operator set between spaces (`=`, `<`, `>`, `≤`,
-   *  `≥`, `±`, `×`, `≈`, `≠`, `÷`, `−`) with both of its terms: "LR+ =
-   *  18.29", "p < 0.05". A line never ends on one nor starts with it. The
-   *  same blocks as {@link bindCitations}. Default `false`. */
-  bindOperators?: boolean;
   /** Shape a word with no letter (`46.`, `1367)`, `».`: digits,
    *  punctuation or symbols alone) in the script of the text around it
    *  (#725). Such a word has no script of its own, and a face may draw its
@@ -428,6 +415,39 @@ export interface BodyTextConfig {
    *  none. Default 3000, chosen on the Spanish showcase books and Cookbook
    *  recipes (#1463). */
   stackPenalty?: number;
+  /** A line that starts with a numbered citation (#1519): a number in
+   *  brackets or parentheses after a word, "[12]", "[12, 14]", "(12–15)",
+   *  the marker `[@key]` sets in a numbered style ("[3, p. 12]") among
+   *  them, never after a number ("2016 (3)" is a year and an issue); and a
+   *  citation divided between two lines. `'allow'` (the default) leaves
+   *  the lines as the breaker sets them and reports nothing. `'warn'`
+   *  leaves them too and reports each line that starts with one (a
+   *  `citationBreak` content warning). `'avoid'` makes a break at the space
+   *  before a citation, or inside it, cost {@link citationBreakPenalty} in
+   *  the line breaker, which sets the paragraph otherwise where the word
+   *  spacing allows, and reports the lines it kept. The space stays a word
+   *  space and stretches with the others. Paragraphs, lists, quotations,
+   *  boxes, captions, notes and table cells, set horizontally in scripts
+   *  that separate words with spaces (right-to-left text and CJK, Thai and
+   *  the like are left as they are). Needs `optimalLineBreaking`. */
+  citationBreaks?: CompositionRule;
+  /** Cost of a break before or inside a citation under `citationBreaks:
+   *  'avoid'`, in demerits added to the paragraph's: at the default as
+   *  much as a line stretched to the word-spacing limit, so the breaker
+   *  never sets a line past it to keep a citation with its word. 0 weighs
+   *  none. Default 10000. */
+  citationBreakPenalty?: number;
+  /** A line that ends or starts on a relation or operator set between
+   *  spaces (#1519): `=`, `<`, `>`, `≤`, `≥`, `±`, `×`, `≈`, `≠`, `÷`, `−`,
+   *  `+`, `·`, `→` ("p < 0.05", "LR+ = 18.29", "3 × 4"). The levels are
+   *  those of {@link citationBreaks}, the warning an `operatorBreak` one,
+   *  and the breaks they price the spaces on either side of the sign, in
+   *  the same blocks. */
+  operatorBreaks?: CompositionRule;
+  /** Cost of a break beside a lone operator under `operatorBreaks:
+   *  'avoid'`, in demerits added to the paragraph's (see
+   *  {@link citationBreakPenalty}). Default 10000. */
+  operatorBreakPenalty?: number;
   /** When true, list items also receive the runt penalty (not just paragraphs).
    *  Only effective when `avoidRunts` is true. Default true. */
   avoidRuntsInLists?: boolean;

@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Le righe si compongono come sono.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Una riga di un paragrafo che comincia con una citazione numerata posta dopo una parola, o con un pezzo di essa (<code>autori [12]</code>, <code>[14, 16]</code>): <code>text</code> è la citazione e <code>lines</code> le due righe ai lati dell'interruzione. Con <code>bodyText.citationBreaks: 'warn'</code> si segnalano tutte; con <code>'avoid'</code>, quelle che la divisione in righe ha tenuto. Uno per interruzione; punta alle due righe, con la loro pagina. Da postext 1.78.</td>
+      <td>Le righe si compongono come sono.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Una riga di un paragrafo che finisce (<code>edge: 'end'</code>) o comincia (<code>'start'</code>) con un segno isolato tra spazi, uno di <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> è il segno e <code>lines</code> le due righe. Con <code>bodyText.operatorBreaks: 'warn'</code> si segnalano tutte; con <code>'avoid'</code>, quelle che la divisione in righe ha tenuto. Uno per interruzione, quindi una riga che comincia e finisce con un segno ne dà due. Da postext 1.78.</td>
+      <td>Le righe si compongono come sono.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Più di <code>max</code> righe di seguito di un paragrafo che finiscono con un trattino (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> dice quante, <code>text</code> dà le righe. Con <code>bodyText.hyphenation.ladders: 'warn'</code> si segnalano tutte le scale; con <code>'avoid'</code>, quelle che la divisione in righe ha tenuto. Uno per scala; punta alle sue righe, con la pagina della prima. Da postext 1.74.</td>
       <td>Le righe si compongono come sono.</td>

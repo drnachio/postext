@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>As linhas são compostas como estão.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Uma linha de um parágrafo que começa com uma citação numerada posta depois de uma palavra, ou com um pedaço dela (<code>autores [12]</code>, <code>[14, 16]</code>): <code>text</code> é a citação e <code>lines</code> as duas linhas dos dois lados da quebra. Com <code>bodyText.citationBreaks: 'warn'</code> todas são informadas; com <code>'avoid'</code>, as que a quebra de linha manteve. Um por quebra; aponta para as duas linhas, com a sua página. Desde postext 1.78.</td>
+      <td>As linhas são compostas como estão.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Uma linha de um parágrafo que termina (<code>edge: 'end'</code>) ou começa (<code>'start'</code>) com um sinal solto entre espaços, um de <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> é o sinal e <code>lines</code> as duas linhas. Com <code>bodyText.operatorBreaks: 'warn'</code> todas são informadas; com <code>'avoid'</code>, as que a quebra de linha manteve. Um por quebra, então uma linha que começa e termina com um sinal dá dois. Desde postext 1.78.</td>
+      <td>As linhas são compostas como estão.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Mais de <code>max</code> linhas seguidas de um parágrafo terminadas em hífen (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> é quantas e <code>text</code>, as linhas. Com <code>bodyText.hyphenation.ladders: 'warn'</code> todas as escadas são informadas; com <code>'avoid'</code>, as que a quebra de linha manteve. Um por escada; aponta para as suas linhas, com a página da primeira. Desde o postext 1.74.</td>
       <td>As linhas são compostas como estão.</td>

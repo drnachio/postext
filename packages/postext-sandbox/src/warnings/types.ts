@@ -454,6 +454,14 @@ export type WarningPayload =
    *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
    *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
   | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  /** A line that starts with the numbered citation `text`
+   *  (`bodyText.citationBreaks: 'warn' | 'avoid'`, #1519), on book page
+   *  `page`; `lines` are the line before and that line. */
+  | { kind: 'citationBreak'; page: number; text: string; lines: [string, string] }
+  /** A line that ends (`edge: 'end'`) or starts on the operator `text` set
+   *  between spaces (`bodyText.operatorBreaks: 'warn' | 'avoid'`, #1519),
+   *  on book page `page`. */
+  | { kind: 'operatorBreak'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
   /** More lines in a row ending on a hyphen than `max`
    *  (`hyphenation.ladders: 'warn' | 'avoid'`, #1466), by book page. */
   | { kind: 'hyphenLadder'; page: number; lines: number; max: number }

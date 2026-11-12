@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>行はそのまま組まれます。</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>段落の行が、語のあとに置かれた番号付き引用またはその一部（<code>authors [12]</code>、<code>[14, 16]</code>）で始まる場合です。<code>text</code>は引用、<code>lines</code>は改行の前後の2行です。<code>bodyText.citationBreaks: 'warn'</code>ではすべての改行を、<code>'avoid'</code>では改行処理が残したものを報告します。改行ごとに1件で、2行とそのページを指します。postext 1.78から。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>段落の行が、前後に空白を置いた単独の記号（<code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>のいずれか）で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は記号、<code>lines</code>は2行です。<code>bodyText.operatorBreaks: 'warn'</code>ではすべての改行を、<code>'avoid'</code>では改行処理が残したものを報告します。改行ごとに1件なので、記号で始まり記号で終わる行は2件になります。postext 1.78から。</td>
+      <td>行はそのまま組まれます。</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>段落の中でハイフンで終わる行が <code>max</code> 行（<code>bodyText.hyphenation.maxConsecutive</code>）を超えて続いています。<code>lines</code> は行数、<code>text</code> はその行です。<code>bodyText.hyphenation.ladders: 'warn'</code> ではすべての連続を、<code>'avoid'</code> では改行処理が残した連続を報告します。連続ごとに1件で、その行を指し、最初の行のページを示します。postext 1.74 から。</td>
       <td>行はそのまま組まれます。</td>

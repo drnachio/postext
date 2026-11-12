@@ -117,7 +117,7 @@ export function wasmBreaker(instance: WebAssembly.Instance): Breaker {
         rows[o] = 1;
         rows[o + 2] = it.stretch;
         rows[o + 3] = it.shrink;
-        rows[o + 4] = 0;
+        rows[o + 4] = it.breakDemerits ?? 0;
         rows[o + 5] = it.sourceIndex >= 0 ? WORD_SPACE : 0;
         rows[o + 6] = 0;
         rows[o + 7] = 0;

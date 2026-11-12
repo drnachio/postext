@@ -150,9 +150,6 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     ...(partial.justifyHardBreaks === true ? { justifyHardBreaks: true as const } : {}),
     // Present only when on (#1465): `++text++` is text by default.
     ...(partial.plusUnderline === true ? { plusUnderline: true as const } : {}),
-    // Present only when on: a document resolves as before.
-    ...(partial.bindCitations === true ? { bindCitations: true as const } : {}),
-    ...(partial.bindOperators === true ? { bindOperators: true as const } : {}),
     // Present only for the host's language (#764): a document shaped in
     // its own, the default since postext 1.30 (#770), resolves as before.
     ...(partial.shapingLanguage === 'host' ? { shapingLanguage: 'host' as const } : {}),
@@ -180,6 +177,10 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     stacks: compositionRuleOf(partial.stacks) ?? DEFAULT_BODY_TEXT_CONFIG.stacks,
     stackMinCharacters: Math.max(1, Math.round(partial.stackMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.stackMinCharacters)),
     stackPenalty: Math.max(0, partial.stackPenalty ?? DEFAULT_BODY_TEXT_CONFIG.stackPenalty),
+    citationBreaks: compositionRuleOf(partial.citationBreaks) ?? DEFAULT_BODY_TEXT_CONFIG.citationBreaks,
+    citationBreakPenalty: Math.max(0, partial.citationBreakPenalty ?? DEFAULT_BODY_TEXT_CONFIG.citationBreakPenalty),
+    operatorBreaks: compositionRuleOf(partial.operatorBreaks) ?? DEFAULT_BODY_TEXT_CONFIG.operatorBreaks,
+    operatorBreakPenalty: Math.max(0, partial.operatorBreakPenalty ?? DEFAULT_BODY_TEXT_CONFIG.operatorBreakPenalty),
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
     tightenRunts: partial.tightenRunts ?? DEFAULT_BODY_TEXT_CONFIG.tightenRunts,
     maxRuntTracking: partial.maxRuntTracking ?? DEFAULT_BODY_TEXT_CONFIG.maxRuntTracking,

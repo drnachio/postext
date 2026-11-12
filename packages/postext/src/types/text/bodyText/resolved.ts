@@ -50,12 +50,6 @@ export interface ResolvedBodyTextConfig {
   /** Present only when switched on (see
    *  {@link BodyTextConfig.plusUnderline}). */
   plusUnderline?: true;
-  /** Present only when switched on (see
-   *  {@link BodyTextConfig.bindCitations}). */
-  bindCitations?: true;
-  /** Present only when switched on (see
-   *  {@link BodyTextConfig.bindOperators}). */
-  bindOperators?: true;
   /** Present only when switched off (see
    *  {@link BodyTextConfig.breakAfterSlashes}). */
   breakAfterSlashes?: false;
@@ -90,6 +84,10 @@ export interface ResolvedBodyTextConfig {
   stacks: CompositionRule;
   stackMinCharacters: number;
   stackPenalty: number;
+  citationBreaks: CompositionRule;
+  citationBreakPenalty: number;
+  operatorBreaks: CompositionRule;
+  operatorBreakPenalty: number;
   avoidRuntsInLists: boolean;
   tightenRunts: boolean;
   maxRuntTracking: number;

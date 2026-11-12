@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>تُنضّد الأسطر كما هي.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>سطر من فقرة يبدأ بإحالة مرقّمة بعد كلمة، أو بجزء منها (<code>authors [12]</code>، <code>[14, 16]</code>): <code>text</code> هو الإحالة و<code>lines</code> السطران على جانبي الكسر. مع <code>bodyText.citationBreaks: 'warn'</code> يُبلَّغ عن كل كسر من هذا النوع، ومع <code>'avoid'</code> عمّا أبقاه كسر الأسطر. واحد لكل كسر؛ يشير إلى السطرين مع صفحتهما. منذ postext 1.78.</td>
+      <td>تُنضّد الأسطر كما هي.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>سطر من فقرة ينتهي (<code>edge: 'end'</code>) أو يبدأ (<code>'start'</code>) بعلامة منفردة بين مسافتين، إحدى <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> هو العلامة و<code>lines</code> السطران. مع <code>bodyText.operatorBreaks: 'warn'</code> يُبلَّغ عن كل كسر من هذا النوع، ومع <code>'avoid'</code> عمّا أبقاه كسر الأسطر. واحد لكل كسر، فالسطر الذي يبدأ بعلامة وينتهي بعلامة يعطي اثنين. منذ postext 1.78.</td>
+      <td>تُنضّد الأسطر كما هي.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>أكثر من <code>max</code> أسطر متتالية من فقرة تنتهي بشرطة (<code>bodyText.hyphenation.maxConsecutive</code>): <code>lines</code> عددها و<code>text</code> الأسطر نفسها. مع <code>bodyText.hyphenation.ladders: 'warn'</code> يُبلَغ عن كل سلّم؛ ومع <code>'avoid'</code> عن السلالم التي أبقاها كسر الأسطر. واحد لكل سلّم؛ يشير إلى أسطره، مع صفحة أولها. منذ postext 1.74.</td>
       <td>تُنضّد الأسطر كما هي.</td>

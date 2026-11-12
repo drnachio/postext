@@ -1518,10 +1518,6 @@ export interface SandboxLabels {
   bodyBreakAfterHyphensTooltip: string;
   bodyBreakAfterSlashes: string;
   bodyBreakAfterSlashesTooltip: string;
-  bodyBindCitations: string;
-  bodyBindCitationsTooltip: string;
-  bodyBindOperators: string;
-  bodyBindOperatorsTooltip: string;
   bodyHardLineBreaks: string;
   bodyHardLineBreaksTooltip: string;
   bodyJustifyHardBreaks: string;
@@ -1664,6 +1660,14 @@ export interface SandboxLabels {
   bodyStackMinCharactersTooltip: string;
   bodyStackPenalty: string;
   bodyStackPenaltyTooltip: string;
+  bodyCitationBreaks: string;
+  bodyCitationBreaksTooltip: string;
+  bodyCitationBreakPenalty: string;
+  bodyCitationBreakPenaltyTooltip: string;
+  bodyOperatorBreaks: string;
+  bodyOperatorBreaksTooltip: string;
+  bodyOperatorBreakPenalty: string;
+  bodyOperatorBreakPenaltyTooltip: string;
   bodyHyphenationMinWordLength: string;
   bodyHyphenationMinWordLengthTooltip: string;
   bodyHyphenationLeftMin: string;
@@ -2591,6 +2595,11 @@ export interface SandboxLabels {
   warningsStackTitle: string;
   warningsStackEndDetail: string;
   warningsStackStartDetail: string;
+  warningsCitationBreakTitle: string;
+  warningsCitationBreakDetail: string;
+  warningsOperatorBreakTitle: string;
+  warningsOperatorBreakEndDetail: string;
+  warningsOperatorBreakStartDetail: string;
   warningsHyphenLadderTitle: string;
   warningsHyphenLadderDetail: string;
   warningsLastWordDividedTitle: string;
@@ -5428,6 +5437,9 @@ export interface SandboxLabels {
   wordCharCharStyle: string;
   wordCharCharStyleStyle: string;
   keepTogetherInline: string;
+  noBreakSpaceMark: string;
+  narrowNoBreakSpaceMark: string;
+  figureSpaceMark: string;
   rubyInline: string;
   tcyInline: string;
   textStyleFontWeightTooltip: string;

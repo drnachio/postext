@@ -256,6 +256,30 @@ export const metadata = {
       <td>كلفة التكرار على الخوارزمية مع <code>stacks: 'avoid'</code>، نقاطَ عيب تُضاف إلى نقاط الفقرة، على مقياس <code>consecutiveHyphenDemerit</code> (سطران متتاليان ينتهيان بشرطة يكلّفان 3000). والكلمة الأحادية المقطع المكرّرة (بحروف العلة في الكتابات اللاتينية واليونانية والسيريلية) تكلّف ضعف ذلك. القيمة الأعلى تتجنّب تكرارات أكثر على حساب أسطر أوسع تباعدًا، و0 تُبقيها كلها.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>سطر يبدأ بإحالة مرقّمة بين معقوفين أو قوسين بعد كلمة، أو بجزء منها: <code>authors [12]</code> و<code>[14, 16]</code> و<code>(12–15)</code>، ومنها العلامة التي يضعها أسلوب مرقّم لـ<code>[@key]</code> (<code>[3, p. 12]</code>). ولا تُعدّ إحالةً بعد عدد: <code>2016 (3)</code> سنة وعدد. <code>'allow'</code> تنضّد الأسطر كما يجدها الخوارزم ولا تُبلغ بشيء. <code>'warn'</code> تنضّدها كذلك وتُبلغ بكل كسر من هذا النوع بتحذير محتوى <code>citationBreak</code> يُدرجه Sandbox في «المراجعة». <code>'avoid'</code> تضيف <code>citationBreakPenalty</code> إلى نقاط عيب الكسر عند المسافة التي تسبق الإحالة أو داخلها، فينضّد الخوارزم الفقرة على نحو آخر حيث يسمح التباعد بين الكلمات، وتُبلغ بالكسور التي تبقى. وتبقى المسافة مسافة بين كلمات تتمدّد مع غيرها؛ ولا يتغيّر النص. الفقرات والقوائم والاقتباسات والصناديق والحواشي والتعليقات وخلايا الجداول المنضّدة أفقيًا؛ وتُقرأ كل إحالة في الكتابة المحيطة بها، ويبقى النص المكتوب من اليمين إلى اليسار ونص CJK كما هو. ومع <code>'avoid'</code> يُنضَّد النص غير المضبوط والتعليقات والحواشي والخلايا بخوارزم Knuth–Plass لتتبع القاعدة أيضًا؛ وإطار الصفحة المركّبة ينضّد نصّه دونها. تحتاج إلى <code>optimalLineBreaking</code>. ولإبقاء كلمتين بعينهما معًا أيًّا كانت القاعدة، اكتب مسافة غير قابلة للكسر.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>كلفة الكسر قبل الإحالة أو داخلها على الخوارزم مع <code>citationBreaks: 'avoid'</code>، نقاطَ عيب تُضاف إلى نقاط الفقرة. وهي افتراضيًا بقدر سطر ممدود إلى حدّ التباعد بين الكلمات، فلا يتجاوز الخوارزم ذلك الحدّ أبدًا ليُبقي إحالة مع كلمتها. والقيمة الأعلى تُبقي إحالات أكثر على حساب أسطر أرخى؛ وبالصفر تمرّ الكسور كلها.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>سطر ينتهي أو يبدأ بعلامة علاقة أو عملية موضوعة بين مسافتين (<code>=</code>، <code>&lt;</code>، <code>&gt;</code>، <code>≤</code>، <code>≥</code>، <code>±</code>، <code>×</code>، <code>≈</code>، <code>≠</code>، <code>÷</code>، <code>−</code>، <code>+</code>، <code>·</code>، <code>→</code>): <code>LR+ = 18.29</code> و<code>p &lt; 0.05</code>. المستويات هي مستويات <code>citationBreaks</code>، والتحذير <code>operatorBreak</code> (مع الطرف، نهاية أو بداية)، و<code>'avoid'</code> تجعل للمسافتين على جانبي العلامة كلفة، في الكتل نفسها.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>كلفة الكسر بجانب علامة منفردة على الخوارزم مع <code>operatorBreaks: 'avoid'</code>، نقاطَ عيب تُضاف إلى نقاط الفقرة، بمقياس <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>اقرأ <code>++text++</code> نصًّا مسطَّرًا، إلى جانب <code>:underline[text]</code> الذي يُقرأ دائمًا. كل زوج من علامتَي جمع على كل جانب يسطِّر، ومنه <code>use ++i rather than i++</code>؛ ويكتب <code>{'\\+\\+'}</code> زوجًا حرفيًّا، والحرف أو الرقم الملاصق للعلامتين يبقيهما نصًّا (<code>C++</code> و<code>g++</code>)، ولا يُسطَّر الكود المضمَّن ولا كتل الكود أبدًا. ويسري حيث تُقرأ العلامات المضمَّنة: النص الجاري والعناوين والقوائم والتعليقات التوضيحية وخلايا الجداول والحواشي والشارات. <code>false</code>: تُطبع علامات الجمع كما هي. انظر <a href="/ar/docs/document-format-inline#التسطير">صيغة المستند › التسطير</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>يُبقي الإحالة المرقّمة بين قوسين معقوفين أو هلاليين ملتصقة بالكلمة التي قبلها (أو بعلامة الترقيم التي تُنهيها) وكاملة: تصبح المسافة قبلها والمسافات داخلها مسافات غير فاصلة (<code>autores [12]</code>، <code>[14, 16]</code>، <code>(12–15)</code>). لا يحدث ذلك أبدًا بعد رقم: <code>2016 (3)</code> سنة وعدد، لا إحالة. في الفقرات وعناصر القوائم والاقتباسات المنضَّدة أفقيًا فقط؛ ويُترك كما هو كلُّ مقطع يحوي نصًا من اليمين إلى اليسار أو نصًا CJK.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>يُبقي الرمز المحاط بمسافات (<code>=</code>، <code>&lt;</code>، <code>&gt;</code>، <code>≤</code>، <code>≥</code>، <code>±</code>، <code>×</code>، <code>≈</code>، <code>≠</code>، <code>÷</code>، <code>−</code>) ملتصقًا بالكلمتين على جانبيه: <code>LR+ = 18,29</code>، <code>p &lt; 0.05</code>. لا ينتهي أي سطر بالرمز ولا يبدأ به. النطاق نفسه الذي لـ<code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

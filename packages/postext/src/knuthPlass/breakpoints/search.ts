@@ -271,6 +271,8 @@ export function search(items: KPItem[], options: KPOptions, edges: LineEdges | u
     const postChars = item.type === 'penalty' ? item.postChars ?? 0 : 0;
     // `fewerHyphens`: every hyphen's penalty raised by the same amount.
     const pen = item.type === 'penalty' ? (isFlagged ? item.penalty + extraHyphen : item.penalty) : 0;
+    // A word space that costs a break (#1519). Demerits, as a stack's.
+    const spaceCost = item.type === 'glue' ? item.breakDemerits ?? 0 : 0;
 
     bestNewNodeByKey.clear();
 
@@ -403,8 +405,8 @@ export function search(items: KPItem[], options: KPOptions, edges: LineEdges | u
       // Consecutive hyphen demerit: the line before ends on a hyphen too.
       const run = isFlagged ? Math.min(a.run + 1, MAX_RUN) : 0;
       if (run > 1) d += consecutiveHyphenDemerit;
-      d += stackDemerits;
-      let faults = stacked;
+      d += stackDemerits + spaceCost;
+      let faults = stacked + (spaceCost > 0 ? 1 : 0);
       // A hyphen ladder past its limit (#1466): each line past it.
       if (run > ladderRun && ladderRun > 0) {
         d += ladderCost;

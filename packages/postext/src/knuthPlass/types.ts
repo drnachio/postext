@@ -32,6 +32,11 @@ export interface KPGlue {
   shrink: number;
   sourceIndex: number;
   meta?: unknown;
+  /** Demerits a break at this space costs (#1519): it would leave a
+   *  numbered citation at the start of a line, or a lone operator at an
+   *  edge (`bodyText.citationBreaks`, `operatorBreaks`). The space stays a
+   *  legal break and keeps its stretch. */
+  breakDemerits?: number;
 }
 
 export interface KPPenalty {

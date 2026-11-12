@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>行照原样排。</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>段落中某一行以紧跟在词后的编号引用或其一部分开头（<code>authors [12]</code>、<code>[14, 16]</code>）：<code>text</code>是引用，<code>lines</code>是断行前后的两行。<code>bodyText.citationBreaks: 'warn'</code>时报告每一处这样的断行；<code>'avoid'</code>时报告断行保留下来的。每处断行一条，指向这两行及其所在页。自 postext 1.78 起。</td>
+      <td>行照原样排。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>段落中某一行以前后有空格的单独符号（<code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>之一）结尾（<code>edge: 'end'</code>）或开头（<code>'start'</code>）：<code>text</code>是符号，<code>lines</code>是这两行。<code>bodyText.operatorBreaks: 'warn'</code>时报告每一处这样的断行；<code>'avoid'</code>时报告断行保留下来的。每处断行一条，所以一行同时以符号开头和结尾会得到两条。自 postext 1.78 起。</td>
+      <td>行照原样排。</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>段落中以连字符结尾的行连续超过 <code>max</code> 行（<code>bodyText.hyphenation.maxConsecutive</code>）：<code>lines</code> 为行数，<code>text</code> 为这些行。<code>bodyText.hyphenation.ladders: 'warn'</code> 时报告所有连行；<code>'avoid'</code> 时报告断行保留下来的连行。每处连行一条；指向其各行，并给出第一行的页码。自 postext 1.74 起。</td>
       <td>行照原样排。</td>

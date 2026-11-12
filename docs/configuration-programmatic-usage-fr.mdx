@@ -394,6 +394,16 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>Les lignes sont composées telles quelles.</td>
     </tr>
     <tr>
+      <td><code>citationBreak</code></td>
+      <td>Une ligne d'un paragraphe qui commence par une citation numérotée placée après un mot, ou par un morceau de celle-ci (<code>auteurs [12]</code>, <code>[14, 16]</code>) : <code>text</code> est la citation et <code>lines</code> les deux lignes de part et d'autre de la coupure. Avec <code>bodyText.citationBreaks: 'warn'</code>, chaque coupure est signalée ; avec <code>'avoid'</code>, celles que la coupure des lignes a gardées. Un par coupure ; pointe vers les deux lignes, avec leur page. Depuis postext 1.78.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreak</code></td>
+      <td>Une ligne d'un paragraphe qui finit (<code>edge: 'end'</code>) ou commence (<code>'start'</code>) par un signe isolé entre espaces, l'un de <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code> : <code>text</code> est le signe et <code>lines</code> les deux lignes. Avec <code>bodyText.operatorBreaks: 'warn'</code>, chaque coupure est signalée ; avec <code>'avoid'</code>, celles que la coupure des lignes a gardées. Un par coupure : une ligne qui commence et finit par un signe en donne deux. Depuis postext 1.78.</td>
+      <td>Les lignes sont composées telles quelles.</td>
+    </tr>
+    <tr>
       <td><code>hyphenLadder</code></td>
       <td>Plus de <code>max</code> lignes de suite d’un paragraphe finissant sur un trait d’union (<code>bodyText.hyphenation.maxConsecutive</code>) : <code>lines</code> dit combien, <code>text</code> donne les lignes. Avec <code>bodyText.hyphenation.ladders: 'warn'</code>, toutes les échelles sont signalées ; avec <code>'avoid'</code>, celles que la coupure a gardées. Un par échelle ; pointe vers ses lignes, avec la page de la première. Depuis postext 1.74.</td>
       <td>Les lignes sont composées telles quelles.</td>
