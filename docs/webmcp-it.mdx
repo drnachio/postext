@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: un agente al lavoro nella Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Che cosa può fare con la Sandbox un agente di IA nel browser tramite i suoi 55 strumenti WebMCP (guardare le pagine, cambiare qualunque impostazione, modificare il testo, aggiungere immagini, tabelle e font, eseguire le verifiche, esportare) e come si invoca ciascuno, con argomenti e risposte reali',
+  description: 'Che cosa può fare con la Sandbox un agente di IA nel browser tramite i suoi 64 strumenti WebMCP (guardare le pagine, cambiare qualunque impostazione, modificare il testo, aggiungere immagini, tabelle e font, eseguire le verifiche, esportare) e come si invoca ciascuno, con argomenti e risposte reali',
   lang: 'it',
   lastUpdated: '2026-11-10',
   readingTime: '12 min',
@@ -23,7 +23,7 @@ della pagina 12, imposta `bodyText.fontSize` a 10,5 pt, vede che il capitolo
 è passato da 18 a 19 pagine e lo rimette com’era. Fa quello che tu fai a occhio, e
 lo fa con il tuo libro, nel tuo browser.
 
-Ci sono 55 strumenti il cui nome comincia con `sandbox_`, registrati mentre la
+Ci sono 64 strumenti il cui nome comincia con `sandbox_`, registrati mentre la
 Sandbox è sullo schermo, e 8 strumenti del sito, `site_*`, su ogni pagina di
 postext.dev. Questa pagina li raggruppa in base a ciò che chiederesti a un agente, e
 per ciascuno riporta la chiamata.
@@ -629,6 +629,8 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   `sandbox_import_word` rifiuta un file del genere e indica questo strumento.
   Da postext 1.68.
 
+- **Progetti grafici.** `sandbox_list_designs` elenca la galleria del pannello Grafica (progetti salvati, quelli inclusi nella Sandbox e quelli dei libri di esempio) con le loro parti. `sandbox_save_design` salva il progetto di un libro, `sandbox_try_design` ne prova uno sul libro sullo schermo e `sandbox_end_design_trial` lo tiene o lo scarta (Scarta riporta solo ciò che il progetto ha sostituito), `sandbox_apply_design` ne applica uno subito o come stile di capitolo, `sandbox_import_design` e `sandbox_export_design` leggono e scrivono file di progetto, e `sandbox_delete_design` ne elimina uno salvato. Tutti accettano `parts`, i gruppi del pannello Grafica, e rispondono con gli stili che il testo nomina e che mancano al progetto.
+
 ### Domande e notifiche
 
 Quando un link apre un libro di cui hai già una tua versione, la Sandbox
@@ -721,6 +723,7 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
 - **La grafica**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
   `sandbox_frame_styles`, `sandbox_merge_styles`.
+- **Progetti grafici**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Annullare**: `sandbox_undo`.
 - **Come viene mostrato**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

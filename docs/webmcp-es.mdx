@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP: un agente trabajando en el Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 55 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
+  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 64 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
   lang: 'es',
   lastUpdated: '2026-11-10',
   readingTime: '13 min',
@@ -23,7 +23,7 @@ libro, pide una imagen de la página 12, pone `bodyText.fontSize` a 10,5 pt, ve
 que el capítulo ha pasado de 18 a 19 páginas y lo deja como estaba. Hace lo
 mismo que tú haces a ojo, con tu libro y en tu navegador.
 
-Hay 55 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
+Hay 64 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
 Sandbox está en pantalla, y 8 herramientas del sitio, `site_*`, en todas las
 páginas de postext.dev. Esta página las ordena según lo que le pedirías a un
 agente y muestra cómo se invoca cada una.
@@ -640,6 +640,8 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   entero. `sandbox_import_word` rechaza un archivo así e indica esta
   herramienta. Desde postext 1.68.
 
+- **Diseños.** `sandbox_list_designs` enumera la galería del panel Diseño (diseños guardados, los que trae el Sandbox y los de los libros de ejemplo) con sus partes. `sandbox_save_design` guarda el diseño de un libro, `sandbox_try_design` prueba uno en el libro en pantalla y `sandbox_end_design_trial` lo conserva o lo descarta (Descartar devuelve solo lo que el diseño sustituyó), `sandbox_apply_design` aplica uno de una vez o como estilo de capítulo, `sandbox_import_design` y `sandbox_export_design` leen y escriben archivos de diseño, y `sandbox_delete_design` elimina uno guardado. Todas aceptan `parts`, los grupos del panel Diseño, y responden con los estilos que nombra el texto y que al diseño le faltan.
+
 ### Preguntas y avisos
 
 Cuando un enlace abre un libro del que ya tienes tu propia versión, el Sandbox
@@ -736,6 +738,7 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
 - **El diseño**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
   `sandbox_frame_styles`, `sandbox_merge_styles`.
+- **Diseños**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Deshacer**: `sandbox_undo`.
 - **Cómo se muestra**: `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

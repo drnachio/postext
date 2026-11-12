@@ -6,6 +6,7 @@ import { findTextTools } from './findText.js';
 import { comicTools } from './comics.js';
 import { configTools } from './config.js';
 import { designItemTools } from './designItems.js';
+import { designTools } from './designs.js';
 import { editionCheckTools } from './editionChecks.js';
 import { historyTools } from './history.js';
 import { idmlTools } from './idml.js';
@@ -32,6 +33,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...findTextTools(host),
     ...configTools(host),
     ...designItemTools(host),
+    ...designTools(host),
     ...historyTools(host),
     ...frameStyleTools(host),
     ...moduleTools(host),

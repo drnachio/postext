@@ -46,11 +46,17 @@ function isChapterList(v: unknown): v is BundleChapterSpec[] {
   return Array.isArray(v) && v.length > 0 && v.every(isChapterSpec);
 }
 
-function isChaptersField(v: unknown): v is BundleChapterSpec[] | Record<string, BundleChapterSpec[]> {
+function isChaptersField(v: unknown, design: boolean): v is BundleChapterSpec[] | Record<string, BundleChapterSpec[]> {
   if (isChapterList(v)) return true;
+  // A design bundle holds no chapters.
+  if (design && Array.isArray(v) && v.length === 0) return true;
   if (!isRecord(v)) return false;
   const values = Object.values(v);
   return values.length > 0 && values.every(isChapterList);
+}
+
+function isDesignField(v: unknown): boolean {
+  return isRecord(v) && Array.isArray(v.parts) && v.parts.every(isNonEmptyString);
 }
 
 function isLocaleOverrides(v: unknown): v is BundleLocaleOverrides {
@@ -82,7 +88,8 @@ export function isBundleManifest(data: unknown): data is BundleManifest {
   if (data.version !== 1 && data.version !== 2) return false;
   if (!isNonEmptyString(data.id) || !isNonEmptyString(data.name)) return false;
   if (data.version === 1 && !isMarkdownField(data.markdown)) return false;
-  if (data.version === 2 && !isChaptersField(data.chapters)) return false;
+  if (data.design !== undefined && !isDesignField(data.design)) return false;
+  if (data.version === 2 && !isChaptersField(data.chapters, data.design !== undefined)) return false;
   if (!hasValidShowcaseMeta(data)) return false;
   if (data.view !== undefined && !isViewField(data.view)) return false;
   if (data.start !== undefined && !isRecord(data.start)) return false;

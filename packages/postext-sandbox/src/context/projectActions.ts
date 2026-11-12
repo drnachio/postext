@@ -2,7 +2,7 @@
 // stays readable. Everything here runs against the live state through the
 // `deps` accessors; the provider owns the refs and hands them in.
 
-import { clearMeasurementCache, type PostextConfig } from 'postext';
+import { applyDesign, clearMeasurementCache, type PostextConfig } from 'postext';
 import { isBundleManifest, pickBundleMeta } from 'postext/bundle';
 import { setCustomFonts } from '../controls/fonts/fontLoader.js';
 import { invalidateResourceImage } from '../controls/media/resourceImages.js';
@@ -126,14 +126,15 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
 
   const copyName = (name: string): string => deps.labels().projectCopySuffix.replace('__name__', name);
 
-  const create: ProjectActions['create'] = ({ from, name }) =>
+  const create: ProjectActions['create'] = ({ from, name, design }) =>
     run(async () => {
       const s = deps.getState();
       const id = generateProjectId();
       if (from === 'blank') {
+        const blank = createBlankBookConfig(s.locale);
         const content: ProjectContent = {
           ...singleChapterBook('', generateChapterId(), deps.labels().chapterUntitled.replace('__n__', '1')),
-          config: withDefaultResourceTypes(createBlankBookConfig(s.locale), s.locale),
+          config: withDefaultResourceTypes(design ? applyDesign(blank, design) : blank, s.locale),
           resources: [],
         };
         return persistNew(newRecord(content, { name: name ?? deps.labels().projectUntitled, locale: s.locale }, id));

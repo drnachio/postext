@@ -25,6 +25,7 @@ Sandboxは、[WebMCP](https://webmachinelearning.github.io/webmcp/)（`document.
 - **変える** — `sandbox_set_config`, `sandbox_get_config`, `sandbox_find_setting`, `sandbox_rename_design_item`, `sandbox_remove_design_item`, `sandbox_language_defaults`, `sandbox_print_profile`, `sandbox_save_layout_as_template`, `sandbox_edit_text`, `sandbox_write_text`, `sandbox_read_text`, `sandbox_search_text`, `sandbox_replace_text`, `sandbox_select_text`, `sandbox_undo_text`, `sandbox_manage_chapters`, `sandbox_save_resource`, `sandbox_save_font`, `sandbox_edit_comic`, `sandbox_import_word`, `sandbox_apply_word_edits`：パスで指定する任意の設定（`bodyText.fontSize`、`page.margins.top`、`headings.levels[level=2].fontSize`、`header.elements[id=titleOdd].italic`）、完全一致の検索と置換による本文の編集（取り消しもできます）、章、画像、SVGの図、動画、書式つきの表、フォント、漫画のコマと吹き出し、スタイルを対応づけて読み込むWord文書。変更すると、各値の変更前と変更後、それぞれの章が何ページになったかが返ります。設定については、エンジンが実際に使う値と、それに連動して変わったほかの設定も返ります。エンジンが扱えない値は受け付けられず、何も変わりません。複数の言語で書かれた本では、`scope`で、設定をすべての言語の共通設定で読み書きするか、画面に出ている版だけで読み書きするかを指定します。
 - **表示する** — `sandbox_set_view`, `sandbox_go_to_page`, `sandbox_run_viewer`：ビューアーのタブ、サイドパネル、章か本全体か、拡大率、合わせ方と見開き、読者側の文字サイズ、印刷プレビュー、ページに描くガイド、Folioの拡大鏡、そして画面に出ているページ（ページ番号、本文の一節、アンカー、EPUBの目次の項目で指定）。PDFやEPUBの再生成、印刷、ページ上の動画の再生。
 - **保存する** — `sandbox_list_books`, `sandbox_open_book`, `sandbox_save_book`, `sandbox_import_book`, `sandbox_import_idml`, `sandbox_export`, `sandbox_word_templates`, `sandbox_answer`：サンプルと自分のプロジェクトとその表紙、`.postext`ファイルの読み込み、InDesign文書（IDML）から新しい本への読み込み、開いている本（または開いていない本）のPDF、EPUB、`.postext`、Word、IDML、Markdown、設定のJSONへの書き出し、Word読み込みのテンプレート、そしてSandboxからの確認への回答。
+- **デザイン** — `sandbox_list_designs`、`sandbox_save_design`、`sandbox_try_design`、`sandbox_end_design_trial`、`sandbox_apply_design`、`sandbox_import_design`、`sandbox_export_design`、`sandbox_delete_design`：デザインパネルのギャラリー、デザインの保存、試用と保持・破棄、即時または章スタイルとしての適用、デザインファイルの読み書き。
 
 本を変更するツールは組版が終わるのを待つので、次の画像はいつも新しいページのものです。ページは、画面にどのタブが出ていても、ツールのために組まれて描かれます。取り消せない操作（章、リソース、プロジェクトの削除、元の状態への復元、Word文書による本文の上書き、手元の本の置き換え）には、影響の大きい操作であることを示す印が付いています。そのため、ブラウザーは実行前に確認を求めることができます。画面で操作するときと同じく、すべてはお使いのブラウザーの中にとどまります。ツールがアクセスできるのは、Sandbox自身がアクセスできるものだけです。
 
@@ -111,6 +112,11 @@ function App() {
       <td><code>outputProfileBaseUrl</code></td>
       <td><code>string</code></td>
       <td>印刷の出力プロファイルを<code>&lt;base&gt;/&lt;id&gt;.icc</code>として取得する場所です（<code>postext</code>パッケージの<code>icc/</code>フォルダーのファイル）。既定はnpmのCDNにあるコピー、<code>https://cdn.jsdelivr.net/npm/postext/icc/</code>です。このWebサイトは自前のものを<code>/icc/</code>から配信しています</td>
+    </tr>
+    <tr>
+      <td><code>designUrls</code></td>
+      <td><code>readonly string[]</code></td>
+      <td>デザインパネルの<strong>デザイン</strong>ギャラリーに付属させるデザインファイル。<code>.postext</code>デザインファイルの同一オリジンのURLで、読み込んだデザインと同じように読みます。ウェブサイトは<code>public/designs/</code>に書き出した4つを渡します。省略すると、ギャラリーには保存したデザインとサンプルの本のデザインだけが並びます</td>
     </tr>
     <tr>
       <td><code>onConfigChange</code></td>

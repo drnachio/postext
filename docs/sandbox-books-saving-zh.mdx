@@ -189,14 +189,6 @@ Word中没有对应结构的内容以源码形式随文件走：标记为`ptx:ra
 
 正文和版面设计也可以分别从正文面板和版面设计面板的标题栏导出。
 
-**版面设计面板**的标题栏会下载去掉默认值的`postext-config.json`：
+**版面设计面板**的标题栏把书的设计导出为设计文件，即没有章节的`.postext`（见[设计文件](/zh/docs/configuration-bundles#设计文件)），并能导入设计文件、整本书`.postext`中的设计，或早期版本写出的`postext-config.json`（见[设计](/zh/docs/sandbox#设计)）。
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-**正文面板**的标题栏把当前章下载为普通的`.md`文件，它的**导入**按钮用一个`.md`文件的内容替换当前章。版面设计面板的**导入**按钮会打开文件选择器，选取`.json`文件，并按预期的`type`和`version`进行校验；无效文件会被静默忽略。早期版本的`postext-markdown.json`包装格式和合并的`postext-sandbox.json`格式已不再存在。
+**正文面板**的标题栏把当前章下载为普通的`.md`文件，它的**导入**按钮用一个`.md`文件的内容替换当前章。早期版本的`postext-markdown.json`包装格式和合并的`postext-sandbox.json`格式已不再存在。

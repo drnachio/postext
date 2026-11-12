@@ -8,6 +8,8 @@
 export { openBundle, createBundle, bundleFileMime } from './api.js';
 export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleLocale, CreatedBundle, BundleFileData } from './api.js';
 export { buildBundle } from './book.js';
+export { createDesignBundle, openDesignBundle, DESIGN_BUNDLE_MAX_BYTES } from './design.js';
+export type { DesignBundleInput, OpenedDesign, OpenDesignOptions } from './design.js';
 export type { BuildBundleOptions } from './book.js';
 export { createBundleLayoutCache } from './layoutCache.js';
 export type { BundleLayoutCache, BundleLayoutStats } from './layoutCache.js';
@@ -76,6 +78,7 @@ export type {
   BundleStart,
   BundleManifestV1,
   BundleManifestV2,
+  BundleDesignSpec,
   BundleManifest,
   BundleFileReader,
   BundleIdScheme,

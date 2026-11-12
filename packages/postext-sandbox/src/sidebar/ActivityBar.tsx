@@ -1,7 +1,7 @@
 'use client';
 
 import { LargeTargetsToggle } from '../ui/LargeTargetsToggle.js';
-import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye, LayoutTemplate } from 'lucide-react';
+import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye } from 'lucide-react';
 import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext.js';
 import type { PanelId } from '../types/index.js';
@@ -17,17 +17,16 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-type NavLabelKey = 'navBooks' | 'navChapters' | 'navManuscript' | 'navTemplates' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
-type NavHintKey = 'navBooksHint' | 'navChaptersHint' | 'navManuscriptHint' | 'navTemplatesHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
+type NavLabelKey = 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
+type NavHintKey = 'navBooksHint' | 'navChaptersHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
 
-/** Workflow order: pick a book, arrange its chapters, write, start from a
- *  design template, add figures and fonts, design, then check. Each entry has a one-word label (shown under the icon) and a
+/** Workflow order: pick a book, arrange its chapters, write, add figures and fonts, design,
+ *  then check. Each entry has a one-word label (shown under the icon) and a
  *  longer hint (tooltip + accessible description). */
 const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: NavLabelKey; hintKey: NavHintKey }[] = [
   { id: 'projects', Icon: Files, labelKey: 'navBooks', hintKey: 'navBooksHint' },
   { id: 'chapters', Icon: BookOpen, labelKey: 'navChapters', hintKey: 'navChaptersHint' },
   { id: 'markdown', Icon: FileCode, labelKey: 'navManuscript', hintKey: 'navManuscriptHint' },
-  { id: 'templates', Icon: LayoutTemplate, labelKey: 'navTemplates', hintKey: 'navTemplatesHint' },
   { id: 'resources', Icon: FolderOpen, labelKey: 'navResources', hintKey: 'navResourcesHint' },
   { id: 'fonts', Icon: Type, labelKey: 'navFonts', hintKey: 'navFontsHint' },
   { id: 'config', Icon: Settings2, labelKey: 'navDesign', hintKey: 'navDesignHint' },

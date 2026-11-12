@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP：在沙盒里工作的智能体',
   sidebarTitle: 'WebMCP',
-  description: '浏览器里的AI智能体借助沙盒的55个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
+  description: '浏览器里的AI智能体借助沙盒的64个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
   lang: 'zh',
   lastUpdated: '2026-11-10',
   readingTime: '9分钟',
@@ -17,7 +17,7 @@ export const metadata = {
 
 [沙盒](/zh/docs/sandbox)通过[WebMCP](https://webmachinelearning.github.io/webmcp/)把专门的工具交给智能体。WebMCP是一项Web标准草案，让网页可以把工具交给浏览器所连接的AI模型。有了这些工具，智能体不必在界面上一下一下地点：它读这本书，要一张第12页的图像，把`bodyText.fontSize`设为10.5 pt，看到这一章从18页变成了19页，再把值改回去。你凭眼睛做的事，它也照样做，用的是你的书，在你的浏览器里。
 
-以`sandbox_`开头的工具共有55个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
+以`sandbox_`开头的工具共有64个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
 
 ## 接入智能体
 
@@ -25,7 +25,7 @@ export const metadata = {
 
 沙盒挂载时把这些工具注册到`document.modelContext`，离开沙盒时收回。浏览器向其提供页面工具的智能体会在那里找到它们。Postext这边不需要安装或设置任何东西。
 
-WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，55个`sandbox_*`工具也随之出现。
+WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，64个`sandbox_*`工具也随之出现。
 
 ### 在其他浏览器中：`window.postextWebMcp`
 
@@ -449,6 +449,8 @@ await browser.close();
 
 - **带回校改**：在从书导出的Word文件中做的校改，用`sandbox_apply_word_edits`带回书中。加上`dryRun: true`时它不做任何改动，逐条列出找到的修改，标明`applied`、`conflict`（同一段文字导出后在书中也改过，或已不存在）或`rejected`（编号、标签等书自己生成的文字）并附原因，同时列出在Word中留下的批注。不加时，应用的修改作为一步写入各章和资源，`sandbox_undo`可整体撤销。`sandbox_import_word`会拒绝这样的文件，并指向这个工具。postext 1.68起。
 
+- **设计**：`sandbox_list_designs`列出版面设计面板的图库（已保存的设计、沙盒内置的设计和示例书的设计）及其部分。`sandbox_save_design`保存一本书的设计，`sandbox_try_design`在屏幕上的书中试用一种设计，`sandbox_end_design_trial`保留或放弃它（放弃只恢复设计替换掉的内容），`sandbox_apply_design`直接应用或作为章节样式应用，`sandbox_import_design`和`sandbox_export_design`读写设计文件，`sandbox_delete_design`删除已保存的设计。它们都接受`parts`（版面设计面板的分组），并返回正文用到而设计缺少的样式。
+
 ### 询问与提示
 
 通过链接打开一本你已经有自己版本的书时，沙盒会询问是否替换你的副本，`sandbox_get_state`把这件事报告为`question`，同时给出`ready: false`。`sandbox_answer`回答这个询问：`replaceCopy: false`保留你的副本，`true`用发布的书替换它，并删除你的副本。`dismissNotice: true`清除书库面板中的消息。
@@ -496,6 +498,7 @@ await browser.close();
 - **页面**：`sandbox_render_page`、`sandbox_inspect_pages`、`sandbox_inspect_point`。
 - **文字**：`sandbox_read_text`、`sandbox_write_text`、`sandbox_edit_text`、`sandbox_undo_text`、`sandbox_select_text`、`sandbox_search_text`、`sandbox_replace_text`、`sandbox_manage_chapters`、`sandbox_remove_chapter`。
 - **版面设计**：`sandbox_get_config`、`sandbox_set_config`、`sandbox_find_setting`、`sandbox_reset_to_original`、`sandbox_frame_styles`、`sandbox_merge_styles`。
+- **设计**： `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`。
 - **撤销**：`sandbox_undo`。
 - **显示方式**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。
 - **资源和字体**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。

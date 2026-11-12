@@ -50,6 +50,7 @@ export function mainHelp(): string {
     '  postext check book.postext --json',
     '  postext docx book/ -o book.docx && postext import-docx book.docx book/ --dry-run',
     '  postext import-idml book.idml -o book/ --report',
+    '  postext design book.postext -o novel.postext && postext pdf other/ --design novel.postext',
     '',
     style.bold('Book options') + ' (every command that reads a book)',
     ...optionLines(BOOK_OPTIONS),

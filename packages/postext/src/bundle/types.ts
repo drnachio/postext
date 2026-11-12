@@ -194,6 +194,15 @@ interface BundleManifestBase extends BundleShowcaseMeta {
    *  chapters map (exact tag, then the same language and script — `zh-TW`
    *  reads `zh-Hant` — then the manifest's locale, then the first entry). */
   localized?: Record<string, BundleLocaleOverrides>;
+  /** A design bundle (#1523): a design and no book. `config` holds the
+   *  design's parts and `chapters` is empty. */
+  design?: BundleDesignSpec;
+}
+
+/** The marker of a design bundle: which parts of a design it holds (the
+ *  Design panel's groups: `page`, `text`, `colors`…). */
+export interface BundleDesignSpec {
+  parts: string[];
 }
 
 /** `preset.json` version 1: a single markdown document. Still read; every
@@ -208,6 +217,7 @@ export interface BundleManifestV1 extends BundleManifestBase {
  *  order, or a locale → chapter list map. */
 export interface BundleManifestV2 extends BundleManifestBase {
   version: 2;
+  /** Empty in a design bundle (`design`). */
   chapters: BundleChapterSpec[] | Record<string, BundleChapterSpec[]>;
 }
 
