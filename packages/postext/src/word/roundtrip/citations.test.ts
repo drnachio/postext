@@ -29,7 +29,8 @@ const FRONT = '---\nreferences:\n  - {id: simmons1991, title: The Victorian Rail
 const MD = `${FRONT}\n# Railway time\n\nAt Exeter the clock kept the time of the city.[^exeter] Bristol held out.[@simmons1991, 345]\n\n[^exeter]: On the towns see [see also @simmons1991, 346–47; and @bartky2000, chap. 9]\n`;
 
 /** The text of the notes, runs joined. */
-const notesText = (xml: string): string => xml.replace(/<[^>]+>/g, '');
+const notesText = (xml: string): string =>
+  [...xml.matchAll(/<w:t(?:\s[^>]*)?>([^<]*)<\/w:t>/g)].map((m) => m[1]).join('');
 
 /** The export with `find` replaced by `replace` in its notes. */
 function editNotes(bytes: Uint8Array, find: string, replace: string): Uint8Array {
