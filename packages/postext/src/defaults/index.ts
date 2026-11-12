@@ -46,6 +46,8 @@ export { PAGE_SIZE_PRESETS, DEFAULT_CUT_LINES, DEFAULT_PAGE_CONFIG, DEFAULT_PAGE
 export { DEFAULT_COLUMN_RULE, DEFAULT_LAYOUT_CONFIG, DEFAULT_FLOAT_MIN_SCALE, MAX_PIN_PAGE_OFFSET, DEFAULT_MAX_TOP_FRACTION, DEFAULT_TEXT_WRAP, resolveLayoutConfig, stripLayoutDefaults } from './layout.js';
 export { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BODY_TEXT_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, hyphenationEqual, avoidWidowsByDefault, avoidOrphansByDefault, resolveBodyTextConfig, stripBodyTextDefaults } from './text/bodyText.js';
 export { DEFAULT_VERSE_CONFIG, resolveVerseConfig, stripVerseDefaults } from './text/verse.js';
+export { BOOK_PAGE_KEYS, BOOK_WIDE_KEYS, BOOK_OWN_KEYS, isBookWideKey, isBookOwnKey, isBookPageKey } from './bookKeys.js';
+export type { BookWideKey, BookOwnKey } from './bookKeys.js';
 export { CHAPTER_STYLE_KEY, blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf } from './chapterStyles.js';
 export { DEFAULT_COLUMN_BALANCING, DEFAULT_HEADINGS_CONFIG, balancingOnByDefault, resolveHeadingsConfig, stripHeadingsDefaults } from './structure/headings.js';
 export { resolveTableStyleConfig, stripTableStyleDefaults, resolveTableStylesConfig, stripTableStylesDefaults, pickTableStyle, defaultTableContinuationStrings } from './resources/tableStyle.js';
