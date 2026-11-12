@@ -14,10 +14,11 @@ export function chapterStyleView(book: PostextConfig, id: string): PostextConfig
 }
 
 /** `book` with style `id` changed so that, merged over the book, it reads
- *  `after` (the settings the panel wrote, over the view it showed). A
- *  setting the whole book shares, changed while the style is shown, is the
- *  book's change: a style cannot hold it. */
-export function writeChapterStyle(book: PostextConfig, id: string, after: PostextConfig): PostextConfig {
+ *  `after` (the settings the panel wrote, over the view it showed). A style
+ *  cannot hold a setting the whole book shares: with `toBook` (the Design
+ *  panel, the agent tools) a change to one is the book's change; without it
+ *  (a template kept as a style) the book keeps its own. */
+export function writeChapterStyle(book: PostextConfig, id: string, after: PostextConfig, { toBook = false }: { toBook?: boolean } = {}): PostextConfig {
   const { chapterStyles: styles = [], ...bookRest } = book;
   const { chapterStyles: _ignored, ...afterRest } = after;
   void _ignored;
@@ -25,7 +26,7 @@ export function writeChapterStyle(book: PostextConfig, id: string, after: Postex
   const out: Record<string, unknown> = { ...book };
   const written = afterRest as Record<string, unknown>;
   for (const key of BOOK_WIDE_KEYS) {
-    if (key !== 'chapterStyles' && key in override) {
+    if (toBook && key !== 'chapterStyles' && key in override) {
       if (written[key] === undefined) delete out[key];
       else out[key] = written[key];
     }
@@ -38,6 +39,10 @@ export function writeChapterStyle(book: PostextConfig, id: string, after: Postex
     let moved = false;
     for (const key of BOOK_PAGE_KEYS) {
       if (!(key in page)) continue;
+      if (!toBook) {
+        delete page[key];
+        continue;
+      }
       if (writtenPage[key] === undefined) delete bookPage[key];
       else bookPage[key] = writtenPage[key];
       delete page[key];

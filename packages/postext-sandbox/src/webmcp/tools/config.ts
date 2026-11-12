@@ -332,7 +332,7 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
         const keys = (p: string) => p.split(/[.[]/);
         const toBook = unique.filter((p) => isBookWideKey(keys(p)[0]!) || (keys(p)[0] === 'page' && isBookPageKey(keys(p)[1] ?? '')));
         if (toBook.length > 0) notes.push(`${toBook.join(', ')}: the whole book shares this, so it was written to the book, not to the style "${styleId}".`);
-        next = writeChapterStyle(book, styleId, next);
+        next = writeChapterStyle(book, styleId, next, { toBook: true });
       }
       let warnings: unknown[] = [];
       try {
