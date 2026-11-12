@@ -121,29 +121,38 @@ export function findStacks(doc: VDTDocument, options: FindStacksOptions = {}): S
   for (const block of doc.blocks) {
     if (options.pageIndex !== undefined && block.pageIndex !== options.pageIndex) continue;
     if (!TEXT_BLOCKS.has(block.type) || block.lines.length < 2) continue;
-    let prev: { text: string; owner: { segment: number; offset: number }[]; end: Edge; start: Edge } | undefined;
-    block.lines.forEach((line, i) => {
-      const t = lineText(line);
-      const cur = { ...t, end: textEdges(t.text, minChars, true), start: textEdges(t.text, minChars, false) };
-      if (prev) {
-        for (const edge of ['end', 'start'] as const) {
-          const a = prev[edge];
-          const b = cur[edge];
-          if (!edgesStack(a, b)) continue;
-          const byWord = a.word !== '' && a.word === b.word;
-          const [af, at] = edgeSpan(prev.text, a, byWord, edge === 'end');
-          const [bf, bt] = edgeSpan(cur.text, b, byWord, edge === 'end');
-          out.push({
-            block,
-            line: i - 1,
-            edge,
-            text: prev.text.slice(af, at).replace(/[­￼]/g, ''),
-            ranges: [rangesOf(prev.owner, af, at), rangesOf(cur.owner, bf, bt)],
-          });
-        }
-      }
-      prev = cur;
-    });
+    for (const s of lineStacks(block.lines, minChars)) out.push({ block, ...s });
   }
+  return out;
+}
+
+/** The stacks of consecutive `lines` of one text (#1463), as
+ *  {@link findStacks} reads them in a block: also those of a caption, a
+ *  note or a table cell (#1542), where (`byParagraph`) a line that ends
+ *  one of its paragraphs (`isLastLine`) stacks with none after it. */
+export function lineStacks(lines: readonly VDTLine[], minChars: number, byParagraph = false): Omit<Stack, 'block'>[] {
+  const out: Omit<Stack, 'block'>[] = [];
+  let prev: { text: string; owner: { segment: number; offset: number }[]; end: Edge; start: Edge; last: boolean } | undefined;
+  lines.forEach((line, i) => {
+    const t = lineText(line);
+    const cur = { ...t, end: textEdges(t.text, minChars, true), start: textEdges(t.text, minChars, false), last: byParagraph && line.isLastLine === true };
+    if (prev && !prev.last) {
+      for (const edge of ['end', 'start'] as const) {
+        const a = prev[edge];
+        const b = cur[edge];
+        if (!edgesStack(a, b)) continue;
+        const byWord = a.word !== '' && a.word === b.word;
+        const [af, at] = edgeSpan(prev.text, a, byWord, edge === 'end');
+        const [bf, bt] = edgeSpan(cur.text, b, byWord, edge === 'end');
+        out.push({
+          line: i - 1,
+          edge,
+          text: prev.text.slice(af, at).replace(/[­￼]/g, ''),
+          ranges: [rangesOf(prev.owner, af, at), rangesOf(cur.owner, bf, bt)],
+        });
+      }
+    }
+    prev = cur;
+  });
   return out;
 }

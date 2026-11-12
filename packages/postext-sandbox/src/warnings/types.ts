@@ -1,8 +1,8 @@
 import type { FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind } from 'postext';
-import type { ContrastCheck, PreflightCheck } from './types/checks.js';
+import type { ContrastCheck, PreflightCheck, SnippetPlace } from './types/checks.js';
 
 export type { WarningKind } from './types/kind.js';
-export type { ContrastCheck, PreflightCheck } from './types/checks.js';
+export type { ContrastCheck, PreflightCheck, SnippetPlace } from './types/checks.js';
 
 /** Which design slot a warning points at. `level` tags heading slots;
  *  the part opener is a single slot; `'box'` is a box style's design
@@ -457,12 +457,12 @@ export type WarningPayload =
   /** Two lines in a row of a paragraph that end (`edge: 'end'`) or start
    *  on the same word or characters, `text` (`bodyText.stacks: 'warn' |
    *  'avoid'`, #1463), on book page `page`; `lines` are the two lines. */
-  | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  | { kind: 'stack'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string]; place?: SnippetPlace }
   /** A line that starts with the citation `text`, or ends (`edge`) or
    *  starts on the operator `text` (`bodyText.citationBreaks` /
    *  `operatorBreaks`, #1519), on book page `page`. */
-  | { kind: 'citationBreak'; page: number; text: string; lines: [string, string] }
-  | { kind: 'operatorBreak'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string] }
+  | { kind: 'citationBreak'; page: number; text: string; lines: [string, string]; place?: SnippetPlace }
+  | { kind: 'operatorBreak'; page: number; edge: 'end' | 'start'; text: string; lines: [string, string]; place?: SnippetPlace }
   /** More lines in a row ending on a hyphen than `max`
    *  (`hyphenation.ladders: 'warn' | 'avoid'`, #1466), by book page. */
   | { kind: 'hyphenLadder'; page: number; lines: number; max: number }

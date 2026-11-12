@@ -17,3 +17,12 @@ export type PreflightCheck =
   /** Spot inks of a placed PDF (an Illustrator file) the job does not print
    *  as they are named (`placedInkProblems`). */
   | { kind: 'masterInks'; severity: PreflightSeverity; name: string; problem: 'offPlates' | 'renamed' | 'unknown'; inks: string[] };
+
+/** Where in a resource a stack, a citation or an operator break lies
+ *  (#1542): its caption, its note or a table cell (row and column from 0).
+ *  Absent on a warning of the running text. */
+export interface SnippetPlace {
+  resourceId: string;
+  part: 'caption' | 'note' | 'cell';
+  cell?: { row: number; col: number };
+}

@@ -363,13 +363,13 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = `The last word of a paragraph is divided ("${w.word}") — with bodyText.hyphenation.lastWord: "avoid" the line breaker keeps it whole where the word spacing allows`;
       break;
     case 'stack':
-      text = `Two lines in a row ${w.edge === 'end' ? 'end' : 'start'} on "${w.text}", a stack. With bodyText.stacks: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
+      text = `${snippetPlace(w)}Two lines in a row ${w.edge === 'end' ? 'end' : 'start'} on "${w.text}", a stack. With bodyText.stacks: "avoid" the line breaker sets the paragraph otherwise where the word spacing allows`;
       break;
     case 'citationBreak':
-      text = `A line starts with the citation "${w.text}" — with bodyText.citationBreaks: "avoid" the line breaker keeps it with the word before it where the word spacing allows`;
+      text = `${snippetPlace(w)}A line starts with the citation "${w.text}" — with bodyText.citationBreaks: "avoid" the line breaker keeps it with the word before it where the word spacing allows`;
       break;
     case 'operatorBreak':
-      text = `A line ${w.edge === 'end' ? 'ends on' : 'starts with'} "${w.text}", set between spaces — with bodyText.operatorBreaks: "avoid" the line breaker keeps it with its terms where the word spacing allows`;
+      text = `${snippetPlace(w)}A line ${w.edge === 'end' ? 'ends on' : 'starts with'} "${w.text}", set between spaces — with bodyText.operatorBreaks: "avoid" the line breaker keeps it with its terms where the word spacing allows`;
       break;
     case 'shortListSplit':
       text = `A list of ${w.items} ${w.items === 1 ? 'item' : 'items'} is cut between two columns — bodyText.shortListSplit: "avoid" sets a short list whole when a column can hold it`;
@@ -557,4 +557,12 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
       text = `Warning "${(w as { kind: string }).kind}"`;
   }
   return text + where(w);
+}
+
+/** Where a fault of the line-edge rules lies when it is in a resource's
+ *  caption, note or table cell (#1542): `In the caption of "fig": `. */
+function snippetPlace(w: { resourceId?: string; part?: 'caption' | 'note' | 'cell'; cell?: { row: number; col: number } }): string {
+  if (w.resourceId === undefined || w.part === undefined) return '';
+  const part = w.part === 'cell' ? `cell ${(w.cell?.row ?? 0) + 1}, ${(w.cell?.col ?? 0) + 1} of the table` : `the ${w.part} of`;
+  return `In ${part} "${w.resourceId}": `;
 }

@@ -2,6 +2,7 @@ import { FORCED_BREAK } from './hardBreaks.js';
 import { type LayoutCursor, layoutNextLine } from '@chenglou/pretext';
 import { type VDTLine, createBoundingBox } from '../vdt.js';
 import { hyphenateTextKeepingCompounds, hyphenateText, withoutEdgeSoftHyphens } from '../hyphenation/hyphenate.js';
+import { ruledSpaces } from '../knuthPlass/spaceBreaks.js';
 import { pretextSegmentsToItems, computeBreakpoints, reconstructPretextLines } from '../knuthPlass/index.js';
 import { type MeasureBlockOptions, type MeasuredBlock, lineStartAt, maxLineIndent, maxLineInset, SOFT_HYPHEN, lineWidthFunction, uniformMeasureFrom, markInsetLines, lineWidthAt } from './types.js';
 import { withLineEndHyphen, endsInsideGeminate, GEMINATE_DOT } from './geminate.js';
@@ -223,6 +224,11 @@ export function measureBlock(
     }
     // Fallback to greedy if K-P produced no breaks, or a line past the
     // measure (a word wider than it: the greedy breaker divides it)
+  }
+  // The line-edge rules avoided (#1542): the word-by-word breaker keeps
+  // them where it can (`rich/greedyRules.ts`); pretext's cannot.
+  if (options?.stacks || (options?.spaceBreaks && !measuringVertically() && ruledSpaces(text, { citations: options.spaceBreaks.citations > 0, operators: options.spaceBreaks.operators > 0 }).length > 0)) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, { ...options, optimal: false });
   }
 
   const lines: VDTLine[] = [];

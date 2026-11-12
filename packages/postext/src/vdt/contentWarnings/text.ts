@@ -1,6 +1,15 @@
 // Content warnings of text setting: loose and ragged lines, divided words,
 // marks past the leading and vertical text.
 
+/** Where in a resource a fault of the line-edge rules lies (#1542): its
+ *  caption, its note or a table cell (row and column from 0). Absent for
+ *  the running text. */
+export interface SnippetWarningPlace {
+  resourceId?: string;
+  part?: 'caption' | 'note' | 'cell';
+  cell?: { row: number; col: number };
+}
+
 /** Members of `ContentWarning` (`../contentWarnings.ts`). */
 export type TextSettingWarning =
   /** A justified line of CJK text that would need more space between its
@@ -28,21 +37,23 @@ export type TextSettingWarning =
    *  kept (no setting within the word spacing avoided them, or it would
    *  have cost more than `stackPenalty`). The source range covers both
    *  lines. Found by the layout, so `collectContentWarnings` never returns
-   *  it. */
-  | { kind: 'stack'; edge: 'end' | 'start'; text: string; lines: [string, string] }
+   *  it. In a caption, a note or a table cell (#1542), `resourceId`,
+   *  `part` and `cell` say which, and the source range is the block that
+   *  cites or embeds the resource. */
+  | ({ kind: 'stack'; edge: 'end' | 'start'; text: string; lines: [string, string] } & SnippetWarningPlace)
   /** A line that starts with a numbered citation, or a piece of one
    *  (#1519, `bodyText.citationBreaks: 'warn' | 'avoid'`): the line before
    *  it ends at the space before the citation or inside it. `text` is the
    *  citation and `lines` the two lines' texts. Under `'avoid'`, the breaks
    *  the breaker kept. The source range covers both lines. Found by the
-   *  layout. */
-  | { kind: 'citationBreak'; text: string; lines: [string, string] }
+   *  layout. In a caption, a note or a table cell, as for `stack`. */
+  | ({ kind: 'citationBreak'; text: string; lines: [string, string] } & SnippetWarningPlace)
   /** A line that ends (`edge: 'end'`) or starts (`'start'`) on a relation
    *  or operator set between spaces (#1519, `bodyText.operatorBreaks:
    *  'warn' | 'avoid'`). `text` is the sign and `lines` the two lines'
    *  texts. Under `'avoid'`, the breaks the breaker kept. Found by the
-   *  layout. */
-  | { kind: 'operatorBreak'; edge: 'end' | 'start'; text: string; lines: [string, string] }
+   *  layout. In a caption, a note or a table cell, as for `stack`. */
+  | ({ kind: 'operatorBreak'; edge: 'end' | 'start'; text: string; lines: [string, string] } & SnippetWarningPlace)
   /** A hyphen ladder (#1466, `bodyText.hyphenation.ladders: 'warn' |
    *  'avoid'`): `lines` lines in a row of a paragraph end on a hyphen, more
    *  than `max` (`hyphenation.maxConsecutive`). `text` is the ladder's

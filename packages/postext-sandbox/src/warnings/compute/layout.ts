@@ -2,7 +2,7 @@
 // what the layout reports of each block (#1276: split out of compute.ts).
 import { type PostextConfig, type VDTDocument, type ResolvedDebugConfig, findLooseLines } from 'postext';
 import { getConfigFontSpecs, getConfigFontFamilies } from '../../controls/fonts/fontLoader.js';
-import type { Warning, WarningPayload } from '../types.js';
+import type { SnippetPlace, Warning, WarningPayload } from '../types.js';
 
 export function lineNumberForOffset(markdown: string, offset: number): number {
   if (offset <= 0) return 1;
@@ -172,7 +172,7 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       // Two lines in a row that end or start alike (#1463), by book page.
       out.push({
         id: `layout-stack-${w.sourceStart ?? 'x'}-${w.edge}-${i}`,
-        payload: { kind: 'stack', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), edge: w.edge, text: w.text, lines: w.lines },
+        payload: { kind: 'stack', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), edge: w.edge, text: w.text, lines: w.lines, ...snippetPlace(w) },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
@@ -185,8 +185,8 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       out.push({
         id: `layout-${w.kind}-${w.sourceStart ?? 'x'}-${i}`,
         payload: w.kind === 'citationBreak'
-          ? { kind: 'citationBreak', page, text: w.text, lines: w.lines }
-          : { kind: 'operatorBreak', page, edge: w.edge, text: w.text, lines: w.lines },
+          ? { kind: 'citationBreak', page, text: w.text, lines: w.lines, ...snippetPlace(w) }
+          : { kind: 'operatorBreak', page, edge: w.edge, text: w.text, lines: w.lines, ...snippetPlace(w) },
         sourceStart: w.sourceStart,
         sourceEnd: w.sourceEnd,
         line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
@@ -407,4 +407,12 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
     });
   }
   return out;
+}
+
+/** The caption, note or table cell a fault of the line-edge rules lies in
+ *  (#1542), as the payload carries it; nothing for the running text. */
+function snippetPlace(w: { resourceId?: string; part?: 'caption' | 'note' | 'cell'; cell?: { row: number; col: number } }): { place?: SnippetPlace } {
+  return w.resourceId !== undefined && w.part !== undefined
+    ? { place: { resourceId: w.resourceId, part: w.part, ...(w.cell ? { cell: w.cell } : {}) } }
+    : {};
 }
