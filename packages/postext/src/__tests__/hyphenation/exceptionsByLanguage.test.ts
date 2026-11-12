@@ -26,6 +26,17 @@ describe('hyphenation.exceptionsByLanguage', () => {
     expect(resolveAllConfig({ bodyText: { hyphenation: { exceptionsByLanguage: { es: ['1'] } } } } as PostextConfig).bodyText.hyphenation.exceptionsByLanguage).toBeUndefined();
   });
 
+  it('keeps no list for a language with no patterns of its own, which would reach English text', () => {
+    const resolved = resolveAllConfig({ bodyText: { hyphenation: { exceptionsByLanguage: { el: ['λέξη'], ja: ['Tokyo'], en: ['Alice'] } } } } as PostextConfig);
+    expect(resolved.bodyText.hyphenation.exceptionsByLanguage).toEqual({ 'en-us': ['Alice'] });
+    expect(resolveAllConfig({ bodyText: { hyphenation: { exceptionsByLanguage: { el: ['λέξη'] } } } } as PostextConfig).bodyText.hyphenation.exceptionsByLanguage).toBeUndefined();
+  });
+
+  it('takes language tags from a host that sets the rules itself', () => {
+    expect(divide('information', 'en-us', { exceptionsByLanguage: { en: ['information'] } })).toBe('information');
+    expect(divide('information', 'en-us', { exceptionsByLanguage: { el: ['information'] } })).toBe(show(hyphenateByDictionary('information', 'en-us')));
+  });
+
   it('applies a list only where its dictionary divides', () => {
     const en = hyphenationLocaleFor('en', false);
     const rules: HyphenationRules = { exceptionsByLanguage: { [en]: ['information'] } };

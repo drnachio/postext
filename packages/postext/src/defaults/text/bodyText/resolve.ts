@@ -49,7 +49,7 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
     : partial?.enabled ?? (isUnhyphenatedLanguage(documentLocale) ? false : D.enabled);
   const locale = hyphenationLocaleFor(requested, enabled);
   const exceptions = normalizeHyphenationExceptions(partial?.exceptions);
-  const exceptionsByLanguage = normalizeExceptionsByLanguage(partial?.exceptionsByLanguage, (tag) => hyphenationLocaleFor(tag, false));
+  const exceptionsByLanguage = normalizeExceptionsByLanguage(partial?.exceptionsByLanguage);
   return {
     enabled,
     locale,

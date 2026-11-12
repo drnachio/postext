@@ -129,12 +129,15 @@ export interface HyphenationConfig {
   exceptions?: string[];
   /** Exception lists of one language each, keyed by its tag (`'en'`,
    *  `'fr-FR'`): read as {@link exceptions} is, and applied only to text
-   *  divided with that language's dictionary (the document's, or a
-   *  chapter's or a passage's own language). For a book in several
-   *  languages, where the same spelling divides differently in each, or a
-   *  word is kept whole in one only. An entry here wins over the same word
-   *  in {@link exceptions}. Tags that share a dictionary share one list.
-   *  Default none. */
+   *  divided with that language's dictionary: the document's, or the one a
+   *  chapter style names (`hyphenation.locale`). A passage marked with
+   *  another language (`{lang=…}`) is divided with the dictionary around
+   *  it. For general settings shared by the editions of a book in several
+   *  languages, or a chapter set in another language, where the same
+   *  spelling divides differently in each or a word is kept whole in one
+   *  only. An entry here wins over the same word in {@link exceptions}.
+   *  Tags that share a dictionary share one list; a tag with no patterns
+   *  of its own (`'el'`, `'ar'`) has none. Default none. */
   exceptionsByLanguage?: Record<string, string[]>;
   /** The shortest word the dictionary divides, in letters. Unset: the
    *  language's own, 5 (4 in Catalan). */

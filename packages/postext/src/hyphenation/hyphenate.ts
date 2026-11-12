@@ -10,11 +10,13 @@ import nl from 'hyphenation.nl';
 import type { HyphenationLocale, LocaleTag, HyphenationLimits } from '../types.js';
 import { hyphenationLocaleFor } from './locale.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
-import { normalizeHyphenationExceptions } from './hyphenationExceptions.js';
+import { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from './hyphenationExceptions.js';
 import { activeLimits, onLimitsEvicted } from './limits.js';
 
 export { HYPHENATION_LOCALES, matchHyphenationLocale, hyphenationLocaleFor } from './locale.js';
-export { normalizeHyphenationExceptions } from './hyphenationExceptions.js';
+export { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from './hyphenationExceptions.js';
+export { ALL_LANGUAGES_KEY, parseHyphenationExceptionsFile, formatHyphenationExceptionsFile, mergeHyphenationExceptions, mergeHyphenationExceptionsFile, hyphenationExceptionsFor, withHyphenationExceptions } from './exceptionsFile.js';
+export type { HyphenationExceptionsFile, HyphenationExceptionsMerge, HyphenationExceptionsFileMerge } from './exceptionsFile.js';
 export { setHyphenationLimits, hyphenationLimitsId } from './limits.js';
 
 /** Catalan words the IEC divides at their prefix rather than by syllable
@@ -187,9 +189,10 @@ export interface HyphenationRules {
    *  word in any case; one with an initial capital matches the occurrences
    *  that start with a capital. */
   exceptions?: readonly string[];
-  /** Lists of one dictionary each (`HyphenationLocale`), read as
-   *  `exceptions` and applied only when that dictionary divides; an entry
-   *  wins over the same word in `exceptions`. */
+  /** Lists of one language each, keyed by its tag or its dictionary
+   *  (`HyphenationLocale`), read as `exceptions` and applied only when that
+   *  dictionary divides; an entry wins over the same word in
+   *  `exceptions`. */
   exceptionsByLanguage?: Readonly<Record<string, readonly string[]>>;
   /** `false`: no break inside a word that starts with a capital. */
   capitalized?: boolean;
@@ -286,7 +289,8 @@ onLimitsEvicted((id) => {
  */
 export function setHyphenationRules(rules?: HyphenationRules): void {
   const exceptions = normalizeHyphenationExceptions(rules?.exceptions);
-  const byLanguage = rules?.exceptionsByLanguage && Object.keys(rules.exceptionsByLanguage).length > 0 ? rules.exceptionsByLanguage : undefined;
+  // Keyed by dictionary, as the build passes them; a host may pass tags.
+  const byLanguage = normalizeExceptionsByLanguage(rules?.exceptionsByLanguage);
   const names = rules?.names && rules.names.length > 0 ? [...new Set(rules.names)].sort() : undefined;
   const keepCapitalised = rules?.capitalized === false;
   const next = exceptions || byLanguage || names || keepCapitalised
