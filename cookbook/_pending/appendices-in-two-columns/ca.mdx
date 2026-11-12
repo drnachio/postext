@@ -1,0 +1,75 @@
+---
+title: "Apèndixs a dues columnes en cos més petit"
+summary: "Un manual a una columna amb apèndixs d'un altre disseny: una part anomena un estil de capítol, un apèndix anomena el seu i l'epíleg torna al del llibre."
+plain: "Els capítols del llibre van a una columna ampla. A partir dels apèndixs, el text corre a dues columnes de lletra més petita, i un apèndix a tres. La mida de pàgina i l'idioma del llibre no canvien en cap moment."
+description: "chapterStyles amb :::part{style=…} i el chapterStyle: d'un capítol, en un llibre de sis documents, i una part amb page=false que torna al disseny del llibre."
+question: "Com componc els apèndixs o una part d'un llibre amb un altre disseny, com ara dues columnes en cos més petit?"
+aliases: ["estils de capítol", "chapterStyle", "disseny dels apèndixs", "apèndixs a dues columnes", "disseny de les pàgines finals", "estil de part", "maqueta diferent per capítol", "part sense portadella", "page=false", "fitxer de disseny", "postext design", "reutilitzar un disseny"]
+pageNotes: { "1": "La portadella de la part I: una banda verda a la meitat superior de la pàgina amb el numeral I i el títol El huerto.", "7": "L'apèndix A a dues columnes en bandera de cos més petit, cada portaempelt amb el nom en negreta, sota un títol més petit que el dels capítols.", "9": "L'apèndix C a tres columnes de pal sec amb els noms de les varietats en vermellós: l'estil propi del capítol.", "10": "L'epíleg de nou a una columna justificada, sense portadella al davant, i el colofó en pal sec petit." }
+---
+
+## Què compondràs
+
+Un petit manual per a qui conrea pomeres en una vall freda, de 150 × 220 mm, escrit en sis documents Markdown i compost com un sol llibre. Els dos capítols de la part I van a una columna justificada de Source Serif 4. La part II, els apèndixs, canvia de disseny: una taula de portaempelts i un calendari mes a mes a dues columnes en bandera i cos més petit, matèria que es consulta al cobert amb el llibre obert sobre el banc de treball, i una llista de varietats a tres columnes de pal sec. L'epíleg torna al disseny propi del llibre sense portadella. El format, els marges, la divisió de paraules i l'idioma són els mateixos a totes les pàgines.
+
+## Elaboració
+
+### 1 · Un estil només guarda el que canvia
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un estil de capítol té un id, un nom per al Sandbox i un `config` que es fusiona sobre els ajustos del llibre com ho fa la capa d'un idioma. Els objectes es fusionen clau per clau i les llistes entrada per entrada pel seu `id` o el seu `level`, de manera que `smallOpener` anomena un element de l'obertura, el títol, i li dona un cos més petit; el filet de sota i tota la resta es queden com els té el llibre. L'estil d'apèndix fixa dues columnes, un cos de text més petit, línies en bandera i espai entre entrades, i res més.
+
+Alguns ajustos són del llibre sencer: el format, la resolució i l'enquadernació de `page`, l'idioma i la direcció d'escriptura, les xifres, les fonts, la impressió i el PDF. Un estil que en fixi algun s'ignora en aquest punt i dona un avís `chapterStyleBookSetting`, així que els apèndixs conserven el format de 150 mm i la divisió de paraules en castellà dels capítols.
+
+### 2 · La part anomena l'estil
+
+<Excerpt region="chapters" />
+
+El tercer document comença amb `:::part{number="II" title="Apéndices" style="appendix"}`, i tots els capítols des d'aquest fins a la part següent es componen amb l'estil d'apèndix. El cinquè anomena el seu propi estil al front matter, `chapterStyle: "reference"`, que passa per davant del de la part. En un llibre, només el front matter del primer document és del llibre; un de posterior només en conserva la línia `chapterStyle:`.
+
+<PageShot page={9} crop="0,0.05,1,0.66" caption="Apèndix C: l'estil propi del capítol, tres columnes de pal sec, per sobre de les dues de la part." />
+
+### 3 · Una portadella, i una part sense
+
+<Excerpt region="parts" />
+
+Cada `:::part` obre una portadella amb el número i el títol de la part sobre una banda verda. L'epíleg comença amb `:::part{title="Epílogo" page=false}`: no s'imprimeix cap portadella i, com que la part no anomena cap estil, el seu capítol es torna a compondre amb els ajustos del llibre. Una part amb `page=false` serveix per a les pàgines finals que segueixen els apèndixs sense tall.
+
+<PageShot page={6} crop="0,0,1,0.45" caption="La portadella de la part II." />
+
+### 4 · Una obertura en dues mides
+
+<Excerpt region="opener" />
+
+L'obertura ocupa tota l'amplada de la pàgina, així que als apèndixs passa per sobre de les dues columnes i el text comença a sota, a dues. Els estils d'apèndix i de llista de consulta redueixen el títol a 16 pt i l'enfonsament a 24 mm a través de l'id de l'element: la matèria del final del llibre ocupa menys, i els seus títols continuen clarament per sobre del text.
+
+### 5 · Titolets del llibre
+
+<Excerpt region="running-heads" />
+
+El títol del llibre va a la pàgina parella i el del capítol a la senar. Cap estil no els canvia, així que els titolets són iguals a totes les parts del llibre.
+
+## Variants
+
+### Demanar a un estil un ajust del llibre
+
+Un estil que fixa el format o l'idioma s'ignora en aquestes claus. La composició dona un avís `chapterStyleBookSetting` per cadascuna, i els apèndixs conserven el format del llibre.
+
+```diff
+   { id: 'appendix', name: t({ en: 'Appendix', es: 'Apéndice' }), config: {
++    page: { width: mm(170) }, locale: 'fr',
+     layout: { layoutType: 'double', gutterWidth: mm(6) },
+```
+
+### Fer servir el disseny en un altre llibre
+
+L'eina de línia d'ordres escriu el disseny d'un llibre, amb els seus estils de capítol, en un fitxer de disseny, i compon un altre llibre amb aquest disseny mitjançant `--design`. Consulta [l'ordre design](/ca/docs/command-line#design).
+
+```bash
+postext design manzanos.postext -o manual.postext
+postext pdf perales/ --design manual.postext -o perales.pdf
+```
+
+## Errors freqüents
+
+- La línia `:::part` ha d'obrir el capítol, abans del seu títol. Una línia de part posada després que hagi començat el text del capítol dona l'avís `partStyleMidChapter`, i l'estil comença al capítol següent.
+- Un nom d'estil que no és a `chapterStyles` dona l'avís `chapterStyleUnknown`, i aquell capítol es compon amb els ajustos del llibre.

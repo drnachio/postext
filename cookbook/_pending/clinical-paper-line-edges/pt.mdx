@@ -1,0 +1,75 @@
+---
+title: "Citações e estatísticas longe das bordas da linha"
+summary: "Um artigo clínico em duas colunas composto duas vezes: a primeira prova aponta cada chamada ou sinal na borda da linha, a segunda encarece essas quebras."
+plain: "Numa coluna justificada estreita, uma chamada como [2, 3] pode abrir sozinha uma linha, e p < 0,05 pode se partir depois do sinal. O artigo é composto duas vezes: uma mostra onde isso acontece, a outra quase sempre o evita."
+description: "citationBreaks e operatorBreaks em duas provas de um artigo clínico: 'warn' lista e marca cada quebra, 'avoid' a encarece nos deméritos de Knuth–Plass."
+question: "Como evito que uma chamada bibliográfica ou uma estatística como p < 0,05 se parta no fim da linha?"
+aliases: ["quebra de citação", "chamada bibliográfica no início da linha", "chamada sozinha na linha", "estatística partida", "valor p partido", "sinal de igual no fim da linha", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "artigo clínico", "revisão de provas"]
+pageNotes: { "1": "Primeira prova, página 211: faixas âmbar-claras sob = 0.09, partido entre duas linhas do resumo, e sob first, no fim de uma linha cuja seguinte começa com [2, 3].", "3": "A última página da primeira prova: LR− = marcado no fim de uma linha, as referências e uma tira intitulada FIRST PROOF: QUERIES que lista três quebras.", "6": "A última página da segunda prova: LR− = 0.09 agora numa só linha, e a tira lista a única quebra que resta, first sobre [2, 3] na página 211." }
+---
+
+## O que você vai compor
+
+Três páginas de uma revista de pediatria de 170 × 240 mm, em duas colunas justificadas de 66 mm em STIX Two Text: um estudo original sobre ultrassom pulmonar na pneumonia infantil, com referências numeradas no estilo Vancouver. Uma coluna tão estreita deixa poucas saídas para o algoritmo de quebra, e em três lugares o texto em inglês quebra mal. Uma chamada, *[2, 3]*, abre uma linha sozinha, longe da palavra a que se refere, e duas vezes a razão de verossimilhança *LR− = 0.09* se parte depois do sinal de igual. A primeira prova é composta com `citationBreaks` e `operatorBreaks` em `'warn'`. Ela não muda nenhuma quebra, marca cada uma com uma faixa âmbar-clara e as lista numa tira depois das referências. A segunda é composta com `'avoid'`, e das três resta uma. A edição espanhola compõe o mesmo estudo com vírgula decimal.
+
+## Preparo
+
+### 1 · Um preço para dois tipos de quebra
+
+O código é [a resposta curta](#a-resposta-curta) logo acima. Há quebra de citação quando uma linha começa com uma chamada numerada, ou com a segunda metade de uma, como *5]* depois de *[4,*. Há quebra de operador quando uma linha termina ou começa com um sinal entre espaços: `=`, `<`, `±`, `×`, o sinal de menos. `'warn'` aponta as duas e deixa as linhas como estão. `'avoid'` soma uma penalidade aos deméritos dessas quebras, e o algoritmo de Knuth–Plass procura outra forma de quebrar o parágrafo. Ele precisa de `optimalLineBreaking`: a quebra linha a linha não tem deméritos aos quais somar nada.
+
+A penalidade padrão, 10000, é o que custa uma linha esticada até o limite do espaço entre palavras, então o algoritmo nunca abre uma linha além desse limite para manter uma chamada junto da sua palavra. Nesta coluna, 10000 deixava duas quebras em cada edição. Com 30000 o algoritmo aceita linhas mais abertas, sempre dentro de `maxWordSpacing`, e resta uma em cada edição. Um valor mais alto não mudava mais nada: a última quebra não tem alternativa dentro do limite.
+
+### 2 · Marcar as quebras no texto
+
+<Excerpt region="marks" />
+
+Cada aviso traz o tipo, a chamada ou o sinal, o texto das duas linhas, a posição da primeira no texto-fonte e a página. O script encontra essas duas linhas no documento composto e envolve a quebra em `:mark[…]`: a palavra antes da chamada e a chamada, ou o sinal e o número do outro lado. Uma marca pinta uma faixa sob o texto e deixa as quebras onde estavam. A faixa não alcança o número que o estilo de citação gera, por isso na página só a palavra anterior fica marcada.
+
+<PageShot page={1} crop="0,0.33,1,0.72" caption="Primeira prova, página 211: LR− = 0.09 partido no resumo, e first no fim de uma linha, com [2, 3] abrindo a seguinte." />
+
+### 3 · Duas provas e uma tira de consultas
+
+<Excerpt region="proofs" />
+
+Cada prova é composta duas vezes. A primeira composição encontra as quebras; a segunda compõe o artigo com as marcas e uma tira depois das referências, que cai assim na última página. É assim que um compositor devolve as provas com suas consultas. As linhas da tira unem as palavras com espaços não separáveis, para não criar quebras próprias. `capture.doc` publica as duas composições marcadas, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.62,1,0.78" caption="Segunda prova, página 213: a tira lista uma quebra que resta no artigo." />
+
+A quebra que resta em inglês é *first* sobre *[2, 3]*, na página 211. Em espanhol a primeira prova encontra quatro, entre elas *CP+* sobre *= 19,19* e *[4,* sobre *5]*, em que a própria chamada se parte, e a segunda mantém uma, *anteriores [4,* sobre *5]*.
+
+### 4 · Chamadas numeradas entre colchetes
+
+<Excerpt region="citations" />
+
+O processador de citações compõe cada `[@key]` como um número entre colchetes depois de um espaço e agrupa sequências como *[4–6]*. O espaço antes do colchete e o que vem depois de uma vírgula dentro dele são lugares onde uma linha pode quebrar, e por isso uma coluna estreita com muitas citações precisa da regra.
+
+### 5 · O cabeçalho da revista e o bloco do artigo
+
+<Excerpt region="title" />
+
+O estilo do título desenha a faixa da revista, o tipo de artigo, o título, os autores com seus números de afiliação e uma nota, tudo a partir de atributos do H1. As duas edições compartilham o estilo, e o texto fica no Markdown.
+
+## Variações
+
+### Apontar as quebras sem mudar nada
+
+Uma revista que confere as provas à mão pode deixar a regra em `'warn'`: o Sandbox lista cada quebra entre seus avisos, e as linhas ficam como o algoritmo as quebrou.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Manter a penalidade padrão
+
+Com 10000 o espaçamento fica um pouco mais apertado e restam duas quebras por edição em vez de uma.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Erros comuns
+
+- As quebras são procuradas nas linhas já quebradas. Uma mudança de formato, corpo ou texto as desloca: leia os avisos de cada composição e não copie posições de uma anterior.
+- Para manter uma chamada específica junto da sua palavra em qualquer coluna, digite um espaço não separável antes dela no Markdown. A regra cuida do resto do artigo.

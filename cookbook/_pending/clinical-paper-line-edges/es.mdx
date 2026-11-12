@@ -1,0 +1,75 @@
+---
+title: "Citas y estadísticos fuera de los bordes de línea"
+summary: "Un artículo a dos columnas compuesto dos veces: las primeras pruebas avisan de cada cita o signo en un borde de línea; las segundas encarecen esos cortes."
+plain: "En una columna justificada estrecha, una llamada como [2, 3] puede quedarse sola al principio de una línea, y p < 0,05 puede partirse tras el signo. El artículo se compone dos veces: una enseña dónde pasa y otra lo evita casi siempre."
+description: "citationBreaks y operatorBreaks en dos pruebas de un artículo clínico: 'warn' lista y marca cada corte; 'avoid' lo encarece en los deméritos de Knuth–Plass."
+question: "¿Cómo evito que una llamada bibliográfica o un estadístico como p < 0,05 se parta al final de una línea?"
+aliases: ["cortes de cita", "llamada bibliográfica a principio de línea", "cita sola en la línea", "estadísticos partidos", "valor p partido", "signo igual a final de línea", "citationBreaks", "operatorBreaks", "citationBreakPenalty", "operatorBreakPenalty", "Vancouver", "artículo clínico", "corrección de pruebas"]
+pageNotes: { "1": "Primeras pruebas, página 211: una banda ámbar pálido bajo específica, al final de una línea cuya cita [4, 5] se parte entre esa línea y la siguiente.", "2": "Primeras pruebas, página 212: kappa al final de una línea y = 0,84 al principio de la siguiente, marcados.", "3": "La última página de las primeras pruebas: anteriores y CP+ marcados en la discusión, la bibliografía y una papeleta titulada PRIMERAS PRUEBAS: CONSULTAS con cuatro cortes.", "6": "La última página de las segundas pruebas: CP+ = 19,19 ya en una sola línea, y la papeleta lista el único corte que queda, anteriores [4, sobre 5], en la página 213." }
+---
+
+## Lo que vas a componer
+
+Tres páginas de una revista de pediatría de 170 × 240 mm, a dos columnas justificadas de 66 mm en STIX Two Text: un estudio original sobre la ecografía pulmonar en la neumonía infantil, con la bibliografía numerada en estilo Vancouver. Una columna tan estrecha deja al cortador de líneas pocas salidas, y en cuatro sitios el texto español se corta mal. Dos veces la llamada *[4, 5]* se parte entre dos líneas, lejos de la palabra a la que apoya, y dos veces un estadístico se separa de su signo: *kappa* sobre *= 0,84*, *CP+* sobre *= 19,19*. Las primeras pruebas se componen con `citationBreaks` y `operatorBreaks` en `'warn'`: no cambian ningún corte, marcan cada uno con una banda ámbar pálido y los listan en una papeleta tras la bibliografía. Las segundas se componen con `'avoid'`, y queda uno de los cuatro. La edición inglesa compone el mismo estudio con punto decimal.
+
+## Elaboración
+
+### 1 · Un precio para dos clases de corte
+
+El código está en [la respuesta corta](#la-respuesta-corta). Hay corte de cita cuando una línea empieza con una llamada numerada o con la segunda mitad de una, como *5]* tras *[4,*. Hay corte de signo cuando una línea acaba o empieza con un signo entre espacios: `=`, `<`, `±`, `×`, el menos. `'warn'` avisa de los dos y deja las líneas como están. `'avoid'` suma una penalización a los deméritos de esos cortes, y el cortador de Knuth–Plass busca otra forma de partir el párrafo. Necesita `optimalLineBreaking`: el cortador voraz no tiene deméritos a los que sumar nada.
+
+La penalización por omisión, 10000, es lo que cuesta una línea estirada hasta el límite del espacio entre palabras, de modo que el cortador nunca abre una línea más allá de ese límite para dejar una cita junto a su palabra. En esta columna, 10000 dejaba dos cortes en cada edición. Con 30000 el cortador acepta líneas más abiertas, siempre dentro de `maxWordSpacing`, y queda uno en cada edición. Un valor más alto ya no cambiaba nada: el último corte no tiene alternativa dentro del límite.
+
+### 2 · Marcar los cortes en el texto
+
+<Excerpt region="marks" />
+
+Cada aviso trae su clase, la cita o el signo, el texto de las dos líneas, la posición en el texto fuente de la primera y la página. El script busca esas dos líneas en el documento compuesto y envuelve el corte en `:mark[…]`: la palabra anterior a la cita y la cita, o el signo y el número del otro lado. Una marca pinta una banda bajo el texto y deja los cortes donde estaban. La banda no llega al número que genera el estilo de citas, así que en la página solo se marca la palabra anterior.
+
+<PageShot page={2} crop="0,0.58,1,0.9" caption="Primeras pruebas, página 212: kappa al final de una línea y = 0,84 al principio de la siguiente." />
+
+### 3 · Dos pruebas y una papeleta de consultas
+
+<Excerpt region="proofs" />
+
+Cada prueba se compone dos veces. La primera composición encuentra los cortes; la segunda compone el artículo con las marcas y una papeleta tras la bibliografía, de modo que la papeleta cae en la última página. Así devuelve un cajista las pruebas con sus consultas. Las líneas de la papeleta unen sus palabras con espacios de no separación, para no añadir cortes propios. `capture.doc` publica las dos composiciones marcadas, `[1, 3]`.
+
+<PageShot page={6} crop="0,0.7,1,0.82" caption="Segundas pruebas, página 213: la papeleta lista un corte en todo el artículo." />
+
+El corte que queda en español es *anteriores [4,* sobre *5]*, en la página 213. En la edición inglesa las primeras pruebas encuentran tres, entre ellos *LR− =* sobre *0.09* dos veces, y las segundas dejan uno, *first* sobre *[2, 3]*.
+
+### 4 · Llamadas numeradas entre corchetes
+
+<Excerpt region="citations" />
+
+El procesador de citas compone cada `[@clave]` como un número entre corchetes tras un espacio y agrupa las series como *[4–6]*. El espacio anterior al corchete y el que sigue a una coma dentro de él son sitios donde una línea puede cortarse; por eso una columna estrecha con muchas citas necesita la regla.
+
+### 5 · La cabecera y el bloque del artículo
+
+<Excerpt region="title" />
+
+El estilo del título dibuja la banda de la revista, el tipo de artículo, el título, los autores con sus números de filiación y una nota, todo a partir de atributos del H1. Las dos ediciones comparten el estilo, y el texto se queda en el Markdown.
+
+## Variantes
+
+### Avisar de los cortes sin cambiar nada
+
+Una revista que revisa las pruebas a mano puede dejar la regla en `'warn'`: el Sandbox lista cada corte entre sus avisos y las líneas se quedan como las compuso el cortador.
+
+```diff
+-  citationBreaks: 'avoid', operatorBreaks: 'avoid',
++  citationBreaks: 'warn', operatorBreaks: 'warn',
+```
+
+### Mantener la penalización por omisión
+
+Con 10000 el espaciado queda algo más apretado y se quedan dos cortes por edición en lugar de uno.
+
+```diff
+-  citationBreakPenalty: 30000, operatorBreakPenalty: 30000,
+```
+
+## Errores frecuentes
+
+- Los cortes se buscan en las líneas tal como quedaron. Si cambian el formato, el cuerpo o el texto, cambian de sitio, así que hay que leer los avisos de cada composición y no copiar posiciones de una anterior.
+- Para mantener una cita concreta junto a su palabra en cualquier columna, escribe un espacio de no separación delante en el Markdown. La regla se ocupa del resto del artículo.

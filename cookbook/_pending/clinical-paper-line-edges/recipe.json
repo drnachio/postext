@@ -1,0 +1,129 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 186,
+  "status": "draft",
+  "chapter": "type",
+  "order": 420,
+  "level": 2,
+  "genres": [
+    "paper"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "citation-sign-breaks",
+      "knuth-plass"
+    ],
+    "also": [
+      "citation-styles",
+      "generated-bibliography",
+      "highlight-marks",
+      "hyphenation-languages",
+      "column-layouts",
+      "opener-design",
+      "heading-attributes",
+      "heading-styles",
+      "running-heads",
+      "page-role-filters",
+      "mirrored-margins",
+      "callout-styles",
+      "color-palette"
+    ]
+  },
+  "answers": [
+    "Q219",
+    "Q112"
+  ],
+  "gotchas": [],
+  "explainsWarnings": [
+    "citationBreak",
+    "operatorBreak"
+  ],
+  "engine": {
+    "postext": "1.78.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "doc": [
+      1,
+      3
+    ],
+    "sandbox": "last",
+    "pages": [
+      1,
+      2,
+      3,
+      6
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [],
+    "fonts": [
+      {
+        "family": "STIX Two Text",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans Condensed",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-12",
+  "updated": "2026-11-12",
+  "related": [
+    "prose-without-stacks",
+    "medical-article-vancouver",
+    "justification-lab",
+    "bilingual-metascience-essay"
+  ],
+  "folio": {
+    "paper": {
+      "type": "coatedMatte",
+      "grammage": 80
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#2c4a7c"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#e2e7ef"
+    },
+    "lighting": {
+      "environment": "overcast"
+    }
+  }
+}
