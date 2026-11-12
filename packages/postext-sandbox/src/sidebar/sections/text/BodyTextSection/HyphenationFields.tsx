@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, normalizeHyphenationExceptions } from 'postext';
 import type { BodyTextConfig, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
 import { DimensionInput, NestedGroup, SelectInput, TextInput, ToggleSwitch } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { localeOptionsFor, HYPHENATION_ZONE_UNITS } from './constants.js';
+import { formatExceptionsFile, mergeExceptions, parseExceptionsFile } from './exceptionsFile.js';
+import { downloadBytes } from '../../../../storage/persistence.js';
 
 interface HyphenationFieldProps {
   bodyText: ResolvedBodyTextConfig;
@@ -103,33 +105,71 @@ export function parseHyphenationExceptions(text: string): string[] | undefined {
 
 /** The words the dictionary keeps whole or divides only where they say
  *  (`hyphenation.exceptions`). Typed freely and stored when the field is
- *  left, so a half-typed word never reaches the layout. */
+ *  left, so a half-typed word never reaches the layout. A list can also be
+ *  imported from a file, merged into the words already there, and exported
+ *  to one (`exceptionsFile.ts`). */
 export function HyphenationExceptionsField({ bodyText, raw, updateBodyText, updateHyphenation, labels }: HyphenationFieldProps) {
-  const stored = (bodyText.hyphenation.exceptions ?? []).join(', ');
+  const words = bodyText.hyphenation.exceptions ?? [];
+  const stored = words.join(', ');
   const [draft, setDraft] = useState<string | null>(null);
-  const commit = () => {
-    if (draft === null) return;
-    const words = parseHyphenationExceptions(draft);
-    setDraft(null);
-    if ((words ?? []).join(', ') === stored) return;
-    if (words) updateHyphenation({ exceptions: words });
+  const [imported, setImported] = useState<number | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const write = (next: string[] | undefined) => {
+    if ((next ?? []).join(', ') === stored) return;
+    if (next) updateHyphenation({ exceptions: next });
     else resetHyphenationField(raw, 'exceptions', updateBodyText);
   };
+  const commit = () => {
+    if (draft === null) return;
+    const next = parseHyphenationExceptions(draft);
+    setDraft(null);
+    write(next);
+  };
+  const importFile = async (file: File | undefined) => {
+    if (!file) return;
+    const added = parseExceptionsFile(await file.text());
+    setDraft(null);
+    write(normalizeHyphenationExceptions(mergeExceptions(words, added)));
+    setImported(added.length);
+    if (fileRef.current) fileRef.current.value = '';
+  };
+  const locale = bodyText.hyphenation.tag ?? bodyText.hyphenation.locale;
+  const button = 'rounded border border-rule px-2 py-1 hover:bg-surface disabled:opacity-50 disabled:hover:bg-transparent';
   return (
-    <TextInput
-      label={labels.bodyHyphenationExceptions}
-      value={draft ?? stored}
-      onChange={setDraft}
-      onBlur={commit}
-      placeholder="Alice, You-Tube"
-      tooltip={labels.bodyHyphenationExceptionsTooltip}
-      isDefault={stored === '' && draft === null}
-      onReset={() => {
-        setDraft(null);
-        resetHyphenationField(raw, 'exceptions', updateBodyText);
-      }}
-      widthCh={22}
-    />
+    <>
+      <TextInput
+        label={labels.bodyHyphenationExceptions}
+        value={draft ?? stored}
+        onChange={setDraft}
+        onBlur={commit}
+        placeholder="Alice, You-Tube"
+        tooltip={labels.bodyHyphenationExceptionsTooltip}
+        isDefault={stored === '' && draft === null}
+        onReset={() => {
+          setDraft(null);
+          setImported(null);
+          resetHyphenationField(raw, 'exceptions', updateBodyText);
+        }}
+        widthCh={22}
+      />
+      <div className="flex flex-wrap items-center justify-end gap-2 py-1 text-[12.5px]">
+        {imported !== null && (
+          <span role="status" className="text-slate">{labels.bodyHyphenationExceptionsImported.replace('__count__', String(imported))}</span>
+        )}
+        <button type="button" className={button} title={labels.bodyHyphenationExceptionsImportTooltip} onClick={() => fileRef.current?.click()}>
+          {labels.bodyHyphenationExceptionsImport}
+        </button>
+        <button
+          type="button"
+          className={button}
+          disabled={words.length === 0}
+          onClick={() => downloadBytes(formatExceptionsFile(words, locale), `hyphenation-exceptions-${locale}.txt`, 'text/plain;charset=utf-8')}
+        >
+          {labels.bodyHyphenationExceptionsExport}
+        </button>
+        <input ref={fileRef} type="file" accept=".txt,.dic,.tex,.csv,.json,text/plain,application/json" className="hidden" onChange={(e) => void importFile(e.target.files?.[0])} />
+      </div>
+    </>
   );
 }
 

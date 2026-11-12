@@ -24,3 +24,28 @@ export function normalizeHyphenationExceptions(entries: readonly unknown[] | und
   }
   return out.size > 0 ? [...out].sort() : undefined;
 }
+
+/**
+ * `bodyText.hyphenation.exceptionsByLanguage` as the engine reads it: each
+ * list read by {@link normalizeHyphenationExceptions}, keyed by the
+ * dictionary `dictionaryOf` gives its tag (tags sharing one are merged),
+ * keys sorted. Undefined when no list is left.
+ */
+export function normalizeExceptionsByLanguage(
+  record: unknown,
+  dictionaryOf: (tag: string) => string,
+): Record<string, string[]> | undefined {
+  if (typeof record !== 'object' || record === null || Array.isArray(record)) return undefined;
+  const merged = new Map<string, unknown[]>();
+  for (const [tag, list] of Object.entries(record)) {
+    if (tag.trim() === '' || !Array.isArray(list)) continue;
+    const key = dictionaryOf(tag.trim());
+    merged.set(key, [...(merged.get(key) ?? []), ...list]);
+  }
+  const out: Record<string, string[]> = {};
+  for (const key of [...merged.keys()].sort()) {
+    const words = normalizeHyphenationExceptions(merged.get(key));
+    if (words) out[key] = words;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}

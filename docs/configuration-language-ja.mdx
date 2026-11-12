@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'ハイフネーションと言語',
   description: 'ハイフネーションのパターンと例外、行末不ぞろいのテキスト、文書の言語とその数字と方向、Postextが組める文字体系',
   lang: 'ja',
-  lastUpdated: '2026-11-10',
-  readingTime: '22分',
+  lastUpdated: '2026-11-12',
+  readingTime: '23分',
   order: 8,
   parent: 'configuration',
   plainSummary: "このページでは、行の終わりで単語をどう分けるかと、Postextが本の言語をどう知るかを説明します。ハイフネーションを使うかどうかを選び、決して分けてはいけない語を挙げます。行の終わりをそろえず、不ぞろいのままにすることもできます。文書の言語によって、ハイフネーションの規則、図や表の呼び名、数字、文字の方向が決まります。最後の節では、Postextが組める文字の種類と、アラビア文字の扱いを説明します。",
@@ -64,6 +64,12 @@ export const metadata = {
       <td><code>string[]</code></td>
       <td>なし</td>
       <td>辞書で分割しない語、または項目に書いた位置でだけ分割する語。<code>'Alice'</code>は決して分割せず、<code>'You-Tube'</code>はそのハイフンの位置でだけ分割します。<a href="#分割しない語">分割しない語</a>を参照してください。</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>なし</td>
+      <td>言語ごとのリストを、その言語タグをキーにして指定します。<code>exceptions</code>と同じように読み、その言語の辞書で分割するテキストにだけ適用し、<code>exceptions</code>の同じ語より優先します。<a href="#分割しない語">分割しない語</a>を参照。</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -147,6 +153,10 @@ matchHyphenationLocale('sv');    // undefined: hyphenated with 'en-us', with a c
 辞書は、名前もほかの語と同じように分割します（`Al-ice`、`Áms-ter-dam`、`You-Tu-be`）。語を分割せずに保つ設定は3つあり、どれも既定値は辞書どおりの動作です。
 
 `hyphenation.exceptions`は語のリストで、TeXの`\hyphenation{…}`にあたります。ハイフンなしで書いた項目は決して分割しません。ハイフンを入れて書いた項目はその位置でだけ分割するので、`'You-Tube'`は`You-` · `Tube`となり、ほかの位置では分かれません。項目は、前後に何があっても、ひと続きの文字に一致します。`'Alice'`は`(Alice,`にも`Alice’s`にも当てはまり、複合語は部分ごとに照合します（`Blender-based`は`'Blender'`に一致します）。活用形は別の語なので、それぞれ項目が必要です。小文字で書いた項目は、大文字・小文字の違いを問わずその語に一致します（`'blender'`は`Blender`にも`BLENDER`にも当てはまります）。大文字で始めた項目は、大文字で始まる箇所にだけ一致するので、`'Rose'`は名前を分割せずに保ち、`rose`は辞書に任せます。項目に使えるのは文字とハイフンだけで、それ以外は取り除かれます。
+
+Sandboxでは、リストの下の「読み込み」でファイルを読み、その語をリストに加えます。読めるのは、1 行に 1 語、またはコンマ・セミコロン・スペースで区切ったテキスト（`#`、`%`、`//` で始まる行はコメント）、TeXの`\hyphenation{…}`ブロック、JSONのリスト（言語ごとのリストはすべて読みます）です。分割位置はハイフン、ソフトハイフン、分綴点（`‧`）、`=`、`~` で示せます（`~` は一部の組版ソフトが書き出す記号で、語頭の `~` はその語を分割しません）。リストにすでにある語は、ファイルの形に置き換わります。「書き出し」はリストを 1 行 1 語のテキストファイルに保存し、ほかの本でそのまま読み込めます。
+
+`hyphenation.exceptionsByLanguage` は、言語タグをキーにした言語ごとのリストです（`{ es: ['ca-mi-no'], en: ['Alice'] }`）。複数の言語で書かれた本のためのもので、各リストは `exceptions` と同じように読み、その言語の辞書で分割するテキスト（文書の言語、または別の言語の章や箇所）にだけ適用します。ここにある項目は、`exceptions` の同じ語より優先します。同じ辞書を使うタグは、リストも共有します。
 
 `hyphenation.capitalized: false`にすると、大文字で始まる語はすべて分割しません。名前、頭字語、そして各文の最初の語も含みます。InDesignの「Hyphenate Capitalized Words」スイッチをオフにした状態で、TeXの`\uchyph=0`にあたります。ハイフンを入れた`exceptions`の項目は、引き続きその位置で語を分割します。ドイツ語は名詞をすべて大文字で始めるので、この設定ではドイツ語のテキストに分割できる語がほとんど残りません。その場合は`exceptions`に語を挙げるか、`citations.hyphenateNames`を使ってください。
 

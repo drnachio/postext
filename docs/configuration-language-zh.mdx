@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: '断词与语言',
   description: '断词模式与例外词、非两端对齐文字的断词、文档语言及其数字和文字方向，以及Postext能排哪些文字',
   lang: 'zh',
-  lastUpdated: '2026-11-10',
-  readingTime: '16分钟',
+  lastUpdated: '2026-11-12',
+  readingTime: '17分钟',
   order: 8,
   parent: 'configuration',
   plainSummary: "本页讲单词在行尾怎样拆开，以及Postext怎样知道一本书用的是什么语言。你可以打开或关闭断词，也可以列出绝不能拆开的词。你还可以让文字的右边参差不齐，不必排成一条直线。文档语言决定断词规则、图和表的名称、数字的写法和文字方向。最后几节说明Postext能排哪些文字，以及怎样处理阿拉伯文。",
@@ -64,6 +64,12 @@ export const metadata = {
       <td><code>string[]</code></td>
       <td>无</td>
       <td>词典不得拆分的词，或只能在条目标明的位置拆分的词：<code>'Alice'</code>绝不拆分，<code>'You-Tube'</code>只在连字符处拆分。见<a href="#不拆分的词">不拆分的词</a>。</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>无</td>
+      <td>按语言分开的词表，以语言标签为键：读法同 <code>exceptions</code>，只用于以该语言词典断字的文本，并优先于 <code>exceptions</code> 中的同一词。参见<a href="#不拆分的词">不拆分的词</a>。</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -147,6 +153,10 @@ matchHyphenationLocale('sv');    // undefined：用'en-us'断词，并在控制�
 词典拆分专名，与拆分其他词没有两样：`Al-ice`、`Áms-ter-dam`、`You-Tu-be`。有三项设置可以让词保持完整，默认都按词典处理。
 
 `hyphenation.exceptions`是一个词表，相当于TeX的`\hyphenation{…}`。不带连字符写出的条目绝不拆分；带连字符写出的条目只在连字符处拆分，所以`'You-Tube'`得到`You-` · `Tube`，没有别的断点。条目匹配一串连续的字母，不管前后是什么：`'Alice'`涵盖`(Alice,`和`Alice’s`，复合词则逐个部分匹配（`Blender-based`匹配`'Blender'`）。词形变化后的形式是另一个词，需要单独的条目。小写的条目匹配这个词的任何大小写写法（`'blender'`涵盖`Blender`和`BLENDER`）；首字母大写的条目只匹配以大写字母开头的出现，所以`'Rose'`让这个名字保持完整，而`rose`仍交给词典。条目只能包含字母和连字符，其余字符一律丢弃。
+
+在 Sandbox 中，列表下方的「导入」读取一个文件并加入其中的词：每行一个词或用逗号、分号、空格分隔的文本（以 `#`、`%` 或 `//` 开头的行为注释），TeX 的 `\hyphenation{…}` 块，或 JSON 列表（按语言分组的列表全部读入）。断字位置可用连字符、软连字符、断字点（`‧`）、`=` 或 `~` 标出（`~` 是部分排版软件写出的记号，词首的 `~` 表示该词不拆分）。列表中已有的词改用文件中的写法。「导出」把列表存为每行一个词的文本文件，另一本书可直接导入。
+
+`hyphenation.exceptionsByLanguage` 是按语言分开的词表，以语言标签为键（`{ es: ['ca-mi-no'], en: ['Alice'] }`），用于多语种的书：每个词表的读法同 `exceptions`，只用于以该语言词典断字的文本（文档本身的语言，或用另一种语言写的章节、段落）。这里的条目优先于 `exceptions` 中的同一词。共用一部词典的标签共用一个词表。
 
 `hyphenation.capitalized: false`让所有以大写字母开头的词保持完整：专名、首字母缩略词，还有每句的第一个词。这相当于关闭InDesign的“Hyphenate Capitalized Words”开关，也相当于TeX的`\uchyph=0`。`exceptions`中带连字符的条目仍会在所标的连字符处拆分这个词。德语的名词都以大写字母开头，这个开关会让德语文本几乎无词可拆：这时请在`exceptions`中列出要保留的词，或使用`citations.hyphenateNames`。
 

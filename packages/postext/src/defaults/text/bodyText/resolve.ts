@@ -4,7 +4,7 @@ import type { HyphenationConfig, LocaleTag, ResolvedBodyTextConfig, BlockquoteCo
 import { presentTag, isUnhyphenatedLanguage, hyphenationLocaleFor } from '../../../hyphenation/locale.js';
 import { colorsEqual, dimensionsEqual, startEndAsLeftRight, compositionRuleOf } from '../../shared.js';
 import { resolveVerseConfig } from '../verse.js';
-import { normalizeHyphenationExceptions } from '../../../hyphenation/hyphenationExceptions.js';
+import { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from '../../../hyphenation/hyphenationExceptions.js';
 import { withFigureStyle } from '../../../fonts/figureStyle.js';
 import { arabicScript, emphasisAndTashkil, resolveKashida } from './arabic.js';
 import { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, DEFAULT_BODY_TEXT_CONFIG, shortListMaxItemsOf } from './defaults.js';
@@ -49,6 +49,7 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
     : partial?.enabled ?? (isUnhyphenatedLanguage(documentLocale) ? false : D.enabled);
   const locale = hyphenationLocaleFor(requested, enabled);
   const exceptions = normalizeHyphenationExceptions(partial?.exceptions);
+  const exceptionsByLanguage = normalizeExceptionsByLanguage(partial?.exceptionsByLanguage, (tag) => hyphenationLocaleFor(tag, false));
   return {
     enabled,
     locale,
@@ -57,6 +58,7 @@ function resolveHyphenation(partial: HyphenationConfig | undefined, documentLoca
     zone: partial?.zone ?? D.zone,
     compounds: partial?.compounds ?? D.compounds,
     ...(exceptions ? { exceptions } : {}),
+    ...(exceptionsByLanguage ? { exceptionsByLanguage } : {}),
     ...cleanLimits(partial),
     capitalized: partial?.capitalized ?? D.capitalized,
     fewerHyphens: Math.min(10, Math.max(0, Math.round(finite(partial?.fewerHyphens) ?? D.fewerHyphens))),

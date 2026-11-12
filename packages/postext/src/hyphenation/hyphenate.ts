@@ -113,7 +113,7 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
   return eachToken(text, (word) => {
     let ruled = memo.get(word);
     if (ruled === undefined) {
-      ruled = withHyphenationRules(word, hyphenateByDictionary(word, loc), rules);
+      ruled = withHyphenationRules(word, hyphenateByDictionary(word, loc), rules, loc);
       if (memo.size >= WORD_MEMO_SLOTS) memo.clear();
       memo.set(word, ruled);
     }
@@ -187,6 +187,10 @@ export interface HyphenationRules {
    *  word in any case; one with an initial capital matches the occurrences
    *  that start with a capital. */
   exceptions?: readonly string[];
+  /** Lists of one dictionary each (`HyphenationLocale`), read as
+   *  `exceptions` and applied only when that dictionary divides; an entry
+   *  wins over the same word in `exceptions`. */
+  exceptionsByLanguage?: Readonly<Record<string, readonly string[]>>;
   /** `false`: no break inside a word that starts with a capital. */
   capitalized?: boolean;
   /** Names never divided where they start with a capital (the authors a
@@ -195,12 +199,17 @@ export interface HyphenationRules {
   names?: readonly string[];
 }
 
-interface CompiledRules {
-  id: number;
+interface CompiledList {
   /** Break offsets by lower-cased word, for an entry in lower case. */
   anyCase: Map<string, readonly number[]>;
   /** The same for an entry with an initial capital, and the names. */
   capitalised: Map<string, readonly number[]>;
+}
+
+interface CompiledRules extends CompiledList {
+  id: number;
+  /** The lists of one dictionary each (`exceptionsByLanguage`). */
+  byLocale: Map<string, CompiledList>;
   keepCapitalised: boolean;
   /** The ruled form of each token under these rules, per locale: a book
    *  whose builds alternate between two sets (with and without the cited
@@ -235,12 +244,23 @@ function compileRules(rules: HyphenationRules, id: number): CompiledRules {
       if (CAPITAL_START_RE.test(run)) capitalised.set(run.toLowerCase(), NO_POINTS);
     }
   }
-  for (const entry of rules.exceptions ?? []) {
+  compileList(rules.exceptions, { anyCase, capitalised });
+  const byLocale = new Map<string, CompiledList>();
+  for (const [loc, list] of Object.entries(rules.exceptionsByLanguage ?? {})) {
+    const own: CompiledList = { anyCase: new Map(), capitalised: new Map() };
+    compileList(list, own);
+    byLocale.set(loc, own);
+  }
+  return { id, anyCase, capitalised, byLocale, keepCapitalised: rules.capitalized === false, memo: new Map() };
+}
+
+/** The entries of `list` into `into`, a later one for the same word winning. */
+function compileList(list: readonly string[] | undefined, into: CompiledList): void {
+  for (const entry of list ?? []) {
     const { word, points } = readException(entry);
     if (word === '') continue;
-    (CAPITAL_START_RE.test(word) ? capitalised : anyCase).set(word.toLowerCase(), points.length > 0 ? points : NO_POINTS);
+    (CAPITAL_START_RE.test(word) ? into.capitalised : into.anyCase).set(word.toLowerCase(), points.length > 0 ? points : NO_POINTS);
   }
-  return { id, anyCase, capitalised, keepCapitalised: rules.capitalized === false, memo: new Map() };
 }
 
 /** Rule sets by their canonical text: equal rules share one id, which the
@@ -266,16 +286,17 @@ onLimitsEvicted((id) => {
  */
 export function setHyphenationRules(rules?: HyphenationRules): void {
   const exceptions = normalizeHyphenationExceptions(rules?.exceptions);
+  const byLanguage = rules?.exceptionsByLanguage && Object.keys(rules.exceptionsByLanguage).length > 0 ? rules.exceptionsByLanguage : undefined;
   const names = rules?.names && rules.names.length > 0 ? [...new Set(rules.names)].sort() : undefined;
   const keepCapitalised = rules?.capitalized === false;
-  const next = exceptions || names || keepCapitalised
-    ? internRules({ ...(exceptions ? { exceptions } : {}), ...(names ? { names } : {}), ...(keepCapitalised ? { capitalized: false } : {}) })
+  const next = exceptions || byLanguage || names || keepCapitalised
+    ? internRules({ ...(exceptions ? { exceptions } : {}), ...(byLanguage ? { exceptionsByLanguage: byLanguage } : {}), ...(names ? { names } : {}), ...(keepCapitalised ? { capitalized: false } : {}) })
     : undefined;
   activeRules = next;
 }
 
 function internRules(rules: HyphenationRules): CompiledRules {
-  const key = JSON.stringify([rules.exceptions ?? [], rules.names ?? [], rules.capitalized === false]);
+  const key = JSON.stringify([rules.exceptions ?? [], rules.names ?? [], rules.capitalized === false, rules.exceptionsByLanguage ?? {}]);
   let compiled = internedRules.get(key);
   if (!compiled) {
     // A host that edits its list word by word interns one set per edit.
@@ -294,10 +315,12 @@ export function getHyphenationRulesKey(): string {
 
 /** The points a rule gives `run` (a run of letters), or undefined when no
  *  rule names it and the dictionary's stand. */
-function ruledPoints(run: string, rules: CompiledRules): readonly number[] | undefined {
+function ruledPoints(run: string, rules: CompiledRules, loc: string): readonly number[] | undefined {
   const capital = CAPITAL_START_RE.test(run);
   const key = run.normalize('NFC').toLowerCase();
-  const points = (capital ? rules.capitalised.get(key) : undefined) ?? rules.anyCase.get(key);
+  const own = rules.byLocale.get(loc);
+  const points = (own && ((capital ? own.capitalised.get(key) : undefined) ?? own.anyCase.get(key)))
+    ?? (capital ? rules.capitalised.get(key) : undefined) ?? rules.anyCase.get(key);
   if (points) return points.length > 0 && key.length !== run.length ? NO_POINTS : points;
   return capital && rules.keepCapitalised ? NO_POINTS : undefined;
 }
@@ -308,13 +331,13 @@ function ruledPoints(run: string, rules: CompiledRules): readonly number[] | und
  * the entry's own, if it has some, put in. A run next to a soft hyphen the
  * author typed is left alone: that occurrence is already decided.
  */
-function withHyphenationRules(word: string, hyphenated: string, rules: CompiledRules): string {
+function withHyphenationRules(word: string, hyphenated: string, rules: CompiledRules, loc: string): string {
   let edits: Array<{ start: number; end: number; points: readonly number[] }> | undefined;
   for (const m of word.matchAll(LETTER_RUN_RE)) {
     const start = m.index;
     const end = start + m[0].length;
     if (word[start - 1] === SOFT_HYPHEN || word[end] === SOFT_HYPHEN) continue;
-    const points = ruledPoints(m[0], rules);
+    const points = ruledPoints(m[0], rules, loc);
     if (points) (edits ??= []).push({ start, end, points });
   }
   if (!edits) return hyphenated;

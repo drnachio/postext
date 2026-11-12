@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Partició de mots i llengua',
   description: 'Com es parteixen els mots (patrons i excepcions), com es compon el text en bandera, què fixa la llengua del document (les xifres i la direcció del text, entre altres coses) i quines escriptures sap compondre Postext',
   lang: 'ca',
-  lastUpdated: '2026-11-10',
-  readingTime: '24 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '25 min',
   order: 8,
   parent: 'configuration',
   plainSummary: "Aquesta pàgina explica com es parteixen els mots al final de la línia i com sap Postext en quina llengua està escrit el llibre. Pots activar o desactivar la partició de mots i fer una llista de les paraules que no s'han de partir mai. També pots deixar irregular la vora dreta del text en lloc de recta. La llengua del document fixa les regles per partir mots, els noms de les figures i de les taules, les xifres i la direcció del text. Les últimes seccions expliquen quines escriptures sap compondre Postext i com tracta el text àrab.",
@@ -64,6 +64,12 @@ Quan l'alineació del text és `'justify'`, la partició de mots evita que l'esp
       <td><code>string[]</code></td>
       <td>cap</td>
       <td>Paraules que el diccionari no ha de partir, o que només pot partir per on indica l'entrada: <code>'Alice'</code> no es parteix mai, i <code>'You-Tube'</code>, només pel guionet. Vegeu <a href="#mots-que-no-es-divideixen">Mots que no es divideixen</a>.</td>
+    </tr>
+    <tr>
+      <td><code>exceptionsByLanguage</code></td>
+      <td><code>Record&lt;string, string[]&gt;</code></td>
+      <td>cap</td>
+      <td>Llistes d'una llengua cadascuna, per la seva etiqueta: es llegeixen com <code>exceptions</code>, s'apliquen només al text que es divideix amb el diccionari d'aquesta llengua i guanyen al mateix mot a <code>exceptions</code>. Vegeu <a href="#mots-que-no-es-divideixen">Mots que no es divideixen</a>.</td>
     </tr>
     <tr>
       <td><code>capitalized</code></td>
@@ -147,6 +153,10 @@ Les paraules de menys de 5 lletres no es parteixen mai, llevat del català, on n
 Un diccionari parteix un nom com qualsevol altra paraula: `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Hi ha tres paràmetres que deixen senceres les paraules, i tots tres, per defecte, fan el que faci el diccionari.
 
 `hyphenation.exceptions` és una llista de paraules, com el `\hyphenation{…}` de TeX. Una entrada escrita sense guionet no es parteix mai; una entrada escrita amb guionets només es parteix per aquests punts, de manera que `'You-Tube'` dona `You-` · `Tube` i res més. Una entrada coincideix amb una seqüència de lletres, tingui el que tingui al voltant: `'Alice'` val per a `(Alice,` i per a `Alice’s`, i els compostos es comparen part per part (`Blender-based` coincideix amb `'Blender'`). Una forma flexionada és una altra paraula i necessita una entrada pròpia. Una entrada en minúscules val per a la paraula escrita amb qualsevol combinació de majúscules i minúscules (`'blender'` cobreix `Blender` i `BLENDER`); una entrada amb majúscula inicial només val per a les aparicions que comencen amb majúscula, de manera que `'Rose'` deixa sencer el nom i deixa `rose` en mans del diccionari. Les entrades només poden contenir lletres i guionets; la resta es descarta.
+
+Al Sandbox, **Importa**, sota la llista, llegeix un fitxer i n'afegeix els mots: text amb un mot per línia o separats per comes, punts i comes o espais, amb línies de comentari que comencen per `#`, `%` o `//`; un bloc `\hyphenation{…}` de TeX, o una llista JSON (de les llistes per llengua se'n prenen totes). Un tall pot anar marcat amb guionet, guionet tou, punt de divisió (`‧`), `=` o `~` (les titlles que escriuen alguns programes de maquetació; una `~` al començament deixa el mot sencer). Un mot que ja és a la llista pren la forma del fitxer. **Exporta** desa la llista en un fitxer de text, un mot per línia, que un altre llibre importa tal qual.
+
+`hyphenation.exceptionsByLanguage` aplega llistes d'una llengua cadascuna, per la seva etiqueta (`{ es: ['ca-mi-no'], en: ['Alice'] }`), per a un llibre en diverses llengües: cada llista es llegeix com `exceptions` i s'aplica només al text que es divideix amb el diccionari d'aquesta llengua, el del document o el d'un capítol o un passatge en una altra llengua. Una entrada d'aquí guanya al mateix mot a `exceptions`. Les etiquetes que comparteixen diccionari comparteixen llista.
 
 `hyphenation.capitalized: false` deixa sencera tota paraula que comença amb majúscula: els noms, les sigles i també la primera paraula de cada frase. Equival a desactivar l'opció «Hyphenate Capitalized Words» d'InDesign, i al `\uchyph=0` de TeX. Una entrada d'`exceptions` amb guionets continua partint la paraula per aquests punts. L'alemany escriu amb majúscula tots els substantius, així que aquest paràmetre deixaria un text alemany gairebé sense paraules per partir: en alemany, llista les paraules a `exceptions` o fes servir `citations.hyphenateNames`.
 
