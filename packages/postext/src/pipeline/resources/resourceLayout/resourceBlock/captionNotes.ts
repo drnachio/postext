@@ -6,7 +6,7 @@ import { dimensionToPx } from '../../../../units.js';
 import { buildFontString, measureRichBlock } from '../../../../measure/index.js';
 import { annotatedSpans, resolveSwatchSpans, resolveRefSpans } from '../refSpans.js';
 import { resolveChipSpans, chipContextOf } from '../../../text/chips.js';
-import { snippetMathSpans, measureSnippetLines, snippetBreaking } from '../snippets.js';
+import { snippetMathSpans, measureSnippetLines, snippetRuleBreaking } from '../snippets.js';
 import { resolveCitationSpans } from '../../../references/citations.js';
 import { withSnippetInlineCode } from '../../../code/codeInline.js';
 import { parseInlineSnippetSpans } from '../../../../parse/inlineSnippet.js';
@@ -78,7 +78,8 @@ export function createCaptionNotes(deps: CaptionNotesDeps) {
 
   // --- Note --------------------------------------------------------------
   const noteFontPx = dimensionToPx(cs.note.fontSize, dpi);
-  const noteLineHeightPx = noteFontPx * lineHeightRatio;
+  // Its own leading (`note.lineHeight`), else the body's in proportion.
+  const noteLineHeightPx = cs.note.lineHeight ? dimensionToPx(cs.note.lineHeight, dpi, noteFontPx) : noteFontPx * lineHeightRatio;
   const noteGapPx = dimensionToPx(cs.note.gap, dpi, noteFontPx);
   const noteFontString = buildFontString(cs.fontFamily, noteFontPx, normalWeight);
   const noteBoldFontString = buildFontString(cs.fontFamily, noteFontPx, boldWeight);
@@ -112,7 +113,7 @@ export function createCaptionNotes(deps: CaptionNotesDeps) {
       [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
       Math.max(1, input.captionAside?.width ?? inside?.captionWidth ?? input.captionWidth ?? columnWidth),
       noteLineHeightPx,
-      { textAlign: cs.note.align, ...snippetBreaking(cs.note.align, cs.note.bodyBreaking, resolved) },
+      { textAlign: cs.note.align, ...snippetRuleBreaking(cs.note.align, resolved, cs.note.hyphenation ? { fontSizePx: noteFontPx } : undefined) },
     );
   }
   const noteHeight = state.measuredNote.length > 0

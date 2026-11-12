@@ -134,6 +134,11 @@ export interface TableStyleConfig {
   /** Text of that marker, set right-aligned under the slice in the note
    *  style. Defaults to `"Continued"` (`"Continúa"` for Spanish documents). */
   continuesMarker?: string;
+  /** Set the cells as running text (see {@link CaptionStyleConfig.hyphenation}):
+   *  broken whole on the optimal line breaker, their words divided when
+   *  `bodyText.hyphenation.ragged` is on (cells are set ragged). Default
+   *  `false`: broken line by line with no word divided, as before 1.80. */
+  hyphenation?: boolean;
 }
 
 /** A named table style (`PostextConfig.tableStyles`), picked per table by
@@ -213,6 +218,7 @@ export interface ResolvedTableStyleConfig {
   continuedSuffix: string;
   continuesMarkerEnabled: boolean;
   continuesMarker: string;
+  hyphenation: boolean;
 }
 
 /** Where a resource caption sits relative to the figure body. */
@@ -232,9 +238,12 @@ export interface CaptionNoteStyleConfig {
   gap?: Dimension;
   /** Horizontal alignment of the note. Default `'left'`. */
   align?: TextAlignKeyword;
-  /** Break the note as the body text is broken (see
-   *  {@link CaptionStyleConfig.bodyBreaking}). Default `false`. */
-  bodyBreaking?: boolean;
+  /** Set the note as running text (see {@link CaptionStyleConfig.hyphenation}).
+   *  Default `false`. */
+  hyphenation?: boolean;
+  /** The note's leading; `em` relative to the note's own size. Unset: the
+   *  body text's leading in proportion to the note's size. */
+  lineHeight?: Dimension;
 }
 
 /** The look of a caption's note with every default filled in. */
@@ -244,7 +253,8 @@ export interface ResolvedCaptionNoteStyleConfig {
   italic: boolean;
   gap: Dimension;
   align: TextAlign;
-  bodyBreaking: boolean;
+  hyphenation: boolean;
+  lineHeight?: Dimension;
 }
 
 /** User-facing styling for resource captions (the numbered label such as
@@ -265,13 +275,15 @@ export interface CaptionStyleConfig {
   color?: ColorValue;
   /** Horizontal alignment of caption text. Default `'left'`. */
   align?: TextAlignKeyword;
-  /** Break the caption as the body text is broken: on the optimal line
-   *  breaker when the body uses it (within the body's word-spacing limits
-   *  when justified, with the ragged right-hand glue otherwise), its words
-   *  divided when the body's hyphenation is on, under the body's
-   *  hyphenation and stack rules. The numbered label is never divided.
-   *  Default `false`: line by line with no word divided, as before. */
-  bodyBreaking?: boolean;
+  /** Hyphenate when justified — and, when `bodyText.hyphenation.ragged` is
+   *  on, when ragged too — as a paragraph style with `hyphenation: true`
+   *  does: with the body's dictionary and hyphen rules, also when
+   *  `bodyText.hyphenation.enabled` is off. The caption is then broken
+   *  whole on the optimal line breaker when `bodyText.optimalLineBreaking`
+   *  is on (within the body's word-spacing limits when justified), as
+   *  running text is. The numbered label is never divided. Default
+   *  `false`: broken line by line with no word divided, as before 1.80. */
+  hyphenation?: boolean;
   /** The caption's leading. `em` is relative to its own font size.
    *  Unset: the body text's leading in proportion to the caption's size. */
   lineHeight?: Dimension;
@@ -313,7 +325,7 @@ export interface ResolvedCaptionStyleConfig {
   fontSize: Dimension;
   color: ColorValue;
   align: TextAlign;
-  bodyBreaking: boolean;
+  hyphenation: boolean;
   lineHeight?: Dimension;
   gap: Dimension;
   labelBold: boolean;

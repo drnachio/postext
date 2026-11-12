@@ -56,7 +56,7 @@ describe('caption style defaults — position / bar / note', () => {
     expect(r.backgroundEnabled).toBe(true);
     expect(r.background.hex).toBe('#123456');
     expect(r.padding).toEqual({ value: 0.5, unit: 'em' });
-    expect(r.note).toEqual({ ...explicit.note, bodyBreaking: false });
+    expect(r.note).toEqual({ ...explicit.note, hyphenation: false });
   });
 });
 

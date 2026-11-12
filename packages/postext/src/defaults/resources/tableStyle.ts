@@ -51,6 +51,7 @@ const STATIC_DEFAULTS = {
   overflow: 'split' as const,
   splitInline: true,
   continuesMarkerEnabled: true,
+  hyphenation: false,
 } satisfies Partial<ResolvedTableStyleConfig>;
 
 /** Localised continuation strings: the caption suffix of a continued slice
@@ -133,6 +134,7 @@ export function resolveTableStyleConfig(
     continuedSuffix: p.continuedSuffix ?? strings.continuedSuffix,
     continuesMarkerEnabled: p.continuesMarkerEnabled ?? STATIC_DEFAULTS.continuesMarkerEnabled,
     continuesMarker: p.continuesMarker ?? strings.continuesMarker,
+    hyphenation: p.hyphenation ?? STATIC_DEFAULTS.hyphenation,
   };
 }
 
@@ -192,6 +194,7 @@ export function stripTableStyleDefaults(
   if (tableStyle.overflow !== undefined && tableStyle.overflow !== STATIC_DEFAULTS.overflow) { r.overflow = tableStyle.overflow; has = true; }
   if (tableStyle.splitInline !== undefined && tableStyle.splitInline !== STATIC_DEFAULTS.splitInline) { r.splitInline = tableStyle.splitInline; has = true; }
   if (tableStyle.continuesMarkerEnabled !== undefined && tableStyle.continuesMarkerEnabled !== STATIC_DEFAULTS.continuesMarkerEnabled) { r.continuesMarkerEnabled = tableStyle.continuesMarkerEnabled; has = true; }
+  if (tableStyle.hyphenation !== undefined && tableStyle.hyphenation !== STATIC_DEFAULTS.hyphenation) { r.hyphenation = tableStyle.hyphenation; has = true; }
 
   return has ? r : undefined;
 }
