@@ -52,7 +52,7 @@ export function createFigureRules(deps: FigureRulesDeps) {
     cap.backgroundEnabled && `padding: ${round(px(cap.padding, capPx) / capPx)}em`,
     `margin: ${round(px(cap.gap, capPx) / capPx)}em 0`,
     cap.lineHeight && lh(cap.lineHeight, capPx),
-    // `hyphenation: true` (1.80): the body's hyphens, as a paragraph style.
+    // `hyphenation: true` (1.81): the body's hyphens, as a paragraph style.
     !cap.hyphenation && 'hyphens: manual',
   ]));
   out.push(rule('caption.pt-caption-below', ['caption-side: bottom']));

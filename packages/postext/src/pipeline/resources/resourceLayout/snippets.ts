@@ -126,7 +126,7 @@ export interface SnippetHyphenation {
 
 /**
  * How a caption, a note or a table cell set in `align` is broken. Line by
- * line with no word divided, as before 1.80, unless a line-edge rule is
+ * line with no word divided, as before 1.81, unless a line-edge rule is
  * avoided ({@link lineEdgeBreaking}: stacks, a citation or a lone operator
  * at a line edge) or its style hyphenates (`hyphenation`, see
  * {@link SnippetHyphenation}). A style that hyphenates breaks the text whole

@@ -587,7 +587,7 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
-- **A book from the Books panel.** `sandbox_export` with `format` `pdf`, `epub` or `html` and `book: { "kind": "project", "id": "…", "language": "en" }` writes a project as its row's **Download as …** does (since postext 1.80): the whole book in that language, laid out apart from the book on screen, which is saved first and left as it is. `html` without `book` writes the project on screen. The answer gives the file, its pages, the language written and the warnings; `epubLayout` chooses the rendition of an EPUB.
+- **A book from the Books panel.** `sandbox_export` with `format` `pdf`, `epub` or `html` and `book: { "kind": "project", "id": "…", "language": "en" }` writes a project as its row's **Download as …** does (since postext 1.81): the whole book in that language, laid out apart from the book on screen, which is saved first and left as it is. `html` without `book` writes the project on screen. The answer gives the file, its pages, the language written and the warnings; `epubLayout` chooses the rendition of an EPUB.
 - **Import a `.postext` file** with `sandbox_import_book` (`inspect: true` says
   which languages it carries without importing it).
 - **Make a book from an InDesign document** with `sandbox_import_idml`. With

@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>يصفّ الخلايا كما يُصفّ النص الأساسي، كما يفعل <code>captionStyle.hyphenation</code> للتعليق: تُقطَّع كل خلية كاملة بالخوارزمية المثلى. الخلايا غير مضبوطة، فلا تُقسَّم كلماتها إلا إذا كان <code>bodyText.hyphenation.ragged</code> مفعّلًا. مع <code>false</code> تُقطَّع الخلايا سطرًا بسطر دون تقسيم أي كلمة. منذ postext 1.80.</td>
+      <td>يصفّ الخلايا كما يُصفّ النص الأساسي، كما يفعل <code>captionStyle.hyphenation</code> للتعليق: تُقطَّع كل خلية كاملة بالخوارزمية المثلى. الخلايا غير مضبوطة، فلا تُقسَّم كلماتها إلا إذا كان <code>bodyText.hyphenation.ragged</code> مفعّلًا. مع <code>false</code> تُقطَّع الخلايا سطرًا بسطر دون تقسيم أي كلمة. منذ postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -672,13 +672,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>يقسّم كلمات التعليق بالواصلة كما يفعل نمط فقرة فيه <code>hyphenation: true</code>: عند الضبط، وفي النص غير المضبوط إذا كان <code>bodyText.hyphenation.ragged</code> مفعّلًا، بقاموس النص الأساسي وقواعد تقسيمه، حتى حين يكون <code>bodyText.hyphenation.enabled</code> موقوفًا. يُقطَّع التعليق حينئذٍ كاملًا بالخوارزمية المثلى (<code>bodyText.optimalLineBreaking</code>)، ضمن حدود المسافات بين الكلمات في النص الأساسي عند الضبط، ووفق قواعده في الدرج وأطراف الأسطر (<code>bodyText.stacks</code>، <code>citationBreaks</code>، <code>operatorBreaks</code>). لا تُقسَّم التسمية المرقّمة أبدًا. مع <code>false</code> يُقطَّع التعليق سطرًا بسطر دون تقسيم أي كلمة. منذ postext 1.80.</td>
+      <td>يقسّم كلمات التعليق بالواصلة كما يفعل نمط فقرة فيه <code>hyphenation: true</code>: عند الضبط، وفي النص غير المضبوط إذا كان <code>bodyText.hyphenation.ragged</code> مفعّلًا، بقاموس النص الأساسي وقواعد تقسيمه، حتى حين يكون <code>bodyText.hyphenation.enabled</code> موقوفًا. يُقطَّع التعليق حينئذٍ كاملًا بالخوارزمية المثلى (<code>bodyText.optimalLineBreaking</code>)، ضمن حدود المسافات بين الكلمات في النص الأساسي عند الضبط، ووفق قواعده في الدرج وأطراف الأسطر (<code>bodyText.stacks</code>، <code>citationBreaks</code>، <code>operatorBreaks</code>). لا تُقسَّم التسمية المرقّمة أبدًا. مع <code>false</code> يُقطَّع التعليق سطرًا بسطر دون تقسيم أي كلمة. منذ postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>تباعد النص الأساسي بالنسبة نفسها</td>
-      <td>تباعد أسطر التعليق. وحدة <code>em</code> نسبية إلى حجم التعليق نفسه. منذ postext 1.80.</td>
+      <td>تباعد أسطر التعليق. وحدة <code>em</code> نسبية إلى حجم التعليق نفسه. منذ postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -801,13 +801,13 @@ const config: PostextConfig = {
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>يقسّم كلمات الملاحظة بالواصلة، كما يفعل <code>hyphenation</code> للتعليق. منذ postext 1.80.</td>
+      <td>يقسّم كلمات الملاحظة بالواصلة، كما يفعل <code>hyphenation</code> للتعليق. منذ postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>تباعد النص الأساسي بالنسبة نفسها</td>
-      <td>تباعد أسطر الملاحظة. وحدة <code>em</code> نسبية إلى حجم الملاحظة نفسها. منذ postext 1.80.</td>
+      <td>تباعد أسطر الملاحظة. وحدة <code>em</code> نسبية إلى حجم الملاحظة نفسها. منذ postext 1.81.</td>
     </tr>
   </tbody>
 </table>

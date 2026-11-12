@@ -589,7 +589,7 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
-- **Un livre depuis le panneau Livres.** `sandbox_export` avec `format` `pdf`, `epub` ou `html` et `book: { "kind": "project", "id": "…", "language": "en" }` écrit un projet comme le fait **Télécharger en …** sur sa ligne (depuis postext 1.80) : le livre entier dans cette langue, mis en page à part du livre à l’écran, qui est enregistré avant et reste tel quel. `html` sans `book` écrit le projet à l’écran. La réponse donne le fichier, ses pages, la langue écrite et les avertissements ; `epubLayout` choisit la présentation d’un EPUB.
+- **Un livre depuis le panneau Livres.** `sandbox_export` avec `format` `pdf`, `epub` ou `html` et `book: { "kind": "project", "id": "…", "language": "en" }` écrit un projet comme le fait **Télécharger en …** sur sa ligne (depuis postext 1.81) : le livre entier dans cette langue, mis en page à part du livre à l’écran, qui est enregistré avant et reste tel quel. `html` sans `book` écrit le projet à l’écran. La réponse donne le fichier, ses pages, la langue écrite et les avertissements ; `epubLayout` choisit la présentation d’un EPUB.
 - **Importer un fichier `.postext`** avec `sandbox_import_book` (`inspect: true` indique
   quelles langues il contient sans l’importer).
 - **Créer un livre à partir d’un document InDesign** avec `sandbox_import_idml`. Avec

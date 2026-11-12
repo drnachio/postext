@@ -137,7 +137,7 @@ export interface TableStyleConfig {
   /** Set the cells as running text (see {@link CaptionStyleConfig.hyphenation}):
    *  broken whole on the optimal line breaker, their words divided when
    *  `bodyText.hyphenation.ragged` is on (cells are set ragged). Default
-   *  `false`: broken line by line with no word divided, as before 1.80. */
+   *  `false`: broken line by line with no word divided, as before 1.81. */
   hyphenation?: boolean;
 }
 
@@ -282,7 +282,7 @@ export interface CaptionStyleConfig {
    *  whole on the optimal line breaker when `bodyText.optimalLineBreaking`
    *  is on (within the body's word-spacing limits when justified), as
    *  running text is. The numbered label is never divided. Default
-   *  `false`: broken line by line with no word divided, as before 1.80. */
+   *  `false`: broken line by line with no word divided, as before 1.81. */
   hyphenation?: boolean;
   /** The caption's leading. `em` is relative to its own font size.
    *  Unset: the body text's leading in proportion to the caption's size. */

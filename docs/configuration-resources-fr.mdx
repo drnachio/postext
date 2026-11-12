@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Compose les cellules comme le texte courant, comme <code>captionStyle.hyphenation</code> la légende : chaque cellule est coupée en entier par l’algorithme optimal. Les cellules sont en drapeau : leurs mots ne sont coupés que si <code>bodyText.hyphenation.ragged</code> est activé. <code>false</code> coupe les cellules ligne par ligne, sans couper de mot. Depuis postext 1.80.</td>
+      <td>Compose les cellules comme le texte courant, comme <code>captionStyle.hyphenation</code> la légende : chaque cellule est coupée en entier par l’algorithme optimal. Les cellules sont en drapeau : leurs mots ne sont coupés que si <code>bodyText.hyphenation.ragged</code> est activé. <code>false</code> coupe les cellules ligne par ligne, sans couper de mot. Depuis postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -672,13 +672,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Coupe les mots de la légende comme un style de paragraphe avec <code>hyphenation: true</code> : en justifié, et en drapeau si <code>bodyText.hyphenation.ragged</code> est activé, avec le dictionnaire et les règles de césure du texte courant, même quand <code>bodyText.hyphenation.enabled</code> est désactivé. La légende est alors coupée en entier par l’algorithme optimal (<code>bodyText.optimalLineBreaking</code>), dans les limites d’espacement du texte courant en justifié et selon ses règles d’échelles et de bords de ligne (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L’étiquette numérotée n’est jamais coupée. <code>false</code> coupe la légende ligne par ligne, sans couper de mot. Depuis postext 1.80.</td>
+      <td>Coupe les mots de la légende comme un style de paragraphe avec <code>hyphenation: true</code> : en justifié, et en drapeau si <code>bodyText.hyphenation.ragged</code> est activé, avec le dictionnaire et les règles de césure du texte courant, même quand <code>bodyText.hyphenation.enabled</code> est désactivé. La légende est alors coupée en entier par l’algorithme optimal (<code>bodyText.optimalLineBreaking</code>), dans les limites d’espacement du texte courant en justifié et selon ses règles d’échelles et de bords de ligne (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L’étiquette numérotée n’est jamais coupée. <code>false</code> coupe la légende ligne par ligne, sans couper de mot. Depuis postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>celui du texte courant, en proportion</td>
-      <td>L’interlignage de la légende. <code>em</code> se mesure sur le corps de la légende. Depuis postext 1.80.</td>
+      <td>L’interlignage de la légende. <code>em</code> se mesure sur le corps de la légende. Depuis postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -801,13 +801,13 @@ Le sous-objet `note` règle `Resource.note`, un court texte (source, crédits, r
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Coupe les mots de la note, comme <code>hyphenation</code> pour la légende. Depuis postext 1.80.</td>
+      <td>Coupe les mots de la note, comme <code>hyphenation</code> pour la légende. Depuis postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>celui du texte courant, en proportion</td>
-      <td>L’interlignage de la note. <code>em</code> se mesure sur le corps de la note. Depuis postext 1.80.</td>
+      <td>L’interlignage de la note. <code>em</code> se mesure sur le corps de la note. Depuis postext 1.81.</td>
     </tr>
   </tbody>
 </table>

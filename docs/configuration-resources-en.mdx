@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Set the cells as running text, as <code>captionStyle.hyphenation</code> sets a caption: each cell is broken whole on the optimal line breaker. Cells are ragged, so their words are divided only when <code>bodyText.hyphenation.ragged</code> is on. <code>false</code> breaks the cells line by line and divides no word. Since postext 1.80.</td>
+      <td>Set the cells as running text, as <code>captionStyle.hyphenation</code> sets a caption: each cell is broken whole on the optimal line breaker. Cells are ragged, so their words are divided only when <code>bodyText.hyphenation.ragged</code> is on. <code>false</code> breaks the cells line by line and divides no word. Since postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -672,13 +672,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Hyphenate the caption as a paragraph style with <code>hyphenation: true</code> does: when justified, and when ragged if <code>bodyText.hyphenation.ragged</code> is on, with the body's dictionary and hyphen rules, also when <code>bodyText.hyphenation.enabled</code> is off. The caption is then broken whole on the optimal line breaker (<code>bodyText.optimalLineBreaking</code>), within the body's word-spacing limits when justified, under the body's stack and line-edge rules (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). The numbered label is never divided. <code>false</code> breaks the caption line by line and divides no word. Since postext 1.80.</td>
+      <td>Hyphenate the caption as a paragraph style with <code>hyphenation: true</code> does: when justified, and when ragged if <code>bodyText.hyphenation.ragged</code> is on, with the body's dictionary and hyphen rules, also when <code>bodyText.hyphenation.enabled</code> is off. The caption is then broken whole on the optimal line breaker (<code>bodyText.optimalLineBreaking</code>), within the body's word-spacing limits when justified, under the body's stack and line-edge rules (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). The numbered label is never divided. <code>false</code> breaks the caption line by line and divides no word. Since postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>the body's leading, in proportion</td>
-      <td>The caption's leading. <code>em</code> is relative to the caption's own size. Since postext 1.80.</td>
+      <td>The caption's leading. <code>em</code> is relative to the caption's own size. Since postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -801,13 +801,13 @@ The `note` sub-object styles `Resource.note`, a short run (source, credits, a re
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Hyphenate the note, as <code>hyphenation</code> does for the caption. Since postext 1.80.</td>
+      <td>Hyphenate the note, as <code>hyphenation</code> does for the caption. Since postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>the body's leading, in proportion</td>
-      <td>The note's leading. <code>em</code> is relative to the note's own size. Since postext 1.80.</td>
+      <td>The note's leading. <code>em</code> is relative to the note's own size. Since postext 1.81.</td>
     </tr>
   </tbody>
 </table>

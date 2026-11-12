@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Compon les cel·les com a text corregut, com <code>captionStyle.hyphenation</code> el peu: cada cel·la es talla sencera amb el partidor òptim. Les cel·les van en bandera, així que les seves paraules només es divideixen amb <code>bodyText.hyphenation.ragged</code> actiu. <code>false</code> talla les cel·les línia a línia sense dividir paraules. Des de postext 1.80.</td>
+      <td>Compon les cel·les com a text corregut, com <code>captionStyle.hyphenation</code> el peu: cada cel·la es talla sencera amb el partidor òptim. Les cel·les van en bandera, així que les seves paraules només es divideixen amb <code>bodyText.hyphenation.ragged</code> actiu. <code>false</code> talla les cel·les línia a línia sense dividir paraules. Des de postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -671,13 +671,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Parteix el peu com ho fa un estil de paràgraf amb <code>hyphenation: true</code>: justificat, i en bandera si <code>bodyText.hyphenation.ragged</code> és actiu, amb el diccionari i les regles de partició del text general, també amb <code>bodyText.hyphenation.enabled</code> desactivat. El peu es talla llavors sencer amb el partidor òptim (<code>bodyText.optimalLineBreaking</code>), dins dels límits d'espaiat del text general en justificar i amb les seves regles d'escales i de vores de línia (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L'etiqueta numerada no es parteix mai. <code>false</code> talla el peu línia a línia sense dividir paraules. Des de postext 1.80.</td>
+      <td>Parteix el peu com ho fa un estil de paràgraf amb <code>hyphenation: true</code>: justificat, i en bandera si <code>bodyText.hyphenation.ragged</code> és actiu, amb el diccionari i les regles de partició del text general, també amb <code>bodyText.hyphenation.enabled</code> desactivat. El peu es talla llavors sencer amb el partidor òptim (<code>bodyText.optimalLineBreaking</code>), dins dels límits d'espaiat del text general en justificar i amb les seves regles d'escales i de vores de línia (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L'etiqueta numerada no es parteix mai. <code>false</code> talla el peu línia a línia sense dividir paraules. Des de postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>el del text general, en proporció</td>
-      <td>L'interlineat del peu. <code>em</code> es mesura sobre el cos del mateix peu. Des de postext 1.80.</td>
+      <td>L'interlineat del peu. <code>em</code> es mesura sobre el cos del mateix peu. Des de postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -800,13 +800,13 @@ El subobjecte `note` dona estil a `Resource.note`, una línia breu (font, crèdi
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Parteix la nota, com <code>hyphenation</code> el peu. Des de postext 1.80.</td>
+      <td>Parteix la nota, com <code>hyphenation</code> el peu. Des de postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>el del text general, en proporció</td>
-      <td>L'interlineat de la nota. <code>em</code> es mesura sobre el cos de la mateixa nota. Des de postext 1.80.</td>
+      <td>L'interlineat de la nota. <code>em</code> es mesura sobre el cos de la mateixa nota. Des de postext 1.81.</td>
     </tr>
   </tbody>
 </table>

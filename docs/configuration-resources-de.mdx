@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Setzt die Zellen wie Fließtext, wie <code>captionStyle.hyphenation</code> die Legende: Jede Zelle wird als Ganzes mit dem optimalen Zeilenumbruch umbrochen. Zellen stehen im Flattersatz, ihre Wörter werden also nur getrennt, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist. <code>false</code> bricht die Zellen Zeile für Zeile um und trennt kein Wort. Seit postext 1.80.</td>
+      <td>Setzt die Zellen wie Fließtext, wie <code>captionStyle.hyphenation</code> die Legende: Jede Zelle wird als Ganzes mit dem optimalen Zeilenumbruch umbrochen. Zellen stehen im Flattersatz, ihre Wörter werden also nur getrennt, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist. <code>false</code> bricht die Zellen Zeile für Zeile um und trennt kein Wort. Seit postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -672,13 +672,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Trennt die Legende wie ein Absatzformat mit <code>hyphenation: true</code>: im Blocksatz, und im Flattersatz, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist, mit dem Wörterbuch und den Trennregeln des Grundtexts, auch wenn <code>bodyText.hyphenation.enabled</code> aus ist. Die Legende wird dann als Ganzes mit dem optimalen Zeilenumbruch umbrochen (<code>bodyText.optimalLineBreaking</code>), im Blocksatz innerhalb der Wortabstandsgrenzen des Grundtexts und nach dessen Treppen- und Zeilenrandregeln (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). Die Nummernbezeichnung wird nie getrennt. <code>false</code> bricht die Legende Zeile für Zeile um und trennt kein Wort. Seit postext 1.80.</td>
+      <td>Trennt die Legende wie ein Absatzformat mit <code>hyphenation: true</code>: im Blocksatz, und im Flattersatz, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist, mit dem Wörterbuch und den Trennregeln des Grundtexts, auch wenn <code>bodyText.hyphenation.enabled</code> aus ist. Die Legende wird dann als Ganzes mit dem optimalen Zeilenumbruch umbrochen (<code>bodyText.optimalLineBreaking</code>), im Blocksatz innerhalb der Wortabstandsgrenzen des Grundtexts und nach dessen Treppen- und Zeilenrandregeln (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). Die Nummernbezeichnung wird nie getrennt. <code>false</code> bricht die Legende Zeile für Zeile um und trennt kein Wort. Seit postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>der des Grundtexts, im Verhältnis</td>
-      <td>Der Zeilenabstand der Legende. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.80.</td>
+      <td>Der Zeilenabstand der Legende. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -801,13 +801,13 @@ Das Unterobjekt `note` gestaltet `Resource.note`, einen kurzen Text (Quelle, Bil
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Trennt die Anmerkung, wie <code>hyphenation</code> die Legende. Seit postext 1.80.</td>
+      <td>Trennt die Anmerkung, wie <code>hyphenation</code> die Legende. Seit postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>der des Grundtexts, im Verhältnis</td>
-      <td>Der Zeilenabstand der Anmerkung. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.80.</td>
+      <td>Der Zeilenabstand der Anmerkung. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.81.</td>
     </tr>
   </tbody>
 </table>

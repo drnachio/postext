@@ -476,7 +476,7 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Compone le celle come il testo corrente, come <code>captionStyle.hyphenation</code> la didascalia: ogni cella viene spezzata per intero dall’algoritmo ottimale. Le celle sono in bandiera, quindi le loro parole si dividono solo con <code>bodyText.hyphenation.ragged</code> attivo. <code>false</code> spezza le celle riga per riga senza dividere parole. Da postext 1.80.</td>
+      <td>Compone le celle come il testo corrente, come <code>captionStyle.hyphenation</code> la didascalia: ogni cella viene spezzata per intero dall’algoritmo ottimale. Le celle sono in bandiera, quindi le loro parole si dividono solo con <code>bodyText.hyphenation.ragged</code> attivo. <code>false</code> spezza le celle riga per riga senza dividere parole. Da postext 1.81.</td>
     </tr>
   </tbody>
 </table>
@@ -672,13 +672,13 @@ const config: PostextConfig = {
       <td><code>hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Sillaba la didascalia come uno stile di paragrafo con <code>hyphenation: true</code>: in giustificato, e in bandiera se <code>bodyText.hyphenation.ragged</code> è attivo, con il dizionario e le regole di sillabazione del testo corrente, anche con <code>bodyText.hyphenation.enabled</code> disattivato. La didascalia viene allora spezzata per intero dall’algoritmo ottimale (<code>bodyText.optimalLineBreaking</code>), entro i limiti di spaziatura del testo corrente in giustificato e con le sue regole di scale e di bordi di riga (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L’etichetta numerata non viene mai divisa. <code>false</code> spezza la didascalia riga per riga senza dividere parole. Da postext 1.80.</td>
+      <td>Sillaba la didascalia come uno stile di paragrafo con <code>hyphenation: true</code>: in giustificato, e in bandiera se <code>bodyText.hyphenation.ragged</code> è attivo, con il dizionario e le regole di sillabazione del testo corrente, anche con <code>bodyText.hyphenation.enabled</code> disattivato. La didascalia viene allora spezzata per intero dall’algoritmo ottimale (<code>bodyText.optimalLineBreaking</code>), entro i limiti di spaziatura del testo corrente in giustificato e con le sue regole di scale e di bordi di riga (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). L’etichetta numerata non viene mai divisa. <code>false</code> spezza la didascalia riga per riga senza dividere parole. Da postext 1.81.</td>
     </tr>
     <tr>
       <td><code>lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>quella del testo corrente, in proporzione</td>
-      <td>L’interlinea della didascalia. <code>em</code> si misura sul corpo della didascalia. Da postext 1.80.</td>
+      <td>L’interlinea della didascalia. <code>em</code> si misura sul corpo della didascalia. Da postext 1.81.</td>
     </tr>
     <tr>
       <td><code>gap</code></td>
@@ -801,13 +801,13 @@ Il sotto-oggetto `note` dà stile a `Resource.note`, un breve testo (fonte, cred
       <td><code>note.hyphenation</code></td>
       <td><code>boolean</code></td>
       <td><code>false</code></td>
-      <td>Sillaba la nota, come <code>hyphenation</code> la didascalia. Da postext 1.80.</td>
+      <td>Sillaba la nota, come <code>hyphenation</code> la didascalia. Da postext 1.81.</td>
     </tr>
     <tr>
       <td><code>note.lineHeight</code></td>
       <td><code>Dimension</code></td>
       <td>quella del testo corrente, in proporzione</td>
-      <td>L’interlinea della nota. <code>em</code> si misura sul corpo della nota. Da postext 1.80.</td>
+      <td>L’interlinea della nota. <code>em</code> si misura sul corpo della nota. Da postext 1.81.</td>
     </tr>
   </tbody>
 </table>

@@ -599,7 +599,7 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
-- **Un libro desde el panel Libros.** `sandbox_export` con `format` `pdf`, `epub` o `html` y `book: { "kind": "project", "id": "…", "language": "en" }` escribe un proyecto como lo hace **Descargar en …** de su fila (desde postext 1.80): el libro entero en ese idioma, maquetado aparte del libro en pantalla, que se guarda antes y queda como está. `html` sin `book` escribe el proyecto en pantalla. La respuesta da el archivo, sus páginas, el idioma escrito y los avisos; `epubLayout` elige la presentación de un EPUB.
+- **Un libro desde el panel Libros.** `sandbox_export` con `format` `pdf`, `epub` o `html` y `book: { "kind": "project", "id": "…", "language": "en" }` escribe un proyecto como lo hace **Descargar en …** de su fila (desde postext 1.81): el libro entero en ese idioma, maquetado aparte del libro en pantalla, que se guarda antes y queda como está. `html` sin `book` escribe el proyecto en pantalla. La respuesta da el archivo, sus páginas, el idioma escrito y los avisos; `epubLayout` elige la presentación de un EPUB.
 - **Importar un archivo `.postext`** con `sandbox_import_book` (`inspect: true`
   dice qué idiomas trae sin importarlo).
 - **Hacer un libro a partir de un documento de InDesign** con

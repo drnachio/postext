@@ -589,7 +589,7 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
-- **Un libro dal pannello Libri.** `sandbox_export` con `format` `pdf`, `epub` o `html` e `book: { "kind": "project", "id": "…", "language": "en" }` scrive un progetto come fa **Scarica in …** della sua riga (da postext 1.80): l’intero libro in quella lingua, impaginato a parte rispetto al libro sullo schermo, che viene salvato prima e resta com’è. `html` senza `book` scrive il progetto sullo schermo. La risposta dà il file, le sue pagine, la lingua scritta e gli avvisi; `epubLayout` sceglie la presentazione di un EPUB.
+- **Un libro dal pannello Libri.** `sandbox_export` con `format` `pdf`, `epub` o `html` e `book: { "kind": "project", "id": "…", "language": "en" }` scrive un progetto come fa **Scarica in …** della sua riga (da postext 1.81): l’intero libro in quella lingua, impaginato a parte rispetto al libro sullo schermo, che viene salvato prima e resta com’è. `html` senza `book` scrive il progetto sullo schermo. La risposta dà il file, le sue pagine, la lingua scritta e gli avvisi; `epubLayout` sceglie la presentazione di un EPUB.
 - **Importare un file `.postext`** con `sandbox_import_book` (`inspect: true` dice
   quali lingue contiene senza importarlo).
 - **Creare un libro da un documento InDesign** con `sandbox_import_idml`. Con

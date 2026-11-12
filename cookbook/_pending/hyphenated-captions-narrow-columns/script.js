@@ -1,10 +1,10 @@
 // ═══ Postext Cookbook · Nº 188 · Hyphenated captions in narrow columns ═══════════════════
 // https://postext.dev/en/cookbook/hyphenated-captions-narrow-columns
 // Code: MIT · Text: original (CC BY 4.0) · Plates: diffusion models
-// Fonts: Newsreader, Fraunces, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.80.0
+// Fonts: Newsreader, Fraunces, Libre Franklin (SIL OFL 1.1) · Needs postext ≥ 1.81.0
 //
 // An observatory bulletin set twice in three columns of 60 mm: first with the captions, notes
-// and table cells broken as before 1.80, then hyphenated and broken on the optimal breaker.
+// and table cells broken as before 1.81, then hyphenated and broken on the optimal breaker.
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage, defaultResourceTypes,
 } from 'https://esm.sh/postext';
@@ -175,7 +175,7 @@ const FONTS = { Newsreader: ['400', '400i'], Fraunces: ['600'], // text and disp
 // ─── 4 · Build & show ───────────────────────────────────────────────────────
 await Promise.all(resources.filter((r) => r.bitmap)
   .map(({ bitmap: b }) => loadImage(b.fileId, asset(b.fileId))));
-// #region builds: the same issue with the 1.80 settings off (the default) and on
+// #region builds: the same issue with the 1.81 settings off (the default) and on
 const build = (on) => buildDocumentWithFonts({ markdown, resources }, { ...config,
   captionStyle: { ...captionStyle, hyphenation: on,
     note: { ...captionStyle.note, hyphenation: on } },

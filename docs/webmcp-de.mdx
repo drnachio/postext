@@ -620,7 +620,7 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
-- **Ein Buch aus dem Bücher-Panel.** `sandbox_export` mit `format` `pdf`, `epub` oder `html` und `book: { "kind": "project", "id": "…", "language": "en" }` schreibt ein Projekt so, wie es **Als … herunterladen** in seiner Zeile tut (seit postext 1.80): das ganze Buch in dieser Sprache, getrennt vom Buch auf dem Bildschirm umbrochen, das vorher gespeichert wird und bleibt, wie es ist. `html` ohne `book` schreibt das Projekt auf dem Bildschirm. Die Antwort nennt die Datei, ihre Seiten, die geschriebene Sprache und die Warnungen; `epubLayout` wählt die Darstellung eines EPUB.
+- **Ein Buch aus dem Bücher-Panel.** `sandbox_export` mit `format` `pdf`, `epub` oder `html` und `book: { "kind": "project", "id": "…", "language": "en" }` schreibt ein Projekt so, wie es **Als … herunterladen** in seiner Zeile tut (seit postext 1.81): das ganze Buch in dieser Sprache, getrennt vom Buch auf dem Bildschirm umbrochen, das vorher gespeichert wird und bleibt, wie es ist. `html` ohne `book` schreibt das Projekt auf dem Bildschirm. Die Antwort nennt die Datei, ihre Seiten, die geschriebene Sprache und die Warnungen; `epubLayout` wählt die Darstellung eines EPUB.
 - **Eine `.postext`-Datei importieren** mit `sandbox_import_book`
   (`inspect: true` sagt, welche Sprachen sie enthält, ohne sie zu importieren).
 - **Ein Buch aus einem InDesign-Dokument anlegen** mit `sandbox_import_idml`.
