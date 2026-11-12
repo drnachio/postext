@@ -91,6 +91,7 @@ export function MarkdownEditor({ isDark = true }: MarkdownEditorProps) {
     lang,
     readOnly,
     plusUnderline: state.config.bodyText?.plusUnderline === true,
+    noBreakNames: { noBreak: state.labels.noBreakSpaceMark, narrow: state.labels.narrowNoBreakSpaceMark, figure: state.labels.figureSpaceMark },
     // One history for the text and the design (#899).
     historyCommands: {
       undo: () => runHistoryFromUi(store.history, 'undo', store.getSnapshot) !== null,

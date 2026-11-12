@@ -255,6 +255,30 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td>Was eine Wiederholung den Algorithmus unter <code>stacks: 'avoid'</code> kostet, als Strafpunkte, die zu denen des Absatzes addiert werden, auf der Skala von <code>consecutiveHyphenDemerit</code> (zwei getrennte Zeilen hintereinander kosten 3000). Ein wiederholtes einsilbiges Wort („in“, „und“, „der“, mit den Vokalen der lateinischen, griechischen und kyrillischen Schrift) kostet doppelt so viel. Ein höherer Wert vermeidet mehr Wiederholungen um den Preis lockererer Zeilen; 0 behält alle.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Eine Zeile, die mit einem nummerierten Zitat in eckigen oder runden Klammern nach einem Wort beginnt oder mit einem Teil davon: <code>Autoren [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, auch die Marke, die ein nummerierter Stil für <code>[@key]</code> setzt (<code>[3, S. 12]</code>). Nie nach einer Zahl: <code>2016 (3)</code> ist ein Jahr und ein Heft. <code>'allow'</code> setzt die Zeilen, wie der Algorithmus sie findet, und meldet nichts. <code>'warn'</code> setzt sie ebenso und meldet jeden solchen Umbruch als Inhaltswarnung <code>citationBreak</code>, die die Sandbox unter Prüfung auflistet. <code>'avoid'</code> addiert <code>citationBreakPenalty</code> zu den Strafpunkten eines Umbruchs am Leerzeichen vor einem Zitat oder darin, sodass der Algorithmus den Absatz anders setzt, wo der Wortabstand es erlaubt, und meldet die Umbrüche, die bleiben. Das Leerzeichen bleibt ein Wortzwischenraum und dehnt sich mit den anderen; am Text ändert sich nichts. Absätze, Listen, Zitate, Kästen, Anmerkungen, Bildunterschriften und Tabellenzellen im waagerechten Satz; jedes Zitat wird in der Schrift seiner Umgebung gelesen, und Text von rechts nach links sowie CJK-Text bleiben, wie sie sind. Bei <code>'avoid'</code> werden Flattersatz, Bildunterschriften, Anmerkungen und Zellen mit dem Knuth–Plass-Algorithmus gesetzt, damit auch sie der Regel folgen; der Rahmen einer gestalteten Seite setzt seinen Text ohne sie. Braucht <code>optimalLineBreaking</code>. Um zwei bestimmte Wörter unabhängig von der Regel zusammenzuhalten, setzen Sie ein geschütztes Leerzeichen.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Was ein Umbruch vor oder in einem Zitat den Algorithmus bei <code>citationBreaks: 'avoid'</code> kostet, als Strafpunkte, die zu denen des Absatzes addiert werden. Standardmäßig so viel wie eine bis an die Grenze des Wortabstands gedehnte Zeile, sodass der Algorithmus diese Grenze nie überschreitet, um ein Zitat bei seinem Wort zu halten. Ein höherer Wert hält mehr Zitate, um den Preis lockererer Zeilen; 0 lässt jeden Umbruch durch.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Eine Zeile, die auf ein Relations- oder Rechenzeichen zwischen Leerzeichen endet oder damit beginnt (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>): <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Die Stufen sind die von <code>citationBreaks</code>, die Warnung heißt <code>operatorBreak</code> (mit dem Rand, Ende oder Anfang), und <code>'avoid'</code> bepreist die Leerzeichen zu beiden Seiten des Zeichens, in denselben Blöcken.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Was ein Umbruch neben einem freistehenden Zeichen den Algorithmus bei <code>operatorBreaks: 'avoid'</code> kostet, als Strafpunkte, die zu denen des Absatzes addiert werden, auf der Skala von <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -271,18 +295,6 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td><code>++Text++</code> als unterstrichenen Text lesen, zusätzlich zu <code>:underline[Text]</code>, das immer gelesen wird. Jedes Paar aus zwei Pluszeichen auf jeder Seite unterstreicht, auch <code>use ++i rather than i++</code>; <code>{'\\+\\+'}</code> setzt ein wörtliches Paar, ein Buchstabe oder eine Ziffer direkt an den Zeichen lässt sie als Text stehen (<code>C++</code>, <code>g++</code>), und Inline-Code und Codeblöcke werden nie unterstrichen. Es gilt überall, wo Inline-Auszeichnungen gelesen werden: im Fließtext, in Überschriften, Listen, Legenden, Tabellenzellen, Anmerkungen und Chips. <code>false</code>: Die Pluszeichen erscheinen als Text. Siehe <a href="/de/docs/document-format-inline#unterstrichener-text">Dokumentformat › Unterstrichener Text</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Hält einen nummerierten Verweis in eckigen oder runden Klammern beim vorangehenden Wort (oder dem Satzzeichen, das es abschließt), und zwar ungeteilt: Das Leerzeichen davor und die Leerzeichen darin werden geschützte Leerzeichen (<code>Autoren [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Nie nach einer Zahl: <code>2016 (3)</code> ist ein Jahr und ein Heft, kein Verweis. Nur in horizontal gesetzten Absätzen, Listenpunkten und Zitaten; ein Block mit Text von rechts nach links oder CJK bleibt, wie er ist.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Hält ein Relations- oder Rechenzeichen zwischen Leerzeichen (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) bei den Wörtern auf beiden Seiten: <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Keine Zeile endet oder beginnt mit dem Zeichen. Gleicher Geltungsbereich wie <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

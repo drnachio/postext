@@ -284,24 +284,6 @@ export const BodyTextSection = memo(function BodyTextSection() {
           isDefault={bodyText.breakAfterSlashes !== false}
           onReset={() => resetField('breakAfterSlashes')}
         />
-        {/* A citation kept with its word, a sign with its terms: off
-            unless the configuration turns them on. */}
-        <ToggleSwitch
-          label={labels.bodyBindCitations}
-          checked={bodyText.bindCitations === true}
-          onChange={(checked) => updateBodyText({ bindCitations: checked })}
-          tooltip={labels.bodyBindCitationsTooltip}
-          isDefault={bodyText.bindCitations !== true}
-          onReset={() => resetField('bindCitations')}
-        />
-        <ToggleSwitch
-          label={labels.bodyBindOperators}
-          checked={bodyText.bindOperators === true}
-          onChange={(checked) => updateBodyText({ bindOperators: checked })}
-          tooltip={labels.bodyBindOperatorsTooltip}
-          isDefault={bodyText.bindOperators !== true}
-          onReset={() => resetField('bindOperators')}
-        />
         <ToggleSwitch
           label={labels.bodyHardLineBreaks}
           checked={bodyText.hardLineBreaks}

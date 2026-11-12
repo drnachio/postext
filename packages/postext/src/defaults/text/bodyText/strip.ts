@@ -183,13 +183,6 @@ export function stripBodyTextDefaults(
     result.plusUnderline = true;
     hasOverride = true;
   }
-  // Off by default, and resolved only when on.
-  for (const key of ['bindCitations', 'bindOperators'] as const) {
-    if (bodyText[key] === true) {
-      result[key] = true;
-      hasOverride = true;
-    }
-  }
   // On by default, and resolved only when off (#725).
   if (bodyText.scriptContext === false) {
     result.scriptContext = false;
@@ -298,6 +291,13 @@ export function stripBodyTextDefaults(
   if (bodyText.stackPenalty !== undefined && bodyText.stackPenalty !== DEFAULT_BODY_TEXT_CONFIG.stackPenalty) {
     result.stackPenalty = bodyText.stackPenalty;
     hasOverride = true;
+  }
+  // The citation and operator break rules (#1519).
+  for (const key of ['citationBreaks', 'citationBreakPenalty', 'operatorBreaks', 'operatorBreakPenalty'] as const) {
+    if (bodyText[key] !== undefined && bodyText[key] !== DEFAULT_BODY_TEXT_CONFIG[key]) {
+      (result as Record<string, unknown>)[key] = bodyText[key];
+      hasOverride = true;
+    }
   }
   if (bodyText.avoidRuntsInLists !== undefined && bodyText.avoidRuntsInLists !== DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists) {
     result.avoidRuntsInLists = bodyText.avoidRuntsInLists;

@@ -256,6 +256,30 @@ export const metadata = {
       <td>设为<code>stacks: 'avoid'</code>时，每处重复给断行器增加的缺陷值（计入段落），与<code>consecutiveHyphenDemerit</code>同一尺度（连续两行以连字符结尾为3000）。重复的单音节词（按拉丁、希腊和西里尔字母的元音计）加倍。数值越高，避开的重复越多，代价是行更松；为0时全部保留。</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>以词后方括号或圆括号中的编号引用开头的行，或以其中一部分开头的行：<code>authors [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>，以及编号式样式为 <code>[@key]</code> 印出的编号（<code>[3, p. 12]</code>）。数字之后的不算：<code>2016 (3)</code> 是年份和期号。<code>'allow'</code> 按断行算法找到的样子排行，不作报告。<code>'warn'</code> 照样排行，并把每处这样的断行报告为内容警告 <code>citationBreak</code>，Sandbox 在“检查”中列出。<code>'avoid'</code> 把 <code>citationBreakPenalty</code> 加到引用前空格处或引用内部断行的缺陷值上，让算法在词距允许的范围内重排段落，并报告保留下来的断行。该空格仍是词距，与其他词距一同伸缩；正文不作改动。适用于横排的段落、列表、引文、框、注释、图注和表格单元格；每处引用按其周围的文字判断，从右向左的文字和中日韩文字不受影响。为 <code>'avoid'</code> 时，齐左文字、图注、注释和单元格都用 Knuth–Plass 算法排，也遵循此规则；组版页面的框排其文字时不用此规则。需要 <code>optimalLineBreaking</code>。无论规则如何都要让两个词不分开时，请输入不换行空格。</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td><code>citationBreaks: 'avoid'</code> 时，在引用之前或之中断一次行给算法增加的缺陷值（计入段落）。默认值相当于拉伸到词距上限的一行，因此算法不会为让引用留在前一个词旁边而排出超过上限的行。调高可保留更多引用，代价是行更松；为0时所有断行都放行。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>以前后有空格的关系符号或运算符号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>、<code>+</code>、<code>·</code>、<code>→</code>）结尾或开头的行：<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>。级别与 <code>citationBreaks</code> 相同，警告为 <code>operatorBreak</code>（注明行尾或行首），<code>'avoid'</code> 在相同的块中给符号两侧的空格加上代价。</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td><code>operatorBreaks: 'avoid'</code> 时，在单独符号旁断一次行给算法增加的缺陷值（计入段落），与 <code>citationBreakPenalty</code> 同一尺度。</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -272,18 +296,6 @@ export const metadata = {
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>把 <code>++text++</code> 读作加下划线的文字；<code>:underline[text]</code> 始终有效。两边各两个加号的每一对都加下划线，<code>use ++i rather than i++</code> 也是；写 <code>{'\\+\\+'}</code> 原样印出一对加号，紧贴加号的字母或数字使其保持为文字（<code>C++</code>、<code>g++</code>），行内代码和代码块从不加下划线。凡是读取行内标记的地方都适用：正文、标题、列表、图注、表格单元格、注释和标签。<code>false</code>：加号照样印出。见<a href="/zh/docs/document-format-inline#下划线">文档格式 › 下划线</a>。</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>将方括号或圆括号中的编号引用与前面的词（或结束该词的标点）保持在一起，且不拆分：引用前的空格和其中的空格都变为不换行空格（<code>autores [12]</code>、<code>[14, 16]</code>、<code>(12–15)</code>）。数字之后从不适用：<code>2016 (3)</code>是年份和期号，不是引用。仅适用于横排的段落、列表项和引文；含有从右到左文本或CJK文本的文本块保持不变。</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>将前后有空格的符号（<code>=</code>、<code>&lt;</code>、<code>&gt;</code>、<code>≤</code>、<code>≥</code>、<code>±</code>、<code>×</code>、<code>≈</code>、<code>≠</code>、<code>÷</code>、<code>−</code>）与两侧的词保持在一起（<code>LR+ = 18.29</code>、<code>p &lt; 0.05</code>）。行尾和行首都不会出现该符号。适用范围与<code>bindCitations</code>相同。</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

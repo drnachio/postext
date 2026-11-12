@@ -255,6 +255,30 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td>Ce que coûte une répétition à l'algorithme sous <code>stacks: 'avoid'</code>, en démérites ajoutés à ceux du paragraphe, à l'échelle de <code>consecutiveHyphenDemerit</code> (deux lignes de suite coupées par un trait d'union coûtent 3000). Un monosyllabe répété (« à », « et », « de », avec les voyelles des écritures latine, grecque et cyrillique) coûte le double. Une valeur plus haute évite plus de répétitions au prix de lignes plus lâches ; 0 les garde toutes.</td>
     </tr>
     <tr>
+      <td><code>citationBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Une ligne qui commence par une citation numérotée entre crochets ou entre parenthèses placée après un mot, ou par un morceau d’une citation : <code>auteurs [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>, et l’appel qu’un style numérique place pour <code>[@clé]</code> (<code>[3, p. 12]</code>). Jamais après un nombre : <code>2016 (3)</code> est une année et un numéro. <code>'allow'</code> compose les lignes comme l'algorithme les trouve et ne signale rien. <code>'warn'</code> les compose de même et signale chaque coupure de ce genre par un avertissement de contenu <code>citationBreak</code>, que le Sandbox liste dans Révision. <code>'avoid'</code> ajoute <code>citationBreakPenalty</code> aux démérites d’une coupure à l’espace qui précède la citation ou à l’intérieur, si bien que l'algorithme compose le paragraphe autrement là où l'espacement des mots le permet, et signale les coupures qu’il garde. L’espace reste une espace de mots et s’étire avec les autres ; le texte ne change pas. Paragraphes, listes, citations, encadrés, notes, légendes et cellules de tableau composés à l’horizontale ; chaque citation est lue dans l’écriture qui l’entoure, et le texte de droite à gauche et le CJK restent tels quels. Avec <code>'avoid'</code> le texte en drapeau, les légendes, les notes et les cellules sont composés par l’algorithme de Knuth–Plass pour suivre aussi la règle ; le cadre d’une page composée compose son texte sans elle. Demande <code>optimalLineBreaking</code>. Pour garder deux mots précis ensemble quelle que soit la règle, tapez une espace insécable.</td>
+    </tr>
+    <tr>
+      <td><code>citationBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Ce que coûte à l'algorithme, avec <code>citationBreaks: 'avoid'</code>, une coupure avant ou dans une citation, en démérites ajoutés à ceux du paragraphe. Par défaut, autant qu’une ligne étirée jusqu’à la limite de l’espacement, si bien que l'algorithme ne dépasse jamais cette limite pour garder une citation avec son mot. Une valeur plus haute garde plus de citations au prix de lignes plus lâches ; 0 laisse passer toutes les coupures.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreaks</code></td>
+      <td><code>'allow' | 'warn' | 'avoid'</code></td>
+      <td><code>'allow'</code></td>
+      <td>Une ligne qui finit ou commence sur un signe de relation ou d’opération placé entre espaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>, <code>+</code>, <code>·</code>, <code>→</code>) : <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Les niveaux sont ceux de <code>citationBreaks</code>, l’avertissement est <code>operatorBreak</code> (avec le bord, fin ou début) et <code>'avoid'</code> met un prix sur les espaces des deux côtés du signe, dans les mêmes blocs.</td>
+    </tr>
+    <tr>
+      <td><code>operatorBreakPenalty</code></td>
+      <td><code>number</code></td>
+      <td><code>10000</code></td>
+      <td>Ce que coûte à l'algorithme, avec <code>operatorBreaks: 'avoid'</code>, une coupure à côté d’un signe isolé, en démérites ajoutés à ceux du paragraphe, sur l’échelle de <code>citationBreakPenalty</code>.</td>
+    </tr>
+    <tr>
       <td><code>hardLineBreaks</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
@@ -271,18 +295,6 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
       <td><code>boolean</code></td>
       <td><code>false</code></td>
       <td>Lire <code>++texte++</code> comme du texte souligné, en plus de <code>:underline[texte]</code>, toujours lu. Chaque paire de deux signes plus de chaque côté souligne, <code>use ++i rather than i++</code> compris ; <code>{'\\+\\+'}</code> écrit une paire littérale, une lettre ou un chiffre collé aux signes les garde comme texte (<code>C++</code>, <code>g++</code>), et le code en ligne et les blocs de code ne sont jamais soulignés. Le réglage vaut partout où les marques en ligne sont lues : le texte courant, les titres, les listes, les légendes, les cellules de tableau, les notes et les pastilles. <code>false</code> : les signes plus s’impriment. Voir <a href="/fr/docs/document-format-inline#texte-souligné">Format du document › Texte souligné</a>.</td>
-    </tr>
-    <tr>
-      <td><code>bindCitations</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Garde un appel numéroté entre crochets ou entre parenthèses avec le mot (ou la ponctuation qui le termine) qui le précède, et entier : l’espace avant lui et ceux qu’il contient deviennent des espaces insécables (<code>auteurs [12]</code>, <code>[14, 16]</code>, <code>(12–15)</code>). Jamais après un nombre : <code>2016 (3)</code> est une année et un numéro, pas un appel. Seulement dans les paragraphes, les éléments de liste et les citations composés à l’horizontale ; un bloc qui contient du texte de droite à gauche ou CJK reste tel quel.</td>
-    </tr>
-    <tr>
-      <td><code>bindOperators</code></td>
-      <td><code>boolean</code></td>
-      <td><code>false</code></td>
-      <td>Garde une relation ou un opérateur entre espaces (<code>=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>≤</code>, <code>≥</code>, <code>±</code>, <code>×</code>, <code>≈</code>, <code>≠</code>, <code>÷</code>, <code>−</code>) avec les mots de part et d’autre : <code>LR+ = 18,29</code>, <code>p &lt; 0,05</code>. Aucune ligne ne finit ni ne commence par le signe. Même portée que <code>bindCitations</code>.</td>
     </tr>
     <tr>
       <td><code>scriptContext</code></td>

@@ -104,6 +104,9 @@ impl Search {
             let is_flagged = items.is_flagged_penalty(i);
             let post_width = if is_penalty { items.post_width[i] } else { 0.0 };
             let post_chars = if is_penalty { items.post_chars[i] } else { 0.0 };
+            // A word space that costs a break (#1519): a citation or a lone
+            // operator it would leave at a line edge. Demerits, as a stack's.
+            let space_cost = if is_penalty { 0.0 } else { items.penalty[i] };
             // `fewerHyphens`: every hyphen's penalty raised alike.
             let pen = if !is_penalty {
                 0.0
@@ -201,8 +204,8 @@ impl Search {
                 if run > 1 {
                     d += o.consecutive_hyphen_demerit;
                 }
-                d += stack_demerits;
-                let mut faults = stacked;
+                d += stack_demerits + space_cost;
+                let mut faults = stacked + u32::from(space_cost > 0.0);
                 // A hyphen ladder past its limit (#1466).
                 if ladder_run > 0 && run > ladder_run {
                     d += rules.ladder_demerits;

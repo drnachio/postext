@@ -291,6 +291,10 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsShortListSplitTitle;
     case 'stack':
       return labels.warningsStackTitle;
+    case 'citationBreak':
+      return labels.warningsCitationBreakTitle;
+    case 'operatorBreak':
+      return labels.warningsOperatorBreakTitle;
     case 'hyphenLadder':
       return labels.warningsHyphenLadderTitle;
     case 'lastWordDivided':

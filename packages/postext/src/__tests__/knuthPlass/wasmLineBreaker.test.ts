@@ -28,6 +28,10 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
   const t = rng(seed ^ 0x5eed);
   // And the hyphen rules from a third one (#1466).
   const h = rng(seed ^ 0x4a11);
+  // And the spaces a break costs at, a citation or a lone operator at a
+  // line edge (#1519), from a fourth.
+  const c = rng(seed ^ 0xc17e);
+  const spaceCost = c() < 0.5 ? [500, 30000, 1e6][Math.floor(c() * 3)]! : 0;
   const words = 3 + Math.floor(r() * 120);
   const items: KPItem[] = [];
   const kashida = r() < 0.15;
@@ -63,7 +67,7 @@ function paragraph(seed: number): { items: KPItem[]; options: KPOptions } {
     }
     if (w < words - 1) {
       if (r() < 0.02) items.push({ type: 'penalty', width: 0, penalty: -10000, flagged: false, sourceIndex: -1 });
-      items.push({ type: 'glue', width: 10, stretch: 5 + r() * 5, shrink: 3, sourceIndex: w });
+      items.push({ type: 'glue', width: 10, stretch: 5 + r() * 5, shrink: 3, sourceIndex: w, ...(spaceCost > 0 && c() < 0.15 ? { breakDemerits: spaceCost } : {}) });
     }
   }
   items.push({ type: 'glue', width: 0, stretch: Number.MAX_SAFE_INTEGER, shrink: 0, sourceIndex: -1 });

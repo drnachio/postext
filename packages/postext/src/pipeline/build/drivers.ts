@@ -25,7 +25,7 @@ import { codeOverflowWarnings } from '../code/codeLines.js';
 import { lineNumberWarnings } from '../text/lineNumbers.js';
 import { connectorAnchorUnknownWarnings, pageFurnitureWarnings } from '../pages/headerFooter.js';
 import { drainPasses } from '../columns/bandCaps.js';
-import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
+import { collectContentWarnings, locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, spaceBreakWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings } from '../contentWarnings.js';
 import { annotateDocument } from '../../marks/cjkMarks.js';
 import { annotateArabicMarks } from '../../marks/arabicMarks.js';
 import { overlineEmphasis } from '../../marks/emphasisOverline.js';
@@ -139,7 +139,7 @@ export function* buildDocumentGen(
   // cap; words of a joining script that run past their line, and styles
   // whose letter-spacing such words do not take.
   // Line numbers set over a float of the side column (#621).
-  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...hyphenRuleWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
+  const loose = [...cjkLooseLineWarnings(doc), ...raggedLineWarnings(doc), ...stackWarnings(doc), ...spaceBreakWarnings(doc), ...hyphenRuleWarnings(doc), ...wordOverflowWarnings(doc), ...(joiningSpacingWarnings.get(doc) ?? []), ...(dropCapWarningsByDoc.get(doc) ?? []), ...lineNumberWarnings(doc), ...codeOverflowWarnings(doc), ...(floatShrinkWarningsByDoc.get(doc) ?? []), ...(textWrapWarningsByDoc.get(doc) ?? []), ...(compositionWarningsByDoc.get(doc) ?? []), ...(composedWarningsByDoc.get(doc) ?? [])];
   // Side boxes and side floats set on pages after the text, and what the
   // layout could place nowhere (#639).
   loose.push(...afterTextWarnings(doc), ...(unplacedByDoc.get(doc) ?? []));

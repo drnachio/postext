@@ -18,7 +18,7 @@ import { orientationHighlight, orientationTheme } from './syntax/orientationSynt
 import { verseHighlight, verseTheme } from './syntax/verseSyntax.js';
 import { hardBreakHighlight, hardBreakTheme } from './syntax/hardBreakSyntax.js';
 import { tabHighlight, tabTheme } from './syntax/tabSyntax.js';
-import { noBreakHighlight, noBreakTheme } from './syntax/noBreakSyntax.js';
+import { noBreakHighlight, noBreakTheme, type NoBreakSpaceNames } from './syntax/noBreakSyntax.js';
 import { comicHighlight, comicTheme } from './syntax/comicSyntax.js';
 import { composedHighlight, composedTheme } from './syntax/composedSyntax.js';
 import { annotationHighlight, annotationTheme } from './syntax/annotationSyntax.js';
@@ -65,6 +65,9 @@ interface UseCodeMirrorOptions {
   /** The document reads `++text++` as underlined text
    *  (`bodyText.plusUnderline`, #1465): the editor marks it too. */
   plusUnderline?: boolean;
+  /** The names the no-break space marks show, in the interface's
+   *  language. */
+  noBreakNames?: NoBreakSpaceNames;
 }
 
 /** Undo and redo keys bound to `commands`; the selection-only history
@@ -96,13 +99,14 @@ function langAttributes(lang: string | undefined) {
   return EditorView.contentAttributes.of(lang ? { lang } : {});
 }
 
-export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false, lang, readOnly = false, historyCommands, onUpdate, plusUnderline = false }: UseCodeMirrorOptions) {
+export function useCodeMirror({ initialValue, externalValue, onChange, onSelectionChange, onFocusChange, isDark = true, persistedStateRef, getRefContext, ariaLabel, ariaDescribedBy, rtl = false, lang, readOnly = false, historyCommands, onUpdate, plusUnderline = false, noBreakNames }: UseCodeMirrorOptions) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const themeCompartment = useRef(new Compartment());
   const langCompartment = useRef(new Compartment());
   const readOnlyCompartment = useRef(new Compartment());
   const underlineCompartment = useRef(new Compartment());
+  const noBreakCompartment = useRef(new Compartment());
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const onSelectionChangeRef = useRef(onSelectionChange);
@@ -170,7 +174,7 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
       tabTheme,
       tabHighlight,
       noBreakTheme,
-      noBreakHighlight,
+      noBreakCompartment.current.of(noBreakHighlight(noBreakNames)),
       comicTheme,
       comicHighlight,
       composedTheme,
@@ -241,6 +245,15 @@ export function useCodeMirror({ initialValue, externalValue, onChange, onSelecti
     if (!viewRef.current) return;
     viewRef.current.dispatch({ effects: underlineCompartment.current.reconfigure(underlineHighlight(plusUnderline)) });
   }, [plusUnderline]);
+
+  // The no-break space marks named in the interface's language.
+  const noBreakKey = noBreakNames ? `${noBreakNames.noBreak}\n${noBreakNames.narrow}\n${noBreakNames.figure}` : '';
+  useEffect(() => {
+    if (!viewRef.current) return;
+    viewRef.current.dispatch({ effects: noBreakCompartment.current.reconfigure(noBreakHighlight(noBreakNames)) });
+    // The names, not the object, which is made anew on every render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noBreakKey]);
 
   // Design mode makes the text read only (#864).
   useEffect(() => {

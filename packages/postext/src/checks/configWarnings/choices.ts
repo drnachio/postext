@@ -57,6 +57,8 @@ export function collectChoiceWarnings(config: PostextConfig): ConfigWarning[] {
   };
   rule('bodyText.shortListSplit', config.bodyText?.shortListSplit);
   rule('bodyText.stacks', config.bodyText?.stacks);
+  rule('bodyText.citationBreaks', config.bodyText?.citationBreaks);
+  rule('bodyText.operatorBreaks', config.bodyText?.operatorBreaks);
   rule('bodyText.hyphenation.ladders', config.bodyText?.hyphenation?.ladders);
   rule('bodyText.hyphenation.lastWord', config.bodyText?.hyphenation?.lastWord);
   rule('layout.openerFloats', config.layout?.openerFloats);
