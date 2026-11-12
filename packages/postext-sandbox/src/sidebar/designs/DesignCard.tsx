@@ -1,12 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Download, Trash2 } from 'lucide-react';
-import { applyDesign, resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig, type ChapterStyleConfig, type DesignPart, type PostextConfig } from 'postext';
+import { applyDesign, baseFontFamily, resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig, type ChapterStyleConfig, type DesignPart, type PostextConfig } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
 import { Button, ConfirmPopover, IconButton, cn } from '../../ui/index.js';
 import { PagePreview } from '../settings/PagePreview.js';
 import { toPt } from '../../controls/inputs/units.js';
+import { loadFont } from '../../controls/fonts/fontLoader.js';
 import { fill } from '../../print/fillTokens.js';
 import { CHAPTER_STYLE_PARTS, type DesignHost } from '../../designs/designActions.js';
 import type { DesignEntry } from '../../designs/designSources.js';
@@ -46,6 +47,13 @@ export function DesignCard({ host, entry, book, active, styles, onTry, onAsStyle
   const body = look ? resolveBodyTextConfig(look.bodyText, look.locale) : null;
   const ink = look && body ? resolveColorValue(body.color, look.colorPalette, { hex: '#000000', model: 'hex' }).hex : '#000000';
   const palette = ready?.design.config.colorPalette ?? [];
+  // The specimen is set in the design's own face, loaded here: the book
+  // may not use it, and a face the page has not loaded may fall to a
+  // system copy with no glyphs.
+  const family = body ? baseFontFamily(body.fontFamily) : '';
+  useEffect(() => {
+    if (family) loadFont(family).catch(() => {});
+  }, [family]);
   const kind = entry.kind === 'saved' ? labels.designsKindSaved : entry.kind === 'builtin' ? labels.designsKindBuiltin : labels.designsKindSample;
 
   return (
@@ -60,7 +68,7 @@ export function DesignCard({ host, entry, book, active, styles, onTry, onAsStyle
           {entry.description && <span className="text-xs text-(--slate)">{entry.description}</span>}
           {entry.source && <span className="text-xs text-(--slate)">{fill(labels.designsFrom, { book: entry.source })}</span>}
           {body && (
-            <span className="truncate text-xs" style={{ fontFamily: `"${body.fontFamily}", serif` }}>{body.fontFamily} · {toPt(body.fontSize)}/{toPt(body.lineHeight)} pt</span>
+            <span className="truncate text-xs" style={{ fontFamily: `"${family}", serif` }}>{family} · {toPt(body.fontSize)}/{toPt(body.lineHeight)} pt</span>
           )}
           {palette.length > 0 && (
             <span role="img" className="flex items-center gap-0.5" aria-label={palette.map((p) => p.name).join(', ')}>
