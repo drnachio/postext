@@ -25,6 +25,9 @@ import { halfPoints, paragraph, px, twips, type Units } from '../wml.js';
 export interface CitationLabel {
   /** The citation as the processor prints it. */
   text: string;
+  /** `text` in pieces with the processor's emphasis (an italic title),
+   *  when it has any (#1518): set as the book sets it. */
+  pieces?: Piece[];
   /** A note style: the citation goes into a note of its own, and `text`
    *  is that note's; `name` stays in the sentence ("As Howse says"). */
   note?: { name: string };
@@ -92,13 +95,15 @@ export async function prepareCitations(parsed: readonly ParsedSource[], book: Re
         const formatted = g !== undefined ? processed.formatted[g] : undefined;
         if (g === undefined || !formatted) continue;
         const missing = processed.unknown[g] ?? [];
-        const text = plainText(formatted) + (missing.length ? ` ${missing.map((id) => `@${id}`).join('; ')}` : '');
+        const unknown = missing.length ? ` ${missing.map((id) => `@${id}`).join('; ')}` : '';
+        const text = plainText(formatted) + unknown;
+        const looks = formatted.some((f) => f.bold || f.italic) ? [...formatted.map((f) => ({ text: f.text, ...(f.bold ? { b: true } : {}), ...(f.italic ? { i: true } : {}) })), { text: unknown }].filter((x) => x.text) : undefined;
         if (note && b.footnoteDef === undefined) {
           const name = span.citation.cluster.mode === 'narrative'
             ? span.citation.cluster.items.map((it) => narrativeName(items.get(it.id), citationLocale(book, locale), processed.processor.terms)).filter(Boolean).join('; ')
             : '';
-          labels.set(span, { text, note: { name } });
-        } else labels.set(span, { text });
+          labels.set(span, { text, ...(looks ? { pieces: looks } : {}), note: { name } });
+        } else labels.set(span, { text, ...(looks ? { pieces: looks } : {}) });
       }
     }
     // The lists, as the build sets them: one per `:::bibliography`, or

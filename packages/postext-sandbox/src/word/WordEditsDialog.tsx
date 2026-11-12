@@ -16,7 +16,7 @@ import { Button, Collapsible, IconButton, announce, usePortalContainer } from '.
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { counted } from './sandboxImport.js';
 import { isolate } from './WordImportDialog.js';
-import { editFieldText, editReasonText, editSnippet, importNoteText, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits, type WordEditGroup, type WordEditsReview } from './wordEdits.js';
+import { editCitationText, editFieldText, editReasonText, editSnippet, importNoteText, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits, type WordEditGroup, type WordEditsReview } from './wordEdits.js';
 
 /** An exported .docx picked in the Manuscript panel. */
 export interface WordEditsFile {
@@ -64,6 +64,7 @@ function EditRow({ edit, labels }: { edit: DocxEdit; labels: SandboxLabels }) {
   const status = edit.status === 'applied' ? labels.wordEditStatusApplied : edit.status === 'conflict' ? labels.wordEditStatusConflict : labels.wordEditStatusRejected;
   const reason = edit.status === 'applied' ? null : editReasonText(labels, edit.reason);
   const field = editFieldText(labels, edit.field);
+  const cited = editCitationText(labels, edit);
   return (
     <li className="flex items-start gap-2 border-b border-(--pt-control-border) py-1.5 text-xs last:border-b-0">
       <StatusIcon status={edit.status} />
@@ -71,6 +72,7 @@ function EditRow({ edit, labels }: { edit: DocxEdit; labels: SandboxLabels }) {
         <span>
           <span className="font-semibold">{status}</span>
           {field && <span className="text-(--slate)"> · {field}</span>}
+          {cited && <span className="text-(--slate)"> · {isolate(cited)}</span>}
         </span>
         {(edit.before || edit.after) && <span style={{ overflowWrap: 'anywhere' }}>{editChangeText(labels, edit)}</span>}
         {reason && <span className="text-(--slate)">{reason}</span>}

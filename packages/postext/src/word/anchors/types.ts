@@ -13,6 +13,13 @@ export const BOOKMARK_PREFIX = '_ptx_';
 /** Which kind of `.docx` was exported. */
 export type ExportVariant = 'semantic' | 'formatted';
 
+/** An export by the name the user chooses it by (#1517): the flow
+ *  document with the book's design (`formatted`) or content only
+ *  (`semantic`), or the page facsimile. The map's {@link ExportVariant}
+ *  names the writer: `semantic` for both flow designs, `formatted` for the
+ *  facsimile (its name before #1458). */
+export type ExportName = 'formatted' | 'semantic' | 'facsimile';
+
 /** A chapter of the export map. */
 export interface MapChapter {
   /** Book chapter id (Sandbox) or file name (CLI). */

@@ -39,7 +39,7 @@ describe('round trip, semantic body', () => {
     expect(isExportedDocx(fx.bytes)).toBe(true);
     expect(isExportedDocx(new Uint8Array([1, 2, 3]))).toBe(false);
     const r = applyDocxEdits(fx.bytes, current());
-    expect(r.variant).toBe('semantic');
+    expect(r).toMatchObject({ variant: 'semantic', writer: 'semantic' });
     expect(r.exportId).toBe('exp-1');
     expect(r.edits).toEqual([]);
     expect(r.changed).toBe(false);

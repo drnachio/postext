@@ -3,7 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { harness } from '../webmcp/tools/testHarness.js';
 import { layoutConfig } from '../webmcp/host.js';
 import { buildWordExport, type WordExportNote } from './wordExport.js';
-import { isWordExport, rebuildWordMap, reviewChanges, reviewWordEdits } from './wordEdits.js';
+import { editCitationText, editReasonText, isWordExport, rebuildWordMap, reviewChanges, reviewWordEdits } from './wordEdits.js';
+import { DEFAULT_LABELS as defaultLabels } from '../types/defaultLabels.js';
 
 // #1397: the review of an edited Word export, as the dialog lists it.
 
@@ -106,5 +107,15 @@ describe('the review of an edited Word export (#1397)', () => {
     });
     const keys = notes.map((n) => (n.kind === 'font' ? `${n.family}|${n.reason}` : `${n.code}|${n.message}|${n.chapter ?? ''}`));
     expect(new Set(keys).size).toBe(keys.length);
+  });
+});
+
+describe('a change inside a citation, in words (#1516)', () => {
+  it('names the citation and the part of it the author wrote', () => {
+    expect(editCitationText(defaultLabels, { citation: 'simmons1991', citationPart: 'locator' })).toBe('Citation simmons1991, locator');
+    expect(editCitationText(defaultLabels, { citation: 'a; b' })).toBe('Citation a; b');
+    expect(editCitationText(defaultLabels, {})).toBe('');
+    expect(editReasonText(defaultLabels, 'citation')).toBe(defaultLabels.wordEditReasonCitation);
+    expect(editReasonText(defaultLabels, 'citation-part')).toBe(defaultLabels.wordEditReasonCitationPart);
   });
 });

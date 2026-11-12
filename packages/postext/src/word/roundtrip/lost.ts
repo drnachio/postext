@@ -57,7 +57,7 @@ export interface LostOptions {
 export function noteOwners(tokens: readonly Token[], map: ExportMap, boxOf: ReadonlyMap<string, number>): Map<number, string> {
   const out = new Map<number, string>();
   const notes = map.fragments.filter((f) => f.role === 'footnote');
-  const calls = map.fragments.map((f) => ({ id: f.id, n: (f.atoms ?? []).filter((a) => a.kind === 'footnote').length })).filter((c) => c.n > 0);
+  const calls = map.fragments.map((f) => ({ id: f.id, n: (f.atoms ?? []).filter((a) => a.kind === 'footnote' || a.kind === 'citation-note').length })).filter((c) => c.n > 0);
   if (!notes.length || calls.reduce((n, c) => n + c.n, 0) !== notes.length) return out;
   const known = new Set(map.fragments.map((f) => f.id));
   const marks = new Map<string, string[]>();

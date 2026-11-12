@@ -305,7 +305,17 @@ stato esportato il file, e una correzione al testo di una risorsa va nel blocco
 - `conflict`: il testo è cambiato anche nel libro dopo l’esportazione, il
   capitolo o la risorsa non c’è più, o due correzioni si sovrappongono;
 - `rejected`: testo che genera il libro stesso (numeri, etichette delle
-  didascalie) o una formattazione che attraversa il markup di Postext.
+  didascalie, ciò che uno stile di citazione scrive a partire dalla
+  bibliografia) o una formattazione che attraversa il markup di Postext.
+
+Una correzione dentro una citazione vi ritorna quando cade in una parte scritta
+dall’autore: il localizzatore, o le parole prima o dopo l’opera. In
+`[see also @simmons1991, 346–47]` un intervallo di pagine corretto in `346–48`
+in Word diventa `[see also @simmons1991, 346–48]`. La riga nomina la citazione
+(`citation simmons1991: locator "7" → "8"`). Una modifica al nome dell’autore,
+al titolo o a *Ibid.* viene rifiutata, e una parte stampata diversamente da
+come è scritta (`346--47` stampato `346–47`) viene rifiutata con la sua
+posizione nel libro, per essere cambiata lì.
 
 Le revisioni si considerano accettate, e i commenti sono elencati con autore e
 posizione ma non scritti. Il codice di uscita è 3 quando una correzione non è
@@ -315,8 +325,11 @@ alla sua destinazione e rinominato al suo posto, così un’esecuzione interrott
 non lascia mai mezzo capitolo; un file di capitolo cambiato mentre
 l’importazione era in corso viene lasciato com’è, con un avviso
 `docx.fileChanged`. `-o` non va con un libro. Con `--json` la risposta contiene
-`variant`, `exportId`, `edits` (ciascuna con `status`, `reason`, `kind`,
-`before`, `after` e `at`), `comments`, `files` e, in una prova a vuoto, `diff`.
+`variant` (l’esportazione che è il file: `formatted`, `semantic` o
+`facsimile`), `writer` (il generatore che nominano le sue proprietà),
+`exportId`, `edits` (ciascuna con `status`, `reason`, `kind`, `before`, `after`
+e `at`, e dentro una citazione `citation` e `citationPart`), `comments`,
+`files` e, in una prova a vuoto, `diff`.
 
 Anche un file modificato in Google Docs e scaricato come `.docx` torna. Docs non
 conserva la mappa né la copia dei capitoli; l’importazione riscrive la mappa a

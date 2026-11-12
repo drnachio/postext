@@ -8,6 +8,8 @@ import { buildBlocks, withLineSpaces, type BlockView } from './blocks.js';
 import { splitKey, withoutCode } from './markup.js';
 import { diffText, mapThrough, type Hunk } from './diff.js';
 import { blockHunks, hunkEdits, type SourceEdit } from './edits.js';
+import { isCitationNote } from './citations.js';
+import { exportVariantName } from '../anchors/exportMap.js';
 import { formatEdits } from './formats.js';
 import { neverMarked } from './lost.js';
 import { mergeText, type PlacedEdit } from './merge.js';
@@ -98,6 +100,8 @@ function editsOfBlock(v: BlockView, base: string): BlockResult {
     const edits: SourceEdit[] = changed ? [{ target: v.target, start: -1, end: -1, text: v.N.replaceAll(PARA_CHAR, '\n'), kind: 'text', reject: 'generated', before: v.O }] : [];
     return { edits, hunks: [] };
   }
+  // A citation's own note emptied: its reference speaks for the citation.
+  if (emptied(v) && isCitationNote(v)) return { edits: [], hunks: [] };
   if (emptied(v)) return { edits: v.O.trim() || v.O.includes(OBJECT_CHAR) ? [blockDeletion(v, base)] : [], hunks: [] };
   const hunks = blockHunks(v, base);
   const edits = hunks.flatMap((h) => hunkEdits(v, base, h));
@@ -415,6 +419,8 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
   const report = (p: PlacedEdit, t: SourceEdit['target']): DocxEdit => {
     const out: DocxEdit = { start: p.start, end: p.end, before: p.before, after: p.edit.text, kind: p.edit.kind, status: p.status };
     if (p.reason) out.reason = p.reason;
+    if (p.edit.cite) out.citation = p.edit.cite;
+    if (p.edit.citePart) out.citationPart = p.edit.citePart;
     if (t.kind === 'markdown') out.chapter = map.chapters[t.chapter]?.id;
     else if (t.kind === 'resource') {
       out.resourceId = t.resourceId;
@@ -455,7 +461,9 @@ export function applyDocxEdits(bytes: Uint8Array, current: DocxEditSource, optio
   };
   const comments = read.comments.map((c) => placeComment(c, blocks, hunksOf, map.chapters.map((ch) => ch.id), moveFor));
   return {
-    variant: map.variant,
+    variant: exportVariantName(map),
+    writer: map.variant,
+    ...(map.design ? { design: map.design } : {}),
     exportId: map.exportId,
     chapters,
     ...(resources ? { resources } : {}),

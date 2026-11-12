@@ -167,11 +167,16 @@ const REASONS: Record<string, string> = {
   'table-row': 'a row or a line added to a table in Word does not come into the book (add it to the table in the book)',
   'bookmark-unpaired': 'its bookmark is gone and none of the text that stands around its place could be told to be its own: read as deleted, and that text as added',
   'bookmark-placed': 'its bookmark is gone: read from the text most like it among the text that stands in its place, the rest as added',
+  citation: 'citation text is written from the bibliography (change the reference, or the citation, in the book)',
+  'citation-part': 'printed otherwise than it is written in the book: change it in the book',
 };
 
 /** What an edit changed, in words a reader can follow: a paragraph mark
  *  added or taken out is named, since its text is only white space. */
-function editWhat(e: { before: string; after: string; kind: string }): string {
+function editWhat(e: { before: string; after: string; kind: string; citation?: string; citationPart?: string }): string {
+  // An edit inside a printed citation names the citation and the part of
+  // it the author wrote (#1516).
+  if (e.citation !== undefined) return `citation ${e.citation}: ${e.citationPart ? `${e.citationPart} ` : ''}"${clip(e.before)}" → "${clip(e.after)}"`;
   const before = clip(e.before);
   const after = clip(e.after);
   if (!before && !after) {
@@ -288,7 +293,10 @@ export async function importWordEdits(bytes: Uint8Array, file: string, project: 
     else reporter.warn({ kind: `docx.${note.code}`, severity, message });
   }
   if (result.notes) reporter.data.notes = result.notes;
+  // The export by the name the user chose (#1517); the writer as the
+  // file's properties name it.
   reporter.data.variant = result.variant;
+  reporter.data.writer = result.writer;
   reporter.data.exportId = result.exportId;
   reporter.data.edits = result.edits.map((e) => ({ ...e, at: editPlace(e, byId) }));
   reporter.data.comments = result.comments.map((c) => ({ ...c, at: c.start >= 0 ? editPlace(c, byId) : undefined }));

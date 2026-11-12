@@ -6,12 +6,24 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { attr, children, escapeAttr, localName, parseXml, textOf } from '../xml.js';
 import { base64Decode, base64Encode } from './base64.js';
-import { EXPORT_MAP_NS, EXPORT_MAP_ROOT, type ExportMap, type MapFragment } from './types.js';
+import { EXPORT_MAP_NS, EXPORT_MAP_ROOT, type ExportMap, type ExportName, type ExportVariant, type MapFragment } from './types.js';
 
 /** Custom document properties (docProps/custom.xml) the package writes. */
 export const PROP_EXPORT_ID = 'postext.exportId';
 export const PROP_VARIANT = 'postext.variant';
 export const PROP_VERSION = 'postext.version';
+/** The export by the name the user chose it by (#1517): what Word's
+ *  properties show; `postext.variant` keeps naming the writer, as files
+ *  written before it do. */
+export const PROP_EXPORT = 'postext.export';
+
+/** The name the user chose an export by (#1517), from what its map or
+ *  properties say: the facsimile, or a flow document by its design (one
+ *  written before the designs, or without one, is the semantic one). */
+export function exportVariantName(about: { variant?: ExportVariant; design?: 'book' | 'plain' }): ExportName {
+  if (about.variant === 'formatted') return 'facsimile';
+  return about.design === 'book' ? 'formatted' : 'semantic';
+}
 
 /** Runs of a source-offset map as flat `[start, length]` pairs: a run of
  *  `start, start+1, …`, or of repeated -1 (synthetic characters). */

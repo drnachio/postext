@@ -5,6 +5,7 @@
 // converted, its source text; footnote markers are real footnote
 // references.
 
+import type { Piece } from './generated.js';
 import type { InlineSpan } from '../../parse/types.js';
 import { resolveSwatchSpans } from '../../pipeline/resources/resourceLayout/refSpans.js';
 import { texToOmml } from '../ommlWrite/index.js';
@@ -41,7 +42,7 @@ export interface InlineSource {
   noteRef?: (id: string) => number | undefined;
   /** Sets a note holding a citation's text (a note style) and gives its
    *  Word footnote id; absent where a note cannot stand (inside a note). */
-  citationNote?: (text: string) => number | undefined;
+  citationNote?: (text: string, start: number, end: number, pieces?: readonly Piece[]) => number | undefined;
   /** Write links as HYPERLINK fields (in parts without relationships of
    *  their own: footnotes). */
   linkFields?: boolean;
@@ -167,7 +168,7 @@ function hyperlink(ctx: WriterContext, href: string, runs: string, field?: boole
 
 type Unit =
   | { kind: 'char'; p: number; ch: string; src: number; fmt: Fmt }
-  | { kind: 'obj'; p: number; xml: string; fmt: Fmt; text: string; atom?: { start: number; end: number; kind: string; hash?: string } }
+  | { kind: 'obj'; p: number; xml: string; fmt: Fmt; text: string; atom?: { start: number; end: number; kind: string; hash?: string }; looks?: { text: string; fmt: Fmt }[] }
   | { kind: 'mapped'; p: number; text: string; map: number[]; fmt: Fmt; style: string };
 
 /** Runs and fragment of an inline source. */
@@ -244,14 +245,16 @@ export function renderInline(ctx: WriterContext, s: InlineSource): { xml: string
       // As the citation processor prints it ("[1,2]"); as written when no
       // reference defines its keys.
       const cited = ctx.citations?.label(span);
-      const noteId = cited?.note ? s.citationNote?.(cited.text) : undefined;
+      const noteId = cited?.note ? s.citationNote?.(cited.text, at, end, cited.pieces) : undefined;
       if (cited?.note && noteId !== undefined) {
         // A note style: the citation in a note of its own, the author's
         // name kept in the sentence.
         const name = cited.note.name;
         const ref = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteReference w:id="${noteId}"/></w:r>`;
-        units.push({ kind: 'obj', p, xml: textRuns(name, rPr(runProps(base))) + ref, fmt: base, text: name + OBJECT_CHAR, atom: { start: at, end, kind: 'citation' } });
-      } else units.push(atomUnit(p, cited?.text ?? raw, base, STYLE.reference, at, end, 'citation', refInk));
+        // The note is a fragment of its own over the same source (#1516):
+        // the reference's atom says so, and calls it as a footnote mark does.
+        units.push({ kind: 'obj', p, xml: textRuns(name, rPr(runProps(base))) + ref, fmt: base, text: name + OBJECT_CHAR, atom: { start: at, end, kind: 'citation-note' } });
+      } else units.push(citationUnit(p, cited?.text ?? raw, cited?.pieces, base, at, end));
     } else if (span.chip && !span.chip.gap && chipGlyph(ctx, span.chip)) {
       const glyph = chipGlyph(ctx, span.chip)!;
       const xml = textRuns(glyph.text, rPr(glyph.props));
@@ -320,6 +323,16 @@ function atomUnit(p: number, text: string, fmt: Fmt, style: string | undefined, 
   return { kind: 'obj', p, xml, fmt, text, atom: { start, end, kind } };
 }
 
+/** A citation as the processor prints it, over its source: in the
+ *  emphasis of the text around it, its own (an italic title) turned
+ *  against that as the engine turns it (#1518). */
+function citationUnit(p: number, text: string, pieces: readonly Piece[] | undefined, fmt: Fmt, start: number, end: number): Unit {
+  if (!pieces?.length) return atomUnit(p, text, fmt, STYLE.citation, start, end, 'citation');
+  const looks = pieces.map((x) => ({ text: x.text, fmt: { ...fmt, b: fmt.b || x.b, i: !!fmt.i !== !!x.i } }));
+  const xml = looks.map((l) => textRuns(l.text, rPr(runProps(l.fmt, STYLE.citation)))).join('');
+  return { kind: 'obj', p, xml, fmt, text, atom: { start, end, kind: 'citation' }, looks };
+}
+
 /** The source text of a construct the writer could not convert, mapped
  *  character by character (it comes back as written). */
 function sourceUnit(s: InlineSource, p: number, start: number, end: number): Unit {
@@ -348,7 +361,11 @@ function emit(ctx: WriterContext, s: InlineSource, units: Unit[]): { xml: string
     xml += insertAt(u.p);
     if (u.kind === 'obj') {
       xml += u.fmt.href ? hyperlink(ctx, u.fmt.href, u.xml, s.linkFields) : u.xml;
-      if (u.atom) frag.atom(u.text, u.atom.start, u.atom.end, u.atom.kind, flagsOf(u.fmt), u.atom.hash);
+      if (u.atom && u.looks?.length) {
+        // The atom's text in its looks, as its runs set it.
+        frag.atom(u.looks[0]!.text, u.atom.start, u.atom.end, u.atom.kind, flagsOf(u.looks[0]!.fmt), u.atom.hash);
+        for (const l of u.looks.slice(1)) frag.push(l.text, new Array<number>(l.text.length).fill(-1), flagsOf(l.fmt));
+      } else if (u.atom) frag.atom(u.text, u.atom.start, u.atom.end, u.atom.kind, flagsOf(u.fmt), u.atom.hash);
       else frag.push(u.text, new Array<number>(u.text.length).fill(-1), flagsOf(u.fmt));
       i++;
       continue;

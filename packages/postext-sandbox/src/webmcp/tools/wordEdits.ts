@@ -120,6 +120,7 @@ function describeEdit(s: SandboxState, e: DocxEdit): Record<string, unknown> {
     before: e.before,
     after: e.after,
     ...(e.reason ? { reason: e.reason } : {}),
+    ...(e.citation !== undefined ? { citation: e.citation, ...(e.citationPart ? { citationPart: e.citationPart } : {}) } : {}),
   };
 }
 
@@ -140,7 +141,7 @@ export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
   const applyEdits: WebMcpTool = {
     name: 'sandbox_apply_word_edits',
     title: 'Sandbox: bring back an edited Word export',
-    description: "Read a .docx that sandbox_export (format docx) or the export dialog wrote from this book and was then edited in Word or Google Docs, and put the changes made in it into the book's chapters and resources, as the Manuscript panel's Word import does with such a file. Every change found is listed: applied (it goes in), conflict (the same text also changed in the book since the export, or is no longer there) or rejected (text the book makes itself, such as a number or a label, or formatting it cannot place), with reason; the comments left in Word are listed too. Run it first with dryRun: true to see the list; without it the applied changes are written as one change that sandbox_undo takes back whole. A file saved by Google Docs comes back without the map of its marks: the map is written again from the book, and notes says so, and whether the book changed since the export (then a change made in the book since may be listed as an edit that undoes it). A .docx that was not exported from the Sandbox goes through sandbox_import_word instead.",
+    description: "Read a .docx that sandbox_export (format docx) or the export dialog wrote from this book and was then edited in Word or Google Docs, and put the changes made in it into the book's chapters and resources, as the Manuscript panel's Word import does with such a file. Every change found is listed: applied (it goes in), conflict (the same text also changed in the book since the export, or is no longer there) or rejected (text the book makes itself, such as a number or a label, or formatting it cannot place), with reason; a change inside a printed citation names it (citation: its keys; citationPart: prefix, locator or suffix): a part the author wrote goes into the citation, and a change to the text the bibliography writes is rejected (reason citation). variant is the export the file is (formatted, semantic or facsimile), writer the writer its properties name. The comments left in Word are listed too. Run it first with dryRun: true to see the list; without it the applied changes are written as one change that sandbox_undo takes back whole. A file saved by Google Docs comes back without the map of its marks: the map is written again from the book, and notes says so, and whether the book changed since the export (then a change made in the book since may be listed as an edit that undoes it). A .docx that was not exported from the Sandbox goes through sandbox_import_word instead.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -176,6 +177,7 @@ export function wordEditTools(host: SandboxToolHost): WebMcpTool[] {
       const about = {
         file: input.name,
         variant: review.result.variant,
+        writer: review.result.writer,
         counts: review.counts,
         edits: review.result.edits.map((e) => describeEdit(s, e)),
         ...(review.result.comments.length > 0 ? { comments: review.result.comments.map((c) => describeComment(s, c)) } : {}),

@@ -21,6 +21,7 @@ import { partPaletteAt } from './design/values.js';
 import { headingIsListed } from '../../pipeline/sections/headingStyles.js';
 import { renderScoreBlock } from './media/scores.js';
 import { FragmentBuilder } from './fragments.js';
+import type { Piece as TextPiece } from './generated.js';
 import { renderInline, type InlineSource } from './inline.js';
 import { markInserts, namedBookmark } from './marks.js';
 import { renderDisplayMath } from './math.js';
@@ -116,7 +117,7 @@ export function inlineSourceOf(ctx: WriterContext, block: ContentBlock, notes = 
     inlineCode: block.inlineCode?.map((r) => ({ start: abs(ctx, r.start), end: abs(ctx, r.end) })),
     inserts: markInserts(ctx, block, sourceMap),
     noteRef: notes ? (id) => footnote(ctx, id) : undefined,
-    citationNote: notes ? (text) => citationNote(ctx, text) : undefined,
+    citationNote: notes ? (text, start, end, pieces) => citationNote(ctx, text, start, end, pieces) : undefined,
     linkFields: !notes,
   };
 }
@@ -178,11 +179,25 @@ function footnote(ctx: WriterContext, id: string): number | undefined {
   return wordId;
 }
 
-/** A Word footnote holding a citation (a note style): generated text. */
-function citationNote(ctx: WriterContext, text: string): number {
+/** A Word footnote holding a citation (a note style): the processor's
+ *  text as one atom over the citation's source [`start`, `end`), so a
+ *  locator corrected in it comes back into the citation (#1516). */
+function citationNote(ctx: WriterContext, text: string, start: number, end: number, pieces?: readonly TextPiece[]): number {
   const wordId = ctx.nextFootnoteId();
   const mark = `<w:r>${rPr({ style: STYLE.footnoteRef })}<w:footnoteRef/></w:r><w:r><w:t xml:space="preserve"> </w:t></w:r>`;
-  ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${textRuns(text, '')}</w:p></w:footnote>`);
+  // In the processor's emphasis (an italic title, #1518).
+  const looks = pieces?.length ? pieces : [{ text }];
+  const flags = (x: TextPiece): string => `${x.b ? 'b' : ''}${x.i ? 'i' : ''}`;
+  const frag = new FragmentBuilder();
+  if (start >= 0 && end > start) {
+    frag.atom(looks[0]!.text, start, end, 'citation', flags(looks[0]!));
+    for (const x of looks.slice(1)) frag.push(x.text, new Array<number>(x.text.length).fill(-1), flags(x));
+  }
+  const runs = looks.map((x) => textRuns(x.text, rPr({ style: STYLE.citation, ...(x.b ? { b: true } : {}), ...(x.i ? { i: true } : {}) }))).join('');
+  const wrapped = frag.text
+    ? ctx.log.wrap(runs, frag, { block: blockId(ctx), target: { kind: 'markdown', chapter: ctx.chapter.index }, range: [start, end], role: 'footnote', note: true })
+    : runs;
+  ctx.footnotes.push(`<w:footnote w:id="${wordId}"><w:p>${pPr({ style: STYLE.footnoteText })}${mark}${wrapped}</w:p></w:footnote>`);
   return wordId;
 }
 

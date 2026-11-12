@@ -313,8 +313,18 @@ edició. Cada correcció es notifica en una línia pròpia:
 - `applied`, amb el fitxer i la línia on ha anat;
 - `conflict`: el text també ha canviat al llibre des de l'exportació, el
   capítol o el recurs ja no existeix, o dues correccions es superposen;
-- `rejected`: text que genera el mateix llibre (números, etiquetes de peu) o un
-  format que travessa el marcatge de Postext.
+- `rejected`: text que genera el mateix llibre (números, etiquetes de peu, el
+  que un estil de citació escriu a partir de la bibliografia) o un format que
+  travessa el marcatge de Postext.
+
+Una correcció dins d'una cita hi torna quan cau en una part que va escriure
+l'autor: el localitzador, o les paraules abans o després de l'obra. A
+`[vegeu també @simmons1991, 346–47]`, un interval de pàgines corregit a
+`346–48` a Word queda `[vegeu també @simmons1991, 346–48]`. La línia anomena
+la cita (`citation simmons1991: locator "7" → "8"`). Un canvi en el nom de
+l'autor, el títol o *Ibid.* es rebutja, i una part que s'imprimeix d'una altra
+manera que com està escrita (`346--47` imprès `346–47`) es rebutja amb el seu
+lloc al llibre, per canviar-la allà.
 
 Els canvis amb control de canvis es prenen com a acceptats, i els comentaris
 s'enumeren amb l'autor i el lloc, però no s'escriuen. El codi de sortida és 3
@@ -324,8 +334,11 @@ s'escriu al costat del seu destí i es reanomena a sobre, de manera que una
 execució interrompuda no deixa mai mig capítol; un fitxer de capítol que ha
 canviat mentre s'executava la importació es deixa com està, amb un avís
 `docx.fileChanged`. `-o` no va amb un llibre. Amb `--json`, la resposta porta
-`variant`, `exportId`, `edits` (cadascuna amb `status`, `reason`, `kind`,
-`before`, `after` i `at`), `comments`, `files` i, en una prova en sec, `diff`.
+`variant` (l'exportació que és el fitxer: `formatted`, `semantic` o
+`facsimile`), `writer` (el generador que anomenen les seves propietats),
+`exportId`, `edits` (cadascuna amb `status`, `reason`, `kind`, `before`,
+`after` i `at`, i dins d'una cita `citation` i `citationPart`), `comments`,
+`files` i, en una prova en sec, `diff`.
 
 Un fitxer editat a Google Docs i baixat com a `.docx` també torna. Docs no hi
 desa el mapa ni la còpia dels capítols; la importació torna a escriure el mapa a

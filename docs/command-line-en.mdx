@@ -302,8 +302,18 @@ block. Every correction is reported on a line of its own:
 - `applied`, with the file and line it went to;
 - `conflict`: the text also changed in the book since the export, the chapter
   or resource is gone, or two corrections overlap;
-- `rejected`: text the book makes itself (numbers, caption labels), or
-  formatting that crosses Postext markup.
+- `rejected`: text the book makes itself (numbers, caption labels, what a
+  citation style writes from the bibliography), or formatting that crosses
+  Postext markup.
+
+A correction inside a citation goes back into it when it falls in a part the
+author wrote: the locator, or the words before or after the work. In
+`[see also @simmons1991, 346–47]` a page range corrected to `346–48` in Word
+becomes `[see also @simmons1991, 346–48]`. The line names the citation
+(`citation simmons1991: locator "7" → "8"`). A change to the author's name,
+the title or *Ibid.* is rejected, and a part printed otherwise than it is
+written (`346--47` printed `346–47`) is rejected with its place in the book,
+to be changed there.
 
 Tracked changes are taken as accepted, and comments are listed with their
 author and place but not written. The exit code is 3 when a correction was not
@@ -311,9 +321,11 @@ applied. `--dry-run` (`-n`) prints the report and a unified diff of every file
 it would change, and writes nothing. Each file is written beside its target and
 renamed over it, so an interrupted run never leaves half a chapter; a chapter
 file that changed while the import ran is left alone with a `docx.fileChanged`
-warning. `-o` does not go with a book. With `--json` the answer has `variant`,
-`exportId`, `edits` (each with `status`, `reason`, `kind`, `before`, `after`
-and `at`), `comments`, `files` and, on a dry run, `diff`.
+warning. `-o` does not go with a book. With `--json` the answer has `variant` (the
+export the file is: `formatted`, `semantic` or `facsimile`), `writer` (the
+writer its properties name), `exportId`, `edits` (each with `status`, `reason`,
+`kind`, `before`, `after` and `at`, and inside a citation `citation` and
+`citationPart`), `comments`, `files` and, on a dry run, `diff`.
 
 A file edited in Google Docs and downloaded as `.docx` comes back too. Docs
 leaves out the map and the copy of the chapters; the import writes the map again

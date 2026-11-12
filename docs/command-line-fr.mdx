@@ -317,7 +317,17 @@ est signalée sur sa propre ligne :
 - `conflict` : le texte a aussi changé dans le livre depuis l’export, le
   chapitre ou la ressource n’existe plus, ou deux corrections se chevauchent ;
 - `rejected` : du texte que produit le livre lui-même (numéros, étiquettes de
-  légende) ou une mise en forme qui traverse le balisage Postext.
+  légende, ce qu’un style de citation écrit à partir de la bibliographie) ou une
+  mise en forme qui traverse le balisage Postext.
+
+Une correction dans une citation y revient quand elle tombe dans une partie
+que l’auteur a écrite : le localisateur, ou les mots avant ou après l’ouvrage.
+Dans `[see also @simmons1991, 346–47]`, une plage de pages corrigée en `346–48`
+dans Word devient `[see also @simmons1991, 346–48]`. La ligne nomme la citation
+(`citation simmons1991: locator "7" → "8"`). Une modification du nom de
+l’auteur, du titre ou d’*Ibid.* est refusée, et une partie imprimée autrement
+qu’elle n’est écrite (`346--47` imprimé `346–47`) est refusée avec sa place
+dans le livre, pour être changée là.
 
 Les modifications suivies sont prises comme acceptées, et les commentaires sont
 listés avec leur auteur et leur place, sans être écrits. Le code de sortie est
@@ -327,9 +337,11 @@ Chaque fichier est écrit à côté de sa cible puis renommé par-dessus, si bie
 qu’une exécution interrompue ne laisse jamais un demi-chapitre ; un fichier de
 chapitre qui a changé pendant l’importation est laissé tel quel, avec un
 avertissement `docx.fileChanged`. `-o` ne va pas avec un livre. Avec `--json`,
-la réponse comporte `variant`, `exportId`, `edits` (chacune avec `status`,
-`reason`, `kind`, `before`, `after` et `at`), `comments`, `files` et, lors d’un
-essai à blanc, `diff`.
+la réponse comporte `variant` (l’export qu’est le fichier : `formatted`,
+`semantic` ou `facsimile`), `writer` (le générateur que nomment ses
+propriétés), `exportId`, `edits` (chacune avec `status`, `reason`, `kind`,
+`before`, `after` et `at`, et dans une citation `citation` et `citationPart`),
+`comments`, `files` et, lors d’un essai à blanc, `diff`.
 
 Un fichier modifié dans Google Docs et téléchargé en `.docx` revient aussi. Docs
 n’y garde ni la carte ni la copie des chapitres ; l’importation réécrit la carte

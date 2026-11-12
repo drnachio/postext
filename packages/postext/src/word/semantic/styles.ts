@@ -34,6 +34,7 @@ export const STYLE = {
   source: 'PostextSource',
   sourceChar: 'PostextSourceChar',
   reference: 'PostextReference',
+  citation: 'PostextCitation',
   mark: 'PostextMark',
   chip: 'PostextChip',
   code: 'PostextCode',
@@ -236,6 +237,10 @@ export class StyleRegistry {
     });
     this.add(STYLE.sourceChar, { type: 'character', name: 'Postext Source Char', custom: true, rPr: { ...mono, color: '595959', shd: 'EDEDED' } });
     this.add(STYLE.reference, { type: 'character', name: 'Postext Reference', custom: true, rPr: { color: hex(body.referenceColor), b: body.referenceBold || undefined, i: body.referenceItalic || undefined } });
+    // Citations as the engine sets them (#1518): in the text's own weight
+    // and colour (the cross-reference look is not theirs), in a style of
+    // their own so an editor and the importer tell them from references.
+    this.add(STYLE.citation, { type: 'character', name: 'Postext Citation', custom: true, rPr: {} });
     // The band of a mark as run shading in the mark style's colour:
     // LibreOffice drops a highlight set in a character style.
     const mark = r.markStyles?.[0];

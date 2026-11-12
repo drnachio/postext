@@ -308,8 +308,18 @@ correção é informada numa linha própria:
 - `applied`, com o arquivo e a linha para onde foi;
 - `conflict`: o texto também mudou no livro desde a exportação, o capítulo ou o
   recurso não existe mais, ou duas correções se sobrepõem;
-- `rejected`: texto que o próprio livro gera (números, rótulos de legenda) ou
-  uma formatação que atravessa a marcação do Postext.
+- `rejected`: texto que o próprio livro gera (números, rótulos de legenda, o
+  que um estilo de citação escreve a partir da bibliografia) ou uma formatação
+  que atravessa a marcação do Postext.
+
+Uma correção dentro de uma citação volta para ela quando cai numa parte que o
+autor escreveu: o localizador, ou as palavras antes ou depois da obra. Em
+`[see also @simmons1991, 346–47]`, um intervalo de páginas corrigido para
+`346–48` no Word vira `[see also @simmons1991, 346–48]`. A linha nomeia a
+citação (`citation simmons1991: locator "7" → "8"`). Uma alteração no nome do
+autor, no título ou em *Ibid.* é rejeitada, e uma parte impressa de forma
+diferente de como está escrita (`346--47` impresso `346–47`) é rejeitada com o
+seu lugar no livro, para ser mudada lá.
 
 As alterações controladas são tomadas como aceitas, e os comentários são
 listados com autor e lugar, mas não gravados. O código de saída é 3 quando uma
@@ -318,9 +328,11 @@ unificado de cada arquivo que mudaria, e não grava nada. Cada arquivo é gravad
 ao lado do destino e renomeado por cima dele, então uma execução interrompida
 nunca deixa meio capítulo; um arquivo de capítulo que mudou enquanto a
 importação rodava fica como está, com um aviso `docx.fileChanged`. `-o` não
-combina com um livro. Com `--json`, a resposta traz `variant`, `exportId`,
-`edits` (cada uma com `status`, `reason`, `kind`, `before`, `after` e `at`),
-`comments`, `files` e, num teste sem gravação, `diff`.
+combina com um livro. Com `--json`, a resposta traz `variant` (a exportação
+que o arquivo é: `formatted`, `semantic` ou `facsimile`), `writer` (o gerador
+que as propriedades dele nomeiam), `exportId`, `edits` (cada uma com `status`,
+`reason`, `kind`, `before`, `after` e `at`, e dentro de uma citação `citation`
+e `citationPart`), `comments`, `files` e, num teste sem gravação, `diff`.
 
 Um arquivo editado no Google Docs e baixado como `.docx` também volta. O Docs
 não guarda o mapa nem a cópia dos capítulos; a importação grava o mapa de novo a
