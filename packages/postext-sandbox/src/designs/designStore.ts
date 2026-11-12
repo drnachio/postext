@@ -7,6 +7,7 @@
  */
 
 import type { DesignPart } from 'postext';
+import { moveLegacyTemplates } from './legacyTemplates.js';
 
 /** A saved design. */
 export interface SavedDesign {
@@ -73,13 +74,25 @@ export function onSavedDesignsChange(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
+/** The templates postext 1.78 saved, moved to the saved designs once per
+ *  page, before the designs are first read (see `legacyTemplates.ts`). A
+ *  move that fails leaves them where they were, for the next page. */
+let legacyMove: Promise<void> | null = null;
+function moveLegacyOnce(): Promise<void> {
+  legacyMove ??= moveLegacyTemplates((d) => run('readwrite', (s) => s.put(d)).then(() => undefined))
+    .then((moved) => { if (moved > 0) changed(); }, () => undefined);
+  return legacyMove;
+}
+
 /** Saved designs, newest first. */
 export async function listSavedDesigns(): Promise<SavedDesign[]> {
+  await moveLegacyOnce();
   const all = await run('readonly', (s) => s.getAll() as IDBRequest<SavedDesign[]>);
   return all.sort((a, b) => b.updatedAt - a.updatedAt);
 }
 
 export async function getSavedDesign(id: string): Promise<SavedDesign | null> {
+  await moveLegacyOnce();
   return (await run('readonly', (s) => s.get(id) as IDBRequest<SavedDesign | undefined>)) ?? null;
 }
 

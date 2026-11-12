@@ -198,7 +198,7 @@ export function designTools(host: SandboxToolHost): WebMcpTool[] {
     {
       name: 'sandbox_import_design',
       title: 'Import a design',
-      description: 'Add a design file to the reader\'s designs: a .postext design (made by the Design panel, sandbox_export_design or `postext design`), the design of a whole book\'s .postext, or a configuration exported as .json. The file is read with the limits of a design file (size, fonts and profiles only).',
+      description: 'Add a design file to the reader\'s designs: a .postext design (made by the Design panel, sandbox_export_design or `postext design`), the design of a whole book\'s .postext, a configuration exported as .json, or a design template saved by postext 1.78 (.postext-template.json). The file is read with the limits of a design file (size, fonts and profiles only).',
       inputSchema: {
         type: 'object',
         properties: { file: { ...FILE_PARAM, description: 'The design file: where to fetch it (url) or its bytes (base64).' } },

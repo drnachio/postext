@@ -9,8 +9,9 @@ import { fill } from '../../print/fillTokens.js';
 import { useDesignHost } from '../../designs/designHost.js';
 import { importDesign } from '../../designs/designActions.js';
 
-/** Import a design file (a design or a book `.postext`, or an exported
- *  configuration) into the saved designs. Nothing on the book changes. */
+/** Import a design file (a design or a book `.postext`, an exported
+ *  configuration, or a `.postext-template.json` of postext 1.78) into the
+ *  saved designs. Nothing on the book changes. */
 export function DesignImportButton({ onImported }: { onImported?: () => void }) {
   const labels = useSandboxLabels();
   const host = useDesignHost();

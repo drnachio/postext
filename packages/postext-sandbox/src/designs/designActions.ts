@@ -39,6 +39,7 @@ import { slugify } from '../panels/resources/slugify.js';
 import { deleteSavedDesign, generateDesignId, putSavedDesign } from './designStore.js';
 import { loadDesign, readDesignFile, type DesignEntry, type DesignSourcesContext, type ReadyDesign } from './designSources.js';
 import { bookKey, designTrialOf, setDesignTrial, type DesignTrial } from './designTrial.js';
+import { designFileFromTemplate, legacyTemplateFromFile } from './legacyTemplates.js';
 
 /** What the design actions work on. */
 export interface DesignHost {
@@ -222,9 +223,10 @@ export async function saveDesign(host: DesignHost, input: { name: string; descri
   return { entry, warnings: made.warnings };
 }
 
-/** A design file (`.postext`, a design or a book) or an exported
- *  configuration (`.json`) added to the saved designs. Throws when the
- *  file is neither, or breaks the design file's limits. */
+/** A design file (`.postext`, a design or a book), an exported
+ *  configuration (`.json`) or a template of postext 1.78
+ *  (`.postext-template.json`) added to the saved designs. Throws when the
+ *  file is none of these, or breaks the design file's limits. */
 export async function importDesign(host: DesignHost, bytes: Uint8Array, fileName: string): Promise<{ entry: DesignEntry; warnings: string[] }> {
   const s = host.getState();
   const base = fileName.replace(/\.[^.]+$/, '') || 'design';
@@ -234,6 +236,12 @@ export async function importDesign(host: DesignHost, bytes: Uint8Array, fileName
       data = JSON.parse(new TextDecoder().decode(bytes));
     } catch {
       throw new Error(`"${fileName}" is not a design file`);
+    }
+    const template = legacyTemplateFromFile(data);
+    if (template) {
+      const made = await designFileFromTemplate(template, s.locale);
+      const entry = { name: template.name, ...(template.description ? { description: template.description } : {}), ...(template.source ? { source: template.source } : {}), parts: made.parts };
+      return { entry: await storeDesignBytes(entry, made.bytes), warnings: made.warnings };
     }
     const rec = data as { type?: unknown; version?: unknown; config?: unknown; configVersion?: number };
     if (rec?.type !== 'postext-config' || rec.version !== 1 || typeof rec.config !== 'object' || rec.config === null) throw new Error(`"${fileName}" is not a design file`);
