@@ -2888,6 +2888,10 @@ designs run across the spread, so the Canvas shows the spread as one (Sandbox: D
 
 ### Delivering EPUB, HTML and PDF files
 
+`postext design my-book -o house.postext` writes the book's design as a design file (no chapters; `--parts page,text,…`
+for some of the Design panel's groups), and every command takes `--design house.postext` to set a book in one
+(project-format.md §7, Design files).
+
 The `postext` command line writes every output from the project folder or the `.postext`; `build` takes
 the same options and lays the book out once for all of them
 (`postext build my-book --locale es --pdf out/es.pdf --epub out/es.epub --html out/es.html --docx out/es.docx`):

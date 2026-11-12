@@ -189,14 +189,6 @@ Les mêmes fichiers sont lus et écrits par le paquet npm `postext` (`openBundle
 
 Le texte et la maquette s’exportent aussi séparément depuis les en-têtes des panneaux Texte et Maquette.
 
-L’en-tête du **panneau Maquette** télécharge `postext-config.json` sans les valeurs par défaut :
+L’en-tête du **panneau Maquette** exporte la maquette du livre en fichier de maquette, un `.postext` sans chapitres (voir [Fichiers de maquette](/fr/docs/configuration-bundles#fichiers-de-maquette)), et en importe un, la maquette du `.postext` d’un livre entier ou un `postext-config.json` écrit par des versions antérieures (voir [Maquettes](/fr/docs/sandbox#maquettes)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-L’en-tête du **panneau Texte** télécharge le chapitre actif en simple fichier `.md`, et son bouton **Importer** remplace le chapitre actif par le contenu d’un fichier `.md`. Le bouton **Importer** du panneau Maquette ouvre un sélecteur de fichiers `.json`, validés selon le `type` et la `version` attendus ; les fichiers invalides sont ignorés sans message. L’enveloppe `postext-markdown.json` et le format combiné `postext-sandbox.json` des versions antérieures n’existent plus.
+L’en-tête du **panneau Texte** télécharge le chapitre actif en simple fichier `.md`, et son bouton **Importer** remplace le chapitre actif par le contenu d’un fichier `.md`. L’enveloppe `postext-markdown.json` et le format combiné `postext-sandbox.json` des versions antérieures n’existent plus.

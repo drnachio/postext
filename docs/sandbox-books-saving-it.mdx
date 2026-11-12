@@ -189,14 +189,6 @@ Gli stessi file vengono letti e scritti dal pacchetto `postext` (`openBundle`, `
 
 Il testo e il progetto grafico si esportano anche separatamente dalle intestazioni dei pannelli Testo e Grafica.
 
-L’intestazione del **pannello Grafica** scarica `postext-config.json` privo dei valori predefiniti:
+L’intestazione del **pannello Grafica** esporta il progetto del libro come file di progetto, un `.postext` senza capitoli (vedi [File di progetto grafico](/it/docs/configuration-bundles#file-di-progetto-grafico)), e ne importa uno, il progetto del `.postext` di un libro intero o un `postext-config.json` scritto da versioni precedenti (vedi [Progetti grafici](/it/docs/sandbox#progetti-grafici)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-L’intestazione del **pannello Testo** scarica il capitolo attivo come semplice file `.md` e il suo pulsante **Importa** sostituisce il capitolo attivo con il contenuto di un file `.md`. Il pulsante **Importa** del pannello Grafica apre un selettore di file `.json` validati rispetto a `type` e `version` attesi; i file non validi vengono ignorati senza segnalazione. L’involucro `postext-markdown.json` e il formato combinato `postext-sandbox.json` delle versioni precedenti non esistono più.
+L’intestazione del **pannello Testo** scarica il capitolo attivo come semplice file `.md` e il suo pulsante **Importa** sostituisce il capitolo attivo con il contenuto di un file `.md`. L’involucro `postext-markdown.json` e il formato combinato `postext-sandbox.json` delle versioni precedenti non esistono più.

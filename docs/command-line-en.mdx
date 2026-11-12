@@ -167,6 +167,7 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>idml</code></td><td>The pages as an InDesign package (IDML), for finishing in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>The corrections made in an exported Word file, back into the book; any other Word document as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>An InDesign document saved as IDML, as a new book (a folder or a <code>.postext</code>).</td></tr>
+    <tr><td><code>design</code></td><td>The design of a book (some of its parts, or all) as a design file, a <code>.postext</code> with no chapters.</td></tr>
     <tr><td><code>pack</code></td><td>A book folder or loose Markdown as one <code>.postext</code> file.</td></tr>
     <tr><td><code>unpack</code></td><td>A <code>.postext</code> file as a folder.</td></tr>
     <tr><td><code>info</code></td><td>The book's chapters, languages, resources and fonts, and with <code>--pages</code> its page count.</td></tr>
@@ -400,6 +401,18 @@ postext import-idml book.idml --report --json
 
 A book exported from Postext comes back with the same lines. A document made in InDesign is read with losses: the command prints the verdict (`faithful`, `approximate` or `lossy`), the counts and what was lost or approximated; `--report` adds the notes and how each paragraph style was read, and `--json` carries all of it as data. `--hidden`, `--pasteboard` and `--non-printing` also read hidden layers and objects, the pasteboard and non-printing objects; `--conditions all` reads all the conditional text, `--changes reject` reads tracked changes as rejected, and `--no-masters` leaves out master-page items. `--name` and `--locale` give the title and the language. The importer is `idmlToPostext` of the `postext-idml` package: see [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postext-idml). The import copies the document as it is; to port a book you will keep, with its layout rules worked out, use the agent skill instead (see [InDesign: import, export and porting](/en/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+A design file holds a book's design and none of its text: the settings of the parts asked for (the Design panel's groups, see [Design bundles](/en/docs/configuration-bundles#design-bundles)) with the font files and colour profile they name. A font marked as not redistributable is left out. `--parts` takes some parts only, comma separated; `--design-name`, `--id` and `--description` name the design. The same book always gives the same bytes.
+
+`--design FILE`, an option of every command that reads a book, sets the book in a design file or in another book's design, before `--config` and `--set`: the settings of its parts replace the book's, named styles merge by id and the design's fonts join the book's. `--design-parts` takes some of its parts only. The Sandbox's Design panel imports and exports the same files.
+
 ### pack and unpack
 
 ```bash
@@ -471,6 +484,7 @@ good files.
     <tr><td><code>--chapters LIST</code></td><td>Lays out some chapters only: <code>2</code>, <code>1,3-5</code>, <code>4-</code>. Faster on a long book; their pages are numbered from their own first page.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>Changes one setting for this run, as a dotted path: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. The value is read as JSON when it can be (numbers, true and false, objects), otherwise as text. Repeatable.</td></tr>
     <tr><td><code>--config FILE</code></td><td>A configuration (or a <code>preset.json</code>) for loose Markdown, or merged over a book's own.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Sets the book in the design of a design file (from <code>postext design</code> or the Sandbox) or of another book's <code>.postext</code>, before <code>--config</code> and <code>--set</code>. <code>--design-parts LIST</code> takes only some of its parts.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Pictures, fonts and title for loose Markdown.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>A folder to look in for fonts the book does not carry. Repeatable.</td></tr>
     <tr><td><code>--offline</code></td><td>Never download fonts.</td></tr>

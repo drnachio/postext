@@ -30,7 +30,6 @@ A narrow strip on the left edge has one button per panel. Each button shows an i
 - **Books** (`Files` icon): your books and the sample books
 - **Chapters** (`BookOpen` icon): the open book and its chapters
 - **Text** (`FileCode` icon): write and edit the text of the current chapter
-- **Templates** (`LayoutTemplate` icon): design templates to try on the book, save, import and export
 - **Resources** (`FolderOpen` icon): images, SVG drawings and tables used in the book
 - **Fonts** (`Type` icon): the typefaces the book uses, and your own font files
 - **Design** (`Settings2` icon): page, typography, headings, figures, boxes and export settings
@@ -134,6 +133,7 @@ Clicking a book (or one of a sample book's language tags) opens it, and once it 
     - **Copy of the open book** copies the open book, its figures and fonts into a new book.
     - **Blank book** starts an empty one.
     - **Open a .postext file…** imports a file.
+    - **With the design of…** starts an empty book in a design of the gallery (see [Designs](#designs)).
 
   You can also duplicate any row. While you have no books of your own, the group shows an empty state with the same shortcut. Each row has one labelled **⋯** menu (*More actions for "…"*) with **Rename…**, **Add a language…** (see [A book in several languages](/en/docs/sandbox-books-saving#export-and-import)), **Duplicate**, **Download (.postext)** and **Delete…**. Delete asks for confirmation right next to the ⋯ button.
 
@@ -209,15 +209,18 @@ The open sample book also defines what the other panels' **Reset** buttons resto
 
 A preset that was open in an earlier session but is no longer listed by any source (typically a private preset in a build that does not serve it) still appears, greyed out as *Not available in this build*. The Sandbox keeps the loaded content instead of silently swapping it for the built-in sample. The open preset's id is persisted under the `postext-sandbox-preset` key (see [Persistence](/en/docs/sandbox-books-saving#persistence)). The bundle format is described in the [Preset bundle format](/en/docs/sandbox-embedding#preset-bundle-format) appendix.
 
-#### Templates panel
+#### Designs
 
-The **Templates** panel, between Text and Resources, is the step before the design: choosing which design the book starts from. A template keeps the design (page and columns, type and styles, colours, running heads and feet, print production), never the text, the language or the resource types, and carries copies of its own fonts and ICC profile.
+A design is how a book looks and nothing of what it says: the page and columns, the type and styles, the colours, the running heads, the print settings. It never holds the text, the resources or the settings that belong to the book as a whole (language, direction, numerals, resource types, checks). Designs live in the **Design** panel: the **Designs** row of its overview opens them, and its header exports and imports design files.
 
-- **Gallery.** The saved templates and the four that ship (*Novel*, *Technical manual*, *Two-column magazine* and *Two-colour book*), each with a drawing of its page, its type and its colours.
-- **Try.** Choose the parts to replace and the template is set on the book. A *Trying “…”* bar offers **Keep** (it stays) and **Discard** (back to the design you had). Try several in a row: each is set over the starting design, and Discard goes back to it. What the template leaves unset goes back to its default.
-- **Save a design as a template**, from this book or any other book in the Sandbox, choosing the parts it holds.
-- **As a chapter style**. The chosen parts of a template (page and columns, type, colours, running heads) become a [chapter style](/en/docs/configuration-styles#chapter-styles) of the book, new or one it has: only what they change over the book, the page size and print settings staying the book's. Give it to the chapters that need that design (an appendix, the clinical cases) in **Chapters**, or with `chapterStyle:` in their front matter, and to a part of a chapter, from a new page, with `::section{style="…"}`; the rest of the book keeps its own.
-- **Import** (in the panel's header) and **Export** (on each template) `.postext-template.json` files to share them; fonts that are not redistributable stay behind. Saved templates can be deleted; the built-in ones cannot.
+- **Parts.** A design is cut by the Design panel's groups (page and columns, writing system, colours, body text, headings…). Saving, trying, applying or exporting one, you choose the groups it takes.
+- **Gallery.** Your saved designs, the four the Sandbox ships (*Novel*, *Technical manual*, *Two-column magazine*, *Two-colour book*) and the design of each sample book, each with a drawing of its page and the parts it holds.
+- **Try.** The chosen parts replace the book's. A bar offers **Keep** and **Discard**: Discard brings back only the settings the design replaced, and every other edit made in the meantime stays. Trying another design replaces the first. The trial belongs to the book it began on, and opening another book drops it. The bar lists the styles the text names (paragraph, heading, box, chip, character, mark and table styles) that the design does not define, so you see them before you keep it. Trying, keeping, discarding and applying are steps of the history (⌘Z / Ctrl+Z).
+- **Named styles** merge by id: a style of the design replaces the book's style with the same id, and the book's other styles stay. Fonts merge by family, and the palette colours the design's settings name come with it.
+- **A book in several languages** takes a design in its general settings, whichever scope the switch at the top of the panel shows; each language keeps its own overrides.
+- **Save** the design of this book, or of any other book of yours, with the parts you choose.
+- **As a chapter style.** The chosen parts become a [chapter style](/en/docs/configuration-styles#chapter-styles) of the book, new or one it has, holding only what they change over the book. Give it to chapters in **Chapters** or with `chapterStyle:` in their front matter, and to part of a chapter with `:::part{style="…"}`.
+- **Export and import.** A design file is a `.postext` with no chapters (see [Design bundles](/en/docs/configuration-bundles#design-bundles)) that carries the font files and the colour profile its parts name; fonts that are not redistributable stay behind. Import also reads a whole book's `.postext` (its design) and the `postext-config.json` files of earlier versions. The command line makes and reads the same files ([`postext design`](/en/docs/command-line#design)). Saved designs can be deleted; the included ones and the sample books' cannot.
 
 #### Resources panel
 

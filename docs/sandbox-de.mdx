@@ -30,7 +30,6 @@ Ein schmaler Streifen am linken Rand enthält je Bedienfeld eine Schaltfläche. 
 - **Bücher** (Symbol `Files`): Ihre Bücher und die Beispielbücher
 - **Kapitel** (Symbol `BookOpen`): das geöffnete Buch und seine Kapitel
 - **Text** (Symbol `FileCode`): den Text des aktuellen Kapitels schreiben und bearbeiten
-- **Vorlagen** (Symbol `LayoutTemplate`): Gestaltungsvorlagen am Buch ausprobieren, speichern, importieren und exportieren
 - **Ressourcen** (Symbol `FolderOpen`): Bilder, SVG-Zeichnungen und Tabellen, die das Buch verwendet
 - **Schriften** (Symbol `Type`): die Schriften des Buchs und Ihre eigenen Schriftdateien
 - **Gestaltung** (Symbol `Settings2`): Seite, Typografie, Überschriften, Abbildungen, Kästen und Exporteinstellungen
@@ -134,6 +133,7 @@ Ein Klick auf ein Buch (oder auf eines der Sprachkürzel eines Beispielbuchs) ö
     - **Kopie des geöffneten Buchs** kopiert das geöffnete Buch mit seinen Abbildungen und Schriften in ein neues Buch.
     - **Leeres Buch** beginnt ein leeres.
     - **Eine .postext-Datei öffnen …** importiert eine Datei.
+    - **Mit der Gestaltung von …** beginnt ein leeres Buch in einer Gestaltung der Galerie (siehe [Gestaltungen](#gestaltungen)).
 
   Sie können auch jede Zeile duplizieren. Solange Sie keine eigenen Bücher haben, zeigt die Gruppe einen leeren Zustand mit derselben Abkürzung. Jede Zeile hat ein beschriftetes Menü **⋯** (*Weitere Aktionen für „…“*) mit **Umbenennen …**, **Sprache hinzufügen …** (siehe [Ein Buch in mehreren Sprachen](/de/docs/sandbox-books-saving#export-und-import)), **Duplizieren**, **Herunterladen (.postext)** und **Löschen …**. Löschen fragt direkt neben der Schaltfläche ⋯ nach.
 
@@ -209,15 +209,18 @@ Das geöffnete Beispielbuch legt auch fest, was die Schaltflächen **Zurücksetz
 
 Ein Beispielbuch, das in einer früheren Sitzung geöffnet war, aber von keiner Quelle mehr aufgeführt wird (typischerweise ein privates Beispielbuch in einem Build, der es nicht ausliefert), erscheint weiterhin, ausgegraut als *In diesem Build nicht verfügbar*. Die Sandbox behält den geladenen Inhalt, statt ihn stillschweigend gegen das eingebaute Beispiel auszutauschen. Die ID des geöffneten Beispielbuchs wird unter dem Schlüssel `postext-sandbox-preset` gespeichert (siehe [Speichern](/de/docs/sandbox-books-saving#speichern)). Das Paketformat beschreibt der Anhang [Paketformat der Beispielbücher](/de/docs/sandbox-embedding#paketformat-der-beispielbücher).
 
-#### Bedienfeld Vorlagen
+#### Gestaltungen
 
-Das Bedienfeld **Vorlagen** zwischen Text und Ressourcen ist der Schritt vor dem Design: wählen, von welchem Design das Buch ausgeht. Eine Vorlage bewahrt das Design (Seite und Spalten, Typografie und Formate, Farben, Kolumnentitel und Fußzeilen, Druck), nie den Text, die Sprache oder die Ressourcentypen, und nimmt Kopien ihrer Schriften und ihres ICC-Profils mit.
+Eine Gestaltung ist, wie ein Buch aussieht, und nichts von dem, was es sagt: Seite und Spalten, Schrift und Stile, Farben, Kolumnentitel, Druckeinstellungen. Text, Ressourcen und die Einstellungen des ganzen Buchs (Sprache, Schreibrichtung, Ziffern, Ressourcentypen, Prüfungen) gehören nie dazu. Die Gestaltungen liegen im **Bedienfeld Gestaltung**: die Zeile **Gestaltungen** seiner Übersicht öffnet sie, und seine Kopfzeile exportiert und importiert Gestaltungsdateien.
 
-- **Galerie.** Die gespeicherten Vorlagen und die vier mitgelieferten (*Roman*, *Technisches Handbuch*, *Zweispaltiges Magazin* und *Zweifarbiges Buch*), jede mit einer Zeichnung ihrer Seite, ihrer Typografie und ihrer Farben.
-- **Ausprobieren.** Die zu ersetzenden Teile wählen, und die Vorlage wird auf das Buch gesetzt. Eine Leiste *„…“ wird ausprobiert* bietet **Behalten** und **Verwerfen** (zurück zum vorigen Design). Was die Vorlage offen lässt, geht auf den Standard zurück.
-- **Als Kapitelstil.** Die gewählten Teile einer Vorlage (Seite und Spalten, Typografie, Farben, Kolumnentitel) werden ein Kapitelstil des Buchs, neu oder ein vorhandener: nur, was sie gegenüber dem Buch ändern; Seitenformat und Druck bleiben die des Buchs. Er wird den Kapiteln zugewiesen, die dieses Design brauchen (ein Anhang, die Fallbeispiele), unter **Kapitel** oder mit `chapterStyle:` im Front Matter, und einem Teil eines Kapitels, ab einer neuen Seite, mit `::section{style="…"}`; der Rest des Buchs behält seines.
-- **Ein Design als Vorlage speichern**, aus diesem oder einem anderen Buch im Sandbox, mit den gewählten Teilen.
-- **Importieren** (im Kopf des Bedienfelds) und **Exportieren** (an jeder Vorlage) von `.postext-template.json`-Dateien zum Weitergeben; nicht weitergebbare Schriften bleiben zurück. Gespeicherte Vorlagen lassen sich löschen, mitgelieferte nicht.
+- **Teile.** Eine Gestaltung ist nach den Gruppen des Bedienfelds Gestaltung geschnitten (Seite und Spalten, Schriftsystem, Farben, Text, Überschriften …). Beim Speichern, Ausprobieren, Anwenden oder Exportieren wählst du, welche Gruppen sie mitnimmt.
+- **Galerie.** Deine gespeicherten Gestaltungen, die vier mitgelieferten (*Roman*, *Technisches Handbuch*, *Zweispaltiges Magazin*, *Zweifarbiges Buch*) und die Gestaltung jedes Beispielbuchs, jeweils mit einer Zeichnung der Seite und den Teilen, die sie enthält.
+- **Ausprobieren.** Die gewählten Teile ersetzen die des Buchs. Eine Leiste bietet **Behalten** und **Verwerfen**: Verwerfen bringt nur die Einstellungen zurück, die die Gestaltung ersetzt hat, und jede andere Änderung von inzwischen bleibt. Eine weitere Gestaltung auszuprobieren ersetzt die erste. Der Versuch gehört zu dem Buch, in dem er begann; ein anderes Buch zu öffnen beendet ihn. Die Leiste nennt die Stile, die der Text verwendet (Absatz-, Überschriften-, Kasten-, Chip-, Zeichen-, Markierungs- und Tabellenstile) und die die Gestaltung nicht festlegt, damit du sie vor dem Behalten siehst. Ausprobieren, Behalten, Verwerfen und Anwenden sind Schritte des Verlaufs (⌘Z / Strg+Z).
+- **Benannte Stile** werden nach ID zusammengeführt: ein Stil der Gestaltung ersetzt den Stil des Buchs mit derselben ID, die übrigen Stile des Buchs bleiben. Schriften werden nach Familie zusammengeführt, und die Palettenfarben, die die Einstellungen der Gestaltung nennen, kommen mit.
+- **Ein Buch in mehreren Sprachen** erhält die Gestaltung in seinen allgemeinen Einstellungen, gleich, was der Umschalter oben im Bedienfeld zeigt; jede Sprache behält ihre eigenen Abweichungen.
+- **Speichern** lässt sich die Gestaltung dieses Buchs oder jedes anderen deiner Bücher, mit den gewählten Teilen.
+- **Als Kapitelstil.** Die gewählten Teile werden ein [Kapitelstil](/de/docs/configuration-styles#kapitelstile) des Buchs, neu oder ein vorhandener, mit nur dem, was sie gegenüber dem Buch ändern. Weise ihn Kapiteln unter **Kapitel** oder mit `chapterStyle:` im Vorspann zu, und einem Teil eines Kapitels mit `:::part{style="…"}`.
+- **Exportieren und importieren.** Eine Gestaltungsdatei ist eine `.postext` ohne Kapitel (siehe [Gestaltungsdateien](/de/docs/configuration-bundles#gestaltungsdateien)), die die Schriftdateien und das Farbprofil mitbringt, die ihre Teile nennen; nicht weitergebbare Schriften bleiben zurück. Der Import liest auch die `.postext` eines ganzen Buchs (seine Gestaltung) und die `postext-config.json`-Dateien früherer Versionen. Die Kommandozeile schreibt und liest dieselben Dateien ([`postext design`](/de/docs/command-line#design)). Gespeicherte Gestaltungen lassen sich löschen, die mitgelieferten und die der Beispielbücher nicht.
 
 #### Bedienfeld Ressourcen
 

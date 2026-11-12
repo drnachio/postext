@@ -130,6 +130,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>idml</code></td><td>ページをInDesignのパッケージ（IDML）にします。InDesignで仕上げるためのものです。</td></tr>
     <tr><td><code>import-docx</code></td><td>書き出したWordファイルに加えた校正を本に戻します。それ以外のWord文書は新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>import-idml</code></td><td>IDMLで保存したInDesignの文書を新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
+    <tr><td><code>design</code></td><td>本のデザイン（一部のパーツ、またはすべて）を、章のない<code>.postext</code>であるデザインファイルにします。</td></tr>
     <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
     <tr><td><code>unpack</code></td><td><code>.postext</code>ファイルをフォルダーに展開します。</td></tr>
     <tr><td><code>info</code></td><td>本の章、言語、リソース、フォント。<code>--pages</code>を付けるとページ数も示します。</td></tr>
@@ -243,6 +244,18 @@ postext import-idml book.idml --report --json
 
 Postextから書き出した本は、同じ行のまま戻ります。InDesignで作った文書の読み込みには欠落があります。コマンドは判定（`faithful`、`approximate`、`lossy`のいずれか）、件数、失われたものと近似したものを出力します。`--report`を付けると、注記と、各段落スタイルをどう読んだかも加わり、`--json`はそのすべてをデータとして出力します。`--hidden`、`--pasteboard`、`--non-printing`を付けると、非表示のレイヤーとオブジェクト、ペーストボード上のもの、印刷しないオブジェクトも読み込みます。`--conditions all`は条件テキストをすべて読み込み、`--changes reject`は変更履歴を却下したものとして読み、`--no-masters`はマスターページのアイテムを除きます。`--name`と`--locale`は書名と言語を指定します。読み込みを行うのは`postext-idml`パッケージの`idmlToPostext`です。[プログラムからの利用 › InDesignパッケージ](/ja/docs/configuration-programmatic-usage#indesignパッケージpostext-idml)を参照してください。読み込みは文書をそのまま写します。手元に残す本を、レイアウトの規則を割り出して移植するなら、代わりにエージェントスキルを使ってください（[InDesign：読み込み、書き出し、移植](/ja/docs/indesign)を参照）。
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+デザインファイルは本のデザインだけを持ち、本文は持ちません。指定したパーツ（デザインパネルのグループ。[デザインファイル](/ja/docs/configuration-bundles#デザインファイル)を参照）の設定と、それが参照するフォントファイルとカラープロファイルを含みます。再配布できないフォントは含みません。`--parts`でカンマ区切りの一部のパーツだけを取り、`--design-name`、`--id`、`--description`でデザインに名前を付けます。同じ本からは常に同じバイト列ができます。
+
+`--design FILE`は本を読むすべてのコマンドのオプションで、`--config`と`--set`の前に、デザインファイルまたは別の本のデザインを本に適用します。パーツの設定が本のものを置き換え、名前付きスタイルはidで統合され、デザインのフォントが本のフォントに加わります。`--design-parts`で一部のパーツだけを使います。Sandboxのデザインパネルも同じファイルを読み込み・書き出しします。
+
 ### packとunpack
 
 ```bash
@@ -289,6 +302,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--chapters LIST</code></td><td>一部の章だけをレイアウトします：<code>2</code>、<code>1,3-5</code>、<code>4-</code>。長い本では速くなります。ページ番号はその章自身の最初のページから振られます。</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>この実行に限って、1つの設定をドット区切りのパスで変えます：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。値は、読めるときはJSONとして（数値、trueとfalse、オブジェクト）、そうでなければテキストとして読みます。繰り返し指定できます。</td></tr>
     <tr><td><code>--config FILE</code></td><td>ばらのMarkdownのための設定（または<code>preset.json</code>）。本の場合は本自身の設定の上に統合されます。</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>デザインファイル（<code>postext design</code>またはSandboxで作成）や別の本の<code>.postext</code>のデザインを、<code>--config</code>と<code>--set</code>の前に本に適用します。<code>--design-parts LIST</code>で一部のパーツだけを使います。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>ばらのMarkdownのための画像、フォント、タイトル。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>本に含まれないフォントを探すフォルダー。繰り返し指定できます。</td></tr>
     <tr><td><code>--offline</code></td><td>フォントをダウンロードしません。</td></tr>

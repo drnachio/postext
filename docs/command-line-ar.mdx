@@ -160,6 +160,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>idml</code></td><td>الصفحات حزمةَ InDesign ‏(IDML)، لإتمامها في InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>التصحيحات التي أُجريت في ملف Word مصدَّر، عائدةً إلى الكتاب؛ وأي مستند Word آخر كتابًا جديدًا (مجلدًا أو ملف <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>مستند InDesign محفوظ بصيغة IDML، كتابًا جديدًا (مجلدًا أو ملف <code>.postext</code>).</td></tr>
+    <tr><td><code>design</code></td><td>تصميم كتاب (بعض أجزائه أو كلها) ملفَّ تصميم، أي <code>.postext</code> بلا فصول.</td></tr>
     <tr><td><code>pack</code></td><td>مجلد كتاب أو ملفات Markdown منفردة في ملف <code>.postext</code> واحد.</td></tr>
     <tr><td><code>unpack</code></td><td>ملف <code>.postext</code> مجلدًا.</td></tr>
     <tr><td><code>info</code></td><td>فصول الكتاب ولغاته وموارده وخطوطه، ومع <code>--pages</code> عدد صفحاته.</td></tr>
@@ -373,6 +374,18 @@ postext import-idml book.idml --report --json
 
 والكتاب المصدَّر من Postext يعود بالأسطر نفسها. والمستند المصنوع في InDesign يُقرأ مع فقد: يطبع الأمر الحكم (`faithful` أو `approximate` أو `lossy`) والأعداد وما فُقد أو قُرِّب؛ ويضيف `--report` الملاحظات وكيف قُرئ كل نمط فقرة، ويحمل `--json` ذلك كله بيانات. وتقرأ `--hidden` و`--pasteboard` و`--non-printing` كذلك الطبقات والكائنات المخفية، وما على لوحة اللصق، والكائنات غير المطبوعة؛ ويقرأ `--conditions all` النص الشرطي كله، ويقرأ `--changes reject` التغييرات المتعقَّبة كأنها رُفضت، ويترك `--no-masters` عناصر الصفحات الرئيسية. ويعطي `--name` و`--locale` العنوان واللغة. والمستورد هو `idmlToPostext` من الحزمة `postext-idml`: انظر [الاستخدام البرمجي › حزم InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postext-idml). والاستيراد ينسخ المستند كما هو؛ ولنقل كتاب ستحتفظ به، مع استخلاص قواعد إخراجه، استعمل مهارة الوكيل بدلًا منه (انظر [InDesign: الاستيراد والتصدير والنقل](/ar/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+يحمل ملف التصميم تصميم كتاب ولا شيء من نصه: إعدادات الأجزاء المطلوبة (مجموعات لوحة التصميم، انظر [ملفات التصميم](/ar/docs/configuration-bundles#ملفات-التصميم)) مع ملفات الخطوط وملف تعريف الألوان التي تسمّيها. ولا يُنقل خط موسوم بأنه غير قابل لإعادة التوزيع. ويأخذ `--parts` بعض الأجزاء فقط مفصولة بفواصل، ويسمّي `--design-name` و`--id` و`--description` التصميم. والكتاب نفسه يعطي دائمًا البايتات نفسها.
+
+`--design FILE` خيار لكل أمر يقرأ كتابًا، يضع الكتاب في ملف تصميم أو في تصميم كتاب آخر، قبل `--config` و`--set`: تحل إعدادات أجزائه محل إعدادات الكتاب، وتُدمج الأنماط المسمّاة بالمعرّف، وتنضم خطوط التصميم إلى خطوط الكتاب. ويأخذ `--design-parts` بعض أجزائه فقط. وتستورد لوحة التصميم في Sandbox الملفات نفسها وتصدّرها.
+
 ### pack وunpack
 
 ```bash
@@ -440,6 +453,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--chapters LIST</code></td><td>يُخرج بعض الفصول فقط: <code>2</code> و<code>1,3-5</code> و<code>4-</code>. أسرع في الكتاب الطويل؛ وتُرقَّم صفحاتها بدءًا من صفحتها الأولى.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>يغيّر إعدادًا واحدًا لهذا التشغيل، بمسار تفصل النقاط بين أجزائه: <code>--set page.dpi=150</code> و<code>--set bodyText.fontFamily=Lora</code> و<code>--set headings.levels.0.italic=true</code>. تُقرأ القيمة بصيغة JSON حين يمكن ذلك (الأعداد، وtrue وfalse، والكائنات)، وإلا فنصًا. يمكن تكراره.</td></tr>
     <tr><td><code>--config FILE</code></td><td>إعدادات (أو ملف <code>preset.json</code>) لملفات Markdown المنفردة، أو تُدمج فوق إعدادات الكتاب نفسه.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>يضع الكتاب في تصميم ملف تصميم (من <code>postext design</code> أو من Sandbox) أو في تصميم ملف <code>.postext</code> لكتاب آخر، قبل <code>--config</code> و<code>--set</code>. ويأخذ <code>--design-parts LIST</code> بعض أجزائه فقط.</td></tr>
     <tr><td><code>--resources DIR</code> و<code>--fonts DIR</code> و<code>--name TEXT</code></td><td>الصور والخطوط والعنوان لملفات Markdown المنفردة.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>مجلد يُبحث فيه عن الخطوط التي لا يتضمّنها الكتاب. يمكن تكراره.</td></tr>
     <tr><td><code>--offline</code></td><td>لا ينزّل الخطوط أبدًا.</td></tr>

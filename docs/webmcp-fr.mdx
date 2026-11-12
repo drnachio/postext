@@ -3,7 +3,7 @@
 export const metadata = {
   title: 'WebMCP : un agent au travail dans le Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 55 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
+  description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 64 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
   lang: 'fr',
   lastUpdated: '2026-11-10',
   readingTime: '13 min',
@@ -23,7 +23,7 @@ image de la page 12, règle `bodyText.fontSize` sur 10,5 pt, constate que le ch
 est passé de 18 à 19 pages, et revient en arrière. Il fait ce que vous faites à l’œil, et
 il le fait avec votre livre, dans votre navigateur.
 
-Il y a 55 outils dont le nom commence par `sandbox_`, enregistrés tant que le
+Il y a 64 outils dont le nom commence par `sandbox_`, enregistrés tant que le
 Sandbox est à l’écran, et 8 outils du site, `site_*`, sur chaque page de
 postext.dev. Cette page les classe selon ce que vous demanderiez à un agent, et
 donne l’appel de chacun.
@@ -629,6 +629,8 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
   seule étape, que `sandbox_undo` retire en entier. `sandbox_import_word` refuse
   un tel fichier et renvoie à cet outil. Depuis postext 1.68.
 
+- **Maquettes.** `sandbox_list_designs` liste la galerie du panneau Maquette (maquettes enregistrées, celles fournies par le Sandbox et celles des livres d’exemple) avec leurs parties. `sandbox_save_design` enregistre la maquette d’un livre, `sandbox_try_design` en essaie une sur le livre à l’écran et `sandbox_end_design_trial` la garde ou l’abandonne (Abandonner rétablit seulement ce que la maquette a remplacé), `sandbox_apply_design` en applique une directement ou comme style de chapitre, `sandbox_import_design` et `sandbox_export_design` lisent et écrivent des fichiers de maquette, et `sandbox_delete_design` supprime une maquette enregistrée. Toutes prennent `parts`, les groupes du panneau Maquette, et répondent avec les styles que nomme le texte et qui manquent à la maquette.
+
 ### Questions et messages
 
 Quand un lien ouvre un livre dont vous avez déjà votre propre version, le Sandbox
@@ -721,6 +723,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
 - **La maquette** : `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
   `sandbox_frame_styles`, `sandbox_merge_styles`.
+- **Maquettes** : `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Annuler** : `sandbox_undo`.
 - **L’affichage** : `sandbox_set_view`, `sandbox_go_to_page`,
   `sandbox_run_viewer`.

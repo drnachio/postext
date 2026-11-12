@@ -189,14 +189,6 @@ Os mesmos arquivos são lidos e gravados pelo pacote `postext` (`openBundle`, `c
 
 O texto e o design também podem ser exportados separadamente a partir dos cabeçalhos dos painéis Texto e Design.
 
-O cabeçalho do **painel Design** baixa `postext-config.json` sem os valores padrão:
+O cabeçalho do **painel Design** exporta o projeto do livro como arquivo de projeto, um `.postext` sem capítulos (veja [Arquivos de projeto gráfico](/pt/docs/configuration-bundles#arquivos-de-projeto-gráfico)), e importa um, o projeto do `.postext` de um livro inteiro ou um `postext-config.json` escrito por versões anteriores (veja [Projetos gráficos](/pt/docs/sandbox#projetos-gráficos)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-O cabeçalho do **painel Texto** baixa o capítulo ativo como um arquivo `.md` simples, e o botão **Importar** dele substitui o capítulo ativo pelo conteúdo de um arquivo `.md`. O botão **Importar** do painel Design abre um seletor de arquivos `.json`, validados contra o `type` e a `version` esperados; arquivos inválidos são ignorados sem aviso. O invólucro `postext-markdown.json` e o formato combinado `postext-sandbox.json` de versões anteriores não existem mais.
+O cabeçalho do **painel Texto** baixa o capítulo ativo como um arquivo `.md` simples, e o botão **Importar** dele substitui o capítulo ativo pelo conteúdo de um arquivo `.md`. O invólucro `postext-markdown.json` e o formato combinado `postext-sandbox.json` de versões anteriores não existem mais.

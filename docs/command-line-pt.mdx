@@ -169,6 +169,7 @@ próprio idioma, a menos que `--locale` peça outro (`--locale en`).
     <tr><td><code>idml</code></td><td>As páginas como pacote do InDesign (IDML), para finalizar no InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>As correções feitas num arquivo do Word exportado, de volta no livro; qualquer outro documento do Word, como livro novo (uma pasta ou um <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Um documento do InDesign salvo como IDML, como livro novo (uma pasta ou um <code>.postext</code>).</td></tr>
+    <tr><td><code>design</code></td><td>O projeto gráfico de um livro (algumas das suas partes, ou todas) como arquivo de projeto, um <code>.postext</code> sem capítulos.</td></tr>
     <tr><td><code>pack</code></td><td>Uma pasta de livro ou Markdown solto como um único arquivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Um arquivo <code>.postext</code> como pasta.</td></tr>
     <tr><td><code>info</code></td><td>Os capítulos, idiomas, recursos e fontes do livro e, com <code>--pages</code>, o número de páginas.</td></tr>
@@ -412,6 +413,18 @@ postext import-idml book.idml --report --json
 
 Um livro exportado do Postext volta com as mesmas linhas. Um documento feito no InDesign é lido com perdas: o comando imprime o veredito (`faithful`, `approximate` ou `lossy`), as contagens e o que foi perdido ou aproximado; `--report` acrescenta as notas e como cada estilo de parágrafo foi lido, e `--json` leva tudo como dados. `--hidden`, `--pasteboard` e `--non-printing` leem também as camadas e os objetos ocultos, a área de trabalho e os objetos não imprimíveis; `--conditions all` lê todo o texto condicional, `--changes reject` lê as alterações controladas como rejeitadas e `--no-masters` deixa de fora os itens das páginas-mestre. `--name` e `--locale` dão o título e o idioma. O importador é `idmlToPostext`, do pacote `postext-idml`: veja [Uso programático › Pacotes do InDesign](/pt/docs/configuration-programmatic-usage#pacotes-do-indesign-postext-idml). A importação copia o documento como está; para portar um livro que você vai manter, com as regras de diagramação deduzidas, use no lugar dela a skill para agentes (veja [InDesign: importar, exportar e portar](/pt/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+Um arquivo de projeto guarda o projeto gráfico de um livro e nada do seu texto: as configurações das partes pedidas (os grupos do painel Design, veja [Arquivos de projeto gráfico](/pt/docs/configuration-bundles#arquivos-de-projeto-gráfico)) com os arquivos de fonte e o perfil de cor que elas nomeiam. Uma fonte marcada como não redistribuível fica de fora. `--parts` toma só algumas partes, separadas por vírgulas; `--design-name`, `--id` e `--description` dão nome ao projeto. O mesmo livro sempre dá os mesmos bytes.
+
+`--design ARQUIVO`, uma opção de todos os comandos que leem um livro, compõe o livro num arquivo de projeto ou no projeto de outro livro, antes de `--config` e `--set`: as configurações das suas partes substituem as do livro, os estilos com nome se combinam por id e as fontes do projeto se juntam às do livro. `--design-parts` toma só algumas das suas partes. O painel Design do Sandbox importa e exporta os mesmos arquivos.
+
 ### pack e unpack
 
 ```bash
@@ -485,6 +498,7 @@ arquivos bons.
     <tr><td><code>--chapters LIST</code></td><td>Diagrama só alguns capítulos: <code>2</code>, <code>1,3-5</code>, <code>4-</code>. É mais rápido em um livro longo; as páginas são numeradas a partir da primeira página desses capítulos.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>Muda uma configuração nesta execução, por um caminho com pontos: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. O valor é lido como JSON quando possível (números, true e false, objetos); senão, como texto. Pode ser repetida.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Uma configuração (ou um <code>preset.json</code>) para Markdown solto, ou mesclada sobre a do próprio livro.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Compõe o livro no projeto de um arquivo de projeto (de <code>postext design</code> ou do Sandbox) ou do <code>.postext</code> de outro livro, antes de <code>--config</code> e <code>--set</code>. <code>--design-parts LISTA</code> toma só algumas das suas partes.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imagens, fontes e título para Markdown solto.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Uma pasta onde procurar as fontes que o livro não leva. Pode ser repetida.</td></tr>
     <tr><td><code>--offline</code></td><td>Nunca baixa fontes.</td></tr>

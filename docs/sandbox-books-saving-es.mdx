@@ -189,14 +189,6 @@ El paquete `postext` lee y escribe estos mismos archivos (`openBundle`, `createB
 
 El texto y el diseño también se exportan por separado desde las cabeceras de los paneles Texto y Diseño.
 
-La cabecera del **panel Diseño** descarga `postext-config.json` con los valores por defecto eliminados:
+La cabecera del **panel Diseño** exporta el diseño del libro como archivo de diseño, un `.postext` sin capítulos (véase [Archivos de diseño](/es/docs/configuration-bundles#archivos-de-diseño)), e importa uno, el diseño del `.postext` de un libro entero o un `postext-config.json` escrito por versiones anteriores (véase [Diseños](/es/docs/sandbox#diseños)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-La cabecera del **panel Texto** descarga el capítulo activo como un archivo `.md` y su botón **Importar** sustituye el capítulo activo por el contenido de un archivo `.md`. El botón **Importar** del panel Diseño abre un selector de archivos `.json` validados contra el `type` y la `version` esperados; los archivos no válidos se ignoran sin avisar. El envoltorio `postext-markdown.json` y el formato combinado `postext-sandbox.json` de versiones anteriores ya no existen.
+La cabecera del **panel Texto** descarga el capítulo activo como un archivo `.md` y su botón **Importar** sustituye el capítulo activo por el contenido de un archivo `.md`. El envoltorio `postext-markdown.json` y el formato combinado `postext-sandbox.json` de versiones anteriores ya no existen.

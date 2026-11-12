@@ -189,14 +189,6 @@ Dieselben Dateien liest und schreibt das Paket `postext` (`openBundle`, `createB
 
 Text und Gestaltung lassen sich außerdem getrennt aus den Kopfzeilen der Bedienfelder Text und Gestaltung exportieren.
 
-Die Kopfzeile des **Bedienfelds Gestaltung** lädt `postext-config.json` ohne Standardwerte herunter:
+Die Kopfzeile des **Bedienfelds Gestaltung** exportiert die Gestaltung des Buchs als Gestaltungsdatei, eine `.postext` ohne Kapitel (siehe [Gestaltungsdateien](/de/docs/configuration-bundles#gestaltungsdateien)), und importiert eine solche, die Gestaltung der `.postext` eines ganzen Buchs oder eine von früheren Versionen geschriebene `postext-config.json` (siehe [Gestaltungen](/de/docs/sandbox#gestaltungen)).
 
-```json
-{
-  "type": "postext-config",
-  "version": 1,
-  "config": { ... }
-}
-```
-
-Die Kopfzeile des **Bedienfelds Text** lädt das aktive Kapitel als reine Markdown-Datei (`.md`) herunter, und ihre Schaltfläche **Importieren** ersetzt das aktive Kapitel durch den Inhalt einer Markdown-Datei (`.md`). Die Schaltfläche **Importieren** des Bedienfelds Gestaltung öffnet eine Dateiauswahl für JSON-Dateien (`.json`), die gegen den erwarteten `type` und die erwartete `version` geprüft werden; ungültige Dateien werden stillschweigend ignoriert. Die Hülle `postext-markdown.json` und das kombinierte Format `postext-sandbox.json` früherer Versionen gibt es nicht mehr.
+Die Kopfzeile des **Bedienfelds Text** lädt das aktive Kapitel als reine Markdown-Datei (`.md`) herunter, und ihre Schaltfläche **Importieren** ersetzt das aktive Kapitel durch den Inhalt einer Markdown-Datei (`.md`). Die Hülle `postext-markdown.json` und das kombinierte Format `postext-sandbox.json` früherer Versionen gibt es nicht mehr.

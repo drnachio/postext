@@ -167,6 +167,7 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>idml</code></td><td>Die Seiten als InDesign-Paket (IDML), zur Fertigstellung in InDesign.</td></tr>
     <tr><td><code>import-docx</code></td><td>Die Korrekturen aus einer exportierten Word-Datei zurück ins Buch; jedes andere Word-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>import-idml</code></td><td>Ein als IDML gespeichertes InDesign-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
+    <tr><td><code>design</code></td><td>Die Gestaltung eines Buchs (einige ihrer Teile oder alle) als Gestaltungsdatei, eine <code>.postext</code> ohne Kapitel.</td></tr>
     <tr><td><code>pack</code></td><td>Einen Buchordner oder lose Markdown-Dateien als eine einzige <code>.postext</code>-Datei.</td></tr>
     <tr><td><code>unpack</code></td><td>Eine <code>.postext</code>-Datei als Ordner.</td></tr>
     <tr><td><code>info</code></td><td>Kapitel, Sprachen, Ressourcen und Schriften des Buchs, mit <code>--pages</code> auch seine Seitenzahl.</td></tr>
@@ -414,6 +415,18 @@ postext import-idml book.idml --report --json
 
 Ein aus Postext exportiertes Buch kommt mit denselben Zeilen zurück. Ein in InDesign erstelltes Dokument wird mit Verlusten gelesen: Der Befehl gibt das Urteil (`faithful`, `approximate` oder `lossy`), die Zählungen und das Verlorene oder Angenäherte aus; `--report` ergänzt die Hinweise und wie jedes Absatzformat gelesen wurde, und `--json` trägt alles als Daten. `--hidden`, `--pasteboard` und `--non-printing` lesen auch ausgeblendete Ebenen und Objekte, die Montagefläche und nicht druckende Objekte; `--conditions all` liest den gesamten bedingten Text, `--changes reject` liest verfolgte Änderungen als abgelehnt, und `--no-masters` lässt die Objekte der Musterseiten weg. `--name` und `--locale` geben Titel und Sprache an. Der Import ist `idmlToPostext` aus dem Paket `postext-idml`: siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml). Der Import kopiert das Dokument so, wie es ist; für ein Buch, das Sie behalten, mit seinen erschlossenen Layoutregeln, nehmen Sie stattdessen den Agenten-Skill (siehe [InDesign: Import, Export und Portierung](/de/docs/indesign)).
 
+### design
+
+```bash
+postext design book.postext -o novel.postext
+postext design book/ --parts page,text,headings -o type.postext
+postext pdf other/ --design novel.postext -o other.pdf
+```
+
+Eine Gestaltungsdatei enthält die Gestaltung eines Buchs und nichts von seinem Text: die Einstellungen der gewünschten Teile (der Gruppen des Bedienfelds Gestaltung, siehe [Gestaltungsdateien](/de/docs/configuration-bundles#gestaltungsdateien)) mit den Schriftdateien und dem Farbprofil, die sie nennen. Eine als nicht weitergebbar gekennzeichnete Schrift bleibt zurück. `--parts` nimmt nur einige Teile, durch Kommas getrennt; `--design-name`, `--id` und `--description` benennen die Gestaltung. Dasselbe Buch ergibt immer dieselben Bytes.
+
+`--design DATEI`, eine Option jedes Befehls, der ein Buch liest, setzt das Buch in einer Gestaltungsdatei oder in der Gestaltung eines anderen Buchs, vor `--config` und `--set`: die Einstellungen ihrer Teile ersetzen die des Buchs, benannte Stile werden nach ID zusammengeführt, und die Schriften der Gestaltung kommen zu denen des Buchs. `--design-parts` nimmt nur einige ihrer Teile. Das Bedienfeld Gestaltung der Sandbox importiert und exportiert dieselben Dateien.
+
 ### pack und unpack
 
 ```bash
@@ -486,6 +499,7 @@ und die zuletzt fehlerfreien Dateien bleiben erhalten.
     <tr><td><code>--chapters LIST</code></td><td>Setzt nur einige Kapitel: <code>2</code>, <code>1,3-5</code>, <code>4-</code>. Schneller bei einem langen Buch; ihre Seiten werden ab ihrer eigenen ersten Seite nummeriert.</td></tr>
     <tr><td><code>--set PATH=VALUE</code></td><td>Ändert eine Einstellung für diesen Lauf, als Pfad mit Punkten: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. Der Wert wird als JSON gelesen, wenn das geht (Zahlen, true und false, Objekte), sonst als Text. Wiederholbar.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Eine Konfiguration (oder eine <code>preset.json</code>) für lose Markdown-Dateien, oder über die eigene eines Buchs gelegt.</td></tr>
+    <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Setzt das Buch in der Gestaltung einer Gestaltungsdatei (aus <code>postext design</code> oder der Sandbox) oder der <code>.postext</code> eines anderen Buchs, vor <code>--config</code> und <code>--set</code>. <code>--design-parts LISTE</code> nimmt nur einige ihrer Teile.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Bilder, Schriften und Titel für lose Markdown-Dateien.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Ein Ordner, in dem nach Schriften gesucht wird, die das Buch nicht mitbringt. Wiederholbar.</td></tr>
     <tr><td><code>--offline</code></td><td>Nie Schriften herunterladen.</td></tr>

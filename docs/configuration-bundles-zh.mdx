@@ -395,6 +395,31 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 `openBundle`返回所提供版本合并后的`config`。对于带有`localized`项的文件包，`readBundle`还返回`sharedConfig`，即按同样规则、用同样字体读取的通用设置。`planBundle`在其内容中接受`sharedConfig`：此时清单的`config`由它写出，每个版本（包括主要版本）都作为覆盖写入`localized`。
 
+### 设计文件
+
+设计文件是没有章节的包：一种设计，即一本书的样子，不含书的内容。它的清单用`design: { parts: [...] }`和空的`chapters`标记，`config`只保存这些部分的设置，并像任何包一样带上设置引用的字体文件（`fonts/`）和颜色配置文件（`profiles/`）；标记为`redistributable: false`的字族不包含在内。沙盒的版面设计面板和`postext design`写入这些文件，读取时使用与书相同的读取器，包括`configVersion`迁移。
+
+部分就是版面设计面板的分组，列在`DESIGN_PARTS`中：`page`、`writing`、`colors`、`text`、`headings`、`lists`、`figures`、`callouts`、`exercises`、`comics`、`running`、`parts`、`output`、`folio`、`advanced`。`DESIGN_PART_KEYS`说明每个部分包含哪些设置。多个分组共享的设置按字段拆分：`page.binding`和`layout.writingMode`归`writing`，`page.cutLines`归`output`，`page.baselineGrid`归`advanced`，`page`和`layout`的其余部分归`page`。各部分使用的自定义字体以及裁剪到这些部分的章样式会一并带上。属于整本书的设置（`BOOK_OWN_KEYS`：语言、书写方向、数字、资源类型、检查、调试）从不属于设计；类型保证`PostextConfig`的每个键都属于某个部分或这个列表。
+
+- `extractDesign(config, parts?)`取出一本书的设计，去掉默认值。
+- `applyDesign(config, design, parts?)`把书设为该设计：设计未设置的项回到默认值，命名样式按id合并（书中的其他样式保留），字体按字族合并，设计引用的调色板颜色一并带入。
+- `revertDesign(current, before, applied)`再把它去掉，只恢复它替换掉的设置。
+- `designMissingStyles(chapters, before, after, resources)`列出正文用到而设计没有定义的样式id。
+- `createDesignBundle({ name, design, files, locale, localized })`写入设计文件；`openDesignBundle(bytes, { locale, maxBytes })`读取设计文件（默认压缩和解压后都不超过64 MB；清单之外只能有字体和配置文件），或读取整本书的包中的设计（`fromBook: true`）。
+
+```ts
+import { DESIGN_PARTS, applyDesign, extractDesign } from "postext";
+import { createDesignBundle, openDesignBundle } from "postext/bundle";
+
+// 把一本书设计中的三个部分写成设计文件。
+const design = extractDesign(book.config, ["page", "text", "headings"]);
+const { bytes } = await createDesignBundle({ name: "Lean", locale: "en", design, files });
+
+// 读取它，并把另一本书设为该设计。
+const opened = await openDesignBundle(bytes, { locale: "es" });
+const config = applyDesign(otherBook.config, opened.design);
+```
+
 ### 在线示例：创建文件包
 
 这个pen构建一本带有一幅SVG图的两章书，列出`createBundle`写出的文件以及清单。它提供压缩包下载，然后用`openBundle`重新打开并绘制第一页：几行代码走完整个往返过程。把下载的文件导入沙盒，就可以在那里继续编辑。
