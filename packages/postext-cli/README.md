@@ -40,6 +40,7 @@ postext docx book.postext -o book.docx
 postext import-docx manuscript.docx -o manuscript/
 postext idml book.postext -o out/book.idml --fonts  # InDesign package, fonts beside it
 postext import-idml book.idml -o book/ --report     # an InDesign document (IDML) as a new book
+postext import-idml package.zip -o book.postext     # a zipped InDesign package, with its fonts and pictures
 postext pack book/ -o book.postext
 postext unpack book.postext -o book/
 postext info book.postext --pages
@@ -55,7 +56,7 @@ A book is any of:
 
 `postext idml` writes the laid-out pages as an InDesign Markup package with the [`postext-idml`](https://www.npmjs.com/package/postext-idml) package: `--images embed|link` keeps the pictures inside the file or puts them beside it in `Links/`, `--lines keep|reflow` ends every line where Postext ended it (`keep`, the default) or leaves the paragraphs to InDesign's composer, and `--fonts` writes the font files of the faces used beside the package, in `Document fonts/` (`-o` has to name a file; a family the book may not redistribute is left out, with a warning). `postext build --idml FILE` writes the same package beside the other outputs, with `--idml-images`, `--idml-lines` and `--idml-fonts`.
 
-`postext import-idml` reads an InDesign Markup package (an `.indd` is not read: save it as InDesign Markup first) and writes a new book, a folder or a `.postext`, as composed pages that follow the document or as a flowing book (`--layout auto|pages|flow`). A book exported from Postext comes back with the same lines; a document made in InDesign is read with losses, which the summary counts and `--report` lists. Linked pictures are read from `--links`, or from beside the file and its `Links/`.
+`postext import-idml` reads an InDesign Markup package (an `.indd` is not read: save it as InDesign Markup first) and writes a new book, a folder or a `.postext`, as composed pages that follow the document or as a flowing book (`--layout auto|pages|flow`). A book exported from Postext comes back with the same lines; a document made in InDesign is read with losses, which the summary counts and `--report` lists. The file may also be a zipped InDesign package (the folder File › Package makes, zipped, with Include IDML ticked): its IDML is imported with the pictures of its `Links/` and the font files of its `Document fonts/`, which the book carries (`--document PATH` names the IDML when the zip holds several; an `.indd` alone is refused). Linked pictures are read from `--links` first, then from the package, then from beside the file and its `Links/`; with a package, a face found in `--font-dir` is carried instead of the package's.
 
 `--set path=value` changes one setting without editing the book (`--set page.dpi=150`, `--set bodyText.fontFamily=Lora`), and `--chapters 2-4` lays out part of it.
 

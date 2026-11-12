@@ -60,6 +60,7 @@ Un documento InDesign è un insieme di pagine fatte a mano da qualcuno. Il grafi
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
 La stessa importazione si fa nella Sandbox, da **Libri › Nuovo › Nuovo libro da un documento InDesign (IDML)** (vedi [Sandbox › Importare un documento InDesign](/it/docs/sandbox-books-saving#importare-un-documento-indesign)), che apre anche un pacchetto InDesign compresso da **Nuovo libro da un pacchetto InDesign (.zip)** e ne prende i font e le immagini collegate, e nel codice con `idmlToPostext` del pacchetto `postext-idml` (vedi [Uso programmatico › Pacchetti InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postext-idml)). Tutte le opzioni del comando sono in [Riga di comando › import-idml](/it/docs/command-line#import-idml).
@@ -79,7 +80,7 @@ La stessa importazione si fa nella Sandbox, da **Libri › Nuovo › Nuovo libro
 
 ### Che cosa segnala il rapporto
 
-Il `.idml` non contiene i font né le immagini collegate. L’importatore elenca le famiglie di font di cui il libro ha bisogno, che poi passi alla generazione con `--font-dir`. Legge le immagini collegate da `--links` o dalla cartella del file, ed elenca quelle che non trova. Un pacchetto compresso contiene entrambi: nella Sandbox, e nel codice con `openIdmlArchive`, l’importatore prende le immagini dalla sua cartella `Links` e mette nel libro i file dei font della sua cartella `Document fonts`.
+Il `.idml` non contiene i font né le immagini collegate. L’importatore elenca le famiglie di font di cui il libro ha bisogno, che poi passi alla generazione con `--font-dir`. Legge le immagini collegate da `--links` o dalla cartella del file, ed elenca quelle che non trova. Un pacchetto compresso contiene entrambi: dalla riga di comando (`postext import-idml package.zip`), nella Sandbox e nel codice con `openIdmlArchive`, l’importatore prende le immagini dalla sua cartella `Links` e mette nel libro i file dei font della sua cartella `Document fonts`.
 
 InDesign sa fare cose che in Postext non hanno un equivalente, come il testo su tracciato, una cella ruotata, una diagonale in una cella, gli stili GREP e nidificati o gli effetti di trasparenza. Ognuna diventa una voce del rapporto, con un conteggio e un esempio: una *perdita* quando viene tralasciata, un *avviso* quando viene resa in modo approssimato (le righe di piè di una tabella, una sfumatura, una contornatura sul profilo). Il rapporto finisce con un verdetto:
 

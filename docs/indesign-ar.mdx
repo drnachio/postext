@@ -60,6 +60,7 @@ export const metadata = {
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
 ويجري الاستيراد نفسه في Sandbox، من <strong>الكتب › جديد › كتاب جديد من مستند InDesign (IDML)</strong> (انظر [Sandbox › استيراد مستند InDesign](/ar/docs/sandbox-books-saving#استيراد-مستند-indesign))، وهو يفتح أيضًا حزمة InDesign مضغوطة من <strong>كتاب جديد من حزمة InDesign (⁦.zip⁩)</strong> ويأخذ منها خطوطها وصورها المرتبطة، وفي الشيفرة بالدالة `idmlToPostext` من الحزمة `postext-idml` (انظر [الاستخدام البرمجي › حزم InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postext-idml)). وكل خيارات الأمر في [سطر الأوامر › import-idml](/ar/docs/command-line#import-idml).
@@ -79,7 +80,7 @@ postext import-idml book.idml --report --json
 
 ### ما يُبلَّغ عنه
 
-لا يحمل ملف `.idml` الخطوط ولا الصور المرتبطة. يسرد المستورد عائلات الخطوط التي يحتاج إليها الكتاب، فتعطيها للبناء بالخيار `--font-dir`. ويقرأ الصور المرتبطة من `--links` أو من جانب الملف، ويسرد ما لا يجده. والحزمة المضغوطة تحمل الاثنين: ففي Sandbox، وفي الشيفرة بالدالة `openIdmlArchive`، يأخذ المستورد الصور من مجلدها `Links` ويضع في الكتاب ملفات الخطوط التي في مجلدها `Document fonts`.
+لا يحمل ملف `.idml` الخطوط ولا الصور المرتبطة. يسرد المستورد عائلات الخطوط التي يحتاج إليها الكتاب، فتعطيها للبناء بالخيار `--font-dir`. ويقرأ الصور المرتبطة من `--links` أو من جانب الملف، ويسرد ما لا يجده. والحزمة المضغوطة تحمل الاثنين: ففي سطر الأوامر (`postext import-idml package.zip`)، وفي Sandbox، وفي الشيفرة بالدالة `openIdmlArchive`، يأخذ المستورد الصور من مجلدها `Links` ويضع في الكتاب ملفات الخطوط التي في مجلدها `Document fonts`.
 
 يستطيع InDesign أشياء لا مقابل لها في Postext، مثل النص على مسار، والخلية المُدارة، والخط القطري في خلية، وأنماط GREP والأنماط المتداخلة، أو مؤثرات الشفافية. ويصير كل منها بندًا في التقرير، بعدده ومثال عليه: <em>loss</em> حين يُترك، و<em>warning</em> حين يُخرَج قريبًا من الأصل (صفوف تذييل الجدول، والتدرج اللوني، والالتفاف حول المحيط). وينتهي التقرير بحكم:
 
