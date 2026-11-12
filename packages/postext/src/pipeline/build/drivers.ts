@@ -38,6 +38,9 @@ import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
 import { type CitingPageSlot, type BuildDocumentOptions, BuildCancelledError } from './passTypes.js';
 import { indexWarnings, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, compositionWarningsByDoc, composedWarningsByDoc, afterTextWarnings, unplacedByDoc } from './warnings.js';
+import { chapterConfigOf, sectionBreaks, sectionConfig, type SectionBreak } from '../../defaults/chapterStyles.js';
+import { mergeSectionDocuments, nextSectionContinuation, sectionRanges, sectionSource } from './sectionMerge.js';
+import { continuationAfter } from '../continuation.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -118,8 +121,17 @@ export function* buildDocumentGen(
   // their families, and a config changed in place resolves again (#629).
   const fontSet = options?.fontSet === undefined ? defaultFontSet() : options.fontSet;
   if (fontSet) syncFontSet(fontSet);
+  // A chapter in a style of the book's (`chapterStyle:` in its front
+  // matter) is laid out with that style over the book's settings.
+  const styles = config?.chapterStyles;
+  if (config) config = chapterConfigOf(config, content.markdown);
   validateConfigCache(config);
-  const doc = yield* buildDocumentRounds(content, config, cache, options);
+  // Sections in a style of their own (`::section{style="…"}`), each from a
+  // new page.
+  const breaks = config ? sectionBreaks(content.markdown) : [];
+  const doc = breaks.length > 0
+    ? yield* buildSections(content, config!, styles, breaks, cache, options)
+    : yield* buildDocumentRounds(content, config, cache, options);
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
   markTurnedBoxes(doc);
@@ -202,6 +214,39 @@ export function* buildDocumentGen(
   const configWarnings = collectConfigWarnings(config, { resources: content.resources, metadata: doc.metadata });
   if (configWarnings.length > 0) doc.configWarnings = configWarnings;
   return doc;
+}
+
+/** A chapter set in sections (`::section{style="…"}`): each section laid
+ *  out from a new page in its style, after the ones before it, and the
+ *  documents joined into the chapter's. */
+function* buildSections(
+  content: PostextContent,
+  config: PostextConfig,
+  styles: PostextConfig['chapterStyles'],
+  breaks: readonly SectionBreak[],
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): Generator<void, VDTDocument, void> {
+  const md = content.markdown;
+  const bodyStart = md.length - extractFrontmatter(md).content.length;
+  const ranges = sectionRanges(md, breaks, bodyStart);
+  if (ranges.length === 0) return yield* buildDocumentRounds(content, config, cache, options);
+  const docs: VDTDocument[] = [];
+  let continuation = content.continuation;
+  let metadata = content.metadata;
+  for (const [i, range] of ranges.entries()) {
+    const sectionCfg = range.inherit ? config : sectionConfig(config, styles, range.style);
+    const markdown = sectionSource(md, range.from, range.to);
+    const { jumps: _jumps, ...rest } = continuation ?? {};
+    void _jumps;
+    // The stories sent to the chapter arrive at its first section.
+    const sent = i === 0 ? continuation : Object.keys(rest).length > 0 ? rest : undefined;
+    const doc = yield* buildDocumentRounds({ ...content, markdown, ...(metadata ? { metadata } : {}), ...(sent ? { continuation: sent } : {}) }, sectionCfg, cache, options);
+    docs.push(doc);
+    if (i === 0) metadata = doc.metadata;
+    continuation = nextSectionContinuation(doc, continuationAfter({ markdown, resources: content.resources }, sectionCfg, sent), content);
+  }
+  return mergeSectionDocuments(docs);
 }
 
 /** {@link buildDocumentGen} before the document-wide warnings: the

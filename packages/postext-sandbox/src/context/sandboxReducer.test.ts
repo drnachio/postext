@@ -56,6 +56,7 @@ function baseState(over: Partial<SandboxState> = {}): SandboxState {
     projectStatus: 'idle',
     projectNotice: null,
     bundleReplacePrompt: null,
+    editingChapterStyle: null,
     ...over,
   };
 }

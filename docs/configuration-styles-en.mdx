@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Named styles for paragraphs, chips, character styles, highlights, code listings and headings, and the pages that open each part',
   lang: 'en',
   lastUpdated: '2026-11-10',
-  readingTime: '41 min',
+  readingTime: '44 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "This page covers the named styles you define once and use many times. A paragraph style sets a kind of text, such as a bibliography or a glossary. A chip style draws a small label inside a line, and a highlight style a coloured band behind a phrase or a line under or through it; a character style sets a few words in another face, size or colour, and may name a highlight style to go with them. Code listings have their own font, box and colours. The page also covers the pages that open each part of a book, and the styles for special headings. Callout boxes have a page of their own.",
@@ -1419,6 +1419,70 @@ headingStyles: [
 
 ```md
 # The Lighthouse Keeper {style="cover"}
+
+## Chapter styles
+
+A book whose chapters do not all look alike (appendices on two columns with narrower type, a part printed in another colour, a glossary with its own running heads) declares **chapter styles**, and a chapter takes one by naming it in its front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // What a chapter's front matter names.
+  name?: string;           // A name to show for it.
+  config: ConfigOverride;  // The settings it changes.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+A style's `config` is merged over the book's configuration the way a language's layer is (see `mergeConfigLayers`): objects key by key, a colour or a length whole, lists of styles entry by entry on their `id`, and `null` takes a book value out. So columns and margins, typography and paragraph, heading and box styles, colours and inks, running heads and folio formats can all change from one chapter to the next, while what the style does not name stays the book's. The trim size, the resolution, the cut lines and the binding stay the book's: a style that names them is ignored there.
+
+The chapter's page numbers, counters, notes and contents run on through it like any other chapter. Every output reads it: the canvas, the PDF, the EPUB, the HTML and a bundle laid out with `buildBundle`, and a chapter laid out on its own with `buildDocument` too, since the engine applies the style its text names. In a book, only the first chapter's front matter is the book's; a later chapter's is blanked but for its `chapterStyle:` line. A heading's `{style="…"}` still layers on top of the chapter's style, for one section.
+
+In the Sandbox, the "Chapter style" bar at the top of the Design panel chooses what the panel edits: the book, or one of its styles. While a style is chosen the panel shows it over the book, and what you change is kept in the style as its difference from the book; the bar renames the style, deletes it and goes back to the book, and its + button makes a new one. A chapter takes a style from its menu in the Chapters panel, which writes the `chapterStyle:` line for it; its row shows the style's name. While a style is edited, a field the style sets carries its mark, whose menu takes the book's value back or makes the style's the book's. In a book in several languages, the styles are kept in the layer the panel edits: every language's settings, or the edition on screen.
+
+### Sections in a chapter
+
+Inside a chapter, a section break on a line of its own sets what follows in a chapter style, from a new page, until the next break or the end of the chapter; `::section` alone returns to the chapter's own settings:
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+The style is merged over the chapter's settings (its own chapter style included), so a section changes only what its style names. Page numbers, counters and notes run on through the sections as through chapters. A break inside a code block is text.
 
 ## The lamp room
 

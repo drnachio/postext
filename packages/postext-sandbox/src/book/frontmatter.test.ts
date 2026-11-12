@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { blankFrontmatter, frontmatterRange } from './frontmatter.js';
+import { blankFrontmatter, frontmatterRange, setChapterStyle } from './frontmatter.js';
 
 describe('frontmatterRange', () => {
   it('finds a leading block and its end (newline included)', () => {
@@ -28,5 +28,24 @@ describe('blankFrontmatter', () => {
   });
   it('leaves text without front matter untouched', () => {
     expect(blankFrontmatter('# H')).toBe('# H');
+  });
+});
+
+describe('blankFrontmatter and chapter styles', () => {
+  it('keeps a chapter style inside its rules, and blanks it when the chapter is merged away', () => {
+    const md = '---\ntitle: Two\nchapterStyle: appendix\n---\n# Two';
+    expect(blankFrontmatter(md)).toBe('---\n          \nchapterStyle: appendix\n---\n# Two');
+    expect(blankFrontmatter(md, false)).toBe(`${'   \n          \n                      \n   \n'}# Two`);
+  });
+});
+
+describe('setChapterStyle', () => {
+  it('adds, replaces and takes out the chapter style line, keeping the rest of the front matter', () => {
+    expect(setChapterStyle('# One', 'appendix')).toBe('---\nchapterStyle: appendix\n---\n# One');
+    expect(setChapterStyle('---\ntitle: One\n---\n# One', 'appendix')).toBe('---\ntitle: One\nchapterStyle: appendix\n---\n# One');
+    expect(setChapterStyle('---\ntitle: One\nchapterStyle: old\n---\n# One', 'appendix')).toBe('---\ntitle: One\nchapterStyle: appendix\n---\n# One');
+    expect(setChapterStyle('---\ntitle: One\nchapterStyle: old\n---\n# One', undefined)).toBe('---\ntitle: One\n---\n# One');
+    expect(setChapterStyle('---\nchapterStyle: old\n---\n# One', undefined)).toBe('# One');
+    expect(setChapterStyle('# One', undefined)).toBe('# One');
   });
 });

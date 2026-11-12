@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Como definir estilos nomeados para parágrafos, chips, destaques, listagens de código e títulos, e como configurar as páginas que abrem cada parte',
   lang: 'pt',
   lastUpdated: '2026-11-10',
-  readingTime: '45 min',
+  readingTime: '48 min',
   order: 15,
   parent: 'configuration',
   plainSummary: "Esta página reúne os estilos nomeados, que você define uma vez e usa muitas. Um estilo de parágrafo define um tipo de texto, como uma bibliografia ou um glossário. Um estilo de chip desenha uma pequena caixa com texto dentro da linha, e um estilo de destaque, uma faixa de cor atrás de uma frase ou uma linha por baixo dela ou atravessando-a; um estilo de caractere compõe algumas palavras em outra fonte, outro corpo ou outra cor, e pode nomear um estilo de destaque que as acompanhe. As listagens de código têm fonte, caixa e cores próprias. A página também explica as páginas que abrem cada parte do livro e os estilos dos títulos especiais. Os boxes têm uma página própria.",
@@ -1419,6 +1419,70 @@ headingStyles: [
 
 ```md
 # O faroleiro {style="cover"}
+
+## Estilos de capítulo
+
+Um livro cujos capítulos não são todos iguais (apêndices em duas colunas e com letra menor, uma parte impressa em outra cor, um glossário com os seus próprios cabeços) declara **estilos de capítulo**, e um capítulo adota um deles nomeando-o no seu front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // O que o front matter de um capítulo nomeia.
+  name?: string;           // Um nome para exibi-lo.
+  config: ConfigOverride;  // Os ajustes que ele muda.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+O `config` de um estilo é combinado sobre a configuração do livro como a camada de um idioma (veja `mergeConfigLayers`): os objetos, chave a chave; uma cor ou uma medida, por inteiro; as listas de estilos, entrada a entrada pelo `id`; e `null` retira um valor do livro. Assim, as colunas e as margens, a tipografia e os estilos de parágrafo, de título e de caixa, as cores e as tintas, os cabeços e o formato dos fólios podem mudar de um capítulo para outro, e o que o estilo não nomeia continua sendo do livro. O tamanho da página, a resolução, as marcas de corte e a encadernação continuam sendo do livro: um estilo que os nomeie é ignorado nesses pontos.
+
+A numeração das páginas, os contadores, as notas e o sumário continuam correndo pelo capítulo como em qualquer outro. Todas as saídas o leem: o canvas, o PDF, o EPUB, o HTML e um pacote diagramado com `buildBundle`, e também um capítulo diagramado sozinho com `buildDocument`, porque o motor aplica o estilo que o texto dele nomeia. Num livro, só o front matter do primeiro capítulo é o do livro; o de um capítulo posterior é apagado, exceto a linha `chapterStyle:`. O `{style="…"}` de um título continua se somando ao estilo do capítulo, para uma seção.
+
+No Sandbox, a barra “Estilo de capítulo” no alto do painel Design escolhe o que o painel edita: o livro ou um de seus estilos. Com um estilo escolhido, o painel o mostra sobre o livro, e o que você muda fica guardado no estilo como a diferença dele em relação ao livro; a barra renomeia o estilo, o exclui e volta ao livro, e seu botão + cria um novo. Um capítulo recebe um estilo pelo menu dele no painel Capítulos, que escreve a linha `chapterStyle:` por ele; a entrada do capítulo mostra o nome do estilo. Enquanto um estilo é editado, um campo que o estilo define leva a marca dele, cujo menu recupera o valor do livro ou faz do valor do estilo o do livro. Em um livro em vários idiomas, os estilos ficam guardados na camada que o painel edita: os ajustes de todos os idiomas ou a edição na tela.
+
+### Seções dentro de um capítulo
+
+Dentro de um capítulo, uma quebra de seção numa linha própria diagrama o que vem a seguir com um estilo de capítulo, a partir de uma página nova, até a quebra seguinte ou o fim do capítulo; `::section` sozinho volta aos ajustes do próprio capítulo:
+
+```markdown
+# Results
+
+The chapter's own settings.
+
+::section{style="appendix"}
+
+## Tables of results
+
+Set in the appendix style, from a new page.
+
+::section
+
+## Discussion
+
+Back to the chapter's settings, from a new page.
+```
+
+O estilo é combinado sobre os ajustes do capítulo (incluído o seu próprio estilo de capítulo), de modo que uma seção só muda o que o estilo dela nomeia. A numeração das páginas, os contadores e as notas continuam correndo pelas seções como pelos capítulos. Uma quebra dentro de um bloco de código é texto.
 
 ## A sala da lanterna
 

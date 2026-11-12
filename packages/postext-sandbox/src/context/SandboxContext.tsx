@@ -184,6 +184,7 @@ export function SandboxProvider({
       hiddenPresetIds: loadHiddenPresetIds(),
       config,
       configLayers: null,
+      editingChapterStyle: null,
       resources: [],
       storeReady: false,
       booting,

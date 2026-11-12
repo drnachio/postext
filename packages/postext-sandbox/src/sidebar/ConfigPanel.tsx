@@ -41,6 +41,7 @@ import { OpenSettingsGroupContext, onSettingsGroupRequest, onSettingsSectionRequ
 import { focusSettingsEntry } from './settingsFocus.js';
 import { SECTION_COMPONENTS } from './sections/components.js';
 import { ConfigScopeProvider } from './layers/ConfigScopeProvider.js';
+import { ChapterStyleBar } from './layers/ChapterStyleBar.js';
 import { ConfigScopeBar } from './layers/ConfigScopeBar.js';
 
 /** The Design panel. Three views share one header and search box:
@@ -233,6 +234,7 @@ function ConfigPanelBody() {
       />
 
       <ConfigScopeBar />
+      <ChapterStyleBar />
 
       <div className="flex shrink-0 items-center gap-2 border-b border-(--rule) px-3 py-2">
         <SearchInput value={query} onChange={setQuery} />

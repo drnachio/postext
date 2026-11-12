@@ -41,6 +41,7 @@ export function state(): SandboxState {
     hiddenPresetIds: [],
     config: { page: { width: { value: 120, unit: 'mm' }, height: { value: 180, unit: 'mm' } } },
     configLayers: null,
+    editingChapterStyle: null,
     resources: [],
     storeReady: true,
     booting: false,

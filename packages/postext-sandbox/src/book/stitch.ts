@@ -48,8 +48,13 @@ export function stitchDocuments(chapters: readonly StitchedChapter[]): StitchedB
     const offset = pages.length;
     const count = doc.pages.length;
     chapterFirstPages.push(count === 0 ? -1 : offset + Math.min(leadingBlankPageCount(doc), count - 1));
+    // A chapter in a style of its own (`chapterStyle:`) paints its pages'
+    // ground: the stitched document carries the first chapter's settings.
+    const ground = doc.config?.page?.backgroundColor?.hex;
+    const ownGround = ground !== undefined && ground !== first.config?.page?.backgroundColor?.hex ? ground : undefined;
     for (const page of doc.pages) {
-      pages.push(offset === 0 ? page : shiftPage(page, offset));
+      const shifted = offset === 0 ? page : shiftPage(page, offset);
+      pages.push(ownGround !== undefined && shifted.background === undefined ? { ...shifted, background: ownGround } : shifted);
       pageChapterIds.push(chapterId);
       pageChapters.push(chapterIndex);
     }
