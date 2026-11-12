@@ -363,7 +363,7 @@ those lines, or run the script.
 - `WARN calloutStyleExtendsUnknown` / `calloutStyleExtendsCycle` (postext ≥ 1.39): `calloutStyles[i].extends`
   names no style, or the chain loops (`a → b → a`); the style stands alone, without the parent's fields.
   `lint_project.py` reports both before the engine does.
-- `WARN chapterStyleUnknown` / `partStyleMidChapter` / `chapterStyleBookSetting` (postext ≥ 1.78): a
+- `WARN chapterStyleUnknown` / `partStyleMidChapter` / `chapterStyleBookSetting` (postext ≥ 1.79): a
   `chapterStyle:` or `:::part{style}` names no entry of `chapterStyles` (the chapter takes the book's settings);
   a part fence naming a style stands after the chapter's text has started (move it to the top of the chapter,
   before the `# H1`; until then the style starts with the next chapter); a chapter style sets a book-wide key or

@@ -430,7 +430,7 @@ H&J / Knuth–Plass
 │                        stack; 'avoid' = stackPenalty demerits per stack (scale: consecutiveHyphenDemerit 3000; a repeated monosyllable twice),
 │                        the stacks kept are reported. Captions, notes, table cells too; needs optimalLineBreaking. A port leaves it 'allow'
 │                        (the original's breaks are what it reproduces); 'warn' lists the stacks in proofs without moving a line
-├─ citationBreaks     'allow'; citationBreakPenalty 10000   ≥ 1.78 a line that starts with a numbered citation after a word, or a piece
+├─ citationBreaks     'allow'; citationBreakPenalty 10000   ≥ 1.79 a line that starts with a numbered citation after a word, or a piece
 │                        of one (`autores [12]`, `[14, 16]`, `(12–15)`, the `[3, p. 12]` a numbered style sets for `[@key, p. 12]`; never after
 │                        a number: `2016 (3)`): 'warn' = same layout + a `citationBreak` warning per break; 'avoid' = citationBreakPenalty
 │                        demerits on a break at the space before the citation or inside it (the space stays a stretching word space; the
@@ -439,7 +439,7 @@ H&J / Knuth–Plass
 │                        is set by Knuth–Plass too; composed frames ignore it; needs optimalLineBreaking. A port leaves it 'allow' (or
 │                        'warn' for proofs) unless the original keeps citations with their word, then 'avoid'; to bind one pair whatever
 │                        the rule, write a no-break space in the Markdown
-├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.78 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
+├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.79 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
 │                        set between spaces (`p < 0.05`): same levels, an `operatorBreak` warning (edge 'end'|'start'), 'avoid' prices the
 │                        spaces on both sides of the sign, same blocks
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out

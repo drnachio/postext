@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 186 · Citations and statistics off the line edges ═══════════
 // https://postext.dev/en/cookbook/clinical-paper-line-edges
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: STIX Two Text, IBM Plex Sans and Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.78.0
+// Fonts: STIX Two Text, IBM Plex Sans and Sans Condensed (SIL OFL 1.1) · Needs postext ≥ 1.79.0
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerCitationEngine,
 } from 'https://esm.sh/postext';

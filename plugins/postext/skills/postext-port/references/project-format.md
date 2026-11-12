@@ -547,7 +547,7 @@ const { bytes: out, warnings } = await createBundle({
   `render.mjs` registers.
 
 
-### Design files (≥ 1.78)
+### Design files (≥ 1.79)
 
 A design file is a `.postext` with no chapters: a book's design without its text. The manifest says
 `design: { parts: [...] }` and `chapters: []`; `config` holds only the settings of those parts, with the

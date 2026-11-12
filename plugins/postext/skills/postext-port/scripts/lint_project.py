@@ -387,7 +387,7 @@ BOOK_WIDE_KEYS = {"locale", "direction", "numerals", "customFonts", "symbolFont"
 
 
 def check_chapter_styles(cfg: dict, where: str, rep: Report) -> None:
-    """`chapterStyles[]` (postext >= 1.78): ids, and the settings a style cannot change
+    """`chapterStyles[]` (postext >= 1.79): ids, and the settings a style cannot change
     (chapterStyleBookSetting: the book's value is kept)."""
     styles = cfg.get("chapterStyles")
     if styles is None:

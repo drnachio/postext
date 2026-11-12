@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 187 · Appendices in two columns ═══════════════════════════════
 // https://postext.dev/en/cookbook/appendices-in-two-columns
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: none
-// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.78.0
+// Fonts: Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.79.0
 // A growers' handbook in six Markdown documents: the chapters in one column, the appendices
 // in two columns of smaller type, one appendix in three, and an afterword back in one.
 import {
