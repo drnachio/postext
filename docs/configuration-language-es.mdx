@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Separación silábica e idioma',
   description: 'Cómo se configuran los patrones y las excepciones de la separación silábica y el texto en bandera; el idioma del documento, con sus cifras y su dirección, y qué escrituras compone Postext.',
   lang: 'es',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '24 min',
   order: 8,
   parent: 'configuration',
@@ -147,6 +147,8 @@ Las palabras de menos de 5 letras nunca se dividen, salvo en catalán, donde bas
 Un diccionario divide un nombre como cualquier otra palabra: `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Hay tres ajustes que mantienen enteras las palabras, y los tres, por defecto, dejan actuar al diccionario.
 
 `hyphenation.exceptions` es una lista de palabras, como el `\hyphenation{…}` de TeX. Una entrada escrita sin guion no se divide nunca; una escrita con guiones solo se divide por ellos, de modo que `'You-Tube'` da `You-` · `Tube` y nada más. Una entrada coincide con una secuencia de letras, sea lo que sea lo que la rodee: `'Alice'` sirve para `(Alice,` y para `Alice’s`, y los compuestos se comparan por partes (`Blender-based` coincide con `'Blender'`). Una forma flexionada es otra palabra y necesita su propia entrada. Una entrada en minúsculas coincide con la palabra se escriba como se escriba (`'blender'` cubre `Blender` y `BLENDER`); una entrada con mayúscula inicial solo coincide con las apariciones que empiezan por mayúscula, de modo que `'Rose'` mantiene entero el nombre y deja `rose` en manos del diccionario. Las entradas solo pueden contener letras y guiones; todo lo demás se descarta.
+
+En el Sandbox, **Importar**, bajo la lista, lee un fichero y añade sus palabras: texto con una palabra por línea o separadas por comas, puntos y comas o espacios, con líneas de comentario que empiezan por `#`, `%` o `//`; un bloque `\hyphenation{…}` de TeX, o una lista JSON (de las listas por idioma se toman todas). Un corte puede ir marcado con guion, guion blando, punto de división (`‧`), `=` o `~` (las tildes que escriben algunos programas de maquetación; una `~` al principio deja la palabra entera). Una palabra que ya está en la lista toma la forma del fichero. **Exportar** guarda la lista en un fichero de texto, una palabra por línea, que otro libro importa tal cual.
 
 `hyphenation.capitalized: false` mantiene enteras todas las palabras que empiezan por mayúscula: los nombres propios, las siglas y también la primera palabra de cada frase. Equivale a desactivar la casilla «Hyphenate Capitalized Words» de InDesign y al `\uchyph=0` de TeX. Una entrada de `exceptions` con guiones sigue dividiendo su palabra por ellos. En alemán todos los sustantivos llevan mayúscula, así que este ajuste dejaría un texto alemán casi sin palabras que dividir: en ese caso, enumera las palabras en `exceptions` o usa `citations.hyphenateNames`.
 

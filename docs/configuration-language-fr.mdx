@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Césure et langue',
   description: 'Les motifs de césure et les exceptions, le texte en drapeau, la langue du document avec ses chiffres et son sens d’écriture, et les écritures que compose Postext',
   lang: 'fr',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '23 min',
   order: 8,
   parent: 'configuration',
@@ -147,6 +147,8 @@ Les mots de moins de 5 lettres ne sont jamais coupés, sauf en catalan, où 4 su
 Un dictionnaire coupe un nom comme n’importe quel mot : `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Trois réglages permettent de garder des mots entiers ; par défaut, tous trois laissent faire le dictionnaire.
 
 `hyphenation.exceptions` est une liste de mots, comme le `\hyphenation{…}` de TeX. Une entrée écrite sans trait d’union n’est jamais coupée ; une entrée écrite avec des traits d’union n’est coupée qu’à ces endroits : `'You-Tube'` donne `You-` · `Tube` et rien d’autre. Une entrée correspond à une suite de lettres, quels que soient les caractères qui l’entourent : `'Alice'` couvre `(Alice,` et `Alice’s`, et un composé est comparé partie par partie (`Blender-based` correspond à `'Blender'`). Une forme fléchie est un autre mot et demande sa propre entrée. Une entrée en minuscules correspond au mot quelle que soit sa casse (`'blender'` couvre `Blender` et `BLENDER`) ; une entrée à capitale initiale ne correspond qu’aux occurrences qui commencent par une capitale : `'Rose'` garde le nom entier et laisse `rose` au dictionnaire. Les entrées ne contiennent que des lettres et des traits d’union ; tout le reste est supprimé.
+
+Dans le Sandbox, **Importer**, sous la liste, lit un fichier et en ajoute les mots : texte avec un mot par ligne ou séparés par des virgules, des points-virgules ou des espaces, avec des lignes de commentaire commençant par `#`, `%` ou `//` ; un bloc `\hyphenation{…}` de TeX ; ou une liste JSON (des listes par langue, toutes sont prises). Une coupure peut être marquée par un trait d'union, un trait d'union conditionnel, un point de césure (`‧`), `=` ou `~` (les tildes qu'écrivent certains logiciels de mise en page ; un `~` en tête garde le mot entier). Un mot déjà dans la liste prend la forme du fichier. **Exporter** enregistre la liste dans un fichier texte, un mot par ligne, qu'un autre livre importe tel quel.
 
 `hyphenation.capitalized: false` garde entier tout mot qui commence par une capitale : les noms, les sigles, et aussi le premier mot de chaque phrase. Cela équivaut à désactiver l’option « Césure des mots en majuscules » d’InDesign, ou au `\uchyph=0` de TeX. Une entrée de `exceptions` avec des traits d’union coupe toujours son mot à ces endroits. L’allemand met une capitale à tous les noms : avec cette option, un texte allemand n’aurait presque plus de mots à couper. Listez plutôt les mots dans `exceptions`, ou utilisez `citations.hyphenateNames`.
 

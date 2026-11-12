@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Silbentrennung und Sprache',
   description: 'Trennmuster und Ausnahmen, Flattersatz, die Dokumentsprache mit ihren Ziffern und ihrer Schreibrichtung und die Schriftsysteme, die Postext setzt',
   lang: 'de',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '20 min',
   order: 8,
   parent: 'configuration',
@@ -147,6 +147,8 @@ Wörter mit weniger als 5 Buchstaben werden nie getrennt, außer im Katalanische
 Ein Wörterbuch trennt einen Namen wie jedes andere Wort: `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Drei Einstellungen halten Wörter ganz, und alle drei folgen standardmäßig dem Wörterbuch.
 
 `hyphenation.exceptions` ist eine Liste von Wörtern wie `\hyphenation{…}` in TeX. Ein ohne Bindestrich geschriebener Eintrag wird nie getrennt; ein mit Bindestrichen geschriebener wird nur dort getrennt, sodass `'You-Tube'` `You-` · `Tube` ergibt und sonst nichts. Ein Eintrag passt auf eine Folge von Buchstaben, gleich was darum steht: `'Alice'` deckt `(Alice,` und `Alice’s` ab, und ein Kompositum wird Teil für Teil abgeglichen (`Blender-based` passt auf `'Blender'`). Eine flektierte Form ist ein anderes Wort und braucht einen eigenen Eintrag. Ein kleingeschriebener Eintrag passt auf das Wort in jeder Schreibung (`'blender'` deckt `Blender` und `BLENDER` ab); ein Eintrag mit großem Anfangsbuchstaben passt nur auf die Vorkommen, die mit einem Großbuchstaben beginnen, sodass `'Rose'` den Namen ganz hält und `rose` dem Wörterbuch überlässt. Einträge enthalten nur Buchstaben und Bindestriche; alles andere wird verworfen.
+
+Im Sandbox liest **Importieren** unter der Liste eine Datei und fügt ihre Wörter hinzu: Text mit einem Wort pro Zeile oder durch Kommas, Semikolons oder Leerzeichen getrennt, mit Kommentarzeilen, die mit `#`, `%` oder `//` beginnen; ein TeX-Block `\hyphenation{…}`; oder eine JSON-Liste (von Listen nach Sprache werden alle übernommen). Eine Trennstelle kann mit Bindestrich, weichem Trennstrich, Trennpunkt (`‧`), `=` oder `~` markiert sein (die Tilden, die manche Satzprogramme schreiben; ein `~` am Anfang lässt das Wort ungetrennt). Ein Wort, das schon in der Liste steht, übernimmt die Form der Datei. **Exportieren** speichert die Liste als Textdatei, ein Wort pro Zeile, die ein anderes Buch unverändert importiert.
 
 `hyphenation.capitalized: false` hält jedes Wort ganz, das mit einem Großbuchstaben beginnt: Namen, Akronyme und auch das erste Wort jedes Satzes. Es entspricht dem ausgeschalteten Schalter „Großgeschriebene Wörter trennen“ von InDesign und `\uchyph=0` in TeX. Ein Eintrag in `exceptions` mit Bindestrichen trennt sein Wort weiterhin dort. Im Deutschen wird jedes Substantiv großgeschrieben, sodass der Schalter einem deutschen Text kaum ein trennbares Wort ließe: Führen Sie dort die Wörter in `exceptions` auf oder verwenden Sie `citations.hyphenateNames`.
 

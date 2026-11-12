@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Sillabazione e lingua',
   description: 'I pattern e le eccezioni della sillabazione; il testo in bandiera; la lingua del documento, da cui dipendono le cifre e la direzione del testo; le scritture che Postext sa comporre',
   lang: 'it',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '23 min',
   order: 8,
   parent: 'configuration',
@@ -147,6 +147,8 @@ Le parole di meno di 5 lettere non vengono mai sillabate, tranne in catalano, do
 Un dizionario divide un nome come divide qualsiasi parola: `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Tre impostazioni tengono intere le parole, e per impostazione predefinita tutte e tre lasciano fare al dizionario.
 
 `hyphenation.exceptions` è un elenco di parole, come il `\hyphenation{…}` di TeX. Una voce scritta senza trattino non viene mai divisa; una voce scritta con trattini viene divisa solo lì, quindi `'You-Tube'` dà `You-` · `Tube` e nient’altro. Una voce corrisponde a una sequenza di lettere, qualunque cosa la circondi: `'Alice'` copre `(Alice,` e `Alice’s`, e un composto viene confrontato parte per parte (`Blender-based` corrisponde a `'Blender'`). Una forma flessa è un’altra parola e ha bisogno di una voce propria. Una voce in minuscolo corrisponde alla parola in qualsiasi combinazione di maiuscole (`'blender'` copre `Blender` e `BLENDER`); una voce con l’iniziale maiuscola corrisponde solo alle occorrenze che cominciano con una maiuscola, quindi `'Rose'` tiene intero il nome e lascia `rose` al dizionario. Le voci contengono solo lettere e trattini; tutto il resto viene scartato.
+
+Nel Sandbox, **Importa**, sotto l'elenco, legge un file e ne aggiunge le parole: testo con una parola per riga o separate da virgole, punti e virgola o spazi, con righe di commento che iniziano con `#`, `%` o `//`; un blocco `\hyphenation{…}` di TeX; o un elenco JSON (degli elenchi per lingua si prendono tutti). Un punto di divisione può essere segnato con un trattino, un trattino morbido, un punto di sillabazione (`‧`), `=` o `~` (le tilde che scrivono alcuni programmi di impaginazione; una `~` iniziale lascia la parola intera). Una parola già nell'elenco prende la forma del file. **Esporta** salva l'elenco in un file di testo, una parola per riga, che un altro libro importa così com'è.
 
 `hyphenation.capitalized: false` tiene intera ogni parola che comincia con una maiuscola: nomi propri, sigle, e anche la prima parola di ogni frase. Corrisponde all’opzione «Sillaba parole in maiuscolo» di InDesign disattivata, e al `\uchyph=0` di TeX. Una voce di `exceptions` con trattini continua a dividere la sua parola in quei punti. Il tedesco scrive in maiuscolo ogni sostantivo, quindi l’opzione lascerebbe a un testo tedesco quasi nessuna parola da dividere: in tedesco elenca piuttosto le parole in `exceptions`, oppure usa `citations.hyphenateNames`.
 

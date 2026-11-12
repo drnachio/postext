@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Hifenização e idioma',
   description: 'Padrões e exceções de hifenização, texto em bandeira, o idioma do documento (com os algarismos e a direção que ele define) e os sistemas de escrita que o Postext compõe',
   lang: 'pt',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '22 min',
   order: 8,
   parent: 'configuration',
@@ -147,6 +147,8 @@ Palavras com menos de 5 letras nunca são hifenizadas, exceto em catalão, em qu
 Um dicionário divide um nome como divide qualquer palavra: `Al-ice`, `Áms-ter-dam`, `You-Tu-be`. Três ajustes mantêm palavras inteiras, e os três, por padrão, seguem o dicionário.
 
 `hyphenation.exceptions` é uma lista de palavras, como no `\hyphenation{…}` do TeX. Uma entrada escrita sem hífen nunca é dividida; uma entrada escrita com hifens só é dividida neles, de modo que `'You-Tube'` dá `You-` · `Tube` e nada mais. Uma entrada corresponde a uma sequência de letras, seja o que for que esteja em volta: `'Alice'` cobre `(Alice,` e `Alice’s`, e um composto é comparado parte por parte (`Blender-based` corresponde a `'Blender'`). Uma forma flexionada é outra palavra e precisa de entrada própria. Uma entrada em minúsculas vale para a palavra em qualquer caixa (`'blender'` cobre `Blender` e `BLENDER`); uma entrada com inicial maiúscula só vale para as ocorrências que começam com maiúscula, de modo que `'Rose'` mantém o nome inteiro e deixa `rose` para o dicionário. As entradas só contêm letras e hifens; todo o resto é descartado.
+
+No Sandbox, **Importar**, abaixo da lista, lê um arquivo e adiciona suas palavras: texto com uma palavra por linha ou separadas por vírgulas, ponto e vírgula ou espaços, com linhas de comentário que começam com `#`, `%` ou `//`; um bloco `\hyphenation{…}` do TeX; ou uma lista JSON (das listas por idioma, todas são lidas). Uma quebra pode ser marcada com hífen, hífen condicional, ponto de hifenização (`‧`), `=` ou `~` (os tis que alguns programas de diagramação escrevem; um `~` no início mantém a palavra inteira). Uma palavra que já está na lista assume a forma do arquivo. **Exportar** salva a lista em um arquivo de texto, uma palavra por linha, que outro livro importa sem mudanças.
 
 `hyphenation.capitalized: false` mantém inteira toda palavra que começa com maiúscula: nomes, siglas e também a primeira palavra de cada frase. É a opção "Hyphenate Capitalized Words" do InDesign desativada, e o `\uchyph=0` do TeX. Uma entrada de `exceptions` com hifens continua dividindo a palavra nesses hifens. O alemão escreve todo substantivo com maiúscula, de modo que a opção deixaria um texto alemão quase sem palavras para dividir: nesse caso, indique as palavras em `exceptions`, ou use `citations.hyphenateNames`.
 
