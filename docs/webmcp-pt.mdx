@@ -336,6 +336,8 @@ valor deles. Para mudá-los também, abra cada um (`sandbox_open_book` com
 deixa de ser próprio da edição. Num livro em um só idioma, `scope: "all"` é
 recusado, porque todos os ajustes dele são próprios.
 
+Um livro cujos capítulos não são todos iguais tem [estilos de capítulo](/pt/docs/configuration-styles#estilos-de-capítulo). `sandbox_chapter_styles` lista esses estilos com os ajustes que cada um muda e os capítulos compostos nele, e diz de onde vem o estilo de cada capítulo: do preâmbulo dele (`chapter`), da linha `:::part` com que ele começa (`part`) ou da parte a que pertence (`partBefore`). Também cria, renomeia e remove estilos. `sandbox_get_config` e `sandbox_set_config` aceitam `chapterStyle`: com ele, leem e gravam os ajustes desse estilo, como faz o painel Design enquanto o estilo está escolhido. Um caminho que o livro inteiro compartilha (`page.width`, `locale`, as fontes, a impressão) é gravado no livro, e `notes` avisa. `sandbox_set_chapter_style` dá a um capítulo o seu estilo gravando a linha `chapterStyle:` dele, e `style: null` tira a linha. Para compor todos os capítulos de uma parte em um estilo, escreva `style="…"` na linha `:::part` da parte com `sandbox_edit_text`.
+
 As fontes também são ajustes: `sandbox_list_fonts` com `search: "Garamond"`
 encontra famílias no catálogo aberto, e escrever o nome em um ajuste
 `fontFamily` a carrega.
@@ -735,7 +737,8 @@ cada uma vêm com `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **O design**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
 - **Projetos gráficos**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Desfazer**: `sandbox_undo`.
 - **Como é mostrado**: `sandbox_set_view`, `sandbox_go_to_page`,

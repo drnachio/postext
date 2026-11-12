@@ -15,6 +15,7 @@ import { FragmentBuilder } from './fragments.js';
 import { endsWithTable, renderNodes, type BlockEnv, type Node } from './blocks.js';
 import { renderExercise } from './exercises/exercises.js';
 import { renderPartDesign } from './design/part.js';
+import { partHasPage, partPageAttr } from '../../pipeline/sections/parts.js';
 import { inPartStyle } from './design/partColor.js';
 import { attrRange } from './marks.js';
 import { renderComposedPage } from './media/pages.js';
@@ -86,10 +87,11 @@ export function renderContainer(ctx: WriterContext, node: ContainerNode, env: Bl
     return rawSdt(ctx, start, end, name);
   }
   if (name === 'callout') return renderBox(ctx, node, env);
-  // A book without part pages (`parts.page: false`) prints nothing for the
-  // fence: the part only rules the running heads and the contents. Its
-  // source stays as it is on re-import (#1444).
-  if (name === 'part' && !ctx.resolved.parts.page) return '';
+  // A book without part pages (`parts.page: false`), or a fence that says
+  // `page=false`, prints nothing for the fence: the part only rules the
+  // running heads and the contents. Its source stays as it is on re-import
+  // (#1444).
+  if (name === 'part' && !partHasPage({ ...(partPageAttr(attrs.page) === false ? { page: false as const } : {}) }, ctx.resolved.parts.page)) return '';
   if (name === 'part') {
     // The part's page break comes once: before its number, or before its
     // title when it has none.

@@ -11,6 +11,7 @@ import { collectChoiceWarnings, collectNumeralsWarnings } from './choices.js';
 import { collectContentInConfigWarnings } from './contentInConfig.js';
 import { collectCalloutStyleWarnings, collectLabelIconWarnings, collectDesignAnchorWarnings, collectDesignPathWarnings, collectDesignKeyWarnings, collectBoxShapeWarnings, collectConnectorWarnings, collectTextOverWarnings, collectFenceConditionWarnings } from './design.js';
 import { collectUnknownKeyWarnings } from './unknownKeys.js';
+import { collectChapterStyleWarnings } from './chapterStyles.js';
 import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarnings, collectCjkGridWarnings } from './values.js';
 
 /**
@@ -55,7 +56,9 @@ import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarn
  * - a design element's `when` / `unless` that names no attribute, or that
  *   a heading, part or box design would ignore (#1087);
  * - the exercise styles and settings (#1226): keys they do not have, words
- *   outside their choices, numbering styles the engine does not know.
+ *   outside their choices, numbering styles the engine does not know;
+ * - a chapter style that sets what stays the book's
+ *   (`chapterStyleBookSetting`, #1521).
  * Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined, options: ConfigWarningOptions = {}): ConfigWarning[] {
@@ -68,7 +71,7 @@ export function collectConfigWarnings(config: PostextConfig | undefined, options
     ...collectDesignAnchorWarnings(config),
     ...collectDesignPathWarnings(config), ...collectDesignKeyWarnings(config), ...collectBoxShapeWarnings(config),
     ...collectConnectorWarnings(config), ...collectTextOverWarnings(config), ...collectFenceConditionWarnings(config),
-    ...exerciseConfigWarnings(config),
+    ...exerciseConfigWarnings(config), ...collectChapterStyleWarnings(config),
   ];
 }
 

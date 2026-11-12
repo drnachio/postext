@@ -296,7 +296,8 @@ export function outlineFromDoc(doc: VDTDocument, parsedOutline: readonly Outline
   }
   const partPages: ({ pageLabel: string; pageIndex: number } | undefined)[] = [];
   for (const page of doc.pages) if (page.partInfo) partPages.push({ pageLabel: page.pageLabel, pageIndex: offset + page.index });
-  // Parts set without a divider page (`parts.page: false`) point at the
+  // Parts set without a divider page (`parts.page: false`, a fence's
+  // `page=false`) point at the
   // page their content starts on — the one their running heads switch on.
   if (doc.partMarks && doc.partMarks.length > 0) {
     for (const index of partMarkPages(doc)) {

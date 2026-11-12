@@ -1,6 +1,6 @@
 // The book's design: reading and writing its configuration.
 
-import { collectConfigWarnings, overridePaths, stripConfigDefaults } from 'postext';
+import { collectConfigWarnings, isBookPageKey, isBookWideKey, overridePaths, stripConfigDefaults } from 'postext';
 import type { PostextConfig } from 'postext';
 import { SETTINGS_GROUPS, SETTINGS_SECTIONS } from '../../sidebar/sections/registry.js';
 import { tokenize } from '../../sidebar/search/normalize.js';
@@ -14,6 +14,7 @@ import { readBitmapResolutions } from './designItems.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { editionOverride, generalSettingsFrom, generalSettingsView, ownPathsAt, rebaseEdition, recordSharedConfig, type ConfigScope } from '../../editions/configLayers.js';
 import { getProject } from '../../storage/projects.js';
+import { chapterStyleView, writeChapterStyle } from '../../editions/chapterStyleEdit.js';
 import type { SandboxState } from '../../context/SandboxContext.js';
 
 /** The editions of the book on screen that set one of `paths` themselves,
@@ -55,6 +56,17 @@ const everySection: Exclude<keyof PostextConfig, (typeof CONFIG_KEYS)[number] | 
 void everySection;
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** The `chapterStyle` argument of the config tools: a chapter style
+ *  (`config.chapterStyles[].id`) read or written instead of the book. */
+const CHAPTER_STYLE_PARAM = { type: 'string', description: 'A chapter style\'s id (sandbox_chapter_styles): read or write that style — its settings over the book\'s — instead of the book, as the Design panel does while it edits the style. What the whole book shares (the trim, the language, the fonts, print, the viewers) stays the book\'s: written here, it changes the book.' } as const;
+
+/** The style `id` of `config`, or a refusal naming the ones it has. */
+function styleIn(config: PostextConfig, id: unknown): string {
+  const styles = config.chapterStyles ?? [];
+  if (typeof id === 'string' && styles.some((st) => st.id === id)) return id;
+  throw new ToolError(`No chapter style ${JSON.stringify(id)}. The book's: ${styles.map((st) => st.id).join(', ') || 'none'}; make one with sandbox_chapter_styles (action create).`);
+}
 
 const same = (a: unknown, b: unknown): boolean => stableText(a) === stableText(b);
 
@@ -101,6 +113,7 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
         path: { type: 'string', description: 'The setting, or the section, to read.' },
         effective: { type: 'boolean', description: 'Include the value with defaults filled in (default true when a path is given).' },
         scope: { type: 'string', enum: ['all', 'edition'], description: 'A book in several languages: all reads the general settings every edition reads, edition the edition on screen (its own fields over the general ones). Default: the scope the Design panel is in.' },
+        chapterStyle: CHAPTER_STYLE_PARAM,
       },
       additionalProperties: false,
     },
@@ -109,27 +122,32 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
       const state = store.getSnapshot();
       const layers = state.configLayers;
       const scope = (args.scope as ConfigScope | undefined) ?? layers?.scope ?? 'edition';
-      const config = scope === 'all' && layers ? generalSettingsView(layers.shared, state.config) : state.config;
-      const set = scope === 'all' && layers ? layers.shared : stripConfigDefaults(config);
+      const book = scope === 'all' && layers ? generalSettingsView(layers.shared, state.config) : state.config;
+      // A chapter style: what it stores, and the book with it merged over.
+      const styleId = args.chapterStyle !== undefined ? styleIn(book, args.chapterStyle) : undefined;
+      const config = styleId ? chapterStyleView(book, styleId) : book;
+      const set = styleId ? book.chapterStyles!.find((st) => st.id === styleId)!.config : scope === 'all' && layers ? layers.shared : stripConfigDefaults(config);
       // A book in several languages: which settings the edition on screen
       // sets of its own (#1209).
       const layered = layers ? { scope, ownFields: overridePaths(editionOverride(layers.shared, state.config)) } : {};
       const asked = ((args.path as string | undefined) ?? '').trim();
+      const resolve = (): Record<string, unknown> => (styleId ? effectiveOf(config) : effectiveConfig());
       if (asked === '') {
         return {
           ...layered,
+          ...(styleId ? { chapterStyle: styleId } : {}),
           set,
           sections: CONFIG_KEYS,
-          ...(args.effective ? { effective: effectiveConfig() } : {}),
+          ...(args.effective ? { effective: resolve() } : {}),
         };
       }
       if (args.effective === false) {
         const path = settingPath(asked, null);
         return { path, set: getAtPath(set, path) ?? null };
       }
-      const resolved = effectiveConfig();
+      const resolved = resolve();
       const path = settingPath(asked, resolved);
-      const answer: Record<string, unknown> = { path, set: getAtPath(set, path) ?? null };
+      const answer: Record<string, unknown> = { ...(styleId ? { chapterStyle: styleId } : {}), path, set: getAtPath(set, path) ?? null };
       const effective = getAtPath(resolved, path);
       if (effective === undefined && answer.set === null) {
         const parentPath = formatPath(parsePath(path).slice(0, -1));
@@ -169,6 +187,7 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
         replace: { type: 'object', description: 'A whole configuration (or a postext-config.json export) that takes the place of the book\'s. Not with changes or patch.' },
         wait: { type: 'boolean', description: 'Wait for the book to be laid out again and answer with its pages (default true).' },
         scope: { type: 'string', enum: ['all', 'edition'], description: 'A book in several languages: all writes the general settings every edition reads (an edition that sets the field itself keeps its value, and the answer names it in keptBy); edition writes the edition on screen only, as a value of its own. Default: the scope the Design panel is in. A book in one language has only its own settings.' },
+        chapterStyle: CHAPTER_STYLE_PARAM,
       },
       additionalProperties: false,
     },
@@ -183,8 +202,12 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
       const scope = (args.scope as ConfigScope | undefined) ?? layers?.scope ?? 'edition';
       if (scope === 'all' && !layers) throw new ToolError('This book is in one language: its settings are its own, there are no general settings apart from them. Leave scope out.');
       // The settings written: the general ones (as the Design panel shows
-      // them beside this edition), or the edition's.
-      const base = scope === 'all' && layers ? generalSettingsView(layers.shared, before.config) : before.config;
+      // them beside this edition), or the edition's; or a chapter style of
+      // them, merged over them (#1521).
+      const book = scope === 'all' && layers ? generalSettingsView(layers.shared, before.config) : before.config;
+      const styleId = args.chapterStyle !== undefined ? styleIn(book, args.chapterStyle) : undefined;
+      if (styleId && replace) throw new ToolError('"replace" puts a whole configuration in place of the book\'s: it does not go with chapterStyle.');
+      const base = styleId ? chapterStyleView(book, styleId) : book;
       // A book whose configuration the engine cannot resolve can still be
       // mended: its settings are then written as given.
       let effectiveBefore: Record<string, unknown> | null = null;
@@ -303,9 +326,17 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
       const followedMore = Math.max(0, followed.length - MAX_FOLLOWED);
       followed = followed.slice(0, MAX_FOLLOWED);
 
+      // Written to a style: kept as its difference from the book, what the
+      // whole book shares written to the book.
+      if (styleId) {
+        const keys = (p: string) => p.split(/[.[]/);
+        const toBook = unique.filter((p) => isBookWideKey(keys(p)[0]!) || (keys(p)[0] === 'page' && isBookPageKey(keys(p)[1] ?? '')));
+        if (toBook.length > 0) notes.push(`${toBook.join(', ')}: the whole book shares this, so it was written to the book, not to the style "${styleId}".`);
+        next = writeChapterStyle(book, styleId, next, { toBook: true });
+      }
       let warnings: unknown[] = [];
       try {
-        const warningsBefore = new Set(collectConfigWarnings(base).map((w) => JSON.stringify(w)));
+        const warningsBefore = new Set(collectConfigWarnings(book).map((w) => JSON.stringify(w)));
         warnings = collectConfigWarnings(next).filter((w) => !warningsBefore.has(JSON.stringify(w)));
       } catch {
         warnings = [];
@@ -327,6 +358,7 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
         : 0;
       const answer: Record<string, unknown> = {
         ...(layers ? { scope } : {}),
+        ...(styleId ? { chapterStyle: styleId } : {}),
         ...(keptBy.length > 0 ? { keptBy, keptByNote: `These editions set a changed setting themselves and keep their value; write it with scope "edition" while each is on screen, or drop their own value, to change them too.` } : {}),
         ...(bitmapResolutions > 0 ? { bitmapResolutionsRead: bitmapResolutions } : {}),
         changed: reported,

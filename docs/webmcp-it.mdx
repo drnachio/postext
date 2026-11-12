@@ -329,6 +329,8 @@ loro valore. Per cambiare anche quelle, apri ciascuna (`sandbox_open_book` con
 generale smette di essere proprio dell’edizione. In un libro in una sola lingua
 `scope: "all"` viene rifiutato, perché tutte le sue impostazioni sono proprie.
 
+Un libro i cui capitoli non sono tutti uguali ha degli [stili dei capitoli](/it/docs/configuration-styles#stili-dei-capitoli). `sandbox_chapter_styles` li elenca con le impostazioni che ciascuno cambia e i capitoli composti in esso, e dice da dove viene lo stile di ogni capitolo: dal suo front matter (`chapter`), dalla riga `:::part` con cui comincia (`part`) o dalla parte a cui appartiene (`partBefore`). Crea anche, rinomina e rimuove gli stili. `sandbox_get_config` e `sandbox_set_config` accettano `chapterStyle`: con esso leggono e scrivono le impostazioni di quello stile, come fa il pannello Design mentre lo stile è scelto. Un percorso condiviso dal libro intero (`page.width`, `locale`, i font, la stampa) viene scritto nel libro, e `notes` lo dice. `sandbox_set_chapter_style` dà a un capitolo il suo stile scrivendone la riga `chapterStyle:`, e `style: null` la toglie. Per comporre tutti i capitoli di una parte in uno stile si scrive `style="…"` nella riga `:::part` della parte con `sandbox_edit_text`.
+
 Anche i font sono impostazioni: `sandbox_list_fonts` con `search: "Garamond"` trova
 famiglie nel catalogo aperto, e basta scriverne il nome in un’impostazione `fontFamily`
 per caricarla.
@@ -722,7 +724,8 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
   `sandbox_manage_chapters`, `sandbox_remove_chapter`.
 - **La grafica**: `sandbox_get_config`, `sandbox_set_config`,
   `sandbox_find_setting`, `sandbox_reset_to_original`,
-  `sandbox_frame_styles`, `sandbox_merge_styles`.
+  `sandbox_frame_styles`, `sandbox_merge_styles`,
+  `sandbox_chapter_styles`, `sandbox_set_chapter_style`.
 - **Progetti grafici**: `sandbox_list_designs`, `sandbox_save_design`, `sandbox_try_design`, `sandbox_end_design_trial`, `sandbox_apply_design`, `sandbox_import_design`, `sandbox_export_design`, `sandbox_delete_design`.
 - **Annullare**: `sandbox_undo`.
 - **Come viene mostrato**: `sandbox_set_view`, `sandbox_go_to_page`,

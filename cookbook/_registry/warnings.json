@@ -1404,6 +1404,168 @@
       }
     }
   },
+  "chapterStyleUnknown": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown chapter style",
+      "es": "Estilo de capítulo desconocido",
+      "ca": "Estil de capítol desconegut",
+      "zh": "未知章样式",
+      "ar": "نمط فصل غير معروف",
+      "ja": "不明な章スタイル",
+      "pt": "Estilo de capítulo desconhecido",
+      "fr": "Style de chapitre inconnu",
+      "de": "Unbekannter Kapitelstil",
+      "it": "Stile di capitolo sconosciuto"
+    },
+    "cause": {
+      "en": "A chapter's chapterStyle: line, or a :::part fence's style, names an id that chapterStyles does not define, so the chapter is set in the book's settings.",
+      "es": "La línea chapterStyle: de un capítulo, o el style de una línea :::part, nombra un id que chapterStyles no define, así que el capítulo se compone con los ajustes del libro.",
+      "ca": "La línia chapterStyle: d'un capítol, o el style d'una línia :::part, anomena un id que chapterStyles no defineix, de manera que el capítol es compon amb els ajustos del llibre.",
+      "zh": "某章的chapterStyle:行或某个:::part行的style写了chapterStyles中没有定义的id，因此该章采用全书的设置。",
+      "ar": "يسمّي سطر chapterStyle: في فصل، أو style في سطر :::part، معرّفًا لا تعرّفه chapterStyles، فيُصفّ الفصل بإعدادات الكتاب.",
+      "ja": "章のchapterStyle:行、または:::part行のstyleが、chapterStylesに定義されていないidを指定しているため、その章は本の設定で組まれます。",
+      "pt": "A linha chapterStyle: de um capítulo, ou o style de uma linha :::part, cita um id que chapterStyles não define; por isso, o capítulo é composto com os ajustes do livro.",
+      "fr": "La ligne chapterStyle: d’un chapitre, ou le style d’une ligne :::part, indique un identifiant que chapterStyles ne définit pas : le chapitre est composé avec les réglages du livre.",
+      "de": "Die Zeile chapterStyle: eines Kapitels oder das style einer Zeile :::part nennt eine ID, die chapterStyles nicht definiert; das Kapitel wird daher in den Einstellungen des Buches gesetzt.",
+      "it": "La riga chapterStyle: di un capitolo, o lo style di una riga :::part, indica un id che chapterStyles non definisce, quindi il capitolo si compone con le impostazioni del libro."
+    },
+    "fix": {
+      "en": "Make the style in chapterStyles (Design › Chapter style) or correct the id.",
+      "es": "Crea el estilo en chapterStyles (Diseño › Estilo de capítulo) o corrige el id.",
+      "ca": "Crea l'estil a chapterStyles (Disseny › Estil de capítol) o corregeix l'id.",
+      "zh": "在chapterStyles中新建该样式（版面设计 › 章样式），或改正id。",
+      "ar": "أنشئ النمط في chapterStyles (التصميم › نمط الفصل) أو صحّح المعرّف.",
+      "ja": "chapterStylesにスタイルを作成する（デザイン › 章スタイル）か、idを修正してください。",
+      "pt": "Crie o estilo em chapterStyles (Design › Estilo de capítulo) ou corrija o id.",
+      "fr": "Créez le style dans chapterStyles (Design › Style de chapitre) ou corrigez l’identifiant.",
+      "de": "Legen Sie den Stil in chapterStyles an (Design › Kapitelstil) oder korrigieren Sie die ID.",
+      "it": "Crea lo stile in chapterStyles (Design › Stile del capitolo) oppure correggi l’id."
+    },
+    "docs": {
+      "slug": "configuration-styles",
+      "heading": {
+        "en": "Chapter styles",
+        "es": "Estilos de capítulo",
+        "ca": "Estils de capítol",
+        "zh": "章样式",
+        "ar": "أنماط الفصول",
+        "ja": "章スタイル",
+        "pt": "Estilos de capítulo",
+        "fr": "Styles de chapitre",
+        "de": "Kapitelstile",
+        "it": "Stili dei capitoli"
+      }
+    }
+  },
+  "partStyleMidChapter": {
+    "source": "engine",
+    "label": {
+      "en": "Part style after the chapter text",
+      "es": "Estilo de parte tras el texto del capítulo",
+      "ca": "Estil de part després del text del capítol",
+      "zh": "篇样式写在章正文之后",
+      "ar": "نمط جزء بعد نص الفصل",
+      "ja": "章の本文の後にある部のスタイル",
+      "pt": "Estilo de parte depois do texto do capítulo",
+      "fr": "Style de partie après le texte du chapitre",
+      "de": "Teilstil nach dem Kapiteltext",
+      "it": "Stile di parte dopo il testo del capitolo"
+    },
+    "cause": {
+      "en": "A :::part fence that names a style stands after the chapter's text has started; a style applies to whole chapters, so it starts with the next chapter.",
+      "es": "Una línea :::part que nombra un estilo está después de empezado el texto del capítulo; un estilo se aplica a capítulos enteros, así que empieza en el capítulo siguiente.",
+      "ca": "Una línia :::part que anomena un estil és després que el text del capítol ja hagi començat; un estil s'aplica a capítols sencers, de manera que comença al capítol següent.",
+      "zh": "写了样式的:::part行位于该章正文开始之后；样式按整章生效，因此从下一章开始。",
+      "ar": "يقع سطر :::part الذي يسمّي نمطًا بعد أن بدأ نص الفصل؛ والنمط يسري على فصول كاملة، فيبدأ من الفصل التالي.",
+      "ja": "スタイルを指定した:::part行が、章の本文が始まった後にあります。スタイルは章単位で適用されるため、次の章から有効になります。",
+      "pt": "Uma linha :::part que nomeia um estilo vem depois que o texto do capítulo já começou; um estilo vale para capítulos inteiros, então começa no capítulo seguinte.",
+      "fr": "Une ligne :::part qui nomme un style se trouve après le début du texte du chapitre ; un style s’applique à des chapitres entiers, il commence donc au chapitre suivant.",
+      "de": "Eine Zeile :::part, die einen Stil nennt, steht nach dem Beginn des Kapiteltexts; ein Stil gilt für ganze Kapitel und beginnt daher mit dem nächsten Kapitel.",
+      "it": "Una riga :::part che nomina uno stile si trova dopo l’inizio del testo del capitolo; uno stile vale per capitoli interi, quindi comincia dal capitolo successivo."
+    },
+    "fix": {
+      "en": "Move the :::part fence to the top of the chapter, before its heading, or start a new chapter there.",
+      "es": "Lleva la línea :::part al principio del capítulo, antes de su encabezado, o empieza ahí un capítulo nuevo.",
+      "ca": "Porta la línia :::part al principi del capítol, abans del seu encapçalament, o comença-hi un capítol nou.",
+      "zh": "把:::part行移到该章开头、标题之前，或在那里另起一章。",
+      "ar": "انقل سطر :::part إلى أول الفصل، قبل عنوانه، أو ابدأ فصلًا جديدًا هناك.",
+      "ja": ":::part行を章の先頭、見出しの前に移すか、そこで新しい章を始めてください。",
+      "pt": "Leve a linha :::part para o começo do capítulo, antes do título, ou comece ali um capítulo novo.",
+      "fr": "Placez la ligne :::part en tête du chapitre, avant son titre, ou commencez là un nouveau chapitre.",
+      "de": "Setzen Sie die Zeile :::part an den Anfang des Kapitels, vor seine Überschrift, oder beginnen Sie dort ein neues Kapitel.",
+      "it": "Sposta la riga :::part all’inizio del capitolo, prima del titolo, oppure comincia lì un nuovo capitolo."
+    },
+    "docs": {
+      "slug": "configuration-styles",
+      "heading": {
+        "en": "A part in a chapter style",
+        "es": "Una parte en un estilo de capítulo",
+        "ca": "Una part en un estil de capítol",
+        "zh": "篇采用章样式",
+        "ar": "جزء بنمط فصل",
+        "ja": "部を章スタイルで組む",
+        "pt": "Uma parte em um estilo de capítulo",
+        "fr": "Une partie dans un style de chapitre",
+        "de": "Ein Teil in einem Kapitelstil",
+        "it": "Una parte in uno stile di capitolo"
+      }
+    }
+  },
+  "chapterStyleBookSetting": {
+    "source": "engine",
+    "label": {
+      "en": "Book setting in a chapter style",
+      "es": "Ajuste del libro en un estilo de capítulo",
+      "ca": "Configuració del llibre en un estil de capítol",
+      "zh": "章样式中的全书设置",
+      "ar": "إعداد للكتاب في نمط فصل",
+      "ja": "章スタイル内の本全体の設定",
+      "pt": "Configuração do livro em um estilo de capítulo",
+      "fr": "Réglage du livre dans un style de chapitre",
+      "de": "Bucheinstellung in einem Kapitelstil",
+      "it": "Impostazione del libro in uno stile di capitolo"
+    },
+    "cause": {
+      "en": "A chapter style's config sets something the whole book shares (the trim, the language, the fonts, print, the viewers), which a style cannot change; the chapters keep the book's value.",
+      "es": "El config de un estilo de capítulo fija algo que comparte todo el libro (el tamaño de página, el idioma, las fuentes, la imprenta, los visores), que un estilo no puede cambiar; los capítulos conservan el valor del libro.",
+      "ca": "El config d'un estil de capítol fixa una cosa que comparteix tot el llibre (la mida de pàgina, la llengua, les fonts, la impremta, els visors), que un estil no pot canviar; els capítols conserven el valor del llibre.",
+      "zh": "章样式的config写了全书共用的设置（成品尺寸、语言、字体、印制、查看器），样式无法改变这些设置；各章沿用全书的值。",
+      "ar": "يحدّد config في نمط فصل شيئًا يشترك فيه الكتاب كله (المقاس، اللغة، الخطوط، الطباعة، العارضات)، ولا يستطيع النمط تغييره؛ فتحتفظ الفصول بقيمة الكتاب.",
+      "ja": "章スタイルのconfigが、本全体で共有する設定（判型、言語、フォント、印刷、ビューアー）を指定していますが、スタイルではそれらを変えられません。章は本の値のままです。",
+      "pt": "O config de um estilo de capítulo define algo que o livro inteiro compartilha (o tamanho da página, o idioma, as fontes, a impressão, os visualizadores), que um estilo não pode mudar; os capítulos mantêm o valor do livro.",
+      "fr": "Le config d’un style de chapitre fixe ce que tout le livre partage (le format, la langue, les polices, l’impression, les visionneuses), qu’un style ne peut pas changer ; les chapitres gardent la valeur du livre.",
+      "de": "Das config eines Kapitelstils setzt etwas, das das ganze Buch teilt (Format, Sprache, Schriften, Druck, Viewer) und das ein Stil nicht ändern kann; die Kapitel behalten den Wert des Buches.",
+      "it": "Il config di uno stile di capitolo fissa qualcosa che il libro intero condivide (il formato, la lingua, i font, la stampa, i visualizzatori), che uno stile non può cambiare; i capitoli mantengono il valore del libro."
+    },
+    "fix": {
+      "en": "Set it in the book's configuration and take it out of the style.",
+      "es": "Fíjalo en la configuración del libro y quítalo del estilo.",
+      "ca": "Fixa-ho a la configuració del llibre i treu-ho de l'estil.",
+      "zh": "在全书的配置中设置它，并从样式中去掉。",
+      "ar": "حدّده في إعدادات الكتاب واحذفه من النمط.",
+      "ja": "本の設定で指定し、スタイルからは取り除いてください。",
+      "pt": "Defina-o na configuração do livro e tire-o do estilo.",
+      "fr": "Fixez-le dans la configuration du livre et retirez-le du style.",
+      "de": "Setzen Sie es in der Konfiguration des Buches und nehmen Sie es aus dem Stil.",
+      "it": "Impostalo nella configurazione del libro e toglilo dallo stile."
+    },
+    "docs": {
+      "slug": "configuration-styles",
+      "heading": {
+        "en": "Chapter styles",
+        "es": "Estilos de capítulo",
+        "ca": "Estils de capítol",
+        "zh": "章样式",
+        "ar": "أنماط الفصول",
+        "ja": "章スタイル",
+        "pt": "Estilos de capítulo",
+        "fr": "Styles de chapitre",
+        "de": "Kapitelstile",
+        "it": "Stili dei capitoli"
+      }
+    }
+  },
   "unknownCalloutType": {
     "source": "engine",
     "label": {

@@ -1270,6 +1270,8 @@ parts: {
 
 Uma linha `:::part{number="…" title="…"}` abre a parte e um `:::` sozinho a fecha; os dois atributos são opcionais (o padrão é `''`). Os blocos entre eles (normalmente a lista de capítulos) correm na coluna única da página de parte com `bodyStyle`, a partir de `margins.top`; um corpo mais longo que a página continua em páginas comuns. A página é classificada como `role: 'part'` (`VDTPage.partInfo` traz o número e o título), de modo que os elementos de cabeçalho e rodapé podem visá-la ou pulá-la com `pages: 'part'` / `pages: 'body'`; o renderizador de PDF acrescenta a parte aos marcadores do PDF, acima dos capítulos dela. Um corpo vazio (`:::part{…}` seguido diretamente de `:::`) é o caso comum e ainda assim produz a página; duas partes seguidas nunca dividem uma página. Um `:::part` aninhado em outra parte é incorporado à parte externa.
 
+Mais dois atributos agem sobre os capítulos da parte. `style="<id>"` compõe esses capítulos em um dos estilos de capítulo do livro (veja *Uma parte em um estilo de capítulo*, mais abaixo). `page=false` (também `no`, `0` ou `off`) não imprime a página de parte desta parte, como `parts.page: false` faz com todas: o corpo do contêiner não é composto, e o número, o título, a paleta e o estilo da parte valem a partir do conteúdo seguinte, sem quebra própria. Serve para uma parte que segue sem página divisória, como as páginas finais de um livro cujas outras partes têm uma. O atributo só pode tirar a página: quando `parts.page` é `false`, nenhuma linha `:::part` abre uma.
+
 Um terceiro atributo, `palette="<id>=<hex>[, <id>=<hex>…]"`, dá à parte cores próprias: na página de parte e em todas as páginas que vêm depois dela, até a parte seguinte, cada cor de design (cabeçalho, rodapé, faixa de abertura, designs de parte e de verso) vinculada a um desses ids de paleta usa o valor da parte em vez do valor da paleta do documento. É assim que as seções de um livro mudam a cor da aba do canto, do ponto do cabeço e da faixa de abertura de capítulo sem um segundo design: `:::part{number="II" title="…" palette="band=#f6c297"}`. O fluxo de texto acompanha: nessas mesmas páginas, toda cor do fluxo igual ao valor base de uma entrada de paleta substituída — títulos, cores de negrito, itálico e referências, marcadores e números de lista, rótulos e barras de legenda, texto, fios e preenchimentos de tabela (cabeçalho, corpo, linhas alternadas e o preenchimento próprio de uma célula), boxes (fundo, borda, faixa, título) e chips (preenchimento, contorno e texto) — usa o valor da parte; assim, um `headings.levels[1].color` vinculado a `band` compõe os títulos de cada seção na cor dela. As amostras de cor no texto mantêm a cor escrita nelas. Os pares são separados por vírgulas, ponto e vírgula ou espaços, `=` ou `:` une id e cor, e o `#` é opcional. Uma parte continua valendo depois da linha de fechamento: `{partTitle}`, `{partNumber}` e a paleta acompanham o fluxo nos capítulos seguintes e (por meio de `continuation.part`, que `continuationAfter()` informa) nos capítulos diagramados separadamente, de modo que o segundo capítulo de uma seção mostra a seção nos cabeços exatamente como o primeiro.
 
 Duas entradas da paleta podem ter o mesmo valor base e ainda assim receber valores diferentes numa parte, quando a parte substitui uma e não a outra ou dá a elas cores diferentes. O valor sozinho não diz de qual entrada veio uma cor do fluxo; por isso, cada cor do fluxo é comparada com as configurações de onde ela pode vir e usa o valor a que essas configurações estão vinculadas. Distinguem-se:
@@ -1425,70 +1427,6 @@ headingStyles: [
 …
 ```
 
-## Estilos de capítulo
-
-Um livro cujos capítulos não são todos iguais (apêndices em duas colunas e com letra menor, uma parte impressa em outra cor, um glossário com os seus próprios cabeços) declara **estilos de capítulo**, e um capítulo adota um deles nomeando-o no seu front matter:
-
-```ts
-interface ChapterStyleConfig {
-  id: string;              // O que o front matter de um capítulo nomeia.
-  name?: string;           // Um nome para exibi-lo.
-  config: ConfigOverride;  // Os ajustes que ele muda.
-}
-```
-
-```ts
-chapterStyles: [
-  {
-    id: 'appendix',
-    name: 'Appendix',
-    config: {
-      layout: { layoutType: 'double' },
-      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
-      bodyText: { fontSize: { value: 9, unit: 'pt' } },
-      header: { elements: [] },
-    },
-  },
-],
-```
-
-```markdown
----
-chapterStyle: appendix
----
-# Appendix A
-```
-
-O `config` de um estilo é combinado sobre a configuração do livro como a camada de um idioma (veja `mergeConfigLayers`): os objetos, chave a chave; uma cor ou uma medida, por inteiro; as listas de estilos, entrada a entrada pelo `id`; e `null` retira um valor do livro. Assim, as colunas e as margens, a tipografia e os estilos de parágrafo, de título e de caixa, as cores e as tintas, os cabeços e o formato dos fólios podem mudar de um capítulo para outro, e o que o estilo não nomeia continua sendo do livro. O tamanho da página, a resolução, as marcas de corte e a encadernação continuam sendo do livro: um estilo que os nomeie é ignorado nesses pontos.
-
-A numeração das páginas, os contadores, as notas e o sumário continuam correndo pelo capítulo como em qualquer outro. Todas as saídas o leem: o canvas, o PDF, o EPUB, o HTML e um pacote diagramado com `buildBundle`, e também um capítulo diagramado sozinho com `buildDocument`, porque o motor aplica o estilo que o texto dele nomeia. Num livro, só o front matter do primeiro capítulo é o do livro; o de um capítulo posterior é apagado, exceto a linha `chapterStyle:`. O `{style="…"}` de um título continua se somando ao estilo do capítulo, para uma seção.
-
-No Sandbox, a barra “Estilo de capítulo” no alto do painel Design escolhe o que o painel edita: o livro ou um de seus estilos. Com um estilo escolhido, o painel o mostra sobre o livro, e o que você muda fica guardado no estilo como a diferença dele em relação ao livro; a barra renomeia o estilo, o exclui e volta ao livro, e seu botão + cria um novo. Um capítulo recebe um estilo pelo menu dele no painel Capítulos, que escreve a linha `chapterStyle:` por ele; a entrada do capítulo mostra o nome do estilo. Enquanto um estilo é editado, um campo que o estilo define leva a marca dele, cujo menu recupera o valor do livro ou faz do valor do estilo o do livro. Em um livro em vários idiomas, os estilos ficam guardados na camada que o painel edita: os ajustes de todos os idiomas ou a edição na tela.
-
-### Seções dentro de um capítulo
-
-Dentro de um capítulo, uma quebra de seção numa linha própria diagrama o que vem a seguir com um estilo de capítulo, a partir de uma página nova, até a quebra seguinte ou o fim do capítulo; `::section` sozinho volta aos ajustes do próprio capítulo:
-
-```markdown
-# Results
-
-The chapter's own settings.
-
-::section{style="appendix"}
-
-## Tables of results
-
-Set in the appendix style, from a new page.
-
-::section
-
-## Discussion
-
-Back to the chapter's settings, from a new page.
-```
-
-O estilo é combinado sobre os ajustes do capítulo (incluído o seu próprio estilo de capítulo), de modo que uma seção só muda o que o estilo dela nomeia. A numeração das páginas, os contadores e as notas continuam correndo pelas seções como pelos capítulos. Uma quebra dentro de um bloco de código é texto.
-
 A página da capa não imprime cabeços, e a partir de *A sala da lanterna* as páginas voltam a usar o cabeçalho e o rodapé do documento. Com o valor padrão, `'level'`, a seção da capa duraria até o próximo título de nível 1, que este livro não tem, e nenhuma das suas páginas teria cabeço.
 
 **Uma quebra de página não substitui a quebra do próprio título.** Um estilo herda o `breakBefore` do nível (o padrão do nível 1 é `{ enabled: true, parity: 'always-odd' }`), e um título o aplica onde quer que esteja, inclusive logo depois de um `:::pagebreak`. A quebra de página abre uma página nova, e o título ainda pede o lado dele na página dupla. Com `parity: 'odd'`, uma quebra que cai num verso é seguida de uma página em branco, e o título abre na próxima página ímpar. Com `'always-odd'` vem também a página em branco separadora, e a quebra de página não muda nada, já que o título abriria essa página de qualquer jeito. Um estilo que deve começar na página aberta por uma quebra manual, como uma página de sumário depois da folha de rosto, desliga a própria quebra:
@@ -1549,3 +1487,55 @@ const minimal = stripHeadingStylesDefaults(config.headingStyles);
 // => undefined quando não resta nenhum estilo
 ```
 
+## Estilos de capítulo
+
+Um livro cujos capítulos não são todos iguais (apêndices em duas colunas e com letra menor, uma parte impressa em outra cor, um glossário com os seus próprios cabeços) declara **estilos de capítulo**, e um capítulo adota um deles nomeando-o no seu front matter:
+
+```ts
+interface ChapterStyleConfig {
+  id: string;              // O que o front matter de um capítulo nomeia.
+  name?: string;           // Um nome para exibi-lo.
+  config: ConfigOverride;  // Os ajustes que ele muda.
+}
+```
+
+```ts
+chapterStyles: [
+  {
+    id: 'appendix',
+    name: 'Appendix',
+    config: {
+      layout: { layoutType: 'double' },
+      page: { margins: { left: { value: 15, unit: 'mm' }, right: { value: 15, unit: 'mm' } } },
+      bodyText: { fontSize: { value: 9, unit: 'pt' } },
+      header: { elements: [] },
+    },
+  },
+],
+```
+
+```markdown
+---
+chapterStyle: appendix
+---
+# Appendix A
+```
+
+O `config` de um estilo é combinado sobre a configuração do livro como a camada de um idioma (veja `mergeConfigLayers`): os objetos, chave a chave; uma cor ou uma medida, por inteiro; as listas de estilos, entrada a entrada pelo `id`; e `null` retira um valor do livro. Assim, as colunas e as margens, a tipografia e os estilos de parágrafo, de título e de caixa, as cores e as tintas, os cabeços e o formato dos fólios podem mudar de um capítulo para outro, e o que o estilo não nomeia continua sendo do livro. O que o livro inteiro compartilha continua sendo do livro: de `page`, o tamanho, a resolução, as marcas de corte e a encadernação; e também o idioma e a direção da escrita, os algarismos, as fontes registradas e a de símbolos, os tipos de recurso, a produção gráfica, a geração do PDF, os visualizadores e as verificações. Um estilo que defina algum deles é ignorado nesse ponto, e os avisos de configuração o apontam com `chapterStyleBookSetting`. No Sandbox, uma alteração em um desses ajustes feita enquanto se edita um estilo vai para o livro.
+
+A numeração das páginas, os contadores, as notas e o sumário continuam correndo pelo capítulo como em qualquer outro. Todas as saídas o leem: o canvas, o PDF, o EPUB, o HTML e um pacote diagramado com `buildBundle`, e também um capítulo diagramado sozinho com `buildDocument`, porque o motor aplica o estilo que o texto dele nomeia. Num livro, só o front matter do primeiro capítulo é o do livro; o de um capítulo posterior é apagado, exceto a linha `chapterStyle:`. O `{style="…"}` de um título continua se somando ao estilo do capítulo, para uma seção.
+
+No Sandbox, a barra “Estilo de capítulo” no alto do painel Design escolhe o que o painel edita: o livro ou um de seus estilos. Com um estilo escolhido, o painel o mostra sobre o livro, e o que você muda fica guardado no estilo como a diferença dele em relação ao livro; a barra renomeia o estilo, o exclui e volta ao livro, e seu botão + cria um novo. Um capítulo recebe um estilo pelo menu dele no painel Capítulos, que escreve a linha `chapterStyle:` por ele; a entrada do capítulo mostra o nome do estilo. Enquanto um estilo é editado, um campo que o estilo define leva a marca dele, cujo menu recupera o valor do livro ou faz do valor do estilo o do livro. Em um livro em vários idiomas, os estilos ficam guardados na camada que o painel edita: os ajustes de todos os idiomas ou a edição na tela. Um capítulo composto no estilo da sua parte mostra esse estilo na própria linha, e o primeiro item do menu dele diz “Estilo da parte: …”.
+
+### Uma parte em um estilo de capítulo
+
+Uma parte pode compor todos os seus capítulos em um estilo: a linha `:::part` o nomeia com `style`, e o capítulo que essa linha abre e todos os que vêm depois, até a parte seguinte, são compostos nele.
+
+```markdown
+:::part{number="IV" title="Apêndices" style="appendix"}
+:::
+
+# Apêndice A
+```
+
+O `chapterStyle:` do próprio capítulo prevalece sobre o da parte, e uma parte que não nomeia estilo compõe seus capítulos com os ajustes do livro. A linha `:::part` vai no começo do capítulo que abre a parte, antes do título dele: se ela nomeia um estilo depois que o texto do capítulo já começou, gera um aviso `partStyleMidChapter`, e o estilo começa no capítulo seguinte. Um capítulo composto sozinho recebe o estilo da sua parte pela continuação (`continuation.part.style`, que `continuationAfter()` retorna), assim como o título e a paleta da parte. Um estilo que `chapterStyles` não tem, nomeado por `chapterStyle:` ou por uma parte, gera um aviso `chapterStyleUnknown`, e o capítulo é composto com os ajustes do livro.

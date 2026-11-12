@@ -65,6 +65,8 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'unclosedCodeBlock':
     case 'strayFence':
     case 'unknownParagraphStyle':
+    case 'chapterStyleUnknown':
+    case 'partStyleMidChapter':
     case 'columnsFlowUnknown':
     case 'templateUnknown':
     case 'slotUnknown':
@@ -171,6 +173,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'unknownConfigValue':
     case 'calloutStyleExtendsUnknown':
     case 'calloutStyleExtendsCycle':
+    case 'chapterStyleBookSetting':
     case 'contentInConfig':
       return FileWarning;
     case 'templateDuplicate':

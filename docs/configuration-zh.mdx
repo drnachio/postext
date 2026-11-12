@@ -100,7 +100,7 @@ const document = buildDocument(content, {
 - [代码清单](/zh/docs/configuration-styles#代码清单)：`codeStyle`，即```` ``` ````清单的字体、框、制表符宽度、过长的行、行号和记号颜色，语法着色及其高亮器接口，以及用代码字体排的行内代码。
 - [篇](/zh/docs/configuration-styles#篇)：`:::part`容器生成的篇名页，包括奇偶页、版心、篇名页的设计、正文的字体排印。
 - [标题样式](/zh/docs/configuration-styles#标题样式)：供`{style="…"}`标题使用的命名样式，如不编号的章、带独立书眉的前辅文，以及页面几何和配色。
-- [章样式](/zh/docs/configuration-styles#章样式)：`chapterStyles`，章在其前置元数据（`chapterStyle:`）中指名即可使用的一整套设计（页面、排版、颜色、书眉）。
+- [章样式](/zh/docs/configuration-styles#章样式)：`chapterStyles`，章在其前置元数据（`chapterStyle:`）中指名即可使用的一整套设计（页面、排版、颜色、书眉）；也可以在一篇的`:::part{style="…"}`中指定，让这一篇的所有章使用。
 
 **[标注框](/zh/docs/configuration-callouts)**
 

@@ -441,6 +441,10 @@ export interface SandboxLabels {
   warningsUnclosedContainerDetail: string;
   warningsUnknownParagraphStyleTitle: string;
   warningsUnknownParagraphStyleDetail: string;
+  warningsChapterStyleUnknownTitle: string;
+  warningsChapterStyleUnknownDetail: string;
+  warningsPartStyleMidChapterTitle: string;
+  warningsPartStyleMidChapterDetail: string;
   warningsUnknownCalloutTypeTitle: string;
   warningsUnknownCalloutTypeDetail: string;
   warningsExerciseUnknownTypeTitle: string;
@@ -2405,6 +2409,7 @@ export interface SandboxLabels {
   chapterStyleDelete: string;
   chapterStyleBack: string;
   chapterStyleNone: string;
+  chapterStyleOfPart: string;
   chapterStyleUse: string;
   chapterStyleEditThis: string;
   chapterStyleFieldOwn: string;
@@ -2621,6 +2626,8 @@ export interface SandboxLabels {
   warningsCalloutStyleExtendsUnknownDetail: string;
   warningsCalloutStyleExtendsCycleTitle: string;
   warningsCalloutStyleExtendsCycleDetail: string;
+  warningsChapterStyleBookSettingTitle: string;
+  warningsChapterStyleBookSettingDetail: string;
   warningsTemplateDuplicateTitle: string;
   warningsTemplateDuplicateDetail: string;
   warningsTemplateExtendsCycleTitle: string;

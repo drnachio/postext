@@ -260,6 +260,7 @@ Diagnósticos en vivo, recalculados a partir del texto, el diseño, las figuras 
   - *Formato de numeración desconocido*: un formato de numeración de lista, de página o de tipo de recurso que el motor no conoce, y que numera en decimal;
   - *Ajuste desconocido*: una clave que no existe en los encabezados, en un nivel de encabezado, en un estilo de encabezado o en una tabulación (un `letterSpacng` mal escrito), y que el motor ignora; la entrada sugiere el ajuste al que más se parece, cuando lo hay.
   - *Estilo de recuadro basado en uno que no existe* y *Estilos de recuadro basados unos en otros en bucle*: un estilo de recuadro cuyo **Basado en** (`extends`) no corresponde a ningún estilo, o que vuelve a sí mismo a través de otros; el estilo queda solo (`calloutStyleExtendsUnknown`, `calloutStyleExtendsCycle`).
+  - *Ajuste del libro en un estilo de capítulo* (`chapterStyleBookSetting`): un estilo de capítulo que fija el tamaño de página, el idioma, las fuentes, la imprenta u otro ajuste que comparte todo el libro, y que el estilo no puede cambiar.
   - *Sin numeración de líneas en texto vertical*: la numeración de líneas activada en un documento vertical, que no lleva ninguna.
 
   Las entradas que hablan de un ajuste y no del texto, como *Lista de fuentes en una familia* y las que siguen a *Número de columnas fuera de rango*, indican la ruta del ajuste, y al hacer clic en una no se mueve el editor.

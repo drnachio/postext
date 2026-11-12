@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { buildBundle } from '../../bundle/index.js';
-import { blankChapterFrontmatter, chapterConfig, chapterConfigOf, chapterStyleOf, sectionBreaks } from '../../defaults/chapterStyles.js';
+import { blankChapterFrontmatter, bookSettingsOf, chapterConfig, chapterConfigOf, chapterStyleIdOf, chapterStyleOf, openingPart } from '../../defaults/chapterStyles.js';
+import { collectConfigWarnings } from '../../checks/configWarnings.js';
+import { collectContentWarnings } from '../../pipeline/contentWarnings.js';
+import { continuationAfter } from '../../pipeline/continuation.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig } from '../../types.js';
 
@@ -108,30 +111,104 @@ describe('chapter styles', () => {
   });
 });
 
-describe('sections in a chapter style', () => {
-  const markdown = `# One\n\n${filler(8)}\n\n::section{style="appendix"}\n\n## Appendix\n\n${filler(8)}\n\n::section\n\n## Back\n\n${filler(3)}`;
+describe('parts in a chapter style', () => {
+  const part = (attrs: string) => `:::part{number="I" title="Appendices"${attrs}}\n:::\n`;
 
-  it('are found outside code fences and the front matter', () => {
-    expect(sectionBreaks(markdown).map((b) => b.style ?? null)).toEqual(['appendix', null]);
-    expect(sectionBreaks('```\n::section{style="x"}\n```\n')).toEqual([]);
+  it('read the fence a chapter opens with, after its front matter', () => {
+    expect(openingPart(`${part(' style="appendix"')}\n# A`)).toEqual({ style: 'appendix' });
+    expect(openingPart(`---\ntitle: x\n---\n\n${part('')}`)).toEqual({});
+    expect(openingPart(`# A\n\n${part(' style="appendix"')}`)).toBeUndefined();
+    expect(openingPart('')).toBeUndefined();
   });
 
-  it('start a new page each, in their style, the chapter\'s pages and numbers running on', () => {
+  it('give a chapter its own style first, then the part it opens, then the part it is in', () => {
+    expect(chapterStyleIdOf('# A', 'appendix')).toBe('appendix');
+    expect(chapterStyleIdOf('---\nchapterStyle: own\n---\n# A', 'appendix')).toBe('own');
+    expect(chapterStyleIdOf(`${part(' style="other"')}# A`, 'appendix')).toBe('other');
+    // A part with no style ends the one before it.
+    expect(chapterStyleIdOf(`${part('')}# A`, 'appendix')).toBeUndefined();
+  });
+
+  it('set the chapters after the fence in the style, until the next part', () => {
+    const docs = buildBundle({
+      config: book,
+      resources: [],
+      chapters: [
+        { markdown: `# One\n\n${filler(20)}` },
+        { markdown: `${part(' style="appendix"')}\n# Two\n\n${filler(20)}` },
+        { markdown: `# Three\n\n${filler(5)}` },
+        { markdown: `---\nchapterStyle: none-such\n---\n# Four\n\n${filler(5)}` },
+        { markdown: `:::part{number="II" title="Back"}\n:::\n\n# Five\n\n${filler(5)}` },
+      ],
+    });
+    expect(docs.map((d) => d.config.layout.layoutType)).toEqual(['single', 'double', 'double', 'single', 'single']);
+    // The part page itself is the styled chapter's first page.
+    expect(docs[1]!.pages.some((p) => p.partInfo)).toBe(true);
+    // One trim for the whole book.
+    expect(new Set(docs.map((d) => d.pages[0]!.width)).size).toBe(1);
+  });
+
+  it('carry the style in the continuation', () => {
+    const after = continuationAfter({ markdown: part(' style="appendix"') }, book);
+    expect(after.part?.style).toBe('appendix');
+    expect(continuationAfter({ markdown: '# Next' }, book, after).part?.style).toBe('appendix');
+    expect(continuationAfter({ markdown: part('') }, book, after).part?.style).toBeUndefined();
+  });
+
+  it('start with the next chapter when the fence stands after text, with a warning', () => {
+    const markdown = `# One\n\n${filler(3)}\n\n${part(' style="appendix"')}`;
     const doc = buildDocument({ markdown }, book);
-    const whole = buildDocument({ markdown: markdown.replace(/::section[^\n]*/g, '') }, book);
-    // The appendix section's blocks sit on pages of their own, two columns.
-    const appendix = doc.blocks.find((b) => b.lines.some((l) => l.text === 'Appendix'))!;
-    const back = doc.blocks.find((b) => b.lines.some((l) => l.text === 'Back'))!;
-    expect(appendix.pageIndex).toBeGreaterThan(0);
-    expect(doc.pages[appendix.pageIndex]!.columns.length).toBe(2);
-    expect(doc.pages[back.pageIndex]!.columns.length).toBe(1);
-    expect(back.pageIndex).toBeGreaterThan(appendix.pageIndex);
-    // Pages indexed and numbered in order.
-    expect(doc.pages.map((p) => p.index)).toEqual(doc.pages.map((_, i) => i));
-    expect(doc.pages.map((p) => p.pageNumberValue)).toEqual(doc.pages.map((_, i) => doc.pages[0]!.pageNumberValue + i));
-    expect(doc.pages.length).toBeGreaterThanOrEqual(whole.pages.length);
-    // The break lines print nothing and warn of nothing.
-    expect(doc.blocks.flatMap((b) => b.lines.map((l) => l.text)).some((t) => t.includes('::section'))).toBe(false);
-    expect((doc.contentWarnings ?? []).map((w) => w.kind)).not.toContain('malformedEmbed');
+    expect(doc.config.layout.layoutType).toBe('single');
+    const w = (doc.contentWarnings ?? []).find((x) => x.kind === 'partStyleMidChapter');
+    expect(w).toMatchObject({ kind: 'partStyleMidChapter', style: 'appendix' });
+    expect(markdown.slice(w!.sourceStart, w!.sourceEnd)).toContain(':::part');
+    expect(continuationAfter({ markdown }, book).part?.style).toBe('appendix');
+  });
+
+  it('warn of a style the book does not define, in the front matter or on a fence', () => {
+    const md = `---\nchapterStyle: nope\n---\n${part(' style="missing"')}`;
+    const found = collectContentWarnings(md, book).filter((w) => w.kind === 'chapterStyleUnknown');
+    expect(found.map((w) => (w.kind === 'chapterStyleUnknown' ? [w.style, w.source] : []))).toEqual([['nope', 'frontmatter'], ['missing', 'part']]);
+    expect(md.slice(found[0]!.sourceStart, found[0]!.sourceEnd)).toBe('nope');
+    expect(collectContentWarnings(`${part(' style="appendix"')}# A`, book).map((w) => w.kind)).not.toContain('chapterStyleUnknown');
+    // A chapter built in a style still knows the book's styles.
+    const doc = buildDocument({ markdown: `---\nchapterStyle: appendix\n---\n# A\n\n${part(' style="missing"')}` }, book);
+    expect((doc.contentWarnings ?? []).filter((w) => w.kind === 'chapterStyleUnknown')).toHaveLength(1);
+  });
+
+  it('set a part without its divider page when its fence says page=false', () => {
+    const docs = buildBundle({
+      config: book,
+      resources: [],
+      chapters: [
+        { markdown: `:::part{number="I" title="One" page=false}\n:::\n\n# One\n\n${filler(3)}` },
+        { markdown: `:::part{number="II" title="Two"}\n:::\n\n# Two\n\n${filler(3)}` },
+      ],
+    });
+    expect(docs[0]!.pages.some((p) => p.partInfo)).toBe(false);
+    expect(docs[0]!.partMarks?.[0]?.title).toBe('One');
+    expect(docs[1]!.pages.some((p) => p.partInfo)).toBe(true);
+  });
+});
+
+describe('book settings in a chapter style', () => {
+  const styled: PostextConfig = {
+    ...book,
+    chapterStyles: [{ id: 'appendix', config: { locale: 'fr', page: { width: pt(500), dpi: 300, margins: { left: pt(40) } }, layout: { layoutType: 'double' } } }],
+  };
+
+  it('are listed, ignored and reported', () => {
+    expect(bookSettingsOf(styled.chapterStyles![0]!)).toEqual(['locale', 'page.width', 'page.dpi']);
+    const cfg = chapterConfig(styled, 'appendix');
+    expect(cfg.locale).toBeUndefined();
+    expect(cfg.page?.width).toEqual(pt(360));
+    expect(cfg.page?.margins?.left).toEqual(pt(40));
+    expect(cfg.chapterStyles).toBe(styled.chapterStyles);
+    // A chapter's configuration is not styled again.
+    expect(chapterConfig(cfg, 'appendix')).toBe(cfg);
+    const warnings = collectConfigWarnings(styled).filter((w) => w.kind === 'chapterStyleBookSetting');
+    expect(warnings.map((w) => w.path)).toEqual(['chapterStyles[0].config.locale', 'chapterStyles[0].config.page.width', 'chapterStyles[0].config.page.dpi']);
+    const doc = buildDocument({ markdown: '---\nchapterStyle: appendix\n---\n# A' }, styled);
+    expect((doc.configWarnings ?? []).filter((w) => w.kind === 'chapterStyleBookSetting')).toHaveLength(3);
   });
 });

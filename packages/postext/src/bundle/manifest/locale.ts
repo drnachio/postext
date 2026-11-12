@@ -174,6 +174,8 @@ export function bundleStart(value: unknown): BundleStart | undefined {
       const palette = Object.fromEntries(Object.entries(value.part.palette).filter((entry): entry is [string, string] => typeof entry[1] === 'string'));
       if (Object.keys(palette).length > 0) part.palette = palette;
     }
+    // The chapter style of a book that starts inside a styled part (#1521).
+    if (isNonEmptyString(value.part.style)) part.style = value.part.style.trim();
     out.part = part;
   }
   if (value.afterPartPage === true) out.afterPartPage = true;

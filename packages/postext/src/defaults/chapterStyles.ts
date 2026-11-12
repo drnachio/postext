@@ -1,13 +1,12 @@
-import type { PostextConfig } from '../types.js';
+import type { ChapterStyleConfig, PostextConfig } from '../types.js';
 import { extractFrontmatter } from '../parse/frontmatter.js';
+import { DIRECTIVE_RE } from '../parse/blockParser.js';
+import { parseDirectiveAttrs } from '../parse/attrs.js';
 import { mergeConfigLayers, type ConfigOverride } from './configLayers.js';
+import { BOOK_PAGE_KEYS, BOOK_WIDE_KEYS } from './bookKeys.js';
 
 /** The front-matter key a chapter names its style with. */
 export const CHAPTER_STYLE_KEY = 'chapterStyle';
-
-/** The page settings a chapter style cannot change: one trim, resolution,
- *  set of cut lines and binding for the whole book. */
-const BOOK_PAGE_KEYS = ['sizePreset', 'width', 'height', 'dpi', 'cutLines', 'binding'];
 
 /** A `chapterStyle:` line a later chapter's blanked front matter keeps. */
 const STYLE_LINE = /^chapterStyle:[ \t]*["']?[\w.-]+["']?[ \t]*$/;
@@ -38,27 +37,96 @@ export function chapterStyleOf(markdown: string): string | undefined {
   }
 }
 
+/** Offset of the first line after a leading front-matter block (found by
+ *  its `---` lines, as the Sandbox and the bundles find it), 0 without
+ *  one. */
+function bodyStart(markdown: string): number {
+  const bom = markdown.startsWith('﻿') ? 1 : 0;
+  const first = markdown.indexOf('\n', bom);
+  if (first === -1 || markdown.slice(bom, first).replace(/\r$/, '') !== '---') return bom;
+  let pos = first + 1;
+  while (pos < markdown.length) {
+    const nl = markdown.indexOf('\n', pos);
+    const end = nl === -1 ? markdown.length : nl;
+    if (markdown.slice(pos, end).replace(/\r$/, '') === '---') return nl === -1 ? markdown.length : nl + 1;
+    if (nl === -1) break;
+    pos = nl + 1;
+  }
+  return bom;
+}
+
+/** The `:::part` fence a chapter opens with — its first line of text after
+ *  the front matter —, with the style it names (`style="…"`). `undefined`
+ *  for a chapter that opens with anything else. */
+export function openingPart(markdown: string): { style?: string } | undefined {
+  let pos = bodyStart(markdown);
+  while (pos < markdown.length) {
+    const nl = markdown.indexOf('\n', pos);
+    const line = markdown.slice(pos, nl === -1 ? markdown.length : nl).trim();
+    if (line) {
+      const m = DIRECTIVE_RE.exec(line);
+      if (!m || m[1] !== 'part') return undefined;
+      const style = parseDirectiveAttrs(m[2] ?? '').style?.trim();
+      return style ? { style } : {};
+    }
+    if (nl === -1) break;
+    pos = nl + 1;
+  }
+  return undefined;
+}
+
+/**
+ * The style a chapter is set in: the one its front matter names; else,
+ * for a chapter that opens with a `:::part` fence, the style of that part
+ * (none when the fence names none); else `inherited`, the style of the
+ * part the chapter belongs to (`continuation.part.style`).
+ */
+export function chapterStyleIdOf(markdown: string, inherited?: string): string | undefined {
+  const own = chapterStyleOf(markdown);
+  if (own) return own;
+  const part = openingPart(markdown);
+  return part ? part.style : inherited;
+}
+
+/** The settings of a chapter style that stay the book's and are ignored:
+ *  top-level keys of `BOOK_WIDE_KEYS`, and `page.<key>` for the page keys
+ *  of `BOOK_PAGE_KEYS`. */
+export function bookSettingsOf(style: Pick<ChapterStyleConfig, 'config'>): string[] {
+  const config = style.config ?? {};
+  const out: string[] = BOOK_WIDE_KEYS.filter((k) => config[k] !== undefined);
+  const page = config.page;
+  if (page && typeof page === 'object') {
+    for (const k of BOOK_PAGE_KEYS) if ((page as Record<string, unknown>)[k] !== undefined) out.push(`page.${k}`);
+  }
+  return out;
+}
+
 const merged = new WeakMap<PostextConfig, Map<string, PostextConfig>>();
+/** The configurations {@link chapterConfig} made: a chapter's, never
+ *  styled again. */
+const styled = new WeakSet<PostextConfig>();
 
 /**
  * The configuration a chapter in style `styleId` is laid out with: the
  * style's override merged over the book's (`mergeConfigLayers`), without
- * the page settings that stay the book's. The book's own configuration for
- * a chapter without a style or with one the book does not define. The same
- * object for the same book configuration and style, so the caches keyed on
- * configurations keep working.
+ * the settings that stay the book's (`BOOK_WIDE_KEYS`, `BOOK_PAGE_KEYS`).
+ * The book's own configuration for a chapter without a style or with one
+ * the book does not define. The same object for the same book
+ * configuration and style, so the caches keyed on configurations keep
+ * working. The merged configuration keeps the book's list of styles (its
+ * warnings name the styles the book defines); handed back here, it is
+ * returned as it is.
  */
 export function chapterConfig(config: PostextConfig, styleId: string | undefined): PostextConfig {
-  if (!styleId) return config;
+  if (!styleId || styled.has(config)) return config;
   const style = config.chapterStyles?.find((s) => s.id === styleId);
   if (!style) return config;
   let perConfig = merged.get(config);
   if (!perConfig) merged.set(config, (perConfig = new Map()));
   const hit = perConfig.get(styleId);
   if (hit) return hit;
-  // The merged configuration names no styles: a chapter laid out with it
-  // is not styled twice.
-  const override: ConfigOverride = { ...style.config, chapterStyles: null };
+  const override: ConfigOverride = { ...style.config };
+  for (const key of BOOK_WIDE_KEYS) delete override[key];
   if (override.page && typeof override.page === 'object') {
     const page = { ...(override.page as Record<string, unknown>) };
     for (const key of BOOK_PAGE_KEYS) delete page[key];
@@ -66,73 +134,12 @@ export function chapterConfig(config: PostextConfig, styleId: string | undefined
   }
   const out = mergeConfigLayers(config, override);
   perConfig.set(styleId, out);
+  styled.add(out);
   return out;
 }
 
-/** The configuration of the chapter whose source is `markdown`. */
-export function chapterConfigOf(config: PostextConfig, markdown: string): PostextConfig {
-  return config.chapterStyles?.length ? chapterConfig(config, chapterStyleOf(markdown)) : config;
-}
-
-/** A section break inside a chapter (`::section{style="…"}`, on a line of
- *  its own): from it to the next break the chapter is set in that chapter
- *  style, from a new page; `::section` alone returns to the chapter's own
- *  settings. */
-export interface SectionBreak {
-  /** Source offsets of the break's line (its line break excluded). */
-  start: number;
-  end: number;
-  style?: string;
-}
-
-const SECTION_LINE = /^::section(?:\{\s*style\s*=\s*["']([^"']*)["']\s*\})?[ \t]*$/;
-const FENCE = /^(`{3,}|~{3,})/;
-
-/** The section breaks of a chapter's source, in order: outside code
- *  fences and the front matter. */
-export function sectionBreaks(markdown: string): SectionBreak[] {
-  if (!markdown.includes('::section')) return [];
-  const out: SectionBreak[] = [];
-  let fence: string | undefined;
-  let pos = 0;
-  let inFrontmatter = markdown.startsWith('---');
-  let first = true;
-  while (pos <= markdown.length) {
-    const nl = markdown.indexOf('\n', pos);
-    const end = nl === -1 ? markdown.length : nl;
-    const line = markdown.slice(pos, end).replace(/\r$/, '');
-    if (inFrontmatter) {
-      if (!first && line === '---') inFrontmatter = false;
-    } else {
-      const f = FENCE.exec(line.trimStart());
-      if (f) {
-        if (!fence) fence = f[1]![0]!;
-        else if (f[1]![0] === fence) fence = undefined;
-      } else if (!fence) {
-        const m = SECTION_LINE.exec(line.trim());
-        if (m) out.push({ start: pos, end: pos + line.length, ...(m[1]?.trim() ? { style: m[1].trim() } : {}) });
-      }
-    }
-    first = false;
-    if (nl === -1) break;
-    pos = nl + 1;
-  }
-  return out;
-}
-
-const sectionMerged = new WeakMap<PostextConfig, Map<string, PostextConfig>>();
-
-/** The configuration of a section in style `styleId` of a chapter set with
- *  `chapterCfg`: the style (from the book's `styles`) merged over the
- *  chapter's settings, the book's page settings kept. */
-export function sectionConfig(chapterCfg: PostextConfig, styles: PostextConfig['chapterStyles'], styleId: string | undefined): PostextConfig {
-  const style = styleId ? styles?.find((s) => s.id === styleId) : undefined;
-  if (!style) return chapterCfg;
-  let perConfig = sectionMerged.get(chapterCfg);
-  if (!perConfig) sectionMerged.set(chapterCfg, (perConfig = new Map()));
-  const hit = perConfig.get(style.id);
-  if (hit) return hit;
-  const out = chapterConfig({ ...chapterCfg, chapterStyles: styles }, style.id);
-  perConfig.set(style.id, out);
-  return out;
+/** The configuration of the chapter whose source is `markdown`, in the
+ *  part whose style is `inherited` (see {@link chapterStyleIdOf}). */
+export function chapterConfigOf(config: PostextConfig, markdown: string, inherited?: string): PostextConfig {
+  return config.chapterStyles?.length ? chapterConfig(config, chapterStyleIdOf(markdown, inherited)) : config;
 }
