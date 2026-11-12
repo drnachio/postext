@@ -19,6 +19,7 @@ import type { BlobRecord } from '../storage/blobStore.js';
 import type { PresetProvider, PresetSummary } from '../presets/types.js';
 import { slugify } from '../panels/resources/slugify.js';
 import { getSavedDesign, listSavedDesigns } from './designStore.js';
+import { generalSettingsWithWording } from '../editions/configLayers.js';
 
 /** Where a design of the gallery comes from. */
 export type DesignEntryKind = 'saved' | 'builtin' | 'sample';
@@ -155,7 +156,7 @@ export async function listDesignEntries(ctx: DesignSourcesContext): Promise<Desi
 /** The design of a sample book, its files under the entry's ids. */
 async function sampleDesign(entry: DesignEntry, provider: PresetProvider, locale: string): Promise<ReadyDesign> {
   const loaded = await provider.load(locale);
-  const source: PostextConfig = loaded.sharedConfig ?? loaded.config;
+  const source: PostextConfig = loaded.sharedConfig ? generalSettingsWithWording(loaded.sharedConfig, loaded.config) : loaded.config;
   const design = extractDesign(source);
   const { fontIds, blobIds } = designFileIds(design.config);
   const fonts = loaded.fonts.filter((f) => fontIds.includes(f.fileId)).map((f) => ({ ...f }));
