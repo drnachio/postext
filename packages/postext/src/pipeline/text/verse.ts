@@ -124,6 +124,9 @@ interface VerseLayoutInput {
   /** The poem's direction and its frame's. */
   direction: 'ltr' | 'rtl';
   frameDirection: 'ltr' | 'rtl';
+  /** How a hemistich wider than the measure is broken while a line-edge
+   *  rule is avoided (`lineEdgeBreaking`, #1542). */
+  rules?: MeasureBlockOptions;
   cache?: MeasurementCache;
 }
 
@@ -141,9 +144,9 @@ export function measureVerse(input: VerseLayoutInput): MeasuredBlock {
   const widthOf = (seg: VDTLineSegment, text: string) => textWidth(text, fontOf(seg), false);
   const lineHeight = style.lineHeightPx;
   const options: MeasureBlockOptions = { textAlign: 'left', direction };
-  const measureSpans = (spans: InlineSpan[], width: number): VDTLine[] => (input.cache
-    ? cachedMeasureRichBlock(spans, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, width, lineHeight, options, input.cache)
-    : measureRichBlock(spans, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, width, lineHeight, options)).lines;
+  const measureSpans = (spans: InlineSpan[], width: number, opts: MeasureBlockOptions = options): VDTLine[] => (input.cache
+    ? cachedMeasureRichBlock(spans, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, width, lineHeight, opts, input.cache)
+    : measureRichBlock(spans, fonts.normal, fonts.bold, fonts.italic, fonts.boldItalic, width, lineHeight, opts)).lines;
   const hemistichOf = (line: VDTLine): Hemistich => {
     const segments = line.segments ?? [];
     return {
@@ -233,7 +236,7 @@ export function measureVerse(input: VerseLayoutInput): MeasuredBlock {
   /** The lines of one hemistich set alone: one when it fits the measure,
    *  else broken over the measure; each placed on `side`. */
   const alone = (spans: InlineSpan[], h: Hemistich, side: 'start' | 'end' | 'center', bayt: number, part: 'sadr' | 'ajuz' | 'single', x0: number, x1: number) => {
-    const set = h.width <= measure + 0.01 ? [h] : measureSpans(spans, measure).map(hemistichOf);
+    const set = h.width <= measure + 0.01 ? [h] : measureSpans(spans, measure, { ...options, ...input.rules }).map(hemistichOf);
     for (const piece of set) push(piece.segments, piece.order, place(piece.width, side, x0, x1), piece.text, { bayt, part });
   };
 

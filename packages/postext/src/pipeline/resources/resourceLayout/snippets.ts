@@ -7,8 +7,7 @@ import { type ResolvedConfig, type VDTLine, createBoundingBox } from '../../../v
 import { type MeasurementCache, type MeasureBlockOptions, cachedMeasureRichSnippet } from '../../../measure/index.js';
 import { measureRichSnippet } from '../../../measure/rich.js';
 import { isBlankText } from '../../../measure/spaces.js';
-import { stackBreaking } from '../../text/stacks.js';
-import { spaceBreaking } from '../../text/spaceBreaks.js';
+import { lineEdgeBreaking } from '../../text/lineEdgeRules.js';
 import { linkSegments } from '../../../measure/links.js';
 import { sliceSpan } from '../../../parse/links.js';
 import { indentColumn } from '../../../parse/listNesting.js';
@@ -116,25 +115,10 @@ export function takeCellItemMarker(spans: InlineSpan[]): { marker: CellItemMarke
   return { marker: { text, ws, column: indentColumn(indent) }, spans: stripped };
 }
 
-/**
- * How a caption, a note or a table cell set in `align` is broken while a
- * composition rule of the line breaker is avoided: stacks (`bodyText.
- * stacks: 'avoid'`, #1463), a citation or a lone operator at a line edge
- * (`citationBreaks`, `operatorBreaks: 'avoid'`, #1519). The line-by-line
- * breaker cannot look back to avoid one, so the text is broken whole on
- * Knuth–Plass, justified within the word-spacing limits, ragged with the
- * right-hand glue ragged running text gets (`optimalRagged`, whether or not
- * the body text asks for it). Empty, line by line as before, under any
- * other level of the rules or without `optimalLineBreaking`.
- */
+/** How a caption, a note or a table cell set in `align` is broken while a
+ *  line-edge rule is avoided: see {@link lineEdgeBreaking}. */
 export function snippetRuleBreaking(align: TextAlign, resolved: ResolvedConfig): MeasureBlockOptions {
-  const body = resolved.bodyText;
-  const stacks = stackBreaking(body);
-  const spaceBreaks = spaceBreaking(body);
-  if ((!stacks && !spaceBreaks) || !body.optimalLineBreaking) return {};
-  const rules = { ...(stacks ? { stacks } : {}), ...(spaceBreaks ? { spaceBreaks } : {}) };
-  if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, ...rules };
-  return { optimal: true, optimalRagged: true, ...rules };
+  return lineEdgeBreaking(align, resolved);
 }
 
 /** The measurement cache of the resource block being laid out, if its

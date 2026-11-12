@@ -26,6 +26,7 @@ import { sidewaysNumberSpans, setLabelTabs, tokenSegment } from './spanTokens.js
 import { tabsAsSpaces, paragraphBidi, markKashidaCapacity, withDirections, tabRun, setTabbedLine } from './tabsAndBidi.js';
 import { tokenizeSpans } from './tokenize.js';
 import { type RichToken, tokenFont, pickSpanFont, rtlWordWidth, expandSmallCaps, type RichBreakPoint } from './tokens.js';
+import { greedyRules, ruleBackoff, noteLineEnd } from './greedyRules.js';
 import { ownRest, markRestShifts, withLeadingHyphen, MAX_RAGGED_HYPHEN_RUN, trailingSpaceWidth, splitToken, isDivisible, emergencySplit, gluedTailLength, lastPlainBreakInGroup, lastSyllableInGroup } from './wordBreaks.js';
 
 /**
@@ -268,6 +269,8 @@ function measureRichText(
   const tabSpaceWidth = hasTabs ? normalSpaceWidthFor(normalFont) + letterSpacingPx : 0;
   // A word space a line may start or end at (a tab is none).
   const isBreakSpace = (t: RichToken): boolean => t.kind === 'space' && !t.tab;
+  // The line-edge rules avoided (#1542, `greedyRules.ts`); a tab's line is set as it falls.
+  const rules = hasTabs ? undefined : greedyRules(tokens, options);
 
   while (tokenIdx < tokens.length) {
     const lineIndent = indentOf(lineIndex);
@@ -289,6 +292,7 @@ function measureRichText(
     while (tokenIdx < tokens.length && isBreakSpace(tokens[tokenIdx]!)) {
       tokenIdx++;
     }
+    const lineStart = tokenIdx;
     // The compound's hyphen, repeated: the tail it broke from opens the
     // line with it, measured.
     const lineRepeated = repeatPending && tokens[tokenIdx]?.kind === 'text';
@@ -525,6 +529,11 @@ function measureRichText(
     }
 
     if (lineTokens.length === 0) break;
+    const keep = rules && !lineHyphenated && tokenIdx < tokens.length ? ruleBackoff(rules, tokens, lineStart, lineTokens, tokenIdx, (w, n, sw) => (textAlign === 'justify' ? n > 0 && (sw + lineMaxWidth - w) / (n * normalSpaceWidth) <= (options?.maxStretchRatio ?? 1.5) : w >= lineMaxWidth / 2)) : undefined;
+    if (keep !== undefined) {
+      tokenIdx = lineStart + keep;
+      while (lineTokens.length > keep) lineWidth -= lineTokens.pop()!.width;
+    }
     syllableRun = lineSyllable ? syllableRun + 1 : 0;
     repeatPending = lineRepeatNext;
 
@@ -534,6 +543,7 @@ function measureRichText(
       lineWidth -= lineTokens[lineTokens.length - 1]!.width;
       lineTokens.pop();
     }
+    if (rules) noteLineEnd(rules, lineTokens);
 
     // Check if this is the last line
     // Skip remaining leading spaces to check if there's more content
