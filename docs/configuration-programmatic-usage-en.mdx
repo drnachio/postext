@@ -389,18 +389,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>The list is cut where the column ends.</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>Two lines in a row of a paragraph, in one column, that end (<code>edge: 'end'</code>) or start (<code>'start'</code>) on the same word or the same <code>bodyText.stackMinCharacters</code> characters: <code>text</code> is what they repeat, as the first line prints it, and <code>lines</code> the two lines. Under <code>bodyText.stacks: 'warn'</code> every stack is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per stack; points at the two lines, with their page. Since postext 1.73.</td>
-      <td>The lines are set as they are.</td>
-    </tr>
-    <tr>
-      <td><code>citationBreak</code></td>
-      <td>A line of a paragraph that starts with a numbered citation set after a word, or with a piece of one (<code>autores [12]</code>, <code>[14, 16]</code>): <code>text</code> is the citation and <code>lines</code> the two lines around the break. Under <code>bodyText.citationBreaks: 'warn'</code> every such break is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per break; points at the two lines, with their page. Since postext 1.78.</td>
-      <td>The lines are set as they are.</td>
-    </tr>
-    <tr>
-      <td><code>operatorBreak</code></td>
-      <td>A line of a paragraph that ends (<code>edge: 'end'</code>) or starts (<code>'start'</code>) on a lone sign set between spaces, one of <code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>: <code>text</code> is the sign and <code>lines</code> the two lines. Under <code>bodyText.operatorBreaks: 'warn'</code> every such break is reported; under <code>'avoid'</code>, the ones the line breaker kept. One per break, so a line that starts and ends on a sign gives two. Since postext 1.78.</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>Two lines in a row of a paragraph, in one column, that end (<code>edge: 'end'</code>) or start (<code>'start'</code>) on the same word or the same <code>bodyText.stackMinCharacters</code> characters (<code>stack</code>, 1.73); a line that starts with a numbered citation after a word, or a piece of one (<code>citationBreak</code>, 1.78); a line that ends or starts on a lone sign between spaces, <code>=</code> or <code>±</code> (<code>operatorBreak</code>, 1.78). <code>text</code> is the repeat, citation or sign, and <code>lines</code> the two lines. Under <code>'warn'</code> (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>) all are reported; under <code>'avoid'</code>, those kept. One per break; points at the two lines, with their page.</td>
       <td>The lines are set as they are.</td>
     </tr>
     <tr>
@@ -415,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>A block of the contents kept together (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), headed by <code>title</code>, set in <code>columns</code> columns: it is taller than a full column, or the column it starts in is short (under a page-span box, beside a float). One per block; points at the <code>:::toc</code> directive, with the page the block starts on. To clear it, list fewer levels (<code>levels="1"</code>), head the blocks with a lower level (<code>toc.groups.head: 2</code>), or make the entries smaller or tighter. Since postext 1.34.</td>
+      <td>A block of the contents kept together (<code>toc.groups.keepTogether</code>, <code>:::toc{'{keep="…"}'}</code>), headed by <code>title</code>, set in <code>columns</code> columns: it is taller than a full column, or the column it starts in is short (under a page-span box, beside a float). One per block; points at the <code>:::toc</code> directive, with the page the block starts on. Since postext 1.34.</td>
       <td>The block is cut; with <code>toc.groups.continuation</code> each column it goes on in opens with its head row and the continuation mark.</td>
     </tr>
     <tr>

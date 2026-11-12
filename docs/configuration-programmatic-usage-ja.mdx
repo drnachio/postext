@@ -389,18 +389,8 @@ console.log(`Document has ${vdt.pages.length} pages`);
       <td>リストは段の終わりで切られます。</td>
     </tr>
     <tr>
-      <td><code>stack</code></td>
-      <td>段落の同じ段にある連続した2行が、同じ語または同じ<code>bodyText.stackMinCharacters</code>文字で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は繰り返された文字列（1行目の表記どおり）、<code>lines</code>は2行の文字列です。<code>bodyText.stacks: 'warn'</code>ではすべての重複を、<code>'avoid'</code>では改行処理が残したものを報告します。重複ごとに1件。2行を指し、そのページが付きます。postext 1.73以降。</td>
-      <td>行はそのまま組まれます。</td>
-    </tr>
-    <tr>
-      <td><code>citationBreak</code></td>
-      <td>段落の行が、語のあとに置かれた番号付き引用またはその一部（<code>authors [12]</code>、<code>[14, 16]</code>）で始まる場合です。<code>text</code>は引用、<code>lines</code>は改行の前後の2行です。<code>bodyText.citationBreaks: 'warn'</code>ではすべての改行を、<code>'avoid'</code>では改行処理が残したものを報告します。改行ごとに1件で、2行とそのページを指します。postext 1.78から。</td>
-      <td>行はそのまま組まれます。</td>
-    </tr>
-    <tr>
-      <td><code>operatorBreak</code></td>
-      <td>段落の行が、前後に空白を置いた単独の記号（<code>= &lt; &gt; ≤ ≥ ± × ≈ ≠ ÷ − + · →</code>のいずれか）で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合です。<code>text</code>は記号、<code>lines</code>は2行です。<code>bodyText.operatorBreaks: 'warn'</code>ではすべての改行を、<code>'avoid'</code>では改行処理が残したものを報告します。改行ごとに1件なので、記号で始まり記号で終わる行は2件になります。postext 1.78から。</td>
+      <td><code>stack</code>, <code>citationBreak</code>, <code>operatorBreak</code></td>
+      <td>段落の同じ段にある連続した2行が、同じ語または同じ<code>bodyText.stackMinCharacters</code>文字で終わる（<code>edge: 'end'</code>）か始まる（<code>'start'</code>）場合（<code>stack</code>、postext 1.73から）、行が語のあとの番号付き引用またはその一部で始まる場合（<code>citationBreak</code>、1.78から）、行が前後に空白を置いた単独の記号（<code>=</code> や <code>±</code>など）で終わるか始まる場合（<code>operatorBreak</code>、1.78から）です。<code>text</code>は繰り返された文字列、引用または記号、<code>lines</code>は2行です。<code>'warn'</code>（<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>）ではすべてを、<code>'avoid'</code>では改行処理が残したものを報告します。改行ごとに1件で、2行とそのページを指します。</td>
       <td>行はそのまま組まれます。</td>
     </tr>
     <tr>
@@ -415,7 +405,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
     </tr>
     <tr>
       <td><code>tocGroupSplit</code></td>
-      <td>まとめて組むよう指定した目次のグループ（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>）です。先頭は<code>title</code>で、<code>columns</code>段に組まれています。1段の高さを超えているか、グループが始まる段が短い場合です（ページ幅の囲みの下、フロートの横）。グループごとに1件。<code>:::toc</code>ディレクティブを指し、グループが始まるページが付きます。解消するには、載せるレベルを減らす（<code>levels="1"</code>）、もっと下位のレベルを先頭にする（<code>toc.groups.head: 2</code>）、項目を小さくするか詰めて組む、のいずれかを行います。postext 1.34以降。</td>
+      <td>まとめて組むよう指定した目次のグループ（<code>toc.groups.keepTogether</code>、<code>:::toc{'{keep="…"}'}</code>）です。先頭は<code>title</code>で、<code>columns</code>段に組まれています。1段の高さを超えているか、グループが始まる段が短い場合です（ページ幅の囲みの下、フロートの横）。グループごとに1件。<code>:::toc</code>ディレクティブを指し、グループが始まるページが付きます。postext 1.34以降。</td>
       <td>グループは分割されます。<code>toc.groups.continuation</code>が有効なら、続きが入る各段の頭に先頭行と続きの印を組みます。</td>
     </tr>
     <tr>

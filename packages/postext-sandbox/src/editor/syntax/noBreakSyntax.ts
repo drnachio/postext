@@ -31,17 +31,22 @@ const ENGLISH: NoBreakSpaceNames = {
 /** The no-break spaces marked, one decoration per kind. */
 const SPACES = /[   ]/g;
 
-/** The mark of each no-break space, named in `names`. */
-export function noBreakHighlight(names: NoBreakSpaceNames = ENGLISH) {
+/** The marks of the no-break spaces in a view, named in `names`. */
+export function noBreakDecorator(names: NoBreakSpaceNames = ENGLISH): MatchDecorator {
   const marks = {
     ' ': Decoration.mark({ class: 'cm-nbsp', attributes: { title: names.noBreak } }),
     ' ': Decoration.mark({ class: 'cm-nbsp cm-nbsp-narrow', attributes: { title: names.narrow } }),
     ' ': Decoration.mark({ class: 'cm-nbsp cm-nbsp-figure', attributes: { title: names.figure } }),
   } as const;
-  const decorator = new MatchDecorator({
+  return new MatchDecorator({
     regexp: SPACES,
     decoration: (match) => marks[match[0] as keyof typeof marks],
   });
+}
+
+/** The mark of each no-break space, named in `names`. */
+export function noBreakHighlight(names: NoBreakSpaceNames = ENGLISH) {
+  const decorator = noBreakDecorator(names);
   return ViewPlugin.fromClass(
     class {
       decorations: DecorationSet;
