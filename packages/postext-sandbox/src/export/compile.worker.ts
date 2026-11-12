@@ -7,10 +7,16 @@
 import { setFigureStyleFamilies } from 'postext';
 import type { EpubCover } from 'postext-epub';
 import { takesFigureFeatures } from '../controls/fonts/systemFonts.js';
-import { compileBook } from './compileBook.js';
 import type { CompileAsk, CompileReply, CompileRequestMessage } from './compileProtocol.js';
 
 declare const self: DedicatedWorkerGlobalScope;
+
+// The compiler is loaded once the handlers below are set: a module of its
+// graph that fails as it loads then comes back as the compilation's error,
+// where a static import would leave the worker without a handler and the
+// Books panel waiting for an answer.
+const compiler = import('./compileBook.js');
+compiler.catch(() => undefined);
 
 // As in the layout worker: a style's figures leave a face only the system
 // has as it is.
@@ -36,6 +42,7 @@ self.onmessage = async (event: MessageEvent<CompileRequestMessage>) => {
     return;
   }
   try {
+    const { compileBook } = await compiler;
     const book = await compileBook(message.request, {
       onProgress: (progress) => self.postMessage({ type: 'progress', progress } satisfies CompileReply),
       rasterizeSvg: (svgText, widthPx, heightPx) => ask<Uint8Array>({ kind: 'rasterize', svgText, widthPx, heightPx }),

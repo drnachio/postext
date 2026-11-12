@@ -14,6 +14,7 @@ import { hashBundleFragment, hashBundleOrigin, readViewHash, viewHashFragment, t
 import { openLinkQuietly } from '../context/hashBundle.js';
 import type { FrameJump } from '../warnings/composedChecks.js';
 import { setOverlapFocus } from './overlapFocus.js';
+import { hasWindow } from '../env/window.js';
 
 export interface PendingFrameJump extends FrameJump {
   /** The book the jump is for: a preset's id (null for a project). */
@@ -101,7 +102,7 @@ export function requestFrameJump(jump: Omit<PendingFrameJump, 'at'>): void {
   // it lands (`useFrameJumpRunner`).
   setOverlapFocus(null);
   emit();
-  if (typeof window === 'undefined') return;
+  if (!hasWindow()) return;
   // The reader's copy of that language opens as it is (#1011).
   if (jump.linked && jump.locale !== '') openLinkQuietly(hashBundleOrigin({ ...jump.linked, lang: jump.locale }));
   const next = frameJumpFragment(readViewHash(), jump);

@@ -31,6 +31,7 @@ import { useLayoutsSave } from './SandboxContext/layoutsSave.js';
 import { useFontsAndGc } from './SandboxContext/fontsAndGc.js';
 import { useWarningsSource } from './SandboxContext/warningsSource.js';
 import type { SandboxProviderLate } from './SandboxContext/providerState.js';
+import { hasWindow } from '../env/window.js';
 
 export type { EditorSelection, PendingEditorFocus, ResourceFocusTarget, PendingResourceFocus, ResourceSelection, SandboxState, SandboxAction } from './SandboxContext/state.js';
 export { sandboxReducer } from './SandboxContext/reducer.js';
@@ -114,7 +115,7 @@ export function SandboxProvider({
   // opens on a draft (see the mount seeding).
   const initialAsksRestoreRef = useRef<boolean | null>(null);
   if (initialAsksRestoreRef.current === null) {
-    initialAsksRestoreRef.current = typeof window !== 'undefined' && hashAsksRestore(window.location.hash);
+    initialAsksRestoreRef.current = hasWindow() && hashAsksRestore(window.location.hash);
   }
   // Host bundle links (`#recipe=…`): the resolvers are read live, the keys
   // and the link the page was opened with once.
@@ -126,7 +127,7 @@ export function SandboxProvider({
   const linkedEditionsRef = useRef(new Map<string, Promise<string[] | null>>());
   const initialBundleRef = useRef<HashBundleRef | null | undefined>(undefined);
   if (initialBundleRef.current === undefined) {
-    initialBundleRef.current = typeof window === 'undefined' ? null : parseHashBundle(window.location.hash, hashBundleKeys);
+    initialBundleRef.current = !hasWindow() ? null : parseHashBundle(window.location.hash, hashBundleKeys);
   }
   const [state, reducerDispatch] = useReducer(sandboxReducer, undefined, () => {
     const savedBook = loadBook(migration);

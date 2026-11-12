@@ -13,6 +13,7 @@ import { saveResource, deleteResource } from '../../storage/resources.js';
 import type { SandboxState, SandboxAction } from './state.js';
 import type { Resource } from 'postext';
 import type { SandboxProviderLate } from './providerState.js';
+import { hasWindow } from '../../env/window.js';
 
 /** What usePresetWatch takes from the sandbox provider. */
 export interface UsePresetWatchDeps {
@@ -60,7 +61,7 @@ export function usePresetWatch(deps: UsePresetWatchDeps) {
   // (with an immediate check) when the active preset or the provider list
   // changes, which also covers "edited the bundle, then opened the sandbox".
   useEffect(() => {
-    if (typeof window === 'undefined' || typeof document === 'undefined') return;
+    if (!hasWindow() || typeof document === 'undefined') return;
     let disposed = false;
     let inFlight = false;
     // The version of the source the book last followed, once per version.

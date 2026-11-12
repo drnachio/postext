@@ -1,4 +1,5 @@
 import type { EpubLayout } from '../types/props.js';
+import { hasWindow } from '../env/window.js';
 
 /** What the default rendition depends on, read from the browser. */
 export interface DeviceTraits {
@@ -29,7 +30,7 @@ export function defaultEpubLayout(d: DeviceTraits | null = readDeviceTraits()): 
 
 /** The browser's traits, or null outside a browser. */
 export function readDeviceTraits(): DeviceTraits | null {
-  if (typeof window === 'undefined' || typeof navigator === 'undefined') return null;
+  if (!hasWindow() || typeof navigator === 'undefined') return null;
   const screen = window.screen;
   return {
     userAgent: navigator.userAgent ?? '',

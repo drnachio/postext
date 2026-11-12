@@ -11,13 +11,15 @@
  * helpers return 0, spans are no-ops.
  */
 
+import { hasWindow } from '../env/window.js';
+
 const STORAGE_KEY = 'postextPerf';
 
 let enabled: boolean | null = null;
 
 export function perfEnabled(): boolean {
   if (enabled !== null) return enabled;
-  if (typeof window === 'undefined') return (enabled = false);
+  if (!hasWindow()) return (enabled = false);
   try {
     const stored = window.localStorage.getItem(STORAGE_KEY) === '1';
     const query = /[?&]perf(=1|&|$)/.test(window.location.search);
@@ -153,7 +155,7 @@ declare global {
   }
 }
 
-if (typeof window !== 'undefined' && !window.postextPerf) {
+if (hasWindow() && !window.postextPerf) {
   window.postextPerf = { set: setPerfEnabled, enabled: perfEnabled };
   installPerfObservers();
 }

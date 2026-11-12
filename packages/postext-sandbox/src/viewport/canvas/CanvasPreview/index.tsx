@@ -26,6 +26,7 @@ import { useDisplaySize } from './hooks/useDisplaySize.js';
 import { useLayoutBuild } from './hooks/useLayoutBuild.js';
 import { usePagePaint } from './hooks/usePagePaint.js';
 import { useOverlays } from './hooks/useOverlays.js';
+import { hasWindow } from '../../../env/window.js';
 
 /** Bitmaps are painted at the size the page is shown (× device pixels),
  *  never above the page's own resolution. A repaint is worth it when the
@@ -158,7 +159,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   /** The scale a page shown `displayWidth` CSS px wide wants, capped at
    *  the page's own resolution. */
   const wantedBitmapScale = (displayWidth: number, pageWidthPx: number): number => {
-    const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+    const dpr = hasWindow() ? window.devicePixelRatio || 1 : 1;
     return Math.min(1, (displayWidth * dpr) / pageWidthPx);
   };
   const needsRescale = (wanted: number): boolean => {

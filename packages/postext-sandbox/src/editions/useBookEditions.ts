@@ -20,6 +20,7 @@ import { editionsOnDemand } from './onDemand.js';
 import { useLayoutService } from '../worker/LayoutServiceContext.js';
 import { onLateFonts } from '../worker/LayoutService.js';
 import { askEditions, editionEntry, editionsAsked, editionsVersion, ensureEdition, loadPresetEdition, loadProjectEdition, subscribeEditions, type EditionEntry } from './editionStore.js';
+import { hasWindow } from '../env/window.js';
 
 export interface BookEditions {
   /** `preset:<id>` or `project:<id>`. */
@@ -184,7 +185,7 @@ export function useBookEditions(
   useEffect(() => {
     if (!enabled || linked === null) return;
     const resolve = linkedBundles.resolver(linked.key);
-    if (!resolve || typeof window === 'undefined') return;
+    if (!resolve || !hasWindow()) return;
     const pageOrigin = window.location.origin;
     const timer = setTimeout(() => {
       for (const locale of locales) {
