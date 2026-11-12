@@ -43,15 +43,17 @@ export interface LoadedProfile {
 const loads = new Map<string, Promise<LoadedProfile>>();
 
 /** The key a print config's profile is cached by. */
-export function profileKey(print: ResolvedPrintConfig): string {
+export function profileKey(print: ResolvedPrintConfig, base = profileBaseUrl): string {
   return print.outputProfile === 'custom' && print.customProfile
     ? `custom:${print.customProfile.fileId}`
-    : `${profileBaseUrl}|${print.outputProfile}`;
+    : `${base}|${print.outputProfile}`;
 }
 
-/** Load (once) the output profile a print config names. */
-export function loadPrintProfile(print: ResolvedPrintConfig): Promise<LoadedProfile> {
-  const key = profileKey(print);
+/** Load (once) the output profile a print config names; a catalogue one
+ *  from `base` (the host's, by default: a worker of the Sandbox is handed
+ *  the page's). */
+export function loadPrintProfile(print: ResolvedPrintConfig, base = profileBaseUrl): Promise<LoadedProfile> {
+  const key = profileKey(print, base);
   let p = loads.get(key);
   if (!p) {
     p = (async () => {
@@ -62,7 +64,7 @@ export function loadPrintProfile(print: ResolvedPrintConfig): Promise<LoadedProf
         bytes = new Uint8Array(record.bytes);
       } else {
         if (!outputProfileInfo(print.outputProfile)) throw new Error(`unknown output profile ${print.outputProfile}`);
-        const url = `${profileBaseUrl.replace(/\/?$/, '/')}${print.outputProfile}.icc`;
+        const url = `${base.replace(/\/?$/, '/')}${print.outputProfile}.icc`;
         const res = await fetch(url);
         if (!res.ok) throw new Error(`could not fetch ${url} (${res.status})`);
         bytes = new Uint8Array(await res.arrayBuffer());

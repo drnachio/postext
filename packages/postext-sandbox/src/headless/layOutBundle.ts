@@ -12,12 +12,9 @@
 // records in state, viewers), nothing here stands in for it. Not exported
 // from the package index.
 
-import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
+import type { PostextConfig, VDTDocument } from 'postext';
 import { createLayoutWorker, type LayoutWorkerHandle } from 'postext/worker';
-import { composeBookMemo } from '../book/compose.js';
-import { layoutCacheKey } from '../book/layoutKeys.js';
-import { chapterLayoutFromDoc, createBookPlanner, sameChapterLayout } from '../book/pagination.js';
-import type { ChapterLayout } from '../book/types.js';
+import { paginateBook } from '../book/paginate.js';
 import { withDefaultResourceTypes } from '../context/defaultConfig.js';
 import {
   declareStandIns, ensureConfigFontsLoaded, fontLoaderState, getConfigFontFamilies, loadVerticalTwins, preloadConfigFonts, setCustomFonts,
@@ -30,7 +27,6 @@ import { putFontFile } from '../storage/fontStorage.js';
 import { projectFileId, projectFontFileId } from '../storage/projectFiles.js';
 import { generateChapterId, generateProjectId } from '../storage/projects.js';
 import { createLayoutService } from '../worker/LayoutService.js';
-import { planContent } from '../book/jumps.js';
 
 export interface LayOutBundleOptions {
   /** The interface language the Sandbox would open the bundle in: the
@@ -111,7 +107,7 @@ function pageFaces(families: readonly string[]): Map<string, string[]> {
  *  2. the bundle's font files stored, then `setCustomFonts` (`applyRecord`);
  *  3. `preloadConfigFonts`, `ensureConfigFontsLoaded`, `loadVerticalTwins`
  *     and `declareStandIns`, the font steps of a preview before its build;
- *  4. the book planned (`createBookPlanner`) and its pending chapter built
+ *  4. the book planned and its pending chapter built (`paginateBook`)
  *     with the configuration `withHyphenationLocale` gives, until none is
  *     pending (`viewport/ChapterPaginator.tsx`).
  *
@@ -201,48 +197,19 @@ export async function layOutBundle(bytes: Uint8Array, options: LayOutBundleOptio
   // for, as long as the requests themselves are (#757).
   const service = createLayoutService({ handle, fontCeilingMs: Infinity });
   serviceNow = service;
-  const planner = createBookPlanner();
-  const layouts: Record<string, ChapterLayout> = {};
-  const docs = new Map<string, VDTDocument>();
   let builds = 0;
-  let settled = false;
+  let laidOut: Awaited<ReturnType<typeof paginateBook>>;
   try {
-    // A chapter is built again when the ones before it change its start or
-    // the book's outline: a few rounds per chapter at most.
-    const limit = chapters.length * 6 + 4;
-    for (let round = 0; round < limit; round++) {
-      const plan = planner.plan(chapters, config, resources, layouts, loaded.start);
-      const id = plan.pendingChapterId;
-      if (id === null) {
-        settled = true;
-        break;
-      }
-      const chapterPlan = plan.byId[id];
-      const target = chapters.find((c) => c.id === id);
-      if (!chapterPlan || !target) break;
-      const book = composeBookMemo(chapters, id);
-      const content: PostextContent = {
-        markdown: book.markdown, metadata: book.metadata, resources,
-        continuation: chapterPlan.continuation, ...planContent(chapterPlan),
-      };
-      step(`build ${builds + 1}, chapter ${chapters.findIndex((c) => c.id === id) + 1} of ${chapters.length}`);
-      const doc = await service.build({
-        clientId: 'headless', priority: 'background', content, config: effective,
-        cacheKey: layoutCacheKey({
-          markdown: book.markdown, metadata: book.metadata, config: effective, resources,
-          continuation: chapterPlan.continuation, continuationKey: chapterPlan.continuationKey, outlineKey: chapterPlan.outlineKey,
-        }),
-      });
-      builds++;
-      docs.set(id, doc);
-      const layout = chapterLayoutFromDoc(doc, chapterPlan, { markdown: target.markdown, config, resources });
-      // No record, or the record there already: the plan would ask again.
-      if (!layout || (layouts[id] && sameChapterLayout(layouts[id], layout))) break;
-      layouts[id] = layout;
-    }
+    laidOut = await paginateBook({
+      chapters, config, effective, resources, ...(loaded.start ? { start: loaded.start } : {}),
+      build: (content, cfg, cacheKey) => service.build({ clientId: 'headless', priority: 'background', content, config: cfg, cacheKey }),
+      onChapter: (index, count) => step(`build ${++builds}, chapter ${index + 1} of ${count}`),
+    });
   } finally {
     service.dispose();
   }
+  const { docs } = laidOut;
+  builds = laidOut.builds;
 
   const families = getConfigFontFamilies(effective, texts);
   const onPage = pageFaces(families);
@@ -255,7 +222,7 @@ export async function layOutBundle(bytes: Uint8Array, options: LayOutBundleOptio
   ];
   return {
     locale: loaded.locale,
-    settled: settled && chapters.every((c) => docs.has(c.id)),
+    settled: laidOut.settled && chapters.every((c) => docs.has(c.id)),
     unanswered: unansweredFontRequests(),
     builds,
     fonts,
