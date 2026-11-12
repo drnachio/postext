@@ -217,7 +217,7 @@ function FilterBar({ locale, chapters, gallery, live }: FiltersProps & { gallery
   return (
     <>
       <div ref={anchorRef} aria-hidden="true" />
-      <div className="cb-bar cb-bar-shadow sticky z-40 bg-background/96 backdrop-blur-md backdrop-saturate-150">
+      <div className="cb-bar cb-bar-shadow sticky z-40 bg-background">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 2xl:max-w-7xl 2xl:px-8">
           {/* Wraps instead of overflowing when text is enlarged (WCAG 1.4.4). */}
           <div className="flex min-h-16 flex-wrap items-center gap-2 sm:min-h-14 lg:gap-3">

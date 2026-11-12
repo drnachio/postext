@@ -18,11 +18,14 @@ export async function Navbar() {
   const tRecipe = await getTranslations("CookbookRecipe");
   const locale = await getLocale();
 
+  // Opaque, with no backdrop filter: a blur behind a bar that rides the
+  // scroll has to be redrawn on every frame, and on macOS it sometimes shows
+  // a frame late, so the bar flickers (#1534).
   return (
     <nav
       aria-label={t("mainNav")}
       data-site-nav=""
-      className="sticky top-0 z-50 w-full border-b border-rule bg-background/85 backdrop-blur-md backdrop-saturate-150"
+      className="sticky top-0 z-50 w-full border-b border-rule bg-background"
     >
       <div aria-hidden="true" className="tri-stripe h-[3px] w-full" />
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-y-2 px-6 py-2.5 2xl:max-w-7xl 2xl:px-8 4xl:max-w-[96rem] 4xl:px-12">
