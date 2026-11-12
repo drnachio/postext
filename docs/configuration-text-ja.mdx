@@ -336,6 +336,25 @@ export const metadata = {
   </tbody>
 </table>
 
+### 組版の慣習
+
+`bodyText`の組版規則（ハイフネーションの規則、`stacks`、`citationBreaks`、`operatorBreaks`、`hyphenateAcrossColumns`と、それぞれの上限とペナルティ）は既定ではオフなので、どの本も変わりません。ある組版の伝統に従う本は、これらをまとめて設定できます。エンジンは5つの伝統の規則を組版の慣習として備えています（postext 1.80以降）。慣習は`composition`パーツだけを持つデザインです（[デザインファイル](/ja/docs/configuration-bundles#デザインファイル)を参照）。どの慣習も、伝統が定めている規則だけを設定します。ほかの規則は既定値のままで、ペナルティはエンジンの値です。
+
+<table>
+  <thead>
+    <tr><th>慣習</th><th>規則</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>スペイン語（伝統的）、<code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 1</code>）、<code>hyphenation.lastWord: 'avoid'</code>、<code>stacks: 'avoid'</code>、<code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>英語（米国）、<code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>英語（英国）、<code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 2</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>フランス語、<code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>ドイツ語、<code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）</td></tr>
+  </tbody>
+</table>
+
+慣習はそれだけでは何も変えません。Sandboxでは5つともデザインのギャラリーにあり、組版規則グループが本の言語の慣習を示します（[デザインパネル](/ja/docs/sandbox-design-checks)を参照）。コマンドラインでは`--composition`で設定します（[コマンドライン](/ja/docs/command-line#design)を参照）。コードでは`applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`です。慣習を適用すると、その規則が設定され、ほかの組版規則は既定値に戻ります。文字組み、ハイフネーションの言語、単語の例外はそのままです。カタルーニャ語、イタリア語、ポルトガル語の慣習はまだありません。
+
 ### 引用ブロック
 
 引用ブロック（`>`で始まる行）は、本文のフォントファミリー、サイズ、行送り、ウェイト、行そろえ、ハイフネーションを引き継ぎます。それ以外は`bodyText.blockquote`で設定します。設定しない場合、引用ブロックはpostext 1.4までと同じ見た目になります。灰色のイタリックで、本文の1行目の字下げを使い、左右のインデントはありません。

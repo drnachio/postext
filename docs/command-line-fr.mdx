@@ -437,6 +437,13 @@ Un fichier de maquette garde la maquette d’un livre et rien de son texte : les
 
 `--design FICHIER`, une option de toutes les commandes qui lisent un livre, met le livre dans un fichier de maquette ou dans la maquette d’un autre livre, avant `--config` et `--set` : les réglages de ses parties remplacent ceux du livre, les styles nommés se fusionnent par identifiant et les polices de la maquette s’ajoutent à celles du livre. `--design-parts` n’en prend que certaines parties. Le panneau Maquette du Sandbox importe et exporte les mêmes fichiers.
 
+`--composition ÉTIQUETTE`, également une option de toutes les commandes qui lisent un livre, applique les règles de composition de la tradition d’une langue après `--design` (depuis postext 1.80) : `es`, `en-US` (ou `en`), `en-GB`, `fr` ou `de`, ou `auto` pour la langue du livre. Les règles de la convention remplacent celles du livre et les autres reviennent à leurs valeurs par défaut ; la typographie reste telle quelle. Voir [Conventions de composition](/fr/docs/configuration-text#conventions-de-composition).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack et unpack
 
 ```bash
@@ -514,6 +521,7 @@ les derniers fichiers valides.
     <tr><td><code>--set PATH=VALUE</code></td><td>Modifie un réglage le temps de cette exécution, sous forme de chemin pointé : <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. La valeur est lue comme du JSON quand c’est possible (nombres, true et false, objets), sinon comme du texte. Répétable.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Une configuration (ou un <code>preset.json</code>) pour des fichiers Markdown isolés, ou fusionnée par-dessus celle d’un livre.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Met le livre dans la maquette d’un fichier de maquette (de <code>postext design</code> ou du Sandbox) ou du <code>.postext</code> d’un autre livre, avant <code>--config</code> et <code>--set</code>. <code>--design-parts LISTE</code> n’en prend que certaines parties.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Applique les règles de composition de la tradition d’une langue (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code> ; <code>auto</code> : la langue du livre) après <code>--design</code>. Depuis postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Images, polices et titre pour des fichiers Markdown isolés.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Un dossier où chercher les polices que le livre ne porte pas. Répétable.</td></tr>
     <tr><td><code>--offline</code></td><td>Ne jamais télécharger de polices.</td></tr>

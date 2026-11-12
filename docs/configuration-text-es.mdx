@@ -336,6 +336,25 @@ La propiedad `bodyText` controla la tipografía de todo el texto de los párrafo
   </tbody>
 </table>
 
+### Convenciones de composición
+
+Las reglas de composición de `bodyText` (las reglas de separación silábica, `stacks`, `citationBreaks`, `operatorBreaks`, `hyphenateAcrossColumns` y sus límites y penalizaciones) están desactivadas por defecto, así que ningún libro cambia. Un libro compuesto en una tradición tipográfica puede tomarlas juntas: el motor trae las reglas de cinco tradiciones como convenciones de composición (desde postext 1.80), diseños que solo llevan la parte `composition` (véase [Archivos de diseño](/es/docs/configuration-bundles#archivos-de-diseño)). Cada una fija una regla solo donde la tradición la establece; las demás se quedan en sus valores por defecto, y las penalizaciones son las del motor.
+
+<table>
+  <thead>
+    <tr><th>Convención</th><th>Reglas</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Español (tradicional), <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> con <code>maxConsecutive: 1</code>, <code>hyphenation.lastWord: 'avoid'</code>, <code>stacks: 'avoid'</code>, <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>Inglés (EE. UU.), <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> con <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Inglés (Reino Unido), <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> con <code>maxConsecutive: 2</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Francés, <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> con <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Alemán, <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> con <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+Una convención no cambia nada por sí sola. En el Sandbox las cinco están en la galería de diseños, y el grupo Composición ofrece la del idioma del libro (véase [Panel Diseño](/es/docs/sandbox-design-checks)); la línea de comandos pone una con `--composition` (véase [Línea de comandos](/es/docs/command-line#design)); en código, `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. Aplicar una fija sus reglas y devuelve las demás reglas de composición a sus valores por defecto, y deja como están la tipografía, el idioma de la separación silábica y las excepciones de palabras. El catalán, el italiano y el portugués aún no tienen ninguna.
+
 ### Citas
 
 Una cita (las líneas que empiezan por `>`) toma la familia, el cuerpo, el interlineado, los pesos, la alineación y la separación silábica del texto base. `bodyText.blockquote` fija lo demás; sin fijar, una cita se ve como hasta postext 1.4: gris, en cursiva, con la sangría de primera línea del texto base y sin sangría lateral.

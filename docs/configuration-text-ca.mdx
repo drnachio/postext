@@ -335,6 +335,26 @@ La propietat `bodyText` controla la tipografia de tot el text de paràgraf.
     </tr>
   </tbody>
 </table>
+
+### Convencions de composició
+
+Les regles de composició de `bodyText` (les regles de partició de mots, `stacks`, `citationBreaks`, `operatorBreaks`, `hyphenateAcrossColumns` i els seus límits i penalitzacions) estan desactivades per defecte, així que cap llibre no canvia. Un llibre compost en una tradició tipogràfica les pot prendre juntes: el motor porta les regles de cinc tradicions com a convencions de composició (des de postext 1.80), dissenys que només porten la part `composition` (vegeu [Fitxers de disseny](/ca/docs/configuration-bundles#fitxers-de-disseny)). Cadascuna fixa una regla només on la tradició l'estableix; les altres es queden en els seus valors per defecte, i les penalitzacions són les del motor.
+
+<table>
+  <thead>
+    <tr><th>Convenció</th><th>Regles</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Castellà (tradicional), <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> amb <code>maxConsecutive: 1</code>, <code>hyphenation.lastWord: 'avoid'</code>, <code>stacks: 'avoid'</code>, <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>Anglès (EUA), <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> amb <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Anglès (Regne Unit), <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> amb <code>maxConsecutive: 2</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Francès, <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> amb <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Alemany, <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> amb <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+Una convenció no canvia res per si sola. Al Sandbox les cinc són a la galeria de dissenys, i el grup Composició ofereix la de la llengua del llibre (vegeu [Tauler Disseny](/ca/docs/sandbox-design-checks)); la línia d'ordres en posa una amb `--composition` (vegeu [Línia d'ordres](/ca/docs/command-line#design)); en codi, `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. Aplicar-ne una fixa les seves regles i torna les altres regles de composició als seus valors per defecte, i deixa com estan la tipografia, la llengua de la partició de mots i les excepcions de paraules. El català, l'italià i el portuguès encara no en tenen cap.
+
 ### Cites
 
 Una cita (les línies que comencen per `>`) pren la família, el cos, l'interlineat, els pesos, l'alineació i la partició de mots del text de cos. `bodyText.blockquote` fixa la resta; si no es fixa, una cita es veu com fins a postext 1.4: grisa, en cursiva, amb el sagnat de primera línia del cos i sense sagnat lateral.

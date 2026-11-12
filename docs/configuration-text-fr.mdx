@@ -335,6 +335,25 @@ La propriété `bodyText` règle la typographie de tout le texte des paragraphes
   </tbody>
 </table>
 
+### Conventions de composition
+
+Les règles de composition de `bodyText` (les règles de césure, `stacks`, `citationBreaks`, `operatorBreaks`, `hyphenateAcrossColumns` et leurs limites et pénalités) sont désactivées par défaut, si bien qu’aucun livre ne change. Un livre composé dans une tradition typographique peut les prendre ensemble : le moteur fournit les règles de cinq traditions comme conventions de composition (depuis postext 1.80), des maquettes qui ne contiennent que la partie `composition` (voir [Fichiers de maquette](/fr/docs/configuration-bundles#fichiers-de-maquette)). Chacune ne fixe une règle que là où la tradition l’énonce ; les autres restent à leurs valeurs par défaut, et les pénalités sont celles du moteur.
+
+<table>
+  <thead>
+    <tr><th>Convention</th><th>Règles</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Espagnol (traditionnel), <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> avec <code>maxConsecutive: 1</code>, <code>hyphenation.lastWord: 'avoid'</code>, <code>stacks: 'avoid'</code>, <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>Anglais (États-Unis), <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> avec <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Anglais (Royaume-Uni), <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> avec <code>maxConsecutive: 2</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Français, <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> avec <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Allemand, <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> avec <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+Une convention ne change rien par elle-même. Dans le Sandbox, les cinq sont dans la galerie des maquettes, et le groupe Composition propose celle de la langue du livre (voir [Panneau Maquette](/fr/docs/sandbox-design-checks)) ; la ligne de commande en applique une avec `--composition` (voir [Ligne de commande](/fr/docs/command-line#design)) ; dans le code, `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. En appliquer une pose ses règles et remet les autres règles de composition à leurs valeurs par défaut, et laisse telles quelles la typographie, la langue de césure et les exceptions de mots. Le catalan, l’italien et le portugais n’en ont pas encore.
+
 ### Citations
 
 Une citation (lignes qui commencent par `>`) reprend la famille, le corps, l’interlignage, les graisses, l’alignement et la césure du texte courant. `bodyText.blockquote` règle le reste ; non défini, une citation a l’aspect qu’elle avait jusqu’à postext 1.4 : grise, en italique, avec le retrait de première ligne du texte courant et sans retrait latéral.

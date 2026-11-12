@@ -336,6 +336,25 @@ export const metadata = {
   </tbody>
 </table>
 
+### 排版惯例
+
+`bodyText`的排版规则（断词规则、`stacks`、`citationBreaks`、`operatorBreaks`、`hyphenateAcrossColumns`及其限度和惩罚）默认关闭，所以任何书都不会改变。按某种排版传统排的书可以一次采用这些规则：引擎以排版惯例的形式提供五种传统的规则（自postext 1.80起），它们是只含`composition`部分的设计（见[设计文件](/zh/docs/configuration-bundles#设计文件)）。每种惯例只设置该传统明确规定的规则；其他规则保持默认值，惩罚值取引擎的值。
+
+<table>
+  <thead>
+    <tr><th>惯例</th><th>规则</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>西班牙语（传统）、<code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 1</code>）、<code>hyphenation.lastWord: 'avoid'</code>、<code>stacks: 'avoid'</code>、<code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>英语（美国）、<code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>英语（英国）、<code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 2</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>法语、<code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）、<code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>德语、<code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code>（<code>maxConsecutive: 3</code>）</td></tr>
+  </tbody>
+</table>
+
+惯例本身不会改变任何东西。在沙盒中，五种惯例都在设计图库里，排版规则组会提供书的语言对应的惯例（见[版面设计面板](/zh/docs/sandbox-design-checks)）；命令行用`--composition`设置（见[命令行](/zh/docs/command-line#design)）；在代码中写作`applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`。应用一种惯例会设置它的规则，并把其他排版规则恢复为默认值；字体排印、断词语言和单词例外保持不变。加泰罗尼亚语、意大利语和葡萄牙语还没有惯例。
+
 ### 引用块
 
 引用块（以`>`开头的行）沿用正文的字体族、字号、行距、字重、对齐方式和断词设置。其余由`bodyText.blockquote`设置；不设置时，引用块的样子与postext 1.4及更早版本相同：灰色、斜体，使用正文的首行缩进，没有侧缩进。

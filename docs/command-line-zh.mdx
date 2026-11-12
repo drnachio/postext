@@ -258,6 +258,13 @@ postext pdf other/ --design novel.postext -o other.pdf
 
 `--design FILE`是所有读取书的命令都有的选项，在`--config`和`--set`之前，把书设为某个设计文件或另一本书的设计：其各部分的设置替换书中的设置，命名样式按id合并，设计的字体加入书的字体。`--design-parts`只取其中部分。沙盒的版面设计面板也导入和导出同样的文件。
 
+`--composition TAG`同样是所有读取书的命令都有的选项，在`--design`之后设置某种语言的排版传统规则（自postext 1.80起）：`es`、`en-US`（或`en`）、`en-GB`、`fr`或`de`，或用`auto`取书的语言。惯例的规则替换书中的规则，其他规则回到默认值；字体排印保持不变。见[排版惯例](/zh/docs/configuration-text#排版惯例)。
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack和unpack
 
 ```bash
@@ -305,6 +312,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--set PATH=VALUE</code></td><td>在本次运行中改变一项设置，用点号分隔的路径表示：<code>--set page.dpi=150</code>、<code>--set bodyText.fontFamily=Lora</code>、<code>--set headings.levels.0.italic=true</code>。能按JSON读取的值就按JSON读取（数字、true和false、对象），否则当作文本。可以重复使用。</td></tr>
     <tr><td><code>--config FILE</code></td><td>用于零散Markdown的配置（或<code>preset.json</code>），或合并到书本身配置之上的配置。</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>在<code>--config</code>和<code>--set</code>之前，把书设为某个设计文件（来自<code>postext design</code>或沙盒）或另一本书的<code>.postext</code>的设计。<code>--design-parts LIST</code>只取其中部分。</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>在<code>--design</code>之后设置某种语言的排版传统规则（<code>es</code>、<code>en-US</code>、<code>en-GB</code>、<code>fr</code>、<code>de</code>；<code>auto</code>：书的语言）。自postext 1.80起。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>零散Markdown的图片、字体和书名。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>到这个文件夹里查找书中没有自带的字体。可以重复使用。</td></tr>
     <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>

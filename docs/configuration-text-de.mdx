@@ -335,6 +335,25 @@ Die Eigenschaft `bodyText` steuert die Typografie aller Absätze.
   </tbody>
 </table>
 
+### Satzkonventionen
+
+Die Satzregeln von `bodyText` (die Regeln der Silbentrennung, `stacks`, `citationBreaks`, `operatorBreaks`, `hyphenateAcrossColumns` und ihre Grenzen und Strafwerte) sind standardmäßig aus, sodass sich kein Buch ändert. Ein Buch, das in einer typografischen Tradition gesetzt ist, kann sie gemeinsam übernehmen: Die Engine bringt die Regeln von fünf Traditionen als Satzkonventionen mit (seit postext 1.80), Gestaltungen, die nur den Teil `composition` enthalten (siehe [Gestaltungsdateien](/de/docs/configuration-bundles#gestaltungsdateien)). Jede setzt eine Regel nur dort, wo die Tradition sie vorgibt; die übrigen bleiben auf ihren Standardwerten, und die Strafwerte sind die der Engine.
+
+<table>
+  <thead>
+    <tr><th>Konvention</th><th>Regeln</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Spanisch (traditionell), <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> mit <code>maxConsecutive: 1</code>, <code>hyphenation.lastWord: 'avoid'</code>, <code>stacks: 'avoid'</code>, <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>Englisch (USA), <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> mit <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Englisch (Vereinigtes Königreich), <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> mit <code>maxConsecutive: 2</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Französisch, <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> mit <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>Deutsch, <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> mit <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+Eine Konvention ändert von sich aus nichts. In der Sandbox stehen die fünf in der Galerie der Gestaltungen, und die Gruppe Satzregeln bietet die der Sprache des Buchs an (siehe [Bedienfeld Gestaltung](/de/docs/sandbox-design-checks)); auf der Kommandozeile setzt `--composition` eine (siehe [Kommandozeile](/de/docs/command-line#design)); im Code `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. Eine Konvention anzuwenden setzt ihre Regeln und stellt die übrigen Satzregeln auf ihre Standardwerte zurück; die Typografie, die Sprache der Silbentrennung und die Wortausnahmen bleiben, wie sie sind. Katalanisch, Italienisch und Portugiesisch haben noch keine.
+
 ### Zitate
 
 Ein Zitat (Zeilen, die mit `>` beginnen) übernimmt Familie, Größe, Zeilenabstand, Schriftstärken, Ausrichtung und Silbentrennung des Fließtexts. `bodyText.blockquote` legt den Rest fest; ohne Wert sieht ein Zitat aus wie bis postext 1.4: grau, kursiv, mit dem Erstzeileneinzug des Fließtexts und ohne seitlichen Einzug.

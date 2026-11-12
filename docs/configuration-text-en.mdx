@@ -336,6 +336,25 @@ The `bodyText` property controls the typography of all paragraph text.
   </tbody>
 </table>
 
+### Composition conventions
+
+The composition rules of `bodyText` (the hyphenation rules, `stacks`, `citationBreaks`, `operatorBreaks`, `hyphenateAcrossColumns` and their limits and penalties) are off by default, so no book changes. A book set in one typesetting tradition can take them together: the engine ships the rules of five traditions as composition conventions (since postext 1.80), designs that hold only the `composition` part (see [Design bundles](/en/docs/configuration-bundles#design-bundles)). Each sets a rule only where the tradition states it; the others stay at their defaults, and the penalties are the engine's.
+
+<table>
+  <thead>
+    <tr><th>Convention</th><th>Rules</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Spanish (traditional), <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> with <code>maxConsecutive: 1</code>, <code>hyphenation.lastWord: 'avoid'</code>, <code>stacks: 'avoid'</code>, <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>English (US), <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> with <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>English (UK), <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> with <code>maxConsecutive: 2</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>French, <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> with <code>maxConsecutive: 3</code>, <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>German, <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> with <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+A convention changes nothing by itself. In the Sandbox the five are in the designs gallery, and the Composition group offers the one of the book's language (see [Design panel](/en/docs/sandbox-design-checks)); the command line sets one with `--composition` (see [Command line](/en/docs/command-line#design)); in code, `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. Applying one sets its rules and puts the other composition rules back to their defaults, and leaves the type, the hyphenation language and the word exceptions as they are. Catalan, Italian and Portuguese have none yet.
+
 ### Blockquotes
 
 A blockquote (lines that start with `>`) takes the body's family, size, leading, weights, alignment and hyphenation. `bodyText.blockquote` sets the rest; left unset, a blockquote looks as it did up to postext 1.4: grey, italic, with the body's first-line indent and no side indent.

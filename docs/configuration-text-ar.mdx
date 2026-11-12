@@ -336,6 +336,25 @@ export const metadata = {
   </tbody>
 </table>
 
+### أعراف التنضيد
+
+قواعد التنضيد في `bodyText` (قواعد تقسيم الكلمات بالواصلة، و`stacks`، و`citationBreaks`، و`operatorBreaks`، و`hyphenateAcrossColumns`، وحدودها وعقوباتها) معطّلة افتراضيًا، فلا يتغيّر أي كتاب. ويمكن للكتاب المنضَّد في تقليد طباعي ما أن يأخذها معًا: يأتي المحرّك بقواعد خمسة تقاليد في صورة أعراف تنضيد (منذ postext 1.80)، وهي تصاميم لا تحمل إلا جزء `composition` (انظر [ملفات التصميم](/ar/docs/configuration-bundles#ملفات-التصميم)). ولا يضبط كل عُرف قاعدةً إلا حيث ينصّ عليها التقليد؛ وتبقى القواعد الأخرى على قيمها الافتراضية، والعقوبات هي عقوبات المحرّك.
+
+<table>
+  <thead>
+    <tr><th>العُرف</th><th>القواعد</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>الإسبانية (التقليدية)، <code>composition-es</code></td><td><code>hyphenation.ladders: 'avoid'</code> مع <code>maxConsecutive: 1</code>، <code>hyphenation.lastWord: 'avoid'</code>، <code>stacks: 'avoid'</code>، <code>hyphenateAcrossColumns: false</code></td></tr>
+    <tr><td>الإنجليزية (الولايات المتحدة)، <code>composition-en-us</code></td><td><code>hyphenation.ladders: 'avoid'</code> مع <code>maxConsecutive: 3</code>، <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>الإنجليزية (المملكة المتحدة)، <code>composition-en-gb</code></td><td><code>hyphenation.ladders: 'avoid'</code> مع <code>maxConsecutive: 2</code>، <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>الفرنسية، <code>composition-fr</code></td><td><code>hyphenation.ladders: 'avoid'</code> مع <code>maxConsecutive: 3</code>، <code>hyphenation.lastWord: 'avoid'</code></td></tr>
+    <tr><td>الألمانية، <code>composition-de</code></td><td><code>hyphenation.ladders: 'avoid'</code> مع <code>maxConsecutive: 3</code></td></tr>
+  </tbody>
+</table>
+
+لا يغيّر العُرف شيئًا بنفسه. في Sandbox تجد الخمسة في معرض التصاميم، وتعرض مجموعة قواعد التنضيد عُرف لغة الكتاب (انظر [لوحة التصميم](/ar/docs/sandbox-design-checks))؛ ويضبط سطر الأوامر عُرفًا بـ`--composition` (انظر [سطر الأوامر](/ar/docs/command-line#design))؛ وفي الشيفرة: `applyDesign(config, compositionConventionDesign(compositionConventionFor('es')!))`. وتطبيق عُرف يضبط قواعده ويعيد قواعد التنضيد الأخرى إلى قيمها الافتراضية، ويترك الطباعة ولغة التقسيم بالواصلة واستثناءات الكلمات كما هي. ولا عُرف بعدُ للكتالونية ولا للإيطالية ولا للبرتغالية.
+
 ### الاقتباسات الكتلية
 
 يأخذ الاقتباس الكتلي (الأسطر التي تبدأ بـ`>`) عائلة خط المتن وحجمه وتباعد أسطره وأوزانه ومحاذاته وتقسيمه بالواصلة. ويضبط `bodyText.blockquote` الباقي؛ وإن لم يُضبط، يبدو الاقتباس الكتلي كما كان حتى postext 1.4: رماديًا مائلًا، بإزاحة السطر الأول التي في المتن، وبلا إزاحة جانبية.

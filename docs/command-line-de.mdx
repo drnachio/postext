@@ -429,6 +429,13 @@ Eine Gestaltungsdatei enthält die Gestaltung eines Buchs und nichts von seinem 
 
 `--design DATEI`, eine Option jedes Befehls, der ein Buch liest, setzt das Buch in einer Gestaltungsdatei oder in der Gestaltung eines anderen Buchs, vor `--config` und `--set`: die Einstellungen ihrer Teile ersetzen die des Buchs, benannte Stile werden nach ID zusammengeführt, und die Schriften der Gestaltung kommen zu denen des Buchs. `--design-parts` nimmt nur einige ihrer Teile. Das Bedienfeld Gestaltung der Sandbox importiert und exportiert dieselben Dateien.
 
+`--composition TAG`, ebenfalls eine Option jedes Befehls, der ein Buch liest, setzt nach `--design` die Satzregeln der Tradition einer Sprache (seit postext 1.80): `es`, `en-US` (oder `en`), `en-GB`, `fr` oder `de`, oder `auto` für die Sprache des Buchs. Die Regeln der Konvention ersetzen die des Buchs, und die übrigen kehren zu ihren Standardwerten zurück; die Typografie bleibt, wie sie ist. Siehe [Satzkonventionen](/de/docs/configuration-text#satzkonventionen).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack und unpack
 
 ```bash
@@ -502,6 +509,7 @@ und die zuletzt fehlerfreien Dateien bleiben erhalten.
     <tr><td><code>--set PATH=VALUE</code></td><td>Ändert eine Einstellung für diesen Lauf, als Pfad mit Punkten: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. Der Wert wird als JSON gelesen, wenn das geht (Zahlen, true und false, Objekte), sonst als Text. Wiederholbar.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Eine Konfiguration (oder eine <code>preset.json</code>) für lose Markdown-Dateien, oder über die eigene eines Buchs gelegt.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Setzt das Buch in der Gestaltung einer Gestaltungsdatei (aus <code>postext design</code> oder der Sandbox) oder der <code>.postext</code> eines anderen Buchs, vor <code>--config</code> und <code>--set</code>. <code>--design-parts LISTE</code> nimmt nur einige ihrer Teile.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Setzt die Satzregeln der Tradition einer Sprache (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: die Sprache des Buchs) nach <code>--design</code>. Seit postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Bilder, Schriften und Titel für lose Markdown-Dateien.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Ein Ordner, in dem nach Schriften gesucht wird, die das Buch nicht mitbringt. Wiederholbar.</td></tr>
     <tr><td><code>--offline</code></td><td>Nie Schriften herunterladen.</td></tr>

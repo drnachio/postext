@@ -427,6 +427,13 @@ Um arquivo de projeto guarda o projeto gráfico de um livro e nada do seu texto:
 
 `--design ARQUIVO`, uma opção de todos os comandos que leem um livro, compõe o livro num arquivo de projeto ou no projeto de outro livro, antes de `--config` e `--set`: as configurações das suas partes substituem as do livro, os estilos com nome se combinam por id e as fontes do projeto se juntam às do livro. `--design-parts` toma só algumas das suas partes. O painel Design do Sandbox importa e exporta os mesmos arquivos.
 
+`--composition TAG`, também uma opção de todos os comandos que leem um livro, aplica as regras de composição da tradição de um idioma depois de `--design` (desde o postext 1.80): `es`, `en-US` (ou `en`), `en-GB`, `fr` ou `de`, ou `auto` para o idioma do livro. As regras da convenção substituem as do livro e as outras voltam aos valores padrão; a tipografia fica como está. Veja [Convenções de composição](/pt/docs/configuration-text#convenções-de-composição).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack e unpack
 
 ```bash
@@ -501,6 +508,7 @@ arquivos bons.
     <tr><td><code>--set PATH=VALUE</code></td><td>Muda uma configuração nesta execução, por um caminho com pontos: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. O valor é lido como JSON quando possível (números, true e false, objetos); senão, como texto. Pode ser repetida.</td></tr>
     <tr><td><code>--config FILE</code></td><td>Uma configuração (ou um <code>preset.json</code>) para Markdown solto, ou mesclada sobre a do próprio livro.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Compõe o livro no projeto de um arquivo de projeto (de <code>postext design</code> ou do Sandbox) ou do <code>.postext</code> de outro livro, antes de <code>--config</code> e <code>--set</code>. <code>--design-parts LISTA</code> toma só algumas das suas partes.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Aplica as regras de composição da tradição de um idioma (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: o idioma do livro) depois de <code>--design</code>. Desde o postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imagens, fontes e título para Markdown solto.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Uma pasta onde procurar as fontes que o livro não leva. Pode ser repetida.</td></tr>
     <tr><td><code>--offline</code></td><td>Nunca baixa fontes.</td></tr>

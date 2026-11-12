@@ -415,6 +415,13 @@ A design file holds a book's design and none of its text: the settings of the pa
 
 `--design FILE`, an option of every command that reads a book, sets the book in a design file or in another book's design, before `--config` and `--set`: the settings of its parts replace the book's, named styles merge by id and the design's fonts join the book's. `--design-parts` takes some of its parts only. The Sandbox's Design panel imports and exports the same files.
 
+`--composition TAG`, also an option of every command that reads a book, sets the composition rules of a language's tradition after `--design` (since postext 1.80): `es`, `en-US` (or `en`), `en-GB`, `fr` or `de`, or `auto` for the book's language. The convention's rules replace the book's and the others go back to their defaults; the type stays as it is. See [Composition conventions](/en/docs/configuration-text#composition-conventions).
+
+```bash
+postext pdf book/ --composition auto -o book.pdf
+postext design book/ --composition es --parts composition -o house-rules.postext
+```
+
 ### pack and unpack
 
 ```bash
@@ -487,6 +494,7 @@ good files.
     <tr><td><code>--set PATH=VALUE</code></td><td>Changes one setting for this run, as a dotted path: <code>--set page.dpi=150</code>, <code>--set bodyText.fontFamily=Lora</code>, <code>--set headings.levels.0.italic=true</code>. The value is read as JSON when it can be (numbers, true and false, objects), otherwise as text. Repeatable.</td></tr>
     <tr><td><code>--config FILE</code></td><td>A configuration (or a <code>preset.json</code>) for loose Markdown, or merged over a book's own.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Sets the book in the design of a design file (from <code>postext design</code> or the Sandbox) or of another book's <code>.postext</code>, before <code>--config</code> and <code>--set</code>. <code>--design-parts LIST</code> takes only some of its parts.</td></tr>
+    <tr><td><code>--composition TAG</code></td><td>Sets the composition rules of a language's tradition (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: the book's language) after <code>--design</code>. Since postext 1.80.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Pictures, fonts and title for loose Markdown.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>A folder to look in for fonts the book does not carry. Repeatable.</td></tr>
     <tr><td><code>--offline</code></td><td>Never download fonts.</td></tr>
