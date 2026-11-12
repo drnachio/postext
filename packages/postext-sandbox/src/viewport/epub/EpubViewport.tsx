@@ -2,17 +2,17 @@
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
-import { renderToEpub, type EpubLayout, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
+import { renderToEpub, type EpubLayout, type RenderToEpubOptions } from 'postext-epub';
 import { createEpubWorker, EpubWorkerError, type EpubWorkerHandle } from 'postext-epub/worker';
 import { useBookPlan, useSandboxSelector, useSandboxStateGetter } from '../../context/SandboxContext.js';
-import { composeBookMemo } from '../../book/compose.js';
 import { layOutBookPrint } from '../../book/printChain.js';
 import type { Chapter } from '../../book/types.js';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../../controls/fonts/fontLoader.js';
 import { withHyphenationLocale } from '../../controls/language/hyphenation.js';
 import { epubCoverOf } from '../../epub/cover.js';
-import { collectEpubFonts, epubResourceBytes, epubSvgFonts } from '../../epub/inputs.js';
-import { epubFileName, epubMetadataOf, type EpubBookIdentity } from '../../epub/metadata.js';
+import { collectEpubFonts } from '../../epub/inputs.js';
+import { epubFileName, type EpubBookIdentity } from '../../epub/metadata.js';
+import { epubNotices, epubWriterOptions, type EpubNotice } from '../../epub/write.js';
 import { downloadBytes } from '../../storage/persistence.js';
 import { dockedToolbarReserve } from '../../epub/viewer.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
@@ -27,22 +27,7 @@ import { EpubToolbar } from './EpubToolbar.js';
 import { useFloatingToolbarShell } from '../useFloatingToolbarShell.js';
 import { useViewerControls } from '../viewerControls.js';
 
-/** A warning of the last generation: the writer's, or a family the
- *  Sandbox left out of the file. */
-export type EpubNotice = EpubWarning
-  | { kind: 'fontWithheld'; family: string }
-  /** A family the book may not hand on is set in its `fallback` under the
-   *  same name (#993). */
-  | { kind: 'fontStoodIn'; family: string; standIn: string };
-
-const noticeKey = (n: EpubNotice): string =>
-  n.kind === 'missingImage' ? `img:${n.fileId}`
-    : n.kind === 'unsupported' ? `x:${n.detail}`
-      : n.kind === 'missingFont' ? `font:${n.family}:${n.weight ?? ''}:${n.style ?? ''}`
-        : n.kind === 'svgFontUnavailable' ? `svgfont:${n.fileId}:${n.family}:${n.weight}:${n.style}`
-          : n.kind === 'svgFontsTooLarge' ? `svgsize:${n.fileId}`
-            : n.kind === 'fontStoodIn' ? `stood:${n.family}`
-              : `withheld:${n.family}`;
+export type { EpubNotice } from '../../epub/write.js';
 
 /** The generated file and what it was made from. */
 interface Generated {
@@ -115,18 +100,7 @@ export function EpubViewport() {
     setProgress({ phase: 'layout', done: 0, total: plan.chapters.length });
     failedRef.current = false;
     const total = perfSpan('epub.total', { layout: snapshotLayout });
-    const found: EpubNotice[] = [];
-    const seen = new Set<string>();
-    // A family left out is said once, not again for each face it lacks.
-    const withheldFamilies = new Set<string>();
-    const note = (n: EpubNotice) => {
-      const key = noticeKey(n);
-      if (n.kind === 'fontWithheld') withheldFamilies.add(n.family);
-      if (seen.has(key) || (n.kind === 'missingFont' && withheldFamilies.has(n.family))) return;
-      seen.add(key);
-      found.push(n);
-      console.warn('[EpubViewport]', n);
-    };
+    const { note, notices: found } = epubNotices();
     try {
       await ensureConfigFontsLoaded(snapshot.config, snapshot.chapters.map((c) => c.markdown));
       signal.throwIfAborted();
@@ -151,28 +125,22 @@ export function EpubViewport() {
         : preset
           ? { kind: 'preset', id: preset.id, locale: state.presetApplied?.locale ?? state.locale, name: preset.name }
           : null;
-      const metadata = epubMetadataOf(composeBookMemo(snapshot.chapters).metadata, snapshot.config, identity, locale);
-      const onWithheld = (family: string) => {
-        note({ kind: 'fontWithheld', family });
-        withheldFamilies.add(family);
-      };
-      const [{ fonts, withheld, stoodIn }, cover] = await Promise.all([
-        collectEpubFonts(snapshot.config, docs, snapshot.chapters.map((c) => c.markdown)),
-        epubCoverOf(docs[0]!, snapshot, metadata.title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
-      ]);
-      for (const family of withheld) onWithheld(family);
-      for (const stood of stoodIn) note({ kind: 'fontStoodIn', ...stood });
+      const { options: written, metadata } = await epubWriterOptions({
+        docs,
+        chapters: snapshot.chapters,
+        config: snapshot.config,
+        layout: snapshotLayout,
+        identity,
+        locale,
+        cover: (title) => epubCoverOf(docs[0]!, snapshot, title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
+        note,
+      });
+      const { fonts, cover } = written;
       signal.throwIfAborted();
 
       const options: RenderToEpubOptions = {
-        layout: snapshotLayout,
-        metadata,
-        fonts,
-        resourceBytes: epubResourceBytes(),
-        svgFonts: epubSvgFonts(),
-        ...(cover ? { cover } : {}),
+        ...written,
         onProgress: (p) => setProgress({ phase: p.phase, done: p.done, total: p.total }),
-        onWarning: note,
         signal,
       };
       const write = perfSpan('epub.write', { layout: snapshotLayout });

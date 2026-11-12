@@ -1,62 +1,49 @@
 'use client';
 
 import { useCallback } from 'react';
-import { useSandboxDispatch, useSandboxStateGetter } from '../context/SandboxContext.js';
-import { withDefaultResourceTypes } from '../context/defaultConfig.js';
-import { setCustomFonts } from '../controls/fonts/fontLoader.js';
-import { getProject } from '../storage/projects.js';
+import { useSandboxDispatch, useSandboxLabels, useSandboxProjects, useSandboxStateGetter } from '../context/SandboxContext.js';
+import { pdfFontChecksSource, setPdfFontChecks } from '../controls/fonts/pdfFontWarnings.js';
+import { sameLocaleTag } from '../presets/locale.js';
 import { downloadBytes } from '../storage/persistence.js';
-import { useLayoutWorker } from '../worker/useLayoutWorker.js';
-import { compileBook, type CompiledFormat } from './compileBook.js';
+import { announce } from '../ui/announcer.js';
+import { noticeText } from '../viewport/epub/EpubToolbar.js';
+import type { CompiledFormat } from './compileBook.js';
+import { isCompileCancelled } from './compileStore.js';
 
 /**
- * Compile one of the reader's books (`projectId`) to a PDF, HTML or EPUB 3
- * file and hand it over as a download. The panel shows the work as busy,
- * and an error as the panel's error. The book open is compiled from what
- * is on screen; another one from its stored record, its custom fonts
- * standing in for the open book's while it is laid out and written (the
- * font registry is the open book's), the open book's put back after.
+ * Compile one of the reader's books to a PDF, HTML or EPUB 3 file, in one
+ * of its editions, and hand it over as a download (#1526). The work runs
+ * apart from the book on screen (`compileBook.ts`); the Books panel shows
+ * its progress and a Cancel button (`compileStore.ts`). The file's
+ * warnings go to the panel's notice; a PDF's font checks also reach the
+ * Checks panel when the book compiled is the one on screen, in the
+ * language on screen, as the PDF tab's do.
  */
-export function useCompileBook(): (projectId: string, format: CompiledFormat) => Promise<void> {
+export function useCompileBook(): (projectId: string, format: CompiledFormat, locale?: string) => Promise<void> {
   const dispatch = useSandboxDispatch();
   const getState = useSandboxStateGetter();
-  const { build } = useLayoutWorker('pdf');
-  return useCallback(async (projectId, format) => {
-    const s = getState();
-    const setStatus = (status: 'busy' | 'idle' | 'error', error?: string) =>
-      dispatch({ type: 'SET_PROJECT_STATUS', payload: { status, error } });
-    setStatus('busy');
-    const open = projectId === s.activeProjectId;
-    let swapped = false;
+  const labels = useSandboxLabels();
+  const { compile } = useSandboxProjects();
+  return useCallback(async (projectId, format, locale) => {
+    let book;
     try {
-      const record = open ? null : await getProject(projectId);
-      if (!open && !record) throw new Error('Project not found');
-      const config = open ? s.config : withDefaultResourceTypes(record!.config, s.locale);
-      if (!open) {
-        setCustomFonts(config.customFonts, { newBook: true });
-        swapped = true;
-      }
-      const summary = s.projects.find((p) => p.id === projectId);
-      const name = open ? (summary?.name ?? '') : record!.name;
-      const thumbnail = open ? summary?.thumbnail : record!.thumbnail;
-      const out = await compileBook(format, {
-        chapters: open ? s.chapters : record!.chapters,
-        config,
-        resources: open ? s.resources : record!.resources,
-        locale: s.locale,
-        name,
-        identity: { kind: 'project', id: projectId, name },
-        ...(thumbnail ? { thumbnail } : {}),
-        epubLayout: s.epubLayout,
-        build,
-      });
-      downloadBytes(out.bytes, out.fileName, out.mime);
-      setStatus('idle');
+      book = await compile(projectId, format, locale ? { locale } : {});
     } catch (err) {
-      console.error('[compileBook]', err);
-      setStatus('error', err instanceof Error ? err.message : String(err));
-    } finally {
-      if (swapped) setCustomFonts(getState().config.customFonts, { newBook: true });
+      // A cancellation says nothing; a failure stays in the panel.
+      if (!isCompileCancelled(err)) console.error('[compileBook]', err);
+      return;
     }
-  }, [build, dispatch, getState]);
+    downloadBytes(book.bytes, book.fileName, book.mime);
+    const notes = [...book.warnings, ...(book.epubNotices ?? []).map((n) => noticeText(n, labels))];
+    const message = notes.length > 0
+      ? labels.projectCompiledNotes.replace('__file__', book.fileName).replace('__count__', String(notes.length)).replace('__list__', () => notes.join('; '))
+      : labels.projectCompiled.replace('__file__', book.fileName);
+    dispatch({ type: 'SET_PROJECT_NOTICE', payload: message });
+    announce(labels.projectCompiled.replace('__file__', book.fileName));
+    const s = getState();
+    const summary = s.projects.find((p) => p.id === projectId);
+    if (book.fontChecks && s.activeProjectId === projectId && (!summary?.locale || sameLocaleTag(summary.locale, book.locale))) {
+      setPdfFontChecks(book.fontChecks, pdfFontChecksSource({ ...s, pdfScope: 'book' }));
+    }
+  }, [compile, dispatch, getState, labels]);
 }

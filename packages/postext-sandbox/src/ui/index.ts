@@ -5,7 +5,7 @@ export { POPUP_SURFACE, POPUP_Z_INDEX, TOOLTIP_Z_INDEX } from './layout/surface.
 export { Tooltip, TooltipProvider, type TooltipSide } from './overlays/tooltip.js';
 export { Popover, type PopoverProps, type PopoverSide, type PopoverAlign, type PopoverCloseReason } from './overlays/popover.js';
 export { ConfirmPopover, type ConfirmOpenArg } from './overlays/confirm-popover.js';
-export { Menu, MenuItem, MenuSeparator } from './overlays/menu.js';
+export { Menu, MenuItem, MenuSeparator, MenuSubmenu } from './overlays/menu.js';
 export { IconButton, type IconButtonProps } from './inputs/icon-button.js';
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './inputs/button.js';
 export { PanelHeader } from './layout/panel-header.js';

@@ -2502,6 +2502,14 @@ export interface SandboxLabels {
   projectCompilePdf: string;
   projectCompileHtml: string;
   projectCompileEpub: string;
+  /** Books panel: the book being compiled, where it stands (as the EPUB
+   *  tab words it) and how it ended (#1526). */
+  projectCompiling: string;
+  projectCompilePaginate: string;
+  projectCompileInputs: string;
+  projectCompiled: string;
+  projectCompiledNotes: string;
+  projectCompileFailed: string;
   projectActivate: string;
   projectRename: string;
   projectNameLabel: string;
