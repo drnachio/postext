@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: "Com és la interfície del Sandbox: la barra d'activitats; els taulers Text, Llibres, Capítols, Recursos i Fonts, i la disposició de la pantalla als mòbils",
   lang: 'ca',
-  lastUpdated: '2026-11-10',
-  readingTime: '34 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '35 min',
   order: 41,
   plainSummary: "El Sandbox és una eina gratuïta d'aquest web per provar Postext sense instal·lar res. Escrius el text a una banda i veus les pàgines acabades a l'altra, i canvien mentre escrius. Aquesta pàgina explica les parts de la pantalla i els taulers on escrius el text, organitzes llibres i capítols, afegeixes imatges i tries els tipus de lletra. Altres pàgines expliquen els paràmetres de disseny, les previsualitzacions, com desar i importar, i com posar el Sandbox al teu web.",
 };
@@ -218,6 +218,7 @@ El tauler **Plantilles**, entre Text i Recursos, és el pas previ al disseny: tr
 - **Desar un disseny com a plantilla**, des d’aquest llibre o des de qualsevol altre llibre del Sandbox, triant quines parts inclou.
 - **Com a estil de capítol**. Les parts triades d'una plantilla (pàgina i columnes, tipografia, colors, capçaleres) passen a un estil de capítol del llibre, nou o un que ja tingui: només el que canvien respecte al llibre, amb la mida de pàgina i la impremta del llibre. S'assigna als capítols que necessitin aquell disseny (un annex, els casos clínics) a **Capítols**, o amb `chapterStyle:` al seu preàmbul, i a una part d'un capítol, des d'una pàgina nova, amb `::section{style="…"}`; la resta del llibre conserva el seu.
 - **Importa** (a la capçalera del tauler) i **Exporta** (a cada plantilla) fitxers `.postext-template.json` per compartir-les; les fonts que no són redistribuïbles no hi viatgen. Les plantilles desades es poden eliminar; les de sèrie, no.
+- **Convencions de composició.** *Regles de composició* és una part a banda: les escales de guionets, l’última paraula partida, els límits del diccionari, les repeticions i el guionet al peu d’una columna. Aplicar la tipografia no les toca, i aplicar-les no toca res més (una plantilla desada abans conserva les regles que porta la seva tipografia). La galeria inclou les convencions d’algunes tradicions, que només porten aquestes regles i només fixen el que la tradició demana amb claredat: *Castellà (tradicional)* (cap línia amb guionet seguida d’una altra, ni última paraula partida, ni repeticions, ni columna que acabi en guionet), *Anglès (EUA)* (com a màxim tres línies seguides amb guionet, l’última paraula sencera), *Anglès (Regne Unit)* (com a màxim dues, l’última paraula sencera), *Francès* (com a màxim tres, l’última paraula sencera) i *Alemany* (com a màxim tres). Prova’n una, ajusta un valor i desa les regles del llibre com a convenció pròpia marcant només *Regles de composició*. En un llibre en diverses llengües la plantilla s’aplica a l’edició en pantalla, de manera que cada llengua pot seguir les seves regles. Quan la llengua del llibre té convenció i les seves regles són unes altres, els ajustos de partició de Text principal mostren una nota amb **Aplica**; res no canvia fins que la prems, i **Desfés** torna les regles que tenies.
 
 #### Tauler de recursos
 

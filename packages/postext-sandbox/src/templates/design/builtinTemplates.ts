@@ -2,12 +2,14 @@
  * The templates the gallery ships with: a few book designs to start from.
  * They set the page, the type and the colours (and, for the two-colour
  * book, the print settings); their typefaces are Google Fonts, so they
- * carry no files. Names and descriptions come from the labels.
+ * carry no files. After them, the composition conventions: a language's
+ * typesetting rules alone. Names and descriptions come from the labels.
  */
 
 import type { ColorValue, PostextConfig } from 'postext';
 import type { SandboxLabels } from '../../types/index.js';
 import type { DesignPart } from './designTemplate.js';
+import { COMPOSITION_CONVENTIONS } from './compositionConventions.js';
 
 export interface BuiltinTemplate {
   id: string;
@@ -115,4 +117,5 @@ export const BUILTIN_TEMPLATES: readonly BuiltinTemplate[] = [
   { id: 'builtin-manual', nameKey: 'designTemplateManual', descriptionKey: 'designTemplateManualDescription', parts: ['page', 'typography', 'colors'], config: MANUAL },
   { id: 'builtin-magazine', nameKey: 'designTemplateMagazine', descriptionKey: 'designTemplateMagazineDescription', parts: ['page', 'typography', 'colors'], config: MAGAZINE },
   { id: 'builtin-two-colour', nameKey: 'designTemplateTwoColour', descriptionKey: 'designTemplateTwoColourDescription', parts: ['page', 'typography', 'colors', 'print'], config: TWO_COLOUR },
+  ...COMPOSITION_CONVENTIONS.map(({ id, nameKey, descriptionKey, config }): BuiltinTemplate => ({ id, nameKey, descriptionKey, parts: ['composition'], config })),
 ];

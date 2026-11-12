@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'Die Oberfläche der Sandbox: die Aktivitätsleiste, die Bedienfelder Text, Bücher, Kapitel, Ressourcen und Schriften und die Darstellung auf Telefonen',
   lang: 'de',
-  lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '31 min',
   order: 41,
   plainSummary: "Die Sandbox ist ein kostenloses Werkzeug auf dieser Website, mit dem Sie Postext ausprobieren können, ohne etwas zu installieren. Sie schreiben Ihren Text auf der einen Seite und sehen auf der anderen die fertigen Seiten, die sich beim Tippen mitändern. Diese Seite erklärt die Teile des Bildschirms und die Bedienfelder, in denen Sie den Text schreiben, Bücher und Kapitel verwalten, Bilder hinzufügen und Schriften wählen. Andere Seiten behandeln die Gestaltungseinstellungen, die Vorschauen, das Speichern und Importieren und das Einbinden der Sandbox in Ihre eigene Website.",
 };
@@ -218,6 +218,7 @@ Das Bedienfeld **Vorlagen** zwischen Text und Ressourcen ist der Schritt vor dem
 - **Als Kapitelstil.** Die gewählten Teile einer Vorlage (Seite und Spalten, Typografie, Farben, Kolumnentitel) werden ein Kapitelstil des Buchs, neu oder ein vorhandener: nur, was sie gegenüber dem Buch ändern; Seitenformat und Druck bleiben die des Buchs. Er wird den Kapiteln zugewiesen, die dieses Design brauchen (ein Anhang, die Fallbeispiele), unter **Kapitel** oder mit `chapterStyle:` im Front Matter, und einem Teil eines Kapitels, ab einer neuen Seite, mit `::section{style="…"}`; der Rest des Buchs behält seines.
 - **Ein Design als Vorlage speichern**, aus diesem oder einem anderen Buch im Sandbox, mit den gewählten Teilen.
 - **Importieren** (im Kopf des Bedienfelds) und **Exportieren** (an jeder Vorlage) von `.postext-template.json`-Dateien zum Weitergeben; nicht weitergebbare Schriften bleiben zurück. Gespeicherte Vorlagen lassen sich löschen, mitgelieferte nicht.
+- **Satzkonventionen.** *Satzregeln* ist ein eigener Teil: Trennstrich-Treppen, das getrennte letzte Wort, die Grenzen des Wörterbuchs, Wiederholungen und die Trennung am Spaltenende. Die Typografie anzuwenden lässt sie unverändert, und sie anzuwenden ändert nichts anderes (eine früher gespeicherte Vorlage behält die Regeln, die ihre Typografie enthält). Die Galerie bringt die Konventionen einiger Traditionen mit; sie enthalten nur diese Regeln und setzen nur, was die Tradition klar verlangt: *Spanisch (traditionell)* (keine zwei Trennungen in Folge, kein getrenntes letztes Wort, keine Wiederholungen, keine Spalte, die mit einer Trennung endet), *Englisch (USA)* (höchstens drei Trennungen in Folge, das letzte Wort ganz), *Englisch (Vereinigtes Königreich)* (höchstens zwei, das letzte Wort ganz), *Französisch* (höchstens drei, das letzte Wort ganz) und *Deutsch* (höchstens drei). Probieren Sie eine aus, passen Sie einen Wert an und speichern Sie die Regeln des Buchs als eigene Konvention, indem Sie nur *Satzregeln* ankreuzen. In einem mehrsprachigen Buch gilt eine Vorlage für die angezeigte Ausgabe, sodass jede Sprache ihren eigenen Regeln folgen kann. Hat die Sprache des Buchs eine Konvention und weichen seine Regeln ab, zeigen die Silbentrennungseinstellungen des Fließtexts einen Hinweis mit **Anwenden**; nichts ändert sich vor dem Klick, und **Rückgängig** stellt die vorherigen Regeln wieder her.
 
 #### Bedienfeld Ressourcen
 

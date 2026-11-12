@@ -2,8 +2,9 @@
  * Design templates: the design of a book, kept apart from its text, to
  * set another book with. A template holds the parts of a configuration
  * that make the design — the page, the typography, the colours, the
- * running heads, the print settings — and never what belongs to the book
- * (its language, writing system, resource types, viewer settings).
+ * running heads, the print settings, the composition rules — and never
+ * what belongs to the book (its language, writing system, resource types,
+ * viewer settings).
  *
  * Applying a template replaces the chosen parts of the book's design: a
  * key the template leaves unset goes back to its default, so the result
@@ -12,14 +13,19 @@
 
 import { stripConfigDefaults, type ColorPaletteEntry, type CustomFontFamily, type PostextConfig } from 'postext';
 import { chapterStyleView, newChapterStyle, writeChapterStyle } from '../../editions/chapterStyleEdit.js';
+import { holdsComposition, withCompositionOf, withoutComposition } from './compositionPaths.js';
 
-/** The parts a template is saved and applied by. */
-export type DesignPart = 'page' | 'typography' | 'colors' | 'headerFooter' | 'print';
+/** The parts a template is saved and applied by. `composition` is a
+ *  language's typesetting rules: settings inside `bodyText`
+ *  (`COMPOSITION_PATHS`), which the typography leaves alone. */
+export type DesignPart = 'page' | 'typography' | 'composition' | 'colors' | 'headerFooter' | 'print';
 
-export const DESIGN_PARTS: readonly DesignPart[] = ['page', 'typography', 'colors', 'headerFooter', 'print'];
+export const DESIGN_PARTS: readonly DesignPart[] = ['page', 'typography', 'composition', 'colors', 'headerFooter', 'print'];
 
 /** The configuration keys of each part. `customFonts` travels with the
- *  typography (and is merged, not replaced: see {@link applyDesign}). */
+ *  typography (and is merged, not replaced: see {@link applyDesign}). The
+ *  composition is made of paths inside `bodyText`, so it has no keys of
+ *  its own. */
 export const PART_KEYS: Record<DesignPart, readonly (keyof PostextConfig)[]> = {
   page: ['page', 'layout'],
   typography: [
@@ -27,6 +33,7 @@ export const PART_KEYS: Record<DesignPart, readonly (keyof PostextConfig)[]> = {
     'unorderedLists', 'orderedLists', 'math', 'footnotes', 'tableStyle', 'tableStyles',
     'captionStyle', 'diagramStyle', 'videoStyle', 'toc', 'index', 'crossRefs', 'citations', 'parts',
   ],
+  composition: [],
   colors: ['colorPalette'],
   headerFooter: ['header', 'footer'],
   print: ['print', 'pdfGeneration'],
@@ -51,7 +58,11 @@ export function extractDesign(config: PostextConfig, parts: readonly DesignPart[
       if (config[key] !== undefined) out[key] = structuredClone(config[key]);
     }
   }
-  const stripped = stripConfigDefaults(out as PostextConfig);
+  // The type does not carry the composition rules: they are a part of
+  // their own.
+  let picked = withoutComposition(out as PostextConfig);
+  if (parts.includes('composition')) picked = withCompositionOf(picked, config);
+  const stripped = stripConfigDefaults(picked);
   delete stripped.locale;
   const families = usedFontFamilies(stripped, config.customFonts ?? []);
   if (families.length > 0) stripped.customFonts = structuredClone(families);
@@ -96,9 +107,15 @@ function paletteIds(node: unknown, out: Set<string>): Set<string> {
  * still use them. Palette entries the applied parts link to and the book
  * lacks are added when the colours themselves are not applied, so linked
  * colours keep the template's look.
+ *
+ * The typography leaves the book's composition rules as they are; a
+ * template saved before the composition was a part of its own, whose
+ * typography still holds some of those settings, sets them all as it did
+ * then (its values, the others back to their defaults). The composition,
+ * applied, sets the template's rules and nothing else.
  */
 export function applyDesign(current: PostextConfig, design: DesignSnapshot, parts: readonly DesignPart[]): PostextConfig {
-  const next: Record<string, unknown> = { ...current };
+  let next: Record<string, unknown> = { ...current };
   const applied = parts.filter((p) => design.parts.includes(p));
   for (const part of applied) {
     for (const key of PART_KEYS[part]) {
@@ -107,6 +124,11 @@ export function applyDesign(current: PostextConfig, design: DesignSnapshot, part
       else next[key] = structuredClone(value);
     }
   }
+  const legacy = !design.parts.includes('composition') && holdsComposition(design.config);
+  if (applied.includes('typography') && !legacy) {
+    next = withCompositionOf(next as PostextConfig, current) as Record<string, unknown>;
+  }
+  if (applied.includes('composition')) next = withCompositionOf(next as PostextConfig, design.config) as Record<string, unknown>;
   if (applied.includes('typography') || applied.includes('headerFooter')) {
     const fonts = design.config.customFonts ?? [];
     if (fonts.length > 0) {
@@ -136,8 +158,10 @@ export function designFileIds(design: PostextConfig): { fontIds: string[]; blobI
 }
 
 /** The parts a chapter style can take : the print settings are
- *  the book's, whatever chapter is printed. */
-export const CHAPTER_STYLE_PARTS: readonly DesignPart[] = ['page', 'typography', 'colors', 'headerFooter'];
+ *  the book's, whatever chapter is printed. The composition rules are a
+ *  chapter's like its type: an appendix in another language can be set by
+ *  that language's rules. */
+export const CHAPTER_STYLE_PARTS: readonly DesignPart[] = ['page', 'typography', 'composition', 'colors', 'headerFooter'];
 
 /**
  * `book` with the chosen `parts` of a template kept as a chapter style

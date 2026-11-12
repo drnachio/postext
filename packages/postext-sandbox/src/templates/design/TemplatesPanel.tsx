@@ -30,6 +30,7 @@ type Labels = ReturnType<typeof useSandboxLabels>;
 const PART_LABEL: Record<DesignPart, keyof Labels> = {
   page: 'designPartPage',
   typography: 'designPartTypography',
+  composition: 'designPartComposition',
   colors: 'designPartColors',
   headerFooter: 'designPartHeaderFooter',
   print: 'designPartPrint',
@@ -362,7 +363,11 @@ function TemplateCard({ entry, book, labels, active, onTry, styles, onAsStyle, o
           </div>
           {entry.description && <span className="text-xs text-(--slate)">{entry.description}</span>}
           {entry.source && <span className="text-xs text-(--slate)">{fill(labels.designTemplateFrom, { book: entry.source })}</span>}
-          <span className="truncate text-xs" style={{ fontFamily: `"${body.fontFamily}", serif` }}>{body.fontFamily} · {toPt(body.fontSize)}/{toPt(body.lineHeight)} pt</span>
+          {/* A composition convention sets no type: the book's would be
+              shown as if it were the template's. */}
+          {entry.design.parts.includes('typography') && (
+            <span className="truncate text-xs" style={{ fontFamily: `"${body.fontFamily}", serif` }}>{body.fontFamily} · {toPt(body.fontSize)}/{toPt(body.lineHeight)} pt</span>
+          )}
           {palette.length > 0 && (
             <span role="img" className="flex items-center gap-0.5" aria-label={palette.map((p) => p.name).join(', ')}>
               {palette.slice(0, 8).map((p) => (

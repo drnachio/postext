@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'L’interface du Sandbox : la barre d’activité, les panneaux Texte, Livres, Chapitres, Ressources et Polices, et l’affichage sur téléphone',
   lang: 'fr',
-  lastUpdated: '2026-11-10',
-  readingTime: '34 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '35 min',
   order: 41,
   plainSummary: "Le Sandbox est un outil gratuit de ce site pour essayer Postext sans rien installer. Vous écrivez votre texte d’un côté et, de l’autre, vous voyez les pages terminées changer à mesure que vous tapez. Cette page présente les parties de l’écran et les panneaux où vous écrivez le texte, gérez les livres et les chapitres, ajoutez des images et choisissez les polices. D’autres pages traitent des réglages de maquette, des aperçus, de l’enregistrement et de l’import, et de l’intégration du Sandbox dans votre propre site.",
 };
@@ -218,6 +218,7 @@ Le panneau **Modèles**, entre Texte et Ressources, est l’étape avant le desi
 - **Comme style de chapitre.** Les parties choisies d’un modèle (page et colonnes, typographie, couleurs, titres courants) deviennent un style de chapitre du livre, nouveau ou existant : seulement ce qu’elles changent par rapport au livre, le format de page et l’impression restant ceux du livre. On l’attribue aux chapitres qui demandent ce design (une annexe, les cas cliniques) dans **Chapitres**, ou avec `chapterStyle:` dans leur en-tête, et à une partie d’un chapitre, à partir d’une nouvelle page, avec `::section{style="…"}` ; le reste du livre garde le sien.
 - **Enregistrer un design comme modèle**, depuis ce livre ou un autre livre du Sandbox, en choisissant les parties qu’il contient.
 - **Importer** (dans l’en-tête du panneau) et **Exporter** (sur chaque modèle) des fichiers `.postext-template.json` pour les partager ; les polices non redistribuables restent derrière. Les modèles enregistrés peuvent être supprimés, pas ceux fournis.
+- **Conventions de composition.** *Règles de composition* est une partie à part : les échelles de césures, le dernier mot coupé, les limites du dictionnaire, les répétitions et la coupure en pied de colonne. Appliquer la typographie n’y touche pas, et les appliquer ne touche à rien d’autre (un modèle enregistré avant garde les règles que contient sa typographie). La galerie fournit les conventions de quelques traditions, qui ne contiennent que ces règles et ne fixent que ce que la tradition demande clairement : *Espagnol (traditionnel)* (jamais deux lignes coupées de suite, ni dernier mot coupé, ni répétitions, ni colonne finissant sur une coupure), *Anglais (États-Unis)* (trois lignes coupées de suite au plus, le dernier mot entier), *Anglais (Royaume-Uni)* (deux au plus, le dernier mot entier), *Français* (trois au plus, le dernier mot entier) et *Allemand* (trois au plus). Essayez-en une, ajustez une valeur et enregistrez les règles du livre comme convention à vous en ne cochant que *Règles de composition*. Dans un livre en plusieurs langues, un modèle s’applique à l’édition à l’écran : chaque langue peut suivre ses règles. Quand la langue du livre a une convention et que ses règles diffèrent, les réglages de césure du Texte courant affichent une note avec **Appliquer** ; rien ne change avant le clic, et **Annuler** rétablit les règles d’avant.
 
 #### Panneau Ressources
 

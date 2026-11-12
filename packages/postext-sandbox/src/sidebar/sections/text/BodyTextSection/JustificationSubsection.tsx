@@ -6,6 +6,7 @@ import { NestedGroup, NumberInput, SelectInput, ToggleSwitch } from '../../../..
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { HyphenateCapitalizedField, HyphenateCompoundsField, HyphenationExceptionsField, HyphenationLocaleField, RaggedHyphenationFields } from './HyphenationFields.js';
 import { HyphenationLimitsFields, HyphenDistributionFields } from './HyphenRulesFields.js';
+import { CompositionHint } from '../../../../templates/design/CompositionHint.js';
 
 interface Props {
   bodyText: ResolvedBodyTextConfig;
@@ -161,6 +162,8 @@ export function JustificationSubsection({
             effectiveHyphenationLocale={effectiveHyphenationLocale}
             isHyphenationLocaleDefault={isHyphenationLocaleDefault}
           />
+          {/* The language's composition convention, offered, never set. */}
+          {bodyText.optimalLineBreaking && <CompositionHint fallbackLanguage={effectiveHyphenationLocale} />}
           <HyphenationLimitsFields {...ruleProps} />
           <HyphenateCompoundsField
             bodyText={bodyText}

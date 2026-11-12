@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'La interfaz del Sandbox: la barra de actividades; los paneles Texto, Libros, Capítulos, Recursos y Fuentes, y cómo se organiza la pantalla en un móvil.',
   lang: 'es',
-  lastUpdated: '2026-11-10',
-  readingTime: '34 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '35 min',
   order: 41,
   plainSummary: "El Sandbox es una herramienta gratuita de esta web para probar Postext sin instalar nada. Escribes el texto a un lado y ves las páginas terminadas al otro, y cambian mientras escribes. Esta página explica las partes de la pantalla y los paneles donde escribes el texto, organizas libros y capítulos, añades imágenes y eliges tipografías. Otras páginas explican los ajustes de diseño, las vistas previas, cómo guardar e importar, y cómo poner el Sandbox en tu propia web.",
 };
@@ -218,6 +218,7 @@ El panel **Plantillas**, entre Texto y Recursos, es el paso previo al diseño: e
 - **Guardar un diseño como plantilla**, desde este libro o desde cualquier otro libro del Sandbox, eligiendo qué partes incluye.
 - **Como estilo de capítulo**. Las partes elegidas de una plantilla (página y columnas, tipografía, colores, cabeceras) pasan a un [estilo de capítulo](/es/docs/configuration-styles#estilos-de-capítulo) del libro, nuevo o uno que ya tenga: solo lo que cambian respecto al libro, con el tamaño de página y la imprenta del libro. Se asigna a los capítulos que necesiten ese diseño (un anexo, los casos clínicos) en **Capítulos**, o con `chapterStyle:` en su preámbulo, y a una parte de un capítulo, desde una página nueva, con `::section{style="…"}`; el resto del libro conserva el suyo.
 - **Importar** (en la cabecera del panel) y **Exportar** (en cada plantilla) archivos `.postext-template.json` para compartirlas; las fuentes que no son redistribuibles no viajan. Las plantillas guardadas se pueden eliminar; las de serie, no.
+- **Convenciones de composición.** *Reglas de composición* es una parte aparte: las escaleras de guiones, la última palabra partida, los límites del diccionario, las repeticiones y el guion al pie de una columna. Aplicar la tipografía no las toca, y aplicarlas no toca nada más (una plantilla guardada antes conserva las reglas que lleva su tipografía). La galería incluye las convenciones de algunas tradiciones, que solo llevan estas reglas y solo fijan lo que la tradición pide con claridad: *Español (tradicional)* (ninguna línea con guion seguida de otra, ni última palabra partida, ni repeticiones, ni columna que acabe en guion), *Inglés (EE. UU.)* (como mucho tres líneas seguidas con guion, la última palabra entera), *Inglés (Reino Unido)* (como mucho dos, la última palabra entera), *Francés* (como mucho tres, la última palabra entera) y *Alemán* (como mucho tres). Prueba una, ajusta un valor y guarda las reglas del libro como convención propia marcando solo *Reglas de composición*. En un libro en varios idiomas la plantilla se aplica a la edición en pantalla, así que cada idioma puede seguir sus reglas. Cuando el idioma del libro tiene convención y sus reglas son otras, los ajustes de partición de Texto principal muestran una nota con **Aplicar**; nada cambia hasta que la pulsas, y **Deshacer** devuelve las reglas que tenías.
 
 #### Panel de recursos
 

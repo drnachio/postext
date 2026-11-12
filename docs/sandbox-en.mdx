@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: "The Sandbox's interface: the activity bar and the Text, Books, Chapters, Resources and Fonts panels, and the layout on phones",
   lang: 'en',
-  lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '31 min',
   order: 41,
   plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. This page explains the parts of the screen and the panels where you write the text, manage books and chapters, add pictures and choose fonts. Other pages cover the design settings, the previews, saving and importing, and putting the Sandbox in your own website.",
 };
@@ -218,6 +218,7 @@ The **Templates** panel, between Text and Resources, is the step before the desi
 - **Save a design as a template**, from this book or any other book in the Sandbox, choosing the parts it holds.
 - **As a chapter style**. The chosen parts of a template (page and columns, type, colours, running heads) become a [chapter style](/en/docs/configuration-styles#chapter-styles) of the book, new or one it has: only what they change over the book, the page size and print settings staying the book's. Give it to the chapters that need that design (an appendix, the clinical cases) in **Chapters**, or with `chapterStyle:` in their front matter, and to a part of a chapter, from a new page, with `::section{style="…"}`; the rest of the book keeps its own.
 - **Import** (in the panel's header) and **Export** (on each template) `.postext-template.json` files to share them; fonts that are not redistributable stay behind. Saved templates can be deleted; the built-in ones cannot.
+- **Composition conventions.** *Composition rules* is a part of its own: the hyphen ladders, the divided last word, the dictionary's limits, the stacks and a hyphen at the foot of a column. Applying the type leaves it as it is, and applying it touches nothing else (a template saved before keeps the rules its type holds). The gallery includes the conventions of some traditions, each holding only these rules and setting only what the tradition clearly asks for: *Spanish (traditional)* (no two hyphenated lines in a row, no divided last word, no stacks, no column ending on a hyphen), *English (US)* (at most three hyphenated lines in a row, the last word whole), *English (UK)* (at most two, the last word whole), *French* (at most three, the last word whole) and *German* (at most three). Try one, adjust a value and save the book's rules as a convention of your own by ticking only *Composition rules*. In a book in several languages a template is set on the edition on screen, so each language can follow its own rules. When the book's language has a convention and its rules differ, the hyphenation settings of Body text show a note with **Apply**; nothing changes until you click it, and **Undo** brings back the rules you had.
 
 #### Resources panel
 

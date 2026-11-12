@@ -5,8 +5,8 @@ export const metadata = {
   sidebarTitle: 'Sandbox',
   description: 'A interface do Sandbox: a barra de atividades, os painéis Texto, Livros, Capítulos, Recursos e Fontes, e a disposição da tela em celulares',
   lang: 'pt',
-  lastUpdated: '2026-11-10',
-  readingTime: '33 min',
+  lastUpdated: '2026-11-12',
+  readingTime: '34 min',
   order: 41,
   plainSummary: "O Sandbox é uma ferramenta gratuita deste site para experimentar o Postext sem instalar nada. Você escreve o texto de um lado e vê as páginas prontas do outro, e elas mudam enquanto você digita. Esta página explica as partes da tela e os painéis em que você escreve o texto, organiza livros e capítulos, inclui imagens e escolhe fontes. Outras páginas tratam dos ajustes de design, das visualizações, de como salvar e importar, e de como colocar o Sandbox no seu próprio site.",
 };
@@ -218,6 +218,7 @@ O painel **Modelos**, entre Texto e Recursos, é o passo anterior ao design: esc
 - **Guardar um design como modelo**, a partir deste livro ou de qualquer outro livro do Sandbox, escolhendo que partes inclui.
 - **Como estilo de capítulo**. As partes escolhidas de um modelo (página e colunas, tipografia, cores, cabeçalhos) passam a um estilo de capítulo do livro, novo ou um que já tenha: só o que mudam em relação ao livro, com o tamanho de página e a impressão do livro. Atribui-se aos capítulos que precisem desse design (um anexo, os casos clínicos) em **Capítulos**, ou com `chapterStyle:` no seu preâmbulo, e a uma parte de um capítulo, a partir de uma página nova, com `::section{style="…"}`; o resto do livro mantém o seu.
 - **Importar** (no cabeçalho do painel) e **Exportar** (em cada modelo) ficheiros `.postext-template.json` para os partilhar; as fontes não redistribuíveis ficam de fora. Os modelos guardados podem eliminar-se; os de origem, não.
+- **Convenções de composição.** *Regras de composição* é uma parte à parte: as escadas de hífenes, a última palavra dividida, os limites do dicionário, as repetições e o hífen no pé de uma coluna. Aplicar a tipografia não lhes toca, e aplicá-las não toca em mais nada (um modelo guardado antes mantém as regras que a sua tipografia leva). A galeria inclui as convenções de algumas tradições, que só levam estas regras e só fixam o que a tradição pede com clareza: *Espanhol (tradicional)* (nunca duas linhas seguidas com hífen, nem última palavra dividida, nem repetições, nem coluna que termine em hífen), *Inglês (EUA)* (no máximo três linhas seguidas com hífen, a última palavra inteira), *Inglês (Reino Unido)* (no máximo duas, a última palavra inteira), *Francês* (no máximo três, a última palavra inteira) e *Alemão* (no máximo três). Experimente uma, ajuste um valor e guarde as regras do livro como convenção sua marcando só *Regras de composição*. Num livro em várias línguas, um modelo aplica-se à edição no ecrã, por isso cada língua pode seguir as suas regras. Quando a língua do livro tem convenção e as suas regras são outras, as definições de hifenização do Texto principal mostram uma nota com **Aplicar**; nada muda até carregar, e **Desfazer** repõe as regras que tinha.
 
 #### Painel Recursos
 
