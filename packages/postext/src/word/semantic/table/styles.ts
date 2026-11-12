@@ -44,8 +44,8 @@ export function cellStyles(ctx: WriterContext, style: ResolvedTableStyleConfig, 
     basedOn: STYLE.normal,
     pPr: {
       // Narrow cells are not hyphenated (the engine sets a cell's words
-      // whole).
-      suppressAutoHyphens: true,
+      // whole) unless the table style hyphenates them (`hyphenation`).
+      suppressAutoHyphens: !style.hyphenation || undefined,
       before: 0,
       after: 0,
       // Exactly the engine's leading: a face with tall metrics would
