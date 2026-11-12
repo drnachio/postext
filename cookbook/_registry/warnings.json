@@ -1473,28 +1473,28 @@
       "it": "Stile di parte dopo il testo del capitolo"
     },
     "cause": {
-      "en": "A :::part fence that names a style stands after the chapter's text has started; a style applies to whole chapters, so it starts with the next chapter.",
-      "es": "Una línea :::part que nombra un estilo está después de empezado el texto del capítulo; un estilo se aplica a capítulos enteros, así que empieza en el capítulo siguiente.",
-      "ca": "Una línia :::part que anomena un estil és després que el text del capítol ja hagi començat; un estil s'aplica a capítols sencers, de manera que comença al capítol següent.",
-      "zh": "写了样式的:::part行位于该章正文开始之后；样式按整章生效，因此从下一章开始。",
-      "ar": "يقع سطر :::part الذي يسمّي نمطًا بعد أن بدأ نص الفصل؛ والنمط يسري على فصول كاملة، فيبدأ من الفصل التالي.",
-      "ja": "スタイルを指定した:::part行が、章の本文が始まった後にあります。スタイルは章単位で適用されるため、次の章から有効になります。",
-      "pt": "Uma linha :::part que nomeia um estilo vem depois que o texto do capítulo já começou; um estilo vale para capítulos inteiros, então começa no capítulo seguinte.",
-      "fr": "Une ligne :::part qui nomme un style se trouve après le début du texte du chapitre ; un style s’applique à des chapitres entiers, il commence donc au chapitre suivant.",
-      "de": "Eine Zeile :::part, die einen Stil nennt, steht nach dem Beginn des Kapiteltexts; ein Stil gilt für ganze Kapitel und beginnt daher mit dem nächsten Kapitel.",
-      "it": "Una riga :::part che nomina uno stile si trova dopo l’inizio del testo del capitolo; uno stile vale per capitoli interi, quindi comincia dal capitolo successivo."
+      "en": "A :::part fence that names a style stands after the chapter's text has started; a style applies to whole chapters, so it starts with the next chapter. A ::section{style=\"…\"} line from postext 1.78 raises it too: the line is no longer read and the text after it stays in the chapter.",
+      "es": "Una línea :::part que nombra un estilo está después de empezado el texto del capítulo; un estilo se aplica a capítulos enteros, así que empieza en el capítulo siguiente. También la da una línea ::section{style=\"…\"} de postext 1.78: la línea ya no se lee y el texto que la sigue queda en el capítulo.",
+      "ca": "Una línia :::part que anomena un estil és després que el text del capítol ja hagi començat; un estil s'aplica a capítols sencers, de manera que comença al capítol següent. També la dona una línia ::section{style=\"…\"} de postext 1.78: la línia ja no es llegeix i el text que la segueix queda dins el capítol.",
+      "zh": "写了样式的:::part行位于该章正文开始之后；样式按整章生效，因此从下一章开始。postext 1.78 的 ::section{style=\"…\"} 行也会引发此警告：该行已不再读取，其后的正文留在本章中。",
+      "ar": "يقع سطر :::part الذي يسمّي نمطًا بعد أن بدأ نص الفصل؛ والنمط يسري على فصول كاملة، فيبدأ من الفصل التالي. ويصدر كذلك عن سطر ::section{style=\"…\"} من postext 1.78: لم يعد السطر يُقرأ، ويبقى النص الذي يليه في الفصل.",
+      "ja": "スタイルを指定した:::part行が、章の本文が始まった後にあります。スタイルは章単位で適用されるため、次の章から有効になります。postext 1.78 の ::section{style=\"…\"} 行でも出ます。この行はもう読まれず、後に続く本文は章の中に残ります。",
+      "pt": "Uma linha :::part que nomeia um estilo vem depois que o texto do capítulo já começou; um estilo vale para capítulos inteiros, então começa no capítulo seguinte. Uma linha ::section{style=\"…\"} do postext 1.78 também o gera: a linha não é mais lida e o texto depois dela fica no capítulo.",
+      "fr": "Une ligne :::part qui nomme un style se trouve après le début du texte du chapitre ; un style s’applique à des chapitres entiers, il commence donc au chapitre suivant. Une ligne ::section{style=\"…\"} de postext 1.78 le déclenche aussi : la ligne n’est plus lue et le texte qui la suit reste dans le chapitre.",
+      "de": "Eine Zeile :::part, die einen Stil nennt, steht nach dem Beginn des Kapiteltexts; ein Stil gilt für ganze Kapitel und beginnt daher mit dem nächsten Kapitel. Auch eine Zeile ::section{style=\"…\"} aus postext 1.78 löst ihn aus: Die Zeile wird nicht mehr gelesen, und der Text danach bleibt im Kapitel.",
+      "it": "Una riga :::part che nomina uno stile si trova dopo l’inizio del testo del capitolo; uno stile vale per capitoli interi, quindi comincia dal capitolo successivo. Lo solleva anche una riga ::section{style=\"…\"} di postext 1.78: la riga non viene più letta e il testo che la segue resta nel capitolo."
     },
     "fix": {
-      "en": "Move the :::part fence to the top of the chapter, before its heading, or start a new chapter there.",
-      "es": "Lleva la línea :::part al principio del capítulo, antes de su encabezado, o empieza ahí un capítulo nuevo.",
-      "ca": "Porta la línia :::part al principi del capítol, abans del seu encapçalament, o comença-hi un capítol nou.",
-      "zh": "把:::part行移到该章开头、标题之前，或在那里另起一章。",
-      "ar": "انقل سطر :::part إلى أول الفصل، قبل عنوانه، أو ابدأ فصلًا جديدًا هناك.",
-      "ja": ":::part行を章の先頭、見出しの前に移すか、そこで新しい章を始めてください。",
-      "pt": "Leve a linha :::part para o começo do capítulo, antes do título, ou comece ali um capítulo novo.",
-      "fr": "Placez la ligne :::part en tête du chapitre, avant son titre, ou commencez là un nouveau chapitre.",
-      "de": "Setzen Sie die Zeile :::part an den Anfang des Kapitels, vor seine Überschrift, oder beginnen Sie dort ein neues Kapitel.",
-      "it": "Sposta la riga :::part all’inizio del capitolo, prima del titolo, oppure comincia lì un nuovo capitolo."
+      "en": "Move the :::part fence to the top of the chapter, before its heading, or start a new chapter there. For a ::section line, make the text after it a chapter of its own inside :::part{style=\"…\"}, or give that chapter chapterStyle: in its front matter.",
+      "es": "Lleva la línea :::part al principio del capítulo, antes de su encabezado, o empieza ahí un capítulo nuevo. Para una línea ::section, haz del texto que la sigue un capítulo propio dentro de :::part{style=\"…\"}, o da a ese capítulo chapterStyle: en su encabezado.",
+      "ca": "Porta la línia :::part al principi del capítol, abans del seu encapçalament, o comença-hi un capítol nou. Per a una línia ::section, fes del text que la segueix un capítol propi dins de :::part{style=\"…\"}, o dona a aquest capítol chapterStyle: a la capçalera.",
+      "zh": "把:::part行移到该章开头、标题之前，或在那里另起一章。对于 ::section 行，把其后的正文做成 :::part{style=\"…\"} 中独立的一章，或在该章的前置元数据中写 chapterStyle:。",
+      "ar": "انقل سطر :::part إلى أول الفصل، قبل عنوانه، أو ابدأ فصلًا جديدًا هناك. أما سطر ::section فاجعل النص الذي يليه فصلًا مستقلًا داخل :::part{style=\"…\"}، أو أعطِ ذلك الفصل chapterStyle: في بياناته التمهيدية.",
+      "ja": ":::part行を章の先頭、見出しの前に移すか、そこで新しい章を始めてください。::section 行の場合は、後に続く本文を :::part{style=\"…\"} の中の独立した章にするか、その章のフロントマターに chapterStyle: を書いてください。",
+      "pt": "Leve a linha :::part para o começo do capítulo, antes do título, ou comece ali um capítulo novo. Para uma linha ::section, transforme o texto depois dela num capítulo próprio dentro de :::part{style=\"…\"}, ou dê a esse capítulo chapterStyle: no front matter.",
+      "fr": "Placez la ligne :::part en tête du chapitre, avant son titre, ou commencez là un nouveau chapitre. Pour une ligne ::section, faites du texte qui la suit un chapitre à part dans :::part{style=\"…\"}, ou donnez à ce chapitre chapterStyle: dans son en-tête.",
+      "de": "Setzen Sie die Zeile :::part an den Anfang des Kapitels, vor seine Überschrift, oder beginnen Sie dort ein neues Kapitel. Bei einer Zeile ::section machen Sie den Text danach zu einem eigenen Kapitel in :::part{style=\"…\"} oder geben diesem Kapitel chapterStyle: im Frontmatter.",
+      "it": "Sposta la riga :::part all’inizio del capitolo, prima del titolo, oppure comincia lì un nuovo capitolo. Per una riga ::section, fai del testo che la segue un capitolo a sé dentro :::part{style=\"…\"}, oppure assegna a quel capitolo chapterStyle: nel front matter."
     },
     "docs": {
       "slug": "configuration-styles",

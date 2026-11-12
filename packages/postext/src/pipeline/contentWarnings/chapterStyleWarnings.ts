@@ -1,11 +1,13 @@
 // The chapter styles a chapter names (#1521): a `chapterStyle:` in its
 // front matter or a `:::part{style}` fence naming no style of the book,
-// and a styled part fence that does not open its chapter.
+// a styled part fence that does not open its chapter, and a
+// `::section{style}` line of postext 1.78, no longer read (#1532).
 import type { ContentBlock } from '../../parse/index.js';
 import { extractFrontmatter, type ParsedFrontmatter } from '../../parse/frontmatter.js';
 import type { BookChapterRange, ChapterStyleConfig } from '../../types.js';
 import type { ContentWarning } from '../../vdt.js';
 import { CHAPTER_STYLE_KEY, openingPart } from '../../defaults/chapterStyles.js';
+import { sectionBreakLines } from '../../parse/blockParser/sectionBreaks.js';
 
 /**
  * The chapter-style warnings of a chapter's source: `fm` is its front
@@ -49,6 +51,12 @@ export function chapterStyleWarnings(
     const range = { sourceStart: at, sourceEnd: b.sourceEnd + fm.contentOffset };
     if (!known.has(style)) out.push({ kind: 'chapterStyleUnknown', style, source: 'part', ...range });
     if (!opening) out.push({ kind: 'partStyleMidChapter', style, ...range });
+  }
+  // 1.78 switched style mid-chapter with `::section{style="…"}`: the parser
+  // reads the line as blank, so its text stays in the chapter, set in the
+  // chapter's settings.
+  for (const line of sectionBreakLines(markdown.slice(fm.contentOffset))) {
+    out.push({ kind: 'partStyleMidChapter', style: line.style ?? '', source: 'section', sourceStart: line.start + fm.contentOffset, sourceEnd: line.end + fm.contentOffset });
   }
   return out;
 }

@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "El llibre no té cap estil de capítol amb aquest id; el capítol es compon amb la configuració del llibre.",
     "warningsPartStyleMidChapterTitle": "Estil de part després de text del seu capítol",
     "warningsPartStyleMidChapterDetail": "Aquest capítol manté la seva pròpia configuració; l'estil comença amb el capítol següent. Comença un capítol amb :::part perquè la part prengui el seu estil des d'allà.",
+    "warningsSectionLineTitle": "Línia ::section de postext 1.78",
+    "warningsSectionLineDetail": "Ja no es llegeix: el text que la segueix queda dins el capítol, amb els ajustos del capítol. Per compondre'l amb un estil de capítol, fes-ne un capítol propi dins de :::part'{'style=\"…\"'}', o dona a aquest capítol chapterStyle: a la capçalera.",
     "warningsUnknownCalloutTypeTitle": "Tipus de requadre desconegut",
     "warningsUnknownCalloutTypeDetail": "No hi ha cap estil de requadre amb aquest id a la configuració.",
     "warningsExerciseUnknownTypeTitle": "Tipus d'exercici desconegut",

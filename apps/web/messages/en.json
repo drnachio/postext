@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "No chapter style with this id exists in the book; the chapter is set in the book's settings.",
     "warningsPartStyleMidChapterTitle": "Part style after text of its chapter",
     "warningsPartStyleMidChapterDetail": "This chapter keeps its own settings; the style starts with the next chapter. Start a chapter with :::part to set the part in its style from there.",
+    "warningsSectionLineTitle": "::section line from postext 1.78",
+    "warningsSectionLineDetail": "No longer read: the text after it stays in the chapter, in the chapter's settings. To set it in a chapter style, make it a chapter of its own inside :::part'{'style=\"…\"'}', or give that chapter chapterStyle: in its front matter.",
     "warningsUnknownCalloutTypeTitle": "Unknown callout type",
     "warningsUnknownCalloutTypeDetail": "No callout style with this id exists in the configuration.",
     "warningsExerciseUnknownTypeTitle": "Unknown exercise type",

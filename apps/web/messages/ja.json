@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "このIDの章スタイルは本にありません。章は本の設定で組まれます。",
     "warningsPartStyleMidChapterTitle": "章の本文のあとにある部のスタイル",
     "warningsPartStyleMidChapterDetail": "この章は自分の設定のまま組まれ、スタイルは次の章から始まります。そこから部をそのスタイルで組むには、章を :::part で始めてください。",
+    "warningsSectionLineTitle": "postext 1.78 の ::section 行",
+    "warningsSectionLineDetail": "この行はもう読まれません。後に続く本文は章の中に残り、章の設定で組まれます。章スタイルで組むには、その本文を :::part'{'style=\"…\"'}' の中の独立した章にするか、その章のフロントマターに chapterStyle: を書いてください。",
     "warningsUnknownCalloutTypeTitle": "不明な囲みの種類",
     "warningsUnknownCalloutTypeDetail": "このIDの囲みスタイルは設定にありません。",
     "warningsExerciseUnknownTypeTitle": "不明な問題の種類",

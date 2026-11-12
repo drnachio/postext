@@ -441,7 +441,8 @@ H&J / Knuth–Plass
 │                        the rule, write a no-break space in the Markdown
 ├─ operatorBreaks     'allow'; operatorBreakPenalty 10000   ≥ 1.79 a line that ends or starts on a lone `= < > ≤ ≥ ± × ≈ ≠ ÷ − + · →`
 │                        set between spaces (`p < 0.05`): same levels, an `operatorBreak` warning (edge 'end'|'start'), 'avoid' prices the
-│                        spaces on both sides of the sign, same blocks
+│                        spaces on both sides of the sign, same blocks. 1.78's `bindCitations` / `bindOperators: true`
+│                        read as 'avoid' (write the new keys)
 ├─ kashida            'auto'|'none'   'auto' in an Arabic-script document, else 'none'   justified Arabic lines open spaces ≤ 1.25× then insert whole tatweels (U+0640) at raqim-kashida points; never Latin/digits/headings/ragged/last lines; plain and PDF-copied text leave them out
 ├─ kashidaPatterns    'auto'|'naskh'|'simple'|'nastaliq'   'auto' (from the body font: Ruqʿa/Dīwānī e.g. Aref Ruqaa → none, Nastaʿlīq → nastaliq, else naskh)
 ├─ kashidaPerWord     1       elongations per word
@@ -2595,6 +2596,8 @@ A book can hold named designs, and a chapter is laid out with one of them over t
 - A `chapterStyle:` or part `style` naming an unknown id raises `chapterStyleUnknown`; the chapter is laid out
   with the book's settings.
 - There is no style for part of a chapter: split the chapter, or use a heading style (§19g) for one section.
+  1.78's `::section{style="…"}` line is no longer read (its text stays in the chapter, `partStyleMidChapter`
+  with `source: 'section'`).
 - The Word export reads the styles too: in the formatted `.docx` each chapter is a Word section with its
   style's margins, columns and page numbering, and a paragraph or character style the chapter style sets
   otherwise gets a version named after it (`Normal (Appendix)`, id `NormalCs1`); the round trip gives back

@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "Il libro non ha uno stile di capitolo con questo id; il capitolo viene composto con le impostazioni del libro.",
     "warningsPartStyleMidChapterTitle": "Stile di parte dopo il testo del suo capitolo",
     "warningsPartStyleMidChapterDetail": "Questo capitolo mantiene le sue impostazioni; lo stile comincia dal capitolo successivo. Apri un capitolo con :::part perché la parte prenda il suo stile da lì.",
+    "warningsSectionLineTitle": "Riga ::section di postext 1.78",
+    "warningsSectionLineDetail": "Non viene più letta: il testo che la segue resta nel capitolo, con le impostazioni del capitolo. Per comporlo in uno stile di capitolo, fanne un capitolo a sé dentro :::part'{'style=\"…\"'}', oppure assegna a quel capitolo chapterStyle: nel front matter.",
     "warningsUnknownCalloutTypeTitle": "Tipo di riquadro sconosciuto",
     "warningsUnknownCalloutTypeDetail": "Nella configurazione non esiste uno stile di riquadro con questo id.",
     "warningsExerciseUnknownTypeTitle": "Tipo di esercizio sconosciuto",

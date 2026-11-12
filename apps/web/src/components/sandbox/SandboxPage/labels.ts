@@ -398,6 +398,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsChapterStyleUnknownDetail: t("warningsChapterStyleUnknownDetail"),
     warningsPartStyleMidChapterTitle: t("warningsPartStyleMidChapterTitle"),
     warningsPartStyleMidChapterDetail: t("warningsPartStyleMidChapterDetail"),
+    warningsSectionLineTitle: t("warningsSectionLineTitle"),
+    warningsSectionLineDetail: t("warningsSectionLineDetail"),
     warningsUnknownCalloutTypeTitle: t("warningsUnknownCalloutTypeTitle"),
     warningsUnknownCalloutTypeDetail: t("warningsUnknownCalloutTypeDetail"),
     warningsExerciseUnknownTypeTitle: t("warningsExerciseUnknownTypeTitle"),

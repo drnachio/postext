@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "本书没有这个ID的章样式；该章按全书设置排版。",
     "warningsPartStyleMidChapterTitle": "篇样式位于本章正文之后",
     "warningsPartStyleMidChapterDetail": "本章保留自己的设置；该样式从下一章开始。若要从这里起按该样式排版此篇，请让一章以 :::part 开头。",
+    "warningsSectionLineTitle": "postext 1.78 的 ::section 行",
+    "warningsSectionLineDetail": "此行已不再读取：其后的正文留在本章中，按本章的设置排版。若要按某个章样式排版，请把这段正文做成 :::part'{'style=\"…\"'}' 中独立的一章，或在该章的前置元数据中写 chapterStyle:。",
     "warningsUnknownCalloutTypeTitle": "未知标注框类型",
     "warningsUnknownCalloutTypeDetail": "配置中没有这个ID的标注框样式。",
     "warningsExerciseUnknownTypeTitle": "未知的练习类型",

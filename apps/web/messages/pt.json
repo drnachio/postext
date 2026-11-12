@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "O livro não tem nenhum estilo de capítulo com este id; o capítulo é composto com as configurações do livro.",
     "warningsPartStyleMidChapterTitle": "Estilo de parte depois de texto do seu capítulo",
     "warningsPartStyleMidChapterDetail": "Este capítulo mantém as próprias configurações; o estilo começa no capítulo seguinte. Comece um capítulo com :::part para que a parte adote o seu estilo a partir dali.",
+    "warningsSectionLineTitle": "Linha ::section do postext 1.78",
+    "warningsSectionLineDetail": "Não é mais lida: o texto que vem depois dela fica no capítulo, com as configurações do capítulo. Para compô-lo num estilo de capítulo, transforme-o num capítulo próprio dentro de :::part'{'style=\"…\"'}', ou dê a esse capítulo chapterStyle: no front matter.",
     "warningsUnknownCalloutTypeTitle": "Tipo de boxe desconhecido",
     "warningsUnknownCalloutTypeDetail": "Não existe na configuração nenhum estilo de boxe com este id.",
     "warningsExerciseUnknownTypeTitle": "Tipo de exercício desconhecido",

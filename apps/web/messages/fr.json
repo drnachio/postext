@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "Le livre n’a aucun style de chapitre avec cet identifiant ; le chapitre est composé avec les réglages du livre.",
     "warningsPartStyleMidChapterTitle": "Style de partie après du texte de son chapitre",
     "warningsPartStyleMidChapterDetail": "Ce chapitre garde ses propres réglages ; le style commence au chapitre suivant. Ouvrez un chapitre avec :::part pour que la partie prenne son style à partir de là.",
+    "warningsSectionLineTitle": "Ligne ::section de postext 1.78",
+    "warningsSectionLineDetail": "Elle n'est plus lue : le texte qui la suit reste dans le chapitre, avec les réglages du chapitre. Pour le composer dans un style de chapitre, faites-en un chapitre à part dans :::part'{'style=\"…\"'}', ou donnez à ce chapitre chapterStyle: dans son en-tête.",
     "warningsUnknownCalloutTypeTitle": "Type d’encadré inconnu",
     "warningsUnknownCalloutTypeDetail": "Aucun style d’encadré avec cet identifiant n’existe dans la configuration.",
     "warningsExerciseUnknownTypeTitle": "Type d’exercice inconnu",

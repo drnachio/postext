@@ -12,6 +12,7 @@ import { parseAttrBlobStrict, parseDirectiveAttrs, scanDirectiveAttrs } from './
 import { fixMathSourceMap } from './inlineMath.js';
 import { buildBlockMapping } from './sourceMapping.js';
 import { attachIndexMarks, extractIndexMarks, remapParseOffsets } from './indexMarks.js';
+import { blankSectionBreaks } from './blockParser/sectionBreaks.js';
 import { joinEastAsianLines } from './softBreaks.js';
 import { codeFenceOpen } from './codeFence.js';
 import { createVerseParsing } from './blockParser/verse.js';
@@ -257,9 +258,12 @@ export function parseMarkdown(markdown: string, options?: ParseOptions): Content
  * are taken out first and attached to the blocks holding them
  * (`ContentBlock.indexMarks`); every source offset still points into
  * `markdown`. `options` picks how code is read (#624): fences on, indented
- * code off by default.
+ * code off by default. A `::section` line of postext 1.78 is read as a
+ * blank line (see `sectionBreaks.ts`).
  */
-export function parseMarkdownWithIssues(markdown: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+export function parseMarkdownWithIssues(source: string, options?: ParseOptions): { blocks: ContentBlock[]; issues: ParseIssue[] } {
+  // 1.78's `::section{style="…"}` lines read as blank (#1532).
+  const markdown = blankSectionBreaks(source);
   const marks = extractIndexMarks(markdown, { fences: options?.fences !== false });
   if (!marks) return attachInlineCode(attachDirections(attachContainerAnchors(attachEquationAnchors(parseBlocks(markdown, options), markdown))), markdown);
   const result = parseBlocks(marks.text, options);

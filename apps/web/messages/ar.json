@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "لا يوجد في الكتاب نمط فصل بهذا المعرّف؛ يُنضَّد الفصل بإعدادات الكتاب.",
     "warningsPartStyleMidChapterTitle": "نمط جزء بعد نص من فصله",
     "warningsPartStyleMidChapterDetail": "يحتفظ هذا الفصل بإعداداته، ويبدأ النمط من الفصل التالي. ابدأ فصلًا بـ :::part ليأخذ الجزء نمطه من هناك.",
+    "warningsSectionLineTitle": "سطر ::section من postext 1.78",
+    "warningsSectionLineDetail": "لم يعد هذا السطر يُقرأ: يبقى النص الذي يليه في الفصل بإعدادات الفصل. لتنضيده بنمط فصل، اجعله فصلًا مستقلًا داخل :::part'{'style=\"…\"'}'، أو أعطِ ذلك الفصل chapterStyle: في بياناته التمهيدية.",
     "warningsUnknownCalloutTypeTitle": "نوع إطار غير معروف",
     "warningsUnknownCalloutTypeDetail": "لا يوجد في الإعدادات نمط إطار بهذا المعرّف.",
     "warningsExerciseUnknownTypeTitle": "نوع تمرين غير معروف",

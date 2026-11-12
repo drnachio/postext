@@ -445,6 +445,8 @@ export interface SandboxLabels {
   warningsChapterStyleUnknownDetail: string;
   warningsPartStyleMidChapterTitle: string;
   warningsPartStyleMidChapterDetail: string;
+  warningsSectionLineTitle: string;
+  warningsSectionLineDetail: string;
   warningsUnknownCalloutTypeTitle: string;
   warningsUnknownCalloutTypeDetail: string;
   warningsExerciseUnknownTypeTitle: string;

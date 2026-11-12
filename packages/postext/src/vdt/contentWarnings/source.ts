@@ -43,8 +43,13 @@ export type SourceWarning =
   /** A `:::part{style}` fence after text of its chapter: the chapter it
    *  stands in keeps its own settings, and the style starts with the next
    *  chapter. Open the chapter with the fence (or move it to a chapter of
-   *  its own) to set the part's first pages in its style. */
-  | { kind: 'partStyleMidChapter'; style: string }
+   *  its own) to set the part's first pages in its style. With `source:
+   *  'section'`, a `::section{style}` line of postext 1.78 (#1532), no
+   *  longer read: the text after it stays in the chapter, in the chapter's
+   *  settings (`style` is empty for a bare `::section`). Make that text a
+   *  chapter of its own inside a `:::part{style}`, or give its chapter
+   *  `chapterStyle:` in its front matter. */
+  | { kind: 'partStyleMidChapter'; style: string; source?: 'section' }
   /** `:::callout{type}` names none of the configured callout styles: the box
    *  takes the first one. Not raised while `calloutStyles` is unset or
    *  empty (every type is then the built-in plain box). */

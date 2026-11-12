@@ -71,7 +71,11 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
         : `The chapter names the chapter style "${w.style}", which the book does not define — it is set in the book's settings`;
       break;
     case 'partStyleMidChapter':
-      text = `The part with the chapter style "${w.style}" stands after text of its chapter — the style starts with the next chapter; open a chapter with the fence to set it from there`;
+      text = w.source === 'section'
+        ? (w.style
+          ? `The line ::section{style="${w.style}"} of postext 1.78 is no longer read — the text after it stays in the chapter, in the chapter's settings; make that text a chapter of its own inside :::part{style="${w.style}"}, or give that chapter chapterStyle: ${w.style} in its front matter`
+          : 'The line ::section of postext 1.78 is no longer read — the chapter goes on in its own settings; the line can go')
+        : `The part with the chapter style "${w.style}" stands after text of its chapter — the style starts with the next chapter; open a chapter with the fence to set it from there`;
       break;
     case 'unknownCalloutType':
       text = `Unknown callout type "${w.type}" — the box takes the first callout style`;

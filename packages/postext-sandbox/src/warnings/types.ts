@@ -114,10 +114,10 @@ export type WarningPayload =
   /** A `:::paragraphs{style="…"}` container names a style id that is not in
    *  `config.paragraphStyles`; the paragraphs render as body text. */
   | { kind: 'unknownParagraphStyle'; style: string }
-  /** #1521: a `chapterStyle:` or `:::part{style}` (`source`) naming no
-   *  chapter style; a `:::part{style}` after text of its chapter. */
+  /** #1521: a `chapterStyle:` or `:::part{style}` (`source`) naming no chapter style;
+   *  a `:::part{style}` after text of its chapter, or 1.78's `::section` (#1532). */
   | { kind: 'chapterStyleUnknown'; style: string; source: 'frontmatter' | 'part' }
-  | { kind: 'partStyleMidChapter'; style: string }
+  | { kind: 'partStyleMidChapter'; style: string; source?: 'section' }
   /** A `:::callout{type="…"}` container names a type that is not in
    *  `config.calloutStyles`. */
   | { kind: 'unknownCalloutType'; type: string }

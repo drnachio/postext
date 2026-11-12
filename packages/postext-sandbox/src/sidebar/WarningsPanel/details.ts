@@ -156,6 +156,7 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
     case 'chapterStyleUnknown':
       return `${payload.source === 'part' ? `:::part{style="${payload.style}"}` : `chapterStyle: ${payload.style}`} — ${labels.warningsChapterStyleUnknownDetail}`;
     case 'partStyleMidChapter':
+      if (payload.source === 'section') return `${payload.style ? `::section{style="${payload.style}"}` : '::section'} — ${labels.warningsSectionLineDetail}`;
       return `:::part{style="${payload.style}"} — ${labels.warningsPartStyleMidChapterDetail}`;
     case 'unknownCalloutType':
       return `:::callout{type="${payload.type}"} — ${labels.warningsUnknownCalloutTypeDetail}`;

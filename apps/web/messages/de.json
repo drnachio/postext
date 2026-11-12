@@ -1050,6 +1050,8 @@
     "warningsChapterStyleUnknownDetail": "Das Buch hat keinen Kapitelstil mit dieser ID; das Kapitel wird mit den Einstellungen des Buchs gesetzt.",
     "warningsPartStyleMidChapterTitle": "Teilstil nach Text seines Kapitels",
     "warningsPartStyleMidChapterDetail": "Dieses Kapitel behält seine eigenen Einstellungen; der Stil beginnt mit dem nächsten Kapitel. Beginnen Sie ein Kapitel mit :::part, damit der Teil ab dort in seinem Stil gesetzt wird.",
+    "warningsSectionLineTitle": "::section-Zeile aus postext 1.78",
+    "warningsSectionLineDetail": "Wird nicht mehr gelesen: Der Text danach bleibt im Kapitel, mit den Einstellungen des Kapitels. Um ihn in einem Kapitelstil zu setzen, machen Sie daraus ein eigenes Kapitel in :::part'{'style=\"…\"'}' oder geben Sie diesem Kapitel chapterStyle: im Frontmatter.",
     "warningsUnknownCalloutTypeTitle": "Unbekannter Kastentyp",
     "warningsUnknownCalloutTypeDetail": "In der Konfiguration gibt es keinen Kastenstil mit dieser ID.",
     "warningsExerciseUnknownTypeTitle": "Unbekannter Übungstyp",

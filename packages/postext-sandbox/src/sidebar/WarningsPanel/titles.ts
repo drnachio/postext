@@ -87,7 +87,7 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
     case 'chapterStyleUnknown':
       return labels.warningsChapterStyleUnknownTitle;
     case 'partStyleMidChapter':
-      return labels.warningsPartStyleMidChapterTitle;
+      return payload.source === 'section' ? labels.warningsSectionLineTitle : labels.warningsPartStyleMidChapterTitle;
     case 'unknownCalloutType':
       return labels.warningsUnknownCalloutTypeTitle;
     case 'exerciseUnknownType':

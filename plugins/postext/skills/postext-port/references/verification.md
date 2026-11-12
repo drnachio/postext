@@ -368,6 +368,8 @@ those lines, or run the script.
   a part fence naming a style stands after the chapter's text has started (move it to the top of the chapter,
   before the `# H1`; until then the style starts with the next chapter); a chapter style sets a book-wide key or
   the page trim (configuration.md §19g2), which the style cannot change: move it to the book's config.
+  `partStyleMidChapter` with `source: 'section'` is a `::section{style}` line written for postext 1.78: no longer
+  read, its text stays in the chapter; make that text a chapter inside `:::part{style}` or give it `chapterStyle:`.
 - `WARN dropCap` reason `inBox` (postext ≥ 1.38): a drop cap asked inside a `:::callout` is not set (a frame
   of a composed page is running text and takes it). Reason `split` (≥ 1.39): a paragraph whose piece with the
   initial has fewer lines than the initial sinks and goes on in another piece: the frame is too short for the
