@@ -130,7 +130,13 @@ def test_design_idml_and_build_args():
     calls = _Calls(client)
     client.design("book/", out="d.postext", parts=["page", "headings"], design_name="Novel", id="novel", description="Novels")
     assert calls.calls[-1][0] == "design" and calls.calls[-1][1][0] == "book/"
-    assert calls.options() == {"--out": "d.postext", "--parts": "page,headings", "--design-name": "Novel", "--id": "novel", "--description": "Novels"}
+    assert calls.options() == {
+        "--out": "d.postext",
+        "--parts": "page,headings",
+        "--design-name": "Novel",
+        "--id": "novel",
+        "--description": "Novels",
+    }
     client.design_bytes(b"PK\x03\x04", parts="text")
     assert calls.calls[-1][2] is True and calls.options()["--out"] == "-"
     client.idml("book/", out="b.idml", images="link", lines="reflow", spreads="single", fonts=True, design="d.postext")
