@@ -89,7 +89,7 @@ export function designTools(host: SandboxToolHost): WebMcpTool[] {
     {
       name: 'sandbox_list_designs',
       title: 'List the designs',
-      description: 'The designs the Design panel offers: the ones the reader saved or imported, the ones the Sandbox ships and the designs of the sample books, each with the parts it holds (the Design panel\'s groups: page, writing, colors, text, headings…). Also says which design is being tried on the book on screen, and the parts a chapter style can take.',
+      description: 'The designs the Design panel offers: the ones the reader saved or imported, the ones the Sandbox ships and the designs of the sample books, each with the parts it holds (the Design panel\'s groups: page, writing, colors, text, composition, headings…; composition is a language\'s composition rules, and the shipped composition-* designs hold that part alone). Also says which design is being tried on the book on screen, and the parts a chapter style can take.',
       inputSchema: { type: 'object', properties: {}, additionalProperties: false },
       annotations: { readOnlyHint: true },
       execute: async () => {

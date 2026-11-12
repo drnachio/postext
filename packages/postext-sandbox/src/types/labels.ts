@@ -4984,6 +4984,18 @@ export interface SandboxLabels {
   settingsGroupOutputDescription: string;
   settingsGroupFolio: string;
   settingsGroupFolioDescription: string;
+  settingsGroupComposition: string;
+  settingsGroupCompositionDescription: string;
+  compositionSection: string;
+  compositionGroupWordDivision: string;
+  compositionGroupHyphens: string;
+  compositionGroupLineEdges: string;
+  compositionHyphensNeedOptimal: string;
+  compositionHintAvailable: string;
+  compositionHintApply: string;
+  compositionHintApplied: string;
+  compositionHintUndo: string;
+  compositionHintUndone: string;
   pageTemplatesGroupBox: string;
   pageTemplatesGroupBoxUnion: string;
   pageTemplatesGroupBoxTooltip: string;

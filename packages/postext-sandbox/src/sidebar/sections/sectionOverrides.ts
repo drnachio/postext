@@ -4,6 +4,7 @@
 
 import type { PostextConfig } from 'postext';
 import { isDefaultColorPalette } from 'postext';
+import { holdsBodyText, holdsComposition } from './composition/compositionSlots.js';
 import { SETTINGS_GROUPS, SETTINGS_SECTIONS, type SettingsGroupId, type SettingsSectionEntry, type SettingsSectionId } from './registry.js';
 
 function hasKeys(v: unknown): boolean {
@@ -36,8 +37,11 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'modules':
     case 'frameStyles':
       return false;
+    // The composition rules are their own section's (#1540).
     case 'bodyText':
-      return hasKeys(config.bodyText);
+      return holdsBodyText(config);
+    case 'composition':
+      return holdsComposition(config);
     case 'writing':
       return config.locale !== undefined || config.layout?.writingMode !== undefined || config.page?.binding !== undefined;
     case 'calloutStyles':

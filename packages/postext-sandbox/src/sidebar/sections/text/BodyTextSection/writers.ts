@@ -2,6 +2,7 @@
 // hyphenation settings and the alignment, which may drop the justified-only
 // hyphenation settings.
 import { type BodyTextConfig, type HyphenationConfig, isCjkLanguage } from 'postext';
+import { compositionOnly } from '../../composition/compositionSlots.js';
 import type { SandboxAction } from '../../../../context/SandboxContext/state.js';
 
 /** What createBodyTextWriters takes from the section. */
@@ -22,11 +23,12 @@ export function createBodyTextWriters(deps: BodyTextWritersDeps) {
     });
   };
 
-  // The document language is kept: it is set under Writing system.
+  // The document language is kept: it is set under Writing system. So are
+  // the composition rules, which have their own section (#1540).
   const resetBodyText = () => {
     dispatch({
       type: 'UPDATE_CONFIG',
-      payload: { bodyText: undefined },
+      payload: { bodyText: compositionOnly(raw) },
     });
   };
 
@@ -53,10 +55,12 @@ export function createBodyTextWriters(deps: BodyTextWritersDeps) {
   const handleTextAlignChange = (value: string) => {
     const textAlign = value as BodyTextConfig['textAlign'];
     // Going ragged drops the justified-only hyphenation settings, unless
-    // ragged text hyphenates too.
+    // ragged text hyphenates too; the composition rules stay (#1540).
     if (textAlign === 'left' && !raw?.hyphenation?.ragged) {
       const next: BodyTextConfig = { ...raw, textAlign };
-      delete next.hyphenation;
+      const kept = compositionOnly({ hyphenation: raw?.hyphenation })?.hyphenation;
+      if (kept) next.hyphenation = kept;
+      else delete next.hyphenation;
       const hasKeys = Object.keys(next).length > 0;
       dispatch({
         type: 'UPDATE_CONFIG',
