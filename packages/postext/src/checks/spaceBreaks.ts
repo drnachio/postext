@@ -3,9 +3,9 @@
 // a piece of one, or that ends or starts on a relation or operator set
 // between spaces, read off the lines with the rules the line breaker
 // prices under `bodyText.citationBreaks` and `operatorBreaks: 'avoid'`
-// (`measure/spaceBreaks.ts`). What `'warn'` and `'avoid'` report.
+// (`measure/spaces.ts`). What `'warn'` and `'avoid'` report.
 import type { VDTBlock, VDTDocument } from '../vdt.js';
-import { ruledSpaces } from '../measure/spaceBreaks.js';
+import { ruledSpaces } from '../measure/spaces.js';
 import { pageIsVertical } from '../vdt/flowFrames.js';
 
 /** A break at a ruled space: between lines `line` and `line + 1` of

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/build.js';
-import { ruledSpaces, spaceBreakDemerits } from '../../../measure/spaceBreaks.js';
+import { ruledSpaces, spaceBreakDemerits } from '../../../measure/spaces.js';
 import { spaceBreaking } from '../../../pipeline/text/spaceBreaks.js';
 import { findSpaceBreaks } from '../../../checks/spaceBreaks.js';
 import { resolveBodyTextConfig, stripBodyTextDefaults } from '../../../defaults/index.js';

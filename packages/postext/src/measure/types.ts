@@ -1,5 +1,5 @@
 import type { VDTLine } from '../vdt.js';
-import type { SpaceBreakCosts } from './spaceBreaks.js';
+import type { SpaceBreakCosts } from './spaces.js';
 import type { CjkWordBreak, TextAlign, WritingMode } from '../types.js';
 import type { CjkLineBreakLevel } from './cjk/cjkClasses.js';
 import type { CjkComposition } from './cjk/cjkPunctuation.js';
