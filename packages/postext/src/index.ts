@@ -173,8 +173,7 @@ export { classifyPages } from './pipeline/pages/pageRoles.js';
 export { migrateLegacyHeaderFooterConfig, isLegacyHeaderFooterSlot, resolveDesignSlot, stripDesignSlotDefaults, defaultTextOverflow, DEFAULT_BOX_ELEMENT } from './defaults/structure/headerFooter.js';
 export type { DesignSlotKind } from './defaults/structure/headerFooter.js';
 export type {
-  PostextContent,
-  BookChapterRange,
+  PostextContent, BookChapterRange,
   LayoutContinuation,
   OutlineEntry,
   HeadingStyleConfig,
