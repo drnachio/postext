@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Resources and tables',
   description: 'Resource types and their numbering, table and caption styles, single-ink diagrams and printed videos',
   lang: 'en',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '41 min',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>Horizontal alignment of the caption lines. <code>'justify'</code> spreads every line but the last to the full width. On a caption bar the lines align inside its padding; a side caption aligns within its own width.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Break the caption as the body text is broken: the same line breaker, within the body's word-spacing limits when justified, words divided when the body text is hyphenated, and the body's hyphenation and stack rules (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). The numbered label is never divided. Off: line by line, no word divided.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>the body's leading, in proportion</td>
+      <td>The caption's leading. <code>em</code> is relative to the caption's own size.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ The `note` sub-object styles `Resource.note`, a short run (source, credits, a re
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the note lines, as <code>align</code> for the caption.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Break the note as the body text is broken, as <code>bodyBreaking</code> for the caption.</td>
     </tr>
   </tbody>
 </table>

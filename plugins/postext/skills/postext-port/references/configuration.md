@@ -1769,6 +1769,10 @@ heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink)
 fontFamily, fontSize, color  → body text (label and description share family+size: engine limit)
 figureStyle                  label and description (§20a); unset = the body's figures when in the body family
 align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
+bodyBreaking = false: true breaks the caption as the body (optimal breaker, word-spacing limits,
+   hyphenated when the body is, the body's hyphenation and stack rules; the label never divided).
+   Port a source whose captions are justified and hyphenated as its text with true.
+lineHeight (unset = the body's leading in proportion to the caption size; em = caption size)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
@@ -1776,7 +1780,8 @@ labelNumberGap = ' ' (no-break space) between label and number; labelSeparator =
 descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
-note = { fontSize = 0.85×caption size, color = caption color, italic = false, gap = 0.35em, align = 'left' }
+note = { fontSize = 0.85×caption size, color = caption color, italic = false, gap = 0.35em, align = 'left',
+         bodyBreaking = false }
 ```
 Per-type: `resourceTypes[].captionStyle` partial (e.g. tables `{position:'above'}`).
 Caption text supports inline markdown; a bold lead sentence is written as `**…**` in the caption.

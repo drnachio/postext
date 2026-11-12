@@ -232,6 +232,9 @@ export interface CaptionNoteStyleConfig {
   gap?: Dimension;
   /** Horizontal alignment of the note. Default `'left'`. */
   align?: TextAlignKeyword;
+  /** Break the note as the body text is broken (see
+   *  {@link CaptionStyleConfig.bodyBreaking}). Default `false`. */
+  bodyBreaking?: boolean;
 }
 
 /** The look of a caption's note with every default filled in. */
@@ -241,6 +244,7 @@ export interface ResolvedCaptionNoteStyleConfig {
   italic: boolean;
   gap: Dimension;
   align: TextAlign;
+  bodyBreaking: boolean;
 }
 
 /** User-facing styling for resource captions (the numbered label such as
@@ -261,6 +265,16 @@ export interface CaptionStyleConfig {
   color?: ColorValue;
   /** Horizontal alignment of caption text. Default `'left'`. */
   align?: TextAlignKeyword;
+  /** Break the caption as the body text is broken: on the optimal line
+   *  breaker when the body uses it (within the body's word-spacing limits
+   *  when justified, with the ragged right-hand glue otherwise), its words
+   *  divided when the body's hyphenation is on, under the body's
+   *  hyphenation and stack rules. The numbered label is never divided.
+   *  Default `false`: line by line with no word divided, as before. */
+  bodyBreaking?: boolean;
+  /** The caption's leading. `em` is relative to its own font size.
+   *  Unset: the body text's leading in proportion to the caption's size. */
+  lineHeight?: Dimension;
   /** Gap between the figure body and the caption. Default `0.75em`. */
   gap?: Dimension;
   /** Render the numbered label bold. Default `true`. */
@@ -299,6 +313,8 @@ export interface ResolvedCaptionStyleConfig {
   fontSize: Dimension;
   color: ColorValue;
   align: TextAlign;
+  bodyBreaking: boolean;
+  lineHeight?: Dimension;
   gap: Dimension;
   labelBold: boolean;
   labelItalic: boolean;

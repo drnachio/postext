@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'リソースと表',
   description: 'リソースの種類とその番号付け、表とキャプションのスタイル、単色のダイアグラム、紙面上の動画',
   lang: 'ja',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '45分',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>キャプションの行の水平方向のそろえです。<code>'justify'</code>は最後の行以外を全幅に広げます。キャプションの帯の上では、行は帯の内側余白の内側でそろい、横に置くキャプションは自身の幅の中でそろいます。</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>キャプションを本文と同じ方法で行分割します。同じ行分割アルゴリズムを使い、両端揃えでは本文の語間の上限内に収め、本文がハイフネーションするときは単語を分割し、本文のハイフネーションと階段の規則（<code>bodyText.hyphenation</code>、<code>bodyText.stacks</code>）に従います。番号ラベルは分割しません。オフ：1 行ずつ、単語を分割しません。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>本文の行送りに比例</td>
+      <td>キャプションの行送り。<code>em</code> はキャプション自身の文字サイズ基準です。</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ const config: PostextConfig = {
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>注記の行の水平方向のそろえ。キャプションの<code>align</code>と同じです。</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>注をキャプションの <code>bodyBreaking</code> と同じく本文の方法で行分割します。</td>
     </tr>
   </tbody>
 </table>

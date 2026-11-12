@@ -3333,6 +3333,10 @@ export const DEFAULT_LABELS: SandboxLabels = {
   // Caption styling section
   captionStyleSection: 'Captions',
   captionGap: 'Gap above',
+  captionLineHeight: "Leading",
+  captionLineHeightTooltip: "The caption's line spacing. em is relative to its own size. Unset, the body text's leading in proportion to the caption's size.",
+  captionBodyBreaking: "Break as the body text",
+  captionBodyBreakingTooltip: "Break the lines as the body text is broken: the same line breaker, the same word-spacing limits when justified, words divided when the body text is hyphenated, and the same hyphenation and stack rules. The number label is never divided. Off: line by line, no word divided.",
   captionLabelGroup: 'Numbered label',
   captionLabelNumberGap: 'Before the number',
   captionLabelNumberGapTooltip: 'What stands between the label and the number, in the caption and in the references: a no-break space (Figure 1.7) or nothing (图1-1).',
