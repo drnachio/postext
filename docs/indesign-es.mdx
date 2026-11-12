@@ -60,9 +60,10 @@ Un documento de InDesign es un conjunto de páginas que alguien hizo a mano. El 
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
-La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nuevo a partir de un documento de InDesign (IDML)** (véase [Sandbox › Importar un documento de InDesign](/es/docs/sandbox-books-saving#importar-un-documento-de-indesign)), y desde código con `idmlToPostext`, del paquete `postext-idml` (véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml)). Todas las opciones del comando están en [Línea de comandos › import-idml](/es/docs/command-line#import-idml).
+La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nuevo a partir de un documento de InDesign (IDML)** (véase [Sandbox › Importar un documento de InDesign](/es/docs/sandbox-books-saving#importar-un-documento-de-indesign)), que también abre un armado de InDesign comprimido con **Libro nuevo a partir de un armado de InDesign (.zip)** y toma de él las fuentes y las imágenes enlazadas, y desde código con `idmlToPostext`, del paquete `postext-idml` (véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml)). Todas las opciones del comando están en [Línea de comandos › import-idml](/es/docs/command-line#import-idml).
 
 ### Páginas o texto corrido
 
@@ -79,7 +80,7 @@ La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nue
 
 ### Lo que informa
 
-El `.idml` no lleva las fuentes ni las imágenes enlazadas. El importador enumera las familias de fuentes que necesita el libro, que luego das a la generación con `--font-dir`. Lee las imágenes enlazadas de `--links` o de la carpeta del archivo, y enumera las que no encuentra.
+El `.idml` no lleva las fuentes ni las imágenes enlazadas. El importador enumera las familias de fuentes que necesita el libro, que luego das a la generación con `--font-dir`. Lee las imágenes enlazadas de `--links` o de la carpeta del archivo, y enumera las que no encuentra. Un armado comprimido lleva las dos cosas: en la línea de comandos (`postext import-idml armado.zip`), en el Sandbox y desde código con `openIdmlArchive`, el importador toma las imágenes de su carpeta `Links` y pone en el libro los archivos de fuente de su carpeta `Document fonts`.
 
 InDesign hace cosas que no tienen equivalente en Postext, como el texto en un trazado, una celda girada, una línea diagonal en una celda, los estilos GREP y anidados o los efectos de transparencia. Cada una de ellas pasa a ser un hallazgo del informe, con un recuento y un ejemplo: una *pérdida* cuando se deja fuera, un *aviso* cuando se compone de forma parecida al original (las filas de pie de una tabla, un degradado, un ceñido al contorno). El informe termina con un veredicto:
 
@@ -139,7 +140,7 @@ El exportador maqueta el libro como lo hace el PDF y escribe las páginas como u
 - **Líneas.** `--lines keep`, el valor por defecto, termina cada línea donde la terminó Postext, así que InDesign muestra las mismas líneas que el PDF. `--lines reflow` deja los párrafos al componedor de InDesign, para un libro que se va a componer de nuevo allí.
 - **Texto.** Cada marco de una página compuesta pasa a ser un marco de texto con su propio artículo, y los marcos encadenados con `next` comparten uno. Los estilos de párrafo llevan los nombres de los estilos del libro, sus sangrías, sus tabulaciones y su espaciado. Pasan las notas al pie, los enlaces, el ruby, los signos de énfasis y los artículos de derecha a izquierda y verticales.
 - **Elementos de página.** Los filetes, los recuadros, los trazados y las imágenes pasan a ser elementos de página de InDesign; las tablas, tablas de InDesign, y las fórmulas en línea, la música y las muestras, objetos anclados. Los colores CMYK de autor pasan a ser muestras de cuatricromía, y los chips con campo de formulario, campos de formulario de InDesign.
-- **Imágenes y fuentes.** `--images link` escribe las imágenes en `Links/`, junto al paquete, en lugar de incrustarlas. `--fonts` escribe los archivos de fuente en `Document fonts/`, donde InDesign los encuentra, y deja fuera cualquier familia que el libro no pueda redistribuir.
+- **Imágenes y fuentes.** `--images link` escribe las imágenes en `Links/`, junto al paquete, en lugar de incrustarlas. Cada archivo lleva la extensión de su formato (`.svg`, `.png`, `.jpg`, `.pdf`…), así que se abre con su programa una vez descomprimido. `--fonts` escribe los archivos de fuente en `Document fonts/`, donde InDesign los encuentra, y deja fuera cualquier familia que el libro no pueda redistribuir.
 - **Avisos.** Lo que InDesign no puede mostrar tal como lo compuso Postext se notifica como aviso `idml.*`, como el marco redondeado de una tabla o los puntos de énfasis del texto vertical.
 
 Exportar no es portar al revés. El `.idml` contiene las páginas que maquetó Postext, y las reglas que las maquetaron se quedan en el libro de Postext. Un cambio hecho en InDesign vuelve a Postext por el importador, como copia de la página. Las reglas que quieras cambiar, como el cuerpo de letra, conviene cambiarlas en el libro de Postext y exportarlo de nuevo.

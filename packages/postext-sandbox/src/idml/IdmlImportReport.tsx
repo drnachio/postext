@@ -9,7 +9,7 @@ import { AlertTriangle, CheckCircle2, Info, XCircle } from 'lucide-react';
 import type { FindingSeverity, IdmlImportResult, IdmlSummary } from 'postext-idml';
 import type { SandboxLabels } from '../types/index.js';
 import { isolate } from '../word/WordImportDialog.js';
-import { findingsBySeverity, fontsNeeded, mainPageSize } from './sandboxIdmlImport.js';
+import { findingsBySeverity, fontsCarried, fontsNeeded, mainPageSize } from './sandboxIdmlImport.js';
 
 const SEVERITY_LABEL: Record<FindingSeverity, keyof SandboxLabels> = {
   loss: 'idmlImportSeverityLoss',
@@ -24,8 +24,9 @@ function SeverityIcon({ severity, size = 13 }: { severity: FindingSeverity; size
 }
 
 /** The package before it is imported: pages and their size, stories,
- *  fonts named, pictures linked and embedded, tables. */
-export function IdmlHoldings({ summary, labels }: { summary: IdmlSummary; labels: SandboxLabels }) {
+ *  fonts named, pictures linked and embedded, tables; for a document read
+ *  from a zipped package, the linked pictures the package gave. */
+export function IdmlHoldings({ summary, labels, packageLinks }: { summary: IdmlSummary; labels: SandboxLabels; packageLinks?: number | undefined }) {
   const size = mainPageSize(summary);
   const families = [...new Set(summary.fonts.map((f) => f.family).filter(Boolean))];
   const rows: [string, string][] = [
@@ -36,6 +37,7 @@ export function IdmlHoldings({ summary, labels }: { summary: IdmlSummary; labels
     [labels.idmlImportStories, String(summary.readableStories)],
     [labels.idmlImportFonts, families.length > 0 ? families.map(isolate).join(labels.frameStylesListSeparator) : '0'],
     [labels.idmlImportPictures, labels.idmlImportPicturesValue.replace('__linked__', String(summary.pictures.linked)).replace('__embedded__', String(summary.pictures.embedded))],
+    ...(packageLinks !== undefined ? [[labels.idmlImportPackageLinks, String(packageLinks)] as [string, string]] : []),
     [labels.idmlImportTables, String(summary.tables)],
   ];
   return (
@@ -51,10 +53,11 @@ export function IdmlHoldings({ summary, labels }: { summary: IdmlSummary; labels
 }
 
 /** The importer's report on a document read as a book. */
-export function IdmlImportReport({ result, labels }: { result: IdmlImportResult; labels: SandboxLabels }) {
+export function IdmlImportReport({ result, labels, fromPackage = false }: { result: IdmlImportResult; labels: SandboxLabels; fromPackage?: boolean }) {
   const { report } = result;
   const verdict = report.verdict === 'faithful' ? labels.idmlImportVerdictFaithful : report.verdict === 'approximate' ? labels.idmlImportVerdictApproximate : labels.idmlImportVerdictLossy;
   const fonts = fontsNeeded(result);
+  const carried = fontsCarried(result);
   return (
     <div className="flex flex-col gap-2">
       <p className="m-0 flex items-start gap-2 font-semibold">
@@ -90,13 +93,26 @@ export function IdmlImportReport({ result, labels }: { result: IdmlImportResult;
           </ul>
         </div>
       ))}
+      {carried.length > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="m-0 text-xs font-semibold">{labels.idmlImportFontsCarried}</p>
+          <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
+            {carried.map((f) => (
+              <li key={f} className="flex items-start gap-1.5" dir="auto" style={{ overflowWrap: 'anywhere' }}>
+                <CheckCircle2 size={12} aria-hidden="true" className="mt-0.5 shrink-0" style={{ color: 'var(--pt-success, #16a34a)' }} />
+                {f}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {fonts.length > 0 && (
         <div className="flex flex-col gap-1">
           <p className="m-0 text-xs font-semibold">{labels.idmlImportFontsNeeded}</p>
           <ul className="m-0 flex list-none flex-col gap-0.5 p-0 text-xs">
             {fonts.map((f) => <li key={f} dir="auto" style={{ overflowWrap: 'anywhere' }}>{f}</li>)}
           </ul>
-          <p className="m-0 text-xs text-(--slate)">{labels.idmlImportFontsHelp}</p>
+          <p className="m-0 text-xs text-(--slate)">{fromPackage ? labels.idmlImportFontsMissingHelp : labels.idmlImportFontsHelp}</p>
         </div>
       )}
     </div>

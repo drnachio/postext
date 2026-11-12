@@ -60,9 +60,10 @@ InDesign文档是一组由人手工做出的页面。设计者遵循一些规则
 postext import-idml book.idml -o book/
 postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
+postext import-idml package.zip -o book.postext
 ```
 
-同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
+同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)；沙盒还能用<strong>从 InDesign 打包文件（.zip）新建书</strong>打开压缩成zip的InDesign打包文件，并从中取用字体和链接的图片），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
 
 ### 逐页还是连续排
 
@@ -79,7 +80,7 @@ postext import-idml book.idml --report --json
 
 ### 报告的内容
 
-`.idml`不带字体，也不带链接的图片。导入器列出这本书需要的字体家族，你再用`--font-dir`把它们交给构建。链接的图片从`--links`或文件旁边读取，找不到的会列出来。
+`.idml`不带字体，也不带链接的图片。导入器列出这本书需要的字体家族，你再用`--font-dir`把它们交给构建。链接的图片从`--links`或文件旁边读取，找不到的会列出来。压缩成zip的打包文件两样都带：在命令行中（`postext import-idml package.zip`）、在沙盒中，以及在代码中用`openIdmlArchive`时，导入器从其`Links`文件夹取用图片，并把其`Document fonts`文件夹中的字体文件放入书中。
 
 InDesign能做的有些事在Postext中没有对应，比如路径文字、旋转的单元格、单元格中的对角线、GREP样式和嵌套样式，或者透明效果。每一项都成为报告中的一条结果，附带数量和一个例子：省略的是<em>loss</em>，以接近原稿的方式排出的是<em>warning</em>（表格的表尾行、渐变、沿轮廓绕排）。报告最后给出结论：
 
@@ -139,7 +140,7 @@ postext build book/ --pdf book.pdf --idml book.idml
 - <strong>行。</strong>默认的`--lines keep`让每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。`--lines reflow`把段落交给InDesign的排版器，用于要在InDesign中重新排版的书。
 - <strong>文字。</strong>模板页的每个框成为一个带有独立文章的文本框，用`next`串接的框共用一篇文章。段落样式带有书中的样式名、缩进、制表位和间距。脚注、链接、注音、着重号、从右到左的文章和竖排文章都会带过去。
 - <strong>页面项目。</strong>线条、方框、路径和图片成为InDesign页面项目；表格成为InDesign表格，行内公式、乐谱和色样成为锚定对象。作者定义的CMYK颜色成为印刷色色板，表单域标签成为InDesign表单域。
-- <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
+- <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。每个文件都带有其格式的扩展名（`.svg`、`.png`、`.jpg`、`.pdf`等），解压后即可用相应的程序打开。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
 - <strong>警告。</strong>InDesign无法照Postext排出的样子显示的内容，以`idml.*`警告报告，比如表格的圆角外框或竖排文字里的着重号。
 
 导出不是反过来的移植。`.idml`保存的是Postext排出的页面，排出这些页面的规则留在Postext书里。在InDesign中做的修改，要通过导入器回到Postext，回来的是页面的副本。像字号这样的规则，最好在Postext书中修改，再重新导出。

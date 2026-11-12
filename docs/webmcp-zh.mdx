@@ -433,7 +433,7 @@ await browser.close();
   ```
 
 - **导入`.postext`文件**用`sandbox_import_book`（加上`inspect: true`只报告文件里有哪些语言，并不导入）。
-- <strong>从InDesign文档做一本书</strong>用`sandbox_import_idml`。加上`dryRun: true`时它什么都不创建，回答`.idml`的内容和导入报告：将采用的排版方式及理由、结论、发现的问题、这本书需要的字体，以及仍缺少的链接图片。`layout`选择`pages`或`flow`，`links`交上链接的图片，每张按其`fileName`匹配。
+- <strong>从InDesign文档做一本书</strong>用`sandbox_import_idml`。加上`dryRun: true`时它什么都不创建，回答`.idml`的内容和导入报告：将采用的排版方式及理由、结论、发现的问题、这本书需要的字体，以及仍缺少的链接图片。`layout`选择`pages`或`flow`，`links`交上链接的图片，每张按其`fileName`匹配。`file`也可以是压缩成zip的InDesign打包文件：其中链接的图片和字体放入书中（`linksFromPackage`、`fontsFromPackage`）；打包文件中有多个IDML时，`document`指定要导入哪一个（回答中的`documents`列出它们）。
 - **导入Word书稿**用`sandbox_import_word`。先加上`dryRun: true`运行一次：它什么都不改，回答质量报告、每种Word样式会转换成什么，以及将会生成的章节和资源。然后修正对应关系，再正式运行：
 
   ```json

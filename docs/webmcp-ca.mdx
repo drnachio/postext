@@ -605,7 +605,10 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   per què, el veredicte, les troballes, les fonts que necessita el llibre i
   les imatges enllaçades que encara falten. `layout` tria `pages` o `flow`, i
   `links` lliura les imatges enllaçades, cadascuna aparellada pel seu
-  `fileName`.
+  `fileName`. `file` també pot ser un paquet d'InDesign comprimit: les seves
+  imatges enllaçades i les seves fonts passen al llibre (`linksFromPackage`,
+  `fontsFromPackage`), i `document` anomena l'IDML que s'importa quan en porta
+  diversos (`documents`, a la resposta, els enumera).
 - **Portar un manuscrit de Word** amb `sandbox_import_word`. Executa'l primer
   amb `dryRun: true`: no canvia res i respon amb l'informe de qualitat, cada
   estil de Word amb el que esdevindria, i els capítols i els recursos que

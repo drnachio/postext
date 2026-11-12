@@ -434,7 +434,7 @@ await browser.close();
   ```
 
 - **`.postext`ファイルを読み込む**：`sandbox_import_book`を使います（`inspect: true`を渡すと、読み込まずに、どの言語が入っているかを返します）。
-- **InDesignの文書から本を作る**：`sandbox_import_idml`を使います。`dryRun: true`を渡すと何も作らずに、`.idml`の内容と読み込みレポートを返します。採用するレイアウトとその理由、判定、指摘、本に必要なフォント、まだ見つからないリンク画像です。`layout`で`pages`か`flow`を選び、`links`でリンク画像を渡します。画像はそれぞれ`fileName`で照合されます。
+- **InDesignの文書から本を作る**：`sandbox_import_idml`を使います。`dryRun: true`を渡すと何も作らずに、`.idml`の内容と読み込みレポートを返します。採用するレイアウトとその理由、判定、指摘、本に必要なフォント、まだ見つからないリンク画像です。`layout`で`pages`か`flow`を選び、`links`でリンク画像を渡します。画像はそれぞれ`fileName`で照合されます。`file`にはzipにしたInDesignパッケージも渡せます。そのリンク画像とフォントは本に入り（`linksFromPackage`、`fontsFromPackage`）、IDMLが複数入っているときは`document`で読み込むものを指定します（回答の`documents`に一覧が出ます）。
 - **Wordの原稿を取り込む**：`sandbox_import_word`を使います。最初に`dryRun: true`で実行してください。何も変えずに、品質レポート、Wordのスタイルごとに何になるか、作られる章とリソースを返します。そのあとで対応づけを直し、本番の読み込みを実行します。
 
   ```json

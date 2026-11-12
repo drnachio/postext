@@ -2,7 +2,8 @@
 
 // The Books panel's "New book from an InDesign document": the package is
 // read and summed up, the reader chooses how it is laid out and hands
-// over the pictures it links to, the importer of `postext-idml` runs and
+// over the pictures it links to (a zipped package hands over its own, and
+// its fonts, #1538), the importer of `postext-idml` runs and
 // its report is shown, and the button creates the book as the panel
 // creates one from a `.postext` file. The logic is in
 // ./sandboxIdmlImport.ts.
@@ -10,19 +11,18 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, FolderOpen, Images, X } from 'lucide-react';
-import type { IdmlImportResult } from 'postext-idml';
 import { useSandboxLabels, useSandboxProjects } from '../context/SandboxContext.js';
 import { Button, IconButton, Select, announce, usePortalContainer, type SelectOption } from '../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { DialogSection, isolate } from '../word/WordImportDialog.js';
 import { IdmlHoldings, IdmlImportReport } from './IdmlImportReport.js';
-import { addLinkFiles, convertIdml, idmlBookBundle, linkFileName, readIdmlFile, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile } from './sandboxIdmlImport.js';
+import { addLinkFiles, convertIdml, idmlBookBundle, linkFileName, packageDocumentName, readIdmlFile, readIdmlPackageDocument, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile, type IdmlPackageChoice, type SandboxIdmlResult } from './sandboxIdmlImport.js';
 
-/** The file picked in the Books panel, as read from disk. */
-export interface IdmlPickedFile {
-  name: string;
-  bytes: Uint8Array;
-}
+/** The file picked in the Books panel: an `.idml` as read from disk, or
+ *  the document chosen in a zipped package. */
+export type IdmlPickedFile =
+  | { name: string; bytes: Uint8Array; package?: undefined }
+  | { name: string; package: IdmlPackageChoice; bytes?: undefined };
 
 export interface IdmlImportDialogProps {
   file: IdmlPickedFile | null;
@@ -34,7 +34,7 @@ export interface IdmlImportDialogProps {
 export function IdmlImportDialog({ file, onClose, onCreated }: IdmlImportDialogProps) {
   return (
     <Dialog.Root open={file !== null} onOpenChange={(next) => { if (!next) onClose(); }}>
-      {file && <IdmlImportPopup key={file.name} file={file} onClose={onClose} onCreated={onCreated} />}
+      {file && <IdmlImportPopup key={file.package ? `${file.package.name}\u0000${file.package.path}` : file.name} file={file} onClose={onClose} onCreated={onCreated} />}
     </Dialog.Root>
   );
 }
@@ -45,8 +45,10 @@ const messageOf = (err: unknown): string => (err instanceof Error ? err.message 
  *  synchronous step. */
 const nextFrame = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
-function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; onClose: () => void; onCreated?: () => void }) {
+function IdmlImportPopup({ file: picked, onClose, onCreated }: { file: IdmlPickedFile; onClose: () => void; onCreated?: () => void }) {
   const labels = useSandboxLabels();
+  // A package's document goes by its own name.
+  const file = { ...picked, name: picked.package ? packageDocumentName(picked.package) : picked.name };
   const { importBundleBytes } = useSandboxProjects();
   const container = usePortalContainer();
   const titleId = useId();
@@ -58,7 +60,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
   const [error, setError] = useState<string | null>(null);
   const [layout, setLayout] = useState<IdmlLayoutChoice>('auto');
   const [links, setLinks] = useState<IdmlLinkFile[]>([]);
-  const [result, setResult] = useState<IdmlImportResult | null>(null);
+  const [result, setResult] = useState<SandboxIdmlResult | null>(null);
   // What the importer decides left to itself, kept while another layout
   // is tried.
   const [auto, setAuto] = useState<{ layout: 'pages' | 'flow'; reason: string } | null>(null);
@@ -72,7 +74,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
     void (async () => {
       await nextFrame();
       try {
-        const opened = await readIdmlFile(file.name, file.bytes);
+        const opened = file.package ? await readIdmlPackageDocument(file.package) : await readIdmlFile(file.name, file.bytes);
         if (!stale) setRead(opened);
       } catch (err) {
         if (stale) return;
@@ -84,7 +86,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
     })();
     return () => { stale = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- the labels do not change while the dialog is open
-  }, [file]);
+  }, [picked]);
 
   // The import, run again when the layout or the pictures change.
   useEffect(() => {
@@ -177,6 +179,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
         <div className="flex min-h-0 flex-col gap-1 overflow-y-auto px-4 pb-2">
           <Dialog.Description className="text-xs text-(--slate)" style={{ margin: '0 0 8px' }}>
             {labels.idmlImportIntro}
+            {picked.package && <> {labels.idmlImportFromPackage.replace('__file__', isolate(picked.package.name))}</>}
           </Dialog.Description>
 
           {!read && !error && <p role="status" className="m-0 text-xs text-(--slate)">{labels.idmlImportReading}</p>}
@@ -190,7 +193,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
           {read && (
             <>
               <DialogSection title={labels.idmlImportHolds}>
-                <IdmlHoldings summary={read.summary} labels={labels} />
+                <IdmlHoldings summary={read.summary} labels={labels} packageLinks={read.package ? result?.packageLinks.length : undefined} />
               </DialogSection>
 
               <DialogSection title={labels.idmlImportLayout}>
@@ -241,7 +244,7 @@ function IdmlImportPopup({ file, onClose, onCreated }: { file: IdmlPickedFile; o
 
               <DialogSection title={labels.idmlImportReport}>
                 {result
-                  ? <IdmlImportReport result={result} labels={labels} />
+                  ? <IdmlImportReport result={result} labels={labels} fromPackage={!!read.package} />
                   : !error && <p role="status" className="m-0 text-xs text-(--slate)">{labels.idmlImportReading}</p>}
               </DialogSection>
             </>

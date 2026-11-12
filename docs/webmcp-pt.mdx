@@ -607,6 +607,10 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
   e por quê, o veredito, os achados, as fontes de que o livro precisa e as
   imagens vinculadas que ainda faltam. `layout` escolhe `pages` ou `flow`, e
   `links` entrega as imagens vinculadas, cada uma associada pelo `fileName`.
+  `file` também pode ser um pacote do InDesign compactado: as imagens
+  vinculadas e as fontes dele entram no livro (`linksFromPackage`,
+  `fontsFromPackage`), e `document` nomeia o IDML a importar quando ele traz
+  vários (`documents`, na resposta, lista todos).
 - **Trazer um manuscrito do Word** com `sandbox_import_word`. Execute-a
   primeiro com `dryRun: true`: ela não muda nada e responde com o relatório de
   qualidade, cada estilo do Word com aquilo em que se tornaria e os capítulos
