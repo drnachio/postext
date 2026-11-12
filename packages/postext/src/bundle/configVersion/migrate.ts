@@ -5,6 +5,7 @@ import { mergeConfigLayers, type ConfigOverride } from '../../defaults/configLay
 import { readContent, mayHaveMaths, mayEmbedResources, mayHaveHeadingMarks, mayLeadListWithColon, mayEmbedResourcesInBoxes, mayHaveBoxes, mayHaveClosedDashes, mayHaveHeadings, mayHaveParagraphContainers, mayHaveCompounds, mayHavePlainPoems, mayHaveForcedBreaks, mayHaveCodeFences, mayHaveLinePoems, mayHaveBookTitles, mayHaveCircledNumbers, mayHaveCjkDesignText, mayHaveColumnGroups, setsPageSpanHeading, mayHaveFloats, mayHaveOffGridLines, mayHaveIndexes, mayHaveNotes, mayHaveCjkText, mayHaveRefs, mayHaveComics, mayHaveTaskItems, mayHaveMarks, mayHaveScoreFences } from './contentChecks.js';
 import { pinLegacyLooseOrder, pinLegacyWideFloatStretch, pinLegacyTrailingStep, pinLegacyIndexGroupSplit, pinLegacyGridBreakRules, pinLegacyNoteBreaks, pinLegacyLatinSpacingEdge, pinLegacyInlineCaptionSide, pinLegacyRefLabelBreaks, pinLegacyBalloonPlacement, pinLegacyScriptContext, pinLegacyShapingLanguage, pinLegacyTaskBox, pinLegacyBoxParagraphStyles, pinLegacyMarkRadius, pinLegacySlashBreaks, pinLegacyScoreFences } from './pins12To20.js';
 import { pinLegacyHtmlViewerBreaking } from './pins22On.js';
+import { renameLegacyLineBinding } from '../../defaults/text/bodyText/legacyBinding.js';
 import { pinLegacyHeadingBreaks, pinLegacyMathSize, pinLegacyInlineGap, pinLegacyHeadingMarks, pinLegacyDropCapSize, pinLegacyColonListRoom, pinLegacyBoxResourceGap, pinLegacyBoxChildCut } from './pins3To6.js';
 import { pinLegacyDashBreaks, pinLegacyRaggedBreaking, pinLegacyHeadingSplit, pinLegacyParagraphContainerSpacing, pinLegacyHyphenBreaks, pinLegacyVerseLayout, pinLegacyPairedIndents, pinLegacyHardBreaks, pinLegacyCodeBlocks, pinLegacyVerseTightening, pinLegacyDesignOverflow, pinLegacyGridBalancing, pinLegacyTitleBreaks, pinLegacyCircledNumbers, pinLegacyDesignText, pinLegacyInlineTableSplit, pinLegacyFlowColumns, pinLegacyOpenerHeadFloats } from './pins7To11.js';
 import { HEADING_BREAK_RULES, CONFIG_VERSION, MATH_SIZE_RULES, INLINE_GAP_RULES, HEADING_MARKS_RULES, DROP_CAP_SIZE_RULES, COLON_LIST_ROOM_RULES, BOX_GAP_RULES, BOX_CHILD_CUT_RULES, DASH_BREAK_RULES, RAGGED_BREAKING_RULES, HEADING_SPLIT_RULES, PARAGRAPH_CONTAINER_RULES, HYPHEN_BREAK_RULES, VERSE_LAYOUT_RULES, PAIRED_INDENT_RULES, HARD_BREAK_RULES, CODE_BLOCK_RULES, VERSE_TIGHTEN_RULES, DESIGN_OVERFLOW_RULES, GRID_BALANCING_RULES, TITLE_BREAK_RULES, CIRCLED_NUMBER_RULES, DESIGN_TEXT_RULES, INLINE_TABLE_SPLIT_RULES, FLOW_COLUMNS_RULES, OPENER_HEAD_FLOAT_RULES, LOOSE_ORDER_RULES, WIDE_FLOAT_STRETCH_RULES, TRAILING_STEP_RULES, INDEX_GROUP_SPLIT_RULES, GRID_BREAK_RULES, NOTE_BREAK_RULES, LATIN_SPACING_EDGE_RULES, INLINE_CAPTION_SIDE_RULES, REF_LABEL_BREAK_RULES, BALLOON_PLACEMENT_RULES, SCRIPT_CONTEXT_RULES, SHAPING_LANGUAGE_RULES, TASK_BOX_RULES, BOX_PARAGRAPH_STYLE_RULES, MARK_RADIUS_RULES, SLASH_BREAK_RULES, SCORE_FENCE_RULES, LOCALE_LAYER_RULES, HTML_VIEWER_BREAKING_RULES } from './rules.js';
@@ -125,7 +126,11 @@ export interface MigrateConfigOptions {
  * pinLegacyScoreFences}, unless `options.content` shows none; one older
  * than 22 has the line breaker of its HTML viewer pinned by {@link
  * pinLegacyHtmlViewerBreaking}, unless it names it.
- * A current one is returned as it is (the same object).
+ * Whatever the version, postext 1.78's `bodyText.bindCitations` and
+ * `bindOperators` are renamed to `citationBreaks` / `operatorBreaks`
+ * (`true` reads `'avoid'`, see {@link renameLegacyLineBinding}): 1.78
+ * stored them under today's number. A current one without them is
+ * returned as it is (the same object).
  * Migrate a stored configuration once and store it again under
  * `CONFIG_VERSION`: the maths pin multiplies a scale, so a configuration
  * read twice under its old number would grow twice.
@@ -136,7 +141,8 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
   options: MigrateConfigOptions = {},
 ): T {
   const rules = rulesOf(configVersion);
-  let out = rules < HEADING_BREAK_RULES ? pinLegacyHeadingBreaks(config) : config;
+  const named = renameLegacyLineBinding(config);
+  let out = rules < HEADING_BREAK_RULES ? pinLegacyHeadingBreaks(named) : named;
   const content = rules < CONFIG_VERSION ? readContent(options.content) : undefined;
   if (rules < MATH_SIZE_RULES && mayHaveMaths(content)) out = pinLegacyMathSize(out);
   if (rules < INLINE_GAP_RULES && mayEmbedResources(content)) out = pinLegacyInlineGap(out);
@@ -231,6 +237,8 @@ export function migrateConfig<T extends Partial<PostextConfig>>(
  * `markStyles` in force, the breaks at a slash on the `bodyText` in
  * force, the fences in a notation language on the `scoreStyle` in force,
  * and the line breaker of the HTML viewer on the `htmlViewer` in force.
+ * 1.78's line binding keys are renamed on the merged configuration,
+ * whatever the version.
  * @internal `readBundle`'s; hosts call {@link migrateConfig}.
  */
 export function migrateBundleConfig(
@@ -292,5 +300,5 @@ export function migrateBundleConfig(
   if (rules < SCORE_FENCE_RULES && mayHaveScoreFences(content)) merged = pinLegacyScoreFences(merged);
   // LOCALE_LAYER_RULES (21, #1209): read above, nothing to pin.
   if (rules < HTML_VIEWER_BREAKING_RULES) merged = pinLegacyHtmlViewerBreaking(merged);
-  return merged;
+  return renameLegacyLineBinding(merged);
 }

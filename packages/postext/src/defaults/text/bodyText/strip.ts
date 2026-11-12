@@ -7,6 +7,7 @@ import { stripVerseDefaults } from '../verse.js';
 import { isArabicScriptLanguage, DEFAULT_KASHIDA_CONFIG } from './arabic.js';
 import { DEFAULT_BODY_TEXT_CONFIG, hyphenationEqual } from './defaults.js';
 import { stripBlockquoteDefaults } from './resolve.js';
+import { legacyBindingRule } from './legacyBinding.js';
 
 /** Whether `hyphenation` names patterns other than the ones a document in
  *  `documentLocale` takes when it names none (`resolveHyphenation`):
@@ -293,9 +294,11 @@ export function stripBodyTextDefaults(
     hasOverride = true;
   }
   // The citation and operator break rules (#1519).
+  // 1.78's `bindCitations` / `bindOperators: true` are kept as 'avoid' (#1532).
   for (const key of ['citationBreaks', 'citationBreakPenalty', 'operatorBreaks', 'operatorBreakPenalty'] as const) {
-    if (bodyText[key] !== undefined && bodyText[key] !== DEFAULT_BODY_TEXT_CONFIG[key]) {
-      (result as Record<string, unknown>)[key] = bodyText[key];
+    const value = key === 'citationBreaks' || key === 'operatorBreaks' ? bodyText[key] ?? legacyBindingRule(bodyText, key) : bodyText[key];
+    if (value !== undefined && value !== DEFAULT_BODY_TEXT_CONFIG[key]) {
+      (result as Record<string, unknown>)[key] = value;
       hasOverride = true;
     }
   }

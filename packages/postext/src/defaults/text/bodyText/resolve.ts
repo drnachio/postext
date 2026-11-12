@@ -9,6 +9,7 @@ import { withFigureStyle } from '../../../fonts/figureStyle.js';
 import { arabicScript, emphasisAndTashkil, resolveKashida } from './arabic.js';
 import { DEFAULT_HYPHENATION_CONFIG, DEFAULT_BLOCKQUOTE_CONFIG, DEFAULT_BODY_TEXT_CONFIG, shortListMaxItemsOf } from './defaults.js';
 import { cleanLimits } from '../../../hyphenation/limits.js';
+import { legacyBindingRule } from './legacyBinding.js';
 
 /** `n` when it is a finite number. */
 const finite = (n: number | undefined): number | undefined => (typeof n === 'number' && Number.isFinite(n) ? n : undefined);
@@ -177,9 +178,10 @@ export function resolveBodyTextConfig(partial?: BodyTextConfig, documentLocale?:
     stacks: compositionRuleOf(partial.stacks) ?? DEFAULT_BODY_TEXT_CONFIG.stacks,
     stackMinCharacters: Math.max(1, Math.round(partial.stackMinCharacters ?? DEFAULT_BODY_TEXT_CONFIG.stackMinCharacters)),
     stackPenalty: Math.max(0, partial.stackPenalty ?? DEFAULT_BODY_TEXT_CONFIG.stackPenalty),
-    citationBreaks: compositionRuleOf(partial.citationBreaks) ?? DEFAULT_BODY_TEXT_CONFIG.citationBreaks,
+    // 1.78's `bindCitations` / `bindOperators: true` read as 'avoid' (#1532).
+    citationBreaks: compositionRuleOf(partial.citationBreaks) ?? legacyBindingRule(partial, 'citationBreaks') ?? DEFAULT_BODY_TEXT_CONFIG.citationBreaks,
     citationBreakPenalty: Math.max(0, partial.citationBreakPenalty ?? DEFAULT_BODY_TEXT_CONFIG.citationBreakPenalty),
-    operatorBreaks: compositionRuleOf(partial.operatorBreaks) ?? DEFAULT_BODY_TEXT_CONFIG.operatorBreaks,
+    operatorBreaks: compositionRuleOf(partial.operatorBreaks) ?? legacyBindingRule(partial, 'operatorBreaks') ?? DEFAULT_BODY_TEXT_CONFIG.operatorBreaks,
     operatorBreakPenalty: Math.max(0, partial.operatorBreakPenalty ?? DEFAULT_BODY_TEXT_CONFIG.operatorBreakPenalty),
     avoidRuntsInLists: partial.avoidRuntsInLists ?? DEFAULT_BODY_TEXT_CONFIG.avoidRuntsInLists,
     tightenRunts: partial.tightenRunts ?? DEFAULT_BODY_TEXT_CONFIG.tightenRunts,
