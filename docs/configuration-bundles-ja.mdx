@@ -397,7 +397,7 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 ### デザインファイル
 
-デザインファイルは章のないバンドルで、本の見た目だけを持ち、内容は持ちません。マニフェストには`design: { parts: [...] }`と空の`chapters`があり、`config`にはそのパーツの設定だけが入り、設定が参照するフォントファイル（`fonts/`）とカラープロファイル（`profiles/`）をほかのバンドルと同じように含みます。`redistributable: false`のファミリーは含みません。Sandboxのデザインパネルと`postext design`がこのファイルを書き、本と同じリーダーで（`configVersion`の移行も含めて）読み込みます。
+デザインファイルは章のないバンドルで、本の見た目だけを持ち、内容は持ちません。マニフェストには`design: { parts: [...] }`と空の`chapters`があり、`config`にはそのパーツの設定だけが入り、設定が参照するフォントファイル（`fonts/`）とカラープロファイル（`profiles/`）をほかのバンドルと同じように含みます。`redistributable: false`のファミリーは含みません。Sandboxのデザインパネルと`postext design`がこのファイルを書き、本と同じリーダーで（`configVersion`の移行も含めて）読み込みます。postext 1.78 の Sandbox はデザインをバンドルではなくテンプレート（`.postext-template.json`）として保存していました。現在の Sandbox はそれをデザインとして読み込みます。
 
 パーツはデザインパネルのグループで、`DESIGN_PARTS`に並んでいます：`page`、`writing`、`colors`、`text`、`headings`、`lists`、`figures`、`callouts`、`exercises`、`comics`、`running`、`parts`、`output`、`folio`、`advanced`。各パーツがどの設定を持つかは`DESIGN_PART_KEYS`にあります。複数のグループが共有する設定はフィールド単位で分かれます。`page.binding`と`layout.writingMode`は`writing`、`page.cutLines`は`output`、`page.baselineGrid`は`advanced`、`page`と`layout`の残りは`page`です。パーツが使うカスタムフォントと、パーツに絞った章スタイルも一緒に入ります。本全体の設定（`BOOK_OWN_KEYS`：言語、組み方向、数字、リソースの種類、チェック、デバッグ）はデザインに含まれません。型によって、`PostextConfig`のすべてのキーはいずれかのパーツかこの一覧に属します。
 

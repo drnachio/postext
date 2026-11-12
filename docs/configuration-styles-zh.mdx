@@ -1540,4 +1540,4 @@ Word导出也会读取它。在版式文档中，每章是一个Word节，带有
 # 附录A
 ```
 
-章自己的`chapterStyle:`优先于所属篇的样式；没有写样式的篇，其各章采用全书的设置。`:::part`行放在开启这一篇的那一章开头、标题之前：如果在该章正文开始之后才写样式，会产生`partStyleMidChapter`警告，样式从下一章开始生效。单独排版的章从接续信息（`continuationAfter()`返回的`continuation.part.style`）取得所属篇的样式，与篇的标题和调色板一样。`chapterStyle:`或某一篇写了`chapterStyles`中没有的样式时，会产生`chapterStyleUnknown`警告，该章采用全书的设置。
+章自己的`chapterStyle:`优先于所属篇的样式；没有写样式的篇，其各章采用全书的设置。`:::part`行放在开启这一篇的那一章开头、标题之前：如果在该章正文开始之后才写样式，会产生`partStyleMidChapter`警告，样式从下一章开始生效。单独排版的章从接续信息（`continuationAfter()`返回的`continuation.part.style`）取得所属篇的样式，与篇的标题和调色板一样。`chapterStyle:`或某一篇写了`chapterStyles`中没有的样式时，会产生`chapterStyleUnknown`警告，该章采用全书的设置。postext 1.78 中用于在章内切换样式的`::section{style="…"}`行已不再读取：其后的正文留在本章中，按本章的设置排版，该行会引发`partStyleMidChapter`警告；请把这段正文做成采用该样式的篇中独立的一章，或为其指定`chapterStyle:`。

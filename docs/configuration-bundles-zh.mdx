@@ -397,7 +397,7 @@ const own = leastConfigOverride(shared, arabic, stripConfigDefaults);
 
 ### 设计文件
 
-设计文件是没有章节的包：一种设计，即一本书的样子，不含书的内容。它的清单用`design: { parts: [...] }`和空的`chapters`标记，`config`只保存这些部分的设置，并像任何包一样带上设置引用的字体文件（`fonts/`）和颜色配置文件（`profiles/`）；标记为`redistributable: false`的字族不包含在内。沙盒的版面设计面板和`postext design`写入这些文件，读取时使用与书相同的读取器，包括`configVersion`迁移。
+设计文件是没有章节的包：一种设计，即一本书的样子，不含书的内容。它的清单用`design: { parts: [...] }`和空的`chapters`标记，`config`只保存这些部分的设置，并像任何包一样带上设置引用的字体文件（`fonts/`）和颜色配置文件（`profiles/`）；标记为`redistributable: false`的字族不包含在内。沙盒的版面设计面板和`postext design`写入这些文件，读取时使用与书相同的读取器，包括`configVersion`迁移。postext 1.78 的 Sandbox 把设计保存为模板（`.postext-template.json`），而不是包；现在的 Sandbox 将其作为设计读取。
 
 部分就是版面设计面板的分组，列在`DESIGN_PARTS`中：`page`、`writing`、`colors`、`text`、`headings`、`lists`、`figures`、`callouts`、`exercises`、`comics`、`running`、`parts`、`output`、`folio`、`advanced`。`DESIGN_PART_KEYS`说明每个部分包含哪些设置。多个分组共享的设置按字段拆分：`page.binding`和`layout.writingMode`归`writing`，`page.cutLines`归`output`，`page.baselineGrid`归`advanced`，`page`和`layout`的其余部分归`page`。各部分使用的自定义字体以及裁剪到这些部分的章样式会一并带上。属于整本书的设置（`BOOK_OWN_KEYS`：语言、书写方向、数字、资源类型、检查、调试）从不属于设计；类型保证`PostextConfig`的每个键都属于某个部分或这个列表。
 

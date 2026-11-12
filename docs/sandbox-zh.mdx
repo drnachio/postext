@@ -220,7 +220,7 @@ export const metadata = {
 - **多语言的书**无论面板顶部的切换显示哪个范围，设计都写入通用设置；每种语言保留自己的覆盖设置。
 - **保存**这本书或你的任何其他书的设计，包含你选择的部分。
 - **作为章节样式**：所选部分成为书的一个[章样式](/zh/docs/configuration-styles#章样式)（新建或已有），只包含相对于全书的改动。在**章节**面板或前置信息中的`chapterStyle:`把它分配给章节，用`:::part{style="…"}`分配给一个部分的各章。
-- **导出和导入**：设计文件是没有章节的`.postext`（见[设计文件](/zh/docs/configuration-bundles#设计文件)），带有其部分引用的字体文件和颜色配置文件；不可再分发的字体不包含在内。导入也能读取整本书的`.postext`（取其设计）和早期版本的`postext-config.json`。命令行也能写入和读取同样的文件（[`postext design`](/zh/docs/command-line#design)）。已保存的设计可以删除，内置设计和示例书的设计不能删除。
+- **导出和导入**：设计文件是没有章节的`.postext`（见[设计文件](/zh/docs/configuration-bundles#设计文件)），带有其部分引用的字体文件和颜色配置文件；不可再分发的字体不包含在内。导入也能读取整本书的`.postext`（取其设计）和早期版本的`postext-config.json`。命令行也能写入和读取同样的文件（[`postext design`](/zh/docs/command-line#design)）。已保存的设计可以删除，内置设计和示例书的设计不能删除。postext 1.78 保存的模板会在首次打开图库时移入已保存的设计，其`.postext-template.json`文件也可作为设计导入。
 
 #### 资源面板
 

@@ -1540,4 +1540,4 @@ Sandboxでは、デザインパネル上部の「章スタイル」バーで、�
 # 付録A
 ```
 
-章自身の`chapterStyle:`は部のスタイルより優先され、スタイルを指定しない部では、章は本の設定で組まれます。`:::part`の行は、部を開く章の先頭、見出しの前に置きます。章の本文が始まってからスタイルを指定すると`partStyleMidChapter`の警告が出て、スタイルは次の章から適用されます。単独で組む章は、部のタイトルやパレットと同じく、部のスタイルを継続情報（`continuationAfter()`が返す`continuation.part.style`）から受け取ります。`chapterStyles`にないスタイルを`chapterStyle:`や部が指定すると`chapterStyleUnknown`の警告が出て、その章は本の設定で組まれます。
+章自身の`chapterStyle:`は部のスタイルより優先され、スタイルを指定しない部では、章は本の設定で組まれます。`:::part`の行は、部を開く章の先頭、見出しの前に置きます。章の本文が始まってからスタイルを指定すると`partStyleMidChapter`の警告が出て、スタイルは次の章から適用されます。単独で組む章は、部のタイトルやパレットと同じく、部のスタイルを継続情報（`continuationAfter()`が返す`continuation.part.style`）から受け取ります。`chapterStyles`にないスタイルを`chapterStyle:`や部が指定すると`chapterStyleUnknown`の警告が出て、その章は本の設定で組まれます。postext 1.78 で章の途中でスタイルを切り替えていた`::section{style="…"}`行は、もう読まれません。その本文は章の設定のまま章の中に残り、行には`partStyleMidChapter`警告が出ます。その本文を、そのスタイルの部の中の独立した章にするか、`chapterStyle:`を指定してください。
