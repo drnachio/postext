@@ -1,0 +1,77 @@
+---
+title: "Bildunterschriften mit Silbentrennung in schmalen Spalten"
+summary: "Das Blatt einer Vogelwarte in drei Spalten zu 60 mm, zweimal gesetzt: Bildunterschriften, Anmerkungen und Zellen Zeile für Zeile, dann mit Trennung."
+plain: "Eine Bildunterschrift im Blocksatz findet in einer schmalen Spalte wenige Umbruchstellen, und die Wortabstände reißen auf. Das Blatt wird zweimal gesetzt: wie bisher und mit Wörtern, die wie im Fließtext getrennt werden."
+description: "captionStyle.hyphenation, note.hyphenation und tableStyle.hyphenation in einem dreispaltigen Blatt, mit lineHeight für Unterschriften und Anmerkungen."
+question: "Wie verhindere ich große Wortlücken in einer Bildunterschrift im Blocksatz in einer schmalen Spalte?"
+aliases: ["Silbentrennung in Bildunterschriften", "Bildunterschriften trennen", "Bildunterschriften im Blocksatz", "lockere Bildunterschriften", "Löcher in Bildunterschriften", "Zeilenabstand der Bildunterschrift", "lineHeight der Bildunterschrift", "lineHeight der Anmerkung", "Silbentrennung in Tabellen", "tableStyle.hyphenation", "drei Spalten", "Feldführer", "Vogeltafeln"]
+pageNotes: { "2": "Erster Satz, Seite 2: die Unterschrift zu Abbildung 4 oben in der dritten Spalte, ihre erste Zeile auf vier Wörter mit großen Lücken verteilt.", "4": "Zweiter Satz, Seite 2: dieselbe Unterschrift mit Acrocephalus am Ende der ersten Zeile getrennt und gleichmäßig gesperrten Zeilen; die Tabelle trennt below und warbler." }
+---
+
+## Was Sie setzen
+
+Zwei Seiten aus *Tideline*, dem Wintermitteilungsblatt einer erfundenen Vogelwarte, im Format 225 × 297 mm mit drei Spalten zu 60 mm. Unter dem grünen Band des Aufmachers läuft ein Streifen Flussmündung, und vier Aquarelltafeln stehen jeweils eine Spalte breit, auf den Vogel zugeschnitten, mit einer Bildunterschrift im Blocksatz aus der Libre Franklin und einer kurzen Anmerkung darunter. Eine Tabelle der Höchstzahlen schließt den Artikel. Die Ausgabe wird zweimal gesetzt. Der erste Satz behält die Voreinstellungen: Jede Bildunterschrift wird Zeile für Zeile umbrochen, und kein Wort darin wird getrennt, sodass in einer 60-mm-Spalte die Zeile mit *Acrocephalus scirpaceus* auf vier Wörter verteilt wird. Der zweite Satz trennt die Bildunterschriften, die Anmerkungen und die Tabellenzellen, und ihre Abstände gleichen denen des Fließtexts.
+
+## Zubereitung
+
+### 1 · Bildunterschriften wie der Fließtext gesetzt
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. Mit `captionStyle.hyphenation: true` wird eine Bildunterschrift so getrennt wie ein Absatzstil mit `hyphenation: true`: im Blocksatz, mit den Trennmustern des Fließtexts (`locale`) und seinen Regeln für Trennstriche, auch wenn der Fließtext selbst ohne Silbentrennung gesetzt ist. Ist `bodyText.optimalLineBreaking` an, wird sie als Ganzes mit dem Knuth-Plass-Verfahren umbrochen, innerhalb von `minWordSpacing` und `maxWordSpacing` des Fließtexts. Die Bezeichnung, *Figure 4.*, wird nie getrennt. `note.hyphenation` tut dasselbe für die Zeile unter der Bildunterschrift, `Resource.note`.
+
+`lineHeight` gibt der Bildunterschrift einen eigenen Zeilenabstand, hier 10,8 pt bei 8,2 pt Schriftgröße, und `note.lineHeight` gibt der Anmerkung 8,8 pt bei 6,8 pt. In `em` zählen beide von ihrer eigenen Schriftgröße aus. Ohne Angabe übernehmen beide den Zeilenabstand des Fließtexts im Verhältnis zu ihrer Größe.
+
+### 2 · Dieselbe Ausgabe, zweimal gesetzt
+
+<Excerpt region="builds" />
+
+Die drei Schalter stehen standardmäßig auf `false`, sodass ein Buch, das vor postext 1.80 gesetzt wurde, seine Seiten behält: Bildunterschriften, Anmerkungen und Zellen Zeile für Zeile umbrochen. Die beiden Sätze unterscheiden sich nur in diesen Schaltern, und `capture.doc` veröffentlicht beide: die Seiten 1 und 2 Zeile für Zeile, die Seiten 3 und 4 mit Silbentrennung. Die Schaltflächen in der Leiste zeigen den einen oder den anderen.
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="Zeile für Zeile: Die erste Zeile der Unterschrift zu Abbildung 4 ist auf vier Wörter verteilt." />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="Mit Silbentrennung: Acrocephalus wird getrennt, und die fünf Zeilen haben gleiche Abstände." />
+
+### 3 · Tabellenzellen im Flattersatz mit Silbentrennung
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` umbricht jede Zelle als Ganzes mit dem optimalen Verfahren. Zellen stehen im Flattersatz, also werden ihre Wörter nur dort getrennt, wo Flattersatz Wörter trennt: mit `bodyText.hyphenation.ragged: true`, und nur dann, wenn ein ganz in die nächste Zeile geschobenes Wort mehr als die `zone` leer ließe. Die voreingestellte Zone von 3 em misst bei 7,4 pt 7,8 mm, zu viel für eine Zelle von 20 mm; dieser Entwurf setzt sie auf 1,5 em. Der Fließtext steht im Blocksatz, also wirkt der Flattersatz-Schalter nur auf die Tabelle, das Impressum und die Tabellenüberschrift, die ihr Ressourcentyp linksbündig über die Tabelle stellt (`resourceTypes[].captionStyle`). Ein benannter Tabellenstil nimmt dasselbe Feld an, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="Die Zähltabelle mit Silbentrennung: „Reed war-bler“ in einer 15-mm-Spalte und „Open mud be-low the hides“ in einer 20-mm-Spalte." />
+
+### 4 · Tafeln auf den Vogel zugeschnitten
+
+<Excerpt region="plates" />
+
+Die Tafeln messen 1200 × 600 Pixel, der Vogel mitten auf einem breiten cremefarbenen Grund. `Resource.crop` behält den Teil um jeden Vogel, und die Abbildung nimmt diese Form in der Spalte an. Die Seite ist im Cremeton der Tafeln selbst gedruckt, `#f6f3ea`, sodass die Ränder der Malerei zu sehen sind und nicht die der Datei. Bildunterschriften, Anmerkungen und Alternativtexte stehen in einer Inhaltsdatei pro Sprache, ein Block pro Ressource.
+
+### 5 · Ein Aufmacher auf einer Farbfläche
+
+<Excerpt region="opener" />
+
+Der Aufmacher zeichnet ein grünes Band von 100 mm Höhe mit Kopf des Blatts, Dachzeile, Titel und Vorspann, darunter den 66 mm hohen Streifen Flussmündung über die ganze Formatbreite. Sein `minHeight` lässt die drei Spalten 6 mm unter dem Streifen beginnen, sodass Band und Bild mehr als die halbe erste Seite füllen.
+
+## Varianten
+
+### Nur die Unterschriften der Abbildungen trennen
+
+Der `captionStyle` eines Ressourcentyps nimmt dieselben Felder an und hat Vorrang vor dem des Dokuments, sodass ein Typ mit Silbentrennung gesetzt werden kann und die anderen nicht.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Bildunterschriften im Flattersatz
+
+Eine linksbündige Bildunterschrift mit `hyphenation: true` trennt ihre Wörter in der Trennzone des Flattersatzes, solange `bodyText.hyphenation.ragged` an ist.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Häufige Fehler
+
+- Ist `bodyText.hyphenation.ragged` aus, wird eine Bildunterschrift im Flattersatz oder eine Zelle mit `hyphenation: true` mit dem optimalen Verfahren umbrochen, trennt aber kein Wort.
+- Ohne `bodyText.optimalLineBreaking` wird die Bildunterschrift Zeile für Zeile umbrochen, ihre Wörter werden trotzdem getrennt.

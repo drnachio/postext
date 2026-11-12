@@ -1,0 +1,77 @@
+---
+title: "Legendas com hifenização em colunas estreitas"
+summary: "O boletim de um observatório de aves em três colunas de 60 mm, composto duas vezes: legendas, notas e células linha a linha, depois com hifenização."
+plain: "Uma legenda justificada numa coluna estreita tem poucos pontos para quebrar a linha, e os espaços entre as palavras se abrem. O boletim é composto duas vezes: com as legendas quebradas como antes e com as palavras divididas como no texto."
+description: "captionStyle.hyphenation, note.hyphenation e tableStyle.hyphenation num boletim em três colunas, com lineHeight para legendas e notas, antes e depois."
+question: "Como evito que uma legenda justificada numa coluna estreita abra espaços grandes entre as palavras?"
+aliases: ["hifenização em legendas", "dividir palavras nas legendas", "legendas justificadas", "legendas frouxas", "buracos nas legendas", "entrelinha da legenda", "lineHeight da legenda", "lineHeight da nota", "hifenização em tabelas", "tableStyle.hyphenation", "três colunas", "guia de campo", "pranchas de aves"]
+pageNotes: { "2": "Primeira composição, página 2: a legenda da figura 4 no alto da terceira coluna, com a primeira linha espalhada em quatro palavras com espaços largos entre elas.", "4": "Segunda composição, página 2: a mesma legenda com Acrocephalus dividido no fim da primeira linha e todas as linhas com espaçamento igual; a tabela divide below e warbler." }
+---
+
+## O que você vai compor
+
+Duas páginas de *Tideline*, o boletim de inverno de um observatório de aves imaginário, no formato 225 × 297 mm em três colunas de 60 mm. Uma faixa de estuário corre sob a faixa verde da abertura, e quatro pranchas em aquarela ocupam uma coluna cada, recortadas em volta da ave, com uma legenda justificada em Libre Franklin e uma nota curta embaixo. Uma tabela das contagens máximas fecha o artigo. O número é composto duas vezes. A primeira composição mantém os valores padrão: cada legenda é quebrada linha a linha e nenhuma palavra é dividida, de modo que numa coluna de 60 mm a linha com *Acrocephalus scirpaceus* fica espalhada em quatro palavras. A segunda hifeniza as legendas, as notas e as células da tabela, e o espaçamento delas fica igual ao do texto.
+
+## Preparo
+
+### 1 · Legendas compostas como o texto
+
+O código está na [resposta curta](#a-resposta-curta) acima. Com `captionStyle.hyphenation: true`, uma legenda é hifenizada como um estilo de parágrafo com `hyphenation: true`: quando está justificada, com os padrões do texto (`locale`) e as regras de hífen dele, mesmo que o texto corrido tenha a hifenização desligada. Ela é quebrada inteira pelo algoritmo de Knuth–Plass quando `bodyText.optimalLineBreaking` está ligado, dentro dos limites `minWordSpacing` e `maxWordSpacing` do texto. O rótulo, *Figure 4.*, nunca é dividido. `note.hyphenation` faz o mesmo com a linha embaixo da legenda, `Resource.note`.
+
+`lineHeight` dá à legenda a sua própria entrelinha, aqui 10,8 pt para um corpo de 8,2 pt, e `note.lineHeight` dá 8,8 pt à nota de 6,8 pt. Em `em`, eles se medem pelo próprio corpo. Sem eles, os dois tomam a entrelinha do texto em proporção ao seu corpo.
+
+### 2 · O mesmo número, composto duas vezes
+
+<Excerpt region="builds" />
+
+Os três interruptores valem `false` por padrão, então um livro composto antes do postext 1.80 mantém as suas páginas: legendas, notas e células quebradas linha a linha. As duas composições só diferem nesses interruptores, e `capture.doc` publica as duas: as páginas 1 e 2 linha a linha, as páginas 3 e 4 com hifenização. Os botões da barra mostram uma ou outra.
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="Linha a linha: a primeira linha da legenda da figura 4 fica espalhada em quatro palavras." />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="Com hifenização: Acrocephalus é dividido e as cinco linhas têm o mesmo espaçamento." />
+
+### 3 · Células em bandeira com hifenização
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` quebra cada célula inteira com o algoritmo ótimo. As células são compostas em bandeira, então as palavras delas só se dividem onde o texto em bandeira divide palavras: com `bodyText.hyphenation.ragged: true`, e só quando uma palavra levada inteira para a linha seguinte deixaria vazio mais do que a `zone`. A zona padrão, 3 em, mede 7,8 mm a 7,4 pt, demais para uma célula de 20 mm; este projeto a reduz para 1,5 em. O texto é justificado, então a opção da bandeira só chega à tabela, ao colofão e à legenda da tabela, que o tipo de recurso dela alinha à esquerda e coloca acima (`resourceTypes[].captionStyle`). Um estilo de tabela com nome aceita o mesmo campo, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="A tabela das contagens com hifenização: “Reed war-bler” numa coluna de 15 mm e “Open mud be-low the hides” numa de 20 mm." />
+
+### 4 · Pranchas recortadas em volta da ave
+
+<Excerpt region="plates" />
+
+As pranchas medem 1200 × 600 pixels, com a ave no meio de um fundo creme largo. `Resource.crop` fica com a parte em volta de cada ave, e a figura toma essa forma na coluna. A página é impressa no mesmo creme das pranchas, `#f6f3ea`, de modo que se veem as bordas da pintura e não as do arquivo. Legendas, notas e textos alternativos ficam num arquivo de conteúdo por idioma, um bloco por recurso.
+
+### 5 · Uma abertura sobre um campo de cor
+
+<Excerpt region="opener" />
+
+A abertura desenha uma faixa verde de 100 mm com o cabeçalho do boletim, o chapéu, o título e o lide, e embaixo a faixa de estuário, de 66 mm, em toda a largura do formato. O `minHeight` dela faz as três colunas começarem 6 mm abaixo da faixa, de modo que a faixa e a imagem ocupam mais da metade da primeira página.
+
+## Variações
+
+### Hifenizar só as legendas das figuras
+
+O `captionStyle` de um tipo de recurso aceita os mesmos campos e vale mais que o do documento, então um tipo pode ter hifenização e os outros não.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Legendas em bandeira
+
+Uma legenda alinhada à esquerda com `hyphenation: true` divide as palavras dentro da zona de hifenização do texto em bandeira, desde que `bodyText.hyphenation.ragged` esteja ligado.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Erros comuns
+
+- Com `bodyText.hyphenation.ragged` desligado, uma legenda em bandeira ou uma célula com `hyphenation: true` é quebrada pelo algoritmo ótimo, mas não divide nenhuma palavra.
+- Sem `bodyText.optimalLineBreaking`, a legenda é quebrada linha a linha, e as palavras dela são divididas do mesmo jeito.

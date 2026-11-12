@@ -1,0 +1,77 @@
+---
+title: "Légendes avec césure dans des colonnes étroites"
+summary: "Le bulletin d’un observatoire d’oiseaux sur trois colonnes de 60 mm, composé deux fois : légendes, notes et cellules coupées ligne par ligne, puis avec césure."
+plain: "Une légende justifiée dans une colonne étroite a peu d’endroits où couper la ligne, et ses blancs s’ouvrent. Le bulletin est composé deux fois : avec les légendes coupées comme avant, puis avec les mots divisés comme dans le texte."
+description: "captionStyle.hyphenation, note.hyphenation et tableStyle.hyphenation dans un bulletin sur trois colonnes, avec lineHeight pour légendes et notes."
+question: "Comment éviter qu’une légende justifiée dans une colonne étroite ouvre de grands blancs entre ses mots ?"
+aliases: ["césure des légendes", "couper les mots des légendes", "légendes justifiées", "légendes lâches", "blancs dans les légendes", "interligne de la légende", "lineHeight de la légende", "lineHeight de la note", "césure dans les tableaux", "tableStyle.hyphenation", "trois colonnes", "guide de terrain", "planches d’oiseaux"]
+pageNotes: { "2": "Première composition, page 2 : la légende de la figure 4 en haut de la troisième colonne, sa première ligne étalée sur quatre mots séparés par de grands blancs.", "4": "Seconde composition, page 2 : la même légende avec Acrocephalus coupé en fin de première ligne et toutes les lignes espacées de façon égale ; le tableau coupe below et warbler." }
+---
+
+## Ce que vous allez composer
+
+Deux pages de *Tideline*, le bulletin d’hiver d’un observatoire d’oiseaux imaginaire, au format 225 × 297 mm sur trois colonnes de 60 mm. Une bande d’estuaire passe sous le bandeau vert de l’ouverture, et quatre planches à l’aquarelle occupent chacune une colonne, recadrées autour de l’oiseau, avec une légende justifiée en Libre Franklin et une courte note dessous. Un tableau des effectifs maximaux ferme l’article. Le numéro est composé deux fois. La première composition garde les valeurs par défaut : chaque légende est coupée ligne par ligne et aucun de ses mots n’est divisé, si bien que dans une colonne de 60 mm la ligne qui porte *Acrocephalus scirpaceus* s’étale sur quatre mots. La seconde ajoute la césure aux légendes, aux notes et aux cellules du tableau, et leur espacement rejoint celui du texte.
+
+## Préparation
+
+### 1 · Des légendes composées comme le texte
+
+Le code se trouve dans [la réponse courte](#la-réponse-courte) plus haut. Avec `captionStyle.hyphenation: true`, une légende reçoit la césure comme un style de paragraphe avec `hyphenation: true` : quand elle est justifiée, avec les motifs du texte (`locale`) et ses règles de trait d’union, même si le texte courant a sa propre césure désactivée. Elle est coupée d’un seul bloc par l’algorithme de Knuth–Plass quand `bodyText.optimalLineBreaking` est actif, dans les limites `minWordSpacing` et `maxWordSpacing` du texte. L’étiquette, *Figure 4.*, n’est jamais divisée. `note.hyphenation` fait de même pour la ligne placée sous la légende, `Resource.note`.
+
+`lineHeight` donne à la légende son propre interligne, ici 10,8 pt pour un corps de 8,2 pt, et `note.lineHeight` donne 8,8 pt à la note de 6,8 pt. En `em`, ils se mesurent sur leur propre corps. Sans eux, les deux prennent l’interligne du texte en proportion de leur corps.
+
+### 2 · Le même numéro, composé deux fois
+
+<Excerpt region="builds" />
+
+Les trois interrupteurs valent `false` par défaut, si bien qu’un livre composé avant postext 1.80 garde ses pages : légendes, notes et cellules coupées ligne par ligne. Les deux compositions ne diffèrent que par ces interrupteurs, et `capture.doc` publie les deux : les pages 1 et 2 ligne par ligne, les pages 3 et 4 avec césure. Les boutons de la barre affichent l’une ou l’autre.
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="Ligne par ligne : la première ligne de la légende de la figure 4 s’étale sur quatre mots." />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="Avec césure : Acrocephalus est coupé et les cinq lignes sont espacées de la même façon." />
+
+### 3 · Cellules en drapeau avec césure
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` coupe chaque cellule d’un seul bloc avec l’algorithme optimal. Les cellules sont composées en drapeau, donc leurs mots ne sont divisés que là où le texte en drapeau divise les mots : avec `bodyText.hyphenation.ragged: true`, et seulement quand un mot renvoyé entier à la ligne suivante laisserait vide plus que la `zone`. La zone par défaut, 3 em, mesure 7,8 mm à 7,4 pt, trop pour une cellule de 20 mm ; cette maquette la règle à 1,5 em. Le texte est justifié, donc l’option du drapeau ne touche que le tableau, le colophon et la légende du tableau, que son type de ressource aligne à gauche et place au-dessus (`resourceTypes[].captionStyle`). Un style de tableau nommé accepte le même champ, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="Le tableau des effectifs avec césure : « Reed war-bler » dans une colonne de 15 mm et « Open mud be-low the hides » dans une de 20 mm." />
+
+### 4 · Des planches recadrées sur l’oiseau
+
+<Excerpt region="plates" />
+
+Les planches mesurent 1200 × 600 pixels, l’oiseau au milieu d’un large fond crème. `Resource.crop` garde la partie qui entoure chaque oiseau, et la figure prend cette forme dans la colonne. La page est imprimée dans le crème même des planches, `#f6f3ea`, si bien qu’on voit les bords de la peinture et pas ceux du fichier. Légendes, notes et textes alternatifs se trouvent dans un fichier de contenu par langue, un bloc par ressource.
+
+### 5 · Une ouverture sur un aplat de couleur
+
+<Excerpt region="opener" />
+
+L’ouverture dessine un bandeau vert de 100 mm avec le titre du bulletin, le surtitre, le titre et le chapeau, et dessous la bande d’estuaire, haute de 66 mm, sur toute la largeur du format. Son `minHeight` fait commencer les trois colonnes 6 mm sous la bande, si bien que le bandeau et l’image occupent plus de la moitié de la première page.
+
+## Variantes
+
+### Césure pour les seules légendes des figures
+
+Le `captionStyle` d’un type de ressource accepte les mêmes champs et l’emporte sur celui du document, si bien qu’un type peut recevoir la césure sans les autres.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Légendes en drapeau
+
+Une légende alignée à gauche avec `hyphenation: true` divise ses mots dans la zone de césure du texte en drapeau, tant que `bodyText.hyphenation.ragged` est actif.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Erreurs fréquentes
+
+- Avec `bodyText.hyphenation.ragged` désactivé, une légende en drapeau ou une cellule avec `hyphenation: true` est coupée par l’algorithme optimal mais ne divise aucun mot.
+- Sans `bodyText.optimalLineBreaking`, la légende est coupée ligne par ligne, ses mots étant divisés malgré tout.
