@@ -99,9 +99,39 @@ def test_docx_round_trip(client, bundle, tmp_path):
 
 
 def test_build(client, book, tmp_path):
-    r = client.build(book, pdf=tmp_path / "b.pdf", html=tmp_path / "b.html", epub=tmp_path / "b.epub")
-    assert sorted(o.kind for o in r.outputs) == ["epub", "html", "pdf"]
+    r = client.build(book, pdf=tmp_path / "b.pdf", html=tmp_path / "b.html", epub=tmp_path / "b.epub", idml=tmp_path / "b.idml")
+    assert sorted(o.kind for o in r.outputs) == ["epub", "html", "idml", "pdf"]
     assert all(Path(o.path).is_file() for o in r.outputs)
+
+
+def test_design_round_trip(client, book, tmp_path):
+    styled = client.pack(book, out=tmp_path / "styled.postext", set={"bodyText.fontSize.value": 14}, auto_thumbnail=False)
+    assert styled.ok
+    out = tmp_path / "type.postext"
+    r = client.design(tmp_path / "styled.postext", out=out, parts=["page", "text"], design_name="Large type")
+    assert isinstance(r, postext.DesignReport) and (r.name, r.parts) == ("Large type", ["page", "text"])
+    assert zipfile.is_zipfile(out) and r.output and r.output.path == str(out)
+    plain = client.pdf(book, out=tmp_path / "plain.pdf")
+    large = client.pdf(book, out=tmp_path / "large.pdf", design=out, design_parts="text")
+    assert large.ok and (large.pages or 0) >= (plain.pages or 0)
+    data = client.design_bytes(tmp_path / "styled.postext", parts="text")
+    assert data[:2] == b"PK" and client.pdf_bytes(book, design=data)[:5] == b"%PDF-"
+    with pytest.raises(postext.UsageError):
+        client.pdf(book, out=postext.STDOUT, design_parts="text")
+
+
+def test_idml_and_import_idml(client, book, tmp_path):
+    out = tmp_path / "b.idml"
+    r = client.idml(book, out=out, lines="reflow", spreads="single")
+    assert r.ok and r.output and r.output.kind == "idml" and r.output.pages == 3
+    assert zipfile.is_zipfile(out)
+    assert client.idml_bytes(book)[:2] == b"PK"
+    imported = client.import_idml(out.read_bytes(), out=tmp_path / "imported", layout="flow")
+    assert isinstance(imported, postext.ImportIdmlReport) and imported.layout == "flow"
+    assert (imported.chapters or 0) >= 1 and imported.quality is not None and imported.package is None
+    assert (tmp_path / "imported" / "preset.json").is_file()
+    bundle = client.import_idml(out, out=tmp_path / "imported.postext", auto_thumbnail=False)
+    assert bundle.layout in ("pages", "flow") and zipfile.is_zipfile(tmp_path / "imported.postext")
 
 
 def test_failures_raise(client, book, tmp_path):
