@@ -1,7 +1,7 @@
 // anchored: inline, above-line and custom anchored frames, an anchored
 // box that holds a table, and nested groups. The story runs from page 1
 // into a frame under the groups of page 2.
-#include "lib.jsxinc"
+//@include "lib.jsxinc"
 var doc = newDoc("170mm", "240mm", 2, false);
 var W = doc.documentPreferences.pageWidth, H = doc.documentPreferences.pageHeight;
 margins(doc, 54, 54, 120, 42, 1, 12);
