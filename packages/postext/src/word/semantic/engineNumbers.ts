@@ -42,20 +42,23 @@ export interface BookNumbers {
 
 /** Number the headings and resources of every chapter in book order,
  *  from `startHeadings`: the counters a book that continues a longer one
- *  starts from (`preset.json`'s `start.headings`, #1444). */
-export function bookNumbers(chapters: readonly { blocks: ContentBlock[] }[], config: PostextConfig, resolved: ResolvedConfig, resources: Resource[], startHeadings?: HeadingCounters): BookNumbers {
+ *  starts from (`preset.json`'s `start.headings`, #1444). A chapter's
+ *  headings are numbered as its own settings say (`resolvedOf`: the
+ *  chapter style it is set in, #1521), else as the book's. */
+export function bookNumbers(chapters: readonly { blocks: ContentBlock[] }[], config: PostextConfig, resolved: ResolvedConfig, resources: Resource[], startHeadings?: HeadingCounters, resolvedOf?: (index: number) => ResolvedConfig): BookNumbers {
   const resourceTypes = effectiveResourceTypes(config, resources);
   const locale = documentLocale(config);
-  const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, resolved);
-  const templates = headingTemplatesOf(resolved);
-  const options = headingNumberingOptions(resolved);
   let heading: HeadingContext | undefined = startHeadings ? { ...startHeadings } : undefined;
   let counters: ResourceCounterState | undefined;
   let numbered: ResourceNumberingMap = {};
   const headings: (string | undefined)[][] = [];
   const headingValues: (number | undefined)[][] = [];
   const strips = new Map<ContentBlock, ResourceNumberEntry>();
-  for (const ch of chapters) {
+  chapters.forEach((ch, index) => {
+    const own = resolvedOf?.(index) ?? resolved;
+    const isNumbered = (b: ContentBlock): boolean => headingIsNumbered(b, own);
+    const templates = headingTemplatesOf(own);
+    const options = headingNumberingOptions(own);
     const start = heading ? [heading.h1, heading.h2, heading.h3, heading.h4, heading.h5, heading.h6] : undefined;
     const counted = computeHeadingNumbering(ch.blocks, templates, start, isNumbered, options);
     headings.push(counted.prefixes);
@@ -69,7 +72,7 @@ export function bookNumbers(chapters: readonly { blocks: ContentBlock[] }[], con
       if (b) strips.set(b, entry);
     }
     if (context.length) heading = context[context.length - 1];
-  }
+  });
   // The plain count of each resource in its type, in numbering order.
   const ordinals = new Map<string, number>();
   const perType = new Map<string, number>();

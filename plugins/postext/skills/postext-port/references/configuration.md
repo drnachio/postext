@@ -2595,6 +2595,12 @@ A book can hold named designs, and a chapter is laid out with one of them over t
 - A `chapterStyle:` or part `style` naming an unknown id raises `chapterStyleUnknown`; the chapter is laid out
   with the book's settings.
 - There is no style for part of a chapter: split the chapter, or use a heading style (§19g) for one section.
+- The Word export reads the styles too: in the formatted `.docx` each chapter is a Word section with its
+  style's margins, columns and page numbering, and a paragraph or character style the chapter style sets
+  otherwise gets a version named after it (`Normal (Appendix)`, id `NormalCs1`); the round trip gives back
+  the `chapterStyle:` lines and part fences as they were. A host laying the whole book out as one document
+  passes `content.chapters` (`{ start, end }` source ranges): the chapters of one style are laid out
+  together, the next style's from a new page (the Sandbox HTML viewer's whole-book mode does this).
 
 ## 19h. `checks` — the `contentInConfig` check (postext 1.34)
 

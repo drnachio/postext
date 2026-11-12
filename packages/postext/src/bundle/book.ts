@@ -169,8 +169,23 @@ export function buildBundle(
   // no `page:` target keeps none, and a chapter without a composed page
   // does not depend on them.
   const jumpsPossible = (jsonKey(config) ?? '').includes('page:');
+  let chain: (LayoutContinuation | undefined)[] | undefined;
+  // Where the book starts: the pages before it and the numbering in effect
+  // are the first chapter's alone (the chain supplies them from then on),
+  // the counters and the open part are what every chapter after it counts
+  // on from.
+  const start = bundleStart(bundle.start);
+  const { pageIndexOffset: startOffset = 0, pageNumbering: _startNumbering, ...startCounters } = start ?? {};
+  void _startNumbering;
+  // A chapter's page fences are read in its own style: the one it names,
+  // or the one of the part it is in (#1521), which may give it the
+  // templates its pages name.
   const laterIds = jumpsPossible
-    ? laterPageIdsOf(sources.map((markdown) => (hasComposedPage(markdown) ? build.derive(`ids\u0000${markdown}`, () => pageFenceIds(markdown, config)) : [])))
+    ? laterPageIdsOf(sources.map((markdown, index) => {
+      if (!hasComposedPage(markdown)) return [];
+      const before = inherited(index);
+      return build.derive(`ids\u0000${before?.part?.style ?? ''}\u0000${markdown}`, () => pageFenceIds(markdown, config, before));
+    }))
     : undefined;
   /** What each chapter needs of `laterIds` to be laid out: only the
    *  chapters with a composed page jump. */
@@ -196,14 +211,6 @@ export function buildBundle(
   // every chapter is laid out: the book goes round once more with it. It
   // never moves a page break, so one more round settles it.
   const usesBookTotal = configUsesPlaceholder(config, 'bookTotalPages');
-  // Where the book starts: the pages before it and the numbering in effect
-  // are the first chapter's alone (the chain supplies them from then on),
-  // the counters and the open part are what every chapter after it counts
-  // on from.
-  const start = bundleStart(bundle.start);
-  const { pageIndexOffset: startOffset = 0, pageNumbering: _startNumbering, ...startCounters } = start ?? {};
-  void _startNumbering;
-
   // The contents before any chapter is laid out (#787): every chapter's
   // headings, parts and anchors, numbered as the book numbers them, without
   // their pages. A contents chapter set with it takes, but for its page
@@ -305,12 +312,23 @@ export function buildBundle(
   /** Every chapter's outline entries as its text gives them, the counters
    *  chained from chapter to chapter as the rounds chain them. */
   function provisionalOutline(): OutlineEntry[] {
-    let before: LayoutContinuation | undefined = Object.keys(startCounters).length > 0 ? startCounters : undefined;
-    return sources.flatMap((markdown) => {
-      const prior = before;
-      const priorKey = jsonKey(prior);
-      before = build.derive(priorKey === undefined ? undefined : `next\u0000${priorKey}\u0000${markdown}`, () => continuationAfter({ markdown, resources }, config, prior));
-      return contentOutline({ markdown, resources }, config, prior).outline;
-    });
+    return sources.flatMap((markdown, index) => contentOutline({ markdown, resources }, config, inherited(index)).outline);
+  }
+
+  /** What chapter `index` inherits from the chapters before it, as the
+   *  first round chains it (the same keys, so the round finds them): its
+   *  counters and the part it is in. Chained once, on first use. */
+  function inherited(index: number): LayoutContinuation | undefined {
+    if (!chain) {
+      chain = [];
+      let before: LayoutContinuation | undefined = Object.keys(startCounters).length > 0 ? startCounters : undefined;
+      for (const markdown of sources) {
+        const prior = before;
+        chain.push(prior);
+        const priorKey = jsonKey(prior);
+        before = build.derive(priorKey === undefined ? undefined : `next\u0000${priorKey}\u0000${markdown}`, () => continuationAfter({ markdown, resources }, config, prior));
+      }
+    }
+    return chain[index];
   }
 }

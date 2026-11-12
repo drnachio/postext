@@ -38,7 +38,9 @@ import { buildDocumentBalanced } from './balanced.js';
 import { withIndexMarks } from './pageMarks.js';
 import { type CitingPageSlot, type BuildDocumentOptions, BuildCancelledError } from './passTypes.js';
 import { indexWarnings, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrinkWarningsByDoc, textWrapWarningsByDoc, compositionWarningsByDoc, composedWarningsByDoc, afterTextWarnings, unplacedByDoc } from './warnings.js';
-import { chapterConfigOf } from '../../defaults/chapterStyles.js';
+import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js';
+import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
+import { continuationAfter } from '../continuation.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -122,9 +124,15 @@ export function* buildDocumentGen(
   // A chapter in a style of the book's (`chapterStyle:` in its front
   // matter, or the `style` of the part it opens or belongs to) is laid
   // out with that style over the book's settings.
-  if (config) config = chapterConfigOf(config, content.markdown, content.continuation?.part?.style);
+  // A whole book in one document sets each chapter in its own style
+  // (`content.chapters`): chapters of one style together, from a new page.
+  const runs = config?.chapterStyles?.length && content.chapters?.length ? chapterRuns(content.markdown, content.chapters, config, content.continuation) : undefined;
+  const book = config;
+  if (config) config = runs ? chapterConfig(config, runs[0]?.style) : chapterConfigOf(config, content.markdown, content.continuation?.part?.style);
   validateConfigCache(config);
-  const doc = yield* buildDocumentRounds(content, config, cache, options);
+  const doc = runs && runs.length > 1 ? yield* buildChapterRuns(content, book!, runs, cache, options) : yield* buildDocumentRounds(content, config, cache, options);
+  // The warnings below read the book's settings and where each chapter lies.
+  if (runs && runs.length > 1) config = book;
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
   markTurnedBoxes(doc);
@@ -133,7 +141,7 @@ export function* buildDocumentGen(
   // `doc.warnings`, whose entries keep their postext 1.4 shape.
   const bookAnchors = content.outline ? new Set(anchorOutline(content.outline).map((e) => e.anchorId!)) : undefined;
   const bookCitationKeys = content.citations ? new Set(content.citations.items.map((i) => i.id)) : undefined;
-  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys), ...(indexWarnings.get(doc) ?? [])];
+  const found = [...collectContentWarnings(content.markdown, config, content.resources ?? [], bookAnchors, bookCitationKeys, content.chapters),...(indexWarnings.get(doc) ?? [])];
   const located = found.length > 0 ? locateContentWarnings(doc, found) : [];
   // Justified CJK lines the composer could not fill within its tracking
   // cap; words of a joining script that run past their line, and styles
@@ -247,6 +255,44 @@ function* buildDocumentRounds(
     }
   }
   return withIndexMarks(yield* buildDocumentNumbered(content, config, cache, options, 0, citing), content);
+}
+
+/** A whole book whose chapters are set in more than one style: each run
+ *  of chapters of one style laid out in it, after the runs before it, and
+ *  the documents joined (`bookChapters.ts`). A book printing its contents
+ *  or its index is laid out again while the page labels they print move. */
+function* buildChapterRuns(
+  content: PostextContent,
+  book: PostextConfig,
+  runs: readonly ChapterRun[],
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): Generator<void, VDTDocument, void> {
+  const resolved = resolveAllConfig(chapterConfig(book, runs[0]!.style));
+  const parsed = parseMarkdownMemo(extractFrontmatter(content.markdown).content, codeParseOptions(resolved));
+  const lists = content.outline === undefined && (hasTocDirective(parsed) || hasIndexDirective(parsed) || hasAnchorRefs(parsed, new Set((content.resources ?? []).map((r) => r.id))));
+  let outline = lists ? ownOutline(parsed, resolved, content.continuation) : content.outline;
+  const { chapters: _chapters, ...rest } = content;
+  void _chapters;
+  for (let round = 0; ; round++) {
+    const docs: VDTDocument[] = [];
+    let continuation = content.continuation;
+    for (const run of runs) {
+      const config = chapterConfig(book, run.style);
+      const markdown = runSource(content.markdown, run);
+      // The stories sent to the book arrive at its first run: the
+      // continuation of a later one carries none (`nextRunContinuation`).
+      const sent = continuation;
+      const doc = yield* buildDocumentRounds({ ...rest, markdown, ...(docs[0] ? { metadata: docs[0].metadata } : {}), ...(outline ? { outline } : {}), ...(sent ? { continuation: sent } : {}) }, config, cache, options);
+      docs.push(doc);
+      continuation = nextRunContinuation(doc, continuationAfter({ markdown, ...(content.resources ? { resources: content.resources } : {}) }, config, sent), content);
+    }
+    const doc = mergeRunDocuments(docs);
+    if (!lists || round >= MAX_TOC_ROUNDS) return doc;
+    const after = outlineFromDoc(doc, outline!);
+    if (sameOutline(after, outline!)) return doc;
+    outline = after;
+  }
 }
 
 /** A document's own outline, its exercises' anchors named as a reference
