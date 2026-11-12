@@ -6124,6 +6124,15 @@ export interface SandboxLabels {
   idmlImportWorking: string;
   idmlImportDone: string;
   idmlImportCreateFailed: string;
+  idmlPackageImport: string;
+  idmlPackageReadFailed: string;
+  idmlPackageNoIdml: string;
+  idmlPackageChooseTitle: string;
+  idmlPackageChooseIntro: string;
+  idmlImportFromPackage: string;
+  idmlImportPackageLinks: string;
+  idmlImportFontsCarried: string;
+  idmlImportFontsMissingHelp: string;
   wordFontRestricted: string;
   wordFontCff: string;
   wordFontVariable: string;

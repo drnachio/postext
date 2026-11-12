@@ -1,6 +1,6 @@
 'use client';
 
-import { Plus, ChevronDown, Copy, FilePlus, FileInput, Upload, X, Files, ChevronRight } from 'lucide-react';
+import { Plus, ChevronDown, Copy, FilePlus, FileInput, FileArchive, Upload, X, Files, ChevronRight } from 'lucide-react';
 import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
@@ -17,6 +17,9 @@ import { openBookThenShowChapters } from './openBook.js';
 import { openTextMigration } from '../migrate/migrationRequest.js';
 import { PresetRow, ProjectRow } from './ProjectsPanel/rows.js';
 import { IdmlImportDialog, type IdmlPickedFile } from '../idml/IdmlImportDialog.js';
+import { IdmlPackageDialog } from '../idml/IdmlPackageDialog.js';
+import { readIdmlPackage, type IdmlPackageFile } from '../idml/sandboxIdmlImport.js';
+import { isolate } from '../word/WordImportDialog.js';
 
 function GroupTitle({ children, actions }: { children: ReactNode; actions?: ReactNode }) {
   return (
@@ -67,12 +70,33 @@ export function ProjectsPanel() {
   };
   const importRef = useRef<HTMLInputElement>(null);
   const idmlRef = useRef<HTMLInputElement>(null);
+  const idmlPackageRef = useRef<HTMLInputElement>(null);
   // An InDesign document picked for a new book: the dialog reads it.
   const [idmlFile, setIdmlFile] = useState<IdmlPickedFile | null>(null);
   const handleIdml = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = '';
     if (file) setIdmlFile({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+  };
+  // A zipped InDesign package (#1538): one IDML goes straight to the
+  // import dialog; several ask which one first.
+  const [idmlPackage, setIdmlPackage] = useState<IdmlPackageFile | null>(null);
+  const handleIdmlPackage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setImportError(null);
+    let pkg: IdmlPackageFile;
+    try {
+      pkg = await readIdmlPackage(file.name, new Uint8Array(await file.arrayBuffer()));
+    } catch (err) {
+      setImportError(labels.idmlPackageReadFailed.replace('__file__', isolate(file.name)).replace('__error__', () => isolate(err instanceof Error ? err.message : String(err))));
+      return;
+    }
+    const { documents } = pkg.archive;
+    if (documents.length === 0) setImportError(labels.idmlPackageNoIdml.replace('__file__', isolate(file.name)));
+    else if (documents.length === 1) setIdmlFile({ name: file.name, package: { ...pkg, path: documents[0]! } });
+    else setIdmlPackage(pkg);
   };
   const [importError, setImportError] = useState<string | null>(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
@@ -184,23 +208,35 @@ export function ProjectsPanel() {
               <MenuSeparator />
               <MenuItem icon={<Upload size={13} />} onClick={() => importRef.current?.click()}>{labels.projectImportShort}</MenuItem>
               <MenuItem icon={<FileInput size={13} />} onClick={() => idmlRef.current?.click()}>{labels.idmlImport}</MenuItem>
+              <MenuItem icon={<FileArchive size={13} />} onClick={() => idmlPackageRef.current?.click()}>{labels.idmlPackageImport}</MenuItem>
             </Menu>
-            {/* No `accept` filter (#1183): macOS gives `.postext` only a
-                dynamic type, and the picker greys the files out now and
-                then. The import reads the archive and reports a file that
-                is not a book. */}
+            {/* Each picker offers the files its item names (#1537). Chrome
+                on macOS matches them by extension, and its picker keeps an
+                All files entry: a file of another kind picked there is
+                refused by the import in its own words. (#1183 had dropped
+                the filter: a `.postext` exported seconds earlier could show
+                greyed out until the picker was opened again.) */}
             <input
               ref={importRef}
               type="file"
+              accept=".postext"
               onChange={handleImport}
               className="hidden"
               aria-hidden="true"
             />
-            {/* No `accept` filter either: a file that is no IDML package
-                is named in the dialog, in the reader's words. */}
-            <input ref={idmlRef} type="file" onChange={handleIdml} className="hidden" aria-hidden="true" />
+            <input ref={idmlRef} type="file" accept=".idml" onChange={handleIdml} className="hidden" aria-hidden="true" />
+            <input ref={idmlPackageRef} type="file" accept=".zip" onChange={(e) => void handleIdmlPackage(e)} className="hidden" aria-hidden="true" />
           </>
         }
+      />
+      <IdmlPackageDialog
+        pkg={idmlPackage}
+        onClose={() => setIdmlPackage(null)}
+        onChoose={(path) => {
+          const pkg = idmlPackage;
+          setIdmlPackage(null);
+          if (pkg) setIdmlFile({ name: pkg.name, package: { ...pkg, path } });
+        }}
       />
       <IdmlImportDialog
         file={idmlFile}

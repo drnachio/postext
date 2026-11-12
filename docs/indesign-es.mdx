@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nuevo a partir de un documento de InDesign (IDML)** (véase [Sandbox › Importar un documento de InDesign](/es/docs/sandbox-books-saving#importar-un-documento-de-indesign)), y desde código con `idmlToPostext`, del paquete `postext-idml` (véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml)). Todas las opciones del comando están en [Línea de comandos › import-idml](/es/docs/command-line#import-idml).
+La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nuevo a partir de un documento de InDesign (IDML)** (véase [Sandbox › Importar un documento de InDesign](/es/docs/sandbox-books-saving#importar-un-documento-de-indesign)), que también abre un armado de InDesign comprimido con **Libro nuevo a partir de un armado de InDesign (.zip)** y toma de él las fuentes y las imágenes enlazadas, y desde código con `idmlToPostext`, del paquete `postext-idml` (véase [Uso programático › Paquetes de InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml)). Todas las opciones del comando están en [Línea de comandos › import-idml](/es/docs/command-line#import-idml).
 
 ### Páginas o texto corrido
 
@@ -79,7 +79,7 @@ La misma importación se hace en el Sandbox, en **Libros › Nuevo › Libro nue
 
 ### Lo que informa
 
-El `.idml` no lleva las fuentes ni las imágenes enlazadas. El importador enumera las familias de fuentes que necesita el libro, que luego das a la generación con `--font-dir`. Lee las imágenes enlazadas de `--links` o de la carpeta del archivo, y enumera las que no encuentra.
+El `.idml` no lleva las fuentes ni las imágenes enlazadas. El importador enumera las familias de fuentes que necesita el libro, que luego das a la generación con `--font-dir`. Lee las imágenes enlazadas de `--links` o de la carpeta del archivo, y enumera las que no encuentra. Un armado comprimido lleva las dos cosas: en el Sandbox, y desde código con `openIdmlArchive`, el importador toma las imágenes de su carpeta `Links` y pone en el libro los archivos de fuente de su carpeta `Document fonts`.
 
 InDesign hace cosas que no tienen equivalente en Postext, como el texto en un trazado, una celda girada, una línea diagonal en una celda, los estilos GREP y anidados o los efectos de transparencia. Cada una de ellas pasa a ser un hallazgo del informe, con un recuento y un ejemplo: una *pérdida* cuando se deja fuera, un *aviso* cuando se compone de forma parecida al original (las filas de pie de una tabla, un degradado, un ceñido al contorno). El informe termina con un veredicto:
 

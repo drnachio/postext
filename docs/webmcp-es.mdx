@@ -605,7 +605,10 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
   tomaría y por qué, el veredicto, los hallazgos, las fuentes que necesita el
   libro y las imágenes enlazadas que aún faltan. `layout` elige `pages` o
   `flow`, y `links` entrega las imágenes enlazadas, cada una emparejada por su
-  `fileName`.
+  `fileName`. `file` también puede ser un armado de InDesign comprimido: sus
+  imágenes enlazadas y sus fuentes pasan al libro (`linksFromPackage`,
+  `fontsFromPackage`), y `document` nombra el IDML que se importa cuando lleva
+  varios (`documents`, en la respuesta, los enumera).
 - **Traer un manuscrito de Word** con `sandbox_import_word`. Ejecútalo primero
   con `dryRun: true`: no cambia nada y responde con el informe de calidad, cada
   estilo de Word con aquello en lo que se convertiría y los capítulos y

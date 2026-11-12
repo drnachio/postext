@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-La mateixa importació es fa al Sandbox, a **Llibres › Nou › Llibre nou a partir d'un document d'InDesign (IDML)** (vegeu [Sandbox › Importar un document d'InDesign](/ca/docs/sandbox-books-saving#importar-un-document-dindesign)), i des del codi amb `idmlToPostext`, del paquet `postext-idml` (vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml)). Totes les opcions de l'ordre són a [Línia d'ordres › import-idml](/ca/docs/command-line#import-idml).
+La mateixa importació es fa al Sandbox, a **Llibres › Nou › Llibre nou a partir d'un document d'InDesign (IDML)** (vegeu [Sandbox › Importar un document d'InDesign](/ca/docs/sandbox-books-saving#importar-un-document-dindesign)), que també obre un paquet d'InDesign comprimit amb **Llibre nou a partir d'un paquet d'InDesign (.zip)** i en pren les fonts i les imatges enllaçades, i des del codi amb `idmlToPostext`, del paquet `postext-idml` (vegeu [Ús programàtic › Paquets d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml)). Totes les opcions de l'ordre són a [Línia d'ordres › import-idml](/ca/docs/command-line#import-idml).
 
 ### Pàgines o text seguit
 
@@ -79,7 +79,7 @@ La mateixa importació es fa al Sandbox, a **Llibres › Nou › Llibre nou a pa
 
 ### El que informa
 
-L'`.idml` no porta les fonts ni les imatges enllaçades. L'importador enumera les famílies de fonts que necessita el llibre, que després dones a la generació amb `--font-dir`. Llegeix les imatges enllaçades de `--links` o de la carpeta del fitxer, i enumera les que no troba.
+L'`.idml` no porta les fonts ni les imatges enllaçades. L'importador enumera les famílies de fonts que necessita el llibre, que després dones a la generació amb `--font-dir`. Llegeix les imatges enllaçades de `--links` o de la carpeta del fitxer, i enumera les que no troba. Un paquet comprimit porta totes dues coses: al Sandbox, i des del codi amb `openIdmlArchive`, l'importador pren les imatges de la seva carpeta `Links` i posa al llibre els fitxers de font de la seva carpeta `Document fonts`.
 
 InDesign fa coses que no tenen equivalent a Postext, com el text en un traçat, una cel·la girada, una línia diagonal en una cel·la, els estils GREP i imbricats o els efectes de transparència. Cadascuna es converteix en una troballa de l'informe, amb un recompte i un exemple: una *pèrdua* quan es deixa fora, un *avís* quan es compon de manera semblant a l'original (les files de peu d'una taula, un degradat, un ajust al contorn). L'informe acaba amb un veredicte:
 

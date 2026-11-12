@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus einem InDesign-Dokument (IDML)** (siehe [Sandbox › Ein InDesign-Dokument importieren](/de/docs/sandbox-books-saving#ein-indesign-dokument-importieren)) und im Code mit `idmlToPostext` aus dem Paket `postext-idml` (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml)). Alle Optionen des Befehls stehen unter [Kommandozeile › import-idml](/de/docs/command-line#import-idml).
+Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus einem InDesign-Dokument (IDML)** (siehe [Sandbox › Ein InDesign-Dokument importieren](/de/docs/sandbox-books-saving#ein-indesign-dokument-importieren)), die unter **Neues Buch aus einem InDesign-Paket (.zip)** auch ein gezipptes InDesign-Paket öffnet und daraus seine Schriften und verknüpften Bilder übernimmt, und im Code mit `idmlToPostext` aus dem Paket `postext-idml` (siehe [Programmatische Nutzung › InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml)). Alle Optionen des Befehls stehen unter [Kommandozeile › import-idml](/de/docs/command-line#import-idml).
 
 ### Seiten oder Fließtext
 
@@ -79,7 +79,7 @@ Derselbe Import läuft in der Sandbox unter **Bücher › Neu › Neues Buch aus
 
 ### Was der Bericht meldet
 
-Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Import listet die Schriftfamilien auf, die das Buch braucht und die Sie dem Build dann mit `--font-dir` geben. Verknüpfte Bilder liest er aus `--links` oder aus dem Ordner der Datei und listet die auf, die er nicht findet.
+Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Import listet die Schriftfamilien auf, die das Buch braucht und die Sie dem Build dann mit `--font-dir` geben. Verknüpfte Bilder liest er aus `--links` oder aus dem Ordner der Datei und listet die auf, die er nicht findet. Ein gezipptes Paket enthält beides: In der Sandbox und im Code mit `openIdmlArchive` nimmt der Import die Bilder aus seinem Ordner `Links` und übernimmt die Schriftdateien seines Ordners `Document fonts` in das Buch.
 
 InDesign kann Dinge, für die Postext keine Entsprechung hat, etwa Pfadtext, eine gedrehte Zelle, eine Diagonale in einer Zelle, GREP- und verschachtelte Formate oder Transparenzeffekte. Jedes davon wird zu einem Befund im Bericht, mit einer Anzahl und einem Beispiel: ein *Verlust*, wenn es wegfällt, eine *Warnung*, wenn es angenähert gesetzt wird (die Fußzeilen einer Tabelle, ein Verlauf, eine Konturenführung). Der Bericht endet mit einem Urteil:
 

@@ -594,7 +594,11 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
   il rapporto di importazione: il layout che adotterebbe e perché, il verdetto,
   i rilievi, i font di cui il libro ha bisogno e le immagini collegate ancora
   mancanti. `layout` sceglie `pages` o `flow`, e `links` consegna le immagini
-  collegate, ciascuna abbinata in base al suo `fileName`.
+  collegate, ciascuna abbinata in base al suo `fileName`. `file` può anche essere
+  un pacchetto InDesign compresso: le sue immagini collegate e i suoi font
+  entrano nel libro (`linksFromPackage`, `fontsFromPackage`), e `document` nomina
+  l’IDML da importare quando ne contiene più di uno (`documents`, nella risposta,
+  li elenca).
 - **Importare un manoscritto Word** con `sandbox_import_word`. Eseguilo prima con
   `dryRun: true`: non cambia nulla e risponde con il rapporto di qualità, ogni
   stile di Word con ciò che diventerebbe, e i capitoli e le risorse che

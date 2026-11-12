@@ -1,9 +1,10 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { zipSync, strToU8 } from 'fflate';
 import { buildDocument, type PostextConfig, type Resource } from 'postext';
 import { openBundle } from 'postext/bundle';
 import { idmlDocument } from 'postext-idml';
-import { addLinkFiles, convertIdml, describeIdmlImport, findingsBySeverity, fontsNeeded, idmlBookBundle, linkFileName, linkLookup, mainPageSize, readIdmlFile } from './sandboxIdmlImport.js';
+import { addLinkFiles, convertIdml, describeIdmlImport, findingsBySeverity, fontsCarried, fontsNeeded, idmlBookBundle, linkFileName, linkLookup, mainPageSize, readIdmlFile, readIdmlPackage, readIdmlPackageDocument } from './sandboxIdmlImport.js';
 
 // Text measured without a DOM: a fixed advance per character.
 (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = class {
@@ -94,5 +95,37 @@ describe('the Sandbox InDesign import', () => {
     const said = describeIdmlImport(result);
     expect(said).toMatchObject({ name: 'harbour', layout: result.layout, reason: result.reason, verdict: result.report.verdict, resources: result.resources.length });
     expect(said.missingLinks).toBeUndefined();
+  });
+
+  it('reads a zipped InDesign package: its document, its links and its fonts (#1538)', async () => {
+    const amiri = new Uint8Array(readFileSync(new URL('../../../../apps/web/public/presets/alf-layla/fonts/Amiri-Regular.ttf', import.meta.url)));
+    const config = { page: { width: { value: 120, unit: 'mm' }, height: { value: 180, unit: 'mm' } }, bodyText: { fontFamily: 'Amiri' } } as PostextConfig;
+    const resources = [{ id: 'pic', typeId: 'figure', kind: 'bitmap', bitmap: { fileId: 'f-pic', format: 'png', width: 1, height: 1 }, createdAt: 0, updatedAt: 0 }] as unknown as Resource[];
+    const doc = buildDocument({ markdown: 'Boats come in at dusk.\n\n::resource{id="pic"}\n\nNets dry on the quay.', resources }, config);
+    const exported = idmlDocument({ docs: [doc], resourceBytes: () => PNG, images: 'link', title: 'Harbour' });
+    const link = exported.links[0]!;
+    const zip = zipSync({
+      'Harbour Folder/Harbour.idml': exported.bytes,
+      [`Harbour Folder/${link.path}`]: link.bytes,
+      'Harbour Folder/Document fonts/Amiri-Regular.ttf': amiri,
+      '__MACOSX/Harbour Folder/._Harbour.idml': strToU8('x'),
+    });
+
+    const pkg = await readIdmlPackage('harbour.zip', zip);
+    expect(pkg.archive.documents).toEqual(['Harbour Folder/Harbour.idml']);
+    const file = await readIdmlPackageDocument({ ...pkg, path: pkg.archive.documents[0]! });
+    expect(file.name).toBe('Harbour.idml');
+    const result = await convertIdml(file);
+    expect(result.missingLinks).toEqual([]);
+    expect(result.packageLinks).toHaveLength(1);
+    expect(fontsCarried(result)).toEqual(['Amiri (Regular)']);
+    expect(fontsNeeded(result).join(' ')).not.toMatch(/Amiri \(Regular/);
+    expect(describeIdmlImport(result)).toMatchObject({ fontsFromPackage: ['Amiri (Regular)'], linksFromPackage: 1 });
+
+    // The book carries the face: its file and the family that names it.
+    const opened = await openBundle((await idmlBookBundle(result)).bytes);
+    const family = opened.config.customFonts?.find((f) => f.name === 'Amiri');
+    expect(family?.variants.some((v) => v.weight === 400 && v.style === 'normal')).toBe(true);
+    expect(opened.files.get(family!.variants[0]!.fileId)).toEqual(amiri);
   });
 });

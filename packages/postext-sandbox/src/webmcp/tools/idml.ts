@@ -7,7 +7,7 @@ import { layOutBookPrint } from '../../book/printChain.js';
 import { ensureConfigFontsLoaded } from '../../controls/fonts/fontLoader.js';
 import { buildIdmlExport, type IdmlExportChoices } from '../../idml/idmlExport.js';
 import { idmlFontWithheld, sandboxIdmlFaces } from '../../idml/idmlFonts.js';
-import { convertIdml, describeIdmlImport, idmlBookBundle, mainPageSize, readIdmlFile, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile } from '../../idml/sandboxIdmlImport.js';
+import { convertIdml, describeIdmlImport, idmlBookBundle, mainPageSize, readIdmlFile, readIdmlPackage, readIdmlPackageDocument, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile } from '../../idml/sandboxIdmlImport.js';
 import { downloadBytes } from '../../storage/persistence.js';
 import { bookPagesSummary, layoutConfig, whenSettled, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
@@ -121,11 +121,12 @@ export function idmlTools(host: SandboxToolHost): WebMcpTool[] {
   const importIdml: WebMcpTool = {
     name: 'sandbox_import_idml',
     title: 'Sandbox: import an InDesign document',
-    description: "Read an InDesign document saved as IDML (.idml) into a new book, as the Books panel's \"New book from an InDesign document\" does: its text becomes chapters, its page and styles the design, its pictures and tables resources. The books the reader has are left as they are, and the new one opens. Run it first with dryRun: true — it creates nothing and answers with what the document holds (pages, page size, stories, fonts, pictures linked and embedded, tables) and the import report: how it would be laid out and why, the verdict (faithful, approximate or lossy), the counts, every finding with its severity (loss, warning, info), count and examples, the fonts the book needs and the linked pictures nobody gave the bytes of. layout chooses composed pages that keep the document's geometry (pages) or a flowing book (flow); auto, the default, lets the importer decide. Pictures the document links to and does not carry are handed over in links, each matched by its file name alone. An .indd file is refused: it is saved as IDML from InDesign first. For a Word manuscript, sandbox_import_word; for a .postext book, sandbox_import_book.",
+    description: "Read an InDesign document saved as IDML (.idml) into a new book, as the Books panel's \"New book from an InDesign document\" does: its text becomes chapters, its page and styles the design, its pictures and tables resources. The books the reader has are left as they are, and the new one opens. Run it first with dryRun: true — it creates nothing and answers with what the document holds (pages, page size, stories, fonts, pictures linked and embedded, tables) and the import report: how it would be laid out and why, the verdict (faithful, approximate or lossy), the counts, every finding with its severity (loss, warning, info), count and examples, the fonts the book needs and the linked pictures nobody gave the bytes of. layout chooses composed pages that keep the document's geometry (pages) or a flowing book (flow); auto, the default, lets the importer decide. Pictures the document links to and does not carry are handed over in links, each matched by its file name alone. file may also be a zipped InDesign package (the folder File › Package makes, as a .zip): the IDML document in it is imported with the package's linked pictures and fonts (fontsFromPackage, linksFromPackage); when it holds several, document names the one to import (documents in the answer lists them). An .indd file is refused: it is saved as IDML from InDesign first. For a Word manuscript, sandbox_import_word; for a .postext book, sandbox_import_book.",
     inputSchema: {
       type: 'object',
       properties: {
-        file: fileParam('The .idml file: where to fetch it (url) or its bytes (base64).'),
+        file: fileParam('The .idml file, or a zipped InDesign package that holds one: where to fetch it (url) or its bytes (base64).'),
+        document: { type: 'string', description: 'A zipped package: the path inside it of the IDML document to import (Book/Book.idml). Needed when it holds more than one.' },
         dryRun: { type: 'boolean', description: 'Create nothing: answer with what the document holds and the import report.' },
         layout: { type: 'string', enum: ['auto', 'pages', 'flow'], description: 'pages: composed pages, every frame where the document has it. flow: a flowing book. auto (default): the importer decides and says why (reason).' },
         links: {
@@ -143,10 +144,21 @@ export function idmlTools(host: SandboxToolHost): WebMcpTool[] {
     annotations: { untrustedContentHint: true },
     execute: async (args, { signal }) => {
       const picked = await readFileInput(args.file as FileInput, signal);
+      const bytes = new Uint8Array(await picked.arrayBuffer());
       let file: IdmlImportFile;
       try {
-        file = await readIdmlFile(picked.name, new Uint8Array(await picked.arrayBuffer()));
+        // A zip that is no IDML package itself is read as a zipped InDesign package.
+        const pkg = /\.idml$/i.test(picked.name) ? null : await readIdmlPackage(picked.name, bytes).catch(() => null);
+        if (pkg && !pkg.archive.documents.includes('')) {
+          const { documents } = pkg.archive;
+          if (documents.length === 0) throw new ToolError(`${picked.name} holds no IDML document${pkg.archive.indd.length > 0 ? ` (only ${pkg.archive.indd.join(', ')})` : ''}: in InDesign, tick Include IDML in File › Package, or save the document as IDML (File › Export).`);
+          const wanted = typeof args.document === 'string' ? args.document : documents.length === 1 ? documents[0]! : null;
+          if (wanted === null) throw new ToolError(`${picked.name} holds ${documents.length} IDML documents; name the one to import in document. documents: ${JSON.stringify(documents)}`);
+          if (!documents.includes(wanted)) throw new ToolError(`${picked.name} has no IDML document ${JSON.stringify(wanted)}. documents: ${JSON.stringify(documents)}`);
+          file = await readIdmlPackageDocument({ ...pkg, path: wanted });
+        } else file = await readIdmlFile(picked.name, bytes);
       } catch (err) {
+        if (err instanceof ToolError) throw err;
         // The reader's own words: an .indd, a Word document, no package.
         throw new ToolError(`${picked.name} could not be read as an InDesign document: ${messageOf(err)}`);
       }
@@ -161,7 +173,12 @@ export function idmlTools(host: SandboxToolHost): WebMcpTool[] {
         ...(typeof args.name === 'string' ? { name: args.name } : {}),
         ...(typeof args.language === 'string' ? { locale: args.language } : {}),
       });
-      const about = { file: picked.name, holds: holds(file), ...describeIdmlImport(result) };
+      const about = {
+        file: picked.name,
+        ...(file.package ? { document: file.package.path || file.name, documents: file.package.archive.documents } : {}),
+        holds: holds(file),
+        ...describeIdmlImport(result),
+      };
       if (args.dryRun === true) return { dryRun: true, imported: false, ...about };
 
       let project: string;

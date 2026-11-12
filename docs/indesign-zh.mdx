@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
+同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)；沙盒还能用<strong>从 InDesign 打包文件（.zip）新建书</strong>打开压缩成zip的InDesign打包文件，并从中取用字体和链接的图片），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
 
 ### 逐页还是连续排
 
@@ -79,7 +79,7 @@ postext import-idml book.idml --report --json
 
 ### 报告的内容
 
-`.idml`不带字体，也不带链接的图片。导入器列出这本书需要的字体家族，你再用`--font-dir`把它们交给构建。链接的图片从`--links`或文件旁边读取，找不到的会列出来。
+`.idml`不带字体，也不带链接的图片。导入器列出这本书需要的字体家族，你再用`--font-dir`把它们交给构建。链接的图片从`--links`或文件旁边读取，找不到的会列出来。压缩成zip的打包文件两样都带：在沙盒中，以及在代码中用`openIdmlArchive`时，导入器从其`Links`文件夹取用图片，并把其`Document fonts`文件夹中的字体文件放入书中。
 
 InDesign能做的有些事在Postext中没有对应，比如路径文字、旋转的单元格、单元格中的对角线、GREP样式和嵌套样式，或者透明效果。每一项都成为报告中的一条结果，附带数量和一个例子：省略的是<em>loss</em>，以接近原稿的方式排出的是<em>warning</em>（表格的表尾行、渐变、沿轮廓绕排）。报告最后给出结论：
 

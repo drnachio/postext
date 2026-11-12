@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { unzipSync, strFromU8 } from 'fflate';
+import { unzipSync, strFromU8, zipSync } from 'fflate';
 import { buildDocument, type PostextConfig, type Resource } from 'postext';
 import { openBundle } from 'postext/bundle';
 import { idmlDocument } from 'postext-idml';
@@ -63,6 +63,24 @@ describe('the InDesign tools', () => {
     indd.set([0x06, 0x06, 0xed, 0xf5]);
     const refused = await call('sandbox_import_idml', { file: { base64: base64(indd), fileName: 'book.indd' } });
     expect(refused.error).toMatch(/book\.indd could not be read as an InDesign document: .*\.indd/);
+  });
+
+  it('import a zipped InDesign package, asking which document when it holds several (#1538)', async () => {
+    const { call } = harness({}, { projectActions: { importBundleBytes: async () => 'new' } as unknown as ProjectActions });
+    const { file, link } = sample();
+    const idml = fromBase64(file.base64);
+    const pkg = (docs: string[]) => ({ fileName: 'harbour.zip', base64: base64(zipSync({ ...Object.fromEntries(docs.map((d) => [d, idml])), [`Pkg/Links/${link.fileName}`]: fromBase64(link.base64) })) });
+    const one = await call('sandbox_import_idml', { file: pkg(['Pkg/Harbour.idml']), dryRun: true });
+    expect(one).toMatchObject({ ok: true, dryRun: true, document: 'Pkg/Harbour.idml', linksFromPackage: 1 });
+    expect(one.missingLinks).toBeUndefined();
+    const two = pkg(['Pkg/Harbour.idml', 'Pkg/old/Harbour v1.idml']);
+    const asked = await call('sandbox_import_idml', { file: two, dryRun: true });
+    expect(asked.ok).toBe(false);
+    expect(JSON.stringify(asked)).toMatch(/document/);
+    const chosen = await call('sandbox_import_idml', { file: two, document: 'Pkg/old/Harbour v1.idml', dryRun: true });
+    expect(chosen).toMatchObject({ ok: true, document: 'Pkg/old/Harbour v1.idml', documents: ['Pkg/Harbour.idml', 'Pkg/old/Harbour v1.idml'] });
+    const none = await call('sandbox_import_idml', { file: { fileName: 'job.zip', base64: base64(zipSync({ 'Job/Job.indd': new Uint8Array([6, 6, 0xed, 0xf5]) })) }, dryRun: true });
+    expect(JSON.stringify(none)).toMatch(/Include IDML/);
   });
 
   it('export the book as IDML with the options of the dialog', async () => {

@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-La même importation se fait dans le Sandbox, sous **Livres › Nouveau › Nouveau livre à partir d’un document InDesign (IDML)** (voir [Sandbox › Importer un document InDesign](/fr/docs/sandbox-books-saving#importer-un-document-indesign)), et dans le code avec `idmlToPostext` du paquet `postext-idml` (voir [Utilisation programmatique › Paquets InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml)). Toutes les options de la commande sont dans [Ligne de commande › import-idml](/fr/docs/command-line#import-idml).
+La même importation se fait dans le Sandbox, sous **Livres › Nouveau › Nouveau livre à partir d’un document InDesign (IDML)** (voir [Sandbox › Importer un document InDesign](/fr/docs/sandbox-books-saving#importer-un-document-indesign)), qui ouvre aussi un assemblage InDesign compressé sous **Nouveau livre à partir d’un assemblage InDesign (.zip)** et en prend les polices et les images liées, et dans le code avec `idmlToPostext` du paquet `postext-idml` (voir [Utilisation programmatique › Paquets InDesign](/fr/docs/configuration-programmatic-usage#paquets-indesign-postext-idml)). Toutes les options de la commande sont dans [Ligne de commande › import-idml](/fr/docs/command-line#import-idml).
 
 ### Pages ou texte continu
 
@@ -79,7 +79,7 @@ La même importation se fait dans le Sandbox, sous **Livres › Nouveau › Nouv
 
 ### Ce que signale le rapport
 
-Le `.idml` ne contient ni les polices ni les images liées. L’importateur liste les familles de polices dont le livre a besoin, que vous donnez ensuite à la génération avec `--font-dir`. Il lit les images liées depuis `--links` ou depuis le dossier du fichier, et liste celles qu’il ne trouve pas.
+Le `.idml` ne contient ni les polices ni les images liées. L’importateur liste les familles de polices dont le livre a besoin, que vous donnez ensuite à la génération avec `--font-dir`. Il lit les images liées depuis `--links` ou depuis le dossier du fichier, et liste celles qu’il ne trouve pas. Un assemblage compressé contient les deux : dans le Sandbox, et dans le code avec `openIdmlArchive`, l’importateur prend les images de son dossier `Links` et met dans le livre les fichiers de police de son dossier `Document fonts`.
 
 InDesign sait faire des choses qui n’ont pas d’équivalent dans Postext, comme le texte sur un tracé, une cellule pivotée, une diagonale dans une cellule, les styles GREP et imbriqués, ou les effets de transparence. Chacune devient une constatation du rapport, avec un décompte et un exemple : une *perte* quand elle est laissée de côté, un *avertissement* quand elle est rendue de façon approchée (les rangs de pied d’un tableau, un dégradé, un habillage par contour). Le rapport finit par un verdict :
 

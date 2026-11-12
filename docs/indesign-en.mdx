@@ -62,7 +62,7 @@ postext import-idml book.idml -o book.postext --layout flow --links Links/
 postext import-idml book.idml --report --json
 ```
 
-The same import runs in the Sandbox, under **Books › New › New book from an InDesign document (IDML)** (see [Sandbox › Importing an InDesign document](/en/docs/sandbox-books-saving#importing-an-indesign-document)), and in code with `idmlToPostext` from the `postext-idml` package (see [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postext-idml)). Every option of the command is in [Command line › import-idml](/en/docs/command-line#import-idml).
+The same import runs in the Sandbox, under **Books › New › New book from an InDesign document (IDML)** (see [Sandbox › Importing an InDesign document](/en/docs/sandbox-books-saving#importing-an-indesign-document)), which also opens a zipped InDesign package under **New book from an InDesign package (.zip)** and takes its fonts and linked pictures from it, and in code with `idmlToPostext` from the `postext-idml` package (see [Programmatic usage › InDesign packages](/en/docs/configuration-programmatic-usage#indesign-packages-postext-idml)). Every option of the command is in [Command line › import-idml](/en/docs/command-line#import-idml).
 
 ### Pages or flow
 
@@ -79,7 +79,7 @@ The same import runs in the Sandbox, under **Books › New › New book from an 
 
 ### What it reports
 
-The `.idml` does not carry the fonts or the linked pictures. The importer lists the font families the book needs, which you then give to the build with `--font-dir`. It reads linked pictures from `--links` or from beside the file, and lists the ones it does not find.
+The `.idml` does not carry the fonts or the linked pictures. The importer lists the font families the book needs, which you then give to the build with `--font-dir`. It reads linked pictures from `--links` or from beside the file, and lists the ones it does not find. A zipped package carries both: in the Sandbox, and in code with `openIdmlArchive`, the importer takes the pictures from its `Links` folder and puts the font files of its `Document fonts` folder into the book.
 
 InDesign can do things Postext has no equivalent for, such as text on a path, a rotated cell, a diagonal line in a cell, GREP and nested styles, or transparency effects. Each of these becomes a finding in the report, with a count and an example: a *loss* when it is left out, a *warning* when it is set close to the source (a table's footer rows, a gradient, a contour wrap). The report ends with a verdict:
 

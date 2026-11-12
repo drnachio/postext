@@ -1,6 +1,9 @@
 // The importer's public shapes: what a host passes, and what it gets.
 
 import type { PostextConfig, Resource } from 'postext';
+import type { IdmlFontFile } from '../package/archive.js';
+
+export type { IdmlFontFile } from '../package/archive.js';
 
 /** A picture the document links to and does not carry. */
 export interface IdmlLink {
@@ -20,6 +23,13 @@ export interface IdmlImportOptions {
   locale?: string;
   /** Bytes of linked pictures; embedded ones are read from the package. */
   linkBytes?: (link: IdmlLink) => Uint8Array | undefined;
+  /** Font files that travel with the document (an InDesign package's
+   *  `Document fonts`, see `openIdmlArchive`). Each face the book is set
+   *  in is matched to one by its PostScript name, else by family and
+   *  style, and the book carries the matched files and the other faces of
+   *  their families in `config.customFonts`. Left out, the book names its
+   *  families only (`fonts`). */
+  fontFiles?: readonly IdmlFontFile[];
   /** Each defaults to `'skip'`; what is skipped is counted in the report. */
   hiddenLayers?: 'skip' | 'include';
   hiddenObjects?: 'skip' | 'include';
@@ -89,7 +99,9 @@ export interface ImportReport {
 
 export interface ImportedFont {
   family: string;
-  styles: { name: string; weight: number; italic: boolean; characters: number }[];
+  /** `file`: the font file of `fontFiles` that carries the face, when one
+   *  does. */
+  styles: { name: string; weight: number; italic: boolean; characters: number; file?: string }[];
 }
 
 export interface IdmlImportResult {
@@ -104,7 +116,8 @@ export interface IdmlImportResult {
   resources: Resource[];
   /** `fileId` → bytes, for `createBundle`. */
   files: Map<string, Uint8Array>;
-  /** The faces the book needs. The importer cannot carry font files. */
+  /** The faces the book needs, each with the file that carries it when
+   *  `fontFiles` had one. */
   fonts: ImportedFont[];
   missingLinks: { name: string; uri: string; uses: number }[];
   report: ImportReport;
