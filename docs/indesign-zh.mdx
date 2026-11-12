@@ -139,7 +139,7 @@ postext build book/ --pdf book.pdf --idml book.idml
 - <strong>行。</strong>默认的`--lines keep`让每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。`--lines reflow`把段落交给InDesign的排版器，用于要在InDesign中重新排版的书。
 - <strong>文字。</strong>模板页的每个框成为一个带有独立文章的文本框，用`next`串接的框共用一篇文章。段落样式带有书中的样式名、缩进、制表位和间距。脚注、链接、注音、着重号、从右到左的文章和竖排文章都会带过去。
 - <strong>页面项目。</strong>线条、方框、路径和图片成为InDesign页面项目；表格成为InDesign表格，行内公式、乐谱和色样成为锚定对象。作者定义的CMYK颜色成为印刷色色板，表单域标签成为InDesign表单域。
-- <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
+- <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。每个文件都带有其格式的扩展名（`.svg`、`.png`、`.jpg`、`.pdf`等），解压后即可用相应的程序打开。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
 - <strong>警告。</strong>InDesign无法照Postext排出的样子显示的内容，以`idml.*`警告报告，比如表格的圆角外框或竖排文字里的着重号。
 
 导出不是反过来的移植。`.idml`保存的是Postext排出的页面，排出这些页面的规则留在Postext书里。在InDesign中做的修改，要通过导入器回到Postext，回来的是页面的副本。像字号这样的规则，最好在Postext书中修改，再重新导出。
