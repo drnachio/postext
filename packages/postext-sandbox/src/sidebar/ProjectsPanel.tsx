@@ -5,6 +5,7 @@ import { type ReactNode, useRef, useState } from 'react';
 import { pickBundleMeta } from 'postext/bundle';
 import { sameContentLocale } from 'postext';
 import { useSandboxLabels, useSandboxPresets, useSandboxProjects, useSandboxSelector, useSandboxDispatch, type ProjectSummary } from '../context/SandboxContext.js';
+import { useCompileBook } from '../export/useCompileBook.js';
 import { PanelHeader, Menu, Button, MenuItem, MenuSeparator, ConfirmPopover, PanelBody, Select, IconButton, EmptyState, Collapsible } from '../ui/index.js';
 import { DOCUMENT_LOCALE_OPTIONS } from './sections/text/BodyTextSection/constants.js';
 import { partitionPresets, isPresetHideable } from '../presets/hidden.js';
@@ -55,6 +56,7 @@ export function ProjectsPanel() {
     exportProject,
     setThumbnail,
   } = projectsValue;
+  const compileProject = useCompileBook();
   const viewerLocale = useSandboxSelector((s) => s.locale);
   const dispatch = useSandboxDispatch();
   const activePanel = useSandboxSelector((s) => s.activePanel);
@@ -362,6 +364,7 @@ export function ProjectsPanel() {
                 canAddLanguage={languagesLeft(takenOf(project)).length > 0}
                 onDuplicate={() => { void duplicate({ kind: 'project', id: project.id }); }}
                 onExport={() => { void exportProject({ kind: 'project', id: project.id }); }}
+                onCompile={(format) => { void compileProject(project.id, format); }}
                 onSetThumbnail={(file) => { void setThumbnail(project.id, file); }}
                 onDelete={() => { void remove(project.id); }}
               />

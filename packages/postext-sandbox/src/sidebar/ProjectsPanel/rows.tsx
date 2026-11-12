@@ -3,7 +3,8 @@
 // The rows of the library panel: one row per saved book and per built-in
 // preset, with the preset's licence tag (#1276: split out of
 // ProjectsPanel.tsx).
-import { Check, ImagePlus, X, Pencil, Languages, Copy, Download, Trash2, RotateCcw, EyeOff, Eye } from 'lucide-react';
+import { Check, ImagePlus, X, Pencil, Languages, Copy, Download, Trash2, RotateCcw, EyeOff, Eye, FileText, Globe, BookOpen } from 'lucide-react';
+import type { CompiledFormat } from '../../export/compileBook.js';
 import { useState, useRef } from 'react';
 import { type ProjectSummary, useSandboxLabels } from '../../context/SandboxContext.js';
 import { RowTag, IconButton, ListRow, MenuItem, MenuSeparator } from '../../ui/index.js';
@@ -31,6 +32,8 @@ interface ProjectRowProps {
   canAddLanguage: boolean;
   onDuplicate: () => void;
   onExport: () => void;
+  /** Compile the whole book to a PDF, HTML or EPUB 3 file and download it. */
+  onCompile: (format: CompiledFormat) => void;
   /** Set the cover picture from a file, or drop it with null. */
   onSetThumbnail: (file: File | null) => void;
   onDelete: () => void;
@@ -49,6 +52,7 @@ export function ProjectRow({
   canAddLanguage,
   onDuplicate,
   onExport,
+  onCompile,
   onSetThumbnail,
   onDelete,
 }: ProjectRowProps) {
@@ -267,6 +271,10 @@ export function ProjectRow({
               <MenuItem icon={<Languages size={13} />} disabled={!canAddLanguage} onClick={onAddLanguage}>{labels.projectAddLanguage}</MenuItem>
               <MenuItem icon={<Copy size={13} />} onClick={onDuplicate}>{labels.projectDuplicate}</MenuItem>
               <MenuItem icon={<Download size={13} />} onClick={onExport}>{labels.projectExport}</MenuItem>
+              <MenuSeparator />
+              <MenuItem icon={<FileText size={13} />} onClick={() => onCompile('pdf')}>{labels.projectCompilePdf}</MenuItem>
+              <MenuItem icon={<Globe size={13} />} onClick={() => onCompile('html')}>{labels.projectCompileHtml}</MenuItem>
+              <MenuItem icon={<BookOpen size={13} />} onClick={() => onCompile('epub')}>{labels.projectCompileEpub}</MenuItem>
               <MenuSeparator />
               <MenuItem icon={<Trash2 size={13} />} destructive onClick={askDelete}>{labels.projectDelete}</MenuItem>
             </>
