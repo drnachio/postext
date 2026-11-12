@@ -617,23 +617,28 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Una función por comando**: `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` y `build`. Las
-  opciones conservan su nombre, con guiones bajos (`color_space`, `font_dirs`,
-  `dry_run`). `set` recibe un diccionario, `config` un archivo o un
-  diccionario, `chapters` un número, una lista, un `range` o `"1,3-5"`.
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` y `build`. Las opciones conservan su nombre, con guiones
+  bajos (`color_space`, `font_dirs`, `dry_run`). `set` recibe un diccionario,
+  `config` un archivo o un diccionario, `chapters` un número, una lista, un
+  `range` o `"1,3-5"`. Toda función que lee un libro admite `design=`, un
+  archivo de diseño como ruta o como bytes, y `design_parts=`, una lista o
+  `"page,text"`.
 - **Informes como objetos.** Cada función ejecuta su comando con `--json` y
   devuelve el informe: `outputs`, `pages`, `timings` y `warnings`, cada aviso
   un `Diagnostic` con `kind`, `severity`, `message`, `at` y `page`. `info`
   añade `chapters`, `resources` y `fonts`; `check` añade `passed`,
-  `error_count` y `warning_count`.
+  `error_count` y `warning_count`; `design` añade `name` y `parts`;
+  `import_idml` añade `layout`, `reason`, `chapters`, `quality`, `fonts`,
+  `missing_links` y `package`.
 - **Errores como excepciones.** Un fallo lanza `PostextError`; una opción
   equivocada, `UsageError`. Cuando `check` encuentra errores lanza
   `ProblemsFound`, cuyo `report` los enumera; con `raise_on_problems=False`
   devuelve el informe.
 - **Bytes.** Un libro puede darse como los bytes de un paquete `.postext`. Con
   `out="-"` el archivo vuelve en `report.content`; `pdf_bytes`, `html_bytes`,
-  `epub_bytes`, `image_bytes`, `docx_bytes` y `pack_bytes` lo devuelven
-  directamente.
+  `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`, `pack_bytes` y
+  `design_bytes` lo devuelven directamente.
 - `postext.Postext(binary, cwd=…, timeout=…)` usa un ejecutable concreto, y
   `python -m postext …` es la propia línea de comandos.
 

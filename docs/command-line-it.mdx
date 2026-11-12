@@ -619,23 +619,28 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Una funzione per comando**: `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` e `build`. Le
-  opzioni mantengono il loro nome, con i trattini bassi (`color_space`,
-  `font_dirs`, `dry_run`). `set` riceve un dizionario, `config` un file o un
-  dizionario, `chapters` un numero, una lista, un `range` o `"1,3-5"`.
-- **Rapporti come oggetti.** Ogni funzione esegue il suo comando con `--json`
-  e restituisce il rapporto: `outputs`, `pages`, `timings` e `warnings`, ogni
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` e `build`. Le opzioni mantengono il loro nome, con i trattini
+  bassi (`color_space`, `font_dirs`, `dry_run`). `set` riceve un dizionario,
+  `config` un file o un dizionario, `chapters` un numero, una lista, un `range`
+  o `"1,3-5"`. Ogni funzione che legge un libro accetta `design=`, un file di
+  progetto come percorso o come byte, e `design_parts=`, una lista o
+  `"page,text"`.
+- **Rapporti come oggetti.** Ogni funzione esegue il suo comando con `--json` e
+  restituisce il rapporto: `outputs`, `pages`, `timings` e `warnings`, ogni
   avviso un `Diagnostic` con `kind`, `severity`, `message`, `at` e `page`.
-  `info` aggiunge `chapters`, `resources` e `fonts`; `check` aggiunge
-  `passed`, `error_count` e `warning_count`.
+  `info` aggiunge `chapters`, `resources` e `fonts`; `check` aggiunge `passed`,
+  `error_count` e `warning_count`; `design` aggiunge `name` e `parts`;
+  `import_idml` aggiunge `layout`, `reason`, `chapters`, `quality`, `fonts`,
+  `missing_links` e `package`.
 - **Errori come eccezioni.** Un fallimento solleva `PostextError`, un’opzione
   sbagliata `UsageError`. Quando `check` trova errori solleva `ProblemsFound`,
   il cui `report` li elenca; con `raise_on_problems=False` restituisce il
   rapporto.
 - **Byte.** Un libro può essere dato come i byte di un pacchetto `.postext`.
   Con `out="-"` il file torna in `report.content`; `pdf_bytes`, `html_bytes`,
-  `epub_bytes`, `image_bytes`, `docx_bytes` e `pack_bytes` lo restituiscono
-  direttamente.
+  `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`, `pack_bytes` e
+  `design_bytes` lo restituiscono direttamente.
 - `postext.Postext(binary, cwd=…, timeout=…)` usa un eseguibile preciso, e
   `python -m postext …` è la riga di comando stessa.
 

@@ -642,23 +642,28 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **Une fonction par commande** : `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` et `build`. Les
-  options gardent leur nom, avec des tirets bas (`color_space`, `font_dirs`,
-  `dry_run`). `set` prend un dictionnaire, `config` un fichier ou un
-  dictionnaire, `chapters` un nombre, une liste, un `range` ou `"1,3-5"`.
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` et `build`. Les options gardent leur nom, avec des tirets bas
+  (`color_space`, `font_dirs`, `dry_run`). `set` prend un dictionnaire,
+  `config` un fichier ou un dictionnaire, `chapters` un nombre, une liste, un
+  `range` ou `"1,3-5"`. Toute fonction qui lit un livre accepte `design=`, un
+  fichier de maquette en chemin ou en octets, et `design_parts=`, une liste ou
+  `"page,text"`.
 - **Des rapports en objets.** Chaque fonction lance sa commande avec `--json`
   et renvoie le rapport : `outputs`, `pages`, `timings` et `warnings`, chaque
   avertissement étant un `Diagnostic` avec `kind`, `severity`, `message`, `at`
   et `page`. `info` y ajoute `chapters`, `resources` et `fonts` ; `check`,
-  `passed`, `error_count` et `warning_count`.
+  `passed`, `error_count` et `warning_count` ; `design`, `name` et `parts` ;
+  `import_idml`, `layout`, `reason`, `chapters`, `quality`, `fonts`,
+  `missing_links` et `package`.
 - **Des erreurs en exceptions.** Un échec lève `PostextError`, une option
   erronée `UsageError`. Quand `check` trouve des erreurs, il lève
   `ProblemsFound`, dont le `report` les énumère ; avec
   `raise_on_problems=False`, il renvoie le rapport.
 - **Des octets.** Un livre peut être donné sous forme des octets d’un paquet
   `.postext`. Avec `out="-"`, le fichier revient dans `report.content` ;
-  `pdf_bytes`, `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes` et
-  `pack_bytes` le renvoient directement.
+  `pdf_bytes`, `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes`,
+  `idml_bytes`, `pack_bytes` et `design_bytes` le renvoient directement.
 - `postext.Postext(binary, cwd=…, timeout=…)` utilise un exécutable donné, et
   `python -m postext …` est la ligne de commande elle-même.
 

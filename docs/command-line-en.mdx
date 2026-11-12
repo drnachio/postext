@@ -607,22 +607,26 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 ```
 
 - **One function per command**: `pdf`, `html`, `epub`, `image`, `images`,
-  `docx`, `import_docx`, `pack`, `unpack`, `info`, `check` and `build`. The
-  options keep their names, with underscores (`color_space`, `font_dirs`,
-  `dry_run`). `set` takes a dict, `config` a file or a dict, `chapters` a
-  number, a list, a `range` or `"1,3-5"`.
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` and `build`. The options keep their names, with underscores
+  (`color_space`, `font_dirs`, `dry_run`). `set` takes a dict, `config` a file
+  or a dict, `chapters` a number, a list, a `range` or `"1,3-5"`. Every
+  function that reads a book takes `design=`, a design file as a path or as
+  bytes, and `design_parts=`, a list or `"page,text"`.
 - **Reports as objects.** Each function runs its command with `--json` and
   returns the report: `outputs`, `pages`, `timings` and `warnings`, each a
   `Diagnostic` with `kind`, `severity`, `message`, `at` and `page`. `info` adds
   `chapters`, `resources` and `fonts`; `check` adds `passed`, `error_count` and
-  `warning_count`.
+  `warning_count`; `design` adds `name` and `parts`; `import_idml` adds
+  `layout`, `reason`, `chapters`, `quality`, `fonts`, `missing_links` and
+  `package`.
 - **Errors as exceptions.** A failure raises `PostextError`, a wrong option
   `UsageError`. When `check` finds errors it raises `ProblemsFound`, whose
   `report` lists them; with `raise_on_problems=False` it returns the report.
 - **Bytes.** A book can be given as the bytes of a `.postext` bundle. With
-  `out="-"` the file comes back in `report.content`; `pdf_bytes`,
-  `html_bytes`, `epub_bytes`, `image_bytes`, `docx_bytes` and `pack_bytes`
-  return it directly.
+  `out="-"` the file comes back in `report.content`; `pdf_bytes`, `html_bytes`,
+  `epub_bytes`, `image_bytes`, `docx_bytes`, `idml_bytes`, `pack_bytes` and
+  `design_bytes` return it directly.
 - `postext.Postext(binary, cwd=…, timeout=…)` runs a given executable, and
   `python -m postext …` is the command line itself.
 
