@@ -34,6 +34,7 @@ export const BOOK_OPTIONS: OptionSpec[] = [
   { name: 'design', kind: 'string', arg: 'FILE', help: 'Set the book in the design of a design file (.postext from "postext design" or the Sandbox), or of another book' },
   { name: 'design-parts', kind: 'string', arg: 'LIST', help: 'With --design: only these parts, e.g. "page,text,headings"' },
   { name: 'config', kind: 'string', arg: 'FILE', help: 'Configuration JSON for loose Markdown (or merged over a book\'s)' },
+  { name: 'hyphenation-exceptions', kind: 'list', arg: '[LANG=]FILE', help: 'Merge a list of words kept whole (text, TeX \\hyphenation, JSON) into the book\'s for this run: every language\'s list, or LANG\'s; a JSON object of lists by language fills each (repeatable)' },
   { name: 'resources', kind: 'string', arg: 'DIR', help: 'Pictures for loose Markdown; ids are file names without extension' },
   { name: 'fonts', kind: 'string', arg: 'DIR', help: 'Font files bundled with loose Markdown' },
   { name: 'name', kind: 'string', arg: 'TEXT', help: 'Book title for loose Markdown' },
