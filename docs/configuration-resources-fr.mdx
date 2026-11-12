@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ressources et tableaux',
   description: 'Les types de ressources et leur numérotation, les styles de tableau et de légende, les diagrammes en une seule encre et les vidéos imprimées',
   lang: 'fr',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '46 min',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>Alignement horizontal des lignes de la légende. <code>'justify'</code> étire chaque ligne sauf la dernière sur toute la largeur. Sur une barre de légende, les lignes s’alignent à l’intérieur de sa marge intérieure ; une légende latérale s’aligne dans sa propre largeur.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Coupe la légende comme le texte courant : le même algorithme de coupure, dans les limites d’espacement du texte courant en justifié, les mots coupés quand le texte courant est césuré, et ses règles de césure et d’échelles (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). L’étiquette numérotée n’est jamais coupée. Désactivé : ligne par ligne, sans couper de mot.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>celui du texte courant, en proportion</td>
+      <td>L’interlignage de la légende. <code>em</code> se mesure sur le corps de la légende.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ Le sous-objet `note` règle `Resource.note`, un court texte (source, crédits, r
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alignement horizontal des lignes de la note, comme <code>align</code> pour la légende.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Coupe la note comme le texte courant, comme <code>bodyBreaking</code> pour la légende.</td>
     </tr>
   </tbody>
 </table>

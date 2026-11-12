@@ -271,7 +271,7 @@ export function tokenizeSpans(
         });
         continue;
       }
-      const syllabified = isSpace ? { clean: part, soft: [] } : syllabify(part, shouldHyphenate && inCompound?.[partAt] !== true);
+      const syllabified = isSpace ? { clean: part, soft: [] } : syllabify(part, shouldHyphenate && !span.captionLabel && inCompound?.[partAt] !== true);
       // The author's zero-width spaces: breaks, out of the text (#1164).
       const { clean, soft, zeroWidth } = isSpace || !syllabified.clean.includes(ZERO_WIDTH_SPACE) || hasCJK(syllabified.clean) ? { ...syllabified, zeroWidth: [] } : dropZeroWidthSpaces(syllabified.clean, syllabified.soft);
       // The characters this word touches, for a dash that opens it

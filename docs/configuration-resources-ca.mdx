@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos i taules',
   description: 'Els tipus de recurs i la seva numeració, els estils de taules i de peus de recurs, els diagrames a una tinta i els vídeos impresos',
   lang: 'ca',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '47 min',
   order: 14,
   parent: 'configuration',
@@ -662,6 +662,18 @@ const config: PostextConfig = {
       <td>Alineació horitzontal de les línies del peu. <code>'justify'</code> porta totes les línies llevat de l'última a l'amplada completa. Sobre una barra de peu, les línies s'alineen dins del farciment de la barra; un peu lateral s'alinea dins de la seva pròpia amplada.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Talla la llegenda com el text general: el mateix partidor, dins dels límits d'espaiat del text general en justificar, les paraules dividides quan el text general es parteix i les seves regles de partició i d'escales (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). L'etiqueta numerada no es parteix mai. Desactivat: línia a línia, sense dividir paraules.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del text general, en proporció</td>
+      <td>L'interlineat de la llegenda. <code>em</code> es mesura sobre el cos de la mateixa llegenda.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -777,6 +789,12 @@ El subobjecte `note` dona estil a `Resource.note`, una línia breu (font, crèdi
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineació horitzontal de les línies de la nota, com <code>align</code> per al peu.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Talla la nota com el text general, com <code>bodyBreaking</code> per a la llegenda.</td>
     </tr>
   </tbody>
 </table>

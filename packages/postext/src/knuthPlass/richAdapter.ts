@@ -46,6 +46,9 @@ interface RichToken {
   text: string;
   bold: boolean;
   italic: boolean;
+  /** Part of a caption's numbered label ("Figure 1.7. "): painted in the
+   *  label's colour (`VDTLineSegment.captionLabel`). */
+  captionLabel?: boolean;
   /** A space inside inline code: no stretch, no shrink (see
    *  `measure/rich.ts`). */
   fixedGlue?: true;
@@ -389,6 +392,7 @@ export function reconstructRichLines(
           width: restWidths?.get(j) ?? it.width,
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
+          ...(token.captionLabel ? { captionLabel: true } : {}),
           ...(token.mathRender ? { mathRender: token.mathRender } : {}),
           ...(token.swatch ? { swatch: token.swatch } : {}),
           ...(token.chip ? { chip: token.chip } : {}),
@@ -418,6 +422,7 @@ export function reconstructRichLines(
           kind: 'space',
           text: token.text,
           width: it.width,
+          ...(token.captionLabel ? { captionLabel: true } : {}),
           // A space inside a reference label (#702) is of the reference.
           ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId, ...(token.refAnchor ? { refAnchor: true as const } : {}), ...(token.refPageIndex !== undefined ? { refPageIndex: token.refPageIndex } : {}), refContinues: true } : {}),
         });

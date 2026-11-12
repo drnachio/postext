@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ressourcen und Tabellen',
   description: 'Ressourcentypen und ihre Nummerierung, Tabellen- und Legendenstile, einfarbige Diagramme und gedruckte Videos',
   lang: 'de',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '40 min',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>Waagerechte Ausrichtung der Legendenzeilen. <code>'justify'</code> treibt jede Zeile außer der letzten auf die volle Breite aus. Auf einem Legendenbalken richten sich die Zeilen innerhalb seines Innenabstands aus; eine seitliche Legende richtet sich innerhalb ihrer eigenen Breite aus.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Bricht die Legende wie den Grundtext um: derselbe Zeilenumbruch, im Blocksatz innerhalb der Wortabstandsgrenzen des Grundtexts, Worttrennung, wenn der Grundtext getrennt wird, und dessen Trenn- und Treppenregeln (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). Die Nummernbezeichnung wird nie getrennt. Aus: Zeile für Zeile, ohne Worttrennung.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>der des Grundtexts, im Verhältnis</td>
+      <td>Der Zeilenabstand der Legende. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ Das Unterobjekt `note` gestaltet `Resource.note`, einen kurzen Text (Quelle, Bil
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Waagerechte Ausrichtung der Anmerkungszeilen, wie <code>align</code> bei der Legende.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Bricht die Anmerkung wie den Grundtext um, wie <code>bodyBreaking</code> bei der Legende.</td>
     </tr>
   </tbody>
 </table>

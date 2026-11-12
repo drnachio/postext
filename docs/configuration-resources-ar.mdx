@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'الموارد والجداول',
   description: 'أنواع الموارد وترقيمها، وأنماط الجداول والتعليقات، والمخططات بحبر واحد، والفيديو المطبوع',
   lang: 'ar',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '43 دقيقة',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>المحاذاة الأفقية لأسطر التعليق. تمدّ <code>'justify'</code> كل سطر إلى العرض الكامل ما عدا الأخير. وعلى شريط التعليق تُحاذى الأسطر داخل حشوته؛ والتعليق الجانبي يُحاذى داخل عرضه الخاص.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يقطّع التعليق كما يُقطَّع النص الأساسي: الخوارزمية نفسها، وضمن حدود المسافات بين الكلمات في النص الأساسي عند الضبط، مع تقسيم الكلمات حين يُقسَّم النص الأساسي، ووفق قواعده في التقسيم والدرج (<code>bodyText.hyphenation</code>، <code>bodyText.stacks</code>). لا تُقسَّم التسمية المرقّمة أبدًا. عند الإيقاف: سطرًا بسطر دون تقسيم الكلمات.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>تباعد النص الأساسي بالنسبة نفسها</td>
+      <td>تباعد أسطر التعليق. وحدة <code>em</code> نسبية إلى حجم التعليق نفسه.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ const config: PostextConfig = {
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>المحاذاة الأفقية لأسطر الملاحظة، كما في <code>align</code> للتعليق.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>يقطّع الملاحظة كما يُقطَّع النص الأساسي، مثل <code>bodyBreaking</code> للتعليق.</td>
     </tr>
   </tbody>
 </table>

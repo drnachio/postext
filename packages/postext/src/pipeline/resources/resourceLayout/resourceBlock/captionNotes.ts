@@ -6,7 +6,7 @@ import { dimensionToPx } from '../../../../units.js';
 import { buildFontString, measureRichBlock } from '../../../../measure/index.js';
 import { annotatedSpans, resolveSwatchSpans, resolveRefSpans } from '../refSpans.js';
 import { resolveChipSpans, chipContextOf } from '../../../text/chips.js';
-import { snippetMathSpans, measureSnippetLines, snippetStackBreaking } from '../snippets.js';
+import { snippetMathSpans, measureSnippetLines, snippetBreaking } from '../snippets.js';
 import { resolveCitationSpans } from '../../../references/citations.js';
 import { withSnippetInlineCode } from '../../../code/codeInline.js';
 import { parseInlineSnippetSpans } from '../../../../parse/inlineSnippet.js';
@@ -112,7 +112,7 @@ export function createCaptionNotes(deps: CaptionNotesDeps) {
       [noteFontString, noteBoldFontString, noteItalicFontString, noteBoldItalicFontString],
       Math.max(1, input.captionAside?.width ?? inside?.captionWidth ?? input.captionWidth ?? columnWidth),
       noteLineHeightPx,
-      { textAlign: cs.note.align, ...snippetStackBreaking(cs.note.align, resolved) },
+      { textAlign: cs.note.align, ...snippetBreaking(cs.note.align, cs.note.bodyBreaking, resolved) },
     );
   }
   const noteHeight = state.measuredNote.length > 0

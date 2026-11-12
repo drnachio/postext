@@ -8,6 +8,7 @@ import { type MeasurementCache, type MeasureBlockOptions, cachedMeasureRichSnipp
 import { measureRichSnippet } from '../../../measure/rich.js';
 import { isBlankText } from '../../../measure/spaces.js';
 import { stackBreaking } from '../../text/stacks.js';
+import { hyphenBreaking } from '../../text/hyphenRules.js';
 import { linkSegments } from '../../../measure/links.js';
 import { sliceSpan } from '../../../parse/links.js';
 import { indentColumn } from '../../../parse/listNesting.js';
@@ -130,6 +131,32 @@ export function snippetStackBreaking(align: TextAlign, resolved: ResolvedConfig)
   if (!stacks || !body.optimalLineBreaking) return {};
   if (align === 'justify') return { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing, stacks };
   return { optimal: true, optimalRagged: true, stacks };
+}
+
+/**
+ * How a caption or a note set in `align` is broken. With `bodyBreaking`
+ * (`captionStyle.bodyBreaking`, `note.bodyBreaking`) it is broken as the
+ * body text is: on the optimal breaker when the body uses it, within the
+ * body's word-spacing limits when justified and with the ragged right-hand
+ * glue otherwise, its words divided when the body's hyphenation is on, and
+ * under the body's hyphenation and stack rules. Without it, as before:
+ * line by line with no word divided, or broken whole while stacks are
+ * avoided ({@link snippetStackBreaking}).
+ */
+export function snippetBreaking(align: TextAlign, bodyBreaking: boolean, resolved: ResolvedConfig): MeasureBlockOptions {
+  if (!bodyBreaking) return snippetStackBreaking(align, resolved);
+  const body = resolved.bodyText;
+  const stacks = stackBreaking(body);
+  return {
+    ...(body.hyphenation.enabled ? { hyphenate: true } : {}),
+    ...(body.optimalLineBreaking
+      ? align === 'justify'
+        ? { optimal: true, maxStretchRatio: body.maxWordSpacing, minShrinkRatio: body.minWordSpacing }
+        : { optimal: true, optimalRagged: true }
+      : {}),
+    ...(stacks ? { stacks } : {}),
+    ...hyphenBreaking(body.hyphenation),
+  };
 }
 
 /** The measurement cache of the resource block being laid out, if its

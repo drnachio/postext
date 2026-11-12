@@ -8,8 +8,10 @@ import type {
   ResolvedCaptionStyleConfig,
   TextAlign,
 } from 'postext';
-import { useSandboxLabels } from '../../../context/SandboxContext.js';
+import { useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import { separatorFromOption, separatorOption, separatorOptions, type SeparatorChoice } from '../../settings/eastAsianOptions.js';
+import { dimensionToPx, resolveBodyTextConfig } from 'postext';
+import { LINE_HEIGHT_UNITS } from '../text/BodyTextSection/constants.js';
 import {
   CollapsibleSection,
   ColorPicker,
@@ -58,6 +60,11 @@ export function CaptionStyleFields({
   const labels = useSandboxLabels();
   const side = flowSideLabels(useRightToLeftFlow(), labels.alignLeft, labels.alignRight);
   const unset = (field: keyof CaptionStyleConfig) => raw?.[field] === undefined;
+  // The leading a caption takes when it sets none: the body's, in proportion.
+  const bodyText = useSandboxSelector((s) => s.config.bodyText);
+  const body = resolveBodyTextConfig(bodyText);
+  const bodyFontPx = dimensionToPx(body.fontSize, 96);
+  const bodyRatio = bodyFontPx > 0 ? dimensionToPx(body.lineHeight, 96, bodyFontPx) / bodyFontPx : 1.4;
 
   const updateNote = (partial: Partial<CaptionNoteStyleConfig>) => {
     update({ note: { ...raw?.note, ...partial } });
@@ -105,13 +112,32 @@ export function CaptionStyleFields({
         isDefault={unset('fontSize')}
         onReset={() => resetField('fontSize')}
       />
+      <DimensionInput
+        label={labels.captionLineHeight}
+        tooltip={labels.captionLineHeightTooltip}
+        value={cs.lineHeight ?? { value: Math.round(bodyRatio * 100) / 100, unit: 'em' }}
+        onChange={(v) => update({ lineHeight: v })}
+        min={0.5}
+        step={0.05}
+        units={LINE_HEIGHT_UNITS}
+        isDefault={unset('lineHeight')}
+        onReset={() => resetField('lineHeight')}
+      />
       <SelectInput
         label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
         value={cs.align}
-        options={alignOptions}
+        options={[...alignOptions, { value: 'justify', label: labels.bodyTextAlignJustify }]}
         onChange={(v) => update({ align: v as TextAlign })}
         isDefault={unset('align')}
         onReset={() => resetField('align')}
+      />
+      <ToggleSwitch
+        label={labels.captionBodyBreaking}
+        tooltip={labels.captionBodyBreakingTooltip}
+        checked={cs.bodyBreaking}
+        onChange={(v) => update({ bodyBreaking: v })}
+        isDefault={unset('bodyBreaking')}
+        onReset={() => resetField('bodyBreaking')}
       />
       <SelectInput
         label={labels.captionPosition}
@@ -261,10 +287,18 @@ export function CaptionStyleFields({
         <SelectInput
           label={labels.alignmentLabel} tooltip={labels.alignmentHelp}
           value={cs.note.align}
-          options={alignOptions}
+          options={[...alignOptions, { value: 'justify', label: labels.bodyTextAlignJustify }]}
           onChange={(v) => updateNote({ align: v as TextAlign })}
           isDefault={noteUnset('align')}
           onReset={() => resetNoteField('align')}
+        />
+        <ToggleSwitch
+          label={labels.captionBodyBreaking}
+          tooltip={labels.captionBodyBreakingTooltip}
+          checked={cs.note.bodyBreaking}
+          onChange={(v) => updateNote({ bodyBreaking: v })}
+          isDefault={noteUnset('bodyBreaking')}
+          onReset={() => resetNoteField('bodyBreaking')}
         />
         <DimensionInput
           label={labels.captionGap}

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos y tablas',
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '47 min',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>Alineación horizontal de las líneas del pie. <code>'justify'</code> lleva todas las líneas salvo la última al ancho completo. Sobre una barra de pie las líneas se alinean dentro de su relleno; un pie lateral se alinea dentro de su propio ancho.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Corta la leyenda como el texto general: el mismo partidor, dentro de los límites de espaciado del texto general al justificar, las palabras divididas cuando el texto general se parte y sus reglas de partición y de escaleras (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). La etiqueta numerada nunca se parte. Desactivado: línea a línea, sin dividir palabras.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del texto general, en proporción</td>
+      <td>El interlineado de la leyenda. <code>em</code> se mide sobre el cuerpo de la propia leyenda.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ El subobjeto `note` estiliza `Resource.note`, una línea breve (procedencia, cr�
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineación horizontal de las líneas de la nota, como <code>align</code> para el pie.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Corta la nota como el texto general, como <code>bodyBreaking</code> para la leyenda.</td>
     </tr>
   </tbody>
 </table>

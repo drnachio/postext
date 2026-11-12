@@ -28,6 +28,7 @@ const STATIC_DEFAULTS = {
   padding: { value: 0.35, unit: 'em' as const },
   labelNumberGap: '\u00a0',
   labelSeparator: '. ',
+  bodyBreaking: false,
 } satisfies Partial<ResolvedCaptionStyleConfig>;
 
 /** What stands around a caption's number when the config sets nothing:
@@ -47,6 +48,7 @@ const NOTE_STATIC_DEFAULTS = {
   italic: false,
   gap: { value: 0.35, unit: 'em' as const },
   align: 'left' as const,
+  bodyBreaking: false,
 } satisfies Partial<ResolvedCaptionNoteStyleConfig>;
 
 /** The default note size for a caption size: 0.85 × in the same unit. */
@@ -66,6 +68,7 @@ function resolveNote(
     italic: n.italic ?? NOTE_STATIC_DEFAULTS.italic,
     gap: n.gap ?? NOTE_STATIC_DEFAULTS.gap,
     align: startEndAsLeftRight(n.align ?? NOTE_STATIC_DEFAULTS.align),
+    bodyBreaking: n.bodyBreaking ?? NOTE_STATIC_DEFAULTS.bodyBreaking,
   };
 }
 
@@ -88,6 +91,8 @@ export function resolveCaptionStyleConfig(
     fontSize,
     color,
     align: startEndAsLeftRight(p.align ?? STATIC_DEFAULTS.align),
+    bodyBreaking: p.bodyBreaking ?? STATIC_DEFAULTS.bodyBreaking,
+    ...(p.lineHeight ? { lineHeight: p.lineHeight } : {}),
     gap: p.gap ?? STATIC_DEFAULTS.gap,
     labelBold: p.labelBold ?? STATIC_DEFAULTS.labelBold,
     labelItalic: p.labelItalic ?? STATIC_DEFAULTS.labelItalic,
@@ -132,6 +137,8 @@ export function mergeCaptionStyle(
     fontSize,
     color,
     align: startEndAsLeftRight(o.align ?? base.align),
+    bodyBreaking: o.bodyBreaking ?? base.bodyBreaking,
+    ...((o.lineHeight ?? base.lineHeight) ? { lineHeight: o.lineHeight ?? base.lineHeight } : {}),
     gap: o.gap ?? base.gap,
     labelBold: o.labelBold ?? base.labelBold,
     labelItalic: o.labelItalic ?? base.labelItalic,
@@ -147,6 +154,7 @@ export function mergeCaptionStyle(
       italic: n.italic ?? base.note.italic,
       gap: n.gap ?? base.note.gap,
       align: startEndAsLeftRight(n.align ?? base.note.align),
+      bodyBreaking: n.bodyBreaking ?? base.note.bodyBreaking,
     },
     labelNumberGap: typeof o.labelNumberGap === 'string' ? o.labelNumberGap : base.labelNumberGap,
     labelSeparator: typeof o.labelSeparator === 'string' ? o.labelSeparator : base.labelSeparator,
@@ -164,6 +172,7 @@ function stripNoteDefaults(note: CaptionNoteStyleConfig | undefined): CaptionNot
   if (note.italic !== undefined && note.italic !== NOTE_STATIC_DEFAULTS.italic) { r.italic = note.italic; has = true; }
   if (note.gap !== undefined && !dimensionsEqual(note.gap, NOTE_STATIC_DEFAULTS.gap)) { r.gap = note.gap; has = true; }
   if (note.align !== undefined && note.align !== NOTE_STATIC_DEFAULTS.align) { r.align = note.align; has = true; }
+  if (note.bodyBreaking !== undefined && note.bodyBreaking !== NOTE_STATIC_DEFAULTS.bodyBreaking) { r.bodyBreaking = note.bodyBreaking; has = true; }
   return has ? r : undefined;
 }
 
@@ -184,9 +193,11 @@ export function stripCaptionStyleDefaults(
   if (captionStyle.fontFamily !== undefined) { r.fontFamily = captionStyle.fontFamily; has = true; }
   if (captionStyle.figureStyle !== undefined) { r.figureStyle = captionStyle.figureStyle; has = true; }
   if (captionStyle.fontSize !== undefined) { r.fontSize = captionStyle.fontSize; has = true; }
+  if (captionStyle.lineHeight !== undefined) { r.lineHeight = captionStyle.lineHeight; has = true; }
   if (captionStyle.color !== undefined) { r.color = captionStyle.color; has = true; }
   if (captionStyle.labelColor !== undefined) { r.labelColor = captionStyle.labelColor; has = true; }
   if (captionStyle.align !== undefined && captionStyle.align !== STATIC_DEFAULTS.align) { r.align = captionStyle.align; has = true; }
+  if (captionStyle.bodyBreaking !== undefined && captionStyle.bodyBreaking !== STATIC_DEFAULTS.bodyBreaking) { r.bodyBreaking = captionStyle.bodyBreaking; has = true; }
   if (captionStyle.gap !== undefined && !dimensionsEqual(captionStyle.gap, STATIC_DEFAULTS.gap)) { r.gap = captionStyle.gap; has = true; }
   if (captionStyle.labelBold !== undefined && captionStyle.labelBold !== STATIC_DEFAULTS.labelBold) { r.labelBold = captionStyle.labelBold; has = true; }
   if (captionStyle.labelItalic !== undefined && captionStyle.labelItalic !== STATIC_DEFAULTS.labelItalic) { r.labelItalic = captionStyle.labelItalic; has = true; }

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Risorse e tabelle',
   description: 'Come si definiscono i tipi di risorsa e la loro numerazione, gli stili delle tabelle e delle didascalie, i diagrammi stampati con un solo inchiostro e i video su carta',
   lang: 'it',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '45 min',
   order: 14,
   parent: 'configuration',
@@ -663,6 +663,18 @@ const config: PostextConfig = {
       <td>Allineamento orizzontale delle righe della didascalia. <code>'justify'</code> allarga ogni riga tranne l’ultima a tutta la larghezza. Su una barra di didascalia le righe si allineano dentro la sua spaziatura interna; una didascalia laterale si allinea entro la propria larghezza.</td>
     </tr>
     <tr>
+      <td><code>bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Spezza la didascalia come il testo corrente: lo stesso algoritmo, entro i limiti di spaziatura del testo corrente in giustificato, le parole divise quando il testo corrente è sillabato e le sue regole di sillabazione e di scale (<code>bodyText.hyphenation</code>, <code>bodyText.stacks</code>). L’etichetta numerata non viene mai divisa. Disattivato: riga per riga, senza dividere parole.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>quella del testo corrente, in proporzione</td>
+      <td>L’interlinea della didascalia. <code>em</code> si misura sul corpo della didascalia.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +790,12 @@ Il sotto-oggetto `note` dà stile a `Resource.note`, un breve testo (fonte, cred
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Allineamento orizzontale delle righe della nota, come <code>align</code> per la didascalia.</td>
+    </tr>
+    <tr>
+      <td><code>note.bodyBreaking</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Spezza la nota come il testo corrente, come <code>bodyBreaking</code> per la didascalia.</td>
     </tr>
   </tbody>
 </table>
