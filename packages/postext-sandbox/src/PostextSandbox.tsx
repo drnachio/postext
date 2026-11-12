@@ -9,6 +9,7 @@ import { preloadConfigFonts } from './controls/fonts/fontLoader.js';
 import { ActivityBar, MobileNavBar } from './sidebar/ActivityBar.js';
 import { SidebarPanel } from './sidebar/SidebarPanel.js';
 import { ConfigPanel } from './sidebar/ConfigPanel.js';
+import { TemplatesPanel } from './templates/design/TemplatesPanel.js';
 import { ResourcesPanel } from './sidebar/ResourcesPanel.js';
 import { MarkdownPanel } from './sidebar/MarkdownPanel.js';
 import { WarningsPanel } from './sidebar/WarningsPanel.js';
@@ -43,10 +44,11 @@ const FolioViewport = lazy(() => import('./viewport/folio/FolioViewport.js').the
 const EpubViewport = lazy(() => import('./viewport/epub/EpubViewport.js').then((m) => ({ default: m.EpubViewport })));
 const ScormViewport = lazy(() => import('./viewport/ScormViewport.js').then((m) => ({ default: m.ScormViewport })));
 
-const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
+const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navTemplates' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
   projects: 'navBooks',
   chapters: 'navChapters',
   markdown: 'navManuscript',
+  templates: 'navTemplates',
   resources: 'navResources',
   fonts: 'navFonts',
   config: 'navDesign',
@@ -170,6 +172,8 @@ function SandboxLayout({
 
   const renderPanel = () => {
     switch (activePanel) {
+      case 'templates':
+        return <TemplatesPanel />;
       case 'config':
         return <ConfigPanel />;
       case 'resources':

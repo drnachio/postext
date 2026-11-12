@@ -1,7 +1,7 @@
 'use client';
 
 import { startTransition, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronRight, CircleHelp, Download, LayoutTemplate, RotateCcw, Search, SlidersHorizontal, Upload, X } from 'lucide-react';
 import { isDefaultColorPalette, stripConfigDefaults } from 'postext';
 import {
   useSandboxDispatch,
@@ -303,9 +303,29 @@ function SettingsHome({ counts, onOpen, buttonRefs }: {
   buttonRefs: Map<SettingsGroupId, HTMLButtonElement>;
 }) {
   const labels = useSandboxLabels();
+  const dispatch = useSandboxDispatch();
   return (
     <>
       <DesignSummary onOpenGroup={onOpen} />
+      <div className="px-1.5 pt-2">
+        <button
+          type="button"
+          onClick={() => dispatch({ type: 'SET_PANEL', payload: 'templates' })}
+          className={cn(
+            'group/row flex pt-large:min-h-11 w-full cursor-pointer items-center gap-3 rounded-lg px-1.5 py-2 text-start transition-colors',
+            'hover:bg-(--surface) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
+          )}
+        >
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-(--rule) bg-(--surface) text-(--brand)">
+            <LayoutTemplate size={16} aria-hidden="true" />
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="text-[0.8rem] leading-[1.35] font-medium text-(--foreground)">{labels.designTemplates}</span>
+            <span className="text-[0.68rem] leading-[1.35] text-(--slate) [text-wrap:pretty]">{labels.designTemplatesHint}</span>
+          </span>
+          <ChevronRight size={14} aria-hidden="true" className="shrink-0 text-(--slate) transition-transform group-hover/row:translate-x-0.5 rtl:-scale-x-100 rtl:group-hover/row:-translate-x-0.5" />
+        </button>
+      </div>
       <h3 className="px-3 pt-4 pb-1.5 text-[0.72rem] font-semibold tracking-[0.12em] text-(--slate) pt-caps">
         {labels.settingsGroupsHeading}
       </h3>

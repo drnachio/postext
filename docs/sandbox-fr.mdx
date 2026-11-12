@@ -6,7 +6,7 @@ export const metadata = {
   description: 'L’interface du Sandbox : la barre d’activité, les panneaux Texte, Livres, Chapitres, Ressources et Polices, et l’affichage sur téléphone',
   lang: 'fr',
   lastUpdated: '2026-11-10',
-  readingTime: '32 min',
+  readingTime: '34 min',
   order: 41,
   plainSummary: "Le Sandbox est un outil gratuit de ce site pour essayer Postext sans rien installer. Vous écrivez votre texte d’un côté et, de l’autre, vous voyez les pages terminées changer à mesure que vous tapez. Cette page présente les parties de l’écran et les panneaux où vous écrivez le texte, gérez les livres et les chapitres, ajoutez des images et choisissez les polices. D’autres pages traitent des réglages de maquette, des aperçus, de l’enregistrement et de l’import, et de l’intégration du Sandbox dans votre propre site.",
 };
@@ -30,6 +30,7 @@ Une bande étroite sur le bord gauche comporte un bouton par panneau. Chaque bou
 - **Livres** (icône `Files`) : vos livres et les livres d’exemple
 - **Chapitres** (icône `BookOpen`) : le livre ouvert et ses chapitres
 - **Texte** (icône `FileCode`) : écrire et modifier le texte du chapitre courant
+- **Modèles** (icône `LayoutTemplate`) : modèles de design à essayer sur le livre, enregistrer, importer et exporter
 - **Ressources** (icône `FolderOpen`) : images, dessins SVG et tableaux utilisés dans le livre
 - **Polices** (icône `Type`) : les caractères qu’utilise le livre, et vos propres fichiers de police
 - **Maquette** (icône `Settings2`) : réglages de la page, de la typographie, des titres, des figures, des encadrés et de l’export
@@ -207,6 +208,16 @@ Le livre d’exemple ouvert définit aussi ce que restaurent les boutons **Réin
 </table>
 
 Un préréglage ouvert lors d’une session précédente mais qu’aucune source ne liste plus (typiquement un préréglage privé dans une version qui ne le sert pas) apparaît encore, grisé, avec la mention *Indisponible dans cette version*. Le Sandbox garde le contenu chargé au lieu de le remplacer en silence par l’exemple intégré. L’identifiant du préréglage ouvert est conservé sous la clé `postext-sandbox-preset` (voir [Persistance](/fr/docs/sandbox-books-saving#persistance)). Le format des paquets est décrit dans l’annexe [Format des paquets de préréglage](/fr/docs/sandbox-embedding#format-des-paquets-de-préréglage).
+
+#### Panneau Modèles
+
+Le panneau **Modèles**, entre Texte et Ressources, est l’étape avant le design : choisir de quel design part le livre. Un modèle garde le design (page et colonnes, typographie et styles, couleurs, titres courants et pieds, impression), jamais le texte, la langue ni les types de ressources, et emporte des copies de ses polices et de son profil ICC.
+
+- **Galerie.** Les modèles enregistrés et les quatre fournis (*Roman*, *Manuel technique*, *Magazine à deux colonnes* et *Livre en deux couleurs*), chacun avec un dessin de sa page, sa typographie et ses couleurs.
+- **Essayer.** On choisit les parties à remplacer et le modèle s’applique au livre. Une barre *Essai de « … »* propose **Conserver** et **Abandonner** (retour au design d’avant). Ce que le modèle laisse non défini revient à sa valeur par défaut.
+- **Comme style de chapitre.** Les parties choisies d’un modèle (page et colonnes, typographie, couleurs, titres courants) deviennent un style de chapitre du livre, nouveau ou existant : seulement ce qu’elles changent par rapport au livre, le format de page et l’impression restant ceux du livre. On l’attribue aux chapitres qui demandent ce design (une annexe, les cas cliniques) dans **Chapitres**, ou avec `chapterStyle:` dans leur en-tête, et à une partie d’un chapitre, à partir d’une nouvelle page, avec `::section{style="…"}` ; le reste du livre garde le sien.
+- **Enregistrer un design comme modèle**, depuis ce livre ou un autre livre du Sandbox, en choisissant les parties qu’il contient.
+- **Importer** (dans l’en-tête du panneau) et **Exporter** (sur chaque modèle) des fichiers `.postext-template.json` pour les partager ; les polices non redistribuables restent derrière. Les modèles enregistrés peuvent être supprimés, pas ceux fournis.
 
 #### Panneau Ressources
 

@@ -6,7 +6,7 @@ export const metadata = {
   description: 'L’interfaccia della Sandbox: la barra delle attività, i pannelli Testo, Libri, Capitoli, Risorse e Font, e la disposizione sui telefoni',
   lang: 'it',
   lastUpdated: '2026-11-10',
-  readingTime: '30 min',
+  readingTime: '32 min',
   order: 41,
   plainSummary: "La Sandbox è uno strumento gratuito di questo sito per provare Postext senza installare nulla. Scrivi il testo da una parte e vedi le pagine finite dall’altra, e cambiano mentre scrivi. Questa pagina spiega le parti dello schermo e i pannelli in cui scrivi il testo, gestisci libri e capitoli, aggiungi immagini e scegli i font. Altre pagine trattano le impostazioni grafiche, le anteprime, il salvataggio e l’importazione, e l’inserimento della Sandbox nel tuo sito.",
 };
@@ -30,6 +30,7 @@ Una stretta striscia lungo il bordo sinistro ha un pulsante per pannello. Ogni p
 - **Libri** (icona `Files`): i tuoi libri e i libri di esempio
 - **Capitoli** (icona `BookOpen`): il libro aperto e i suoi capitoli
 - **Testo** (icona `FileCode`): scrivi e modifica il testo del capitolo corrente
+- **Modelli** (icona `LayoutTemplate`): modelli di design da provare sul libro, salvare, importare ed esportare
 - **Risorse** (icona `FolderOpen`): immagini, disegni SVG e tabelle usati nel libro
 - **Font** (icona `Type`): i caratteri usati dal libro e i tuoi file di font
 - **Grafica** (icona `Settings2`): impostazioni di pagina, tipografia, titoli, figure, riquadri ed esportazione
@@ -207,6 +208,16 @@ Il libro di esempio aperto definisce anche che cosa ripristinano i pulsanti **Re
 </table>
 
 Un preset che era aperto in una sessione precedente ma che nessuna sorgente elenca più (di solito un preset privato in una build che non lo serve) compare ancora, in grigio, come *Non disponibile in questa build*. La Sandbox conserva il contenuto caricato invece di sostituirlo in silenzio con l’esempio integrato. L’id del preset aperto viene salvato sotto la chiave `postext-sandbox-preset` (vedi [Persistenza](/it/docs/sandbox-books-saving#persistenza)). Il formato dei pacchetti è descritto nell’appendice [Formato dei pacchetti preset](/it/docs/sandbox-embedding#formato-dei-pacchetti-preset).
+
+#### Pannello Modelli
+
+Il pannello **Modelli**, tra Testo e Risorse, è il passo prima del design: scegliere da quale design parte il libro. Un modello conserva il design (pagina e colonne, tipografia e stili, colori, testatine e piedini, stampa), mai il testo, la lingua o i tipi di risorsa, e porta con sé copie dei suoi font e del suo profilo ICC.
+
+- **Galleria.** I modelli salvati e i quattro inclusi (*Romanzo*, *Manuale tecnico*, *Rivista a due colonne* e *Libro a due colori*), ciascuno con un disegno della sua pagina, la sua tipografia e i suoi colori.
+- **Prova.** Si scelgono le parti da sostituire e il modello si applica al libro. Una barra *Prova di «…»* offre **Mantieni** e **Scarta** (ritorno al design precedente). Ciò che il modello lascia non impostato torna al valore predefinito.
+- **Come stile di capitolo.** Le parti scelte di un modello (pagina e colonne, tipografia, colori, testatine) diventano uno stile di capitolo del libro, nuovo o già esistente: solo ciò che cambiano rispetto al libro, con il formato di pagina e la stampa del libro. Si assegna ai capitoli che chiedono quel design (un’appendice, i casi clinici) in **Capitoli**, o con `chapterStyle:` nel front matter, e a una parte di un capitolo, da una pagina nuova, con `::section{style="…"}`; il resto del libro mantiene il suo.
+- **Salvare un design come modello**, da questo libro o da un altro libro del Sandbox, scegliendo le parti che contiene.
+- **Importa** (nell’intestazione del pannello) ed **Esporta** (su ogni modello) file `.postext-template.json` per condividerli; i font non ridistribuibili restano indietro. I modelli salvati si possono eliminare, quelli inclusi no.
 
 #### Pannello Risorse
 
