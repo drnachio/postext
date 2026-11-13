@@ -5,6 +5,7 @@ import { applyHtmlViewerOverrides, resolveDebugConfig, resolveLayoutConfig } fro
 import type { PostextConfig } from 'postext';
 import { requestSettingsGroup, requestSettingsSwitches, settingsChangedOnly } from '../../context/settingsNavigation.js';
 import { printPreviewOn, setPrintPreview } from '../../print/printPreviewToggle.js';
+import { dieLinesOn, finishesView, setDieLines, setFinishesView, type FinishesView } from '../../viewport/canvas/specialInksView.js';
 import { EDIT_MODES, editModeNow, selectedFrameNow, setEditMode, type EditMode } from '../../editing/editMode.js';
 import { breadcrumb, breadcrumbText, selectedElement } from '../../selection/pageSelection.js';
 import { pageSelectionNow } from '../../selection/selectionStore.js';
@@ -114,6 +115,8 @@ export function viewState(host: SandboxToolHost): Record<string, unknown> {
     chapter: at.chapterIndex + 1,
     ...(at.page !== null ? { page: at.page } : {}),
     printPreview: printPreviewOn(),
+    dieLines: dieLinesOn(),
+    finishes: finishesView(),
     fitMarks: fitMarksViewOf(s.config.debug),
     largeTargets: host.largeTargets.get(),
     guides: guidesOf(s.config),
@@ -171,6 +174,8 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
         magnification: { type: ['number', 'null'], minimum: 1.5, maximum: 10, description: 'Folio: hold the magnifying glass over the middle of the open spread, magnifying this many times; null puts it away. The glass belongs to the magnify pointer mode, which the viewer is switched to.' },
         toolbarPinned: { type: 'boolean', description: 'Keep the viewer\'s floating toolbar on screen.' },
         printPreview: { type: 'boolean', description: 'Canvas and Folio: the soft proof of the output profile with trim, bleed and safe-zone guides.' },
+        dieLines: { type: 'boolean', description: 'Canvas: draw each page\'s die-cut holes and outline (dieCuts) as the dashed magenta die line. Kept as the reader\'s choice in this browser.' },
+        finishes: { type: 'string', enum: ['flat', 'sheen', 'map'], description: 'Canvas: how special inks (a colour with a finish) are painted: flat as their screen colour, sheen with their metallic or varnish sheen, map as the map of where each finish prints. Kept as the reader\'s choice in this browser.' },
         fitMarks: { type: 'string', enum: [...FIT_MARKS_MODES, 'book'], description: 'Canvas: the marks of how composed frames fit — all (scaled text and pictures too), problems (frames that do not fit, unknown looks) or none. Kept as the reader\'s choice in this browser, over the book\'s debug.fitMarks (problems unless the book sets another); book forgets the choice and follows the book again. Never drawn in the PDF, HTML, EPUB or Folio.' },
         largeTargets: { type: 'boolean', description: 'Controls at least 44 px, for touch.' },
         guides: {
@@ -256,6 +261,8 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
       }
 
       if (args.printPreview !== undefined) setPrintPreview(args.printPreview as boolean);
+      if (args.dieLines !== undefined) setDieLines(args.dieLines as boolean);
+      if (args.finishes !== undefined) setFinishesView(args.finishes as FinishesView);
       if (args.fitMarks !== undefined) setFitMarksChoice(args.fitMarks === 'book' ? null : (args.fitMarks as FitMarksMode));
       if (args.largeTargets !== undefined) host.largeTargets.set(args.largeTargets as boolean);
 

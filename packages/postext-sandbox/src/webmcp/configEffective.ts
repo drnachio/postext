@@ -23,6 +23,7 @@ import {
   resolveLinksConfig,
   resolvePdfGenerationConfig,
   resolvePrintConfig,
+  resolveDieCutsConfig,
 } from 'postext';
 import type { PostextConfig, Resource } from 'postext';
 import { withHyphenationLocale } from '../controls/language/hyphenation.js';
@@ -58,6 +59,9 @@ export function resolveEffectiveConfig(config: PostextConfig, locale: string, re
     contrast: resolved.contrast ?? resolveContrastConfig(config.contrast),
     checks: resolved.checks ?? resolveChecksConfig(config.checks),
     folio: resolved.folio ?? resolveFolioConfig(config.folio, resolved.page.sizePreset),
+    // Die-cuts (#1565): resolved here while the engine resolves them only
+    // where it lays them out.
+    dieCuts: (resolved as { dieCuts?: unknown }).dieCuts ?? resolveDieCutsConfig(config.dieCuts),
     lineNumbers: resolved.lineNumbers ?? resolveLineNumbersConfig(config.lineNumbers, resolved.bodyText),
     codeStyle: resolved.codeStyle ?? resolveCodeStyleConfig(config.codeStyle, resolved.bodyText),
     links: resolved.links ?? resolveLinksConfig(config.links),
