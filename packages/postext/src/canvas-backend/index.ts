@@ -25,6 +25,8 @@ import { resetContextState, restoreContext, saveContext } from './contextState.j
 import { resetWordSpacing } from './contextText.js';
 import { paperPaint, screenFinishPaints } from './finish/paint.js';
 import { paintFinishPreview, type FinishPreviewMode } from './finish/preview.js';
+import { cutDieShapes, paintThrough, type PageImageSource } from './through.js';
+export { composeThrough, cutDieShapes, type ComposeThroughOptions, type PageImageSource } from './through.js';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -88,6 +90,12 @@ export interface RenderPageOptions {
    *  `'map'` shows the mask in false colour. A page without special inks
    *  paints the same in every mode. */
   finishes?: FinishPreviewMode;
+  /** The painted pages a die-cut hole shows (#1567), by document page
+   *  index, painted as this one is (the same `trim`). Each hole of the page
+   *  and the paper past its leaf's outline are cut out; with this, the
+   *  pages beneath are drawn back into the holes (`composeThrough`), else
+   *  the holes stay transparent and show what is behind the canvas. */
+  beneath?: PageImageSource;
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -414,6 +422,13 @@ function paintContext(
 
   if (options?.pageNegative) {
     ctx.filter = 'none';
+  }
+
+  // Die-cuts (#1565): holes and the leaf's outline cut out, the pages
+  // beneath drawn into the holes when the host has them (#1567).
+  if (page.dieCut) {
+    cutDieShapes(ctx, page, doc);
+    if (options?.beneath) paintThrough(ctx, doc, doc.pages.indexOf(page), options.beneath, sx, { inset });
   }
 
   if (options?.printPreview) paintPrintPreview(ctx, canvas, page, doc, options.printPreview, sx, inset);

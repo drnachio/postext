@@ -83,6 +83,8 @@ describe("package exports", () => {
       "renderToCanvas",
       "renderPage",
       "renderPageToCanvas",
+      "composeThrough",
+      "cutDieShapes",
       "registerResourceImage",
       "unregisterResourceImage",
       "clearResourceImages",

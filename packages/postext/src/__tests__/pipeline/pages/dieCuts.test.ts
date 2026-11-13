@@ -3,6 +3,8 @@ import { buildDocument } from '../../../pipeline/index.js';
 import { collectContentWarnings } from '../../../pipeline/contentWarnings.js';
 import { collectConfigWarnings } from '../../../checks/configWarnings.js';
 import { preflightDocument } from '../../../checks/preflight.js';
+import { renderToHtml } from '../../../html-backend/html-backend.js';
+import { renderPageToCanvas } from '../../../canvas-backend/index.js';
 import { pathBounds } from '../../../dieCut/index.js';
 import { flattenPath, rectPolygonDistance } from '../../../dieCut/geometry.js';
 import type { PageTemplate } from '../../../composed/types.js';
@@ -78,6 +80,29 @@ describe('dieCuts.pages: a porthole on page 3', () => {
     // Pages without a hole set full lines.
     const full = lines(doc.pages[1]!).filter((l) => l.bbox.width > 250);
     expect(full.length).toBeGreaterThan(5);
+  });
+
+  it('clips the page in the HTML viewer to its holes', () => {
+    const html = renderToHtml(doc);
+    expect(html.match(/clip-path:path\(evenodd,/g)).toHaveLength(2);
+  });
+
+  it('cuts the holes out of the canvas page, and draws the page beneath into them', () => {
+    const calls: unknown[][] = [];
+    const ctx = new Proxy({ textBaseline: 'alphabetic', font: '' } as Record<string | symbol, unknown>, {
+      get(t, k) {
+        if (k in t) return t[k];
+        if (k === 'measureText') return (s: string) => ({ width: s.length * 7 });
+        return (...args: unknown[]) => { calls.push([k, ...args]); };
+      },
+      set(t, k, v) { t[k] = v; calls.push([`=${String(k)}`, v]); return true; },
+    });
+    const canvas = { width: 0, height: 0, getContext: () => ctx } as unknown as HTMLCanvasElement;
+    renderPageToCanvas(doc.pages[2]!, doc, canvas, { beneath: (i) => (i === 4 ? ('page5' as unknown as CanvasImageSource) : undefined) });
+    const out = calls.findIndex((c) => c[0] === '=globalCompositeOperation' && c[1] === 'destination-out');
+    const draw = calls.findIndex((c) => c[0] === 'drawImage' && c[1] === 'page5');
+    expect(out).toBeGreaterThan(-1);
+    expect(draw).toBeGreaterThan(out);
   });
 
   it('a die nobody has is a config warning', () => {
