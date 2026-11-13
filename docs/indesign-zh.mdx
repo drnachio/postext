@@ -76,7 +76,7 @@ postext import-idml package.zip -o book.postext
 ### 逐页还是连续排
 
 - <strong>`--layout pages`</strong>逐页照文档排。每一页成为一个[模板页](/zh/docs/composed-pages)，每个框保持原来的位置、大小和顺序，串接的框仍然串接。适合每一页都是手工做出来的文档。
-- <strong>`--layout flow`</strong>按阅读顺序写出各篇文章，沿用文档的段落样式，由Postext把它们排进书的设计生成的页面。适合小说、随笔这类连续的文字，页面只是用来容纳文字。
+- <strong>`--layout flow`</strong>按阅读顺序写出各篇文章，沿用文档的段落样式，由Postext把它们排进书的设计生成的页面。适合小说、随笔这类连续的文字，页面只是用来容纳文字。各个框只有放在一起才读得通的页面会整页排出（自postext 1.83.1起）。没有自己正文的页面，如封面或篇章页，在连续版式中成为一个[组合页面](/zh/docs/composed-pages)，各框留在InDesign中的位置，形状和图片作为装饰。正文从一个带色带、图片或填色框的标题下面开始的页面是章首页：标题成为开启该页的标题，其标题样式的设计画出色带、眉题和切口上的书签。报告把它们列为`composedPagesInFlow`和`openerDesigns`。
 - <strong>`auto`</strong>是默认值，它根据文档选一种，并说明理由。
 
 ### 带过来的内容

@@ -7,8 +7,11 @@
 // frame of the main thread is taken to hold a share of the text
 // proportional to its area. Stories on pages before the main story are
 // front matter, those after it back matter. Shapes drawn on the pages
-// are not part of a flowing book and are counted.
+// are not part of a flowing book and are counted, except on the pages
+// set as one unit (a cover, an opener: `fidelity/flowUnits.ts`), which
+// keep their artwork.
 
+import type { HeadingStyleConfig, PageTemplate } from 'postext';
 import type { IdmlStory } from '../model/document.js';
 import { boxHeight, boxWidth, type Box } from '../model/geometry.js';
 import { pageSize } from '../resolve/geometry.js';
@@ -17,6 +20,7 @@ import { blocksOf, joinChunks, type BlockEnv, type Chunk } from './blocks.js';
 import type { Context } from './context.js';
 import type { MasterWords } from './design.js';
 import { bookmarkChapters } from './fidelity/bookmarks.js';
+import { flowUnits } from './fidelity/flowUnits.js';
 import { makeHooks } from './hooks.js';
 import { indexTerm, inlineOf } from './inline.js';
 import { ownText } from './looks.js';
@@ -87,6 +91,10 @@ export interface FlowResult {
   words: MasterWords;
   /** Resource types the captions asked for. */
   labels: Map<'figure' | 'table', string>;
+  /** Templates of the pages set as composed pages (a cover, a divider). */
+  templates: PageTemplate[];
+  /** Heading styles whose design draws an opener page's frames. */
+  headingStyles: HeadingStyleConfig[];
 }
 
 export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main: OrderedStory | undefined, words: MasterWords): FlowResult {
@@ -137,8 +145,11 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
 
   // Pictures and shapes on the pages.
   const insert = new Map<number, (string | Chunk)[]>();
-  const front: { page: number; chunks: Chunk[] }[] = [];
-  const back: { page: number; chunks: Chunk[] }[] = [];
+  // `lead`: an opener's heading, which goes before whatever else its page
+  // gives (a picture placed by the geometry would otherwise stand on the
+  // page before the one the heading opens).
+  const front: { page: number; chunks: Chunk[]; lead?: boolean }[] = [];
+  const back: { page: number; chunks: Chunk[]; lead?: boolean }[] = [];
   const put = (where: number | 'before' | 'after', page: number, blocks: (string | Chunk)[]): void => {
     if (!blocks.length) return;
     const chunks = (): Chunk[] => blocks.map((b) => (typeof b === 'string' ? { kind: 'block', text: b } : b));
@@ -162,14 +173,37 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     if (above.length === on.length) return paragraphAt(on[0]!.from) - (on[0]!.from > 0 ? 0 : 1);
     return paragraphAt(on[on.length - 1]!.to - 1);
   };
+  const leaves = doc.spreads.flatMap((spread) => leavesOf(ctx, spread));
+  // Pages whose frames read together are set whole before anything else
+  // is placed (#1556): a cover as a composed page, the frames above an
+  // opener's running text as the design of its heading. What they hold
+  // is left out of the passes below.
+  const usedAnchors = new Set<string>();
+  const units = flowUnits(ctx, stories, main, { leaves, headingAttrs, usedAnchors, generated: (e) => generatedKind(ctx, e.story) !== undefined });
+  /** The paragraph of the main story after which the text of a page
+   *  that opens at `from` goes on (-1: before the first). The share is an
+   *  estimate; a break typed at the end of a paragraph near it (next
+   *  page, next frame) is where the page really begins. */
+  const openingParagraph = (from: number): number => {
+    if (from <= 0) return -1;
+    const guess = paragraphAt(from);
+    const paragraphs = main!.story.paragraphs;
+    const ends = (n: number): boolean => /Page|Frame/.test(paragraphs[n]?.breakAfter ?? '');
+    for (let d = 0; d <= 3; d++) {
+      if (ends(guess + d)) return guess + d;
+      if (d && ends(guess - d)) return guess - d;
+    }
+    return guess;
+  };
   const captionOf = new Map<Leaf, OrderedStory>();
   const captions = new Set<OrderedStory>();
   const pictures: Leaf[] = [];
   let shapes = 0;
   const shapePages = new Set<string>();
-  for (const spread of doc.spreads) {
-    for (const leaf of leavesOf(ctx, spread)) {
+  {
+    for (const leaf of leaves) {
       const item = leaf.at.item;
+      if (units.items.has(item)) continue;
       if (item.graphic) {
         pictures.push(leaf);
         continue;
@@ -186,7 +220,7 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     const group = leaf.at.parents[leaf.at.parents.length - 1];
     let best: OrderedStory | undefined;
     for (const e of stories) {
-      if (e === main || captions.has(e) || e.frames.length !== 1) continue;
+      if (e === main || captions.has(e) || units.stories.has(e) || e.frames.length !== 1) continue;
       const f = e.frames[0]!;
       if (f.pageIndex !== leaf.g.pageIndex || !f.box) continue;
       const text = e.story.paragraphs.map(ownText).join(' ').trim();
@@ -270,29 +304,52 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     if (anchor) usedAnchors.add(anchor);
     return blocksOf(ctx, e.story.paragraphs, { notes: [], carry, hooks, target: 'flow', headingAttrs, ...(page ? { pageName: page.name } : {}), ...env });
   };
-  const usedAnchors = new Set<string>();
   const sides: OrderedStory[] = [];
+  // A composed page stands where its page comes in the flow.
+  for (const u of units.pages) {
+    const where = beside(u.page, 0);
+    if (where === 'before') front.push({ page: u.page, chunks: u.chunks });
+    else if (where === 'after') back.push({ page: u.page, chunks: u.chunks });
+    else put(where, u.page, u.chunks);
+  }
+  // An opener's heading goes before the running text of its page: in the
+  // main story at the paragraph that page opens with, or before a story
+  // that starts on it.
+  const leads = new Map<OrderedStory, Chunk[]>();
+  for (const o of units.openers) {
+    if (o.body !== main) {
+      leads.set(o.body, o.chunks);
+      continue;
+    }
+    const on = shares.filter((s) => s.page === o.page);
+    if (on.length) put(openingParagraph(on[0]!.from), o.page, o.chunks);
+  }
   let inOrder = 0;
   bookmarkChapters(ctx, main, insert, (page) => {
     const share = shares.find((s) => s.page === page);
     return share ? paragraphAt(share.from) : undefined;
   });
   for (const e of stories) {
-    if (e === main || captions.has(e)) continue;
+    if (e === main || captions.has(e) || units.stories.has(e)) continue;
     const page = firstPage(e);
     const box = e.frames.find((f) => f.box)?.box;
     const where = beside(page, box ? box.top : 0);
-    if (where === 'before') front.push({ page, chunks: emit(e) });
-    else if (where === 'after') back.push({ page, chunks: emit(e) });
+    const lead = leads.get(e) ?? [];
+    if (where === 'before' || where === 'after') {
+      const list = where === 'before' ? front : back;
+      if (lead.length) list.push({ page, chunks: lead, lead: true });
+      list.push({ page, chunks: emit(e) });
+    }
     else {
       const item = e.frames[0]!.item;
       const dress = boxLook(ctx, item, 'side story');
       const sequence = dress.fill || dress.stroke ? undefined : inSequence(page, box);
       if (sequence !== undefined) {
         inOrder++;
-        put(sequence, page, emit(e));
+        put(sequence, page, [...lead, ...emit(e)]);
         continue;
       }
+      if (lead.length) put(where, page, lead);
       // A story beside the main one is a box at the paragraph it faces.
       sides.push(e);
       const style = calloutStyleFor(ctx, item, dress);
@@ -307,8 +364,9 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
   }
   if (sides.length) ctx.rep.add('sideStories', 'info', 'Stories that stand beside the main text (or in a filled or stroked frame of their own) are boxes set at the paragraph of the main story the page geometry suggests', undefined, sides.length);
   if (inOrder) ctx.rep.add('storiesInSequence', 'info', 'Stories set in plain frames above or below the main text on its pages are part of the running text, in reading order', undefined, inOrder);
-  front.sort((a, b) => a.page - b.page);
-  back.sort((a, b) => a.page - b.page);
+  const byPage = (a: { page: number; lead?: boolean }, b: { page: number; lead?: boolean }): number => a.page - b.page || Number(!!b.lead) - Number(!!a.lead);
+  front.sort(byPage);
+  back.sort(byPage);
   let lastPage = -1;
   for (const f of front) {
     chunks.push(...sectionBlocks(f.page));
@@ -354,5 +412,5 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     current.push(c);
   }
   flush();
-  return { chapters, words, labels };
+  return { chapters, words, labels, templates: units.templates, headingStyles: units.headingStyles };
 }

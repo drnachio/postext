@@ -109,6 +109,11 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
     const r = layoutFlow(ctx, stories, main, words);
     chapters = r.chapters;
     void r.labels;
+    // A cover set as a composed page, an opener drawn by its heading's
+    // design (#1556).
+    if (r.templates.length) config.pageTemplates = r.templates;
+    templates = r.templates.length;
+    if (r.headingStyles.length) config.headingStyles = [...(config.headingStyles ?? []), ...r.headingStyles];
     if (main?.story.orientation === 'vertical') (config.layout ??= {}).writingMode = 'vertical-rl';
   };
   // A readable package always gives a book: what the chosen layout

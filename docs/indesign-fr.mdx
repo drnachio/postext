@@ -76,7 +76,7 @@ La même importation se fait dans le Sandbox, sous **Livres › Nouveau › Nouv
 ### Pages ou texte continu
 
 - **`--layout pages`** suit le document page pour page. Chaque page devient une [page composée](/fr/docs/composed-pages) et chaque bloc garde sa place, sa taille et son ordre ; une chaîne de blocs liés reste une chaîne. Utilisez-le pour les documents dont chaque page est faite à la main.
-- **`--layout flow`** écrit les articles dans l’ordre de lecture sous les styles de paragraphe du document, et Postext les compose sur des pages que fait la maquette du livre. Utilisez-le pour du texte courant, comme un roman ou un essai, où les pages ne font que porter le texte.
+- **`--layout flow`** écrit les articles dans l’ordre de lecture sous les styles de paragraphe du document, et Postext les compose sur des pages que fait la maquette du livre. Utilisez-le pour du texte courant, comme un roman ou un essai, où les pages ne font que porter le texte. Les pages dont les blocs ne se lisent qu’ensemble sont composées en entier (depuis postext 1.83.1). Une page sans texte courant à elle, comme une couverture ou un intercalaire de partie, devient dans le flux une [page composée](/fr/docs/composed-pages), ses blocs là où InDesign les a et ses formes et images en décor. Une page dont le texte courant commence sous un titre accompagné d’un bandeau, d’une image ou d’un bloc rempli est une ouverture : le titre devient un intertitre qui ouvre la page, et le dessin de son style d’intertitre trace le bandeau, le surtitre et l’onglet en marge de grand fond, s’il y en a un. Le rapport les relève comme `composedPagesInFlow` et `openerDesigns`.
 - **`auto`**, la valeur par défaut, choisit l’un ou l’autre d’après le document et donne sa raison.
 
 ### Ce qui est repris
