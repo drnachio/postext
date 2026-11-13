@@ -12,6 +12,7 @@ import { type ParagraphContainerPlan, containerStyle } from '../../../callouts/p
 import type { PartPlan } from '../../../sections/parts.js';
 import { type PlacementCursor, advanceToNextPageBoundary, enforcePageParity, currentColumn, advanceToNextColumn, FIT_EPS } from '../../../blocks/placement.js';
 import type { FloatRotation } from '../types.js';
+import { settleColumnWraps } from '../../../floats/textWrap.js';
 import { type BlockMeasureContext, type MeasureContentBlockOptions, measureContentBlock } from '../../../blocks/measureContentBlock.js';
 import type { ResolvedHeadingStyleConfig } from '../../../../types/structure/headingStyles.js';
 import type { ResolvedHeadingLevelConfig, Resource, ResourceType } from '../../../../types.js';
@@ -73,6 +74,7 @@ export function createBlockMeasure(deps: BlockMeasureDeps) {
     } = blockTurn;
     // --- Heading `breakBefore` ----------------------------------------
     if (rawBlock.type === 'heading' && rawBlock.level) {
+      const pageBefore = cursor.pageIndex;
       const level = headingLevels.forBlock(rawBlock);
       const bb = level?.breakBefore;
       /** The heading opens its page (#749): with its own break, or as the
@@ -103,6 +105,10 @@ export function createBlockMeasure(deps: BlockMeasureDeps) {
         opensPage = true;
       }
       if (opensPage) openerPages.add(doc.pages[cursor.pageIndex]!);
+      // The break above opened a fresh column after the dispatch settled
+      // the old one: a heading does not run beside a die-cut hole, so it
+      // goes under one at the head of its new page (#1577).
+      if (pageBefore !== cursor.pageIndex && settleColumnWraps(currentColumn(doc, cursor))) state.pendingSpacing = 0;
     }
 
     const id = `block-${state.blockIdCounter++}`;
