@@ -1,0 +1,66 @@
+---
+title: "Lucido serigrafico su una rivista soft touch"
+summary: "Due vernici come tinte piatte: soft touch su ogni pagina e lucida sulle foto e sulla testata, viste in Folio e nelle viste delle finiture."
+plain: "Una rivista di fotografia con un rivestimento vellutato su ogni pagina e uno lucido solo sulle foto e sul titolo. Le vernici non hanno colore; la vista 3D e una vista di prova mostrano dove si trovano."
+description: "Una rivista fotografica in Postext con vernice soft touch su ogni pagina e UV lucida serigrafica su foto e testata: due lastre di vernice, Folio e viste."
+question: "Come metto una vernice soft touch su ogni pagina e una lucida serigrafica solo sulle foto?"
+aliases: ["vernice serigrafica", "verniciatura selettiva", "UV selettivo", "soft touch", "plastificazione soft touch", "vernice lucida", "vernice opaca", "lastra della vernice", "rivista fotografica", "risparmio di vernice", "vernice UV", "nobilitazione", "spot UV", "spot varnish"]
+pageNotes: { "1": "La copertina: un camminatore solo su una distesa di sale screpolata al tramonto, al vivo, LONG LIGHT in grandi maiuscole e minuscole graziate bianche sul cielo, gli strilli in bianco su una fascia ardesia.", "3": "Un pescatore ripara una rete arancione su una banchina del porto, al vivo nella parte alta della pagina, il titolo The net mender e due colonne di testo.", "6": "La quarta di copertina: una pagina ardesia con Long Light in bianco e una riga di colophon sotto." }
+---
+
+## Che cosa comporrai
+
+Il numero 14 di *Long Light*, una rivista di fotografia inventata: sei pagine da 210 × 280 mm, in brossura fresata. Ogni pagina ha una vernice soft touch, la finitura vellutata che spegne il foglio e gli toglie la lucentezza. Sulle cinque fotografie e sulla testata lo stampatore stende una seconda vernice, lucida, così le immagini prendono la luce mentre la pagina intorno resta ferma. Nessuna delle due vernici ha un colore: la tela mostra le pagine come vengono stampate, e tre viste della copertina accanto a Folio mostrano le lastre e il riflesso. Folio apre la rivista su un tavolo di marmo in luce da studio, dove il lucido brilla quando si gira un foglio.
+
+## Preparazione
+
+### 1 · Ogni vernice è una tinta piatta con una finitura
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Una vernice è un colore piatto con la finitura `varnish` e una brillantezza: `softTouch` per il vellutato, `gloss` per la UV serigrafica ([finiture](/it/docs/special-inks-die-cuts#finiture)). Il file PDF/X-4 mette ciascuna su una `Separation` propria, così lo stampatore riceve due lastre di vernice accanto alle quattro di quadricromia. A schermo una vernice non dipinge nulla; le serve comunque un hex proprio, perché un render di stampa distingue gli inchiostri dal loro hex. Una vernice è in sovrastampa per impostazione predefinita, quindi nessuna delle due fa risparmio nei colori che ha sotto.
+
+### 2 · Soft touch su ogni pagina
+
+<Excerpt region="velvet" />
+
+Il soft touch è un solo riquadro nella vernice, da abbondanza ad abbondanza. Lo porta il piè di pagina perché il piè di pagina è l'ultima cosa dipinta sulla pagina: il PDF non mette mai in sovrastampa un segno successivo su ciò che è stato dipinto prima, quindi un testo posto dopo la vernice la risparmierebbe sotto di sé. La copertina e la quarta non hanno numeri di pagina, e il loro piè di pagina porta solo il riquadro.
+
+### 3 · Lucido sulle fotografie
+
+<Excerpt region="gloss" />
+
+Ogni fotografia è un'immagine con sopra un riquadro nella vernice lucida, della stessa misura. Il riquadro viene dopo, quindi sta sopra: sulla lastra è un rettangolo che copre l'immagine esattamente, ed è così che si disegna una lastra di UV serigrafica.
+
+### 4 · La testata composta due volte
+
+<Excerpt region="cover" />
+
+La testata è fatta di due elementi di testo nello stesso punto: uno in bianco carta, che si risparmia nella fotografia, e uno nella vernice lucida sopra. La versione lucida non dipinge nulla a schermo e dà alla lastra la forma delle lettere, così sulla copertina stampata il titolo brilla sopra un cielo che brilla anche lui.
+
+### 5 · Le viste delle finiture e Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` accetta un'opzione `finishes`. `'flat'` è il valore predefinito e mostra la pagina come viene stampata; `'map'` sbiadisce la pagina e segna ogni lastra speciale in falsi colori, la vernice in ciano, il lucido più chiaro del soft touch; `'sheen'` fa passare una luce sulla pagina. Folio legge la stessa maschera delle finiture: il lucido prende i riflessi, il soft touch li toglie.
+
+## Varianti
+
+### Opaco al posto del soft touch
+
+Una semplice vernice opaca costa meno e dà lo stesso contrasto, un po' meno profondo.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Lucido solo sulla scritta
+
+Lascia le foto opache e stendi il lucido solo sulla testata e sui titoli: componi i titoli due volte, come la testata, e togli i riquadri sopra le immagini.
+
+## Errori frequenti
+
+- Una vernice con l'hex di un altro colore viene stampata come quel colore. Dai a ogni vernice un hex che nient'altro usa.
+- Quello che la pagina dipinge dopo una vernice la risparmia nel PDF. Metti una vernice generale dove la pagina viene dipinta per ultima, come qui il piè di pagina.
+- Il soft touch si vende spesso come plastificazione e non come vernice. Chiedi allo stampatore quale nome di lastra vuole e impostalo con `pdfName` nella tabella degli inchiostri.

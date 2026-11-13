@@ -6414,5 +6414,33 @@
       "ar": "حبر أبيض على الكرافت"
     },
     "theme": "output"
+  },
+  "Q226": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a soft-touch varnish on every page and a spot gloss over the photographs only?",
+      "es": "¿Cómo pongo un barniz de tacto suave en todas las páginas y brillo selectivo solo en las fotos?",
+      "ca": "Com poso un vernís de tacte suau a totes les pàgines i brillantor selectiva només a les fotos?",
+      "fr": "Comment poser un vernis toucher doux sur toutes les pages et un vernis sélectif sur les photos ?",
+      "de": "Wie lege ich Soft-Touch-Lack auf jede Seite und partiellen Glanzlack nur auf die Fotos?",
+      "it": "Come metto una vernice soft touch su ogni pagina e una lucida serigrafica solo sulle foto?",
+      "pt": "Como aplico verniz soft touch em todas as páginas e verniz localizado brilhante só nas fotos?",
+      "zh": "怎样给每页上柔感涂层，只在照片上局部上光油？",
+      "ja": "全ページにソフトタッチニス、写真だけに部分グロスニスをかけるには？",
+      "ar": "كيف أضع ورنيشًا مخمليًا على كل صفحة وورنيشًا لامعًا موضعيًا على الصور وحدها؟"
+    },
+    "index": {
+      "en": "Spot UV over soft touch",
+      "es": "Brillo selectivo sobre tacto suave",
+      "ca": "Brillantor selectiva sobre tacte suau",
+      "fr": "Vernis sélectif sur toucher doux",
+      "de": "Partieller UV-Lack auf Soft-Touch",
+      "it": "Vernice UV selettiva su soft touch",
+      "pt": "Verniz localizado sobre soft touch",
+      "zh": "柔感涂层上的局部UV",
+      "ja": "ソフトタッチの上の部分UV",
+      "ar": "ورنيش UV موضعي فوق الملمس المخملي"
+    },
+    "theme": "output"
   }
 }

@@ -1,0 +1,66 @@
+---
+title: "Verniz localizado brilhante numa revista soft touch"
+summary: "Dois vernizes como cores especiais: soft touch em todas as páginas e brilho sobre as fotos e o logotipo da capa, vistos no Folio e nas vistas de acabamento."
+plain: "Uma revista de fotografia com um acabamento aveludado em todas as páginas e outro brilhante só nas fotos e no título. Os vernizes não têm cor; a vista 3D e uma vista de prova mostram onde eles ficam."
+description: "Uma revista de fotografia no Postext com verniz soft touch em todas as páginas e verniz UV localizado nas fotos e no logotipo: duas chapas de verniz, Folio."
+question: "Como aplico verniz soft touch em todas as páginas e verniz localizado brilhante só nas fotos?"
+aliases: ["verniz localizado", "verniz UV localizado", "UV localizado", "soft touch", "laminação soft touch", "verniz brilhante", "verniz fosco", "chapa de verniz", "revista de fotografia", "reserva de verniz", "verniz UV", "enobrecimento gráfico", "spot UV", "spot varnish"]
+pageNotes: { "1": "A capa: um caminhante sozinho numa planície de sal rachada ao entardecer, sangrada, LONG LIGHT em grandes maiúsculas e minúsculas serifadas brancas sobre o céu, as chamadas em branco numa faixa ardósia.", "3": "Um pescador remenda uma rede laranja num cais do porto, sangrada na parte de cima da página, o título The net mender e duas colunas de texto.", "6": "A quarta capa: uma página ardósia com Long Light em branco e uma linha de colofão embaixo." }
+---
+
+## O que você vai compor
+
+A edição 14 de *Long Light*, uma revista de fotografia inventada: seis páginas de 210 × 280 mm, com lombada quadrada colada. Todas as páginas levam um verniz soft touch, o acabamento aveludado que apaga a folha e tira o brilho dela. Sobre as cinco fotografias e o logotipo da capa a gráfica aplica um segundo verniz, brilhante, para que as fotos peguem a luz enquanto a página em volta fica quieta. Nenhum dos vernizes tem cor: a tela mostra as páginas como são impressas, e três vistas da capa ao lado do Folio mostram as chapas e o brilho. O Folio abre a revista sobre uma mesa de mármore com luz de estúdio, onde o brilho reluz quando uma folha vira.
+
+## Preparo
+
+### 1 · Cada verniz é uma cor especial com acabamento
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Um verniz é uma cor especial com o acabamento `varnish` e um brilho: `softTouch` para o aveludado, `gloss` para o UV localizado ([acabamentos](/pt/docs/special-inks-die-cuts#acabamentos)). O arquivo PDF/X-4 põe cada um numa `Separation` própria, e a gráfica recebe duas chapas de verniz ao lado das quatro de quadricromia. Na tela um verniz não pinta nada; mesmo assim precisa de um hex próprio, porque uma renderização de impressão distingue as tintas pelo hex. Um verniz sobreimprime por padrão, então nenhum dos dois vaza as cores que estão embaixo.
+
+### 2 · Soft touch em todas as páginas
+
+<Excerpt region="velvet" />
+
+O soft touch é uma única caixa no verniz, de sangria a sangria. Quem a leva é o rodapé, porque o rodapé é a última coisa pintada na página: o PDF nunca faz uma marca posterior sobreimprimir o que foi pintado antes, então um texto posto depois do verniz o vazaria embaixo de si. A capa e a quarta capa não têm fólio, e o rodapé delas leva só a caixa.
+
+### 3 · Brilho sobre as fotografias
+
+<Excerpt region="gloss" />
+
+Cada fotografia é uma imagem com uma caixa no verniz brilhante por cima, do mesmo tamanho. A caixa vem depois, então fica em cima: na chapa ela é um retângulo que cobre a imagem exatamente, que é como se desenha uma chapa de UV localizado.
+
+### 4 · O logotipo composto duas vezes
+
+<Excerpt region="cover" />
+
+O logotipo da capa são dois elementos de texto no mesmo lugar: um em branco papel, vazado na fotografia, e outro no verniz brilhante por cima. A versão brilhante não pinta nada na tela e dá à chapa a forma das letras, então na capa impressa o título brilha sobre um céu que também brilha.
+
+### 5 · As vistas de acabamento e o Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` aceita a opção `finishes`. `'flat'` é o padrão e mostra a página como ela é impressa; `'map'` esmaece a página e marca cada chapa especial em cor falsa, o verniz em ciano, o brilhante mais claro que o soft touch; `'sheen'` passa uma luz pela página. O Folio lê a mesma máscara de acabamentos: o brilhante pega os reflexos, o soft touch os tira.
+
+## Variações
+
+### Fosco no lugar do soft touch
+
+Um verniz fosco comum custa menos e dá o mesmo contraste, um pouco menos profundo.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Brilho só nas letras
+
+Deixe as fotos foscas e aplique o brilho só sobre o logotipo e os títulos: componha os títulos duas vezes, como o logotipo, e tire as caixas de cima das imagens.
+
+## Erros comuns
+
+- Um verniz com o hex de outra cor é impresso como essa cor. Dê a cada verniz um hex que nada mais use.
+- O que a página pinta depois de um verniz o vaza no PDF. Ponha um verniz geral onde a página é pintada por último, como aqui o rodapé.
+- O soft touch costuma ser vendido como laminação, e não como verniz. Pergunte à gráfica qual nome de chapa ela quer e defina-o com `pdfName` na tabela de tintas.

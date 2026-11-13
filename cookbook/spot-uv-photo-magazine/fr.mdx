@@ -1,0 +1,66 @@
+---
+title: "Vernis sélectif brillant sur un magazine toucher doux"
+summary: "Deux vernis en tons directs : toucher doux sur toutes les pages, brillant sur les photos et le titre du magazine, à voir dans Folio et les vues des finitions."
+plain: "Un magazine de photographie avec un fini velouté sur toutes les pages et un fini brillant seulement sur les photos et le titre. Les vernis n'ont pas de couleur ; la vue 3D et une vue d'épreuve montrent où ils se trouvent."
+description: "Un magazine photo dans Postext, vernis toucher doux sur toutes les pages et vernis UV sélectif sur les photos et le titre : deux plaques, Folio, vues finitions."
+question: "Comment poser un vernis toucher doux sur toutes les pages et un vernis sélectif sur les photos ?"
+aliases: ["vernis sélectif", "vernis UV sélectif", "toucher doux", "toucher velours", "pelliculage soft touch", "vernis brillant", "vernis mat", "plaque de vernis", "magazine photo", "réserve de vernis", "vernis UV", "ennoblissement", "spot UV", "soft touch"]
+pageNotes: { "1": "La couverture : un marcheur seul sur un désert de sel craquelé au crépuscule, à fond perdu, LONG LIGHT en grandes capitales et bas de casse à empattements blanches sur le ciel, les accroches en blanc sur une bande ardoise.", "3": "Un pêcheur ravaude un filet orange sur un quai du port, à fond perdu en haut de la page, le titre The net mender et deux colonnes de texte.", "6": "La quatrième de couverture : une page ardoise avec Long Light en blanc et une ligne de colophon dessous." }
+---
+
+## Ce que vous allez composer
+
+Le numéro 14 de *Long Light*, un magazine de photographie inventé : six pages de 210 × 280 mm, en dos carré collé. Toutes les pages reçoivent un vernis toucher doux, le fini velours qui éteint la feuille et lui ôte son éclat. Sur les cinq photographies et le titre du magazine, l'imprimeur pose un second vernis, brillant, pour que les images accrochent la lumière tandis que la page autour reste calme. Aucun des deux vernis n'a de couleur : la zone de rendu montre les pages telles qu'elles s'impriment, et trois vues de la couverture à côté de Folio montrent les plaques et le reflet. Folio ouvre le magazine sur une table de marbre sous une lumière de studio, où le brillant scintille quand une page tourne.
+
+## Préparation
+
+### 1 · Chaque vernis est un ton direct avec une finition
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Un vernis est une couleur d'accompagnement dont la finition est `varnish`, avec un aspect : `softTouch` pour le velours, `gloss` pour le vernis UV sélectif ([finitions](/fr/docs/special-inks-die-cuts#finitions)). Le fichier PDF/X-4 place chacun sur une `Separation` à lui, et l'imprimeur reçoit deux plaques de vernis à côté des quatre plaques de quadrichromie. À l'écran, un vernis ne peint rien ; il lui faut quand même un hex à lui, parce qu'un rendu d'impression distingue les encres par leur hex. Un vernis est en surimpression par défaut, donc aucun des deux ne fait de réserve dans les couleurs qu'il recouvre.
+
+### 2 · Le toucher doux sur toutes les pages
+
+<Excerpt region="velvet" />
+
+Le toucher doux est un seul bloc dans le vernis, de fond perdu à fond perdu. C'est le pied de page qui le porte, parce qu'il est peint en dernier sur la page : le PDF ne met jamais une marque posée plus tard en surimpression sur ce qui a été peint avant, si bien qu'un texte placé après le vernis le réserverait. La couverture et la quatrième n'ont pas de folio, et leur pied de page ne porte que le bloc.
+
+### 3 · Le brillant sur les photographies
+
+<Excerpt region="gloss" />
+
+Chaque photographie est une image recouverte d'un bloc de même taille dans le brillant. Le bloc vient en second, il se trouve donc au-dessus : sur la plaque, c'est un rectangle qui couvre l'image exactement, comme on dessine une forme de vernis sélectif.
+
+### 4 · Le titre du magazine posé deux fois
+
+<Excerpt region="cover" />
+
+Le titre du magazine, ce sont deux éléments de texte au même endroit : l'un en blanc papier, en réserve dans la photographie, l'autre dans le brillant par-dessus. La version brillante ne peint rien à l'écran et donne à la plaque la forme des lettres : sur la couverture imprimée, le titre brille sur un ciel qui brille aussi.
+
+### 5 · Les vues des finitions et Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` accepte une option `finishes`. `'flat'` est la valeur par défaut et montre la page telle qu'elle s'imprime ; `'map'` estompe la page et marque chaque plaque spéciale en fausses couleurs, le vernis en cyan, le brillant plus clair que le toucher doux ; `'sheen'` fait passer une lumière sur la page. Folio lit le même masque de finitions : le brillant accroche les reflets, le toucher doux les efface.
+
+## Variantes
+
+### Du mat à la place du toucher doux
+
+Un simple vernis mat coûte moins cher et donne le même contraste, un peu moins profond.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Du brillant sur la lettre seulement
+
+Laissez les photographies mates et posez le brillant sur le titre du magazine et les titres seuls : composez les titres deux fois, comme le titre du magazine, et retirez les blocs posés sur les images.
+
+## Erreurs fréquentes
+
+- Un vernis qui a l'hex d'une autre couleur s'imprime comme cette couleur. Donnez à chaque vernis un hex que rien d'autre n'utilise.
+- Tout ce que la page peint après un vernis le réserve dans le PDF. Placez un vernis général là où la page est peinte en dernier, comme le pied de page ici.
+- Le toucher doux se vend souvent comme un pelliculage plutôt que comme un vernis. Demandez à l'imprimeur quel nom de plaque il veut, et indiquez-le avec `pdfName` dans la table des encres.
