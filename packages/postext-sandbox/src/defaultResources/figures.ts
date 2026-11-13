@@ -15,7 +15,7 @@
 import { coverArtVerticalSvg, coverArtSvg, COVER_VW, COVER_VH, COVER_ZH_VW, COVER_ZH_VH } from './cover.js';
 import { byLang, type GuideLang } from './lang.js';
 import { P, text, FS, COLUMN_VW, DEFS, node, edge, PAGE_VW, bar, mirrorFragment, localizeFigure, mirrorSvg } from './svgKit.js';
-import { cjkCompositionSvg, columnLayoutsSvg, floatSlotsSvg, balancingSvg, bookAnatomySvg, sandboxUiSvg, epubRenditionsSvg, vectorRosetteSvg, vectorChartSvg, vectorClipSvg } from './guideFigures.js';
+import { cjkCompositionSvg, columnLayoutsSvg, floatSlotsSvg, balancingSvg, bookAnatomySvg, sandboxUiSvg, epubRenditionsSvg, vectorRosetteSvg, vectorChartSvg, vectorClipSvg, dieCutSvg } from './guideFigures.js';
 
 const PIPELINE = byLang(
   { parse: 'Parse', measure: 'Measure', layout: 'Layout', config: 'Configuration', loop: ['at most', '5 passes'], aria: 'Postext pipeline' },
@@ -375,4 +375,5 @@ export const SVG_FIGURES: Record<string, GuideFigure> = {
   'default-vector-rosette': { generate: drawn(vectorRosetteSvg), width: PAGE_VW, height: 222 },
   'default-vector-chart': { generate: drawn(vectorChartSvg, true), width: PAGE_VW, height: 186 },
   'default-vector-clip': { generate: drawn(vectorClipSvg, true), width: PAGE_VW, height: 170 },
+  'default-die-cut': { generate: drawn(dieCutSvg, true), width: PAGE_VW, height: 232 },
 };

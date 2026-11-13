@@ -27,6 +27,7 @@ export const DEFAULT_RESOURCE_IDS = {
   vectorClip: 'vector-clip',
   sandboxUi: 'sandbox-ui',
   epubRenditions: 'epub-renditions',
+  dieCut: 'die-cut',
   // Tables
   featureTable: 'feature-comparison',
   toolsTable: 'tools-comparison',
