@@ -49,6 +49,11 @@ export interface IdmlOptions {
    *  alone, as a book is made up in InDesign; `single`: a page a spread.
    *  Default: `facing` for a book with mirrored margins, else `single`. */
   spreads?: 'facing' | 'single';
+  /** `thread` (default): the running text of the pages Postext laid out
+   *  in columns runs through one story threaded through a frame per
+   *  column, as in a book set in InDesign (`thread.ts`, #1559); `frames`:
+   *  a frame and a story for each block, where the engine painted it. */
+  text?: 'thread' | 'frames';
   /** The font file of a face (TrueType or OpenType bytes; a WOFF2 decoded
    *  first). With it a face is named as the file names it, which is how
    *  InDesign finds it, and the files come back in `fonts`. */
@@ -115,6 +120,11 @@ export interface Writer {
   page?: VDTPage;
   blockStyles: Map<string, BlockStyle>;
   stories: { id: string; xml: string }[];
+  /** While the thread's story is written: what each of its breaks and
+   *  paragraph ends was (`thread.ts`). */
+  joins?: string[];
+  /** The page being written is one of the thread's. */
+  threaded?: boolean;
   media: Map<string, { path: string; bytes: Uint8Array }>;
   opts: IdmlOptions;
   warn: (code: string, message: string) => void;
@@ -123,7 +133,15 @@ export interface Writer {
 export type TextItem = Extract<DisplayItem, { kind: 'text' }>;
 /** A text item in a story: `joinsPrevious` when it is the rest of the
  *  paragraph the item before it holds (a paragraph a frame break split). */
-export type StoryItem = TextItem & { joinsPrevious?: boolean };
+export type StoryItem = TextItem & {
+  joinsPrevious?: boolean;
+  /** The first item of a thread's frame after a column the author broke. */
+  columnBreak?: boolean;
+  /** Frames anchored above its first line (the thread's boxes), and the
+   *  sheet height (px) they take in its column. */
+  anchors?: string[];
+  anchorHeight?: number;
+};
 
 /** A frame's name in its template (`cp3:body` → `body`). */
 export const frameName = (id: string) => id.replace(/^cp\d+:/, '');

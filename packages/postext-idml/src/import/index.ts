@@ -14,6 +14,7 @@ import { Context } from './context.js';
 import { decideLayout, mainStory } from './decide.js';
 import type { MasterWords } from './design.js';
 import { joinContinued } from './fidelity/continued.js';
+import { rejoinThreads } from './fidelity/keptThread.js';
 import { indexDestinations } from './fidelity/crossref.js';
 import { layoutFlow } from './flow.js';
 import { carryFonts } from './fonts.js';
@@ -88,9 +89,14 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
 
   const stories = joinContinued(ctx, selectStories(ctx));
   const main = mainStory(stories);
+  // (The layout is read from the frames, not from the paragraphs' looks.)
+  const { layout, reason } = decideLayout(ctx, stories, main);
+  // In a flowing book the lines a Postext export kept read as the
+  // paragraphs it wrote (#1559); composed pages keep them, so the frames
+  // set the same lines.
+  if (layout === 'flow') rejoinThreads(ctx, stories);
   ctx.looks.classify(countLooks(ctx, stories, main));
   indexDestinations(ctx, stories);
-  const { layout, reason } = decideLayout(ctx, stories, main);
   const styles = styleConfig(ctx);
   const config: PostextConfig = { ...pageConfig(ctx, layout), ...styles };
 

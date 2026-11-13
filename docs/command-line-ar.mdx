@@ -353,7 +353,7 @@ postext idml book/ -o out/book.idml --lines reflow --fonts
 المؤلف عيّناتِ ألوان (swatches). والشارات التي تحمل حقل نموذج تصير حقول نماذج
 في InDesign. وينهي `--lines keep` (الافتراضي) كل سطر حيث أنهاه Postext، فيعرض
 InDesign الأسطر نفسها التي في PDF؛ ويترك `--lines reflow` الفقرات لمنضِّد
-InDesign، وقد تختلف فواصل الأسطر. ويجعل `--spreads facing` أو `--spreads single`
+InDesign، وقد تختلف فواصل الأسطر. ويجري النص الجاري لصفحات الأعمدة في قصة واحدة مسلسلة في إطار لكل عمود، يقرؤها المستورِد كتابًا متدفقًا؛ أما `--text frames` فيكتب إطارًا وقصة لكل كتلة (منذ postext 1.85.0). ويجعل `--spreads facing` أو `--spreads single`
 الصفحات أزواجًا متقابلة أو لا، أيًّا كانت الهوامش. ويضع `--images link` الصور بجانب الملف في
 `Links/` بدلًا من داخله. ويكتب `--fonts` ملفات الخطوط للأوجه المستعملة بجانب
 الحزمة في `Document fonts/`، حيث يجدها InDesign لذلك المستند؛ ويحتاج إلى أن
@@ -362,7 +362,7 @@ InDesign، وقد تختلف فواصل الأسطر. ويجعل `--spreads faci
 الزوايا لجدول) يُبلَّغ عنه بتحذير `idml.*`. والحزمة `postext-idml` هي التي
 تكتب الملف: انظر [الاستخدام البرمجي › حزم
 InDesign](/ar/docs/configuration-programmatic-usage#حزم-indesign-postext-idml).
-وفي `build` يكتب `--idml FILE` الحزمة نفسها، مع `--idml-images` و`--idml-lines` و`--idml-spreads` و`--idml-fonts`.
+وفي `build` يكتب `--idml FILE` الحزمة نفسها، مع `--idml-images` و`--idml-lines` و`--idml-spreads`, `--idml-text` و`--idml-fonts`.
 منذ postext 1.71؛ و`--lines` و`--fonts` منذ 1.76، و`--spreads` منذ 1.78.
 
 ### import-idml

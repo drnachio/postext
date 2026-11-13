@@ -35,7 +35,9 @@ import {
   type DocumentGeometry,
 } from './parts.js';
 import { linksXml, sectionsXml } from './document.js';
-import { pageItemsXml, spreadXml, type SpreadPage } from './spreads.js';
+import { pageItemsXml, spreadXml, THREAD_LABEL_SLOT, type SpreadPage } from './spreads.js';
+import { pageColumns, threadStory } from './threadStory.js';
+import { pageKey, planThread } from './thread.js';
 import { flowCallouts, newSurvey, settleStyles, type StyleSurvey } from './styles.js';
 import { keepsLines, type IdmlOptions, type IdmlResult, type Writer } from './writer.js';
 
@@ -107,12 +109,16 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
   w.pageBase = -start;
   const laid: (SpreadPage & { label?: string; recto: boolean })[] = [];
   let geometry: DocumentGeometry = { width: 0, height: 0, bleed: 0, pages: 0 };
-  for (const doc of docs) {
+  // The running text of the pages laid out in columns, threaded (#1559).
+  const lists = docs.map((doc) => doc.pages.map((_, p) => pageDisplayList(doc, p)));
+  const thread = planThread(w, docs, lists);
+  let labelled = -1;
+  docs.forEach((doc, d) => {
     w.k = 72 / doc.config.page.dpi;
     w.doc = doc;
     w.blockStyles.clear();
     for (let p = 0; p < doc.pages.length; p++) {
-      const page = pageDisplayList(doc, p);
+      const page = lists[d]![p]!;
       const trim = page.trim ?? { x: 0, y: 0, width: page.width, height: page.height };
       const n = laid.length;
       const recto = (start + n) % 2 === 0;
@@ -137,9 +143,20 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
       if (!n) geometry = { width, height: w.pageH, bleed: trim.x * w.k, pages: 0, facing, rightBound, ...(margins ? { margins } : {}) };
       else if (Math.abs(width - geometry.width) > 0.5 || Math.abs(w.pageH - geometry.height) > 0.5) w.warn('page.size', `Page ${n + 1} has its own size; IDML pages keep it, the document setup shows the first page's`);
       const frames = new Map((vdt.composed?.frames ?? []).map((f) => [f.id, f] as const));
-      const items = pageItemsXml(w, page, frames);
-      laid.push({ self: `pg${n}`, name: page.label ?? String(n + 1), ...(page.label !== undefined ? { label: page.label } : {}), width, height: w.pageH, left, ...(margins ? { margins } : {}), items, recto });
+      const own = thread?.byPage.get(pageKey(d, p));
+      const items = pageItemsXml(w, page, frames, own && thread ? { thread, frames: own, boxes: thread.boxes.get(pageKey(d, p)) ?? [] } : undefined);
+      if (thread && pageKey(d, p) === thread.first) labelled = laid.length;
+      // A page of the thread says its columns, so its frames follow them.
+      const columns = own ? pageColumns(vdt, w.k) : undefined;
+      laid.push({ self: `pg${n}`, name: page.label ?? String(n + 1), ...(page.label !== undefined ? { label: page.label } : {}), width, height: w.pageH, left, ...(margins ? { margins } : {}), ...(columns ? { columns } : {}), items, recto });
     }
+  });
+  // The thread's story, a document after another, and the label that
+  // tells its breaks (`thread.ts`).
+  if (thread) {
+    const label = threadStory(w, docs, thread);
+    const page = laid[labelled];
+    if (page) page.items = page.items.replace(THREAD_LABEL_SLOT, label);
   }
   if (surveying) return undefined;
   // A verso and the recto after it share a spread; a page a spread otherwise.

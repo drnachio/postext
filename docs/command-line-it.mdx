@@ -387,7 +387,7 @@ di paragrafo e i colori CMYK dell’autore come campioni. I chip che portano un
 campo di modulo diventano campi di modulo di InDesign. `--lines keep`
 (predefinito) chiude ogni riga dove l’ha chiusa Postext, quindi InDesign
 mostra le stesse righe del PDF; `--lines reflow` lascia i paragrafi al
-compositore di InDesign, e gli a capo possono cambiare. `--spreads facing` o
+compositore di InDesign, e gli a capo possono cambiare. Il testo corrente delle pagine composte in colonne scorre in un solo brano, concatenato attraverso una cornice per colonna, che l’importatore rilegge come libro a flusso; `--text frames` scrive invece una cornice e un brano per blocco (da postext 1.85.0). `--spreads facing` o
 `--spreads single` accoppia le pagine, o no, qualunque cosa dicano i margini.
 `--images link` mette
 le immagini accanto al file, in `Links/`, invece che al suo interno. `--fonts`
@@ -399,7 +399,7 @@ verticale, la cornice arrotondata di una tabella) viene segnalato con un
 avviso `idml.*`. Il generatore è il pacchetto `postext-idml`: vedi [Uso
 programmatico › Pacchetti
 InDesign](/it/docs/configuration-programmatic-usage#pacchetti-indesign-postext-idml).
-In `build`, `--idml FILE` scrive lo stesso pacchetto, con `--idml-images`, `--idml-lines`, `--idml-spreads` e `--idml-fonts`.
+In `build`, `--idml FILE` scrive lo stesso pacchetto, con `--idml-images`, `--idml-lines`, `--idml-spreads`, `--idml-text` e `--idml-fonts`.
 Da postext 1.71; `--lines` e `--fonts` da 1.76, `--spreads` da 1.78.
 
 ### import-idml

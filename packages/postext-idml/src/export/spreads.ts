@@ -9,10 +9,12 @@ import { boxGeometry, union } from './geometry.js';
 import { imageXml } from './images.js';
 import { alignedItem, asPainted, textScale } from './paragraphs.js';
 import { attr, DOM_VERSION, num, PKG_NS, XML_HEAD } from './parts.js';
-import { chipFields, chipRects, pathXml, rectXml, ruleXml } from './shapes.js';
+import { chipFields, chipRects, paintAttrs, pathXml, rectXml, ruleXml } from './shapes.js';
 import { storyXml } from './story.js';
 import { asHorizontal, asLines, frameBox, frameIsVertical, hasEmphasisDots, isVertical, sheetRect } from './vertical.js';
 import { tableXml } from './tables.js';
+import { neighbours, threadLabel, type Thread, type ThreadBox, type ThreadFrame } from './thread.js';
+import { swatch } from './colours.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
 /** A frame of a chain: its own id, its neighbours', the chain's story
@@ -24,6 +26,11 @@ interface ChainLink {
   next?: string;
   write: boolean;
   storyItems: StoryItem[];
+  /** A frame of the book's thread (`thread.ts`): a column's box, its
+   *  story written apart. */
+  thread?: boolean;
+  /** A label for the frame (`<Label>…</Label>`). */
+  label?: string;
 }
 
 /** One text frame: a composed frame's text, or a single text item outside
@@ -36,7 +43,16 @@ interface ChainLink {
  *  (`sheetRect`) and the insets turn with it: the first line stands at the
  *  right, its baseline the fixed offset from the right inset, and the
  *  lines start at the top inset. */
-function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined, link?: ChainLink): string {
+/** What a frame of text outside composed frames may carry beside its
+ *  text: the box it fills (in place of its text's), its fill and stroke,
+ *  and the setting that anchors it in a story (the thread's boxes). */
+interface FrameExtra {
+  box?: DisplayRect;
+  paint?: string;
+  anchored?: string;
+}
+
+function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined, link?: ChainLink, extra?: FrameExtra): string {
   const withLines = items.filter((i) => i.lines.length);
   if (!withLines.length && !(link && frame)) return '';
   // A frame of a chain that holds no text of its own on this page.
@@ -46,7 +62,7 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
   const own = placed?.box ?? frame?.rect;
   const measured: { bbox: DisplayRect; lines: { baseline: number; lineHeight: number }[]; rotate?: number }[] = withLines.length ? withLines : [{ bbox: { ...own! }, lines: [{ baseline: own!.y, lineHeight: 0 }], rotate: 0 }];
   const text = union(measured.map((i) => i.bbox));
-  const box = own ? { ...own } : { ...text };
+  const box = own ? { ...own } : extra?.box ? { ...extra.box } : { ...text };
   const rotate = placed ? placed.rotate : (frame?.rotate ?? measured[0]!.rotate ?? 0);
   if (keepsLines(w) && !rotate && withLines.length) {
     // The text frame is not painted (a frame's box is a rectangle of its
@@ -57,12 +73,16 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
     // would go to the next line and push the rest out of the frame.
     const lastItem = withLines[withLines.length - 1]!;
     const tail = lastItem.lines[lastItem.lines.length - 1]!;
-    const need = tail.baseline + tail.lineHeight * 0.75;
+    let need = tail.baseline + tail.lineHeight * 0.75;
+    // A thread's frame is its column's box: it grows at most 3 pt past the
+    // margin (what an importer allows), still room for a descender.
+    if (link?.thread) need = Math.max(tail.baseline + tail.lineHeight * 0.3, Math.min(need, box.y + box.height + 3 / w.k));
     if (need > box.y + box.height) box.height = need - box.y;
     // (A vertical line may end in a stop Postext hung past the measure or
     // set on half a cell: room for a whole cell.)
-    if (withLines.every((i) => i.lines.every((l) => l.align === 'left' && !l.rtl))) box.width += vertical ? Math.max(6 / w.k, ...withLines.flatMap((i) => i.lines.map((l) => l.lineHeight))) : 6 / w.k;
-  } else if (!frame) {
+    // (A thread's frame stays as wide as its column but for 3 pt.)
+    if (withLines.every((i) => i.lines.every((l) => l.align === 'left' && !l.rtl))) box.width += vertical ? Math.max(6 / w.k, ...withLines.flatMap((i) => i.lines.map((l) => l.lineHeight))) : (link?.thread ? 3 : 6) / w.k;
+  } else if (!frame && !extra?.box) {
     // Room below for InDesign's own composer.
     box.height += (measured[0]!.lines[0]?.lineHeight ?? 0) * 0.5;
   }
@@ -73,11 +93,24 @@ function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined,
   const top = Math.max(0, (text.y - box.y) * w.k);
   const baselineOffset = Math.max(0, (firstBaseline - text.y) * w.k);
   const storyId = link?.story ?? w.next();
-  if (!link || link.write) w.stories.push({ id: storyId, xml: storyXml(w, storyId, link?.storyItems ?? withLines, frame) });
+  // A story of its own with its lines kept says what its breaks were, as
+  // the thread does (`thread.ts`): the importer reads its paragraphs back.
+  let label = link?.label;
+  if (!link || link.write) {
+    // (On a page of the thread only: elsewhere the export is #1555's.)
+    const own = !link && keepsLines(w) && !w.halo && w.threaded === true;
+    if (own) w.joins = [];
+    w.stories.push({ id: storyId, xml: storyXml(w, storyId, link?.storyItems ?? withLines, frame) });
+    if (own) {
+      if (w.joins!.length) label = threadLabel(w, w.joins!);
+      delete w.joins;
+    }
+  }
   return (
     `<TextFrame${attr('Self', link?.self ?? w.next())}${attr('ParentStory', storyId)}${attr('PreviousTextFrame', link?.prev ?? 'n')}${attr('NextTextFrame', link?.next ?? 'n')} ContentType="TextType" ItemLayer="ulayer"` +
-    `${attr('ItemTransform', g.transform)} AppliedObjectStyle="ObjectStyle/$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0"${attr('Name', frame ? frameName(frame.name) : undefined)}>` +
-    g.geometry +
+    `${attr('ItemTransform', g.transform)} AppliedObjectStyle="ObjectStyle/$ID/[None]"${extra?.paint ?? ' FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0"'}${attr('Name', frame ? frameName(frame.name) : extra?.anchored ? 'Box' : undefined)}>` +
+    (label ? g.geometry.replace('<Properties>', `<Properties>${label}`) : g.geometry) +
+    (extra?.anchored ?? '') +
     `<TextFramePreference TextColumnCount="1" FirstBaselineOffset="FixedHeight"${attr('MinimumFirstBaselineOffset', baselineOffset)} VerticalJustification="TopAlign"${attr('InsetSpacing', vertical ? `${num(left)} 0 ${num(right)} ${num(top)}` : `${num(top)} ${num(left)} 0 ${num(right)}`)} AutoSizingType="Off" IgnoreWrap="false"/>` +
     '</TextFrame>'
   );
@@ -99,9 +132,47 @@ function chainOf(f: VDTFrame, frames: Map<string, VDTFrame>): VDTFrame[] {
   return chain;
 }
 
-/** The items of one page, in its spread's frame (`w.px`, `w.ox`, `w.oy`). */
-export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>): string {
+/** A frame of the book's thread: its column's box, threaded to the frames
+ *  before and after it, its text in the thread's story (`thread.ts`). */
+function threadFrameXml(w: Writer, thread: Thread, f: ThreadFrame): string {
+  const frame = { id: f.self, name: 'Text', rect: f.box } as unknown as VDTFrame;
+  const { prev, next } = neighbours(thread, f);
+  // (The label is set once the story is written: `index.ts`.)
+  const label = !prev ? THREAD_LABEL_SLOT : undefined;
+  return textFrameXml(w, f.items, frame, { story: thread.story, self: f.self, ...(prev ? { prev } : {}), ...(next ? { next } : {}), write: false, storyItems: [], thread: true, ...(label ? { label } : {}) });
+}
+
+/** A box of the thread (`thread.ts`): one text frame with the box's fill
+ *  and stroke round its text, anchored above the line of the running
+ *  text it stands before, at its place across the column. Its story is
+ *  written now, with the page's boxes of the flow known. */
+function anchoredBoxXml(w: Writer, b: ThreadBox): string {
+  const r = b.rect;
+  const fill = swatch(w, r.fill);
+  const stroke = r.strokeWidthPx ? swatch(w, r.stroke) : undefined;
+  const paint = paintAttrs(w, fill, stroke, r.strokeWidthPx, r.radius);
+  const anchored =
+    '<AnchoredObjectSetting AnchoredPosition="AboveLine" SpineRelative="false" LockPosition="false" PinPosition="true" AnchorPoint="TopLeftAnchor"' +
+    ` HorizontalAlignment="LeftAlign" HorizontalReferencePoint="ColumnEdge" VerticalAlignment="TopAlign" VerticalReferencePoint="LineBaseline"${attr('AnchorXoffset', (r.rect.x - b.column.x) * w.k)} AnchorYoffset="0" AnchorSpaceAbove="0"/>`;
+  return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">${textFrameXml(w, b.texts, undefined, undefined, { box: r.rect, paint, anchored })}</CharacterStyleRange>`;
+}
+
+/** Where the thread's label goes in its first frame's XML. */
+export const THREAD_LABEL_SLOT = '\u0000thread-label\u0000';
+
+/** The items of one page, in its spread's frame (`w.px`, `w.ox`, `w.oy`).
+ *  `thread`: the book's thread and the frames of it on this page, written
+ *  where the page's first item of running text paints. */
+export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>, thread?: { thread: Thread; frames: ThreadFrame[]; boxes: ThreadBox[] }): string {
   const out: string[] = [];
+  w.threaded = !!thread;
+  let threaded = false;
+  const putThread = (): void => {
+    if (threaded || !thread) return;
+    threaded = true;
+    for (const f of thread.frames) out.push(threadFrameXml(w, thread.thread, f));
+    for (const b of thread.boxes) if (b.host) b.xml = anchoredBoxXml(w, b);
+  };
   // Left to InDesign's composer, stories are written left to right
   // (`storyXml`), once said for the whole package.
   const lines = page.items.flatMap((it) => (it.kind === 'text' ? it.lines : []));
@@ -152,6 +223,8 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
   for (const it of page.items) {
     switch (it.kind) {
       case 'rect':
+        // A box of the thread is anchored in its story.
+        if (thread?.thread.taken.has(it)) break;
         out.push(rectXml(w, it));
         break;
       case 'rule':
@@ -164,6 +237,10 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         out.push(imageXml(w, it, page.index));
         break;
       case 'text': {
+        if (thread?.thread.taken.has(it)) {
+          putThread();
+          break;
+        }
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
@@ -210,6 +287,7 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         break;
     }
   }
+  putThread();
   return out.join('');
 }
 
@@ -223,6 +301,8 @@ export interface SpreadPage {
   /** Left of the spine. */
   left: boolean;
   margins?: { top: number; bottom: number; inside: number; outside: number };
+  /** The page's text columns (a page of the book's thread). */
+  columns?: { count: number; gutter: number; positions?: number[] };
   items: string;
 }
 
@@ -234,9 +314,15 @@ export function spreadXml(id: string, pages: SpreadPage[], index: number, gap: n
     const m = p.margins ?? { top: 0, bottom: 0, inside: 0, outside: 0 };
     // `Left` is the inside margin of a page of a facing-pages document.
     const text = Math.max(0, p.width - m.inside - m.outside);
+    // Column guides: the page's own columns, of equal width or (a main
+    // and a side column) where they stand.
+    const count = p.columns?.count ?? 1;
+    const gutter = p.columns?.gutter ?? 12;
+    const each = Math.max(0, (text - gutter * (count - 1)) / count);
+    const positions = p.columns?.positions?.map((x) => num(x)).join(' ') ?? Array.from({ length: count }, (_, i) => `${num(i * (each + gutter))} ${num(i * (each + gutter) + each)}`).join(' ');
     return (
       `<Page${attr('Self', p.self)}${attr('Name', p.name)} AppliedMaster="n"${attr('GeometricBounds', `0 0 ${num(p.height)} ${num(p.width)}`)}${attr('ItemTransform', `1 0 0 1 ${num(p.left ? -p.width : 0)} ${num(-p.height / 2)}`)} OverrideList="" TabOrder="" GridStartingPoint="TopOutside" UseMasterGrid="true">` +
-      `<MarginPreference ColumnCount="1" ColumnGutter="12"${attr('Top', m.top)}${attr('Bottom', m.bottom)}${attr('Left', m.inside)}${attr('Right', m.outside)} ColumnDirection="Horizontal"${attr('ColumnsPositions', `0 ${num(text)}`)}/>` +
+      `<MarginPreference${attr('ColumnCount', count)}${attr('ColumnGutter', gutter)}${attr('Top', m.top)}${attr('Bottom', m.bottom)}${attr('Left', m.inside)}${attr('Right', m.outside)} ColumnDirection="Horizontal"${attr('ColumnsPositions', positions)}/>` +
       '</Page>'
     );
   };

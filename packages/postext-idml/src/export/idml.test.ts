@@ -39,7 +39,7 @@ const contents = (story: string) => [...story.matchAll(/<Content>([^<]*)<\/Conte
  *  and well-formed, ids unique, every frame's story, paragraph style,
  *  swatch and face defined. */
 function idml(md: string, cfg: PostextConfig, opts: Partial<IdmlOptions> = {}): Files {
-  const { bytes } = idmlDocument({ docs: [build(md, cfg)], ...opts });
+  const { bytes } = idmlDocument({ docs: [build(md, cfg)], text: 'frames', ...opts });
   expect(strFromU8(bytes.subarray(30, 38))).toBe('mimetype');
   expect(bytes[8]).toBe(0);
   const f = unzipSync(bytes);

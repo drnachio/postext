@@ -18,6 +18,7 @@ import { attr, num, type ParagraphFormat, type ParagraphStyleDef, type TextProps
 import { characterStyle, runCharacterStyle } from './styles.js';
 import type { StoryPara } from './story.js';
 import { unkerned, VERTICAL_KEPT, VERTICAL_KEPT_PROPS, VERTICAL_RANGE } from './vertical.js';
+import { lineJoin } from './thread.js';
 import type { StoryItem, Writer } from './writer.js';
 
 /** Characters InDesign shows as a missing glyph when the face lacks them
@@ -66,6 +67,11 @@ export interface KeptContext {
   /** Tab stops the lines need beside the style's (leaders of a contents
    *  row), by line. */
   stops?: LineStop[][];
+  /** In a thread (`w.joins`), what the paragraph end before the item
+   *  was: told with the item's first paragraph. */
+  join?: string;
+  /** Ranges that open the item's first paragraph (anchored frames). */
+  lead?: string;
 }
 
 const spread = (v: number[]): number => (v.length ? Math.max(...v) - Math.min(...v) : 0);
@@ -94,7 +100,11 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     if (i === 0 || irregular || lines[i - 1]!.last || (justified && lines[i - 1]!.hardBreak)) cuts.push(i);
   });
   const out: StoryPara[] = [];
+  // In a thread, what each break and paragraph end written was
+  // (`thread.ts`): the one before the group, then one per line break.
+  const codes = w.joins;
   cuts.forEach((a, g) => {
+    const before = g === 0 ? c.join : lines[a - 1]!.last ? 'p' : lineJoin(lines[a - 1]!, lines[a]);
     const b = (cuts[g + 1] ?? lines.length) - 1;
     const group = lines.slice(a, b + 1);
     const tail = group[group.length - 1]!;
@@ -149,7 +159,8 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
     // left for it to space or break.
     const vertical = group.some((l) => l.vertical);
     if (vertical) attrs += VERTICAL_KEPT;
-    let ranges = '';
+    let ranges = out.length === 0 && c.lead ? c.lead : '';
+    const breaks: string[] = [];
     for (let i = a; i <= b; i++) {
       // Leading is a character's: every range of the line says it.
       const extra = Math.abs(lead(i) - style.leading) >= 0.01 ? lead(i) : undefined;
@@ -161,11 +172,18 @@ export function keptParagraphs(w: Writer, item: StoryItem, perLine: TextRun[][],
       // The break is a range of its own (it must stay a place to break),
       // at its line's leading and size: an empty line still takes its room.
       if (last) {
+        breaks.push(lineJoin(lines[i]!, lines[i + 1]));
         const tail = runs[runs.length - 1];
         ranges += rangeXml({ text: FORCED_LINE_BREAK, props: tail?.props ?? style.props, ...(tail?.named ? { named: tail.named } : {}), ...(vertical ? { extra: VERTICAL_RANGE } : {}) }, style.props, extra, false, w);
       }
     }
     if (!ranges) return;
+    if (codes) {
+      // (The item's first paragraph told after the paragraph before it,
+      // a later one after the group before.)
+      if (before !== undefined && (g === 0 || out.length)) codes.push(before);
+      codes.push(...breaks);
+    }
     out.push({ style, attrs, format: fmt, ranges, ...(vertical ? { properties: VERTICAL_KEPT_PROPS } : {}), ...(g === 0 && c.spaceBefore !== undefined ? { spaceBefore: c.spaceBefore } : {}) });
   });
   return out;

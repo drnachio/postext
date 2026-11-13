@@ -392,7 +392,7 @@ con campo de formulario pasan a ser campos de formulario de InDesign. `--lines
 keep` (el valor por defecto) termina cada línea donde la terminó Postext, así
 que InDesign muestra las mismas líneas que el PDF; `--lines reflow` deja los
 párrafos al componedor de InDesign, y los cortes de línea pueden variar.
-`--spreads facing` o `--spreads single` empareja las páginas, o no, digan lo que digan los márgenes.
+El texto corrido de las páginas compuestas en columnas va en un solo artículo, enlazado por un marco por columna, que el importador lee como libro de flujo; `--text frames` escribe en su lugar un marco y un artículo por bloque (desde postext 1.85.0). `--spreads facing` o `--spreads single` empareja las páginas, o no, digan lo que digan los márgenes.
 `--images link` deja las imágenes junto al archivo, en `Links/`, en lugar de
 dentro. `--fonts` escribe los archivos de fuente de las variantes usadas junto
 al paquete, en `Document fonts/`, donde InDesign los encuentra para ese
@@ -402,7 +402,7 @@ llevar como está en el libro (los puntos de énfasis del texto vertical, el mar
 redondeado de una tabla) se notifica como aviso `idml.*`. El generador es el paquete
 `postext-idml`: véase [Uso programático › Paquetes de
 InDesign](/es/docs/configuration-programmatic-usage#paquetes-de-indesign-postext-idml).
-En `build`, `--idml ARCHIVO` escribe el mismo paquete, con `--idml-images`, `--idml-lines`, `--idml-spreads` y `--idml-fonts`.
+En `build`, `--idml ARCHIVO` escribe el mismo paquete, con `--idml-images`, `--idml-lines`, `--idml-spreads`, `--idml-text` y `--idml-fonts`.
 Desde postext 1.71; `--lines` y `--fonts`, desde 1.76, y `--spreads`, desde 1.78.
 
 ### import-idml

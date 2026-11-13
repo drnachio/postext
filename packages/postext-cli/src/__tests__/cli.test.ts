@@ -786,6 +786,7 @@ describe('postext cli', () => {
     expect(JSON.parse(built.stdout).outputs.map((o: { kind: string }) => o.kind).sort()).toEqual(['idml', 'pdf']);
     expect(readFileSync(join(dir, 'out', 'b.idml')).subarray(0, 2).toString()).toBe('PK');
     expect(run(['build', 'ch', '--idml', 'x.idml', '--idml-lines', 'loose', '--offline'], dir).code).toBe(2);
+    expect(run(['build', 'ch', '--idml', 'x.idml', '--idml-text', 'columns', '--offline'], dir).code).toBe(2);
     // The package as a book: an unpacked folder, with a report.
     const folder = run(['import-idml', 'out/b.idml', '-o', 'back', '--json'], dir);
     expect(folder.code).toBe(0);

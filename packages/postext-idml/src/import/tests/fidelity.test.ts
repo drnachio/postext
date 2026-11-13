@@ -65,7 +65,8 @@ describe('the reference document InDesign wrote', () => {
 describe('a book exported and imported back', () => {
   const MD = `# First chapter\n\n${LOREM}\n\nA second paragraph with *italic* and **bold** words, and a [link](https://postext.dev/).\n\n- one\n- two\n\n## A section\n\n${Array(12).fill(LOREM).join('\n\n')}\n`;
   const cfg = config({ page: { dpi: 72, width: mm(140), height: mm(200), margins: { top: mm(15), bottom: mm(20), left: mm(18), right: mm(12), mirror: true } } } as unknown as Partial<PostextConfig>);
-  const { bytes } = idmlDocument({ docs: [build(MD, cfg)], title: 'Round trip' });
+  // A block a frame, as #1555 exported every book (`text: 'frames'`).
+  const { bytes } = idmlDocument({ docs: [build(MD, cfg)], title: 'Round trip', text: 'frames' });
   // No localOverrides: every paragraph of the export carries only its
   // style, which takes the format most of its paragraphs share (#1555).
   const COMMON: Pin[] = [['baselineGrid', 'info', 1], ['colouredText', 'info', 4], ['continuedParagraphs', 'info', 2], ['fontStatus', 'info', 4]];
@@ -86,5 +87,16 @@ describe('a book exported and imported back', () => {
     expect(md).toMatch(/^# First chapter\n\nTypesetting is/);
     expect(md).not.toContain(':::callout');
     expect(md.indexOf('## A section')).toBeGreaterThan(md.indexOf('A second paragraph'));
+  });
+
+  it('comes back as the flowing book it was when its text is threaded (#1559)', () => {
+    const threaded = idmlDocument({ docs: [build(MD, cfg)], title: 'Round trip' }).bytes;
+    const r = idmlToPostext(threaded, { layout: 'auto' });
+    expect(r.layout).toBe('flow');
+    expect(r.report.verdict).toBe('faithful');
+    const md = r.chapters.map((c) => c.markdown).join('\n');
+    expect(md).toMatch(/^# First chapter\n\nTypesetting is/);
+    expect(md.match(/Typesetting is the composition/g)).toHaveLength(13);
+    expect(md).not.toMatch(/\\\n/);
   });
 });

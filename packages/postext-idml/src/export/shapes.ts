@@ -26,7 +26,7 @@ export function rectXml(w: Writer, item: Pick<RectItem, 'rect' | 'fill' | 'strok
 }
 
 /** Fill, stroke (inside the edge) and rounded corners of a box. */
-function paintAttrs(w: Writer, fill: { ref: string } | undefined, stroke: { ref: string } | undefined, strokeWidthPx: number | undefined, radiusPx: number | undefined): string {
+export function paintAttrs(w: Writer, fill: { ref: string } | undefined, stroke: { ref: string } | undefined, strokeWidthPx: number | undefined, radiusPx: number | undefined): string {
   const radius = radiusPx ? radiusPx * w.k : 0;
   const corners = radius > 0 ? ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'].map((c) => `${attr(`${c}CornerOption`, 'RoundedCorner')}${attr(`${c}CornerRadius`, radius)}`).join('') : '';
   return (
