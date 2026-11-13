@@ -1,0 +1,63 @@
+---
+title: "Ein Tunnelbuch, zwanzig Blätter tief"
+summary: "Neunzehn runde Fenster, mit dieCuts gestanzt, jedes kleiner als das vorige auf einer Achse: Vom Umschlag aus blickt man durch zwanzig Ebenen bis zu einem Reh."
+plain: "Ein dickes Pappbuch über einen Gang durch den Wald. Jedes Blatt hat ein rundes Loch, etwas kleiner als das davor, und vom Umschlag aus sieht man bis zur letzten Seite."
+description: "Ein Tunnelbuch aus zwanzig Pappblättern: neunzehn schrumpfende Stanzfenster auf einer Achse, gemalte Ebenen im Passer, Stanzlinie und Folio."
+question: "Wie mache ich ein Tunnelbuch, durch dessen Löcher man vom Umschlag bis zur letzten Seite sieht?"
+aliases: ["Tunnelbuch", "Guckkastenbuch", "verschachtelte Stanzungen", "schrumpfende Löcher", "Stanzlinie"]
+pageNotes: { "1": "Der Umschlag: zwei Eichenstämme und Farne um ein großes rundes Fenster, und dahinter Ring um Ring aus Blättern, Fingerhut, Birken und Farn, immer kleiner, bis zu einer Ricke und ihrem Kitz, die an einem sonnigen Teich trinken; der Titel auf einem dunkelgrünen Band am Fuß.", "2": "Die Rückseite des Umschlags: dunkelgrün, mit dem Fenster und einer Verszeile darunter.", "39": "Die letzte Ebene, ungestanzt: eine sonnige Lichtung, auf der eine Ricke und ihr Kitz an einem Teich trinken." }
+---
+
+## Was Sie setzen
+
+*Tief in den Wald*, ein Tunnelbuch aus zwanzig Pappblättern auf 150 mm im Quadrat. Jede rechte Seite ist eine Ebene eines gemalten Waldes (Eichen, Fingerhut, ein Rotkehlchen, ein Fuchs im Farn, ein Kauz, Birken), und jede hat ein rundes Fenster, etwas kleiner als das davor, alle um dieselbe Mitte. Die letzte Ebene ist ganz: eine Ricke und ihr Kitz an einem Teich auf der Lichtung. Vom Umschlag geht der Blick durch alle neunzehn Fenster bis zu den Rehen, und die Schnittkanten der Pappe stehen um den Tunnel wie die Stämme selbst. Auf der Rückseite jedes Blatts nennt eine Verszeile die Ebene gegenüber. Die Druckdatei führt alle Fenster auf der Stanzplatte.
+
+## Zubereitung
+
+### 1 · Neunzehn Fenster auf einer Achse
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. Die Fenster entstehen in einer Schleife: Blatt k bekommt einen Kreis mit dem Radius R1 · Q^(k − 1) um dieselbe Mitte, und `dieCuts.pages` setzt ihn auf Seite 2k − 1, die Vorderseite dieses Blatts. Ein Loch schneidet beide Seiten seines Blatts, also hat die Rückseite dahinter dasselbe Fenster, gespiegelt. Q = 0,9162 führt in achtzehn Schritten von 58 mm auf 12 mm.
+
+### 2 · Ebenen im Passer zu ihren Fenstern
+
+<Excerpt region="planes" />
+
+Jedes Bild hat seine eigene neblige Lichtung, darum wurden die Bilder skaliert, bevor sie ins Buch kamen: Auf jedem wurde in Pixeln der Radius gemessen, bei dem Blätter den halben Ring bedecken, und das Bild so skaliert, dass dieser Radius auf das Fenster seines Blatts trifft. Vom Umschlag aus zeigt jede Ebene nur einen schmalen Blätterring um ihr Fenster, und die Ringe stapeln sich zum Tunnel. Die Mitte, die jede Stanzung wegnimmt, ist einfarbig und kostet in der Datei fast nichts.
+
+### 3 · Neunzehn Kreise auf der Platte Die
+
+<Excerpt region="die-line" />
+
+Das PDF zieht jedes Fenster und jedes Blatt mit seinen am Vorderschnitt gerundeten Ecken auf einer Separation `Die` nach, die überdruckt und nie eingefärbt wird. Vierzig Seiten mit Bildern bleiben mit `convertImages: false` unter 1,5 MB.
+
+### 4 · Der Tunnel in der Hand
+
+<Excerpt region="folio" />
+
+Zwanzig Pappblätter ergeben einen dicken Block, und Folio stanzt jedes Fenster hindurch: Das geschlossene Buch zeigt den Tunnel, dessen Schnittwände in Stufen bis zur Lichtung hinabführen.
+
+### 5 · Zwanzig Ebenen auf einer flachen Seite
+
+<Excerpt region="see-through" />
+
+`beneath` malt die übernächste Seite mit ihrem eigenen `beneath`: Das Fenster des Umschlags zeigt Seite 3, deren Fenster Seite 5, und so weiter bis Seite 39. Jede Seite wird einmal gemalt und wiederverwendet.
+
+## Varianten
+
+### Quadratische Fenster mit runden Ecken
+
+Ein `roundRect` mit einem Eckradius von einem Drittel seiner halben Breite wirkt weicher, wie ausgeschnittenes Papier.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Alle Ecken runden
+
+Ein Pappbuch für kleine Hände rundet alle vier Ecken jedes Blatts.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

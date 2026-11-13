@@ -1,0 +1,63 @@
+---
+title: "Un libro túnel de veinte hojas de hondo"
+summary: "Diecinueve ventanas redondas troqueladas con dieCuts, cada una menor que la anterior: desde la cubierta se ve a través de veinte planos hasta un ciervo."
+plain: "Un libro grueso de cartón sobre un paseo por el bosque. Cada hoja tiene un agujero redondo algo más pequeño que el anterior, y desde la cubierta se ve hasta la última página."
+description: "Un libro túnel de veinte hojas de cartón: diecinueve ventanas troqueladas que menguan sobre un eje, planos pintados en registro, línea de troquel y Folio."
+question: "¿Cómo hago un libro túnel, con agujeros en cada hoja que dejen ver la última página desde la cubierta?"
+aliases: ["libro túnel", "libro de teatrillo", "troqueles anidados", "agujeros que menguan", "ventanas troqueladas", "línea de troquel"]
+pageNotes: { "1": "La cubierta: dos troncos de roble y helechos alrededor de una gran ventana redonda y, a través de ella, anillo tras anillo de hojas, dedaleras, abedules y helechos cada vez más pequeños, hasta una cierva y su cervatillo bebiendo en una charca al sol; el título en una banda verde oscuro al pie.", "2": "El dorso de la cubierta: verde oscuro, con la ventana troquelada y un verso debajo.", "39": "El último plano, sin troquel: un claro soleado donde una cierva y su cervatillo beben en una charca." }
+---
+
+## Lo que vas a componer
+
+*Al fondo del bosque*, un libro túnel de veinte hojas de cartón en un cuadrado de 150 mm. Cada recto es un plano de un bosque pintado (robles, dedaleras, un petirrojo, un zorro entre los helechos, un búho, abedules), y cada uno lleva una ventana redonda algo menor que la anterior, todas con el mismo centro. El último plano está entero: una cierva y su cervatillo en una charca del claro. Desde la cubierta, la vista atraviesa las diecinueve ventanas hasta los ciervos, y los cantos del cartón cortado rodean el túnel como los propios troncos. En el dorso de cada hoja, un verso nombra el plano que tiene enfrente. El PDF de imprenta lleva todas las ventanas en la planilla de troquel.
+
+## Elaboración
+
+### 1 · Diecinueve ventanas sobre un eje
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las ventanas salen de un bucle: la hoja k lleva un círculo de radio R1 · Q^(k − 1) alrededor del mismo centro, y `dieCuts.pages` lo pone en la página 2k − 1, el recto de esa hoja. Un agujero corta las dos caras de su hoja, así que el verso de detrás tiene la misma ventana, en espejo. Q = 0,9162 lleva de 58 mm a 12 mm en dieciocho pasos, y la última ventana deja justo el sitio de los ciervos.
+
+### 2 · Planos en registro con sus ventanas
+
+<Excerpt region="planes" />
+
+Cada pintura tiene su propio claro de niebla, así que las imágenes se escalaron antes de entrar en el libro: en cada una se midió en píxeles el radio en el que las hojas cubren la mitad del anillo, y se escaló la pintura hasta que ese radio coincidiera con la ventana de su hoja, sobre el centro de la ventana. Desde la cubierta, cada plano enseña solo un anillo fino de hojas alrededor de su ventana, y los anillos se apilan en un túnel. El centro que se lleva cada troquel es plano, y apenas pesa en el archivo.
+
+### 3 · Diecinueve círculos en la planilla Die
+
+<Excerpt region="die-line" />
+
+El PDF traza cada ventana, y cada hoja con sus esquinas redondeadas del lado del corte, en una separación `Die` en sobreimpresión que nunca se entinta. Cuarenta páginas de pinturas se quedan por debajo de 1,5 MB con `convertImages: false`.
+
+### 4 · El túnel en la mano
+
+<Excerpt region="folio" />
+
+Veinte hojas de cartón hacen un bloque grueso, y Folio troquela cada ventana a través de él: el libro cerrado enseña el túnel, con las paredes del corte bajando en escalones hasta el claro.
+
+### 5 · Veinte planos en una página plana
+
+<Excerpt region="see-through" />
+
+`beneath` pinta la página dos más allá con su propio `beneath`, así que la ventana de la cubierta enseña la página 3, cuya ventana enseña la 5, y así hasta la 39. Cada página se pinta una vez y se reutiliza, y la cubierta plana enseña el mismo túnel que el libro.
+
+## Variantes
+
+### Ventanas cuadradas de esquinas redondas
+
+Un `roundRect` con un radio de esquina de un tercio de su semiancho da un aire más suave, de papel recortado.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Redondea todas las esquinas
+
+Un libro de cartón para manos pequeñas redondea las cuatro esquinas de cada hoja.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

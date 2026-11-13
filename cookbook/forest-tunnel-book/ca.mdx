@@ -1,0 +1,63 @@
+---
+title: "Un llibre túnel de vint fulls de fondària"
+summary: "Dinou finestres rodones troquelades amb dieCuts, cadascuna més petita que l’anterior: des de la coberta es veu a través de vint plans fins a un cérvol."
+plain: "Un llibre gruixut de cartró sobre un passeig pel bosc. Cada full té un forat rodó una mica més petit que l’anterior, i des de la coberta es veu fins a l’última pàgina."
+description: "Un llibre túnel de vint fulls de cartró: dinou finestres troquelades que minven sobre un eix, plans pintats en registre, línia de troquel i Folio."
+question: "Com faig un llibre túnel, amb forats a cada full que deixin veure l’última pàgina des de la coberta?"
+aliases: ["llibre túnel", "llibre teatret", "troquels niats", "forats que minven", "línia de troquel"]
+pageNotes: { "1": "La coberta: dos troncs de roure i falgueres al voltant d’una gran finestra rodona i, a través d’ella, anell rere anell de fulles, didaleres, bedolls i falgueres cada cop més petits, fins a una cérvola i el seu cervatell bevent en una bassa al sol; el títol en una banda verd fosc al peu.", "2": "El dors de la coberta: verd fosc, amb la finestra troquelada i un vers a sota.", "39": "L’últim pla, sense troquel: una clariana assolellada on una cérvola i el seu cervatell beuen en una bassa." }
+---
+
+## Què compondràs
+
+*Al fons del bosc*, un llibre túnel de vint fulls de cartró en un quadrat de 150 mm. Cada recto és un pla d’un bosc pintat (roures, didaleres, un pit-roig, una guineu entre les falgueres, un mussol, bedolls), i cadascun porta una finestra rodona una mica més petita que l’anterior, totes amb el mateix centre. L’últim pla és sencer: una cérvola i el seu cervatell en una bassa de la clariana. Des de la coberta, la vista travessa les dinou finestres fins als cérvols, i els cantells del cartró tallat envolten el túnel com els mateixos troncs. Al dors de cada full, un vers anomena el pla que té al davant. El PDF d’impremta porta totes les finestres a la planxa de troquel.
+
+## Elaboració
+
+### 1 · Dinou finestres sobre un eix
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Les finestres surten d’un bucle: el full k porta un cercle de radi R1 · Q^(k − 1) al voltant del mateix centre, i `dieCuts.pages` el posa a la pàgina 2k − 1, el recto d’aquell full. Un forat talla les dues cares del full, i el vers de darrere té la mateixa finestra, en mirall. Q = 0,9162 porta de 58 mm a 12 mm en divuit passos.
+
+### 2 · Plans en registre amb les finestres
+
+<Excerpt region="planes" />
+
+Cada pintura té la seva pròpia clariana de boira, i les imatges es van escalar abans d’entrar al llibre: a cadascuna es va mesurar en píxels el radi on les fulles cobreixen la meitat de l’anell, i es va escalar la pintura fins que aquest radi coincidís amb la finestra del seu full. Des de la coberta, cada pla ensenya només un anell fi de fulles al voltant de la finestra, i els anells s’apilen en un túnel. El centre que s’endú cada troquel és pla, i gairebé no pesa al fitxer.
+
+### 3 · Dinou cercles a la planxa Die
+
+<Excerpt region="die-line" />
+
+El PDF traça cada finestra, i cada full amb les cantonades arrodonides del costat del tall, en una separació `Die` en sobreimpressió que mai no s’entinta. Quaranta pàgines de pintures queden per sota d’1,5 MB amb `convertImages: false`.
+
+### 4 · El túnel a la mà
+
+<Excerpt region="folio" />
+
+Vint fulls de cartró fan un bloc gruixut, i Folio troquela cada finestra a través seu: el llibre tancat ensenya el túnel, amb les parets del tall baixant en graons fins a la clariana.
+
+### 5 · Vint plans en una pàgina plana
+
+<Excerpt region="see-through" />
+
+`beneath` pinta la pàgina dues més enllà amb el seu propi `beneath`: la finestra de la coberta ensenya la pàgina 3, la finestra de la qual ensenya la 5, i així fins a la 39. Cada pàgina es pinta una vegada i es reutilitza.
+
+## Variants
+
+### Finestres quadrades de cantonades rodones
+
+Un `roundRect` amb un radi de cantonada d’un terç del seu semiample dona un aire més suau, de paper retallat.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Arrodoneix totes les cantonades
+
+Un llibre de cartró per a mans petites arrodoneix les quatre cantonades de cada full.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

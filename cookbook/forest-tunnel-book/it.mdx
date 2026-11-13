@@ -1,0 +1,63 @@
+---
+title: "Un libro tunnel profondo venti fogli"
+summary: "Diciannove finestre rotonde fustellate con dieCuts, ognuna più piccola della precedente: dalla copertina si vede attraverso venti piani fino a un cervo."
+plain: "Uno spesso libro cartonato su una passeggiata nel bosco. Ogni foglio ha un foro rotondo un po’ più piccolo del precedente, e dalla copertina si vede fino all’ultima pagina."
+description: "Un libro tunnel di venti fogli cartonati: diciannove finestre fustellate che si stringono su un asse, piani dipinti a registro, linea di fustella e Folio."
+question: "Come faccio un libro tunnel, con fori in ogni foglio che lascino vedere l’ultima pagina dalla copertina?"
+aliases: ["libro tunnel", "libro teatrino", "fustelle annidate", "fori che si stringono", "linea di fustella"]
+pageNotes: { "1": "La copertina: due tronchi di quercia e felci attorno a una grande finestra rotonda e, attraverso di essa, anello dopo anello di foglie, digitali, betulle e felci sempre più piccoli, fino a una cerva e al suo cerbiatto che bevono a uno stagno al sole; il titolo su una fascia verde scuro al piede.", "2": "Il retro della copertina: verde scuro, con la finestra fustellata e un verso sotto.", "39": "L’ultimo piano, senza fustella: una radura al sole dove una cerva e il suo cerbiatto bevono a uno stagno." }
+---
+
+## Che cosa comporrai
+
+*Nel cuore del bosco*, un libro tunnel di venti fogli cartonati su un quadrato di 150 mm. Ogni recto è un piano di un bosco dipinto (querce, digitali, un pettirosso, una volpe tra le felci, un allocco, betulle), e ognuno ha una finestra rotonda un po’ più piccola della precedente, tutte sullo stesso centro. L’ultimo piano è intero: una cerva e il suo cerbiatto a uno stagno nella radura. Dalla copertina lo sguardo attraversa le diciannove finestre fino ai cervi, e i bordi del cartone tagliato circondano il tunnel come i tronchi stessi. Sul retro di ogni foglio un verso nomina il piano di fronte. Il PDF per la stampa porta tutte le finestre sulla lastra di fustella.
+
+## Preparazione
+
+### 1 · Diciannove finestre su un asse
+
+Il codice è la [risposta breve](#la-risposta-breve) qui sopra. Le finestre nascono da un ciclo: il foglio k riceve un cerchio di raggio R1 · Q^(k − 1) attorno allo stesso centro, e `dieCuts.pages` lo mette a pagina 2k − 1, il recto di quel foglio. Un foro taglia entrambe le facce, quindi il verso dietro ha la stessa finestra, specchiata. Q = 0,9162 porta da 58 mm a 12 mm in diciotto passi.
+
+### 2 · Piani a registro con le loro finestre
+
+<Excerpt region="planes" />
+
+Ogni pittura ha la sua radura di nebbia, quindi le immagini sono state scalate prima di entrare nel libro: su ciascuna si è misurato in pixel il raggio in cui le foglie coprono metà dell’anello, e la pittura è stata scalata finché quel raggio incontrasse la finestra del suo foglio. Dalla copertina ogni piano mostra solo un sottile anello di foglie attorno alla sua finestra, e gli anelli si impilano in un tunnel. Il centro che ogni fustella porta via è piatto, e nel file non pesa quasi nulla.
+
+### 3 · Diciannove cerchi sulla lastra Die
+
+<Excerpt region="die-line" />
+
+Il PDF traccia ogni finestra, e ogni foglio con gli angoli arrotondati sul taglio davanti, su una separazione `Die` in sovrastampa che non viene mai inchiostrata. Quaranta pagine di pitture restano sotto 1,5 MB con `convertImages: false`.
+
+### 4 · Il tunnel in mano
+
+<Excerpt region="folio" />
+
+Venti fogli di cartone fanno un blocco spesso, e Folio vi fustella ogni finestra: il libro chiuso mostra il tunnel, con le pareti del taglio che scendono a gradini fino alla radura.
+
+### 5 · Venti piani su una pagina piatta
+
+<Excerpt region="see-through" />
+
+`beneath` dipinge la pagina due più in là con il suo `beneath`: la finestra della copertina mostra la pagina 3, la cui finestra mostra la 5, e così fino alla 39. Ogni pagina si dipinge una volta e si riusa.
+
+## Varianti
+
+### Finestre quadrate dagli angoli tondi
+
+Un `roundRect` con un raggio d’angolo pari a un terzo della sua semilarghezza dà un’aria più morbida, da carta ritagliata.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Arrotonda tutti gli angoli
+
+Un libro cartonato per mani piccole arrotonda i quattro angoli di ogni foglio.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

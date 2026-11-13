@@ -1,0 +1,63 @@
+---
+title: "Um livro túnel com vinte folhas de fundo"
+summary: "Dezenove janelas redondas cortadas com dieCuts, cada uma menor que a anterior num mesmo eixo: da capa se vê através de vinte planos até um cervo."
+plain: "Um livro grosso de papelão sobre um passeio no bosque. Cada folha tem um furo redondo um pouco menor que o anterior, e da capa se vê até a última página."
+description: "Um livro túnel de vinte folhas de papelão: dezenove janelas cortadas que diminuem num eixo, planos pintados em registro, linha de faca e Folio."
+question: "Como faço um livro túnel, com furos em cada folha que deixem ver a última página desde a capa?"
+aliases: ["livro túnel", "livro teatrinho", "facas aninhadas", "furos que diminuem", "linha de faca"]
+pageNotes: { "1": "A capa: dois troncos de carvalho e samambaias em volta de uma grande janela redonda e, através dela, anel após anel de folhas, dedaleiras, bétulas e samambaias cada vez menores, até uma corça e seu filhote bebendo num lago ao sol; o título numa faixa verde-escura no pé.", "2": "O verso da capa: verde-escuro, com a janela cortada e um verso embaixo.", "39": "O último plano, sem corte: uma clareira ensolarada onde uma corça e seu filhote bebem num lago." }
+---
+
+## O que você vai compor
+
+*No fundo do bosque*, um livro túnel de vinte folhas de papelão num quadrado de 150 mm. Cada página ímpar é um plano de um bosque pintado (carvalhos, dedaleiras, um pisco, uma raposa entre as samambaias, uma coruja, bétulas), e cada uma tem uma janela redonda um pouco menor que a anterior, todas no mesmo centro. O último plano é inteiro: uma corça e seu filhote num lago da clareira. Da capa, o olhar atravessa as dezenove janelas até os cervos, e as bordas do papelão cortado cercam o túnel como os próprios troncos. No verso de cada folha, um verso nomeia o plano em frente. O PDF da gráfica leva todas as janelas na chapa de faca.
+
+## Preparo
+
+### 1 · Dezenove janelas num eixo
+
+O código é [a resposta curta](#a-resposta-curta) acima. As janelas saem de um laço: a folha k recebe um círculo de raio R1 · Q^(k − 1) em volta do mesmo centro, e `dieCuts.pages` o coloca na página 2k − 1, a frente dessa folha. Um furo corta as duas faces, então o verso atrás tem a mesma janela, espelhada. Q = 0,9162 leva de 58 mm a 12 mm em dezoito passos.
+
+### 2 · Planos em registro com as janelas
+
+<Excerpt region="planes" />
+
+Cada pintura tem sua própria clareira de névoa, então as imagens foram redimensionadas antes de entrar no livro: em cada uma se mediu em pixels o raio onde as folhas cobrem metade do anel, e a pintura foi redimensionada até esse raio encontrar a janela da sua folha. Da capa, cada plano mostra só um anel fino de folhas em volta da janela, e os anéis se empilham num túnel. O centro que cada faca leva embora é liso, e quase não pesa no arquivo.
+
+### 3 · Dezenove círculos na chapa Die
+
+<Excerpt region="die-line" />
+
+O PDF traça cada janela, e cada folha com os cantos arredondados do lado do corte, numa separação `Die` em sobreimpressão que nunca é entintada. Quarenta páginas de pinturas ficam abaixo de 1,5 MB com `convertImages: false`.
+
+### 4 · O túnel na mão
+
+<Excerpt region="folio" />
+
+Vinte folhas de papelão fazem um bloco grosso, e o Folio corta cada janela através dele: o livro fechado mostra o túnel, com as paredes do corte descendo em degraus até a clareira.
+
+### 5 · Vinte planos numa página plana
+
+<Excerpt region="see-through" />
+
+`beneath` pinta a página duas adiante com seu próprio `beneath`: a janela da capa mostra a página 3, cuja janela mostra a 5, e assim até a 39. Cada página é pintada uma vez e reutilizada.
+
+## Variações
+
+### Janelas quadradas de cantos redondos
+
+Um `roundRect` com raio de canto de um terço da sua meia-largura dá um ar mais suave, de papel recortado.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Arredonde todos os cantos
+
+Um livro de papelão para mãos pequenas arredonda os quatro cantos de cada folha.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```
