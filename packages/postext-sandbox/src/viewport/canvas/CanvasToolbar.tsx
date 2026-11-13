@@ -21,6 +21,7 @@ import { Tooltip, useUiRtl } from '../../ui/index.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import { useLargeTargets } from '../../ui/largeTargets.js';
 import { PrintPreviewButton } from '../../print/PrintPreviewButton.js';
+import { SpecialInksButtons } from './SpecialInksButtons.js';
 import { openFind, searchableSelection, useFindState } from '../../editor/find/findStore.js';
 
 type ViewMode = 'single' | 'spread';
@@ -457,6 +458,7 @@ export function CanvasToolbar({
       <ToolbarSeparator />
       <PrintPreviewButton />
       <ToolbarSeparator />
+      <SpecialInksButtons />
       <ToolbarButton
         icon={<ChevronUp size={16} aria-hidden="true" />}
         label={labels.previousPage}

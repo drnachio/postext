@@ -2,6 +2,7 @@
 // built again and the visible pages painted (#1276: split out of
 // CanvasPreview/index.tsx).
 import { useMemo, useEffect } from 'react';
+import type { FinishesView } from '../../specialInksView.js';
 import { resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig, type RenderPageOptions, renderPageToCanvas, type VDTDocument, type PostextConfig, type PrintPreview, type Resource } from 'postext';
 import { ensureResourceImages } from '../../../../controls/media/resourceImages.js';
 import { type GeomSnapshot, sameStructure, type ViewMode, type FitMode, type PageGaps } from '../layoutUtils.js';
@@ -55,6 +56,8 @@ export interface UsePagePaintDeps {
   paintKey: number;
   setPaintKey: React.Dispatch<React.SetStateAction<number>>;
   printPreviewRef: React.RefObject<PrintPreview | undefined>;
+  /** How special inks are painted (#1570): `'flat'` passes nothing. */
+  finishesRef?: React.RefObject<FinishesView>;
   lastPaintedPaintKeyRef: React.RefObject<number>;
   gapsRef: React.RefObject<PageGaps>;
   applyDisplaySize: (displayWidth: number, displayHeight: number, force?: boolean) => void;
@@ -68,7 +71,7 @@ export function usePagePaint(deps: UsePagePaintDeps) {
     overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef,
     lastPaintedDocVersionRef, bitmapScaleRef, renderOptsRef, paintOptions, paintOptionsRef,
     wantedBitmapScale, needsRescale, paintSpanRef, builtSourceRef, deferredResources, deferredConfig,
-    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef,
+    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef, finishesRef,
     lastPaintedPaintKeyRef, gapsRef, applyDisplaySize, computeDisplaySizeRef
   } = deps;
   // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
@@ -138,6 +141,7 @@ export function usePagePaint(deps: UsePagePaintDeps) {
       pageNegative: debugConfig.pageNegative.enabled,
       ...(forms ? { forms } : {}),
       ...(printPreviewRef.current ? { printPreview: printPreviewRef.current } : {}),
+      ...(finishesRef?.current && finishesRef.current !== 'flat' ? { finishes: finishesRef.current } : {}),
     };
     const pageWidthPx = firstPage.width;
     const pageHeightPx = firstPage.height;

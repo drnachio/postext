@@ -8,6 +8,8 @@ import { type HeldChapterDoc } from '../../../book/buildBook.js';
 import type { PrintPreview } from 'postext';
 import { previewFor, printsGrayscale, usePrintSetup } from '../../../print/printSetup.js';
 import { usePrintPreview } from '../../../print/printPreviewToggle.js';
+import { useDieLines, useFinishesView } from '../specialInksView.js';
+import { syncDieLines } from './dieLines.js';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { createPaintedPages, type PaintedPages } from './pageReuse.js';
 import { useTemplateEditorHost } from '../../../templates/useTemplateEditorHost.js';
@@ -234,6 +236,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [printPreviewKey]);
+  // How special inks are painted (#1570): flat, with their sheen, or the
+  // finish map. Repaints, never relays.
+  const [finishes] = useFinishesView();
+  const finishesRef = useRef(finishes);
+  useEffect(() => {
+    if (finishesRef.current === finishes) return;
+    finishesRef.current = finishes;
+    setPaintKey((k) => k + 1);
+  }, [finishes]);
+  const [dieLines] = useDieLines();
   const lastPaintedPaintKeyRef = useRef(0);
   // The book's first chapter as last laid out here, for its cover (a book
   // without one gets a picture of its first page once it is painted).
@@ -267,9 +279,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef,
     lastPaintedDocVersionRef, bitmapScaleRef, renderOptsRef, paintOptions, paintOptionsRef,
     wantedBitmapScale, needsRescale, paintSpanRef, builtSourceRef, deferredResources, deferredConfig,
-    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef,
+    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef, finishesRef,
     lastPaintedPaintKeyRef, gapsRef, applyDisplaySize, computeDisplaySizeRef
   });
+
+  // The die lines (#1570) in each page's overlay, after the paint effect
+  // above has (re)built the pages: on every new document and page DOM.
+  useEffect(() => {
+    const doc = docRef.current;
+    for (const [pageIndex, svg] of overlayMapRef.current) syncDieLines(svg, doc?.pages[pageIndex], dieLines);
+  }, [dieLines, docVersion, paintKey, layoutKey, zoom, viewMode, fitMode, deferredConfig]);
 
   useOverlays({
     activeChapterId, config, editorSelection, editorFocused, selectionFromViewerRef,

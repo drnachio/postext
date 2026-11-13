@@ -75,3 +75,15 @@ describe('pageToPaint (#1435)', () => {
     expect(pageToPaint({ pages }, -1)).toBeUndefined();
   });
 });
+
+describe('the special inks view repaints a kept page (#1570)', () => {
+  it('as part of the paint options', () => {
+    const painted = createPaintedPages();
+    const doc = build(book());
+    painted.painted(0, doc.pages[0]!, { scale: 1 });
+    expect(painted.same(0, doc.pages[0]!, { scale: 1 })).toBe(true);
+    expect(painted.same(0, doc.pages[0]!, { scale: 1, finishes: 'sheen' })).toBe(false);
+    painted.painted(0, doc.pages[0]!, { scale: 1, finishes: 'map' });
+    expect(painted.same(0, doc.pages[0]!, { scale: 1, finishes: 'map' })).toBe(true);
+  });
+});

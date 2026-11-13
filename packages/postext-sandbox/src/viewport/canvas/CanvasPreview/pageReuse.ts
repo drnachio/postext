@@ -24,15 +24,15 @@ const previewIds = new WeakMap<object, number>();
 let nextPreviewId = 1;
 
 /** The paint options that change pixels, as a key (a print preview by
- *  identity: it holds colour transforms; the form fields' number style by
- *  value). */
+ *  identity: it holds colour transforms; the form fields' number style and
+ *  the special inks' view by value). */
 function optionsKey(opts: RenderPageOptions): string {
   let preview = 0;
   if (opts.printPreview) {
     preview = previewIds.get(opts.printPreview) ?? nextPreviewId++;
     previewIds.set(opts.printPreview, preview);
   }
-  return `${opts.scale ?? 1}|${opts.pageNegative ? 1 : 0}|${opts.singleInk ? 1 : 0}|${opts.trim ? 1 : 0}|${preview}|${opts.forms ? JSON.stringify(opts.forms) : ''}`;
+  return `${opts.scale ?? 1}|${opts.pageNegative ? 1 : 0}|${opts.singleInk ? 1 : 0}|${opts.trim ? 1 : 0}|${preview}|${opts.forms ? JSON.stringify(opts.forms) : ''}|${opts.finishes ?? 'flat'}`;
 }
 
 function signature(page: VDTPage, opts: RenderPageOptions): string | undefined {
