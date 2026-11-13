@@ -1,7 +1,7 @@
 /**
  * The finish mask of a page (#1564): where each special ink lies on it and
  * what it is, painted with the ordinary page painter through the paint
- * hook of `finishPaint.ts`. Folio lights metallic ink, foil, fluorescent
+ * hook of `finish/paint.ts`. Folio lights metallic ink, foil, fluorescent
  * ink, opaque white and varnish from it; the canvas preview shows it
  * (`RenderPageOptions.finishes`).
  *
@@ -23,16 +23,16 @@
  * merged into the first paint's with `lighten` (the larger wins).
  */
 
-import type { VDTDocument, VDTPage } from '../vdt.js';
-import { authoredSpotColors, overprintColors } from '../color/authored.js';
-import { finishInks, type FinishInk } from '../color/finishInks.js';
-import { finishSheen, sheenLevel } from '../color/finishKinds.js';
-import { printedSpot } from '../color/inks.js';
-import type { ResolvedPrintInk } from '../types.js';
-import { NO_PAINT, overridePaints, parsePaint, rgbaPaint, withScreenFinishesOff, type PaintValue } from './finishPaint.js';
-import { setFinishImageHook } from './renderResourceBlock/images.js';
-import { renderPageToCanvas } from './index.js';
-import { restoreContext, saveContext } from './contextState.js';
+import type { VDTDocument, VDTPage } from '../../vdt.js';
+import { authoredSpotColors, overprintColors } from '../../color/authored.js';
+import { finishInks, type FinishInk } from '../../color/finishInks.js';
+import { finishSheen, sheenLevel } from '../../color/finishKinds.js';
+import { printedSpot } from '../../color/inks.js';
+import type { ResolvedPrintInk } from '../../types.js';
+import { NO_PAINT, overridePaints, parsePaint, rgbaPaint, withScreenFinishesOff, type PaintValue } from './paint.js';
+import { setFinishImageHook } from '../renderResourceBlock/images.js';
+import { renderPageToCanvas } from '../index.js';
+import { restoreContext, saveContext } from '../contextState.js';
 
 /** The finish mask of a page: RGBA bytes, not premultiplied, `width` ×
  *  `height` pixels (the page canvas's size at the same scale). */

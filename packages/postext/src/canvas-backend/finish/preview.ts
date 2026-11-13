@@ -11,8 +11,8 @@
  *   varnish cyan, opaque white blue.
  */
 
-import type { VDTDocument, VDTPage } from '../vdt.js';
-import { renderFinishMask, type FinishMask } from './finishMask.js';
+import type { VDTDocument, VDTPage } from '../../vdt.js';
+import { renderFinishMask, type FinishMask } from './mask.js';
 
 /** How the canvas preview shows special inks. */
 export type FinishPreviewMode = 'flat' | 'sheen' | 'map';

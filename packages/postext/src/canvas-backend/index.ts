@@ -23,8 +23,8 @@ import { pageComics } from '../comics/transform.js';
 import { proofPixels, type PrintPreview } from '../color/softProof.js';
 import { resetContextState, restoreContext, saveContext } from './contextState.js';
 import { resetWordSpacing } from './contextText.js';
-import { screenFinishPaints } from './finishPaint.js';
-import { paintFinishPreview, type FinishPreviewMode } from './finishPreview.js';
+import { screenFinishPaints } from './finish/paint.js';
+import { paintFinishPreview, type FinishPreviewMode } from './finish/preview.js';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -34,9 +34,9 @@ export {
 export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock.js';
 export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText.js';
 export type { VerticalAlternatesFace } from './verticalText.js';
-export { renderFinishMask, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas } from './finishMask.js';
-export { applyFinishPreview, type FinishPreviewMode } from './finishPreview.js';
-export { finishMaskSvg } from './finishMaskSvg.js';
+export { renderFinishMask, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas } from './finish/mask.js';
+export { applyFinishPreview, type FinishPreviewMode } from './finish/preview.js';
+export { finishMaskSvg } from './finish/maskSvg.js';
 
 /** Options of a canvas paint: scale, overlays, ink, trim and print preview. */
 export interface RenderPageOptions {

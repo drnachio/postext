@@ -7,12 +7,12 @@
  * prototype has) sees every colour the page paints: text, rules, boxes,
  * bands, swatches, comic panels, composed decoration. The screen uses it to
  * leave a varnish out ({@link screenFinishPaints}); the finish mask to paint
- * each ink in its mask colour (`finishMask.ts`). Nothing is installed on a
+ * each ink in its mask colour (`finish/mask.ts`). Nothing is installed on a
  * page of a document without special inks.
  */
 
-import type { VDTDocument } from '../vdt.js';
-import { varnishHexes } from '../color/finishInks.js';
+import type { VDTDocument } from '../../vdt.js';
+import { varnishHexes } from '../../color/finishInks.js';
 
 /** What a context's `fillStyle` or `strokeStyle` holds. */
 export type PaintValue = string | CanvasGradient | CanvasPattern;

@@ -15,12 +15,12 @@
  * its paint from a marked group is painted by its own colour.
  */
 
-import type { VDTDocument } from '../vdt.js';
-import { finishInks, finishOfInkName, type FinishInk } from '../color/finishInks.js';
-import { finishOverprintsByDefault, finishSheen, sheenLevel } from '../color/finishKinds.js';
-import { scanSvgPaints, splitIccPaint } from '../svg/spotPaints.js';
-import { inkMaskColor, type FinishMaskPass } from './finishMask.js';
-import { parsePaint } from './finishPaint.js';
+import type { VDTDocument } from '../../vdt.js';
+import { finishInks, finishOfInkName, type FinishInk } from '../../color/finishInks.js';
+import { finishOverprintsByDefault, finishSheen, sheenLevel } from '../../color/finishKinds.js';
+import { scanSvgPaints, splitIccPaint } from '../../svg/spotPaints.js';
+import { inkMaskColor, type FinishMaskPass } from './mask.js';
+import { parsePaint } from './paint.js';
 
 const rgb = (r: number, g: number, b: number): string => `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
 

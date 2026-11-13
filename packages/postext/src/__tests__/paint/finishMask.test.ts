@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { clearResourceImages, clearVarnishPaints, registerResourceImage, renderFinishMask, renderPageToCanvas, renderToHtml, finishMaskSvg } from '../../index.js';
-import { maskPaintMap, overprintHexes, paintFinishMask, packFinishMask } from '../../canvas-backend/finishMask.js';
-import { applyFinishPreview } from '../../canvas-backend/finishPreview.js';
-import { parsePaint } from '../../canvas-backend/finishPaint.js';
+import { maskPaintMap, overprintHexes, paintFinishMask, packFinishMask } from '../../canvas-backend/finish/mask.js';
+import { applyFinishPreview } from '../../canvas-backend/finish/preview.js';
+import { parsePaint } from '../../canvas-backend/finish/paint.js';
 import type { FinishInk } from '../../color/finishInks.js';
 import type { PostextConfig, SpotColor } from '../../types.js';
 import { RasterCanvas, type RasterContext } from './rasterCanvas.js';

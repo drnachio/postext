@@ -8,10 +8,8 @@ export type { BuildDocumentOptions } from './pipeline/index.js';
 export type { ConfigOverride } from './defaults/configLayers.js';
 export { formatFootnoteNumber, footnoteFormatOf, footnoteSymbol, DEFAULT_FOOTNOTE_SYMBOLS } from './pipeline/references/footnotes.js';
 export type { FootnoteFormat } from './pipeline/references/footnotes.js';
-export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE, renderFinishMask, applyFinishPreview, finishMaskSvg } from './canvas-backend/index.js';
-export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions, VerticalAlternatesFace, FinishMask, FinishMaskOptions, FinishMaskPass, FinishMaskCanvas, FinishPreviewMode } from './canvas-backend/index.js';
-export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement, renderHtmlBook, htmlBookFiles, htmlFontFaceRule, redistributableFaces, fontNoteWarning } from './html-backend/html-backend.js';
-export { clearVarnishPaints } from './html-backend/varnish.js';
+export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE, renderFinishMask, applyFinishPreview, finishMaskSvg, type RenderPageOptions, type ResourceImageSource, type RegisterResourceImageOptions, type VerticalAlternatesFace, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas, type FinishPreviewMode } from './canvas-backend/index.js';
+export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement, renderHtmlBook, htmlBookFiles, htmlFontFaceRule, redistributableFaces, fontNoteWarning, clearVarnishPaints } from './html-backend/html-backend.js';
 export { renderComicHtml, comicPanelSvg } from './html-backend/htmlComic.js';
 export type { ComicHtmlPaint, ComicPanelSvgOptions } from './html-backend/htmlComic.js';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage, RenderHtmlBookOptions, HtmlBookFace, HtmlBookFile, HtmlBookFontNote, HtmlBookWarning } from './html-backend/html-backend.js';
@@ -21,8 +19,7 @@ export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './pain
 export type { FootnoteRuleSegment, ColumnRuleSegment } from './paint/columnRule.js';
 export { cropMarkSegments } from './paint/cropMarks.js';
 export * from './color/index.js';
-export { preflightDocument, placedImageResolutions } from './checks/preflight.js';
-export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity, PlacedImageResolution } from './checks/preflight.js';
+export { preflightDocument, placedImageResolutions, type PreflightIssue, type PreflightKind, type PreflightOptions, type PreflightSeverity, type PlacedImageResolution } from './checks/preflight.js';
 export {
   contrastDocument,
   contrastPairs,

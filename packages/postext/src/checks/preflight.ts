@@ -22,13 +22,14 @@
  *   stop short of the trim by less than `bleedSnap` without bleeding.
  */
 
-import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
+import type { CmykPercent, InkFinishKind, InkSheen, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
 import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
 import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
 import { platesIssues } from './preflightPlates.js';
+import { finishIssues } from './preflightFinishes.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -83,8 +84,19 @@ export type PreflightIssue = {
    *  the printer would get two plates of. An alias in `print.inks` merges
    *  them. */
   | { kind: 'spotInkSimilar'; inks: string[] }
+  /** A special ink the job prints with and what it is (#1563), once per
+   *  ink (info). */
+  | { kind: 'spotInkFinish'; ink: string; finish: InkFinishKind; sheen?: InkSheen }
+  /** The order the press lays the special inks in: the white inks first,
+   *  under the colours, the varnishes last, over them (info). */
+  | { kind: 'inkPressOrder'; first: string[]; last: string[] }
+  /** A white ink on a page whose paper is white or unset: it shows
+   *  nothing there. Once per ink, on the first such page. */
+  | { kind: 'whiteInkOnWhite'; ink: string; color: string }
   /** A colour that overprints (`ColorValue.overprint`) and puts no ink
-   *  down (paper white, a spot at 0 %): on press it disappears. */
+   *  down (paper white, a spot at 0 %): on press it disappears. A white
+   *  ink and a varnish put down no colour on purpose and are not
+   *  reported. */
   | { kind: 'overprintWhite'; color: string }
   /** The plates a restricted job prints on (`print.plates`), and those
    *  its pictures print on, once per document (info). */
@@ -563,12 +575,14 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // Spot inks: the plates the job adds, and what is wrong with them.
   if (cmykJob) out.push(...spotInkIssues({ doc, print, spots, usedInks, pageIndex: offset, ...(options.svgInks ? { svgInks: options.svgInks } : {}) }));
+  if (cmykJob) out.push(...finishIssues({ doc, spots, usedInks, pageIndex: offset }));
 
   // Colours that overprint with no ink: they vanish on press.
   if (cmykJob) {
     for (const hex of overprintColors([doc.config, doc.printColors])) {
       if (!usedColors.has(hex)) continue;
       const spot = spots.get(hex);
+      if (spot?.finish?.kind === 'white' || spot?.finish?.kind === 'varnish') continue;
       const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
       const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
       if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
