@@ -4309,6 +4309,11 @@ export interface SandboxLabels {
   headerFooterElementConnector: string;
   headerFooterAddPath: string;
   headerFooterAddConnector: string;
+  headerFooterElementCut: string;
+  headerFooterAddCut: string;
+  cutElementIntro: string;
+  cutElementDieTooltip: string;
+  cutElementDieNone: string;
   connectorFrom: string;
   connectorFromTooltip: string;
   connectorTo: string;
