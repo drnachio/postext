@@ -2,11 +2,12 @@
 // it returns (#1276: split out of viewer.ts).
 import type { FolioPaperConfig, FolioConfig } from 'postext';
 import type { PageSource, PageVideoFrame } from '../pageFlip.js';
+import type { FaceFinish } from '../pageFlip/finish.js';
 
 /** A page of the book: its source, or its source with a text alternative
  *  and the paper it is printed on when that is not the book's (a plate
  *  section on gloss in a matte book). */
-export type FolioPage = PageSource | { src: PageSource; alt?: string; paper?: FolioPaperConfig };
+export type FolioPage = PageSource | { src: PageSource; alt?: string; paper?: FolioPaperConfig; finish?: FaceFinish };
 
 /** How the 3D book is presented. */
 export interface FolioAppearance {

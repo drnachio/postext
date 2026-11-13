@@ -1,7 +1,7 @@
 import { type SpreadSrc } from './pageFlip.js';
 import { type Spread, spreadOfPage } from './spreads.js';
 import { injectStyles } from './styles.js';
-import { DEFAULT_LABELS, paperOf, sourceOf, SINGLE_BELOW, clamp, ZOOM_MIN, ZOOM_MAX } from './viewer/constants.js';
+import { DEFAULT_LABELS, paperOf, sourceOf, SINGLE_BELOW, clamp, ZOOM_MIN, ZOOM_MAX, finishesOf } from './viewer/constants.js';
 import type { FolioOptions, FolioViewer } from './viewer/types.js';
 import { createFolioLayout } from './viewer/layout.js';
 import { createFolioTurning } from './viewer/turning.js';
@@ -224,7 +224,9 @@ export function createFolio(container: HTMLElement, options: FolioOptions): Foli
       vs.mode = opts.mode ?? vs.mode;
       vs.paper = opts.paper ?? vs.paper;
       if (relayout) return rebuild(atPage);
-      // Same spreads: the leaves take their new pages where they lie.
+      // Same spreads: the leaves take their new pages where they lie, with
+      // their special inks.
+      vs.flipper?.setFinishes(finishesOf(vs.pages));
       vs.flipper?.setBook(bookOf(), opts.at !== undefined ? spreadOfPage(vs.spreads, opts.at) : undefined);
       // The glass's paintings follow pages that came as other sources (a
       // page decorated for the first time, #543).

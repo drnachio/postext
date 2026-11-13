@@ -1,6 +1,6 @@
 // The folio viewer's turning: page videos, the render of a spread, go and
 // jump, the flipper's set-up and the rebuild (#1276: split out of viewer.ts).
-import { sourceOf, rgbOf, SINGLE_BELOW, CHEVRON } from './constants.js';
+import { sourceOf, rgbOf, SINGLE_BELOW, CHEVRON, finishesOf } from './constants.js';
 import type { FolioPageVideo, FolioOptions } from './types.js';
 import { canFlip, PageFlipper, type SpreadSrc, type FlipAppearance } from '../pageFlip.js';
 import { type Spread, spreadsOf, spreadOfPage } from '../spreads.js';
@@ -154,6 +154,7 @@ export function createFolioTurning(deps: FolioTurningDeps) {
     );
     const rgb = rgbOf(vs.paper);
     if (rgb) vs.flipper.setPaper(...rgb);
+    vs.flipper.setFinishes(finishesOf(vs.pages));
     if (vs.pageVideos.length) applyVideo();
     // A new book: its glass and paintings start afresh.
     vs.details = new Map();

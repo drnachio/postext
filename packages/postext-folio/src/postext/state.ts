@@ -1,5 +1,5 @@
 // The running state of the document book its modules share (#1276).
-import type { VDTDocument } from 'postext';
+import type { FinishMask, VDTDocument } from 'postext';
 import type { SweepRun } from './sweep.js';
 import type { PagePlayer } from './constants.js';
 import type { FolioViewer } from '../viewer/types.js';
@@ -9,6 +9,9 @@ import type { FolioViewer } from '../viewer/types.js';
 export interface FolioDocumentState {
   current: VDTDocument;
   canvases: (HTMLCanvasElement | null)[];
+  /** A page painting's finish mask (#1568), when the page has special
+   *  inks: it lives and goes with its canvas. */
+  masks: WeakMap<HTMLCanvasElement, FinishMask>;
   decorated: (HTMLCanvasElement | null)[];
   painted: Map<number, number>;
   focus: number[];

@@ -33,6 +33,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const reach = options.window ?? 3;
   ds.current = doc;
   ds.canvases = [];
+  ds.masks = new WeakMap();
   /** A decorated page's canvas: its painting with the decorations over
    *  it, kept (and drawn again in place) once a page has been decorated. */
   ds.decorated = [];
@@ -60,7 +61,8 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     ds.current.pages.map((_, i) => {
       const canvas = ds.canvases[i];
       const paper = pagePaperOf(ds.current.pages[i]);
-      if (ds.painted.has(i) && canvas) return { src: ds.decorated[i] ?? canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
+      const mask = canvas ? ds.masks.get(canvas) : undefined;
+      if (ds.painted.has(i) && canvas) return { src: ds.decorated[i] ?? canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}), ...(mask ? { finish: { mask } } : {}) };
       return paper ? { src: "" as const, paper } : "";
     });
 

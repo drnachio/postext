@@ -6,6 +6,7 @@ import type { FolioConfig } from 'postext';
 import type { PaperSpec } from '../paper.js';
 import { MAX_PAGE_VIDEOS } from '../videoAtlas.js';
 import { occlusionUniforms, BOOK_POS_PARS, BOOK_POS, keyShadowed, OCCLUSION, keySpecular } from './occlusion.js';
+import { finishUniforms, type FinishUniforms, FINISH_PARS, FINISH_READ, FINISH_DIFFUSE, FINISH_ROUGHNESS, FINISH_METALNESS, FINISH_EMISSIVE, FINISH_COAT, FINISH_NORMAL } from './finish.js';
 
 /** What lies behind the leaves in the air (#484): the scene drawn without
  *  the translucent leaves (colour, mipmapped, and depth), shared by every
@@ -23,7 +24,7 @@ export const behindUniforms = {
   uBehindFloor: { value: 1 },
 };
 
-type PageUniforms = {
+type PageUniforms = FinishUniforms & {
   uFront: { value: Texture | null };
   uBack: { value: Texture | null };
   uHasFront: { value: number };
@@ -105,6 +106,7 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uReflectionOn: { value: 0 },
     uReflectionSize: { value: new Vector2(1, 1) },
     uReflectionNormal: { value: new Vector3(0, 0, 1) },
+    ...finishUniforms(),
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -165,6 +167,7 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
+        ${FINISH_PARS}
         ${OCCLUSION}`,
       )
       .replace(
@@ -197,6 +200,7 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
               ink = texture2D(uVideo, vec2(v.x, 1.0 - v.y)).rgb;
             }
           }
+          ${FINISH_READ}
           // The other side's print, seen through the sheet (the same point
           // of paper, so mirrored as it should be).
           float other = front ? uHasBack : uHasFront;
@@ -215,8 +219,14 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
             ink *= mix(vec3(1.0), under, uUnderK);
           }
           diffuseColor.rgb *= ink;
+          ${FINISH_DIFFUSE}
         }`,
       )
+      .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\n${FINISH_ROUGHNESS}`)
+      .replace("#include <metalnessmap_fragment>", `#include <metalnessmap_fragment>\n${FINISH_METALNESS}`)
+      .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${FINISH_NORMAL}`)
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\n${FINISH_EMISSIVE}`)
+      .replace("#include <lights_physical_fragment>", `#include <lights_physical_fragment>\n${FINISH_COAT}`)
       .replace(
         "#include <aomap_fragment>",
         `#include <aomap_fragment>

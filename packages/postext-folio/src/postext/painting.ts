@@ -1,7 +1,8 @@
 // The document book's page paintings: which pages are wanted, painting and
 // freeing them, the sweep of a turn and the idle schedule round the open
 // spread (#1276: split out of postext.ts).
-import { renderPageToCanvas, type FolioPaperConfig } from 'postext';
+import { renderFinishMask, renderPageToCanvas, type FolioPaperConfig } from 'postext';
+import type { FaceFinish } from '../pageFlip/finish.js';
 import { trimmedSize } from './book.js';
 import { sweepFor, SWEEP_BUDGET_MS } from './sweep.js';
 import { cancelIdle, onIdle } from './constants.js';
@@ -14,7 +15,7 @@ export interface DocumentPaintingDeps {
   options: FolioDocumentOptions;
   reach: number;
   slotWidth: () => number;
-  sources: () => ("" | { paper?: FolioPaperConfig | undefined; src: HTMLCanvasElement; alt: string; } | { src: ""; paper: FolioPaperConfig; })[];
+  sources: () => ("" | { paper?: FolioPaperConfig | undefined; src: HTMLCanvasElement; alt: string; finish?: FaceFinish } | { src: ""; paper: FolioPaperConfig; })[];
   ds: FolioDocumentState;
   dlate: FolioDocumentLate;
 }
@@ -39,15 +40,21 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
     if (!page) return;
     const canvas = document.createElement("canvas");
     // The page as bound: trimmed, without the slug and the crop marks.
+    const scale = width / trimmedSize(page, ds.current).width;
     renderPageToCanvas(page, ds.current, canvas, {
       trim: true,
       output: 'folio',
-      scale: width / trimmedSize(page, ds.current).width,
+      scale,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,
       ...(options.forms ? { forms: options.forms } : {}),
       ...(options.printPreview ? { printPreview: options.printPreview } : {}),
     });
+    // Where its special inks lie (#1568), at half the painting's size: the
+    // light they catch is softer than the print's edges. Undefined, at the
+    // cost of a lookup, for a page without any.
+    const mask = renderFinishMask(page, ds.current, { trim: true, scale: scale / 2 });
+    if (mask) ds.masks.set(canvas, mask);
     const old = ds.canvases[i];
     if (old) old.width = old.height = 0;
     ds.canvases[i] = canvas;
