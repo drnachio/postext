@@ -29,7 +29,7 @@ import { finishInks, type FinishInk } from '../../color/finishInks.js';
 import { finishSheen, sheenLevel } from '../../color/finishKinds.js';
 import { printedSpot } from '../../color/inks.js';
 import type { ResolvedPrintInk } from '../../types.js';
-import { NO_PAINT, overridePaints, parsePaint, rgbaPaint, withScreenFinishesOff, type PaintValue } from './paint.js';
+import { KNOCK_OUT, NO_PAINT, overridePaints, parsePaint, rgbaPaint, withScreenFinishesOff, type PaintValue } from './paint.js';
 import { setFinishImageHook } from '../renderResourceBlock/images.js';
 import { renderPageToCanvas } from '../index.js';
 import { restoreContext, saveContext } from '../contextState.js';
@@ -106,9 +106,6 @@ export function inkMaskColor(ink: FinishInk): [number, number, number] {
   return [255 * metal * t, 255 * sheen * t, 255 * fluo * t];
 }
 
-/** The black the mask's own code knocks out with: it passes the paint
- *  hook as it is, whatever overprints. */
-const KNOCK_OUT = 'rgba(0, 0, 0, 1)';
 
 /** How each paint of the mask maps a colour. */
 export function maskPaintMap(pass: FinishMaskPass, inks: ReadonlyMap<string, FinishInk>, overprint: ReadonlySet<string>): (value: PaintValue) => PaintValue {

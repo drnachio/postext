@@ -23,7 +23,7 @@ import { pageComics } from '../comics/transform.js';
 import { proofPixels, type PrintPreview } from '../color/softProof.js';
 import { resetContextState, restoreContext, saveContext } from './contextState.js';
 import { resetWordSpacing } from './contextText.js';
-import { screenFinishPaints } from './finish/paint.js';
+import { paperPaint, screenFinishPaints } from './finish/paint.js';
 import { paintFinishPreview, type FinishPreviewMode } from './finish/preview.js';
 export {
   registerResourceImage,
@@ -232,12 +232,12 @@ function paintContext(
   // (those the host flags, or every unflagged one when the render asks).
   const inkHex = documentInkHex(doc.config);
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = paperPaint('#ffffff');
   ctx.fillRect(0, 0, page.width, page.height);
 
   const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
   if (bgColor && bgColor !== 'transparent') {
-    ctx.fillStyle = bgColor;
+    ctx.fillStyle = paperPaint(bgColor);
     ctx.fillRect(
       trimOff - bleedPx,
       trimOff - bleedPx,

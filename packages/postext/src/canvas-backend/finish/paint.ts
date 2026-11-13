@@ -95,6 +95,23 @@ export function overridePaints(ctx: object, map: (value: PaintValue) => PaintVal
  *  while one is, since the mask paints varnish on purpose. */
 let maskPaints = 0;
 
+/** The black the mask's own code knocks out with: the mask's paint map
+ *  passes it as it is, whatever overprints. */
+export const KNOCK_OUT = 'rgba(0, 0, 0, 1)';
+
+/**
+ * The paint of the sheet and the paper under a page: `hex` on screen. In a
+ * finish mask the bare sheet and a plain white paper are black: they are
+ * stock, not ink, so they never count as coverage, not even when a white
+ * ink's screen colour is that same white. A page ground in a special ink
+ * (a flood of gold) still paints as the ink.
+ */
+export function paperPaint(hex: string): string {
+  if (maskPaints === 0) return hex;
+  const p = parsePaint(hex);
+  return !p || p.hex === '#ffffff' ? KNOCK_OUT : hex;
+}
+
 /** Run `paint` with the screen rule off (a finish mask's own paint). */
 export function withScreenFinishesOff<T>(paint: () => T): T {
   maskPaints++;

@@ -158,6 +158,15 @@ describe('renderFinishMask on a laid-out page', () => {
     expect(at(m, 1, 1)).toEqual([0, 0, 0, 255]);
   });
 
+  it('never counts the sheet or a white paper as a pure-white ink', () => {
+    const doc = buildDocument({ markdown: 'White ink.' }, config({ hex: '#ffffff', model: 'hex' }, {
+      colorPalette: [{ id: 'w', name: 'Opaque white', value: spot('#ffffff', { name: 'Opaque white', cmyk: CMYK0, finish: { kind: 'white' } }) }],
+    }));
+    const m = renderFinishMask(doc.pages[0]!, doc, { scale: 0.5 });
+    // The palette defines the ink, but nothing on the page is set in it.
+    expect(m === undefined || at(m, 1, 1)[3] === 0).toBe(true);
+  });
+
   it('paints the host recoloured picture of an SVG in the mask paints', () => {
     const resource = { id: 'fig', typeId: 'figure', kind: 'svg' as const, createdAt: 0, updatedAt: 0, svg: { fileId: 'fig.svg', width: 100, height: 50 }, placement: { position: 'here' as const } };
     const doc = buildDocument({ markdown: 'Text.\n\n::resource{id="fig"}', resources: [resource] }, config({ hex: '#ffffff', model: 'hex' }, {
