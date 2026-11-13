@@ -367,7 +367,10 @@
     "music": "Música en tus libros: cancioneros, partituras y acordes como texto, con Postext, a mano o con IA",
     "exercises": "Ejercicios en tus libros: fichas, libro del profesor y respuestas en pantalla, a mano o con IA",
     "everyLanguage": "Un libro en todos los idiomas: un diseño compartido y los ajustes de cada edición, a mano o con IA",
-    "everyOutput": "Un manuscrito, todas las salidas: PDF de imprenta, PDF accesible, web, EPUB y SCORM, a mano o con IA"
+    "everyOutput": "Un manuscrito, todas las salidas: PDF de imprenta, PDF accesible, web, EPUB y SCORM, a mano o con IA",
+    "justification": "Los espacios entre las palabras: cómo justifica Postext el texto, a mano o con IA",
+    "wordFiles": "Word, ida y vuelta: el libro va a la correctora y cada corrección vuelve a su sitio, con Postext",
+    "indesign": "InDesign, entrar y salir: importar, portar y exportar libros de InDesign con Postext"
   },
   "About": {
     "eyebrow": "Por qué Postext",

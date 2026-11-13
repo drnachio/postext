@@ -367,7 +367,10 @@
     "music": "书里的音乐：歌本、乐谱与和弦写成文字，由 Postext 刻谱，手工做或借助 AI",
     "exercises": "书里的练习：练习册、教师用书与屏幕作答，手工做或借助 AI",
     "everyLanguage": "一本书，所有语言：共用一个设计，每个版本保留自己的设置，手工做或借助 AI",
-    "everyOutput": "一份书稿，每一种输出：印刷 PDF、无障碍 PDF、网页、EPUB 和 SCORM，手工做或借助 AI"
+    "everyOutput": "一份书稿，每一种输出：印刷 PDF、无障碍 PDF、网页、EPUB 和 SCORM，手工做或借助 AI",
+    "justification": "词与词之间的空隙：Postext 如何排两端对齐的文字，手工做或借助 AI",
+    "wordFiles": "Word，双向往来：用 Postext 把书交给编辑，再把每一处校改带回书中",
+    "indesign": "InDesign，进得来，出得去：用 Postext 导入、移植和导出 InDesign 书"
   },
   "About": {
     "eyebrow": "为什么选择Postext",

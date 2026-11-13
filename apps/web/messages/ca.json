@@ -367,7 +367,10 @@
     "music": "Música als llibres: cançoners, partitures i acords com a text, gravats per Postext, a mà o amb IA",
     "exercises": "Exercicis als llibres: fitxes, llibre del professor i respostes en pantalla, a mà o amb IA",
     "everyLanguage": "Un llibre en totes les llengües: un disseny compartit i els ajustos de cada edició, a mà o amb IA",
-    "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA"
+    "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA",
+    "justification": "Els espais entre les paraules: com compon Postext el text justificat, a mà o amb IA",
+    "wordFiles": "Word, d’anada i tornada: envia un llibre a la correctora i recupera cada correcció, amb Postext",
+    "indesign": "InDesign, entrada i sortida: importa, porta i exporta llibres d’InDesign amb Postext"
   },
   "About": {
     "eyebrow": "Per què Postext",

@@ -367,7 +367,10 @@
     "music": "本の中の音楽：歌の本、楽譜、コードをテキストで。Postext が浄書、手作業でも AI でも",
     "exercises": "本の練習問題：ワークブック、教師用の版、画面で答える問題。Postext で、手作業でも AI でも",
     "everyLanguage": "一冊の本をすべての言語で：共有するデザインと各版の独自の設定。手作業でも AI でも",
-    "everyOutput": "一つの原稿を、すべての出力へ：印刷用 PDF、アクセシブルな PDF、ウェブ、EPUB、SCORM。手作業でも AI でも"
+    "everyOutput": "一つの原稿を、すべての出力へ：印刷用 PDF、アクセシブルな PDF、ウェブ、EPUB、SCORM。手作業でも AI でも",
+    "justification": "語と語のあいだのスペース：Postext が両端そろえのテキストを組むしくみ。手作業でも AI でも",
+    "wordFiles": "Word、行きも帰りも：本を校正者に送り、すべての直しを元の場所へ戻す。Postext で",
+    "indesign": "InDesign、取り込んで、書き出す：InDesign の本を Postext で読み込み、移植し、書き出す"
   },
   "About": {
     "eyebrow": "なぜPostextか",

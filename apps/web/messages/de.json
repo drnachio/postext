@@ -367,7 +367,10 @@
     "music": "Musik im Buch: Liederbücher, Noten und Akkorde als Text, gestochen von Postext, von Hand oder mit KI",
     "exercises": "Übungen im Buch: Arbeitsblätter, Lehrerausgabe und Antworten am Bildschirm, von Hand oder mit KI",
     "everyLanguage": "Ein Buch in allen Sprachen: gemeinsame Gestaltung, eigene Werte je Ausgabe, von Hand oder mit KI",
-    "everyOutput": "Ein Manuskript, jede Ausgabe: Druck-PDF, barrierefreies PDF, Web, EPUB, SCORM, von Hand oder mit KI"
+    "everyOutput": "Ein Manuskript, jede Ausgabe: Druck-PDF, barrierefreies PDF, Web, EPUB, SCORM, von Hand oder mit KI",
+    "justification": "Die Abstände zwischen den Wörtern: wie Postext Blocksatz setzt, von Hand oder mit KI",
+    "wordFiles": "Word, in beide Richtungen: das Buch zur Lektorin, jede Korrektur zurück ins Buch, mit Postext",
+    "indesign": "InDesign, hinein und hinaus: InDesign-Bücher mit Postext importieren, portieren und exportieren"
   },
   "About": {
     "eyebrow": "Warum Postext",

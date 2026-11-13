@@ -367,7 +367,10 @@
     "music": "Music in your books: songbooks, scores and chords as text, engraved by Postext, by hand or with AI",
     "exercises": "Exercises in your books: worksheets, teacher’s editions and answers on screen, by hand or with AI",
     "everyLanguage": "One book in every language: shared design, each edition’s own settings, by hand or with AI",
-    "everyOutput": "One manuscript, every output: print PDF, accessible PDF, web, EPUB and SCORM, by hand or with AI"
+    "everyOutput": "One manuscript, every output: print PDF, accessible PDF, web, EPUB and SCORM, by hand or with AI",
+    "justification": "The spaces between the words: how Postext sets justified text, by hand or with AI",
+    "wordFiles": "Word, both ways: send a book to the copy editor and bring every correction back, with Postext",
+    "indesign": "InDesign, in and out: import, port and export InDesign books with Postext"
   },
   "About": {
     "eyebrow": "Why Postext",
