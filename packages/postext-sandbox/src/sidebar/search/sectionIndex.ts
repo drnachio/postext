@@ -133,6 +133,22 @@ function sectionLabelText(labels: SandboxLabels, entry: SettingsSectionEntry): {
   return text;
 }
 
+/** The inks of the config's spot colours (`PANTONE 871 C`): a colour row
+ *  shows its ink's name. */
+function spotInkNames(config: PostextConfig): string[] {
+  const names = new Set<string>();
+  const seen = new Set<object>();
+  const walk = (v: unknown): void => {
+    if (!v || typeof v !== 'object' || seen.has(v)) return;
+    seen.add(v);
+    const spot = (v as { spot?: { name?: unknown } }).spot;
+    if (spot && typeof spot.name === 'string') names.add(spot.name);
+    for (const x of Array.isArray(v) ? v : Object.values(v)) walk(x);
+  };
+  walk(config);
+  return [...names];
+}
+
 function sourceWords(
   source: SearchWordSource,
   config: PostextConfig,
@@ -144,7 +160,7 @@ function sourceWords(
     // The pickers' own help text (shown when a row passes none) is part
     // of what their rows show.
     case 'color':
-      return [...COLOR_WORDS, labels.colorFieldHelp, labels.paletteColorFieldHelp, ...(config.colorPalette ?? []).flatMap((e) => [e.name, e.id])];
+      return [...COLOR_WORDS, labels.colorFieldHelp, labels.paletteColorFieldHelp, ...(config.colorPalette ?? []).flatMap((e) => [e.name, e.id]), ...spotInkNames(config)];
     case 'dimension':
       return DIMENSION_UNITS;
     case 'font':
