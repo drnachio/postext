@@ -7,7 +7,7 @@ const EDITIONS = { en: DEFAULT_MARKDOWN_EN, es: DEFAULT_MARKDOWN_ES, ca: DEFAULT
 /** The editions brought up to the English text of #1590 (special inks,
  *  die-cuts, chapter styles, designs, InDesign…). The shape test holds these
  *  to English; an edition joins the set when its translation lands. */
-const MIRRORED = new Set<string>(['en', 'es', 'fr']);
+const MIRRORED = new Set<string>(['en', 'es', 'fr', 'ca']);
 
 // `:ref{id="…"}` in the prose is the syntax, not a reference.
 const refsOf = (md: string): string[] => [...md.matchAll(/:ref\{id="([^"…]+)"/g)].map((m) => m[1]!);
