@@ -125,6 +125,11 @@ export interface Writer {
   joins?: string[];
   /** The page being written is one of the thread's. */
   threaded?: boolean;
+  /** The paragraph styles chapter titles are set in, with how many
+   *  titles each sets (`masters.ts`). */
+  titleStyles?: Map<string, number>;
+  /** The chapter titles the running heads show, as `titleKey` has them. */
+  chapterTitles?: Set<string>;
   media: Map<string, { path: string; bytes: Uint8Array }>;
   opts: IdmlOptions;
   warn: (code: string, message: string) => void;

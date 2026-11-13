@@ -349,7 +349,11 @@ the bundle).
   subpath) writes the laid-out pages as an InDesign package: page items for rules, boxes and
   pictures, the running text of the pages laid out in columns as one story threaded through a
   frame per column with the boxes of the flow anchored in it (≥ 1.85.0; `--text frames` gives each
-  block its own frame and story), one story per composed-page frame (`next` chains share one), callout styles as paragraph
+  block its own frame and story), running heads and folios on master spreads (≥ 1.86.0: the folio
+  as InDesign's current page number, `{chapterTitle}` as a running-header text variable, a master
+  per set of heads, the chapter openers' named Opener; a head with `{attr.x}` or another
+  placeholder stays on its page), the boxes floated into a side column (glosses) anchored in the
+  thread at a custom position, one story per composed-page frame (`next` chains share one), callout styles as paragraph
   styles, authored CMYK colours as swatches, form-field chips as InDesign form fields. From 1.76
   the pages stand in facing spreads for a book with mirrored margins (else one page per spread),
   every line ends where Postext ended it (`--lines keep`, the default; `--lines reflow` leaves the
@@ -365,8 +369,10 @@ the bundle).
   flowing book (postext ≥ 1.85.0: the export threads the running text through a frame per column
   and labels the line breaks it kept, so the paragraphs, boxes and captions read as written; the
   column guides carry a column-and-a-half page's main and side columns, read back as `oneAndHalf`;
-  running heads, folios and shapes drawn on the pages are left out as losses,
-  `runningHeadsOnPages` and `pageArtInFlow`, so redraw them in the design), a
+  from 1.86.0 the running heads and folios come back from the masters as the book's header and
+  footer, the openers' own included, and the glosses as `span="side"` callouts before the paragraph
+  they face; shapes drawn on the pages are left out as the `pageArtInFlow` loss, so redraw them in
+  the design; with 1.85.x the heads were the `runningHeadsOnPages` loss), a
   book exported with `--text frames` as composed pages with the same lines (≥ 1.84.0: its
   character styles, boxes and tints come back); a document made in InDesign comes through with
   the losses the report lists.

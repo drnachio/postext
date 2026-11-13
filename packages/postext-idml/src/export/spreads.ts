@@ -13,7 +13,7 @@ import { chipFields, chipRects, paintAttrs, pathXml, rectXml, ruleXml } from './
 import { storyXml } from './story.js';
 import { asHorizontal, asLines, frameBox, frameIsVertical, hasEmphasisDots, isVertical, sheetRect } from './vertical.js';
 import { tableXml } from './tables.js';
-import { neighbours, threadLabel, type Thread, type ThreadBox, type ThreadFrame } from './thread.js';
+import { neighbours, threadLabel, type SideFloat, type Thread, type ThreadBox, type ThreadFrame } from './thread.js';
 import { swatch } from './colours.js';
 import { frameName, keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
 
@@ -52,7 +52,7 @@ interface FrameExtra {
   anchored?: string;
 }
 
-function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined, link?: ChainLink, extra?: FrameExtra): string {
+export function textFrameXml(w: Writer, items: TextItem[], frame: VDTFrame | undefined, link?: ChainLink, extra?: FrameExtra): string {
   const withLines = items.filter((i) => i.lines.length);
   if (!withLines.length && !(link && frame)) return '';
   // A frame of a chain that holds no text of its own on this page.
@@ -157,13 +157,29 @@ function anchoredBoxXml(w: Writer, b: ThreadBox): string {
   return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">${textFrameXml(w, b.texts, undefined, undefined, { box: r.rect, paint, anchored })}</CharacterStyleRange>`;
 }
 
+/** A float of the side column (`thread.ts`): one text frame round its
+ *  texts, anchored at the start of its host's first line at a custom
+ *  position, across from the centre of the host's column (where a
+ *  positive offset moves it right) and down from the line's baseline,
+ *  so InDesign shows it where Postext set it. Its paint (a rule, a
+ *  stripe) stays on the page. */
+function sideFloatXml(w: Writer, g: SideFloat): string {
+  const host = g.host!;
+  const column = g.column!;
+  const baseline = host.lines[0]!.baseline;
+  const anchored =
+    '<AnchoredObjectSetting AnchoredPosition="Anchored" SpineRelative="false" LockPosition="false" PinPosition="false" AnchorPoint="TopLeftAnchor"' +
+    ` HorizontalAlignment="CenterAlign" HorizontalReferencePoint="ColumnEdge" VerticalAlignment="TopAlign" VerticalReferencePoint="LineBaseline"${attr('AnchorXoffset', (g.box.x - (column.x + column.width / 2)) * w.k)}${attr('AnchorYoffset', (g.box.y - baseline) * w.k)} AnchorSpaceAbove="0"/>`;
+  return `<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]">${textFrameXml(w, g.texts, undefined, undefined, { box: g.box, anchored })}</CharacterStyleRange>`;
+}
+
 /** Where the thread's label goes in its first frame's XML. */
 export const THREAD_LABEL_SLOT = '\u0000thread-label\u0000';
 
 /** The items of one page, in its spread's frame (`w.px`, `w.ox`, `w.oy`).
  *  `thread`: the book's thread and the frames of it on this page, written
  *  where the page's first item of running text paints. */
-export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>, thread?: { thread: Thread; frames: ThreadFrame[]; boxes: ThreadBox[] }): string {
+export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, VDTFrame>, thread?: { thread: Thread; frames: ThreadFrame[]; boxes: ThreadBox[]; sides?: SideFloat[] }): string {
   const out: string[] = [];
   w.threaded = !!thread;
   let threaded = false;
@@ -172,6 +188,7 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
     threaded = true;
     for (const f of thread.frames) out.push(threadFrameXml(w, thread.thread, f));
     for (const b of thread.boxes) if (b.host) b.xml = anchoredBoxXml(w, b);
+    for (const g of thread.sides ?? []) if (g.host && g.column) g.xml = sideFloatXml(w, g);
   };
   // Left to InDesign's composer, stories are written left to right
   // (`storyXml`), once said for the whole package.
@@ -304,6 +321,8 @@ export interface SpreadPage {
   /** The page's text columns (a page of the book's thread). */
   columns?: { count: number; gutter: number; positions?: number[] };
   items: string;
+  /** The master spread it applies (`masters.ts`). */
+  master?: string;
 }
 
 /** A spread: its pages about the spine (x = 0), then their items. */
@@ -321,7 +340,7 @@ export function spreadXml(id: string, pages: SpreadPage[], index: number, gap: n
     const each = Math.max(0, (text - gutter * (count - 1)) / count);
     const positions = p.columns?.positions?.map((x) => num(x)).join(' ') ?? Array.from({ length: count }, (_, i) => `${num(i * (each + gutter))} ${num(i * (each + gutter) + each)}`).join(' ');
     return (
-      `<Page${attr('Self', p.self)}${attr('Name', p.name)} AppliedMaster="n"${attr('GeometricBounds', `0 0 ${num(p.height)} ${num(p.width)}`)}${attr('ItemTransform', `1 0 0 1 ${num(p.left ? -p.width : 0)} ${num(-p.height / 2)}`)} OverrideList="" TabOrder="" GridStartingPoint="TopOutside" UseMasterGrid="true">` +
+      `<Page${attr('Self', p.self)}${attr('Name', p.name)}${attr('AppliedMaster', p.master ?? 'n')}${attr('GeometricBounds', `0 0 ${num(p.height)} ${num(p.width)}`)}${attr('ItemTransform', `1 0 0 1 ${num(p.left ? -p.width : 0)} ${num(-p.height / 2)}`)} OverrideList="" TabOrder="" GridStartingPoint="TopOutside" UseMasterGrid="true">` +
       `<MarginPreference${attr('ColumnCount', count)}${attr('ColumnGutter', gutter)}${attr('Top', m.top)}${attr('Bottom', m.bottom)}${attr('Left', m.inside)}${attr('Right', m.outside)} ColumnDirection="Horizontal"${attr('ColumnsPositions', positions)}/>` +
       '</Page>'
     );

@@ -15,7 +15,7 @@ export function threadStory(w: Writer, docs: readonly VDTDocument[], thread: Thr
   const codes: string[] = [];
   w.joins = codes;
   const parts: string[] = [];
-  const written = thread.segments.map((frames, d) => ({ d, items: segmentItems(frames, thread.anchors) })).filter((s) => s.items.length);
+  const written = thread.segments.map((frames, d) => ({ d, items: segmentItems(frames, thread.anchors, thread.sideAnchors) })).filter((s) => s.items.length);
   written.forEach(({ d, items }, i) => {
     const doc = docs[d]!;
     w.doc = doc;

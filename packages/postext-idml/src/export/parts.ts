@@ -18,6 +18,10 @@ export interface DesignMapInput {
   title: string;
   layerId: string;
   masterId: string;
+  /** Master spreads beside the empty one (`masters.ts`). */
+  masters?: string[];
+  /** Text variables, written as they are. */
+  variables?: string;
   spreads: string[];
   stories: string[];
   /** Sections, hyperlinks and their destinations, written as they are. */
@@ -34,8 +38,9 @@ export function designMapXml(d: DesignMapInput): string {
     '<idPkg:Fonts src="Resources/Fonts.xml"/>' +
     '<idPkg:Styles src="Resources/Styles.xml"/>' +
     '<idPkg:Preferences src="Resources/Preferences.xml"/>' +
+    (d.variables ?? '') +
     `<Layer${attr('Self', d.layerId)} Name="Postext" Visible="true" Locked="false" IgnoreWrap="false" ShowGuides="true" LockGuides="false" UI="true" Expendable="true" Printable="true"><Properties><LayerColor type="enumeration">LightBlue</LayerColor></Properties></Layer>` +
-    `<idPkg:MasterSpread src="MasterSpreads/MasterSpread_${d.masterId}.xml"/>` +
+    [d.masterId, ...(d.masters ?? [])].map((id) => `<idPkg:MasterSpread src="MasterSpreads/MasterSpread_${id}.xml"/>`).join('') +
     d.spreads.map((id) => `<idPkg:Spread src="Spreads/Spread_${id}.xml"/>`).join('') +
     (d.sections ?? '') +
     '<idPkg:BackingStory src="XML/BackingStory.xml"/>' +

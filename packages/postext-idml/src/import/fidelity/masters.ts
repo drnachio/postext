@@ -22,6 +22,7 @@ import type { Context } from '../context.js';
 import { masterElements, type MasterWords } from '../design.js';
 import { ownText } from '../looks.js';
 import { allPages, mainMaster, parityOf } from '../pagesetup.js';
+import { threadCodes } from './keptThread.js';
 
 /** The pages a level-1 heading stands on: where chapters open. A story's
  *  frames are taken to hold shares of its text proportional to their
@@ -93,6 +94,15 @@ export function runningHeads(ctx: Context, words: MasterWords, stories: readonly
       most = on;
       opener = key;
     }
+  }
+  // Else, in a book Postext exported (its thread says so), the master it
+  // named for chapter openers (#1585): its pages are the openers,
+  // whatever their headings read as.
+  const postext = opener === undefined && stories.some((e) => e.frames.some((f) => threadCodes(f.item) !== undefined));
+  const named = postext ? [...others.keys()].filter((k) => k && ctx.doc.masterSpreads.find((m) => m.self === k)?.baseName === 'Opener') : [];
+  if (named.length === 1) {
+    opener = named[0]!;
+    for (const p of others.get(opener)!) openers.add(p.index);
   }
 
   const draw = (page: IdmlPage, prefix: string, role: 'body' | 'opener' | undefined): void => {
