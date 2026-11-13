@@ -1,0 +1,64 @@
+---
+title: "Une couverture à fenêtre qui encadre la page de titre"
+summary: "Une fenêtre ovale découpée dans la couverture avec dieCuts, mesurée sur la peinture de la page de titre pour que son bord tombe sur l’or, et le tracé à part."
+plain: "Un petit livre relié d’un conte de Poe, dont la couverture à motifs est percée d’un trou ovale. Par le trou, on voit le visage du portrait imprimé sur la page de titre dessous."
+description: "Une fenêtre ovale découpée dans une couverture, en repérage avec le portrait de la page de titre dessous : dieCuts en page 1, le tracé et la vue 3D de Folio."
+question: "Comment découper une fenêtre dans une couverture pour encadrer une image de la page dessous ?"
+aliases: ["couverture à fenêtre", "couverture découpée", "fenêtre ovale", "tracé de découpe"]
+pageNotes: { "1": "La couverture : un damas aux grenades or et sang-de-bœuf, percé d’une fenêtre ovale en haut où paraît le visage peint d’une jeune femme dans un anneau doré ; le titre et l’auteur sur un cartouche sombre dessous.", "2": "L’intérieur de la couverture, imprimé de velours rouge sombre, percé de la fenêtre ovale.", "3": "La page de titre : le portrait dans son cadre ovale doré à la mauresque sur un mur de velours, le titre et l’auteur en or dessous." }
+---
+
+## Ce que vous allez composer
+
+*Le Portrait ovale*, le conte d’Edgar Allan Poe de 1842 dans le texte plus bref qu’il publia en 1845, en petit livre relié de dix pages au format 130 × 195 mm. La couverture est un vieux damas percé d’une fenêtre ovale. Dessous se trouve la page de titre, le portrait lui-même dans son cadre doré à la mauresque, et la fenêtre est placée pour que son bord tombe sur la dorure : fermé, le livre montre le visage peint encadré deux fois, par l’or et par la découpe. Le conte suit sur papier crème avec une lettrine, et le dos reprend le damas avec le texte sur un cartouche sombre. Le PDF pour l’imprimeur porte le contour de la fenêtre sur une plaque à part.
+
+## Préparation
+
+### 1 · Une fenêtre en repérage avec le cadre
+
+Le code est [la réponse courte](#la-réponse-courte) plus haut. La fenêtre est une `ellipse` en page 1, placée depuis le coin supérieur gauche de la coupe. Un trou en page 1 donne sur la page 3 : on le mesure donc sur la peinture de la page de titre. Ici l’ouverture du cadre et son bord extérieur ont été relevés en pixels sur l’image puis convertis en millimètres, et la fenêtre placée au tiers de la bande dorée, pour qu’un mince anneau d’or paraisse dans la découpe.
+
+### 2 · Des peintures accrochées à la coupe
+
+<Excerpt region="plates" />
+
+Le gabarit se mesure en millimètres depuis la coupe, les peintures aussi. Le damas dépasse la coupe de tout le fond perdu ; le portrait est posé quelques millimètres plus large, pour que le cadre du tableau soit centré sur la page et sur la fenêtre. La couverture et la page de titre suppriment la marge de pied, et chacune imprime titre et auteur depuis le frontmatter.
+
+### 3 · Le tracé de découpe sur sa plaque
+
+<Excerpt region="die-line" />
+
+Le PDF imprime la couverture entière et trace le contour de la fenêtre sur une séparation `Die` en surimpression, jamais encrée : le fabricant de formes y lit le dessin et la presse l’ignore. `convertImages: false` garde les peintures en JPEG sRGB, ce que PDF/X-4 autorise, et le fichier reste sous le mégaoctet.
+
+### 4 · Le livre fermé sur la table
+
+<Excerpt region="folio" />
+
+Avec `binding.cover: 'pages'`, la première page est le plat avant : Folio montre le livre fermé, le visage dans la fenêtre et les parois de la découpe éclairées par la lampe. Tournez la couverture pour voir la page de titre entière.
+
+### 5 · La couverture à plat qui laisse voir
+
+<Excerpt region="see-through" />
+
+Sur le canvas, `beneath` donne au rendu la page 3 pour la fenêtre de la couverture, et la couverture à plat montre aussi le visage. L’intérieur de la couverture n’a rien dessous : son trou montre le fond.
+
+## Variantes
+
+### Nommer la plaque comme l’attend la table de découpe
+
+Les tables de découpe numérique cherchent une couleur d’accompagnement nommée CutContour, presque toujours magenta, et un filet très fin.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Une fenêtre ronde
+
+Un cercle ne montre que le visage ; le cadre reste caché sous la couverture jusqu’à ce qu’on la tourne.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

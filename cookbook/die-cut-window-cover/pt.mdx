@@ -1,0 +1,64 @@
+---
+title: "Uma capa com janela que emoldura a folha de rosto"
+summary: "Uma janela oval cortada na capa com dieCuts, medida na pintura da folha de rosto para que a borda caia na moldura dourada, e a linha de faca à parte."
+plain: "Um livrinho de capa dura com um conto de Poe, cuja capa estampada tem um furo oval. Pelo furo se vê o rosto do retrato impresso na folha de rosto embaixo."
+description: "Uma janela oval cortada na capa, em registro com o retrato da folha de rosto embaixo: dieCuts na página 1, a linha de faca e a vista 3D do Folio."
+question: "Como corto uma janela na capa de um livro para que ela emoldure uma imagem da página de baixo?"
+aliases: ["capa com janela", "capa com faca especial", "janela oval", "linha de faca"]
+pageNotes: { "1": "A capa: um damasco de romãs em ouro e vermelho-sangue com uma janela oval no alto, pela qual aparece o rosto pintado de uma moça dentro de um anel dourado; título e autor num painel escuro abaixo.", "2": "O verso da capa, impresso em veludo vermelho-escuro, com a janela oval cortada.", "3": "A folha de rosto: o retrato na moldura oval dourada à mourisca sobre uma parede de veludo, título e autor em dourado abaixo." }
+---
+
+## O que você vai compor
+
+*O retrato oval*, o conto de Edgar Allan Poe de 1842 no texto mais curto que ele publicou em 1845, como um livrinho de capa dura de dez páginas em 130 × 195 mm. A capa é um damasco antigo com uma janela oval cortada. Embaixo está a folha de rosto, o próprio retrato na moldura dourada à mourisca, e a janela fica de modo que a borda caia sobre o dourado: fechado, o livro mostra o rosto pintado emoldurado duas vezes, pelo ouro e pelo corte. O conto segue em papel creme com capitular, e a quarta capa repete o damasco com o texto num painel escuro. O PDF da gráfica leva o contorno da janela numa chapa própria.
+
+## Preparo
+
+### 1 · Uma janela em registro com a moldura
+
+O código é [a resposta curta](#a-resposta-curta) acima. A janela é uma `ellipse` na página 1, posicionada a partir do canto superior esquerdo do refile. Um furo na página 1 dá para a página 3, então ele é medido na pintura da folha de rosto: aqui a abertura da moldura e a borda externa foram lidas em pixels na imagem e convertidas em milímetros, e a janela ficou a um terço da faixa dourada, para que um anel fino de ouro apareça dentro do corte.
+
+### 2 · Pinturas penduradas no refile
+
+<Excerpt region="plates" />
+
+A faca é medida em milímetros a partir do refile, e as pinturas também. O damasco passa do refile por toda a sangria; o retrato fica alguns milímetros mais largo, para que a moldura do quadro fique centrada na página e na janela. A capa e a folha de rosto tiram a margem do pé, e cada uma imprime título e autor a partir do frontmatter.
+
+### 3 · A linha de faca na sua chapa
+
+<Excerpt region="die-line" />
+
+O PDF imprime a capa inteira e traça o contorno da janela numa separação `Die` em sobreimpressão que nunca é entintada: quem faz a faca lê a forma nela e a impressora a ignora. `convertImages: false` mantém as pinturas como JPEG sRGB, o que o PDF/X-4 permite, e o arquivo fica abaixo de um megabyte.
+
+### 4 · O livro fechado na mesa
+
+<Excerpt region="folio" />
+
+Com `binding.cover: 'pages'` a primeira página é a capa da frente, então o Folio mostra o livro fechado, com o rosto na janela e as paredes do corte pegando a luz da lâmpada. Vire a capa para ver a folha de rosto inteira.
+
+### 5 · A capa plana que deixa ver
+
+<Excerpt region="see-through" />
+
+No canvas, `beneath` entrega ao renderizador a página 3 para a janela da capa, e a capa plana também mostra o rosto. O verso da capa não tem nada embaixo, então o furo mostra o fundo.
+
+## Variações
+
+### Dê à chapa o nome que a mesa de corte espera
+
+Mesas de corte digital procuram uma cor especial chamada CutContour, quase sempre magenta, e um traço finíssimo.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Uma janela redonda
+
+Um círculo mostra só o rosto; a moldura fica escondida sob a capa até que ela seja virada.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

@@ -1,0 +1,64 @@
+---
+title: "Una copertina con finestra che incornicia il frontespizio"
+summary: "Una finestra ovale fustellata in copertina con dieCuts, misurata sulla pittura del frontespizio perché il bordo cada sull’oro, e la fustella a parte."
+plain: "Un libretto rilegato con un racconto di Poe, la cui copertina a motivi ha un foro ovale. Dal foro si vede il volto del ritratto stampato sul frontespizio sotto."
+description: "Una finestra ovale fustellata in copertina, a registro con il ritratto del frontespizio sotto: dieCuts a pagina 1, la linea di fustella e la vista 3D di Folio."
+question: "Come fustello una finestra in copertina perché incornici un’immagine della pagina sotto?"
+aliases: ["copertina con finestra", "copertina fustellata", "finestra ovale", "linea di fustella"]
+pageNotes: { "1": "La copertina: un damasco a melograni oro e rosso sangue con una finestra ovale in alto, da cui appare il volto dipinto di una giovane donna dentro un anello dorato; titolo e autore su un cartiglio scuro sotto.", "2": "L’interno della copertina, stampato in velluto rosso scuro, con la finestra ovale fustellata.", "3": "Il frontespizio: il ritratto nella sua cornice ovale dorata alla moresca su una parete di velluto, titolo e autore in oro sotto." }
+---
+
+## Che cosa comporrai
+
+*Il ritratto ovale*, il racconto di Edgar Allan Poe del 1842 nel testo più breve che pubblicò nel 1845, come libretto rilegato di dieci pagine in 130 × 195 mm. La copertina è un vecchio damasco con una finestra ovale fustellata. Sotto c’è il frontespizio, il ritratto stesso nella sua cornice dorata alla moresca, e la finestra è messa in modo che il suo bordo cada sull’oro: chiuso, il libro mostra il volto dipinto incorniciato due volte, dall’oro e dal taglio. Il racconto segue su carta crema con un capolettera, e il retro riprende il damasco con il testo su un cartiglio scuro. Il PDF per la stampa porta il contorno della finestra su una lastra propria.
+
+## Preparazione
+
+### 1 · Una finestra a registro con la cornice
+
+Il codice è la [risposta breve](#la-risposta-breve) qui sopra. La finestra è una `ellipse` a pagina 1, collocata dall’angolo in alto a sinistra del rifilo. Un foro a pagina 1 dà sulla pagina 3, quindi si misura sulla pittura del frontespizio: qui l’apertura della cornice e il suo bordo esterno sono stati letti in pixel sull’immagine e convertiti in millimetri, e la finestra è stata messa a un terzo della fascia dorata, così dentro il taglio resta un sottile anello d’oro.
+
+### 2 · Pitture appese al rifilo
+
+<Excerpt region="plates" />
+
+La fustella si misura in millimetri dal rifilo, e così le pitture. Il damasco supera il rifilo di tutta l’abbondanza; il ritratto è posto qualche millimetro più largo, perché la cornice del quadro sia centrata sulla pagina e sulla finestra. Copertina e frontespizio tolgono il margine inferiore, e ciascuno stampa titolo e autore dal frontmatter.
+
+### 3 · La linea di fustella sulla sua lastra
+
+<Excerpt region="die-line" />
+
+Il PDF stampa la copertina intera e traccia il contorno della finestra su una separazione `Die` in sovrastampa che non viene mai inchiostrata: il fustellatore vi legge la forma e la macchina la ignora. `convertImages: false` lascia le pitture come JPEG sRGB, che PDF/X-4 ammette, e il file resta sotto il megabyte.
+
+### 4 · Il libro chiuso sul tavolo
+
+<Excerpt region="folio" />
+
+Con `binding.cover: 'pages'` la prima pagina è il piatto anteriore, così Folio mostra il libro chiuso, con il volto nella finestra e le pareti del taglio che prendono la luce della lampada. Gira la copertina per vedere il frontespizio intero.
+
+### 5 · La copertina piatta che lascia vedere
+
+<Excerpt region="see-through" />
+
+Sul canvas, `beneath` passa al renderer la pagina 3 per la finestra della copertina, e anche la copertina piatta mostra il volto. Sotto l’interno della copertina non c’è nulla, quindi il suo foro mostra lo sfondo.
+
+## Varianti
+
+### Chiama la lastra come se l’aspetta il plotter da taglio
+
+I tavoli da taglio digitale cercano un colore spot chiamato CutContour, quasi sempre magenta, e un filetto sottilissimo.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Una finestra rotonda
+
+Un cerchio mostra solo il volto; la cornice resta nascosta sotto la copertina finché non la si gira.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

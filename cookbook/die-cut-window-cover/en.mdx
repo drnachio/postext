@@ -1,0 +1,64 @@
+---
+title: "A window cover that frames the title page"
+summary: "An oval window cut through the cover with dieCuts, measured on the title-page painting so its edge falls on the gilt frame, plus the die line on its own plate."
+plain: "A small hardback of a Poe story whose patterned cover has an oval hole in it. Through the hole you see the face of the portrait printed on the title page beneath."
+description: "A die-cut oval window in a book cover, in register with the portrait on the title page beneath: dieCuts on page 1, the die line plate, and Folio's 3D view."
+question: "How do I cut a window in a book cover so it frames a picture on the page beneath?"
+aliases: ["window cover", "die-cut cover", "cut-out cover", "oval window", "peephole cover", "die line"]
+pageNotes: { "1": "The cover: a gold and oxblood pomegranate damask with an oval window near the top, through which a young woman's painted face shows inside a ring of gilt; the title and author sit on a dark panel below.", "2": "The inside of the cover, printed dark red velvet, with the oval window cut through it.", "3": "The title page: the portrait in its gilded Moorish oval frame on a velvet wall, the title and author in gold below." }
+---
+
+## What you'll build
+
+*The Oval Portrait*, Edgar Allan Poe's tale of 1842 in the shorter text he printed in 1845, as a ten-page hardback on 130 × 195 mm. The cover is an old damask with an oval window cut through it. Under the cover lies the title page, the portrait itself in its gilded Moorish frame, and the window is placed so its edge falls on the gilt: closed, the book shows the painted face framed twice, once by the gold and once by the cut. The tale follows on cream paper with a drop cap, and the back cover repeats the damask with the copy on a dark panel. The press file carries the window's outline on a plate of its own.
+
+## Method
+
+### 1 · A window in register with the frame
+
+The code is [the short answer](#the-short-answer) above. The window is an `ellipse` on page 1, placed from the trim's top-left corner. A hole in page 1 looks onto page 3, so measure it on the title-page painting: here the frame's opening and its outer edge were read off the picture in pixels and turned into millimetres, and the window was set a third of the way into the gilt band, so a thin ring of gold shows inside the cut.
+
+### 2 · Paintings hung from the trim
+
+<Excerpt region="plates" />
+
+The die is measured in trim millimetres, so the paintings are too. The damask runs the bleed past the trim on every side; the portrait is set a few millimetres wider than that, so the frame in the picture is centred on the page and on the window. The cover and the title page drop the foot margin, so their designs reach the foot of the page, and each prints its title and author from the frontmatter.
+
+### 3 · The die line on its own plate
+
+<Excerpt region="die-line" />
+
+The PDF prints the cover whole and strokes the window's outline on a `Die` separation that overprints and is never inked: the die-maker reads the shape from it and the press leaves it out. `convertImages: false` keeps the paintings as sRGB JPEGs, which PDF/X-4 allows, and the file stays under a megabyte.
+
+### 4 · The closed book on the desk
+
+<Excerpt region="folio" />
+
+With `binding.cover: 'pages'` the first page is the front board, so Folio shows the book closed with the face in the window and the cut walls catching the lamp. Turn the cover to see the title page whole.
+
+### 5 · The flat cover that looks through
+
+<Excerpt region="see-through" />
+
+On the canvas, `beneath` hands the renderer page 3 for the cover's window, and the flat cover shows the face too. The inside of the cover has nothing beneath it, so its hole shows the background.
+
+## Variations
+
+### Name the plate as the cutter expects
+
+Digital cutting tables look for a spot colour called CutContour, usually magenta, and a hairline.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### A round window
+
+A circle shows the face alone; the frame stays hidden under the cover until it is turned.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

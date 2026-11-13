@@ -1,0 +1,64 @@
+---
+title: "Una cubierta con ventana que enmarca la portada"
+summary: "Una ventana oval troquelada en la cubierta con dieCuts, medida sobre la pintura de la portada para que su borde caiga en el oro, y la línea de troquel aparte."
+plain: "Un librito de tapa dura con un cuento de Poe, cuya cubierta estampada tiene un agujero oval. Por el agujero se ve la cara del retrato impreso en la portada de debajo."
+description: "Una ventana oval troquelada en la cubierta, en registro con el retrato de la portada de debajo: dieCuts en la página 1, la línea de troquel y Folio en 3D."
+question: "¿Cómo troquelo una ventana en la cubierta de un libro para que enmarque una imagen de la página de debajo?"
+aliases: ["cubierta con ventana", "cubierta troquelada", "ventana oval", "troquel de cubierta", "línea de troquel"]
+pageNotes: { "1": "La cubierta: un damasco de granadas en oro y rojo sangre con una ventana oval arriba, por la que se ve el rostro pintado de una muchacha dentro de un anillo dorado; el título y el autor van en un panel oscuro debajo.", "2": "El interior de la cubierta, impreso en terciopelo rojo oscuro, con la ventana oval troquelada.", "3": "La portada: el retrato en su marco oval dorado a la morisca sobre una pared de terciopelo, con el título y el autor en dorado debajo." }
+---
+
+## Lo que vas a componer
+
+*El retrato oval*, el cuento de Edgar Allan Poe de 1842 en el texto más breve que publicó en 1845, como un librito de tapa dura de diez páginas en 130 × 195 mm. La cubierta es un damasco antiguo con una ventana oval troquelada. Debajo está la portada, el retrato mismo en su marco dorado a la morisca, y la ventana está puesta para que su borde caiga sobre el dorado: cerrado, el libro enseña el rostro pintado enmarcado dos veces, por el oro y por el corte. El cuento sigue en papel crema con una capitular, y la contracubierta repite el damasco con el texto sobre un panel oscuro. El PDF de imprenta lleva el contorno de la ventana en una planilla propia.
+
+## Elaboración
+
+### 1 · Una ventana en registro con el marco
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. La ventana es una `ellipse` en la página 1, colocada desde la esquina superior izquierda del corte. Un agujero en la página 1 da a la página 3, así que se mide sobre la pintura de la portada: aquí la abertura del marco y su borde exterior se leyeron en píxeles sobre la imagen y se pasaron a milímetros, y la ventana se puso a un tercio de la banda dorada, para que dentro del corte asome un aro fino de oro.
+
+### 2 · Pinturas colgadas del corte
+
+<Excerpt region="plates" />
+
+El troquel se mide en milímetros desde el corte, y las pinturas también. El damasco sobrepasa el corte en todo el sangrado; el retrato va unos milímetros más ancho, para que el marco del cuadro quede centrado en la página y en la ventana. La cubierta y la portada quitan el margen inferior, así que su diseño llega al pie de la página, y cada una imprime título y autor desde el frontmatter.
+
+### 3 · La línea de troquel en su planilla
+
+<Excerpt region="die-line" />
+
+El PDF imprime la cubierta entera y traza el contorno de la ventana en una separación `Die` en sobreimpresión que nunca se entinta: el troquelista lee la forma en ella y la máquina la omite. `convertImages: false` deja las pinturas como JPEG sRGB, que PDF/X-4 admite, y el archivo se queda por debajo del megabyte.
+
+### 4 · El libro cerrado en la mesa
+
+<Excerpt region="folio" />
+
+Con `binding.cover: 'pages'` la primera página es la tapa delantera, así que Folio enseña el libro cerrado, con el rostro en la ventana y las paredes del corte recogiendo la luz de la lámpara. Pasa la cubierta para ver la portada entera.
+
+### 5 · La cubierta plana que deja ver
+
+<Excerpt region="see-through" />
+
+En el canvas, `beneath` da al renderizador la página 3 para la ventana de la cubierta, y la cubierta plana enseña también el rostro. El interior de la cubierta no tiene nada debajo, así que su agujero muestra el fondo.
+
+## Variantes
+
+### Llama a la planilla como la espera la máquina de corte
+
+Las mesas de corte digital buscan una tinta plana llamada CutContour, casi siempre magenta, y un trazo finísimo.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Una ventana redonda
+
+Un círculo enseña solo el rostro; el marco queda oculto bajo la cubierta hasta que se pasa.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```
