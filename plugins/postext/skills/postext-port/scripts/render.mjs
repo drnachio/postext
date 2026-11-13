@@ -19,6 +19,7 @@
 // third page of the layout). Files: <out-dir>/page-<NNN>.jpg, NNN the
 // position in the layout (the log line gives the number each page prints). This is the
 // quick look for an agent loop; --png goes through the PDF (the print check).
+// A die-cut page shows the pages beneath its holes, as deep as they line up.
 //
 // One-time setup (Node >= 22.15; any folder, default ~/.cache/postext-tools):
 //   mkdir -p ~/.cache/postext-tools && cd ~/.cache/postext-tools && \
@@ -658,18 +659,53 @@ if (JPEG) {
   const scale = dpi / (doc.config.page.dpi || 300);
   const quality = Number(opt('quality', '85'));
   const wanted = pickPages(opt('pages', null));
+  // A die-cut page (postext >= 1.84) shows the pages beneath its holes, as
+  // in the hand: they are painted for it at the same scale, each with what
+  // its own holes show. Without them a JPEG fills a hole with black.
+  const beneathOf = (page) => {
+    if (!page.dieCut?.holes?.length || typeof postext.seeThrough !== 'function') return null;
+    const painted = new Map();
+    const painting = new Set();
+    const source = (j) => {
+      if (painted.has(j)) return painted.get(j);
+      const under = doc.pages[j];
+      if (!under || painting.has(j)) return undefined;
+      const c = drawsSvgAtSize(napi.createCanvas(1, 1));
+      painting.add(j);
+      try {
+        postext.renderPageToCanvas(under, doc, c, { scale, ...(under.dieCut?.holes?.length ? { beneath: source } : {}) });
+      } finally {
+        painting.delete(j);
+      }
+      painted.set(j, c);
+      return c;
+    };
+    return source;
+  };
   for (const i of wanted) {
     const page = doc.pages[i];
     // A picture too large for the engine's cache is drawn on the page itself.
     const canvas = drawsSvgAtSize(napi.createCanvas(1, 1));
+    const beneath = beneathOf(page);
     postext.renderPageToCanvas(page, doc, canvas, {
       scale,
+      ...(beneath ? { beneath } : {}),
       onWarning: (w) => console.log(`JPEG-WARN page ${i + 1} ${w.kind} ${w.fileId ?? ''}`),
     });
     // Named by position in the layout (printed numbers can repeat: roman
     // front matter, a restart); the log gives the number the page prints.
     const file = join(JPEG, `page-${String(i + 1).padStart(3, '0')}.jpg`);
-    writeFileSync(file, await canvas.encode('jpeg', quality));
+    // Paper cut away (rounded corners, a shaped leaf) is transparent: a JPEG
+    // shows it white rather than black.
+    let flat = canvas;
+    if (page.dieCut) {
+      flat = napi.createCanvas(canvas.width, canvas.height);
+      const ctx = flat.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(canvas, 0, 0);
+    }
+    writeFileSync(file, await flat.encode('jpeg', quality));
     console.log(`wrote ${file} (#${i + 1}, prints ${page.pageLabel ?? page.pageNumberValue}, ${canvas.width}×${canvas.height})`);
   }
   if (!wanted.length) console.log(`JPEG: no page matches --pages ${opt('pages', '')}`);

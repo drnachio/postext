@@ -2670,6 +2670,13 @@ finish  { kind, sheen? }
   'process'`. White and varnish overprint unless `overprint: false`; the preflight lists white first and
   varnish last (`inkPressOrder`). Screens paint the `hex`, except a varnish, which paints nothing (give it a
   distinct hex all the same). In a `plates` job an unnamed white or varnish is dropped (`finishInkDropped`).
+- Nothing painted later cuts a white or varnish plate (≥ 1.85), pictures included: the white stays whole
+  under a photograph, folios painted after a varnish leave it whole. Only a white with `overprint: false`
+  knocks out the colour under it (white type on a coloured panel).
+- Two varnishes that meet (a soft-touch coat over the page from a footer element, a spot gloss over the
+  pictures) lie in the order of `print.inks` (postext > 1.85.1): a later entry over an earlier one, the
+  unlisted varnishes over the listed ones, in the palette's order. The finish mask, the Canvas sheen/map
+  views and Folio follow it. List them in the source's press order (soft touch first, then the gloss).
 - `whiteInkOnWhite`: set `page.backgroundColor` to the stock a white ink prints on.
 - From a source: `inventory.py` reads Separations (PDF) and spot swatches (IDML) and guesses a finish from
   each name (`ink_finishes.py`, the engine's `guessInkFinish`): `suggested_config.print.inks`. Confirm with
@@ -2698,6 +2705,8 @@ dieCuts
   in a page template (the `die` names the shape stretched to the element's box, else `d`, else the box; the
   element's own `leaves`/`wrap` win; it is never painted). Composed frames do not wrap around a hole yet.
 - A hole cuts both sides of its leaf, mirrored on the back; `leaves: N` carries it through the next leaves.
+  `render.mjs --jpeg` paints the pages a hole shows, as deep as the holes line up, and paper cut away
+  (rounded corners, a shaped leaf) white: compare with the source's pages as held, not as printed flat.
 - `print.dieLine` strokes the die line on its own Separation (overprinting, an artifact, in the optional
   content group "Die line" outside PDF/X-1a): `output` page | none, `ink` the plate name (default `Die`;
   use the die-maker's: `CutContour`, `Dieline`, `Troquel`…), `cmyk` its alternate (100 % magenta), `width`
