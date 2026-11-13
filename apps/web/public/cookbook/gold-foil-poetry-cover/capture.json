@@ -1,0 +1,976 @@
+{
+  "schemaVersion": 1,
+  "slug": "gold-foil-poetry-cover",
+  "sourceHash": "a88f71ccb7da8625477895a6a001dd6a2fef7d7b368da6465079a1d0213a080e",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T16:53:16.505Z",
+  "variants": {
+    "en": {
+      "hash8": "8f5ad26a",
+      "vdtHash": "9703a8fbc7b1bb7935658d08a2b5178db7ac7787",
+      "timings": {
+        "importMs": 7535,
+        "fontsMs": 174,
+        "buildMs": 94,
+        "totalMs": 9849,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          216
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Cormorant Garamond",
+          "sizePt": 12.2,
+          "leadingPt": 14.2
+        },
+        "families": [
+          "Cinzel",
+          "Cormorant Garamond",
+          "Cormorant SC"
+        ],
+        "pages": 12,
+        "ownLines": 213
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 15924,
+          "alt": "Opening page 1: Shook Foil."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "blank",
+          "w": 1000,
+          "h": 1543,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 3340,
+          "alt": "Blank page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 16174,
+          "alt": "Opening page 3: Shook Foil."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 18524,
+          "alt": "Opening page 4: Contents."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 63694,
+          "alt": "Opening page 5: God’s Grandeur."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 80192,
+          "alt": "Opening page 6: Nocturne."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 66194,
+          "alt": "Opening page 7: The Starlight Night."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 46018,
+          "alt": "Opening page 8: Pied Beauty."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 71190,
+          "alt": "Opening page 9: The Windhover."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 61850,
+          "alt": "Opening page 10: Spring."
+        },
+        {
+          "n": 11,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 30058,
+          "alt": "Opening page 11: Colophon."
+        },
+        {
+          "n": 12,
+          "label": "12",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p12.webp",
+          "strip": "p12.s.webp",
+          "bytes": 6444,
+          "alt": "Opening page 12: Shook Foil."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          11,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gold-foil-poetry-cover.pdf",
+        "bytes": 1460145,
+        "pages": 12
+      },
+      "sandbox": {
+        "file": "gold-foil-poetry-cover.postext",
+        "bytes": 145573,
+        "folio": "ec67fa90",
+        "chapters": [
+          {
+            "pages": 12,
+            "hash": "8ef3e1353de529ab",
+            "lines": "ce34eafb66839bf1"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginTop",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.outputProfile",
+          "print.standard",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].color",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.color",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "toc"
+        ],
+        "configLeaves": 491,
+        "designElements": 29,
+        "directives": [
+          ":::paper",
+          ":::toc",
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cinzel",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paper-runs",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings",
+          "verse"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C27",
+            "severity": "warn",
+            "detail": "features.primary lists special-inks, but its detect rule did not fire"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "dcf0e3b7",
+      "vdtHash": "4338f6604b6eec748969e141ae25332b38d5faa8",
+      "timings": {
+        "importMs": 7530,
+        "fontsMs": 164,
+        "buildMs": 103,
+        "totalMs": 9849,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          140,
+          216
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Cormorant Garamond",
+          "sizePt": 12.2,
+          "leadingPt": 14.2
+        },
+        "families": [
+          "Cinzel",
+          "Cormorant Garamond",
+          "Cormorant SC"
+        ],
+        "pages": 12,
+        "ownLines": 213
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 14348,
+          "alt": "Página de apertura 1: Rimas."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "blank",
+          "w": 1000,
+          "h": 1543,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 3340,
+          "alt": "Página en blanco 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 18104,
+          "alt": "Página de apertura 3: Rimas."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 21470,
+          "alt": "Página de apertura 4: Índice."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 36074,
+          "alt": "Página de apertura 5: Rima VII."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 80192,
+          "alt": "Página de apertura 6: Nocturno."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 42074,
+          "alt": "Página de apertura 7: Rima X."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 44438,
+          "alt": "Página de apertura 8: Rima XXX."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 52204,
+          "alt": "Página de apertura 9: Rima LII."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 15520,
+          "alt": "Página de apertura 10: Rima XXIII."
+        },
+        {
+          "n": 11,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 26876,
+          "alt": "Página de apertura 11: Colofón."
+        },
+        {
+          "n": 12,
+          "label": "12",
+          "role": "opener",
+          "w": 1000,
+          "h": 1543,
+          "file": "p12.webp",
+          "strip": "p12.s.webp",
+          "bytes": 5966,
+          "alt": "Página de apertura 12: Rimas."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          10
+        ],
+        [
+          11,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "gold-foil-poetry-cover.pdf",
+        "bytes": 1456593,
+        "pages": 12
+      },
+      "sandbox": {
+        "file": "gold-foil-poetry-cover.postext",
+        "bytes": 146025,
+        "folio": "ec67fa90",
+        "chapters": [
+          {
+            "pages": 12,
+            "hash": "00ed622d7debe6e7",
+            "lines": "bc6319e111b0f36d"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].placement",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].direction",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].thickness",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].marginTop",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].level",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.outputProfile",
+          "print.standard",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].color",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.color",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "toc"
+        ],
+        "configLeaves": 491,
+        "designElements": 29,
+        "directives": [
+          ":::paper",
+          ":::toc",
+          ":::verse",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cinzel",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant SC",
+            "weight": 500,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paper-runs",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings",
+          "verse"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C27",
+            "severity": "warn",
+            "detail": "features.primary lists special-inks, but its detect rule did not fire"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

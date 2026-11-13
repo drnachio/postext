@@ -57,7 +57,7 @@
     "card": "page",
     "pages": "all",
     "expect": {
-      "imageMb": 1.3
+      "imageMb": 1.1
     }
   },
   "credits": {
