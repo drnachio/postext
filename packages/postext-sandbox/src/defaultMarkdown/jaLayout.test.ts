@@ -128,7 +128,11 @@ describe('the Japanese guide laid out as a book', () => {
     // The title of the composed page (#1296) sits in its template's frame,
     // not in a tier: it is left out.
     const headings = docs.flatMap((doc) => doc.blocks.filter((b) => b.type === 'heading' && b.headingLevel === 2 && !doc.pages[b.pageIndex]?.composed));
-    expect(headings.length).toBe(136);
+    // 148 since #1590: the English update added twelve sections (paragraph
+    // rules, full-page figures, chapter styles, designs, PDF forms, spot
+    // colours, two-colour printing, special inks, die-cuts, the 3D finishes,
+    // InDesign out and back in).
+    expect(headings.length).toBe(148);
     for (const h of headings) {
       // The band: three lines of the tier, whatever the heading's own pitch.
       expect(h.bbox.height / pitch, h.lines[0]?.text).toBeCloseTo(3, 1);
