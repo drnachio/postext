@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-es.mdx */}
+
+export const metadata = {
+  title: 'Tintas especiales y troqueles',
+  sidebarTitle: 'Tintas especiales y troqueles',
+  description: 'Quintas tintas, tintas metálicas y fluorescentes, estampación en caliente, blanco opaco y barniz como tintas planas con acabado, y troqueles: huecos que atraviesan una o varias hojas, esquinas redondeadas y libros con forma, la línea de troquel en el PDF, el preflight y cómo los muestra cada visor',
+  lang: 'es',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "Esta página trata de lo que la imprenta añade a un libro además de las cuatro tintas de siempre. Una quinta tinta puede ser un color corporativo exacto, un oro o una plata, una estampación brillante, una tinta fluorescente muy viva, un blanco para papel kraft o de color, o un barniz transparente. Cada una es un color del libro marcado con lo que es, y el PDF la entrega a la imprenta en su propia plancha. Un troquel corta un hueco en las hojas, redondea las esquinas o da al libro una forma. Los huecos se definen en la configuración, el texto los rodea y el PDF dibuja la línea que sigue el troquel.",
+};
+
+# Tintas especiales y troqueles
+
+**Una tinta especial es una tinta plana con acabado. Un troquel es una forma de la configuración que se corta a través de las hojas.**
+
+Los dos pertenecen a la forma del libro, así que los dos van en la configuración. Un acabado nunca mueve una línea: la maquetación ve un color, el PDF ve una tinta en su propia plancha y cada visor decide cómo mostrarla. Un troquel sí cambia la página, porque el texto se aparta del hueco, pero el Markdown solo nombra el troquel donde el contenido lo pide.
+
+## Quintas tintas
+
+Una quinta tinta es cualquier tinta que el trabajo imprime además del cian, el magenta, el amarillo y el negro: un Pantone que tiene que coincidir exactamente, un color corporativo que prepara el fabricante de tintas o una de las tintas especiales de más abajo. En Postext es una tinta plana, un color con `model: 'spot'` cuyo `spot` nombra la tinta, da su aspecto al 100 % en CMYK (el equivalente que muestra una prueba) y su tono. Un archivo CMYK o PDF/X la imprime en una plancha `Separation` con el nombre de la tinta; la pantalla y un archivo RGB pintan su `hex`. [Tintas planas](/es/docs/configuration-pdf-output#tintas-planas) explica el modelo completo.
+
+La [tabla de tintas](/es/docs/configuration-pdf-output#la-tabla-de-tintas) (`print.inks`) describe cada tinta tal como la recibirá la imprenta, la llamen como la llamen los colores, las imágenes SVG y los archivos importados: el nombre de su plancha, sus alias, si se imprime en cuatricromía, su equivalente, su sobreimpresión y, en una tinta especial, su acabado.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Acabados
+
+Una tinta plana sin acabado es una tinta corriente. Con acabado, es una tinta especial:
+
+<table>
+  <thead>
+    <tr>
+      <th>Acabado</th>
+      <th>Qué es</th>
+      <th>Brillo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Una tinta con pigmento metálico: oro, plata, cobre (Pantone 871–877 C, las series 8000 y 10000).</td><td><code>satin</code> por defecto, o <code>gloss</code> o <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Estampación en caliente: una lámina que un grabado caliente fija en el pliego después de imprimir. La plancha es el original con el que se hace el grabado.</td><td><code>gloss</code> por defecto, o <code>satin</code> o <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Una tinta más viva que cualquier mezcla de cuatricromía (Pantone 801–814 C).</td><td>ninguno</td></tr>
+    <tr><td><code>white</code></td><td>Un blanco opaco, para papel kraft, papel de color o film, normalmente debajo de los colores.</td><td>ninguno</td></tr>
+    <tr><td><code>varnish</code></td><td>Una capa transparente sobre zonas concretas (barniz UVI con reserva, un barniz mate o de tacto suave).</td><td><code>gloss</code> por defecto, o <code>satin</code>, <code>matte</code> o <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // No cuenta en las tintas fluorescentes ni en el blanco.
+}
+```
+
+El acabado se pone en la tinta plana (`spot.finish`) o en la entrada de la tinta en la tabla de tintas (`print.inks[].finish`); manda el de la tabla. La tabla es el sitio para una tinta que no definen los colores: un SVG o un archivo importado que nombra `Gold` recibe ahí su acabado metálico. Un tipo de acabado que Postext no conoce se descarta, y también un brillo que no corresponde: ninguno en una tinta fluorescente o blanca, y el tacto suave solo en un barniz.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Cómo se imprime una tinta especial
+
+- **Una plancha propia.** Cada tinta especial se imprime en su propia `Separation`, con el nombre de plancha que le da la tabla de tintas (`pdfName` o, si no, su nombre). Nunca pasa a cuatricromía, salvo que su entrada en la tabla de tintas diga `output: 'process'`.
+- **Sobreimpresión.** El blanco y el barniz sobreimprimen salvo que `overprint: false` diga lo contrario, en el color o en la tabla de tintas: el blanco va debajo de los colores y el barniz encima, y ninguno de los dos debe vaciar las planchas. Las tintas metálicas, las estampaciones y las fluorescentes vacían como cualquier tinta plana.
+- **Orden en máquina.** El archivo contiene planchas, no un orden. El blanco se imprime primero y el barniz al final; el preflight los enumera (`inkPressOrder`) para que se lo indiques a la imprenta, que es quien fija el orden en máquina.
+- **Trabajos a pocas planchas.** En un trabajo con [`print.plates`](/es/docs/configuration-pdf-output#impresión-a-dos-tintas), un blanco o un barniz que el trabajo no nombra se omite, en lugar de proyectarse sobre las planchas de color, y el render avisa (`finishInkDropped`). Las tintas metálicas, las estampaciones y las fluorescentes se proyectan como cualquier otra tinta plana.
+- **Archivos RGB y en grises.** Un barniz no pone nada en la página; los demás acabados pintan su `hex`.
+
+### En pantalla
+
+El canvas, el visor HTML y el EPUB pintan cada tinta especial con su `hex`, salvo el barniz, que es transparente y no pinta nada. Aun así, da al barniz un hex propio, porque un render de impresión distingue las tintas por su hex.
+
+`RenderPageOptions.finishes` muestra los acabados en el canvas:
+
+- `'flat'` (por defecto): el hex de cada tinta, y nada para el barniz.
+- `'sheen'`: un barrido de luz cruza la página y hace brillar la tinta metálica y la estampación (más cuanto más brillante sea el acabado), un resplandor realza la tinta fluorescente y un reflejo muestra dónde está el barniz.
+- `'map'`: las planchas especiales en falso color sobre la página atenuada, como las señala una prueba de separaciones: metálicas y estampaciones en ámbar, fluorescentes en rosa, barniz en cian, blanco opaco en azul.
+
+Las dos vistas leen la **máscara de acabados** de la página. `renderFinishMask(page, doc, { scale })` la devuelve, o devuelve `undefined` en una página que no pinta ninguna tinta especial, que así no cuesta nada. Es un mapa de bits RGBA: el rojo es el metal (tinta metálica y estampación), el verde el brillo (brillo 1, satinado 0,7, mate 0,4, tacto suave 0,2), el azul la fluorescencia y el alfa el blanco opaco, cada uno multiplicado por el tono de la tinta. Un anfitrión que ilumina sus propias páginas, como Folio, la lee directamente. Todo lo que se imprime encima de una tinta especial la vacía en la máscara, las imágenes por su silueta, salvo que sobreimprima.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined sin tintas especiales
+```
+
+### En Folio
+
+Folio ilumina las tintas especiales como las mostraría el papel bajo sus lámparas. La tinta metálica y la estampación reflejan la habitación como un metal teñido del color de la tinta, la estampación casi como un espejo. La tinta fluorescente destaca más luminosa que el papel. El blanco opaco tapa el tono del papel, así que se lee sobre kraft o papel de color. Un barniz brillante recoge los reflejos cuando pasa la hoja, uno mate los apaga y el tacto suave los elimina. Solo llevan máscara las páginas con alguna tinta especial, a la mitad de la resolución de la página, así que un libro sin ellas se dibuja igual que antes.
+
+### Qué dice el preflight de las tintas
+
+En un trabajo de imprenta (una norma PDF/X, o CMYK), el preflight añade:
+
+- `spotInkFinish` (información): cada tinta especial que usan las páginas, con su acabado y su brillo, para que el pedido a la imprenta las nombre todas.
+- `inkPressOrder` (información): los blancos que se imprimen primero y los barnices que se imprimen al final.
+- `whiteInkOnWhite` (aviso): un blanco opaco en una página cuyo papel es blanco o no está definido, donde no se ve nada. Define el color del papel (`page.backgroundColor`) con el del soporte en que se imprime.
+
+Un blanco o un barniz nunca dan `overprintWhite`: no ponen color a propósito.
+
+## Deducir el acabado por el nombre
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` lee el nombre que una muestra, una separación o una tabla de tintas da a una tinta y devuelve el acabado que sugiere, o `undefined`. Conoce las palabras de cada acabado y cada brillo en los diez idiomas del sitio y en los nombres que usan las guías de color, y los números de Pantone: del 801 al 814 son fluorescentes; del 871 al 877, la serie 8000 y la 10000, metálicos. Una palabra de barniz o de estampación pesa más que una de color (`Gold foil` es una estampación, `Barniz oro` un barniz), una de fluorescente más que el blanco, y un metal más que el blanco (`白金`, platino). La palabra francesa `or` no se tiene en cuenta, porque es también la conjunción inglesa; `Or métallisé` se sigue leyendo como metálico por su segunda palabra.
+
+Es una sugerencia y nada la aplica sin avisar: el Sandbox la ofrece como un botón, y la [skill postext-port](/es/docs/skill) la menciona en su informe.
+
+## Troqueles
+
+Un troquel es el trabajo de una forma de cuchillas de fleje después de imprimir: una ventana en una cubierta, un hueco que atraviesa un libro de cartoné, unos uñeros, unas esquinas redondeadas, un libro cortado con el contorno de una casa. La propiedad `dieCuts` describe los troqueles del libro; el texto se aparta del hueco en cada página que corta.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // Las formas de troquel del libro.
+  pages?: DieCutPlacement[];           // Formas puestas en páginas por número.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Formas de troquel
+
+Una forma de troquel se coloca desde la esquina superior izquierda del corte de la página en la que se pone.
+
+<table>
+  <thead>
+    <tr>
+      <th>Propiedad</th>
+      <th>Tipo</th>
+      <th>Por defecto</th>
+      <th>Descripción</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>obligatorio</td><td>Cómo la llaman las colocaciones y <code>:::diecut</code>.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>ninguno</td><td>Un nombre para las personas; lo muestra el Sandbox.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>obligatorio</td><td>Un círculo es el mayor que cabe en la caja, centrado en ella; una elipse llena la caja.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>obligatorio</td><td>Desde los bordes izquierdo y superior del corte.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>obligatorio</td><td>La caja que llena la forma.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Las esquinas de un <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>ninguno</td><td>Los datos de trazado SVG de un <code>path</code> (<code>M L H V C S Q T A Z</code>), estirados desde <code>viewBox</code> hasta la caja.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>El ancho y el alto del espacio en que está escrito <code>d</code>.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Cuántas hojas atraviesa el hueco: aquella en la que se pone y las siguientes.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>El texto queda a <code>gap</code> del hueco; con <code>false</code> pasa por debajo del hueco y se pierde con él.</td></tr>
+  </tbody>
+</table>
+
+### Tres maneras de colocar un troquel
+
+**Por número de página.** `dieCuts.pages` pone una forma en una lista de páginas: `'5'`, `'3-12'`, `'3,7,11-13'`. Los números cuentan las páginas del libro por su posición, siendo 1 la primera, no los folios impresos. En un libro de varios capítulos cuentan desde el principio del libro, así que un capítulo maquetado por separado sigue troquelando la página correcta.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Donde lo decide el contenido.** Un contenedor `:::diecut` troquela todas las páginas en las que cae su contenido, igual que [`:::paper`](/es/docs/document-format-directives#paper) cambia el papel. Su contenido empieza en una página nueva, y lo que sigue al `:::` de cierre también. Un contenedor dentro de otro troquela su propia forma; un troquel que no está en `dieCuts.shapes` se notifica (**Forma de troquel desconocida**, `dieCutUnknown`), y esas páginas se componen aparte pero no se troquelan. Véase [`:::diecut`](/es/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Mira dentro
+La ventana enmarca la portadilla que hay debajo.
+:::
+```
+
+**En una plantilla de página.** En una página compuesta, un elemento de decoración de tipo `'cut'` coloca un hueco como cualquier elemento de trazado, con `when` y `unless` para limitarlo a las páginas que lo piden. Véase [Elementos de corte en una plantilla de página](#elementos-de-corte-en-una-plantilla-de-página).
+
+### Elementos de corte en una plantilla de página
+
+Un elemento de decoración de tipo `'cut'` es un hueco que el troquel corta en la hoja de cada página compuesta sobre la que se pone la decoración de la plantilla: una ventana en una plantilla de cubierta, un uñero en las aperturas de una obra de consulta. Se coloca y se dimensiona como un [elemento de trazado](/es/docs/configuration-headers-footers#elementos-de-trazado), con `when`, `unless`, `parity` y `pin` como cualquier elemento de decoración, y nunca se pinta: la maquetación lo saca de la decoración y lo pasa a los troqueles de la página, en espejo en la otra cara de la hoja.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Dónde va el hueco y su caja.
+  die?: string;                      // Una forma de dieCuts.shapes, estirada hasta la caja.
+  d?: string;                        // Si no, datos de trazado SVG, en unidades de viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Por defecto, las del troquel o, si no, 1.
+  wrap?: false | { gap?: Dimension }; // Por defecto, el del troquel o, si no, 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+El contorno del hueco es la forma de troquel que nombra `die`, estirada hasta la caja del elemento (el troquel aporta su tipo, el radio de las esquinas, los datos de trazado, `leaves` y `wrap`, pero no su propia caja); sin `die`, los datos de trazado `d`; sin ninguno de los dos, la propia caja. Los `leaves` y `wrap` del elemento mandan sobre los del troquel.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+El texto de los marcos de una página compuesta todavía no rodea los huecos: coloca los marcos fuera de ellos y lee el `dieCutText` del preflight. En una plantilla de doble página, un elemento de corte no se reparte entre las dos páginas. El resto de las [plantillas de página](/es/docs/configuration-composed-pages#plantillas-de-página) está en la referencia de la configuración.
+
+### Las dos caras de la hoja
+
+Un hueco atraviesa el papel, así que corta las dos caras de la hoja. La página 1 es impar, y su dorso, la página 2, es la par de la misma hoja, y así sucesivamente; un capítulo que empieza más adelante en el libro cuenta desde la primera página del libro. Una forma puesta en una página corta también la otra cara de su hoja, en espejo respecto al corte: una ventana a 40 mm del borde izquierdo de una página impar queda a 40 mm del borde derecho de la par del dorso. Con `leaves: 6` el hueco atraviesa además las cinco hojas siguientes, en el mismo sitio de la pila, de modo que queda donde lo pusiste en todas las páginas de esa cara y en espejo en todas las de la otra.
+
+### Esquinas redondeadas y libros con forma
+
+`corners` redondea todas las hojas: por defecto, solo las esquinas del corte delantero (a la derecha en una página impar y a la izquierda en una par, al revés en un libro encuadernado por la derecha), con el lomo en escuadra; `edges: 'all'` redondea las cuatro. `outline` corta todas las hojas con un contorno: datos de trazado SVG en unidades de `viewBox`, estirados hasta el corte de una página impar y en espejo en las pares. Si se definen los dos, manda el contorno.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // una casa
+}
+```
+
+### El texto alrededor de un hueco
+
+Cada hueco, ampliado con su `wrap.gap`, es un obstáculo que el texto rodea en las dos caras de cada hoja que corta, en las páginas de texto corrido: las líneas se acortan a su lado, como junto a una imagen con texto al lado. Una forma con `wrap: false` deja el texto donde está, y lo que quede debajo del hueco se pierde con el corte.
+
+### La línea de troquel en el PDF
+
+El troquelista trabaja con la línea de troquel: el contorno de cada hueco y de la hoja cuando tiene forma o esquinas redondeadas, en una plancha que la máquina nunca entinta. `print.dieLine` la configura.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (por defecto): se traza en cada página con troquel.
+  ink?: string;               // El nombre de la plancha. Por defecto, 'Die'.
+  cmyk?: CmykPercent;         // El equivalente de la plancha, cómo la muestran las pruebas. Por defecto, 100 % magenta.
+  width?: Dimension;          // El grosor del trazo. Por defecto, 0.25 pt.
+}
+```
+
+La línea se traza después de las marcas de corte, en una plancha `Separation` propia, con extremos y uniones redondeados, y sobreimprime, así que nunca deja una línea en blanco en las planchas de debajo. En un PDF etiquetado es un artefacto. Fuera de PDF/X-1a, que no admite contenido opcional, va en un grupo de contenido opcional llamado **Die line** que el lector puede ocultar. La plancha aparece con las tintas del trabajo (`inspectPrintPdf` la pone en `color.spots`), y un trabajo con [`print.plates`](/es/docs/configuration-pdf-output#impresión-a-dos-tintas) nunca la proyecta sobre sus planchas. Pregunta al troquelista cómo debe llamarse la plancha: se usan `Die`, `CutContour`, `Dieline` y `Troquel`.
+
+La página se imprime entera: el PDF no recorta el hueco. Lo que haya dentro se imprime y se va con el papel que saca el troquel.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+En la línea de comandos, `postext pdf --die-line page|none` sustituye a `output` en una ejecución (véase [`pdf`](/es/docs/command-line#pdf)).
+
+### Qué dice el preflight de los troqueles
+
+<table>
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>Gravedad</th>
+      <th>Cuándo</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>aviso</td><td>Texto dentro de la separación de un hueco, o debajo de un hueco que no lo aparta, con su distancia al borde del corte en milímetros. Uno por hueco y página.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>aviso, o crítico</td><td>Un hueco a menos de 3 mm del corte, donde el troquel rasga el borde; crítico cuando sobrepasa el corte.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>crítico</td><td>Un hueco a menos de 3 mm del pliegue del lomo, donde las hojas se cosen o se encolan.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>aviso</td><td>Una colocación o un <code>:::diecut</code> que nombra un troquel que no está en <code>dieCuts.shapes</code>.</td></tr>
+  </tbody>
+</table>
+
+Estas comprobaciones se hacen siempre que el preflight está activado, sea o no un trabajo de imprenta. Los avisos de configuración señalan una colocación cuyo troquel no existe (y sugieren el id más parecido), una lista de páginas sin ningún número, una forma que el motor descarta (sin id, con un `shape` desconocido, sin tamaño o sin trazado) y unos datos de trazado que no puede leer, en cuyo caso la forma corta su caja.
+
+## En los visores
+
+**Canvas.** `renderPageToCanvas` recorta de la página cada hueco, y el papel que queda fuera de una hoja con forma o con esquinas redondeadas, así que se ve lo que hay detrás del canvas. Con la opción `beneath`, una función que devuelve el canvas ya pintado de cualquier página por su índice, dibuja en cada hueco las páginas que vería el lector a través de él, hasta donde coinciden los huecos: cada página recortada por los huecos de todas las que tiene encima, una sombra suave a lo largo de cada borde del corte, una línea fina para el canto del papel y, pasado el final del libro, el color de la tapa. `composeThrough(doc, pageIndex, source, target, scale)` dibuja esa misma composición en un canvas propio.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // páginas ya pintadas, por índice
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**Visor HTML.** Una página troquelada se recorta con `clip-path: path(evenodd, …)`, la caja de sangrado (o el contorno de la hoja) menos sus huecos, así que un hueco deja ver el fondo del visor y ninguna página debajo. En la maquetación de pantalla las páginas no son las impresas, así que no hay página de debajo que mostrar.
+
+**Folio.** Folio muestra un hueco como se ve con el libro en la mano. En una página abierta, el hueco deja ver las páginas de debajo, hasta donde coinciden los huecos (un libro túnel puede mostrar una página veinte hojas más abajo), con los cantos del papel cortado y un paralaje que sigue a la vista. Una hoja que pasa tiene un hueco de verdad, y las sombras caen a través de él sobre la página de debajo. Las esquinas redondeadas y el contorno de un libro con forma se cortan en todas las hojas, y los cantos del bloque de páginas siguen el radio de las esquinas.
+
+**Un visor propio.** Cada página maquetada lleva sus troqueles en `VDTPage.dieCut`: `holes` y `outline` como trazados en píxeles de la página, `sources` (el troquel de cada hueco) y `wrapGapPx`. `leafSide(doc, i)` dice si una página es impar o par, `pageBeneath(doc, i)` qué página queda debajo (`-1` pasado el final del libro), `seeThrough(doc, i)` toda la pila que deja ver un hueco, con el recorte de cada capa, y `dieCutPath2D(cut)` convierte el troquel en un `Path2D`.
+
+## En el Sandbox
+
+- **Colores.** La pestaña **Plana** del selector de color tiene **Acabado** y **Brillo**, y ofrece el acabado que sugiere el nombre de la tinta (**Poner el acabado: …**). El menú **Añadir una tinta especial** de la paleta añade una ya preparada: oro, plata o cobre metálicos, estampación oro o plata, cuatro fluorescentes, blanco opaco y barniz brillo, mate o de tacto suave.
+- **Tabla de tintas.** Cada tinta tiene **Acabado** y **Brillo**, y **Tintas que usan los colores** muestra el acabado de cada una.
+- **Troqueles.** **Diseño › Página y columnas › Troqueles** reúne las formas de troquel, cada una con un dibujo de su contorno, las páginas que cortan, las esquinas redondeadas y el contorno de un libro con forma. **Diseño › Exportación › Preparación para imprenta › Línea de troquel** configura la plancha.
+- **Canvas.** En un libro con troqueles, la barra de herramientas tiene **Líneas de troquel**, que dibuja cada troquel como una línea discontinua sobre la página; en un libro con tintas especiales tiene **Tintas especiales**, que pasa por *planas*, *con brillo* y *mapa de acabados*. El navegador recuerda los dos.
+- **Revisión.** Los resultados del preflight descritos arriba aparecen en **Revisión** con estos títulos: **Tinta especial**, **Orden de las tintas especiales en máquina**, **Tinta blanca sobre papel blanco**, **Texto bajo un troquel**, **Troquel cerca del corte**, **Troquel en el lomo**, **Forma de troquel desconocida**.
+
+[Los paneles de diseño y de revisión](/es/docs/sandbox-design-checks) y [Las vistas previas](/es/docs/sandbox-previews#pestaña-canvas) describen los paneles en detalle.
+
+## Límites
+
+- La máscara de acabados no lo ve todo. Una fórmula dibujada como imagen en una tinta especial vacía en lugar de mostrar su tinta, los puntos de un degradado en tintas especiales no se tienen en cuenta, y un SVG que usa una tinta de barniz sigue pintando su hex en pantalla salvo que se recoloree. Un blanco opaco cuyo hex de pantalla es exactamente `#ffffff` no se distingue del papel: dale un hex algo más oscuro.
+- El texto de los marcos de una página compuesta todavía no rodea los huecos: solo lo hace el texto corrido. Revisa las páginas compuestas con `dieCutText`.
+- Un elemento de corte en una plantilla de doble página no se reparte entre las dos páginas.
+- El visor HTML recorta los huecos de las páginas compuestas, pero no dibuja las páginas que hay debajo.
+- El PDF imprime la página entera y traza la línea de troquel: el hueco lo corta después el troquel.

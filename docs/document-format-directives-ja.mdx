@@ -152,6 +152,10 @@ Keep the lantern lit **every** night.
       <td>別の用紙に印刷するひと続きのページです。マット紙の本の中にあるグロス紙の図版の部分などです。表示するのはFolioビューアーだけです。</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>設定の抜き型で抜くひと続きのページです。窓や、何丁も貫く穴などです。下の<a href="#diecut"><code>:::diecut</code></a>を参照してください。</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>ブロックを、それ専用の複数の段に組みます。囲みの中、本文の段の中、または複数の段があるページの全幅に組めます。後述の<a href="#columns"><code>:::columns</code></a>を参照してください。</td>
     </tr>
@@ -376,6 +380,19 @@ A second answer box.
 </table>
 
 別の用紙の範囲の中にある`:::paper`は、自身が設定した属性だけを上書きし、やはり改ページで始まり改ページで終わります。`:::callout`の中ではフェンスは無視します。エンジンが読み取れない値は捨てられ、Sandboxに**無効な用紙属性**の警告として表示されます（文書の`contentWarnings`の`paperAttributeInvalid`）。
+
+### `:::diecut`
+
+抜き加工は本の形式に属します。形、大きさ、ページ上の位置は、設定の抜き型（`dieCuts.shapes`。[特殊インキと抜き加工](/ja/docs/special-inks-die-cuts#抜き型)を参照）で決めます。どのページを抜くかを内容が決めるときは、その内容を抜き型の名前を書いた`:::diecut`コンテナーで囲みます。
+
+```md
+:::diecut{die=window}
+## 家
+窓の向こうに、次のページの庭が見えます。
+:::
+```
+
+コンテナーの中の内容を組んだすべてのページがその抜き型で抜かれ、それが入る丁の反対側の面も左右反転して抜かれます。`:::paper`と同じく、内容は新しいページから始まり、閉じる`:::`のあとに続く内容も新しいページから始まります。別の`:::diecut`の中にある`:::diecut`は、内側の抜き型で抜きます。属性は`die`だけです。`dieCuts.shapes`にない抜き型は何も抜きません。ページはやはり単独で組まれ、Sandboxに**不明な抜き型**の警告が表示されます（文書の`contentWarnings`の`dieCutUnknown`）。ページ番号で抜くには`dieCuts.pages`を使います。
 
 ### `:::pagebreak`
 

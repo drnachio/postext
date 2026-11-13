@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-pt.mdx */}
+
+export const metadata = {
+  title: 'Tintas especiais e facas',
+  sidebarTitle: 'Tintas especiais e facas',
+  description: 'Quintas cores, tintas metálicas e fluorescentes, hot stamping, branco opaco e verniz como cores especiais com acabamento, e facas especiais: furos que atravessam uma ou mais folhas, cantos arredondados e livros recortados, a linha de faca no PDF, o preflight e como cada visualizador os mostra',
+  lang: 'pt',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: 'Esta página trata dos extras que uma gráfica acrescenta a um livro além das quatro tintas de sempre. Uma quinta cor pode ser uma cor de marca exata, uma tinta ouro ou prata, um hot stamping brilhante, uma tinta fluorescente muito viva, um branco para papel kraft ou colorido, ou um verniz transparente. Cada uma é uma cor do livro marcada com o que ela é, e o PDF dá a cada uma a sua própria chapa para a gráfica. Uma faca especial corta um furo através das páginas, arredonda os cantos ou recorta o livro numa forma. Os furos são definidos nas configurações, o texto os contorna e o PDF desenha a linha que a faca segue.',
+};
+
+# Tintas especiais e facas
+
+**Uma tinta especial é uma cor especial com um acabamento. Uma faca especial é uma forma das configurações que corta as folhas.**
+
+As duas fazem parte da forma do livro, por isso as duas ficam nas configurações. Um acabamento nunca move uma linha: a diagramação vê uma cor, o PDF vê uma tinta numa chapa própria, e os visualizadores decidem como mostrá-la. Uma faca muda a página, porque o texto se afasta do furo, mas o Markdown só nomeia a faca onde o conteúdo precisa dela.
+
+## Quintas cores
+
+Uma quinta cor é qualquer tinta que o trabalho imprime além do ciano, do magenta, do amarelo e do preto: um Pantone que precisa bater exatamente, uma cor corporativa preparada pelo fabricante de tintas ou uma das tintas especiais descritas abaixo. No Postext ela é uma cor especial, uma cor com `model: 'spot'` cujo `spot` nomeia a tinta, dá a aparência dela a 100 % em CMYK (o equivalente que uma prova mostra) e a retícula. Um arquivo CMYK ou PDF/X a imprime numa chapa `Separation` com o nome da tinta; a tela e um arquivo RGB pintam o `hex` dela. [Cores especiais](/pt/docs/configuration-pdf-output#cores-especiais) explica o modelo por inteiro.
+
+A [tabela de tintas](/pt/docs/configuration-pdf-output#a-tabela-de-tintas) (`print.inks`) é onde uma tinta é descrita tal como a gráfica vai recebê-la, seja qual for o nome que as cores, as imagens SVG e os arquivos importados lhe dão: o nome da chapa, os aliases, se ela imprime em quadricromia, o equivalente, a sobreimpressão e, para uma tinta especial, o acabamento.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Acabamentos
+
+Uma cor especial sem acabamento é uma tinta comum. Com um, é uma tinta especial:
+
+<table>
+  <thead>
+    <tr>
+      <th>Acabamento</th>
+      <th>O que é</th>
+      <th>Brilho</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Uma tinta com pigmento metálico: ouro, prata, cobre (Pantone 871–877 C, as séries 8000 e 10000).</td><td><code>satin</code> por padrão, ou <code>gloss</code> ou <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Hot stamping: uma película aplicada na folha por um clichê aquecido depois da impressão. A chapa é a arte da qual se faz o clichê.</td><td><code>gloss</code> por padrão, ou <code>satin</code> ou <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Uma tinta mais viva que qualquer mistura de quadricromia (Pantone 801–814 C).</td><td>nenhum</td></tr>
+    <tr><td><code>white</code></td><td>Um branco opaco, para papel kraft, papel colorido ou filme, em geral aplicado sob as cores.</td><td>nenhum</td></tr>
+    <tr><td><code>varnish</code></td><td>Uma camada transparente em áreas escolhidas (verniz UV localizado, um verniz fosco ou soft touch).</td><td><code>gloss</code> por padrão, ou <code>satin</code>, <code>matte</code> ou <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // Ignorado nas tintas fluorescentes e brancas.
+}
+```
+
+O acabamento fica na cor especial (`spot.finish`) ou na entrada da tinta na tabela de tintas (`print.inks[].finish`); a da tabela prevalece. A tabela é o lugar de uma tinta que as cores não definem: um SVG ou um arquivo importado que nomeia `Gold` recebe ali o seu acabamento metálico. Um tipo que o Postext não conhece é descartado, assim como um brilho que não se aplica: nenhum numa tinta fluorescente ou branca, e soft touch só num verniz.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Como uma tinta especial é impressa
+
+- **Uma chapa própria.** Cada tinta especial é impressa na sua própria `Separation`, com o nome de chapa que a tabela de tintas lhe dá (`pdfName`, senão o nome dela). Ela nunca passa para quadricromia, a menos que a sua entrada na tabela de tintas diga `output: 'process'`.
+- **Sobreimpressão.** Um branco e um verniz sobreimprimem, a menos que `overprint: false` diga o contrário, na cor ou na tabela de tintas: o branco fica sob as cores e o verniz sobre elas, e nenhum dos dois deve vazar as chapas. As tintas metálicas, o hot stamping e as fluorescentes vazam como qualquer cor especial.
+- **Ordem na máquina.** O arquivo contém chapas, não uma ordem. O branco imprime primeiro e o verniz por último; o preflight lista os dois (`inkPressOrder`) para você informar a gráfica, que define a ordem na máquina.
+- **Trabalhos com poucas chapas.** Num trabalho com [`print.plates`](/pt/docs/configuration-pdf-output#impressão-a-duas-tintas), um branco ou um verniz que o trabalho não nomeia fica de fora, não é projetado sobre as chapas de cor, e o render avisa (`finishInkDropped`). As tintas metálicas, o hot stamping e as fluorescentes são projetados como qualquer outra cor especial.
+- **Arquivos RGB e em tons de cinza.** Um verniz não põe nada na página; os outros acabamentos pintam o seu `hex`.
+
+### Na tela
+
+O canvas, o visualizador HTML e o EPUB pintam cada tinta especial com o seu `hex`, exceto o verniz, que é transparente e não pinta nada. Mesmo assim, dê ao verniz um hex próprio, porque um render de impressão distingue as tintas pelo hex.
+
+`RenderPageOptions.finishes` mostra os acabamentos no canvas:
+
+- `'flat'` (o padrão): o hex de cada tinta, e nada para o verniz.
+- `'sheen'`: uma faixa de luz que varre a página acende a tinta metálica e o hot stamping (mais quanto mais brilhante for o acabamento), um brilho realça a tinta fluorescente e um reflexo mostra onde está o verniz.
+- `'map'`: as chapas especiais em cor falsa sobre uma página esmaecida, como uma prova de impressão as marca: metálica e hot stamping em âmbar, fluorescente em rosa, verniz em ciano, branco opaco em azul.
+
+As duas visualizações leem a **máscara de acabamentos** da página. `renderFinishMask(page, doc, { scale })` a devolve, ou `undefined` para uma página que não pinta nenhuma tinta especial, que assim não custa nada. É um bitmap RGBA: o vermelho é o metal (tinta metálica e hot stamping), o verde é o brilho (brilho 1, acetinado 0,7, fosco 0,4, soft touch 0,2), o azul é a fluorescência e o alfa é o branco opaco, cada um multiplicado pela retícula da tinta. Um hospedeiro que ilumina as próprias páginas, como o Folio, a lê diretamente. Tudo o que é impresso sobre uma tinta especial a retira da máscara (as imagens, pela silhueta), a menos que sobreimprima.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined sem tintas especiais
+```
+
+### No Folio
+
+O Folio ilumina as tintas especiais como o papel as mostraria sob as suas luzes. A tinta metálica e o hot stamping refletem o ambiente como um metal tingido pela cor da tinta, o hot stamping quase como um espelho. A tinta fluorescente se destaca mais que o papel. O branco opaco cobre o tom do papel, e por isso aparece sobre kraft ou papel colorido. Um verniz brilho pega os reflexos quando uma folha vira, um verniz fosco os apaga e o soft touch os elimina. Só as páginas que levam uma tinta especial recebem uma máscara, com metade da resolução da página, e assim um livro sem tintas especiais é desenhado como antes.
+
+### O que o preflight diz sobre as tintas
+
+Num trabalho de impressão (um padrão PDF/X, ou CMYK), o preflight acrescenta:
+
+- `spotInkFinish` (informação): cada tinta especial que as páginas usam, com o acabamento e o brilho, para que o pedido à gráfica nomeie todas.
+- `inkPressOrder` (informação): os brancos que imprimem primeiro e os vernizes que imprimem por último.
+- `whiteInkOnWhite` (aviso): um branco numa página cujo papel é branco ou não definido, onde ele não aparece. Defina a cor do papel (`page.backgroundColor`) como a do suporte em que se imprime.
+
+Um branco ou um verniz nunca geram `overprintWhite`: eles não depositam cor de propósito.
+
+## Deduzir o acabamento pelo nome
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` lê o nome que uma amostra, uma separação ou uma tabela de tintas dá a uma tinta e devolve o acabamento que ele sugere, ou `undefined`. Conhece as palavras de cada acabamento e brilho nos dez idiomas do site e nos nomes usados pelos catálogos de cores, e os números da Pantone: de 801 a 814 são fluorescentes, de 871 a 877, as séries 8000 e 10000, metálicos. Uma palavra de verniz ou de hot stamping prevalece sobre uma de cor (`Gold foil` é um hot stamping, `Barniz oro` um verniz), uma de fluorescente sobre o branco, e um metal sobre o branco (`白金`, platina). O francês `or` fica de fora, porque também é a conjunção inglesa; `Or métallisé` continua sendo lido como metálico pela segunda palavra.
+
+É uma sugestão, e nada a aplica em silêncio: o Sandbox a oferece como um botão, e o skill de portabilidade a informa no relatório.
+
+## Facas especiais
+
+Uma faca especial é o trabalho de uma faca de aço depois da impressão: uma janela numa capa, um furo que atravessa um livro cartonado, os recortes de índice no corte da frente, cantos arredondados, um livro recortado no formato de uma casa. A propriedade `dieCuts` descreve as facas do livro; o texto se afasta de um furo em todas as páginas que ele corta.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // As formas de faca do livro.
+  pages?: DieCutPlacement[];           // Formas colocadas em páginas pelo número.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Formas de faca
+
+Uma forma de faca é posicionada a partir do canto superior esquerdo do refile da página em que é colocada.
+
+<table>
+  <thead>
+    <tr>
+      <th>Propriedade</th>
+      <th>Tipo</th>
+      <th>Padrão</th>
+      <th>Descrição</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>obrigatório</td><td>O nome pelo qual as colocações e <code>:::diecut</code> a chamam.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>nenhum</td><td>Um nome para pessoas; o Sandbox o mostra.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>obrigatório</td><td>Um círculo é o maior que cabe na caixa, centrado nela; uma elipse preenche a caixa.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>obrigatório</td><td>A partir das bordas esquerda e superior do refile.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>obrigatório</td><td>A caixa que a forma preenche.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Os cantos de um <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>nenhum</td><td>Dados de traçado SVG de um <code>path</code> (<code>M L H V C S Q T A Z</code>), esticados da <code>viewBox</code> até a caixa.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>A largura e a altura do espaço em que <code>d</code> está escrito.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Quantas folhas o furo atravessa: aquela em que é colocado e as seguintes.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>O texto fica a <code>gap</code> do furo; <code>false</code> o deixa passar sob o furo e sair junto com o recorte.</td></tr>
+  </tbody>
+</table>
+
+### Três maneiras de posicionar uma faca
+
+**Pelo número da página.** `dieCuts.pages` coloca uma forma numa lista de páginas: `'5'`, `'3-12'`, `'3,7,11-13'`. Os números contam as páginas do livro pela posição, sendo 1 a primeira, não pelos fólios impressos. Num livro de vários capítulos eles contam desde o início do livro, de modo que um capítulo diagramado sozinho continua cortando a página certa.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Onde o conteúdo decide.** Um contêiner `:::diecut` corta todas as páginas em que o seu conteúdo cai, como [`:::paper`](/pt/docs/document-format-directives#paper) troca o papel. O conteúdo começa numa página nova, e o que vem depois do `:::` de fechamento também. Um contêiner dentro de outro corta a sua própria forma; uma forma que `dieCuts.shapes` não tem é informada (**Forma de faca desconhecida**, `dieCutUnknown`), e essas páginas são compostas à parte e não são cortadas. Veja [`:::diecut`](/pt/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Olhe por dentro
+A janela emoldura a folha de rosto logo abaixo.
+:::
+```
+
+**Num modelo de página.** Numa página composta, um elemento de decoração do tipo `'cut'` posiciona um furo como qualquer elemento de caminho, com `when` e `unless` para limitá-lo às páginas que o pedem. Veja [Elementos de corte num modelo de página](#elementos-de-corte-num-modelo-de-página).
+
+### Elementos de corte num modelo de página
+
+Um elemento de decoração do tipo `'cut'` é um furo que a faca corta na folha de cada página composta em que a decoração do modelo é colocada: uma janela num modelo de capa, um recorte de índice nas aberturas de uma obra de referência. Ele é posicionado e dimensionado como um [elemento de caminho](/pt/docs/configuration-headers-footers#elementos-de-caminho), com `when`, `unless`, `parity` e `pin` como qualquer elemento de decoração, e nunca é pintado: a diagramação o tira da decoração e o coloca nas facas da página, espelhado no outro lado da folha.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Onde fica o furo e a caixa dele.
+  die?: string;                      // Uma forma de dieCuts.shapes, esticada até a caixa.
+  d?: string;                        // Senão, dados de traçado SVG, em unidades da viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Padrão: o da forma; senão, 1.
+  wrap?: false | { gap?: Dimension }; // Padrão: o da forma; senão, 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+O contorno do furo é a forma de faca que `die` nomeia, esticada até a caixa do elemento (a forma dá o tipo, o raio dos cantos, os dados de traçado, `leaves` e `wrap`, mas não a própria caixa); sem `die`, os dados de traçado `d`; sem nenhum dos dois, a própria caixa. Os `leaves` e o `wrap` do próprio elemento prevalecem sobre os da forma.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+O texto nos blocos de uma página composta ainda não contorna um furo: posicione os blocos longe dele e leia o `dieCutText` do preflight. Num modelo de página dupla, um elemento de corte não é dividido entre as duas páginas. O restante dos [modelos de página](/pt/docs/configuration-composed-pages#modelos-de-página) está na referência de configuração.
+
+### Folhas e espelhamento
+
+Um furo atravessa o papel, por isso corta os dois lados de uma folha. A página 1 é um recto, o verso dela é a página 2 da mesma folha, e assim por diante; um capítulo que começa mais adiante no livro conta a partir da primeira página do livro. Uma forma colocada numa página corta também o outro lado da folha, espelhada em relação ao refile: uma janela a 40 mm da borda esquerda de um recto fica a 40 mm da borda direita do verso. Com `leaves: 6` o furo continua pelas cinco folhas seguintes, no mesmo lugar da pilha, e assim fica onde você o colocou em todas as páginas daquele lado e espelhado em todas as do outro.
+
+### Cantos arredondados e livros recortados
+
+`corners` arredonda todas as folhas: por padrão só os cantos do corte da frente (à direita num recto, à esquerda num verso, ao contrário num livro com encadernação à direita), com a lombada em ângulo reto; `edges: 'all'` arredonda os quatro. `outline` recorta todas as folhas num contorno: dados de traçado SVG em unidades da `viewBox`, esticados até o refile de um recto e espelhados nos versos. Quando os dois estão definidos, o contorno prevalece.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // uma casa
+}
+```
+
+### O texto ao redor do furo
+
+Cada furo, ampliado pelo seu `wrap.gap`, é um obstáculo que o texto contorna dos dois lados de cada folha que ele corta, nas páginas de texto corrido: as linhas encurtam ao lado dele, como ao lado de uma imagem contornada pelo texto. Uma forma com `wrap: false` deixa o texto onde está, e o que fica sob o furo sai junto com o recorte.
+
+### A linha de faca no PDF
+
+O fabricante de facas trabalha a partir da linha de faca: o contorno de cada furo e da folha, quando ela é recortada ou tem cantos arredondados, numa chapa que a máquina nunca entinta. `print.dieLine` a define.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (padrão): desenhada em cada página com faca.
+  ink?: string;               // O nome da chapa. Padrão: 'Die'.
+  cmyk?: CmykPercent;         // O equivalente da chapa, como as provas a mostram. Padrão: 100 % magenta.
+  width?: Dimension;          // Espessura do traço. Padrão: 0,25 pt.
+}
+```
+
+A linha é traçada depois das marcas de corte numa chapa `Separation` própria, com pontas e junções arredondadas, e sobreimprime, de modo que nunca vaza uma linha branca nas chapas de baixo. Num PDF com tags ela é um artefato. Fora do PDF/X-1a, que não admite conteúdo opcional, ela fica num grupo de conteúdo opcional chamado **Die line**, que o leitor pode ocultar. A chapa aparece junto com as tintas do trabalho (`inspectPrintPdf` a coloca em `color.spots`), e um trabalho com [`print.plates`](/pt/docs/configuration-pdf-output#impressão-a-duas-tintas) nunca a projeta sobre as suas chapas. Pergunte ao fabricante de facas que nome a chapa deve ter: `Die`, `CutContour`, `Dieline` e `Troquel` são todos usados.
+
+A página em si é impressa inteira: o PDF não recorta o furo. O que estiver composto dentro dele é impresso e sai junto com o papel.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+Na linha de comando, `postext pdf --die-line page|none` substitui `output` numa execução (veja [`pdf`](/pt/docs/command-line#pdf)).
+
+### O que o preflight diz sobre as facas
+
+<table>
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>Gravidade</th>
+      <th>Quando</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>aviso</td><td>Texto dentro do espaço de afastamento de um furo, ou sob um furo que o texto não contorna, com a distância da borda do corte em milímetros. Um por furo e página.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>aviso, ou crítico</td><td>Um furo a menos de 3 mm do refile, onde a faca rasga a borda; crítico quando passa do refile.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>crítico</td><td>Um furo a menos de 3 mm da dobra da lombada, onde as folhas são costuradas ou coladas.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>aviso</td><td>Uma colocação ou um <code>:::diecut</code> que nomeia uma forma que <code>dieCuts.shapes</code> não tem.</td></tr>
+  </tbody>
+</table>
+
+Essas verificações rodam sempre que o preflight está ligado, num trabalho de impressão ou não. Os avisos de configuração informam uma colocação cuja forma não existe (com o id mais parecido como sugestão), uma lista de páginas sem nenhum número, uma forma que o motor descarta (sem id, com um `shape` desconhecido, sem tamanho ou sem traçado) e dados de traçado que ele não consegue ler; nesse caso, a forma corta a sua caixa.
+
+## Nos visualizadores
+
+**Canvas.** `renderPageToCanvas` recorta da página cada furo, e o papel fora de uma folha recortada ou de cantos arredondados, de modo que eles mostram o que está atrás do canvas. Com a opção `beneath`, uma função que devolve o canvas pintado de qualquer página pelo índice, ela desenha dentro de cada furo as páginas que um leitor veria através dele, até onde os furos se alinham: cada página recortada pelos furos de todas as que estão acima dela, uma sombra suave ao longo de cada borda cortada e uma linha fina para a espessura do papel, e a cor da capa depois do fim do livro. `composeThrough(doc, pageIndex, source, target, scale)` desenha a mesma composição num canvas seu.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // páginas já desenhadas, pelo índice
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**Visualizador HTML.** Uma página com faca é recortada com `clip-path: path(evenodd, …)`, a caixa de sangria (ou o contorno da folha) menos os furos, de modo que um furo mostra o fundo do visualizador e nenhuma página por baixo. No layout de tela as páginas não são as de impressão, então não há página por baixo para mostrar.
+
+**Folio.** O Folio mostra um furo como ele aparece com o livro na mão. Numa página aberta, o furo mostra as páginas de baixo, até onde os furos se alinham (um livro-túnel pode mostrar uma página vinte folhas abaixo), com as paredes de papel do corte e uma paralaxe que acompanha a vista. Uma folha que vira tem um furo de verdade, e as sombras passam por ele até a página de baixo. Os cantos arredondados e o contorno de um livro recortado são cortados em todas as folhas, e as bordas do miolo seguem o raio dos cantos.
+
+**O seu próprio visualizador.** Cada página diagramada leva as suas facas em `VDTPage.dieCut`: `holes` e `outline` como caminhos em pixels da página, `sources` (a forma de cada furo) e `wrapGapPx`. `leafSide(doc, i)` diz se uma página é um recto ou um verso, `pageBeneath(doc, i)` qual página está embaixo dela (`-1` depois do fim do livro), `seeThrough(doc, i)` a pilha inteira que um furo mostra, com o recorte de cada camada, e `dieCutPath2D(cut)` transforma o corte num `Path2D`.
+
+## No Sandbox
+
+- **Cores.** A aba **Especial** do seletor de cor tem **Acabamento** e **Brilho**, e oferece o acabamento que o nome da tinta sugere (**Definir o acabamento: …**). O menu **Adicionar uma tinta especial** da paleta acrescenta uma pronta: ouro, prata ou cobre metálico, hot stamping ouro ou prata, quatro fluorescentes, branco opaco e verniz brilho, fosco ou soft touch.
+- **Tabela de tintas.** Cada tinta tem **Acabamento** e **Brilho**, e **Tintas usadas pelas cores** mostra o acabamento de cada uma.
+- **Facas especiais.** **Design › Página e colunas › Facas especiais** reúne as formas de faca, cada uma com um desenho do contorno, as páginas que elas cortam, os cantos arredondados e o contorno de um livro recortado. **Design › Exportação › Preparação para impressão › Linha de faca** define a chapa.
+- **Canvas.** Num livro com facas, a barra de ferramentas tem **Linhas de faca**, que desenha cada faca como uma linha tracejada sobre a página; num livro com tintas especiais, tem **Tintas especiais**, que passa por *planas*, *com brilho* e *mapa de acabamentos*. O navegador lembra os dois.
+- **Verificações.** Os problemas do preflight descritos acima aparecem em **Verificações** com os seus títulos: **Tinta especial**, **Ordem das tintas especiais na impressão**, **Tinta branca em papel branco**, **Texto sob uma faca**, **Faca perto do refile**, **Faca na medianiz**, **Forma de faca desconhecida**.
+
+[Os painéis Design e Verificações](/pt/docs/sandbox-design-checks) e [As visualizações](/pt/docs/sandbox-previews#aba-canvas) descrevem os painéis por inteiro.
+
+## Limites
+
+- A máscara de acabamentos não vê tudo. Uma fórmula desenhada como imagem numa tinta especial vaza em vez de mostrar a tinta, as paradas de um degradê em tintas especiais não são mapeadas, e um SVG que usa uma tinta de verniz continua pintando o seu hex na tela, a menos que seja recolorido. Um branco cujo hex de tela é exatamente `#ffffff` não se distingue do papel: dê a ele um hex um pouco mais escuro.
+- O texto nos blocos de uma página composta ainda não contorna um furo: só o texto corrido faz isso. Verifique as páginas compostas com `dieCutText`.
+- Um elemento de corte num modelo de página dupla não é dividido entre as duas páginas.
+- O visualizador HTML corta os furos nas páginas compostas, mas não desenha as páginas de baixo.
+- O PDF imprime a página inteira e desenha a linha de faca: o furo é trabalho do fabricante de facas.

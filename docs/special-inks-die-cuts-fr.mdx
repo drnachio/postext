@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-fr.mdx */}
+
+export const metadata = {
+  title: 'Encres spéciales et découpes',
+  sidebarTitle: 'Encres spéciales et découpes',
+  description: 'Cinquièmes couleurs, encres métallisées et fluorescentes, dorure à chaud, blanc opaque et vernis comme tons directs dotés d’une finition, et découpes : trous à travers un ou plusieurs feuillets, coins arrondis et livres découpés en forme, le tracé de découpe dans le PDF, le contrôle en amont et la façon dont chaque visionneuse les montre',
+  lang: 'fr',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "Cette page traite de ce qu’un imprimeur ajoute à un livre en plus des quatre encres habituelles. Une cinquième encre peut être la couleur exacte d’une marque, un or ou un argent, une dorure brillante, une encre fluo très vive, un blanc pour un papier kraft ou de couleur, ou un vernis transparent. Chacune est une couleur du livre qui dit ce qu’elle est, et le PDF lui donne sa propre plaque pour l’imprimeur. Une découpe est un trou percé à travers les pages, des coins arrondis ou un livre taillé selon une forme. Les trous se définissent dans les réglages, le texte les contourne, et le PDF dessine la ligne que suit l’outil de découpe.",
+};
+
+# Encres spéciales et découpes
+
+**Une encre spéciale est un ton direct doté d’une finition. Une découpe est un contour défini dans la configuration, que la forme de découpe tranche à travers les feuillets.**
+
+Toutes deux relèvent de la mise en forme du livre : elles se règlent donc dans la configuration. Une finition ne déplace jamais une ligne : la mise en page voit une couleur, le PDF une encre sur sa propre plaque, et les visionneuses décident comment la montrer. Une découpe change bien la page, puisque le texte s’écarte d’un trou, mais le Markdown ne nomme la forme qu’à l’endroit où le contenu en a besoin.
+
+## Cinquièmes couleurs
+
+Une cinquième couleur est toute encre que le travail imprime en plus du cyan, du magenta, du jaune et du noir : un Pantone qui doit être respecté exactement, une couleur d’entreprise préparée par le fabricant d’encres, ou l’une des encres spéciales ci-dessous. Dans Postext, c’est un ton direct, une couleur avec `model: 'spot'` dont le `spot` nomme l’encre, donne son aspect à 100 % en CMJN (la substitution que montre une épreuve) et sa teinte. Un fichier CMJN ou PDF/X l’imprime sur une plaque `Separation` qui porte le nom de l’encre ; l’écran et un fichier RVB peignent son `hex`. [Tons directs](/fr/docs/configuration-pdf-output#tons-directs) décrit le modèle en entier.
+
+La [table des encres](/fr/docs/configuration-pdf-output#la-table-des-encres) (`print.inks`) décrit une encre telle que l’imprimeur la recevra, quel que soit le nom que lui donnent les couleurs, les images SVG et les fichiers importés : son nom de plaque, ses alias, si elle s’imprime en quadrichromie, sa substitution, sa surimpression et, pour une encre spéciale, sa finition.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Finitions
+
+Un ton direct sans finition est une encre ordinaire. Avec une finition, c’est une encre spéciale :
+
+<table>
+  <thead>
+    <tr>
+      <th>Finition</th>
+      <th>Ce que c’est</th>
+      <th>Brillance</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Une encre à pigments métalliques : or, argent, cuivre (Pantone 871–877 C, les séries 8000 et 10000).</td><td><code>satin</code> par défaut, ou <code>gloss</code> ou <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Un film marqué à chaud sur la feuille par un cliché chauffé, après l’impression. La plaque est le document à partir duquel le cliché est gravé.</td><td><code>gloss</code> par défaut, ou <code>satin</code> ou <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Une encre plus vive que tout mélange de quadrichromie (Pantone 801–814 C).</td><td>aucune</td></tr>
+    <tr><td><code>white</code></td><td>Un blanc couvrant, pour le kraft, un papier de couleur ou un film, posé en général sous les couleurs.</td><td>aucune</td></tr>
+    <tr><td><code>varnish</code></td><td>Une couche transparente sur des zones choisies (vernis sélectif UV, vernis mat ou toucher doux).</td><td><code>gloss</code> par défaut, ou <code>satin</code>, <code>matte</code> ou <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // Ignorée pour les encres fluorescentes et blanches.
+}
+```
+
+La finition se place sur le ton direct (`spot.finish`) ou sur l’entrée de l’encre dans la table des encres (`print.inks[].finish`) ; celle de la table l’emporte. La table est l’endroit qui convient à une encre que les couleurs ne définissent pas : un SVG ou un fichier importé qui nomme `Gold` y reçoit sa finition métallisée. Un type que Postext ne connaît pas est écarté, de même qu’une brillance qui ne s’applique pas : aucune sur une encre fluorescente ou blanche, et le toucher doux sur un vernis seulement.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Comment s’imprime une encre spéciale
+
+- **Une plaque à elle.** Chaque encre spéciale s’imprime sur sa propre `Separation`, sous le nom de plaque que lui donne la table des encres (`pdfName`, sinon son nom). Elle ne se rabat jamais sur la quadrichromie, sauf si son entrée dans la table indique `output: 'process'`.
+- **Surimpression.** Un blanc et un vernis sont en surimpression, sauf si `overprint: false` dit le contraire, sur la couleur ou dans la table des encres : le blanc se trouve sous les couleurs et le vernis par-dessus, et aucun des deux ne doit défoncer les autres plaques. Les encres métallisées, les dorures et les encres fluorescentes défoncent comme n’importe quel ton direct.
+- **Ordre sous presse.** Le fichier contient des plaques, pas un ordre. Le blanc s’imprime en premier et le vernis en dernier ; le contrôle en amont énumère l’un et l’autre (`inkPressOrder`) pour que vous l’indiquiez à l’imprimeur, qui règle l’ordre sous presse.
+- **Travaux sur quelques plaques.** Dans un travail [`print.plates`](/fr/docs/configuration-pdf-output#impression-à-deux-encres), un blanc ou un vernis que le travail ne nomme pas est omis, et non projeté sur les plaques de couleur, et le rendu avertit (`finishInkDropped`). Les encres métallisées, les dorures et les encres fluorescentes sont projetées comme tout autre ton direct.
+- **Fichiers RVB et en niveaux de gris.** Un vernis ne pose rien sur la page ; les autres finitions peignent leur `hex`.
+
+### À l’écran
+
+Le canvas, la visionneuse HTML et l’EPUB peignent chaque encre spéciale avec son `hex`, sauf un vernis, qui est transparent et ne peint rien. Donnez quand même à un vernis un hex qui lui soit propre, car un rendu pour l’impression distingue les encres par leur hex.
+
+`RenderPageOptions.finishes` montre les finitions sur le canvas :
+
+- `'flat'` (par défaut) : le hex de chaque encre, et rien pour un vernis.
+- `'sheen'` : un balayage de lumière sur la page allume l’encre métallisée et la dorure (davantage pour une brillance plus forte), un halo rehausse l’encre fluorescente, et un reflet montre où se trouve le vernis.
+- `'map'` : les plaques spéciales en fausses couleurs sur une page estompée, comme les marque une épreuve de presse : métallisé et dorure en ambre, fluorescent en rose, vernis en cyan, blanc opaque en bleu.
+
+Les deux aperçus lisent le **masque de finitions** de la page. `renderFinishMask(page, doc, { scale })` le renvoie, ou `undefined` pour une page qui ne peint aucune encre spéciale et qui ne coûte alors rien. C’est un bitmap RGBA : le rouge est le métal (encre métallisée et dorure), le vert la brillance (brillant 1, satiné 0,7, mat 0,4, toucher doux 0,2), le bleu la fluorescence et l’alpha le blanc opaque, chacun multiplié par la teinte de l’encre. Un hôte qui éclaire ses propres pages, comme Folio, le lit directement. Tout ce qui s’imprime par-dessus une encre spéciale la retire du masque, les images selon leur silhouette, sauf s’il est en surimpression.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined sans encre spéciale
+```
+
+### Dans Folio
+
+Folio éclaire les encres spéciales comme les montrerait le papier sous ses lampes. L’encre métallisée et la dorure reflètent la pièce comme un métal teinté par la couleur de l’encre, la dorure presque comme un miroir. L’encre fluorescente ressort plus vive que le papier. Le blanc opaque couvre la teinte du papier et se lit donc sur le kraft ou sur un papier de couleur. Un vernis brillant accroche les reflets quand un feuillet tourne, un vernis mat les ternit et le toucher doux les efface. Seules les pages qui portent une encre spéciale reçoivent un masque, à la moitié de la résolution de la page : un livre qui n’en a pas se dessine comme avant.
+
+### Ce que dit le contrôle en amont des encres
+
+Dans un travail d’impression (une norme PDF/X, ou CMJN), le contrôle en amont ajoute :
+
+- `spotInkFinish` (information) : chaque encre spéciale qu’utilisent les pages, avec sa finition et sa brillance, pour que la commande passée à l’imprimeur les nomme toutes.
+- `inkPressOrder` (information) : les blancs qui s’impriment en premier et les vernis qui s’impriment en dernier.
+- `whiteInkOnWhite` (avertissement) : un blanc sur une page au papier blanc ou non défini, où il ne montre rien. Donnez à la couleur du papier (`page.backgroundColor`) celle du support sur lequel il s’imprime.
+
+Un blanc ou un vernis ne déclenche jamais `overprintWhite` : ils ne posent volontairement aucune couleur.
+
+## Deviner une finition d’après un nom
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` lit le nom qu’un nuancier, une séparation ou une table des encres donne à une encre et renvoie la finition que ce nom suggère, ou `undefined`. Il connaît les mots de chaque finition et de chaque brillance dans les dix langues du site et dans les noms des nuanciers, ainsi que les numéros de Pantone : 801 à 814 sont fluorescents, 871 à 877, la série 8000 et la série 10000 métallisés. Un mot de vernis ou de dorure l’emporte sur un mot de couleur (`Gold foil` est une dorure, `Barniz oro` un vernis), un mot de fluorescence sur le blanc, un métal sur le blanc (`白金`, le platine). Le français `or` est laissé de côté, parce que c’est aussi la conjonction anglaise ; `Or métallisé` se lit quand même comme métallisé grâce à son second mot.
+
+C’est une indication, et rien ne l’applique en silence : le Sandbox la propose sous forme de bouton, et le [skill postext-port](/fr/docs/skill) la signale.
+
+## Découpes
+
+Une découpe est le travail d’une forme de découpe en filets d’acier, après l’impression : une fenêtre dans une couverture, un trou qui traverse un livre cartonné, des encoches d’onglets, des coins arrondis, un livre découpé selon le contour d’une maison. La propriété `dieCuts` décrit les formes de découpe du livre ; le texte s’écarte d’un trou sur chaque page que celui-ci traverse.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // Les formes de découpe du livre.
+  pages?: DieCutPlacement[];           // Formes placées sur des pages par numéro.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Formes de découpe
+
+Une forme de découpe se place à partir du coin supérieur gauche de la coupe de la page où elle est posée.
+
+<table>
+  <thead>
+    <tr>
+      <th>Propriété</th>
+      <th>Type</th>
+      <th>Défaut</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>requis</td><td>Le nom que lui donnent les placements et <code>:::diecut</code>.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>aucun</td><td>Un nom pour les personnes ; le Sandbox l’affiche.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>requis</td><td>Un cercle est le plus grand que contient la boîte, centré dedans ; une ellipse remplit la boîte.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>requis</td><td>Depuis les bords gauche et supérieur de la coupe.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>requis</td><td>La boîte que remplit la forme.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Les coins d’un <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>aucun</td><td>Les données de tracé SVG d’un <code>path</code> (<code>M L H V C S Q T A Z</code>), étirées de <code>viewBox</code> à la boîte.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>La largeur et la hauteur de l’espace dans lequel <code>d</code> est écrit.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Combien de feuillets le trou traverse : celui où il est placé, puis les suivants.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>Le texte reste à <code>gap</code> du trou ; <code>false</code> le laisse passer sous le trou et partir avec la découpe.</td></tr>
+  </tbody>
+</table>
+
+### Trois façons de placer une forme
+
+**Par numéro de page.** `dieCuts.pages` place une forme sur une liste de pages : `'5'`, `'3-12'`, `'3,7,11-13'`. Les numéros comptent les pages du livre par position, 1 étant sa première page, et non les folios imprimés. Dans un livre de plusieurs chapitres, ils comptent depuis le début du livre : un chapitre mis en page seul découpe donc toujours la bonne page.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Là où le contenu le décide.** Un conteneur `:::diecut` découpe chaque page où tombe son contenu, comme [`:::paper`](/fr/docs/document-format-directives#paper) change de papier. Son contenu commence sur une nouvelle page, et ce qui suit le `:::` de fermeture commence aussi sur une nouvelle page. Un conteneur placé dans un autre découpe sa propre forme ; une forme absente de `dieCuts.shapes` est signalée (**Forme de découpe inconnue**, `dieCutUnknown`), et ces pages sont composées à part sans être découpées. Voir [`:::diecut`](/fr/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Regardez dedans
+La fenêtre encadre la page de titre qui se trouve dessous.
+:::
+```
+
+**Dans un gabarit de page.** Sur une page composée, un élément de décor de type `'cut'` place un trou comme n’importe quel élément tracé, avec `when` et `unless` pour le réserver aux pages qui le demandent. Voir [Éléments de découpe dans un gabarit de page](#éléments-de-découpe-dans-un-gabarit-de-page).
+
+### Éléments de découpe dans un gabarit de page
+
+Un élément de décor de type `'cut'` est un trou que la forme de découpe perce dans le feuillet de chaque page composée sur laquelle le décor du gabarit est posé : une fenêtre dans un gabarit de couverture, une encoche d’onglet sur les ouvertures d’un ouvrage de référence. Il se place et se dimensionne comme un [élément tracé](/fr/docs/configuration-headers-footers#éléments-tracé), avec `when`, `unless`, `parity` et `pin` comme tout élément de décor, et il n’est jamais dessiné : la mise en page le retire du décor et le range parmi les découpes de la page, en miroir sur l’autre face du feuillet.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Où se trouve le trou, et sa boîte.
+  die?: string;                      // Une forme de dieCuts.shapes, étirée à la boîte.
+  d?: string;                        // Sinon des données de tracé SVG, en unités de viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Par défaut : celui de la forme, sinon 1.
+  wrap?: false | { gap?: Dimension }; // Par défaut : celui de la forme, sinon 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+Le contour du trou est la forme de découpe que nomme `die`, étirée à la boîte de l’élément (la forme donne son type, son rayon de coin, ses données de tracé, `leaves` et `wrap`, mais pas sa propre boîte) ; sans `die`, ce sont les données de tracé `d` ; sans l’un ni l’autre, la boîte elle-même. Les `leaves` et `wrap` propres à l’élément l’emportent sur ceux de la forme.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+Le texte des blocs d’une page composée ne contourne pas encore un trou : posez les blocs à l’écart, et lisez le `dieCutText` du contrôle en amont. Dans un gabarit de double page, un élément de découpe n’est pas partagé entre les deux pages. Le reste des [gabarits de page](/fr/docs/configuration-composed-pages#gabarits-de-page) se trouve dans la référence de configuration.
+
+### Feuillets et symétrie
+
+Un trou traverse le papier : il découpe donc les deux faces d’un feuillet. La page 1 est un recto, son dos, la page 2, le verso du même feuillet, et ainsi de suite ; un chapitre qui commence plus loin dans le livre compte depuis la première page du livre. Une forme placée sur une page découpe aussi l’autre face de son feuillet, en miroir : une fenêtre à 40 mm du bord gauche d’un recto est à 40 mm du bord droit de son verso. Avec `leaves: 6`, le trou traverse aussi les cinq feuillets suivants, au même endroit de la pile : il se trouve là où vous l’avez placé sur chaque page de ce côté, et en miroir sur chaque page de l’autre.
+
+### Coins arrondis et livres découpés en forme
+
+`corners` arrondit chaque feuillet : par défaut seulement les coins côté gouttière (à droite sur un recto, à gauche sur un verso, inversés dans un livre relié à droite), le dos restant droit ; `edges: 'all'` arrondit les quatre. `outline` découpe chaque feuillet selon un contour : des données de tracé SVG en unités de `viewBox`, étirées à la coupe d’un recto et en miroir sur les versos. Quand les deux sont définis, le contour l’emporte.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // une maison
+}
+```
+
+### Le texte autour d’un trou
+
+Chaque trou, agrandi de son `wrap.gap`, est un obstacle que le texte contourne sur les deux faces de chaque feuillet qu’il découpe, sur les pages où le texte coule : les lignes sont raccourcies à côté de lui, comme à côté d’une image habillée. Une forme avec `wrap: false` laisse le texte où il est, et ce qui se trouve sous le trou part avec la découpe.
+
+### Le tracé de découpe dans le PDF
+
+Le fabricant de formes travaille à partir du tracé de découpe : le contour de chaque trou, et celui du feuillet quand il est découpé en forme ou arrondi, sur une plaque que la presse n’encre jamais. `print.dieLine` le règle.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (par défaut) : tracé sur chaque page qui a une découpe.
+  ink?: string;               // Le nom de la plaque. Par défaut, 'Die'.
+  cmyk?: CmykPercent;         // La substitution de la plaque, ce que montrent les épreuves. Par défaut, 100 % magenta.
+  width?: Dimension;          // L’épaisseur du trait. Par défaut, 0,25 pt.
+}
+```
+
+Le trait est tracé après les traits de coupe, sur une plaque `Separation` à part, avec des extrémités et des jonctions arrondies, et il est en surimpression : il ne défonce donc jamais un filet blanc dans les plaques qu’il recouvre. Dans un PDF balisé, c’est un artefact. Hors PDF/X-1a, qui n’admet pas de contenu optionnel, il se trouve dans un groupe de contenu optionnel nommé **Die line**, que le lecteur peut masquer. La plaque figure parmi les encres du travail (`inspectPrintPdf` la place dans `color.spots`), et un travail [`print.plates`](/fr/docs/configuration-pdf-output#impression-à-deux-encres) ne la projette jamais sur ses plaques. Demandez au fabricant de formes comment la plaque doit s’appeler : `Die`, `CutContour`, `Dieline` et `Troquel` sont tous en usage.
+
+La page elle-même s’imprime entière : le PDF n’en retire pas le trou. Ce qui est composé à l’intérieur s’imprime et part avec le papier à la découpe.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+En ligne de commande, `postext pdf --die-line page|none` remplace `output` le temps d’une exécution (voir [`pdf`](/fr/docs/command-line#pdf)).
+
+### Ce que dit le contrôle en amont des découpes
+
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Gravité</th>
+      <th>Quand</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>avertissement</td><td>Du texte dans la marge d’habillage d’un trou, ou sous un trou sans habillage, avec sa distance au bord de la découpe en millimètres. Un par trou et par page.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>avertissement, ou critique</td><td>Un trou à moins de 3 mm de la coupe, là où la forme déchire le bord ; critique quand il dépasse la coupe.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>critique</td><td>Un trou à moins de 3 mm du pli du dos, là où les feuillets sont cousus ou collés.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>avertissement</td><td>Un placement ou un <code>:::diecut</code> qui nomme une forme absente de <code>dieCuts.shapes</code>.</td></tr>
+  </tbody>
+</table>
+
+Ces contrôles s’exécutent dès que le contrôle en amont est actif, dans un travail d’impression ou non. Les avertissements de configuration signalent un placement dont la forme n’existe pas (avec l’identifiant le plus proche en suggestion), une liste de pages sans aucun numéro de page, une forme que le moteur écarte (sans identifiant, avec un `shape` inconnu, sans taille ou sans tracé) et des données de tracé illisibles, auquel cas la forme découpe sa boîte.
+
+## Dans les visionneuses
+
+**Canvas.** `renderPageToCanvas` retire de la page chaque trou, et le papier hors d’un feuillet découpé en forme ou arrondi, pour qu’ils laissent voir ce qui se trouve derrière le canvas. Avec l’option `beneath`, une fonction qui renvoie le canvas peint de n’importe quelle page d’après son index, il dessine dans chaque trou les pages qu’un lecteur verrait au travers, aussi loin que les trous s’alignent : chaque page rognée par les trous de toutes les pages au-dessus d’elle, une ombre douce le long de chaque bord découpé, un trait fin pour l’épaisseur du papier, et la couleur du fond au-delà de la fin du livre. `composeThrough(doc, pageIndex, source, target, scale)` dessine la même composition sur un canvas à vous.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // pages déjà dessinées, par index
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**Visionneuse HTML.** Une page découpée est rognée avec `clip-path: path(evenodd, …)`, la boîte de fond perdu (ou le contour du feuillet) moins ses trous : un trou montre donc le fond de la visionneuse, sans page en dessous. Dans la mise en page pour l’écran, les pages ne sont pas les pages imprimées : il n’y a pas de page en dessous à montrer.
+
+**Folio.** Folio montre un trou tel qu’il se présente en main. Sur une page ouverte, le trou montre les pages qui sont dessous, aussi loin que les trous s’alignent (un livre tunnel peut montrer une page vingt feuillets plus bas), avec les parois de papier de la découpe et une parallaxe qui suit le point de vue. Un feuillet qui tourne a un vrai trou, et les ombres le traversent jusqu’à la page du dessous. Les coins arrondis et un contour en forme sont découpés sur chaque feuillet, et les tranches du bloc des pages suivent le rayon des coins.
+
+**Votre propre visionneuse.** Chaque page mise en page porte ses découpes dans `VDTPage.dieCut` : `holes` et `outline` comme tracés en pixels de page, `sources` (la forme de chaque trou) et `wrapGapPx`. `leafSide(doc, i)` indique si une page est un recto ou un verso, `pageBeneath(doc, i)` quelle page se trouve dessous (`-1` au-delà de la fin du livre), `seeThrough(doc, i)` toute la pile que montre un trou, avec la zone de rognage de chaque couche, et `dieCutPath2D(cut)` transforme la découpe en `Path2D`.
+
+## Dans le Sandbox
+
+- **Couleurs.** L’onglet **Ton direct** du sélecteur de couleur a **Finition** et **Brillance**, et propose la finition que suggère le nom de l’encre (**Appliquer la finition : …**). Le menu **Ajouter une encre spéciale** de la palette en ajoute une toute prête : or, argent ou cuivre métallisé, dorure or ou argent, quatre encres fluo, blanc opaque, et vernis brillant, mat ou toucher doux.
+- **Table des encres.** Chaque encre a **Finition** et **Brillance**, et **Encres utilisées par les couleurs** montre la finition de chacune.
+- **Découpes.** **Maquette › Page et colonnes › Découpes** contient les formes de découpe, chacune avec un dessin de son contour, les pages qu’elles découpent, les coins arrondis et le contour d’un livre découpé en forme. **Maquette › Export › Préparation pour l’impression › Tracé de découpe** règle la plaque.
+- **Canvas.** Pour un livre avec des découpes, la barre d’outils a **Tracés de découpe**, qui dessine chaque forme en pointillés sur la page ; pour un livre avec des encres spéciales, elle a **Encres spéciales**, qui passe par *à plat*, *avec brillance* et *carte des finitions*. Les deux choix sont mémorisés.
+- **Vérifications.** Les constats du contrôle en amont décrits plus haut apparaissent dans **Vérifications** avec leurs titres : **Encre spéciale**, **Ordre des encres spéciales sous presse**, **Encre blanche sur papier blanc**, **Texte sous une découpe**, **Découpe près de la coupe**, **Découpe dans le petit fond**, **Forme de découpe inconnue**.
+
+[Maquette et vérifications](/fr/docs/sandbox-design-checks) et [Aperçus](/fr/docs/sandbox-previews#onglet-canvas) décrivent les panneaux en détail.
+
+## Limites
+
+- Le masque de finitions ne voit pas tout. Une formule dessinée comme image dans une encre spéciale défonce au lieu de montrer son encre, les points d’un dégradé dans une encre spéciale ne sont pas pris en compte, et un SVG qui utilise une encre de vernis peint toujours son hex à l’écran, sauf s’il est recoloré. Un blanc dont le hex d’écran est exactement `#ffffff` ne se distingue pas de la feuille : donnez-lui un hex un peu plus sombre.
+- Le texte des blocs d’une page composée ne contourne pas encore un trou : seul le texte courant le fait. Vérifiez les pages composées avec `dieCutText`.
+- Un élément de découpe dans un gabarit de double page n’est pas partagé entre les deux pages.
+- La visionneuse HTML découpe les trous des pages composées mais ne dessine pas les pages qui sont dessous.
+- Le PDF imprime la page entière et dessine le tracé de découpe : le trou est le travail du fabricant de formes.

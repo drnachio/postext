@@ -152,6 +152,10 @@ Cinq noms de conteneur sont reconnus dans le flux du texte ; `:::frame` et `::
       <td>Une suite de pages imprimées sur un autre papier, comme un cahier de planches sur couché brillant dans un livre sur papier mat. Seule la visionneuse Folio l’affiche.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Une suite de pages découpées par une forme de la configuration : une fenêtre, un trou à travers plusieurs feuillets. Voir <a href="#diecut"><code>:::diecut</code></a> plus bas.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Des blocs composés dans plusieurs colonnes qui leur sont propres : dans un encadré, dans la colonne de texte, ou sur toute la largeur d’une page à plusieurs colonnes. Voir <a href="#columns"><code>:::columns</code></a> plus bas.</td>
     </tr>
@@ -376,6 +380,19 @@ Les attributs sont ceux des réglages `folio.paper`, et tous sont facultatifs. U
 </table>
 
 Un `:::paper` placé dans un autre ne remplace que les attributs qu’il définit, et il commence et se termine lui aussi par un saut de page. Dans un `:::callout`, les délimiteurs sont ignorés. Une valeur que le moteur ne sait pas lire est écartée, et le Sandbox la signale par un avertissement **Attribut de papier non valide** (`paperAttributeInvalid` dans les `contentWarnings` du document).
+
+### `:::diecut`
+
+Une découpe relève de la mise en forme du livre : sa forme, sa taille et sa position sur la page sont une forme de découpe de la configuration (`dieCuts.shapes`, voir [Encres spéciales et découpes](/fr/docs/special-inks-die-cuts#formes-de-découpe)). Quand c’est le contenu qui décide quelles pages sont découpées, enveloppez-le dans un conteneur `:::diecut` qui nomme la forme :
+
+```md
+:::diecut{die=window}
+## La maison
+Par la fenêtre, le jardin de la page suivante.
+:::
+```
+
+Chaque page composée avec du contenu issu du conteneur est découpée par la forme, de même que l’autre face de chaque feuillet où tombe ce contenu, en miroir. Comme avec `:::paper`, le contenu commence sur une nouvelle page et ce qui suit le `:::` de fermeture commence aussi sur une nouvelle page. Un `:::diecut` placé dans un autre découpe la forme du conteneur intérieur. `die` est le seul attribut. Une forme absente de `dieCuts.shapes` ne découpe rien : les pages sont quand même composées à part, et le Sandbox signale un avertissement **Forme de découpe inconnue** (`dieCutUnknown` dans les `contentWarnings` du document). Pour découper des pages par numéro, utilisez plutôt `dieCuts.pages`.
 
 ### `:::pagebreak`
 

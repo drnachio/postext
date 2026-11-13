@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'de',
   lastUpdated: '2026-11-10',
   readingTime: '14 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Diese Seite behandelt den rechten Bereich der Sandbox, in dem die fertigen Seiten erscheinen. Fünf Tabs zeigen dasselbe Buch auf fünf Arten: als Seitenbilder, als PDF-Datei, als 3D-Buch zum Durchblättern, als Webseite und als E-Book im Format EPUB. Ein sechster erstellt aus den Kapiteln, die Sie wählen, ein SCORM-Paket für die Lernplattform einer Schule oder eines Unternehmens. Ein Wechsel des Tabs setzt das Buch nicht neu, deshalb zeigt jeder Tab dieselben Seiten. Die Seite erklärt, was jeder Tab zeigt und was Sie darin tun können.",
 };
@@ -35,6 +35,10 @@ Eine Werkzeugleiste oben im Canvas-Ansichtsbereich bietet:
 - **Anpassungsmodi** – An Seitenbreite oder an Seitenhöhe anpassen. Lässt sich ein- und ausschalten; die Anpassung wird bei einer Größenänderung des Fensters automatisch neu berechnet.
 - **Ansichtsmodi** – Einzelseite (eine Seite je Reihe) oder Doppelseite (buchartige Anordnung, bei der die erste Seite allein rechts steht und die folgenden Seiten zu Doppelseiten gepaart werden). Ein rechts gebundenes Buch (`page.binding`, vertikales Chinesisch) zeigt seine Doppelseiten andersherum: Seite 1 allein links, dann `[3 | 2]`, `[5 | 4]`. Auf einer Seite im senkrechten Satz trifft ein Klick das Zeichen unter dem Zeiger, und die Einfügemarke ist ein Balken quer über die Spalte.
 - **Druckvorschau** (Symbol `Printer`) – Zeigt die Seiten so, wie sie gedruckt werden, standardmäßig aus und vom Browser gespeichert: jede Farbe über das Ausgabeprofil aus *Druckvorbereitung* separiert und auf dem eigenen Weiß des Papiers gezeigt, große schwarze Flächen in Tiefschwarz; ein auf Graustufen gezwungenes PDF erscheint allein in schwarzer Druckfarbe. Nur was gedruckt wird: keine Bildschirmhilfslinien und keine Umrisse (die Befunde des Preflights stehen unter **Prüfungen**). Der Tab Folio teilt den Schalter. Die Druckvorschau zeichnet die Seiten neu und setzt sie nie neu.
+- **Stanzlinien** (Symbol `Scissors`, in einem Buch mit Stanzungen) – Zeichnet die Stanzform jedes Lochs und die Kontur eines geformten oder abgerundeten Blatts als gestrichelte Linie über die Seite.
+- **Sonderfarben** (Symbol `Sparkles`, in einem Buch mit Spezialfarben) – Schaltet durch drei Ansichten: *flach*, jede Druckfarbe in ihrer Bildschirmfarbe und ein Lack gar nicht; *mit Glanz*, Metallicfarbe und Heißfolie von einem Lichtstreif beleuchtet, Neonfarbe leuchtend und der Lack an seinem Glanzlicht erkennbar; und *Veredelungskarte*, die Sonderplatten in Falschfarben über einer blassen Seite (Metallic und Heißfolie bernsteinfarben, Neon pink, Lack cyan, Deckweiß blau). Siehe [Spezialfarben und Stanzungen](/de/docs/special-inks-die-cuts#auf-dem-bildschirm).
+
+Der Browser merkt sich beide Einstellungen, und keine setzt die Seiten neu.
 
 Seiten werden verzögert über `IntersectionObserver` gerendert – nur sichtbare Seiten (plus ein Rand von 200 px) werden auf das Canvas gezeichnet, was den GPU-Speicherbedarf bei langen Dokumenten niedrig hält.
 

@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total de tinta, em porcentagem.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // A tabela de tintas: nomes, aliases, quadricromia.
+  inks?: PrintInk[];                       // A tabela de tintas: nomes, aliases, quadricromia, acabamentos.
   plates?: PrintPlatesConfig;              // As chapas do trabalho: impressão a duas tintas.
   imageColor?: PrintImageColorConfig;      // Como as imagens são lidas: perfis, cinza.
+  dieLine?: PrintDieLineConfig;            // A linha de faca das facas especiais do livro.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>veja <a href="/pt/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>O que o preflight verifica e os limites dele.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>A linha de faca das páginas com faca especial (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> ou <code>'none'</code>), o nome da chapa <code>ink</code>, o equivalente <code>cmyk</code> (100 % magenta) e a espessura do traço <code>width</code> (0,25 pt). Veja <a href="/pt/docs/special-inks-die-cuts#a-linha-de-faca-no-pdf">A linha de faca no PDF</a>.</td>
     </tr>
   </tbody>
 </table>

@@ -152,6 +152,10 @@ Cinco nomes de contêiner são reconhecidos no fluxo do texto; `:::frame` e `:::
       <td>Uma sequência de páginas impressas em outro papel, como um caderno de pranchas em papel brilhante dentro de um livro em papel fosco. Só o visualizador Folio mostra isso.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Uma sequência de páginas cortadas por uma faca das configurações: uma janela, um furo que atravessa várias folhas. Veja <a href="#diecut"><code>:::diecut</code></a> abaixo.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Blocos compostos em colunas próprias: dentro de um boxe, na coluna de texto ou ao longo de uma página de várias colunas. Veja <a href="#columns"><code>:::columns</code></a> abaixo.</td>
     </tr>
@@ -382,6 +386,19 @@ Os atributos são os das configurações `folio.paper`, e todos são opcionais. 
 </table>
 
 Um `:::paper` dentro de outro só substitui os atributos que define, e também começa e termina com uma quebra de página. Dentro de um `:::callout`, as linhas `:::paper` são ignoradas. Um valor que o motor não consegue ler é descartado, e o Sandbox o lista como um aviso **Atributo de papel inválido** (`paperAttributeInvalid` nos `contentWarnings` do documento).
+
+### `:::diecut`
+
+Uma faca especial pertence à forma do livro: o formato, o tamanho e o lugar dela na página são uma forma de faca das configurações (`dieCuts.shapes`, veja [Tintas especiais e facas](/pt/docs/special-inks-die-cuts#formas-de-faca)). Quando é o conteúdo que decide quais páginas são cortadas, envolva-o num contêiner `:::diecut` que nomeie a faca:
+
+```md
+:::diecut{die=window}
+## A casa
+Pela janela, o jardim da página seguinte.
+:::
+```
+
+Toda página composta com conteúdo de dentro do contêiner é cortada pela faca, assim como o outro lado de cada folha em que ele cai, espelhado. Como com `:::paper`, o conteúdo começa numa página nova e o que vem depois do `:::` de fechamento também. Um `:::diecut` dentro de outro corta a faca do interno. `die` é o único atributo. Uma faca que `dieCuts.shapes` não tem não corta nada: as páginas continuam sendo compostas à parte, e o Sandbox lista um aviso **Forma de faca desconhecida** (`dieCutUnknown` nos `contentWarnings` do documento). Para cortar páginas pelo número, use `dieCuts.pages`.
 
 ### `:::pagebreak`
 

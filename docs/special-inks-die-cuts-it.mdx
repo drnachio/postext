@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-it.mdx */}
+
+export const metadata = {
+  title: 'Inchiostri speciali e fustelle',
+  sidebarTitle: 'Inchiostri speciali e fustelle',
+  description: 'Quinti colori, inchiostri metallizzati e fluorescenti, stampa a caldo, bianco coprente e vernici come tinte piatte con una finitura, e fustelle: fori che attraversano uno o più fogli, angoli arrotondati e libri sagomati, la linea di fustella nel PDF, il preflight e il modo in cui ogni visualizzatore li mostra',
+  lang: 'it',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "Questa pagina parla di ciò che una tipografia aggiunge a un libro oltre ai quattro inchiostri abituali. Un quinto inchiostro può essere il colore esatto di un marchio, un oro o un argento, una lamina lucida, un inchiostro fluorescente molto acceso, un bianco per la carta kraft o colorata, oppure una vernice trasparente. Ognuno è un colore del libro che dice che cosa è, e il PDF gli dà una lastra propria per la tipografia. Una fustella è un foro tagliato attraverso le pagine, degli angoli arrotondati o un libro tagliato secondo una sagoma. I fori si definiscono nelle impostazioni, il testo ci gira attorno, e il PDF disegna la linea che segue l’utensile di taglio.",
+};
+
+# Inchiostri speciali e fustelle
+
+**Un inchiostro speciale è una tinta piatta con una finitura. Una fustella è un contorno definito nella configurazione, che lo stampo taglia attraverso i fogli.**
+
+Entrambi appartengono alla forma del libro, quindi stanno entrambi nella configurazione. Una finitura non sposta mai una riga: l’impaginazione vede un colore, il PDF un inchiostro su una lastra propria, e i visualizzatori decidono come mostrarlo. Una fustella invece cambia la pagina, perché il testo si tiene lontano da un foro, ma il Markdown nomina la fustella solo dove il contenuto ne ha bisogno.
+
+## Quinti colori
+
+Un quinto colore è qualsiasi inchiostro che il lavoro stampa oltre a ciano, magenta, giallo e nero: un Pantone da rispettare esattamente, un colore aziendale preparato dal produttore di inchiostri, o uno degli inchiostri speciali descritti più avanti. In Postext è una tinta piatta, un colore con `model: 'spot'` il cui `spot` nomina l’inchiostro, ne dà l’aspetto al 100 % in CMYK (il sostituto che mostra una prova di stampa) e la tinta. Un file CMYK o PDF/X lo stampa su una lastra `Separation` che porta il nome dell’inchiostro; lo schermo e un file RGB ne dipingono l’`hex`. [Tinte piatte](/it/docs/configuration-pdf-output#tinte-piatte) spiega il modello per intero.
+
+La [tabella degli inchiostri](/it/docs/configuration-pdf-output#la-tabella-degli-inchiostri) (`print.inks`) descrive un inchiostro come lo riceverà la tipografia, comunque lo chiamino i colori, le immagini SVG e i file importati: il nome della lastra, gli alias, se si stampa in quadricromia, il sostituto, la sovrastampa e, per un inchiostro speciale, la finitura.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Finiture
+
+Una tinta piatta senza finitura è un inchiostro normale. Con una finitura, è un inchiostro speciale:
+
+<table>
+  <thead>
+    <tr>
+      <th>Finitura</th>
+      <th>Che cos’è</th>
+      <th>Lucentezza</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Un inchiostro con pigmento metallico: oro, argento, rame (Pantone 871–877 C, le serie 8000 e 10000).</td><td><code>satin</code> per impostazione predefinita, oppure <code>gloss</code> o <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Una lamina impressa a caldo sul foglio con un cliché riscaldato, dopo la stampa. La lastra è l’originale da cui si ricava il cliché.</td><td><code>gloss</code> per impostazione predefinita, oppure <code>satin</code> o <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Un inchiostro più acceso di qualsiasi miscela in quadricromia (Pantone 801–814 C).</td><td>nessuna</td></tr>
+    <tr><td><code>white</code></td><td>Un bianco coprente, per carta kraft, cartoncino colorato o film, di solito steso sotto i colori.</td><td>nessuna</td></tr>
+    <tr><td><code>varnish</code></td><td>Uno strato trasparente su aree scelte (vernice UV selettiva, vernice opaca o soft touch).</td><td><code>gloss</code> per impostazione predefinita, oppure <code>satin</code>, <code>matte</code> o <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // Ignorata per gli inchiostri fluorescenti e bianchi.
+}
+```
+
+La finitura va sulla tinta piatta (`spot.finish`) o sulla voce dell’inchiostro nella tabella degli inchiostri (`print.inks[].finish`); prevale quella della tabella. La tabella è il posto giusto per un inchiostro che i colori non definiscono: un SVG o un file importato che nomina `Gold` riceve lì la sua finitura metallizzata. Un tipo che Postext non conosce viene scartato, e così una lucentezza che non si applica: nessuna su un inchiostro fluorescente o bianco, e il soft touch solo su una vernice.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Come si stampa un inchiostro speciale
+
+- **Una lastra propria.** Ogni inchiostro speciale si stampa sulla propria `Separation`, con il nome di lastra che gli dà la tabella degli inchiostri (`pdfName`, altrimenti il suo nome). Non ripiega mai sulla quadricromia, a meno che la sua voce nella tabella non dica `output: 'process'`.
+- **Sovrastampa.** Un bianco e una vernice vanno in sovrastampa, salvo che `overprint: false` dica il contrario, sul colore o nella tabella degli inchiostri: il bianco sta sotto i colori e la vernice sopra, e nessuno dei due deve risparmiare le altre lastre. Gli inchiostri metallizzati, le lamine e gli inchiostri fluorescenti risparmiano come qualsiasi tinta piatta.
+- **Ordine di stampa.** Il file contiene lastre, non un ordine. Il bianco si stampa per primo e la vernice per ultima; il preflight li elenca entrambi (`inkPressOrder`) perché tu lo possa dire alla tipografia, che stabilisce l’ordine in macchina.
+- **Lavori su poche lastre.** In un lavoro [`print.plates`](/it/docs/configuration-pdf-output#stampa-a-due-inchiostri), un bianco o una vernice che il lavoro non nomina viene omesso, non proiettato sulle lastre dei colori, e il render avverte (`finishInkDropped`). Gli inchiostri metallizzati, le lamine e gli inchiostri fluorescenti vengono proiettati come qualsiasi altra tinta piatta.
+- **File RGB e in scala di grigi.** Una vernice non mette nulla sulla pagina; le altre finiture dipingono il loro `hex`.
+
+### A schermo
+
+Il canvas, il visualizzatore HTML ed EPUB dipingono ogni inchiostro speciale con il suo `hex`, tranne la vernice, che è trasparente e non dipinge nulla. Dai comunque a una vernice un hex tutto suo, perché un render di stampa distingue gli inchiostri dal loro hex.
+
+`RenderPageOptions.finishes` mostra le finiture sul canvas:
+
+- `'flat'` (predefinito): l’hex di ogni inchiostro, e niente per una vernice.
+- `'sheen'`: un fascio di luce che attraversa la pagina accende l’inchiostro metallizzato e la lamina (di più con una lucentezza più brillante), un alone ravviva l’inchiostro fluorescente e un riflesso mostra dove sta la vernice.
+- `'map'`: le lastre speciali in falsi colori su una pagina sbiadita, come le segna una prova di macchina: metallizzato e lamina in ambra, fluorescente in rosa, vernice in ciano, bianco coprente in blu.
+
+Entrambe le anteprime leggono la **maschera delle finiture** della pagina. `renderFinishMask(page, doc, { scale })` la restituisce, oppure `undefined` per una pagina che non dipinge alcun inchiostro speciale, che così non costa nulla. È una bitmap RGBA: il rosso è il metallo (inchiostro metallizzato e lamina), il verde la lucentezza (lucido 1, satinato 0,7, opaco 0,4, soft touch 0,2), il blu la fluorescenza e l’alfa il bianco coprente, ciascuno scalato per la tinta dell’inchiostro. Un’applicazione ospite che illumina le proprie pagine, come Folio, la legge direttamente. Tutto ciò che si stampa sopra un inchiostro speciale lo toglie dalla maschera, le immagini secondo la loro sagoma, a meno che non vada in sovrastampa.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined senza inchiostri speciali
+```
+
+### In Folio
+
+Folio illumina gli inchiostri speciali come li mostrerebbe la carta sotto le sue lampade. L’inchiostro metallizzato e la lamina riflettono la stanza come un metallo tinto dal colore dell’inchiostro, la lamina quasi come uno specchio. L’inchiostro fluorescente risalta più acceso della carta. Il bianco coprente copre il tono della carta, e quindi si legge sulla kraft o su un cartoncino colorato. Una vernice lucida coglie i riflessi quando un foglio gira, una vernice opaca li smorza e il soft touch li toglie. Solo le pagine che portano un inchiostro speciale ricevono una maschera, a metà della risoluzione della pagina, così un libro che non ne ha si disegna come prima.
+
+### Che cosa dice il preflight sugli inchiostri
+
+In un lavoro di stampa (uno standard PDF/X, o CMYK), il preflight aggiunge:
+
+- `spotInkFinish` (informazione): ogni inchiostro speciale che usano le pagine, con la sua finitura e la sua lucentezza, perché l’ordine alla tipografia li nomini tutti.
+- `inkPressOrder` (informazione): i bianchi che si stampano per primi e le vernici che si stampano per ultime.
+- `whiteInkOnWhite` (avviso): un bianco su una pagina la cui carta è bianca o non impostata, dove non si vede. Imposta il colore della carta (`page.backgroundColor`) su quello del supporto su cui si stampa.
+
+Un bianco o una vernice non fanno mai scattare `overprintWhite`: non mettono colore di proposito.
+
+## Dedurre la finitura dal nome
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` legge il nome che un campione, una separazione o una tabella degli inchiostri dà a un inchiostro e restituisce la finitura che suggerisce, oppure `undefined`. Conosce le parole di ogni finitura e lucentezza nelle dieci lingue del sito e nei nomi delle mazzette di colori, e i numeri Pantone: da 801 a 814 sono fluorescenti, da 871 a 877, la serie 8000 e la serie 10000 metallizzati. Una parola di vernice o di lamina prevale su una parola di colore (`Gold foil` è una lamina, `Barniz oro` una vernice), una di fluorescenza sul bianco, un metallo sul bianco (`白金`, platino). Il francese `or` è escluso, perché è anche la congiunzione inglese; `Or métallisé` si legge comunque come metallizzato grazie alla seconda parola.
+
+È un suggerimento e niente lo applica in silenzio: la Sandbox lo propone come pulsante, e la [skill postext-port](/it/docs/skill) lo riporta.
+
+## Fustelle
+
+Una fustella è il lavoro di uno stampo a filetti d’acciaio dopo la stampa: una finestra in una copertina, un foro che attraversa un libro cartonato, le unghiature di una rubrica, angoli arrotondati, un libro tagliato sul profilo di una casa. La proprietà `dieCuts` descrive le fustelle del libro; il testo si tiene lontano da un foro su ogni pagina che il foro taglia.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // Le forme di fustella del libro.
+  pages?: DieCutPlacement[];           // Forme applicate alle pagine per numero.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Forme di fustella
+
+Una forma di fustella si colloca a partire dall’angolo superiore sinistro del taglio della pagina su cui è messa.
+
+<table>
+  <thead>
+    <tr>
+      <th>Proprietà</th>
+      <th>Tipo</th>
+      <th>Predefinito</th>
+      <th>Descrizione</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>obbligatorio</td><td>Il nome con cui la chiamano le collocazioni e <code>:::diecut</code>.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>nessuno</td><td>Un nome per le persone; la Sandbox lo mostra.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>obbligatorio</td><td>Un cerchio è il più grande che il riquadro contiene, centrato in esso; un’ellisse riempie il riquadro.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>obbligatorio</td><td>Dal bordo sinistro e dal bordo superiore del taglio.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>obbligatorio</td><td>Il riquadro che la forma riempie.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Gli angoli di un <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>nessuno</td><td>I dati di tracciato SVG di un <code>path</code> (<code>M L H V C S Q T A Z</code>), stirati da <code>viewBox</code> al riquadro.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>La larghezza e l’altezza dello spazio in cui è scritto <code>d</code>.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Quanti fogli attraversa il foro: quello su cui è messo, poi i successivi.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>Il testo resta a <code>gap</code> dal foro; <code>false</code> lo lascia scorrere sotto il foro e cadere con il ritaglio.</td></tr>
+  </tbody>
+</table>
+
+### Tre modi di applicare una fustella
+
+**Per numero di pagina.** `dieCuts.pages` mette una forma su un elenco di pagine: `'5'`, `'3-12'`, `'3,7,11-13'`. I numeri contano le pagine del libro per posizione, dove 1 è la sua prima pagina, non i numeri di pagina stampati. In un libro di più capitoli contano dall’inizio del libro, così un capitolo impaginato da solo taglia comunque la pagina giusta.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Dove decide il contenuto.** Un contenitore `:::diecut` taglia ogni pagina su cui cade il suo contenuto, come [`:::paper`](/it/docs/document-format-directives#paper) cambia la carta. Il suo contenuto comincia su una pagina nuova, e ciò che segue il `:::` di chiusura comincia anch’esso su una pagina nuova. Un contenitore dentro un altro taglia la propria fustella; una fustella che manca in `dieCuts.shapes` viene segnalata (**Forma di fustella sconosciuta**, `dieCutUnknown`), e quelle pagine vengono composte a parte e non tagliate. Vedi [`:::diecut`](/it/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Guarda dentro
+La finestra inquadra il frontespizio che sta sotto.
+:::
+```
+
+**In un modello di pagina.** In una pagina composta, un elemento di decorazione di tipo `'cut'` colloca un foro come qualsiasi elemento tracciato, con `when` e `unless` per limitarlo alle pagine che lo chiedono. Vedi [Elementi di fustella in un modello di pagina](#elementi-di-fustella-in-un-modello-di-pagina).
+
+### Elementi di fustella in un modello di pagina
+
+Un elemento di decorazione di tipo `'cut'` è un foro che la fustella taglia nel foglio di ogni pagina composta su cui viene posata la decorazione del modello: una finestra in un modello di copertina, un’unghiatura sulle aperture di un’opera di consultazione. Si colloca e si dimensiona come un [elemento tracciato](/it/docs/configuration-headers-footers#elementi-tracciato), con `when`, `unless`, `parity` e `pin` come qualsiasi elemento di decorazione, e non viene mai dipinto: l’impaginazione lo toglie dalla decorazione e lo mette tra le fustelle della pagina, specchiato sull’altra facciata del foglio.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Dove sta il foro e il suo riquadro.
+  die?: string;                      // Una forma di dieCuts.shapes, stirata sul riquadro.
+  d?: string;                        // Altrimenti dati di tracciato SVG, in unità di viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Predefinito: quello della forma, altrimenti 1.
+  wrap?: false | { gap?: Dimension }; // Predefinito: quello della forma, altrimenti 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+Il contorno del foro è la forma di fustella che nomina `die`, stirata sul riquadro dell’elemento (la forma dà il suo tipo, il raggio degli angoli, i dati di tracciato, `leaves` e `wrap`, ma non il proprio riquadro); senza `die`, i dati di tracciato `d`; senza nessuno dei due, il riquadro stesso. I `leaves` e il `wrap` propri dell’elemento prevalgono su quelli della forma.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+Il testo nelle cornici di una pagina composta non gira ancora attorno a un foro: disponi le cornici lontano dal foro e leggi il `dieCutText` del preflight. In un modello di doppia pagina un elemento di fustella non viene diviso tra le due pagine. Il resto dei [modelli di pagina](/it/docs/configuration-composed-pages#modelli-di-pagina) è nel riferimento della configurazione.
+
+### Fogli e specchiatura
+
+Un foro attraversa la carta, quindi taglia entrambe le facciate di un foglio. La pagina 1 è un recto, il suo retro, la pagina 2, è il verso dello stesso foglio, e così via; un capitolo che comincia più avanti nel libro conta dalla prima pagina del libro. Una forma messa su una pagina taglia anche l’altra facciata del suo foglio, specchiata: una finestra a 40 mm dal bordo sinistro di un recto è a 40 mm dal bordo destro del suo verso. Con `leaves: 6` il foro prosegue anche attraverso i cinque fogli successivi, nello stesso punto della pila, così si trova dove l’hai messo su ogni pagina di quel lato e specchiato su ogni pagina dell’altro.
+
+### Angoli arrotondati e libri sagomati
+
+`corners` arrotonda ogni foglio: per impostazione predefinita solo gli angoli del taglio davanti (a destra su un recto, a sinistra su un verso, invertiti in un libro rilegato a destra), con il dorso che resta squadrato; `edges: 'all'` arrotonda tutti e quattro. `outline` taglia ogni foglio secondo un contorno: dati di tracciato SVG in unità di `viewBox`, stirati sul taglio di un recto e specchiati sui versi. Quando sono impostati entrambi, prevale il contorno.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // una casa
+}
+```
+
+### Il testo attorno a un foro
+
+Ogni foro, allargato del suo `wrap.gap`, è un ostacolo che il testo aggira su entrambe le facciate di ogni foglio che taglia, nelle pagine a testo corrente: le righe si accorciano accanto al foro, come accanto a un’immagine scontornata. Una forma con `wrap: false` lascia il testo dov’è, e ciò che sta sotto il foro cade con il ritaglio.
+
+### La linea di fustella nel PDF
+
+Il fustellatore lavora sulla linea di fustella: il contorno di ogni foro, e del foglio quando è sagomato o ha gli angoli arrotondati, su una lastra che la macchina non inchiostra mai. `print.dieLine` la imposta.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (predefinito): disegnata su ogni pagina con una fustella.
+  ink?: string;               // Il nome della lastra. Predefinito 'Die'.
+  cmyk?: CmykPercent;         // Il sostituto della lastra, come la mostrano le prove. Predefinito 100 % magenta.
+  width?: Dimension;          // Spessore del tratto. Predefinito 0,25 pt.
+}
+```
+
+La linea si traccia dopo i segni di taglio su una lastra `Separation` propria, con estremità e giunzioni arrotondate, e va in sovrastampa, così non risparmia mai una linea bianca nelle lastre sotto di essa. In un PDF con tag è un artefatto. Fuori da PDF/X-1a, che non ammette contenuto opzionale, sta in un gruppo di contenuto opzionale chiamato **Die line** che il lettore può nascondere. La lastra compare tra gli inchiostri del lavoro (`inspectPrintPdf` la mette in `color.spots`), e un lavoro [`print.plates`](/it/docs/configuration-pdf-output#stampa-a-due-inchiostri) non la proietta mai sulle sue lastre. Chiedi al fustellatore come deve chiamarsi la lastra: `Die`, `CutContour`, `Dieline` e `Troquel` sono tutti in uso.
+
+La pagina in sé si stampa intera: il PDF non ritaglia il foro. Ciò che vi è composto dentro si stampa e cade con la carta fustellata.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+Dalla riga di comando, `postext pdf --die-line page|none` sostituisce `output` per una sola esecuzione (vedi [`pdf`](/it/docs/command-line#pdf)).
+
+### Che cosa dice il preflight sulle fustelle
+
+<table>
+  <thead>
+    <tr>
+      <th>Tipo</th>
+      <th>Gravità</th>
+      <th>Quando</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>avviso</td><td>Testo dentro la distanza di scontorno di un foro, o sotto un foro che non scontorna, con la sua distanza dal bordo del taglio in millimetri. Uno per foro e per pagina.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>avviso, o critico</td><td>Un foro a meno di 3 mm dal taglio, dove la fustella strappa il bordo; critico quando va oltre il taglio.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>critico</td><td>Un foro a meno di 3 mm dalla piega del dorso, dove i fogli sono cuciti o incollati.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>avviso</td><td>Una collocazione o un <code>:::diecut</code> che nomina una fustella che <code>dieCuts.shapes</code> non ha.</td></tr>
+  </tbody>
+</table>
+
+Queste verifiche girano ogni volta che il preflight è attivo, in un lavoro di stampa o no. Gli avvisi della configurazione segnalano una collocazione la cui fustella non esiste (con l’id più vicino come suggerimento), un elenco di pagine senza alcun numero di pagina, una forma che il motore scarta (senza id, con uno `shape` sconosciuto, senza dimensioni o senza tracciato) e dati di tracciato che non riesce a leggere, nel qual caso la forma taglia il suo riquadro.
+
+## Nei visualizzatori
+
+**Canvas.** `renderPageToCanvas` ritaglia dalla pagina ogni foro, e la carta fuori da un foglio sagomato o arrotondato, così mostrano ciò che sta dietro il canvas. Con l’opzione `beneath`, una funzione che restituisce il canvas dipinto di qualsiasi pagina dal suo indice, disegna dentro ogni foro le pagine che un lettore vedrebbe attraverso, fin dove i fori sono allineati: ogni pagina ritagliata dai fori di tutte le pagine sopra di essa, un’ombra morbida lungo ogni bordo tagliato e una linea sottile per lo spessore della carta, e il colore dello sfondo oltre la fine del libro. `composeThrough(doc, pageIndex, source, target, scale)` disegna la stessa composizione su un canvas tuo.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // pagine già disegnate, per indice
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**Visualizzatore HTML.** Una pagina fustellata viene ritagliata con `clip-path: path(evenodd, …)`, il riquadro dell’abbondanza (o il contorno del foglio) meno i suoi fori, così un foro mostra lo sfondo del visualizzatore e nessuna pagina sotto. Nell’impaginazione per lo schermo le pagine non sono quelle di stampa, quindi non c’è una pagina sotto da mostrare.
+
+**Folio.** Folio mostra un foro come appare in mano. Su una pagina aperta il foro mostra le pagine sottostanti, fin dove i fori sono allineati (un libro a tunnel può mostrare una pagina venti fogli più in basso), con le pareti di carta del taglio e una parallasse che segue la vista. Un foglio che gira ha un foro vero, e le ombre lo attraversano fino alla pagina sotto. Gli angoli arrotondati e un contorno sagomato sono tagliati su ogni foglio, e i tagli del blocco del libro seguono il raggio degli angoli.
+
+**Il tuo visualizzatore.** Ogni pagina impaginata porta le sue fustelle in `VDTPage.dieCut`: `holes` e `outline` come tracciati in pixel della pagina, `sources` (la fustella di ogni foro) e `wrapGapPx`. `leafSide(doc, i)` dice se una pagina è un recto o un verso, `pageBeneath(doc, i)` quale pagina le sta sotto (`-1` oltre la fine del libro), `seeThrough(doc, i)` l’intera pila che mostra un foro con il ritaglio di ogni strato, e `dieCutPath2D(cut)` trasforma il taglio in un `Path2D`.
+
+## Nella Sandbox
+
+- **Colori.** La scheda **Piatta** del selettore di colore ha **Finitura** e **Lucentezza**, e propone la finitura che suggerisce il nome dell’inchiostro (**Imposta la finitura: …**). Il menu **Aggiungi un inchiostro speciale** della tavolozza ne aggiunge uno già pronto: oro, argento o rame metallizzato, lamina oro o argento, quattro fluorescenti, bianco coprente e vernice lucida, opaca o soft touch.
+- **Tabella degli inchiostri.** Ogni inchiostro ha **Finitura** e **Lucentezza**, e **Inchiostri usati dai colori** mostra la finitura di ciascuno.
+- **Fustelle.** **Grafica › Pagina e colonne › Fustelle** contiene le forme di fustella, ognuna con un disegno del suo contorno, le pagine che tagliano, gli angoli arrotondati e il contorno di un libro sagomato. **Grafica › Esportazione › Preparazione per la stampa › Linea di fustella** imposta la lastra.
+- **Canvas.** Per un libro con fustelle la barra degli strumenti ha **Linee di fustella**, che disegna ogni fustella come linea tratteggiata sopra la pagina; per un libro con inchiostri speciali ha **Inchiostri speciali**, che passa per *piatti*, *con lucentezza* e *mappa delle finiture*. Entrambe le scelte vengono ricordate.
+- **Verifiche.** I risultati del preflight descritti sopra compaiono in **Verifiche** con i loro titoli: **Inchiostro speciale**, **Ordine di stampa degli inchiostri speciali**, **Inchiostro bianco su carta bianca**, **Testo sotto una fustella**, **Fustella vicino al taglio**, **Fustella nella piega**, **Forma di fustella sconosciuta**.
+
+[Grafica e verifiche](/it/docs/sandbox-design-checks) e [Anteprime](/it/docs/sandbox-previews#scheda-canvas) descrivono i pannelli per intero.
+
+## Limiti
+
+- La maschera delle finiture non vede tutto. Una formula disegnata come immagine in un inchiostro speciale risparmia invece di mostrare il suo inchiostro, gli stop di un gradiente in inchiostri speciali non vengono mappati, e un SVG che usa un inchiostro di vernice dipinge comunque il suo hex a schermo, a meno che non venga ricolorato. Un bianco il cui hex a schermo è esattamente `#ffffff` non si distingue dal foglio: dagli un hex leggermente più scuro.
+- Il testo dentro le cornici di una pagina composta non gira ancora attorno a un foro: lo fa solo il testo corrente. Controlla le pagine composte con `dieCutText`.
+- Un elemento di fustella in un modello di doppia pagina non viene diviso tra le due pagine.
+- Il visualizzatore HTML taglia i fori delle pagine composte ma non disegna le pagine sotto di essi.
+- Il PDF stampa la pagina intera e disegna la linea di fustella: il foro è lavoro del fustellatore.

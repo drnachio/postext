@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-ja.mdx */}
+
+export const metadata = {
+  title: '特殊インキと抜き加工',
+  sidebarTitle: '特殊インキと抜き加工',
+  description: '5色目のインキ、加工を指定した特色としてのメタリックインキ、蛍光インキ、箔押し、不透明ホワイト、ニス。抜き加工：1丁または複数の丁を貫く穴、角丸、型抜きの本、PDFでの抜き型の線、プリフライト、各ビューアーでの表示',
+  lang: 'ja',
+  lastUpdated: '2026-11-13',
+  readingTime: '14分',
+  order: 40,
+  plainSummary: "このページでは、いつもの4色のインキのほかに印刷所が本に加えるものを扱います。5色目のインキは、正確なブランドカラー、金や銀のインキ、光る箔、とても鮮やかな蛍光インキ、クラフト紙や色紙に刷る白インキ、透明なニスのどれかです。どれも本の色のひとつとして、それが何であるかを書いて指定し、PDFは印刷所のためにそれぞれ専用の版を作ります。抜き加工は、ページを貫いて抜いた穴、丸めた角、形に合わせて抜いた本のことです。穴は設定で決め、文字は穴を避けて組まれ、PDFには抜き型がたどる線が描かれます。",
+};
+
+# 特殊インキと抜き加工
+
+**特殊インキは加工を指定した特色です。抜き加工は設定の中の形で、抜き型がそれを丁ごと抜きます。**
+
+どちらも本の形式に属するので、どちらも設定に書きます。加工は行をひとつも動かしません。レイアウトから見れば色、PDFから見れば専用の版に刷るインキで、どう表示するかは各ビューアーが決めます。抜き加工はページを変えます。文字が穴を避けるからです。それでもMarkdownには、内容が必要とする箇所で抜き型の名前を書くだけです。
+
+## 5色目のインキ
+
+5色目のインキとは、シアン、マゼンタ、イエロー、墨のほかに刷るインキのことです。正確に合わせる必要のあるPantone、インキメーカーが調色したコーポレートカラー、あるいは下で説明する特殊インキです。Postextでは特色、つまり`model: 'spot'`の色で、その`spot`にインキの名前、100 %でのCMYKの見え方（校正刷りに出る代替色）、網点濃度を書きます。CMYKやPDF/Xのファイルではインキの名前の付いた`Separation`の版に刷られ、画面とRGBのファイルでは`hex`で塗られます。仕組みの全体は[特色](/ja/docs/configuration-pdf-output#特色)で説明しています。
+
+[インキ表](/ja/docs/configuration-pdf-output#インキ表)（`print.inks`）には、色、SVG画像、読み込んだファイルがどう呼んでいても、印刷所に渡すときのインキを書きます。版名、別名、プロセスで刷るかどうか、代替色、オーバープリント、そして特殊インキならその加工です。
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## 加工
+
+加工のない特色は普通のインキです。加工を指定すると特殊インキになります。
+
+<table>
+  <thead>
+    <tr>
+      <th>加工</th>
+      <th>内容</th>
+      <th>光沢</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>金属顔料を含むインキ。金、銀、銅（Pantone 871–877 C、8000番台と10000番台）。</td><td>既定は<code>satin</code>。<code>gloss</code>、<code>matte</code>も可</td></tr>
+    <tr><td><code>foil</code></td><td>印刷のあと、熱した版で紙に押す箔。この版が、箔押し版を作る原稿になります。</td><td>既定は<code>gloss</code>。<code>satin</code>、<code>matte</code>も可</td></tr>
+    <tr><td><code>fluorescent</code></td><td>どのプロセスの掛け合わせよりも鮮やかなインキ（Pantone 801–814 C）。</td><td>なし</td></tr>
+    <tr><td><code>white</code></td><td>不透明ホワイト。クラフト紙、色紙、フィルムに使い、ふつうは色の下に敷きます。</td><td>なし</td></tr>
+    <tr><td><code>varnish</code></td><td>選んだ部分にかける透明な層（部分UV、マットニス、ソフトタッチニス）。</td><td>既定は<code>gloss</code>。<code>satin</code>、<code>matte</code>、<code>softTouch</code>も可</td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // 蛍光インキと白インキでは無視されます。
+}
+```
+
+加工は特色（`spot.finish`）か、インキ表のそのインキの項目（`print.inks[].finish`）に書きます。インキ表のほうが優先です。色で定義していないインキにはインキ表で加工を付けます。`Gold`という名前を使うSVGや読み込んだファイルは、そこでメタリックの加工を得ます。Postextが知らない種類は捨てられ、当てはまらない光沢も捨てられます。蛍光インキと白インキには光沢がなく、ソフトタッチはニスだけです。
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### 特殊インキの刷られ方
+
+- **専用の版。** 特殊インキはどれも専用の`Separation`に、インキ表が付けた版名（`pdfName`、なければその名前）で刷られます。インキ表の項目に`output: 'process'`と書かない限り、プロセスに置き換えられることはありません。
+- **オーバープリント。** 白インキとニスは、色かインキ表に`overprint: false`と書かない限りオーバープリントします。白は色の下に、ニスは色の上に乗り、どちらもほかの版を抜いてはいけないからです。メタリック、箔、蛍光のインキは、ほかの特色と同じくノックアウトします。
+- **刷り順。** ファイルにあるのは版で、順番はありません。白は最初に、ニスは最後に刷ります。プリフライトが両方を挙げるので（`inkPressOrder`）、印刷機で順番を決める印刷所に伝えてください。
+- **版の少ない仕事。** [`print.plates`](/ja/docs/configuration-pdf-output#2色刷り)の仕事では、その仕事が挙げていない白インキやニスは色の版に振り分けられず、省かれます。レンダリングは警告します（`finishInkDropped`）。メタリック、箔、蛍光のインキは、ほかの特色と同じように振り分けられます。
+- **RGBとグレーのファイル。** ニスはページに何も描かず、ほかの加工は`hex`で塗られます。
+
+### 画面での表示
+
+Canvas、HTMLビューアー、EPUBは、特殊インキをその`hex`で塗ります。ニスは透明なので何も塗りません。それでもニスには専用のhexを付けておいてください。印刷用のレンダリングはhexでインキを見分けるからです。
+
+`RenderPageOptions.finishes`は、Canvasに加工を表示します。
+
+- `'flat'`（既定）：各インキのhex。ニスは表示しません。
+- `'sheen'`：ページを横切る光がメタリックインキと箔を照らし（光沢が強いほど明るく）、蛍光インキが光り、ハイライトがニスのある場所を示します。
+- `'map'`：校正刷りで印を付けるように、薄くしたページの上に特殊な版を疑似カラーで表示します。メタリックと箔は琥珀色、蛍光はピンク、ニスはシアン、不透明ホワイトは青です。
+
+どちらのプレビューもページの**加工マスク**を読みます。`renderFinishMask(page, doc, { scale })`がそれを返します。特殊インキを塗らないページでは`undefined`を返し、そのぶんの負荷はかかりません。マスクはRGBAのビットマップです。赤は金属（メタリックインキと箔）、緑は光沢（グロス1、サテン0.7、マット0.4、ソフトタッチ0.2）、青は蛍光、アルファは不透明ホワイトで、それぞれインキの網点濃度を掛けた値です。自分でページに光を当てるホスト（Folioなど）はこれを直接読みます。特殊インキの上に刷るものは、オーバープリントでない限り、マスクからそのインキを抜きます（画像はそのシルエットで抜きます）。
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // 特殊インキがなければundefined
+```
+
+### Folioでの表示
+
+Folioは、紙がそのライトの下で見せるとおりに特殊インキを照らします。メタリックインキと箔は、インキの色を帯びた金属として部屋を映し、箔はほとんど鏡のようです。蛍光インキは紙よりも明るく浮き上がります。不透明ホワイトは紙の色を覆うので、クラフト紙や色紙の上でも読めます。丁をめくると、グロスニスはハイライトをとらえ、マットニスはそれを鈍らせ、ソフトタッチはハイライトを消します。マスクを持つのは特殊インキのあるページだけで、解像度はページの半分です。特殊インキのない本はこれまでどおりに描かれます。
+
+### インキについてのプリフライト
+
+印刷の仕事（PDF/X規格、またはCMYK）では、プリフライトが次の項目を加えます。
+
+- `spotInkFinish`（情報）：ページが使う特殊インキを、加工と光沢とともに挙げます。印刷所への発注にすべてを書けるようにするためです。
+- `inkPressOrder`（情報）：最初に刷る白インキと、最後に刷るニス。
+- `whiteInkOnWhite`（警告）：紙が白か未設定のページにある白インキで、何も見えません。紙の色（`page.backgroundColor`）を実際に刷る用紙に合わせてください。
+
+白インキとニスが`overprintWhite`を出すことはありません。もともと色を置かないインキだからです。
+
+## 名前から加工を推測する
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)`は、スウォッチ、分版、インキ表がインキに付けた名前を読み、その名前が示す加工を返します。なければ`undefined`です。このサイトの10の言語での加工と光沢を表す語、スウォッチ帳で使われる名前、そしてPantoneの番号を知っています。801から814は蛍光、871から877と8000番台、10000番台はメタリックです。ニスや箔を表す語は色を表す語に勝ち（`Gold foil`は箔、`Barniz oro`はニス）、蛍光を表す語は白に、金属は白に勝ちます（`白金`、プラチナ）。フランス語の`or`は英語の接続詞でもあるので数えません。`Or métallisé`は2つ目の語でメタリックと読まれます。
+
+あくまでヒントで、黙って設定されることはありません。Sandboxはボタンとして示し、移植スキルは報告に書きます。
+
+## 抜き加工
+
+抜き加工は、印刷のあとにトムソン型（抜き型）で行う加工です。表紙の窓、ボードブックを貫く穴、ツメ見出し、角丸、家の形に抜いた本などです。`dieCuts`プロパティが本の抜き型を記述し、文字は穴が抜くすべてのページでその穴を避けます。
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // 本の抜き型。
+  pages?: DieCutPlacement[];           // ページ番号で置く抜き型。
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### 抜き型
+
+抜き型は、置いたページの仕上がりの左上の角を基準に配置します。
+
+<table>
+  <thead>
+    <tr>
+      <th>プロパティ</th>
+      <th>型</th>
+      <th>既定値</th>
+      <th>説明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>必須</td><td>配置と<code>:::diecut</code>が使う名前。</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>なし</td><td>人が読むための名前。Sandboxに表示されます。</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>必須</td><td>円はボックスに収まる最大の円で、中央に置かれます。楕円はボックスいっぱいになります。</td></tr>
+    <tr><td><code>x</code>、<code>y</code></td><td><code>Dimension</code></td><td>必須</td><td>仕上がりの左端と上端から。</td></tr>
+    <tr><td><code>width</code>、<code>height</code></td><td><code>Dimension</code></td><td>必須</td><td>形が収まるボックス。</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td><code>roundRect</code>の角。</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>なし</td><td><code>path</code>のSVGパスデータ（<code>M L H V C S Q T A Z</code>）。<code>viewBox</code>からボックスに合わせて伸ばします。</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td><code>d</code>を書いた座標空間の幅と高さ。</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>穴が貫く丁の数。置いた丁と、その後ろの丁。</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>文字は穴から<code>gap</code>だけ離れます。<code>false</code>では文字が穴の下を通り、一緒に抜かれます。</td></tr>
+  </tbody>
+</table>
+
+### 抜き型を置く3つの方法
+
+**ページ番号で。** `dieCuts.pages`は、形をページの一覧に置きます。`'5'`、`'3-12'`、`'3,7,11-13'`のように書きます。番号は本のページを位置で数えたもので、1が本の最初のページです。印刷されたノンブルではありません。複数の章からなる本では本の先頭から数えるので、章を単独で組んでも正しいページが抜かれます。
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**内容が決める場所で。** `:::diecut`コンテナーは、その内容が入るすべてのページを抜きます。[`:::paper`](/ja/docs/document-format-directives#paper)が用紙を変えるのと同じです。内容は新しいページから始まり、閉じる`:::`のあとに続く内容も新しいページから始まります。別のコンテナーの中にあるコンテナーは自分の抜き型で抜きます。`dieCuts.shapes`にない抜き型は報告され（**不明な抜き型**、`dieCutUnknown`）、そのページは単独で組まれますが抜かれません。[`:::diecut`](/ja/docs/document-format-directives#diecut)を参照してください。
+
+```md
+:::diecut{die=window}
+## のぞいてみて
+窓の向こうに、下の扉ページが見えます。
+:::
+```
+
+**ページテンプレートで。** テンプレートページでは、種類が`'cut'`の装飾要素が、パス要素と同じように穴を置きます。`when`と`unless`で、穴を求めるページだけに限れます。[ページテンプレートの抜き要素](#ページテンプレートの抜き要素)を参照してください。
+
+### ページテンプレートの抜き要素
+
+種類が`'cut'`の装飾要素は、テンプレートの装飾が置かれるすべてのテンプレートページで、抜き型がその丁を貫いて抜く穴です。表紙テンプレートの窓や、事典の扉に入れるツメの切り欠きなどに使います。配置と大きさは[パス要素](/ja/docs/configuration-headers-footers#パス要素)と同じで、`when`、`unless`、`parity`、`pin`もほかの装飾要素と同じです。描かれることはありません。レイアウトはこれを装飾から取り出してそのページの抜き加工に加え、丁の反対側の面には左右反転して入れます。
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // 穴の位置とそのボックス。
+  die?: string;                      // dieCuts.shapesの形。ボックスに合わせて伸ばす。
+  d?: string;                        // なければSVGパスデータ（viewBoxの単位）。
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // 既定：抜き型の値、なければ1。
+  wrap?: false | { gap?: Dimension }; // 既定：抜き型の値、なければ3 mm。
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+穴の輪郭は、`die`が指す抜き型を要素のボックスに合わせて伸ばしたものです（抜き型からは種類、角の半径、パスデータ、`leaves`、`wrap`を受け継ぎますが、抜き型自身のボックスは使いません）。`die`がなければパスデータ`d`、どちらもなければボックスそのものです。要素自身の`leaves`と`wrap`は抜き型の値より優先されます。
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+テンプレートページの枠の中の文字は、まだ穴を避けて組まれません。枠は穴にかからないように置き、プリフライトの`dieCutText`を確認してください。見開きテンプレートでは、抜き要素は2ページに分割されません。[ページテンプレート](/ja/docs/configuration-composed-pages#ページテンプレート)のほかの項目は設定リファレンスにあります。
+
+### 丁と左右反転
+
+穴は紙を貫くので、丁の両面を抜きます。1ページ目が奇数ページで、その裏の2ページ目が同じ丁の偶数ページ、以下同様です。本の途中から始まる章も、本の最初のページから数えます。あるページに置いた形は、その丁の反対側の面も、仕上がりを軸に左右反転して抜きます。奇数ページの左端から40 mmにある窓は、その裏の偶数ページでは右端から40 mmにあります。`leaves: 6`では、穴はさらに後ろの5丁も、束の中の同じ位置で貫きます。そのため、同じ側のすべてのページでは置いた位置に、反対側のすべてのページでは左右反転した位置に穴があります。
+
+### 角丸と型抜きの本
+
+`corners`はすべての丁の角を丸くします。既定では小口側の角だけ（奇数ページでは右、偶数ページでは左、右綴じの本では逆）で、背側は直角のままです。`edges: 'all'`で四隅すべてを丸くします。`outline`はすべての丁を外形どおりに抜きます。`viewBox`の単位で書いたSVGパスデータを奇数ページの仕上がりに合わせて伸ばし、偶数ページでは左右反転します。両方を設定すると外形が優先されます。
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // 家の形
+}
+```
+
+### 穴のまわりの文字
+
+それぞれの穴は`wrap.gap`だけ広げられ、流し込みのページでは、穴が抜く各丁の両面で文字が回り込む障害物になります。回り込みを指定した図版の横と同じように、穴の横の行が短くなります。`wrap: false`の形は文字をそのままにし、穴の下にあるものは一緒に抜かれます。
+
+### PDFでの抜き型の線
+
+抜き型業者は抜き型の線をもとに型を作ります。すべての穴の輪郭と、型抜きや角丸にした丁の輪郭を、印刷機がインキを付けない版に描いたものです。`print.dieLine`で設定します。
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page'（既定）：抜き加工のある各ページに描く。
+  ink?: string;               // 版名。既定は'Die'。
+  cmyk?: CmykPercent;         // 版の代替色。校正刷りでの見え方。既定はマゼンタ100 %。
+  width?: Dimension;          // 線の太さ。既定は0.25 pt。
+}
+```
+
+線はトンボのあとに、専用の`Separation`の版へ丸い線端と丸い角で描かれ、オーバープリントになるので、下の版に白い線を抜くことはありません。タグ付きPDFではアーティファクトです。オプションコンテンツを認めないPDF/X-1a以外では、読者が隠せる**Die line**という名前のオプションコンテンツグループに入ります。版は仕事のインキと一緒に一覧され（`inspectPrintPdf`は`color.spots`に入れます）、[`print.plates`](/ja/docs/configuration-pdf-output#2色刷り)の仕事でも自分の版に振り分けられることはありません。版の名前は抜き型業者に確認してください。`Die`、`CutContour`、`Dieline`、`Troquel`のどれも使われています。
+
+ページそのものは全体が刷られます。PDFは穴をくり抜きません。穴の中に組んだものも刷られ、紙と一緒に抜き取られます。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+コマンドラインでは、`postext pdf --die-line page|none`が1回の実行に限って`output`を上書きします（[`pdf`](/ja/docs/command-line#pdf)を参照）。
+
+### 抜き加工についてのプリフライト
+
+<table>
+  <thead>
+    <tr>
+      <th>種類</th>
+      <th>重要度</th>
+      <th>条件</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>警告</td><td>穴の回り込みの間隔の内側にある文字、または回り込みのない穴の下にある文字。抜き線からの距離をミリメートルで示します。穴とページごとに1件。</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>警告、または重大</td><td>仕上がり線から3 mm未満の穴で、抜き型が紙の縁を破ります。仕上がり線を越える場合は重大です。</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>重大</td><td>背の折り目から3 mm以内の穴。丁がかがられたり糊付けされたりする場所です。</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>警告</td><td><code>dieCuts.shapes</code>にない抜き型を指す配置や<code>:::diecut</code>。</td></tr>
+  </tbody>
+</table>
+
+これらの検査は、印刷の仕事かどうかにかかわらず、プリフライトがオンなら実行されます。設定の警告は、抜き型が存在しない配置（最も近いidを候補として示します）、ページ番号を含まないページ一覧、エンジンが捨てる形（idがない、未知の`shape`、大きさやパスがない）、読み取れないパスデータを報告します。パスデータが読めない場合、形はボックスどおりに抜かれます。
+
+## 各ビューアーでの表示
+
+**Canvas。** `renderPageToCanvas`は、各穴と、型抜きや角丸にした丁の外側の紙をページから切り取るので、そこにはcanvasの後ろにあるものが見えます。`beneath`オプション（任意のページの描画済みcanvasをインデックスで返す関数）を渡すと、読者が穴から見るはずのページを、穴が重なる深さまで各穴の中に描きます。各ページはその上にあるすべてのページの穴で切り抜かれ、抜き口の縁には柔らかい影、紙の断面には細い線が入り、本の終わりより先はボードの色になります。`composeThrough(doc, pageIndex, source, target, scale)`は、同じ合成を自分のcanvasに描きます。
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // 描画済みのページ（インデックスごと）
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**HTMLビューアー。** 抜き加工のあるページは`clip-path: path(evenodd, …)`で切り抜かれます。塗り足しのボックス（または丁の外形）から穴を除いたもので、穴にはビューアーの背景が見え、下のページは見えません。画面用のレイアウトではページが印刷のページと一致しないので、見せるべき下のページがありません。
+
+**Folio。** Folioは、手に取ったときの見え方で穴を表示します。開いたページでは、穴が重なる深さまで下のページが見え（トンネルブックなら20丁下のページまで見えます）、抜き口の紙の壁が描かれ、視点に合わせて視差が付きます。めくっている丁には本物の穴があり、影はそこを通って下のページに落ちます。角丸と外形はすべての丁に抜かれ、本の束の縁も角の半径に合わせて丸くなります。
+
+**自前のビューアー。** レイアウト済みの各ページは`VDTPage.dieCut`に抜き加工を持ちます。`holes`と`outline`はページのピクセル単位のパス、`sources`は各穴の抜き型、それに`wrapGapPx`です。`leafSide(doc, i)`はページが奇数ページか偶数ページかを、`pageBeneath(doc, i)`はその下にあるページを（本の終わりより先なら`-1`）、`seeThrough(doc, i)`は穴から見える束全体と各層の切り抜きを返し、`dieCutPath2D(cut)`は抜き加工を`Path2D`に変換します。
+
+## Sandboxでの操作
+
+- **色。** カラーピッカーの**特色**タブに**加工**と**光沢**があり、インキの名前が示す加工を提案します（**加工を設定：…**）。パレットの**特殊インキを追加**メニューは、用意された特殊インキを加えます。メタリックゴールド、シルバー、カッパー、金箔押しまたは銀箔押し、4つの蛍光インキ、不透明ホワイト、グロス、マット、ソフトタッチのニスです。
+- **インキ表。** 各インキに**加工**と**光沢**があり、**色が使っているインキ**にはそれぞれの加工が表示されます。
+- **抜き加工。** **デザイン › ページと段組み › 抜き加工**に、抜き型（それぞれ輪郭の図付き）、それが抜くページ、角丸、型抜きの本の外形があります。版は**デザイン › 書き出し › 印刷の準備 › 抜き型の線**で設定します。
+- **Canvas。** 抜き加工のある本ではツールバーに**抜き型の線**が現れ、各抜き型をページの上に破線で描きます。特殊インキのある本では**特殊インキ**が現れ、*フラット*、*光沢あり*、*加工マップ*を順に切り替えます。どちらも状態が記憶されます。
+- **検査。** 上のプリフライトの結果は、それぞれの見出しで**検査**に表示されます。**特殊インキ**、**特色インキの刷り順**、**白い紙に白インキ**、**抜き型の下の文字**、**抜き型が仕上がり線に近い**、**抜き型がノドにかかる**、**不明な抜き型**です。
+
+各パネルの詳細は[デザインパネルと検査パネル](/ja/docs/sandbox-design-checks)と[プレビュー](/ja/docs/sandbox-previews#canvasタブ)にあります。
+
+## 制限
+
+- 加工マスクはすべてを捉えるわけではありません。特殊インキで画像として描いた数式は、そのインキを表示せずに抜きになります。特殊インキのグラデーションの分岐点は対応付けられません。ニスのインキを使うSVGは、色を付け替えない限り画面ではhexで塗られます。画面用のhexがちょうど`#ffffff`の白インキは紙と見分けられないので、わずかに暗いhexを付けてください。
+- テンプレートページの枠の中の文字は、まだ穴を避けて組まれません。避けるのは流し込みの文字だけです。テンプレートページは`dieCutText`で確認してください。
+- 見開きテンプレートの抜き要素は2ページに分割されません。
+- HTMLビューアーはテンプレートページの穴を抜きますが、その下のページは描きません。
+- PDFはページ全体を刷り、抜き型の線を描きます。穴をあけるのは抜き型業者の仕事です。

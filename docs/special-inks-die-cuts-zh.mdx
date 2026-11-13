@@ -1,0 +1,352 @@
+{/* docs/special-inks-die-cuts-zh.mdx */}
+
+export const metadata = {
+  title: '特种油墨与模切',
+  sidebarTitle: '特种油墨与模切',
+  description: '第五色油墨，以及作为带工艺的专色来定义的金属油墨、荧光油墨、烫金、不透明白和上光油；模切：穿过一张或多张纸页的孔、圆角和异形书，PDF中的模切线，印前检查，以及各种视图如何显示它们',
+  lang: 'zh',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 分钟',
+  order: 40,
+  plainSummary: "本页介绍印刷厂在常用的四色油墨之外给书加上的东西。第五色油墨可以是准确的品牌色、金色或银色油墨、闪亮的烫金、非常鲜艳的荧光油墨、印在牛皮纸或色纸上的白墨，或者透明的上光油。每一种都是书中的一个颜色，标明它是什么，PDF给每一种单独出一块印版交给印刷厂。模切是穿过书页切出的孔、切圆的书角，或者切成某种形状的书。孔在设置中定义，文字绕开它们排，PDF画出刀模沿着切的线。",
+};
+
+# 特种油墨与模切
+
+**特种油墨是带有工艺的专色。模切是配置中的一个形状，由刀模把它切穿纸页。**
+
+两者都属于书的形式，所以都写在配置里。工艺从不移动任何一行：排版看到的是一个颜色，PDF看到的是一种印在单独印版上的油墨，如何显示由各个视图决定。模切会改变页面，因为文字要避开孔，但Markdown只在内容需要的地方写出刀模的名称。
+
+## 第五色
+
+第五色是作业在青、品红、黄、黑之外印刷的任何油墨：必须准确匹配的Pantone色、由油墨厂调配的企业色，或者下文的某种特种油墨。在Postext中它是一个专色，即`model: 'spot'`的颜色，其`spot`写明油墨名称、油墨在100 %时以CMYK表示的外观（打样显示的替代色）及其网点浓度。CMYK或PDF/X文件把它印在以该油墨命名的`Separation`印版上；屏幕和RGB文件绘制它的`hex`。[专色](/zh/docs/configuration-pdf-output#专色)完整说明了这一模型。
+
+[油墨表](/zh/docs/configuration-pdf-output#油墨表)（`print.inks`）用来描述交给印刷厂时的油墨，不管颜色、SVG图片和导入的文件怎么称呼它：印版名称、别名、是否以四色印刷、替代色、叠印，以及特种油墨的工艺。
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## 工艺
+
+没有工艺的专色是普通油墨。设了工艺，它就是特种油墨：
+
+<table>
+  <thead>
+    <tr>
+      <th>工艺</th>
+      <th>是什么</th>
+      <th>光泽</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>含金属颜料的油墨：金、银、铜（Pantone 871–877 C、8000系列和10000系列）。</td><td>默认<code>satin</code>，也可为<code>gloss</code>或<code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>印刷之后用加热的烫版压在纸上的电化铝（烫金、烫银）。这块印版就是制作烫版所用的图稿。</td><td>默认<code>gloss</code>，也可为<code>satin</code>或<code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>比任何四色混合都鲜艳的油墨（Pantone 801–814 C）。</td><td>无</td></tr>
+    <tr><td><code>white</code></td><td>不透明白，用于牛皮纸、色纸或薄膜，通常垫在彩色之下。</td><td>无</td></tr>
+    <tr><td><code>varnish</code></td><td>覆盖在选定区域上的透明涂层（局部UV、哑光油或触感油）。</td><td>默认<code>gloss</code>，也可为<code>satin</code>、<code>matte</code>或<code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // 荧光油墨和白墨忽略此项。
+}
+```
+
+工艺写在专色上（`spot.finish`），或写在油墨表中该油墨的条目上（`print.inks[].finish`）；以油墨表为准。颜色中没有定义的油墨要在油墨表里设置工艺：某个SVG或导入的文件用了`Gold`这个名称，就在表里给它设金属工艺。Postext不认识的种类会被丢弃，不适用的光泽也会被丢弃：荧光油墨和白墨没有光泽，柔感只用于上光油。
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### 特种油墨如何印刷
+
+- **单独一块印版。** 每种特种油墨都印在自己的`Separation`上，使用油墨表给它的印版名称（`pdfName`，否则为其名称）。除非它在油墨表中的条目写了`output: 'process'`，否则从不退回四色印刷。
+- **叠印。** 白墨和上光油默认叠印，除非颜色或油墨表中写了`overprint: false`：白墨在彩色之下，上光油在彩色之上，两者都不应在其他印版上镂空。金属、烫金和荧光油墨与任何专色一样镂空。
+- **印刷顺序。** 文件里只有印版，没有顺序。白墨先印，上光油最后印；印前检查把两者都列出来（`inkPressOrder`），便于告知印刷厂，由印刷厂在机上安排顺序。
+- **只印几块印版的作业。** 在[`print.plates`](/zh/docs/configuration-pdf-output#双色印刷)作业中，作业没有列出的白墨或上光油会被略去，而不是投射到彩色印版上，渲染时会发出警告（`finishInkDropped`）。金属、烫金和荧光油墨与其他专色一样投射。
+- **RGB和灰度文件。** 上光油在页面上什么也不画；其他工艺绘制它们的`hex`。
+
+### 屏幕上的显示
+
+Canvas、HTML阅读器和EPUB用各特种油墨的`hex`绘制它，上光油除外：上光油是透明的，什么也不画。即便如此，也要给上光油一个独有的hex，因为印刷渲染靠hex区分油墨。
+
+`RenderPageOptions.finishes`在Canvas上显示工艺：
+
+- `'flat'`（默认）：各油墨的hex，上光油不显示。
+- `'sheen'`：一道光扫过页面，照亮金属油墨和烫金（光泽越亮，反光越强），荧光油墨发出微光，高光显示上光油所在的位置。
+- `'map'`：在淡化的页面上用假色显示特种印版，就像印刷打样上标注的那样：金属和烫金为琥珀色，荧光为粉红色，上光油为青色，不透明白为蓝色。
+
+两种预览都读取页面的**工艺蒙版**。`renderFinishMask(page, doc, { scale })`返回它；页面没有绘制任何特种油墨时返回`undefined`，此时不产生任何开销。它是一张RGBA位图：红色通道表示金属（金属油墨和烫金），绿色通道表示光泽（亮光1、缎光0.7、哑光0.4、柔感0.2），蓝色通道表示荧光，alpha通道表示不透明白，各自乘以油墨的网点浓度。自己给页面打光的宿主程序（例如Folio）直接读取它。印在特种油墨之上的任何内容都会把它从蒙版中镂空（图片按其轮廓），除非它是叠印的。
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // 没有特种油墨时为undefined
+```
+
+### 在Folio中
+
+Folio照亮特种油墨，呈现纸张在它的灯光下应有的样子。金属油墨和烫金像带有油墨颜色的金属一样映出房间，烫金几乎像镜子。荧光油墨比纸张更亮。不透明白遮住纸张本身的色调，所以在牛皮纸或色纸上也看得清。纸页翻动时，亮光油抓住高光，哑光油让高光变暗，触感油则把高光去掉。只有印了特种油墨的页面才有蒙版，分辨率为页面的一半，所以没有特种油墨的书绘制起来和以前一样。
+
+### 印前检查对油墨的报告
+
+在印刷作业中（PDF/X标准，或CMYK），印前检查增加：
+
+- `spotInkFinish`（提示）：页面用到的每种特种油墨，附其工艺和光泽，让给印刷厂的订单把它们全部写上。
+- `inkPressOrder`（提示）：先印的白墨和最后印的上光油。
+- `whiteInkOnWhite`（警告）：白墨所在页面的纸张为白色或未设置，印出来看不见。请把纸张颜色（`page.backgroundColor`）设为实际印刷所用的纸。
+
+白墨和上光油从不引发`overprintWhite`：它们本来就不带颜色。
+
+## 由名称推测工艺
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)`读取色板、分色或油墨表给某种油墨起的名称，返回这个名称暗示的工艺，没有则返回`undefined`。它认识本站十种语言中表示每种工艺和光泽的词、色卡常用的名称，以及Pantone的编号：801到814为荧光，871到877、8000系列和10000系列为金属。表示上光油或烫金的词优先于表示颜色的词（`Gold foil`是烫金，`Barniz oro`是上光油），荧光词优先于白色，金属优先于白色（`白金`，铂）。法语的`or`不计入，因为它也是英语的连词；`Or métallisé`仍会因第二个词被读作金属。
+
+它只是提示，不会悄悄设置任何东西：沙盒把它做成一个按钮，移植技能把它写进报告。
+
+## 模切
+
+模切是印刷之后由钢刀模完成的加工：封面上的窗口、贯穿纸板书的孔、拇指索引、圆角，或切成房子轮廓的书。`dieCuts`属性描述书中的刀模；在它切过的每一页上，文字都会避开孔。
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // 书中的模切形状。
+  pages?: DieCutPlacement[];           // 按页码放置的形状。
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### 模切形状
+
+模切形状从所放页面的成品尺寸左上角开始定位。
+
+<table>
+  <thead>
+    <tr>
+      <th>属性</th>
+      <th>类型</th>
+      <th>默认值</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>必填</td><td>放置项和<code>:::diecut</code>引用它的名称。</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>无</td><td>给人看的名称；沙盒显示它。</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>必填</td><td>圆形取框内能容纳的最大圆，居中；椭圆填满整个框。</td></tr>
+    <tr><td><code>x</code>、<code>y</code></td><td><code>Dimension</code></td><td>必填</td><td>从成品尺寸的左边缘和上边缘算起。</td></tr>
+    <tr><td><code>width</code>、<code>height</code></td><td><code>Dimension</code></td><td>必填</td><td>形状填满的框。</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td><code>roundRect</code>的圆角。</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>无</td><td><code>path</code>的SVG路径数据（<code>M L H V C S Q T A Z</code>），从<code>viewBox</code>拉伸到框的大小。</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>书写<code>d</code>所用坐标空间的宽和高。</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>孔穿过的纸页数：放置的那一张，再加其后各张。</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>文字与孔保持<code>gap</code>的距离；<code>false</code>让文字从孔下穿过并被切掉。</td></tr>
+  </tbody>
+</table>
+
+### 放置模切的三种方式
+
+**按页码。** `dieCuts.pages`把一个形状放在一组页面上：`'5'`、`'3-12'`、`'3,7,11-13'`。这些数字按位置计算书的页面，1是书的第一页，与印出的页码无关。在多章的书中，它们从全书开头算起，所以单独排版的一章仍会切在正确的页面上。
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**由内容决定。** `:::diecut`容器在其内容排入的每一页上模切，就像[`:::paper`](/zh/docs/document-format-directives#paper)换用纸张那样。其内容从新的一页开始，结束行`:::`之后的内容也从新的一页开始。嵌套在另一个容器里的容器切它自己的刀模；`dieCuts.shapes`中没有的刀模会被报告（**未知的模切形状**，`dieCutUnknown`），这些页面照样单独排，但不模切。见[`:::diecut`](/zh/docs/document-format-directives#diecut)。
+
+```md
+:::diecut{die=window}
+## 往里看
+透过窗口，看到下面的扉页。
+:::
+```
+
+**在页面模板中。** 在模板页上，种类为`'cut'`的装饰元素像任何路径元素一样放置一个孔，并用`when`和`unless`把它限定在需要它的页面上。见[页面模板中的模切元素](#页面模板中的模切元素)。
+
+### 页面模板中的模切元素
+
+种类为`'cut'`的装饰元素是一个孔，刀模在铺有该模板装饰的每个模板页的纸页上把它切穿：封面模板上的窗口、工具书各篇首页上的拇指索引切口。它的放置和尺寸与[路径元素](/zh/docs/configuration-headers-footers#路径元素)相同，`when`、`unless`、`parity`和`pin`与任何装饰元素一样，而且它从不被绘制：排版把它从装饰中取出，放进该页的模切中，并在纸页的另一面做镜像。
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // 孔的位置和它的框。
+  die?: string;                      // dieCuts.shapes中的一个形状，拉伸到框的大小。
+  d?: string;                        // 否则为SVG路径数据，以viewBox为单位。
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // 默认：刀模的值，否则为1。
+  wrap?: false | { gap?: Dimension }; // 默认：刀模的值，否则为3 mm。
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+孔的轮廓是`die`指定的模切形状，拉伸到元素的框（刀模提供它的种类、圆角半径、路径数据、`leaves`和`wrap`，但不提供它自己的框）；没有`die`时用路径数据`d`；两者都没有时就是框本身。元素自己的`leaves`和`wrap`优先于刀模的设置。
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+模板页各框中的文字还不会绕开孔：请把框放在孔外，并留意印前检查的`dieCutText`。在跨页模板中，模切元素不会在两页之间拆分。[页面模板](/zh/docs/configuration-composed-pages#页面模板)的其余内容见配置参考。
+
+### 纸页与镜像
+
+孔穿过的是纸，所以切到一张纸页的两面。第1页是奇数页，它的背面第2页是同一张纸页的偶数页，以此类推；从书中较后位置开始的一章，从全书第一页算起。放在某一页上的形状也会切到这张纸页的另一面，沿成品尺寸做镜像：距奇数页左边缘40 mm的窗口，在其偶数页上距右边缘40 mm。设`leaves: 6`时，孔还会穿过其后的五张纸页，在整叠纸中位置相同，所以在这一面的每一页上它都在你放的位置，在另一面的每一页上都是镜像。
+
+### 圆角与异形书
+
+`corners`把每张纸页切成圆角：默认只切切口一侧的角（奇数页在右，偶数页在左，右侧装订的书相反），书脊一侧保持直角；`edges: 'all'`四个角都切。`outline`把每张纸页切成某个外形：以`viewBox`为单位的SVG路径数据，拉伸到奇数页的成品尺寸，偶数页为镜像。两者都设置时，以外形为准。
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // 一座房子
+}
+```
+
+### 文字绕开孔
+
+每个孔按它的`wrap.gap`向外扩出，成为一个障碍，在流式页面上，文字在它切过的每张纸页的两面都绕开它排：孔旁边的行会缩短，就像在绕排的图片旁边一样。设`wrap: false`的形状让文字留在原处，孔下面的内容随纸一起被切掉。
+
+### PDF中的模切线
+
+刀模厂按模切线制作刀模：每个孔的轮廓，以及纸页被切成异形或圆角时纸页的轮廓，都画在一块印刷机从不上墨的印版上。`print.dieLine`设置它。
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page'（默认）：画在每个有模切的页面上。
+  ink?: string;               // 印版名称。默认'Die'。
+  cmyk?: CmykPercent;         // 印版的替代色，即打样时的显示。默认100 %品红。
+  width?: Dimension;          // 描边宽度。默认0.25 pt。
+}
+```
+
+模切线在裁切线之后描在单独的`Separation`印版上，使用圆头端点和圆角连接，并且设为叠印，所以不会在下面的印版上镂出白线。在带标签的PDF中，它是一个工件（artifact）。除不允许可选内容的PDF/X-1a之外，它放在名为**Die line**的可选内容组中，读者可以把它隐藏。这块印版与作业的油墨一起列出（`inspectPrintPdf`把它放在`color.spots`中），[`print.plates`](/zh/docs/configuration-pdf-output#双色印刷)作业从不把它投射到自己的印版上。印版该叫什么，请问刀模厂：`Die`、`CutContour`、`Dieline`和`Troquel`都有人用。
+
+页面本身完整印出：PDF不会把孔挖掉。孔内排的任何内容都会印出来，再随纸一起被冲掉。
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+在命令行中，`postext pdf --die-line page|none`在一次运行中覆盖`output`（见[`pdf`](/zh/docs/command-line#pdf)）。
+
+### 印前检查对模切的报告
+
+<table>
+  <thead>
+    <tr>
+      <th>种类</th>
+      <th>严重程度</th>
+      <th>何时</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>警告</td><td>文字落在孔的避让间距之内，或位于不避让的孔之下，并给出它与切边的距离（毫米）。每个孔每页一条。</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>警告或严重</td><td>孔距裁切线不到3 mm，刀模会在此撕裂纸边；孔越过裁切线时为严重。</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>严重</td><td>孔距书脊折线3 mm以内，那里是纸页锁线或胶粘的地方。</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>警告</td><td>放置项或<code>:::diecut</code>指定的刀模在<code>dieCuts.shapes</code>中不存在。</td></tr>
+  </tbody>
+</table>
+
+只要印前检查开着，这些检查就会运行，不论是否为印刷作业。配置警告会报告：刀模不存在的放置项（并给出最接近的id作为建议）、不含任何页码的页面列表、引擎丢弃的形状（没有id、未知的`shape`、缺少尺寸或路径），以及无法读取的路径数据，此时形状按它的框切。
+
+## 在各种视图中
+
+**Canvas。** `renderPageToCanvas`把每个孔，以及异形或圆角纸页之外的纸，从页面上挖掉，于是这些地方显示画布后面的东西。使用`beneath`选项（一个按索引返回任意页面已绘制画布的函数）时，它在每个孔里画出读者透过孔会看到的页面，孔对齐多深就画多深：每一页都按其上方每一页的孔裁剪，每条切边有柔和的阴影，纸的断面有一条细线，书的末尾之后是纸板的颜色。`composeThrough(doc, pageIndex, source, target, scale)`把同样的合成画到你自己的画布上。
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // 已绘制的页面，按索引
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**HTML阅读器。** 有模切的页面用`clip-path: path(evenodd, …)`裁剪，即出血框（或纸页的外形）减去它的孔，所以孔里显示的是阅读器的背景，没有下面的页面。在屏幕版式中，页面不是印刷页面，所以没有下面的页面可显示。
+
+**Folio。** Folio把孔显示成拿在手里时的样子。在翻开的页面上，孔里显示下面的页面，孔对齐多深就显示多深（隧道书可以显示二十张纸页之下的一页），带有切口的纸壁，并随视角产生视差。翻动中的纸页上有真正的孔，阴影穿过它落到下面的页面上。圆角和异形外形切在每张纸页上，书芯的边缘也随圆角半径变化。
+
+**你自己的查看器。** 每个排好的页面在`VDTPage.dieCut`中带有它的模切：`holes`和`outline`是以页面像素表示的路径，`sources`是每个孔的刀模，还有`wrapGapPx`。`leafSide(doc, i)`说明某页是奇数页还是偶数页，`pageBeneath(doc, i)`说明它下面是哪一页（书的末尾之后为`-1`），`seeThrough(doc, i)`给出孔里显示的整叠页面及每一层的裁剪，`dieCutPath2D(cut)`把模切转换成`Path2D`。
+
+## 在沙盒中
+
+- **颜色。** 颜色选择器的**专色**标签页有**工艺**和**光泽**，并提供油墨名称暗示的工艺（**设为工艺：…**）。调色板的**添加特种油墨**菜单添加现成的特种油墨：金色、银色或铜色金属油墨，烫金或烫银，四种荧光油墨，不透明白，以及亮光油、哑光油或柔感油。
+- **油墨表。** 每种油墨都有**工艺**和**光泽**，**颜色所用的油墨**显示每种油墨的工艺。
+- **模切。** **版面设计 › 页面与分栏 › 模切**包含模切形状（每个都画出其轮廓）、它们切的页面、圆角以及异形书的外形。**版面设计 › 导出 › 印前准备 › 模切线**设置这块印版。
+- **Canvas。** 有模切的书，工具栏上有**模切线**，把每个刀模画成页面上的虚线；有特种油墨的书，工具栏上有**特种油墨**，在*平面*、*显示光泽*和*工艺分布图*之间切换。两者都会被记住。
+- **检查。** 上述印前检查结果以各自的标题出现在**检查**中：**特种油墨**、**专色油墨的印刷顺序**、**白墨印在白纸上**、**模切下有文字**、**模切靠近裁切线**、**模切进入订口**、**未知的模切形状**。
+
+[版面设计面板与检查面板](/zh/docs/sandbox-design-checks)和[预览](/zh/docs/sandbox-previews#canvas标签页)完整介绍了这些面板。
+
+## 限制
+
+- 工艺蒙版并不能看到一切。以特种油墨画成图片的公式会镂空，而不是显示它的油墨；特种油墨的渐变色标不会映射；使用上光油油墨的SVG在屏幕上仍会绘制它的hex，除非它被重新着色。屏幕hex正好是`#ffffff`的白墨无法与纸张区分：给它一个稍深的hex。
+- 模板页各框中的文字还不会绕开孔，只有流式文字会。请用`dieCutText`检查模板页。
+- 跨页模板中的模切元素不会在两页之间拆分。
+- HTML阅读器会在模板页上切出孔，但不画出孔下面的页面。
+- PDF完整印出页面并画出模切线：孔是刀模厂的工作。

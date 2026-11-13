@@ -152,6 +152,10 @@ Keep the lantern lit **every** night.
       <td>换用另一种纸张印刷的一组页面，例如哑粉纸书中的一组光面铜版插图。只有Folio视图显示它。</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>由配置中的某个刀模模切的一组页面：一个窗口、一个穿过多张纸页的孔。见下文的<a href="#diecut"><code>:::diecut</code></a>。</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>一组块，排成自己的若干栏：可以在框内、在正文栏中，也可以横跨多栏页面的整个版心。见下文的<a href="#columns"><code>:::columns</code></a>。</td>
     </tr>
@@ -376,6 +380,19 @@ A second answer box.
 </table>
 
 嵌套在另一个`:::paper`里的`:::paper`只覆盖它写出的属性，同样在前后分页。在`:::callout`内，`:::paper`的起始行和结束行被忽略。引擎无法读取的值会被丢弃，沙盒将其列为**纸张属性无效**警告（文档`contentWarnings`中的`paperAttributeInvalid`）。
+
+### `:::diecut`
+
+模切属于书的形式：它的形状、尺寸和在页面上的位置是配置中的一个模切形状（`dieCuts.shapes`，见[特种油墨与模切](/zh/docs/special-inks-die-cuts#模切形状)）。由内容决定哪些页面要模切时，把内容放进写明刀模的`:::diecut`容器：
+
+```md
+:::diecut{die=window}
+## 房子
+透过窗口，看见下一页的花园。
+:::
+```
+
+凡是排入该容器内容的页面都由这个刀模切出，它所在每张纸页的另一面也一样，呈镜像。与`:::paper`一样，内容从新的一页开始，结束行`:::`之后的内容也从新的一页开始。嵌套在另一个`:::diecut`里的`:::diecut`切的是内层的刀模。`die`是唯一的属性。`dieCuts.shapes`中没有的刀模什么也不切：这些页面照样单独排，沙盒列出**未知的模切形状**警告（文档`contentWarnings`中的`dieCutUnknown`）。要按页码模切，请改用`dieCuts.pages`。
 
 ### `:::pagebreak`
 

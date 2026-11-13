@@ -564,9 +564,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Cobertura total d'àrea, en percentatge.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // La taula de tintes: noms, àlies, quadricromia.
+  inks?: PrintInk[];                       // La taula de tintes: noms, àlies, quadricromia, acabats.
   plates?: PrintPlatesConfig;              // Les planxes del treball: impressió a dues tintes.
   imageColor?: PrintImageColorConfig;      // Com es llegeixen les imatges: perfils, grisos.
+  dieLine?: PrintDieLineConfig;            // La línia de troquel dels troquels del llibre.
 }
 
 interface CustomOutputProfile {
@@ -640,6 +641,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>vegeu <a href="/ca/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Què revisa el preflight i amb quins llindars.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>La línia de troquel de les pàgines amb troquel (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> o <code>'none'</code>), el nom de la planxa <code>ink</code>, el seu equivalent <code>cmyk</code> (100 % magenta) i el gruix del traç <code>width</code> (0,25 pt). Vegeu <a href="/ca/docs/special-inks-die-cuts#la-línia-de-troquel-al-pdf">La línia de troquel al PDF</a>.</td>
     </tr>
   </tbody>
 </table>

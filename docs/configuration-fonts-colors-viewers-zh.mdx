@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // 总墨量，百分比。
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // 油墨表：重命名、别名、四色印刷。
+  inks?: PrintInk[];                       // 油墨表：重命名、别名、四色印刷、工艺。
   plates?: PrintPlatesConfig;              // 作业印刷所用的印版：双色印刷。
   imageColor?: PrintImageColorConfig;      // 如何读取图片：特性文件、灰度。
+  dieLine?: PrintDieLineConfig;            // 书中模切的模切线。
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>见<a href="/zh/docs/configuration-pdf-output#印前检查">印前检查</a></td>
       <td>印前检查查哪些内容，以及它的阈值。</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>有模切（<code>dieCuts</code>）的页面的模切线：<code>output</code>（<code>'page'</code>或<code>'none'</code>）、印版名称<code>ink</code>、替代色<code>cmyk</code>（100 %品红）和描边宽度<code>width</code>（0.25 pt）。见<a href="/zh/docs/special-inks-die-cuts#pdf中的模切线">PDF中的模切线</a>。</td>
     </tr>
   </tbody>
 </table>

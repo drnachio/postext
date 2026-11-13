@@ -425,10 +425,11 @@ Für produktive Druckabläufe stimmen Sie vor dem Rendern diese Konfigurationsop
 - **`page.dpi: 300`** – die px pro Zoll des Layouts: Eine Bitmap ohne eigene Auflösung wird in ihrer natürlichen Größe mit dieser Auflösung gedruckt. Der [Preflight](/de/docs/configuration-pdf-output#preflight) meldet Bilder unter 300 ppi in ihrer gedruckten Größe.
 - **`ColorValue.cmyk`** – eine in CMYK angelegte Farbe wird mit ihren genauen Werten gedruckt.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` – kehrt den Bereich des Endformats mit dem Mischmodus Differenz um (Schnittmarken bleiben unverändert). Nützlich für Preflight-Prüfungen bei dunkler Typografie auf hellem Grund.
+- **`print.dieLine`** – die Stanzlinie eines Buchs mit Stanzungen, auf einer eigenen Platte gezeichnet, die die Druckmaschine nie einfärbt (standardmäßig `Die`, außer bei PDF/X-1a in einer optionalen Inhaltsgruppe). Siehe [Die Stanzlinie im PDF](/de/docs/special-inks-die-cuts#die-stanzlinie-im-pdf).
 
 ### Sonderfarben
 
-Eine Sonderfarbe (ein Pantone-Ton, eine Hausfarbe, ein Lack) druckt auf einer eigenen Platte. Eine Farbe mit `model: 'spot'` trägt ihre Druckfarbe in `ColorValue.spot`: `name` ist der Name der Platte, wie die Druckerei ihn kennt, `cmyk` das Aussehen der Druckfarbe bei 100 % (der Ersatzwert, den das PDF jedem gibt, der die Druckfarbe nicht hat), `tint` die Stärke in Prozent (Standard 100), und `overprint` lässt die Druckfarbe das Darunterliegende überdrucken, statt es auszusparen, wie ein Lack. `hex` ist ihre Bildschirmdarstellung.
+Eine Sonderfarbe (ein Pantone-Ton, eine Hausfarbe, ein Lack) druckt auf einer eigenen Platte. Eine Farbe mit `model: 'spot'` trägt ihre Druckfarbe in `ColorValue.spot`: `name` ist der Name der Platte, wie die Druckerei ihn kennt, `cmyk` das Aussehen der Druckfarbe bei 100 % (der Ersatzwert, den das PDF jedem gibt, der die Druckfarbe nicht hat), `tint` die Stärke in Prozent (Standard 100), `overprint` lässt die Druckfarbe das Darunterliegende überdrucken, statt es auszusparen, wie ein Lack, und `finish` sagt, was für eine Spezialfarbe sie ist: metallisch, Heißfolie, fluoreszierend, Deckweiß oder Lack. `hex` ist ihre Bildschirmdarstellung. [Spezialfarben und Stanzungen](/de/docs/special-inks-die-cuts#veredelungen) erklärt, wie jede Veredelung gedruckt und angezeigt wird.
 
 Ein CMYK- oder PDF/X-PDF schreibt jede Druckfarbe als Farbraum `Separation` mit ihrem Namen und malt jede Farbe dieser Druckfarbe in ihrem Tonwert: Farben mit demselben `name` teilen sich eine Platte. Das deckt die üblichen Aufträge ab: zweifarbig (Schwarz und eine Sonderfarbe), Vierfarbdruck mit einigen Elementen in einer Sonderfarbe und ein Lack, der auf ausgewählte Flächen überdruckt wird. Verwendet `diagramStyle.singleInk` eine Sonderfarbe, drucken SVG-Diagramme in Tonwerten dieser Platte. Ein RGB-PDF und der Bildschirm malen den `hex`-Wert der Farbe.
 
@@ -438,7 +439,7 @@ Ein CMYK- oder PDF/X-PDF schreibt jede Druckfarbe als Farbraum `Separation` mit 
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' druckt die Druckfarbe in CMYK, aus ihrem Ersatzwert.
   cmyk?: CmykPercent;              // Der Ersatzwert bei 100 %, vor dem der Farben.
   overprint?: boolean;             // Vor dem der Farben.
+  finish?: InkFinish;              // Metallisch, Heißfolie, fluoreszierend, Weiß oder Lack, vor dem der Farben.
 }
 ```
 
-Namen und Aliasse werden ohne Rücksicht auf Groß- und Kleinschreibung und mehrfache Leerzeichen verglichen. Umbenennen ist eine Zeile, gleich wie viele Farben die Druckfarbe verwenden; ein Alias führt die Namen, die ein Farbfeld des Gestalters, ein SVG (`data-spot`, `icc-named-color`) oder eine ältere Palette derselben Druckfarbe gaben, auf einer Platte zusammen; und `output: 'process'` druckt eine Druckfarbe in CMYK, wenn die Druckmaschine kein Druckwerk für sie hat, alle Tonwerte eingeschlossen.
+Namen und Aliasse werden ohne Rücksicht auf Groß- und Kleinschreibung und mehrfache Leerzeichen verglichen. Umbenennen ist eine Zeile, gleich wie viele Farben die Druckfarbe verwenden; ein Alias führt die Namen, die ein Farbfeld des Gestalters, ein SVG (`data-spot`, `icc-named-color`) oder eine ältere Palette derselben Druckfarbe gaben, auf einer Platte zusammen; `output: 'process'` druckt eine Druckfarbe in CMYK, wenn die Druckmaschine kein Druckwerk für sie hat, alle Tonwerte eingeschlossen; und `finish` macht eine Druckfarbe zur Spezialfarbe, woher ihr Name auch kommt, auch aus einem SVG oder einer importierten Datei, die `Gold` nennt.
 
-In der Sandbox liegt die Tabelle unter **Gestaltung › Export › Druckvorbereitung › Farbtabelle**: eine Karte pro Druckfarbe mit **Name der Druckfarbe**, **Aliasnamen**, **Plattenname im PDF**, **Druckt als**, **Ersatz-CMYK** und **Überdrucken**. **Druckfarben, die die Farben verwenden** listet die Druckfarben der Buchfarben auf, die in der Tabelle fehlen, jede mit einer Schaltfläche, die sie hinzufügt.
+In der Sandbox liegt die Tabelle unter **Gestaltung › Export › Druckvorbereitung › Farbtabelle**: eine Karte pro Druckfarbe mit **Name der Druckfarbe**, **Aliasnamen**, **Plattenname im PDF**, **Druckt als**, **Ersatz-CMYK**, **Überdrucken**, **Veredelung** und **Glanz**. **Druckfarben, die die Farben verwenden** listet die Druckfarben der Buchfarben auf, die in der Tabelle fehlen, jede mit einer Schaltfläche, die sie hinzufügt.
 
 ```ts
 print: {

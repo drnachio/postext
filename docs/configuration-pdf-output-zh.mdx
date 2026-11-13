@@ -425,10 +425,11 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`**：排版的每英寸像素数；没有自身分辨率的位图按自然尺寸以这个分辨率印刷。[印前检查](/zh/docs/configuration-pdf-output#印前检查)会报告印刷尺寸下不足300 ppi的图片。
 - **`ColorValue.cmyk`**：以CMYK定义的颜色按其准确数值印刷。
 - `RenderToPdfOptions`中的<strong>`{ pageNegative: true }`</strong>：用Difference混合模式反转成品区域（裁切线不反转）。适合对浅底深字的排版做印前检查。
+- **`print.dieLine`**：有模切的书的模切线，描在一块印刷机从不上墨的单独印版上（默认名为`Die`，PDF/X-1a以外放在可选内容组中）。见[PDF中的模切线](/zh/docs/special-inks-die-cuts#pdf中的模切线)。
 
 ### 专色
 
-专色（Pantone、企业专用油墨、光油等）在单独的印版上印刷。`model: 'spot'` 的颜色在 `ColorValue.spot` 中携带其油墨：`name` 是印刷厂所用的印版名称，`cmyk` 是油墨在100 %时的外观（没有该油墨时PDF使用的替代值），`tint` 是百分比网点浓度（默认100），`overprint` 让油墨像光油一样叠印在下方内容上而不是镂空。`hex` 是其屏幕显示色。
+专色（Pantone、企业专用油墨、光油等）在单独的印版上印刷。`model: 'spot'` 的颜色在 `ColorValue.spot` 中携带其油墨：`name` 是印刷厂所用的印版名称，`cmyk` 是油墨在100 %时的外观（没有该油墨时PDF使用的替代值），`tint` 是百分比网点浓度（默认100），`overprint` 让油墨像光油一样叠印在下方内容上而不是镂空，`finish` 说明特种油墨是什么：金属、烫金、荧光、不透明白或上光油。`hex` 是其屏幕显示色。[特种油墨与模切](/zh/docs/special-inks-die-cuts#工艺)说明每种工艺如何印刷和显示。
 
 CMYK或PDF/X格式的PDF会把每种油墨写成以其命名的 `Separation` 色彩空间，并按各自的浓度绘制该油墨的每个颜色：`name` 相同的颜色共用一块印版。由此可覆盖常见的作业：双色（黑色加一种专色）、四色印刷中部分元素使用专色，以及在选定区域叠印光油。当 `diagramStyle.singleInk` 使用专色时，SVG图表以该印版的浓淡印刷。RGB格式的PDF和屏幕则以 `hex` 绘制。
 
@@ -438,7 +439,7 @@ CMYK或PDF/X格式的PDF会把每种油墨写成以其命名的 `Separation` 色
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process'按替代值以CMYK印刷该油墨。
   cmyk?: CmykPercent;              // 100 %时的替代值，优先于颜色自身的值。
   overprint?: boolean;             // 优先于颜色自身的设置。
+  finish?: InkFinish;              // 金属、烫金、荧光、白墨或上光油，优先于颜色自身的设置。
 }
 ```
 
-名称和别名在比较时不区分大小写，也忽略连续的空格。无论多少颜色使用该油墨，重命名只需一行；别名把设计师色板、SVG（`data-spot`、`icc-named-color`）或旧调色板给同一油墨起的名称合并到一块印版上；当印刷机没有该油墨的色组时，`output: 'process'` 以CMYK印刷该油墨，所有网点浓度都包括在内。
+名称和别名在比较时不区分大小写，也忽略连续的空格。无论多少颜色使用该油墨，重命名只需一行；别名把设计师色板、SVG（`data-spot`、`icc-named-color`）或旧调色板给同一油墨起的名称合并到一块印版上；当印刷机没有该油墨的色组时，`output: 'process'` 以CMYK印刷该油墨，所有网点浓度都包括在内；`finish` 让一种油墨无论名称来自哪里都成为特种油墨，包括用了`Gold`这个名称的SVG或导入文件。
 
-在Sandbox中，该表位于**设计 › 导出 › 印前准备 › 油墨表**：每种油墨一张卡片，包括**油墨名称**、**别名**、**PDF中的印版名称**、**印刷方式**、**替代CMYK**和**叠印**。**颜色所用的油墨**列出书中颜色用到、而表中缺少的油墨，每种都附有一个添加按钮。
+在Sandbox中，该表位于**设计 › 导出 › 印前准备 › 油墨表**：每种油墨一张卡片，包括**油墨名称**、**别名**、**PDF中的印版名称**、**印刷方式**、**替代CMYK**、**叠印**、**工艺**和**光泽**。**颜色所用的油墨**列出书中颜色用到、而表中缺少的油墨，每种都附有一个添加按钮。
 
 ```ts
 print: {

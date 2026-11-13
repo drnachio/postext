@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td><a href="/ja/docs/configuration-pdf-output#プリフライト">プリフライト</a>を参照</td>
       <td>プリフライトが検査する項目と、そのしきい値。</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>抜き加工（<code>dieCuts</code>）のあるページの抜き型の線。<code>output</code>（<code>'page'</code>または<code>'none'</code>）、版名<code>ink</code>、代替色<code>cmyk</code>（マゼンタ100 %）、線の太さ<code>width</code>（0.25 pt）。<a href="/ja/docs/special-inks-die-cuts#pdfでの抜き型の線">PDFでの抜き型の線</a>を参照してください。</td>
     </tr>
   </tbody>
 </table>

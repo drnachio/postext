@@ -425,10 +425,11 @@ For production print workflows, tune these configuration options before renderin
 - **`page.dpi: 300`** — the layout's px per inch: a bitmap with no resolution of its own prints at this resolution at its natural size. The [preflight](/en/docs/configuration-pdf-output#preflight) reports pictures under 300 ppi at their printed size.
 - **`ColorValue.cmyk`** — a colour authored in CMYK prints with its exact values.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions` — inverts the trim area using a Difference blend mode (cut marks stay un-inverted). Useful for preflight checks on dark-on-light typography.
+- **`print.dieLine`** — the die line of a book with die-cuts, stroked on a plate of its own that the press never inks (`Die` by default, in an optional content group outside PDF/X-1a). See [The die line in the PDF](/en/docs/special-inks-die-cuts#the-die-line-in-the-pdf).
 
 ### Spot colours
 
-A spot colour (a Pantone, a corporate ink, a varnish) prints on its own plate. A colour with `model: 'spot'` carries its ink in `ColorValue.spot`: `name` is the plate's name as the printer knows it, `cmyk` is what the ink looks like at 100 % (the alternate the PDF gives anyone without the ink), `tint` is the strength in percent (100 by default), and `overprint` makes the ink overprint what is under it instead of knocking it out, like a varnish. `hex` is its screen rendering.
+A spot colour (a Pantone, a corporate ink, a varnish) prints on its own plate. A colour with `model: 'spot'` carries its ink in `ColorValue.spot`: `name` is the plate's name as the printer knows it, `cmyk` is what the ink looks like at 100 % (the alternate the PDF gives anyone without the ink), `tint` is the strength in percent (100 by default), `overprint` makes the ink overprint what is under it instead of knocking it out, like a varnish, and `finish` says what a special ink is: metallic, foil, fluorescent, opaque white or varnish. `hex` is its screen rendering. [Special inks and die-cuts](/en/docs/special-inks-die-cuts#finishes) explains how each finish prints and shows.
 
 A CMYK or PDF/X PDF writes each ink as a `Separation` colour space named after it, and paints every colour of that ink at its tint: colours with the same `name` share a plate. That covers the usual jobs: two colours (black and a spot), process with a few elements in a spot ink, and a varnish overprinted on chosen areas. When `diagramStyle.singleInk` uses a spot ink, SVG diagrams print in tints of that plate. An RGB PDF and the screen paint the colour's `hex`.
 
@@ -438,7 +439,7 @@ A CMYK or PDF/X PDF writes each ink as a `Separation` colour space named after i
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' prints the ink in CMYK, from its alternate.
   cmyk?: CmykPercent;              // The alternate at 100 %, over the colours' own.
   overprint?: boolean;             // Over the colours' own.
+  finish?: InkFinish;              // Metallic, foil, fluorescent, white or varnish, over the colours' own.
 }
 ```
 
-Names and aliases are matched ignoring case and runs of spaces. Renaming takes one line however many colours use the ink; an alias merges the names a designer's swatch, an SVG (`data-spot`, `icc-named-color`) or an older palette gave the same ink onto one plate; and `output: 'process'` prints an ink in CMYK when the press has no unit for it, every tint included.
+Names and aliases are matched ignoring case and runs of spaces. Renaming takes one line however many colours use the ink; an alias merges the names a designer's swatch, an SVG (`data-spot`, `icc-named-color`) or an older palette gave the same ink onto one plate; `output: 'process'` prints an ink in CMYK when the press has no unit for it, every tint included; and `finish` makes an ink a special one wherever its name comes from, an SVG or an imported file that names `Gold` included.
 
-In the Sandbox the table is **Design › Export › Print preparation › Ink table**: a card per ink with its **Ink name**, **Aliases**, **Plate name in the PDF**, **Prints as**, **Alternate CMYK** and **Overprint**. **Inks the colours use** lists the inks of the book's colours that the table lacks, each with a button that adds it.
+In the Sandbox the table is **Design › Export › Print preparation › Ink table**: a card per ink with its **Ink name**, **Aliases**, **Plate name in the PDF**, **Prints as**, **Alternate CMYK**, **Overprint**, **Finish** and **Sheen**. **Inks the colours use** lists the inks of the book's colours that the table lacks, each with a button that adds it.
 
 ```ts
 print: {

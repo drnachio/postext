@@ -425,10 +425,11 @@ const pdfWorker = createPdfWorker({ worker: new Worker(entry, { type: 'module' }
 - **`page.dpi: 300`** — レイアウトの1インチあたりのpx数です。自身の解像度を持たないビットマップは、原寸ではこの解像度で印刷されます。印刷サイズで300 ppiに満たない画像は、[プリフライト](/ja/docs/configuration-pdf-output#プリフライト)が報告します。
 - **`ColorValue.cmyk`** — CMYKで指定した色は、その値のまま印刷されます。
 - **`{ pageNegative: true }`**（`RenderToPdfOptions`のオプション） — Differenceブレンドモードで仕上がり領域を反転します（トンボは反転しません）。明るい地に暗い文字の組版を、プリフライトで確認するのに便利です。
+- **`print.dieLine`** — 抜き加工のある本の抜き型の線を、印刷機がインキを付けない専用の版に描きます（既定の名前は`Die`。PDF/X-1a以外ではオプションコンテンツグループに入ります）。[PDFでの抜き型の線](/ja/docs/special-inks-die-cuts#pdfでの抜き型の線)を参照してください。
 
 ### 特色
 
-特色（Pantone、コーポレートインキ、ニスなど）は専用の版で刷られます。`model: 'spot'` の色は `ColorValue.spot` にインキを持ちます。`name` は印刷所が使う版の名前、`cmyk` は100 %のインキの見え方（インキがない環境でPDFが代わりに使う値）、`tint` はパーセントでの網点濃度（既定は100）、`overprint` はニスのように下の色をノックアウトせずオーバープリントさせます。`hex` は画面上の表示色です。
+特色（Pantone、コーポレートインキ、ニスなど）は専用の版で刷られます。`model: 'spot'` の色は `ColorValue.spot` にインキを持ちます。`name` は印刷所が使う版の名前、`cmyk` は100 %のインキの見え方（インキがない環境でPDFが代わりに使う値）、`tint` はパーセントでの網点濃度（既定は100）、`overprint` はニスのように下の色をノックアウトせずオーバープリントさせ、`finish` は特殊インキが何であるか（メタリック、箔、蛍光、不透明ホワイト、ニス）を示します。`hex` は画面上の表示色です。それぞれの加工がどう刷られ、どう表示されるかは[特殊インキと抜き加工](/ja/docs/special-inks-die-cuts#加工)で説明しています。
 
 CMYKまたはPDF/XのPDFでは、各インキがその名前の `Separation` 色空間として書き出され、そのインキの色はそれぞれの濃度で塗られます。同じ `name` の色は同じ版を共有します。2色刷り（墨と特色1色）、一部の要素だけ特色を使うプロセス印刷、選んだ部分へのオーバープリントのニスといった一般的な仕事に対応します。`diagramStyle.singleInk` に特色を使うと、SVG図版はその版の濃淡で刷られます。RGBのPDFと画面では `hex` で塗られます。
 
@@ -438,7 +439,7 @@ CMYKまたはPDF/XのPDFでは、各インキがその名前の `Separation` 色
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process'はインキを代替値からCMYKで刷る。
   cmyk?: CmykPercent;              // 100 %での代替値。色側の値より優先。
   overprint?: boolean;             // 色側の値より優先。
+  finish?: InkFinish;              // メタリック、箔、蛍光、白、ニス。色側の値より優先。
 }
 ```
 
-名前と別名は、大文字小文字と連続するスペースを区別せずに照合されます。インキを使う色がいくつあっても、名前の変更は1行で済みます。別名は、デザイナーのスウォッチ、SVG（`data-spot`、`icc-named-color`）、以前のパレットが同じインキに付けていた名前を1つの版にまとめます。`output: 'process'` は、印刷機にそのインキのユニットがないとき、すべての濃度を含めてインキをCMYKで刷ります。
+名前と別名は、大文字小文字と連続するスペースを区別せずに照合されます。インキを使う色がいくつあっても、名前の変更は1行で済みます。別名は、デザイナーのスウォッチ、SVG（`data-spot`、`icc-named-color`）、以前のパレットが同じインキに付けていた名前を1つの版にまとめます。`output: 'process'` は、印刷機にそのインキのユニットがないとき、すべての濃度を含めてインキをCMYKで刷ります。`finish` は、名前がどこから来たものでも（`Gold`という名前を使うSVGや読み込んだファイルも含めて）そのインキを特殊インキにします。
 
-Sandboxでは、この表は**デザイン › 書き出し › 印刷の準備 › インキ表**にあります。インキごとにカードが1枚あり、**インキ名**、**別名**、**PDFでの版名**、**刷り方**、**代替CMYK**、**オーバープリント**を設定します。**色が使っているインキ**には、本の色が使っていて表にないインキが並び、それぞれのボタンで表に加えられます。
+Sandboxでは、この表は**デザイン › 書き出し › 印刷の準備 › インキ表**にあります。インキごとにカードが1枚あり、**インキ名**、**別名**、**PDFでの版名**、**刷り方**、**代替CMYK**、**オーバープリント**、**加工**、**光沢**を設定します。**色が使っているインキ**には、本の色が使っていて表にないインキが並び、それぞれのボタンで表に加えられます。
 
 ```ts
 print: {
