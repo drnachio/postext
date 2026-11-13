@@ -13,7 +13,14 @@ import { WORDS_AND_SPACES_RE, isBreakingSpaceRun } from '../spaces.js';
  * may close it. A word with a letter before its first digit (`COVID-19`)
  * or a hyphen between its digits (a date, a range) is not one.
  */
-const NUMBER_WORD_RE = /^[([{"'«“‘‹„]*[+\-−±~≈<>≤≥]?\p{Sc}?\p{Nd}[\p{Nd}.,'’    ٫٬]*(?:[eE][+\-−]?\p{Nd}+)?(?:[  ]?(?:[%‰‱′″\p{Sc}]|°[CFK]?|[\p{L}µΩ][\p{L}µΩ²³/·]{0,5}))?[)\]}"'»”’›.,;:!?]*$/u;
+const NUMBER_WORD_RE = /^[([{"'«“‘‹„]*[+\-−±~≈<>≤≥]?\p{Sc}?\p{Nd}[\p{Nd}.,'’    ٫٬]*(?:[eE][+\-−]?\p{Nd}+)?(?:[  ]?(?:[%‰‱′″\p{Sc}]|°[CFK]?|[\p{L}µΩ][\p{L}µΩ²³/·]{0,5}))?$/u;
+
+/** The punctuation that may close a number. It is taken off by
+ *  `isNumberWord` before the pattern runs: as a last `[…]*` of the pattern
+ *  it shared `.` `,` `'` `’` with the digit groups, and a long run of them
+ *  made the match backtrack over every way of splitting it (CodeQL
+ *  js/polynomial-redos). */
+const CLOSING = new Set([...')]}"\'»”’›.,;:!?']);
 
 /**
  * Whether `word` (text between breaking spaces, as the breaker holds it)
@@ -26,7 +33,10 @@ const NUMBER_WORD_RE = /^[([{"'«“‘‹„]*[+\-−±~≈<>≤≥]?\p{Sc}?\p{
  * added.
  */
 export function isNumberWord(word: string): boolean {
-  return word.length > 1 && NUMBER_WORD_RE.test(word);
+  if (word.length < 2) return false;
+  let end = word.length;
+  while (end > 0 && CLOSING.has(word[end - 1]!)) end--;
+  return NUMBER_WORD_RE.test(word.slice(0, end));
 }
 
 /**

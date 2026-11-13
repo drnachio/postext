@@ -42,6 +42,17 @@ describe('what a number is (#1549)', () => {
       expect(isNumberWord(w), w).toBe(false);
     }
   });
+
+  it('reads a long run of separators or closing marks in linear time', () => {
+    // The closing punctuation used to be a last `[…]*` of the pattern that
+    // shared `'` `’` `.` `,` with the digit groups (CodeQL js/polynomial-redos).
+    const t = performance.now();
+    for (const mark of ["'", '’', '.', ',']) {
+      expect(isNumberWord(`1${mark.repeat(50_000)}#`)).toBe(false);
+      expect(isNumberWord(`1${mark.repeat(50_000)}`)).toBe(true);
+    }
+    expect(performance.now() - t).toBeLessThan(1000);
+  });
 });
 
 describe('a number wider than its line stays whole (#1549)', () => {
