@@ -1,0 +1,66 @@
+---
+title: "Un quinto inchiostro per il colore aziendale"
+summary: "Quadricromia più un Pantone aziendale esatto: la tabella degli inchiostri riunisce su una lastra, PANTONE 286 C, ogni nome che prende il blu."
+plain: "Il bilancio annuale di una fondazione che cura un fiume, stampato con i soliti quattro inchiostri e un blu esatto che è il colore della fondazione. Ogni file chiama il blu in un altro modo, e il file di stampa lo mette tutto su una lastra."
+description: "Un bilancio annuale in quadricromia e un Pantone aziendale in Postext: retini della tinta piatta, una tabella che unisce i nomi, un SVG che nomina l’inchiostro."
+question: "Come stampo un bilancio in quadricromia e il nostro Pantone se ogni file chiama l’inchiostro in un altro modo?"
+aliases: ["quinto inchiostro", "tinta piatta", "Pantone", "colore aziendale", "colore del marchio", "tabella degli inchiostri", "alias di inchiostro", "bilancio annuale", "nome della lastra", "fifth ink", "spot colour"]
+pageNotes: { "1": "La copertina: una foto aerea di un’ansa verde sopra una fascia di blu aziendale intenso, con CAUCE FOUNDATION, Annual Report 2025, un filetto corto azzurro e un motto in corsivo, tutto in bianco.", "3": "Il lavoro lungo il fiume: una barra blu con l’occhiello, il titolo in blu, due colonne di testo, un grafico a barre nel blu e nel suo retino al 40 % e una tabella con l’intestazione blu e la riga del totale azzurro chiaro.", "6": "I conti: due colonne con la tabella di entrate e uscite a destra, e una barra larga quanto la pagina divisa tra il blu pieno, il suo retino chiaro e un grigio per le spese di gestione." }
+---
+
+## Che cosa comporrai
+
+Un bilancio annuale di otto pagine A4 per una fondazione inventata che risana un fiume, stampato in quadricromia più un quinto inchiostro, il suo blu aziendale. Il blu sta dove lo metterebbe un marchio: la fascia della copertina, la barra sopra ogni sezione, i titoli, le intestazioni delle tabelle, le barre del grafico e la quarta di copertina. I suoi retini al 40 % e al 12 % riempiono le barre del previsto, le righe dei totali e il riquadro delle cifre chiave, e si stampano come retini dello stesso inchiostro, mai come una miscela di quadricromia. Le fotografie e il testo restano in quadricromia. Il PDF/X-4 ha cinque lastre, e la quinta porta il nome con cui il tipografo tiene l’inchiostro, `PANTONE 286 C`, anche se nel progetto niente lo chiama così.
+
+## Preparazione
+
+### 1 · Un inchiostro con tre nomi
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Il blu arriva nel bilancio con tre nomi, come accade nei lavori veri: il campione del grafico dice `Brand Blue`, una vecchia palette scriveva `Pantone 286C` per il retino al 40 %, e il grafico, disegnato dall’ufficio spagnolo, dice `Azul Cauce`. Senza tabella degli inchiostri ogni nome uscirebbe su una lastra propria, e il tipografo riceverebbe tre blu da miscelare. La voce della [tabella degli inchiostri](/it/docs/configuration-pdf-output#tinte-piatte) dà il nome alla lastra ed elenca gli altri nomi come alias; i nomi si confrontano senza badare a maiuscole e spazi, così ogni retino di ogni nome finisce sull’unica separazione `PANTONE 286 C`. Il suo `cmyk` è il colore alternativo che mostra una prova.
+
+### 2 · Il grafico nomina il suo inchiostro
+
+<Excerpt region="chart" />
+
+Un SVG dice con `data-spot` su quale inchiostro si stampa un colore, e con `data-spot-tint` con quale intensità, in percentuale. Le barre del grafico nominano `Azul Cauce` al 100 % e al 40 %, e l’alias le mette sulla stessa lastra del resto del blu. Le linee della griglia e le etichette sono colori comuni e restano nel nero di quadricromia. La barra delle uscite nella pagina dei conti fa lo stesso con tre segmenti, il terzo un grigio di quadricromia.
+
+### 3 · Il blu regge il progetto
+
+<Excerpt region="cover" />
+
+La foto di copertina riempie la parte alta dell’abbondanza con `fit: 'cover'`, e un riquadro nel blu riempie il resto; il testo sopra è bianco e fa da risparmio nella lastra. Le barre di sezione, i piè di pagina e le intestazioni delle tabelle usano la stessa voce della palette, quindi cambiare inchiostro è una riga.
+
+<Excerpt region="tables" />
+
+Le tabelle vengono da file TSV accanto al testo. Una riga con la prima cella in grassetto è un totale e prende il retino al 12 %; le cifre sono allineate a destra.
+
+### 4 · Le fotografie restano in RGB
+
+`convertImages: false` nelle impostazioni di stampa lascia le fotografie come JPEG RGB con profilo sRGB, che PDF/X-4 ammette; il RIP del tipografo le separa. Il file resta leggero, e la lastra del blu non riceve nulla dalle foto.
+
+## Varianti
+
+### Stampa il blu in quadricromia
+
+Quando la macchina non ha un quinto gruppo, una parola nella tabella degli inchiostri stampa ogni retino del blu in CMYK a partire dal suo colore alternativo.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Dai alla lastra il nome di un altro tipografo
+
+Alcuni tipografi vogliono la lastra con il loro nome. `pdfName` la rinomina e conserva gli alias.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Errori frequenti
+
+- Un colore di un’immagine che non nomina il suo inchiostro né coincide esattamente con una tinta piatta della palette resta in quadricromia, anche se sembra il blu. Marca gli elementi con `data-spot`, oppure dai alla palette una tinta piatta con quell’hex esatto.
+- Un nome di famiglia con una cifra, come `Source Sans 3`, va tra virgolette nel `font-family` di un SVG; senza virgolette il browser scarta la dichiarazione e compone le etichette in un graziato.

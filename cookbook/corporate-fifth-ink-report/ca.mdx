@@ -1,0 +1,66 @@
+---
+title: "Una cinquena tinta per al color corporatiu"
+summary: "Quadricromia i un Pantone corporatiu exacte: la taula de tintes reuneix en una planxa, PANTONE 286 C, cada nom que rep el blau."
+plain: "Una memòria anual d'una fundació que cuida un riu, impresa amb les quatre tintes de sempre i un blau exacte que és el color de la fundació. Cada fitxer anomena el blau d'una manera, i el d'impremta ho posa tot en una planxa."
+description: "Una memòria anual a quatre tintes i un Pantone corporatiu a Postext: tints de la tinta plana, una taula de tintes que uneix noms i un SVG amb la seva tinta."
+question: "Com imprimeixo una memòria a quatre tintes i el nostre Pantone si cada fitxer anomena la tinta d'una manera?"
+aliases: ["cinquena tinta", "tinta plana", "Pantone", "color corporatiu", "color de marca", "taula de tintes", "àlies de tinta", "memòria anual", "nom de planxa", "fifth ink", "spot colour"]
+pageNotes: { "1": "La coberta: una foto aèria d'un meandre verd sobre una franja de blau corporatiu intens, amb CAUCE FOUNDATION, Annual Report 2025, un filet curt blau clar i un lema en cursiva, tot en blanc.", "3": "Feina al llarg del riu: una barra blava amb l'avanttítol, el títol en blau, dues columnes de text, un gràfic de barres en el blau i el seu tint al 40 % i una taula amb la capçalera blava i la fila del total en blau pàl·lid.", "6": "Comptes: dues columnes amb la taula d'ingressos i despeses a la dreta, i una barra d'amplada de pàgina dividida en el blau ple, el seu tint clar i un gris per al funcionament." }
+---
+
+## Què compondràs
+
+Una memòria anual de vuit pàgines A4 per a una fundació inventada que restaura un riu, impresa a quatre tintes i una cinquena, el seu blau corporatiu. El blau és on el posaria una marca: la franja de la coberta, la barra damunt de cada secció, els títols, les capçaleres de taula, les barres del gràfic i la contracoberta. Els seus tints al 40 % i al 12 % omplen les barres previstes, les files de total i la caixa de xifres, i s'imprimeixen com a trames de la mateixa tinta, mai com una barreja de quadricromia. Les fotografies i el text van en quadricromia. El PDF/X-4 té cinc planxes, i la cinquena porta el nom amb què l'impressor guarda la tinta, `PANTONE 286 C`, encara que res del disseny no l'anomena així.
+
+## Elaboració
+
+### 1 · Una tinta amb tres noms
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El blau arriba a la memòria amb tres noms, com passa en les feines de veritat: la mostra del dissenyador diu `Brand Blue`, una paleta antiga va escriure `Pantone 286C` per al tint al 40 %, i el gràfic, dibuixat a l'oficina d'Espanya, diu `Azul Cauce`. Sense taula de tintes cada nom sortiria en una planxa pròpia, i l'impressor rebria tres blaus per barrejar. L'entrada de la [taula de tintes](/ca/docs/configuration-pdf-output#tintes-planes) dona nom a la planxa i posa els altres com a àlies; els noms es comparen sense tenir en compte majúscules ni espais, de manera que cada tint de cada nom va a parar a l'única separació `PANTONE 286 C`. El seu `cmyk` és l'alternativa que mostra una prova.
+
+### 2 · El gràfic anomena la seva tinta
+
+<Excerpt region="chart" />
+
+Un SVG diu amb quina tinta s'imprimeix un color amb `data-spot`, i amb quina força amb `data-spot-tint`, en percentatge. Les barres del gràfic anomenen `Azul Cauce` al 100 % i al 40 %, i l'àlies les posa a la mateixa planxa que la resta del blau. Les línies de la quadrícula i les etiquetes són colors corrents i queden en el negre de quadricromia. La barra de despeses de la pàgina de comptes fa el mateix amb tres trams, el tercer un gris de quadricromia.
+
+### 3 · El blau porta el disseny
+
+<Excerpt region="cover" />
+
+La foto de coberta omple la part alta del sang amb `fit: 'cover'`, i una caixa en el blau omple la resta; la lletra de sobre és blanca i queda calada a la planxa. Les barres de secció, els peus de pàgina i les capçaleres de taula fan servir la mateixa entrada de la paleta, així que canviar de tinta és una línia.
+
+<Excerpt region="tables" />
+
+Les taules surten de fitxers TSV al costat del text. Una fila amb la primera cel·la en negreta és un total i pren el tint al 12 %; les xifres van a la dreta.
+
+### 4 · Les fotografies es queden en RGB
+
+`convertImages: false` als ajustos d'impressió deixa les fotografies com a JPEG en RGB amb perfil sRGB, que PDF/X-4 admet; el RIP de l'impressor les separa. El fitxer queda lleuger, i la planxa blava no rep res de les fotos.
+
+## Variants
+
+### Imprimeix el blau en quadricromia
+
+Quan la màquina no té cinquè cos, una paraula a la taula de tintes imprimeix cada tint del blau en CMYK a partir de la seva alternativa.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Anomena la planxa per a una altra impremta
+
+Hi ha impremtes que volen la planxa amb el seu propi nom. `pdfName` la reanomena i conserva els àlies.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Errors freqüents
+
+- Un color d'una imatge que ni anomena la seva tinta ni coincideix exactament amb un color pla de la paleta queda en quadricromia, encara que sembli el blau. Marca els elements amb `data-spot`, o dona a la paleta un color pla amb aquest hex exacte.
+- Un nom de família amb una xifra, com `Source Sans 3`, necessita cometes al `font-family` d'un SVG; sense cometes, el navegador descarta la declaració i compon les etiquetes en una serif.

@@ -1,0 +1,66 @@
+---
+title: "Uma quinta cor para a cor institucional"
+summary: "Quadricromia mais um Pantone institucional exato: a tabela de tintas reúne numa chapa, PANTONE 286 C, cada nome que o azul recebe."
+plain: "O relatório anual de uma fundação que cuida de um rio, impresso com as quatro tintas de sempre e um azul exato que é a cor da fundação. Cada arquivo chama o azul de um jeito, e o arquivo de impressão põe tudo numa chapa só."
+description: "Um relatório anual em quatro cores e um Pantone institucional no Postext: retículas da cor especial, uma tabela que une nomes e um SVG com a sua tinta."
+question: "Como imprimo um relatório em quatro cores e o nosso Pantone se cada arquivo chama a tinta de um jeito?"
+aliases: ["quinta cor", "cor especial", "cor Pantone", "Pantone", "cor institucional", "cor da marca", "tabela de tintas", "alias de tinta", "relatório anual", "nome da chapa", "fifth ink", "spot colour"]
+pageNotes: { "1": "A capa: uma foto aérea de um meandro verde sobre uma faixa de azul institucional intenso, com CAUCE FOUNDATION, Annual Report 2025, um fio curto azul-claro e um lema em itálico, tudo em branco.", "3": "Trabalho ao longo do rio: uma barra azul com o chapéu, o título em azul, duas colunas de texto, um gráfico de barras no azul e na sua retícula de 40 % e uma tabela com o cabeçalho azul e a linha do total azul-clara.", "6": "Contas: duas colunas com a tabela de receitas e despesas à direita, e uma barra da largura da página dividida entre o azul pleno, a sua retícula clara e um cinza para as despesas de funcionamento." }
+---
+
+## O que você vai compor
+
+Um relatório anual de oito páginas A4 para uma fundação inventada que recupera um rio, impresso em quatro cores e uma quinta, o seu azul institucional. O azul está onde uma marca o poria: a faixa da capa, a barra sobre cada seção, os títulos, os cabeçalhos das tabelas, as barras do gráfico e a quarta capa. As suas retículas de 40 % e de 12 % preenchem as barras do previsto, as linhas de total e o box dos números principais, e saem como retículas da mesma tinta, nunca como uma mistura de quadricromia. As fotografias e o texto ficam em quadricromia. O PDF/X-4 tem cinco chapas, e a quinta leva o nome com que a gráfica guarda a tinta, `PANTONE 286 C`, embora nada no projeto gráfico a chame assim.
+
+## Preparo
+
+### 1 · Uma tinta com três nomes
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O azul chega ao relatório com três nomes, como acontece nos trabalhos reais: a amostra do designer diz `Brand Blue`, uma paleta antiga escreveu `Pantone 286C` para a retícula de 40 %, e o gráfico, desenhado no escritório da Espanha, diz `Azul Cauce`. Sem tabela de tintas cada nome sairia numa chapa própria, e a gráfica receberia três azuis para misturar. A entrada da [tabela de tintas](/pt/docs/configuration-pdf-output#cores-especiais) dá nome à chapa e lista os outros nomes como aliases; os nomes são comparados sem levar em conta maiúsculas nem espaços, de modo que cada retícula de cada nome cai na única separação `PANTONE 286 C`. O seu `cmyk` é a cor alternativa que uma prova mostra.
+
+### 2 · O gráfico nomeia a sua tinta
+
+<Excerpt region="chart" />
+
+Um SVG diz em que tinta uma cor é impressa com `data-spot`, e com que força com `data-spot-tint`, em porcentagem. As barras do gráfico nomeiam `Azul Cauce` a 100 % e a 40 %, e o alias as põe na mesma chapa que o resto do azul. As linhas da grade e os rótulos são cores comuns e ficam no preto de quadricromia. A barra de despesas da página de contas faz o mesmo com três trechos, o terceiro um cinza de quadricromia.
+
+### 3 · O azul sustenta o projeto gráfico
+
+<Excerpt region="cover" />
+
+A foto da capa preenche a parte de cima da sangria com `fit: 'cover'`, e um box no azul preenche o resto; o texto por cima é branco e fica vazado na chapa. As barras de seção, os rodapés e os cabeçalhos das tabelas usam a mesma entrada da paleta, então trocar de tinta é uma linha.
+
+<Excerpt region="tables" />
+
+As tabelas vêm de arquivos TSV ao lado do texto. Uma linha cuja primeira célula está em negrito é um total e recebe a retícula de 12 %; os números ficam alinhados à direita.
+
+### 4 · As fotografias continuam em RGB
+
+`convertImages: false` nas configurações de impressão mantém as fotografias como JPEG em RGB com perfil sRGB, o que o PDF/X-4 permite; o RIP da gráfica faz a separação. O arquivo fica leve, e a chapa do azul não recebe nada das fotos.
+
+## Variações
+
+### Imprima o azul em quadricromia
+
+Quando a máquina não tem quinta unidade, uma palavra na tabela de tintas imprime cada retícula do azul em CMYK a partir da sua cor alternativa.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Dê à chapa o nome de outra gráfica
+
+Algumas gráficas querem a chapa com o nome delas. `pdfName` renomeia a chapa e mantém os aliases.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Erros comuns
+
+- Uma cor de uma imagem que não nomeia a sua tinta nem coincide exatamente com uma cor especial da paleta fica em quadricromia, mesmo parecendo o azul. Marque os elementos com `data-spot`, ou dê à paleta uma cor especial com esse hex exato.
+- Um nome de família com um algarismo, como `Source Sans 3`, precisa de aspas no `font-family` de um SVG; sem elas, o navegador descarta a declaração e compõe os rótulos numa fonte serifada.

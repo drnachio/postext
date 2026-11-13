@@ -1,0 +1,66 @@
+---
+title: "A fifth ink for the corporate colour"
+summary: "Process colour plus one exact corporate Pantone: the ink table gathers every name the blue goes by onto one plate, PANTONE 286 C."
+plain: "An annual report for a river charity, printed in the usual four inks plus one exact blue that is the charity's own colour. Each file calls the blue by another name, and the print file still puts it all on one plate."
+description: "An annual report in four colours and a corporate Pantone in Postext: spot tints, an ink table that merges names, an SVG that names its ink."
+question: "How do I print a report in four colours plus our corporate Pantone when every file names the ink differently?"
+aliases: ["fifth ink", "spot colour", "spot color", "Pantone", "corporate colour", "brand colour", "ink table", "ink alias", "annual report", "plate name", "quinta tinta", "tinta plana"]
+pageNotes: { "1": "The cover: an aerial photograph of a green river meander over a band of deep corporate blue, with CAUCE FOUNDATION, Annual Report 2025, a short pale-blue rule and an italic strapline in white.", "3": "Work along the river: a blue bar with the kicker, the title in blue, two columns of text, a bar chart in the blue and its 40 % tint, and a table with a blue header and a pale-blue total row.", "6": "Accounts: two columns with an income and spending table on the right, and a bar across the page split into the full blue, its pale tint and a grey for running costs." }
+---
+
+## What you'll build
+
+An eight-page A4 annual report for an invented river charity, printed in four colours and one fifth ink, its corporate blue. The blue is everywhere a brand would put it: the band across the cover, the bar over each section, the headings, the table heads, the chart bars and the back cover. Its 40 % and 12 % tints fill the planned bars, the total rows and the box of key figures, and they print as screens of the same ink, never as a process mix. The photographs and the text stay in process. The PDF/X-4 file has five plates, and the fifth is named as the printer stocks the ink, `PANTONE 286 C`, although nothing in the design calls it that.
+
+## Method
+
+### 1 · One ink under three names
+
+The code is [the short answer](#the-short-answer) above. The blue reaches the report under three names, as it does in real jobs: the designer's swatch says `Brand Blue`, an older palette wrote `Pantone 286C` for the 40 % tint, and the chart, drawn by the Spanish office, says `Azul Cauce`. Without an ink table each name would print on a plate of its own, and the printer would get three blues to mix. The [ink table](/en/docs/configuration-pdf-output#spot-colours) entry names the plate and lists the other names as aliases; names match ignoring case and spaces, so every tint of every name lands on the one `PANTONE 286 C` separation. Its `cmyk` is the alternate a proof shows.
+
+### 2 · The chart names its ink
+
+<Excerpt region="chart" />
+
+An SVG says which ink a colour prints on with `data-spot`, and how strong with `data-spot-tint`, in percent. The bars of the chart name `Azul Cauce` at 100 % and at 40 %, and the alias puts them on the same plate as the rest of the blue. The grid lines and labels are plain colours and stay in process black. The bar of spending on the accounts page does the same with three segments, the third a process grey.
+
+### 3 · The blue carries the design
+
+<Excerpt region="cover" />
+
+The cover photograph fills the top of the bleed with `fit: 'cover'`, and a box in the blue fills the rest; the type on it is white, which knocks out of the plate. The section bars, the running feet and the table heads use the same palette entry, so a change of ink is one line.
+
+<Excerpt region="tables" />
+
+The tables come from TSV files next to the text. A row whose first cell is bold is a total and takes the 12 % tint; figures set right.
+
+### 4 · The photographs stay in RGB
+
+`convertImages: false` in the print settings keeps the photographs as RGB JPEGs tagged sRGB, which PDF/X-4 allows; the printer's RIP separates them. The file stays small, and the blue plate gets nothing from the photographs.
+
+## Variations
+
+### Print the blue in process
+
+When the press has no fifth unit, one word in the ink table prints every tint of the blue in CMYK from its alternate.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Name the plate for another printer
+
+Some printers want the plate under their own name. `pdfName` renames it and keeps the aliases.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Pitfalls
+
+- A colour in a picture that neither names its ink nor matches a palette spot colour exactly stays in process, even when it looks like the blue. Mark the elements with `data-spot`, or give the palette a spot colour with exactly that hex.
+- A family name with a digit, such as `Source Sans 3`, needs quotes in an SVG's `font-family`; unquoted, the browser drops the declaration and sets the labels in a serif.

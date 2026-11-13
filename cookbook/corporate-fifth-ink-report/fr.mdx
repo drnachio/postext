@@ -1,0 +1,66 @@
+---
+title: "Une cinquième encre pour la couleur de l’entreprise"
+summary: "Quadrichromie et un Pantone d’entreprise exact : la table des encres réunit sur une plaque, PANTONE 286 C, chaque nom que porte le bleu."
+plain: "Le rapport annuel d’une fondation qui veille sur une rivière, imprimé avec les quatre encres habituelles et un bleu exact, sa couleur. Chaque fichier appelle ce bleu autrement, et le fichier d’impression le met sur une seule plaque."
+description: "Un rapport annuel en quadrichromie et un Pantone d’entreprise dans Postext : trames du ton direct, une table qui unit les noms, un SVG qui nomme l’encre."
+question: "Comment imprimer un rapport en quadrichromie et notre Pantone quand chaque fichier nomme l’encre autrement ?"
+aliases: ["cinquième encre", "ton direct", "Pantone", "couleur d’entreprise", "couleur de marque", "table des encres", "alias d’encre", "rapport annuel", "nom de plaque", "fifth ink", "spot colour"]
+pageNotes: { "1": "La couverture : une photo aérienne d’un méandre vert au-dessus d’une bande de bleu d’entreprise soutenu, avec CAUCE FOUNDATION, Annual Report 2025, un filet court bleu clair et une devise en italique, le tout en blanc.", "3": "Le travail le long de la rivière : une barre bleue avec le surtitre, le titre en bleu, deux colonnes de texte, un graphique à barres dans le bleu et sa trame à 40 %, et un tableau à en-tête bleu dont la ligne de total est bleu pâle.", "6": "Les comptes : deux colonnes avec le tableau des recettes et des dépenses à droite, et une barre sur toute la largeur partagée entre le bleu plein, sa trame claire et un gris pour le fonctionnement." }
+---
+
+## Ce que vous allez composer
+
+Un rapport annuel de huit pages A4 pour une fondation inventée qui restaure une rivière, imprimé en quadrichromie et une cinquième encre, son bleu d’entreprise. Le bleu est là où une marque le mettrait : la bande de la couverture, la barre au-dessus de chaque section, les titres, les en-têtes de tableau, les barres du graphique et la quatrième de couverture. Ses trames à 40 % et à 12 % remplissent les barres du prévisionnel, les lignes de total et l’encadré des chiffres clés, et s’impriment comme des trames de la même encre, jamais comme un mélange de quadrichromie. Les photographies et le texte restent en quadrichromie. Le PDF/X-4 a cinq plaques, et la cinquième porte le nom sous lequel l’imprimeur range l’encre, `PANTONE 286 C`, alors que rien dans la maquette ne l’appelle ainsi.
+
+## Préparation
+
+### 1 · Une encre sous trois noms
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le bleu arrive dans le rapport sous trois noms, comme dans les vrais travaux : la nuance du graphiste s’appelle `Brand Blue`, une ancienne palette écrivait `Pantone 286C` pour la trame à 40 %, et le graphique, dessiné par le bureau espagnol, dit `Azul Cauce`. Sans table des encres, chaque nom sortirait sur sa propre plaque, et l’imprimeur recevrait trois bleus à mélanger. L’entrée de la [table des encres](/fr/docs/configuration-pdf-output#tons-directs) nomme la plaque et donne les autres noms comme alias ; les noms se comparent sans tenir compte de la casse ni des espaces, si bien que chaque trame de chaque nom tombe sur l’unique séparation `PANTONE 286 C`. Son `cmyk` est la couleur de substitution que montre une épreuve.
+
+### 2 · Le graphique nomme son encre
+
+<Excerpt region="chart" />
+
+Un SVG indique sur quelle encre s’imprime une couleur avec `data-spot`, et à quelle force avec `data-spot-tint`, en pourcentage. Les barres du graphique nomment `Azul Cauce` à 100 % et à 40 %, et l’alias les place sur la même plaque que le reste du bleu. Les lignes de la grille et les étiquettes sont des couleurs ordinaires et restent dans le noir de quadrichromie. La barre des dépenses de la page des comptes fait de même avec trois segments, le troisième en gris de quadrichromie.
+
+### 3 · Le bleu porte la maquette
+
+<Excerpt region="cover" />
+
+La photo de couverture remplit le haut du fond perdu avec `fit: 'cover'`, et un bloc dans le bleu remplit le reste ; le texte posé dessus est blanc et réservé dans la plaque. Les barres de section, les pieds de page et les en-têtes de tableau utilisent la même entrée de la palette, si bien que changer d’encre tient en une ligne.
+
+<Excerpt region="tables" />
+
+Les tableaux viennent de fichiers TSV placés à côté du texte. Une ligne dont la première cellule est en gras est un total et prend la trame à 12 % ; les chiffres sont alignés à droite.
+
+### 4 · Les photographies restent en RVB
+
+`convertImages: false` dans les réglages d’impression garde les photographies en JPEG RVB balisés sRGB, ce que PDF/X-4 autorise ; le RIP de l’imprimeur les sépare. Le fichier reste léger, et la plaque du bleu ne reçoit rien des photos.
+
+## Variantes
+
+### Imprimer le bleu en quadrichromie
+
+Quand la presse n’a pas de cinquième groupe, un mot dans la table des encres imprime chaque trame du bleu en CMJN à partir de sa couleur de substitution.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Nommer la plaque pour un autre imprimeur
+
+Certains imprimeurs veulent la plaque sous leur propre nom. `pdfName` la renomme et garde les alias.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Erreurs fréquentes
+
+- Une couleur d’image qui ne nomme pas son encre et ne correspond pas exactement à un ton direct de la palette reste en quadrichromie, même si elle ressemble au bleu. Marquez les éléments avec `data-spot`, ou donnez à la palette un ton direct de ce hex exact.
+- Un nom de famille qui contient un chiffre, comme `Source Sans 3`, doit être entre guillemets dans le `font-family` d’un SVG ; sans guillemets, le navigateur ignore la déclaration et compose les étiquettes dans une serif.

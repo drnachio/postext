@@ -6330,5 +6330,33 @@
       "ar": "الذهب الحراري"
     },
     "theme": "output"
+  },
+  "Q223": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a report in four colours plus our corporate Pantone when every file names the ink differently?",
+      "es": "¿Cómo imprimo una memoria a cuatro tintas y nuestro Pantone si cada archivo llama a la tinta de una manera?",
+      "ca": "Com imprimeixo una memòria a quatre tintes més el nostre Pantone corporatiu, si cada fitxer anomena la tinta d’una manera?",
+      "fr": "Comment imprimer un rapport en quadri plus notre Pantone de marque, quand chaque fichier nomme l’encre autrement ?",
+      "de": "Wie drucke ich einen Bericht vierfarbig plus unsere Pantone-Hausfarbe, wenn jede Datei die Farbe anders nennt?",
+      "it": "Come stampo un rapporto in quadricromia più il nostro Pantone aziendale, se ogni file chiama l’inchiostro in un altro modo?",
+      "pt": "Como imprimo um relatório em quatro cores mais o nosso Pantone institucional, se cada arquivo chama a tinta de um jeito?",
+      "zh": "报告用四色加上我们的企业潘通色印刷，而每个文件给这种油墨起的名字都不一样，该怎么办？",
+      "ja": "報告書をプロセス4色と自社のパントン特色で刷りたいが、ファイルごとにインキの名前が違うときは？",
+      "ar": "كيف أطبع تقريرًا بالألوان الأربعة مع لون بانتون الخاص بمؤسستنا، وكل ملف يسمّي الحبر باسم مختلف؟"
+    },
+    "index": {
+      "en": "Corporate spot colour",
+      "es": "Tinta corporativa",
+      "ca": "Tinta corporativa",
+      "fr": "Ton direct de marque",
+      "de": "Hausfarbe als Sonderfarbe",
+      "it": "Tinta aziendale",
+      "pt": "Cor institucional especial",
+      "zh": "企业专色",
+      "ja": "コーポレート特色",
+      "ar": "لون المؤسسة الخاص"
+    },
+    "theme": "output"
   }
 }

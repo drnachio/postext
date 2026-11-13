@@ -1,0 +1,143 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 189,
+  "status": "draft",
+  "chapter": "output",
+  "order": 310,
+  "level": 3,
+  "genres": [
+    "report"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "spot-inks",
+      "pdf-colour-space"
+    ],
+    "also": [
+      "color-palette",
+      "covers",
+      "opener-design",
+      "design-elements",
+      "design-images",
+      "callout-styles",
+      "table-style",
+      "resources",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q223"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "page",
+    "pages": "all",
+    "expect": {
+      "imageMb": 1.3
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "The river from the air, on the cover",
+          "es": "El río desde el aire, en la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "meander-1120.jpg"
+      },
+      {
+        "what": {
+          "en": "The director on the river bank",
+          "es": "La directora en la orilla"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "director-800.jpg"
+      },
+      {
+        "what": {
+          "en": "Volunteers planting willow stakes",
+          "es": "Voluntarios plantando estacas de sauce"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "volunteers-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "A water sample at a gauging station",
+          "es": "Una muestra de agua en una estación de aforo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "sample-900.jpg"
+      },
+      {
+        "what": {
+          "en": "A kingfisher on a willow branch",
+          "es": "Un martín pescador en una rama de sauce"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "kingfisher-1050.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Sans 3",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13",
+  "related": [
+    "gold-foil-poetry-cover",
+    "annual-report-flush-columns",
+    "print-ready-pdf"
+  ],
+  "downloads": {
+    "pdf": true
+  }
+}

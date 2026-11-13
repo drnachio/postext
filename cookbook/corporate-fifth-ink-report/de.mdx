@@ -1,0 +1,66 @@
+---
+title: "Eine fünfte Farbe für die Hausfarbe"
+summary: "Vierfarbdruck plus ein exaktes Pantone als Hausfarbe: Die Farbtabelle legt jeden Namen des Blaus auf eine Platte, PANTONE 286 C."
+plain: "Der Jahresbericht einer Stiftung, die sich um einen Fluss kümmert, gedruckt mit den üblichen vier Farben und einem exakten Blau, der Farbe der Stiftung. Jede Datei nennt das Blau anders, und die Druckdatei legt es doch auf eine Platte."
+description: "Ein Jahresbericht in vier Farben plus Pantone-Hausfarbe in Postext: Rastertöne der Sonderfarbe, eine Farbtabelle, die Namen vereint, ein SVG mit Farbnamen."
+question: "Wie drucke ich einen Bericht vierfarbig plus unser Pantone, wenn jede Datei die Farbe anders nennt?"
+aliases: ["fünfte Farbe", "Sonderfarbe", "Schmuckfarbe", "Pantone", "Hausfarbe", "Markenfarbe", "Farbtabelle", "Farbalias", "Jahresbericht", "Plattenname", "fifth ink", "spot colour"]
+pageNotes: { "1": "Der Umschlag: ein Luftbild einer grünen Flussschleife über einem Band in sattem Hausblau, darauf CAUCE FOUNDATION, Annual Report 2025, eine kurze hellblaue Linie und ein kursiver Leitsatz, alles in Weiß.", "3": "Arbeit am Fluss: ein blauer Balken mit der Dachzeile, der Titel in Blau, zwei Textspalten, ein Balkendiagramm im Blau und seinem 40-%-Rasterton und eine Tabelle mit blauem Kopf und hellblauer Summenzeile.", "6": "Finanzen: zwei Spalten mit der Tabelle der Einnahmen und Ausgaben rechts und ein seitenbreiter Balken, geteilt in das volle Blau, seinen hellen Rasterton und ein Grau für die laufenden Kosten." }
+---
+
+## Was Sie setzen
+
+Ein achtseitiger Jahresbericht in A4 für eine erfundene Stiftung, die einen Fluss renaturiert, gedruckt in vier Farben und einer fünften, ihrem Hausblau. Das Blau steht dort, wo eine Marke es hinsetzen würde: das Band auf dem Umschlag, der Balken über jedem Abschnitt, die Überschriften, die Tabellenköpfe, die Balken des Diagramms und die Rückseite. Seine Rastertöne von 40 % und 12 % füllen die Planbalken, die Summenzeilen und den Kasten mit den Kennzahlen, und sie drucken als Raster derselben Farbe, nie als Mischung aus den Prozessfarben. Fotos und Text bleiben im Vierfarbdruck. Das PDF/X-4 hat fünf Platten, und die fünfte trägt den Namen, unter dem die Druckerei die Farbe führt, `PANTONE 286 C`, obwohl sie im Entwurf nirgends so heißt.
+
+## Zubereitung
+
+### 1 · Eine Farbe unter drei Namen
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Das Blau kommt unter drei Namen in den Bericht, wie bei echten Aufträgen: Das Farbfeld der Gestalterin heißt `Brand Blue`, eine ältere Palette schrieb `Pantone 286C` für den 40-%-Ton, und das Diagramm, im spanischen Büro gezeichnet, sagt `Azul Cauce`. Ohne Farbtabelle käme jeder Name auf eine eigene Platte, und die Druckerei bekäme drei Blaus zum Anmischen. Der Eintrag in der [Farbtabelle](/de/docs/configuration-pdf-output#sonderfarben) benennt die Platte und führt die anderen Namen als Aliasse; die Namen werden ohne Rücksicht auf Groß- und Kleinschreibung und Leerzeichen verglichen, sodass jeder Rasterton jedes Namens auf dem einen Auszug `PANTONE 286 C` landet. Sein `cmyk` ist die Ersatzfarbe, die ein Proof zeigt.
+
+### 2 · Das Diagramm nennt seine Farbe
+
+<Excerpt region="chart" />
+
+Ein SVG gibt mit `data-spot` an, auf welcher Druckfarbe ein Farbton druckt, und mit `data-spot-tint`, wie stark, in Prozent. Die Balken des Diagramms nennen `Azul Cauce` mit 100 % und mit 40 %, und der Alias legt sie auf dieselbe Platte wie das übrige Blau. Gitterlinien und Beschriftungen sind gewöhnliche Farben und bleiben im Prozessschwarz. Der Ausgabenbalken auf der Finanzseite macht es ebenso mit drei Abschnitten, der dritte ein Grau aus den Prozessfarben.
+
+### 3 · Das Blau trägt die Gestaltung
+
+<Excerpt region="cover" />
+
+Das Umschlagfoto füllt mit `fit: 'cover'` den oberen Teil des Anschnitts, und ein Kasten im Blau füllt den Rest; die Schrift darauf ist weiß und spart die Platte aus. Abschnittsbalken, Fußzeilen und Tabellenköpfe verwenden denselben Paletteneintrag, ein Farbwechsel ist also eine Zeile.
+
+<Excerpt region="tables" />
+
+Die Tabellen kommen aus TSV-Dateien neben dem Text. Eine Zeile, deren erste Zelle fett ist, ist eine Summe und bekommt den 12-%-Ton; Zahlen stehen rechtsbündig.
+
+### 4 · Die Fotos bleiben in RGB
+
+`convertImages: false` in den Druckeinstellungen lässt die Fotos als RGB-JPEGs mit sRGB-Profil, was PDF/X-4 erlaubt; das RIP der Druckerei separiert sie. Die Datei bleibt klein, und die blaue Platte bekommt nichts von den Fotos.
+
+## Varianten
+
+### Das Blau im Vierfarbdruck drucken
+
+Hat die Maschine kein fünftes Druckwerk, druckt ein Wort in der Farbtabelle jeden Rasterton des Blaus in CMYK aus seiner Ersatzfarbe.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Die Platte für eine andere Druckerei benennen
+
+Manche Druckereien wollen die Platte unter ihrem eigenen Namen. `pdfName` benennt sie um und behält die Aliasse.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Häufige Fehler
+
+- Eine Farbe in einem Bild, die weder ihre Druckfarbe nennt noch genau einer Sonderfarbe der Palette entspricht, bleibt im Vierfarbdruck, auch wenn sie wie das Blau aussieht. Markieren Sie die Elemente mit `data-spot`, oder geben Sie der Palette eine Sonderfarbe mit genau diesem Hex-Wert.
+- Ein Familienname mit einer Ziffer, etwa `Source Sans 3`, braucht in der `font-family` eines SVG Anführungszeichen; ohne sie verwirft der Browser die Angabe und setzt die Beschriftungen in einer Serifenschrift.

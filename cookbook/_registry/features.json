@@ -29074,5 +29074,142 @@
         "guessInkFinish"
       ]
     }
+  },
+  "spot-inks": {
+    "label": {
+      "en": "Spot inks and the ink table",
+      "es": "Tintas planas y tabla de tintas",
+      "ca": "Tintes planes i taula de tintes",
+      "zh": "专色与油墨表",
+      "ar": "الألوان الخاصة وجدول الأحبار",
+      "ja": "特色とインキ表",
+      "pt": "Cores especiais e tabela de tintas",
+      "fr": "Tons directs et table des encres",
+      "de": "Sonderfarben und Druckfarbentabelle",
+      "it": "Tinte piatte e tabella degli inchiostri"
+    },
+    "definition": {
+      "en": "A colour with model 'spot' prints on a plate of its own, at its tint. The ink table names the plate as the printer knows it and merges the other names the palette, SVGs and imported files give the same ink.",
+      "es": "Un color con modelo 'spot' se imprime en su propia plancha, a su porcentaje. La tabla de tintas nombra la plancha como la conoce el impresor y reúne los otros nombres que la paleta, los SVG y los archivos importados dan a la misma tinta.",
+      "ca": "Un color amb model 'spot' s'imprimeix en una planxa pròpia, al seu percentatge. La taula de tintes anomena la planxa com la coneix l'impressor i aplega els altres noms que la paleta, els SVG i els fitxers importats donen a la mateixa tinta.",
+      "zh": "模型为 'spot' 的颜色按其网点百分比印在自己的印版上。油墨表按印厂的叫法命名印版，并把调色板、SVG 和导入文件给同一种油墨起的其他名字合并到这块版上。",
+      "ar": "اللون ذو النموذج 'spot' يُطبع على لوح خاص به بنسبته. ويسمّي جدول الأحبار اللوح كما تعرفه المطبعة، ويجمع عليه الأسماء الأخرى التي تعطيها لوحة الألوان وملفات SVG والملفات المستوردة للحبر نفسه.",
+      "ja": "モデルが 'spot' の色は、その濃度で専用の版に出力されます。インキ表は印刷所が呼ぶ名前で版に名前を付け、パレットやSVG、取り込んだファイルが同じインキに付けた別名をその版にまとめます。",
+      "pt": "Uma cor com modelo 'spot' sai numa chapa própria, na sua porcentagem. A tabela de tintas dá à chapa o nome que a gráfica conhece e junta nela os outros nomes que a paleta, os SVG e os arquivos importados dão à mesma tinta.",
+      "fr": "Une couleur de modèle 'spot' s’imprime sur sa propre plaque, à son pourcentage. La table des encres nomme la plaque comme l’imprimeur la connaît et y réunit les autres noms que la palette, les SVG et les fichiers importés donnent à la même encre.",
+      "de": "Eine Farbe mit dem Modell 'spot' druckt auf einer eigenen Platte, in ihrem Tonwert. Die Druckfarbentabelle benennt die Platte so, wie die Druckerei sie kennt, und führt die anderen Namen, die Palette, SVGs und importierte Dateien derselben Farbe geben, auf ihr zusammen.",
+      "it": "Un colore con modello 'spot' si stampa su una lastra sua, alla sua percentuale. La tabella degli inchiostri chiama la lastra come la conosce lo stampatore e vi riunisce gli altri nomi che la tavolozza, gli SVG e i file importati danno allo stesso inchiostro."
+    },
+    "aliases": {
+      "en": [
+        "spot colour",
+        "spot color",
+        "fifth ink",
+        "Pantone",
+        "corporate colour",
+        "brand colour",
+        "ink table",
+        "Separation",
+        "plate name",
+        "ink alias"
+      ],
+      "es": [
+        "tinta plana",
+        "quinta tinta",
+        "Pantone",
+        "color corporativo",
+        "tabla de tintas",
+        "plancha",
+        "separación"
+      ],
+      "ca": [
+        "tinta plana",
+        "cinquena tinta",
+        "Pantone",
+        "color corporatiu",
+        "taula de tintes",
+        "planxa"
+      ],
+      "zh": [
+        "专色",
+        "第五色",
+        "潘通",
+        "企业色",
+        "油墨表",
+        "分色版"
+      ],
+      "ar": [
+        "لون خاص",
+        "الحبر الخامس",
+        "بانتون",
+        "لون الهوية",
+        "جدول الأحبار",
+        "لوح الطباعة"
+      ],
+      "ja": [
+        "特色",
+        "スポットカラー",
+        "5色目",
+        "パントン",
+        "コーポレートカラー",
+        "インキ表",
+        "版名"
+      ],
+      "pt": [
+        "cor especial",
+        "cor Pantone",
+        "quinta cor",
+        "cor institucional",
+        "tabela de tintas",
+        "chapa"
+      ],
+      "fr": [
+        "ton direct",
+        "cinquième couleur",
+        "Pantone",
+        "couleur de marque",
+        "table des encres",
+        "plaque"
+      ],
+      "de": [
+        "Sonderfarbe",
+        "Volltonfarbe",
+        "fünfte Farbe",
+        "Pantone",
+        "Hausfarbe",
+        "Druckfarbentabelle",
+        "Farbauszug"
+      ],
+      "it": [
+        "tinta piatta",
+        "quinto colore",
+        "Pantone",
+        "colore aziendale",
+        "tabella degli inchiostri",
+        "lastra"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration-pdf-output",
+      "heading": {
+        "en": "The ink table",
+        "es": "La tabla de tintas",
+        "ca": "La taula de tintes",
+        "zh": "油墨表",
+        "ar": "جدول الأحبار",
+        "ja": "インキ表",
+        "pt": "A tabela de tintas",
+        "fr": "La table des encres",
+        "de": "Die Druckfarbentabelle",
+        "it": "La tabella degli inchiostri"
+      }
+    },
+    "detect": {
+      "config": [
+        "colorPalette[].value.spot.name",
+        "print.inks[].aliases"
+      ]
+    }
   }
 }
