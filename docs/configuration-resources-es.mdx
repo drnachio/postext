@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos y tablas',
   description: 'Cómo se configuran los tipos de recurso y su numeración, el estilo de las tablas y de los pies de recurso, los diagramas a una sola tinta y la forma en que se imprimen los vídeos',
   lang: 'es',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '47 min',
   order: 14,
   parent: 'configuration',
@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continúa'</code> / <code>'Continued'</code></td>
       <td>Texto de ese indicador, alineado a la derecha bajo la parte con la tipografía de la nota (véase <a href="#estilo-de-pies-de-recurso">estilo de pies</a>). El valor por defecto sigue el idioma del documento (véase <a href="/es/docs/configuration-language#idioma-del-documento">Idioma del documento</a> para el de cada idioma).</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compone las celdas como texto corrido, como <code>captionStyle.hyphenation</code> el pie: cada celda se corta entera con el partidor óptimo. Las celdas van en bandera, así que sus palabras solo se dividen con <code>bodyText.hyphenation.ragged</code> activo. <code>false</code> corta las celdas línea a línea sin dividir palabras. Desde postext 1.81.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,6 +669,18 @@ const config: PostextConfig = {
       <td>Alineación horizontal de las líneas del pie. <code>'justify'</code> lleva todas las líneas salvo la última al ancho completo. Sobre una barra de pie las líneas se alinean dentro de su relleno; un pie lateral se alinea dentro de su propio ancho.</td>
     </tr>
     <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Parte el pie como lo hace un estilo de párrafo con <code>hyphenation: true</code>: justificado, y en bandera si <code>bodyText.hyphenation.ragged</code> está activo, con el diccionario y las reglas de partición del texto general, también con <code>bodyText.hyphenation.enabled</code> desactivado. El pie se corta entonces entero con el partidor óptimo (<code>bodyText.optimalLineBreaking</code>), dentro de los límites de espaciado del texto general al justificar y con sus reglas de escaleras y de bordes de línea (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). La etiqueta numerada nunca se parte. <code>false</code> corta el pie línea a línea sin dividir palabras. Desde postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del texto general, en proporción</td>
+      <td>El interlineado del pie. <code>em</code> se mide sobre el cuerpo del propio pie. Desde postext 1.81.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +796,18 @@ El subobjeto `note` estiliza `Resource.note`, una línea breve (procedencia, cr�
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alineación horizontal de las líneas de la nota, como <code>align</code> para el pie.</td>
+    </tr>
+    <tr>
+      <td><code>note.hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Parte la nota, como <code>hyphenation</code> el pie. Desde postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>el del texto general, en proporción</td>
+      <td>El interlineado de la nota. <code>em</code> se mide sobre el cuerpo de la propia nota. Desde postext 1.81.</td>
     </tr>
   </tbody>
 </table>

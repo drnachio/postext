@@ -10,6 +10,7 @@ import type { SandboxState } from '../context/SandboxContext.js';
 import { announce } from '../ui/announcer.js';
 import { SETTINGS_SECTIONS } from '../sidebar/sections/registry.js';
 import type { HistoryStepInfo, SandboxHistory } from './sandboxHistory.js';
+import { hasWindow } from '../env/window.js';
 
 /** Inputs that take no typing: the keys go to the history over them. */
 const KEYLESS_INPUTS = new Set(['button', 'checkbox', 'color', 'file', 'image', 'radio', 'range', 'reset', 'submit']);
@@ -74,7 +75,7 @@ export function runHistoryFromUi(history: SandboxHistory, dir: 'undo' | 'redo', 
 
 /** Listen for the keys on the window; returns the function that stops. */
 export function installHistoryKeys(history: SandboxHistory, getState: () => SandboxState): () => void {
-  if (typeof window === 'undefined') return () => undefined;
+  if (!hasWindow()) return () => undefined;
   const onKey = (ev: KeyboardEvent) => {
     if (ev.defaultPrevented) return;
     const dir = historyKeyOf(ev);

@@ -26,8 +26,9 @@ export function captionLook(u: Units, cap: ResolvedCaptionStyleConfig, lineTwips
       before: above ? lineTwips : gap,
       after: above ? gap : lineTwips,
       contextualSpacing: true,
-      // The body's leading scaled to the caption's size.
-      line: { twips: Math.max(1, Math.round((lineTwips * sizePx) / u.basePx)), rule: 'atLeast' },
+      // Its own leading (`lineHeight`), else the body's scaled to the
+      // caption's size.
+      line: { twips: Math.max(1, cap.lineHeight ? twips(u, cap.lineHeight, sizePx) : Math.round((lineTwips * sizePx) / u.basePx)), rule: 'atLeast' },
       ind: { firstLine: 0 },
       jc: JC[cap.align],
     },
@@ -38,6 +39,6 @@ export function captionLook(u: Units, cap: ResolvedCaptionStyleConfig, lineTwips
 /** Whether two caption styles set the same paragraph (the fields
  *  `captionLook` reads). */
 export function sameCaptionLook(a: ResolvedCaptionStyleConfig, b: ResolvedCaptionStyleConfig): boolean {
-  const key = (c: ResolvedCaptionStyleConfig): string => JSON.stringify([c.fontFamily, c.fontSize, c.color, c.align, c.gap, c.position]);
+  const key = (c: ResolvedCaptionStyleConfig): string => JSON.stringify([c.fontFamily, c.fontSize, c.color, c.align, c.gap, c.position, c.lineHeight]);
   return key(a) === key(b);
 }

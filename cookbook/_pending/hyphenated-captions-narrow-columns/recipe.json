@@ -1,0 +1,183 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 188,
+  "status": "draft",
+  "chapter": "figures",
+  "order": 140,
+  "level": 2,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas"
+  ],
+  "features": {
+    "primary": [
+      "captions",
+      "hyphenation-languages",
+      "table-style"
+    ],
+    "also": [
+      "knuth-plass",
+      "resources",
+      "figure-citations",
+      "figure-numbering",
+      "resource-types",
+      "multiple-columns",
+      "opener-design",
+      "heading-attributes",
+      "design-images",
+      "mirrored-margins",
+      "running-heads",
+      "page-role-filters",
+      "color-palette",
+      "paragraph-styles",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q221",
+    "Q63"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.81.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 3,
+    "card": "page",
+    "doc": [
+      "first",
+      "last"
+    ],
+    "sandbox": "last",
+    "pages": [
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The bulletin, the captions, the table and the colophon, in English and Spanish; Wrenmarsh, Ozal and their observatories are imaginary",
+          "es": "El boletín, los pies, la tabla y el colofón, en inglés y en español; Wrenmarsh, Ozal y sus observatorios son imaginarios"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The opener strip: a curlew and a redshank on the mud, the reedbed beyond",
+          "es": "La franja de la apertura: un zarapito y un archibebe en el fango, y el carrizal al fondo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "strip-1536.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate: Eurasian curlew",
+          "es": "Lámina: zarapito real"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "curlew-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate: common redshank",
+          "es": "Lámina: archibebe común"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "redshank-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate: bearded reedling",
+          "es": "Lámina: bigotudo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "reedling-1200.jpg"
+      },
+      {
+        "what": {
+          "en": "Plate: common reed warbler",
+          "es": "Lámina: carricero común"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "warbler-1200.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Newsreader",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fraunces",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Libre Franklin",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-12",
+  "updated": "2026-11-12",
+  "related": [
+    "photos-fill-short-columns",
+    "magazine-three-column-feature",
+    "parts-in-colour"
+  ],
+  "folio": {
+    "paper": {
+      "type": "coatedMatte",
+      "grammage": 115,
+      "shade": "#faf8f2"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "case",
+      "coverMaterial": "paper",
+      "coverColor": "#24504d"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "daylight"
+    }
+  }
+}

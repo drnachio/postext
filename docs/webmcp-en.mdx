@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'What an AI agent in the browser can do with the Sandbox through its 64 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '12 min',
   order: 52,
   plainSummary: "This page is for people who want an AI helper to work on a book in the Sandbox for them. While the Sandbox is open, it gives the helper a set of tools: to look at any page, change the design, edit the text, add pictures and tables, find problems and save files. You ask in your own words, for example \"make the text a little larger and check the book still fits in 40 pages\", and the helper uses the tools and shows you the pages. Everything stays in your browser. The page explains how to connect a helper, what it can do and how each tool is called.",
@@ -587,6 +587,7 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
+- **A book from the Books panel.** `sandbox_export` with `format` `pdf`, `epub` or `html` and `book: { "kind": "project", "id": "…", "language": "en" }` writes a project as its row's **Download as …** does (since postext 1.81): the whole book in that language, laid out apart from the book on screen, which is saved first and left as it is. `html` without `book` writes the project on screen. The answer gives the file, its pages, the language written and the warnings; `epubLayout` chooses the rendition of an EPUB.
 - **Import a `.postext` file** with `sandbox_import_book` (`inspect: true` says
   which languages it carries without importing it).
 - **Make a book from an InDesign document** with `sandbox_import_idml`. With

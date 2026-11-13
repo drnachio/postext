@@ -17,6 +17,7 @@ import { TextMigrationOffer } from '../migrate/TextMigrationOffer.js';
 import { detailFor } from './WarningsPanel/details.js';
 import { iconFor } from './WarningsPanel/icons.js';
 import { titleFor } from './WarningsPanel/titles.js';
+import { hasWindow } from '../env/window.js';
 
 export { titleFor } from './WarningsPanel/titles.js';
 export { detailFor } from './WarningsPanel/details.js';
@@ -24,7 +25,7 @@ export { detailFor } from './WarningsPanel/details.js';
 /** Open a book page in the viewer: the fragment names it, and the viewer
  *  follows a fragment change (see `usePageHashSync`). */
 function goToBookPage(page: number): void {
-  if (typeof window === 'undefined') return;
+  if (!hasWindow()) return;
   window.location.hash = viewHashFragment({ ...readViewHash(), page });
 }
 

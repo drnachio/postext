@@ -1,26 +1,22 @@
-// The laid-out pages as HTML (`renderToHtml`): positioned text the browser
-// can select, search and read aloud. One self-contained file (pictures and
-// fonts as data URIs) or a folder (index.html beside assets/).
+// The laid-out pages as HTML: positioned text the browser can select,
+// search and read aloud, written by `renderHtmlBook` (shared with the
+// Sandbox's Download as HTML, #1544). One self-contained file (pictures
+// and fonts as data URIs) or a folder (index.html beside assets/): the
+// files and where they go are this module's.
 
 import { join } from 'node:path';
-import { anchoredResourceIds, applySingleInkToSvg, EXERCISE_SCRIPT, exerciseDataOf, formatWarning, HTML_TEXT_RESET, renderToHtml, screenSvgColors, type RenderHtmlOptions } from 'postext';
+import { htmlBookFiles, redistributableFaces, renderHtmlBook } from 'postext';
 import { diagramInkHex, mimeForFile } from 'postext/bundle';
 import { UsageError, type Options } from '../args';
-import type { Face, FontSet } from '../fonts';
+import type { FontSet } from '../fonts';
 import type { Book } from '../input';
 import { byteLength, writeOut } from '../io';
 import type { Layout } from '../layout';
 import type { Reporter } from '../log';
 
-const escapeHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 const dataUri = (mime: string, bytes: Uint8Array | string) =>
   `data:${mime};base64,${Buffer.from(typeof bytes === 'string' ? new TextEncoder().encode(bytes) : bytes).toString('base64')}`;
 const safeName = (s: string) => s.replace(/[^\w.-]+/g, '_');
-
-/** Families a book marks as not to be copied out (`redistributable: false`). */
-function withheldFamilies(book: Book): Set<string> {
-  return new Set((book.config.customFonts ?? []).filter((f) => f.redistributable === false).map((f) => f.name.toLowerCase()));
-}
 
 export async function writeHtml(book: Book, layout: Layout, fonts: FontSet, opts: Options, reporter: Reporter, out: string): Promise<void> {
   const mode = opts.choice('mode', ['single', 'multi'] as const) ?? 'multi';
@@ -36,104 +32,33 @@ export async function writeHtml(book: Book, layout: Layout, fonts: FontSet, opts
     return `assets/${path}`;
   };
 
-  // Pictures (SVGs recoloured for single ink, as the Sandbox shows them).
-  const inkHex = diagramInkHex(book.config);
+  // Pictures (SVGs recoloured for single ink, as the Sandbox shows them);
+  // self-hosted videos go beside the page, embedded they show their poster.
   const urls = new Map<string, string>();
   const videoUrls = new Map<string, string>();
-  for (const r of book.resources) {
-    const fileId = r.kind === 'svg' ? r.svg?.fileId : r.kind === 'bitmap' ? r.bitmap?.fileId : r.kind === 'video' ? r.video?.poster?.fileId : undefined;
-    const bytes = fileId ? book.files.get(fileId) : undefined;
-    if (fileId && bytes && !urls.has(fileId)) {
-      // A spot ink named in a paint is the print PDF's: here, the colour.
-      const text = r.kind === 'svg' ? new TextDecoder().decode(bytes) : undefined;
-      const svg = text !== undefined ? screenSvgColors(text) : undefined;
-      const content = svg !== undefined && (inkHex || svg !== text) ? (inkHex ? applySingleInkToSvg(svg, inkHex) : svg) : bytes;
-      urls.set(fileId, asset(safeName(fileId), mimeForFile(fileId), content));
-    }
-    // Self-hosted videos go beside the page; embedded, they show their poster.
-    const video = r.kind === 'video' ? r.video?.fileId : undefined;
-    const videoBytes = video ? book.files.get(video) : undefined;
-    if (video && videoBytes && assets === 'folder') videoUrls.set(video, asset(safeName(video), mimeForFile(video), videoBytes));
+  for (const file of htmlBookFiles(book.resources, (id) => book.files.get(id), { inkHex: diagramInkHex(book.config), videos: assets === 'folder' })) {
+    (file.kind === 'video' ? videoUrls : urls).set(file.fileId, asset(safeName(file.fileId), mimeForFile(file.fileId), file.content));
   }
 
-  // Fonts, as @font-face rules.
-  const withheld = withheldFamilies(book);
-  const faces: Face[] = [];
-  const told = new Set<string>();
-  for (const f of fonts.usedFaces()) {
-    const key = f.family.toLowerCase();
-    if (!withheld.has(key)) {
-      faces.push(f);
-      continue;
-    }
-    // A family the book may not hand on: its own files stay out, and the
-    // open family it names as its fallback goes in under its name (#993).
-    if (told.has(key)) continue;
-    told.add(key);
-    const stand = await fonts.exportStandIn(f.family);
-    if (stand.length > 0) {
-      reporter.warn({ kind: 'fontStoodIn', severity: 'info', message: `"${f.family}" may not be copied out of the book: the HTML sets it in ${stand[0]!.standsInFor}, under the same name` });
-      faces.push(...stand);
-    } else {
-      reporter.warn({ kind: 'fontWithheld', severity: 'info', message: `"${f.family}" may not be copied out of the book: the HTML names it without its file` });
-    }
-  }
-  const fontFaces = faces.map((f) => {
+  // Fonts: a family the book may not hand on stays out, and the open
+  // family it names as its fallback goes in under its name (#993).
+  const { faces, notes } = await redistributableFaces(fonts.usedFaces(), book.config.customFonts, (family) => fonts.exportStandIn(family));
+  const pageFaces = faces.map((f) => {
     const file = `fonts/${safeName(`${f.family}-${f.weight}${f.style === 'italic' ? 'i' : ''}.${f.format}`)}`;
-    const url = asset(file, f.format === 'otf' ? 'font/otf' : 'font/ttf', f.bytes);
-    return `@font-face{font-family:${JSON.stringify(f.family)};font-weight:${f.weight};font-style:${f.style};font-display:block;src:url(${JSON.stringify(url)})}`;
+    return { family: f.family, weight: f.weight, style: f.style, url: asset(file, f.format === 'otf' ? 'font/otf' : 'font/ttf', f.bytes) };
   });
 
-  const refTargets = new Set(layout.docs.flatMap((d) => [...anchoredResourceIds(d)]));
-  const resourceImageUrl = Object.assign((fileId: string) => urls.get(fileId), { singleInk: false });
-  const options: RenderHtmlOptions = {
+  const html = reporter.time('html', () => renderHtmlBook(layout.docs, {
+    title: book.name,
+    lang: book.config.locale ?? book.locale,
     mode,
-    refTargets,
-    resourceImageUrl,
-    resourceVideoUrl: (fileId) => videoUrls.get(fileId),
-    ...(assets === 'embed' ? { videos: { files: 'poster' as const } } : {}),
-    singleInk: false,
-    onWarning: (w) => reporter.warn({ kind: `html.${w.kind}`, severity: 'warning', message: formatWarning(w) }),
-  };
-  const body = reporter.time('html', () => layout.docs.map((d) => renderToHtml(d, options)).join('\n'));
-  // Exercises (#1230): the script that makes them answerable, checks
-  // them and keeps the answers in the browser, under the file's path.
-  const exercises = layout.docs.some((d) => exerciseDataOf(d) !== undefined)
-    ? `<script>${EXERCISE_SCRIPT.replace(/<\/(script)/gi, '<\\/$1')}</script>`
-    : '';
-  const lang = book.config.locale ?? book.locale;
-  // The pages are the print layout, in page pixels (page.dpi, 300 by
-  // default): shown at 96 dpi, as a browser sizes a printed inch.
-  const dpi = layout.docs[0]?.config.page.dpi ?? 96;
-  const zoom = Math.round((96 / dpi) * 10000) / 10000;
-  // The paper colour fills the window, as in the Sandbox's HTML view
-  // (a translucent colour over white).
-  const paper = layout.docs[0]?.config.page.backgroundColor?.hex;
-  const background = !paper || paper === 'transparent' ? '#ffffff' : `linear-gradient(${paper},${paper}),#ffffff`;
-  const html = [
-    '<!doctype html>',
-    `<html lang="${escapeHtml(lang)}">`,
-    '<head>',
-    '<meta charset="utf-8">',
-    '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    `<meta name="generator" content="postext">`,
-    `<title>${escapeHtml(book.name)}</title>`,
-    '<style>',
-    ...fontFaces,
-    `html,body{margin:0;background:${background}}body{${HTML_TEXT_RESET}}`,
-    `.postext-book{zoom:${zoom};padding:24px 0}`,
-    '.postext-book .pt-page{margin-left:auto;margin-right:auto}',
-    '</style>',
-    '</head>',
-    '<body>',
-    '<main class="postext-book">',
-    body,
-    '</main>',
-    ...(exercises ? [exercises] : []),
-    '</body>',
-    '</html>',
-    '',
-  ].join('\n');
+    faces: pageFaces,
+    fontNotes: notes,
+    pictureUrl: (fileId) => urls.get(fileId),
+    videoUrl: (fileId) => videoUrls.get(fileId),
+    videoPosters: assets === 'embed',
+    onWarning: (w) => reporter.warn(w),
+  }));
   await Promise.all(written);
   await writeOut(page, html);
   reporter.output({ kind: 'html', path: page, bytes: byteLength(html), pages: layout.pageCount });

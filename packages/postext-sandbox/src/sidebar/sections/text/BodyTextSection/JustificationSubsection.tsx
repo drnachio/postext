@@ -160,7 +160,6 @@ export function JustificationSubsection({
             bodyText={bodyText}
             raw={raw}
             updateBodyText={updateBodyText}
-            updateHyphenation={updateHyphenation}
             labels={labels}
           />
           <RaggedHyphenationFields

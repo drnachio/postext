@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'InDesign',
   description: '把InDesign书籍带进Postext的两种方式：照搬文档内容的IDML导入器，和推断版式规则的智能体技能；各自适合什么情况，以及IDML导出器怎样把书交回InDesign',
   lang: 'zh',
-  lastUpdated: '2026-11-11',
+  lastUpdated: '2026-11-12',
   readingTime: '8分钟',
   order: 49,
   plainSummary: "用InDesign做的书可以用两种方式带进Postext。导入器照搬InDesign文件里的内容，每一页、每个框和每种样式都原样保留，速度很快，但得到的是旧页面的副本，不好修改，也不好翻译。智能体技能则研究这本书：文件、印刷PDF、字体和图片，找出设计者遵循的规则，再按这些规则重建这本书，文字可以自由排下去。这样得到的书更好，所以我们推荐这种方式。本页说明这两种方式、各自适合的情况，以及Postext怎样把做好的书交回InDesign。",
@@ -63,7 +63,13 @@ postext import-idml book.idml --report --json
 postext import-idml package.zip -o book.postext
 ```
 
-同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[沙盒 › 导入InDesign文档](/zh/docs/sandbox-books-saving#导入indesign文档)；沙盒还能用<strong>从 InDesign 打包文件（.zip）新建书</strong>打开压缩成zip的InDesign打包文件，并从中取用字体和链接的图片），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
+同样的导入也可以在Sandbox中进行，位置是<strong>书库 › 新建 › 从 InDesign 文档（IDML）新建书</strong>（见[导入InDesign文档](/zh/docs/indesign#导入indesign文档)；沙盒还能用<strong>从 InDesign 打包文件（.zip）新建书</strong>打开压缩成zip的InDesign打包文件，并从中取用字体和链接的图片），在代码中则用`postext-idml`包的`idmlToPostext`（见[以编程方式使用 › InDesign包](/zh/docs/configuration-programmatic-usage#indesign包postext-idml)）。命令的全部选项见[命令行 › import-idml](/zh/docs/command-line#import-idml)。
+
+### 导入InDesign文档
+
+<strong>书库</strong>面板<strong>新建</strong>菜单中的<strong>从 InDesign 文档（IDML）新建书</strong>在浏览器中读取一个`.idml`文件，并打开一个对话框。对话框列出文档的内容：页数和页面大小、文章、用到的字体、链接的和嵌入的图片，以及表。<strong>排版方式</strong>有两种：<strong>模板页</strong>让每一页的框架都留在文档中原来的位置，<strong>流式排版的书</strong>让文字顺着书的设计生成的页面排下去；<strong>自动</strong>把选择交给导入器，导入器会说明理由。`.idml`不带它所链接的图片：请选择这些文件，或选择它们所在的文件夹，每张图片按文件名匹配。导入报告随每一项选择更新：结论、各项计数，丢失、近似和备注三类情况（每类附数量和一个例子），这本书需要的字体，以及仍缺少的链接。<strong>创建这本书</strong>把结果加入你的书并打开它，原有的书保持不变。`.indd`文件会被拒绝，提示会说明要先在InDesign中把它存为IDML。命令行用[`postext import-idml`](/zh/docs/command-line#import-idml)做同样的导入。导入得到的是文档页面的副本；对于你会长期保留的书，[智能体技能](/zh/docs/skill)会推断出它的版式规则（见[技能](/zh/docs/indesign#技能)）。
+
+<strong>从 InDesign 打包文件（.zip）新建书</strong>读取InDesign的<strong>文件 › 打包</strong>生成的文件夹，打包时须勾选<strong>包括 IDML</strong>，再压缩成zip。打包文件中有不止一个IDML文档时，会弹出对话框询问哪一个成为这本书。之后的导入对话框与上面所述相同，另外列出打包文件带来的内容。链接的图片取自打包文件，按文件名匹配；同名的文件再按文件夹区分。`Document fonts`中的字体文件放入书中：每种字体样式按PostScript名称与文档指定的字体样式匹配，因此文字用原来的字体样式排出。报告列出打包文件带有的字体和没有对应文件的字体样式，并指出书无法带上的字体文件（Type 1、字体集、Mac字体手提箱）。只含一个`.indd`的打包文件会被拒绝，提示会说明如何得到它的IDML。
 
 ### 逐页还是连续排
 

@@ -11,6 +11,7 @@
 import type { SvgFontProvider } from 'postext';
 import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
 import { getCustomFontFamily, onCustomFontsChanged } from '../fonts/fontLoader.js';
+import { hasWindow } from '../../env/window.js';
 
 let provider: SvgFontProvider | null = null;
 
@@ -26,7 +27,7 @@ let listening = false;
 /** Bumped whenever the custom fonts change: decodes of SVG pictures made
  *  before carry the old faces and are made again. */
 export function svgFontGeneration(): number {
-  if (!listening && typeof window !== 'undefined') {
+  if (!listening && hasWindow()) {
     listening = true;
     onCustomFontsChanged(() => {
       generation++;

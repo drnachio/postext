@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '命令行',
   description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON',
   lang: 'zh',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '10分钟',
   order: 51,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
@@ -313,6 +313,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--config FILE</code></td><td>用于零散Markdown的配置（或<code>preset.json</code>），或合并到书本身配置之上的配置。</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>在<code>--config</code>和<code>--set</code>之前，把书设为某个设计文件（来自<code>postext design</code>或沙盒）或另一本书的<code>.postext</code>的设计。<code>--design-parts LIST</code>只取其中部分。</td></tr>
     <tr><td><code>--composition TAG</code></td><td>在<code>--design</code>之后设置某种语言的排版传统规则（<code>es</code>、<code>en-US</code>、<code>en-GB</code>、<code>fr</code>、<code>de</code>；<code>auto</code>：书的语言）。自postext 1.80起。</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>仅在本次运行中把不拆分词的文件合并到书的列表里，在<code>--config</code>之后、<code>--set</code>之前生效。读取的文件与沙盒的导入相同（<a href="/zh/docs/configuration-language#不拆分的词">不拆分的词</a>）：普通列表、TeX文件中的<code>{'\\hyphenation{…}'}</code>块，或JSON。普通列表进入<code>LANG</code>的列表，未指定语言时进入所有语言的列表；JSON对象按语言各填一个列表，其中键<code>"*"</code>是所有语言的列表。可重复使用。自postext 1.81起。</td></tr>
     <tr><td><code>--resources DIR</code>、<code>--fonts DIR</code>、<code>--name TEXT</code></td><td>零散Markdown的图片、字体和书名。</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>到这个文件夹里查找书中没有自带的字体。可以重复使用。</td></tr>
     <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>

@@ -30,6 +30,7 @@ import { recordSharedConfig, initialSharedConfig } from '../editions/configLayer
 import { bundleCoverImage } from '../covers/renderCover.js';
 import { bookOfState, newRecord, ownEditions, copyThumbnail, adoptPresetThumbnail, withEditionsOf, ownContent, adoptLoadedPreset, storeThumbnail, bookFromLoaded, presetThumbnailBytes, PRESET_THUMBNAIL_ID, storedCurrentLayouts, localizedOf, BUNDLE_COVER_ID } from './projectActions/copies.js';
 import type { ProjectActionDeps, ProjectActions } from './projectActions/types.js';
+import { cancelCompileFor, startCompile } from '../export/compileStore.js';
 
 export type { ProjectActionDeps, DuplicateSource, ProjectActions } from './projectActions/types.js';
 
@@ -227,6 +228,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
 
   const remove: ProjectActions['remove'] = (id, opts = {}) =>
     run(async () => {
+      cancelCompileFor(id);
       const wasActive = !opts.offScreen && deps.getState().activeProjectId === id;
       if (wasActive) {
         deps.discardWorkingSave();
@@ -483,6 +485,14 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       }
     });
 
+  // Not run(): the other books stay at hand while one compiles.
+  const compile: ProjectActions['compile'] = async (id, format, opts = {}) => {
+    const s = deps.getState();
+    if (s.activeProjectId === id) await deps.flushWorkingSave();
+    const name = s.projects.find((p) => p.id === id)?.name ?? '';
+    return startCompile({ projectId: id, format, ...(opts.locale ? { locale: opts.locale } : {}), uiLocale: s.locale, epubLayout: opts.epubLayout ?? s.epubLayout }, name);
+  };
+
   const setThumbnail: ProjectActions['setThumbnail'] = (id, file) =>
     run(async () => {
       // The reader's choice: no cover is taken from the first page in its
@@ -562,5 +572,5 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       applyRecord({ ...merged, config }, parts);
     });
 
-  return { activate, create, duplicate, rename, remove, importBundle, importBundleBytes, switchEdition, addEdition, exportProject, setThumbnail, adoptGeneratedThumbnail, renameFrameInEditions, resetToSource };
+  return { activate, create, duplicate, rename, remove, importBundle, importBundleBytes, switchEdition, addEdition, exportProject, compile, setThumbnail, adoptGeneratedThumbnail, renameFrameInEditions, resetToSource };
 }

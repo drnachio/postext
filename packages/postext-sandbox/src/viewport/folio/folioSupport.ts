@@ -1,6 +1,8 @@
 /** Screens whose short side is below this (CSS px) are phones: the folio's
  *  WebGL book (three.js, a texture per page side) takes more memory than
  *  their browsers give a tab, and the tab reloads (#345). */
+import { hasWindow } from '../../env/window.js';
+
 const MIN_SHORT_SIDE = 600;
 
 let cached: boolean | null = null;
@@ -22,7 +24,7 @@ function hasWebGL2(): boolean {
  *  window keeps it; its short side, so turning a phone does not bring it
  *  in. Settled once per page. */
 export function folioSupported(): boolean {
-  if (typeof window === 'undefined') return true;
+  if (!hasWindow()) return true;
   if (cached === null) {
     const { width, height } = window.screen;
     cached = Math.min(width, height) >= MIN_SHORT_SIDE && hasWebGL2();

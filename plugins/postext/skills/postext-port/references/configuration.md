@@ -346,7 +346,7 @@ bodyText
 ├─ verse             { layout='auto', indentStep=0.5em, turnover='hang', hang=2em, turnoverMark='[', stanzaSpace=1, keepStanzas=0, tighten=true }   (≥ 1.23) defaults of `:::verse` poems set line by line; the fence's attributes of the same name win. layout 'bayt' = 1.22's centred single hemistichs for poems with no `||` (stored configs < 9 get it); stanzaSpace in lines of the poem's leading; tighten (≥ 1.24) = a line a little wider than the measure shrinks its word spaces down to minWordSpacing and stays on one line, only a line still too wide turns over (false = 1.23: every overlong line turns over; stored configs < 10 with a line-by-line poem get false)
 ├─ tabStops          TabStop[]       unset           (≥ 1.23, §4a) tab stops of every paragraph, list item and quotation; a paragraph style or a callout body that sets its own replaces them
 ├─ tabInterval       Dimension       unset           (≥ 1.23, §4a) default stops every interval past the last stop, from the start of the measure; unset = a tab past the last stop is a word space
-└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true, exceptions=none, capitalized=true }
+└─ hyphenation       { enabled=true, locale=<config.locale ?? 'en-us'>, ragged=false, zone=3em, compounds=true, exceptions=none, exceptionsByLanguage=none, capitalized=true }
                       locale: any BCP 47 tag; patterns for 'en-us'|'es'|'fr'|'de'|'it'|'pt'|'ca'|'nl' (region ignored; other languages → en-us + console warning)
                       ragged: also hyphenate ragged text, only where the word does not fit and sending it down would leave a gap wider than zone (em = text size); line by line ≤ 2 hyphenated lines in a row, with optimalRagged two in a row are only discouraged
                       compounds: false = the dictionary leaves a word with a hyphen between two letters whole; it breaks only after that hyphen (TeX; after- | dinner, never af- | ter-dinner)
@@ -478,7 +478,7 @@ H&J / Knuth–Plass
 Gotchas
 - Hyphenation only applies when `textAlign: 'justify'`, unless `hyphenation.ragged: true` (ragged text too, within `zone`). Words < 5 chars never break (2 before / 3 after).
 - For a Spanish book set top-level `locale: 'es'` (hyphenation follows unless `hyphenation.locale` is set).
-- **Keeping words whole (postext ≥ 1.28).** `hyphenation.exceptions: ['Alice', 'You-Tube']`: a word without a hyphen is never divided, one with hyphens only there (TeX's `\hyphenation`). An entry matches a run of letters (`(Alice,`, `Alice’s`, each part of a compound); an inflected form is another entry; lower case matches any case, an initial capital only capitalised occurrences (`'Rose'` leaves `rose` alone). `hyphenation.capitalized: false` keeps every capitalised word whole, sentence openers included (InDesign's "Hyphenate Capitalized Words" off; useless in German, where every noun has a capital). `citations.hyphenateNames: false` keeps the family names of the cited authors whole (`(Lup-` | `ton, 2010)` never happens). All three reach captions, cells, notes and design text too. Port the source's hyphenation exception list and its "capitalized words" switch to these; for one occurrence, a soft hyphen before the word (references/document-format.md §3.3). Up to 1.27 the only ways were a `hyphenation: false` paragraph style, a soft hyphen typed inside the word, or rewording.
+- **Keeping words whole (postext ≥ 1.28).** `hyphenation.exceptions: ['Alice', 'You-Tube']`: a word without a hyphen is never divided, one with hyphens only there (TeX's `\hyphenation`). An entry matches a run of letters (`(Alice,`, `Alice’s`, each part of a compound); an inflected form is another entry; lower case matches any case, an initial capital only capitalised occurrences (`'Rose'` leaves `rose` alone). `hyphenation.capitalized: false` keeps every capitalised word whole, sentence openers included (InDesign's "Hyphenate Capitalized Words" off; useless in German, where every noun has a capital). `citations.hyphenateNames: false` keeps the family names of the cited authors whole (`(Lup-` | `ton, 2010)` never happens). All three reach captions, cells, notes and design text too. Port the source's hyphenation exception list and its "capitalized words" switch to these; for one occurrence, a soft hyphen before the word (references/document-format.md §3.3). Up to 1.27 the only ways were a `hyphenation: false` paragraph style, a soft hyphen typed inside the word, or rewording. Lists per language (postext ≥ 1.81) go in `hyphenation.exceptionsByLanguage: { es: ['ca-mi-no'], en: ['Alice'] }`: each list reads as `exceptions`, applies where that dictionary divides (the document's, or a chapter style's `hyphenation.locale`; a passage `{lang=…}` keeps the surrounding dictionary) and wins over the same word in `exceptions`; a language without patterns of its own (Greek, Arabic, Japanese…) keeps no list. In a book with editions per language, an edition's own `exceptions` (config layers) already applies to that edition only; `exceptionsByLanguage` is for a book whose chapters change dictionary. A source exception file (one word per line, breaks marked with hyphens, `=`, `~` or soft hyphens; the `\hyphenation{…}` blocks of a TeX file; or a JSON array, or an object of lists by language with `"*"` for every language) goes in through the Sandbox's Import, which merges it into the list chosen, or on the command line with `--hyphenation-exceptions [LANG=]FILE` (repeatable, after `--config`, before `--set`).
 - All widow/orphan/runt rules are soft penalties, never hard.
 - No-break spaces (U+00A0, U+202F, U+2007) and the word joiner (U+2060) glue their neighbours on every breaker; type the character, not `&nbsp;`. U+00A0 is in practically every face; a face without U+202F/U+2007 gets half a word space / a digit width.
 
@@ -1757,6 +1757,8 @@ splitInline = true   (≥ 1.25) overflow applies to `here` tables too: one that 
   next column at its width; < 5 body rows never cut); 'clip'/'hide' for one taller than a column; not inside boxes
   or on vertical pages. false = 1.24 (moves whole); a preset below configVersion 11 embedding a resource reads false
 continuedSuffix = '(cont.)', continuesMarkerEnabled = true, continuesMarker = 'Continued' | 'Continúa' (by locale)
+hyphenation = false  (≥ 1.81) true breaks each cell whole on the optimal breaker; cells are ragged, so words are
+  divided only with bodyText.hyphenation.ragged. Set true when the source hyphenates its table cells as its text.
 ```
 tableStyles[]: `{ id (REQUIRED), name?, …any tableStyle field }` — unset fields inherit
 `tableStyle`, then body. Picked per table by `resource.table.styleId`.
@@ -1777,6 +1779,11 @@ heads: `rules: 'booktabs'` with `headerBackgroundEnabled: false` and black (ink)
 fontFamily, fontSize, color  → body text (label and description share family+size: engine limit)
 figureStyle                  label and description (§20a); unset = the body's figures when in the body family
 align = 'left' (TextAlign), gap = 0.75em (em = caption size; body↔caption)
+hyphenation = false (≥ 1.81): true hyphenates as a paragraph style's `hyphenation: true` (justified; ragged only
+   with bodyText.hyphenation.ragged; also when bodyText.hyphenation.enabled is off), broken whole on the optimal
+   breaker within the body's word spacing, under its hyphen, stack and citation/operator rules; label never divided.
+   Set true when the source hyphenates its captions as its text (narrow justified captions with hyphens).
+lineHeight (≥ 1.81; unset = the body's leading in proportion to the caption size; em = caption size)
 labelBold = true, labelItalic = false, labelColor = color
 labelNumberGap = ' ' (no-break space) between label and number; labelSeparator = '. ' after the number (≥ 1.9)
    Chinese captions: labelNumberGap '' and labelSeparator '　' (U+3000) → 图1-1　标题
@@ -1784,9 +1791,10 @@ labelNumberGap = ' ' (no-break space) between label and number; labelSeparator =
 descriptionItalic = false
 position = 'below' | 'above'
 backgroundEnabled = false, background = main, padding = 0.35em   (bar behind caption)
-note = { fontSize = 0.85×caption size, color = caption color, italic = false, gap = 0.35em, align = 'left' }
+note = { fontSize = 0.85×caption size, color = caption color, italic = false, gap = 0.35em, align = 'left',
+         hyphenation = false, lineHeight (unset = body leading in proportion; em = note size) }   (≥ 1.81 for the last two)
 ```
-Per-type: `resourceTypes[].captionStyle` partial (e.g. tables `{position:'above'}`).
+Per-type: `resourceTypes[].captionStyle` partial (e.g. tables `{position:'above'}`; `hyphenation`, `lineHeight` and `note` too).
 Caption text supports inline markdown; a bold lead sentence is written as `**…**` in the caption.
 
 ---------------------------------------------------------------------------------

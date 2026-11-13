@@ -627,7 +627,7 @@ await run('sandbox_import_book', { file: { base64: b64, fileName: 'my-book.poste
 await run('sandbox_get_warnings', { scope: 'book' });               // the Checks panel: kind, category, chapter, line, offsets, page
 await run('sandbox_render_page', { chapter: 3, page: 41, count: 2, width: 1200, format: 'jpeg' }); // { content: [json text, image parts (base64)] }
 await run('sandbox_get_composed_checks', {});                       // every edition (`language` keeps one)
-await run('sandbox_export', { format: 'pdf', scope: 'book', deliver: 'data' }); // pdf|epub|postext|docx|markdown|config; `epubLayout: 'reflowable'`
+await run('sandbox_export', { format: 'pdf', scope: 'book', deliver: 'data' }); // pdf|epub|html|postext|docx|idml|markdown|config; `epubLayout: 'reflowable'`; `book: { kind: 'project', id }` writes a project not on screen (≥ 1.81)
 ```
 
 - Every tool waits for the layout before it answers and gives each chapter's page count. Answers are `{ ok, … }`

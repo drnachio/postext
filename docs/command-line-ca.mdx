@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: "Línia d'ordres",
   description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents",
   lang: 'ca',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '14 min',
   order: 51,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
@@ -518,6 +518,7 @@ les sortides. Si en desar el llibre queda trencat, imprimeix l'error i conserva 
     <tr><td><code>--config FILE</code></td><td>Una configuració (o un <code>preset.json</code>) per a Markdown solt, o que es combina amb la del llibre i hi té prioritat.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Posa el llibre en el disseny d'un fitxer de disseny (de <code>postext design</code> o del Sandbox) o del <code>.postext</code> d'un altre llibre, abans de <code>--config</code> i <code>--set</code>. <code>--design-parts LLISTA</code> en pren només algunes parts.</td></tr>
     <tr><td><code>--composition TAG</code></td><td>Posa les regles de composició de la tradició d'una llengua (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: la llengua del llibre) després de <code>--design</code>. Des de postext 1.80.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Combina un fitxer de mots que no es divideixen amb les llistes del llibre per a aquesta execució, després de <code>--config</code> i abans de <code>--set</code>. Llegeix els mateixos fitxers que Importa del Sandbox (<a href="/ca/docs/configuration-language#mots-que-no-es-divideixen">mots que no es divideixen</a>): una llista senzilla, els blocs <code>{'\\hyphenation{…}'}</code> d'un fitxer TeX o JSON. Una llista senzilla va a la llista de <code>LANG</code>, o a la de totes les llengües si no se n'indica cap; un objecte JSON omple una llista per llengua, i la seva clau <code>"*"</code> és la de totes les llengües. Repetible. Des de postext 1.81.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Imatges, fonts i títol per a Markdown solt.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>Una carpeta on buscar les fonts que el llibre no porta. Es pot repetir.</td></tr>
     <tr><td><code>--offline</code></td><td>No baixa mai fonts.</td></tr>

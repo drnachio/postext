@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ressourcen und Tabellen',
   description: 'Ressourcentypen und ihre Nummerierung, Tabellen- und Legendenstile, einfarbige Diagramme und gedruckte Videos',
   lang: 'de',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '40 min',
   order: 14,
   parent: 'configuration',
@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
       <td>Text dieses Hinweises, rechtsbündig unter den Teil in der Schrift der Anmerkung gesetzt (siehe <a href="#legendenstil">Legendenstil</a>). Der Standard folgt der Sprache des Dokuments (siehe <a href="/de/docs/configuration-language#dokumentsprache">Dokumentsprache</a> für die Werte jeder Sprache).</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Setzt die Zellen wie Fließtext, wie <code>captionStyle.hyphenation</code> die Legende: Jede Zelle wird als Ganzes mit dem optimalen Zeilenumbruch umbrochen. Zellen stehen im Flattersatz, ihre Wörter werden also nur getrennt, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist. <code>false</code> bricht die Zellen Zeile für Zeile um und trennt kein Wort. Seit postext 1.81.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,6 +669,18 @@ const config: PostextConfig = {
       <td>Waagerechte Ausrichtung der Legendenzeilen. <code>'justify'</code> treibt jede Zeile außer der letzten auf die volle Breite aus. Auf einem Legendenbalken richten sich die Zeilen innerhalb seines Innenabstands aus; eine seitliche Legende richtet sich innerhalb ihrer eigenen Breite aus.</td>
     </tr>
     <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Trennt die Legende wie ein Absatzformat mit <code>hyphenation: true</code>: im Blocksatz, und im Flattersatz, wenn <code>bodyText.hyphenation.ragged</code> eingeschaltet ist, mit dem Wörterbuch und den Trennregeln des Grundtexts, auch wenn <code>bodyText.hyphenation.enabled</code> aus ist. Die Legende wird dann als Ganzes mit dem optimalen Zeilenumbruch umbrochen (<code>bodyText.optimalLineBreaking</code>), im Blocksatz innerhalb der Wortabstandsgrenzen des Grundtexts und nach dessen Treppen- und Zeilenrandregeln (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). Die Nummernbezeichnung wird nie getrennt. <code>false</code> bricht die Legende Zeile für Zeile um und trennt kein Wort. Seit postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>der des Grundtexts, im Verhältnis</td>
+      <td>Der Zeilenabstand der Legende. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.81.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +796,18 @@ Das Unterobjekt `note` gestaltet `Resource.note`, einen kurzen Text (Quelle, Bil
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Waagerechte Ausrichtung der Anmerkungszeilen, wie <code>align</code> bei der Legende.</td>
+    </tr>
+    <tr>
+      <td><code>note.hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Trennt die Anmerkung, wie <code>hyphenation</code> die Legende. Seit postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>der des Grundtexts, im Verhältnis</td>
+      <td>Der Zeilenabstand der Anmerkung. <code>em</code> bezieht sich auf ihren eigenen Schriftgrad. Seit postext 1.81.</td>
     </tr>
   </tbody>
 </table>

@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useCallback, useContext, useSyncExternalStore, type ReactNode } from 'react';
+import { hasWindow } from '../env/window.js';
 
 /** "Large targets": every pointer target at least 44×44 CSS px (WCAG 2.5.5,
  *  Target Size Enhanced). The editor is compact by default; this is the
@@ -28,7 +29,7 @@ function read(): boolean {
   } catch {
     // storage blocked: fall back to the pointer
   }
-  return typeof window !== 'undefined' && window.matchMedia?.(COARSE).matches === true;
+  return hasWindow() && window.matchMedia?.(COARSE).matches === true;
 }
 
 function subscribe(onChange: () => void) {

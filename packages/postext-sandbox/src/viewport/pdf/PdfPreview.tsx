@@ -7,6 +7,7 @@ import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 import { pdfPageFragment } from '../../storage/viewHash.js';
 import type { BuildProgress } from '../../worker/useLayoutWorker.js';
 import type { RenderProgress } from 'postext-pdf/worker';
+import { hasWindow } from '../../env/window.js';
 
 interface PdfPreviewProps {
   bytesUrl: string | null;
@@ -30,7 +31,7 @@ function useInlinePdf(): boolean {
   const compact = useCompactLayout();
   return useMemo(() => {
     if (compact) return false;
-    if (typeof window === 'undefined') return true;
+    if (!hasWindow()) return true;
     if (navigator.pdfViewerEnabled === false) return false;
     return !window.matchMedia('(hover: none) and (pointer: coarse)').matches;
   }, [compact]);

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Resources and tables',
   description: 'Resource types and their numbering, table and caption styles, single-ink diagrams and printed videos',
   lang: 'en',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '41 min',
   order: 14,
   parent: 'configuration',
@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
       <td>Text of that marker, set flush right under the part in the note typeface (see <a href="#caption-style">caption style</a>). The default follows the document locale (listed per language under <a href="/en/docs/configuration-language#document-language">Document language</a>).</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Set the cells as running text, as <code>captionStyle.hyphenation</code> sets a caption: each cell is broken whole on the optimal line breaker. Cells are ragged, so their words are divided only when <code>bodyText.hyphenation.ragged</code> is on. <code>false</code> breaks the cells line by line and divides no word. Since postext 1.81.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,6 +669,18 @@ const config: PostextConfig = {
       <td>Horizontal alignment of the caption lines. <code>'justify'</code> spreads every line but the last to the full width. On a caption bar the lines align inside its padding; a side caption aligns within its own width.</td>
     </tr>
     <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hyphenate the caption as a paragraph style with <code>hyphenation: true</code> does: when justified, and when ragged if <code>bodyText.hyphenation.ragged</code> is on, with the body's dictionary and hyphen rules, also when <code>bodyText.hyphenation.enabled</code> is off. The caption is then broken whole on the optimal line breaker (<code>bodyText.optimalLineBreaking</code>), within the body's word-spacing limits when justified, under the body's stack and line-edge rules (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). The numbered label is never divided. <code>false</code> breaks the caption line by line and divides no word. Since postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>the body's leading, in proportion</td>
+      <td>The caption's leading. <code>em</code> is relative to the caption's own size. Since postext 1.81.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +796,18 @@ The `note` sub-object styles `Resource.note`, a short run (source, credits, a re
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Horizontal alignment of the note lines, as <code>align</code> for the caption.</td>
+    </tr>
+    <tr>
+      <td><code>note.hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hyphenate the note, as <code>hyphenation</code> does for the caption. Since postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>the body's leading, in proportion</td>
+      <td>The note's leading. <code>em</code> is relative to the note's own size. Since postext 1.81.</td>
     </tr>
   </tbody>
 </table>

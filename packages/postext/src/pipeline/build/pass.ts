@@ -157,7 +157,8 @@ function placeDocumentPass(
   // whichever dictionary the previous one (or the default, en-us) chose.
   // With the words the document keeps whole (#699); the names of the
   // authors it cites join them below, once its references are read.
-  const hyphenationRules = { exceptions: setup.resolved.bodyText.hyphenation.exceptions, capitalized: setup.resolved.bodyText.hyphenation.capitalized };
+  const { exceptions, exceptionsByLanguage, capitalized } = setup.resolved.bodyText.hyphenation;
+  const hyphenationRules = { exceptions, exceptionsByLanguage, capitalized };
   initHyphenator(setup.resolved.bodyText.hyphenation.locale, hyphenationRules);
   // A line may end after a slash between two words wherever rich text is
   // measured (#1164), unless the configuration keeps the breaks of 1.51.

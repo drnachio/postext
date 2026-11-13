@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: '浏览器里的AI智能体借助沙盒的64个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
   lang: 'zh',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '9分钟',
   order: 52,
   plainSummary: "本页写给想让AI助手替自己在沙盒里处理一本书的人。沙盒打开时，会交给助手一套工具，用来查看任意一页、修改设计、编辑文字、添加图片和表格、找出问题和保存文件。你用自己的话提出要求，比如“把字稍微放大一点，再看看书是不是还能排在40页以内”，助手就去使用这些工具，并把页面给你看。一切都留在你的浏览器里。本页说明怎样接入助手、它能做什么，以及每个工具怎样调用。",
@@ -432,6 +432,7 @@ await browser.close();
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
+- **从书库面板写出一本书**：`sandbox_export`加上`format`（`pdf`、`epub`或`html`）和`book: { "kind": "project", "id": "…", "language": "en" }`，会像该行的 **下载为 …** 一样写出一个项目（postext 1.81 起）：整本书、该语言，与屏幕上的书分开排版；屏幕上的书会先保存并保持原样。不带`book`的`html`写出屏幕上的项目。返回结果给出文件、页数、写出的语言和警告；`epubLayout`选择EPUB的呈现方式。
 - **导入`.postext`文件**用`sandbox_import_book`（加上`inspect: true`只报告文件里有哪些语言，并不导入）。
 - <strong>从InDesign文档做一本书</strong>用`sandbox_import_idml`。加上`dryRun: true`时它什么都不创建，回答`.idml`的内容和导入报告：将采用的排版方式及理由、结论、发现的问题、这本书需要的字体，以及仍缺少的链接图片。`layout`选择`pages`或`flow`，`links`交上链接的图片，每张按其`fileName`匹配。`file`也可以是压缩成zip的InDesign打包文件：其中链接的图片和字体放入书中（`linksFromPackage`、`fontsFromPackage`）；打包文件中有多个IDML时，`document`指定要导入哪一个（回答中的`documents`列出它们）。
 - **导入Word书稿**用`sandbox_import_word`。先加上`dryRun: true`运行一次：它什么都不改，回答质量报告、每种Word样式会转换成什么，以及将会生成的章节和资源。然后修正对应关系，再正式运行：

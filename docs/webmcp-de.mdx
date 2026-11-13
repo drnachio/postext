@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Was ein KI-Agent im Browser mit den 64 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '12 min',
   order: 52,
   plainSummary: "Diese Seite ist für alle, die einen KI-Helfer für sich an einem Buch in der Sandbox arbeiten lassen möchten. Solange die Sandbox geöffnet ist, gibt sie dem Helfer eine Reihe von Werkzeugen: um jede Seite anzusehen, die Gestaltung zu ändern, den Text zu bearbeiten, Bilder und Tabellen hinzuzufügen, Probleme zu finden und Dateien zu speichern. Sie bitten mit Ihren eigenen Worten, zum Beispiel „mach die Schrift etwas größer und prüf, ob das Buch noch auf 40 Seiten passt“, und der Helfer setzt die Werkzeuge ein und zeigt Ihnen die Seiten. Alles bleibt in Ihrem Browser. Die Seite erklärt, wie Sie einen Helfer verbinden, was er tun kann und wie jedes Werkzeug aufgerufen wird.",
@@ -620,6 +620,7 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
+- **Ein Buch aus dem Bücher-Panel.** `sandbox_export` mit `format` `pdf`, `epub` oder `html` und `book: { "kind": "project", "id": "…", "language": "en" }` schreibt ein Projekt so, wie es **Als … herunterladen** in seiner Zeile tut (seit postext 1.81): das ganze Buch in dieser Sprache, getrennt vom Buch auf dem Bildschirm umbrochen, das vorher gespeichert wird und bleibt, wie es ist. `html` ohne `book` schreibt das Projekt auf dem Bildschirm. Die Antwort nennt die Datei, ihre Seiten, die geschriebene Sprache und die Warnungen; `epubLayout` wählt die Darstellung eines EPUB.
 - **Eine `.postext`-Datei importieren** mit `sandbox_import_book`
   (`inspect: true` sagt, welche Sprachen sie enthält, ohne sie zu importieren).
 - **Ein Buch aus einem InDesign-Dokument anlegen** mit `sandbox_import_idml`.

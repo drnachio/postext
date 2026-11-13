@@ -12,6 +12,7 @@ import { openHashBundle, takeQuietLink, fetchBundleBytes } from '../hashBundle.j
 import type { HashBundleResolver } from '../../types/props.js';
 import type { PresetProvider, PresetApplyParts } from '../../presets/index.js';
 import type { SandboxProviderLate } from './providerState.js';
+import { hasWindow } from '../../env/window.js';
 
 /** What usePresetOpening takes from the sandbox provider. */
 export interface UsePresetOpeningDeps {
@@ -118,7 +119,7 @@ export function usePresetOpening(deps: UsePresetOpeningDeps) {
     keep?: string | null,
   ): Promise<string | null> => {
     const resolver = hashBundlesRef.current?.[ref.key];
-    if (!resolver || typeof window === 'undefined') return null;
+    if (!resolver || !hasWindow()) return null;
     const labels = late.stateRef.current.labels;
     try {
       const list = known ?? late.stateRef.current.projects;

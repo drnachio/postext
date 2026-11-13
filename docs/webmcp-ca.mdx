@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: "Què pot fer un agent d'IA al navegador amb les 64 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '13 min',
   order: 52,
   plainSummary: "Aquesta pàgina és per a qui vol que un assistent d'intel·ligència artificial li faci la feina en un llibre del Sandbox. Mentre el Sandbox és obert, dona a l'assistent un joc d'eines per mirar qualsevol pàgina, canviar el disseny, editar el text, afegir imatges i taules, trobar problemes i desar fitxers. Li demanes les coses amb les teves paraules, per exemple «fes la lletra una mica més grossa i comprova que el llibre encara cap en 40 pàgines», i l'assistent fa servir les eines i et mostra les pàgines. Tot es queda al teu navegador. La pàgina explica com connectar-hi un assistent, què pot fer i com es crida cada eina.",
@@ -597,6 +597,7 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
+- **Un llibre des del tauler Llibres.** `sandbox_export` amb `format` `pdf`, `epub` o `html` i `book: { "kind": "project", "id": "…", "language": "en" }` escriu un projecte com ho fa **Baixa en …** de la seva fila (des de postext 1.81): el llibre sencer en aquella llengua, maquetat a part del llibre en pantalla, que es desa abans i queda tal com és. `html` sense `book` escriu el projecte en pantalla. La resposta dona el fitxer, les seves pàgines, la llengua escrita i els avisos; `epubLayout` tria la presentació d'un EPUB.
 - **Importar un fitxer `.postext`** amb `sandbox_import_book` (`inspect: true`
   diu quins idiomes porta sense importar-lo).
 - **Fer un llibre a partir d'un document d'InDesign** amb

@@ -2,6 +2,7 @@
 
 import type { ReactElement, ReactNode, Ref } from 'react';
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
+import { ChevronRight } from 'lucide-react';
 import { cn } from '../cn.js';
 import { usePortalContainer } from './portal.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../layout/surface.js';
@@ -104,6 +105,17 @@ interface MenuItemProps {
   children: ReactNode;
 }
 
+/** The class of an item, or of the item that opens a submenu. */
+const itemClass = (heading: boolean | undefined) => (state: { highlighted: boolean; disabled: boolean }) =>
+  cn(
+    'flex min-h-7 pt-large:min-h-11 cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
+    heading ? 'pt-2 pb-1 text-[11px] tracking-wide' : 'py-1.5',
+    'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
+    state.highlighted && 'bg-(--background)',
+    !state.disabled && 'hover:bg-(--background)',
+    state.disabled && 'cursor-default opacity-50',
+  );
+
 export function MenuItem({ icon, onClick, disabled, destructive, selected, heading, title, children }: MenuItemProps) {
   return (
     <MenuPrimitive.Item
@@ -111,16 +123,7 @@ export function MenuItem({ icon, onClick, disabled, destructive, selected, headi
       disabled={disabled}
       aria-current={selected || undefined}
       title={title}
-      className={(state) =>
-        cn(
-          'flex min-h-7 pt-large:min-h-11 cursor-pointer items-center gap-2 rounded px-2 text-xs outline-none select-none',
-          heading ? 'pt-2 pb-1 text-[11px] tracking-wide' : 'py-1.5',
-          'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-(--brand)',
-          state.highlighted && 'bg-(--background)',
-          !state.disabled && 'hover:bg-(--background)',
-          state.disabled && 'cursor-default opacity-50',
-        )
-      }
+      className={itemClass(heading)}
       style={{
         color: destructive ? 'var(--destructive)' : heading ? 'var(--slate)' : 'var(--foreground)',
         fontWeight: selected || heading ? 600 : 400,
@@ -134,4 +137,30 @@ export function MenuItem({ icon, onClick, disabled, destructive, selected, headi
 
 export function MenuSeparator() {
   return <MenuPrimitive.Separator className="my-1 h-px" style={{ backgroundColor: 'var(--rule)' }} />;
+}
+
+/** An item that opens a menu of its own beside it (the edition of a book
+ *  to download, #1526): opened by hovering, a click, or the arrow key
+ *  towards it. Compose `MenuItem`s as children. */
+export function MenuSubmenu({ icon, label, disabled, children }: { icon?: ReactNode; label: ReactNode; disabled?: boolean; children: ReactNode }) {
+  const portalContainer = usePortalContainer();
+  return (
+    <MenuPrimitive.SubmenuRoot>
+      <MenuPrimitive.SubmenuTrigger disabled={disabled} className={itemClass(false)} style={{ color: 'var(--foreground)' }}>
+        {icon && <span aria-hidden="true" className="inline-flex shrink-0" style={{ color: 'var(--slate)' }}>{icon}</span>}
+        <span className="min-w-0 flex-1 truncate">{label}</span>
+        <ChevronRight size={12} aria-hidden="true" className="shrink-0 rtl:-scale-x-100" style={{ color: 'var(--slate)' }} />
+      </MenuPrimitive.SubmenuTrigger>
+      <MenuPrimitive.Portal container={portalContainer}>
+        <MenuPrimitive.Positioner side="inline-end" align="start" collisionPadding={8} style={{ zIndex: POPUP_Z_INDEX }}>
+          <MenuPrimitive.Popup
+            data-postext-popup=""
+            style={{ ...POPUP_SURFACE, padding: 4, minWidth: 140, maxHeight: 'var(--available-height)', overflowY: 'auto', overscrollBehavior: 'contain' }}
+          >
+            {children}
+          </MenuPrimitive.Popup>
+        </MenuPrimitive.Positioner>
+      </MenuPrimitive.Portal>
+    </MenuPrimitive.SubmenuRoot>
+  );
 }

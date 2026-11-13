@@ -252,6 +252,28 @@ describe('the books', () => {
     expect((await call('sandbox_export', { format: 'docx', variant: 'plain' })).error).toMatch(/variant/);
   });
 
+  it('compile a project to a pdf, an epub or an html in one of its languages, as its row does (#1526)', async () => {
+    const asked: unknown[][] = [];
+    const { call } = harness({ projects: [project({ locales: ['es', 'en'], locale: 'es' }), project({ id: 'p2', name: 'Bare' })], activeProjectId: 'p2' }, {
+      projectActions: {
+        compile: async (id: string, format: string, opts: { locale?: string }) => {
+          asked.push([id, format, opts]);
+          if (opts.locale === 'de') throw new Error('The book has no edition in "de"');
+          return { bytes: new Uint8Array([1, 2, 3]), fileName: `book.${format}`, mime: 'text/html', pages: 4, locale: opts.locale ?? 'es', warnings: ['a face lacks ŋ'] };
+        },
+      } as unknown as ProjectActions,
+    });
+    const html = await call('sandbox_export', { format: 'html', deliver: 'data', book: { kind: 'project', id: 'p1', language: 'en' } });
+    expect(html).toMatchObject({ ok: true, format: 'html', file: 'book.html', bytes: 3, base64: base64(new Uint8Array([1, 2, 3])), pages: 4, book: { kind: 'project', id: 'p1', language: 'en' }, warnings: ['a face lacks ŋ'] });
+    // An html without "book" is the project on screen; a pdf of a book, the whole book.
+    await call('sandbox_export', { format: 'html', deliver: 'data' });
+    await call('sandbox_export', { format: 'epub', deliver: 'data', epubLayout: 'reflowable', book: { kind: 'project', id: 'p1' } });
+    expect(asked).toEqual([['p1', 'html', { locale: 'en' }], ['p2', 'html', {}], ['p1', 'epub', { epubLayout: 'reflowable' }]]);
+    expect((await call('sandbox_export', { format: 'pdf', book: { kind: 'project', id: 'p1', language: 'de' } })).error).toBe('The pdf could not be written: The book has no edition in "de"');
+    expect((await call('sandbox_export', { format: 'pdf', scope: 'chapter', book: { kind: 'project', id: 'p1' } })).error).toMatch(/"scope" goes with the pdf of the book on screen/);
+    expect((await call('sandbox_export', { format: 'epub', book: { kind: 'sample', id: 'guide' } })).error).toMatch(/written of one of the reader's projects/);
+  });
+
   it('say which languages a .postext file carries, without importing it', async () => {
     let imported = 0;
     const { call } = harness({}, { projectActions: { importBundleBytes: async () => { imported++; return 'new'; } } as unknown as ProjectActions });

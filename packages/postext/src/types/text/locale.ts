@@ -127,6 +127,18 @@ export interface HyphenationConfig {
    *  table cells, notes, running heads and the other design text. Default
    *  none. */
   exceptions?: string[];
+  /** Exception lists of one language each, keyed by its tag (`'en'`,
+   *  `'fr-FR'`): read as {@link exceptions} is, and applied only to text
+   *  divided with that language's dictionary: the document's, or the one a
+   *  chapter style names (`hyphenation.locale`). A passage marked with
+   *  another language (`{lang=…}`) is divided with the dictionary around
+   *  it. For general settings shared by the editions of a book in several
+   *  languages, or a chapter set in another language, where the same
+   *  spelling divides differently in each or a word is kept whole in one
+   *  only. An entry here wins over the same word in {@link exceptions}.
+   *  Tags that share a dictionary share one list; a tag with no patterns
+   *  of its own (`'el'`, `'ar'`) has none. Default none. */
+  exceptionsByLanguage?: Record<string, string[]>;
   /** The shortest word the dictionary divides, in letters. Unset: the
    *  language's own, 5 (4 in Catalan). */
   minWordLength?: number;
@@ -211,6 +223,10 @@ export interface ResolvedHyphenationConfig {
   /** The words of `HyphenationConfig.exceptions`, trimmed, checked, without
    *  duplicates and sorted; absent when the document names none. */
   exceptions?: string[];
+  /** `HyphenationConfig.exceptionsByLanguage`, keyed by dictionary
+   *  (`HyphenationLocale`), each list read as {@link exceptions}; absent
+   *  when none is left. */
+  exceptionsByLanguage?: Record<string, string[]>;
   /** {@link HyphenationConfig.minWordLength}, `leftMin`, `rightMin`: absent
    *  when unset (the language's own). */
   minWordLength?: number;

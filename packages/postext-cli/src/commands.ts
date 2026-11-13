@@ -35,6 +35,7 @@ export const BOOK_OPTIONS: OptionSpec[] = [
   { name: 'design-parts', kind: 'string', arg: 'LIST', help: 'With --design: only these parts, e.g. "page,text,headings"' },
   { name: 'composition', kind: 'string', arg: 'TAG|auto', help: 'Set the composition rules of a language\'s tradition (es, en-US, en-GB, fr, de; auto: the book\'s language), after --design' },
   { name: 'config', kind: 'string', arg: 'FILE', help: 'Configuration JSON for loose Markdown (or merged over a book\'s)' },
+  { name: 'hyphenation-exceptions', kind: 'list', arg: '[LANG=]FILE', help: 'Merge a list of words kept whole (text, TeX \\hyphenation, JSON) into the book\'s for this run: every language\'s list, or LANG\'s; a JSON object of lists by language fills each (repeatable)' },
   { name: 'resources', kind: 'string', arg: 'DIR', help: 'Pictures for loose Markdown; ids are file names without extension' },
   { name: 'fonts', kind: 'string', arg: 'DIR', help: 'Font files bundled with loose Markdown' },
   { name: 'name', kind: 'string', arg: 'TEXT', help: 'Book title for loose Markdown' },

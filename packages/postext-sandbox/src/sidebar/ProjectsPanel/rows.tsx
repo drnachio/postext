@@ -4,6 +4,7 @@
 // preset, with the preset's licence tag (#1276: split out of
 // ProjectsPanel.tsx).
 import { Check, ImagePlus, X, Pencil, Languages, Copy, Download, Trash2, RotateCcw, EyeOff, Eye } from 'lucide-react';
+import type { CompiledFormat } from '../../export/compileBook.js';
 import { useState, useRef } from 'react';
 import { type ProjectSummary, useSandboxLabels } from '../../context/SandboxContext.js';
 import { RowTag, IconButton, ListRow, MenuItem, MenuSeparator } from '../../ui/index.js';
@@ -13,6 +14,7 @@ import { useBlobObjectUrl } from '../../panels/resources/ResourcePreview.js';
 import type { PresetSummary } from '../../presets/index.js';
 import { RowActionsMenu } from '../RowActionsMenu.js';
 import { LocaleTag } from '../LocaleTag.js';
+import { CompileMenuItems } from './compile.js';
 
 interface ProjectRowProps {
   project: ProjectSummary;
@@ -31,6 +33,9 @@ interface ProjectRowProps {
   canAddLanguage: boolean;
   onDuplicate: () => void;
   onExport: () => void;
+  /** Compile the whole book to a PDF, HTML or EPUB 3 file and download
+   *  it: in `locale`, for a book in several languages. */
+  onCompile: (format: CompiledFormat, locale?: string) => void;
   /** Set the cover picture from a file, or drop it with null. */
   onSetThumbnail: (file: File | null) => void;
   onDelete: () => void;
@@ -49,6 +54,7 @@ export function ProjectRow({
   canAddLanguage,
   onDuplicate,
   onExport,
+  onCompile,
   onSetThumbnail,
   onDelete,
 }: ProjectRowProps) {
@@ -267,6 +273,8 @@ export function ProjectRow({
               <MenuItem icon={<Languages size={13} />} disabled={!canAddLanguage} onClick={onAddLanguage}>{labels.projectAddLanguage}</MenuItem>
               <MenuItem icon={<Copy size={13} />} onClick={onDuplicate}>{labels.projectDuplicate}</MenuItem>
               <MenuItem icon={<Download size={13} />} onClick={onExport}>{labels.projectExport}</MenuItem>
+              <MenuSeparator />
+              <CompileMenuItems project={project} uiLocale={uiLocale} onCompile={onCompile} />
               <MenuSeparator />
               <MenuItem icon={<Trash2 size={13} />} destructive onClick={askDelete}>{labels.projectDelete}</MenuItem>
             </>

@@ -2,6 +2,8 @@
 // read and write goes through (#1276: split out of persistence.ts).
 
 
+import { hasWindow } from '../../env/window.js';
+
 export const CONFIG_KEY = 'postext-sandbox-config';
 /** Shape of the saved configuration, numbered as project records are
  *  (`PROJECT_RECORD_VERSION`); a copy saved before the stamp existed is
@@ -36,7 +38,7 @@ export const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
 export const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 
 export function getStorage(): Storage | null {
-  if (typeof window === 'undefined') return null;
+  if (!hasWindow()) return null;
   try {
     return window.localStorage;
   } catch {

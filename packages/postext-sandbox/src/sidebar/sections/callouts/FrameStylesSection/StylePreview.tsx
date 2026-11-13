@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CalloutStyleConfig, PostextConfig, Resource } from 'postext';
 import { inheritedStyle, paintStylePreview, requestStylePreview, type PreviewSample } from '../../../../frameStyles/stylePreview.js';
+import { hasWindow } from '../../../../env/window.js';
 
 interface StylePreviewProps {
   style: CalloutStyleConfig;
@@ -51,7 +52,7 @@ export function StylePreview({ style, config, contextKey, resources, sample, wid
   const styleJson = JSON.stringify(inheritedStyle(config, style));
   useEffect(() => {
     if (!visible) return;
-    const dpr = typeof window !== 'undefined' ? Math.min(2, window.devicePixelRatio || 1) : 1;
+    const dpr = hasWindow() ? Math.min(2, window.devicePixelRatio || 1) : 1;
     const pixelWidth = Math.round(width * dpr);
     const key = `${contextKey}|${styleJson}|${JSON.stringify(sample)}|${pixelWidth}`;
     let timer: ReturnType<typeof setTimeout> | undefined;

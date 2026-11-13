@@ -29,6 +29,7 @@ import {
   type WordTemplate,
 } from 'postext/word';
 import type { SandboxLabels } from '../types/index.js';
+import { hasWindow } from '../env/window.js';
 
 /** Where an import's text goes: into the open chapter in place of its
  *  text, as new chapters after it, or as the whole book. */
@@ -299,7 +300,7 @@ export function removeTemplate(id: string): { templates: WordTemplate[]; kept: b
 const STORAGE_KEY = 'postext-sandbox-word-templates';
 
 function storage(): Storage | null {
-  if (typeof window === 'undefined') return null;
+  if (!hasWindow()) return null;
   try {
     return window.localStorage;
   } catch {

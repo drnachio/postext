@@ -13,6 +13,7 @@ export interface FigureRulesDeps {
   bodyPx: number;
   fam: (f: string) => string;
   em: (d: Dimension, basePx?: number) => string;
+  lh: (d: Dimension, fontPx: number) => string;
   color: (c: ColorValue | undefined, prop?: string) => string | undefined;
   px: (d: Dimension, basePx?: number) => number;
   out: (string | CssRule)[];
@@ -20,7 +21,7 @@ export interface FigureRulesDeps {
 
 export function createFigureRules(deps: FigureRulesDeps) {
   const {
-    config, options, dpi, bodyPx, fam, em, color, px, out
+    config, options, dpi, bodyPx, fam, em, lh, color, px, out
   } = deps;
   // --- figures, tables, captions ------------------------------------------
   const cap = config.captionStyle;
@@ -50,7 +51,9 @@ export function createFigureRules(deps: FigureRulesDeps) {
     cap.backgroundEnabled && color(cap.background, 'background-color'),
     cap.backgroundEnabled && `padding: ${round(px(cap.padding, capPx) / capPx)}em`,
     `margin: ${round(px(cap.gap, capPx) / capPx)}em 0`,
-    'hyphens: manual',
+    cap.lineHeight && lh(cap.lineHeight, capPx),
+    // `hyphenation: true` (1.81): the body's hyphens, as a paragraph style.
+    !cap.hyphenation && 'hyphens: manual',
   ]));
   out.push(rule('caption.pt-caption-below', ['caption-side: bottom']));
   out.push(rule('.pt-label', [
@@ -65,6 +68,8 @@ export function createFigureRules(deps: FigureRulesDeps) {
     `font-style: ${note.italic ? 'italic' : 'normal'}`,
     `text-align: ${ALIGN[note.align] ?? 'start'}`,
     'text-indent: 0',
+    note.lineHeight && lh(note.lineHeight, px(note.fontSize)),
+    note.hyphenation !== cap.hyphenation && (note.hyphenation ? 'hyphens: inherit' : 'hyphens: manual'),
   ]));
   out.push(rule('figcaption .pt-note', ['display: block', `margin-block-start: ${em(note.gap, px(cap.fontSize))}`]));
   out.push(rule('.pt-missing', ['border: 1px dashed currentColor', 'padding: 1em', 'font-style: italic']));
@@ -117,6 +122,7 @@ export function createFigureRules(deps: FigureRulesDeps) {
         reset && fam(st.bodyFontFamily),
         reset && `font-size: ${round(cellPx / bodyPx)}em`,
         reset && color(st.bodyColor),
+        reset && st.hyphenation !== reset.hyphenation && (st.hyphenation ? 'hyphens: inherit' : 'hyphens: manual'),
         tableBorder ? `border: ${border}` : reset && 'border: none',
         heavy > 0 && `border-top: ${line(heavy, st.borderColor)}`,
         heavy > 0 && `border-bottom: ${line(heavy, st.borderColor)}`,
@@ -154,7 +160,7 @@ export function createFigureRules(deps: FigureRulesDeps) {
     `font-size: ${round(bodyCellPx / bodyPx)}em`,
     color(ts.bodyColor),
     'text-indent: 0',
-    'hyphens: manual',
+    !ts.hyphenation && 'hyphens: manual',
     ...base.table,
   ]));
   out.push(rule('th, td', [

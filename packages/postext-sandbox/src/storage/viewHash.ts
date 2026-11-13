@@ -23,6 +23,7 @@
 
 import { canonicalLocaleTag } from 'postext';
 import type { ViewportTab } from '../types/props.js';
+import { hasWindow } from '../env/window.js';
 
 export interface ViewHash {
   /** Manifest id of the preset on screen, or null when absent / in project
@@ -115,7 +116,7 @@ export function parseViewHash(hash: string): ViewHash {
 
 /** The view carried by the URL hash. */
 export function readViewHash(): ViewHash {
-  if (typeof window === 'undefined') return EMPTY_VIEW_HASH;
+  if (!hasWindow()) return EMPTY_VIEW_HASH;
   return parseViewHash(window.location.hash);
 }
 
@@ -148,7 +149,7 @@ export function hashAsksRestore(hash: string): boolean {
  *  parts given change: a viewer reporting its page leaves the book alone,
  *  the provider naming the book leaves the page alone. Null drops a part. */
 export function writeViewHash(patch: Partial<ViewHash>): void {
-  if (typeof window === 'undefined') return;
+  if (!hasWindow()) return;
   const next = viewHashFragment({ ...readViewHash(), ...patch });
   if (window.location.hash === next) return;
   try {

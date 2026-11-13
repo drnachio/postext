@@ -1,0 +1,77 @@
+---
+title: "Pies con separación silábica en columnas estrechas"
+summary: "El boletín de un observatorio de aves a tres columnas de 60 mm, compuesto dos veces: pies, notas y celdas línea a línea, y luego con separación silábica."
+plain: "Un pie justificado en una columna estrecha tiene pocos sitios donde cortar la línea, y los espacios entre palabras se abren. El boletín se compone dos veces: con los pies cortados como antes y con las palabras divididas como en el texto."
+description: "captionStyle.hyphenation, note.hyphenation y tableStyle.hyphenation en un boletín a tres columnas, con lineHeight para pies y notas, antes y después."
+question: "¿Cómo evito que un pie justificado en una columna estrecha abra huecos grandes entre las palabras?"
+aliases: ["separación silábica en pies", "partir palabras en los pies", "pies justificados", "pies con huecos", "interlineado del pie", "lineHeight del pie", "lineHeight de la nota", "separación silábica en tablas", "tableStyle.hyphenation", "tres columnas", "guía de campo", "láminas de aves"]
+pageNotes: { "2": "La primera composición, página 2: los pies de las figuras 3 y 4 al pie de la página, con la primera línea de cada uno abierta en huecos anchos entre cuatro palabras.", "4": "La segunda composición, página 2: los mismos pies con Panurus y Acrocephalus en líneas espaciadas por igual, y la tabla con Corre-limos y case-tas divididas." }
+---
+
+## Lo que vas a componer
+
+Dos páginas de *Bajamar*, el boletín de invierno de un observatorio de aves imaginario, de 225 × 297 mm y a tres columnas de 60 mm. Bajo la banda verde de la apertura corre una franja de la ría, y cuatro láminas de acuarela ocupan una columna cada una, recortadas en torno al ave, con un pie justificado en Libre Franklin y una nota breve debajo. Una tabla de máximos cierra el artículo. El número se compone dos veces. La primera composición deja los valores por defecto: cada pie se corta línea a línea y ninguna palabra se divide, de modo que en 60 mm la primera línea del pie de la figura 3 reparte su espacio entre cuatro palabras. La segunda divide las palabras de los pies, las notas y las celdas, y su espaciado queda como el del texto.
+
+## Elaboración
+
+### 1 · Pies compuestos como el texto
+
+El código está en [la respuesta corta](#la-respuesta-corta). Con `captionStyle.hyphenation: true`, un pie se divide igual que un estilo de párrafo con `hyphenation: true`: cuando va justificado, con los patrones del texto (`locale`) y sus reglas de guiones, aunque el texto tenga su propia separación silábica desactivada. Si `bodyText.optimalLineBreaking` está activo, el pie se corta entero con el algoritmo de Knuth–Plass, dentro de los límites `minWordSpacing` y `maxWordSpacing` del texto. La etiqueta, *Figura 4.*, no se divide nunca. `note.hyphenation` hace lo mismo con la línea que va bajo el pie, `Resource.note`.
+
+`lineHeight` da al pie su propio interlineado, 10,8 pt para un cuerpo de 8,2 pt, y `note.lineHeight` da 8,8 pt a la nota de 6,8 pt. En `em` se miden sobre su propio cuerpo. Sin ellos, los dos toman el interlineado del texto en proporción a su cuerpo.
+
+### 2 · El mismo número, compuesto dos veces
+
+<Excerpt region="builds" />
+
+Los tres interruptores valen `false` por defecto, así que un libro compuesto antes de postext 1.81 conserva sus páginas: pies, notas y celdas cortados línea a línea. Las dos composiciones solo se diferencian en esos interruptores, y `capture.doc` publica las dos: las páginas 1 y 2 línea a línea y las 3 y 4 con separación silábica. Los botones de la barra ponen una u otra sobre la mesa.
+
+<PageShot page={2} crop="0.34,0.79,0.62,0.18" caption="Línea a línea: la primera línea de los pies de las figuras 3 y 4 se abre en huecos anchos." />
+
+<PageShot page={4} crop="0.34,0.79,0.62,0.18" caption="Con separación silábica: biarmi-cus y captu-rada se dividen y las líneas quedan espaciadas por igual." />
+
+### 3 · Celdas en bandera con separación silábica
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` corta cada celda entera con el algoritmo óptimo. Las celdas van en bandera, así que sus palabras solo se dividen donde las divide el texto en bandera: con `bodyText.hyphenation.ragged: true`, y solo cuando pasar la palabra entera a la línea siguiente dejaría vacío más de la `zone`. La zona por defecto, 3 em, mide 7,8 mm a 7,4 pt, demasiado para una celda de 20 mm; este diseño la deja en 1,5 em. El texto va justificado, así que la opción de la bandera llega a la tabla, al colofón y al pie de la tabla, que su tipo de recurso alinea a la izquierda y pone encima (`resourceTypes[].captionStyle`). Un estilo de tabla con nombre admite el mismo campo, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.21,0.31,0.31" caption="La tabla con separación silábica: Corre-limos en una columna de 15 mm y case-tas en una de 20 mm." />
+
+### 4 · Láminas recortadas en torno al ave
+
+<Excerpt region="plates" />
+
+Las láminas miden 1200 × 600 píxeles, con el ave en medio de un fondo crema muy ancho. `Resource.crop` se queda con la parte que rodea a cada ave, y la figura toma esa forma en la columna. La página se imprime en el mismo crema de las láminas, `#f6f3ea`, de modo que se ven los bordes de la pintura y no los del archivo. Los pies, las notas y los textos alternativos están en un archivo de contenido por idioma, un bloque por recurso.
+
+### 5 · Una apertura sobre un campo de color
+
+<Excerpt region="opener" />
+
+La apertura dibuja una banda verde de 100 mm con la cabecera del boletín, el antetítulo, el título y la entradilla, y debajo la franja de la ría, de 66 mm, a todo el ancho del formato. Su `minHeight` hace que las tres columnas empiecen 6 mm por debajo de la franja, así que la banda y la imagen ocupan más de media página.
+
+## Variantes
+
+### Dividir solo los pies de las figuras
+
+El `captionStyle` de un tipo de recurso admite los mismos campos y manda sobre el del documento, así que un tipo puede llevar separación silábica y los demás no.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Pies en bandera
+
+Un pie alineado a la izquierda con `hyphenation: true` divide sus palabras dentro de la zona del texto en bandera, siempre que `bodyText.hyphenation.ragged` esté activo.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Errores frecuentes
+
+- Con `bodyText.hyphenation.ragged` desactivado, un pie en bandera o una celda con `hyphenation: true` se corta con el algoritmo óptimo, pero no divide ninguna palabra.
+- Sin `bodyText.optimalLineBreaking`, el pie se corta línea a línea, aunque sus palabras se dividen igual.

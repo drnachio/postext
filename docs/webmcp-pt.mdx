@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 64 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
   lang: 'pt',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '13 min',
   order: 52,
   plainSummary: "Esta página é para quem quer que um assistente de inteligência artificial trabalhe por você em um livro no Sandbox. Enquanto o Sandbox está aberto, ele entrega ao assistente um conjunto de ferramentas para olhar qualquer página, mudar o design, editar o texto, adicionar imagens e tabelas, encontrar problemas e salvar arquivos. Você pede com suas próprias palavras, por exemplo “aumente um pouco a letra e confira se o livro continua cabendo em 40 páginas”, e o assistente usa as ferramentas e mostra as páginas para você. Tudo fica no seu navegador. A página explica como conectar um assistente, o que ele pode fazer e como cada ferramenta é chamada.",
@@ -599,6 +599,7 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
   { "format": "pdf", "scope": "book", "deliver": "data" }
   ```
 
+- **Um livro a partir do painel Livros.** `sandbox_export` com `format` `pdf`, `epub` ou `html` e `book: { "kind": "project", "id": "…", "language": "en" }` grava um projeto como faz **Baixar em …** da sua linha (desde o postext 1.81): o livro inteiro nesse idioma, diagramado à parte do livro na tela, que é salvo antes e fica como está. `html` sem `book` grava o projeto na tela. A resposta traz o arquivo, suas páginas, o idioma gravado e os avisos; `epubLayout` escolhe a apresentação de um EPUB.
 - **Importar um arquivo `.postext`** com `sandbox_import_book` (`inspect: true`
   diz quais idiomas ele traz sem importá-lo).
 - **Fazer um livro a partir de um documento do InDesign** com

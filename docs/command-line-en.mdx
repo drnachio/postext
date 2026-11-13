@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Command line',
   description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents',
   lang: 'en',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '14 min',
   order: 51,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
@@ -495,6 +495,7 @@ good files.
     <tr><td><code>--config FILE</code></td><td>A configuration (or a <code>preset.json</code>) for loose Markdown, or merged over a book's own.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>Sets the book in the design of a design file (from <code>postext design</code> or the Sandbox) or of another book's <code>.postext</code>, before <code>--config</code> and <code>--set</code>. <code>--design-parts LIST</code> takes only some of its parts.</td></tr>
     <tr><td><code>--composition TAG</code></td><td>Sets the composition rules of a language's tradition (<code>es</code>, <code>en-US</code>, <code>en-GB</code>, <code>fr</code>, <code>de</code>; <code>auto</code>: the book's language) after <code>--design</code>. Since postext 1.80.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>Merges a file of words kept whole into the book's lists for this run, after <code>--config</code> and before <code>--set</code>. It reads the same files as the Sandbox's Import (<a href="/en/docs/configuration-language#words-kept-whole">words kept whole</a>): a plain list, the <code>{'\\hyphenation{…}'}</code> blocks of a TeX file, or JSON. A plain list goes to the list of <code>LANG</code>, or to the list of every language without one; a JSON object fills one list per language, and its <code>"*"</code> key is the list of every language. Repeatable. Since postext 1.81.</td></tr>
     <tr><td><code>--resources DIR</code>, <code>--fonts DIR</code>, <code>--name TEXT</code></td><td>Pictures, fonts and title for loose Markdown.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>A folder to look in for fonts the book does not carry. Repeatable.</td></tr>
     <tr><td><code>--offline</code></td><td>Never download fonts.</td></tr>

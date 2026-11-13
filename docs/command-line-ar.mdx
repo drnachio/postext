@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'سطر الأوامر',
   description: 'ملف تنفيذي واحد مكتفٍ بذاته لأنظمة macOS وLinux وWindows. يحوّل كتاب .postext أو مجلد كتاب أو ملفات Markdown منفردة إلى PDF وHTML وEPUB وصور للصفحات ومستند Word، وينشئ الحزم ويفحص الكتب، ويقدّم مخرجات JSON للبرامج النصية والوكلاء',
   lang: 'ar',
-  lastUpdated: '2026-11-06',
+  lastUpdated: '2026-11-12',
   readingTime: '13 دقيقة',
   order: 51,
   plainSummary: "هذه الصفحة لمن يريد أن يصنع كتبًا بـPostext من الطرفية بدلًا من الموقع. تنزّل ملفًا واحدًا يناسب حاسوبك وتشغّله، دون أن تثبّت أي شيء. تعطيه كتابك أو بضعة ملفات نصية، فيصنع منها ملف PDF أو صفحة ويب أو كتابًا إلكترونيًا أو صورًا للصفحات أو مستند Word. ويستطيع أيضًا أن يفحص الكتاب بحثًا عن المشكلات، وأن يجمع ملفاته في ملف واحد. وتستطيع البرامج والمساعدات الذكية استعماله أيضًا، لأنه يجيب بصيغة تقرؤها بسهولة.",
@@ -464,6 +464,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--config FILE</code></td><td>إعدادات (أو ملف <code>preset.json</code>) لملفات Markdown المنفردة، أو تُدمج فوق إعدادات الكتاب نفسه.</td></tr>
     <tr><td><code>--design FILE</code>, <code>--design-parts LIST</code></td><td>يضع الكتاب في تصميم ملف تصميم (من <code>postext design</code> أو من Sandbox) أو في تصميم ملف <code>.postext</code> لكتاب آخر، قبل <code>--config</code> و<code>--set</code>. ويأخذ <code>--design-parts LIST</code> بعض أجزائه فقط.</td></tr>
     <tr><td><code>--composition TAG</code></td><td>يضبط قواعد التنضيد في تقليد لغة ما (<code>es</code>، <code>en-US</code>، <code>en-GB</code>، <code>fr</code>، <code>de</code>؛ <code>auto</code>: لغة الكتاب) بعد <code>--design</code>. منذ postext 1.80.</td></tr>
+    <tr><td><code>--hyphenation-exceptions [LANG=]FILE</code></td><td>يدمج ملفًا من الكلمات التي لا تُقسَّم في قوائم الكتاب لهذا التشغيل فقط، بعد <code>--config</code> وقبل <code>--set</code>. ويقرأ الملفات نفسها التي يقرؤها الاستيراد في Sandbox (<a href="/ar/docs/configuration-language#كلمات-لا-تُقسَّم">كلمات لا تُقسَّم</a>): قائمة بسيطة، أو كتل <code>{'\\hyphenation{…}'}</code> في ملف TeX، أو JSON. تذهب القائمة البسيطة إلى قائمة <code>LANG</code>، أو إلى قائمة كل اللغات إن لم تُذكر لغة؛ ويملأ كائن JSON قائمة لكل لغة، ومفتاحه <code>"*"</code> هو قائمة كل اللغات. قابل للتكرار. منذ postext 1.81.</td></tr>
     <tr><td><code>--resources DIR</code> و<code>--fonts DIR</code> و<code>--name TEXT</code></td><td>الصور والخطوط والعنوان لملفات Markdown المنفردة.</td></tr>
     <tr><td><code>--font-dir DIR</code></td><td>مجلد يُبحث فيه عن الخطوط التي لا يتضمّنها الكتاب. يمكن تكراره.</td></tr>
     <tr><td><code>--offline</code></td><td>لا ينزّل الخطوط أبدًا.</td></tr>

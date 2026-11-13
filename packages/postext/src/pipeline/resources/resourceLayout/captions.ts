@@ -89,7 +89,8 @@ function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
     tintPaperOf(resolved.page),
   );
   const captionFontPx = dimensionToPx(cs.fontSize, dpi);
-  const captionLineHeightPx = captionFontPx * lineHeightRatio;
+  // Its own leading (`captionStyle.lineHeight`), else the body's in proportion.
+  const captionLineHeightPx = cs.lineHeight ? dimensionToPx(cs.lineHeight, dpi, captionFontPx) : captionFontPx * lineHeightRatio;
   const captionGapPx = dimensionToPx(cs.gap, dpi, captionFontPx);
   const captionPaddingPx = cs.backgroundEnabled ? dimensionToPx(cs.padding, dpi, captionFontPx) : 0;
   // Caption font set (label + description share one typeface/size; weight and
@@ -144,7 +145,7 @@ function layoutCaptionTextIn(input: CaptionTextInput): CaptionTextLayout {
       [captionFontString, captionBoldFontString, captionItalicFontString, captionBoldItalicFontString],
       Math.max(1, input.width - captionPaddingPx * 2),
       captionLineHeightPx,
-      { textAlign: cs.align, ...snippetRuleBreaking(cs.align, resolved) },
+      { textAlign: cs.align, ...snippetRuleBreaking(cs.align, resolved, cs.hyphenation ? { fontSizePx: captionFontPx } : undefined) },
     );
   }
   const captionTextHeight = measuredCaption.length * captionLineHeightPx;

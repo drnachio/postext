@@ -5,6 +5,7 @@ import type { Design } from 'postext';
 import type { PresetProvider, PresetApplyParts } from '../../presets/index.js';
 import type { ChapterLayout } from '../../book/types.js';
 import type { SandboxAction, SandboxState } from '../SandboxContext.js';
+import type { CompiledBook, CompiledFormat } from '../../export/compileBook.js';
 
 export interface ProjectActionDeps {
   dispatch: Dispatch<SandboxAction>;
@@ -74,6 +75,12 @@ export interface ProjectActions {
    *  already has that language. */
   addEdition: (id: string, locale: string) => Promise<boolean>;
   exportProject: (target?: DuplicateSource) => Promise<void>;
+  /** Compile a project to one PDF, HTML or EPUB 3 file (#1526), in the
+   *  edition `locale` (the one it opens with by default), laid out apart
+   *  from the book on screen (`export/compileBook.ts`); an EPUB in
+   *  `epubLayout` (the EPUB tab's by default). The book on screen is saved
+   *  first. Rejects with an AbortError when cancelled. */
+  compile: (id: string, format: CompiledFormat, opts?: { locale?: string; epubLayout?: 'fixed' | 'reflowable' }) => Promise<CompiledBook>;
   /** Replace a project's cover picture with `file`, or drop it with null. */
   setThumbnail: (id: string, file: File | null) => Promise<void>;
   /** Give a project without a cover the picture taken from its first page

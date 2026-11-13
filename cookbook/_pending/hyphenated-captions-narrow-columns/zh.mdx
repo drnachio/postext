@@ -1,0 +1,77 @@
+---
+title: "窄栏里的图注断词"
+summary: "一份鸟类观测站通讯，排成三栏、每栏 60 mm，排两次：图注、注释和表格单元格先逐行断行，再加上断词。"
+plain: "窄栏里两端对齐的图注可断行的地方很少，词间距就会拉开。这份通讯排两次：一次图注照旧断行，一次像正文一样把单词拆开。"
+description: "三栏通讯里的 captionStyle.hyphenation、note.hyphenation、tableStyle.hyphenation 和图注行距。"
+question: "窄栏里两端对齐的图注，怎样才能不在单词之间拉出大空隙？"
+aliases: ["图注断词", "图注连字符", "两端对齐的图注", "图注空隙", "图注行距", "图注 lineHeight", "注释 lineHeight", "表格断词", "tableStyle.hyphenation", "三栏", "野外图鉴", "鸟类图版"]
+pageNotes: { "2": "第一次排版的第 2 页：图 4 的图注在第三栏顶部，第一行只有四个单词，中间空隙很大。", "4": "第二次排版的第 2 页：同一条图注，Acrocephalus 在第一行末尾断开，各行间距均匀；下方表格拆开了 below 和 warbler。" }
+---
+
+## 成品一览
+
+*Tideline* 的两页。这是一家虚构鸟类观测站的冬季通讯，开本 225 × 297 mm，三栏，每栏 60 mm。开篇的绿色色带下面是一条河口图片，四幅水彩图版各占一栏，裁到鸟的周围，下面配一条用 Libre Franklin 排的两端对齐图注和一行简短注释。文章最后是一张最高计数表。这一期排两次。第一次保留默认值：每条图注逐行断行，不拆任何单词，所以在 60 mm 的栏里，含 *Acrocephalus scirpaceus* 的那一行只摊开四个单词。第二次给图注、注释和表格单元格加上断词，它们的间距就和正文一致了。
+
+## 做法
+
+### 1 · 图注像正文一样排
+
+代码见上文[简短回答](#简短回答)。设了 `captionStyle.hyphenation: true`，图注的断词方式就和设了 `hyphenation: true` 的段落样式一样：两端对齐时，用正文的断词模式（`locale`）和连字符规则，即使正文自己关掉了断词。`bodyText.optimalLineBreaking` 开启时，整条图注用 Knuth–Plass 算法一起断行，词间距不超出正文的 `minWordSpacing` 和 `maxWordSpacing`。标签 *Figure 4.* 永远不拆。`note.hyphenation` 对图注下面那一行 `Resource.note` 做同样的事。
+
+`lineHeight` 给图注自己的行距，这里 8.2 pt 的字配 10.8 pt，`note.lineHeight` 给 6.8 pt 的注释配 8.8 pt。用 `em` 时按各自的字号计算。不设时，两者都按字号比例沿用正文行距。
+
+### 2 · 同一期排两次
+
+<Excerpt region="builds" />
+
+三个开关默认都是 `false`，所以 postext 1.81 之前排好的书页面不变：图注、注释和单元格都逐行断行。两次排版只差这几个开关，`capture.doc` 两次都发布：第 1、2 页逐行断行，第 3、4 页有断词。工具栏上的按钮可以切换。
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="逐行断行：图 4 图注的第一行只摊开四个单词。" />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="加上断词：Acrocephalus 被拆开，五行的间距一致。" />
+
+### 3 · 齐左的单元格加断词
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` 用最优算法把每个单元格整体断行。单元格是齐左排的，所以只在齐左文字会拆词的地方拆词：要开启 `bodyText.hyphenation.ragged: true`，而且只有当整个单词移到下一行会留下超过 `zone` 的空白时才拆。默认区域 3 em 在 7.4 pt 下是 7.8 mm，对 20 mm 的单元格太宽；这个设计改成 1.5 em。正文两端对齐，所以齐左开关只作用于表格、版权页和表格标题，表格的资源类型把标题放在表格上方并左对齐（`resourceTypes[].captionStyle`）。命名的表格样式也接受同一个字段 `tableStyles[].hyphenation`。
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="加上断词的计数表：15 mm 栏里的“Reed war-bler”，20 mm 栏里的“Open mud be-low the hides”。" />
+
+### 4 · 裁到鸟周围的图版
+
+<Excerpt region="plates" />
+
+图版是 1200 × 600 像素，鸟在一大片奶油色底子的中间。`Resource.crop` 只留每只鸟周围的部分，图在栏里就是这个形状。页面印成和图版一样的奶油色 `#f6f3ea`，所以看得见的是画的边缘，不是文件的边缘。图注、注释和替代文字放在每种语言一个的内容文件里，每个资源一段。
+
+### 5 · 色块上的开篇
+
+<Excerpt region="opener" />
+
+开篇画一条 100 mm 高的绿色色带，上面是刊头、眉题、标题和导语，下面是 66 mm 高、通栏满幅的河口图片。它的 `minHeight` 让三栏从图片下方 6 mm 处开始，所以色带和图片占了第一页的一半以上。
+
+## 变化
+
+### 只给插图的图注断词
+
+资源类型的 `captionStyle` 接受同样的字段，并且优先于文档的设置，所以可以只给一种类型断词。
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### 齐左的图注
+
+设了 `hyphenation: true` 的左对齐图注，只要开启了 `bodyText.hyphenation.ragged`，就会在齐左文字的断词区域内拆词。
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## 常见问题
+
+- 关掉 `bodyText.hyphenation.ragged` 时，齐左的图注或设了 `hyphenation: true` 的单元格仍用最优算法断行，但不拆任何单词。
+- 没有 `bodyText.optimalLineBreaking` 时，图注逐行断行，单词照样会拆。

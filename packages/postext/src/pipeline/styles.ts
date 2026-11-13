@@ -136,7 +136,7 @@ function emphasisFields(
 /** Whether a block with this alignment hyphenates, and its hyphenation zone
  *  when it is ragged: justified text hyphenates when `enabled`; ragged text
  *  only when `bodyText.hyphenation.ragged` is on too, within the zone. */
-function hyphenationFor(
+export function hyphenationFor(
   enabled: boolean,
   textAlign: TextAlign,
   resolved: ResolvedConfig,

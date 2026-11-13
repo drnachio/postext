@@ -1,0 +1,77 @@
+---
+title: "Didascalie con sillabazione in colonne strette"
+summary: "Il bollettino di un osservatorio ornitologico su tre colonne da 60 mm, composto due volte: didascalie, note e celle riga per riga, poi con sillabazione."
+plain: "Una didascalia giustificata in una colonna stretta ha pochi punti in cui andare a capo, e gli spazi tra le parole si allargano. Il bollettino è composto due volte: con le didascalie spezzate come prima e con le parole divise come nel testo."
+description: "captionStyle.hyphenation, note.hyphenation e tableStyle.hyphenation in un bollettino su tre colonne, con lineHeight per didascalie e note, prima e dopo."
+question: "Come evito che una didascalia giustificata in una colonna stretta apra grandi vuoti tra le parole?"
+aliases: ["sillabazione delle didascalie", "dividere le parole nelle didascalie", "didascalie giustificate", "didascalie larghe", "vuoti nelle didascalie", "interlinea della didascalia", "lineHeight della didascalia", "lineHeight della nota", "sillabazione nelle tabelle", "tableStyle.hyphenation", "tre colonne", "guida da campo", "tavole di uccelli"]
+pageNotes: { "2": "Prima composizione, pagina 2: la didascalia della figura 4 in cima alla terza colonna, con la prima riga distribuita su quattro parole separate da grandi vuoti.", "4": "Seconda composizione, pagina 2: la stessa didascalia con Acrocephalus diviso alla fine della prima riga e tutte le righe spaziate in modo uniforme; la tabella divide below e warbler." }
+---
+
+## Che cosa comporrai
+
+Due pagine di *Tideline*, il bollettino invernale di un osservatorio ornitologico immaginario, in formato 225 × 297 mm su tre colonne da 60 mm. Una striscia di estuario corre sotto la fascia verde dell’apertura, e quattro tavole ad acquerello occupano una colonna ciascuna, ritagliate intorno all’uccello, con una didascalia giustificata in Libre Franklin e una breve nota sotto. Una tabella dei conteggi massimi chiude l’articolo. Il numero è composto due volte. La prima composizione mantiene i valori predefiniti: ogni didascalia va a capo riga per riga e nessuna parola viene divisa, così in una colonna da 60 mm la riga che contiene *Acrocephalus scirpaceus* è distribuita su quattro parole. La seconda sillaba le didascalie, le note e le celle della tabella, e la loro spaziatura torna uguale a quella del testo.
+
+## Preparazione
+
+### 1 · Didascalie composte come il testo
+
+Il codice è nella [risposta breve](#la-risposta-breve) qui sopra. Con `captionStyle.hyphenation: true` una didascalia viene sillabata come uno stile di paragrafo con `hyphenation: true`: quando è giustificata, con i pattern del testo (`locale`) e le sue regole per i trattini, anche se il testo corrente ha la sillabazione disattivata. Se `bodyText.optimalLineBreaking` è attivo, la didascalia viene spezzata per intero con l’algoritmo di Knuth–Plass, entro i limiti `minWordSpacing` e `maxWordSpacing` del testo. L’etichetta, *Figure 4.*, non viene mai divisa. `note.hyphenation` fa lo stesso per la riga sotto la didascalia, `Resource.note`.
+
+`lineHeight` dà alla didascalia la sua interlinea, qui 10,8 pt per un corpo di 8,2 pt, e `note.lineHeight` dà 8,8 pt alla nota da 6,8 pt. In `em` si misurano sul proprio corpo. Se mancano, entrambe prendono l’interlinea del testo in proporzione al loro corpo.
+
+### 2 · Lo stesso numero, composto due volte
+
+<Excerpt region="builds" />
+
+I tre interruttori valgono `false` per impostazione predefinita, quindi un libro composto prima di postext 1.81 conserva le sue pagine: didascalie, note e celle spezzate riga per riga. Le due composizioni differiscono solo per questi interruttori, e `capture.doc` le pubblica entrambe: le pagine 1 e 2 riga per riga, le pagine 3 e 4 con sillabazione. I pulsanti della barra mostrano l’una o l’altra.
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="Riga per riga: la prima riga della didascalia della figura 4 è distribuita su quattro parole." />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="Con sillabazione: Acrocephalus è diviso e le cinque righe hanno la stessa spaziatura." />
+
+### 3 · Celle a bandiera con sillabazione
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` spezza ogni cella per intero con l’algoritmo ottimale. Le celle sono composte a bandiera, quindi le loro parole si dividono solo dove il testo a bandiera divide le parole: con `bodyText.hyphenation.ragged: true`, e solo quando una parola mandata intera alla riga successiva lascerebbe vuoto più della `zone`. La zona predefinita, 3 em, misura 7,8 mm a 7,4 pt, troppo per una cella da 20 mm; questo progetto la porta a 1,5 em. Il testo è giustificato, quindi l’opzione della bandiera arriva solo alla tabella, al colophon e alla didascalia della tabella, che il suo tipo di risorsa allinea a sinistra e mette sopra (`resourceTypes[].captionStyle`). Uno stile di tabella con nome accetta lo stesso campo, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="La tabella dei conteggi con sillabazione: «Reed war-bler» in una colonna da 15 mm e «Open mud be-low the hides» in una da 20 mm." />
+
+### 4 · Tavole ritagliate intorno all’uccello
+
+<Excerpt region="plates" />
+
+Le tavole misurano 1200 × 600 pixel, con l’uccello al centro di un ampio fondo color crema. `Resource.crop` tiene la parte intorno a ogni uccello, e la figura prende quella forma nella colonna. La pagina è stampata nello stesso crema delle tavole, `#f6f3ea`, così si vedono i bordi della pittura e non quelli del file. Didascalie, note e testi alternativi stanno in un file di contenuto per lingua, un blocco per risorsa.
+
+### 5 · Un’apertura su un campo di colore
+
+<Excerpt region="opener" />
+
+L’apertura disegna una fascia verde alta 100 mm con la testata del bollettino, l’occhiello, il titolo e il sommario, e sotto la striscia di estuario, alta 66 mm, su tutta la larghezza del formato. Il suo `minHeight` fa iniziare le tre colonne 6 mm sotto la striscia, così la fascia e l’immagine occupano più di metà della prima pagina.
+
+## Varianti
+
+### Sillabare solo le didascalie delle figure
+
+Il `captionStyle` di un tipo di risorsa accetta gli stessi campi e prevale su quello del documento, quindi un tipo può essere sillabato e gli altri no.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Didascalie a bandiera
+
+Una didascalia allineata a sinistra con `hyphenation: true` divide le parole entro la zona di sillabazione del testo a bandiera, purché `bodyText.hyphenation.ragged` sia attivo.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Errori frequenti
+
+- Con `bodyText.hyphenation.ragged` disattivato, una didascalia a bandiera o una cella con `hyphenation: true` viene spezzata con l’algoritmo ottimale ma non divide nessuna parola.
+- Senza `bodyText.optimalLineBreaking` la didascalia va a capo riga per riga, e le sue parole vengono divise lo stesso.

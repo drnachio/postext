@@ -1,0 +1,77 @@
+---
+title: "Peus amb partició de mots en columnes estretes"
+summary: "El butlletí d'un observatori d'ocells a tres columnes de 60 mm, compost dues vegades: peus, notes i cel·les línia a línia, i després amb partició de mots."
+plain: "Un peu justificat en una columna estreta té pocs llocs on tallar la línia, i els espais entre paraules s'obren. El butlletí es compon dues vegades: una amb els peus tallats com abans i una altra amb les paraules partides com les del text."
+description: "captionStyle.hyphenation, note.hyphenation i tableStyle.hyphenation en un butlletí a tres columnes, amb lineHeight per a peus i notes, abans i després."
+question: "Com evito que un peu justificat en una columna estreta obri forats grans entre les paraules?"
+aliases: ["partició de mots als peus", "partir paraules als peus", "peus justificats", "peus amb forats", "interlineat del peu", "lineHeight del peu", "lineHeight de la nota", "partició de mots a les taules", "tableStyle.hyphenation", "tres columnes", "guia de camp", "làmines d'ocells"]
+pageNotes: { "2": "La primera composició, pàgina 2: els peus de les figures 3 i 4 al peu de la pàgina, amb la primera línia de cadascun oberta en forats amples entre quatre paraules.", "4": "La segona composició, pàgina 2: els mateixos peus amb Panurus i Acrocephalus en línies espaiades igual, i la taula amb Corre-limos i case-tas partides." }
+---
+
+## Què compondràs
+
+Dues pàgines de *Bajamar*, el butlletí d'hivern d'un observatori d'ocells imaginari, de 225 × 297 mm i a tres columnes de 60 mm. Sota la banda verda de l'obertura hi ha una franja de la ria, i quatre làmines d'aquarel·la ocupen una columna cadascuna, retallades al voltant de l'ocell, amb un peu justificat en Libre Franklin i una nota breu a sota. Una taula de màxims tanca l'article. El número es compon dues vegades. La primera composició deixa els valors per defecte: cada peu es talla línia a línia i no es parteix cap paraula, de manera que en 60 mm la primera línia del peu de la figura 3 reparteix l'espai entre quatre paraules. La segona parteix les paraules dels peus, les notes i les cel·les, i l'espaiat queda com el del text.
+
+## Elaboració
+
+### 1 · Peus compostos com el text
+
+El codi és a [la resposta curta](#la-resposta-curta). Amb `captionStyle.hyphenation: true`, un peu es parteix igual que un estil de paràgraf amb `hyphenation: true`: quan va justificat, amb els patrons del text (`locale`) i les seves regles de guionets, encara que el text tingui la partició desactivada. Si `bodyText.optimalLineBreaking` és actiu, el peu es talla sencer amb l'algorisme de Knuth–Plass, dins dels límits `minWordSpacing` i `maxWordSpacing` del text. L'etiqueta, *Figura 4.*, no es parteix mai. `note.hyphenation` fa el mateix amb la línia que va sota el peu, `Resource.note`.
+
+`lineHeight` dona al peu el seu propi interlineat, 10,8 pt per a un cos de 8,2 pt, i `note.lineHeight` dona 8,8 pt a la nota de 6,8 pt. En `em` es mesuren sobre el seu propi cos. Sense ells, tots dos prenen l'interlineat del text en proporció al seu cos.
+
+### 2 · El mateix número, compost dues vegades
+
+<Excerpt region="builds" />
+
+Els tres interruptors valen `false` per defecte, així que un llibre compost abans de postext 1.81 conserva les seves pàgines: peus, notes i cel·les tallats línia a línia. Les dues composicions només es diferencien en aquests interruptors, i `capture.doc` publica totes dues: les pàgines 1 i 2 línia a línia i les 3 i 4 amb partició de mots. Els botons de la barra posen l'una o l'altra sobre la taula.
+
+<PageShot page={2} crop="0.34,0.79,0.62,0.18" caption="Línia a línia: la primera línia dels peus de les figures 3 i 4 s'obre en forats amples." />
+
+<PageShot page={4} crop="0.34,0.79,0.62,0.18" caption="Amb partició de mots: biarmi-cus i captu-rada es parteixen i les línies queden espaiades igual." />
+
+### 3 · Cel·les en bandera amb partició de mots
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` talla cada cel·la sencera amb l'algorisme òptim. Les cel·les van en bandera, així que les paraules només es parteixen on les parteix el text en bandera: amb `bodyText.hyphenation.ragged: true`, i només quan passar la paraula sencera a la línia següent deixaria buit més de la `zone`. La zona per defecte, 3 em, fa 7,8 mm a 7,4 pt, massa per a una cel·la de 20 mm; aquest disseny la deixa en 1,5 em. El text va justificat, així que l'opció de la bandera arriba a la taula, al colofó i al peu de la taula, que el seu tipus de recurs alinea a l'esquerra i posa a sobre (`resourceTypes[].captionStyle`). Un estil de taula amb nom admet el mateix camp, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.21,0.31,0.31" caption="La taula amb partició de mots: Corre-limos en una columna de 15 mm i case-tas en una de 20 mm." />
+
+### 4 · Làmines retallades al voltant de l'ocell
+
+<Excerpt region="plates" />
+
+Les làmines fan 1200 × 600 píxels, amb l'ocell al mig d'un fons crema molt ample. `Resource.crop` es queda amb la part que envolta cada ocell, i la figura pren aquesta forma a la columna. La pàgina s'imprimeix en el mateix crema de les làmines, `#f6f3ea`, de manera que es veuen les vores de la pintura i no les del fitxer. Els peus, les notes i els textos alternatius són en un fitxer de contingut per idioma, un bloc per recurs.
+
+### 5 · Una obertura sobre un camp de color
+
+<Excerpt region="opener" />
+
+L'obertura dibuixa una banda verda de 100 mm amb la capçalera del butlletí, l'avanttítol, el títol i l'entradeta, i a sota la franja de la ria, de 66 mm, a tota l'amplada del format. El seu `minHeight` fa que les tres columnes comencin 6 mm per sota de la franja, així que la banda i la imatge ocupen més de mitja pàgina.
+
+## Variants
+
+### Partir només els peus de les figures
+
+El `captionStyle` d'un tipus de recurs admet els mateixos camps i mana sobre el del document, així que un tipus pot dur partició de mots i els altres no.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Peus en bandera
+
+Un peu alineat a l'esquerra amb `hyphenation: true` parteix les paraules dins de la zona del text en bandera, sempre que `bodyText.hyphenation.ragged` sigui actiu.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Errors freqüents
+
+- Amb `bodyText.hyphenation.ragged` desactivat, un peu en bandera o una cel·la amb `hyphenation: true` es talla amb l'algorisme òptim, però no parteix cap paraula.
+- Sense `bodyText.optimalLineBreaking`, el peu es talla línia a línia, encara que les paraules es parteixen igualment.

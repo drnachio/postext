@@ -100,6 +100,14 @@ export function TableStyleFields({
           fieldId={`${fieldIdPrefix}-bodyColor`}
         />
         <ToggleSwitch
+          label={labels.bodyHyphenation}
+          tooltip={labels.tableHyphenationTooltip}
+          checked={ts.hyphenation}
+          onChange={(v) => update({ hyphenation: v })}
+          isDefault={unset('hyphenation')}
+          onReset={() => resetField('hyphenation')}
+        />
+        <ToggleSwitch
           label={labels.tableBodyFill} tooltip={labels.tableBodyFillTooltip}
           checked={ts.bodyBackgroundEnabled}
           onChange={(v) => update({ bodyBackgroundEnabled: v })}

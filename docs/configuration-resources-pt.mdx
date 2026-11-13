@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Recursos e tabelas',
   description: 'Os tipos de recurso e a numeração deles, os estilos de tabela e de legenda, os diagramas em uma só tinta e os vídeos impressos',
   lang: 'pt',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '45 min',
   order: 14,
   parent: 'configuration',
@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
       <td>Texto desse aviso, alinhado à direita embaixo da parte, na tipografia das notas (veja <a href="#estilo-de-legenda">estilo de legenda</a>). O padrão acompanha o idioma do documento (veja <a href="/pt/docs/configuration-language#idioma-do-documento">Idioma do documento</a> para o de cada idioma).</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Compõe as células como o texto geral, como <code>captionStyle.hyphenation</code> a legenda: cada célula é quebrada inteira pelo algoritmo ótimo. As células ficam em bandeira, então as palavras só são divididas com <code>bodyText.hyphenation.ragged</code> ativo. <code>false</code> quebra as células linha a linha, sem dividir palavras. Desde o postext 1.81.</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,6 +669,18 @@ const config: PostextConfig = {
       <td>Alinhamento horizontal das linhas da legenda. <code>'justify'</code> estende todas as linhas, menos a última, à largura total. Numa barra de legenda, as linhas se alinham dentro da margem interna dela; uma legenda lateral se alinha dentro da própria largura.</td>
     </tr>
     <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hifeniza a legenda como um estilo de parágrafo com <code>hyphenation: true</code>: justificada, e em bandeira se <code>bodyText.hyphenation.ragged</code> estiver ativo, com o dicionário e as regras de hifenização do texto geral, também com <code>bodyText.hyphenation.enabled</code> desativado. A legenda é então quebrada inteira pelo algoritmo ótimo (<code>bodyText.optimalLineBreaking</code>), dentro dos limites de espaçamento do texto geral ao justificar e com as suas regras de escadas e de bordas de linha (<code>bodyText.stacks</code>, <code>citationBreaks</code>, <code>operatorBreaks</code>). O rótulo numerado nunca é dividido. <code>false</code> quebra a legenda linha a linha, sem dividir palavras. Desde o postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>a do texto geral, em proporção</td>
+      <td>A entrelinha da legenda. <code>em</code> é relativo ao corpo da própria legenda. Desde o postext 1.81.</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +796,18 @@ O subobjeto `note` define o estilo de `Resource.note`, um trecho curto (a origem
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>Alinhamento horizontal das linhas da nota, como <code>align</code> na legenda.</td>
+    </tr>
+    <tr>
+      <td><code>note.hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>Hifeniza a nota, como <code>hyphenation</code> a legenda. Desde o postext 1.81.</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>a do texto geral, em proporção</td>
+      <td>A entrelinha da nota. <code>em</code> é relativo ao corpo da própria nota. Desde o postext 1.81.</td>
     </tr>
   </tbody>
 </table>

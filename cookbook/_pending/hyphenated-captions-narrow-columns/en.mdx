@@ -1,0 +1,77 @@
+---
+title: "Hyphenated captions in narrow columns"
+summary: "A bird observatory's bulletin in three 60 mm columns, set twice: captions, notes and table cells line by line, then hyphenated on the optimal breaker."
+plain: "A caption justified in a narrow column has few places to break a line, so its word spaces open wide. The bulletin is set twice: once with captions broken as before, once with their words divided like the running text."
+description: "captionStyle.hyphenation, note.hyphenation and tableStyle.hyphenation in a three-column bulletin, with lineHeight for captions and notes, before and after."
+question: "How do I keep a justified caption in a narrow column from opening wide gaps between its words?"
+aliases: ["caption hyphenation", "hyphenate captions", "justified captions", "loose captions", "gaps in captions", "caption leading", "caption lineHeight", "note lineHeight", "table cell hyphenation", "tableStyle.hyphenation", "three columns", "field guide", "bird plates"]
+pageNotes: { "2": "The first build, page 2: Figure 4's caption at the head of the third column, its first line spread to four words with wide gaps between them.", "4": "The second build, page 2: the same caption with Acrocephalus divided at the end of its first line and every line spaced evenly; the table divides below and warbler." }
+---
+
+## What you'll build
+
+Two pages of *Tideline*, the winter bulletin of an imaginary bird observatory, 225 × 297 mm in three columns of 60 mm. An estuary strip runs under the opener's green band, and four watercolour plates stand one column wide, each cropped to its bird, with a justified caption in Libre Franklin and a short note under it. A table of peak counts closes the article. The issue is set twice. The first build keeps the defaults, so each caption is broken line by line and no word in it is divided: in a 60 mm column the line that holds *Acrocephalus scirpaceus* is spread over four words. The second build hyphenates the captions, the notes and the table cells, and their spacing matches the text's.
+
+## Method
+
+### 1 · Captions set like the running text
+
+The code is [the short answer](#the-short-answer) above. With `captionStyle.hyphenation: true` a caption is hyphenated as a paragraph style with `hyphenation: true` is: when it is justified, with the body's patterns (`locale`) and hyphen rules, even if the body text has its own hyphenation off. It is broken whole on the Knuth–Plass breaker when `bodyText.optimalLineBreaking` is on, within the body's `minWordSpacing` and `maxWordSpacing`. The label, *Figure 4.*, is never divided. `note.hyphenation` does the same for the line under the caption, `Resource.note`.
+
+`lineHeight` gives the caption its own leading, 10.8 pt for 8.2 pt type here, and `note.lineHeight` gives the note 8.8 pt for 6.8 pt. In `em` they count from their own size. Left unset, both take the body's leading in proportion to their size.
+
+### 2 · The same issue, built twice
+
+<Excerpt region="builds" />
+
+The three switches default to `false`, so a book set before postext 1.81 keeps its pages: captions broken line by line, notes and cells too. The two builds differ in those switches alone, and `capture.doc` publishes both: pages 1 and 2 line by line, pages 3 and 4 hyphenated. The buttons in the bar put either on the desk.
+
+<PageShot page={2} crop="0.63,0.06,0.31,0.33" caption="Line by line: the first line of Figure 4's caption is spread to four words." />
+
+<PageShot page={4} crop="0.63,0.06,0.31,0.33" caption="Hyphenated: Acrocephalus is divided and the five lines are spaced alike." />
+
+### 3 · Table cells, ragged and hyphenated
+
+<Excerpt region="table" />
+
+`tableStyle.hyphenation: true` breaks each cell whole on the optimal breaker. Cells are set ragged, so their words are divided only where ragged text divides words: with `bodyText.hyphenation.ragged: true`, and only when a word sent whole to the next line would leave more than the `zone` empty. The default zone, 3 em, is 7.8 mm at 7.4 pt, too wide for a 20 mm cell; this design sets 1.5 em. The body is justified, so the ragged switch reaches the table, the colophon and the table's caption, which its resource type sets flush left and above the table (`resourceTypes[].captionStyle`). A named table style takes the same field, `tableStyles[].hyphenation`.
+
+<PageShot page={4} crop="0.63,0.47,0.31,0.33" caption="The counts table, hyphenated: “Reed war-bler” in a 15 mm column and “Open mud be-low the hides” in a 20 mm one." />
+
+### 4 · Plates cropped to the bird
+
+<Excerpt region="plates" />
+
+The plates are 1200 × 600 pixels with the bird in the middle of a wide cream ground. `Resource.crop` keeps the part around each bird, so the figure takes that shape in the column. The page is printed in the plates' own cream, `#f6f3ea`, so the edges of the painting show and the edges of the file do not. Captions, notes and alt text sit in a content file per language, one block per resource.
+
+### 5 · An opener on a colour field
+
+<Excerpt region="opener" />
+
+The opener draws a green band 100 mm deep with the masthead, kicker, title and standfirst, and the estuary strip under it, 66 mm deep across the full trim. Its `minHeight` starts the three columns 6 mm under the strip, so the band and the picture fill more than half of the first page.
+
+## Variations
+
+### Hyphenate the figures' captions only
+
+A resource type's `captionStyle` takes the same fields and wins over the document's, so one type can be hyphenated while the others are not.
+
+```diff
+ const resourceTypes = defaultResourceTypes(LANG).map((type) => ({ ...type,
+   numberingTemplate: '{n}', resetOn: 'never',
++  ...(type.id === 'figure' && { captionStyle: { hyphenation: true } }),
+```
+
+### Ragged captions
+
+A caption set flush left with `hyphenation: true` divides its words within the hyphenation zone of ragged text, as long as `bodyText.hyphenation.ragged` is on.
+
+```diff
+-  align: 'justify',
++  align: 'left',
+```
+
+## Pitfalls
+
+- With `bodyText.hyphenation.ragged` off, a ragged caption or a table cell with `hyphenation: true` is broken on the optimal breaker but divides no word.
+- Without `bodyText.optimalLineBreaking` the caption is broken line by line, with its words divided all the same.

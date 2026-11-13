@@ -1495,6 +1495,15 @@ export interface SandboxLabels {
   bodyHyphenateCapitalizedTooltip: string;
   bodyHyphenationExceptions: string;
   bodyHyphenationExceptionsTooltip: string;
+  bodyHyphenationExceptionsImport: string;
+  bodyHyphenationExceptionsImportTooltip: string;
+  bodyHyphenationExceptionsExport: string;
+  bodyHyphenationExceptionsImportResult: string;
+  bodyHyphenationExceptionsImportUnknown: string;
+  bodyHyphenationExceptionsImportFailed: string;
+  bodyHyphenationExceptionsList: string;
+  bodyHyphenationExceptionsListTooltip: string;
+  bodyHyphenationExceptionsAllLanguages: string;
   bodyFirstLineIndent: string;
   bodyFirstLineIndentTooltip: string;
   bodyHangingIndent: string;
@@ -2489,6 +2498,18 @@ export interface SandboxLabels {
   projectLanguageDefaults: string;
   projectRenameEditionOnly: string;
   projectExport: string;
+  /** Books panel › ⋯: the whole book compiled to a file and downloaded. */
+  projectCompilePdf: string;
+  projectCompileHtml: string;
+  projectCompileEpub: string;
+  /** Books panel: the book being compiled, where it stands (as the EPUB
+   *  tab words it) and how it ended (#1526). */
+  projectCompiling: string;
+  projectCompilePaginate: string;
+  projectCompileInputs: string;
+  projectCompiled: string;
+  projectCompiledNotes: string;
+  projectCompileFailed: string;
   projectActivate: string;
   projectRename: string;
   projectNameLabel: string;
@@ -3555,6 +3576,9 @@ export interface SandboxLabels {
   // --- Caption styling section ---
   captionStyleSection: string;
   captionGap: string;
+  captionLineHeight: string;
+  captionLineHeightTooltip: string;
+  captionHyphenationTooltip: string;
   captionLabelGroup: string;
   captionLabelNumberGap: string;
   captionLabelNumberGapTooltip: string;
@@ -5533,6 +5557,7 @@ export interface SandboxLabels {
   resourceTypePlacementColumnsTooltip: string;
   resourceTypePlacementRotateTooltip: string;
   tableBodyFillTooltip: string;
+  tableHyphenationTooltip: string;
   tableHeaderFillTooltip: string;
   tableBordersTooltip: string;
   tableContinuesMarkerEnabledTooltip: string;

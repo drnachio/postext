@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '资源与表格',
   description: '资源类型及其编号，表格样式与题注样式，单色图示和印在纸上的视频',
   lang: 'zh',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-12',
   readingTime: '31分钟',
   order: 14,
   parent: 'configuration',
@@ -472,6 +472,12 @@ const config: PostextConfig = {
       <td><code>'Continued'</code> / <code>'Continúa'</code></td>
       <td>该标记的文字，以注释字体（见<a href="#题注样式">题注样式</a>）右对齐排在该部分下方。默认值随文档语言而定（各语言的默认值见<a href="/zh/docs/configuration-language#文档语言">文档语言</a>）。</td>
     </tr>
+    <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>像 <code>captionStyle.hyphenation</code> 之于题注一样，把单元格按正文方式排：每个单元格整体用最优断行断行。单元格不两端对齐，因此只有 <code>bodyText.hyphenation.ragged</code> 开启时才断词。<code>false</code> 时逐行断行，不断词。postext 1.81起。</td>
+    </tr>
   </tbody>
 </table>
 
@@ -663,6 +669,18 @@ const config: PostextConfig = {
       <td>题注各行的水平对齐。<code>'justify'</code>把除最后一行外的每一行撑满整个宽度。在色条上时，各行在其内边距以内对齐；侧边题注在自身宽度内对齐。</td>
     </tr>
     <tr>
+      <td><code>hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>像设置 <code>hyphenation: true</code> 的段落样式一样为题注断词：两端对齐时断词，<code>bodyText.hyphenation.ragged</code> 开启时不两端对齐也断词，使用正文的词典和断词规则，<code>bodyText.hyphenation.enabled</code> 关闭时也一样。此时题注整体用最优断行（<code>bodyText.optimalLineBreaking</code>）断行，两端对齐时不超出正文的词距上下限，并遵循正文的阶梯和行首行尾规则（<code>bodyText.stacks</code>、<code>citationBreaks</code>、<code>operatorBreaks</code>）。编号标签从不拆开。<code>false</code> 时逐行断行，不断词。postext 1.81起。</td>
+    </tr>
+    <tr>
+      <td><code>lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>按比例沿用正文行距</td>
+      <td>题注的行距。<code>em</code> 以题注自身字号为准。postext 1.81起。</td>
+    </tr>
+    <tr>
       <td><code>gap</code></td>
       <td><code>Dimension</code></td>
       <td><code>0.75em</code></td>
@@ -778,6 +796,18 @@ const config: PostextConfig = {
       <td><code>'left' | 'center' | 'right' | 'justify' | 'start' | 'end'</code></td>
       <td><code>'left'</code></td>
       <td>注释各行的水平对齐，与题注的<code>align</code>相同。</td>
+    </tr>
+    <tr>
+      <td><code>note.hyphenation</code></td>
+      <td><code>boolean</code></td>
+      <td><code>false</code></td>
+      <td>为注释断词，同题注的 <code>hyphenation</code>。postext 1.81起。</td>
+    </tr>
+    <tr>
+      <td><code>note.lineHeight</code></td>
+      <td><code>Dimension</code></td>
+      <td>按比例沿用正文行距</td>
+      <td>注释的行距。<code>em</code> 以注释自身字号为准。postext 1.81起。</td>
     </tr>
   </tbody>
 </table>

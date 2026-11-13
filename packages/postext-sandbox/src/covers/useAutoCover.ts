@@ -11,6 +11,7 @@ import { useSandboxCoverSaver, useSandboxStateGetter } from '../context/SandboxC
 import { missingConfigFontSpecs } from '../controls/fonts/fontLoader.js';
 import { coverTargetKey, coverToCapture, sessionCoverAttempts as attempted } from './autoCover.js';
 import { renderCoverImage, showFirstChapterDoc, type FirstChapterDoc } from './renderCover.js';
+import { hasWindow } from '../env/window.js';
 
 export { COVER_WIDTH, renderCoverImage, type FirstChapterDoc } from './renderCover.js';
 
@@ -46,7 +47,7 @@ export function useAutoCover(firstChapterDocRef: MutableRefObject<FirstChapterDo
   useEffect(() => showFirstChapterDoc(firstChapterDocRef), [firstChapterDocRef]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (!hasWindow()) return;
     const s = getState();
     const target = coverToCapture(s, attempted);
     if (!target) return;

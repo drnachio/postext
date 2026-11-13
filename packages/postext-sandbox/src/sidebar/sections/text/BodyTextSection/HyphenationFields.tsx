@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
-import { DEFAULT_HYPHENATION_CONFIG, dimensionsEqual, normalizeHyphenationExceptions } from 'postext';
+import { DEFAULT_HYPHENATION_CONFIG, dimensionsEqual } from 'postext';
 import type { BodyTextConfig, HyphenationConfig, ResolvedBodyTextConfig } from 'postext';
-import { DimensionInput, NestedGroup, SelectInput, TextInput, ToggleSwitch } from '../../../../controls/index.js';
+import { DimensionInput, NestedGroup, SelectInput, ToggleSwitch } from '../../../../controls/index.js';
 import type { useSandboxLabels } from '../../../../context/SandboxContext.js';
 import { localeOptionsFor, HYPHENATION_ZONE_UNITS } from './constants.js';
+import { HyphenationExceptionsField } from './HyphenationExceptionsField.js';
+
+export { HyphenationExceptionsField } from './HyphenationExceptionsField.js';
 
 interface HyphenationFieldProps {
   bodyText: ResolvedBodyTextConfig;
@@ -91,44 +93,6 @@ export function HyphenateCapitalizedField({ bodyText, raw, updateBodyText, updat
       tooltip={labels.bodyHyphenateCapitalizedTooltip}
       isDefault={bodyText.hyphenation.capitalized === DEFAULT_HYPHENATION_CONFIG.capitalized}
       onReset={() => resetHyphenationField(raw, 'capitalized', updateBodyText)}
-    />
-  );
-}
-
-/** The words of `text`, separated by spaces, commas or semicolons, as the
- *  engine keeps them: checked, without duplicates, sorted. */
-export function parseHyphenationExceptions(text: string): string[] | undefined {
-  return normalizeHyphenationExceptions(text.split(/[\s,;]+/));
-}
-
-/** The words the dictionary keeps whole or divides only where they say
- *  (`hyphenation.exceptions`). Typed freely and stored when the field is
- *  left, so a half-typed word never reaches the layout. */
-export function HyphenationExceptionsField({ bodyText, raw, updateBodyText, updateHyphenation, labels }: HyphenationFieldProps) {
-  const stored = (bodyText.hyphenation.exceptions ?? []).join(', ');
-  const [draft, setDraft] = useState<string | null>(null);
-  const commit = () => {
-    if (draft === null) return;
-    const words = parseHyphenationExceptions(draft);
-    setDraft(null);
-    if ((words ?? []).join(', ') === stored) return;
-    if (words) updateHyphenation({ exceptions: words });
-    else resetHyphenationField(raw, 'exceptions', updateBodyText);
-  };
-  return (
-    <TextInput
-      label={labels.bodyHyphenationExceptions}
-      value={draft ?? stored}
-      onChange={setDraft}
-      onBlur={commit}
-      placeholder="Alice, You-Tube"
-      tooltip={labels.bodyHyphenationExceptionsTooltip}
-      isDefault={stored === '' && draft === null}
-      onReset={() => {
-        setDraft(null);
-        resetHyphenationField(raw, 'exceptions', updateBodyText);
-      }}
-      widthCh={22}
     />
   );
 }

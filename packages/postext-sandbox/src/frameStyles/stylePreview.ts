@@ -9,6 +9,7 @@
  */
 
 import { buildDocument, inheritCalloutStyles, renderPageToCanvas, type CalloutStyleConfig, type PostextConfig, type Resource } from 'postext';
+import { hasWindow } from '../env/window.js';
 
 export interface PreviewSample {
   text: string;
@@ -226,7 +227,7 @@ function pump(): void {
 }
 
 function schedule(): void {
-  if (scheduled || typeof window === 'undefined') return;
+  if (scheduled || !hasWindow()) return;
   scheduled = true;
   const w = window as IdleWindow;
   if (w.requestIdleCallback) w.requestIdleCallback(() => pump(), { timeout: 600 });
