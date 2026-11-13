@@ -9,7 +9,7 @@ import { type EnvironmentKind, type Environment, environment } from './environme
 import { type PaperSpec, paperSpec, pagePaper } from './paper.js';
 import { loadDeskMaps, type DeskMaps } from './deskTextures.js';
 import { VideoAtlas, ATLAS_MAX, MAX_PAGE_VIDEOS } from './videoAtlas.js';
-import { cachedDesk, cachedRelief, type DeskKind } from './procedural.js';
+import { cachedDesk, cachedRelief, deskKind } from './procedural.js';
 import { Loupe, type LoupeView } from './loupe.js';
 import { FOV, NX_OPEN, NX, NY, BLOCK_PAGES, DURATION, BLOCK_DURATION, GAP, GRIP } from './pageFlip/constants.js';
 import { type PageMesh, type Turn, type Surfaces, spreadColumns, column, MAX_PITCH, disposeLeaf, type BoardParts, type Pt, progressFrom, reach, type Airborne, foldOf, layLeaf, pagePlane } from './pageFlip/leaf.js';
@@ -361,10 +361,10 @@ export class PageFlipper {
           };
     // The desk.
     const old = this.desk.material;
-    if (r.surface.type === "none") {
+    const kind = deskKind(r.surface.type);
+    if (kind === "none") {
       this.desk.material = new ShadowMaterial({ opacity: 0.32, transparent: true, depthWrite: false });
     } else {
-      const kind = r.surface.type;
       const d = cachedDesk(kind);
       const m = occluded(new MeshStandardMaterial({ map: d.color, normalMap: d.normal, roughnessMap: d.roughness, roughness: d.roughnessScale }), this.sign);
       m.userData.tileMm = d.tileMm;
@@ -882,8 +882,9 @@ export class PageFlipper {
       this.desk.geometry = new PlaneGeometry(size, size);
     }
     const dm = this.desk.material as MeshStandardMaterial;
-    if (dm.map && this.resolved.surface.type !== "none") {
-      const tile = ((dm.userData.tileMm as number | undefined) ?? cachedDesk(this.resolved.surface.type as DeskKind).tileMm) * k;
+    const desk = deskKind(this.resolved.surface.type);
+    if (dm.map && desk !== "none") {
+      const tile = ((dm.userData.tileMm as number | undefined) ?? cachedDesk(desk).tileMm) * k;
       for (const t of [dm.map, dm.normalMap, dm.roughnessMap, dm.aoMap]) t?.repeat.set(size / tile, size / tile);
     }
     // The camera, tilted about the book's horizontal axis and turned round

@@ -1,6 +1,7 @@
 /**
  * recipe.json `folio` → the `config.folio` the `.postext` bundle carries.
- * recipe.json writes colours as `#rrggbb`; the config takes ColorValues.
+ * recipe.json writes colours as `#rrggbb` or as ColorValues; the config
+ * takes ColorValues, so a bare hex becomes one and an object passes.
  * Isomorphic Node.
  */
 import crypto from "node:crypto";

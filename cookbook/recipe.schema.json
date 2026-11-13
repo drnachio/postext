@@ -620,7 +620,7 @@
               "maximum": 2
             },
             "shade": {
-              "$ref": "#/definitions/hex"
+              "$ref": "#/definitions/colorValue"
             },
             "showThrough": {
               "type": "boolean"
@@ -655,7 +655,7 @@
               ]
             },
             "coverColor": {
-              "$ref": "#/definitions/hex"
+              "$ref": "#/definitions/colorValue"
             }
           }
         },
@@ -676,7 +676,7 @@
               ]
             },
             "color": {
-              "$ref": "#/definitions/hex"
+              "$ref": "#/definitions/colorValue"
             }
           }
         },
@@ -828,6 +828,53 @@
     "hex": {
       "type": "string",
       "pattern": "^#[0-9a-fA-F]{6}$"
+    },
+    "colorValue": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/hex"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "hex",
+            "model"
+          ],
+          "properties": {
+            "hex": {
+              "$ref": "#/definitions/hex"
+            },
+            "model": {
+              "enum": [
+                "hex",
+                "rgb",
+                "cmyk",
+                "hsl",
+                "spot"
+              ]
+            },
+            "cmyk": {
+              "type": "object"
+            },
+            "spot": {
+              "type": "object"
+            },
+            "overprint": {
+              "type": "boolean"
+            },
+            "tint": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "paletteId": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      ]
     },
     "page": {
       "type": "integer",

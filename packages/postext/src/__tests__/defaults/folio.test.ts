@@ -98,6 +98,11 @@ describe('resolveFolioConfig', () => {
     expect(r.paper.bulk).toBe(FOLIO_PAPER_STOCKS.bible.bulk);
   });
 
+  it('falls back to the default surface for an unknown surface type (#1582)', () => {
+    expect(resolveFolioConfig({ surface: { type: 'concrete' as never } }).surface).toEqual({ type: 'oak' });
+    expect(resolveFolioConfig({ surface: { type: 'none' } }).surface).toEqual({ type: 'none' });
+  });
+
   it('leaves the surface colour out unless it is set', () => {
     expect(resolveFolioConfig({ surface: { type: 'plain' } }).surface).toEqual({ type: 'plain' });
     expect(resolveFolioConfig({ surface: { color: hex('#336699') } }).surface).toEqual({ type: 'oak', color: hex('#336699') });

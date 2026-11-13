@@ -4,6 +4,7 @@ import type {
   FolioPaperFinish,
   FolioPaperTexture,
   FolioPaperType,
+  FolioSurfaceType,
   PageSizePreset,
   ResolvedFolioConfig,
 } from '../../types.js';
@@ -25,6 +26,9 @@ export interface FolioPaperStock {
  *  Holmen Book kind); coated matte, silk and gloss (art) papers, thinner
  *  for their weight as the coating is calendered; bible (India) paper; and
  *  newsprint; cover card; and rigid board (about 2 mm). */
+/** The surfaces the book can lie on (`FolioSurfaceType`). */
+const FOLIO_SURFACE_TYPES: ReadonlySet<string> = new Set<FolioSurfaceType>(['oak', 'walnut', 'linen', 'felt', 'leather', 'marble', 'plain', 'none']);
+
 export const FOLIO_PAPER_STOCKS: Readonly<Record<FolioPaperType, FolioPaperStock>> = {
   uncoated: { grammage: 90, bulk: 1.25, finish: 'uncoated', texture: 'wove', shade: '#fcfbf8' },
   bookWove: { grammage: 80, bulk: 1.6, finish: 'uncoated', texture: 'wove', shade: '#f6efdc' },
@@ -145,7 +149,9 @@ export function resolveFolioConfig(config?: FolioConfig, sizePreset?: PageSizePr
       ...(partial?.binding?.spineImage && binding !== 'saddleStitch' && binding !== 'folded' ? { spineImage: partial.binding.spineImage } : {}),
     },
     surface: {
-      type: partial?.surface?.type ?? d.surface.type,
+      // A type this version does not know (a newer bundle, a typo) is the
+      // default's, as an unknown paper stock is.
+      type: partial?.surface?.type && FOLIO_SURFACE_TYPES.has(partial.surface.type) ? partial.surface.type : d.surface.type,
       ...(partial?.surface?.color ? { color: partial.surface.color } : {}),
     },
     lighting: {

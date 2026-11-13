@@ -97,6 +97,15 @@ describe("validateRecipeMeta (fixture)", () => {
     expect(schemaErrors(fixtureMeta(), RECIPE_SCHEMA)).toEqual([]);
   });
 
+  it("takes a folio colour as Folio does, a hex or a ColorValue, and flags what Folio rejects (#1582)", () => {
+    const withFolio = (folio: unknown) => schemaErrors({ ...fixtureMeta(), folio }, RECIPE_SCHEMA);
+    expect(withFolio({ surface: { type: "plain", color: "#7a6a58" } })).toEqual([]);
+    expect(withFolio({ surface: { type: "plain", color: { hex: "#7a6a58", model: "cmyk", cmyk: { c: 0, m: 10, y: 30, k: 55 } } }, paper: { shade: { hex: "#f3ead8", model: "hex" } } })).toEqual([]);
+    expect(withFolio({ surface: { type: "concrete" } })).not.toEqual([]);
+    expect(withFolio({ surface: { color: { model: "hex" } } })).not.toEqual([]);
+    expect(withFolio({ binding: { coverColor: "red" } })).not.toEqual([]);
+  });
+
   it("reports schema errors with their paths", () => {
     const meta = { ...fixtureMeta(), level: 4, genres: [], extra: true } as unknown;
     const errors = validate(meta);
