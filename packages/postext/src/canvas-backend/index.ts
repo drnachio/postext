@@ -23,6 +23,8 @@ import { pageComics } from '../comics/transform.js';
 import { proofPixels, type PrintPreview } from '../color/softProof.js';
 import { resetContextState, restoreContext, saveContext } from './contextState.js';
 import { resetWordSpacing } from './contextText.js';
+import { screenFinishPaints } from './finishPaint.js';
+import { paintFinishPreview, type FinishPreviewMode } from './finishPreview.js';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -32,6 +34,9 @@ export {
 export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock.js';
 export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText.js';
 export type { VerticalAlternatesFace } from './verticalText.js';
+export { renderFinishMask, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas } from './finishMask.js';
+export { applyFinishPreview, type FinishPreviewMode } from './finishPreview.js';
+export { finishMaskSvg } from './finishMaskSvg.js';
 
 /** Options of a canvas paint: scale, overlays, ink, trim and print preview. */
 export interface RenderPageOptions {
@@ -77,6 +82,12 @@ export interface RenderPageOptions {
    *  does. Separators default from the document language. Unset fields
    *  come from the document's `pdfGeneration.forms`. */
   forms?: FormNumberOptions;
+  /** How special inks show (#1564): `'flat'` (the default) paints each
+   *  ink's screen hex, a varnish nothing; `'sheen'` lights metallic ink
+   *  and foil, fluorescent ink and varnish from the page's finish mask;
+   *  `'map'` shows the mask in false colour. A page without special inks
+   *  paints the same in every mode. */
+  finishes?: FinishPreviewMode;
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -141,9 +152,15 @@ function paintPage(
   // The page sets the language it paints in (`paintContext`); what the
   // host draws over it afterwards is the host's, in the context's own.
   const language = 'lang' in ctx ? (ctx as CanvasRenderingContext2D & { lang: string }).lang : undefined;
+  // A varnish puts no colour on the page (#1563): one hook on the context
+  // for every painter, only on a document that has one.
+  const endFinishes = screenFinishPaints(ctx, doc);
   try {
     paintContext(ctx, canvas, page, doc, options);
+    const finishes = options?.finishes;
+    if (finishes === 'sheen' || finishes === 'map') paintFinishPreview(ctx, canvas, page, doc, finishes, scale, options?.trim === true);
   } finally {
+    endFinishes?.();
     if (direction !== undefined) ctx.direction = direction;
     // Every text of the page set the word spacing that keys its word
     // cache (`contextText.ts`): the canvas is left at the one it had when

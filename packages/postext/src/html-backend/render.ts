@@ -2,7 +2,9 @@
 // and the per-render shaping state they set while pages are written
 // (#1276: split out of html-backend.ts).
 import { restoreHtmlLinkPaint, setHtmlLinkPaint } from './linkPaint.js';
-import { featureFontCss } from '../fonts/figureStyle.js';
+import { featureFontCss as featureFontCssOf } from '../fonts/figureStyle.js';
+import { varnishHexes } from '../color/finishInks.js';
+import { clearVarnishPaints } from './varnish.js';
 import type { RenderWarning, VDTAnchor, VDTDocument } from '../vdt.js';
 import { dimensionToPx } from '../units.js';
 import { documentInkHex, singleInkColorMatrix } from '../svg/singleInk.js';
@@ -351,6 +353,10 @@ function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRender
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))
     : 0;
   const svgUrl = svgFontInliner(doc, options);
+  // A style's figures (#1237) are set as the base family with
+  // `font-variant-numeric`; a varnish (#1563) puts no colour on the page.
+  const varnish = varnishHexes(doc);
+  const featureFontCss = varnish.size > 0 ? (html: string) => clearVarnishPaints(featureFontCssOf(html), varnish) : featureFontCssOf;
   // The language the pages' text is shaped in, for the words set whole
   // (#770): the declared one, else the writing page's.
   shapedText = shapedTextOf(docLang, documentFontString(doc));
