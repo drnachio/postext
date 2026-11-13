@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "forest-tunnel-book",
-  "sourceHash": "de082ea697c10eb47e461dfdfc10cf806b9fd530a2a887b7832cbfd91b75e6ef",
+  "sourceHash": "4af6a66416305424cb8a78e318c82cc1fcde1815a3718fdeec29df84b2c705e2",
   "engine": {
     "postext": "1.84.0",
     "postextPdf": "1.84.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T16:44:22.659Z",
+  "capturedAt": "2026-11-13T16:47:58.268Z",
   "variants": {
     "en": {
-      "hash8": "04e87d7e",
+      "hash8": "bc45895d",
       "vdtHash": "8dd44e1db9f5fb1cb2bddef257967f987a6121e7",
       "timings": {
-        "importMs": 3862,
-        "fontsMs": 317,
-        "buildMs": 7,
-        "totalMs": 8075,
+        "importMs": 1567,
+        "fontsMs": 371,
+        "buildMs": 6,
+        "totalMs": 5437,
         "builds": 2
       },
       "specimen": {
@@ -84,17 +84,6 @@
           "strip": "p04.s.webp",
           "bytes": 8634,
           "alt": "Page 4."
-        },
-        {
-          "n": 5,
-          "label": "5",
-          "role": "opener",
-          "w": 1000,
-          "h": 1000,
-          "file": "p05.webp",
-          "strip": "p05.s.webp",
-          "bytes": 222942,
-          "alt": "Opening page 5: Toadstools."
         },
         {
           "n": 11,
@@ -185,6 +174,10 @@
         ],
         [
           3,
+          null
+        ],
+        [
+          null,
           4
         ],
         [
@@ -208,11 +201,7 @@
           9
         ],
         [
-          null,
-          10
-        ],
-        [
-          11,
+          10,
           null
         ]
       ],
@@ -444,6 +433,11 @@
         },
         "findings": [
           {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.23 MB: state 1.25 MB"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -457,13 +451,13 @@
       }
     },
     "es": {
-      "hash8": "5df1ee10",
+      "hash8": "317312ca",
       "vdtHash": "922f33b93a99ae9d85d908d23fc5cf738381611c",
       "timings": {
-        "importMs": 3852,
-        "fontsMs": 383,
-        "buildMs": 9,
-        "totalMs": 7941,
+        "importMs": 2096,
+        "fontsMs": 143,
+        "buildMs": 6,
+        "totalMs": 5089,
         "builds": 2
       },
       "specimen": {
@@ -530,17 +524,6 @@
           "strip": "p04.s.webp",
           "bytes": 9352,
           "alt": "Página 4."
-        },
-        {
-          "n": 5,
-          "label": "5",
-          "role": "opener",
-          "w": 1000,
-          "h": 1000,
-          "file": "p05.webp",
-          "strip": "p05.s.webp",
-          "bytes": 222942,
-          "alt": "Página de apertura 5: Setas."
         },
         {
           "n": 11,
@@ -631,6 +614,10 @@
         ],
         [
           3,
+          null
+        ],
+        [
+          null,
           4
         ],
         [
@@ -654,11 +641,7 @@
           9
         ],
         [
-          null,
-          10
-        ],
-        [
-          11,
+          10,
           null
         ]
       ],
@@ -889,6 +872,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.24 MB: state 1.25 MB"
+          },
           {
             "check": "sandbox",
             "severity": "info",

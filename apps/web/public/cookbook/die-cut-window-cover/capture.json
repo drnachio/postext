@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "die-cut-window-cover",
-  "sourceHash": "02f73b1ae9ffd6c4168e01252efb4181eaf52dfd9b4cc27a15162041b59fe24f",
+  "sourceHash": "b6979c650bc7b3a650f40a206da658140674a539d46f0cb3573d4cee23d30059",
   "engine": {
     "postext": "1.84.0",
     "postextPdf": "1.84.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T16:44:22.549Z",
+  "capturedAt": "2026-11-13T16:47:58.200Z",
   "variants": {
     "en": {
-      "hash8": "ddf98a13",
+      "hash8": "6d3b96ec",
       "vdtHash": "7d1abe6d39faeb5d7363670c0df3c58085c1b9ac",
       "timings": {
-        "importMs": 4979,
-        "fontsMs": 113,
-        "buildMs": 22,
-        "totalMs": 10083,
+        "importMs": 1584,
+        "fontsMs": 559,
+        "buildMs": 14,
+        "totalMs": 4763,
         "builds": 2
       },
       "specimen": {
@@ -97,17 +97,6 @@
           "alt": "Opening page 5: The Oval Portrait."
         },
         {
-          "n": 6,
-          "label": "6",
-          "role": "body",
-          "w": 1000,
-          "h": 1500,
-          "file": "p06.webp",
-          "strip": "p06.s.webp",
-          "bytes": 150612,
-          "alt": "Page 6."
-        },
-        {
           "n": 7,
           "label": "7",
           "role": "body",
@@ -166,15 +155,15 @@
           4
         ],
         [
-          5,
-          6
+          null,
+          5
         ],
         [
-          7,
-          8
+          6,
+          7
         ],
         [
-          9,
+          8,
           null
         ]
       ],
@@ -461,6 +450,11 @@
         },
         "findings": [
           {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.25 MB: state 1.25 MB"
+          },
+          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -474,13 +468,13 @@
       }
     },
     "es": {
-      "hash8": "c2d391af",
+      "hash8": "2648c689",
       "vdtHash": "21b3b2fd1fd34e4b9a58d63337df43738da07d5a",
       "timings": {
-        "importMs": 3862,
-        "fontsMs": 290,
-        "buildMs": 17,
-        "totalMs": 8508,
+        "importMs": 2755,
+        "fontsMs": 86,
+        "buildMs": 14,
+        "totalMs": 4452,
         "builds": 2
       },
       "specimen": {
@@ -560,17 +554,6 @@
           "alt": "Página de apertura 5: El retrato oval."
         },
         {
-          "n": 6,
-          "label": "6",
-          "role": "body",
-          "w": 1000,
-          "h": 1500,
-          "file": "p06.webp",
-          "strip": "p06.s.webp",
-          "bytes": 147536,
-          "alt": "Página 6."
-        },
-        {
           "n": 7,
           "label": "7",
           "role": "body",
@@ -629,15 +612,15 @@
           4
         ],
         [
-          5,
-          6
+          null,
+          5
         ],
         [
-          7,
-          8
+          6,
+          7
         ],
         [
-          9,
+          8,
           null
         ]
       ],
@@ -923,6 +906,11 @@
           "count": 0
         },
         "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.23 MB: state 1.25 MB"
+          },
           {
             "check": "sandbox",
             "severity": "info",
