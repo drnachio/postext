@@ -127,7 +127,12 @@ export function withoutAnchoredTo(slot: ResolvedDesignSlot, frames: ReadonlySet<
 /** Set `page.background` on the pages whose palette overrides (part and
  *  styled section) change the colour `page.backgroundColor` follows: the
  *  entry it links to (`paletteId`), or, unlinked, an entry of the same
- *  value, as the flow's colours are matched. */
+ *  value, as the flow's colours are matched.
+ *
+ *  A linked page colour follows its own entry only (#1557): another entry
+ *  that happens to share its base value (`paper` and `onBand` both white)
+ *  and is overridden on the page does not recolour the paper. A link to an
+ *  entry the palette no longer has counts as no link. */
 export function stampPageBackgrounds(
   doc: { pages: { index: number; background?: string }[] },
   palettes: readonly (Record<string, string> | undefined)[],
@@ -136,12 +141,13 @@ export function stampPageBackgrounds(
 ): void {
   const base = pageColor.hex?.toLowerCase();
   if (!base || base === 'transparent') return;
-  const linked = pageColor.paletteId;
-  const sameValue = (basePalette ?? []).filter((e) => e.value.hex.toLowerCase() === base).map((e) => e.id);
+  const entries = basePalette ?? [];
+  const linked = pageColor.paletteId && entries.some((e) => e.id === pageColor.paletteId) ? pageColor.paletteId : undefined;
+  const sameValue = linked ? [] : entries.filter((e) => e.value.hex.toLowerCase() === base).map((e) => e.id);
   for (const page of doc.pages) {
     const overrides = palettes[page.index];
     if (!overrides) continue;
-    const id = linked && overrides[linked] !== undefined ? linked : sameValue.find((e) => overrides[e] !== undefined);
+    const id = linked ? (overrides[linked] !== undefined ? linked : undefined) : sameValue.find((e) => overrides[e] !== undefined);
     if (!id) continue;
     const own = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;
     // A page colour at a tint of its entry keeps its strength.
