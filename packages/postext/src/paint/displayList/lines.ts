@@ -180,6 +180,7 @@ function runsOf(setting: Setting, composed: boolean, style: LineStyle, tracking:
     if ((seg.strike && seg.strike.from === undefined) || markedSpace(segs, i, 'strike')) run.strike = true;
     if ((seg.underline && seg.underline.from === undefined) || markedSpace(segs, i, 'underline')) run.underline = true;
     if (seg.footnoteId !== undefined) run.footnoteId = seg.footnoteId;
+    if (seg.charStyle) run.namedStyle = { kind: 'span', id: seg.charStyle.style };
     if (seg.refResourceId !== undefined) run.refTarget = { id: seg.refResourceId, ...(seg.refAnchor ? { anchor: true } : {}) };
     if (seg.pageLink !== undefined) run.pageLink = seg.pageLink;
     if (seg.rtl) run.rtl = true;

@@ -7,7 +7,7 @@ import type { DisplayPage, DisplayRect } from 'postext';
 import type { VDTFrame } from 'postext/writer';
 import { boxGeometry, union } from './geometry.js';
 import { imageXml } from './images.js';
-import { asPainted, textScale } from './paragraphs.js';
+import { alignedItem, asPainted, textScale } from './paragraphs.js';
 import { attr, DOM_VERSION, num, PKG_NS, XML_HEAD } from './parts.js';
 import { chipFields, chipRects, pathXml, rectXml, ruleXml } from './shapes.js';
 import { storyXml } from './story.js';
@@ -132,7 +132,9 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
   // display list's order.
   const byFrame = new Map<string, TextItem[]>();
   // A frame's items as painted, at its text scale.
-  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), lined(framed(asPainted(it, textScale(frames.get(it.frame))), frames.get(it.frame)!))]);
+  // (A heading's or a design's lines are told aligned in their box,
+  // `alignedItem`.)
+  for (const it of page.items) if (it.kind === 'text' && it.frame && frames.has(it.frame)) byFrame.set(it.frame, [...(byFrame.get(it.frame) ?? []), lined(alignedItem(framed(asPainted(it, textScale(frames.get(it.frame))), frames.get(it.frame)!)))]);
   const done = new Set<string>();
   // Outside frames a list item's marker shares its item's text frame.
   const markerFor = new Map<TextItem, TextItem>();
@@ -165,7 +167,7 @@ export function pageItemsXml(w: Writer, page: DisplayPage, frames: Map<string, V
         if (!it.frame || !byFrame.has(it.frame)) {
           if (held.has(it)) break;
           const marker = markerFor.get(it);
-          const t = lined(it);
+          const t = lined(alignedItem(it));
           if (it.halo && it.halo.widthPx > 0) {
             // A halo: the same text under it, in the halo's ink, stroked
             // twice its width (half of a stroke lies inside the glyph).

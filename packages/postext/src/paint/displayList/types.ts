@@ -59,6 +59,11 @@ export interface DisplayRun {
   /** Underlined (`++…++`), as {@link strike}. */
   underline?: boolean;
   footnoteId?: string;
+  /** The named style that gave the run its look, when one did: a
+   *  character style (`:span[…]{style="id"}`) or a chip style (every run
+   *  of a chip's words). Writers that keep named styles (InDesign's
+   *  character styles, #1555) name the run's style after it. */
+  namedStyle?: { kind: 'span' | 'chip'; id: string };
   /** A `:ref` run's target: a resource id, or an anchor's id (`anchor`). */
   refTarget?: { id: string; anchor?: boolean };
   /** Book page index the run links to (an index entry's page number). */

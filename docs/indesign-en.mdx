@@ -93,7 +93,7 @@ The `.idml` does not carry the fonts or the linked pictures. The importer lists 
 
 InDesign can do things Postext has no equivalent for, such as text on a path, a rotated cell, a diagonal line in a cell, GREP and nested styles, or transparency effects. Each of these becomes a finding in the report, with a count and an example: a *loss* when it is left out, a *warning* when it is set close to the source (a table's footer rows, a gradient, a contour wrap). The report ends with a verdict:
 
-- **`faithful`**: nothing was lost or approximated (a book exported from Postext).
+- **`faithful`**: nothing was lost or approximated. A book exported from Postext comes back faithful as composed pages: each page with its frames where the export placed them, and the book's paragraph styles, character styles, boxes and pictures (since postext 1.83.2). It does not come back as a flowing book: the export gives each paragraph a frame of its own, with no thread between frames, so `--layout flow` reports the page art it cannot carry.
 - **`approximate`**: some things were set close to the source, and nothing was left out.
 - **`lossy`**: something was left out.
 

@@ -11,7 +11,7 @@
 
 import type { DesignElement, FrameConfig, PageTemplate } from 'postext';
 import type { IdmlPage, IdmlPageItem } from '../model/document.js';
-import { apply, boxCentre, boxHeight, boxWidth, decompose, isRectangle, overlap, pathExtent, type Box } from '../model/geometry.js';
+import { boxHeight, boxWidth, isRectangle, overlap, type Box } from '../model/geometry.js';
 import { graphicCrop, pageSize } from '../resolve/geometry.js';
 import { masterItems } from '../resolve/masters.js';
 import type { OrderedStory } from '../resolve/order.js';
@@ -19,6 +19,7 @@ import { blocksOf, joinChunks, type Chunk } from './blocks.js';
 import type { Context } from './context.js';
 import { masterElements, placeAt, shapeElement, type MasterWords } from './design.js';
 import { customAnchors, type HostFrame } from './fidelity/anchorPlaces.js';
+import { crossesSpine, emptyBoxFence, exactCover, paintOrder } from './fidelity/pageItems.js';
 import { firstLineShift, frameSetup, fromTop, openingLines, runningLines } from './fidelity/baseline.js';
 import { makeHooks } from './hooks.js';
 import { boxLook, calloutStyleFor } from './objects.js';
@@ -27,6 +28,7 @@ import { pictureResource } from './pictures.js';
 import { freeBands, jumpObjectOf, meetsWithOffsets, spansColumns, type JumpObject } from './jumps.js';
 import { hasContent, leavesOf, type Leaf } from './scan.js';
 import { pt } from './values.js';
+import { FOOT_ROOM, frameBox, VERTICAL } from './frames.js';
 
 interface Slot {
   leaf: Leaf;
@@ -57,28 +59,13 @@ interface PagePlan {
   jumps: JumpObject[];
 }
 
-const VERTICAL: Record<string, FrameConfig['verticalAlign']> = { CenterAlign: 'middle', BottomAlign: 'bottom', JustifyAlign: 'justify' };
 const snap = (n: number): number => Math.round(n / 2.835) * 2.835;
-
-/** A frame's own rectangle on the page and its turn. */
-function frameBox(leaf: Leaf): { box: Box; rotation: number; flipped: boolean } | undefined {
-  const own = pathExtent(leaf.at.item.paths);
-  if (!own) return undefined;
-  const d = decompose(leaf.g.toPage);
-  const w = boxWidth(own) * d.scaleX;
-  const h = boxHeight(own) * d.scaleY;
-  const c = apply(leaf.g.toPage, boxCentre(own));
-  if (![w, h, c.x, c.y].every(Number.isFinite)) return undefined;
-  return { box: { left: c.x - w / 2, top: c.y - h / 2, right: c.x + w / 2, bottom: c.y + h / 2 }, rotation: Math.abs(d.rotation) < 0.01 ? 0 : d.rotation, flipped: d.flipped };
-}
 
 export interface PagesResult {
   templates: PageTemplate[];
   chapters: { title: string; markdown: string }[];
 }
 
-/** The room under a plain text frame, in leadings (see where it is used). */
-const FOOT_ROOM = 0.2;
 
 export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): PagesResult {
   const doc = ctx.doc;
@@ -117,7 +104,7 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
           continue;
         }
         if (fb.flipped) ctx.rep.add('flippedFrame', 'warning', 'A mirrored frame is set unmirrored', where);
-        if (leaf.g.box.right > size.width + 1 && leaf.g.box.left < size.width - 1 && spread.pages.length > 1) ctx.rep.add('acrossSpine', 'warning', 'An object that runs across the spine is set on the page that holds most of it', where);
+        if (crossesSpine(page, leaf.g.box, size.width, spread.pages.length)) ctx.rep.add('acrossSpine', 'warning', 'An object that runs across the spine is set on the page that holds most of it', where);
         const held = item.textFrame?.story;
         const story = held && wanted.has(held) ? wanted.get(held)!.story.self : held;
         const base = { leaf, box: fb.box, rotation: fb.rotation, name: '', page: page.index };
@@ -129,17 +116,20 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
           plan.slots.push(slot);
           slotOf.set(item.self, slot);
         } else if (item.graphic) {
-          const id = pictureResource(ctx, item);
           // A picture its frame crops is drawn by the template, which
           // can cover a box with a picture about a point of it; a frame
           // of the page would show the whole picture.
           const crop = graphicCrop(item);
-          if (id && crop && !fb.rotation && crop.width > 0 && crop.height > 0 && (crop.width < 0.995 || crop.height < 0.995) && Math.abs(crop.rotation) < 0.01) {
+          const cropped = !!crop && !fb.rotation && crop.width > 0 && crop.height > 0 && (crop.width < 0.995 || crop.height < 0.995) && Math.abs(crop.rotation) < 0.01;
+          const exact = cropped && exactCover(crop!);
+          const id = pictureResource(ctx, item, exact ? { drawnCropped: true } : {});
+          if (id && crop && cropped) {
             const look = boxLook(ctx, item, where);
             const r4 = (n: number): number => Math.round(n * 10000) / 10000;
             plan.decoration.push({ kind: 'image', id: `s${leaf.z}`, pin: true, reserve: false, placement: placeAt(fb.box), resourceId: id, decorative: !item.altText, fit: 'cover', focus: { x: r4(crop.x + crop.width / 2), y: r4(crop.y + crop.height / 2) } });
             if (look.stroke) plan.decoration.push({ kind: 'box', id: `s${leaf.z}-edge`, pin: true, reserve: false, placement: placeAt(fb.box), style: { borderColor: look.stroke, borderWidth: pt(look.strokeWeight) } });
-            ctx.rep.add('croppedPictureAsDecoration', 'warning', 'A picture its frame crops is drawn by the page template (cover, about the cropped part\'s centre): it keeps its crop on the page and is not part of reflowable output', item.graphic.link?.name ?? where);
+            if (exact) ctx.rep.add('croppedPictureCover', 'info', 'A picture its frame crops is drawn by the page template, cover about the cropped part\'s centre, which shows the part the frame showed; it is not part of reflowable output', item.graphic.link?.name ?? where);
+            else ctx.rep.add('croppedPictureAsDecoration', 'warning', 'A picture its frame crops is drawn by the page template (cover, about the cropped part\'s centre): it keeps its crop on the page and is not part of reflowable output', item.graphic.link?.name ?? where);
             continue;
           }
           const slot: Slot = { ...base, kind: 'picture', ...(id ? { resource: id } : {}) };
@@ -170,6 +160,7 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
           plan.decoration.push(s.element);
         }
       }
+      plan.decoration = paintOrder(plan.decoration);
     }
   }
 
@@ -308,6 +299,8 @@ export function layoutPages(ctx: Context, stories: readonly OrderedStory[]): Pag
 
       // Content: a story where its thread starts, a picture in its frame.
       if (slot.kind === 'picture' && slot.resource) pieces.push(`::resource{id="${slot.resource}" slot="${slot.name}"}`);
+      const boxFence = emptyBoxFence(slot.kind, slot.name, slot.style);
+      if (boxFence) pieces.push(boxFence);
       if (slot.kind === 'text' && slot.story && !written.has(slot.story)) {
         if (!entry) continue;
         const first = entry.frames.map((fp) => slotOf.get(fp.item.self)).find((s) => s !== undefined);

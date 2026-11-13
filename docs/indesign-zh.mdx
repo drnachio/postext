@@ -93,7 +93,7 @@ postext import-idml package.zip -o book.postext
 
 InDesign能做的有些事在Postext中没有对应，比如路径文字、旋转的单元格、单元格中的对角线、GREP样式和嵌套样式，或者透明效果。每一项都成为报告中的一条结果，附带数量和一个例子：省略的是<em>loss</em>，以接近原稿的方式排出的是<em>warning</em>（表格的表尾行、渐变、沿轮廓绕排）。报告最后给出结论：
 
-- <strong>`faithful`</strong>：没有丢失，也没有近似处理（Postext导出的书）。
+- <strong>`faithful`</strong>：没有丢失，也没有近似处理。Postext导出的书以组合页面的形式忠实返回：每页的框都在导出时放置的位置，书的段落样式、字符样式、方框和图片也都保留（自postext 1.83.2起）。它不会以连续版式的书返回：导出给每个段落一个单独的框，框与框之间没有串接，因此`--layout flow`会报告它带不过来的页面装饰。
 - <strong>`approximate`</strong>：有些内容以接近原稿的方式排出，没有省略任何内容。
 - <strong>`lossy`</strong>：有内容被省略。
 

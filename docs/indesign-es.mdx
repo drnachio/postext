@@ -93,7 +93,7 @@ El `.idml` no lleva las fuentes ni las imágenes enlazadas. El importador enumer
 
 InDesign hace cosas que no tienen equivalente en Postext, como el texto en un trazado, una celda girada, una línea diagonal en una celda, los estilos GREP y anidados o los efectos de transparencia. Cada una de ellas pasa a ser un hallazgo del informe, con un recuento y un ejemplo: una *pérdida* cuando se deja fuera, un *aviso* cuando se compone de forma parecida al original (las filas de pie de una tabla, un degradado, un ceñido al contorno). El informe termina con un veredicto:
 
-- **`faithful`**: no se perdió ni se aproximó nada (un libro exportado desde Postext).
+- **`faithful`**: no se perdió ni se aproximó nada. Un libro exportado desde Postext vuelve fiel como páginas compuestas: cada página con sus marcos donde los puso la exportación, y los estilos de párrafo, los estilos de carácter, las cajas y las imágenes del libro (desde postext 1.83.2). No vuelve como libro de flujo: la exportación da a cada párrafo un marco propio, sin enlaces entre marcos, así que `--layout flow` informa del arte de página que no puede llevar.
 - **`approximate`**: algunas cosas se compusieron de forma parecida al original, y no se dejó nada fuera.
 - **`lossy`**: algo se dejó fuera.
 

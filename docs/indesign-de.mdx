@@ -93,7 +93,7 @@ Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Impor
 
 InDesign kann Dinge, für die Postext keine Entsprechung hat, etwa Pfadtext, eine gedrehte Zelle, eine Diagonale in einer Zelle, GREP- und verschachtelte Formate oder Transparenzeffekte. Jedes davon wird zu einem Befund im Bericht, mit einer Anzahl und einem Beispiel: ein *Verlust*, wenn es wegfällt, eine *Warnung*, wenn es angenähert gesetzt wird (die Fußzeilen einer Tabelle, ein Verlauf, eine Konturenführung). Der Bericht endet mit einem Urteil:
 
-- **`faithful`**: nichts ging verloren oder wurde angenähert (ein aus Postext exportiertes Buch).
+- **`faithful`**: nichts ging verloren oder wurde angenähert. Ein aus Postext exportiertes Buch kommt als komponierte Seiten getreu zurück: jede Seite mit ihren Rahmen dort, wo der Export sie platziert hat, und mit den Absatzformaten, Zeichenformaten, Kästen und Bildern des Buchs (seit postext 1.83.2). Als fließendes Buch kommt es nicht zurück: Der Export gibt jedem Absatz einen eigenen Rahmen, ohne Verkettung zwischen den Rahmen, daher meldet `--layout flow` die Seitengestaltung, die es nicht übernehmen kann.
 - **`approximate`**: manches wurde angenähert gesetzt, und nichts fiel weg.
 - **`lossy`**: etwas fiel weg.
 

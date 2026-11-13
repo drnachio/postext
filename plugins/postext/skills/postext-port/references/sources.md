@@ -359,8 +359,14 @@ the bundle).
   studio, not as a way to check the port.
 - `postext-idml` also reads: `idmlToPostext(bytes, { layout })` returns chapters, configuration,
   resources and a report (verdict, findings with counts) of what Postext has no equivalent for. It
-  is deterministic and brings a book that Postext exported back with the same lines; a document made
-  in InDesign comes through with the losses the report lists. `postext import-idml file.idml -o book/
+  is deterministic and brings a book that Postext exported back with the same lines, faithful as
+  composed pages (postext ≥ 1.83.2: its character styles, boxes and tints come back; not yet as a
+  flowing book, #1559); a document made in InDesign comes through with the losses the report lists.
+  The importer also cuts a text frame behind a Jump Object or Jump to Next Column wrap into chained
+  frames above and below the object (≥ 1.82.2), splits a package's font collections (`.ttc`,
+  `.otc`) into the single faces the text uses (≥ 1.83), and in `--layout flow` sets a page with no
+  running text (cover, divider) as a composed page and an opener's band, kicker and title as a
+  heading design (≥ 1.83.1; `composedPagesInFlow`, `openerDesigns`). `postext import-idml file.idml -o book/
   --report` runs it from the command line and prints the report: a first import to start from, which
   the port then corrects. For a port, keep to the steps below.
 - `idml_extract.py roles book.idml > map.json` lists the paragraph styles in

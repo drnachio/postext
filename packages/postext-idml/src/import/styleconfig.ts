@@ -22,10 +22,15 @@ function colourOf(ctx: Context, l: Look): ColorValue {
 
 const TAB_ALIGN: Record<string, PostextTabStop['align']> = { LeftAlign: 'start', CenterAlign: 'center', RightAlign: 'end', CharacterAlign: 'decimal' };
 
-function tabStops(l: Look): PostextTabStop[] | undefined {
+/** A look's tab stops. InDesign measures a stop from the frame's text
+ *  edge, Postext from the start of the paragraph's measure, past the
+ *  style's indent: `origin` is that indent (0 where it is not carried, as
+ *  for the body text), taken off every stop. Without it a key set in
+ *  columns from an indent came back one indent too far right (#1555). */
+function tabStops(l: Look, origin = 0): PostextTabStop[] | undefined {
   if (!l.pf.tabs.length) return undefined;
   const stops = l.pf.tabs.map((t) => {
-    const stop: PostextTabStop = { position: pt(t.position), align: TAB_ALIGN[t.alignment] ?? 'start' };
+    const stop: PostextTabStop = { position: pt(Math.max(0, t.position - origin)), align: TAB_ALIGN[t.alignment] ?? 'start' };
     const leader = t.leader.trim() ? t.leader : '';
     if (leader) stop.leader = leader;
     if (t.alignment === 'CharacterAlign' && t.alignmentCharacter && t.alignmentCharacter !== '.') stop.decimalChar = t.alignmentCharacter;
@@ -36,7 +41,7 @@ function tabStops(l: Look): PostextTabStop[] | undefined {
   // row goes there. Postext has no such stop of its own.
   const left = l.pf.leftIndent;
   if (l.pf.firstLineIndent < 0 && left > 0 && !l.pf.tabs.some((t) => t.position <= left + 0.5 && t.position > left + l.pf.firstLineIndent)) {
-    stops.push({ position: pt(left), align: 'start' });
+    stops.push({ position: pt(Math.max(0, left - origin)), align: 'start' });
     const at = (stop: PostextTabStop): number => (typeof stop.position === 'object' && 'value' in stop.position ? stop.position.value : Infinity);
     stops.sort((a, b) => at(a) - at(b));
   }
@@ -87,6 +92,11 @@ function paragraphStyle(ctx: Context, l: Look, id: string, body: Look | undefine
     italic: l.italic,
     hyphenation: l.pf.hyphenation,
     color: colourOf(ctx, l),
+    // InDesign's bold and italic words keep their paragraph's colour (a
+    // coloured word is a mark of its own); Postext's would take the
+    // palette's main colour (#1555).
+    boldColor: colourOf(ctx, l),
+    italicColor: colourOf(ctx, l),
     indent: pt(Math.max(0, l.pf.leftIndent + Math.min(0, l.pf.firstLineIndent))),
     endIndent: pt(l.pf.rightIndent),
     firstLineIndent: pt(Math.max(0, l.pf.firstLineIndent)),
@@ -102,7 +112,7 @@ function paragraphStyle(ctx: Context, l: Look, id: string, body: Look | undefine
   if (l.cf.capitalization === 'AllCaps') s.textTransform = 'uppercase';
   if (l.cf.capitalization === 'SmallCaps' || l.cf.capitalization === 'CapToSmallCap') s.smallCaps = true;
   if (l.cf.tracking) s.letterSpacing = em(l.cf.tracking);
-  const tabs = tabStops(l);
+  const tabs = tabStops(l, Math.max(0, l.pf.leftIndent + Math.min(0, l.pf.firstLineIndent)));
   if (tabs) s.tabStops = tabs;
   if (l.pf.dropCap) s.dropCap = { lines: l.pf.dropCap.lines, characters: l.pf.dropCap.characters, each: true };
   return s;
@@ -167,6 +177,10 @@ export function styleConfig(ctx: Context): Pick<PostextConfig, 'bodyText' | 'hea
       textAlign: body.pf.align,
       fontWeight: body.weight,
       color: colourOf(ctx, body),
+      // Bold and italic words in the body's colour, as InDesign sets them
+      // (Postext's default is the palette's main colour, #1555).
+      boldColor: colourOf(ctx, body),
+      italicColor: colourOf(ctx, body),
       firstLineIndent: pt(Math.max(0, body.pf.firstLineIndent)),
       paragraphSpacing: body.pf.spaceBefore + body.pf.spaceAfter > 0 ? pt(body.pf.spaceBefore + body.pf.spaceAfter) : false,
       hyphenation: { enabled: body.pf.hyphenation },

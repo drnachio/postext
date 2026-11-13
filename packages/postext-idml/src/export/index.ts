@@ -36,15 +36,29 @@ import {
 } from './parts.js';
 import { linksXml, sectionsXml } from './document.js';
 import { pageItemsXml, spreadXml, type SpreadPage } from './spreads.js';
+import { flowCallouts, newSurvey, settleStyles, type StyleSurvey } from './styles.js';
 import { keepsLines, type IdmlOptions, type IdmlResult, type Writer } from './writer.js';
 
 export type { IdmlOptions, IdmlResult, IdmlWarning } from './writer.js';
 
-/** Write the laid-out documents as an IDML package. */
+/** Write the laid-out documents as an IDML package. The pages are
+ *  written twice: the first pass counts what the paragraphs of every
+ *  style look like, the second writes them in the styles that count
+ *  settled on (`styles.ts`, #1555). */
 export function idmlDocument(options: IdmlOptions): IdmlResult {
-  const { docs } = options;
-  const first = docs[0];
+  const first = options.docs[0];
   if (!first || !first.pages.length) throw new Error('idmlDocument: nothing laid out');
+  const survey = newSurvey();
+  writePackage(options, survey);
+  settleStyles(survey);
+  return writePackage(options, survey)!;
+}
+
+/** One pass over the pages; the package itself only from the second. */
+function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | undefined {
+  const { docs } = options;
+  const first = docs[0]!;
+  const surveying = styles.pass === 'survey';
   let n = 0x100;
   const seen = new Set<string>();
   const palette = new Map<string, string>();
@@ -67,12 +81,16 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
     faces: new Map(),
     fontFiles: new Map(),
     paraStyles: new Map(),
+    charStyles: new Map(),
+    styles,
     doc: first,
     blockStyles: new Map(),
     stories: [],
     media: new Map(),
     opts: options,
     warn: (code, message) => {
+      // (The first pass says nothing: the second meets the same.)
+      if (surveying) return;
       const key = `${code}\u0000${message}`;
       if (seen.has(key)) return;
       seen.add(key);
@@ -109,6 +127,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
       const vdt = doc.pages[p]!;
       // (A vertical page's area is told in its flow: where it stands on the sheet.)
       w.page = vdt;
+      w.callouts = flowCallouts(vdt);
       const area = pageIsVertical(vdt) ? flowRectToPage(vdt, vdt.contentArea) : vdt.flow ? undefined : vdt.contentArea;
       const l = area ? Math.max(0, (area.x - trim.x) * w.k) : 0;
       const r = area ? Math.max(0, (trim.x + trim.width - area.x - area.width) * w.k) : 0;
@@ -122,6 +141,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
       laid.push({ self: `pg${n}`, name: page.label ?? String(n + 1), ...(page.label !== undefined ? { label: page.label } : {}), width, height: w.pageH, left, ...(margins ? { margins } : {}), items, recto });
     }
   }
+  if (surveying) return undefined;
   // A verso and the recto after it share a spread; a page a spread otherwise.
   const groups: (typeof laid)[] = [];
   for (const page of laid) {
@@ -141,7 +161,7 @@ export function idmlDocument(options: IdmlOptions): IdmlResult {
   parts.set('META-INF/container.xml', strToU8(CONTAINER_XML));
   parts.set('Resources/Graphic.xml', strToU8(graphicXml([...w.swatches.values()])));
   parts.set('Resources/Fonts.xml', strToU8(fontsXml(w.fonts)));
-  parts.set('Resources/Styles.xml', strToU8(stylesXml([...w.paraStyles.values()], keepsLines(w))));
+  parts.set('Resources/Styles.xml', strToU8(stylesXml([...w.paraStyles.values()], keepsLines(w), [...w.charStyles.values()])));
   parts.set('Resources/Preferences.xml', strToU8(preferencesXml(g)));
   parts.set('MasterSpreads/MasterSpread_umaster.xml', strToU8(masterSpreadXml('umaster', g)));
   for (const s of spreads) parts.set(`Spreads/Spread_${s.id}.xml`, strToU8(s.xml));

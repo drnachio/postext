@@ -39,6 +39,10 @@ export interface PictureOptions {
   /** Resource type; `picture` (no label, no number) unless a caption's
    *  label says otherwise. */
   typeId?: string;
+  /** The page template draws the picture cropped as its frame crops it
+   *  (a cover fit that shows the same part, `exactCover`): the crop is
+   *  kept, not approximated, and no `pictureCrop` is reported (#1555). */
+  drawnCropped?: boolean;
 }
 
 const fileIds = new WeakMap<Context, Map<string, string>>();
@@ -133,7 +137,7 @@ export function pictureResource(ctx: Context, item: IdmlPageItem, options: Pictu
     if (cut && crop.width > 0 && crop.height > 0) {
       const r = (n: number): number => Math.round(n * 10000) / 10000;
       base.safeArea = { x: r(crop.x), y: r(crop.y), width: r(crop.width), height: r(crop.height) };
-      ctx.rep.add('pictureCrop', 'warning', 'A picture its frame crops keeps the visible part as its safe area; Postext shows the whole picture unless the layout needs to crop it', name);
+      if (!options.drawnCropped) ctx.rep.add('pictureCrop', 'warning', 'A picture its frame crops keeps the visible part as its safe area; Postext shows the whole picture unless the layout needs to crop it', name);
     }
     if (Math.abs(crop.rotation) > 0.01 || crop.flipped) ctx.rep.add('pictureTurned', 'loss', 'A picture turned or mirrored inside its frame is set upright and unmirrored, whole in its frame', name);
     if (Math.abs(crop.scaleX - crop.scaleY) > 0.005 * Math.max(crop.scaleX, crop.scaleY)) ctx.rep.add('pictureStretched', 'warning', 'A picture scaled unevenly keeps its own proportions', name);

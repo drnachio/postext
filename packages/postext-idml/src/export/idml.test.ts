@@ -198,12 +198,18 @@ describe('idmlDocument', () => {
     const paras = descendants(parseXml(story), 'ParagraphStyleRange');
     expect(paras).toHaveLength(2);
     expect(contents(story)).toMatch(/^\S+\tFirst point\S*\tSecond point$/);
+    // Items alike share their style's format and set nothing of their own
+    // (#1555): the hanging indent and the stop are the style's.
+    const styles = descendants(xml(f, 'Resources/Styles.xml'), 'ParagraphStyle');
     for (const p of paras) {
-      expect(Number(attr(p, 'LeftIndent'))).toBeGreaterThan(0);
-      expect(Number(attr(p, 'FirstLineIndent'))).toBeLessThan(0);
+      const style = styles.find((s) => attr(s, 'Self') === attr(p, 'AppliedParagraphStyle'))!;
+      const own = (name: string) => attr(p, name) ?? attr(style, name);
+      expect(attr(p, 'LeftIndent')).toBeUndefined();
+      expect(Number(own('LeftIndent'))).toBeGreaterThan(0);
+      expect(Number(own('FirstLineIndent'))).toBeLessThan(0);
       // An explicit tab stop at the text's indent, not InDesign's default stops.
-      const stop = descendants(p, 'Position')[0]!;
-      expect(Number(stop.children.join(''))).toBeCloseTo(Number(attr(p, 'LeftIndent')), 3);
+      const stop = descendants(style, 'Position')[0]!;
+      expect(Number(stop.children.join(''))).toBeCloseTo(Number(own('LeftIndent')), 3);
     }
   });
 
@@ -294,8 +300,10 @@ describe('idmlDocument', () => {
     } as unknown as Partial<PostextConfig>);
     const md = `:::paragraphs{style="hang"}\n\\*\t${LOREM.slice(0, 160)}\tend\n\n\\*\\*\\*\\*\tShort.\n:::\n\n:::paragraphs{style="indented"}\n${LOREM}\n:::\n\nA plain paragraph.`;
     const f = reflow(md, cfg);
-    // The first paragraph names the style (`Body`): the hanging note's.
-    const style = paraStyle(f, 'Body');
+    // Paragraphs set in a paragraph style are written in one named after
+    // it (its id, as a frame's style is), with the format most of them
+    // share (#1555).
+    const style = paraStyle(f, 'hang');
     expect(Number(attr(style, 'LeftIndent'))).toBeCloseTo(MM45, 3);
     expect(Number(attr(style, 'FirstLineIndent'))).toBeCloseTo(-MM45, 3);
     const measure = (120 * 72) / 25.4;
@@ -311,13 +319,19 @@ describe('idmlDocument', () => {
     expect(contents(short!.story)).toBe('****\tShort.');
     expect(attr(short!.para, 'LeftIndent')).toBeUndefined();
     expect(short!.story).not.toContain('<TabList');
-    // An indented paragraph: indent plus first-line indent, the stops cleared.
-    expect(Number(attr(indented!.para, 'LeftIndent'))).toBeCloseTo((3 * 72) / 25.4, 3);
-    expect(Number(attr(indented!.para, 'FirstLineIndent'))).toBeCloseTo((5 * 72) / 25.4, 3);
-    expect(indented!.story).toContain('<TabList type="list"></TabList>');
-    // A paragraph without indents takes none.
-    expect(Number(attr(plainText!.para, 'LeftIndent'))).toBe(0);
-    expect(Number(attr(plainText!.para, 'FirstLineIndent'))).toBe(0);
+    // An indented paragraph: its style holds the indent plus first-line
+    // indent, and no stops; the paragraph sets nothing of its own.
+    const ind = paraStyle(f, 'indented');
+    expect(attr(indented!.para, 'AppliedParagraphStyle')).toBe(attr(ind, 'Self'));
+    expect(Number(attr(ind, 'LeftIndent'))).toBeCloseTo((3 * 72) / 25.4, 3);
+    expect(Number(attr(ind, 'FirstLineIndent'))).toBeCloseTo((5 * 72) / 25.4, 3);
+    expect(attr(indented!.para, 'LeftIndent')).toBeUndefined();
+    expect(tabsOf(ind)).toEqual([]);
+    // A paragraph without indents, in the body's style, takes none.
+    const body = paraStyle(f, 'Body');
+    expect(attr(plainText!.para, 'AppliedParagraphStyle')).toBe(attr(body, 'Self'));
+    expect(Number(attr(plainText!.para, 'LeftIndent') ?? attr(body, 'LeftIndent') ?? 0)).toBe(0);
+    expect(Number(attr(plainText!.para, 'FirstLineIndent') ?? attr(body, 'FirstLineIndent') ?? 0)).toBe(0);
   });
 
   it('sets a frame its fit shrank as painted: indents, stops, spacing and first baseline at the scale, the padding as it stands', () => {

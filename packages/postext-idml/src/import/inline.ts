@@ -3,15 +3,16 @@
 // story (a note, an index mark, a link, a variable, an anchored object)
 // becomes.
 
+import type { CharacterStyleConfig } from 'postext';
 import type { IdmlPageItem, IdmlParagraph, IdmlRun, IdmlTable, Inline } from '../model/document.js';
 import { characterFormat, type CharacterFormat } from '../resolve/format.js';
-import { runProps } from '../resolve/styles.js';
+import { runProps, stylePath } from '../resolve/styles.js';
 import type { Context } from './context.js';
-import { attributeValue, cleanText, LINE_BREAK, WORD_JOINER } from './escape.js';
+import { attributeValue, cleanText, idOf, LINE_BREAK, WORD_JOINER } from './escape.js';
 import { crossReferences } from './fidelity/crossref.js';
 import type { Look } from './looks.js';
 import { renderSegs, withInlineBreaks, type Seg } from './marks.js';
-import { italicOf, sameColour, weightOf } from './values.js';
+import { italicOf, pt, sameColour, weightOf } from './values.js';
 
 export interface InlineEnv {
   /** `body`: a paragraph, a list item, a quotation. `heading`: one line,
@@ -77,24 +78,66 @@ const KENTEN: Record<string, string> = {
   KentenSmallWhiteCircle: '{style="dot" fill="open"}',
 };
 
+const sc = (c: string): boolean => c === 'SmallCaps' || c === 'CapToSmallCap';
+const spanIds = new WeakMap<Context, Map<string, string>>();
+
+/** A run in a named character style that sets another face, size or
+ *  tracking than its paragraph's (which no mark of Postext sets) is set in
+ *  a character style of the book with the run's whole look:
+ *  `:span[…]{style="id"}` (#1555). One book style per character style and
+ *  look. Words set so by hand, in no character style, keep the paragraph's
+ *  face and are reported: the change is formatting of the document, not a
+ *  style of it. */
+function spanStyle(ctx: Context, f: CharacterFormat, look: Look, run: IdmlRun): string | undefined {
+  const cs = run.characterStyle ? ctx.doc.styles.character.get(run.characterStyle) : undefined;
+  if (!cs || cs.root) return undefined;
+  const base = look.cf;
+  const scripted = /Superscript|Subscript|Numerator|Denominator/.test(f.position);
+  const face = !!f.fontFamily && !!base.fontFamily && f.fontFamily !== base.fontFamily;
+  const size = Math.abs(f.pointSize - base.pointSize) > 0.01 && !scripted;
+  if (!face && !size && f.tracking === base.tracking) return undefined;
+  const colour = ctx.palette.colour(f.fillColor, f.fillTint, 'text');
+  const weight = weightOf(f.fontStyle);
+  const italic = italicOf(f.fontStyle) || f.skew !== 0;
+  const key = [cs.self, f.fontFamily ?? '', f.pointSize, weight, italic, colour?.hex ?? '', f.tracking, sc(f.capitalization)].join('|');
+  let ids = spanIds.get(ctx);
+  if (!ids) spanIds.set(ctx, (ids = new Map()));
+  const hit = ids.get(key);
+  if (hit) return hit;
+  const id = ctx.styleIds.take(idOf(cs.name, 'span'));
+  const style: CharacterStyleConfig = { id, name: stylePath(cs), fontSize: pt(f.pointSize), fontWeight: weight, italic };
+  if (f.fontFamily) style.fontFamily = f.fontFamily;
+  if (colour) style.color = colour;
+  if (f.tracking) style.letterSpacing = { value: Math.round(f.tracking) / 1000, unit: 'em' };
+  if (sc(f.capitalization)) style.smallCaps = true;
+  ctx.characterStyles.set(id, style);
+  ids.set(key, id);
+  return id;
+}
+
 /** The marks of a run against its paragraph's look, and what of its
- *  format has no mark (counted in the report). */
+ *  format has no mark (counted in the report). A run in a character style
+ *  of the book (`spanStyle`) takes its face, size, weight, slant and
+ *  colour from that style, and marks only the rest. */
 function marksOf(ctx: Context, f: CharacterFormat, look: Look, run: IdmlRun, sample: string): Omit<Seg, 't'> {
   const base = look.cf;
   const out: Omit<Seg, 't'> = {};
+  const span = spanStyle(ctx, f, look, run);
+  if (span) out.span = span;
   const weight = weightOf(f.fontStyle);
-  if (weight >= 600 && look.weight < 600) out.b = true;
+  if (span) {
+    // (The style sets all of these.)
+  } else if (weight >= 600 && look.weight < 600) out.b = true;
   else if (weight < 600 && look.weight >= 600) ctx.rep.add('lighterRun', 'warning', 'Text lighter than the paragraph it stands in is set at the paragraph\'s weight: Postext marks bold, not its absence', sample);
-  if ((italicOf(f.fontStyle) || f.skew !== 0) !== look.italic) out.i = true;
-  const sc = (c: string): boolean => c === 'SmallCaps' || c === 'CapToSmallCap';
-  if (sc(f.capitalization) && !sc(base.capitalization)) out.sc = true;
+  if (!span && (italicOf(f.fontStyle) || f.skew !== 0) !== look.italic) out.i = true;
+  if (!span && sc(f.capitalization) && !sc(base.capitalization)) out.sc = true;
   if (f.underline && !base.underline) out.u = true;
   if (f.strikeThru && !base.strikeThru) out.s = true;
   if (/Superscript|Numerator/.test(f.position)) out.script = 'sup';
   else if (/Subscript|Denominator/.test(f.position)) out.script = 'sub';
   if (f.characterDirection && f.characterDirection !== look.pf.direction) out.dir = f.characterDirection;
   // Colour: a mark style that only colours.
-  if ((f.fillColor ?? '') !== (base.fillColor ?? '') || (f.fillTint ?? -1) !== (base.fillTint ?? -1)) {
+  if (!span && ((f.fillColor ?? '') !== (base.fillColor ?? '') || (f.fillTint ?? -1) !== (base.fillTint ?? -1))) {
     const own = ctx.palette.colour(f.fillColor, f.fillTint, 'text');
     const of = ctx.palette.colour(base.fillColor, base.fillTint);
     if (own && !sameColour(own, of)) {
@@ -104,9 +147,9 @@ function marksOf(ctx: Context, f: CharacterFormat, look: Look, run: IdmlRun, sam
   }
   const style = run.characterStyle ? ctx.doc.styles.character.get(run.characterStyle)?.name : undefined;
   const named = style ? ` (character style ${style})` : '';
-  if (f.fontFamily && base.fontFamily && f.fontFamily !== base.fontFamily) ctx.rep.add('inlineFontFamily', 'loss', 'Words set in another typeface than their paragraph keep the paragraph\'s: Postext has no inline font change', `${f.fontFamily}${named}: ${sample}`);
-  if (Math.abs(f.pointSize - base.pointSize) > 0.01 && !out.script) ctx.rep.add('inlineFontSize', 'loss', 'Words set in another size than their paragraph keep the paragraph\'s: Postext has no inline size change', `${f.pointSize} pt${named}: ${sample}`);
-  if (f.tracking !== base.tracking) ctx.rep.add('inlineTracking', 'warning', 'Tracking set on some words of a paragraph is not carried: Postext tracks whole styles', `${f.tracking}${named}: ${sample}`);
+  if (!span && f.fontFamily && base.fontFamily && f.fontFamily !== base.fontFamily) ctx.rep.add('inlineFontFamily', 'loss', 'Words set in another typeface than their paragraph by hand, in no character style, keep the paragraph\'s (a character style that changes the face becomes one of the book\'s)', `${f.fontFamily}${named}: ${sample}`);
+  if (!span && Math.abs(f.pointSize - base.pointSize) > 0.01 && !out.script) ctx.rep.add('inlineFontSize', 'loss', 'Words set in another size than their paragraph by hand, in no character style, keep the paragraph\'s (a character style that changes the size becomes one of the book\'s)', `${f.pointSize} pt${named}: ${sample}`);
+  if (!span && f.tracking !== base.tracking) ctx.rep.add('inlineTracking', 'warning', 'Tracking set on some words of a paragraph is not carried: Postext tracks whole styles', `${f.tracking}${named}: ${sample}`);
   if (f.baselineShift !== 0 && f.baselineShift !== base.baselineShift) ctx.rep.add('baselineShift', 'warning', 'A baseline shift is not carried', sample);
   if ((f.horizontalScale !== 100 || f.verticalScale !== 100) && (f.horizontalScale !== base.horizontalScale || f.verticalScale !== base.verticalScale)) ctx.rep.add('glyphScaling', 'warning', 'Horizontally or vertically scaled characters are set at their natural width', sample);
   if (f.strokeColor && f.strokeColor !== base.strokeColor && (f.strokeWeight ?? 0) > 0 && !/None$/.test(f.strokeColor)) ctx.rep.add('strokedText', 'warning', 'A stroke on characters is not carried', sample);
