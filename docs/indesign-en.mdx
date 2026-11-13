@@ -76,7 +76,7 @@ The same import runs in the Sandbox, under **Books › New › New book from an 
 ### Pages or flow
 
 - **`--layout pages`** follows the document page for page. Each page becomes a [composed page](/en/docs/composed-pages) and each frame stays at its place, size and order, with a chain of linked frames kept as a chain. Use it for documents whose pages are each made by hand.
-- **`--layout flow`** writes the stories in reading order under the document's paragraph styles, and Postext sets them on pages the book's design makes. Use it for running text, such as a novel or an essay, where the pages only hold the text.
+- **`--layout flow`** writes the stories in reading order under the document's paragraph styles, and Postext sets them on pages the book's design makes. Use it for running text, such as a novel or an essay, where the pages only hold the text. Pages whose frames only read together are set whole (since postext 1.83.1). A page with no running text of its own, such as a cover or a part divider, becomes a [composed page](/en/docs/composed-pages) in the flow, its frames where InDesign has them and its shapes and pictures as decoration. A page whose running text starts under a title with a band, a picture or a filled frame is an opener: the title becomes a heading that opens the page, and its heading style's design draws the band, the kicker and any tab on the fore edge. The report lists them as `composedPagesInFlow` and `openerDesigns`.
 - **`auto`**, the default, picks one from the document and gives its reason.
 
 ### What comes through

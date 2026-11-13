@@ -76,7 +76,7 @@ La stessa importazione si fa nella Sandbox, da **Libri › Nuovo › Nuovo libro
 ### Pagine o testo continuo
 
 - **`--layout pages`** segue il documento pagina per pagina. Ogni pagina diventa una [pagina composta](/it/docs/composed-pages) e ogni cornice mantiene posizione, misura e ordine; una catena di cornici concatenate resta una catena. Usalo per i documenti le cui pagine sono fatte a mano una per una.
-- **`--layout flow`** scrive i brani in ordine di lettura sotto gli stili di paragrafo del documento, e Postext li compone su pagine fatte dal progetto grafico del libro. Usalo per testo corrente, come un romanzo o un saggio, dove le pagine servono solo a contenere il testo.
+- **`--layout flow`** scrive i brani in ordine di lettura sotto gli stili di paragrafo del documento, e Postext li compone su pagine fatte dal progetto grafico del libro. Usalo per testo corrente, come un romanzo o un saggio, dove le pagine servono solo a contenere il testo. Le pagine le cui cornici si leggono solo insieme vengono composte intere (da postext 1.83.1). Una pagina senza testo corrente suo, come una copertina o un occhiello di parte, diventa nel flusso una [pagina composta](/it/docs/composed-pages), con le cornici dove le ha InDesign e forme e immagini come decorazione. Una pagina il cui testo corrente comincia sotto un titolo con una fascia, un’immagine o una cornice riempita è un’apertura: il titolo diventa un titolo che apre la pagina, e il disegno del suo stile di titolo traccia la fascia, l’occhiello e l’eventuale linguetta sul margine esterno. Il rapporto le elenca come `composedPagesInFlow` e `openerDesigns`.
 - **`auto`**, il valore predefinito, sceglie in base al documento e ne dà il motivo.
 
 ### Che cosa passa

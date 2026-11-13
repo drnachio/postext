@@ -76,7 +76,7 @@ A mesma importação roda no Sandbox, em **Livros › Novo › Livro novo a part
 ### Páginas ou texto corrido
 
 - **`--layout pages`** segue o documento página por página. Cada página vira uma [página composta](/pt/docs/composed-pages) e cada quadro fica no seu lugar, com o seu tamanho e a sua ordem; uma cadeia de quadros vinculados continua sendo uma cadeia. Use-o para documentos com páginas feitas à mão uma a uma.
-- **`--layout flow`** grava as matérias na ordem de leitura com os estilos de parágrafo do documento, e o Postext as compõe nas páginas que o projeto gráfico do livro faz. Use-o para texto corrido, como um romance ou um ensaio, em que as páginas só contêm o texto.
+- **`--layout flow`** grava as matérias na ordem de leitura com os estilos de parágrafo do documento, e o Postext as compõe nas páginas que o projeto gráfico do livro faz. Use-o para texto corrido, como um romance ou um ensaio, em que as páginas só contêm o texto. As páginas cujos quadros só se leem juntos são compostas inteiras (desde o postext 1.83.1). Uma página sem texto corrido próprio, como uma capa ou uma folha de rosto de parte, vira no fluxo uma [página composta](/pt/docs/composed-pages), com os quadros onde o InDesign os tem e as formas e imagens como decoração. Uma página cujo texto corrido começa sob um título com uma faixa, uma imagem ou um quadro preenchido é uma abertura: o título vira um título que abre a página, e o design do seu estilo de título desenha a faixa, o chapéu e a aba na margem externa, se houver. O relatório as lista como `composedPagesInFlow` e `openerDesigns`.
 - **`auto`**, o padrão, escolhe um dos dois a partir do documento e diz o motivo.
 
 ### O que passa

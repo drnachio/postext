@@ -76,7 +76,7 @@ La mateixa importació es fa al Sandbox, a **Llibres › Nou › Llibre nou a pa
 ### Pàgines o text seguit
 
 - **`--layout pages`** segueix el document pàgina a pàgina. Cada pàgina es converteix en una [pàgina composta](/ca/docs/composed-pages) i cada marc es queda al seu lloc, amb la seva mida i el seu ordre; una cadena de marcs enllaçats continua sent una cadena. Fes-lo servir per a documents amb pàgines fetes a mà una per una.
-- **`--layout flow`** escriu els articles en ordre de lectura amb els estils de paràgraf del document, i Postext els compon a les pàgines que fa el disseny del llibre. Fes-lo servir per a text seguit, com una novel·la o un assaig, on les pàgines només contenen el text.
+- **`--layout flow`** escriu els articles en ordre de lectura amb els estils de paràgraf del document, i Postext els compon a les pàgines que fa el disseny del llibre. Fes-lo servir per a text seguit, com una novel·la o un assaig, on les pàgines només contenen el text. Les pàgines els marcs de les quals només es llegeixen junts es componen senceres (des de postext 1.83.1). Una pàgina sense text seguit propi, com una coberta o una portadella de part, passa a ser una [pàgina composta](/ca/docs/composed-pages) dins del flux, amb els marcs on els té InDesign i les formes i imatges com a decoració. Una pàgina el text seguit de la qual comença sota un títol amb una banda, una imatge o un marc amb emplenament és una obertura: el títol passa a ser un encapçalament que obre la pàgina, i el disseny del seu estil d'encapçalament dibuixa la banda, l'avanttítol i la pestanya del tall, si n'hi ha. L'informe les recull com a `composedPagesInFlow` i `openerDesigns`.
 - **`auto`**, el valor per defecte, en tria un a partir del document i en dona el motiu.
 
 ### El que passa
