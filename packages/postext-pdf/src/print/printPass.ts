@@ -19,12 +19,16 @@
  * - **Spot colours**: the CMYK stand-in of a spot colour (see `spot.ts`)
  *   becomes its ink's Separation colour space at the tint, and the paint
  *   overprints when the ink does (a varnish, an ink laid over process).
+ * - **White and varnish**: no later paint knocks their plates out; the
+ *   stream draws them a second time at its end when one would
+ *   (`inkLayers.ts`).
  */
 
 import { PDFDict, PDFName, PDFNumber, PDFOperator, PDFOperatorNames, type PDFPage } from 'pdf-lib';
 import { channelsOffPlates, dimensionToPx } from 'postext';
 import type { PrintColorMode } from './colorMode.js';
-import type { SpotPlate } from './spot.js';
+import type { SpotPlate, StandInPaint } from './spot.js';
+import { withInkLayers } from './inkLayers.js';
 
 /** Overprint flags of a graphics state: fill (`op`) and stroke (`OP`). */
 export interface OverprintFlags {
@@ -50,8 +54,18 @@ interface GState {
   /** The current fill / stroke colour is a spot ink that overprints. */
   fillSpotOver: boolean;
   strokeSpotOver: boolean;
+  /** The current fill / stroke colour is a white ink or a varnish. */
+  fillLayer: boolean;
+  strokeLayer: boolean;
   op: OverprintFlags;
   textMode: number;
+}
+
+/** Whether a paint is in a white ink or a varnish only. */
+function isLayerPaint(paint: StandInPaint): boolean {
+  if ('plate' in paint) return !!paint.plate.layer;
+  if ('mix' in paint) return paint.mix.every((p) => !!p.layer);
+  return false;
 }
 
 const IDENTITY: Matrix = [1, 0, 0, 1, 0, 0];
@@ -142,12 +156,12 @@ export function applyPrintPass(
 
   const out: PDFOperator[] = [];
   const stack: GState[] = [];
-  let gs: GState = { ctm: IDENTITY, fillK: false, strokeK: false, fillSpotOver: false, strokeSpotOver: false, op: { fill: false, stroke: false }, textMode: 0 };
+  let gs: GState = { ctm: IDENTITY, fillK: false, strokeK: false, fillSpotOver: false, strokeSpotOver: false, fillLayer: false, strokeLayer: false, op: { fill: false, stroke: false }, textMode: 0 };
   /** Whether the current fill / stroke colour overprints. */
   const fillOver = (): boolean => (overprint && gs.fillK) || gs.fillSpotOver;
   const strokeOver = (): boolean => (overprint && gs.strokeK) || gs.strokeSpotOver;
   /** The Separation operators of a `k` / `K` stand-in, if it is one. */
-  const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean; kOnly?: boolean } | undefined => {
+  const spotOps = (args: unknown[], stroke: boolean): { ops: PDFOperator[]; over: boolean; kOnly?: boolean; layer?: boolean } | undefined => {
     if (!options.spaceFor || args.length !== 4) return undefined;
     const [c, m, y, k] = args.map(num) as [number, number, number, number];
     const paint = mode.inkRegistry.paintOf(c, m, y, k);
@@ -165,7 +179,16 @@ export function applyPrintPass(
         PDFOperator.of(stroke ? PDFOperatorNames.StrokingColorN : PDFOperatorNames.NonStrokingColorN, (mix ? paint.tints : [paint.tint]).map((t) => PDFNumber.of(t))),
       ],
       over: paint.overprint,
+      layer: isLayerPaint(paint),
     };
+  };
+  /** A white or a varnish has been painted; and since then, a paint that
+   *  knocks out (which may have cut its plate). */
+  let layerPainted = false;
+  let knockedOut = false;
+  const painted = (knocks: boolean, layer: boolean): void => {
+    if (knocks && layerPainted) knockedOut = true;
+    if (layer) layerPainted = true;
   };
   let pathStart = -1;
   let box: [number, number, number, number] | null = null;
@@ -214,9 +237,11 @@ export function applyPrintPass(
       if (stroke) {
         gs.strokeK = k;
         gs.strokeSpotOver = !!spot?.over;
+        gs.strokeLayer = !!spot?.layer;
       } else {
         gs.fillK = k;
         gs.fillSpotOver = !!spot?.over;
+        gs.fillLayer = !!spot?.layer;
       }
       if (spot) out.push(...spot.ops);
       else out.push(op);
@@ -225,12 +250,14 @@ export function applyPrintPass(
     if (FILL_COLOR_OPS.has(name)) {
       gs.fillK = false;
       gs.fillSpotOver = false;
+      gs.fillLayer = false;
       out.push(op);
       continue;
     }
     if (STROKE_COLOR_OPS.has(name)) {
       gs.strokeK = false;
       gs.strokeSpotOver = false;
+      gs.strokeLayer = false;
       out.push(op);
       continue;
     }
@@ -263,6 +290,7 @@ export function applyPrintPass(
       const at = pathStart < 0 ? out.length : pathStart;
       const b = box as [number, number, number, number] | null;
       const large = !!b && Math.min(b[2] - b[0], b[3] - b[1]) >= minSide;
+      painted((fills && !(fillOver() && !(gs.fillK && rich && large))) || (strokes && !strokeOver()), (fills && gs.fillLayer) || (strokes && gs.strokeLayer));
       if (fills && gs.fillK && rich && large) {
         // Rich black, knocked out, inside its own state so the K-only
         // colour (and the overprint) come back after it.
@@ -295,6 +323,7 @@ export function applyPrintPass(
       const m = gs.textMode % 4;
       const fill = m === 0 || m === 2;
       const stroke = m === 1 || m === 2;
+      painted((fill && !fillOver()) || (stroke && !strokeOver()), (fill && gs.fillLayer) || (stroke && gs.strokeLayer));
       out.push(
         ...switchTo({
           fill: fill ? fillOver() : gs.op.fill,
@@ -306,12 +335,17 @@ export function applyPrintPass(
     }
     if (name === 'Do' || name === 'sh' || name === 'BI') {
       // Pictures, forms and shadings never overprint.
+      painted(true, false);
       out.push(...switchTo({ fill: false, stroke: false }), op);
       continue;
     }
     out.push(op);
   }
-  return out;
+  const layerOps = (args: unknown[], stroke: boolean): PDFOperator[] | undefined => {
+    const spot = spotOps(args, stroke);
+    return spot?.layer ? spot.ops : undefined;
+  };
+  return withInkLayers(out, ops, knockedOut, layerOps, () => named({ fill: true, stroke: true }));
 }
 
 /** The ExtGState dictionary of a pair of overprint flags. */

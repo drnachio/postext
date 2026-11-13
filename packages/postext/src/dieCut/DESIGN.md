@@ -20,6 +20,9 @@ Tracker #1573. Issues: #1563 finishes · #1564 finish mask · #1565 die-cuts · 
   - Every special ink gets its own `Separation`, named by the ink table's `pdfName`, as any spot ink.
   - It never falls back to process unless `output: 'process'`.
   - White and varnish overprint unless `overprint: false` (`finishOverprintsByDefault`).
+  - No later paint knocks out a White plate (#1579): white goes down first on press. When a stream paints something
+    that knocks out after a white, the print pass draws the stream's white paints a second time at its end,
+    overprinting (`print/inkLayers.ts`). A white with `overprint: false` still knocks out the colour under it.
 - **Preflight:**
   - `spotInkFinish` (info, one per special ink).
   - `whiteInkOnWhite` (warning: a white ink on a page whose paper is white or unset).
@@ -47,8 +50,8 @@ The mask is painted with the ordinary canvas painter through instance-level over
 1. **Pass 1, inks that knock out.** A special hex is painted in its mask colour. Any other paint is painted black,
    unless it overprints (then it is skipped). Pictures paint black over their box. A varnish is skipped.
 2. **Pass 2, varnish.** Only varnish hexes are painted. Pass 2 is merged into pass 1's G channel with `lighten`.
-3. **White.** It is coverage in A, from pass 1's paint of white inks into a separate canvas. The two are packed into
-   one RGBA buffer on the CPU.
+3. **White.** It is coverage in A, from a paint of white inks only into a separate canvas: white goes down first on
+   press, so no later paint or picture knocks it out (#1579). The paints are packed into one RGBA buffer on the CPU.
 
 The canvas preview is `RenderPageOptions.finishes?: 'flat' | 'sheen' | 'map'`, default `'flat'`.
 
