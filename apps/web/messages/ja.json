@@ -6833,7 +6833,7 @@
     "canvasFinishesFlat": "フラット",
     "canvasFinishesSheen": "光沢あり",
     "canvasFinishesMap": "加工マップ",
-    "printGroupDieLine": "抜き型の線",
+    "printGroupDieLine": "抜き型の線の版",
     "printDieLineOutput": "PDF での扱い",
     "printDieLineOutputTooltip": "ページ上：PDF は各ページの抜き型を、何も刷らない専用の版にオーバープリントで描きます（PDF/X-1a 以外では、読者が隠せるレイヤーに入れます）。なし：出力しません。",
     "printDieLineOutputPage": "ページ上",

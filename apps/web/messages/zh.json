@@ -6833,7 +6833,7 @@
     "canvasFinishesFlat": "平面",
     "canvasFinishesSheen": "显示光泽",
     "canvasFinishesMap": "工艺分布图",
-    "printGroupDieLine": "模切线",
+    "printGroupDieLine": "模切线印版",
     "printDieLineOutput": "在 PDF 中",
     "printDieLineOutputTooltip": "在页面上：PDF 将每页的模切路径描在一块不印任何内容的单独印版上，并设为叠印（PDF/X-1a 以外，放在读者可以隐藏的图层中）。无：不输出。",
     "printDieLineOutputPage": "在页面上",
