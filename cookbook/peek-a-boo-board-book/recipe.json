@@ -1,0 +1,208 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 193,
+  "status": "published",
+  "chapter": "output",
+  "order": 220,
+  "level": 2,
+  "genres": [
+    "ephemera"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "die-cuts",
+      "die-cut-corners",
+      "die-line"
+    ],
+    "also": [
+      "die-cut-leaves",
+      "folio-viewer",
+      "heading-styles",
+      "design-images",
+      "heading-attributes",
+      "paragraph-styles",
+      "bleed-and-crop-marks",
+      "pdf-colour-space",
+      "pdf-export",
+      "resources",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q230",
+    "Q233"
+  ],
+  "gotchas": [],
+  "related": [
+    "die-cut-window-cover",
+    "forest-tunnel-book",
+    "folio-book-on-a-desk"
+  ],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": [1, 2, 3, 4, 5, 6, 7, 12, 13, 14],
+    "expect": {
+      "pages": [
+        14,
+        14
+      ],
+      "imageMb": 1.5
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "tilt": 50,
+    "yaw": -32,
+    "paper": {
+      "type": "board",
+      "shade": "#fbf5e8"
+    },
+    "binding": {
+      "type": "hardcover",
+      "cover": "pages",
+      "coverMaterial": "paper"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1.05
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The words of the board book",
+          "es": "El texto del libro de cartón"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Cover painting: a cottage garden, a hedge, hollyhocks and a robin",
+          "es": "Pintura de cubierta: un jardín, un seto, malvarrosas y un petirrojo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cover.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 3: the hedge",
+          "es": "Página 3: el seto"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "hedge.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 5: the ginger cat asleep",
+          "es": "Página 5: el gato pelirrojo dormido"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cat.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 7: the wooden fence",
+          "es": "Página 7: la valla de madera"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fence.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 9: the sheep",
+          "es": "Página 9: la oveja"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "sheep.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 11: the barn door",
+          "es": "Página 11: la puerta del granero"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "door.jpg"
+      },
+      {
+        "what": {
+          "en": "Page 13: Grandpa and his lantern at dusk",
+          "es": "Página 13: el abuelo con su farolillo al anochecer"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "lantern.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Andika",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Fredoka",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Nunito",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13"
+}

@@ -1,0 +1,64 @@
+---
+title: "Una fanzine in nero e rosa fluo"
+summary: "Un lavoro a due lastre, nero e un rosa fluorescente: foto in bicromia, un nero che sovrastampa e un rosa che brilla in Folio."
+plain: "Una piccola rivista musicale stampata con due soli inchiostri, il nero e un rosa neon molto acceso. Le foto escono in nero e rosa, il rosa brilla nella vista 3D e il file di stampa ha esattamente due lastre."
+description: "Una fanzine musicale a due lastre in Postext: un inchiostro fluorescente, foto in bicromia tramite curve, un nero che sovrastampa, il rosa che brilla in Folio."
+question: "Come stampo una fanzine solo in nero e rosa fluo, con le foto in bicromia?"
+aliases: ["inchiostro fluorescente", "rosa fluo", "fluo", "neon", "stampa a due colori", "bicromia", "duotone", "fanzine", "risografia", "sovrastampa del nero", "fluorescent ink"]
+pageNotes: { "1": "La copertina: il pubblico di un concerto in uno scantinato in nero e rosa, sotto una fascia nera con PINK NOISE in enormi maiuscole rosa fluo e gli strilli in bianco.", "3": "L’apertura dell’intervista: un chitarrista su un piccolo palco in nero e rosa al vivo, una fascia rosa con l’occhiello e THREE CHORDS AND A BORROWED AMP in nero, e due colonne con le domande in rosa.", "6": "Gli appuntamenti: un riquadro rosa pallido con April, May e June su tre colonne, ogni concerto con un segno più rosa, e due paragrafi sotto." }
+---
+
+## Che cosa comporrai
+
+Il numero 7 di *Pink Noise*, una fanzine musicale inventata: otto pagine A5 a punto metallico, stampate su una macchina a due tamburi. Uno stampa il nero e l’altro un rosa fluorescente, e nient’altro arriva sulla carta. Il rosa compone il titolo di copertina, la fascia dell’apertura dell’intervista, le domande, la citazione in evidenza e la quarta di copertina; un retino al 30 % riempie il riquadro degli appuntamenti. Le tre fotografie sono originali in grigio che si stampano in bicromia, il nero nelle ombre e il rosa nei mezzitoni. Folio posa la fanzine aperta su un tavolo scuro, dove il rosa risalta sulla carta.
+
+## Preparazione
+
+### 1 · Due lastre, e il rosa è fluo
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. `print.plates` nomina le lastre che il lavoro stampa, `Black` e `PANTONE 806 C`, e il PDF ha quelle due separazioni e nessun’altra ([stampa a due colori](/it/docs/configuration-pdf-output#tinte-piatte)). Il rosa è una tinta piatta; la sua finitura sta nella tabella degli inchiostri, come starebbe nell’ordine al tipografo, e lo rende un inchiostro fluorescente: ha una lastra propria e Folio lo illumina più della carta ([finiture](/it/docs/special-inks-die-cuts#finiture)). `images` mette le fotografie su entrambe le lastre, e `CURVES` dà forma a ciascuna: il nero solo nelle ombre, il rosa nei mezzitoni e in calo negli scuri, così il rosa non sporca mai il nero.
+
+### 2 · Anche lo schermo mostra la bicromia
+
+<Excerpt region="duotone" />
+
+Il canvas e Folio dipingono un’immagine così com’è il suo file, quindi una foto grigia lì apparirebbe grigia, anche se si stampa in rosa e nero. La ricetta registra una seconda immagine per lo schermo: lo stesso grigio letto attraverso le stesse `CURVES`, il nero moltiplicato sul rosa come gli inchiostri si sovrappongono sulla carta. Il PDF riceve sempre l’originale grigio, da `imageBytes`, e lo separa da sé.
+
+### 3 · Nero sul rosa
+
+<Excerpt region="cover" />
+
+Il nero è la sola lastra K, definito come colore CMYK con `overprint: true`. Dove il testo nero o la fascia nera della copertina incontrano il rosa, il nero si stampa sopra invece di fare risparmio, e un foglio che esce un po’ fuori registro non mostra alcun filo bianco. Il titolo rosa invece fa risparmio nel nero, come deve fare il testo su una fascia scura.
+
+### 4 · Folio su un tavolo scuro
+
+<Excerpt region="folio" />
+
+Un inchiostro fluorescente ha bisogno di un po’ di buio intorno per leggersi come tale. La fanzine resta aperta sull’intervista su una superficie liscia e scura, sotto la luce piatta di un cielo coperto, e la fascia rosa e il rosa della foto risaltano sulla carta bianca.
+
+## Varianti
+
+### Stampa le foto solo in nero
+
+Con una sola lastra per le immagini, le foto si stampano in semplici toni di grigio sul nero, e il rosa resta per il testo e i riquadri.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Un giallo fluo al suo posto
+
+Cambia l’inchiostro e il suo colore a schermo; le lastre, la finitura e le curve seguono il nome.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Rinomina allo stesso modo `PANTONE 806 C` in `CURVES`, in `PRINT` e negli hex della palette.
+
+## Errori frequenti
+
+- Un colore che nessuna delle due lastre stampa viene proiettato sui due inchiostri. Un blu di quadricromia rimasto in uno stile esce come un rosa nerastro; leggi le segnalazioni `offPlateColor` del controllo preliminare prima di inviare il file.
+- Un inchiostro fluorescente non ha un colore alternativo CMYK fedele. Una prova o un PDF RGB mostrano l’hex, più spento dell’inchiostro sulla carta.

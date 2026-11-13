@@ -1,0 +1,64 @@
+---
+title: "Ein Fanzine in Schwarz und Neonpink"
+summary: "Ein Auftrag mit zwei Platten, Schwarz und ein fluoreszierendes Pink: Fotos als Duplex, ein überdruckendes Schwarz und ein Pink, das in Folio leuchtet."
+plain: "Ein kleines Musikheft, gedruckt mit nur zwei Farben, Schwarz und einem grellen Neonpink. Die Fotos erscheinen in Schwarz und Pink, das Pink leuchtet in der 3D-Ansicht, und die Druckdatei hat genau zwei Platten."
+description: "Ein Musik-Fanzine auf zwei Platten in Postext: eine Leuchtfarbe als Sonderfarbe, Duplexfotos über Kurven, überdruckendes Schwarz, leuchtendes Pink in Folio."
+question: "Wie drucke ich ein Fanzine nur in Schwarz und Neonpink, mit den Fotos als Duplex?"
+aliases: ["Leuchtfarbe", "Tagesleuchtfarbe", "Neonpink", "Neonfarbe", "Zweifarbendruck", "Duplex", "Fanzine", "Risografie", "Schwarz überdrucken", "fluorescent ink", "duotone"]
+pageNotes: { "1": "Der Umschlag: ein Publikum bei einem Kellerkonzert in Schwarz und Pink, darunter ein schwarzes Band mit PINK NOISE in riesigen Versalien in Neonpink und den Anrissen in Weiß.", "3": "Der Einstieg ins Interview: ein Gitarrist auf einer kleinen Bühne in Schwarz und Pink bis in den Anschnitt, ein pinkes Band mit der Dachzeile und THREE CHORDS AND A BORROWED AMP in Schwarz und zwei Spalten mit den Fragen in Pink.", "6": "Die Termine: ein blassrosa Kasten mit April, May und June in drei Spalten, jedes Konzert mit einem pinken Pluszeichen, und zwei Absätze darunter." }
+---
+
+## Was Sie setzen
+
+Ausgabe 7 von *Pink Noise*, einem erfundenen Musik-Fanzine: acht Seiten A5, rückstichgeheftet, gedruckt auf einer Maschine mit zwei Trommeln. Die eine druckt Schwarz, die andere ein fluoreszierendes Pink, und sonst erreicht nichts das Papier. Das Pink setzt den Umschlagtitel, das Band über dem Einstieg ins Interview, die Fragen, das Zitat und die Rückseite; ein Rasterton von 30 % füllt den Kasten mit den Terminen. Die drei Fotos sind graue Vorlagen, die als Duplex drucken, Schwarz in den Tiefen und Pink in den Mitteltönen. Folio legt das Heft aufgeschlagen auf einen dunklen Tisch, auf dem sich das Pink vom Papier abhebt.
+
+## Zubereitung
+
+### 1 · Zwei Platten, und das Pink leuchtet
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). `print.plates` nennt die Platten, die der Auftrag druckt, `Black` und `PANTONE 806 C`, und das PDF hat genau diese beiden Auszüge und keine weiteren ([Zweifarbendruck](/de/docs/configuration-pdf-output#sonderfarben)). Das Pink ist eine Sonderfarbe; seine Veredelung steht in der Farbtabelle, wie sie im Auftrag an die Druckerei stünde, und macht es zu einer Leuchtfarbe: Es bekommt eine eigene Platte, und Folio beleuchtet es heller als das Papier ([Veredelungen](/de/docs/special-inks-die-cuts#veredelungen)). `images` legt die Fotos auf beide Platten, und `CURVES` formt jede: Schwarz nur in den Tiefen, Pink in den Mitteltönen und in den dunklen Partien zurückgenommen, damit das Pink das Schwarz nie verschmutzt.
+
+### 2 · Auch der Bildschirm zeigt das Duplex
+
+<Excerpt region="duotone" />
+
+Canvas und Folio malen ein Bild so, wie seine Datei ist; ein graues Foto erschiene dort also grau, obwohl es in Pink und Schwarz druckt. Das Rezept registriert ein zweites Bild für den Bildschirm: dasselbe Grau, durch dieselben `CURVES` gelesen, das Schwarz über dem Pink multipliziert, so wie Druckfarben auf dem Papier übereinanderliegen. Das PDF bekommt weiterhin die graue Vorlage aus `imageBytes` und separiert sie selbst.
+
+### 3 · Schwarz über Pink
+
+<Excerpt region="cover" />
+
+Das Schwarz ist allein die K-Platte, angelegt als CMYK-Farbe mit `overprint: true`. Wo schwarze Schrift oder das schwarze Band des Umschlags auf das Pink trifft, druckt es darüber, statt es auszusparen, und ein Bogen, der etwas aus dem Passer läuft, zeigt keinen weißen Blitzer. Der pinke Titel spart das Schwarz dagegen aus, wie es Schrift auf einem dunklen Band tun soll.
+
+### 4 · Folio auf einem dunklen Tisch
+
+<Excerpt region="folio" />
+
+Eine Leuchtfarbe braucht etwas Dunkelheit um sich, damit sie als solche wirkt. Das Heft liegt beim Interview aufgeschlagen auf einer glatten, dunklen Fläche, im flachen Licht eines bedeckten Himmels, und das pinke Band und das Pink im Foto heben sich vom weißen Papier ab.
+
+## Varianten
+
+### Die Fotos nur in Schwarz drucken
+
+Mit einer einzigen Bildplatte drucken die Fotos als einfache Graustufen in Schwarz, und das Pink bleibt Schrift und Kästen vorbehalten.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Stattdessen ein Neongelb
+
+Ändern Sie die Druckfarbe und ihre Bildschirmfarbe; Platten, Veredelung und Kurven folgen dem Namen.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Benennen Sie `PANTONE 806 C` ebenso in `CURVES`, in `PRINT` und in den Hex-Werten der Palette um.
+
+## Häufige Fehler
+
+- Eine Farbe, die keine der beiden Platten druckt, wird auf die zwei Druckfarben projiziert. Ein Prozessblau, das in einem Stil stehen geblieben ist, kommt als dunkles Pinkschwarz heraus; lesen Sie die Befunde `offPlateColor` der Preflight-Prüfung, bevor Sie die Datei schicken.
+- Eine Leuchtfarbe hat keine getreue CMYK-Ersatzfarbe. Ein Proof oder ein RGB-PDF zeigt den Hex-Wert, der stumpfer ist als die Farbe auf dem Papier.

@@ -1,0 +1,63 @@
+---
+title: "A tunnel book twenty leaves deep"
+summary: "Nineteen round windows cut with dieCuts, each smaller than the last on one axis, so the cover looks through twenty painted planes of a wood to a deer at a pool."
+plain: "A thick board book about a walk in a wood. Every leaf has a round hole a little smaller than the one before, so from the cover you see all the way to the last page."
+description: "A tunnel book of twenty board leaves: nineteen shrinking die-cut windows on one axis, painted planes in register with them, the die line and Folio."
+question: "How do I make a tunnel book, with holes through every leaf that let you see the last page from the cover?"
+aliases: ["tunnel book", "peep show book", "nested die cuts", "shrinking holes", "die-cut windows", "die line"]
+pageNotes: { "1": "The cover: two oak trunks and ferns round a large round window, and through it ring after ring of leaves, foxgloves, birches and bracken getting smaller, down to a doe and fawn drinking at a sunlit pool; the title on a dark green band at the foot.", "2": "The back of the cover: dark green, the window cut through it, and one line of verse under it.", "39": "The last plane, uncut: a sunlit clearing where a doe and her fawn drink at a pool." }
+---
+
+## What you'll build
+
+*Into the Wood*, a tunnel book of twenty board leaves on a 150 mm square. Each recto is one plane of a painted wood (oaks, foxgloves, a robin, a fox in the bracken, an owl, birches), and each is cut with a round window a little smaller than the one before, all on the same centre. The last plane is whole: a doe and her fawn at a pool in a clearing. From the cover the eye goes through all nineteen windows to the deer, and the cut edges of the board stand round the tunnel like the trunks themselves. On the back of every leaf a line of verse names the plane that faces it. The press file carries every window on the die plate.
+
+## Method
+
+### 1 · Nineteen windows on one axis
+
+The code is [the short answer](#the-short-answer) above. The windows are built in a loop: leaf k gets a circle of radius R1 · Q^(k − 1) round the same centre, and `dieCuts.pages` puts it on page 2k − 1, the recto of that leaf. A hole cuts both sides of its leaf, so the verso behind it has the same window, mirrored. Q = 0.9162 takes 58 mm down to 12 mm in eighteen steps, and the last window is just wide enough for the deer.
+
+### 2 · Planes in register with their windows
+
+<Excerpt region="planes" />
+
+Each painting has its own misty opening, so the pictures were scaled before they went into the book: on each one the radius where leaves cover half the ring was measured in pixels, and the painting was scaled until that radius met the leaf's window, on the window's centre. Seen from the cover, every plane shows only a thin ring of its leaves round its window, and the rings stack into a tunnel. The centre each die takes away is flat, so it costs almost nothing in the file.
+
+### 3 · Nineteen circles on the Die plate
+
+<Excerpt region="die-line" />
+
+The PDF strokes each window, and each leaf with its rounded fore-edge corners, on a `Die` separation that overprints and is never inked. Forty pages of paintings stay under 1.5 MB with `convertImages: false`.
+
+### 4 · The tunnel in the hand
+
+<Excerpt region="folio" />
+
+Twenty leaves of board make a thick block, and Folio cuts every window through it: the closed book shows the tunnel with the walls of the cut stepping down to the clearing.
+
+### 5 · Twenty planes on a flat page
+
+<Excerpt region="see-through" />
+
+`beneath` paints the page two on with its own `beneath`, so the cover's window shows page 3, whose window shows page 5, and so on down to page 39. Each page is painted once and reused, and the flat cover shows the same tunnel as the book.
+
+## Variations
+
+### Rounded square windows
+
+A `roundRect` with a corner radius a third of its half-width gives a softer, cut-paper look.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Round every corner
+
+A board book for small hands rounds all four corners of every leaf.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

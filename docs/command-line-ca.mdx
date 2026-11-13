@@ -397,7 +397,7 @@ de formulari passen a ser camps de formulari d'InDesign. `--lines keep` (el
 valor per defecte) acaba cada línia on la va acabar Postext, de manera que
 InDesign mostra les mateixes línies que el PDF; `--lines reflow` deixa els
 paràgrafs al compositor d'InDesign, i els salts de línia poden variar.
-`--spreads facing` o `--spreads single` aparella les pàgines, o no, diguin el que diguin els marges.
+El text corrent de les pàgines compostes en columnes va en un sol article, enllaçat per un marc per columna, que l'importador llegeix com a llibre de flux; `--text frames` escriu en canvi un marc i un article per bloc (des de postext 1.85.0). `--spreads facing` o `--spreads single` aparella les pàgines, o no, diguin el que diguin els marges.
 `--images link` deixa les imatges al costat del fitxer, a `Links/`, en lloc de
 dins. `--fonts` escriu els fitxers de font de les variants usades al costat
 del paquet, a `Document fonts/`, on InDesign els troba per a aquell document;
@@ -407,7 +407,7 @@ redistribuir es deixa fora amb un avís. El que el paquet no pot portar tal com
 a avís `idml.*`. El generador és el paquet `postext-idml`: vegeu [Ús
 programàtic › Paquets
 d'InDesign](/ca/docs/configuration-programmatic-usage#paquets-dindesign-postext-idml).
-A `build`, `--idml FITXER` escriu el mateix paquet, amb `--idml-images`, `--idml-lines`, `--idml-spreads` i `--idml-fonts`.
+A `build`, `--idml FITXER` escriu el mateix paquet, amb `--idml-images`, `--idml-lines`, `--idml-spreads`, `--idml-text` i `--idml-fonts`.
 Des de postext 1.71; `--lines` i `--fonts`, des de 1.76, i `--spreads`, des de 1.78.
 
 ### import-idml

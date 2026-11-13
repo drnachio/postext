@@ -1,0 +1,66 @@
+---
+title: "Partieller Glanzlack auf einem Soft-Touch-Magazin"
+summary: "Zwei Lacke als Sonderfarben: Soft-Touch auf jeder Seite, Glanzlack über den Fotos und dem Titelschriftzug, zu sehen in Folio und den Veredelungsansichten."
+plain: "Ein Fotomagazin mit einer samtigen Beschichtung auf jeder Seite und einer glänzenden nur auf den Fotos und dem Titel. Die Lacke haben keine Farbe; die 3D-Ansicht und eine Proof-Ansicht zeigen, wo sie liegen."
+description: "Ein Fotomagazin in Postext mit Soft-Touch-Lack auf jeder Seite und partiellem UV-Glanzlack auf Fotos und Titel: zwei Lackplatten, Folio, Veredelungsansichten."
+question: "Wie lege ich Soft-Touch-Lack auf jede Seite und partiellen Glanzlack nur auf die Fotos?"
+aliases: ["partieller UV-Lack", "Spotlack", "Partiallack", "Soft-Touch-Lack", "Soft-Touch-Kaschierung", "Glanzlack", "Mattlack", "Lackplatte", "Drucklack", "Fotomagazin", "Lackaussparung", "Veredelung", "spot UV", "soft touch"]
+pageNotes: { "1": "Das Titelblatt: ein einsamer Wanderer auf einer rissigen Salzebene in der Dämmerung, randabfallend, LONG LIGHT in großen weißen Serifen-Versalien und Gemeinen über dem Himmel, die Coverzeilen weiß auf einem schiefergrauen Band.", "3": "Ein Fischer flickt ein orangefarbenes Netz auf einem Hafenkai, randabfallend über den oberen Teil der Seite, der Titel The net mender und zwei Textspalten.", "6": "Die Rückseite: eine schiefergraue Seite mit Long Light in Weiß und einer Impressumszeile darunter." }
+---
+
+## Was Sie setzen
+
+Heft 14 von *Long Light*, einem erfundenen Fotomagazin: sechs Seiten in 210 × 280 mm, klebegebunden. Jede Seite trägt einen Soft-Touch-Lack, die samtige Veredelung, die den Bogen dämpft und ihm den Glanz nimmt. Über die fünf Fotos und den Titelschriftzug legt die Druckerei einen zweiten Lack, einen Glanzlack, damit die Bilder das Licht fangen, während die Seite um sie herum ruhig bleibt. Keiner der beiden Lacke hat eine Farbe: Die Leinwand zeigt die Seiten so, wie sie gedruckt werden, und drei Ansichten des Titelblatts neben Folio zeigen die Platten und den Glanz. Folio legt das Magazin aufgeschlagen auf einen Marmortisch im Studiolicht, wo der Glanz beim Umblättern aufblitzt.
+
+## Zubereitung
+
+### 1 · Jeder Lack ist eine Sonderfarbe mit Veredelung
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Ein Lack ist eine Sonderfarbe mit der Veredelung `varnish` und einem Schimmer: `softTouch` für das Samtige, `gloss` für den partiellen UV-Lack ([Veredelungen](/de/docs/special-inks-die-cuts#veredelungen)). Die PDF/X-4-Datei legt jeden auf eine eigene `Separation`, sodass die Druckerei zwei Lackplatten neben den vier Prozessplatten bekommt. Auf dem Bildschirm malt ein Lack nichts; er braucht trotzdem ein eigenes Hex, weil ein Druck-Render die Farben an ihrem Hex unterscheidet. Ein Lack druckt standardmäßig über, also spart keiner der beiden die Farben darunter aus.
+
+### 2 · Soft-Touch auf jeder Seite
+
+<Excerpt region="velvet" />
+
+Der Soft-Touch ist ein einzelner Kasten im Lack, von Anschnitt zu Anschnitt. Die Fußzeile trägt ihn, weil sie als Letztes auf die Seite gemalt wird: Das PDF lässt eine spätere Marke nie über das drucken, was vorher gemalt wurde, also würde ein nach dem Lack gesetzter Text den Lack unter sich aussparen. Titelblatt und Rückseite haben keine Seitenzahlen, ihre Fußzeile trägt nur den Kasten.
+
+### 3 · Glanz über den Fotos
+
+<Excerpt region="gloss" />
+
+Jedes Foto ist ein Bild, über das ein gleich großer Kasten im Glanzlack gelegt wird. Der Kasten kommt als Zweites und liegt deshalb oben: Auf der Platte ist er ein Rechteck, das das Bild genau deckt, und so zeichnet man eine Platte für partiellen UV-Lack.
+
+### 4 · Der Titelschriftzug zweimal gesetzt
+
+<Excerpt region="cover" />
+
+Der Titelschriftzug besteht aus zwei Textelementen an derselben Stelle: eines in Papierweiß, das aus dem Foto ausgespart wird, und eines im Glanzlack darüber. Die Glanzfassung malt auf dem Bildschirm nichts und gibt der Platte die Form der Buchstaben, sodass auf dem gedruckten Titel der Schriftzug über dem glänzenden Himmel glänzt.
+
+### 5 · Die Veredelungsansichten und Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` nimmt eine Option `finishes`. `'flat'` ist der Standard und zeigt die Seite, wie sie gedruckt wird; `'map'` blendet die Seite ab und markiert jede Sonderplatte in Falschfarbe, den Lack in Cyan, den Glanz heller als den Soft-Touch; `'sheen'` lässt ein Licht über die Seite wandern. Folio liest dieselbe Veredelungsmaske: Glanz fängt die Lichter, Soft-Touch nimmt sie weg.
+
+## Varianten
+
+### Matt statt Soft-Touch
+
+Ein einfacher Mattlack kostet weniger und zeigt denselben Kontrast, etwas weniger tief.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Glanz nur auf der Schrift
+
+Lassen Sie die Fotos matt und legen Sie den Glanz nur über den Titelschriftzug und die Überschriften: Setzen Sie die Überschriften zweimal, wie den Schriftzug, und entfernen Sie die Kästen über den Bildern.
+
+## Häufige Fehler
+
+- Ein Lack mit dem Hex einer anderen Farbe wird als diese Farbe gedruckt. Geben Sie jedem Lack ein Hex, das sonst nichts verwendet.
+- Was die Seite nach einem Lack malt, spart ihn im PDF aus. Legen Sie einen vollflächigen Lack dorthin, wo die Seite zuletzt gemalt wird, wie hier in die Fußzeile.
+- Soft-Touch wird oft als Kaschierung statt als Lack verkauft. Fragen Sie die Druckerei, welchen Plattennamen sie möchte, und setzen Sie ihn mit `pdfName` in der Farbtabelle.

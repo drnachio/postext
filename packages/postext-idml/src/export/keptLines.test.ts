@@ -10,7 +10,7 @@ const BREAK = '\u2028';
 
 function write(md: string, cfg: PostextConfig, opts: Partial<IdmlOptions> = {}) {
   const doc = build(md, cfg);
-  const result = idmlDocument({ docs: [doc], ...opts });
+  const result = idmlDocument({ docs: [doc], text: 'frames', ...opts });
   const files = unzipSync(result.bytes);
   const stories = Object.keys(files).filter((p) => p.startsWith('Stories/')).map((p) => parseXml(strFromU8(files[p]!)));
   return { doc, result, files, stories, styles: strFromU8(files['Resources/Styles.xml']!) };

@@ -1,0 +1,63 @@
+---
+title: "Um livro cartonado de esconde-esconde com furos em registro"
+summary: "Quatro furos com faca onde a pintura seguinte guarda o que engana, uma janela que desce a um furo menor, cantos arredondados e linha de faca."
+plain: "Um livro cartonado para os pequenos. Cada furo numa página mostra um pedacinho da figura seguinte, o texto faz adivinhar e, ao virar a página, aparece o que era de verdade."
+description: "Um livro cartonado com furos em registro com as pinturas de baixo: formas de dieCuts, cantos arredondados, texto ao redor dos furos e linha de faca."
+question: "Como corto furos nas páginas de um livro, cada um mostrando parte da imagem seguinte?"
+aliases: ["livro de esconde-esconde", "livro cartonado", "furos com faca", "olho mágico", "cantos arredondados", "linha de faca"]
+pageNotes: { "1": "A capa: uma sebe sob o céu azul, o título em vermelho e uma janela redonda na sebe, pela qual um furo menor da página seguinte mostra listras laranja e pretas.", "2": "O verso da capa: a janela atravessa a página à esquerda, a pergunta fica à direita dela e segue em largura total abaixo, e a adivinha em vermelho.", "11": "A porta vermelha de um celeiro com um olho mágico redondo no alto, pelo qual se vê um disco amarelo aceso." }
+---
+
+## O que você vai compor
+
+*Achou! Quem está no jardim?*, um livro cartonado de catorze páginas num quadrado de 160 mm, com os quatro cantos arredondados. Cada pintura tem um furo, e o furo fica bem onde a pintura seguinte guarda a parte que engana o olho: o flanco listrado de um gato dormindo que podia ser um tigre, a lã de uma ovelha que podia ser uma nuvem, uma lanterna que podia ser a lua. A janela da capa é mais larga que o furo de trás, então o primeiro olhar chega duas páginas ao fundo. O texto da esquerda faz adivinhar; a página virada responde. O PDF da gráfica leva a linha de faca numa chapa própria.
+
+## Preparo
+
+### 1 · Furos onde a figura seguinte se entrega
+
+O código é [a resposta curta](#a-resposta-curta) acima. Cada forma é posicionada a partir do canto superior esquerdo do refile, e `dieCuts.pages` diz qual página ela corta, contando da primeira página do livro. Meça o furo na pintura que ele revela, não na página onde é cortado: a sebe, a cerca e a porta são texturas que aceitam um furo em qualquer lugar; o gato e a lanterna, não.
+
+### 2 · Pinturas em registro com os furos
+
+<Excerpt region="pictures" />
+
+Os furos estão em milímetros a partir do refile, então cada pintura pende do refile e passa dele pela sangria nos quatro lados, na tela e na impressão. O estilo das pinturas tira só a margem do pé: o desenho chega ao pé da página, e o texto do verso de trás mantém seus 44 mm de margem superior, que o baixam para baixo do topo dos furos pequenos.
+
+### 3 · A linha de faca na sua chapa
+
+<Excerpt region="die-line" />
+
+O PDF imprime cada página inteira e traça o contorno de cada furo, e de cada folha arredondada, numa separação `Die` em sobreimpressão que nunca é entintada. `convertImages: false` mantém as pinturas como JPEG RGB marcados como sRGB, o que o PDF/X-4 permite, e o arquivo continua pequeno.
+
+### 4 · O livro na mão
+
+<Excerpt region="folio" />
+
+O Folio corta os furos em cada folha e mostra as páginas de baixo com as paredes do corte, e a janela em degraus se lê como profundidade. O cartão vira rígido, e os cantos arredondados são cortados em todas as folhas.
+
+### 5 · Páginas planas que deixam ver
+
+<Excerpt region="see-through" />
+
+No canvas, um furo mostra o que houver atrás do canvas se o renderizador não receber as páginas de baixo. `beneath` as devolve por índice, cada uma pintada com seus próprios furos: assim a capa deixa ver a sebe e, através da sebe, o gato.
+
+## Variações
+
+### Arredonde só os cantos do corte da frente
+
+Um livro ilustrado arredonda os dois cantos longe da lombada e deixa a lombada em esquadro.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Recorte cada folha num formato
+
+Um contorno em unidades de `viewBox` recorta cada folha, espelhado nos versos; prevalece sobre os cantos.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

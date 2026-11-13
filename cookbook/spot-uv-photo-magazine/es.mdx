@@ -1,0 +1,66 @@
+---
+title: "Brillo selectivo sobre una revista en tacto suave"
+summary: "Dos barnices como tintas planas: tacto suave en todas las páginas y brillo sobre las fotos y la cabecera, vistos en Folio y en las vistas de acabados."
+plain: "Una revista de fotografía con un acabado aterciopelado en todas las páginas y otro brillante solo en las fotos y el título. Los barnices no tienen color; la vista 3D y una vista de prueba enseñan dónde están."
+description: "Una revista de fotografía en Postext con barniz de tacto suave en todas las páginas y brillo UV selectivo en fotos y cabecera: dos planchas, Folio y vistas."
+question: "¿Cómo pongo un barniz de tacto suave en todas las páginas y brillo selectivo solo en las fotos?"
+aliases: ["barniz selectivo", "UV selectivo", "tacto suave", "soft touch", "barniz brillo", "barniz mate", "plastificado", "plancha de barniz", "revista de fotografía", "reserva de brillo", "spot UV", "spot varnish"]
+pageNotes: { "1": "La cubierta: un caminante solo en un salar agrietado al anochecer, a sangre, LONG LIGHT en una romana blanca grande sobre el cielo y los titulares en blanco sobre una franja pizarra.", "3": "Un pescador remienda una red naranja en el muelle, a sangre en la parte de arriba de la página, el título El redero y dos columnas de texto.", "6": "La contracubierta: una página pizarra con Long Light en blanco y una línea de colofón debajo." }
+---
+
+## Lo que vas a componer
+
+El número 14 de *Long Light*, una revista de fotografía inventada: seis páginas de 210 × 280 mm, en rústica fresada. Todas las páginas llevan un barniz de tacto suave, el acabado aterciopelado que apaga la hoja y le quita el brillo. Sobre las cinco fotografías y la cabecera la imprenta pone un segundo barniz, brillante, para que las fotos recojan la luz mientras la página de alrededor queda quieta. Ningún barniz tiene color: el lienzo muestra las páginas como se imprimen, y tres vistas de la cubierta junto a Folio enseñan las planchas y el brillo. Folio abre la revista sobre una mesa de mármol con luz de estudio, donde el brillo destella al pasar la hoja.
+
+## Elaboración
+
+### 1 · Cada barniz es una tinta plana con acabado
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un barniz es un color plano con el acabado `varnish` y un lustre: `softTouch` para el aterciopelado y `gloss` para el UV selectivo ([acabados](/es/docs/special-inks-die-cuts#acabados)). El PDF/X-4 pone cada uno en una `Separation` propia, así que la imprenta recibe dos planchas de barniz junto a las cuatro de cuatricromía. En pantalla un barniz no pinta nada; aun así necesita un hex propio, porque un render de impresión distingue las tintas por su hex. Un barniz se sobreimprime por defecto, así que ninguno de los dos cala los colores que tiene debajo.
+
+### 2 · Tacto suave en todas las páginas
+
+<Excerpt region="velvet" />
+
+El tacto suave es una sola caja en el barniz, de sangre a sangre. La lleva el pie porque el pie es lo último que se pinta en la página: el PDF nunca sobreimprime una marca posterior sobre lo pintado antes, así que un texto puesto después del barniz lo calaría. La cubierta y la contracubierta no tienen folio, y su pie lleva solo la caja.
+
+### 3 · Brillo sobre las fotografías
+
+<Excerpt region="gloss" />
+
+Cada fotografía es una imagen con una caja en el brillo encima, del mismo tamaño. La caja va después, así que queda arriba: en la plancha es un rectángulo que cubre la foto justa, que es como se dibuja una plancha de UV selectivo.
+
+### 4 · La cabecera, dos veces
+
+<Excerpt region="cover" />
+
+La cabecera son dos elementos de texto en el mismo sitio: uno en blanco papel, que se cala en la fotografía, y otro en el brillo encima. El del brillo no pinta nada en pantalla y da a la plancha la forma de las letras, así que en la cubierta impresa el título brilla sobre el cielo, que también brilla.
+
+### 5 · Las vistas de acabados y Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` admite la opción `finishes`. `'flat'` es la de por defecto y enseña la página como se imprime; `'map'` aclara la página y marca cada plancha especial en falso color, el barniz en cian, el brillo más claro que el tacto suave; `'sheen'` pasa una luz por la página. Folio lee la misma máscara de acabados: el brillo recoge los reflejos y el tacto suave los quita.
+
+## Variantes
+
+### Mate en lugar de tacto suave
+
+Un barniz mate corriente cuesta menos y da el mismo contraste, algo menos profundo.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Brillo solo en la letra
+
+Deja las fotos en mate y pon el brillo solo sobre la cabecera y los títulos: compón los títulos dos veces, como la cabecera, y quita las cajas de encima de las fotos.
+
+## Errores frecuentes
+
+- Un barniz con el hex de otro color se imprime como ese color. Da a cada barniz un hex que no use nada más.
+- Lo que la página pinta después de un barniz lo cala en el PDF. Pon un barniz general donde la página se pinta al final, como aquí el pie.
+- El tacto suave se vende a menudo como plastificado y no como barniz. Pregunta a la imprenta qué nombre de plancha quiere y ponlo con `pdfName` en la tabla de tintas.

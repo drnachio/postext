@@ -1,0 +1,64 @@
+---
+title: "Una coberta amb finestra que emmarca la portada"
+summary: "Una finestra oval troquelada a la coberta amb dieCuts, mesurada sobre la pintura de la portada perquè la vora caigui a l’or, i la línia de troquel a part."
+plain: "Un llibret de tapa dura amb un conte de Poe, amb una coberta estampada que té un forat oval. Pel forat es veu la cara del retrat imprès a la portada de sota."
+description: "Una finestra oval troquelada a la coberta, en registre amb el retrat de la portada de sota: dieCuts a la pàgina 1, la línia de troquel i Folio en 3D."
+question: "Com troquelo una finestra a la coberta d’un llibre perquè emmarqui una imatge de la pàgina de sota?"
+aliases: ["coberta amb finestra", "coberta troquelada", "finestra oval", "línia de troquel"]
+pageNotes: { "1": "La coberta: un domàs de magranes en or i vermell fosc amb una finestra oval a dalt, per on es veu el rostre pintat d’una noia dins d’un anell daurat; el títol i l’autor van en un plafó fosc a sota.", "2": "L’interior de la coberta, imprès en vellut vermell fosc, amb la finestra oval troquelada.", "3": "La portada: el retrat en el seu marc oval daurat a la morisca sobre una paret de vellut, amb el títol i l’autor en daurat a sota." }
+---
+
+## Què compondràs
+
+*El retrat oval*, el conte d’Edgar Allan Poe de 1842 en el text més breu que va publicar el 1845, com un llibret de tapa dura de deu pàgines en 130 × 195 mm. La coberta és un domàs antic amb una finestra oval troquelada. A sota hi ha la portada, el retrat mateix en el seu marc daurat a la morisca, i la finestra està posada perquè la vora caigui sobre el daurat: tancat, el llibre ensenya el rostre pintat emmarcat dues vegades, per l’or i pel tall. El conte continua en paper crema amb una caplletra, i la contracoberta repeteix el domàs amb el text sobre un plafó fosc. El PDF d’impremta porta el contorn de la finestra en una planxa pròpia.
+
+## Elaboració
+
+### 1 · Una finestra en registre amb el marc
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. La finestra és una `ellipse` a la pàgina 1, col·locada des de la cantonada superior esquerra del tall. Un forat a la pàgina 1 dona a la pàgina 3, així que es mesura sobre la pintura de la portada: aquí l’obertura del marc i la vora exterior es van llegir en píxels sobre la imatge i es van passar a mil·límetres, i la finestra es va posar a un terç de la banda daurada, perquè dins del tall s’hi vegi un anell fi d’or.
+
+### 2 · Pintures penjades del tall
+
+<Excerpt region="plates" />
+
+El troquel es mesura en mil·límetres des del tall, i les pintures també. El domàs sobrepassa el tall en tot el sagnat; el retrat va uns mil·límetres més ample, perquè el marc del quadre quedi centrat a la pàgina i a la finestra. La coberta i la portada treuen el marge inferior, i cadascuna imprimeix títol i autor des del frontmatter.
+
+### 3 · La línia de troquel en la seva planxa
+
+<Excerpt region="die-line" />
+
+El PDF imprimeix la coberta sencera i traça el contorn de la finestra en una separació `Die` en sobreimpressió que mai no s’entinta: el troquelador hi llegeix la forma i la màquina l’omet. `convertImages: false` deixa les pintures com a JPEG sRGB, que PDF/X-4 admet, i el fitxer queda per sota del megabyte.
+
+### 4 · El llibre tancat a la taula
+
+<Excerpt region="folio" />
+
+Amb `binding.cover: 'pages'` la primera pàgina és la tapa davantera, i Folio ensenya el llibre tancat, amb el rostre a la finestra i les parets del tall agafant la llum del llum. Passa la coberta per veure la portada sencera.
+
+### 5 · La coberta plana que deixa veure
+
+<Excerpt region="see-through" />
+
+Al canvas, `beneath` dona al renderitzador la pàgina 3 per a la finestra de la coberta, i la coberta plana també ensenya el rostre. L’interior de la coberta no té res a sota, i el seu forat mostra el fons.
+
+## Variants
+
+### Anomena la planxa com l’espera la màquina de tall
+
+Les taules de tall digital busquen una tinta plana anomenada CutContour, gairebé sempre magenta, i un traç molt fi.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Una finestra rodona
+
+Un cercle ensenya només el rostre; el marc queda amagat sota la coberta fins que es passa.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

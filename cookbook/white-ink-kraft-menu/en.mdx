@@ -1,0 +1,69 @@
+---
+title: "A bakery menu in white ink on kraft"
+summary: "Opaque white as a spot ink on kraft: white type on the brown card, a white card under brown type, and white knocked out of a green panel."
+plain: "A bakery menu printed on brown kraft card. The bakery's name and the headings are in white ink, which shows on brown paper only because the printer adds it as an extra ink. The print file keeps the white on a plate of its own."
+description: "A bakery menu on kraft card in Postext: opaque white as a spot ink, white type, white under colour, white knocked out of colour, and the preflight."
+question: "How do I print white on kraft or brown paper, as type and under the colours?"
+aliases: ["white ink", "opaque white", "kraft paper", "brown paper", "white underlay", "white underprint", "knockout", "overprint", "menu", "café menu", "tinta blanca", "papel kraft"]
+pageNotes: { "1": "The cover on brown kraft: HORNO ALTO in large white slab capitals, a line of small brown capitals, a painted sourdough loaf on a white mount and the address in brown italics.", "3": "A painted cup of coffee on a white mount, AT THE COUNTER in white, coffee and breakfast prices on dotted leaders, and a dark green box with the day's bake in white type.", "4": "SINCE 1987 in white, two paragraphs about the bakery in brown, the opening hours on a white card and the address." }
+---
+
+## What you'll build
+
+The menu of Horno Alto, an invented village bakery: an A5 card of brown kraft folded once, four pages. Kraft has no white in it, so every white on the card is an ink the printer adds: the bakery's name and the course heads straight on the brown, the mounts the three gouache paintings sit on, and the card that carries the opening hours. The prices stand on a tab stop with a dotted leader, in a dark brown printed in process colour. On the coffee page a green panel carries the day's bake in white type cut out of the green. Folio opens the card on an oak counter in daylight.
+
+## Method
+
+### 1 · The paper is kraft, the white is an ink
+
+The code is [the short answer](#the-short-answer) above. The paper is a palette colour authored in CMYK at 0 %: the screen and Folio paint kraft, and no plate prints it. The white is a spot colour with the white finish ([finishes](/en/docs/special-inks-die-cuts#finishes)), named `Opaque White` in the ink table as the printer will be told. The PDF/X-4 file puts it on a `Separation` of its own, next to the four process plates. Its screen hex is a step below `#ffffff`, so the finish mask can tell the ink from a white sheet.
+
+### 2 · White straight on the brown
+
+<Excerpt region="mount" />
+
+The name, the course heads and the titles of the inside pages are type in the white, set in Alfa Slab One. A white ink is less opaque than a black: the brown shows through a fine stroke, so a heavy slab face at 12 pt or more reads where a light serif would turn beige. The mounts are boxes in the same white, 4 mm larger than each painting on every side.
+
+### 3 · Colour on top of the white
+
+The opening hours sit on a card of white ink, in the dark brown of the menu text. A white ink overprints by default, and the brown is set to overprint as well (`overprint: true` on the palette colour), so on press the brown lands on the white instead of cutting its letters out of it.
+
+### 4 · White on top of colour: knock it out
+
+<Excerpt region="panel" />
+
+The press lays the white first and the colours over it, so white type on the green panel would vanish under the green. The panel's type takes a second white on the same plate, with `overprint: false`: the type cuts its shape out of the green and the white fills it. The two whites differ by one step of hex because the PDF tells colours apart by their hex.
+
+### 5 · The prices on a tab stop
+
+<Excerpt region="dishes" />
+
+Each section is a `:::paragraphs` group in the dish style; `:tab` before the price sends it to the end of the measure, with a dotted leader up to it, as in [the bistro menu](/en/cookbook/bistro-menu).
+
+### 6 · What the preflight says
+
+<Excerpt region="preflight" />
+
+`preflightDocument` warns with `whiteInkOnWhite` when a white ink lands on a page whose paper is white or unset, where it shows nothing. On kraft it stays quiet, and the line under the download button lists what is left: the white as a special ink (`spotInkFinish`) and the press order that lays it first (`inkPressOrder`).
+
+### 7 · Folio shows the card on a counter
+
+<Excerpt region="folio" />
+
+Folio paints the white so that it covers the paper's shade, as the ink does, and the card stock with a felt texture makes the brown read as kraft.
+
+## Variations
+
+### A notebook cover
+
+Swap the menu for a title and a pattern of white rules on the front: the paper, the ink and the ink table stay as they are.
+
+### Two hits of white
+
+A printer can lay the white twice for a whiter white on dark kraft. Ask for it on the order; the file stays the same, with one white plate.
+
+## Pitfalls
+
+- A white ink on a page whose paper is white or unset prints nothing you can see. Set `page.backgroundColor` to the stock, in CMYK at 0 %, and the preflight stops warning.
+- The PDF never makes a picture overprint, so a painting over a white box cuts the white away under it: the plate keeps the frame of the mount, and on press the painting's own whites show the kraft. Ask the printer to fill the white plate under the pictures, or set the paintings on white paper stickers.
+- White type over a colour must not overprint. With the default it prints under the colour and disappears.

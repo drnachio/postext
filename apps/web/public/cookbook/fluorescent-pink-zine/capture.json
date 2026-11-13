@@ -1,0 +1,914 @@
+{
+  "schemaVersion": 1,
+  "slug": "fluorescent-pink-zine",
+  "sourceHash": "93542415f1ebe746a7786a57780fa62ca9eaca8da9ab5a67fb77c5778f1b2277",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T16:53:16.841Z",
+  "variants": {
+    "en": {
+      "hash8": "716d2404",
+      "vdtHash": "b35fa595d5f729b1b5e20dcf61a699f81ad2c8f8",
+      "timings": {
+        "importMs": 4232,
+        "fontsMs": 234,
+        "buildMs": 166,
+        "totalMs": 6775,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 5,
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Sans",
+          "sizePt": 8.8,
+          "leadingPt": 12.4
+        },
+        "families": [
+          "Archivo Black",
+          "IBM Plex Mono",
+          "IBM Plex Sans"
+        ],
+        "pages": 8,
+        "ownLines": 212
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 98936,
+          "alt": "Opening page 1: Pink Noise."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 86622,
+          "alt": "Opening page 2: Hello again."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 117356,
+          "alt": "Opening page 3: Three chords and a borrowed amp."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 78858,
+          "alt": "Page 4: What was the first gig like?"
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 111474,
+          "alt": "Opening page 5: The wall. The wall behind the Lavadero, March."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 72954,
+          "alt": "Opening page 6: Every gig until June."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 89662,
+          "alt": "Opening page 7: Heard this spring."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 26066,
+          "alt": "Opening page 8: Pink Noise."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "fluorescent-pink-zine.pdf",
+        "bytes": 1533687,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "fluorescent-pink-zine.postext",
+        "bytes": 423957,
+        "folio": "62fab634",
+        "chapters": [
+          {
+            "pages": 8,
+            "hash": "157a1ad55b3a815b",
+            "lines": "87ed4dd4153d5bf2"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].body.textTransform",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.color",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "print",
+          "print.inks",
+          "print.inks[].aliases",
+          "print.inks[].finish",
+          "print.inks[].name",
+          "print.outputProfile",
+          "print.plates",
+          "print.plates.curves",
+          "print.plates.images",
+          "print.plates.inks",
+          "print.standard",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "print",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 366,
+        "designElements": 16,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::columns"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 3,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Black",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "span-boxes",
+          "special-inks",
+          "spot-inks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 5,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 2,
+          "tracked": 2,
+          "worst": 5
+        },
+        "findings": [
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "2 paragraphs set a line short with tracking (worst −5‰): p. 2 −5‰ “The scene had a strange winter. The Lavadero los…”, p. 7 −5‰ “The garage holds sixty if nobody brings a bike. …”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "7c6fb1e4",
+      "vdtHash": "77e6c7ccb35ca4552f3d695c1d9fc0e46c3fb8cb",
+      "timings": {
+        "importMs": 4358,
+        "fontsMs": 130,
+        "buildMs": 178,
+        "totalMs": 6462,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          148,
+          210
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 5,
+        "mirror": true,
+        "body": {
+          "family": "IBM Plex Sans",
+          "sizePt": 8.8,
+          "leadingPt": 12.4
+        },
+        "families": [
+          "Archivo Black",
+          "IBM Plex Mono",
+          "IBM Plex Sans"
+        ],
+        "pages": 8,
+        "ownLines": 212
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 99814,
+          "alt": "Página de apertura 1: Pink Noise."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 91412,
+          "alt": "Página de apertura 2: Hola otra vez."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 118024,
+          "alt": "Página de apertura 3: Tres acordes y un ampli prestado."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1419,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 83458,
+          "alt": "Página 4: ¿Cómo fue el primer concierto?"
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 115602,
+          "alt": "Página de apertura 5: La pared. La pared de detrás del Lavadero, en marzo."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 83394,
+          "alt": "Página de apertura 6: Todos los conciertos hasta junio."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 91496,
+          "alt": "Página de apertura 7: Lo que sonó esta primavera."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1419,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 28158,
+          "alt": "Página de apertura 8: Pink Noise."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "fluorescent-pink-zine.pdf",
+        "bytes": 1534687,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "fluorescent-pink-zine.postext",
+        "bytes": 424192,
+        "folio": "62fab634",
+        "chapters": [
+          {
+            "pages": 8,
+            "hash": "efdd8ec5c846c49d",
+            "lines": "06313d9d25928b97"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.boldColor",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].body.textTransform",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.color",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "print",
+          "print.inks",
+          "print.inks[].aliases",
+          "print.inks[].finish",
+          "print.inks[].name",
+          "print.outputProfile",
+          "print.plates",
+          "print.plates.curves",
+          "print.plates.images",
+          "print.plates.inks",
+          "print.standard",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "print",
+          "resourceTypes",
+          "unorderedLists"
+        ],
+        "configLeaves": 366,
+        "designElements": 16,
+        "directives": [
+          ":::callout",
+          "::resource",
+          ":::columns"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 3,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Archivo Black",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Mono",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "italic"
+          },
+          {
+            "family": "IBM Plex Sans",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-running-heads",
+          "span-boxes",
+          "special-inks",
+          "spot-inks",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 6,
+          "tracked": 6,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "6 paragraphs set a line short with tracking (worst −10‰, the cap): p. 2 −10‰ “Siete números, y este es el primero impreso a do…”, p. 6 −10‰ “Los escenarios abiertos de los miércoles son nue…”, p. 7 −10‰ “Ocho canciones en diecinueve minutos, grabadas e…”, p. 6 −5‰ “Sáb 2 · Noche de casete: presentación de Hollín …”, p. 6 −5‰ “Mié 20 · Escenario abierto · el Lavadero, 20:30,…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

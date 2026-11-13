@@ -5,6 +5,7 @@
 // page's margins: a novel, a report, a manual. Anything else (a magazine,
 // a brochure, a poster) keeps its pages.
 
+import type { IdmlMargins } from '../model/document.js';
 import { boxHeight, boxWidth } from '../model/geometry.js';
 import { pageSize } from '../resolve/geometry.js';
 import type { OrderedStory } from '../resolve/order.js';
@@ -28,6 +29,15 @@ export function mainStory(stories: readonly OrderedStory[]): OrderedStory | unde
   return best;
 }
 
+/** The widths of a page's columns: as its guides stand when they give
+ *  each column's edges, else of equal width. */
+export function columnWidths(m: IdmlMargins, area: number): number[] {
+  const n = Math.max(1, m.columnCount);
+  const p = m.columnsPositions;
+  if (p.length === 2 * n) return Array.from({ length: n }, (_, i) => p[2 * i + 1]! - p[2 * i]!);
+  return [(area - m.columnGutter * (n - 1)) / n];
+}
+
 export function decideLayout(ctx: Context, stories: readonly OrderedStory[], main: OrderedStory | undefined): { layout: 'pages' | 'flow'; reason: string } {
   if (ctx.opt.layout !== 'auto') return { layout: ctx.opt.layout, reason: `The layout was asked for: ${ctx.opt.layout}.` };
   const pages = allPages(ctx);
@@ -49,9 +59,11 @@ export function decideLayout(ctx: Context, stories: readonly OrderedStory[], mai
     const right = Math.max(inside, outside);
     const b = f.box!;
     const within = b.left >= left - 4 && b.right <= right + 4 && b.top >= m.top - 4 && b.bottom <= size.height - m.bottom + 4;
-    // A frame as wide as the type area, or as one of its columns.
-    const column = (right - left - m.columnGutter * (m.columnCount - 1)) / Math.max(1, m.columnCount);
-    const wide = Math.abs(boxWidth(b) - (right - left)) < 6 || Math.abs(boxWidth(b) - column) < 6;
+    // A frame as wide as the type area, or as one of its columns (of
+    // their own widths when the guides say where each stands: the main
+    // column of a column-and-a-half page).
+    const widths = columnWidths(m, right - left);
+    const wide = Math.abs(boxWidth(b) - (right - left)) < 6 || widths.some((w) => Math.abs(boxWidth(b) - w) < 6);
     if (within && wide && boxHeight(b) > 0) follow++;
   }
   const following = frames.length ? follow / frames.length : 0;

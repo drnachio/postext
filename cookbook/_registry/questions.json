@@ -6190,5 +6190,257 @@
       "ar": "التعليقات، تقسيم الكلمات فيها"
     },
     "theme": "figures"
+  },
+  "Q230": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cut holes through a book’s pages, each showing part of the next picture?",
+      "es": "¿Cómo troquelo agujeros en las páginas de un libro para que cada uno deje ver parte del dibujo siguiente?",
+      "ca": "Com troquelo forats a les pàgines d’un llibre perquè cadascun deixi veure part del dibuix següent?",
+      "zh": "怎样在书页上模切出孔，让每个孔露出下一幅画的一部分？",
+      "ar": "كيف أقصّ فتحات في صفحات كتاب تُظهر كل منها جزءًا من الصورة التالية؟",
+      "ja": "本のページに穴を抜いて、それぞれの穴から次の絵の一部が見えるようにするには？",
+      "pt": "Como corto furos nas páginas de um livro, cada um mostrando parte da imagem seguinte?",
+      "fr": "Comment percer des trous dans les pages d’un livre, chacun laissant voir une partie de l’image suivante ?",
+      "de": "Wie stanze ich Löcher in die Seiten eines Buchs, durch die man jeweils einen Teil des nächsten Bilds sieht?",
+      "it": "Come fustello dei fori nelle pagine di un libro, ognuno dei quali lascia vedere parte dell’immagine successiva?"
+    },
+    "index": {
+      "en": "Die-cuts, peek-a-boo holes",
+      "es": "Troqueles, agujeros de cucú",
+      "ca": "Troquels, forats de cucut",
+      "zh": "模切，躲猫猫孔",
+      "ar": "القص بالقالب، فتحات الاختباء",
+      "ja": "抜き穴、いないいないばあの",
+      "pt": "Facas especiais, furos de esconde-esconde",
+      "fr": "Découpes, trous de coucou",
+      "de": "Stanzungen, Gucklöcher",
+      "it": "Fustelle, fori cucù"
+    },
+    "theme": "output"
+  },
+  "Q231": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cut a window in a cover that frames the title page beneath?",
+      "es": "¿Cómo troquelo una ventana en la cubierta que enmarque la portada de debajo?",
+      "ca": "Com troquelo una finestra a la coberta que emmarqui la portada de sota?",
+      "zh": "怎样在封面上开一个窗，框住下面的书名页？",
+      "ar": "كيف أقصّ نافذة في الغلاف تؤطّر صفحة العنوان تحتها؟",
+      "ja": "表紙に窓を抜いて、下の扉ページを額縁のように見せるには？",
+      "pt": "Como corto uma janela na capa que emoldure a folha de rosto embaixo?",
+      "fr": "Comment découper dans une couverture une fenêtre qui encadre la page de titre dessous ?",
+      "de": "Wie stanze ich ein Fenster in den Umschlag, das die Titelseite darunter rahmt?",
+      "it": "Come fustello in copertina una finestra che incornici il frontespizio sotto?"
+    },
+    "index": {
+      "en": "Covers, die-cut window in",
+      "es": "Cubiertas, ventana troquelada en las",
+      "ca": "Cobertes, finestra troquelada a les",
+      "zh": "封面，模切窗口",
+      "ar": "الأغلفة، نافذة مقصوصة فيها",
+      "ja": "表紙の窓抜き",
+      "pt": "Capas, janela recortada nas",
+      "fr": "Couvertures, fenêtre découpée dans les",
+      "de": "Umschläge, gestanztes Fenster in",
+      "it": "Copertine, finestra fustellata nelle"
+    },
+    "theme": "output"
+  },
+  "Q232": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a tunnel book whose holes go twenty pages deep?",
+      "es": "¿Cómo hago un libro túnel cuyos agujeros dejen ver veinte páginas de fondo?",
+      "ca": "Com faig un llibre túnel els forats del qual deixin veure vint pàgines de fons?",
+      "zh": "怎样做一本孔洞能看穿二十页的隧道书？",
+      "ar": "كيف أصنع كتاب نفق تكشف فتحاته عشرين صفحة في العمق؟",
+      "ja": "穴から二十ページ奥まで見えるトンネルブックを作るには？",
+      "pt": "Como faço um livro túnel cujos furos deixam ver vinte páginas de profundidade?",
+      "fr": "Comment faire un livre tunnel dont les trous laissent voir vingt pages en profondeur ?",
+      "de": "Wie mache ich ein Tunnelbuch, dessen Löcher zwanzig Seiten tief blicken lassen?",
+      "it": "Come faccio un libro tunnel i cui fori lascino vedere venti pagine in profondità?"
+    },
+    "index": {
+      "en": "Tunnel books",
+      "es": "Libros túnel",
+      "ca": "Llibres túnel",
+      "zh": "隧道书",
+      "ar": "كتب النفق",
+      "ja": "トンネルブック",
+      "pt": "Livros túnel",
+      "fr": "Livres tunnels",
+      "de": "Tunnelbücher",
+      "it": "Libri tunnel"
+    },
+    "theme": "output"
+  },
+  "Q233": {
+    "kind": "how",
+    "text": {
+      "en": "How do I send the die-maker a die line on its own plate in the PDF?",
+      "es": "¿Cómo entrego al troquelista la línea de troquel en una plancha propia del PDF?",
+      "ca": "Com lliuro al troquelista la línia de troquel en una planxa pròpia del PDF?",
+      "zh": "怎样在PDF里把模切线放在单独的色版上交给模切版制作者？",
+      "ar": "كيف أسلّم صانع القالب خط القص على لوح خاص به في ملف PDF؟",
+      "ja": "抜き型の線をPDFの専用の版に載せて抜き型屋に渡すには？",
+      "pt": "Como entrego a quem faz a faca a linha de faca numa chapa própria do PDF?",
+      "fr": "Comment fournir au fabricant de formes le tracé de découpe sur une plaque à part dans le PDF ?",
+      "de": "Wie gebe ich dem Stanzformenbauer die Stanzlinie auf einer eigenen Platte im PDF?",
+      "it": "Come consegno a chi fa la fustella la linea di fustella su una lastra a parte nel PDF?"
+    },
+    "index": {
+      "en": "Die line, plate of its own",
+      "es": "Línea de troquel, plancha propia",
+      "ca": "Línia de troquel, planxa pròpia",
+      "zh": "模切线，单独色版",
+      "ar": "خط القص، لوح خاص",
+      "ja": "抜き型の線、専用の版",
+      "pt": "Linha de faca, chapa própria",
+      "fr": "Tracé de découpe, plaque à part",
+      "de": "Stanzlinie, eigene Platte",
+      "it": "Linea di fustella, lastra propria"
+    },
+    "theme": "output"
+  },
+  "Q222": {
+    "kind": "how",
+    "text": {
+      "en": "How do I stamp a cover and the rules of a book in gold foil, and send the foil to the printer on its own plate?",
+      "es": "¿Cómo estampo en oro una cubierta y los filetes de un libro, y mando el oro al impresor en una plancha aparte?",
+      "ca": "Com estampo en or una coberta i els filets d’un llibre, i envio l’or a l’impressor en una planxa a part?",
+      "fr": "Comment dorer à chaud une couverture et les filets d’un livre, et envoyer la dorure à l’imprimeur sur une plaque à part ?",
+      "de": "Wie präge ich einen Umschlag und die Linien eines Buches in Goldfolie und schicke die Folie auf einer eigenen Platte an die Druckerei?",
+      "it": "Come stampo in oro a caldo una copertina e i filetti di un libro, e mando la lamina allo stampatore su una lastra a parte?",
+      "pt": "Como faço hot stamping dourado numa capa e nos fios de um livro, e mando o dourado para a gráfica numa chapa à parte?",
+      "zh": "怎样给封面和书中的线条烫金，并把烫金单独作为一块印版交给印厂？",
+      "ja": "表紙と本文の罫を金箔押しにして、箔を別版として印刷所に渡すには？",
+      "ar": "كيف أختم غلافًا وخطوط كتاب بالذهب الحراري، وأرسل الذهب إلى المطبعة على لوح مستقل؟"
+    },
+    "index": {
+      "en": "Gold foil, stamped",
+      "es": "Oro en caliente",
+      "ca": "Daurat en calent",
+      "fr": "Dorure à chaud",
+      "de": "Goldprägung",
+      "it": "Oro a caldo",
+      "pt": "Hot stamping dourado",
+      "zh": "烫金",
+      "ja": "金箔押し",
+      "ar": "الذهب الحراري"
+    },
+    "theme": "output"
+  },
+  "Q223": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a report in four colours plus our corporate Pantone when every file names the ink differently?",
+      "es": "¿Cómo imprimo una memoria a cuatro tintas y nuestro Pantone si cada archivo llama a la tinta de una manera?",
+      "ca": "Com imprimeixo una memòria a quatre tintes més el nostre Pantone corporatiu, si cada fitxer anomena la tinta d’una manera?",
+      "fr": "Comment imprimer un rapport en quadri plus notre Pantone de marque, quand chaque fichier nomme l’encre autrement ?",
+      "de": "Wie drucke ich einen Bericht vierfarbig plus unsere Pantone-Hausfarbe, wenn jede Datei die Farbe anders nennt?",
+      "it": "Come stampo un rapporto in quadricromia più il nostro Pantone aziendale, se ogni file chiama l’inchiostro in un altro modo?",
+      "pt": "Como imprimo um relatório em quatro cores mais o nosso Pantone institucional, se cada arquivo chama a tinta de um jeito?",
+      "zh": "报告用四色加上我们的企业潘通色印刷，而每个文件给这种油墨起的名字都不一样，该怎么办？",
+      "ja": "報告書をプロセス4色と自社のパントン特色で刷りたいが、ファイルごとにインキの名前が違うときは？",
+      "ar": "كيف أطبع تقريرًا بالألوان الأربعة مع لون بانتون الخاص بمؤسستنا، وكل ملف يسمّي الحبر باسم مختلف؟"
+    },
+    "index": {
+      "en": "Corporate spot colour",
+      "es": "Tinta corporativa",
+      "ca": "Tinta corporativa",
+      "fr": "Ton direct de marque",
+      "de": "Hausfarbe als Sonderfarbe",
+      "it": "Tinta aziendale",
+      "pt": "Cor institucional especial",
+      "zh": "企业专色",
+      "ja": "コーポレート特色",
+      "ar": "لون المؤسسة الخاص"
+    },
+    "theme": "output"
+  },
+  "Q224": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a zine in black and a fluorescent pink only, with the photographs as duotones?",
+      "es": "¿Cómo imprimo un fanzine solo en negro y rosa flúor, con las fotos en duotono?",
+      "ca": "Com imprimeixo un fanzín només en negre i rosa fluorescent, amb les fotos en duotò?",
+      "fr": "Comment imprimer un fanzine en noir et rose fluo seulement, avec les photos en bichromie ?",
+      "de": "Wie drucke ich ein Zine nur in Schwarz und Neonpink, mit den Fotos als Duplex?",
+      "it": "Come stampo una fanzine solo in nero e rosa fluo, con le foto in bicromia?",
+      "pt": "Como imprimo um fanzine só em preto e rosa flúor, com as fotos em duotone?",
+      "zh": "怎样只用黑色和荧光粉红印一本小志，并把照片印成双色调？",
+      "ja": "ジンを黒と蛍光ピンクの2色だけで刷り、写真をダブルトーンにするには？",
+      "ar": "كيف أطبع مجلة صغيرة بالأسود والوردي الفلوري فقط، والصور بلونين؟"
+    },
+    "index": {
+      "en": "Fluorescent ink, two-plate job",
+      "es": "Tinta flúor a dos planchas",
+      "ca": "Tinta fluorescent a dues planxes",
+      "fr": "Encre fluo sur deux plaques",
+      "de": "Leuchtfarbe im Zweifarbendruck",
+      "it": "Inchiostro fluo a due lastre",
+      "pt": "Tinta flúor em duas chapas",
+      "zh": "双版荧光油墨",
+      "ja": "2版の蛍光インキ",
+      "ar": "حبر فلوري على لوحين"
+    },
+    "theme": "output"
+  },
+  "Q225": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print white on kraft or brown paper, as type and under the colours?",
+      "es": "¿Cómo imprimo en blanco sobre papel kraft, como letra y debajo de los colores?",
+      "ca": "Com imprimeixo en blanc sobre paper kraft, com a lletra i sota els colors?",
+      "fr": "Comment imprimer du blanc sur papier kraft, en texte et sous les couleurs ?",
+      "de": "Wie drucke ich Weiß auf Kraftpapier, als Schrift und unter den Farben?",
+      "it": "Come stampo il bianco su carta kraft, come testo e sotto i colori?",
+      "pt": "Como imprimo branco em papel kraft, como texto e sob as cores?",
+      "zh": "怎样在牛皮纸上印白色，既印文字，也垫在彩色下面？",
+      "ja": "クラフト紙に白を刷るには？文字として、また色の下地として。",
+      "ar": "كيف أطبع الأبيض على ورق الكرافت، نصًا وتحت الألوان؟"
+    },
+    "index": {
+      "en": "White ink on kraft paper",
+      "es": "Tinta blanca sobre kraft",
+      "ca": "Tinta blanca sobre kraft",
+      "fr": "Encre blanche sur kraft",
+      "de": "Weiße Farbe auf Kraftpapier",
+      "it": "Inchiostro bianco su kraft",
+      "pt": "Tinta branca sobre kraft",
+      "zh": "牛皮纸上的白墨",
+      "ja": "クラフト紙の白インキ",
+      "ar": "حبر أبيض على الكرافت"
+    },
+    "theme": "output"
+  },
+  "Q226": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put a soft-touch varnish on every page and a spot gloss over the photographs only?",
+      "es": "¿Cómo pongo un barniz de tacto suave en todas las páginas y brillo selectivo solo en las fotos?",
+      "ca": "Com poso un vernís de tacte suau a totes les pàgines i brillantor selectiva només a les fotos?",
+      "fr": "Comment poser un vernis toucher doux sur toutes les pages et un vernis sélectif sur les photos ?",
+      "de": "Wie lege ich Soft-Touch-Lack auf jede Seite und partiellen Glanzlack nur auf die Fotos?",
+      "it": "Come metto una vernice soft touch su ogni pagina e una lucida serigrafica solo sulle foto?",
+      "pt": "Como aplico verniz soft touch em todas as páginas e verniz localizado brilhante só nas fotos?",
+      "zh": "怎样给每页上柔感涂层，只在照片上局部上光油？",
+      "ja": "全ページにソフトタッチニス、写真だけに部分グロスニスをかけるには？",
+      "ar": "كيف أضع ورنيشًا مخمليًا على كل صفحة وورنيشًا لامعًا موضعيًا على الصور وحدها؟"
+    },
+    "index": {
+      "en": "Spot UV over soft touch",
+      "es": "Brillo selectivo sobre tacto suave",
+      "ca": "Brillantor selectiva sobre tacte suau",
+      "fr": "Vernis sélectif sur toucher doux",
+      "de": "Partieller UV-Lack auf Soft-Touch",
+      "it": "Vernice UV selettiva su soft touch",
+      "pt": "Verniz localizado sobre soft touch",
+      "zh": "柔感涂层上的局部UV",
+      "ja": "ソフトタッチの上の部分UV",
+      "ar": "ورنيش UV موضعي فوق الملمس المخملي"
+    },
+    "theme": "output"
   }
 }

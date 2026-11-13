@@ -1,0 +1,170 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 192,
+  "status": "published",
+  "chapter": "output",
+  "order": 340,
+  "level": 3,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "special-inks"
+    ],
+    "also": [
+      "spot-inks",
+      "pdf-colour-space",
+      "folio-viewer",
+      "folio-appearance",
+      "color-palette",
+      "covers",
+      "heading-styles",
+      "opener-design",
+      "design-elements",
+      "design-images",
+      "running-heads",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q226"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "A walker on a salt flat at dusk, on the cover",
+          "es": "Un caminante en un salar al anochecer, en la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "saltflat-800.jpg"
+      },
+      {
+        "what": {
+          "en": "A fisherman mending a net",
+          "es": "Un pescador remendando una red"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "nets-1100.jpg"
+      },
+      {
+        "what": {
+          "en": "Pines in morning fog",
+          "es": "Pinos en la niebla de la mañana"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fog-800.jpg"
+      },
+      {
+        "what": {
+          "en": "A desert road between mesas",
+          "es": "Una carretera en el desierto entre mesetas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "road-1100.jpg"
+      },
+      {
+        "what": {
+          "en": "The salt flat at sunset, on the back cover",
+          "es": "El salar a la puesta de sol, en la contracubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "dusk-560.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Bodoni Moda",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Serif 4",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Source Sans 3",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13",
+  "downloads": {
+    "pdf": true
+  },
+  "related": [
+    "gold-foil-poetry-cover",
+    "white-ink-kraft-menu",
+    "fluorescent-pink-zine"
+  ],
+  "folio": {
+    "tilt": 26,
+    "yaw": -18,
+    "paper": {
+      "type": "coatedMatte",
+      "grammage": 150
+    },
+    "binding": {
+      "type": "paperback",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "marble"
+    },
+    "lighting": {
+      "environment": "studio",
+      "intensity": 1.15
+    }
+  }
+}

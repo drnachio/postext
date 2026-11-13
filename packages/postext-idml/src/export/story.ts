@@ -9,6 +9,7 @@ import { resolvedLocale } from 'postext/writer';
 import { resolveTabSettings } from 'postext/writer';
 import { linesRuns, type LineStop, paragraphJustification, paragraphRuns, sameProps, textScale, type TextRun } from './paragraphs.js';
 import { keptParagraphs, rangeXml } from './keptLines.js';
+import { itemJoin } from './thread.js';
 import { paragraphStyle } from './styles.js';
 import {
   attr,
@@ -128,6 +129,20 @@ function lineIndents(w: Writer, item: TextItem, edge: { left: number; right: num
   return { left: pt(left), first: pt(first), right: pt(right) };
 }
 
+/** In a thread, the space under a heading: the room between its last
+ *  line and the paragraph after it in its frame, less the space that
+ *  paragraph's style keeps above it, so the paragraphs of one style after
+ *  any heading keep that style's space (#1559). */
+function headingSpaceAfter(w: Writer, item: StoryItem, next: StoryItem | undefined, frame: VDTFrame | undefined): number {
+  const tail = item.lines[item.lines.length - 1];
+  const head = next?.lines[0];
+  if (item.role !== 'heading' || !tail || !head || next!.frame !== item.frame || next!.joinsPrevious) return 0;
+  const gap = (head.baseline - tail.baseline - head.lineHeight) * w.k;
+  const style = engineStyle(w, next!, frame);
+  const above = style ? style.marginTopPx * textScale(frame) * w.k : 0;
+  return Math.max(0, gap - above);
+}
+
 /** A paragraph of a story, written once the next one has said how far
  *  apart they stand. */
 export interface StoryPara {
@@ -139,8 +154,10 @@ export interface StoryPara {
   ranges: string;
   /** The rest of the paragraph before it (a paragraph a frame break split). */
   joins?: boolean;
-  /** The text after it starts in the next frame of the chain. */
-  frameBreak?: boolean;
+  /** The text after it starts in the next frame of the chain
+   *  (`NextFrame`), or on the next page (`NextPage`: a chapter's end in a
+   *  thread). */
+  breakType?: 'NextFrame' | 'NextPage';
   /** Properties the paragraph sets beside its tab stops (a vertical
    *  paragraph's line-breaking and spacing sets). */
   properties?: string;
@@ -163,8 +180,8 @@ function paraXml(p: StoryPara, end: boolean): string {
   const props = set ? `<Properties>${set}</Properties>` : '';
   const ranges = end
     ? p.ranges
-    : p.frameBreak
-      ? `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]" ParagraphBreakType="NextFrame"><Br/></CharacterStyleRange>`
+    : p.breakType
+      ? `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"${attr('ParagraphBreakType', p.breakType)}><Br/></CharacterStyleRange>`
       : p.ranges.endsWith('</CharacterStyleRange>')
         ? p.ranges.replace(/<\/CharacterStyleRange>$/, '<Br/></CharacterStyleRange>')
         : `${p.ranges}<CharacterStyleRange AppliedCharacterStyle="CharacterStyle/$ID/[No character style]"><Br/></CharacterStyleRange>`;
@@ -205,15 +222,17 @@ export function storyPartXml(id: string, paragraphs: string, rtl = false, vertic
   );
 }
 
-/** The paragraphs of a story, or of a table cell: `storyXml`'s rules. */
-export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | undefined): string {
+/** The paragraphs of a story, or of a table cell: `storyXml`'s rules.
+ *  `end`: a break after the last paragraph (a chapter of a thread that
+ *  another follows), which then ends in a paragraph return. */
+export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | undefined, end?: 'NextPage'): string {
   const keep = keepsLines(w);
   const paras: StoryPara[] = [];
   let prev: StoryItem | undefined;
   const sc = textScale(frame);
   const edges = textEdges(items);
   let marker: { runs: TextRun[]; x: number } | undefined;
-  items.forEach((item) => {
+  items.forEach((item, at) => {
     if (item.role === 'marker') {
       marker = { runs: paragraphRuns(w, item), x: item.lines[0]?.runs[0]?.x ?? item.bbox.x };
       return;
@@ -256,7 +275,7 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
     const indents = lineIndents(w, item, edge, turnover);
     const base: ParagraphFormat = hang
       ? { ...NO_FORMAT, rightIndent: indents.right }
-      : { leftIndent: indents.left, firstLineIndent: indents.first, rightIndent: indents.right, spaceAfter: engine ? engine.marginBottomPx * sc * w.k : 0, tabs };
+      : { leftIndent: indents.left, firstLineIndent: indents.first, rightIndent: indents.right, spaceAfter: engine ? engine.marginBottomPx * sc * w.k : (w.joins ? headingSpaceAfter(w, item, items[at + 1], frame) : 0), tabs };
     // The tab after a list marker stops at the text's indent, not at
     // InDesign's default stops.
     const format: ParagraphFormat = joins
@@ -293,12 +312,21 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
         if (keep && gap < -0.05) firstLeading = Math.max(0.1, leading + gap);
       }
     }
-    if (keep && last && prev && prev.frame !== item.frame) last.frameBreak = true;
+    // Boxes anchored above the first line take their room in the column
+    // in InDesign: the space above the paragraph is what is left of it.
+    const anchors = item.anchors?.join('') ?? '';
+    if (anchors && spaceBefore !== undefined) spaceBefore = Math.max(0, spaceBefore - (item.anchorHeight ?? 0) * w.k) || undefined;
+    if (keep && last && prev && prev.frame !== item.frame) last.breakType = 'NextFrame';
+    // A column the author broke ends in a frame break, its lines kept or not.
+    else if (last && item.columnBreak) last.breakType = 'NextFrame';
+    // In a thread, what the paragraph end before this item was (`thread.ts`).
+    const join = w.joins && last && !joins ? itemJoin(w, prev, item) : undefined;
     prev = item;
     if (keep) {
-      paras.push(...keptParagraphs(w, item, perLine!, { style, edge, format, hang: !!hang, firstLeading, spaceBefore, stops }));
+      paras.push(...keptParagraphs(w, item, perLine!, { style, edge, format, hang: !!hang, firstLeading, spaceBefore, stops, ...(join ? { join } : {}), ...(anchors ? { lead: anchors } : {}) }));
       return;
     }
+    if (join) w.joins!.push(join);
     let local = '';
     if (justification && style.justification !== justification) local += attr('Justification', justification);
     // Leading is a character's: every range says the paragraph's own.
@@ -311,7 +339,8 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
       local += VERTICAL_REFLOW;
       w.warn('text.vertical.kinsoku', "Vertical text left to InDesign's composer takes the document's line-breaking (kinsoku) and spacing (mojikumi) sets: choose them in InDesign");
     }
-    paras.push({ style, attrs: local, format, ranges: ranges.join(''), ...(joins ? { joins } : {}), ...(spaceBefore !== undefined ? { spaceBefore } : {}) });
+    paras.push({ style, attrs: local, format, ranges: anchors + ranges.join(''), ...(joins ? { joins } : {}), ...(spaceBefore !== undefined ? { spaceBefore } : {}) });
   });
-  return paras.map((p, i) => paraXml(p, i === paras.length - 1 || !!paras[i + 1]!.joins)).join('');
+  if (end && paras.length) paras[paras.length - 1]!.breakType = end;
+  return paras.map((p, i) => paraXml(p, (i === paras.length - 1 && !end) || !!paras[i + 1]?.joins)).join('');
 }

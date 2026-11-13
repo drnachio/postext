@@ -28475,5 +28475,741 @@
         "exerciseStyles[].digital"
       ]
     }
+  },
+  "die-cuts": {
+    "label": {
+      "en": "Die-cut holes",
+      "es": "Agujeros troquelados",
+      "ca": "Forats troquelats",
+      "zh": "模切孔",
+      "ar": "فتحات مقصوصة بالقالب",
+      "ja": "抜き穴",
+      "pt": "Furos com faca especial",
+      "fr": "Trous découpés",
+      "de": "Gestanzte Löcher",
+      "it": "Fori fustellati"
+    },
+    "definition": {
+      "en": "dieCuts.shapes and dieCuts.pages (or a :::diecut container) cut a hole through a page and its leaf; the text on both sides runs round it.",
+      "es": "dieCuts.shapes y dieCuts.pages (o un contenedor :::diecut) cortan un agujero en una página y su hoja; el texto de las dos caras lo rodea.",
+      "ca": "dieCuts.shapes i dieCuts.pages (o un contenidor :::diecut) tallen un forat en una pàgina i el seu full; el text de les dues cares l’envolta.",
+      "zh": "dieCuts.shapes与dieCuts.pages（或:::diecut容器）在一页及其纸页上切出一个孔，两面的文字都绕开它。",
+      "ar": "تقصّ dieCuts.shapes وdieCuts.pages (أو حاوية :::diecut) فتحة في الصفحة وورقتها، ويلتفّ النص حولها على الوجهين.",
+      "ja": "dieCuts.shapesとdieCuts.pages（または:::diecutコンテナー）で、ページとその丁に穴を抜きます。表裏の文字は穴をよけて組まれます。",
+      "pt": "dieCuts.shapes e dieCuts.pages (ou um contêiner :::diecut) cortam um furo numa página e na sua folha; o texto das duas faces contorna o furo.",
+      "fr": "dieCuts.shapes et dieCuts.pages (ou un conteneur :::diecut) percent un trou dans une page et son feuillet ; le texte des deux faces le contourne.",
+      "de": "dieCuts.shapes und dieCuts.pages (oder ein :::diecut-Container) stanzen ein Loch in eine Seite und ihr Blatt; der Text beider Seiten läuft darum herum.",
+      "it": "dieCuts.shapes e dieCuts.pages (o un contenitore :::diecut) tagliano un foro in una pagina e nel suo foglio; il testo delle due facciate gli gira attorno."
+    },
+    "aliases": {
+      "en": [
+        "die-cut",
+        "die cut",
+        "hole",
+        "peephole",
+        "window",
+        ":::diecut",
+        "die"
+      ],
+      "es": [
+        "troquel",
+        "troquelado",
+        "agujero",
+        "ventana",
+        ":::diecut"
+      ],
+      "ca": [
+        "troquel",
+        "troquelat",
+        "forat",
+        "finestra",
+        ":::diecut"
+      ],
+      "zh": [
+        "模切",
+        "挖孔",
+        "开窗",
+        ":::diecut"
+      ],
+      "ar": [
+        "قص بالقالب",
+        "فتحة",
+        "نافذة",
+        ":::diecut"
+      ],
+      "ja": [
+        "抜き加工",
+        "型抜き",
+        "穴あき",
+        "窓抜き",
+        ":::diecut"
+      ],
+      "pt": [
+        "faca especial",
+        "furo",
+        "janela",
+        "corte especial",
+        ":::diecut"
+      ],
+      "fr": [
+        "découpe",
+        "trou",
+        "fenêtre",
+        "emporte-pièce",
+        ":::diecut"
+      ],
+      "de": [
+        "Stanzung",
+        "Loch",
+        "Fenster",
+        "Stanzform",
+        ":::diecut"
+      ],
+      "it": [
+        "fustella",
+        "fustellatura",
+        "foro",
+        "finestra",
+        ":::diecut"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "Die-cuts",
+        "es": "Troqueles",
+        "ca": "Troquels",
+        "zh": "模切",
+        "ar": "القص بالقالب",
+        "ja": "抜き加工",
+        "pt": "Facas especiais",
+        "fr": "Découpes",
+        "de": "Stanzungen",
+        "it": "Fustelle"
+      }
+    },
+    "detect": {
+      "config": [
+        "dieCuts.shapes"
+      ],
+      "markdown": [
+        "^:::\\s*diecut\\b"
+      ]
+    }
+  },
+  "die-cut-leaves": {
+    "label": {
+      "en": "Holes through several leaves",
+      "es": "Agujeros a través de varias hojas",
+      "ca": "Forats a través de diversos fulls",
+      "zh": "穿过多张纸页的孔",
+      "ar": "فتحات تخترق عدة أوراق",
+      "ja": "複数の丁を貫く穴",
+      "pt": "Furos através de várias folhas",
+      "fr": "Trous à travers plusieurs feuillets",
+      "de": "Löcher durch mehrere Blätter",
+      "it": "Fori attraverso più fogli"
+    },
+    "definition": {
+      "en": "A hole cuts both sides of its leaf, mirrored on the verso, and leaves: N carries it through the next leaves; the canvas and Folio show the pages beneath, as deep as the holes line up.",
+      "es": "Un agujero corta las dos caras de su hoja, en espejo en el verso, y leaves: N lo lleva por las hojas siguientes; el canvas y Folio muestran las páginas de debajo, tan hondo como se alinean los agujeros.",
+      "ca": "Un forat talla les dues cares del full, en mirall al vers, i leaves: N el porta pels fulls següents; el canvas i Folio mostren les pàgines de sota, tan endins com s’alineen els forats.",
+      "zh": "孔切穿所在纸页的两面，背面左右镜像；leaves: N让它穿过后面的纸页。画布和Folio在孔里显示下面的页面，孔对得多深就显示多深。",
+      "ar": "تقصّ الفتحة وجهي ورقتها، معكوسة على الظهر، وleaves: N تمدّها عبر الأوراق التالية؛ ويُظهر canvas وFolio الصفحات التي تحتها بقدر ما تتطابق الفتحات.",
+      "ja": "穴は丁の表裏を抜き、裏では左右反転します。leaves: Nで後ろの丁まで抜けます。キャンバスとFolioは、穴が重なる深さまで下のページを見せます。",
+      "pt": "Um furo corta as duas faces da sua folha, espelhado no verso, e leaves: N o leva pelas folhas seguintes; o canvas e o Folio mostram as páginas de baixo, até onde os furos se alinham.",
+      "fr": "Un trou perce les deux faces de son feuillet, en miroir au verso, et leaves: N le prolonge dans les feuillets suivants ; le canvas et Folio montrent les pages dessous, aussi loin que les trous s’alignent.",
+      "de": "Ein Loch schneidet beide Seiten seines Blatts, auf der Rückseite gespiegelt, und leaves: N führt es durch die folgenden Blätter; Canvas und Folio zeigen die Seiten darunter, so tief die Löcher übereinanderliegen.",
+      "it": "Un foro taglia le due facciate del suo foglio, specchiato sul verso, e leaves: N lo porta nei fogli successivi; il canvas e Folio mostrano le pagine sotto, fin dove i fori sono allineati."
+    },
+    "aliases": {
+      "en": [
+        "leaves",
+        "tunnel book",
+        "see-through",
+        "mirrored hole",
+        "seeThrough",
+        "beneath"
+      ],
+      "es": [
+        "hojas",
+        "libro túnel",
+        "ver a través",
+        "agujero en espejo",
+        "beneath"
+      ],
+      "ca": [
+        "fulls",
+        "llibre túnel",
+        "veure a través",
+        "forat en mirall",
+        "beneath"
+      ],
+      "zh": [
+        "纸页",
+        "隧道书",
+        "透视",
+        "镜像孔",
+        "beneath"
+      ],
+      "ar": [
+        "أوراق",
+        "كتاب النفق",
+        "الرؤية عبر الفتحة",
+        "beneath"
+      ],
+      "ja": [
+        "丁",
+        "トンネルブック",
+        "のぞき穴",
+        "反転した穴",
+        "beneath"
+      ],
+      "pt": [
+        "folhas",
+        "livro túnel",
+        "ver através",
+        "furo espelhado",
+        "beneath"
+      ],
+      "fr": [
+        "feuillets",
+        "livre tunnel",
+        "voir à travers",
+        "trou en miroir",
+        "beneath"
+      ],
+      "de": [
+        "Blätter",
+        "Tunnelbuch",
+        "Durchblick",
+        "gespiegeltes Loch",
+        "beneath"
+      ],
+      "it": [
+        "fogli",
+        "libro tunnel",
+        "vedere attraverso",
+        "foro specchiato",
+        "beneath"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "Leaves and mirroring",
+        "es": "Las dos caras de la hoja",
+        "ca": "Fulls i mirall",
+        "zh": "纸页与镜像",
+        "ar": "الأوراق والانعكاس",
+        "ja": "丁と左右反転",
+        "pt": "Folhas e espelhamento",
+        "fr": "Feuillets et symétrie",
+        "de": "Blätter und Spiegelung",
+        "it": "Fogli e specchiatura"
+      }
+    }
+  },
+  "die-cut-corners": {
+    "label": {
+      "en": "Rounded corners and shaped books",
+      "es": "Esquinas redondeadas y libros con forma",
+      "ca": "Cantonades arrodonides i llibres amb forma",
+      "zh": "圆角与异形书",
+      "ar": "الزوايا المستديرة والكتب بأشكال مقصوصة",
+      "ja": "角丸と型抜きの本",
+      "pt": "Cantos arredondados e livros recortados",
+      "fr": "Coins arrondis et livres découpés en forme",
+      "de": "Abgerundete Ecken und Bücher in Form",
+      "it": "Angoli arrotondati e libri sagomati"
+    },
+    "definition": {
+      "en": "dieCuts.corners rounds the corners of every leaf (the fore-edge ones or all four), and dieCuts.outline cuts every leaf to a shape.",
+      "es": "dieCuts.corners redondea las esquinas de cada hoja (las del corte delantero o las cuatro), y dieCuts.outline recorta cada hoja con una forma.",
+      "ca": "dieCuts.corners arrodoneix les cantonades de cada full (les del tall davanter o totes quatre), i dieCuts.outline retalla cada full amb una forma.",
+      "zh": "dieCuts.corners把每张纸页的角切圆（切口一侧的角或四个角），dieCuts.outline把每张纸页切成一个形状。",
+      "ar": "تجعل dieCuts.corners زوايا كل ورقة مستديرة (زوايا الحافة الأمامية أو الأربع)، وتقصّ dieCuts.outline كل ورقة على شكل.",
+      "ja": "dieCuts.cornersで各丁の角を丸め（小口側か四隅）、dieCuts.outlineで各丁を形に抜きます。",
+      "pt": "dieCuts.corners arredonda os cantos de cada folha (os do corte da frente ou os quatro), e dieCuts.outline recorta cada folha num formato.",
+      "fr": "dieCuts.corners arrondit les coins de chaque feuillet (ceux de la gouttière ou les quatre), et dieCuts.outline découpe chaque feuillet selon une forme.",
+      "de": "dieCuts.corners rundet die Ecken jedes Blatts ab (die am Vorderschnitt oder alle vier), und dieCuts.outline schneidet jedes Blatt in eine Form.",
+      "it": "dieCuts.corners arrotonda gli angoli di ogni foglio (quelli del taglio davanti o tutti e quattro), e dieCuts.outline sagoma ogni foglio."
+    },
+    "aliases": {
+      "en": [
+        "rounded corners",
+        "corner rounding",
+        "shaped book",
+        "board book",
+        "outline"
+      ],
+      "es": [
+        "esquinas redondeadas",
+        "redondeo de esquinas",
+        "libro troquelado",
+        "libro de cartón"
+      ],
+      "ca": [
+        "cantonades arrodonides",
+        "llibre troquelat",
+        "llibre de cartró"
+      ],
+      "zh": [
+        "圆角",
+        "异形书",
+        "纸板书"
+      ],
+      "ar": [
+        "زوايا مستديرة",
+        "كتاب مقصوص",
+        "كتاب من الورق المقوّى"
+      ],
+      "ja": [
+        "角丸",
+        "型抜き本",
+        "ボードブック"
+      ],
+      "pt": [
+        "cantos arredondados",
+        "livro recortado",
+        "livro cartonado"
+      ],
+      "fr": [
+        "coins arrondis",
+        "livre découpé",
+        "livre cartonné"
+      ],
+      "de": [
+        "abgerundete Ecken",
+        "Eckenrundung",
+        "Formbuch",
+        "Pappbilderbuch"
+      ],
+      "it": [
+        "angoli arrotondati",
+        "libro sagomato",
+        "libro cartonato"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "Rounded corners and shaped books",
+        "es": "Esquinas redondeadas y libros con forma",
+        "ca": "Cantonades arrodonides i llibres amb forma",
+        "zh": "圆角与异形书",
+        "ar": "الزوايا المستديرة والكتب بأشكال مقصوصة",
+        "ja": "角丸と型抜きの本",
+        "pt": "Cantos arredondados e livros recortados",
+        "fr": "Coins arrondis et livres découpés en forme",
+        "de": "Abgerundete Ecken und Bücher in Form",
+        "it": "Angoli arrotondati e libri sagomati"
+      }
+    },
+    "detect": {
+      "config": [
+        "dieCuts.corners",
+        "dieCuts.outline"
+      ]
+    }
+  },
+  "die-line": {
+    "label": {
+      "en": "Die line in the PDF",
+      "es": "Línea de troquel en el PDF",
+      "ca": "Línia de troquel al PDF",
+      "zh": "PDF中的模切线",
+      "ar": "خط القص في PDF",
+      "ja": "PDFの抜き型の線",
+      "pt": "Linha de faca no PDF",
+      "fr": "Tracé de découpe dans le PDF",
+      "de": "Stanzlinie im PDF",
+      "it": "Linea di fustella nel PDF"
+    },
+    "definition": {
+      "en": "print.dieLine strokes every hole and shaped edge on a Separation plate of its own that overprints and is never inked, for the die-maker.",
+      "es": "print.dieLine traza cada agujero y cada borde con forma en una plancha Separation propia, en sobreimpresión y que nunca se entinta, para el troquelista.",
+      "ca": "print.dieLine traça cada forat i cada vora amb forma en una planxa Separation pròpia, en sobreimpressió i que mai no s’entinta, per al troquelista.",
+      "zh": "print.dieLine把每个孔和异形边描在一块单独的Separation色版上，叠印，从不上墨，供模切版制作者使用。",
+      "ar": "ترسم print.dieLine كل فتحة وكل حافة مقصوصة على لوح Separation خاص بها، بطباعة فوقية ولا يُحبَّر أبدًا، لصانع القالب.",
+      "ja": "print.dieLineは、穴と型抜きの縁を専用のSeparation版に描きます。オーバープリントで、印刷機ではインキを載せない、抜き型屋のための版です。",
+      "pt": "print.dieLine traça cada furo e cada borda recortada numa chapa Separation própria, em sobreimpressão e nunca entintada, para quem faz a faca.",
+      "fr": "print.dieLine trace chaque trou et chaque bord découpé sur une plaque Separation à part, en surimpression et jamais encrée, pour le fabricant de formes.",
+      "de": "print.dieLine zieht jedes Loch und jede Formkante auf einer eigenen Separation-Platte nach, die überdruckt und nie eingefärbt wird, für den Stanzformenbauer.",
+      "it": "print.dieLine traccia ogni foro e ogni bordo sagomato su una lastra Separation propria, in sovrastampa e mai inchiostrata, per chi fa la fustella."
+    },
+    "aliases": {
+      "en": [
+        "die line",
+        "dieline",
+        "CutContour",
+        "cutter guide",
+        "die plate"
+      ],
+      "es": [
+        "línea de troquel",
+        "trazado de troquel",
+        "CutContour",
+        "plancha de troquel"
+      ],
+      "ca": [
+        "línia de troquel",
+        "CutContour",
+        "planxa de troquel"
+      ],
+      "zh": [
+        "模切线",
+        "刀线",
+        "CutContour"
+      ],
+      "ar": [
+        "خط القص",
+        "CutContour",
+        "لوح القالب"
+      ],
+      "ja": [
+        "抜き型の線",
+        "トムソン線",
+        "CutContour"
+      ],
+      "pt": [
+        "linha de faca",
+        "CutContour",
+        "chapa de faca"
+      ],
+      "fr": [
+        "tracé de découpe",
+        "CutContour",
+        "plaque de découpe"
+      ],
+      "de": [
+        "Stanzlinie",
+        "Stanzkontur",
+        "CutContour"
+      ],
+      "it": [
+        "linea di fustella",
+        "tracciato di fustella",
+        "CutContour"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "The die line in the PDF",
+        "es": "La línea de troquel en el PDF",
+        "ca": "La línia de troquel al PDF",
+        "zh": "PDF中的模切线",
+        "ar": "خط القص في ملف PDF",
+        "ja": "PDFでの抜き型の線",
+        "pt": "A linha de faca no PDF",
+        "fr": "Le tracé de découpe dans le PDF",
+        "de": "Die Stanzlinie im PDF",
+        "it": "La linea di fustella nel PDF"
+      }
+    },
+    "detect": {
+      "config": [
+        "print.dieLine"
+      ]
+    }
+  },
+  "special-inks": {
+    "label": {
+      "en": "Special inks",
+      "es": "Tintas especiales",
+      "ca": "Tintes especials",
+      "zh": "特种油墨",
+      "ar": "الأحبار الخاصة",
+      "ja": "特殊インキ",
+      "pt": "Tintas especiais",
+      "fr": "Encres spéciales",
+      "de": "Spezialfarben",
+      "it": "Inchiostri speciali"
+    },
+    "definition": {
+      "en": "A spot colour marked with a finish: metallic, hot foil, fluorescent, opaque white or varnish. It prints on a plate of its own, the canvas can show its sheen or a finish map, and Folio lights it.",
+      "es": "Una tinta plana con acabado: metálica, oro en caliente, fluorescente, blanco opaco o barniz. Se imprime en su propia plancha, el canvas puede mostrar su brillo o un mapa de acabados, y Folio la ilumina.",
+      "ca": "Una tinta plana amb acabat: metàl·lica, daurat en calent, fluorescent, blanc opac o vernís. S'imprimeix en una planxa pròpia, el canvas en pot mostrar la brillantor o un mapa d'acabats, i Folio la il·lumina.",
+      "zh": "带有工艺标记的专色：金属色、烫金、荧光、不透明白或光油。它印在自己的印版上，Canvas可以显示其光泽或工艺图，Folio会给它打光。",
+      "ar": "لون خاص مُعلَّم بتشطيب: معدني أو ختم حراري أو فلوري أو أبيض معتم أو ورنيش. يُطبع على لوح خاص به، ويمكن للوحة (Canvas) أن تُظهر لمعانه أو خريطة التشطيبات، ويضيئه Folio.",
+      "ja": "加工の種類を持つ特色です。メタリック、箔押し、蛍光、不透明白、ニスがあります。専用の版に出力され、キャンバスでは光沢や加工マップを表示でき、Folioでは光が当たります。",
+      "pt": "Uma cor especial marcada com um acabamento: metálica, hot stamping, fluorescente, branco opaco ou verniz. Sai numa chapa própria, o canvas pode mostrar o brilho ou um mapa de acabamentos e o Folio a ilumina.",
+      "fr": "Un ton direct doté d’une finition : métallisé, dorure à chaud, fluorescent, blanc couvrant ou vernis. Il sort sur une plaque à lui, le canvas peut en montrer le brillant ou une carte des finitions, et Folio l’éclaire.",
+      "de": "Eine Sonderfarbe mit einer Veredelung: Metallic, Heißfolie, Leuchtfarbe, Deckweiß oder Lack. Sie druckt auf einer eigenen Platte, das Canvas kann ihren Glanz oder eine Veredelungskarte zeigen, und Folio beleuchtet sie.",
+      "it": "Un colore spot con una finitura: metallizzato, lamina a caldo, fluorescente, bianco coprente o vernice. Stampa su una lastra propria, il canvas ne mostra la lucentezza o una mappa delle finiture e Folio la illumina."
+    },
+    "aliases": {
+      "en": [
+        "hot foil",
+        "foil stamping",
+        "metallic ink",
+        "fluorescent ink",
+        "neon",
+        "opaque white",
+        "white ink",
+        "spot UV",
+        "varnish",
+        "soft touch",
+        "finish mask"
+      ],
+      "es": [
+        "oro en caliente",
+        "estampación",
+        "tinta metálica",
+        "tinta fluorescente",
+        "flúor",
+        "blanco opaco",
+        "tinta blanca",
+        "barniz UVI",
+        "barniz selectivo",
+        "soft touch"
+      ],
+      "ca": [
+        "daurat en calent",
+        "estampació",
+        "tinta metàl·lica",
+        "tinta fluorescent",
+        "blanc opac",
+        "vernís selectiu",
+        "soft touch"
+      ],
+      "zh": [
+        "烫金",
+        "烫印",
+        "金属油墨",
+        "荧光油墨",
+        "白墨",
+        "局部UV",
+        "光油",
+        "触感膜"
+      ],
+      "ar": [
+        "ختم حراري",
+        "تذهيب",
+        "حبر معدني",
+        "حبر فلوري",
+        "حبر أبيض",
+        "ورنيش موضعي",
+        "سوفت تتش"
+      ],
+      "ja": [
+        "箔押し",
+        "金箔",
+        "メタリックインキ",
+        "蛍光インキ",
+        "白インキ",
+        "スポットUV",
+        "ニス",
+        "ソフトタッチ"
+      ],
+      "pt": [
+        "hot stamping",
+        "estampagem",
+        "tinta metálica",
+        "tinta fluorescente",
+        "branco opaco",
+        "tinta branca",
+        "verniz localizado",
+        "soft touch"
+      ],
+      "fr": [
+        "dorure à chaud",
+        "marquage à chaud",
+        "encre métallisée",
+        "encre fluo",
+        "blanc couvrant",
+        "encre blanche",
+        "vernis sélectif",
+        "soft touch"
+      ],
+      "de": [
+        "Heißfolienprägung",
+        "Goldprägung",
+        "Metallicfarbe",
+        "Leuchtfarbe",
+        "Deckweiß",
+        "weiße Farbe",
+        "partieller UV-Lack",
+        "Soft-Touch"
+      ],
+      "it": [
+        "lamina a caldo",
+        "stampa a caldo",
+        "inchiostro metallizzato",
+        "inchiostro fluo",
+        "bianco coprente",
+        "inchiostro bianco",
+        "vernice selettiva",
+        "soft touch"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "Finishes",
+        "es": "Acabados",
+        "ca": "Acabats",
+        "zh": "工艺",
+        "ar": "التشطيبات",
+        "ja": "加工",
+        "pt": "Acabamentos",
+        "fr": "Finitions",
+        "de": "Veredelungen",
+        "it": "Finiture"
+      }
+    },
+    "detect": {
+      "config": [
+        "colorPalette[].value.spot.finish",
+        "print.inks[].finish"
+      ],
+      "api": [
+        "renderFinishMask",
+        "guessInkFinish"
+      ]
+    }
+  },
+  "spot-inks": {
+    "label": {
+      "en": "Spot inks and the ink table",
+      "es": "Tintas planas y tabla de tintas",
+      "ca": "Tintes planes i taula de tintes",
+      "zh": "专色与油墨表",
+      "ar": "الألوان الخاصة وجدول الأحبار",
+      "ja": "特色とインキ表",
+      "pt": "Cores especiais e tabela de tintas",
+      "fr": "Tons directs et table des encres",
+      "de": "Sonderfarben und Druckfarbentabelle",
+      "it": "Tinte piatte e tabella degli inchiostri"
+    },
+    "definition": {
+      "en": "A colour with model 'spot' prints on a plate of its own, at its tint. The ink table names the plate as the printer knows it and merges the other names the palette, SVGs and imported files give the same ink.",
+      "es": "Un color con modelo 'spot' se imprime en su propia plancha, a su porcentaje. La tabla de tintas nombra la plancha como la conoce el impresor y reúne los otros nombres que la paleta, los SVG y los archivos importados dan a la misma tinta.",
+      "ca": "Un color amb model 'spot' s'imprimeix en una planxa pròpia, al seu percentatge. La taula de tintes anomena la planxa com la coneix l'impressor i aplega els altres noms que la paleta, els SVG i els fitxers importats donen a la mateixa tinta.",
+      "zh": "模型为 'spot' 的颜色按其网点百分比印在自己的印版上。油墨表按印厂的叫法命名印版，并把调色板、SVG 和导入文件给同一种油墨起的其他名字合并到这块版上。",
+      "ar": "اللون ذو النموذج 'spot' يُطبع على لوح خاص به بنسبته. ويسمّي جدول الأحبار اللوح كما تعرفه المطبعة، ويجمع عليه الأسماء الأخرى التي تعطيها لوحة الألوان وملفات SVG والملفات المستوردة للحبر نفسه.",
+      "ja": "モデルが 'spot' の色は、その濃度で専用の版に出力されます。インキ表は印刷所が呼ぶ名前で版に名前を付け、パレットやSVG、取り込んだファイルが同じインキに付けた別名をその版にまとめます。",
+      "pt": "Uma cor com modelo 'spot' sai numa chapa própria, na sua porcentagem. A tabela de tintas dá à chapa o nome que a gráfica conhece e junta nela os outros nomes que a paleta, os SVG e os arquivos importados dão à mesma tinta.",
+      "fr": "Une couleur de modèle 'spot' s’imprime sur sa propre plaque, à son pourcentage. La table des encres nomme la plaque comme l’imprimeur la connaît et y réunit les autres noms que la palette, les SVG et les fichiers importés donnent à la même encre.",
+      "de": "Eine Farbe mit dem Modell 'spot' druckt auf einer eigenen Platte, in ihrem Tonwert. Die Druckfarbentabelle benennt die Platte so, wie die Druckerei sie kennt, und führt die anderen Namen, die Palette, SVGs und importierte Dateien derselben Farbe geben, auf ihr zusammen.",
+      "it": "Un colore con modello 'spot' si stampa su una lastra sua, alla sua percentuale. La tabella degli inchiostri chiama la lastra come la conosce lo stampatore e vi riunisce gli altri nomi che la tavolozza, gli SVG e i file importati danno allo stesso inchiostro."
+    },
+    "aliases": {
+      "en": [
+        "spot colour",
+        "spot color",
+        "fifth ink",
+        "Pantone",
+        "corporate colour",
+        "brand colour",
+        "ink table",
+        "Separation",
+        "plate name",
+        "ink alias"
+      ],
+      "es": [
+        "tinta plana",
+        "quinta tinta",
+        "Pantone",
+        "color corporativo",
+        "tabla de tintas",
+        "plancha",
+        "separación"
+      ],
+      "ca": [
+        "tinta plana",
+        "cinquena tinta",
+        "Pantone",
+        "color corporatiu",
+        "taula de tintes",
+        "planxa"
+      ],
+      "zh": [
+        "专色",
+        "第五色",
+        "潘通",
+        "企业色",
+        "油墨表",
+        "分色版"
+      ],
+      "ar": [
+        "لون خاص",
+        "الحبر الخامس",
+        "بانتون",
+        "لون الهوية",
+        "جدول الأحبار",
+        "لوح الطباعة"
+      ],
+      "ja": [
+        "特色",
+        "スポットカラー",
+        "5色目",
+        "パントン",
+        "コーポレートカラー",
+        "インキ表",
+        "版名"
+      ],
+      "pt": [
+        "cor especial",
+        "cor Pantone",
+        "quinta cor",
+        "cor institucional",
+        "tabela de tintas",
+        "chapa"
+      ],
+      "fr": [
+        "ton direct",
+        "cinquième couleur",
+        "Pantone",
+        "couleur de marque",
+        "table des encres",
+        "plaque"
+      ],
+      "de": [
+        "Sonderfarbe",
+        "Volltonfarbe",
+        "fünfte Farbe",
+        "Pantone",
+        "Hausfarbe",
+        "Druckfarbentabelle",
+        "Farbauszug"
+      ],
+      "it": [
+        "tinta piatta",
+        "quinto colore",
+        "Pantone",
+        "colore aziendale",
+        "tabella degli inchiostri",
+        "lastra"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "configuration-pdf-output",
+      "heading": {
+        "en": "Spot colours",
+        "es": "Tintas planas",
+        "ca": "Tintes planes",
+        "zh": "专色",
+        "ar": "الألوان الخاصة",
+        "ja": "特色",
+        "pt": "Cores especiais",
+        "fr": "Tons directs",
+        "de": "Sonderfarben",
+        "it": "Tinte piatte"
+      }
+    },
+    "detect": {
+      "config": [
+        "colorPalette[].value.spot.name",
+        "print.inks[].aliases"
+      ]
+    }
   }
 }

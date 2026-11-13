@@ -1,0 +1,70 @@
+---
+title: "Gold foil on a deep-blue cover"
+summary: "Gold foil as a spot colour with a foil finish: its own plate in the PDF, light in Folio, and blue card and cream paper that print no ink."
+plain: "A small book of poems with a dark blue cover and gold lettering pressed into it. Inside, every line and frame is gold too. The 3D view shows the gold shining, and the print file keeps the gold apart for the printer."
+description: "A poetry chapbook with a hot-foil cover in Postext: foil as a spot ink with a finish, its own PDF plate, stocks that print no ink, shown in Folio."
+question: "How do I stamp a cover and a book's rules in gold foil, and send the foil to the printer on its own plate?"
+aliases: ["hot foil", "foil stamping", "gold foil", "gilding", "foil block", "stamping die", "coloured stock", "dark paper", "poetry chapbook", "estampación en caliente", "oro en caliente", "stamping"]
+pageNotes: { "1": "The cover: a double frame of gold rules on deep-blue card, FIVE POEMS, SHOOK FOIL in large gold capitals, a short gold rule and Gerard Manley Hopkins in gold small capitals, the years at the foot.", "4": "The contents in gold on the blue card: five poem titles, dotted leaders and page numbers.", "6": "A night meadow under stars, painted, inside a gold frame on the cream paper.", "9": "The Windhover: a gold double rule under the running head, the title in capitals over a short gold rule, the dedication in italics and the poem, whose long lines turn over." }
+---
+
+## What you'll build
+
+A chapbook of five poems by Gerard Manley Hopkins, 140 × 216 mm, bound as a paperback. The cover and the leaf behind it are deep-blue card stamped with gold foil and nothing else: a double frame, the title in Cinzel capitals, the poet's name and the contents. Inside, on cream wove, the poems print in four colours, a painted nocturne faces the second poem, and every rule of the page is foil: the double rule under the running head, the short rule under each title, the rule under the folio. The title is borrowed from the first poem, where the world shines out "like shining from shook foil". Folio turns the closed book to the light, so the gold reads as metal.
+
+## Method
+
+### 1 · The foil is a spot colour with a finish
+
+The code is [the short answer](#the-short-answer) above. `finish: { kind: 'foil' }` turns the spot colour into a special ink ([finishes](/en/docs/special-inks-die-cuts#finishes)). The layout sees a colour and nothing moves; the canvas paints its hex, Folio lights it as metal, and the PDF/X-4 file puts every foil element on one `Separation` called `Gold foil`, from which the block-maker etches the brass die. A foil knocks out what lies under it, as hot foil does on press.
+
+### 2 · The stocks are colours that print no ink
+
+<Excerpt region="content" />
+
+The blue card and the cream wove are palette colours authored in CMYK at 0 % on every channel: the screen and Folio paint the stock, and no plate receives a dot of it, so the PDF of the cover has the foil plate and four empty process plates. Each blue page takes the card by its heading style (`palette: { paper: … }` in `onCard`), and the two `:::paper` fences give Folio the weight and stiffness of the card on the cover leaf and the leaf behind it.
+
+### 3 · The cover is a frame and four lines of type
+
+<Excerpt region="cover" />
+
+Foil holds a fine line, so the frame is a 1.6 pt rule with a 0.4 pt hairline 2.5 mm inside it, each a box border in the foil colour. Everything on the cover is foil: no second ink touches the card, which is how a stamped cover is ordered from a bindery.
+
+### 4 · Inside, the rules are foil and the poems are ink
+
+<Excerpt region="rules" />
+
+The running head sits over a double rule, a 0.9 pt line and a 0.3 pt line 1.2 mm under it, as wide as the text block. The poem's title design adds a 12 mm rule under the title, and the footer a 6 mm rule under the folio. Text stays in the warm black ink: small type in foil fills in on press.
+
+### 5 · Folio turns the cover to the light
+
+<Excerpt region="folio" />
+
+The foil only shows as foil when it reflects something. The studio environment has bright soft boxes, and a tilt of 24° with the book turned 16° brings their reflection across the title. Under the dimmer lamp setting the same gold reads as a flat ochre.
+
+## Variations
+
+### Stamp in silver instead
+
+Change the hex and the alternate; the finish and the plate stay.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Print the gold as a metallic ink
+
+A metallic ink costs less than a foil block and prints with the other inks; Folio shows it with a satin sheen.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Pitfalls
+
+- A coloured stock set as `page.backgroundColor` with an ordinary hex prints as a process flood over the whole page. Author the stock in CMYK at 0 %, as here, when the colour is the paper's.
+- Hairlines under 0.25 pt and type under 8 pt fill in when they are stamped. Keep the foil to rules and display type.

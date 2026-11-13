@@ -379,7 +379,7 @@ chained by `next` share one), callout styles as paragraph styles and authored
 CMYK colours as swatches. Chips that carry a form field become InDesign form
 fields. `--lines keep` (the default) ends every line where Postext ended it,
 so InDesign shows the same lines as the PDF; `--lines reflow` leaves the
-paragraphs to InDesign's composer, and line breaks may differ. `--spreads facing`
+paragraphs to InDesign's composer, and line breaks may differ. The running text of the pages laid out in columns runs through one story, threaded through a frame per column, which the importer reads back as a flowing book; `--text frames` writes a frame and a story for each block instead (since postext 1.85.0). `--spreads facing`
 or `--spreads single` pairs the pages, or not, whatever the margins say. `--images link`
 puts the pictures beside the file in `Links/` instead of inside it. `--fonts`
 writes the font files of the faces used beside the package, in `Document
@@ -389,7 +389,7 @@ What the package cannot carry as the book has it (emphasis dots in vertical text
 table's rounded frame) is reported as an `idml.*` warning. The writer is the
 `postext-idml` package: see [Programmatic usage › InDesign
 packages](/en/docs/configuration-programmatic-usage#indesign-packages-postext-idml).
-In `build`, `--idml FILE` writes the same package, with `--idml-images`, `--idml-lines`, `--idml-spreads` and `--idml-fonts`.
+In `build`, `--idml FILE` writes the same package, with `--idml-images`, `--idml-lines`, `--idml-spreads`, `--idml-text` and `--idml-fonts`.
 Since postext 1.71; `--lines` and `--fonts` since 1.76, `--spreads` since 1.78.
 
 ### import-idml

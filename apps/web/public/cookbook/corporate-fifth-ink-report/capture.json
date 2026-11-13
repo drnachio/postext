@@ -1,0 +1,955 @@
+{
+  "schemaVersion": 1,
+  "slug": "corporate-fifth-ink-report",
+  "sourceHash": "ea7ed702b924c4587276894f91f7a59be691b6af50f4fb2be858437dff9e108c",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T17:05:18.066Z",
+  "variants": {
+    "en": {
+      "hash8": "d113be61",
+      "vdtHash": "589bb8a0c497a42fea1209366b72a4b850f37677",
+      "timings": {
+        "importMs": 1258,
+        "fontsMs": 294,
+        "buildMs": 145,
+        "totalMs": 2693,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 9.6,
+          "leadingPt": 13.2
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 8,
+        "ownLines": 298
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 219592,
+          "alt": "Opening page 1: Annual Report 2025."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 128544,
+          "alt": "Opening page 2: A river given room. Inés Barrera, director."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 106892,
+          "alt": "Opening page 3: Work along the river. Table 1. The year’s projects. · Figure 1. River bank restored each year, in kilometres: ⁤ done and ⁤ planned."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 181786,
+          "alt": "Opening page 4: Planting day."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 99236,
+          "alt": "Opening page 5: Cleaner water. A monthly water sample at the Fuentelsaz gauge. · Table 2. Nitrate and dissolved oxygen at the nine stations, in milligrams a litre."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 69782,
+          "alt": "Opening page 6: Accounts. Table 3. Income and spending, in thousands of euros. · Figure 2. Where each euro we spent went in 2025."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 111704,
+          "alt": "Opening page 7: With thanks. A kingfisher on a willow at Valtierra, one of those planted in 2019."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 11526,
+          "alt": "Opening page 8: Cauce Foundation."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "corporate-fifth-ink-report.pdf",
+        "bytes": 1092866,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "corporate-fifth-ink-report.postext",
+        "bytes": 995628,
+        "chapters": [
+          {
+            "pages": 8,
+            "hash": "1e65d8e464f8c5c4",
+            "lines": "9bd9b40e12b4b4b4"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf",
+          "setAlignment",
+          "setCellBackground"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.inks",
+          "print.inks[].aliases",
+          "print.inks[].cmyk",
+          "print.inks[].name",
+          "print.outputProfile",
+          "print.standard",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "resourceTypes",
+          "tableStyle",
+          "unorderedLists"
+        ],
+        "configLeaves": 531,
+        "designElements": 27,
+        "directives": [
+          "::resource",
+          ":::callout",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 5,
+          "table": 3
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "cell-fills",
+          "figure-citations",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "span-boxes",
+          "spot-inks",
+          "table-model",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 3,
+          "share": 0.0326,
+          "worst": 2.21
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "3 of 92 justified lines (3.3 %) stretch past 2× (worst 2.21×); loosest: p. 2 2.21× “year running, dissolved oxygen in August stayed”, p. 6 2.14× “The accounts were audited by an independent”, p. 3 2.13× “Volunteers planted 41,000 trees and shrubs in 46”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "aec18c8a",
+      "vdtHash": "1ba00f4a7db5ae63d734753f1cf011ab6bc0552c",
+      "timings": {
+        "importMs": 1259,
+        "fontsMs": 295,
+        "buildMs": 159,
+        "totalMs": 2696,
+        "builds": 1
+      },
+      "specimen": {
+        "trimMm": [
+          210,
+          297
+        ],
+        "dpi": 150,
+        "layoutType": "double",
+        "gutterMm": 7,
+        "mirror": true,
+        "body": {
+          "family": "Source Serif 4",
+          "sizePt": 9.6,
+          "leadingPt": 13.2
+        },
+        "families": [
+          "Source Sans 3",
+          "Source Serif 4"
+        ],
+        "pages": 8,
+        "ownLines": 298
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 222334,
+          "alt": "Página de apertura 1: Memoria anual 2025."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 129962,
+          "alt": "Página de apertura 2: Un río con sitio. Inés Barrera, directora."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 106386,
+          "alt": "Página de apertura 3: Trabajo a lo largo del río. Tabla 1. Los proyectos del año. · Figura 1. Orilla restaurada cada año, en kilómetros: ⁤ hecha y ⁤ prevista."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 181486,
+          "alt": "Página de apertura 4: Día de plantación."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 104252,
+          "alt": "Página de apertura 5: Agua más limpia. Una muestra mensual de agua en la estación de Fuentelsaz. · Tabla 2. Nitrato y oxígeno disuelto en las nueve estaciones, en miligramos por litro."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 71790,
+          "alt": "Página de apertura 6: Cuentas. Tabla 3. Ingresos y gastos, en miles de euros. · Figura 2. A qué fue cada euro que gastamos en 2025."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 110364,
+          "alt": "Página de apertura 7: Gracias. Un martín pescador en un sauce de Valtierra, de los plantados en 2019."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "opener",
+          "w": 1000,
+          "h": 1414,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 11558,
+          "alt": "Página de apertura 8: Fundación Cauce."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "corporate-fifth-ink-report.pdf",
+        "bytes": 1096621,
+        "pages": 8
+      },
+      "sandbox": {
+        "file": "corporate-fifth-ink-report.postext",
+        "bytes": 995778,
+        "chapters": [
+          {
+            "pages": 8,
+            "hash": "348916576581427b",
+            "lines": "d22294a5677ba34f"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "parseTSV",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf",
+          "setAlignment",
+          "setCellBackground"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "calloutStyles",
+          "calloutStyles[].background",
+          "calloutStyles[].body",
+          "calloutStyles[].body.color",
+          "calloutStyles[].body.firstLineIndent",
+          "calloutStyles[].body.fontFamily",
+          "calloutStyles[].body.fontSize",
+          "calloutStyles[].body.lineHeight",
+          "calloutStyles[].body.textAlign",
+          "calloutStyles[].columnGap",
+          "calloutStyles[].id",
+          "calloutStyles[].marginBottom",
+          "calloutStyles[].marginTop",
+          "calloutStyles[].padding",
+          "calloutStyles[].padding.bottom",
+          "calloutStyles[].padding.left",
+          "calloutStyles[].padding.right",
+          "calloutStyles[].padding.top",
+          "calloutStyles[].titleStyle",
+          "calloutStyles[].titleStyle.color",
+          "calloutStyles[].titleStyle.fontFamily",
+          "calloutStyles[].titleStyle.fontSize",
+          "calloutStyles[].titleStyle.fontWeight",
+          "calloutStyles[].titleStyle.gap",
+          "calloutStyles[].titleStyle.letterSpacing",
+          "calloutStyles[].titleStyle.textTransform",
+          "captionStyle",
+          "captionStyle.color",
+          "captionStyle.fontFamily",
+          "captionStyle.fontSize",
+          "captionStyle.gap",
+          "captionStyle.labelBold",
+          "captionStyle.labelColor",
+          "captionStyle.note",
+          "captionStyle.note.color",
+          "captionStyle.note.fontSize",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].direction",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].fontWeight",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].letterSpacing",
+          "footer.elements[].overflow",
+          "footer.elements[].parity",
+          "footer.elements[].placement",
+          "footer.elements[].textTransform",
+          "footer.elements[].thickness",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].span",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].advancedDesign",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.levels[].span",
+          "layout",
+          "layout.gutterWidth",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].boldColor",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.inks",
+          "print.inks[].aliases",
+          "print.inks[].cmyk",
+          "print.inks[].name",
+          "print.outputProfile",
+          "print.standard",
+          "resourceTypes",
+          "resourceTypes[].captionPrefix",
+          "resourceTypes[].counterFormat",
+          "resourceTypes[].id",
+          "resourceTypes[].name",
+          "resourceTypes[].numberingTemplate",
+          "resourceTypes[].resetOn",
+          "tableStyle",
+          "tableStyle.bodyColor",
+          "tableStyle.bodyFontFamily",
+          "tableStyle.bodyFontSize",
+          "tableStyle.borderColor",
+          "tableStyle.borderWidth",
+          "tableStyle.cellPadding",
+          "tableStyle.headerBackground",
+          "tableStyle.headerColor",
+          "tableStyle.headerFontFamily",
+          "tableStyle.headerFontSize",
+          "tableStyle.rules",
+          "unorderedLists",
+          "unorderedLists.bulletChar",
+          "unorderedLists.color",
+          "unorderedLists.marginBottom",
+          "unorderedLists.marginTop"
+        ],
+        "configSections": [
+          "bodyText",
+          "calloutStyles",
+          "captionStyle",
+          "colorPalette",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "resourceTypes",
+          "tableStyle",
+          "unorderedLists"
+        ],
+        "configLeaves": 531,
+        "designElements": 27,
+        "directives": [
+          "::resource",
+          ":::callout",
+          ":::columns",
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}",
+          ":ref"
+        ],
+        "resources": {
+          "svg": 2,
+          "bitmap": 5,
+          "table": 3
+        },
+        "fonts": [
+          {
+            "family": "Source Sans 3",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Source Sans 3",
+            "weight": 800,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Source Serif 4",
+            "weight": 700,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "callout-columns",
+          "callout-styles",
+          "cell-fills",
+          "figure-citations",
+          "heading-attributes",
+          "heading-styles",
+          "inline-embeds",
+          "opener-band",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resource-types",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "span-boxes",
+          "spot-inks",
+          "table-model",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 4,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.83
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

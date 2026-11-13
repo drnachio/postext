@@ -1,0 +1,168 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 194,
+  "status": "published",
+  "chapter": "output",
+  "order": 221,
+  "level": 2,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "die-cuts",
+      "die-line"
+    ],
+    "also": [
+      "folio-viewer",
+      "heading-styles",
+      "design-images",
+      "design-elements",
+      "frontmatter",
+      "paragraph-styles",
+      "drop-caps",
+      "bleed-and-crop-marks",
+      "pdf-colour-space",
+      "pdf-export",
+      "resources",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q231",
+    "Q233"
+  ],
+  "gotchas": [],
+  "related": [
+    "peek-a-boo-board-book",
+    "forest-tunnel-book",
+    "print-ready-pdf"
+  ],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": [1, 2, 3, 4, 5, 7, 8, 9, 10],
+    "expect": {
+      "pages": [
+        10,
+        10
+      ],
+      "imageMb": 1.5
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "tilt": 34,
+    "yaw": 0,
+    "paper": {
+      "type": "bookWove",
+      "shade": "#f6efe2"
+    },
+    "binding": {
+      "type": "hardcover",
+      "cover": "pages",
+      "coverMaterial": "paper"
+    },
+    "surface": {
+      "type": "walnut"
+    },
+    "lighting": {
+      "environment": "lamp",
+      "intensity": 1.15
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Oval Portrait, in the text of the Broadway Journal (1845), from Project Gutenberg eBook 2147, with Poe’s “rarely” for the eBook’s “merely”",
+          "es": "The Oval Portrait, en el texto del Broadway Journal (1845), según el libro electrónico 2147 de Project Gutenberg, con el «rarely» de Poe donde el libro electrónico dice «merely»"
+        },
+        "who": "Edgar Allan Poe",
+        "source": "https://www.gutenberg.org/ebooks/2147",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "The Spanish translation, the note on the text and the back-cover copy",
+          "es": "La traducción española, la nota sobre el texto y el texto de la contracubierta"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Cover and back: a pomegranate damask",
+          "es": "Cubierta y contracubierta: un damasco de granadas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "damask.jpg"
+      },
+      {
+        "what": {
+          "en": "Title page: the oval portrait on a velvet wall",
+          "es": "Portada: el retrato oval sobre una pared de terciopelo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "portrait.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "EB Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13"
+}

@@ -1,0 +1,63 @@
+---
+title: "Un livre tunnel de vingt feuillets de profondeur"
+summary: "Dix-neuf fenêtres rondes découpées avec dieCuts, chacune plus petite que la précédente : de la couverture, on voit à travers vingt plans jusqu’à un cerf."
+plain: "Un épais livre cartonné sur une promenade en forêt. Chaque feuillet a un trou rond un peu plus petit que le précédent, et depuis la couverture on voit jusqu’à la dernière page."
+description: "Un livre tunnel de vingt feuillets cartonnés : dix-neuf fenêtres découpées qui rapetissent sur un axe, des plans peints en repérage, le tracé et Folio."
+question: "Comment faire un livre tunnel, percé à chaque feuillet pour voir la dernière page depuis la couverture ?"
+aliases: ["livre tunnel", "livre théâtre", "découpes emboîtées", "trous décroissants", "tracé de découpe"]
+pageNotes: { "1": "La couverture : deux troncs de chêne et des fougères autour d’une grande fenêtre ronde et, à travers elle, anneau après anneau de feuilles, digitales, bouleaux et fougères de plus en plus petits, jusqu’à une biche et son faon buvant à une mare au soleil ; le titre sur une bande vert sombre au pied.", "2": "Le dos de la couverture : vert sombre, percé de la fenêtre, avec un vers dessous.", "39": "Le dernier plan, non découpé : une clairière ensoleillée où une biche et son faon boivent à une mare." }
+---
+
+## Ce que vous allez composer
+
+*Au fond du bois*, un livre tunnel de vingt feuillets cartonnés sur un carré de 150 mm. Chaque recto est un plan d’un bois peint (chênes, digitales, un rouge-gorge, un renard dans les fougères, une chouette, des bouleaux), percé d’une fenêtre ronde un peu plus petite que la précédente, toutes sur le même centre. Le dernier plan est entier : une biche et son faon à une mare de la clairière. Depuis la couverture, le regard traverse les dix-neuf fenêtres jusqu’aux cerfs, et les tranches du carton découpé entourent le tunnel comme les troncs eux-mêmes. Au dos de chaque feuillet, un vers nomme le plan d’en face. Le PDF pour l’imprimeur porte toutes les fenêtres sur la plaque de découpe.
+
+## Préparation
+
+### 1 · Dix-neuf fenêtres sur un axe
+
+Le code est [la réponse courte](#la-réponse-courte) plus haut. Les fenêtres sortent d’une boucle : le feuillet k reçoit un cercle de rayon R1 · Q^(k − 1) autour du même centre, et `dieCuts.pages` le place en page 2k − 1, le recto de ce feuillet. Un trou perce les deux faces, si bien que le verso derrière porte la même fenêtre, en miroir. Q = 0,9162 mène de 58 mm à 12 mm en dix-huit pas.
+
+### 2 · Des plans en repérage avec leurs fenêtres
+
+<Excerpt region="planes" />
+
+Chaque peinture a sa propre clairière de brume, alors les images ont été mises à l’échelle avant d’entrer dans le livre : sur chacune, on a mesuré en pixels le rayon où les feuilles couvrent la moitié de l’anneau, puis on a réduit la peinture jusqu’à ce que ce rayon rencontre la fenêtre de son feuillet. Vu de la couverture, chaque plan ne montre qu’un mince anneau de feuilles autour de sa fenêtre, et les anneaux s’empilent en tunnel. Le centre que chaque découpe emporte est uni, et ne pèse presque rien.
+
+### 3 · Dix-neuf cercles sur la plaque Die
+
+<Excerpt region="die-line" />
+
+Le PDF trace chaque fenêtre, et chaque feuillet avec ses coins arrondis côté gouttière, sur une séparation `Die` en surimpression, jamais encrée. Quarante pages de peintures restent sous 1,5 Mo avec `convertImages: false`.
+
+### 4 · Le tunnel en main
+
+<Excerpt region="folio" />
+
+Vingt feuillets de carton font un bloc épais, et Folio y découpe chaque fenêtre : le livre fermé montre le tunnel, les parois de la découpe descendant en gradins jusqu’à la clairière.
+
+### 5 · Vingt plans sur une page à plat
+
+<Excerpt region="see-through" />
+
+`beneath` peint la page deux plus loin avec son propre `beneath` : la fenêtre de la couverture montre la page 3, dont la fenêtre montre la 5, et ainsi jusqu’à la 39. Chaque page est peinte une fois puis réutilisée.
+
+## Variantes
+
+### Des fenêtres carrées aux coins arrondis
+
+Un `roundRect` au rayon d’angle égal au tiers de sa demi-largeur donne un air plus doux, de papier découpé.
+
+```diff
+-    shape: 'circle', x: mm(CX - radius(k)), y: mm(CY - radius(k)),
++    shape: 'roundRect', radius: mm(radius(k) / 3), x: mm(CX - radius(k)), y: mm(CY - radius(k)),
+```
+
+### Arrondir tous les coins
+
+Un livre cartonné pour petites mains arrondit les quatre coins de chaque feuillet.
+
+```diff
+-  corners: { radius: mm(4), edges: 'fore' },
++  corners: { radius: mm(8), edges: 'all' },
+```

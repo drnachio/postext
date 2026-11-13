@@ -1,0 +1,69 @@
+---
+title: "Un menu de boulangerie à l'encre blanche sur kraft"
+summary: "Le blanc opaque comme ton direct sur kraft : du texte blanc sur le carton brun, un fond blanc sous du texte brun et du blanc réservé dans un pavé vert."
+plain: "Le menu d'une boulangerie imprimé sur du carton kraft brun. Le nom et les titres sont à l'encre blanche, que l'imprimeur ajoute comme une encre de plus. Le fichier garde le blanc sur sa propre plaque."
+description: "Un menu de boulangerie sur kraft avec Postext : blanc opaque en ton direct, texte blanc, blanc sous la couleur, blanc réservé et contrôle avant impression."
+question: "Comment imprimer du blanc sur papier kraft, en texte et sous les couleurs ?"
+aliases: ["encre blanche", "blanc opaque", "papier kraft", "carton kraft", "papier brun", "sous-couche blanche", "fond blanc", "réserve", "surimpression", "menu de café", "white ink", "kraft paper"]
+pageNotes: { "1": "La couverture sur kraft brun : HORNO ALTO en grandes capitales blanches à empattements épais, une ligne de petites capitales brunes, un pain au levain peint sur un passe-partout blanc et l'adresse en italique brun.", "3": "Une tasse de café peinte sur un passe-partout blanc, AT THE COUNTER en blanc, les prix du café et des petits-déjeuners sur des points de conduite et un encadré vert foncé avec la fournée du jour en texte blanc.", "4": "SINCE 1987 en blanc, deux paragraphes sur la boulangerie en brun, les horaires sur une carte blanche et l'adresse." }
+---
+
+## Ce que vous allez composer
+
+Le menu d'Horno Alto, une boulangerie de village inventée : une carte A5 en kraft brun pliée une fois, quatre pages. Le kraft ne contient pas de blanc, donc chaque blanc de la carte est une encre que l'imprimeur ajoute : le nom et les titres de rubrique directement sur le brun, les passe-partout où se posent les trois gouaches et la carte des horaires. Les prix s'alignent sur une tabulation avec des points de conduite, dans un brun foncé en quadrichromie. Sur la page du café, un pavé vert porte la fournée du jour en texte blanc découpé dans le vert. Folio ouvre la carte sur un comptoir en chêne, à la lumière du jour.
+
+## Préparation
+
+### 1 · Le papier est du kraft, le blanc est une encre
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le papier est une couleur de la palette définie en CMJN à 0 % : l'écran et Folio peignent le kraft, et aucune plaque ne l'imprime. Le blanc est un ton direct avec la finition blanche ([finitions](/fr/docs/special-inks-die-cuts#finitions)), nommé `Opaque White` dans la table des encres, comme on l'indiquera à l'imprimeur. Le fichier PDF/X-4 le place sur une `Separation` à lui, à côté des quatre plaques de quadrichromie. Son hex d'écran est un cran sous `#ffffff`, pour que le masque des finitions distingue l'encre d'une feuille blanche.
+
+### 2 · Le blanc directement sur le brun
+
+<Excerpt region="mount" />
+
+Le nom, les titres de rubrique et ceux des pages intérieures sont du texte dans le blanc, composé en Alfa Slab One. Une encre blanche couvre moins qu'un noir : le brun transparaît dans un trait fin, donc une égyptienne grasse de 12 pt ou plus se lit là où un romain léger virerait au beige. Les passe-partout sont des blocs du même blanc, 4 mm plus grands que chaque peinture de tous les côtés.
+
+### 3 · La couleur sur le blanc
+
+Les horaires sont posés sur une carte d'encre blanche, dans le brun foncé du texte du menu. Une encre blanche est en surimpression par défaut, et le brun l'est aussi (`overprint: true` sur la couleur de la palette) : sur la presse, le brun se pose sur le blanc au lieu d'y découper ses lettres.
+
+### 4 · Le blanc sur la couleur : le réserver
+
+<Excerpt region="panel" />
+
+La presse pose d'abord le blanc, puis les couleurs par-dessus, donc un texte blanc sur le pavé vert disparaîtrait sous le vert. Le texte du pavé prend un second blanc sur la même plaque, avec `overprint: false` : le texte découpe sa forme dans le vert et le blanc la remplit. Les deux blancs diffèrent d'un cran d'hex, car le PDF distingue les couleurs par leur hex.
+
+### 5 · Les prix sur une tabulation
+
+<Excerpt region="dishes" />
+
+Chaque rubrique est un groupe `:::paragraphs` dans le style des plats ; `:tab` avant le prix l'envoie au bout de la justification, avec des points de conduite jusqu'à lui, comme dans [le menu de bistrot](/fr/cookbook/bistro-menu).
+
+### 6 · Ce que dit le contrôle avant impression
+
+<Excerpt region="preflight" />
+
+`preflightDocument` avertit avec `whiteInkOnWhite` quand une encre blanche tombe sur une page dont le papier est blanc ou non défini, où elle ne montre rien. Sur kraft il se tait, et la ligne sous le bouton de téléchargement liste ce qui reste : le blanc comme encre spéciale (`spotInkFinish`) et l'ordre de passage qui l'imprime en premier (`inkPressOrder`).
+
+### 7 · Folio montre la carte sur un comptoir
+
+<Excerpt region="folio" />
+
+Folio peint le blanc de façon qu'il couvre la teinte du papier, comme le fait l'encre, et le carton à texture feutrée fait passer le brun pour du kraft.
+
+## Variantes
+
+### Une couverture de carnet
+
+Remplacez le menu par un titre et un motif de filets blancs en couverture : le papier, l'encre et la table des encres restent tels quels.
+
+### Deux passages de blanc
+
+Un imprimeur peut passer le blanc deux fois pour un blanc plus franc sur un kraft foncé. Demandez-le sur la commande ; le fichier ne change pas, avec une seule plaque de blanc.
+
+## Erreurs fréquentes
+
+- Une encre blanche sur une page dont le papier est blanc ou non défini n'imprime rien de visible. Réglez `page.backgroundColor` sur le support, en CMJN à 0 %, et le contrôle cesse d'avertir.
+- Le PDF ne met jamais une image en surimpression, donc une peinture posée sur un bloc blanc retire le blanc sous elle : la plaque garde le cadre du passe-partout et, sur la presse, les blancs de la peinture laissent voir le kraft. Demandez à l'imprimeur de remplir la plaque de blanc sous les images, ou collez les peintures sur des étiquettes de papier blanc.
+- Un texte blanc sur une couleur ne doit pas être en surimpression. Avec la valeur par défaut, il s'imprime sous la couleur et disparaît.

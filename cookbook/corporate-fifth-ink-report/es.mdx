@@ -1,0 +1,66 @@
+---
+title: "Una quinta tinta para el color corporativo"
+summary: "Cuatricromía más un Pantone corporativo exacto: la tabla de tintas reúne en una plancha, PANTONE 286 C, cada nombre que recibe el azul."
+plain: "Una memoria anual de una fundación que cuida un río, impresa con las cuatro tintas de siempre y un azul exacto que es el color de la fundación. Cada archivo llama al azul de una manera, y el de imprenta lo pone todo en una plancha."
+description: "Una memoria anual a cuatro tintas y un Pantone corporativo en Postext: tintes de la plana, una tabla de tintas que une nombres y un SVG con su tinta."
+question: "¿Cómo imprimo una memoria a cuatro tintas y nuestro Pantone si cada archivo llama a la tinta de una manera?"
+aliases: ["quinta tinta", "tinta plana", "Pantone", "color corporativo", "tabla de tintas", "alias de tinta", "memoria anual", "nombre de plancha", "fifth ink", "spot colour"]
+pageNotes: { "1": "La cubierta: una foto aérea de un meandro verde sobre una franja de azul corporativo intenso, con FUNDACIÓN CAUCE, Memoria anual 2025, un filete corto azul claro y un lema en cursiva, todo en blanco.", "3": "Trabajo a lo largo del río: una barra azul con el antetítulo, el título en azul, dos columnas de texto, un gráfico de barras en el azul y su tinte al 40 % y una tabla con la cabecera azul y la fila de total en azul pálido.", "6": "Cuentas: dos columnas con la tabla de ingresos y gastos a la derecha, y una barra a lo ancho de la página dividida en el azul pleno, su tinte claro y un gris para el funcionamiento." }
+---
+
+## Lo que vas a componer
+
+Una memoria anual de ocho páginas A4 para una fundación inventada que restaura un río, impresa a cuatro tintas y una quinta, su azul corporativo. El azul está donde lo pondría una marca: la franja de la cubierta, la barra sobre cada sección, los títulos, las cabeceras de tabla, las barras del gráfico y la contracubierta. Sus tintes al 40 % y al 12 % rellenan las barras previstas, las filas de total y la caja de cifras, y se imprimen como tramas de la misma tinta, nunca como una mezcla de cuatricromía. Las fotografías y el texto van en cuatricromía. El PDF/X-4 tiene cinco planchas, y la quinta lleva el nombre con que el impresor guarda la tinta, `PANTONE 286 C`, aunque en el diseño nada la llama así.
+
+## Elaboración
+
+### 1 · Una tinta con tres nombres
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El azul llega a la memoria con tres nombres, como pasa en los trabajos de verdad: la muestra del diseñador dice `Brand Blue`, una paleta antigua escribió `Pantone 286C` para el tinte al 40 %, y el gráfico, dibujado en la oficina de España, dice `Azul Cauce`. Sin tabla de tintas cada nombre saldría en su propia plancha, y el impresor recibiría tres azules que mezclar. La entrada de la [tabla de tintas](/es/docs/configuration-pdf-output#tintas-planas) da nombre a la plancha y pone los demás como alias; los nombres se comparan sin mirar mayúsculas ni espacios, así que cada tinte de cada nombre cae en la única separación `PANTONE 286 C`. Su `cmyk` es la alternativa que enseña una prueba.
+
+### 2 · El gráfico nombra su tinta
+
+<Excerpt region="chart" />
+
+Un SVG dice en qué tinta se imprime un color con `data-spot`, y con qué fuerza con `data-spot-tint`, en porcentaje. Las barras del gráfico nombran `Azul Cauce` al 100 % y al 40 %, y el alias las pone en la misma plancha que el resto del azul. Las líneas de la rejilla y las etiquetas son colores corrientes y quedan en el negro de cuatricromía. La barra de gastos de la página de cuentas hace lo mismo con tres tramos, el tercero un gris de cuatricromía.
+
+### 3 · El azul lleva el diseño
+
+<Excerpt region="cover" />
+
+La foto de cubierta llena la parte alta del sangrado con `fit: 'cover'`, y una caja en el azul llena el resto; la letra encima es blanca y calada en la plancha. Las barras de sección, los pies de página y las cabeceras de tabla usan la misma entrada de la paleta, así que cambiar de tinta es una línea.
+
+<Excerpt region="tables" />
+
+Las tablas salen de archivos TSV junto al texto. Una fila cuya primera celda va en negrita es un total y toma el tinte al 12 %; las cifras van a la derecha.
+
+### 4 · Las fotografías siguen en RGB
+
+`convertImages: false` en los ajustes de impresión deja las fotografías como JPEG en RGB con perfil sRGB, que PDF/X-4 admite; el RIP del impresor las separa. El archivo queda ligero, y la plancha azul no recibe nada de las fotos.
+
+## Variantes
+
+### Imprime el azul en cuatricromía
+
+Cuando la máquina no tiene quinto cuerpo, una palabra en la tabla de tintas imprime cada tinte del azul en CMYK a partir de su alternativa.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+-    cmyk: BLUE }] };
++  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++    cmyk: BLUE, output: 'process' }] };
+```
+
+### Nombra la plancha para otra imprenta
+
+Hay imprentas que quieren la plancha con su propio nombre. `pdfName` la renombra y conserva los alias.
+
+```diff
+-  inks: [{ name: 'PANTONE 286 C', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
++  inks: [{ name: 'PANTONE 286 C', pdfName: 'PANTONE 286 U', aliases: ['Brand Blue', 'Pantone 286C', 'Azul Cauce'],
+```
+
+## Errores frecuentes
+
+- Un color de una imagen que ni nombra su tinta ni coincide exactamente con un color plano de la paleta queda en cuatricromía, aunque parezca el azul. Marca los elementos con `data-spot`, o da a la paleta un color plano con ese hex exacto.
+- Un nombre de familia con un número, como `Source Sans 3`, necesita comillas en el `font-family` de un SVG; sin ellas, el navegador descarta la declaración y compone las etiquetas en una serif.

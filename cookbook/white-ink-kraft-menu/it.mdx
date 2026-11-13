@@ -1,0 +1,69 @@
+---
+title: "Un menù da panetteria in bianco su kraft"
+summary: "Il bianco coprente come tinta piatta su kraft: testo bianco sul cartoncino bruno, un fondo bianco sotto testo bruno e bianco risparmiato in un riquadro verde."
+plain: "Il menù di una panetteria stampato su cartoncino kraft marrone. Il nome e i titoli sono in inchiostro bianco, che il tipografo aggiunge come inchiostro in più. Il file di stampa tiene il bianco su una lastra a parte."
+description: "Un menù da panetteria su kraft con Postext: bianco coprente come tinta piatta, testo bianco, bianco sotto il colore, bianco risparmiato e il controllo."
+question: "Come stampo il bianco su carta kraft, come testo e sotto i colori?"
+aliases: ["inchiostro bianco", "bianco coprente", "carta kraft", "cartoncino kraft", "carta da pacchi", "sottofondo bianco", "base bianca", "risparmio", "sovrastampa", "menù da bar", "white ink", "kraft paper"]
+pageNotes: { "1": "La copertina su kraft marrone: HORNO ALTO in grandi maiuscole bianche egiziane, una riga di piccole maiuscole brune, una pagnotta dipinta su un passe-partout bianco e l'indirizzo in corsivo bruno.", "3": "Una tazza di caffè dipinta su un passe-partout bianco, AT THE COUNTER in bianco, i prezzi di caffè e colazioni con linee di puntini e un riquadro verde scuro con l'infornata del giorno in testo bianco.", "4": "SINCE 1987 in bianco, due paragrafi sulla panetteria in bruno, gli orari su un cartoncino bianco e l'indirizzo." }
+---
+
+## Che cosa comporrai
+
+Il menù di Horno Alto, una panetteria di paese inventata: un cartoncino kraft A5 piegato una volta, quattro pagine. Il kraft non contiene bianco, quindi ogni bianco del menù è un inchiostro che aggiunge il tipografo: il nome e i titoli delle sezioni direttamente sul bruno, i passe-partout su cui poggiano le tre tempere e il cartoncino con gli orari. I prezzi stanno su un tabulatore con linea di puntini, in un bruno scuro in quadricromia. Nella pagina del caffè un riquadro verde porta l'infornata del giorno in testo bianco ritagliato nel verde. Folio apre il menù su un bancone di rovere, alla luce del giorno.
+
+## Preparazione
+
+### 1 · La carta è kraft, il bianco è un inchiostro
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. La carta è un colore della palette definito in CMYK allo 0 %: lo schermo e Folio dipingono il kraft, e nessuna lastra lo stampa. Il bianco è una tinta piatta con la finitura bianca ([finiture](/it/docs/special-inks-die-cuts#finiture)), chiamata `Opaque White` nella tabella degli inchiostri, come verrà detto al tipografo. Il file PDF/X-4 lo mette su una `Separation` propria, accanto alle quattro lastre di quadricromia. Il suo hex a schermo è un passo sotto `#ffffff`, così la maschera delle finiture distingue l'inchiostro da un foglio bianco.
+
+### 2 · Il bianco direttamente sul bruno
+
+<Excerpt region="mount" />
+
+Il nome, i titoli delle sezioni e quelli delle pagine interne sono testo nel bianco, composto in Alfa Slab One. Un inchiostro bianco copre meno del nero: il bruno traspare in un tratto sottile, quindi un'egiziana nera da 12 pt in su si legge dove un tondo leggero diventerebbe beige. I passe-partout sono riquadri nello stesso bianco, 4 mm più grandi di ogni dipinto su ogni lato.
+
+### 3 · Il colore sopra il bianco
+
+Gli orari stanno su un cartoncino di inchiostro bianco, nel bruno scuro del testo del menù. Un inchiostro bianco sovrastampa per impostazione predefinita, e anche il bruno è impostato in sovrastampa (`overprint: true` sul colore della palette), così in macchina il bruno si posa sul bianco invece di ritagliarci dentro le sue lettere.
+
+### 4 · Il bianco sopra il colore: risparmiarlo
+
+<Excerpt region="panel" />
+
+La macchina stende prima il bianco e poi i colori sopra, quindi un testo bianco sul riquadro verde sparirebbe sotto il verde. Il testo del riquadro prende un secondo bianco sulla stessa lastra, con `overprint: false`: il testo ritaglia la sua forma nel verde e il bianco la riempie. I due bianchi differiscono di un passo di hex perché il PDF distingue i colori dal loro hex.
+
+### 5 · I prezzi su un tabulatore
+
+<Excerpt region="dishes" />
+
+Ogni sezione è un gruppo `:::paragraphs` nello stile dei piatti; `:tab` prima del prezzo lo manda in fondo alla giustezza, con una linea di puntini fino a lui, come nel [menù del bistrot](/it/cookbook/bistro-menu).
+
+### 6 · Che cosa dice il controllo
+
+<Excerpt region="preflight" />
+
+`preflightDocument` avvisa con `whiteInkOnWhite` quando un inchiostro bianco finisce su una pagina con carta bianca o non impostata, dove non mostra nulla. Sul kraft tace, e la riga sotto il pulsante di download elenca ciò che resta: il bianco come inchiostro speciale (`spotInkFinish`) e l'ordine di stampa che lo stende per primo (`inkPressOrder`).
+
+### 7 · Folio mostra il menù su un bancone
+
+<Excerpt region="folio" />
+
+Folio dipinge il bianco in modo che copra il tono della carta, come fa l'inchiostro, e il cartoncino con texture feltrata fa leggere il bruno come kraft.
+
+## Varianti
+
+### Una copertina di quaderno
+
+Sostituisci il menù con un titolo e un motivo di filetti bianchi sul davanti: la carta, l'inchiostro e la tabella degli inchiostri restano come sono.
+
+### Due passate di bianco
+
+Il tipografo può stendere il bianco due volte per un bianco più pieno su un kraft scuro. Chiedilo nell'ordine; il file resta lo stesso, con una sola lastra di bianco.
+
+## Errori frequenti
+
+- Un inchiostro bianco su una pagina con carta bianca o non impostata non stampa nulla di visibile. Imposta `page.backgroundColor` sul supporto, in CMYK allo 0 %, e il controllo smette di avvisare.
+- Il PDF non mette mai un'immagine in sovrastampa, quindi un dipinto sopra un riquadro bianco toglie il bianco sotto di sé: la lastra tiene la cornice del passe-partout e, in macchina, i bianchi del dipinto lasciano vedere il kraft. Chiedi al tipografo di riempire la lastra del bianco sotto le immagini, o applica i dipinti su adesivi di carta bianca.
+- Il testo bianco sopra un colore non deve sovrastampare. Con l'impostazione predefinita si stampa sotto il colore e sparisce.

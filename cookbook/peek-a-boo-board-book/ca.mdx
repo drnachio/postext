@@ -1,0 +1,63 @@
+---
+title: "Un llibre de cartró de cucut amb forats en registre"
+summary: "Quatre forats troquelats on la pintura següent guarda el que enganya, una finestra que baixa a un forat més petit, cantonades arrodonides i línia de troquel."
+plain: "Un llibre de cartró per als més petits. Cada forat d’una pàgina deixa veure un trosset del dibuix següent, el text fa una pregunta i en girar el full es veu què era de debò."
+description: "Un llibre de cartró amb forats troquelats en registre amb les pintures de sota: formes de dieCuts, cantonades arrodonides i línia de troquel al PDF."
+question: "Com troquelo forats a les pàgines d’un llibre perquè cadascun deixi veure part del dibuix següent?"
+aliases: ["llibre de cucut", "llibre de cartró", "forats troquelats", "espiell", "cantonades arrodonides", "línia de troquel"]
+pageNotes: { "1": "La coberta: una bardissa sota el cel blau, el títol en vermell i una finestra rodona a la bardissa per on un forat més petit de la pàgina següent deixa veure ratlles taronja i negres.", "2": "L’interior de la coberta: la finestra travessa la pàgina a l’esquerra, la pregunta va a la dreta i continua a tota amplada per sota, i l’endevinalla en vermell.", "11": "La porta vermella d’un graner amb un espiell rodó a dalt, per on es veu un disc groc encès." }
+---
+
+## Què compondràs
+
+*Cucut! Qui hi ha al jardí?*, un llibre de cartró de catorze pàgines en un quadrat de 160 mm amb les quatre cantonades arrodonides. Cada pintura té un forat, i el forat és just on la pintura següent guarda la part que enganya l’ull: el llom ratllat d’un gat adormit que podria ser un tigre, la llana d’una ovella que podria ser un núvol, un fanalet que podria ser la lluna. La finestra de la coberta és més ampla que el forat de darrere, i la primera mirada arriba dues pàgines al fons. El text de l’esquerra pregunta; en girar el full arriba la resposta. El PDF d’impremta porta la línia de troquel en una planxa pròpia.
+
+## Elaboració
+
+### 1 · Forats on el dibuix següent es delata
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Cada forma es col·loca des de la cantonada superior esquerra del tall i `dieCuts.pages` diu quina pàgina talla, comptant des de la primera del llibre. Mesura el forat sobre la pintura que descobreix, no sobre la pàgina on es talla: la bardissa, la tanca i la porta són textures que admeten un forat a qualsevol lloc; el gat i el fanalet, no.
+
+### 2 · Pintures en registre amb els forats
+
+<Excerpt region="pictures" />
+
+Els forats van en mil·límetres des del tall, de manera que cada pintura penja del tall i el sobrepassa el sagnat pels quatre costats, igual en pantalla que a la impremta. L’estil de les pintures només treu el marge inferior: el disseny arriba al peu de la pàgina, i el text del vers de darrere conserva els 44 mm de marge superior, que el baixen per sota dels forats petits.
+
+### 3 · La línia de troquel en la seva planxa
+
+<Excerpt region="die-line" />
+
+El PDF imprimeix cada pàgina sencera i traça el contorn de cada forat, i de cada full arrodonit, en una separació `Die` en sobreimpressió que mai no s’entinta. `convertImages: false` deixa les pintures com a JPEG RGB etiquetats sRGB, que PDF/X-4 admet, i el fitxer continua sent petit.
+
+### 4 · El llibre a la mà
+
+<Excerpt region="folio" />
+
+Folio talla els forats a cada full i ensenya les pàgines de sota amb les parets del tall, i la finestra escalonada es llegeix com a profunditat. El cartró passa rígid i les cantonades arrodonides es tallen a tots els fulls.
+
+### 5 · Pàgines planes que deixen veure
+
+<Excerpt region="see-through" />
+
+Al canvas, un forat mostra el que hi hagi darrere del canvas si el renderitzador no rep les pàgines de sota. `beneath` les retorna per índex, cadascuna pintada amb els seus forats, i així la coberta deixa veure la bardissa i, a través de la bardissa, el gat.
+
+## Variants
+
+### Arrodoneix només les cantonades del tall davanter
+
+Un àlbum il·lustrat arrodoneix les dues cantonades lluny del llom i deixa el llom en escaire.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Talla cada full amb una forma
+
+Un contorn en unitats de `viewBox` talla cada full, en mirall als versos; mana sobre les cantonades.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

@@ -1,0 +1,70 @@
+---
+title: "Dorure à chaud sur une couverture bleu nuit"
+summary: "La dorure comme ton direct avec une finition : sa propre plaque dans le PDF, l’éclat dans Folio, et une carte bleue et un vélin crème sans encre."
+plain: "Un petit recueil de poèmes à couverture bleu foncé, aux lettres dorées marquées dans la carte. Dedans, filets et cadres sont dorés aussi. La vue 3D montre l’éclat de l’or, et le fichier d’impression le garde à part pour l’imprimeur."
+description: "Un recueil de poèmes à couverture dorée à chaud dans Postext : un ton direct avec finition, sa plaque dans le PDF, des papiers sans encre, vus dans Folio."
+question: "Comment dorer la couverture et les filets d’un livre, et livrer la dorure sur une plaque à part ?"
+aliases: ["dorure à chaud", "marquage à chaud", "dorure", "film doré", "cliché de dorure", "carte de couleur", "papier foncé", "recueil de poèmes", "plaquette de poésie", "hot foil", "foil stamping"]
+pageNotes: { "1": "La couverture : un double cadre de filets dorés sur une carte bleu foncé, FIVE POEMS, SHOOK FOIL en grandes capitales dorées, un court filet doré et Gerard Manley Hopkins en petites capitales dorées, les années au pied.", "4": "La table des matières dorée sur la carte bleue : cinq titres de poèmes, des points de conduite et les numéros de page.", "6": "Une prairie la nuit sous les étoiles, peinte, dans un cadre doré sur le papier crème.", "9": "The Windhover : un double filet doré sous le titre courant, le titre en capitales au-dessus d’un court filet doré, la dédicace en italique et le poème, dont les longs vers passent à la ligne." }
+---
+
+## Ce que vous allez composer
+
+Une plaquette de cinq poèmes de Gerard Manley Hopkins, au format 140 × 216 mm, brochée. La couverture et le feuillet qui la suit sont une carte bleu foncé dorée à chaud, sans rien d’autre : un double cadre, le titre en capitales Cinzel, le nom du poète et la table des matières. À l’intérieur, sur un vélin crème, les poèmes s’impriment en quadrichromie, un nocturne peint fait face au deuxième poème, et chaque filet de la page est doré : le double filet sous le titre courant, le court filet sous chaque titre, celui qui accompagne le folio. Le titre vient du premier poème, où le monde brille « like shining from shook foil ». Folio tourne le livre fermé vers la lumière, et l’or s’y lit comme du métal.
+
+## Préparation
+
+### 1 · La dorure est un ton direct avec une finition
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. `finish: { kind: 'foil' }` fait du ton direct une encre spéciale ([finitions](/fr/docs/special-inks-die-cuts#finitions)). La mise en page voit une couleur et rien ne bouge ; le canvas peint son hex, Folio l’éclaire comme un métal, et le fichier PDF/X-4 met chaque élément doré sur une seule `Separation` nommée `Gold foil`, d’après laquelle le graveur fait le cliché en laiton. La dorure défonce ce qui se trouve dessous, comme sous la presse à dorer.
+
+### 2 · Les papiers sont des couleurs qui n’impriment aucune encre
+
+<Excerpt region="content" />
+
+La carte bleue et le vélin crème sont des couleurs de la palette définies en CMJN à 0 % sur chaque canal : l’écran et Folio peignent le support, et aucune plaque n’en reçoit un point. Le PDF de la couverture a donc la plaque de la dorure et quatre plaques de quadrichromie vides. Chaque page bleue prend la carte dans son style de titre (`palette: { paper: … }` dans `onCard`), et les deux blocs `:::paper` donnent à Folio le grammage et la raideur de la carte sur le feuillet de couverture et celui qui le suit.
+
+### 3 · La couverture est un cadre et quatre lignes
+
+<Excerpt region="cover" />
+
+La dorure tient un trait fin : le cadre est donc un filet de 1,6 pt doublé d’un filet de 0,4 pt 2,5 mm à l’intérieur, chacun la bordure d’un bloc dans la couleur de la dorure. Tout ce qui est sur la couverture est doré : aucune autre encre ne touche la carte, et c’est ainsi qu’on commande une couverture dorée à un atelier de reliure.
+
+### 4 · À l’intérieur, les filets sont dorés et les poèmes à l’encre
+
+<Excerpt region="rules" />
+
+Le titre courant est posé sur un double filet, un trait de 0,9 pt et un trait de 0,3 pt 1,2 mm en dessous, de la largeur du bloc de texte. La maquette du titre de poème ajoute un filet de 12 mm sous le titre, et le pied de page un filet de 6 mm sous le folio. Le texte reste dans le noir chaud : un petit corps doré se bouche sous la presse.
+
+### 5 · Folio tourne la couverture vers la lumière
+
+<Excerpt region="folio" />
+
+La dorure ne se voit comme telle que lorsqu’elle reflète quelque chose. L’environnement `studio` a des boîtes à lumière claires et diffuses, et une inclinaison de 24° avec le livre tourné de 16° fait passer leur reflet sur le titre. Sous la lampe, plus faible, le même or devient un ocre terne.
+
+## Variantes
+
+### Dorer à l’argent
+
+Changez le hex et le CMJN de substitution ; la finition et la plaque restent.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Imprimer l’or en encre métallisée
+
+Une encre métallisée coûte moins cher qu’un cliché de dorure et s’imprime avec les autres encres ; Folio la montre satinée.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Erreurs fréquentes
+
+- Un papier de couleur donné dans `page.backgroundColor` avec un hex ordinaire s’imprime comme un aplat de quadrichromie sur toute la page. Définissez le support en CMJN à 0 %, comme ici, quand la couleur est celle du papier.
+- Les filets de moins de 0,25 pt et les caractères de moins de 8 pt se bouchent à la dorure. Gardez l’or pour les filets et les titres.

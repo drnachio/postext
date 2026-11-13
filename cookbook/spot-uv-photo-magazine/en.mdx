@@ -1,0 +1,66 @@
+---
+title: "Spot gloss over a soft-touch magazine"
+summary: "Two varnishes as spot inks: soft touch over every page, a gloss over the photographs and the masthead, shown in Folio and the finish views."
+plain: "A photography magazine with a velvety coating on every page and a shiny coating only on the photographs and the title. The coatings have no colour, so the page looks normal on screen; the 3D view and a proof view show where they are."
+description: "A photo magazine in Postext with soft-touch varnish on every page and spot UV gloss over the pictures and masthead: two varnish plates, Folio, finish views."
+question: "How do I put a soft-touch varnish on every page and a spot gloss over the photographs only?"
+aliases: ["spot UV", "spot varnish", "soft touch", "soft-touch lamination", "gloss varnish", "matte varnish", "UV coating", "varnish plate", "photo magazine", "barniz selectivo", "tacto suave", "selective varnish"]
+pageNotes: { "1": "The cover: a lone walker on a cracked salt flat at dusk to the bleed, LONG LIGHT in large white serif capitals and lower case over the sky, the cover lines in white on a slate band.", "3": "A fisherman mending an orange net on a harbour quay, to the bleed across the top of the page, the title The net mender and two columns of text.", "6": "The back cover: a slate page with Long Light in white and a line of colophon under it." }
+---
+
+## What you'll build
+
+Issue 14 of *Long Light*, an invented photography magazine: six pages at 210 × 280 mm, perfect bound. Every page is coated in a soft-touch varnish, the velvet finish that dulls the sheet and takes the shine off it. Over the five photographs and the masthead a printer lays a second varnish, a gloss, so the pictures catch the light while the page around them stays still. Neither varnish has a colour: the canvas shows the pages as they print, and three views of the cover beside Folio show the plates and the sheen. Folio lays the magazine open on a marble table in studio light, where the gloss shines as a leaf turns.
+
+## Method
+
+### 1 · Each varnish is a spot ink with a finish
+
+The code is [the short answer](#the-short-answer) above. A varnish is a spot colour whose finish is `varnish`, with a sheen: `softTouch` for the velvet, `gloss` for the spot UV ([finishes](/en/docs/special-inks-die-cuts#finishes)). The PDF/X-4 file puts each on a `Separation` of its own, so the printer gets two varnish plates beside the four process plates. On screen a varnish paints nothing; it still needs a hex of its own, because a print render tells inks apart by their hex. A varnish overprints by default, so neither cuts a hole in the colours under it.
+
+### 2 · Soft touch over every page
+
+<Excerpt region="velvet" />
+
+The soft touch is one box in the varnish, from bleed to bleed. The footer holds it because the footer is painted last on the page: the PDF never makes a later mark overprint what was painted before it, so text set after the varnish would cut the varnish away under it. The cover and the back have no folios, and their footer carries the box alone.
+
+### 3 · Gloss over the photographs
+
+<Excerpt region="gloss" />
+
+Each photograph is a picture with a box in the gloss laid over it at the same size. The box comes second, so it lies on top: on the plate it is a rectangle that covers the picture exactly, which is how a spot UV plate is drawn.
+
+### 4 · The masthead set twice
+
+<Excerpt region="cover" />
+
+The masthead is two text elements in the same place: one in paper white, which knocks out of the photograph, and one in the gloss over it. The gloss version paints nothing on screen and gives the plate the shapes of the letters, so on the printed cover the title shines over the shining sky.
+
+### 5 · The finish views and Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` takes a `finishes` option. `'flat'` is the default and shows the page as it prints; `'map'` fades the page and marks each special plate in false colour, the varnish in cyan, the gloss brighter than the soft touch; `'sheen'` sweeps a light across the page. Folio reads the same finish mask: a gloss catches the highlights, soft touch takes them away.
+
+## Variations
+
+### Matte instead of soft touch
+
+A plain matte varnish costs less and shows the same contrast, a little less deep.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Gloss on the type only
+
+Leave the photographs matte and lay the gloss over the masthead and the titles alone: set the titles twice, as the masthead is, and drop the boxes over the pictures.
+
+## Pitfalls
+
+- A varnish with the hex of another colour is printed as that colour. Give each varnish a hex nothing else uses.
+- Whatever the page paints after a varnish cuts it away in the PDF. Put an all-over varnish where the page is painted last, as the footer here.
+- Soft touch is often sold as a laminate rather than a varnish. Ask the printer which plate name they want, and set it with the ink table's `pdfName`.

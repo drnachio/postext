@@ -1,0 +1,63 @@
+---
+title: "A peek-a-boo board book with holes in register"
+summary: "Four die-cut holes, placed with dieCuts where the next painting's telling part lies, a window that steps down to a smaller hole, rounded corners and a die line."
+plain: "A cardboard picture book for toddlers. Each hole in a page shows a small piece of the next picture, the words make a guess, and turning the page shows what it really is."
+description: "A board book with die-cut holes in register with the paintings beneath: dieCuts shapes and pages, rounded corners, text round holes, a die line plate."
+question: "How do I cut holes through a book’s pages, each showing part of the next picture?"
+aliases: ["peek-a-boo book", "board book", "die-cut holes", "peephole", "lift and look", "rounded corners", "die line"]
+pageNotes: { "1": "The cover: a garden hedge under a blue sky, the title in red, and a round window in the hedge through which a smaller hole in the next page shows orange and black stripes.", "2": "The inside of the cover: the window cut through it at the left, the question set to its right and running full width below it, and the guess Is it a tiger? in red.", "11": "A red barn door with a small round peephole near the top, through which a glowing yellow disc shows." }
+---
+
+## What you'll build
+
+*Peek-a-boo! Who’s in the Garden?*, a fourteen-page board book on a 160 mm square, its corners rounded on all four sides. Each painting has a hole, and the hole is cut exactly where the next painting keeps the part that fools the eye: the striped flank of a sleeping cat that could be a tiger, a sheep's wool that could be a cloud, a lantern that could be the moon. The cover's window is wider than the hole behind it, so the first look goes two pages deep. The words on the left make the guess; the turn of the page answers it. The press file carries the die line on a plate of its own.
+
+## Method
+
+### 1 · Holes where the next picture tells
+
+The code is [the short answer](#the-short-answer) above. Each shape is placed from the trim's top-left corner and `dieCuts.pages` names the page it cuts, counted from the book's first page. Measure the hole on the painting it reveals, not on the page it is cut in: the hedge, the fence and the door are textures that take a hole anywhere, the cat and the lantern are not.
+
+### 2 · Paintings in register with the holes
+
+<Excerpt region="pictures" />
+
+The holes are in trim millimetres, so every painting hangs from the trim and runs the bleed past it on every side, on screen and in print alike. The picture style drops only the foot margin: its design reaches the foot of the page, and the words on the verso behind it keep their 44 mm top margin, which lowers them under the top of the small holes.
+
+### 3 · The die line on its own plate
+
+<Excerpt region="die-line" />
+
+The PDF prints each page whole and strokes the outline of every hole, and of each rounded leaf, on a `Die` separation that overprints and is never inked. `convertImages: false` keeps the paintings as RGB JPEGs tagged sRGB, which PDF/X-4 allows, so the file stays small.
+
+### 4 · The book in the hand
+
+<Excerpt region="folio" />
+
+Folio cuts the holes through each leaf and shows the pages beneath with the walls of the cut, so the stepped window reads as depth. Board stock turns stiff, and the rounded corners are cut on every leaf.
+
+### 5 · Flat pages that look through
+
+<Excerpt region="see-through" />
+
+On the canvas a hole shows what is behind the canvas unless the renderer gets the pages beneath. `beneath` returns them by index, each painted with its own holes, so the cover shows the hedge and, through the hedge, the cat.
+
+## Variations
+
+### Round only the fore-edge corners
+
+A trade picture book rounds the two corners away from the spine and keeps the spine square.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Cut every leaf to a shape
+
+An outline in `viewBox` units cuts every leaf to it, mirrored on the versos; it wins over the corners.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

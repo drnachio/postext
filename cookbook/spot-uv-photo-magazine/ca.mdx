@@ -1,0 +1,66 @@
+---
+title: "Brillantor selectiva sobre una revista amb tacte suau"
+summary: "Dos vernissos com a tintes planes: tacte suau a totes les pàgines i brillantor sobre les fotos i la capçalera, vistos a Folio i a les vistes d'acabats."
+plain: "Una revista de fotografia amb un acabat de vellut a totes les pàgines i un altre de brillant només a les fotos i al títol. Els vernissos no tenen color; la vista 3D i una vista de prova ensenyen on són."
+description: "Una revista de fotografia a Postext amb vernís de tacte suau a totes les pàgines i UV selectiu brillant a fotos i capçalera: dues planxes, Folio i vistes."
+question: "Com poso un vernís de tacte suau a totes les pàgines i brillantor selectiva només a les fotos?"
+aliases: ["vernís selectiu", "UV selectiu", "tacte suau", "soft touch", "vernís brillant", "vernís mat", "plastificat", "planxa de vernís", "revista de fotografia", "reserva de brillantor", "vernís UV", "acabat de vellut", "spot UV", "spot varnish"]
+pageNotes: { "1": "La coberta: un caminant sol en un salobrar clivellat al capvespre, a sang, LONG LIGHT en una romana blanca gran sobre el cel i els titulars en blanc sobre una franja pissarra.", "3": "Un pescador adoba una xarxa taronja al moll, a sang a la part de dalt de la pàgina, el títol The net mender i dues columnes de text.", "6": "La contracoberta: una pàgina pissarra amb Long Light en blanc i una línia de colofó a sota." }
+---
+
+## Què compondràs
+
+El número 14 de *Long Light*, una revista de fotografia inventada: sis pàgines de 210 × 280 mm, en rústica fresada. Totes les pàgines porten un vernís de tacte suau, l'acabat de vellut que apaga el full i li treu la lluentor. Sobre les cinc fotografies i la capçalera la impremta posa un segon vernís, brillant, perquè les fotos agafin la llum mentre la pàgina del voltant es queda quieta. Cap vernís no té color: el llenç mostra les pàgines tal com s'imprimeixen, i tres vistes de la coberta al costat de Folio ensenyen les planxes i la lluentor. Folio obre la revista sobre una taula de marbre amb llum d'estudi, on la brillantor espurneja en passar el full.
+
+## Elaboració
+
+### 1 · Cada vernís és una tinta plana amb acabat
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un vernís és un color pla amb l'acabat `varnish` i una lluentor: `softTouch` per al vellut i `gloss` per a l'UV selectiu ([acabats](/ca/docs/special-inks-die-cuts#acabats)). El PDF/X-4 posa cadascun en una `Separation` pròpia, de manera que la impremta rep dues planxes de vernís al costat de les quatre de quadricromia. A la pantalla un vernís no pinta res; tot i així necessita un hex propi, perquè un render d'impressió distingeix les tintes pel seu hex. Un vernís se sobreimprimeix per defecte, així que cap dels dos no cala els colors que té a sota.
+
+### 2 · Tacte suau a totes les pàgines
+
+<Excerpt region="velvet" />
+
+El tacte suau és una sola caixa en el vernís, de sang a sang. La porta el peu perquè el peu és l'últim que es pinta a la pàgina: el PDF mai no fa sobreimprimir una marca posterior sobre el que s'ha pintat abans, així que un text posat després del vernís el calaria. La coberta i la contracoberta no tenen foli, i el seu peu porta només la caixa.
+
+### 3 · Brillantor sobre les fotografies
+
+<Excerpt region="gloss" />
+
+Cada fotografia és una imatge amb una caixa en el brillant a sobre, de la mateixa mida. La caixa va després, així que queda a dalt: a la planxa és un rectangle que cobreix la foto justa, que és com es dibuixa una planxa d'UV selectiu.
+
+### 4 · La capçalera, dues vegades
+
+<Excerpt region="cover" />
+
+La capçalera són dos elements de text al mateix lloc: un en blanc paper, que es cala a la fotografia, i un altre en el brillant a sobre. El del brillant no pinta res a la pantalla i dona a la planxa la forma de les lletres, així que a la coberta impresa el títol brilla sobre el cel, que també brilla.
+
+### 5 · Les vistes d'acabats i Folio
+
+<Excerpt region="views" />
+
+<Excerpt region="folio" />
+
+`renderPageToCanvas` admet l'opció `finishes`. `'flat'` és la de per defecte i ensenya la pàgina tal com s'imprimeix; `'map'` aclareix la pàgina i marca cada planxa especial en fals color, el vernís en cian, el brillant més clar que el tacte suau; `'sheen'` fa passar una llum per la pàgina. Folio llegeix la mateixa màscara d'acabats: el brillant agafa els reflexos i el tacte suau els treu.
+
+## Variants
+
+### Mat en lloc de tacte suau
+
+Un vernís mat corrent costa menys i dona el mateix contrast, una mica menys profund.
+
+```diff
+-  velvet: varnish('#e9e4f0', 'Soft-touch varnish', 'softTouch'),
++  velvet: varnish('#e9e4f0', 'Matte varnish', 'matte'),
+```
+
+### Brillantor només a la lletra
+
+Deixa les fotos en mat i posa el brillant només sobre la capçalera i els títols: compon els títols dues vegades, com la capçalera, i treu les caixes de sobre les fotos.
+
+## Errors freqüents
+
+- Un vernís amb l'hex d'un altre color s'imprimeix com aquell color. Dona a cada vernís un hex que no faci servir res més.
+- El que la pàgina pinta després d'un vernís el cala al PDF. Posa un vernís general allà on la pàgina es pinta al final, com aquí el peu.
+- El tacte suau sovint es ven com a plastificat i no com a vernís. Pregunta a la impremta quin nom de planxa vol i posa'l amb `pdfName` a la taula de tintes.

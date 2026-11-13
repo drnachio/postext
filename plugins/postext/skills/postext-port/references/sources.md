@@ -347,7 +347,9 @@ the bundle).
 - The other way round, `postext idml my-book -o book.idml` (postext ≥ 1.71; in code `idmlDocument`
   from the `postext-idml` package, which postext ≥ 1.76 needs in place of the old `postext/idml`
   subpath) writes the laid-out pages as an InDesign package: page items for rules, boxes and
-  pictures, one story per composed-page frame (`next` chains share one), callout styles as paragraph
+  pictures, the running text of the pages laid out in columns as one story threaded through a
+  frame per column with the boxes of the flow anchored in it (≥ 1.85.0; `--text frames` gives each
+  block its own frame and story), one story per composed-page frame (`next` chains share one), callout styles as paragraph
   styles, authored CMYK colours as swatches, form-field chips as InDesign form fields. From 1.76
   the pages stand in facing spreads for a book with mirrored margins (else one page per spread),
   every line ends where Postext ended it (`--lines keep`, the default; `--lines reflow` leaves the
@@ -359,9 +361,15 @@ the bundle).
   studio, not as a way to check the port.
 - `postext-idml` also reads: `idmlToPostext(bytes, { layout })` returns chapters, configuration,
   resources and a report (verdict, findings with counts) of what Postext has no equivalent for. It
-  is deterministic and brings a book that Postext exported back with the same lines, faithful as
-  composed pages (postext ≥ 1.84.0: its character styles, boxes and tints come back; not yet as a
-  flowing book, #1559); a document made in InDesign comes through with the losses the report lists.
+  is deterministic and brings a book that Postext exported back faithful: a flowing book as a
+  flowing book (postext ≥ 1.85.0: the export threads the running text through a frame per column
+  and labels the line breaks it kept, so the paragraphs, boxes and captions read as written; the
+  column guides carry a column-and-a-half page's main and side columns, read back as `oneAndHalf`;
+  running heads, folios and shapes drawn on the pages are left out as losses,
+  `runningHeadsOnPages` and `pageArtInFlow`, so redraw them in the design), a
+  book exported with `--text frames` as composed pages with the same lines (≥ 1.84.0: its
+  character styles, boxes and tints come back); a document made in InDesign comes through with
+  the losses the report lists.
   The importer also cuts a text frame behind a Jump Object or Jump to Next Column wrap into chained
   frames above and below the object (≥ 1.82.2), splits a package's font collections (`.ttc`,
   `.otc`) into the single faces the text uses (≥ 1.83), and in `--layout flow` sets a page with no

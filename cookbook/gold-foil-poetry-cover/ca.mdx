@@ -1,0 +1,70 @@
+---
+title: "Or en calent sobre una coberta blava"
+summary: "L'or en calent com a tinta plana amb acabat: planxa pròpia al PDF, brillantor a Folio, i cartolina blava i paper crema sense tinta."
+plain: "Un llibret de poemes amb la coberta blau fosc i les lletres estampades en or. A dins, tots els filets i marcs també són d'or. La vista 3D mostra la brillantor de l'or, i el fitxer d'impremta el separa per a l'impressor."
+description: "Un quadern de poesia amb coberta en or en calent a Postext: tinta plana amb acabat, la seva planxa al PDF, papers sense tinta i Folio."
+question: "Com estampo en or una coberta i els filets d'un llibre, i envio l'or a l'impressor en una planxa a part?"
+aliases: ["or en calent", "estampació en calent", "estampat", "daurat", "pa d'or", "clixé", "cartolina de color", "paper fosc", "quadern de poesia", "hot foil", "foil stamping"]
+pageNotes: { "1": "La coberta: un doble marc de filets daurats sobre cartolina blau fosc, FIVE POEMS, SHOOK FOIL en versals grans d'or, un filet curt i Gerard Manley Hopkins en versaletes daurades, els anys al peu.", "4": "L'índex en or sobre la cartolina blava: cinc títols de poemes, línies de punts i números de pàgina.", "6": "Un prat de nit sota les estrelles, pintat, dins d'un marc daurat sobre el paper crema.", "9": "The Windhover: un doble filet daurat sota la capçalera, el títol en versals sobre un filet daurat curt, la dedicatòria en cursiva i el poema, amb els versos llargs que passen a la línia següent." }
+---
+
+## Què compondràs
+
+Un quadern amb cinc poemes de Gerard Manley Hopkins, de 140 × 216 mm i enquadernat en rústica. La coberta i el full que la segueix són cartolina blau fosc estampada en or i res més: un doble marc, el títol en versals de Cinzel, el nom del poeta i l'índex. A dins, en paper verjurat crema, els poemes s'imprimeixen a quatre tintes, un nocturn pintat fa de pàgina de cara al segon poema, i cada filet de la pàgina és or: el doble filet sota la capçalera, el filet curt sota cada títol i el que acompanya el foli. El títol ve del primer poema, on el món brilla «like shining from shook foil». A Folio el llibre tancat gira cap a la llum i l'or es llegeix com a metall.
+
+## Elaboració
+
+### 1 · L'or és una tinta plana amb acabat
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `finish: { kind: 'foil' }` converteix la tinta plana en una tinta especial ([acabats](/ca/docs/special-inks-die-cuts#acabats)). La maquetació veu un color i no es mou res; el canvas pinta el seu hex, Folio l'il·lumina com a metall i el PDF/X-4 posa cada element daurat en una sola `Separation` anomenada `Gold foil`, de la qual el gravador treu el clixé de llautó. L'or buida el que té a sota, com passa a la màquina d'estampar.
+
+### 2 · Els papers són colors que no porten tinta
+
+<Excerpt region="content" />
+
+La cartolina blava i el verjurat crema són colors de la paleta definits en CMYK al 0 % a tots els canals: la pantalla i Folio pinten el paper i cap planxa no en rep ni un punt, així que el PDF de la coberta té la planxa de l'or i quatre planxes de quadricromia buides. Cada pàgina blava pren la cartolina del seu estil de títol (`palette: { paper: … }` a `onCard`), i els dos blocs `:::paper` donen a Folio el gramatge i la rigidesa de la cartolina al full de coberta i al que el segueix.
+
+### 3 · La coberta és un marc i quatre línies
+
+<Excerpt region="cover" />
+
+L'or aguanta una línia fina, així que el marc és un filet d'1,6 pt amb un altre de 0,4 pt 2,5 mm cap a dins, cadascun la vora d'una caixa en el color de l'or. Tot el que hi ha a la coberta és or: cap altra tinta no toca la cartolina, que és com s'encarrega una coberta estampada al taller d'enquadernació.
+
+### 4 · A dins, els filets són or i els poemes, tinta
+
+<Excerpt region="rules" />
+
+La capçalera va sobre un doble filet, un de 0,9 pt i un altre de 0,3 pt 1,2 mm per sota, de l'amplada de la caixa de text. El disseny del títol del poema hi afegeix un filet de 12 mm sota el títol, i el peu un altre de 6 mm sota el foli. El text queda en el negre càlid: la lletra petita en or s'empasta a la màquina.
+
+### 5 · Folio posa la coberta a la llum
+
+<Excerpt region="folio" />
+
+L'or només sembla or quan reflecteix alguna cosa. L'entorn `studio` té focus difusos i clars, i una inclinació de 24° amb el llibre girat 16° en porta el reflex sobre el títol. Amb la llum de làmpada, més tènue, el mateix or es queda en un ocre mat.
+
+## Variants
+
+### Estampa en plata
+
+Canvia el hex i el CMYK de referència; l'acabat i la planxa es queden.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Imprimeix l'or com a tinta metàl·lica
+
+Una tinta metàl·lica surt més barata que un clixé i s'imprimeix amb les altres tintes; Folio la mostra setinada.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Errors freqüents
+
+- Un paper de color posat a `page.backgroundColor` amb un hex corrent s'imprimeix com una taca de quadricromia sobre tota la pàgina. Defineix el paper en CMYK al 0 %, com aquí, quan el color és el del suport.
+- Els filets de menys de 0,25 pt i la lletra de menys de 8 pt s'empasten en estampar-los. Reserva l'or per a filets i titulars.

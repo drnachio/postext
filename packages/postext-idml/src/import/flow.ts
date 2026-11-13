@@ -250,9 +250,12 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
       text = lines.join(' ');
       const plain = caption.story.paragraphs.map(ownText).join(' ');
       const label = captionLabel(plain);
-      // The label goes only when the Markdown opens with the same words.
-      if (label && text.startsWith(plain.slice(0, plain.length - label.rest.length))) {
-        text = text.slice(plain.length - label.rest.length).trim();
+      // The label goes only when the Markdown opens with the same words,
+      // set plain or in bold or italics (Postext sets its own label bold).
+      const lead = label ? plain.slice(0, plain.length - label.rest.length).trim() : '';
+      const marked = label ? new RegExp(`^(\\*\\*|\\*|__|_)?${lead.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\1?`).exec(text) : null;
+      if (label && marked) {
+        text = text.slice(marked[0].length).trim();
         typeId = label.kind;
         if (!ctx.labelWords.has(label.kind)) ctx.labelWords.set(label.kind, label.word.replace(/\.$/, ''));
         ctx.rep.add('captionLabels', 'info', 'A caption\'s typed label ("Figure 3.") is replaced by Postext\'s own numbering of the resource', plain.slice(0, 40));
@@ -324,13 +327,29 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     const on = shares.filter((s) => s.page === o.page);
     if (on.length) put(openingParagraph(on[0]!.from), o.page, o.chunks);
   }
+  /** A running head or a page number set on a page rather than on its
+   *  master (a Postext export draws them so): a short story in a frame of
+   *  its own wholly in the head or foot margin of a page the main text
+   *  runs on. It is no part of the running text. */
+  const furniture = (e: OrderedStory): boolean => {
+    const f = e.frames.length === 1 ? e.frames[0]! : undefined;
+    if (!f?.page || !f.box || !shares.some((s) => s.page === f.pageIndex)) return false;
+    if (e.story.paragraphs.length > 2 || e.story.paragraphs.map(ownText).join(' ').trim().length > 200) return false;
+    const m = f.page.margins;
+    return f.box.bottom <= m.top + 2 || f.box.top >= pageSize(f.page).height - m.bottom - 2;
+  };
   let inOrder = 0;
+  let heads = 0;
   bookmarkChapters(ctx, main, insert, (page) => {
     const share = shares.find((s) => s.page === page);
     return share ? paragraphAt(share.from) : undefined;
   });
   for (const e of stories) {
     if (e === main || captions.has(e) || units.stories.has(e)) continue;
+    if (furniture(e)) {
+      heads++;
+      continue;
+    }
     const page = firstPage(e);
     const box = e.frames.find((f) => f.box)?.box;
     const where = beside(page, box ? box.top : 0);
@@ -363,6 +382,7 @@ export function layoutFlow(ctx: Context, stories: readonly OrderedStory[], main:
     }
   }
   if (sides.length) ctx.rep.add('sideStories', 'info', 'Stories that stand beside the main text (or in a filled or stroked frame of their own) are boxes set at the paragraph of the main story the page geometry suggests', undefined, sides.length);
+  if (heads) ctx.rep.add('runningHeadsOnPages', 'loss', 'Running heads and page numbers set on the pages, in their head or foot margins, are left out of the running text: a flowing book draws its own from its design (set it in Design → Running heads)', undefined, heads);
   if (inOrder) ctx.rep.add('storiesInSequence', 'info', 'Stories set in plain frames above or below the main text on its pages are part of the running text, in reading order', undefined, inOrder);
   const byPage = (a: { page: number; lead?: boolean }, b: { page: number; lead?: boolean }): number => a.page - b.page || Number(!!b.lead) - Number(!!a.lead);
   front.sort(byPage);

@@ -1,0 +1,928 @@
+{
+  "schemaVersion": 1,
+  "slug": "die-cut-window-cover",
+  "sourceHash": "b6979c650bc7b3a650f40a206da658140674a539d46f0cb3573d4cee23d30059",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T16:47:58.200Z",
+  "variants": {
+    "en": {
+      "hash8": "6d3b96ec",
+      "vdtHash": "7d1abe6d39faeb5d7363670c0df3c58085c1b9ac",
+      "timings": {
+        "importMs": 1584,
+        "fontsMs": 559,
+        "buildMs": 14,
+        "totalMs": 4763,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          130,
+          195
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "EB Garamond",
+          "sizePt": 10.5,
+          "leadingPt": 14
+        },
+        "families": [
+          "Cormorant Garamond",
+          "EB Garamond"
+        ],
+        "pages": 10,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 229856,
+          "alt": "Opening page 1: The Oval Portrait."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "blank",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 4658,
+          "alt": "Blank page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 118258,
+          "alt": "Opening page 3: The Oval Portrait."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 19908,
+          "alt": "Opening page 4: Note on the text."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 135596,
+          "alt": "Opening page 5: The Oval Portrait."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 155348,
+          "alt": "Page 7."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 114570,
+          "alt": "Page 8."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "blank",
+          "w": 1000,
+          "h": 1500,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 3248,
+          "alt": "Blank page 9."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 260548,
+          "alt": "Opening page 10: About the tale."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "die-cut-window-cover.pdf",
+        "bytes": 734702,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "die-cut-window-cover.postext",
+        "bytes": 574673,
+        "folio": "8dbeafb0",
+        "chapters": [
+          {
+            "pages": 10,
+            "hash": "055c80fc52b058ce",
+            "lines": "c31675169ad15234"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].italic",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].bodyStyle",
+          "headingStyles[].bodyStyle.color",
+          "headingStyles[].bodyStyle.fontSize",
+          "headingStyles[].bodyStyle.lineHeight",
+          "headingStyles[].bodyStyle.textAlign",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].dropCap",
+          "headingStyles[].dropCap.color",
+          "headingStyles[].dropCap.fontFamily",
+          "headingStyles[].dropCap.gap",
+          "headingStyles[].dropCap.lines",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].hidden",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].marginTop",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 321,
+        "designElements": 12,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 2,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "body-drop-caps",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.98
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.25 MB: state 1.25 MB"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "2648c689",
+      "vdtHash": "21b3b2fd1fd34e4b9a58d63337df43738da07d5a",
+      "timings": {
+        "importMs": 2755,
+        "fontsMs": 86,
+        "buildMs": 14,
+        "totalMs": 4452,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          130,
+          195
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "EB Garamond",
+          "sizePt": 10.5,
+          "leadingPt": 14
+        },
+        "families": [
+          "Cormorant Garamond",
+          "EB Garamond"
+        ],
+        "pages": 10,
+        "ownLines": 179
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 228752,
+          "alt": "Página de apertura 1: El retrato oval."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "blank",
+          "w": 1000,
+          "h": 1500,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 4658,
+          "alt": "Página en blanco 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 116994,
+          "alt": "Página de apertura 3: El retrato oval."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 23996,
+          "alt": "Página de apertura 4: Nota sobre el texto."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 133878,
+          "alt": "Página de apertura 5: El retrato oval."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 150666,
+          "alt": "Página 7."
+        },
+        {
+          "n": 8,
+          "label": "8",
+          "role": "body",
+          "w": 1000,
+          "h": 1500,
+          "file": "p08.webp",
+          "strip": "p08.s.webp",
+          "bytes": 105884,
+          "alt": "Página 8."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "blank",
+          "w": 1000,
+          "h": 1500,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 3248,
+          "alt": "Página en blanco 9."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "opener",
+          "w": 1000,
+          "h": 1500,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 261722,
+          "alt": "Página de apertura 10: Sobre el cuento."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          8,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "die-cut-window-cover.pdf",
+        "bytes": 741002,
+        "pages": 10
+      },
+      "sandbox": {
+        "file": "die-cut-window-cover.postext",
+        "bytes": 574505,
+        "folio": "8dbeafb0",
+        "chapters": [
+          {
+            "pages": 10,
+            "hash": "249eb839d136c545",
+            "lines": "be85d6c59e85fa55"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].id",
+          "header.elements[].italic",
+          "header.elements[].kind",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].bodyStyle",
+          "headingStyles[].bodyStyle.color",
+          "headingStyles[].bodyStyle.fontSize",
+          "headingStyles[].bodyStyle.lineHeight",
+          "headingStyles[].bodyStyle.textAlign",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].dropCap",
+          "headingStyles[].dropCap.color",
+          "headingStyles[].dropCap.fontFamily",
+          "headingStyles[].dropCap.gap",
+          "headingStyles[].dropCap.lines",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].hidden",
+          "headingStyles[].id",
+          "headingStyles[].marginBottom",
+          "headingStyles[].marginTop",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].italic",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 321,
+        "designElements": 12,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 2,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "body-drop-caps",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 1.69
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.23 MB: state 1.25 MB"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

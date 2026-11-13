@@ -1,0 +1,880 @@
+{
+  "schemaVersion": 1,
+  "slug": "peek-a-boo-board-book",
+  "sourceHash": "2f8323548f5945cb62156ccd3fefa2c1c8596a5655eb7848f48a269b24eb4f63",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T16:47:58.126Z",
+  "variants": {
+    "en": {
+      "hash8": "de6bd325",
+      "vdtHash": "34ac5e35943433e288f04b59eb053a3e18c4af5a",
+      "timings": {
+        "importMs": 4375,
+        "fontsMs": 325,
+        "buildMs": 9,
+        "totalMs": 7056,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          160,
+          160
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Andika",
+          "sizePt": 24,
+          "leadingPt": 31
+        },
+        "families": [
+          "Andika",
+          "Fredoka",
+          "Nunito"
+        ],
+        "pages": 14,
+        "ownLines": 187
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 177566,
+          "alt": "Opening page 1: Peek-a-boo!"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 26912,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 191756,
+          "alt": "Opening page 3: The hedge."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 17030,
+          "alt": "Page 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 157646,
+          "alt": "Opening page 5: Marmalade the cat."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 19854,
+          "alt": "Page 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 196500,
+          "alt": "Opening page 7: The fence."
+        },
+        {
+          "n": 12,
+          "label": "12",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p12.webp",
+          "strip": "p12.s.webp",
+          "bytes": 19458,
+          "alt": "Page 12."
+        },
+        {
+          "n": 13,
+          "label": "13",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p13.webp",
+          "strip": "p13.s.webp",
+          "bytes": 200326,
+          "alt": "Opening page 13: Grandpa’s lantern."
+        },
+        {
+          "n": 14,
+          "label": "14",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p14.webp",
+          "strip": "p14.s.webp",
+          "bytes": 19984,
+          "alt": "Opening page 14: Goodnight."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "peek-a-boo-board-book.pdf",
+        "bytes": 1529373,
+        "pages": 14
+      },
+      "sandbox": {
+        "file": "peek-a-boo-board-book.postext",
+        "bytes": 1413021,
+        "folio": "105cf3b6",
+        "chapters": [
+          {
+            "pages": 14,
+            "hash": "c4d9687b130da553",
+            "lines": "31f505fb7a71f9f7"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.corners",
+          "dieCuts.corners.edges",
+          "dieCuts.corners.radius",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].wrap",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].color",
+          "headingStyles[].id",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 198,
+        "designElements": 3,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "die-cut-corners",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.26 MB: state 1.3 MB"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "3c923bfe",
+      "vdtHash": "17fd07b20003b616323997a35530a037551e9324",
+      "timings": {
+        "importMs": 4382,
+        "fontsMs": 283,
+        "buildMs": 7,
+        "totalMs": 7068,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          160,
+          160
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Andika",
+          "sizePt": 24,
+          "leadingPt": 31
+        },
+        "families": [
+          "Andika",
+          "Fredoka",
+          "Nunito"
+        ],
+        "pages": 14,
+        "ownLines": 187
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 173162,
+          "alt": "Página de apertura 1: ¡Cucú!"
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 26202,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 191756,
+          "alt": "Página de apertura 3: El seto."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 18604,
+          "alt": "Página 4."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 157646,
+          "alt": "Página de apertura 5: Mermelada, el gato."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 19812,
+          "alt": "Página 6."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 196500,
+          "alt": "Página de apertura 7: La valla."
+        },
+        {
+          "n": 12,
+          "label": "12",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p12.webp",
+          "strip": "p12.s.webp",
+          "bytes": 18528,
+          "alt": "Página 12."
+        },
+        {
+          "n": 13,
+          "label": "13",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p13.webp",
+          "strip": "p13.s.webp",
+          "bytes": 200326,
+          "alt": "Página de apertura 13: El farolillo del abuelo."
+        },
+        {
+          "n": 14,
+          "label": "14",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p14.webp",
+          "strip": "p14.s.webp",
+          "bytes": 22290,
+          "alt": "Página de apertura 14: Buenas noches."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          4
+        ],
+        [
+          5,
+          6
+        ],
+        [
+          7,
+          8
+        ],
+        [
+          9,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "peek-a-boo-board-book.pdf",
+        "bytes": 1530123,
+        "pages": 14
+      },
+      "sandbox": {
+        "file": "peek-a-boo-board-book.postext",
+        "bytes": 1411771,
+        "folio": "105cf3b6",
+        "chapters": [
+          {
+            "pages": 14,
+            "hash": "9d881fe05e7fe866",
+            "lines": "454c4ea6b499109c"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidRunts",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.paragraphSpacing",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.corners",
+          "dieCuts.corners.edges",
+          "dieCuts.corners.radius",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].wrap",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].color",
+          "headingStyles[].id",
+          "headingStyles[].margins",
+          "headingStyles[].margins.bottom",
+          "headingStyles[].margins.left",
+          "headingStyles[].margins.right",
+          "headingStyles[].margins.top",
+          "headingStyles[].numbered",
+          "headingStyles[].palette",
+          "headingStyles[].palette.paper",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.fontWeight",
+          "headings.levels",
+          "headings.levels[].breakBefore",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].id",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 198,
+        "designElements": 3,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 7,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Andika",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Fredoka",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Nunito",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "die-cut-corners",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "part-palettes",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "section-geometry",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 2,
+          "tracked": 2,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.26 MB: state 1.3 MB"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 4 −10‰ “Es Mermelada, el gato, que se echa la siesta al …”, p. 6 −5‰ “¿Qué hay detrás de la valla? Ahí detrás hay algo…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

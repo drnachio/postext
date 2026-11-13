@@ -15,7 +15,7 @@ import { plain } from './kit.test-helper.js';
 import type { IdmlPage } from '../../model/document.js';
 import type { GraphicCrop } from '../../resolve/geometry.js';
 
-const roundTrip = (md: string, cfg: PostextConfig, layout: 'pages' | 'flow' = 'pages') => idmlToPostext(idmlDocument({ docs: [build(md, cfg)] }).bytes, { layout });
+const roundTrip = (md: string, cfg: PostextConfig, layout: 'pages' | 'flow' = 'pages') => idmlToPostext(idmlDocument({ docs: [build(md, cfg)], text: 'frames' }).bytes, { layout });
 const ids = (r: ReturnType<typeof roundTrip>) => r.report.findings.map((f) => f.id);
 const markdown = (r: ReturnType<typeof roundTrip>) => r.chapters.map((c) => c.markdown).join('\n');
 const value = (d: unknown) => (d as { value: number }).value;

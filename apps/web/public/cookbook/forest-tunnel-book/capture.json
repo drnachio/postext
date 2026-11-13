@@ -1,0 +1,894 @@
+{
+  "schemaVersion": 1,
+  "slug": "forest-tunnel-book",
+  "sourceHash": "4af6a66416305424cb8a78e318c82cc1fcde1815a3718fdeec29df84b2c705e2",
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.78",
+  "capturedAt": "2026-11-13T16:47:58.268Z",
+  "variants": {
+    "en": {
+      "hash8": "bc45895d",
+      "vdtHash": "8dd44e1db9f5fb1cb2bddef257967f987a6121e7",
+      "timings": {
+        "importMs": 1567,
+        "fontsMs": 371,
+        "buildMs": 6,
+        "totalMs": 5437,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          150
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Cormorant Garamond",
+          "sizePt": 14,
+          "leadingPt": 17
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Lora"
+        ],
+        "pages": 40,
+        "ownLines": 166
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 212824,
+          "alt": "Opening page 1: Into the Wood."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 10028,
+          "alt": "Page 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 231484,
+          "alt": "Opening page 3: Foxgloves."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 8634,
+          "alt": "Page 4."
+        },
+        {
+          "n": 11,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 157474,
+          "alt": "Opening page 11: The fox."
+        },
+        {
+          "n": 19,
+          "label": "19",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p19.webp",
+          "strip": "p19.s.webp",
+          "bytes": 88562,
+          "alt": "Opening page 19: Ferns."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 68042,
+          "alt": "Opening page 21: Mossy stones."
+        },
+        {
+          "n": 29,
+          "label": "29",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p29.webp",
+          "strip": "p29.s.webp",
+          "bytes": 35278,
+          "alt": "Opening page 29: The path."
+        },
+        {
+          "n": 37,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p37.webp",
+          "strip": "p37.s.webp",
+          "bytes": 27498,
+          "alt": "Opening page 37: Foxgloves in the sun."
+        },
+        {
+          "n": 39,
+          "label": "39",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p39.webp",
+          "strip": "p39.s.webp",
+          "bytes": 161776,
+          "alt": "Opening page 39: The clearing."
+        },
+        {
+          "n": 40,
+          "label": "40",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p40.webp",
+          "strip": "p40.s.webp",
+          "bytes": 15922,
+          "alt": "Page 40."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          null,
+          9
+        ],
+        [
+          10,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "forest-tunnel-book.pdf",
+        "bytes": 1314696,
+        "pages": 40
+      },
+      "sandbox": {
+        "file": "forest-tunnel-book.postext",
+        "bytes": 1167612,
+        "folio": "8e9c80d3",
+        "chapters": [
+          {
+            "pages": 40,
+            "hash": "b8661cdb656ff533",
+            "lines": "cc4ecea9ae1829c3"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italic",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.corners",
+          "dieCuts.corners.edges",
+          "dieCuts.corners.radius",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 311,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 20,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Lora",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "die-cut-corners",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.23 MB: state 1.25 MB"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "317312ca",
+      "vdtHash": "922f33b93a99ae9d85d908d23fc5cf738381611c",
+      "timings": {
+        "importMs": 2096,
+        "fontsMs": 143,
+        "buildMs": 6,
+        "totalMs": 5089,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          150,
+          150
+        ],
+        "dpi": 150,
+        "layoutType": "single",
+        "mirror": false,
+        "body": {
+          "family": "Cormorant Garamond",
+          "sizePt": 14,
+          "leadingPt": 17
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Lora"
+        ],
+        "pages": 40,
+        "ownLines": 166
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 214512,
+          "alt": "Página de apertura 1: Al fondo del bosque."
+        },
+        {
+          "n": 2,
+          "label": "2",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p02.webp",
+          "strip": "p02.s.webp",
+          "bytes": 11416,
+          "alt": "Página 2."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 231484,
+          "alt": "Página de apertura 3: Dedaleras."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 9352,
+          "alt": "Página 4."
+        },
+        {
+          "n": 11,
+          "label": "11",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p11.webp",
+          "strip": "p11.s.webp",
+          "bytes": 157474,
+          "alt": "Página de apertura 11: El zorro."
+        },
+        {
+          "n": 19,
+          "label": "19",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p19.webp",
+          "strip": "p19.s.webp",
+          "bytes": 88562,
+          "alt": "Página de apertura 19: Helechos."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 68042,
+          "alt": "Página de apertura 21: Piedras con musgo."
+        },
+        {
+          "n": 29,
+          "label": "29",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p29.webp",
+          "strip": "p29.s.webp",
+          "bytes": 35278,
+          "alt": "Página de apertura 29: El sendero."
+        },
+        {
+          "n": 37,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p37.webp",
+          "strip": "p37.s.webp",
+          "bytes": 27498,
+          "alt": "Página de apertura 37: Dedaleras al sol."
+        },
+        {
+          "n": 39,
+          "label": "39",
+          "role": "opener",
+          "w": 1000,
+          "h": 1000,
+          "file": "p39.webp",
+          "strip": "p39.s.webp",
+          "bytes": 161776,
+          "alt": "Página de apertura 39: El claro."
+        },
+        {
+          "n": 40,
+          "label": "40",
+          "role": "body",
+          "w": 1000,
+          "h": 1000,
+          "file": "p40.webp",
+          "strip": "p40.s.webp",
+          "bytes": 16658,
+          "alt": "Página 40."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          3,
+          null
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          null,
+          7
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          null,
+          9
+        ],
+        [
+          10,
+          null
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "forest-tunnel-book.pdf",
+        "bytes": 1314542,
+        "pages": 40
+      },
+      "sandbox": {
+        "file": "forest-tunnel-book.postext",
+        "bytes": 1167838,
+        "folio": "8e9c80d3",
+        "chapters": [
+          {
+            "pages": 40,
+            "hash": "aa2651d8688dde7a",
+            "lines": "6c2775ac1e543666"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildDocumentWithFonts",
+          "createFolioFromDocument",
+          "decompressWoff2",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidRunts",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.italic",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "dieCuts",
+          "dieCuts.corners",
+          "dieCuts.corners.edges",
+          "dieCuts.corners.radius",
+          "dieCuts.pages",
+          "dieCuts.pages[].die",
+          "dieCuts.pages[].pages",
+          "dieCuts.shapes",
+          "dieCuts.shapes[].height",
+          "dieCuts.shapes[].id",
+          "dieCuts.shapes[].name",
+          "dieCuts.shapes[].shape",
+          "dieCuts.shapes[].width",
+          "dieCuts.shapes[].x",
+          "dieCuts.shapes[].y",
+          "folio",
+          "folio.binding",
+          "folio.binding.cover",
+          "folio.binding.coverMaterial",
+          "folio.binding.type",
+          "folio.lighting",
+          "folio.lighting.environment",
+          "folio.lighting.intensity",
+          "folio.paper",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "folio.surface",
+          "folio.surface.type",
+          "folio.tilt",
+          "folio.yaw",
+          "footer",
+          "footer.elements",
+          "header",
+          "header.elements",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].fontSize",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.cutLines",
+          "page.cutLines.bleed",
+          "page.cutLines.enabled",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.dieLine",
+          "print.dieLine.ink",
+          "print.dieLine.output",
+          "print.dieLine.width",
+          "print.outputProfile",
+          "print.standard"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "dieCuts",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print"
+        ],
+        "configLeaves": 311,
+        "designElements": 5,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 20,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Lora",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "bleed-and-crop-marks",
+          "die-cut-corners",
+          "die-cuts",
+          "die-line",
+          "folio-appearance",
+          "folio-viewer",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "resources",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C20",
+            "severity": "info",
+            "detail": "capture.expect.imageMb states 1.5 MB, and the edition weighs 1.24 MB: state 1.25 MB"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

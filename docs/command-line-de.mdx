@@ -392,7 +392,7 @@ mit einem Formularfeld werden zu InDesign-Formularfeldern. `--lines keep`
 (Standard) beendet jede Zeile dort, wo Postext sie beendet hat, sodass
 InDesign dieselben Zeilen zeigt wie das PDF; `--lines reflow` überlässt die
 Absätze dem Setzer von InDesign, und die Zeilenumbrüche können abweichen.
-`--spreads facing` oder `--spreads single` stellt die Seiten paarweise oder
+Der Fließtext der in Spalten gesetzten Seiten läuft in einem Textabschnitt, verkettet durch einen Rahmen je Spalte, den der Import als fließendes Buch zurückliest; `--text frames` schreibt stattdessen einen Rahmen und einen Textabschnitt je Block (seit postext 1.85.0). `--spreads facing` oder `--spreads single` stellt die Seiten paarweise oder
 einzeln, gleich was die Ränder sagen.
 `--images link` legt die Bilder neben der Datei in `Links/` ab, statt sie in
 die Datei zu packen. `--fonts` schreibt die Schriftdateien der verwendeten
@@ -403,7 +403,7 @@ nicht so tragen kann, wie es im Buch steht (Betonungspunkte in senkrechtem Text,
 Rahmen einer Tabelle), wird als Warnung `idml.*` gemeldet. Der Export ist das
 Paket `postext-idml`: siehe [Programmatische Nutzung ›
 InDesign-Pakete](/de/docs/configuration-programmatic-usage#indesign-pakete-postext-idml).
-In `build` schreibt `--idml DATEI` dasselbe Paket, mit `--idml-images`, `--idml-lines`, `--idml-spreads` und `--idml-fonts`.
+In `build` schreibt `--idml DATEI` dasselbe Paket, mit `--idml-images`, `--idml-lines`, `--idml-spreads`, `--idml-text` und `--idml-fonts`.
 Seit postext 1.71; `--lines` und `--fonts` seit 1.76, `--spreads` seit 1.78.
 
 ### import-idml

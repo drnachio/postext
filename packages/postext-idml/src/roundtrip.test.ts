@@ -13,7 +13,7 @@ const MD = `# First chapter\n\n${LOREM}\n\nA second paragraph with *italic* and 
 describe('export → read', () => {
   const cfg = config({ page: { dpi: 72, width: mm(140), height: mm(200), margins: { top: mm(15), bottom: mm(20), left: mm(18), right: mm(12), mirror: true } } } as unknown as Partial<PostextConfig>);
   const doc = build(MD, cfg);
-  const { bytes } = idmlDocument({ docs: [doc], title: 'Round trip' });
+  const { bytes } = idmlDocument({ docs: [doc], title: 'Round trip', text: 'frames' });
   const idml = readIdml(bytes);
 
   it('reads the package without a warning', () => {
@@ -69,7 +69,7 @@ describe('export → read', () => {
 describe('export → import', () => {
   const cfg = config({ page: { dpi: 72, width: mm(140), height: mm(200), margins: { top: mm(15), bottom: mm(20), left: mm(18), right: mm(12) } } } as unknown as Partial<PostextConfig>);
   const source = build(`${Array(3).fill(LOREM).join('\n\n')}\n`, cfg);
-  const { bytes } = idmlDocument({ docs: [source], title: 'Kept lines' });
+  const { bytes } = idmlDocument({ docs: [source], title: 'Kept lines', text: 'frames' });
   const result = idmlToPostext(bytes, { layout: 'pages' });
 
   it('turns justified forced breaks on and reports nothing about them', () => {

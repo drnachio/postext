@@ -1,0 +1,63 @@
+---
+title: "Un libro de cartón de cucú con agujeros en registro"
+summary: "Cuatro agujeros troquelados donde la pintura siguiente guarda lo que engaña, una ventana que baja a un agujero menor, esquinas redondeadas y línea de troquel."
+plain: "Un libro de cartón para los más pequeños. Cada agujero de una página deja ver un trocito del dibujo siguiente, el texto hace una pregunta y al pasar la página se ve lo que era de verdad."
+description: "Un libro de cartón con agujeros troquelados en registro con las pinturas de debajo: formas de dieCuts, esquinas redondeadas y línea de troquel en el PDF."
+question: "¿Cómo troquelo agujeros en las páginas de un libro para que cada uno deje ver parte del dibujo siguiente?"
+aliases: ["libro de cucú", "libro de cartón", "agujeros troquelados", "mirilla", "esquinas redondeadas", "línea de troquel"]
+pageNotes: { "1": "La cubierta: un seto bajo el cielo azul, el título en rojo y una ventana redonda en el seto por la que un agujero menor de la página siguiente deja ver rayas naranjas y negras.", "2": "El interior de la cubierta: la ventana atraviesa la página a la izquierda, la pregunta va a su derecha y sigue a todo el ancho por debajo, y la adivinanza ¿Será un tigre? en rojo.", "11": "La puerta roja de un granero con una mirilla redonda arriba, por la que se ve un disco amarillo encendido." }
+---
+
+## Lo que vas a componer
+
+*¡Cucú! ¿Quién hay en el jardín?*, un libro de cartón de catorce páginas en un cuadrado de 160 mm con las cuatro esquinas redondeadas. Cada pintura tiene un agujero, y el agujero está justo donde la pintura siguiente guarda la parte que engaña al ojo: el lomo a rayas de un gato dormido que podría ser un tigre, la lana de una oveja que podría ser una nube, un farolillo que podría ser la luna. La ventana de la cubierta es más ancha que el agujero de detrás, así que la primera mirada llega dos páginas al fondo. El texto de la izquierda pregunta; al pasar la página llega la respuesta. El PDF de imprenta lleva la línea de troquel en una plancha propia.
+
+## Elaboración
+
+### 1 · Agujeros donde el dibujo siguiente se delata
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Cada forma se coloca desde la esquina superior izquierda del corte y `dieCuts.pages` dice qué página corta, contando desde la primera del libro. Mide el agujero sobre la pintura que descubre, no sobre la página donde se corta: el seto, la valla y la puerta son texturas que admiten un agujero en cualquier sitio; el gato y el farolillo no.
+
+### 2 · Pinturas en registro con los agujeros
+
+<Excerpt region="pictures" />
+
+Los agujeros van en milímetros desde el corte, así que cada pintura cuelga del corte y lo rebasa el sangrado por los cuatro lados, igual en pantalla que en imprenta. El estilo de las pinturas solo quita el margen inferior: su diseño llega al pie de la página, y el texto del verso de detrás conserva sus 44 mm de margen superior, que lo bajan por debajo de los agujeros pequeños.
+
+### 3 · La línea de troquel en su plancha
+
+<Excerpt region="die-line" />
+
+El PDF imprime cada página entera y traza el contorno de cada agujero, y de cada hoja redondeada, en una separación `Die` en sobreimpresión que nunca se entinta. `convertImages: false` deja las pinturas como JPEG RGB etiquetados sRGB, que PDF/X-4 admite, y el archivo sigue siendo pequeño.
+
+### 4 · El libro en la mano
+
+<Excerpt region="folio" />
+
+Folio corta los agujeros en cada hoja y enseña las páginas de debajo con las paredes del corte, así que la ventana escalonada se lee como profundidad. El cartón se pasa rígido y las esquinas redondeadas se cortan en todas las hojas.
+
+### 5 · Páginas planas que dejan ver
+
+<Excerpt region="see-through" />
+
+En el canvas, un agujero muestra lo que haya detrás del canvas si el renderizador no recibe las páginas de debajo. `beneath` las devuelve por índice, cada una pintada con sus propios agujeros, y así la cubierta deja ver el seto y, a través del seto, el gato.
+
+## Variantes
+
+### Redondea solo las esquinas del corte delantero
+
+Un álbum ilustrado redondea las dos esquinas lejos del lomo y deja el lomo en escuadra.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Corta cada hoja con una forma
+
+Un contorno en unidades de `viewBox` corta cada hoja, en espejo en los versos; manda sobre las esquinas.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

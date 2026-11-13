@@ -1,0 +1,64 @@
+---
+title: "Ein Fensterumschlag, der die Titelseite rahmt"
+summary: "Ein ovales Fenster, mit dieCuts in den Umschlag gestanzt und am Bild der Titelseite gemessen, damit sein Rand auf das Gold fällt, dazu die Stanzlinie."
+plain: "Ein kleines gebundenes Buch mit einer Erzählung von Poe, dessen gemusterter Umschlag ein ovales Loch hat. Durch das Loch sieht man das Gesicht des Porträts auf der Titelseite darunter."
+description: "Ein gestanztes ovales Fenster im Umschlag, im Passer zum Porträt auf der Titelseite darunter: dieCuts auf Seite 1, die Stanzlinie und die 3D-Ansicht von Folio."
+question: "Wie stanze ich ein Fenster in einen Buchumschlag, das ein Bild auf der Seite darunter rahmt?"
+aliases: ["Fensterumschlag", "gestanzter Umschlag", "ovales Fenster", "Stanzlinie"]
+pageNotes: { "1": "Der Umschlag: ein Granatapfel-Damast in Gold und Ochsenblut mit einem ovalen Fenster oben, durch das das gemalte Gesicht einer jungen Frau in einem Goldring zu sehen ist; Titel und Autor auf einer dunklen Kartusche darunter.", "2": "Die Innenseite des Umschlags, dunkelroter Samt, mit dem ovalen Fenster.", "3": "Die Titelseite: das Porträt im vergoldeten maurischen Ovalrahmen an einer Samtwand, Titel und Autor in Gold darunter." }
+---
+
+## Was Sie setzen
+
+*Das ovale Porträt*, Edgar Allan Poes Erzählung von 1842 in der kürzeren Fassung, die er 1845 druckte, als zehnseitiges gebundenes Büchlein in 130 × 195 mm. Der Umschlag ist ein alter Damast mit einem gestanzten ovalen Fenster. Darunter liegt die Titelseite, das Porträt selbst in seinem vergoldeten maurischen Rahmen, und das Fenster sitzt so, dass sein Rand auf das Gold fällt: Geschlossen zeigt das Buch das gemalte Gesicht doppelt gerahmt, vom Gold und vom Schnitt. Die Erzählung folgt auf cremefarbenem Papier mit Initiale, und die Rückseite wiederholt den Damast mit dem Klappentext auf einer dunklen Kartusche. Die Druckdatei führt den Umriss des Fensters auf einer eigenen Platte.
+
+## Zubereitung
+
+### 1 · Ein Fenster im Passer zum Rahmen
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. Das Fenster ist eine `ellipse` auf Seite 1, gesetzt von der oberen linken Ecke des Beschnitts. Ein Loch in Seite 1 blickt auf Seite 3, also wird es am Bild der Titelseite gemessen: Hier wurden die Öffnung des Rahmens und sein Außenrand in Pixeln am Bild abgelesen und in Millimeter umgerechnet, und das Fenster sitzt ein Drittel tief im Goldband, damit im Schnitt ein schmaler Goldring stehen bleibt.
+
+### 2 · Bilder am Beschnitt aufgehängt
+
+<Excerpt region="plates" />
+
+Die Stanzform wird in Millimetern ab dem Beschnitt gemessen, die Bilder ebenso. Der Damast läuft auf allen Seiten um den Anschnitt über den Beschnitt; das Porträt ist ein paar Millimeter breiter gesetzt, damit der Rahmen im Bild auf der Seite und im Fenster mittig sitzt. Umschlag und Titelseite verzichten auf den unteren Rand, und jede druckt Titel und Autor aus dem Frontmatter.
+
+### 3 · Die Stanzlinie auf ihrer Platte
+
+<Excerpt region="die-line" />
+
+Das PDF druckt den Umschlag ganz und zieht den Umriss des Fensters auf einer Separation `Die` nach, die überdruckt und nie eingefärbt wird: Der Stanzformenbauer liest die Form daraus, die Druckmaschine lässt sie aus. `convertImages: false` lässt die Bilder als sRGB-JPEGs, was PDF/X-4 erlaubt, und die Datei bleibt unter einem Megabyte.
+
+### 4 · Das geschlossene Buch auf dem Tisch
+
+<Excerpt region="folio" />
+
+Mit `binding.cover: 'pages'` ist die erste Seite der Vorderdeckel, also zeigt Folio das Buch geschlossen, mit dem Gesicht im Fenster und den Schnittkanten im Lampenlicht. Schlagen Sie den Umschlag um, um die Titelseite ganz zu sehen.
+
+### 5 · Der flache Umschlag mit Durchblick
+
+<Excerpt region="see-through" />
+
+Auf dem Canvas gibt `beneath` dem Renderer Seite 3 für das Fenster des Umschlags, und auch der flache Umschlag zeigt das Gesicht. Unter der Innenseite des Umschlags liegt nichts, also zeigt ihr Loch den Hintergrund.
+
+## Varianten
+
+### Die Platte so nennen, wie der Schneidplotter sie erwartet
+
+Digitale Schneidtische suchen eine Sonderfarbe namens CutContour, fast immer Magenta, und eine Haarlinie.
+
+```diff
+-    dieLine: { output: 'page', ink: 'Die', width: pt(0.5) } },
++    dieLine: { output: 'page', ink: 'CutContour', cmyk: { c: 0, m: 100, y: 0, k: 0 },
++      width: pt(0.25) } },
+```
+
+### Ein rundes Fenster
+
+Ein Kreis zeigt nur das Gesicht; der Rahmen bleibt unter dem Umschlag verborgen, bis man ihn umschlägt.
+
+```diff
+-    shape: 'ellipse', x: mm(26), y: mm(15.7), width: mm(78), height: mm(102) }],
++    shape: 'circle', x: mm(32), y: mm(24), width: mm(66), height: mm(66) }],
+```

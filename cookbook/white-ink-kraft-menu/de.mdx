@@ -1,0 +1,69 @@
+---
+title: "Eine Bäckereikarte in Weiß auf Kraftkarton"
+summary: "Deckweiß als Sonderfarbe auf Kraft: weiße Schrift auf dem braunen Karton, eine weiße Karte unter brauner Schrift und Weiß aus einer grünen Fläche ausgespart."
+plain: "Die Karte einer Bäckerei, gedruckt auf braunem Kraftkarton. Der Name und die Überschriften stehen in weißer Farbe, die die Druckerei als zusätzliche Farbe druckt. Die Druckdatei legt das Weiß auf eine eigene Platte."
+description: "Eine Bäckereikarte auf Kraftkarton mit Postext: Deckweiß als Sonderfarbe, weiße Schrift, Weiß unter Farbe, ausgespartes Weiß und die Druckvorstufenprüfung."
+question: "Wie drucke ich Weiß auf Kraftpapier, als Schrift und unter den Farben?"
+aliases: ["weiße Druckfarbe", "Deckweiß", "Kraftpapier", "Kraftkarton", "Packpapier", "Weißunterdruck", "weiße Grundierung", "Aussparung", "Überdrucken", "Speisekarte", "white ink", "kraft paper"]
+pageNotes: { "1": "Der Umschlag auf braunem Kraft: HORNO ALTO in großen weißen Egyptienne-Versalien, eine Zeile kleiner brauner Versalien, ein gemaltes Sauerteigbrot auf einem weißen Passepartout und die Adresse in brauner Kursive.", "3": "Eine gemalte Tasse Kaffee auf einem weißen Passepartout, AT THE COUNTER in Weiß, Preise für Kaffee und Frühstück mit Punktführern und ein dunkelgrüner Kasten mit dem Tagesgebäck in weißer Schrift.", "4": "SINCE 1987 in Weiß, zwei Absätze über die Bäckerei in Braun, die Öffnungszeiten auf einer weißen Karte und die Adresse." }
+---
+
+## Was Sie setzen
+
+Die Karte von Horno Alto, einer erfundenen Dorfbäckerei: ein A5-Kraftkarton, einmal gefalzt, vier Seiten. Kraft enthält kein Weiß, also ist jedes Weiß auf der Karte eine Farbe, die die Druckerei hinzufügt: der Name und die Rubrikentitel direkt auf dem Braun, die Passepartouts unter den drei Gouachen und die Karte mit den Öffnungszeiten. Die Preise stehen auf einem Tabulator mit Punktführer, in einem dunklen Braun aus der Prozessfarbe. Auf der Kaffeeseite trägt eine grüne Fläche das Tagesgebäck in weißer Schrift, aus dem Grün ausgespart. Folio legt die Karte bei Tageslicht auf eine Eichentheke.
+
+## Zubereitung
+
+### 1 · Das Papier ist Kraft, das Weiß ist eine Druckfarbe
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Das Papier ist eine Palettenfarbe, in CMYK mit 0 % angelegt: Bildschirm und Folio malen Kraft, und keine Platte druckt es. Das Weiß ist eine Sonderfarbe mit der Veredelung Weiß ([Veredelungen](/de/docs/special-inks-die-cuts#veredelungen)), in der Farbtabelle `Opaque White` genannt, so wie man es der Druckerei sagen wird. Die PDF/X-4-Datei legt es auf eine eigene `Separation` neben den vier Prozessplatten. Sein Bildschirm-Hex liegt eine Stufe unter `#ffffff`, damit die Veredelungsmaske die Farbe von einem weißen Bogen unterscheiden kann.
+
+### 2 · Weiß direkt auf dem Braun
+
+<Excerpt region="mount" />
+
+Der Name, die Rubrikentitel und die Titel der Innenseiten sind Schrift im Weiß, gesetzt in Alfa Slab One. Eine weiße Druckfarbe deckt weniger als Schwarz: Das Braun scheint durch einen feinen Strich, deshalb liest sich eine kräftige Egyptienne ab 12 pt dort, wo eine leichte Antiqua beige würde. Die Passepartouts sind Kästen im selben Weiß, auf jeder Seite 4 mm größer als das Bild.
+
+### 3 · Farbe auf dem Weiß
+
+Die Öffnungszeiten stehen auf einer Karte aus weißer Farbe, im dunklen Braun des Kartentexts. Eine weiße Druckfarbe überdruckt standardmäßig, und das Braun ist ebenfalls auf Überdrucken gestellt (`overprint: true` an der Palettenfarbe), sodass das Braun in der Maschine auf dem Weiß landet, statt seine Buchstaben aus ihm auszusparen.
+
+### 4 · Weiß auf Farbe: aussparen
+
+<Excerpt region="panel" />
+
+Die Maschine druckt zuerst das Weiß und die Farben darüber, also würde weiße Schrift auf der grünen Fläche unter dem Grün verschwinden. Die Schrift der Fläche bekommt ein zweites Weiß auf derselben Platte, mit `overprint: false`: Die Schrift spart ihre Form aus dem Grün aus, und das Weiß füllt sie. Die beiden Weiß unterscheiden sich um eine Hex-Stufe, weil das PDF Farben an ihrem Hex unterscheidet.
+
+### 5 · Die Preise auf einem Tabulator
+
+<Excerpt region="dishes" />
+
+Jede Rubrik ist eine `:::paragraphs`-Gruppe im Stil der Gerichte; `:tab` vor dem Preis schickt ihn ans Ende der Satzbreite, mit einem Punktführer bis zu ihm, wie in [der Bistrokarte](/de/cookbook/bistro-menu).
+
+### 6 · Was die Prüfung meldet
+
+<Excerpt region="preflight" />
+
+`preflightDocument` warnt mit `whiteInkOnWhite`, wenn eine weiße Farbe auf einer Seite landet, deren Papier weiß oder nicht gesetzt ist, wo sie nichts zeigt. Auf Kraft bleibt sie still, und die Zeile unter dem Download-Knopf nennt, was übrig bleibt: das Weiß als Sonderfarbe (`spotInkFinish`) und die Druckreihenfolge, die es zuerst druckt (`inkPressOrder`).
+
+### 7 · Folio zeigt die Karte auf einer Theke
+
+<Excerpt region="folio" />
+
+Folio malt das Weiß so, dass es den Ton des Papiers abdeckt, wie die Farbe es tut, und der Karton mit Filzstruktur lässt das Braun als Kraft erscheinen.
+
+## Varianten
+
+### Ein Notizbuchumschlag
+
+Ersetzen Sie die Karte durch einen Titel und ein Muster aus weißen Linien auf der Vorderseite: Papier, Farbe und Farbtabelle bleiben, wie sie sind.
+
+### Zweimal Weiß
+
+Eine Druckerei kann das Weiß zweimal drucken, damit es auf dunklem Kraft weißer wirkt. Geben Sie es im Auftrag an; die Datei bleibt dieselbe, mit einer einzigen Weißplatte.
+
+## Häufige Fehler
+
+- Eine weiße Farbe auf einer Seite, deren Papier weiß oder nicht gesetzt ist, druckt nichts Sichtbares. Setzen Sie `page.backgroundColor` auf den Bedruckstoff, in CMYK mit 0 %, und die Prüfung hört auf zu warnen.
+- Das PDF lässt ein Bild nie überdrucken, also schneidet ein Gemälde über einem weißen Kasten das Weiß darunter weg: Die Platte behält den Rahmen des Passepartouts, und in der Maschine zeigen die hellen Stellen des Bildes das Kraft. Bitten Sie die Druckerei, die Weißplatte unter den Bildern zu füllen, oder setzen Sie die Bilder auf weiße Papieraufkleber.
+- Weiße Schrift über einer Farbe darf nicht überdrucken. Mit der Voreinstellung wird sie unter der Farbe gedruckt und verschwindet.

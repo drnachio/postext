@@ -1,0 +1,151 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 191,
+  "status": "published",
+  "chapter": "output",
+  "order": 330,
+  "level": 3,
+  "genres": [
+    "ephemera"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "special-inks",
+      "spot-inks"
+    ],
+    "also": [
+      "pdf-colour-space",
+      "folio-viewer",
+      "folio-appearance",
+      "color-palette",
+      "covers",
+      "heading-styles",
+      "design-elements",
+      "design-images",
+      "paragraph-styles",
+      "tab-stops",
+      "callout-styles",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q225"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "A sourdough loaf, on the cover",
+          "es": "Una hogaza de masa madre, en la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "loaf-700.jpg"
+      },
+      {
+        "what": {
+          "en": "Three pastries",
+          "es": "Tres piezas de bollería"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "pastries-900.jpg"
+      },
+      {
+        "what": {
+          "en": "A cup of coffee",
+          "es": "Una taza de café"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "coffee-600.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Alfa Slab One",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lora",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13",
+  "downloads": {
+    "pdf": true
+  },
+  "related": [
+    "bistro-menu",
+    "gold-foil-poetry-cover",
+    "fluorescent-pink-zine"
+  ],
+  "folio": {
+    "tilt": 20,
+    "yaw": -12,
+    "paper": {
+      "type": "cardStock",
+      "grammage": 250,
+      "texture": "felt",
+      "shade": "#c19a6b"
+    },
+    "binding": {
+      "type": "folded",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1.1
+    }
+  }
+}

@@ -1,0 +1,64 @@
+---
+title: "Un fanzine en negro y rosa flúor"
+summary: "Un trabajo a dos planchas, negro y un rosa fluorescente: fotos en duotono, un negro que sobreimprime y un rosa que brilla en Folio."
+plain: "Una revista de música pequeña impresa solo con dos tintas, negro y un rosa neón muy vivo. Las fotos salen en negro y rosa, el rosa brilla en la vista 3D, y el archivo de imprenta tiene exactamente dos planchas."
+description: "Un fanzine de música a dos planchas en Postext: una tinta fluorescente, fotos en duotono por curvas, negro que sobreimprime y el rosa brillando en Folio."
+question: "¿Cómo imprimo un fanzine solo en negro y rosa flúor, con las fotos en duotono?"
+aliases: ["tinta fluorescente", "rosa flúor", "flúor", "neón", "dos tintas", "duotono", "fanzine", "risografía", "sobreimpresión del negro", "fluorescent ink", "two-colour printing"]
+pageNotes: { "1": "La cubierta: un público en un concierto en un sótano en negro y rosa, una franja negra debajo con PINK NOISE en mayúsculas enormes de rosa flúor y los sumarios en blanco.", "3": "La apertura de la entrevista: un guitarrista en un escenario pequeño en negro y rosa a sangre, una franja rosa con el antetítulo y TRES ACORDES Y UN AMPLI PRESTADO en negro, y dos columnas con las preguntas en rosa.", "6": "La agenda: una caja rosa pálido con abril, mayo y junio en tres columnas, cada concierto con un signo más en rosa, y dos párrafos debajo." }
+---
+
+## Lo que vas a componer
+
+El número 7 de *Pink Noise*, un fanzine de música inventado: ocho páginas A5 grapadas, impresas en una máquina de dos tambores. Uno imprime negro y el otro un rosa fluorescente, y nada más llega al papel. El rosa compone el título de la cubierta, la franja de la apertura de la entrevista, las preguntas, la cita destacada y la contraportada; un tinte al 30 % llena la caja de la agenda. Las tres fotografías son originales en gris que se imprimen en duotono, negro en las sombras y rosa en los medios tonos. Folio deja el fanzine abierto sobre una mesa oscura, donde el rosa destaca sobre el papel.
+
+## Elaboración
+
+### 1 · Dos planchas, y el rosa es flúor
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `print.plates` nombra las planchas que imprime el trabajo, `Black` y `PANTONE 806 C`, y el PDF tiene esas dos separaciones y ninguna más ([impresión a dos tintas](/es/docs/configuration-pdf-output#tintas-planas)). El rosa es una tinta plana; su acabado va en la tabla de tintas, como iría en el pedido a la imprenta, y la convierte en fluorescente: tiene su plancha propia y Folio la ilumina más que el papel ([acabados](/es/docs/special-inks-die-cuts#acabados)). `images` pone las fotografías en las dos planchas, y `CURVES` da forma a cada una: el negro solo en las sombras, el rosa en los medios tonos y aflojando en los oscuros, para que el rosa no ensucie el negro.
+
+### 2 · La pantalla también enseña el duotono
+
+<Excerpt region="duotone" />
+
+El canvas y Folio pintan una imagen tal como es su archivo, así que una foto gris se vería gris, aunque se imprima en rosa y negro. La receta registra una segunda imagen para la pantalla: el mismo gris leído por las mismas `CURVES`, el negro multiplicado sobre el rosa como se superponen las tintas en el papel. El PDF sigue recibiendo el original gris, de `imageBytes`, y lo separa él.
+
+### 3 · Negro sobre rosa
+
+<Excerpt region="cover" />
+
+El negro es solo la plancha K, definido como color CMYK con `overprint: true`. Donde la letra negra o la franja negra de la cubierta tocan el rosa, se imprimen encima en vez de calarlo, y un pliego que caiga un poco fuera de registro no enseña un filo blanco. El título rosa sí cala el negro, como debe la letra sobre una franja oscura.
+
+### 4 · Folio sobre una mesa oscura
+
+<Excerpt region="folio" />
+
+Una tinta flúor necesita algo de oscuridad alrededor para leerse como tal. El fanzine queda abierto por la entrevista sobre una superficie lisa y oscura, con la luz plana de cielo cubierto, y la franja rosa y el rosa de la foto destacan sobre el papel blanco.
+
+## Variantes
+
+### Fotos solo en negro
+
+Con una sola plancha para las imágenes, las fotos se imprimen en gris sobre el negro, y el rosa queda para la letra y las cajas.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Un amarillo flúor
+
+Cambia la tinta y su color en pantalla; las planchas, el acabado y las curvas siguen al nombre.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Renombra igual `PANTONE 806 C` en `CURVES`, en `PRINT` y en los hex de la paleta.
+
+## Errores frecuentes
+
+- Un color que no imprime ninguna de las dos planchas se proyecta sobre las dos tintas. Un azul de cuatricromía olvidado en un estilo sale como un rosa negruzco; lee los avisos `offPlateColor` de la comprobación antes de mandar el archivo.
+- Una tinta fluorescente no tiene una alternativa CMYK fiel. Una prueba o un PDF en RGB enseñan el hex, más apagado que la tinta en el papel.

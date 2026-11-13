@@ -76,6 +76,8 @@ export function pageConfig(ctx: Context, layout: 'pages' | 'flow' = 'flow'): Pic
     out.page.margins = { top: mm(m.top), bottom: mm(m.bottom), left: mm(m.left), right: mm(m.right), mirror: prefs.facingPages };
     const cols = Math.max(1, m.columnCount);
     out.layout = cols === 1 ? { layoutType: 'single' } : cols === 2 ? { layoutType: 'double', gutterWidth: mm(m.columnGutter) } : { layoutType: 'multiple', columnCount: cols, gutterWidth: mm(m.columnGutter) };
+    const half = first ? oneAndHalf(first, prefs.facingPages) : undefined;
+    if (half) out.layout = half;
     const different = body.filter((p) => Math.abs(p.margins.top - m.top) + Math.abs(p.margins.bottom - m.bottom) + Math.abs(p.margins.left - m.left) + Math.abs(p.margins.right - m.right) > 1 || p.margins.columnCount !== m.columnCount);
     // Composed pages keep every frame where it stands, whatever the
     // book's margins say: a page's own margins move nothing (#1555).
@@ -106,4 +108,29 @@ export function parityOf(ctx: Context, page: IdmlPage): 'odd' | 'even' | undefin
   // Left-bound: the right page is the recto (odd). Right-bound: the left.
   const recto = ctx.doc.preferences.rightToLeft ? 'left' : 'right';
   return page.side === recto ? 'odd' : 'even';
+}
+
+/** A page of two columns of their own widths (the guides give each
+ *  column's edges) is a column-and-a-half page: a main column and, the
+ *  narrower, a side column for figures and boxes, on the side it stands
+ *  (outer or inner of a facing page). The text a Postext export threads
+ *  runs in the main column only. */
+function oneAndHalf(page: IdmlPage, facing: boolean): PostextConfig['layout'] | undefined {
+  const m = page.margins;
+  const p = m.columnsPositions;
+  if (m.columnCount !== 2 || p.length !== 4) return undefined;
+  const a = p[1]! - p[0]!;
+  const b = p[3]! - p[2]!;
+  if (Math.abs(a - b) < 6) return undefined;
+  const area = p[3]! - p[0]!;
+  if (area <= 0) return undefined;
+  const right = b < a;
+  const side = !facing || page.side === 'single' ? (right ? 'right' : 'left') : (page.side === 'right') === right ? 'outer' : 'inner';
+  return {
+    layoutType: 'oneAndHalf',
+    gutterWidth: mm(p[2]! - p[1]!),
+    sideColumnPercent: Math.round((Math.min(a, b) / area) * 1000) / 10,
+    sideColumnRole: 'floats',
+    sideColumnSide: side,
+  } as PostextConfig['layout'];
 }

@@ -1,0 +1,69 @@
+---
+title: "Una carta de forn en tinta blanca sobre kraft"
+summary: "El blanc opac com a tinta plana sobre kraft: lletra blanca sobre la cartolina bruna, un fons blanc sota lletra bruna i blanc calat en un plafó verd."
+plain: "La carta d'un forn impresa en cartolina kraft marró. El nom i els títols van en una tinta blanca que la impremta afegeix com una tinta més. L'arxiu d'impremta posa el blanc en una planxa pròpia."
+description: "Una carta de forn en kraft amb Postext: blanc opac com a tinta plana, lletra blanca, blanc sota el color, blanc calat i la revisió prèvia."
+question: "Com imprimeixo en blanc sobre paper kraft, com a lletra i sota els colors?"
+aliases: ["tinta blanca", "blanc opac", "paper kraft", "paper d'estrassa", "base blanca", "fons blanc", "calat", "sobreimpressió", "carta", "carta de cafeteria", "white ink", "kraft paper"]
+pageNotes: { "1": "La coberta en kraft marró: HORNO ALTO en grans versals blanques de pal sec gruixut, una línia de versaletes brunes, un pa pintat sobre un paspartú blanc i l'adreça en cursiva bruna.", "3": "Una tassa de cafè pintada sobre un paspartú blanc, AT THE COUNTER en blanc, els preus de cafè i esmorzars amb línies de punts i un requadre verd fosc amb la fornada del dia en lletra blanca.", "4": "SINCE 1987 en blanc, dos paràgrafs sobre el forn en bru, l'horari sobre una targeta blanca i l'adreça." }
+---
+
+## Què compondràs
+
+La carta d'Horno Alto, un forn de poble inventat: una cartolina kraft A5 plegada una vegada, quatre pàgines. El kraft no té blanc, així que cada blanc de la carta és una tinta que afegeix la impremta: el nom i els títols de secció directament sobre el bru, els paspartús on van les tres pintures al gouache i la targeta de l'horari. Els preus van en un tabulador amb línia de punts, en un bru fosc de quadricromia. A la pàgina del cafè, un plafó verd porta la fornada del dia en lletra blanca calada en el verd. Folio obre la carta sobre un taulell de roure amb llum de dia.
+
+## Elaboració
+
+### 1 · El paper és kraft i el blanc és una tinta
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El paper és un color de la paleta definit en CMYK al 0 %: la pantalla i Folio pinten el kraft i cap planxa no l'imprimeix. El blanc és una tinta plana amb l'acabat blanc ([acabats](/ca/docs/special-inks-die-cuts#acabats)), anomenada `Opaque White` a la taula de tintes, tal com se li dirà a la impremta. El PDF/X-4 la posa en una `Separation` pròpia al costat de les quatre planxes de quadricromia. El seu hex de pantalla queda un pas per sota de `#ffffff`, perquè la màscara d'acabats distingeixi la tinta d'un full blanc.
+
+### 2 · Blanc directament sobre el bru
+
+<Excerpt region="mount" />
+
+El nom, els títols de secció i els de les pàgines interiors són lletra en el blanc, en Alfa Slab One. Una tinta blanca cobreix menys que el negre: el bru es transparenta en un traç fi, així que una egípcia gruixuda de 12 pt o més es llegeix on una romana fina quedaria beix. Els paspartús són caixes en el mateix blanc, 4 mm més grans que cada pintura per tots els costats.
+
+### 3 · Color damunt del blanc
+
+L'horari va sobre una targeta de tinta blanca, en el bru fosc del text de la carta. Una tinta blanca se sobreimprimeix per defecte, i el bru també (`overprint: true` en el color de la paleta), així que a la màquina el bru cau sobre el blanc en lloc de calar-hi les lletres.
+
+### 4 · Blanc damunt del color: calat
+
+<Excerpt region="panel" />
+
+La màquina posa primer el blanc i al damunt els colors, així que una lletra blanca sobre el plafó verd desapareixeria sota el verd. La lletra del plafó pren un segon blanc de la mateixa planxa, amb `overprint: false`: la lletra retalla la seva forma en el verd i el blanc l'omple. Els dos blancs es diferencien en un pas d'hex perquè el PDF distingeix els colors pel seu hex.
+
+### 5 · Els preus en un tabulador
+
+<Excerpt region="dishes" />
+
+Cada secció és un grup `:::paragraphs` amb l'estil de plat; `:tab` abans del preu l'envia al final de la mida amb una línia de punts fins a ell, com a [la carta del bistrot](/ca/cookbook/bistro-menu).
+
+### 6 · Què diu la revisió prèvia
+
+<Excerpt region="preflight" />
+
+`preflightDocument` avisa amb `whiteInkOnWhite` quan una tinta blanca cau en una pàgina amb paper blanc o sense definir, on no es veu. Sobre kraft no avisa, i la línia sota el botó de baixada mostra el que queda: el blanc com a tinta especial (`spotInkFinish`) i l'ordre de la màquina, que el posa primer (`inkPressOrder`).
+
+### 7 · Folio mostra la carta en un taulell
+
+<Excerpt region="folio" />
+
+Folio pinta el blanc de manera que cobreix el to del paper, com fa la tinta, i la cartolina amb textura de feltre fa que el bru es llegeixi com a kraft.
+
+## Variants
+
+### Una coberta de llibreta
+
+Canvia la carta per un títol i un dibuix de filets blancs a la portada: el paper, la tinta i la taula de tintes es queden com estan.
+
+### Dues passades de blanc
+
+La impremta pot fer dues passades de blanc perquè blanquegi més sobre un kraft fosc. Demana-ho a la comanda; l'arxiu és el mateix, amb una sola planxa de blanc.
+
+## Errors freqüents
+
+- Una tinta blanca en una pàgina amb paper blanc o sense definir no deixa res visible. Defineix `page.backgroundColor` amb el suport, en CMYK al 0 %, i la revisió deixa d'avisar.
+- El PDF mai no sobreimprimeix una imatge, així que una pintura sobre una caixa blanca li treu el blanc per sota: la planxa conserva el marc del paspartú i, a la màquina, els blancs de la pintura deixen veure el kraft. Demana a la impremta que ompli la planxa de blanc sota les imatges, o posa les pintures en adhesius de paper blanc.
+- La lletra blanca sobre un color no s'ha de sobreimprimir. Amb el valor per defecte s'imprimeix sota el color i desapareix.

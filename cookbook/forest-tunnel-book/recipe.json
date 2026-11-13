@@ -1,0 +1,321 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 195,
+  "status": "published",
+  "chapter": "output",
+  "order": 222,
+  "level": 3,
+  "genres": [
+    "ephemera"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf",
+    "live"
+  ],
+  "features": {
+    "primary": [
+      "die-cuts",
+      "die-line"
+    ],
+    "also": [
+      "die-cut-corners",
+      "folio-viewer",
+      "heading-styles",
+      "design-images",
+      "design-elements",
+      "frontmatter",
+      "paragraph-styles",
+      "bleed-and-crop-marks",
+      "pdf-colour-space",
+      "pdf-export",
+      "resources",
+      "color-palette",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q232",
+    "Q233"
+  ],
+  "gotchas": [],
+  "related": [
+    "peek-a-boo-board-book",
+    "die-cut-window-cover",
+    "folio-book-on-a-desk"
+  ],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": [1, 2, 3, 4, 11, 19, 21, 29, 37, 39, 40],
+    "expect": {
+      "pages": [
+        40,
+        40
+      ],
+      "imageMb": 1.5
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "tilt": 40,
+    "yaw": -30,
+    "paper": {
+      "type": "board",
+      "shade": "#f4ecd6"
+    },
+    "binding": {
+      "type": "hardcover",
+      "cover": "pages",
+      "coverMaterial": "paper"
+    },
+    "surface": {
+      "type": "oak"
+    },
+    "lighting": {
+      "environment": "daylight",
+      "intensity": 1.1
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The verse of the walk and the colophon",
+          "es": "Los versos del paseo y el colofón"
+        },
+        "who": "Postext Cookbook",
+        "license": "CC-BY-4.0"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "Plane 1 of the wood",
+          "es": "Plano 1 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane01.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 2 of the wood",
+          "es": "Plano 2 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane02.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 3 of the wood",
+          "es": "Plano 3 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane03.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 4 of the wood",
+          "es": "Plano 4 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane04.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 5 of the wood",
+          "es": "Plano 5 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane05.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 6 of the wood",
+          "es": "Plano 6 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane06.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 7 of the wood",
+          "es": "Plano 7 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane07.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 8 of the wood",
+          "es": "Plano 8 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane08.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 9 of the wood",
+          "es": "Plano 9 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane09.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 10 of the wood",
+          "es": "Plano 10 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane10.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 11 of the wood",
+          "es": "Plano 11 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane11.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 12 of the wood",
+          "es": "Plano 12 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane12.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 13 of the wood",
+          "es": "Plano 13 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane13.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 14 of the wood",
+          "es": "Plano 14 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane14.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 15 of the wood",
+          "es": "Plano 15 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane15.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 16 of the wood",
+          "es": "Plano 16 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane16.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 17 of the wood",
+          "es": "Plano 17 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane17.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 18 of the wood",
+          "es": "Plano 18 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane18.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 19 of the wood",
+          "es": "Plano 19 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane19.jpg"
+      },
+      {
+        "what": {
+          "en": "Plane 20 of the wood",
+          "es": "Plano 20 del bosque"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "plane20.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Lora",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13"
+}

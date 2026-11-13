@@ -1,0 +1,70 @@
+---
+title: "Goldprägung auf einem tiefblauen Umschlag"
+summary: "Heißfolie als Sonderfarbe mit Veredelung: eine eigene Platte im PDF, Glanz in Folio, dazu blauer Karton und cremefarbenes Papier ohne Druckfarbe."
+plain: "Ein kleiner Gedichtband mit dunkelblauem Umschlag und goldener, eingeprägter Schrift. Innen sind alle Linien und Rahmen ebenfalls golden. Die 3D-Ansicht zeigt das Gold glänzend, und die Druckdatei hält es für die Druckerei getrennt."
+description: "Ein Gedichtheft mit Heißfolienprägung auf dem Umschlag in Postext: Folie als Sonderfarbe mit Veredelung, eigene PDF-Platte, Papiere ohne Farbe, in Folio."
+question: "Wie präge ich Umschlag und Linien eines Buchs in Gold und liefere die Folie auf einer eigenen Platte?"
+aliases: ["Heißfolienprägung", "Heißprägung", "Goldprägung", "Goldfolie", "Prägefolie", "Prägestempel", "Klischee", "farbiger Karton", "dunkles Papier", "Gedichtband", "hot foil", "foil stamping"]
+pageNotes: { "1": "Der Umschlag: ein doppelter Rahmen aus Goldlinien auf tiefblauem Karton, FIVE POEMS, SHOOK FOIL in großen goldenen Versalien, eine kurze Goldlinie und Gerard Manley Hopkins in goldenen Kapitälchen, die Jahreszahlen am Fuß.", "4": "Das Inhaltsverzeichnis in Gold auf dem blauen Karton: fünf Gedichttitel, Punktleitlinien und Seitenzahlen.", "6": "Eine nächtliche Wiese unter Sternen, gemalt, in einem Goldrahmen auf dem cremefarbenen Papier.", "9": "The Windhover: eine goldene Doppellinie unter dem Kolumnentitel, der Titel in Versalien über einer kurzen Goldlinie, die Widmung kursiv und das Gedicht, dessen lange Verse umbrechen." }
+---
+
+## Was Sie setzen
+
+Ein Heft mit fünf Gedichten von Gerard Manley Hopkins, 140 × 216 mm, als Broschur gebunden. Der Umschlag und das Blatt dahinter sind tiefblauer Karton, nur mit Goldfolie geprägt: ein doppelter Rahmen, der Titel in Versalien der Cinzel, der Name des Dichters und das Inhaltsverzeichnis. Innen, auf cremefarbenem Velin, drucken die Gedichte vierfarbig, ein gemaltes Nachtstück steht dem zweiten Gedicht gegenüber, und jede Linie der Seite ist Folie: die Doppellinie unter dem Kolumnentitel, die kurze Linie unter jedem Titel, die Linie unter der Seitenzahl. Der Titel stammt aus dem ersten Gedicht, in dem die Welt leuchtet „like shining from shook foil“. Folio dreht das geschlossene Buch ins Licht, sodass das Gold als Metall erscheint.
+
+## Zubereitung
+
+### 1 · Die Folie ist eine Sonderfarbe mit Veredelung
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). `finish: { kind: 'foil' }` macht aus der Sonderfarbe eine Spezialfarbe ([Veredelungen](/de/docs/special-inks-die-cuts#veredelungen)). Der Umbruch sieht eine Farbe, und nichts verschiebt sich; das Canvas malt ihren Hex-Wert, Folio beleuchtet sie als Metall, und die PDF/X-4-Datei legt jedes goldene Element auf eine einzige `Separation` namens `Gold foil`, nach der der Graveur den Messingstempel ätzt. Die Folie spart aus, was unter ihr liegt, wie die Heißfolie an der Prägepresse.
+
+### 2 · Die Papiere sind Farben, die keine Druckfarbe tragen
+
+<Excerpt region="content" />
+
+Der blaue Karton und das cremefarbene Velin sind Palettenfarben, in CMYK mit 0 % auf jedem Kanal angelegt: Bildschirm und Folio malen den Bedruckstoff, und keine Platte erhält davon einen Punkt. Das PDF des Umschlags hat daher die Folienplatte und vier leere Prozessplatten. Jede blaue Seite übernimmt den Karton aus ihrem Überschriftenstil (`palette: { paper: … }` in `onCard`), und die beiden `:::paper`-Blöcke geben Folio Grammatur und Steifigkeit des Kartons für das Umschlagblatt und das Blatt dahinter.
+
+### 3 · Der Umschlag ist ein Rahmen und vier Zeilen
+
+<Excerpt region="cover" />
+
+Folie hält eine feine Linie, also ist der Rahmen eine Linie von 1,6 pt mit einer Haarlinie von 0,4 pt 2,5 mm innerhalb, jede der Rand eines Kastens in der Folienfarbe. Alles auf dem Umschlag ist Folie: Keine zweite Druckfarbe berührt den Karton, und so bestellt man einen geprägten Umschlag bei der Buchbinderei.
+
+### 4 · Innen sind die Linien Folie und die Gedichte Druckfarbe
+
+<Excerpt region="rules" />
+
+Der Kolumnentitel steht über einer Doppellinie, einer Linie von 0,9 pt und einer von 0,3 pt 1,2 mm darunter, so breit wie der Satzspiegel. Die Gestaltung des Gedichttitels fügt unter dem Titel eine Linie von 12 mm hinzu, die Fußzeile eine von 6 mm unter der Seitenzahl. Der Text bleibt im warmen Schwarz: Kleine Schrift in Folie läuft beim Prägen zu.
+
+### 5 · Folio dreht den Umschlag ins Licht
+
+<Excerpt region="folio" />
+
+Folie sieht nur dann nach Folie aus, wenn sie etwas spiegelt. Die Umgebung `studio` hat helle Softboxen, und eine Neigung von 24° bei einem um 16° gedrehten Buch führt ihren Widerschein über den Titel. Unter dem schwächeren Lampenlicht wirkt dasselbe Gold wie ein stumpfer Ocker.
+
+## Varianten
+
+### In Silber prägen
+
+Ändern Sie Hex-Wert und CMYK-Ersatzwert; Veredelung und Platte bleiben.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Das Gold als Metallicfarbe drucken
+
+Eine Metallicfarbe kostet weniger als ein Prägestempel und druckt mit den anderen Farben; Folio zeigt sie mit seidigem Glanz.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Häufige Fehler
+
+- Ein farbiges Papier, das als `page.backgroundColor` mit einem gewöhnlichen Hex-Wert angegeben ist, druckt als vollflächiger Prozessfarbton über die ganze Seite. Legen Sie den Bedruckstoff wie hier in CMYK mit 0 % an, wenn die Farbe die des Papiers ist.
+- Linien unter 0,25 pt und Schrift unter 8 pt laufen beim Prägen zu. Beschränken Sie die Folie auf Linien und Auszeichnungsschrift.

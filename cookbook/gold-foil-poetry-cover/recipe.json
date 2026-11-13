@@ -1,0 +1,82 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 188,
+  "status": "published",
+  "chapter": "output",
+  "order": 300,
+  "level": 3,
+  "genres": ["poetry"],
+  "outputs": ["canvas", "pdf"],
+  "features": {
+    "primary": ["special-inks", "pdf-colour-space"],
+    "also": [
+      "folio-viewer", "folio-appearance", "paper-runs", "color-palette", "verse", "toc",
+      "heading-styles", "covers", "opener-design", "design-elements", "design-images",
+      "running-heads", "pdf-export", "canvas-rendering"
+    ]
+  },
+  "answers": ["Q222", "Q118"],
+  "gotchas": [],
+  "related": ["saddle-stitched-card-cover", "paper-swatch-book", "print-ready-pdf"],
+  "engine": { "postext": "1.84.0", "postextPdf": "1.84.0" },
+  "kit": ["core", "fonts", "viewer", "pdf", "images"],
+  "sample": { "locales": ["en", "es"] },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": { "width": 1280, "height": 900 },
+    "pages": "all"
+  },
+  "downloads": { "pdf": true },
+  "folio": {
+    "tilt": 24,
+    "yaw": -16,
+    "paper": { "type": "bookWove", "grammage": 100, "shade": "#ffffff" },
+    "binding": { "type": "paperback", "cover": "pages" },
+    "surface": { "type": "walnut" },
+    "lighting": { "environment": "studio", "intensity": 1.1 }
+  },
+  "credits": {
+    "authors": [{ "name": "Ignacio Ferro", "github": "drnachio" }],
+    "text": [
+      {
+        "what": {
+          "en": "Six poems by Gerard Manley Hopkins, from Poems (1918), Project Gutenberg eBook #22403",
+          "es": "Seis poemas de Gerard Manley Hopkins, de Poems (1918), libro electrónico n.º 22403 del Proyecto Gutenberg"
+        },
+        "who": "Gerard Manley Hopkins",
+        "source": "https://www.gutenberg.org/ebooks/22403",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "Seven rimas by Gustavo Adolfo Bécquer, from his Obras (1871)",
+          "es": "Siete rimas de Gustavo Adolfo Bécquer, de sus Obras (1871)"
+        },
+        "who": "Gustavo Adolfo Bécquer",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The nocturne facing the second poem, a gouache",
+          "es": "El nocturno frente al segundo poema, un gouache"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "nocturne-600.jpg"
+      }
+    ],
+    "fonts": [
+      { "family": "Cormorant Garamond", "license": "OFL-1.1" },
+      { "family": "Cinzel", "license": "OFL-1.1" },
+      { "family": "Cormorant SC", "license": "OFL-1.1" }
+    ]
+  },
+  "license": { "code": "MIT", "content": "CC-BY-4.0" },
+  "created": "2026-11-13",
+  "updated": "2026-11-13"
+}
