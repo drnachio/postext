@@ -305,6 +305,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     warningsCjkLooseLineDetail: t("warningsCjkLooseLineDetail"),
     warningsUnbreakableWordOverflowTitle: t("warningsUnbreakableWordOverflowTitle"),
     warningsUnbreakableWordOverflowDetail: t("warningsUnbreakableWordOverflowDetail"),
+    warningsNumberOverflowTitle: t("warningsNumberOverflowTitle"),
+    warningsNumberOverflowDetail: t("warningsNumberOverflowDetail"),
     warningsWordDividedByCharacterTitle: t("warningsWordDividedByCharacterTitle"),
     warningsWordDividedByCharacterDetail: t("warningsWordDividedByCharacterDetail"),
     warningsWordDividedBySyllableTitle: t("warningsWordDividedBySyllableTitle"),

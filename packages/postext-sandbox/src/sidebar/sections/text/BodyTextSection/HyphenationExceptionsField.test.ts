@@ -8,7 +8,7 @@ import { resolveBodyTextConfig, type BodyTextConfig } from 'postext';
 import { SandboxStoreContext } from '../../../../context/SandboxContext.js';
 import { FieldLayerContext, type FieldLayerValue } from '../../../../controls/fieldLayer.js';
 import { DEFAULT_LABELS } from '../../../../types/defaultLabels.js';
-import { HyphenationExceptionsField, exceptionListLanguages } from './HyphenationExceptionsField.js';
+import { HyphenationExceptionsField, exceptionListLanguages, passageLanguages } from './HyphenationExceptionsField.js';
 
 const layer = (scope: 'all' | 'edition', locale: string, locales: string[]) => ({ scope, locale, locales });
 
@@ -20,6 +20,12 @@ describe('exceptionListLanguages', () => {
   it('offers the document\'s language and a chapter style\'s other dictionary', () => {
     const chapterStyles = [{ id: 'appendix', config: { bodyText: { hyphenation: { locale: 'en-GB' } } } }];
     expect(exceptionListLanguages({ layer: null, documentTag: 'es', chapterStyles, stored: undefined })).toEqual(['es', 'en-GB']);
+  });
+
+  it('offers the languages the passages of the text name (#1547)', () => {
+    const markdown = ':::paragraphs{dir=ltr lang=fr}\nTexte.\n:::\n\nUn :ltr[word]{lang="en-GB"} y :::verse{lang=el}';
+    expect(passageLanguages(markdown)).toEqual(['fr', 'en-GB', 'el']);
+    expect(exceptionListLanguages({ layer: null, documentTag: 'es', chapterStyles: undefined, stored: undefined, passages: passageLanguages(markdown) })).toEqual(['es', 'fr', 'en-GB']);
   });
 
   it('offers a list already written, and never a language without patterns', () => {

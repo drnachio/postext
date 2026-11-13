@@ -367,7 +367,10 @@
     "music": "Música als llibres: cançoners, partitures i acords com a text, gravats per Postext, a mà o amb IA",
     "exercises": "Exercicis als llibres: fitxes, llibre del professor i respostes en pantalla, a mà o amb IA",
     "everyLanguage": "Un llibre en totes les llengües: un disseny compartit i els ajustos de cada edició, a mà o amb IA",
-    "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA"
+    "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA",
+    "justification": "Els espais entre les paraules: com compon Postext el text justificat, a mà o amb IA",
+    "wordFiles": "Word, d’anada i tornada: envia un llibre a la correctora i recupera cada correcció, amb Postext",
+    "indesign": "InDesign, entrada i sortida: importa, porta i exporta llibres d’InDesign amb Postext"
   },
   "About": {
     "eyebrow": "Per què Postext",
@@ -957,6 +960,8 @@
     "warningsCjkLooseLineDetail": "«__text__»: per arribar a la mesura caldria separar-ne els caràcters més del que es permet (mig quadratí, o l'espaiat màxim de lletres en justificar, si està definit), així que la línia queda curta. Sol passar quan a la línia següent hi ha una paraula llarga o una adreça web que no es pot tallar.",
     "warningsUnbreakableWordOverflowTitle": "Paraula més ampla que la línia",
     "warningsUnbreakableWordOverflowDetail": "«__text__»: una paraula en escriptura àrab d'aquesta línia és més ampla que la línia. Una paraula així no es divideix mai (les lletres hi van unides), així que sobresurt de la mesura. Eixampla la mesura, redueix el cos o posa un espai si són diverses paraules escrites juntes.",
+    "warningsNumberOverflowTitle": "Nombre més ample que la línia",
+    "warningsNumberOverflowDetail": "Pàgina __page__: el nombre «__text__» és més ample que la línia. Un nombre no es parteix mai com una paraula, de manera que sobresurt de la mesura. Eixampla la columna, redueix el cos o agrupa les xifres amb espais indivisibles, per on sí que es pot partir.",
     "warningsWordDividedByCharacterTitle": "Paraula tallada entre dues lletres",
     "warningsWordDividedByCharacterDetail": "«__text__»: una paraula d'aquesta línia és més ampla que la línia sencera, i s'ha tallat entre dues de les seves lletres, sense guionet, perquè hi càpiga. Dona més espai al text, redueix el cos o escurça la paraula.",
     "warningsWordDividedBySyllableTitle": "Paraula dividida perquè hi càpiga",

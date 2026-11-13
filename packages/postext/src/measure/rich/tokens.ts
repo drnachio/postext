@@ -183,6 +183,10 @@ export interface RichToken {
    *  and the document is shaped in its own (`:ltr[…]{lang=en}`, #764): what
    *  is measured of the word later (a cut, a piece) is measured in it. */
   lang?: string;
+  /** The language of the passage this word is of, when a run names its
+   *  own (`:ltr[…]{lang=fr}`, #1547), in any document: the dictionary that
+   *  divides the word when it is cut later (wider than its line). */
+  hyphenLang?: string;
   /** A word with a letter that may be painted in pieces with none
    *  (`10.1006/ijhc.2001`): the script in force where its text starts,
    *  which such a piece takes when no letter stands before it in the text
@@ -313,7 +317,7 @@ export function tokenFont(
 
 /** The script, small-caps and Chinese-mark fields a token derived from
  *  another (a split, a hyphenated head) carries on. */
-export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; charStyle?: VDTSegmentCharStyle; charTracking?: number; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'charStyle' | 'charTracking' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang'> {
+export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; baselineShift?: number; faceFont?: string; smallCaps?: boolean; cjkMarks?: VDTSegmentMarks; charStyle?: VDTSegmentCharStyle; charTracking?: number; inserted?: boolean; scriptContext?: ScriptContext; scriptRtl?: true; lang?: string; hyphenLang?: string }): Pick<RichToken, 'script' | 'scriptFont' | 'baselineShift' | 'faceFont' | 'smallCaps' | 'cjkMarks' | 'charStyle' | 'charTracking' | 'inserted' | 'scriptContext' | 'scriptRtl' | 'lang' | 'hyphenLang'> {
   return {
     ...(t.script ? { script: t.script, scriptFont: t.scriptFont, baselineShift: t.baselineShift } : {}),
     ...(t.faceFont ? { faceFont: t.faceFont } : {}),
@@ -327,6 +331,8 @@ export function scriptOf(t: { script?: 'sup' | 'sub'; scriptFont?: string; basel
     ...(t.scriptRtl ? { scriptRtl: true as const } : {}),
     // And the pieces of a word of a run in another language in it (#764).
     ...(t.lang !== undefined ? { lang: t.lang } : {}),
+    // And its dictionary (#1547).
+    ...(t.hyphenLang !== undefined ? { hyphenLang: t.hyphenLang } : {}),
   };
 }
 

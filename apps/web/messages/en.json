@@ -367,7 +367,10 @@
     "music": "Music in your books: songbooks, scores and chords as text, engraved by Postext, by hand or with AI",
     "exercises": "Exercises in your books: worksheets, teacher’s editions and answers on screen, by hand or with AI",
     "everyLanguage": "One book in every language: shared design, each edition’s own settings, by hand or with AI",
-    "everyOutput": "One manuscript, every output: print PDF, accessible PDF, web, EPUB and SCORM, by hand or with AI"
+    "everyOutput": "One manuscript, every output: print PDF, accessible PDF, web, EPUB and SCORM, by hand or with AI",
+    "justification": "The spaces between the words: how Postext sets justified text, by hand or with AI",
+    "wordFiles": "Word, both ways: send a book to the copy editor and bring every correction back, with Postext",
+    "indesign": "InDesign, in and out: import, port and export InDesign books with Postext"
   },
   "About": {
     "eyebrow": "Why Postext",
@@ -957,6 +960,8 @@
     "warningsCjkLooseLineDetail": "“__text__”: reaching the measure would spread its characters past the limit (half an em, or the maximum justification tracking when it is set), so the line stops short. A long word or web address that cannot break, on the next line, usually causes it.",
     "warningsUnbreakableWordOverflowTitle": "Word wider than its line",
     "warningsUnbreakableWordOverflowDetail": "“__text__”: an Arabic-script word on this line is wider than the line. Such a word is never divided (its letters join), so it runs past the measure. Widen the measure, set a smaller size, or put a space in the word if it is several words written together.",
+    "warningsNumberOverflowTitle": "Number wider than its line",
+    "warningsNumberOverflowDetail": "Page __page__: the number “__text__” is wider than its line. A number is never divided as a word, so it runs past the measure. Widen the column, set the text smaller, or group its digits with no-break spaces, where it may part.",
     "warningsWordDividedByCharacterTitle": "Word cut between two letters",
     "warningsWordDividedByCharacterDetail": "“__text__”: a word on this line is wider than the whole line, so it was cut between two of its letters, with no hyphen, to fit. Give the text more room, set a smaller size, or write the word shorter.",
     "warningsWordDividedBySyllableTitle": "Word divided to fit its line",

@@ -12,5 +12,5 @@
 
 
 export { fullwidthMarkupIn, collectContentWarnings } from './contentWarnings/sourceWarnings.js';
-export { locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, spaceBreakWarnings, snippetEdgeWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings, joiningLetterSpacingWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings, dropCapWarnings } from './contentWarnings/layoutWarnings.js';
+export { locateContentWarnings, cjkLooseLineWarnings, raggedLineWarnings, stackWarnings, spaceBreakWarnings, snippetEdgeWarnings, snippetNumberWarnings, hyphenRuleWarnings, wordOverflowWarnings, designTruncationWarnings, joiningLetterSpacingWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings, dropCapWarnings } from './contentWarnings/layoutWarnings.js';
 export { formatWarning } from './contentWarnings/formatWarning.js';

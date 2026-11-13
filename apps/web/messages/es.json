@@ -367,7 +367,10 @@
     "music": "Música en tus libros: cancioneros, partituras y acordes como texto, con Postext, a mano o con IA",
     "exercises": "Ejercicios en tus libros: fichas, libro del profesor y respuestas en pantalla, a mano o con IA",
     "everyLanguage": "Un libro en todos los idiomas: un diseño compartido y los ajustes de cada edición, a mano o con IA",
-    "everyOutput": "Un manuscrito, todas las salidas: PDF de imprenta, PDF accesible, web, EPUB y SCORM, a mano o con IA"
+    "everyOutput": "Un manuscrito, todas las salidas: PDF de imprenta, PDF accesible, web, EPUB y SCORM, a mano o con IA",
+    "justification": "Los espacios entre las palabras: cómo justifica Postext el texto, a mano o con IA",
+    "wordFiles": "Word, ida y vuelta: el libro va a la correctora y cada corrección vuelve a su sitio, con Postext",
+    "indesign": "InDesign, entrar y salir: importar, portar y exportar libros de InDesign con Postext"
   },
   "About": {
     "eyebrow": "Por qué Postext",
@@ -2492,6 +2495,8 @@
     "warningsCjkLooseLineDetail": "«__text__»: para llegar a la medida habría que separar sus caracteres más de lo permitido (medio cuadratín, o el espaciado máximo entre letras para justificar, si está definido), así que la línea queda corta. Suele deberse a una palabra larga o a una dirección web de la línea siguiente que no se puede cortar.",
     "warningsUnbreakableWordOverflowTitle": "Palabra más ancha que su línea",
     "warningsUnbreakableWordOverflowDetail": "«__text__»: una palabra en escritura árabe de esta línea es más ancha que la línea. Una palabra así nunca se divide (sus letras van unidas), así que sobresale de la medida. Ensancha la medida, reduce el cuerpo o pon un espacio si son varias palabras escritas juntas.",
+    "warningsNumberOverflowTitle": "Número más ancho que su línea",
+    "warningsNumberOverflowDetail": "Página __page__: el número «__text__» es más ancho que su línea. Un número nunca se divide como una palabra, así que sobresale de la medida. Ensancha la columna, reduce el cuerpo o agrupa sus cifras con espacios de no separación, por donde sí puede partirse.",
     "warningsWordDividedByCharacterTitle": "Palabra cortada entre dos letras",
     "warningsWordDividedByCharacterDetail": "«__text__»: una palabra de esta línea es más ancha que la línea entera, así que se ha cortado entre dos de sus letras, sin guion, para que quepa. Da más espacio al texto, reduce el cuerpo o acorta la palabra.",
     "warningsWordDividedBySyllableTitle": "Palabra dividida para caber",

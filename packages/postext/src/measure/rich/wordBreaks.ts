@@ -1,20 +1,22 @@
 // Where a word may break and how it is cut: the rest of a word measured
 // as a line's opening text, URL and syllable breaks, the emergency split,
 // and a token split at a break with its hyphen (#1276: split out of rich.ts).
-import type { InlineSpan } from '../../parse/index.js';
-import { withoutSlashJoints, hyphenateByDictionary, hyphenateText, softHyphenBreaks, getHyphenationRulesKey } from '../../hyphenation/hyphenate.js';
-import { SOFT_HYPHEN } from '../types.js';
+import { getHyphenationRulesKey, withHyphenationLanguage } from '../../hyphenation/hyphenate.js';
 import { measureTextWidth, getMeasureLanguage } from '../canvas.js';
 import { hasCJK } from '../cjk/cjk.js';
 import type { CjkWordBreaks } from '../cjk/cjkCompose.js';
 import { graphemeCount } from '../graphemes.js';
 import { measuringVertically } from '../vertical.js';
-import { NO_BREAK_SPACES, isBreakingSpace } from '../spaces.js';
-import { withoutZeroWidthSpaces, ZERO_WIDTH_SPACE, isDash, breaksAfterDash, breaksAfterHardHyphen, slashBreakIndices, getSlashBreaks, hasCompound } from '../breakRules.js';
+import { NO_BREAK_SPACES } from '../spaces.js';
+import { isDash, breaksAfterDash, breaksAfterHardHyphen, slashBreakIndices, getSlashBreaks } from '../breakRules.js';
+import { isNumberWord } from './numbers.js';
+import { syllabify, type SoftBreak } from './syllables.js';
+
 import { endsInsideGeminate, GEMINATE_DOT, withLineEndHyphen } from '../geminate.js';
 import { joiningScriptIn, insideJoiningWord } from '../rtl/joining.js';
 import { scriptContextUntracked } from '../script.js';
 import { type RichToken, tokenTextWidth, scriptOf, pieceScriptFields, type RichBreakPoint, textWidth } from './tokens.js';
+export { URL_LIKE_RE, urlBreakIndices, syllabify, dropZeroWidthSpaces, compoundMask } from './syllables.js';
 
 /** How many characters of the rest of a word are measured with what
  *  follows the break (see {@link ownRest}): past any kerned pair,
@@ -111,87 +113,6 @@ export function markRestShifts(tokens: readonly RichToken[], fontOf: (token: Ric
       bp.restShift = own - (repeated ? token.hyphenWidth ?? 0 : 0) - (token.width - bp.widthBefore);
     }
   }
-}
-
-/**
- * Tokenize inline spans into word/space tokens with bold/italic flags and measured widths.
- */
-/** A word that is a URL or a bare DOI: never hyphenated by the dictionary,
- *  but breakable at its own joints so a long link cannot force an
- *  unfillable line. */
-export const URL_LIKE_RE = /^(?:(?:https?|ftp):\/\/|www\.|10\.\d{4,}\/)\S+$/i;
-
-/** Break opportunities inside a URL, following the usual editorial rule:
- *  after a slash (never inside the `//` of the scheme) or before a dot,
- *  hyphen or query/fragment punctuation, so the punctuation opens the next
- *  line and no hyphen is added. Never within the first few characters. */
-export function urlBreakIndices(text: string): number[] {
-  const out: number[] = [];
-  for (let i = 4; i < text.length - 1; i++) {
-    const prev = text[i - 1]!;
-    const ch = text[i]!;
-    if (prev === '/' && ch !== '/' && text[i - 2] !== '/') out.push(i);
-    else if ('.?#&=_~%-'.includes(ch) && prev !== '/' && !'.?#&=_~%-'.includes(prev)) out.push(i);
-  }
-  return out;
-}
-
-interface SoftBreak {
-  /** Offset into the word as laid out. */
-  index: number;
-  /** Typed in the source rather than found by the dictionary. */
-  author: boolean;
-}
-
-/**
- * A word as laid out (its soft hyphens removed) and the breaks its soft
- * hyphens mark: the dictionary's when `hyphenate` is on, and the author's
- * own — the U+00AD the source carries between two letters or digits
- * (`softHyphenBreaks`), which the dictionary leaves as they are (it does not
- * hyphenate a word that already has them). The zero-width
- * space the dictionary puts after a slash is dropped: the rich breaker does
- * not break there, and it must not reach the line text. `byDictionary`
- * leaves the document's rules out (#699): every point of the patterns.
- */
-export function syllabify(word: string, hyphenate: boolean, byDictionary = false): { clean: string; soft: SoftBreak[] } {
-  // A word of a joining script is never divided, not even at a soft hyphen
-  // its author typed: its letters connect (`measure/rtl/joining.ts`).
-  if (joiningScriptIn(word)) return { clean: word.includes(SOFT_HYPHEN) ? word.split(SOFT_HYPHEN).join('') : word, soft: [] };
-  const hyphenated = hyphenate ? withoutSlashJoints(word, byDictionary ? hyphenateByDictionary(word) : hyphenateText(word)) : word;
-  if (!hyphenated.includes(SOFT_HYPHEN)) return { clean: hyphenated, soft: [] };
-  let clean = '';
-  const soft: SoftBreak[] = [];
-  let j = 0;
-  for (let i = 0; i < hyphenated.length; i++) {
-    const ch = hyphenated[i]!;
-    // A soft hyphen the dictionary inserted is not the source's character.
-    const fromSource = j < word.length && ch === word[j];
-    if (fromSource) j++;
-    if (ch !== SOFT_HYPHEN) clean += ch;
-    // One the author typed at the word's edge or next to punctuation is no
-    // break (#700).
-    else if (!fromSource || softHyphenBreaks(word, j - 1)) soft.push({ index: clean.length, author: fromSource });
-  }
-  return { clean, soft };
-}
-
-/** {@link withoutZeroWidthSpaces} of a syllabified word: its soft breaks
- *  moved to the text left. */
-export function dropZeroWidthSpaces(clean: string, soft: SoftBreak[]): { clean: string; soft: SoftBreak[]; zeroWidth: number[] } {
-  const dropped = withoutZeroWidthSpaces(clean);
-  if (dropped.text === clean) return { clean, soft, zeroWidth: [] };
-  // How many zero-width spaces stand before each offset of `clean`.
-  const before: number[] = [];
-  let n = 0;
-  for (let i = 0; i <= clean.length; i++) {
-    before.push(n);
-    if (clean[i] === ZERO_WIDTH_SPACE) n++;
-  }
-  return {
-    clean: dropped.text,
-    soft: soft.map((s) => ({ ...s, index: s.index - before[s.index]! })),
-    zeroWidth: dropped.breaks,
-  };
 }
 
 /** Break opportunities inside a word (`clean`, the text as laid out):
@@ -332,6 +253,11 @@ export function emergencySplit(
       tail: { ...restFrom(idx + 1), ...flags, ...pieceScriptFields(token, idx + 1, text.length) },
     };
   }
+  // A number (`3,600`, `−12.5 %`, `1.2e-3`) is never divided as a word
+  // (#1549): `3,60-` | `0` reads as two numbers. Only the no-break space
+  // between its groups above parts it; else it runs past the measure, and
+  // the line says so (`VDTLine.numberOverflow`).
+  if (isNumberWord(text)) return null;
   // After a slash ("ACC/" | "AHA/AAPA"), any slash but the `//` of an
   // address (with `bodyText.breakAfterSlashes`), or at a free break of the
   // token's (a zero-width space the author typed, a dash): no word is
@@ -381,7 +307,8 @@ export function emergencySplit(
   let divided: 'syllable' | 'character' | undefined;
   // The dictionary's syllables, as offsets into the text: `syllabify` maps
   // them past anything else the dictionary might put in.
-  const { clean, soft } = syllabify(text, true);
+  // In the dictionary of the passage the word is of (#1547).
+  const { clean, soft } = withHyphenationLanguage(token.hyphenLang, () => syllabify(text, true));
   if (clean === text) {
     for (const s of soft) {
       if (s.index > 0 && s.index <= reach && fits(s.index)) at = s.index;
@@ -392,7 +319,7 @@ export function emergencySplit(
   // words, cited names) is still divided when it is wider than its measure:
   // at its entry's points above, else at the dictionary's syllables (#699).
   if (at === 0 && getHyphenationRulesKey() !== '') {
-    const whole = syllabify(text, true, true);
+    const whole = withHyphenationLanguage(token.hyphenLang, () => syllabify(text, true, true));
     if (whole.clean === text) {
       for (const s of whole.soft) {
         if (s.index > 0 && s.index <= reach && fits(s.index)) at = s.index;
@@ -452,23 +379,6 @@ function tailAfter(token: RichToken, at: number, cutWidth: number, font?: string
     ...(token.dashJoin ? { dashJoin: true } : {}),
     ...(own ? { ownPieces: token.ownPieces } : {}),
   };
-}
-
-/** For each character of the spans' joined text, whether it sits in a
- *  compound: a run of text between breaking spaces with a hyphen between
- *  two letters (see `hasCompound`). */
-export function compoundMask(spans: readonly InlineSpan[]): boolean[] {
-  const text = spans.map((s) => s.text).join('');
-  const mask = new Array<boolean>(text.length).fill(false);
-  let i = 0;
-  while (i < text.length) {
-    if (isBreakingSpace(text[i])) { i++; continue; }
-    let j = i;
-    while (j < text.length && !isBreakingSpace(text[j])) j++;
-    if (hasCompound(text.slice(i, j))) mask.fill(true, i, j);
-    i = j;
-  }
-  return mask;
 }
 
 /** Ragged hyphenation: at most this many lines in a row end on a

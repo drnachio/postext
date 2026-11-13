@@ -51,7 +51,7 @@ import { figureLabelsOverlay } from './labels.js';
 import { calloutIcon, calloutTitle } from './calloutHead.js';
 import { CSS_PX_PER_PT, drawnBoxSvg } from './exercises.js';
 import { appendLine, appendLines, fontPx, idOf, mathSvg, plainText, xmlText, type InlineContext, type TextSink } from './inline.js';
-import { cellImageOf, cropOf, plainCaption } from './figures.js';
+import { cellImageOf, cropOf, plainCaption, typeCaption } from './figures.js';
 
 /** Where an id landed: its content document and element id. */
 export interface Loc {
@@ -1299,7 +1299,8 @@ class DocWalker {
       for (const l of ls) appendLine(sink, l, ctx);
       return sink.inl;
     };
-    const captionAbove = this.config.captionStyle.position === 'above';
+    // Its type's caption style (#1550): the side, and the class it hangs on.
+    const { above: captionAbove, cls: typeClass } = typeCaption(this.config, res.typeId);
     if (rb.kind === 'table' && rb.table) {
       let node = this.tables.get(res.id);
       if (!node) {
@@ -1313,6 +1314,7 @@ class DocWalker {
           headerRows: res.table?.model.headerRowCount ?? 0,
           ...(res.table?.model.columnWidths ? { columnWidths: res.table.model.columnWidths } : {}),
           cells: new Map(),
+          ...(typeClass ? { typeClass } : {}),
         };
         // A named table style is a class the stylesheet styles (#625).
         const styleId = res.table?.styleId;
@@ -1374,6 +1376,7 @@ class DocWalker {
       // A forced break in a label (`Pico Albar \\ 2565 m`) reads as a space.
       ...(rb.labels?.some((l) => labelPlainText(l.text, l.icons)) ? { labels: rb.labels.map((l) => labelPlainText(l.text, l.icons)).filter(Boolean) } : {}),
       ...cropOf(res),
+      ...(typeClass ? { typeClass } : {}),
     };
     // The labels the print draws as text, drawn over the picture (#955).
     // The pages of a right-to-left book are laid out mirrored: their

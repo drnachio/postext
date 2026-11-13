@@ -16,6 +16,7 @@ export type WarningKind =
   | 'cjkLooseLine'
   | 'raggedLine'
   | 'unbreakableWordOverflow'
+  | 'numberOverflow'
   | 'wordDividedByCharacter'
   | 'wordDividedBySyllable'
   | 'joiningScriptLetterSpacing'

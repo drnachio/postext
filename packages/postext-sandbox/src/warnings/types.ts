@@ -3,6 +3,7 @@ import type { ContrastCheck, PreflightCheck, SnippetPlace } from './types/checks
 
 export type { WarningKind } from './types/kind.js';
 export type { ContrastCheck, PreflightCheck, SnippetPlace } from './types/checks.js';
+export type { Warning } from './types/warning.js';
 
 /** Which design slot a warning points at. `level` tags heading slots;
  *  the part opener is a single slot; `'box'` is a box style's design
@@ -49,6 +50,9 @@ export type WarningPayload =
    *  `ratio` times their width (#732). */
   | { kind: 'raggedLine'; text: string; ratio: number }
   | { kind: 'unbreakableWordOverflow'; text: string }
+  /** The engine's `numberOverflow` (#1549): `text`, a number wider than
+   *  its line, runs past it whole; `place`, its caption, note or cell. */
+  | { kind: 'numberOverflow'; page: number; text: string; place?: SnippetPlace }
   /** The engine's `wordDividedByCharacter` / `wordDividedBySyllable`
    *  (#1150): a word wider than its whole line, cut between two letters
    *  or at a syllable to fit. `text` is the line's text. */
@@ -577,24 +581,3 @@ export type WarningPayload =
    *  reversed text too fine for the press. `page` is the book page number
    *  of its first occurrence. */
   | { kind: 'contrast'; check: ContrastCheck; page?: number };
-
-export interface Warning {
-  id: string;
-  payload: WarningPayload;
-  /** Absolute source offset to focus in the editor on click. Undefined for
-   *  warnings that don't map to a specific markdown location (e.g. missing
-   *  fonts sourced from the config). */
-  sourceStart?: number;
-  sourceEnd?: number;
-  /** Approximate line number in the editor (1-based), when available. In a
-   *  multi-chapter book this is the line in the composed document. */
-  line?: number;
-  /** Chapter the warning points at, with a chapter-local line, when the
-   *  document was composed from several chapters. */
-  chapterId?: string;
-  chapterIndex?: number;
-  chapterLine?: number;
-  /** Chapter-local offsets (`sourceStart`/`sourceEnd` stay document-wide). */
-  chapterStart?: number;
-  chapterEnd?: number;
-}

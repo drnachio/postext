@@ -20,6 +20,7 @@ import { getMeasureWritingMode, withMeasureWritingMode, measuringVertically, get
 import { isBlankText } from '../spaces.js';
 import { raggedStretchPx } from '../breakRules.js';
 import { joiningScriptIn } from '../rtl/joining.js';
+import { isNumberWord } from './numbers.js';
 import { spanLanguages, applySegmentLanguages } from '../rtl/bidiLines.js';
 import { justifyLinesWithKashida } from '../rtl/kashida.js';
 import { sidewaysNumberSpans, setLabelTabs, tokenSegment } from './spanTokens.js';
@@ -282,8 +283,9 @@ function measureRichText(
     let lineSyllable = false;
     // The line ends after a hyphen the word carries (EF-140).
     let lineHardHyphen = false;
-    // A word of a joining script wider than the line runs past it.
-    let lineWordOverflow = false;
+    // A word of a joining script, or a number (#1549), wider than the line
+    // runs past it.
+    let lineWordOverflow: false | 'word' | 'number' = false;
     let lineWordDivided: 'syllable' | 'character' | undefined;
     // The line holds a tab placed at a stop (#622).
     let lineTabbed = false;
@@ -518,9 +520,9 @@ function measureRichText(
 
       // No viable split. If line is empty, force-fit this token; else break to next line.
       if (lineTokens.length === 0) {
-        // A word of a joining script wider than the line is never cut: it
-        // runs past the measure, and the line says so.
-        if (token.width > lineMaxWidth && token.kind === 'text' && joiningScriptIn(token.text)) lineWordOverflow = true;
+        // A word of a joining script or a number wider than the line is
+        // never cut: it runs past the measure, and the line says so.
+        if (token.width > lineMaxWidth && token.kind === 'text') lineWordOverflow = joiningScriptIn(token.text) ? 'word' : isNumberWord(token.text) ? 'number' : false;
         lineTokens.push(token);
         lineWidth += token.width;
         tokenIdx++;
@@ -573,7 +575,7 @@ function measureRichText(
       segments,
       isLastLine,
       ...spaceRatios,
-      ...(lineWordOverflow ? { wordOverflow: true as const } : {}),
+      ...(lineWordOverflow ? { wordOverflow: true as const, ...(lineWordOverflow === 'number' ? { numberOverflow: true as const } : {}) } : {}),
       ...(lineWordDivided ? { wordDivided: lineWordDivided } : {}),
       ...(lineTabbed ? { tabbed: true as const, ...(textAlign === 'justify' ? { ragged: true } : {}) } : {}),
     });

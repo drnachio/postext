@@ -16,3 +16,14 @@ export function spanShapingLanguage(span: InlineSpan): string | undefined {
   for (let d: { lang?: string; outer?: unknown } | undefined = span.direction; d && lang === undefined; d = d.outer as typeof d) lang = d.lang;
   return lang === undefined ? undefined : shapingTagOf(lang);
 }
+
+/**
+ * The language a run is written in when it names one (#1547): the `lang`
+ * of the innermost isolate around it that has one (`:ltr[…]{lang=fr}`), as
+ * written, whatever language the document is shaped in. Its words are
+ * divided with that language's dictionary (`withHyphenationLanguage`).
+ */
+export function spanLanguageTag(span: InlineSpan): string | undefined {
+  for (let d: { lang?: string; outer?: unknown } | undefined = span.direction; d; d = d.outer as typeof d) if (d.lang !== undefined) return d.lang;
+  return undefined;
+}

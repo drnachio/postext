@@ -22,6 +22,7 @@ import { needsBidi } from '../writing/bidi.js';
 import { getMeasureScriptContext, faceReadsScript } from './script.js';
 import { prepareInLanguage } from './pretextLanguage.js';
 import { UNIT_SQUARE_RE, holdsLetterlessWord, holdsLetterlessPiece, FIGURE_SPACE, hasOverwideGluedGroup, hasOverwideMixedWord, hasOverwideJoiningWord, hasOverwideCompoundPart, measuresWordsWhole } from './plain/overwide.js';
+import { hasOverwideNumber } from './rich/numbers.js';
 import { geminateDotWidth, getHyphenWidth, hasOverfullLine, throughGeminate, extractSegments, findLastTextSegmentIndex, geminateDotRoom } from './plain/segments.js';
 
 export { hasOverfullLine, computeJustifiedSpaceRatio } from './plain/segments.js';
@@ -124,6 +125,11 @@ export function measureBlock(
   // hyphen its author typed, and cut one wider than the line between two
   // letters. The word-by-word breaker does neither.
   if (joiningScriptIn(text) && (text.includes(SOFT_HYPHEN) || hasOverwideJoiningWord(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - widestIndent))) {
+    return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
+  }
+  // A number wider than the line stays whole (#1549): pretext would cut it
+  // between two digits.
+  if (hasOverwideNumber(text, font, Math.min(maxWidthPx, ...(options?.restWidths ?? []).map((s) => s.maxWidthPx)) - widestIndent)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
   // A hyphen repeated at the start of the line after a compound's break

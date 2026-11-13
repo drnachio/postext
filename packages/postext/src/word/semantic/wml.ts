@@ -123,7 +123,8 @@ export interface ParaProps {
   /** Tab stops: alignment (`left`/`right` read as start/end in a bidi
    *  paragraph) and position in twips from the start margin. */
   tabs?: { val: 'left' | 'right' | 'center'; pos: number; leader?: 'dot' }[];
-  /** Keep Word and LibreOffice from hyphenating the paragraph. */
+  /** Keep Word and LibreOffice from hyphenating the paragraph; `false`
+   *  hyphenates one whose style keeps it whole (#1550). */
   suppressAutoHyphens?: boolean;
   /** Twips. */
   before?: number;
@@ -160,7 +161,7 @@ export function pPr(p: ParaProps): string {
   }
   if (p.shd) x += `<w:shd w:val="clear" w:color="auto" w:fill="${p.shd}"/>`;
   if (p.tabs?.length) x += `<w:tabs>${p.tabs.map((t) => `<w:tab w:val="${t.val}"${t.leader ? ` w:leader="${t.leader}"` : ''} w:pos="${Math.max(0, Math.round(t.pos))}"/>`).join('')}</w:tabs>`;
-  if (p.suppressAutoHyphens) x += '<w:suppressAutoHyphens/>';
+  if (p.suppressAutoHyphens !== undefined) x += p.suppressAutoHyphens ? '<w:suppressAutoHyphens/>' : '<w:suppressAutoHyphens w:val="0"/>';
   if (p.bidi !== undefined) x += p.bidi ? '<w:bidi/>' : '<w:bidi w:val="0"/>';
   if (p.before !== undefined || p.after !== undefined || p.line) {
     let s = '';

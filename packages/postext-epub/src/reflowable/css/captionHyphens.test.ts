@@ -16,7 +16,10 @@ describe('captions, notes and tables in the reflowable stylesheet', () => {
     expect(decls(rules, 'figcaption, caption')).toContain('hyphens: manual');
     expect(decls(rules, 'table')).toContain('hyphens: manual');
     expect(decls(rules, 'figcaption, caption').some((d) => d.startsWith('line-height'))).toBe(false);
-    expect(decls(rules, '.pt-note').some((d) => d.startsWith('line-height') || d.startsWith('hyphens'))).toBe(false);
+    expect(decls(rules, '.pt-note').some((d) => d.startsWith('line-height'))).toBe(false);
+    // Stated (#1550): a note set after the picture, out of the caption,
+    // would take the body's hyphens.
+    expect(decls(rules, '.pt-note')).toContain('hyphens: manual');
   });
 
   it('takes the body hyphens and their own leading when set', () => {
@@ -25,7 +28,7 @@ describe('captions, notes and tables in the reflowable stylesheet', () => {
       tableStyle: { hyphenation: true },
       tableStyles: [{ id: 'plain', hyphenation: false }],
     });
-    expect(decls(rules, 'figcaption, caption')).not.toContain('hyphens: manual');
+    expect(decls(rules, 'figcaption, caption')).toContain('hyphens: auto');
     expect(decls(rules, 'figcaption, caption')).toContain('line-height: 1.2');
     expect(decls(rules, '.pt-note')).toEqual(expect.arrayContaining(['line-height: 1.1', 'hyphens: manual']));
     expect(decls(rules, 'table')).not.toContain('hyphens: manual');

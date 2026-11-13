@@ -12,12 +12,14 @@ import { hyphenationLocaleFor } from './locale.js';
 import { joiningScriptIn } from '../measure/rtl/joining.js';
 import { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from './hyphenationExceptions.js';
 import { activeLimits, onLimitsEvicted } from './limits.js';
+import { dictionaryInForce } from './dictionary.js';
 
 export { HYPHENATION_LOCALES, matchHyphenationLocale, hyphenationLocaleFor } from './locale.js';
 export { normalizeHyphenationExceptions, normalizeExceptionsByLanguage } from './hyphenationExceptions.js';
 export { ALL_LANGUAGES_KEY, parseHyphenationExceptionsFile, formatHyphenationExceptionsFile, mergeHyphenationExceptions, mergeHyphenationExceptionsFile, hyphenationExceptionsFor, withHyphenationExceptions } from './exceptionsFile.js';
 export type { HyphenationExceptionsFile, HyphenationExceptionsMerge, HyphenationExceptionsFileMerge } from './exceptionsFile.js';
 export { setHyphenationLimits, hyphenationLimitsId } from './limits.js';
+export { setHyphenationLocale, getHyphenationLocale, dictionaryInForce, hyphenationDictionaryKey, withHyphenationLanguage, enterHyphenationLanguage } from './dictionary.js';
 
 /** Catalan words the IEC divides at their prefix rather than by syllable
  *  (*Llibre d'estil*, VI § 2.7): `vos-altres`, not `vo-saltres`. */
@@ -63,20 +65,6 @@ export function hyphenationLanguageLimits(locale: HyphenationLocale): Required<H
   return { leftMin: PATTERNS[locale].leftmin, rightMin: PATTERNS[locale].rightmin, minWordLength: locale === 'ca' ? MIN_WORD_LENGTH : DEFAULT_MIN_WORD_LENGTH };
 }
 
-let currentLocale: HyphenationLocale = 'en-us';
-
-/** Set the dictionary {@link hyphenateText} uses when called without a
- *  locale. Any BCP 47 tag is accepted (see {@link matchHyphenationLocale});
- *  a missing or blank one sets `'en-us'`. */
-export function setHyphenationLocale(locale: LocaleTag): void {
-  currentLocale = hyphenationLocaleFor(locale);
-}
-
-/** The dictionary {@link hyphenateText} uses when called without a locale. */
-export function getHyphenationLocale(): HyphenationLocale {
-  return currentLocale;
-}
-
 /** Hyphenated form of each whitespace-delimited token, per locale. The
  *  same words come back in every paragraph, every pass and every chapter
  *  of a book; the trie walk is not cheap and its result never changes. */
@@ -94,7 +82,8 @@ function memoFor(locale: HyphenationLocale): Map<string, string> {
 
 /**
  * Hyphenate a full text string by inserting soft hyphens at syllable boundaries
- * using TeX/Liang patterns for the active locale, or for `locale` (any BCP 47
+ * using TeX/Liang patterns for the dictionary in force (the text's, or a
+ * passage's: `withHyphenationLanguage`, #1547), or for `locale` (any BCP 47
  * tag, see {@link matchHyphenationLocale}) when given — a missing or blank
  * one counts as not given. The dictionary also puts a zero-width space after
  * a slash inside a word (see {@link withoutSlashJoints}). The document's
@@ -105,7 +94,9 @@ function memoFor(locale: HyphenationLocale): Map<string, string> {
 export function hyphenateText(text: string, locale?: LocaleTag): string {
   const rules = activeRules;
   if (!rules) return hyphenateByDictionary(text, locale);
-  const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : currentLocale;
+  const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : dictionaryInForce();
+  // A passage in a language without patterns (#1547): no word divided.
+  if (loc === null) return text;
   const memoKey = `${activeLimits().id}:${loc}`;
   let memo = rules.memo.get(memoKey);
   if (!memo) {
@@ -129,7 +120,8 @@ export function hyphenateText(text: string, locale?: LocaleTag): string {
  * a rule keeps it whole (#699).
  */
 export function hyphenateByDictionary(text: string, locale?: LocaleTag): string {
-  const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : currentLocale;
+  const loc = typeof locale === 'string' && locale.trim() !== '' ? hyphenationLocaleFor(locale) : dictionaryInForce();
+  if (loc === null) return text;
   const hyphenator = getHyphenator(loc);
   const { limits } = activeLimits();
   const memo = memoFor(loc);

@@ -91,6 +91,12 @@ export interface ResolvedConfig {
    *  overrides (`ResourceType.captionStyle`) can resolve palette colours at
    *  layout time. Absent when the config defines no palette. */
   colorPalette?: ColorPaletteEntry[];
+  /** The caption style of each resource type that sets one of its own
+   *  (`ResourceType.captionStyle`, #1550), merged over `captionStyle`, by
+   *  type id. Absent when no type sets one. The layout merges the types'
+   *  styles itself; the outputs that style captions apart from it (the
+   *  reflowable EPUB) read them here. */
+  resourceTypeCaptionStyles?: Record<string, ResolvedCaptionStyleConfig>;
   /** The PDF settings (`PostextConfig.pdfGeneration`), resolved, when the
    *  config sets any. Layout ignores them; `renderToPdf` in postext-pdf
    *  reads them for each setting its own options leave out. */

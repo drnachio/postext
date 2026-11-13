@@ -71,6 +71,13 @@ export type TextSettingWarning =
    *  (`VDTLine.wordOverflow`). `text` is the line's text. Found by the
    *  layout, so `collectContentWarnings` never returns it. */
   | { kind: 'unbreakableWordOverflow'; text: string }
+  /** A number wider than its line (#1549): `3,600` in a table column
+   *  narrower than it. A number is never divided as a word (`3,60-` | `0`
+   *  would read as two), only at a no-break space between its groups, so
+   *  it runs past the measure (`VDTLine.numberOverflow`). `text` is the
+   *  number. In a caption, a note or a table cell, the resource and the
+   *  part it lies in, as for `stack`. Found by the layout. */
+  | ({ kind: 'numberOverflow'; text: string } & SnippetWarningPlace)
   /** A word wider than its whole line (a narrow frame, a running head, a
    *  table cell), cut to fit between two of its characters, with no
    *  hyphen (`VDTLine.wordDivided`, #1150): "CL" | "IMA". `text` is the

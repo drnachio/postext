@@ -367,7 +367,10 @@
     "music": "本の中の音楽：歌の本、楽譜、コードをテキストで。Postext が浄書、手作業でも AI でも",
     "exercises": "本の練習問題：ワークブック、教師用の版、画面で答える問題。Postext で、手作業でも AI でも",
     "everyLanguage": "一冊の本をすべての言語で：共有するデザインと各版の独自の設定。手作業でも AI でも",
-    "everyOutput": "一つの原稿を、すべての出力へ：印刷用 PDF、アクセシブルな PDF、ウェブ、EPUB、SCORM。手作業でも AI でも"
+    "everyOutput": "一つの原稿を、すべての出力へ：印刷用 PDF、アクセシブルな PDF、ウェブ、EPUB、SCORM。手作業でも AI でも",
+    "justification": "語と語のあいだのスペース：Postext が両端そろえのテキストを組むしくみ。手作業でも AI でも",
+    "wordFiles": "Word、行きも帰りも：本を校正者に送り、すべての直しを元の場所へ戻す。Postext で",
+    "indesign": "InDesign、取り込んで、書き出す：InDesign の本を Postext で読み込み、移植し、書き出す"
   },
   "About": {
     "eyebrow": "なぜPostextか",
@@ -957,6 +960,8 @@
     "warningsCjkLooseLineDetail": "「__text__」：行長いっぱいまでそろえると字間が上限（二分、または両端そろえの最大トラッキングが設定されていればその値）を超えるため、行長に届かないまま行を終えています。多くの場合、次の行にある分割できない長い単語やウェブアドレスが原因です。",
     "warningsUnbreakableWordOverflowTitle": "行より長い単語",
     "warningsUnbreakableWordOverflowDetail": "「__text__」：この行にあるアラビア文字の単語が行長より長くなっています。こうした単語は文字が連結しているため分割されず、行長からはみ出します。行長を広げるか、文字サイズを小さくしてください。複数の語が続けて書かれている場合は、語の間にスペースを入れてください。",
+    "warningsNumberOverflowTitle": "行より長い数値",
+    "warningsNumberOverflowDetail": "__page__ ページ：数値「__text__」が行より長くなっています。数値は単語のように分割されないため、行長からはみ出します。段を広げる、文字を小さくする、または数字の桁区切りに改行しないスペースを使ってください（そこでは分割できます）。",
     "warningsWordDividedByCharacterTitle": "2文字の間で切られた単語",
     "warningsWordDividedByCharacterDetail": "「__text__」：この行の単語が行全体より長いため、ハイフンなしで文字と文字の間で切って収めました。テキストの幅を広げるか、文字サイズを小さくするか、単語を短くしてください。",
     "warningsWordDividedBySyllableTitle": "行に収めるため分割された単語",

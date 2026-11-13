@@ -19,6 +19,7 @@
 
 import type { Resource, SvgFontFaceReport } from 'postext';
 import { prepareSvgMarkup, registerResourceImage } from 'postext';
+import { svgSize } from 'postext/bundle';
 import { getBlob, type BlobRecord } from '../../storage/blobStore.js';
 import { dropSvgTextIndex, ensureSvgTextIndex } from './svgTextIndex.js';
 import { sandboxSvgFontProvider, svgFontGeneration } from './svgFontProvider.js';
@@ -121,6 +122,19 @@ export interface SvgImageOptions {
   /** `diagramStyle.inlineFonts` (default true); a resource's own
    *  `svg.inlineFonts: false` wins. */
   inlineFonts?: boolean;
+  /** Where no `Image` can decode an SVG: a worker, the Books panel's
+   *  compiler painting a cover (#1548). The markup, prepared as on the
+   *  page (recoloured, its fonts inlined from this realm's registry), is
+   *  rasterized by `rasterize` (the page, asked) at its own proportions
+   *  within `box`, the largest the picture can show at, and registered as
+   *  a vector source the canvas scales down to the size it is placed at. */
+  raster?: SvgRaster;
+}
+
+/** How a realm without `Image` has its SVG pictures rasterized. */
+export interface SvgRaster {
+  rasterize: (svgText: string, widthPx: number, heightPx: number) => Promise<Uint8Array | null>;
+  box: { width: number; height: number };
 }
 
 /** Whether a resource's SVG gets the book's fonts inlined. */
@@ -184,12 +198,30 @@ export async function ensureResourceVideoUrls(resources: Resource[]): Promise<bo
   return changed;
 }
 
+/** An `<img>` with no size of its own is 300 × 150 pixels. */
+const SVG_DEFAULT_SIZE = { width: 300, height: 150 };
+
+/** SVG markup as a bitmap from `raster`, at its own proportions (as an
+ *  `<img>` would take them, then stretched to the box it is placed in)
+ *  and as large as `raster.box` holds. */
+async function rasterizedSvg(svgText: string, raster: SvgRaster): Promise<ImageBitmap | null> {
+  const size = svgSize(svgText) ?? SVG_DEFAULT_SIZE;
+  const fit = Math.min(raster.box.width / size.width, raster.box.height / size.height);
+  const png = await raster.rasterize(svgText, Math.max(1, Math.round(size.width * fit)), Math.max(1, Math.round(size.height * fit)));
+  if (!png || typeof createImageBitmap === 'undefined') return null;
+  return createImageBitmap(new Blob([png as BlobPart], { type: 'image/png' }));
+}
+
 /** Decode a blob into something the canvas backend can `drawImage`. SVGs load
  *  through an `<img>` (scaled to the requested box at draw time, recoloured
  *  first when `inkHex` is set, the book's fonts inlined); rasters decode via
- *  `createImageBitmap`. */
-async function decodeImage(fileId: string, rec: BlobRecord, inkHex: string | null, inlineFonts: boolean): Promise<CanvasImageSource | null> {
-  if (typeof document === 'undefined') return null;
+ *  `createImageBitmap`. Without a document (a worker) an SVG is a bitmap
+ *  `raster` gives, or nothing. */
+async function decodeImage(fileId: string, rec: BlobRecord, inkHex: string | null, inlineFonts: boolean, raster?: SvgRaster): Promise<CanvasImageSource | null> {
+  if (typeof document === 'undefined') {
+    if (rec.contentType === 'image/svg+xml') return raster ? rasterizedSvg(await svgMarkup(fileId, rec, inkHex, inlineFonts), raster) : null;
+    return typeof createImageBitmap !== 'undefined' ? createImageBitmap(new Blob([rec.bytes], { type: rec.contentType })) : null;
+  }
   if (rec.contentType === 'image/svg+xml') {
     const svgText = await svgMarkup(fileId, rec, inkHex, inlineFonts);
     const blob = new Blob([svgText], { type: 'image/svg+xml' });
@@ -294,7 +326,7 @@ export async function ensureResourceImages(
     setFlag(missingPayloads, fileId, !rec);
     if (!rec) continue;
     indexSvgText(fileId, rec);
-    const img = await decodeImage(fileId, rec, r.kind === 'svg' ? inkHex : null, inlinesFonts(r, options)).catch(() => null);
+    const img = await decodeImage(fileId, rec, r.kind === 'svg' ? inkHex : null, inlinesFonts(r, options), options?.raster).catch(() => null);
     setFlag(undecodable, fileId, !img);
     if (!img) continue;
     // SVGs go in as vector sources: the canvas backend rasterises them once

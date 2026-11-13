@@ -51,12 +51,22 @@ function oneTagPerDictionary(tags: readonly (string | undefined)[]): string[] {
   return out;
 }
 
+/** The languages the passages of `markdown` name (`:::paragraphs{lang=fr}`,
+ *  `:ltr[…]{lang=fr}`, a poem's `{lang=fr}`), in the order they come:
+ *  their words are divided with their own dictionary and list (#1547). */
+export function passageLanguages(markdown: string): string[] {
+  const out: string[] = [];
+  for (const m of markdown.matchAll(/\{[^}\n]*?\blang=["']?([A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{1,8})*)/g)) out.push(m[1]!);
+  return out;
+}
+
 /** The languages the list select offers besides every language's list:
  *  - the editions of a book in several languages, in the scope of every
  *    language;
  *  - in one edition's scope, its own language once it has a list (the
  *    edition's `exceptions` is its own list already);
  *  - the languages chapter styles divide with (`hyphenation.locale`);
+ *  - the languages passages of the text name (`passages`, #1547);
  *  - the languages that already have a list.
  *  A book with one language and no such chapter has none. */
 export function exceptionListLanguages(input: {
@@ -64,17 +74,18 @@ export function exceptionListLanguages(input: {
   documentTag: string;
   chapterStyles: readonly ChapterStyleConfig[] | undefined;
   stored: Record<string, unknown> | undefined;
+  passages?: readonly string[];
 }): string[] {
-  const { layer, documentTag, chapterStyles, stored } = input;
+  const { layer, documentTag, chapterStyles, stored, passages = [] } = input;
   const styled = (chapterStyles ?? []).map((s) => (s.config as { bodyText?: BodyTextConfig }).bodyText?.hyphenation?.locale ?? undefined);
   const kept = Object.keys(stored ?? {});
   const languages = layer && !layer.wording ? layer.locales : [documentTag];
   if (layer && !layer.wording && layer.scope === 'edition') {
     const own = matchHyphenationLocale(layer.locale);
     const hasOwn = kept.some((tag) => own !== undefined && matchHyphenationLocale(tag) === own);
-    return oneTagPerDictionary([...(hasOwn ? [layer.locale] : []), ...styled]);
+    return oneTagPerDictionary([...(hasOwn ? [layer.locale] : []), ...styled, ...passages]);
   }
-  const all = oneTagPerDictionary([...languages, ...styled, ...kept]);
+  const all = oneTagPerDictionary([...languages, ...styled, ...passages, ...kept]);
   return all.length > 1 || kept.length > 0 ? all : [];
 }
 
@@ -100,8 +111,9 @@ export function HyphenationExceptionsField({ bodyText, raw, updateBodyText, labe
   const layer = useContext(FieldLayerContext);
   const uiLocale = useSandboxSelector((s) => s.locale);
   const chapterStyles = useSandboxSelector((s) => s.config.chapterStyles);
+  const markdown = useSandboxSelector((s) => s.markdown) ?? '';
   const documentTag = bodyText.hyphenation.tag ?? bodyText.hyphenation.locale;
-  const languages = exceptionListLanguages({ layer, documentTag, chapterStyles, stored: raw?.hyphenation?.exceptionsByLanguage });
+  const languages = exceptionListLanguages({ layer, documentTag, chapterStyles, stored: raw?.hyphenation?.exceptionsByLanguage, passages: passageLanguages(markdown) });
   const [chosen, setChosen] = useState<string>(ALL_LANGUAGES_KEY);
   const list = languages.includes(chosen) ? chosen : ALL_LANGUAGES_KEY;
   const all = list === ALL_LANGUAGES_KEY;

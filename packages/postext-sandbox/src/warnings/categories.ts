@@ -97,6 +97,7 @@ export function warningCategory(kind: WarningPayload['kind']): WarningCategory {
     case 'cjkLooseLine':
     case 'raggedLine':
     case 'unbreakableWordOverflow':
+    case 'numberOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':
     case 'joiningScriptLetterSpacing':

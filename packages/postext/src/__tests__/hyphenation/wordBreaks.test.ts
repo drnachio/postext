@@ -56,11 +56,16 @@ describe('breaks inside words', () => {
 
   it('…and at the last character that fits when no syllable does', () => {
     setHyphenationLocale('es');
-    // 6 characters per line: a 16-digit run has no syllables; the last six
-    // digits fit a line as they are.
-    const block = measureRichBlock(span('1234567890123456'), FONT, FONT, FONT, FONT, 42, 20, { textAlign: 'left' });
-    expect(texts(block.lines)).toEqual(['12345-', '67890-', '123456']);
+    // 6 characters per line: a run of one letter has no syllables; the last
+    // six fit a line as they are.
+    const block = measureRichBlock(span('xxxxxxxxxxxxxxxx'), FONT, FONT, FONT, FONT, 42, 20, { textAlign: 'left' });
+    expect(texts(block.lines)).toEqual(['xxxxx-', 'xxxxx-', 'xxxxxx']);
     for (const w of widths(block.lines)) expect(w).toBeLessThanOrEqual(42);
-    expect(joined(block.lines).replace(/-/g, '')).toBe('1234567890123456');
+    expect(joined(block.lines).replace(/-/g, '')).toBe('xxxxxxxxxxxxxxxx');
+    // A run of digits is a number, never divided as a word (#1549): it runs
+    // past the measure whole.
+    const number = measureRichBlock(span('1234567890123456'), FONT, FONT, FONT, FONT, 42, 20, { textAlign: 'left' });
+    expect(texts(number.lines)).toEqual(['1234567890123456']);
+    expect(number.lines[0]!.numberOverflow).toBe(true);
   });
 });

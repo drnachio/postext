@@ -12,6 +12,7 @@ import { frameOverflowDetail } from '../../warnings/frameOverflowText.js';
 import { frameCoveredDetail, frameOutsideDetail, repeatOverflowDetail } from '../../warnings/frameOverlapText.js';
 import { localNumber } from '../../viewport/composed/reflowText.js';
 import { pdfFontDetail } from './fontDetails.js';
+import { placePrefix } from './placeText.js';
 
 /** Where a design warning points: the slot (`header`, `part`, `H2`); for
  *  a heading style its `{style="…"}` and, for the running heads of its
@@ -436,13 +437,13 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `#${payload.resourceId} — ${labels.warningsParagraphCitedInNoteDetail}`;
     case 'floatCropped':
       return `#${payload.resourceId} — ${(payload.reason === 'row' ? labels.warningsFloatRowCroppedDetail : labels.warningsFloatCroppedDetail).replace('__share__', String(Math.round(payload.share * 100)))}`;
+    case 'numberOverflow':
+      // In a caption, a note or a cell (#1549), named as a stack is.
+      return placePrefix(payload.place, labels) + labels.warningsNumberOverflowDetail.replace('__page__', String(payload.page)).replace('__text__', payload.text);
     case 'stack':
     case 'citationBreak':
     case 'operatorBreak':
-      return (payload.place ? `#${payload.place.resourceId} · ${(payload.place.part === 'caption' ? labels.warningsPartCaption
-        : payload.place.part === 'note' ? labels.warningsPartNote
-        : labels.warningsPartCell.replace('__row__', String((payload.place.cell?.row ?? 0) + 1)).replace('__col__', String((payload.place.cell?.col ?? 0) + 1)))} — ` : '')
-        + (payload.kind === 'citationBreak' ? labels.warningsCitationBreakDetail
+      return placePrefix(payload.place, labels) + (payload.kind === 'citationBreak' ? labels.warningsCitationBreakDetail
         : payload.kind === 'stack' ? (payload.edge === 'end' ? labels.warningsStackEndDetail : labels.warningsStackStartDetail)
         : payload.edge === 'end' ? labels.warningsOperatorBreakEndDetail : labels.warningsOperatorBreakStartDetail)
         .replace('__page__', String(payload.page))

@@ -134,3 +134,30 @@ describe('fonts in SVG pictures (#630)', () => {
     expect(await (await fetch(getResourceImageUrl('chart.svg')!)).text()).toBe(CHART);
   });
 });
+
+describe('pictures decoded in a worker (#1548)', () => {
+  const WIDE = '<svg xmlns="http://www.w3.org/2000/svg" width="40" height="10"/>';
+
+  it('has an SVG rasterized at its proportions within the box and a bitmap decoded, both registered', async () => {
+    G.document = undefined;
+    G.createImageBitmap = async (blob: Blob) => ({ type: blob.type });
+    blobs.set('chart.svg', { contentType: 'image/svg+xml', bytes: enc(WIDE) });
+    blobs.set('late.png', { contentType: 'image/png', bytes: new Uint8Array([1]).buffer });
+    const rasterize = vi.fn(async () => new Uint8Array([0x89, 0x50]));
+    const raster = { rasterize, box: { width: 800, height: 1200 } };
+    expect(await ensureResourceImages([resource('chart.svg', 'svg'), resource('late.png', 'bitmap')], INK, { inlineFonts: false, raster })).toBe(true);
+    // Recoloured as on the page, then rasterized by the page.
+    expect(rasterize.mock.calls).toEqual([[applySingleInkToSvg(WIDE, INK), 800, 200]]);
+    expect(registered).toEqual([
+      { fileId: 'chart.svg', options: { vector: true, singleInk: false } },
+      { fileId: 'late.png', options: { vector: false, singleInk: false } },
+    ]);
+  });
+
+  it('leaves an SVG out where nothing rasterizes it', async () => {
+    G.document = undefined;
+    blobs.set('fig.svg', { contentType: 'image/svg+xml', bytes: enc(RAW) });
+    expect(await ensureResourceImages([resource('fig.svg', 'svg')])).toBe(false);
+    expect(registered).toEqual([]);
+  });
+});

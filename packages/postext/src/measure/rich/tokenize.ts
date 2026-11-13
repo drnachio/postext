@@ -5,7 +5,8 @@ import { uprightFace } from '../../writing/uprightArabic.js';
 import type { InlineSpan, CharStyleLook } from '../../parse/index.js';
 import type { VDTSegmentCharStyle } from '../../vdt.js';
 import { getMeasureLanguage, setMeasureLanguage, measureTextWidth } from '../canvas.js';
-import { spanShapingLanguage } from '../spanLanguage.js';
+import { spanShapingLanguage, spanLanguageTag } from '../spanLanguage.js';
+import { enterHyphenationLanguage } from '../../hyphenation/hyphenate.js';
 import { hasCJK } from '../cjk/cjk.js';
 import { spanMarks, cjkWordBreaks } from '../cjk/cjkCompose.js';
 import { graphemeCount } from '../graphemes.js';
@@ -166,6 +167,10 @@ export function tokenizeSpans(
     const spanTokensFrom = tokens.length;
     const languageBefore = getMeasureLanguage();
     if (ownLanguage !== undefined) setMeasureLanguage(ownLanguage);
+    // And its words are divided with that language's dictionary (#1547),
+    // in any document, which they keep to be cut later.
+    const passageTag = spanLanguageTag(span);
+    const leavePassage = enterHyphenationLanguage(passageTag);
     try {
     const spanBase = spanStart;
     spanStart += span.text.length;
@@ -331,6 +336,8 @@ export function tokenizeSpans(
       }
     }
     } finally {
+      leavePassage();
+      if (passageTag !== undefined) for (let k = spanTokensFrom; k < tokens.length; k++) tokens[k]!.hyphenLang = passageTag;
       if (ownLanguage !== undefined) {
         setMeasureLanguage(languageBefore);
         if (ownLanguage !== languageBefore) for (let k = spanTokensFrom; k < tokens.length; k++) tokens[k]!.lang = ownLanguage;

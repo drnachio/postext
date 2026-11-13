@@ -653,7 +653,7 @@ class Writer {
     // without the style sheet, or reading the text aloud, does not run the
     // caption's last word into the note's first.
     const wrap = this.wrapAttrs(node.wrap);
-    const open = `<figure id="${node.id}"${wrap.cls ? ` class="${wrap.cls}"` : ''}${wrap.style}>`;
+    const open = `<figure id="${node.id}"${this.classAttr([wrap.cls, node.typeClass])}${wrap.style}>`;
     if (node.caption.length === 0) {
       return `${open}${pre}${body}${note ? `\n<p class="pt-note">${note}</p>` : ''}</figure>`;
     }
@@ -717,7 +717,7 @@ class Writer {
     const tbody = body.length > 0 ? `<tbody>\n${body.map((r) => row(r, false)).join('\n')}\n</tbody>\n` : '';
     const note = node.note.length > 0 ? `\n<p class="pt-note">${this.inline(node.note)}</p>` : '';
     const pre = this.inline(node.pre);
-    return `<div class="pt-table">${pre}<table id="${node.id}"${this.classAttr([node.styleClass])}>\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
+    return `<div${this.classAttr(['pt-table', node.typeClass])}>${pre}<table id="${node.id}"${this.classAttr([node.styleClass])}>\n${caption}${cols}${thead}${tbody}</table>${note}</div>`;
   }
 
   private toc(node: TocNode): string {

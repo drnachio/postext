@@ -28,6 +28,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'hyphenLadder':
     case 'lastWordDivided':
     case 'unbreakableWordOverflow':
+    case 'numberOverflow':
     case 'wordDividedByCharacter':
     case 'wordDividedBySyllable':
     case 'joiningScriptLetterSpacing':

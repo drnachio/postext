@@ -48,7 +48,6 @@ const host = () => {
     host: {
       onProgress: (p: { phase: string }) => { phases.push(p.phase); },
       rasterizeSvg: async () => null,
-      paintCover: async () => null,
       layoutService: () => service as never,
     },
   };

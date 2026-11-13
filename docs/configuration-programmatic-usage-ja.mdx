@@ -441,7 +441,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
   </tbody>
 </table>
 
-表には、どの文書でも出うる種類を挙げています。1つの機能に属する種類は、その機能と一緒に説明しています。漫画（`comicPanelCount`、`comicBalloonOverflow`…）は[漫画](/ja/docs/comics)のページ、動画（`videoWithoutUrl`、`videoUrlInvalid`、`videoWithoutPoster`）は[リソース](/ja/docs/document-format-resources)、引用と索引（`unknownCitationKey`、`referencesUnreadable`、`indexMark`…）は[注と参照](/ja/docs/document-format-notes-references)、中国語・日本語・アラビア語のテキスト（`cjkLooseLine`、`rubyExceedsLeading`、`arabicMarksExceedLeading`…）はそれぞれの文字のページ、改行器の種類（`raggedLine`、`unbreakableWordOverflow`、`wordDividedByCharacter`、`wordDividedBySyllable`）は[ハイフネーションと両端そろえ](/ja/docs/justification)にあります。
+表には、どの文書でも出うる種類を挙げています。1つの機能に属する種類は、その機能と一緒に説明しています。漫画（`comicPanelCount`、`comicBalloonOverflow`…）は[漫画](/ja/docs/comics)のページ、動画（`videoWithoutUrl`、`videoUrlInvalid`、`videoWithoutPoster`）は[リソース](/ja/docs/document-format-resources)、引用と索引（`unknownCitationKey`、`referencesUnreadable`、`indexMark`…）は[注と参照](/ja/docs/document-format-notes-references)、中国語・日本語・アラビア語のテキスト（`cjkLooseLine`、`rubyExceedsLeading`、`arabicMarksExceedLeading`…）はそれぞれの文字のページ、改行器の種類（`raggedLine`、`unbreakableWordOverflow`、`numberOverflow`、`wordDividedByCharacter`、`wordDividedBySyllable`）は[ハイフネーションと両端そろえ](/ja/docs/justification)にあります。
 
 リソースに関する警告（表スタイル、グリッド、キャプションや注、セルの中の参照）は、本文の中でそのリソースが最初に埋め込まれた位置か参照された位置を指し、リソースごとに1回だけ挙がります。検査するのは文書が使うリソースだけです。本の1章は、本に含まれるすべての表ではなく、その章が参照する表について報告します。
 
