@@ -54,8 +54,8 @@ const label = (size, color) => ({ fontFamily: SANS, fontWeight: 700, fontSize: p
   letterSpacing: pt(size * 0.16), textTransform: 'uppercase', color });
 
 // #region velvet: soft touch over every page, a box in the varnish to the bleed
-// The page's footer carries it, after the folios: the footer is painted last, and whatever
-// is painted after a varnish cuts it away in the PDF. The cover and the back keep it alone.
+// The page's footer carries it, so every page has it. A varnish goes down last on press, and
+// nothing painted after it cuts it away. The cover and the back keep it alone.
 const velvet = { kind: 'box', id: 'velvet', style: { backgroundColor: col('velvet') },
   placement: at('bleed', 'top-left', 0, 0, { width: 'fill', height: 'fill' }) };
 // #endregion

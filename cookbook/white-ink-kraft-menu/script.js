@@ -60,8 +60,8 @@ const bare = { numbered: false, toc: false, span: 'page', header: { elements: []
   footer: { elements: [] } };
 
 // #region mount: a painting on a white mount, 4 mm of white round it
-// The mount is a box in the white, the painting a picture over it. The PDF never makes a
-// picture overprint, so the white plate keeps the frame and is cut away under the painting.
+// The mount is a box in the white, the painting a picture over it. The white goes down first
+// on press and runs on under the whole painting, so its light tones print on white.
 const mount = (x, y, w, h, extra) => [
   { kind: 'box', id: 'mount', style: { backgroundColor: col('white') },
     placement: at('page', 'top-left', x, y, { width: mm(w), height: mm(h) }) },

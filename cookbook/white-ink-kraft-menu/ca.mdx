@@ -22,7 +22,7 @@ El codi és [la resposta curta](#la-resposta-curta) de més amunt. El paper és 
 
 <Excerpt region="mount" />
 
-El nom, els títols de secció i els de les pàgines interiors són lletra en el blanc, en Alfa Slab One. Una tinta blanca cobreix menys que el negre: el bru es transparenta en un traç fi, així que una egípcia gruixuda de 12 pt o més es llegeix on una romana fina quedaria beix. Els paspartús són caixes en el mateix blanc, 4 mm més grans que cada pintura per tots els costats.
+El nom, els títols de secció i els de les pàgines interiors són lletra en el blanc, en Alfa Slab One. Una tinta blanca cobreix menys que el negre: el bru es transparenta en un traç fi, així que una egípcia gruixuda de 12 pt o més es llegeix on una romana fina quedaria beix. Els paspartús són caixes en el mateix blanc, 4 mm més grans que cada pintura per tots els costats. El blanc continua per sota de tota la pintura, no només al voltant, així que els tons clars de la pintura s'imprimeixen sobre blanc i no sobre el bru.
 
 ### 3 · Color damunt del blanc
 
@@ -65,5 +65,5 @@ La impremta pot fer dues passades de blanc perquè blanquegi més sobre un kraft
 ## Errors freqüents
 
 - Una tinta blanca en una pàgina amb paper blanc o sense definir no deixa res visible. Defineix `page.backgroundColor` amb el suport, en CMYK al 0 %, i la revisió deixa d'avisar.
-- El PDF mai no sobreimprimeix una imatge, així que una pintura sobre una caixa blanca li treu el blanc per sota: la planxa conserva el marc del paspartú i, a la màquina, els blancs de la pintura deixen veure el kraft. Demana a la impremta que ompli la planxa de blanc sota les imatges, o posa les pintures en adhesius de paper blanc.
+- Una imatge impresa directament sobre el kraft, sense blanc a sota, deixa veure el bru en tots els tons clars. Posa una caixa del blanc sota cada imatge que hagi de conservar els colors, com fan aquí els paspartús.
 - La lletra blanca sobre un color no s'ha de sobreimprimir. Amb el valor per defecte s'imprimeix sota el color i desapareix.
