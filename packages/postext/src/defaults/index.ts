@@ -77,7 +77,8 @@ export { DEFAULT_CANVAS_VIEWER_CONFIG, CANVAS_VIEWER_MAX_GAP, resolveCanvasViewe
 export { DEFAULT_HTML_VIEWER_CONFIG, resolveHtmlViewerConfig, stripHtmlViewerDefaults, mergeConfigOverrides, applyHtmlViewerOverrides } from './output/htmlViewer.js';
 export { mergeConfigLayers, diffConfigLayers, leastConfigOverride, commonConfig, overridePaths, sameConfig, REMOVE_ENTRY, type ConfigOverride } from './configLayers.js';
 export { DEFAULT_PDF_GENERATION_CONFIG, resolvePdfGenerationConfig, stripPdfGenerationDefaults } from './output/pdfGeneration.js';
-export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit } from './output/print.js';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit, resolveInkFinish, resolvePrintDieLine, DEFAULT_PRINT_DIE_LINE } from './output/print.js';
+export { resolveDieCutsConfig, stripDieCutsDefaults } from './dieCuts.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './output/checks.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './output/contrast.js';
 export { FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, isNewspaperSizePreset, folioDefaultsFor, folioForTrim, resolveFolioConfig, stripFolioDefaults, wrapFolioYaw } from './output/folio.js';

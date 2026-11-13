@@ -11,6 +11,6 @@ export { DEFAULT_CENTRAL_BASELINE, verticalFlowOf, pageIsVertical, lineTextAlign
 export type { VDTVerticalFlowFrame, VDTMirroredFlowFrame, VDTFlowFrame } from './vdt/flowFrames.js';
 export { pictureTraits } from './vdt/design.js';
 export type { VDTDesignTextRun, VDTDesignTextLine, VDTDesignTextStroke, VDTTextDots, VDTDesignBoxStyle, VDTDesignBlockOrigin, VDTDesignTextBlock, VDTVerticalText, VDTDesignRuleBlock, VDTDesignBoxBlock, VDTDesignImageBlock, VDTPathCommand, VDTPathStroke, VDTPathMarker, VDTDesignPathBlock, VDTDesignBlock, VDTDesignSlot, VDTHeaderFooterSlot, VDTHeaderFooterBlock, VDTHeaderFooterTextBlock, VDTRuleBlock, VDTDesignSlotKind } from './vdt/design.js';
-export type { VDTPoint, VDTComicArt, VDTComicPanel, VDTComicSplitter, VDTComicBalloon, ReflowEventKind, ReflowEvent, VDTFrame, VDTComposedPage, VDTComicPage, VDTColumnRule, VDTPage, VDTLineNumberMark } from './vdt/pages.js';
+export type { VDTPoint, VDTComicArt, VDTComicPanel, VDTComicSplitter, VDTComicBalloon, ReflowEventKind, ReflowEvent, VDTFrame, VDTComposedPage, VDTComicPage, VDTColumnRule, VDTPage, VDTLineNumberMark, VDTDieCut } from './vdt/pages.js';
 export type { CalloutOverflowWarning, ConfigWarning, FrameFitStep, FrameOverflowProposal, FrameCoverProposal, FrameOutsideProposal, PageTemplateWarningKind, LayoutWarning, MissingImageWarning, SvgFontUnavailableWarning, SvgFontsTooLargeWarning, SvgPictureFontWarning, RenderWarning } from './vdt/warnings.js';
 export type { ContentWarning } from './vdt/contentWarnings.js';

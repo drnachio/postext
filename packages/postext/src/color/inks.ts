@@ -6,7 +6,7 @@
  * a colour's ink by its screen hex.
  */
 
-import type { CmykPercent, PostextConfig, ResolvedPrintInk, SpotColor } from '../types.js';
+import type { CmykPercent, PostextConfig, ResolvedPrintInk, ResolvedSpotColor } from '../types.js';
 import { isAuthoredCmyk, isAuthoredSpot, normalizeSpotColor, spotColorCmyk } from './authored.js';
 
 /** An ink name as the ink table compares it: trimmed, runs of spaces as
@@ -29,7 +29,7 @@ export function inkEntry(name: string, inks: readonly ResolvedPrintInk[]): Resol
  * `undefined` — in process (`output: 'process'`). An ink the table does
  * not list prints as the colour defines it.
  */
-export function printedSpot(spot: Required<SpotColor>, inks: readonly ResolvedPrintInk[]): Required<SpotColor> | undefined {
+export function printedSpot(spot: ResolvedSpotColor, inks: readonly ResolvedPrintInk[]): ResolvedSpotColor | undefined {
   const entry = inkEntry(spot.name, inks);
   if (!entry) return spot;
   if (entry.output === 'process') return undefined;
@@ -43,7 +43,7 @@ export function printedSpot(spot: Required<SpotColor>, inks: readonly ResolvedPr
 
 /** The CMYK a spot colour prints in when the table sends its ink to
  *  process: the alternate (the table's, else the colour's) at the tint. */
-export function processCmykOfSpot(spot: Required<SpotColor>, inks: readonly ResolvedPrintInk[]): CmykPercent {
+export function processCmykOfSpot(spot: ResolvedSpotColor, inks: readonly ResolvedPrintInk[]): CmykPercent {
   const entry = inkEntry(spot.name, inks);
   return spotColorCmyk(entry?.cmyk ? { ...spot, cmyk: entry.cmyk } : spot);
 }
@@ -52,11 +52,11 @@ export function processCmykOfSpot(spot: Required<SpotColor>, inks: readonly Reso
  *  renamed or merged onto the plate it names, or moved to the process
  *  colours (`authored`, by the same hex) when it sends the ink to process. */
 export function spotsThroughInkTable(
-  spots: ReadonlyMap<string, Required<SpotColor>>,
+  spots: ReadonlyMap<string, ResolvedSpotColor>,
   authored: ReadonlyMap<string, CmykPercent>,
   inks: readonly ResolvedPrintInk[],
-): { spots: Map<string, Required<SpotColor>>; authored: Map<string, CmykPercent> } {
-  const onPlates = new Map<string, Required<SpotColor>>();
+): { spots: Map<string, ResolvedSpotColor>; authored: Map<string, CmykPercent> } {
+  const onPlates = new Map<string, ResolvedSpotColor>();
   const process = new Map(authored);
   for (const [hex, s] of spots) {
     const printed = printedSpot(s, inks);

@@ -57,7 +57,7 @@ export type DesignKeyPath =
 
 /** The settings of each part. */
 export const DESIGN_PART_KEYS = {
-  page: ['page', 'layout', 'pageTemplates'],
+  page: ['page', 'layout', 'pageTemplates', 'dieCuts'],
   writing: ['cjk', 'layout.writingMode', 'page.binding'],
   colors: ['colorPalette', 'contrast'],
   text: [

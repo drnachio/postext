@@ -6,7 +6,7 @@
  * spacing, and an ink an SVG names that no colour defines.
  */
 
-import type { ResolvedPrintConfig, SpotColor } from '../types.js';
+import type { ResolvedPrintConfig, ResolvedSpotColor } from '../types.js';
 import type { VDTDocument } from '../vdt.js';
 import { spotInks } from '../color/authored.js';
 import { inkEntry, inkKey, inkNameProblem, printableInkName, similarInkNames } from '../color/inks.js';
@@ -17,7 +17,7 @@ export interface SpotInkCheckInput {
   doc: VDTDocument;
   print: ResolvedPrintConfig;
   /** The job's spot colours by screen hex, through the ink table. */
-  spots: ReadonlyMap<string, Required<SpotColor>>;
+  spots: ReadonlyMap<string, ResolvedSpotColor>;
   /** The inks the pages paint with, found while the colours were checked. */
   usedInks: Set<string>;
   /** The spot inks an SVG picture names, by its file id (`svgSpotInks` on

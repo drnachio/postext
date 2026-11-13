@@ -8,7 +8,7 @@ import { shapedSvgText } from '../../text/shapedText.js';
 import type { PathSeg, SvgInk, VectorDrawing } from '../svgVector.js';
 import type { SpotInkRegistry, SpotPlate } from '../../../print/spot.js';
 import { mixColor, planMix } from '../../../print/plates.js';
-import { inkEntry, inkKey, type SpotColor } from 'postext';
+import { inkEntry, inkKey, type ResolvedSpotColor } from 'postext';
 import { parseCssColor } from '../../../colors.js';
 import { mul } from './geometry.js';
 
@@ -167,9 +167,9 @@ export function inkStrength(hex: string, inkHex: string): number | undefined {
 export function svgSpotOf(
   hex: string,
   ink: SvgInk | undefined,
-  spots: ReadonlyMap<string, Required<SpotColor>>,
+  spots: ReadonlyMap<string, ResolvedSpotColor>,
   colorSpace: PageCtx['colorSpace'],
-): { spot: Required<SpotColor>; tint: number } | undefined {
+): { spot: ResolvedSpotColor; tint: number } | undefined {
   if (ink) {
     // Through the ink table: the SVG may name the ink by an alias, and an
     // ink sent to process prints the SVG's own colour.
@@ -208,7 +208,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
   const inks = isPrintMode(colorSpace) ? colorSpace.spots : undefined;
   const registry = isPrintMode(colorSpace) ? colorSpace.inkRegistry : undefined;
   // A job on a few plates sets an ink of another plate on its own.
-  const inkColor = (spot: Required<SpotColor>, tint: number): Color =>
+  const inkColor = (spot: ResolvedSpotColor, tint: number): Color =>
     isPrintMode(colorSpace) && colorSpace.plates
       ? { ...mixColor(planMix(colorSpace.plates, { kind: 'spot', spot, tint }, colorSpace), registry!, spot.overprint) }
       : { ...registry!.standIn(spot, tint) };

@@ -1,4 +1,4 @@
-import type { CmykPercent, SpotColor } from '../types.js';
+import type { CmykPercent, ResolvedSpotColor, SpotColor } from '../types.js';
 
 export function isAuthoredCmyk(v: unknown): v is { hex: string; model: 'cmyk'; cmyk: CmykPercent } {
   if (!v || typeof v !== 'object') return false;
@@ -41,7 +41,7 @@ const clampPercent = (n: unknown, fallback: number): number =>
 
 /** A spot colour with its name trimmed, its tint and CMYK clamped to
  *  0..100 and its defaults filled in. */
-export function normalizeSpotColor(spot: SpotColor): Required<SpotColor> {
+export function normalizeSpotColor(spot: SpotColor): ResolvedSpotColor {
   const c = spot.cmyk;
   return {
     name: spot.name.trim(),
@@ -67,7 +67,7 @@ export function spotColorCmyk(spot: SpotColor): CmykPercent {
  * print render paints these on the ink's own plate. The first colour of a
  * hex wins.
  */
-export function authoredSpotColors(config: unknown, into: Map<string, Required<SpotColor>> = new Map()): Map<string, Required<SpotColor>> {
+export function authoredSpotColors(config: unknown, into: Map<string, ResolvedSpotColor> = new Map()): Map<string, ResolvedSpotColor> {
   const seen = new Set<object>();
   const walk = (v: unknown): void => {
     if (!v || typeof v !== 'object' || seen.has(v)) return;
@@ -98,7 +98,7 @@ export interface SpotInk {
  * colour defines differently — two plates the printer would be asked to
  * make the same.
  */
-export function spotInks(spots: Iterable<Required<SpotColor>>): { inks: SpotInk[]; conflicts: string[] } {
+export function spotInks(spots: Iterable<ResolvedSpotColor>): { inks: SpotInk[]; conflicts: string[] } {
   const byName = new Map<string, SpotInk>();
   const conflicts = new Set<string>();
   for (const s of spots) {

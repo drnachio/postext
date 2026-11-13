@@ -13,7 +13,7 @@
  *   colours this moves far from what was asked.
  */
 
-import type { CmykPercent, ResolvedPrintConfig, ResolvedPrintInk, SpotColor } from '../types.js';
+import type { CmykPercent, ResolvedPrintConfig, ResolvedPrintInk, ResolvedSpotColor } from '../types.js';
 import { spotColorCmyk } from './authored.js';
 import { inkEntry, inkKey } from './inks.js';
 import { deltaE, srgbToLab, type Lab, type OutputTransform } from './transform.js';
@@ -70,7 +70,7 @@ function plateNameOf(given: string, inks: readonly ResolvedPrintInk[]): { name: 
  * (`spotsThroughInkTable`), whose alternates stand for plates the table
  * gives none.
  */
-export function jobPlates(print: ResolvedPrintConfig, spots: Iterable<Required<SpotColor>>): JobPlate[] | undefined {
+export function jobPlates(print: ResolvedPrintConfig, spots: Iterable<ResolvedSpotColor>): JobPlate[] | undefined {
   if (print.plates.inks.length === 0) return undefined;
   const spotList = [...spots];
   const out: JobPlate[] = [];
@@ -116,7 +116,7 @@ export function jobImagePlates<P extends { name: string; process?: ProcessChanne
 }
 
 /** The plate of `plates` a spot colour's ink prints on, if any. */
-export function plateOfSpot<P extends { name: string }>(spot: Required<SpotColor>, plates: readonly P[]): P | undefined {
+export function plateOfSpot<P extends { name: string }>(spot: ResolvedSpotColor, plates: readonly P[]): P | undefined {
   const key = inkKey(spot.name);
   return plates.find((p) => inkKey(p.name) === key);
 }
@@ -147,7 +147,7 @@ export function mixAlternate(plates: readonly { cmyk: CmykPercent }[], tints: re
 /** What a colour asks for: a spot ink at a tint (0..1), a CMYK mix, or a
  *  screen colour (sRGB 0..1, already over the paper when flattened). */
 export type PlateTarget =
-  | { kind: 'spot'; spot: Required<SpotColor>; tint: number }
+  | { kind: 'spot'; spot: ResolvedSpotColor; tint: number }
   | { kind: 'cmyk'; cmyk: CmykPercent }
   | { kind: 'rgb'; r: number; g: number; b: number };
 
@@ -272,7 +272,7 @@ export interface PlacedInkProblems {
 
 /** Sort the spot inks a placed file prints on (`inks`) by what the job
  *  makes of them; `spots` are the book's spot colours. */
-export function placedInkProblems(inks: readonly string[], print: ResolvedPrintConfig, spots: Iterable<Required<SpotColor>>): PlacedInkProblems {
+export function placedInkProblems(inks: readonly string[], print: ResolvedPrintConfig, spots: Iterable<ResolvedSpotColor>): PlacedInkProblems {
   const spotList = [...spots];
   const plates = jobPlates(print, spotList);
   const out: PlacedInkProblems = { offPlates: [], renamed: [], unknown: [] };

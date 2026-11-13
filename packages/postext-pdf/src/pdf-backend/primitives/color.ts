@@ -2,7 +2,7 @@
 // the pixel scale (#1276: split out of primitives.ts).
 import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, setGraphicsState } from 'pdf-lib';
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
-import type { PlateTarget, SpotColor } from 'postext';
+import type { PlateTarget, ResolvedSpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
 import { mixColor, planMix } from '../../print/plates.js';
@@ -94,7 +94,7 @@ export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
 
 /** A spot colour on its ink's own plate; flattened over the paper, a
  *  translucent one is a lighter tint of the same ink. */
-function spotColor(hex: string, spot: Required<SpotColor>, mode: PrintColorMode): Color {
+function spotColor(hex: string, spot: ResolvedSpotColor, mode: PrintColorMode): Color {
   let cache = spotColorCache.get(mode.inkRegistry);
   if (!cache) spotColorCache.set(mode.inkRegistry, (cache = new Map()));
   const cached = cache.get(hex);

@@ -151,7 +151,7 @@ export type {
   ChipUnderline,
   FigureStyle,
 } from './types.js';
-export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit, resolveInkFinish, resolvePrintDieLine, DEFAULT_PRINT_DIE_LINE, resolveDieCutsConfig, stripDieCutsDefaults } from './defaults/index.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './defaults/index.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './defaults/index.js';
 export type { FolioPaperStock } from './defaults/index.js';
@@ -477,7 +477,8 @@ export type {
   ResolvedPdfGenerationConfig,
   PdfXStandard,
   PrintRenderingIntent,
-  CmykPercent, SpotColor,
+  CmykPercent, SpotColor, ResolvedSpotColor, InkFinish, InkFinishKind, InkSheen, PrintDieLineConfig, ResolvedPrintDieLineConfig,
+  DieShape, DieCutPlacement, DieCutsConfig, ResolvedDieShape, ResolvedDieCutsConfig,
   PrintBlackConfig,
   ResolvedPrintBlackConfig, PrintInk, ResolvedPrintInk, PrintPlatesConfig, ResolvedPrintPlatesConfig, PrintImageColorConfig, ResolvedPrintImageColorConfig,
   PrintPreflightConfig,
@@ -654,6 +655,7 @@ export type {
   VDTComicSplitter,
   VDTComicBalloon,
   VDTComicPage,
+  VDTDieCut,
   VDTComposedPage,
   VDTFrame,
   VDTFigureLabel,

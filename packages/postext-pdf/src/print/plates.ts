@@ -16,7 +16,7 @@ import {
   type PlateMix,
   type PlateTarget,
   type ResolvedPrintConfig,
-  type SpotColor,
+  type ResolvedSpotColor,
 } from 'postext';
 import type { SpotInkRegistry, SpotPlate } from './spot.js';
 
@@ -36,7 +36,7 @@ export interface PlatePlan {
 /** The plan of a job restricted to a few plates, else undefined. A spot
  *  plate nothing defines prints as black (the preflight reports it). The
  *  picture plates and curves are named through the ink table. */
-export function platePlan(config: ResolvedPrintConfig, spots: Iterable<Required<SpotColor>>): PlatePlan | undefined {
+export function platePlan(config: ResolvedPrintConfig, spots: Iterable<ResolvedSpotColor>): PlatePlan | undefined {
   const given = jobPlates(config, spots);
   if (!given) return undefined;
   const plates: PlateInk[] = given.map((p) => ({

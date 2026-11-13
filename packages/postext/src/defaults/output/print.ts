@@ -3,12 +3,15 @@ import type {
   Dimension,
   PrintBlackConfig,
   PrintConfig,
+  InkFinish,
+  PrintDieLineConfig,
   PrintInk,
   PrintPlatesConfig,
   PrintImageColorConfig,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
+  ResolvedPrintDieLineConfig,
   ResolvedPrintInk,
   ResolvedPrintPlatesConfig,
   ResolvedPrintImageColorConfig,
@@ -38,6 +41,13 @@ export const DEFAULT_PRINT_PREFLIGHT_CONFIG: ResolvedPrintPreflightConfig = {
   checkFonts: true,
 };
 
+export const DEFAULT_PRINT_DIE_LINE: ResolvedPrintDieLineConfig = {
+  output: 'page',
+  ink: 'Die',
+  cmyk: { c: 0, m: 100, y: 0, k: 0 },
+  width: { value: 0.25, unit: 'pt' },
+};
+
 export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   standard: 'none',
   outputProfile: DEFAULT_OUTPUT_PROFILE_ID,
@@ -50,7 +60,36 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   inks: [],
   plates: { inks: [], images: [], curves: {} },
   imageColor: { embeddedProfile: 'ignore', grayDotGain: 'none', cmykProfile: 'keep' },
+  dieLine: DEFAULT_PRINT_DIE_LINE,
 };
+
+const FINISH_KINDS = ['metallic', 'foil', 'fluorescent', 'white', 'varnish'] as const;
+const SHEENS = ['gloss', 'satin', 'matte', 'softTouch'] as const;
+
+/** A finish as written, checked: an unknown kind is dropped (`undefined`),
+ *  an unknown sheen left out; soft-touch is a varnish's only. */
+export function resolveInkFinish(f: unknown): InkFinish | undefined {
+  if (!f || typeof f !== 'object') return undefined;
+  const kind = (f as { kind?: unknown }).kind;
+  if (!FINISH_KINDS.includes(kind as InkFinish['kind'])) return undefined;
+  const out: InkFinish = { kind: kind as InkFinish['kind'] };
+  const sheen = (f as { sheen?: unknown }).sheen;
+  if (SHEENS.includes(sheen as NonNullable<InkFinish['sheen']>) && kind !== 'fluorescent' && kind !== 'white') {
+    if (sheen !== 'softTouch' || kind === 'varnish') out.sheen = sheen as InkFinish['sheen'];
+  }
+  return out;
+}
+
+export function resolvePrintDieLine(partial?: PrintDieLineConfig): ResolvedPrintDieLineConfig {
+  const d = DEFAULT_PRINT_DIE_LINE;
+  const ink = typeof partial?.ink === 'string' && partial.ink.trim() ? partial.ink.trim() : d.ink;
+  return {
+    output: partial?.output === 'none' ? 'none' : 'page',
+    ink,
+    cmyk: resolveCmyk(partial?.cmyk, d.cmyk),
+    width: partial?.width ? { ...partial.width } : { ...d.width },
+  };
+}
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
 
@@ -99,6 +138,8 @@ export function resolvePrintInks(partial?: PrintInk[]): ResolvedPrintInk[] {
     const resolved: ResolvedPrintInk = { name, aliases, pdfName, output: ink.output === 'process' ? 'process' : 'spot' };
     if (ink.cmyk) resolved.cmyk = resolveCmyk(ink.cmyk, { c: 0, m: 0, y: 0, k: 0 });
     if (typeof ink.overprint === 'boolean') resolved.overprint = ink.overprint;
+    const finish = resolveInkFinish(ink.finish);
+    if (finish) resolved.finish = finish;
     out.push(resolved);
   }
   return out;
@@ -184,6 +225,7 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     inks: resolvePrintInks(partial?.inks),
     plates: resolvePrintPlates(partial?.plates),
     imageColor: resolvePrintImageColor(partial?.imageColor),
+    dieLine: resolvePrintDieLine(partial?.dieLine),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -240,6 +282,10 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
     if (ic.grayDotGain === 'none') delete ic.grayDotGain;
     if (ic.cmykProfile === 'keep') delete ic.cmykProfile;
     if (Object.keys(ic).length > 0) result.imageColor = ic;
+  }
+  if (cfg.dieLine) {
+    const dl = stripSection(cfg.dieLine, DEFAULT_PRINT_DIE_LINE as unknown as Record<string, unknown>);
+    if (dl) result.dieLine = dl;
   }
   return Object.keys(result).length > 0 ? result : undefined;
 }

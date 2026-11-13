@@ -8,7 +8,7 @@
  * and a screen colour that lands far from itself.
  */
 
-import type { CmykPercent, ResolvedPrintConfig, SpotColor } from '../types.js';
+import type { CmykPercent, ResolvedPrintConfig, ResolvedSpotColor } from '../types.js';
 import type { OutputTransform } from '../color/transform.js';
 import { channelsOffPlates, jobImagePlates, jobPlates, plateMix, plateOfSpot, type MixPlate } from '../color/plates.js';
 import type { PreflightIssue } from './preflight.js';
@@ -21,7 +21,7 @@ export const PLATE_DELTA_E = 6;
 export interface PlatesCheckInput {
   print: ResolvedPrintConfig;
   /** The job's spot colours by screen hex, through the ink table. */
-  spots: ReadonlyMap<string, Required<SpotColor>>;
+  spots: ReadonlyMap<string, ResolvedSpotColor>;
   /** Colours authored in CMYK, by screen hex, through the ink table. */
   authored: ReadonlyMap<string, CmykPercent>;
   /** The colours the pages paint with, by screen hex (`#rrggbb`). */

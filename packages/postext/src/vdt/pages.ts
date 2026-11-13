@@ -4,7 +4,7 @@
 import type { PageRole, FolioPaperConfig } from '../types.js';
 import type { NumeralStyle } from '../numerals/numbering.js';
 import type { VDTColumn, VDTBlock, VDTFootnoteArea } from './blocks.js';
-import type { VDTDesignSlot } from './design.js';
+import type { VDTDesignSlot, VDTPathCommand } from './design.js';
 import type { BoundingBox } from './document.js';
 import type { VDTFlowFrame } from './flowFrames.js';
 import type { VDTComicPage } from './pages/comic.js';
@@ -122,6 +122,11 @@ export interface VDTPage {
    *  viewer reads it; canvas, PDF and HTML ignore it. Absent on every other
    *  page. */
   paper?: FolioPaperConfig;
+  /** Present on a page whose leaf is die-cut (#1565): its holes and the
+   *  leaf's outline, in page px (sheet coordinates, y down), already
+   *  mirrored for this side of the leaf. `sources` are the die ids that cut
+   *  it, for the preflight and the Sandbox. */
+  dieCut?: VDTDieCut;
   /** Present on a comic page (`:::page`, `role: 'comic'`): its panels,
    *  split lines and lettering, in sheet coordinates. The page's columns
    *  are empty: nothing flows on it. */
@@ -154,4 +159,19 @@ export interface VDTLineNumberMark {
    *  `lines`. */
   blockId: string;
   lineIndex: number;
+}
+
+/** The die-cuts of one page (#1565), as every backend and viewer reads
+ *  them. */
+export interface VDTDieCut {
+  /** Each hole's closed outline. */
+  holes: VDTPathCommand[][];
+  /** The leaf's outline when it is not the plain trim rectangle (rounded
+   *  corners, a shaped book). */
+  outline?: VDTPathCommand[][];
+  /** Die ids, one per hole, in `holes` order (`'#corners'` / `'#outline'`
+   *  are not listed). */
+  sources: string[];
+  /** Text keeps this clear of each hole, px, one per hole (0: no wrap). */
+  wrapGapPx: number[];
 }

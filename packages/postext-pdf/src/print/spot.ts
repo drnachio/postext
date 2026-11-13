@@ -19,7 +19,7 @@
  */
 
 import { cmyk, type Color, PDFName, type PDFContext, type PDFRef } from 'pdf-lib';
-import { mixAlternate, printableInkName, type CmykPercent, type ProcessChannel, type SpotColor } from 'postext';
+import { mixAlternate, printableInkName, type CmykPercent, type ProcessChannel, type ResolvedSpotColor } from 'postext';
 
 /** One ink, as the print pass writes it. */
 export interface SpotPlate {
@@ -127,7 +127,7 @@ export class SpotInkRegistry {
    * returned and the colour prints in process; {@link exhausted} counts it,
    * for the render's warning.
    */
-  standIn(spot: Required<SpotColor>, tint: number): Color {
+  standIn(spot: ResolvedSpotColor, tint: number): Color {
     const plate = this.plateOf(spot);
     const t = round4(Math.max(0, Math.min(1, tint)));
     // One ink, two colours: one of them may overprint and the other not.
@@ -353,7 +353,7 @@ export class SpotInkRegistry {
     return plate.process ? PDFName.of(plate.name) : inkPdfName(this.pdfNameOf(plate.name));
   }
 
-  private plateOf(spot: Required<SpotColor>): SpotPlate {
+  private plateOf(spot: ResolvedSpotColor): SpotPlate {
     const first = this.platesByName.get(spot.name);
     if (first) return first;
     const plate: SpotPlate = { name: spot.name, cmyk: { ...spot.cmyk }, overprint: spot.overprint };

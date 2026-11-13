@@ -70,7 +70,7 @@ export const CONFIG_KEYS = {
   parts: true, headingStyles: true, toc: true, index: true, unorderedLists: true, orderedLists: true, math: true,
   footnotes: true, crossRefs: true, citations: true, links: true, cjk: true, lineNumbers: true, codeStyle: true, header: true,
   footer: true, locale: true, direction: true, numerals: true, debug: true, htmlViewer: true, canvasViewer: true,
-  folio: true, comics: true, pageTemplates: true, chapterStyles: true, labelStyles: true, frameLooks: true, composedViewerLeaf: true,
+  folio: true, dieCuts: true, comics: true, pageTemplates: true, chapterStyles: true, labelStyles: true, frameLooks: true, composedViewerLeaf: true,
   pdfGeneration: true, print: true, contrast: true, checks: true, colorPalette: true, customFonts: true, symbolFont: true,
   resourceTypes: true, exerciseStyles: true, exercises: true,
 } satisfies Record<keyof PostextConfig, true>;

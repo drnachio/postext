@@ -40,7 +40,7 @@
  */
 
 import { LineCapStyle, LineJoinStyle, type PDFFont, type PDFImage } from 'pdf-lib';
-import type { SpotColor } from 'postext';
+import type { ResolvedSpotColor } from 'postext';
 import { IDENTITY, Unsupported } from './svgVector/geometry.js';
 import { parseLength, ROOT_STYLE } from './svgVector/style.js';
 import { indexIds, parseAspect, type Walker, walk } from './svgVector/walk.js';
@@ -167,7 +167,7 @@ export interface VectorDrawing {
   /** Set on a drawing recoloured for a single ink that is a spot colour
    *  (`diagramStyle.singleInk` with a spot `inkColor`): a print render
    *  paints every tint of the ink on the ink's own plate. */
-  spotInk?: { hex: string; spot: Required<SpotColor> };
+  spotInk?: { hex: string; spot: ResolvedSpotColor };
 }
 
 export interface SvgToVectorOptions {

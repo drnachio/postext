@@ -18,7 +18,7 @@ export const BOOK_PAGE_KEYS = ['sizePreset', 'width', 'height', 'dpi', 'cutLines
  *  types, one print production and PDF, one set of viewers and checks. */
 export const BOOK_WIDE_KEYS = [
   'locale', 'direction', 'numerals', 'customFonts', 'symbolFont', 'resourceTypes',
-  'print', 'pdfGeneration', 'htmlViewer', 'canvasViewer', 'folio',
+  'print', 'pdfGeneration', 'htmlViewer', 'canvasViewer', 'folio', 'dieCuts',
   'debug', 'checks', 'contrast', 'chapterStyles', 'composedViewerLeaf',
 ] as const satisfies readonly (keyof PostextConfig)[];
 
