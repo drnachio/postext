@@ -40,4 +40,17 @@ describe('the ink table cards', () => {
       expect(html, key).toContain(DEFAULT_LABELS[key]);
     }
   });
+
+  it('show each ink’s finish: the card’s own, and the one the colours give an ink they use (#1570)', () => {
+    setCardsOpen('printInks', ['0'], true);
+    const gold = { hex: '#b39249', model: 'spot', spot: { name: 'Gold', cmyk: { c: 0, m: 20, y: 60, k: 30 }, tint: 100, finish: { kind: 'metallic' } } };
+    const html = render({
+      bodyText: { color: gold },
+      print: { inks: [{ name: 'Varnish', finish: { kind: 'varnish', sheen: 'softTouch' } }] },
+    } as never);
+    expect(html).toContain(DEFAULT_LABELS.inkFinish);
+    expect(html).toContain(DEFAULT_LABELS.inkSheen);
+    expect(html).toContain('· Metallic');
+    expect(html).toContain('Add “Gold” to the ink table (Metallic)');
+  });
 });

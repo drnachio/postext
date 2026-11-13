@@ -1,13 +1,14 @@
 'use client';
 
 import { memo, useState } from 'react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import type { ColorPaletteEntry } from 'postext';
 import { cloneDefaultColorPalette, isDefaultColorPalette } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import { findPaletteUsages, unlinkPaletteRefs } from '../../../context/paletteUtils.js';
 import { CollapsibleSection, ColorPicker } from '../../../controls/index.js';
-import { Button, ConfirmPopover, IconButton } from '../../../ui/index.js';
+import { Button, ConfirmPopover, IconButton, Menu, MenuItem } from '../../../ui/index.js';
+import { SPECIAL_INK_PRESETS, finishText, specialInkEntry, type SpecialInkPreset } from '../../../controls/color/inkFinish.js';
 import { SearchScope } from '../../search/SearchScope.js';
 
 function newEntryId(): string {
@@ -42,6 +43,12 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
     writePalette([...palette, entry]);
     setDraftName(entry.name);
     setEditingId(entry.id);
+  };
+
+  // A special ink (#1570): a spot colour with its finish, named in the
+  // interface's language as a printer would understand it.
+  const addSpecialInk = (preset: SpecialInkPreset) => {
+    writePalette([...palette, specialInkEntry(preset, labels[preset.labelKey], newEntryId(), palette)]);
   };
 
   const updateEntry = (id: string, partial: Partial<ColorPaletteEntry>) => {
@@ -174,9 +181,19 @@ export const ColorPaletteSection = memo(function ColorPaletteSection() {
           </SearchScope>
         );
       })}
-      <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addEntry} className="mt-1">
-        {labels.colorPaletteAdd}
-      </Button>
+      <div className="mt-1 flex flex-wrap gap-1">
+        <Button variant="outline" size="xs" icon={<Plus size={12} />} onClick={addEntry}>
+          {labels.colorPaletteAdd}
+        </Button>
+        <Menu side="bottom" align="start" trigger={<Button variant="outline" size="xs" icon={<Sparkles size={12} aria-hidden="true" />}>{labels.colorPaletteAddSpecial}</Button>}>
+          {SPECIAL_INK_PRESETS.map((preset) => (
+            <MenuItem key={preset.id} onClick={() => addSpecialInk(preset)} title={finishText(preset.finish, labels)}
+              icon={<span style={{ display: 'inline-block', width: 12, height: 12, borderRadius: 6, border: '1px solid var(--rule)', backgroundColor: preset.hex }} />}>
+              {labels[preset.labelKey]}
+            </MenuItem>
+          ))}
+        </Menu>
+      </div>
     </CollapsibleSection>
   );
 });

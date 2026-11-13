@@ -1,3 +1,4 @@
+import { resolveInkFinish } from 'postext';
 import type { CmykPercent, PrintConfig, PrintInk } from 'postext';
 
 /*
@@ -30,6 +31,9 @@ export function normaliseInk(ink: PrintInk): PrintInk {
   if (ink.output === 'spot' || ink.output === 'process') out.output = ink.output;
   if (ink.cmyk) out.cmyk = clampCmyk(ink.cmyk);
   if (typeof ink.overprint === 'boolean') out.overprint = ink.overprint;
+  // A finish is kept as written, once checked: an unknown kind is dropped.
+  const finish = resolveInkFinish(ink.finish);
+  if (finish) out.finish = finish;
   return out;
 }
 
