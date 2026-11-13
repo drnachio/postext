@@ -17,6 +17,7 @@ import { edgeMaterial, pageMaterial, withStockForExtent, edgeUniforms, edgeColor
 import { occluded, casterMaterial, casterGeometry, occlusionUniforms, syncCaster } from './pageFlip/occlusion.js';
 import { FinishTextures, dressFinish, type FaceFinish } from './pageFlip/finish.js';
 import { drawMirror } from './pageFlip/mirror.js';
+import { CUT_AIR, CUT_OPEN, casterCut, dressCut } from './pageFlip/through.js';
 
 export { BLOCK_PAGES } from './pageFlip/constants.js';
 export { withStockForExtent } from './pageFlip/materials.js';
@@ -248,8 +249,8 @@ export class PageFlipper {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = PCFShadowMap;
     }
-    this.left = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign));
-    this.right = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign));
+    this.left = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign, CUT_OPEN));
+    this.right = new Mesh(this.openGeometry(), pageMaterial(mirror, this.sign, CUT_OPEN));
     for (const m of [this.left, this.right]) {
       m.receiveShadow = m.castShadow = true;
       // A leaf lifting off an open page lies a hair above it: the page
@@ -542,10 +543,13 @@ export class PageFlipper {
     this.dressFinish(mesh);
   }
 
-  /** A mesh's faces' finish masks, and the clear coat a varnish needs. */
+  /** A mesh's faces' finish masks, and the clear coat a varnish needs;
+   *  their die-cuts (#1569). */
   private dressFinish(mesh: PageMesh) {
     const f = this.finishes;
-    dressFinish(mesh.material, f.maskOf(mesh.userData.Front), f.maskOf(mesh.userData.Back), mesh.material.userData.spec?.clearcoat ?? 0);
+    const spec = mesh.material.userData.spec;
+    dressFinish(mesh.material, f.maskOf(mesh.userData.Front), f.maskOf(mesh.userData.Back), spec?.clearcoat ?? 0);
+    dressCut(mesh, f, (spec ?? this.bookSpec).caliperMm * this.pxPerMm(), { shared: this.leafCaster, cut: () => casterMaterial(true, casterCut()) });
   }
 
   /** The special inks of the pages (#1568): page source → its finish
@@ -1235,6 +1239,7 @@ export class PageFlipper {
       if (!tex || mesh.userData[face] !== src) return;
       u[`u${face}`].value = tex;
       u[`uHas${face}`].value = 1;
+      if (face !== "Under") this.dressFinish(mesh);
       this.redraw();
     };
     const tex = this.ready.get(src);
@@ -1259,7 +1264,7 @@ export class PageFlipper {
     const geometry = new PlaneGeometry(1, 1, NX, NY);
     spreadColumns(geometry, NX);
     geometry.setAttribute("ao", new BufferAttribute(new Float32Array(geometry.attributes.position.count).fill(1), 1));
-    const mesh: PageMesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign));
+    const mesh: PageMesh = new Mesh(geometry, pageMaterial(this.sign < 0, this.sign, CUT_AIR));
     mesh.material.userData.uniforms.uPaper.value.setRGB(...this.paper, SRGBColorSpace);
     mesh.castShadow = mesh.receiveShadow = true;
     mesh.frustumCulled = false;

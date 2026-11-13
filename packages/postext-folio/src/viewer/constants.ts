@@ -47,7 +47,7 @@ export function finishesOf(pages: readonly FolioPage[]): Map<PageSource, FaceFin
   for (const page of pages) {
     if (!page || typeof page !== "object" || !("src" in page)) continue;
     const finish = (page as { finish?: FaceFinish }).finish;
-    if (page.src && finish?.mask) out.set(page.src, finish);
+    if (page.src && (finish?.mask || finish?.cut || finish?.through)) out.set(page.src, finish!);
   }
   return out;
 }

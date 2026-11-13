@@ -5,6 +5,7 @@
 // emissive lift, and white standing over the paper's shade. A page without
 // one costs nothing: no texture, and every branch of the shader is off.
 import { DataTexture, LinearFilter, LinearMipmapLinearFilter, RGBAFormat, UnsignedByteType, type Texture } from 'three';
+import { throughTexture, type FaceThroughData } from './through.js';
 
 /** A finish mask as postext paints it: RGBA bytes, not premultiplied, the
  *  top row first. R metalness, G sheen, B fluorescence, A opaque white. */
@@ -18,6 +19,11 @@ export interface FaceMaskData {
 export interface FaceFinish {
   /** Where its special inks lie (see {@link FaceMaskData}). */
   mask?: FaceMaskData;
+  /** The painting is cut (#1569): transparent in its holes and past its
+   *  leaf's outline. */
+  cut?: boolean;
+  /** What its holes show (see {@link FaceThroughData}). */
+  through?: FaceThroughData;
 }
 
 /** A mask's texture and whether it asks for a clear coat (a varnish, or the
@@ -53,19 +59,31 @@ export function maskTexture(mask: FaceMaskData): MaskTexture {
 export class FinishTextures {
   private bySrc = new Map<unknown, FaceFinish>();
   private textures = new Map<FaceMaskData, MaskTexture>();
+  private throughs = new Map<FaceThroughData, Texture>();
 
   /** The pages' finishes now; textures of masks no page carries are
    *  freed. True when anything changed. */
   set(finishes: ReadonlyMap<unknown, FaceFinish>): boolean {
     let changed = finishes.size !== this.bySrc.size;
-    for (const [src, f] of finishes) if (this.bySrc.get(src)?.mask !== f.mask) changed = true;
+    for (const [src, f] of finishes) {
+      const was = this.bySrc.get(src);
+      if (was?.mask !== f.mask || was?.through !== f.through || !!was?.cut !== !!f.cut) changed = true;
+    }
     this.bySrc = new Map(finishes);
-    const kept = new Set<FaceMaskData>();
-    for (const f of finishes.values()) if (f.mask) kept.add(f.mask);
+    const kept = new Set<unknown>();
+    for (const f of finishes.values()) {
+      if (f.mask) kept.add(f.mask);
+      if (f.through) kept.add(f.through);
+    }
     for (const [mask, t] of this.textures) {
       if (kept.has(mask)) continue;
       t.texture.dispose();
       this.textures.delete(mask);
+    }
+    for (const [through, t] of this.throughs) {
+      if (kept.has(through)) continue;
+      t.dispose();
+      this.throughs.delete(through);
     }
     return changed;
   }
@@ -79,14 +97,31 @@ export class FinishTextures {
     return t;
   }
 
+  /** Whether the page whose source is `src` is painted cut. */
+  cutOf(src: unknown): boolean {
+    return !!src && !!this.bySrc.get(src)?.cut;
+  }
+
+  /** The through texture of the page whose source is `src` and how many
+   *  layers it holds, if its holes show any. */
+  throughOf(src: unknown): { texture: Texture; layers: number } | null {
+    const through = src ? this.bySrc.get(src)?.through : undefined;
+    if (!through) return null;
+    let t = this.throughs.get(through);
+    if (!t) this.throughs.set(through, (t = throughTexture(through)));
+    return { texture: t, layers: through.layers };
+  }
+
   /** The textures alive (for tests and for the frame budget). */
   get size(): number {
-    return this.textures.size;
+    return this.textures.size + this.throughs.size;
   }
 
   dispose() {
     for (const t of this.textures.values()) t.texture.dispose();
+    for (const t of this.throughs.values()) t.dispose();
     this.textures.clear();
+    this.throughs.clear();
     this.bySrc.clear();
   }
 }
