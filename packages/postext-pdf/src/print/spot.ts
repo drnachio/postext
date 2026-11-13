@@ -382,7 +382,7 @@ export class SpotInkRegistry {
     const first = this.platesByName.get(spot.name);
     if (first) return first;
     const kind = spot.finish?.kind;
-    const plate: SpotPlate = { name: spot.name, cmyk: { ...spot.cmyk }, overprint: spot.overprint, ...(kind === 'white' ? { layer: kind } : {}) };
+    const plate: SpotPlate = { name: spot.name, cmyk: { ...spot.cmyk }, overprint: spot.overprint, ...(kind === 'white' || kind === 'varnish' ? { layer: kind } : {}) };
     this.platesByName.set(spot.name, plate);
     return plate;
   }

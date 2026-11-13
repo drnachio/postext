@@ -20,9 +20,10 @@ Tracker #1573. Issues: #1563 finishes · #1564 finish mask · #1565 die-cuts · 
   - Every special ink gets its own `Separation`, named by the ink table's `pdfName`, as any spot ink.
   - It never falls back to process unless `output: 'process'`.
   - White and varnish overprint unless `overprint: false` (`finishOverprintsByDefault`).
-  - No later paint knocks out a White plate (#1579): white goes down first on press. When a stream paints something
-    that knocks out after a white, the print pass draws the stream's white paints a second time at its end,
-    overprinting (`print/inkLayers.ts`). A white with `overprint: false` still knocks out the colour under it.
+  - No later paint knocks out a White or Varnish plate (#1579, #1580): white goes down first on press and varnish
+    last. When a stream paints something that knocks out after a white or a varnish, the print pass draws the
+    stream's white and varnish paints a second time at its end, overprinting (`print/inkLayers.ts`). A white with
+    `overprint: false` still knocks out the colour under it.
 - **Preflight:**
   - `spotInkFinish` (info, one per special ink).
   - `whiteInkOnWhite` (warning: a white ink on a page whose paper is white or unset).

@@ -82,13 +82,13 @@ function laterFills(content: string, space: string): number {
 }
 
 describe('white and varnish as the press lays them', () => {
-  it('draws the white again after the picture over it', async () => {
+  it('draws the white again after the picture over it, and the varnish after the box over it', async () => {
     const { pdf, content } = await render(layered());
     const w = separationOf(pdf, 'Opaque white')!;
     const v = separationOf(pdf, 'Varnish')!;
     expect(content).toMatch(/\/\S+ Do/);
     expect(laterFills(content, w)).toBe(1);
-    expect(laterFills(content, v)).toBe(0);
+    expect(laterFills(content, v)).toBe(1);
     // No picture, no other colour is painted a second time.
     const replay = content.slice(content.lastIndexOf('/Artifact BMC'));
     expect(replay).not.toMatch(/ Do\b/);
@@ -99,7 +99,7 @@ describe('white and varnish as the press lays them', () => {
     expect(plain.content).not.toContain('/Artifact BMC');
   });
 
-  it.skipIf(spawnSync('gs', ['--version']).status !== 0)('keeps the White plate under the whole picture (tiffsep)', async () => {
+  it.skipIf(spawnSync('gs', ['--version']).status !== 0)('keeps the White plate under the whole picture and the Varnish plate over the box (tiffsep)', async () => {
     for (const over of [undefined, false] as const) {
       const { bytes } = await render(layered(over));
       if (process.env.INK_LAYERS_DUMP) fs.writeFileSync(`${process.env.INK_LAYERS_DUMP}-${over ?? 'default'}.pdf`, bytes);
@@ -108,6 +108,7 @@ describe('white and varnish as the press lays them', () => {
       // white; over every pixel of the red box (the right half's magenta)
       // lies varnish.
       expect(covered(plates.get('Yellow')!, plates.get('Opaque white')!, 'left')).toBeGreaterThan(0.99);
+      expect(covered(plates.get('Magenta')!, plates.get('Varnish')!, 'right')).toBeGreaterThan(0.99);
     }
   });
 
