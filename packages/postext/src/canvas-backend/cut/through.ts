@@ -5,10 +5,10 @@
 // soft shadow along each cut edge and a thin darker line for the paper's
 // wall, and the board or the background past the book's end.
 
-import type { VDTDocument, VDTPage, VDTPathCommand } from '../vdt.js';
-import { seeThrough } from '../dieCut/seeThrough.js';
-import { traceDiePaths } from '../dieCut/path2d.js';
-import { restoreContext, saveContext } from './contextState.js';
+import type { VDTDocument, VDTPage, VDTPathCommand } from '../../vdt.js';
+import { seeThrough } from '../../dieCut/seeThrough.js';
+import { traceDiePaths } from '../../dieCut/path2d.js';
+import { restoreContext, saveContext } from '../contextState.js';
 
 /** A page's painted image, by document page index; `undefined` when the
  *  host has none (the layer is then filled with the paper's colour). */

@@ -21,11 +21,7 @@ export { cropMarkSegments } from './paint/cropMarks.js';
 export * from './color/index.js';
 export { preflightDocument, placedImageResolutions, type PreflightIssue, type PreflightKind, type PreflightOptions, type PreflightSeverity, type PlacedImageResolution } from './checks/preflight.js';
 export {
-  contrastDocument,
-  contrastPairs,
-  contrastMedia,
-  contrastRatio,
-  contrastThreshold,
+  contrastDocument, contrastPairs, contrastMedia, contrastRatio, contrastThreshold,
   relativeLuminance,
   isLargeText,
   blendColors,
@@ -161,9 +157,7 @@ export { layoutDesignSlot } from './design/layout.js';
 export { pathMarkerOutline, pathSvgData, markerSvgData, markerSvgElement, colorWithOpacity, quadToCubic, pathInkBox, pathHit, offsetPathBlock, translatedPathBlock, pathBlockColors, recolorPathBlock } from './design/pathBlock.js';
 export type { PathMarkerOutline } from './design/pathBlock.js';
 export { parseSvgPath, arcToCubics } from './design/svgPath.js';
-// Die-cuts (#1565): holes, leaf outlines, what shows through.
-export { pathBounds, mirrorPath, dieMetricsOf, dieShapePath, dieShapeInBox, leafOutline, leafSide, pageBeneath, parsePageList, buildDieCuts, seeThrough, traceDiePaths, dieCutPath2D } from './dieCut/index.js';
-export type { DieCutMetrics, DiePlacement, SeeThroughLayer, PathSink } from './dieCut/index.js';
+export { pathBounds, mirrorPath, dieMetricsOf, dieShapePath, dieShapeInBox, leafOutline, leafSide, pageBeneath, parsePageList, buildDieCuts, seeThrough, traceDiePaths, dieCutPath2D, type DieCutMetrics, type DiePlacement, type SeeThroughLayer, type PathSink } from './dieCut/index.js';
 export type { SvgPathParse } from './design/svgPath.js';
 export { facingSide, CONNECTOR_ROUTINGS, CONNECTOR_CAPS, CONNECTOR_SIDES, DEFAULT_CONNECTOR_WIDTH, connectorPaintsOver } from './design/connector.js';
 export type { ConnectorRect } from './design/connector.js';
@@ -202,8 +196,7 @@ export type {
   ResolvedDesignImageElement,
   DesignPathElement,
   ResolvedDesignPathElement,
-  DesignCutElement,
-  ResolvedDesignCut,
+  DesignCutElement, ResolvedDesignCut,
   HeadingCounters,
   ResourceNumberEntry,
   DocumentMetadata,

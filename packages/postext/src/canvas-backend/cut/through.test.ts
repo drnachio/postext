@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { VDTDieCut, VDTDocument, VDTPage, VDTPathCommand } from '../vdt.js';
+import type { VDTDieCut, VDTDocument, VDTPage, VDTPathCommand } from '../../vdt.js';
 import { composeThrough, cutDieShapes, paintThrough } from './through.js';
-import { dieCutClipDecl } from '../html-backend/dieCut.js';
+import { dieCutClipDecl } from '../../html-backend/dieCut.js';
 
 // The see-through composite (#1567): what it cuts out, and in what order it
 // clips and draws, on a context that records its calls.

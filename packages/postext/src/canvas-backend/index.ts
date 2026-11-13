@@ -25,8 +25,8 @@ import { resetContextState, restoreContext, saveContext } from './contextState.j
 import { resetWordSpacing } from './contextText.js';
 import { paperPaint, screenFinishPaints } from './finish/paint.js';
 import { paintFinishPreview, type FinishPreviewMode } from './finish/preview.js';
-import { cutDieShapes, paintThrough, type PageImageSource } from './through.js';
-export { composeThrough, cutDieShapes, type ComposeThroughOptions, type PageImageSource } from './through.js';
+import { cutDieShapes, paintThrough, type PageImageSource } from './cut/through.js';
+export { composeThrough, cutDieShapes, type ComposeThroughOptions, type PageImageSource } from './cut/through.js';
 export {
   registerResourceImage,
   unregisterResourceImage,
