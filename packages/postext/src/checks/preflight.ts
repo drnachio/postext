@@ -18,6 +18,8 @@
  * - Colours whose separation exceeds the ink limit.
  * - Spot inks: the plates the job adds, from its colours and the inks its
  *   SVGs name, and names a plate cannot carry (`preflightInks.ts`).
+ * - Die-cuts: text by a hole, a hole by the trim or across the fold, a die
+ *   nobody defined (`preflightDieCuts.ts`).
  * - Text inside the safe zone near the trim (a figure's labels too, #902), and boxes or pictures that
  *   stop short of the trim by less than `bleedSnap` without bleeding.
  */
@@ -30,6 +32,7 @@ import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
 import { platesIssues } from './preflightPlates.js';
 import { finishIssues } from './preflightFinishes.js';
+import { dieCutIssues } from './preflightDieCuts.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -116,6 +119,16 @@ export type PreflightIssue = {
   | { kind: 'plateUndefined'; plate: string }
   | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
   | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
+  /** Text within its hole's wrap gap of a die-cut edge, or under the hole
+   *  (#1565): `distanceMm` from the edge (0: over it). */
+  | { kind: 'dieCutText'; die: string; text: string; distanceMm: number }
+  /** A hole past the trim (critical, `distanceMm` below 0) or within 3 mm
+   *  of it (warning). */
+  | { kind: 'dieCutTrim'; die: string; distanceMm: number }
+  /** A hole that reaches the spine fold. */
+  | { kind: 'dieCutGutter'; die: string }
+  /** A page or a `:::diecut` names a die the config does not have. */
+  | { kind: 'dieCutUnknown'; die: string }
 );
 
 /** The kinds of problem preflight reports. */
@@ -588,6 +601,9 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
       if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
     }
   }
+
+  // Die-cuts (#1565): holes by the trim, the fold or the text.
+  if (pf.enabled) out.push(...dieCutIssues(doc));
 
   // A job on a few plates: the colours it moves onto them.
   if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));

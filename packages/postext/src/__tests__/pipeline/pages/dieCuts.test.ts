@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/index.js';
 import { collectContentWarnings } from '../../../pipeline/contentWarnings.js';
 import { collectConfigWarnings } from '../../../checks/configWarnings.js';
+import { preflightDocument } from '../../../checks/preflight.js';
 import { pathBounds } from '../../../dieCut/index.js';
 import { flattenPath, rectPolygonDistance } from '../../../dieCut/geometry.js';
 import type { PageTemplate } from '../../../composed/types.js';
@@ -145,5 +146,41 @@ describe('a template cut element', () => {
     expect(page.dieCut!.holes[0]!.filter((c) => c.op === 'C')).toHaveLength(4);
     const mate = at % 2 === 0 ? at + 1 : at - 1;
     if (doc.pages[mate]) expect(doc.pages[mate]!.dieCut?.sources).toEqual(['win']);
+  });
+});
+
+describe('preflight of die-cuts', () => {
+  const shapes = [
+    { id: 'porthole', shape: 'circle' as const, x: pt(36), y: pt(120), width: pt(100), height: pt(100), wrap: { gap: pt(8) } },
+    // Under the text, and no wrap: the text runs over it.
+    { id: 'blind', shape: 'rect' as const, x: pt(150), y: pt(300), width: pt(40), height: pt(40), wrap: false as const },
+    // Past the fore edge of a recto.
+    { id: 'thumb', shape: 'rect' as const, x: pt(340), y: pt(20), width: pt(30), height: pt(20), wrap: false as const },
+    // At the spine of a recto.
+    { id: 'spine', shape: 'rect' as const, x: pt(2), y: pt(400), width: pt(20), height: pt(20), wrap: false as const },
+  ];
+  const config: PostextConfig = {
+    ...base,
+    dieCuts: { shapes, pages: [{ pages: '1', die: 'porthole' }, { pages: '3', die: 'blind' }, { pages: '5', die: 'thumb' }, { pages: '7', die: 'spine' }, { pages: '2', die: 'ghost' }] },
+  };
+  const doc = buildDocument({ markdown: filler('Word', 40) }, config);
+  const issues = preflightDocument(doc);
+  const of = (kind: string, die: string) => issues.filter((i) => i.kind === kind && 'die' in i && i.die === die);
+
+  it('finds no text by a hole the text wraps round', () => {
+    expect(of('dieCutText', 'porthole')).toEqual([]);
+  });
+  it('finds the text over a hole that does not wrap', () => {
+    expect(of('dieCutText', 'blind').length).toBeGreaterThan(0);
+    expect(of('dieCutText', 'blind')[0]).toMatchObject({ severity: 'warning', pageIndex: 2, distanceMm: 0 });
+  });
+  it('finds a hole past the trim, and one at the fold', () => {
+    expect(of('dieCutTrim', 'thumb')[0]).toMatchObject({ severity: 'critical', pageIndex: 4 });
+    expect(of('dieCutGutter', 'spine')[0]).toMatchObject({ severity: 'critical', pageIndex: 6 });
+    // The verso of the spine hole's leaf: the hole is at its spine too.
+    expect(of('dieCutGutter', 'spine').map((i) => i.pageIndex)).toEqual([6, 7]);
+  });
+  it('names a die nobody defined', () => {
+    expect(of('dieCutUnknown', 'ghost')).toHaveLength(1);
   });
 });
