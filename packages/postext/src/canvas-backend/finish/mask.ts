@@ -21,7 +21,11 @@
  *    down first on press, under everything, so no later paint or picture
  *    knocks it out (#1579).
  * 3. *varnish*: a varnish in its sheen, nothing else: it goes down last,
- *    over everything.
+ *    over everything. Two varnishes that meet (a spot gloss over a soft-
+ *    touch sheet, #1587) lie in press order, the ink table's: each is
+ *    painted on its own and laid over the ones before, so the one printed
+ *    last is the surface, whichever the page painted last (a soft touch
+ *    carried by the footer would otherwise cover the gloss of the page).
  * The three are packed into one RGBA buffer on the CPU, the varnish's sheen
  * merged into the first paint's with `lighten` (the larger wins).
  */
@@ -30,7 +34,7 @@ import type { VDTDocument, VDTPage } from '../../vdt.js';
 import { authoredSpotColors, overprintColors } from '../../color/authored.js';
 import { finishInks, type FinishInk } from '../../color/finishInks.js';
 import { finishSheen, sheenLevel } from '../../color/finishKinds.js';
-import { printedSpot } from '../../color/inks.js';
+import { inkKey, printedSpot } from '../../color/inks.js';
 import type { ResolvedPrintInk } from '../../types.js';
 import { KNOCK_OUT, NO_PAINT, overridePaints, parsePaint, rgbaPaint, withScreenFinishesOff, type PaintValue } from './paint.js';
 import { setFinishImageHook } from '../renderResourceBlock/images.js';
@@ -71,6 +75,30 @@ export interface FinishMaskOptions {
    * and left out of the white's and the varnish's.
    */
   images?: (fileId: string, pass: FinishMaskPass) => CanvasImageSource | undefined;
+  /** The document's varnishes in press order, first down first, each the
+   *  hexes of one plate (see {@link varnishLayers}). Default: one layer,
+   *  in the order the page paints them. */
+  varnishOrder?: readonly (readonly string[])[];
+}
+
+/**
+ * The varnishes of `inks` by plate, in press order: the order the ink
+ * table lists them (a later entry goes down later, over the earlier), the
+ * plates it does not list after, in the colours' order. The tints of one
+ * varnish share its plate.
+ */
+export function varnishLayers(inks: ReadonlyMap<string, FinishInk>, table: readonly ResolvedPrintInk[] = []): string[][] {
+  const plates = new Map<string, string[]>();
+  for (const [hex, ink] of inks) {
+    if (ink.kind !== 'varnish') continue;
+    const key = inkKey(ink.name);
+    plates.set(key, [...(plates.get(key) ?? []), hex]);
+  }
+  const rank = (key: string) => {
+    const i = table.findIndex((t) => inkKey(t.pdfName) === key || inkKey(t.name) === key);
+    return i < 0 ? table.length : i;
+  };
+  return [...plates.entries()].map(([key, hexes], i) => ({ hexes, at: rank(key), i })).sort((a, b) => a.at - b.at || a.i - b.i).map((p) => p.hexes);
 }
 
 type Painter = (canvas: FinishMaskCanvas) => void;
@@ -114,7 +142,10 @@ export function inkMaskColor(ink: FinishInk): [number, number, number] {
 export function maskPaintMap(pass: FinishMaskPass, inks: ReadonlyMap<string, FinishInk>, overprint: ReadonlySet<string>): (value: PaintValue) => PaintValue {
   const black = (alpha: number) => rgbaPaint(0, 0, 0, alpha);
   return (value) => {
-    if (value === KNOCK_OUT) return value;
+    // The sheet and a knocked-out picture: black in the first paints. The
+    // varnish goes down over them: it leaves its paint transparent there,
+    // so varnishes painted apart lie over one another (#1587).
+    if (value === KNOCK_OUT) return pass === 'varnish' ? NO_PAINT : value;
     const p = parsePaint(value);
     // A gradient or a pattern: an ordinary paint that knocks out the
     // first paint's inks; the white and the varnish it leaves alone.
@@ -208,7 +239,7 @@ export function paintFinishMask(
   paint: Painter,
   inks: ReadonlyMap<string, FinishInk>,
   overprint: ReadonlySet<string>,
-  options: Pick<FinishMaskOptions, 'createCanvas' | 'images'> = {},
+  options: Pick<FinishMaskOptions, 'createCanvas' | 'images' | 'varnishOrder'> = {},
 ): FinishMask | undefined {
   const createCanvas = options.createCanvas ?? defaultCanvas;
   const kinds = new Set([...inks.values()].map((i) => i.kind));
@@ -216,8 +247,8 @@ export function paintFinishMask(
   if (kinds.has('metallic') || kinds.has('foil') || kinds.has('fluorescent')) passes.push('inks');
   if (kinds.has('white')) passes.push('white');
   if (kinds.has('varnish')) passes.push('varnish');
-  const layers = new Map<FinishMaskPass, Uint8ClampedArray>();
-  for (const pass of passes) {
+  /** One paint of the page with `own` as its special inks. */
+  const paintPass = (pass: FinishMaskPass, own: ReadonlyMap<string, FinishInk>): Uint8ClampedArray | undefined => {
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d') as Ctx2D | null;
     if (!ctx) return undefined;
@@ -230,7 +261,7 @@ export function paintFinishMask(
           return img;
         }
       : null);
-    const undoPaints = overridePaints(ctx, maskPaintMap(pass, inks, overprint));
+    const undoPaints = overridePaints(ctx, maskPaintMap(pass, own, overprint));
     const undoImages = overrideImages(ctx, pass, passThrough, createCanvas);
     try {
       withScreenFinishesOff(() => paint(canvas));
@@ -241,13 +272,56 @@ export function paintFinishMask(
     }
     if (canvas.width !== width || canvas.height !== height) return undefined;
     try {
-      layers.set(pass, ctx.getImageData(0, 0, width, height).data);
+      return ctx.getImageData(0, 0, width, height).data;
     } catch {
       // A canvas that cannot be read back has no mask to give.
       return undefined;
     }
+  };
+  const layers = new Map<FinishMaskPass, Uint8ClampedArray>();
+  for (const pass of passes) {
+    const order = pass === 'varnish' ? (options.varnishOrder ?? []).filter((hexes) => hexes.some((h) => inks.has(h))) : [];
+    let data: Uint8ClampedArray | undefined;
+    if (order.length < 2) data = paintPass(pass, inks);
+    else {
+      // Each varnish on its own, laid over the ones printed before it.
+      const plates: Uint8ClampedArray[] = [];
+      for (const hexes of order) {
+        const own = new Map([...inks].filter(([hex, ink]) => ink.kind !== 'varnish' || hexes.includes(hex)));
+        const plate = paintPass(pass, own);
+        if (!plate) return undefined;
+        plates.push(plate);
+      }
+      data = stackVarnishes(plates);
+    }
+    if (!data) return undefined;
+    layers.set(pass, data);
   }
   return packFinishMask(width, height, layers);
+}
+
+/**
+ * Varnish paints laid one over another, first down first: each covers the
+ * ones under it as far as it covers a pixel. The result's G is the sheen
+ * seen at the surface, its A the coverage of all of them (G already
+ * weighted by it, A full where anything lies).
+ */
+export function stackVarnishes(plates: readonly Uint8ClampedArray[]): Uint8ClampedArray {
+  const out = new Uint8ClampedArray(plates[0]!.length);
+  for (let i = 0; i < out.length; i += 4) {
+    let g = 0;
+    let a = 0;
+    for (const p of plates) {
+      const pa = p[i + 3]! / 255;
+      g = p[i + 1]! * pa + g * (1 - pa);
+      a = pa + a * (1 - pa);
+    }
+    // Sheen as packFinishMask reads it (G × A / 255): its value over the
+    // pixel, at the coverage the stack has.
+    out[i + 1] = a > 0 ? Math.round(g / a) : 0;
+    out[i + 3] = Math.round(a * 255);
+  }
+  return out;
 }
 
 /** Pack the paints into one RGBA buffer; `undefined` when every channel
@@ -315,5 +389,6 @@ export function renderFinishMask(page: VDTPage, doc: VDTDocument, options: Finis
   const width = Math.max(1, Math.round((page.width - 2 * inset) * scale));
   const height = Math.max(1, Math.round((page.height - 2 * inset) * scale));
   const paint: Painter = (canvas) => renderPageToCanvas(page, doc, canvas as unknown as HTMLCanvasElement, { scale, ...(options.trim ? { trim: true } : {}) });
-  return paintFinishMask(width, height, paint, inks, overprintHexes(doc), options);
+  const table = (doc.config as { print?: { inks?: ResolvedPrintInk[] } }).print?.inks ?? [];
+  return paintFinishMask(width, height, paint, inks, overprintHexes(doc), { varnishOrder: varnishLayers(inks, table), ...options });
 }

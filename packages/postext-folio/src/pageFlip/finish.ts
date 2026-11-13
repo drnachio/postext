@@ -256,7 +256,12 @@ export const FINISH_EMISSIVE = /* glsl */ `
 
 /** The clear coat a varnish lays (after three.js has set the stock's): a
  *  gloss varnish a hard, sharp coat, a satin one softer, a matte or soft-
- *  touch one next to none. A bare metal takes none. */
+ *  touch one next to none. A bare metal takes none. Under a coat the print
+ *  has no surface of its own (the varnish wets it): the paper's own
+ *  reflection goes, and all the light the surface sends back is the
+ *  coat's, a sharp image of the lamps over a deep print (#1587). Left on,
+ *  the stock's blurred reflection laid a milky veil over the photographs a
+ *  spot gloss should deepen. */
 export const FINISH_COAT = /* glsl */ `
   #ifdef USE_CLEARCOAT
   if (finishMask.g > 0.0) {
@@ -264,6 +269,9 @@ export const FINISH_COAT = /* glsl */ `
     float w = finishCover * (1.0 - finishMask.r);
     material.clearcoat = mix(material.clearcoat, s, w);
     material.clearcoatRoughness = mix(material.clearcoatRoughness, min(1.0, max(mix(0.6, 0.03, s), 0.0525) + geometryRoughness), w);
+    float wet = 1.0 - s * w;
+    material.specularColor *= wet;
+    material.specularF90 *= wet;
   }
   #endif
 `;

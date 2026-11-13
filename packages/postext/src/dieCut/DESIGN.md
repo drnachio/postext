@@ -51,6 +51,9 @@ The mask is painted with the ordinary canvas painter through instance-level over
 1. **Pass 1, inks that knock out.** A special hex is painted in its mask colour. Any other paint is painted black,
    unless it overprints (then it is skipped). Pictures paint black over their box. A varnish is skipped.
 2. **Pass 2, varnish.** Only varnish hexes are painted. Pass 2 is merged into pass 1's G channel with `lighten`.
+   Where two varnishes meet they lie in press order, the ink table's (a later entry over an earlier, the unlisted
+   after): each is painted on its own and stacked by coverage (`varnishLayers`, `stackVarnishes`), so a soft touch
+   carried by the footer does not cover the page's spot gloss (#1587). The sheet's knock-out is transparent there.
 3. **White.** It is coverage in A, from a paint of white inks only into a separate canvas: white goes down first on
    press, so no later paint or picture knocks it out (#1579). The paints are packed into one RGBA buffer on the CPU.
 
