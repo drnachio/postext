@@ -1,7 +1,7 @@
 // Numbers as the line breaker sees them (#1549): a figure in a cell
 // narrower than it is never divided as a word is.
-import { measureTextWidth } from './canvas.js';
-import { WORDS_AND_SPACES_RE, isBreakingSpaceRun } from './spaces.js';
+import { measureTextWidth } from '../canvas.js';
+import { WORDS_AND_SPACES_RE, isBreakingSpaceRun } from '../spaces.js';
 
 /**
  * A number as one word of the text: what may open it (brackets and quotes,

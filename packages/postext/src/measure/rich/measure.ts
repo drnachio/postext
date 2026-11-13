@@ -20,7 +20,7 @@ import { getMeasureWritingMode, withMeasureWritingMode, measuringVertically, get
 import { isBlankText } from '../spaces.js';
 import { raggedStretchPx } from '../breakRules.js';
 import { joiningScriptIn } from '../rtl/joining.js';
-import { isNumberWord } from '../numbers.js';
+import { isNumberWord } from './numbers.js';
 import { spanLanguages, applySegmentLanguages } from '../rtl/bidiLines.js';
 import { justifyLinesWithKashida } from '../rtl/kashida.js';
 import { sidewaysNumberSpans, setLabelTabs, tokenSegment } from './spanTokens.js';

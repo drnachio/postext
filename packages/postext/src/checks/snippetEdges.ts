@@ -5,7 +5,7 @@
 // the rules too (`lineEdgeBreaking`); what `'warn'` and `'avoid'` report.
 // And the numbers too wide for their line there (#1549).
 import type { VDTBlock, VDTDocument, VDTLine, VDTPage } from '../vdt.js';
-import { isNumberWord } from '../measure/numbers.js';
+import { isNumberWord } from '../measure/rich/numbers.js';
 import { pageIsVertical } from '../vdt/flowFrames.js';
 import { lineStacks } from './stacks.js';
 import { spaceBreakBetween } from './spaceBreaks.js';

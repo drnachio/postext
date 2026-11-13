@@ -2,7 +2,7 @@ import { describe, it, expect, afterEach } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { measureRichSnippet } from '../../measure/rich.js';
 import { measureBlock } from '../../measure/index.js';
-import { isNumberWord } from '../../measure/numbers.js';
+import { isNumberWord } from '../../measure/rich/numbers.js';
 import { initHyphenator } from '../../measure/font.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import type { ContentWarning, ResolvedResourceBlock, VDTDocument, VDTLine } from '../../vdt.js';

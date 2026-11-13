@@ -9,7 +9,7 @@ import { graphemeCount } from '../graphemes.js';
 import { measuringVertically } from '../vertical.js';
 import { NO_BREAK_SPACES } from '../spaces.js';
 import { isDash, breaksAfterDash, breaksAfterHardHyphen, slashBreakIndices, getSlashBreaks } from '../breakRules.js';
-import { isNumberWord } from '../numbers.js';
+import { isNumberWord } from './numbers.js';
 import { syllabify, type SoftBreak } from './syllables.js';
 
 import { endsInsideGeminate, GEMINATE_DOT, withLineEndHyphen } from '../geminate.js';

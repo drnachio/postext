@@ -22,7 +22,7 @@ import { needsBidi } from '../writing/bidi.js';
 import { getMeasureScriptContext, faceReadsScript } from './script.js';
 import { prepareInLanguage } from './pretextLanguage.js';
 import { UNIT_SQUARE_RE, holdsLetterlessWord, holdsLetterlessPiece, FIGURE_SPACE, hasOverwideGluedGroup, hasOverwideMixedWord, hasOverwideJoiningWord, hasOverwideCompoundPart, measuresWordsWhole } from './plain/overwide.js';
-import { hasOverwideNumber } from './numbers.js';
+import { hasOverwideNumber } from './rich/numbers.js';
 import { geminateDotWidth, getHyphenWidth, hasOverfullLine, throughGeminate, extractSegments, findLastTextSegmentIndex, geminateDotRoom } from './plain/segments.js';
 
 export { hasOverfullLine, computeJustifiedSpaceRatio } from './plain/segments.js';
