@@ -283,6 +283,7 @@ const PANEL_NOTED = [
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
+  [/^DesignCutElement\.leaves$/, 'no cut element editor yet: SlotEditor keeps a template cut element as written (Die-cuts lists the dies)'],
 ];
 const rows = fields.map((f) => ({
   key: `${f.owner}.${f.field}`,

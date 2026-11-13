@@ -51,7 +51,7 @@ import sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
-KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper"}
+KNOWN_CONTAINERS = {"callout", "paragraphs", "part", "columns", "paper", "diecut"}
 # The page numbering styles `:::numbering{format=…}` takes (packages/postext
 # src/numerals/numbering.ts NumeralStyle): Latin, East Asian (Chinese, Japanese) and
 # Arabic-script.
@@ -2051,6 +2051,8 @@ def style_ids(cfg: dict) -> dict[str, set[str]]:
         "tables": ids("tableStyles", set()),
         "chapter": ids("chapterStyles", set()),
         "smallChip": small_cap_chip_styles(cfg),
+        "die": {x.get("id") for x in ((cfg.get("dieCuts") or {}).get("shapes") or []) if isinstance(x, dict)}
+        if isinstance(cfg.get("dieCuts"), dict) else set(),
     }
 
 
@@ -2624,6 +2626,16 @@ def check_markdown(name: str, text: str, idx: int, ids: dict[str, set[str]], res
                                 rep.warn(where, f"paper shade {v!r} is neither a #rrggbb colour nor a colorPalette id (dropped)")
                         elif k != "id":
                             rep.warn(where, f"paper attribute {k!r} is unknown (dropped)")
+                elif fname == "diecut":
+                    # Die-cuts (#1571): the die is config (dieCuts.shapes); the Markdown only names it.
+                    die = attrs.get("die", "").strip()
+                    dies = ids.get("die", set())
+                    if die not in dies:
+                        rep.error(where, f"die {die!r} is not in dieCuts.shapes {sorted(dies)} (no cut, dieCutUnknown)")
+                    for k in attrs:
+                        if k not in ("die", "id", "slot"):
+                            rep.warn(where, f"diecut attribute {k!r} is unknown (dropped): the die's shape and place "
+                                            "are written in dieCuts.shapes")
                 stack.append((fname, i + 1))
             elif fname in KNOWN_DIRECTIVES:
                 if fname != "space" and any(s[0] == "callout" for s in stack):
