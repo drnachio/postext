@@ -1,8 +1,9 @@
 // Die-cuts in the HTML viewer (#1567): a page's holes and its leaf's
-// outline as the page's `clip-path`, merged with the bleed clip. What is
-// behind the page shows through a hole: on the print leaf (composed pages)
-// that is the viewer's background, as on the screen relayout, whose pages
-// are not the print pages.
+// outline as the page's `clip-path`, merged with the bleed clip. On the
+// print leaf (composed pages) the pages beneath are drawn in the holes by a
+// layer over the page (`through.ts`), and the page is clipped to its
+// outline alone; on the screen relayout, whose pages are not the print
+// pages, a hole shows what is behind the page.
 
 import type { VDTPage, VDTPathCommand } from '../vdt.js';
 
@@ -41,9 +42,12 @@ export function svgPathData(paths: readonly (readonly VDTPathCommand[])[]): stri
  * leaf's outline (else the bleed box, `bleedInset` inside the sheet, or the
  * whole sheet), less every hole, as one even-odd path. `undefined` for a
  * page nothing cuts. The path data holds only numbers and command letters.
+ * `holes: false` keeps the holes (a layer over them draws what shows
+ * through): only an outline is then cut, `undefined` without one.
  */
-export function dieCutClipDecl(page: Pick<VDTPage, 'dieCut' | 'width' | 'height'>, bleedInset = 0): string | undefined {
-  const cut = page.dieCut;
+export function dieCutClipDecl(page: Pick<VDTPage, 'dieCut' | 'width' | 'height'>, bleedInset = 0, holes = true): string | undefined {
+  const found = page.dieCut;
+  const cut = found && !holes ? { ...found, holes: [] } : found;
   if (!cut || (cut.holes.length === 0 && !cut.outline)) return undefined;
   const b = Math.max(0, bleedInset);
   const keep: VDTPathCommand[][] = cut.outline ?? [[
