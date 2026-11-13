@@ -360,7 +360,7 @@ the bundle).
 - `postext-idml` also reads: `idmlToPostext(bytes, { layout })` returns chapters, configuration,
   resources and a report (verdict, findings with counts) of what Postext has no equivalent for. It
   is deterministic and brings a book that Postext exported back with the same lines, faithful as
-  composed pages (postext ≥ 1.83.2: its character styles, boxes and tints come back; not yet as a
+  composed pages (postext ≥ 1.84.0: its character styles, boxes and tints come back; not yet as a
   flowing book, #1559); a document made in InDesign comes through with the losses the report lists.
   The importer also cuts a text frame behind a Jump Object or Jump to Next Column wrap into chained
   frames above and below the object (≥ 1.82.2), splits a package's font collections (`.ttc`,

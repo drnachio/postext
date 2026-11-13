@@ -93,7 +93,7 @@ Il `.idml` non contiene i font né le immagini collegate. L’importatore elenca
 
 InDesign sa fare cose che in Postext non hanno un equivalente, come il testo su tracciato, una cella ruotata, una diagonale in una cella, gli stili GREP e nidificati o gli effetti di trasparenza. Ognuna diventa una voce del rapporto, con un conteggio e un esempio: una *perdita* quando viene tralasciata, un *avviso* quando viene resa in modo approssimato (le righe di piè di una tabella, una sfumatura, una contornatura sul profilo). Il rapporto finisce con un verdetto:
 
-- **`faithful`**: niente è andato perso né è stato approssimato. Un libro esportato da Postext torna fedele come pagine composte: ogni pagina con le sue cornici dove le ha messe l’esportazione, e gli stili di paragrafo, gli stili di carattere, i riquadri e le immagini del libro (da postext 1.83.2). Non torna come libro a flusso: l’esportazione dà a ogni paragrafo una cornice sua, senza concatenamento tra le cornici, quindi `--layout flow` segnala la grafica di pagina che non può portare.
+- **`faithful`**: niente è andato perso né è stato approssimato. Un libro esportato da Postext torna fedele come pagine composte: ogni pagina con le sue cornici dove le ha messe l’esportazione, e gli stili di paragrafo, gli stili di carattere, i riquadri e le immagini del libro (da postext 1.84.0). Non torna come libro a flusso: l’esportazione dà a ogni paragrafo una cornice sua, senza concatenamento tra le cornici, quindi `--layout flow` segnala la grafica di pagina che non può portare.
 - **`approximate`**: alcune cose sono state rese in modo approssimato, e niente è stato tralasciato.
 - **`lossy`**: qualcosa è stato tralasciato.
 
