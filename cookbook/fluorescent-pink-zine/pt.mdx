@@ -1,0 +1,64 @@
+---
+title: "Um fanzine em preto e rosa fluorescente"
+summary: "Um trabalho em duas chapas, preto e um rosa fluorescente: fotos em duotone, um preto que sobreimprime e um rosa que brilha no Folio."
+plain: "Uma pequena revista de música impressa com só duas tintas, preto e um rosa neon bem vivo. As fotos saem em preto e rosa, o rosa brilha na visualização 3D, e o arquivo de impressão tem exatamente duas chapas."
+description: "Um fanzine de música em duas chapas no Postext: uma tinta fluorescente, fotos em duotone por curvas, preto que sobreimprime e o rosa brilhando no Folio."
+question: "Como imprimo um fanzine só em preto e rosa fluorescente, com as fotos em duotone?"
+aliases: ["tinta fluorescente", "rosa fluorescente", "rosa neon", "neon", "impressão em duas cores", "duotone", "fanzine", "risografia", "sobreimpressão do preto", "fluorescent ink"]
+pageNotes: { "1": "A capa: o público de um show num porão em preto e rosa, uma faixa preta embaixo com PINK NOISE em maiúsculas enormes de rosa fluorescente e as chamadas em branco.", "3": "A abertura da entrevista: um guitarrista num palco pequeno em preto e rosa, sangrando, uma faixa rosa com o chapéu e THREE CHORDS AND A BORROWED AMP em preto, e duas colunas com as perguntas em rosa.", "6": "A agenda: um box rosa-claro com April, May e June em três colunas, cada show com um sinal de mais rosa, e dois parágrafos embaixo." }
+---
+
+## O que você vai compor
+
+O número 7 de *Pink Noise*, um fanzine de música inventado: oito páginas A5 grampeadas, impressas numa máquina de dois tambores. Um imprime o preto e o outro um rosa fluorescente, e nada mais chega ao papel. O rosa compõe o título da capa, a faixa da abertura da entrevista, as perguntas, o olho e a quarta capa; uma retícula de 30 % preenche o box da agenda. As três fotografias são originais em cinza que saem em duotone, preto nas sombras e rosa nos meios-tons. O Folio deixa o fanzine aberto sobre uma mesa escura, onde o rosa se destaca do papel.
+
+## Preparo
+
+### 1 · Duas chapas, e o rosa é fluorescente
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `print.plates` nomeia as chapas que o trabalho imprime, `Black` e `PANTONE 806 C`, e o PDF tem essas duas separações e nenhuma outra ([impressão em duas cores](/pt/docs/configuration-pdf-output#cores-especiais)). O rosa é uma cor especial; o seu acabamento vai na tabela de tintas, como iria no pedido à gráfica, e faz dele uma tinta fluorescente: ganha uma chapa própria e o Folio o ilumina mais que o papel ([acabamentos](/pt/docs/special-inks-die-cuts#acabamentos)). `images` põe as fotografias nas duas chapas, e `CURVES` dá forma a cada uma: o preto só nas sombras, o rosa nos meios-tons e diminuindo nos escuros, para que o rosa nunca suje o preto.
+
+### 2 · A tela também mostra o duotone
+
+<Excerpt region="duotone" />
+
+O canvas e o Folio pintam uma imagem como o seu arquivo é, então uma foto cinza apareceria cinza ali, embora seja impressa em rosa e preto. A receita registra uma segunda imagem para a tela: o mesmo cinza lido pelas mesmas `CURVES`, o preto multiplicado sobre o rosa como as tintas se sobrepõem no papel. O PDF continua recebendo o original cinza, de `imageBytes`, e faz a separação ele mesmo.
+
+### 3 · Preto sobre rosa
+
+<Excerpt region="cover" />
+
+O preto é só a chapa K, definido como cor CMYK com `overprint: true`. Onde o texto preto ou a faixa preta da capa encontram o rosa, ele é impresso por cima em vez de vazá-lo, e uma folha que saia um pouco fora de registro não mostra nenhum filete branco. Já o título rosa vaza o preto, como deve fazer o texto sobre uma faixa escura.
+
+### 4 · O Folio sobre uma mesa escura
+
+<Excerpt region="folio" />
+
+Uma tinta fluorescente precisa de um pouco de escuridão em volta para ser lida como tal. O fanzine fica aberto na entrevista sobre uma superfície lisa e escura, sob a luz chapada de um céu nublado, e a faixa rosa e o rosa da foto se destacam do papel branco.
+
+## Variações
+
+### Imprima as fotos só em preto
+
+Com uma única chapa para as imagens, as fotos saem em tons de cinza simples no preto, e o rosa fica para o texto e os boxes.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Um amarelo fluorescente no lugar
+
+Troque a tinta e a sua cor na tela; as chapas, o acabamento e as curvas seguem o nome.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Renomeie da mesma forma `PANTONE 806 C` em `CURVES`, em `PRINT` e nos hex da paleta.
+
+## Erros comuns
+
+- Uma cor que nenhuma das duas chapas imprime é projetada sobre as duas tintas. Um azul de quadricromia esquecido num estilo sai como um rosa enegrecido; leia os avisos `offPlateColor` da verificação de pré-impressão antes de enviar o arquivo.
+- Uma tinta fluorescente não tem uma cor alternativa CMYK fiel. Uma prova ou um PDF em RGB mostram o hex, mais apagado que a tinta no papel.

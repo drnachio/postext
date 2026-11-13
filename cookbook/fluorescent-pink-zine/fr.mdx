@@ -1,0 +1,64 @@
+---
+title: "Un fanzine en noir et rose fluo"
+summary: "Un travail sur deux plaques, noir et un rose fluorescent : photos en duotone, un noir en surimpression et un rose qui brille dans Folio."
+plain: "Un petit magazine de musique imprimé avec deux encres seulement, du noir et un rose néon très vif. Les photos sortent en noir et rose, le rose brille dans la vue 3D, et le fichier d’impression a exactement deux plaques."
+description: "Un fanzine musical sur deux plaques dans Postext : une encre fluo, des photos en duotone par courbes, un noir en surimpression, le rose qui brille dans Folio."
+question: "Comment imprimer un fanzine en noir et rose fluo seulement, avec les photos en duotone ?"
+aliases: ["encre fluorescente", "rose fluo", "fluo", "néon", "deux couleurs", "bichromie", "duotone", "fanzine", "risographie", "surimpression du noir", "fluorescent ink"]
+pageNotes: { "1": "La couverture : le public d’un concert en sous-sol en noir et rose, une bande noire dessous avec PINK NOISE en énormes capitales rose fluo et les accroches en blanc.", "3": "L’ouverture de l’entretien : un guitariste sur une petite scène en noir et rose à fond perdu, une bande rose avec le surtitre et THREE CHORDS AND A BORROWED AMP en noir, et deux colonnes avec les questions en rose.", "6": "L’agenda : un encadré rose pâle avec April, May et June sur trois colonnes, chaque concert précédé d’un signe plus rose, et deux paragraphes dessous." }
+---
+
+## Ce que vous allez composer
+
+Le numéro 7 de *Pink Noise*, un fanzine musical inventé : huit pages A5 piquées à cheval, imprimées sur une presse à deux tambours. L’un imprime le noir, l’autre un rose fluorescent, et rien d’autre n’atteint le papier. Le rose compose le titre de couverture, la bande de l’ouverture de l’entretien, les questions, la citation en exergue et la quatrième de couverture ; une trame à 30 % remplit l’encadré de l’agenda. Les trois photographies sont des originaux en gris qui s’impriment en duotone, le noir dans les ombres et le rose dans les demi-teintes. Folio pose le fanzine ouvert sur une table sombre, où le rose se détache du papier.
+
+## Préparation
+
+### 1 · Deux plaques, et le rose est fluo
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. `print.plates` nomme les plaques qu’imprime le travail, `Black` et `PANTONE 806 C`, et le PDF a ces deux séparations et aucune autre ([impression en deux couleurs](/fr/docs/configuration-pdf-output#tons-directs)). Le rose est un ton direct ; sa finition figure dans la table des encres, comme elle figurerait sur la commande à l’imprimeur, et en fait une encre fluorescente : elle a sa propre plaque et Folio l’éclaire plus que le papier ([finitions](/fr/docs/special-inks-die-cuts#finitions)). `images` place les photographies sur les deux plaques, et `CURVES` donne sa forme à chacune : le noir seulement dans les ombres, le rose dans les demi-teintes et plus faible dans les tons sombres, pour que le rose ne salisse jamais le noir.
+
+### 2 · L’écran montre aussi le duotone
+
+<Excerpt region="duotone" />
+
+Le canevas et Folio peignent une image telle qu’est son fichier : une photo grise y paraîtrait grise, alors qu’elle s’imprime en rose et noir. La recette enregistre une seconde image pour l’écran : le même gris lu à travers les mêmes `CURVES`, le noir multiplié sur le rose comme les encres se superposent sur le papier. Le PDF reçoit toujours l’original gris, depuis `imageBytes`, et le sépare lui-même.
+
+### 3 · Le noir sur le rose
+
+<Excerpt region="cover" />
+
+Le noir n’est que la plaque K, défini comme une couleur CMJN avec `overprint: true`. Là où le texte noir ou la bande noire de la couverture rencontrent le rose, il s’imprime par-dessus au lieu de le défoncer, et une feuille qui tombe un peu hors repérage ne montre aucun liseré blanc. Le titre rose, lui, défonce le noir, comme doit le faire un texte sur une bande sombre.
+
+### 4 · Folio sur une table sombre
+
+<Excerpt region="folio" />
+
+Une encre fluorescente a besoin d’un peu d’obscurité autour d’elle pour se lire comme telle. Le fanzine reste ouvert à l’entretien sur une surface unie et sombre, sous la lumière plate d’un ciel couvert, et la bande rose et le rose de la photo se détachent du papier blanc.
+
+## Variantes
+
+### Imprimer les photos en noir seul
+
+Avec une seule plaque pour les images, les photos s’impriment en simples niveaux de gris sur le noir, et le rose reste réservé au texte et aux encadrés.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Un jaune fluo à la place
+
+Changez l’encre et sa couleur à l’écran ; les plaques, la finition et les courbes suivent le nom.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Renommez de même `PANTONE 806 C` dans `CURVES`, dans `PRINT` et dans les hex de la palette.
+
+## Erreurs fréquentes
+
+- Une couleur qu’aucune des deux plaques n’imprime est projetée sur les deux encres. Un bleu de quadrichromie oublié dans un style sort en rose noirâtre ; lisez les remarques `offPlateColor` du contrôle en amont avant d’envoyer le fichier.
+- Une encre fluorescente n’a pas de couleur de substitution CMJN fidèle. Une épreuve ou un PDF RVB montrent le hex, plus terne que l’encre sur le papier.

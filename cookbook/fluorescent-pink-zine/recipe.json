@@ -1,0 +1,155 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 190,
+  "status": "draft",
+  "chapter": "output",
+  "order": 320,
+  "level": 3,
+  "genres": [
+    "magazine"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "special-inks",
+      "spot-inks"
+    ],
+    "also": [
+      "pdf-colour-space",
+      "folio-viewer",
+      "folio-appearance",
+      "color-palette",
+      "covers",
+      "heading-styles",
+      "opener-design",
+      "design-elements",
+      "design-images",
+      "callout-styles",
+      "resources",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q224"
+  ],
+  "engine": {
+    "postext": "1.84.0",
+    "postextPdf": "1.84.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 1,
+    "card": "screenshot",
+    "selector": "#folio",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "pages": "all"
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [],
+    "images": [
+      {
+        "what": {
+          "en": "A crowd at a basement gig, on the cover",
+          "es": "Un público en un concierto en un sótano, en la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "crowd-900.jpg"
+      },
+      {
+        "what": {
+          "en": "A guitarist on a small stage",
+          "es": "Un guitarrista en un escenario pequeño"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "guitarist-600.jpg"
+      },
+      {
+        "what": {
+          "en": "An alley wall layered with posters",
+          "es": "La pared de un callejón cubierta de carteles"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "posters-560.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Archivo Black",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Sans",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "IBM Plex Mono",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-13",
+  "updated": "2026-11-13",
+  "related": [
+    "riso-zine-single-ink",
+    "corporate-fifth-ink-report",
+    "gold-foil-poetry-cover"
+  ],
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "tilt": 22,
+    "yaw": -14,
+    "paper": {
+      "type": "uncoated",
+      "grammage": 100,
+      "shade": "#ffffff"
+    },
+    "binding": {
+      "type": "saddleStitch",
+      "cover": "pages"
+    },
+    "surface": {
+      "type": "plain",
+      "color": "#2b2b30"
+    },
+    "lighting": {
+      "environment": "overcast",
+      "intensity": 1.05
+    }
+  },
+  "gotchas": []
+}

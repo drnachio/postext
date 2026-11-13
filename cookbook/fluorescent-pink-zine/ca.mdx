@@ -1,0 +1,64 @@
+---
+title: "Un fanzine en negre i rosa fluorescent"
+summary: "Una feina a dues planxes, negre i un rosa fluorescent: fotos en duotò, un negre que sobreimprimeix i un rosa que brilla a Folio."
+plain: "Una revista petita de música impresa només amb dues tintes, negre i un rosa neó molt viu. Les fotos surten en negre i rosa, el rosa brilla a la vista 3D, i el fitxer d'impremta té exactament dues planxes."
+description: "Un fanzine de música a dues planxes a Postext: una tinta fluorescent, fotos en duotò per corbes, un negre que sobreimprimeix i el rosa que brilla a Folio."
+question: "Com imprimeixo un fanzine només en negre i rosa fluorescent, amb les fotos en duotò?"
+aliases: ["tinta fluorescent", "rosa fluorescent", "fluor", "neó", "dues tintes", "duotò", "fanzine", "risografia", "sobreimpressió del negre", "fluorescent ink", "two-colour printing"]
+pageNotes: { "1": "La coberta: un públic en un concert en un soterrani en negre i rosa, una franja negra a sota amb PINK NOISE en majúscules enormes de rosa fluorescent i els sumaris en blanc.", "3": "L'obertura de l'entrevista: un guitarrista en un escenari petit en negre i rosa a sang, una franja rosa amb l'avanttítol i THREE CHORDS AND A BORROWED AMP en negre, i dues columnes amb les preguntes en rosa.", "6": "L'agenda: una caixa rosa pàl·lid amb April, May i June en tres columnes, cada concert amb un signe més en rosa, i dos paràgrafs a sota." }
+---
+
+## Què compondràs
+
+El número 7 de *Pink Noise*, un fanzine de música inventat: vuit pàgines A5 grapades, impreses en una màquina de dos tambors. Un imprimeix negre i l'altre un rosa fluorescent, i res més no arriba al paper. El rosa compon el títol de la coberta, la franja de l'obertura de l'entrevista, les preguntes, la cita destacada i la contracoberta; un tint al 30 % omple la caixa de l'agenda. Les tres fotografies són originals en gris que s'imprimeixen en duotò, negre a les ombres i rosa als tons mitjans. Folio deixa el fanzine obert sobre una taula fosca, on el rosa destaca sobre el paper.
+
+## Elaboració
+
+### 1 · Dues planxes, i el rosa és fluorescent
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. `print.plates` anomena les planxes que imprimeix la feina, `Black` i `PANTONE 806 C`, i el PDF té aquestes dues separacions i cap altra ([impressió a dues tintes](/ca/docs/configuration-pdf-output#tintes-planes)). El rosa és una tinta plana; el seu acabat va a la taula de tintes, com aniria a la comanda a la impremta, i la converteix en fluorescent: té una planxa pròpia i Folio la il·lumina més que el paper ([acabats](/ca/docs/special-inks-die-cuts#acabats)). `images` posa les fotografies a les dues planxes, i `CURVES` dona forma a cadascuna: el negre només a les ombres, el rosa als tons mitjans i afluixant als foscos, perquè el rosa no embruti mai el negre.
+
+### 2 · La pantalla també mostra el duotò
+
+<Excerpt region="duotone" />
+
+El canvas i Folio pinten una imatge tal com és el seu fitxer, de manera que una foto grisa s'hi veuria grisa, encara que s'imprimeixi en rosa i negre. La recepta registra una segona imatge per a la pantalla: el mateix gris llegit per les mateixes `CURVES`, el negre multiplicat sobre el rosa com se superposen les tintes al paper. El PDF continua rebent l'original gris, d'`imageBytes`, i el separa ell mateix.
+
+### 3 · Negre sobre rosa
+
+<Excerpt region="cover" />
+
+El negre és només la planxa K, definit com a color CMYK amb `overprint: true`. On la lletra negra o la franja negra de la coberta toquen el rosa, s'imprimeixen al damunt en lloc de calar-lo, i un plec que surti una mica fora de registre no mostra cap vora blanca. El títol rosa sí que cala el negre, com ha de fer la lletra sobre una franja fosca.
+
+### 4 · Folio sobre una taula fosca
+
+<Excerpt region="folio" />
+
+Una tinta fluorescent necessita una mica de foscor al voltant per llegir-se com a tal. El fanzine queda obert per l'entrevista sobre una superfície llisa i fosca, sota la llum plana d'un cel ennuvolat, i la franja rosa i el rosa de la foto destaquen sobre el paper blanc.
+
+## Variants
+
+### Imprimeix les fotos només en negre
+
+Amb una sola planxa per a les imatges, les fotos s'imprimeixen en gris sobre el negre, i el rosa queda per a la lletra i les caixes.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### Un groc fluorescent
+
+Canvia la tinta i el seu color en pantalla; les planxes, l'acabat i les corbes segueixen el nom.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Reanomena igual `PANTONE 806 C` a `CURVES`, a `PRINT` i als hex de la paleta.
+
+## Errors freqüents
+
+- Un color que no imprimeix cap de les dues planxes es projecta sobre les dues tintes. Un blau de quadricromia oblidat en un estil surt com un rosa negrós; llegeix els avisos `offPlateColor` de la comprovació prèvia abans d'enviar el fitxer.
+- Una tinta fluorescent no té cap alternativa CMYK fidel. Una prova o un PDF en RGB mostren el hex, més apagat que la tinta sobre el paper.

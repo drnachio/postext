@@ -1,0 +1,64 @@
+---
+title: "A zine in black and fluorescent pink"
+summary: "A two-plate job, black and a fluorescent pink: duotone photographs, black that overprints, and a pink that glows in Folio."
+plain: "A small music magazine printed with only two inks, black and a bright neon pink. The photographs come out in black and pink, the pink shines in the 3D view, and the print file has exactly two plates."
+description: "A music zine on two plates in Postext: a fluorescent spot ink, duotone photographs through curves, black that overprints, the pink glowing in Folio."
+question: "How do I print a zine in black and a fluorescent pink only, with the photographs as duotones?"
+aliases: ["fluorescent ink", "neon pink", "fluo", "two-colour printing", "two-ink job", "duotone", "zine", "fanzine", "riso", "overprint black", "tinta flúor", "dos tintas"]
+pageNotes: { "1": "The cover: a crowd at a basement gig in black and pink, a black band below with PINK NOISE in huge fluorescent pink capitals and the cover lines in white.", "3": "The interview opener: a guitarist on a small stage in black and pink to the bleed, a pink band with the kicker and THREE CHORDS AND A BORROWED AMP in black, and two columns with pink questions.", "6": "The listings: a pale-pink box with April, May and June in three columns, each gig with a pink plus sign, and two paragraphs under it." }
+---
+
+## What you'll build
+
+Issue 7 of *Pink Noise*, an invented music zine: eight A5 pages, saddle-stitched, printed on a press with two drums. One prints black and the other a fluorescent pink, and nothing else reaches the paper. The pink sets the cover title, the band across the interview opener, the questions, the pull quote and the back cover; a 30 % tint of it fills the box of listings. The three photographs are grey originals that print as duotones, black in the shadows and pink in the middle tones. Folio lays the zine open on a dark table, where the pink stands out from the paper.
+
+## Method
+
+### 1 · Two plates, and the pink is fluorescent
+
+The code is [the short answer](#the-short-answer) above. `print.plates` names the plates the job prints, `Black` and `PANTONE 806 C`, and the PDF has those two separations and no others ([two-ink printing](/en/docs/configuration-pdf-output#spot-colours)). The pink is a spot colour; its finish is given in the ink table, as it would be on the order to the printer, and makes it a fluorescent ink: it gets a plate of its own and Folio lights it brighter than the paper ([finishes](/en/docs/special-inks-die-cuts#finishes)). `images` puts the photographs on both plates, and `CURVES` shapes each one: black only in the shadows, pink in the middle tones and easing off in the darks, so the pink never muddies the black.
+
+### 2 · The screen shows the duotone too
+
+<Excerpt region="duotone" />
+
+The canvas and Folio paint a picture as its file is, so a grey photograph would show grey there, although it prints pink and black. The recipe registers a second picture for the screen: the same grey, read through the same `CURVES`, the black multiplied over the pink as inks lie on paper. The PDF still receives the grey original, from `imageBytes`, and separates it itself.
+
+### 3 · Black over pink
+
+<Excerpt region="cover" />
+
+Black is the K plate alone, set as a CMYK colour with `overprint: true`. Where black type or the black band of the cover meets the pink, it prints over it instead of cutting a hole, and a sheet that lands a little out of register shows no white rim. The pink title knocks out of the black, as type on a dark band should.
+
+### 4 · Folio on a dark table
+
+<Excerpt region="folio" />
+
+A fluorescent ink needs a little darkness around it to read as one. The zine lies open at the interview on a plain dark surface, under the flat overcast light, so the pink band and the pink in the photograph stand out from the white paper.
+
+## Variations
+
+### Print the photographs in black alone
+
+With one picture plate, the photographs print as plain greyscale on black, and the pink is kept for type and boxes.
+
+```diff
+-  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black', 'PANTONE 806 C'],
++  plates: { inks: ['Black', 'PANTONE 806 C'], images: ['Black'],
+```
+
+### A fluorescent yellow instead
+
+Change the ink and its screen colour; the plates, the finish and the curves follow the name.
+
+```diff
+-const PINK = { name: 'PANTONE 806 C', cmyk: { c: 0, m: 77, y: 0, k: 0 } };
++const PINK = { name: 'PANTONE 803 C', cmyk: { c: 0, m: 0, y: 92, k: 0 } };
+```
+
+Rename `PANTONE 806 C` in `CURVES`, `PRINT` and the palette's hexes the same way.
+
+## Pitfalls
+
+- A colour neither plate prints is projected onto the two inks. A process blue left in a style comes out as a dark pink-black; read the preflight's `offPlateColor` findings before sending the file.
+- A fluorescent ink has no faithful CMYK alternate. A proof or an RGB PDF shows the hex, which is duller than the ink on paper.

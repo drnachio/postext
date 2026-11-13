@@ -6358,5 +6358,33 @@
       "ar": "لون المؤسسة الخاص"
     },
     "theme": "output"
+  },
+  "Q224": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a zine in black and a fluorescent pink only, with the photographs as duotones?",
+      "es": "¿Cómo imprimo un fanzine solo en negro y rosa flúor, con las fotos en duotono?",
+      "ca": "Com imprimeixo un fanzín només en negre i rosa fluorescent, amb les fotos en duotò?",
+      "fr": "Comment imprimer un fanzine en noir et rose fluo seulement, avec les photos en bichromie ?",
+      "de": "Wie drucke ich ein Zine nur in Schwarz und Neonpink, mit den Fotos als Duplex?",
+      "it": "Come stampo una fanzine solo in nero e rosa fluo, con le foto in bicromia?",
+      "pt": "Como imprimo um fanzine só em preto e rosa flúor, com as fotos em duotone?",
+      "zh": "怎样只用黑色和荧光粉红印一本小志，并把照片印成双色调？",
+      "ja": "ジンを黒と蛍光ピンクの2色だけで刷り、写真をダブルトーンにするには？",
+      "ar": "كيف أطبع مجلة صغيرة بالأسود والوردي الفلوري فقط، والصور بلونين؟"
+    },
+    "index": {
+      "en": "Fluorescent ink, two-plate job",
+      "es": "Tinta flúor a dos planchas",
+      "ca": "Tinta fluorescent a dues planxes",
+      "fr": "Encre fluo sur deux plaques",
+      "de": "Leuchtfarbe im Zweifarbendruck",
+      "it": "Inchiostro fluo a due lastre",
+      "pt": "Tinta flúor em duas chapas",
+      "zh": "双版荧光油墨",
+      "ja": "2版の蛍光インキ",
+      "ar": "حبر فلوري على لوحين"
+    },
+    "theme": "output"
   }
 }
