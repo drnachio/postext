@@ -17,7 +17,7 @@ const expectSourceMapAligned = (markdown: string, block: ContentBlock): void => 
 
 describe('fenced containers', () => {
   it('exposes the known names', () => {
-    expect([...KNOWN_CONTAINERS]).toEqual(['callout', 'paragraphs', 'part', 'columns', 'paper', 'frame', 'module', 'exercise', 'solution', 'hint']);
+    expect([...KNOWN_CONTAINERS]).toEqual(['callout', 'paragraphs', 'part', 'columns', 'paper', 'diecut', 'frame', 'module', 'exercise', 'solution', 'hint']);
     expect([...KNOWN_DIRECTIVES]).toEqual(['pagebreak', 'numbering', 'columnbreak', 'space', 'toc', 'index', 'bibliography', 'references', 'verse', 'page', 'strip', 'figure', 'solutions']);
   });
 

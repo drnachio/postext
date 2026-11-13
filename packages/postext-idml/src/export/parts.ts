@@ -188,6 +188,17 @@ export interface ParagraphStyleDef {
   format: ParagraphFormat;
 }
 
+/** A character style: the look of the runs a named Postext style set
+ *  (a chip, a `:span`), or of words in a face or size their paragraph's
+ *  style has not (#1555). Written whole (face, size, colour, tracking), so
+ *  a reader that takes a character style for what it sets, as the
+ *  importer does, reads the run's look from the style alone. */
+export interface CharacterStyleDef {
+  self: string;
+  name: string;
+  props: TextProps;
+}
+
 /** `ParagraphStyle/<name>`: a colon in a name is written `%3a`, as InDesign does. */
 export const styleSelf = (kind: 'ParagraphStyle' | 'CharacterStyle', name: string): string => `${kind}/${name.replace(/%/g, '%25').replace(/:/g, '%3a')}`;
 
@@ -235,7 +246,7 @@ export const KEPT_LINES =
   ' MinimumGlyphScaling="100" DesiredGlyphScaling="100" MaximumGlyphScaling="100" SingleWordJustification="LeftAlign" KeepLinesTogether="false" KeepAllLinesTogether="false" KeepWithNext="0"' +
   ' KerningMethod="$ID/Metrics" Ligatures="true" AlignToBaseline="false" BalanceRaggedLines="NoBalancing" LastLineIndent="0"';
 
-export function stylesXml(paragraphStyles: ParagraphStyleDef[], keptLines = false): string {
+export function stylesXml(paragraphStyles: ParagraphStyleDef[], keptLines = false, characterStyles: CharacterStyleDef[] = []): string {
   const own = paragraphStyles
     .map(
       (s) =>
@@ -247,7 +258,11 @@ export function stylesXml(paragraphStyles: ParagraphStyleDef[], keptLines = fals
     .join('');
   return (
     `${XML_HEAD}<idPkg:Styles xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
-    '<RootCharacterStyleGroup Self="ucharstyles"><CharacterStyle Self="CharacterStyle/$ID/[No character style]" Imported="false" Name="$ID/[No character style]"/></RootCharacterStyleGroup>' +
+    '<RootCharacterStyleGroup Self="ucharstyles"><CharacterStyle Self="CharacterStyle/$ID/[No character style]" Imported="false" Name="$ID/[No character style]"/>' +
+    characterStyles
+      .map((s) => `<CharacterStyle${attr('Self', s.self)}${attr('Name', s.name)} Imported="false"${textPropsAttrs(s.props)}><Properties><BasedOn type="string">$ID/[No character style]</BasedOn><AppliedFont type="string">${escapeAttr(s.props.font)}</AppliedFont></Properties></CharacterStyle>`)
+      .join('') +
+    '</RootCharacterStyleGroup>' +
     '<RootParagraphStyleGroup Self="uparastyles">' +
     '<ParagraphStyle Self="ParagraphStyle/$ID/[No paragraph style]" Name="$ID/[No paragraph style]" Imported="false"/>' +
     '<ParagraphStyle Self="ParagraphStyle/$ID/NormalParagraphStyle" Name="$ID/NormalParagraphStyle" Imported="false" NextStyle="ParagraphStyle/$ID/NormalParagraphStyle"><Properties><BasedOn type="string">$ID/[No paragraph style]</BasedOn></Properties></ParagraphStyle>' +

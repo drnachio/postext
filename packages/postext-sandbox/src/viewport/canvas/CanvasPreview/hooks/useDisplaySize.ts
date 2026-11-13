@@ -3,10 +3,11 @@
 // split out of CanvasPreview/index.tsx).
 import { useMemo, useRef, useCallback, useEffect } from 'react';
 import { type PageGaps, rowPadding, PAGE_PADDING, innerRowWidth, fitRowPageWidth, type ViewMode, type FitMode, type GeomSnapshot } from '../layoutUtils.js';
-import { resolveCanvasViewerConfig, renderPageToCanvas, watchFonts, onFontsChanged, type PostextConfig, type VDTDocument, type RenderPageOptions } from 'postext';
+import { resolveCanvasViewerConfig, watchFonts, onFontsChanged, type PostextConfig, type VDTDocument, type RenderPageOptions } from 'postext';
 import { joinPagesOfRow } from '../pageDom.js';
 import { onLateFonts } from '../../../../worker/LayoutService.js';
 import type { PaintedPages } from '../pageReuse.js';
+import { paintPages, type ThroughState } from '../through/paintPages.js';
 
 /** What useDisplaySize takes from the canvas preview. */
 export interface UseDisplaySizeDeps {
@@ -21,6 +22,7 @@ export interface UseDisplaySizeDeps {
   renderedPagesRef: React.RefObject<Set<number>>;
   stalePagesRef: React.RefObject<Set<number>>;
   paintedPagesRef: React.RefObject<PaintedPages>;
+  throughRef: React.RefObject<ThroughState>;
   visiblePagesRef: React.RefObject<Set<number>>;
   lastGeomRef: React.RefObject<GeomSnapshot | null>;
   bitmapScaleRef: React.RefObject<number>;
@@ -35,7 +37,7 @@ export interface UseDisplaySizeDeps {
 export function useDisplaySize(deps: UseDisplaySizeDeps) {
   const {
     zoom, viewMode, fitMode, config, containerRef, docRef, canvasMapRef, overlayMapRef,
-    renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
+    renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
     paintOptionsRef, wantedBitmapScale, needsRescale, setRebuildKey, containerSizeRef, setLayoutKey
   } = deps;
   // Stable (only touches refs and DOM), so effects can depend on it without
@@ -100,18 +102,23 @@ export function useDisplaySize(deps: UseDisplaySizeDeps) {
       if (doc && needsRescale(wanted)) {
         bitmapScaleRef.current = wanted;
         const opts = paintOptionsRef.current();
+        const now: number[] = [];
         for (const pageIndex of renderedPagesRef.current) {
           if (!visiblePagesRef.current.has(pageIndex)) {
             stalePagesRef.current.add(pageIndex);
             continue;
           }
-          const canvas = canvasMapRef.current.get(pageIndex);
-          const page = doc.pages[pageIndex];
-          if (canvas && page) {
-            renderPageToCanvas(page, doc, canvas, opts);
-            paintedPagesRef.current.painted(pageIndex, page, opts);
-          }
+          if (canvasMapRef.current.has(pageIndex) && doc.pages[pageIndex]) now.push(pageIndex);
         }
+        paintPages({
+          doc,
+          canvasMap: canvasMapRef.current,
+          rendered: renderedPagesRef.current,
+          stale: stalePagesRef.current,
+          visible: visiblePagesRef.current,
+          painted: paintedPagesRef.current,
+          through: throughRef.current,
+        }, now, opts);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

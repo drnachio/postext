@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-11-10',
   readingTime: '16 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Esta página trata do lado direito do Sandbox, onde aparecem as páginas prontas. Cinco abas mostram o mesmo livro de cinco maneiras: como imagens de página, como arquivo PDF, como livro em 3D que você pode folhear, como página web e como livro digital EPUB. Uma sexta gera um pacote SCORM com os capítulos que você escolher, para a plataforma de ensino de uma escola ou de uma empresa. Trocar de aba não diagrama o livro de novo; por isso, todas as abas mostram as mesmas páginas. A página explica o que cada aba mostra e o que você pode fazer nela.",
 };
@@ -35,6 +35,10 @@ Uma barra de ferramentas no alto da visualização do canvas oferece:
 - **Modos de ajuste**: ajustar à largura da página ou à altura da página. Cada um liga e desliga; o ajuste é recalculado sozinho quando a janela muda de tamanho.
 - **Modos de exibição**: página simples (uma página por linha) ou página dupla (disposição de livro em que a primeira página aparece à direita, como página ímpar, e as seguintes formam pares como páginas duplas). Um livro encadernado à direita (`page.binding`, chinês vertical) mostra as páginas duplas ao contrário: a página 1 sozinha à esquerda, depois `[3 | 2]`, `[5 | 4]`. Em uma página vertical, um clique cai no caractere sob o ponteiro, e o cursor é uma barra que atravessa a coluna.
 - **Simular impressão** (ícone `Printer`): mostra as páginas como vão sair impressas, desligada por padrão e lembrada pelo navegador: cada cor separada com o perfil de saída de *Preparação para impressão* e mostrada sobre o branco do próprio papel, e as áreas pretas grandes em preto composto; um PDF forçado a escala de cinza aparece só em tinta preta. Só o que é impresso: nem guias de tela nem contornos (os problemas do preflight ficam em **Verificações**). A aba Folio compartilha a chave. Ela repinta as páginas e nunca refaz a diagramação.
+- **Linhas de faca** (ícone `Scissors`, num livro com facas especiais): desenha a faca de cada furo, e o contorno de uma folha recortada ou de cantos arredondados, como uma linha tracejada sobre a página.
+- **Tintas especiais** (ícone `Sparkles`, num livro com tintas especiais): alterna entre três vistas: *planas*, cada tinta na sua cor de tela e o verniz de modo nenhum; *com brilho*, a tinta metálica e o hot stamping acesos por uma faixa de luz, a tinta fluorescente brilhando e o verniz mostrado pelo reflexo; e *mapa de acabamentos*, as chapas especiais em cor falsa sobre uma página esmaecida (metálica e hot stamping em âmbar, fluorescente em rosa, verniz em ciano, branco opaco em azul). Veja [Tintas especiais e facas](/pt/docs/special-inks-die-cuts#na-tela).
+
+O navegador lembra as duas chaves, e nenhuma delas refaz a diagramação.
 
 As páginas são renderizadas sob demanda via `IntersectionObserver`: só as páginas visíveis (mais uma margem de 200 px) são desenhadas no canvas, o que mantém baixo o uso de memória da GPU em documentos longos.
 

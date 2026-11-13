@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'it',
   lastUpdated: '2026-11-12',
   readingTime: '10 min',
-  order: 49,
+  order: 50,
   plainSummary: "Postext può accogliere in due modi un libro fatto in InDesign. L’importatore copia ciò che il file di InDesign contiene, ogni pagina, ogni cornice e ogni stile così com’è; è rapido, ma il risultato è una copia delle vecchie pagine, difficile da modificare e da tradurre. La skill per agenti invece studia il libro: il file, il PDF stampato, i font e le immagini. Trova le regole che il grafico ha seguito e ricostruisce il libro a partire da quelle, con il testo libero di scorrere. Così si ottiene un libro migliore, ed è la via che consigliamo. Questa pagina spiega i due modi, quando conviene ciascuno e come Postext restituisce a InDesign un libro finito.",
 };
 
@@ -93,7 +93,7 @@ Il `.idml` non contiene i font né le immagini collegate. L’importatore elenca
 
 InDesign sa fare cose che in Postext non hanno un equivalente, come il testo su tracciato, una cella ruotata, una diagonale in una cella, gli stili GREP e nidificati o gli effetti di trasparenza. Ognuna diventa una voce del rapporto, con un conteggio e un esempio: una *perdita* quando viene tralasciata, un *avviso* quando viene resa in modo approssimato (le righe di piè di una tabella, una sfumatura, una contornatura sul profilo). Il rapporto finisce con un verdetto:
 
-- **`faithful`**: niente è andato perso né è stato approssimato (un libro esportato da Postext).
+- **`faithful`**: niente è andato perso né è stato approssimato. Un libro esportato da Postext torna fedele come pagine composte: ogni pagina con le sue cornici dove le ha messe l’esportazione, e gli stili di paragrafo, gli stili di carattere, i riquadri e le immagini del libro (da postext 1.84.0). Non torna come libro a flusso: l’esportazione dà a ogni paragrafo una cornice sua, senza concatenamento tra le cornici, quindi `--layout flow` segnala la grafica di pagina che non può portare.
 - **`approximate`**: alcune cose sono state rese in modo approssimato, e niente è stato tralasciato.
 - **`lossy`**: qualcosa è stato tralasciato.
 

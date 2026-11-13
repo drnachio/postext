@@ -100,13 +100,50 @@ export function vdtText(docs, { own = false, boxes = true } = {}) {
 
 // ─── Pictures ───────────────────────────────────────────────────────────────
 
+/** The pages a die-cut page shows through its holes (#1567), painted for
+ *  it at the same scale, each with what its own holes show, so the picture
+ *  is the page as held in the hand. Nothing for a page without holes or an
+ *  engine without die-cuts. */
+function beneathOf(engine, p, scale) {
+  if (!p.page.dieCut?.holes?.length || typeof engine.seeThrough !== 'function') return null;
+  const doc = p.doc;
+  const canvases = new Map();
+  const painting = new Set();
+  const source = (j) => {
+    if (canvases.has(j)) return canvases.get(j);
+    const page = doc.pages[j];
+    if (!page || painting.has(j)) return undefined;
+    const c = document.createElement('canvas');
+    painting.add(j);
+    try {
+      engine.renderPageToCanvas(page, doc, c, { scale, ...(page.dieCut?.holes?.length ? { beneath: source } : {}) });
+    } finally {
+      painting.delete(j);
+    }
+    canvases.set(j, c);
+    return c;
+  };
+  return {
+    source,
+    release() {
+      for (const c of canvases.values()) { c.width = 1; c.height = 1; }
+      canvases.clear();
+    },
+  };
+}
+
 /** Paints one page at `scale` with the pen's engine, then the overlay hook
  *  (harness need H2: loose-line marks, reading-order numbers). The hook
  *  gets the context in canvas pixels (the renderer leaves it scaled), so it
  *  maps page px with `scale` itself: window.__postextOverlay(ctx, page, doc, scale). */
 export function paint(engine, p, scale) {
   const canvas = document.createElement('canvas');
-  engine.renderPageToCanvas(p.page, p.doc, canvas, { scale });
+  const beneath = beneathOf(engine, p, scale);
+  try {
+    engine.renderPageToCanvas(p.page, p.doc, canvas, { scale, ...(beneath ? { beneath: beneath.source } : {}) });
+  } finally {
+    beneath?.release();
+  }
   if (typeof window.__postextOverlay === 'function') {
     const ctx = canvas.getContext('2d');
     ctx.save();

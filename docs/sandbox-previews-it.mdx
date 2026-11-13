@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'it',
   lastUpdated: '2026-11-10',
   readingTime: '15 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Questa pagina riguarda il lato destro della Sandbox, dove compaiono le pagine finite. Cinque schede mostrano lo stesso libro in cinque modi: come immagini delle pagine, come file PDF, come libro 3D da sfogliare, come pagina web e come e-book EPUB. Una sesta crea un pacchetto SCORM dei capitoli che scegli, per la piattaforma di apprendimento di una scuola o di un’azienda. Cambiare scheda non reimpagina il libro, quindi ogni scheda mostra le stesse pagine. La pagina spiega che cosa mostra ogni scheda e che cosa ci puoi fare.",
 };
@@ -35,6 +35,10 @@ Una barra degli strumenti in cima all’area del canvas offre:
 - **Modalità di adattamento**: adatta alla larghezza della pagina o all’altezza della pagina. Si attivano e disattivano; l’adattamento si ricalcola automaticamente quando la finestra cambia dimensioni.
 - **Modalità di visualizzazione**: pagina singola (una pagina per riga) o doppia pagina (disposizione da libro in cui la prima pagina compare a destra come recto, e le pagine successive sono accoppiate in doppie pagine). Un libro rilegato a destra (`page.binding`, cinese verticale) mostra le sue doppie pagine al contrario: la pagina 1 da sola a sinistra, poi `[3 | 2]`, `[5 | 4]`. Su una pagina verticale un clic cade sul carattere sotto il puntatore, e il cursore è una barra di traverso alla colonna.
 - **Anteprima di stampa** (icona `Printer`): mostra le pagine come verranno stampate, disattivata per impostazione predefinita e ricordata dal browser: ogni colore separato tramite il profilo di output di *Preparazione per la stampa* e mostrato sul bianco proprio della carta, le grandi aree nere in nero ricco; un PDF forzato in scala di grigi si mostra nel solo inchiostro nero. Solo ciò che si stampa: niente guide a schermo e niente contorni (le segnalazioni del preflight sono in **Verifiche**). La scheda Folio condivide lo stesso interruttore. L’anteprima ridisegna le pagine e non le reimpagina mai.
+- **Linee di fustella** (icona `Scissors`, in un libro con fustelle): disegna la fustella di ogni foro, e il contorno di un foglio sagomato o arrotondato, come linea tratteggiata sopra la pagina.
+- **Inchiostri speciali** (icona `Sparkles`, in un libro con inchiostri speciali): passa per tre viste: *piatti*, ogni inchiostro nel suo colore a schermo e la vernice per niente; *con lucentezza*, l’inchiostro metallizzato e la lamina illuminati da un fascio di luce, l’inchiostro fluorescente che risplende e la vernice mostrata dal suo riflesso; e *mappa delle finiture*, le lastre speciali in falsi colori su una pagina sbiadita (metallizzato e lamina in ambra, fluorescente in rosa, vernice in ciano, bianco coprente in blu). Vedi [Inchiostri speciali e fustelle](/it/docs/special-inks-die-cuts#a-schermo).
+
+Il browser ricorda entrambe le scelte, e nessuna delle due reimpagina le pagine.
 
 Le pagine si disegnano in modo differito tramite `IntersectionObserver`: sul canvas vengono disegnate solo le pagine visibili (più un margine di 200px), il che tiene basso l’uso di memoria della GPU nei documenti lunghi.
 

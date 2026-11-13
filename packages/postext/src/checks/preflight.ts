@@ -18,6 +18,8 @@
  * - Colours whose separation exceeds the ink limit.
  * - Spot inks: the plates the job adds, from its colours and the inks its
  *   SVGs name, and names a plate cannot carry (`preflightInks.ts`).
+ * - Die-cuts: text by a hole, a hole by the trim or across the fold, a die
+ *   nobody defined (`preflightDieCuts.ts`).
  * - Text inside the safe zone near the trim (a figure's labels too, #902), and boxes or pictures that
  *   stop short of the trim by less than `bleedSnap` without bleeding.
  */
@@ -26,88 +28,18 @@ import type { CmykPercent, ResolvedPrintConfig, Resource } from '../types.js';
 import type { BoundingBox, VDTComicPage, VDTDesignSlot, VDTDocument, VDTLine } from '../vdt.js';
 import type { OutputTransform } from '../color/transform.js';
 import { authoredCmykColors, authoredSpotColors, overprintColors, spotColorCmyk } from '../color/authored.js';
-import { spotsThroughInkTable, type InkNameProblem } from '../color/inks.js';
+import { spotsThroughInkTable } from '../color/inks.js';
 import { spotInkIssues } from './preflightInks.js';
 import { platesIssues } from './preflightPlates.js';
+import { finishIssues } from './preflightFinishes.js';
+import { dieCutIssues } from './preflightDieCuts.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
 import { figureLabelLeaderPath } from '../composed/labels.js';
 
-/** How much a preflight problem matters. */
-export type PreflightSeverity = 'critical' | 'warning' | 'info';
-
-/** A problem preflight found, and where. */
-export type PreflightIssue = {
-  severity: PreflightSeverity;
-  /** Book-absolute page index (`pageIndexOffset` counted in). */
-  pageIndex: number;
-  /** The offending area, page px. */
-  rect?: BoundingBox;
-  /** Source range in the chapter markdown, when the element has one. */
-  sourceStart?: number;
-  sourceEnd?: number;
-} & (
-  | { kind: 'lowImageResolution'; fileId: string; resourceId?: string; ppi: number; minimum: number }
-  /** A bitmap that declares a pixel size its file does not have (more
-   *  than a pixel off either way): its print size and resolution are
-   *  worked out from the declaration. Reported once, where it is first
-   *  placed; `warning` when the declaration exceeds the file. */
-  | { kind: 'declaredPixelsMismatch'; fileId: string; resourceId?: string; declared: { width: number; height: number }; actual: { width: number; height: number } }
-  | { kind: 'rgbImage'; fileId: string; resourceId?: string; converted: boolean }
-  /** A CMYK JPEG separated for another press condition (its profile) in a
-   *  PDF/X-1a job: its pixels are not decoded and PDF/X-1a allows no
-   *  ICC-based picture, so it prints its values as they are. */
-  | { kind: 'cmykImageForeign'; fileId: string; resourceId?: string; profile: string }
-  | { kind: 'thinRule'; widthPt: number; minimumPt: number; color: string }
-  | { kind: 'smallProcessText'; sizePt: number; inks: number; color: string; text: string }
-  | { kind: 'inkLimit'; color: string; coverage: number; limit: number }
-  /** The spot inks the job prints with besides process, once per
-   *  document (info). */
-  | { kind: 'spotInks'; inks: string[] }
-  /** One ink defined twice with a different CMYK or overprint: the PDF
-   *  writes the first, and the printer would be asked for two plates of
-   *  one name. */
-  | { kind: 'spotInkConflict'; ink: string }
-  /** A plate name a PDF cannot carry as it is: `All` or `None` (every
-   *  plate, no plate), a process plate's name, a control character, or
-   *  longer than 127 bytes. The PDF writes it as `written` instead
-   *  (`printableInkName`). */
-  | { kind: 'spotInkName'; ink: string; problem: InkNameProblem; written: string }
-  /** An ink an SVG picture names (`icc-named-color`, `data-spot`) that no
-   *  colour of the configuration and no `print.inks` entry with a `cmyk`
-   *  defines: it prints on a plate of its own, with the SVG's colour as
-   *  its alternate. */
-  | { kind: 'spotInkUndefined'; ink: string; fileId: string; resourceId?: string }
-  /** Plate names that differ only in case or spacing: most likely one ink
-   *  the printer would get two plates of. An alias in `print.inks` merges
-   *  them. */
-  | { kind: 'spotInkSimilar'; inks: string[] }
-  /** A colour that overprints (`ColorValue.overprint`) and puts no ink
-   *  down (paper white, a spot at 0 %): on press it disappears. */
-  | { kind: 'overprintWhite'; color: string }
-  /** The plates a restricted job prints on (`print.plates`), and those
-   *  its pictures print on, once per document (info). */
-  | { kind: 'platesJob'; plates: string[]; images: string[] }
-  /** A spot ink a colour of the book uses that the job does not print:
-   *  its colours are projected onto the job's plates, the ink lost.
-   *  `deltaE`: how far the farthest lands from its ink (CIE76), when the
-   *  output profile is known; information up to `PLATE_DELTA_E`. */
-  | { kind: 'offPlateInk'; ink: string; deltaE?: number }
-  /** A colour authored in CMYK whose channels the job does not print. */
-  | { kind: 'offPlateCmyk'; color: string; channels: string[]; deltaE?: number }
-  /** A screen colour the job's plates cannot come within `PLATE_DELTA_E`
-   *  of (a warning). */
-  | { kind: 'offPlateColor'; color: string; deltaE: number }
-  /** A spot plate of the job that neither a colour nor the ink table
-   *  defines: nothing says what it looks like (its alternate). */
-  | { kind: 'plateUndefined'; plate: string }
-  | { kind: 'safeZone'; distanceMm: number; safeZoneMm: number; text: string }
-  | { kind: 'nearTrim'; gapMm: number; edge: 'top' | 'right' | 'bottom' | 'left' }
-);
-
-/** The kinds of problem preflight reports. */
-export type PreflightKind = PreflightIssue['kind'];
+export type { PreflightIssue, PreflightKind, PreflightSeverity } from './preflightIssues.js';
+import type { PreflightIssue } from './preflightIssues.js';
 
 /** Options of `preflightDocument`: the limits, the resources and how images
  *  read. */
@@ -563,17 +495,22 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // Spot inks: the plates the job adds, and what is wrong with them.
   if (cmykJob) out.push(...spotInkIssues({ doc, print, spots, usedInks, pageIndex: offset, ...(options.svgInks ? { svgInks: options.svgInks } : {}) }));
+  if (cmykJob) out.push(...finishIssues({ doc, spots, usedInks, pageIndex: offset }));
 
   // Colours that overprint with no ink: they vanish on press.
   if (cmykJob) {
     for (const hex of overprintColors([doc.config, doc.printColors])) {
       if (!usedColors.has(hex)) continue;
       const spot = spots.get(hex);
+      if (spot?.finish?.kind === 'white' || spot?.finish?.kind === 'varnish') continue;
       const ink = spot ? spotColorCmyk(spot) : authored.get(hex);
       const blank = ink ? ink.c + ink.m + ink.y + ink.k < 0.5 && !(spot && spot.tint > 0) : hex === '#ffffff';
       if (blank) out.push({ kind: 'overprintWhite', severity: 'critical', pageIndex: offset, color: hex });
     }
   }
+
+  // Die-cuts (#1565): holes by the trim, the fold or the text.
+  if (pf.enabled) out.push(...dieCutIssues(doc));
 
   // A job on a few plates: the colours it moves onto them.
   if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));

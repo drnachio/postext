@@ -26,8 +26,10 @@ export interface PdfPrintWarning {
    *  not be loaded, so they were read through their own profiles.
    *  `pictureOriginalUnreadable`: a TIFF or Photoshop original could not
    *  be decoded, so its preview (`previewBytes`) was printed instead, or a
-   *  placeholder when it has none. */
-  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pictureOriginalUnreadable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates';
+   *  placeholder when it has none. `finishInkDropped`: in a job on a few
+   *  plates (`print.plates`) a white ink or a varnish the job does not
+   *  print was left out, never projected onto the colour plates (#1566). */
+  kind: 'outputProfileUnavailable' | 'imageProfileUnavailable' | 'pictureOriginalUnreadable' | 'pageNegativeIgnored' | 'spotTintsExhausted' | 'spotInkRenamed' | 'overprintsExhausted' | 'plateMixesApproximated' | 'artworkOffPlates' | 'finishInkDropped';
   message: string;
 }
 

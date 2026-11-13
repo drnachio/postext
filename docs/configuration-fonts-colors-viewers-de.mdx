@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>siehe <a href="/de/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Was der Preflight prüft und seine Schwellenwerte.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>Die Stanzlinie der Seiten mit einer Stanzung (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> oder <code>'none'</code>), der Name der Platte <code>ink</code>, ihr Ersatzwert <code>cmyk</code> (100 % Magenta) und die Strichstärke <code>width</code> (0,25 pt). Siehe <a href="/de/docs/special-inks-die-cuts#die-stanzlinie-im-pdf">Die Stanzlinie im PDF</a>.</td>
     </tr>
   </tbody>
 </table>

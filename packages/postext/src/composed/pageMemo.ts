@@ -293,7 +293,7 @@ const PAINT_FREE_KEYS = new Set(['sourceStart', 'sourceEnd', 'sourceMap', 'conte
 /**
  * What a composed page paints, as a key (#857): its frames' layout key
  * with what is laid round them (running heads, decoration, page number,
- * paper, the floats and notes no frame holds). Two pages with the same
+ * paper, die-cut, the floats and notes no frame holds). Two pages with the same
  * key paint the same pixels with the same paint options, so a host can
  * keep a page's bitmap across a relayout. Undefined for a page without a
  * layout key (not a composed page, or one laid out afresh every time).
@@ -309,6 +309,9 @@ export function composedPagePaintKey(page: VDTPage): string | undefined {
       page.width, page.height, page.pageLabel, page.background ?? null, page.paper ?? null,
       page.header ?? null, page.footer ?? null, composed.decoration ?? null, page.lineNumbers ?? null,
       loose, page.marginNotes ?? null, page.footnoteAreas ?? null,
+      // Its die-cut (#1565): the holes and outline cut out of the bitmap
+      // (a page without one keeps the key it had).
+      ...(page.dieCut ? [page.dieCut] : []),
       // Where the text is written does not change the pixels: an edit on
       // an earlier page moves every offset after it.
     ], (key, value: unknown) => (PAINT_FREE_KEYS.has(key) ? undefined : value)),

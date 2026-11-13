@@ -62,7 +62,7 @@ describe('the corpus of InDesign documents', () => {
         "book-flow": "approximate | pages 15 stories 4 paragraphs 112 pictures 2 tables 1 notes 3 links 5 | chapters 1 | loss: - | warning: pageLinkTarget×4",
         "cjk-rtl": "lossy | pages 2 stories 3 paragraphs 9 pictures 0 tables 0 notes 0 links 0 | chapters 1 | loss: inlineFontFamily×7 | warning: -",
         "links-notes": "approximate | pages 3 stories 2 paragraphs 12 pictures 0 tables 0 notes 2 links 6 | chapters 1 | loss: - | warning: endnotesAsFootnotes",
-        "magazine-pages": "approximate | pages 4 stories 9 paragraphs 41 pictures 2 tables 0 notes 0 links 0 | chapters 1 | loss: - | warning: croppedPictureAsDecoration gradient pictureCrop",
+        "magazine-pages": "approximate | pages 4 stories 9 paragraphs 41 pictures 2 tables 0 notes 0 links 0 | chapters 1 | loss: - | warning: gradient",
         "styles": "lossy | pages 1 stories 1 paragraphs 12 pictures 0 tables 0 notes 0 links 0 | chapters 1 | loss: grepStyles lineStyles | warning: -",
         "tables": "lossy | pages 1 stories 1 paragraphs 32 pictures 1 tables 3 notes 1 links 0 | chapters 1 | loss: diagonalCellLines rotatedCell | warning: nestedTable noteInTable tableFooterRows",
       }

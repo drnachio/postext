@@ -2,7 +2,7 @@
 // report, the identifiers handed out and the things gathered on the way
 // (resources, files, styles of inline marks).
 
-import type { ChipStyleConfig, ColorValue, MarkStyleConfig, Resource } from 'postext';
+import type { CharacterStyleConfig, ChipStyleConfig, ColorValue, MarkStyleConfig, Resource } from 'postext';
 import type { IdmlDestination, IdmlDocument, IdmlHyperlink, IdmlPage, IdmlPageItem, IdmlParagraph, IdmlRun } from '../model/document.js';
 import { findOrdered, readingOrder, type OrderedStory } from '../resolve/order.js';
 import { Ids, idOf } from './escape.js';
@@ -36,6 +36,9 @@ export class Context {
   readonly missing = new Map<string, { name: string; uri: string; uses: number }>();
   readonly markStyles = new Map<string, MarkStyleConfig>();
   readonly chipStyles = new Map<string, ChipStyleConfig>();
+  /** Character styles of the book (`:span[…]{style}`), by the look
+   *  they set (`spanStyle`, #1555). */
+  readonly characterStyles = new Map<string, CharacterStyleConfig>();
   /** Hyperlinks and cross-references by the `Self` of their source. */
   readonly linkBySource = new Map<string, IdmlHyperlink>();
   /** Destinations a link or a reference of the book points at → anchor. */

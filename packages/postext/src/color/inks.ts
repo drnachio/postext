@@ -6,8 +6,9 @@
  * a colour's ink by its screen hex.
  */
 
-import type { CmykPercent, PostextConfig, ResolvedPrintInk, SpotColor } from '../types.js';
+import type { CmykPercent, PostextConfig, ResolvedPrintInk, ResolvedSpotColor } from '../types.js';
 import { isAuthoredCmyk, isAuthoredSpot, normalizeSpotColor, spotColorCmyk } from './authored.js';
+import { finishOverprintsByDefault, finishSheen } from './finishKinds.js';
 
 /** An ink name as the ink table compares it: trimmed, runs of spaces as
  *  one, ignoring case (`Pantone  286c` and `PANTONE 286C` are one ink;
@@ -25,25 +26,31 @@ export function inkEntry(name: string, inks: readonly ResolvedPrintInk[]): Resol
 
 /**
  * A spot colour as the ink table prints it: on the plate the table names,
- * with the table's alternate and overprint over the colour's own, or —
- * `undefined` — in process (`output: 'process'`). An ink the table does
- * not list prints as the colour defines it.
+ * with the table's alternate, overprint and finish over the colour's own,
+ * or — `undefined` — in process (`output: 'process'`). An ink the table
+ * does not list prints as the colour defines it. A finish the table gives
+ * (#1563) brings its overprint default with it: a colour the table turns
+ * into a white ink or a varnish overprints unless the table says it does
+ * not.
  */
-export function printedSpot(spot: Required<SpotColor>, inks: readonly ResolvedPrintInk[]): Required<SpotColor> | undefined {
+export function printedSpot(spot: ResolvedSpotColor, inks: readonly ResolvedPrintInk[]): ResolvedSpotColor | undefined {
   const entry = inkEntry(spot.name, inks);
   if (!entry) return spot;
   if (entry.output === 'process') return undefined;
+  const finish = entry.finish ?? spot.finish;
+  const overprint = entry.overprint ?? (entry.finish && finishOverprintsByDefault(entry.finish) ? true : spot.overprint);
   return {
     ...spot,
     name: entry.pdfName,
     cmyk: entry.cmyk ? { ...entry.cmyk } : spot.cmyk,
-    overprint: entry.overprint ?? spot.overprint,
+    overprint,
+    ...(finish ? { finish: { ...finish } } : {}),
   };
 }
 
 /** The CMYK a spot colour prints in when the table sends its ink to
  *  process: the alternate (the table's, else the colour's) at the tint. */
-export function processCmykOfSpot(spot: Required<SpotColor>, inks: readonly ResolvedPrintInk[]): CmykPercent {
+export function processCmykOfSpot(spot: ResolvedSpotColor, inks: readonly ResolvedPrintInk[]): CmykPercent {
   const entry = inkEntry(spot.name, inks);
   return spotColorCmyk(entry?.cmyk ? { ...spot, cmyk: entry.cmyk } : spot);
 }
@@ -52,11 +59,11 @@ export function processCmykOfSpot(spot: Required<SpotColor>, inks: readonly Reso
  *  renamed or merged onto the plate it names, or moved to the process
  *  colours (`authored`, by the same hex) when it sends the ink to process. */
 export function spotsThroughInkTable(
-  spots: ReadonlyMap<string, Required<SpotColor>>,
+  spots: ReadonlyMap<string, ResolvedSpotColor>,
   authored: ReadonlyMap<string, CmykPercent>,
   inks: readonly ResolvedPrintInk[],
-): { spots: Map<string, Required<SpotColor>>; authored: Map<string, CmykPercent> } {
-  const onPlates = new Map<string, Required<SpotColor>>();
+): { spots: Map<string, ResolvedSpotColor>; authored: Map<string, CmykPercent> } {
+  const onPlates = new Map<string, ResolvedSpotColor>();
   const process = new Map(authored);
   for (const [hex, s] of spots) {
     const printed = printedSpot(s, inks);
@@ -148,7 +155,8 @@ function paintOf(v: unknown): string | undefined {
   const over = (v as { overprint?: unknown }).overprint === true ? '|over' : '';
   if (isAuthoredSpot(v)) {
     const s = normalizeSpotColor(v.spot);
-    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}${over}`;
+    const finish = s.finish ? `|${s.finish.kind}:${finishSheen(s.finish) ?? ''}` : '';
+    return `spot|${s.name}|${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}|${s.tint}|${s.overprint}${finish}${over}`;
   }
   if (isAuthoredCmyk(v)) {
     const c = v.cmyk;

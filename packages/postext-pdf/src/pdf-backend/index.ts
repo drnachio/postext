@@ -7,8 +7,10 @@ import './text/verticalText.js';
 import { PDFDocument, ReadingDirection, PDFName } from 'pdf-lib';
 import { type ResourceBytesProvider, type SvgRasterizer, type ResourceImageMap, preloadResourceImages } from './blocks/renderResourceBlock.js';
 import fontkit from '@pdf-lib/fontkit';
-import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type IccProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type SpotColor } from 'postext';
+import { type PdfColorSpace, type PrintConfig, type VDTDocument, shapingLanguageOf, documentLanguageOf, formNumberStyle, formOptionsOf, type ResolvedPrintConfig, resolvePrintConfig, outputProfileInfo, parseIccProfile, loadOutputProfile, type IccProfile, type CmykPercent, authoredCmykColors, authoredSpotColors, overprintColors, type ResolvedSpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, createPrintColorMode } from '../print/colorMode.js';
+import { screenVarnishHexes, spotFinishNotes, withInkFinishes, withScreenVarnish, type SpotFinishNote } from '../print/finishes.js';
+import { DieLineWriter } from './page/dieLine.js';
 import { runPagePrintPass } from '../print/printPass.js';
 import { writePdfX } from '../print/pdfx.js';
 import { type PdfFontProvider, type PdfFontAnswer, type PdfFontFile, type PdfFontFileDeclaration, type PdfFontRequest, withBareFiles, FontCache } from '../fontCache.js';
@@ -266,6 +268,10 @@ export async function renderToPdf(
     warn({ kind: 'pageNegativeIgnored', message: 'postext-pdf: PDF/X-1a has no blend modes, so the page negative was left out' });
   }
 
+  // A screen render paints no varnish (#1563): its colours are set fully
+  // transparent.
+  const varnish = printMode ? undefined : screenVarnishHexes(docs.flatMap((d) => [d.config, d.printColors]), printConfig.inks);
+
   // Accessible output: the structure tree the pages tag their content into.
   const tree = settings.accessible
     ? new StructTree(pdfDoc, {
@@ -302,6 +308,8 @@ export async function renderToPdf(
   // canvas preview writes them.
   const formOptions = formOptionsOf<PdfFormOptions>(options.forms, first.config.pdfGeneration?.forms);
   const fieldNumbers = formNumberStyle(formOptions, documentLanguageOf(first.config));
+  // The die line (#1566), on its own plate after each page's crop marks.
+  const dieLines = new DieLineWriter(pdfDoc, printConfig.dieLine, { optionalContent: pdfx !== 'pdfx1a', tagged: !!tree });
   let rendered = 0;
   // Placeholders are reported once per image for the whole file.
   const onWarning = options.onWarning;
@@ -325,9 +333,13 @@ export async function renderToPdf(
             onWarning({ kind: 'missingImage', fileId, ...(resourceId !== undefined ? { resourceId } : {}), pageIndex: page.index, documentIndex });
           }
         : undefined;
-      renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false, settings.baselineGrid);
+      withScreenVarnish(varnish, () => renderPage(pdfDoc, page, doc, fontCache, pageNegative, colorSpace, resourceCtx, tree, onMissingImage, options.characterGrid ?? false, settings.baselineGrid));
+      const pdfPage = pdfDoc.getPage(pdfDoc.getPageCount() - 1);
       // Black handling over the page's operators (overprint, rich black).
-      if (printMode) runPagePrintPass(pdfDoc.getPage(pdfDoc.getPageCount() - 1), printMode);
+      if (printMode) runPagePrintPass(pdfPage, printMode);
+      // After the pass, which leaves it alone: it sets its own plate and
+      // overprint.
+      dieLines.draw(pdfPage, page, doc);
       rendered++;
       options.onProgress?.({ phase: 'pages', pages: rendered, totalPages });
     }
@@ -378,6 +390,9 @@ export async function renderToPdf(
     for (const [kind, n] of printMode.inkRegistry.offPlateArtwork()) {
       const what = kind === 'pdf' ? 'placed PDF page(s)' : 'picture(s) that could not be decoded';
       warn({ kind: 'artworkOffPlates', message: `postext-pdf: ${n} ${what} kept their own inks in a job on a few plates (print.plates)` });
+    }
+    for (const [ink, n] of printMode.inkRegistry.droppedOffPlates()) {
+      warn({ kind: 'finishInkDropped', message: `postext-pdf: "${ink}" is a white ink or a varnish the job does not print (print.plates), so ${n} paint(s) of it were left out rather than set on the colour plates` });
     }
     for (const [ink, written] of printMode.inkRegistry.renamed()) {
       warn({ kind: 'spotInkRenamed', message: `postext-pdf: a plate cannot be named "${ink}"; it is written as "${written}"` });
@@ -457,14 +472,18 @@ async function printColorMode(
       ? { registryName: custom.registryName ?? 'Custom', condition: custom.name, name: profile.description || custom.name }
       : { registryName: info!.registryName, condition: info!.condition, name: info!.name };
     const authored = new Map<string, CmykPercent>();
-    const spots = new Map<string, Required<SpotColor>>();
+    const spots = new Map<string, ResolvedSpotColor>();
     const overprints = new Set<string>();
+    const finishes = new Map<string, SpotFinishNote>();
     for (const doc of docs) {
       authoredCmykColors([doc.config, doc.printColors], authored);
       authoredSpotColors([doc.config, doc.printColors], spots);
       overprintColors([doc.config, doc.printColors], overprints);
+      spotFinishNotes([doc.config, doc.printColors], finishes);
     }
-    return createPrintColorMode(profile, config, condition, authored, spots, overprints, assignedRgbProfile(config, options, warn));
+    // Special inks (#1563): a white ink and a varnish overprint unless
+    // told otherwise.
+    return createPrintColorMode(profile, config, condition, authored, withInkFinishes(spots, finishes, config.inks), overprints, assignedRgbProfile(config, options, warn));
   } catch (err) {
     const reason = (err as Error).message;
     if (pdfx) throw new Error(`postext-pdf: cannot write PDF/X without its output profile (${reason})`);

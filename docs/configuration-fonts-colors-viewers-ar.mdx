@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>انظر <a href="/ar/docs/configuration-pdf-output#الفحص-قبل-الطباعة">الفحص قبل الطباعة</a></td>
       <td>ما يتحقق منه الفحص قبل الطباعة، وعتباته.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>خط القص في الصفحات التي فيها قص بالقالب (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> أو <code>'none'</code>)، واسم اللوح <code>ink</code>، وبديله <code>cmyk</code> (ماجنتا 100 %)، وسماكة الخط <code>width</code> (0.25 نقطة). انظر <a href="/ar/docs/special-inks-die-cuts#خط-القص-في-ملف-pdf">خط القص في ملف PDF</a>.</td>
     </tr>
   </tbody>
 </table>

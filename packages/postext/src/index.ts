@@ -8,9 +8,8 @@ export type { BuildDocumentOptions } from './pipeline/index.js';
 export type { ConfigOverride } from './defaults/configLayers.js';
 export { formatFootnoteNumber, footnoteFormatOf, footnoteSymbol, DEFAULT_FOOTNOTE_SYMBOLS } from './pipeline/references/footnotes.js';
 export type { FootnoteFormat } from './pipeline/references/footnotes.js';
-export { renderToCanvas, renderPage, renderPageToCanvas, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './canvas-backend/index.js';
-export type { RenderPageOptions, ResourceImageSource, RegisterResourceImageOptions, VerticalAlternatesFace } from './canvas-backend/index.js';
-export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement, renderHtmlBook, htmlBookFiles, htmlFontFaceRule, redistributableFaces, fontNoteWarning } from './html-backend/html-backend.js';
+export { renderToCanvas, renderPage, renderPageToCanvas, composeThrough, cutDieShapes, registerResourceImage, unregisterResourceImage, clearResourceImages, getResourceImage, registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE, renderFinishMask, applyFinishPreview, finishMaskSvg, type RenderPageOptions, type ResourceImageSource, type RegisterResourceImageOptions, type VerticalAlternatesFace, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas, type FinishPreviewMode, type ComposeThroughOptions, type PageImageSource } from './canvas-backend/index.js';
+export { renderToHtml, renderToHtmlIndexed, anchoredResourceIds, HTML_TEXT_RESET, tintHex, tintFilterElement, renderHtmlBook, htmlBookFiles, htmlFontFaceRule, redistributableFaces, fontNoteWarning, clearVarnishPaints } from './html-backend/html-backend.js';
 export { renderComicHtml, comicPanelSvg } from './html-backend/htmlComic.js';
 export type { ComicHtmlPaint, ComicPanelSvgOptions } from './html-backend/htmlComic.js';
 export type { RenderHtmlOptions, HtmlRenderIndex, HtmlRenderIndexPage, RenderHtmlBookOptions, HtmlBookFace, HtmlBookFile, HtmlBookFontNote, HtmlBookWarning } from './html-backend/html-backend.js';
@@ -20,14 +19,9 @@ export { columnRuleSegments, footnoteRuleSegments, pageColumnRule } from './pain
 export type { FootnoteRuleSegment, ColumnRuleSegment } from './paint/columnRule.js';
 export { cropMarkSegments } from './paint/cropMarks.js';
 export * from './color/index.js';
-export { preflightDocument, placedImageResolutions } from './checks/preflight.js';
-export type { PreflightIssue, PreflightKind, PreflightOptions, PreflightSeverity, PlacedImageResolution } from './checks/preflight.js';
+export { preflightDocument, placedImageResolutions, type PreflightIssue, type PreflightKind, type PreflightOptions, type PreflightSeverity, type PlacedImageResolution } from './checks/preflight.js';
 export {
-  contrastDocument,
-  contrastPairs,
-  contrastMedia,
-  contrastRatio,
-  contrastThreshold,
+  contrastDocument, contrastPairs, contrastMedia, contrastRatio, contrastThreshold,
   relativeLuminance,
   isLargeText,
   blendColors,
@@ -151,7 +145,7 @@ export type {
   ChipUnderline,
   FigureStyle,
 } from './types.js';
-export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit } from './defaults/index.js';
+export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIGHT_CONFIG, DEFAULT_RICH_BLACK, resolvePrintConfig, resolvePrintBlackConfig, resolvePrintPreflightConfig, resolvePrintInks, resolvePrintPlates, resolvePrintImageColor, stripPrintDefaults, profileInkLimit, resolveInkFinish, resolvePrintDieLine, DEFAULT_PRINT_DIE_LINE, resolveDieCutsConfig, stripDieCutsDefaults } from './defaults/index.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './defaults/index.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './defaults/index.js';
 export type { FolioPaperStock } from './defaults/index.js';
@@ -163,6 +157,7 @@ export { layoutDesignSlot } from './design/layout.js';
 export { pathMarkerOutline, pathSvgData, markerSvgData, markerSvgElement, colorWithOpacity, quadToCubic, pathInkBox, pathHit, offsetPathBlock, translatedPathBlock, pathBlockColors, recolorPathBlock } from './design/pathBlock.js';
 export type { PathMarkerOutline } from './design/pathBlock.js';
 export { parseSvgPath, arcToCubics } from './design/svgPath.js';
+export { pathBounds, mirrorPath, dieMetricsOf, dieShapePath, dieShapeInBox, leafOutline, leafSide, pageBeneath, parsePageList, buildDieCuts, seeThrough, traceDiePaths, dieCutPath2D, type DieCutMetrics, type DiePlacement, type SeeThroughLayer, type PathSink } from './dieCut/index.js';
 export type { SvgPathParse } from './design/svgPath.js';
 export { facingSide, CONNECTOR_ROUTINGS, CONNECTOR_CAPS, CONNECTOR_SIDES, DEFAULT_CONNECTOR_WIDTH, connectorPaintsOver } from './design/connector.js';
 export type { ConnectorRect } from './design/connector.js';
@@ -201,6 +196,7 @@ export type {
   ResolvedDesignImageElement,
   DesignPathElement,
   ResolvedDesignPathElement,
+  DesignCutElement, ResolvedDesignCut,
   HeadingCounters,
   ResourceNumberEntry,
   DocumentMetadata,
@@ -477,7 +473,8 @@ export type {
   ResolvedPdfGenerationConfig,
   PdfXStandard,
   PrintRenderingIntent,
-  CmykPercent, SpotColor,
+  CmykPercent, SpotColor, ResolvedSpotColor, InkFinish, InkFinishKind, InkSheen, PrintDieLineConfig, ResolvedPrintDieLineConfig,
+  DieShape, DieCutPlacement, DieCutsConfig, ResolvedDieShape, ResolvedDieCutsConfig,
   PrintBlackConfig,
   ResolvedPrintBlackConfig, PrintInk, ResolvedPrintInk, PrintPlatesConfig, ResolvedPrintPlatesConfig, PrintImageColorConfig, ResolvedPrintImageColorConfig,
   PrintPreflightConfig,
@@ -654,6 +651,7 @@ export type {
   VDTComicSplitter,
   VDTComicBalloon,
   VDTComicPage,
+  VDTDieCut,
   VDTComposedPage,
   VDTFrame,
   VDTFigureLabel,

@@ -152,6 +152,10 @@ Nel flusso del testo sono riconosciuti cinque nomi di contenitore; `:::frame` e 
       <td>Una sequenza di pagine stampate su un’altra carta, come una sezione di tavole su carta lucida in un libro su carta opaca. La mostra solo il visualizzatore Folio.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Una sequenza di pagine tagliate da una fustella della configurazione: una finestra, un foro attraverso più fogli. Vedi <a href="#diecut"><code>:::diecut</code></a> più avanti.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Blocchi composti su più colonne proprie: dentro un riquadro, nella colonna di testo o a tutta larghezza su una pagina a più colonne. Vedi <a href="#columns"><code>:::columns</code></a> più avanti.</td>
     </tr>
@@ -376,6 +380,19 @@ Gli attributi sono quelli delle impostazioni `folio.paper`, e sono tutti facolta
 </table>
 
 Un `:::paper` dentro un altro sostituisce solo gli attributi che imposta, e anch’esso comincia e finisce con un’interruzione di pagina. Dentro un `:::callout` i delimitatori vengono ignorati. Un valore che il motore non riesce a leggere viene scartato, e la Sandbox lo elenca come avviso **Attributo della carta non valido** (`paperAttributeInvalid` nei `contentWarnings` del documento).
+
+### `:::diecut`
+
+Una fustella appartiene alla forma del libro: la sua sagoma, la sua dimensione e la sua posizione sulla pagina sono una forma di fustella della configurazione (`dieCuts.shapes`, vedi [Inchiostri speciali e fustelle](/it/docs/special-inks-die-cuts#forme-di-fustella)). Quando è il contenuto a decidere quali pagine vengono tagliate, racchiudilo in un contenitore `:::diecut` che nomina la fustella:
+
+```md
+:::diecut{die=window}
+## La casa
+Dalla finestra, il giardino della pagina seguente.
+:::
+```
+
+Ogni pagina composta con contenuto preso dal contenitore viene tagliata dalla fustella, e così l’altra facciata di ogni foglio su cui cade, specchiata. Come con `:::paper`, il contenuto comincia su una pagina nuova e ciò che segue il `:::` di chiusura comincia anch’esso su una pagina nuova. Un `:::diecut` dentro un altro taglia la fustella di quello interno. `die` è l’unico attributo. Una fustella che `dieCuts.shapes` non ha non taglia nulla: le pagine vengono comunque composte a parte, e la Sandbox elenca un avviso **Forma di fustella sconosciuta** (`dieCutUnknown` nei `contentWarnings` del documento). Per tagliare invece le pagine per numero, usa `dieCuts.pages`.
 
 ### `:::pagebreak`
 

@@ -66,8 +66,10 @@ Conversion at `page.dpi` (default 300):
   InDesign CMYK swatch, a brand colour). A CMYK print render (`print`, §21) sets them as they
   are; `hex` is their screen rendering. Put them on the palette entry: every linked use follows.
 - `spot` (with `model: 'spot'`): a spot ink (a Pantone, a corporate ink, a varnish),
-  `{ name, cmyk, tint?, overprint? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
-  alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process.
+  `{ name, cmyk, tint?, overprint?, finish? }`: `name` is the plate, `cmyk` the ink at 100 % (the PDF's
+  alternate), `tint` percent (default 100), `overprint` for a varnish or an ink laid over process,
+  `finish` (≥ 1.84) for a special ink: `{ kind: 'metallic' | 'foil' | 'fluorescent' | 'white' |
+  'varnish', sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch' }` (§19i).
   A CMYK or PDF/X PDF prints it on its own plate (a `Separation` colour space); screens draw `hex`
   (the ink at its tint). Colours naming the same ink share a plate. A source's spot swatches map
   here, on the palette entry. In the print PDF an SVG colour prints on an ink only when it names
@@ -159,7 +161,8 @@ Conversion at `page.dpi` (default 300):
 | `canvasViewer` | `{ pageGap?, rowGap? }` | `24` / `24` | §21 Sandbox Canvas page spacing (≥ 1.43); `pageGap: 0` for art across the spine |
 | `composedViewerLeaf` | `{ width, height, margins? }` | — | host only (≥ 1.47): the Sandbox's HTML viewer lays composed pages on this print leaf, as `comics.viewerLeaf` does comic pages; **do not write in preset.json config** |
 | `pdfGeneration` | PdfGenerationConfig | §21 | outlines, tagging, colour space |
-| `print` | PrintConfig | §21 | PDF/X standard, ICC output profile, black (K-only, overprint, rich black), preflight (≥ 1.22) |
+| `print` | PrintConfig | §21 | PDF/X standard, ICC output profile, black (K-only, overprint, rich black), preflight (≥ 1.22); ink finishes and the die line (≥ 1.84) |
+| `dieCuts` | DieCutsConfig | — | §19i die-cuts (≥ 1.84): die `shapes`, `pages` that take them, rounded `corners`, a shaped `outline` |
 | `contrast` | ContrastConfig | §21 | contrast check of text on its ground (≥ 1.28): `level` AA/AAA, `mode` auto/screen/print/both, `reversedText` sizes, `allow` accepted pairs (>= 1.52); layout ignores it |
 | `folio` | FolioConfig | §21 | Folio 3D viewer only: tilt, yaw, paper stock, binding (type, covers, spine image), surface, lighting |
 | `debug` | DebugConfig | §21 | editor overlays + warning toggles; no effect on output |
@@ -2652,6 +2655,56 @@ default is used). Never raise the limits to quiet a port: move the text into the
 A box design prints the box's words through `{boxText}` / `{boxText.<n>}` and `{titleText}`; literal
 text typed into its elements is content like any other design text.
 
+## 19i. Special inks and `dieCuts` — die-cuts (postext ≥ 1.84)
+
+**Special inks.** A spot colour with `spot.finish`, or an ink table entry `print.inks[].finish` (the
+ink table's wins; it also covers an ink only an SVG or an imported file names):
+
+```
+finish  { kind, sheen? }
+├─ kind   metallic | foil | fluorescent | white | varnish
+└─ sheen  gloss | satin | matte | softTouch    default gloss for varnish and foil, satin for metallic;
+                                               ignored for fluorescent and white; softTouch only on a varnish
+```
+- Every special ink prints on its own Separation, never in process unless its ink entry says `output:
+  'process'`. White and varnish overprint unless `overprint: false`; the preflight lists white first and
+  varnish last (`inkPressOrder`). Screens paint the `hex`, except a varnish, which paints nothing (give it a
+  distinct hex all the same). In a `plates` job an unnamed white or varnish is dropped (`finishInkDropped`).
+- `whiteInkOnWhite`: set `page.backgroundColor` to the stock a white ink prints on.
+- From a source: `inventory.py` reads Separations (PDF) and spot swatches (IDML) and guesses a finish from
+  each name (`ink_finishes.py`, the engine's `guessInkFinish`): `suggested_config.print.inks`. Confirm with
+  the printer's specification (sources.md, "Special inks and die-cuts").
+
+**Die-cuts.** `dieCuts` describes the book's dies; the Markdown only names one.
+
+```
+dieCuts
+├─ shapes[]    DieShape  { id, name?, shape, x, y, width, height, radius?, d?, viewBox?, leaves?, wrap? }
+│   ├─ shape     rect | roundRect | circle | ellipse | path    circle = largest in the box, centred
+│   ├─ x, y      Dimension from the trim's top-left; width/height = the box the shape fills
+│   ├─ radius    3mm        corners of a roundRect
+│   ├─ d         SVG path data of a path (M L H V C S Q T A Z), in viewBox units, stretched to the box
+│   ├─ viewBox   [1, 1]
+│   ├─ leaves    1          leaves the hole goes through (this one, then the next ones)
+│   └─ wrap      { gap: 3mm }  text keeps gap clear on flowing pages; false = runs under and is cut away
+├─ pages[]     DieCutPlacement  { pages: '1' | '3-12' | '3,7,11-13', die }   pages by position in the
+│                                book (1 = first page), not printed folios
+├─ corners     { radius, edges?: fore | all }   fore (default) = fore-edge corners, spine square
+└─ outline     { d, viewBox? }   every leaf cut to a shape, stretched to a recto's trim; wins over corners
+```
+- Three placements: `dieCuts.pages`; a `:::diecut{die=<id>}` fence (its content starts a page, and the text
+  after its `:::` too; every page it lands on is cut; the innermost fence wins); a decoration element
+  `{ kind: 'cut', id, placement, die?, d?, viewBox?, preserveAspectRatio?, leaves?, wrap?, when?, unless? }`
+  in a page template (the `die` names the shape stretched to the element's box, else `d`, else the box; the
+  element's own `leaves`/`wrap` win; it is never painted). Composed frames do not wrap around a hole yet.
+- A hole cuts both sides of its leaf, mirrored on the back; `leaves: N` carries it through the next leaves.
+- `print.dieLine` strokes the die line on its own Separation (overprinting, an artifact, in the optional
+  content group "Die line" outside PDF/X-1a): `output` page | none, `ink` the plate name (default `Die`;
+  use the die-maker's: `CutContour`, `Dieline`, `Troquel`…), `cmyk` its alternate (100 % magenta), `width`
+  (0.25 pt). The page prints whole; the hole is not cut out of the PDF. CLI: `postext pdf --die-line none`.
+- Preflight (whenever enabled): `dieCutText` (text in a gap or under a hole), `dieCutTrim` (< 3 mm from the
+  trim; critical past it), `dieCutGutter` (critical, within 3 mm of the spine), `dieCutUnknown`.
+
 ## 20. Fonts — `customFonts` and what goes in preset.json
 
 `CustomFontFamily = { name, variants: [{ weight 100–900, style 'normal'|'italic', fileId, format 'woff2'|'woff'|'ttf'|'otf', fileName? }], redistributable?: boolean (default true), fallback?: string (≥ 1.42) }`.
@@ -2826,8 +2879,11 @@ as a change. Left out, the file is stamped with the time of the call.
                  "safeZone": { "value": 5, "unit": "mm" }, "bleedSnap": { "value": 3, "unit": "mm" }, "checkFonts": true },
   "inks": [                        // the ink table: spot inks as the printer gets them
     { "name": "Azul corporativo", "pdfName": "PANTONE 286 C", "aliases": ["Pantone 286C"] },
-    { "name": "Varnish", "output": "process" }    // process: printed in CMYK from its alternate
+    { "name": "Varnish", "output": "process" },   // process: printed in CMYK from its alternate
+    { "name": "Gold", "finish": { "kind": "metallic", "sheen": "satin" } }   // ≥ 1.84, §19i
   ],                               // also "cmyk" (the alternate) and "overprint", over the colours' own
+  "dieLine": { "output": "page", "ink": "Die", "cmyk": { "c": 0, "m": 100, "y": 0, "k": 0 },
+               "width": { "value": 0.25, "unit": "pt" } },   // ≥ 1.84: the die line's plate (§19i); output none = no line
   "plates": {                      // two-ink printing: the only plates the job prints on (absent: all)
     "inks": ["Black", "PANTONE 286 C"],      // Cyan/Magenta/Yellow/Black, or a spot plate by name/alias
     "images": ["Black", "PANTONE 286 C"],    // pictures as a monotone (one) or duotone (two)
@@ -2872,7 +2928,9 @@ as a change. Left out, the file is stamped with the time of the call.
   print: info when its projection lands within ΔE 6, a warning past it or with no profile), `offPlateColor` (warning:
   a screen colour that lands past ΔE 6), `plateUndefined` (a spot plate no colour or `inks` entry defines: it prints
   as black), `cmykImageForeign` (a CMYK JPEG of another press
-  condition in a PDF/X-1a job, with `imageColor.cmykProfile: 'convert'`). `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
+  condition in a PDF/X-1a job, with `imageColor.cmykProfile: 'convert'`); ≥ 1.84 (§19i): `spotInkFinish` and
+  `inkPressOrder` (info), `whiteInkOnWhite` (warning), `dieCutText`, `dieCutTrim`, `dieCutGutter`, `dieCutUnknown`,
+  and the render warning `finishInkDropped`. `render.mjs` passes each SVG's ink names to the preflight (`svgInks`, read with
   `svgSpotInks`), so its PREFLIGHT lines include `spotInkUndefined`; so does `postext check`. Fix the critical ones.
 - With `plates`, a colour off the job's plates prints as the closest mix of one
   plate or two (a `DeviceN` space for two); greys stay on Black; rich black is dropped unless every ink of the recipe

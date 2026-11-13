@@ -168,6 +168,8 @@ export function keyShadowed(fragmentShader: string): string {
 export function casterGeometry(source: BufferGeometry): BufferGeometry {
   const g = new BufferGeometry();
   g.setAttribute("position", source.attributes.position.clone());
+  // A cut leaf's caster drops its holes by the page's uv (#1569).
+  if (source.attributes.uv) g.setAttribute("uv", source.attributes.uv.clone());
   if (source.index) g.setIndex(source.index.clone());
   return g;
 }
@@ -179,10 +181,21 @@ export function syncCaster(caster: Mesh, source: BufferGeometry) {
   to.needsUpdate = true;
 }
 
-export function casterMaterial(leaf: boolean) {
+/** The caster of a leaf with holes (#1569): the page texture's alpha
+ *  drops them (`cut`: the discard's declarations and code, and its
+ *  uniforms). */
+export interface CasterCut {
+  pars: string;
+  discard: string;
+  uniforms: Record<string, { value: unknown }>;
+}
+
+export function casterMaterial(leaf: boolean, cut?: CasterCut) {
+  const vertexShader = cut ? CASTER_VERTEX.replace("varying float vZ;", "varying float vZ;\nvarying vec2 vCutUv;").replace("vZ = w.z;", "vZ = w.z;\nvCutUv = uv;") : CASTER_VERTEX;
+  const fragmentShader = cut ? CASTER_FRAGMENT.replace("varying float vZ;", `varying float vZ;\n${cut.pars}`).replace("void main() {", `void main() {\n${cut.discard}`) : CASTER_FRAGMENT;
   return new ShaderMaterial({
-    vertexShader: CASTER_VERTEX,
-    fragmentShader: CASTER_FRAGMENT,
+    vertexShader,
+    fragmentShader,
     side: DoubleSide,
     blending: CustomBlending,
     blendEquation: MaxEquation,
@@ -191,7 +204,7 @@ export function casterMaterial(leaf: boolean) {
     blendDst: OneFactor,
     depthTest: false,
     depthWrite: false,
-    uniforms: { uLeaf: { value: leaf ? 1 : 0 } },
+    uniforms: { uLeaf: { value: leaf ? 1 : 0 }, ...cut?.uniforms },
   });
 }
 

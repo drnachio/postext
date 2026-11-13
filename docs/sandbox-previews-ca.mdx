@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-11-10',
   readingTime: '16 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Aquesta pàgina explica la part dreta del Sandbox, on apareixen les pàgines acabades. Cinc pestanyes mostren el mateix llibre de cinc maneres: com a imatges de pàgina, com a fitxer PDF, com a llibre en 3D que pots fullejar, com a pàgina web i com a llibre electrònic EPUB. Una sisena fa un paquet SCORM amb els capítols que triïs, per a la plataforma d'aprenentatge d'una escola o d'una empresa. Quan canvies de pestanya, el llibre no es torna a compondre, així que totes mostren les mateixes pàgines. La pàgina explica què mostra cada pestanya i què hi pots fer.",
 };
@@ -35,6 +35,10 @@ La barra d'eines de la part superior de l'àrea del canvas ofereix:
 - **Modes d'ajust**: ajustar a l'amplada o a l'alçada de la pàgina. S'activen i es desactiven amb el mateix botó, i l'ajust es recalcula automàticament quan canvia la mida de la finestra.
 - **Modes de vista**: pàgina única (una pàgina per fila) o doble pàgina (maquetació de llibre, on la primera pàgina apareix a la dreta com a pàgina senar i les següents s'aparellen en dobles pàgines). Un llibre enquadernat per la dreta (`page.binding`, xinès vertical) mostra les dobles pàgines al revés: la pàgina 1 sola a l'esquerra i després `[3 | 2]`, `[5 | 4]`. En una pàgina vertical, un clic va al caràcter que hi ha sota el punter, i el cursor és una barra que travessa la columna.
 - **Simula la impressió** (icona `Printer`): mostra les pàgines tal com s'imprimiran. Està desactivada per defecte i el navegador en recorda l'estat. Cada color se separa amb el perfil de sortida de *Preparació per a impremta* i es mostra sobre el blanc del paper, i les masses grans de negre es veuen en negre enriquit; un PDF forçat a escala de grisos es veu només amb tinta negra. Només es mostra el que s'imprimeix: ni guies de pantalla ni marcs (els problemes del preflight són a **Revisió**). La pestanya Folio comparteix aquest interruptor. Només torna a pintar les pàgines; no les torna a compondre mai.
+- **Línies de troquel** (icona `Scissors`, en un llibre amb troquels): dibuixa el troquel de cada forat, i el contorn d'un full amb forma o amb cantonades arrodonides, com una línia discontínua sobre la pàgina.
+- **Tintes especials** (icona `Sparkles`, en un llibre amb tintes especials): passa per tres vistes: *planes*, cada tinta en el seu color de pantalla i el vernís gens; *amb brillantor*, la tinta metàl·lica i l'estampació il·luminades per un feix de llum, la tinta fluorescent lluent i el vernís visible pel seu reflex; i *mapa d’acabats*, les planxes especials en fals color sobre una pàgina esvaïda (metàl·lica i estampació en ambre, fluorescent en rosa, vernís en cian, blanc opac en blau). Vegeu [Tintes especials i troquels](/ca/docs/special-inks-die-cuts#en-pantalla).
+
+El navegador recorda tots dos botons, i cap dels dos no torna a compondre les pàgines.
 
 Les pàgines es renderitzen a demanda mitjançant `IntersectionObserver`: només es dibuixen al canvas les pàgines visibles (més un marge de 200 px), cosa que manté baix l'ús de memòria de la GPU en documents llargs.
 

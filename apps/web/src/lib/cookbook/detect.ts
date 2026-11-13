@@ -21,13 +21,13 @@ export const CONFIG_KEYS: readonly string[] = [
   "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "characterStyles", "markStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "links", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
   "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "symbolFont", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
-  "pageTemplates", "chapterStyles", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises",
+  "pageTemplates", "chapterStyles", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises", "dieCuts",
 ];
 
 /** The parser's single-line directives and fenced containers
  *  (KNOWN_DIRECTIVES / KNOWN_CONTAINERS in packages/postext/src/parse). */
 export const KNOWN_DIRECTIVES: readonly string[] = ["pagebreak", "numbering", "columnbreak", "space", "toc", "index", "bibliography", "references", "verse", "page", "strip", "figure", "solutions"];
-export const KNOWN_CONTAINERS: readonly string[] = ["callout", "paragraphs", "part", "columns", "paper", "frame", "module", "exercise", "solution", "hint"];
+export const KNOWN_CONTAINERS: readonly string[] = ["callout", "paragraphs", "part", "columns", "paper", "diecut", "frame", "module", "exercise", "solution", "hint"];
 
 /** The engine's fence line: `:::name` with an optional `{attrs}` block. */
 const DIRECTIVE_LINE = /^:::\s*([a-z][a-z0-9-]*)(?:\s*\{([^}]*)\})?\s*$/;

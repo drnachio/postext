@@ -1,4 +1,4 @@
-import type { Dimension } from '../page.js';
+import type { Dimension, InkFinish } from '../page.js';
 
 /** The colour space a PDF is written in. */
 export type PdfColorSpace = 'rgb' | 'cmyk' | 'grayscale';
@@ -247,6 +247,9 @@ export interface PrintInk {
   cmyk?: CmykPercent;
   /** Whether the ink overprints, over what the colours say. */
   overprint?: boolean;
+  /** The ink's finish, over what the colours say (#1563): an SVG or an
+   *  imported file that names `Gold` gets its metallic finish here. */
+  finish?: InkFinish;
 }
 
 export interface ResolvedPrintInk {
@@ -256,6 +259,30 @@ export interface ResolvedPrintInk {
   output: 'spot' | 'process';
   cmyk?: CmykPercent;
   overprint?: boolean;
+  finish?: InkFinish;
+}
+
+/** The die line (#1566): the path the die-maker cuts, stroked on a plate
+ *  of its own that prints nothing, on every page with a die-cut. */
+export interface PrintDieLineConfig {
+  /** `'page'` (default) strokes the die line on each page with a die-cut,
+   *  overprinting, on its own plate (and, outside PDF/X-1a, in an optional
+   *  content group a reader can hide); `'none'` leaves it out. */
+  output?: 'page' | 'none';
+  /** The plate's name, as the printer and the die-maker call it. Default
+   *  `'Die'` (`CutContour`, `Dieline`, `Troquel`…). */
+  ink?: string;
+  /** The plate's alternate, how proofs show it. Default 100 % magenta. */
+  cmyk?: CmykPercent;
+  /** Stroke width. Default 0.25 pt. */
+  width?: Dimension;
+}
+
+export interface ResolvedPrintDieLineConfig {
+  output: 'page' | 'none';
+  ink: string;
+  cmyk: CmykPercent;
+  width: Dimension;
 }
 
 /** The plates a job prints on (`print.plates`): a two-ink (or one-ink)
@@ -348,6 +375,8 @@ export interface PrintConfig {
   plates?: PrintPlatesConfig;
   /** How pictures' colours are read: their profiles, greyscale. */
   imageColor?: PrintImageColorConfig;
+  /** The die line of the book's die-cuts (`dieCuts`, #1566). */
+  dieLine?: PrintDieLineConfig;
 }
 
 /** Print production with every default filled in. */
@@ -365,6 +394,7 @@ export interface ResolvedPrintConfig {
   inks: ResolvedPrintInk[];
   plates: ResolvedPrintPlatesConfig;
   imageColor: ResolvedPrintImageColorConfig;
+  dieLine: ResolvedPrintDieLineConfig;
 }
 
 /** How postext-pdf writes the file. Layout ignores it; the VDT carries it

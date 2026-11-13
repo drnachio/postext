@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-11-12',
   readingTime: '14 min',
-  order: 51,
+  order: 52,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
 };
 
@@ -200,6 +200,9 @@ change them for one run:
 - `--accessible` / `--no-accessible`: the tagged structure for screen readers.
 - `--no-outlines`: leave out the bookmarks.
 - `--page-negative`: negative pages, for some print workflows.
+- `--die-line page|none`: the die line of a book with die-cuts, on a plate of its own
+  (`page`, the default) or left out (`none`); see
+  [The die line in the PDF](/en/docs/special-inks-die-cuts#the-die-line-in-the-pdf).
 
 ### html
 

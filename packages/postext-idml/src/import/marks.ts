@@ -1,8 +1,8 @@
 // Runs of text with their marks, written as Postext inline Markdown.
 //
-// The marks nest in one fixed order, outermost first: colour, bold,
-// italic, small capitals, underline, strikethrough, script, direction,
-// link. Postext reads italic inside bold and not the other way round, so
+// The marks nest in one fixed order, outermost first: character style
+// (`:span`, #1555), colour, bold, italic, small capitals, underline,
+// strikethrough, script, direction, link. Postext reads italic inside bold and not the other way round, so
 // bold is always the outer one. Spaces at the edges of a marked stretch
 // move outside its markers (`**word** next`, never `**word **next`).
 //
@@ -20,6 +20,9 @@ export interface Seg {
   t: string;
   raw?: boolean;
   href?: string;
+  /** Id of a character style (`:span[…]{style}`): the run's face, size,
+   *  weight, slant and colour, all at once. */
+  span?: string;
   /** Id of a mark style. */
   mark?: string;
   b?: boolean;
@@ -35,9 +38,9 @@ export interface Seg {
   dots?: string;
 }
 
-type Layer = 'mark' | 'b' | 'i' | 'sc' | 'u' | 's' | 'script' | 'dir' | 'href';
-const LAYERS: Layer[] = ['mark', 'b', 'i', 'sc', 'u', 's', 'script', 'dir', 'href'];
-const BRACKETED = new Set<Layer>(['mark', 'sc', 'u', 'dir']);
+type Layer = 'span' | 'mark' | 'b' | 'i' | 'sc' | 'u' | 's' | 'script' | 'dir' | 'href';
+const LAYERS: Layer[] = ['span', 'mark', 'b', 'i', 'sc', 'u', 's', 'script', 'dir', 'href'];
+const BRACKETED = new Set<Layer>(['span', 'mark', 'sc', 'u', 'dir']);
 
 const flagsEqual = (a: Seg, b: Seg): boolean => LAYERS.every((k) => (a[k] || undefined) === (b[k] || undefined)) && !a.ruby && !b.ruby && !a.tcy && !b.tcy && !a.dots && !b.dots;
 
@@ -68,7 +71,13 @@ const isRoom = (s: Seg): boolean => !!s.raw && (s.t.trim() === '' || /^ ?:tab(?:
 /** Whitespace at the edges of a group, taken off its segments: spaces,
  *  forced breaks and tabs. A mark of emphasis that closes after a space or
  *  a tab is not read (`**1.1 :tab **` prints its asterisks). */
-function edges(segs: Seg[]): { lead: string; inner: Seg[]; trail: string } {
+function edges(segs: Seg[], layer?: Layer): { lead: string; inner: Seg[]; trail: string } {
+  // A character style keeps its fixed spaces (thin, en, no-break) inside:
+  // they are room the style's look sets, as a chip's padding is (#1555),
+  // and a paragraph trimmed at its start would lose them outside.
+  const fixed = layer === 'span';
+  const leadRe = fixed ? /^[^\S\u00a0\u2000-\u200a\u202f]+/ : /^\s+/;
+  const trailRe = fixed ? /[^\S\u00a0\u2000-\u200a\u202f]+$/ : /\s+$/;
   const inner = segs.map((s) => ({ ...s }));
   let lead = '';
   let trail = '';
@@ -81,7 +90,7 @@ function edges(segs: Seg[]): { lead: string; inner: Seg[]; trail: string } {
       continue;
     }
     if (!first.raw) {
-      const m = /^\s+/.exec(first.t);
+      const m = leadRe.exec(first.t);
       if (m) {
         lead += m[0];
         first.t = first.t.slice(m[0].length);
@@ -102,7 +111,7 @@ function edges(segs: Seg[]): { lead: string; inner: Seg[]; trail: string } {
       continue;
     }
     if (!last.raw) {
-      const end = last.t.trimEnd().length;
+      const end = last.t.length - (trailRe.exec(last.t)?.[0].length ?? 0);
       if (end < last.t.length) {
         trail = last.t.slice(end) + trail;
         last.t = last.t.slice(0, end);
@@ -149,6 +158,8 @@ function wrap(layer: Layer, value: unknown, body: string): string {
   switch (layer) {
     case 'href':
       return `[${body}](${linkDestination(String(value))})`;
+    case 'span':
+      return `:span[${body}]{style="${String(value)}"}`;
     case 'mark':
       return `:mark[${body}]{style="${String(value)}"}`;
     case 'b':
@@ -187,7 +198,7 @@ function render(segs: Seg[], depth: number, st: State): string {
       out += render(group, depth + 1, st);
       continue;
     }
-    const { lead, inner, trail } = edges(group.map((s) => ({ ...s, [layer]: undefined })));
+    const { lead, inner, trail } = edges(group.map((s) => ({ ...s, [layer]: undefined })), layer);
     if (!inner.length) {
       st.out += lead + trail;
       out += lead + trail;
@@ -209,7 +220,11 @@ function render(segs: Seg[], depth: number, st: State): string {
     st.out += lead;
     // Two markers of emphasis that meet (`**a***b*`) are parted.
     const glue = (layer === 'b' || layer === 'i') && /[*_]$/.test(st.out) ? WORD_JOINER : '';
-    const body = render(inner, depth + 1, { out: '', brackets: st.brackets + (BRACKETED.has(layer) ? 1 : 0) });
+    let body = render(inner, depth + 1, { out: '', brackets: st.brackets + (BRACKETED.has(layer) ? 1 : 0) });
+    // Fixed spaces a character style opens the paragraph with (a chip's
+    // padding) would be dropped as a line's leading spaces: a word joiner
+    // before them holds them on the line (#1555).
+    if (layer === 'span' && !st.out.trim() && /^[\u00a0\u2000-\u200a\u202f]/.test(body)) body = WORD_JOINER + body;
     const text = glue + wrap(layer, value, body);
     st.out += text + trail;
     out += lead + text + trail;

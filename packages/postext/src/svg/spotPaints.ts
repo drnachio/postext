@@ -127,8 +127,9 @@ function codePoint(n: number): string | undefined {
 /** What {@link scanSvgPaints} hands its visitor. */
 interface PaintVisitor {
   /** A paint value (raw, entities not decoded): return a replacement to
-   *  rewrite it, or undefined to keep it. */
-  paint?: (raw: string) => string | undefined;
+   *  rewrite it, or undefined to keep it. `spot` is the `data-spot` of the
+   *  element whose attribute holds it (none in a `<style>` sheet). */
+  paint?: (raw: string, spot?: string) => string | undefined;
   /** An element's `data-spot` / `data-spot-tint` attributes, decoded. */
   dataSpot?: (name: string, tint: string | undefined) => void;
 }
@@ -136,7 +137,7 @@ interface PaintVisitor {
 /** The declarations of a CSS text (a `style` attribute or a sheet), each
  *  paint value handed to `paint`; returns the text, rewritten where it
  *  answered. */
-function scanDeclarations(css: string, paint: NonNullable<PaintVisitor['paint']>): string {
+function scanDeclarations(css: string, paint: (raw: string) => string | undefined): string {
   let out = '';
   let start = 0;
   for (let i = 0; i <= css.length; i++) {
@@ -214,7 +215,7 @@ function tagEnd(text: string, lt: number): number {
  * the paints `visitor.paint` rewrote (the same string when it rewrote
  * none).
  */
-function scanSvgPaints(svg: string, visitor: PaintVisitor): string {
+export function scanSvgPaints(svg: string, visitor: PaintVisitor): string {
   let out = '';
   let copied = 0;
   let i = 0;
@@ -249,15 +250,20 @@ function scanSvgPaints(svg: string, visitor: PaintVisitor): string {
     const tag = svg.slice(lt, end);
     let spotName: string | undefined;
     let spotTint: string | undefined;
-    for (const a of attributes(tag, nameEnd - lt)) {
+    const attrs = attributes(tag, nameEnd - lt);
+    for (const a of attrs) {
       const name = a.name.toLowerCase();
       if (name === 'data-spot') spotName = decodeEntities(a.value).trim();
       else if (name === 'data-spot-tint') spotTint = decodeEntities(a.value);
-      else if (visitor.paint && PAINT_PROPERTIES.has(name)) {
-        const next = visitor.paint(a.value);
+    }
+    const paint = visitor.paint;
+    for (const a of attrs) {
+      const name = a.name.toLowerCase();
+      if (paint && PAINT_PROPERTIES.has(name)) {
+        const next = paint(a.value, spotName || undefined);
         if (next !== undefined) replace(lt + a.start, lt + a.end, next);
-      } else if (visitor.paint && name === 'style' && a.value.includes(':')) {
-        const next = scanDeclarations(a.value, visitor.paint);
+      } else if (paint && name === 'style' && a.value.includes(':')) {
+        const next = scanDeclarations(a.value, (raw) => paint(raw, spotName || undefined));
         if (next !== a.value) replace(lt + a.start, lt + a.end, next);
       }
     }

@@ -46,7 +46,7 @@ const JOINS: Record<NonNullable<NonNullable<VDTDesignPathBlock['stroke']>['join'
 const KAPPA = 0.5522847498;
 
 /** The operators tracing `subpaths` (page px) in PDF user space. */
-function traceOps(ctx: PageCtx, subpaths: readonly (readonly VDTPathCommand[])[]): PDFOperator[] {
+export function traceOps(ctx: Pick<PageCtx, 'scale' | 'pageHeightPt'>, subpaths: readonly (readonly VDTPathCommand[])[]): PDFOperator[] {
   const { scale, pageHeightPt: h } = ctx;
   const X = (x: number) => x * scale;
   const Y = (y: number) => h - y * scale;

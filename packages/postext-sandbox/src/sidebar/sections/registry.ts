@@ -72,6 +72,7 @@ export type SettingsSectionId =
   | 'comicsBalloonStyles'
   | 'comicsCast'
   | 'pageTemplates'
+  | 'dieCuts'
   | 'modules'
   | 'htmlViewer'
   | 'canvasViewer'
@@ -129,6 +130,8 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'pageTemplates', group: 'page', labelKey: 'pageTemplatesSection', configKeys: ['pageTemplates'] },
   // The module library (#1065): the templates a page stacks with :::module.
   { id: 'modules', group: 'page', labelKey: 'modulesSection', configKeys: ['pageTemplates'] },
+  // Die-cuts (#1565, #1570): holes, rounded corners, a shaped book.
+  { id: 'dieCuts', group: 'page', labelKey: 'dieCutsSection', configKeys: ['dieCuts'] },
   // Language and direction: `locale`, `layout.writingMode`, `page.binding`
   // (see `sectionHasOverrides` for the two nested keys).
   { id: 'writing', group: 'writing', labelKey: 'writingSection', configKeys: ['locale', 'layout', 'page'] },

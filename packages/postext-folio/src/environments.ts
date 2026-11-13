@@ -79,6 +79,10 @@ export function environment(kind: EnvironmentKind): Environment {
           panel(6, 4, "#ffffff", 7, [-4, 3, 7]),
           panel(4, 6, "#ffffff", 2.2, [7, -1, 4]),
           panel(10, 2, "#ffffff", 1.5, [0, 8, 6]),
+          // A strip light overhead, beyond the book (#1568): what a page
+          // seen from the reader's place mirrors, so foil and metallic ink
+          // catch a highlight (they would mirror only the grey room).
+          panel(8, 1.4, "#ffffff", 3, [0, 4.6, 9.6]),
         ),
         key: new Vector3(-0.4, 0.3, 0.86).normalize(),
         keyColor: new Color("#ffffff"),
@@ -98,6 +102,9 @@ export function environment(kind: EnvironmentKind): Environment {
           panel(8, 4, "#ffe6c4", 1.8, [-3, 0, -1.9], [-3, 0, 5]),
           // Light bounced off the room's far wall.
           panel(10, 8, "#fff8f0", 1.6, [9.5, 0, 4], [0, 0, 4]),
+          // The window's light on the ceiling over the desk: what a page
+          // mirrors back at the reader, and metal ink with it (#1568).
+          panel(7, 3, "#fbfcff", 2.2, [-1.5, 4.2, 9.6]),
         ),
         key: new Vector3(-0.75, 0.15, 0.64).normalize(),
         keyColor: new Color("#fff4e6"),

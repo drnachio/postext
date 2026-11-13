@@ -152,6 +152,10 @@ En el flujo del texto se reconocen cinco nombres de contenedor; `:::frame` y `::
       <td>Una serie de páginas impresas en otro papel, como un cuadernillo de láminas en estucado brillo dentro de un libro en papel mate. Solo lo muestra el visor Folio.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Una serie de páginas que corta un troquel de la configuración: una ventana, un hueco que atraviesa varias hojas. Véase <a href="#diecut"><code>:::diecut</code></a> más abajo.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Bloques compuestos en varias columnas propias: dentro de un recuadro, en la columna de texto o a lo ancho de una página de varias columnas. Véase <a href="#columns"><code>:::columns</code></a> más abajo.</td>
     </tr>
@@ -382,6 +386,19 @@ Los atributos son los de los ajustes `folio.paper`, y todos son opcionales. Un a
 </table>
 
 Un `:::paper` dentro de otro solo cambia los atributos que escribe, y también empieza y termina con un salto de página. Dentro de un `:::callout`, las líneas `:::paper` se ignoran. Un valor que el motor no puede leer se descarta, y el Sandbox lo muestra con el aviso **Atributo de papel no válido** (`paperAttributeInvalid` en los `contentWarnings` del documento).
+
+### `:::diecut`
+
+Un troquel pertenece a la forma del libro: su contorno, su tamaño y su sitio en la página son una forma de troquel de la configuración (`dieCuts.shapes`, véase [Tintas especiales y troqueles](/es/docs/special-inks-die-cuts#formas-de-troquel)). Cuando es el contenido el que decide qué páginas se troquelan, se encierra en un contenedor `:::diecut` que nombra el troquel:
+
+```md
+:::diecut{die=window}
+## La casa
+Por la ventana, el jardín de la página siguiente.
+:::
+```
+
+Cada página compuesta con contenido del contenedor la corta el troquel, y también la otra cara de cada hoja en que cae, en espejo. Como con `:::paper`, el contenido empieza en una página nueva, y lo que sigue al `:::` de cierre también. Un `:::diecut` dentro de otro corta el troquel del interior. `die` es el único atributo. Un troquel que no está en `dieCuts.shapes` no corta nada: las páginas se siguen componiendo aparte, y el Sandbox muestra el aviso **Forma de troquel desconocida** (`dieCutUnknown` en los `contentWarnings` del documento). Para troquelar páginas por su número, usa `dieCuts.pages`.
 
 ### `:::pagebreak`
 

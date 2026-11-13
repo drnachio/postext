@@ -425,10 +425,11 @@ Per i flussi di lavoro di stampa in produzione, regola queste opzioni di configu
 - **`page.dpi: 300`**: i px per pollice dell’impaginazione: una bitmap senza una risoluzione propria viene stampata a questa risoluzione alla sua dimensione naturale. Il [preflight](/it/docs/configuration-pdf-output#preflight) segnala le immagini sotto i 300 ppi alla dimensione di stampa.
 - **`ColorValue.cmyk`**: un colore definito in CMYK viene stampato con i suoi valori esatti.
 - **`{ pageNegative: true }`** in `RenderToPdfOptions`: inverte l’area del formato rifilato con un metodo di fusione Differenza (i segni di taglio restano non invertiti). Utile per i controlli di preflight sul testo scuro su fondo chiaro.
+- **`print.dieLine`**: la linea di fustella di un libro con fustelle, tracciata su una lastra propria che la macchina non inchiostra mai (`Die` per impostazione predefinita, in un gruppo di contenuto opzionale fuori da PDF/X-1a). Vedi [La linea di fustella nel PDF](/it/docs/special-inks-die-cuts#la-linea-di-fustella-nel-pdf).
 
 ### Tinte piatte
 
-Una tinta piatta (un Pantone, un inchiostro aziendale, una vernice) si stampa su una propria lastra. Un colore con `model: 'spot'` porta il suo inchiostro in `ColorValue.spot`: `name` è il nome della lastra come lo conosce lo stampatore, `cmyk` l’aspetto dell’inchiostro al 100 % (il sostituto che il PDF dà a chi non ha l’inchiostro), `tint` la forza in percentuale (100 per impostazione predefinita), e `overprint` fa sovrastampare l’inchiostro su ciò che sta sotto invece di risparmiarlo, come una vernice. `hex` è la sua resa a schermo.
+Una tinta piatta (un Pantone, un inchiostro aziendale, una vernice) si stampa su una propria lastra. Un colore con `model: 'spot'` porta il suo inchiostro in `ColorValue.spot`: `name` è il nome della lastra come lo conosce lo stampatore, `cmyk` l’aspetto dell’inchiostro al 100 % (il sostituto che il PDF dà a chi non ha l’inchiostro), `tint` la forza in percentuale (100 per impostazione predefinita), `overprint` fa sovrastampare l’inchiostro su ciò che sta sotto invece di risparmiarlo, come una vernice, e `finish` dice che cos’è un inchiostro speciale: metallizzato, lamina a caldo, fluorescente, bianco coprente o vernice. `hex` è la sua resa a schermo. [Inchiostri speciali e fustelle](/it/docs/special-inks-die-cuts#finiture) spiega come si stampa e come si vede ogni finitura.
 
 Un PDF CMYK o PDF/X scrive ogni inchiostro come uno spazio colore `Separation` con il suo nome, e dipinge ogni colore di quell’inchiostro alla sua tinta: i colori con lo stesso `name` condividono una lastra. Questo copre i lavori abituali: due colori (il nero e una tinta piatta), la quadricromia con alcuni elementi in una tinta piatta, e una vernice sovrastampata su aree scelte. Quando `diagramStyle.singleInk` usa una tinta piatta, i diagrammi SVG si stampano in tinte di quella lastra. Un PDF RGB e lo schermo dipingono l’`hex` del colore.
 
@@ -438,7 +439,7 @@ Un PDF CMYK o PDF/X scrive ogni inchiostro come uno spazio colore `Separation` c
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' stampa l’inchiostro in CMYK, dal suo sostituto.
   cmyk?: CmykPercent;              // Il sostituto al 100 %, prevale su quello dei colori.
   overprint?: boolean;             // Prevale su quello dei colori.
+  finish?: InkFinish;              // Metallizzato, lamina, fluorescente, bianco o vernice; prevale su quella dei colori.
 }
 ```
 
-Nomi e alias si confrontano ignorando le maiuscole e gli spazi ripetuti. Rinominare richiede una riga, per quanti colori usino l’inchiostro; un alias riunisce su una lastra i nomi che un campione del grafico, un SVG (`data-spot`, `icc-named-color`) o una tavolozza precedente davano allo stesso inchiostro; e `output: 'process'` stampa un inchiostro in CMYK quando la macchina non ha un gruppo per esso, tutte le sue tinte comprese.
+Nomi e alias si confrontano ignorando le maiuscole e gli spazi ripetuti. Rinominare richiede una riga, per quanti colori usino l’inchiostro; un alias riunisce su una lastra i nomi che un campione del grafico, un SVG (`data-spot`, `icc-named-color`) o una tavolozza precedente davano allo stesso inchiostro; `output: 'process'` stampa un inchiostro in CMYK quando la macchina non ha un gruppo per esso, tutte le sue tinte comprese; e `finish` rende speciale un inchiostro da qualunque parte venga il suo nome, compreso un SVG o un file importato che nomina `Gold`.
 
-Nel Sandbox la tabella si trova in **Grafica › Esportazione › Preparazione per la stampa › Tabella degli inchiostri**: una scheda per inchiostro con **Nome dell’inchiostro**, **Alias**, **Nome della lastra nel PDF**, **Si stampa come**, **CMYK alternativo** e **Sovrastampa**. **Inchiostri usati dai colori** elenca gli inchiostri dei colori del libro che mancano nella tabella, ciascuno con un pulsante che lo aggiunge.
+Nel Sandbox la tabella si trova in **Grafica › Esportazione › Preparazione per la stampa › Tabella degli inchiostri**: una scheda per inchiostro con **Nome dell’inchiostro**, **Alias**, **Nome della lastra nel PDF**, **Si stampa come**, **CMYK alternativo**, **Sovrastampa**, **Finitura** e **Lucentezza**. **Inchiostri usati dai colori** elenca gli inchiostri dei colori del libro che mancano nella tabella, ciascuno con un pulsante che lo aggiunge.
 
 ```ts
 print: {

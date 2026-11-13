@@ -152,6 +152,10 @@ Im Textfluss werden fünf Containernamen erkannt; `:::frame` und `:::module` neh
       <td>Eine Folge von Seiten, die auf einem anderen Papier gedruckt werden, etwa ein Bildteil auf Glanzpapier in einem Buch auf mattem Papier. Nur der Folio-Betrachter zeigt das an.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Eine Folge von Seiten, die eine Stanzform der Konfiguration schneidet: ein Fenster, ein Loch durch mehrere Blätter. Siehe <a href="#diecut"><code>:::diecut</code></a> unten.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Blöcke in eigenen Spalten: in einem Kasten, in der Textspalte oder über eine Seite mit mehreren Spalten hinweg. Siehe <a href="#columns"><code>:::columns</code></a> unten.</td>
     </tr>
@@ -382,6 +386,19 @@ Die Attribute sind die der Einstellungen `folio.paper`, und alle sind optional. 
 </table>
 
 Ein `:::paper` in einem anderen überschreibt nur die Attribute, die es setzt, und beginnt und endet ebenfalls mit einem Seitenumbruch. In einem `:::callout` werden diese Blöcke ignoriert. Ein Wert, den die Engine nicht lesen kann, wird verworfen, und die Sandbox führt ihn als Warnung **Ungültiges Papierattribut** auf (`paperAttributeInvalid` in den `contentWarnings` des Dokuments).
+
+### `:::diecut`
+
+Eine Stanzung gehört zur Form des Buchs: Ihre Kontur, ihre Größe und ihr Platz auf der Seite sind eine Stanzform der Konfiguration (`dieCuts.shapes`, siehe [Spezialfarben und Stanzungen](/de/docs/special-inks-die-cuts#stanzformen)). Wenn der Inhalt bestimmt, welche Seiten gestanzt werden, fassen Sie ihn in einen Container `:::diecut`, der die Stanzform nennt:
+
+```md
+:::diecut{die=window}
+## Das Haus
+Durch das Fenster der Garten der nächsten Seite.
+:::
+```
+
+Jede Seite, die mit Inhalt aus dem Container gesetzt ist, wird von der Stanzform geschnitten, und ebenso, gespiegelt, die andere Seite jedes Blatts, auf das er fällt. Wie bei `:::paper` beginnt der Inhalt auf einer neuen Seite, und was auf das schließende `:::` folgt, ebenfalls. Ein `:::diecut` in einem anderen schneidet die Stanzform des inneren. `die` ist das einzige Attribut. Eine Stanzform, die `dieCuts.shapes` nicht enthält, schneidet nichts: Die Seiten werden trotzdem für sich gesetzt, und die Sandbox führt eine Warnung **Unbekannte Stanzform** auf (`dieCutUnknown` in den `contentWarnings` des Dokuments). Um Seiten stattdessen nach ihrer Nummer zu stanzen, verwenden Sie `dieCuts.pages`.
 
 ### `:::pagebreak`
 

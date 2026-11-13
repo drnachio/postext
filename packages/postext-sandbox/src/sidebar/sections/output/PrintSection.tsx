@@ -39,10 +39,11 @@ import { usePrintSetup } from '../../../print/printSetup.js';
 import { PrintInksGroup } from './PrintInksGroup.js';
 import { PrintPicturesGroup } from './PrintPicturesGroup.js';
 import { PrintPlatesGroup } from './PrintPlatesGroup.js';
+import { PrintDieLineGroup } from './PrintDieLineGroup.js';
 
 /** Print preparation (#607): crop marks and bleed, the PDF/X standard and
  *  output profile, black handling, how pictures' colours print, the ink
- *  table, the plates and the preflight thresholds. Writes `print` and `page.cutLines`. */
+ *  table, the plates, the die line and the preflight thresholds. Writes `print` and `page.cutLines`. */
 export const PrintSection = memo(function PrintSection() {
   const dispatch = useSandboxDispatch();
   const labels = useSandboxLabels();
@@ -281,6 +282,7 @@ export const PrintSection = memo(function PrintSection() {
       <PrintPicturesGroup />
       <PrintInksGroup />
       <PrintPlatesGroup />
+      <PrintDieLineGroup />
 
       <CollapsibleSection title={labels.printGroupPreflight} sectionId="print-preflight" variant="subsection">
         <ToggleSwitch label={labels.printPreflightEnabled} checked={cfg.preflight.enabled} onChange={(v) => updatePreflight({ enabled: v })}

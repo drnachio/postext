@@ -1,0 +1,353 @@
+{/* docs/special-inks-die-cuts-ca.mdx */}
+
+export const metadata = {
+  title: 'Tintes especials i troquels',
+  sidebarTitle: 'Tintes especials i troquels',
+  description: "Cinquenes tintes, tintes metàl·liques i fluorescents, estampació en calent, blanc opac i vernís com a tintes planes amb un acabat, i troquels: forats que travessen un o més fulls, cantonades arrodonides i llibres amb forma, la línia de troquel al PDF, el preflight i com els mostra cada visor",
+  lang: 'ca',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "Aquesta pàgina tracta del que una impremta afegeix a un llibre a més de les quatre tintes de sempre. Una cinquena tinta pot ser un color de marca exacte, una tinta d'or o de plata, una estampació brillant, una tinta fluorescent molt viva, un blanc per a paper marró o de color, o un vernís transparent. Cadascuna és un color del llibre marcat amb el que és, i el PDF li dona una planxa pròpia per a la impremta. Un troquel és un forat tallat a través de les pàgines, unes cantonades arrodonides o un llibre retallat amb una forma. Els forats es defineixen a la configuració, el text els envolta i el PDF dibuixa la línia que segueix l'eina de tall.",
+};
+
+# Tintes especials i troquels
+
+**Una tinta especial és una tinta plana amb un acabat. Un troquel és una forma de la configuració que l'eina de tall travessa pels fulls.**
+
+Totes dues coses formen part de la forma del llibre, i per això viuen a la configuració. Un acabat no mou mai cap línia: la maquetació hi veu un color, el PDF hi veu una tinta en una planxa pròpia, i cada visor decideix com mostrar-la. Un troquel sí que canvia la pàgina, perquè el text s'aparta del forat, però el Markdown només anomena el troquel allà on el contingut el necessita.
+
+## Cinquenes tintes
+
+Una cinquena tinta és qualsevol tinta que el treball imprimeix a més del cian, el magenta, el groc i el negre: un Pantone que ha de coincidir exactament, un color corporatiu que barreja el fabricant de tintes o una de les tintes especials que es descriuen més avall. A Postext és una tinta plana, un color amb `model: 'spot'` el `spot` del qual anomena la tinta, en dona l'aspecte al 100 % en CMYK (l'equivalent que mostra una prova) i el to. Un fitxer CMYK o PDF/X la imprimeix en una planxa `Separation` amb el nom de la tinta; la pantalla i un fitxer RGB pinten el seu `hex`. El model complet és a [Tintes planes](/ca/docs/configuration-pdf-output#tintes-planes).
+
+A la [taula de tintes](/ca/docs/configuration-pdf-output#la-taula-de-tintes) (`print.inks`) es descriu cada tinta tal com la rebrà la impremta, l'anomenin com l'anomenin els colors, les imatges SVG i els fitxers importats: el nom de la planxa, els àlies, si s'imprimeix en quadricromia, l'equivalent, la sobreimpressió i, per a una tinta especial, l'acabat.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Acabats
+
+Una tinta plana sense acabat és una tinta corrent. Amb un acabat, és una tinta especial:
+
+<table>
+  <thead>
+    <tr>
+      <th>Acabat</th>
+      <th>Què és</th>
+      <th>Brillantor</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Una tinta amb pigment metàl·lic: or, plata, coure (Pantone 871–877 C, les sèries 8000 i 10000).</td><td><code>satin</code> per defecte, o <code>gloss</code> o <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Estampació en calent: una làmina que un clixé calent fixa al plec després d'imprimir. La planxa és l'original amb què es fa el clixé.</td><td><code>gloss</code> per defecte, o <code>satin</code> o <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Una tinta més viva que qualsevol barreja de quadricromia (Pantone 801–814 C).</td><td>cap</td></tr>
+    <tr><td><code>white</code></td><td>Un blanc opac, per a paper kraft, paper de color o film, normalment sota els colors.</td><td>cap</td></tr>
+    <tr><td><code>varnish</code></td><td>Una capa transparent en zones escollides (vernís UVI selectiu, un vernís mat o de tacte suau).</td><td><code>gloss</code> per defecte, o <code>satin</code>, <code>matte</code> o <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // S'ignora en les tintes fluorescents i blanques.
+}
+```
+
+L'acabat va a la tinta plana (`spot.finish`) o a l'entrada de la tinta a la taula de tintes (`print.inks[].finish`); mana la de la taula. La taula és el lloc per a una tinta que els colors no defineixen: un SVG o un fitxer importat que anomena `Gold` hi rep el seu acabat metàl·lic. Un tipus que Postext no coneix es descarta, i també una brillantor que no correspon: cap en una tinta fluorescent o blanca, i el tacte suau només en un vernís.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Com imprimeix una tinta especial
+
+- **Una planxa pròpia.** Cada tinta especial s'imprimeix en la seva pròpia `Separation`, amb el nom de planxa que li dona la taula de tintes (`pdfName`, o si no el seu nom). No passa mai a quadricromia, tret que la seva entrada a la taula de tintes digui `output: 'process'`.
+- **Sobreimpressió.** Un blanc i un vernís sobreimprimeixen tret que `overprint: false` digui el contrari, al color o a la taula de tintes: el blanc va sota els colors i el vernís a sobre, i cap dels dos no ha de buidar les planxes. Les tintes metàl·liques, l'estampació i les fluorescents buiden com qualsevol tinta plana.
+- **Ordre a màquina.** El fitxer conté planxes, no un ordre. El blanc s'imprimeix primer i el vernís al final; el preflight els enumera tots dos (`inkPressOrder`) perquè ho puguis dir a la impremta, que fixa l'ordre a màquina.
+- **Treballs amb poques planxes.** En un treball amb [`print.plates`](/ca/docs/configuration-pdf-output#impressió-a-dues-tintes), un blanc o un vernís que el treball no anomena queda fora, no es projecta sobre les planxes de color, i el render avisa (`finishInkDropped`). Les tintes metàl·liques, l'estampació i les fluorescents es projecten com qualsevol altra tinta plana.
+- **Fitxers RGB i en grisos.** Un vernís no posa res a la pàgina; els altres acabats pinten el seu `hex`.
+
+### En pantalla
+
+El canvas, el visor HTML i l'EPUB pinten cada tinta especial amb el seu `hex`, tret del vernís, que és transparent i no pinta res. Dona igualment al vernís un hex propi, perquè un render d'impressió distingeix les tintes pel seu hex.
+
+`RenderPageOptions.finishes` mostra els acabats al canvas:
+
+- `'flat'` (per defecte): l'hex de cada tinta, i res per al vernís.
+- `'sheen'`: un feix de llum que escombra la pàgina il·lumina la tinta metàl·lica i l'estampació (més com més brillant), una lluentor aixeca la tinta fluorescent i un reflex mostra on hi ha vernís.
+- `'map'`: les planxes especials en fals color sobre una pàgina esvaïda, com les marca una prova d'impremta: metàl·lica i estampació en ambre, fluorescent en rosa, vernís en cian, blanc opac en blau.
+
+Totes dues previsualitzacions llegeixen la **màscara d'acabats** de la pàgina. `renderFinishMask(page, doc, { scale })` la retorna, o `undefined` per a una pàgina que no pinta cap tinta especial, que així no costa res. És un mapa de bits RGBA: el vermell és el metall (tinta metàl·lica i estampació), el verd la brillantor (brillant 1, setinat 0,7, mat 0,4, tacte suau 0,2), el blau la fluorescència i l'alfa el blanc opac, cadascun multiplicat pel to de la tinta. Una aplicació que il·lumina les seves pròpies pàgines, com el Folio, la llegeix directament. Tot el que s'imprimeix a sobre d'una tinta especial la treu de la màscara (les imatges, per la seva silueta), tret que sobreimprimeixi.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined si no hi ha tintes especials
+```
+
+### Al visor Folio
+
+El Folio il·lumina les tintes especials com les mostraria el paper sota els seus llums. La tinta metàl·lica i l'estampació reflecteixen l'habitació com un metall tenyit del color de la tinta, l'estampació gairebé com un mirall. La tinta fluorescent destaca més que el paper. El blanc opac cobreix el to del paper, de manera que es llegeix sobre paper kraft o de color. Un vernís brillant agafa els reflexos quan es gira un full, un vernís mat els apaga i el tacte suau els treu. Només les pàgines que porten una tinta especial tenen màscara, a la meitat de la resolució de la pàgina, així que un llibre sense tintes especials es dibuixa com abans.
+
+### Què diu el preflight de les tintes
+
+En un treball d'impremta (una norma PDF/X, o CMYK), el preflight hi afegeix:
+
+- `spotInkFinish` (informació): cada tinta especial que fan servir les pàgines, amb el seu acabat i la seva brillantor, perquè la comanda a la impremta les anomeni totes.
+- `inkPressOrder` (informació): els blancs que s'imprimeixen primer i els vernissos que s'imprimeixen al final.
+- `whiteInkOnWhite` (avís): un blanc en una pàgina amb paper blanc o sense definir, on no es veu. Defineix el color del paper (`page.backgroundColor`) com el del suport on s'imprimeix.
+
+Un blanc o un vernís no generen mai `overprintWhite`: no posen color expressament.
+
+## Deduir l'acabat pel nom
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` llegeix el nom que una mostra, una separació o una taula de tintes dona a una tinta i retorna l'acabat que suggereix, o `undefined`. Coneix les paraules de cada acabat i brillantor en les deu llengües del lloc i en els noms dels mostraris, i els números de Pantone: del 801 al 814 són fluorescents, i del 871 al 877, les sèries 8000 i 10000, metàl·lics. Una paraula de vernís o d'estampació mana sobre una de color (`Gold foil` és una estampació, `Barniz oro` un vernís), una de fluorescent sobre el blanc, i un metall sobre el blanc (`白金`, platí). El francès `or` es deixa fora, perquè també és la conjunció anglesa; `Or métallisé` continua llegint-se com a metàl·lic per la segona paraula.
+
+És una pista, i res no l'aplica en silenci: el Sandbox l'ofereix com un botó, i l'skill de portabilitat la indica a l'informe.
+
+## Troquels
+
+Un troquel és la feina d'un troquel d'acer després d'imprimir: una finestra en una coberta, un forat que travessa un llibre de cartró, les osques d'un índex al tall davanter, cantonades arrodonides, un llibre retallat amb el perfil d'una casa. La propietat `dieCuts` descriu els troquels del llibre; el text s'aparta d'un forat a totes les pàgines que talla.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // Les formes de troquel del llibre.
+  pages?: DieCutPlacement[];           // Formes posades a pàgines per número.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Formes de troquel
+
+Una forma de troquel es col·loca des de la cantonada superior esquerra del tall de la pàgina on es posa.
+
+<table>
+  <thead>
+    <tr>
+      <th>Propietat</th>
+      <th>Tipus</th>
+      <th>Per defecte</th>
+      <th>Descripció</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>obligatori</td><td>El nom amb què la criden les col·locacions i <code>:::diecut</code>.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>cap</td><td>Un nom per a les persones; el mostra el Sandbox.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>obligatori</td><td>Un cercle és el més gran que hi cap a la caixa, centrat; una el·lipse omple la caixa.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>obligatori</td><td>Des de les vores esquerra i superior del tall.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>obligatori</td><td>La caixa que omple la forma.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Les cantonades d'un <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>cap</td><td>Dades de traçat SVG d'un <code>path</code> (<code>M L H V C S Q T A Z</code>), estirades de <code>viewBox</code> a la caixa.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>L'amplada i l'alçada de l'espai on estan escrites les dades <code>d</code>.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Quants fulls travessa el forat: aquell on es posa i els següents.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>El text queda a <code>gap</code> del forat; <code>false</code> el deixa passar per sota del forat, i es perd amb el tall.</td></tr>
+  </tbody>
+</table>
+
+### Tres maneres de situar un troquel
+
+**Per número de pàgina.** `dieCuts.pages` posa una forma en una llista de pàgines: `'5'`, `'3-12'`, `'3,7,11-13'`. Els números compten les pàgines del llibre per posició, essent 1 la primera, no pels folis impresos. En un llibre de diversos capítols compten des del començament del llibre, de manera que un capítol maquetat tot sol continua troquelant la pàgina correcta.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**On ho decideix el contingut.** Un contenidor `:::diecut` troquela totes les pàgines on cau el seu contingut, com [`:::paper`](/ca/docs/document-format-directives#paper) canvia el paper. El contingut comença en una pàgina nova, i el que segueix el `:::` de tancament també. Un contenidor dins d'un altre troquela la seva pròpia forma; d'una forma que `dieCuts.shapes` no té se n'avisa (**Forma de troquel desconeguda**, `dieCutUnknown`), i aquelles pàgines es componen a part i no es troquelen. Vegeu [`:::diecut`](/ca/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Mira a dins
+La finestra emmarca la portada que hi ha a sota.
+:::
+```
+
+**En una plantilla de pàgina.** En una pàgina composta, un element de decoració de tipus `'cut'` situa un forat com qualsevol element de traçat, amb `when` i `unless` per limitar-lo a les pàgines que el demanen. Vegeu [Elements de tall en una plantilla de pàgina](#elements-de-tall-en-una-plantilla-de-pàgina).
+
+### Elements de tall en una plantilla de pàgina
+
+Un element de decoració de tipus `'cut'` és un forat que el troquel talla al full de cada pàgina composta on es posa la decoració de la plantilla: una finestra en una plantilla de coberta, una osca d'índex a les obertures d'una obra de consulta. Es col·loca i es dimensiona com un [element de traçat](/ca/docs/configuration-headers-footers#elements-de-traçat), amb `when`, `unless`, `parity` i `pin` com qualsevol element de decoració, i no es pinta mai: la maquetació el treu de la decoració i el posa als troquels de la pàgina, en mirall a l'altra cara del full.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // On és el forat i la seva caixa.
+  die?: string;                      // Una forma de dieCuts.shapes, estirada fins a la caixa.
+  d?: string;                        // Si no, dades de traçat SVG, en unitats de viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Per defecte, els de la forma; si no, 1.
+  wrap?: false | { gap?: Dimension }; // Per defecte, el de la forma; si no, 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+El contorn del forat és la forma de troquel que anomena `die`, estirada fins a la caixa de l'element (la forma en dona el tipus, el radi de les cantonades, les dades de traçat, `leaves` i `wrap`, però no la seva caixa); sense `die`, les dades de traçat `d`; sense cap de les dues, la mateixa caixa. Els `leaves` i el `wrap` propis de l'element manen sobre els de la forma.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+El text dels marcs d'una pàgina composta encara no envolta els forats: posa els marcs lluny del forat i llegeix el `dieCutText` del preflight. En una plantilla de doble pàgina, un element de tall no es reparteix entre les dues pàgines. La resta de les [plantilles de pàgina](/ca/docs/configuration-composed-pages#plantilles-de-pàgina) és a la referència de configuració.
+
+### Fulls i mirall
+
+Un forat travessa el paper, així que talla les dues cares d'un full. La pàgina 1 és un recto, la 2 el verso del mateix full, i així successivament; un capítol que comença més endins del llibre compta des de la primera pàgina del llibre. Una forma posada en una pàgina també talla l'altra cara del full, en mirall respecte al tall: una finestra a 40 mm de la vora esquerra d'un recto és a 40 mm de la vora dreta del seu verso. Amb `leaves: 6` el forat continua pels cinc fulls següents, al mateix lloc de la pila, de manera que queda on l'has posat a totes les pàgines d'aquella cara i en mirall a totes les de l'altra.
+
+### Cantonades arrodonides i llibres amb forma
+
+`corners` arrodoneix tots els fulls: per defecte només les cantonades del tall davanter (a la dreta en un recto, a l'esquerra en un verso, a l'inrevés en un llibre enquadernat per la dreta), amb el llom en angle recte; `edges: 'all'` arrodoneix les quatre. `outline` retalla tots els fulls amb un contorn: dades de traçat SVG en unitats de `viewBox`, estirades fins al tall d'un recto i en mirall als versos. Si hi ha totes dues coses, mana el contorn.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // una casa
+}
+```
+
+### El text entorn del forat
+
+Cada forat, ampliat amb el seu `wrap.gap`, és un obstacle que el text envolta a les dues cares de cada full que talla, a les pàgines de text corregut: les línies s'escurcen al seu costat, com al costat d'una imatge amb el text al voltant. Una forma amb `wrap: false` deixa el text on és, i el que queda sota el forat es perd amb el tall.
+
+### La línia de troquel al PDF
+
+El troquelador treballa a partir de la línia de troquel: el contorn de cada forat i del full quan té forma o cantonades arrodonides, en una planxa que la màquina no entinta mai. `print.dieLine` la defineix.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (per defecte): es dibuixa a cada pàgina amb troquel.
+  ink?: string;               // El nom de la planxa. Per defecte, 'Die'.
+  cmyk?: CmykPercent;         // L'equivalent de la planxa, com la mostren les proves. Per defecte, 100 % magenta.
+  width?: Dimension;          // Gruix del traç. Per defecte, 0,25 pt.
+}
+```
+
+La línia es traça després de les marques de tall en una planxa `Separation` pròpia, amb extrems i unions arrodonits, i sobreimprimeix, de manera que no buida mai una línia blanca a les planxes de sota. En un PDF etiquetat és un artefacte. Fora de PDF/X-1a, que no admet contingut opcional, va en un grup de contingut opcional anomenat **Die line** que el lector pot amagar. La planxa apareix amb les tintes del treball (`inspectPrintPdf` la posa a `color.spots`), i un treball amb [`print.plates`](/ca/docs/configuration-pdf-output#impressió-a-dues-tintes) no la projecta mai sobre les seves planxes. Pregunta al troquelador com s'ha de dir la planxa: `Die`, `CutContour`, `Dieline` i `Troquel` es fan servir tots.
+
+La pàgina s'imprimeix sencera: el PDF no retalla el forat. El que hi hagi compost a dins s'imprimeix i el troquel s'ho emporta amb el paper.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+A la línia d'ordres, `postext pdf --die-line page|none` substitueix `output` durant una execució (vegeu [`pdf`](/ca/docs/command-line#pdf)).
+
+### Què diu el preflight dels troquels
+
+<table>
+  <thead>
+    <tr>
+      <th>Tipus</th>
+      <th>Gravetat</th>
+      <th>Quan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>avís</td><td>Text dins de la separació d'un forat, o sota un forat que el text no envolta, amb la distància a la vora del tall en mil·límetres. Un per forat i pàgina.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>avís, o crític</td><td>Un forat a menys de 3 mm del tall, on el troquel esquinça la vora; crític quan passa del tall.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>crític</td><td>Un forat a menys de 3 mm del plec del llom, on els fulls es cusen o s'encolen.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>avís</td><td>Una col·locació o un <code>:::diecut</code> que anomena una forma que <code>dieCuts.shapes</code> no té.</td></tr>
+  </tbody>
+</table>
+
+Aquestes revisions es fan sempre que el preflight està activat, en un treball d'impremta o no. Els avisos de configuració informen d'una col·locació la forma de la qual no existeix (amb l'id més semblant com a suggeriment), d'una llista de pàgines sense cap número, d'una forma que el motor descarta (sense id, amb un `shape` desconegut, sense mida o sense traçat) i de dades de traçat que no sap llegir; en aquest cas, la forma talla la seva caixa.
+
+## Als visors
+
+**Canvas.** `renderPageToCanvas` retalla de la pàgina cada forat, i el paper de fora d'un full amb forma o amb cantonades arrodonides, de manera que s'hi veu el que hi ha darrere del canvas. Amb l'opció `beneath`, una funció que retorna el canvas pintat de qualsevol pàgina pel seu índex, dibuixa dins de cada forat les pàgines que un lector hi veuria a través, tan endins com els forats coincideixen: cada pàgina retallada pels forats de totes les que té a sobre, una ombra suau al llarg de cada vora tallada i una línia fina per al gruix del paper, i el color de la tapa més enllà del final del llibre. `composeThrough(doc, pageIndex, source, target, scale)` dibuixa la mateixa composició en un canvas teu.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // pàgines ja dibuixades, per índex
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**Visor HTML.** Una pàgina troquelada es retalla amb `clip-path: path(evenodd, …)`, la caixa de sang (o el contorn del full) menys els forats. A la fulla d'impremta, una pàgina composta dibuixa dins de cada forat les pàgines que té a sota, tan endins com els forats coincideixen, amb una ombra suau i una línia fina per al gruix del paper a cada vora tallada; aquestes còpies queden amagades als lectors de pantalla i no reben clics. A la maquetació de pantalla les pàgines no són les d'impremta, així que allà un forat mostra el fons del visor.
+
+**Folio.** El Folio mostra un forat com es veu amb el llibre a la mà. En una pàgina oberta, el forat mostra les pàgines de sota, tan endins com els forats coincideixen (un llibre túnel pot mostrar una pàgina vint fulls més avall), amb les parets de paper del tall i una paral·laxi que segueix la vista. Un full que gira té un forat de debò, i les ombres hi passen a través fins a la pàgina de sota. Les cantonades arrodonides i el contorn d'un llibre amb forma es tallen a tots els fulls.
+
+**El teu propi visor.** Cada pàgina maquetada porta els seus troquels a `VDTPage.dieCut`: `holes` i `outline` com a traçats en píxels de pàgina, `sources` (la forma de cada forat) i `wrapGapPx`. `leafSide(doc, i)` diu si una pàgina és un recto o un verso, `pageBeneath(doc, i)` quina pàgina hi ha a sota (`-1` més enllà del final del llibre), `seeThrough(doc, i)` tota la pila que mostra un forat amb el retall de cada capa, i `dieCutPath2D(cut)` converteix el troquel en un `Path2D`.
+
+## Al Sandbox
+
+- **Colors.** La pestanya **Plana** del selector de color té **Acabat** i **Brillantor**, i ofereix l'acabat que suggereix el nom de la tinta (**Posar l’acabat: …**). El menú **Afegir una tinta especial** de la paleta n'afegeix una de preparada: or, plata o coure metàl·lics, estampació or o plata, quatre fluorescents, blanc opac i vernís brillant, mat o de tacte suau.
+- **Taula de tintes.** Cada tinta té **Acabat** i **Brillantor**, i **Tintes que fan servir els colors** mostra l'acabat de cadascuna.
+- **Troquels.** **Disseny › Pàgina i columnes › Troquels** conté les formes de troquel, cadascuna amb un dibuix del seu contorn, les pàgines que troquelen, les cantonades arrodonides i el contorn d'un llibre amb forma. **Disseny › Exportació › Preparació per a impremta › Línia de troquel** defineix la planxa.
+- **Canvas.** En un llibre amb troquels, la barra d'eines té **Línies de troquel**, que dibuixa cada troquel com una línia discontínua sobre la pàgina; en un llibre amb tintes especials, té **Tintes especials**, que passa per *planes*, *amb brillantor* i *mapa d’acabats*. El navegador recorda tots dos botons. Un forat mostra les pàgines de sota, tan endins com els forats coincideixen; si canvies una pàgina més avall, les pàgines que hi donen es tornen a pintar.
+- **Revisió.** Les incidències del preflight d'aquesta pàgina apareixen a **Revisió** amb els seus títols: **Tinta especial**, **Ordre de les tintes especials a màquina**, **Tinta blanca sobre paper blanc**, **Text sota un troquel**, **Troquel a prop del tall**, **Troquel al llom**, **Forma de troquel desconeguda**.
+
+[Els taulers de disseny i de revisió](/ca/docs/sandbox-design-checks) i [Les previsualitzacions](/ca/docs/sandbox-previews#pestanya-canvas) descriuen els taulers sencers.
+
+## Límits
+
+- La màscara d'acabats no ho veu tot. Una fórmula dibuixada com a imatge en una tinta especial buida en lloc de mostrar la tinta, les parades d'un degradat en tintes especials no es mapen, i un SVG que fa servir una tinta de vernís continua pintant el seu hex en pantalla si no es recoloreja. Un blanc amb l'hex de pantalla exactament `#ffffff` no es distingeix del paper: dona-li un hex una mica més fosc.
+- El text dels marcs d'una pàgina composta encara no envolta els forats: només ho fa el text corregut. Revisa les pàgines compostes amb `dieCutText`.
+- Un element de tall en una plantilla de doble pàgina no es reparteix entre les dues pàgines.
+- El visor HTML dibuixa les pàgines de sota d'un forat només a les pàgines compostes de la fulla d'impremta. Al Folio, les vores del bloc de pàgines continuen quadrades sota les cantonades arrodonides.
+- Si el Sandbox mostra un sol capítol, un forat a les últimes fulles del capítol mostra la tapa en lloc del capítol següent: canvia al llibre sencer per veure'l.
+- El PDF imprimeix la pàgina sencera i dibuixa la línia de troquel: el forat és feina del troquelador.

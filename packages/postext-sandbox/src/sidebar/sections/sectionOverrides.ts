@@ -115,6 +115,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'videoStyle':
     case 'htmlViewer':
     case 'canvasViewer':
+    case 'dieCuts':
     case 'folio':
     case 'pdfGeneration':
     case 'exercises': {

@@ -425,10 +425,11 @@ Per a la producció d'impremta, fixa aquestes opcions de configuració abans de 
 - **`page.dpi: 300`**: els píxels per polzada de la maquetació. Un mapa de bits sense resolució pròpia s'imprimeix a aquesta resolució a la seva mida natural. El [preflight](/ca/docs/configuration-pdf-output#preflight) avisa de les imatges per sota de 300 ppp a la seva mida impresa.
 - **`ColorValue.cmyk`**: un color definit en CMYK s'imprimeix amb els seus valors exactes.
 - **`{ pageNegative: true }`** a `RenderToPdfOptions`: inverteix l'àrea del format final amb un mode de fusió Difference (les marques de tall no s'inverteixen). És útil per fer comprovacions de preflight sobre text fosc en fons clar.
+- **`print.dieLine`**: la línia de troquel d'un llibre amb troquels, traçada en una planxa pròpia que la màquina no entinta mai (`Die` per defecte, en un grup de contingut opcional fora de PDF/X-1a). Vegeu [La línia de troquel al PDF](/ca/docs/special-inks-die-cuts#la-línia-de-troquel-al-pdf).
 
 ### Tintes planes
 
-Una tinta plana (un Pantone, una tinta corporativa, un vernís) s’imprimeix en la seva pròpia planxa. Un color amb `model: 'spot'` porta la seva tinta a `ColorValue.spot`: `name` és el nom de la planxa tal com el coneix la impremta, `cmyk` és l’aspecte de la tinta al 100 % (l’equivalent que el PDF dona a qui no tingui la tinta), `tint` és el to en percentatge (100 per defecte) i `overprint` fa que la tinta sobreimprimeixi el que té a sota en lloc de buidar-ho, com un vernís. `hex` és la seva representació en pantalla.
+Una tinta plana (un Pantone, una tinta corporativa, un vernís) s’imprimeix en la seva pròpia planxa. Un color amb `model: 'spot'` porta la seva tinta a `ColorValue.spot`: `name` és el nom de la planxa tal com el coneix la impremta, `cmyk` és l’aspecte de la tinta al 100 % (l’equivalent que el PDF dona a qui no tingui la tinta), `tint` és el to en percentatge (100 per defecte), `overprint` fa que la tinta sobreimprimeixi el que té a sota en lloc de buidar-ho, com un vernís, i `finish` diu què és una tinta especial: metàl·lica, estampació, fluorescent, blanc opac o vernís. `hex` és la seva representació en pantalla. [Tintes especials i troquels](/ca/docs/special-inks-die-cuts#acabats) explica com s'imprimeix i com es veu cada acabat.
 
 Un PDF CMYK o PDF/X escriu cada tinta com un espai de color `Separation` amb el seu nom, i cada color d’aquesta tinta es pinta al seu to: els colors amb el mateix `name` comparteixen planxa. Hi caben les feines habituals: dues tintes (negre i una plana), quadricromia amb alguns elements en plana i un vernís sobreimprès en zones concretes. Si `diagramStyle.singleInk` fa servir una tinta plana, els diagrames SVG s’imprimeixen en tons d’aquesta planxa. En un PDF RGB i en pantalla, el color es pinta amb el seu `hex`.
 
@@ -438,7 +439,7 @@ Un PDF CMYK o PDF/X escriu cada tinta com un espai de color `Separation` amb el 
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' imprimeix la tinta en CMYK, amb el seu equivalent.
   cmyk?: CmykPercent;              // L'equivalent al 100 %, per sobre del dels colors.
   overprint?: boolean;             // Per sobre del dels colors.
+  finish?: InkFinish;              // Metàl·lica, estampació, fluorescent, blanc o vernís, per sobre del dels colors.
 }
 ```
 
-Els noms i els àlies es comparen sense distingir majúscules ni espais repetits. Canviar el nom és una línia, la facin servir tants colors com vulguin; un àlies ajunta en una planxa els noms que una mostra del dissenyador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior donaven a la mateixa tinta; i `output: 'process'` imprimeix una tinta en CMYK quan la màquina no té cos per a ella, amb tots els seus tons.
+Els noms i els àlies es comparen sense distingir majúscules ni espais repetits. Canviar el nom és una línia, la facin servir tants colors com vulguin; un àlies ajunta en una planxa els noms que una mostra del dissenyador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior donaven a la mateixa tinta; `output: 'process'` imprimeix una tinta en CMYK quan la màquina no té cos per a ella, amb tots els seus tons; i `finish` converteix una tinta en especial vingui d'on vingui el seu nom, també d'un SVG o d'un fitxer importat que anomena `Gold`.
 
-Al Sandbox, la taula és a **Disseny › Exportació › Preparació per a impremta › Taula de tintes**: una targeta per tinta amb el **Nom de la tinta**, els **Àlies**, el **Nom de la planxa al PDF**, **S’imprimeix com a**, el **CMYK alternatiu** i la **Sobreimpressió**. **Tintes que fan servir els colors** enumera les tintes dels colors del llibre que falten a la taula, cadascuna amb un botó que l’afegeix.
+Al Sandbox, la taula és a **Disseny › Exportació › Preparació per a impremta › Taula de tintes**: una targeta per tinta amb el **Nom de la tinta**, els **Àlies**, el **Nom de la planxa al PDF**, **S’imprimeix com a**, el **CMYK alternatiu**, la **Sobreimpressió**, l'**Acabat** i la **Brillantor**. **Tintes que fan servir els colors** enumera les tintes dels colors del llibre que falten a la taula, cadascuna amb un botó que l’afegeix.
 
 ```ts
 print: {

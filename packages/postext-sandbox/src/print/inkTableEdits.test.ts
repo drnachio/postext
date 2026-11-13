@@ -80,3 +80,14 @@ describe('the ink table edits', () => {
     ]);
   });
 });
+
+describe('the ink table keeps a finish (#1570)', () => {
+  it('as written once checked, and drops an unknown one', () => {
+    expect(normaliseInk({ name: 'Gold', finish: { kind: 'metallic', sheen: 'gloss' } })).toEqual({ name: 'Gold', finish: { kind: 'metallic', sheen: 'gloss' } });
+    expect(normaliseInk({ name: 'Gold', finish: { kind: 'shiny' } as never })).toEqual({ name: 'Gold' });
+    const inks = updateInk([{ name: 'Varnish' }], 0, { finish: { kind: 'varnish', sheen: 'softTouch' } });
+    expect(inks[0]!.finish).toEqual({ kind: 'varnish', sheen: 'softTouch' });
+    expect(resetInkField(inks, 0, 'finish')[0]).toEqual({ name: 'Varnish' });
+    expect(resolvePrintInks(inks)[0]!.finish).toEqual({ kind: 'varnish', sheen: 'softTouch' });
+  });
+});

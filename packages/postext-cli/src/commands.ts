@@ -51,6 +51,7 @@ export const PDF_OPTIONS: OptionSpec[] = [
   { name: 'color-space', kind: 'string', arg: 'rgb|cmyk|grayscale', help: 'Colour space of the PDF' },
   { name: 'pdfx', kind: 'string', arg: 'none|x1a|x4', help: 'PDF/X standard for print' },
   { name: 'profile', kind: 'string', arg: 'NAME|FILE', help: 'Output ICC profile: fogra39, fogra51, swop5, gracol2006… or an .icc file' },
+  { name: 'die-line', kind: 'string', arg: 'page|none', help: 'The die line of die-cut pages, on its own plate (page, default) or left out (none)' },
   { name: 'outlines', kind: 'boolean', help: 'PDF bookmarks from the headings (--no-outlines leaves them out)' },
   { name: 'page-negative', kind: 'boolean', help: 'Negative pages (white on black), for some print workflows' },
 ];

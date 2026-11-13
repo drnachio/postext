@@ -54,7 +54,10 @@ export async function pdfOptions(book: Book, fonts: FontSet, opts: Options, repo
       print = { ...print, outputProfile: 'custom', customProfile: { name: basename(profile), fileId: profile } };
     } else throw new UsageError(`--profile: "${profile}" is neither a profile name (${ICC_PROFILES.join(', ')}) nor a file`);
   }
-  if (pdfx !== undefined || profile !== undefined) options.print = print;
+  // The die line of die-cut pages (#1566): on its own plate, or left out.
+  const dieLine = opts.choice('die-line', ['page', 'none'] as const);
+  if (dieLine) print = { ...print, dieLine: { ...(print.dieLine ?? {}), output: dieLine } };
+  if (pdfx !== undefined || profile !== undefined || dieLine) options.print = print;
   const resolved = resolvePrintConfig(print);
   const pdfGen = book.config.pdfGeneration;
   const cmyk = (colorSpace ?? (pdfGen?.forceColorSpace ? pdfGen.colorSpace ?? 'cmyk' : 'rgb')) === 'cmyk';

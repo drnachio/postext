@@ -23,6 +23,10 @@ import { pageComics } from '../comics/transform.js';
 import { proofPixels, type PrintPreview } from '../color/softProof.js';
 import { resetContextState, restoreContext, saveContext } from './contextState.js';
 import { resetWordSpacing } from './contextText.js';
+import { paperPaint, screenFinishPaints } from './finish/paint.js';
+import { paintFinishPreview, type FinishPreviewMode } from './finish/preview.js';
+import { cutDieShapes, paintThrough, type PageImageSource } from './cut/through.js';
+export { composeThrough, cutDieShapes, type ComposeThroughOptions, type PageImageSource } from './cut/through.js';
 export {
   registerResourceImage,
   unregisterResourceImage,
@@ -32,6 +36,9 @@ export {
 export type { ResourceImageSource, RegisterResourceImageOptions } from './renderResourceBlock.js';
 export { registerVerticalAlternates, unregisterVerticalAlternates, loadVerticalAlternates, verticalTwinName, VERTICAL_ALTERNATE_SAMPLE } from './verticalText.js';
 export type { VerticalAlternatesFace } from './verticalText.js';
+export { renderFinishMask, type FinishMask, type FinishMaskOptions, type FinishMaskPass, type FinishMaskCanvas } from './finish/mask.js';
+export { applyFinishPreview, type FinishPreviewMode } from './finish/preview.js';
+export { finishMaskSvg } from './finish/maskSvg.js';
 
 /** Options of a canvas paint: scale, overlays, ink, trim and print preview. */
 export interface RenderPageOptions {
@@ -77,6 +84,18 @@ export interface RenderPageOptions {
    *  does. Separators default from the document language. Unset fields
    *  come from the document's `pdfGeneration.forms`. */
   forms?: FormNumberOptions;
+  /** How special inks show (#1564): `'flat'` (the default) paints each
+   *  ink's screen hex, a varnish nothing; `'sheen'` lights metallic ink
+   *  and foil, fluorescent ink and varnish from the page's finish mask;
+   *  `'map'` shows the mask in false colour. A page without special inks
+   *  paints the same in every mode. */
+  finishes?: FinishPreviewMode;
+  /** The painted pages a die-cut hole shows (#1567), by document page
+   *  index, painted as this one is (the same `trim`). Each hole of the page
+   *  and the paper past its leaf's outline are cut out; with this, the
+   *  pages beneath are drawn back into the holes (`composeThrough`), else
+   *  the holes stay transparent and show what is behind the canvas. */
+  beneath?: PageImageSource;
 }
 
 /** How far the painted area sits inside the sheet: the trim offset when
@@ -141,9 +160,15 @@ function paintPage(
   // The page sets the language it paints in (`paintContext`); what the
   // host draws over it afterwards is the host's, in the context's own.
   const language = 'lang' in ctx ? (ctx as CanvasRenderingContext2D & { lang: string }).lang : undefined;
+  // A varnish puts no colour on the page (#1563): one hook on the context
+  // for every painter, only on a document that has one.
+  const endFinishes = screenFinishPaints(ctx, doc);
   try {
     paintContext(ctx, canvas, page, doc, options);
+    const finishes = options?.finishes;
+    if (finishes === 'sheen' || finishes === 'map') paintFinishPreview(ctx, canvas, page, doc, finishes, scale, options?.trim === true);
   } finally {
+    endFinishes?.();
     if (direction !== undefined) ctx.direction = direction;
     // Every text of the page set the word spacing that keys its word
     // cache (`contextText.ts`): the canvas is left at the one it had when
@@ -215,12 +240,12 @@ function paintContext(
   // (those the host flags, or every unflagged one when the render asks).
   const inkHex = documentInkHex(doc.config);
 
-  ctx.fillStyle = '#ffffff';
+  ctx.fillStyle = paperPaint('#ffffff');
   ctx.fillRect(0, 0, page.width, page.height);
 
   const bleedPx = trimOff > 0 ? dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi) : 0;
   if (bgColor && bgColor !== 'transparent') {
-    ctx.fillStyle = bgColor;
+    ctx.fillStyle = paperPaint(bgColor);
     ctx.fillRect(
       trimOff - bleedPx,
       trimOff - bleedPx,
@@ -397,6 +422,13 @@ function paintContext(
 
   if (options?.pageNegative) {
     ctx.filter = 'none';
+  }
+
+  // Die-cuts (#1565): holes and the leaf's outline cut out, the pages
+  // beneath drawn into the holes when the host has them (#1567).
+  if (page.dieCut) {
+    cutDieShapes(ctx, page, doc);
+    if (options?.beneath) paintThrough(ctx, doc, doc.pages.indexOf(page), options.beneath, sx, { inset });
   }
 
   if (options?.printPreview) paintPrintPreview(ctx, canvas, page, doc, options.printPreview, sx, inset);

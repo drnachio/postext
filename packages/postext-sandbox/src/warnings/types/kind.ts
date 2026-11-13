@@ -52,6 +52,7 @@ export type WarningKind =
   | 'exerciseWordUnplaced'
   | 'solutionOutside'
   | 'columnsFlowUnknown'
+  | 'dieCutUnknown'
   | 'templateUnknown'
   | 'slotUnknown'
   | 'slotEmpty'

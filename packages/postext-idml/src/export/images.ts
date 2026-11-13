@@ -28,9 +28,13 @@ export function imageXml(w: Writer, item: Extract<DisplayItem, { kind: 'image' }
     pw = mb ? Number(mb[3]) - Number(mb[1]) : g.width;
     ph = mb ? Number(mb[4]) - Number(mb[2]) : g.height;
   } else if (item.imageKind === 'svg') {
+    // `svgSize` tells CSS px (96 to the inch: `127.559pt` reads 170.08),
+    // InDesign places an SVG at its size in pt; told in px, the picture
+    // was taken for a third larger than InDesign shows it, and the frame
+    // scaled and cropped it short of the PDF's crop (#1555).
     const size = svgSize(new TextDecoder().decode(bytes));
-    pw = size?.width ?? g.width;
-    ph = size?.height ?? g.height;
+    pw = size ? (size.width * 72) / 96 : g.width;
+    ph = size ? (size.height * 72) / 96 : g.height;
     w.warn('image.svg', `Page ${pageIndex + 1}: ${fileId.slice(0, 80)} is an SVG; InDesign 2020 and later place SVG, older versions do not`);
   } else {
     const info = bitmapInfo(bytes);

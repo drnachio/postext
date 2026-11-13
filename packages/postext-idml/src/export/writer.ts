@@ -6,7 +6,8 @@ import type { DisplayItem, DisplayRun } from 'postext';
 import type { VDTPage } from 'postext';
 import type { VDTDocument } from 'postext/writer';
 import type { BlockStyle } from 'postext/writer';
-import type { ParagraphStyleDef, Swatch } from './parts.js';
+import type { CharacterStyleDef, ParagraphStyleDef, Swatch } from './parts.js';
+import type { StyleSurvey } from './styles.js';
 import type { FontNames } from './sfnt.js';
 
 import type { IdmlWarning } from '../model/document.js';
@@ -95,6 +96,17 @@ export interface Writer {
   /** Pages of the documents before the one being written. */
   pageBase: number;
   paraStyles: Map<string, ParagraphStyleDef>;
+  /** Character styles written, by name: a run whose look a named style
+   *  gave (a chip, a `:span`), or whose face or size its paragraph's
+   *  style does not have (#1555). */
+  charStyles: Map<string, CharacterStyleDef>;
+  /** What the first of the two passes over the pages saw of every
+   *  paragraph style, and in the second, what each style settled on
+   *  (`styles.ts`). */
+  styles: StyleSurvey;
+  /** The callout style of each block of the page being written that
+   *  stands in a box of the flow, by block key (`calloutOf`). */
+  callouts?: Map<string, string>;
   /** The document being written, and the engine's block styles of its
    *  paragraphs by frame style and paragraph style (`engineStyle`). */
   doc: VDTDocument;

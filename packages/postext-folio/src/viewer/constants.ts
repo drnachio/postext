@@ -4,6 +4,7 @@
 import type { FolioPaperConfig } from 'postext';
 import type { PageSource } from '../pageFlip.js';
 import type { FolioLabels, FolioPage } from './types.js';
+import type { FaceFinish } from '../pageFlip/finish.js';
 
 export const DEFAULT_LABELS: FolioLabels = {
   region: "Book",
@@ -38,6 +39,18 @@ export const sourceOf = (page: FolioPage | undefined): PageSource => (page && ty
 export const altOf = (page: FolioPage | undefined) => (page && typeof page === "object" && "src" in page ? page.alt : undefined);
 export const paperOf = (page: FolioPage | undefined) =>
   page && typeof page === "object" && "src" in page ? (page as { paper?: FolioPaperConfig }).paper : undefined;
+
+/** The finishes the pages carry (#1568), by page source: what the WebGL
+ *  book lights its special inks from. */
+export function finishesOf(pages: readonly FolioPage[]): Map<PageSource, FaceFinish> {
+  const out = new Map<PageSource, FaceFinish>();
+  for (const page of pages) {
+    if (!page || typeof page !== "object" || !("src" in page)) continue;
+    const finish = (page as { finish?: FaceFinish }).finish;
+    if (page.src && (finish?.mask || finish?.cut || finish?.through)) out.set(page.src, finish!);
+  }
+  return out;
+}
 
 /** The natural width / height of a page source, when it is known. */
 export function aspectOf(src: PageSource): number | null {

@@ -23,8 +23,37 @@ export interface SpotColor {
   tint?: number;
   /** The ink overprints whatever is under it instead of knocking it out:
    *  a varnish, or an ink laid over the process colours. Defaults to
-   *  false. */
+   *  false, except for a white ink and a varnish, which overprint unless
+   *  set to false. */
   overprint?: boolean;
+  /** What the ink is beyond its colour: metallic, foil, fluorescent,
+   *  opaque white or varnish (#1563). Absent: an ordinary ink. On screen a
+   *  varnish puts no colour on the page; the others paint `hex`. The PDF
+   *  prints each on its own plate, as any spot ink. */
+  finish?: InkFinish;
+}
+
+/** A spot colour with its defaults filled in (`normalizeSpotColor`): every
+ *  field set but the optional finish. */
+export type ResolvedSpotColor = Required<Omit<SpotColor, 'finish'>> & Pick<SpotColor, 'finish'>;
+
+/** What a special ink is, beyond its colour (#1563): what the press lays
+ *  down, and what Folio and the screen preview make of it. */
+export type InkFinishKind = 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+
+/** How shiny a varnish, a metallic ink or a foil is. Soft-touch is a
+ *  varnish only. */
+export type InkSheen = 'gloss' | 'satin' | 'matte' | 'softTouch';
+
+/** The finish of a spot ink (#1563): a metallic ink (gold, silver,
+ *  copper), a hot foil stamped on the sheet, a fluorescent ink, an opaque
+ *  white (on coloured or kraft paper) or a varnish. A spot ink without one
+ *  is an ordinary ink: a Pantone or a corporate fifth colour. */
+export interface InkFinish {
+  kind: InkFinishKind;
+  /** Default `'gloss'` for varnish and foil, `'satin'` for a metallic
+   *  ink. Ignored for fluorescent and white inks. */
+  sheen?: InkSheen;
 }
 
 /** A colour: its hex value, the model it was chosen in, and its CMYK or

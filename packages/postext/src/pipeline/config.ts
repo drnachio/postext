@@ -1,4 +1,4 @@
-import type { DigitSystem, PostextConfig, ResolvedHeadingLevelConfig } from '../types.js';
+import type { DigitSystem, PostextConfig, ResolvedDieCutsConfig, ResolvedHeadingLevelConfig } from '../types.js';
 import { resolveExerciseStylesConfig, resolveExercisesConfig } from '../defaults/boxes/exercises.js';
 import { columnCountUsed, layoutColumnCount, MULTIPLE_COLUMNS_MAX, MULTIPLE_COLUMNS_MIN } from '../defaults/layout.js';
 import { separatePrintColors } from '../color/inks.js';
@@ -42,6 +42,7 @@ import {
   resolveContrastConfig,
   resolveChecksConfig,
   resolveFolioConfig,
+  resolveDieCutsConfig,
   resolveComicsConfig,
   comicReadingDirection,
   mergeCaptionStyle,
@@ -54,6 +55,7 @@ import {
   avoidOrphansByDefault,
 } from '../defaults/index.js';
 import { dimensionToPx } from '../units.js';
+import { hasDieCuts } from '../defaults/dieCuts.js';
 import { applyCjkGrid } from './text/cjkGrid.js';
 import { directionOf, localeScript, presentTag, resolveNumerals } from '../hyphenation/locale.js';
 import { configFingerprint } from '../util/stableHash.js';
@@ -115,6 +117,13 @@ export function validateConfigCache(config: PostextConfig | undefined): void {
   if (known === fingerprint) return;
   if (known !== undefined) invalidateConfig(config);
   fingerprints.set(config, fingerprint);
+}
+
+/** `dieCuts` resolved, as a spread: nothing when it cuts nothing. */
+function dieCutsOf(dieCuts: PostextConfig['dieCuts']): { dieCuts?: ResolvedDieCutsConfig } {
+  if (!dieCuts) return {};
+  const resolved = resolveDieCutsConfig(dieCuts);
+  return hasDieCuts(resolved) ? { dieCuts: resolved } : {};
 }
 
 function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
@@ -219,6 +228,9 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
     ...(config?.checks ? { checks: resolveChecksConfig(config.checks) } : {}),
     // Not used by layout either: the Folio 3D viewer reads it.
     ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
+    // Die-cuts (#1565): only a config that cuts something carries them, so
+    // every other one resolves (and hashes) as before.
+    ...dieCutsOf(config?.dieCuts),
     // Exercise styles and settings (#1226): only a config that sets them
     // carries them; the defaults come from `exerciseSettingsFor`.
     ...(config?.exerciseStyles || config?.exercises

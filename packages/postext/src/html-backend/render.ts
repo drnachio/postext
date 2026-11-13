@@ -2,7 +2,9 @@
 // and the per-render shaping state they set while pages are written
 // (#1276: split out of html-backend.ts).
 import { restoreHtmlLinkPaint, setHtmlLinkPaint } from './linkPaint.js';
-import { featureFontCss } from '../fonts/figureStyle.js';
+import { featureFontCss as featureFontCssOf } from '../fonts/figureStyle.js';
+import { varnishHexes } from '../color/finishInks.js';
+import { clearVarnishPaints } from './varnish.js';
 import type { RenderWarning, VDTAnchor, VDTDocument } from '../vdt.js';
 import { dimensionToPx } from '../units.js';
 import { documentInkHex, singleInkColorMatrix } from '../svg/singleInk.js';
@@ -14,7 +16,8 @@ import { measuresOwnFace } from '../measure/canvas.js';
 import { type ExerciseData, exerciseDataOf, exerciseDataJson } from '../exercises/digital.js';
 import { svgFontInliner } from './images.js';
 import { exerciseBoxesOf, renderPageDetailed } from './page.js';
-import { anchoredResourceIds } from './segmentText.js';
+import { drawsThrough, throughLayerHtml } from './through.js';
+import { anchoredResourceIds, pageElementId } from './segmentText.js';
 import type { TextDirection } from './styles.js';
 import { esc } from './textRuns.js';
 import type { VerticalHtml } from './vertical.js';
@@ -351,13 +354,17 @@ function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRender
     ? Math.max(0, doc.trimOffset - dimensionToPx(doc.config.page.cutLines.bleed, doc.config.page.dpi))
     : 0;
   const svgUrl = svgFontInliner(doc, options);
+  // A style's figures (#1237) are set as the base family with
+  // `font-variant-numeric`; a varnish (#1563) puts no colour on the page.
+  const varnish = varnishHexes(doc);
+  const featureFontCss = varnish.size > 0 ? (html: string) => clearVarnishPaints(featureFontCssOf(html), varnish) : featureFontCssOf;
   // The language the pages' text is shaped in, for the words set whole
   // (#770): the declared one, else the writing page's.
   shapedText = shapedTextOf(docLang, documentFontString(doc));
   // A document shaped in its own language sets a tracked ligature with
   // the tracking of each of its letters, as the layout counted it (#770).
   ownShaping = shapedIn !== undefined && shapedText !== null;
-  for (const p of doc.pages) {
+  const renderOne = (p: VDTDocument['pages'][number], throughHtml = '') => {
     const pageOptions: HtmlPaint = onWarning
       ? {
           ...options,
@@ -372,7 +379,26 @@ function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRender
         }
       : { ...options, ...(svgUrl ? { svgUrl } : {}), linkTargets, ...anchorPaint };
     const gridCells = doc.config.cjk?.grid?.show && !p.comic ? cjkGridCells(doc.config, p.contentArea, doc.baselineGrid, p.columns, p.flow) : undefined;
-    const detail = renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits);
+    return renderPageDetailed(p, p.background ?? background, pageOptions, ink, bleedInset, gridCells, doc.config.cjk?.region, doc.config.cjk?.uprightDigits, throughHtml);
+  };
+  const details = doc.pages.map((p) => renderOne(p));
+  // A die-cut page of the print leaf (#1567) is written again with the
+  // pages beneath drawn in its holes, from their own first writing.
+  if (doc.pages.some((p) => p.dieCut?.holes.length)) {
+    const paperFallback = background !== 'transparent' ? background : doc.config.page.backgroundColor.hex ?? '#ffffff';
+    const plain = details.slice();
+    const source = {
+      inner: (j: number) => plain[j]?.innerHtml ?? '',
+      paper: (j: number) => doc.pages[j]?.background ?? paperFallback,
+    };
+    doc.pages.forEach((p, i) => {
+      if (!drawsThrough(doc, i)) return;
+      const id = pageElementId((doc.pageIndexOffset ?? 0) + p.index);
+      details[i] = renderOne(p, throughLayerHtml(doc, i, source, id, bleedInset));
+    });
+  }
+  doc.pages.forEach((p, i) => {
+    const detail = details[i]!;
     // A style's figures (#1237): its feature family is set as the base
     // family with `font-variant-numeric`.
     pageHtmlParts.push(featureFontCss(detail.outerHtml));
@@ -385,7 +411,7 @@ function renderIndexed(doc: VDTDocument, options: RenderHtmlOptions): HtmlRender
       decorationHtml: featureFontCss(detail.decorationHtml),
       ...(detail.comicHtml ? { comicHtml: featureFontCss(detail.comicHtml) } : {}),
     });
-  }
+  });
   shapedText = null;
   ownShaping = false;
 

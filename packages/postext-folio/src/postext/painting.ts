@@ -1,7 +1,9 @@
 // The document book's page paintings: which pages are wanted, painting and
 // freeing them, the sweep of a turn and the idle schedule round the open
 // spread (#1276: split out of postext.ts).
-import { renderPageToCanvas, type FolioPaperConfig } from 'postext';
+import { renderFinishMask, renderPageToCanvas, type FolioPaperConfig } from 'postext';
+import type { FaceFinish } from '../pageFlip/finish.js';
+import { withPagesThrough } from './through.js';
 import { trimmedSize } from './book.js';
 import { sweepFor, SWEEP_BUDGET_MS } from './sweep.js';
 import { cancelIdle, onIdle } from './constants.js';
@@ -14,7 +16,7 @@ export interface DocumentPaintingDeps {
   options: FolioDocumentOptions;
   reach: number;
   slotWidth: () => number;
-  sources: () => ("" | { paper?: FolioPaperConfig | undefined; src: HTMLCanvasElement; alt: string; } | { src: ""; paper: FolioPaperConfig; })[];
+  sources: () => ("" | { paper?: FolioPaperConfig | undefined; src: HTMLCanvasElement; alt: string; finish?: FaceFinish } | { src: ""; paper: FolioPaperConfig; })[];
   ds: FolioDocumentState;
   dlate: FolioDocumentLate;
 }
@@ -23,14 +25,23 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
   const {
     options, reach, slotWidth, sources, ds, dlate
   } = deps;
-  /** Pages within `reach` spreads of the ones on show. */
-  function wanted(): Set<number> {
-    const keep = new Set<number>();
+  /** Pages within `reach` spreads of the ones on show, and the pages
+   *  their die-cut holes show (`deep`, #1569). */
+  function painting(): { keep: Set<number>; deep: Set<number> } {
+    const around = new Set<number>();
     const span = 2 * reach + 1;
-    for (const p of ds.focus) for (let i = p - span; i <= p + span; i++) if (i >= 0 && i < ds.current.pages.length) keep.add(i);
-    for (const i of ds.sweep) keep.add(i);
-    return keep;
+    for (const p of ds.focus) for (let i = p - span; i <= p + span; i++) if (i >= 0 && i < ds.current.pages.length) around.add(i);
+    for (const i of ds.sweep) around.add(i);
+    return withPagesThrough(ds.current, around);
   }
+  const wanted = () => painting().keep;
+  /** The width page `i` is painted at: a page seen only through a hole at
+   *  half the slot's. A page painted wider than that is kept. */
+  const widthOf = (i: number, width: number, deep: Set<number>) => (deep.has(i) ? Math.max(1, Math.round(width / 2)) : width);
+  const stale = (i: number, width: number, deep: Set<number>) => {
+    const had = ds.painted.get(i);
+    return deep.has(i) ? (had ?? 0) < widthOf(i, width, deep) : had !== width;
+  };
 
   /** Paints page `i` on a fresh canvas (the leaves cache their texture by
    *  element) exactly `width` device pixels wide. */
@@ -39,15 +50,21 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
     if (!page) return;
     const canvas = document.createElement("canvas");
     // The page as bound: trimmed, without the slug and the crop marks.
+    const scale = width / trimmedSize(page, ds.current).width;
     renderPageToCanvas(page, ds.current, canvas, {
       trim: true,
       output: 'folio',
-      scale: width / trimmedSize(page, ds.current).width,
+      scale,
       singleInk: options.singleInk,
       pageNegative: options.pageNegative,
       ...(options.forms ? { forms: options.forms } : {}),
       ...(options.printPreview ? { printPreview: options.printPreview } : {}),
     });
+    // Where its special inks lie (#1568), at half the painting's size: the
+    // light they catch is softer than the print's edges. Undefined, at the
+    // cost of a lookup, for a page without any.
+    const mask = renderFinishMask(page, ds.current, { trim: true, scale: scale / 2 });
+    if (mask) ds.masks.set(canvas, mask);
     const old = ds.canvases[i];
     if (old) old.width = old.height = 0;
     ds.canvases[i] = canvas;
@@ -153,9 +170,10 @@ export function createDocumentPainting(deps: DocumentPaintingDeps) {
     ds.idle = onIdle(() => {
       const width = slotWidth();
       const distance = (i: number) => Math.min(...ds.focus.map((f) => Math.abs(i - f)));
-      const next = [...wanted()].filter((i) => ds.painted.get(i) !== width).sort((a, b) => distance(a) - distance(b)).slice(0, 4);
+      const { keep, deep } = painting();
+      const next = [...keep].filter((i) => stale(i, width, deep)).sort((a, b) => distance(a) - distance(b)).slice(0, 4);
       if (!next.length) return;
-      for (const i of next) paint(i, width);
+      for (const i of next) paint(i, widthOf(i, width, deep));
       dlate.viewer.setPages(sources());
       schedule();
     });

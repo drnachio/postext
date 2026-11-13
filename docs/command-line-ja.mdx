@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ja',
   lastUpdated: '2026-11-12',
   readingTime: '14分',
-  order: 51,
+  order: 52,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
 };
 
@@ -157,6 +157,7 @@ PDFは本自身の設定に従います（[PDF生成](/ja/docs/configuration-fon
 - `--accessible` / `--no-accessible`：スクリーンリーダーのためのタグ構造。
 - `--no-outlines`：しおりを入れません。
 - `--page-negative`：一部の印刷ワークフロー向けのネガのページ。
+- `--die-line page|none`：抜き加工のある本の抜き型の線を、専用の版に描くか（`page`、既定）、省くか（`none`）。[PDFでの抜き型の線](/ja/docs/special-inks-die-cuts#pdfでの抜き型の線)を参照してください。
 
 ### html
 

@@ -8,8 +8,11 @@ import { type HeldChapterDoc } from '../../../book/buildBook.js';
 import type { PrintPreview } from 'postext';
 import { previewFor, printsGrayscale, usePrintSetup } from '../../../print/printSetup.js';
 import { usePrintPreview } from '../../../print/printPreviewToggle.js';
+import { useDieLines, useFinishesView } from '../specialInksView.js';
+import { syncDieLines } from './dieLines.js';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { createPaintedPages, type PaintedPages } from './pageReuse.js';
+import { createThroughState, type ThroughState } from './through/paintPages.js';
 import { useTemplateEditorHost } from '../../../templates/useTemplateEditorHost.js';
 import type { BookPageMap } from '../../usePageHashSync.js';
 import { createFontGate } from '../../../controls/fonts/fontLoader.js';
@@ -141,6 +144,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   /** What each canvas holds: a composed page a relayout left as it was
    *  keeps its pixels (#857). */
   const paintedPagesRef = useRef<PaintedPages>(createPaintedPages());
+  /** What shows through die-cut holes (#1567): the see-through chain of
+   *  the document and the pages painted only to be seen in a hole. */
+  const throughRef = useRef<ThroughState>(createThroughState());
   // Pages within the observer's margin of the viewport right now.
   const visiblePagesRef = useRef<Set<number>>(new Set());
   const lastGeomRef = useRef<GeomSnapshot | null>(null);
@@ -234,6 +240,16 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     // every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [printPreviewKey]);
+  // How special inks are painted (#1570): flat, with their sheen, or the
+  // finish map. Repaints, never relays.
+  const [finishes] = useFinishesView();
+  const finishesRef = useRef(finishes);
+  useEffect(() => {
+    if (finishesRef.current === finishes) return;
+    finishesRef.current = finishes;
+    setPaintKey((k) => k + 1);
+  }, [finishes]);
+  const [dieLines] = useDieLines();
   const lastPaintedPaintKeyRef = useRef(0);
   // The book's first chapter as last laid out here, for its cover (a book
   // without one gets a picture of its first page once it is painted).
@@ -248,7 +264,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     gapsRef, applyDisplaySize, computeDisplaySizeRef
   } = useDisplaySize({
     zoom, viewMode, fitMode, config, containerRef, docRef, canvasMapRef, overlayMapRef,
-    renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
+    renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
     paintOptionsRef, wantedBitmapScale, needsRescale, setRebuildKey, containerSizeRef, setLayoutKey
   });
 
@@ -264,12 +280,19 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   usePagePaint({
     zoom, viewMode, fitMode, pageLabelRef, containerRef, dispatchRef, activePanelRef, resourcesRef,
     labelsRef, pageSourceRef, navigateRef, docRef, drawnOverlaysRef, observerRef, canvasMapRef,
-    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef,
+    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef,
     lastPaintedDocVersionRef, bitmapScaleRef, renderOptsRef, paintOptions, paintOptionsRef,
     wantedBitmapScale, needsRescale, paintSpanRef, builtSourceRef, deferredResources, deferredConfig,
-    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef,
+    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef, finishesRef,
     lastPaintedPaintKeyRef, gapsRef, applyDisplaySize, computeDisplaySizeRef
   });
+
+  // The die lines (#1570) in each page's overlay, after the paint effect
+  // above has (re)built the pages: on every new document and page DOM.
+  useEffect(() => {
+    const doc = docRef.current;
+    for (const [pageIndex, svg] of overlayMapRef.current) syncDieLines(svg, doc?.pages[pageIndex], dieLines);
+  }, [dieLines, docVersion, paintKey, layoutKey, zoom, viewMode, fitMode, deferredConfig]);
 
   useOverlays({
     activeChapterId, config, editorSelection, editorFocused, selectionFromViewerRef,

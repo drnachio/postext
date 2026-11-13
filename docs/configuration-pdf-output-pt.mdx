@@ -425,10 +425,11 @@ Para fluxos de produção gráfica, ajuste estas opções de configuração ante
 - **`page.dpi: 300`**: os px por polegada da diagramação; um bitmap sem resolução própria é impresso com essa resolução no tamanho natural. O [preflight](/pt/docs/configuration-pdf-output#preflight) informa as imagens abaixo de 300 ppi no tamanho impresso.
 - **`ColorValue.cmyk`**: uma cor definida em CMYK é impressa com os valores exatos.
 - **`{ pageNegative: true }`** em `RenderToPdfOptions`: inverte a área de refile com um modo de mesclagem Difference (as marcas de corte não são invertidas). Útil em verificações de preflight de tipografia escura sobre fundo claro.
+- **`print.dieLine`**: a linha de faca de um livro com facas especiais, traçada numa chapa própria que a máquina nunca entinta (`Die` por padrão, num grupo de conteúdo opcional fora do PDF/X-1a). Veja [A linha de faca no PDF](/pt/docs/special-inks-die-cuts#a-linha-de-faca-no-pdf).
 
 ### Cores especiais
 
-Uma cor especial (um Pantone, uma tinta corporativa, um verniz) é impressa na sua própria chapa. Uma cor com `model: 'spot'` leva a sua tinta em `ColorValue.spot`: `name` é o nome da chapa tal como a gráfica o conhece, `cmyk` é o aspeto da tinta a 100 % (o equivalente que o PDF dá a quem não tem a tinta), `tint` é a retícula em percentagem (100 por omissão) e `overprint` faz a tinta sobreimprimir o que está por baixo em vez de o vazar, como um verniz. `hex` é a sua representação no ecrã.
+Uma cor especial (um Pantone, uma tinta corporativa, um verniz) é impressa na sua própria chapa. Uma cor com `model: 'spot'` leva a sua tinta em `ColorValue.spot`: `name` é o nome da chapa tal como a gráfica o conhece, `cmyk` é o aspeto da tinta a 100 % (o equivalente que o PDF dá a quem não tem a tinta), `tint` é a retícula em percentagem (100 por omissão), `overprint` faz a tinta sobreimprimir o que está por baixo em vez de o vazar, como um verniz, e `finish` diz o que é uma tinta especial: metálica, hot stamping, fluorescente, branco opaco ou verniz. `hex` é a sua representação no ecrã. [Tintas especiais e facas](/pt/docs/special-inks-die-cuts#acabamentos) explica como cada acabamento é impresso e aparece.
 
 Um PDF CMYK ou PDF/X escreve cada tinta como um espaço de cor `Separation` com o seu nome, e cada cor dessa tinta é pintada na sua retícula: as cores com o mesmo `name` partilham chapa. Cabem assim os trabalhos habituais: duas cores (preto e uma especial), quadricromia com alguns elementos em especial e um verniz sobreimpresso em zonas escolhidas. Se `diagramStyle.singleInk` usar uma cor especial, os diagramas SVG são impressos em retículas dessa chapa. Num PDF RGB e no ecrã, a cor é pintada com o seu `hex`.
 
@@ -438,7 +439,7 @@ Um PDF CMYK ou PDF/X escreve cada tinta como um espaço de cor `Separation` com 
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' imprime a tinta em CMYK, com o seu equivalente.
   cmyk?: CmykPercent;              // O equivalente a 100 %, acima do das cores.
   overprint?: boolean;             // Acima do das cores.
+  finish?: InkFinish;              // Metálica, hot stamping, fluorescente, branco ou verniz, acima do das cores.
 }
 ```
 
-Os nomes e os aliases são comparados sem distinguir maiúsculas nem espaços repetidos. Mudar o nome é uma linha, sejam quantas forem as cores que usam a tinta; um alias junta numa chapa os nomes que uma amostra do designer, um SVG (`data-spot`, `icc-named-color`) ou uma paleta anterior davam à mesma tinta; e `output: 'process'` imprime uma tinta em CMYK quando a máquina não tem unidade para ela, com todas as suas retículas.
+Os nomes e os aliases são comparados sem distinguir maiúsculas nem espaços repetidos. Mudar o nome é uma linha, sejam quantas forem as cores que usam a tinta; um alias junta numa chapa os nomes que uma amostra do designer, um SVG (`data-spot`, `icc-named-color`) ou uma paleta anterior davam à mesma tinta; `output: 'process'` imprime uma tinta em CMYK quando a máquina não tem unidade para ela, com todas as suas retículas; e `finish` torna uma tinta especial venha de onde vier o nome dela, inclusive de um SVG ou de um arquivo importado que nomeia `Gold`.
 
-No Sandbox, a tabela fica em **Design › Exportação › Preparação para impressão › Tabela de tintas**: um cartão por tinta com o **Nome da tinta**, os **Apelidos**, o **Nome da chapa no PDF**, **Impressa como**, o **CMYK alternativo** e a **Sobreimpressão**. **Tintas usadas pelas cores** lista as tintas das cores do livro que faltam na tabela, cada uma com um botão que a acrescenta.
+No Sandbox, a tabela fica em **Design › Exportação › Preparação para impressão › Tabela de tintas**: um cartão por tinta com o **Nome da tinta**, os **Apelidos**, o **Nome da chapa no PDF**, **Impressa como**, o **CMYK alternativo**, a **Sobreimpressão**, o **Acabamento** e o **Brilho**. **Tintas usadas pelas cores** lista as tintas das cores do livro que faltam na tabela, cada uma com um botão que a acrescenta.
 
 ```ts
 print: {

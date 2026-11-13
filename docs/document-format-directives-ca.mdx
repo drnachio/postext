@@ -152,6 +152,10 @@ Al flux del text es reconeixen cinc noms de contenidor; `:::frame` i `:::module`
       <td>Una sèrie de pàgines impreses en un altre paper, com un quadern de làmines en estucat brillant dins d'un llibre en paper mat. Només ho mostra el visor Folio.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>Una sèrie de pàgines tallades per un troquel de la configuració: una finestra, un forat que travessa diversos fulls. Vegeu <a href="#diecut"><code>:::diecut</code></a> més avall.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Blocs compostos en diverses columnes pròpies: dins d'un requadre, a la columna de text o a tota l'amplada d'una pàgina de diverses columnes. Vegeu <a href="#columns"><code>:::columns</code></a> més avall.</td>
     </tr>
@@ -376,6 +380,20 @@ Els atributs són els de la configuració `folio.paper`, i tots són opcionals. 
 </table>
 
 Un `:::paper` dins d'un altre només canvia els atributs que escriu, i també comença i acaba amb un salt de pàgina. Dins d'un `:::callout`, les línies d'obertura i de tancament s'ignoren. Un valor que el motor no sap llegir es descarta, i el Sandbox el mostra com a avís **Atribut de paper no vàlid** (`paperAttributeInvalid` als `contentWarnings` del document).
+
+### `:::diecut`
+
+Un troquel forma part de la forma del llibre: la seva figura, la seva mida i el lloc que ocupa a la pàgina són una forma de troquel de la configuració (`dieCuts.shapes`, vegeu [Tintes especials i troquels](/ca/docs/special-inks-die-cuts#formes-de-troquel)). Quan és el contingut el que decideix quines pàgines es troquelen, embolcalla'l en un contenidor `:::diecut` que anomeni el troquel:
+
+```md
+:::diecut{die=window}
+## La casa
+Per la finestra, el jardí de la pàgina següent.
+:::
+```
+
+Totes les pàgines compostes amb contingut de dins del contenidor es troquelen amb aquesta forma, i també l'altra cara de cada full on cau, en mirall. Com amb `:::paper`, el contingut comença en una pàgina nova i el que segueix el `:::` de tancament també. Un `:::diecut` dins d'un altre talla la forma de l'interior. `die` és l'únic atribut. Una forma que `dieCuts.shapes` no té no talla res: les pàgines es continuen component a part, i el Sandbox mostra un avís **Forma de troquel desconeguda** (`dieCutUnknown` als `contentWarnings` del document). Per troquelar pàgines per número, fes servir `dieCuts.pages`.
+
 ### `:::pagebreak`
 
 La directiva sola no força cap paritat: només afecta el bloc següent. Fes-la servir per acabar un pròleg, posar una dedicatòria en una pàgina pròpia o marcar el final d'una secció. Si vols els dos efectes (salt de pàgina i reinici de la numeració), escriu `:::pagebreak` seguit de `:::numbering`: el canvi de numeració s'aplica a la pàgina nova que acaba de crear `:::pagebreak`.

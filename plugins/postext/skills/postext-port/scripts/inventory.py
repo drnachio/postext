@@ -30,6 +30,8 @@ from collections import Counter
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from ink_finishes import die_line_plate, guess_ink_finish, suggested_ink_config
+
 PT_MM = 25.4 / 72
 TWIP_MM = 25.4 / 1440
 EMU_MM = 1 / 36000
@@ -135,6 +137,63 @@ def print_setup(doc, p0) -> dict:
     return out
 
 
+_SEPARATION_RE = re.compile(r"/Separation\s*/((?:[^\s/\[\]()<>{}%#]|#[0-9A-Fa-f]{2})+)")
+_PROCESS_PLATES = {"Cyan", "Magenta", "Yellow", "Black", "All", "None"}
+
+
+def pdf_name(raw: str) -> str:
+    """A PDF name with its `#xx` escapes read (UTF-8, as InDesign writes them)."""
+    data = re.sub(rb"#([0-9A-Fa-f]{2})", lambda m: bytes([int(m.group(1), 16)]), raw.encode("latin-1", "replace"))
+    return data.decode("utf-8", "replace")
+
+
+def special_inks(names: list[str], layers: list[str] | None = None) -> dict:
+    """The spot plates of a source with the finish each name suggests and
+    the plates (or layers) that are a die line, and the `print` config they
+    suggest. Finishes are guesses (`guessInkFinish`): confirm them with the
+    printer's specification before writing them."""
+    out: dict = {}
+    plates = [{"name": n, **({"finish": f} if (f := guess_ink_finish(n)) else {}), **({"dieLine": True} if die_line_plate(n) else {})}
+              for n in names]
+    if plates:
+        out["spot_plates"] = plates
+    die_layers = [l for l in (layers or []) if die_line_plate(l)]
+    if die_layers:
+        out["die_line_layers"] = die_layers
+    suggested = suggested_ink_config(names + die_layers)
+    if suggested:
+        out["suggested_config"] = {"print": suggested}
+        out["note_special_inks"] = ("finishes are read from the names: confirm each with the printer, then set finish on the palette "
+                                    "colour or in print.inks; a die-line plate or layer is not a colour: write its holes as dieCuts "
+                                    "(references/sources.md, Special inks and die-cuts)")
+    return out
+
+
+def merge_suggested(out: dict, more: dict) -> None:
+    """`more` into `out`, its `suggested_config.print` merged into the one
+    the print set-up already suggests (standard, profile)."""
+    extra = more.pop("suggested_config", None)
+    out.update(more)
+    if extra:
+        cfg = out.setdefault("suggested_config", {})
+        cfg["print"] = {**cfg.get("print", {}), **extra["print"]}
+
+
+def pdf_separations(doc) -> list[str]:
+    """Every Separation colorant the file defines (not the process plates)."""
+    found: list[str] = []
+    for x in range(1, doc.xref_length()):
+        try:
+            obj = doc.xref_object(x, compressed=False)
+        except Exception:
+            continue
+        for raw in _SEPARATION_RE.findall(obj):
+            name = pdf_name(raw)
+            if name not in _PROCESS_PLATES and name not in found:
+                found.append(name)
+    return found
+
+
 def inv_pdf(path: Path, pages_spec: str | None) -> dict:
     try:
         import fitz  # type: ignore
@@ -154,6 +213,11 @@ def inv_pdf(path: Path, pages_spec: str | None) -> dict:
         out["trimbox_mm"] = [mm(tb.x0 * PT_MM), mm(tb.y0 * PT_MM), mm(tb.x1 * PT_MM), mm(tb.y1 * PT_MM)]
         out["note_trim"] = "media box larger than trim box: measure everything from the trim (subtract the bleed/slug)"
     out.update(print_setup(doc, p0))
+    try:
+        layers = [o.get("name", "") for o in (doc.get_ocgs() or {}).values()]
+    except Exception:
+        layers = []
+    merge_suggested(out, special_inks(pdf_separations(doc), layers))
     sizes = Counter((round(doc[i].rect.width), round(doc[i].rect.height)) for i in range(n))
     if len(sizes) > 1:
         out["page_sizes_pt"] = {f"{w}x{h}": c for (w, h), c in sizes.most_common()}
@@ -443,6 +507,13 @@ def inv_idml(path: Path) -> dict:
     out["largest_stories"] = [{"story": k, "chars": v} for k, v in chars.most_common(8)]
     out["links"] = len([el for s in spreads for el in ET.fromstring(z.read(s)).iter() if local(el.tag) == "Link"])
     out["index_page_references"] = sum(z.read(s).count(b"<PageReference ") for s in stories)
+    swatches = []
+    if "Resources/Graphic.xml" in z.namelist():
+        for el in ET.fromstring(z.read("Resources/Graphic.xml")).iter():
+            if local(el.tag) == "Color" and attr(el, "Model") == "Spot" and attr(el, "Name"):
+                swatches.append(attr(el, "Name"))
+    layers = [attr(el, "Name", "") for el in dm.iter() if local(el.tag) == "Layer"]
+    merge_suggested(out, special_inks(swatches, layers))
     out["next"] = "idml_extract.py roles SOURCE, then idml_extract.py markdown SOURCE --map map.json; positions come from the printed PDF"
     return out
 

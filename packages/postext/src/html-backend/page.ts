@@ -2,6 +2,7 @@
 // frames, comic pages, the mirrored-flow style and character grids
 // (#1276: split out of html-backend.ts).
 import { footnoteRuleSegments } from '../paint/columnRule.js';
+import { dieCutClipDecl } from './dieCut.js';
 import { type VDTBlock, type VDTPage, verticalFlowOf, type VDTComicPage, type VDTFrame, type VDTComicPanel } from '../vdt.js';
 import { type CjkGridCells, CHARACTER_GRID_COLOR } from '../pipeline/text/cjkGrid.js';
 import type { CjkRegion } from '../types.js';
@@ -172,11 +173,17 @@ export function renderPageDetailed(
   /** `cjk.region` and `cjk.uprightDigits`, for a vertical page. */
   verticalRegion?: CjkRegion,
   verticalDigits?: number,
+  /** The layer that draws the pages beneath in the page's die-cut holes
+   *  (`throughLayerHtml`, #1567): the page then keeps its holes in its
+   *  clip, the layer covers them. */
+  throughHtml = '',
 ): PageRenderResult {
   const bgDecl = background && background !== 'transparent' ? `background:${background};` : '';
   // With cut lines nothing the page paints shows past the bleed box, as on
   // the canvas and in the PDF (EF-133).
-  const clipDecl = bleedInset > 0 ? `clip-path:inset(${bleedInset}px);` : '';
+  // A die-cut page (#1567) is clipped to its leaf's outline less its holes,
+  // inside the same bleed box.
+  const clipDecl = dieCutClipDecl(page, bleedInset, throughHtml === '') ?? (bleedInset > 0 ? `clip-path:inset(${bleedInset}px);` : '');
   // A filter id local to the page and its ink, so every page is
   // self-contained (a patcher may replace pages one by one) and two
   // documents on one page never share a filter.
@@ -342,7 +349,7 @@ export function renderPageDetailed(
   const comicHtml = page.comic ? comicMarkup(page.comic) : '';
   const sheetComicsHtml = comicHtml + (plainFlow ? '' : comics.filter((c) => c !== page.comic).map(comicMarkup).join(''));
   const sheetComposedHtml = composedFlow ? composedDecorationHtml + composedOverHtml : '';
-  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + sheetComicsHtml + composedShape.join('') + composedDecorationHtml + composedOverHtml + slotParts.join('');
+  const decorationHtml = defsHtml + gridHtml + openerHtml + footnoteRulesHtml + sheetComicsHtml + composedShape.join('') + composedDecorationHtml + composedOverHtml + slotParts.join('') + throughHtml;
   // A vertical page's flow: one box turned a quarter turn clockwise, its
   // text lines turned back and set vertically (see `renderVerticalLine`).
   const anchorsHtml = (options.anchors ?? [])
@@ -358,7 +365,7 @@ export function renderPageDetailed(
     ? `<div class="pt-flow" style="position:absolute;left:0;top:0;width:${page.height}px;height:${page.width}px;transform:translate(${page.width}px,0) rotate(90deg);transform-origin:0 0;">${flowHtml}</div>`
     : page.flow?.writingMode === 'horizontal-tb'
       ? `<div class="pt-flow pt-flow-mirrored" style="position:absolute;left:0;top:0;width:${page.width}px;height:${page.height}px;transform:scaleX(-1);transform-origin:${page.flow.mirror.originX / 2}px 0;">${MIRRORED_FLOW_STYLE}${flowHtml}</div>`
-      : flowHtml) + sheetComposedHtml + sheetComicsHtml + slotParts.join('');
+      : flowHtml) + sheetComposedHtml + sheetComicsHtml + slotParts.join('') + throughHtml;
   // A right-to-left document's pages say so, with its language, for a host
   // that mounts them apart from the document's root (#379); so do a
   // Japanese document's, whose glyph forms (a pan-CJK face's `locl`) and

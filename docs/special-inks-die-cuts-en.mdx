@@ -1,0 +1,353 @@
+{/* docs/special-inks-die-cuts-en.mdx */}
+
+export const metadata = {
+  title: 'Special inks and die-cuts',
+  sidebarTitle: 'Special inks and die-cuts',
+  description: 'Fifth inks, metallic and fluorescent inks, hot foil, opaque white and varnish as spot colours with a finish, and die-cuts: holes through one or more leaves, rounded corners and shaped books, the die line in the PDF, the preflight and how each viewer shows them',
+  lang: 'en',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "This page is about the extras a printer adds to a book beyond the four usual inks. A fifth ink can be an exact brand colour, a gold or silver ink, a shiny foil, a very bright fluorescent ink, a white ink for brown or coloured paper, or a clear varnish. Each one is a colour of the book marked with what it is, and the PDF gives each its own plate for the printer. A die-cut is a hole cut through the pages, rounded corners or a book cut to a shape. The holes are set in the settings, the text runs around them, and the PDF draws the line the cutting tool follows.",
+};
+
+# Special inks and die-cuts
+
+**A special ink is a spot colour with a finish. A die-cut is a shape in the configuration that the die cuts through the leaves.**
+
+Both belong to the form of the book, so both live in the configuration. A finish never moves a line: the layout sees a colour, the PDF sees an ink on a plate of its own, and the viewers decide how to show it. A die-cut does change the page, because text keeps clear of a hole, but the Markdown only names the die where the content needs it.
+
+## Fifth inks
+
+A fifth ink is any ink the job prints beyond cyan, magenta, yellow and black: a Pantone that has to match exactly, a corporate colour mixed by the ink maker, or one of the special inks below. In Postext it is a spot colour, a colour with `model: 'spot'` whose `spot` names the ink, gives its look at 100 % in CMYK (the alternate a proof shows) and its tint. A CMYK or PDF/X file prints it on a `Separation` plate named after the ink; the screen and an RGB file paint its `hex`. [Spot colours](/en/docs/configuration-pdf-output#spot-colours) explains the model in full.
+
+The [ink table](/en/docs/configuration-pdf-output#the-ink-table) (`print.inks`) is where an ink is described as the printer will receive it, whatever the colours, the SVG pictures and the imported files call it: its plate name, its aliases, whether it prints in process, its alternate, its overprint and, for a special ink, its finish.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Finishes
+
+A spot colour without a finish is an ordinary ink. With one, it is a special ink:
+
+<table>
+  <thead>
+    <tr>
+      <th>Finish</th>
+      <th>What it is</th>
+      <th>Sheen</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>An ink with metal pigment: gold, silver, copper (Pantone 871–877 C, the 8000 and 10000 series).</td><td><code>satin</code> by default, or <code>gloss</code> or <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Hot foil stamped on the sheet with a heated block after printing. The plate is the artwork the block is made from.</td><td><code>gloss</code> by default, or <code>satin</code> or <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>An ink brighter than any process mix (Pantone 801–814 C).</td><td>none</td></tr>
+    <tr><td><code>white</code></td><td>An opaque white, for kraft, coloured stock or film, usually laid under the colours.</td><td>none</td></tr>
+    <tr><td><code>varnish</code></td><td>A clear coat over chosen areas (spot UV, a matte or soft-touch varnish).</td><td><code>gloss</code> by default, or <code>satin</code>, <code>matte</code> or <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // Ignored for fluorescent and white inks.
+}
+```
+
+The finish goes on the spot colour (`spot.finish`) or on the ink's entry in the ink table (`print.inks[].finish`); the ink table's wins. The table is the place for an ink that the colours do not define: an SVG or an imported file that names `Gold` gets its metallic finish there. A kind Postext does not know is dropped, and so is a sheen that does not apply: none on a fluorescent or white ink, and soft touch on a varnish only.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### How a special ink prints
+
+- **A plate of its own.** Every special ink prints on its own `Separation`, under the plate name the ink table gives it (`pdfName`, else its name). It never falls back to process, unless its ink table entry says `output: 'process'`.
+- **Overprint.** A white ink and a varnish overprint unless `overprint: false` says otherwise, on the colour or in the ink table: the white lies under the colours and the varnish over them, and neither should knock a hole in the plates. Metallic, foil and fluorescent inks knock out like any spot ink.
+- **Press order.** The file holds plates, not an order. White prints first and varnish last; the preflight lists both (`inkPressOrder`) so you can tell the printer, who sets the order on press.
+- **Jobs on a few plates.** In a [`print.plates`](/en/docs/configuration-pdf-output#two-ink-printing) job, a white ink or a varnish the job does not name is left out, not projected onto the colour plates, and the render warns (`finishInkDropped`). Metallic, foil and fluorescent inks are projected like any other spot ink.
+- **RGB and grey files.** A varnish puts nothing on the page; the other finishes paint their `hex`.
+
+### On screen
+
+The canvas, the HTML viewer and EPUB paint each special ink with its `hex`, except a varnish, which is clear and paints nothing. Give a varnish a hex of its own all the same, since a print render tells inks apart by their hex.
+
+`RenderPageOptions.finishes` shows the finishes on the canvas:
+
+- `'flat'` (the default): each ink's hex, and nothing for a varnish.
+- `'sheen'`: a light sweep across the page lights metallic ink and foil (more for a glossier sheen), a glow lifts fluorescent ink, and a highlight shows where the varnish lies.
+- `'map'`: the special plates in false colour over a faded page, as a press proof marks them: metallic and foil amber, fluorescent pink, varnish cyan, opaque white blue.
+
+The *sheen* and *map* views read the page's **finish mask**. `renderFinishMask(page, doc, { scale })` returns it, or `undefined` for a page that paints no special ink, which then costs nothing. It is an RGBA bitmap: red is metal (metallic ink and foil), green is sheen (gloss 1, satin 0.7, matte 0.4, soft touch 0.2), blue is fluorescence and alpha is opaque white, each scaled by the ink's tint. A host that lights its own pages, such as Folio, reads it directly. Anything printed over a special ink knocks it out of the mask, pictures by their silhouette, unless it overprints.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined without special inks
+```
+
+### In Folio
+
+Folio lights special inks as the paper under its lamps would show them. Metallic ink and foil reflect the room as a metal tinted by the ink's colour, foil almost as a mirror. Fluorescent ink stands brighter than the paper. Opaque white covers the paper's shade, so it reads on kraft or coloured stock. A gloss varnish catches the highlights as a leaf turns, a matte varnish dulls them, and soft touch takes them away. Only the pages that carry a special ink get a mask, at half the resolution of the page, so a book without them draws as before.
+
+### What the preflight says about inks
+
+In a print job (a PDF/X standard, or CMYK), the preflight adds:
+
+- `spotInkFinish` (information): each special ink the pages use, with its finish and sheen, so the order to the printer names them all.
+- `inkPressOrder` (information): the white inks that print first and the varnishes that print last.
+- `whiteInkOnWhite` (warning): a white ink on a page whose paper is white or unset, where it shows nothing. Set the paper colour (`page.backgroundColor`) to the stock it prints on.
+
+A white ink or a varnish never raises `overprintWhite`: they put no colour down on purpose.
+
+## Guessing a finish from a name
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` reads the name a swatch, a separation or an ink table gives an ink and returns the finish it suggests, or `undefined`. It knows the words for each finish and sheen in the site's ten languages and in the names swatch books use, and Pantone's numbers: 801 to 814 are fluorescent, 871 to 877, the 8000s and the 10000s metallic. A varnish or foil word wins over a colour word (`Gold foil` is a foil, `Barniz oro` a varnish), a fluorescent word over white, a metal over white (`白金`, platinum). French `or` is left out, because it is also the English conjunction; `Or métallisé` still reads as metallic by its second word.
+
+It is a hint and nothing sets it silently: the Sandbox offers it as a button, and the porting skill reports it.
+
+## Die-cuts
+
+A die-cut is the work of a steel-rule die after printing: a window in a cover, a hole that runs through a board book, a thumb index, rounded corners, a book cut to the outline of a house. The `dieCuts` property describes the dies of the book; text keeps clear of a hole on every page it cuts.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // The book's die shapes.
+  pages?: DieCutPlacement[];           // Shapes put on pages by number.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Die shapes
+
+A die shape is placed from the top-left corner of the trim of the page it is put on.
+
+<table>
+  <thead>
+    <tr>
+      <th>Property</th>
+      <th>Type</th>
+      <th>Default</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>required</td><td>What placements and <code>:::diecut</code> call it.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>none</td><td>A name for people; the Sandbox shows it.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>required</td><td>A circle is the largest the box holds, centred in it; an ellipse fills the box.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>required</td><td>From the trim's left and top edges.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>required</td><td>The box the shape fills.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>The corners of a <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>none</td><td>SVG path data of a <code>path</code> (<code>M L H V C S Q T A Z</code>), stretched from <code>viewBox</code> to the box.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>The width and height of the space <code>d</code> is written in.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>How many leaves the hole goes through: the one it is put on, then the next ones.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>Text keeps <code>gap</code> clear of the hole; <code>false</code> lets it run under the hole and be cut away.</td></tr>
+  </tbody>
+</table>
+
+### Three ways to place a die
+
+**By page number.** `dieCuts.pages` puts a shape on a list of pages: `'5'`, `'3-12'`, `'3,7,11-13'`. The numbers count the pages of the book by position, 1 being its first page, not the printed folios. In a book of several chapters they count from the start of the book, so a chapter laid out on its own still cuts the right page.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Where the content decides.** A `:::diecut` container cuts every page its content lands on, as [`:::paper`](/en/docs/document-format-directives#paper) changes the stock. Its content starts on a new page, and whatever follows the closing `:::` starts on a new page too. A container inside another cuts its own die; a die that `dieCuts.shapes` lacks is reported (**Unknown die shape**, `dieCutUnknown`), and those pages are set on their own and not cut. See [`:::diecut`](/en/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Look inside
+The window frames the title page beneath.
+:::
+```
+
+**In a page template.** On a composed page, a decoration element of kind `'cut'` places a hole like any path element, with `when` and `unless` to keep it to the pages that ask for it. See [Cut elements in a page template](#cut-elements-in-a-page-template).
+
+### Cut elements in a page template
+
+A decoration element of kind `'cut'` is a hole the die cuts through the leaf of every composed page the template's decoration is laid on: a window in a cover template, a thumb cut on the openers of a reference book. It is placed and sized like a [path element](/en/docs/configuration-headers-footers#path-elements), with `when`, `unless`, `parity` and `pin` as any decoration element, and it is never painted: the layout takes it out of the decoration and puts it on the page's die-cuts, mirrored on the other side of the leaf.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Where the hole sits and its box.
+  die?: string;                      // A shape of dieCuts.shapes, stretched to the box.
+  d?: string;                        // Else SVG path data, in viewBox units.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Default: the die's, else 1.
+  wrap?: false | { gap?: Dimension }; // Default: the die's, else 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+The outline of the hole is the die shape `die` names, stretched to the element's box (the die gives its kind, corner radius, path data, `leaves` and `wrap`, but not its own box); without `die`, the path data `d`; without either, the box itself. An element's own `leaves` and `wrap` win over the die's.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+Text in the frames of a composed page does not yet wrap around a hole: lay the frames clear of it, and read the preflight's `dieCutText`. In a spread template a cut element is not split between the two pages. The rest of [page templates](/en/docs/configuration-composed-pages#page-templates) is in the configuration reference.
+
+### Leaves and mirroring
+
+A hole goes through paper, so it cuts both sides of a leaf. Page 1 is a recto, its back page 2 the verso of the same leaf, and so on; a chapter that starts further into the book counts from the book's first page. A shape placed on a page cuts the other side of its leaf as well, mirrored across the trim: a window 40 mm from the left edge of a recto is 40 mm from the right edge of its verso. With `leaves: 6` the hole runs on through the next five leaves too, in the same place in the stack, so it lies where you put it on every page of that side and mirrored on every page of the other.
+
+### Rounded corners and shaped books
+
+`corners` rounds every leaf: by default the fore-edge corners only (right on a recto, left on a verso, swapped in a book bound on the right), the spine kept square; `edges: 'all'` rounds all four. `outline` cuts every leaf to an outline: SVG path data in `viewBox` units, stretched to the trim of a recto and mirrored on versos. When both are set, the outline wins.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // a house
+}
+```
+
+### Text around a hole
+
+Each hole, grown by its `wrap.gap`, is an obstacle the text runs around on both sides of every leaf it cuts, on flowing pages: lines are shortened beside it, as beside a wrapped picture. A shape with `wrap: false` leaves the text where it is, and whatever lies under the hole is cut away.
+
+### The die line in the PDF
+
+The die-maker works from the die line: the outline of every hole and of the leaf when it is shaped or rounded, on a plate that the press never inks. `print.dieLine` sets it.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (default): drawn on each page with a die-cut.
+  ink?: string;               // The plate's name. Default 'Die'.
+  cmyk?: CmykPercent;         // The plate's alternate, how proofs show it. Default 100 % magenta.
+  width?: Dimension;          // Stroke width. Default 0.25 pt.
+}
+```
+
+The line is stroked after the crop marks on a `Separation` plate of its own, with round caps and joins, and it overprints, so it never knocks a white line into the plates under it. In a tagged PDF it is an artifact. Outside PDF/X-1a, which allows no optional content, it sits in an optional content group called **Die line** that a reader can hide. The plate is listed with the job's inks (`inspectPrintPdf` puts it in `color.spots`), and a [`print.plates`](/en/docs/configuration-pdf-output#two-ink-printing) job never projects it onto its plates. Ask the die-maker what the plate should be called: `Die`, `CutContour`, `Dieline` and `Troquel` are all in use.
+
+The page itself prints whole: the PDF does not cut the hole out. Whatever is set inside it prints and is punched away with the paper.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+On the command line, `postext pdf --die-line page|none` overrides `output` for one run (see [`pdf`](/en/docs/command-line#pdf)).
+
+### What the preflight says about die-cuts
+
+<table>
+  <thead>
+    <tr>
+      <th>Kind</th>
+      <th>Severity</th>
+      <th>When</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>warning</td><td>Text inside a hole's wrap gap, or under a hole that does not wrap, with its distance from the cut edge in millimetres. One per hole and page.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>warning, or critical</td><td>A hole closer than 3 mm to the trim, where the die tears the edge; critical when it runs past the trim.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>critical</td><td>A hole within 3 mm of the spine fold, where the leaves are sewn or glued.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>warning</td><td>A placement or a <code>:::diecut</code> that names a die <code>dieCuts.shapes</code> does not have.</td></tr>
+  </tbody>
+</table>
+
+These checks run whenever the preflight is on, in a print job or not. The configuration warnings report a placement whose die does not exist (with the closest id as a suggestion), a page list with no page number in it, a shape the engine drops (no id, an unknown `shape`, a missing size or path) and path data it cannot read, in which case the shape cuts its box.
+
+## In the viewers
+
+**Canvas.** `renderPageToCanvas` cuts each hole, and the paper outside a shaped or rounded leaf, out of the page, so they show what is behind the canvas. With the `beneath` option, a function that returns the painted canvas of any page by its index, it draws into each hole the pages a reader would see through it, as deep as the holes line up: each page clipped by the holes of every page above it, a soft shadow along each cut edge and a fine line for the paper's wall, and a dark board grey past the end of the book (`composeThrough`'s `background` changes it). `composeThrough(doc, pageIndex, source, target, scale)` draws the same composite onto a canvas of your own.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // pages already drawn, by index
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**HTML viewer.** A die-cut page is clipped with `clip-path: path(evenodd, …)`, the bleed box (or the leaf's outline) less its holes. On the print leaf, a composed page draws into each hole the pages beneath it, as deep as the holes line up, with a soft shadow and a fine wall line along every cut edge; these copies are hidden from screen readers and take no clicks. On the screen layout the pages are not the print pages, so a hole there shows the viewer's background.
+
+**Folio.** Folio shows a hole as it looks in the hand. On an open page, the hole shows the pages beneath, as deep as the holes line up (a tunnel book can show a page twenty leaves down), with the paper walls of the cut and a parallax that follows the view. A leaf that turns has a real hole, and the shadows fall through it onto the page below. Rounded corners and a shaped outline are cut on every leaf.
+
+**Your own viewer.** Each laid-out page carries its die-cuts in `VDTPage.dieCut`: `holes` and `outline` as paths in page pixels, `sources` (the die of each hole) and `wrapGapPx`. `leafSide(doc, i)` says whether a page is a recto or a verso, `pageBeneath(doc, i)` which page lies under it (`-1` past the end of the book), `seeThrough(doc, i)` the whole stack a hole shows with each layer's clip, and `dieCutPath2D(cut)` turns the cut into a `Path2D`.
+
+## In the Sandbox
+
+- **Colours.** The colour picker's **Spot** tab has **Finish** and **Sheen**, and offers the finish the ink's name suggests (**Set the finish: …**). The palette's **Add a special ink** menu adds a ready-made one: metallic gold, silver or copper, gold or silver foil, four fluorescents, opaque white, and gloss, matte or soft-touch varnish.
+- **Ink table.** Each ink has **Finish** and **Sheen**, and **Inks the colours use** shows the finish of each.
+- **Die-cuts.** **Design › Page & columns › Die-cuts** holds the die shapes, each with a drawing of its outline, the pages they cut, the rounded corners and the outline of a shaped book. **Design › Export › Print preparation › Die line** sets the plate.
+- **Canvas.** For a book with die-cuts the toolbar has **Die lines**, which draws each die as a dashed line over the page; for a book with special inks it has **Special inks**, which steps through *flat*, *with sheen* and *finish map*. Both are remembered. A hole shows the pages beneath it, as deep as the holes line up; when you change a page further down, the pages that look onto it repaint.
+- **Checks.** The preflight findings above appear in **Checks** with their titles: **Special ink**, **Press order of the special inks**, **White ink on white paper**, **Text under a die-cut**, **Die-cut near the trim**, **Die-cut in the gutter**, **Unknown die shape**.
+
+[Design and checks](/en/docs/sandbox-design-checks) and [Previews](/en/docs/sandbox-previews#canvas-tab) describe the panels in full.
+
+## Limits
+
+- The finish mask does not see everything. A formula drawn as a picture in a special ink knocks the ink out of the mask instead of showing it, gradient stops in special inks are not mapped, and an SVG that uses a varnish ink still paints its hex on screen unless it is recoloured. A white ink whose screen hex is exactly `#ffffff` cannot be told from the sheet: give it a slightly darker hex.
+- Text inside a composed page's frames does not yet wrap around a hole: only flowing text does. Check composed pages with `dieCutText`.
+- A cut element in a spread template is not split between the two pages.
+- The HTML viewer draws the pages beneath a hole only for composed pages on the print leaf. In Folio, the edges of the book block stay square under rounded page corners.
+- With the Sandbox showing one chapter, a hole on the chapter's last leaves shows the board instead of the next chapter: switch to the whole book to see it.
+- The PDF prints the page whole and draws the die line: the hole is the die-maker's work.

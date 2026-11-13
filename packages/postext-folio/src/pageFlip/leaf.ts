@@ -329,6 +329,8 @@ export function disposeLeaf(mesh: PageMesh) {
     parts.slab.material.dispose();
   }
   (mesh.userData.caster as Mesh | undefined)?.geometry.dispose();
+  // A cut leaf's own depth material and caster (#1569).
+  for (const key of ["cutDepth", "cutCaster"]) (mesh.userData[key] as { dispose(): void } | undefined)?.dispose();
   mesh.geometry.dispose();
   mesh.material.dispose();
 }

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'de',
   lastUpdated: '2026-11-12',
   readingTime: '10 min',
-  order: 49,
+  order: 50,
   plainSummary: "Postext kann ein in InDesign gemachtes Buch auf zwei Wegen übernehmen. Der Import kopiert, was die InDesign-Datei enthält, jede Seite, jeden Rahmen und jedes Format so, wie es ist; das geht schnell, aber das Ergebnis ist eine Kopie der alten Seiten und schwer zu ändern und zu übersetzen. Der Agenten-Skill untersucht stattdessen das Buch: die Datei, das gedruckte PDF, die Schriften und die Bilder. Er findet die Regeln, denen die Gestalterin oder der Gestalter gefolgt ist, und baut das Buch nach diesen Regeln neu auf, mit frei fließendem Text. Das ergibt ein besseres Buch, darum empfehlen wir diesen Weg. Diese Seite erklärt beide Wege, wann welcher passt und wie Postext ein fertiges Buch an InDesign zurückgibt.",
 };
 
@@ -93,7 +93,7 @@ Die `.idml` enthält weder die Schriften noch die verknüpften Bilder. Der Impor
 
 InDesign kann Dinge, für die Postext keine Entsprechung hat, etwa Pfadtext, eine gedrehte Zelle, eine Diagonale in einer Zelle, GREP- und verschachtelte Formate oder Transparenzeffekte. Jedes davon wird zu einem Befund im Bericht, mit einer Anzahl und einem Beispiel: ein *Verlust*, wenn es wegfällt, eine *Warnung*, wenn es angenähert gesetzt wird (die Fußzeilen einer Tabelle, ein Verlauf, eine Konturenführung). Der Bericht endet mit einem Urteil:
 
-- **`faithful`**: nichts ging verloren oder wurde angenähert (ein aus Postext exportiertes Buch).
+- **`faithful`**: nichts ging verloren oder wurde angenähert. Ein aus Postext exportiertes Buch kommt als komponierte Seiten getreu zurück: jede Seite mit ihren Rahmen dort, wo der Export sie platziert hat, und mit den Absatzformaten, Zeichenformaten, Kästen und Bildern des Buchs (seit postext 1.84.0). Als fließendes Buch kommt es nicht zurück: Der Export gibt jedem Absatz einen eigenen Rahmen, ohne Verkettung zwischen den Rahmen, daher meldet `--layout flow` die Seitengestaltung, die es nicht übernehmen kann.
 - **`approximate`**: manches wurde angenähert gesetzt, und nichts fiel weg.
 - **`lossy`**: etwas fiel weg.
 

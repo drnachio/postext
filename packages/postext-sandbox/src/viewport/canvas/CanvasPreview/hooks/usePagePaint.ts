@@ -2,7 +2,8 @@
 // built again and the visible pages painted (#1276: split out of
 // CanvasPreview/index.tsx).
 import { useMemo, useEffect } from 'react';
-import { resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig, type RenderPageOptions, renderPageToCanvas, type VDTDocument, type PostextConfig, type PrintPreview, type Resource } from 'postext';
+import type { FinishesView } from '../../specialInksView.js';
+import { resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig, type RenderPageOptions, type VDTDocument, type PostextConfig, type PrintPreview, type Resource } from 'postext';
 import { ensureResourceImages } from '../../../../controls/media/resourceImages.js';
 import { type GeomSnapshot, sameStructure, type ViewMode, type FitMode, type PageGaps } from '../layoutUtils.js';
 import { buildPagesDom } from '../pageDom.js';
@@ -14,6 +15,7 @@ import type { ComposedBook } from '../../../../book/types.js';
 import type { PageNavigator } from '../interaction/types.js';
 import { pageToPaint, type PaintedPages } from '../pageReuse.js';
 import type { PerfSpan } from '../../../../perf/marks.js';
+import { evictHidden, hiddenBytes, paintPages, syncThrough, throughKeyOf, type PaintPagesDeps, type ThroughState } from '../through/paintPages.js';
 
 /** What usePagePaint takes from the canvas preview. */
 export interface UsePagePaintDeps {
@@ -36,6 +38,9 @@ export interface UsePagePaintDeps {
   renderedPagesRef: React.RefObject<Set<number>>;
   stalePagesRef: React.RefObject<Set<number>>;
   paintedPagesRef: React.RefObject<PaintedPages>;
+  /** What shows through die-cut holes (#1567): the chain and the hidden
+   *  pages painted for it. */
+  throughRef: React.RefObject<ThroughState>;
   visiblePagesRef: React.RefObject<Set<number>>;
   lastGeomRef: React.RefObject<GeomSnapshot | null>;
   lastPaintedDocVersionRef: React.RefObject<number>;
@@ -55,6 +60,8 @@ export interface UsePagePaintDeps {
   paintKey: number;
   setPaintKey: React.Dispatch<React.SetStateAction<number>>;
   printPreviewRef: React.RefObject<PrintPreview | undefined>;
+  /** How special inks are painted (#1570): `'flat'` passes nothing. */
+  finishesRef?: React.RefObject<FinishesView>;
   lastPaintedPaintKeyRef: React.RefObject<number>;
   gapsRef: React.RefObject<PageGaps>;
   applyDisplaySize: (displayWidth: number, displayHeight: number, force?: boolean) => void;
@@ -65,10 +72,10 @@ export function usePagePaint(deps: UsePagePaintDeps) {
   const {
     zoom, viewMode, fitMode, pageLabelRef, containerRef, dispatchRef, activePanelRef, resourcesRef,
     labelsRef, pageSourceRef, navigateRef, docRef, drawnOverlaysRef, observerRef, canvasMapRef,
-    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef,
+    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef,
     lastPaintedDocVersionRef, bitmapScaleRef, renderOptsRef, paintOptions, paintOptionsRef,
     wantedBitmapScale, needsRescale, paintSpanRef, builtSourceRef, deferredResources, deferredConfig,
-    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef,
+    containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef, finishesRef,
     lastPaintedPaintKeyRef, gapsRef, applyDisplaySize, computeDisplaySizeRef
   } = deps;
   // Single-ink diagram colour: when diagramStyle.singleInk is on, SVG resources
@@ -138,6 +145,7 @@ export function usePagePaint(deps: UsePagePaintDeps) {
       pageNegative: debugConfig.pageNegative.enabled,
       ...(forms ? { forms } : {}),
       ...(printPreviewRef.current ? { printPreview: printPreviewRef.current } : {}),
+      ...(finishesRef?.current && finishesRef.current !== 'flat' ? { finishes: finishesRef.current } : {}),
     };
     const pageWidthPx = firstPage.width;
     const pageHeightPx = firstPage.height;
@@ -160,6 +168,17 @@ export function usePagePaint(deps: UsePagePaintDeps) {
     };
     const structureSame = sameStructure(lastGeomRef.current, geom)
       && canvasMapRef.current.size === geom.pageCount;
+    // The canvases and their bookkeeping, read when a paint runs (the
+    // rebuild below replaces the sets).
+    const paintDeps = (d: VDTDocument): PaintPagesDeps => ({
+      doc: d,
+      canvasMap: canvasMapRef.current,
+      rendered: renderedPagesRef.current,
+      stale: stalePagesRef.current,
+      visible: visiblePagesRef.current,
+      painted: paintedPagesRef.current,
+      through: throughRef.current,
+    });
 
     if (structureSame) {
       applyDisplaySize(displayWidth, displayHeight);
@@ -169,29 +188,26 @@ export function usePagePaint(deps: UsePagePaintDeps) {
       if (lastPaintedDocVersionRef.current !== docVersion || lastPaintedPaintKeyRef.current !== paintKey) {
         // The pages in view repaint now; the others keep their old pixels
         // and repaint on their next entry (see the observer below).
-        let painted = 0;
         // A composed page the relayout left as it was (same frames, same
-        // running heads) keeps its pixels, unless the pictures changed.
+        // running heads, the same pages through its holes) keeps its
+        // pixels, unless the pictures changed.
+        const deps = paintDeps(doc);
+        syncThrough(deps.through, doc, renderOpts);
         const keep = (pageIndex: number): boolean => {
           const page = doc.pages[pageIndex];
           return lastPaintedPaintKeyRef.current === paintKey && !stalePagesRef.current.has(pageIndex)
-            && page !== undefined && paintedPagesRef.current.same(pageIndex, page, renderOpts);
+            && page !== undefined && paintedPagesRef.current.same(pageIndex, page, renderOpts, throughKeyOf(deps, pageIndex));
         };
+        const now: number[] = [];
         for (const pageIndex of renderedPagesRef.current) {
           if (keep(pageIndex)) continue;
           if (!visiblePagesRef.current.has(pageIndex)) {
             stalePagesRef.current.add(pageIndex);
             continue;
           }
-          const canvas = canvasMapRef.current.get(pageIndex);
-          const page = doc.pages[pageIndex];
-          if (canvas && page) {
-            renderPageToCanvas(page, doc, canvas, renderOpts);
-            paintedPagesRef.current.painted(pageIndex, page, renderOpts);
-            stalePagesRef.current.delete(pageIndex);
-            painted++;
-          }
+          if (canvasMapRef.current.has(pageIndex) && doc.pages[pageIndex]) now.push(pageIndex);
         }
+        const painted = paintPages(deps, now, renderOpts);
         lastPaintedDocVersionRef.current = docVersion;
         lastPaintedPaintKeyRef.current = paintKey;
         paintSpanRef.current?.end({ pages: doc.pages.length, painted, rebuilt: false, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
@@ -243,15 +259,8 @@ export function usePagePaint(deps: UsePagePaintDeps) {
     // the swap from old DOM to new DOM shows already-painted pixels. Pages
     // that were painted but scrolled away are left to the observer.
     const renderedSet = new Set<number>();
-    for (const pageIndex of previouslyVisible) {
-      const canvas = canvasMapRef.current.get(pageIndex);
-      const page = doc.pages[pageIndex];
-      if (!canvas || !page) continue;
-      renderPageToCanvas(page, doc, canvas, renderOpts);
-      paintedPagesRef.current.painted(pageIndex, page, renderOpts);
-      renderedSet.add(pageIndex);
-    }
     renderedPagesRef.current = renderedSet;
+    paintPages(paintDeps(doc), [...previouslyVisible].filter((i) => canvasMapRef.current.has(i) && doc.pages[i]), renderOpts);
     lastPaintedDocVersionRef.current = docVersion;
     lastPaintedPaintKeyRef.current = paintKey;
     paintSpanRef.current?.end({ pages: doc.pages.length, painted: renderedSet.size, rebuilt: true, bitmapScale: Math.round(bitmapScaleRef.current * 100) / 100 });
@@ -270,8 +279,11 @@ export function usePagePaint(deps: UsePagePaintDeps) {
       const s = bitmapScaleRef.current;
       return Math.round(pageWidthPx * s) * Math.round(pageHeightPx * s) * 4;
     };
+    // The hidden pages painted for die-cut holes count too, and go first.
     const trimPaintedPages = (anchor: number) => {
       const rendered = renderedPagesRef.current;
+      const through = throughRef.current;
+      while (rendered.size * pageBytes() + hiddenBytes(through) > PAINTED_PAGES_BUDGET_BYTES && evictHidden(through, anchor));
       while (rendered.size * pageBytes() > PAINTED_PAGES_BUDGET_BYTES && rendered.size > MIN_PAINTED_PAGES) {
         let victim = -1;
         let farthest = -1;
@@ -296,6 +308,7 @@ export function usePagePaint(deps: UsePagePaintDeps) {
     };
     const observer = new IntersectionObserver(
       (entries) => {
+        const entering: number[] = [];
         for (const entry of entries) {
           const idx = Number((entry.target as HTMLElement).dataset.pageIndex);
           if (!entry.isIntersecting) {
@@ -314,13 +327,12 @@ export function usePagePaint(deps: UsePagePaintDeps) {
             if (doc && !page) visiblePagesRef.current.delete(idx);
             continue;
           }
-          const opts = paintOptionsRef.current();
-          renderPageToCanvas(page, doc, canvas, opts);
-          paintedPagesRef.current.painted(idx, page, opts);
-          renderedPagesRef.current.add(idx);
-          stalePagesRef.current.delete(idx);
-          trimPaintedPages(idx);
+          entering.push(idx);
         }
+        const doc = docRef.current;
+        if (!doc || entering.length === 0) return;
+        paintPages(paintDeps(doc), entering, paintOptionsRef.current());
+        for (const idx of entering) trimPaintedPages(idx);
       },
       { root: container, rootMargin: '200px 0px 200px 0px' },
     );

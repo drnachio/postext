@@ -2,7 +2,9 @@
 
 import type { SandboxLabels } from '../types/index.js';
 import type { PreflightCheck } from '../warnings/types.js';
+import type { InkFinish } from 'postext';
 import { fill } from './fillTokens.js';
+import { finishText } from '../controls/color/inkFinish.js';
 
 /** Process channels as the PDF names their plates. */
 const PLATE_NAMES: Record<string, string> = { c: 'Cyan', m: 'Magenta', y: 'Yellow', k: 'Black' };
@@ -33,6 +35,61 @@ export function preflightTitle(check: PreflightCheck, labels: SandboxLabels): st
     case 'masterRgb': return labels.preflightMasterRgb;
     case 'masterTransparency': return labels.preflightMasterTransparency;
     case 'masterInks': return labels.preflightMasterInks;
+    // The special-ink and die-cut findings (#1563, #1565) the engine adds:
+    // read by kind, so the panel names them whatever shape they take.
+    default: return specialFindingTitle(check as unknown as SpecialFinding, labels);
+  }
+}
+
+/** A special-ink or die-cut finding as the panel reads it (#1570). Its
+ *  fields are read defensively: an ink by `ink` (or `name`), a die by
+ *  `die` (or `source`, `id`), a finish as a kind or an `InkFinish`. */
+interface SpecialFinding {
+  kind: string;
+  ink?: string;
+  name?: string;
+  finish?: InkFinish | InkFinish['kind'];
+  die?: string;
+  first?: string[];
+  last?: string[];
+  source?: string;
+  id?: string;
+}
+
+const SPECIAL_KINDS = ['spotInkFinish', 'inkPressOrder', 'whiteInkOnWhite', 'dieCutText', 'dieCutTrim', 'dieCutGutter'] as const;
+
+/** Whether a preflight kind is one of the special-ink or die-cut findings. */
+export function isSpecialFindingKind(kind: string): kind is (typeof SPECIAL_KINDS)[number] {
+  return (SPECIAL_KINDS as readonly string[]).includes(kind);
+}
+
+function specialFindingTitle(check: SpecialFinding, labels: SandboxLabels): string {
+  switch (check.kind) {
+    case 'spotInkFinish': return labels.preflightSpotInkFinish;
+    case 'inkPressOrder': return labels.preflightInkPressOrder;
+    case 'whiteInkOnWhite': return labels.preflightWhiteInkOnWhite;
+    case 'dieCutText': return labels.preflightDieCutText;
+    case 'dieCutTrim': return labels.preflightDieCutTrim;
+    case 'dieCutGutter': return labels.preflightDieCutGutter;
+    default: return check.kind;
+  }
+}
+
+/** Ink names for a detail line, or a dash when there are none. */
+const list = (names: string[] | undefined): string => (names && names.length > 0 ? names.join(', ') : '—');
+
+function specialFindingDetail(check: SpecialFinding, labels: SandboxLabels): string {
+  const ink = check.ink ?? check.name ?? '';
+  const die = check.die ?? check.source ?? check.id ?? '';
+  const finish = typeof check.finish === 'string' ? { kind: check.finish } : check.finish;
+  switch (check.kind) {
+    case 'spotInkFinish': return fill(labels.preflightSpotInkFinishDetail, { ink, finish: finish ? finishText(finish, labels) : '—' });
+    case 'inkPressOrder': return fill(labels.preflightInkPressOrderDetail, { first: list(check.first), last: list(check.last) });
+    case 'whiteInkOnWhite': return fill(labels.preflightWhiteInkOnWhiteDetail, { ink });
+    case 'dieCutText': return fill(labels.preflightDieCutTextDetail, { die });
+    case 'dieCutTrim': return fill(labels.preflightDieCutTrimDetail, { die });
+    case 'dieCutGutter': return fill(labels.preflightDieCutGutterDetail, { die });
+    default: return '';
   }
 }
 
@@ -114,5 +171,7 @@ export function preflightDetail(check: PreflightCheck, labels: SandboxLabels): s
       return fill(labels.preflightMasterDetail, { name: check.name, detail: labels.preflightMasterTransparencyX1a });
     case 'masterInks':
       return fill(check.problem === 'offPlates' ? labels.preflightMasterInksOffPlatesDetail : check.problem === 'renamed' ? labels.preflightMasterInksRenamedDetail : labels.preflightMasterInksUnknownDetail, { name: check.name, inks: check.inks.map((i) => `“${i}”`).join(', ') });
+    default:
+      return specialFindingDetail(check as unknown as SpecialFinding, labels);
   }
 }

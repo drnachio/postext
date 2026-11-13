@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>vedi <a href="/it/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>Che cosa verifica il preflight e le sue soglie.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>La linea di fustella delle pagine con una fustella (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> o <code>'none'</code>), il nome della lastra <code>ink</code>, il suo sostituto <code>cmyk</code> (100 % magenta) e lo spessore del tratto <code>width</code> (0,25 pt). Vedi <a href="/it/docs/special-inks-die-cuts#la-linea-di-fustella-nel-pdf">La linea di fustella nel PDF</a>.</td>
     </tr>
   </tbody>
 </table>

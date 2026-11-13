@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'fr',
   lastUpdated: '2026-11-10',
   readingTime: '16 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Cette page présente la partie droite du Sandbox, où apparaissent les pages terminées. Cinq onglets montrent le même livre de cinq façons : en images de pages, en fichier PDF, en livre 3D que l’on feuillette, en page web et en livre numérique EPUB. Un sixième produit un paquet SCORM des chapitres que vous choisissez, pour la plateforme d’apprentissage d’une école ou d’une entreprise. Changer d’onglet ne refait pas la mise en page : chaque onglet montre les mêmes pages. La page explique ce que montre chaque onglet et ce que vous pouvez y faire.",
 };
@@ -35,6 +35,10 @@ Une barre d’outils en haut de la zone d’aperçu du canvas offre :
 - **Modes d’ajustement** : ajuster à la largeur ou à la hauteur de la page. Ils s’activent et se désactivent ; l’ajustement se recalcule automatiquement quand la fenêtre est redimensionnée.
 - **Modes d’affichage** : page simple (une page par rangée) ou double page (disposition de livre où la première page apparaît à droite, en recto, et où les pages suivantes sont associées en doubles pages). Un livre relié à droite (`page.binding`, chinois vertical) montre ses doubles pages dans l’autre sens : la page 1 seule à gauche, puis `[3 | 2]`, `[5 | 4]`. Sur une page verticale, un clic tombe sur le caractère situé sous le pointeur, et le curseur est une barre en travers de la colonne.
 - **Aperçu d’impression** (icône `Printer`) : montre les pages telles qu’elles seront imprimées, désactivé par défaut et mémorisé par le navigateur : chaque couleur séparée selon le profil de sortie de *Préparation pour l’impression* et affichée sur le blanc propre du papier, les grandes surfaces noires en noir enrichi ; un PDF forcé en niveaux de gris s’affiche en encre noire seule. Seul ce qui s’imprime apparaît : ni repères d’écran ni contours (les constats du contrôle en amont sont dans **Vérifications**). L’onglet Folio partage cet interrupteur. Il repeint les pages et ne les remet jamais en page.
+- **Tracés de découpe** (icône `Scissors`, dans un livre avec des découpes) : dessine la forme de chaque trou, et le contour d’un feuillet découpé en forme ou arrondi, en pointillés sur la page.
+- **Encres spéciales** (icône `Sparkles`, dans un livre avec des encres spéciales) : alterne entre trois vues : *à plat*, chaque encre dans sa couleur d’écran et le vernis invisible ; *avec brillance*, l’encre métallisée et la dorure éclairées par un balayage de lumière, l’encre fluorescente lumineuse et le vernis montré par son reflet ; et *carte des finitions*, les plaques spéciales en fausses couleurs sur une page estompée (métallisé et dorure en ambre, fluorescent en rose, vernis en cyan, blanc opaque en bleu). Voir [Encres spéciales et découpes](/fr/docs/special-inks-die-cuts#à-lécran).
+
+Le navigateur mémorise les deux, et aucun ne remet les pages en page.
 
 Les pages sont dessinées à la demande via `IntersectionObserver` : seules les pages visibles (plus une marge de 200 px) sont dessinées sur le canvas, ce qui limite l’usage de la mémoire GPU pour les longs documents.
 

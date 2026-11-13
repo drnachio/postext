@@ -204,6 +204,11 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'columnsFlowUnknown':
       text = `Unknown flow "${w.value}" for :::columns — the group fills its columns in turn ("snake"), or stream by stream ("parallel") when it sets breaks`;
       break;
+    case 'dieCutUnknown':
+      text = w.die
+        ? `:::diecut names the die "${w.die}", which dieCuts.shapes does not have${w.known.length > 0 ? ` (it has ${w.known.map((k) => `"${k}"`).join(', ')})` : ''} — its pages are set on their own and nothing cuts them`
+        : `:::diecut names no die (die="…") — its pages are set on their own and nothing cuts them`;
+      break;
     case 'paperAttributeInvalid':
       text = `:::paper ${w.key}="${w.value}" is not a value it reads — dropped, the pages keep the document's paper for it`;
       break;

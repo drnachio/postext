@@ -159,7 +159,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate, extraPlaceholders
   /** `reserve` is left out of the element unless it is switched off. */
   const setReserve = (index: number, reserve: boolean) => {
     const next = { ...currentRaw[index]! };
-    if (next.kind === 'connector') return;
+    if (next.kind === 'connector' || next.kind === 'cut') return;
     if (reserve) delete next.reserve;
     else next.reserve = false;
     updateAt(index, next);
@@ -288,7 +288,7 @@ export function SlotEditor({ slotKey, raw, resolved, onUpdate, extraPlaceholders
               {fenceConditions && (
                 <FenceConditionFields raw={rawEl} attributes={fenceAttributes} onChange={(next) => updateAt(idx, next)} />
               )}
-              {(slotKey === 'heading' || slotKey === 'box') && rawEl.kind !== 'connector' && (
+              {(slotKey === 'heading' || slotKey === 'box') && rawEl.kind !== 'connector' && rawEl.kind !== 'cut' && (
                 <ToggleSwitch
                   label={labels.headerFooterElementReserve}
                   checked={rawEl.reserve !== false}

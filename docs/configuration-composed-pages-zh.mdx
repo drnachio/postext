@@ -104,7 +104,7 @@ const config: PostextConfig = {
       <td><code>decoration</code></td>
       <td><code>DesignSlot</code></td>
       <td>无</td>
-      <td>与页面一起绘制的图像、线条和方框，使用<a href="/zh/docs/configuration-headers-footers#页眉与页脚">页眉与页脚</a>的元素语言。文本元素只放占位符（<code>&#123;pageNumber&#125;</code>、<code>&#123;chapterTitle&#125;</code>，以及表示页面块某个属性的<code>&#123;attr.x&#125;</code>）。元素可以锚定到某个框或组（<code>'#dinero'</code>），并随之移动。装饰在框之后排放，从不推开文字。自postext 1.42起，<code>&#123;headingNumber&#125;</code>输出页面各框中第一个带编号的标题的计数（带<code>takes</code>的框），<code>&#123;headingNumber.titulo&#125;</code>输出框<code>titulo</code>中那个标题的计数，数字采用文档的数字系统；因此带有主题编号的徽章可以直接从标题读取，页面块不必再写一遍。装饰绘制在框的下方；点击覆盖在某个框上的文字元素时，如果该点处框没有自己的文字，选中的是这个元素，而不是框。<code>layer</code>为负数的框绘制在装饰下方。自postext 1.48起，装饰还接受<a href="/zh/docs/configuration-headers-footers#路径元素">路径元素</a>（画成矢量形状的色条、飘带、人字形）和<a href="#连接线">连接线</a>，即连接各框的线。</td>
+      <td>与页面一起绘制的图像、线条和方框，使用<a href="/zh/docs/configuration-headers-footers#页眉与页脚">页眉与页脚</a>的元素语言。文本元素只放占位符（<code>&#123;pageNumber&#125;</code>、<code>&#123;chapterTitle&#125;</code>，以及表示页面块某个属性的<code>&#123;attr.x&#125;</code>）。元素可以锚定到某个框或组（<code>'#dinero'</code>），并随之移动。装饰在框之后排放，从不推开文字。自postext 1.42起，<code>&#123;headingNumber&#125;</code>输出页面各框中第一个带编号的标题的计数（带<code>takes</code>的框），<code>&#123;headingNumber.titulo&#125;</code>输出框<code>titulo</code>中那个标题的计数，数字采用文档的数字系统；因此带有主题编号的徽章可以直接从标题读取，页面块不必再写一遍。装饰绘制在框的下方；点击覆盖在某个框上的文字元素时，如果该点处框没有自己的文字，选中的是这个元素，而不是框。<code>layer</code>为负数的框绘制在装饰下方。自postext 1.48起，装饰还接受<a href="/zh/docs/configuration-headers-footers#路径元素">路径元素</a>（色条、飘带、人字形）、<a href="#连接线">连接线</a>（连接各框的线），以及<a href="/zh/docs/special-inks-die-cuts#页面模板中的模切元素">模切元素</a>，即模切的孔。</td>
     </tr>
     <tr>
       <td><code>header</code>、<code>footer</code></td>

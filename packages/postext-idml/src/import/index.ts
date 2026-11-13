@@ -92,7 +92,7 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   indexDestinations(ctx, stories);
   const { layout, reason } = decideLayout(ctx, stories, main);
   const styles = styleConfig(ctx);
-  const config: PostextConfig = { ...pageConfig(ctx), ...styles };
+  const config: PostextConfig = { ...pageConfig(ctx, layout), ...styles };
 
   let chapters: IdmlImportResult['chapters'] = [];
   let templates = 0;
@@ -144,6 +144,7 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   const tables = tableStyles(ctx);
   if (tables.length) config.tableStyles = tables;
   if (ctx.markStyles.size) config.markStyles = [...ctx.markStyles.values()];
+  if (ctx.characterStyles.size) config.characterStyles = [...ctx.characterStyles.values()];
   // Resource types: pictures and tables print no label unless a caption
   // of the document typed one.
   if (ctx.resources.length) {

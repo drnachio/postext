@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'fr',
   lastUpdated: '2026-11-12',
   readingTime: '10 min',
-  order: 49,
+  order: 50,
   plainSummary: "Postext peut faire entrer de deux façons un livre fait dans InDesign. L’importateur copie ce que contient le fichier InDesign, chaque page, chaque bloc et chaque style tels qu’ils sont ; c’est rapide, mais le résultat est une copie des anciennes pages, difficile à modifier et à traduire. Le skill pour agents étudie plutôt le livre : le fichier, le PDF imprimé, les polices et les images. Il trouve les règles que le graphiste a suivies et reconstruit le livre à partir d’elles, avec un texte libre de couler. Cela donne un meilleur livre, et c’est la voie que nous recommandons. Cette page explique les deux façons, quand chacune convient, et comment Postext renvoie un livre fini à InDesign.",
 };
 
@@ -93,7 +93,7 @@ Le `.idml` ne contient ni les polices ni les images liées. L’importateur list
 
 InDesign sait faire des choses qui n’ont pas d’équivalent dans Postext, comme le texte sur un tracé, une cellule pivotée, une diagonale dans une cellule, les styles GREP et imbriqués, ou les effets de transparence. Chacune devient une constatation du rapport, avec un décompte et un exemple : une *perte* quand elle est laissée de côté, un *avertissement* quand elle est rendue de façon approchée (les rangs de pied d’un tableau, un dégradé, un habillage par contour). Le rapport finit par un verdict :
 
-- **`faithful`** : rien n’a été perdu ni approché (un livre exporté depuis Postext).
+- **`faithful`** : rien n’a été perdu ni approché. Un livre exporté depuis Postext revient fidèle en pages composées : chaque page avec ses blocs là où l’export les a placés, et les styles de paragraphe, les styles de caractère, les encadrés et les images du livre (depuis postext 1.84.0). Il ne revient pas en livre à flux : l’export donne à chaque paragraphe un bloc à lui, sans chaînage entre les blocs, si bien que `--layout flow` signale le décor de page qu’il ne peut pas reprendre.
 - **`approximate`** : certaines choses ont été rendues de façon approchée, et rien n’a été laissé de côté.
 - **`lossy`** : quelque chose a été laissé de côté.
 

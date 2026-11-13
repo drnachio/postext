@@ -8,6 +8,8 @@ import { createDocumentPainting } from './postext/painting.js';
 import { createDocumentVideos } from './postext/pageVideos.js';
 import { createDocumentSharp } from './postext/sharp.js';
 import type { FolioDocumentState, FolioDocumentLate } from './postext/state.js';
+import { cachedThrough, isCut } from './postext/through.js';
+import type { FaceFinish } from './pageFlip/finish.js';
 
 export type { FolioDocumentOptions, FolioDocumentViewer } from './postext/types.js';
 export { firstPageIsRecto, trimmedSize, appearanceOf, carriedPaintings } from './postext/book.js';
@@ -33,6 +35,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   const reach = options.window ?? 3;
   ds.current = doc;
   ds.canvases = [];
+  ds.masks = new WeakMap();
   /** A decorated page's canvas: its painting with the decorations over
    *  it, kept (and drawn again in place) once a page has been decorated. */
   ds.decorated = [];
@@ -56,11 +59,25 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
 
   const slotWidth = () => viewer.pageSize.deviceWidth;
 
+  /** A painted page's special inks (#1568) and die-cut (#1569): its
+   *  painting is transparent where it is cut, and its holes show the
+   *  pages beneath at half its size. */
+  const finishOf = (i: number, canvas: HTMLCanvasElement): FaceFinish | undefined => {
+    const mask = ds.masks.get(canvas);
+    const cut = isCut(ds.current, i);
+    if (!mask && !cut) return undefined;
+    const through = cut ? cachedThrough(ds.current, i, canvas.width / 2, (j) => ds.canvases[j]) : undefined;
+    return { ...(mask ? { mask } : {}), ...(cut ? { cut } : {}), ...(through ? { through } : {}) };
+  };
+
   const sources = () =>
     ds.current.pages.map((_, i) => {
       const canvas = ds.canvases[i];
       const paper = pagePaperOf(ds.current.pages[i]);
-      if (ds.painted.has(i) && canvas) return { src: ds.decorated[i] ?? canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}) };
+      if (ds.painted.has(i) && canvas) {
+        const finish = finishOf(i, canvas);
+        return { src: ds.decorated[i] ?? canvas, alt: options.alt?.(i) ?? `Page ${i + 1}`, ...(paper ? { paper } : {}), ...(finish ? { finish } : {}) };
+      }
       return paper ? { src: "" as const, paper } : "";
     });
 

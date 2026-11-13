@@ -40,6 +40,8 @@ import { createComposed } from './pass/composed.js';
 import type { PassState, PassLate } from './pass/state.js';
 import type { BlockIteration } from './pass/blocks/blockIteration.js';
 import { createBlockDispatch } from './pass/blocks/blockDispatch.js';
+import { setColumnObstacleSource } from '../floats/textWrap.js';
+import { dieWrapSource } from '../floats/dieWrap.js';
 import { createBlockMeasure } from './pass/blocks/blockMeasure.js';
 import { createResourceBlock } from './pass/blocks/resourceBlock.js';
 import { createBlockLines } from './pass/blocks/blockLines.js';
@@ -83,9 +85,11 @@ export function buildDocumentPass(
   const language = getMeasureLanguage();
   const slashBreaks = getSlashBreaks();
   const symbols = symbolFont();
+  const obstacles = setColumnObstacleSource(undefined);
   try {
     return placeDocumentPass(content, config, cache, options, hints);
   } finally {
+    setColumnObstacleSource(obstacles);
     setSymbolFont(symbols);
     setSlashBreaks(slashBreaks);
     setMeasureLanguage(language);
@@ -486,8 +490,14 @@ function placeDocumentPass(
     citedFootTake, tocGroupNeed
   });
 
+  // Die-cut holes (#1565): each column keeps its text clear of the holes
+  // its page is known to have when the flow first reaches it.
+  let dieAt = 0;
+  setColumnObstacleSource(dieWrapSource(doc, contentBlocks, () => ({ blockIdx: dieAt, pageIndex: cursor.pageIndex })));
+
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     const blockTurn = { blockIdx } as BlockIteration;
+    dieAt = blockIdx;
     if (options?.shouldCancel?.()) throw new BuildCancelledError();
     options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
     const rawBlock = contentBlocks[blockIdx]!;

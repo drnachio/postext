@@ -9,13 +9,13 @@ import { resolvedLocale } from 'postext/writer';
 import { resolveTabSettings } from 'postext/writer';
 import { linesRuns, type LineStop, paragraphJustification, paragraphRuns, sameProps, textScale, type TextRun } from './paragraphs.js';
 import { keptParagraphs, rangeXml } from './keptLines.js';
+import { paragraphStyle } from './styles.js';
 import {
   attr,
   DOM_VERSION,
   NO_FORMAT,
   paragraphFormatAttrs,
   PKG_NS,
-  styleSelf,
   tabListXml,
   XML_HEAD,
   type ParagraphFormat,
@@ -34,14 +34,19 @@ function paragraphStyleName(w: Writer, item: TextItem, frame: VDTFrame | undefin
   const names = { ...STYLE_NAMES, ...w.opts.styleNames };
   if (item.role === 'heading') return `${names.heading ?? 'Heading'} ${item.level ?? 1}`;
   if (frame) return frame.styleId ?? frameName(frame.name);
+  // A paragraph the author set in a paragraph style takes its name; one in
+  // a box of the flow, the box's (its title, the box's and "title"), as a
+  // composed frame's paragraphs do (#1555). Under the role's name they
+  // would share a style with paragraphs of another look.
+  if (item.role === 'body' && item.paragraphStyle) return item.paragraphStyle;
+  const box = calloutOf(w, item);
+  if (box && item.role === 'body') return box;
+  if (box && item.role === 'callout') return `${box} title`;
   return names[item.role] ?? item.role;
 }
 
-function paragraphStyle(w: Writer, name: string, first: TextProps, leading: number, justification: string, format: ParagraphFormat): ParagraphStyleDef {
-  let s = w.paraStyles.get(name);
-  if (!s) w.paraStyles.set(name, (s = { self: styleSelf('ParagraphStyle', name), name, props: first, leading, justification, format }));
-  return s;
-}
+/** The callout style of the flow box a text item stands in. */
+const calloutOf = (w: Writer, item: TextItem): string | undefined => (item.source?.blockKey ? w.callouts?.get(item.source.blockKey) : undefined);
 
 /** The block style the engine set a body paragraph in (its frame's callout
  *  style's body, or its paragraph style in that body), for what its lines
@@ -49,11 +54,13 @@ function paragraphStyle(w: Writer, name: string, first: TextProps, leading: numb
  *  text (headings, list items, notes). */
 function engineStyle(w: Writer, item: TextItem, frame: VDTFrame | undefined): BlockStyle | undefined {
   if (item.role !== 'body') return undefined;
-  const key = `${frame?.styleId ?? ''}\u0000${item.paragraphStyle ?? ''}`;
+  const key = `${frame?.styleId ?? calloutOf(w, item) ?? ''}\u0000${item.paragraphStyle ?? ''}`;
   let style = w.blockStyles.get(key);
   if (!style) {
     const config = w.doc.config;
-    const callout = frame?.styleId ? config.calloutStyles.find((s) => s.id === frame.styleId) : undefined;
+    // (A box of the flow sets its paragraphs in its own body, #1555.)
+    const boxId = frame?.styleId ?? calloutOf(w, item);
+    const callout = boxId ? config.calloutStyles.find((s) => s.id === boxId) : undefined;
     const resolved = callout ? deriveCalloutResolvedConfig(config, callout) : config;
     const para = item.paragraphStyle ? resolved.paragraphStyles.find((s) => s.id === item.paragraphStyle) : undefined;
     style = para ? resolveParagraphStyle(para, resolved) : resolveBodyStyle(resolved);
@@ -265,7 +272,10 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
       weight.set(same, (weight.get(same) ?? 0) + r.text.trim().length);
     }
     const dominant = [...weight].sort((a, b) => b[1] - a[1])[0]![0];
-    const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign', base);
+    // The style is settled over all the paragraphs of its look
+    // (`styles.ts`): it is counted with the format the paragraph has.
+    const chars = runs.reduce((n, r) => n + r.text.trim().length, 0);
+    const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign', format, chars);
     let spaceBefore: number | undefined;
     // With lines kept, the first line's own leading when it stands closer
     // to the line before than its leading says.

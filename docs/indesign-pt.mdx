@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-11-12',
   readingTime: '9 min',
-  order: 49,
+  order: 50,
   plainSummary: "O Postext pode trazer um livro feito no InDesign de dois jeitos. O importador copia o que o arquivo do InDesign contém: cada página, cada quadro e cada estilo como estão. É rápido, mas o resultado é uma cópia das páginas antigas, difícil de mudar e de traduzir. Já a skill para agentes estuda o livro: o arquivo, o PDF de impressão, as fontes e as imagens. Ela descobre as regras que o designer seguiu e refaz o livro a partir delas, com o texto livre para correr, e assim sai um livro melhor, que é o que recomendamos. Esta página explica os dois jeitos, quando cada um serve e como o Postext devolve um livro pronto ao InDesign.",
 };
 
@@ -93,7 +93,7 @@ O `.idml` não leva as fontes nem as imagens vinculadas. O importador lista as f
 
 O InDesign faz coisas que não têm equivalente no Postext, como texto em um traçado, uma célula girada, uma linha diagonal em uma célula, estilos GREP e aninhados ou efeitos de transparência. Cada uma delas vira um achado do relatório, com uma contagem e um exemplo: uma *perda* quando fica de fora, um *aviso* quando é composta de forma parecida com o original (as linhas de rodapé de uma tabela, um degradê, um contorno de texto). O relatório termina com um veredito:
 
-- **`faithful`**: nada foi perdido nem aproximado (um livro exportado do Postext).
+- **`faithful`**: nada foi perdido nem aproximado. Um livro exportado do Postext volta fiel como páginas compostas: cada página com seus quadros onde a exportação os pôs, e os estilos de parágrafo, os estilos de caractere, as caixas e as imagens do livro (desde o postext 1.84.0). Não volta como livro de fluxo: a exportação dá a cada parágrafo um quadro próprio, sem encadeamento entre quadros, e por isso `--layout flow` relata a arte de página que não consegue levar.
 - **`approximate`**: algumas coisas foram compostas de forma parecida com o original, e nada ficou de fora.
 - **`lossy`**: alguma coisa ficou de fora.
 

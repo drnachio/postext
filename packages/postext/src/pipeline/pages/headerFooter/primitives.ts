@@ -87,6 +87,8 @@ function pathPrimitiveToBlock(prim: ResolvedPathPrimitive): VDTDesignPathBlock {
     ...(prim.markers ? { markers: prim.markers.map((m) => ({ ...m })) } : {}),
     // Painted after the frames (#1076).
     ...(prim.over ? { over: true as const } : {}),
+    // A template's die-cut (#1565), lifted off the decoration later.
+    ...(prim.dieCut ? { dieCut: structuredClone(prim.dieCut) } : {}),
   };
   block.bbox = pathInkBox(block);
   return block;

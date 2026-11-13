@@ -40,6 +40,9 @@ export interface Look {
   /** Paragraphs of the look that end a sentence (a full stop, a question
    *  mark): running text does, a title does not. */
   sentences: number;
+  /** Paragraphs of the look that hold a tab: words set in columns at the
+   *  look's tab stops (a key, a row of figures) are no title (#1555). */
+  tabbed?: number;
   role: Role;
   reason: string;
   /** Heading level 1–6. */
@@ -135,6 +138,7 @@ export class Looks {
     look.paragraphs++;
     look.characters += text.length;
     if (/[.!?…:;»”"。！？]\s*$/.test(text)) look.sentences++;
+    if (text.includes('\t')) look.tabbed = (look.tabbed ?? 0) + 1;
     if (!look.sample && text.trim()) look.sample = text.trim().slice(0, 60);
     return look;
   }
@@ -289,6 +293,10 @@ function isTitleLike(l: Look, body: Look | undefined, bodySize: number): boolean
   if (mean > 140 || mean < 3) return false;
   // Titles do not end in a full stop; captions and short notes do.
   if (l.sentences * 2 > l.paragraphs) return false;
+  // Words set in columns at tab stops (a cover's key) are not a title: a
+  // heading would set its tabs as spaces and the columns would close up
+  // (#1555).
+  if (l.pf.tabs.length && (l.tabbed ?? 0) * 2 > l.paragraphs) return false;
   if (l.cf.pointSize >= bodySize * 1.15) return true;
   return l.cf.pointSize >= bodySize && l.weight >= 600 && body.weight < 600;
 }

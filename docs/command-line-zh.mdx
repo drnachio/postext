@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-11-12',
   readingTime: '10分钟',
-  order: 51,
+  order: 52,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
 };
 
@@ -157,6 +157,7 @@ PDF遵循书本身的设置（见[PDF生成](/zh/docs/configuration-fonts-colors
 - `--accessible` / `--no-accessible`：供屏幕阅读器使用的标签结构。
 - `--no-outlines`：不写入书签。
 - `--page-negative`：负片页面，用于某些印刷流程。
+- `--die-line page|none`：有模切的书的模切线，印在单独的印版上（`page`，默认），或者略去（`none`）；见[PDF中的模切线](/zh/docs/special-inks-die-cuts#pdf中的模切线)。
 
 ### html
 

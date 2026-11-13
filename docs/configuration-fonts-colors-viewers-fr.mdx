@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>voir <a href="/fr/docs/configuration-pdf-output#contrôle-en-amont">Contrôle en amont</a></td>
       <td>Ce que vérifie le contrôle en amont, et ses seuils.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>Le tracé de découpe des pages qui ont une découpe (<code>dieCuts</code>) : <code>output</code> (<code>'page'</code> ou <code>'none'</code>), le nom de la plaque <code>ink</code>, sa substitution <code>cmyk</code> (100 % magenta) et l’épaisseur du trait <code>width</code> (0,25 pt). Voir <a href="/fr/docs/special-inks-die-cuts#le-tracé-de-découpe-dans-le-pdf">Le tracé de découpe dans le PDF</a>.</td>
     </tr>
   </tbody>
 </table>

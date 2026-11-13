@@ -37,6 +37,7 @@ export type * from './types/structure/citations.js';
 export type * from './types/structure/links.js';
 export type * from './types/text/cjk.js';
 export type * from './types/output/print.js';
+export type * from './types/dieCuts.js';
 export type * from './types/text/fonts.js';
 export type * from './types/designPlacement.js';
 export type * from './types/designElements.js';

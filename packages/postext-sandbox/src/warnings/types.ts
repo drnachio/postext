@@ -139,6 +139,9 @@ export type WarningPayload =
   /** `:::columns{flow=…}` names neither `snake` nor `parallel` (#634): the
    *  group takes the default. */
   | { kind: 'columnsFlowUnknown'; value: string }
+  /** `:::diecut{die=…}` names a die shape `dieCuts.shapes` does not have
+   *  (#1565): the pages are not cut. */
+  | { kind: 'dieCutUnknown'; die: string }
   /** Composed pages (#854): a `::::page` naming no template, a slot the
    *  template lacks, a template frame left empty, a composed page written
    *  with three colons. */

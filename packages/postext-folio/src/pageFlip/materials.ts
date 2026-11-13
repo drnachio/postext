@@ -6,6 +6,8 @@ import type { FolioConfig } from 'postext';
 import type { PaperSpec } from '../paper.js';
 import { MAX_PAGE_VIDEOS } from '../videoAtlas.js';
 import { occlusionUniforms, BOOK_POS_PARS, BOOK_POS, keyShadowed, OCCLUSION, keySpecular } from './occlusion.js';
+import { cutUniforms, CUT_OFF, CUT_PARS, CUT_FRAGMENT, type CutUniforms } from './through.js';
+import { finishUniforms, type FinishUniforms, FINISH_PARS, FINISH_READ, FINISH_DIFFUSE, FINISH_ROUGHNESS, FINISH_METALNESS, FINISH_EMISSIVE, FINISH_COAT, FINISH_NORMAL } from './finish.js';
 
 /** What lies behind the leaves in the air (#484): the scene drawn without
  *  the translucent leaves (colour, mipmapped, and depth), shared by every
@@ -23,7 +25,7 @@ export const behindUniforms = {
   uBehindFloor: { value: 1 },
 };
 
-type PageUniforms = {
+type PageUniforms = FinishUniforms & CutUniforms & {
   uFront: { value: Texture | null };
   uBack: { value: Texture | null };
   uHasFront: { value: number };
@@ -79,7 +81,7 @@ export type PageMaterial = MeshPhysicalMaterial & { userData: { uniforms: PageUn
  * gutter's occlusion (a vertex attribute, from the book's cross-section)
  * and by lifted leaves nearby.
  */
-export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
+export function pageMaterial(mirror: boolean, sign: number, cutMode = CUT_OFF): PageMaterial {
   const m = new MeshPhysicalMaterial({ side: DoubleSide, roughness: 0.85 }) as PageMaterial;
   const uniforms: PageUniforms = {
     uFront: { value: null },
@@ -105,6 +107,8 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
     uReflectionOn: { value: 0 },
     uReflectionSize: { value: new Vector2(1, 1) },
     uReflectionNormal: { value: new Vector3(0, 0, 1) },
+    ...finishUniforms(),
+    ...cutUniforms(cutMode),
   };
   m.userData.uniforms = uniforms;
   m.onBeforeCompile = (shader: WebGLProgramParametersWithUniforms) => {
@@ -165,6 +169,8 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
         varying float vAo;
         varying vec2 vPageUv;
         varying vec3 vBookPos;
+        ${FINISH_PARS}
+        ${CUT_PARS}
         ${OCCLUSION}`,
       )
       .replace(
@@ -177,7 +183,17 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           vec2 uvF = vec2(u, vPageUv.y);
           vec2 uvB = vec2(1.0 - u, vPageUv.y);
           vec3 ink = uPaper;
-          if (has > 0.5 && has < 1.5) ink = front ? texture2D(uFront, uvF).rgb : texture2D(uBack, uvB).rgb;
+          // A cut face's painting is transparent in its holes and past its
+          // outline: its alpha is the cut (#1569).
+          float cutA = 1.0;
+          if (has > 0.5 && has < 1.5) {
+            vec4 page = front ? texture2D(uFront, uvF) : texture2D(uBack, uvB);
+            ink = page.rgb;
+            if ((front ? uHasFrontCut : uHasBackCut) > 0.5) {
+              cutA = page.a;
+              if (cutA > 0.0 && cutA < 1.0) ink = min(ink / cutA, vec3(1.0));
+            }
+          }
           // The videos playing on this face, printed over their posters:
           // the point of the page (from its top left corner) in each
           // picture's own frame, which may lie turned on the page, then in
@@ -197,11 +213,13 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
               ink = texture2D(uVideo, vec2(v.x, 1.0 - v.y)).rgb;
             }
           }
+          ${CUT_FRAGMENT}
+          ${FINISH_READ}
           // The other side's print, seen through the sheet (the same point
           // of paper, so mirrored as it should be).
           float other = front ? uHasBack : uHasFront;
           vec3 through = vec3(1.0);
-          if ((uShowThrough > 0.0 || uTransmit > 0.0) && other > 0.5 && other < 1.5) {
+          if ((uShowThrough > 0.0 || uTransmit > 0.0) && other > 0.5 && other < 1.5 && cutA > 0.999) {
             through = front ? texture2D(uBack, uvB).rgb : texture2D(uFront, uvF).rgb;
           }
           transInk = ink * through;
@@ -210,13 +228,19 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           // whole sheet (the fibres spread it by a fraction of a millimetre,
           // finer than the page's own texels: a softer sample would blur
           // a page seen small to grey).
-          if (uHasUnder > 0.5 && uUnderK > 0.0) {
+          if (uHasUnder > 0.5 && uUnderK > 0.0 && cutA > 0.999) {
             vec3 under = texture2D(uUnder, front ? uvF : uvB).rgb;
             ink *= mix(vec3(1.0), under, uUnderK);
           }
           diffuseColor.rgb *= ink;
+          ${FINISH_DIFFUSE}
         }`,
       )
+      .replace("#include <roughnessmap_fragment>", `#include <roughnessmap_fragment>\n${FINISH_ROUGHNESS}`)
+      .replace("#include <metalnessmap_fragment>", `#include <metalnessmap_fragment>\n${FINISH_METALNESS}`)
+      .replace("#include <normal_fragment_maps>", `#include <normal_fragment_maps>\n${FINISH_NORMAL}`)
+      .replace("#include <emissivemap_fragment>", `#include <emissivemap_fragment>\n${FINISH_EMISSIVE}`)
+      .replace("#include <lights_physical_fragment>", `#include <lights_physical_fragment>\n${FINISH_COAT}`)
       .replace(
         "#include <aomap_fragment>",
         `#include <aomap_fragment>
@@ -224,8 +248,10 @@ export function pageMaterial(mirror: boolean, sign: number): PageMaterial {
           // A leaf's own roll counts among the leaves it is occluded by:
           // held to what its open side would let in.
           float occ = vAo * (1.0 - uLeafOcc * bookOcclusion(vBookPos, 1.0));
-          reflectedLight.indirectDiffuse *= occ;
-          reflectedLight.indirectSpecular *= mix(1.0, occ, 0.85);
+          reflectedLight.indirectDiffuse *= occ * throughAo;
+          reflectedLight.indirectSpecular *= mix(1.0, occ, 0.85) * throughAo;
+          reflectedLight.directDiffuse *= throughLit;
+          reflectedLight.directSpecular *= throughLit;
         }
         // The reflection's ray, in book coordinates.
         vec3 reflected = (vec4(reflect(-geometryViewDir, normal), 0.0) * viewMatrix).xyz;

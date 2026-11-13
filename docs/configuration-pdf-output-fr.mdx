@@ -425,10 +425,11 @@ Pour une chaîne de production imprimée, réglez ces options de configuration a
 - **`page.dpi: 300`** : les px par pouce de la mise en page ; un bitmap sans résolution propre s’imprime à cette résolution à sa taille naturelle. Le [contrôle en amont](/fr/docs/configuration-pdf-output#contrôle-en-amont) signale les images de moins de 300 ppp à leur taille imprimée.
 - **`ColorValue.cmyk`** : une couleur définie en CMJN s’imprime avec ses valeurs exactes.
 - **`{ pageNegative: true }`** dans `RenderToPdfOptions` : inverse la zone rognée au moyen d’un mode de fusion Différence (les traits de coupe ne sont pas inversés). Utile pour les contrôles en amont d’une typographie sombre sur fond clair.
+- **`print.dieLine`** : le tracé de découpe d’un livre avec des découpes, tracé sur sa propre plaque, que la presse n’encre jamais (`Die` par défaut, dans un groupe de contenu optionnel hors PDF/X-1a). Voir [Le tracé de découpe dans le PDF](/fr/docs/special-inks-die-cuts#le-tracé-de-découpe-dans-le-pdf).
 
 ### Tons directs
 
-Un ton direct (un Pantone, une encre d’entreprise, un vernis) s’imprime sur sa propre plaque. Une couleur avec `model: 'spot'` porte son encre dans `ColorValue.spot` : `name` est le nom de la plaque tel que l’imprimeur le connaît, `cmyk` l’aspect de l’encre à 100 % (la couleur de substitution que le PDF donne à qui n’a pas l’encre), `tint` la force en pourcentage (100 par défaut), et `overprint` fait surimprimer l’encre sur ce qui est dessous au lieu de le défoncer, comme un vernis. `hex` est son rendu à l’écran.
+Un ton direct (un Pantone, une encre d’entreprise, un vernis) s’imprime sur sa propre plaque. Une couleur avec `model: 'spot'` porte son encre dans `ColorValue.spot` : `name` est le nom de la plaque tel que l’imprimeur le connaît, `cmyk` l’aspect de l’encre à 100 % (la couleur de substitution que le PDF donne à qui n’a pas l’encre), `tint` la force en pourcentage (100 par défaut), `overprint` fait surimprimer l’encre sur ce qui est dessous au lieu de le défoncer, comme un vernis, et `finish` dit ce qu’est une encre spéciale : métallisée, dorure, fluorescente, blanc opaque ou vernis. `hex` est son rendu à l’écran. [Encres spéciales et découpes](/fr/docs/special-inks-die-cuts#finitions) explique comment chaque finition s’imprime et s’affiche.
 
 Un PDF CMJN ou PDF/X écrit chaque encre comme un espace colorimétrique `Separation` qui porte son nom, et peint chaque couleur de cette encre à sa teinte : les couleurs de même `name` partagent une plaque. Cela couvre les travaux habituels : deux couleurs (le noir et un ton direct), la quadrichromie avec quelques éléments dans un ton direct, et un vernis surimprimé sur des zones choisies. Quand `diagramStyle.singleInk` utilise un ton direct, les diagrammes SVG s’impriment en teintes de cette plaque. Un PDF RVB et l’écran peignent le `hex` de la couleur.
 
@@ -438,7 +439,7 @@ Un PDF CMJN ou PDF/X écrit chaque encre comme un espace colorimétrique `Separa
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' imprime l’encre en CMJN, d’après sa substitution.
   cmyk?: CmykPercent;              // La substitution à 100 %, prioritaire sur celle des couleurs.
   overprint?: boolean;             // Prioritaire sur celui des couleurs.
+  finish?: InkFinish;              // Métallisée, dorure, fluorescente, blanc ou vernis, prioritaire sur celle des couleurs.
 }
 ```
 
-Les noms et les alias sont comparés sans tenir compte de la casse ni des espaces répétés. Renommer tient en une ligne, quel que soit le nombre de couleurs qui utilisent l’encre ; un alias réunit sur une seule plaque les noms qu’un nuancier du graphiste, un SVG (`data-spot`, `icc-named-color`) ou une palette antérieure donnaient à la même encre ; et `output: 'process'` imprime une encre en CMJN quand la presse n’a pas de groupe pour elle, toutes ses teintes comprises.
+Les noms et les alias sont comparés sans tenir compte de la casse ni des espaces répétés. Renommer tient en une ligne, quel que soit le nombre de couleurs qui utilisent l’encre ; un alias réunit sur une seule plaque les noms qu’un nuancier du graphiste, un SVG (`data-spot`, `icc-named-color`) ou une palette antérieure donnaient à la même encre ; `output: 'process'` imprime une encre en CMJN quand la presse n’a pas de groupe pour elle, toutes ses teintes comprises ; et `finish` fait d’une encre une encre spéciale d’où que vienne son nom, y compris d’un SVG ou d’un fichier importé qui nomme `Gold`.
 
-Dans le Sandbox, la table se trouve dans **Maquette › Export › Préparation pour l’impression › Table des encres** : une carte par encre avec son **Nom de l’encre**, ses **Alias**, le **Nom de la plaque dans le PDF**, **S’imprime en**, le **CMJN de substitution** et la **Surimpression**. **Encres utilisées par les couleurs** énumère les encres des couleurs du livre absentes de la table, chacune avec un bouton qui l’ajoute.
+Dans le Sandbox, la table se trouve dans **Maquette › Export › Préparation pour l’impression › Table des encres** : une carte par encre avec son **Nom de l’encre**, ses **Alias**, le **Nom de la plaque dans le PDF**, **S’imprime en**, le **CMJN de substitution**, la **Surimpression**, la **Finition** et la **Brillance**. **Encres utilisées par les couleurs** énumère les encres des couleurs du livre absentes de la table, chacune avec un bouton qui l’ajoute.
 
 ```ts
 print: {

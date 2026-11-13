@@ -1,0 +1,353 @@
+{/* docs/special-inks-die-cuts-de.mdx */}
+
+export const metadata = {
+  title: 'Spezialfarben und Stanzungen',
+  sidebarTitle: 'Spezialfarben und Stanzungen',
+  description: 'Fünfte Farben, Metallic- und Neonfarben, Heißfolie, Deckweiß und Lack als Sonderfarben mit Veredelung, und Stanzungen: Löcher durch ein oder mehrere Blätter, abgerundete Ecken und Bücher in Form, die Stanzlinie im PDF, der Preflight und wie jeder Betrachter sie zeigt',
+  lang: 'de',
+  lastUpdated: '2026-11-13',
+  readingTime: '14 min',
+  order: 40,
+  plainSummary: "Diese Seite handelt von dem, was eine Druckerei einem Buch über die vier üblichen Druckfarben hinaus hinzufügt. Eine fünfte Farbe kann eine genaue Hausfarbe sein, eine Gold- oder Silberfarbe, eine glänzende Folie, eine sehr helle Neonfarbe, ein Weiß für braunes oder farbiges Papier oder ein klarer Lack. Jede davon ist eine Farbe des Buchs mit der Angabe, was sie ist, und das PDF gibt jeder eine eigene Platte für die Druckerei. Eine Stanzung ist ein Loch, das durch die Seiten geschnitten wird, abgerundete Ecken oder ein Buch, das in eine Form geschnitten ist. Die Löcher werden in den Einstellungen festgelegt, der Text läuft um sie herum, und das PDF zeichnet die Linie, der das Schneidwerkzeug folgt.",
+};
+
+# Spezialfarben und Stanzungen
+
+**Eine Spezialfarbe ist eine Sonderfarbe mit Veredelung. Eine Stanzung ist eine Form in der Konfiguration, die die Stanzform durch die Blätter schneidet.**
+
+Beides gehört zur Form des Buchs, also steht beides in der Konfiguration. Eine Veredelung verschiebt nie eine Zeile: Das Layout sieht eine Farbe, das PDF eine Druckfarbe auf einer eigenen Platte, und die Betrachter entscheiden, wie sie sie zeigen. Eine Stanzung verändert die Seite dagegen, denn der Text hält Abstand von einem Loch; das Markdown nennt die Stanzform nur dort, wo der Inhalt sie braucht.
+
+## Fünfte Druckfarbe
+
+Eine fünfte Farbe ist jede Druckfarbe, die der Auftrag über Cyan, Magenta, Gelb und Schwarz hinaus druckt: ein Pantone-Ton, der genau stimmen muss, eine Hausfarbe, die der Farbhersteller anmischt, oder eine der Spezialfarben weiter unten. In Postext ist sie eine Sonderfarbe, eine Farbe mit `model: 'spot'`, deren `spot` die Druckfarbe benennt, ihr Aussehen bei 100 % in CMYK angibt (den Ersatzwert, den ein Proof zeigt) und ihren Tonwert. Eine CMYK- oder PDF/X-Datei druckt sie auf einer Platte `Separation` mit dem Namen der Druckfarbe; der Bildschirm und eine RGB-Datei malen ihren `hex`-Wert. [Sonderfarben](/de/docs/configuration-pdf-output#sonderfarben) erklärt das Modell vollständig.
+
+In der [Druckfarbentabelle](/de/docs/configuration-pdf-output#die-druckfarbentabelle) (`print.inks`) wird eine Druckfarbe so beschrieben, wie die Druckerei sie erhält, gleich wie die Farben, die SVG-Bilder und die importierten Dateien sie nennen: ihr Plattenname, ihre Aliasnamen, ob sie im Vierfarbdruck druckt, ihr Ersatzwert, ihr Überdrucken und, bei einer Spezialfarbe, ihre Veredelung.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'brand', name: 'Brand blue', value: { hex: '#1f3f99', model: 'spot',
+      spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 286 C', aliases: ['Pantone 286C', 'Corporate blue'] }],
+  },
+};
+```
+
+## Veredelungen
+
+Eine Sonderfarbe ohne Veredelung ist eine gewöhnliche Druckfarbe. Mit einer ist sie eine Spezialfarbe:
+
+<table>
+  <thead>
+    <tr>
+      <th>Veredelung</th>
+      <th>Was sie ist</th>
+      <th>Glanz</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>metallic</code></td><td>Eine Druckfarbe mit Metallpigment: Gold, Silber, Kupfer (Pantone 871–877 C, die Serien 8000 und 10000).</td><td>standardmäßig <code>satin</code>, sonst <code>gloss</code> oder <code>matte</code></td></tr>
+    <tr><td><code>foil</code></td><td>Heißfolienprägung: Die Folie wird nach dem Druck mit einem beheizten Prägestempel auf den Bogen geprägt. Die Platte ist die Vorlage, nach der der Stempel gefertigt wird.</td><td>standardmäßig <code>gloss</code>, sonst <code>satin</code> oder <code>matte</code></td></tr>
+    <tr><td><code>fluorescent</code></td><td>Eine Druckfarbe, die heller leuchtet als jede Mischung aus dem Vierfarbdruck (Pantone 801–814 C).</td><td>keiner</td></tr>
+    <tr><td><code>white</code></td><td>Ein Deckweiß, für Kraftpapier, farbigen Karton oder Folie, meist unter die Farben gelegt.</td><td>keiner</td></tr>
+    <tr><td><code>varnish</code></td><td>Ein klarer Überzug auf ausgewählten Flächen (partieller UV-Lack, ein Matt- oder Soft-Touch-Lack).</td><td>standardmäßig <code>gloss</code>, sonst <code>satin</code>, <code>matte</code> oder <code>softTouch</code></td></tr>
+  </tbody>
+</table>
+
+```ts
+interface InkFinish {
+  kind: 'metallic' | 'foil' | 'fluorescent' | 'white' | 'varnish';
+  sheen?: 'gloss' | 'satin' | 'matte' | 'softTouch';   // Bei Neonfarben und Weiß ignoriert.
+}
+```
+
+Die Veredelung steht an der Sonderfarbe (`spot.finish`) oder am Eintrag der Druckfarbe in der Druckfarbentabelle (`print.inks[].finish`); der Eintrag der Tabelle hat Vorrang. Die Tabelle ist der Ort für eine Druckfarbe, die keine Farbe des Buchs definiert: Nennt ein SVG oder eine importierte Datei `Gold`, erhält diese Druckfarbe dort ihre metallische Veredelung. Eine Art, die Postext nicht kennt, wird verworfen, ebenso ein Glanz, der nicht passt: keiner bei Neonfarbe und Weiß, und Soft-Touch nur bei einem Lack.
+
+```ts
+const config: PostextConfig = {
+  colorPalette: [
+    { id: 'gold', name: 'Gold foil', value: { hex: '#c9a54a', model: 'spot',
+      spot: { name: 'Gold foil', cmyk: { c: 15, m: 30, y: 70, k: 10 }, finish: { kind: 'foil' } } } },
+    { id: 'fluo', name: 'Fluo pink', value: { hex: '#ff3fa4', model: 'spot',
+      spot: { name: 'PANTONE 806 C', cmyk: { c: 0, m: 80, y: 0, k: 0 }, finish: { kind: 'fluorescent' } } } },
+    { id: 'white', name: 'Opaque white', value: { hex: '#f4f2ec', model: 'spot',
+      spot: { name: 'Opaque white', cmyk: { c: 0, m: 0, y: 0, k: 0 }, finish: { kind: 'white' } } } },
+    { id: 'uv', name: 'Spot UV', value: { hex: '#e8f0f4', model: 'spot',
+      spot: { name: 'Varnish', cmyk: { c: 10, m: 0, y: 0, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
+  ],
+  print: {
+    standard: 'pdfx4',
+    inks: [{ name: 'PANTONE 871 C', aliases: ['Gold'], finish: { kind: 'metallic' } }],
+  },
+};
+```
+
+### Wie eine Spezialfarbe druckt
+
+- **Eine eigene Platte.** Jede Spezialfarbe druckt auf ihrer eigenen `Separation`, unter dem Plattennamen, den die Druckfarbentabelle ihr gibt (`pdfName`, sonst ihr Name). Sie fällt nie auf den Vierfarbdruck zurück, es sei denn, ihr Eintrag in der Druckfarbentabelle sagt `output: 'process'`.
+- **Überdrucken.** Deckweiß und Lack überdrucken, sofern nicht `overprint: false` an der Farbe oder in der Druckfarbentabelle etwas anderes sagt: Das Weiß liegt unter den Farben, der Lack über ihnen, und keines von beiden soll ein Loch in die Platten sparen. Metallic-, Heißfolien- und Neonfarben sparen aus wie jede Sonderfarbe.
+- **Druckreihenfolge.** Die Datei enthält Platten, keine Reihenfolge. Weiß druckt zuerst und Lack zuletzt; der Preflight listet beide auf (`inkPressOrder`), damit Sie es der Druckerei sagen können, die die Reihenfolge an der Maschine festlegt.
+- **Aufträge auf wenigen Platten.** In einem Auftrag mit [`print.plates`](/de/docs/configuration-pdf-output#zweifarbendruck) wird ein Weiß oder ein Lack, den der Auftrag nicht nennt, weggelassen statt auf die Farbplatten projiziert, und das Rendering warnt (`finishInkDropped`). Metallic-, Heißfolien- und Neonfarben werden projiziert wie jede andere Sonderfarbe.
+- **RGB- und Graustufendateien.** Ein Lack bringt nichts auf die Seite; die übrigen Veredelungen malen ihren `hex`-Wert.
+
+### Auf dem Bildschirm
+
+Das Canvas, der HTML-Betrachter und EPUB malen jede Spezialfarbe mit ihrem `hex`-Wert, außer einem Lack, der klar ist und nichts malt. Geben Sie einem Lack trotzdem einen eigenen Hex-Wert, denn ein Druck-Rendering unterscheidet Druckfarben an ihrem Hex-Wert.
+
+`RenderPageOptions.finishes` zeigt die Veredelungen im Canvas:
+
+- `'flat'` (der Standard): der Hex-Wert jeder Druckfarbe, und nichts für einen Lack.
+- `'sheen'`: Ein Lichtstreif über die Seite lässt Metallicfarbe und Heißfolie aufleuchten (stärker bei mehr Glanz), ein Schein hebt Neonfarbe hervor, und ein Glanzlicht zeigt, wo der Lack liegt.
+- `'map'`: die Sonderplatten in Falschfarben über einer blassen Seite, wie ein Andruck sie markiert: Metallic und Heißfolie bernsteinfarben, Neon pink, Lack cyan, Deckweiß blau.
+
+Beide Vorschauen lesen die **Veredelungsmaske** der Seite. `renderFinishMask(page, doc, { scale })` liefert sie, oder `undefined` für eine Seite ohne Spezialfarbe, die dann nichts kostet. Sie ist eine RGBA-Bitmap: Rot ist Metall (Metallicfarbe und Heißfolie), Grün Glanz (glänzend 1, seidenmatt 0,7, matt 0,4, Soft-Touch 0,2), Blau Fluoreszenz und Alpha Deckweiß, jeweils mit dem Tonwert der Druckfarbe gewichtet. Ein Host, der seine Seiten selbst beleuchtet, etwa Folio, liest sie direkt. Was über einer Spezialfarbe gedruckt wird, spart sie aus der Maske aus, Bilder mit ihrer Silhouette, es sei denn, es überdruckt.
+
+```ts
+import { renderFinishMask, renderPageToCanvas } from 'postext';
+
+renderPageToCanvas(page, doc, canvas, { scale: 2, finishes: 'sheen' });
+const mask = renderFinishMask(page, doc, { scale: 0.5 });   // undefined ohne Spezialfarben
+```
+
+### In Folio
+
+Folio beleuchtet Spezialfarben so, wie das Papier sie unter seinen Lampen zeigen würde. Metallicfarbe und Heißfolie spiegeln den Raum wie ein Metall in der Farbe der Druckfarbe, Heißfolie fast wie ein Spiegel. Neonfarbe leuchtet heller als das Papier. Deckweiß deckt den Ton des Papiers ab und bleibt so auf Kraftpapier oder farbigem Karton lesbar. Ein Glanzlack fängt beim Umblättern die Glanzlichter ein, ein Mattlack dämpft sie, und Soft-Touch nimmt sie ganz weg. Nur die Seiten mit einer Spezialfarbe erhalten eine Maske, in halber Auflösung der Seite; ein Buch ohne Spezialfarben wird gezeichnet wie bisher.
+
+### Was der Preflight zu Druckfarben meldet
+
+In einem Druckauftrag (ein PDF/X-Standard oder CMYK) ergänzt der Preflight:
+
+- `spotInkFinish` (Hinweis): jede Spezialfarbe, die die Seiten verwenden, mit Veredelung und Glanz, damit der Auftrag an die Druckerei alle nennt.
+- `inkPressOrder` (Hinweis): die Weißfarben, die zuerst drucken, und die Lacke, die zuletzt drucken.
+- `whiteInkOnWhite` (Warnung): ein Weiß auf einer Seite, deren Papier weiß oder nicht festgelegt ist, wo es nichts zeigt. Stellen Sie die Papierfarbe (`page.backgroundColor`) auf das Papier ein, auf dem gedruckt wird.
+
+Ein Weiß oder ein Lack löst nie `overprintWhite` aus: Sie tragen absichtlich keine Farbe auf.
+
+## Die Veredelung aus dem Namen erraten
+
+```ts
+import { guessInkFinish } from 'postext';
+
+guessInkFinish('PANTONE 871 C');   // { kind: 'metallic' }
+guessInkFinish('Gold foil');       // { kind: 'foil' }
+guessInkFinish('Barniz UVI mate'); // { kind: 'varnish', sheen: 'matte' }
+guessInkFinish('PANTONE 286 C');   // undefined
+```
+
+`guessInkFinish(name)` liest den Namen, den ein Farbfeld, eine Separation oder eine Druckfarbentabelle einer Druckfarbe gibt, und liefert die Veredelung, die er nahelegt, oder `undefined`. Es kennt die Wörter für jede Veredelung und jeden Glanz in den zehn Sprachen der Website und in den Namen der Farbfächer, dazu die Pantone-Nummern: 801 bis 814 sind Neonfarben, 871 bis 877, die 8000er und die 10000er metallisch. Ein Wort für Lack oder Folie hat Vorrang vor einem Farbwort (`Gold foil` ist eine Heißfolie, `Barniz oro` ein Lack), ein Wort für Neon vor Weiß, ein Metall vor Weiß (`白金`, Platin). Das französische `or` bleibt außen vor, weil es auch die englische Konjunktion ist; `Or métallisé` wird über sein zweites Wort trotzdem als metallisch erkannt.
+
+Es ist ein Vorschlag, und nichts setzt ihn stillschweigend: Die Sandbox bietet ihn als Schaltfläche an, und der Portierungs-Skill meldet ihn.
+
+## Stanzungen
+
+Eine Stanzung ist die Arbeit einer Bandstahlstanzform nach dem Druck: ein Fenster in einem Umschlag, ein Loch, das durch ein ganzes Pappbilderbuch geht, ein Daumenregister, abgerundete Ecken, ein Buch, das auf die Kontur eines Hauses geschnitten ist. Die Eigenschaft `dieCuts` beschreibt die Stanzformen des Buchs; der Text hält auf jeder Seite, die ein Loch schneidet, Abstand davon.
+
+```ts
+interface DieCutsConfig {
+  shapes?: DieShape[];                 // Die Stanzformen des Buchs.
+  pages?: DieCutPlacement[];           // Formen, nach Seitennummer auf Seiten gesetzt.
+  corners?: { radius: Dimension; edges?: 'fore' | 'all' };
+  outline?: { d: string; viewBox?: [number, number] };
+}
+```
+
+### Stanzformen
+
+Eine Stanzform wird von der oberen linken Ecke des Endformats der Seite aus platziert, auf die sie gesetzt ist.
+
+<table>
+  <thead>
+    <tr>
+      <th>Eigenschaft</th>
+      <th>Typ</th>
+      <th>Standard</th>
+      <th>Beschreibung</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>id</code></td><td><code>string</code></td><td>erforderlich</td><td>Der Name, mit dem Platzierungen und <code>:::diecut</code> sie aufrufen.</td></tr>
+    <tr><td><code>name</code></td><td><code>string</code></td><td>keiner</td><td>Ein Name für Menschen; die Sandbox zeigt ihn.</td></tr>
+    <tr><td><code>shape</code></td><td><code>'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path'</code></td><td>erforderlich</td><td>Ein Kreis ist der größte, den der Rahmen fasst, in ihm zentriert; eine Ellipse füllt den Rahmen.</td></tr>
+    <tr><td><code>x</code>, <code>y</code></td><td><code>Dimension</code></td><td>erforderlich</td><td>Vom linken und vom oberen Rand des Endformats.</td></tr>
+    <tr><td><code>width</code>, <code>height</code></td><td><code>Dimension</code></td><td>erforderlich</td><td>Der Rahmen, den die Form füllt.</td></tr>
+    <tr><td><code>radius</code></td><td><code>Dimension</code></td><td>3 mm</td><td>Die Ecken eines <code>roundRect</code>.</td></tr>
+    <tr><td><code>d</code></td><td><code>string</code></td><td>keiner</td><td>SVG-Pfaddaten eines <code>path</code> (<code>M L H V C S Q T A Z</code>), von <code>viewBox</code> auf den Rahmen gedehnt.</td></tr>
+    <tr><td><code>viewBox</code></td><td><code>[number, number]</code></td><td><code>[1, 1]</code></td><td>Breite und Höhe des Raums, in dem <code>d</code> geschrieben ist.</td></tr>
+    <tr><td><code>leaves</code></td><td><code>number</code></td><td>1</td><td>Durch wie viele Blätter das Loch geht: das, auf dem es sitzt, und die folgenden.</td></tr>
+    <tr><td><code>wrap</code></td><td><code>false | &#123; gap?: Dimension &#125;</code></td><td><code>&#123; gap: 3mm &#125;</code></td><td>Der Text hält <code>gap</code> Abstand vom Loch; <code>false</code> lässt ihn unter dem Loch weiterlaufen, wo er mit ausgestanzt wird.</td></tr>
+  </tbody>
+</table>
+
+### Drei Wege, eine Stanzform zu setzen
+
+**Nach Seitennummer.** `dieCuts.pages` setzt eine Form auf eine Liste von Seiten: `'5'`, `'3-12'`, `'3,7,11-13'`. Die Nummern zählen die Seiten des Buchs nach ihrer Position, 1 ist seine erste Seite, nicht die gedruckten Seitenzahlen. In einem Buch aus mehreren Kapiteln zählen sie vom Anfang des Buchs, sodass ein einzeln gesetztes Kapitel trotzdem die richtige Seite stanzt.
+
+```ts
+const config: PostextConfig = {
+  dieCuts: {
+    shapes: [
+      { id: 'window', name: 'Cover window', shape: 'roundRect',
+        x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' },
+        width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' },
+        radius: { value: 4, unit: 'mm' } },
+      { id: 'tunnel', shape: 'circle',
+        x: { value: 55, unit: 'mm' }, y: { value: 90, unit: 'mm' },
+        width: { value: 30, unit: 'mm' }, height: { value: 30, unit: 'mm' },
+        leaves: 6, wrap: { gap: { value: 4, unit: 'mm' } } },
+    ],
+    pages: [
+      { pages: '1', die: 'window' },
+      { pages: '9', die: 'tunnel' },
+    ],
+    corners: { radius: { value: 5, unit: 'mm' } },
+  },
+};
+```
+
+**Wo der Inhalt entscheidet.** Ein Container `:::diecut` stanzt jede Seite, auf die sein Inhalt fällt, so wie [`:::paper`](/de/docs/document-format-directives#paper) das Papier wechselt. Sein Inhalt beginnt auf einer neuen Seite, und was auf das schließende `:::` folgt, ebenfalls. Ein Container in einem anderen schneidet seine eigene Stanzform; eine Stanzform, die in `dieCuts.shapes` fehlt, wird gemeldet (**Unbekannte Stanzform**, `dieCutUnknown`), und diese Seiten werden für sich gesetzt und nicht gestanzt. Siehe [`:::diecut`](/de/docs/document-format-directives#diecut).
+
+```md
+:::diecut{die=window}
+## Ein Blick hinein
+Das Fenster rahmt die Titelseite darunter.
+:::
+```
+
+**In einer Seitenvorlage.** Auf einer zusammengesetzten Seite setzt ein Dekorationselement der Art `'cut'` ein Loch wie jedes Pfadelement, mit `when` und `unless`, um es auf die Seiten zu beschränken, die es verlangen. Siehe [Stanzelemente in einer Seitenvorlage](#stanzelemente-in-einer-seitenvorlage).
+
+### Stanzelemente in einer Seitenvorlage
+
+Ein Dekorationselement der Art `'cut'` ist ein Loch, das die Stanzform durch das Blatt jeder zusammengesetzten Seite schneidet, auf die die Dekoration der Vorlage gelegt wird: ein Fenster in einer Umschlagvorlage, ein Daumenregister auf den Auftaktseiten eines Nachschlagewerks. Es wird platziert und bemessen wie ein [Pfadelement](/de/docs/configuration-headers-footers#pfadelemente), mit `when`, `unless`, `parity` und `pin` wie jedes Dekorationselement, und es wird nie gemalt: Das Layout nimmt es aus der Dekoration heraus und legt es zu den Stanzungen der Seite, gespiegelt auf der anderen Seite des Blatts.
+
+```ts
+interface DesignCutElement {
+  kind: 'cut';
+  id: string;
+  placement: ElementPlacement;       // Wo das Loch sitzt, und sein Rahmen.
+  die?: string;                      // Eine Form aus dieCuts.shapes, auf den Rahmen gedehnt.
+  d?: string;                        // Sonst SVG-Pfaddaten, in Einheiten der viewBox.
+  viewBox?: [number, number];
+  preserveAspectRatio?: 'none' | 'meet';
+  leaves?: number;                   // Standard: der Wert der Stanzform, sonst 1.
+  wrap?: false | { gap?: Dimension }; // Standard: der Wert der Stanzform, sonst 3 mm.
+  when?: string; unless?: string; parity?: PageParity; pages?: PageRoleFilter; pin?: boolean;
+}
+```
+
+Die Kontur des Lochs ist die Stanzform, die `die` nennt, auf den Rahmen des Elements gedehnt (die Stanzform liefert ihre Art, den Eckenradius, die Pfaddaten, `leaves` und `wrap`, aber nicht ihren eigenen Rahmen); ohne `die` die Pfaddaten `d`; ohne beides der Rahmen selbst. Die eigenen `leaves` und `wrap` des Elements haben Vorrang vor denen der Stanzform.
+
+```ts
+decoration: { elements: [
+  { kind: 'cut', id: 'window', die: 'window', unless: 'closed',
+    placement: { anchor: { to: 'page', edge: 'top-left' },
+      offset: { x: { value: 40, unit: 'mm' }, y: { value: 60, unit: 'mm' } },
+      size: { width: { value: 70, unit: 'mm' }, height: { value: 45, unit: 'mm' } } } },
+] }
+```
+
+Text in den Rahmen einer zusammengesetzten Seite umfließt ein Loch noch nicht: Legen Sie die Rahmen so, dass sie es freilassen, und achten Sie auf `dieCutText` im Preflight. In einer Doppelseitenvorlage wird ein Stanzelement nicht auf die beiden Seiten aufgeteilt. Alles Weitere zu [Seitenvorlagen](/de/docs/configuration-composed-pages#seitenvorlagen) steht in der Konfigurationsreferenz.
+
+### Blätter und Spiegelung
+
+Ein Loch geht durch das Papier, also schneidet es beide Seiten eines Blatts. Seite 1 ist eine Vorderseite (Recto), ihre Rückseite (Verso) Seite 2 desselben Blatts, und so weiter; ein Kapitel, das weiter hinten im Buch beginnt, zählt von der ersten Seite des Buchs. Eine Form, die auf eine Seite gesetzt ist, schneidet auch die andere Seite ihres Blatts, am Endformat gespiegelt: Ein Fenster 40 mm vom linken Rand einer Vorderseite liegt 40 mm vom rechten Rand ihrer Rückseite. Mit `leaves: 6` geht das Loch auch durch die nächsten fünf Blätter, an derselben Stelle im Stapel, und liegt so auf jeder Seite derselben Blattseite dort, wo Sie es gesetzt haben, und auf jeder Seite der anderen Blattseite gespiegelt.
+
+### Abgerundete Ecken und Bücher in Form
+
+`corners` rundet jedes Blatt ab: standardmäßig nur die Ecken am Vorderschnitt (rechts auf einer Vorderseite, links auf einer Rückseite, vertauscht in einem rechts gebundenen Buch), der Rücken bleibt eckig; `edges: 'all'` rundet alle vier ab. `outline` schneidet jedes Blatt auf eine Kontur zu: SVG-Pfaddaten in Einheiten der `viewBox`, auf das Endformat einer Vorderseite gedehnt und auf Rückseiten gespiegelt. Sind beide gesetzt, hat die Kontur Vorrang.
+
+```ts
+dieCuts: {
+  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] },   // ein Haus
+}
+```
+
+### Text um ein Loch
+
+Jedes Loch, um seinen `wrap.gap` vergrößert, ist auf fließenden Seiten ein Hindernis, das der Text auf beiden Seiten jedes Blatts umfließt, das es schneidet: Die Zeilen werden daneben gekürzt, wie neben einem umflossenen Bild. Eine Form mit `wrap: false` lässt den Text, wo er ist, und was unter dem Loch liegt, wird mit ausgestanzt.
+
+### Die Stanzlinie im PDF
+
+Der Stanzformenbauer arbeitet nach der Stanzlinie: der Kontur jedes Lochs und, wenn es geformt oder abgerundet ist, des Blatts, auf einer Platte, die die Druckmaschine nie einfärbt. `print.dieLine` legt sie fest.
+
+```ts
+interface PrintDieLineConfig {
+  output?: 'page' | 'none';   // 'page' (Standard): auf jede Seite mit Stanzung gezeichnet.
+  ink?: string;               // Der Name der Platte. Standard 'Die'.
+  cmyk?: CmykPercent;         // Der Ersatzwert der Platte, wie Proofs sie zeigen. Standard 100 % Magenta.
+  width?: Dimension;          // Strichstärke. Standard 0,25 pt.
+}
+```
+
+Die Linie wird nach den Schnittmarken auf einer eigenen Platte `Separation` gezogen, mit runden Enden und Ecken, und sie überdruckt, spart also nie eine weiße Linie in die Platten darunter aus. In einem getaggten PDF ist sie ein Artefakt. Außer bei PDF/X-1a, das keine optionalen Inhalte erlaubt, liegt sie in einer optionalen Inhaltsgruppe namens **Die line**, die sich im Reader ausblenden lässt. Die Platte steht bei den Druckfarben des Auftrags (`inspectPrintPdf` führt sie in `color.spots`), und ein Auftrag mit [`print.plates`](/de/docs/configuration-pdf-output#zweifarbendruck) projiziert sie nie auf seine Platten. Fragen Sie den Stanzformenbauer, wie die Platte heißen soll: `Die`, `CutContour`, `Dieline` und `Troquel` sind alle gebräuchlich.
+
+Die Seite selbst wird vollständig gedruckt: Das PDF schneidet das Loch nicht aus. Was darin gesetzt ist, wird gedruckt und mit dem Papier ausgestanzt.
+
+```ts
+print: {
+  standard: 'pdfx4',
+  dieLine: { ink: 'CutContour', width: { value: 0.5, unit: 'pt' } },
+},
+```
+
+Auf der Kommandozeile überschreibt `postext pdf --die-line page|none` den Wert von `output` für einen Lauf (siehe [`pdf`](/de/docs/command-line#pdf)).
+
+### Was der Preflight zu Stanzungen meldet
+
+<table>
+  <thead>
+    <tr>
+      <th>Art</th>
+      <th>Schweregrad</th>
+      <th>Wann</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>dieCutText</code></td><td>Warnung</td><td>Text im Umflussabstand eines Lochs oder unter einem Loch ohne Umfluss, mit seinem Abstand zur Schnittkante in Millimetern. Eine Meldung pro Loch und Seite.</td></tr>
+    <tr><td><code>dieCutTrim</code></td><td>Warnung oder kritisch</td><td>Ein Loch, das näher als 3 mm am Endformat liegt, wo die Stanzform die Kante einreißt; kritisch, wenn es über das Endformat hinausreicht.</td></tr>
+    <tr><td><code>dieCutGutter</code></td><td>kritisch</td><td>Ein Loch weniger als 3 mm vom Falz am Rücken, wo die Blätter geheftet oder geklebt werden.</td></tr>
+    <tr><td><code>dieCutUnknown</code></td><td>Warnung</td><td>Eine Platzierung oder ein <code>:::diecut</code>, das eine Stanzform nennt, die <code>dieCuts.shapes</code> nicht hat.</td></tr>
+  </tbody>
+</table>
+
+Diese Prüfungen laufen immer, wenn der Preflight eingeschaltet ist, ob in einem Druckauftrag oder nicht. Die Konfigurationswarnungen melden eine Platzierung, deren Stanzform nicht existiert (mit der ähnlichsten ID als Vorschlag), eine Seitenliste ohne Seitennummer, eine Form, die die Engine verwirft (ohne ID, mit unbekanntem `shape`, ohne Größe oder Pfad), und Pfaddaten, die sie nicht lesen kann; in diesem Fall schneidet die Form ihren Rahmen.
+
+## In den Betrachtern
+
+**Canvas.** `renderPageToCanvas` schneidet jedes Loch und das Papier außerhalb eines geformten oder abgerundeten Blatts aus der Seite heraus, sodass dort zu sehen ist, was hinter dem Canvas liegt. Mit der Option `beneath`, einer Funktion, die das gemalte Canvas jeder Seite nach ihrem Index liefert, zeichnet es in jedes Loch die Seiten, die ein Leser hindurch sähe, so tief die Löcher übereinanderliegen: jede Seite beschnitten von den Löchern aller Seiten darüber, ein weicher Schatten an jeder Schnittkante, eine feine Linie für die Wand des Papiers und die Farbe der Arbeitsfläche hinter dem Ende des Buchs. `composeThrough(doc, pageIndex, source, target, scale)` zeichnet dasselbe Bild auf ein eigenes Canvas.
+
+```ts
+import { renderPageToCanvas } from 'postext';
+
+const painted = new Map<number, HTMLCanvasElement>();   // bereits gezeichnete Seiten, nach Index
+renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
+```
+
+**HTML-Betrachter.** Eine gestanzte Seite wird mit `clip-path: path(evenodd, …)` beschnitten, der Anschnittbox (oder der Kontur des Blatts) abzüglich ihrer Löcher. Auf dem Druckblatt zeichnet eine zusammengesetzte Seite in jedes Loch die Seiten darunter, so tief die Löcher übereinanderliegen, mit einem weichen Schatten und einer feinen Linie für die Wand des Papiers an jeder Schnittkante; diese Kopien sind für Screenreader verborgen und nehmen keine Klicks an. Im Bildschirmlayout sind die Seiten nicht die Druckseiten, daher zeigt ein Loch dort den Hintergrund des Betrachters.
+
+**Folio.** Folio zeigt ein Loch, wie es in der Hand aussieht. Auf einer aufgeschlagenen Seite zeigt das Loch die Seiten darunter, so tief die Löcher übereinanderliegen (ein Tunnelbuch kann eine Seite zwanzig Blätter tiefer zeigen), mit den Papierwänden des Schnitts und einer Parallaxe, die der Ansicht folgt. Ein Blatt, das umgeblättert wird, hat ein echtes Loch, und die Schatten fallen hindurch auf die Seite darunter. Abgerundete Ecken und eine Kontur werden an jedem Blatt geschnitten.
+
+**Ein eigener Betrachter.** Jede gesetzte Seite trägt ihre Stanzungen in `VDTPage.dieCut`: `holes` und `outline` als Pfade in Seitenpixeln, `sources` (die Stanzform jedes Lochs) und `wrapGapPx`. `leafSide(doc, i)` sagt, ob eine Seite Vorder- oder Rückseite ist, `pageBeneath(doc, i)`, welche Seite darunter liegt (`-1` hinter dem Ende des Buchs), `seeThrough(doc, i)` den ganzen Stapel, den ein Loch zeigt, mit dem Beschnitt jeder Lage, und `dieCutPath2D(cut)` macht aus der Stanzung einen `Path2D`.
+
+## In der Sandbox
+
+- **Farben.** Der Tab **Sonderfarbe** der Farbauswahl hat **Veredelung** und **Glanz** und bietet die Veredelung an, die der Name der Druckfarbe nahelegt (**Veredelung setzen: …**). Das Menü **Sonderfarbe hinzufügen** der Palette fügt eine vorbereitete hinzu: Gold, Silber oder Kupfer metallic, Heißfolie Gold oder Silber, vier Neonfarben, Deckweiß sowie Glanz-, Matt- oder Soft-Touch-Lack.
+- **Farbtabelle.** Jede Druckfarbe hat **Veredelung** und **Glanz**, und **Druckfarben, die die Farben verwenden** zeigt die Veredelung jeder einzelnen.
+- **Stanzungen.** **Gestaltung › Seite und Spalten › Stanzungen** enthält die Stanzformen, jede mit einer Zeichnung ihrer Kontur, die Seiten, die sie stanzen, die abgerundeten Ecken und die Kontur eines Buchs in Form. **Gestaltung › Export › Druckvorbereitung › Stanzlinie** legt die Platte fest.
+- **Canvas.** Bei einem Buch mit Stanzungen hat die Werkzeugleiste **Stanzlinien**, das jede Stanzform als gestrichelte Linie über die Seite zeichnet; bei einem Buch mit Spezialfarben hat sie **Sonderfarben**, das zwischen *flach*, *mit Glanz* und *Veredelungskarte* wechselt. Beide Einstellungen bleiben gespeichert. Ein Loch zeigt die Seiten darunter, so tief die Löcher übereinanderliegen; ändern Sie eine Seite weiter unten, werden die Seiten, die auf sie blicken, neu gemalt.
+- **Prüfungen.** Die Befunde des Preflights von oben erscheinen unter **Prüfungen** mit ihren Titeln: **Sonderfarbe**, **Druckreihenfolge der Sonderfarben**, **Weiße Farbe auf weißem Papier**, **Text unter einer Stanzung**, **Stanzung nahe am Beschnitt**, **Stanzung im Bund**, **Unbekannte Stanzform**.
+
+[Die Bedienfelder Gestaltung und Prüfungen](/de/docs/sandbox-design-checks) und [die Vorschauen](/de/docs/sandbox-previews#tab-canvas) beschreiben die Bedienfelder vollständig.
+
+## Grenzen
+
+- Die Veredelungsmaske sieht nicht alles. Eine Formel, die als Bild in einer Spezialfarbe gezeichnet ist, spart aus, statt ihre Druckfarbe zu zeigen, Verlaufsstufen in Spezialfarben werden nicht abgebildet, und ein SVG mit einer Lackfarbe malt auf dem Bildschirm weiterhin seinen Hex-Wert, sofern es nicht umgefärbt wird. Ein Weiß, dessen Bildschirm-Hex-Wert genau `#ffffff` ist, lässt sich vom Bogen nicht unterscheiden: Geben Sie ihm einen etwas dunkleren Hex-Wert.
+- Text in den Rahmen einer zusammengesetzten Seite umfließt ein Loch noch nicht; das tut nur fließender Text. Prüfen Sie zusammengesetzte Seiten mit `dieCutText`.
+- Ein Stanzelement in einer Doppelseitenvorlage wird nicht auf die beiden Seiten aufgeteilt.
+- Der HTML-Betrachter zeichnet die Seiten unter einem Loch nur für zusammengesetzte Seiten auf dem Druckblatt. In Folio bleiben die Kanten des Buchblocks unter abgerundeten Seitenecken eckig.
+- Zeigt die Sandbox ein einzelnes Kapitel, so zeigt ein Loch auf den letzten Blättern des Kapitels die Arbeitsfläche statt des nächsten Kapitels: Wechseln Sie zum ganzen Buch, um es zu sehen.
+- Das PDF druckt die Seite vollständig und zeichnet die Stanzlinie: Das Loch ist die Arbeit des Stanzformenbauers.

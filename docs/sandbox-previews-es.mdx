@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'es',
   lastUpdated: '2026-11-10',
   readingTime: '16 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "Esta página explica la parte derecha del Sandbox, donde aparecen las páginas terminadas. Cinco pestañas muestran el mismo libro de cinco formas: como imágenes de página, como archivo PDF, como un libro en 3D que puedes hojear, como página web y como libro electrónico EPUB. Una sexta crea un paquete SCORM con los capítulos que elijas, para la plataforma de aprendizaje de un centro educativo o de una empresa. Al cambiar de pestaña, el libro no se vuelve a maquetar, así que todas muestran las mismas páginas. La página explica qué muestra cada pestaña y qué puedes hacer en ella.",
 };
@@ -35,6 +35,10 @@ Una barra de herramientas en la parte superior de la vista de canvas ofrece:
 - **Modos de ajuste**: ajustar al ancho o al alto de la página. Se activan y desactivan; el ajuste se recalcula automáticamente al cambiar el tamaño de la ventana.
 - **Modos de vista**: página simple (una página por fila) o doble página (como un libro: la primera página aparece a la derecha, como página impar, y las siguientes se emparejan en dobles páginas). Un libro encuadernado por la derecha (`page.binding`, chino vertical) muestra sus dobles páginas al revés: la página 1 sola a la izquierda y luego `[3 | 2]`, `[5 | 4]`. En una página vertical, un clic cae en el carácter que hay bajo el puntero, y el cursor es una barra que cruza la columna.
 - **Simular impresión** (icono `Printer`): muestra las páginas tal como se imprimirán. Está desactivada por defecto y el navegador recuerda la elección. Cada color se separa con el perfil de salida de *Preparación para imprenta* y se muestra sobre el blanco del propio papel, y las grandes masas negras, en negro enriquecido; un PDF forzado a escala de grises se ve solo en tinta negra. Solo aparece lo que se imprime: ni guías de pantalla ni contornos (lo que encuentra el preflight está en **Revisión**). La pestaña **Folio** comparte el interruptor. Vuelve a pintar las páginas, pero nunca las maqueta de nuevo.
+- **Líneas de troquel** (icono `Scissors`, en un libro con troqueles): dibuja el troquel de cada hueco, y el contorno de una hoja con forma o con esquinas redondeadas, como una línea discontinua sobre la página.
+- **Tintas especiales** (icono `Sparkles`, en un libro con tintas especiales): pasa por tres vistas: *planas*, cada tinta con su color de pantalla y el barniz sin mostrar; *con brillo*, la tinta metálica y la estampación iluminadas por un barrido de luz, la tinta fluorescente resplandeciente y el barniz visible por su reflejo; y *mapa de acabados*, las planchas especiales en falso color sobre la página atenuada (metálicas y estampaciones en ámbar, fluorescentes en rosa, barniz en cian, blanco opaco en azul). Véase [Tintas especiales y troqueles](/es/docs/special-inks-die-cuts#en-pantalla).
+
+El navegador recuerda los dos botones, y ninguno vuelve a maquetar las páginas.
 
 Las páginas se dibujan bajo demanda mediante `IntersectionObserver`: solo se pintan en el canvas las páginas visibles (más un margen de 200 px), para que el uso de memoria de la GPU sea bajo en documentos largos.
 

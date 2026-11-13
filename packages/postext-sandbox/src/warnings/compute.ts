@@ -1,4 +1,4 @@
-import { type PostextConfig, type VDTDocument, type Resource, type SvgFontFaceReport, extractFrontmatter, type OutputTransform, resolveContrastConfig, contrastDocument, resolvePrintConfig, resolvePdfGenerationConfig, preflightDocument, authoredSpotColors, placedInkProblems, spotsThroughInkTable, type SpotColor } from 'postext';
+import { type PostextConfig, type VDTDocument, type Resource, type SvgFontFaceReport, extractFrontmatter, type OutputTransform, resolveContrastConfig, contrastDocument, resolvePrintConfig, resolvePdfGenerationConfig, preflightDocument, authoredSpotColors, placedInkProblems, spotsThroughInkTable, type ResolvedSpotColor } from 'postext';
 import type { Warning, ContrastCheck, PreflightCheck, WarningPayload } from './types.js';
 import type { PdfFontCheck } from '../controls/fonts/pdfFontWarnings.js';
 import type { PreflightInputs } from '../print/preflightInputs.js';
@@ -160,7 +160,7 @@ export function collectPreflightWarnings(doc: VDTDocument, config: PostextConfig
     });
   });
   // Placed PDF masters; a job on a few plates sets the SVG instead.
-  let spots: ReadonlyMap<string, Required<SpotColor>> | undefined;
+  let spots: ReadonlyMap<string, ResolvedSpotColor> | undefined;
   for (const r of print.plates.inks.length > 0 ? [] : resources) {
     const id = r.svg?.pdfFileId;
     const report = id ? inputs.masters.get(id) : undefined;

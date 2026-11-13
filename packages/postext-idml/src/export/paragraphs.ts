@@ -80,6 +80,39 @@ export function asPainted(item: TextItem, s: number): TextItem {
   return { ...item, bbox: rect(item.bbox), lines, ...(item.clip ? { clip: rect(item.clip) } : {}) };
 }
 
+/** Roles whose lines are told against the measure they were set in
+ *  (body text, lists, quotations, notes, code): their start and end say
+ *  their indents. Every other role's lines are as wide as their words. */
+const MEASURED_ROLES = new Set<TextItem['role']>(['body', 'list', 'quote', 'footnote', 'code', 'marker', 'dropCap', 'cell']);
+
+/** A text item whose lines are as wide as their words (a heading, a
+ *  running head, a design's text), each line told as standing in the
+ *  item's box with the alignment where it stands: centred when it leaves
+ *  the same room on both sides, set right when it leaves none at the
+ *  right, set left when it leaves none at the left. Read from where the
+ *  words stand, a centred line was a ragged left line with a left and a
+ *  right indent of its own, and a ragged line a right indent as wide as
+ *  the room it left: local formatting a reader takes for a look of its own
+ *  (#1555). Lines that do not agree, or a role whose lines carry their
+ *  measure, are left as they are. */
+export function alignedItem(item: TextItem): TextItem {
+  if (MEASURED_ROLES.has(item.role) || item.rotate || !item.lines.length) return item;
+  const box = item.bbox;
+  let align: 'left' | 'center' | 'right' | undefined;
+  for (const l of item.lines) {
+    if (l.align !== 'left' || l.rtl || l.vertical) return item;
+    const tol = Math.max(2, l.lineHeight * 0.25);
+    const before = l.x - box.x;
+    const after = box.x + box.width - (l.x + l.width);
+    if (before < -tol || after < -tol * 2) return item;
+    const own = before > tol && Math.abs(before - after) <= tol ? 'center' : before > tol && after <= tol ? 'right' : before <= tol ? 'left' : undefined;
+    if (!own || (align && own !== align)) return item;
+    align = own;
+  }
+  if (!align) return item;
+  return { ...item, lines: item.lines.map((l) => ({ ...l, x: box.x, width: box.width, align: align! })) };
+}
+
 export function runProps(w: Writer, run: DisplayRun): TextProps {
   const f = parseCssFont(run.fontString);
   const face = faceOf(w, f.family, run.bold && f.weight < 600 ? 700 : f.weight, run.italic || f.italic);
@@ -207,6 +240,9 @@ export interface TextRun {
   /** Attributes the range sets beside its look (vertical text: a
    *  tate-chu-yoko cell, a ruby reading). Such a run joins no other. */
   extra?: string;
+  /** The named Postext style that set the run (a chip's, a `:span`'s):
+   *  its character style's name (#1555). */
+  named?: string;
 }
 
 /** A run's words as the pieces its line's setting cuts them in: one,
@@ -231,13 +267,13 @@ function roomAfter(w: Writer, out: TextRun[], px: number): boolean {
   if (!chars.length) last.props = props;
   else {
     last.text = chars.join('');
-    out.push({ text: tail, props, ...(last.link ? { link: last.link } : {}) });
+    out.push({ text: tail, props, ...(last.link ? { link: last.link } : {}), ...(last.named ? { named: last.named } : {}) });
   }
   return true;
 }
 
 /** Add a run's pieces to a line's (or a paragraph's) runs. */
-function pushPieces(w: Writer, out: TextRun[], pieces: VerticalPiece[], base: TextProps, link: RunLink | undefined): void {
+function pushPieces(w: Writer, out: TextRun[], pieces: VerticalPiece[], base: TextProps, link: RunLink | undefined, named?: string): void {
   for (const piece of pieces) {
     // At the head of a line no character stands before the bracket to
     // carry the pull: the bracket takes the font's proportional metrics,
@@ -245,13 +281,13 @@ function pushPieces(w: Writer, out: TextRun[], pieces: VerticalPiece[], base: Te
     // tracking on a zero-width space before it does nothing there).
     const headPull = !!piece.pull && !roomAfter(w, out, piece.pull);
     if (headPull) {
-      out.push({ text: piece.text, props: base, ...(link ? { link } : {}), extra: `${piece.extra ?? ''} OTFProportionalMetrics="true"` });
+      out.push({ text: piece.text, props: base, ...(link ? { link } : {}), ...(named ? { named } : {}), extra: `${piece.extra ?? ''} OTFProportionalMetrics="true"` });
       continue;
     }
     const props = piece.track ? tracked(w, base, piece.track) : base;
     const last = out[out.length - 1];
-    if (last && !last.object && !last.extra && !piece.extra && sameProps(last.props, props) && sameLink(last.link, link)) last.text += piece.text;
-    else out.push({ text: piece.text, props, ...(link ? { link } : {}), ...(piece.extra ? { extra: piece.extra } : {}) });
+    if (last && !last.object && !last.extra && !piece.extra && sameProps(last.props, props) && sameLink(last.link, link) && last.named === named) last.text += piece.text;
+    else out.push({ text: piece.text, props, ...(link ? { link } : {}), ...(named ? { named } : {}), ...(piece.extra ? { extra: piece.extra } : {}) });
   }
 }
 
@@ -289,7 +325,7 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
         if (line.vertical && !run.inline && run.width > 0) roomAfter(w, out, run.width);
         return;
       }
-      pushPieces(w, out, piecesOf(w, line, run, text, true), runProps(w, run), text === '\t' ? undefined : runLink(run));
+      pushPieces(w, out, piecesOf(w, line, run, text, true), runProps(w, run), text === '\t' ? undefined : runLink(run), run.namedStyle?.id);
     });
     // A space at a line's end would take part in its justification.
     const tail = out[out.length - 1];
@@ -306,11 +342,11 @@ export function linesRuns(w: Writer, item: TextItem, tabLeaders = false, stops?:
  *  left to InDesign's composer. */
 export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): TextRun[] {
   const out: TextRun[] = [];
-  const push = (text: string, props: TextProps, link?: RunLink) => {
+  const push = (text: string, props: TextProps, link?: RunLink, named?: string) => {
     if (!text) return;
     const last = out[out.length - 1];
-    if (last && !last.object && !last.extra && sameProps(last.props, props) && sameLink(last.link, link)) last.text += text;
-    else out.push({ text, props, ...(link ? { link } : {}) });
+    if (last && !last.object && !last.extra && sameProps(last.props, props) && sameLink(last.link, link) && last.named === named) last.text += text;
+    else out.push({ text, props, ...(link ? { link } : {}), ...(named ? { named } : {}) });
   };
   item.lines.forEach((line, li) => {
     const runs = paintedRuns(w, line, tabLeaders);
@@ -322,20 +358,21 @@ export function paragraphRuns(w: Writer, item: TextItem, tabLeaders = false): Te
       let text = painted;
       if (li > 0 && ri === 0 && line.repeatedHyphen) text = text.replace(/^[-‐]/, '');
       if (ri === runs.length - 1 && line.addedHyphen) text = text.replace(/[-‐\u00ad]$/, '');
-      if (line.vertical) pushPieces(w, out, piecesOf(w, line, run, text, false), runProps(w, run), runLink(run));
-      else push(text, runProps(w, run), runLink(run));
+      if (line.vertical) pushPieces(w, out, piecesOf(w, line, run, text, false), runProps(w, run), runLink(run), run.namedStyle?.id);
+      else push(text, runProps(w, run), runLink(run), run.namedStyle?.id);
     });
     const next = item.lines[li + 1];
     if (!next || !runs.length) return;
     const lastProps = out[out.length - 1]?.props ?? runProps(w, runs[0]!.run);
+    const lastNamed = out[out.length - 1]?.named;
     // A forced break stays one: InDesign's forced line break (U+2028).
-    if (line.hardBreak) push('\u2028', lastProps);
+    if (line.hardBreak) push('\u2028', lastProps, undefined, lastNamed);
     else if (!line.addedHyphen) {
       const end = [...line.map].reverse().find((m) => m >= 0);
       const start = next.map.find((m) => m >= 0);
       const tail = line.text.slice(-1);
       const gap = end !== undefined && start !== undefined ? start - end > 1 : !/[\s\-‐–—\/]$/.test(tail);
-      if (gap && !/\s$/.test(line.text) && !/^\s/.test(next.text)) push(' ', lastProps);
+      if (gap && !/\s$/.test(line.text) && !/^\s/.test(next.text)) push(' ', lastProps, undefined, lastNamed);
     }
   });
   return out;

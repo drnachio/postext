@@ -103,6 +103,19 @@ export function setMissingImageSink(sink: MissingImageSink | null): MissingImage
   return previous;
 }
 
+/** The picture a finish mask paints for a registered image (#1564), set by
+ *  `paintFinishMask` for the span of one paint of the mask: the host's
+ *  recoloured SVG, drawn in place of the image. */
+export type FinishImageHook = (fileId: string) => ResourceImageSource | undefined;
+let finishImageHook: FinishImageHook | null = null;
+
+/** Install the finish mask's image hook; returns the one it replaces. */
+export function setFinishImageHook(hook: FinishImageHook | null): FinishImageHook | null {
+  const previous = finishImageHook;
+  finishImageHook = hook;
+  return previous;
+}
+
 /** Whether the paint in progress tints the SVG pictures registered without
  *  a `singleInk` flag (`RenderPageOptions.singleInk`). Set by
  *  `renderPageToCanvas` for the span of one synchronous page paint. */
@@ -307,6 +320,11 @@ export function drawResourceImage(
   ink?: ImageInk,
   resourceId?: string,
 ): boolean {
+  const masked = finishImageHook?.(fileId);
+  if (masked) {
+    ctx.drawImage(masked, x, y, w, h);
+    return true;
+  }
   const entry = imageRegistry.get(fileId);
   if (!entry) {
     missingImageSink?.(fileId, resourceId);

@@ -2,8 +2,8 @@
 
 import { memo, useMemo, useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { authoredSpotColors, spotInks } from 'postext';
-import type { CmykPercent, PrintConfig, PrintInk, SpotInk } from 'postext';
+import { authoredSpotColors, finishSheen, spotInks } from 'postext';
+import type { CmykPercent, InkFinish, InkSheen, PrintConfig, PrintInk, SpotInk } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import type { SandboxLabels } from '../../../types/labels.js';
 import { CollapsibleSection, ItemCard, ItemCardListActions, NestedGroup, NumberInput, SelectInput, TextInput, ToggleSwitch, openCard } from '../../../controls/index.js';
@@ -24,6 +24,8 @@ import {
   withInks,
   type InkOverprint,
 } from '../../../print/inkTableEdits.js';
+import { FINISH_KINDS, finishKindLabel, finishText, finishWithKind, finishWithSheen, sheenLabel, sheensFor, type FinishChoice } from '../../../controls/color/inkFinish.js';
+import { usedInkFinishes } from '../../../print/usedInkFinishes.js';
 
 const LIST = 'printInks';
 /** What a new alternate starts from when no colour of the book names the ink. */
@@ -40,6 +42,8 @@ export const PrintInksGroup = memo(function PrintInksGroup() {
   const raw: PrintConfig | undefined = config.print;
   const inks: PrintInk[] = raw?.inks ?? [];
   const used = useMemo(() => spotInks(authoredSpotColors(config).values()).inks, [config]);
+  // The finish each ink has in the colours that name it (#1570).
+  const usedFinishes = useMemo(() => usedInkFinishes(config), [config]);
   const offered = unlistedInks(used.map((i) => i.name), inks);
 
   const write = (next: PrintInk[]) => dispatch({ type: 'UPDATE_CONFIG', payload: { print: withInks(raw, next) } });
@@ -66,6 +70,7 @@ export const PrintInksGroup = memo(function PrintInksGroup() {
           ink={ink}
           index={index}
           known={used.find((u) => inkKey(u.name) === inkKey(ink.name))}
+          colourFinish={usedFinishes.get(inkKey(ink.name))}
           labels={labels}
           onChange={(partial) => write(updateInk(inks, index, partial))}
           onReset={(key) => write(resetInkField(inks, index, key))}
@@ -77,18 +82,22 @@ export const PrintInksGroup = memo(function PrintInksGroup() {
         <div className="mt-1 mb-1">
           <div className="mb-1 text-xs text-(--slate)">{labels.printInksUsed}</div>
           <div className="flex flex-wrap gap-1">
-            {offered.map((name) => (
-              <Button
-                key={name}
-                variant="outline"
-                size="xs"
-                icon={<Plus size={12} aria-hidden="true" />}
-                aria-label={labels.printInkAddUsed.replace('__ink__', name)}
-                onClick={() => add(name)}
-              >
-                <span dir="auto">{name}</span>
-              </Button>
-            ))}
+            {offered.map((name) => {
+              const finish = usedFinishes.get(inkKey(name));
+              return (
+                <Button
+                  key={name}
+                  variant="outline"
+                  size="xs"
+                  icon={<Plus size={12} aria-hidden="true" />}
+                  aria-label={labels.printInkAddUsed.replace('__ink__', name) + (finish ? ` (${finishText(finish, labels)})` : '')}
+                  onClick={() => add(name)}
+                >
+                  <span dir="auto">{name}</span>
+                  {finish && <span className="text-(--slate)">{`· ${finishText(finish, labels)}`}</span>}
+                </Button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -104,6 +113,8 @@ interface InkCardProps {
   index: number;
   /** The ink as the book's colours define it, when one names it. */
   known: SpotInk | undefined;
+  /** The finish the colours that name the ink give it. */
+  colourFinish: InkFinish | undefined;
   labels: SandboxLabels;
   onChange: (partial: Partial<PrintInk>) => void;
   onReset: (key: Exclude<keyof PrintInk, 'name'>) => void;
@@ -111,7 +122,7 @@ interface InkCardProps {
   onRemove: () => void;
 }
 
-function InkCard({ ink, index, known, labels, onChange, onReset, onChannel, onRemove }: InkCardProps) {
+function InkCard({ ink, index, known, colourFinish, labels, onChange, onReset, onChannel, onRemove }: InkCardProps) {
   const title = ink.name.trim() || labels.printInkUnnamed;
   const pdfName = ink.pdfName?.trim();
   const seed = known ? known.cmyk : BLACK;
@@ -159,11 +170,46 @@ function InkCard({ ink, index, known, labels, onChange, onReset, onChannel, onRe
             ))}
           </NestedGroup>
         )}
+        <InkFinishFields finish={ink.finish} colourFinish={colourFinish} labels={labels}
+          onChange={(finish) => (finish ? onChange({ finish }) : onReset('finish'))} />
         <SelectInput stacked label={labels.printInkOverprint} value={inkOverprint(ink)} options={overprintOptions}
           onChange={(v) => onChange({ overprint: overprintValue(v as InkOverprint) })} tooltip={labels.printInkOverprintTooltip}
           isDefault={ink.overprint === undefined} onReset={() => onReset('overprint')} />
       </ItemCard>
     </SearchScope>
+  );
+}
+
+/** The ink's finish and sheen (`PrintInk.finish`), over what the colours
+ *  that name it say: unset, the card shows theirs. */
+function InkFinishFields({ finish, colourFinish, labels, onChange }: {
+  finish: InkFinish | undefined;
+  colourFinish: InkFinish | undefined;
+  labels: SandboxLabels;
+  onChange: (finish: InkFinish | undefined) => void;
+}) {
+  const colours = colourFinish ? `${labels.printInkFinishColours} (${finishText(colourFinish, labels)})` : labels.printInkFinishColours;
+  const kindOptions = [
+    { value: 'colours', label: colours },
+    ...FINISH_KINDS.map((k) => ({ value: k, label: finishKindLabel(k, labels) })),
+  ];
+  const sheens = finish ? sheensFor(finish.kind) : [];
+  const defaultSheen = finish ? finishSheen({ kind: finish.kind }) : undefined;
+  const sheenOptions = [
+    { value: 'default', label: defaultSheen ? labels.inkSheenDefault.replace('__sheen__', sheenLabel(defaultSheen, labels).toLocaleLowerCase()) : labels.inkFinishNone },
+    ...sheens.map((s) => ({ value: s, label: sheenLabel(s, labels) })),
+  ];
+  return (
+    <>
+      <SelectInput stacked label={labels.inkFinish} value={finish?.kind ?? 'colours'} options={kindOptions}
+        onChange={(v) => onChange(v === 'colours' ? undefined : finishWithKind(finish, v as FinishChoice))}
+        tooltip={labels.inkFinishTooltip} isDefault={finish === undefined} onReset={() => onChange(undefined)} />
+      {finish && sheens.length > 0 && (
+        <SelectInput stacked label={labels.inkSheen} value={finish.sheen ?? 'default'} options={sheenOptions}
+          onChange={(v) => onChange(finishWithSheen(finish, v === 'default' ? undefined : (v as InkSheen)))}
+          tooltip={labels.inkSheenTooltip} isDefault={finish.sheen === undefined} onReset={() => onChange(finishWithSheen(finish, undefined))} />
+      )}
+    </>
   );
 }
 

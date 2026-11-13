@@ -3,12 +3,14 @@ import type {
   Dimension,
   PrintBlackConfig,
   PrintConfig,
+  PrintDieLineConfig,
   PrintInk,
   PrintPlatesConfig,
   PrintImageColorConfig,
   PrintPreflightConfig,
   ResolvedPrintBlackConfig,
   ResolvedPrintConfig,
+  ResolvedPrintDieLineConfig,
   ResolvedPrintInk,
   ResolvedPrintPlatesConfig,
   ResolvedPrintImageColorConfig,
@@ -16,6 +18,7 @@ import type {
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
 import { dimensionsEqual } from '../shared.js';
+import { resolveInkFinish } from '../../color/finishKinds.js';
 
 export const DEFAULT_RICH_BLACK: CmykPercent = { c: 60, m: 40, y: 40, k: 100 };
 
@@ -38,6 +41,13 @@ export const DEFAULT_PRINT_PREFLIGHT_CONFIG: ResolvedPrintPreflightConfig = {
   checkFonts: true,
 };
 
+export const DEFAULT_PRINT_DIE_LINE: ResolvedPrintDieLineConfig = {
+  output: 'page',
+  ink: 'Die',
+  cmyk: { c: 0, m: 100, y: 0, k: 0 },
+  width: { value: 0.25, unit: 'pt' },
+};
+
 export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   standard: 'none',
   outputProfile: DEFAULT_OUTPUT_PROFILE_ID,
@@ -50,7 +60,22 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   inks: [],
   plates: { inks: [], images: [], curves: {} },
   imageColor: { embeddedProfile: 'ignore', grayDotGain: 'none', cmykProfile: 'keep' },
+  dieLine: DEFAULT_PRINT_DIE_LINE,
 };
+
+// A finish as written, checked: kept beside the colour code that reads it.
+export { resolveInkFinish };
+
+export function resolvePrintDieLine(partial?: PrintDieLineConfig): ResolvedPrintDieLineConfig {
+  const d = DEFAULT_PRINT_DIE_LINE;
+  const ink = typeof partial?.ink === 'string' && partial.ink.trim() ? partial.ink.trim() : d.ink;
+  return {
+    output: partial?.output === 'none' ? 'none' : 'page',
+    ink,
+    cmyk: resolveCmyk(partial?.cmyk, d.cmyk),
+    width: partial?.width ? { ...partial.width } : { ...d.width },
+  };
+}
 
 const clampPct = (v: number) => Math.max(0, Math.min(100, v));
 
@@ -99,6 +124,8 @@ export function resolvePrintInks(partial?: PrintInk[]): ResolvedPrintInk[] {
     const resolved: ResolvedPrintInk = { name, aliases, pdfName, output: ink.output === 'process' ? 'process' : 'spot' };
     if (ink.cmyk) resolved.cmyk = resolveCmyk(ink.cmyk, { c: 0, m: 0, y: 0, k: 0 });
     if (typeof ink.overprint === 'boolean') resolved.overprint = ink.overprint;
+    const finish = resolveInkFinish(ink.finish);
+    if (finish) resolved.finish = finish;
     out.push(resolved);
   }
   return out;
@@ -184,6 +211,7 @@ export function resolvePrintConfig(partial?: PrintConfig): ResolvedPrintConfig {
     inks: resolvePrintInks(partial?.inks),
     plates: resolvePrintPlates(partial?.plates),
     imageColor: resolvePrintImageColor(partial?.imageColor),
+    dieLine: resolvePrintDieLine(partial?.dieLine),
   };
   if (partial?.customProfile) resolved.customProfile = { ...partial.customProfile };
   return resolved;
@@ -240,6 +268,10 @@ export function stripPrintDefaults(cfg?: PrintConfig): PrintConfig | undefined {
     if (ic.grayDotGain === 'none') delete ic.grayDotGain;
     if (ic.cmykProfile === 'keep') delete ic.cmykProfile;
     if (Object.keys(ic).length > 0) result.imageColor = ic;
+  }
+  if (cfg.dieLine) {
+    const dl = stripSection(cfg.dieLine, DEFAULT_PRINT_DIE_LINE as unknown as Record<string, unknown>);
+    if (dl) result.dieLine = dl;
   }
   return Object.keys(result).length > 0 ? result : undefined;
 }

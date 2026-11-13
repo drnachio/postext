@@ -50,7 +50,7 @@ export function numberingDirective(ctx: Context, s: IdmlSection, first: number):
   return `:::numbering{format="${format}"${start !== undefined ? ` startAt=${start}` : ''}}`;
 }
 
-export function pageConfig(ctx: Context): Pick<PostextConfig, 'page' | 'layout' | 'direction'> {
+export function pageConfig(ctx: Context, layout: 'pages' | 'flow' = 'flow'): Pick<PostextConfig, 'page' | 'layout' | 'direction'> {
   const doc = ctx.doc;
   const prefs = doc.preferences;
   const pages = allPages(ctx);
@@ -77,7 +77,10 @@ export function pageConfig(ctx: Context): Pick<PostextConfig, 'page' | 'layout' 
     const cols = Math.max(1, m.columnCount);
     out.layout = cols === 1 ? { layoutType: 'single' } : cols === 2 ? { layoutType: 'double', gutterWidth: mm(m.columnGutter) } : { layoutType: 'multiple', columnCount: cols, gutterWidth: mm(m.columnGutter) };
     const different = body.filter((p) => Math.abs(p.margins.top - m.top) + Math.abs(p.margins.bottom - m.bottom) + Math.abs(p.margins.left - m.left) + Math.abs(p.margins.right - m.right) > 1 || p.margins.columnCount !== m.columnCount);
-    if (different.length) ctx.rep.add('mixedMargins', 'warning', 'Body pages with margins or columns of their own take the margins most body pages have', different.map((p) => p.name).slice(0, 8).join(', '), different.length);
+    // Composed pages keep every frame where it stands, whatever the
+    // book's margins say: a page's own margins move nothing (#1555).
+    if (different.length && layout === 'pages') ctx.rep.add('mixedMarginsComposed', 'info', 'Pages with margins or columns of their own keep their frames where they stand: the book\'s margins are those most body pages have, and no composed page follows them', different.map((p) => p.name).slice(0, 8).join(', '), different.length);
+    else if (different.length) ctx.rep.add('mixedMargins', 'warning', 'Body pages with margins or columns of their own take the margins most body pages have', different.map((p) => p.name).slice(0, 8).join(', '), different.length);
   }
   const bleed = Math.max(prefs.bleed.top, prefs.bleed.bottom, prefs.bleed.inside, prefs.bleed.outside);
   if (bleed > 0) {

@@ -1,6 +1,9 @@
 import type { DesignTextAlign, DesignTextRepeat, DesignTextStroke, ElementBoxStyle, ElementPlacement, PageParity, PageRoleFilter, SidePosition, TextDotsStyle, TextOverflow, VAlign } from './designPlacement.js';
 import type { FigureStyle } from './text/locale.js';
 import type { ColorValue, Dimension } from './page.js';
+import type { DesignCutElement, ResolvedDesignCut } from './designCut.js';
+
+export type { DesignCutElement, ResolvedDesignCut } from './designCut.js';
 
 /** A line of text in a design slot: a running head, a folio, a label. */
 export interface DesignTextElement {
@@ -473,7 +476,7 @@ export interface DesignConnectorElement {
 }
 
 /** Anything a design slot can draw. */
-export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement | DesignPathElement | DesignConnectorElement;
+export type DesignElement = DesignTextElement | DesignRuleElement | DesignBoxElement | DesignImageElement | DesignPathElement | DesignConnectorElement | DesignCutElement;
 
 /** A design element placed by an anchor (every kind but a connector, which
  *  is laid between the boxes it joins). */
@@ -531,6 +534,10 @@ export interface ResolvedDesignImageElement extends Omit<DesignImageElement, 'pa
 /** A design path element with every default filled in. */
 export interface ResolvedDesignPathElement extends Omit<DesignPathElement, 'parity'> {
   parity: PageParity;
+  /** A template's die-cut (`DesignCutElement`, #1565) laid as a path:
+   *  never painted, taken out of the decoration onto the page's
+   *  `dieCut`. */
+  cut?: ResolvedDesignCut;
 }
 
 /** A design connector element with every default filled in. */

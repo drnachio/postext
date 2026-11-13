@@ -565,9 +565,10 @@ interface PrintConfig {
   inkLimit?: number;                       // Total area coverage, percent.
   black?: PrintBlackConfig;
   preflight?: PrintPreflightConfig;
-  inks?: PrintInk[];                       // The ink table: renames, aliases, process.
+  inks?: PrintInk[];                       // The ink table: renames, aliases, process, finishes.
   plates?: PrintPlatesConfig;              // The plates the job prints on: two-ink printing.
   imageColor?: PrintImageColorConfig;      // How pictures are read: profiles, greyscale.
+  dieLine?: PrintDieLineConfig;            // The die line of the book's die-cuts.
 }
 
 interface CustomOutputProfile {
@@ -641,6 +642,12 @@ interface CustomOutputProfile {
       <td><code>PrintPreflightConfig</code></td>
       <td>see <a href="/en/docs/configuration-pdf-output#preflight">Preflight</a></td>
       <td>What the preflight checks and its thresholds.</td>
+    </tr>
+    <tr>
+      <td><code>dieLine</code></td>
+      <td><code>PrintDieLineConfig</code></td>
+      <td><code>&#123; output: 'page', ink: 'Die' &#125;</code></td>
+      <td>The die line of the pages with a die-cut (<code>dieCuts</code>): <code>output</code> (<code>'page'</code> or <code>'none'</code>), the plate's name <code>ink</code>, its alternate <code>cmyk</code> (100 % magenta) and the stroke <code>width</code> (0.25 pt). See <a href="/en/docs/special-inks-die-cuts#the-die-line-in-the-pdf">The die line in the PDF</a>.</td>
     </tr>
   </tbody>
 </table>

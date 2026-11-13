@@ -105,7 +105,7 @@ export function runsBesideWrap(block: ContentBlock): boolean {
 export function transparentToWrap(block: ContentBlock): boolean {
   if (block.type === 'containerStart' || block.type === 'containerEnd') {
     const name = block.containerName;
-    return name !== 'callout' && name !== 'part' && name !== 'paper' && name !== 'composedPage' && name !== 'exercise' && name !== 'solution' && name !== 'hint';
+    return name !== 'callout' && name !== 'part' && name !== 'paper' && name !== 'diecut' && name !== 'composedPage' && name !== 'exercise' && name !== 'solution' && name !== 'hint';
   }
   return block.type === 'directive' && block.directiveName === 'numbering';
 }
@@ -116,11 +116,34 @@ export interface OpenWrap {
   /** `'top'`: it starts at or above the flow's cursor (an inline figure, a
    *  float at the column's head); settling takes the cursor under it.
    *  `'bottom'`: it stands at the column's foot, below the cursor;
-   *  settling ends the column at its top. */
-  kind: 'top' | 'bottom';
+   *  settling ends the column at its top. `'fixed'` (#1565): it stands
+   *  where the sheet puts it, a die-cut hole: settling takes a cursor
+   *  beside it under it and leaves it open while the cursor is above it. */
+  kind: 'top' | 'bottom' | 'fixed';
 }
 
 const openWraps = new WeakMap<VDTColumn, OpenWrap[]>();
+
+/** What a column's sheet keeps text away from before anything is placed in
+ *  it (#1565: the die-cut holes of its page), asked once per column. */
+export type ColumnObstacleSource = (col: VDTColumn) => readonly VDTExclusion[] | undefined;
+let obstacleSource: ColumnObstacleSource | undefined;
+const obstaclesAsked = new WeakSet<VDTColumn>();
+
+/** Sets the source of the columns' fixed obstacles for the pass that lays
+ *  out now (`undefined`: none); returns the one before, to put back. */
+export function setColumnObstacleSource(source: ColumnObstacleSource | undefined): ColumnObstacleSource | undefined {
+  const before = obstacleSource;
+  obstacleSource = source;
+  return before;
+}
+
+/** Opens the fixed obstacles of `col` the first time it is asked about. */
+function askObstacles(col: VDTColumn): void {
+  if (!obstacleSource || obstaclesAsked.has(col)) return;
+  obstaclesAsked.add(col);
+  for (const ex of obstacleSource(col) ?? []) openColumnWrap(col, ex, 'fixed');
+}
 
 /** Record an exclusion of `col` and open it to the flow. */
 export function openColumnWrap(col: VDTColumn, ex: VDTExclusion, kind: OpenWrap['kind']): void {
@@ -132,6 +155,7 @@ export function openColumnWrap(col: VDTColumn, ex: VDTExclusion, kind: OpenWrap[
 
 /** The exclusions of `col` the flow may still run beside. */
 export function openColumnWraps(col: VDTColumn): readonly OpenWrap[] {
+  askObstacles(col);
   return openWraps.get(col) ?? [];
 }
 
@@ -148,20 +172,29 @@ export function columnCursorY(col: VDTColumn): number {
  * space the text was owing is then taken by the wrap's own gap).
  */
 export function settleColumnWraps(col: VDTColumn): boolean {
+  askObstacles(col);
   const list = openWraps.get(col);
   if (!list || list.length === 0) return false;
   openWraps.delete(col);
   const before = col.availableHeight;
   const colBottom = col.bbox.y + col.bbox.height;
-  for (const { ex, kind } of list) {
+  const kept: OpenWrap[] = [];
+  for (const item of list) {
+    const { ex, kind } = item;
     const y = columnCursorY(col);
-    if (kind === 'top') {
+    if (kind === 'fixed') {
+      const bottom = ex.y + ex.height;
+      // Still above it: what comes may run beside it later.
+      if (y < ex.y - 0.01) kept.push(item);
+      else if (y < bottom - 0.01) col.availableHeight = Math.max(0, Math.min(col.availableHeight, colBottom - bottom));
+    } else if (kind === 'top') {
       const bottom = ex.y + ex.height;
       if (y < bottom - 0.01) col.availableHeight = Math.max(0, Math.min(col.availableHeight, colBottom - bottom));
     } else {
       col.availableHeight = Math.max(0, Math.min(col.availableHeight, ex.y - y));
     }
   }
+  if (kept.length > 0) openWraps.set(col, kept);
   return col.availableHeight < before - 0.01;
 }
 

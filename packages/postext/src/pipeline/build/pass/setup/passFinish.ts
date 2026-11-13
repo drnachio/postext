@@ -9,6 +9,7 @@ import { effectiveResourceTypes } from '../../../../defaults/resources/resourceT
 import { dimensionToPx } from '../../../../units.js';
 import { pageLayoutOf } from '../../../blocks/placement.js';
 import { paperByBlock, stampPagePaper } from '../../../pages/paper.js';
+import { stampDieCuts } from '../../../pages/dieCuts.js';
 import { buildPageLabels } from '../../../../numerals/numbering.js';
 import { fillPageMarks, stampCarriedSource, carriedByDoc } from '../../pageMarks.js';
 import { buildLineNumbers } from '../../../text/lineNumbers.js';
@@ -238,6 +239,9 @@ export function createPassFinish(deps: PassFinishDeps) {
   // The line numbers of code listings (#624), in the same slot, after the
   // margin numbers' palette pass: they keep `codeStyle.lineNumberColor`.
   if (codeBoxes.wrapped) buildCodeLineNumbers(doc);
+  // Die-cuts (#1565): the holes and outline of each page's leaf, the cut
+  // elements of the templates lifted out of their decoration.
+  stampDieCuts(doc, contentBlocks);
 
   // Vertical pages: the axis each font's upright characters turn about.
   if (doc.pages.some((p) => pageIsVertical(p) || p.composed?.frames.some((f) => f.writingMode === 'vertical-rl'))) stampCentralBaselines(doc);

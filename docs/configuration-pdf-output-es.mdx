@@ -425,10 +425,11 @@ Para la producción de impresos, ajusta estas opciones de configuración antes d
 - **`page.dpi: 300`**: los px por pulgada de la maquetación; un mapa de bits sin resolución propia se imprime a esta resolución a su tamaño natural. La [verificación previa (preflight)](/es/docs/configuration-pdf-output#preflight) avisa de las imágenes que quedan por debajo de 300 ppp a su tamaño impreso.
 - **`ColorValue.cmyk`**: un color definido en CMYK se imprime con sus valores exactos.
 - **`{ pageNegative: true }`** en `RenderToPdfOptions`: invierte el área de corte con un modo de fusión Diferencia (las marcas de corte no se invierten). Es útil en la verificación previa de tipografía oscura sobre fondo claro.
+- **`print.dieLine`**: la línea de troquel de un libro con troqueles, trazada en su propia plancha, que la máquina nunca entinta (`Die` por defecto, en un grupo de contenido opcional fuera de PDF/X-1a). Véase [La línea de troquel en el PDF](/es/docs/special-inks-die-cuts#la-línea-de-troquel-en-el-pdf).
 
 ### Tintas planas
 
-Una tinta plana (un Pantone, una tinta corporativa, un barniz) se imprime en su propia plancha. Un color con `model: 'spot'` lleva su tinta en `ColorValue.spot`: `name` es el nombre de la plancha tal como lo conoce la imprenta, `cmyk` es el aspecto de la tinta al 100 % (el equivalente que el PDF da a quien no tenga la tinta), `tint` es el tono en porcentaje (100 por defecto) y `overprint` hace que la tinta sobreimprima lo que tiene debajo en lugar de vaciarlo, como un barniz. `hex` es su representación en pantalla.
+Una tinta plana (un Pantone, una tinta corporativa, un barniz) se imprime en su propia plancha. Un color con `model: 'spot'` lleva su tinta en `ColorValue.spot`: `name` es el nombre de la plancha tal como lo conoce la imprenta, `cmyk` es el aspecto de la tinta al 100 % (el equivalente que el PDF da a quien no tenga la tinta), `tint` es el tono en porcentaje (100 por defecto), `overprint` hace que la tinta sobreimprima lo que tiene debajo en lugar de vaciarlo, como un barniz, y `finish` dice qué es una tinta especial: metálica, estampación, fluorescente, blanco opaco o barniz. `hex` es su representación en pantalla. [Tintas especiales y troqueles](/es/docs/special-inks-die-cuts#acabados) explica cómo se imprime y cómo se ve cada acabado.
 
 Un PDF CMYK o PDF/X escribe cada tinta como un espacio de color `Separation` con su nombre, y cada color de esa tinta se pinta a su tono: los colores con el mismo `name` comparten plancha. Así caben las tres formas habituales de trabajar: dos tintas (negro y una plana), cuatricromía con algunos elementos en plana, y un barniz sobreimpreso en zonas concretas. Si `diagramStyle.singleInk` usa una tinta plana, los diagramas SVG se imprimen en tonos de esa plancha. En un PDF RGB y en pantalla, el color se pinta con su `hex`.
 
@@ -438,7 +439,7 @@ Un PDF CMYK o PDF/X escribe cada tinta como un espacio de color `Separation` con
 colorPalette: [
   { id: 'brand', name: 'Brand', value: { hex: '#1f3f99', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 } } } },
   { id: 'brand-40', name: 'Brand 40 %', value: { hex: '#a5b6dd', model: 'spot', spot: { name: 'PANTONE 286 C', cmyk: { c: 100, m: 66, y: 0, k: 2 }, tint: 40 } } },
-  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, overprint: true } } },
+  { id: 'varnish', name: 'Varnish', value: { hex: '#f4f4ee', model: 'spot', spot: { name: 'Varnish', cmyk: { c: 0, m: 0, y: 10, k: 0 }, finish: { kind: 'varnish', sheen: 'gloss' } } } },
 ],
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
@@ -461,12 +462,13 @@ interface PrintInk {
   output?: 'spot' | 'process';     // 'process' imprime la tinta en CMYK, con su equivalente.
   cmyk?: CmykPercent;              // El equivalente al 100 %, por encima del de los colores.
   overprint?: boolean;             // Por encima del de los colores.
+  finish?: InkFinish;              // Metálica, estampación, fluorescente, blanco o barniz, por encima del de los colores.
 }
 ```
 
-Los nombres y los alias se comparan sin distinguir mayúsculas ni espacios repetidos. Renombrar es una línea, la usen cuantos colores la usen; un alias junta en una plancha los nombres que una muestra del diseñador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior daban a la misma tinta; y `output: 'process'` imprime una tinta en CMYK cuando la máquina no tiene cuerpo para ella, con todos sus tonos.
+Los nombres y los alias se comparan sin distinguir mayúsculas ni espacios repetidos. Renombrar es una línea, la usen cuantos colores la usen; un alias junta en una plancha los nombres que una muestra del diseñador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior daban a la misma tinta; `output: 'process'` imprime una tinta en CMYK cuando la máquina no tiene cuerpo para ella, con todos sus tonos; y `finish` convierte una tinta en especial venga de donde venga su nombre, también de un SVG o un archivo importado que nombra `Gold`.
 
-En el Sandbox, la tabla está en **Diseño › Exportación › Preparación para imprenta › Tabla de tintas**: una tarjeta por tinta con su **Nombre de la tinta**, **Alias**, **Nombre de la plancha en el PDF**, **Se imprime como**, **CMYK alternativo** y **Sobreimpresión**. **Tintas que usan los colores** enumera las tintas de los colores del libro que faltan en la tabla, cada una con un botón que la añade.
+En el Sandbox, la tabla está en **Diseño › Exportación › Preparación para imprenta › Tabla de tintas**: una tarjeta por tinta con su **Nombre de la tinta**, **Alias**, **Nombre de la plancha en el PDF**, **Se imprime como**, **CMYK alternativo**, **Sobreimpresión**, **Acabado** y **Brillo**. **Tintas que usan los colores** enumera las tintas de los colores del libro que faltan en la tabla, cada una con un botón que la añade.
 
 ```ts
 print: {

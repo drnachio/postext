@@ -71,6 +71,7 @@ export function iconFor(kind: WarningPayload['kind']) {
     case 'chapterStyleUnknown':
     case 'partStyleMidChapter':
     case 'columnsFlowUnknown':
+    case 'dieCutUnknown':
     case 'templateUnknown':
     case 'slotUnknown':
     case 'slotEmpty':

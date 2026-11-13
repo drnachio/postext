@@ -11,6 +11,7 @@ import { collectChoiceWarnings, collectNumeralsWarnings } from './choices.js';
 import { collectContentInConfigWarnings } from './contentInConfig.js';
 import { collectCalloutStyleWarnings, collectLabelIconWarnings, collectDesignAnchorWarnings, collectDesignPathWarnings, collectDesignKeyWarnings, collectBoxShapeWarnings, collectConnectorWarnings, collectTextOverWarnings, collectFenceConditionWarnings } from './design.js';
 import { collectUnknownKeyWarnings } from './unknownKeys.js';
+import { collectDieCutWarnings } from './dieCuts.js';
 import { collectChapterStyleWarnings } from './chapterStyles.js';
 import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarnings, collectCjkGridWarnings } from './values.js';
 
@@ -58,7 +59,9 @@ import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarn
  * - the exercise styles and settings (#1226): keys they do not have, words
  *   outside their choices, numbering styles the engine does not know;
  * - a chapter style that sets what stays the book's
- *   (`chapterStyleBookSetting`, #1521).
+ *   (`chapterStyleBookSetting`, #1521);
+ * - the die-cuts (#1565): a placement naming no die, a page spec or path
+ *   data it cannot read, a shape it drops (see `collectDieCutWarnings`).
  * Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined, options: ConfigWarningOptions = {}): ConfigWarning[] {
@@ -71,7 +74,7 @@ export function collectConfigWarnings(config: PostextConfig | undefined, options
     ...collectDesignAnchorWarnings(config),
     ...collectDesignPathWarnings(config), ...collectDesignKeyWarnings(config), ...collectBoxShapeWarnings(config),
     ...collectConnectorWarnings(config), ...collectTextOverWarnings(config), ...collectFenceConditionWarnings(config),
-    ...exerciseConfigWarnings(config), ...collectChapterStyleWarnings(config),
+    ...exerciseConfigWarnings(config), ...collectChapterStyleWarnings(config), ...collectDieCutWarnings(config),
   ];
 }
 

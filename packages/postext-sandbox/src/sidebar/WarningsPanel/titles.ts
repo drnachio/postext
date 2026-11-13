@@ -108,6 +108,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsSolutionOutsideTitle;
     case 'columnsFlowUnknown':
       return labels.warningsColumnsFlowUnknownTitle;
+    case 'dieCutUnknown':
+      return labels.warningsDieCutUnknownTitle;
     case 'templateUnknown':
       return labels.warningsTemplateUnknownTitle;
     case 'slotUnknown':

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-11-10',
   readingTime: '14 min',
-  order: 44,
+  order: 45,
   parent: 'sandbox',
   plainSummary: "This page covers the right side of the Sandbox, where the finished pages appear. Five tabs show the same book in five ways: as page images, as a PDF file, as a 3D book you can leaf through, as a web page and as an EPUB e-book. A sixth makes a SCORM package of the chapters you pick, for a school's or a company's learning platform. Changing the tab does not lay the book out again, so every tab shows the same pages. The page explains what each tab shows and what you can do in it.",
 };
@@ -35,6 +35,10 @@ A toolbar at the top of the canvas viewport provides:
 - **Fit modes** — Fit to page width or fit to page height. Toggles on/off; fitting recalculates automatically on window resize.
 - **View modes** — Single page (one page per row) or double-page spread (book-like layout where the first page appears on the right as a recto, and subsequent pages are paired as spreads). A book bound on the right (`page.binding`, vertical Chinese) shows its spreads the other way round: page 1 alone on the left, then `[3 | 2]`, `[5 | 4]`. On a vertical page a click lands on the character under the pointer, and the caret is a bar across the column.
 - **Print preview** (`Printer` icon) — Shows the pages as they will print, off by default and remembered by the browser: every colour separated through the output profile of *Print preparation* and shown on the paper's own white, large black areas in rich black; a PDF forced to grayscale shows in black ink alone. Only what prints: no screen guides and no outlines (the preflight's findings are in **Checks**). The Folio tab shares the switch. It repaints the pages and never lays them out again.
+- **Die lines** (`Scissors` icon, in a book with die-cuts) — Draws the die of every hole, and the outline of a shaped or rounded leaf, as a dashed line over the page.
+- **Special inks** (`Sparkles` icon, in a book with special inks) — Steps through three views: *flat*, each ink in its screen colour and a varnish not at all; *with sheen*, metallic ink and foil lit by a sweep of light, fluorescent ink glowing and the varnish shown by its highlight; and *finish map*, the special plates in false colour over a faded page (metallic and foil amber, fluorescent pink, varnish cyan, opaque white blue). See [Special inks and die-cuts](/en/docs/special-inks-die-cuts#on-screen).
+
+Both are remembered by the browser, and neither lays the pages out again.
 
 Pages render lazily via `IntersectionObserver` — only visible pages (plus a 200px margin) are drawn to canvas, keeping GPU memory usage low for long documents.
 

@@ -42,7 +42,7 @@ const CONFIG_KEYS = [
   'page', 'layout', 'bodyText', 'headings', 'tableStyle', 'tableStyles', 'captionStyle', 'diagramStyle', 'scoreStyle', 'scoreStyles', 'videoStyle',
   'paragraphStyles', 'calloutStyles', 'chipStyles', 'characterStyles', 'markStyles', 'parts', 'headingStyles', 'toc', 'index', 'unorderedLists',
   'orderedLists', 'math', 'footnotes', 'links', 'crossRefs', 'citations', 'cjk', 'lineNumbers', 'codeStyle', 'header', 'footer',
-  'locale', 'direction', 'numerals', 'debug', 'htmlViewer', 'canvasViewer', 'folio', 'comics', 'pdfGeneration', 'print', 'contrast', 'checks',
+  'locale', 'direction', 'numerals', 'debug', 'htmlViewer', 'canvasViewer', 'folio', 'dieCuts', 'comics', 'pdfGeneration', 'print', 'contrast', 'checks',
   'colorPalette', 'customFonts', 'symbolFont', 'resourceTypes', 'pageTemplates', 'chapterStyles', 'labelStyles', 'frameLooks', 'exerciseStyles', 'exercises',
 ] as const satisfies readonly (keyof PostextConfig)[];
 

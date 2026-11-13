@@ -152,6 +152,10 @@ Five container names are recognized in the text flow; `:::frame` and `:::module`
       <td>A run of pages printed on another paper stock, such as a section of gloss plates in a matte book. Only the Folio viewer shows it.</td>
     </tr>
     <tr>
+      <td><code>:::diecut&#123;die=…&#125;</code> … <code>:::</code></td>
+      <td>A run of pages cut by a die of the configuration: a window, a hole through several leaves. See <a href="#diecut"><code>:::diecut</code></a> below.</td>
+    </tr>
+    <tr>
       <td><code>:::columns&#123;…&#125;</code> … <code>:::</code></td>
       <td>Blocks set in several columns of their own: inside a box, in the text column, or across a page of several columns. See <a href="#columns"><code>:::columns</code></a> below.</td>
     </tr>
@@ -382,6 +386,19 @@ The attributes are those of the `folio.paper` settings, and all of them are opti
 </table>
 
 A `:::paper` inside another one overrides only the attributes it sets, and it also starts and ends on a page break. Inside a `:::callout` the fences are ignored. A value the engine cannot read is dropped, and the sandbox lists it as an **Invalid paper attribute** warning (`paperAttributeInvalid` in the document's `contentWarnings`).
+
+### `:::diecut`
+
+A die-cut belongs to the form of the book: its shape, its size and where it sits on the page are a die shape of the configuration (`dieCuts.shapes`, see [Special inks and die-cuts](/en/docs/special-inks-die-cuts#die-shapes)). When the content decides which pages are cut, wrap it in a `:::diecut` container that names the die:
+
+```md
+:::diecut{die=window}
+## The house
+Through the window, the garden of the next page.
+:::
+```
+
+Every page set with content from inside the container is cut by the die, and so is the other side of each leaf it lands on, mirrored. As with `:::paper`, the content starts on a new page and whatever follows the closing `:::` starts on a new page too. A `:::diecut` inside another cuts the inner one's die. `die` is the only attribute. A die that `dieCuts.shapes` does not have cuts nothing: the pages are still set on their own, and the Sandbox lists an **Unknown die shape** warning (`dieCutUnknown` in the document's `contentWarnings`). To cut pages by number instead, use `dieCuts.pages`.
 
 ### `:::pagebreak`
 

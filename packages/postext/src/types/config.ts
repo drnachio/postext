@@ -8,6 +8,7 @@ import type { CjkConfig } from './text/cjk.js';
 import type { CodeStyleConfig } from './text/code.js';
 import type { ComicsConfig, ComposedViewerLeafConfig } from './comics.js';
 import type { DebugConfig } from './output/debug.js';
+import type { DieCutsConfig } from './dieCuts.js';
 import type { DiagramStyleConfig } from './resources/diagramStyles.js';
 import type { ExerciseStyleConfig, ExercisesConfig } from './boxes/exercises.js';
 import type { FolioConfig } from './output/folio.js';
@@ -178,6 +179,11 @@ export interface PostextConfig {
 
   /** The 3D book viewer (`postext-folio`): paper, binding, surface, light. */
   folio?: FolioConfig;
+
+  /** Die-cuts (#1565): holes through one or many leaves, rounded corners,
+   *  a shaped book. Part of the layout (text wraps around a hole); the PDF
+   *  strokes the die line on its own plate (`print.dieLine`). */
+  dieCuts?: DieCutsConfig;
 
   /** Comic pages (`:::page`): panel grid, panel and balloon styles,
    *  lettering, cast. */

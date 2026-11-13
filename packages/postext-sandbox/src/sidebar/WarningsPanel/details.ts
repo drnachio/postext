@@ -177,6 +177,7 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return labels.warningsSolutionOutsideDetail;
     case 'columnsFlowUnknown':
       return `:::columns{flow="${payload.value}"} — ${labels.warningsColumnsFlowUnknownDetail}`;
+    case 'dieCutUnknown': return `:::diecut{die="${payload.die}"} — ${labels.warningsDieCutUnknownDetail}`;
     case 'templateUnknown':
       return `::::page{template="${payload.template}"} — ${labels.warningsTemplateUnknownDetail}`;
     case 'slotUnknown':
