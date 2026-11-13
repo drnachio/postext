@@ -1,0 +1,70 @@
+---
+title: "Oro en caliente sobre una cubierta azul"
+summary: "El oro en caliente como tinta plana con acabado: plancha propia en el PDF, brillo en Folio, y cartulina azul y papel crema sin tinta."
+plain: "Un librito de poemas con la cubierta azul oscuro y las letras estampadas en oro. Dentro, todos los filetes y marcos son de oro también. La vista 3D enseña el brillo del oro, y el archivo de imprenta lo separa para el impresor."
+description: "Un cuaderno de poesía con cubierta en oro en caliente en Postext: tinta plana con acabado, su plancha en el PDF, papeles sin tinta y Folio."
+question: "¿Cómo estampo en oro una cubierta y los filetes de un libro, y mando el oro al impresor en una plancha aparte?"
+aliases: ["oro en caliente", "estampación en caliente", "estampado", "dorado", "pan de oro", "clisé", "cartulina de color", "papel oscuro", "cuaderno de poesía", "hot foil", "foil stamping"]
+pageNotes: { "1": "La cubierta: un doble marco de filetes dorados sobre cartulina azul oscuro, SIETE POEMAS, RIMAS en versales grandes de oro, un filete corto y Gustavo Adolfo Bécquer en versalitas doradas, los años al pie.", "4": "El índice en oro sobre la cartulina azul: siete rimas, líneas de puntos y números de página.", "6": "Un prado de noche bajo las estrellas, pintado, dentro de un marco dorado sobre el papel crema.", "9": "La rima LII: un doble filete dorado bajo la cabecera, el título en versales sobre un filete dorado corto, el primer verso en cursiva y el poema." }
+---
+
+## Lo que vas a componer
+
+Un cuaderno con siete rimas de Bécquer, de 140 × 216 mm y encuadernado en rústica. La cubierta y la hoja que la sigue son cartulina azul oscuro estampada en oro y nada más: un doble marco, el título en versales de Cinzel, el nombre del poeta y el índice. Dentro, en papel verjurado crema, las rimas se imprimen a cuatro tintas, un nocturno pintado da frente a la segunda, y cada filete de la página es oro: el doble filete bajo la cabecera, el filete corto bajo cada título y el que acompaña al folio. En Folio el libro cerrado gira hacia la luz y el oro se lee como metal.
+
+## Elaboración
+
+### 1 · El oro es una tinta plana con acabado
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `finish: { kind: 'foil' }` convierte la tinta plana en una tinta especial ([acabados](/es/docs/special-inks-die-cuts#acabados)). La maquetación ve un color y no se mueve nada; el canvas pinta su hex, Folio lo ilumina como metal y el PDF/X-4 pone cada elemento dorado en una sola `Separation` llamada `Gold foil`, de la que el grabador saca el clisé de latón. El oro reserva lo que tiene debajo, como en la máquina de estampar.
+
+### 2 · Los papeles son colores que no llevan tinta
+
+<Excerpt region="content" />
+
+La cartulina azul y el verjurado crema son colores de la paleta definidos en CMYK al 0 % en todos los canales: la pantalla y Folio pintan el papel y ninguna plancha recibe un punto, así que el PDF de la cubierta tiene la plancha del oro y cuatro planchas de cuatricromía vacías. Cada página azul toma la cartulina de su estilo de título (`palette: { paper: … }` en `onCard`), y los dos bloques `:::paper` dan a Folio el gramaje y la rigidez de la cartulina en la hoja de cubierta y en la que la sigue.
+
+### 3 · La cubierta es un marco y cuatro líneas
+
+<Excerpt region="cover" />
+
+El oro aguanta una línea fina, así que el marco es un filete de 1,6 pt con otro de 0,4 pt 2,5 mm por dentro, cada uno el borde de una caja en el color del oro. Todo lo de la cubierta es oro: ninguna otra tinta toca la cartulina, que es como se encarga una cubierta estampada al taller.
+
+### 4 · Dentro, los filetes son oro y los versos tinta
+
+<Excerpt region="rules" />
+
+La cabecera va sobre un doble filete, uno de 0,9 pt y otro de 0,3 pt 1,2 mm por debajo, del ancho de la caja de texto. El diseño del título del poema añade un filete de 12 mm bajo el título, y el pie otro de 6 mm bajo el folio. El texto queda en el negro cálido: la letra pequeña en oro se empasta en la máquina.
+
+### 5 · Folio pone la cubierta a la luz
+
+<Excerpt region="folio" />
+
+El oro solo parece oro cuando refleja algo. El entorno `studio` tiene focos difusos y claros, y una inclinación de 24° con el libro girado 16° lleva su reflejo sobre el título. Con la luz de lámpara, más tenue, el mismo oro se queda en un ocre mate.
+
+## Variantes
+
+### Estampa en plata
+
+Cambia el hex y el CMYK de referencia; el acabado y la plancha se quedan.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Imprime el oro como tinta metálica
+
+Una tinta metálica sale más barata que un clisé y se imprime con las demás tintas; Folio la muestra satinada.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Errores frecuentes
+
+- Un papel de color puesto en `page.backgroundColor` con un hex corriente se imprime como una mancha de cuatricromía sobre toda la página. Define el papel en CMYK al 0 %, como aquí, cuando el color es el del soporte.
+- Los filetes de menos de 0,25 pt y la letra de menos de 8 pt se empastan al estampar. Deja el oro para filetes y titulares.

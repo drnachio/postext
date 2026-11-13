@@ -1,0 +1,70 @@
+---
+title: "Hot stamping dourado numa capa azul-escura"
+summary: "O dourado como cor especial com acabamento: chapa própria no PDF, brilho no Folio, e um cartão azul e um papel creme que não levam tinta."
+plain: "Um livrinho de poemas com capa azul-escura e letras douradas gravadas a quente. Por dentro, todos os fios e molduras também são dourados. A vista 3D mostra o brilho do dourado, e o arquivo de impressão o separa para a gráfica."
+description: "Um livreto de poesia com capa em hot stamping no Postext: o dourado como cor especial com acabamento, chapa própria no PDF, papéis sem tinta, no Folio."
+question: "Como estampo em dourado a capa e os fios de um livro, e mando o dourado à gráfica numa chapa à parte?"
+aliases: ["hot stamping", "estampagem a quente", "dourado", "douração", "folha metálica", "clichê", "cartão colorido", "papel escuro", "livreto de poesia", "hot foil", "foil stamping"]
+pageNotes: { "1": "A capa: uma moldura dupla de fios dourados sobre cartão azul-escuro, FIVE POEMS, SHOOK FOIL em grandes maiúsculas douradas, um fio curto e Gerard Manley Hopkins em versaletes dourados, os anos ao pé.", "4": "O sumário em dourado sobre o cartão azul: cinco títulos de poemas, linhas pontilhadas e números de página.", "6": "Um campo à noite sob as estrelas, pintado, dentro de uma moldura dourada sobre o papel creme.", "9": "The Windhover: um fio duplo dourado sob o cabeço, o título em maiúsculas sobre um fio dourado curto, a dedicatória em itálico e o poema, com os versos longos quebrando de linha." }
+---
+
+## O que você vai compor
+
+Um livreto com cinco poemas de Gerard Manley Hopkins, de 140 × 216 mm, em brochura. A capa e a folha que vem depois dela são cartão azul-escuro com hot stamping dourado e mais nada: uma moldura dupla, o título em maiúsculas Cinzel, o nome do poeta e o sumário. Por dentro, num papel vergê creme, os poemas são impressos em quatro cores, um noturno pintado fica de frente para o segundo poema, e todo fio da página é dourado: o fio duplo sob o cabeço, o fio curto sob cada título, o fio sob o fólio. O título vem do primeiro poema, em que o mundo brilha “like shining from shook foil”. O Folio vira o livro fechado para a luz, e o dourado aparece como metal.
+
+## Preparo
+
+### 1 · O dourado é uma cor especial com acabamento
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. `finish: { kind: 'foil' }` transforma a cor especial numa tinta especial ([acabamentos](/pt/docs/special-inks-die-cuts#acabamentos)). A diagramação vê uma cor e nada se mexe; o canvas pinta o hex, o Folio a ilumina como metal e o arquivo PDF/X-4 põe cada elemento dourado numa única `Separation` chamada `Gold foil`, a partir da qual o gravador faz o clichê de latão. O dourado vaza o que está embaixo dele, como acontece na máquina de hot stamping.
+
+### 2 · Os papéis são cores que não levam tinta
+
+<Excerpt region="content" />
+
+O cartão azul e o vergê creme são cores da paleta definidas em CMYK a 0 % em todos os canais: a tela e o Folio pintam o suporte, e nenhuma chapa recebe um ponto dele. Por isso o PDF da capa tem a chapa do dourado e quatro chapas de quadricromia vazias. Cada página azul pega o cartão do seu estilo de título (`palette: { paper: … }` em `onCard`), e os dois blocos `:::paper` dão ao Folio a gramatura e a rigidez do cartão na folha da capa e na seguinte.
+
+### 3 · A capa é uma moldura e quatro linhas
+
+<Excerpt region="cover" />
+
+O hot stamping segura uma linha fina, por isso a moldura é um fio de 1,6 pt com outro de 0,4 pt 2,5 mm para dentro, cada um a borda de uma caixa na cor do dourado. Tudo o que está na capa é dourado: nenhuma outra tinta toca o cartão, e é assim que se encomenda uma capa estampada a quente a uma encadernadora.
+
+### 4 · Por dentro, os fios são dourados e os poemas, tinta
+
+<Excerpt region="rules" />
+
+O cabeço fica sobre um fio duplo, um de 0,9 pt e outro de 0,3 pt 1,2 mm abaixo, da largura da mancha de texto. O design do título do poema acrescenta um fio de 12 mm sob o título, e o rodapé um de 6 mm sob o fólio. O texto fica no preto quente: letra pequena em dourado empasta na máquina.
+
+### 5 · O Folio vira a capa para a luz
+
+<Excerpt region="folio" />
+
+O dourado só parece dourado quando reflete alguma coisa. O ambiente `studio` tem softboxes claros e difusos, e uma inclinação de 24° com o livro girado 16° leva o reflexo deles até o título. Com a luz de luminária, mais fraca, o mesmo dourado fica um ocre fosco.
+
+## Variações
+
+### Estampe em prata
+
+Mude o hex e o CMYK equivalente; o acabamento e a chapa continuam.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Imprima o dourado como tinta metálica
+
+Uma tinta metálica sai mais barata que um clichê e é impressa junto com as outras tintas; o Folio a mostra acetinada.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Erros comuns
+
+- Um papel colorido definido em `page.backgroundColor` com um hex comum é impresso como um chapado de quadricromia na página inteira. Defina o suporte em CMYK a 0 %, como aqui, quando a cor é a do papel.
+- Fios com menos de 0,25 pt e letras com menos de 8 pt empastam no hot stamping. Deixe o dourado para fios e títulos.

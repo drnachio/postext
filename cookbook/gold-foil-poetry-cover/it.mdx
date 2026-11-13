@@ -1,0 +1,70 @@
+---
+title: "Oro a caldo su una copertina blu notte"
+summary: "La lamina d’oro come tinta piatta con una finitura: una lastra propria nel PDF, la lucentezza in Folio, e cartoncino blu e carta crema senza inchiostro."
+plain: "Un libretto di poesie con la copertina blu scuro e le lettere impresse in oro. All’interno anche tutti i filetti e le cornici sono d’oro. La vista 3D mostra l’oro che brilla, e il file di stampa lo tiene a parte per il tipografo."
+description: "Una plaquette di poesia con copertina in oro a caldo in Postext: lamina come tinta piatta con finitura, la sua lastra nel PDF, carte senza inchiostro, in Folio."
+question: "Come stampo in oro la copertina e i filetti di un libro, e mando l’oro al tipografo su una lastra a parte?"
+aliases: ["oro a caldo", "stampa a caldo", "lamina d’oro", "doratura", "cliché", "cartoncino colorato", "carta scura", "plaquette di poesia", "libretto di poesie", "hot foil", "foil stamping"]
+pageNotes: { "1": "La copertina: una doppia cornice di filetti d’oro su cartoncino blu scuro, FIVE POEMS, SHOOK FOIL in grandi maiuscole d’oro, un breve filetto d’oro e Gerard Manley Hopkins in maiuscoletto d’oro, gli anni al piede.", "4": "L’indice in oro sul cartoncino blu: cinque titoli di poesie, puntini di guida e numeri di pagina.", "6": "Un prato di notte sotto le stelle, dipinto, in una cornice d’oro sulla carta crema.", "9": "The Windhover: un doppio filetto d’oro sotto la testatina, il titolo in maiuscolo sopra un breve filetto d’oro, la dedica in corsivo e la poesia, i cui versi lunghi vanno a capo." }
+---
+
+## Che cosa comporrai
+
+Una plaquette con cinque poesie di Gerard Manley Hopkins, 140 × 216 mm, in brossura. La copertina e il foglio che la segue sono cartoncino blu scuro stampato in oro a caldo e nient’altro: una doppia cornice, il titolo in maiuscole Cinzel, il nome del poeta e l’indice. All’interno, su carta vergata crema, le poesie si stampano in quadricromia, un notturno dipinto sta di fronte alla seconda poesia, e ogni filetto della pagina è oro: il doppio filetto sotto la testatina, il filetto breve sotto ogni titolo, quello sotto il numero di pagina. Il titolo viene dalla prima poesia, dove il mondo risplende «like shining from shook foil». Folio gira il libro chiuso verso la luce, e l’oro si legge come metallo.
+
+## Preparazione
+
+### 1 · L’oro è una tinta piatta con una finitura
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. `finish: { kind: 'foil' }` trasforma la tinta piatta in un inchiostro speciale ([finiture](/it/docs/special-inks-die-cuts#finiture)). L’impaginazione vede un colore e non si sposta nulla; il canvas dipinge il suo hex, Folio lo illumina come metallo, e il file PDF/X-4 mette ogni elemento in oro su un’unica `Separation` chiamata `Gold foil`, da cui l’incisore ricava il cliché in ottone. La lamina risparmia ciò che sta sotto, come avviene nella macchina per la stampa a caldo.
+
+### 2 · Le carte sono colori che non stampano inchiostro
+
+<Excerpt region="content" />
+
+Il cartoncino blu e la vergata crema sono colori della palette definiti in CMYK allo 0 % su ogni canale: lo schermo e Folio dipingono il supporto, e nessuna lastra ne riceve un punto. Il PDF della copertina ha quindi la lastra dell’oro e quattro lastre di quadricromia vuote. Ogni pagina blu prende il cartoncino dal suo stile di titolo (`palette: { paper: … }` in `onCard`), e i due blocchi `:::paper` danno a Folio la grammatura e la rigidità del cartoncino sul foglio di copertina e su quello successivo.
+
+### 3 · La copertina è una cornice e quattro righe
+
+<Excerpt region="cover" />
+
+La lamina tiene una linea sottile, così la cornice è un filetto da 1,6 pt con un filetto da 0,4 pt 2,5 mm più all’interno, ciascuno il bordo di un riquadro nel colore dell’oro. Tutto ciò che sta in copertina è oro: nessun altro inchiostro tocca il cartoncino, ed è così che si ordina una copertina stampata a caldo a una legatoria.
+
+### 4 · All’interno i filetti sono oro e le poesie inchiostro
+
+<Excerpt region="rules" />
+
+La testatina poggia su un doppio filetto, uno da 0,9 pt e uno da 0,3 pt 1,2 mm più sotto, largo quanto la gabbia del testo. La grafica del titolo della poesia aggiunge un filetto di 12 mm sotto il titolo, e il piè di pagina uno di 6 mm sotto il numero di pagina. Il testo resta nel nero caldo: il corpo piccolo in oro si impasta in macchina.
+
+### 5 · Folio porta la copertina alla luce
+
+<Excerpt region="folio" />
+
+La lamina sembra lamina solo quando riflette qualcosa. L’ambiente `studio` ha softbox chiari e diffusi, e un’inclinazione di 24° con il libro ruotato di 16° porta il loro riflesso sul titolo. Con la luce della lampada, più debole, lo stesso oro resta un ocra opaco.
+
+## Varianti
+
+### Stampa in argento
+
+Cambia l’hex e il CMYK sostitutivo; la finitura e la lastra restano.
+
+```diff
+-const foil = { hex: '#c9a24a', model: 'spot', spot: { name: 'Gold foil',
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++const foil = { hex: '#b8bcc2', model: 'spot', spot: { name: 'Silver foil',
++  cmyk: { c: 20, m: 12, y: 10, k: 25 }, finish: { kind: 'foil', sheen: 'gloss' } } };
+```
+
+### Stampa l’oro come inchiostro metallizzato
+
+Un inchiostro metallizzato costa meno di un cliché e si stampa con gli altri inchiostri; Folio lo mostra satinato.
+
+```diff
+-  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'foil', sheen: 'gloss' } } };
++  cmyk: { c: 15, m: 30, y: 75, k: 10 }, finish: { kind: 'metallic' } } };
+```
+
+## Errori frequenti
+
+- Una carta colorata messa in `page.backgroundColor` con un hex qualsiasi si stampa come un fondo pieno in quadricromia su tutta la pagina. Definisci il supporto in CMYK allo 0 %, come qui, quando il colore è quello della carta.
+- I filetti sotto 0,25 pt e il testo sotto 8 pt si impastano nella stampa a caldo. Tieni l’oro per i filetti e i titoli.

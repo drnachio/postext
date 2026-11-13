@@ -28917,5 +28917,162 @@
         "print.dieLine"
       ]
     }
+  },
+  "special-inks": {
+    "label": {
+      "en": "Special inks",
+      "es": "Tintas especiales",
+      "ca": "Tintes especials",
+      "zh": "特种油墨",
+      "ar": "الأحبار الخاصة",
+      "ja": "特殊インキ",
+      "pt": "Tintas especiais",
+      "fr": "Encres spéciales",
+      "de": "Spezialfarben",
+      "it": "Inchiostri speciali"
+    },
+    "definition": {
+      "en": "A spot colour marked with a finish: metallic, hot foil, fluorescent, opaque white or varnish. It prints on a plate of its own, the canvas can show its sheen or a finish map, and Folio lights it.",
+      "es": "Una tinta plana con acabado: metálica, oro en caliente, fluorescente, blanco opaco o barniz. Se imprime en su propia plancha, el canvas puede mostrar su brillo o un mapa de acabados, y Folio la ilumina.",
+      "ca": "Una tinta plana amb acabat: metàl·lica, daurat en calent, fluorescent, blanc opac o vernís. S'imprimeix en una planxa pròpia, el canvas en pot mostrar la brillantor o un mapa d'acabats, i Folio la il·lumina.",
+      "zh": "带有工艺标记的专色：金属色、烫金、荧光、不透明白或光油。它印在自己的印版上，Canvas可以显示其光泽或工艺图，Folio会给它打光。",
+      "ar": "لون خاص مُعلَّم بتشطيب: معدني أو ختم حراري أو فلوري أو أبيض معتم أو ورنيش. يُطبع على لوح خاص به، ويمكن للوحة (Canvas) أن تُظهر لمعانه أو خريطة التشطيبات، ويضيئه Folio.",
+      "ja": "加工の種類を持つ特色です。メタリック、箔押し、蛍光、不透明白、ニスがあります。専用の版に出力され、キャンバスでは光沢や加工マップを表示でき、Folioでは光が当たります。",
+      "pt": "Uma cor especial marcada com um acabamento: metálica, hot stamping, fluorescente, branco opaco ou verniz. Sai numa chapa própria, o canvas pode mostrar o brilho ou um mapa de acabamentos e o Folio a ilumina.",
+      "fr": "Un ton direct doté d’une finition : métallisé, dorure à chaud, fluorescent, blanc couvrant ou vernis. Il sort sur une plaque à lui, le canvas peut en montrer le brillant ou une carte des finitions, et Folio l’éclaire.",
+      "de": "Eine Sonderfarbe mit einer Veredelung: Metallic, Heißfolie, Leuchtfarbe, Deckweiß oder Lack. Sie druckt auf einer eigenen Platte, das Canvas kann ihren Glanz oder eine Veredelungskarte zeigen, und Folio beleuchtet sie.",
+      "it": "Un colore spot con una finitura: metallizzato, lamina a caldo, fluorescente, bianco coprente o vernice. Stampa su una lastra propria, il canvas ne mostra la lucentezza o una mappa delle finiture e Folio la illumina."
+    },
+    "aliases": {
+      "en": [
+        "hot foil",
+        "foil stamping",
+        "metallic ink",
+        "fluorescent ink",
+        "neon",
+        "opaque white",
+        "white ink",
+        "spot UV",
+        "varnish",
+        "soft touch",
+        "finish mask"
+      ],
+      "es": [
+        "oro en caliente",
+        "estampación",
+        "tinta metálica",
+        "tinta fluorescente",
+        "flúor",
+        "blanco opaco",
+        "tinta blanca",
+        "barniz UVI",
+        "barniz selectivo",
+        "soft touch"
+      ],
+      "ca": [
+        "daurat en calent",
+        "estampació",
+        "tinta metàl·lica",
+        "tinta fluorescent",
+        "blanc opac",
+        "vernís selectiu",
+        "soft touch"
+      ],
+      "zh": [
+        "烫金",
+        "烫印",
+        "金属油墨",
+        "荧光油墨",
+        "白墨",
+        "局部UV",
+        "光油",
+        "触感膜"
+      ],
+      "ar": [
+        "ختم حراري",
+        "تذهيب",
+        "حبر معدني",
+        "حبر فلوري",
+        "حبر أبيض",
+        "ورنيش موضعي",
+        "سوفت تتش"
+      ],
+      "ja": [
+        "箔押し",
+        "金箔",
+        "メタリックインキ",
+        "蛍光インキ",
+        "白インキ",
+        "スポットUV",
+        "ニス",
+        "ソフトタッチ"
+      ],
+      "pt": [
+        "hot stamping",
+        "estampagem",
+        "tinta metálica",
+        "tinta fluorescente",
+        "branco opaco",
+        "tinta branca",
+        "verniz localizado",
+        "soft touch"
+      ],
+      "fr": [
+        "dorure à chaud",
+        "marquage à chaud",
+        "encre métallisée",
+        "encre fluo",
+        "blanc couvrant",
+        "encre blanche",
+        "vernis sélectif",
+        "soft touch"
+      ],
+      "de": [
+        "Heißfolienprägung",
+        "Goldprägung",
+        "Metallicfarbe",
+        "Leuchtfarbe",
+        "Deckweiß",
+        "weiße Farbe",
+        "partieller UV-Lack",
+        "Soft-Touch"
+      ],
+      "it": [
+        "lamina a caldo",
+        "stampa a caldo",
+        "inchiostro metallizzato",
+        "inchiostro fluo",
+        "bianco coprente",
+        "inchiostro bianco",
+        "vernice selettiva",
+        "soft touch"
+      ]
+    },
+    "group": "colour",
+    "docs": {
+      "slug": "special-inks-die-cuts",
+      "heading": {
+        "en": "Finishes",
+        "es": "Acabados",
+        "ca": "Acabats",
+        "zh": "工艺",
+        "ar": "التشطيبات",
+        "ja": "加工",
+        "pt": "Acabamentos",
+        "fr": "Finitions",
+        "de": "Veredelungen",
+        "it": "Finiture"
+      }
+    },
+    "detect": {
+      "config": [
+        "colorPalette[].value.spot.finish",
+        "print.inks[].finish"
+      ],
+      "api": [
+        "renderFinishMask",
+        "guessInkFinish"
+      ]
+    }
   }
 }

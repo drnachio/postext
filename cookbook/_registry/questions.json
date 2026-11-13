@@ -6302,5 +6302,33 @@
       "it": "Linea di fustella, lastra propria"
     },
     "theme": "output"
+  },
+  "Q222": {
+    "kind": "how",
+    "text": {
+      "en": "How do I stamp a cover and the rules of a book in gold foil, and send the foil to the printer on its own plate?",
+      "es": "¿Cómo estampo en oro una cubierta y los filetes de un libro, y mando el oro al impresor en una plancha aparte?",
+      "ca": "Com estampo en or una coberta i els filets d’un llibre, i envio l’or a l’impressor en una planxa a part?",
+      "fr": "Comment dorer à chaud une couverture et les filets d’un livre, et envoyer la dorure à l’imprimeur sur une plaque à part ?",
+      "de": "Wie präge ich einen Umschlag und die Linien eines Buches in Goldfolie und schicke die Folie auf einer eigenen Platte an die Druckerei?",
+      "it": "Come stampo in oro a caldo una copertina e i filetti di un libro, e mando la lamina allo stampatore su una lastra a parte?",
+      "pt": "Como faço hot stamping dourado numa capa e nos fios de um livro, e mando o dourado para a gráfica numa chapa à parte?",
+      "zh": "怎样给封面和书中的线条烫金，并把烫金单独作为一块印版交给印厂？",
+      "ja": "表紙と本文の罫を金箔押しにして、箔を別版として印刷所に渡すには？",
+      "ar": "كيف أختم غلافًا وخطوط كتاب بالذهب الحراري، وأرسل الذهب إلى المطبعة على لوح مستقل؟"
+    },
+    "index": {
+      "en": "Gold foil, stamped",
+      "es": "Oro en caliente",
+      "ca": "Daurat en calent",
+      "fr": "Dorure à chaud",
+      "de": "Goldprägung",
+      "it": "Oro a caldo",
+      "pt": "Hot stamping dourado",
+      "zh": "烫金",
+      "ja": "金箔押し",
+      "ar": "الذهب الحراري"
+    },
+    "theme": "output"
   }
 }
