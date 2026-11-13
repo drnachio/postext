@@ -100,7 +100,8 @@ export interface ImportReport {
 export interface ImportedFont {
   family: string;
   /** `file`: the font file of `fontFiles` that carries the face, when one
-   *  does. */
+   *  does. A face of a collection goes by the collection's path with the
+   *  face's file name after it (`Document fonts/PTSans.ttc/PTSans-Narrow.ttf`). */
   styles: { name: string; weight: number; italic: boolean; characters: number; file?: string }[];
 }
 

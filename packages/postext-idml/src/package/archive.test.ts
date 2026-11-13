@@ -7,6 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { idmlToPostext } from '../import/index.js';
 import { pack, referenceBytes, referenceFiles } from '../read/fixture.test-helper.js';
 import { openIdmlArchive } from './archive.js';
+import { buildCollection } from './collection.test-helper.js';
 import { IdmlError } from './errors.js';
 import { readFontFace } from './fontFace.js';
 
@@ -129,5 +130,44 @@ describe('a package read into a book', () => {
     const plain = idmlToPostext(archive.document(path));
     expect(plain.config.customFonts).toBeUndefined();
     expect(plain.report.findings.some((f) => f.id === 'fontNotInPackage')).toBe(false);
+  });
+});
+
+describe('a package whose fonts come in a collection (#1558)', () => {
+  // InDesign packages a font as the file the system holds: on a Mac, often a collection.
+  const ttc = buildCollection([font('ArefRuqaa-Bold.ttf'), font('Amiri-Regular.ttf'), font('Amiri-Bold.ttf')]);
+  const archive = openIdmlArchive(zip({
+    'Pkg/Book.idml': amiriDocument(),
+    'Pkg/Document fonts/Fonts.ttc': ttc,
+  }));
+  const path = archive.documents[0]!;
+  const result = idmlToPostext(archive.document(path), { fontFiles: archive.fontFiles() });
+
+  it('carries the faces the text is set in as single fonts', () => {
+    const minion = result.config.customFonts?.find((f) => f.name === 'Minion Pro');
+    // The reference document sets Minion Pro in its regular only.
+    expect(minion?.variants).toHaveLength(1);
+    const regular = minion?.variants.find((v) => v.weight === 400 && v.style === 'normal');
+    expect(regular).toMatchObject({ format: 'ttf', fileName: 'Amiri-Regular.ttf', fileId: 'fonts/Amiri-Regular.ttf' });
+    const carried = readFontFace('Amiri-Regular.ttf', result.files.get(regular!.fileId)!);
+    expect(carried).toMatchObject({ format: 'ttf', postScriptName: 'Amiri-Regular', weight: 400 });
+    const used = result.fonts.find((f) => f.family === 'Minion Pro')!;
+    expect(used.styles.find((s) => s.name === 'Regular')?.file).toBe('Pkg/Document fonts/Fonts.ttc/Amiri-Regular.ttf');
+  });
+
+  it('leaves out the faces of the collection the book does not use, and says nothing of the collection', () => {
+    const fontFiles = [...result.files.keys()].filter((id) => id.startsWith('fonts/'));
+    expect(fontFiles).toEqual(['fonts/Amiri-Regular.ttf']);
+    const ids = result.report.findings.map((f) => f.id);
+    expect(ids).not.toContain('fontFile.collection');
+    expect(result.report.findings.find((f) => f.id === 'fontNotInPackage')?.examples.join(' ') ?? '').not.toMatch(/Minion/);
+  });
+
+  it('names a face it cannot take out of the collection', () => {
+    const cut = ttc.slice();
+    new DataView(cut.buffer).setUint32(12, cut.length + 100);
+    const broken = idmlToPostext(archive.document(path), { fontFiles: [{ name: 'Pkg/Document fonts/Fonts.ttc', bytes: cut }] });
+    expect(broken.report.findings.find((f) => f.id === 'fontFile.collection')?.examples).toEqual(['Fonts.ttc (face 1)']);
+    expect(broken.files.has('fonts/Amiri-Regular.ttf')).toBe(true);
   });
 });

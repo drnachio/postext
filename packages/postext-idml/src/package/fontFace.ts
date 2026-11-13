@@ -27,7 +27,9 @@ export interface FontFace {
 }
 
 /** Why a font file cannot be carried: a collection of faces, a Type 1
- *  font, a Mac suitcase, a WOFF 1 file, bytes that are no font. */
+ *  font, a Mac suitcase, a WOFF 1 file, bytes that are no font. A
+ *  collection is read here as one file; the importer splits it into
+ *  single faces first (`splitFontCollection`). */
 export type UnusableFont = { unusable: 'collection' | 'type1' | 'suitcase' | 'woff' | 'unknown' };
 
 /** Extensions of font files, usable or not. A file of `Document fonts`
