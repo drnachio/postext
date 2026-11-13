@@ -175,6 +175,9 @@ export type GotchaId = string;
 export type WarningKind = string;
 export type CollectionId = string;
 
+/** A colour of the folio: `#rrggbb`, or a postext ColorValue. */
+export type RecipeFolioColor = string | { hex: string; model: "hex" | "rgb" | "cmyk" | "hsl" | "spot"; [key: string]: unknown };
+
 /** `config.folio` (postext `FolioConfig`) as recipe.json writes it. */
 export interface RecipeFolio {
   tilt?: number;
@@ -185,16 +188,16 @@ export interface RecipeFolio {
     finish?: "uncoated" | "matte" | "silk" | "gloss";
     texture?: "smooth" | "vellum" | "wove" | "laid" | "linen" | "felt";
     textureStrength?: number;
-    shade?: string;
+    shade?: RecipeFolioColor;
     showThrough?: boolean;
   };
   binding?: {
     type?: "hardcover" | "paperback" | "sewn" | "layflat" | "saddleStitch" | "folded";
     cover?: "case" | "pages";
     coverMaterial?: "cloth" | "paper" | "leather";
-    coverColor?: string;
+    coverColor?: RecipeFolioColor;
   };
-  surface?: { type?: "oak" | "walnut" | "linen" | "felt" | "leather" | "marble" | "plain" | "none"; color?: string };
+  surface?: { type?: "oak" | "walnut" | "linen" | "felt" | "leather" | "marble" | "plain" | "none"; color?: RecipeFolioColor };
   lighting?: { environment?: "studio" | "daylight" | "lamp" | "overcast" | "night"; intensity?: number; shadows?: boolean };
 }
 

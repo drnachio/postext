@@ -195,7 +195,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
             finish: { enum: ["uncoated", "matte", "silk", "gloss"] },
             texture: { enum: ["smooth", "vellum", "wove", "laid", "linen", "felt"] },
             textureStrength: { type: "number", minimum: 0, maximum: 2 },
-            shade: ref("hex"),
+            shade: ref("colorValue"),
             showThrough: { type: "boolean" },
           },
         },
@@ -206,7 +206,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
             type: { enum: ["hardcover", "paperback", "sewn", "layflat", "saddleStitch", "folded"] },
             cover: { enum: ["case", "pages"] },
             coverMaterial: { enum: ["cloth", "paper", "leather"] },
-            coverColor: ref("hex"),
+            coverColor: ref("colorValue"),
           },
         },
         surface: {
@@ -214,7 +214,7 @@ export const RECIPE_SCHEMA: JsonSchema = {
           additionalProperties: false,
           properties: {
             type: { enum: ["oak", "walnut", "linen", "felt", "leather", "marble", "plain", "none"] },
-            color: ref("hex"),
+            color: ref("colorValue"),
           },
         },
         lighting: {
@@ -282,6 +282,27 @@ export const RECIPE_SCHEMA: JsonSchema = {
     date: { type: "string", pattern: "^\\d{4}-\\d{2}-\\d{2}$" },
     url: { type: "string", pattern: "^https?://" },
     hex: { type: "string", pattern: "^#[0-9a-fA-F]{6}$" },
+    // A colour as postext's ColorValue takes it (Folio's colours): a bare
+    // `#rrggbb`, or the object with its hex, model and print values (#1582).
+    colorValue: {
+      anyOf: [
+        ref("hex"),
+        {
+          type: "object",
+          additionalProperties: false,
+          required: ["hex", "model"],
+          properties: {
+            hex: ref("hex"),
+            model: { enum: ["hex", "rgb", "cmyk", "hsl", "spot"] },
+            cmyk: { type: "object" },
+            spot: { type: "object" },
+            overprint: { type: "boolean" },
+            tint: { type: "number", minimum: 0, maximum: 100 },
+            paletteId: { type: "string", minLength: 1 },
+          },
+        },
+      ],
+    },
     page: { type: "integer", minimum: 1 },
     fraction: { type: "number", minimum: 0, maximum: 1 },
     // recipe.json text (credits): English and Spanish are required, other

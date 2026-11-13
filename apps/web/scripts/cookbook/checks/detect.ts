@@ -15,7 +15,9 @@ function isLeafObject(value: Record<string, unknown>): boolean {
 
 /** The user config's shape: dotted key paths (≤ 3 segments, arrays as
  *  `[]`), top-level sections, leaf count (a colour or a dimension is one
- *  leaf) and design elements (items of every `elements` array). */
+ *  leaf) and design elements (items of every `elements` array). `paths`
+ *  also reach inside a colour (`colorPalette.value.spot.finish`), which
+ *  the detect rules read. */
 export function configStats(config: Record<string, unknown> | null | undefined): {
   keys: string[];
   sections: string[];
@@ -27,14 +29,34 @@ export function configStats(config: Record<string, unknown> | null | undefined):
   const paths = new Set<string>();
   let leaves = 0;
   let designElements = 0;
+  /** The paths inside a colour value, keys and leaves left as they were. */
+  const colourPaths = (value: unknown, segs: string[]) => {
+    if (value === null || typeof value !== "object") return;
+    if (Array.isArray(value)) {
+      for (const item of value) colourPaths(item, segs);
+      return;
+    }
+    for (const [key, item] of Object.entries(value)) {
+      const at = [...segs, key];
+      paths.add(at.join(".").replace(/\[\]/g, ""));
+      colourPaths(item, at);
+    }
+  };
   const walk = (value: unknown, segs: string[]) => {
     // An array item repeats its array's key: record paths on entering the array.
     if (segs.length && !segs[segs.length - 1].endsWith("[]")) {
       if (segs.length <= 3) keys.add(segs.join("."));
       paths.add(segs.join(".").replace(/\[\]/g, ""));
     }
-    if (value === null || typeof value !== "object" || isLeafObject(value as Record<string, unknown>)) {
+    if (value === null || typeof value !== "object") {
       leaves++;
+      return;
+    }
+    if (isLeafObject(value as Record<string, unknown>)) {
+      leaves++;
+      // A colour is one leaf, but what it sets inside (a spot ink's name,
+      // its finish) is a path a detect rule may name (#1581).
+      colourPaths(value, segs);
       return;
     }
     if (Array.isArray(value)) {

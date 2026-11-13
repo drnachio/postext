@@ -93,6 +93,19 @@ describe('finish mask channels', () => {
     expect(at(m, 35, 5)).toEqual([255, 179, 0, 0]); // varnish over gold: the larger sheen
   });
 
+  it('keeps a white under a picture and under later paint, as on press (#1579)', () => {
+    const picture = { width: 4, height: 4, rgba: [10, 200, 30, 255] as [number, number, number, number] };
+    const m = mask((ctx) => {
+      ctx.fillStyle = WHITE; ctx.fillRect(0, 0, 40, 10);
+      ctx.drawImage(picture as never, 0, 0, 20, 10);
+      ctx.fillStyle = '#123456'; ctx.fillRect(20, 0, 10, 10);
+      ctx.fillStyle = {} as never; ctx.fillRect(30, 0, 10, 10);
+    })!;
+    for (const x of [5, 15, 25, 35]) expect(at(m, x, 5)[3]).toBeCloseTo(128, -1);
+    expect(maskPaintMap('white', INKS, new Set())('#123456')).toBe('rgba(0, 0, 0, 0)');
+    expect(maskPaintMap('white', INKS, new Set())(GOLD)).toBe('rgba(0, 0, 0, 0)');
+  });
+
   it('maps paints for each pass, leaving transparent paints and gradients as they are', () => {
     const inks = maskPaintMap('inks', INKS, new Set());
     expect(inks('rgba(0, 0, 0, 0)')).toBe('rgba(0, 0, 0, 0)');
@@ -253,6 +266,8 @@ describe('finishMaskSvg', () => {
 
   it('recolours each paint for the paint of the mask', () => {
     expect(finishMaskSvg(svg, doc, 'inks')).toBe('<svg><rect fill="rgb(255, 179, 0)"/><rect fill="transparent"/><path data-spot="Gold" stroke="rgb(255, 179, 0)" fill="none"/><rect style="fill:#000000"/></svg>');
+    // The white paint: no ordinary paint knocks a white out.
+    expect(finishMaskSvg(svg, doc, 'white')).toBe('<svg><rect fill="transparent"/><rect fill="transparent"/><path data-spot="Gold" stroke="transparent" fill="none"/><rect style="fill:transparent"/></svg>');
     expect(finishMaskSvg(svg, doc, 'varnish')).toBe('<svg><rect fill="transparent"/><rect fill="rgb(0, 255, 0)"/><path data-spot="Gold" stroke="transparent" fill="none"/><rect style="fill:transparent"/></svg>');
   });
 });

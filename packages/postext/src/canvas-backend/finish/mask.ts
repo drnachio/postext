@@ -17,8 +17,11 @@
  *    other paint black (it knocks the ink out, as on press), unless it
  *    overprints, when it is left out; pictures black over what they cover;
  *    a varnish left out.
- * 2. *white*: a white ink in white, the rest as in the first paint.
- * 3. *varnish*: a varnish in its sheen, nothing else.
+ * 2. *white*: a white ink in white, nothing else. An opaque white goes
+ *    down first on press, under everything, so no later paint or picture
+ *    knocks it out (#1579).
+ * 3. *varnish*: a varnish in its sheen, nothing else: it goes down last,
+ *    over everything.
  * The three are packed into one RGBA buffer on the CPU, the varnish's sheen
  * merged into the first paint's with `lighten` (the larger wins).
  */
@@ -64,8 +67,8 @@ export interface FinishMaskOptions {
    * The picture to paint for a registered image in one paint of the mask,
    * when the host has it: an SVG whose inks have a finish, recoloured with
    * `finishMaskSvg` for that paint. A picture the host gives none for is
-   * painted black (it knocks the inks under it out) in the first two
-   * paints and left out of the varnish's.
+   * painted black (it knocks the inks under it out) in the first paint
+   * and left out of the white's and the varnish's.
    */
   images?: (fileId: string, pass: FinishMaskPass) => CanvasImageSource | undefined;
 }
@@ -113,19 +116,21 @@ export function maskPaintMap(pass: FinishMaskPass, inks: ReadonlyMap<string, Fin
   return (value) => {
     if (value === KNOCK_OUT) return value;
     const p = parsePaint(value);
-    // A gradient or a pattern: an ordinary paint that knocks out.
-    if (!p) return pass === 'varnish' ? NO_PAINT : black(1);
+    // A gradient or a pattern: an ordinary paint that knocks out the
+    // first paint's inks; the white and the varnish it leaves alone.
+    if (!p) return pass === 'inks' ? black(1) : NO_PAINT;
     if (p.alpha === 0) return value;
     const ink = inks.get(p.hex);
     if (pass === 'varnish') {
       if (ink?.kind !== 'varnish') return NO_PAINT;
       return rgbaPaint(0, 255 * sheenLevel(finishSheen(ink)) * (ink.tint / 100), 0, p.alpha);
     }
-    if (ink?.kind === 'varnish') return NO_PAINT;
-    if (pass === 'white' && ink?.kind === 'white') {
+    if (pass === 'white') {
+      if (ink?.kind !== 'white') return NO_PAINT;
       const v = 255 * (ink.tint / 100);
       return rgbaPaint(v, v, v, p.alpha);
     }
+    if (ink?.kind === 'varnish') return NO_PAINT;
     if (pass === 'inks' && ink && ink.kind !== 'white') return rgbaPaint(...inkMaskColor(ink), p.alpha);
     return overprint.has(p.hex) ? NO_PAINT : black(p.alpha);
   };
@@ -147,9 +152,9 @@ type Ctx2D = CanvasRenderingContext2D;
 /**
  * Route `drawImage` of `ctx`: a picture the host recoloured for this paint
  * (`passThrough`) paints as it is; any other is painted as its silhouette
- * in black in the first two paints (what it covers, by its own alpha: a
+ * in black in the first paint (what it covers, by its own alpha: a
  * photograph its box, a transparent drawing its shapes), and left out of
- * the varnish's.
+ * the white's and the varnish's.
  */
 function overrideImages(ctx: Ctx2D, pass: FinishMaskPass, passThrough: WeakSet<object>, createCanvas: (w: number, h: number) => FinishMaskCanvas): () => void {
   const own = Object.getOwnPropertyDescriptor(ctx, 'drawImage');
@@ -160,7 +165,8 @@ function overrideImages(ctx: Ctx2D, pass: FinishMaskPass, passThrough: WeakSet<o
       draw.apply(ctx, args);
       return;
     }
-    if (pass === 'varnish') return;
+    // White lies under a picture and varnish over it: neither is cut.
+    if (pass !== 'inks') return;
     const [iw, ih] = sourceSize(image);
     const [sx, sy, sw, sh] = args.length >= 9 ? (args.slice(1, 5) as number[]) : [0, 0, iw, ih];
     const [dx, dy, dw, dh] = args.length >= 9 ? (args.slice(5, 9) as number[]) : args.length >= 5 ? (args.slice(1, 5) as number[]) : [args[1] as number, args[2] as number, iw, ih];

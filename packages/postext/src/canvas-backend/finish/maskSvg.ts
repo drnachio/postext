@@ -7,8 +7,9 @@
  * `renderFinishMask` (`FinishMaskOptions.images`). Each paint of the
  * markup becomes what the mask paints for it: an ink with a finish (named
  * by `icc-named-color` or the element's `data-spot`, or a colour whose hex
- * is a special ink's) its mask colour, any other paint black (it knocks
- * the inks under it out) or nothing in the varnish paint. `none`,
+ * is a special ink's) its mask colour, any other paint black in the
+ * first paint (it knocks the inks under it out) and nothing in the white
+ * and varnish paints. `none`,
  * `currentColor`, `inherit` and `url(…)` references are left as they are.
  *
  * `data-spot` counts for the element's own paints; a child that inherits
@@ -26,13 +27,15 @@ const rgb = (r: number, g: number, b: number): string => `rgb(${Math.round(r)}, 
 
 /** What one paint of the mask paints for an ink (none: an ordinary one). */
 export function svgMaskPaint(pass: FinishMaskPass, ink: FinishInk | undefined): string {
-  if (!ink) return pass === 'varnish' ? 'transparent' : '#000000';
+  // An ordinary paint knocks out the first paint's inks only: the white
+  // lies under it and the varnish over it.
+  if (!ink) return pass === 'inks' ? '#000000' : 'transparent';
   const t = ink.tint / 100;
   if (ink.kind === 'varnish') return pass === 'varnish' ? rgb(0, 255 * sheenLevel(finishSheen(ink)) * t, 0) : 'transparent';
   if (pass === 'varnish') return 'transparent';
   if (ink.kind === 'white') return pass === 'white' ? rgb(255 * t, 255 * t, 255 * t) : ink.overprint ? 'transparent' : '#000000';
   if (pass === 'inks') return rgb(...inkMaskColor(ink));
-  return ink.overprint ? 'transparent' : '#000000';
+  return 'transparent';
 }
 
 const KEEP = /^\s*(none|currentcolor|inherit|transparent|url\()/i;

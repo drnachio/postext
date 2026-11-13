@@ -30,6 +30,10 @@ export interface SpotPlate {
   /** A process plate (`Cyan` … `Black`) in a mix of a job on a few plates
    *  (`print.plates`): named as it is, never renamed. */
   process?: ProcessChannel;
+  /** An opaque white or a varnish: an ink the press lays under (white) or
+   *  over (varnish) every other, so no later paint knocks its plate out
+   *  (`inkLayers.ts`). */
+  layer?: 'white' | 'varnish';
 }
 
 /** A spot colour as painted: its ink, the tint (0..1), and whether it
@@ -134,8 +138,11 @@ export class SpotInkRegistry {
     const plate = this.plateOf(spot);
     const t = round4(Math.max(0, Math.min(1, tint)));
     // One ink, two colours: one of them may overprint and the other not.
-    const overprint = plate.overprint || spot.overprint;
-    const key = `${plateKey(plate)}|${t}${overprint !== plate.overprint ? '|over' : ''}`;
+    // A white or a varnish takes the colour's own choice either way: white
+    // type knocked out of a colour shares the plate of a white laid under
+    // the colours.
+    const overprint = plate.layer ? spot.overprint : plate.overprint || spot.overprint;
+    const key = `${plateKey(plate)}|${t}${overprint === plate.overprint ? '' : overprint ? '|over' : '|knock'}`;
     return this.code(key, mixAlternate([plate], [t]), { plate, tint: t, overprint }, [plate]);
   }
 
@@ -377,7 +384,8 @@ export class SpotInkRegistry {
   private plateOf(spot: ResolvedSpotColor): SpotPlate {
     const first = this.platesByName.get(spot.name);
     if (first) return first;
-    const plate: SpotPlate = { name: spot.name, cmyk: { ...spot.cmyk }, overprint: spot.overprint };
+    const kind = spot.finish?.kind;
+    const plate: SpotPlate = { name: spot.name, cmyk: { ...spot.cmyk }, overprint: spot.overprint, ...(kind === 'white' || kind === 'varnish' ? { layer: kind } : {}) };
     this.platesByName.set(spot.name, plate);
     return plate;
   }

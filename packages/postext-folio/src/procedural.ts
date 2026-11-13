@@ -229,6 +229,16 @@ export function paperRelief(kind: PaperTexture): Relief {
 
 export type DeskKind = "oak" | "walnut" | "linen" | "felt" | "leather" | "marble" | "plain";
 
+const DESK_KINDS: ReadonlySet<string> = new Set<DeskKind>(["oak", "walnut", "linen", "felt", "leather", "marble", "plain"]);
+
+/** The desk a configured surface type lies on: a kind Folio knows, `none`
+ *  for no desk, and oak (the default) for anything else, so a config from
+ *  a newer or a hand-written bundle never stops the book from showing. */
+export function deskKind(type: unknown): DeskKind | "none" {
+  if (type === "none") return "none";
+  return typeof type === "string" && DESK_KINDS.has(type) ? (type as DeskKind) : "oak";
+}
+
 /** A desk surface: colour, relief and roughness maps, the width of one
  *  tile (mm), and the roughness the map scales. */
 export interface DeskSurface {

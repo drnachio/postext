@@ -87,7 +87,11 @@ export function createPrintColorMode(
   });
   const flattenTransparency = config.standard === 'pdfx1a';
   // The ink table renames, merges and sends inks to process.
-  if (config.inks.length > 0) ({ spots, authored } = spotsThroughInkTable(spots, authored, config.inks));
+  if (config.inks.length > 0) {
+    const through = spotsThroughInkTable(spots, authored, config.inks);
+    spots = keepLayerOverprint(spots, through.spots);
+    authored = through.authored;
+  }
   spots = onePlatePerInk(spots);
   const plates = platePlan(config, spots.values());
   return {
@@ -131,9 +135,25 @@ export function overPaper(r: number, g: number, b: number, alpha: number): [numb
   return [r * a + (1 - a), g * a + (1 - a), b * a + (1 - a)];
 }
 
+/** The overprint of each white and varnish colour as `withInkFinishes`
+ *  settled it (the ink table's, else the colour's own, else the finish's
+ *  default): the ink table pass, which cannot tell a colour's unset
+ *  `overprint` from `false`, gives every colour of a white ink the
+ *  finish's default, and white type set `overprint: false` would print
+ *  under the colour it is meant to knock out. */
+function keepLayerOverprint(before: ReadonlyMap<string, ResolvedSpotColor>, after: Map<string, ResolvedSpotColor>): Map<string, ResolvedSpotColor> {
+  for (const [hex, s] of after) {
+    const b = before.get(hex);
+    const kind = b?.finish?.kind;
+    if (b && (kind === 'white' || kind === 'varnish') && b.overprint !== s.overprint) after.set(hex, { ...s, overprint: b.overprint });
+  }
+  return after;
+}
+
 /** Spot colours with every ink as its first colour defines it: one ink
  *  name is one plate, whatever CMYK, overprint or finish a later colour
- *  gives it (the preflight reports those). */
+ *  gives it (the preflight reports those). A white's or a varnish's
+ *  colours keep their own overprint. */
 function onePlatePerInk(spots: ReadonlyMap<string, ResolvedSpotColor>): ReadonlyMap<string, ResolvedSpotColor> {
   const first = new Map<string, ResolvedSpotColor>();
   const out = new Map<string, ResolvedSpotColor>();
@@ -143,7 +163,10 @@ function onePlatePerInk(spots: ReadonlyMap<string, ResolvedSpotColor>): Readonly
       out.set(hex, s);
       continue;
     }
-    const merged: ResolvedSpotColor = { ...s, cmyk: ink.cmyk, overprint: ink.overprint };
+    // A white or a varnish keeps the colour's own overprint (the ink's
+    // default, or `overprint: false` on this colour): see `standIn`.
+    const layered = ink.finish?.kind === 'white' || ink.finish?.kind === 'varnish';
+    const merged: ResolvedSpotColor = { ...s, cmyk: ink.cmyk, overprint: layered ? s.overprint : ink.overprint };
     if (ink.finish) merged.finish = ink.finish;
     else delete merged.finish;
     out.set(hex, merged);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { altText, cardProblems, sidesOf, spreadsOf } from "../../../scripts/cookbook/cards.ts";
-import { detect, detectFeatures, readBackFindings, runChecks } from "../../../scripts/cookbook/checks.ts";
+import { configStats, detect, detectFeatures, readBackFindings, runChecks } from "../../../scripts/cookbook/checks.ts";
 import type { BundleReadBack, CheckInput, EpubRecord, ProbeFacts, ProbePage, ScormRecord } from "../../../scripts/cookbook/checks.ts";
 import { blankFont, mathErrorsOf, textOfFaces } from "../../../scripts/cookbook/lib/probe.js";
 import { loadRegistry } from "./registry.ts";
@@ -354,6 +354,16 @@ describe("spreads of a capture that takes two builds", () => {
 describe("right-binding detection", () => {
   const registry = loadRegistry();
   const found = (paths: string[]) => detectFeatures(registry, { paths, markdown: "", apis: [] }).detected;
+
+  it("finds a finish or a spot ink set on a palette colour (#1581)", () => {
+    const gold = { hex: "#b8962e", model: "spot", spot: { name: "Gold", cmyk: { c: 0, m: 20, y: 60, k: 25 }, finish: { kind: "metallic" } } };
+    const stats = configStats({ colorPalette: [{ id: "gold", name: "Gold", value: gold }] });
+    expect(found(stats.paths)).toEqual(expect.arrayContaining(["special-inks", "spot-inks"]));
+    // A colour is still one leaf, and keys stop at it.
+    expect(stats.leaves).toBe(3);
+    expect(stats.keys).not.toContain("colorPalette[].value.spot");
+    expect(found(configStats({ colorPalette: [{ id: "red", value: { hex: "#ff0000", model: "hex" } }] }).paths)).not.toContain("special-inks");
+  });
 
   it("finds tab stops in the config and :tab in the text (#622)", () => {
     const tabs = (paths: string[], markdown = "") => detectFeatures(registry, { paths, markdown, apis: [] }).detected.includes("tab-stops");
