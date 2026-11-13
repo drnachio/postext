@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "corporate-fifth-ink-report",
-  "sourceHash": "0e824a72b836fe8030fa5fee1a0b6a1a5fff8a6501c054fd50562cfc8be498f4",
+  "sourceHash": "ea7ed702b924c4587276894f91f7a59be691b6af50f4fb2be858437dff9e108c",
   "engine": {
     "postext": "1.84.0",
     "postextPdf": "1.84.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T16:53:16.716Z",
+  "capturedAt": "2026-11-13T17:05:18.066Z",
   "variants": {
     "en": {
       "hash8": "d113be61",
       "vdtHash": "589bb8a0c497a42fea1209366b72a4b850f37677",
       "timings": {
-        "importMs": 7526,
-        "fontsMs": 216,
-        "buildMs": 204,
-        "totalMs": 9792,
+        "importMs": 1258,
+        "fontsMs": 294,
+        "buildMs": 145,
+        "totalMs": 2693,
         "builds": 1
       },
       "specimen": {
@@ -466,11 +466,6 @@
         },
         "findings": [
           {
-            "check": "C20",
-            "severity": "info",
-            "detail": "capture.expect.imageMb states 1.3 MB, and the edition weighs 1.07 MB: state 1.1 MB"
-          },
-          {
             "check": "C24",
             "severity": "warn",
             "detail": "3 of 92 justified lines (3.3 %) stretch past 2× (worst 2.21×); loosest: p. 2 2.21× “year running, dissolved oxygen in August stayed”, p. 6 2.14× “The accounts were audited by an independent”, p. 3 2.13× “Volunteers planted 41,000 trees and shrubs in 46”"
@@ -492,10 +487,10 @@
       "hash8": "aec18c8a",
       "vdtHash": "1ba00f4a7db5ae63d734753f1cf011ab6bc0552c",
       "timings": {
-        "importMs": 3426,
-        "fontsMs": 988,
-        "buildMs": 179,
-        "totalMs": 6309,
+        "importMs": 1259,
+        "fontsMs": 295,
+        "buildMs": 159,
+        "totalMs": 2696,
         "builds": 1
       },
       "specimen": {
@@ -943,11 +938,6 @@
           "count": 0
         },
         "findings": [
-          {
-            "check": "C20",
-            "severity": "info",
-            "detail": "capture.expect.imageMb states 1.3 MB, and the edition weighs 1.08 MB: state 1.1 MB"
-          },
           {
             "check": "sandbox",
             "severity": "info",

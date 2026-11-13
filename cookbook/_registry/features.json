@@ -29193,16 +29193,16 @@
     "docs": {
       "slug": "configuration-pdf-output",
       "heading": {
-        "en": "The ink table",
-        "es": "La tabla de tintas",
-        "ca": "La taula de tintes",
-        "zh": "油墨表",
-        "ar": "جدول الأحبار",
-        "ja": "インキ表",
-        "pt": "A tabela de tintas",
-        "fr": "La table des encres",
-        "de": "Die Druckfarbentabelle",
-        "it": "La tabella degli inchiostri"
+        "en": "Spot colours",
+        "es": "Tintas planas",
+        "ca": "Tintes planes",
+        "zh": "专色",
+        "ar": "الألوان الخاصة",
+        "ja": "特色",
+        "pt": "Cores especiais",
+        "fr": "Tons directs",
+        "de": "Sonderfarben",
+        "it": "Tinte piatte"
       }
     },
     "detect": {
