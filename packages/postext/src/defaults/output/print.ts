@@ -3,7 +3,6 @@ import type {
   Dimension,
   PrintBlackConfig,
   PrintConfig,
-  InkFinish,
   PrintDieLineConfig,
   PrintInk,
   PrintPlatesConfig,
@@ -19,6 +18,7 @@ import type {
 } from '../../types.js';
 import { DEFAULT_OUTPUT_PROFILE_ID, outputProfileInfo } from '../../color/catalogue.js';
 import { dimensionsEqual } from '../shared.js';
+import { resolveInkFinish } from '../../color/finishKinds.js';
 
 export const DEFAULT_RICH_BLACK: CmykPercent = { c: 60, m: 40, y: 40, k: 100 };
 
@@ -63,22 +63,8 @@ export const DEFAULT_PRINT_CONFIG: ResolvedPrintConfig = {
   dieLine: DEFAULT_PRINT_DIE_LINE,
 };
 
-const FINISH_KINDS = ['metallic', 'foil', 'fluorescent', 'white', 'varnish'] as const;
-const SHEENS = ['gloss', 'satin', 'matte', 'softTouch'] as const;
-
-/** A finish as written, checked: an unknown kind is dropped (`undefined`),
- *  an unknown sheen left out; soft-touch is a varnish's only. */
-export function resolveInkFinish(f: unknown): InkFinish | undefined {
-  if (!f || typeof f !== 'object') return undefined;
-  const kind = (f as { kind?: unknown }).kind;
-  if (!FINISH_KINDS.includes(kind as InkFinish['kind'])) return undefined;
-  const out: InkFinish = { kind: kind as InkFinish['kind'] };
-  const sheen = (f as { sheen?: unknown }).sheen;
-  if (SHEENS.includes(sheen as NonNullable<InkFinish['sheen']>) && kind !== 'fluorescent' && kind !== 'white') {
-    if (sheen !== 'softTouch' || kind === 'varnish') out.sheen = sheen as InkFinish['sheen'];
-  }
-  return out;
-}
+// A finish as written, checked: kept beside the colour code that reads it.
+export { resolveInkFinish };
 
 export function resolvePrintDieLine(partial?: PrintDieLineConfig): ResolvedPrintDieLineConfig {
   const d = DEFAULT_PRINT_DIE_LINE;

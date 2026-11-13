@@ -41,7 +41,8 @@ export {
   type OutputProfileInfo,
 } from './catalogue.js';
 export { srgbProfileBytes } from './srgbProfile.js';
-export { finishOfSpot, finishSheen, finishOverprintsByDefault, finishPaintsOnScreen, guessInkFinish } from './finishes.js';
+export { finishOfSpot, finishSheen, finishOverprintsByDefault, finishPaintsOnScreen, guessInkFinish, sameFinish, sheenLevel } from './finishes.js';
+export { finishInks, finishOfInkName, varnishHexes, type FinishInk } from './finishInks.js';
 export { authoredCmykColors, authoredSpotColors, overprintColors, normalizeSpotColor, spotColorCmyk, spotInks, type SpotInk } from './authored.js';
 export { inkEntry, inkKey, inkNameProblem, printableInkName, printedSpot, processCmykOfSpot, separatePrintColors, similarInkNames, spotsThroughInkTable, type InkNameProblem } from './inks.js';
 // Spot inks an SVG names (`icc-named-color`, `data-spot`).

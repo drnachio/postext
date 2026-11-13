@@ -1,4 +1,5 @@
-import type { CmykPercent, ResolvedSpotColor, SpotColor } from '../types.js';
+import type { CmykPercent, InkFinish, ResolvedSpotColor, SpotColor } from '../types.js';
+import { finishOverprintsByDefault, resolveInkFinish, sameFinish } from './finishKinds.js';
 
 export function isAuthoredCmyk(v: unknown): v is { hex: string; model: 'cmyk'; cmyk: CmykPercent } {
   if (!v || typeof v !== 'object') return false;
@@ -40,14 +41,18 @@ const clampPercent = (n: unknown, fallback: number): number =>
   typeof n === 'number' && Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : fallback;
 
 /** A spot colour with its name trimmed, its tint and CMYK clamped to
- *  0..100 and its defaults filled in. */
+ *  0..100 and its defaults filled in: a finish checked (an unknown one is
+ *  dropped), and a white ink or a varnish overprinting unless it says it
+ *  does not (#1563). */
 export function normalizeSpotColor(spot: SpotColor): ResolvedSpotColor {
   const c = spot.cmyk;
+  const finish = resolveInkFinish(spot.finish);
   return {
     name: spot.name.trim(),
     cmyk: { c: clampPercent(c.c, 0), m: clampPercent(c.m, 0), y: clampPercent(c.y, 0), k: clampPercent(c.k, 0) },
     tint: clampPercent(spot.tint, 100),
-    overprint: spot.overprint === true,
+    overprint: typeof spot.overprint === 'boolean' ? spot.overprint : finishOverprintsByDefault(finish),
+    ...(finish ? { finish } : {}),
   };
 }
 
@@ -90,12 +95,14 @@ export interface SpotInk {
   cmyk: CmykPercent;
   overprint: boolean;
   tints: number[];
+  /** What the ink is beyond its colour (#1563), when it is a special ink. */
+  finish?: InkFinish;
 }
 
 /**
  * The inks of a set of spot colours, by name (the first colour naming an
- * ink sets its CMYK and overprint), and the names that more than one
- * colour defines differently — two plates the printer would be asked to
+ * ink sets its CMYK, overprint and finish), and the names that more than
+ * one colour defines differently — two plates the printer would be asked to
  * make the same.
  */
 export function spotInks(spots: Iterable<ResolvedSpotColor>): { inks: SpotInk[]; conflicts: string[] } {
@@ -104,12 +111,12 @@ export function spotInks(spots: Iterable<ResolvedSpotColor>): { inks: SpotInk[];
   for (const s of spots) {
     const ink = byName.get(s.name);
     if (!ink) {
-      byName.set(s.name, { name: s.name, cmyk: { ...s.cmyk }, overprint: s.overprint, tints: [s.tint] });
+      byName.set(s.name, { name: s.name, cmyk: { ...s.cmyk }, overprint: s.overprint, tints: [s.tint], ...(s.finish ? { finish: { ...s.finish } } : {}) });
       continue;
     }
     const a = ink.cmyk;
     const b = s.cmyk;
-    if (a.c !== b.c || a.m !== b.m || a.y !== b.y || a.k !== b.k || ink.overprint !== s.overprint) conflicts.add(s.name);
+    if (a.c !== b.c || a.m !== b.m || a.y !== b.y || a.k !== b.k || ink.overprint !== s.overprint || !sameFinish(ink.finish, s.finish)) conflicts.add(s.name);
     if (!ink.tints.includes(s.tint)) ink.tints.push(s.tint);
   }
   return { inks: [...byName.values()], conflicts: [...conflicts] };
