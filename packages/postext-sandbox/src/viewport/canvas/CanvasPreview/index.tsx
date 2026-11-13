@@ -12,6 +12,7 @@ import { useDieLines, useFinishesView } from '../specialInksView.js';
 import { syncDieLines } from './dieLines.js';
 import type { VDTDocument, PostextConfig, RenderPageOptions } from 'postext';
 import { createPaintedPages, type PaintedPages } from './pageReuse.js';
+import { createThroughState, type ThroughState } from './through/paintPages.js';
 import { useTemplateEditorHost } from '../../../templates/useTemplateEditorHost.js';
 import type { BookPageMap } from '../../usePageHashSync.js';
 import { createFontGate } from '../../../controls/fonts/fontLoader.js';
@@ -143,6 +144,9 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   /** What each canvas holds: a composed page a relayout left as it was
    *  keeps its pixels (#857). */
   const paintedPagesRef = useRef<PaintedPages>(createPaintedPages());
+  /** What shows through die-cut holes (#1567): the see-through chain of
+   *  the document and the pages painted only to be seen in a hole. */
+  const throughRef = useRef<ThroughState>(createThroughState());
   // Pages within the observer's margin of the viewport right now.
   const visiblePagesRef = useRef<Set<number>>(new Set());
   const lastGeomRef = useRef<GeomSnapshot | null>(null);
@@ -260,7 +264,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
     gapsRef, applyDisplaySize, computeDisplaySizeRef
   } = useDisplaySize({
     zoom, viewMode, fitMode, config, containerRef, docRef, canvasMapRef, overlayMapRef,
-    renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
+    renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef, bitmapScaleRef,
     paintOptionsRef, wantedBitmapScale, needsRescale, setRebuildKey, containerSizeRef, setLayoutKey
   });
 
@@ -276,7 +280,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   usePagePaint({
     zoom, viewMode, fitMode, pageLabelRef, containerRef, dispatchRef, activePanelRef, resourcesRef,
     labelsRef, pageSourceRef, navigateRef, docRef, drawnOverlaysRef, observerRef, canvasMapRef,
-    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, visiblePagesRef, lastGeomRef,
+    overlayMapRef, renderedPagesRef, stalePagesRef, paintedPagesRef, throughRef, visiblePagesRef, lastGeomRef,
     lastPaintedDocVersionRef, bitmapScaleRef, renderOptsRef, paintOptions, paintOptionsRef,
     wantedBitmapScale, needsRescale, paintSpanRef, builtSourceRef, deferredResources, deferredConfig,
     containerSizeRef, layoutKey, docVersion, paintKey, setPaintKey, printPreviewRef, finishesRef,

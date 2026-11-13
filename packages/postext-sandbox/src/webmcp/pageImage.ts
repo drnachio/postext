@@ -18,6 +18,7 @@ import { declareStandIns, ensureConfigFontsLoaded, loadVerticalTwins } from '../
 import { ensureResourceImages } from '../controls/media/resourceImages.js';
 import { preflightInputs } from '../print/preflightInputs.js';
 import { loadPrintProfile, previewFor, printTransform } from '../print/printSetup.js';
+import { beneathOnTheFly } from '../viewport/canvas/CanvasPreview/through/onTheFly.js';
 
 /** Pixels the supersampled page may take before it is scaled down. */
 const MAX_PAINT_PIXELS = 24_000_000;
@@ -104,13 +105,20 @@ export function pageImage(page: VDTPage, doc: VDTDocument, options: PageImageOpt
   const negative = resolveDebugConfig((doc.config as PostextConfig).debug).pageNegative.enabled;
   const big = document.createElement('canvas');
   let missingImages = 0;
-  renderPageToCanvas(page, doc, big, {
-    scale,
-    pageNegative: negative,
-    ...(trim ? { trim: true } : {}),
-    ...(options.printPreview ? { printPreview: options.printPreview } : {}),
-    onWarning: (w) => { if (w.kind === 'missingImage') missingImages++; },
-  });
+  const base = { scale, pageNegative: negative, ...(trim ? { trim: true } : {}) };
+  // A die-cut page shows the pages beneath through its holes, as in the
+  // hand (#1567): they are painted for it here, at the same scale.
+  const beneath = beneathOnTheFly(doc, doc.pages.indexOf(page), base);
+  try {
+    renderPageToCanvas(page, doc, big, {
+      ...base,
+      ...(options.printPreview ? { printPreview: options.printPreview } : {}),
+      ...(beneath ? { beneath: beneath.source } : {}),
+      onWarning: (w) => { if (w.kind === 'missingImage') missingImages++; },
+    });
+  } finally {
+    beneath?.release();
+  }
   const sx = Math.round(crop.x * big.width);
   const sy = Math.round(crop.y * big.height);
   const sw = Math.max(1, Math.min(big.width - sx, Math.round(crop.width * big.width)));
