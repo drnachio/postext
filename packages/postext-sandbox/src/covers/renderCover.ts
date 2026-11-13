@@ -36,11 +36,43 @@ export function showFirstChapterDoc(ref: { readonly current: FirstChapterDoc | n
   };
 }
 
+/** The JPEG quality of a cover picture. */
+const COVER_JPEG_QUALITY = 0.85;
+
+/** A canvas to paint a cover on: an `OffscreenCanvas` wherever there is
+ *  one, else one of the page's. The EPUB tab paints its cover on the page
+ *  and the Books panel's compiler in its worker (#1548): both on the same
+ *  kind of canvas, so that the same page set in the same faces comes out
+ *  as the same JPEG. Null where neither can be made. */
+export function coverCanvas(): OffscreenCanvas | HTMLCanvasElement | null {
+  if (typeof OffscreenCanvas !== 'undefined') return new OffscreenCanvas(1, 1);
+  return typeof document === 'undefined' ? null : document.createElement('canvas');
+}
+
+/** A canvas's pixels as a JPEG. */
+function jpegOf(canvas: OffscreenCanvas | HTMLCanvasElement): Promise<Blob | null> {
+  if ('convertToBlob' in canvas) return canvas.convertToBlob({ type: 'image/jpeg', quality: COVER_JPEG_QUALITY }).catch(() => null);
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/jpeg', COVER_JPEG_QUALITY));
+}
+
+/** The scale {@link renderCoverImage} paints `page` at before it scales
+ *  the picture down to `width` (page pixels to canvas pixels); null for a
+ *  page with no area. */
+export function coverPaintScale(page: VDTPage, doc: VDTDocument, { width = COVER_WIDTH, trimmed = false }: { width?: number; trimmed?: boolean } = {}): number | null {
+  const off = trimmed && doc.trimOffset > 0 ? doc.trimOffset : 0;
+  const pageW = page.width - 2 * off;
+  if (pageW <= 0 || page.height - 2 * off <= 0) return null;
+  // Painted at twice the size and scaled down: small text anti-aliases
+  // better than when drawn at the final size.
+  return (width * 2) / pageW;
+}
+
 /** Paint `page` into a JPEG `width` pixels wide, `COVER_WIDTH` by default
  *  (on white: a page without a paper colour is transparent); `trimmed`
  *  leaves out the cut-line margin a layout with crop marks has around the
  *  page. `missing` when a picture of the page has not been decoded yet,
- *  unless `allowMissing` (placeholders then). */
+ *  unless `allowMissing` (placeholders then). The text is set in the faces
+ *  of the realm's font set: the page's, or a worker's own (#1548). */
 export async function renderCoverImage(
   page: VDTPage,
   doc: VDTDocument,
@@ -50,21 +82,22 @@ export async function renderCoverImage(
   const off = trimmed && doc.trimOffset > 0 ? doc.trimOffset : 0;
   const pageW = page.width - 2 * off;
   const pageH = page.height - 2 * off;
-  if (typeof document === 'undefined' || pageW <= 0 || pageH <= 0) return null;
-  // Painted at twice the size and scaled down: small text anti-aliases
-  // better than when drawn at the final size.
-  const big = document.createElement('canvas');
-  const scale = (width * 2) / pageW;
+  const scale = coverPaintScale(page, doc, { width, trimmed });
+  const big = scale === null ? null : coverCanvas();
+  if (scale === null || !big) return null;
   let missing = false;
-  renderPageToCanvas(page, doc, big, {
+  // The painter only sizes the canvas and asks it for a 2D context, which
+  // an offscreen canvas has as well.
+  renderPageToCanvas(page, doc, big as HTMLCanvasElement, {
     scale,
     onWarning: (w) => { if (w.kind === 'missingImage') missing = true; },
   });
   if (missing && !allowMissing) return 'missing';
-  const out = document.createElement('canvas');
+  const out = coverCanvas();
+  if (!out) return null;
   out.width = width;
   out.height = Math.max(1, Math.round((pageH / pageW) * width));
-  const ctx = out.getContext('2d');
+  const ctx = out.getContext('2d') as CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D | null;
   if (!ctx) return null;
   ctx.fillStyle = '#ffffff';
   ctx.fillRect(0, 0, out.width, out.height);
@@ -72,7 +105,7 @@ export async function renderCoverImage(
   ctx.drawImage(big, off * scale, off * scale, pageW * scale, pageH * scale, 0, 0, out.width, out.height);
   big.width = 1;
   big.height = 1;
-  const blob = await new Promise<Blob | null>((resolve) => out.toBlob(resolve, 'image/jpeg', 0.85));
+  const blob = await jpegOf(out);
   if (!blob) return null;
   return { bytes: await blob.arrayBuffer(), mime: blob.type || 'image/jpeg' };
 }

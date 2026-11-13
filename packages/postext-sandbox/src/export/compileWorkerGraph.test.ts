@@ -63,4 +63,13 @@ describe('compile worker module graph', () => {
     expect(graph.has(`${SRC}/export/compileBook.ts`)).toBe(true);
     expect(graph.has(`${SRC}/worker/LayoutService.ts`)).toBe(true);
   });
+
+  // The EPUB's cover is painted in the worker (#1548), by the paint the
+  // EPUB tab makes.
+  it('loads the cover painter and the EPUB tab\'s paint', () => {
+    const graph = workerGraph();
+    for (const rel of ['export/compileCover.ts', 'epub/cover.ts', 'covers/renderCover.ts', 'controls/media/resourceImages.ts']) {
+      expect(graph.has(`${SRC}/${rel}`), rel).toBe(true);
+    }
+  });
 });
