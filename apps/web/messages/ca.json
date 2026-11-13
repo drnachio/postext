@@ -52,7 +52,12 @@
     "figureEnlarge": "Amplia la figura",
     "figureClose": "Tanca la figura",
     "chapterPages": "Pàgines d’aquest capítol",
-    "inChapter": "Al capítol"
+    "inChapter": "Al capítol",
+    "cookbookStrip": "Al Receptari",
+    "cookbookStripLabel": "Receptes del Receptari per a {section}",
+    "cookbookExamples": "Exemples al Receptari",
+    "cookbookExamplesLead": "Receptes que fan servir el que explica aquesta pàgina, cadascuna sota la secció a què respon millor. Cada recepta mostra les seves pàgines al costat de l’script complet.",
+    "cookbookMore": "{count, plural, one {Una recepta més} other {# receptes més}} amb {feature} al Receptari"
   },
   "CodePen": {
     "run": "Executar a CodePen",

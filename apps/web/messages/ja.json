@@ -52,7 +52,12 @@
     "figureEnlarge": "図を拡大",
     "figureClose": "図を閉じる",
     "chapterPages": "この章のページ",
-    "inChapter": "所属する章："
+    "inChapter": "所属する章：",
+    "cookbookStrip": "レシピ集から",
+    "cookbookStripLabel": "{section}のレシピ",
+    "cookbookExamples": "レシピ集の例",
+    "cookbookExamplesLead": "このページの内容を使うレシピを、いちばん近い節ごとにまとめました。どのレシピもページとスクリプト全体を並べて見せます。",
+    "cookbookMore": "レシピ集には{feature}を使うレシピがあと{count}件あります"
   },
   "CodePen": {
     "run": "CodePenで実行",

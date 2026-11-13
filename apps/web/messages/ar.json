@@ -52,7 +52,12 @@
     "figureEnlarge": "كبّر الشكل",
     "figureClose": "أغلق الشكل",
     "chapterPages": "صفحات هذا الفصل",
-    "inChapter": "ضمن الفصل"
+    "inChapter": "ضمن الفصل",
+    "cookbookStrip": "في دليل الوصفات",
+    "cookbookStripLabel": "وصفات من دليل الوصفات عن {section}",
+    "cookbookExamples": "أمثلة في دليل الوصفات",
+    "cookbookExamplesLead": "وصفات تستعمل ما تشرحه هذه الصفحة، كل واحدة تحت القسم الأنسب لها. تعرض كل وصفة صفحاتها بجانب الشيفرة كاملة.",
+    "cookbookMore": "{count, plural, one {وصفة أخرى} two {وصفتان أخريان} few {# وصفات أخرى} many {# وصفة أخرى} other {# وصفة أخرى}} تستعمل {feature} في دليل الوصفات"
   },
   "CodePen": {
     "run": "شغّل على CodePen",

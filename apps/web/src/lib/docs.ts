@@ -166,6 +166,41 @@ export function extractToc(source: string): TocItem[] {
   return items;
 }
 
+/** The source with a block of text added at the end of some sections: a
+ *  section runs from its heading (h1–h3, as `extractToc` reads them) to the
+ *  next one, so the block lands before that heading, or at the end of the
+ *  page. `blocks` is keyed by heading id; the docs page puts its Cookbook
+ *  strips there (#1589). */
+export function appendToSections(source: string, blocks: Record<string, string>): string {
+  const lines = source.split("\n");
+  const slugger = createSlugger();
+  const out: string[] = [];
+  let current: string | null = null;
+  let fence: string | null = null;
+  const close = () => {
+    const block = current !== null ? blocks[current] : undefined;
+    if (block) out.push("", block, "");
+  };
+  for (const line of lines) {
+    const fenceMatch = line.match(/^(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence === null) fence = marker;
+      else if (fence === marker) fence = null;
+    } else if (fence === null) {
+      const match = line.match(/^(#{1,3})\s+(.+)$/);
+      const id = match ? slugger(match[2].trim()) : "";
+      if (id) {
+        close();
+        current = id;
+      }
+    }
+    out.push(line);
+  }
+  close();
+  return out.join("\n");
+}
+
 export function hasLocaleVersion(slug: string, locale: string): boolean {
   const filePath = path.join(DOCS_DIR, `${slug}-${locale}.mdx`);
   return fs.existsSync(filePath);

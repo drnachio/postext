@@ -13,7 +13,7 @@
 import type { CaptureBuild, CaptureManifest } from './types/capture.ts';
 import type { FeatureGroup } from './types/registry.ts';
 
-export type { DocAnchor, Taxonomy, FeatureGroup, Feature, Question, Gap, WarningEntry, Gotcha, Collection, Registry } from './types/registry.ts';
+export type { DocAnchor, DocExampleEntry, Taxonomy, FeatureGroup, Feature, Question, Gap, WarningEntry, Gotcha, Collection, Registry } from './types/registry.ts';
 export type { ComposedPen, CapturePage, CaptureFinding, CaptureVariant, CaptureBuild, CaptureManifest } from './types/capture.ts';
 
 /**

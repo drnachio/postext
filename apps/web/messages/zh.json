@@ -52,7 +52,12 @@
     "figureEnlarge": "放大图示",
     "figureClose": "关闭图示",
     "chapterPages": "本章各页",
-    "inChapter": "所属章节："
+    "inChapter": "所属章节：",
+    "cookbookStrip": "见排版食谱",
+    "cookbookStripLabel": "{section}的排版食谱",
+    "cookbookExamples": "排版食谱中的示例",
+    "cookbookExamplesLead": "用到本页内容的食谱，每道列在最贴切的小节下。每道食谱都把页面和完整脚本并排展示。",
+    "cookbookMore": "排版食谱中还有 {count} 道使用{feature}的食谱"
   },
   "CodePen": {
     "run": "在CodePen中运行",

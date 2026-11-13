@@ -131,6 +131,25 @@
       "print-ready-pdf", "riso-zine-single-ink", "accessible-tagged-pdf"
     ]
   },
+  "special-inks-die-cuts": {
+    "title": { "en": "Special inks and die-cuts", "es": "Tintas especiales y troqueles", "ca": "Tintes especials i troquels", "zh": "特种油墨与模切", "ar": "الأحبار الخاصة والقص بالقالب", "ja": "特殊インキと抜き加工", "pt": "Tintas especiais e facas", "fr": "Encres spéciales et découpes", "de": "Spezialfarben und Stanzungen", "it": "Inchiostri speciali e fustelle" },
+    "summary": {
+      "en": "What the press and the die add to the four process inks: gold foil, a corporate fifth ink, a fluorescent, white on kraft and spot varnish, then a board book with holes in register, a window cover and a tunnel book cut leaf by leaf.",
+      "es": "Lo que la imprenta y el troquel suman a las cuatro tintas de cuatricromía: oro en estampación, una quinta tinta corporativa, un flúor, blanco sobre kraft y barniz selectivo, y después un libro de cartón con agujeros en registro, una cubierta con ventana y un libro túnel troquelado hoja a hoja.",
+      "ca": "El que la impremta i el troquel afegeixen a les quatre tintes de quadricromia: or estampat, una cinquena tinta corporativa, un fluor, blanc sobre kraft i vernís selectiu, i després un llibre de cartró amb forats en registre, una coberta amb finestra i un llibre túnel troquelat full a full.",
+      "zh": "印刷机和模切在四色之外添加的东西：烫金、企业专色、荧光色、牛皮纸上的白墨和局部上光，再加上孔洞对位的纸板书、开窗封面和一页页模切的隧道书。",
+      "ar": "ما تضيفه المطبعة والقالب إلى أحبار الطباعة الأربعة: رقائق ذهبية، وحبر خامس بلون المؤسسة، وحبر فلوري، وأبيض على ورق الكرافت، وورنيش موضعي، ثم كتاب من الورق المقوّى بثقوب متطابقة، وغلاف بنافذة، وكتاب نفق مقصوص ورقة ورقة.",
+      "ja": "印刷機と抜き型がプロセス4色に加えるもの。金の箔押し、コーポレートカラーの5色目、蛍光色、クラフト紙の白インキ、部分ニス。そして穴の位置がそろったボードブック、窓抜きの表紙、1枚ずつ抜いたトンネルブック。",
+      "pt": "O que a gráfica e a faca acrescentam às quatro cores de processo: hot stamping dourado, uma quinta cor corporativa, um flúor, branco sobre kraft e verniz localizado, e depois um livro cartonado com furos em registro, uma capa com janela e um livro túnel cortado folha a folha.",
+      "fr": "Ce que la presse et la forme de découpe ajoutent aux quatre encres de quadrichromie : la dorure à chaud, une cinquième couleur d’entreprise, un fluo, le blanc sur kraft et le vernis sélectif, puis un livre cartonné aux trous repérés, une couverture à fenêtre et un livre tunnel découpé feuille à feuille.",
+      "de": "Was Druckmaschine und Stanzform den vier Prozessfarben hinzufügen: Heißfoliengold, eine fünfte Hausfarbe, eine Leuchtfarbe, Weiß auf Kraftpapier und partiellen Lack, dann ein Pappbilderbuch mit passgenauen Löchern, ein Umschlag mit Fenster und ein Tunnelbuch, Blatt für Blatt gestanzt.",
+      "it": "Ciò che la stampa e la fustella aggiungono ai quattro colori di quadricromia: oro a caldo, un quinto colore aziendale, un fluorescente, bianco su kraft e vernice selettiva, poi un cartonato con fori a registro, una copertina con finestra e un libro tunnel fustellato foglio per foglio."
+    },
+    "recipes": [
+      "gold-foil-poetry-cover", "corporate-fifth-ink-report", "fluorescent-pink-zine", "white-ink-kraft-menu",
+      "spot-uv-photo-magazine", "peek-a-boo-board-book", "die-cut-window-cover", "forest-tunnel-book"
+    ]
+  },
   "workarounds": {
     "title": { "en": "Not supported yet, and what to do", "es": "Lo que aún no hay y cómo resolverlo", "ca": "El que encara no hi ha i com resoldre-ho", "zh": "尚不支持的功能及对策", "ar": "غير مدعوم بعد، وما العمل", "ja": "未対応の機能と代わりの方法", "pt": "O que ainda não existe e como contornar", "fr": "Pas encore pris en charge, et que faire", "de": "Noch nicht unterstützt, und was zu tun ist", "it": "Non ancora supportato, e cosa fare" },
     "summary": {

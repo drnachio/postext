@@ -91,6 +91,16 @@ export interface Collection {
   frontispiece?: Partial<Record<Locale, Slug>>;
 }
 
+/** A curator's override for the recipes one docs heading lists
+ *  (docExamples.json, #1589). */
+export interface DocExampleEntry {
+  docs: DocAnchor;
+  /** Listed first under the heading, in this order, matching or not. */
+  pin?: Slug[];
+  /** Never listed under the heading. */
+  hide?: Slug[];
+}
+
 export interface Registry {
   taxonomy: Taxonomy;
   features: Record<FeatureId, Feature>;
@@ -104,4 +114,7 @@ export interface Registry {
   gotchas: Record<GotchaId, Gotcha>;
   /** "featured" is ordered: [0] is the frontispiece, [1..3] the editor's picks. */
   collections: Record<CollectionId, Collection>;
+  /** Pins and hides for the Cookbook recipes a docs heading lists; the
+   *  rest is matched from features, APIs and config keys. */
+  docExamples?: Record<string, DocExampleEntry>;
 }

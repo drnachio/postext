@@ -52,7 +52,12 @@
     "figureEnlarge": "Ingrandisci la figura",
     "figureClose": "Chiudi la figura",
     "chapterPages": "Pagine di questo capitolo",
-    "inChapter": "Nel capitolo"
+    "inChapter": "Nel capitolo",
+    "cookbookStrip": "Nel Ricettario",
+    "cookbookStripLabel": "Ricette del Ricettario su {section}",
+    "cookbookExamples": "Esempi nel Ricettario",
+    "cookbookExamplesLead": "Ricette che usano ciò che questa pagina descrive, ciascuna sotto la sezione a cui risponde meglio. Ogni ricetta mostra le sue pagine accanto allo script completo.",
+    "cookbookMore": "{count, plural, one {Un’altra ricetta} other {Altre # ricette}} con {feature} nel Ricettario"
   },
   "CodePen": {
     "run": "Esegui su CodePen",
