@@ -10,4 +10,6 @@ export type { IdmlFontFile, IdmlImportOptions, IdmlImportResult, IdmlLink, Impor
 export { openIdmlArchive, linkKey } from './package/archive.js';
 export type { IdmlArchive, OpenIdmlArchiveOptions } from './package/archive.js';
 export { readFontFace } from './package/fontFace.js';
+export { splitFontCollection, isFontCollection } from './package/collection.js';
+export type { CollectionFace } from './package/collection.js';
 export type { FontFace, FontFileFormat, UnusableFont } from './package/fontFace.js';

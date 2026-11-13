@@ -5,7 +5,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { basename, dirname, extname, join } from 'node:path';
 import { createBundle } from 'postext/bundle';
-import { idmlToPostext, importBundleInput, openIdmlArchive, readFontFace, readIdml, type IdmlArchive, type IdmlDocument, type IdmlFontFile, type IdmlImportResult } from 'postext-idml';
+import { idmlToPostext, importBundleInput, openIdmlArchive, readFontFace, readIdml, splitFontCollection, type IdmlArchive, type IdmlDocument, type IdmlFontFile, type IdmlImportResult } from 'postext-idml';
 import { CliError, UsageError } from '../args';
 import type { CommandContext } from '../context';
 import { byteLength, writeOut } from '../io';
@@ -78,8 +78,20 @@ function userFontFiles(dirs: readonly string[], doc: IdmlDocument): IdmlFontFile
         walk(path);
         continue;
       }
-      if (!/\.(otf|ttf|woff2)$/i.test(name)) continue;
+      if (!/\.(otf|ttf|woff2|ttc|otc)$/i.test(name)) continue;
       const bytes = new Uint8Array(readFileSync(path));
+      // A collection (#1558) goes in whole when one of its faces is of a
+      // family the document names: the importer splits it and keeps the
+      // faces the text is set in.
+      const split = splitFontCollection(bytes);
+      if (split) {
+        const named = split.some((part) => {
+          const face = part.bytes && readFontFace('', part.bytes);
+          return !!face && !('unusable' in face) && (families.has(norm(face.family)) || families.has(norm(face.legacyFamily)));
+        });
+        if (named) out.push({ name, bytes });
+        continue;
+      }
       const face = readFontFace(name, bytes);
       if ('unusable' in face) continue;
       // A WOFF2 file's names are compressed: its file name (`Lora-Bold`) stands for them.
