@@ -4752,6 +4752,60 @@
       }
     }
   },
+  "dieCutUnknown": {
+    "source": "engine",
+    "label": {
+      "en": "Unknown die",
+      "es": "Troquel desconocido",
+      "ca": "Troquel desconegut",
+      "zh": "未知的模切版",
+      "ar": "قالب قص غير معروف",
+      "ja": "不明な抜き型",
+      "pt": "Faca de corte desconhecida",
+      "fr": "Forme de découpe inconnue",
+      "de": "Unbekannte Stanzform",
+      "it": "Fustella sconosciuta"
+    },
+    "cause": {
+      "en": "A :::diecut container (or a page of dieCuts.pages) names a die that dieCuts.shapes does not define. Nothing is cut on that page.",
+      "es": "Un contenedor :::diecut (o una página de dieCuts.pages) nombra un troquel que dieCuts.shapes no define. En esa página no se corta nada.",
+      "ca": "Un contenidor :::diecut (o una pàgina de dieCuts.pages) anomena un troquel que dieCuts.shapes no defineix. En aquella pàgina no es talla res.",
+      "zh": ":::diecut容器（或dieCuts.pages中的某一页）引用了dieCuts.shapes中未定义的模切版。该页不做任何模切。",
+      "ar": "حاوية :::diecut (أو صفحة في dieCuts.pages) تسمّي قالب قص لا تعرّفه dieCuts.shapes. فلا يُقص شيء في تلك الصفحة.",
+      "ja": ":::diecutコンテナー（またはdieCuts.pagesのページ）が、dieCuts.shapesに定義されていない抜き型を指定しています。そのページでは何も抜かれません。",
+      "pt": "Um contêiner :::diecut (ou uma página de dieCuts.pages) cita uma faca que dieCuts.shapes não define. Nada é cortado nessa página.",
+      "fr": "Un conteneur :::diecut (ou une page de dieCuts.pages) nomme une forme de découpe que dieCuts.shapes ne définit pas. Rien n’est découpé sur cette page.",
+      "de": "Ein :::diecut-Container (oder eine Seite in dieCuts.pages) nennt eine Stanzform, die dieCuts.shapes nicht definiert. Auf dieser Seite wird nichts gestanzt.",
+      "it": "Un contenitore :::diecut (o una pagina di dieCuts.pages) nomina una fustella che dieCuts.shapes non definisce. In quella pagina non si fustella nulla."
+    },
+    "fix": {
+      "en": "Define the die under dieCuts.shapes with that id, or use the id of one already defined (the warning lists them).",
+      "es": "Define el troquel en dieCuts.shapes con ese id o usa el id de uno ya definido (el aviso los enumera).",
+      "ca": "Defineix el troquel a dieCuts.shapes amb aquest id o fes servir l'id d'un de ja definit (l'avís els enumera).",
+      "zh": "在dieCuts.shapes中以该id定义模切版，或改用已定义的id（警告中会列出）。",
+      "ar": "عرّف القالب في dieCuts.shapes بهذا المعرّف، أو استعمل معرّف قالب معرّف من قبل (يسردها التحذير).",
+      "ja": "dieCuts.shapesにそのidで抜き型を定義するか、定義済みのid（警告に一覧があります）を使ってください。",
+      "pt": "Defina a faca em dieCuts.shapes com esse id ou use o id de uma já definida (o aviso as lista).",
+      "fr": "Définissez la forme dans dieCuts.shapes avec cet id, ou utilisez l’id d’une forme déjà définie (l’avertissement les énumère).",
+      "de": "Definieren Sie die Stanzform unter dieCuts.shapes mit dieser ID oder verwenden Sie die ID einer bereits definierten (die Warnung listet sie auf).",
+      "it": "Definisci la fustella in dieCuts.shapes con quell’id, oppure usa l’id di una già definita (l’avviso le elenca)."
+    },
+    "docs": {
+      "slug": "document-format-directives",
+      "heading": {
+        "en": "Containers",
+        "es": "Contenedores",
+        "ca": "Contenidors",
+        "zh": "容器",
+        "ar": "الحاويات",
+        "ja": "コンテナー",
+        "pt": "Contêineres",
+        "fr": "Conteneurs",
+        "de": "Container",
+        "it": "Contenitori"
+      }
+    }
+  },
   "unknownNumerals": {
     "source": "engine",
     "label": {
