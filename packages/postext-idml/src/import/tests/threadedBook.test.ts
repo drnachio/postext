@@ -24,6 +24,9 @@ const roundTrip = (md: string, cfg: PostextConfig, options: Partial<IdmlOptions>
 const text = (r: ReturnType<typeof roundTrip>) => r.chapters.map((c) => c.markdown).join('\n');
 const ids = (r: ReturnType<typeof roundTrip>) => r.report.findings.map((f) => f.id);
 
+/** The text of a story's Content elements, runs joined by a space and white space collapsed. */
+const contentText = (xml: string): string => [...xml.matchAll(/<Content>([^<]*)<\/Content>/g)].map((m) => m[1]).join(' ').replace(/[\s\u2028]+/g, ' ');
+
 describe('a flowing book exported to IDML', () => {
   it('runs its text through one story threaded through a frame per column', () => {
     const files = unzipSync(exported(MD, twoColumns()));
@@ -105,7 +108,7 @@ describe('the running heads of a flowing book exported to IDML', () => {
     const stories = Object.keys(files).filter((k) => k.startsWith('Stories/')).map((k) => strFromU8(files[k]!)).join('');
     expect(stories).toContain('<?ACE 18?>');
     expect(stories).toMatch(/<TextVariableInstance [^>]*AssociatedTextVariable="dTextVariablenChapter Title"/);
-    expect(stories.replace(/<[^>]+>/g, '')).toContain('A walk by the river');
+    expect(contentText(stories)).toContain('A walk by the river');
     const design = strFromU8(files['designmap.xml']!);
     expect(design).toMatch(/<TextVariable [^>]*VariableType="MatchParagraphStyleType"><MatchParagraphStylePreference AppliedParagraphStyle="ParagraphStyle\/Heading 1" SearchStrategy="LastOnPage"/);
     const spreads = Object.keys(files).filter((k) => k.startsWith('Spreads/')).map((k) => strFromU8(files[k]!)).join('');
@@ -177,7 +180,7 @@ describe('the glosses of a column-and-a-half book exported to IDML', () => {
   it('are anchored in the running text, where Postext set them', () => {
     const files = unzipSync(exported(GLOSSED, half));
     const stories = Object.keys(files).filter((k) => k.startsWith('Stories/')).map((k) => strFromU8(files[k]!));
-    const plain = (x: string) => x.replace(/<[^>]+>/g, '').replace(/\u2028/g, ' ');
+    const plain = contentText;
     const thread = stories.find((x) => plain(x).includes('The path follows'))!;
     const settings = [...thread.matchAll(/<AnchoredObjectSetting [^>]*AnchoredPosition="Anchored"[^>]*>/g)].map((m) => m[0]);
     expect(settings).toHaveLength(2);
