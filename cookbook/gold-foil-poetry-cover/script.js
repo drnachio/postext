@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 188 · Gold foil on a deep-blue cover ═══════════════════════
 // https://postext.dev/en/cookbook/gold-foil-poetry-cover
 // Code: MIT · Text: Hopkins, Bécquer (public domain) · Nocturne: diffusion models
-// Fonts: Cormorant Garamond, Cinzel, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.84.0
+// Fonts: Cormorant Garamond, Cinzel, Cormorant SC (SIL OFL 1.1) · Needs postext ≥ 1.85.1
 //
 // A poetry chapbook with a hot-foil cover. The cover, the opener and the contents are set
 // in gold foil alone on deep-blue card; inside, on cream paper, the poems print in four

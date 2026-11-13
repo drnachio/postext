@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "white-ink-kraft-menu",
-  "sourceHash": "7285b89e25e6d9fbe67a9054ce17d406ecdf7aa80e876aa8368af18a425fe286",
+  "sourceHash": "32500b604cc81ccef59e49c914b1fde8a310ea740fe34b58c049388ed915729a",
   "engine": {
-    "postext": "1.84.0",
-    "postextPdf": "1.84.0",
+    "postext": "1.85.1",
+    "postextPdf": "1.85.1",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T16:53:16.947Z",
+  "capturedAt": "2026-11-13T18:46:16.184Z",
   "variants": {
     "en": {
-      "hash8": "a7050458",
+      "hash8": "137c1047",
       "vdtHash": "cbc01ad8d3c4ea49e1ba7e7f2ea48cce484bd33e",
       "timings": {
-        "importMs": 1696,
-        "fontsMs": 2489,
-        "buildMs": 95,
-        "totalMs": 8078,
+        "importMs": 1129,
+        "fontsMs": 47,
+        "buildMs": 60,
+        "totalMs": 2260,
         "builds": 1
       },
       "specimen": {
@@ -114,12 +114,12 @@
       },
       "pdf": {
         "file": "white-ink-kraft-menu.pdf",
-        "bytes": 398150,
+        "bytes": 400981,
         "pages": 4
       },
       "sandbox": {
         "file": "white-ink-kraft-menu.postext",
-        "bytes": 272237,
+        "bytes": 272365,
         "folio": "8814f483",
         "chapters": [
           {
@@ -363,13 +363,13 @@
       }
     },
     "es": {
-      "hash8": "3c672b83",
+      "hash8": "2f25d1bb",
       "vdtHash": "b015d9f3f416b57f8e5df78adebe71821c99abe7",
       "timings": {
-        "importMs": 1532,
-        "fontsMs": 94,
-        "buildMs": 93,
-        "totalMs": 6036,
+        "importMs": 1129,
+        "fontsMs": 51,
+        "buildMs": 57,
+        "totalMs": 2252,
         "builds": 1
       },
       "specimen": {
@@ -466,12 +466,12 @@
       },
       "pdf": {
         "file": "white-ink-kraft-menu.pdf",
-        "bytes": 396674,
+        "bytes": 400744,
         "pages": 4
       },
       "sandbox": {
         "file": "white-ink-kraft-menu.postext",
-        "bytes": 272100,
+        "bytes": 272326,
         "folio": "8814f483",
         "chapters": [
           {
