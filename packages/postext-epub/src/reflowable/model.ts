@@ -231,6 +231,9 @@ export interface FigureNode {
    *  and the picture's own height over its width: the figure shows only
    *  the crop, at the crop's ratio. */
   crop?: { x: number; y: number; width: number; height: number; ratio: number };
+  /** The class of its resource type (`pt-type-<id>`) when the type sets
+   *  its captions apart (#1550). */
+  typeClass?: string;
 }
 
 export interface TableCellNode {
@@ -262,6 +265,9 @@ export interface TableNode {
   /** Mark the body rows that head a group (`pt-group`): its style draws a
    *  booktabs rule above them (`groupRules`). */
   groupRules?: boolean;
+  /** The class of its resource type (`pt-type-<id>`) when the type sets
+   *  its captions apart (#1550), on the box that holds caption and note. */
+  typeClass?: string;
 }
 
 /** One bayt of a `:::verse` poem (#378): its ṣadr and ʿajuz, or a lone

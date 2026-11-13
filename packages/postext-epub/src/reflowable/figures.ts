@@ -1,8 +1,26 @@
 // A figure's picture in the reflowable book: its alternative text, the
 // author's crop of it (`Resource.crop`), and a music example's systems.
-import { type Resource, type VDTResourceTableCell, type VDTResourceTableCellImage, resourceCrop } from 'postext';
+import { type ResolvedCaptionStyleConfig, type ResolvedConfig, type Resource, type VDTResourceTableCell, type VDTResourceTableCellImage, resourceCrop, sameConfig } from 'postext';
 import type { FigureNode, TableCellNode } from './model.js';
-import { xmlAttr } from './inline.js';
+import { idOf, xmlAttr } from './inline.js';
+
+/** The caption style of a resource type that sets its own (#1550), when
+ *  it looks other than the document's. The side its captions stand on
+ *  is left out of the comparison (the markup says it, `pt-caption-below`),
+ *  and so are the label's words (the engine wrote them into the caption). */
+export function ownCaptionStyle(config: ResolvedConfig, typeId: string): ResolvedCaptionStyleConfig | undefined {
+  const own = config.resourceTypeCaptionStyles?.[typeId];
+  const look = (c: ResolvedCaptionStyleConfig) => ({ ...c, position: '', labelNumberGap: '', labelSeparator: '' });
+  return own && !sameConfig(look(own), look(config.captionStyle)) ? own : undefined;
+}
+
+/** Where a resource's caption stands and the class of its figure or
+ *  table's box, `pt-type-<id>`, when its type sets its caption apart
+ *  (#1550): the stylesheet's rules for that type hang on it. */
+export function typeCaption(config: ResolvedConfig, typeId: string): { above: boolean; cls?: string } {
+  const above = (config.resourceTypeCaptionStyles?.[typeId] ?? config.captionStyle).position === 'above';
+  return ownCaptionStyle(config, typeId) ? { above, cls: idOf('pt-type-', typeId) } : { above };
+}
 
 /** A resource caption as plain text (its Markdown marks dropped). */
 export function plainCaption(caption: string | undefined): string {

@@ -44,6 +44,8 @@ import {
   resolveFolioConfig,
   resolveComicsConfig,
   comicReadingDirection,
+  mergeCaptionStyle,
+  tintPaperOf,
   applyPaletteToConfig,
   applyPaletteToResolvedConfig,
   DEFAULT_LAYOUT_CONFIG,
@@ -149,6 +151,7 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
   // so a Latin document resolves exactly as before.
   const numerals = resolveNumerals(config?.numerals, documentLocale);
   const markStyles = resolveMarkStylesConfig(config?.markStyles);
+  const captionStyle = resolveCaptionStyleConfig(config?.captionStyle, bodyText, documentLocale);
   const resolved: ResolvedConfig = {
     page,
     layout,
@@ -156,7 +159,7 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
     headings,
     tableStyle: resolveTableStyleConfig(config?.tableStyle, bodyText, config?.locale),
     tableStyles: resolveTableStylesConfig(config?.tableStyles, config?.tableStyle, bodyText, config?.locale),
-    captionStyle: resolveCaptionStyleConfig(config?.captionStyle, bodyText, documentLocale),
+    captionStyle,
     diagramStyle: resolveDiagramStyleConfig(config?.diagramStyle),
     scoreStyle: resolveScoreStyleConfig(config?.scoreStyle, bodyText),
     scoreStyles: resolveScoreStylesConfig(config?.scoreStyles, config?.scoreStyle, bodyText),
@@ -190,6 +193,11 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
     // resolves (and hashes) as it did before directions existed.
     ...(direction === 'rtl' ? { direction } : {}),
     ...(numerals !== 'latn' ? { numerals } : {}),
+    // The caption style of each resource type that sets its own (#1550),
+    // over the document's: what the reflowable EPUB styles a type's
+    // captions with (the layout merges `ResourceType.captionStyle` where
+    // it sets a caption). Only a config whose types set one carries it.
+    ...typeCaptionStylesOf(config?.resourceTypes, captionStyle, rawConfig?.colorPalette, page),
     // Kept for per-resource-type caption overrides, which resolve their
     // palette colours at layout time (see `mergeCaptionStyle`). A copy: the
     // result is cached against the config object, so a palette the caller
@@ -243,6 +251,21 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
     ...(config?.composedViewerLeaf ? { composedViewerLeaf: resolveComposedViewerLeaf(config.composedViewerLeaf) } : {}),
   };
   return applyPaletteToResolvedConfig(resolved, rawConfig?.colorPalette);
+}
+
+/** `{ resourceTypeCaptionStyles }` when a resource type sets keys of its
+ *  own caption style (`ResourceType.captionStyle`), merged over the
+ *  document's as the layout merges them; `{}` otherwise. */
+function typeCaptionStylesOf(
+  types: PostextConfig['resourceTypes'],
+  base: ResolvedConfig['captionStyle'],
+  palette: PostextConfig['colorPalette'],
+  page: ResolvedConfig['page'],
+): { resourceTypeCaptionStyles?: Record<string, ResolvedConfig['captionStyle']> } {
+  const own = (types ?? []).filter((t) => typeof t?.id === 'string' && t.captionStyle && Object.keys(t.captionStyle).length > 0);
+  if (own.length === 0) return {};
+  const paper = tintPaperOf(page);
+  return { resourceTypeCaptionStyles: Object.fromEntries(own.map((t) => [t.id, mergeCaptionStyle(base, t.captionStyle, palette, paper)])) };
 }
 
 /** `{ frameLooks }` when the config names a look the engine can use. */
