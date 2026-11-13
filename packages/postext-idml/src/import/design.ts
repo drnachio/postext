@@ -62,9 +62,15 @@ export function placeholderText(ctx: Context, paragraphs: readonly IdmlParagraph
     let line = '';
     let pending = '';
     const flush = (): void => {
-      const lead = /^\s*/.exec(pending)![0];
-      const trail = /\s*$/.exec(pending.slice(lead.length))![0];
-      const core = pending.slice(lead.length, pending.length - trail.length);
+      // The white space around the words, found by scanning (a regex
+      // anchored at the end backtracks over every run of spaces).
+      let a = 0;
+      while (a < pending.length && /\s/.test(pending[a]!)) a++;
+      let b = pending.length;
+      while (b > a && /\s/.test(pending[b - 1]!)) b--;
+      const lead = pending.slice(0, a);
+      const trail = pending.slice(b);
+      const core = pending.slice(a, b);
       if (core) {
         const v = attributeValue(core);
         if (v.changed) ctx.rep.add('masterTextRewritten', 'warning', 'Master text holding a quote or a brace is carried with a look-alike character (it travels as an attribute of the Markdown)', core);
