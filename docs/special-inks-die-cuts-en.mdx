@@ -327,9 +327,9 @@ const painted = new Map<number, HTMLCanvasElement>();   // pages already drawn, 
 renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => painted.get(i) });
 ```
 
-**HTML viewer.** A die-cut page is clipped with `clip-path: path(evenodd, …)`, the bleed box (or the leaf's outline) less its holes, so a hole shows the viewer's background and no page beneath. On the screen layout the pages are not the print pages, so there is no page beneath to show.
+**HTML viewer.** A die-cut page is clipped with `clip-path: path(evenodd, …)`, the bleed box (or the leaf's outline) less its holes. On the print leaf, a composed page draws into each hole the pages beneath it, as deep as the holes line up, with a soft shadow and a fine wall line along every cut edge; these copies are hidden from screen readers and take no clicks. On the screen layout the pages are not the print pages, so a hole there shows the viewer's background.
 
-**Folio.** Folio shows a hole as it looks in the hand. On an open page, the hole shows the pages beneath, as deep as the holes line up (a tunnel book can show a page twenty leaves down), with the paper walls of the cut and a parallax that follows the view. A leaf that turns has a real hole, and the shadows fall through it onto the page below. Rounded corners and a shaped outline are cut on every leaf, and the edges of the book block follow the corner radius.
+**Folio.** Folio shows a hole as it looks in the hand. On an open page, the hole shows the pages beneath, as deep as the holes line up (a tunnel book can show a page twenty leaves down), with the paper walls of the cut and a parallax that follows the view. A leaf that turns has a real hole, and the shadows fall through it onto the page below. Rounded corners and a shaped outline are cut on every leaf.
 
 **Your own viewer.** Each laid-out page carries its die-cuts in `VDTPage.dieCut`: `holes` and `outline` as paths in page pixels, `sources` (the die of each hole) and `wrapGapPx`. `leafSide(doc, i)` says whether a page is a recto or a verso, `pageBeneath(doc, i)` which page lies under it (`-1` past the end of the book), `seeThrough(doc, i)` the whole stack a hole shows with each layer's clip, and `dieCutPath2D(cut)` turns the cut into a `Path2D`.
 
@@ -338,7 +338,7 @@ renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => paint
 - **Colours.** The colour picker's **Spot** tab has **Finish** and **Sheen**, and offers the finish the ink's name suggests (**Set the finish: …**). The palette's **Add a special ink** menu adds a ready-made one: metallic gold, silver or copper, gold or silver foil, four fluorescents, opaque white, and gloss, matte or soft-touch varnish.
 - **Ink table.** Each ink has **Finish** and **Sheen**, and **Inks the colours use** shows the finish of each.
 - **Die-cuts.** **Design › Page & columns › Die-cuts** holds the die shapes, each with a drawing of its outline, the pages they cut, the rounded corners and the outline of a shaped book. **Design › Export › Print preparation › Die line** sets the plate.
-- **Canvas.** For a book with die-cuts the toolbar has **Die lines**, which draws each die as a dashed line over the page; for a book with special inks it has **Special inks**, which steps through *flat*, *with sheen* and *finish map*. Both are remembered.
+- **Canvas.** For a book with die-cuts the toolbar has **Die lines**, which draws each die as a dashed line over the page; for a book with special inks it has **Special inks**, which steps through *flat*, *with sheen* and *finish map*. Both are remembered. A hole shows the pages beneath it, as deep as the holes line up; when you change a page further down, the pages that look onto it repaint.
 - **Checks.** The preflight findings above appear in **Checks** with their titles: **Special ink**, **Press order of the special inks**, **White ink on white paper**, **Text under a die-cut**, **Die-cut near the trim**, **Die-cut in the gutter**, **Unknown die shape**.
 
 [Design and checks](/en/docs/sandbox-design-checks) and [Previews](/en/docs/sandbox-previews#canvas-tab) describe the panels in full.
@@ -348,5 +348,6 @@ renderPageToCanvas(doc.pages[0]!, doc, canvas, { scale: 2, beneath: (i) => paint
 - The finish mask does not see everything. A formula drawn as a picture in a special ink knocks the ink out of the mask instead of showing it, gradient stops in special inks are not mapped, and an SVG that uses a varnish ink still paints its hex on screen unless it is recoloured. A white ink whose screen hex is exactly `#ffffff` cannot be told from the sheet: give it a slightly darker hex.
 - Text inside a composed page's frames does not yet wrap around a hole: only flowing text does. Check composed pages with `dieCutText`.
 - A cut element in a spread template is not split between the two pages.
-- The HTML viewer cuts holes on composed pages but does not draw the pages beneath them.
+- The HTML viewer draws the pages beneath a hole only for composed pages on the print leaf. In Folio, the edges of the book block stay square under rounded page corners.
+- With the Sandbox showing one chapter, a hole on the chapter's last leaves shows the board instead of the next chapter: switch to the whole book to see it.
 - The PDF prints the page whole and draws the die line: the hole is the die-maker's work.
