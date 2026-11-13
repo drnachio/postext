@@ -48,4 +48,26 @@ describe('a section palette gives its pages their own paper (#506)', () => {
     const doc = buildDocument({ markdown: MD.replace(' {style="business"}', '') }, config({ hex: '#f6f4ef', model: 'hex', paletteId: 'paper' }), createMeasurementCache());
     expect(doc.pages.every((p) => p.background === undefined)).toBe(true);
   });
+
+  it('keeps a linked page colour when another entry of the same value is overridden (#1557)', () => {
+    const base = config({ hex: '#f6f4ef', model: 'hex', paletteId: 'paper' });
+    const cfg: PostextConfig = {
+      ...base,
+      colorPalette: [...base.colorPalette!, { id: 'onBand', name: 'onBand', value: { hex: '#f6f4ef', model: 'hex' } }],
+      headingStyles: [{ id: 'business', palette: { onBand: '#1b2430' } }],
+    };
+    const doc = buildDocument({ markdown: MD }, cfg, createMeasurementCache());
+    expect(doc.pages.every((p) => p.background === undefined)).toBe(true);
+  });
+
+  it('still matches an unlinked page colour by value when an entry shares it (#1557)', () => {
+    const base = config({ hex: '#f6f4ef', model: 'hex' });
+    const cfg: PostextConfig = {
+      ...base,
+      colorPalette: [...base.colorPalette!, { id: 'onBand', name: 'onBand', value: { hex: '#f6f4ef', model: 'hex' } }],
+      headingStyles: [{ id: 'business', palette: { onBand: '#1b2430' } }],
+    };
+    const doc = buildDocument({ markdown: MD }, cfg, createMeasurementCache());
+    expect(doc.pages.some((p) => p.background === '#1b2430')).toBe(true);
+  });
 });

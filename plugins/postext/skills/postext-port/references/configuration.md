@@ -1115,6 +1115,9 @@ number; each callout style's fills / border / rules / text; each colour of each 
 caption style. Still by value (the override wins): settings in different places that set the same
 colour of a block (`bodyText.color` vs a callout `body.color`, a paragraph style `color`,
 `bodyText.blockquote.color`) linked to such entries: give those entries distinct base values.
+The page colour (`page.backgroundColor`) linked by `paletteId` follows its own entry only
+(postext ≥ 1.82.1): a section overriding another entry of the same base value (`onBand` white like
+`paper`) leaves the paper alone. Unlinked, it is still matched by value.
 Page role of a part page = `'part'` (filter running heads with `pages`).
 
 ---------------------------------------------------------------------------------
