@@ -1,7 +1,7 @@
 // A leaf's shape: the open book's two surfaces, the fold and roll of a
 // turning leaf, how far through its turn it is, and laying its mesh out
 // (#1276: split out of pageFlip.ts).
-import { BufferGeometry, Mesh, BoxGeometry, MeshStandardMaterial, Plane, Vector3 } from 'three';
+import { BufferAttribute, BufferGeometry, Mesh, BoxGeometry, MeshStandardMaterial, Plane, PlaneGeometry, Vector3 } from 'three';
 import { along, type Profile, topAt } from '../bookGeometry.js';
 import type { PaperSpec } from '../paper.js';
 import { ROLL, BLOCK_GAP, NX, NY, OWN_GAP } from './constants.js';
@@ -24,6 +24,28 @@ export function spreadColumns(geometry: BufferGeometry, nx: number) {
   const uv = geometry.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setX(i, column((i % (nx + 1)) / nx));
   uv.needsUpdate = true;
+}
+
+/** A leaf's mesh: a grid of NX × NY columns from the spine, its ambient
+ *  occlusion clear, and the side of a board it draws (see
+ *  {@link setLeafFace}). */
+export function leafGeometry(): PlaneGeometry {
+  const geometry = new PlaneGeometry(1, 1, NX, NY);
+  spreadColumns(geometry, NX);
+  const n = geometry.attributes.position.count;
+  geometry.setAttribute("ao", new BufferAttribute(new Float32Array(n).fill(1), 1));
+  geometry.setAttribute("leafFace", new BufferAttribute(new Float32Array(n), 1));
+  return geometry;
+}
+
+/** Which side of a leaf's mesh looks out of it: +1 its front, −1 its back
+ *  (a board's two faces, each drawn by a mesh of its own: the other side is
+ *  inside the board, seen only through a hole, #1586), 0 both (a sheet). */
+export function setLeafFace(geometry: BufferGeometry, face: -1 | 0 | 1) {
+  const attr = geometry.attributes.leafFace as BufferAttribute | undefined;
+  if (!attr || attr.getX(0) === face) return;
+  (attr.array as Float32Array).fill(face);
+  attr.needsUpdate = true;
 }
 
 /** max(a, b), rounded over a band `k` wide (no crease where they meet). */

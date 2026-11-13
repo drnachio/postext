@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildDocument, type PostextConfig, type VDTDocument } from "postext";
 import { Texture } from "three";
 import { FinishTextures } from "./pageFlip/finish.js";
-import { CUT_AIR, CUT_OFF, CUT_OPEN, cutUniforms, dressCut, type CutSources } from "./pageFlip/through.js";
+import { CUT_AIR, CUT_OFF, CUT_OPEN, boardEdges, cutUniforms, dressCut, leafCut, leafCutOf, type CutSources } from "./pageFlip/through.js";
+import { leafGeometry, setLeafFace } from "./pageFlip/leaf.js";
 import { cachedThrough, isCut, pagesThrough, withPagesThrough } from "./postext/through.js";
 import { finishesOf } from "./viewer/constants.js";
 
@@ -125,7 +126,7 @@ describe("cut uniforms", () => {
     const caster = { material: "shared" as unknown };
     const leaf = meshOf(CUT_AIR, "b.png", "z.png");
     leaf.userData.caster = caster;
-    const cut = { uniforms: { uCut: { value: null }, uCutBack: { value: 1 }, uMirror: { value: 1 } } };
+    const cut = { uniforms: { uCut: { value: null }, uCutBack: { value: 1 }, uMirror: { value: 1 }, uHasCut: { value: 0 } } };
     dressCut(leaf, sources, 0.5, { shared: "shared", cut: () => cut });
     expect(leaf.material.userData.uniforms.uHasFrontThrough.value).toBe(0);
     expect(leaf.customDepthMaterial).toBeDefined();
@@ -138,5 +139,64 @@ describe("cut uniforms", () => {
     expect(leaf.customDepthMaterial).toBeUndefined();
     expect(caster.material).toBe("shared");
     expect(CUT_OFF).toBe(0);
+  });
+
+  // #1586: holes that go through to the end of a book with no case (its
+  // own printed covers, or folded sheets) show the desk the book lies on.
+  it("lets an open page whose holes reach the book's end show the desk", () => {
+    const f = new FinishTextures();
+    f.set(new Map([["a.png", { cut: true, through: { ...through, end: true } }], ["c.png", { cut: true, through }]]));
+    const caster = { material: "shared" as unknown };
+    const cut = { uniforms: { uCut: { value: null }, uCutBack: { value: 1 }, uMirror: { value: 1 }, uHasCut: { value: 0 } } };
+    const open = meshOf(CUT_OPEN, "a.png", "z.png");
+    open.userData.caster = caster;
+    dressCut(open, f, 0.5, { shared: "shared", cut: () => cut }, true);
+    const u = open.material.userData.uniforms;
+    expect([u.uFrontEnd.value, u.uBackEnd.value, u.uSeeDesk.value]).toEqual([3, 0, 1]);
+    // The key light and the sky pass through the holes to the desk.
+    expect(open.customDepthMaterial).toBeDefined();
+    expect(caster.material).toBe(cut);
+    expect(cut.uniforms.uHasCut.value).toBe(1);
+    expect(leafCutOf(open).uCut.value).toBe(u.uFront.value);
+    // In a case, the board lies past the end: drawn, nothing let through.
+    dressCut(open, f, 0.5, { shared: "shared", cut: () => cut }, false);
+    expect(u.uSeeDesk.value).toBe(0);
+    expect(open.customDepthMaterial).toBeUndefined();
+    expect(caster.material).toBe("shared");
+    // Holes that stop at a page beneath keep the page solid in depth.
+    const shallow = meshOf(CUT_OPEN, "c.png", "z.png");
+    dressCut(shallow, f, 0.5, { shared: "shared", cut: () => cut }, true);
+    expect(shallow.material.userData.uniforms.uFrontEnd.value).toBe(0);
+    expect(shallow.customDepthMaterial).toBeUndefined();
+  });
+
+  it("carries the end of a through picture to its texture", () => {
+    const f = new FinishTextures();
+    f.set(new Map([["a.png", { cut: true, through: { ...through, end: true } }], ["b.png", { cut: true, through }]]));
+    expect(f.throughOf("a.png")?.end).toBe(true);
+    expect(f.throughOf("b.png")?.end).toBeUndefined();
+  });
+
+  it("builds a board's edges without lids, so a hole stays open through it", () => {
+    const cut = leafCut();
+    const { geometry, material } = boardEdges(cut);
+    // Four sides of two triangles; no face looks along z.
+    expect(geometry.index!.count).toBe(24);
+    const normal = geometry.attributes.normal!;
+    for (const i of geometry.index!.array) expect(Math.abs(normal.getZ(i))).toBe(0);
+    expect(cut.uHasCut.value).toBe(0);
+    geometry.dispose();
+    material.dispose();
+  });
+
+  it("marks which side of a board's mesh looks out", () => {
+    const g = leafGeometry();
+    const face = g.attributes.leafFace!;
+    expect(face.getX(0)).toBe(0);
+    setLeafFace(g, -1);
+    expect([face.getX(0), face.getX(face.count - 1)]).toEqual([-1, -1]);
+    setLeafFace(g, 0);
+    expect(face.getX(3)).toBe(0);
+    g.dispose();
   });
 });

@@ -7,13 +7,20 @@
 //   The fragment walks the view ray down the stack a leaf at a time: a
 //   layer shows where the ray reaches it, a cut wall where it meets paper
 //   first; the key light's ray is walked back up for the shadow the walls
-//   throw, and the deep pages darken with depth.
+//   throw, and the deep pages darken with depth. Where the holes go
+//   through to the end of the book and nothing lies past it but the desk
+//   (a book whose own printed covers are its case, #1586), the ray leaves
+//   the book: the page discards there and the desk shows, in the key
+//   light's depth too, so light falls through.
 // - A leaf in the air (or the block of a long jump) is real geometry: it
 //   discards its holes, in its colour, in its key-light depth and in the
 //   height map, so the open page under it shows and shadows fall through.
+//   A board in the air is two faces with its edges between them: the edges
+//   follow the leaf's outline and leave the holes open, and a face seen
+//   from inside the board, through a hole, is the board's core (#1586).
 // - Paper cut away past the leaf's outline (rounded corners, a shaped
 //   book) is discarded everywhere.
-import { DataTexture, LinearFilter, MeshDepthMaterial, RGBADepthPacking, RGBAFormat, SRGBColorSpace, UnsignedByteType, type Texture } from 'three';
+import { BoxGeometry, DataTexture, LinearFilter, MeshDepthMaterial, MeshStandardMaterial, RGBADepthPacking, RGBAFormat, SRGBColorSpace, UnsignedByteType, type Texture } from 'three';
 
 /** A through picture as the document side paints it: RGBA bytes, top row
  *  first; RGB the stack seen through the holes, A the depth code (0 off
@@ -23,6 +30,9 @@ export interface FaceThroughData {
   height: number;
   data: Uint8ClampedArray;
   layers: number;
+  /** The deepest layer is past the book's end (the board or what the
+   *  book lies on), not a page. */
+  end?: boolean;
 }
 
 /** A through picture as a texture: its colour sRGB like the pages' (the
@@ -57,6 +67,13 @@ export interface CutUniforms {
   uThroughLayers: { value: number };
   /** A leaf's thickness, book units. */
   uLeafDepth: { value: number };
+  /** The depth code of the layer past the book's end, per face (0: the
+   *  holes stop at a page). */
+  uFrontEnd: { value: number };
+  uBackEnd: { value: number };
+  /** Nothing lies past the book's end but the desk (no case): the ray
+   *  that gets there leaves the book. */
+  uSeeDesk: { value: number };
 }
 
 export const cutUniforms = (mode: number): CutUniforms => ({
@@ -69,6 +86,9 @@ export const cutUniforms = (mode: number): CutUniforms => ({
   uHasBackThrough: { value: 0 },
   uThroughLayers: { value: 0 },
   uLeafDepth: { value: 1 },
+  uFrontEnd: { value: 0 },
+  uBackEnd: { value: 0 },
+  uSeeDesk: { value: 0 },
 });
 
 /** Declarations for the page material's fragment shader. */
@@ -82,6 +102,9 @@ export const CUT_PARS = /* glsl */ `
   uniform float uHasBackThrough;
   uniform float uThroughLayers;
   uniform float uLeafDepth;
+  uniform float uFrontEnd;
+  uniform float uBackEnd;
+  uniform float uSeeDesk;
   // The direct light a hole's wall keeps from a point deep in it, and the
   // sky its depth leaves it.
   float throughLit = 1.0;
@@ -161,6 +184,10 @@ export const CUT_FRAGMENT = /* glsl */ `
           if (d < k) { wall = 1.0; break; }
           if (d < k + 0.5) break;
         }
+        // Out past the book's last page with nothing there but the desk:
+        // the page lets the eye through, to the real desk under the book.
+        float endK = front ? uFrontEnd : uBackEnd;
+        if (uSeeDesk > 0.5 && endK > 0.5 && wall < 0.5 && k > endK - 0.5) discard;
         // The key's ray from there back up: paper on its way is a wall's
         // shadow.
         float lit = 1.0;
@@ -185,9 +212,8 @@ export const CUT_FRAGMENT = /* glsl */ `
  * page texture's alpha discarding the holes (the leaf's front, or its back
  * read through the paper), so the key's shadow falls through them.
  */
-export function cutDepthMaterial(): MeshDepthMaterial & { userData: { cut: { uCut: { value: Texture | null }; uCutBack: { value: number }; uMirror: { value: number } } } } {
+export function cutDepthMaterial(cut: LeafCut = leafCut()): MeshDepthMaterial & { userData: { cut: LeafCut } } {
   const m = new MeshDepthMaterial({ depthPacking: RGBADepthPacking }) as ReturnType<typeof cutDepthMaterial>;
-  const cut = { uCut: { value: null as Texture | null }, uCutBack: { value: 0 }, uMirror: { value: 0 } };
   m.userData.cut = cut;
   m.onBeforeCompile = (shader) => {
     Object.assign(shader.uniforms, cut);
@@ -201,23 +227,69 @@ export function cutDepthMaterial(): MeshDepthMaterial & { userData: { cut: { uCu
   return m;
 }
 
+/** A leaf's cut as its depth material, its caster and a board's edges
+ *  read it: the painted face whose alpha is the cut, whether that is its
+ *  back, the book's mirroring, and whether there is a cut at all. */
+export interface LeafCut {
+  uCut: { value: Texture | null };
+  uCutBack: { value: number };
+  uMirror: { value: number };
+  uHasCut: { value: number };
+}
+
+export const leafCut = (): LeafCut => ({ uCut: { value: null }, uCutBack: { value: 0 }, uMirror: { value: 0 }, uHasCut: { value: 0 } });
+
 /** The leaf's cut at a point, from either face's texture. */
 const CUT_UV_PARS = /* glsl */ `
   uniform sampler2D uCut;
   uniform float uCutBack;
   uniform float uMirror;
+  uniform float uHasCut;
   varying vec2 vCutUv;
 `;
 const CUT_DISCARD = /* glsl */ `
-  {
+  if (uHasCut > 0.5) {
     float u = uMirror > 0.5 ? 1.0 - vCutUv.x : vCutUv.x;
     vec2 st = uCutBack > 0.5 ? vec2(1.0 - u, vCutUv.y) : vec2(u, vCutUv.y);
-    if (texture2D(uCut, st).a < 0.5) discard;
+    // Kept a hair inside the sheet: a board's edges stand on its rim.
+    if (texture2D(uCut, clamp(st, 0.002, 0.998)).a < 0.5) discard;
   }
 `;
 
+/**
+ * The edges of a board in the air (#1586): a unit box's four sides (its
+ * two faces are the leaf's meshes), its colour the board's. Each side
+ * stands only where the leaf has paper at its rim: a rounded or shaped
+ * outline takes its edges with it. Without a lid between the two faces a
+ * hole stays open through the board's thickness.
+ */
+export function boardEdges(cut: LeafCut): { geometry: BoxGeometry; material: MeshStandardMaterial } {
+  const box = new BoxGeometry(1, 1, 1);
+  // A box's groups run +x, −x, +y, −y, +z, −z: the faces are the last two.
+  const sides = box.groups.slice(0, 4).reduce((n, g) => n + g.count, 0);
+  box.setIndex(Array.from(box.index!.array.slice(0, sides)));
+  box.clearGroups();
+  const material = new MeshStandardMaterial({ roughness: 0.8 });
+  material.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, cut);
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", "#include <common>\nvarying vec2 vCutUv;")
+      // The box's x runs from the spine (−½) to the fore-edge, y from foot
+      // to head: the leaf's own uv.
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvCutUv = position.xy + 0.5;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", `#include <common>\n${CUT_UV_PARS}`)
+      .replace("#include <clipping_planes_fragment>", `#include <clipping_planes_fragment>\n${CUT_DISCARD}`);
+  };
+  return { geometry: box, material };
+}
+
 /** The same discard for the height-map caster of a cut leaf. */
 export const CASTER_CUT = { pars: CUT_UV_PARS, discard: CUT_DISCARD };
+
+/** The leaf's cut uniforms its depth material and its board's edges share,
+ *  made once per mesh. */
+export const leafCutOf = (mesh: { userData: Record<string, unknown> }): LeafCut => (mesh.userData.leafCut ??= leafCut()) as LeafCut;
 
 type CutMesh = {
   material: { userData: { uniforms: CutUniforms & { uFront: { value: Texture | null }; uBack: { value: Texture | null }; uMirror: { value: number } } } };
@@ -228,16 +300,18 @@ type CutMesh = {
 /** What a page mesh's two faces carry, from the book's finishes. */
 export interface CutSources {
   cutOf(src: unknown): boolean;
-  throughOf(src: unknown): { texture: Texture; layers: number } | null;
+  throughOf(src: unknown): { texture: Texture; layers: number; end?: boolean } | null;
 }
 
 /**
  * Sets a page mesh's cut uniforms from the pages on its faces: which face
  * is cut, what its holes show (open pages), a leaf's thickness, and for a
  * leaf in the air its key-light depth material and its caster, which
- * discard the holes (the shared caster again once it is not cut).
+ * discard the holes (the shared caster again once it is not cut). `desk`:
+ * nothing lies past the book's end but the desk (no case), so an open page
+ * whose holes reach it lets the key light through them too.
  */
-export function dressCut(mesh: CutMesh, sources: CutSources, leafDepth: number, caster: { shared: unknown; cut: () => unknown }) {
+export function dressCut(mesh: CutMesh, sources: CutSources, leafDepth: number, caster: { shared: unknown; cut: () => unknown }, desk = false) {
   const u = mesh.material.userData.uniforms;
   const front = mesh.userData.Front;
   const back = mesh.userData.Back;
@@ -254,25 +328,37 @@ export function dressCut(mesh: CutMesh, sources: CutSources, leafDepth: number, 
   u.uBackThrough.value = bt?.texture ?? null;
   u.uHasBackThrough.value = bt ? 1 : 0;
   u.uThroughLayers.value = Math.max(ft?.layers ?? 0, bt?.layers ?? 0);
-  if (u.uCutMode.value !== CUT_AIR) return;
-  // A leaf: its holes from whichever face is painted and cut.
+  u.uFrontEnd.value = ft?.end ? ft.layers : 0;
+  u.uBackEnd.value = bt?.end ? bt.layers : 0;
+  u.uSeeDesk.value = desk ? 1 : 0;
+  const air = u.uCutMode.value === CUT_AIR;
+  // The face's holes, from whichever face is painted and cut.
   const tex = fc && u.uFront.value ? u.uFront.value : bc && u.uBack.value ? u.uBack.value : null;
+  const shared = leafCutOf(mesh);
+  shared.uCut.value = tex;
+  shared.uHasCut.value = tex ? 1 : 0;
+  shared.uCutBack.value = tex && tex !== u.uFront.value ? 1 : 0;
+  shared.uMirror.value = u.uMirror.value;
+  // An open page drops its holes from the key light's depth only where the
+  // desk shows through them: elsewhere the pages beneath are its own
+  // picture, shadowed by the walk.
+  const throughToDesk = open && desk && !!(ft?.end || bt?.end);
   const casterMesh = mesh.userData.caster as { material: unknown } | undefined;
-  if (!tex) {
+  if (!tex || !(air || throughToDesk)) {
     mesh.customDepthMaterial = undefined;
     if (casterMesh) casterMesh.material = caster.shared;
     return;
   }
-  const depth = (mesh.userData.cutDepth ??= cutDepthMaterial()) as ReturnType<typeof cutDepthMaterial>;
+  mesh.customDepthMaterial = (mesh.userData.cutDepth ??= cutDepthMaterial(shared)) as ReturnType<typeof cutDepthMaterial>;
+  if (!casterMesh) return;
   const cutCaster = (mesh.userData.cutCaster ??= caster.cut()) as { uniforms: Record<string, { value: unknown }> };
-  for (const c of [depth.userData.cut, cutCaster.uniforms]) {
-    c.uCut!.value = tex;
-    c.uCutBack!.value = tex === u.uFront.value ? 0 : 1;
-    c.uMirror!.value = u.uMirror.value;
-  }
-  mesh.customDepthMaterial = depth;
-  if (casterMesh) casterMesh.material = cutCaster;
+  const c = cutCaster.uniforms;
+  c.uCut!.value = tex;
+  c.uCutBack!.value = shared.uCutBack.value;
+  c.uMirror!.value = shared.uMirror.value;
+  c.uHasCut!.value = 1;
+  casterMesh.material = cutCaster;
 }
 
 /** The caster discard's uniforms, fresh for each cut leaf. */
-export const casterCut = () => ({ ...CASTER_CUT, uniforms: { uCut: { value: null }, uCutBack: { value: 0 }, uMirror: { value: 0 } } });
+export const casterCut = () => ({ ...CASTER_CUT, uniforms: { ...leafCut() } as Record<string, { value: unknown }> });

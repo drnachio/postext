@@ -104,12 +104,12 @@ export class FinishTextures {
 
   /** The through texture of the page whose source is `src` and how many
    *  layers it holds, if its holes show any. */
-  throughOf(src: unknown): { texture: Texture; layers: number } | null {
+  throughOf(src: unknown): { texture: Texture; layers: number; end?: boolean } | null {
     const through = src ? this.bySrc.get(src)?.through : undefined;
     if (!through) return null;
     let t = this.throughs.get(through);
     if (!t) this.throughs.set(through, (t = throughTexture(through)));
-    return { texture: t, layers: through.layers };
+    return { texture: t, layers: through.layers, ...(through.end ? { end: true } : {}) };
   }
 
   /** The textures alive (for tests and for the frame budget). */

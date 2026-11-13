@@ -118,8 +118,10 @@ export function pageMaterial(mirror: boolean, sign: number, cutMode = CUT_OFF): 
         "#include <common>",
         `#include <common>
         attribute float ao;
+        attribute float leafFace;
         varying float vAo;
         varying vec2 vPageUv;
+        varying float vLeafFace;
         ${BOOK_POS_PARS}`,
       )
       .replace(
@@ -127,6 +129,7 @@ export function pageMaterial(mirror: boolean, sign: number, cutMode = CUT_OFF): 
         `#include <begin_vertex>
         vAo = ao;
         vPageUv = uv;
+        vLeafFace = leafFace;
         ${BOOK_POS}`,
       );
     shader.fragmentShader = keyShadowed(shader.fragmentShader)
@@ -168,6 +171,7 @@ export function pageMaterial(mirror: boolean, sign: number, cutMode = CUT_OFF): 
         uniform vec3 uReflectionNormal;
         varying float vAo;
         varying vec2 vPageUv;
+        varying float vLeafFace;
         varying vec3 vBookPos;
         ${FINISH_PARS}
         ${CUT_PARS}
@@ -215,6 +219,17 @@ export function pageMaterial(mirror: boolean, sign: number, cutMode = CUT_OFF): 
           }
           ${CUT_FRAGMENT}
           ${FINISH_READ}
+          // A board's face seen from inside the board, through a hole in
+          // the other face (#1586): the board's core, unprinted. A board
+          // draws each face from its own mesh, leafFace the side that
+          // looks out (+1 the front, −1 the back; 0 a sheet, both).
+          if (vLeafFace * (gl_FrontFacing ? 1.0 : -1.0) < -0.5) {
+            ink = uPaper * 0.8;
+            cutA = 1.0;
+            finishMask = vec4(0.0);
+            finishSheen = 0.0;
+            finishCover = 0.0;
+          }
           // The other side's print, seen through the sheet (the same point
           // of paper, so mirrored as it should be).
           float other = front ? uHasBack : uHasFront;

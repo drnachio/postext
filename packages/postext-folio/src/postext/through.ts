@@ -62,7 +62,8 @@ export function withPagesThrough(doc: VDTDocument, around: Iterable<number>): { 
  * wide, from the paintings of the pages beneath (trimmed, as Folio paints
  * them; `canvasOf` gives none for a page not painted yet: its paper is
  * drawn). RGB the layer seen straight down, A its depth: 0 off the holes,
- * k for the k-th layer beneath (the board past the book's end included).
+ * k for the k-th layer beneath (the board past the book's end included,
+ * and then marked `end`: the viewer knows what lies there).
  * Undefined for a page without holes or where no canvas can be read.
  */
 export function paintThrough(doc: VDTDocument, i: number, width: number, canvasOf: (j: number) => CanvasImageSource | null | undefined): FaceThroughData | undefined {
@@ -143,7 +144,7 @@ export function paintThrough(doc: VDTDocument, i: number, width: number, canvasO
     data[p + 2] = rgb[p + 2]!;
     data[p + 3] = code;
   }
-  return { width: w, height: h, data, layers: layers.length };
+  return { width: w, height: h, data, layers: layers.length, ...(layers[layers.length - 1]!.pageIndex < 0 ? { end: true } : {}) };
 }
 
 const ids = new WeakMap<object, number>();
