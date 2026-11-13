@@ -1,7 +1,7 @@
 import { resolveColorValue, resolveDiagramStyleConfig, type PostextConfig, type Resource, type VDTDocument } from 'postext';
 import type { EpubCover } from 'postext-epub';
 import { ensureResourceImages } from '../controls/media/resourceImages.js';
-import { renderCoverImage } from '../covers/useAutoCover.js';
+import { renderCoverImage } from '../covers/renderCover.js';
 import { bookCoverPicture, RENDERED_COVER_WIDTH, usableCover } from './inputs.js';
 
 /** The book's own cover picture, when it is a bitmap large enough. A
