@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "“__ink__” (__finish__) s’imprimeix en la seva pròpia planxa. Demana la tinta a la impremta amb aquest nom.",
     "preflightWhiteInkOnWhite": "Tinta blanca sobre paper blanc",
     "preflightWhiteInkOnWhiteDetail": "“__ink__” és un blanc opac en una pàgina amb paper blanc o sense definir: no es veurà. Defineix el color del paper o imprimeix sobre paper de color.",
+    "preflightInkPressOrder": "Ordre de les tintes especials a màquina",
+    "preflightInkPressOrderDetail": "Els blancs s’imprimeixen primer, sota els colors: __first__. Els vernissos, al final, a sobre: __last__. Indica-ho a la impremta, que fixa l’ordre a màquina.",
     "preflightDieCutText": "Text sota un troquel",
     "preflightDieCutTextDetail": "Hi ha text sota la forma de troquel “__die__” i es perd amb el forat. Activa El text l’envolta o mou la forma.",
     "preflightDieCutTrim": "Troquel a prop del tall",

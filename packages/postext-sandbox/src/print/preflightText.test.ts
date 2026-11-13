@@ -27,4 +27,11 @@ describe('special-ink and die-cut findings', () => {
     expect(preflightDetail(check({ kind: 'dieCutTrim', source: 'moon' }), DEFAULT_LABELS)).toContain('“moon”');
     expect(preflightDetail(check({ kind: 'dieCutGutter', id: 'moon' }), DEFAULT_LABELS)).toContain('“moon”');
   });
+
+  it('give the press order of white inks and varnishes', () => {
+    expect(preflightTitle(check({ kind: 'inkPressOrder' }), DEFAULT_LABELS)).toBe(DEFAULT_LABELS.preflightInkPressOrder);
+    const detail = preflightDetail(check({ kind: 'inkPressOrder', first: ['Opaque white'], last: [] }), DEFAULT_LABELS);
+    expect(detail).toContain('Opaque white');
+    expect(detail).toContain('—');
+  });
 });

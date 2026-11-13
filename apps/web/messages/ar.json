@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "«__ink__» (__finish__) يُطبع على لوحه الخاص. اطلب الحبر من المطبعة بهذا الاسم.",
     "preflightWhiteInkOnWhite": "حبر أبيض على ورق أبيض",
     "preflightWhiteInkOnWhiteDetail": "«__ink__» أبيض معتم على صفحة ورقها أبيض أو غير محدد: لن يظهر. حدّد لون الورق أو اطبع على ورق ملوّن.",
+    "preflightInkPressOrder": "ترتيب طباعة الأحبار الخاصة",
+    "preflightInkPressOrderDetail": "يُطبع الأبيض أولًا تحت الألوان: __first__. ويُطبع الورنيش أخيرًا فوقها: __last__. أبلغ المطبعة، فهي التي تضبط الترتيب على الآلة.",
     "preflightDieCutText": "نص تحت القص",
     "preflightDieCutTextDetail": "يمر نص تحت شكل القص «__die__» ويُقطع مع الفتحة. فعّل «النص يبتعد عنه» أو حرّك الشكل.",
     "preflightDieCutTrim": "قص قريب من حافة القطع",

@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "“__ink__”（__finish__）印在单独的印版上。请按此名称向印刷厂订购油墨。",
     "preflightWhiteInkOnWhite": "白墨印在白纸上",
     "preflightWhiteInkOnWhiteDetail": "“__ink__”是不透明白，所在页面的纸张为白色或未设置：印出来看不见。请设置纸张颜色，或改用有色纸。",
+    "preflightInkPressOrder": "专色油墨的印刷顺序",
+    "preflightInkPressOrderDetail": "白墨先印，在彩色之下：__first__。上光油最后印，在彩色之上：__last__。请告知印刷厂，由其在机上安排顺序。",
     "preflightDieCutText": "模切下有文字",
     "preflightDieCutTextDetail": "有文字位于模切形状“__die__”之下，会随孔洞被切掉。请打开“文字避让”，或移动该形状。",
     "preflightDieCutTrim": "模切靠近裁切线",

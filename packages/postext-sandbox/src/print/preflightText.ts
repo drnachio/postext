@@ -50,11 +50,13 @@ interface SpecialFinding {
   name?: string;
   finish?: InkFinish | InkFinish['kind'];
   die?: string;
+  first?: string[];
+  last?: string[];
   source?: string;
   id?: string;
 }
 
-const SPECIAL_KINDS = ['spotInkFinish', 'whiteInkOnWhite', 'dieCutText', 'dieCutTrim', 'dieCutGutter'] as const;
+const SPECIAL_KINDS = ['spotInkFinish', 'inkPressOrder', 'whiteInkOnWhite', 'dieCutText', 'dieCutTrim', 'dieCutGutter'] as const;
 
 /** Whether a preflight kind is one of the special-ink or die-cut findings. */
 export function isSpecialFindingKind(kind: string): kind is (typeof SPECIAL_KINDS)[number] {
@@ -64,6 +66,7 @@ export function isSpecialFindingKind(kind: string): kind is (typeof SPECIAL_KIND
 function specialFindingTitle(check: SpecialFinding, labels: SandboxLabels): string {
   switch (check.kind) {
     case 'spotInkFinish': return labels.preflightSpotInkFinish;
+    case 'inkPressOrder': return labels.preflightInkPressOrder;
     case 'whiteInkOnWhite': return labels.preflightWhiteInkOnWhite;
     case 'dieCutText': return labels.preflightDieCutText;
     case 'dieCutTrim': return labels.preflightDieCutTrim;
@@ -72,12 +75,16 @@ function specialFindingTitle(check: SpecialFinding, labels: SandboxLabels): stri
   }
 }
 
+/** Ink names for a detail line, or a dash when there are none. */
+const list = (names: string[] | undefined): string => (names && names.length > 0 ? names.join(', ') : '—');
+
 function specialFindingDetail(check: SpecialFinding, labels: SandboxLabels): string {
   const ink = check.ink ?? check.name ?? '';
   const die = check.die ?? check.source ?? check.id ?? '';
   const finish = typeof check.finish === 'string' ? { kind: check.finish } : check.finish;
   switch (check.kind) {
     case 'spotInkFinish': return fill(labels.preflightSpotInkFinishDetail, { ink, finish: finish ? finishText(finish, labels) : '—' });
+    case 'inkPressOrder': return fill(labels.preflightInkPressOrderDetail, { first: list(check.first), last: list(check.last) });
     case 'whiteInkOnWhite': return fill(labels.preflightWhiteInkOnWhiteDetail, { ink });
     case 'dieCutText': return fill(labels.preflightDieCutTextDetail, { die });
     case 'dieCutTrim': return fill(labels.preflightDieCutTrimDetail, { die });

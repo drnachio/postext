@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "„__ink__“ (__finish__) wird auf einer eigenen Platte gedruckt. Bestellen Sie die Farbe bei der Druckerei unter diesem Namen.",
     "preflightWhiteInkOnWhite": "Weiße Farbe auf weißem Papier",
     "preflightWhiteInkOnWhiteDetail": "„__ink__“ ist ein Deckweiß auf einer Seite mit weißem oder nicht gesetztem Papier: Es bleibt unsichtbar. Legen Sie die Papierfarbe fest oder drucken Sie auf farbigem Papier.",
+    "preflightInkPressOrder": "Druckreihenfolge der Sonderfarben",
+    "preflightInkPressOrderDetail": "Weiß wird zuerst gedruckt, unter den Farben: __first__. Lacke zuletzt, darüber: __last__. Teilen Sie es der Druckerei mit, die die Reihenfolge an der Maschine festlegt.",
     "preflightDieCutText": "Text unter einer Stanzung",
     "preflightDieCutTextDetail": "Text läuft unter der Stanzform „__die__“ und wird mit dem Loch ausgestanzt. Schalten Sie „Text weicht aus“ ein oder verschieben Sie die Form.",
     "preflightDieCutTrim": "Stanzung nahe am Beschnitt",

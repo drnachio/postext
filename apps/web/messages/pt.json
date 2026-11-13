@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "“__ink__” (__finish__) é impressa em sua própria chapa. Peça a tinta à gráfica por esse nome.",
     "preflightWhiteInkOnWhite": "Tinta branca em papel branco",
     "preflightWhiteInkOnWhiteDetail": "“__ink__” é um branco opaco numa página de papel branco ou não definido: não vai aparecer. Defina a cor do papel ou imprima em papel colorido.",
+    "preflightInkPressOrder": "Ordem das tintas especiais na impressão",
+    "preflightInkPressOrderDetail": "Os brancos imprimem primeiro, sob as cores: __first__. Os vernizes por último, por cima: __last__. Informe a gráfica, que define a ordem na máquina.",
     "preflightDieCutText": "Texto sob uma faca",
     "preflightDieCutTextDetail": "Há texto sob a forma de faca “__die__”, e ele sai junto com o furo. Ative O texto contorna ou mova a forma.",
     "preflightDieCutTrim": "Faca perto do refile",

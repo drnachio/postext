@@ -6203,6 +6203,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   preflightSpotInkFinishDetail: "“__ink__” (__finish__) prints on a plate of its own. Ask the printer for the ink by that name.",
   preflightWhiteInkOnWhite: "White ink on white paper",
   preflightWhiteInkOnWhiteDetail: "“__ink__” is an opaque white on a page whose paper is white or not set: it will not show. Set the paper colour, or print on coloured stock.",
+  preflightInkPressOrder: "Press order of the special inks",
+  preflightInkPressOrderDetail: "White inks print first, under the colours: __first__. Varnishes print last, over them: __last__. Tell the printer, who sets the order on press.",
   preflightDieCutText: "Text under a die-cut",
   preflightDieCutTextDetail: "Text runs under die shape “__die__” and is cut away with the hole. Turn on Text keeps clear, or move the shape.",
   preflightDieCutTrim: "Die-cut near the trim",

@@ -6384,6 +6384,8 @@ export interface SandboxLabels {
   preflightSpotInkFinishDetail: string;
   preflightWhiteInkOnWhite: string;
   preflightWhiteInkOnWhiteDetail: string;
+  preflightInkPressOrder: string;
+  preflightInkPressOrderDetail: string;
   preflightDieCutText: string;
   preflightDieCutTextDetail: string;
   preflightDieCutTrim: string;

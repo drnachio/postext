@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "« __ink__ » (__finish__) s’imprime sur sa propre plaque. Demandez l’encre à l’imprimeur sous ce nom.",
     "preflightWhiteInkOnWhite": "Encre blanche sur papier blanc",
     "preflightWhiteInkOnWhiteDetail": "« __ink__ » est un blanc opaque sur une page au papier blanc ou non défini : il ne se verra pas. Définissez la couleur du papier ou imprimez sur un papier de couleur.",
+    "preflightInkPressOrder": "Ordre des encres spéciales sous presse",
+    "preflightInkPressOrderDetail": "Les blancs s’impriment d’abord, sous les couleurs : __first__. Les vernis en dernier, par-dessus : __last__. Indiquez-le à l’imprimeur, qui règle l’ordre sous presse.",
     "preflightDieCutText": "Texte sous une découpe",
     "preflightDieCutTextDetail": "Du texte passe sous la forme de découpe « __die__ » et part avec la découpe. Activez Le texte l’évite, ou déplacez la forme.",
     "preflightDieCutTrim": "Découpe près de la coupe",

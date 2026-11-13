@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "“__ink__” (__finish__) se imprime en su propia plancha. Pide la tinta a la imprenta con ese nombre.",
     "preflightWhiteInkOnWhite": "Tinta blanca sobre papel blanco",
     "preflightWhiteInkOnWhiteDetail": "“__ink__” es un blanco opaco en una página cuyo papel es blanco o no está definido: no se verá. Define el color del papel o imprime sobre papel de color.",
+    "preflightInkPressOrder": "Orden de las tintas especiales en máquina",
+    "preflightInkPressOrderDetail": "Los blancos se imprimen primero, debajo de los colores: __first__. Los barnices, al final, encima: __last__. Indícaselo a la imprenta, que fija el orden en máquina.",
     "preflightDieCutText": "Texto bajo un troquel",
     "preflightDieCutTextDetail": "Hay texto bajo la forma de troquel “__die__” y se pierde con el hueco. Activa El texto lo rodea o mueve la forma.",
     "preflightDieCutTrim": "Troquel cerca del corte",

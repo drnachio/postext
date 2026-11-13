@@ -6190,6 +6190,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     preflightSpotInkFinishDetail: t("preflightSpotInkFinishDetail"),
     preflightWhiteInkOnWhite: t("preflightWhiteInkOnWhite"),
     preflightWhiteInkOnWhiteDetail: t("preflightWhiteInkOnWhiteDetail"),
+    preflightInkPressOrder: t("preflightInkPressOrder"),
+    preflightInkPressOrderDetail: t("preflightInkPressOrderDetail"),
     preflightDieCutText: t("preflightDieCutText"),
     preflightDieCutTextDetail: t("preflightDieCutTextDetail"),
     preflightDieCutTrim: t("preflightDieCutTrim"),

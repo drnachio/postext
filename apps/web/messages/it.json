@@ -6843,6 +6843,8 @@
     "preflightSpotInkFinishDetail": "“__ink__” (__finish__) si stampa sulla sua lastra. Chiedi l’inchiostro alla tipografia con questo nome.",
     "preflightWhiteInkOnWhite": "Inchiostro bianco su carta bianca",
     "preflightWhiteInkOnWhiteDetail": "“__ink__” è un bianco coprente su una pagina con carta bianca o non impostata: non si vedrà. Imposta il colore della carta o stampa su carta colorata.",
+    "preflightInkPressOrder": "Ordine di stampa degli inchiostri speciali",
+    "preflightInkPressOrderDetail": "I bianchi si stampano per primi, sotto i colori: __first__. Le vernici per ultime, sopra: __last__. Indicalo alla tipografia, che stabilisce l’ordine in macchina.",
     "preflightDieCutText": "Testo sotto una fustella",
     "preflightDieCutTextDetail": "Del testo passa sotto la forma di fustella “__die__” e viene asportato con il foro. Attiva Il testo la evita o sposta la forma.",
     "preflightDieCutTrim": "Fustella vicino al taglio",
