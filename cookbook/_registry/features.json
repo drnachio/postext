@@ -28831,7 +28831,7 @@
     },
     "definition": {
       "en": "print.dieLine strokes every hole and shaped edge on a Separation plate of its own that overprints and is never inked, for the die-maker.",
-      "es": "print.dieLine traza cada agujero y cada borde con forma en una plancha Separation propia, en sobreimpresión y que nunca se entinta, para el troquelista.",
+      "es": "print.dieLine traza cada agujero y cada borde con forma en una plancha Separation propia, en sobreimpresión y que nunca se entinta, para el troquelador.",
       "ca": "print.dieLine traça cada forat i cada vora amb forma en una planxa Separation pròpia, en sobreimpressió i que mai no s’entinta, per al troquelista.",
       "zh": "print.dieLine把每个孔和异形边描在一块单独的Separation色版上，叠印，从不上墨，供模切版制作者使用。",
       "ar": "ترسم print.dieLine كل فتحة وكل حافة مقصوصة على لوح Separation خاص بها، بطباعة فوقية ولا يُحبَّر أبدًا، لصانع القالب.",
