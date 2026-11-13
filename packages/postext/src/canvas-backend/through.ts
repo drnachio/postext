@@ -8,6 +8,7 @@
 import type { VDTDocument, VDTPage, VDTPathCommand } from '../vdt.js';
 import { seeThrough } from '../dieCut/seeThrough.js';
 import { traceDiePaths } from '../dieCut/path2d.js';
+import { restoreContext, saveContext } from './contextState.js';
 
 /** A page's painted image, by document page index; `undefined` when the
  *  host has none (the layer is then filled with the paper's colour). */
@@ -50,7 +51,7 @@ function clipTo(ctx: Ctx, paths: readonly (readonly VDTPathCommand[])[]): void {
 export function cutDieShapes(ctx: Ctx, page: VDTPage, doc: Pick<VDTDocument, 'trimOffset'>): void {
   const cut = page.dieCut;
   if (!cut || (cut.holes.length === 0 && !cut.outline)) return;
-  ctx.save();
+  saveContext(ctx);
   ctx.globalCompositeOperation = 'destination-out';
   ctx.fillStyle = '#000000';
   if (cut.holes.length > 0) {
@@ -65,7 +66,7 @@ export function cutDieShapes(ctx: Ctx, page: VDTPage, doc: Pick<VDTDocument, 'tr
     traceDiePaths(ctx, cut.outline);
     ctx.fill('evenodd');
   }
-  ctx.restore();
+  restoreContext(ctx);
 }
 
 /**
@@ -82,7 +83,7 @@ export function paintThrough(ctx: Ctx, doc: Pick<VDTDocument, 'pages' | 'pageInd
   const inset = options.inset ?? 0;
   for (let k = layers.length - 1; k >= 0; k--) {
     const layer = layers[k]!;
-    ctx.save();
+    saveContext(ctx);
     for (const clip of layer.clips) clipTo(ctx, clip);
     const image = layer.pageIndex >= 0 ? source(layer.pageIndex) : undefined;
     if (image) ctx.drawImage(image, inset, inset, page.width - 2 * inset, page.height - 2 * inset);
@@ -91,11 +92,11 @@ export function paintThrough(ctx: Ctx, doc: Pick<VDTDocument, 'pages' | 'pageInd
       ctx.fillStyle = layer.pageIndex < 0 ? options.background ?? DEFAULT_BOARD : beneath?.background ?? '#ffffff';
       ctx.fillRect(0, 0, page.width, page.height);
     }
-    ctx.restore();
+    restoreContext(ctx);
   }
   // The cut edges: a shadow thrown inwards, then the wall's line.
   for (const hole of holes) {
-    ctx.save();
+    saveContext(ctx);
     clipTo(ctx, [hole]);
     ctx.shadowColor = EDGE_SHADOW;
     ctx.shadowBlur = 6 * pxPerPagePx;
@@ -111,7 +112,7 @@ export function paintThrough(ctx: Ctx, doc: Pick<VDTDocument, 'pages' | 'pageInd
     ctx.beginPath();
     traceDiePaths(ctx, [hole]);
     ctx.stroke();
-    ctx.restore();
+    restoreContext(ctx);
   }
 }
 
@@ -132,10 +133,10 @@ export function composeThrough(
 ): void {
   const ctx = 'getContext' in target ? target.getContext('2d') : target;
   if (!ctx) return;
-  ctx.save();
+  saveContext(ctx);
   ctx.setTransform(scale, 0, 0, scale, 0, 0);
   const inset = options.inset ?? 0;
   if (inset > 0) ctx.translate(-inset, -inset);
   paintThrough(ctx, doc, pageIndex, source, scale, options);
-  ctx.restore();
+  restoreContext(ctx);
 }
