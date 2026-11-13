@@ -1,16 +1,13 @@
 // The messages between the page and the compile worker (#1526).
 
-import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import type { CompiledBook, CompileProgress, CompileRequest } from './compileBook.js';
 
-/** What the worker asks of the page: an SVG as a bitmap for the PDF, or
- *  the first page painted as the EPUB's cover. */
+/** What the worker asks of the page: an SVG as a bitmap, for the PDF or
+ *  for the EPUB's cover, which the worker paints itself (#1548). */
 export interface CompileAsk {
   type: 'ask';
   id: number;
-  question:
-    | { kind: 'rasterize'; svgText: string; widthPx: number; heightPx: number }
-    | { kind: 'cover'; first: VDTDocument; title: string; config: PostextConfig; resources: Resource[]; markdown: string };
+  question: { kind: 'rasterize'; svgText: string; widthPx: number; heightPx: number };
 }
 
 /** Page to worker. */

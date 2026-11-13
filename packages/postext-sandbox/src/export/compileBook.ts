@@ -19,13 +19,14 @@
 // the PDF and EPUB tabs lay it out (`layOutBookPrint`), and written with
 // the options those tabs write with (`pdfWriterSettings`,
 // `epubWriterOptions`); the HTML is the command line's page
-// (`renderHtmlBook`). The page is asked only for what a worker cannot do:
-// an SVG rasterized for the PDF, the first page painted as the EPUB's
-// cover.
+// (`renderHtmlBook`). The EPUB's cover, when the book has no picture of
+// its own, is its first page painted here with the book's faces
+// (`compileCover.ts`, #1548). The page is asked only for what a worker
+// cannot do: an SVG rasterized, for the PDF or for that cover.
 
-import { metadataText, htmlBookFiles, renderHtmlBook, type HtmlBookFontNote, type HtmlBookWarning, type PostextConfig, type Resource, type VDTDocument } from 'postext';
+import { metadataText, htmlBookFiles, renderHtmlBook, type HtmlBookFontNote, type HtmlBookWarning, type PostextConfig, type Resource } from 'postext';
 import { diagramInkHex } from 'postext/bundle';
-import { renderToEpub, type EpubCover, type EpubLayout } from 'postext-epub';
+import { renderToEpub, type EpubLayout } from 'postext-epub';
 import { renderToPdf, type SvgRasterizer } from 'postext-pdf';
 import { composeBookMemo } from '../book/compose.js';
 import { paginateBook } from '../book/paginate.js';
@@ -45,6 +46,7 @@ import { createPdfFontProvider } from '../viewport/pdf/pdfFontProvider.js';
 import { pdfWarnings, pdfWriterSettings } from '../viewport/pdf/pdfWriterOptions.js';
 import { createLayoutService } from '../worker/LayoutService.js';
 import type { LayoutService } from '../worker/LayoutService.js';
+import { compiledBookCover } from './compileCover.js';
 import { compiledEdition } from './edition.js';
 
 export type CompiledFormat = 'pdf' | 'html' | 'epub';
@@ -92,12 +94,9 @@ export interface CompiledBook {
 /** What the compilation asks of the page. */
 export interface CompileHost {
   onProgress: (progress: CompileProgress) => void;
-  /** An SVG the PDF cannot draw as vectors, as a bitmap. */
+  /** An SVG as a bitmap: one the PDF cannot draw as vectors, or a picture
+   *  of the page painted as the EPUB's cover. */
   rasterizeSvg: SvgRasterizer;
-  /** The first page painted as the EPUB's cover, when the book has no
-   *  picture of its own large enough; null when the page cannot paint it
-   *  with the book's fonts. */
-  paintCover: (first: VDTDocument, title: string, book: { config: PostextConfig; resources: Resource[]; markdown: string }) => Promise<EpubCover | null>;
   /** The layout service (a test's stub); one of its own by default. */
   layoutService?: () => LayoutService;
 }
@@ -173,7 +172,7 @@ export async function compileBook(request: CompileRequest, host: CompileHost): P
         identity: { kind: 'project', id: record.id, name: edition.name },
         locale: request.uiLocale,
         cover: async (coverTitle) => (await epubOwnCover(coverTitle, record.thumbnail ? { projectThumbnail: record.thumbnail } : {}))
-          ?? host.paintCover(docs[0]!, coverTitle, { config: effective, resources, markdown: chapters[0]?.markdown ?? '' }),
+          ?? compiledBookCover(docs[0]!, { config: effective, resources, markdown: chapters[0]?.markdown ?? '' }, coverTitle, host.rasterizeSvg),
         note,
       });
       const bytes = await renderToEpub(docs, { ...options, onProgress: (p) => host.onProgress({ phase: p.phase, done: p.done, total: p.total }) });

@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CustomFontFamily, PostextConfig, VDTDocument } from 'postext';
+import type { CustomFontFamily } from 'postext';
 import type { CompiledBook } from './compileBook.js';
 import type { CompileReply, CompileRequestMessage } from './compileProtocol.js';
 
 // The page's side of the Books panel's compiler (#1526): the open book's
-// font registry is never set to another book's, a cover is painted only
-// with the compiled book's own fonts, and a compilation can be stopped.
+// font registry is never set to another book's, the page only rasterizes
+// SVGs (the worker paints the EPUB's cover itself, #1548), and a
+// compilation can be stopped.
 
-const painted = vi.hoisted(() => vi.fn(async () => ({ bytes: new Uint8Array([1]), mediaType: 'image/jpeg', alt: 't' })));
-vi.mock('../epub/cover.js', () => ({ epubPaintedCover: painted }));
 vi.mock('postext-pdf', () => ({ rasterizeSvgWithDom: vi.fn(async () => new Uint8Array([9])) }));
 
 const { answerCompileAsk, compileOnWorker } = await import('./compileClient.js');
@@ -35,7 +34,6 @@ class FakeWorker {
 beforeEach(() => {
   vi.stubGlobal('Worker', FakeWorker);
   setCustomFonts([family('Open Book Face')], { newBook: true });
-  painted.mockClear();
 });
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -76,26 +74,11 @@ describe('compileOnWorker', () => {
   });
 });
 
-describe('answerCompileAsk: the EPUB cover', () => {
-  const question = (customFonts: CustomFontFamily[]) => ({
-    kind: 'cover' as const,
-    first: { pages: [{}] } as unknown as VDTDocument,
-    title: 'T',
-    config: { customFonts } as PostextConfig,
-    resources: [],
-    markdown: '',
-  });
-
-  it('is not painted with the open book\'s fonts for a book with others, nor are the page\'s fonts changed', async () => {
+describe('answerCompileAsk', () => {
+  it('rasterizes an SVG on the page, the page\'s fonts left as they are', async () => {
     const before = customFontsSignature();
-    await expect(answerCompileAsk(question([family('Other Book Face')]))).resolves.toBeNull();
-    expect(painted).not.toHaveBeenCalled();
+    await expect(answerCompileAsk({ kind: 'rasterize', svgText: '<svg/>', widthPx: 4, heightPx: 2 })).resolves.toEqual(new Uint8Array([9]));
     expect(customFontsSignature()).toBe(before);
-  });
-
-  it('is painted on the page when the fonts are the same (the open book compiled)', async () => {
-    await expect(answerCompileAsk(question([family('Open Book Face')]))).resolves.toMatchObject({ mediaType: 'image/jpeg' });
-    expect(painted).toHaveBeenCalledOnce();
   });
 });
 
