@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "gold-foil-poetry-cover",
-  "sourceHash": "a88f71ccb7da8625477895a6a001dd6a2fef7d7b368da6465079a1d0213a080e",
+  "sourceHash": "f5d7d0d37dca748956713aa506cbbf5eedd4307939a1cd5501b61e8a4ac94161",
   "engine": {
-    "postext": "1.84.0",
-    "postextPdf": "1.84.0",
+    "postext": "1.85.1",
+    "postextPdf": "1.85.1",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T16:53:16.505Z",
+  "capturedAt": "2026-11-13T18:46:16.241Z",
   "variants": {
     "en": {
       "hash8": "8f5ad26a",
       "vdtHash": "9703a8fbc7b1bb7935658d08a2b5178db7ac7787",
       "timings": {
-        "importMs": 7535,
-        "fontsMs": 174,
-        "buildMs": 94,
-        "totalMs": 9849,
+        "importMs": 514,
+        "fontsMs": 131,
+        "buildMs": 85,
+        "totalMs": 1695,
         "builds": 1
       },
       "specimen": {
@@ -455,6 +455,8 @@
           "resources",
           "section-geometry",
           "section-running-heads",
+          "special-inks",
+          "spot-inks",
           "toc",
           "unnumbered-headings",
           "verse"
@@ -474,11 +476,6 @@
         },
         "findings": [
           {
-            "check": "C27",
-            "severity": "warn",
-            "detail": "features.primary lists special-inks, but its detect rule did not fire"
-          },
-          {
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
@@ -495,10 +492,10 @@
       "hash8": "dcf0e3b7",
       "vdtHash": "4338f6604b6eec748969e141ae25332b38d5faa8",
       "timings": {
-        "importMs": 7530,
-        "fontsMs": 164,
-        "buildMs": 103,
-        "totalMs": 9849,
+        "importMs": 408,
+        "fontsMs": 70,
+        "buildMs": 73,
+        "totalMs": 1601,
         "builds": 1
       },
       "specimen": {
@@ -936,6 +933,8 @@
           "resources",
           "section-geometry",
           "section-running-heads",
+          "special-inks",
+          "spot-inks",
           "toc",
           "unnumbered-headings",
           "verse"
@@ -954,11 +953,6 @@
           "count": 0
         },
         "findings": [
-          {
-            "check": "C27",
-            "severity": "warn",
-            "detail": "features.primary lists special-inks, but its detect rule did not fire"
-          },
           {
             "check": "sandbox",
             "severity": "info",

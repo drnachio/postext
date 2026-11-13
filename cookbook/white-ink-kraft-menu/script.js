@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 191 · A bakery menu in white ink on kraft ═════════════════════
 // https://postext.dev/en/cookbook/white-ink-kraft-menu
 // Code: MIT · Text: original (CC BY 4.0) · Paintings: diffusion models
-// Fonts: Alfa Slab One, Lora (SIL OFL 1.1) · Needs postext ≥ 1.84.0
+// Fonts: Alfa Slab One, Lora (SIL OFL 1.1) · Needs postext ≥ 1.85.1
 //
 // The menu of a bakery, a folded card of brown kraft. Kraft takes no white from the paper, so
 // the name and the course heads print in an opaque white ink, and the paintings sit on white

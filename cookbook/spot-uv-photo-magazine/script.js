@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 192 · Spot gloss over a soft-touch magazine ═════════════════
 // https://postext.dev/en/cookbook/spot-uv-photo-magazine
 // Code: MIT · Text: original (CC BY 4.0) · Photographs: diffusion models
-// Fonts: Bodoni Moda, Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.84.0
+// Fonts: Bodoni Moda, Source Serif 4, Source Sans 3 (SIL OFL 1.1) · Needs postext ≥ 1.85.1
 //
 // A photography magazine whose pages are coated in a soft-touch varnish, with a gloss
 // varnish laid over the photographs and the masthead only: the spot UV a printer sells as
