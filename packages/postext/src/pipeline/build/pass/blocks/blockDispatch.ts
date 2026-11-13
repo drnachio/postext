@@ -261,8 +261,9 @@ export function createBlockDispatch(deps: BlockDispatchDeps) {
     // starts on a fresh page, and so does what follows it. The closing
     // break waits for the next placed block (a run that ends the document
     // leaves no empty page behind). The pages get their `paper` once laid
-    // out (`stampPagePaper`).
-    if ((rawBlock.type === 'containerStart' || rawBlock.type === 'containerEnd') && rawBlock.containerName === 'paper') {
+    // out (`stampPagePaper`). A `:::diecut` run (#1565) is set the same
+    // way: a die cuts whole pages (`stampDieCuts`).
+    if ((rawBlock.type === 'containerStart' || rawBlock.type === 'containerEnd') && (rawBlock.containerName === 'paper' || rawBlock.containerName === 'diecut')) {
       if (rawBlock.type === 'containerStart') {
         state.pendingPaperBreak = false;
         breakForPaper(blockTurn.blockIdx);

@@ -430,6 +430,12 @@ export function layoutPathElement(
     sy = k;
   }
   prim.subpaths = mapPath(parsed.subpaths, ox, oy, sx, sy);
+  // A template's die-cut (#1565) paints nothing: it is lifted onto the
+  // page's die-cut once the decoration is laid.
+  if (el.cut) {
+    prim.dieCut = { box: { x, y, width, height }, ...el.cut };
+    return prim;
+  }
   const fill = el.fill?.hex ?? (el.stroke ? undefined : DEFAULT_PATH_FILL);
   if (fill) prim.fill = fill;
   if (el.stroke?.hex) {

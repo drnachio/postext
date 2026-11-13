@@ -1,7 +1,7 @@
 // The VDT document root and what it carries: the resolved config, the
 // bounding box every node uses, and the factory functions that create a
 // document, page, column and block (#1276: split out of vdt.ts).
-import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedCharacterStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedLinksConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState, ColorValue } from '../types.js';
+import type { ResolvedPageConfig, ResolvedLayoutConfig, ResolvedBodyTextConfig, ResolvedHeadingsConfig, ResolvedTableStyleConfig, ResolvedNamedTableStyleConfig, ResolvedCaptionStyleConfig, ResolvedDiagramStyleConfig, ResolvedScoreStyleConfig, ResolvedNamedScoreStyleConfig, ResolvedVideoStyleConfig, ResolvedParagraphStyleConfig, ResolvedCalloutStyleConfig, ResolvedChipStyleConfig, ResolvedCharacterStyleConfig, ResolvedMarkStyleConfig, ResolvedUnorderedListsConfig, ResolvedOrderedListsConfig, ResolvedMathConfig, ResolvedDesignSlot, ResolvedPartsConfig, ResolvedHeadingStyleConfig, ResolvedTocConfig, ResolvedIndexConfig, ResolvedFootnotesConfig, ResolvedCrossRefsConfig, ResolvedCitationsConfig, ResolvedLinksConfig, ResolvedCjkConfig, PostextConfig, ColorPaletteEntry, ResolvedPdfGenerationConfig, ResolvedPrintConfig, ResolvedContrastConfig, ResolvedChecksConfig, ResolvedFolioConfig, ResolvedDieCutsConfig, ResolvedComicsConfig, ResolvedLineNumbersConfig, ResolvedCodeStyleConfig, PageTemplate, ResolvedLabelStyle, FrameLookEntry, Dimension, PageMargins, DocumentMetadata, PartState, ColorValue } from '../types.js';
 import type { StoryJump } from '../composed/carryTypes.js';
 import type { VDTBlock, VDTGridBalancing, VDTColumn, VDTBlockType, TextAlign } from './blocks.js';
 import type { ContentWarning } from './contentWarnings.js';
@@ -114,6 +114,10 @@ export interface ResolvedConfig {
   /** The Folio 3D viewer settings (`PostextConfig.folio`), resolved, when
    *  the config sets any. Layout ignores them; `postext-folio` reads them. */
   folio?: ResolvedFolioConfig;
+  /** Die-cuts (`PostextConfig.dieCuts`, #1565), resolved, when the config
+   *  cuts anything. Part of the layout: text keeps clear of a hole. Each
+   *  page carries its own holes on `VDTPage.dieCut`. */
+  dieCuts?: ResolvedDieCutsConfig;
   /** Comic pages (`PostextConfig.comics`), resolved, when the config sets
    *  any; absent otherwise, so a document without comics resolves (and
    *  hashes) as before. Read it with `resolvedComics()`, which falls back

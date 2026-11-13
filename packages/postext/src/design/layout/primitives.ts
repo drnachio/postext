@@ -2,7 +2,7 @@
 // layout, issues and layout context, image alt text, page parity and role
 // tests, and palette overrides (#1276: split out of layout.ts).
 import type { DesignTextAlign, VAlign, Resource, PageRole, PageParity, PageRoleFilter, ColorValue, ElementBoxStyle, ResolvedDesignElement } from '../../types.js';
-import type { VDTDesignBoxStyle, VDTPathCommand, VDTPathStroke, VDTPathMarker } from '../../vdt.js';
+import type { VDTDesignBoxStyle, VDTDesignPathBlock, VDTPathCommand, VDTPathStroke, VDTPathMarker } from '../../vdt.js';
 import { parseInlineSnippetSpans } from '../../parse/inlineSnippet.js';
 import { isTinted, paletteTintHex } from '../../defaults/shared.js';
 import type { InlineSpan } from '../../parse/types.js';
@@ -139,6 +139,8 @@ export interface ResolvedPathPrimitive extends ResolvedElementGeometry {
   markers?: VDTPathMarker[];
   /** A connector painted over the frames (#1076). */
   over?: true;
+  /** A template's die-cut (#1565): its element box and what it carries. */
+  dieCut?: VDTDesignPathBlock['dieCut'];
 }
 
 /** An image element resolved to its resource payload. Only emitted when

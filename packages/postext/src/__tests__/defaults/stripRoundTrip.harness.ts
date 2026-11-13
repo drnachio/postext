@@ -10,6 +10,7 @@ import {
   resolvePrintConfig,
   resolveContrastConfig,
   resolveChecksConfig,
+  resolveDieCutsConfig,
   stripConfigDefaults,
 } from '../../defaults/index.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
@@ -85,6 +86,7 @@ function read(config: PostextConfig): string {
     contrast: resolveContrastConfig(config.contrast),
     checks: resolveChecksConfig(config.checks),
     folio: resolveFolioConfig(config.folio, resolved.page.sizePreset),
+    dieCuts: resolveDieCutsConfig(config.dieCuts),
     lineNumbers: resolveLineNumbersConfig(config.lineNumbers, resolved.bodyText),
     codeStyle: resolveCodeStyleConfig(config.codeStyle, resolved.bodyText),
     comics: resolveComicsConfig(config.comics, documentLocale),
@@ -282,6 +284,7 @@ const RICH: PostextConfig = {
   contrast: { level: 'AAA' },
   checks: { contentInConfig: { allow: ['Editorial Cometa'], maxWords: 3 } },
   folio: { cover: { stiffness: 0.9 } },
+  dieCuts: { shapes: [{ id: 'porthole', shape: 'circle', x: pt(60), y: pt(80), width: pt(70), height: pt(70), leaves: 3 }], pages: [{ pages: '5', die: 'porthole' }], corners: { radius: pt(12) } },
   debug: { pageOutline: { enabled: true } },
   htmlViewer: { fitFiguresToPage: false },
 } as unknown as PostextConfig;

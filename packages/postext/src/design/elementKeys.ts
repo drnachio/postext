@@ -7,6 +7,7 @@ import type {
   ConnectorEnd,
   DesignBoxElement,
   DesignConnectorElement,
+  DesignCutElement,
   DesignImageElement,
   DesignPathElement,
   DesignRuleElement,
@@ -38,6 +39,9 @@ export const DESIGN_IMAGE_KEYS = { ...PLACED, resourceId: true, decorative: true
 export const DESIGN_PATH_KEYS = {
   ...PLACED, d: true, viewBox: true, fill: true, stroke: true, width: true, dash: true, preserveAspectRatio: true,
 } satisfies Record<keyof DesignPathElement, true>;
+export const DESIGN_CUT_KEYS = {
+  ...COMMON, placement: true, die: true, d: true, viewBox: true, preserveAspectRatio: true, leaves: true, wrap: true,
+} satisfies Record<keyof DesignCutElement, true>;
 export const DESIGN_CONNECTOR_KEYS = {
   ...COMMON, from: true, to: true, routing: true, radius: true, trunk: true, color: true, opacity: true, width: true,
   dash: true, startCap: true, endCap: true, capSize: true, over: true,
@@ -77,7 +81,7 @@ export const CONFIG_KEYS = {
 
 const ELEMENT_KEYS: Record<string, Record<string, true>> = {
   text: DESIGN_TEXT_KEYS, rule: DESIGN_RULE_KEYS, box: DESIGN_BOX_KEYS, image: DESIGN_IMAGE_KEYS, path: DESIGN_PATH_KEYS,
-  connector: DESIGN_CONNECTOR_KEYS,
+  connector: DESIGN_CONNECTOR_KEYS, cut: DESIGN_CUT_KEYS,
 };
 
 /** How a warning's path is written: `/a/0/b` (a JSON pointer, as the page

@@ -24,6 +24,7 @@ import { stripPrintDefaults } from './output/print.js';
 import { stripContrastDefaults } from './output/contrast.js';
 import { stripChecksDefaults } from './output/checks.js';
 import { stripFolioDefaults } from './output/folio.js';
+import { stripDieCutsDefaults } from './dieCuts.js';
 import { stripHeaderFooterDefaults } from './structure/headerFooter.js';
 import { stripPartsDefaults } from './structure/parts.js';
 import { stripHeadingStylesDefaults } from './structure/headingStyles.js';
@@ -296,6 +297,12 @@ export function stripConfigDefaults(config: PostextConfig): PostextConfig {
     result.folio = strippedFolio;
   } else {
     delete result.folio;
+  }
+  const strippedDieCuts = stripDieCutsDefaults(config.dieCuts);
+  if (strippedDieCuts) {
+    result.dieCuts = strippedDieCuts;
+  } else {
+    delete result.dieCuts;
   }
   const strippedHeader = stripHeaderFooterDefaults(config.header, 'header');
   if (strippedHeader) {

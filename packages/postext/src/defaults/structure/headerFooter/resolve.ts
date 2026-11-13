@@ -1,6 +1,6 @@
 // Resolving design slots and their elements: line heights, fences and each
 // element kind (#1278: split out of headerFooter.ts).
-import type { Dimension, DesignTextElement, ResolvedDesignTextElement, DesignRuleElement, ResolvedDesignRuleElement, DesignBoxElement, ResolvedDesignBoxElement, DesignImageElement, ResolvedDesignImageElement, DesignPathElement, ResolvedDesignPathElement, DesignConnectorElement, ResolvedDesignConnectorElement, DesignElement, ResolvedDesignElement, DesignSlot, ResolvedDesignSlot } from '../../../types.js';
+import type { Dimension, DesignTextElement, ResolvedDesignTextElement, DesignRuleElement, ResolvedDesignRuleElement, DesignBoxElement, ResolvedDesignBoxElement, DesignImageElement, ResolvedDesignImageElement, DesignPathElement, ResolvedDesignPathElement, DesignConnectorElement, ResolvedDesignConnectorElement, DesignCutElement, DesignElement, ResolvedDesignElement, DesignSlot, ResolvedDesignSlot } from '../../../types.js';
 import { DEFAULT_MAIN_COLOR } from '../../shared.js';
 import { dimensionToPx } from '../../../units.js';
 import { withFigureStyle } from '../../../fonts/figureStyle.js';
@@ -187,6 +187,34 @@ function resolvePathElement(el: DesignPathElement, idx: number): ResolvedDesignP
   };
 }
 
+/** A die-cut element (#1565) as a path element that paints nothing: its
+ *  outline is laid as a path's, and `cut` marks it for the page's die-cut
+ *  (`stampDieCuts`). With neither `die` nor `d` it cuts its box. */
+function resolveCutElement(el: DesignCutElement, idx: number): ResolvedDesignPathElement {
+  return {
+    kind: 'path',
+    id: el.id ?? `cut-${idx + 1}`,
+    parity: el.parity ?? 'all',
+    pages: el.pages ?? 'all',
+    ...fenceConditionOf(el),
+    placement: {
+      anchor: el.placement.anchor,
+      offset: el.placement.offset ?? {},
+      size: el.placement.size ?? {},
+    },
+    d: typeof el.d === 'string' && el.d.trim() ? el.d : 'M0 0H1V1H0Z',
+    ...(typeof el.d === 'string' && el.d.trim() && el.viewBox !== undefined ? { viewBox: el.viewBox } : {}),
+    ...(el.preserveAspectRatio === 'meet' ? { preserveAspectRatio: 'meet' as const } : {}),
+    reserve: false,
+    ...(el.pin ? { pin: true } : {}),
+    cut: {
+      ...(typeof el.die === 'string' && el.die.trim() ? { die: el.die.trim() } : {}),
+      ...(typeof el.leaves === 'number' ? { leaves: el.leaves } : {}),
+      ...(el.wrap !== undefined ? { wrap: el.wrap === false ? false as const : { ...el.wrap } } : {}),
+    },
+  };
+}
+
 /** A connector (#1056) as written, its id, parity, pages and colour
  *  filled in (the main colour, palette-linked, so a part recolours it);
  *  the geometry's defaults are read where it is laid (`design/connector.ts`). */
@@ -210,6 +238,7 @@ function resolveElement(el: DesignElement, idx: number, kind: DesignSlotKind): R
   if (el.kind === 'rule') return resolveRuleElement(el, idx);
   if (el.kind === 'image') return resolveImageElement(el, idx);
   if (el.kind === 'path') return resolvePathElement(el, idx);
+  if (el.kind === 'cut') return resolveCutElement(el, idx);
   return resolveBoxElement(el, idx);
 }
 

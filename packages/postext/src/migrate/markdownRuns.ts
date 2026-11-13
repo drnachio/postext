@@ -60,7 +60,7 @@ const HEADING_RE = /^(#{1,6})[ \t]+([^ \t].*)?$/;
 const FENCE_RE = /^(:{3,})(?:[ \t]*([A-Za-z][\w-]*))?(?:[ \t]*(\{.*\}))?$/;
 const CODE_RE = /^[ \t]{0,3}(`{3,}|~{3,})/;
 /** Containers, and the blocks the parser reads whole up to a bare `:::`. */
-const OPENS = new Set(['callout', 'paragraphs', 'part', 'columns', 'paper', 'frame', 'references', 'verse', 'figure', 'page', 'strip', 'exercise', 'solution', 'hint']);
+const OPENS = new Set(['callout', 'paragraphs', 'part', 'columns', 'paper', 'diecut', 'frame', 'references', 'verse', 'figure', 'page', 'strip', 'exercise', 'solution', 'hint']);
 /** Directives that close a run when they stand at the top level: a part
  *  page, the contents, a composed page already there, the index. */
 const CLOSES = new Set(['part', 'toc', 'index', 'bibliography', 'numbering']);

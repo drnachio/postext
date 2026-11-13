@@ -40,6 +40,10 @@ export type MarkupWarning =
    *  other than true / false. The attribute is dropped; the pages follow
    *  the document's paper for it. */
   | { kind: 'paperAttributeInvalid'; key: string; value: string }
+  /** A `:::diecut{die=…}` (#1565) that names no die of `dieCuts.shapes`
+   *  (`die` empty when it names none): its pages are set on pages of their
+   *  own and nothing cuts them. `known` lists the dice the config has. */
+  | { kind: 'dieCutUnknown'; die: string; known: string[] }
   /** `:chip[…]{style}` names no chip style: the chip takes the first one.
    *  `inResource` names the resource whose caption, note or cell holds it. */
   | { kind: 'unknownChipStyle'; style: string; inResource?: string }

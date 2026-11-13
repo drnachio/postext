@@ -83,7 +83,7 @@ export function headingAttrTokens(blob: string, spaced: boolean): ReturnType<typ
 }
 /** Set of fenced-container names recognized today. A `:::name` line whose
  *  name is a known container opens a block that runs until a bare `:::`. */
-export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part', 'columns', 'paper', 'frame', 'module', 'exercise', 'solution', 'hint']);
+export const KNOWN_CONTAINERS: ReadonlySet<ContainerName> = new Set(['callout', 'paragraphs', 'part', 'columns', 'paper', 'diecut', 'frame', 'module', 'exercise', 'solution', 'hint']);
 
 /** Absolute source range of each attribute value of a blob that starts at
  *  `blobStart` (a flag: its key). A repeated key keeps the last, as

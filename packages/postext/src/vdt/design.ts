@@ -1,7 +1,7 @@
 // Design slot blocks painted on running heads, folios, headings, part
 // pages and boxes: text, rules, boxes, images and paths
 // (#1276: split out of vdt.ts).
-import type { CjkRegion, Resource } from '../types.js';
+import type { CjkRegion, Dimension, Resource } from '../types.js';
 import type { BoundingBox } from './document.js';
 import type { RoundedOutline } from './resourceTables.js';
 import type { VDTChip } from './segments.js';
@@ -356,6 +356,11 @@ export interface VDTDesignPathBlock extends VDTDesignBlockOrigin {
   kind: 'path';
   bbox: BoundingBox;
   subpaths: VDTPathCommand[][];
+  /** A page template's die-cut element (`kind: 'cut'`, #1565) while the
+   *  page is laid out: its element box, the die it names, its leaves and
+   *  wrap. The layout moves it onto `VDTPage.dieCut` before the document
+   *  is returned, so no finished page paints one. */
+  dieCut?: { box: BoundingBox; die?: string; leaves?: number; wrap?: false | { gap?: Dimension } };
   /** Fill colour; absent = no fill. */
   fill?: string;
   /** Absent: `'nonzero'`. */

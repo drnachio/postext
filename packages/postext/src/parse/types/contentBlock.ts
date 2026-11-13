@@ -43,6 +43,9 @@ export type DirectiveName = 'pagebreak' | 'numbering' | 'columnbreak' | 'space' 
  *  between are parsed as usual and bracketed by a `containerStart` /
  *  `containerEnd` marker pair sharing a `containerId`. */
 export type ContainerName = 'callout' | 'paragraphs' | 'part' | 'columns' | 'paper' | 'frame'
+  /** A die-cut run (#1565): `:::diecut{die=…}` … `:::`, its content on
+   *  pages of its own, each cut by the die it names. */
+  | 'diecut'
   /** An exercise (#1225): `:::exercise{type=…}` … `:::` (see
    *  `exercises/model.ts`), with its `:::solution` and `:::hint` inside. */
   | 'exercise' | 'solution' | 'hint'
