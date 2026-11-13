@@ -113,24 +113,31 @@ describe('white and varnish as the press lays them', () => {
   });
 
   it.skipIf(spawnSync('gs', ['--version']).status !== 0)('still knocks the colour out under a white set overprint: false over it (tiffsep)', async () => {
-    const off: ColorValue = { ...white, spot: { ...white.spot!, overprint: false } };
-    const config = inkConfig([], { header: { elements: [band('red', 'top-left', red, 60), band('ink', 'top-left', off, 60)] } as never });
-    const { bytes } = await renderInk(buildDocument({ markdown: 'Text.', resources: [] }, config), { standard: 'pdfx4' });
-    const plates = tiffsep(bytes);
-    const magenta = plates.get('Magenta')!;
-    const whitePlate = plates.get('Opaque white')!;
-    const cyan = plates.get('Cyan')!;
-    const half = Math.floor(magenta.w / 2);
-    let whiteInk = 0;
-    let magentaInk = 0;
-    for (let y = 0; y < magenta.h; y++) for (let x = 0; x < half; x++) {
-      // Inside the white, past the crop marks (on every plate, cyan too).
-      if (whitePlate.data[y * magenta.w + x]! >= 128 || cyan.data[y * magenta.w + x]! < 128) continue;
-      whiteInk++;
-      if (magenta.data[y * magenta.w + x]! < 128) magentaInk++;
+    // Two colours of one white ink, as white type on a panel and a white
+    // card under colour share a plate: the first overprints, the second
+    // knocks out.
+    const off: ColorValue = { hex: '#fcfcfc', model: 'spot', spot: { ...white.spot!, overprint: false } };
+    const config = inkConfig([], { header: { elements: [band('card', 'top-right', white, 60), band('red', 'top-left', red, 60), band('ink', 'top-left', off, 60)] } as never });
+    // With an ink table that names the white's finish too, as a job tells
+    // the printer.
+    for (const inks of [undefined, [{ name: 'Opaque white', finish: { kind: 'white' as const } }]]) {
+      const { bytes } = await renderInk(buildDocument({ markdown: 'Text.', resources: [] }, config), { standard: 'pdfx4', ...(inks ? { inks } : {}) });
+      const plates = tiffsep(bytes);
+      const magenta = plates.get('Magenta')!;
+      const whitePlate = plates.get('Opaque white')!;
+      const cyan = plates.get('Cyan')!;
+      const half = Math.floor(magenta.w / 2);
+      let whiteInk = 0;
+      let magentaInk = 0;
+      for (let y = 0; y < magenta.h; y++) for (let x = 0; x < half; x++) {
+        // Inside the white, past the crop marks (on every plate, cyan too).
+        if (whitePlate.data[y * magenta.w + x]! >= 128 || cyan.data[y * magenta.w + x]! < 128) continue;
+        whiteInk++;
+        if (magenta.data[y * magenta.w + x]! < 128) magentaInk++;
+      }
+      expect(whiteInk).toBeGreaterThan(100);
+      expect(magentaInk).toBe(0);
     }
-    expect(whiteInk).toBeGreaterThan(100);
-    expect(magentaInk).toBe(0);
   });
 });
 

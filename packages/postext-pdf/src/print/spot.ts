@@ -138,8 +138,11 @@ export class SpotInkRegistry {
     const plate = this.plateOf(spot);
     const t = round4(Math.max(0, Math.min(1, tint)));
     // One ink, two colours: one of them may overprint and the other not.
-    const overprint = plate.overprint || spot.overprint;
-    const key = `${plateKey(plate)}|${t}${overprint !== plate.overprint ? '|over' : ''}`;
+    // A white or a varnish takes the colour's own choice either way: white
+    // type knocked out of a colour shares the plate of a white laid under
+    // the colours.
+    const overprint = plate.layer ? spot.overprint : plate.overprint || spot.overprint;
+    const key = `${plateKey(plate)}|${t}${overprint === plate.overprint ? '' : overprint ? '|over' : '|knock'}`;
     return this.code(key, mixAlternate([plate], [t]), { plate, tint: t, overprint }, [plate]);
   }
 
