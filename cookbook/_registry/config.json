@@ -629,5 +629,20 @@
       "de": "Notenstil",
       "it": "Stile di partitura"
     }
+  },
+  "dieCuts": {
+    "slug": "special-inks-die-cuts",
+    "heading": {
+      "en": "Die-cuts",
+      "es": "Troqueles",
+      "ca": "Troquels",
+      "zh": "模切",
+      "ar": "القص بالقالب",
+      "ja": "抜き加工",
+      "pt": "Facas especiais",
+      "fr": "Découpes",
+      "de": "Stanzungen",
+      "it": "Fustelle"
+    }
   }
 }

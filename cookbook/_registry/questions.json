@@ -6190,5 +6190,117 @@
       "ar": "التعليقات، تقسيم الكلمات فيها"
     },
     "theme": "figures"
+  },
+  "Q230": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cut holes through a book’s pages, each showing part of the next picture?",
+      "es": "¿Cómo troquelo agujeros en las páginas de un libro para que cada uno deje ver parte del dibujo siguiente?",
+      "ca": "Com troquelo forats a les pàgines d’un llibre perquè cadascun deixi veure part del dibuix següent?",
+      "zh": "怎样在书页上模切出孔，让每个孔露出下一幅画的一部分？",
+      "ar": "كيف أقصّ فتحات في صفحات كتاب تُظهر كل منها جزءًا من الصورة التالية؟",
+      "ja": "本のページに穴を抜いて、それぞれの穴から次の絵の一部が見えるようにするには？",
+      "pt": "Como corto furos nas páginas de um livro, cada um mostrando parte da imagem seguinte?",
+      "fr": "Comment percer des trous dans les pages d’un livre, chacun laissant voir une partie de l’image suivante ?",
+      "de": "Wie stanze ich Löcher in die Seiten eines Buchs, durch die man jeweils einen Teil des nächsten Bilds sieht?",
+      "it": "Come fustello dei fori nelle pagine di un libro, ognuno dei quali lascia vedere parte dell’immagine successiva?"
+    },
+    "index": {
+      "en": "Die-cuts, peek-a-boo holes",
+      "es": "Troqueles, agujeros de cucú",
+      "ca": "Troquels, forats de cucut",
+      "zh": "模切，躲猫猫孔",
+      "ar": "القص بالقالب، فتحات الاختباء",
+      "ja": "抜き穴、いないいないばあの",
+      "pt": "Facas especiais, furos de esconde-esconde",
+      "fr": "Découpes, trous de coucou",
+      "de": "Stanzungen, Gucklöcher",
+      "it": "Fustelle, fori cucù"
+    },
+    "theme": "output"
+  },
+  "Q231": {
+    "kind": "how",
+    "text": {
+      "en": "How do I cut a window in a cover that frames the title page beneath?",
+      "es": "¿Cómo troquelo una ventana en la cubierta que enmarque la portada de debajo?",
+      "ca": "Com troquelo una finestra a la coberta que emmarqui la portada de sota?",
+      "zh": "怎样在封面上开一个窗，框住下面的书名页？",
+      "ar": "كيف أقصّ نافذة في الغلاف تؤطّر صفحة العنوان تحتها؟",
+      "ja": "表紙に窓を抜いて、下の扉ページを額縁のように見せるには？",
+      "pt": "Como corto uma janela na capa que emoldure a folha de rosto embaixo?",
+      "fr": "Comment découper dans une couverture une fenêtre qui encadre la page de titre dessous ?",
+      "de": "Wie stanze ich ein Fenster in den Umschlag, das die Titelseite darunter rahmt?",
+      "it": "Come fustello in copertina una finestra che incornici il frontespizio sotto?"
+    },
+    "index": {
+      "en": "Covers, die-cut window in",
+      "es": "Cubiertas, ventana troquelada en las",
+      "ca": "Cobertes, finestra troquelada a les",
+      "zh": "封面，模切窗口",
+      "ar": "الأغلفة، نافذة مقصوصة فيها",
+      "ja": "表紙の窓抜き",
+      "pt": "Capas, janela recortada nas",
+      "fr": "Couvertures, fenêtre découpée dans les",
+      "de": "Umschläge, gestanztes Fenster in",
+      "it": "Copertine, finestra fustellata nelle"
+    },
+    "theme": "output"
+  },
+  "Q232": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a tunnel book whose holes go twenty pages deep?",
+      "es": "¿Cómo hago un libro túnel cuyos agujeros dejen ver veinte páginas de fondo?",
+      "ca": "Com faig un llibre túnel els forats del qual deixin veure vint pàgines de fons?",
+      "zh": "怎样做一本孔洞能看穿二十页的隧道书？",
+      "ar": "كيف أصنع كتاب نفق تكشف فتحاته عشرين صفحة في العمق؟",
+      "ja": "穴から二十ページ奥まで見えるトンネルブックを作るには？",
+      "pt": "Como faço um livro túnel cujos furos deixam ver vinte páginas de profundidade?",
+      "fr": "Comment faire un livre tunnel dont les trous laissent voir vingt pages en profondeur ?",
+      "de": "Wie mache ich ein Tunnelbuch, dessen Löcher zwanzig Seiten tief blicken lassen?",
+      "it": "Come faccio un libro tunnel i cui fori lascino vedere venti pagine in profondità?"
+    },
+    "index": {
+      "en": "Tunnel books",
+      "es": "Libros túnel",
+      "ca": "Llibres túnel",
+      "zh": "隧道书",
+      "ar": "كتب النفق",
+      "ja": "トンネルブック",
+      "pt": "Livros túnel",
+      "fr": "Livres tunnels",
+      "de": "Tunnelbücher",
+      "it": "Libri tunnel"
+    },
+    "theme": "output"
+  },
+  "Q233": {
+    "kind": "how",
+    "text": {
+      "en": "How do I send the die-maker a die line on its own plate in the PDF?",
+      "es": "¿Cómo entrego al troquelista la línea de troquel en una plancha propia del PDF?",
+      "ca": "Com lliuro al troquelista la línia de troquel en una planxa pròpia del PDF?",
+      "zh": "怎样在PDF里把模切线放在单独的色版上交给模切版制作者？",
+      "ar": "كيف أسلّم صانع القالب خط القص على لوح خاص به في ملف PDF؟",
+      "ja": "抜き型の線をPDFの専用の版に載せて抜き型屋に渡すには？",
+      "pt": "Como entrego a quem faz a faca a linha de faca numa chapa própria do PDF?",
+      "fr": "Comment fournir au fabricant de formes le tracé de découpe sur une plaque à part dans le PDF ?",
+      "de": "Wie gebe ich dem Stanzformenbauer die Stanzlinie auf einer eigenen Platte im PDF?",
+      "it": "Come consegno a chi fa la fustella la linea di fustella su una lastra a parte nel PDF?"
+    },
+    "index": {
+      "en": "Die line, plate of its own",
+      "es": "Línea de troquel, plancha propia",
+      "ca": "Línia de troquel, planxa pròpia",
+      "zh": "模切线，单独色版",
+      "ar": "خط القص، لوح خاص",
+      "ja": "抜き型の線、専用の版",
+      "pt": "Linha de faca, chapa própria",
+      "fr": "Tracé de découpe, plaque à part",
+      "de": "Stanzlinie, eigene Platte",
+      "it": "Linea di fustella, lastra propria"
+    },
+    "theme": "output"
   }
 }

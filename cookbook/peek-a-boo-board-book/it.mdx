@@ -1,0 +1,63 @@
+---
+title: "Un libro cartonato cucù con i fori a registro"
+summary: "Quattro fori fustellati dove la pittura seguente tiene ciò che inganna, una finestra su un foro più piccolo, angoli arrotondati e linea di fustella."
+plain: "Un libro cartonato per i più piccoli. Ogni foro in una pagina lascia vedere un pezzetto dell’immagine seguente, il testo fa indovinare e girando la pagina si scopre che cos’era davvero."
+description: "Un libro cartonato con fori fustellati a registro con le pitture sotto: forme di dieCuts, angoli arrotondati e linea di fustella nel PDF."
+question: "Come fustello dei fori nelle pagine di un libro, ognuno con parte dell’immagine successiva?"
+aliases: ["libro cucù", "libro cartonato", "fori fustellati", "spioncino", "angoli arrotondati", "linea di fustella"]
+pageNotes: { "1": "La copertina: una siepe sotto il cielo azzurro, il titolo in rosso e una finestra tonda nella siepe da cui un foro più piccolo della pagina seguente mostra strisce arancioni e nere.", "2": "L’interno della copertina: la finestra attraversa la pagina a sinistra, la domanda sta alla sua destra e prosegue a tutta larghezza sotto, e l’indovinello in rosso.", "11": "La porta rossa di un fienile con uno spioncino tondo in alto, da cui si vede un disco giallo acceso." }
+---
+
+## Che cosa comporrai
+
+*Cucù! Chi c’è nel giardino?*, un libro cartonato di quattordici pagine su un quadrato di 160 mm, con i quattro angoli arrotondati. Ogni pittura ha un foro, e il foro cade proprio dove la pittura seguente tiene la parte che inganna l’occhio: il fianco a strisce di un gatto addormentato che potrebbe essere una tigre, la lana di una pecora che potrebbe essere una nuvola, una lanterna che potrebbe essere la luna. La finestra della copertina è più larga del foro dietro, così il primo sguardo arriva due pagine in fondo. Il testo a sinistra fa indovinare; la pagina girata risponde. Il PDF per la stampa porta la linea di fustella su una lastra propria.
+
+## Preparazione
+
+### 1 · Fori dove l’immagine seguente si tradisce
+
+Il codice è la [risposta breve](#la-risposta-breve) qui sopra. Ogni forma si colloca dall’angolo in alto a sinistra del rifilo e `dieCuts.pages` indica la pagina che taglia, contata dalla prima pagina del libro. Misura il foro sulla pittura che scopre, non sulla pagina in cui è tagliato: la siepe, lo steccato e la porta sono texture che accettano un foro ovunque, il gatto e la lanterna no.
+
+### 2 · Pitture a registro con i fori
+
+<Excerpt region="pictures" />
+
+I fori sono in millimetri dal rifilo, quindi ogni pittura pende dal rifilo e lo supera dell’abbondanza su ogni lato, a schermo come in stampa. Lo stile delle pitture toglie solo il margine inferiore: il disegno arriva al piede della pagina, e il testo del verso dietro conserva i suoi 44 mm di margine superiore, che lo abbassano sotto la cima dei fori piccoli.
+
+### 3 · La linea di fustella sulla sua lastra
+
+<Excerpt region="die-line" />
+
+Il PDF stampa ogni pagina intera e traccia il contorno di ogni foro, e di ogni foglio arrotondato, su una separazione `Die` in sovrastampa che non viene mai inchiostrata. `convertImages: false` lascia le pitture come JPEG RGB con profilo sRGB, che PDF/X-4 ammette, e il file resta leggero.
+
+### 4 · Il libro in mano
+
+<Excerpt region="folio" />
+
+Folio taglia i fori in ogni foglio e mostra le pagine sotto con le pareti del taglio, così la finestra a gradini si legge come profondità. Il cartone gira rigido e gli angoli arrotondati sono tagliati su ogni foglio.
+
+### 5 · Pagine piatte che lasciano vedere
+
+<Excerpt region="see-through" />
+
+Sul canvas un foro mostra ciò che sta dietro al canvas finché il renderer non riceve le pagine sotto. `beneath` le restituisce per indice, ognuna dipinta con i propri fori: così la copertina lascia vedere la siepe e, attraverso la siepe, il gatto.
+
+## Varianti
+
+### Arrotonda solo gli angoli del taglio davanti
+
+Un albo illustrato arrotonda i due angoli lontani dal dorso e lascia il dorso a squadra.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Sagoma ogni foglio
+
+Un contorno in unità di `viewBox` sagoma ogni foglio, specchiato sui versi; prevale sugli angoli.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

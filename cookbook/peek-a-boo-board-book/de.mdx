@@ -1,0 +1,63 @@
+---
+title: "Ein Guckloch-Pappbilderbuch mit Löchern im Passer"
+summary: "Vier gestanzte Löcher dort, wo das nächste Bild das Täuschende zeigt, ein Fenster auf ein kleineres Loch, runde Ecken und eine Stanzlinie."
+plain: "Ein Pappbilderbuch für die Kleinsten. Jedes Loch in einer Seite zeigt ein Stückchen des nächsten Bilds, der Text rät mit, und beim Umblättern sieht man, was es wirklich ist."
+description: "Ein Pappbilderbuch mit gestanzten Löchern im Passer zu den Bildern darunter: dieCuts-Formen, runde Ecken, Text um die Löcher und eine Stanzlinie."
+question: "Wie stanze ich Löcher in die Seiten eines Buchs, durch die man jeweils einen Teil des nächsten Bilds sieht?"
+aliases: ["Guckloch-Buch", "Pappbilderbuch", "gestanzte Löcher", "Guckloch", "abgerundete Ecken", "Stanzlinie"]
+pageNotes: { "1": "Der Umschlag: eine Hecke unter blauem Himmel, der Titel in Rot und ein rundes Fenster in der Hecke, durch das ein kleineres Loch der nächsten Seite orange und schwarze Streifen zeigt.", "2": "Die Innenseite des Umschlags: das Fenster links durch die Seite, die Frage rechts daneben und darunter über die volle Breite, die Rateaufgabe in Rot.", "11": "Das rote Tor einer Scheune mit einem runden Guckloch oben, durch das eine leuchtend gelbe Scheibe zu sehen ist." }
+---
+
+## Was Sie setzen
+
+*Kuckuck! Wer ist im Garten?*, ein Pappbilderbuch mit vierzehn Seiten auf 160 mm im Quadrat, alle vier Ecken abgerundet. Jedes Bild hat ein Loch, und das Loch sitzt genau dort, wo das nächste Bild den Teil hat, der das Auge täuscht: die gestreifte Flanke einer schlafenden Katze, die ein Tiger sein könnte, die Wolle eines Schafs, die eine Wolke sein könnte, eine Laterne, die der Mond sein könnte. Das Fenster im Umschlag ist breiter als das Loch dahinter, so reicht der erste Blick zwei Seiten tief. Links fragt der Text; das Umblättern gibt die Antwort. Die Druckdatei führt die Stanzlinie auf einer eigenen Platte.
+
+## Zubereitung
+
+### 1 · Löcher dort, wo das nächste Bild sich verrät
+
+Der Code steht in [der kurzen Antwort](#die-kurze-antwort) oben. Jede Form wird von der oberen linken Ecke des Beschnitts aus gesetzt, und `dieCuts.pages` nennt die Seite, die sie stanzt, gezählt ab der ersten Seite des Buchs. Messen Sie das Loch an dem Bild, das es zeigt, nicht an der Seite, in die es gestanzt wird: Hecke, Zaun und Tor sind Texturen, die überall ein Loch vertragen, Katze und Laterne nicht.
+
+### 2 · Bilder im Passer mit den Löchern
+
+<Excerpt region="pictures" />
+
+Die Löcher stehen in Millimetern ab dem Beschnitt, also hängt jedes Bild am Beschnitt und läuft auf allen Seiten um den Anschnitt darüber hinaus, am Bildschirm wie im Druck. Der Bildstil nimmt nur den unteren Rand weg: der Entwurf reicht bis zum Fuß der Seite, und der Text auf der Rückseite behält seinen oberen Rand von 44 mm, der ihn unter die Oberkante der kleinen Löcher setzt.
+
+### 3 · Die Stanzlinie auf ihrer Platte
+
+<Excerpt region="die-line" />
+
+Das PDF druckt jede Seite ganz und zieht den Umriss jedes Lochs und jedes abgerundeten Blatts auf einer Separation `Die` nach, die überdruckt und nie eingefärbt wird. `convertImages: false` lässt die Bilder als RGB-JPEGs mit sRGB-Profil, was PDF/X-4 erlaubt, und die Datei bleibt klein.
+
+### 4 · Das Buch in der Hand
+
+<Excerpt region="folio" />
+
+Folio stanzt die Löcher durch jedes Blatt und zeigt die Seiten darunter mit den Wänden des Schnitts, so liest sich das gestufte Fenster als Tiefe. Die Pappe blättert steif, und die runden Ecken sind an jedem Blatt geschnitten.
+
+### 5 · Flache Seiten mit Durchblick
+
+<Excerpt region="see-through" />
+
+Auf dem Canvas zeigt ein Loch, was hinter dem Canvas liegt, solange der Renderer die Seiten darunter nicht bekommt. `beneath` gibt sie nach Index zurück, jede mit ihren eigenen Löchern gemalt: so zeigt der Umschlag die Hecke und durch die Hecke die Katze.
+
+## Varianten
+
+### Nur die Ecken am Vorderschnitt runden
+
+Ein Bilderbuch rundet die beiden Ecken fern vom Rücken und lässt den Rücken rechtwinklig.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Jedes Blatt in eine Form schneiden
+
+Ein Umriss in `viewBox`-Einheiten schneidet jedes Blatt, auf den Rückseiten gespiegelt; er geht den Ecken vor.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```

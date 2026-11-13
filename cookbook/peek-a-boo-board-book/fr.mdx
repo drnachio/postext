@@ -1,0 +1,63 @@
+---
+title: "Un livre cartonné à coucou avec des trous en repérage"
+summary: "Quatre trous découpés là où la peinture suivante garde ce qui trompe l’œil, une fenêtre sur un trou plus petit, des coins arrondis et un tracé de découpe."
+plain: "Un livre cartonné pour les tout-petits. Chaque trou d’une page laisse voir un bout de l’image suivante, le texte fait deviner, et la page tournée montre ce que c’était vraiment."
+description: "Un livre cartonné aux trous découpés en repérage avec les peintures dessous : formes de dieCuts, coins arrondis et tracé de découpe dans le PDF."
+question: "Comment percer des trous dans les pages d’un livre, chacun laissant voir une partie de l’image suivante ?"
+aliases: ["livre à coucou", "livre cartonné", "trous découpés", "judas", "coins arrondis", "tracé de découpe"]
+pageNotes: { "1": "La couverture : une haie sous le ciel bleu, le titre en rouge et une fenêtre ronde dans la haie, par laquelle un trou plus petit de la page suivante montre des rayures orange et noires.", "2": "L’intérieur de la couverture : la fenêtre perce la page à gauche, la question se place à sa droite puis court sur toute la largeur, et la devinette en rouge.", "11": "La porte rouge d’une grange avec un judas rond en haut, par lequel on voit un disque jaune allumé." }
+---
+
+## Ce que vous allez composer
+
+*Coucou ! Qui est dans le jardin ?*, un livre cartonné de quatorze pages sur un carré de 160 mm, ses quatre coins arrondis. Chaque peinture a un trou, et le trou tombe exactement là où la peinture suivante garde la partie qui trompe l’œil : le flanc rayé d’un chat endormi qui pourrait être un tigre, la laine d’un mouton qui pourrait être un nuage, une lanterne qui pourrait être la lune. La fenêtre de la couverture est plus large que le trou derrière elle, et le premier regard porte à deux pages de profondeur. Le texte de gauche fait deviner ; la page tournée répond. Le PDF pour l’imprimeur porte le tracé de découpe sur une plaque à part.
+
+## Préparation
+
+### 1 · Des trous là où l’image suivante se trahit
+
+Le code est [la réponse courte](#la-réponse-courte) plus haut. Chaque forme se place depuis le coin supérieur gauche de la coupe, et `dieCuts.pages` désigne la page qu’elle perce, comptée depuis la première page du livre. Mesurez le trou sur la peinture qu’il dévoile, pas sur la page où il est découpé : la haie, la palissade et la porte sont des textures qui acceptent un trou n’importe où, le chat et la lanterne non.
+
+### 2 · Des peintures en repérage avec les trous
+
+<Excerpt region="pictures" />
+
+Les trous sont en millimètres depuis la coupe, donc chaque peinture s’accroche à la coupe et la dépasse du fond perdu sur les quatre côtés, à l’écran comme à l’impression. Le style des peintures ne supprime que la marge de pied : le dessin descend jusqu’au pied de la page, et le texte du verso derrière garde ses 44 mm de marge de tête, qui le placent sous le haut des petits trous.
+
+### 3 · Le tracé de découpe sur sa plaque
+
+<Excerpt region="die-line" />
+
+Le PDF imprime chaque page entière et trace le contour de chaque trou, et de chaque feuillet arrondi, sur une séparation `Die` en surimpression qui n’est jamais encrée. `convertImages: false` garde les peintures en JPEG RVB marqués sRGB, ce que PDF/X-4 autorise, et le fichier reste léger.
+
+### 4 · Le livre en main
+
+<Excerpt region="folio" />
+
+Folio perce les trous dans chaque feuillet et montre les pages dessous avec les parois de la découpe, si bien que la fenêtre en gradins se lit comme une profondeur. Le carton tourne raide, et les coins arrondis sont découpés sur tous les feuillets.
+
+### 5 · Des pages à plat qui laissent voir
+
+<Excerpt region="see-through" />
+
+Sur le canvas, un trou montre ce qu’il y a derrière le canvas tant que le rendu ne reçoit pas les pages dessous. `beneath` les rend par index, chacune peinte avec ses propres trous : la couverture laisse voir la haie, et à travers la haie, le chat.
+
+## Variantes
+
+### N’arrondir que les coins de gouttière
+
+Un album illustré arrondit les deux coins loin du dos et garde le dos d’équerre.
+
+```diff
+-  corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  corners: { radius: mm(6), edges: 'fore' },
+```
+
+### Découper chaque feuillet selon une forme
+
+Un contour en unités de `viewBox` découpe chaque feuillet, en miroir sur les versos ; il l’emporte sur les coins.
+
+```diff
+   corners: { radius: mm(9), edges: 'all' }, // board books are rounded on all four corners
++  outline: { d: 'M0 0.35 L0.5 0 L1 0.35 L1 1 L0 1 Z', viewBox: [1, 1] }, // a house
+```
