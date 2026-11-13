@@ -8,7 +8,8 @@ import { shapedSvgText } from '../../text/shapedText.js';
 import type { PathSeg, SvgInk, VectorDrawing } from '../svgVector.js';
 import type { SpotInkRegistry, SpotPlate } from '../../../print/spot.js';
 import { mixColor, planMix } from '../../../print/plates.js';
-import { inkEntry, inkKey, type ResolvedSpotColor } from 'postext';
+import { finishOverprintsByDefault, inkEntry, inkKey, plateOfSpot, type ResolvedSpotColor } from 'postext';
+import { droppedOffPlates, isScreenVarnish } from '../../../print/finishes.js';
 import { parseCssColor } from '../../../colors.js';
 import { mul } from './geometry.js';
 
@@ -184,7 +185,9 @@ export function svgSpotOf(
       const k = c && isPrintMode(colorSpace) ? colorSpace.transform.fromRgb(c.r, c.g, c.b) : undefined;
       const pct = (v: number) => Math.round(v * 1000) / 10;
       const cmyk = entry?.cmyk ?? (k ? { c: pct(k.c), m: pct(k.m), y: pct(k.y), k: pct(k.k) } : { c: 0, m: 0, y: 0, k: 100 });
-      spot = { name: plateName, cmyk, tint: 100, overprint: entry?.overprint ?? false };
+      // The ink table's finish (#1563): a white ink or a varnish an SVG
+      // names overprints unless the table says otherwise.
+      spot = { name: plateName, cmyk, tint: 100, overprint: entry?.overprint ?? finishOverprintsByDefault(entry?.finish), ...(entry?.finish ? { finish: entry.finish } : {}) };
     }
     return { spot, tint: (ink.tint ?? 100) / 100 };
   }
@@ -208,9 +211,12 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
   const inks = isPrintMode(colorSpace) ? colorSpace.spots : undefined;
   const registry = isPrintMode(colorSpace) ? colorSpace.inkRegistry : undefined;
   // A job on a few plates sets an ink of another plate on its own.
+  // A white ink or a varnish the job does not print is left out (#1566).
   const inkColor = (spot: ResolvedSpotColor, tint: number): Color =>
     isPrintMode(colorSpace) && colorSpace.plates
-      ? { ...mixColor(planMix(colorSpace.plates, { kind: 'spot', spot, tint }, colorSpace), registry!, spot.overprint) }
+      ? droppedOffPlates(spot.finish) && !plateOfSpot(spot, colorSpace.plates.plates)
+        ? { ...registry!.dropStandIn(spot.name) }
+        : { ...mixColor(planMix(colorSpace.plates, { kind: 'spot', spot, tint }, colorSpace), registry!, spot.overprint) }
       : { ...registry!.standIn(spot, tint) };
   const paint = (hex: string, alpha: number, ink?: SvgInk): Color => {
     const over = flatten && alpha < 1 ? alpha : 1;
@@ -227,6 +233,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
     return colorFromHex(flatten && alpha < 1 ? withAlpha(hex, alpha) : hex, colorSpace);
   };
   const alphaState = (ca: number, CA: number) => (flatten ? null : res.alpha(ca, CA));
+  const hidden = (hex: string): boolean => !isPrintMode(colorSpace) && isScreenVarnish(hex);
   for (const shape of drawing.shapes) {
     ops.push(pushGraphicsState());
     for (const c of shape.clips) {
@@ -246,7 +253,7 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
     if (shape.kind === 'text') {
       for (const run of shape.runs) {
         const font = run.font.pdfFont;
-        if (!font) continue;
+        if (!font || hidden(run.fill.hex)) continue;
         const gs = alphaState(run.fill.alpha, 1);
         ops.push(pushGraphicsState());
         if (gs) ops.push(gs);
@@ -278,11 +285,18 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
       ops.push(popGraphicsState());
       continue;
     }
-    const gs = alphaState(shape.fill?.alpha ?? 1, shape.stroke?.alpha ?? 1);
+    // A screen render paints no varnish (#1563).
+    const fillP = shape.fill && !hidden(shape.fill.hex) ? shape.fill : undefined;
+    const strokeP = shape.stroke && !hidden(shape.stroke.hex) ? shape.stroke : undefined;
+    if (!fillP && !strokeP) {
+      ops.push(popGraphicsState());
+      continue;
+    }
+    const gs = alphaState(fillP?.alpha ?? 1, strokeP?.alpha ?? 1);
     if (gs) ops.push(gs);
-    if (shape.fill) ops.push(setFillingColor(paint(shape.fill.hex, shape.fill.alpha, shape.fill.ink)));
-    if (shape.stroke) {
-      const st = shape.stroke;
+    if (fillP) ops.push(setFillingColor(paint(fillP.hex, fillP.alpha, fillP.ink)));
+    if (strokeP) {
+      const st = strokeP;
       ops.push(
         setStrokingColor(paint(st.hex, st.alpha, st.ink)),
         setLineWidth(round(st.width)),
@@ -293,9 +307,9 @@ function drawingOps(drawing: VectorDrawing, res: FormResources, colorSpace: Page
       if (st.dash) ops.push(setDashPattern(st.dash.map(round), round(st.dashOffset)));
     }
     ops.push(...pathOps(shape.segs));
-    if (shape.fill && shape.stroke) {
+    if (fillP && strokeP) {
       ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOddAndStroke) : fillAndStroke());
-    } else if (shape.fill) {
+    } else if (fillP) {
       ops.push(shape.evenOdd ? PDFOperator.of(PDFOperatorNames.FillEvenOdd) : fill());
     } else {
       ops.push(stroke());

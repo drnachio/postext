@@ -86,6 +86,10 @@ export interface PrintPdfReport {
   form: boolean;
   /** The file is tagged (`MarkInfo /Marked true`). */
   tagged: boolean;
+  /** The names of its optional content groups (layers), as the catalog
+   *  lists them (`Die line` for the die-cut plate Postext writes); absent
+   *  when it has none. */
+  layers?: string[];
 }
 
 const MM_PER_PT = 25.4 / 72;
@@ -120,6 +124,16 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
         profileEmbedded: lookup(d.get(PDFName.of('DestOutputProfile'))) instanceof PDFStream,
       };
       break;
+    }
+  }
+  const layers: string[] = [];
+  const ocProperties = lookup(pdf.catalog.get(PDFName.of('OCProperties')));
+  const ocgs = ocProperties instanceof PDFDict ? lookup(ocProperties.get(PDFName.of('OCGs'))) : undefined;
+  if (ocgs instanceof PDFArray) {
+    for (let i = 0; i < ocgs.size(); i++) {
+      const g = lookup(ocgs.get(i));
+      const name = g instanceof PDFDict ? textOf(lookup(g.get(PDFName.of('Name')))) : undefined;
+      if (name !== undefined) layers.push(name);
     }
   }
   const markInfo = lookup(pdf.catalog.get(PDFName.of('MarkInfo')));
@@ -317,5 +331,6 @@ export async function inspectPrintPdf(bytes: Uint8Array): Promise<PrintPdfReport
     annotations,
     form,
     tagged,
+    ...(layers.length > 0 ? { layers } : {}),
   };
 }

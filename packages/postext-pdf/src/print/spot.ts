@@ -107,6 +107,9 @@ export class SpotInkRegistry {
   private approximations = 0;
   /** Pictures placed as they are in a job on a few plates, by kind. */
   private readonly offPlates = new Map<string, number>();
+  /** Paints of a white ink or a varnish a job on a few plates does not
+   *  print, left out, by ink. */
+  private readonly dropped = new Map<string, number>();
 
   /**
    * `maxCodes` is for tests; a render uses {@link MAX_SPOT_CODES}.
@@ -216,6 +219,24 @@ export class SpotInkRegistry {
    *  a picture that does not decode): its inks were not moved onto them. */
   noteOffPlates(kind: 'pdf' | 'image'): void {
     this.offPlates.set(kind, (this.offPlates.get(kind) ?? 0) + 1);
+  }
+
+  /**
+   * The pdf-lib colour of a paint left out (#1566): a white ink or a
+   * varnish in a job on a few plates that does not print it. It stands
+   * for no ink at all, written back as process 0/0/0/0 under an
+   * overprinting state with `OPM 1`, which leaves every plate as it was,
+   * PDF/X-1a included (no transparency). Counted by ink for the render's
+   * warning.
+   */
+  dropStandIn(ink: string): Color {
+    this.dropped.set(ink, (this.dropped.get(ink) ?? 0) + 1);
+    return this.overprintStandIn(0, 0, 0, 0);
+  }
+
+  /** The paints left out of a job on a few plates, by ink. */
+  droppedOffPlates(): ReadonlyMap<string, number> {
+    return this.dropped;
   }
 
   /** Artwork placed off the job's plates, by kind. */

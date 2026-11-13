@@ -2,10 +2,11 @@
 // the pixel scale (#1276: split out of primitives.ts).
 import { type Color, cmyk, grayscale, rgb, type PDFPage, PDFName, PDFOperator, setGraphicsState } from 'pdf-lib';
 import { hexToRgb, colorAlpha, rgbToCmyk, rgbToGrayscale } from '../../colors.js';
-import type { PlateTarget, ResolvedSpotColor } from 'postext';
+import { plateOfSpot, type PlateTarget, type ResolvedSpotColor } from 'postext';
 import { type ColorMode, type PrintColorMode, isPrintMode, modeKey, overPaper } from '../../print/colorMode.js';
 import type { PageCtx } from '../primitives.js';
 import { mixColor, planMix } from '../../print/plates.js';
+import { droppedOffPlates, isScreenVarnish } from '../../print/finishes.js';
 
 export function makeScale(dpi: number): number {
   return 72 / dpi;
@@ -36,6 +37,8 @@ interface AlphaColor {
  * its opacity along (see {@link alphaOf}); malformed input paints black.
  */
 export function colorFromHex(hex: string, colorSpace: ColorMode): Color {
+  // A screen render puts no colour where a varnish goes (#1563).
+  if (!isPrintMode(colorSpace) && isScreenVarnish(hex)) return unpainted(colorSpace);
   // A job on a few plates sets every colour on them.
   if (isPrintMode(colorSpace) && colorSpace.plates) return plateColor(hex, colorSpace);
   // A spot colour's stand-in belongs to the render (its ink registry),
@@ -145,11 +148,25 @@ function plateColor(hex: string, mode: PrintColorMode): Color {
     const [r, g, b] = over < 1 ? overPaper(c.r, c.g, c.b, over) : [c.r, c.g, c.b];
     target = { kind: 'rgb', r, g, b };
   }
+  // A white ink or a varnish the job does not print is left out: on the
+  // colour plates it would be a pale tint where no ink was meant (#1566).
+  if (spot && droppedOffPlates(spot.finish) && !plateOfSpot(spot, mode.plates!.plates)) {
+    const dropped: Color = { ...mode.inkRegistry.dropStandIn(spot.name) };
+    cache.set(hex, dropped);
+    return dropped;
+  }
   const overprints = mode.overprints.has(hex6) || !!spot?.overprint;
   const color: Color = { ...mixColor(planMix(mode.plates!, target, mode), mode.inkRegistry, overprints) };
   if (alpha < 1) (color as AlphaColor).alpha = alpha;
   cache.set(hex, color);
   return color;
+}
+
+/** A colour that paints nothing in a screen render: fully transparent,
+ *  never cached (whether a hex is a varnish belongs to the render). */
+function unpainted(colorSpace: ColorMode): Color {
+  const color = whiteColor(colorSpace);
+  return { ...color, alpha: 0 } as Color & AlphaColor;
 }
 
 /** Spot colours by document colour string, per render (ink registry). */

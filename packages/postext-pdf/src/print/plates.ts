@@ -9,6 +9,9 @@
 import type { Color } from 'pdf-lib';
 import { cmyk } from 'pdf-lib';
 import {
+  finishOverprintsByDefault,
+  inkEntry,
+  inkKey,
   jobImagePlates,
   jobPlates,
   mixAlternate,
@@ -37,12 +40,13 @@ export interface PlatePlan {
  *  plate nothing defines prints as black (the preflight reports it). The
  *  picture plates and curves are named through the ink table. */
 export function platePlan(config: ResolvedPrintConfig, spots: Iterable<ResolvedSpotColor>): PlatePlan | undefined {
-  const given = jobPlates(config, spots);
+  const spotList = [...spots];
+  const given = jobPlates(config, spotList);
   if (!given) return undefined;
   const plates: PlateInk[] = given.map((p) => ({
     name: p.name,
     cmyk: p.cmyk ?? { c: 0, m: 0, y: 0, k: 100 },
-    overprint: p.overprint,
+    overprint: p.overprint || finishPlateOverprints(p.name, config, spotList),
     ...(p.process ? { process: p.process } : {}),
   }));
   const pictured = jobImagePlates(config, plates);
@@ -50,6 +54,15 @@ export function platePlan(config: ResolvedPrintConfig, spots: Iterable<ResolvedS
   const curves = pictured.map((i, n) => curveOf(i.curve ?? defaultCurve(images.length, n)));
   const key = `${plates.map((p) => `${p.name}/${p.cmyk.c},${p.cmyk.m},${p.cmyk.y},${p.cmyk.k}/${p.overprint}`).join('+')}|${images.map((p) => p.name).join('+')}|${JSON.stringify(pictured.map((i) => i.curve ?? null))}`;
   return { plates, images, curves, key };
+}
+
+/** Whether a spot plate the ink table makes a white ink or a varnish
+ *  overprints although no colour names it (#1563): the colours' own
+ *  finish already set theirs; the table's `overprint` wins. */
+function finishPlateOverprints(name: string, config: ResolvedPrintConfig, spots: readonly ResolvedSpotColor[]): boolean {
+  if (spots.some((s) => inkKey(s.name) === inkKey(name))) return false;
+  const entry = inkEntry(name, config.inks);
+  return entry?.overprint === undefined && finishOverprintsByDefault(entry?.finish);
 }
 
 /** A monotone is a straight line; a duotone puts its first plate on the

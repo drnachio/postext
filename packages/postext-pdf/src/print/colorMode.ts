@@ -110,7 +110,7 @@ export function createPrintColorMode(
 }
 
 function spotsKey(spots: ReadonlyMap<string, ResolvedSpotColor>): string {
-  return [...spots].map(([hex, s]) => `${hex}=${s.name}/${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}/${s.tint}/${s.overprint}`).join(';');
+  return [...spots].map(([hex, s]) => `${hex}=${s.name}/${s.cmyk.c},${s.cmyk.m},${s.cmyk.y},${s.cmyk.k}/${s.tint}/${s.overprint}${s.finish ? `/${s.finish.kind}` : ''}`).join(';');
 }
 
 /** How pictures' colours are read (`print.imageColor`), for the mode's
@@ -132,14 +132,21 @@ export function overPaper(r: number, g: number, b: number, alpha: number): [numb
 }
 
 /** Spot colours with every ink as its first colour defines it: one ink
- *  name is one plate, whatever CMYK or overprint a later colour gives it
- *  (the preflight reports those). */
+ *  name is one plate, whatever CMYK, overprint or finish a later colour
+ *  gives it (the preflight reports those). */
 function onePlatePerInk(spots: ReadonlyMap<string, ResolvedSpotColor>): ReadonlyMap<string, ResolvedSpotColor> {
   const first = new Map<string, ResolvedSpotColor>();
   const out = new Map<string, ResolvedSpotColor>();
   for (const [hex, s] of spots) {
     const ink = first.get(s.name) ?? (first.set(s.name, s), s);
-    out.set(hex, ink === s ? s : { ...s, cmyk: ink.cmyk, overprint: ink.overprint });
+    if (ink === s) {
+      out.set(hex, s);
+      continue;
+    }
+    const merged: ResolvedSpotColor = { ...s, cmyk: ink.cmyk, overprint: ink.overprint };
+    if (ink.finish) merged.finish = ink.finish;
+    else delete merged.finish;
+    out.set(hex, merged);
   }
   return out;
 }
