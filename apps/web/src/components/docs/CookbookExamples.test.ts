@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { appendToSections } from "@/lib/docs";
 import { compileDocsMdx } from "@/lib/mdx/mdx";
-import type { DocExampleCard } from "@/lib/cookbook/docExamplesIndex";
+import type { DocExampleCard } from "@/lib/cookbook/docExamples";
 import { CookbookExamples, CookbookStrip, HeadingText } from "./CookbookExamples";
 
 const card = (n: number): DocExampleCard => ({

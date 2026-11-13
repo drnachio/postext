@@ -7,13 +7,13 @@
  *
  * Server-only (it reads the repo through recipes.ts and docLinks.ts).
  */
-import { getDocSlugsForLocale } from "../docs.ts";
-import { docToc, resolveDocAnchor } from "./docLinks.ts";
-import { pageExamples, rankDocExamples, type ExampleRecipe, type ExampleSources, type PageExamples, type ResolveAnchor } from "./docExamples.ts";
-import { cardImage } from "./images.ts";
-import { getAllRecipes, recipeHref, writeupFor } from "./recipes.ts";
-import { loadRegistry } from "./registry.ts";
-import type { Locale, Recipe, Registry } from "./types.ts";
+import { getDocSlugsForLocale } from "../../docs.ts";
+import { docToc, resolveDocAnchor } from "../docLinks.ts";
+import { pageExamples, rankDocExamples, type ExampleRecipe, type ExampleSources, type PageExamples, type ResolveAnchor } from "./rank.ts";
+import { cardImage } from "../images.ts";
+import { getAllRecipes, recipeHref, writeupFor } from "../recipes.ts";
+import { loadRegistry } from "../registry.ts";
+import type { Locale, Recipe, Registry } from "../types.ts";
 
 /** What a docs card shows of a recipe, in one locale. */
 export interface DocExampleCard {

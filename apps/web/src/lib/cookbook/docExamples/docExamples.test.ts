@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { appendToSections, extractToc, getDocSlugsForLocale } from "../docs.ts";
-import { docToc, resolveDocAnchor } from "./docLinks.ts";
-import { GROUP_SIZE, STRIP_SIZE, pageExamples, rankDocExamples, topLevelKeys, type ExampleRecipe, type ExampleSources, type ResolveAnchor } from "./docExamples.ts";
-import { buildDocExamples, buildDocExamplesFrom } from "./docExamplesIndex.ts";
-import { getAllRecipes } from "./recipes.ts";
-import { loadRegistry } from "./registry.ts";
-import type { DocAnchor, Locale } from "./types.ts";
-import { LOCALES } from "./types.ts";
+import { appendToSections, extractToc, getDocSlugsForLocale } from "../../docs.ts";
+import { docToc, resolveDocAnchor } from "../docLinks.ts";
+import { GROUP_SIZE, STRIP_SIZE, pageExamples, rankDocExamples, topLevelKeys, type ExampleRecipe, type ExampleSources, type ResolveAnchor } from "./rank.ts";
+import { buildDocExamples, buildDocExamplesFrom } from "./index.ts";
+import { getAllRecipes } from "../recipes.ts";
+import { loadRegistry } from "../registry.ts";
+import type { DocAnchor, Locale } from "../types.ts";
+import { LOCALES } from "../types.ts";
 
 // ─── Ranking (fixture) ──────────────────────────────────────────────────────
 

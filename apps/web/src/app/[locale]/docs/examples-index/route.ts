@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { buildDocExamples } from "@/lib/cookbook/docExamplesIndex";
+import { buildDocExamples } from "@/lib/cookbook/docExamples";
 import { routing } from "@/i18n/routing";
 import { siteLocale } from "@/i18n/locales";
 

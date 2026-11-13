@@ -23,9 +23,9 @@
  * `bodyText`) says nothing about a recipe, so a feature, API or config key
  * that more than a fifth of the recipes use only counts as a primary one.
  *
- * Pure and isomorphic: the loader (docExamplesIndex.ts) feeds it.
+ * Pure and isomorphic: the loader (index.ts) feeds it.
  */
-import type { DocAnchor, DocExampleEntry, Locale } from "./types.ts";
+import type { DocAnchor, DocExampleEntry, Locale } from "../types.ts";
 
 /** What the ranking needs of a published recipe. */
 export interface ExampleRecipe {

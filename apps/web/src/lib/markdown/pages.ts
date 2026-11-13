@@ -10,7 +10,7 @@ import { FEATURE_KEYS, featureDocPath } from '@/lib/featureDocs';
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from '@/lib/guideBundle';
 import { type TranscriptVideo, TRANSCRIPTS } from '@/components/landing/transcripts';
 import { COOKBOOK_PATH } from './cookbook';
-import { buildDocExamples } from '@/lib/cookbook/docExamplesIndex';
+import { buildDocExamples } from '@/lib/cookbook/docExamples';
 import { recipeHref } from '@/lib/cookbook/recipes';
 import { labelsFor, messagesFor, REPO_URL, NPM_URL, YOUTUBE_URL } from './labels';
 import { markdownUrl, mdxToMarkdown } from './mdx';

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import type { DocExampleCard } from "@/lib/cookbook/docExamplesIndex";
-import { GROUP_SIZE, type ExampleGroup } from "@/lib/cookbook/docExamples";
+import type { DocExampleCard } from "@/lib/cookbook/docExamples";
+import { GROUP_SIZE, type ExampleGroup } from "@/lib/cookbook/docExamples/rank";
 import "./cookbookExamples.css";
 
 /** "Nº 188" */

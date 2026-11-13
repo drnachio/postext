@@ -9,7 +9,7 @@ import {
   hasLocaleVersion,
   appendToSections,
 } from "@/lib/docs";
-import { buildDocExamples } from "@/lib/cookbook/docExamplesIndex";
+import { buildDocExamples } from "@/lib/cookbook/docExamples";
 import { CookbookExamples, CookbookStrip } from "@/components/docs/CookbookExamples";
 import { routing } from "@/i18n/routing";
 import { MdxContent } from "@/components/docs/MdxContent";
