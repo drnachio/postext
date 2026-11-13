@@ -51,6 +51,7 @@ import { ComicsBalloonStylesSection } from './comics/ComicsBalloonStylesSection.
 import { ComicsCastSection } from './comics/ComicsCastSection.js';
 import { PageTemplatesSection } from './page/PageTemplatesSection/index.js';
 import { ModulesSection } from './page/ModulesSection/index.js';
+import { DieCutsSection } from './page/DieCutsSection/index.js';
 import { FrameStylesSection } from './callouts/FrameStylesSection/index.js';
 import { FrameLooksSection } from './callouts/FrameLooksSection.js';
 import { ExerciseStylesSection } from './exercises/ExerciseStylesSection.js';
@@ -62,6 +63,7 @@ import { CharacterStylesSection } from './text/CharacterStylesSection.js';
 export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'page': PageSection,
   'layout': LayoutSection,
+  'dieCuts': DieCutsSection,
   'writing': WritingSection,
   'color-palette': ColorPaletteSection,
   'headerFooter': HeaderFooterSection,
