@@ -307,6 +307,9 @@ export function formatWarning(w: LayoutWarning | ContentWarning | ConfigWarning 
     case 'unbreakableWordOverflow':
       text = `The line "${w.text}" holds an Arabic-script word wider than the line — such a word is never divided, so it runs past the measure`;
       break;
+    case 'numberOverflow':
+      text = `${snippetPlace(w)}The number "${w.text}" is wider than its line — a number is never divided as a word, so it runs past the measure: widen the column, set the text smaller, or group its digits with no-break spaces`;
+      break;
     case 'wordDividedByCharacter':
       text = `The line "${w.text}" ends in a word wider than the whole line, cut between two of its letters with no hyphen to fit — give the text more room or a smaller size`;
       break;

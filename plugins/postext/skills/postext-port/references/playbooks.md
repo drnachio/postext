@@ -1167,7 +1167,8 @@ Decimal comma vs point in data and captions; `{,}` in LaTeX.
   folio outer corner (left of odd pages) or centred.
 - Keep the author's typed digits and punctuation (، ؛ ؟ «»); generated numbers follow `numerals`.
 - Watch in the render: `unbreakableWordOverflow` (a word wider than a narrow cell/column: widen it;
-  a Latin word there is cut instead and reported as `wordDividedByCharacter` / `wordDividedBySyllable`),
+  a Latin word there is cut instead and reported as `wordDividedByCharacter` / `wordDividedBySyllable`;
+  a number is never cut, ≥ 1.82: `numberOverflow` with the cell, caption or note),
   `joiningScriptLetterSpacing` (a style tracks Arabic: remove `letterSpacing`).
 
 ### F8. Arabic, classical vocalised edition (turāth, tahqīq, Nights)

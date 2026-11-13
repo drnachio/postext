@@ -957,6 +957,8 @@
     "warningsCjkLooseLineDetail": "« __text__ » : pour remplir la longueur de ligne, ses caractères devraient s’espacer au-delà de la limite (un demi-cadratin, ou l’approche de justification maximale si elle est réglée) ; la ligne s’arrête donc avant la fin. La cause est généralement un mot long ou une adresse web insécable en début de ligne suivante.",
     "warningsUnbreakableWordOverflowTitle": "Mot plus large que sa ligne",
     "warningsUnbreakableWordOverflowDetail": "« __text__ » : un mot en écriture arabe est plus large que cette ligne. Un tel mot n’est jamais coupé (ses lettres sont liées) : il dépasse donc la longueur de ligne. Augmentez la longueur de ligne, choisissez un corps plus petit, ou insérez une espace dans le mot s’il s’agit de plusieurs mots écrits sans espace.",
+    "warningsNumberOverflowTitle": "Nombre plus large que sa ligne",
+    "warningsNumberOverflowDetail": "Page __page__ : le nombre « __text__ » est plus large que sa ligne. Un nombre n’est jamais coupé comme un mot : il dépasse donc la justification. Élargissez la colonne, réduisez le corps ou groupez ses chiffres avec des espaces insécables, où il peut se couper.",
     "warningsWordDividedByCharacterTitle": "Mot coupé entre deux lettres",
     "warningsWordDividedByCharacterDetail": "« __text__ » : un mot de cette ligne est plus large que la ligne entière ; il a été coupé entre deux de ses lettres, sans trait d’union, pour tenir. Donnez plus de place au texte, réduisez le corps ou raccourcissez le mot.",
     "warningsWordDividedBySyllableTitle": "Mot divisé pour tenir dans sa ligne",

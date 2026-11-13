@@ -436,6 +436,12 @@ export function detailFor(payload: WarningPayload, labels: SandboxLabels, locale
       return `#${payload.resourceId} — ${labels.warningsParagraphCitedInNoteDetail}`;
     case 'floatCropped':
       return `#${payload.resourceId} — ${(payload.reason === 'row' ? labels.warningsFloatRowCroppedDetail : labels.warningsFloatCroppedDetail).replace('__share__', String(Math.round(payload.share * 100)))}`;
+    case 'numberOverflow':
+      // In a caption, a note or a cell (#1549), named as a stack is.
+      return (payload.place ? `#${payload.place.resourceId} · ${(payload.place.part === 'caption' ? labels.warningsPartCaption
+        : payload.place.part === 'note' ? labels.warningsPartNote
+        : labels.warningsPartCell.replace('__row__', String((payload.place.cell?.row ?? 0) + 1)).replace('__col__', String((payload.place.cell?.col ?? 0) + 1)))} — ` : '')
+        + labels.warningsNumberOverflowDetail.replace('__page__', String(payload.page)).replace('__text__', payload.text);
     case 'stack':
     case 'citationBreak':
     case 'operatorBreak':

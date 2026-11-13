@@ -957,6 +957,8 @@
     "warningsCjkLooseLineDetail": "„__text__“: Um die Satzbreite zu füllen, müssten die Zeichen über die Grenze hinaus gesperrt werden (ein halbes Geviert oder die maximale Blocksatz-Sperrung, falls eingestellt), daher endet die Zeile vorher. Meist verursacht das ein langes, nicht trennbares Wort oder eine Webadresse in der nächsten Zeile.",
     "warningsUnbreakableWordOverflowTitle": "Wort breiter als seine Zeile",
     "warningsUnbreakableWordOverflowDetail": "„__text__“: Ein Wort in arabischer Schrift ist in dieser Zeile breiter als die Zeile. Ein solches Wort wird nie getrennt (seine Buchstaben sind verbunden) und ragt daher über die Satzbreite hinaus. Verbreitern Sie die Satzbreite, wählen Sie einen kleineren Schriftgrad oder setzen Sie ein Leerzeichen, falls es mehrere zusammengeschriebene Wörter sind.",
+    "warningsNumberOverflowTitle": "Zahl breiter als ihre Zeile",
+    "warningsNumberOverflowDetail": "Seite __page__: Die Zahl „__text__“ ist breiter als ihre Zeile. Eine Zahl wird nie wie ein Wort getrennt und läuft daher über die Satzbreite hinaus. Verbreitern Sie die Spalte, wählen Sie einen kleineren Schriftgrad oder gliedern Sie die Ziffern mit geschützten Leerzeichen, an denen sie umbrechen darf.",
     "warningsWordDividedByCharacterTitle": "Wort zwischen zwei Buchstaben getrennt",
     "warningsWordDividedByCharacterDetail": "„__text__“: Ein Wort in dieser Zeile ist breiter als die ganze Zeile und wurde deshalb ohne Trennstrich zwischen zwei Buchstaben getrennt, damit es passt. Geben Sie dem Text mehr Platz, wählen Sie einen kleineren Schriftgrad oder kürzen Sie das Wort.",
     "warningsWordDividedBySyllableTitle": "Wort getrennt, damit es passt",

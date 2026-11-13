@@ -21,7 +21,7 @@ import { buildCodeLineNumbers } from '../../../code/codeLines.js';
 import { stampCentralBaselines } from '../../../text/verticalMetrics.js';
 import { orientLinesToFrames } from '../../../blocks/mirrorFrame.js';
 import { stampFigureLabelRects } from '../../../../composed/labels.js';
-import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings, snippetEdgeWarnings } from '../../../contentWarnings.js';
+import { joiningLetterSpacingWarnings, dropCapWarnings, floatShrinkWarnings, pictureBelowPrintSizeWarnings, emptyCaptionWarnings, snippetEdgeWarnings, snippetNumberWarnings } from '../../../contentWarnings.js';
 import { floatPinWarnings } from '../../../contentWarnings/floatPinWarnings.js';
 import type { PostextConfig, Resource, ResolvedCalloutStyleConfig } from '../../../../types.js';
 import type { VDTDocument } from '../../../../vdt/document.js';
@@ -272,12 +272,17 @@ export function createPassFinish(deps: PassFinishDeps) {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
+  // Numbers wider than their line in captions, notes and cells (#1549).
+  const snippetNumbers = snippetNumberWarnings(doc, (idx) => {
+    const b = contentBlocks[idx];
+    return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
+  });
   // Floats set by hand that are not where their pin asks (#1494).
   const pins = floatPinWarnings(doc, givenResources ?? [], pinnedFloats, (idx) => {
     const b = contentBlocks[idx];
     return b ? { start: b.sourceStart + bodyOffset, end: b.sourceEnd + bodyOffset } : undefined;
   });
-  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0 || pins.length > 0 || snippetEdges.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely, ...pins, ...snippetEdges]);
+  if (shrunk.length > 0 || belowPrint.length > 0 || lonely.length > 0 || pins.length > 0 || snippetEdges.length > 0 || snippetNumbers.length > 0) floatShrinkWarningsByDoc.set(doc, [...shrunk, ...belowPrint, ...lonely, ...pins, ...snippetEdges, ...snippetNumbers]);
   if (textWrapNotes.length > 0 || columnsNotes.length > 0 || movedNotes.length > 0) textWrapWarningsByDoc.set(doc, [...textWrapNotes, ...columnsNotes, ...movedNotes]);
   // Composed pages (#855): frames whose content does not fit.
   if (composedNotes.length > 0) composedWarningsByDoc.set(doc, composedNotes);

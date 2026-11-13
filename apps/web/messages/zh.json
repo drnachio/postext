@@ -957,6 +957,8 @@
     "warningsCjkLooseLineDetail": "“__text__”：要撑满行长，字符间的扩展会超过上限（半个em，设了两端对齐最大字距时以它为准），所以这一行不撑满。原因通常是下一行有无法断开的长单词或网址。",
     "warningsUnbreakableWordOverflowTitle": "单词宽于行长",
     "warningsUnbreakableWordOverflowDetail": "“__text__”：这一行有一个阿拉伯文字的单词比行还宽。这类单词从不拆开（字母彼此相连），所以会超出行长。可以加大行长、缩小字号，或在连写的几个词之间加空格。",
+    "warningsNumberOverflowTitle": "数字宽于行长",
+    "warningsNumberOverflowDetail": "第 __page__ 页：数字“__text__”比所在行还宽。数字不会像单词那样拆开，所以会超出行长。请加宽栏、缩小字号，或用不换行空格给数字分组（数字可以在那里断开）。",
     "warningsWordDividedByCharacterTitle": "词在两个字母之间被截断",
     "warningsWordDividedByCharacterDetail": "“__text__”：这一行中有一个词比整行还宽，因此在它的两个字母之间被截断（没有连字符）以便排下。请给文字更多空间、缩小字号，或改用更短的写法。",
     "warningsWordDividedBySyllableTitle": "词被断开以排进一行",

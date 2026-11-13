@@ -418,7 +418,10 @@ Arabic and right-to-left traps (postext ≥ 1.15; playbooks F7–F8; configurati
   from an LTR book keeps working. Header/footer slots stay physical.
 - **Words are never cut, hyphenated or letter-spaced.** No `letterSpacing` on
   Arabic styles (`joiningScriptLetterSpacing`); a word wider than a narrow
-  cell overflows (`unbreakableWordOverflow`): widen the cell.
+  cell overflows (`unbreakableWordOverflow`): widen the cell. So does a number
+  in any book (≥ 1.82, `numberOverflow`, which names the table cell, caption
+  or note): never divided as a word; widen the column, set the table smaller,
+  or group its digits with no-break spaces (U+202F), where it may turn over.
 - **Emphasis**: keep `*…*`; it prints bold (Arabic is never slanted). Do not
   set `emphasis: 'italic'`.
 - **Notes «(١)»**: `[^id]` markers before the following punctuation, and

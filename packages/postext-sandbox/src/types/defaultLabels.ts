@@ -302,6 +302,8 @@ export const DEFAULT_LABELS: SandboxLabels = {
   warningsCjkLooseLineDetail: '“__text__”: reaching the measure would spread its characters past the limit (half an em, or the maximum justification tracking when it is set), so the line stops short. A long word or web address that cannot break, on the next line, usually causes it.',
   warningsUnbreakableWordOverflowTitle: 'Word wider than its line',
   warningsUnbreakableWordOverflowDetail: '“__text__”: an Arabic-script word on this line is wider than the line. Such a word is never divided (its letters join), so it runs past the measure. Widen the measure, set a smaller size, or put a space in the word if it is several words written together.',
+  warningsNumberOverflowTitle: 'Number wider than its line',
+  warningsNumberOverflowDetail: 'Page __page__: the number “__text__” is wider than its line. A number is never divided as a word, so it runs past the measure. Widen the column, set the text smaller, or group its digits with no-break spaces, where it may part.',
   warningsWordDividedByCharacterTitle: 'Word cut between two letters',
   warningsWordDividedByCharacterDetail: '“__text__”: a word on this line is wider than the whole line, so it was cut between two of its letters, with no hyphen, to fit. Give the text more room, set a smaller size, or write the word shorter.',
   warningsWordDividedBySyllableTitle: 'Word divided to fit its line',

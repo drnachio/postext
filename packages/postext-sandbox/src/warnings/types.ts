@@ -49,6 +49,10 @@ export type WarningPayload =
    *  `ratio` times their width (#732). */
   | { kind: 'raggedLine'; text: string; ratio: number }
   | { kind: 'unbreakableWordOverflow'; text: string }
+  /** The engine's `numberOverflow` (#1549): a number wider than its line,
+   *  never divided as a word, runs past the measure. `text` is the number;
+   *  `place` the caption, note or table cell it lies in, if any. */
+  | { kind: 'numberOverflow'; page: number; text: string; place?: SnippetPlace }
   /** The engine's `wordDividedByCharacter` / `wordDividedBySyllable`
    *  (#1150): a word wider than its whole line, cut between two letters
    *  or at a syllable to fit. `text` is the line's text. */

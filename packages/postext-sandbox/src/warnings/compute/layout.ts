@@ -168,6 +168,18 @@ export function collectLayoutWarnings(doc: VDTDocument, markdown: string): Warni
       });
       return;
     }
+    if (w.kind === 'numberOverflow') {
+      // A number wider than its line (#1549), by book page, with the
+      // caption, note or cell it lies in.
+      out.push({
+        id: `layout-numberOverflow-${w.sourceStart ?? 'x'}-${i}`,
+        payload: { kind: 'numberOverflow', page: (w.pageIndex ?? 0) + 1 + (doc.pageIndexOffset ?? 0), text: w.text, ...snippetPlace(w) },
+        sourceStart: w.sourceStart,
+        sourceEnd: w.sourceEnd,
+        line: w.sourceStart !== undefined ? lineNumberForOffset(markdown, w.sourceStart) : undefined,
+      });
+      return;
+    }
     if (w.kind === 'stack') {
       // Two lines in a row that end or start alike (#1463), by book page.
       out.push({

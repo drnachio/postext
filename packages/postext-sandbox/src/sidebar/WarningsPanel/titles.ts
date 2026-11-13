@@ -36,6 +36,8 @@ export function titleFor(payload: WarningPayload, labels: SandboxLabels): string
       return labels.warningsRaggedLineTitle;
     case 'unbreakableWordOverflow':
       return labels.warningsUnbreakableWordOverflowTitle;
+    case 'numberOverflow':
+      return labels.warningsNumberOverflowTitle;
     case 'wordDividedByCharacter':
       return labels.warningsWordDividedByCharacterTitle;
     case 'wordDividedBySyllable':

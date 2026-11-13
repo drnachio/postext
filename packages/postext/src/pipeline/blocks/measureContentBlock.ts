@@ -40,6 +40,7 @@ import type { BlockMeasureContext, MeasureContentBlockOptions, MeasuredContentBl
 import { createMeasureOptions } from './measureContentBlock/measureOptions.js';
 import { linkQrSetting, hangLinkQr } from './measureContentBlock/linkQr.js';
 import { placementWidthOf, widthShareIn } from '../floats/placementLength.js';
+import { withHyphenationLanguage } from '../../hyphenation/hyphenate.js';
 
 export type { BlockMeasureContext, DropCapNote, MeasuredContentBlock, MeasureContentBlockOptions } from './measureContentBlock/types.js';
 export { wordSpacingProfile } from './measureContentBlock/helpers.js';
@@ -68,6 +69,20 @@ export function composedFrameMeasureContext(ctx: BlockMeasureContext): BlockMeas
  * resource that floats to a page band.
  */
 export function measureContentBlock(
+  rawBlock: ContentBlock,
+  blockIdx: number,
+  columnWidth: number,
+  ctx: BlockMeasureContext,
+  opts?: MeasureContentBlockOptions,
+): MeasuredContentBlock | null {
+  // A block inside a container that names its language
+  // (`:::paragraphs{lang=fr}`, a poem's `:::verse{lang=fr}`) divides its
+  // words with that language's dictionary and list of words kept whole
+  // (#1547); every caller measures blocks through here.
+  return withHyphenationLanguage(rawBlock.lang, () => measureContentBlockIn(rawBlock, blockIdx, columnWidth, ctx, opts));
+}
+
+function measureContentBlockIn(
   rawBlock: ContentBlock,
   blockIdx: number,
   columnWidth: number,

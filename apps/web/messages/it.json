@@ -957,6 +957,8 @@
     "warningsCjkLooseLineDetail": "«__text__»: per arrivare alla giustezza i suoi caratteri si spazierebbero oltre il limite (mezzo em, o il tracking massimo di giustificazione quando è impostato), quindi la riga si ferma prima. Di solito la causa è una parola lunga o un indirizzo web che non si può dividere, sulla riga successiva.",
     "warningsUnbreakableWordOverflowTitle": "Parola più larga della riga",
     "warningsUnbreakableWordOverflowDetail": "«__text__»: una parola in scrittura araba su questa riga è più larga della riga. Una parola del genere non si divide mai (le sue lettere sono legate), quindi supera la giustezza. Allarga la giustezza, usa un corpo più piccolo o inserisci uno spazio nella parola se si tratta di più parole scritte unite.",
+    "warningsNumberOverflowTitle": "Numero più largo della sua riga",
+    "warningsNumberOverflowDetail": "Pagina __page__: il numero «__text__» è più largo della sua riga. Un numero non viene mai diviso come una parola, quindi va oltre la giustezza. Allarga la colonna, riduci il corpo o raggruppa le cifre con spazi indivisibili, dove può andare a capo.",
     "warningsWordDividedByCharacterTitle": "Parola tagliata tra due lettere",
     "warningsWordDividedByCharacterDetail": "«__text__»: una parola di questa riga è più larga dell’intera riga, quindi è stata tagliata tra due sue lettere, senza trattino, per entrarci. Dai più spazio al testo, riduci il corpo o accorcia la parola.",
     "warningsWordDividedBySyllableTitle": "Parola divisa per entrare nella riga",

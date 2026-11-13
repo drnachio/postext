@@ -217,8 +217,14 @@ export interface VDTLine {
    *  wider than its measure. Such a word is never cut between its letters
    *  (its pieces would lose their joining forms), so it runs past the
    *  measure, and the build reports an `unbreakableWordOverflow` content
-   *  warning. Absent otherwise. */
+   *  warning. Absent otherwise. A number wider than its measure runs past
+   *  it the same way (#1549), and also carries {@link numberOverflow}. */
   wordOverflow?: true;
+  /** The word that runs past the measure ({@link wordOverflow}) is a
+   *  number (`3,600`, `−12.5 %`): the breaker never divides one as a word
+   *  (#1549), and the build reports a `numberOverflow` content warning in
+   *  its place. Absent otherwise. */
+  numberOverflow?: true;
   /** The line ends in a piece of a word wider than its whole measure,
    *  which the breaker cut to fit (#1150): at one of its syllables, a
    *  hyphen added (`'syllable'`), or, where none fits, between two of its

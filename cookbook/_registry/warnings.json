@@ -486,6 +486,60 @@
       }
     }
   },
+  "numberOverflow": {
+    "source": "engine",
+    "label": {
+      "en": "Number wider than its line",
+      "es": "Número más ancho que su línea",
+      "ca": "Nombre més ample que la línia",
+      "zh": "数字宽于行长",
+      "ar": "رقم أعرض من سطره",
+      "ja": "行より長い数値",
+      "pt": "Número mais largo que a linha",
+      "fr": "Nombre plus large que sa ligne",
+      "de": "Zahl breiter als ihre Zeile",
+      "it": "Numero più largo della sua riga"
+    },
+    "cause": {
+      "en": "A number (3,600, −12.5 %, 37 °C, €1,250.00) is wider than its line, usually in a narrow table column, a caption or a note. A number is never divided as a word, at a syllable or between two digits with a hyphen (3,60- over 0 would read as two numbers), so it runs past the measure. It parts only at a no-break space between its groups, where nothing is added.",
+      "es": "Un número (3.600, −12,5 %, 37 °C, 1.250,00 €) es más ancho que su línea, casi siempre en una columna estrecha de una tabla, un pie o una nota. Un número nunca se divide como una palabra, ni por sílabas ni entre dos cifras con guion (3.60- sobre 0 se leería como dos números), así que sobresale de la medida. Solo se parte en un espacio de no separación entre sus grupos, donde no se añade nada.",
+      "ca": "Un nombre (3.600, −12,5 %, 37 °C, 1.250,00 €) és més ample que la línia, gairebé sempre en una columna estreta d'una taula, un peu o una nota. Un nombre no es parteix mai com una paraula, ni per síl·labes ni entre dues xifres amb guionet (3.60- damunt de 0 es llegiria com dos nombres), de manera que sobresurt de la mesura. Només es parteix en un espai indivisible entre els seus grups, on no s'hi afegeix res.",
+      "zh": "一个数字（3,600、−12.5 %、37 °C、€1,250.00）比所在行还宽，通常出现在较窄的表格栏、图注或注释中。数字从不像单词那样拆开，既不按音节拆，也不在两位数字之间加连字符拆开（3,60- 接 0 会被读成两个数），所以会超出行长。它只会在数位分组之间的不换行空格处断开，那里不加任何符号。",
+      "ar": "رقم (3,600 أو −12.5 % أو 37 °C أو €1,250.00) أعرض من سطره، وغالبًا ما يكون ذلك في عمود ضيق من جدول أو في تعليق أو ملاحظة. لا يُقسَّم الرقم أبدًا كما تُقسَّم الكلمة، لا عند مقطع ولا بين رقمين بشَرطة (فـ 3,60- فوق 0 تُقرأ رقمين)، فيتجاوز عرض السطر. ولا ينقسم إلا عند مسافة غير فاصلة بين مجموعاته، ولا يُضاف هناك شيء.",
+      "ja": "数値（3,600、−12.5 %、37 °C、€1,250.00）が行より長くなっています。多くは表の狭い列、キャプション、注で起きます。数値は単語のように分割されず、音節でも、ハイフンを付けて数字の間でも切られません（3,60- と 0 に分かれると二つの数値に読めるため）。そのため行長からはみ出します。分割されるのは桁区切りの改行しないスペースの位置だけで、そこには何も加わりません。",
+      "pt": "Um número (3.600, −12,5 %, 37 °C, € 1.250,00) é mais largo que a linha, quase sempre numa coluna estreita de uma tabela, numa legenda ou numa nota. Um número nunca é dividido como uma palavra, nem por sílabas nem entre dois algarismos com hífen (3.60- sobre 0 seria lido como dois números), por isso ultrapassa a medida. Só quebra num espaço não separável entre os seus grupos, onde nada é acrescentado.",
+      "fr": "Un nombre (3 600, −12,5 %, 37 °C, 1 250,00 €) est plus large que sa ligne, le plus souvent dans une colonne étroite d’un tableau, une légende ou une note. Un nombre n’est jamais coupé comme un mot, ni à une syllabe ni entre deux chiffres avec un trait d’union (3 60- au-dessus de 0 se lirait comme deux nombres) : il dépasse donc la justification. Il ne se coupe qu’à une espace insécable entre ses groupes, où rien n’est ajouté.",
+      "de": "Eine Zahl (3.600, −12,5 %, 37 °C, 1.250,00 €) ist breiter als ihre Zeile, meist in einer schmalen Tabellenspalte, einer Bildunterschrift oder einer Anmerkung. Eine Zahl wird nie wie ein Wort getrennt, weder an einer Silbe noch zwischen zwei Ziffern mit Trennstrich (3.60- über 0 läse sich als zwei Zahlen), und läuft daher über die Satzbreite hinaus. Sie bricht nur an einem geschützten Leerzeichen zwischen ihren Zifferngruppen um, wo nichts hinzukommt.",
+      "it": "Un numero (3.600, −12,5 %, 37 °C, 1.250,00 €) è più largo della sua riga, quasi sempre in una colonna stretta di una tabella, in una didascalia o in una nota. Un numero non viene mai diviso come una parola, né in sillabe né tra due cifre con un trattino (3.60- sopra 0 si leggerebbe come due numeri), quindi va oltre la giustezza. Va a capo solo in uno spazio indivisibile tra i suoi gruppi, dove non si aggiunge nulla."
+    },
+    "fix": {
+      "en": "Widen the column (a larger columnWidths weight, a wider table), set the table, caption or note text smaller, or write the number's groups with no-break spaces (U+202F or U+00A0) so it may part between them.",
+      "es": "Ensancha la columna (más peso en columnWidths, una tabla más ancha), reduce el cuerpo de la tabla, el pie o la nota, o escribe los grupos del número con espacios de no separación (U+202F o U+00A0) para que pueda partirse entre ellos.",
+      "ca": "Eixampla la columna (més pes a columnWidths, una taula més ampla), redueix el cos de la taula, el peu o la nota, o escriu els grups del nombre amb espais indivisibles (U+202F o U+00A0) perquè s'hi pugui partir.",
+      "zh": "加宽该栏（提高 columnWidths 中的权重，或加宽表格），缩小表格、图注或注释的字号，或用不换行空格（U+202F 或 U+00A0）给数字分组，让它可以在组与组之间断开。",
+      "ar": "وسّع العمود (وزن أكبر في columnWidths أو جدول أعرض)، أو صغّر حجم نص الجدول أو التعليق أو الملاحظة، أو اكتب مجموعات الرقم بمسافات غير فاصلة (U+202F أو U+00A0) لينقسم بينها.",
+      "ja": "列を広げる（columnWidths の比率を上げる、表を広くする）、表・キャプション・注の文字を小さくする、または数字のグループを改行しないスペース（U+202F または U+00A0）で区切って、その間で分割できるようにしてください。",
+      "pt": "Alargue a coluna (mais peso em columnWidths, uma tabela mais larga), reduza o corpo da tabela, da legenda ou da nota, ou escreva os grupos do número com espaços não separáveis (U+202F ou U+00A0) para que possa quebrar entre eles.",
+      "fr": "Élargissez la colonne (un poids plus grand dans columnWidths, un tableau plus large), réduisez le corps du tableau, de la légende ou de la note, ou écrivez les groupes du nombre avec des espaces insécables (U+202F ou U+00A0) pour qu’il puisse se couper entre eux.",
+      "de": "Verbreitern Sie die Spalte (ein größeres Gewicht in columnWidths, eine breitere Tabelle), setzen Sie Tabelle, Bildunterschrift oder Anmerkung kleiner oder schreiben Sie die Zifferngruppen mit geschützten Leerzeichen (U+202F oder U+00A0), damit die Zahl zwischen ihnen umbrechen kann.",
+      "it": "Allarga la colonna (un peso maggiore in columnWidths, una tabella più larga), riduci il corpo della tabella, della didascalia o della nota, oppure scrivi i gruppi del numero con spazi indivisibili (U+202F o U+00A0) perché possa andare a capo tra di essi."
+    },
+    "docs": {
+      "slug": "justification",
+      "heading": {
+        "en": "Where a Line Never Breaks",
+        "es": "Dónde nunca se corta una línea",
+        "ca": "On no es talla mai una línia",
+        "zh": "行从不断开的地方",
+        "ar": "حيث لا ينكسر السطر أبدًا",
+        "ja": "行を分割しない箇所",
+        "pt": "Onde uma linha nunca quebra",
+        "fr": "Où une ligne ne se coupe jamais",
+        "de": "Wo eine Zeile nie umbricht",
+        "it": "Dove una riga non si divide mai"
+      }
+    }
+  },
   "joiningScriptLetterSpacing": {
     "source": "engine",
     "label": {

@@ -10,7 +10,7 @@ import { bitmapResolutionFor, bitmapLayoutSize } from '../../bitmapResolution.js
 import { findStacks } from '../../checks/stacks.js';
 import { findHyphenFaults } from '../../checks/hyphenRules.js';
 import { findSpaceBreaks } from '../../checks/spaceBreaks.js';
-import { findSnippetEdgeFaults } from '../../checks/snippetEdges.js';
+import { findSnippetEdgeFaults, findSnippetNumberOverflows, overflowingNumber } from '../../checks/snippetEdges.js';
 
 /**
  * The page each content warning's construct was placed on: the first placed
@@ -175,6 +175,28 @@ export function snippetEdgeWarnings(
   });
 }
 
+/** A `numberOverflow` warning for each number wider than its line in a
+ *  caption, a note or a table cell (#1549, `findSnippetNumberOverflows`),
+ *  with the resource and the part it lies in, on the page the resource was
+ *  first placed on; `sourceRangeOf` as for {@link snippetEdgeWarnings}. */
+export function snippetNumberWarnings(
+  doc: VDTDocument,
+  sourceRangeOf?: (contentIndex: number) => { start: number; end: number } | undefined,
+): ContentWarning[] {
+  return findSnippetNumberOverflows(doc).map((f) => {
+    const range = f.block.contentIndex !== undefined ? sourceRangeOf?.(f.block.contentIndex) : undefined;
+    return {
+      kind: 'numberOverflow',
+      text: f.text,
+      resourceId: f.resourceId,
+      part: f.part,
+      ...(f.cell ? { cell: f.cell } : {}),
+      ...(range ? { sourceStart: range.start, sourceEnd: range.end } : {}),
+      pageIndex: f.pageIndex,
+    };
+  });
+}
+
 /** A `hyphenLadder` or `lastWordDivided` warning for each fault of the
  *  hyphen rules in the running text (#1466, `findHyphenFaults`), on the
  *  page it starts on, under `hyphenation.ladders` / `lastWord` at `'warn'`
@@ -206,7 +228,8 @@ function dividedKind(cut: 'syllable' | 'character' | undefined): 'wordDividedByC
  *  the breaker cut to fit (`VDTLine.wordDivided`, #1150), in the flow, a
  *  composed page's frames and design texts alike. And an
  *  `unbreakableWordOverflow` warning for each line holding a word of a
- *  joining script wider than the line (`VDTLine.wordOverflow`), on the page
+ *  joining script wider than the line (`VDTLine.wordOverflow`), or a
+ *  `numberOverflow` one for a number (`VDTLine.numberOverflow`), on the page
  *  it was placed on; and once per text for a design text line that does
  *  (`VDTDesignTextLine.wordOverflow`: a running head repeats it on every
  *  page), on the first page that shows it. */
@@ -239,11 +262,12 @@ export function wordOverflowWarnings(doc: VDTDocument): ContentWarning[] {
   });
   for (const block of doc.blocks) {
     for (const line of block.lines) {
-      const kind = line.wordOverflow ? 'unbreakableWordOverflow' : dividedKind(line.wordDivided);
+      const kind = line.numberOverflow ? 'numberOverflow' : line.wordOverflow ? 'unbreakableWordOverflow' : dividedKind(line.wordDivided);
       if (!kind) continue;
       out.push({
         kind,
-        text: line.text,
+        // A number names itself, not its line (#1549).
+        text: kind === 'numberOverflow' ? overflowingNumber(line.text) : line.text,
         ...(line.sourceStart !== undefined ? { sourceStart: line.sourceStart } : {}),
         ...(line.sourceEnd !== undefined ? { sourceEnd: line.sourceEnd } : {}),
         ...(block.pageIndex >= 0 ? { pageIndex: block.pageIndex } : {}),
