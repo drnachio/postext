@@ -1,0 +1,69 @@
+---
+title: "Una carta de panadería en tinta blanca sobre kraft"
+summary: "El blanco opaco como tinta plana sobre kraft: letra blanca sobre la cartulina parda, un fondo blanco bajo letra parda y blanco calado en un panel verde."
+plain: "La carta de una panadería impresa en cartulina kraft marrón. El nombre y los títulos van en una tinta blanca que la imprenta añade como una tinta más. El archivo de imprenta pone el blanco en una plancha propia."
+description: "Una carta de panadería en kraft con Postext: blanco opaco como tinta plana, letra blanca, blanco bajo el color, blanco calado y la revisión previa."
+question: "¿Cómo imprimo en blanco sobre papel kraft, como letra y debajo de los colores?"
+aliases: ["tinta blanca", "blanco opaco", "papel kraft", "papel de estraza", "base blanca", "fondo blanco", "calado", "sobreimpresión", "carta", "menú de cafetería", "white ink", "kraft paper"]
+pageNotes: { "1": "La cubierta en kraft marrón: HORNO ALTO en grandes versales blancas de palo seco grueso, una línea de versalitas pardas, una hogaza pintada sobre un paspartú blanco y la dirección en cursiva parda.", "3": "Una taza de café pintada sobre un paspartú blanco, EN EL MOSTRADOR en blanco, los precios de café y desayunos con líneas de puntos y un recuadro verde oscuro con la hornada del día en letra blanca.", "4": "DESDE 1987 en blanco, dos párrafos sobre la panadería en pardo, el horario sobre una tarjeta blanca y la dirección." }
+---
+
+## Lo que vas a componer
+
+La carta de Horno Alto, una panadería de pueblo inventada: una cartulina kraft A5 plegada una vez, cuatro páginas. El kraft no tiene blanco, así que cada blanco de la carta es una tinta que añade la imprenta: el nombre y los títulos de sección directamente sobre el pardo, los paspartús sobre los que van las tres pinturas al gouache y la tarjeta del horario. Los precios van en un tabulador con línea de puntos, en un pardo oscuro de cuatricromía. En la página del café, un panel verde lleva la hornada del día en letra blanca calada en el verde. Folio abre la carta sobre un mostrador de roble con luz de día.
+
+## Elaboración
+
+### 1 · El papel es kraft y el blanco es una tinta
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El papel es un color de la paleta definido en CMYK al 0 %: la pantalla y Folio pintan el kraft y ninguna plancha lo imprime. El blanco es una tinta plana con el acabado blanco ([acabados](/es/docs/special-inks-die-cuts#acabados)), llamada `Opaque White` en la tabla de tintas, como se le dirá a la imprenta. El PDF/X-4 la pone en una `Separation` propia junto a las cuatro planchas de cuatricromía. Su hex de pantalla queda un paso por debajo de `#ffffff`, para que la máscara de acabados distinga la tinta de una hoja blanca.
+
+### 2 · Blanco directamente sobre el pardo
+
+<Excerpt region="mount" />
+
+El nombre, los títulos de sección y los de las páginas interiores son letra en el blanco, en Alfa Slab One. Una tinta blanca cubre menos que el negro: el pardo se transparenta en un trazo fino, así que una egipcia gruesa de 12 pt o más se lee donde una romana fina quedaría beis. Los paspartús son cajas en el mismo blanco, 4 mm más grandes que cada pintura por todos los lados.
+
+### 3 · Color encima del blanco
+
+El horario va sobre una tarjeta de tinta blanca, en el pardo oscuro del texto de la carta. Una tinta blanca se sobreimprime por defecto, y el pardo también (`overprint: true` en el color de la paleta), así que en la máquina el pardo cae sobre el blanco en vez de calar sus letras en él.
+
+### 4 · Blanco encima del color: calado
+
+<Excerpt region="panel" />
+
+La máquina pone primero el blanco y encima los colores, así que una letra blanca sobre el panel verde desaparecería bajo el verde. La letra del panel toma un segundo blanco de la misma plancha, con `overprint: false`: la letra recorta su forma en el verde y el blanco la rellena. Los dos blancos se diferencian en un paso de hex porque el PDF distingue los colores por su hex.
+
+### 5 · Los precios en un tabulador
+
+<Excerpt region="dishes" />
+
+Cada sección es un grupo `:::paragraphs` con el estilo de plato; `:tab` antes del precio lo lleva al final de la medida con una línea de puntos hasta él, como en [la carta del bistró](/es/cookbook/bistro-menu).
+
+### 6 · Lo que dice la revisión previa
+
+<Excerpt region="preflight" />
+
+`preflightDocument` avisa con `whiteInkOnWhite` cuando una tinta blanca cae en una página con papel blanco o sin definir, donde no se ve. Sobre kraft no avisa, y la línea bajo el botón de descarga muestra lo que queda: el blanco como tinta especial (`spotInkFinish`) y el orden de la máquina, que lo pone primero (`inkPressOrder`).
+
+### 7 · Folio enseña la carta en un mostrador
+
+<Excerpt region="folio" />
+
+Folio pinta el blanco de forma que cubre el tono del papel, como hace la tinta, y la cartulina con textura de fieltro hace que el pardo se lea como kraft.
+
+## Variantes
+
+### Una cubierta de libreta
+
+Cambia la carta por un título y un dibujo de filetes blancos en la portada: el papel, la tinta y la tabla de tintas se quedan como están.
+
+### Dos pasadas de blanco
+
+La imprenta puede dar dos pasadas de blanco para que blanquee más sobre un kraft oscuro. Pídelo en el encargo; el archivo es el mismo, con una sola plancha de blanco.
+
+## Errores frecuentes
+
+- Una tinta blanca en una página con papel blanco o sin definir no deja nada visible. Define `page.backgroundColor` con el soporte, en CMYK al 0 %, y la revisión deja de avisar.
+- El PDF nunca sobreimprime una imagen, así que una pintura sobre una caja blanca le quita el blanco por debajo: la plancha conserva el marco del paspartú y, en la máquina, los blancos de la pintura dejan ver el kraft. Pide a la imprenta que rellene la plancha de blanco bajo las imágenes, o pon las pinturas en pegatinas de papel blanco.
+- La letra blanca sobre un color no debe sobreimprimirse. Con el valor por defecto se imprime debajo del color y desaparece.
