@@ -441,7 +441,7 @@ console.log(`Document has ${vdt.pages.length} pages`);
   </tbody>
 </table>
 
-上表列出任何文档都可能产生的警告类型。某一功能特有的类型与该功能一起介绍：漫画的（`comicPanelCount`、`comicBalloonOverflow`……）在[漫画](/zh/docs/comics)页，视频的（`videoWithoutUrl`、`videoUrlInvalid`、`videoWithoutPoster`）在[资源](/zh/docs/document-format-resources)中，引用和索引的（`unknownCitationKey`、`referencesUnreadable`、`indexMark`……）在[注释与引用](/zh/docs/document-format-notes-references)中，中文、日文和阿拉伯文的（`cjkLooseLine`、`rubyExceedsLeading`、`arabicMarksExceedLeading`……）在这几种文字各自的页面上，断行器的（`raggedLine`、`unbreakableWordOverflow`、`wordDividedByCharacter`、`wordDividedBySyllable`）在[断词与两端对齐](/zh/docs/justification)中。
+上表列出任何文档都可能产生的警告类型。某一功能特有的类型与该功能一起介绍：漫画的（`comicPanelCount`、`comicBalloonOverflow`……）在[漫画](/zh/docs/comics)页，视频的（`videoWithoutUrl`、`videoUrlInvalid`、`videoWithoutPoster`）在[资源](/zh/docs/document-format-resources)中，引用和索引的（`unknownCitationKey`、`referencesUnreadable`、`indexMark`……）在[注释与引用](/zh/docs/document-format-notes-references)中，中文、日文和阿拉伯文的（`cjkLooseLine`、`rubyExceedsLeading`、`arabicMarksExceedLeading`……）在这几种文字各自的页面上，断行器的（`raggedLine`、`unbreakableWordOverflow`、`numberOverflow`、`wordDividedByCharacter`、`wordDividedBySyllable`）在[断词与两端对齐](/zh/docs/justification)中。
 
 关于某个资源的警告（它的表格样式、网格，或其题注、附注、单元格中的引用）都指向正文中该资源的第一次嵌入或引用，并且每个资源只列出一次。只检查文档用到的资源：书中的一章只报告它引用的表格，而不是书中的所有表格。
 
