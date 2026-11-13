@@ -466,7 +466,7 @@ interface PrintInk {
 }
 ```
 
-Los nombres y los alias se comparan sin distinguir mayúsculas ni espacios repetidos. Renombrar es una línea, la usen cuantos colores la usen; un alias junta en una plancha los nombres que una muestra del diseñador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior daban a la misma tinta; `output: 'process'` imprime una tinta en CMYK cuando la máquina no tiene cuerpo para ella, con todos sus tonos; y `finish` convierte una tinta en especial venga de donde venga su nombre, también de un SVG o un archivo importado que nombra `Gold`.
+Los nombres y los alias se comparan sin distinguir mayúsculas ni espacios repetidos. Renombrar es una línea, la usen cuantos colores la usen; un alias junta en una plancha los nombres que una muestra del diseñador, un SVG (`data-spot`, `icc-named-color`) o una paleta anterior daban a la misma tinta; `output: 'process'` imprime una tinta en CMYK cuando la máquina no tiene cuerpo para ella, con todos sus tonos; y `finish` convierte una tinta en especial venga de donde venga su nombre, también de un SVG o un archivo importado que nombra `Gold`. El orden de las entradas es el orden en máquina de dos barnices que se juntan: en pantalla y en Folio una entrada posterior queda encima de una anterior (véase [Acabados](/es/docs/special-inks-die-cuts#acabados)).
 
 En el Sandbox, la tabla está en **Diseño › Exportación › Preparación para imprenta › Tabla de tintas**: una tarjeta por tinta con su **Nombre de la tinta**, **Alias**, **Nombre de la plancha en el PDF**, **Se imprime como**, **CMYK alternativo**, **Sobreimpresión**, **Acabado** y **Brillo**. **Tintas que usan los colores** enumera las tintas de los colores del libro que faltan en la tabla, cada una con un botón que la añade.
 

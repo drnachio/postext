@@ -52,7 +52,12 @@
     "figureEnlarge": "Abbildung vergrößern",
     "figureClose": "Abbildung schließen",
     "chapterPages": "Seiten dieses Kapitels",
-    "inChapter": "Im Kapitel"
+    "inChapter": "Im Kapitel",
+    "cookbookStrip": "In den Rezepten",
+    "cookbookStripLabel": "Rezepte zu {section}",
+    "cookbookExamples": "Beispiele in den Rezepten",
+    "cookbookExamplesLead": "Rezepte, die nutzen, was diese Seite beschreibt, jedes unter dem Abschnitt, zu dem es am besten passt. Jedes Rezept zeigt seine Seiten neben dem vollständigen Skript.",
+    "cookbookMore": "{count, plural, one {Ein weiteres Rezept} other {# weitere Rezepte}} mit {feature} in den Rezepten"
   },
   "CodePen": {
     "run": "Auf CodePen ausführen",
@@ -4685,6 +4690,11 @@
     "headerFooterElementConnector": "Verbinder",
     "headerFooterAddPath": "Form hinzufügen",
     "headerFooterAddConnector": "Verbinder hinzufügen",
+    "headerFooterElementCut": "Stanzloch",
+    "headerFooterAddCut": "Stanzloch hinzufügen",
+    "cutElementIntro": "Ein Loch, das die Stanze durch das Blatt jeder Seite schneidet, auf der diese Vorlage liegt. Es wird nie gemalt, und der Text der Rahmen weicht ihm noch nicht aus: Halten Sie die Rahmen davon frei.",
+    "cutElementDieTooltip": "Eine Stanzform aus Seite und Spalten › Stanzungen, auf den Rahmen unten gedehnt: ihre Form, Ecken, Blätter und der Textabstand. Keine: die Pfaddaten, sonst der Rahmen selbst.",
+    "cutElementDieNone": "Keine",
     "connectorFrom": "Beginnt bei",
     "connectorFromTooltip": "Der Rahmen, die Gruppe oder das Element, von dem die Linie ausgeht; bei einem Baum der Elternknoten.",
     "connectorTo": "Führt zu",

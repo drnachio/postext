@@ -52,7 +52,12 @@
     "figureEnlarge": "Ingrandisci la figura",
     "figureClose": "Chiudi la figura",
     "chapterPages": "Pagine di questo capitolo",
-    "inChapter": "Nel capitolo"
+    "inChapter": "Nel capitolo",
+    "cookbookStrip": "Nel Ricettario",
+    "cookbookStripLabel": "Ricette del Ricettario su {section}",
+    "cookbookExamples": "Esempi nel Ricettario",
+    "cookbookExamplesLead": "Ricette che usano ciò che questa pagina descrive, ciascuna sotto la sezione a cui risponde meglio. Ogni ricetta mostra le sue pagine accanto allo script completo.",
+    "cookbookMore": "{count, plural, one {Un’altra ricetta} other {Altre # ricette}} con {feature} nel Ricettario"
   },
   "CodePen": {
     "run": "Esegui su CodePen",
@@ -4685,6 +4690,11 @@
     "headerFooterElementConnector": "Connettore",
     "headerFooterAddPath": "Aggiungi forma",
     "headerFooterAddConnector": "Aggiungi connettore",
+    "headerFooterElementCut": "Foro fustellato",
+    "headerFooterAddCut": "Aggiungi foro fustellato",
+    "cutElementIntro": "Un foro che la fustella taglia nel foglio di ogni pagina a cui si applica questo modello. Non viene mai dipinto, e il testo delle cornici non lo evita ancora: tieni le cornici lontane dal foro.",
+    "cutElementDieTooltip": "Una forma di fustella di Pagina e colonne › Fustelle, stirata sul riquadro qui sotto: la forma, gli angoli, i fogli e la distanza del testo. Nessuna: i dati del tracciato, altrimenti il riquadro stesso.",
+    "cutElementDieNone": "Nessuna",
     "connectorFrom": "Parte da",
     "connectorFromTooltip": "La cornice, il gruppo o l'elemento da cui parte la linea; il genitore di un albero.",
     "connectorTo": "Va a",

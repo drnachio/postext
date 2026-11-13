@@ -56,6 +56,7 @@ YouTube上也有：[在那里观看](https://www.youtube.com/watch?v=MQrBUB7QbL0
   - 日文书籍，竖排、右侧装订的文库本和单行本小说，或横排的技术书：开启日文规则的语言设置（`ja`，不用任何中文标签），在需求中要问什么（排版方向、版面网格、注音假名、注释、底本的用字），如何按字数和行数测量版面，注音假名和傍点的标记，用`aozora.py`转换的青空文库文本，日本国立国会图书馆公有领域版本的扫描件，以及保留假名和竖排字形的日文字体子集（见[日文排版](/zh/docs/japanese-layout)）；
   - 阿拉伯文书籍，现代的或标注元音的古典版本，从右到左排、右侧装订：让整本书转向的语言设置，在需求中要问什么（地区与数字、元音标注、诗体、目录放在书末），如何测量镜像的页面，如何从PDF、Word和维基文库读取阿拉伯文，把诗排成`:::verse`，每页重新编号的脚注「(١)」，以及保留连写表的阿拉伯文字体子集（见[阿拉伯文排版](/zh/docs/arabic-layout)）；
   - 漫画和报纸连环漫画：把一页分成若干分格的分割表达式，带有说话人锚点和安全区的分格画面，每种语言一份由引擎嵌字的脚本（对白框、旁白框、拟声词），从右到左阅读的日本漫画和阿拉伯文版本，以及如何从无字原画加译文、从已嵌字的扫描页或从脚本加生成的画面进行移植（见[漫画](/zh/docs/comics)）；
+  - 特种油墨与模切：PDF或IDML来源中的专色印版和模切厂的印版与图层，每种油墨名称所提示的工艺（金属色、烫印、荧光、不透明白、上光油），并以印刷厂的规格确认，以及按模切线测量的模切形状（见[特种油墨与模切](/zh/docs/special-inks-die-cuts)）；
   - 模板页：把教材、练习册和杂志的固定页面移植为页面模板，模板中的框由Markdown填充；已安装的Postext支持哪一轮移植；每个版本必须通过的检查（见[模板页](/zh/docs/composed-pages)）；
   - 印刷实物：如何读出源书的纸张、装订、封面和书脊，并把它们设为[书页视图](/zh/docs/sandbox-previews#书页标签页)所显示的`folio`设置，由lint脚本检查。
 - **脚本**（Python和Node），在下一节介绍。
@@ -70,7 +71,7 @@ YouTube上也有：[在那里观看](https://www.youtube.com/watch?v=MQrBUB7QbL0
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>inventory.py</code></td><td>初步查看任意源文件：几何尺寸、字体、使用中的样式、媒体、需要OCR的页面；对按PDF/X印刷的PDF，给出其输出条件和出血，以及重现它们的<code>print</code>设置。</td></tr>
+    <tr><td><code>inventory.py</code></td><td>初步查看任意源文件：几何尺寸、字体、使用中的样式、媒体、需要OCR的页面；对按PDF/X印刷的PDF，给出其输出条件和出血，以及重现它们的<code>print</code>设置。它还会列出PDF或IDML的专色印版及每个名称所提示的工艺，以及模切厂的印版和图层。</td></tr>
     <tr><td><code>measure_layout.py</code></td><td>PDF的页边距、栏、栏间距和行距（即基线网格）</td></tr>
     <tr><td><code>pdf_extract.py</code></td><td>PDF → 按<em>字体角色</em>（字体/字号/颜色）生成的章节草稿：阅读顺序、段落、去除断词连字符、粗体/斜体、上标/下标、列表、题注</td></tr>
     <tr><td><code>pdf_figures.py</code></td><td>从PDF中裁出图：原始分辨率的照片、SVG预览图、矢量PDF印刷原稿</td></tr>
@@ -84,7 +85,7 @@ YouTube上也有：[在那里观看](https://www.youtube.com/watch?v=MQrBUB7QbL0
     <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>对字体做实例化、子集化、缩放和拆分（按书中用字裁剪的中文或日文字体保留其竖排字形和度量，阿拉伯文字体保留其连写字形和tatweel）；把图片转换为sRGB、裁边和拼接；把<code>.ai</code>/<code>.pdf</code>插图转换成SVG</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>搭建项目及其生成脚本，构建<code>preset.json</code>，打包<code>.postext</code>文件，并检查配置：配置里只应放版式设计，脚本会找出写进设计元素的书中文字，以及大到沙盒放不下的配置</td></tr>
     <tr><td><code>lint_project.py</code></td><td>找出解析器和加载器会悄悄弄错的所有问题；对中文、日文和韩文文本，还会找出项目自带字体排不出的字符；对日文文本，会指出设成中文语言的假名文本、中文字体或中文设置、章节里残留的青空文库标记，以及没有读音的汉字索引条目；对阿拉伯文文本，会指出缺少阿拉伯语的语言设置、只有拉丁字母或没有连写表的字体、字母间距、强制断词和斜体强调；对漫画，会指出无法读取的<code>split</code>表达式、与分割单元数不符的分格、未知的图片、对白框样式或分格样式、格式错误的说话人锚点、项目没有附带的嵌字字体，以及各语言版本之间不一致的页面。它还会指出代理常留下的问题：没有<code>inlineMarks</code>的设计文字里的行内标记，固定宽度空格旁多打的普通空格，1.52 之前的引擎中标题里的 chip，用小号 chip 打大写字母而不用<code>:smallcaps[…]</code>，以及<code>:::toc</code>这类单行指令后面的<code>:::</code>。配置项列表来自引擎本身的类型</td></tr>
-    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，智能体不必生成PDF就能查看页面；<code>--out</code>写出PDF。为印刷设置的书会输出PREFLIGHT行（低分辨率图片、过细线条、多色小字、超出上限的墨量、靠近裁切线的文字），其PDF按ICC输出特性文件分色。</td></tr>
+    <tr><td><code>render.mjs</code></td><td>用真实引擎在无浏览器环境中排版项目（一个文件夹或一个<code>.postext</code>文件），像沙盒一样读取其配置，并输出警告。加上<code>--jpeg</code>时，它用引擎自己的Canvas渲染器把指定的页面（<code>--pages 12-15</code>）画成JPEG文件，只需一两秒，智能体不必生成PDF就能查看页面；<code>--out</code>写出PDF。为印刷设置的书会输出PREFLIGHT行（低分辨率图片、过细线条、多色小字、超出上限的墨量、靠近裁切线的文字），其PDF按ICC输出特性文件分色。有模切的页面会显示孔下面的页面，和拿在手里一样。</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>把源文件页面和Postext页面并排放置，Postext页面取自渲染出的PDF或JPEG文件夹；加<code>--score</code>时衡量两者有多相似，再加<code>--check</code>时，只要检查仍报告框与框重叠，评分就失败；加上<code>--watch DIR</code>并与<code>postext build … --images DIR --watch</code>一起运行时，每当某页改变，就重写该页的对照图和分数</td></tr>
     <tr><td><code>port_audit.py</code></td><td>逐项比较原始 PDF 和移植后的 PDF，按内容配对文字：特殊空格、斜体（包括把正体倾斜的伪斜体）、粗体、小型大写、项目符号的大小和粗细、表格单元格的对齐和粗细，以及页码、页眉和正文的颜色。它写出 JSON 和 Markdown 两份报告，按项目和页面计数；交付前请运行</td></tr>
     <tr><td><code>composed_check.py</code></td><td>模板页：<code>round</code>读取已安装引擎的版本，说明它支持哪一轮移植、缺少哪些模板页功能；<code>check</code>对每个版本运行<code>postext check</code>和<code>postext html</code>，遇到以下情况就失败：框溢出、未知的模板或槽位、放不进锚点的标签、写进配置里的文字，以及HTML读取框的顺序与Markdown填充框的顺序不一致。从postext 1.48起，框被另一个框盖住或超出自己的盒子时（<code>frameCovered</code>、<code>frameOutsideArea</code>）也会失败，并在最后给出重叠的数目；源文件有意重叠的地方，连同理由记入项目的<code>composed-check.json</code>。拼错的设置和引擎不接受的值（<code>unknownConfigKey</code>、<code>unknownConfigValue</code>）也判为不通过，其余警告全部打印出来。<code>--json-out FILE</code>保存结果，同时保留报告和退出码；保存的检查未通过时，<code>preset_kit.py pack</code>拒绝打包</td></tr>

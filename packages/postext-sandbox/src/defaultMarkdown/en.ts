@@ -82,7 +82,7 @@ Postext takes a different position, summarised in :ref{id="tools-comparison"}. I
 
 The rules Postext follows were not invented for it. A comfortable line holds between 45 and 75 characters, which is why long texts are set in columns instead of lines as wide as the page. Text is justified or ragged, but in either case its texture must be even, without the gaps that open into rivers when too many loose lines are stacked. Every line of a page sits on a common baseline grid so that lines face each other across the gutter and show through the paper in register. Headings stay with the text they announce, a paragraph does not leave its first or last line alone at the edge of a column, and a figure appears after the sentence that mentions it, never before.
 
-For centuries these rules were applied by hand, by compositors who read every page before it went to press. Desktop publishing turned many of them into software, but that software remained a separate world, with its own files and its own tools. What was never available was an engine that applied them automatically, from structured text, inside the environment where most reading happens today. That is the gap this book is about.
+For centuries these rules were applied by hand, by compositors who read every page before it went to press. TeX applied many of them automatically from 1978 on, but to printed pages, far from the browser. Desktop publishing turned more of them into software, but that software remained a separate world, with its own files and its own tools. What was never available was an engine that applied them automatically, from structured text, inside the environment where most reading happens today. That is the gap this book is about.
 
 ## Who Postext is for
 
@@ -228,15 +228,23 @@ The optimal breaker sees the whole chain. It may decide to end the first line on
 
 ## Hyphenation
 
-:index{term="hyphenation"}Hyphenation uses the same **Liang patterns** TeX has relied on since 1983, served by the _Hypher_ library, in eight languages: English, Spanish, French, German, Italian, Portuguese, Catalan and Dutch. The document's language is set once, at the top of the configuration, and also tags the PDF for screen readers. Patterns leave at least two letters before a hyphen and three after it, so words shorter than five letters are never divided, and each hyphen is a flagged penalty of 50 that the optimiser can accept or refuse.
+:index{term="hyphenation"}Hyphenation uses the same **Liang patterns** TeX has relied on since 1983, served by the _Hypher_ library, in eight languages: English, Spanish, French, German, Italian, Portuguese, Catalan and Dutch. The document's language is set once, at the top of the configuration, and also tags the PDF for screen readers. Each language keeps its own limits, in English two letters before the hyphen and three after it, which \`leftMin\` and \`rightMin\` change. Each hyphen is a flagged penalty of 50 that the optimiser can accept or refuse, and **Fewer hyphens**, a scale from 0 to 10, raises that price at each step.
 
-Hyphenation only runs on justified text, where it earns its keep. Two break opportunities are always available, whatever the setting: a hard hyphen between two letters is a legitimate break, and a word wider than the whole measure is divided at the last syllable that fits, or at the last character if it has to be.
+Hyphenation runs on justified text, where it earns its keep, and on ragged text only when the configuration asks for it. Two break opportunities are always available, whatever the setting: a hard hyphen between two letters is a legitimate break, and a word wider than the whole measure is divided at the last syllable that fits, or at the last character if it has to be.
 
-Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. Catalan follows the rules of the Institut d'Estudis Catalans: a word with a geminated _l·l_, such as _col·lecció_, divides between the two _l_, and the hyphen takes the place of the middle dot, _col-_ at the end of one line and _lecció_ at the start of the next. The language can also change within a book: every chapter shares the configuration's language, so an edition in several languages, like this one, is configured once per language, and each version of the guide hyphenates by its own rules.
+Soft hyphens typed in the text are honoured as break points, and at the same price as the pattern's own. Catalan follows the rules of the Institut d'Estudis Catalans: a word with a geminated _l·l_, such as _col·lecció_, divides between the two _l_, and the hyphen takes the place of the middle dot, _col-_ at the end of one line and _lecció_ at the start of the next. Each edition of a book in several languages, like this one, hyphenates by its own rules, and inside a chapter a passage marked as another language, a \`:::paragraphs{lang=fr}\` or a run \`:ltr[…]{lang=de}\`, is divided with that language's dictionary. A number is never divided as if it were a word.
+
+:index{term="hyphenation!words kept whole"}A dictionary divides a name as it divides any other word, _Áms-ter-dam_ or _You-Tu-be_. \`hyphenation.exceptions\` lists the words a book never divides, or divides only where the entry puts its hyphens, as TeX's \`\\hyphenation\` does. The Design panel imports a list from a plain file, a TeX file or JSON, and the command line adds one for a run with \`--hyphenation-exceptions\`.
 
 ## Word spacing and ragged lines
 
-Two settings bound how far a space may stretch or shrink: \`maxWordSpacing\`, by default twice the natural space, and \`minWordSpacing\`, 0.6 of it. Stretching past the maximum is priced above any other defect, so the breaker will hyphenate, move a word or accept a runt before it opens a river. Some lines cannot be filled at all — a long URL, the unbreakable tail of a list item — and rather than opening them into gaps three times the natural space, the engine sets them ragged at natural spacing. The last line of a paragraph is always ragged, except when it is overfull: then its spaces compress to fit, exactly as TeX sets glue.
+Two settings bound how far a space may stretch or shrink: \`maxWordSpacing\`, by default twice the natural space, and \`minWordSpacing\`, 0.6 of it. Stretching past the maximum is priced above any other defect, so the breaker will hyphenate, move a word or accept a runt before it opens a river. Some lines cannot be filled at all — a long URL, the unbreakable tail of a list item — and rather than opening them into gaps three times the natural space, the engine sets them ragged at natural spacing. The last line of a paragraph is always ragged, except when it is overfull: then its spaces compress to fit, exactly as TeX sets glue. A line that ends at a forced line break is ragged too, unless \`bodyText.justifyHardBreaks\` justifies it, for a book whose lines were decided elsewhere.
+
+## House rules for the paragraph
+
+Some faults of a paragraph are matters of house style. A **hyphen ladder** is more lines in a row ending on a hyphen than the house allows: one in the Spanish tradition, three in the American. A **divided last word** leaves the last line holding only the end of a word. A **stack** is two lines in a row that end, or start, on the same word. And a numbered citation, or a sign such as = or ±, can be left at the edge of a line, away from the words it belongs to.
+
+Each fault takes one of three values,:index{term="composition rules"} like the rules of :ref{id="columns"}. _Allow_ sets the lines as the breaker finds them, _warn_ sets them the same and lists every case in the Checks panel, and _avoid_ adds a price to the paragraph's demerits, so the breaker sets it another way wherever the spacing allows and lists only the cases it had to keep. The rules of one tradition travel together as a design of their own, a composition convention.
 
 ## Chinese and East Asian text
 
@@ -246,7 +254,7 @@ Each Chinese punctuation mark sits in a square of its own, half of it ink and ha
 
 A justified Chinese line is filled in a fixed order: first the spaces between Western words, then the quarter of an em the engine sets between Chinese and Latin text (\`cjk.latinSpacing\`; it is never typed), and last every gap between two characters, never inside a Latin word or a number. When a character may not open the next line, the composer first tries to take it into the line by giving up blank from the marks already on it, and only when that fails carries the character before it down to the next line. A line that would need more than half an em between its characters is left short, and the **Checks** panel reports it as a CJK line set short.
 
-The rest of a Chinese book follows the same settings. Chapter templates, page numbers, lists and counters accept the Chinese numeral styles, such as \`cjk-decimal\`, \`simp-chinese-informal\` and \`trad-chinese-informal\`, so chapters can be named by their Chinese ordinals; figures and tables take their Chinese names and are numbered by chapter with a hyphen. \`cjk.grid\` sets the type area as a number of characters per line and lines per page, the grid Chinese books are designed on. The Chinese edition of this guide is set vertically and bound on the right, as Chinese books were printed for centuries: it names its chapters by their Chinese ordinals, prints its folios in Chinese numerals and numbers its figures and tables by chapter; its row in the **Books** panel has a language button of its own. Among the sample books, _Dream of the Red Chamber_ is a whole novel set in Chinese, and its Traditional edition is set vertically on a grid of 38 characters by 15 lines.
+The rest of a Chinese book follows the same settings. Chapter templates, page numbers, lists and counters accept the Chinese numeral styles, such as \`cjk-decimal\`, \`simp-chinese-informal\` and \`trad-chinese-informal\`, so chapters can be named by their Chinese ordinals; figures and tables take their Chinese names and are numbered by chapter with a hyphen. \`cjk.grid\` sets the type area as a number of characters per line and lines per page, the grid Chinese books are designed on. The Chinese edition of this guide is set vertically and bound on the right, as Chinese books were printed for centuries. Among the sample books, _Dream of the Red Chamber_ is a whole novel set in Chinese, and its Traditional edition is set vertically on a grid of 38 characters by 15 lines.
 
 \`layout.writingMode: 'vertical-rl'\` sets a book vertically. Lines run from top to bottom and follow each other from right to left, two columns become two tiers stacked on the page, figures and tables stay upright, Latin words and long numbers turn on their side, and each mark takes the place or the form it has in vertical text: brackets and quotation marks take their vertical forms, and the full stop moves to the top right of its cell on the mainland and stays centred in Taiwan and Hong Kong. Such a book is bound on the right (\`page.binding\`): its first page stands alone to the left of the spine, and the Sandbox shows its spreads from right to left. The canvas and the PDF set the same vertical lines; the HTML view breaks its own lines to the height of its page, and stands each character upright or turns it as they do. By default \`cjk.uprightDigits\` stands a number of up to two digits upright in a single cell, and it can be raised to three or four; \`:tcy[…]\` does the same for any short run.
 
@@ -267,8 +275,6 @@ Vowel marks stack over and under the letters, in the leading, which never grows 
 A paragraph is rarely a single run of text. Bold, italic and bold italic are set in the real faces of the family — a true italic, not a slanted roman — each measured with its own metrics, so a word in bold takes exactly the room it needs. The colour of bold text, italic text and references can be set separately; in this book, references to figures and tables are set in bold in the part colour, so they are easy to find on the page and in the PDF, where they are also links.
 
 Superscripts and subscripts are set smaller and shifted from the baseline without disturbing the leading, and inline colour swatches sit on the baseline like a letter. All of these are atomic: the line breaker can break before or after them but never inside them, so a formula or a swatch never ends up split across two lines.
-
-Two more runs set words apart without a face of their own. \`:smallcaps[…]\` sets small capitals drawn from the face's capitals, the same way in every output, for acronyms and the names of the characters in a play. \`:chip[…]\` sets a word in a small rounded box that flows with the line — keyboard keys, tags, the word bank of an exercise — styled by name, never broken inside, and with words that stay real text in the HTML and the PDF.
 
 Numbers have styles too.:index{term="figure styles"} A face can draw its figures lining, as tall as capitals, or old-style, rising and falling like lower-case letters, and proportional or tabular, all the same width so that columns of numbers line up. \`figureStyle\` chooses among them for the body, a paragraph style, a heading level, a table or a caption: old-style figures in the running text, where lining ones would shout, and tabular lining figures in a table of results. A face that does not draw the style asked for keeps its own figures.
 
@@ -296,25 +302,25 @@ $$
 
 The same paths are drawn by the canvas, the HTML view and the PDF, so formulas match in the three outputs and stay vectors in print.
 
-A few more examples show the range of notation the engine handles, and what it does with each so the formula can live alongside the text. The first is an infinite series, the sum of the inverse squares that Euler solved in 1734. In a display formula the limits of the sum are set above and below the symbol, as in an analysis textbook, and the fraction of the result takes its full size instead of the reduced form used inside a line.
+The first of a few more examples is an infinite series, the sum of the inverse squares that Euler solved in 1734. In a display formula the limits of the sum are set above and below the symbol, as in an analysis textbook, and the fraction of the result takes its full size instead of the reduced form used inside a line.
 
 $$
 \\sum_{n=1}^{\\infty} \\frac{1}{n^2} = \\frac{\\pi^2}{6}
 $$
 
-Matrices are another common test, because they require rows and columns to line up and the brackets to grow to the height of their content. MathJax sets the matrix as a table of centred cells and stretches the delimiters to span it; Postext receives the result as paths, measures its whole box and reserves exactly that room before returning the text to the grid. The determinant of a two-by-two matrix reads as follows.
+Matrices are another common test, because they require rows and columns to line up and the brackets to grow to the height of their content. MathJax stretches the delimiters to span it, and Postext reserves exactly the room the result takes before returning the text to the grid. The determinant of a two-by-two matrix reads as follows.
 
 $$
 \\det \\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} = ad - bc
 $$
 
-The normal distribution gathers in one expression almost everything that makes mathematical typesetting hard: a root with its bar, Greek letters, and a whole fraction inside an exponent, which has to shrink twice without becoming unreadable. It is the formula found in any statistics textbook, and here it is set by the same rules TeX would use.
+The normal distribution gathers in one expression almost everything that makes mathematical typesetting hard: a root with its bar, Greek letters, and a whole fraction inside an exponent, which has to shrink twice without becoming unreadable.
 
 $$
 f(x) = \\frac{1}{\\sigma\\sqrt{2\\pi}}\\, e^{-\\frac{(x-\\mu)^2}{2\\sigma^2}}
 $$
 
-Definitions by cases close the series. A brace groups the branches of the definition, each with its condition aligned on the right, and the brace grows with the number of cases. It is a frequent device in mathematics and computer science texts, and a good example of a formula that would not fit inside a line of text.
+Definitions by cases close the series. A brace groups the branches of the definition, each with its condition aligned on the right, and the brace grows with the number of cases.
 
 $$
 |x| = \\begin{cases} x & \\text{if } x \\ge 0 \\\\ -x & \\text{if } x < 0 \\end{cases}
@@ -360,6 +366,8 @@ Headings are kept with what follows them, so a section title never waits alone a
 
 :index{term="baseline grid"}Professional books align the first baseline of every column to a shared vertical rhythm, and every line after it lands on the same grid, so lines face each other across the gutter. Postext snaps text to a baseline grid derived from the body leading, as :ref{id="baseline-grid"} illustrates. Elements that break the grid — a heading larger than the body, a figure, a display formula — are followed by the space needed to return the next line to it. The grid can be drawn as an overlay while you work, wherever there is text.
 
+Where a block opens is a matter of its style. With \`snapTopToGrid\`, a heading, a paragraph, a box, a list, a display formula or a figure set in the text opens on the next grid line, however the block before it ended. A heading set off the grid on purpose, at its exact size and spacing, can take \`regainGrid\` instead: the text under it goes back to the grid at once, rather than running off it until the next block that snaps.
+
 ## Ending columns level
 
 When a page ends in the middle of the text, its columns should end at the same height. That is **column balancing**:index{term="column balancing"}, and it is harder than it looks: lines come in whole grid steps, figures cannot be split, headings must stay with their text and paragraphs must not leave orphans behind. Postext levels a short column with three levers, used in order of preference and drawn in :ref{id="column-balancing"}:
@@ -402,27 +410,29 @@ A handful of rules keep floats honest:
 
 ## Placement
 
-Each resource can state where it prefers to go, and each resource type has a default; the fields are gathered in :ref{id="placement-options"}. A resource can be embedded inline at a precise point too, when its position is _here_. And a table or figure too wide for the page can be turned a quarter turn, either way: it then takes a page of its own, set flush to the spine and sized to the page's height.
+Each resource can state where it prefers to go, and each resource type has a default; the fields are gathered in :ref{id="placement-options"}. A resource can be embedded inline at a precise point too, when its position is _here_. Its width is a share of its slot or a length, such as 80 mm. And a table or figure too wide for the page can be turned a quarter turn, either way: it then takes a page of its own, set flush to the spine and sized to the page's height.
+
+## Plates
+
+A picture can also be a **plate**:index{term="plates"}: alone on a fresh page after its citation, at the largest size the content area holds with its caption, while the text runs on before and after it. Set to the trim or the bleed, the plate covers the whole page, without margins, running heads or folio, the way an art book prints a painting.
 
 ## Numbers and labels
 
 Resource types define their own numbering sequences. Figures and tables are built in and localised to the document's language; a type can add a prefix, a short label, a template such as \`{h1}.{n}\` for chapter-relative numbers — figure 5.2 is the second figure of chapter 5 — a reset rule and a counter format. Numbers follow the **first reference in reading order**: insert an earlier mention and every number after it moves. A reference can print the number alone, the full label or the short one, change its case, or print text of its own.
 
-Numbering stays correct across a whole book because it is part of what each chapter inherits from the chapters before it. The seventh chapter of this guide starts its figures at 7.1 because the chapter counter says so, not because anyone typed the number, and moving a chapter renumbers everything after it the next time the book is laid out.
-
 ## Types of your own
 
-Figures and tables are only the two types every book needs. A configuration can declare as many resource types as a publication uses — maps, plates, boxes, charts, documents — each with a singular and a plural name, a short label for references, a prefix for its captions and a numbering sequence of its own. A catalogue can number its plates 1, 2, 3 through the whole book while its figures restart in every chapter. Each type can also carry its default placement and adjust the caption style, so plates can take a whole page with their caption above while figures float at column width.
+Figures and tables are only the two types every book needs. A configuration can declare as many resource types as a publication uses — maps, plates, boxes, charts, documents — each with a singular and a plural name, a short label for references, a prefix for its captions and a numbering sequence of its own. A catalogue can number its plates 1, 2, 3 through the whole book while its figures restart in every chapter. Each type can also carry its default placement and a caption style of its own.
 
 ## Tables
 
-:index{term="tables"}Tables carry their model inline: rows of cells with column and row spans, header rows, alignment and relative column widths. Cells accept inline Markdown, paragraphs and simple lists, a fill of their own — this book's four part colours are :swatch{color="#2b4acb"} blue, :swatch{color="#8f6408"} gilt, :swatch{color="#1f7a6d"} teal and :swatch{color="#c0452f"} vermilion — and even an image. Tables are styled once, for the whole document: body and header typography, header fill, rules in a grid, horizontal only, outer only or none.
+:index{term="tables"}Tables carry their model inline: rows of cells with column and row spans, header rows, alignment and relative column widths. Cells accept inline Markdown, paragraphs and simple lists, a fill of their own — this book's four part colours are :swatch{color="#2b4acb"} blue, :swatch{color="#8f6408"} gilt, :swatch{color="#1f7a6d"} teal and :swatch{color="#c0452f"} vermilion — and even an image. Tables are styled once, for the whole document: body and header typography, header fill, rules in a grid, horizontal only, outer only or none. A table style can hyphenate its cells, and the table editor turns a table on its side, rows into columns, with one button.
 
-A table taller than the page splits across pages. Its header rows repeat on every part, the caption of each continuation gains a _(cont.)_ suffix, a _Continued_ marker closes every part but the last, and no split ever cuts through a row span. A rotated table splits the same way, page after page.
+A table taller than the page splits across pages. Its header rows repeat on every part, the caption of each continuation gains a _(cont.)_ suffix, a _Continued_ marker closes every part but the last, and no split ever cuts through a row span.
 
 ## Figures beside the text
 
-In a column-and-a-half layout whose side column carries only floats, resources can live beside the text instead of inside it. A figure with the _side_ span stacks in the side column next to the paragraph that cites it; a callout can do the same, so textbooks can keep definitions, key concepts and marginal figures next to the lines they explain. A wide figure can also keep its caption beside it, in the side column, which is the classic arrangement of illustrated textbooks and exhibition catalogues. The showcase presets include a biochemistry textbook and a literary edition set exactly that way.
+In a column-and-a-half layout whose side column carries only floats, resources can live beside the text instead of inside it. A figure with the _side_ span stacks in the side column next to the paragraph that cites it; a callout can do the same, so textbooks can keep definitions, key concepts and marginal figures next to the lines they explain. A wide figure can also keep its caption beside it, in the side column, which is the classic arrangement of illustrated textbooks and exhibition catalogues.
 
 ## Text that wraps round
 
@@ -430,29 +440,29 @@ In a column-and-a-half layout whose side column carries only floats, resources c
 
 ## Safe areas
 
-A photograph rarely needs all of itself. A picture can mark its **safe area**:index{term="safe area"}, the rectangle that holds what matters, and the engine may then crop it anywhere between the whole picture and that rectangle, keeping its width. It uses that freedom to keep a picture in a column it would otherwise leave short, to fit a picture taller than the page, and to balance columns: a picture with a safe area can grow by whole lines to fill the foot of a short column, which leaves no visible hole. The safe area is drawn on the picture in the Resources panel, and comic panels use the same mark to know what never to cut.
+A photograph rarely needs all of itself. A picture can mark its **safe area**:index{term="safe area"}, the rectangle that holds what matters, and the engine may then crop it anywhere between the whole picture and that rectangle, keeping its width. It uses that freedom to keep a picture in a column it would otherwise leave short, to fit a picture taller than the page, and to balance columns: a picture with a safe area can grow by whole lines to fill the foot of a short column, which leaves no visible hole. The safe area is drawn on the picture in the Resources panel. A picture can also be cropped by hand, in every output, and the safe area is then read inside the crop.
 
 ## Captions and credits
 
-A caption is the type's prefix, the number and the caption text — which accepts inline Markdown and references of its own. Captions go above or below their resource, optionally on a coloured bar, in the typeface and size of the caption style; the label can be bold or coloured, as in this book. A resource can also carry a note: a smaller credit or source line set under it.
+A caption is the type's prefix, the number and the caption text — which accepts inline Markdown and references of its own. Captions go above or below their resource, optionally on a coloured bar, in the typeface and size of the caption style; the label can be bold or coloured, as in this book. A resource can also carry a note: a smaller credit or source line set under it. Captions and notes take a leading of their own and can be hyphenated like the running text.
 
 ## Vector figures
 
 SVG diagrams are drawn as vectors everywhere. The PDF converts the common subset of SVG — shapes, paths, groups, clip paths, solid fills and strokes, opacity and text — into native drawing operations, and rasterises anything beyond it at 600 dpi; a figure can also bring a PDF master of its own, embedded as it is. For single-colour printing, a switch recolours every diagram as tints of one ink, by luminance, in all three renderers.
 
-Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, which is why their labels are Spanish in the Spanish edition, Catalan in the Catalan one, Chinese in the Chinese one, Arabic in the Arabic one and English in this one.
+Text inside an SVG stays text. In the PDF it is set in real fonts and can be selected and searched, and in the Sandbox it can be edited in place: the Resources panel opens the diagram's source with only its text editable — the drawing itself stays locked unless you unlock it — so a label can be corrected or translated without opening a drawing program. The diagrams in this book are generated for each language, so each edition reads their labels in its own.
 
-Three figures set here to prove the point. The rosette of :ref{id="vector-rosette"} is made of Bézier curves, hairline strokes and a line of microtext two and a half points tall; the chart of :ref{id="vector-chart"} combines a filled area, a dashed line and text labels; and :ref{id="vector-clip"} uses a clipping path, a group drawn with transparency and one shape reused five times. Open the PDF, zoom in to several times their size and look at the edges: they stay as sharp as the text around them, because they are drawn with the same operators, not pasted in as pictures. Try selecting the chart's labels, or searching for them: they are text.
+Three figures set here to prove the point. The rosette of :ref{id="vector-rosette"} is made of Bézier curves, hairline strokes and a line of microtext two and a half points tall; the chart of :ref{id="vector-chart"} combines a filled area, a dashed line and text labels; and :ref{id="vector-clip"} uses a clipping path, a group drawn with transparency and one shape reused five times. Zoom in on them in the PDF: their edges stay as sharp as the text, and the chart's labels can be selected and searched.
 
 :::callout{type="try"}
-Click the caption of any figure in the canvas: the Resources panel opens on that resource, with its caption field ready. Change its placement from _auto_ to _top_ and watch it move.
+Click the caption of any figure in the canvas, change its placement in the Resources panel from _auto_ to _top_ and watch it move.
 :::
 
 ## Videos
 
-:index{term="videos"}A video is one more resource. It is mentioned, numbered on its own (Video 1.1 next to Figure 1.1) and floats to the first free slot like a figure. It can come from YouTube or Vimeo, from a file kept in the book, or from a web address: an MP4 or WebM file, or an HLS stream.
+:index{term="videos"}A video is one more resource. It is mentioned, numbered on its own (Video 1.1 next to Figure 1.1) and floats to the first free slot like a figure. It can come from YouTube or Vimeo, from a file kept in the book, or from a web address.
 
-Print carries its poster, a chosen frame, with a play mark and a QR code that opens the video; in the PDF the poster is also a link. The HTML view and the EPUB play it, except YouTube, Vimeo and HLS videos, which an e-book can only link to. In the Folio view a click on the poster plays it on the page, and it keeps playing while the leaf turns. The videos in this book, such as :ref{id="postext-showreel"}, are HLS streams.
+Print carries its poster, a chosen frame, with a play mark and a QR code that opens the video; in the PDF the poster is also a link. The HTML view and the EPUB play it, except YouTube, Vimeo and HLS videos, which an e-book can only link to. The videos in this book, such as :ref{id="postext-showreel"}, are HLS streams.
 
 # Boxes, notes and marks {#boxes lead="Around the running text a book keeps a second layer: boxes that set an aside apart, notes at the foot of the column, small marks inside the line and an index that remembers every page. Each is written in the Markdown and drawn by the configuration." summary="Callouts, nested and floated boxes, chips, footnotes and the index"}
 
@@ -464,7 +474,7 @@ Running text is only part of what a reader meets on a page. Textbooks frame defi
 
 A long callout can split between its paragraphs, or even between its lines, keeping at least two on each side; the continuation leaves out the title. Inside a callout, \`:::columns\` sets its content in balanced columns, like the panel of figures in :ref{id="engine"}.
 
-A callout's attributes can override its style for one box: a \`title\`, a \`placement\`, a \`span\` of column, page or side, and a \`label\` printed in a tab at its top corner, like the _Box 1-1_ labels of a textbook.
+A callout's attributes can override its style for one box: a \`title\`, a \`placement\`, a \`span\` of column, page or side, and a \`label\` printed in a tab at its top corner, like the _Box 1-1_ labels of a textbook. A style can also hang the paragraphs of its boxes, every line but the first set further in, so the notes under a price list or a numbered legend hang their marks in front of the text.
 
 ## Boxes inside boxes
 
@@ -526,11 +536,27 @@ Every chapter is laid out on its own, _continued_ from the chapters before it: i
 
 ## What a chapter inherits
 
-The continuation a chapter receives is small and precise. It carries the page count and the parity of the next page, so an opener that must fall on a verso knows whether it needs a blank page before it. It carries the counters of chapters, resources and page labels. And it carries the book's outline, so a contents page in chapter two can print the page on which chapter ten begins.
+The continuation a chapter receives is small and precise. It carries the page count and the parity of the next page, so an opener that must fall on a verso knows whether it needs a blank page before it. It carries the counters of chapters, resources and page labels, and the open part, with its title, its palette and its style. And it carries the book's outline, so a contents page in chapter two can print the page on which chapter ten begins.
 
 ## Heading styles
 
 A heading can carry attributes, written in braces at the end of its line. The most powerful is a **style**: \`{style="cover"}\` applies a named heading style, which changes the heading's typography and design and, for the section the heading opens, can change the running heads, the page margins, the column layout, the body typography and the palette. A style can also leave its headings unnumbered, so a preface does not shift the chapter numbers, and keep them out of the contents.
+
+## Chapter styles
+
+A book whose chapters do not all look alike, with appendices in two narrower columns, a glossary with running heads of its own or a part printed in another colour, declares **chapter styles**:index{term="chapter styles"}. Each is a name and the settings it changes. A chapter takes one with a \`chapterStyle:\` line in its front matter, or from its menu in the Chapters panel, and \`:::part{style="…"}\` sets every chapter of a part in it, until the next part. This guide needs none, since its parts differ only in colour, which a palette gives them. Whatever the style does not name stays the book's, and what the whole book shares, the trim, the language and the binding, no style can change. Page numbers, counters and notes run on through a styled chapter as through any other.
+
+In the Design panel, a bar at the top chooses what the panel edits: the book or one of its styles. While a style is chosen, the panel shows it over the book, every field the style changes carries a mark, and what you change is kept in the style as its difference from the book.
+
+A style meets the other layers of the book in a fixed order: the book's settings first, the chapter's style over them, and a heading's \`{style}\` over both for the section it opens, so an appendix in narrower columns can still open with a heading style of its own. A chapter's own \`chapterStyle:\` wins over its part's, and a style the book does not declare is reported in the Checks panel and leaves the chapter in the book's settings rather than in a guess. In a book in several languages the styles live in the layer the panel edits, every language's settings or the edition on screen, so one edition can set its appendices its own way.
+
+:::callout{type="note" title="Appendices in a style of their own"}
+1. In the Design panel, press **+** on the chapter-style bar and name the style _Appendix_
+2. With the style chosen, set two columns and a smaller body size; the book keeps its own
+3. In the Chapters panel, choose _Appendix_ from each appendix's menu, or open their part with \`:::part{title="Appendices" style="appendix"}\`
+:::
+
+Every output sets a styled chapter as the canvas does: the PDF, both kinds of EPUB and the HTML view of the whole book. The formatted Word document makes each chapter a section with its style's margins, columns and page numbers, and gives the Word styles the chapter style changes versions of their own, named after it, such as _Normal (Appendix)_; a round trip through Word brings the \`chapterStyle:\` and \`:::part\` lines back as they were.
 
 ## A look at this book's configuration
 
@@ -544,13 +570,27 @@ The chapter openers are a design of the first heading level. A box fills the top
 
 Running heads are an ordinary design slot with elements filtered by parity and role. On this book's versos, the folio in the part colour and the title of the book sit at the outer edge; on rectos, the chapter title and the folio. They appear only on body pages; openers carry a folio at their foot instead, and part dividers carry nothing. The page in the part colour that faces each divider is a design element too: a box filling the bleed, shown only on blank versos, which in this book are exactly the pages that face a part.
 
+## Designs
+
+A **design** is how a book looks and nothing of what it says:index{term="designs"}: the page, the type and its styles, the colours, the running heads and the print settings, without the text, the pictures or the language. The **Designs** gallery of the Design panel holds the designs you saved, four the Sandbox ships, a novel, a technical manual, a two-column magazine and a two-colour book, the five composition conventions and the design of every sample book, each with a drawing of its page and the groups it holds. A design is cut along the sixteen groups of the Design panel, from the page and the writing system to the running heads, the output and Folio, and each step chooses which groups to take: the type of one book with the page of another, or only its boxes. The language, the direction of the text, the numerals, the resource types and the checks belong to the book as a whole and never travel with a design.
+
+**Try** sets the book in a design and offers to keep or discard it; discarding brings back only what the design replaced, and named styles merge by their ids, so the book keeps the ones the design does not define. Before you keep it, the bar lists the styles the text names, paragraph, heading, box, chip, character, mark and table styles, that the design does not define, so a book does not lose the look of its boxes unawares. Trying, keeping and discarding are steps of the history, undone like any edit, and a trial belongs to the book it began on. A book in several languages takes a design in its general settings, and each language keeps its own overrides. An agent working the Sandbox has the same gallery among its tools: it lists the designs, tries one, keeps or discards it and saves its own.
+
+:::callout{type="try"}
+Open **Designs** in the Design panel, choose _Novel_ and press **Try**. Look at a few pages of this guide in its single column, then press **Discard**: the book comes back as it was.
+:::
+
+The house rules of the paragraph are a design part of their own, and the rules of one tradition travel together as a **composition convention**:index{term="composition conventions"}. Postext ships five, Spanish, American and British English, French and German, each setting only what its tradition writes down; the Spanish one avoids ladders of more than one line, divided last words and stacks, and never carries a divided word over to the next column. A convention holds the Composition group alone, so it leaves the type as it is. The Design panel offers the one of the book's language, and the command line applies one with \`--composition\`.
+
+A design can also become a chapter style, and it travels as a file: a .postext with no chapters, carrying the fonts and the colour profile it names, all but the fonts whose licence forbids it, which the command line reads with \`--design\`. That is how a house keeps its look across titles: the design of a finished book, saved with the groups you choose, starts every new manuscript, and a printer, a freelance designer or a script sets the next book the same way. The same design always gives the same file, so a design kept under version control changes only when its settings do.
+
 ## Parts and palettes
 
 :index{term="parts"}\`:::part\` opens a part divider: a page of its own, broken to the parity the configuration asks for, drawn by the part design and followed by a body — usually the list of its chapters.
 
 In this book every part opens as a spread: a verso in the part colour on the left, the divider on the right. The parts break with the parity _always odd_, which lays one blank leaf before every divider, so the divider always lands on a recto. The first chapter of the part then opens on its back, on a verso, as every chapter does.
 
-A part can also recolour the book. Colours in the configuration can be linked to named entries of the **palette**:index{term="palette"}, and a part's \`palette\` attribute replaces entries until the next part. This book defines one entry, the _part colour_, and each part sets it: blue for the foundations, gilt for the craft, teal for the pages beyond running text, vermilion for practice.
+A part can also recolour the book. Colours in the configuration can be linked to named entries of the **palette**:index{term="palette"}, and a part's \`palette\` attribute replaces entries until the next part. This book defines one entry, the _part colour_, and each part sets it: blue for the foundations, gilt for the craft, teal for the pages beyond running text, vermilion for practice. A part that should run on without a divider, such as the back matter of a book whose other parts have one, takes \`page=false\`: its title, palette and style take effect from the next page on.
 
 ## A contents page that keeps up
 
@@ -584,7 +624,9 @@ Those numbers are shown in :ref{id="edition-layers"}. The split is not an accide
 
 ## What a language changes
 
-The document's language is a setting, \`locale\`, and it reaches further than hyphenation. It chooses the hyphenation patterns, eight languages of them built in; the names of the built-in figure and table types, _Figure_ in English, _Figura_ in Spanish, _Abbildung_ in German; the words a split table or a continued box prints; the order of an index; and the digits, which an Arabic book can set in Arabic-Indic numerals. A heading or a paragraph can change language for itself, and a few words in another language can be marked inline, so a French quotation in an English chapter breaks by French rules.
+The document's language is a setting, \`locale\`, and it reaches further than hyphenation. It chooses the hyphenation patterns, eight languages of them built in; the names of the built-in figure and table types, _Figure_ in English, _Figura_ in Spanish, _Abbildung_ in German; the words a split table or a continued box prints; the order of an index; and the digits, which an Arabic book can set in Arabic-Indic numerals. A heading or a paragraph can change language for itself, and a few words in another language can be marked inline, so a French quotation in an English chapter breaks by French rules and with the French list of words kept whole. A language also has its composition convention, when it has one, which an edition can take apart from its type.
+
+No typeface holds every character. A Latin face may lack the mathematical letters, the arrows or the Greek of a quotation, and the **symbol font** of the Typography group sets those characters, on screen, in the PDF and in the EPUB, where the face would leave an empty box. The Checks panel names each paragraph whose characters no face of the book can draw, before any of them reaches the press.
 
 ## Four scripts, two directions
 
@@ -782,7 +824,7 @@ Postext documents are Markdown first.:index{term="Markdown"} A writer who knows 
 
 ## Plain Markdown
 
-Headings from one to six hashes, paragraphs, block quotes, bulleted, numbered and task lists — nested two spaces per level, up to five levels — and display mathematics between double dollar signs. Inline, the usual bold and italic, plus superscript between carets, as in 10^-8^, subscript between tildes, as in H~2~O, inline mathematics between dollar signs and backslash escapes for literal characters.
+Headings from one to six hashes, paragraphs, block quotes, bulleted, numbered and task lists — nested two spaces per level, up to five levels — and display mathematics between double dollar signs. Inline, the usual bold and italic, plus superscript between carets, as in 10^-8^, subscript between tildes, as in H~2~O, a line through words between double tildes, as in ~~€ 165~~ € 129, inline mathematics between dollar signs and backslash escapes for literal characters.
 
 A few details are worth knowing. Consecutive lines of a paragraph are joined, so line breaks in the source never reach the page; a new paragraph needs a blank line. Lists tolerate a single blank line between items, but two blank lines end them. Ordered lists keep the number they start with, so a list can begin at 0 or 5. And a heading can force a line break in its title with two backslashes, which only affects the designs that print the title large — openers and part pages — while the running heads, the contents and the PDF bookmarks keep it on one line.
 
@@ -791,6 +833,8 @@ Some Markdown is deliberately left out, because a book has other ways to say it:
 ## Highlights, small capitals and tabs
 
 Three more marks change how words look without leaving the line. \`:mark[…]\` lays a band of colour behind a phrase, :mark[the way a textbook highlights what matters], and the words under it still break, hyphenate and justify like the ones around them, so marking a finished book moves none of its pages. \`:smallcaps[…]\` sets lower-case letters as small capitals, as for :smallcaps[Hamlet] in the cast of a play or an acronym such as :smallcaps[unesco], drawn from the face's own capitals in the same way on every output. And \`:tab\` sends the rest of a line to a stop the configuration sets: a price at the end of the measure behind a row of dots, or the marks of an exam question at the margin.
+
+A run can also take a named look. \`:span[…]{style="…"}\` gives the words a **character style**:index{term="character styles"}, a face, size, weight, colour, tracking or small capitals from \`characterStyles\`, for a drug name in a medical textbook or a speaker in a script. The band of a \`:mark\` comes from a **highlight style**: its colour and opacity, a padding that can bring it down into the letters as a marker pen does, edges that wobble like a stroke drawn by hand, or a line under or through the words, solid, double, dotted, dashed or wavy; a character style can name one. A plain line needs no style: \`:underline[…]\` draws one under the words, :underline[as under these], at the position and thickness the face gives. Word receives each style as a character style, and the reflowable EPUB as a class.
 
 ## Directives and containers
 
@@ -842,7 +886,7 @@ A few habits make the engine's work easier and the pages better. Introduce every
 
 ## Front matter
 
-A book's metadata lives in YAML front matter at the head of its first chapter: title, subtitle, author and publication date, available to every design slot as placeholders. This book's cover prints its title and subtitle from there. Any other key is kept for the host application; front matter in later chapters is ignored, with a warning.
+A book's metadata lives in YAML front matter at the head of its first chapter: title, subtitle, author and publication date, available to every design slot as placeholders. This book's cover prints its title and subtitle from there. Any other key is kept for the host application; front matter in later chapters is ignored, with a warning, all but a \`chapterStyle:\` line.
 
 # The Sandbox {lead="The Sandbox is the engine with an editor around it: the page you are reading, the Markdown it came from and every setting that shaped it, side by side and live." summary="The editor, the panels, projects, presets and sharing"}
 
@@ -857,6 +901,8 @@ The sidebar and the viewport share the window, and the boundary between them can
 ## Editing a book
 
 The editor of the **Text** panel highlights front matter and mathematics, and its toolbar inserts formatting, lists, page breaks and numbering changes. At its head, a **chapter switcher** moves between the chapters of the book, showing their page ranges; each chapter keeps its own undo history and cursor. Editor and pages stay in step both ways: clicking a word on the page puts the cursor on it in the Markdown, and selecting text highlights it on the page. The **Chapters** panel shows the open book as a whole, its chapters in order with their page ranges.
+
+**Find and replace**, in the header of the Text panel or with :chip[⌘ F], searches the chapter on screen or the whole book, marks included, with switches for case, whole words, accents and regular expressions. A replacement across several chapters asks first, and it is one step of the history, so a single undo takes it back.
 
 The bar above the preview switches between two ways of working. In **Content** mode the text is edited, in the Text panel and on the pages; in **Design** mode the styles and the page templates are, and a click on the page picks the style or the frame that drew what lies under the pointer. A second click on the same spot climbs one level, from a word to its paragraph, its box and its page, and :chip[⌘ Z] takes back the latest change of either kind, a word typed or a setting moved, from a single history.
 
@@ -882,13 +928,15 @@ The **Resources** panel lists the book's resources by type. Images and SVG files
 
 Each resource has a detail view with its id, its type, its caption, its note and its alternative text, its placement — position, span, rotation, width, alignment and a caption beside it — and a live preview. Deleting a resource warns when the text still mentions it. The Fonts panel, for its part, checks that every family the configuration names has the weights and styles it needs, and warns about missing or duplicate variants.
 
+In the canvas a figure can also be moved by hand, to another column or slot up to three pages after its citation. That **pin** is tried first and given up, with a note in the Checks panel, when the slot no longer fits. It belongs to one layout, and a correction or a translation can leave it naming a page that no longer makes sense, so it is the last step of a book, not the first; the rules of :ref{id="float-slots"} are what a book should rely on. Two settings of the Figures group help without pinning anything: \`footFloatRow\` sets figures that meet at the foot of a page side by side, one to a column, and \`alignFloatsAcrossColumns\` lines up the figures that share a band of the page.
+
 ## Warnings
 
 The **Checks** panel lists everything the engine noticed while setting the book: fonts that failed to load, loose lines, skipped heading levels, unclosed containers and unknown directives, unknown styles, placeholders that print nothing, missing resources and callouts too tall for their column. Every warning names its chapter and line, and clicking it jumps there.
 
 ## Projects, presets and sharing
 
-Your work is saved in the browser as you type. **Projects** are books stored locally, listed under **My books** in the **Books** panel, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from, listed under **Sample books**: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue, two university textbooks, _Dream of the Red Chamber_ in Chinese, _One Thousand and One Nights_ in Arabic, bound on the right, and an annotated _Paradise Lost_ with Doré's plates — each set with a design of its own. **Make my own copy** turns one into a project of yours.
+Your work is saved in the browser as you type. **Projects** are books stored locally, listed under **My books** in the **Books** panel, each with its name, description and cover image; they can be duplicated, exported and imported. **Presets** are read-only books to start from, listed under **Sample books**: this guide and a gallery of showcase editions — an astronomy magazine, an illustrated _Don Quixote_, an environmental magazine, an exhibition catalogue, two university textbooks, _Dream of the Red Chamber_ in Chinese, _One Thousand and One Nights_ in Arabic, bound on the right, and an annotated _Paradise Lost_ with Doré's plates — each set with a design of its own. **Make my own copy** turns one into a project of yours. The menu of a book's row also writes it whole as a PDF, a page of HTML or an EPUB 3, open or not: it is laid out apart from the book on screen, in the language you choose, and the book you are working on is left as it was. The **New** menu opens a .postext file or an InDesign document as a new book.
 
 Presets follow their source. When a preset bundle changes on the server, the Sandbox notices within seconds: an untouched preset is reloaded on its own, and one you have edited shows a banner offering to reload it, so work in progress is never overwritten. Presets can be hidden from the list and shown again, and each one can be opened in any of its languages when it has more than one, like this guide, which comes in English, Spanish, Catalan, French, German, Italian, Brazilian Portuguese, Simplified Chinese, Arabic and Japanese.
 
@@ -914,23 +962,27 @@ The canvas renderer draws a page on an HTML canvas, at any resolution. In the Sa
 
 The HTML renderer returns absolutely positioned HTML with editorial CSS: every line where the layout put it, in its exact font, size and baseline. An indexed variant tells the host which parts of the page changed, so a viewer can patch only those. In the Sandbox, the HTML tab isolates the output in a Shadow DOM and adds a reading mode with a single scrolling column or as many columns as fit the screen, with a font-scale control. A screen-only set of overrides can adjust the design for reading on screen without touching the print pages.
 
-The renderer takes a function that turns a resource's file id into a URL, so images can be served from anywhere, and a background colour for the page. Its output is plain markup and CSS, with no script, which makes it suitable for static hosting, e-mail previews or server-side storage once the layout has been computed in a browser.
+The renderer takes a function that turns a resource's file id into a URL, so images can be served from anywhere, and a background colour for the page. Its output is plain markup and CSS, with no script, ready for static hosting once the layout has been computed in a browser. \`renderHtmlBook\` goes further and writes a whole book as one page: every chapter's pages, the text selectable and searchable, references that link across chapters and exercises that can be answered. The command line's \`html\` and the Sandbox's download of a book as HTML both write it.
 
 ## PDF
 
 :index{term="PDF"}The _postext-pdf_ package turns the VDT into a real PDF, for one document or for a whole book. It never measures again: the canvas metrics are the source of truth and the PDF only transports them, which is why the lines break in exactly the same places. It embeds real fonts, one static face per weight, so bold is bold and italic is italic, and the text stays selectable. On top of the pages it adds bookmarks from the headings and parts, page labels that match the printed numbers, clickable references, SVG figures as vectors and a choice of colour space — RGB, CMYK or greyscale — for print.
 
-The fonts reach the PDF through a **font provider**, a function that returns the bytes of a family in a given weight and style. The Sandbox's provider fetches static faces from Fontsource, one file per weight, and decompresses them from WOFF2; custom fonts come from the Fonts panel. Resource bytes are handed over the same way, by file id. Rendering reports its progress, runs in a worker of its own when asked, and accepts a whole book as a list of chapter documents, producing one PDF with continuous page labels, bookmarks and links.
+The fonts reach the PDF through a **font provider**, a function that returns the bytes of a family in a given weight and style; in the Sandbox it fetches static faces from Fontsource, and custom fonts come from the Fonts panel. Resource bytes are handed over the same way, by file id, and rendering reports its progress and runs in a worker of its own when asked.
 
 ## Accessible by default
 
 :index{term="PDF!accessible (PDF/UA)"}Every PDF is **tagged** by default, following the PDF/UA-1 standard: a structure tree of headings, paragraphs, lists, tables and figures in reading order, alternative text for every figure, the document language, and decorative elements marked as artefacts so screen readers skip them. Accessibility is not an export option to remember; it is the way the file is made.
 
-Tagging follows the layout rather than the source. Paragraphs split across columns and pages are tagged as one paragraph, lists keep their items together, tables keep their header cells, and figures carry their alternative text — or their caption, or their label, when no alternative text was written. The document's title and language travel in its metadata, running heads and page decorations are marked as artefacts, and references between the text and the figures they mention are real links.
+Tagging follows the layout rather than the source. Paragraphs split across columns and pages are tagged as one paragraph, lists keep their items together, tables keep their header cells, and figures carry their alternative text — or their caption, or their label, when no alternative text was written.
+
+## Forms in the PDF
+
+A chip with a \`field\` attribute becomes a field of the PDF that a reader fills in:index{term="PDF!form fields"}: a box for text or a number, a check box, or a choice among options, drawn in the chip's style. \`:chip[ ]{style="field" field="total" format="currency" calc="sum(a, b)"}\` is a field that adds two others and writes the sum as money. A calculation adds, multiplies, averages or takes the least or the greatest of other fields, so an order form totals itself in Acrobat, in Firefox and in most viewers. A PDF/X file, which allows no interactive fields, prints the values as text.
 
 ## Colour for print
 
-Colours in the configuration are written as hexadecimal values, optionally linked to the palette, and that is what the PDF draws by default. A PDF can also be forced into CMYK for offset printing or greyscale for single-colour work, and a book set up for the press goes further: an ICC profile, PDF/X, a black that prints in one ink and a preflight of every page. All of that is the subject of :ref{id="press"}.
+The PDF draws the configuration's colours as they are written, and can force them into CMYK for offset printing or greyscale for single-colour work. A book set up for the press goes further, with an ICC profile, PDF/X, a black that prints in one ink and a preflight of every page, the subject of :ref{id="press"}.
 
 ## Whole books
 
@@ -938,29 +990,27 @@ The PDF of a book is not a concatenation of separate files. The renderer receive
 
 ## Fonts in the PDF
 
-A PDF is only as good as the fonts inside it. Postext embeds every face the layout used — one static file per weight and style, so a bold word is set in the real bold and an italic in the real italic, never a slanted or thickened imitation. TrueType faces are subset to the glyphs the book actually uses, which keeps files small even with four families; OpenType faces with PostScript outlines are embedded whole, because some viewers cannot read their subsets, and declared as what they are, so a printer's preflight reads them as CFF fonts. Every embedded font carries a map from glyphs back to characters, including ligatures, so copying a sentence out of the PDF gives back the sentence that was written, and searching the document finds every word.
-
-A family available only as WOFF is not accepted by the PDF, because the format cannot be embedded reliably; WOFF2, TrueType and OpenType files all work.
+Postext embeds every face the layout used, one static file per weight and style. TrueType faces are subset to the glyphs the book uses, which keeps files small even with four families, and OpenType faces with PostScript outlines are embedded whole, because some viewers cannot read their subsets. Every embedded font maps its glyphs back to characters, ligatures included, so a sentence copied out of the PDF reads as it was written and a search finds every word. A family available only as WOFF cannot be embedded reliably; WOFF2, TrueType and OpenType files all work.
 
 ## EPUB 3
 
 :index{term="EPUB"}The _postext-epub_ package writes a laid-out book as an EPUB 3 file, the format of e-book stores, libraries and reading apps. It reads the same chapter documents as the PDF of a whole book, so page numbers, notes, citations, cross-references, the contents and the index arrive resolved, and it returns the file as bytes, in the browser or in Node, with no server. EPUB defines two renditions, set side by side in :ref{id="epub-renditions"}, and the writer produces either one from the same layout.
 
-A **fixed layout** keeps the printed page. Each page becomes a document of its own, at the page's size, with the text where the PDF puts it and in the book's own fonts, so columns, floats, running heads, openers and every line break survive. The text stays text: it can be selected, searched and read aloud, and the links of the book work between pages — cross-references, notes, the printed contents and the index. Spreads pair as they do in print, and a book bound on the right, in Arabic or in vertical Chinese, turns from right to left. It suits books whose pages are designed as pages, an illustrated book, a textbook, a catalogue or a magazine, read on a large screen; on a phone the page is scaled down and the reader zooms in to read it.
+A **fixed layout** keeps the printed page. Each page becomes a document of its own, at the page's size, with the text where the PDF puts it and in the book's own fonts, so columns, floats, running heads, openers and every line break survive. The text stays text: it can be selected, searched and read aloud, and the links of the book work between pages — cross-references, notes, the printed contents and the index. Spreads pair as they do in print, and a book bound on the right, in Arabic or in vertical Chinese, turns from right to left. It suits books whose pages are designed as pages, read on a large screen.
 
 ## Reflowable books
 
 A **reflowable** book gives up the page and keeps the text. Each chapter becomes one document that the reading system sets again for its screen, in the typeface, size and margins the reader picks. The writer does not go back to the Markdown: it rebuilds every paragraph from the lines the engine set, removing the hyphens the line breaks added and keeping those that belong to the word, so a paragraph split across two columns or two pages is one paragraph again. Figures and tables follow the text that cites them, with their numbered captions and alternative text; tables stay real tables, with header rows and merged cells; boxes become asides with their titles; and notes link to the end of the chapter and back. Each printed page leaves a marker where its text begins, so a reader can find page 112 of the printed edition, and the index points to those markers.
 
-The look comes from the configuration. A style sheet derived from it gives the headings, boxes, tables, captions and lists their sizes and colours, relative to the body text, so the reader's choice of size carries through. Paragraphs set in a paragraph style keep it, because the layout records which style set each block, and the levels of the index are told apart the same way; a chapter configured differently, or a part that recolours the book, adds a second sheet with only the rules that change. Vertical Chinese keeps its vertical lines, and an Arabic book runs from right to left.
+The look comes from the configuration. A style sheet derived from it gives the headings, boxes, tables, captions and lists their sizes and colours, relative to the body text, so the reader's choice of size carries through. Paragraphs set in a paragraph style keep it, because the layout records which style set each block, the captions of each type keep their own caption style, underlined words are set in \`<u>\`, and the levels of the index are told apart the same way; a chapter configured differently, or a part that recolours the book, adds a second sheet with only the rules that change. Vertical Chinese keeps its vertical lines, and an Arabic book runs from right to left.
 
-Both renditions carry the same navigation: a table of contents from the headings and the parts, a list of the printed page numbers, and landmarks for the cover, the printed contents and the start of the text. Every family the design names is embedded, unless it is marked as not redistributable, and every picture goes in once. Both carry the metadata of EPUB Accessibility 1.1, and both pass W3C EPUBCheck, the validator e-book stores run on the files they receive, with no errors and no warnings, for this guide and for every sample book. In the Sandbox, the **EPUB 3** tab writes the file on a worker, so the page stays responsive while a long book is written. Anything the file cannot carry, such as a picture with no stored file, is listed among its warnings.
+Both renditions carry the same navigation: a table of contents from the headings and the parts, a list of the printed page numbers, and landmarks for the cover, the printed contents and the start of the text. Every family the design names is embedded, unless it is marked as not redistributable, and every picture goes in once. Both carry the metadata of EPUB Accessibility 1.1, and both pass W3C EPUBCheck, the validator e-book stores run on the files they receive, with no errors and no warnings, for this guide and for every sample book. In the Sandbox, the **EPUB 3** tab writes the file on a worker, and lists anything it cannot carry among its warnings.
 
 ## Using the library
 
 The engine ships on npm as [_postext_](https://www.npmjs.com/package/postext), for the layout and the canvas and HTML renderers, with a package for each heavier output: _postext-pdf_ for PDF, _postext-epub_ for EPUB 3 and _postext-folio_ for the book in 3D. All are ES modules under the MIT licence and can also be imported straight from a CDN. The documentation includes live examples that render a page to an image, to HTML and to a PDF, ready to fork.
 
-The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ and _postext-epub_ run in the browser too, and also in Node, so a PDF or an EPUB can be produced on a server from a layout computed elsewhere. A whole book travels the same way: \`openBundle\` reads a .postext file, \`buildBundle\` lays out its chapters in order, and the result goes straight to \`renderToPdf\` or \`renderToEpub\`. The packages are ES modules only, with TypeScript types included, and some bundlers need a one-line setting for the WOFF2 decoder the PDF package uses. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
+The layout engine runs in the browser, where it can measure with the fonts the reader sees; _postext-pdf_ and _postext-epub_ run in the browser too, and also in Node, so a PDF or an EPUB can be produced on a server from a layout computed elsewhere. A whole book travels the same way: \`openBundle\` reads a .postext file, \`buildBundle\` lays out its chapters in order, and the result goes straight to \`renderToPdf\` or \`renderToEpub\`. The documentation walks through the whole path, from installing the packages to a first PDF, and no step of it needs the Sandbox.
 
 :::callout{type="note" title="Four steps"}
 1. Load the fonts the configuration names, so the browser can measure them
@@ -971,7 +1021,7 @@ The layout engine runs in the browser, where it can measure with the fonts the r
 
 ## Pages as images, from a script
 
-A page does not need a browser to become a picture. The canvas renderer draws on any canvas that speaks the browser's drawing interface, and in Node a prebuilt canvas does: lay the book out, draw the page, and encode it as a JPEG or a PNG. That is how the agent skill that ports books to Postext looks at its work. After each change to the configuration or the text it lays the book out again, draws only the pages it is working on and reads them as images, in a second or two, with no PDF to generate. The PDF is built at the end, for the checks that only a PDF can answer: fonts embedded, images at their resolution, the tagged structure.
+A page does not need a browser to become a picture. The canvas renderer draws on any canvas that speaks the browser's drawing interface, and in Node a prebuilt canvas does: lay the book out, draw the page, and encode it as a JPEG or a PNG. That is how the agent skill that ports books to Postext looks at its work: after each change it draws only the pages it is working on, in a second or two, and builds the PDF at the end, for the checks only a PDF can answer.
 
 :ref{id="skill-tutorial"} shows the skill from start to finish: it is given the reference PDF, the fonts and the original illustrations, proposes a specification sheet, sets the first chapter and checks every page it sets.
 
@@ -997,6 +1047,34 @@ A screen mixes light; a press lays down ink. The colours of a configuration are 
 
 The conversion is done by Postext itself, in the browser, with a rendering intent, relative or perceptual, and black point compensation. Pictures can be converted too, so a photograph in the PDF is already in the inks of the press, and an **ink limit** caps the total coverage of the four inks where the paper would not dry. The print settings never move a line: the layout ignores them, and they act only in the PDF, the print preview and the preflight.
 
+Pictures bring colour of their own. A photograph tagged Adobe RGB or Display P3 can be read through its own profile, a batch that lost its profile through one assigned to it, and a greyscale picture prints on the black plate alone, its tones matched to the dot gain of the press. TIFF and Photoshop files print from their own pixels, in the inks they were separated into when they are CMYK already, while the screen shows a PNG preview of each.
+
+## Spot colours and the ink table
+
+Not every colour is a mix of the four process inks. A **spot colour**:index{term="spot colours"} is an ink of its own, a Pantone or a corporate blue mixed by the ink maker, printed from a plate of its own: a palette colour of the _spot_ model names the ink, gives the CMYK it looks like for a proof, and a tint, so a 40 per cent tint of the ink shares its plate. Any colour can **overprint**, laid over what lies under it instead of knocking it out, and a colour written in CMYK keeps its exact values.
+
+The **ink table**, in Print preparation, says how the inks of the job reach the printer, whatever the palette, an SVG or an imported file calls them: the name of the plate, the other names that print on it, its alternate, and whether it prints as a spot or in process when the press has no unit for it.
+
+## Two inks
+
+A book printed in black and one spot colour, in two spot colours or in black alone names its plates in \`print.plates\`, and nothing else prints. Every other colour of the design is projected onto the plates the job has, as the mix of one or two that comes closest to it, and the preflight lists each colour that moved too far. Pictures print as a monotone on one plate or as a duotone on two, the shadows on the first and the middle tones on the second, each plate with a curve of its own.
+
+## Special inks
+
+Five kinds of ink go beyond colour:index{term="special inks"}. A **metallic** ink carries metal pigment, gold, silver or copper; a **foil** is stamped with a heated block after printing; a **fluorescent** ink is brighter than any process mix; an opaque **white** goes under the colours on kraft, coloured stock or film; and a **varnish** is a clear coat on chosen areas, gloss, satin, matte or soft to the touch. In Postext each is a spot colour with a **finish**. The layout sees a colour and never moves a line for it; the PDF gives each ink a plate of its own, with the white and the varnish overprinting, and the preflight reminds the printer that the white goes down first and the varnish last.
+
+On screen each ink is painted in its screen colour, and a varnish not at all. The **Special inks** button of the Canvas view steps to a view with sheen, where metal and foil catch a sweep of light and fluorescent ink glows, and to a map of the special plates in false colour, as a press proof marks them. The gilt of this book's covers is such an ink, a metallic gold :swatch{color="#d8a21b"} on a plate of its own.
+
+:::callout{type="try"}
+Open the Canvas view on the cover of this guide and press **Special inks** twice: the gold of the kicker and the rule catches the light, then shows as a plate of its own. In the Folio view the same gold reflects the room as the cover turns.
+:::
+
+## Die-cuts
+
+A **die-cut**:index{term="die-cuts"} is the work of a steel-rule die after printing: a window in a cover, a hole through the leaves of a board book, rounded corners, a book cut to the outline of a house. The shapes belong to the design, a rectangle, a rounded rectangle, a circle, an ellipse or any path, placed from the trim, and the Markdown names one only where the content decides which pages are cut, with \`:::diecut{die=window}\`; \`dieCuts.pages\` cuts pages by number instead. Paper has two sides, so a hole cuts the back of its leaf too, in mirror image, and a shape with \`leaves\` runs on through the next leaves in the same place, as :ref{id="die-cut"} shows. Text keeps clear of a hole on every page it cuts, as it keeps clear of a picture it wraps round.
+
+The page itself prints whole. The die-maker works from the **die line**, the outline of every hole, which the PDF strokes on a plate the press never inks and in a layer a reader can hide, and the preflight warns of a hole too close to the trim or the spine, or of text left inside one. The canvas and the HTML view show the pages beneath through each hole, as deep as the holes line up.
+
 ## PDF/X
 
 Printers ask for **PDF/X**:index{term="PDF!PDF/X"} because it removes the guesswork. A PDF/X file says which printing condition it was made for, embeds every font, carries its trim and bleed boxes and leaves out anything a press cannot use, such as links. Postext writes the two versions printers ask for most. PDF/X-1a is the conservative one: four inks and grey only, no transparency. PDF/X-4 keeps transparency and is the usual choice today. Either is chosen under Design › Export › Print preparation, or with the \`--pdfx\` option of the command line.
@@ -1012,6 +1090,8 @@ Black is the colour a printer worries about most. Body text should print in blac
 :index{term="preflight"}Before a file goes to press, prepress runs a **preflight**: a machine reading of every page against the rules of the job. Postext runs its own whenever a book is set up for print, with a PDF/X standard, a CMYK PDF or crop marks, and lists the findings in the Checks panel, the critical ones first. It reports pictures below 300 pixels per inch at their printed size, and below 150 as critical; pictures that are still in RGB; rules thinner than a quarter of a point; small text in several inks; ink above the limit; text too close to the trim; art that stops just short of the trim, when it should either stay clear of it or run into the bleed.
 
 The same preflight runs outside the Sandbox. The command line's \`check\` command exits with an error code when it finds a critical problem, so a publishing pipeline can refuse to send a file that would come back from the printer.
+
+**Check for print**, in the toolbar of the PDF view, reads the finished file back from its own bytes, as the printer's preflight will: its version and PDF/X identification, the trim and the bleed, the page boxes, every font, embedded or not, and the process and spot plates it prints on. In code the same reading is \`inspectPrintPdf\`.
 
 :::callout{type="try"}
 Open Design › Export › Print preparation, choose PDF/X-4 and switch on the crop marks. The Checks panel gains a Preflight group; the PDF view now draws the bleed and the marks around every page.
@@ -1081,6 +1161,10 @@ The book lies on a **surface**: oak, walnut, linen, felt, leather, marble, a pla
 
 This guide is set as a saddle-stitched booklet, on coated gloss paper of 170 grams, on a blue felt mat in studio light. Its covers are its own first and last pages, so it opens on the cover and closes when the last leaf turns. All of it is in the **Folio** group of the Design panel, and nothing in that group changes a single line of the pages.
 
+## Inks and holes in the hand
+
+Folio shows special inks as paper under its lamps would. A metallic ink and a foil reflect the room as metal tinted by their colour, the foil almost as a mirror, which is how the gold of this guide's cover catches the light as the cover turns. A fluorescent ink stands brighter than the paper, an opaque white covers the shade of a kraft stock, and a gloss varnish catches the highlights as a leaf turns, where a soft-touch one takes them away. A die-cut hole shows the pages beneath it, as deep as the holes line up, with the wall of the cut along its edge; it stays open while the leaf turns and after it lands, and rounded corners and a book cut to a shape are cut on every leaf.
+
 ## Where Folio runs
 
 Folio draws with WebGL2, the three-dimensional graphics of the browser, with a texture for each side of every painted page. Painting only the spreads around the open one keeps the memory of a long book to that of a few pages, but a phone still gives a browser tab less memory than a book needs, so the Sandbox offers the Folio tab on computers and tablets and leaves it out on phones, and in browsers without WebGL2.
@@ -1105,7 +1189,7 @@ The engine at the centre of this book is a library, and a library can be called 
 
 :index{term="command line"}**postext** is a program for the terminal that turns a book into a PDF, an EPUB, HTML, page images or a Word document, without a browser. It comes as one file per system, for macOS, Linux and Windows, downloaded from the [project's releases](https://github.com/drnachio/postext/releases), or through npm as _postext-cli_. Everything it needs travels inside it: the engine, a drawing library, a text shaper, the ICC profiles of the print chapter and two families of fonts. Other fonts are fetched once from Google Fonts or a folder you name and kept in a cache; the fonts installed on the computer are never used, so a book sets the same on every machine.
 
-The program reads a \`.postext\` file, a folder holding a book, or loose Markdown files taken as chapters in the order of their names. Each output has its command: \`pdf\`, \`epub\`, \`html\`, \`image\` and \`images\`, \`docx\`. Options cover what the Sandbox offers in its panels: a PDF/X standard and a profile, a fixed or reflowable EPUB, a single page or a range of pages in the numbering the book prints, a resolution, a print preview. \`--set\` changes any setting for one run, \`--locale\` chooses an edition and \`--chapters\` a part of the book.
+The program reads a \`.postext\` file, a folder holding a book, or loose Markdown files taken as chapters in the order of their names. Each output has its command: \`pdf\`, \`epub\`, \`html\`, \`image\` and \`images\`, \`docx\`. Options cover what the Sandbox offers in its panels: a PDF/X standard and a profile, a fixed or reflowable EPUB, a single page or a range of pages in the numbering the book prints, a resolution, a print preview. \`--set\` changes any setting for one run, \`--locale\` chooses an edition and \`--chapters\` a part of the book. \`--design\` sets a book in a design file or in another book's design, \`--composition\` in the rules of a tradition, \`--hyphenation-exceptions\` adds a file of words kept whole, and \`--die-line\` keeps the die line of a die-cut book or leaves it out. \`idml\` writes an InDesign package and \`import-idml\` reads one.
 
 :::callout{type="note" title="From a manuscript to a PDF"}
 1. \`postext pdf book.postext\` writes the whole book as a PDF
@@ -1114,7 +1198,7 @@ The program reads a \`.postext\` file, a folder holding a book, or loose Markdow
 4. \`postext build book/ --watch\` sets the book again whenever a chapter is saved
 :::
 
-Two commands serve automation. \`check\` lays the book out and reports what the Checks panel would report, with the preflight when the book is set up for print, and ends with an error code a script can test. \`build --watch\` keeps a book open and sets it again when a file changes, so an editor and a PDF viewer side by side behave like the Sandbox. On an ordinary laptop a 140-page illustrated novel is set and written as a PDF in about ten seconds.
+Two commands serve automation. \`check\` lays the book out and reports what the Checks panel would report, with the preflight when the book is set up for print, and ends with an error code a script can test. \`build --watch\` keeps a book open and sets it again when a file changes, so an editor and a PDF viewer side by side behave like the Sandbox. On an ordinary laptop a 140-page illustrated novel is set and written as a PDF in about ten seconds. And \`pip install postext\` makes the same program a Python library: its functions take the command's options, \`design\`, \`idml\` and \`import_idml\` among them, and the first one to run downloads the executable for its system.
 
 ## A book in one file
 
@@ -1128,19 +1212,45 @@ A file can hold several languages, each with its chapters, its resources and its
 
 Pictures and tables become resources, footnotes become notes, the index fields of Word become index marks and its equations become mathematics. The import can replace the current chapter, add new chapters after it, or replace the whole book, cut at its first-level headings.
 
-The journey also runs the other way. **Export to Word** writes a chapter or the whole book as a .docx for an author or an editor who works in Word. What Word cannot show, a directive or a resource reference, is kept in grey paragraphs of a style named _Postext Markup_, and the template travels inside the file, so the corrected document comes back into Postext without losing anything.
+The journey also runs the other way. **Export to Word** writes a chapter or the whole book in one of two kinds: _semantic_, the content alone in plain Word styles, for whoever corrects the words, or _formatted_, the same editable text set with the book's design as far as Word allows, its faces embedded. Paragraph and character styles become Word styles, and what Word has no structure for travels as its Postext source. Both open in Word and in Google Docs, and the corrected file comes back: each change goes in where its text came from, and the import lists what it could not take, such as a number the book prints itself.
+
+## InDesign
+
+A book travels to InDesign:index{term="InDesign"} and back as an **IDML** package. The exporter lays the book out as the PDF does and writes its pages for a designer to finish: the running text threaded through a frame per column, as in a book set in InDesign, the running heads and page numbers on master spreads, the glosses anchored beside the paragraphs they face, and every line ending where Postext ended it, unless InDesign is asked to break the paragraphs again. The pictures can go in a \`Links\` folder beside the package and the fonts in \`Document fonts\`, where InDesign finds them; a family the book may not redistribute stays behind.
+
+The export is made for the work a studio does last. With \`--lines keep\`, the default, InDesign shows the same lines as the PDF, so a designer who moves a caption or a picture changes nothing else; with \`--lines reflow\` InDesign's own composer sets the paragraphs again, for a book that will be finished there. Pages stand in spreads when the margins mirror, the paragraph and character styles keep the book's names, tables become InDesign tables, and inline formulas, music and swatches become anchored objects. Right-to-left and vertical stories are written as InDesign's own. What InDesign cannot show as Postext set it, such as a table's rounded frame or emphasis dots in vertical text, is listed among the warnings. In the Sandbox the export is in the header of the Text panel; in code it is the _postext-idml_ package.
+
+Exporting is not porting in reverse. The \`.idml\` holds the pages Postext laid out, and the rules that laid them out stay in the book: a new type size is set in Postext and exported again, while a change made by hand in InDesign comes back through the importer.
+
+:::callout{type="note" title="To InDesign and back"}
+1. \`postext idml book.postext -o book.idml --images link --fonts\` writes the package
+2. \`postext import-idml book.idml --report --json\` lists what a document holds
+3. \`postext import-idml package.zip -o book.postext --layout flow\` brings a packaged book in as a flowing book
+:::
+
+## From InDesign to Postext
+
+The importer reads an \`.idml\`, or a zipped InDesign package with its fonts and linked pictures, as a new book, from the Books panel or with \`import-idml\`. It copies what the document holds and closes its report with a verdict: _faithful_, _approximate_ or _lossy_. A book Postext exported comes back as the flowing book it was, its paragraphs, headings, boxes and figures where they stood; only the shapes its design draws on each page are left for the design to draw again. In the Sandbox a dialog shows what the document holds, its pages, stories, fonts, pictures and tables, before anything is created.
+
+Choosing a layout is choosing what the book will be. As **composed pages**, every page keeps its frames where the document has them, a chain of linked frames stays a chain, and the result suits a poster, a form or a brochure that will not change. As a **flowing book**, the stories run in reading order under the document's paragraph styles and Postext makes the pages, which suits a novel or an essay; a cover or a part divider in it stays a composed page, and a page whose text starts under a band or a picture becomes a chapter opener with a design of its own. Left to choose, the importer picks one and gives its reason.
+
+An \`.idml\` carries neither its fonts nor its linked pictures. The dialog asks for the pictures, matched by file name, and lists the fonts the book needs; a zipped package made with InDesign's **Package** command brings both, and a font collection in it is split into the faces the text uses. Tables keep their merged cells and header rows, ruby and emphasis marks keep their characters, and text wrapped round a frame still runs round it. What InDesign does and Postext cannot, text on a path, a GREP style or a transparency effect, becomes a finding in the report, with a count and an example.
+
+IDML stores the text and the frames, not the lines InDesign broke them into, so Postext sets the lines again with its own composer, and a line rarely ends on the same word. What should match is which words fall on which page, and on the documents made in InDesign that the importer is tested against, 87 to 100 per cent of them do.
+
+For a book you mean to keep, edit or translate, the porting skill is the better road. It reads the \`.idml\` with the printed PDF, the fonts and the artwork, works out the rules the designer followed, a grid, the type roles, the openers, where boxes and figures go, and rebuilds the book from them with the text free to flow. It can run the importer first, for an inventory in seconds, and then replaces its frames with rules.
 
 ## Agents in the Sandbox
 
-An assistant that can use a browser can also use the Sandbox, through **WebMCP**:index{term="WebMCP"}, a proposed web standard for pages that offer tools to agents. While the Sandbox is open it offers more than fifty: read the book's state, edit a chapter, change a setting, add a resource, render a page as a picture, read the warnings, export a PDF, undo. An agent asked to tighten a chapter can edit the text, look at the page it produced and try again, the way a person would, and every change it makes is on screen and in the undo history.
+An assistant that can use a browser can also use the Sandbox, through **WebMCP**:index{term="WebMCP"}, a proposed web standard for pages that offer tools to agents. While the Sandbox is open it offers more than sixty: read the book's state, edit a chapter, find and replace through the whole book, change a setting, try a design, add a resource, render a page as a picture, read the warnings, import an InDesign document, export a PDF, undo. An agent asked to tighten a chapter can edit the text, look at the page it produced and try again, the way a person would, and every change it makes is on screen and in the undo history.
 
 Tools that destroy work, deleting a chapter, a resource or a book, are marked as consequential, so the browser asks the person before running them. An application that embeds the Sandbox can turn the tools off.
 
 ## Porting a book with an agent
 
-Bringing an existing book into Postext is mostly a question of reading its design: the trim, the margins, the columns, the type sizes, the way chapters open and figures sit. The **postext-port** skill:index{term="postext-port skill"} teaches an agent to do that from whatever the publisher has: a PDF, a Word or InDesign file, an EPUB, LaTeX, HTML or scanned pages. It inventories the source, measures the pages, proposes a specification sheet, writes the configuration and the chapters, and then checks its own work: it draws each page it sets as a picture and compares it with the original, page by page, until they match. The result is a .postext file that opens in the Sandbox like any other book.
+Bringing an existing book into Postext is mostly a question of reading its design: the trim, the margins, the columns, the type sizes, the way chapters open and figures sit. The **postext-port** skill:index{term="postext-port skill"} teaches an agent to do that from whatever the publisher has: a PDF, a Word or InDesign file, an EPUB, LaTeX, HTML or scanned pages. For a book made in InDesign, the best source is the folder InDesign's **Package** command makes, with the IDML and the print PDF ticked. The skill inventories the source, measures the pages, proposes a specification sheet, writes the configuration and the chapters, and then checks its own work: it draws each page it sets as a picture and compares it with the original, page by page, until they match. The result is a .postext file that opens in the Sandbox like any other book.
 
-The skill is installed in any agent that reads skills, with one command, and in Claude Code as a plugin. It knows the scripts of this book: Chinese and Japanese books set vertically, Arabic books set from the right, comics re-lettered in another language, textbooks built on composed pages.
+The skill is installed in any agent that reads skills, with one command, and in Claude Code as a plugin. It knows the scripts of this book: Chinese and Japanese books set vertically, Arabic books set from the right, comics re-lettered in another language, textbooks built on composed pages, and the special inks and die-cuts of a printer's job.
 
 # Roadmap and community {lead="Postext is young and open. The core pipeline, the document format and the configuration system have shipped; what comes next is decided in public." summary="Where the project stands and how to take part"}
 
@@ -1150,7 +1260,7 @@ Postext is not trying to be a universal document platform. It aims to be a very 
 
 The work is organised in four phases, summarised in :ref{id="development-phases"}. They are not strict milestones; they describe the order in which capabilities become stable enough for production.
 
-The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, citations, a back-of-book index, Chinese and Japanese set horizontally and vertically, Arabic set from right to left with kashida justification, composed pages, comics, music, exercises and text that wraps round pictures — and has margin notes still open. The fourth, output, has shipped canvas, HTML, a tagged PDF ready for the press, EPUB 3 books and SCORM courses, together with the worker, the Sandbox and its presets, the Folio view that shows a layout as a printed book and a command line that sets books without a browser.
+The first two phases are essentially complete: the data model, the parser and the measurement layer, the document format, the column engine with its balancing, floats and tables, and the book machinery of chapters, parts, contents and running heads. The third phase has delivered its core — optimal line breaking with editorial penalties, hyphenation in eight languages, mathematics, footnotes and chapter-end notes, citations, a back-of-book index, Chinese and Japanese set horizontally and vertically, Arabic set from right to left with kashida justification, composed pages, comics, music, exercises and text that wraps round pictures — and has margin notes still open. The fourth, output, has shipped canvas, HTML, a tagged PDF ready for the press, EPUB 3 books and SCORM courses, together with the worker, the Sandbox and its presets, the Folio view that shows a layout as a printed book, a command line that sets books without a browser, and an exporter and importer for InDesign.
 
 What is still missing is as important as what has shipped. **Margin notes** have a place in the data model but are not laid out yet. Text does not yet run on both sides of a picture, Korean is set with the Chinese rules rather than its own, and the command line shapes text without the language forms a browser applies, so a line can now and then break at another word than in the Sandbox. These are the next problems worth solving, and the ones where help counts most.
 

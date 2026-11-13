@@ -52,7 +52,12 @@
     "figureEnlarge": "Enlarge figure",
     "figureClose": "Close figure",
     "chapterPages": "Pages in this chapter",
-    "inChapter": "In chapter"
+    "inChapter": "In chapter",
+    "cookbookStrip": "In the Cookbook",
+    "cookbookStripLabel": "Cookbook recipes for {section}",
+    "cookbookExamples": "Examples in the Cookbook",
+    "cookbookExamplesLead": "Recipes that use what this page describes, each under the section it suits best. A recipe shows its pages beside the whole script.",
+    "cookbookMore": "{count, plural, one {One more recipe} other {# more recipes}} with {feature} in the Cookbook"
   },
   "CodePen": {
     "run": "Run on CodePen",
@@ -4685,6 +4690,11 @@
     "headerFooterElementConnector": "Connector",
     "headerFooterAddPath": "Add shape",
     "headerFooterAddConnector": "Add connector",
+    "headerFooterElementCut": "Die-cut hole",
+    "headerFooterAddCut": "Add die-cut hole",
+    "cutElementIntro": "A hole the die cuts through the leaf of every page this template is laid on. It is never painted, and the text of the frames does not wrap around it yet: keep the frames clear of it.",
+    "cutElementDieTooltip": "A die shape from Page & columns › Die-cuts, stretched to the box below: its shape, corners, leaves and text gap. None: the path data, or else the box itself.",
+    "cutElementDieNone": "None",
     "connectorFrom": "Starts at",
     "connectorFromTooltip": "The frame, group or element the line leaves from; the parent of a tree.",
     "connectorTo": "Goes to",

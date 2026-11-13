@@ -190,6 +190,7 @@ describe("cookbook/_registry", () => {
         ...Object.entries(registry!.gaps)
           .filter(([, g]) => g.docs)
           .map(([id, g]): [string, DocAnchor] => [`gaps.${id}`, g.docs!]),
+        ...Object.entries(registry!.docExamples ?? {}).map(([id, e]): [string, DocAnchor] => [`docExamples.${id}`, e.docs]),
       ];
       // A docs page announced before it is written: list its slug here and
       // its anchors are checked from the day docs/<slug>-en.mdx exists.

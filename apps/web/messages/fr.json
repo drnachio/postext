@@ -52,7 +52,12 @@
     "figureEnlarge": "Agrandir la figure",
     "figureClose": "Fermer la figure",
     "chapterPages": "Pages de ce chapitre",
-    "inChapter": "Dans le chapitre"
+    "inChapter": "Dans le chapitre",
+    "cookbookStrip": "Dans les Recettes",
+    "cookbookStripLabel": "Recettes pour {section}",
+    "cookbookExamples": "Exemples dans les Recettes",
+    "cookbookExamplesLead": "Les recettes qui utilisent ce que décrit cette page, chacune sous la section qui lui correspond le mieux. Chaque recette montre ses pages à côté du script complet.",
+    "cookbookMore": "{count, plural, one {Une recette de plus} other {# recettes de plus}} avec {feature} dans les Recettes"
   },
   "CodePen": {
     "run": "Exécuter sur CodePen",
@@ -4685,6 +4690,11 @@
     "headerFooterElementConnector": "Connecteur",
     "headerFooterAddPath": "Ajouter une forme",
     "headerFooterAddConnector": "Ajouter un connecteur",
+    "headerFooterElementCut": "Trou de découpe",
+    "headerFooterAddCut": "Ajouter un trou de découpe",
+    "cutElementIntro": "Un trou que la forme de découpe perce dans le feuillet de chaque page où ce gabarit est posé. Il n’est jamais peint, et le texte des cadres ne l’évite pas encore : gardez les cadres à l’écart.",
+    "cutElementDieTooltip": "Une forme de découpe de Page et colonnes › Découpes, étirée à la boîte ci-dessous : son contour, ses coins, ses feuillets et l’écart du texte. Aucune : les données du tracé, sinon la boîte elle-même.",
+    "cutElementDieNone": "Aucune",
     "connectorFrom": "Part de",
     "connectorFromTooltip": "Le bloc, groupe ou élément d'où part la ligne ; le parent d'un arbre.",
     "connectorTo": "Va vers",

@@ -52,7 +52,12 @@
     "figureEnlarge": "كبّر الشكل",
     "figureClose": "أغلق الشكل",
     "chapterPages": "صفحات هذا الفصل",
-    "inChapter": "ضمن الفصل"
+    "inChapter": "ضمن الفصل",
+    "cookbookStrip": "في دليل الوصفات",
+    "cookbookStripLabel": "وصفات من دليل الوصفات عن {section}",
+    "cookbookExamples": "أمثلة في دليل الوصفات",
+    "cookbookExamplesLead": "وصفات تستعمل ما تشرحه هذه الصفحة، كل واحدة تحت القسم الأنسب لها. تعرض كل وصفة صفحاتها بجانب الشيفرة كاملة.",
+    "cookbookMore": "{count, plural, one {وصفة أخرى} two {وصفتان أخريان} few {# وصفات أخرى} many {# وصفة أخرى} other {# وصفة أخرى}} تستعمل {feature} في دليل الوصفات"
   },
   "CodePen": {
     "run": "شغّل على CodePen",
@@ -4685,6 +4690,11 @@
     "headerFooterElementConnector": "موصل",
     "headerFooterAddPath": "إضافة شكل",
     "headerFooterAddConnector": "إضافة موصل",
+    "headerFooterElementCut": "فتحة قص",
+    "headerFooterAddCut": "إضافة فتحة قص",
+    "cutElementIntro": "فتحة يقصها القالب في ورقة كل صفحة يُطبَّق عليها هذا القالب. لا تُرسم أبدًا، ولا يبتعد عنها نص الإطارات بعد: أبقِ الإطارات بعيدة عنها.",
+    "cutElementDieTooltip": "شكل قص من الصفحة والأعمدة › القص، ممدود ليملأ الإطار أدناه: شكله وزواياه وعدد أوراقه ومسافة النص عنه. بلا: بيانات المسار، وإلا فالإطار نفسه.",
+    "cutElementDieNone": "بلا",
     "connectorFrom": "يبدأ من",
     "connectorFromTooltip": "الإطار أو المجموعة أو العنصر الذي يخرج منه الخط؛ وهو الأصل في الشجرة.",
     "connectorTo": "يتجه إلى",

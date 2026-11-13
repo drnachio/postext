@@ -18,7 +18,7 @@ const memo = new Map<string, { at: number; toc: TocItem[] | null }>();
 const DEV_TTL_MS = 1500;
 
 /** A doc's headings; memoised in production, for DEV_TTL_MS in development. */
-function tocFor(slug: string, locale: Locale): TocItem[] | null {
+export function docToc(slug: string, locale: Locale): TocItem[] | null {
   const key = `${slug}|${locale}`;
   const hit = memo.get(key);
   if (hit && (process.env.NODE_ENV === "production" || Date.now() - hit.at < DEV_TTL_MS)) return hit.toc;
@@ -33,7 +33,7 @@ function tocFor(slug: string, locale: Locale): TocItem[] | null {
 export function resolveDocAnchor(anchor: DocAnchor, locale: Locale): { slug: string; id: string; text: string } | null {
   const text = anchor.heading[locale];
   if (!text) return null;
-  const item = tocFor(anchor.slug, locale)?.find((i) => i.text === text);
+  const item = docToc(anchor.slug, locale)?.find((i) => i.text === text);
   return item ? { slug: anchor.slug, id: item.id, text: item.text } : null;
 }
 
@@ -54,7 +54,7 @@ export function docAnchor(anchor: DocAnchor, locale: Locale): string | null {
 export function docLinkExists(href: string): boolean {
   const m = /^\/(en|es|ca|zh|ja|ar|pt|fr|de|it)\/docs\/([a-z0-9-]+)\/?(?:#(.+))?$/.exec(href);
   if (!m || !(LOCALES as readonly string[]).includes(m[1])) return false;
-  const toc = tocFor(m[2], m[1] as Locale);
+  const toc = docToc(m[2], m[1] as Locale);
   if (!toc) return false;
   if (!m[3]) return true;
   const id = decodeURIComponent(m[3]);

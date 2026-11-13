@@ -93,7 +93,7 @@ postext import-idml package.zip -o book.postext
 
 InDesign能做的有些事在Postext中没有对应，比如路径文字、旋转的单元格、单元格中的对角线、GREP样式和嵌套样式，或者透明效果。每一项都成为报告中的一条结果，附带数量和一个例子：省略的是<em>loss</em>，以接近原稿的方式排出的是<em>warning</em>（表格的表尾行、渐变、沿轮廓绕排）。报告最后给出结论：
 
-- <strong>`faithful`</strong>：没有丢失，也没有近似处理。Postext导出的书会忠实返回。自postext 1.85.0起，导出把分栏排版页面的正文串接成一篇文章，每栏一个框，导入器把它读回原来的连续版式的书：段落完整，标题、方框以及带图注的插图都在原来的位置。栏参考线就是页面的栏，侧栏也包括在内。Postext在每页绘制的书眉、页码和图形不会导入，并作为丢失列入报告（`runningHeadsOnPages`、`pageArtInFlow`），因此带有这些内容的书以连续版式返回时结论为`lossy`，可由它的设计重新绘制。用`--text frames`导出（每个块一个框，与1.85.0之前相同）时，它以组合页面的形式返回：每页的框都在导出时放置的位置，书的段落样式、字符样式、方框和图片也都保留（自postext 1.84.0起）。
+- <strong>`faithful`</strong>：没有丢失，也没有近似处理。Postext导出的书会忠实返回。自postext 1.85.0起，导出把分栏排版页面的正文串接成一篇文章，每栏一个框，导入器把它读回原来的连续版式的书：段落完整，标题、方框以及带图注的插图都在原来的位置。栏参考线就是页面的栏，侧栏也包括在内。自postext 1.86.0起，书眉和页码作为书的页眉和页脚返回，章首页自己的也包括在内；浮动到侧栏的方框（旁注）作为该栏的浮动对象返回。Postext在每页绘制的图形不会导入，并作为丢失列入报告（`pageArtInFlow`），因此带有图形的书以连续版式返回时结论为`lossy`，可由它的设计重新绘制。用`--text frames`导出（每个块一个框，与1.85.0之前相同）时，它以组合页面的形式返回：每页的框都在导出时放置的位置，书的段落样式、字符样式、方框和图片也都保留（自postext 1.84.0起）。
 - <strong>`approximate`</strong>：有些内容以接近原稿的方式排出，没有省略任何内容。
 - <strong>`lossy`</strong>：有内容被省略。
 
@@ -148,6 +148,7 @@ postext build book/ --pdf book.pdf --idml book.idml
 - <strong>页面与跨页。</strong>页面按成品尺寸放置：设了对称页边距的书排成对页的跨页，否则每个跨页一页；`--spreads facing`或`--spreads single`不管页边距怎样设，都按指定的方式排。
 - <strong>行。</strong>默认的`--lines keep`让每一行都在Postext断行的位置结束，因此InDesign显示的行与PDF相同。`--lines reflow`把段落交给InDesign的排版器，用于要在InDesign中重新排版的书。
 - <strong>文字。</strong>分栏排版页面的正文是一篇文章，像在InDesign中排的书一样，串接在每栏一个的文本框中，流中的方框锚定在其中（自postext 1.85.0起）；`--text frames`则在Postext绘制的位置为每个块写一个框和一篇文章。模板页的每个框成为一个带有独立文章的文本框，用`next`串接的框共用一篇文章。段落样式带有书中的样式名、缩进、制表位和间距。脚注、链接、注音、着重号、从右到左的文章和竖排文章都会带过去。
+- <strong>书眉。</strong>正文串接导出时，书眉和页码放在主页上，与在InDesign中排版的书一样（自postext 1.86.0起）。页码是InDesign的当前页码，`{chapterTitle}`是显示该页最后一个章标题的书眉文本变量，其他文字照原样写出。显示相同书眉的页面应用同一个主页，章首页有自己的主页，名为Opener。InDesign无法表达的书眉（例如`{attr.place}`）留在所在页面上。浮动到侧栏的方框（旁注）以自定位置锚定在正文中，随旁边的段落一起移动。
 - <strong>页面项目。</strong>线条、方框、路径和图片成为InDesign页面项目；表格成为InDesign表格，行内公式、乐谱和色样成为锚定对象。作者定义的CMYK颜色成为印刷色色板，表单域标签成为InDesign表单域。
 - <strong>图片与字体。</strong>`--images link`把图片写到包旁边的`Links/`中，而不嵌入。每个文件都带有其格式的扩展名（`.svg`、`.png`、`.jpg`、`.pdf`等），解压后即可用相应的程序打开。`--fonts`把字体文件写到`Document fonts/`中，InDesign会在那里找到它们；书无权再分发的字体家族不写出。
 - <strong>警告。</strong>InDesign无法照Postext排出的样子显示的内容，以`idml.*`警告报告，比如表格的圆角外框或竖排文字里的着重号。

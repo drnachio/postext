@@ -10,6 +10,7 @@ export { bookAnatomySvg } from './guideFigures/bookAnatomy.js';
 export { cjkCompositionSvg } from './guideFigures/cjkComposition.js';
 export { sandboxUiSvg, epubRenditionsSvg } from './guideFigures/screens.js';
 export { vectorRosetteSvg, vectorChartSvg, vectorClipSvg } from './guideFigures/vectorFigures.js';
+export { dieCutSvg } from './guideFigures/dieCut.js';
 
 // ── Column structures ───────────────────────────────────────────────────────
 

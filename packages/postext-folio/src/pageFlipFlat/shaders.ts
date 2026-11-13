@@ -118,7 +118,11 @@ const FRAGMENT = /* glsl */ `
       col = uPaper;
     } else {
       float u = uMirror > 0.5 ? 1.0 - vUv.x : vUv.x;
-      col = front ? texture2D(uFront, vec2(u, vUv.y)).rgb : texture2D(uBack, vec2(1.0 - u, vUv.y)).rgb;
+      vec4 page = front ? texture2D(uFront, vec2(u, vUv.y)) : texture2D(uBack, vec2(1.0 - u, vUv.y));
+      // A page cut to a shape (a die-cut leaf's rounded corners, #1586) is
+      // transparent past its outline: nothing of the leaf there.
+      if (page.a < 0.5) discard;
+      col = page.rgb;
     }
     // uv.x is the distance from the spine on both faces.
     col *= 1.0 - (front ? spine(vUv.x, 0.18, 0.05) : spine(vUv.x, 0.16, 0.04));

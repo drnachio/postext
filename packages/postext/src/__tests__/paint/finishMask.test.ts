@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import { clearResourceImages, clearVarnishPaints, registerResourceImage, renderFinishMask, renderPageToCanvas, renderToHtml, finishMaskSvg } from '../../index.js';
-import { maskPaintMap, overprintHexes, paintFinishMask, packFinishMask } from '../../canvas-backend/finish/mask.js';
+import { maskPaintMap, overprintHexes, paintFinishMask, packFinishMask, stackVarnishes, varnishLayers } from '../../canvas-backend/finish/mask.js';
 import { applyFinishPreview } from '../../canvas-backend/finish/preview.js';
-import { parsePaint } from '../../canvas-backend/finish/paint.js';
+import { paperPaint, parsePaint } from '../../canvas-backend/finish/paint.js';
 import type { FinishInk } from '../../color/finishInks.js';
 import type { PostextConfig, SpotColor } from '../../types.js';
 import { RasterCanvas, type RasterContext } from './rasterCanvas.js';
@@ -141,6 +141,54 @@ function config(background: ReturnType<typeof spot> | { hex: string; model: 'hex
 }
 
 beforeEach(() => clearResourceImages());
+
+// #1587: a spot gloss over a soft-touch sheet. The soft touch is carried by
+// the footer, painted after the page's pictures; on press it goes down
+// first and the gloss over it.
+describe('varnishes that meet', () => {
+  const GLOSS = '#e4f0ee';
+  const SOFT = '#e9e4f0';
+  const inks = new Map<string, FinishInk>([
+    [SOFT, ink('varnish', { sheen: 'softTouch', name: 'Soft-touch varnish' })],
+    [GLOSS, ink('varnish', { sheen: 'gloss', name: 'Spot UV gloss' })],
+  ]);
+  const paint = (order?: string[][]) => paintFinishMask(40, 10, (canvas) => {
+    const ctx = canvas.getContext('2d') as RasterContext;
+    // The sheet, as the page painter knocks it out in a mask.
+    ctx.fillStyle = paperPaint('#ffffff'); ctx.fillRect(0, 0, 40, 10);
+    ctx.fillStyle = GLOSS; ctx.fillRect(0, 0, 20, 10); // the picture's gloss
+    ctx.fillStyle = SOFT; ctx.fillRect(0, 0, 40, 10); // the footer's soft touch, after it
+  }, inks, new Set(), { createCanvas, ...(order ? { varnishOrder: order } : {}) })!;
+
+  it('lies in press order, not in the order the page paints them', () => {
+    const m = paint([[SOFT], [GLOSS]]);
+    expect(at(m, 5, 5)[1]).toBe(255);
+    expect(at(m, 30, 5)[1]).toBe(51);
+    // A matte spot over a gloss sheet: the other order.
+    expect(at(paint([[GLOSS], [SOFT]]), 5, 5)[1]).toBe(51);
+    // With no order, the last painted.
+    expect(at(paint(), 5, 5)[1]).toBe(51);
+  });
+
+  it('orders the plates as the ink table lists them, the unlisted after', () => {
+    const entry = (name: string) => ({ name, aliases: [], pdfName: name, output: 'spot' as const });
+    expect(varnishLayers(inks, [entry('Soft-touch varnish'), entry('Spot UV gloss')])).toEqual([[SOFT], [GLOSS]]);
+    expect(varnishLayers(inks, [entry('Spot UV gloss')])).toEqual([[GLOSS], [SOFT]]);
+    expect(varnishLayers(inks)).toEqual([[SOFT], [GLOSS]]);
+    // The tints of one varnish share its plate.
+    const tints = new Map([...inks, ['#f0f0f0', ink('varnish', { sheen: 'gloss', name: 'Spot UV gloss', tint: 50 })]]);
+    expect(varnishLayers(tints, [entry('Spot UV gloss')])).toEqual([[GLOSS, '#f0f0f0'], [SOFT]]);
+  });
+
+  it('stacks part-covered pixels by their coverage', () => {
+    const px = (g: number, a: number) => new Uint8ClampedArray([0, g, 0, a]);
+    const out = stackVarnishes([px(51, 255), px(255, 128)]);
+    // Half the pixel gloss over a full soft touch: about half way.
+    expect(out[3]).toBe(255);
+    expect(out[1]).toBeCloseTo(153, -1);
+    expect([...stackVarnishes([px(0, 0), px(0, 0)])]).toEqual([0, 0, 0, 0]);
+  });
+});
 
 describe('renderFinishMask on a laid-out page', () => {
   it('reads a metallic paper through the page painter, text knocking it out', () => {

@@ -13,6 +13,7 @@ import { pickVideo, type PlayableVideo } from '../../viewport/viewerVideos.js';
 import { runTool } from '../modelContext.js';
 import { editModeNow, resetEditMode } from '../../editing/editMode.js';
 import { fitMarksChoiceNow, resetFitMarksView, setFitMarksChoice } from '../../viewport/composed/fitMarksView.js';
+import { dieLinesOn, finishesView, resetSpecialInksViewForTests } from '../../viewport/canvas/specialInksView.js';
 import { sourcePlace } from '../pagePoint.js';
 import { compactStatus } from '../viewerStatus.js';
 import { chapter, harness } from './testHarness.js';
@@ -182,6 +183,22 @@ describe('sandbox_set_view', () => {
     const book = await call('sandbox_set_view', { fitMarks: 'book' });
     expect(book.view.fitMarks).toEqual({ mode: 'problems', minScale: 0.95, source: 'book' });
     expect((await call('sandbox_set_view', { fitMarks: 'some' })).error).toBeTruthy();
+  });
+});
+
+describe('the Canvas view of special inks and die-cuts', () => {
+  it('draws the die lines and steps through the special-ink views, and says so in the state (#1570)', async () => {
+    cleanups.push(resetSpecialInksViewForTests);
+    resetSpecialInksViewForTests();
+    const { call } = harness();
+    expect((await call('sandbox_get_state')).view).toMatchObject({ dieLines: false, finishes: 'flat' });
+    const set = await call('sandbox_set_view', { dieLines: true, finishes: 'map' });
+    expect(set.view).toMatchObject({ dieLines: true, finishes: 'map' });
+    expect(dieLinesOn()).toBe(true);
+    expect(finishesView()).toBe('map');
+    await call('sandbox_set_view', { finishes: 'sheen' });
+    expect(finishesView()).toBe('sheen');
+    expect((await call('sandbox_set_view', { finishes: 'glossy' })).error).toBeTruthy();
   });
 });
 

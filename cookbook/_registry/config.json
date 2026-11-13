@@ -644,5 +644,155 @@
       "de": "Stanzungen",
       "it": "Fustelle"
     }
+  },
+  "footnotes": {
+    "slug": "configuration-notes-references",
+    "heading": {
+      "en": "Footnotes",
+      "es": "Notas al pie",
+      "ca": "Notes a peu de pàgina",
+      "zh": "脚注",
+      "ar": "الحواشي السفلية",
+      "ja": "脚注",
+      "pt": "Notas de rodapé",
+      "fr": "Notes de bas de page",
+      "de": "Fußnoten",
+      "it": "Note a piè di pagina"
+    }
+  },
+  "lineNumbers": {
+    "slug": "configuration-notes-references",
+    "heading": {
+      "en": "Line numbers",
+      "es": "Numeración de líneas",
+      "ca": "Numeració de línies",
+      "zh": "行号",
+      "ar": "ترقيم الأسطر",
+      "ja": "行番号",
+      "pt": "Numeração de linhas",
+      "fr": "Numéros de ligne",
+      "de": "Zeilennummern",
+      "it": "Numeri di riga"
+    }
+  },
+  "links": {
+    "slug": "configuration-notes-references",
+    "heading": {
+      "en": "Links in print",
+      "es": "Enlaces en papel",
+      "ca": "Enllaços en paper",
+      "zh": "印刷版中的链接",
+      "ar": "الروابط في النسخة المطبوعة",
+      "ja": "印刷物でのリンク",
+      "pt": "Links na edição impressa",
+      "fr": "Liens sur papier",
+      "de": "Links im Druck",
+      "it": "Link su carta"
+    }
+  },
+  "folio": {
+    "slug": "configuration-html-folio-epub",
+    "heading": {
+      "en": "Appearance",
+      "es": "Aspecto",
+      "ca": "Aspecte",
+      "zh": "外观",
+      "ar": "المظهر",
+      "ja": "外観",
+      "pt": "Aparência",
+      "fr": "Apparence",
+      "de": "Erscheinungsbild",
+      "it": "Aspetto"
+    }
+  },
+  "canvasViewer": {
+    "slug": "configuration-fonts-colors-viewers",
+    "heading": {
+      "en": "Canvas viewer",
+      "es": "Visor Canvas",
+      "ca": "Visor Canvas",
+      "zh": "Canvas查看器",
+      "ar": "عارض Canvas",
+      "ja": "Canvasビューアー",
+      "pt": "Visualizador Canvas",
+      "fr": "Visionneuse Canvas",
+      "de": "Canvas-Ansicht",
+      "it": "Visualizzatore Canvas"
+    }
+  },
+  "symbolFont": {
+    "slug": "configuration-fonts-colors-viewers",
+    "heading": {
+      "en": "Symbol font",
+      "es": "Fuente de símbolos",
+      "ca": "Font de símbols",
+      "zh": "符号字体",
+      "ar": "خط الرموز",
+      "ja": "記号フォント",
+      "pt": "Fonte de símbolos",
+      "fr": "Police des symboles",
+      "de": "Symbolschrift",
+      "it": "Font dei simboli"
+    }
+  },
+  "exerciseStyles": {
+    "slug": "configuration-exercises",
+    "heading": {
+      "en": "Exercise styles",
+      "es": "Estilos de ejercicio",
+      "ca": "Estils d'exercici",
+      "zh": "练习样式",
+      "ar": "أنماط التمارين",
+      "ja": "練習問題スタイル",
+      "pt": "Estilos de exercício",
+      "fr": "Styles d’exercice",
+      "de": "Übungsstile",
+      "it": "Stili degli esercizi"
+    }
+  },
+  "exercises": {
+    "slug": "configuration-exercises",
+    "heading": {
+      "en": "Book settings",
+      "es": "Ajustes del libro",
+      "ca": "Paràmetres del llibre",
+      "zh": "全书设置",
+      "ar": "إعدادات الكتاب",
+      "ja": "本全体の設定",
+      "pt": "Ajustes do livro",
+      "fr": "Réglages du livre",
+      "de": "Bucheinstellungen",
+      "it": "Impostazioni del libro"
+    }
+  },
+  "codeStyle": {
+    "slug": "configuration-styles",
+    "heading": {
+      "en": "Code listings",
+      "es": "Listados de código",
+      "ca": "Llistats de codi",
+      "zh": "代码清单",
+      "ar": "قوائم الشيفرة",
+      "ja": "コードリスト",
+      "pt": "Listagens de código",
+      "fr": "Listings de code",
+      "de": "Code-Listings",
+      "it": "Listati di codice"
+    }
+  },
+  "chapterStyles": {
+    "slug": "configuration-styles",
+    "heading": {
+      "en": "Chapter styles",
+      "es": "Estilos de capítulo",
+      "ca": "Estils de capítol",
+      "zh": "章样式",
+      "ar": "أنماط الفصول",
+      "ja": "章スタイル",
+      "pt": "Estilos de capítulo",
+      "fr": "Styles de chapitre",
+      "de": "Kapitelstile",
+      "it": "Stili dei capitoli"
+    }
   }
 }

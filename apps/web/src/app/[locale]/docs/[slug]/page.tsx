@@ -7,7 +7,10 @@ import {
   getAllDocs,
   getDocSlugsForLocale,
   hasLocaleVersion,
+  appendToSections,
 } from "@/lib/docs";
+import { buildDocExamples } from "@/lib/cookbook/docExamples";
+import { CookbookExamples, CookbookStrip } from "@/components/docs/CookbookExamples";
 import { routing } from "@/i18n/routing";
 import { MdxContent } from "@/components/docs/MdxContent";
 import { DocsToc } from "@/components/docs/DocsToc";
@@ -15,7 +18,10 @@ import { DocsMobileNav } from "@/components/docs/DocsMobileNav";
 import { SITE_NAME, SITE_URL, buildMetadata, localizedUrl } from "@/lib/seo";
 import { docPart, partClass } from "@/lib/docParts";
 import { DocOpener } from "@/components/docs/DocOpener";
-import { htmlLang } from "@/i18n/locales";
+import { htmlLang, siteLocale } from "@/i18n/locales";
+
+/** The id of the page's closing "Examples in the Cookbook" section. */
+const EXAMPLES_ID = "cookbook-examples";
 import { PlainSummary } from "@/components/brand/PlainSummary";
 import { DocsPager, type PagerLink } from "@/components/docs/DocsPager";
 import { OldAnchorRedirect } from "@/components/docs/OldAnchorRedirect";
@@ -79,13 +85,40 @@ export default async function DocPage({
   const doc = getDocSource(slug, locale);
   if (!doc) notFound();
 
+  const t = await getTranslations("Docs");
+  const tCookbook = await getTranslations("Cookbook");
+
+  // The Cookbook recipes that use what each section describes (#1589): a
+  // strip at the end of a section, and every one of them in a closing list.
+  const examples = buildDocExamples(siteLocale(locale));
+  const pageExamples = examples.pages[slug];
+  const stripSections = pageExamples?.sections.filter((section) => section.strip.length > 0) ?? [];
+  const source = appendToSections(
+    doc.source,
+    Object.fromEntries(stripSections.map((section, i) => [section.id, `<CookbookStrip n="${i}" />`])),
+  );
+  const plain = (text: string) => text.replace(/[`*]/g, "");
+  function StripAt({ n }: { n: string }) {
+    const section = stripSections[Number(n)];
+    if (!section) return null;
+    return (
+      <CookbookStrip
+        recipes={section.strip.map((r) => examples.recipes[r]!).filter(Boolean)}
+        label={t("cookbookStrip")}
+        section={t("cookbookStripLabel", { section: plain(section.text) })}
+        numberPrefix={tCookbook("number")}
+      />
+    );
+  }
   const toc = extractToc(doc.source);
+  const tocWithExamples = pageExamples?.groups.length
+    ? [...toc, { id: EXAMPLES_ID, text: t("cookbookExamples"), level: 2 }]
+    : toc;
   const docs = getAllDocs();
   const availableLocales = routing.locales.filter((l) =>
     hasLocaleVersion(slug, l)
   );
 
-  const t = await getTranslations("Docs");
   const tIndex = await getTranslations("DocsIndex");
   const tPlain = await getTranslations("PlainLanguage");
   const part = docPart(doc.meta.order);
@@ -162,7 +195,7 @@ export default async function DocPage({
         className={`min-w-0 flex-1 py-6 lg:ps-8 xl:pe-8 ${partClass(part.color)}`}
       >
         <div className="relative mb-6 lg:hidden">
-          <DocsMobileNav docs={docs} toc={toc} />
+          <DocsMobileNav docs={docs} toc={tocWithExamples} />
         </div>
 
         <DocOpener
@@ -256,7 +289,23 @@ export default async function DocPage({
           </nav>
         )}
 
-        <MdxContent source={doc.source} skipTitle />
+        <MdxContent source={source} skipTitle components={{ CookbookStrip: StripAt }} />
+
+        {pageExamples && (
+          <CookbookExamples
+            id={EXAMPLES_ID}
+            groups={pageExamples.groups}
+            recipes={examples.recipes}
+            locale={locale}
+            labels={{
+              heading: t("cookbookExamples"),
+              headingLink: t("headingLink", { heading: t("cookbookExamples") }),
+              lead: t("cookbookExamplesLead"),
+              numberPrefix: tCookbook("number"),
+              more: (count, feature) => t("cookbookMore", { count, feature }),
+            }}
+          />
+        )}
 
         <DocsPager
           label={t("neighbours")}
@@ -268,7 +317,7 @@ export default async function DocPage({
       </main>
 
       <div className={`contents ${partClass(part.color)}`}>
-        <DocsToc items={toc} />
+        <DocsToc items={tocWithExamples} />
       </div>
     </>
   );

@@ -144,3 +144,35 @@ export function besideColumn(ctx: Context, item: IdmlPageItem): { side: 'left' |
   if (share >= 0.85 || share < 0.05) return undefined;
   return { side, share };
 }
+
+/** The width of the main column of a column-and-a-half book: the wider of
+ *  the two columns of its body pages, whose guides give each column's
+ *  edges (`pagesetup.ts` reads them as `oneAndHalf`). Undefined for a
+ *  book of equal columns. */
+export function mainColumnWidth(ctx: Context): number | undefined {
+  const page = bodyPages(ctx)[0];
+  const p = page?.margins.columnsPositions;
+  if (!page || page.margins.columnCount !== 2 || p?.length !== 4) return undefined;
+  const a = p[1]! - p[0]!;
+  const b = p[3]! - p[2]!;
+  return Math.abs(a - b) < 6 ? undefined : Math.max(a, b);
+}
+
+/** In a column-and-a-half book: an object anchored at a custom position
+ *  that its rule puts wholly outside the main column it is anchored in,
+ *  where the side column stands (a gloss, #1585). */
+export function inSideColumn(ctx: Context, item: IdmlPageItem): boolean {
+  const p = item.anchored?.props;
+  if (!p || item.anchored?.position !== 'Anchored') return false;
+  const ref = p.HorizontalReferencePoint ?? 'TextFrame';
+  if (ref !== 'ColumnEdge' && ref !== 'TextFrame') return false;
+  const width = mainColumnWidth(ctx);
+  const size = anchoredSize(item);
+  if (!width || !size) return false;
+  // Where its left edge stands from the column's (`anchoredPlace`).
+  const align = p.HorizontalAlignment === 'RightAlign' ? 1 : p.HorizontalAlignment === 'CenterAlign' ? 0.5 : 0;
+  const point = p.AnchorPoint ?? 'TopLeftAnchor';
+  const px = /Left/.test(point) ? 0 : /Right/.test(point) ? 1 : 0.5;
+  const x = width * align + number(p.AnchorXoffset) * (align === 0 ? -1 : 1) - px * size.width;
+  return x >= width - 2 || x + size.width <= 2;
+}

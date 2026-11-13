@@ -46,7 +46,9 @@ export const COLOURS = {
   white: '#ffffff',
   // The part colour: gilt by default, blue / gilt / teal / vermilion per part.
   band: '#8f6408',
-  gilt: '#d8a21a',
+  // A metallic gold ink (#1590): one step off the figures' process gilt
+  // (#d8a21a), so only the design's gilt prints on the gold plate.
+  gilt: '#d8a21b',
   'main-color': '#2b4acb',
   vermilion: '#c0452f',
   teal: '#1f7a6d',
@@ -279,8 +281,19 @@ export function image(id: string, resourceId: string, o: Common & { width: numbe
 }
 export const slot = (...elements: DesignElement[]): DesignSlot => ({ elements });
 
+/** The gilt of the covers, the rules and the panel titles is a special ink
+ *  (#1590): a metallic gold on a plate of its own in a print PDF, lit as
+ *  metal in Folio and in the Canvas view's sheen, its screen colour
+ *  everywhere else. The layout never sees the difference. */
+const GILT_INK: ColorValue = {
+  hex: COLOURS.gilt, model: 'spot',
+  spot: { name: 'PANTONE 871 C', cmyk: { c: 15, m: 38, y: 100, k: 3 }, finish: { kind: 'metallic' } },
+};
+
 /** The palette as the configuration lists it, named in the edition's language. */
 export function colorPalette(lang: GuideLang) {
   const names = PALETTE_NAMES[lang];
-  return (Object.keys(COLOURS) as PaletteId[]).map((id) => ({ id, name: names[id], value: { hex: COLOURS[id], model: 'hex' as const } }));
+  return (Object.keys(COLOURS) as PaletteId[]).map((id) => ({
+    id, name: names[id], value: id === 'gilt' ? GILT_INK : { hex: COLOURS[id], model: 'hex' as const },
+  }));
 }

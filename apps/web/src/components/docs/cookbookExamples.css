@@ -1,0 +1,167 @@
+/* ── Docs → Cookbook (#1589) ─────────────────────────────────────────────
+   The "In the Cookbook" strip at the end of a docs section and the page's
+   closing "Examples in the Cookbook". Plain CSS over the site's tokens; the
+   theme is class-based (html.dark / html.light). Logical properties only,
+   so Arabic mirrors. Every thumbnail has its box before the image loads. */
+
+:root,
+:root.dark {
+  --docs-cb-desk: #1b1d22;
+}
+:root.light {
+  --docs-cb-desk: #e7e1d4;
+}
+
+.docs-cb-strip {
+  margin-block: 1.75rem 2rem;
+  padding-block-start: 0.85rem;
+  border-block-start: 1px solid var(--rule);
+  text-align: start;
+  hyphens: manual;
+}
+.docs-content .docs-cb-kicker,
+.docs-cb-kicker {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--part-ink, var(--brand));
+}
+.docs-content ul.docs-cb-cards,
+.docs-content ul.docs-cb-list {
+  display: grid;
+  gap: 0.5rem 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* Titles are short lines: never justified or hyphenated like the text. */
+  text-align: start;
+  hyphens: manual;
+  -webkit-hyphens: manual;
+}
+.docs-content ul.docs-cb-cards > li,
+.docs-content ul.docs-cb-list > li {
+  margin: 0;
+  padding: 0;
+}
+
+/* A card: thumbnail beside the number and title on a phone, above them
+   from 640 px in the strip. The whole card is the link (≥ 44 px tall). */
+.docs-content a.docs-cb-card,
+a.docs-cb-card {
+  display: grid;
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.35rem;
+  margin-inline: -0.35rem;
+  border-radius: 4px;
+  color: var(--foreground);
+  font-weight: inherit;
+  text-decoration: none;
+  transition: background-color 0.15s ease;
+}
+a.docs-cb-card:hover {
+  background: var(--surface);
+}
+a.docs-cb-card:focus-visible {
+  outline: 2px solid var(--part-ink, var(--brand));
+  outline-offset: 2px;
+}
+.docs-cb-thumb {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--docs-cb-desk);
+}
+.docs-cb-thumb > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+:root:not(.light) .docs-cb-thumb > img {
+  filter: brightness(0.94);
+}
+.docs-cb-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+.docs-cb-number {
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--part-ink, var(--brand));
+}
+.docs-cb-title {
+  font-family: var(--font-display);
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+a.docs-cb-card:hover .docs-cb-title {
+  color: var(--part-ink, var(--brand));
+}
+
+@media (min-width: 640px) {
+  .docs-content ul.docs-cb-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .docs-cb-cards a.docs-cb-card {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    gap: 0.5rem;
+  }
+  .docs-content ul.docs-cb-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* ── Examples in the Cookbook ── */
+.docs-cb-examples {
+  margin-block-start: 3rem;
+}
+.docs-content .docs-cb-lead {
+  color: var(--slate);
+  font-style: italic;
+}
+.docs-cb-group {
+  margin-block-start: 1.5rem;
+}
+.docs-content h3.docs-cb-group-title {
+  margin-block: 0 0.5rem;
+  font-size: 0.95rem;
+}
+.docs-content h3.docs-cb-group-title > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: inherit;
+  text-decoration: none;
+}
+.docs-content h3.docs-cb-group-title > a:hover {
+  color: var(--part-ink, var(--brand));
+}
+.docs-content .docs-cb-group-title code {
+  font-size: 0.85em;
+}
+.docs-content p.docs-cb-more {
+  margin: 0.25rem 0 0;
+}
+.docs-content a.docs-cb-more-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+}

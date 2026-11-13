@@ -1,6 +1,7 @@
 /**
  * The bilingual registries in cookbook/_registry/*.json: taxonomy, features,
- * APIs, config keys, questions, gaps, warnings, gotchas and collections.
+ * APIs, config keys, questions, gaps, warnings, gotchas, collections and
+ * the docs examples' pins and hides.
  * Read once per process. Isomorphic Node.
  */
 import fs from "node:fs";
@@ -9,7 +10,7 @@ import { REGISTRY_DIR } from "./paths.ts";
 import type { Registry } from "./types.ts";
 
 export const REGISTRY_FILES = [
-  "taxonomy", "features", "apis", "config", "questions", "gaps", "warnings", "gotchas", "collections",
+  "taxonomy", "features", "apis", "config", "questions", "gaps", "warnings", "gotchas", "collections", "docExamples",
 ] as const satisfies readonly (keyof Registry)[];
 
 let cache: Registry | null = null;

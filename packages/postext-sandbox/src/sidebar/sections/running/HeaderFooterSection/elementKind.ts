@@ -10,6 +10,7 @@ export function elementKindLabel(labels: SandboxLabels, kind: DesignElement['kin
     case 'image': return labels.headerFooterElementImage;
     case 'path': return labels.headerFooterElementPath;
     case 'connector': return labels.headerFooterElementConnector;
+    case 'cut': return labels.headerFooterElementCut;
     default: return labels.headerFooterElementBox;
   }
 }

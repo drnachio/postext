@@ -10,6 +10,8 @@ import { FEATURE_KEYS, featureDocPath } from '@/lib/featureDocs';
 import { GUIDE_BUNDLE_FILE, GUIDE_BUNDLE_PATH } from '@/lib/guideBundle';
 import { type TranscriptVideo, TRANSCRIPTS } from '@/components/landing/transcripts';
 import { COOKBOOK_PATH } from './cookbook';
+import { buildDocExamples } from '@/lib/cookbook/docExamples';
+import { recipeHref } from '@/lib/cookbook/recipes';
 import { labelsFor, messagesFor, REPO_URL, NPM_URL, YOUTUBE_URL } from './labels';
 import { markdownUrl, mdxToMarkdown } from './mdx';
 
@@ -82,6 +84,7 @@ export function docMarkdown(slug: string, locale: string): string | null {
   const entry = getAllDocs().find((d) => d.slug === slug);
   const availableLocales = routing.locales.filter((l) => entry?.locales[l]);
   const body = dropLeadingH1(mdxToMarkdown(doc.source, locale, localizedUrl(locale, path)));
+  const examples = docExamplesMarkdown(slug, locale);
   return `${header({
     title: doc.meta.title,
     description: doc.meta.description,
@@ -89,7 +92,28 @@ export function docMarkdown(slug: string, locale: string): string | null {
     path,
     availableLocales,
     meta: doc.meta,
-  })}\n${doc.meta.plainSummary ? `${plainSummary(locale, doc.meta.plainSummary)}\n` : ""}${body}\n`;
+  })}\n${doc.meta.plainSummary ? `${plainSummary(locale, doc.meta.plainSummary)}\n` : ""}${body}\n${examples ? `\n${examples}\n` : ""}`;
+}
+
+/** "Examples in the Cookbook" as a plain list: the recipes the page links
+ *  (#1589), under the section each suits best, every link to the recipe's
+ *  own Markdown rendition. Null when the page links none. */
+export function docExamplesMarkdown(slug: string, locale: string): string | null {
+  const index = buildDocExamples(siteLocale(locale));
+  const page = index.pages[slug];
+  if (!page?.groups.length) return null;
+  const docs = messagesFor(locale).Docs;
+  const prefix = messagesFor(locale).Cookbook.number;
+  const lines = [`## ${docs.cookbookExamples}`, ""];
+  for (const group of page.groups) {
+    lines.push(`### ${group.text}`, "");
+    for (const id of group.recipes) {
+      const recipe = index.recipes[id];
+      if (recipe) lines.push(`- [${prefix} ${String(recipe.number).padStart(3, "0")} ${recipe.title}](${markdownUrl(locale, recipeHref(id))})`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n").trimEnd();
 }
 
 export function docsList(locale: string, withMarkdownLinks = true): string[] {

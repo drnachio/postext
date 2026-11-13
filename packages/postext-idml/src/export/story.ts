@@ -10,6 +10,7 @@ import { resolveTabSettings } from 'postext/writer';
 import { linesRuns, type LineStop, paragraphJustification, paragraphRuns, sameProps, textScale, type TextRun } from './paragraphs.js';
 import { keptParagraphs, rangeXml } from './keptLines.js';
 import { itemJoin } from './thread.js';
+import { isChapterTitle } from './masters.js';
 import { paragraphStyle } from './styles.js';
 import {
   attr,
@@ -295,6 +296,10 @@ export function paragraphsXml(w: Writer, items: StoryItem[], frame: VDTFrame | u
     // (`styles.ts`): it is counted with the format the paragraph has.
     const chars = runs.reduce((n, r) => n + r.text.trim().length, 0);
     const style = paragraphStyle(w, paragraphStyleName(w, item, frame), dominant, leading, justification ?? 'LeftAlign', format, chars);
+    // The styles chapter titles are set in, for the running-header
+    // variable (`masters.ts`): a heading, or an opener's design, whose
+    // words are a title the running heads show.
+    if (w.titleStyles && (item.role === 'heading' || item.role === 'opener' || item.role === 'design') && isChapterTitle(w, item)) w.titleStyles.set(style.self, (w.titleStyles.get(style.self) ?? 0) + 1);
     let spaceBefore: number | undefined;
     // With lines kept, the first line's own leading when it stands closer
     // to the line before than its leading says.

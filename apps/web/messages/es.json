@@ -52,7 +52,12 @@
     "figureEnlarge": "Ampliar la figura",
     "figureClose": "Cerrar la figura",
     "chapterPages": "Páginas de este capítulo",
-    "inChapter": "En el capítulo"
+    "inChapter": "En el capítulo",
+    "cookbookStrip": "En el Recetario",
+    "cookbookStripLabel": "Recetas del Recetario para {section}",
+    "cookbookExamples": "Ejemplos en el Recetario",
+    "cookbookExamplesLead": "Recetas que usan lo que explica esta página, cada una bajo la sección a la que mejor responde. Cada receta muestra sus páginas junto al script completo.",
+    "cookbookMore": "{count, plural, one {Una receta más} other {# recetas más}} con {feature} en el Recetario"
   },
   "CodePen": {
     "run": "Ejecutar en CodePen",
@@ -1971,6 +1976,11 @@
     "headerFooterElementConnector": "Conector",
     "headerFooterAddPath": "Añadir forma",
     "headerFooterAddConnector": "Añadir conector",
+    "headerFooterElementCut": "Hueco troquelado",
+    "headerFooterAddCut": "Añadir hueco troquelado",
+    "cutElementIntro": "Un hueco que el troquel corta en la hoja de cada página a la que se aplica esta plantilla. Nunca se pinta, y el texto de los marcos todavía no lo rodea: deja los marcos fuera de él.",
+    "cutElementDieTooltip": "Una forma de troquel de Página y columnas › Troqueles, estirada hasta la caja de abajo: su forma, sus esquinas, sus hojas y la distancia del texto. Ninguna: los datos del trazado o, si no hay, la propia caja.",
+    "cutElementDieNone": "Ninguna",
     "connectorFrom": "Empieza en",
     "connectorFromTooltip": "El marco, grupo o elemento del que sale la línea; el padre de un árbol.",
     "connectorTo": "Va a",

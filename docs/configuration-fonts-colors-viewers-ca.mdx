@@ -40,7 +40,7 @@ Els colors es desen amb una representació hexadecimal i amb el model de color d
 interface ColorValue {
   hex: string;         // '#ff0000', 'transparent', etc.
   model: ColorModel;   // 'hex' | 'rgb' | 'cmyk' | 'hsl' | 'spot'
-  cmyk?: CmykPercent;  // Els valors de quatricromia exactes d'un color definit en CMYK.
+  cmyk?: CmykPercent;  // Els valors de quadricromia exactes d'un color definit en CMYK.
   spot?: SpotColor;    // La tinta d'un color de tinta plana.
   overprint?: boolean; // Sobreimprimeix en una sortida d'impremta (consulta Colors que sobreimprimeixen).
   paletteId?: string;  // L'entrada de colorPalette que segueix.
@@ -746,7 +746,7 @@ interface PrintBlackConfig {
       <td><code>kOnlyNeutrals</code></td>
       <td><code>boolean</code></td>
       <td><code>true</code></td>
-      <td>Un color neutre (`#000000`, `#808080`…) s'imprimeix només amb tinta negra, amb la K triada perquè la lluminositat coincideixi, mai com un gris de quatricromia que canvia amb el registre. Les imatges conserven la generació de negre del perfil.</td>
+      <td>Un color neutre (`#000000`, `#808080`…) s'imprimeix només amb tinta negra, amb la K triada perquè la lluminositat coincideixi, mai com un gris de quadricromia que canvia amb el registre. Les imatges conserven la generació de negre del perfil.</td>
     </tr>
     <tr>
       <td><code>overprint</code></td>

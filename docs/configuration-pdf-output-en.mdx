@@ -466,7 +466,7 @@ interface PrintInk {
 }
 ```
 
-Names and aliases are matched ignoring case and runs of spaces. Renaming takes one line however many colours use the ink; an alias merges the names a designer's swatch, an SVG (`data-spot`, `icc-named-color`) or an older palette gave the same ink onto one plate; `output: 'process'` prints an ink in CMYK when the press has no unit for it, every tint included; and `finish` makes an ink a special one wherever its name comes from, an SVG or an imported file that names `Gold` included.
+Names and aliases are matched ignoring case and runs of spaces. Renaming takes one line however many colours use the ink; an alias merges the names a designer's swatch, an SVG (`data-spot`, `icc-named-color`) or an older palette gave the same ink onto one plate; `output: 'process'` prints an ink in CMYK when the press has no unit for it, every tint included; and `finish` makes an ink a special one wherever its name comes from, an SVG or an imported file that names `Gold` included. The order of the entries is the press order of two varnishes that meet: on screen and in Folio a later entry lies over an earlier one (see [Finishes](/en/docs/special-inks-die-cuts#finishes)).
 
 In the Sandbox the table is **Design › Export › Print preparation › Ink table**: a card per ink with its **Ink name**, **Aliases**, **Plate name in the PDF**, **Prints as**, **Alternate CMYK**, **Overprint**, **Finish** and **Sheen**. **Inks the colours use** lists the inks of the book's colours that the table lacks, each with a button that adds it.
 

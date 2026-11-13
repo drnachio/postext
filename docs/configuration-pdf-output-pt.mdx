@@ -429,9 +429,9 @@ Para fluxos de produção gráfica, ajuste estas opções de configuração ante
 
 ### Cores especiais
 
-Uma cor especial (um Pantone, uma tinta corporativa, um verniz) é impressa na sua própria chapa. Uma cor com `model: 'spot'` leva a sua tinta em `ColorValue.spot`: `name` é o nome da chapa tal como a gráfica o conhece, `cmyk` é o aspeto da tinta a 100 % (o equivalente que o PDF dá a quem não tem a tinta), `tint` é a retícula em percentagem (100 por omissão), `overprint` faz a tinta sobreimprimir o que está por baixo em vez de o vazar, como um verniz, e `finish` diz o que é uma tinta especial: metálica, hot stamping, fluorescente, branco opaco ou verniz. `hex` é a sua representação no ecrã. [Tintas especiais e facas](/pt/docs/special-inks-die-cuts#acabamentos) explica como cada acabamento é impresso e aparece.
+Uma cor especial (um Pantone, uma tinta corporativa, um verniz) é impressa numa chapa própria. Uma cor com `model: 'spot'` leva sua tinta em `ColorValue.spot`: `name` é o nome da chapa tal como a gráfica o conhece, `cmyk` é o aspecto da tinta a 100 % (o equivalente que o PDF dá a quem não tem a tinta), `tint` é a retícula em porcentagem (100 por padrão), `overprint` faz a tinta sobreimprimir o que está por baixo em vez de vazá-lo, como um verniz, e `finish` diz o que é uma tinta especial: metálica, hot stamping, fluorescente, branco opaco ou verniz. `hex` é sua representação na tela. [Tintas especiais e facas](/pt/docs/special-inks-die-cuts#acabamentos) explica como cada acabamento é impresso e aparece.
 
-Um PDF CMYK ou PDF/X escreve cada tinta como um espaço de cor `Separation` com o seu nome, e cada cor dessa tinta é pintada na sua retícula: as cores com o mesmo `name` partilham chapa. Cabem assim os trabalhos habituais: duas cores (preto e uma especial), quadricromia com alguns elementos em especial e um verniz sobreimpresso em zonas escolhidas. Se `diagramStyle.singleInk` usar uma cor especial, os diagramas SVG são impressos em retículas dessa chapa. Num PDF RGB e no ecrã, a cor é pintada com o seu `hex`.
+Um PDF CMYK ou PDF/X escreve cada tinta como um espaço de cor `Separation` com seu nome, e cada cor dessa tinta é pintada na sua retícula: as cores com o mesmo `name` compartilham a chapa. Cabem assim os trabalhos habituais: duas cores (preto e uma especial), quadricromia com alguns elementos em especial e um verniz sobreimpresso em zonas escolhidas. Se `diagramStyle.singleInk` usar uma cor especial, os diagramas SVG são impressos em retículas dessa chapa. Num PDF RGB e na tela, a cor é pintada com seu `hex`.
 
 **Cores especiais dentro de um SVG.** Veja [Como funciona a tinta única](/pt/docs/configuration-resources#como-funciona-a-tinta-única).
 
@@ -444,29 +444,29 @@ colorPalette: [
 diagramStyle: { singleInk: true, inkColor: { hex: '#1f3f99', model: 'spot', paletteId: 'brand' } },
 ```
 
-O preflight conta uma cor especial como uma só tinta, deixa-a fora do limite de cobertura e enumera as cores especiais do trabalho (`spotInks`), incluindo as que as imagens SVG nomeiam. Avisa quando uma tinta é definida duas vezes com valores diferentes (`spotInkConflict`; o PDF usa a primeira), quando um SVG nomeia uma tinta que nenhuma cor da paleta nem nenhuma entrada da tabela de tintas com `cmyk` define (`spotInkUndefined`; é impressa numa chapa própria, com o CMYK da cor do SVG como equivalente, uma chapa por nome), quando o PDF tem de escrever o nome de uma chapa de outra forma (`spotInkName`, veja abaixo) e quando dois nomes de chapa só diferem em maiúsculas ou espaços (`spotInkSimilar`: `PANTONE 185 C` e `Pantone  185 C` seriam duas chapas). `preflightDocument` sabe que tintas um SVG nomeia por `svgInks(fileId)`, uma função que devolve os nomes que `svgSpotInks(markup)` encontra no arquivo; o painel **Verificações** do Sandbox e o `postext check` fornecem essa função.
+O preflight conta uma cor especial como uma só tinta, deixa-a fora do limite de cobertura e enumera as cores especiais do trabalho (`spotInks`), incluindo as que as imagens SVG nomeiam. Avisa quando uma tinta é definida duas vezes com valores diferentes (`spotInkConflict`; o PDF usa a primeira), quando um SVG nomeia uma tinta que nenhuma cor da paleta nem nenhuma entrada da tabela de tintas com `cmyk` define (`spotInkUndefined`; é impressa numa chapa própria, com o CMYK da cor do SVG como equivalente, uma chapa por nome), quando o PDF precisa escrever o nome de uma chapa de outra forma (`spotInkName`, veja abaixo) e quando dois nomes de chapa só diferem em maiúsculas ou espaços (`spotInkSimilar`: `PANTONE 185 C` e `Pantone  185 C` seriam duas chapas). `preflightDocument` sabe que tintas um SVG nomeia por `svgInks(fileId)`, uma função que devolve os nomes que `svgSpotInks(markup)` encontra no arquivo; o painel **Verificações** do Sandbox e o `postext check` fornecem essa função.
 
 **Nomes de chapa.** O nome é escrito tal como é digitado: os acentos, os símbolos e `#` chegam ao PDF em UTF-8 (`Rojo Médica` é `/Rojo#20M#C3#A9dica`), que é como o leem o Acrobat, um RIP e o preflight da gráfica. Um nome que uma chapa não aceita é escrito com outro: `All`, `None`, `Cyan`, `Magenta`, `Yellow` e `Black`, em maiúsculas ou minúsculas, recebem a palavra ink depois (`All ink`); os caracteres de controle são removidos, e um nome com mais de 127 bytes em UTF-8 é cortado entre dois caracteres e termina num hash curto, de modo que dois nomes longos que começam igual continuam a ser duas chapas. O `spotInkName` do preflight diz o motivo (`problem`: `reserved`, `process`, `control` ou `tooLong`) e o nome que o PDF escreve (`written`), e o render avisa de cada mudança por `onWarning` (`spotInkRenamed`). Para escolher o nome, dê à tinta um `pdfName` na tabela de tintas.
 
-**Uma tinta por cor.** Um render de impressão reconhece uma cor pelo seu hex de ecrã, por isso duas cores que fixam os seus valores de impressão — duas tintas, ou uma tinta e uma cor definida em CMYK — não o podem partilhar. Se o partilharem, a segunda passa para o hex livre mais próximo, a um passo e invisível no ecrã, e cada uma sai na sua chapa. Uma cor de ecrã (`model: 'hex'`) com o hex de uma cor especial é impressa como essa cor especial; ligue-a à entrada da paleta para o deixar explícito. A cor que se move também muda no ecrã, um passo (1/255) num só canal, o azul primeiro, em todas as saídas (canvas, HTML, EPUB e PDF RGB). Fica muito abaixo do que o olho distingue, e é o preço de um render de impressão que lê as tintas do hex pintado. A configuração guardada não muda.
+**Uma tinta por cor.** Um render de impressão reconhece uma cor pelo seu hex de tela, por isso duas cores que fixam seus valores de impressão — duas tintas, ou uma tinta e uma cor definida em CMYK — não podem compartilhá-lo. Se o compartilharem, a segunda passa para o hex livre mais próximo, a um passo e invisível na tela, e cada uma sai na sua chapa. Uma cor de tela (`model: 'hex'`) com o hex de uma cor especial é impressa como essa cor especial; ligue-a à entrada da paleta para o deixar explícito. A cor que se move também muda na tela, um passo (1/255) num só canal, o azul primeiro, em todas as saídas (canvas, HTML, EPUB e PDF RGB). Fica muito abaixo do que o olho distingue, e é o preço de um render de impressão que lê as tintas do hex pintado. A configuração salva não muda.
 
 #### A tabela de tintas
 
-`print.inks` diz como as tintas do trabalho chegam à gráfica, seja qual for o nome que lhes dão as cores, os SVG e os arquivos importados. Uma tinta que não está na tabela é impressa tal como as suas cores a definem.
+`print.inks` diz como as tintas do trabalho chegam à gráfica, seja qual for o nome que lhes dão as cores, os SVG e os arquivos importados. Uma tinta que não está na tabela é impressa como suas cores a definem.
 
 ```ts
 interface PrintInk {
   name: string;                    // A tinta tal como a nomeia spot.name ou um SVG.
   aliases?: string[];              // Outros nomes da mesma tinta: saem nesta chapa.
-  pdfName?: string;                // O nome da chapa no PDF. Por omissão, name.
-  output?: 'spot' | 'process';     // 'process' imprime a tinta em CMYK, com o seu equivalente.
+  pdfName?: string;                // O nome da chapa no PDF. Por padrão, name.
+  output?: 'spot' | 'process';     // 'process' imprime a tinta em CMYK, com seu equivalente.
   cmyk?: CmykPercent;              // O equivalente a 100 %, acima do das cores.
   overprint?: boolean;             // Acima do das cores.
   finish?: InkFinish;              // Metálica, hot stamping, fluorescente, branco ou verniz, acima do das cores.
 }
 ```
 
-Os nomes e os aliases são comparados sem distinguir maiúsculas nem espaços repetidos. Mudar o nome é uma linha, sejam quantas forem as cores que usam a tinta; um alias junta numa chapa os nomes que uma amostra do designer, um SVG (`data-spot`, `icc-named-color`) ou uma paleta anterior davam à mesma tinta; `output: 'process'` imprime uma tinta em CMYK quando a máquina não tem unidade para ela, com todas as suas retículas; e `finish` torna uma tinta especial venha de onde vier o nome dela, inclusive de um SVG ou de um arquivo importado que nomeia `Gold`.
+Os nomes e os aliases são comparados sem distinguir maiúsculas nem espaços repetidos. Mudar o nome é uma linha, sejam quantas forem as cores que usam a tinta; um alias junta numa chapa os nomes que uma amostra do designer, um SVG (`data-spot`, `icc-named-color`) ou uma paleta anterior davam à mesma tinta; `output: 'process'` imprime uma tinta em CMYK quando a máquina não tem unidade para ela, com todas as suas retículas; e `finish` torna uma tinta especial venha de onde vier o nome dela, inclusive de um SVG ou de um arquivo importado que nomeia `Gold`. A ordem das entradas é a ordem na máquina de dois vernizes que se encontram: na tela e no Folio, uma entrada posterior fica sobre uma anterior (veja [Acabamentos](/pt/docs/special-inks-die-cuts#acabamentos)).
 
 No Sandbox, a tabela fica em **Design › Exportação › Preparação para impressão › Tabela de tintas**: um cartão por tinta com o **Nome da tinta**, os **Apelidos**, o **Nome da chapa no PDF**, **Impressa como**, o **CMYK alternativo**, a **Sobreimpressão**, o **Acabamento** e o **Brilho**. **Tintas usadas pelas cores** lista as tintas das cores do livro que faltam na tabela, cada uma com um botão que a acrescenta.
 
@@ -488,13 +488,13 @@ print: {
 interface PrintPlatesConfig {
   inks?: string[];                                // As chapas. Vazio: todas, como sempre.
   images?: string[];                              // As chapas das imagens: uma ou duas.
-  curves?: Record<string, Array<[number, number]>>; // A curva de uma chapa de imagem: [tom, tinta] em percentagem.
+  curves?: Record<string, Array<[number, number]>>; // A curva de uma chapa de imagem: [tom, tinta] em porcentagem.
 }
 ```
 
 - Uma cor de uma tinta que o trabalho imprime, ou uma cor CMYK cujos canais ele imprime, sai tal como está.
 - Qualquer outra cor é projetada: é impressa com a mistura de uma ou duas chapas que, através do perfil de saída, mais se lhe assemelha. Uma mistura de duas tintas é um espaço de cor `DeviceN` no PDF, e um cinza fica só em `Black`. O preto composto é descartado, a não ser que o trabalho imprima as quatro tintas de quadricromia.
-- As imagens saem em monotom, numa chapa, ou em duotom, em duas: o tom de cada pixel (a sua luminosidade) passa pela curva de cada chapa. `images` é por omissão `Black`, ou a primeira chapa se o trabalho não imprimir preto. A curva de um monotom é uma reta; um duotom põe a primeira chapa nas sombras e a segunda nos meios-tons. `curves` substitui qualquer uma delas.
+- As imagens saem em monotom, numa chapa, ou em duotom, em duas: o tom de cada pixel (sua luminosidade) passa pela curva de cada chapa. `images` é por padrão `Black`, ou a primeira chapa se o trabalho não imprimir preto. A curva de um monotom é uma reta; um duotom põe a primeira chapa nas sombras e a segunda nos meios-tons. `curves` substitui qualquer uma delas.
 
 ```ts
 print: {
@@ -507,7 +507,7 @@ print: {
 },
 ```
 
-O preflight enumera as chapas do trabalho e cada cor que a projeção desloca. Uma cor especial ou uma cor CMYK que o trabalho não imprime é informação quando a sua mistura fica a menos de ΔE 6, e um aviso se fica mais longe ou enquanto o perfil de saída não foi carregado (`offPlateInk`, `offPlateCmyk`); uma cor de tela que fica a mais de ΔE 6 também é um aviso (`offPlateColor`). Uma chapa de cor especial que nenhuma cor nem nenhuma entrada da tabela de tintas define é um aviso: é impressa e simulada como preto. Num trabalho assim, o original de impressão de uma figura é posto de lado e o seu SVG é composto nas chapas; uma página PDF inserida, ou uma imagem que não pode ser decodificada, mantém as suas próprias tintas e o render avisa (`artworkOffPlates`). No Sandbox as chapas são escolhidas em Preparação para impressão → Chapas. As suas pré-visualizações e a pré-visualização de impressão mostram as cores como o livro as define, não como as chapas as imprimem: veja o PDF, onde Verificar para impressão lista as tintas que ele usa.
+O preflight enumera as chapas do trabalho e cada cor que a projeção desloca. Uma cor especial ou uma cor CMYK que o trabalho não imprime é informação quando sua mistura fica a menos de ΔE 6, e um aviso se fica mais longe ou enquanto o perfil de saída não foi carregado (`offPlateInk`, `offPlateCmyk`); uma cor de tela que fica a mais de ΔE 6 também é um aviso (`offPlateColor`). Uma chapa de cor especial que nenhuma cor nem nenhuma entrada da tabela de tintas define é um aviso: é impressa e simulada como preto. Num trabalho assim, o original de impressão de uma figura é posto de lado e seu SVG é composto nas chapas; uma página PDF inserida, ou uma imagem que não pode ser decodificada, mantém suas próprias tintas e o render avisa (`artworkOffPlates`). No Sandbox as chapas são escolhidas em Preparação para impressão → Chapas. Suas pré-visualizações e a pré-visualização de impressão mostram as cores como o livro as define, não como as chapas as imprimem: veja o PDF, onde Verificar para impressão lista as tintas que ele usa.
 
 ### Cor das imagens
 

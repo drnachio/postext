@@ -69,6 +69,7 @@ YouTubeでも見られます。[YouTubeで見る](https://www.youtube.com/watch?
   - 欧米のコミック、日本の漫画、新聞漫画：ページをコマに分ける分割式、話者のアンカーとセーフエリアを付けたコマの絵、
     エンジンが写植する言語ごとの台本（吹き出し、ナレーション、描き文字）、右から左に読む漫画とアラビア語版、
     文字のない原画と翻訳から、写植済みのスキャンから、台本と生成した絵から移植する方法（[漫画](/ja/docs/comics)を参照）。
+  - 特殊インキと抜き加工：PDFやIDMLの特色版と抜き型業者の版やレイヤー、各インキの名前が示す加工（メタリック、箔押し、蛍光、不透明ホワイト、ニス）を印刷所の仕様で確かめる方法、抜き型の線から測る抜き型（[特殊インキと抜き加工](/ja/docs/special-inks-die-cuts)を参照）。
   - テンプレートページ：教科書、ワークブック、雑誌の固定レイアウトのページを、Markdownから枠を埋めるページテンプレートとして移植する方法、インストール済みのPostextが対応する移植のラウンド、各版が通るべき検査（[テンプレートページ](/ja/docs/composed-pages)を参照）。
   - 物としての本：原本の用紙、綴じ、表紙、背を読み取り、[Folioビューアー](/ja/docs/sandbox-previews#folioタブ)が表示する
     `folio`設定として指定する方法。リンターで検査されます。
@@ -84,7 +85,7 @@ YouTubeでも見られます。[YouTubeで見る](https://www.youtube.com/watch?
     </tr>
   </thead>
   <tbody>
-    <tr><td><code>inventory.py</code></td><td>どんな原稿にも最初にかける下調べ：寸法と配置、フォント、使われているスタイル、メディア、OCRが必要なページ。PDF/Xで刷られたPDFでは、出力条件と塗り足しを、それを再現する<code>print</code>の設定とともに示します。</td></tr>
+    <tr><td><code>inventory.py</code></td><td>どんな原稿にも最初にかける下調べ：寸法と配置、フォント、使われているスタイル、メディア、OCRが必要なページ。PDF/Xで刷られたPDFでは、出力条件と塗り足しを、それを再現する<code>print</code>の設定とともに示します。PDFやIDMLの特色版も、各名前が示す加工とともに挙げ、抜き型業者の版やレイヤーも示します。</td></tr>
     <tr><td><code>measure_layout.py</code></td><td>PDFの余白、段、段間、行送り（ベースライングリッド）</td></tr>
     <tr><td><code>pdf_extract.py</code></td><td>PDF → <em>書体の役割</em>（フォント、サイズ、色）ごとの章の下書き：読む順序、段落、ハイフネーションの解除、太字とイタリック、上付きと下付き、リスト、キャプション</td></tr>
     <tr><td><code>pdf_figures.py</code></td><td>PDFから図を切り出す：元の解像度の写真、SVGのプレビュー、印刷用のベクターPDF原稿</td></tr>
@@ -98,7 +99,7 @@ YouTubeでも見られます。[YouTubeで見る](https://www.youtube.com/watch?
     <tr><td><code>fonts.py</code>、<code>images.py</code>、<code>convert_assets.py</code></td><td>フォントのインスタンス化、サブセット化、拡大縮小、分割（本の文字だけに絞った中国語や日本語の書体は縦組み用字形とメトリクスを、アラビア語の書体は連結形とタトウィールを保ちます）。画像をsRGBに変換し、余白を切り詰め、つなぎ合わせます。<code>.ai</code>/<code>.pdf</code>のアートワークをSVGにします</td></tr>
     <tr><td><code>preset_kit.py</code></td><td>プロジェクトとその生成スクリプトのひな形を作り、<code>preset.json</code>を組み立て、<code>.postext</code>ファイルにまとめます。設定も点検し、デザイン要素に書き込まれた本文（設定に置くのはデザインだけです）と、Sandboxに収まらない大きさの設定を見つけます</td></tr>
     <tr><td><code>lint_project.py</code></td><td>パーサーとローダーがエラーを出さずに誤って処理してしまうものを、すべて検出します。中国語、日本語、韓国語のテキストでは、同梱フォントで組めない文字。日本語のテキストでは、中国語ロケールの下のかな、中国語の書体や設定、章に残った青空文庫の注記、読みのない漢字の索引項目。アラビア語のテキストでは、アラビア語ロケールの欠落、ラテン文字専用または連結しない書体、字間、強制的なハイフネーション、イタリックによる強調。漫画では、解析できない<code>split</code>の式、分割のセルと合わないコマ、見つからない画像や吹き出し・コマのスタイル、不正な話者のアンカー、同梱されていない写植用フォント、版ごとに異なるページ。エージェントが残しがちな誤りも指摘します。<code>inlineMarks</code>なしのデザインテキストにあるインラインの記号、固定幅のスペースの隣に打った通常のスペース、1.52より古いエンジンでの見出し内のチップ、<code>:smallcaps[…]</code>を使わずに小さなチップで組んだ大文字、<code>:::toc</code>のような1行の指示の後の<code>:::</code>です。設定項目の一覧はエンジン自身の型から作ります</td></tr>
-    <tr><td><code>render.mjs</code></td><td>プロジェクト（フォルダーまたは<code>.postext</code>ファイル）を、本物のエンジンでヘッドレスにレイアウトします。設定はSandboxと同じように読み込み、警告を出力します。<code>--jpeg</code>を付けると、指定したページ（<code>--pages 12-15</code>）をエンジン自身のcanvasレンダラーでJPEGファイルに描画します。1、2秒で済むので、エージェントはPDFを作らずに自分のページを見られます。<code>--out</code>はPDFを書き出します。印刷用に設定した本ではPREFLIGHT行（解像度不足の画像、細すぎる罫、複数インキの小さな文字、上限を超えるインキ量、仕上がり線に近い文字）を出力し、PDFはICC出力プロファイルで分版します。</td></tr>
+    <tr><td><code>render.mjs</code></td><td>プロジェクト（フォルダーまたは<code>.postext</code>ファイル）を、本物のエンジンでヘッドレスにレイアウトします。設定はSandboxと同じように読み込み、警告を出力します。<code>--jpeg</code>を付けると、指定したページ（<code>--pages 12-15</code>）をエンジン自身のcanvasレンダラーでJPEGファイルに描画します。1、2秒で済むので、エージェントはPDFを作らずに自分のページを見られます。<code>--out</code>はPDFを書き出します。印刷用に設定した本ではPREFLIGHT行（解像度不足の画像、細すぎる罫、複数インキの小さな文字、上限を超えるインキ量、仕上がり線に近い文字）を出力し、PDFはICC出力プロファイルで分版します。抜き加工のあるページでは、手に取ったときのように穴の下のページが見えます。</td></tr>
     <tr><td><code>compare_pages.py</code></td><td>原本のページとPostextのページを並べて表示します。描画結果のPDFからでも、JPEGのフォルダーからでも使えます。<code>--score</code>で似ている度合いを測り、<code>--check</code>を付けると、チェックが枠の重なりを報告しているあいだは評価が失敗します。<code>--watch DIR</code>を付けて<code>postext build … --images DIR --watch</code>と並べて動かすと、ページが変わるたびにそのページの対と点数を書き直します</td></tr>
     <tr><td><code>port_audit.py</code></td><td>元のPDFと移植したPDFを属性ごとに比べます。語は内容で突き合わせ、特殊なスペース、イタリック（正体を斜めにしたものを含む）、太字、スモールキャップ、箇条記号の大きさと太さ、表のセルの揃えと太さ、ノンブル・柱・本文の色を見ます。属性とページごとの件数をJSONとMarkdownで書き出します。納品の前に実行してください</td></tr>
     <tr><td><code>composed_check.py</code></td><td>テンプレートページ：<code>round</code>はインストール済みエンジンのバージョンを読み、どの移植ラウンドに対応し、どのテンプレートページ機能が欠けているかを示します。<code>check</code>は各版で<code>postext check</code>と<code>postext html</code>を実行し、枠のあふれ、未知のテンプレートやスロット、アンカーに収まらないラベル、設定に書かれたテキスト、Markdownが埋める順序とは異なる順序でHTMLが読む枠があれば失敗します。postext 1.48以降は、枠が別の枠の下に隠れたり自分の箱からはみ出したりした場合（<code>frameCovered</code>、<code>frameOutsideArea</code>）にも失敗し、最後に重なりの数を示します。原本が意図して重ねている箇所は、理由を添えてプロジェクトの<code>composed-check.json</code>に記録します。綴りを誤った設定やエンジンが受け付けない値（<code>unknownConfigKey</code>、<code>unknownConfigValue</code>）も不合格にし、ほかの警告もすべて表示します。<code>--json-out FILE</code>は結果を保存しつつ報告と終了コードを残し、保存した検査が不合格のあいだは<code>preset_kit.py pack</code>がパックを拒みます</td></tr>

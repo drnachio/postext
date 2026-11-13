@@ -1,0 +1,63 @@
+{
+  "$comment": "Curated recipes for docs headings (#1589). Every docs heading already lists the published recipes whose features (features.json), imported APIs (apis.json) or config keys (config.json) point at it; an entry here corrects that list for one heading. docs names the heading the way the other registries do (the h1-h3 text in every locale); pin lists recipes shown first, in order, whether or not they match on their own; hide lists recipes never shown there. Keys are free kebab-case ids, by convention <page>-<section>.",
+  "inks-fifth-inks": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Fifth inks", "es": "Quintas tintas", "ca": "Cinquenes tintes", "zh": "第五色", "ar": "الحبر الخامس", "ja": "5色目のインキ", "pt": "Quintas cores", "fr": "Cinquièmes couleurs", "de": "Fünfte Druckfarbe", "it": "Quinti colori"} },
+    "pin": ["corporate-fifth-ink-report", "fluorescent-pink-zine"]
+  },
+  "inks-finishes": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Finishes", "es": "Acabados", "ca": "Acabats", "zh": "工艺", "ar": "التشطيبات", "ja": "加工", "pt": "Acabamentos", "fr": "Finitions", "de": "Veredelungen", "it": "Finiture"} },
+    "pin": ["gold-foil-poetry-cover", "spot-uv-photo-magazine", "white-ink-kraft-menu"]
+  },
+  "inks-how-a-special-ink-prints": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "How a special ink prints", "es": "Cómo se imprime una tinta especial", "ca": "Com imprimeix una tinta especial", "zh": "特种油墨如何印刷", "ar": "كيف يُطبع الحبر الخاص", "ja": "特殊インキの刷られ方", "pt": "Como uma tinta especial é impressa", "fr": "Comment s’imprime une encre spéciale", "de": "Wie eine Spezialfarbe druckt", "it": "Come si stampa un inchiostro speciale"} },
+    "pin": ["white-ink-kraft-menu", "fluorescent-pink-zine"]
+  },
+  "inks-in-folio": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "In Folio", "es": "En Folio", "ca": "Al visor Folio", "zh": "在Folio中", "ar": "في Folio", "ja": "Folioでの表示", "pt": "No Folio", "fr": "Dans Folio", "de": "In Folio", "it": "In Folio"} },
+    "pin": ["spot-uv-photo-magazine", "gold-foil-poetry-cover"]
+  },
+  "inks-preflight": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "What the preflight says about inks", "es": "Qué dice el preflight de las tintas", "ca": "Què diu el preflight de les tintes", "zh": "印前检查对油墨的报告", "ar": "ما يقوله الفحص قبل الطباعة عن الأحبار", "ja": "インキについてのプリフライト", "pt": "O que o preflight diz sobre as tintas", "fr": "Ce que dit le contrôle en amont des encres", "de": "Was der Preflight zu Druckfarben meldet", "it": "Che cosa dice il preflight sugli inchiostri"} },
+    "pin": ["white-ink-kraft-menu"]
+  },
+  "dies-die-cuts": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Die-cuts", "es": "Troqueles", "ca": "Troquels", "zh": "模切", "ar": "القص بالقالب", "ja": "抜き加工", "pt": "Facas especiais", "fr": "Découpes", "de": "Stanzungen", "it": "Fustelle"} },
+    "pin": ["die-cut-window-cover", "peek-a-boo-board-book", "forest-tunnel-book"]
+  },
+  "dies-shapes": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Die shapes", "es": "Formas de troquel", "ca": "Formes de troquel", "zh": "模切形状", "ar": "أشكال القص", "ja": "抜き型", "pt": "Formas de faca", "fr": "Formes de découpe", "de": "Stanzformen", "it": "Forme di fustella"} },
+    "pin": ["forest-tunnel-book"]
+  },
+  "dies-leaves-and-mirroring": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Leaves and mirroring", "es": "Las dos caras de la hoja", "ca": "Fulls i mirall", "zh": "纸页与镜像", "ar": "الأوراق والانعكاس", "ja": "丁と左右反転", "pt": "Folhas e espelhamento", "fr": "Feuillets et symétrie", "de": "Blätter und Spiegelung", "it": "Fogli e specchiatura"} },
+    "pin": ["die-cut-window-cover"]
+  },
+  "dies-rounded-corners": {
+    "docs": { "slug": "special-inks-die-cuts", "heading": {"en": "Rounded corners and shaped books", "es": "Esquinas redondeadas y libros con forma", "ca": "Cantonades arrodonides i llibres amb forma", "zh": "圆角与异形书", "ar": "الزوايا المستديرة والكتب بأشكال مقصوصة", "ja": "角丸と型抜きの本", "pt": "Cantos arredondados e livros recortados", "fr": "Coins arrondis et livres découpés en forme", "de": "Abgerundete Ecken und Bücher in Form", "it": "Angoli arrotondati e libri sagomati"} },
+    "pin": ["peek-a-boo-board-book"]
+  },
+  "pdf-pictures-colours": {
+    "docs": { "slug": "configuration-pdf-output", "heading": {"en": "Pictures' colours", "es": "Color de las imágenes", "ca": "Color de les imatges", "zh": "图片的颜色", "ar": "ألوان الصور", "ja": "画像の色", "pt": "Cor das imagens", "fr": "Couleurs des images", "de": "Farben der Bilder", "it": "Colore delle immagini"} },
+    "pin": ["fluorescent-pink-zine", "corporate-fifth-ink-report"]
+  },
+  "pdf-colours-that-overprint": {
+    "docs": { "slug": "configuration-pdf-output", "heading": {"en": "Colours that overprint", "es": "Colores que sobreimprimen", "ca": "Colors que sobreimprimeixen", "zh": "叠印的颜色", "ar": "الألوان التي تُطبع فوق غيرها", "ja": "オーバープリントする色", "pt": "Cores que sobreimprimem", "fr": "Couleurs en surimpression", "de": "Überdruckende Farben", "it": "Colori in sovrastampa"} },
+    "pin": ["white-ink-kraft-menu"]
+  },
+  "pdf-preflight": {
+    "docs": { "slug": "configuration-pdf-output", "heading": {"en": "Preflight", "es": "Preflight", "ca": "Preflight", "zh": "印前检查", "ar": "الفحص قبل الطباعة", "ja": "プリフライト", "pt": "Preflight", "fr": "Contrôle en amont", "de": "Preflight", "it": "Preflight"} },
+    "pin": ["white-ink-kraft-menu"]
+  },
+  "text-composition-conventions": {
+    "docs": { "slug": "configuration-text", "heading": {"en": "Composition conventions", "es": "Convenciones de composición", "ca": "Convencions de composició", "zh": "排版惯例", "ar": "أعراف التنضيد", "ja": "組版の慣習", "pt": "Convenções de composição", "fr": "Conventions de composition", "de": "Satzkonventionen", "it": "Convenzioni di composizione"} },
+    "pin": ["prose-without-stacks", "clinical-paper-line-edges"]
+  },
+  "language-words-kept-whole": {
+    "docs": { "slug": "configuration-language", "heading": {"en": "Words kept whole", "es": "Palabras que no se dividen", "ca": "Mots que no es divideixen", "zh": "不拆分的词", "ar": "كلمات لا تُقسَّم", "ja": "分割しない語", "pt": "Palavras que não se dividem", "fr": "Mots gardés entiers", "de": "Ungetrennte Wörter", "it": "Parole tenute intere"} },
+    "pin": ["film-club-video-qr", "annotated-classic-glosses"]
+  },
+  "styles-chapter-styles": {
+    "docs": { "slug": "configuration-styles", "heading": {"en": "Chapter styles", "es": "Estilos de capítulo", "ca": "Estils de capítol", "zh": "章样式", "ar": "أنماط الفصول", "ja": "章スタイル", "pt": "Estilos de capítulo", "fr": "Styles de chapitre", "de": "Kapitelstile", "it": "Stili dei capitoli"} },
+    "pin": ["appendices-in-two-columns"]
+  }
+}

@@ -51,6 +51,9 @@ The mask is painted with the ordinary canvas painter through instance-level over
 1. **Pass 1, inks that knock out.** A special hex is painted in its mask colour. Any other paint is painted black,
    unless it overprints (then it is skipped). Pictures paint black over their box. A varnish is skipped.
 2. **Pass 2, varnish.** Only varnish hexes are painted. Pass 2 is merged into pass 1's G channel with `lighten`.
+   Where two varnishes meet they lie in press order, the ink table's (a later entry over an earlier, the unlisted
+   after): each is painted on its own and stacked by coverage (`varnishLayers`, `stackVarnishes`), so a soft touch
+   carried by the footer does not cover the page's spot gloss (#1587). The sheet's knock-out is transparent there.
 3. **White.** It is coverage in A, from a paint of white inks only into a separate canvas: white goes down first on
    press, so no later paint or picture knocks it out (#1579). The paints are packed into one RGBA buffer on the CPU.
 
@@ -114,4 +117,9 @@ outline is cut to transparent. Folio uses the same composite as its per-face *th
   - Each face carries a *through* texture (rgb = deep stack, a = hole) from `composeThrough`.
   - Open pages shade the hole with depth parallax and a procedural wall.
   - Turning leaves `discard` in the hole, and so do their depth material and caster.
+  - A board in the air (a cover) is two face meshes and its edges: the edges have no lids and follow the outline,
+    and a face seen from inside the board through a hole is the board's core (#1586).
+  - Past the book's end lies the desk when the book has no case (its own printed covers, or folded sheets): the
+    through texture marks that layer (`end`), and an open page discards where its view ray reaches it, in colour,
+    key-light depth and caster alike. In a case it is the board colour (#1586).
   - Painting adds the exposed deep pages at reduced scale.

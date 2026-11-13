@@ -29,6 +29,7 @@
 
 import type { DisplayItem, DisplayLine, DisplayPage, DisplayRect } from 'postext';
 import type { VDTDocument } from 'postext/writer';
+import type { VDTPage } from 'postext';
 import { pageIsVertical } from 'postext';
 import { flowCallouts } from './styles.js';
 import { keepsLines, type StoryItem, type TextItem, type Writer } from './writer.js';
@@ -64,8 +65,27 @@ export interface ThreadBox {
   xml?: string;
 }
 
+/** A box floated into the side column of a column-and-a-half page (a
+ *  gloss): one text frame with its texts, anchored in the line of running
+ *  text it floats from (`host`) at a custom position that puts it where
+ *  Postext set it, so it travels with its text and an importer reads it
+ *  as a float of the side column (#1585). */
+export interface SideFloat {
+  /** The float's box on the sheet. */
+  box: DisplayRect;
+  texts: TextItem[];
+  host?: TextItem;
+  /** The column of the host's frame. */
+  column?: DisplayRect;
+  xml?: string;
+}
+
 export interface Thread {
   story: string;
+  /** The side floats of the thread's pages, by page key. */
+  sides: Map<string, SideFloat[]>;
+  /** The side floats anchored in each item of running text. */
+  sideAnchors: Map<TextItem, SideFloat[]>;
   /** The boxes of the thread's pages, by page key. */
   boxes: Map<string, ThreadBox[]>;
   /** The boxes anchored in each item of running text. */
@@ -91,6 +111,11 @@ export function planThread(w: Writer, docs: readonly VDTDocument[], lists: reado
   const taken = new Set<DisplayItem>();
   const boxes = new Map<string, ThreadBox[]>();
   const anchors = new Map<TextItem, ThreadBox[]>();
+  const sides = new Map<string, SideFloat[]>();
+  const sideAnchors = new Map<TextItem, SideFloat[]>();
+  /** The side floats found on each page, with the content index after
+   *  which the running text they float from goes on. */
+  const found = new Map<string, { float: SideFloat; after: number }[]>();
   let first: string | undefined;
   docs.forEach((doc, d) => {
     const frames: ThreadFrame[] = [];
@@ -119,8 +144,10 @@ export function planThread(w: Writer, docs: readonly VDTDocument[], lists: reado
       byPage.set(pageKey(d, p), mine);
       first ??= pageKey(d, p);
       frames.push(...mine);
-      const found = flowBoxes(lists[d]![p]!, columns.map((c) => c.bbox), taken);
-      if (found.length) boxes.set(pageKey(d, p), found);
+      const inColumns = flowBoxes(lists[d]![p]!, columns.map((c) => c.bbox), taken);
+      if (inColumns.length) boxes.set(pageKey(d, p), inColumns);
+      const glosses = sideFloats(vdt, lists[d]![p]!, taken);
+      if (glosses.length) found.set(pageKey(d, p), glosses);
     });
     segments.push(frames);
   });
@@ -141,7 +168,57 @@ export function planThread(w: Writer, docs: readonly VDTDocument[], lists: reado
       for (const t of b.texts) taken.add(t);
     }
   }
-  return { story: w.next(), byPage, segments, taken, first, boxes, anchors };
+  // A side float anchors in the running text that follows it in the
+  // Markdown when that text is on its page, else in the first line of
+  // running text on its page level with it or below, else in the last.
+  segments.forEach((frames, d) => {
+    const items = frames.flatMap((f) => f.items.map((it) => ({ it, f })));
+    for (const [key, list] of found) {
+      if (!key.startsWith(`${d}:`)) continue;
+      const on = items.filter((x) => x.f.page === key);
+      if (!on.length) continue;
+      for (const { float, after } of list) {
+        const next = items.find((x) => (contentIndexOf(x.it) ?? -1) > after);
+        const at = next && next.f.page === key ? next : (on.find((x) => x.it.bbox.y + 1 >= float.box.y) ?? on[on.length - 1]!);
+        float.host = at.it;
+        float.column = at.f.box;
+        sideAnchors.set(at.it, [...(sideAnchors.get(at.it) ?? []), float]);
+        for (const t of float.texts) taken.add(t);
+        sides.set(key, [...(sides.get(key) ?? []), float]);
+      }
+    }
+  });
+  return { story: w.next(), byPage, segments, taken, first, boxes, anchors, sides, sideAnchors };
+}
+
+/** The content index of a text item's block (`b<n>`). */
+const contentIndexOf = (it: TextItem): number | undefined => {
+  const m = /^b(\d+)$/.exec(it.source?.blockKey ?? '');
+  return m ? Number(m[1]) : undefined;
+};
+
+/** The boxes floated into a page's side column, each with its texts and
+ *  the last content index it holds. */
+function sideFloats(vdt: VDTPage, page: DisplayPage, taken: ReadonlySet<DisplayItem>): { float: SideFloat; after: number }[] {
+  const side = vdt.columns.filter((c) => c.kind === 'side').map((c) => c.bbox);
+  if (!side.length || !vdt.floats?.length) return [];
+  const out: { float: SideFloat; after: number }[] = [];
+  const inside = (r: DisplayRect, x: number, y: number) => x >= r.x - 0.5 && x <= r.x + r.width + 0.5 && y >= r.y - 0.5 && y <= r.y + r.height + 0.5;
+  // A box's blocks share its container id.
+  const outer = (b: (typeof vdt.floats)[number]): number | undefined => b.calloutPath?.[0] ?? b.containerId;
+  for (const f of vdt.floats) {
+    if (f.type !== 'callout' || !f.callout || f.hidden) continue;
+    const id = outer(f);
+    // A nested box goes with the box that holds it.
+    if (f.calloutPath && f.calloutPath.length > 1) continue;
+    if (!side.some((c) => inside(c, f.bbox.x + f.bbox.width / 2, f.bbox.y + f.bbox.height / 2))) continue;
+    const own = vdt.floats.filter((b) => id !== undefined && outer(b) === id);
+    const after = Math.max(f.contentIndex ?? -1, ...own.map((b) => b.contentIndex ?? -1));
+    const texts = page.items.filter((t): t is TextItem => t.kind === 'text' && !taken.has(t) && !t.frame && !t.rotate && !t.halo && t.lines.length > 0 && inside(f.bbox, t.bbox.x + t.bbox.width / 2, t.bbox.y + t.bbox.height / 2));
+    if (!texts.length || after < 0) continue;
+    out.push({ float: { box: { ...f.bbox }, texts }, after });
+  }
+  return out;
 }
 
 /** The boxes of the flow on a page that stand in its columns: a box's
@@ -174,7 +251,7 @@ export function neighbours(thread: Thread, f: ThreadFrame): { prev?: string; nex
  *  frame (`frame` is the frame's self, so a change of frame is a frame
  *  break), the rest of a paragraph a column break split joined to it, the
  *  first item after a column the author broke marked. */
-export function segmentItems(frames: readonly ThreadFrame[], anchors?: ReadonlyMap<TextItem, ThreadBox[]>): StoryItem[] {
+export function segmentItems(frames: readonly ThreadFrame[], anchors?: ReadonlyMap<TextItem, ThreadBox[]>, sideAnchors?: ReadonlyMap<TextItem, SideFloat[]>): StoryItem[] {
   const out: StoryItem[] = [];
   let forced = false;
   for (const f of frames) {
@@ -186,6 +263,9 @@ export function segmentItems(frames: readonly ThreadFrame[], anchors?: ReadonlyM
         item.anchors = boxes.map((b) => b.xml!);
         item.anchorHeight = boxes.reduce((h, b) => h + b.rect.rect.height, 0);
       }
+      // A side float takes no room in its column.
+      const glosses = sideAnchors?.get(x)?.filter((g) => g.xml);
+      if (glosses?.length) item.anchors = [...(item.anchors ?? []), ...glosses.map((g) => g.xml!)];
       if (k === 0 && before) {
         if (before.source?.blockKey && before.source.blockKey === x.source?.blockKey && x.role !== 'marker') item.joinsPrevious = true;
         else if (forced) item.columnBreak = true;

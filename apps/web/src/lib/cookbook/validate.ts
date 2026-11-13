@@ -168,6 +168,28 @@ export function validateRegistry(registry: Registry, { knownSlugs, requireFeatur
       else if (known && !known.has(slug)) errors.push(`${at}.recipes: no recipe folder "${slug}"`);
     }
   }
+  // Docs examples: pins and hides per docs heading.
+  for (const [id, entry] of Object.entries(registry.docExamples ?? {})) {
+    const at = `docExamples.${id}`;
+    anchorErrors(entry.docs, `${at}.docs`, errors);
+    const lists = { pin: entry.pin, hide: entry.hide };
+    for (const [key, list] of Object.entries(lists)) {
+      if (list === undefined) continue;
+      if (!Array.isArray(list)) {
+        errors.push(`${at}.${key}: must be a list of slugs`);
+        continue;
+      }
+      if (new Set(list).size !== list.length) errors.push(`${at}.${key}: lists a recipe twice`);
+      for (const slug of list) {
+        if (typeof slug !== "string" || !SLUG_PATTERN.test(slug)) errors.push(`${at}.${key}: "${String(slug)}" is not a slug`);
+        else if (known && !known.has(slug)) errors.push(`${at}.${key}: no recipe folder "${slug}"`);
+      }
+    }
+    const both = asArray(entry.pin).filter((slug) => asArray(entry.hide).includes(slug));
+    if (both.length) errors.push(`${at}: ${quoteList(both)} both pinned and hidden`);
+    if (!asArray(entry.pin).length && !asArray(entry.hide).length) errors.push(`${at}: pins or hides nothing`);
+  }
+
   const featured = registry.collections?.featured;
   if (featured) {
     const count = asArray(featured.recipes).length;
