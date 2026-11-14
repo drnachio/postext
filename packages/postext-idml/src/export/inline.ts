@@ -5,7 +5,7 @@
 
 import type { DisplayRun } from 'postext';
 import { svgSize } from 'postext/writer';
-import { swatch } from './colours.js';
+import { overprintAttrs, swatch } from './colours.js';
 import { parseCssFont } from './fonts.js';
 import { attr, num } from './parts.js';
 import type { Writer } from './writer.js';
@@ -45,7 +45,7 @@ export function inlineObjectXml(w: Writer, run: DisplayRun): string | undefined 
     const corners = radius > 0 ? ['TopLeft', 'TopRight', 'BottomLeft', 'BottomRight'].map((c) => `${attr(`${c}CornerOption`, 'RoundedCorner')}${attr(`${c}CornerRadius`, radius)}`).join('') : '';
     return (
       `<Rectangle${attr('Self', w.next())} ContentType="Unassigned" ItemTransform="1 0 0 1 0 0" AppliedObjectStyle="ObjectStyle/$ID/[None]"${attr('FillColor', fill?.ref ?? 'Swatch/None')}${attr('StrokeColor', stroke?.ref ?? 'Swatch/None')}` +
-      `${attr('StrokeWeight', stroke ? s.borderWidth! * w.k : 0)}${stroke ? ' StrokeAlignment="InsideAlignment"' : ''}${corners}>${box(Math.min(width, side) || side, side)}<AnchoredObjectSetting${ANCHOR} AnchorYoffset="0" AnchorSpaceAbove="0"/></Rectangle>`
+      `${attr('StrokeWeight', stroke ? s.borderWidth! * w.k : 0)}${stroke ? ' StrokeAlignment="InsideAlignment"' : ''}${corners}${overprintAttrs(fill, stroke)}>${box(Math.min(width, side) || side, side)}<AnchoredObjectSetting${ANCHOR} AnchorYoffset="0" AnchorSpaceAbove="0"/></Rectangle>`
     );
   }
   if (!inl.svg) return undefined;

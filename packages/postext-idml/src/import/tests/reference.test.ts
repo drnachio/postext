@@ -120,11 +120,11 @@ describe('the reference document as a flowing book', () => {
     expect(r.locale).toBe('es-ES');
   });
 
-  it('keeps colours as authored and names the spot colour', () => {
+  it('keeps colours as authored and the spot colour on its ink', () => {
     const palette = asFlow().config.colorPalette!;
     const cyan = palette.find((c) => c.name === 'Brand Cyan')!;
     expect(cyan.value).toMatchObject({ model: 'cmyk', cmyk: { c: 80, m: 10, y: 0, k: 5 } });
-    expect(palette.some((c) => /PANTONE 185 C \(spot\)/.test(c.name))).toBe(true);
+    expect(palette.find((c) => c.name === 'PANTONE 185 C')?.value).toMatchObject({ model: 'spot', spot: { name: 'PANTONE 185 C' } });
     expect(palette.some((c) => c.name === 'Black')).toBe(true);
   });
 

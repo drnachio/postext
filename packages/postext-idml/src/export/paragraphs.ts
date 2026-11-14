@@ -117,11 +117,13 @@ export function runProps(w: Writer, run: DisplayRun): TextProps {
   const f = parseCssFont(run.fontString);
   const face = faceOf(w, f.family, run.bold && f.weight < 600 ? 700 : f.weight, run.italic || f.italic);
   const sizePt = f.sizePx * w.k;
+  const ink = swatch(w, run.color);
   const p: TextProps = {
     font: face.family,
     fontStyle: face.style,
     size: sizePt,
-    color: swatch(w, run.color)?.ref ?? 'Color/Black',
+    color: ink?.ref ?? 'Color/Black',
+    ...(ink?.overprint ? { overprint: true } : {}),
     tracking: run.tracking && f.sizePx ? Math.round((run.tracking / f.sizePx) * 10000) / 10 : 0,
   };
   if (run.smallCaps) p.capitalization = 'SmallCaps';
@@ -129,10 +131,12 @@ export function runProps(w: Writer, run: DisplayRun): TextProps {
   if (run.script === 'sub') p.position = 'Subscript';
   if (run.baselineShift) p.baselineShift = run.baselineShift * w.k;
   if (w.halo) {
-    const ink = swatch(w, w.halo.color)?.ref;
-    if (ink) {
-      p.color = ink;
-      p.stroke = { color: ink, weight: w.halo.weight };
+    const halo = swatch(w, w.halo.color);
+    if (halo) {
+      p.color = halo.ref;
+      p.stroke = { color: halo.ref, weight: w.halo.weight };
+      if (halo.overprint) p.overprint = true;
+      else delete p.overprint;
     }
   }
   if (run.underline) p.underline = true;
@@ -149,6 +153,7 @@ export function overrides(p: TextProps, style: TextProps): string {
   if (p.fontStyle !== style.fontStyle || p.font !== style.font) d.fontStyle = p.fontStyle;
   if (Math.abs(p.size - style.size) >= 0.01) d.size = p.size;
   if (p.color !== style.color) d.color = p.color;
+  if (!p.overprint !== !style.overprint) d.overprint = !!p.overprint;
   if (p.tracking !== style.tracking) d.tracking = p.tracking;
   if (p.capitalization !== style.capitalization) d.capitalization = p.capitalization;
   if (p.position !== style.position) d.position = p.position;

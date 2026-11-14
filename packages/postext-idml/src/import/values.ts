@@ -45,7 +45,22 @@ export class Palette {
 
   constructor(private readonly doc: IdmlDocument, private readonly rep: Reporter) {}
 
+  /** Swatches that are no colour of the book (the die line's). */
+  private readonly skipped = new Set<string>();
+
+  /** Leave a swatch out of the palette: the die line's is a plate the
+   *  die-maker reads, not a colour (`dieCuts.ts`). */
+  skip(ref: string): void {
+    this.skipped.add(ref);
+  }
+
   private valueOf(c: ResolvedColour): ColorValue {
+    // A spot ink prints on its own plate, at the tint it is used at: its
+    // swatch's values are the ink's alternate at full strength.
+    if (c.spot) {
+      const cmyk = c.cmyk ?? rgbToCmyk(c.hex, c.tint);
+      return { hex: c.hex, model: 'spot', spot: { name: c.spot, cmyk: { c: round(cmyk[0], 2), m: round(cmyk[1], 2), y: round(cmyk[2], 2), k: round(cmyk[3], 2) }, ...(c.tint < 1 ? { tint: round(c.tint * 100, 2) } : {}) } };
+    }
     const value: ColorValue = { hex: c.hex, model: c.cmyk ? 'cmyk' : 'hex' };
     // The authored inks travel with the colour, at the tint it is used at.
     if (c.cmyk) value.cmyk = { c: round(c.cmyk[0] * c.tint, 2), m: round(c.cmyk[1] * c.tint, 2), y: round(c.cmyk[2] * c.tint, 2), k: round(c.cmyk[3] * c.tint, 2) };
@@ -73,9 +88,9 @@ export class Palette {
     let entry = this.entries.get(ref);
     if (!entry) {
       const name = swatch.name || ref;
-      entry = { id: this.ids.take(idOf(name, 'colour')), name: c.spot ? `${name} (spot)` : name, value };
+      entry = { id: this.ids.take(idOf(name, 'colour')), name, value };
       this.entries.set(ref, entry);
-      if (c.spot) this.rep.add('spotColour', 'info', 'A spot colour is kept by name in the palette and printed as its process equivalent', name);
+      if (c.spot) this.rep.add('spotColour', 'info', 'A spot colour is kept as a spot colour of the palette: it prints on its own plate', name);
     }
     return { ...value, paletteId: entry.id };
   }
@@ -84,15 +99,29 @@ export class Palette {
    *  visible swatches, so the library comes whole. */
   list(): ColorPaletteEntry[] {
     for (const [ref, s] of this.doc.swatches) {
-      if (s.kind === 'none' || this.entries.has(ref)) continue;
+      if (s.kind === 'none' || this.entries.has(ref) || this.skipped.has(ref)) continue;
       if (s.kind === 'color' && (!s.visible || s.special === 'reserved' || s.special === 'registration')) continue;
       if (s.kind === 'gradient') continue;
       const c = resolveColour(this.doc, ref);
       if (!c) continue;
-      this.entries.set(ref, { id: this.ids.take(idOf(s.name, 'colour')), name: c.spot ? `${s.name} (spot)` : s.name, value: this.valueOf(c) });
+      this.entries.set(ref, { id: this.ids.take(idOf(s.name, 'colour')), name: s.name, value: this.valueOf(c) });
     }
     return [...this.entries.values()];
   }
+}
+
+/** A screen colour's naive CMYK, undone from its tint: the alternate of a
+ *  spot ink whose swatch has no CMYK values (one defined in Lab or RGB). */
+function rgbToCmyk(hex: string, tint: number): [number, number, number, number] {
+  const n = parseInt(hex.slice(1, 7), 16);
+  // Back to the ink at full strength: the tint lightened it over white.
+  const full = (v: number): number => 1 - (1 - v / 255) / Math.max(tint, 1e-6);
+  const r = Math.max(0, full((n >> 16) & 255));
+  const g = Math.max(0, full((n >> 8) & 255));
+  const b = Math.max(0, full(n & 255));
+  const k = 1 - Math.max(r, g, b);
+  if (k >= 1) return [0, 0, 0, 100];
+  return [((1 - r - k) / (1 - k)) * 100, ((1 - g - k) / (1 - k)) * 100, ((1 - b - k) / (1 - k)) * 100, k * 100];
 }
 
 export const BLACK: ColorValue = { hex: '#000000', model: 'hex' };

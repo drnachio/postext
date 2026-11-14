@@ -168,6 +168,8 @@ export function shapeElement(ctx: Context, item: IdmlPageItem, o: ElementOptions
 /** A master item (and what a group holds) as design elements, back to
  *  front. Text frames print their story with placeholders. */
 export function masterElements(ctx: Context, item: IdmlPageItem, o: ElementOptions, out: DesignElement[] = []): DesignElement[] {
+  // The die line is read as the book's die-cuts (`dieCuts.ts`).
+  if (ctx.dieItems.has(item)) return out;
   if (!item.visible && !ctx.opt.hiddenObjects) {
     ctx.rep.add('hiddenObjects', 'info', 'Hidden objects are left out (hiddenObjects: "include" keeps them)', o.where);
     return out;

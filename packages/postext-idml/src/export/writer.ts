@@ -8,6 +8,7 @@ import type { VDTDocument } from 'postext/writer';
 import type { BlockStyle } from 'postext/writer';
 import type { CharacterStyleDef, ParagraphStyleDef, Swatch } from './parts.js';
 import type { StyleSurvey } from './styles.js';
+import type { InkDef, InkPlan } from './inks.js';
 import type { FontNames } from './sfnt.js';
 
 import type { IdmlWarning } from '../model/document.js';
@@ -84,6 +85,10 @@ export interface Writer {
   /** Swatch names taken, lower-cased: InDesign's own and those written. */
   swatchNames: Set<string>;
   cmyk: Map<string, { c: number; m: number; y: number; k: number }>;
+  /** The spot inks of the book and the colours printed on them. */
+  inks: InkPlan;
+  /** The die line's ink and stroke, when a page of the book is die-cut. */
+  die?: InkDef & { widthPt: number; printable: boolean };
   palette: Map<string, string>;
   /** Faces written, by InDesign family then style name; the file's names
    *  when the face has a file. */

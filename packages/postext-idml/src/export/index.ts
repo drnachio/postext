@@ -14,14 +14,18 @@
 // vertical stories, a column of characters a line (`vertical.ts`).
 //
 // The writer's parts: `writer.ts` (its state, the options), `colours.ts`
-// (swatches), `geometry.ts`, `shapes.ts` (boxes, rules, paths, chips),
+// (swatches), `inks.ts` (spot inks and their finishes), `dieLine.ts` (the
+// die line's layer), `geometry.ts`, `shapes.ts` (boxes, rules, paths, chips),
 // `images.ts`, `paragraphs.ts` (a paragraph's runs), `story.ts`,
 // `spreads.ts`, and `parts.ts` for the package's fixed parts.
 
 import { strToU8, zipSync, type Zippable } from 'fflate';
 import { flowRectToPage, pageDisplayList, pageIsVertical } from 'postext';
 import { authoredCmykColors } from 'postext/writer';
-import { RESERVED_SWATCH_NAMES } from './colours.js';
+import { inkSwatch, RESERVED_SWATCH_NAMES } from './colours.js';
+import { dieLayerXml, dieLineXml } from './dieLine.js';
+import { dieLineInk, inkType, inkXml, planInks } from './inks.js';
+import { DIE_LINE_LAYER } from '../model/specialInks.js';
 import {
   BACKING_STORY_XML,
   CONTAINER_XML,
@@ -66,6 +70,8 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
   const seen = new Set<string>();
   const palette = new Map<string, string>();
   for (const e of first.config.colorPalette ?? []) palette.set(e.value.hex.slice(0, 7).toLowerCase(), e.name);
+  const inks = planInks(docs);
+  const dieCut = docs.some((doc) => doc.pages.some((p) => p.dieCut));
   const w: Writer = {
     next: () => `u${(n++).toString(16)}`,
     k: 72 / first.config.page.dpi,
@@ -79,6 +85,8 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
     swatches: new Map(),
     swatchNames: new Set(RESERVED_SWATCH_NAMES.map((n) => n.toLowerCase())),
     cmyk: authoredCmykColors(first.config),
+    inks,
+    ...(dieCut ? { die: dieLineInk(first) } : {}),
     palette,
     fonts: new Map(),
     faces: new Map(),
@@ -101,6 +109,9 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
       options.onWarning?.({ code, message });
     },
   };
+  // Every ink of the job is a swatch, used or not, so the package lists
+  // the inks the printer is told of.
+  for (const ink of inks.inks.values()) inkSwatch(w, ink);
 
   // The pages, each written in the frame of the spread it will stand in.
   const facing = options.spreads ? options.spreads === 'facing' : !!(first.config.page as { margins?: { mirror?: boolean } }).margins?.mirror;
@@ -162,7 +173,7 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
       else if (Math.abs(width - geometry.width) > 0.5 || Math.abs(w.pageH - geometry.height) > 0.5) w.warn('page.size', `Page ${n + 1} has its own size; IDML pages keep it, the document setup shows the first page's`);
       const frames = new Map((vdt.composed?.frames ?? []).map((f) => [f.id, f] as const));
       const own = thread?.byPage.get(pageKey(d, p));
-      const items = pageItemsXml(w, page, frames, own && thread ? { thread, frames: own, boxes: thread.boxes.get(pageKey(d, p)) ?? [], sides: thread.sides.get(pageKey(d, p)) ?? [] } : undefined);
+      const items = pageItemsXml(w, page, frames, own && thread ? { thread, frames: own, boxes: thread.boxes.get(pageKey(d, p)) ?? [], sides: thread.sides.get(pageKey(d, p)) ?? [] } : undefined) + dieLineXml(w, doc, p);
       if (thread && pageKey(d, p) === thread.first) labelled = laid.length;
       // A page of the thread says its columns, so its frames follow them.
       const columns = own ? pageColumns(vdt, w.k) : undefined;
@@ -196,9 +207,12 @@ function writePackage(options: IdmlOptions, styles: StyleSurvey): IdmlResult | u
   const g = { ...geometry, pages: laid.length };
   const parts = new Map<string, Uint8Array>();
   parts.set('mimetype', strToU8(IDML_MIMETYPE));
-  parts.set('designmap.xml', strToU8(designMapXml({ title: options.title ?? 'Postext', layerId: 'ulayer', masterId: masters.spreads[0]?.id ?? 'umaster', masters: masters.spreads.slice(1).map((m) => m.id), ...(masters.spreads.length && w.stories.some((s) => s.xml.includes(RUNNING_HEAD_VARIABLE)) ? { variables: runningHeadVariableXml(w) } : {}), spreads: spreads.map((s) => s.id), stories: w.stories.map((s) => s.id), sections: sectionsXml(w, laid), links: linksXml(w, laid.map((p) => p.self)) })));
+  parts.set('designmap.xml', strToU8(designMapXml({ title: options.title ?? 'Postext', layerId: 'ulayer', ...(w.die ? { layers: dieLayerXml(DIE_LINE_LAYER, w.die.printable) } : {}), masterId: masters.spreads[0]?.id ?? 'umaster', masters: masters.spreads.slice(1).map((m) => m.id), ...(masters.spreads.length && w.stories.some((s) => s.xml.includes(RUNNING_HEAD_VARIABLE)) ? { variables: runningHeadVariableXml(w) } : {}), spreads: spreads.map((s) => s.id), stories: w.stories.map((s) => s.id), sections: sectionsXml(w, laid), links: linksXml(w, laid.map((p) => p.self)) })));
   parts.set('META-INF/container.xml', strToU8(CONTAINER_XML));
-  parts.set('Resources/Graphic.xml', strToU8(graphicXml([...w.swatches.values()])));
+  // The spot inks after the process ones, the transparent ones (varnish,
+  // die line) last, as they print.
+  const spotInks = [...inks.inks.values(), ...(w.die ? [w.die] : [])].sort((a, b) => Number(inkType(a) === 'Transparent') - Number(inkType(b) === 'Transparent'));
+  parts.set('Resources/Graphic.xml', strToU8(graphicXml([...w.swatches.values()], spotInks.map((ink, i) => inkXml(ink, 5 + i)).join(''))));
   parts.set('Resources/Fonts.xml', strToU8(fontsXml(w.fonts)));
   parts.set('Resources/Styles.xml', strToU8(stylesXml([...w.paraStyles.values()], keepsLines(w), [...w.charStyles.values()])));
   parts.set('Resources/Preferences.xml', strToU8(preferencesXml(g)));

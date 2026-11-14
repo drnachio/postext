@@ -17,7 +17,9 @@ import { joinContinued } from './fidelity/continued.js';
 import { rejoinThreads } from './fidelity/keptThread.js';
 import { indexDestinations } from './fidelity/crossref.js';
 import { layoutFlow } from './flow.js';
+import { readDieCuts } from './dieCuts.js';
 import { carryFonts } from './fonts.js';
+import { printInks } from './inks.js';
 import { calloutStyles } from './objects.js';
 import { layoutPages } from './pages.js';
 import { runningHeads } from './fidelity/masters.js';
@@ -86,6 +88,8 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   const doc = isDocument(input) ? input : readIdml(input);
   const ctx = new Context(doc, options);
   for (const w of doc.warnings) ctx.rep.add(`reader.${w.code}`, 'warning', w.message, w.part);
+  // The die line first: its paths are no artwork of the pages (#1576).
+  const die = readDieCuts(ctx);
 
   const stories = joinContinued(ctx, selectStories(ctx));
   const main = mainStory(stories);
@@ -173,6 +177,13 @@ export function idmlToPostext(input: Uint8Array | ArrayBuffer | IdmlDocument, op
   }
   const palette = ctx.palette.list();
   if (palette.length) config.colorPalette = palette;
+  // Special inks and the die line (#1576).
+  const inks = printInks(doc, ctx.rep);
+  if (inks.length || die.dieLine) config.print = { ...(inks.length ? { inks } : {}), ...(die.dieLine ? { dieLine: die.dieLine } : {}) };
+  if (die.dieCuts) {
+    config.dieCuts = die.dieCuts;
+    if (layout === 'flow' && die.dieCuts.pages?.length) ctx.rep.add('dieCutsInFlow', 'warning', 'Die-cuts are placed by page number: the pages of a flowing book may not fall where the document\'s did', undefined, die.dieCuts.pages.length);
+  }
 
   // The language most of the text is set in.
   const known = [...ctx.languages].filter(([tag]) => !tag.startsWith('?')).sort((a, b) => b[1] - a[1]);
