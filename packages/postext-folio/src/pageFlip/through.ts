@@ -33,12 +33,34 @@ export interface FaceThroughData {
   /** The deepest layer is past the book's end (the board or what the
    *  book lies on), not a page. */
   end?: boolean;
+  /** Each layer's own cut, as many texels as `data`: the four bytes of a
+   *  texel are a 32-bit word (R the low byte) whose bit k−1 is set where
+   *  the k-th layer beneath has a hole. The straight-down picture cannot
+   *  tell a leaf under an overhang (a hole that widens below the page, as
+   *  the leaves already turned show it) from paper: the walk asks each
+   *  layer at its own depth (#1592). */
+  cuts?: Uint8ClampedArray;
 }
 
 /** A through picture as a texture: its colour sRGB like the pages' (the
  *  alpha, the depth codes, stays as it is), filtered; the shader reads
  *  the codes texel by texel (`texelFetch`), never blended. */
 export function throughTexture(through: FaceThroughData): Texture {
+  if (through.cuts) {
+    // The layers' cuts ride below the picture, in rows of their own (a
+    // sampler more would pass the page shader's texture units): bits, so
+    // the texture stays raw and the shader decodes the picture's sRGB.
+    const both = new Uint8Array(through.data.byteLength * 2);
+    both.set(through.data, 0);
+    both.set(through.cuts, through.data.byteLength);
+    const texture = new DataTexture(both, through.width, through.height * 2, RGBAFormat, UnsignedByteType);
+    texture.minFilter = LinearFilter;
+    texture.magFilter = LinearFilter;
+    texture.generateMipmaps = false;
+    texture.needsUpdate = true;
+    texture.userData.cuts = true;
+    return texture;
+  }
   const texture = new DataTexture(new Uint8Array(through.data.buffer, through.data.byteOffset, through.data.byteLength), through.width, through.height, RGBAFormat, UnsignedByteType);
   texture.colorSpace = SRGBColorSpace;
   texture.minFilter = LinearFilter;
@@ -61,6 +83,10 @@ export interface CutUniforms {
   uHasBackCut: { value: number };
   uFrontThrough: { value: Texture | null };
   uBackThrough: { value: Texture | null };
+  /** The face's through texture carries the layers' cuts below its
+   *  picture (see {@link FaceThroughData.cuts}). */
+  uHasFrontCuts: { value: number };
+  uHasBackCuts: { value: number };
   uHasFrontThrough: { value: number };
   uHasBackThrough: { value: number };
   /** The layers the faces' through pictures hold (the walk's bound). */
@@ -82,6 +108,8 @@ export const cutUniforms = (mode: number): CutUniforms => ({
   uHasBackCut: { value: 0 },
   uFrontThrough: { value: null },
   uBackThrough: { value: null },
+  uHasFrontCuts: { value: 0 },
+  uHasBackCuts: { value: 0 },
   uHasFrontThrough: { value: 0 },
   uHasBackThrough: { value: 0 },
   uThroughLayers: { value: 0 },
@@ -98,6 +126,8 @@ export const CUT_PARS = /* glsl */ `
   uniform float uHasBackCut;
   uniform sampler2D uFrontThrough;
   uniform sampler2D uBackThrough;
+  uniform float uHasFrontCuts;
+  uniform float uHasBackCuts;
   uniform float uHasFrontThrough;
   uniform float uHasBackThrough;
   uniform float uThroughLayers;
@@ -117,8 +147,26 @@ export const CUT_PARS = /* glsl */ `
     ivec2 t = ivec2(clamp(p, vec2(0.0), vec2(0.999999)) * size);
     return floor(throughAt(front, t).a * 255.0 + 0.5);
   }
+  // Whether the k-th layer beneath (k ≥ 1) has a hole at a point of the
+  // face, from its own cut; without the cuts, from the straight-down
+  // picture (right while every hole lies within the one above it).
+  bool layerCut(bool front, vec2 p, vec2 size, float k) {
+    if ((front ? uHasFrontCuts : uHasBackCuts) < 0.5) return throughDepth(front, p, size) > k + 0.5;
+    ivec2 t = ivec2(clamp(p, vec2(0.0), vec2(0.999999)) * size) + ivec2(0, int(size.y));
+    vec4 c = throughAt(front, t);
+    int b = int(k) - 1;
+    if (b < 0 || b > 31) return false;
+    int bits = int(floor((b < 8 ? c.r : b < 16 ? c.g : b < 24 ? c.b : c.a) * 255.0 + 0.5));
+    return ((bits >> (b - (b / 8) * 8)) & 1) == 1;
+  }
   vec3 throughColour(bool front, vec2 p) {
-    return front ? texture2D(uFrontThrough, p).rgb : texture2D(uBackThrough, p).rgb;
+    if ((front ? uHasFrontCuts : uHasBackCuts) < 0.5) return front ? texture2D(uFrontThrough, p).rgb : texture2D(uBackThrough, p).rgb;
+    // The picture is the texture's top half, raw: kept off the cuts'
+    // rows by half a texel, and decoded from sRGB here.
+    float h = float(front ? textureSize(uFrontThrough, 0).y : textureSize(uBackThrough, 0).y);
+    vec2 q = vec2(p.x, min(p.y * 0.5, 0.5 - 0.5 / h));
+    vec3 c = front ? texture2D(uFrontThrough, q).rgb : texture2D(uBackThrough, q).rgb;
+    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
   }
 `;
 
@@ -135,6 +183,8 @@ export const CUT_FRAGMENT = /* glsl */ `
       vec2 p0 = vec2(tuv.x, 1.0 - tuv.y);
       bool hasThrough = (front ? uHasFrontThrough : uHasBackThrough) > 0.5;
       vec2 size = hasThrough ? vec2(front ? textureSize(uFrontThrough, 0) : textureSize(uBackThrough, 0)) : vec2(1.0);
+      // A texture with the cuts below its picture is twice its height.
+      if ((front ? uHasFrontCuts : uHasBackCuts) > 0.5) size.y *= 0.5;
       float d0 = hasThrough ? throughDepth(front, p0, size) : 0.0;
       // The picture is coarser than the page: at the hole's rim it may
       // still say paper where the page's alpha says hole.
@@ -180,9 +230,12 @@ export const CUT_FRAGMENT = /* glsl */ `
           k = float(i);
           if (k > uThroughLayers) break;
           hit = p0 + stepDown * k;
-          float d = throughDepth(front, hit, size);
-          if (d < k) { wall = 1.0; break; }
-          if (d < k + 0.5) break;
+          // Down through the leaf above this layer: paper there is a
+          // wall (the page itself, then each layer at its own depth, so a
+          // hole that widens beneath an overhang shows its own step).
+          bool clear = k < 1.5 ? throughDepth(front, hit, size) > 0.5 : layerCut(front, hit, size, k - 1.0);
+          if (!clear) { wall = 1.0; break; }
+          if (!layerCut(front, hit, size, k)) break;
         }
         // Out past the book's last page with nothing there but the desk:
         // the page lets the eye through, to the real desk under the book.
@@ -200,7 +253,10 @@ export const CUT_FRAGMENT = /* glsl */ `
         throughLit = wall > 0.5 ? 0.45 * lit : lit;
         // Deeper is darker: less of the sky reaches down a narrow shaft.
         throughAo = mix(0.35, 1.0, exp(-0.12 * (k - 1.0))) * (wall > 0.5 ? 0.7 : 1.0);
-        hole = wall > 0.5 ? uPaper * 0.8 : throughColour(front, hit);
+        // A layer reached under an overhang is not in the picture seen
+        // straight down: its paper, in the shade the overhang gives it.
+        bool seen = throughDepth(front, hit, size) > k - 0.5;
+        hole = wall > 0.5 ? uPaper * 0.8 : seen ? throughColour(front, hit) : uPaper * 0.7;
       }
       ink = mix(hole, ink, cutA);
     }
@@ -327,6 +383,8 @@ export function dressCut(mesh: CutMesh, sources: CutSources, leafDepth: number, 
   u.uHasFrontThrough.value = ft ? 1 : 0;
   u.uBackThrough.value = bt?.texture ?? null;
   u.uHasBackThrough.value = bt ? 1 : 0;
+  u.uHasFrontCuts.value = ft?.texture.userData.cuts ? 1 : 0;
+  u.uHasBackCuts.value = bt?.texture.userData.cuts ? 1 : 0;
   u.uThroughLayers.value = Math.max(ft?.layers ?? 0, bt?.layers ?? 0);
   u.uFrontEnd.value = ft?.end ? ft.layers : 0;
   u.uBackEnd.value = bt?.end ? bt.layers : 0;
