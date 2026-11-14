@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Encres spéciales et découpes',
   description: 'Cinquièmes couleurs, encres métallisées et fluorescentes, dorure à chaud, blanc opaque et vernis comme tons directs dotés d’une finition, et découpes : trous à travers un ou plusieurs feuillets, coins arrondis et livres découpés en forme, le tracé de découpe dans le PDF, le contrôle en amont et la façon dont chaque visionneuse les montre',
   lang: 'fr',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "Cette page traite de ce qu’un imprimeur ajoute à un livre en plus des quatre encres habituelles. Une cinquième encre peut être la couleur exacte d’une marque, un or ou un argent, une dorure brillante, une encre fluo très vive, un blanc pour un papier kraft ou de couleur, ou un vernis transparent. Chacune est une couleur du livre qui dit ce qu’elle est, et le PDF lui donne sa propre plaque pour l’imprimeur. Une découpe est un trou percé à travers les pages, des coins arrondis ou un livre taillé selon une forme. Les trous se définissent dans les réglages, le texte les contourne, et le PDF dessine la ligne que suit l’outil de découpe.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` lit le nom qu’un nuancier, une séparation ou une table des encres donne à une encre et renvoie la finition que ce nom suggère, ou `undefined`. Il connaît les mots de chaque finition et de chaque brillance dans les dix langues du site et dans les noms des nuanciers, ainsi que les numéros de Pantone : 801 à 814 sont fluorescents, 871 à 877, la série 8000 et la série 10000 métallisés. Un mot de vernis ou de dorure l’emporte sur un mot de couleur (`Gold foil` est une dorure, `Barniz oro` un vernis), un mot de fluorescence sur le blanc, un métal sur le blanc (`白金`, le platine). Le français `or` est laissé de côté, parce que c’est aussi la conjonction anglaise ; `Or métallisé` se lit quand même comme métallisé grâce à son second mot.
 
 C’est une indication, et rien ne l’applique en silence : le Sandbox la propose sous forme de bouton, et le [skill postext-port](/fr/docs/skill) la signale.
+
+L’[importateur IDML](/fr/docs/indesign) s’en sert aussi, pour une nuance de ton direct dont aucun export de Postext n’a noté la finition, et signale chaque supposition dans son rapport.
 
 ## Découpes
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 En ligne de commande, `postext pdf --die-line page|none` remplace `output` le temps d’une exécution (voir [`pdf`](/fr/docs/command-line#pdf)).
+
+Dans InDesign, le tracé de découpe est un calque. L’[export IDML](/fr/docs/indesign) place les trous et les bords façonnés sur un calque verrouillé nommé **Die line**, avec la nuance de découpe pour contour et en surimpression, et l’importateur relit un tel calque, ou les tracés dont le contour est une nuance `CutContour`, `Die`, `Dieline` ou `Troquel`, comme `dieCuts`.
 
 ### Ce que dit le contrôle en amont des découpes
 

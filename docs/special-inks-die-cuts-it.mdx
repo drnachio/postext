@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Inchiostri speciali e fustelle',
   description: 'Quinti colori, inchiostri metallizzati e fluorescenti, stampa a caldo, bianco coprente e vernici come tinte piatte con una finitura, e fustelle: fori che attraversano uno o più fogli, angoli arrotondati e libri sagomati, la linea di fustella nel PDF, il preflight e il modo in cui ogni visualizzatore li mostra',
   lang: 'it',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "Questa pagina parla di ciò che una tipografia aggiunge a un libro oltre ai quattro inchiostri abituali. Un quinto inchiostro può essere il colore esatto di un marchio, un oro o un argento, una lamina lucida, un inchiostro fluorescente molto acceso, un bianco per la carta kraft o colorata, oppure una vernice trasparente. Ognuno è un colore del libro che dice che cosa è, e il PDF gli dà una lastra propria per la tipografia. Una fustella è un foro tagliato attraverso le pagine, degli angoli arrotondati o un libro tagliato secondo una sagoma. I fori si definiscono nelle impostazioni, il testo ci gira attorno, e il PDF disegna la linea che segue l’utensile di taglio.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` legge il nome che un campione, una separazione o una tabella degli inchiostri dà a un inchiostro e restituisce la finitura che suggerisce, oppure `undefined`. Conosce le parole di ogni finitura e lucentezza nelle dieci lingue del sito e nei nomi delle mazzette di colori, e i numeri Pantone: da 801 a 814 sono fluorescenti, da 871 a 877, la serie 8000 e la serie 10000 metallizzati. Una parola di vernice o di lamina prevale su una parola di colore (`Gold foil` è una lamina, `Barniz oro` una vernice), una di fluorescenza sul bianco, un metallo sul bianco (`白金`, platino). Il francese `or` è escluso, perché è anche la congiunzione inglese; `Or métallisé` si legge comunque come metallizzato grazie alla seconda parola.
 
 È un suggerimento e niente lo applica in silenzio: la Sandbox lo propone come pulsante, e la [skill postext-port](/it/docs/skill) lo riporta.
+
+Anche l’[importatore IDML](/it/docs/indesign) la usa, per un campione di tinta piatta la cui finitura nessuna esportazione di Postext ha annotato, e riporta ogni ipotesi nel suo rapporto.
 
 ## Fustelle
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 Dalla riga di comando, `postext pdf --die-line page|none` sostituisce `output` per una sola esecuzione (vedi [`pdf`](/it/docs/command-line#pdf)).
+
+In InDesign la linea di fustella è un livello. L’[esportazione IDML](/it/docs/indesign) mette i fori e i bordi sagomati su un livello bloccato chiamato **Die line**, con la traccia del campione della fustella e in sovrastampa, e l’importatore rilegge un livello simile, o i tracciati con la traccia di un campione `CutContour`, `Die`, `Dieline` o `Troquel`, come `dieCuts`.
 
 ### Che cosa dice il preflight sulle fustelle
 

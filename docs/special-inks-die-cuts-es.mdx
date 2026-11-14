@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Tintas especiales y troqueles',
   description: 'Quintas tintas, tintas metálicas y fluorescentes, estampación en caliente, blanco opaco y barniz como tintas planas con acabado, y troqueles: huecos que atraviesan una o varias hojas, esquinas redondeadas y libros con forma, la línea de troquel en el PDF, el preflight y cómo los muestra cada visor',
   lang: 'es',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "Esta página trata de lo que la imprenta añade a un libro además de las cuatro tintas de siempre. Una quinta tinta puede ser un color corporativo exacto, un oro o una plata, una estampación brillante, una tinta fluorescente muy viva, un blanco para papel kraft o de color, o un barniz transparente. Cada una es un color del libro marcado con lo que es, y el PDF la entrega a la imprenta en su propia plancha. Un troquel corta un hueco en las hojas, redondea las esquinas o da al libro una forma. Los huecos se definen en la configuración, el texto los rodea y el PDF dibuja la línea que sigue el troquel.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` lee el nombre que una muestra, una separación o una tabla de tintas da a una tinta y devuelve el acabado que sugiere, o `undefined`. Conoce las palabras de cada acabado y cada brillo en los diez idiomas del sitio y en los nombres que usan las guías de color, y los números de Pantone: del 801 al 814 son fluorescentes; del 871 al 877, la serie 8000 y la 10000, metálicos. Una palabra de barniz o de estampación pesa más que una de color (`Gold foil` es una estampación, `Barniz oro` un barniz), una de fluorescente más que el blanco, y un metal más que el blanco (`白金`, platino). La palabra francesa `or` no se tiene en cuenta, porque es también la conjunción inglesa; `Or métallisé` se sigue leyendo como metálico por su segunda palabra.
 
 Es una sugerencia y nada la aplica sin avisar: el Sandbox la ofrece como un botón, y la [skill postext-port](/es/docs/skill) la menciona en su informe.
+
+El [importador de IDML](/es/docs/indesign) también la usa, para una muestra de tinta plana cuyo acabado no anotó ninguna exportación de Postext, y anota cada suposición en su informe.
 
 ## Troqueles
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 En la línea de comandos, `postext pdf --die-line page|none` sustituye a `output` en una ejecución (véase [`pdf`](/es/docs/command-line#pdf)).
+
+En InDesign, la línea de troquel es una capa. La [exportación a IDML](/es/docs/indesign) pone los huecos y los bordes con forma en una capa bloqueada llamada **Die line**, con el trazo de la muestra del troquel y en sobreimpresión, y el importador lee esa capa, o los trazados con el trazo de una muestra `CutContour`, `Die`, `Dieline` o `Troquel`, de vuelta como `dieCuts`.
 
 ### Qué dice el preflight de los troqueles
 
