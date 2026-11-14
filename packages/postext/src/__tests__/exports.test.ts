@@ -689,6 +689,7 @@ describe("package exports", () => {
       "buildDieCuts",
       "seeThrough",
       "traceDiePaths",
+      "flattenPath",
       "dieCutPath2D",
       "facingSide",
       "CONNECTOR_ROUTINGS",
