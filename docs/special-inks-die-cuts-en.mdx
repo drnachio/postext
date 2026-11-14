@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Special inks and die-cuts',
   description: 'Fifth inks, metallic and fluorescent inks, hot foil, opaque white and varnish as spot colours with a finish, and die-cuts: holes through one or more leaves, rounded corners and shaped books, the die line in the PDF, the preflight and how each viewer shows them',
   lang: 'en',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "This page is about the extras a printer adds to a book beyond the four usual inks. A fifth ink can be an exact brand colour, a gold or silver ink, a shiny foil, a very bright fluorescent ink, a white ink for brown or coloured paper, or a clear varnish. Each one is a colour of the book marked with what it is, and the PDF gives each its own plate for the printer. A die-cut is a hole cut through the pages, rounded corners or a book cut to a shape. The holes are set in the settings, the text runs around them, and the PDF draws the line the cutting tool follows.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` reads the name a swatch, a separation or an ink table gives an ink and returns the finish it suggests, or `undefined`. It knows the words for each finish and sheen in the site's ten languages and in the names swatch books use, and Pantone's numbers: 801 to 814 are fluorescent, 871 to 877, the 8000s and the 10000s metallic. A varnish or foil word wins over a colour word (`Gold foil` is a foil, `Barniz oro` a varnish), a fluorescent word over white, a metal over white (`白金`, platinum). French `or` is left out, because it is also the English conjunction; `Or métallisé` still reads as metallic by its second word.
 
 It is a hint and nothing sets it silently: the Sandbox offers it as a button, and the porting skill reports it.
+
+The [IDML importer](/en/docs/indesign) uses it too, for a spot swatch whose finish no Postext export recorded, and lists each guess in its report.
 
 ## Die-cuts
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 On the command line, `postext pdf --die-line page|none` overrides `output` for one run (see [`pdf`](/en/docs/command-line#pdf)).
+
+In InDesign, the die line is a layer. The [IDML export](/en/docs/indesign) puts the holes and the shaped edges on a locked layer called **Die line**, stroked with the die swatch and set to overprint, and the importer reads such a layer, or the paths stroked with a `CutContour`, `Die`, `Dieline` or `Troquel` swatch, back as `dieCuts`.
 
 ### What the preflight says about die-cuts
 

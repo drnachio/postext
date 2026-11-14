@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Tintes especials i troquels',
   description: "Cinquenes tintes, tintes metàl·liques i fluorescents, estampació en calent, blanc opac i vernís com a tintes planes amb un acabat, i troquels: forats que travessen un o més fulls, cantonades arrodonides i llibres amb forma, la línia de troquel al PDF, el preflight i com els mostra cada visor",
   lang: 'ca',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "Aquesta pàgina tracta del que una impremta afegeix a un llibre a més de les quatre tintes de sempre. Una cinquena tinta pot ser un color de marca exacte, una tinta d'or o de plata, una estampació brillant, una tinta fluorescent molt viva, un blanc per a paper marró o de color, o un vernís transparent. Cadascuna és un color del llibre marcat amb el que és, i el PDF li dona una planxa pròpia per a la impremta. Un troquel és un forat tallat a través de les pàgines, unes cantonades arrodonides o un llibre retallat amb una forma. Els forats es defineixen a la configuració, el text els envolta i el PDF dibuixa la línia que segueix l'eina de tall.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` llegeix el nom que una mostra, una separació o una taula de tintes dona a una tinta i retorna l'acabat que suggereix, o `undefined`. Coneix les paraules de cada acabat i brillantor en les deu llengües del lloc i en els noms dels mostraris, i els números de Pantone: del 801 al 814 són fluorescents, i del 871 al 877, les sèries 8000 i 10000, metàl·lics. Una paraula de vernís o d'estampació mana sobre una de color (`Gold foil` és una estampació, `Barniz oro` un vernís), una de fluorescent sobre el blanc, i un metall sobre el blanc (`白金`, platí). El francès `or` es deixa fora, perquè també és la conjunció anglesa; `Or métallisé` continua llegint-se com a metàl·lic per la segona paraula.
 
 És una pista, i res no l'aplica en silenci: el Sandbox l'ofereix com un botó, i l'skill de portabilitat la indica a l'informe.
+
+L'[importador d'IDML](/ca/docs/indesign) també la fa servir, per a una mostra de tinta plana l'acabat de la qual no va anotar cap exportació de Postext, i anota cada suposició al seu informe.
 
 ## Troquels
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 A la línia d'ordres, `postext pdf --die-line page|none` substitueix `output` durant una execució (vegeu [`pdf`](/ca/docs/command-line#pdf)).
+
+A InDesign, la línia de troquel és una capa. L'[exportació a IDML](/ca/docs/indesign) posa els forats i les vores amb forma en una capa bloquejada anomenada **Die line**, amb el traç de la mostra del troquel i en sobreimpressió, i l'importador llegeix aquesta capa, o els traçats amb el traç d'una mostra `CutContour`, `Die`, `Dieline` o `Troquel`, de tornada com a `dieCuts`.
 
 ### Què diu el preflight dels troquels
 

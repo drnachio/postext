@@ -22,6 +22,8 @@ export interface DesignMapInput {
   masters?: string[];
   /** Text variables, written as they are. */
   variables?: string;
+  /** Layers above the pages' own (the die line's), written as they are. */
+  layers?: string;
   spreads: string[];
   stories: string[];
   /** Sections, hyperlinks and their destinations, written as they are. */
@@ -40,6 +42,7 @@ export function designMapXml(d: DesignMapInput): string {
     '<idPkg:Preferences src="Resources/Preferences.xml"/>' +
     (d.variables ?? '') +
     `<Layer${attr('Self', d.layerId)} Name="Postext" Visible="true" Locked="false" IgnoreWrap="false" ShowGuides="true" LockGuides="false" UI="true" Expendable="true" Printable="true"><Properties><LayerColor type="enumeration">LightBlue</LayerColor></Properties></Layer>` +
+    (d.layers ?? '') +
     [d.masterId, ...(d.masters ?? [])].map((id) => `<idPkg:MasterSpread src="MasterSpreads/MasterSpread_${id}.xml"/>`).join('') +
     d.spreads.map((id) => `<idPkg:Spread src="Spreads/Spread_${id}.xml"/>`).join('') +
     (d.sections ?? '') +
@@ -102,12 +105,32 @@ export interface Swatch {
   name: string;
   space: 'CMYK' | 'RGB';
   value: number[];
+  /** A spot ink's swatch (an ink of its own), or a tint of one. */
+  model?: 'Spot';
+  /** A tint swatch: the swatch it is a tint of, and the tint (percent). */
+  base?: string;
+  tint?: number;
+  /** The swatch's script label, key and value. */
+  label?: [string, string][];
 }
 
-export function graphicXml(swatches: Swatch[]): string {
-  const own = swatches
-    .map((s) => `<Color${attr('Self', s.self)} Model="Process"${attr('Space', s.space)}${attr('ColorValue', s.value.map(num).join(' '))} ColorOverride="Normal" AlternateSpace="NoAlternateColor" AlternateColorValue=""${attr('Name', s.name)} ColorEditable="true" ColorRemovable="true" Visible="true" SwatchCreatorID="7937"/>`)
-    .join('');
+const labelXml = (pairs: [string, string][] | undefined): string =>
+  pairs?.length ? `<Properties><Label>${pairs.map(([k, v]) => `<KeyValuePair${attr('Key', k)}${attr('Value', v)}/>`).join('')}</Label></Properties>` : '';
+
+function swatchXml(s: Swatch): string {
+  const tag = s.base ? 'Tint' : 'Color';
+  const head =
+    `<${tag}${attr('Self', s.self)} Model="${s.model ?? 'Process'}"${attr('Space', s.space)}${attr('ColorValue', s.value.map(num).join(' '))} ColorOverride="Normal" AlternateSpace="NoAlternateColor" AlternateColorValue=""` +
+    `${attr('Name', s.base ? '$ID/' : s.name)} ColorEditable="true" ColorRemovable="true" Visible="true" SwatchCreatorID="7937"${s.base ? `${attr('TintValue', s.tint ?? 100)}${attr('BaseColor', s.base)}` : ''}`;
+  const label = labelXml(s.label);
+  return label ? `${head}>${label}</${tag}>` : `${head}/>`;
+}
+
+/** Graphic.xml: InDesign's own swatches, the book's colours (tints after
+ *  the colours they are tints of), and the inks: the four process ones,
+ *  then the spot inks (`inks`, already written). */
+export function graphicXml(swatches: Swatch[], inks = ''): string {
+  const own = [...swatches.filter((s) => !s.base), ...swatches.filter((s) => s.base)].map(swatchXml).join('');
   return (
     `${XML_HEAD}<idPkg:Graphic xmlns:idPkg="${PKG_NS}" DOMVersion="${DOM_VERSION}">` +
     '<Color Self="Color/Black" Model="Process" Space="CMYK" ColorValue="0 0 0 100" ColorOverride="Specialblack" AlternateSpace="NoAlternateColor" AlternateColorValue="" Name="Black" ColorEditable="false" ColorRemovable="false" Visible="true" SwatchCreatorID="7937"/>' +
@@ -118,6 +141,7 @@ export function graphicXml(swatches: Swatch[]): string {
     '<Ink Self="Ink/$ID/Process Magenta" Name="$ID/Process Magenta" Angle="15" ConvertToProcess="false" Frequency="70" NeutralDensity="0.76" PrintInk="true" TrapOrder="2" InkType="Normal"/>' +
     '<Ink Self="Ink/$ID/Process Yellow" Name="$ID/Process Yellow" Angle="0" ConvertToProcess="false" Frequency="70" NeutralDensity="0.16" PrintInk="true" TrapOrder="3" InkType="Normal"/>' +
     '<Ink Self="Ink/$ID/Process Black" Name="$ID/Process Black" Angle="45" ConvertToProcess="false" Frequency="70" NeutralDensity="1.7" PrintInk="true" TrapOrder="4" InkType="Normal"/>' +
+    inks +
     '<Swatch Self="Swatch/None" Name="None" ColorEditable="false" ColorRemovable="false" Visible="true" SwatchCreatorID="7937"/>' +
     '<StrokeStyle Self="StrokeStyle/$ID/Solid" Name="$ID/Solid"/>' +
     '<StrokeStyle Self="StrokeStyle/$ID/Dashed" Name="$ID/Dashed"/>' +
@@ -160,6 +184,9 @@ export interface TextProps {
   strike?: boolean;
   /** A stroke round the glyphs (a halo's copy of the text): swatch and pt. */
   stroke?: { color: string; weight: number };
+  /** The text's ink overprints (a white or a varnish, an overprinting
+   *  colour). */
+  overprint?: boolean;
 }
 
 /** A tab stop: pt from the text frame's text edge (InDesign measures tab
@@ -218,7 +245,8 @@ export function textPropsAttrs(p: Partial<TextProps>): string {
     attr('BaselineShift', p.baselineShift) +
     attr('Underline', p.underline) +
     attr('StrikeThru', p.strike) +
-    (p.stroke ? `${attr('StrokeColor', p.stroke.color)}${attr('StrokeWeight', p.stroke.weight)} EndJoin="RoundEndJoin"` : '')
+    (p.stroke ? `${attr('StrokeColor', p.stroke.color)}${attr('StrokeWeight', p.stroke.weight)} EndJoin="RoundEndJoin"` : '') +
+    attr('OverprintFill', p.overprint)
   );
 }
 

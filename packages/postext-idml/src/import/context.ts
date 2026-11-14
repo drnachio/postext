@@ -71,6 +71,9 @@ export class Context {
   /** Anchored objects set in a frame of their own on the page: the text
    *  they are anchored in leaves them out. */
   readonly placedAnchors = new Set<IdmlPageItem>();
+  /** Items of the die line (`finishes/dieCuts.ts`): the book's die-cuts, no
+   *  artwork of its pages. */
+  readonly dieItems = new Set<IdmlPageItem>();
 
   constructor(readonly doc: IdmlDocument, readonly options: IdmlImportOptions) {
     this.palette = new Palette(doc, this.rep);

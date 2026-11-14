@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Tintas especiais e facas',
   description: 'Quintas cores, tintas metálicas e fluorescentes, hot stamping, branco opaco e verniz como cores especiais com acabamento, e facas especiais: furos que atravessam uma ou mais folhas, cantos arredondados e livros recortados, a linha de faca no PDF, o preflight e como cada visualizador os mostra',
   lang: 'pt',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: 'Esta página trata dos extras que uma gráfica acrescenta a um livro além das quatro tintas de sempre. Uma quinta cor pode ser uma cor de marca exata, uma tinta ouro ou prata, um hot stamping brilhante, uma tinta fluorescente muito viva, um branco para papel kraft ou colorido, ou um verniz transparente. Cada uma é uma cor do livro marcada com o que ela é, e o PDF dá a cada uma a sua própria chapa para a gráfica. Uma faca especial corta um furo através das páginas, arredonda os cantos ou recorta o livro numa forma. Os furos são definidos nas configurações, o texto os contorna e o PDF desenha a linha que a faca segue.',
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` lê o nome que uma amostra, uma separação ou uma tabela de tintas dá a uma tinta e devolve o acabamento que ele sugere, ou `undefined`. Conhece as palavras de cada acabamento e brilho nos dez idiomas do site e nos nomes usados pelos catálogos de cores, e os números da Pantone: de 801 a 814 são fluorescentes, de 871 a 877, as séries 8000 e 10000, metálicos. Uma palavra de verniz ou de hot stamping prevalece sobre uma de cor (`Gold foil` é um hot stamping, `Barniz oro` um verniz), uma de fluorescente sobre o branco, e um metal sobre o branco (`白金`, platina). O francês `or` fica de fora, porque também é a conjunção inglesa; `Or métallisé` continua sendo lido como metálico pela segunda palavra.
 
 É uma sugestão, e nada a aplica em silêncio: o Sandbox a oferece como um botão, e o skill de portabilidade a informa no relatório.
+
+O [importador de IDML](/pt/docs/indesign) também a usa, para uma amostra de cor especial cujo acabamento nenhuma exportação do Postext anotou, e lista cada suposição no relatório.
 
 ## Facas especiais
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 Na linha de comando, `postext pdf --die-line page|none` substitui `output` numa execução (veja [`pdf`](/pt/docs/command-line#pdf)).
+
+No InDesign, a linha de faca é uma camada. A [exportação IDML](/pt/docs/indesign) põe os furos e as bordas recortadas numa camada bloqueada chamada **Die line**, com o traço da amostra da faca e em sobreimpressão, e o importador lê de volta uma camada assim, ou os traçados cujo traço usa uma amostra `CutContour`, `Die`, `Dieline` ou `Troquel`, como `dieCuts`.
 
 ### O que o preflight diz sobre as facas
 

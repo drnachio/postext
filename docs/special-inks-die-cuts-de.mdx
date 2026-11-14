@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Spezialfarben und Stanzungen',
   description: 'Fünfte Farben, Metallic- und Neonfarben, Heißfolie, Deckweiß und Lack als Sonderfarben mit Veredelung, und Stanzungen: Löcher durch ein oder mehrere Blätter, abgerundete Ecken und Bücher in Form, die Stanzlinie im PDF, der Preflight und wie jeder Betrachter sie zeigt',
   lang: 'de',
-  lastUpdated: '2026-11-13',
+  lastUpdated: '2026-11-14',
   readingTime: '14 min',
   order: 40,
   plainSummary: "Diese Seite handelt von dem, was eine Druckerei einem Buch über die vier üblichen Druckfarben hinaus hinzufügt. Eine fünfte Farbe kann eine genaue Hausfarbe sein, eine Gold- oder Silberfarbe, eine glänzende Folie, eine sehr helle Neonfarbe, ein Weiß für braunes oder farbiges Papier oder ein klarer Lack. Jede davon ist eine Farbe des Buchs mit der Angabe, was sie ist, und das PDF gibt jeder eine eigene Platte für die Druckerei. Eine Stanzung ist ein Loch, das durch die Seiten geschnitten wird, abgerundete Ecken oder ein Buch, das in eine Form geschnitten ist. Die Löcher werden in den Einstellungen festgelegt, der Text läuft um sie herum, und das PDF zeichnet die Linie, der das Schneidwerkzeug folgt.",
@@ -142,6 +142,8 @@ guessInkFinish('PANTONE 286 C');   // undefined
 `guessInkFinish(name)` liest den Namen, den ein Farbfeld, eine Separation oder eine Druckfarbentabelle einer Druckfarbe gibt, und liefert die Veredelung, die er nahelegt, oder `undefined`. Es kennt die Wörter für jede Veredelung und jeden Glanz in den zehn Sprachen der Website und in den Namen der Farbfächer, dazu die Pantone-Nummern: 801 bis 814 sind Neonfarben, 871 bis 877, die 8000er und die 10000er metallisch. Ein Wort für Lack oder Folie hat Vorrang vor einem Farbwort (`Gold foil` ist eine Heißfolie, `Barniz oro` ein Lack), ein Wort für Neon vor Weiß, ein Metall vor Weiß (`白金`, Platin). Das französische `or` bleibt außen vor, weil es auch die englische Konjunktion ist; `Or métallisé` wird über sein zweites Wort trotzdem als metallisch erkannt.
 
 Es ist ein Vorschlag, und nichts setzt ihn stillschweigend: Die Sandbox bietet ihn als Schaltfläche an, und der Portierungs-Skill meldet ihn.
+
+Der [IDML-Import](/de/docs/indesign) nutzt sie ebenfalls, für ein Sonderfarben-Farbfeld, dessen Veredelung kein Export aus Postext vermerkt hat, und führt jede Vermutung in seinem Bericht auf.
 
 ## Stanzungen
 
@@ -295,6 +297,8 @@ print: {
 ```
 
 Auf der Kommandozeile überschreibt `postext pdf --die-line page|none` den Wert von `output` für einen Lauf (siehe [`pdf`](/de/docs/command-line#pdf)).
+
+In InDesign ist die Stanzlinie eine Ebene. Der [IDML-Export](/de/docs/indesign) legt die Löcher und die geformten Ränder auf eine gesperrte Ebene namens **Die line**, mit der Kontur des Stanzfarbfelds und auf Überdrucken gestellt, und der Import liest eine solche Ebene, oder die Pfade mit der Kontur eines Farbfelds `CutContour`, `Die`, `Dieline` oder `Troquel`, als `dieCuts` zurück.
 
 ### Was der Preflight zu Stanzungen meldet
 

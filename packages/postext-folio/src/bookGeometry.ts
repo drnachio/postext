@@ -223,7 +223,13 @@ export function gutterOcclusion(own: Profile, other: Profile, W: number, n = 64)
  * cover, so the shader draws the edges of the leaves, and `run`: how far
  * along the cut face it lies.
  */
-export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, leaves: number): BufferGeometry {
+/** The leaves' outline past the spine (`dieCuts.corners`, a shaped book),
+ *  as fractions of the page: [from the spine (0) to the fore-edge (1),
+ *  from the head (0) to the foot (1)], running from the spine at the head
+ *  round to the spine at the foot. */
+export type EdgeOutline = readonly (readonly [number, number])[];
+
+export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, leaves: number, outline?: EdgeOutline): BufferGeometry {
   const NS = 48;
   const NL = Math.max(2, Math.min(24, leaves + 1));
   const pos: number[] = [];
@@ -253,7 +259,36 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
         else idx.push(a, b, d, b, e, d);
       }
   };
-  for (const end of [1, -1] as const) {
+  if (outline && outline.length > 1) {
+    // A cut leaf (#1591): the sides follow its outline, a strip from the
+    // spine at the head round to the spine at the foot, each straight
+    // piece its own flat face, cut finer where the leaves bend.
+    let along0 = 0;
+    for (let i = 0; i + 1 < outline.length; i++) {
+      const [s0, v0] = outline[i]!;
+      const [s1, v1] = outline[i + 1]!;
+      const dx = (s1 - s0) * W;
+      const dy = -(v1 - v0) * H;
+      const len = Math.hypot(dx, dy);
+      if (len < 1e-6) continue;
+      const cols = Math.max(1, Math.ceil(Math.abs(s1 - s0) * NS));
+      const start = along0;
+      quadGrid(
+        cols,
+        NL - 1,
+        (c, r) => {
+          const f = c / cols;
+          const lambda = r / (NL - 1);
+          const [x, z] = alongLayer(p, (s0 + (s1 - s0) * f) * W, lambda);
+          return [side * x, H / 2 - (v0 + (v1 - v0) * f) * H, z, lambda * leaves, start + f * len];
+        },
+        // Outward: the strip runs clockwise seen from above a recto.
+        [(side * -dy) / len, dx / len, 0],
+        side < 0,
+      );
+      along0 += len;
+    }
+  } else for (const end of [1, -1] as const) {
     // Head (y = H/2, facing +y) and tail (facing −y).
     quadGrid(
       NS,
@@ -268,7 +303,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
     );
   }
   // The fore-edge: each leaf ends where its arc length runs out.
-  quadGrid(
+  if (!(outline && outline.length > 1)) quadGrid(
     1,
     NL - 1,
     (c, r) => {

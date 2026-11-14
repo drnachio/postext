@@ -37,6 +37,9 @@ export interface IdmlColor {
   /** InDesign's own (Black, Paper, Registration) or hidden reserved. */
   special?: 'black' | 'paper' | 'registration' | 'reserved';
   visible: boolean;
+  /** The swatch's script label (`<Properties><Label>`), key → value:
+   *  where an export from Postext records an ink's finish. */
+  label?: Record<string, string>;
 }
 
 export interface IdmlTint {

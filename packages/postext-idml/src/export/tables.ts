@@ -30,7 +30,7 @@ function edgeAttrs(w: Writer, t: TableItem, c: Cell): string {
   let out = '';
   for (const e of EDGES) {
     const on = !!stroke && (rules === 'grid' || (rules === 'horizontal' && (e === 'Top' || e === 'Bottom')) || (rules === 'outer' && outer[e]));
-    out += `${attr(`${e}EdgeStrokeWeight`, on ? weight : 0)}${attr(`${e}EdgeStrokeColor`, on ? stroke!.ref : 'Swatch/None')} ${e}EdgeStrokeType="StrokeStyle/$ID/Solid" ${e}EdgeStrokeTint="100"`;
+    out += `${attr(`${e}EdgeStrokeWeight`, on ? weight : 0)}${attr(`${e}EdgeStrokeColor`, on ? stroke!.ref : 'Swatch/None')} ${e}EdgeStrokeType="StrokeStyle/$ID/Solid" ${e}EdgeStrokeTint="100"${on && stroke!.overprint ? ` ${e}EdgeStrokeOverprint="true"` : ''}`;
   }
   return out;
 }
@@ -57,7 +57,7 @@ function cellXml(w: Writer, t: TableItem, self: string, c: Cell): string {
   }
   return (
     `<Cell${attr('Self', `${self}i${c.col}_${c.row}`)}${attr('Name', `${c.col}:${c.row}`)}${attr('RowSpan', c.rowSpan)}${attr('ColumnSpan', c.colSpan)} AppliedCellStyle="CellStyle/$ID/[None]" AppliedCellStylePriority="0"` +
-    `${insets} VerticalJustification="TopAlign"${baseline} ClipContentToTextCell="false"${attr('FillColor', fill?.ref ?? 'Swatch/None')}${fill && fill.opacity < 1 ? attr('FillTint', fill.opacity * 100) : ''}${edgeAttrs(w, t, c)}>` +
+    `${insets} VerticalJustification="TopAlign"${baseline} ClipContentToTextCell="false"${attr('FillColor', fill?.ref ?? 'Swatch/None')}${fill && fill.opacity < 1 ? attr('FillTint', fill.opacity * 100) : ''}${fill?.overprint ? ' OverprintFill="true"' : ''}${edgeAttrs(w, t, c)}>` +
     `${body}</Cell>`
   );
 }

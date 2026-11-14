@@ -6,7 +6,7 @@
 // cut walls show where the ray meets paper. `composeThrough` bakes its
 // shadows and walls into a flat picture, right for a flat viewer; here the
 // walls and shadows are the shader's, so the layers are drawn bare.
-import { resolveFolioConfig, seeThrough, traceDiePaths, type SeeThroughLayer, type VDTDocument } from 'postext';
+import { pathBounds, resolveFolioConfig, seeThrough, traceDiePaths, type SeeThroughLayer, type VDTDocument } from 'postext';
 import type { FaceThroughData } from '../pageFlip/through.js';
 
 /** The deepest a tunnel is followed: past this the pages beneath are too
@@ -136,6 +136,7 @@ export function paintThrough(doc: VDTDocument, i: number, width: number, canvasO
     for (const canvas of [colour, depth, silhouette]) canvas.width = canvas.height = 0;
   }
   const data = new Uint8ClampedArray(w * h * 4);
+  const cuts = paintCuts(doc, layers, w, h, scale, inset);
   for (let p = 0; p < data.length; p += 4) {
     // A texel the hole covers less than half of is paper.
     const code = z[p + 3]! >= 128 ? z[p]! : 0;
@@ -144,7 +145,58 @@ export function paintThrough(doc: VDTDocument, i: number, width: number, canvasO
     data[p + 2] = rgb[p + 2]!;
     data[p + 3] = code;
   }
-  return { width: w, height: h, data, layers: layers.length, ...(layers[layers.length - 1]!.pageIndex < 0 ? { end: true } : {}) };
+  return { width: w, height: h, data, layers: layers.length, ...(cuts ? { cuts } : {}), ...(layers[layers.length - 1]!.pageIndex < 0 ? { end: true } : {}) };
+}
+
+/**
+ * Each layer's own holes, bit k−1 of a texel's 32-bit word for the k-th
+ * layer (see `FaceThroughData.cuts`): the whole of each hole, not only
+ * what shows of it from straight above, so the walk finds a hole that
+ * widens beneath the page (#1592). Each layer is read back within its
+ * holes' box only. Undefined where no canvas can be read.
+ */
+function paintCuts(doc: VDTDocument, layers: readonly SeeThroughLayer[], w: number, h: number, scale: number, inset: number): Uint8ClampedArray | undefined {
+  const cuts = new Uint8ClampedArray(w * h * 4);
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d", { willReadFrequently: true });
+  if (!ctx) return undefined;
+  try {
+    for (let k = 1; k <= Math.min(layers.length, 32); k++) {
+      const j = layers[k - 1]!.pageIndex;
+      const holes = j >= 0 ? doc.pages[j]?.dieCut?.holes : undefined;
+      const box = holes?.length ? pathBounds(holes) : undefined;
+      if (!holes || !box) continue;
+      const x0 = Math.max(0, Math.floor((box.x - inset) * scale) - 1);
+      const y0 = Math.max(0, Math.floor((box.y - inset) * scale) - 1);
+      const x1 = Math.min(w, Math.ceil((box.x + box.width - inset) * scale) + 1);
+      const y1 = Math.min(h, Math.ceil((box.y + box.height - inset) * scale) + 1);
+      if (x1 <= x0 || y1 <= y0) continue;
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      ctx.setTransform(scale, 0, 0, scale, -inset * scale, -inset * scale);
+      ctx.fillStyle = "#000";
+      ctx.beginPath();
+      traceDiePaths(ctx, holes);
+      ctx.fill("nonzero");
+      const a = ctx.getImageData(x0, y0, x1 - x0, y1 - y0).data;
+      const byte = (k - 1) >> 3;
+      const bit = 1 << ((k - 1) & 7);
+      for (let y = y0; y < y1; y++) {
+        for (let x = x0; x < x1; x++) {
+          if (a[((y - y0) * (x1 - x0) + (x - x0)) * 4 + 3]! < 128) continue;
+          const q = (y * w + x) * 4 + byte;
+          cuts[q] = cuts[q]! | bit;
+        }
+      }
+    }
+  } catch {
+    return undefined;
+  } finally {
+    canvas.width = canvas.height = 0;
+  }
+  return cuts;
 }
 
 const ids = new WeakMap<object, number>();

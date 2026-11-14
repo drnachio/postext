@@ -171,7 +171,7 @@ export function settleStyles(s: StyleSurvey): void {
 export function characterStyle(w: Writer, name: string, props: TextProps): CharacterStyleDef {
   let c = w.charStyles.get(name);
   if (!c) {
-    const own: TextProps = { font: props.font, fontStyle: props.fontStyle, size: props.size, color: props.color, tracking: props.tracking };
+    const own: TextProps = { font: props.font, fontStyle: props.fontStyle, size: props.size, color: props.color, tracking: props.tracking, ...(props.overprint ? { overprint: true } : {}) };
     if (props.capitalization) own.capitalization = props.capitalization;
     w.charStyles.set(name, (c = { self: styleSelf('CharacterStyle', name), name, props: own }));
   }

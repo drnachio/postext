@@ -1,7 +1,7 @@
 // `Resources/Graphic.xml` (swatches and stroke styles) and
 // `Resources/Fonts.xml`.
 
-import { children, isElement, localName, num, nums, type XmlElement } from '../xml/read.js';
+import { child, children, isElement, localName, num, nums, type XmlElement } from '../xml/read.js';
 import type { ColourSpace, IdmlColor, IdmlFont, IdmlStrokeStyle, IdmlSwatch, IdmlWarning } from '../model/document.js';
 import { plainName } from './props.js';
 
@@ -13,6 +13,20 @@ const spaceOf = (v: string | undefined): ColourSpace => SPACES[v ?? ''] ?? 'CMYK
 // plate) and the hidden process inks it reserves.
 const SPECIALS: Record<string, NonNullable<IdmlColor['special']>> = { Specialblack: 'black', Specialpaper: 'paper', Specialregistration: 'registration', Hiddenreserved: 'reserved' };
 const MODELS = new Set(['Process', 'Spot', 'Registration', 'MixedInkModel']);
+
+/** The key-value pairs of an element's script label, if it has any. */
+export function labelOf(el: XmlElement): Record<string, string> | undefined {
+  return labelPairs(children(child(el, 'Properties'), 'Label'));
+}
+
+/** The key-value pairs of `<Label>` elements, if they hold any. */
+export function labelPairs(labels: readonly XmlElement[]): Record<string, string> | undefined {
+  const pairs = labels.flatMap((l) => children(l, 'KeyValuePair'));
+  if (!pairs.length) return undefined;
+  const out: Record<string, string> = Object.create(null) as Record<string, string>;
+  for (const kv of pairs) if (kv.attrs.Key) out[kv.attrs.Key] = kv.attrs.Value ?? '';
+  return out;
+}
 
 function colourOf(el: XmlElement): IdmlColor {
   const a = el.attrs;
@@ -29,6 +43,8 @@ function colourOf(el: XmlElement): IdmlColor {
   };
   if (special) colour.special = special;
   if (a.AlternateSpace && a.AlternateSpace !== 'NoAlternateColor' && alt?.length) colour.alternate = { space: spaceOf(a.AlternateSpace), value: alt };
+  const label = labelOf(el);
+  if (label) colour.label = label;
   return colour;
 }
 

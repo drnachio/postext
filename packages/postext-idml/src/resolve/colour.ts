@@ -94,7 +94,11 @@ function resolve(doc: IdmlDocument, swatch: IdmlSwatch, tint: number, depth: num
       const kind: ResolvedColour['kind'] = swatch.special === 'paper' ? 'paper' : swatch.special === 'black' ? 'black' : swatch.special === 'registration' || swatch.model === 'Registration' ? 'registration' : swatch.model === 'Spot' ? 'spot' : 'process';
       const out: ResolvedColour = { hex: hexOf(tinted(rgb, tint)), tint, kind };
       if (swatch.space === 'CMYK' && swatch.value.length >= 4) out.cmyk = [swatch.value[0]!, swatch.value[1]!, swatch.value[2]!, swatch.value[3]!];
-      if (swatch.model === 'Spot') out.spot = swatch.name;
+      if (swatch.model === 'Spot') {
+        out.spot = swatch.name;
+        // A spot ink defined in Lab or RGB prints from its CMYK alternate.
+        if (!out.cmyk && swatch.alternate?.space === 'CMYK' && swatch.alternate.value.length >= 4) out.cmyk = [swatch.alternate.value[0]!, swatch.alternate.value[1]!, swatch.alternate.value[2]!, swatch.alternate.value[3]!];
+      }
       return out;
     }
     case 'tint': {

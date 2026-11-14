@@ -1,7 +1,8 @@
 // A document as a book: its recto rule, trimmed page size, paper and
 // appearance, and the paintings a new layout can keep (#1276: split out of
 // postext.ts).
-import { type VDTDocument, type VDTPage, folioForTrim, resolveFolioConfig, type FolioPaperConfig } from 'postext';
+import { type VDTDocument, type VDTPage, flattenPath, folioForTrim, leafSide, resolveFolioConfig, type FolioPaperConfig } from 'postext';
+import type { EdgeOutline } from '../bookGeometry.js';
 import type { FolioAppearance } from '../viewer.js';
 
 /** Whether the document's first page is a recto: page 1, or a chapter
@@ -44,14 +45,50 @@ export function appearanceOf(doc: VDTDocument, own: FolioAppearance | undefined)
   // (#449).
   const ownCovers = resolveFolioConfig(folio).binding.cover === "pages";
   const total = before + doc.pages.length;
+  const edgeOutline = edgeOutlineOf(doc);
   return {
     covers: { front: ownCovers && before === 0, back: ownCovers && after === 0 && total % 2 === 0 },
+    ...(edgeOutline ? { edgeOutline } : {}),
     // Page sizes are in device pixels at the page's dpi.
     ...(page ? { pageWidthMm: (trimmedSize(page, doc).width * 25.4) / (doc.config.page.dpi || 300) } : {}),
     ...own,
     folio,
     extraPages: { before, after },
   };
+}
+
+/**
+ * The leaves' outline past the spine (`FlipAppearance.edgeOutline`), from
+ * the first recto cut to an outline (rounded corners, a shaped book): its
+ * outline as fractions of the trim, measured from the spine, without the
+ * run along the spine itself. Undefined for leaves cut square, or for an
+ * outline that never meets the spine.
+ */
+export function edgeOutlineOf(doc: VDTDocument): EdgeOutline | undefined {
+  const i = doc.pages.findIndex((p, k) => !!p.dieCut?.outline?.length && leafSide(doc, k) === "recto");
+  const page = doc.pages[i];
+  const path = page?.dieCut?.outline?.[0];
+  if (!page || !path) return undefined;
+  const poly = flattenPath(path, 6)[0];
+  if (!poly || poly.length < 3) return undefined;
+  const inset = Math.max(0, doc.trimOffset);
+  const { width: W, height: H } = trimmedSize(page, doc);
+  const right = doc.config.page.binding === "right";
+  const pts = poly.map((p) => [Math.min(1, Math.max(0, right ? (inset + W - p.x) / W : (p.x - inset) / W)), Math.min(1, Math.max(0, (p.y - inset) / H))] as const);
+  // Start just past the run along the spine and go round to it.
+  const onSpine = pts.map(([s]) => s < 1e-3);
+  const n = pts.length;
+  const startAt = onSpine.findIndex((on, k) => on && !onSpine[(k + 1) % n]);
+  if (startAt < 0) return undefined;
+  const strip: [number, number][] = [];
+  for (let k = 0; k <= n; k++) {
+    const q = (startAt + k) % n;
+    strip.push([pts[q]![0], pts[q]![1]]);
+    if (k > 0 && onSpine[q]) break;
+  }
+  // From the head round to the foot.
+  if (strip[0]![1] > strip[strip.length - 1]![1]) strip.reverse();
+  return strip;
 }
 
 /** The paper a page is printed on, when a `:::paper` run sets one. */

@@ -678,6 +678,7 @@ describe("package exports", () => {
       "parseSvgPath",
       "arcToCubics",
       "pathBounds",
+      "flattenPath",
       "mirrorPath",
       "dieMetricsOf",
       "dieShapePath",

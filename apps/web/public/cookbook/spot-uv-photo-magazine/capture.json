@@ -3,21 +3,21 @@
   "slug": "spot-uv-photo-magazine",
   "sourceHash": "c7fd46dc8fc09a973e24de106fdf03ef5ebe41da73d76227d80fa2195efc483d",
   "engine": {
-    "postext": "1.85.1",
-    "postextPdf": "1.85.1",
+    "postext": "1.86.0",
+    "postextPdf": "1.86.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.78",
-  "capturedAt": "2026-11-13T18:46:16.213Z",
+  "capturedAt": "2026-11-14T00:03:53.808Z",
   "variants": {
     "en": {
-      "hash8": "b96420c8",
+      "hash8": "6e12ff76",
       "vdtHash": "4f6588f826f90f40d396b5e9c870b0a93f007d4c",
       "timings": {
-        "importMs": 541,
-        "fontsMs": 163,
-        "buildMs": 126,
-        "totalMs": 1986,
+        "importMs": 11208,
+        "fontsMs": 66,
+        "buildMs": 83,
+        "totalMs": 12756,
         "builds": 1
       },
       "specimen": {
@@ -147,7 +147,7 @@
       },
       "sandbox": {
         "file": "spot-uv-photo-magazine.postext",
-        "bytes": 705380,
+        "bytes": 703024,
         "folio": "4e652620",
         "chapters": [
           {
@@ -360,13 +360,13 @@
       }
     },
     "es": {
-      "hash8": "0255df0d",
+      "hash8": "81841e42",
       "vdtHash": "f2bb57e959b7f462788eb33e69be2fa0bc610792",
       "timings": {
-        "importMs": 513,
-        "fontsMs": 81,
-        "buildMs": 88,
-        "totalMs": 1952,
+        "importMs": 11210,
+        "fontsMs": 84,
+        "buildMs": 83,
+        "totalMs": 12775,
         "builds": 1
       },
       "specimen": {
@@ -496,7 +496,7 @@
       },
       "sandbox": {
         "file": "spot-uv-photo-magazine.postext",
-        "bytes": 705443,
+        "bytes": 703203,
         "folio": "4e652620",
         "chapters": [
           {
