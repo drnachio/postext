@@ -1,6 +1,6 @@
 {
   "name": "postext-idml",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "InDesign Markup (IDML) for Postext, in both directions: a laid-out book as an IDML package that InDesign opens as the PDF shows it, and an IDML package as a Postext book. A typed IDML reader, no dependency on InDesign.",
   "type": "module",
   "license": "MIT",
