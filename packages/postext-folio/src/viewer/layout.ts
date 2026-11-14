@@ -42,6 +42,7 @@ export function createFolioLayout(deps: FolioLayoutDeps) {
       textureBaseUrl: vs.appearance.textureBaseUrl,
       coverLeaves: coverLeavesOf(),
       ...(vs.appearance.spineImage ? { spineImage: vs.appearance.spineImage } : {}),
+      ...(vs.appearance.edgeOutline ? { edgeOutline: vs.appearance.edgeOutline } : {}),
     };
   }
 

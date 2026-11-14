@@ -4,7 +4,7 @@ import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
 import { type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig, resolveFolioConfig } from 'postext';
-import { BINDINGS, profiles, gutterOcclusion, along, stackGeometry, type Profile } from './bookGeometry.js';
+import { BINDINGS, profiles, gutterOcclusion, along, stackGeometry, type EdgeOutline, type Profile } from './bookGeometry.js';
 import { type EnvironmentKind, type Environment, environment } from './environments.js';
 import { type PaperSpec, paperSpec, pagePaper } from './paper.js';
 import { loadDeskMaps, type DeskMaps } from './deskTextures.js';
@@ -85,6 +85,9 @@ export interface FlipAppearance {
    *  the right. Fitted to cover the back of the block, centred. A
    *  saddle-stitched book has no spine and shows none. */
   spineImage?: PageSource;
+  /** The leaves' outline past the spine when they are cut to a shape
+   *  (rounded corners, a shaped book): the blocks' sides follow it. */
+  edgeOutline?: EdgeOutline;
 }
 
 /**
@@ -755,7 +758,7 @@ export class PageFlipper {
             color: this.boardColor(),
           }
         : undefined;
-      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half)), bands ? edgeMaterial(this.sign, bands, this.edges.color) : this.edges);
+      const mesh = new Mesh(stackGeometry(p, side, W, H, Math.round(n * half), this.appearance.edgeOutline), bands ? edgeMaterial(this.sign, bands, this.edges.color) : this.edges);
       mesh.castShadow = mesh.receiveShadow = true;
       this.stacks.push(mesh);
       this.stage.add(mesh);
