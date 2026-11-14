@@ -8,9 +8,9 @@
 // the book (`dieCuts.ts`).
 
 import { guessInkFinish, type InkFinish, type PrintInk } from 'postext';
-import type { IdmlColor, IdmlDocument, IdmlSwatch } from '../model/document.js';
-import { DIE_LINE_LABEL, FINISH_LABEL, isDieLineName, OVERPRINT_LABEL, parseFinishLabel } from '../model/specialInks.js';
-import type { Reporter } from './report.js';
+import type { IdmlColor, IdmlDocument, IdmlSwatch } from '../../model/document.js';
+import { DIE_LINE_LABEL, FINISH_LABEL, isDieLineName, OVERPRINT_LABEL, parseFinishLabel } from '../../model/specialInks.js';
+import type { Reporter } from '../report.js';
 
 const isColour = (s: IdmlSwatch | undefined): s is IdmlColor => s?.kind === 'color';
 

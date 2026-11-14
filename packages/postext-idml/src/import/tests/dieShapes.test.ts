@@ -6,8 +6,8 @@ import { describe, expect, it } from 'vitest';
 import type { Path, Point } from '../../model/geometry.js';
 import { finishLabel, isDieLineName, parseFinishLabel } from '../../model/specialInks.js';
 import { inkLabel, inkType } from '../../export/inks.js';
-import { classifyHole, cornerOptions, cornerRadii, mirrorPath, pathData } from '../dieShapes.js';
-import { swatchFinish } from '../inks.js';
+import { classifyHole, cornerOptions, cornerRadii, mirrorPath, pathData } from '../finishes/dieShapes.js';
+import { swatchFinish } from '../finishes/inks.js';
 import type { IdmlColor } from '../../model/document.js';
 
 const KAPPA = 0.5522847498;

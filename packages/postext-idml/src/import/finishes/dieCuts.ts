@@ -15,17 +15,17 @@
 // its path data and its text wrap.
 
 import { dieShapeInBox, type DieCutsConfig, type DieShape, type PrintDieLineConfig, type VDTPathCommand } from 'postext';
-import type { IdmlColor, IdmlPage, IdmlPageItem } from '../model/document.js';
-import { multiply, type Matrix, type Path, type Point } from '../model/geometry.js';
-import { DIE_LABEL, isDieLineName } from '../model/specialInks.js';
-import { masterItems } from '../resolve/masters.js';
-import { itemExtent, pageMatrix, pageSize, pageUnder, spreadMatrix, transformPaths } from '../resolve/geometry.js';
-import { labelPairs } from '../read/resources.js';
-import type { Context } from './context.js';
+import type { IdmlColor, IdmlPage, IdmlPageItem } from '../../model/document.js';
+import { multiply, type Matrix, type Path, type Point } from '../../model/geometry.js';
+import { DIE_LABEL, isDieLineName } from '../../model/specialInks.js';
+import { masterItems } from '../../resolve/masters.js';
+import { itemExtent, pageMatrix, pageSize, pageUnder, spreadMatrix, transformPaths } from '../../resolve/geometry.js';
+import { labelPairs } from '../../read/resources.js';
+import type { Context } from '../context.js';
 import { anchorBox, classifyHole, cornerOptions, cornerRadii, CORNERS, mirrorPath, pathData, sameAnchors, type HoleShape, type Radii } from './dieShapes.js';
 import { dieSwatchRefs } from './inks.js';
-import { allPages } from './pagesetup.js';
-import { mm, pt } from './values.js';
+import { allPages } from '../pagesetup.js';
+import { mm, pt } from '../values.js';
 
 /** What a die path's label says of its die. */
 interface DieLabel {

@@ -3,7 +3,7 @@
 // leaf's outline as rounded corners. Everything in page coordinates, pt,
 // y down. Pure.
 
-import { boxHeight, boxOf, boxWidth, isRectangle, type Box, type Path, type Point } from '../model/geometry.js';
+import { boxHeight, boxOf, boxWidth, isRectangle, type Box, type Path, type Point } from '../../model/geometry.js';
 
 export type DieShapeKind = 'rect' | 'roundRect' | 'circle' | 'ellipse' | 'path';
 

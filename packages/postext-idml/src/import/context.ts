@@ -71,7 +71,7 @@ export class Context {
   /** Anchored objects set in a frame of their own on the page: the text
    *  they are anchored in leaves them out. */
   readonly placedAnchors = new Set<IdmlPageItem>();
-  /** Items of the die line (`dieCuts.ts`): the book's die-cuts, no
+  /** Items of the die line (`finishes/dieCuts.ts`): the book's die-cuts, no
    *  artwork of its pages. */
   readonly dieItems = new Set<IdmlPageItem>();
 

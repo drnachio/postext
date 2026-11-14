@@ -49,7 +49,7 @@ export class Palette {
   private readonly skipped = new Set<string>();
 
   /** Leave a swatch out of the palette: the die line's is a plate the
-   *  die-maker reads, not a colour (`dieCuts.ts`). */
+   *  die-maker reads, not a colour (`finishes/dieCuts.ts`). */
   skip(ref: string): void {
     this.skipped.add(ref);
   }

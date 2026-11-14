@@ -110,7 +110,7 @@ export function leavesOf(ctx: Context, spread: IdmlSpread): Leaf[] {
   const out: Leaf[] = [];
   let z = 0;
   const walk = (item: IdmlPageItem, parents: IdmlPageItem[], depth: number): void => {
-    // The die line is read as the book's die-cuts (`dieCuts.ts`).
+    // The die line is read as the book's die-cuts (`finishes/dieCuts.ts`).
     if (ctx.dieItems.has(item)) return;
     const chain = [...parents, item];
     const inside = item.children.length ? item.children : (item.states?.find((s) => s.active) ?? item.states?.[0])?.items ?? [];
