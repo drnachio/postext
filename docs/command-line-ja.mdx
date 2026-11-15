@@ -400,6 +400,27 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 
 呼び出しのたびに実行ファイルを起動し直します。すべてのオプションはパッケージの[README](https://github.com/drnachio/postext/tree/main/packages/postext-python)にあります。
 
+## Rust
+
+`cargo add postext`で、同じことをRustからできます。crateのバージョンはpostextと同じです。最初に使うときに同じ実行ファイルを同じキャッシュフォルダーにダウンロードし（ビルド時には決してダウンロードしないので、オフラインでもビルドできます）、`POSTEXT_BIN`も読みます。そのため、同じコンピューター上のPythonパッケージとRustのcrateは1つのダウンロードを共有します。
+
+```rust
+let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).locale("es").run()?;
+println!("{:?}", report.output().and_then(|o| o.pages));
+for warning in &report.warnings {
+    println!("{} {:?} {}", warning.kind, warning.at, warning.message);
+}
+
+let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+```
+
+- **コマンドごとに1つのビルダー**：`pdf`、`html`、`epub`、`image`、`images`、`docx`、`idml`、`import_docx`、`import_idml`、`design`、`pack`、`unpack`、`info`、`check`、`build`。オプションは同じ名前をアンダースコアで書いたメソッドです（`color_space`、`font_dir`、`dry_run`）。`set`は任意のJSON値、`config_json`は`serde_json::Value`、`chapters`は数値、範囲、リスト、`"1,3-5"`のいずれかを受け取ります。`run()`はレポートを、`bytes()`はファイルを返します。
+- **型付きのレポート**：`outputs`、`pages`、`timings`、`warnings`を持つ`Report`と、各コマンドのフィールドを持つ`InfoReport`、`CheckReport`、`DesignReport`、`ImportIdmlReport`。`raw`にはJSON全体が残ります。
+- **エラーは1つの型**：`postext::Error`は`Failed`、`Usage`、`ProblemsFound`（レポート付き。`allow_problems()`を使うと代わりにレポートを返します）、`BinaryNotFound`、`InvalidArgument`、`Timeout`、`Io`のいずれかです。
+- `postext::Postext::with_binary(path)`は指定した実行ファイルを、独自のフォルダー、環境変数、タイムアウトで実行します。既定で有効な`download`機能を外すと、crateは何もダウンロードしません。
+
+すべてのオプションは、crateの[README](https://github.com/drnachio/postext/tree/main/packages/postext-rust)と[APIドキュメント](https://docs.rs/postext)にあります。
+
 ## しくみ
 
 コマンドラインは、[リポジトリ](https://github.com/drnachio/postext/tree/main/packages/postext-cli)の`postext-cli`パッケージです。[Bun](https://bun.sh)がそれをエンジンと書き出し機能とともに、システムごとに1つの実行ファイルにコンパイルします。テキストの計測と描画は、Sandboxでブラウザーのcanvasが行うのと同じように、[Skia](https://skia.org)（`@napi-rs/canvas`経由）が行います。ビットマップを含むSVG画像（data URIとして埋め込まれたPNGやJPEG。PDFから切り出した図版を`pdftocairo -svg`で書き出すとこの形になります）は、SkiaのSVGレンダラーがそうした画像を描かないため、代わりに[resvg](https://github.com/linebender/resvg)が描画します。リリースのたびに実行ファイルがビルドされ、Linux、Alpine、macOS、Windowsで実行されてから、GitHub Releaseに添付されます。npmには`postext-cli`と、実行ファイルごとに1つの`postext-cli-<system>`パッケージが公開されます。

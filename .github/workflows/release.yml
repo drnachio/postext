@@ -50,6 +50,18 @@
 # 2. Until then the pypi job fails on its own and blocks nothing; the next
 #    release publishes what is missing.
 #
+# crates.io setup (#1595; the crates job signs in with GitHub OIDC):
+#
+# 1. crates.io sets up trusted publishing only for a crate that exists, so
+#    the first version goes out by hand: with an API token from
+#    https://crates.io/settings/tokens (scope publish-new),
+#    `cargo login`, then `cd packages/postext-rust && cargo publish`.
+# 2. On https://crates.io/crates/postext/settings add a trusted publisher:
+#    GitHub, owner drnachio, repository postext, workflow release.yml,
+#    environment crates-io. Then delete the token.
+# 3. Until then the crates job fails on its own and blocks nothing; the
+#    next release publishes what is missing.
+#
 # Homebrew and Scoop setup (one-time, done for #1430):
 #
 # The package-managers job pushes the formula to drnachio/homebrew-postext
@@ -236,6 +248,13 @@ jobs:
         run: |
           sed -i 's/^__version__ = .*/__version__ = "${{ steps.version.outputs.version }}"/' packages/postext-python/src/postext/_version.py
 
+      # The Rust crate (#1595) does the same: same version again (the first
+      # `version =` line of its manifest is the package's).
+      - name: Set postext (Rust) version
+        run: |
+          sed -i '0,/^version = .*/s//version = "${{ steps.version.outputs.version }}"/' packages/postext-rust/Cargo.toml
+          grep -q '^version = "${{ steps.version.outputs.version }}"' packages/postext-rust/Cargo.toml
+
       # Build & test the packages (postext-pdf, postext-folio,
       # postext-citeproc and postext-epub build against the freshly bumped
       # workspace postext)
@@ -338,7 +357,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json packages/postext-scorm/package.json packages/postext-idml/package.json packages/postext-cli/package.json packages/postext-cli/bin/readme.txt packages/postext-python/src/postext/_version.py
+          git add packages/postext/package.json packages/postext-pdf/package.json packages/postext-folio/package.json packages/postext-citeproc/package.json packages/postext-epub/package.json packages/postext-scorm/package.json packages/postext-idml/package.json packages/postext-cli/package.json packages/postext-cli/bin/readme.txt packages/postext-python/src/postext/_version.py packages/postext-rust/Cargo.toml
           # The pagination, when the step above wrote and verified all of it
           if [ "${{ steps.layouts.outcome }}" = success ]; then
             git add apps/web/public/presets
@@ -588,6 +607,87 @@ jobs:
           done
           mkdir -p book && printf '# Hello\n\nFrom Python.\n' > book/01.md
           python -c "import postext; r = postext.pdf('book', out='book.pdf', offline=True); print(r.output); assert r.ok and r.output.pages == 1"
+          head -c 5 book.pdf | grep -q '%PDF-'
+
+  # The Rust crate on crates.io (#1595): typed functions over the executable
+  # of its version, downloaded from the GitHub Release. Its tests run against
+  # that release first; trusted publishing (OIDC, see the header). Never
+  # fails the release.
+  crates:
+    name: Publish on crates.io
+    needs: [release, cli-release]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    environment:
+      name: crates-io
+      url: https://crates.io/crates/postext
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: packages/postext-rust
+    env:
+      VERSION: ${{ needs.release.outputs.version }}
+      POSTEXT_CACHE_DIR: ${{ runner.temp }}/postext-cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+          sparse-checkout: packages/postext-rust
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - id: published
+        name: Already on crates.io?
+        run: |
+          grep -q "^version = \"$VERSION\"" Cargo.toml
+          if curl -sfA "postext-release (github.com/drnachio/postext)" "https://crates.io/api/v1/crates/postext/$VERSION" >/dev/null; then
+            echo "postext $VERSION is on crates.io already"
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Test
+        if: steps.published.outputs.yes != 'true'
+        run: cargo test --all-targets
+      - uses: rust-lang/crates-io-auth-action@v1
+        if: steps.published.outputs.yes != 'true'
+        id: auth
+      - name: cargo publish
+        if: steps.published.outputs.yes != 'true'
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: cargo publish
+
+  # `cargo add postext` and a PDF, from crates.io, on each system.
+  crates-verify:
+    name: Verify crates.io (${{ matrix.os }})
+    needs: [release, crates]
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    steps:
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - name: cargo add postext and typeset a PDF
+        shell: bash
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+        run: |
+          cargo new --quiet verify && cd verify
+          # The index can take a minute to list a new release
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            cargo add --quiet "postext@=$VERSION" && cargo generate-lockfile --quiet && break
+            sleep 30
+          done
+          mkdir -p book && printf '# Hello\n\nFrom Rust.\n' > book/01.md
+          cat > src/main.rs <<'RS'
+          fn main() {
+              let r = postext::pdf("book").out("book.pdf").offline(true).run().expect("postext pdf");
+              println!("{:?}", r.output());
+              assert!(r.ok && r.output().and_then(|o| o.pages) == Some(1));
+          }
+          RS
+          cargo run --quiet
           head -c 5 book.pdf | grep -q '%PDF-'
 
   # The release notes (#releases) and the docs & translations notice

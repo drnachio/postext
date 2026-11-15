@@ -281,6 +281,12 @@ Everything below ships today in `postext` and its companion packages (`postext-p
   report = postext.pdf("book.postext", out="book.pdf", set={"page.dpi": 300})
   pdf = postext.pdf_bytes(open("book.postext", "rb").read())
   ```
+- **From Rust**: `cargo add postext` ([`packages/postext-rust`](packages/postext-rust)) runs the same executable the same way: downloaded on first use (never at build time), checked against `SHA256SUMS`, shared with the Python package's cache, `POSTEXT_BIN` respected. Every command is a builder whose `run()` returns the typed `--json` report and whose `bytes()` returns the file:
+
+  ```rust
+  let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).run()?;
+  let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+  ```
 
 ---
 
@@ -300,6 +306,7 @@ postext/
 │   ├── postext-citeproc/         # CSL citations and bibliographies (citeproc-js)
 │   ├── postext-cli/              # Command line: self-contained executables (Bun)
 │   ├── postext-python/           # Python package: pip install postext, drives the command line
+│   ├── postext-rust/             # Rust crate: cargo add postext, drives the command line
 │   ├── postext-sandbox/          # Interactive sandbox UI (controls + viewports)
 │   └── typescript-config/        # Shared TypeScript configurations
 ├── docs/                         # MDX documentation, <topic>-<locale>.mdx in ten locales
