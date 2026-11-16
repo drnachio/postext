@@ -13,12 +13,15 @@ import { chapterNumberCounter } from '../pages/placeholders.js';
 import { mostlyJoiningScript } from '../../measure/rtl/joining.js';
 import { composesAsCjk } from '../../measure/cjk/cjkCompose.js';
 
-/** The page each floated resource of `doc` lies on (its first slice's). */
+/** The page each floated resource or callout box of `doc` lies on (its
+ *  first slice's). */
 export function floatPagesOf(doc: VDTDocument): Map<string, number> {
   const out = new Map<string, number>();
   for (const page of doc.pages) {
     for (const f of page.floats ?? []) {
-      const id = f.resourceBlock?.resource.id;
+      // A floated callout box is keyed as its float is queued (#1600).
+      const id = f.resourceBlock?.resource.id
+        ?? (f.type === 'callout' && f.contentIndex !== undefined ? `callout:${f.contentIndex}` : undefined);
       if (id && !out.has(id)) out.set(id, page.index);
     }
   }

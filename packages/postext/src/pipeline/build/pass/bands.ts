@@ -13,6 +13,7 @@ import { headingDesignBoxes, defaultOpenerTitle, measureHeadingDesign, markedTit
 import type { SideObstacle } from '../../floats/floatSlots.js';
 import { measureContentBlock, type BlockMeasureContext } from '../../blocks/measureContentBlock.js';
 import { columnBottom, uncapBand, type BandCap, bandTop, bareBandTop, applyBandCap, type BandCapZone, bandLinePitch, bandCapLinesAroundZone, bandCapLines, capRetryLimit } from '../../columns/bandCaps.js';
+import { bandSlackLines } from '../../columns/bandSlack.js';
 import { rollbackTrailingBlocks } from '../../blocks/buildHelpers.js';
 import type { BlockStyle } from '../../styles.js';
 import type { PartPlan } from '../../sections/parts.js';
@@ -366,6 +367,9 @@ export function createBands(deps: BandsDeps) {
   const bandCapProposals = new Map<number, BandCap>();
   const spanPlacedInBand = new Set<number>();
   const bandCapsApplied = new Set<number>();
+  /** Delivered trailing caps: the whole lines every column of the band
+   *  left empty under the cut (#1600, see `BandPassReport.capSlack`). */
+  const capSlack = new Map<number, number>();
 
   /** Columns of the band each cap was last applied to. */
   const cappedBandColumns = new Map<number, readonly VDTColumn[]>();
@@ -450,7 +454,11 @@ export function createBands(deps: BandsDeps) {
       // a page of its own at the chapter's end. Not delivered: the cap is
       // tried a line lower, then dropped (#505).
       const displaced = floatPages && pendingFloats.some((f) => floatPages.get(f.resourceId) === page.index);
-      if (!displaced) spanPlacedInBand.add(boundaryIndex);
+      if (!displaced) {
+        spanPlacedInBand.add(boundaryIndex);
+        const cap = bandCaps?.get(boundaryIndex);
+        if (cap?.kind === 'trailing' && !cap.zone) capSlack.set(boundaryIndex, bandSlackLines(cols, cap.pitchPx ?? baselineGrid));
+      }
       return;
     }
     // A cap in force for this boundary that did not open the band the
@@ -537,7 +545,7 @@ export function createBands(deps: BandsDeps) {
     balanceExtraInColumn, addBalanceExtra, opensDefaultOpener, measuredAcrossPage, reserveOpenerBand,
     openerOwnColumn, openerHeadOf, underOpenerHeadFloat, atColumnHead, openerHeadSpacing,
     sideObstacleColumn, headingClaims, noteHeadingClaim, markSideObstacles, spanHeadingOpenedHere,
-    openSpanHeadingHere, rollbackHeadings, bandCapProposals, spanPlacedInBand, bandCapsApplied,
+    openSpanHeadingHere, rollbackHeadings, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack,
     cappedBandColumns, enterBand, proposeTrailingCap
   };
 }
