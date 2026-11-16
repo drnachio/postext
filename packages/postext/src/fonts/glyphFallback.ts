@@ -188,6 +188,13 @@ function registeredCoverage(family: string, weight: number, style: 'normal' | 'i
  *  selectors, which go with the letter before them. */
 export const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
 
+/** {@link SKIPPED} for one character, the ASCII ones answered without the
+ *  pattern: every character of a document is asked (#1606). */
+export function skippedChar(ch: string): boolean {
+  const code = ch.charCodeAt(0);
+  return code < 0x80 ? code <= 0x20 || code === 0x7f : SKIPPED.test(ch);
+}
+
 export type Add = (font: string | undefined, text: string | undefined) => void;
 
 export function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
@@ -231,11 +238,26 @@ function walkTexts(node: unknown, add: Add, depth = 0): void {
  *  figure labels) and the texts the pages set beside them. */
 export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
+  // The texts already read in each font: a word set again adds nothing.
+  const read = new Map<string, Set<string>>();
+  let font0: string | undefined;
+  let set0!: Set<string>;
+  let read0!: Set<string>;
   const add: Add = (font, text) => {
     if (!font || !text) return;
-    let set = out.get(font);
-    if (!set) out.set(font, (set = new Set()));
-    for (const ch of text) if (!SKIPPED.test(ch)) set.add(ch);
+    if (font !== font0) {
+      let set = out.get(font);
+      if (!set) {
+        out.set(font, (set = new Set()));
+        read.set(font, new Set());
+      }
+      font0 = font;
+      set0 = set;
+      read0 = read.get(font)!;
+    }
+    if (read0.has(text)) return;
+    read0.add(text);
+    for (const ch of text) if (!set0.has(ch) && !skippedChar(ch)) set0.add(ch);
   };
   const blocks = new Set(doc.blocks);
   for (const page of doc.pages) for (const b of [...(page.floats ?? []), ...(page.marginNotes ?? [])]) blocks.add(b);

@@ -3,7 +3,7 @@ import { buildDocument } from '../../pipeline/build.js';
 import { formatWarning } from '../../pipeline/contentWarnings.js';
 import { rangesHave, sfntCodePointRanges, type CodePointRanges } from '../../fonts/cmap.js';
 import { minimalFont } from '../../fonts/minimalFont.js';
-import { forgetFontCoverage, glyphFallbacks, registerFontCoverage, GLYPH_FALLBACK_LISTED } from '../../fonts/glyphFallback.js';
+import { forgetFontCoverage, glyphFallbacks, registerFontCoverage, skippedChar, GLYPH_FALLBACK_LISTED, SKIPPED } from '../../fonts/glyphFallback.js';
 import { fontStringFamilies } from '../../measure/fontString.js';
 import type { ContentWarning, VDTDocument } from '../../vdt.js';
 
@@ -146,5 +146,22 @@ describe('#1105: glyphFallback warnings', () => {
     registerFontCoverage('Subset Sans', 400, 'normal', LATIN);
     const doc = buildDocument({ markdown: 'An arrow → here.' }, { bodyText: { fontFamily: '"Subset Sans", serif' }, debug: { warnings: { missingFont: false } } });
     expect(glyphWarnings(doc.contentWarnings)).toEqual([]);
+  });
+
+  it('skips the same characters with and without the pattern (#1606)', () => {
+    for (let code = 0; code < 0x3000; code++) {
+      const ch = String.fromCodePoint(code);
+      expect(skippedChar(ch), `U+${code.toString(16)}`).toBe(SKIPPED.test(ch));
+    }
+  });
+
+  it('reports a character every paragraph that sets it, however often the text repeats (#1606)', () => {
+    registerFontCoverage('Subset Sans', 400, 'normal', LATIN);
+    const doc = buildDocument({ markdown: 'An arrow → here.\n\nAn arrow → here.\n\nNo arrow here.\n\nAn arrow → here, and → there.' }, { bodyText: { fontFamily: '"Subset Sans", serif' } });
+    const places = (doc.contentWarnings ?? []).filter((w) => w.kind === 'glyphFallbackAt');
+    expect(places.map((w) => (w.kind === 'glyphFallbackAt' ? w.characters : []))).toEqual([['→'], ['→'], ['→']]);
+    expect(new Set(places.map((w) => (w.kind === 'glyphFallbackAt' ? w.blockId : ''))).size).toBe(3);
+    const faces = glyphWarnings(doc.contentWarnings);
+    expect(faces).toHaveLength(1);
   });
 });

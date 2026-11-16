@@ -8,8 +8,9 @@ name: Layout timing
 # The numbers are in the run's summary and in its artifact, to compare one
 # run with another.
 on:
-  # main's numbers after each release, and develop's when the report itself
-  # changes (a new workflow cannot be started by hand until main has it)
+  # main's numbers after each release, and develop's when the engine or the
+  # report changes: the layout performance programme (#1602) reads them
+  # commit by commit
   push:
     branches: [main, develop]
     paths:
@@ -17,6 +18,9 @@ on:
       - .github/scripts/layout-timing.mjs
       - packages/postext-cli/scripts/bench-layout.ts
       - packages/postext/package.json
+      - packages/postext/src/**
+      - '!packages/postext/src/**/*.test.ts'
+      - rust/**
   workflow_dispatch:
 
 # Read-only token: no job here writes to the repository (artifacts and
