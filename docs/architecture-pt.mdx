@@ -622,6 +622,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 Uma ressalva, por honestidade: não há canvas no Node; por isso, os benchmarks simulam a medição de texto, e os tempos absolutos deles não são os do navegador. Já a razão entre o cache vazio e o preenchido e o número de passadas valem também para o navegador, e uma regressão em qualquer um dos dois aparece aqui antes de aparecer no Sandbox. Os benchmarks do capítulo e das páginas compostas informam números e não quebram o build; o chinês verifica que os caracteres medidos ficam abaixo de três vezes o tamanho do parágrafo mais longo. Nenhum roda na CI: as regressões são detectadas comparando os números entre execuções quando um caminho crítico muda (como foi feito na reescrita dos nós ativos do Knuth-Plass). Por enquanto nenhum build falha por um tempo mais lento: uma perda de velocidade é encontrada medindo e na revisão.
 
 
+Um quarto benchmark mede livros inteiros com medição real do texto (Skia, como a CLI mede). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, executado em `packages/postext-cli`, compõe um livro a frio, capítulo a capítulo, e imprime o tempo de cada execução, a memória, um hash das páginas e a parte de cada etapa: medição, quebra de linhas, posicionamento e o trabalho depois das passadas. O fluxo Layout timing o executa em cinco livros de mostra em um runner do GitHub depois de cada versão e escreve a tabela no resumo da execução; ele informa e não faz nada falhar. Estes são os números da 1.88.1 (16 de novembro de 2026, mediana de três execuções, uma thread); as três últimas colunas são partes da execução.
+
+| Livro | Páginas | Tempo | Por página | Medição | Quebra de linhas | Posicionamento |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
+
 ## Fluxo de dados
 
 <Illustration name="DataFlow" data='{"title": "Fluxo de dados pelo motor", "desc": "O conteúdo e a configuração entram na passada de posicionamento, que estrutura, mede e posiciona cada bloco, flutua os recursos e aplica as regras de quebra e de manter junto. buildDocument roda a passada de novo com dicas até que cada rodada se acomode. O VDT pronto é entregue ao renderizador, que gera HTML ou PDF.", "caption": "Fluxo de dados de ponta a ponta: uma passada de posicionamento, repetida com dicas, e depois a renderização.", "input": ["Conteúdo +", "Config"], "loopBadge": "passada de posicionamento", "passesInLoop": [{"num": "1", "name": "estruturar"}, {"num": "2", "name": "medir"}, {"num": "3", "name": "posicionar"}, {"num": "4", "name": "flutuantes"}, {"num": "5", "name": "manter junto"}], "loopCondition": "rodar de novo com dicas, cada rodada até o limite", "convergedLabel": "VDT (pronto)", "backend": "Renderizador", "output": "HTML / PDF"}' />

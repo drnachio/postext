@@ -625,6 +625,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 Un advertiment, per honestedat: a Node no hi ha canvas, de manera que els benchmarks simulen la mesura del text i els temps absoluts no són els del navegador. La proporció entre fred i calent i el nombre de passades sí que són els del navegador, i una regressió en qualsevol dels dos es detecta aquí abans que al Sandbox. Els benchmarks del capítol i de les pàgines compostes informen de xifres i no fan fallar la compilació; el xinès comprova que els caràcters mesurats es mantenen per sota del triple de la longitud del paràgraf més llarg. Cap no s'executa a la CI: les regressions es detecten comparant les xifres entre execucions quan canvia una part crítica del codi (com es va fer amb la reescriptura dels nodes actius de Knuth-Plass). Encara cap compilació no falla per un temps més lent: una pèrdua de velocitat es detecta mesurant i en la revisió.
 
 
+Un quart benchmark mesura llibres sencers amb mesura real del text (Skia, com mesura la CLI). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, llançat a `packages/postext-cli`, compon un llibre en fred, capítol a capítol, i imprimeix el temps de cada execució, la memòria, un hash de les pàgines i la part de cada etapa: mesura, partició de línies, col·locació i la feina posterior a les passades. El flux Layout timing l'executa sobre cinc llibres de mostra en un runner de GitHub després de cada versió i escriu la taula al resum de l'execució; informa i no fa fallar res. Aquests són els seus números per a la 1.88.1 (16 de novembre de 2026, mediana de tres execucions, un fil); les tres últimes columnes són parts de l'execució.
+
+| Llibre | Pàgines | Temps | Per pàgina | Mesura | Partició de línies | Col·locació |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
+
 ## Flux de dades
 
 <Illustration name="DataFlow" data='{"title": "Flux de dades a través del motor", "desc": "El contingut i la configuració entren a la passada de col·locació, que estructura, mesura i col·loca cada bloc, fa flotar els recursos i aplica les regles de tall i de cohesió. buildDocument torna a executar la passada amb indicacions fins que cada ronda s’estabilitza. El VDT acabat passa al backend, que renderitza HTML o PDF.", "caption": "El flux de dades complet: una passada de col·locació, repetida amb indicacions, i després el renderitzat.", "input": ["Contingut +", "Config"], "loopBadge": "passada de col·locació", "passesInLoop": [{"num": "1", "name": "estructurar"}, {"num": "2", "name": "mesurar"}, {"num": "3", "name": "col·locar"}, {"num": "4", "name": "flotants"}, {"num": "5", "name": "cohesió"}], "loopCondition": "es repeteix amb indicacions, cada ronda fins al límit", "convergedLabel": "VDT (acabat)", "backend": "Backend: renderitzat", "output": "HTML / PDF"}' />

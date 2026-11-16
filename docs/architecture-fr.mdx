@@ -625,6 +625,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 Une réserve, par honnêteté : il n’y a pas de canvas dans Node : les bancs d’essai simulent donc la mesure du texte, et leurs temps absolus ne sont pas ceux du navigateur. Le rapport entre cache vide et cache rempli et le nombre de passes, eux, le sont, et une régression de l’un ou de l’autre se voit ici avant de se voir dans le Sandbox. Les bancs d’essai du chapitre et des pages composées rapportent des chiffres et ne font pas échouer la construction ; celui du chinois vérifie que les caractères mesurés restent en dessous de trois fois la longueur du paragraphe le plus long. Aucun ne tourne en CI : les régressions se repèrent en comparant les chiffres d’une exécution à l’autre quand un chemin critique change (comme on l’a fait pour la réécriture des nœuds actifs de Knuth-Plass). Aucune compilation n’échoue encore sur un temps plus lent : un ralentissement se repère en mesurant et à la relecture.
 
 
+Un quatrième benchmark chronomètre des livres entiers avec une mesure réelle du texte (Skia, comme mesure la CLI). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, lancé dans `packages/postext-cli`, compose un livre à froid, chapitre par chapitre, et affiche le temps de chaque exécution, la mémoire, un hash des pages et la part de chaque étape : mesure, coupure des lignes, placement et travail après les passes. Le workflow Layout timing le lance sur cinq livres de démonstration sur un runner GitHub après chaque version et écrit le tableau dans le résumé de l'exécution ; il rend compte et ne fait rien échouer. Voici ses chiffres pour la 1.88.1 (16 novembre 2026, médiane de trois exécutions, un fil) ; les trois dernières colonnes sont des parts de l'exécution.
+
+| Livre | Pages | Temps | Par page | Mesure | Coupure des lignes | Placement |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
+
 ## Flux de données
 
 <Illustration name="DataFlow" data='{"title": "Flux des données dans le moteur", "desc": "Le contenu et la configuration entrent dans la passe de placement, qui structure, mesure et place chaque bloc, fait flotter les ressources et applique les règles de coupure et de maintien. buildDocument relance la passe avec des indications jusqu’à ce que chaque tour se stabilise. Le VDT achevé est remis au moteur de rendu, qui produit du HTML ou du PDF.", "caption": "Flux de données de bout en bout : une passe de placement, relancée avec des indications, puis le rendu.", "input": ["Contenu +", "Configuration"], "loopBadge": "passe de placement", "passesInLoop": [{"num": "1", "name": "structure"}, {"num": "2", "name": "mesure"}, {"num": "3", "name": "placement"}, {"num": "4", "name": "flottants"}, {"num": "5", "name": "maintien"}], "loopCondition": "relance avec indications, chaque tour jusqu’à sa limite", "convergedLabel": "VDT (achevé)", "backend": "Moteur de rendu", "output": "HTML / PDF"}' />
