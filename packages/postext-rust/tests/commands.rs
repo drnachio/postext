@@ -11,7 +11,16 @@ use tempfile::TempDir;
 
 fn client() -> &'static Postext {
     static CLIENT: OnceLock<Postext> = OnceLock::new();
-    CLIENT.get_or_init(|| Postext::with_binary(postext::find_binary().expect("the postext executable")).offline(true))
+    CLIENT.get_or_init(|| {
+        let client = Postext::with_binary(postext::find_binary().expect("the postext executable")).offline(true);
+        // The first command that sets text copies Skia's addon (and on Windows
+        // its icudtl.dat) into the cache. Executables up to 1.87.0 crash when
+        // several processes do it at once on Windows (#1597), and the tests
+        // run in parallel: place it once first.
+        let (_dir, book) = book();
+        client.info(&book).pages(true).run().expect("a first run");
+        client
+    })
 }
 
 /// Two chapters; chapter two opens on a recto, so page 2 is blank.
