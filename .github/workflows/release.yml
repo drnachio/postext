@@ -629,7 +629,6 @@ jobs:
         working-directory: packages/postext-rust
     env:
       VERSION: ${{ needs.release.outputs.version }}
-      POSTEXT_CACHE_DIR: ${{ runner.temp }}/postext-cache
     steps:
       - uses: actions/checkout@v4
         with:
@@ -646,6 +645,8 @@ jobs:
           fi
       - name: Test
         if: steps.published.outputs.yes != 'true'
+        env:
+          POSTEXT_CACHE_DIR: ${{ runner.temp }}/postext-cache
         run: cargo test --all-targets
       - uses: rust-lang/crates-io-auth-action@v1
         if: steps.published.outputs.yes != 'true'
