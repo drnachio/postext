@@ -48,10 +48,23 @@ jobs:
             "$presets/don-quijote" "$presets/paradise-lost" "$presets/openstax-fisica" \
             "$presets/alf-layla" "$presets/hongloumeng" > "$RUNNER_TEMP/layout-timing.json"
 
+      # The engine keeps the canvas's widths for the life of a process, so
+      # the runs above ask the canvas once. Here every run asks again, as
+      # the first layout of a book does (#1605).
+      - name: Lay the books out, the canvas asked on every run
+        working-directory: packages/postext-cli
+        run: |
+          presets=../../apps/web/public/presets
+          pnpm exec bun scripts/bench-layout.ts --runs 3 --stages --cold-host --json \
+            "$presets/don-quijote" "$presets/paradise-lost" "$presets/openstax-fisica" \
+            "$presets/alf-layla" "$presets/hongloumeng" > "$RUNNER_TEMP/layout-timing-cold-host.json"
+
       - name: Report
-        run: node .github/scripts/layout-timing.mjs "$RUNNER_TEMP/layout-timing.json" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          node .github/scripts/layout-timing.mjs "$RUNNER_TEMP/layout-timing.json" >> "$GITHUB_STEP_SUMMARY"
+          node .github/scripts/layout-timing.mjs "$RUNNER_TEMP/layout-timing-cold-host.json" "Whole book, the canvas asked on every run" >> "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v4
         with:
           name: layout-timing
-          path: ${{ runner.temp }}/layout-timing.json
+          path: ${{ runner.temp }}/layout-timing*.json

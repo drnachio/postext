@@ -4,13 +4,20 @@
 // hash of the VDT, so that a change to the engine can be judged on speed
 // and on output that must not move.
 //
-//   bun scripts/bench-layout.ts [--runs N] [--warm] [--stages] [--json] [--ts-kp] [--kp-dump FILE] <book> [<book> …]
+//   bun scripts/bench-layout.ts [--runs N] [--warm] [--stages] [--cold-host] [--json] [--ts-kp] [--kp-dump FILE] <book> [<book> …]
 //
 // --stages (#1603) adds where the last run's time went: the engine reports
 // each stage through `globalThis.__postextPerfTap` (`util/perfTap.ts`), and
 // the nested ones are taken out of their parents here, so the shares add up
 // to the run. Times are also given as CPU time of this process, which holds
 // on a busy machine where wall time does not.
+//
+// With --stages a measurement miss is divided further (#1605): the canvas's
+// `measureText` and font set, the hyphenation dictionary, and the engine's
+// own work. The engine keeps the widths the canvas gave it for the life of
+// the process, so only a process's first run asks the canvas: --cold-host
+// drops those widths before every run, and each run then pays what the
+// first layout of a book pays in a fresh process, less the JIT's warm-up.
 //
 // --ts-kp breaks the lines with the TypeScript line breaker instead of the
 // Rust one compiled to WebAssembly (#794): the two choose the same breaks,
@@ -22,7 +29,7 @@
 // --warm, which reuses the first run's cache (what the Sandbox's worker
 // sees after the first build).
 
-import { createMeasurementCache, useWasmLineBreaker, type MeasurementCache } from 'postext';
+import { clearMeasurementCache, createMeasurementCache, useWasmLineBreaker, type MeasurementCache } from 'postext';
 import { Options } from '../src/args';
 import type { CommandContext } from '../src/context';
 import { layOut } from '../src/layout';
@@ -35,6 +42,7 @@ let runs = 3;
 let warm = false;
 let json = false;
 let stages = false;
+let coldHost = false;
 let kpDump: string | undefined;
 const books: string[] = [];
 for (let i = 0; i < argv.length; i++) {
@@ -43,6 +51,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--warm') warm = true;
   else if (a === '--json') json = true;
   else if (a === '--stages') stages = true;
+  else if (a === '--cold-host') coldHost = true;
   else if (a === '--ts-kp') useWasmLineBreaker(false);
   else if (a === '--kp-dump') kpDump = argv[++i];
   else books.push(a);
@@ -86,7 +95,10 @@ function stageTable(raw: Map<string, { ms: number; n: number }>, totalMs: number
     ['setup (config, parse, content, wiring)', setup, count('pass.blocks')],
     ['measure: cache key and lookup', of('measure.key'), count('measure.key')],
     ['measure: hit (copy)', of('measure.hit'), count('measure.hit')],
-    ['measure: miss, less line breaking', of('measure.miss') + of('measure.uncached') - of('kp'), count('measure.miss') + count('measure.uncached')],
+    ['measure: miss, engine (tokens, items, lines)', of('measure.miss') + of('measure.uncached') - of('kp') - of('host.measureText') - of('host.font') - of('hyphenate'), count('measure.miss') + count('measure.uncached')],
+    ['measure: miss, host measureText', of('host.measureText'), count('host.measureText')],
+    ['measure: miss, host font set', of('host.font'), count('host.font')],
+    ['measure: miss, hyphenation dictionary', of('hyphenate'), count('hyphenate')],
     ['line breaking (Knuth–Plass)', of('kp'), count('kp')],
     ['placement (block loop, less measuring)', of('pass.blocks') - measured, count('pass.blocks')],
     ['pass finish', of('pass.finish'), count('pass.finish')],
@@ -105,6 +117,53 @@ function stageTable(raw: Map<string, { ms: number; n: number }>, totalMs: number
     ['rest (bundle keys, rounds, CLI around the bundle)', totalMs - builds - of('bundle.flags') - of('bundle.pageIds') - of('bundle.citations') - of('bundle.provisionalOutline') - of('bundle.continuation'), 1],
   ];
   return Object.fromEntries(rows.map(([k, ms, n]) => [k, { ms: Math.round(ms), pct: r2((ms / totalMs) * 100), n }]));
+}
+
+/** What a measure miss spends outside the engine's own code (#1605): the
+ *  canvas's `measureText` and `font` setter, and the hyphenation
+ *  dictionary, each wrapped with a timer while `probe.on`. A timer pair
+ *  costs about as much as the cheapest of these calls, so the time of an
+ *  empty pair (`probe.pairMs`, measured here) is taken off every call. */
+const probe = { on: false, pairMs: 0, acc: new Map<string, { ms: number; n: number }>() };
+function timed<A extends unknown[], R>(stage: string, fn: (this: unknown, ...args: A) => R): (this: unknown, ...args: A) => R {
+  return function (this: unknown, ...args: A): R {
+    if (!probe.on) return fn.apply(this, args);
+    const t0 = performance.now();
+    try {
+      return fn.apply(this, args);
+    } finally {
+      const row = probe.acc.get(stage) ?? { ms: 0, n: 0 };
+      row.ms += performance.now() - t0;
+      row.n++;
+      probe.acc.set(stage, row);
+    }
+  };
+}
+if (stages) {
+  const { createCanvas } = await import('@napi-rs/canvas');
+  const proto = Object.getPrototypeOf(createCanvas(1, 1).getContext('2d')) as Record<string, unknown>;
+  proto.measureText = timed('host.measureText', proto.measureText as (text: string) => unknown);
+  const font = Object.getOwnPropertyDescriptor(proto, 'font')!;
+  Object.defineProperty(proto, 'font', { ...font, set: timed('host.font', font.set as (v: string) => void) });
+  const { createRequire } = await import('node:module');
+  const Hypher = createRequire(import.meta.resolve('postext'))('hypher') as { prototype: Record<string, unknown> };
+  for (const m of ['hyphenate', 'hyphenateText']) {
+    // `hyphenateText` calls `hyphenate` per word: only the outermost counts.
+    const inner = Hypher.prototype[m] as (...a: unknown[]) => unknown;
+    let depth = 0;
+    const outer = timed('hyphenate', inner);
+    Hypher.prototype[m] = function (this: unknown, ...a: unknown[]) {
+      if (depth > 0) return inner.apply(this, a);
+      depth++;
+      try { return outer.apply(this, a); } finally { depth--; }
+    };
+  }
+  const empty = timed('pair', () => undefined);
+  probe.on = true;
+  for (let i = 0; i < 2_000_000; i++) empty();
+  probe.on = false;
+  probe.pairMs = probe.acc.get('pair')!.ms / 2_000_000;
+  probe.acc.clear();
 }
 
 const results = [];
@@ -134,12 +193,29 @@ for (const path of books) {
         if (stage === 'pass.wiring') inBlocks = true;
         else if (stage === 'pass.blocks') inBlocks = false;
         else if (!inBlocks && (stage === 'kp' || stage.startsWith('measure.'))) return;
+        // The probes' time since the cache was asked belongs to this miss;
+        // what they took elsewhere (a hit asks nothing of them) is dropped.
+        if (stage === 'measure.key') probe.acc.clear();
+        else if (stage === 'measure.miss' || stage === 'measure.uncached') {
+          let calls = 0;
+          for (const [k, v] of probe.acc) {
+            const row = raw.get(k) ?? { ms: 0, n: 0 };
+            row.ms += Math.max(0, v.ms - v.n * probe.pairMs);
+            row.n += v.n;
+            raw.set(k, row);
+            calls += v.n;
+          }
+          probe.acc.clear();
+          ms -= calls * probe.pairMs;
+        }
         const row = raw.get(stage) ?? { ms: 0, n: 0 };
         row.ms += ms;
         row.n++;
         raw.set(stage, row);
       };
     }
+    if (coldHost) clearMeasurementCache();
+    probe.on = stages && i === runs - 1;
     const c0 = process.cpuUsage();
     const t0 = performance.now();
     const layout = await layOut(book, opts, reporter, cache, fonts);
@@ -147,6 +223,7 @@ for (const path of books) {
     const used = process.cpuUsage(c0);
     cpu.push((used.user + used.system) / 1000);
     delete perf.__postextPerfTap;
+    probe.on = false;
     const h = vdtHash(layout.docs);
     if (hash && h !== hash) process.stderr.write(`${book.name}: run ${i + 1} hash ${h} differs from ${hash}\n`);
     hash = h;
