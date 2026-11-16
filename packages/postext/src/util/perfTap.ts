@@ -52,3 +52,21 @@ export function perfTimed<T>(stage: PerfStage, measure: () => T): T {
     tap(stage, perfNow() - started);
   }
 }
+
+/** A placement pass as a benchmark sees it (#1603): the document the pass
+ *  produced, before the passes after it touch anything. `doc` is typed
+ *  loosely here to keep this file free of the layout's types. */
+export interface PassTrace<Doc> {
+  /** 1-based pass within its contents round. */
+  pass: number;
+  /** 0-based round of a document laying out its own contents. */
+  tocRound: number;
+  doc: Doc;
+}
+
+/** The benchmark's pass tap, when one is listening
+ *  (`globalThis.__postextPassTap`): two engine cores are compared pass by
+ *  pass through it, far finer than by the hash of the finished layout. */
+export function passTap<Doc>(): ((trace: PassTrace<Doc>) => void) | undefined {
+  return (globalThis as { __postextPassTap?: (trace: PassTrace<Doc>) => void }).__postextPassTap;
+}

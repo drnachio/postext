@@ -35,8 +35,21 @@ Every change is judged on real books. Record a corpus with the CLI's benchmark, 
 ```sh
 cd packages/postext-cli
 bun scripts/bench-layout.ts --runs 3 <book>                    # time, RSS, VDT hash
+bun scripts/bench-layout.ts --runs 3 --stages <book>           # and where the time went, stage by stage
 bun scripts/bench-layout.ts --runs 1 --kp-dump kp.jsonl <book>  # Knuth–Plass corpus
 ```
+
+`--stages` reads the stage times the engine reports through `globalThis.__postextPerfTap` (`packages/postext/src/util/perfTap.ts`) and prints each stage's share of the last run. Times are given as wall time and as CPU time of the process: check the machine's load before trusting either.
+
+Two engines are compared pass by pass with the pass trace, one line per placement pass with the hash of the document the pass left:
+
+```sh
+bun scripts/pass-trace.ts --out a.trace <book>            # one engine
+bun scripts/pass-trace.ts --ts-kp --out b.trace <book>    # another (here: the TypeScript line breaker)
+diff a.trace b.trace                                      # the first pass that differs
+```
+
+`--full` adds every block and line of every pass, so the diff shows the first block that moved.
 
 Then replay it:
 
