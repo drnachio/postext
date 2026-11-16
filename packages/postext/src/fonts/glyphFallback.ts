@@ -335,15 +335,27 @@ export function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf 
   }
   if (coverage.length === 0) return undefined;
   const known = new Map<string, CodePointRanges | null>();
+  // The face asked last: a run of characters asks the same one, and its
+  // key is not built again for each (#1606).
+  let lastFamily: string | undefined;
+  let lastWeight = 0;
+  let lastStyle = '';
+  let last: CodePointRanges | null = null;
   return {
     hasGlyph: (family, weight, style, ch) => {
-      const key = `${family.toLowerCase()}|${weight}|${style}`;
-      let ranges = known.get(key);
-      if (ranges === undefined) {
-        ranges = registeredCoverage(family, weight, style) ?? null;
-        known.set(key, ranges);
+      if (family !== lastFamily || weight !== lastWeight || style !== lastStyle) {
+        const key = `${family.toLowerCase()}|${weight}|${style}`;
+        let ranges = known.get(key);
+        if (ranges === undefined) {
+          ranges = registeredCoverage(family, weight, style) ?? null;
+          known.set(key, ranges);
+        }
+        lastFamily = family;
+        lastWeight = weight;
+        lastStyle = style;
+        last = ranges;
       }
-      return ranges ? rangesHave(ranges, ch.codePointAt(0)!) : undefined;
+      return last ? rangesHave(last, ch.codePointAt(0)!) : undefined;
     },
   };
 }
@@ -371,8 +383,8 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
       // A shorthand that lists families after its own (a host's): the
       // first of them that has the character drew it.
       const rest = fontStringFamilies(font).slice(1).filter((f) => f.toLowerCase() !== face.family.toLowerCase());
+      let e = found.get(key);
       for (const ch of chars) {
-        let e = found.get(key);
         if (e?.seen.has(ch)) continue;
         if (hasGlyph(face.family, face.weight, face.style, ch) !== false) continue;
         // Set in the symbol font, as the document asked: nothing to advise.
