@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitectura',
   description: "Com és per dins el motor de composició tipogràfica Postext: els conceptes bàsics, l'arbre del document, el ritme vertical, els backends i el rendiment",
   lang: 'ca',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '30 min',
   order: 2,
   plainSummary: "Aquesta pàgina explica com funciona Postext per dins, i està escrita per a programadors. Primer, Postext mesura cada paraula sense dibuixar res a la pantalla, i per això és molt ràpid. Després calcula on va cada línia, cada imatge i cada columna, i desa aquest pla a la memòria. Al final dibuixa les pàgines acabades en forma de pàgina web, d'imatge en un canvas o de fitxer PDF. Si canvies una paraula, torna a compondre les pàgines i aprofita les mesures dels paràgrafs que no han canviat. La pàgina següent explica, pas a pas, com es col·loquen les línies i les imatges.",
@@ -514,7 +514,7 @@ Com que els continguts binaris dels recursos es desen a part, cada backend resol
     <tr>
       <td><strong>Línia d'ordres</strong></td>
       <td>Pretext sobre Skia (<code>@napi-rs/canvas</code>), en lloc del canvas del navegador</td>
-      <td>Els generadors de PDF, HTML i EPUB, les imatges de pàgina i Word, des d'un terminal i sense navegador (<code>postext-cli</code>)</td>
+      <td>Els generadors de PDF, HTML i EPUB, les imatges de pàgina i Word, des d'un terminal i sense navegador (<code>postext-cli</code>); <code>pip install postext</code> i <code>cargo add postext</code> la fan servir des de Python i Rust</td>
       <td><strong>Disponible</strong></td>
     </tr>
   </tbody>

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architettura',
   description: 'Architettura tecnica del motore di impaginazione Postext: i concetti, l’albero del documento, il ritmo verticale, i backend e le prestazioni',
   lang: 'it',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '29 min',
   order: 2,
   plainSummary: "Questa pagina spiega come funziona Postext al suo interno ed è scritta per chi programma. Per prima cosa Postext misura ogni parola senza disegnare nulla sullo schermo, e per questo è molto veloce. Poi calcola dove va ogni riga, ogni immagine e ogni colonna, e tiene questo piano in memoria. Infine disegna le pagine finite come pagina web, come immagine su canvas o come file PDF. Quando cambi una parola, reimpagina le pagine e riusa le misure dei paragrafi che non sono cambiati. La pagina successiva spiega, passo per passo, come vengono collocate le righe e le immagini.",
@@ -513,7 +513,7 @@ Poiché i dati binari delle risorse viaggiano fuori banda, ogni backend risolve 
     <tr>
       <td><strong>Riga di comando</strong></td>
       <td>Pretext sopra Skia (<code>@napi-rs/canvas</code>), al posto del canvas del browser</td>
-      <td>I generatori di PDF, HTML ed EPUB, le immagini delle pagine e Word, eseguiti da un terminale senza browser (<code>postext-cli</code>)</td>
+      <td>I generatori di PDF, HTML ed EPUB, le immagini delle pagine e Word, eseguiti da un terminale senza browser (<code>postext-cli</code>); <code>pip install postext</code> e <code>cargo add postext</code> la usano da Python e Rust</td>
       <td><strong>Disponibile</strong></td>
     </tr>
   </tbody>

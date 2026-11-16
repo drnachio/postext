@@ -3,9 +3,9 @@
 export const metadata = {
   title: "Línia d'ordres: postext en un terminal, un script o un agent",
   sidebarTitle: "Línia d'ordres",
-  description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents",
+  description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents, i paquets de Python i Rust el fan servir des del codi",
   lang: 'ca',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '14 min',
   order: 52,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
@@ -100,6 +100,8 @@ ordre `postext`.
 
 Sense arguments, `postext` mostra l'ajuda; `postext help <command>` llista les
 opcions d'una ordre.
+
+Per cridar-lo des d'un programa, `pip install postext` (Python) i `cargo add postext` (Rust) embolcallen aquest mateix executable i el baixen el primer cop que es fan servir: vegeu [Python](#python) i [Rust](#rust) més avall.
 
 ## Un primer llibre
 

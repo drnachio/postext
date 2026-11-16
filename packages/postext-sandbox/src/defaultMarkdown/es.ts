@@ -1198,7 +1198,7 @@ El programa lee un archivo \`.postext\`, una carpeta que contiene un libro o arc
 4. \`postext build libro/ --watch\` vuelve a componer el libro cada vez que se guarda un capítulo
 :::
 
-Dos órdenes sirven a la automatización. \`check\` maqueta el libro e informa de lo que mostraría el panel Revisión, con el preflight cuando el libro está preparado para imprenta, y termina con un código de error que un script puede comprobar. \`build --watch\` mantiene un libro abierto y lo vuelve a componer cuando cambia un archivo. En un portátil corriente, una novela ilustrada de 140 páginas se compone y se escribe como PDF en unos diez segundos. Y \`pip install postext\` convierte el mismo programa en una biblioteca de Python: sus funciones toman las opciones de la orden, \`design\`, \`idml\` e \`import_idml\` entre ellas, y la primera que se ejecuta descarga el ejecutable para su sistema.
+Dos órdenes sirven a la automatización. \`check\` maqueta el libro e informa de lo que mostraría el panel Revisión, con el preflight cuando el libro está preparado para imprenta, y termina con un código de error que un script puede comprobar. \`build --watch\` mantiene un libro abierto y lo vuelve a componer cuando cambia un archivo. En un portátil corriente, una novela ilustrada de 140 páginas se compone y se escribe como PDF en unos diez segundos. Y \`pip install postext\` convierte el mismo programa en una biblioteca de Python: sus funciones toman las opciones de la orden, \`design\`, \`idml\` e \`import_idml\` entre ellas, y la primera que se ejecuta descarga el ejecutable para su sistema. \`cargo add postext\` hace lo mismo en Rust, con un constructor por orden.
 
 ## Un libro en un archivo
 

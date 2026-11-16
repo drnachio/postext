@@ -3,9 +3,9 @@
 export const metadata = {
   title: '命令行：在终端、脚本或智能体中使用postext',
   sidebarTitle: '命令行',
-  description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON',
+  description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON，还可通过Python和Rust包在代码中使用',
   lang: 'zh',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '10分钟',
   order: 52,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
@@ -78,6 +78,8 @@ Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/p
 装有Node.js时，`npx postext-cli`会从npm下载适合你系统的可执行文件并运行它，`npm install -g postext-cli`则把它安装为`postext`命令。
 
 不带参数运行时，`postext`打印帮助；`postext help <command>`列出某个命令的选项。
+
+要在程序中调用它，可以用`pip install postext`（Python）和`cargo add postext`（Rust）：两者都封装同一个可执行文件，并在首次使用时下载它。见下文的[Python](#python)和[Rust](#rust)。
 
 ## 第一本书
 

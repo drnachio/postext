@@ -1193,7 +1193,7 @@ O programa lê um arquivo \`.postext\`, uma pasta que contém um livro ou arquiv
 4. \`postext build book/ --watch\` compõe o livro de novo sempre que um capítulo é salvo
 :::
 
-Dois comandos servem à automação. \`check\` diagrama o livro e informa o que o painel Verificações informaria, com o preflight quando o livro está preparado para impressão, e termina com um código de erro que um script pode testar. \`build --watch\` mantém um livro aberto e o compõe de novo quando um arquivo muda. E \`pip install postext\` faz do mesmo programa uma biblioteca de Python: as suas funções recebem as opções do comando, entre elas \`design\`, \`idml\` e \`import_idml\`, e a primeira que roda baixa o executável do seu sistema.
+Dois comandos servem à automação. \`check\` diagrama o livro e informa o que o painel Verificações informaria, com o preflight quando o livro está preparado para impressão, e termina com um código de erro que um script pode testar. \`build --watch\` mantém um livro aberto e o compõe de novo quando um arquivo muda. E \`pip install postext\` faz do mesmo programa uma biblioteca de Python: as suas funções recebem as opções do comando, entre elas \`design\`, \`idml\` e \`import_idml\`, e a primeira que roda baixa o executável do seu sistema. \`cargo add postext\` faz o mesmo em Rust, com um builder por comando.
 
 ## Um livro num arquivo
 

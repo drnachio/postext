@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Technical architecture of the Postext layout engine: its concepts, the document tree, rhythm, backends and performance',
   lang: 'en',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '26 min',
   order: 2,
   plainSummary: "This page explains how Postext works inside, and it is written for programmers. First, Postext measures every word without drawing anything on screen, which makes it very fast. Then it works out where every line, picture and column goes, and keeps that plan in memory. Last, it draws the finished pages as a web page, a canvas image or a PDF file. When you change a word, it lays the pages out again and reuses the measurements of the paragraphs that did not change. The next page explains, step by step, how the lines and pictures are placed.",
@@ -514,7 +514,7 @@ Because binary resource payloads live out-of-band, each backend resolves `fileId
     <tr>
       <td><strong>Command line</strong></td>
       <td>Pretext over Skia (<code>@napi-rs/canvas</code>), in place of the browser's canvas</td>
-      <td>The PDF, HTML and EPUB writers, page images and Word, run from a terminal with no browser (<code>postext-cli</code>)</td>
+      <td>The PDF, HTML and EPUB writers, page images and Word, run from a terminal with no browser (<code>postext-cli</code>); <code>pip install postext</code> and <code>cargo add postext</code> drive it from Python and Rust</td>
       <td><strong>Shipping</strong></td>
     </tr>
   </tbody>

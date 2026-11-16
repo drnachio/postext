@@ -1198,7 +1198,7 @@ The program reads a \`.postext\` file, a folder holding a book, or loose Markdow
 4. \`postext build book/ --watch\` sets the book again whenever a chapter is saved
 :::
 
-Two commands serve automation. \`check\` lays the book out and reports what the Checks panel would report, with the preflight when the book is set up for print, and ends with an error code a script can test. \`build --watch\` keeps a book open and sets it again when a file changes, so an editor and a PDF viewer side by side behave like the Sandbox. On an ordinary laptop a 140-page illustrated novel is set and written as a PDF in about ten seconds. And \`pip install postext\` makes the same program a Python library: its functions take the command's options, \`design\`, \`idml\` and \`import_idml\` among them, and the first one to run downloads the executable for its system.
+Two commands serve automation. \`check\` lays the book out and reports what the Checks panel would report, with the preflight when the book is set up for print, and ends with an error code a script can test. \`build --watch\` keeps a book open and sets it again when a file changes, so an editor and a PDF viewer side by side behave like the Sandbox. On an ordinary laptop a 140-page illustrated novel is set and written as a PDF in about ten seconds. And \`pip install postext\` makes the same program a Python library: its functions take the command's options, \`design\`, \`idml\` and \`import_idml\` among them, and the first one to run downloads the executable for its system. \`cargo add postext\` does the same for Rust, with one builder per command.
 
 ## A book in one file
 

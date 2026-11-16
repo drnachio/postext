@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'Linha de comando: o postext em um terminal, um script ou um agente',
   sidebarTitle: 'Linha de comando',
-  description: 'Um único executável autossuficiente para macOS, Linux e Windows. Ele transforma um livro .postext, uma pasta de livro ou arquivos Markdown soltos em PDF, HTML, EPUB, imagens das páginas e Word, monta pacotes, verifica livros e oferece saída JSON para scripts e agentes',
+  description: 'Um único executável autossuficiente para macOS, Linux e Windows. Ele transforma um livro .postext, uma pasta de livro ou arquivos Markdown soltos em PDF, HTML, EPUB, imagens das páginas e Word, monta pacotes, verifica livros e oferece saída JSON para scripts e agentes, com pacotes Python e Rust que o usam a partir do código',
   lang: 'pt',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '14 min',
   order: 52,
   plainSummary: "Esta página é para quem quer fazer livros com o Postext a partir de um terminal, sem usar o site. Você baixa um único arquivo feito para o seu computador e o executa, sem instalar mais nada. Você entrega a ele o livro, ou alguns arquivos de texto, e ele faz um PDF, uma página da web, um livro digital, imagens das páginas ou um documento do Word. Ele também verifica se o livro tem problemas e junta todos os arquivos do livro em um só. Programas e assistentes de inteligência artificial também podem usá-lo, porque ele responde em um formato que esses programas leem com facilidade.",
@@ -100,6 +100,8 @@ sistema e o executa, e `npm install -g postext-cli` o mantém como um comando
 
 Executado sem argumentos, o `postext` mostra a ajuda; `postext help <command>`
 lista as opções de um comando.
+
+Para chamá-lo de um programa, `pip install postext` (Python) e `cargo add postext` (Rust) envolvem este mesmo executável e o baixam no primeiro uso: veja [Python](#python) e [Rust](#rust) mais abaixo.
 
 ## Um primeiro livro
 

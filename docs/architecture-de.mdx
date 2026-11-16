@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architektur',
   description: 'Technische Architektur der Layout-Engine Postext: Grundbegriffe, Dokumentbaum, vertikaler Rhythmus, Backends und Leistung',
   lang: 'de',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '26 min',
   order: 2,
   plainSummary: "Diese Seite erklärt, wie Postext im Inneren arbeitet, und richtet sich an Programmiererinnen und Programmierer. Zuerst misst Postext jedes Wort, ohne etwas auf dem Bildschirm zu zeichnen, und ist dadurch sehr schnell. Dann berechnet es, wohin jede Zeile, jedes Bild und jede Spalte gehört, und behält diesen Plan im Speicher. Zuletzt zeichnet es die fertigen Seiten als Webseite, als Canvas-Bild oder als PDF-Datei. Wenn Sie ein Wort ändern, setzt es die Seiten neu und verwendet die Messungen der Absätze wieder, die sich nicht geändert haben. Die nächste Seite erklärt Schritt für Schritt, wie Zeilen und Bilder platziert werden.",
@@ -513,7 +513,7 @@ Weil binäre Nutzlasten der Ressourcen außerhalb liegen, löst jedes Backend `f
     <tr>
       <td><strong>Kommandozeile</strong></td>
       <td>Pretext über Skia (<code>@napi-rs/canvas</code>) statt des Canvas im Browser</td>
-      <td>Die Schreiber für PDF, HTML und EPUB, Seitenbilder und Word, ausgeführt in einem Terminal ohne Browser (<code>postext-cli</code>)</td>
+      <td>Die Schreiber für PDF, HTML und EPUB, Seitenbilder und Word, ausgeführt in einem Terminal ohne Browser (<code>postext-cli</code>); <code>pip install postext</code> und <code>cargo add postext</code> steuern sie aus Python und Rust</td>
       <td><strong>Verfügbar</strong></td>
     </tr>
   </tbody>

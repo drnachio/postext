@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'Command line: postext in a terminal, a script or an agent',
   sidebarTitle: 'Command line',
-  description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents',
+  description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents, with Python and Rust packages that drive it from code',
   lang: 'en',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '14 min',
   order: 52,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
@@ -99,6 +99,8 @@ system from npm and runs it, and `npm install -g postext-cli` keeps it as a
 
 Run with no arguments, `postext` prints its help; `postext help <command>`
 lists the options of one command.
+
+To call it from a program, `pip install postext` (Python) and `cargo add postext` (Rust) wrap this same executable and download it on first use: see [Python](#python) and [Rust](#rust) below.
 
 ## A first book
 

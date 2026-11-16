@@ -1204,7 +1204,7 @@ Das Programm liest eine \`.postext\`-Datei, einen Ordner mit einem Buch oder los
 4. \`postext build book/ --watch\` setzt das Buch neu, sobald ein Kapitel gespeichert wird
 :::
 
-Zwei Befehle dienen der Automatisierung. \`check\` setzt das Buch und meldet, was das Bedienfeld Prüfungen melden würde, mit dem Preflight, wenn das Buch für den Druck eingerichtet ist, und endet mit einem Fehlercode. \`build --watch\` hält ein Buch offen und setzt es neu, wenn sich eine Datei ändert. Auf einem gewöhnlichen Laptop wird ein illustrierter Roman von 140 Seiten in etwa zehn Sekunden gesetzt und als PDF geschrieben. Und \`pip install postext\` macht dasselbe Programm zu einer Python-Bibliothek: Ihre Funktionen nehmen die Optionen des Befehls an, \`design\`, \`idml\` und \`import_idml\` darunter, und die erste, die läuft, lädt die ausführbare Datei für ihr System herunter.
+Zwei Befehle dienen der Automatisierung. \`check\` setzt das Buch und meldet, was das Bedienfeld Prüfungen melden würde, mit dem Preflight, wenn das Buch für den Druck eingerichtet ist, und endet mit einem Fehlercode. \`build --watch\` hält ein Buch offen und setzt es neu, wenn sich eine Datei ändert. Auf einem gewöhnlichen Laptop wird ein illustrierter Roman von 140 Seiten in etwa zehn Sekunden gesetzt und als PDF geschrieben. Und \`pip install postext\` macht dasselbe Programm zu einer Python-Bibliothek: Ihre Funktionen nehmen die Optionen des Befehls an, \`design\`, \`idml\` und \`import_idml\` darunter, und die erste, die läuft, lädt die ausführbare Datei für ihr System herunter. \`cargo add postext\` leistet dasselbe für Rust, mit einem Builder pro Befehl.
 
 ## Ein Buch in einer Datei
 
