@@ -663,6 +663,46 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 Jeder Aufruf startet die ausführbare Datei neu. Das
 [README](https://github.com/drnachio/postext/tree/main/packages/postext-python) des Pakets führt alle Optionen auf.
 
+## Rust
+
+`cargo add postext` leistet dasselbe für Rust. Die Version des Crates ist die
+von postext. Es lädt dieselbe ausführbare Datei beim ersten Gebrauch in
+denselben Cache-Ordner (nie beim Kompilieren, Builds ohne Netz funktionieren
+also) und liest ebenfalls `POSTEXT_BIN`. Python-Paket und Rust-Crate teilen
+sich auf einem Rechner also einen Download.
+
+```rust
+let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).locale("es").run()?;
+println!("{:?}", report.output().and_then(|o| o.pages));
+for warning in &report.warnings {
+    println!("{} {:?} {}", warning.kind, warning.at, warning.message);
+}
+
+let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+```
+
+- **Ein Builder pro Befehl**: `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` und `build`. Die Optionen sind Methoden mit denselben Namen,
+  mit Unterstrichen (`color_space`, `font_dir`, `dry_run`). `set` nimmt jeden
+  JSON-Wert, `config_json` einen `serde_json::Value`, `chapters` eine Zahl,
+  einen Bereich, eine Liste oder `"1,3-5"`. `run()` gibt den Bericht zurück,
+  `bytes()` die Datei.
+- **Typisierte Berichte**: `Report` mit `outputs`, `pages`, `timings` und
+  `warnings`, dazu `InfoReport`, `CheckReport`, `DesignReport` und
+  `ImportIdmlReport` mit den Feldern ihrer Befehle; `raw` enthält das ganze
+  JSON.
+- **Ein Fehlertyp**: `postext::Error` ist `Failed`, `Usage`, `ProblemsFound`
+  (mit dem Bericht; `allow_problems()` gibt ihn stattdessen zurück),
+  `BinaryNotFound`, `InvalidArgument`, `Timeout` oder `Io`.
+- `postext::Postext::with_binary(pfad)` führt eine bestimmte Datei aus, mit
+  eigenem Ordner, eigener Umgebung und eigenem Zeitlimit. Ohne das
+  Standard-Feature `download` lädt das Crate nie etwas herunter.
+
+Das [README](https://github.com/drnachio/postext/tree/main/packages/postext-rust)
+des Crates und seine [API-Dokumentation](https://docs.rs/postext) führen alle
+Optionen auf.
+
 ## Wie sie gebaut ist
 
 Die Kommandozeile ist das Paket `postext-cli` im

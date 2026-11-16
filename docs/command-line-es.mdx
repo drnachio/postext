@@ -657,6 +657,46 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 Cada llamada arranca el ejecutable de nuevo. El
 [README](https://github.com/drnachio/postext/tree/main/packages/postext-python) del paquete recoge todas las opciones.
 
+## Rust
+
+`cargo add postext` hace lo mismo en Rust. La versión del crate es la de
+postext, descarga el mismo ejecutable en la misma caché la primera vez que lo
+necesita (nunca al compilar, así que las compilaciones sin conexión funcionan)
+y también lee `POSTEXT_BIN`, de modo que el paquete de Python y el crate de
+Rust comparten una sola descarga en un mismo equipo.
+
+```rust
+let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).locale("es").run()?;
+println!("{:?}", report.output().and_then(|o| o.pages));
+for warning in &report.warnings {
+    println!("{} {:?} {}", warning.kind, warning.at, warning.message);
+}
+
+let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+```
+
+- **Un constructor por comando**: `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` y `build`. Las opciones son métodos con el mismo nombre, con
+  guiones bajos (`color_space`, `font_dir`, `dry_run`). `set` recibe cualquier
+  valor JSON, `config_json` un `serde_json::Value`, `chapters` un número, un
+  rango, una lista o `"1,3-5"`. `run()` devuelve el informe y `bytes()`, el
+  archivo.
+- **Informes con tipos**: `Report` con `outputs`, `pages`, `timings` y
+  `warnings`, e `InfoReport`, `CheckReport`, `DesignReport` e
+  `ImportIdmlReport` con los campos de sus comandos; `raw` conserva el JSON
+  completo.
+- **Un solo tipo de error**: `postext::Error` es `Failed`, `Usage`,
+  `ProblemsFound` (con el informe; `allow_problems()` lo devuelve en su lugar),
+  `BinaryNotFound`, `InvalidArgument`, `Timeout` o `Io`.
+- `postext::Postext::with_binary(ruta)` usa un ejecutable concreto, con su
+  propia carpeta, entorno y tiempo límite. Sin la función `download`, activa
+  por defecto, el crate nunca descarga nada.
+
+El [README](https://github.com/drnachio/postext/tree/main/packages/postext-rust)
+del crate y su [documentación de la API](https://docs.rs/postext) recogen todas
+las opciones.
+
 ## Cómo está hecho
 
 La línea de comandos es el paquete `postext-cli` del

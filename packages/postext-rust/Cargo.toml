@@ -1,0 +1,38 @@
+# The Rust crate `postext` (#1595): typed functions over the self-contained
+# postext command line, as the Python package does (#1443). The engine is
+# TypeScript and needs a canvas, so the crate runs the executable of its own
+# version, downloaded from the GitHub Release on first use. Its version
+# follows the command line's: release.yml sets it with every release.
+[package]
+name = "postext"
+version = "1.87.0"
+edition = "2024"
+rust-version = "1.88"
+description = "Typeset books from Rust with Postext: PDF, HTML, EPUB, page images, Word and InDesign from a .postext book or Markdown, through the self-contained postext command line."
+license = "MIT"
+authors = ["Postext contributors"]
+homepage = "https://postext.dev/"
+documentation = "https://docs.rs/postext"
+repository = "https://github.com/drnachio/postext"
+readme = "README.md"
+keywords = ["typesetting", "pdf", "epub", "markdown", "book"]
+categories = ["text-processing", "api-bindings"]
+include = ["src/**/*.rs", "tests/**/*.rs", "README.md", "LICENSE", "Cargo.toml"]
+
+[features]
+default = ["download"]
+# Download the executable from the GitHub Release on first use. Without it,
+# the crate runs POSTEXT_BIN or an executable already in the cache.
+download = ["dep:ureq", "dep:sha2"]
+
+[dependencies]
+serde_json = "1"
+tempfile = "3"
+sha2 = { version = "0.11", optional = true }
+ureq = { version = "3", optional = true }
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dev-dependencies]
+sha2 = "0.11"

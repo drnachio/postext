@@ -606,6 +606,27 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 كل استدعاء يشغّل الملف التنفيذي من جديد. ويسرد [README](https://github.com/drnachio/postext/tree/main/packages/postext-python)
 الخاص بالحزمة الخيارات كلها.
 
+## Rust
+
+يفعل `cargo add postext` الشيء نفسه في Rust. إصدار الحزمة (crate) هو إصدار postext، وهي تنزّل الملف التنفيذي نفسه إلى مجلد التخزين المؤقت نفسه عند أول استخدام (لا عند البناء أبدًا، فيعمل البناء دون اتصال)، وتقرأ `POSTEXT_BIN` أيضًا، فتتشارك حزمة Python وحزمة Rust تنزيلًا واحدًا على الجهاز نفسه.
+
+```rust
+let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).locale("es").run()?;
+println!("{:?}", report.output().and_then(|o| o.pages));
+for warning in &report.warnings {
+    println!("{} {:?} {}", warning.kind, warning.at, warning.message);
+}
+
+let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+```
+
+- **مُنشئ لكل أمر**: `pdf` و`html` و`epub` و`image` و`images` و`docx` و`idml` و`import_docx` و`import_idml` و`design` و`pack` و`unpack` و`info` و`check` و`build`. الخيارات توابع بالأسماء نفسها مع شرطة سفلية (`color_space` و`font_dir` و`dry_run`). يقبل `set` أي قيمة JSON، و`config_json` قيمة `serde_json::Value`، و`chapters` رقمًا أو نطاقًا أو قائمة أو `"1,3-5"`. يعيد `run()` التقرير و`bytes()` الملف.
+- **تقارير ذات أنواع**: `Report` فيه `outputs` و`pages` و`timings` و`warnings`، و`InfoReport` و`CheckReport` و`DesignReport` و`ImportIdmlReport` بحقول أوامرها؛ ويحفظ `raw` نص JSON كاملًا.
+- **نوع خطأ واحد**: `postext::Error` هو `Failed` أو `Usage` أو `ProblemsFound` (مع التقرير؛ ويعيده `allow_problems()` بدلًا من الخطأ) أو `BinaryNotFound` أو `InvalidArgument` أو `Timeout` أو `Io`.
+- يشغّل `postext::Postext::with_binary(path)` ملفًا تنفيذيًا محددًا بمجلده وبيئته ومهلته. ومن دون الميزة `download` المفعّلة افتراضيًا لا تنزّل الحزمة شيئًا أبدًا.
+
+يسرد [ملف README](https://github.com/drnachio/postext/tree/main/packages/postext-rust) للحزمة و[توثيق واجهتها البرمجية](https://docs.rs/postext) كل الخيارات.
+
 ## كيف صُنع
 
 سطر الأوامر هو الحزمة `postext-cli` في

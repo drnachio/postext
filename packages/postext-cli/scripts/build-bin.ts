@@ -174,11 +174,21 @@ function load() {
       if (fs.existsSync(dir)) return;
       try { fs.mkdirSync(dir, { recursive: true }); } catch (err) { if (!fs.existsSync(dir)) throw err; }
     };
+    // Several processes may start at once on a cold cache (#1597). Windows
+    // refuses to replace a file another process has loaded: when the rename
+    // fails but a copy of the right size is in place, that copy is used.
     const put = (file, source) => {
       ensureDir(nodePath.dirname(file));
       const tmp = file + '.' + process.pid + '.tmp';
-      fs.writeFileSync(tmp, fs.readFileSync(source));
-      fs.renameSync(tmp, file);
+      try {
+        fs.writeFileSync(tmp, fs.readFileSync(source));
+        fs.renameSync(tmp, file);
+      } catch (err) {
+        try { fs.unlinkSync(tmp); } catch {}
+        let placed = false;
+        try { placed = fs.statSync(file).size === fs.statSync(source).size; } catch {}
+        if (!placed) throw err;
+      }
     };
     if (!ok) put(target, embedded);
     for (const [fileName, source] of extras) {

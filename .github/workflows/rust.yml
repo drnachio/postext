@@ -1,0 +1,81 @@
+name: Rust crate
+
+# The Rust crate (packages/postext-rust, #1595) on Linux, macOS and Windows:
+# its tests run the real executable of the crate's version, downloaded from
+# that GitHub Release (as `cargo add postext` users get it), so they need no
+# build of the command line. The engine's own Rust (rust/) is checked in
+# ci.yml's wasm job.
+
+on:
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - packages/postext-rust/**
+      - .github/workflows/rust.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: rust-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  test:
+    name: cargo test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    defaults:
+      run:
+        working-directory: packages/postext-rust
+    env:
+      POSTEXT_CACHE_DIR: ${{ github.workspace }}/.postext-cache
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packages/postext-rust
+      - run: rustup toolchain install stable --profile minimal --component clippy,rustfmt && rustup default stable
+      - id: version
+        shell: bash
+        run: echo "version=$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)" >> "$GITHUB_OUTPUT"
+      # The 200 MB executable, once per version and system
+      - uses: actions/cache@v4
+        with:
+          path: .postext-cache/bin
+          key: postext-bin-${{ runner.os }}-${{ runner.arch }}-${{ steps.version.outputs.version }}
+      - run: cargo test --all-targets
+      - run: cargo test --doc
+      - name: Lint, format and docs
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: |
+          cargo fmt --check
+          cargo clippy --all-targets -- -D warnings
+          cargo clippy --no-default-features --all-targets -- -D warnings
+          cargo doc --no-deps
+
+  # The oldest Rust the crate says it builds with (rust-version in Cargo.toml).
+  msrv:
+    name: Minimum Rust version
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/postext-rust
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: packages/postext-rust
+      - shell: bash
+        run: |
+          MSRV=$(sed -n 's/^rust-version = "\(.*\)"/\1/p' Cargo.toml)
+          rustup toolchain install "$MSRV" --profile minimal
+          cargo +"$MSRV" check --all-targets
+          cargo +"$MSRV" check --no-default-features

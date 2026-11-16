@@ -673,6 +673,46 @@ pdf = postext.pdf_bytes(open("book.postext", "rb").read())
 Cada crida torna a engegar l'executable. El
 [README](https://github.com/drnachio/postext/tree/main/packages/postext-python) del paquet recull totes les opcions.
 
+## Rust
+
+`cargo add postext` fa el mateix en Rust. La versió del crate és la de
+postext, baixa el mateix executable a la mateixa memòria cau el primer cop que
+el necessita (mai en compilar, de manera que les compilacions sense connexió
+funcionen) i també llegeix `POSTEXT_BIN`, així que el paquet de Python i el
+crate de Rust comparteixen una sola baixada en un mateix ordinador.
+
+```rust
+let report = postext::pdf("book.postext").out("book.pdf").set("page.dpi", 300).locale("es").run()?;
+println!("{:?}", report.output().and_then(|o| o.pages));
+for warning in &report.warnings {
+    println!("{} {:?} {}", warning.kind, warning.at, warning.message);
+}
+
+let pdf = postext::pdf(std::fs::read("book.postext")?).bytes()?;
+```
+
+- **Un constructor per ordre**: `pdf`, `html`, `epub`, `image`, `images`,
+  `docx`, `idml`, `import_docx`, `import_idml`, `design`, `pack`, `unpack`,
+  `info`, `check` i `build`. Les opcions són mètodes amb el mateix nom, amb
+  guions baixos (`color_space`, `font_dir`, `dry_run`). `set` rep qualsevol
+  valor JSON, `config_json` un `serde_json::Value`, `chapters` un nombre, un
+  interval, una llista o `"1,3-5"`. `run()` retorna l'informe i `bytes()`,
+  el fitxer.
+- **Informes amb tipus**: `Report` amb `outputs`, `pages`, `timings` i
+  `warnings`, i `InfoReport`, `CheckReport`, `DesignReport` i
+  `ImportIdmlReport` amb els camps de les seves ordres; `raw` conserva el JSON
+  sencer.
+- **Un sol tipus d'error**: `postext::Error` és `Failed`, `Usage`,
+  `ProblemsFound` (amb l'informe; `allow_problems()` el retorna en lloc seu),
+  `BinaryNotFound`, `InvalidArgument`, `Timeout` o `Io`.
+- `postext::Postext::with_binary(camí)` fa servir un executable concret, amb
+  la seva pròpia carpeta, entorn i temps límit. Sense la funció `download`,
+  activa per defecte, el crate no baixa mai res.
+
+El [README](https://github.com/drnachio/postext/tree/main/packages/postext-rust)
+del crate i la seva [documentació de l'API](https://docs.rs/postext) recullen
+totes les opcions.
+
 ## Com està fet
 
 La línia d'ordres és el paquet `postext-cli` del
