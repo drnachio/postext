@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'アーキテクチャー',
   description: 'Postext組版エンジンの技術的なアーキテクチャー：基本概念、文書ツリー、垂直リズム、バックエンド、パフォーマンス',
   lang: 'ja',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '30分',
   order: 2,
   plainSummary: "このページでは、Postextが内部でどう動いているかを、プログラマー向けに説明します。Postextはまず、画面に何も描かずにすべての単語の幅を測るので、とても速く動きます。次に、すべての行、図、段をどこに置くかを決め、その計画をメモリーに保存します。最後に、できあがったページをWebページ、canvasの画像、PDFファイルとして描きます。単語を1つ変えると、ページを組み直し、変わっていない段落の計測結果を再利用します。行と図を置いていく手順は、次のページで順を追って説明します。",
@@ -513,7 +513,7 @@ renderToScorm(docs, options): Promise<Uint8Array>;
     <tr>
       <td><strong>コマンドライン</strong></td>
       <td>Skia（<code>@napi-rs/canvas</code>）上のPretext。Skiaがブラウザーのcanvasの代わりを務める</td>
-      <td>PDF、HTML、EPUBの書き出し、ページ画像、Wordを、ブラウザーなしでターミナルから実行する（<code>postext-cli</code>）</td>
+      <td>PDF、HTML、EPUBの書き出し、ページ画像、Wordを、ブラウザーなしでターミナルから実行する（<code>postext-cli</code>）。PythonとRustからは<code>pip install postext</code>と<code>cargo add postext</code>で使えます</td>
       <td><strong>提供中</strong></td>
     </tr>
   </tbody>

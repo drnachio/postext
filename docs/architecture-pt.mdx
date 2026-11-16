@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Arquitetura',
   description: 'Arquitetura técnica do motor de diagramação do Postext: os conceitos, a árvore do documento, o ritmo vertical, os renderizadores e o desempenho',
   lang: 'pt',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '29 min',
   order: 2,
   plainSummary: "Esta página explica como o Postext funciona por dentro, e foi escrita para programadores. Primeiro, o Postext mede cada palavra sem desenhar nada na tela, e por isso é muito rápido. Depois ele calcula onde vai cada linha, cada imagem e cada coluna, e guarda esse plano na memória. Por fim, desenha as páginas prontas como página web, como imagem em um canvas ou como arquivo PDF. Quando você muda uma palavra, ele diagrama as páginas de novo e reaproveita as medidas dos parágrafos que não mudaram. A página seguinte explica, passo a passo, como as linhas e as imagens são posicionadas.",
@@ -514,7 +514,7 @@ Como os dados binários dos recursos ficam fora do VDT, cada renderizador resolv
     <tr>
       <td><strong>Linha de comando</strong></td>
       <td>Pretext sobre o Skia (<code>@napi-rs/canvas</code>), no lugar do canvas do navegador</td>
-      <td>Os geradores de PDF, HTML e EPUB, as imagens de página e o Word, a partir de um terminal e sem navegador (<code>postext-cli</code>)</td>
+      <td>Os geradores de PDF, HTML e EPUB, as imagens de página e o Word, a partir de um terminal e sem navegador (<code>postext-cli</code>); <code>pip install postext</code> e <code>cargo add postext</code> a usam a partir de Python e Rust</td>
       <td><strong>Disponível</strong></td>
     </tr>
   </tbody>

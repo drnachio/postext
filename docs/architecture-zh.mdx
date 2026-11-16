@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '架构',
   description: 'Postext排版引擎的技术架构：核心概念、文档树、垂直韵律、后端与性能',
   lang: 'zh',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '20分钟',
   order: 2,
   plainSummary: "本页讲解Postext的内部工作原理，面向程序员。首先，Postext在不往屏幕上画任何东西的情况下测量每个词，所以速度很快。然后它算出每一行、每张图和每一栏的位置，并把这份排版方案保存在内存里。最后，它把排好的页面输出为网页、Canvas图像或PDF文件。你改动一个词时，它会把各页重新排一遍，并沿用未改动段落的测量结果。下一页一步步说明各行和各张图是怎样放上去的。",
@@ -513,7 +513,7 @@ renderToScorm(docs, options): Promise<Uint8Array>;
     <tr>
       <td><strong>命令行</strong></td>
       <td>基于Skia（<code>@napi-rs/canvas</code>）的Pretext，由Skia代替浏览器的Canvas</td>
-      <td>PDF、HTML和EPUB写入器，以及页面图像和Word，在终端中运行，不需要浏览器（<code>postext-cli</code>）</td>
+      <td>PDF、HTML和EPUB写入器，以及页面图像和Word，在终端中运行，不需要浏览器（<code>postext-cli</code>）；Python和Rust可通过<code>pip install postext</code>和<code>cargo add postext</code>使用它</td>
       <td><strong>已发布</strong></td>
     </tr>
   </tbody>

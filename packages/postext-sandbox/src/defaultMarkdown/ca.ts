@@ -1197,7 +1197,7 @@ El programa llegeix un fitxer \`.postext\`, una carpeta que conté un llibre o f
 4. \`postext build book/ --watch\` torna a compondre el llibre cada vegada que es desa un capítol
 :::
 
-Dues ordres serveixen per automatitzar. \`check\` maqueta el llibre i informa del que informaria el tauler Revisió, amb el preflight quan el llibre està preparat per imprimir, i acaba amb un codi d'error que un script pot comprovar. \`build --watch\` manté un llibre obert i el torna a compondre quan canvia un fitxer. En un portàtil corrent, una novel·la il·lustrada de 140 pàgines es compon i s'escriu com a PDF en uns deu segons. I \`pip install postext\` converteix el mateix programa en una biblioteca de Python: les seves funcions prenen les opcions de l'ordre, entre elles \`design\`, \`idml\` i \`import_idml\`, i la primera que s'executa baixa l'executable del seu sistema.
+Dues ordres serveixen per automatitzar. \`check\` maqueta el llibre i informa del que informaria el tauler Revisió, amb el preflight quan el llibre està preparat per imprimir, i acaba amb un codi d'error que un script pot comprovar. \`build --watch\` manté un llibre obert i el torna a compondre quan canvia un fitxer. En un portàtil corrent, una novel·la il·lustrada de 140 pàgines es compon i s'escriu com a PDF en uns deu segons. I \`pip install postext\` converteix el mateix programa en una biblioteca de Python: les seves funcions prenen les opcions de l'ordre, entre elles \`design\`, \`idml\` i \`import_idml\`, i la primera que s'executa baixa l'executable del seu sistema. \`cargo add postext\` fa el mateix en Rust, amb un constructor per ordre.
 
 ## Un llibre en un fitxer
 

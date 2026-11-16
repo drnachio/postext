@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'コマンドライン：ターミナル、スクリプト、エージェントでpostextを使う',
   sidebarTitle: 'コマンドライン',
-  description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力',
+  description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力、PythonとRustのパッケージからの利用',
   lang: 'ja',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '14分',
   order: 52,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
@@ -78,6 +78,8 @@ Invoke-WebRequest https://github.com/drnachio/postext/releases/latest/download/p
 Node.jsがあれば、`npx postext-cli`が自分のシステム用の実行ファイルをnpmからダウンロードして実行します。`npm install -g postext-cli`なら、`postext`コマンドとして残ります。
 
 引数なしで実行すると、`postext`はヘルプを表示します。`postext help <command>`は1つのコマンドのオプションを一覧にします。
+
+プログラムから呼び出すには、`pip install postext`（Python）と`cargo add postext`（Rust）を使います。どちらもこの同じ実行ファイルを包み、最初に使うときにダウンロードします。下の[Python](#python)と[Rust](#rust)を参照してください。
 
 ## 最初の本
 

@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Architecture',
   description: 'Architecture technique du moteur de mise en page Postext : ses concepts, l’arbre de document, le rythme vertical, les moteurs de rendu et les performances',
   lang: 'fr',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '31 min',
   order: 2,
   plainSummary: "Cette page explique le fonctionnement interne de Postext ; elle s’adresse aux programmeurs. D’abord, Postext mesure chaque mot sans rien dessiner à l’écran, ce qui le rend très rapide. Ensuite, il calcule l’emplacement de chaque ligne, de chaque image et de chaque colonne, et garde ce plan en mémoire. Enfin, il dessine les pages terminées sous forme de page web, d’image canvas ou de fichier PDF. Quand vous modifiez un mot, il refait la mise en page et réutilise les mesures des paragraphes qui n’ont pas changé. La page suivante explique, étape par étape, comment les lignes et les images sont placées.",
@@ -513,7 +513,7 @@ Comme les données binaires des ressources circulent hors bande, chaque moteur d
     <tr>
       <td><strong>Ligne de commande</strong></td>
       <td>Pretext sur Skia (<code>@napi-rs/canvas</code>), à la place du canvas du navigateur</td>
-      <td>Les générateurs PDF, HTML et EPUB, les images de page et Word, lancés depuis un terminal sans navigateur (<code>postext-cli</code>)</td>
+      <td>Les générateurs PDF, HTML et EPUB, les images de page et Word, lancés depuis un terminal sans navigateur (<code>postext-cli</code>) ; <code>pip install postext</code> et <code>cargo add postext</code> la pilotent depuis Python et Rust</td>
       <td><strong>Disponible</strong></td>
     </tr>
   </tbody>

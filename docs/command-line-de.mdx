@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'Kommandozeile: postext im Terminal, in einem Skript oder einem Agenten',
   sidebarTitle: 'Kommandozeile',
-  description: 'Eine eigenständige ausführbare Datei für macOS, Linux und Windows. Sie wandelt ein .postext-Buch, einen Buchordner oder lose Markdown-Dateien in PDF, HTML, EPUB, Seitenbilder und Word um, packt Pakete, prüft Bücher und liefert JSON-Ausgabe für Skripte und Agenten',
+  description: 'Eine eigenständige ausführbare Datei für macOS, Linux und Windows. Sie wandelt ein .postext-Buch, einen Buchordner oder lose Markdown-Dateien in PDF, HTML, EPUB, Seitenbilder und Word um, packt Pakete, prüft Bücher und liefert JSON-Ausgabe für Skripte und Agenten, dazu Pakete für Python und Rust, die es aus dem Code steuern',
   lang: 'de',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-16',
   readingTime: '13 min',
   order: 52,
   plainSummary: "Diese Seite richtet sich an alle, die Bücher mit Postext im Terminal statt auf der Website machen wollen. Sie laden eine einzige Datei für Ihren Computer herunter und führen sie aus, ohne etwas zu installieren. Sie geben ihr Ihr Buch oder ein paar Textdateien, und sie erzeugt ein PDF, eine Webseite, ein E-Book, Bilder der Seiten oder ein Word-Dokument. Sie kann ein Buch auch auf Probleme prüfen und seine Dateien zu einer einzigen packen. Auch Programme und KI-Assistenten können sie nutzen, denn sie kann in einem Format antworten, das diese leicht lesen.",
@@ -99,6 +99,8 @@ Befehl `postext`.
 
 Ohne Argumente aufgerufen, gibt `postext` seine Hilfe aus; `postext help <command>`
 listet die Optionen eines Befehls auf.
+
+Um es aus einem Programm aufzurufen, umhüllen `pip install postext` (Python) und `cargo add postext` (Rust) genau diese ausführbare Datei und laden sie beim ersten Gebrauch herunter: siehe [Python](#python) und [Rust](#rust) weiter unten.
 
 ## Ein erstes Buch
 

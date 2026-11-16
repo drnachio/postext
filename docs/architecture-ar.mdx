@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'البنية',
   description: 'البنية التقنية لمحرّك الإخراج في Postext: مفاهيمه، وشجرة المستند، والإيقاع العمودي، والمُخرِجات، والأداء',
   lang: 'ar',
-  lastUpdated: '2026-11-04',
+  lastUpdated: '2026-11-16',
   readingTime: '27 دقيقة',
   order: 2,
   plainSummary: "تشرح هذه الصفحة كيف يعمل Postext من الداخل، وهي مكتوبة للمبرمجين. أولًا يقيس Postext كل كلمة دون أن يرسم شيئًا على الشاشة، وهذا يجعله سريعًا جدًا. ثم يحسب موضع كل سطر وكل صورة وكل عمود، ويحفظ هذه الخطة في الذاكرة. وأخيرًا يرسم الصفحات الجاهزة صفحةَ ويب أو صورةً مرسومة في المتصفح أو ملف PDF. وحين تغيّر كلمة، يُخرج الصفحات من جديد ويعيد استعمال قياسات الفقرات التي لم تتغيّر. وتشرح الصفحة التالية خطوةً خطوة كيف توضع الأسطر والصور.",
@@ -513,7 +513,7 @@ renderToScorm(docs, options): Promise<Uint8Array>;
     <tr>
       <td><strong>سطر الأوامر</strong></td>
       <td>Pretext فوق Skia (<code>@napi-rs/canvas</code>) بدلًا من Canvas المتصفح</td>
-      <td>كاتبات PDF وHTML وEPUB وصور الصفحات وWord، من الطرفية ودون متصفح (<code>postext-cli</code>)</td>
+      <td>كاتبات PDF وHTML وEPUB وصور الصفحات وWord، من الطرفية ودون متصفح (<code>postext-cli</code>)؛ ويستخدمه <code>pip install postext</code> و<code>cargo add postext</code> من Python وRust</td>
       <td><strong>متاح</strong></td>
     </tr>
   </tbody>

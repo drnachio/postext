@@ -1194,7 +1194,7 @@ Le programme lit un fichier \`.postext\`, un dossier qui contient un livre, ou d
 4. \`postext build book/ --watch\` recompose le livre chaque fois qu’un chapitre est enregistré
 :::
 
-Deux commandes servent l’automatisation. \`check\` met le livre en page et signale ce que signalerait le panneau **Vérifications**, avec le contrôle en amont quand le livre est préparé pour l’impression, et se termine par un code d’erreur qu’un script peut tester. \`build --watch\` garde un livre ouvert et le recompose quand un fichier change. Sur un portable ordinaire, un roman illustré de 140 pages se compose et s’écrit en PDF en une dizaine de secondes. Et \`pip install postext\` fait du même programme une bibliothèque Python : ses fonctions prennent les options de la commande, dont \`design\`, \`idml\` et \`import_idml\`, et la première qui s’exécute télécharge l’exécutable de son système.
+Deux commandes servent l’automatisation. \`check\` met le livre en page et signale ce que signalerait le panneau **Vérifications**, avec le contrôle en amont quand le livre est préparé pour l’impression, et se termine par un code d’erreur qu’un script peut tester. \`build --watch\` garde un livre ouvert et le recompose quand un fichier change. Sur un portable ordinaire, un roman illustré de 140 pages se compose et s’écrit en PDF en une dizaine de secondes. Et \`pip install postext\` fait du même programme une bibliothèque Python : ses fonctions prennent les options de la commande, dont \`design\`, \`idml\` et \`import_idml\`, et la première qui s’exécute télécharge l’exécutable de son système. \`cargo add postext\` fait de même en Rust, avec un constructeur par commande.
 
 ## Un livre en un seul fichier
 
