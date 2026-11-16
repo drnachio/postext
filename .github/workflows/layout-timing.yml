@@ -1,0 +1,57 @@
+name: Layout timing
+
+# How long the engine takes to lay out the public showcase books, whole and
+# cold, on a runner with nothing else on it (#1603): the time of each run,
+# the memory, the hash of the pages and the share of each stage, as
+# packages/postext-cli/scripts/bench-layout.ts prints them. A report, not a
+# gate: nothing fails on a slower time, and no other workflow waits for it.
+# The numbers are in the run's summary and in its artifact, to compare one
+# run with another.
+on:
+  # main's numbers after each release, and develop's when the report itself
+  # changes (a new workflow cannot be started by hand until main has it)
+  push:
+    branches: [main, develop]
+    paths:
+      - .github/workflows/layout-timing.yml
+      - .github/scripts/layout-timing.mjs
+      - packages/postext-cli/scripts/bench-layout.ts
+      - packages/postext/package.json
+  workflow_dispatch:
+
+# Read-only token: no job here writes to the repository (artifacts and
+# caches use the runner's own token).
+permissions:
+  contents: read
+
+concurrency:
+  group: layout-timing-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  timing:
+    name: Time the showcase books
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+
+      - run: pnpm turbo run build --filter='postext-cli...'
+
+      - name: Lay the books out
+        working-directory: packages/postext-cli
+        run: |
+          presets=../../apps/web/public/presets
+          pnpm exec bun scripts/bench-layout.ts --runs 3 --stages --json \
+            "$presets/don-quijote" "$presets/paradise-lost" "$presets/openstax-fisica" \
+            "$presets/alf-layla" "$presets/hongloumeng" > "$RUNNER_TEMP/layout-timing.json"
+
+      - name: Report
+        run: node .github/scripts/layout-timing.mjs "$RUNNER_TEMP/layout-timing.json" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: layout-timing
+          path: ${{ runner.temp }}/layout-timing.json
