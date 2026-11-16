@@ -59,13 +59,13 @@ Für das editoriale Layout hat die Plattform nie die Grundbausteine angeboten, a
 2. **Fehler am Absatz- und Spaltenende.** _Waisen_ und _Witwen_ gibt es in CSS, aber die Browserunterstützung ist uneinheitlich, und sie sehen die Geometrie der ganzen Seite nicht; für eine _zu kurze Ausgangszeile_, das kurze Wort, das allein in der letzten Zeile eines Absatzes zurückbleibt, gibt es überhaupt keine Regel.
 3. **Zeilenumbruch über den ganzen Absatz.** Browser brechen Zeilen gierig um, eine nach der anderen, und können den übrigen Raum nur innerhalb jeder Zeile verteilen, während ein ausgewogener Blocksatz verlangt, den ganzen Absatz auf einmal abzuwägen.
 4. **Ein gemeinsamer vertikaler Rhythmus.** Bücher und Zeitschriften setzen jede Zeile auf ein Grundlinienraster, das alle Spalten einer Seite teilen; CSS kennt kein solches Raster.
-5. **Der Apparat eines Buches.** Kolumnentitel, die das Kapitel kennen, Seitenzahlen in römischer oder arabischer Zählung, Kapitelumbrüche, die auf rechte und linke Seiten achten, und ein Inhaltsverzeichnis mit echten Seitenzahlen: Nichts davon gibt es in einem scrollenden Dokument.
+5. **Der Apparat eines Buches.** Kolumnentitel, die das Kapitel kennen, Seitenzahlen in römischer oder arabischer Zählung, Kapitelumbrüche, die auf rechte und linke Seiten achten, und ein Inhaltsverzeichnis mit echten Seitenzahlen: Nichts davon gibt es in einem scrollenden Dokument, denn es kennt weder Seiten noch Seitenzahlen.
 
 :::callout{type="quote" placement="top"}
 _Editoriale Typografie ist ein Problem der Erfüllung von Nebenbedingungen. Dem Browser wurde nie die Sprache gegeben, diese Bedingungen zu formulieren._
 :::
 
-CSS beschreibt das _Aussehen_ jeder einzelnen Textregion sehr genau. Was ihm fehlt, ist _globale Optimierung_: die Fähigkeit, einen ganzen Absatz, eine ganze Spalte und eine ganze Seite abzuwägen, bevor es sich auf eines davon festlegt. Ein Setzer wägt so jede Seite ab, bevor er sie umbricht: Er bringt eine Zeile ein, damit eine Spalte nicht mit einer Witwe endet, oder lässt einen Absatz lockerer laufen, damit eine Überschrift bei ihrem Text bleibt.
+CSS beschreibt das _Aussehen_ jeder einzelnen Textregion sehr genau. Was ihm fehlt, ist _globale Optimierung_: die Fähigkeit, einen ganzen Absatz, eine ganze Spalte und eine ganze Seite abzuwägen, bevor es sich auf eines davon festlegt. Ein Setzer wägt so jede Seite ab, bevor er sie umbricht: Er bringt eine Zeile ein, damit eine Spalte nicht mit einer Witwe endet, oder lässt einen Absatz lockerer laufen, damit eine Überschrift bei ihrem Text bleibt. Postext tut dasselbe, mit Kosten für jeden dieser Fehler: Unter allen Arten, einen Absatz umzubrechen, wählt es die mit den geringsten Gesamtkosten.
 
 ## Was bestehenden Werkzeugen fehlt
 
@@ -95,7 +95,7 @@ Postext ist überall nützlich, wo langer, strukturierter Text so aussehen soll,
 
 ## Was Postext nicht ist
 
-Postext ersetzt CSS für Oberflächen nicht; es ist eine spezialisierte Engine für lange, strukturierte Inhalte. Es ist kein WYSIWYG-Editor: Sie schreiben Markdown und beschreiben die Gestaltung, und die Engine setzt die Seiten. Es lädt keine Schriften für Sie: Die Engine misst mit den Schriften, die der Browser bereits hat, also muss eine Seite ihre Schriften laden, bevor sie das Layout berechnet. Und die Layout-Engine läuft vorerst nur im Browser, weil ihre Messungen aus den Canvas-Schriftmetriken eines echten Browsers stammen; die PDF- und EPUB-Writer dagegen laufen auch in Node.
+Postext ersetzt CSS für Oberflächen nicht; es ist eine spezialisierte Engine für lange, strukturierte Inhalte. Es ist kein WYSIWYG-Editor: Sie schreiben Markdown und beschreiben die Gestaltung, und die Engine setzt die Seiten. Es lädt keine Schriften für Sie: Die Engine misst mit den Schriften, die der Browser bereits hat, also muss eine Seite ihre Schriften laden, bevor sie das Layout berechnet. Und die Layout-Engine misst jede Zeile auf einem Canvas, im Browser auf dessen eigenem, in Node, Bun oder Deno auf einem aus einer Canvas-Bibliothek; so setzt die Kommandozeile Bücher ohne Browser.
 
 # Wie die Engine arbeitet {#engine lead="Markdown und ein Konfigurationsobjekt gehen hinein; heraus kommt ein Baum, in dem jede Zeile eine Position in echten Einheiten hat. Dazwischen liegt eine kurze Pipeline, die Text misst, ohne das DOM zu berühren, und so lange wiederholt, bis die Seite zur Ruhe kommt." summary="Parsen, Messen, Setzen, Konvergieren"}
 
@@ -113,11 +113,11 @@ Zwei Dinge gehen in die Pipeline ein, und beide sind dafür gedacht, von Mensche
 2. **Konfiguration**, die die Gestaltung beschreibt
    - Seitenformat, Ränder, Anschnitt und Seitennummerierung
    - Spaltenaufbau, Spaltenabstand und Spaltenlinien
-   - Grundtext, Überschriften, Listen, Legenden, Tabellen und Mathematik
+   - Grundtext, Überschriften, Listen, Legenden, Tabellen, Code und Mathematik, jeweils mit Schrift, Größe und Zeilenabstand
    - Überschriftenstile, Absatzformate, Kastenstile, Teile und die Inhaltsseite
    - Kolumnentitel, eine benannte Farbpalette und die Optionen der PDF-Ausgabe
 
-Die Trennung ist gewollt. Dasselbe Markdown kann zu einem Taschenbuch, einer zweispaltigen Zeitschrift oder einem Lehrbuch mit Randspalte werden, allein durch eine andere Konfiguration.
+Die Trennung ist gewollt. Dasselbe Markdown kann zu einem Taschenbuch, einer zweispaltigen Zeitschrift oder einem Lehrbuch mit Randspalte werden, allein durch eine andere Konfiguration, ohne dass sich ein Wort des Textes ändert.
 
 ## Parsen
 
@@ -149,7 +149,7 @@ Das Layout selbst läuft in sieben Durchgängen ab:
 6. **Spaltenausgleich** gleicht die Spalten jeder Seite aus
 7. **Vertikaler Rhythmus** bringt den Text nach allem, was das Grundlinienraster unterbricht, wieder ins Raster
 
-Diese Durchgänge hängen im Kreis voneinander ab. Eine Überschrift bei ihrem Absatz zu halten, kann beide in die nächste Spalte schieben; diese Verschiebung kann eine Witwe hinterlassen; die Witwe zu beheben, holt eine Zeile zurück, was die Überschrift wieder abtrennen kann. Postext löst den Kreis mit der **Konvergenzschleife**:index{term="Konvergenzschleife"} aus :ref{id="convergence-loop"}: Die Durchgänge drei bis sieben wiederholen sich und markieren nur, was sich geändert hat, bis sich nichts mehr bewegt. Nach jedem Durchlauf werden die typografischen Verstöße bewertet; wird die Grenze je erreicht, behält die Engine also das beste Layout, das sie gefunden hat, nicht das letzte.
+Diese Durchgänge hängen im Kreis voneinander ab. Eine Überschrift bei ihrem Absatz zu halten, kann beide in die nächste Spalte schieben; diese Verschiebung kann eine Witwe hinterlassen; die Witwe zu beheben, holt eine Zeile zurück, was die Überschrift wieder abtrennen kann. Postext löst den Kreis mit der **Konvergenzschleife**:index{term="Konvergenzschleife"} aus :ref{id="convergence-loop"}: Die Durchgänge drei bis sieben wiederholen sich und markieren nur, was sich geändert hat, bis sich nichts mehr bewegt oder fünf Durchläufe erreicht sind. Nach jedem Durchlauf werden die typografischen Verstöße bewertet; wird die Grenze je erreicht, behält die Engine also das beste Layout, das sie gefunden hat, nicht das letzte.
 
 Die Regeln dieser Durchgänge sind bewusst wenige, und sie sind streng. Eine Überschrift bleibt immer bei den ersten Zeilen dessen, was ihr folgt. Ein Absatz, der mit einem Doppelpunkt endet, bleibt bei der Liste, die er einleitet. Eine Abbildung und ihre Bildunterschrift werden nie getrennt. Ein seitenbreites Element teilt die Seite in Streifen, und die Spalten jedes Streifens werden für sich ausgeglichen, sodass Text über einer breiten Tabelle erst beide Spalten hinunterläuft, bevor er unter ihr weitergeht. Lassen sich zwei dieser Regeln nicht zugleich erfüllen, gewinnt die, die der Seite am wenigsten schadet.
 
@@ -181,11 +181,11 @@ Der Ausgleich konvergiert abschnittsweise, zwischen Kapitelauftakten und explizi
 
 :index{term="VDT (virtueller Dokumentbaum)"}Was die Schleife übersteht, ist der **VDT**, der virtuelle Dokumentbaum: Seiten, die Spalten enthalten, Spalten, die Blöcke enthalten, Blöcke, die Zeilen enthalten, jedes mit seinem Rahmen in echten Einheiten, dazu eine flache Liste aller Blöcke für den schnellen Zugriff. Der Baum ist reine Geometrie – er weiß nichts von Canvas, HTML, PDF oder EPUB –, und genau deshalb kann jeder Renderer übereinstimmende Ausgaben zeichnen. Jede Zeile merkt sich außerdem den Abschnitt des Markdowns, aus dem sie stammt; so setzt ein Klick auf die Seite den Cursor des Editors auf das richtige Wort.
 
-Seiten halten auch fest, wofür sie da sind. Eine Seite kann eine Textseite sein, ein Kapitelauftakt, ein Teiltitel oder eine Vakatseite, die eingefügt wurde, damit die folgende Seite rechts oder links zu liegen kommt, und nach dieser Rolle richten sich Kolumnentitel, Paginas und Schmuckelemente. Seitenbezeichnungen – die gedruckte Seitenzahl in ihrer Zählung – werden einmal berechnet, im Baum, sodass Canvas, HTML und PDF darin übereinstimmen, ohne selbst zu zählen.
+Seiten halten auch fest, wofür sie da sind. Eine Seite kann eine Textseite sein, ein Kapitelauftakt, ein Teiltitel oder eine Vakatseite, die eingefügt wurde, damit die folgende Seite rechts oder links zu liegen kommt, und nach dieser Rolle richten sich Kolumnentitel, Paginas und Schmuckelemente. Seitenbezeichnungen – die gedruckte Seitenzahl in ihrer Zählung – werden einmal berechnet, im Baum, sodass Canvas, HTML und PDF darin übereinstimmen, ohne selbst zu zählen. Ein Renderer fragt den Baum also nach Rolle und Bezeichnung einer Seite, statt sie selbst herzuleiten.
 
 ## Abseits des Hauptthreads
 
-Ein Layout kann länger dauern als ein Tastendruck, deshalb kann die Engine in einem Web Worker:index{term="Web Worker"} laufen. Der Worker behält seinen Mess-Cache zwischen den Builds und bricht kooperativ ab: Wird ein neuer Build angefordert, hält der vorige an seinem nächsten Prüfpunkt an, und die letzte Anfrage gewinnt. Die Sandbox setzt jede Ansicht auf diese Weise, und die PDF- und EPUB-Writer haben eigene Worker, sodass die Oberfläche reaktionsfähig bleibt, während ein ganzes Buch gesetzt oder geschrieben wird.
+Ein Layout kann länger dauern als ein Tastendruck, deshalb kann die Engine in einem Web Worker:index{term="Web Worker"} laufen. Der Worker behält seinen Mess-Cache zwischen den Builds und bricht kooperativ ab: Wird ein neuer Build angefordert, hält der vorige an seinem nächsten Prüfpunkt an, und die letzte Anfrage gewinnt. Die Sandbox setzt jede Ansicht auf diese Weise, und die PDF- und EPUB-Writer haben eigene Worker, sodass die Oberfläche reaktionsfähig bleibt, während ein ganzes Buch gesetzt oder geschrieben wird. Ein Tastendruck wartet so nie auf ältere Builds.
 
 :::callout{type="note" title="Im Code"}
 \`buildDocument(content, config)\` gibt den VDT zurück. \`renderPage\` zeichnet eine Seite auf ein Canvas, \`renderToHtml\` gibt positioniertes HTML zurück, und \`renderToPdf\` aus dem Paket _postext-pdf_ gibt die Bytes eines PDF zurück – für ein Dokument oder ein ganzes Buch, als Array von Kapiteln. \`renderToEpub\` aus _postext-epub_ schreibt dieselben Kapitel als EPUB-3-Datei. \`createLayoutWorker\` aus _postext/worker_ führt den Build abseits des Hauptthreads aus.
@@ -202,7 +202,7 @@ Ein Layout kann länger dauern als ein Tastendruck, deshalb kann die Engine in e
 
 # Die Zeile setzen {lead="Ein Absatz wird als Ganzes gesetzt, nicht Zeile für Zeile. Postext wägt jede mögliche Art ab, ihn umzubrechen, belegt Wortabstände, Trennungen und allein stehende Wörter mit Kosten und wählt die Folge von Umbrüchen, die am wenigsten kostet." summary="Optimaler Zeilenumbruch, Silbentrennung, Wortabstände und die Fehler, die er vermeidet"}
 
-Die Qualität einer Seite entscheidet sich zuerst in ihren Absätzen. Postext implementiert den **Knuth-Plass-Algorithmus**, den optimalen Zeilenumbruch, der seit 1981 in TeX arbeitet. Er bewertet jede mögliche Art, den ganzen Absatz umzubrechen, und wählt die mit den geringsten Gesamtkosten; so bleiben die Wortabstände von der ersten bis zur letzten Zeile gleichmäßig, und keine Zeile zahlt für ihre Nachbarn.
+Die Qualität einer Seite entscheidet sich zuerst in ihren Absätzen. Postext implementiert den **Knuth-Plass-Algorithmus**, den optimalen Zeilenumbruch, der seit 1981 in TeX arbeitet. Er bewertet jede mögliche Art, den ganzen Absatz umzubrechen, und wählt die mit den geringsten Gesamtkosten; so bleiben die Wortabstände von der ersten bis zur letzten Zeile gleichmäßig, und keine Zeile zahlt für ihre Nachbarn. Gesetzt wird jeder Absatz dabei in genau der Breite, die er später auf der Seite einnimmt.
 
 ## Boxen, Leim und Strafpunkte
 
@@ -238,7 +238,7 @@ Weiche Trennstriche im Text gelten als Umbruchstellen, zum selben Preis wie die 
 
 ## Wortabstand und Flattersatzzeilen
 
-Zwei Einstellungen begrenzen, wie weit sich ein Wortzwischenraum dehnen oder stauchen darf: Für das Dehnen gilt \`maxWordSpacing\`, standardmäßig das Doppelte des natürlichen Abstands, für das Stauchen \`minWordSpacing\`, das 0,6-Fache davon. Eine Dehnung über das Maximum hinaus kostet mehr als jeder andere Fehler; der Umbruch wird also eher trennen, ein Wort verschieben oder eine zu kurze Ausgangszeile hinnehmen, als einen Gießbach aufzureißen. Zeilen, die sich gar nicht füllen lassen – eine lange URL, das unteilbare Ende eines Listeneintrags –, setzt die Engine im Flattersatz mit natürlichen Wortabständen. Die letzte Zeile eines Absatzes steht immer im Flattersatz, außer wenn sie überfüllt ist: Dann werden ihre Wortabstände gestaucht, bis sie passt. Eine Zeile, die an einem erzwungenen Zeilenumbruch endet, steht ebenfalls im Flattersatz, es sei denn, \`bodyText.justifyHardBreaks\` setzt sie in den Blocksatz, für ein Buch, dessen Zeilen anderswo entschieden wurden.
+Zwei Einstellungen begrenzen, wie weit sich ein Wortzwischenraum dehnen oder stauchen darf: Für das Dehnen gilt \`maxWordSpacing\`, standardmäßig das Doppelte des natürlichen Abstands, für das Stauchen \`minWordSpacing\`, das 0,6-Fache davon. Eine Dehnung über das Maximum hinaus kostet mehr als jeder andere Fehler; der Umbruch wird also eher trennen, ein Wort verschieben oder eine zu kurze Ausgangszeile hinnehmen, als einen Gießbach aufzureißen. Zeilen, die sich gar nicht füllen lassen – eine lange URL, das unteilbare Ende eines Listeneintrags –, setzt die Engine im Flattersatz mit natürlichen Wortabständen. Die letzte Zeile eines Absatzes steht immer im Flattersatz, außer wenn sie überfüllt ist: Dann werden ihre Wortabstände gestaucht, bis sie passt. Eine Zeile, die an einem erzwungenen Zeilenumbruch endet, steht ebenfalls im Flattersatz, es sei denn, \`bodyText.justifyHardBreaks\` setzt sie in den Blocksatz, für ein Buch, dessen Zeilen anderswo entschieden wurden, etwa beim Neusatz einer gedruckten Ausgabe Zeile für Zeile.
 
 ## Hausregeln für den Absatz
 
@@ -258,7 +258,7 @@ Der Rest eines chinesischen Buches folgt denselben Einstellungen. Kapitelvorlage
 
 Mit \`layout.writingMode: 'vertical-rl'\` wird ein Buch vertikal gesetzt. Die Zeilen laufen von oben nach unten und folgen einander von rechts nach links, zwei Spalten werden zu zwei übereinanderliegenden Etagen der Seite, Abbildungen und Tabellen bleiben aufrecht, lateinische Wörter und lange Zahlen legen sich auf die Seite, und jedes Satzzeichen nimmt die Stelle oder Form ein, die es im vertikalen Text hat: Klammern und Anführungszeichen nehmen ihre vertikalen Formen an, und der Punkt wandert auf dem Festland in die rechte obere Ecke seiner Zelle und bleibt in Taiwan und Hongkong zentriert. Ein solches Buch wird rechts gebunden (\`page.binding\`): Seine erste Seite steht allein links vom Buchrücken, und die Sandbox zeigt seine Doppelseiten von rechts nach links. Canvas und PDF setzen dieselben vertikalen Zeilen; die HTML-Ansicht bricht ihre eigenen Zeilen auf die Höhe ihrer Seite um und stellt jedes Zeichen so aufrecht oder dreht es so, wie es jene tun. Standardmäßig stellt \`cjk.uprightDigits\` eine Zahl mit bis zu zwei Ziffern aufrecht in eine einzige Zelle, und der Wert lässt sich auf drei oder vier erhöhen; \`:tcy[…]\` tut dasselbe für jede kurze Zeichenfolge.
 
-Chinesische Bücher zeichnen Text auch auf Arten aus, für die die lateinische Schrift keine Verwendung hat. Hervorhebung zeigt ein Punkt neben jedem Zeichen, nicht die Kursive; in einem chinesischen Dokument setzt \`*…*\` daher Betonungspunkte an die chinesischen Zeichen, die es umschließt, wie \`:dots[…]\`; \`cjk.emphasis: 'italic'\` behält die Kursive bei. \`:name[…]\` zieht die gerade Linie eines Eigennamens, \`:book[…]\` kennzeichnet den Titel eines Buches, und \`cjk.bookTitleMark\` wählt, wie: mit den doppelten Winkelklammern des Festlands oder der Wellenlinie Taiwans und Hongkongs. \`:ruby[…]{rt="…"}\` setzt eine Lesung, Pinyin über den Zeichen oder Zhuyin rechts neben jedem, und \`:warichu[…]\` setzt eine Anmerkung in zwei halbhohen Zeilen innerhalb der Zeile.
+Chinesische Bücher zeichnen Text auch auf Arten aus, für die die lateinische Schrift keine Verwendung hat. Hervorhebung zeigt ein Punkt neben jedem Zeichen, nicht die Kursive; in einem chinesischen Dokument setzt \`*…*\` daher Betonungspunkte an die chinesischen Zeichen, die es umschließt, wie \`:dots[…]\`; \`cjk.emphasis: 'italic'\` behält die Kursive bei. \`:name[…]\` zieht die gerade Linie eines Eigennamens, \`:book[…]\` kennzeichnet den Titel eines Buches, und \`cjk.bookTitleMark\` wählt, wie: mit den doppelten Winkelklammern des Festlands oder der Wellenlinie Taiwans und Hongkongs. \`:ruby[…]{rt="…"}\` setzt eine Lesung, Pinyin über den Zeichen oder Zhuyin rechts neben jedem, und \`:warichu[…]\` setzt eine Anmerkung in zwei halbhohen Zeilen innerhalb der Zeile, wie sie in klassischen Kommentaren üblich ist.
 
 ## Arabisch und Schrift von rechts nach links
 
@@ -336,13 +336,13 @@ Spalten sind der sichtbarste Ausdruck editorialer Gestaltung und die Stelle, an 
 
 Eine Seite beginnt mit ihrem Format. Postext bietet die üblichen Buch- und Zeitschriftenformate als Vorlagen an, aufgeführt in :ref{id="preset-sizes"}, und jedes eigene Format in Zentimetern, Millimetern, Zoll oder Punkt; dieser Leitfaden ist im Format 21 × 28 cm gesetzt. Ränder lassen sich **spiegeln**: Dann wird der linke Rand zum inneren, am Bund, und wechselt auf jeder linken Seite die Seite. Für die Druckvorstufe kann die Seite Anschnitt und Schnittmarken erhalten, und eine DPI-Einstellung steuert die Auflösung pixelbasierter Maße.
 
-Seitenzahlen folgen Zählweisen: arabisch, kleine oder große römische Ziffern, kleine oder große Buchstaben, jede mit eigener Startnummer, sodass ein Buch seine Titelei mit i, ii, iii nummerieren und Kapitel eins bei 1 beginnen lassen kann. Das PDF übernimmt dieselben Zählweisen als Seitenbezeichnungen, sodass das Seitenfeld eines Betrachters genau das anzeigt, was am Fuß der Seite gedruckt steht.
+Seitenzahlen folgen Zählweisen: arabisch, kleine oder große römische Ziffern, kleine oder große Buchstaben, jede mit eigener Startnummer, sodass ein Buch seine Titelei mit i, ii, iii nummerieren und Kapitel eins bei 1 beginnen lassen kann. Das PDF übernimmt dieselben Zählweisen als Seitenbezeichnungen, sodass das Seitenfeld eines Betrachters genau das anzeigt, was am Fuß der Seite gedruckt steht, in der Titelei also etwa iii statt 3.
 
 ## Satzbreite und Zeilenabstand
 
 Die beiden Zahlen, die am meisten darüber entscheiden, wie sich eine Seite liest, sind die Länge ihrer Zeilen und der Abstand zwischen ihnen. Die Konfiguration legt Schriftgrad und Zeilenabstand des Grundtextes in echten Einheiten fest – dieses Buch verwendet 9,4 auf 13,6 Punkt –, und die Spaltenbreite ergibt sich aus der Seite, den Rändern, dem Spaltenaufbau und dem Spaltenabstand. Eine Zeile von 45 bis 75 Zeichen ist das klassische Ziel; ist sie deutlich kürzer, springt das Auge zu oft, ist sie deutlich länger, findet es nur schwer zur nächsten Zeile zurück. Zwei Spalten auf einer 21 cm breiten Seite liegen bequem in diesem Bereich, einer der Gründe, warum das Format bei Zeitschriften und Fachbüchern so verbreitet ist.
 
-Der Zeilenabstand ist auch die Einheit des Grundlinienrasters. Jeder vertikale Abstand, auf den es ankommt – der Raum über und unter einer Überschrift, um eine Abbildung, zwischen Listeneinträgen –, wird am besten als ganze Zahl von Rasterzeilen ausgedrückt oder darauf korrigiert, sodass die Seite von oben bis unten einen einzigen Rhythmus behält.
+Der Zeilenabstand ist auch die Einheit des Grundlinienrasters. Jeder vertikale Abstand, auf den es ankommt – der Raum über und unter einer Überschrift, um eine Abbildung, zwischen Listeneinträgen –, wird am besten als ganze Zahl von Rasterzeilen ausgedrückt oder darauf korrigiert, sodass die Seite von oben bis unten einen einzigen Rhythmus behält. Eine Rasterzeile misst hier 13,6 Punkt, und über und unter jeder Liste steht genau eine davon.
 
 ## Spaltenaufbau
 
@@ -366,7 +366,7 @@ Der Spaltenabstand ist einstellbar, und darin kann eine Spaltenlinie gezogen wer
 
 :index{term="Grundlinienraster"}Professionell gesetzte Bücher richten die erste Grundlinie jeder Spalte an einem gemeinsamen vertikalen Rhythmus aus, und jede weitere Zeile landet auf demselben Raster, sodass die Zeilen einander über den Spaltenabstand hinweg gegenüberstehen. Postext lässt Text auf einem Grundlinienraster einrasten, das sich aus dem Zeilenabstand des Grundtextes ableitet, wie :ref{id="baseline-grid"} zeigt. Auf Elemente, die das Raster unterbrechen – eine Überschrift, die größer ist als der Grundtext, eine Abbildung, eine abgesetzte Formel –, folgt der Raum, der nötig ist, um die nächste Zeile wieder ins Raster zu bringen. Das Raster lässt sich während der Arbeit als Überlagerung einblenden, überall, wo Text steht.
 
-Wo ein Block beginnt, ist eine Frage seines Formats. Mit \`snapTopToGrid\` beginnt eine Überschrift, ein Absatz, ein Kasten, eine Liste, eine abgesetzte Formel oder eine im Text gesetzte Abbildung auf der nächsten Rasterlinie, wie auch immer der Block davor endete. Eine Überschrift, die mit Absicht neben dem Raster steht, in ihrer genauen Größe und mit ihren genauen Abständen, kann stattdessen \`regainGrid\` erhalten: Der Text darunter kehrt sofort ins Raster zurück, statt bis zum nächsten einrastenden Block daneben zu laufen.
+Wo ein Block beginnt, ist eine Frage seines Formats. Mit \`snapTopToGrid\` beginnt eine Überschrift, ein Absatz, ein Kasten, eine Liste, eine abgesetzte Formel oder eine im Text gesetzte Abbildung auf der nächsten Rasterlinie, wie auch immer der Block davor endete. Der Abstand darüber wird dann bis zu dieser Linie aufgerundet, und der eingestellte obere Abstand gilt nur noch als Mindestmaß; für Überschriften heißt der Schalter **Überschriften auf einer Rasterlinie beginnen**. Eine Überschrift, die mit Absicht neben dem Raster steht, in ihrer genauen Größe und mit ihren genauen Abständen, kann stattdessen \`regainGrid\` erhalten: Der Text darunter kehrt sofort ins Raster zurück, statt bis zum nächsten einrastenden Block daneben zu laufen.
 
 ## Spalten auf gleicher Höhe beenden
 
@@ -382,7 +382,7 @@ Jede Korrektur wird überprüft, indem die Seite erneut gesetzt wird, bis zu ach
 
 Eine Seite besteht nicht immer von oben bis unten aus einem einzigen Satz von Spalten. Eine seitenbreite Abbildung, Tabelle oder ein seitenbreiter Kasten zerteilt sie in **Streifen**:index{term="Streifen"}: Der Text über dem Element füllt seine Spalten als eigener Streifen, das Element durchquert die Seite, und darunter beginnen die Spalten neu. Jeder Streifen wird für sich ausgeglichen, sodass der Leser die erste Spalte hinunter- und zum Kopf der zweiten hinaufgeht, bevor er das Element überquert, wie in einer Zeitung. Würde ein Streifen ungleich enden, kürzt eine **Streifenkappung** seine Spalten auf dieselbe Zeilenzahl, und der Text, der nicht mehr hineinpasst, fließt darunter weiter.
 
-Die Schlussspalten eines Kapitels werden ebenso behandelt. Statt die letzte Seite mit einer vollen und einer fast leeren Spalte zurückzulassen, verteilt eine abschließende Kappung die verbleibenden Zeilen auf beide, und die Ausgleichshebel erledigen den Rest. Explizite Spaltenumbrüche werden respektiert: \`:::columnbreak\` beendet eine Spalte dort, wo der Autor es will, und der Ausgleich lässt den Fuß dieser Spalte in Ruhe.
+Die Schlussspalten eines Kapitels werden ebenso behandelt. Statt die letzte Seite mit einer vollen und einer fast leeren Spalte zurückzulassen, verteilt eine abschließende Kappung die verbleibenden Zeilen auf beide, wie auf der letzten Seite dieses Kapitels zu sehen, und die Ausgleichshebel erledigen den Rest. Explizite Spaltenumbrüche werden respektiert: \`:::columnbreak\` beendet eine Spalte dort, wo der Autor es will, und der Ausgleich lässt den Fuß dieser Spalte in Ruhe.
 
 :::callout{type="try"}
 Öffnen Sie im Bedienfeld **Gestaltung** die Gruppe **Überschriften und Inhaltsverzeichnis** und schalten Sie **Spaltenausgleich** aus. Sehen Sie sich den Fuß der Spalten dieses Kapitels an, schalten Sie die Option dann wieder ein und achten Sie darauf, welchen Hebel die Engine auf jeder Seite eingesetzt hat.
@@ -394,7 +394,7 @@ Manche Entscheidungen sind eine Frage des Hausstils, nicht von richtig und falsc
 
 # Abbildungen, Tabellen und Gleitobjekte {lead="Ein Verweis ist ein Versprechen, keine Position. Erwähnen Sie eine Abbildung, und Postext findet ihr einen Platz: die erste freie Stelle nach der Erwähnung, in Lesereihenfolge nummeriert, beschriftet, nie vor den Worten, die sie aufrufen." summary="Wo Ressourcen landen, wie sie nummeriert werden, Tabellen, die sich teilen"}
 
-Alles, was nicht fließender Text ist – Bilder, SVG-Diagramme, Tabellen –, ist eine **Ressource**. Ressourcen werden außerhalb des Textes deklariert, jede mit ID, Typ, Legende und ihren Platzierungswünschen, und das Markdown erwähnt sie einfach. In der Sandbox wohnen sie im Bedienfeld Ressourcen.
+Alles, was nicht fließender Text ist – Bilder, SVG-Diagramme, Tabellen –, ist eine **Ressource**. Ressourcen werden außerhalb des Textes deklariert, jede mit ID, Typ, Legende und ihren Platzierungswünschen, und das Markdown erwähnt sie einfach. In der Sandbox wohnen sie im Bedienfeld Ressourcen, nach ihrem Typ geordnet.
 
 ## Eine Erwähnung genügt
 
@@ -411,11 +411,11 @@ Eine Handvoll Regeln sorgt dafür, dass Gleitobjekte sich anständig benehmen:
 
 ## Platzierung
 
-Jede Ressource kann angeben, wo sie am liebsten stehen möchte, und jeder Ressourcentyp hat eine Voreinstellung; die Felder sind in :ref{id="placement-options"} zusammengestellt. Ein Gleitobjekt kann in seiner Spalte bleiben oder über die ganze Seite reichen, wie die Abbildungen dieses Kapitels. Eine Ressource kann auch an einer genauen Stelle in den Text eingebettet werden, wenn ihr Platz _hier_ ist. Ihre Breite ist ein Anteil ihres Platzes oder eine Länge, etwa 80 mm. Und eine Tabelle oder Abbildung, die für die Seite zu breit ist, lässt sich um eine Vierteldrehung drehen, in die eine oder die andere Richtung: Sie bekommt dann eine eigene Seite, bündig zum Bund gesetzt und nach der Höhe der Seite bemessen.
+Jede Ressource kann angeben, wo sie am liebsten stehen möchte, und jeder Ressourcentyp hat eine Voreinstellung; die Felder sind in :ref{id="placement-options"} zusammengestellt. Ein Gleitobjekt kann in seiner Spalte bleiben oder über die ganze Seite reichen, wie die Abbildungen dieses Kapitels. Eine Ressource kann auch an einer genauen Stelle in den Text eingebettet werden, wenn ihr Platz _hier_ ist. Ihre Breite ist ein Anteil ihres Platzes oder eine Länge, etwa 80 mm. Und eine Tabelle oder Abbildung, die für die Seite zu breit ist, lässt sich um eine Vierteldrehung drehen, in die eine oder die andere Richtung: Sie bekommt dann eine eigene Seite, bündig zum Bund gesetzt und nach der Höhe der Seite bemessen. In der Sandbox stehen diese Felder in der Detailansicht jeder Ressource: Position, Spannweite, Drehung, Breite, Ausrichtung und eine seitliche Legende, und jede Änderung dort setzt das Kapitel neu.
 
 ## Tafeln
 
-Ein Bild kann auch eine **Tafel**:index{term="Tafeln"} sein: allein auf einer neuen Seite nach seiner Erwähnung, in der größten Größe, die der Satzspiegel mitsamt Legende fasst, während der Text davor und danach weiterläuft. Auf das Endformat oder den Anschnitt gesetzt, bedeckt die Tafel die ganze Seite, ohne Ränder, Kolumnentitel oder Pagina, so wie ein Kunstband ein Gemälde druckt. Ein Bildband kann so jedes Bild als Tafel setzen, ohne eine einzige Seite von Hand umzubrechen.
+Ein Bild kann auch eine **Tafel**:index{term="Tafeln"} sein: allein auf einer neuen Seite nach seiner Erwähnung, in der größten Größe, die der Satzspiegel mitsamt Legende fasst, während der Text davor und danach weiterläuft. Auf das Endformat oder den Anschnitt gesetzt, bedeckt die Tafel die ganze Seite, ohne Ränder, Kolumnentitel oder Pagina, so wie ein Kunstband ein Gemälde druckt. Ein Bildband kann so jedes Bild als Tafel setzen, ohne eine einzige Seite von Hand umzubrechen, auch wenn sich der Text davor ändert.
 
 ## Nummern und Bezeichnungen
 
@@ -431,7 +431,7 @@ Abbildungen und Tabellen sind nur die beiden Typen, die jedes Buch braucht; ein 
 
 :index{term="Tabellen"}Tabellen tragen ihr Modell im Text mit: Zeilen aus Zellen mit Spalten- und Zeilenverbünden, Kopfzeilen, Ausrichtung und relativen Spaltenbreiten. Zellen nehmen Inline-Markdown, Absätze und einfache Listen auf, eine eigene Füllung – die vier Teilfarben dieses Buches sind :swatch{color="#2b4acb"} Blau, :swatch{color="#8f6408"} Gold, :swatch{color="#1f7a6d"} Blaugrün und :swatch{color="#c0452f"} Zinnoberrot – und sogar ein Bild. Tabellen werden einmal für das ganze Dokument gestaltet: Typografie von Tabellenkörper und Kopf, Füllung des Kopfes, Linien als Gitter, nur waagerecht, nur außen oder gar keine, dazu abgerundete Ecken und der Innenabstand der Zellen. Ein Tabellenformat kann seine Zellen trennen, und der Tabelleneditor vertauscht mit einer Schaltfläche Zeilen und Spalten. Ein Buch kann außerdem benannte Tabellenformate definieren, und jede Tabelle wählt eines davon, sodass eine schlichte Tabelle mit waagerechten Linien neben einer Farbtabelle mit gefüllten Zellen stehen kann.
 
-Eine Tabelle, die höher ist als die Seite, wird auf mehrere Seiten verteilt. Ihre Kopfzeilen wiederholen sich auf jedem Teilstück, die Legende jeder Fortsetzung erhält den Zusatz _(Forts.)_, ein Vermerk _Wird fortgesetzt_ schließt jedes Teilstück außer dem letzten ab, und keine Teilung schneidet je durch einen Zeilenverbund. Statt sich zu teilen, kann eine zu hohe Tabelle auch nur die Zeilen behalten, die passen, oder ganz wegfallen; das legt ihr Tabellenformat fest. Eine im Text gesetzte Tabelle, die nicht mehr in den Rest ihrer Spalte passt, wird zwischen zwei Zeilen geteilt und läuft am Kopf der nächsten Spalte weiter.
+Eine Tabelle, die höher ist als die Seite, wird auf mehrere Seiten verteilt. Ihre Kopfzeilen wiederholen sich auf jedem Teilstück, die Legende jeder Fortsetzung erhält den Zusatz _(Forts.)_, ein Vermerk _Wird fortgesetzt_ schließt jedes Teilstück außer dem letzten ab, und keine Teilung schneidet je durch einen Zeilenverbund. Statt sich zu teilen, kann eine zu hohe Tabelle auch nur die Zeilen behalten, die passen, oder ganz wegfallen; das legt ihr Tabellenformat fest. Eine im Text gesetzte Tabelle, die nicht mehr in den Rest ihrer Spalte passt, wird zwischen zwei Zeilen geteilt und läuft am Kopf der nächsten Spalte weiter, sodass ihre Spalte bis zum Fuß gefüllt bleibt.
 
 ## Abbildungen neben dem Text
 
@@ -485,7 +485,7 @@ Die Attribute eines Kastens können sein Format für diesen einen Kasten übersc
 
 ## Kästen in Kästen
 
-:index{term="Kästen!verschachtelte"}Ein Kasten kann einen anderen enthalten. Der innere Kasten wird im äußeren geöffnet und vor ihm geschlossen, und jedes bloße \`:::\` schließt den innersten noch offenen Kasten. Der innere behält sein eigenes Format.
+:index{term="Kästen!verschachtelte"}Ein Kasten kann einen anderen enthalten. Der innere Kasten wird im äußeren geöffnet und vor ihm geschlossen, und jedes bloße \`:::\` schließt den innersten noch offenen Kasten. Der innere behält sein eigenes Format. Ein Kasten, der nie geschlossen wird, endet mit dem Kapitel, und das Bedienfeld Prüfungen meldet ihn; das Experiment im Kasten unten führt es vor.
 
 :::callout{type="note" title="Zwei Kästen, ein Block"}
 Der äußere Kasten ist eine technische Anmerkung. Die Engine platziert ihn mit dem inneren als einen Block.
@@ -515,7 +515,7 @@ Wo eine Marke nicht genügt, kann ein Format den ganzen Kasten mit einer **Gesta
 
 :index{term="Chips"}Manche Inhalte sind kleiner als ein Kasten. \`:chip[…]\` setzt ein Wort in ein kleines abgerundetes Kästchen, das mit dem Text fließt, für Tasten, Zustände und Tags: eine Einstellung, die :chip[allow]{style="state"}, :chip[warn]{style="state"} oder :chip[avoid]{style="state"} sein kann, oder eine Taste wie :chip[Esc].
 
-Farbfelder sind eine zweite Art. Als \`:swatch{color="#c0452f"}\` geschrieben, setzt ein Farbfeld ein kleines Quadrat in dieser Farbe in die Zeile, :swatch{color="#c0452f"} wie dieses hier.
+\`:swatch{color="#c0452f"}\` setzt eine zweite Art von Marke in die Zeile, ein Farbfeld, also ein kleines Quadrat in dieser Farbe, :swatch{color="#c0452f"} wie dieses hier, das wie ein Buchstabe auf der Grundlinie sitzt.
 
 ## Fußnoten
 
@@ -523,7 +523,7 @@ Farbfelder sind eine zweite Art. Als \`:swatch{color="#c0452f"}\` geschrieben, s
 
 [^first-note]: Dies ist eine. Sie steht im Markdown ein paar Zeilen weiter unten, als eigener Absatz.
 
-Eine Fußnote steht am Fuß der Spalte, die die Zeile mit ihrem Aufruf enthält, unter einem kurzen Strich, und Zeile und Fußnote teilen sich immer eine Spalte: Passt die Fußnote nicht mehr, wandert die Zeile mit ihr weiter.[^second-note] \`footnotes.placement: 'chapterEnd'\` sammelt die Fußnoten eines Kapitels stattdessen nach seinem letzten Block.
+Eine Fußnote steht am Fuß der Spalte, die die Zeile mit ihrem Aufruf enthält, unter einem kurzen Strich, und Zeile und Fußnote teilen sich immer eine Spalte: Passt die Fußnote nicht mehr, wandert die Zeile mit ihr weiter.[^second-note] \`footnotes.placement: 'chapterEnd'\` sammelt die Fußnoten eines Kapitels stattdessen nach seinem letzten Block. Auch ihr Aussehen ist Konfiguration: Schriftgrad, Zeilenabstand und Farbe der Anmerkungen, ihr Zählerformat, etwa römische Ziffern oder eingekreiste Zahlen, und Länge und Stärke des Strichs.
 
 [^second-note]: Die Engine gleicht die Spalte mit den Zeilen der Fußnote aus, sodass auch eine Seite mit Fußnoten auf gleicher Höhe endet.
 
@@ -555,7 +555,7 @@ Ein Buch, dessen Kapitel nicht alle gleich aussehen, mit Anhängen in zwei schma
 
 Im Bedienfeld Gestaltung wählt eine Leiste oben, was das Bedienfeld bearbeitet: das Buch oder einen seiner Stile. Ist ein Stil gewählt, zeigt das Bedienfeld ihn über dem Buch, jedes Feld, das der Stil ändert, trägt eine Markierung, und was Sie ändern, wird im Stil als sein Unterschied zum Buch gespeichert.
 
-Ein Stil trifft in fester Reihenfolge auf die anderen Ebenen des Buches: zuerst die Einstellungen des Buches, darüber der Stil des Kapitels und über beiden das \`{style}\` einer Überschrift für den Abschnitt, den sie eröffnet, sodass ein Anhang in schmaleren Spalten trotzdem mit einem eigenen Überschriftenstil beginnen kann. Die eigene Zeile \`chapterStyle:\` eines Kapitels geht der seines Teils vor, und ein Stil, den das Buch nicht deklariert, wird im Bedienfeld Prüfungen gemeldet und lässt das Kapitel in den Einstellungen des Buches, statt zu raten. In einem Buch mit mehreren Sprachen liegen die Stile in der Ebene, die das Bedienfeld bearbeitet, den Einstellungen aller Sprachen oder denen der Ausgabe auf dem Bildschirm, sodass eine Ausgabe ihre Anhänge auf eigene Weise setzen kann.
+Ein Stil trifft in fester Reihenfolge auf die anderen Ebenen des Buches: zuerst die Einstellungen des Buches, darüber der Stil des Kapitels und über beiden das \`{style}\` einer Überschrift für den Abschnitt, den sie eröffnet, sodass ein Anhang in schmaleren Spalten trotzdem mit einem eigenen Überschriftenstil beginnen kann. Die eigene Zeile \`chapterStyle:\` eines Kapitels geht der seines Teils vor, und ein Stil, den das Buch nicht deklariert, wird im Bedienfeld Prüfungen gemeldet und lässt das Kapitel in den Einstellungen des Buches, statt zu raten. In einem Buch mit mehreren Sprachen liegen die Stile in der Ebene, die das Bedienfeld bearbeitet, den Einstellungen aller Sprachen oder denen der Ausgabe auf dem Bildschirm, sodass eine Ausgabe ihre Anhänge auf eigene Weise setzen kann, ohne dass sich an den Anhängen der übrigen Ausgaben etwas ändert.
 
 :::callout{type="note" title="Anhänge in einem eigenen Stil"}
 1. Im Bedienfeld Gestaltung auf der Leiste der Kapitelstile **+** drücken und den Stil _Anhang_ nennen
@@ -621,17 +621,17 @@ Eine neue Ausgabe beginnt als Kopie der Ausgabe auf dem Bildschirm über **Sprac
 
 Die Gestaltung eines Buches in mehreren Sprachen liegt in zwei Ebenen. Die **allgemeinen Einstellungen** sind die, die jede Ausgabe verwendet:index{term="allgemeine Einstellungen"}; jede Sprache hat dann eine **Abweichung**, die nur die Felder nennt, die sie anders setzt, Feld für Feld über die allgemeinen gelegt. Eine Farbe, eine Größe oder ein Rand, in der allgemeinen Ebene geändert, erreicht jede Ausgabe auf einmal; in der Abweichung einer Sprache geändert, erreicht sie nur diese Ausgabe.
 
-Das Bedienfeld Gestaltung zeigt die beiden Ebenen mit einem Schalter an seinem Kopf, zwischen _Alle Sprachen_ und nur der aktuellen Sprache. Steht der Schalter auf einer Sprache, trägt ein Feld, das diese Sprache abweichend setzt, eine Markierung, und das Bedienfeld kann einen Wert in die allgemeine Ebene übernehmen oder eine Ausgabe zu ihr zurückführen. Eine kurze Liste am Kopf des Bedienfelds nennt jede Einstellung, die die Sprache für sich setzt.
+Das Bedienfeld Gestaltung zeigt die beiden Ebenen mit einem Schalter an seinem Kopf, zwischen _Alle Sprachen_ und nur der aktuellen Sprache. Steht der Schalter auf einer Sprache, trägt ein Feld, das diese Sprache abweichend setzt, eine Markierung, und das Bedienfeld kann einen Wert in die allgemeine Ebene übernehmen oder eine Ausgabe zu ihr zurückführen. Eine kurze Liste am Kopf des Bedienfelds nennt jede Einstellung, die die Sprache für sich setzt. Ändern Sie unter _Alle Sprachen_ ein Feld, das eine Ausgabe selbst setzt, nennt ein Hinweis diese Ausgabe und bietet an, auch dort den allgemeinen Wert zu verwenden oder ihren eigenen zu behalten.
 
 :::callout{type="note" title="Wie dieser Leitfaden gesetzt ist"}
 Die sieben Ausgaben in lateinischer Schrift teilen fast alles: Von den Einstellungen, die die Gestaltung ausmachen, setzt jede ein paar Dutzend für sich, und alle davon sind Wörter: Titel, Namen und die Sprache ihrer Silbentrennung. Die arabische, die chinesische und die japanische Ausgabe behalten dieselbe Seite, dieselbe Palette und dieselben Teile und setzen Schrift, Laufrichtung und Schreibrichtung für ihre Schriftsysteme.
 :::
 
-Diese Zahlen zeigt :ref{id="edition-layers"}. Die Aufteilung ist die kleinste Abweichung, die jede Ausgabe haben kann, berechnet von der Engine aus den Ausgaben selbst.
+Diese Zahlen zeigt :ref{id="edition-layers"}. Die Aufteilung ist die kleinste Abweichung, die jede Ausgabe haben kann, berechnet von der Engine aus den Ausgaben selbst. In den lateinischen Ausgaben sind es nur Wörter, in den anderen auch Schrift und Richtung.
 
 ## Was eine Sprache ändert
 
-Die Sprache des Dokuments ist eine Einstellung, \`locale\`, und sie reicht weiter als die Silbentrennung. Sie wählt die Trennmuster, von denen acht Sprachen eingebaut sind; die Namen der eingebauten Abbildungs- und Tabellentypen, _Figure_ auf Englisch, _Abbildung_ auf Deutsch; die Wörter, die eine geteilte Tabelle oder ein fortgesetzter Kasten druckt; die Ordnung eines Registers; und die Ziffern, die ein arabisches Buch als arabisch-indische Zahlzeichen setzen kann. Eine Überschrift oder ein Absatz kann die Sprache für sich wechseln, und ein paar Wörter in einer anderen Sprache lassen sich im Text auszeichnen, sodass ein französisches Zitat in einem deutschen Kapitel nach französischen Regeln umbricht und mit der französischen Liste ungetrennter Wörter. Eine Sprache hat auch ihre Satzkonvention, wenn es eine gibt, und eine Ausgabe kann sie unabhängig von ihrer Schrift übernehmen.
+Die Sprache des Dokuments ist eine Einstellung, \`locale\`, und sie reicht weiter als die Silbentrennung. Sie wählt die Trennmuster, von denen acht Sprachen eingebaut sind; die Namen der eingebauten Abbildungs- und Tabellentypen, _Figure_ auf Englisch, _Abbildung_ auf Deutsch; die Wörter, die eine geteilte Tabelle oder ein fortgesetzter Kasten druckt; die Ordnung eines Registers; und die Ziffern, die ein arabisches Buch als arabisch-indische Zahlzeichen setzen kann. Eine Überschrift oder ein Absatz kann die Sprache für sich wechseln, und ein paar Wörter in einer anderen Sprache lassen sich im Text auszeichnen, sodass ein französisches Zitat in einem deutschen Kapitel nach französischen Regeln umbricht und mit der französischen Liste ungetrennter Wörter. Eine Sprache hat auch ihre Satzkonvention, wenn es eine gibt, und eine Ausgabe kann sie unabhängig von ihrer Schrift übernehmen. Die deutsche etwa lässt höchstens drei Trennstriche hintereinander zu.
 
 Keine Schrift enthält jedes Zeichen. Einer lateinischen Schrift fehlen vielleicht die mathematischen Buchstaben, die Pfeile oder das Griechisch eines Zitats, und die **Symbolschrift** der Gruppe Typografie setzt diese Zeichen, am Bildschirm, im PDF und im EPUB, wo die Schrift ein leeres Kästchen ließe. Das Bedienfeld Prüfungen nennt jeden Absatz, dessen Zeichen keine Schrift des Buches zeichnen kann, bevor einer davon in Druck geht.
 
@@ -643,7 +643,7 @@ Die **chinesische** und die **japanische** Ausgabe sind vertikal gesetzt, in Zei
 
 ## Übersetzen mit der Engine im Blick
 
-Weil die Seiten beim Tippen gesetzt werden, lässt sich eine Übersetzung beurteilen, während sie entsteht. Ein deutscher Satz, ein Drittel länger als seine englische Vorlage, zeigt seine Kosten sofort, in einer Spalte, die um eine Zeile überläuft, oder in einer Überschrift, die nicht mehr auf ihr Band passt.
+Weil die Seiten beim Tippen gesetzt werden, lässt sich eine Übersetzung beurteilen, während sie entsteht. Ein deutscher Satz, ein Drittel länger als seine englische Vorlage, zeigt seine Kosten sofort, in einer Spalte, die um eine Zeile überläuft, oder in einer Überschrift, die nicht mehr auf ihr Band passt. Oft genügt dann ein kürzeres Wort oder ein umgestellter Satz.
 
 :::callout{type="try"}
 Öffnen Sie das Bedienfeld Bücher und schalten Sie diesen Leitfaden mit den Schaltflächen seiner Zeile zwischen seinen Sprachen um. Öffnen Sie dann das Bedienfeld Gestaltung, stellen Sie den Schalter an seinem Kopf auf die aktuelle Sprache und lesen Sie die Liste dessen, was diese Ausgabe für sich setzt.
@@ -663,11 +663,11 @@ Die bisherigen Kapitel setzen Text in Spalten, die von Seite zu Seite laufen, un
 
 :index{term="zusammengesetzte Seiten"}Eine **Seitenvorlage** ist Teil der Konfiguration:index{term="Seitenvorlagen"}, unter \`pageTemplates\`. Sie benennt eine Reihe von **Rahmen**: Rechtecke, die über einen Anker und einen Versatz oder über eine Zelle eines Rasters auf der Seite platziert werden, mit einer Breite, einer Höhe und einem Kastenformat aus den Kastenformaten des Buches. Ein Rahmen kann so hoch sein wie sein Inhalt, eine feste Höhe haben oder bis zum Rand der Seite reichen; Rahmen lassen sich stapeln oder als **Gruppe** in eine Reihe setzen, sodass die anderen mitrücken, wenn einer wächst. Eine Vorlage trägt außerdem **Schmuck**: Linien, Bänder, Bilder und kurze Texte, die gesetzt werden, sobald die Rahmen stehen.
 
-In einer Vorlage stehen keine Wörter. Ein Rahmen hat einen Namen, eine Größe und ein Aussehen; der Titel, den er druckt, der Text, den er enthält, und das Bild, das er rahmt, kommen alle von der Seite, die ihn verwendet. Deshalb können die zehn Ausgaben dieses Leitfadens eine Vorlage für die Kurzübersicht teilen, die das Buch vor dem Register abschließt: Jede füllt dieselben Rahmen mit ihren eigenen Wörtern.
+In einer Vorlage stehen keine Wörter. Ein Rahmen hat einen Namen, eine Größe und ein Aussehen; der Titel, den er druckt, der Text, den er enthält, und das Bild, das er rahmt, kommen alle von der Seite, die ihn verwendet. Deshalb können die zehn Ausgaben dieses Leitfadens eine Vorlage für die Kurzübersicht teilen, die das Buch vor dem Register abschließt: Jede füllt dieselben Rahmen mit ihren eigenen Wörtern, und eine Änderung der Vorlage gilt für alle.
 
 ## Die Rahmen aus dem Markdown füllen
 
-Eine zusammengesetzte Seite steht zwischen zwei Zeilen aus vier Doppelpunkten, und die erste nennt ihre Vorlage. Dazwischen schickt \`:::frame{slot="…"}\` seinen Inhalt an den Rahmen dieses Namens, und eine Überschrift, eine Ressource oder ein Kasten kann einen eigenen Slot nennen. Inhalt, der nichts nennt, geht an den Rahmen, den die Vorlage als **Fließrahmen** markiert, und die erste Überschrift an den Rahmen, der Überschriften ihrer Ebene aufnimmt.
+Eine zusammengesetzte Seite steht zwischen zwei Zeilen aus vier Doppelpunkten, und die erste davon nennt ihre Vorlage. Dazwischen schickt jeder Block \`:::frame{slot="…"}\` seinen Inhalt an den Rahmen dieses Namens, und eine Überschrift, eine Ressource oder ein Kasten kann einen eigenen Slot nennen. Inhalt, der nichts nennt, geht an den Rahmen, den die Vorlage als **Fließrahmen** markiert, und die erste Überschrift an den Rahmen, der Überschriften ihrer Ebene aufnimmt.
 
 :::callout{type="note" title="Die Kurzübersicht im Markdown"}
 \`::::page{template="sheet"}\` öffnet sie und \`::::\` schließt sie. Dazwischen eine Überschrift für den Titel, ein Absatz für den Fließrahmen, sechs Blöcke \`:::frame\` für die Karten und einer für die Legende am Fuß der Seite. Positionen, Größen und Farben stehen in der Vorlage, unter Gestaltung › Seite und Spalten › Seitenvorlagen.
@@ -691,9 +691,9 @@ Rahmen lassen sich auch durch **Verbinder** verknüpfen: Linien, Winkel und Kurv
 
 ## Vorlagen in der Sandbox
 
-Vorlagen werden im Bedienfeld Gestaltung bearbeitet, wo jede mit ihren Rahmen gezeichnet und mit der Zahl der Seiten aufgeführt ist, die sie verwenden. Steht die Vorschau im Modus **Gestaltung**, zeigt eine zusammengesetzte Seite ihr Raster und ihre Ränder, ein Druck auf einen Rahmen wählt ihn aus, Ziehen verschiebt ihn, und seine Griffe ändern seine Größe; der Kasten wird in Millimetern in die Vorlage zurückgeschrieben. Verwenden andere Seiten dieselbe Vorlage, fragt die Sandbox, ob die Änderung für alle gilt oder nur für diese Seite, was eine neue Vorlage auf Grundlage der ersten anlegt.
+Vorlagen werden im Bedienfeld Gestaltung bearbeitet, wo jede mit ihren Rahmen gezeichnet und mit der Zahl der Seiten aufgeführt ist, die sie verwenden. Steht die Vorschau im Modus **Gestaltung**, zeigt eine zusammengesetzte Seite ihr Raster und ihre Ränder, ein Druck auf einen Rahmen wählt ihn aus, Ziehen verschiebt ihn, und seine Griffe ändern seine Größe; der Kasten wird in Millimetern in die Vorlage zurückgeschrieben. Verwenden andere Seiten dieselbe Vorlage, fragt die Sandbox, ob die Änderung für alle gilt oder nur für diese Seite, was eine neue Vorlage auf Grundlage der ersten anlegt. Beide Wege sind Schritte des Verlaufs und lassen sich rückgängig machen wie jede Bearbeitung.
 
-Auch der umgekehrte Weg ist da. Eine von Hand gesetzte Seite lässt sich als Vorlage speichern, und ein Buch, dessen alte Formate seine Wörter enthielten, kann sie mit einem Befehl für das ganze Buch ins Markdown verlegen, wohin sie gehören.
+Auch der umgekehrte Weg ist da. Eine von Hand gesetzte Seite lässt sich als Vorlage speichern, und ein Buch, dessen alte Formate seine Wörter enthielten, kann sie mit einem Befehl für das ganze Buch ins Markdown verlegen, wohin sie gehören. Danach steht jedes Wort eines solchen Buches wieder im Text, wo es übersetzt und korrigiert wird, Ausgabe für Ausgabe.
 
 :::callout{type="try"}
 Schalten Sie die Vorschau in den Modus Gestaltung, gehen Sie zur Kurzübersicht direkt vor dem Register und ziehen Sie eine der Karten nach unten. Die Sandbox fragt, ob die Vorlage oder nur diese Seite geändert werden soll; wählen Sie nur diese Seite und öffnen Sie das Bedienfeld Text: Die öffnende Zeile der Seite nennt jetzt eine neue Vorlage.
@@ -711,7 +711,7 @@ Das Skript ist das Markdown des Kapitels. Ein Block \`:::page\` teilt eine Seite
 
 ## Lettering
 
-:index{term="Lettering"}Die Engine lettert jede Sprechblase in einer einzigen Größe, in der Lettering-Schrift des Buches. Sie bricht die Wörter in Zeilen um, die eine runde Form ergeben, oben und unten kurz, zeichnet dann die Blase mit gleich viel Luft auf jeder Seite um sie herum, platziert sie in Lesereihenfolge im Panel, abseits von Gesichtern und von den Zonen, die das Bild markiert, und richtet ihren Dorn auf den Mund des Sprechers. Text wird nie verkleinert, damit er passt: Eine Blase, die nicht passt, ändert ihre Form, rückt weiter oder wird im Bedienfeld Prüfungen gemeldet.
+:index{term="Lettering"}Die Engine lettert jede Sprechblase in einer einzigen Größe, in der Lettering-Schrift des Buches. Sie bricht die Wörter in Zeilen um, die eine runde Form ergeben, oben und unten kurz, zeichnet dann die Blase mit gleich viel Luft auf jeder Seite um sie herum, platziert sie in Lesereihenfolge im Panel, abseits von Gesichtern und von den Zonen, die das Bild markiert, und richtet ihren Dorn auf den Mund des Sprechers. Text wird nie verkleinert, damit er passt: Eine Blase, die nicht passt, ändert ihre Form, rückt weiter oder wird im Bedienfeld Prüfungen gemeldet, mit Kapitel und Zeile ihres Skripts.
 
 Der Strip in :ref{id="guide-strip"} wurde so gelettert. Seine drei Zeichnungen tragen keine Wörter; der Dialog sind drei Zeilen Markdown in diesem Kapitel, und jede Ausgabe dieses Leitfadens lettert ihn in ihrer eigenen Sprache.
 
@@ -728,7 +728,7 @@ sfx: RASCHEL
 
 Ein westlicher Comic wird von links nach rechts gelesen, ein Manga und ein arabischer Comic von rechts nach links. Postext nimmt die Richtung aus der Sprache der Ausgabe: Eine arabische oder japanische Ausgabe legt die Panels jeder Reihe von rechts her an, spiegelt die Ecken und Schrägen und bindet das Buch rechts, während die Bilder bleiben, wie sie gezeichnet sind. Japanische Sprechblasen werden in senkrechten Zeilen gelettert, mit Satzzeichen, die für die Zeile gedreht werden.
 
-Eine Übersetzung ist dasselbe Markdown mit anderen Wörtern. Die Bilder, die Beschnitte und die Markierungen werden geteilt; jede Ausgabe misst ihren eigenen Text und platziert ihre eigenen Sprechblasen.
+Eine Übersetzung ist dasselbe Markdown mit anderen Wörtern. Die Bilder, die Beschnitte und die Markierungen werden geteilt; jede Ausgabe misst ihren eigenen Text und platziert ihre eigenen Sprechblasen. Wird ein deutscher Satz länger als sein englisches Original, wächst seine Blase oder rückt weiter, und das Bild darunter bleibt, wie es gezeichnet wurde.
 
 ## Seiten, Doppelseiten und Strips
 
@@ -760,7 +760,7 @@ Die Übungen eines Schulbuchs gehören zu den mühsamsten Seiten, die man von Ha
 
 :index{term="Übungen"}Eine Übung ist ein Block zwischen \`:::exercise\` und \`:::\`. Ihre ersten Absätze sind die Arbeitsanweisung; was folgt, ist die Frage, in Markdown geschrieben, das eine Lehrerin ohne Handbuch tippen könnte. Eine Aufgabenliste mit angekreuzten richtigen Optionen ist eine Multiple-Choice-Frage. Wörter in doppelten eckigen Klammern sind Lücken, und die Wörter darin sind die Antworten. Paare, die ein Pfeil verbindet, sind eine Zuordnungsübung. Die Engine liest die Art der Übung aus dem, was sie vorfindet, und ein Attribut \`type\` nennt sie, wenn der Inhalt nicht genügt.
 
-Die drei Übungen unten handeln von diesem Buch. Sie stehen im Markdown dieses Kapitels, jede in wenigen Zeilen, und die Engine hat sie nummeriert, ihre Optionen bezeichnet, die Lücken gezogen und die Kästen gesetzt.
+Die drei Übungen unten handeln von diesem Buch. Sie stehen im Markdown dieses Kapitels, jede in wenigen Zeilen, und die Engine hat sie nummeriert, ihre Optionen bezeichnet, die Lücken gezogen und die Kästen gesetzt. Ihr Aussehen kommt aus dem Übungsstil des Buches.
 
 :::exercise{level=1}
 Was davon entscheidet die Konfiguration und nicht das Markdown?
@@ -798,7 +798,7 @@ Eine Schwierigkeitsstufe wird als Punkte nach der Nummer gedruckt, Aktivitätssy
 
 Jede bewertete Übung hat einen **Lösungsschlüssel**, gebildet aus ihren Antworten: die richtige Option, die Lücken der Reihe nach, die Paare. Ein Block \`:::solution\` in einer Übung fügt eine ausgearbeitete Lösung in beliebigem Markdown hinzu. Wo sie gedruckt werden, ist eine Einstellung für das ganze Buch: nirgends, direkt nach jeder Übung, auf dem Kopf stehend darunter wie in Rätselheften, am Ende des Kapitels, an einer Stelle des Kapitels, die sie anfordert, oder in einem Lösungskapitel am Ende des Buches. Dieser Leitfaden behält seine Antworten für den Bildschirm.
 
-Eine **Lehrerausgabe** ist dasselbe Buch mit einer geänderten Einstellung: jede Antwort an ihrem Platz gedruckt, in der Farbe eines Korrekturstifts, Lücken gefüllt, Optionen eingekreist, Zuordnungslinien gezogen.
+Eine **Lehrerausgabe** ist dasselbe Buch mit einer geänderten Einstellung: jede Antwort an ihrem Platz gedruckt, in der Farbe eines Korrekturstifts, Lücken gefüllt, Optionen eingekreist, Zuordnungslinien gezogen. Schülerausgabe und Lehrerausgabe entstehen so aus demselben Markdown.
 
 ## Am Bildschirm
 
@@ -838,7 +838,7 @@ Manches aus Markdown fehlt mit Absicht, weil ein Buch andere Wege hat, es auszud
 
 ## Hervorhebungen, Kapitälchen und Tabulatoren
 
-Drei weitere Marken ändern das Aussehen von Wörtern, ohne die Zeile zu verlassen. \`:mark[…]\` legt ein Farbband hinter eine Wortgruppe, :mark[so wie ein Lehrbuch das Wichtige anstreicht], und die Wörter darunter brechen um, werden getrennt und im Blocksatz ausgeglichen wie die übrigen, sodass das Markieren eines fertigen Buches keine seiner Seiten verschiebt. \`:smallcaps[…]\` setzt Kleinbuchstaben als Kapitälchen, etwa :smallcaps[Hamlet] im Personenverzeichnis eines Stücks oder ein Akronym wie :smallcaps[unesco], gebildet aus den Versalien der Schrift selbst und in jedem Ausgabeformat auf dieselbe Weise. Und \`:tab\` schickt den Rest einer Zeile an einen Tabulator, den die Konfiguration festlegt: einen Preis am Ende der Zeile hinter Punktführern oder die Punktzahl einer Prüfungsaufgabe am Rand.
+Drei weitere Marken ändern das Aussehen von Wörtern, ohne die Zeile zu verlassen. \`:mark[…]\` legt ein Farbband hinter eine Wortgruppe, :mark[so wie ein Lehrbuch das Wichtige anstreicht], und die Wörter darunter brechen um, werden getrennt und im Blocksatz ausgeglichen wie die übrigen, sodass das Markieren eines fertigen Buches keine seiner Seiten verschiebt. \`:smallcaps[…]\` setzt Kleinbuchstaben als Kapitälchen, etwa :smallcaps[Hamlet] im Personenverzeichnis eines Stücks oder ein Akronym wie :smallcaps[unesco], gebildet aus den Versalien der Schrift selbst und in jedem Ausgabeformat auf dieselbe Weise. Und \`:tab\` schickt den Rest einer Zeile an einen Tabulator, den die Konfiguration festlegt: einen Preis am Ende der Zeile hinter Punktführern oder die Punktzahl einer Prüfungsaufgabe am Rand. Jeder Tabulator hat eine Position, eine Ausrichtung und wahlweise Punktführer, etwa zwischen einem Gericht und seinem Preis, und ein Absatzformat kann eigene festlegen.
 
 Eine Wortfolge kann auch ein benanntes Aussehen erhalten. \`:span[…]{style="…"}\` gibt den Wörtern ein **Zeichenformat**:index{term="Zeichenformate"}, eine Schrift, Größe, Stärke, Farbe, Laufweite oder Kapitälchen aus \`characterStyles\`, für den Namen eines Wirkstoffs in einem medizinischen Lehrbuch oder eine Sprecherrolle in einem Drehbuch. Das Band von \`:mark\` stammt aus einem **Hervorhebungsstil**: seine Farbe und Deckkraft, ein Innenabstand, der es wie einen Textmarker in die Buchstaben hinunterziehen kann, Kanten, die wie ein von Hand gezogener Strich zittern, oder eine Linie unter oder durch die Wörter, durchgezogen, doppelt, gepunktet, gestrichelt oder gewellt; ein Zeichenformat kann einen nennen. Eine einfache Linie braucht kein Format: \`:underline[…]\` zieht eine unter die Wörter, :underline[wie unter diese hier], in der Lage und Stärke, die die Schrift vorgibt. Word erhält jedes Format als Zeichenformatvorlage, das umfließende EPUB als Klasse.
 
@@ -862,7 +862,7 @@ Werke werden so zitiert, wie Pandoc es schreibt, \`[@garcia2020, p. 33]\` oder \
 
 ## Links auf Papier
 
-:index{term="Links"}Ein Link ins Web wird wie in jedem Markdown geschrieben, \`[Wörter](https://…)\`, und bleibt ein Link überall dort, wo der Leser ihm folgen kann: in diesen Vorschauen, im HTML, im PDF und im EPUB. Auf Papier wären nur seine Wörter zu sehen. \`links.print\` legt fest, was die gedruckte Seite hinzufügt: nichts, die Adresse in Klammern nach den Wörtern (\`'inline'\`) oder eine Anmerkung (\`'notes'\`) mit der Adresse, einem QR-Code, den ein Telefon öffnet, oder beidem. Dieses Buch druckt die kurze Adresse und den Code, wie die Anmerkung zu diesem Link zum [Postext-Repository](https://github.com/drnachio/postext) zeigt. Auf dem Bildschirm erhält derselbe Link \`links.style\`, eine Farbe und eine Linie darunter in den gewählten Ausgaben: hier die Farbe der Kapitelbänder, unterstrichen, in der HTML-Ansicht, im EPUB und in SCORM.
+:index{term="Links"}Ein Link ins Web wird wie in jedem Markdown geschrieben, \`[Wörter](https://…)\`, und bleibt ein Link überall dort, wo der Leser ihm folgen kann: in diesen Vorschauen, im HTML, im PDF und im EPUB. Auf Papier wären nur seine Wörter zu sehen, ohne die Adresse, zu der sie führen. \`links.print\` legt fest, was die gedruckte Seite hinzufügt: nichts, die Adresse in Klammern nach den Wörtern (\`'inline'\`) oder eine Anmerkung (\`'notes'\`) mit der Adresse, einem QR-Code, den ein Telefon öffnet, oder beidem. Dieses Buch druckt die kurze Adresse und den Code, wie die Anmerkung zu diesem Link zum [Postext-Repository](https://github.com/drnachio/postext) zeigt. Auf dem Bildschirm erhält derselbe Link \`links.style\`, eine Farbe und eine Linie darunter in den gewählten Ausgaben: hier die Farbe der Kapitelbänder, unterstrichen, in der HTML-Ansicht, im EPUB und in SCORM.
 
 ## Mathematik im Quelltext
 
@@ -950,7 +950,7 @@ Vorlagen folgen ihrer Quelle. Ändert sich das Paket einer Vorlage auf dem Serve
 Blättern Sie zu einer Seite, die Ihnen gefällt, und kopieren Sie die Adresse aus dem Browser: Dieser Link öffnet dasselbe Buch im selben Betrachter auf derselben Seite.
 :::
 
-Ein Buch reist als eine einzige **.postext**-Datei: Kapitel, Konfiguration, Ressourcen und Schriften, dazu die bereits berechnete Paginierung, sodass es fertig umbrochen öffnet. Die Rezepte des [Rezeptbuchs](https://postext.dev/de/cookbook) öffnen sich in der Sandbox auf dieselbe Weise, als Ihre eigenen Bücher; ein Rezept, das Sie schon einmal geöffnet haben, fragt, ob Ihre Kopie mit Ihren Änderungen geöffnet oder durch die veröffentlichte Fassung ersetzt werden soll. Und die Adressleiste enthält immer einen Permalink auf das, was Sie gerade ansehen – das Buch, die Sprache, den Betrachter, das Kapitel und die Seite.
+Ein Buch reist als eine einzige **.postext**-Datei: Kapitel, Konfiguration, Ressourcen und Schriften, dazu die bereits berechnete Paginierung, sodass es fertig umbrochen öffnet. Jedes Projekt im Bedienfeld Bücher lässt sich in eine solche Datei exportieren. Die Rezepte des [Rezeptbuchs](https://postext.dev/de/cookbook) öffnen sich in der Sandbox auf dieselbe Weise, als Ihre eigenen Bücher; ein Rezept, das Sie schon einmal geöffnet haben, fragt, ob Ihre Kopie mit Ihren Änderungen geöffnet oder durch die veröffentlichte Fassung ersetzt werden soll. Und die Adressleiste enthält immer einen Permalink auf das, was Sie gerade ansehen – das Buch, die Sprache, den Betrachter, das Kapitel und die Seite.
 
 ## Die Sandbox einbetten
 
@@ -968,7 +968,7 @@ Der Canvas-Renderer zeichnet eine Seite auf ein HTML-Canvas, in jeder beliebigen
 
 Der HTML-Renderer liefert absolut positioniertes HTML mit satztechnischem CSS: jede Zeile dort, wo das Layout sie hingesetzt hat, in ihrer genauen Schrift, Größe und Grundlinie. In der Sandbox isoliert der Tab HTML die Ausgabe in einem Shadow DOM und ergänzt einen Lesemodus mit einer einzigen scrollenden Spalte oder so vielen Spalten, wie auf den Bildschirm passen, mit einem Regler für die Schriftgröße. Eine Reihe von Überschreibungen nur für den Bildschirm kann die Gestaltung für das Lesen am Bildschirm anpassen, ohne die Druckseiten anzutasten.
 
-Der Renderer nimmt eine Funktion entgegen, die die Datei-ID einer Ressource in eine URL umwandelt, sodass Bilder von überall ausgeliefert werden können. Seine Ausgabe ist reines Markup und CSS, ohne Skript, bereit für statisches Hosting, sobald das Layout in einem Browser berechnet ist. \`renderHtmlBook\` geht weiter und schreibt ein ganzes Buch als eine Seite: die Seiten jedes Kapitels, der Text markierbar und durchsuchbar, Verweise, die über Kapitel hinweg verlinken, und Übungen, die sich beantworten lassen. Der Befehl \`html\` der Kommandozeile und der Download eines Buches als HTML in der Sandbox schreiben beide eine solche Seite.
+Der Renderer nimmt eine Funktion entgegen, die die Datei-ID einer Ressource in eine URL umwandelt, sodass Bilder von überall ausgeliefert werden können. Seine Ausgabe ist reines Markup und CSS, ohne Skript, bereit für statisches Hosting, sobald das Layout berechnet ist, im Browser oder in Node. \`renderHtmlBook\` geht weiter und schreibt ein ganzes Buch als eine Seite: die Seiten jedes Kapitels, der Text markierbar und durchsuchbar, Verweise, die über Kapitel hinweg verlinken, und Übungen, die sich beantworten lassen. Der Befehl \`html\` der Kommandozeile und der Download eines Buches als HTML in der Sandbox schreiben beide eine solche Seite.
 
 ## PDF
 
@@ -1016,10 +1016,10 @@ Beide Darstellungsformen tragen dieselbe Navigation: ein Inhaltsverzeichnis aus 
 
 Die Engine erscheint auf npm als [_postext_](https://www.npmjs.com/package/postext), für das Layout sowie die Canvas- und HTML-Renderer, mit einem eigenen Paket für jede schwerere Ausgabe: _postext-pdf_ für PDF, _postext-epub_ für EPUB 3 und _postext-folio_ für das Buch in 3D. Alle sind ES-Module unter der MIT-Lizenz und lassen sich auch direkt von einem CDN importieren.
 
-Die Layout-Engine läuft im Browser, wo sie mit den Schriften messen kann, die der Leser sieht; _postext-pdf_ und _postext-epub_ laufen ebenfalls im Browser und zusätzlich in Node, sodass ein PDF oder ein EPUB auf einem Server aus einem anderswo berechneten Layout erzeugt werden kann. Ein ganzes Buch geht denselben Weg: \`openBundle\` liest eine .postext-Datei, \`buildBundle\` bricht ihre Kapitel der Reihe nach um, und das Ergebnis geht direkt an \`renderToPdf\` oder \`renderToEpub\`.
+Die Layout-Engine läuft im Browser, wo sie mit den Schriften misst, die der Leser sieht, und in Node, Bun oder Deno, sobald sie ein Canvas zum Messen erhält, etwa \`@napi-rs/canvas\`; _postext-pdf_ und _postext-epub_ laufen in beiden, sodass ein Server Kapitel umbrechen und als PDF oder EPUB schreiben kann. Ein ganzes Buch geht denselben Weg: \`openBundle\` liest eine .postext-Datei, \`buildBundle\` bricht ihre Kapitel der Reihe nach um, und das Ergebnis geht direkt an \`renderToPdf\` oder \`renderToEpub\`.
 
 :::callout{type="note" title="Vier Schritte"}
-1. Die Schriften laden, die die Konfiguration nennt, damit der Browser sie messen kann
+1. Die Schriften laden, die die Konfiguration nennt, damit die Engine sie messen kann
 2. Das Dokument mit \`buildDocument(content, config)\` erzeugen
 3. Seine Seiten mit \`renderPage\` zeichnen oder mit \`renderToHtml\` rendern
 4. Für den Druck dasselbe Dokument mit einem Font-Provider an \`renderToPdf\` übergeben; für E-Books die Kapitel an \`renderToEpub\` übergeben
@@ -1051,7 +1051,7 @@ Der Druck bringt ein Problem mit, das ein Bildschirm nie hat. Weißer Text, der 
 
 Die Farben einer Konfiguration sind für den Bildschirm geschrieben, und auf dem Weg in den Druck müssen sie in die vier Druckfarben der Druckbedingung umgerechnet werden. Diese Umrechnung beschreibt ein **ICC-Profil**:index{term="ICC-Profile"}, und Postext bringt fünfzehn davon mit, von FOGRA39 und FOGRA51 für gestrichenes Papier in Europa bis GRACoL und SWOP für Nordamerika, mit FOGRA39 als Voreinstellung.
 
-Die Umrechnung erledigt Postext selbst, im Browser, mit einem Rendering Intent, relativ farbmetrisch oder perzeptiv, und mit Tiefenkompensierung. Auch Bilder lassen sich umrechnen, sodass ein Foto im PDF schon in den Druckfarben der Maschine steht, und eine **Farbauftragsgrenze** begrenzt die Gesamtdeckung der vier Farben dort, wo das Papier nicht trocknen würde. Die Druckeinstellungen verschieben nie eine Zeile: Das Layout ignoriert sie, und sie wirken nur im PDF, in der Druckvorschau und im Preflight.
+Die Umrechnung erledigt Postext selbst, im Browser, mit einem Rendering Intent, relativ farbmetrisch oder perzeptiv, und mit Tiefenkompensierung. Auch Bilder lassen sich umrechnen, sodass ein Foto im PDF schon in den Druckfarben der Maschine steht, und eine **Farbauftragsgrenze** begrenzt die Gesamtdeckung der vier Farben dort, wo das Papier nicht trocknen würde. Die Druckeinstellungen verschieben nie eine Zeile: Das Layout ignoriert sie, und sie wirken nur im PDF, in der Druckvorschau und im Preflight. Wer das Profil wechselt, behält also jeden Zeilen- und Seitenumbruch des Buches, wie er war, und das Inhaltsverzeichnis nennt dieselben Seitenzahlen wie vorher.
 
 Bilder bringen eigene Farbe mit. Ein Foto mit dem Profil Adobe RGB oder Display P3 lässt sich über sein eigenes Profil lesen, eine Serie, die ihr Profil verloren hat, über ein zugewiesenes, und ein Graustufenbild druckt allein auf der schwarzen Platte, seine Töne an den Tonwertzuwachs der Maschine angepasst. TIFF- und Photoshop-Dateien drucken aus ihren eigenen Pixeln, in den Druckfarben, in die sie separiert wurden, wenn sie schon in CMYK vorliegen, während der Bildschirm von jeder eine PNG-Vorschau zeigt.
 
@@ -1085,7 +1085,7 @@ Die Seite selbst wird vollständig gedruckt. Der Stanzformenbauer arbeitet nach 
 
 Druckereien verlangen **PDF/X**:index{term="PDF!PDF/X"}. Eine PDF/X-Datei sagt, für welche Druckbedingung sie erstellt wurde, bettet jede Schrift ein, trägt ihre Endformat- und Anschnittrahmen und lässt alles weg, was eine Druckmaschine nicht verwenden kann, etwa Links. Postext schreibt die beiden Fassungen, die Druckereien am häufigsten verlangen. PDF/X-1a ist die vorsichtige: nur vier Druckfarben und Grau, keine Transparenz. PDF/X-4 behält die Transparenz und ist heute die übliche Wahl. Beide werden unter Gestaltung › Export › Druckvorbereitung gewählt oder mit der Option \`--pdfx\` der Kommandozeile.
 
-Ein Buch für den Druck braucht außerdem **Anschnitt**:index{term="Anschnitt"}: Bilder und Bänder, die über die Seite hinauslaufen, müssen einige Millimeter über das Endformat hinausreichen. Die Einstellungen der Schnittmarken fügen den Anschnitt hinzu und zeichnen Schnittmarken an den Ecken.
+Ein Buch für den Druck braucht außerdem **Anschnitt**:index{term="Anschnitt"}: Bilder und Bänder, die über die Seite hinauslaufen, müssen einige Millimeter über das Endformat hinausreichen. Die Einstellungen der Schnittmarken fügen den Anschnitt hinzu und zeichnen Schnittmarken an den Ecken, außerhalb des Endformats, wo sie beim Beschneiden wegfallen.
 
 ## Schwarz
 
@@ -1105,7 +1105,7 @@ Derselbe Preflight läuft auch außerhalb der Sandbox. Der Befehl \`check\` der 
 
 ## Ein Proof am Bildschirm
 
-Die **Druckvorschau** zeigt:index{term="Druckvorschau"} die Seiten so, wie die Maschine sie drucken wird. Jede Farbe wird über das Profil des Auftrags separiert und auf dem Weiß des Papiers zurückgezeichnet, Tiefschwarz eingeschlossen. Sie ist ein Schalter in der Werkzeugleiste der Ansicht Canvas, geteilt mit der Ansicht Folio.
+Die **Druckvorschau** zeigt:index{term="Druckvorschau"} die Seiten so, wie die Maschine sie drucken wird. Jede Farbe wird über das Profil des Auftrags separiert und auf dem Weiß des Papiers zurückgezeichnet, Tiefschwarz eingeschlossen. Sie ist ein Schalter in der Werkzeugleiste der Ansicht Canvas, geteilt mit der Ansicht Folio. So zeigt sie, was ein leuchtendes RGB-Blau im Druck verliert.
 
 ## Das barrierefreie PDF und das gedruckte
 
@@ -1139,7 +1139,7 @@ Videos laufen auf der Seite. Im Blättermodus startet ein Klick auf das Vorschau
 
 Das Papier wird so gewählt, wie eine Druckerei es bestellen würde: nach **Papiersorte**, der Art des Papiers, und nach **Grammatur**, seinem Gewicht in Gramm pro Quadratmeter. Jede Papiersorte bringt die für sie typischen Werte mit, aufgeführt in :ref{id="paper-stocks"}, und jeder davon lässt sich einzeln ändern: ein Werkdruckpapier mit 70 statt 80 Gramm, ein ungestrichenes Papier in einem wärmeren Ton.
 
-Die Dicke ergibt sich aus zwei Zahlen. Das **Volumen** eines Papiers, in Kubikzentimetern pro Gramm, sagt, wie viel Raum ein Gramm davon einnimmt; Grammatur mal Volumen ergibt die **Dicke**, die Stärke eines Blattes in Mikrometern. Ein Buchblock ist die Zahl seiner Blätter mal diese Dicke, weshalb dieselben dreihundert Seiten auf gestrichenem Papier einen schlanken Band und auf voluminösem Werkdruckpapier einen dicken ergeben. Folio zählt das ganze Buch, sodass auch ein allein gezeigtes Kapitel zwischen den Seiten davor und danach liegt, in deren tatsächlicher Dicke.
+Die Dicke ergibt sich aus zwei Zahlen. Das **Volumen** eines Papiers, in Kubikzentimetern pro Gramm, sagt, wie viel Raum ein Gramm davon einnimmt; Grammatur mal Volumen ergibt die **Dicke**, die Stärke eines Blattes in Mikrometern. Bei 80 Gramm und einem Volumen von 1,5 ist ein Blatt 120 Mikrometer dick. Ein Buchblock ist die Zahl seiner Blätter mal diese Dicke, weshalb dieselben dreihundert Seiten auf gestrichenem Papier einen schlanken Band und auf voluminösem Werkdruckpapier einen dicken ergeben. Folio zählt das ganze Buch, sodass auch ein allein gezeigtes Kapitel zwischen den Seiten davor und danach liegt, in deren tatsächlicher Dicke.
 
 Die Beschaffenheit des Papiers hat drei Einstellungen. Die **Oberfläche** sagt, ob das Papier ungestrichen ist, mit seinen Fasern und ohne Glanz, oder gestrichen und zu matt, seidenmatt oder glänzend kalandriert, was den Raum spiegelt. Die **Struktur** ist das Relief: glatt, die feine Körnung von leicht rauem Papier, das gleichmäßige Bild von Velin, die Linien von geripptem Papier, ein geprägtes Leinen oder die unregelmäßigen Spuren von Filz; ihre Stärke lässt sich verringern oder erhöhen. Der **Papierton** ist die Farbe des Papiers vor dem Druck, weiß, naturweiß oder cremefarben, und das **Durchscheinen** lässt den Druck der Rückseite auf dünnem Papier schwach sichtbar werden, immer weniger, je schwerer und opaker das Papier wird.
 
@@ -1159,11 +1159,11 @@ Bücher wechseln oft für einige Seiten das Papier: ein Teil mit Farbtafeln auf 
 \`:::paper{type=coatedGloss grammage=130}\` öffnet den Abschnitt und \`:::\` schließt ihn. Alles dazwischen wird auf diesem Papier gedruckt.
 :::
 
-Eine Papiersorte umfasst ganze Bogen, deshalb beginnt der Inhalt des Abschnitts auf einer neuen Seite, und was ihm folgt, beginnt ebenfalls auf einer neuen Seite. Jede Seite, die aus dem Abschnitt heraus gesetzt wird, trägt ihr Papier im Layout, und die Ansicht Folio zeichnet diese Blätter mit Farbe, Oberfläche, Dicke und Steifigkeit dieses Papiers; Canvas, HTML und PDF setzen sie wie jede andere Seite. Weggelassene Attribute folgen dem Papier des Buches, und ein Abschnitt innerhalb eines anderen überschreibt nur, was er selbst festlegt.
+Eine Papiersorte umfasst ganze Bogen, deshalb beginnt der Inhalt des Abschnitts auf einer neuen Seite, und was ihm folgt, beginnt ebenfalls auf einer neuen Seite. Jede Seite, die aus dem Abschnitt heraus gesetzt wird, trägt ihr Papier im Layout, und die Ansicht Folio zeichnet diese Blätter mit Farbe, Oberfläche, Dicke und Steifigkeit dieses Papiers; Canvas, HTML und PDF setzen sie wie jede andere Seite. Weggelassene Attribute folgen dem Papier des Buches, und ein Abschnitt innerhalb eines anderen überschreibt nur, was er selbst festlegt, etwa nur die Grammatur oder nur den Papierton.
 
 ## Tisch und Licht
 
-Das Buch liegt auf einer **Unterlage**: Eiche, Nussbaum, Leinen, Filz, Leder, Marmor, eine einfache Farbe oder gar nichts, sodass der Hintergrund der Seite bleibt. Jede Unterlage ist eine fotografierte Textur, und eine Tönung färbt jede davon um. Fünf **Lichtstimmungen** bestimmen die Szene: ein Studio, Tageslicht, eine Leselampe, ein bedeckter Himmel und Nacht. Jede ist ein Paar: die Umgebung, die gestrichenes und glänzendes Papier spiegeln, während sich ein Blatt wendet, und ein Hauptlicht, das die Schatten des Blocks und einer angehobenen Seite auf die Seiten darunter wirft. Die **Belichtung** hellt die Szene auf oder dunkelt sie ab, und die Schatten lassen sich auf einem langsamen Rechner abschalten. Die **Neigung** legt fest, wie weit sich die Ansicht aus der Draufsicht neigt, bis zu siebzig Grad, und die **Drehung**, wie weit sie um das Buch herumgeht; Als Standardansicht speichern hält beides so fest, wie Sie es sehen.
+Das Buch liegt auf einer **Unterlage**: Eiche, Nussbaum, Leinen, Filz, Leder, Marmor, eine einfache Farbe oder gar nichts, sodass der Hintergrund der Seite bleibt. Jede Unterlage ist eine fotografierte Textur, und eine Tönung färbt jede davon um. Fünf **Lichtstimmungen** bestimmen die Szene: ein Studio, Tageslicht, eine Leselampe, ein bedeckter Himmel und Nacht. Jede ist ein Paar: die Umgebung, die gestrichenes und glänzendes Papier spiegeln, während sich ein Blatt wendet, und ein Hauptlicht, das die Schatten des Blocks und einer angehobenen Seite auf die Seiten darunter wirft. Die **Belichtung** hellt die Szene auf oder dunkelt sie ab, und die Schatten lassen sich auf einem langsamen Rechner abschalten. Die **Neigung** legt fest, wie weit sich die Ansicht aus der Draufsicht neigt, bis zu siebzig Grad, und die **Drehung**, wie weit sie um das Buch herumgeht; Als Standardansicht speichern hält beides so fest, wie Sie es sehen. **Ansicht zurücksetzen** bringt das Buch danach in genau diesen Winkel zurück.
 
 Dieser Leitfaden ist als rückendrahtgeheftete Broschüre gesetzt, auf glänzend gestrichenem Papier von 170 Gramm, auf einer blauen Filzmatte im Studiolicht. Seine Umschläge sind seine eigene erste und letzte Seite, deshalb öffnet er sich auf dem Umschlag und schließt sich, wenn das letzte Blatt umgeblättert wird. All das steht in der Gruppe **Folio** des Bedienfelds Gestaltung, und nichts in dieser Gruppe ändert auch nur eine Zeile der Seiten.
 
@@ -1268,7 +1268,7 @@ Die Arbeit ist in vier Phasen gegliedert, zusammengefasst in :ref{id="developmen
 
 Die ersten beiden Phasen sind im Wesentlichen abgeschlossen: das Datenmodell, der Parser und die Messschicht, das Dokumentformat, die Spalten-Engine mit Spaltenausgleich, Gleitobjekten und Tabellen sowie die Buchmechanik aus Kapiteln, Teilen, Inhaltsverzeichnis und Kolumnentiteln. Die dritte Phase hat ihren Kern geliefert – optimalen Zeilenumbruch mit satztechnischen Strafwerten, Silbentrennung in acht Sprachen, Mathematik, Fußnoten und Kapitelendnoten, Zitate, ein Register, Chinesisch und Japanisch horizontal und vertikal gesetzt, Arabisch von rechts nach links mit Kaschida-Ausgleich, zusammengesetzte Seiten, Comics, Musik, Übungen und Text, der Bilder umfließt – und hat noch die Marginalien offen. Die vierte, die Ausgabe, hat Canvas, HTML, ein getaggtes, druckfertiges PDF, EPUB-3-Bücher und SCORM-Kurse ausgeliefert, zusammen mit dem Worker, der Sandbox und ihren Vorlagen, der Ansicht Folio, die ein Layout als gedrucktes Buch zeigt, einer Kommandozeile, die Bücher ohne Browser setzt, und einem Export und Import für InDesign.
 
-Was noch fehlt, ist so wichtig wie das, was ausgeliefert ist. **Marginalien** haben einen Platz im Datenmodell, werden aber noch nicht gesetzt. Text läuft noch nicht zu beiden Seiten eines Bildes, Koreanisch wird nach den chinesischen Regeln statt nach eigenen gesetzt, und die Kommandozeile formt Text ohne die Sprachformen, die ein Browser anwendet, sodass eine Zeile hin und wieder an einem anderen Wort umbricht als in der Sandbox. Das sind die nächsten Probleme, deren Lösung sich lohnt, und die, bei denen Hilfe am meisten zählt.
+Was noch fehlt, ist so wichtig wie das, was ausgeliefert ist. **Marginalien** haben einen Platz im Datenmodell, werden aber noch nicht gesetzt; bis dahin können Kästen in der Randspalte eines anderthalbspaltigen Layouts ihre Aufgabe übernehmen. Text läuft noch nicht zu beiden Seiten eines Bildes, Koreanisch wird nach den chinesischen Regeln statt nach eigenen gesetzt, und die Kommandozeile formt Text ohne die Sprachformen, die ein Browser anwendet, sodass eine Zeile hin und wieder an einem anderen Wort umbricht als in der Sandbox. Das sind die nächsten Probleme, deren Lösung sich lohnt, und die, bei denen Hilfe am meisten zählt.
 
 ## Mitmachen
 
@@ -1278,9 +1278,9 @@ Der übliche Weg von der Idee zum Code ist kurz: Ein Issue beschreibt das Proble
 
 ## Wo Hilfe zählt
 
-Jeder Teil des Projekts freut sich über Mitwirkende. Die **Engine** hat tiefe Probleme – Zeilenumbruch, Spaltenausgleich, Nummerierung, Platzierung von Gleitobjekten – und zugängliche in ihren Tests und Benchmarks. Das **PDF-Backend** hat Schrifteinbettung, Farbmanagement und Barrierefreiheit. Die **Sandbox** hat ihre Bedienfelder, ihre Editoren und ihre Übersetzungen, so organisiert, dass jeder Text der Oberfläche in jeder Sprache auf dieselbe Weise hinzugefügt wird. **Gestaltung und Typografie** brauchen Menschen, die redaktionelle Traditionen kennen, besonders die von Schriftsystemen, denen die Engine noch nicht gut gerecht wird. Und die **Dokumentation** und ihre Übersetzungen, derzeit auf Englisch, Spanisch, Katalanisch, Französisch, Deutsch, Italienisch, brasilianischem Portugiesisch, vereinfachtem Chinesisch, Japanisch und Arabisch, stehen allen offen, die etwas klar erklären können.
+Jeder Teil des Projekts freut sich über Mitwirkende. Die **Engine** hat tiefe Probleme – Zeilenumbruch, Spaltenausgleich, Nummerierung, Platzierung von Gleitobjekten – und zugängliche in ihren Tests und Benchmarks. Das **PDF-Backend** hat Schrifteinbettung, Farbmanagement und Barrierefreiheit. Die **Sandbox** hat ihre Bedienfelder, ihre Editoren und ihre Übersetzungen, so organisiert, dass jeder Text der Oberfläche in jeder Sprache auf dieselbe Weise hinzugefügt wird. **Gestaltung und Typografie** brauchen Menschen, die redaktionelle Traditionen kennen, besonders die von Schriftsystemen, denen die Engine noch nicht gut gerecht wird. Und die **Dokumentation** und ihre Übersetzungen, derzeit auf Englisch, Spanisch, Katalanisch, Französisch, Deutsch, Italienisch, brasilianischem Portugiesisch, vereinfachtem Chinesisch, Japanisch und Arabisch, stehen allen offen, die etwas klar erklären können, auch ohne eine Zeile Code zu schreiben.
 
-Der beste erste Schritt ist klein: Lesen Sie die Anleitung für Beiträge im Repository, stellen Sie sich in den Discussions vor, nehmen Sie sich ein Issue mit dem Label _good first issue_ vor oder übersetzen Sie eine Seite der Dokumentation.
+Der beste erste Schritt ist klein: Lesen Sie die Anleitung für Beiträge im Repository, stellen Sie sich in den Discussions vor, nehmen Sie sich ein Issue mit dem Label _good first issue_ vor oder übersetzen Sie eine Seite der Dokumentation. Wer einen Fehler im Satz dieses Buches findet, kann ihn in der Sandbox nachstellen, das Kapitel als Markdown exportieren und es dem Issue beilegen.
 
 Die meisten Beiträge erfordern kein Programmieren:
 
@@ -1299,7 +1299,7 @@ Anderes ist schlicht noch nicht erledigt. Zusammenarbeit in Echtzeit, also eine 
 
 ## Lizenz
 
-:index{term="Lizenz"}Postext erscheint unter der **MIT-Lizenz**: Die Engine, die PDF- und EPUB-Writer, der Folio-Betrachter und die Sandbox dürfen in offenen wie geschlossenen Projekten verwendet, verändert und eingebettet werden, kommerziell oder nicht, sofern der Lizenzhinweis mit dem Code mitreist. Die Schriften dieses Buches sind offene Schriften, die Google Fonts bereitstellt, die Diagramme sind Teil des Quellcodes der Sandbox, und der Text dieses Leitfadens gehört dem Projekt und seinen Mitwirkenden.
+:index{term="Lizenz"}Postext erscheint unter der **MIT-Lizenz**: Die Engine, die PDF- und EPUB-Writer, der Folio-Betrachter und die Sandbox dürfen in offenen wie geschlossenen Projekten verwendet, verändert und eingebettet werden, kommerziell oder nicht, sofern der Lizenzhinweis mit dem Code mitreist. Die Schriften dieses Buches sind offene Schriften, die Google Fonts bereitstellt, die Diagramme sind Teil des Quellcodes der Sandbox, und der Text dieses Leitfadens gehört dem Projekt und seinen Mitwirkenden. Der Lizenztext steht in der Datei LICENSE des Repositorys.
 
 ## Werte
 
@@ -1311,7 +1311,7 @@ _Klarheit vor Raffinesse._ Code, Konfiguration und Dokumentation sollen leicht z
 
 _Zusammenarbeit vor Revierdenken._ Entscheidungen fallen öffentlich, in Issues und Discussions, die alle lesen und an denen alle teilnehmen können, und kein Teil des Codes gehört einer einzelnen Person. Jeder Beitrag wird anerkannt – Code, Dokumentation, Übersetzungen, Fehlerberichte, typografischer Rat und die Beispielbücher, die zeigen, was die Engine kann –, denn eine Layout-Engine für alle können nur viele Menschen bauen.
 
-Wenn Sie davon etwas anspricht, ist das Repository der nächste Schritt. Eröffnen Sie ein Issue, stellen Sie in den Discussions eine Frage oder ändern Sie etwas in diesem Buch und sehen Sie, was die Engine daraus macht.
+Wenn Sie davon etwas anspricht, ist das Repository der nächste Schritt. Eröffnen Sie ein Issue, stellen Sie in den Discussions eine Frage oder ändern Sie etwas in diesem Buch und sehen Sie, was die Engine daraus macht. Ihre Änderungen bleiben in Ihrem Browser, bis Sie das Original im Bedienfeld Bücher wiederherstellen.
 
 :::paragraphs{style="signature"}
 postext.dev · github.com/drnachio/postext

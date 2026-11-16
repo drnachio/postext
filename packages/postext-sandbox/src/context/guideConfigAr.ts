@@ -494,9 +494,12 @@ export function createArabicGuideConfig(): PostextConfig {
       borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.2), rules: 'horizontal',
     },
     codeStyle: guideCodeStyle(),
-    unorderedLists: { bulletChar: '•', color: col('band') },
+    // One grid line above and below a list (#1594), as in guideConfig.ts.
+    unorderedLists: { bulletChar: '•', color: col('band'), marginTop: pt(LEAD), marginBottom: pt(LEAD) },
     orderedLists: {
       color: col('band'),
+      marginTop: pt(LEAD),
+      marginBottom: pt(LEAD),
       // ١- then أ- then (١), as Arabic books number their lists.
       levels: [
         { level: 1, numberFormat: 'arabic', separator: '-' },
