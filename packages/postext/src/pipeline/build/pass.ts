@@ -324,7 +324,7 @@ function placeDocumentPass(
     balanceExtraInColumn, addBalanceExtra, opensDefaultOpener, measuredAcrossPage, reserveOpenerBand,
     openerOwnColumn, openerHeadOf, underOpenerHeadFloat, atColumnHead, openerHeadSpacing,
     sideObstacleColumn, headingClaims, noteHeadingClaim, markSideObstacles, spanHeadingOpenedHere,
-    openSpanHeadingHere, rollbackHeadings, bandCapProposals, spanPlacedInBand, bandCapsApplied,
+    openSpanHeadingHere, rollbackHeadings, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack,
     cappedBandColumns, enterBand, proposeTrailingCap
   } = createBands({
     bandCaps, floatPages, resolved: setup.resolved, headingLevels, baselineGrid, doc, designFramesOn, resourceById,
@@ -560,5 +560,5 @@ function placeDocumentPass(
     setup
   });
 
-  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
+  return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }

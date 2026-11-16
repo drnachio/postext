@@ -134,6 +134,10 @@ export function collectColumnGaps(
     }
   }
 
+  /** What is left of `gapPx` past its whole lines of `grid`. */
+  const closingFraction = (gapPx: number, grid: number): number =>
+    gapPx - Math.floor(gapPx / grid + EPS) * grid;
+
   /** The trailing-callout candidate of a closing column whose last blocks
    *  are one callout box: the room between the box's foot and the foot of
    *  the lowest last line in the other text columns of its band. */
@@ -155,11 +159,11 @@ export function collectColumnGaps(
     }
     const foot = frame.bbox.y + frame.bbox.height;
     const room = col.bbox.y + col.bbox.height - foot;
-    const gapPx = Math.min(target - foot, room);
-    // Only a small gap closes this way: a box pushed far down would open a
-    // hole between the text above it and itself (the trailing cap levels
-    // such a band instead).
-    if (!(gapPx > d.baselineGrid * 0.1) || gapPx > d.baselineGrid * 6 + EPS) return null;
+    // Only what is left of a line moves it (#1600): a box pushed whole
+    // lines down would open a hole between the text above it and itself;
+    // the column ends those lines short instead, as a closing column does.
+    const gapPx = closingFraction(Math.min(target - foot, room), d.baselineGrid);
+    if (!(gapPx > d.baselineGrid * 0.1)) return null;
     return { contentIndex: frame.contentIndex, part: 0, kind: 'trailingCallout', level: 0, order: frameAt, lineCount: 0, gapPx };
   };
 
@@ -306,7 +310,16 @@ export function collectColumnGaps(
             const beforeFoot = before ? before.bbox.y + before.bbox.height : undefined;
             target = beforeFoot !== undefined && beforeFoot <= trueBottom + EPS ? beforeFoot : trueBottom;
           }
-          const gapPx = target - (frame.bbox.y + frame.bbox.height);
+          let gapPx = target - (frame.bbox.y + frame.bbox.height);
+          // In a closing band the column may end short: a box under text
+          // there moves down by what is left of a line, never whole lines,
+          // which would open a hole above it that reads as a lost line
+          // (#1600). Those lines stay under the box, and no lever fills
+          // them from above it either.
+          if (closingBand && frameAt >= 1 && part === 0) {
+            gapPx = closingFraction(gapPx, doc.baselineGrid);
+            gapLines = 0;
+          }
           // A box ends level with the column beside it: in a band of one
           // text column (a one-column page that ends early, its next block
           // on the next page) there is none, and the box stays under the

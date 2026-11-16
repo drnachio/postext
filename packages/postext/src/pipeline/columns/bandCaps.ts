@@ -190,6 +190,16 @@ export interface BandPassReport {
   spanPlacedInBand: ReadonlySet<number>;
   /** Caps whose opening block did open a band in this pass. */
   bandCapsApplied: ReadonlySet<number>;
+  /** Trailing caps delivered in this pass: how many lines (of the cap's
+   *  pitch) higher the cut could stand, the whole lines the band's columns
+   *  left empty under it shared out among them (#1600). A cut measured on
+   *  the uncut band counts room that vanishes at a column break (the margin
+   *  under a box closing a column, above a heading opening the next) and
+   *  space that only a single column can take (a box closing the last
+   *  column, off the grid), so it can stand a line lower than the columns
+   *  need, and the levers then fill that line into every column, or open
+   *  it above the box. The driver tries such a cut that much higher. */
+  capSlack?: ReadonlyMap<number, number>;
 }
 
 /** Top edge of a band: the highest column top. A column whose top was
@@ -466,6 +476,34 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
   let result = initial;
   /** The caps `result` was placed with. */
   let ranWith: ReadonlySet<number> = new Set();
+  /** Caps tried higher than where they were delivered (#1600), with the cap
+   *  to go back to if the higher cut does not hold; each boundary once. */
+  const raised = new Map<number, BandCap>();
+  const triedHigher = new Set<number>();
+  /** Delivered trailing caps whose columns left a line each empty under
+   *  the cut: tried that many lines higher. Returns how many. */
+  const raise = (report: T): number => {
+    let n = 0;
+    for (const [i, cap] of caps) {
+      if (cap.kind !== 'trailing' || cap.zone || cap.retries > 0 || triedHigher.has(i)) continue;
+      const slack = report.capSlack?.get(i) ?? 0;
+      if (slack < 1 || cap.lines - slack < 1) continue;
+      triedHigher.add(i);
+      raised.set(i, cap);
+      // No retry a line lower: the cut it came from is the one to go back to.
+      caps.set(i, { ...cap, lines: cap.lines - slack, retries: cap.retryLimit ?? MAX_BAND_CAP_RETRIES });
+      n++;
+    }
+    return n;
+  };
+  /** A raised cap whose cut did not hold goes back to where it was. */
+  const lower = (i: number): boolean => {
+    const back = raised.get(i);
+    if (!back) return false;
+    raised.delete(i);
+    caps.set(i, back);
+    return true;
+  };
   // A cap whose lines are shorter than the grid's retries in finer steps
   // and gets as many more passes as it gets retries (#711).
   const passBound = (): number =>
@@ -493,7 +531,9 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
       front = first;
       lastGain = extra;
     }
+    for (const i of raised.keys()) if (!failing.includes(i)) raised.delete(i);
     for (const i of failing) {
+      if (lower(i)) continue;
       const cap = caps.get(i)!;
       const fresh = result.bandCapProposals.get(i);
       if (result.bandCapsApplied.has(i)) {
@@ -510,7 +550,7 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
       }
     }
     const adopted = adopt(result);
-    if (failing.length === 0 && adopted === 0) return { result, caps, passCount };
+    if (failing.length === 0 && adopted === 0 && raise(result) === 0) return { result, caps, passCount };
     if (trailingKeys().length === 0) return giveUp();
   }
 
@@ -520,6 +560,8 @@ export function* resolveTrailingCapsGen<T extends BandPassReport>(
   // one), so the caps still delivered are kept rather than all given up.
   // A cap the last round dropped (out of retries) still cut the layout that
   // round placed: that layout is placed again without it.
+  // (A cut raised after the last pass never ran: `result` has the old one.)
+  for (const i of [...raised.keys()]) lower(i);
   let failing = trailingKeys().filter((i) => !result.spanPlacedInBand.has(i));
   let stale = [...ranWith].some((i) => !caps.has(i));
   while (failing.length > 0 || stale) {

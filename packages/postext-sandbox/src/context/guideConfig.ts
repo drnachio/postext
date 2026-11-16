@@ -478,8 +478,11 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       borderColor: col('rule'), borderWidth: pt(0.5), cellPadding: mm(1.1), rules: 'horizontal',
     },
     codeStyle: guideCodeStyle(),
-    unorderedLists: { bulletChar: '•', color: col('band') },
-    orderedLists: { color: col('band') },
+    // One grid line above and below a list: the engine's 1.5 em is a hair
+    // over a line at this size, which the snap back onto the grid rounds up
+    // to two lines after every list (#1594).
+    unorderedLists: { bulletChar: '•', color: col('band'), marginTop: pt(13.6), marginBottom: pt(13.6) },
+    orderedLists: { color: col('band'), marginTop: pt(13.6), marginBottom: pt(13.6) },
     colorPalette: colorPalette(lang),
     // The guide's name in the running heads and its site on the back cover
     // are form, not content (#849).
