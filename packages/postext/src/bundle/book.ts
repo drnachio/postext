@@ -23,6 +23,8 @@ import { bundleStart } from './manifest.js';
 import type { BundleChapter, BundleStart } from './types.js';
 import { beginLayoutBuild, createBundleLayoutCache, jsonKey } from './layoutCache.js';
 import type { BundleLayoutCache, ChapterRecord } from './layoutCache.js';
+import { perfLap, perfTimed } from '../util/perfTap.js';
+import { holdParseMemo } from '../parse/blockParser.js';
 
 /** Options of `buildBundle`: those of a build, plus a design override, caches
  *  and per-chapter progress. */
@@ -143,6 +145,19 @@ export function buildBundle(
   bundle: { chapters: readonly Pick<BundleChapter, 'markdown'>[]; config: PostextConfig; resources?: readonly Resource[]; start?: BundleStart },
   options: BuildBundleOptions = {},
 ): VDTDocument[] {
+  // Each chapter is parsed once for the whole build (#1604).
+  const release = holdParseMemo();
+  try {
+    return layOutBundle(bundle, options);
+  } finally {
+    release();
+  }
+}
+
+function layOutBundle(
+  bundle: { chapters: readonly Pick<BundleChapter, 'markdown'>[]; config: PostextConfig; resources?: readonly Resource[]; start?: BundleStart },
+  options: BuildBundleOptions,
+): VDTDocument[] {
   const { config: configOverride, cache: sharedCache, onChapter, metadata: givenMetadata, layoutCache, ...buildOptions } = options;
   const config = configOverride ?? bundle.config;
   const resources = [...(bundle.resources ?? [])];
@@ -159,11 +174,13 @@ export function buildBundle(
   // A chapter printing the contents (`:::toc`) or the index (`:::index`)
   // reads the whole book's outline; so does one whose references name
   // anchors, which may lie in another chapter (#262).
+  const lap = perfLap();
   const hasToc = sources.map((markdown) => build.derive(`toc\u0000${markdown}`, () => {
     const { hasToc: toc, hasIndex, hasRefs } = contentOutline({ markdown, resources }, config);
     return toc || hasIndex || hasRefs;
   }));
   const anyToc = hasToc.some(Boolean);
+  lap('bundle.flags');
   // The page fences of the chapters after each chapter (#943): where a
   // story of a composed page may jump to. A book whose configuration names
   // no `page:` target keeps none, and a chapter without a composed page
@@ -191,6 +208,7 @@ export function buildBundle(
    *  chapters with a composed page jump. */
   const laterIdsOf = (index: number): Record<string, number> | undefined =>
     laterIds && hasComposedPage(sources[index]!) && Object.keys(laterIds[index]!).length > 0 ? laterIds[index] : undefined;
+  lap('bundle.pageIds');
   // Citations are numbered and listed across the book (#272): each chapter
   // is formatted against the book's references and citations.
   // Every chapter's front matter counts here (its references), not only
@@ -207,6 +225,7 @@ export function buildBundle(
     ? bookCitationContexts(citationSources, resources)
     : undefined;
   build.bookInputs(jsonKey(sharedCitationKey(citations?.[0])));
+  lap('bundle.citations');
   // `{bookTotalPages}` needs the page count of the whole book, known once
   // every chapter is laid out: the book goes round once more with it. It
   // never moves a page break, so one more round settles it.
@@ -219,6 +238,7 @@ export function buildBundle(
   // them and again (Terapia Ocupacional laid 120 chapters out for its 62).
   // The rounds then settle the labels as before.
   let outline: OutlineEntry[] | undefined = anyToc ? provisionalOutline() : undefined;
+  lap('bundle.provisionalOutline');
   let bookPageCount: number | undefined;
   for (let round = 0; ; round++) {
     if (round > 0) build.nextRound();
@@ -253,7 +273,7 @@ export function buildBundle(
           ...(doc.pendingJumps ? { jumps: doc.pendingJumps } : {}),
           pageCount: doc.pages.length,
           ...(last ? { next: { startAt: last.pageNumberValue + 1, format: last.pageNumberFormat } } : {}),
-          outline: outlineFromDoc(doc, contentOutline({ markdown }, config, continuation).outline),
+          outline: perfTimed('bundle.chapterOutline', () => outlineFromDoc(doc, contentOutline({ markdown }, config, continuation).outline)),
           ...(doc.carriedOutline ? { carried: carriedPlaces(doc) } : {}),
           ...(firstContent ? { firstContent } : {}),
         };
@@ -271,7 +291,7 @@ export function buildBundle(
       if (record.next) next = record.next;
       const before = counters;
       const beforeKey = jsonKey(before);
-      counters = build.derive(beforeKey === undefined ? undefined : `next\u0000${beforeKey}\u0000${markdown}`, () => continuationAfter({ markdown, resources }, config, before));
+      counters = build.derive(beforeKey === undefined ? undefined : `next\u0000${beforeKey}\u0000${markdown}`, () => perfTimed('bundle.continuation', () => continuationAfter({ markdown, resources }, config, before)));
     });
     // Another round for the contents while their page labels move (at
     // most MAX_ROUNDS layouts), and for the book's page count while the

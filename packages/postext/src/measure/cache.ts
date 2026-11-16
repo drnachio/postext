@@ -11,6 +11,7 @@ import { getMeasureArabicNumbers, getMeasureDirection } from './rtl/bidiLines.js
 import { evictionsSince, measurementGeneration, measureLanguageKey } from './canvas.js';
 import { scriptContextKey } from './script.js';
 import { getSlashBreaks } from './breakRules.js';
+import { perfNow, perfTap } from '../util/perfTap.js';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
@@ -178,6 +179,25 @@ function current(cache: MeasurementCache): MeasurementCache {
   return cache;
 }
 
+/** The cached block under `key`, or `measure()` kept under it: a copy
+ *  either way. `started` is when the caller began building the key, read
+ *  only when a benchmark listens (`util/perfTap.ts`). */
+function throughCache(cache: MeasurementCache, key: string, started: number, measure: () => MeasuredBlock): MeasuredBlock {
+  const tap = perfTap();
+  const cached = current(cache)._blocks.get(key);
+  const found = tap ? perfNow() : 0;
+  tap?.('measure.key', found - started);
+  if (cached) {
+    const copy = cloneMeasuredBlock(cached);
+    tap?.('measure.hit', perfNow() - found);
+    return copy;
+  }
+  const result = measure();
+  cache._blocks.set(key, result);
+  tap?.('measure.miss', perfNow() - found);
+  return cloneMeasuredBlock(result);
+}
+
 export function cachedMeasureBlock(
   text: string,
   font: string,
@@ -186,12 +206,9 @@ export function cachedMeasureBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = buildPlainCacheKey(text, font, maxWidthPx, lineHeightPx, options);
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureBlock(text, font, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureBlock(text, font, maxWidthPx, lineHeightPx, options));
 }
 
 /** {@link cachedMeasureRichBlock} for a table cell's paragraph or a piece
@@ -209,12 +226,9 @@ export function cachedMeasureRichSnippet(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = `S${buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options)}`;
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options));
 }
 
 export function cachedMeasureRichBlock(
@@ -228,10 +242,7 @@ export function cachedMeasureRichBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options);
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options));
 }

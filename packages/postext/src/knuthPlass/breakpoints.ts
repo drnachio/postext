@@ -6,6 +6,7 @@ import type { KPItem, KPOptions } from './types.js';
 import type { Breaker } from './wasm/abi.js';
 import { readyWasmBreaker } from './wasm/engine.js';
 import { limited, lineEdgesFor } from './breakpoints/limited.js';
+import { perfNow, perfTap } from '../util/perfTap.js';
 
 export { foldEdge, isMonosyllable, edgesStack, textEdges, LineEdges } from './breakpoints/edges.js';
 export type { Edge } from './breakpoints/edges.js';
@@ -33,7 +34,10 @@ export function computeBreakpoints(items: KPItem[], options: KPOptions): number[
   const hooks = globalThis as BreakpointsHooks;
   // The WebAssembly breaker weighs stacks and the hyphen rules too, stacks
   // over the line edges worked out here (`wasm/abi.ts`).
+  const tap = perfTap();
+  const started = tap ? perfNow() : 0;
   const breaks = (hooks.__postextKpImpl ?? readyWasmBreaker() ?? breakpoints)(items, options);
+  tap?.('kp', perfNow() - started);
   hooks.__postextKpTap?.(items, options, breaks);
   return breaks;
 }

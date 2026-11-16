@@ -51,6 +51,7 @@ import { createContentSetup } from './pass/setup/contentSetup.js';
 import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
 import type { PlacedSlot } from './floatPads.js';
+import { perfLap } from '../../util/perfTap.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -111,6 +112,7 @@ function placeDocumentPass(
   hints: PassHints,
 ): PassResult {
   const setup = {} as PassSetupState;
+  const lap = perfLap();
   const state = {} as PassState;
   const late = {} as PassLate;
   const { balanceExtraPx, balanceLooseness, balanceUntracked, balanceLooseBudget, bandCaps, captionUnder, floatPages, floatPads, citingPageFloats, pullCrop } = hints;
@@ -203,6 +205,7 @@ function placeDocumentPass(
     ...(hanMarksOfLocale(resolvedLocale(setup.resolved)) ? { hanMarks: true } : {}),
   });
 
+  lap('pass.config');
   const {
     baselineGrid, doc, continuation, pageIndexOffset, afterPartPage, pageMetrics, pageWidthPx,
     pageHeightPx, freshPageFlowColumns, designFramesOn, toLeaf, frontmatterMeta, markdownBody,
@@ -210,6 +213,7 @@ function placeDocumentPass(
   } = createPageSetup({
     content, state, setup
   });
+  lap('pass.pageSetup');
   // A figure's own words (#935): its alt, caption and note replace the
   // resource's in this chapter, for the layout, the references and every
   // output alike.
@@ -232,6 +236,7 @@ function placeDocumentPass(
     bodyOffset, parsedBody, setup
   });
 
+  lap('pass.contentSetup');
   const {
     pendingFloats, pendingSideBoxes, openerPages, openerFloatRule, openerFloatNotes, noteOpenerFloat,
     awaitingSideBoxes, multiColumnBand, enqueuedFloatIds, enqueueFloatsFor, citationGates,
@@ -495,6 +500,7 @@ function placeDocumentPass(
   let dieAt = 0;
   setColumnObstacleSource(dieWrapSource(doc, contentBlocks, () => ({ blockIdx: dieAt, pageIndex: cursor.pageIndex })));
 
+  lap('pass.wiring');
   for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
     const blockTurn = { blockIdx } as BlockIteration;
     dieAt = blockIdx;
@@ -545,6 +551,7 @@ function placeDocumentPass(
   // End of the document: level the closing band and place any floats still
   // pending (referenced on the last page) on pages appended after it.
   closeFlowSegment(contentBlocks.length);
+  lap('pass.blocks');
 
   const {
     citingPageProposals, citingPageRefused
@@ -560,5 +567,6 @@ function placeDocumentPass(
     setup
   });
 
+  lap('pass.finish');
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }
