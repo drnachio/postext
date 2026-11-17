@@ -154,6 +154,24 @@ describe('Arabic vowel marks — word by word', () => {
     expect(found[0]).toMatchObject({ kind: 'arabicMarksExceedLeading', lineHeightEm: 1.5, neededEm: 1.8 });
   });
 
+  // #1622: a word's ink is measured when a mark needs it.
+  it('measures the marked words and the words over or under them, no others', () => {
+    const asked: string[] = [];
+    inkMetrics = (text, size) => {
+      asked.push(text);
+      return hasArabicMarks(text) ? { ascent: 0.9 * size, descent: 0.4 * size } : { ascent: 0.7 * size, descent: 0.3 * size };
+    };
+    // A marked word at the start of the second line; plain words over it,
+    // beside it and far from it, and a third line with no mark near it.
+    const first = line(20, [{ x: 0, text: 'فوقها' }, { x: 200, text: 'بعيدة' }]);
+    const second = line(44, [{ x: 0, text: 'مَشْكُولَةٌ' }, { x: 200, text: 'جارة' }]);
+    const third = line(68, [{ x: 0, text: 'تحتها' }, { x: 200, text: 'قصية' }]);
+    expect(annotateArabicMarks(docOf([first, second, third]))).toEqual([]);
+    expect(second.markInk).toEqual({ above: 14.4, below: 6.4 });
+    expect(first.markInk).toBeUndefined();
+    expect([...new Set(asked)].sort()).toEqual(['مَشْكُولَةٌ', 'فوقها', 'تحتها'].sort());
+  });
+
   it('follows the line’s flow order', () => {
     const l = line(20, [{ x: 0, text: 'alpha' }, { x: 50, text: 'بِسْمِ' }]);
     l.order = [2, 1, 0];

@@ -37,6 +37,24 @@ function sortKeys(value: unknown): unknown {
   return out;
 }
 
+// The hashes of the state's own slices, by object (#1621). The state is
+// never changed in place: a slice that is the same object hashes the same.
+// `isDocumentUntouched` is asked on every change of the store, by several
+// selectors, and hashing the text of a whole book each time held every
+// keystroke for tens of milliseconds.
+const chapterHashes = new WeakMap<object, string>();
+const configHashes = new WeakMap<object, string>();
+const resourceHashes = new WeakMap<object, string>();
+
+function held(cache: WeakMap<object, string>, key: object, compute: () => string): string {
+  let hash = cache.get(key);
+  if (hash === undefined) {
+    hash = compute();
+    cache.set(key, hash);
+  }
+  return hash;
+}
+
 export function hashMarkdown(markdown: string): string {
   return hashString(markdown);
 }
@@ -44,23 +62,25 @@ export function hashMarkdown(markdown: string): string {
 /** Hash of the chapter list: titles and text in book order. Ids and
  *  timestamps (fresh on every load) do not count. */
 export function hashChapters(chapters: readonly Chapter[]): string {
-  return hashString(stableStringify(chapters.map((c) => ({ title: c.title, markdown: c.markdown }))));
+  return held(chapterHashes, chapters, () => hashString(stableStringify(chapters.map((c) => ({ title: c.title, markdown: c.markdown })))));
 }
 
 /** Hash of the configuration with defaults stripped — the same shape the
  *  sandbox persists, so a config saved and reloaded hashes identically. */
 export function hashConfig(config: PostextConfig): string {
-  return hashString(stableStringify(stripConfigDefaults(config)));
+  return held(configHashes, config, () => hashString(stableStringify(stripConfigDefaults(config))));
 }
 
 /** Hash of the resource set without `createdAt`/`updatedAt` (fresh on every
  *  preset load) and independent of array order (IndexedDB returns records
  *  keyed by id). */
 export function hashResources(resources: Resource[]): string {
-  const records = resources
-    .map(({ createdAt: _c, updatedAt: _u, ...rest }) => rest)
-    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  return hashString(stableStringify(records));
+  return held(resourceHashes, resources, () => {
+    const records = resources
+      .map(({ createdAt: _c, updatedAt: _u, ...rest }) => rest)
+      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    return hashString(stableStringify(records));
+  });
 }
 
 /** The slices of sandbox state a snapshot covers. */

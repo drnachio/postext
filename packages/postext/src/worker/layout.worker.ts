@@ -250,11 +250,12 @@ async function runBuild(msg: BuildRequest): Promise<void> {
         return;
       }
     }
-    // Progress goes out at most every PROGRESS_INTERVAL_MS, plus on every
-    // new page, so a long build paints a moving bar without flooding the
-    // main thread.
+    // Progress goes out at most every PROGRESS_INTERVAL_MS, so a long
+    // build paints a moving bar without flooding the main thread. A message
+    // per new page was several hundred per build of a long chapter, a
+    // fifth of the build's time on this thread and as many tasks on the
+    // main one (#1623).
     let lastProgressAt = 0;
-    let lastPages = -1;
     const passes: BuildPassInfo[] = [];
     const startedAt = performance.now();
     const doc = await buildDocumentAsync(content, msg.config, measurementCache, {
@@ -262,9 +263,8 @@ async function runBuild(msg: BuildRequest): Promise<void> {
       onPass: (info) => { passes.push(info); },
       onProgress: (progress) => {
         const now = Date.now();
-        if (progress.pages === lastPages && now - lastProgressAt < PROGRESS_INTERVAL_MS) return;
+        if (now - lastProgressAt < PROGRESS_INTERVAL_MS) return;
         lastProgressAt = now;
-        lastPages = progress.pages;
         post({ kind: 'progress', id: msg.id, progress });
       },
     });

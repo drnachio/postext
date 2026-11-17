@@ -94,8 +94,12 @@ interface Ink {
  *  for the same words: clearing them each time was a third of Alf Layla's
  *  layout, #785) and dropped when a font is loaded or evicted
  *  (`measurementGeneration`, as the measurement cache does). */
-let inkCache = new Map<string, Ink>();
+let inkCache = new Map<string, Map<string, Ink>>();
+let inkEntries = 0;
 const MAX_INK_ENTRIES = 500_000;
+/** The words of the language and font asked last: a line's words share
+ *  them, and so the key of the two is built once per run of words (#1622). */
+let inkScope: { language: string; font: string; words: Map<string, Ink> } | null = null;
 /** The measurement generation the ink and profile caches hold. */
 let inkGeneration = -1;
 
@@ -104,17 +108,32 @@ function currentInkCaches(): void {
   const generation = measurementGeneration();
   if (generation === inkGeneration) return;
   inkGeneration = generation;
-  inkCache = new Map();
+  dropInkBoxes();
   profileCache = new Map();
+}
+
+function dropInkBoxes(): void {
+  inkCache = new Map();
+  inkEntries = 0;
+  inkScope = null;
 }
 
 /** The ink box of `text` set in `font`, px above and below the baseline:
  *  measured, else estimated (see `ESTIMATE`). */
 export function inkBoxOf(text: string, font: string): Ink {
-  const key = `${measureLanguageKey()}\u0000${font}\u0000${text}`;
-  const cached = inkCache.get(key);
+  const language = measureLanguageKey();
+  if (!inkScope || inkScope.font !== font || inkScope.language !== language) {
+    const key = `${language}\u0000${font}`;
+    let words = inkCache.get(key);
+    if (!words) inkCache.set(key, (words = new Map()));
+    inkScope = { language, font, words };
+  }
+  const cached = inkScope.words.get(text);
   if (cached) return cached;
-  if (inkCache.size >= MAX_INK_ENTRIES) inkCache = new Map();
+  if (inkEntries >= MAX_INK_ENTRIES) {
+    dropInkBoxes();
+    return inkBoxOf(text, font);
+  }
   let ink: Ink | null = measureInkBox(text, font);
   if (!ink) {
     const em = fontEm(font);
@@ -128,7 +147,8 @@ export function inkBoxOf(text: string, font: string): Ink {
       ink = { ascent: em * ESTIMATE.latinAscent, descent: em * ESTIMATE.latinDescent };
     }
   }
-  inkCache.set(key, ink);
+  inkScope.words.set(text, ink);
+  inkEntries++;
   return ink;
 }
 
@@ -155,15 +175,20 @@ interface WordInk {
 
 type BlockLike = Parameters<typeof segmentPositions>[1];
 
-/** The words of a line with their ink, at the x the renderers paint them
- *  (the flow order `VDTLine.order` followed when the line has one). Spaces,
- *  formulas, chips and swatches hold no Arabic and are left out. */
-export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
+/** A word of a line before its ink is asked for: measuring a word's ink
+ *  is the dear part, and most words of a lightly vocalised text never
+ *  stand over or under a mark (#1622). */
+interface PlacedWord extends Omit<WordInk, 'ascent' | 'descent'> {
+  ink?: Ink;
+}
+
+/** The words of a line where the renderers paint them, without their ink
+ *  (see {@link lineWordInks}). */
+function linePlacedWords(line: VDTLine, block: BlockLike): PlacedWord[] {
   const segments = line.segments;
   if (!segments || segments.length === 0) {
     if (!line.text.trim()) return [];
-    const ink = inkBoxOf(line.text, block.fontString);
-    return [{ x0: line.bbox.x, x1: line.bbox.x + line.bbox.width, ...ink, marked: hasArabicMarks(line.text), text: line.text, font: block.fontString, shift: 0 }];
+    return [{ x0: line.bbox.x, x1: line.bbox.x + line.bbox.width, marked: hasArabicMarks(line.text), text: line.text, font: block.fontString, shift: 0 }];
   }
   const { xs, widths } = segmentPositions(line, block);
   const at = xs.slice();
@@ -174,24 +199,36 @@ export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
       x += widths[i]!;
     }
   }
-  const out: WordInk[] = [];
+  const out: PlacedWord[] = [];
   segments.forEach((seg, i) => {
     if (seg.kind !== 'text' || !seg.text.trim()) return;
-    const font = segmentFont(seg, block);
-    const ink = inkBoxOf(seg.text, font);
-    const shift = seg.baselineShift ?? 0;
     out.push({
       x0: at[i]!,
       x1: at[i]! + widths[i]!,
-      ascent: ink.ascent - shift,
-      descent: ink.descent + shift,
       marked: hasArabicMarks(seg.text),
       text: seg.text,
-      font,
-      shift,
+      font: segmentFont(seg, block),
+      shift: seg.baselineShift ?? 0,
     });
   });
   return out;
+}
+
+/** How far the word's ink rises above the line's baseline, px. */
+function ascentOf(word: PlacedWord): number {
+  return (word.ink ??= inkBoxOf(word.text, word.font)).ascent - word.shift;
+}
+
+/** How far the word's ink hangs under the line's baseline, px. */
+function descentOf(word: PlacedWord): number {
+  return (word.ink ??= inkBoxOf(word.text, word.font)).descent + word.shift;
+}
+
+/** The words of a line with their ink, at the x the renderers paint them
+ *  (the flow order `VDTLine.order` followed when the line has one). Spaces,
+ *  formulas, chips and swatches hold no Arabic and are left out. */
+export function lineWordInks(line: VDTLine, block: BlockLike): WordInk[] {
+  return linePlacedWords(line, block).map(({ ink: _ink, ...word }) => ({ ...word, ascent: ascentOf(word), descent: descentOf(word) }));
 }
 
 const round = (v: number): number => Math.round(v * 1000) / 1000;
@@ -201,7 +238,7 @@ const round = (v: number): number => Math.round(v * 1000) / 1000;
 let profileCache = new Map<string, InkProfile | null>();
 const MAX_PROFILE_ENTRIES = 5_000;
 
-function profileOf(word: WordInk): InkProfile | null {
+function profileOf(word: PlacedWord): InkProfile | null {
   const key = `${measureLanguageKey()}\u0000${word.font}\u0000${word.text}`;
   let profile = profileCache.get(key);
   if (profile === undefined) {
@@ -222,7 +259,7 @@ function profileOf(word: WordInk): InkProfile | null {
  * yāʾ's tail at the other end of the word above are no collision. Null
  * when the words can't be painted (no canvas): their boxes decide.
  */
-function profileNeed(lower: WordInk, upper: WordInk): number | null {
+function profileNeed(lower: PlacedWord, upper: PlacedWord): number | null {
   const lp = profileOf(lower);
   const up = profileOf(upper);
   if (!lp || !up) return null;
@@ -272,19 +309,22 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
   if (!any) return [];
   currentInkCaches();
   /** Lines of the columns that hold a marked line, with their words. */
-  const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: WordInk[]; em: number }[]>();
+  const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: PlacedWord[]; em: number }[]>();
   const marked = new Set<string>();
+  /** The words of the lines holding a mark, placed once for both rounds. */
+  const placed = new Map<VDTLine, PlacedWord[]>();
   for (const block of doc.blocks) {
     if (block.type === 'resource' || block.designOverlay || block.hidden || !block.lines) continue;
     for (const line of block.lines) {
       if (!hasArabicMarks(line.text)) continue;
-      const words = lineWordInks(line, block);
+      const words = linePlacedWords(line, block);
+      placed.set(line, words);
       let above = 0;
       let below = 0;
       for (const w of words) {
         if (!w.marked) continue;
-        above = Math.max(above, w.ascent);
-        below = Math.max(below, w.descent);
+        above = Math.max(above, ascentOf(w));
+        below = Math.max(below, descentOf(w));
       }
       if (above > 0 || below > 0) line.markInk = { above: round(above), below: round(below) };
       if (block.pageIndex >= 0) marked.add(`${block.pageIndex}:${block.columnIndex}`);
@@ -297,7 +337,7 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
     let column = columns.get(key);
     if (!column) columns.set(key, (column = []));
     const em = fontEm(block.fontString);
-    for (const line of block.lines) column.push({ line, block, words: lineWordInks(line, block), em });
+    for (const line of block.lines) column.push({ line, block, words: placed.get(line) ?? linePlacedWords(line, block), em });
   }
 
   const warnings: ContentWarning[] = [];
@@ -315,7 +355,7 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
         for (const upper of a.words) {
           if (!lower.marked && !upper.marked) continue;
           if (Math.min(lower.x1, upper.x1) - Math.max(lower.x0, upper.x0) <= 0) continue;
-          const boxes = lower.ascent + upper.descent;
+          const boxes = ascentOf(lower) + descentOf(upper);
           if (boxes <= pitch + TOUCH_PX) {
             need = Math.max(need, boxes);
             continue;

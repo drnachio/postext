@@ -39,7 +39,7 @@ import type { MeasuredBlock, MeasurementCache, MeasureBlockOptions } from '../..
 import { measureRichBlock } from '../../measure/index.js';
 import { cachedMeasureRichBlock } from '../../measure/cache.js';
 import { pickSpanFont, textWidth } from '../../measure/rich.js';
-import { normalSpaceWidthFor } from '../../measure/canvas.js';
+import { measureLanguageKey, measurementGeneration, normalSpaceWidthFor } from '../../measure/canvas.js';
 import { lineBaselineOffset } from '../../measure/vertical.js';
 import { sliceSpan } from '../../parse/links.js';
 import { distributeKashida, writtenText, type KashidaOptions } from '../../measure/rtl/kashida.js';
@@ -130,8 +130,49 @@ interface VerseLayoutInput {
   cache?: MeasurementCache;
 }
 
-/** Lay a poem out (see the module comment). */
+/** The poem a block was laid out as last, and what it was laid out from
+ *  (#1624). A build sets the same poem several times over, alike: once per
+ *  pass, and before that to see whether it can start under the paragraph
+ *  that introduces it. Setting it is dear (every hemistich is justified,
+ *  kashidas first), and the block is the same object from pass to pass. */
+const verseMemo = new WeakMap<ContentBlock, { key: string; measured: MeasuredBlock }>();
+
+/** Everything {@link layOutVerse} reads, as text: the poem's words and
+ *  attributes, the style's fonts and sizes, the measure, and what the
+ *  measurer answers by (its language, its fonts). */
+function verseKey(input: VerseLayoutInput): string {
+  const { contentBlock, style } = input;
+  return JSON.stringify([
+    contentBlock.spans, contentBlock.verse?.attrs ?? null,
+    style.fontString, style.boldFontString ?? null, style.italicFontString ?? null, style.boldItalicFontString ?? null,
+    style.fontSizePx, style.lineHeightPx, input.measureMaxWidth, input.dpi, input.minWordSpacing,
+    input.kashida ?? null, input.direction, input.frameDirection, input.rules ?? null,
+    measureLanguageKey(), measurementGeneration(),
+  ]);
+}
+
+/** Lay a poem out (see the module comment). The lines are the caller's to
+ *  change: a poem set before comes back as a copy. */
 export function measureVerse(input: VerseLayoutInput): MeasuredBlock {
+  const key = verseKey(input);
+  const held = verseMemo.get(input.contentBlock);
+  if (held?.key === key) return copyOf(held.measured);
+  const measured = layOutVerse(input);
+  verseMemo.set(input.contentBlock, { key, measured: copyOf(measured) });
+  return measured;
+}
+
+/** A copy of plain data (objects, arrays, numbers, strings), down to its
+ *  leaves: what a measured poem is made of. */
+function copyOf<T>(value: T): T {
+  if (Array.isArray(value)) return value.map(copyOf) as T;
+  if (typeof value !== 'object' || value === null) return value;
+  const out: Record<string, unknown> = {};
+  for (const key in value) out[key] = copyOf((value as Record<string, unknown>)[key]);
+  return out as T;
+}
+
+function layOutVerse(input: VerseLayoutInput): MeasuredBlock {
   const { contentBlock, style, measureMaxWidth: measure, direction } = input;
   const settings = verseSettings(contentBlock.verse?.attrs ?? {}, input.dpi, style.fontSizePx);
   const fonts = {
