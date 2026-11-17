@@ -116,6 +116,21 @@ jobs:
           cp "$out/head-warm-1.json" "$out/layout-timing.json"
           cp "$out/head-cold-1.json" "$out/layout-timing-cold-host.json"
 
+      # The long books on one thread and on worker threads (#1611): one
+      # layout per process, as a run of the command line is.
+      - name: Lay the long books out on worker threads
+        continue-on-error: true
+        run: |
+          out="$RUNNER_TEMP/layout-timing"
+          presets="$GITHUB_WORKSPACE/apps/web/public/presets"
+          cd packages/postext-cli
+          for round in 1 2 3; do
+            for threads in 1 2 3 4; do
+              flag=""; if [ "$threads" != 1 ]; then flag="--threads $threads"; fi
+              pnpm exec bun scripts/bench-layout.ts --runs 1 --json $flag "$presets/paradise-lost" "$presets/hongloumeng" "$presets/alf-layla" > "$out/threads-$threads-$round.json"
+            done
+          done
+
       - name: Report
         if: always()
         env:
@@ -129,6 +144,7 @@ jobs:
             echo
             node .github/scripts/layout-timing-ab.mjs "$out" warm "Base and head"
             node .github/scripts/layout-timing-ab.mjs "$out" cold "Base and head, the canvas asked on every run"
+            node .github/scripts/layout-timing-threads.mjs "$out"
             node .github/scripts/layout-timing.mjs "$out/layout-timing.json" "The head, whole book, cold"
             node .github/scripts/layout-timing.mjs "$out/layout-timing-cold-host.json" "The head, the canvas asked on every run"
           } >> "$GITHUB_STEP_SUMMARY"

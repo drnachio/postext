@@ -4,7 +4,7 @@
 // hash of the VDT, so that a change to the engine can be judged on speed
 // and on output that must not move.
 //
-//   bun scripts/bench-layout.ts [--runs N] [--warm] [--stages] [--cold-host] [--json] [--ts-kp] [--kp-dump FILE] <book> [<book> …]
+//   bun scripts/bench-layout.ts [--runs N] [--warm] [--stages] [--cold-host] [--threads N|auto] [--json] [--ts-kp] [--kp-dump FILE] <book> [<book> …]
 //
 // --stages (#1603) adds where the last run's time went: the engine reports
 // each stage through `globalThis.__postextPerfTap` (`util/perfTap.ts`), and
@@ -25,6 +25,11 @@
 // Knuth–Plass call of the first run (items, options with the line widths it
 // reads, breaks) to FILE as JSON lines, the corpus rust/bench replays.
 //
+// --threads N lays the chapters out on N worker threads (#1611), as the
+// command line does for a long book (`auto`: its own rule); every run
+// starts its workers anew, so each pays what a first layout pays. Without
+// it the book is laid out on this thread, whatever its length.
+//
 // Each run lays the book out on a fresh measurement cache (cold) unless
 // --warm, which reuses the first run's cache (what the Sandbox's worker
 // sees after the first build).
@@ -44,6 +49,7 @@ let json = false;
 let stages = false;
 let coldHost = false;
 let kpDump: string | undefined;
+let threads: string | undefined;
 const books: string[] = [];
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i]!;
@@ -54,6 +60,7 @@ for (let i = 0; i < argv.length; i++) {
   else if (a === '--cold-host') coldHost = true;
   else if (a === '--ts-kp') useWasmLineBreaker(false);
   else if (a === '--kp-dump') kpDump = argv[++i];
+  else if (a === '--threads') threads = argv[++i];
   else books.push(a);
 }
 
@@ -170,7 +177,7 @@ if (stages) {
 
 const results = [];
 for (const path of books) {
-  const opts = new Options({});
+  const opts = new Options(threads !== undefined ? { threads } : {});
   const reporter = new Reporter('quiet', true);
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter };
   const { book, fonts } = await openBook(ctx);
@@ -220,7 +227,7 @@ for (const path of books) {
     probe.on = stages && i === runs - 1;
     const c0 = process.cpuUsage();
     const t0 = performance.now();
-    const layout = await layOut(book, opts, reporter, cache, fonts);
+    const layout = await layOut(book, opts, reporter, cache, fonts, undefined, threads !== undefined ? { command: 'check', inputs: [path] } : undefined);
     times.push(performance.now() - t0);
     const used = process.cpuUsage(c0);
     cpu.push((used.user + used.system) / 1000);
