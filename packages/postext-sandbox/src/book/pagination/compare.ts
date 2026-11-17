@@ -3,7 +3,7 @@
 // recorded layout still applies (#1276: split out of pagination.ts).
 import { type PostextConfig, type NumeralStyle, type OutlineEntry, formatNumeral, type LayoutContinuation, type Resource } from 'postext';
 import type { ChapterPageNumber, CarriedOutlinePage, OutlinePage, ChapterPages, BookStart, ChapterLayout, Chapter, ChapterPlan } from '../types.js';
-import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../layoutKeys.js';
+import { ENGINE_KEY, pagesConfigKeyOf, resourcesKeyOf } from '../layoutKeys.js';
 
 /** The page number `n` resolves to when the chapter's first page is
  *  numbered `start`. */
@@ -131,7 +131,7 @@ export function chapterLayoutIsCurrent(
   return !!layout
     && layout.markdown === chapter.markdown
     && layout.engine === ENGINE_KEY
-    && layout.configKey === configKeyOf(config)
+    && layout.configKey === pagesConfigKeyOf(config)
     && layout.resourcesKey === resourcesKeyOf(resources)
     && layout.continuationKey === continuationKey;
 }

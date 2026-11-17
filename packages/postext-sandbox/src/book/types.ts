@@ -131,7 +131,7 @@ export interface CarriedOutlinePage {
 export interface ChapterLayout {
   chapterId: string;
   markdown: string;
-  /** `configKeyOf` / `resourcesKeyOf` of the inputs, `ENGINE_KEY` of the
+  /** `pagesConfigKeyOf` / `resourcesKeyOf` of the inputs, `ENGINE_KEY` of the
    *  engine that laid the chapter out. */
   configKey: string;
   resourcesKey: string;

@@ -8,7 +8,7 @@
 import type { PostextConfig, Resource } from 'postext';
 import { isBundleManifest, pickBundleMeta, pickBundleView, pickLocaleOverrides, planBundle as planCoreBundle, readBundle, resolveBundleConfigLocale, resolveBundleFiles } from 'postext/bundle';
 import type { BundleByteSources as CoreByteSources, BundleFileReader, BundleIdScheme, PlannedFile } from 'postext/bundle';
-import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys.js';
+import { ENGINE_KEY, pagesConfigKeyOf, resourcesKeyOf } from '../book/layoutKeys.js';
 import { createDefaultConfig } from '../context/defaultConfig.js';
 import { svgIntrinsicSize } from '../panels/resources/svg/svgIntrinsic.js';
 import { deriveChapterTitle, newChapter } from '../book/chapterOps.js';
@@ -110,7 +110,7 @@ export async function parseBundle(
   if (layoutsBytes) {
     try {
       const parsed = JSON.parse(new TextDecoder().decode(layoutsBytes)) as BundleLayoutsFile;
-      const configKey = configKeyOf(config);
+      const configKey = pagesConfigKeyOf(config);
       const resourcesKey = resourcesKeyOf(resources);
       if (parsed.version === 1 && parsed.engine === ENGINE_KEY && parsed.configKey === configKey && parsed.resourcesKey === resourcesKey) {
         layouts = {};
@@ -288,7 +288,7 @@ function layoutsFileOf(
   resources: Resource[],
 ): BundleLayoutsFile | undefined {
   if (!layouts) return undefined;
-  const configKey = configKeyOf(config);
+  const configKey = pagesConfigKeyOf(config);
   const resourcesKey = resourcesKeyOf(resources);
   const layoutChapters: BundleLayoutsFile['chapters'] = {};
   chapters.forEach((c, i) => {

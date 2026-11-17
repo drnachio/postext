@@ -5,7 +5,7 @@ import { buildBundleFiles, parseBundle, planBundle } from './bundle.js';
 import { fontsToCustomFonts } from './manifest.js';
 import { newChapter } from '../book/chapterOps.js';
 import type { Chapter, ChapterLayout } from '../book/types.js';
-import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from '../book/layoutKeys.js';
+import { ENGINE_KEY, pagesConfigKeyOf, resourcesKeyOf } from '../book/layoutKeys.js';
 import { openBundleZip, zipBundle } from './zip.js';
 import type { PresetManifestV1, PresetSummary } from './types.js';
 
@@ -554,7 +554,7 @@ describe('layouts.json round trip', () => {
   const layoutOf = (chapter: Chapter, config: PostextConfig, resources: Resource[]): ChapterLayout => ({
     chapterId: chapter.id,
     markdown: chapter.markdown,
-    configKey: configKeyOf(config),
+    configKey: pagesConfigKeyOf(config),
     resourcesKey: resourcesKeyOf(resources),
     engine: ENGINE_KEY,
     continuationKey: 'first',
@@ -590,7 +590,7 @@ describe('layouts.json round trip', () => {
     expect(first.pageCount).toBe(3);
     expect(first.outlinePages[0]).toEqual({ index: 0, number: { delta: 0 }, format: 'decimal' });
     // The imported configuration and resources fingerprint like the exported ones.
-    expect(first.configKey).toBe(configKeyOf(loaded.config));
+    expect(first.configKey).toBe(pagesConfigKeyOf(loaded.config));
     expect(first.resourcesKey).toBe(resourcesKeyOf(loaded.resources));
   });
 
