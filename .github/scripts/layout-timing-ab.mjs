@@ -18,9 +18,16 @@ import { join } from 'node:path';
 
 const [dir, mode, heading = 'Base and head on this runner'] = process.argv.slice(2);
 
+/** `<side>-<mode>-<round>.json`: a round's file, the round in digits. */
+const isRound = (file, side) => {
+  const start = `${side}-${mode}-`;
+  if (!file.startsWith(start) || !file.endsWith('.json')) return false;
+  return /^\d+$/.test(file.slice(start.length, -'.json'.length));
+};
+
 const rounds = (side) =>
   readdirSync(dir)
-    .filter((f) => new RegExp(`^${side}-${mode}-\\d+\\.json$`).test(f))
+    .filter((f) => isRound(f, side))
     .sort()
     .map((f) => JSON.parse(readFileSync(join(dir, f), 'utf8')));
 
