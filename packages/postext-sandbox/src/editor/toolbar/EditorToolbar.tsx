@@ -31,7 +31,7 @@ import {
 import { isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
 import { useRef, useState, type ReactNode } from 'react';
-import { useSandbox } from '../../context/SandboxContext.js';
+import { useSandboxConfig, useSandboxLabels, useSandboxResources } from '../../context/SandboxContext.js';
 import { useHistoryAvailability, useHistoryCommands } from '../../history/HistoryButtons.js';
 import { IconButton, Menu, MenuItem, MenuSeparator } from '../../ui/index.js';
 import { composedPageInsertion } from './composedInsert.js';
@@ -77,9 +77,8 @@ function ToolbarButton({
  *  sets the selection in it (or changes the style of the run the selection
  *  is in), and one that takes a run's style off. */
 function CharStyleMenu({ getView, label }: { getView: () => EditorView | null; label: string }) {
-  const { state } = useSandbox();
-  const { labels } = state;
-  const styles = state.config.characterStyles ?? [];
+  const labels = useSandboxLabels();
+  const styles = useSandboxConfig().characterStyles ?? [];
   return (
     <Menu
       align="start"
@@ -179,8 +178,12 @@ export function insertBlockSelecting(view: EditorView, text: string, anchor: num
 }
 
 export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbarProps) {
-  const { state } = useSandbox();
-  const { labels } = state;
+  // What the toolbar shows, and no more of the state (#1629): it holds
+  // some thirty buttons, each under a tooltip, and the text changes on
+  // every keystroke.
+  const labels = useSandboxLabels();
+  const config = useSandboxConfig();
+  const resources = useSandboxResources();
   const composedRef = useRef<HTMLButtonElement>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
   const iconRef = useRef<HTMLButtonElement>(null);
@@ -403,7 +406,7 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
         open={lookPiece !== undefined && !readOnly}
         onOpenChange={(o) => { if (!o) setLookPiece(undefined); }}
         anchor={lookRef}
-        looks={state.config.frameLooks ?? []}
+        looks={config.frameLooks ?? []}
         piece={lookPiece ?? null}
         labels={labels}
         onPick={(id) => {
@@ -421,7 +424,7 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
         onOpenChange={setIconOpen}
         anchor={iconRef}
         labels={labels}
-        resources={state.resources ?? []}
+        resources={resources ?? []}
         onInsert={(directive) => {
           const v = getView();
           if (v) insertAtCaret(v, directive);
@@ -431,7 +434,7 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
         open={pickerOpen && !readOnly}
         onOpenChange={setPickerOpen}
         anchor={composedRef}
-        config={state.config}
+        config={config}
         labels={labels}
         onPick={(template) => {
           const v = getView();
