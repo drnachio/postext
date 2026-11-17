@@ -101,19 +101,44 @@ const stable = (value) => JSON.stringify(value, (_k, v) => (v && typeof v === 'o
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/** How long a browser may take to start, and how often it is started
+ *  again. The release of 1.89.1 lost 27 of its 28 editions to a Chrome
+ *  that did not answer within puppeteer's 30 s on a busy runner, and
+ *  shipped the books without their pagination. */
+const LAUNCH_TIMEOUT_MS = 120_000;
+const LAUNCH_TRIES = 3;
+
+/** A browser on a fresh profile. */
+async function launch() {
+  let last;
+  for (let attempt = 1; attempt <= LAUNCH_TRIES; attempt++) {
+    const profile = mkdtempSync(join(tmpdir(), 'postext-layouts-'));
+    try {
+      const browser = await puppeteer.launch({
+        executablePath: CHROME,
+        headless: true,
+        userDataDir: profile,
+        // A CI runner's Chrome cannot use its sandbox (unprivileged user
+        // namespaces are off on Ubuntu runners).
+        args: ['--no-first-run', '--window-size=1600,1000', ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [])],
+        protocolTimeout: TIMEOUT_MS,
+        timeout: LAUNCH_TIMEOUT_MS,
+      });
+      return { browser, profile };
+    } catch (err) {
+      last = err;
+      rmSync(profile, { recursive: true, force: true });
+      console.warn(`  the browser did not start (${err.message}), try ${attempt} of ${LAUNCH_TRIES}`);
+      await sleep(5000);
+    }
+  }
+  throw last;
+}
+
 /** Open one edition in a fresh profile and wait until every chapter has a
  *  current record. Returns the records in book order. */
 async function paginate(edition) {
-  const profile = mkdtempSync(join(tmpdir(), 'postext-layouts-'));
-  const browser = await puppeteer.launch({
-    executablePath: CHROME,
-    headless: true,
-    userDataDir: profile,
-    // A CI runner's Chrome cannot use its sandbox (unprivileged user
-    // namespaces are off on Ubuntu runners).
-    args: ['--no-first-run', '--window-size=1600,1000', ...(process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : [])],
-    protocolTimeout: TIMEOUT_MS,
-  });
+  const { browser, profile } = await launch();
   try {
     const page = await browser.newPage();
     await page.setViewport({ width: 1600, height: 1000 });
