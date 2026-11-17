@@ -16,7 +16,7 @@ import {
   type VDTDocument,
 } from 'postext';
 import { buildBundle, type BundleLayoutCache } from 'postext/bundle';
-import { layOutOnWorkers, poolSize, type LayoutSource } from './layoutPool';
+import { layOutOnWorkers, pageHintsOf, poolSize, type LayoutSource } from './layoutPool';
 import { UsageError, type Options } from './args';
 import { fontFallbackWarnings, type FontSet } from './fonts';
 import type { Book, BookChapter } from './input';
@@ -123,9 +123,10 @@ export async function layOut(
   const docs = await reporter.time('layout', async () => {
     if (workers === 0) return onThisThread();
     try {
-      const laid = await layOutOnWorkers(bundle, source!, opts, workers);
-      reporter.detail(`  laid out on ${workers} threads`);
-      return laid;
+      const hints = pageHintsOf(book, chapters, source!);
+      const laid = await layOutOnWorkers(bundle, source!, opts, workers, undefined, hints);
+      reporter.detail(`  laid out on ${workers} threads: ${laid.layouts} chapter layouts in ${laid.rounds} rounds${hints ? ', from the pages of the book\'s layouts file' : ''}`);
+      return laid.docs;
     } catch (err) {
       if (err instanceof UsageError) throw err;
       // The pool is a short cut: whatever stops it, the book is laid out here.

@@ -96,6 +96,24 @@ describe('buildBundleParallel (#1611)', () => {
     same(await buildBundleParallel({ ...book(plain), start }, { layOutChapters }), serial);
   });
 
+  it('lays a book out once when the page hints are those of its layout', async () => {
+    const serial = buildBundle(book(plain));
+    const pageHints = serial.map((doc) => {
+      const first = doc.pages[0]!;
+      const last = doc.pages[doc.pages.length - 1]!;
+      return { pageCount: doc.pages.length, lastPage: { number: { delta: last.pageNumberValue - first.pageNumberValue }, format: last.pageNumberFormat } };
+    });
+    const { layOutChapters, calls } = executor();
+    same(await buildBundleParallel(book(plain), { layOutChapters, pageHints }), serial);
+    // One step for the layout, one for the round of the page total.
+    expect(calls).toEqual([[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5]]);
+    // Hints of another book cost layouts, never a page.
+    const wrong = pageHints.map((h) => ({ ...h, pageCount: h.pageCount + 3 }));
+    const again = executor();
+    same(await buildBundleParallel(book(plain), { layOutChapters: again.layOutChapters, pageHints: wrong }), serial);
+    expect(again.calls.length).toBeGreaterThan(2);
+  });
+
   it('refuses an executor that returns another number of chapters', async () => {
     await expect(buildBundleParallel(book(plain), { layOutChapters: async () => [] })).rejects.toThrow(/chapters asked/);
   });

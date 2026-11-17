@@ -5,9 +5,11 @@
 // chapters it is sent; `buildBundleParallel` chains them and settles the
 // pages, and gives the documents a layout on one thread gives.
 
-import { buildBundleParallel, type BundleLayoutCache, type ChapterLayoutJob, type ChapterRecord } from 'postext/bundle';
+import { buildBundleParallel, type BundleLayoutCache, type ChapterLayoutJob, type ChapterPageHint, type ChapterRecord } from 'postext/bundle';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
+import { join } from 'node:path';
 import { UsageError, type OptionValue, type Options } from './args';
 import type { Book, BookChapter } from './input';
 
@@ -59,6 +61,45 @@ export function poolSize(opts: Options, chapters: readonly BookChapter[], source
   return workers > 1 ? workers : 0;
 }
 
+/**
+ * The pages each chapter had in the layout the book carries: its
+ * pagination file (`layouts.<locale>.json`, or `layouts.json`), which the
+ * Sandbox writes into a bundle and a book folder keeps beside its
+ * chapters. They are where the first round lays the chapters out, so a
+ * book laid out before is laid out once here; a file that is missing, of
+ * another edition of the text or unreadable only costs the rounds it would
+ * have saved.
+ */
+export function pageHintsOf(book: Book, chapters: readonly BookChapter[], source: LayoutSource): (ChapterPageHint | undefined)[] | undefined {
+  const names = [`layouts.${book.locale}.json`, 'layouts.json'];
+  let text: string | undefined;
+  for (const name of names) {
+    const inBook = book.files.get(name);
+    if (inBook) text = new TextDecoder().decode(inBook);
+    else if (source.inputs.length === 1 && existsSync(source.inputs[0]!) && statSync(source.inputs[0]!).isDirectory() && existsSync(join(source.inputs[0]!, name))) {
+      text = readFileSync(join(source.inputs[0]!, name), 'utf8');
+    }
+    if (text !== undefined) break;
+  }
+  if (text === undefined) return undefined;
+  try {
+    const recorded = (JSON.parse(text) as { chapters?: Record<string, { pageCount?: unknown; lastPageNumber?: { value?: unknown; delta?: unknown }; lastPageFormat?: unknown }> }).chapters ?? {};
+    const hints = chapters.map((chapter): ChapterPageHint | undefined => {
+      const entry = chapter.file !== undefined ? recorded[chapter.file] : undefined;
+      if (!entry || typeof entry.pageCount !== 'number' || !Number.isInteger(entry.pageCount) || entry.pageCount < 0) return undefined;
+      const last = entry.lastPageNumber;
+      const number = typeof last?.value === 'number' ? { value: last.value } : typeof last?.delta === 'number' ? { delta: last.delta } : undefined;
+      return {
+        pageCount: entry.pageCount,
+        ...(number && typeof entry.lastPageFormat === 'string' ? { lastPage: { number, format: entry.lastPageFormat as NonNullable<ChapterPageHint['lastPage']>['format'] } } : {}),
+      };
+    });
+    return hints.some((h) => h !== undefined) ? hints : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 /** Lay `chapters` out on `size` workers. Rejects when a worker cannot be
  *  started, opens another book or fails on a chapter: the caller lays the
  *  book out on its own thread instead. */
@@ -68,7 +109,8 @@ export async function layOutOnWorkers(
   opts: Options,
   size: number,
   layoutCache?: BundleLayoutCache,
-): Promise<VDTDocument[]> {
+  pageHints?: readonly (ChapterPageHint | undefined)[],
+): Promise<{ docs: VDTDocument[]; rounds: number; layouts: number }> {
   const workers = Array.from({ length: size }, () => new Worker(new URL('./layoutWorker.ts', import.meta.url).href));
   try {
     const waiting = new Map<number, { resolve: (record: ChapterRecord) => void; reject: (err: Error) => void }>();
@@ -113,7 +155,8 @@ export async function layOutOnWorkers(
       owner[index] = worker;
     }
     let nextId = 0;
-    const layOutChapters = (jobs: ChapterLayoutJob[]): Promise<ChapterRecord[]> => Promise.all(jobs.map((job) => new Promise<ChapterRecord>((resolve, reject) => {
+    let rounds = 0;
+    const layOutChapters = (jobs: ChapterLayoutJob[]): Promise<ChapterRecord[]> => (rounds++, Promise.all(jobs.map((job) => new Promise<ChapterRecord>((resolve, reject) => {
       if (failed) {
         reject(failed);
         return;
@@ -121,11 +164,12 @@ export async function layOutOnWorkers(
       const id = nextId++;
       waiting.set(id, { resolve, reject });
       workers[owner[job.index] ?? 0]!.postMessage({ kind: 'lay', id, job } satisfies PoolRequest);
-    })));
-    return await buildBundleParallel(
+    }))));
+    const docs = await buildBundleParallel(
       { chapters: bundle.chapters, config: bundle.config, resources: bundle.resources, ...(bundle.start ? { start: bundle.start } : {}) },
-      { layOutChapters, ...(layoutCache ? { layoutCache } : {}) },
+      { layOutChapters, ...(layoutCache ? { layoutCache } : {}), ...(pageHints ? { pageHints } : {}) },
     );
+    return { docs, rounds, layouts: nextId };
   } finally {
     for (const worker of workers) worker.terminate();
   }

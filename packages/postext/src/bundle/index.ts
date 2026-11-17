@@ -10,7 +10,7 @@ export type { PostextBundle, OpenBundleOptions, CreateBundleInput, CreateBundleL
 export { buildBundle, buildBundleParallel, layOutChapter } from './book.js';
 export { createDesignBundle, openDesignBundle, DESIGN_BUNDLE_MAX_BYTES } from './design.js';
 export type { DesignBundleInput, OpenedDesign, OpenDesignOptions } from './design.js';
-export type { BuildBundleOptions, BuildBundleParallelOptions, ChapterLayoutJob, ChapterLayoutContext } from './book.js';
+export type { BuildBundleOptions, BuildBundleParallelOptions, ChapterLayoutJob, ChapterLayoutContext, ChapterPageHint } from './book.js';
 export { createBundleLayoutCache } from './layoutCache.js';
 export type { BundleLayoutCache, BundleLayoutStats, ChapterRecord } from './layoutCache.js';
 export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters.js';

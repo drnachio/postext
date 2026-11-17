@@ -213,6 +213,22 @@ export interface BuildBundleParallelOptions extends Omit<BuildBundleOptions, 'on
    *  resources, and resolves with their records in the order of the jobs.
    *  A record crosses threads as a structured clone. */
   layOutChapters: (jobs: ChapterLayoutJob[]) => Promise<ChapterRecord[]>;
+  /** What an earlier layout of the book gave each chapter (a bundle's
+   *  layouts file, a build of the same book before): the first round lays
+   *  every chapter out where these pages put it, so a book that has not
+   *  changed is laid out once. Guesses only: the documents are those of
+   *  `buildBundle` whatever they say. */
+  pageHints?: readonly (ChapterPageHint | undefined)[];
+}
+
+/** A chapter's pages in an earlier layout of its book. */
+export interface ChapterPageHint {
+  /** Its pages, a blank one before its opener included. */
+  pageCount: number;
+  /** The number of its last page — as printed (`value`), or counted from
+   *  the number of its first page (`delta`: 0 on a chapter of one page) —
+   *  and its format. */
+  lastPage?: { number: { value: number } | { delta: number }; format: NonNullable<ChapterRecord['next']>['format'] };
 }
 
 /**
@@ -229,10 +245,10 @@ export interface BuildBundleParallelOptions extends Omit<BuildBundleOptions, 'on
  * out one chapter at a time, as `buildBundle` does.
  */
 export async function buildBundleParallel(bundle: BundleInput, options: BuildBundleParallelOptions): Promise<VDTDocument[]> {
-  const { layOutChapters, ...rest } = options;
+  const { layOutChapters, pageHints, ...rest } = options;
   const release = holdParseMemo();
   try {
-    const { steps } = bundleLayout(bundle, rest, true);
+    const { steps } = bundleLayout(bundle, rest, true, pageHints);
     let step = steps.next();
     while (!step.done) {
       const jobs = step.value;
@@ -277,13 +293,20 @@ function leadingBlank(guess: Guess): number {
 /**
  * What a chapter is taken to give the chain when it starts after
  * `physical` pages numbered from `next`, from its layout elsewhere in the
- * book (`guess`; none: two pages). Its pages are those it had, less the
+ * book (`guess`; none: what `hint` says of it, else two pages). Its pages
+ * are those it had, less the
  * blank page before its opener when it had one and now starts on the
  * other side, and its numbering goes on from the new start when it went
  * on from the old one. A wrong guess costs a layout, never a page: the
  * chapter is laid out again from the records that settle.
  */
-function linkFrom(guess: Guess | undefined, physical: number, next: ChapterRecord['next']): ChainLink {
+function linkFrom(guess: Guess | undefined, physical: number, next: ChapterRecord['next'], hint?: ChapterPageHint): ChainLink {
+  if (!guess && hint) {
+    const last = hint.lastPage;
+    // (A chapter handed no numbering counts from 1.)
+    const numbering = last ? { startAt: ('value' in last.number ? last.number.value : (next?.startAt ?? 1) + last.number.delta) + 1, format: last.format } : undefined;
+    return { pageCount: hint.pageCount, ...(numbering ? { next: numbering } : {}) };
+  }
   if (!guess) return { pageCount: 2, ...(next ? { next: { startAt: next.startAt + 2, format: next.format } } : {}) };
   const { record } = guess;
   const blank = leadingBlank(guess);
@@ -304,7 +327,7 @@ function linkFrom(guess: Guess | undefined, physical: number, next: ChapterRecor
  *  takes their records, and the last returns the documents. `speculate`:
  *  a step may hold every chapter whose layout is not known, the ones after
  *  the first laid out on a guess of the pages before them. */
-function bundleLayout(bundle: BundleInput, options: BuildBundleOptions, speculate: boolean): { context: ChapterLayoutContext; steps: Generator<ChapterLayoutJob[], VDTDocument[], ChapterRecord[]> } {
+function bundleLayout(bundle: BundleInput, options: BuildBundleOptions, speculate: boolean, pageHints?: readonly (ChapterPageHint | undefined)[]): { context: ChapterLayoutContext; steps: Generator<ChapterLayoutJob[], VDTDocument[], ChapterRecord[]> } {
   const { config: configOverride, cache: sharedCache, onChapter, metadata: givenMetadata, layoutCache, ...buildOptions } = options;
   const config = configOverride ?? bundle.config;
   const resources = [...(bundle.resources ?? [])];
@@ -460,7 +483,7 @@ function bundleLayout(bundle: BundleInput, options: BuildBundleOptions, speculat
             // Laid out with the others of this walk; the chapters after
             // it go on from what its last layout says of it.
             jobs.push({ job, key, physical, startAt: next?.startAt, format: next?.format });
-            link = linkFrom(guessFor(index, physical), physical, next);
+            link = linkFrom(guessFor(index, physical), physical, next, pageHints?.[index]);
           } else {
             // A chapter that cannot wait for the others: the walk ends
             // here and the next one reaches it on settled records.
