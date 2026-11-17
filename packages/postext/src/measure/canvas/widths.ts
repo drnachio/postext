@@ -8,7 +8,7 @@ import { C, metricsOf } from './state.js';
 // language repeats words constantly. Keyed font → text → width so the key
 // needs no string concatenation. Cleared wholesale when it grows past the
 // cap (rare) or when fonts change (see clearTextWidthCache).
-const MAX_WIDTH_CACHE_ENTRIES = 100_000;
+const MAX_WIDTH_CACHE_ENTRIES = 600_000;
 
 export function measureTextWidth(text: string, font: string): number {
   let byText = C.width.get(font);
