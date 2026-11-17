@@ -553,7 +553,7 @@ function bundleLayout(bundle: BundleInput, options: BuildBundleOptions, speculat
   const lost = build.lost();
   if (lost.length > 0) {
     const again = yield lost.map((index) => lastJobs[index]!);
-    lost.forEach((index, i) => build.restore(index, again[i]!));
+    lost.forEach((index, i) => build.putBack(index, again[i]!));
   }
   const docs = build.finish();
   // Stories that jump from one chapter to a page of another (#943): the

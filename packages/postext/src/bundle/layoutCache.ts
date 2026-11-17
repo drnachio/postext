@@ -120,10 +120,10 @@ export interface LayoutBuild {
    *  did not use are kept without their documents. */
   nextRound(): void;
   /** The chapters of the last round whose record lost its document, to
-   *  lay out again and hand to {@link LayoutBuild.restore}. */
+   *  lay out again and hand to {@link LayoutBuild.putBack}. */
   lost(): number[];
   /** `record`, laid out again, for chapter `index` of the last round. */
-  restore(index: number, record: ChapterRecord): void;
+  putBack(index: number, record: ChapterRecord): void;
   /** The documents of the last round; the cache keeps the records this
    *  build used. */
   finish(): VDTDocument[];
@@ -176,7 +176,7 @@ export function beginLayoutBuild(cache: BundleLayoutCache, settingsKey: string |
     lost() {
       return round.flatMap((c, index) => (c.record.doc ? [] : [index]));
     },
-    restore(index, record) {
+    putBack(index, record) {
       const c = round[index]!;
       layouts++;
       made.add(record);
