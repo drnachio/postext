@@ -112,3 +112,32 @@ describe('isDocumentUntouched', () => {
     expect(isDocumentUntouched(state, undefined)).toBe(false);
   });
 });
+
+// #1621: the selectors ask on every change of the store; a slice of the
+// state that is the same object is not read again.
+describe('the hashes of the state are held by object', () => {
+  const chapter = (markdown: string) => ({ id: 'c', title: 'One', markdown, createdAt: 1, updatedAt: 1 });
+
+  it('reads a chapter list, a configuration and a resource list once', () => {
+    const chapters = [chapter('# One\n\nText.')];
+    const config = createDefaultConfig();
+    const resources = [table()];
+    const first = [hashChapters(chapters), hashConfig(config), hashResources(resources)];
+    const stringify = JSON.stringify;
+    let calls = 0;
+    JSON.stringify = ((...args: Parameters<typeof JSON.stringify>) => { calls++; return stringify(...args); }) as typeof JSON.stringify;
+    try {
+      expect([hashChapters(chapters), hashConfig(config), hashResources(resources)]).toEqual(first);
+    } finally {
+      JSON.stringify = stringify;
+    }
+    expect(calls).toBe(0);
+  });
+
+  it('gives an edited copy its own hash, and an equal copy the same one', () => {
+    const chapters = [chapter('# One\n\nText.')];
+    const hash = hashChapters(chapters);
+    expect(hashChapters([chapter('# One\n\nText!')])).not.toBe(hash);
+    expect(hashChapters([chapter('# One\n\nText.')])).toBe(hash);
+  });
+});
