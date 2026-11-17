@@ -22,6 +22,8 @@ mod node;
 mod options;
 mod prefix;
 #[cfg(test)]
+mod short_cut_tests;
+#[cfg(test)]
 mod space_tests;
 #[cfg(test)]
 mod stacks_tests;
@@ -52,5 +54,19 @@ impl Breaker {
     pub fn breakpoints(&mut self, items: &Items, options: &Options) -> &[u32] {
         looseness::breakpoints(&mut self.search, items, options, &mut self.breaks);
         &self.breaks
+    }
+
+    /// Whether the search may take its short cut for loose lines (the
+    /// default). The breaks are the same either way: this is for measuring
+    /// and testing the two searches.
+    pub fn set_short_cut(&mut self, on: bool) {
+        self.search.no_short_cut = !on;
+    }
+
+    /// Searches that took the short cut for loose lines (`dp.rs`) since
+    /// this breaker was made, and those of them that gave it up and were
+    /// run again in full: what a benchmark reports.
+    pub fn short_cuts(&self) -> (u32, u32) {
+        self.search.short_cuts()
     }
 }

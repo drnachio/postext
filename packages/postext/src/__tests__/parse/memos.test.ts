@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseMarkdownMemo, parseMarkdownWithIssuesMemo, PARSE_MEMO_CAPACITY } from '../../parse/blockParser.js';
+import { holdParseMemo, parseMarkdownMemo, parseMarkdownWithIssuesMemo, PARSE_MEMO_CAPACITY } from '../../parse/blockParser.js';
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
 
@@ -21,6 +21,25 @@ describe('parseMarkdownMemo', () => {
     const first = parseMarkdownMemo('# first\n');
     for (let i = 0; i < PARSE_MEMO_CAPACITY; i++) parseMarkdownMemo(`# filler ${i}\n`);
     expect(parseMarkdownMemo('# first\n')).not.toBe(first);
+  });
+
+  it('keeps every input while a build holds it, and its few slots after (#1604)', () => {
+    const release = holdParseMemo();
+    const nested = holdParseMemo();
+    const held = parseMarkdownMemo('# held\n');
+    for (let i = 0; i < PARSE_MEMO_CAPACITY * 3; i++) parseMarkdownMemo(`# held filler ${i}\n`);
+    expect(parseMarkdownMemo('# held\n')).toBe(held);
+    // A build inside another: the outer one still holds.
+    nested();
+    nested();
+    for (let i = 0; i < PARSE_MEMO_CAPACITY * 3; i++) parseMarkdownMemo(`# held filler ${i}\n`);
+    expect(parseMarkdownMemo('# held\n')).toBe(held);
+    release();
+    // Released: the most recent inputs stay, the rest are parsed afresh.
+    const recent = parseMarkdownMemo('# held\n');
+    expect(recent).toBe(held);
+    for (let i = 0; i < PARSE_MEMO_CAPACITY; i++) parseMarkdownMemo(`# after ${i}\n`);
+    expect(parseMarkdownMemo('# held\n')).not.toBe(held);
   });
 });
 

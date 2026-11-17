@@ -14,6 +14,7 @@ import { pullFloatsToCitation, withPull, pullHeld } from './floatPull.js';
 import { markGridRefusals } from './gridRefusals.js';
 import { type BuildDocumentOptions, type PassHints, type PassResult, BOX_ROOM_EPS_PX } from './passTypes.js';
 import { unplacedByDoc, SPLICED_WARNING_MAPS } from './warnings.js';
+import { passTap } from '../../util/perfTap.js';
 
 export function* buildDocumentBalanced(
   content: PostextContent,
@@ -61,6 +62,7 @@ export function* buildDocumentBalanced(
     for (const id of result.captionUnderProposals) captionUnder.add(id);
     for (const k of result.looseOffGrid) looseOffGrid.add(k);
     onPass?.({ pass: passIndex, tocRound, ms: now() - started, pages: result.doc.pages.length });
+    passTap<VDTDocument>()?.({ pass: passIndex, tocRound, doc: result.doc });
     return result;
   };
   // The first pass is a pass too: let a cancel land before the caps run.

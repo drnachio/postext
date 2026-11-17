@@ -16,7 +16,8 @@ import {
   type VDTDocument,
 } from 'postext';
 import { buildBundle, type BundleLayoutCache } from 'postext/bundle';
-import type { Options } from './args';
+import { layOutOnWorkers, pageHintsOf, poolSize, type LayoutSource } from './layoutPool';
+import { UsageError, type Options } from './args';
 import { fontFallbackWarnings, type FontSet } from './fonts';
 import type { Book, BookChapter } from './input';
 import { parseChapterList } from './input';
@@ -73,8 +74,21 @@ export function shapedBySkia<T extends { bodyText?: object }>(config: T): T {
   return { ...config, bodyText: { ...config.bodyText, shapingLanguage: 'host' } };
 }
 
+/** Load the engines the text needs (maths, music, citations): each thread
+ *  that lays chapters out loads its own. */
+export async function prepareEngines(text: readonly string[], book: Book, reporter: Reporter): Promise<void> {
+  if (text.some((t) => MATH_RE.test(t))) await reporter.time('math', () => initMathEngine());
+  if (text.some((t) => markdownHasScore(t)) || book.resources.some((r) => r.kind === 'score')) await reporter.time('music', () => initMusicEngine());
+  if (!citeprocLoaded && text.some((t) => CITATION_RE.test(t))) {
+    await reporter.time('citations', () => import('postext-citeproc/register'));
+    citeprocLoaded = true;
+  }
+}
+
 /** Lay `book` out. With a `layoutCache` (--watch), only the chapters whose
- *  inputs changed since the layout that filled it are laid out again. */
+ *  inputs changed since the layout that filled it are laid out again.
+ *  With a `source` (how the book was opened), a long book is laid out on
+ *  several threads (#1611, `--threads`): the same documents, sooner. */
 export async function layOut(
   book: Book,
   opts: Options,
@@ -82,15 +96,11 @@ export async function layOut(
   cache?: MeasurementCache,
   fonts?: FontSet,
   layoutCache?: BundleLayoutCache,
+  source?: LayoutSource,
 ): Promise<Layout> {
   const chapters = selectChapters(book, opts);
   const text = chapters.map((c) => c.markdown);
-  if (text.some((t) => MATH_RE.test(t))) await reporter.time('math', () => initMathEngine());
-  if (text.some((t) => markdownHasScore(t)) || book.resources.some((r) => r.kind === 'score')) await reporter.time('music', () => initMusicEngine());
-  if (!citeprocLoaded && text.some((t) => CITATION_RE.test(t))) {
-    await reporter.time('citations', () => import('postext-citeproc/register'));
-    citeprocLoaded = true;
-  }
+  await prepareEngines(text, book, reporter);
   const issues = new Map<string, ParseIssues>();
   for (const [i, chapter] of chapters.entries()) {
     const found = issues.get(chapter.markdown) ?? issuesByText.get(chapter.markdown) ?? parseMarkdownWithIssues(chapter.markdown).issues;
@@ -104,13 +114,26 @@ export async function layOut(
   // chapter does: a selection that leaves that chapter out (--chapters) is
   // laid out from page 1, as it always was.
   const start = chapters[0] === book.chapters[0] ? book.start : undefined;
-  const docs = reporter.time('layout', () => buildBundle(
-    { chapters, config: shapedBySkia(book.config), resources: book.resources, ...(start ? { start } : {}) },
-    {
-      cache: cache ?? createMeasurementCache(),
-      ...(layoutCache ? { layoutCache } : {}),
-    },
-  ));
+  const bundle = { chapters, config: shapedBySkia(book.config), resources: book.resources, ...(start ? { start } : {}) };
+  const onThisThread = (): VDTDocument[] => buildBundle(bundle, {
+    cache: cache ?? createMeasurementCache(),
+    ...(layoutCache ? { layoutCache } : {}),
+  });
+  const hints = source ? pageHintsOf(book, chapters, source) : undefined;
+  const workers = poolSize(opts, chapters, source, layoutCache !== undefined, hints !== undefined);
+  const docs = await reporter.time('layout', async () => {
+    if (workers === 0) return onThisThread();
+    try {
+      const laid = await layOutOnWorkers(bundle, source!, opts, workers, undefined, hints);
+      reporter.detail(`  laid out on ${workers} threads: ${laid.layouts} chapter layouts in ${laid.rounds} rounds${hints ? ', from the pages of the book\'s layouts file' : ''}`);
+      return laid.docs;
+    } catch (err) {
+      if (err instanceof UsageError) throw err;
+      // The pool is a short cut: whatever stops it, the book is laid out here.
+      reporter.detail(`  ${err instanceof Error ? err.message : String(err)}; laying out on one thread`);
+      return onThisThread();
+    }
+  });
   const laidOut = layoutCache ? layoutCache.stats.laidOut : docs.map(() => true);
   docs.forEach((doc, i) => reporter.detail(`  ${laidOut[i] ? 'laid out' : 'kept'} ${chapters[i]!.file ?? chapters[i]!.title}: ${doc.pages.length} pages`));
   docs.forEach((doc, i) => reportDocWarnings(doc, chapters[i]!, reporter));

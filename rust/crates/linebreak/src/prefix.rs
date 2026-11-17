@@ -2,6 +2,7 @@
 //! two lookups and a subtraction. `at[k]` covers items `0..k`, so the arrays
 //! are one longer than the paragraph.
 
+use crate::constants::KP_INFINITY;
 use crate::items::{ItemKind, Items, flag};
 
 #[derive(Default)]
@@ -20,6 +21,11 @@ pub(crate) struct Prefix {
     /// the next one at or after it.
     pub space_before: Vec<i32>,
     pub space_after: Vec<u32>,
+    /// The totals only grow along the paragraph and no break costs less
+    /// than nothing: no negative width or give, nothing carried to the next
+    /// line, no penalty between 0 and a forced break, no space that pays to
+    /// break at. What the search's short cut for loose lines relies on.
+    pub monotone: bool,
 }
 
 impl Prefix {
@@ -54,8 +60,21 @@ impl Prefix {
         let (mut w, mut st, mut sh) = (0.0, 0.0, 0.0);
         let (mut ch, mut sp, mut nt) = (0.0, 0.0, 0.0);
         let (mut ws, mut wsw) = (0.0, 0.0);
+        let mut monotone = true;
         for k in 0..n {
             let word_space = items.flags[k] & flag::WORD_SPACE != 0;
+            monotone &= match items.kind[k] {
+                ItemKind::Box => items.width[k] >= 0.0 && items.stretch[k] >= 0.0,
+                ItemKind::Glue => {
+                    items.width[k] >= 0.0
+                        && items.stretch[k] >= 0.0
+                        && items.shrink[k] >= 0.0
+                        && items.penalty[k] >= 0.0
+                }
+                ItemKind::Penalty => {
+                    items.post_width[k] == 0.0 && (items.penalty[k] >= 0.0 || items.penalty[k] <= -KP_INFINITY)
+                }
+            };
             match items.kind[k] {
                 ItemKind::Box => {
                     w += items.width[k];
@@ -94,6 +113,7 @@ impl Prefix {
                 self.word_space_width.push(wsw);
             }
         }
+        self.monotone = monotone;
         self.space_before.clear();
         self.space_after.clear();
         if zone {

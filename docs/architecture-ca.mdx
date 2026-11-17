@@ -594,7 +594,7 @@ Pensa en el que ha de fer el motor: milers de blocs de text repartits en centena
 
 No hi ha cap punt d'entrada incremental: cap crida no agafa un VDT acabat per actualitzar-lo. Quan canvia el contingut o la configuració (una pulsació de tecla, una altra mida de pàgina), l'aplicació amfitriona torna a cridar `buildDocument` i obté un document nou.
 
-El que es conserva d'una composició a la següent és la mesura. Crea una `MeasurementCache` una sola vegada amb `createMeasurementCache()` i passa-la com a tercer argument de cada crida a `buildDocument`. Si el text, les fonts, l'amplada i les opcions de partició d'un paràgraf no han canviat, el paràgraf es llegeix de la memòria cau, de manera que un editor que compon el document a cada pulsació només mesura el paràgraf on s'està escrivint. Un canvi de mida de pàgina o de nombre de columnes canvia les amplades, i aquests paràgrafs es tornen a mesurar; els resultats de `prepare()` de Pretext continuen sent vàlids, perquè depenen de la font i del text i no de l'amplada, de manera que només s'executa l'aritmètica barata de `layout()`. L'anàlisi també es memoritza. També es conserven les pàgines compostes: una pàgina composta
+El que es conserva d'una composició a la següent és la mesura. Crea una `MeasurementCache` una sola vegada amb `createMeasurementCache()` i passa-la com a tercer argument de cada crida a `buildDocument`. Si el text, les fonts, l'amplada i les opcions de partició d'un paràgraf no han canviat, el paràgraf es llegeix de la memòria cau, de manera que un editor que compon el document a cada pulsació només mesura el paràgraf on s'està escrivint. Les línies que es llegeixen de la memòria cau hi comparteixen els segments de paraula, de manera que el codi que canviï un segment d'un document compost (el color, per exemple) posa una còpia a `segments` de la línia en lloc d'escriure sobre el que hi ha trobat. Un canvi de mida de pàgina o de nombre de columnes canvia les amplades, i aquests paràgrafs es tornen a mesurar; els resultats de `prepare()` de Pretext continuen sent vàlids, perquè depenen de la font i del text i no de l'amplada, de manera que només s'executa l'aritmètica barata de `layout()`. L'anàlisi també es memoritza. També es conserven les pàgines compostes: una pàgina composta
 amb la plantilla, el Markdown, els estils i les fonts sense canvis es reutilitza de la composició
 anterior (`composed/pageMemo.ts`), de manera que una edició en una pàgina d'un capítol de pàgines
 compostes només torna a compondre aquella pàgina. Una pàgina amb una nota a peu de pàgina, una
@@ -624,6 +624,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 
 Un advertiment, per honestedat: a Node no hi ha canvas, de manera que els benchmarks simulen la mesura del text i els temps absoluts no són els del navegador. La proporció entre fred i calent i el nombre de passades sí que són els del navegador, i una regressió en qualsevol dels dos es detecta aquí abans que al Sandbox. Els benchmarks del capítol i de les pàgines compostes informen de xifres i no fan fallar la compilació; el xinès comprova que els caràcters mesurats es mantenen per sota del triple de la longitud del paràgraf més llarg. Cap no s'executa a la CI: les regressions es detecten comparant les xifres entre execucions quan canvia una part crítica del codi (com es va fer amb la reescriptura dels nodes actius de Knuth-Plass). Encara cap compilació no falla per un temps més lent: una pèrdua de velocitat es detecta mesurant i en la revisió.
 
+
+Un quart benchmark mesura llibres sencers amb mesura real del text (Skia, com mesura la CLI). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, llançat a `packages/postext-cli`, compon un llibre en fred, capítol a capítol, i imprimeix el temps de cada execució, la memòria, un hash de les pàgines i la part de cada etapa: mesura, partició de línies, col·locació i la feina posterior a les passades. El flux Layout timing l'executa sobre cinc llibres de mostra en un runner de GitHub després de cada versió i escriu la taula al resum de l'execució; informa i no fa fallar res. Cada execució compon també el commit anterior al push en el mateix runner, per torns amb el nou: dos runners difereixen en més del que estalvien gairebé tots els canvis, de manera que la diferència que cal llegir és la de dins d'una execució. Aquests són els seus números per a la 1.88.1 (16 de novembre de 2026, mediana de tres execucions, un fil); les tres últimes columnes són parts de l'execució.
+
+| Llibre | Pàgines | Temps | Per pàgina | Mesura | Partició de línies | Col·locació |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
 
 ## Flux de dades
 

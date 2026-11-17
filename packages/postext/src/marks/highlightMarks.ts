@@ -242,10 +242,14 @@ export function highlightDocument(doc: VDTDocument): void {
       const bands = lineHighlights(line, like, styles, dpi);
       if (bands.length > 0) line.highlights = bands;
       else delete line.highlights;
-      for (const seg of line.segments) {
+      // A coloured word is a copy: the measurement cache shares a line's
+      // segments with every other copy of the paragraph (#1609).
+      const segments = line.segments;
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i]!;
         if (!seg.mark || seg.kind !== 'text') continue;
         const color = pickMarkStyle(styles, seg.mark.style || undefined)?.color;
-        if (color) seg.color = color.hex;
+        if (color && seg.color !== color.hex) segments[i] = { ...seg, color: color.hex };
       }
     }
   }

@@ -56,6 +56,12 @@ function refOpenerAt(markdown: string, r: number): boolean {
   return false;
 }
 
+/** The characters that stand for markup in a block's plain text, by
+ *  code, and the lowest of them. */
+const PLACEHOLDERS = new Set([MATH_PLACEHOLDER, REF_PLACEHOLDER, CITATION_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, SWATCH_PLACEHOLDER, GAP_PLACEHOLDER, CHIP_PLACEHOLDER, TAB_PLACEHOLDER, BREAK_PLACEHOLDER].map((c) => c.charCodeAt(0)));
+const FIRST_PLACEHOLDER = Math.min(...PLACEHOLDERS);
+const TAB_CODE = TAB_PLACEHOLDER.charCodeAt(0);
+
 /**
  * Build a per-character map from plain text to absolute source offsets.
  * Greedy matches each plain char against the raw source (delimited by
@@ -98,7 +104,11 @@ export function computeSourceMap(
     : [];
   let rfi = 0;
   for (let p = 0; p < plainText.length; p++) {
-    const ch = plainText[p]!;
+    const cc = plainText.charCodeAt(p);
+    // A placeholder stands for markup; any other character is looked for
+    // as it is. Told apart by its code, so a letter is not compared with
+    // each of them (#1608).
+    const ch = cc >= FIRST_PLACEHOLDER && PLACEHOLDERS.has(cc) ? plainText[p]! : '';
     // Math placeholder: the plain char represents `$...$` in the markdown.
     // Advance to the opening `$`, map to it, then skip past the closing `$`
     // so subsequent plain chars can keep aligning with the source.
@@ -290,7 +300,7 @@ export function computeSourceMap(
     }
     // The tie of `Eq.~\eqref{…}` (#530) is the no-break space before the
     // reference.
-    if (ch === '\u00a0' && plainText[p + 1] === REF_PLACEHOLDER) {
+    if (cc === 0xa0 && plainText[p + 1] === REF_PLACEHOLDER) {
       let j = r;
       while (j < blockSrcEnd && markdown[j] !== '\u00a0' && !(markdown[j] === '~' && refOpenerAt(markdown, j + 1))) j++;
       if (j < blockSrcEnd) {
@@ -299,31 +309,35 @@ export function computeSourceMap(
         continue;
       }
     }
-    const isSpace = ch === ' ';
+    const isSpace = cc === 0x20;
     while (r < blockSrcEnd) {
-      while (si < skips.length && skips[si]![1] <= r) si++;
-      if (si < skips.length && r >= skips[si]![0]) {
-        r = skips[si]![1];
-        continue;
+      if (si < skips.length) {
+        while (si < skips.length && skips[si]![1] <= r) si++;
+        if (si < skips.length && r >= skips[si]![0]) {
+          r = skips[si]![1];
+          continue;
+        }
       }
-      const rc = markdown[r]!;
-      while (ci < code.length && code[ci]![1] <= r) ci++;
-      const inCode = ci < code.length && r >= code[ci]![0];
-      // The opener of a `:smallcaps[…]` run has no plain character: skip
-      // it whole, so its letters never match the text inside. Not in
-      // inline code, where it is printed.
-      if (rc === ':' && !inCode && isSmallCapsOpenerAt(markdown, r, blockSrcEnd)) {
-        r += SMALLCAPS_OPENER.length;
-        continue;
+      const rc = markdown.charCodeAt(r);
+      if (rc === 0x3a) {
+        while (ci < code.length && code[ci]![1] <= r) ci++;
+        const inCode = ci < code.length && r >= code[ci]![0];
+        // The opener of a `:smallcaps[…]` run has no plain character: skip
+        // it whole, so its letters never match the text inside. Not in
+        // inline code, where it is printed.
+        if (!inCode && isSmallCapsOpenerAt(markdown, r, blockSrcEnd)) {
+          r += SMALLCAPS_OPENER.length;
+          continue;
+        }
+        // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`.
+        const orientationOpener = inCode ? 0 : orientationOpenerAt(markdown, r, blockSrcEnd);
+        if (orientationOpener > 0) {
+          r += orientationOpener;
+          continue;
+        }
       }
-      // So has the opener of `:tcy[…]`, `:upright[…]`, `:sideways[…]`.
-      const orientationOpener = rc === ':' && !inCode ? orientationOpenerAt(markdown, r, blockSrcEnd) : 0;
-      if (orientationOpener > 0) {
-        r += orientationOpener;
-        continue;
-      }
-      if (rc === ch) break;
-      if (isSpace && (rc === '\n' || rc === '\t')) break;
+      if (rc === cc) break;
+      if (isSpace && (rc === 0x0a || rc === 0x09)) break;
       r++;
     }
     if (r >= blockSrcEnd) {
@@ -349,9 +363,10 @@ function roleCodeSpans(markdown: string, from: number, end: number): Array<[numb
   return out;
 }
 
-/** Whitespace collapsed by pretext's `normalizeWhitespaceNormal`. A Set
- *  lookup is cheaper than a per-character regex test in these loops. */
-const COLLAPSIBLE_WS = new Set([' ', '\t', '\n', '\r', '\f']);
+/** Whether a character code is whitespace that pretext's
+ *  `normalizeWhitespaceNormal` collapses: space, tab, line feed, form
+ *  feed, carriage return. */
+const collapsible = (c: number): boolean => c === 0x20 || (c >= 0x09 && c <= 0x0d && c !== 0x0b);
 
 /**
  * Collapse runs of `[ \t\n\r\f]` to a single space and strip leading/trailing
@@ -372,23 +387,33 @@ function normalizeWhitespaceInSpans(spans: InlineSpan[]): InlineSpan[] {
       inSpace = true;
       continue;
     }
-    const result: string[] = [];
     // `kept[i]`: characters kept before `span.text[i]` — remaps link ranges.
     const kept: number[] | undefined = span.links ? [] : undefined;
-    for (let i = 0; i < span.text.length; i++) {
-      const ch = span.text[i]!;
-      kept?.push(result.length);
-      if (COLLAPSIBLE_WS.has(ch)) {
-        if (!inSpace) {
-          result.push(' ');
-          inSpace = true;
-        }
-      } else {
-        result.push(ch);
+    // The text is copied run by run: a span with nothing to collapse
+    // keeps its own string.
+    const source = span.text;
+    let text = '';
+    let from = 0;
+    let length = 0;
+    for (let i = 0; i < source.length; i++) {
+      const c = source.charCodeAt(i);
+      kept?.push(length);
+      if (!collapsible(c)) {
+        length++;
         inSpace = false;
+      } else if (inSpace) {
+        text += source.slice(from, i);
+        from = i + 1;
+      } else {
+        if (c !== 0x20) {
+          text += `${source.slice(from, i)} `;
+          from = i + 1;
+        }
+        length++;
+        inSpace = true;
       }
     }
-    const text = result.join('');
+    text = from === 0 ? source : text + source.slice(from);
     if (!kept) {
       out.push({ ...span, text });
       continue;
@@ -447,15 +472,15 @@ export function buildBlockMapping(
   // Whether the last entry is a collapsed space (a tab drops it, #622).
   let collapsed = false;
   for (let i = 0; i < rawText.length; i++) {
-    const ch = rawText[i]!;
-    if (ch === TAB_PLACEHOLDER) {
+    const ch = rawText.charCodeAt(i);
+    if (ch === TAB_CODE) {
       if (collapsed) sourceMap.pop();
       sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
       inSpace = true;
       collapsed = false;
       continue;
     }
-    if (COLLAPSIBLE_WS.has(ch)) {
+    if (collapsible(ch)) {
       if (!inSpace) {
         sourceMap.push(rawSourceMap[i] ?? blockSrcEnd);
         inSpace = true;

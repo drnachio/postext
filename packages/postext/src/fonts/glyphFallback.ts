@@ -188,6 +188,13 @@ function registeredCoverage(family: string, weight: number, style: 'normal' | 'i
  *  selectors, which go with the letter before them. */
 export const SKIPPED = /^[\p{Z}\p{Cc}\p{Cf}\p{M}\p{Cs}]$/u;
 
+/** {@link SKIPPED} for one character, the ASCII ones answered without the
+ *  pattern: every character of a document is asked (#1606). */
+export function skippedChar(ch: string): boolean {
+  const code = ch.charCodeAt(0);
+  return code < 0x80 ? code <= 0x20 || code === 0x7f : SKIPPED.test(ch);
+}
+
 export type Add = (font: string | undefined, text: string | undefined) => void;
 
 export function addLines(lines: readonly VDTLine[] | undefined, normal: string | undefined, bold: string | undefined, italic: string | undefined, boldItalic: string | undefined, add: Add): void {
@@ -231,11 +238,26 @@ function walkTexts(node: unknown, add: Add, depth = 0): void {
  *  figure labels) and the texts the pages set beside them. */
 export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
   const out = new Map<string, Set<string>>();
+  // The texts already read in each font: a word set again adds nothing.
+  const read = new Map<string, Set<string>>();
+  let font0: string | undefined;
+  let set0!: Set<string>;
+  let read0!: Set<string>;
   const add: Add = (font, text) => {
     if (!font || !text) return;
-    let set = out.get(font);
-    if (!set) out.set(font, (set = new Set()));
-    for (const ch of text) if (!SKIPPED.test(ch)) set.add(ch);
+    if (font !== font0) {
+      let set = out.get(font);
+      if (!set) {
+        out.set(font, (set = new Set()));
+        read.set(font, new Set());
+      }
+      font0 = font;
+      set0 = set;
+      read0 = read.get(font)!;
+    }
+    if (read0.has(text)) return;
+    read0.add(text);
+    for (const ch of text) if (!set0.has(ch) && !skippedChar(ch)) set0.add(ch);
   };
   const blocks = new Set(doc.blocks);
   for (const page of doc.pages) for (const b of [...(page.floats ?? []), ...(page.marginNotes ?? [])]) blocks.add(b);
@@ -313,15 +335,27 @@ export function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf 
   }
   if (coverage.length === 0) return undefined;
   const known = new Map<string, CodePointRanges | null>();
+  // The face asked last: a run of characters asks the same one, and its
+  // key is not built again for each (#1606).
+  let lastFamily: string | undefined;
+  let lastWeight = 0;
+  let lastStyle = '';
+  let last: CodePointRanges | null = null;
   return {
     hasGlyph: (family, weight, style, ch) => {
-      const key = `${family.toLowerCase()}|${weight}|${style}`;
-      let ranges = known.get(key);
-      if (ranges === undefined) {
-        ranges = registeredCoverage(family, weight, style) ?? null;
-        known.set(key, ranges);
+      if (family !== lastFamily || weight !== lastWeight || style !== lastStyle) {
+        const key = `${family.toLowerCase()}|${weight}|${style}`;
+        let ranges = known.get(key);
+        if (ranges === undefined) {
+          ranges = registeredCoverage(family, weight, style) ?? null;
+          known.set(key, ranges);
+        }
+        lastFamily = family;
+        lastWeight = weight;
+        lastStyle = style;
+        last = ranges;
       }
-      return ranges ? rangesHave(ranges, ch.codePointAt(0)!) : undefined;
+      return last ? rangesHave(last, ch.codePointAt(0)!) : undefined;
     },
   };
 }
@@ -349,8 +383,8 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
       // A shorthand that lists families after its own (a host's): the
       // first of them that has the character drew it.
       const rest = fontStringFamilies(font).slice(1).filter((f) => f.toLowerCase() !== face.family.toLowerCase());
+      let e = found.get(key);
       for (const ch of chars) {
-        let e = found.get(key);
         if (e?.seen.has(ch)) continue;
         if (hasGlyph(face.family, face.weight, face.style, ch) !== false) continue;
         // Set in the symbol font, as the document asked: nothing to advise.

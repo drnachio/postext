@@ -168,6 +168,7 @@ overrides:
   minimatch@>=7.0.0 <11.0.1: ^11.0.4
 
 patchedDependencies:
+  '@chenglou/pretext@1.0.0': f95c303399fa38a6817a31c69364e111d83e8026d1dae6d0034609c94aa04ea4
   wawoff2: 4464a351270771a5804bde96859b403462c3a9ec2b1fcff9a200cb7c3fda6e0d
 
 importers:
@@ -176,7 +177,7 @@ importers:
     dependencies:
       '@chenglou/pretext':
         specifier: ^1.0.0
-        version: 1.0.0
+        version: 1.0.0(patch_hash=f95c303399fa38a6817a31c69364e111d83e8026d1dae6d0034609c94aa04ea4)
       mathjax-full:
         specifier: ^3.2.2
         version: 3.2.2
@@ -307,7 +308,7 @@ importers:
     dependencies:
       '@chenglou/pretext':
         specifier: ^1.0.0
-        version: 1.0.0
+        version: 1.0.0(patch_hash=f95c303399fa38a6817a31c69364e111d83e8026d1dae6d0034609c94aa04ea4)
       fflate:
         specifier: ^0.8.3
         version: 0.8.3
@@ -4758,7 +4759,7 @@ snapshots:
       hashery: 1.5.1
       keyv: 5.6.0
 
-  '@chenglou/pretext@1.0.0': {}
+  '@chenglou/pretext@1.0.0(patch_hash=f95c303399fa38a6817a31c69364e111d83e8026d1dae6d0034609c94aa04ea4)': {}
 
   '@codemirror/autocomplete@6.20.4':
     dependencies:

@@ -108,13 +108,32 @@ export function cellAdvance(grapheme: string, font: string, vertical: boolean, c
  * (`verticalRuns`), so what is measured is what is painted. Text with no
  * cell is one sideways run: `measureRun(text)`.
  */
-export function verticalTextWidth(text: string, font: string, measureRun: (run: string) => number = (run) => measureTextWidth(run, font)): number {
+export function verticalTextWidth(text: string, font: string, measureRun?: (run: string) => number): number {
+  // With the default measure the advance follows from the text, the font
+  // and the settings below alone: kept (#1610), since a running head is
+  // measured again on every page of every pass.
+  const key = measureRun ? undefined : `${measureLanguageKey()}\u0000${measureRegion}\u0000${measureUprightDigits}\u0000${font}\u0000${text}`;
+  if (key !== undefined) {
+    const hit = verticalWidths.get(key);
+    if (hit !== undefined) return hit;
+  }
+  const runWidth = measureRun ?? ((run: string) => measureTextWidth(run, font));
   let width = 0;
   for (const run of verticalRuns(graphemesOf(text), measureRegion, measureUprightDigits)) {
-    width += run.cell === undefined ? measureRun(run.text) : run.glyph.orient === 'tcy' ? fontEm(font) : cellAdvance(run.text, font, true);
+    width += run.cell === undefined ? runWidth(run.text) : run.glyph.orient === 'tcy' ? fontEm(font) : cellAdvance(run.text, font, true);
+  }
+  if (key !== undefined) {
+    if (verticalWidths.size >= VERTICAL_WIDTHS_MAX) verticalWidths.clear();
+    verticalWidths.set(key, width);
   }
   return width;
 }
+
+/** The advances {@link verticalTextWidth} measured with the default run
+ *  measure, dropped with the text widths they were added up from. */
+const verticalWidths = new Map<string, number>();
+const VERTICAL_WIDTHS_MAX = 50_000;
+onTextWidthCacheClear(() => verticalWidths.clear());
 
 /** How many times tracking follows the characters of `text` in a vertical
  *  line: once per grapheme, a number set in one cell (tate-chu-yoko)

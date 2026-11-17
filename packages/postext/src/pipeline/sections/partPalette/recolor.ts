@@ -30,13 +30,19 @@ function scoped(family: 'table' | 'chip' | 'caption', settings: readonly string[
 
 /** Segment colours of `lines` (inline swatches keep their own colour: it
  *  lives on `segment.swatch`, which is not touched), chips included. A
- *  chip's colours are replaced on a copy of its record: the measurement
- *  cache shares that record between every copy of the measured lines, and
- *  the same paragraph may also sit on a page the palette does not rule. */
+ *  recoloured segment, and a recoloured chip's record, is a copy: the
+ *  measurement cache shares both between every copy of the measured lines
+ *  (#1609), and the same paragraph may also sit on a page the palette does
+ *  not rule. */
 function recolorLines(lines: readonly VDTLine[] | undefined, remap: Remap, r: PageRemaps): void {
   for (const line of lines ?? []) {
-    for (const seg of line.segments ?? []) {
-      if (seg.color) seg.color = remap(seg.color);
+    const segments = line.segments ?? [];
+    for (let i = 0; i < segments.length; i++) {
+      let seg = segments[i]!;
+      if (seg.color) {
+        const color = remap(seg.color);
+        if (color !== seg.color) segments[i] = seg = { ...seg, color };
+      }
       const chip = seg.chip;
       if (chip && (chip.background || chip.borderColor || chip.color)) {
         const style = chip.styleId || undefined;
@@ -44,11 +50,14 @@ function recolorLines(lines: readonly VDTLine[] | undefined, remap: Remap, r: Pa
         const borderColor = r.by(scoped('chip', ['borderColor'], style))(chip.borderColor);
         const color = r.by(scoped('chip', ['color'], style))(chip.color);
         if (background !== chip.background || borderColor !== chip.borderColor || color !== chip.color) {
-          seg.chip = {
-            ...chip,
-            ...(background ? { background } : {}),
-            ...(borderColor ? { borderColor } : {}),
-            ...(color ? { color } : {}),
+          segments[i] = {
+            ...seg,
+            chip: {
+              ...chip,
+              ...(background ? { background } : {}),
+              ...(borderColor ? { borderColor } : {}),
+              ...(color ? { color } : {}),
+            },
           };
         }
       }

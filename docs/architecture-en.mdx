@@ -590,7 +590,7 @@ Consider what the engine is up against: thousands of text blocks across hundreds
 
 There is no incremental entry point: no call takes a finished VDT and updates it. When the content or the configuration changes (a keystroke, another page size), the host calls `buildDocument` again and gets a new document.
 
-What carries over from one build to the next is the measuring. Create a `MeasurementCache` once with `createMeasurementCache()` and pass it as the third argument of every `buildDocument` call. A paragraph whose text, fonts, width and breaking options did not change is read from it, so an editor that lays the document out on every keystroke measures only the paragraph being typed in. A change of page size or of column count changes the widths, and those paragraphs are measured again; Pretext's `prepare()` results still hold, since they depend on the font and the text and not on the width, so only the cheap `layout()` arithmetic runs. The parse is memoized too. Composed pages carry over as well: a composed page whose template,
+What carries over from one build to the next is the measuring. Create a `MeasurementCache` once with `createMeasurementCache()` and pass it as the third argument of every `buildDocument` call. A paragraph whose text, fonts, width and breaking options did not change is read from it, so an editor that lays the document out on every keystroke measures only the paragraph being typed in. The lines read from the cache share their word segments with it, so code that changes a segment of a laid-out document (its colour, say) puts a copy in the line's `segments` instead of writing to the one it found. A change of page size or of column count changes the widths, and those paragraphs are measured again; Pretext's `prepare()` results still hold, since they depend on the font and the text and not on the width, so only the cheap `layout()` arithmetic runs. The parse is memoized too. Composed pages carry over as well: a composed page whose template,
 Markdown, styles and fonts did not change is reused from the build before (`composed/pageMemo.ts`),
 so an edit on one page of a chapter of composed pages sets that page alone. A page that holds a
 footnote, a cross-reference, a citation, a contents or index listing or a comic strip is always set
@@ -619,6 +619,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 
 A caveat for honesty: there is no canvas in Node, so the benchmarks stub text measurement and their absolute times are not the browser's. The ratio of cold to warm and the number of passes are, and a regression in either shows here before it shows in the Sandbox. The chapter and composed-page benchmarks report numbers and do not break the build; the Chinese one asserts that the characters measured stay under three times the length of the longest paragraph. None runs in CI: regressions are caught by comparing the numbers across runs when a hot path changes (as was done for the Knuth-Plass active-node rewrite). No build fails on a slower time yet: a slowdown is found by measuring and in review.
 
+
+A fourth benchmark times whole books with real text measurement (Skia, as the CLI measures). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, run in `packages/postext-cli`, lays a book out cold, chapter by chapter, and prints the time of each run, the memory, a hash of the pages and the share of each stage: measuring, line breaking, placement and the work after the passes. The Layout timing workflow runs it on five showcase books on a GitHub runner after each release and writes the table to the run's summary; it reports and fails nothing. Each run also lays out the commit before the push on the same runner, in turns with the new one: two runners differ by more than most changes save, so the difference to read is the one inside a run. These are its numbers for 1.88.1 (16 November 2026, median of three runs, one thread); the last three columns are shares of the run.
+
+| Book | Pages | Time | Per page | Measuring | Line breaking | Placement |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
 
 ## Data Flow
 

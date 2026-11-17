@@ -4,6 +4,7 @@ import { measureBlock } from './plain.js';
 import { measureRichBlock, measureRichSnippet } from './rich.js';
 import { cachedMeasureBlock as cachedPlainBlock, cachedMeasureRichBlock as cachedRichBlock, cachedMeasureRichSnippet as cachedRichSnippet } from './cache.js';
 import { hasCompound } from './breakRules.js';
+import { perfTimed } from '../util/perfTap.js';
 
 export type { BreakTrace, LineInsetStep, LineWidthStep, MeasuredBlock, MeasurementCache, MeasureBlockOptions } from './types.js';
 export { lineIndentAt, maxLineIndent } from './types.js';
@@ -73,7 +74,7 @@ export function cachedMeasureBlock(
   cache: MeasurementCache,
 ): MeasuredBlock {
   return options?.keepBreaks || options?.restWidths || options?.lineInsets
-    ? measureBlock(text, font, maxWidthPx, lineHeightPx, options)
+    ? perfTimed('measure.uncached', () => measureBlock(text, font, maxWidthPx, lineHeightPx, options))
     : cachedPlainBlock(text, font, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, text));
 }
 
@@ -92,7 +93,7 @@ export function cachedMeasureRichBlock(
   cache: MeasurementCache,
 ): MeasuredBlock {
   return options?.keepBreaks || options?.restWidths || options?.lineInsets
-    ? measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options)
+    ? perfTimed('measure.uncached', () => measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options))
     : cachedRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, spans.map((s) => s.text).join('')));
 }
 
@@ -112,6 +113,6 @@ export function cachedMeasureRichSnippet(
   cache: MeasurementCache,
 ): MeasuredBlock {
   return options?.keepBreaks || options?.restWidths || options?.lineInsets
-    ? measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options)
+    ? perfTimed('measure.uncached', () => measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options))
     : cachedRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options, cacheFor(cache, options, spans.map((s) => s.text).join('')));
 }

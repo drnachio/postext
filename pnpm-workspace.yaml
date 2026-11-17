@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 patchedDependencies:
+  '@chenglou/pretext@1.0.0': patches/@chenglou__pretext@1.0.0.patch
   wawoff2: patches/wawoff2.patch
 overrides:
   # GHSA-qx2v-qp2m-jg93 — next pins a vulnerable postcss; 8.5.x is a

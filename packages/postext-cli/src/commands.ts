@@ -42,6 +42,7 @@ export const BOOK_OPTIONS: OptionSpec[] = [
   { name: 'font-dir', kind: 'list', arg: 'DIR', help: 'Extra folder to look for fonts the book does not carry (repeatable)' },
   { name: 'offline', kind: 'boolean', help: 'Never download fonts (Google Fonts); use cached and embedded faces only' },
   { name: 'cache-dir', kind: 'string', arg: 'DIR', help: 'Where downloaded fonts are kept (default: ~/.cache/postext)' },
+  { name: 'threads', kind: 'string', arg: 'N|auto', help: 'Lay the chapters out on N threads (auto: by the length of the book and the cores of the machine); the same pages as on one thread, the default' },
 ];
 
 const OUT: OptionSpec = { name: 'out', short: 'o', kind: 'string', arg: 'PATH', help: 'Output path ("-" writes to stdout)' };

@@ -29,7 +29,9 @@ export async function openBook(ctx: CommandContext, loaded?: Book): Promise<Sess
 
 export async function openAndLayOut(ctx: CommandContext, cache?: MeasurementCache, loaded?: Book): Promise<Session & { layout: Layout }> {
   const session = await openBook(ctx, loaded);
-  const layout = await layOut(session.book, ctx.opts, ctx.reporter, cache, session.fonts);
+  // A book opened here from its inputs can be opened again by the layout
+  // workers; one handed in already loaded cannot.
+  const layout = await layOut(session.book, ctx.opts, ctx.reporter, cache, session.fonts, undefined, loaded ? undefined : { command: ctx.command, inputs: ctx.inputs });
   ctx.reporter.info(`${session.book.name}: ${layout.pageCount} pages in ${layout.chapters.length} chapter${layout.chapters.length === 1 ? '' : 's'} (${Math.round(ctx.reporter.timings.layout ?? 0)} ms)`);
   return { ...session, layout };
 }

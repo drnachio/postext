@@ -591,7 +591,7 @@ Veja contra o que o motor está lutando: milhares de blocos de texto ao longo de
 
 Não há um ponto de entrada incremental: nenhuma chamada recebe um VDT pronto e o atualiza. Quando o conteúdo ou a configuração muda (uma tecla, outro tamanho de página), o hospedeiro chama `buildDocument` de novo e recebe um documento novo.
 
-O que passa de uma compilação para a seguinte é a medição. Crie um `MeasurementCache` uma vez com `createMeasurementCache()` e passe-o como terceiro argumento de toda chamada a `buildDocument`. Um parágrafo cujo texto, fontes, largura e opções de quebra não mudaram é lido dele, de modo que um editor que diagrama o documento a cada tecla mede só o parágrafo em que se está digitando. Uma mudança de tamanho de página ou de número de colunas muda as larguras, e esses parágrafos são medidos de novo; os resultados de `prepare()` do Pretext continuam válidos, pois dependem da fonte e do texto e não da largura; por isso, só roda a aritmética barata de `layout()`. A análise do Markdown também é memoizada. As páginas compostas também passam de uma compilação
+O que passa de uma compilação para a seguinte é a medição. Crie um `MeasurementCache` uma vez com `createMeasurementCache()` e passe-o como terceiro argumento de toda chamada a `buildDocument`. Um parágrafo cujo texto, fontes, largura e opções de quebra não mudaram é lido dele, de modo que um editor que diagrama o documento a cada tecla mede só o parágrafo em que se está digitando. As linhas lidas do cache compartilham com ele seus segmentos de palavra, de modo que o código que muda um segmento de um documento diagramado (a cor, por exemplo) põe uma cópia em `segments` da linha em vez de escrever no que encontrou. Uma mudança de tamanho de página ou de número de colunas muda as larguras, e esses parágrafos são medidos de novo; os resultados de `prepare()` do Pretext continuam válidos, pois dependem da fonte e do texto e não da largura; por isso, só roda a aritmética barata de `layout()`. A análise do Markdown também é memoizada. As páginas compostas também passam de uma compilação
 para a seguinte: uma página composta cujo modelo, Markdown, estilos e fontes não mudaram é
 reaproveitada da compilação anterior (`composed/pageMemo.ts`), de modo que uma edição em uma página
 de um capítulo de páginas compostas diagrama de novo só essa página. Uma página com uma nota de
@@ -621,6 +621,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 
 Uma ressalva, por honestidade: não há canvas no Node; por isso, os benchmarks simulam a medição de texto, e os tempos absolutos deles não são os do navegador. Já a razão entre o cache vazio e o preenchido e o número de passadas valem também para o navegador, e uma regressão em qualquer um dos dois aparece aqui antes de aparecer no Sandbox. Os benchmarks do capítulo e das páginas compostas informam números e não quebram o build; o chinês verifica que os caracteres medidos ficam abaixo de três vezes o tamanho do parágrafo mais longo. Nenhum roda na CI: as regressões são detectadas comparando os números entre execuções quando um caminho crítico muda (como foi feito na reescrita dos nós ativos do Knuth-Plass). Por enquanto nenhum build falha por um tempo mais lento: uma perda de velocidade é encontrada medindo e na revisão.
 
+
+Um quarto benchmark mede livros inteiros com medição real do texto (Skia, como a CLI mede). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, executado em `packages/postext-cli`, compõe um livro a frio, capítulo a capítulo, e imprime o tempo de cada execução, a memória, um hash das páginas e a parte de cada etapa: medição, quebra de linhas, posicionamento e o trabalho depois das passadas. O fluxo Layout timing o executa em cinco livros de mostra em um runner do GitHub depois de cada versão e escreve a tabela no resumo da execução; ele informa e não faz nada falhar. Cada execução compõe também o commit anterior ao push no mesmo runner, em turnos com o novo: dois runners diferem em mais do que quase todas as mudanças economizam, então a diferença a ler é a de dentro de uma execução. Estes são os números da 1.88.1 (16 de novembro de 2026, mediana de três execuções, uma thread); as três últimas colunas são partes da execução.
+
+| Livro | Páginas | Tempo | Por página | Medição | Quebra de linhas | Posicionamento |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
 
 ## Fluxo de dados
 

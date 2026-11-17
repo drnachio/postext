@@ -23,7 +23,7 @@ export function annotationSourceSkips(markdown: string, from: number, end: numbe
   const inCode = (at: number): boolean => code.some(([s, e]) => at >= s && at < e);
   const walk = (at: number, stop: number): void => {
     for (;;) {
-      const found = nextAnnotation(markdown, at, stop);
+      const found = nextAnnotation(markdown, at, stop, true);
       if (!found) return;
       if (inCode(found.start)) {
         at = found.start + 1;

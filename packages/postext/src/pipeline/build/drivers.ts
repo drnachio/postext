@@ -41,6 +41,7 @@ import { indexWarnings, joiningSpacingWarnings, dropCapWarningsByDoc, floatShrin
 import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js';
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
+import { perfLap } from '../../util/perfTap.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -117,6 +118,7 @@ export function* buildDocumentGen(
   cache?: MeasurementCache,
   options?: BuildDocumentOptions,
 ): Generator<void, VDTDocument, void> {
+  const lap = perfLap();
   // Faces that arrived since the last build drop what was measured in
   // their families, and a config changed in place resolves again (#629).
   const fontSet = options?.fontSet === undefined ? defaultFontSet() : options.fontSet;
@@ -130,8 +132,10 @@ export function* buildDocumentGen(
   const book = config;
   if (config) config = runs ? chapterConfig(config, runs[0]?.style) : chapterConfigOf(config, content.markdown, content.continuation?.part?.style);
   validateConfigCache(config);
+  lap('build.before');
   const doc = runs && runs.length > 1 ? yield* buildChapterRuns(content, book!, runs, cache, options) : yield* buildDocumentRounds(content, config, cache, options);
   // The warnings below read the book's settings and where each chapter lies.
+  lap('build.rounds');
   if (runs && runs.length > 1) config = book;
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
@@ -170,6 +174,7 @@ export function* buildDocumentGen(
     for (const b of page.floats ?? []) if (b.comic) strips.add(b);
     for (const b of strips) loose.push(...comicPageLayoutWarnings(b.comic!).map((w) => ({ ...w, pageIndex: page.index })));
   }
+  lap('post.warnings');
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
   const annotations = annotateDocument(doc, doc.config?.cjk);
@@ -190,6 +195,7 @@ export function* buildDocumentGen(
   markLineDocument(doc);
   // The lines under the links (`links.style`, #1402).
   underlineDocumentLinks(doc);
+  lap('post.marks');
   // Faces the text was set in that the font set could not give (#629).
   const checkFonts = resolveDebugConfig(config?.debug).warnings.missingFont;
   const fallbacks: ContentWarning[] = fontSet && checkFonts
@@ -209,11 +215,13 @@ export function* buildDocumentGen(
   if (located.length > 0 || loose.length > 0 || annotations.length > 0 || harakat.length > 0 || fallbacks.length > 0) {
     doc.contentWarnings = [...located, ...loose, ...annotations, ...harakat, ...fallbacks];
   }
+  lap('post.fonts');
   // Config values the build replaced (an unknown number format, a font
   // stack, a side column no column width can take): walked once per build,
   // not per pass — they belong to no page.
   const configWarnings = collectConfigWarnings(config, { resources: content.resources, metadata: doc.metadata });
   if (configWarnings.length > 0) doc.configWarnings = configWarnings;
+  lap('post.config');
   return doc;
 }
 

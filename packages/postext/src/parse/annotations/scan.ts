@@ -41,6 +41,8 @@ export interface QueuedAnnotation {
 /** `:dots[`, `:name[`… at the start of a match. `:span[…]{style="id"}`
  *  sets its words in a named character style. */
 const OPENER_RE = /:(dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[/y;
+/** The same opener anywhere in a text. */
+const ANY_OPENER_RE = /:(?:dots|name|book|ruby|warichu|ltr|rtl|sideline|kunten|span)\[/;
 
 /** Letters that make a `{…|…}` a compact ruby: Han, kana, bopomofo. A
  *  brace group without one (`{x|x>0}`) stays text. */
@@ -52,39 +54,46 @@ const RUBY_BASE_RE = /[\p{sc=Han}\p{sc=Hiragana}\p{sc=Katakana}\p{sc=Bopomofo}�
  *  backslash escaping the character after it, -1 when the line ends
  *  first), and where the next `:` or `{` is from each index (-1 for none).
  *  Kept for the last text scanned: the parser asks about one text many
- *  times in a row. */
+ *  times in a row. The source map asks about a whole chapter between two
+ *  paragraphs of it, so a chapter's tables are kept apart (`document`):
+ *  kept in the one place, every annotated block built the chapter's
+ *  tables again (#1608). */
 interface ScanTables {
   text: string;
   close: Int32Array;
   next: Int32Array;
 }
 let lastTables: ScanTables | undefined;
+let documentTables: ScanTables | undefined;
 
-function scanTables(text: string): ScanTables {
-  if (lastTables && lastTables.text === text) return lastTables;
+function scanTables(text: string, document = false): ScanTables {
+  const kept = document ? documentTables : lastTables;
+  if (kept && kept.text === text) return kept;
   const n = text.length;
   const close = new Int32Array(n).fill(-1);
   const next = new Int32Array(n + 1).fill(-1);
   const open: number[] = [];
   for (let i = 0; i < n; i++) {
-    const c = text[i]!;
-    if (c === '\n') {
+    const c = text.charCodeAt(i);
+    if (c === 0x0a) {
       open.length = 0;
       continue;
     }
-    if (c === '\\') {
+    if (c === 0x5c) {
       i++;
       continue;
     }
-    if (c === '[') open.push(i);
-    else if (c === ']' && open.length > 0) close[open.pop()!] = i;
+    if (c === 0x5b) open.push(i);
+    else if (c === 0x5d && open.length > 0) close[open.pop()!] = i;
   }
   for (let i = n - 1; i >= 0; i--) {
-    const c = text[i]!;
-    next[i] = c === ':' || c === '{' ? i : next[i + 1]!;
+    const c = text.charCodeAt(i);
+    next[i] = c === 0x3a || c === 0x7b ? i : next[i + 1]!;
   }
-  lastTables = { text, close, next };
-  return lastTables;
+  const tables = { text, close, next };
+  if (document) documentTables = tables;
+  else lastTables = tables;
+  return tables;
 }
 
 /**
@@ -93,9 +102,9 @@ function scanTables(text: string): ScanTables {
  * line ends first (or `end` is reached). Read from one pass over the text
  * ({@link scanTables}), so asking for every `[` of a line stays linear.
  */
-export function closingBracket(text: string, open: number, end: number = text.length): number {
+export function closingBracket(text: string, open: number, end: number = text.length, document = false): number {
   if (text[open] !== '[') return -1;
-  const at = scanTables(text).close[open]!;
+  const at = scanTables(text, document).close[open]!;
   return at >= 0 && at < end ? at : -1;
 }
 
@@ -163,21 +172,22 @@ export interface FoundAnnotation {
 
 /** Where the next `:` or `{` of `text` at or after `from` is, -1 when
  *  there is none: an annotation opens at one of them. */
-function nextOpening(text: string, from: number): number {
-  return from >= text.length ? -1 : scanTables(text).next[from]!;
+function nextOpening(text: string, from: number, document: boolean): number {
+  return from >= text.length ? -1 : scanTables(text, document).next[from]!;
 }
 
 /** The next annotation of `text` at or after `from` (before `end`). Only
- *  a `:` or a `{` can open one: the text between them is passed over. */
-export function nextAnnotation(text: string, from: number, end: number): FoundAnnotation | undefined {
-  for (let i = nextOpening(text, from); i >= 0 && i < end; i = nextOpening(text, i + 1)) {
+ *  a `:` or a `{` can open one: the text between them is passed over.
+ *  `document`: `text` is a whole chapter, asked about block by block. */
+export function nextAnnotation(text: string, from: number, end: number, document = false): FoundAnnotation | undefined {
+  for (let i = nextOpening(text, from, document); i >= 0 && i < end; i = nextOpening(text, i + 1, document)) {
     const c = text[i]!;
     if (c === ':') {
       OPENER_RE.lastIndex = i;
       const m = OPENER_RE.exec(text);
       if (!m) continue;
       const open = i + m[0].length - 1;
-      const close = closingBracket(text, open, end);
+      const close = closingBracket(text, open, end, document);
       if (close < 0 || close === open + 1) continue;
       // A compact ruby right after the bracket is text, not attributes
       // (`:name[賈寶玉]{紅|hóng}`); a brace whose "base" assigns a value is
@@ -234,7 +244,10 @@ function splitReadings(s: string): string[] {
  * characters written.
  */
 export function markAnnotations(text: string, queue: QueuedAnnotation[], restore: (s: string) => string = (s) => s): string {
-  if (!text.includes(':') && !text.includes('{')) return text;
+  // Only an opener or a brace makes an annotation, and only a brace group
+  // is unescaped: a text with neither is left as it is, its colons read
+  // by no scan (#1608).
+  if (!text.includes('{') && !ANY_OPENER_RE.test(text)) return text;
   const mark = (from: number, end: number, inside: boolean): string => {
     let out = '';
     let at = from;

@@ -589,7 +589,7 @@ Bedenken Sie, womit es die Engine zu tun hat: Tausende von Textblöcken auf Hund
 
 Es gibt keinen inkrementellen Einstiegspunkt: Kein Aufruf nimmt einen fertigen VDT und aktualisiert ihn. Ändern sich Inhalt oder Konfiguration (ein Tastendruck, ein anderes Seitenformat), ruft der Host `buildDocument` erneut auf und erhält ein neues Dokument.
 
-Was von einem Build zum nächsten erhalten bleibt, ist das Messen. Legen Sie einmal mit `createMeasurementCache()` einen `MeasurementCache` an und übergeben Sie ihn als drittes Argument bei jedem Aufruf von `buildDocument`. Ein Absatz, dessen Text, Schriften, Breite und Umbruchoptionen sich nicht geändert haben, wird daraus gelesen, sodass ein Editor, der das Dokument bei jedem Tastendruck setzt, nur den Absatz misst, in dem getippt wird. Eine Änderung des Seitenformats oder der Spaltenzahl ändert die Breiten, und diese Absätze werden neu gemessen; die Ergebnisse von `prepare()` in Pretext gelten weiterhin, da sie von Schrift und Text abhängen und nicht von der Breite, sodass nur die günstige Arithmetik von `layout()` läuft. Auch das Einlesen wird memoisiert. Zusammengesetzte Seiten bleiben ebenfalls erhalten: Eine
+Was von einem Build zum nächsten erhalten bleibt, ist das Messen. Legen Sie einmal mit `createMeasurementCache()` einen `MeasurementCache` an und übergeben Sie ihn als drittes Argument bei jedem Aufruf von `buildDocument`. Ein Absatz, dessen Text, Schriften, Breite und Umbruchoptionen sich nicht geändert haben, wird daraus gelesen, sodass ein Editor, der das Dokument bei jedem Tastendruck setzt, nur den Absatz misst, in dem getippt wird. Die aus dem Cache gelesenen Zeilen teilen ihre Wortsegmente mit ihm; Code, der ein Segment eines gesetzten Dokuments ändert (etwa seine Farbe), legt deshalb eine Kopie in `segments` der Zeile ab, statt in das vorgefundene Segment zu schreiben. Eine Änderung des Seitenformats oder der Spaltenzahl ändert die Breiten, und diese Absätze werden neu gemessen; die Ergebnisse von `prepare()` in Pretext gelten weiterhin, da sie von Schrift und Text abhängen und nicht von der Breite, sodass nur die günstige Arithmetik von `layout()` läuft. Auch das Einlesen wird memoisiert. Zusammengesetzte Seiten bleiben ebenfalls erhalten: Eine
 zusammengesetzte Seite, deren Vorlage, Markdown, Stile und Schriften sich nicht geändert haben,
 wird aus dem vorigen Build übernommen (`composed/pageMemo.ts`), sodass eine Änderung auf einer Seite
 eines Kapitels aus zusammengesetzten Seiten nur diese Seite neu setzt. Eine Seite mit einer
@@ -619,6 +619,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 
 Der Ehrlichkeit halber eine Einschränkung: In Node gibt es keine Canvas, deshalb ersetzen die Benchmarks die Textmessung durch eine Attrappe, und ihre absoluten Zeiten sind nicht die des Browsers. Das Verhältnis von kaltem zu warmem Cache und die Zahl der Durchläufe sind es aber, und eine Verschlechterung bei einem von beiden zeigt sich hier, bevor sie sich in der Sandbox zeigt. Die Benchmarks für das Kapitel und die zusammengesetzten Seiten melden Zahlen und lassen den Build nicht scheitern; der chinesische prüft, dass die gemessenen Zeichen unter dem Dreifachen der Länge des längsten Absatzes bleiben. Keiner läuft in der CI: Verschlechterungen werden erkannt, indem die Zahlen über mehrere Läufe verglichen werden, wenn sich ein heißer Pfad ändert (so geschehen bei der Neufassung der aktiven Knoten in Knuth-Plass). Noch schlägt kein Build wegen einer langsameren Zeit fehl: Eine Verlangsamung fällt beim Messen und im Review auf.
 
+
+Ein vierter Benchmark misst ganze Bücher mit echter Textmessung (Skia, wie die CLI misst). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, in `packages/postext-cli` gestartet, setzt ein Buch kalt, Kapitel für Kapitel, und gibt die Zeit jedes Laufs, den Speicher, einen Hash der Seiten und den Anteil jeder Stufe aus: Messen, Zeilenumbruch, Platzierung und die Arbeit nach den Durchläufen. Der Workflow Layout timing führt ihn nach jeder Version auf einem GitHub-Runner mit fünf Beispielbüchern aus und schreibt die Tabelle in die Zusammenfassung des Laufs; er berichtet und lässt nichts fehlschlagen. Jeder Lauf setzt auch den Commit vor dem Push auf demselben Runner, abwechselnd mit dem neuen: Zwei Runner unterscheiden sich um mehr, als die meisten Änderungen einsparen, deshalb zählt der Unterschied innerhalb eines Laufs. Das sind seine Zahlen für 1.88.1 (16. November 2026, Median aus drei Läufen, ein Thread); die letzten drei Spalten sind Anteile am Lauf.
+
+| Buch | Seiten | Zeit | Pro Seite | Messen | Zeilenumbruch | Platzierung |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
 
 ## Datenfluss
 

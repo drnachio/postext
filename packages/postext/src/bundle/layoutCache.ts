@@ -108,14 +108,24 @@ export interface LayoutBuild {
    *  references and citations), once known: when they are not the ones
    *  of the build that filled the cache, none of its chapters stands. */
   bookInputs(key: string | undefined): void;
-  /** The record of the chapter keyed `key` (undefined: never reused),
-   *  laying it out with `layOut` when none stands. */
-  chapter(key: string | undefined, layOut: () => ChapterRecord): ChapterRecord;
+  /** The record of the chapter keyed `key`, when this build or the one
+   *  that filled the cache laid it out (undefined `key`: never). */
+  peek(key: string | undefined): ChapterRecord | undefined;
+  /** `record`, just laid out, kept under `key` (undefined: not kept). */
+  put(key: string | undefined, record: ChapterRecord): ChapterRecord;
+  /** The chapters of the round, in order, each with the record it stands
+   *  on. */
+  settle(chapters: readonly { key: string | undefined; record: ChapterRecord }[]): void;
   /** Start another round: records this build made that the round before
    *  did not use are kept without their documents. */
   nextRound(): void;
-  /** The documents of the last round, laying out again any whose record
-   *  had lost its document; the cache keeps the records this build used. */
+  /** The chapters of the last round whose record lost its document, to
+   *  lay out again and hand to {@link LayoutBuild.putBack}. */
+  lost(): number[];
+  /** `record`, laid out again, for chapter `index` of the last round. */
+  putBack(index: number, record: ChapterRecord): void;
+  /** The documents of the last round; the cache keeps the records this
+   *  build used. */
   finish(): VDTDocument[];
 }
 
@@ -131,14 +141,8 @@ export function beginLayoutBuild(cache: BundleLayoutCache, settingsKey: string |
   let citationsKey: string | undefined;
   const used = new Map<string, ChapterRecord>();
   const made = new Set<ChapterRecord>();
-  let round: { key: string | undefined; record: ChapterRecord; layOut: () => ChapterRecord }[] = [];
+  let round: { key: string | undefined; record: ChapterRecord }[] = [];
   let layouts = 0;
-  const lay = (layOut: () => ChapterRecord): ChapterRecord => {
-    const record = layOut();
-    layouts++;
-    made.add(record);
-    return record;
-  };
   return {
     derive<T>(key: string | undefined, compute: () => T): T {
       if (key === undefined) return compute();
@@ -151,25 +155,36 @@ export function beginLayoutBuild(cache: BundleLayoutCache, settingsKey: string |
       citationsKey = key;
       previous = sameSettings && key !== undefined && state.citationsKey === key ? state.records : new Map();
     },
-    chapter(key, layOut) {
-      let record = key !== undefined ? used.get(key) ?? previous.get(key) : undefined;
-      if (!record) record = lay(layOut);
+    peek(key) {
+      return key !== undefined ? used.get(key) ?? previous.get(key) : undefined;
+    },
+    put(key, record) {
+      layouts++;
+      made.add(record);
       if (key !== undefined) used.set(key, record);
-      round.push({ key, record, layOut });
       return record;
+    },
+    settle(chapters) {
+      round = chapters.map((c) => ({ key: c.key, record: c.record }));
+      for (const c of round) if (c.key !== undefined) used.set(c.key, c.record);
     },
     nextRound() {
       const current = new Set(round.map((c) => c.record));
       for (const record of made) if (!current.has(record)) delete record.doc;
       round = [];
     },
+    lost() {
+      return round.flatMap((c, index) => (c.record.doc ? [] : [index]));
+    },
+    putBack(index, record) {
+      const c = round[index]!;
+      layouts++;
+      made.add(record);
+      c.record = record;
+      if (c.key !== undefined) used.set(c.key, record);
+    },
     finish() {
-      const docs = round.map((c) => {
-        if (c.record.doc) return c.record.doc;
-        c.record = lay(c.layOut);
-        if (c.key !== undefined) used.set(c.key, c.record);
-        return c.record.doc!;
-      });
+      const docs = round.map((c) => c.record.doc!);
       const last = new Set(round.map((c) => c.record));
       for (const record of used.values()) if (!last.has(record)) delete record.doc;
       state.settingsKey = settingsKey;

@@ -2,6 +2,11 @@
 //! it chooses the breaks the TypeScript engine chose, and times it.
 //!
 //!   cargo run --release -p postext-bench -- <corpus.jsonl> [<corpus.jsonl> …]
+//!
+//! `--rounds N` breaks each corpus N times the way the engine asks (the
+//! two-pass looseness) and nothing else, for a profiler or an instruction
+//! count (`/usr/bin/time -l`, `perf stat`): the count with `--rounds 0` is
+//! what loading the corpus takes.
 
 mod corpus;
 
@@ -9,7 +14,16 @@ use postext_linebreak::{Breaker, LoosenessMode};
 use std::time::Instant;
 
 fn main() {
-    for path in std::env::args().skip(1) {
+    let mut args: Vec<String> = std::env::args().skip(1).collect();
+    if let Some(at) = args.iter().position(|a| a == "--rounds") {
+        let rounds: usize = args.get(at + 1).and_then(|n| n.parse().ok()).expect("--rounds N");
+        args.drain(at..at + 2);
+        for path in &args {
+            repeat(path, rounds);
+        }
+        return;
+    }
+    for path in args {
         let calls = corpus::load(&path);
         let mut breaker = Breaker::new();
         for mode in [LoosenessMode::Single, LoosenessMode::TwoPass] {
@@ -43,6 +57,31 @@ fn main() {
             );
         }
     }
+}
+
+/// Breaks the corpus `rounds` times as the engine asks.
+fn repeat(path: &str, rounds: usize) {
+    let mut calls = corpus::load(path);
+    for call in &mut calls {
+        call.options.looseness_mode = LoosenessMode::TwoPass;
+    }
+    let mut breaker = Breaker::new();
+    let mut differ = 0;
+    let mut best = f64::INFINITY;
+    for _ in 0..rounds {
+        let started = Instant::now();
+        for call in &calls {
+            if breaker.breakpoints(&call.items, &call.options) != call.breaks.as_slice() {
+                differ += 1;
+            }
+        }
+        best = best.min(started.elapsed().as_secs_f64() * 1000.0);
+    }
+    let (taken, given_up) = breaker.short_cuts();
+    println!(
+        "{path}: {} calls × {rounds}, quickest round {best:.1} ms; breaks differ from TS in {differ}; short cut taken {taken}, given up {given_up}",
+        calls.len()
+    );
 }
 
 /// Where the two-pass looseness and the single search disagree: did the

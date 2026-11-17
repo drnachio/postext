@@ -11,6 +11,9 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.{ts,tsx}"],
+    // The measurement cache freezes what it keeps, so a write to a
+    // segment its copies share fails here (#1609).
+    setupFiles: ["src/__tests__/freezeMeasured.ts"],
     exclude: ["**/node_modules/**", "**/dist/**", ...QUICK],
     // Whole-book layouts take seconds on a workstation and ten to twenty times
     // as long on a small CI runner (a shard of the suite each since #1118).

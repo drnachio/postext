@@ -594,7 +594,7 @@ Voyez à quoi le moteur doit faire face : des milliers de blocs de texte sur de
 
 Il n’existe pas de point d’entrée incrémental : aucun appel ne prend un VDT achevé pour le mettre à jour. Quand le contenu ou la configuration change (une frappe au clavier, un autre format de page), l’hôte rappelle `buildDocument` et obtient un nouveau document.
 
-Ce qui passe d’une construction à la suivante, c’est la mesure. Créez un `MeasurementCache` une fois avec `createMeasurementCache()` et passez-le comme troisième argument de chaque appel à `buildDocument`. Un paragraphe dont le texte, les polices, la largeur et les options de coupure n’ont pas changé y est lu : un éditeur qui remet le document en page à chaque frappe ne mesure donc que le paragraphe en cours de saisie. Un changement de format de page ou de nombre de colonnes change les largeurs, et ces paragraphes sont mesurés à nouveau ; les résultats de `prepare()` de Pretext restent valables, puisqu’ils dépendent de la police et du texte et non de la largeur, et seule tourne l’arithmétique peu coûteuse de `layout()`. L’analyse est elle aussi mémoïsée. Les pages composées passent aussi d’une construction à
+Ce qui passe d’une construction à la suivante, c’est la mesure. Créez un `MeasurementCache` une fois avec `createMeasurementCache()` et passez-le comme troisième argument de chaque appel à `buildDocument`. Un paragraphe dont le texte, les polices, la largeur et les options de coupure n’ont pas changé y est lu : un éditeur qui remet le document en page à chaque frappe ne mesure donc que le paragraphe en cours de saisie. Les lignes lues dans le cache partagent avec lui leurs segments de mot : le code qui modifie un segment d’un document mis en page (sa couleur, par exemple) place une copie dans `segments` de la ligne au lieu d’écrire dans celui qu’il a trouvé. Un changement de format de page ou de nombre de colonnes change les largeurs, et ces paragraphes sont mesurés à nouveau ; les résultats de `prepare()` de Pretext restent valables, puisqu’ils dépendent de la police et du texte et non de la largeur, et seule tourne l’arithmétique peu coûteuse de `layout()`. L’analyse est elle aussi mémoïsée. Les pages composées passent aussi d’une construction à
 l’autre : une page composée dont le gabarit, le Markdown, les styles et les polices n’ont pas changé
 est reprise de la construction précédente (`composed/pageMemo.ts`), si bien qu’une modification sur
 une page d’un chapitre de pages composées ne remet en page que cette page. Une page qui contient
@@ -624,6 +624,16 @@ const doc = buildDocument({ markdown }, config, createMeasurementCache(), { onPa
 
 Une réserve, par honnêteté : il n’y a pas de canvas dans Node : les bancs d’essai simulent donc la mesure du texte, et leurs temps absolus ne sont pas ceux du navigateur. Le rapport entre cache vide et cache rempli et le nombre de passes, eux, le sont, et une régression de l’un ou de l’autre se voit ici avant de se voir dans le Sandbox. Les bancs d’essai du chapitre et des pages composées rapportent des chiffres et ne font pas échouer la construction ; celui du chinois vérifie que les caractères mesurés restent en dessous de trois fois la longueur du paragraphe le plus long. Aucun ne tourne en CI : les régressions se repèrent en comparant les chiffres d’une exécution à l’autre quand un chemin critique change (comme on l’a fait pour la réécriture des nœuds actifs de Knuth-Plass). Aucune compilation n’échoue encore sur un temps plus lent : un ralentissement se repère en mesurant et à la relecture.
 
+
+Un quatrième benchmark chronomètre des livres entiers avec une mesure réelle du texte (Skia, comme mesure la CLI). `bun scripts/bench-layout.ts --runs 3 --stages <book>`, lancé dans `packages/postext-cli`, compose un livre à froid, chapitre par chapitre, et affiche le temps de chaque exécution, la mémoire, un hash des pages et la part de chaque étape : mesure, coupure des lignes, placement et travail après les passes. Le workflow Layout timing le lance sur cinq livres de démonstration sur un runner GitHub après chaque version et écrit le tableau dans le résumé de l'exécution ; il rend compte et ne fait rien échouer. Chaque exécution compose aussi le commit qui précède le push sur le même runner, à tour de rôle avec le nouveau : deux runners diffèrent de plus que ce que gagnent la plupart des changements, la différence à lire est donc celle d'une même exécution. Voici ses chiffres pour la 1.88.1 (16 novembre 2026, médiane de trois exécutions, un fil) ; les trois dernières colonnes sont des parts de l'exécution.
+
+| Livre | Pages | Temps | Par page | Mesure | Coupure des lignes | Placement |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Don Quijote | 142 | 0.58 s | 4.1 ms | 22 % | 20 % | 18 % |
+| Paradise Lost | 402 | 2.12 s | 5.3 ms | 29 % | 8 % | 25 % |
+| Física universitaria (OpenStax) | 122 | 0.91 s | 7.5 ms | 25 % | 12 % | 35 % |
+| ألف ليلة وليلة | 2,700 | 26.6 s | 9.8 ms | 49 % | 5 % | 23 % |
+| 紅樓夢 | 2,030 | 3.55 s | 1.8 ms | 48 % | 0 % | 12 % |
 
 ## Flux de données
 

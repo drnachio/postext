@@ -1,0 +1,156 @@
+name: Layout timing
+
+# How long the engine takes to lay out the public showcase books, whole and
+# cold, on a runner with nothing else on it (#1603): the time of each run,
+# the memory, the hash of the pages and the share of each stage, as
+# packages/postext-cli/scripts/bench-layout.ts prints them. A report, not a
+# gate: nothing fails on a slower time, and no other workflow waits for it.
+#
+# Two runners differ by 5–25 % on every stage, more than most changes save,
+# so a run also lays out the base commit (the one before the push) on the
+# same runner, in turns with the head (#1607): the difference between the
+# two inside a run is the change, and the spread between rounds of one side
+# says how much of it is the runner. The numbers are in the run's summary
+# and in its artifact.
+on:
+  # main's numbers after each release, and develop's when the engine or the
+  # report changes: the layout performance programme (#1602) reads them
+  # commit by commit
+  push:
+    branches: [main, develop]
+    paths:
+      - .github/workflows/layout-timing.yml
+      - .github/scripts/layout-timing*.mjs
+      - packages/postext-cli/scripts/bench-layout.ts
+      - packages/postext/package.json
+      - packages/postext/src/**
+      - '!packages/postext/src/**/*.test.ts'
+      - rust/**
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Commit, branch or tag to compare the head with (the head's first parent when empty)
+        required: false
+        type: string
+
+# Read-only token: no job here writes to the repository (artifacts and
+# caches use the runner's own token).
+permissions:
+  contents: read
+
+concurrency:
+  group: layout-timing-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  timing:
+    name: Time the showcase books
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      # Rounds of each side, in turns. Three give a median and a spread.
+      ROUNDS: 3
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # the head and its first parent, the base of a manual run
+          fetch-depth: 2
+      - uses: ./.github/actions/setup
+
+      - run: pnpm turbo run build --filter='postext-cli...'
+
+      # The base commit beside the head, built with the head's Turbo cache
+      # (a package the push did not touch is replayed, not built), and
+      # timed with the head's benchmark so both sides report the same
+      # stages. A base that cannot be built leaves the head's report alone.
+      - name: Build the base commit
+        id: base
+        continue-on-error: true
+        env:
+          BASE: ${{ inputs.base || github.event.before }}
+        run: |
+          if [ -n "$BASE" ] && [ -z "${BASE//0/}" ]; then BASE=; fi
+          if [ -n "$BASE" ]; then
+            git fetch --depth 1 origin "$BASE"
+            sha=$(git rev-parse FETCH_HEAD)
+          else
+            sha=$(git rev-parse HEAD^)
+          fi
+          git worktree add --detach "$RUNNER_TEMP/base" "$sha"
+          cd "$RUNNER_TEMP/base"
+          pnpm install --frozen-lockfile
+          pnpm turbo run build --filter='postext-cli...' --cache-dir="$GITHUB_WORKSPACE/.turbo/cache"
+          cp "$GITHUB_WORKSPACE"/packages/postext-cli/scripts/{bench-layout,vdtHash}.ts packages/postext-cli/scripts/
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      # Each round is one process per side and per mode. "warm": the engine
+      # keeps the canvas's widths for the life of a process, so its runs ask
+      # the canvas once. "cold": every run asks again, as the first layout
+      # of a book does (#1605). The side that goes first changes with the
+      # round, so a runner that drifts does not favour one of them.
+      - name: Lay the books out
+        env:
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: |
+          out="$RUNNER_TEMP/layout-timing"
+          mkdir -p "$out"
+          presets="$GITHUB_WORKSPACE/apps/web/public/presets"
+          books=("$presets/don-quijote" "$presets/paradise-lost" "$presets/openstax-fisica" "$presets/alf-layla" "$presets/hongloumeng")
+          bench() { # side, round
+            local root="$GITHUB_WORKSPACE"
+            if [ "$1" = base ]; then root="$RUNNER_TEMP/base"; fi
+            (cd "$root/packages/postext-cli" &&
+              pnpm exec bun scripts/bench-layout.ts --runs 3 --stages --json "${books[@]}" > "$out/$1-warm-$2.json" &&
+              pnpm exec bun scripts/bench-layout.ts --runs 3 --stages --cold-host --json "${books[@]}" > "$out/$1-cold-$2.json")
+          }
+          for round in $(seq "$ROUNDS"); do
+            if [ -z "$BASE_SHA" ]; then order="head"
+            elif [ $((round % 2)) = 1 ]; then order="base head"
+            else order="head base"; fi
+            for side in $order; do
+              bench "$side" "$round" || { [ "$side" = base ] && rm -f "$out"/base-*-"$round".json; } || exit 1
+            done
+          done
+          # the head alone, under the names the report of one commit has had
+          cp "$out/head-warm-1.json" "$out/layout-timing.json"
+          cp "$out/head-cold-1.json" "$out/layout-timing-cold-host.json"
+
+      # The long books on one thread and on worker threads (#1611): one
+      # layout per process, as a run of the command line is.
+      - name: Lay the long books out on worker threads
+        continue-on-error: true
+        run: |
+          out="$RUNNER_TEMP/layout-timing"
+          presets="$GITHUB_WORKSPACE/apps/web/public/presets"
+          cd packages/postext-cli
+          for round in 1 2 3; do
+            for threads in 1 2 3 4; do
+              flag=""; if [ "$threads" != 1 ]; then flag="--threads $threads"; fi
+              pnpm exec bun scripts/bench-layout.ts --runs 1 --json $flag "$presets/paradise-lost" "$presets/hongloumeng" "$presets/alf-layla" > "$out/threads-$threads-$round.json"
+            done
+          done
+
+      - name: Report
+        if: always()
+        env:
+          BASE_SHA: ${{ steps.base.outputs.sha }}
+        run: |
+          out="$RUNNER_TEMP/layout-timing"
+          base="not built"
+          if [ -n "$BASE_SHA" ]; then base="\`${BASE_SHA::9}\`"; fi
+          {
+            echo "Head \`${GITHUB_SHA::9}\`, base ${base}"
+            echo
+            node .github/scripts/layout-timing-ab.mjs "$out" warm "Base and head"
+            node .github/scripts/layout-timing-ab.mjs "$out" cold "Base and head, the canvas asked on every run"
+            node .github/scripts/layout-timing-threads.mjs "$out"
+            node .github/scripts/layout-timing.mjs "$out/layout-timing.json" "The head, whole book, cold"
+            node .github/scripts/layout-timing.mjs "$out/layout-timing-cold-host.json" "The head, the canvas asked on every run"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-timing
+          path: ${{ runner.temp }}/layout-timing/*.json

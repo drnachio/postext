@@ -11,6 +11,7 @@ import { getMeasureArabicNumbers, getMeasureDirection } from './rtl/bidiLines.js
 import { evictionsSince, measurementGeneration, measureLanguageKey } from './canvas.js';
 import { scriptContextKey } from './script.js';
 import { getSlashBreaks } from './breakRules.js';
+import { perfNow, perfTap } from '../util/perfTap.js';
 
 /** Options that change a block's lines, joined into its cache key. The
  *  active hyphenation dictionary is one: soft hyphens (and the syllables an
@@ -141,17 +142,33 @@ function cjkLinkKey(spans: InlineSpan[], spanKey: string): string {
 
 /** A cached result must read exactly like a fresh measure: the block's own
  *  fields (`totalHeight`, `lastLineRunt`, whatever it gains) are carried
- *  whole, and only the lines — which the pipeline shifts and stamps — are
- *  copied. */
+ *  whole, and the lines — which the pipeline shifts and stamps — are
+ *  copied, each with its box and a list of its own of its segments.
+ *
+ *  The segments themselves are the cache's (#1609): copying every word of
+ *  every line was two thirds of a hit. Whoever changes a placed segment
+ *  puts a copy in the line's list instead (a colour in
+ *  `marks/characterStyles.ts`, `marks/highlightMarks.ts` and
+ *  `pipeline/sections/partPalette/recolor.ts`); the tests run with the
+ *  cached segments frozen ({@link freezeMeasured}), so a write to one
+ *  throws there. */
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
   return {
     ...block,
     lines: block.lines.map((l) => ({
       ...l,
       bbox: { ...l.bbox },
-      segments: l.segments ? l.segments.map((s) => ({ ...s })) : undefined,
+      segments: l.segments ? l.segments.slice() : undefined,
     })),
   };
+}
+
+/** Freeze the segments of a block about to be kept, when the host asks
+ *  for it (`globalThis.__postextFreezeMeasured`, set by the test setup,
+ *  `src/__tests__/freezeMeasured.ts`): the copies handed out share them. */
+function freezeMeasured(block: MeasuredBlock): void {
+  if ((globalThis as { __postextFreezeMeasured?: boolean }).__postextFreezeMeasured !== true) return;
+  for (const line of block.lines) for (const seg of line.segments ?? []) Object.freeze(seg);
 }
 
 /** Whether a cache key sets text in one of `families` (lower case): the
@@ -178,6 +195,26 @@ function current(cache: MeasurementCache): MeasurementCache {
   return cache;
 }
 
+/** The cached block under `key`, or `measure()` kept under it: a copy
+ *  either way. `started` is when the caller began building the key, read
+ *  only when a benchmark listens (`util/perfTap.ts`). */
+function throughCache(cache: MeasurementCache, key: string, started: number, measure: () => MeasuredBlock): MeasuredBlock {
+  const tap = perfTap();
+  const cached = current(cache)._blocks.get(key);
+  const found = tap ? perfNow() : 0;
+  tap?.('measure.key', found - started);
+  if (cached) {
+    const copy = cloneMeasuredBlock(cached);
+    tap?.('measure.hit', perfNow() - found);
+    return copy;
+  }
+  const result = measure();
+  freezeMeasured(result);
+  cache._blocks.set(key, result);
+  tap?.('measure.miss', perfNow() - found);
+  return cloneMeasuredBlock(result);
+}
+
 export function cachedMeasureBlock(
   text: string,
   font: string,
@@ -186,12 +223,9 @@ export function cachedMeasureBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = buildPlainCacheKey(text, font, maxWidthPx, lineHeightPx, options);
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureBlock(text, font, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureBlock(text, font, maxWidthPx, lineHeightPx, options));
 }
 
 /** {@link cachedMeasureRichBlock} for a table cell's paragraph or a piece
@@ -209,12 +243,9 @@ export function cachedMeasureRichSnippet(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = `S${buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options)}`;
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureRichSnippet(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options));
 }
 
 export function cachedMeasureRichBlock(
@@ -228,10 +259,7 @@ export function cachedMeasureRichBlock(
   options: MeasureBlockOptions | undefined,
   cache: MeasurementCache,
 ): MeasuredBlock {
+  const started = perfTap() ? perfNow() : 0;
   const key = buildRichCacheKey(spans, [normalFont, boldFont, italicFont, boldItalicFont], maxWidthPx, lineHeightPx, options);
-  const cached = current(cache)._blocks.get(key);
-  if (cached) return cloneMeasuredBlock(cached);
-  const result = measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options);
-  cache._blocks.set(key, result);
-  return cloneMeasuredBlock(result);
+  return throughCache(cache, key, started, () => measureRichBlock(spans, normalFont, boldFont, italicFont, boldItalicFont, maxWidthPx, lineHeightPx, options));
 }

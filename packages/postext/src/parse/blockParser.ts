@@ -224,11 +224,39 @@ function parseMemoLookup(markdown: string, options?: ParseOptions): { blocks: Co
   }
   const result = parseMarkdownWithIssues(markdown, options);
   memo.set(markdown, result);
-  if (memo.size > PARSE_MEMO_SLOTS) {
-    const oldest = memo.keys().next().value;
-    if (oldest !== undefined) memo.delete(oldest);
-  }
+  if (_memoHolds === 0) trimParseMemo(memo);
   return result;
+}
+
+/** Drop the texts least recently read beyond the memo's slots. */
+function trimParseMemo(memo: Map<string, unknown>): void {
+  while (memo.size > PARSE_MEMO_SLOTS) {
+    const oldest = memo.keys().next().value;
+    if (oldest === undefined) break;
+    memo.delete(oldest);
+  }
+}
+
+/** Builds holding the memo open ({@link holdParseMemo}). */
+let _memoHolds = 0;
+
+/**
+ * Keep every text the parse memo reads until the returned function is
+ * called (#1604). A whole book is read chapter by chapter several times
+ * over before it is laid out (its contents flags, its citations, its
+ * counters, its outline), and a memo of a few slots parsed every chapter
+ * again on each of those sweeps. When the last hold is released the memo
+ * goes back to its few slots, so a long-lived worker keeps no more than it
+ * did.
+ */
+export function holdParseMemo(): () => void {
+  _memoHolds++;
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    if (--_memoHolds === 0) for (const memo of _parseMemos.values()) trimParseMemo(memo);
+  };
 }
 
 /** @internal Number of inputs the parse memo keeps (tests). */
