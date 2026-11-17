@@ -39,7 +39,7 @@ bun scripts/bench-layout.ts --runs 3 --stages <book>           # and where the t
 bun scripts/bench-layout.ts --runs 1 --kp-dump kp.jsonl <book>  # Knuth–Plass corpus
 ```
 
-`--stages` reads the stage times the engine reports through `globalThis.__postextPerfTap` (`packages/postext/src/util/perfTap.ts`) and prints each stage's share of the last run. Times are given as wall time and as CPU time of the process: check the machine's load before trusting either.
+`--stages` reads the stage times the engine reports through `globalThis.__postextPerfTap` (`packages/postext/src/util/perfTap.ts`) and prints each stage's share of the last run. Times are given as wall time and as CPU time of the process: check the machine's load before trusting either. The Layout timing workflow (`.github/workflows/layout-timing.yml`) runs the same benchmark on a GitHub runner for the commit before a push and for the pushed one, in turns, and reports the difference beside the spread between rounds: read a change's gain there, not from two separate runs.
 
 Two engines are compared pass by pass with the pass trace, one line per placement pass with the hash of the document the pass left:
 
