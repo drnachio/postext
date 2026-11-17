@@ -10,8 +10,10 @@ import { useDebouncedValue } from '../hooks/useDebouncedValue.js';
 import { useLayoutWorker } from '../worker/useLayoutWorker.js';
 import { fontsPending, onFontsPending, onLateFonts } from '../worker/LayoutService.js';
 import { planContent } from '../book/jumps.js';
+import { followsLanding, type PaginatorTrigger } from './paginatorPace.js';
 
-/** Pause before a preceding chapter is laid out in the background (ms). */
+/** Pause before a chapter is laid out in the background after something
+ *  the reader did (ms). The paginator's own chain of chapters takes none. */
 const PAGINATION_DEBOUNCE_MS = 300;
 /** Pause after the reader settles on a chapter before the chapters around
  *  it are laid out into the worker's cache (ms). */
@@ -105,11 +107,19 @@ export function ChapterPaginator() {
   // the pending one on, and both its key and its text change at once. A
   // trigger per field would fire the effect twice (the old key with the
   // new text first), building the chapter that just landed once more.
-  const trigger = useMemo(
+  const trigger = useMemo<PaginatorTrigger | null>(
     () => (pendingKey && chapterMarkdown !== undefined ? { key: pendingKey, markdown: chapterMarkdown } : null),
     [pendingKey, chapterMarkdown],
   );
-  const debounced = useDebouncedValue(trigger, PAGINATION_DEBOUNCE_MS);
+  // The pause is for the reader. When the trigger changes because the
+  // build started here just recorded its chapter, the next one starts at
+  // once (#1617).
+  const landedKey = useRef<string | null>(null);
+  const debounced = useDebouncedValue(trigger, PAGINATION_DEBOUNCE_MS, (from, to) => {
+    const landed = landedKey.current;
+    landedKey.current = null;
+    return followsLanding(landed, from, to);
+  });
 
   // The latest inputs, read when a build starts so typing in the active
   // chapter (which re-plans the book) does not restart a build in flight.
@@ -144,7 +154,9 @@ export function ChapterPaginator() {
       .then((doc) => {
         if (cancelled) return;
         const layout = chapterLayoutFromDoc(doc, chapterPlan, { markdown: target.markdown, config: currentConfig, resources: currentResources });
-        if (layout) dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
+        if (!layout) return;
+        landedKey.current = debounced.key;
+        dispatch({ type: 'SET_CHAPTER_LAYOUT', payload: layout });
       })
       .catch((err: unknown) => {
         if ((err as { name?: string } | null)?.name === 'AbortError') return;
