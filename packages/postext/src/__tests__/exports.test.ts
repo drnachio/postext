@@ -1018,6 +1018,8 @@ describe("package exports", () => {
       "createDesignBundle",
       "openDesignBundle",
       "buildBundle",
+      "buildBundleParallel",
+      "layOutChapter",
       "createBundleLayoutCache",
       "loadBundleFonts",
       "registerBundleImages",
