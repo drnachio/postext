@@ -3,7 +3,7 @@ import type { LayoutContinuation, PostextConfig, VDTDocument } from 'postext';
 import { createBundle } from 'postext/bundle';
 import { layOutBookChain } from './chain.js';
 import { addChapter, cloneBook, newChapter, renameChapter } from './chapterOps.js';
-import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys.js';
+import { ENGINE_KEY, pagesConfigKeyOf, resourcesKeyOf } from './layoutKeys.js';
 import { createBookPlanner } from './pagination.js';
 import { stitchDocuments } from './stitch.js';
 import type { BookContent, BookStart, Chapter, ChapterLayout, ChapterPlan } from './types.js';
@@ -84,7 +84,7 @@ function layoutFor(plan: ChapterPlan, pageCount: number): ChapterLayout {
   return {
     chapterId: plan.chapterId,
     markdown: chapters.find((c) => c.id === plan.chapterId)!.markdown,
-    configKey: configKeyOf(config),
+    configKey: pagesConfigKeyOf(config),
     resourcesKey: resourcesKeyOf([]),
     engine: ENGINE_KEY,
     continuationKey: plan.continuationKey,
@@ -143,7 +143,7 @@ describe('the planner seeds the first chapter with the book\'s start (#695)', ()
       footer: { elements: [{ kind: 'text', id: 'folio', content: '{pageNumber} / {bookTotalPages}', placement: { anchor: { to: 'container', edge: 'top' } } }] },
     } as PostextConfig;
     const planner = createBookPlanner();
-    const keyed = (plan: ChapterPlan, pages: number): ChapterLayout => ({ ...layoutFor(plan, pages), configKey: configKeyOf(counted) });
+    const keyed = (plan: ChapterPlan, pages: number): ChapterLayout => ({ ...layoutFor(plan, pages), configKey: pagesConfigKeyOf(counted) });
     const p0 = planner.plan(chapters, counted, [], {}, start);
     const p1 = planner.plan(chapters, counted, [], { a: keyed(p0.byId.a!, 4) }, start);
     const p2 = planner.plan(chapters, counted, [], { a: keyed(p1.byId.a!, 4), b: keyed(p1.byId.b!, 3) }, start);
@@ -221,7 +221,7 @@ describe('the start travels with the book (#695)', () => {
     const first = loaded.chapters[0]!;
     const record: ChapterLayout = {
       ...layoutFor({ ...p0.byId[first.id]!, chapterId: 'a' }, 4),
-      chapterId: first.id, markdown: first.markdown, configKey: configKeyOf(loaded.config), resourcesKey: resourcesKeyOf(loaded.resources),
+      chapterId: first.id, markdown: first.markdown, configKey: pagesConfigKeyOf(loaded.config), resourcesKey: resourcesKeyOf(loaded.resources),
     };
     const content = { chapters: loaded.chapters, config: loaded.config, resources: loaded.resources, start: loaded.start, layouts: { [first.id]: record } };
     const built = await buildBundleFiles({ id: 'excerpt', name: 'Excerpt', locale: 'en' }, content, { readBlob: async () => null, readFont: async () => null });

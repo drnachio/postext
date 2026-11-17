@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { NumeralStyle, PostextConfig, Resource, VDTDocument } from 'postext';
 import { chapterLayoutFromDoc, chapterPageLabels, createBookPlanner, opensOnEvenPage, sameChapterLayout, sameLayoutInputs } from './pagination.js';
-import { ENGINE_KEY, configKeyOf, resourcesKeyOf } from './layoutKeys.js';
+import { ENGINE_KEY, pagesConfigKeyOf, resourcesKeyOf } from './layoutKeys.js';
 import { newChapter } from './chapterOps.js';
 import { markBuiltWithoutFaces } from './withoutFaces.js';
 import type { Chapter, ChapterLayout, ChapterPlan } from './types.js';
@@ -24,7 +24,7 @@ function layoutFor(plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount
   return {
     chapterId: plan.chapterId,
     markdown: chapter.markdown,
-    configKey: configKeyOf(config),
+    configKey: pagesConfigKeyOf(config),
     resourcesKey: resourcesKeyOf(resources),
     engine: ENGINE_KEY,
     continuationKey: plan.continuationKey,
@@ -85,7 +85,7 @@ describe('createBookPlanner', () => {
     // The book's first chapter is the book's first page.
     expect(p0.byId.a!.continuation).toBeUndefined();
     // Once the chapter before it is paginated, its pages are the book's.
-    const a = { ...layoutFor(p0.byId.a!, { pageCount: 13 }, book), configKey: configKeyOf(plated), resourcesKey: resourcesKeyOf([]), lastPageFormat: 'cjk-decimal' as const };
+    const a = { ...layoutFor(p0.byId.a!, { pageCount: 13 }, book), configKey: pagesConfigKeyOf(plated), resourcesKey: resourcesKeyOf([]), lastPageFormat: 'cjk-decimal' as const };
     const p1 = planner.plan(book, plated, [], { a });
     expect(p1.byId.b!.paginated).toBe(true);
     expect(p1.byId.b!.continuation?.pageIndexOffset).toBe(13);
@@ -229,7 +229,7 @@ describe('createBookPlanner', () => {
     ];
     const cfg: PostextConfig = { headingStyles: [{ id: 'front', numbered: false }] };
     const layoutIn = (plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout => ({
-      ...layoutFor(plan, over, book), configKey: configKeyOf(cfg),
+      ...layoutFor(plan, over, book), configKey: pagesConfigKeyOf(cfg),
     });
     const planner = createBookPlanner();
     const p0 = planner.plan(book, cfg, resources, {});
@@ -315,7 +315,7 @@ describe('createBookPlanner', () => {
       newChapter('c', 'C', '# Two', 1),
     ];
     const layoutIn = (plan: ChapterPlan, over: Partial<ChapterLayout> & { pageCount: number }): ChapterLayout =>
-      layoutFor(plan, { configKey: configKeyOf(noPage), ...over }, book);
+      layoutFor(plan, { configKey: pagesConfigKeyOf(noPage), ...over }, book);
     const p0 = planner.plan(book, noPage, resources, {});
     const front = layoutIn(p0.byId.front!, { pageCount: 2 });
     const p1 = planner.plan(book, noPage, resources, { front });
@@ -380,7 +380,7 @@ describe('createBookPlanner: line numbers through the book (#621)', () => {
   const book = [newChapter('a', 'A', '# One\n\nText.', 1), newChapter('b', 'B', '# Two\n\nText.', 1), newChapter('c', 'C', '# Three\n\nText.', 1)];
   const record = (plan: ChapterPlan, over: Partial<ChapterLayout>): ChapterLayout => ({
     chapterId: plan.chapterId, markdown: book.find((c) => c.id === plan.chapterId)!.markdown,
-    configKey: configKeyOf(numbered), resourcesKey: resourcesKeyOf([]), engine: ENGINE_KEY, continuationKey: plan.continuationKey,
+    configKey: pagesConfigKeyOf(numbered), resourcesKey: resourcesKeyOf([]), engine: ENGINE_KEY, continuationKey: plan.continuationKey,
     pageCount: 1, leadingBlankPages: 0, firstContentPageNumber: { delta: 0 }, firstContentPageFormat: 'decimal',
     lastPageNumber: { delta: 0 }, lastPageFormat: 'decimal', outlinePages: [], outlineKey: '', ...over,
   });
@@ -447,7 +447,7 @@ describe('chapterLayoutFromDoc', () => {
   it('records page count, leading blanks and how the numbering ends', () => {
     const layout = chapterLayoutFromDoc(doc([{ value: 14 }, { value: 15 }, { value: 16 }], [1, 2, 2]), plan(true), inputs)!;
     expect(layout).toMatchObject({ chapterId: 'b', continuationKey: 'k', pageCount: 3, leadingBlankPages: 1, firstContentPageNumber: { delta: 1 }, firstContentPageFormat: 'decimal', lastPageNumber: { delta: 2 }, lastPageFormat: 'decimal', markdown: '# B' });
-    expect(layout.configKey).toBe(configKeyOf(config));
+    expect(layout.configKey).toBe(pagesConfigKeyOf(config));
     expect(layout.resourcesKey).toBe(resourcesKeyOf(resources));
     expect(layout.engine).toBe(ENGINE_KEY);
     const roman = chapterLayoutFromDoc(doc([{ value: 1, format: 'lower-roman' }, { value: 1 }], [0, 1], [1]), plan(true), inputs)!;
@@ -509,7 +509,7 @@ describe('plan and layout equivalence', () => {
         }],
       },
     };
-    const record = (p: ChapterPlan, pageCount: number): ChapterLayout => ({ ...layoutFor(p, { pageCount }), configKey: configKeyOf(counting) });
+    const record = (p: ChapterPlan, pageCount: number): ChapterLayout => ({ ...layoutFor(p, { pageCount }), configKey: pagesConfigKeyOf(counting) });
     const book = createBookPlanner();
     const p0 = book.plan(chapters, counting, resources, {});
     const a = record(p0.byId.a!, 3);

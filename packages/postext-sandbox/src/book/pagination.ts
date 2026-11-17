@@ -8,7 +8,7 @@
 import { builtWithoutFaces } from './withoutFaces.js';
 import { type PostextConfig, type Resource, type LayoutContinuation, type OutlineEntry, parseMarkdown, extractFrontmatter, DEFAULT_PARTS_CONFIG, resolveHeadingsConfig, configUsesPlaceholder, type CitationSource, mayNeedCitations, citationSourceOf, continuationAfter, contentOutline, resolvePageConfig, type StoryJump, formatNumeral, type CarriedPlace, mergeCarriedOutline, tocOutline, indexOutline, anchorOutline, outlineKey, partPageAttr, needsCitationContext, bookCitationContexts, citationContextKey, type VDTDocument, outlineFromDoc } from 'postext';
 import type { Chapter, ChapterLayout, BookStart, BookPlan, ChapterPart, ChapterPlan, BookPages, ChapterPageNumber, OutlinePage, CarriedOutlinePage } from './types.js';
-import { configKeyOf, resourcesKeyOf, ENGINE_KEY } from './layoutKeys.js';
+import { pagesConfigKeyOf, resourcesKeyOf, ENGINE_KEY } from './layoutKeys.js';
 import { createPageIdsCache, laterIdsOfBook, jumpsKeyOf, keyOf, routeJumps } from './jumps.js';
 import { countersKey, type PageStart, firstContinuationKey, chapterLayoutIsCurrent, lineCountBase, resolvePageNumber, placeOutline } from './pagination/compare.js';
 
@@ -507,7 +507,7 @@ export function chapterLayoutFromDoc(
   return {
     chapterId: plan.chapterId,
     markdown: inputs.markdown,
-    configKey: configKeyOf(inputs.config),
+    configKey: pagesConfigKeyOf(inputs.config),
     resourcesKey: resourcesKeyOf(inputs.resources),
     engine: ENGINE_KEY,
     continuationKey: plan.continuationKey,
