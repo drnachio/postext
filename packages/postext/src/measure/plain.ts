@@ -162,8 +162,12 @@ export function measureBlock(
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, options);
   }
 
+  const ragged = textAlign !== 'justify';
+  /** Knuth–Plass breaks this paragraph: the text library is asked for its
+   *  segments and their widths alone (#1614). */
+  const optimal = options?.optimal === true && (!ragged || options.optimalRagged === true);
   // Measured in the document's language, like every other text (#764).
-  const prepared = prepareInLanguage(processedText, font);
+  let prepared = prepareInLanguage(processedText, font, optimal);
   const normalSpaceWidth = textAlign === 'justify' ? normalSpaceWidthFor(font) : 0;
 
   // Knuth-Plass optimal line breaking path (text with words set without
@@ -171,8 +175,7 @@ export function measureBlock(
   // fullwidth sign in Latin text is no reason). Ragged text takes it too
   // with `optimalRagged`: its word spaces keep their width and each line
   // gets the ragged stretch instead.
-  const ragged = textAlign !== 'justify';
-  if (options?.optimal && (!ragged || options.optimalRagged)) {
+  if (options && optimal) {
     const maxStretchRatio = ragged ? 1 : options.maxStretchRatio ?? 1.5;
     const minShrinkRatio = ragged ? 1 : options.minShrinkRatio ?? 0.8;
     // The runt threshold counts word spaces on ragged text too.
@@ -236,6 +239,9 @@ export function measureBlock(
   if (options?.stacks || (options?.spaceBreaks && !measuringVertically() && ruledSpaces(text, { citations: options.spaceBreaks.citations > 0, operators: options.spaceBreaks.operators > 0 }).length > 0)) {
     return measureRichBlock([{ text, bold: false, italic: false }], font, font, font, font, maxWidthPx, lineHeightPx, { ...options, optimal: false });
   }
+
+  // The library breaks the lines after all: prepared in full for it.
+  if (optimal) prepared = prepareInLanguage(processedText, font);
 
   const lines: VDTLine[] = [];
   const baselineOffset = lineBaselineOffset(lineHeightPx, font);

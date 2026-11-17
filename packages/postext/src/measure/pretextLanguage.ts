@@ -39,7 +39,7 @@
 // a platform whose contexts have no `lang`) the library measures as it
 // always did.
 
-import { prepareWithSegments, type PreparedTextWithSegments } from '@chenglou/pretext';
+import { prepareWithSegments, type PrepareOptions, type PreparedTextWithSegments } from '@chenglou/pretext';
 import { getMeasureLanguage, measureUncachedWidth } from './canvas.js';
 
 const HOST_LANGUAGE = 'inherit';
@@ -122,13 +122,30 @@ function findContext<T>(language: string, prepare: () => T): T {
   }
 }
 
+/** What {@link prepareInLanguage} asks of the library for a caller that
+ *  breaks the lines itself. */
+const SEGMENT_WIDTHS_ONLY = { segmentWidthsOnly: true } as PrepareOptions;
+
 /**
  * `prepareWithSegments(text, font)` measured in the language the engine
  * measures in (`setMeasureLanguage`). With the host's language and a
  * library whose context was never given another, the call is the one it
  * always was.
+ *
+ * `segmentWidthsOnly`: the caller breaks the lines itself (Knuth–Plass) and
+ * reads the segments, their kinds and their widths, nothing else. The
+ * library then leaves out what it measures for its own line breaker alone
+ * (#1614): where a word may be cut between two letters, and how much
+ * narrower the two neighbours of a soft hyphen are set joined, one canvas
+ * measure for every soft hyphen the dictionary adds. Over half the widths
+ * a first layout of a hyphenated book asked the canvas for were these. The
+ * result must not go to the library's `layoutNextLine`: prepare the text
+ * again without the option for that. The option is this repository's patch
+ * of the library (`patches/`); an unpatched copy ignores it and prepares in
+ * full, which gives the same segments and widths.
  */
-export function prepareInLanguage(text: string, font: string): PreparedTextWithSegments {
+export function prepareInLanguage(text: string, font: string, segmentWidthsOnly = false): PreparedTextWithSegments {
+  const options = segmentWidthsOnly ? SEGMENT_WIDTHS_ONLY : undefined;
   const language = getMeasureLanguage();
   const wanted = language ?? HOST_LANGUAGE;
   let keyed = font;
@@ -141,14 +158,14 @@ export function prepareInLanguage(text: string, font: string): PreparedTextWithS
     keyed = font + ' '.repeat(spaces);
   }
   // Nothing to find while the host's language is all that was asked for.
-  if (language === undefined && context === undefined) return prepareWithSegments(text, font);
+  if (language === undefined && context === undefined) return prepareWithSegments(text, font, options);
   if (context !== undefined && context !== null && contextLanguage !== wanted) {
     context.lang = wanted;
     contextLanguage = wanted;
   }
   preparing = language === undefined ? undefined : font;
   try {
-    return context === undefined ? findContext(wanted, () => prepareWithSegments(text, keyed)) : prepareWithSegments(text, keyed);
+    return context === undefined ? findContext(wanted, () => prepareWithSegments(text, keyed, options)) : prepareWithSegments(text, keyed, options);
   } finally {
     preparing = undefined;
   }
