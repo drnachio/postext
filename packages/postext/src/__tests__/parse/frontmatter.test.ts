@@ -56,3 +56,29 @@ Body`;
     expect(extractFrontmatter("# Heading").fieldSources).toBeUndefined();
   });
 });
+
+// #1623: a text that opens with no block is answered without gray-matter,
+// with what gray-matter answers.
+describe("extractFrontmatter on a text without a block", () => {
+  it("answers as gray-matter does", async () => {
+    const matter = (await import("gray-matter")).default;
+    const texts = ["", "abc", "\uFEFFabc", "\uFEFF", "  ---\na: 1\n---\nx", "--\nx", "\n---\na: 1\n---\nx", "# One\n\n---\n\nTwo", " ---", "–––\nx"];
+    for (const text of texts) {
+      const theirs = matter(text, { engines: {} });
+      const ours = extractFrontmatter(text);
+      expect(ours.metadata, JSON.stringify(text)).toEqual(theirs.data);
+      expect(ours.content, JSON.stringify(text)).toBe(theirs.content);
+      expect(ours.error, JSON.stringify(text)).toBeUndefined();
+    }
+  });
+
+  it("keeps where the text starts after a byte-order mark", () => {
+    expect(extractFrontmatter("\uFEFF# One")).toMatchObject({ metadata: {}, content: "# One", contentOffset: 1 });
+    expect(extractFrontmatter("# One")).toMatchObject({ metadata: {}, content: "# One", contentOffset: 0 });
+  });
+
+  it("still reads a block, after a byte-order mark too", () => {
+    expect(extractFrontmatter("---\ntitle: T\n---\nx")).toMatchObject({ metadata: { title: "T" }, content: "x" });
+    expect(extractFrontmatter("\uFEFF---\ntitle: T\n---\nx")).toMatchObject({ metadata: { title: "T" }, content: "x" });
+  });
+});

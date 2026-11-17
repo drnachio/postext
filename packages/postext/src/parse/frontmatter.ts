@@ -203,7 +203,14 @@ export function extractFrontmatter(markdown: string): ParsedFrontmatter {
   let data: unknown;
   let content: string;
   let error: FrontmatterError | undefined;
-  try {
+  // A text that opens with no block has none: gray-matter says so too, but
+  // only after copying the whole text to bytes and back, on every build of
+  // a chapter (#1623).
+  const text = markdown.charCodeAt(0) === 0xfeff ? markdown.slice(1) : markdown;
+  if (!text.startsWith('---')) {
+    data = {};
+    content = text;
+  } else try {
     // With options gray-matter caches nothing either: a text whose block
     // throws used to come back from its cache half-made (no error) when
     // asked again.
