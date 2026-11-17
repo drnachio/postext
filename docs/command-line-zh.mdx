@@ -321,6 +321,7 @@ postext build chapters/ --pdf book.pdf --watch
     <tr><td><code>--font-dir DIR</code></td><td>到这个文件夹里查找书中没有自带的字体。可以重复使用。</td></tr>
     <tr><td><code>--offline</code></td><td>从不下载字体。</td></tr>
     <tr><td><code>--cache-dir DIR</code></td><td>存放下载字体的位置。</td></tr>
+    <tr><td><code>--threads N|auto</code></td><td>用<code>N</code>个线程排各章（<code>auto</code>：按书的篇幅和机器的核心数决定）。页面与默认的单线程排版相同。自postext 1.89起。</td></tr>
   </tbody>
 </table>
 
