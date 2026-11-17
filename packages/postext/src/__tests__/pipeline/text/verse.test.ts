@@ -3,7 +3,7 @@ import { joinsWithNext } from '../../../writing/bidi.js';
 import { parseMarkdown } from '../../../parse/index.js';
 import { buildDocument } from '../../../pipeline/index.js';
 import { collectContentWarnings } from '../../../pipeline/contentWarnings.js';
-import { verseSettings } from '../../../pipeline/text/verse.js';
+import { measureVerse, verseSettings } from '../../../pipeline/text/verse.js';
 import { writtenText } from '../../../measure/rtl/kashida.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../../vdt.js';
@@ -238,5 +238,37 @@ describe('verse in a left-to-right book', () => {
     // lower, on the grid (30 pt here).
     expect(spaced.onGrid).toBeCloseTo(Math.round(spaced.onGrid), 6);
     expect(spaced.after - plain.after).toBeCloseTo(30, 6);
+  });
+});
+
+// #1624: a poem asked again alike comes back as a copy of the one laid out
+// before; asked from other inputs it is laid out anew.
+describe('a poem laid out before', () => {
+  const style = { fontString: '400 20px Amiri', fontSizePx: 20, lineHeightPx: 30 } as unknown as Parameters<typeof measureVerse>[0]['style'];
+  const block = () => parseMarkdown(':::verse\nAAA BBB || CCC DDD\nEEE FFF || GGG HHH\n:::').find((b) => b.verse)!;
+  const input = (contentBlock: ReturnType<typeof block>, measureMaxWidth = 360): Parameters<typeof measureVerse>[0] =>
+    ({ contentBlock, style, measureMaxWidth, dpi: 72, minWordSpacing: 0.8, direction: 'ltr', frameDirection: 'ltr' });
+
+  it('comes back equal, and the caller may change it', () => {
+    const poem = block();
+    const first = measureVerse(input(poem));
+    const again = measureVerse(input(poem));
+    expect(again).toEqual(first);
+    expect(again.lines[0]).not.toBe(first.lines[0]);
+    // What a pass does to its lines stays out of the next answer.
+    again.lines[0]!.bbox.x += 99;
+    again.lines[0]!.segments![0]!.width += 99;
+    first.lines.pop();
+    expect(measureVerse(input(poem))).toEqual(measureVerse(input(block())));
+  });
+
+  it('is laid out anew at another measure, and when its words change', () => {
+    const poem = block();
+    const wide = measureVerse(input(poem, 360));
+    const narrow = measureVerse(input(poem, 200));
+    expect(narrow).toEqual(measureVerse(input(block(), 200)));
+    expect(narrow).not.toEqual(wide);
+    poem.spans = parseMarkdown(':::verse\nAAA || CCC\n:::').find((b) => b.verse)!.spans;
+    expect(measureVerse(input(poem, 360))).toEqual(measureVerse(input(parseMarkdown(':::verse\nAAA || CCC\n:::').find((b) => b.verse)!, 360)));
   });
 });
