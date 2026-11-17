@@ -84,7 +84,7 @@ interface ChosenPoint {
 }
 
 const chosenCache = new Map<string, readonly ChosenPoint[]>();
-const CHOSEN_CACHE_LIMIT = 20000;
+const CHOSEN_CACHE_LIMIT = 400_000;
 
 /** Whether `text[i]` is a tatweel the author typed as an elongation: one
  *  that carries no mark (a tatweel under a mark seats it). */

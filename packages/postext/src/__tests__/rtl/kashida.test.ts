@@ -295,3 +295,18 @@ describe('kashida in a built document', () => {
     for (const s of lines(b).flatMap((l) => l.segments ?? [])) if (s.kashida) expect(/[a-z]/i.test(s.text)).toBe(false);
   });
 });
+
+// #1625: a long book has far more distinct words than the memo once held.
+describe('the memo of a word’s points', () => {
+  it('still holds a word after tens of thousands of others', () => {
+    const first = chosenKashidaPoints('كلمة', 'naskh', 1);
+    const letters = 'بتثجحخسشصضطظعغفقكلمنهي';
+    let asked = 0;
+    for (const a of letters) for (const b of letters) for (const c of letters) for (const d of 'بتثجحخ') {
+      chosenKashidaPoints(a + b + c + d, 'naskh', 1);
+      asked++;
+    }
+    expect(asked).toBeGreaterThan(60_000);
+    expect(chosenKashidaPoints('كلمة', 'naskh', 1)).toBe(first);
+  });
+});
