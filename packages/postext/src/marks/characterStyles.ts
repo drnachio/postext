@@ -21,11 +21,15 @@ export function colorCharacterStyles(doc: VDTDocument): void {
   for (const s of styles) if (s.color) colors.set(s.id, s.color.hex);
   for (const { lines } of textLineGroups(doc)) {
     for (const line of lines) {
-      for (const seg of line.segments ?? []) {
+      // A coloured word is a copy: the measurement cache shares a line's
+      // segments with every other copy of the paragraph (#1609).
+      const segments = line.segments ?? [];
+      for (let i = 0; i < segments.length; i++) {
+        const seg = segments[i]!;
         const run = seg.charStyle;
         if (!run || seg.kind === 'space') continue;
         const color = colors.get(run.style);
-        if (color !== undefined) seg.color = color;
+        if (color !== undefined && seg.color !== color) segments[i] = { ...seg, color };
       }
     }
   }

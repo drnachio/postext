@@ -142,17 +142,33 @@ function cjkLinkKey(spans: InlineSpan[], spanKey: string): string {
 
 /** A cached result must read exactly like a fresh measure: the block's own
  *  fields (`totalHeight`, `lastLineRunt`, whatever it gains) are carried
- *  whole, and only the lines — which the pipeline shifts and stamps — are
- *  copied. */
+ *  whole, and the lines — which the pipeline shifts and stamps — are
+ *  copied, each with its box and a list of its own of its segments.
+ *
+ *  The segments themselves are the cache's (#1609): copying every word of
+ *  every line was two thirds of a hit. Whoever changes a placed segment
+ *  puts a copy in the line's list instead (a colour in
+ *  `marks/characterStyles.ts`, `marks/highlightMarks.ts` and
+ *  `pipeline/sections/partPalette/recolor.ts`); the tests run with the
+ *  cached segments frozen ({@link freezeMeasured}), so a write to one
+ *  throws there. */
 function cloneMeasuredBlock(block: MeasuredBlock): MeasuredBlock {
   return {
     ...block,
     lines: block.lines.map((l) => ({
       ...l,
       bbox: { ...l.bbox },
-      segments: l.segments ? l.segments.map((s) => ({ ...s })) : undefined,
+      segments: l.segments ? l.segments.slice() : undefined,
     })),
   };
+}
+
+/** Freeze the segments of a block about to be kept, when the host asks
+ *  for it (`globalThis.__postextFreezeMeasured`, set by the test setup,
+ *  `src/__tests__/freezeMeasured.ts`): the copies handed out share them. */
+function freezeMeasured(block: MeasuredBlock): void {
+  if ((globalThis as { __postextFreezeMeasured?: boolean }).__postextFreezeMeasured !== true) return;
+  for (const line of block.lines) for (const seg of line.segments ?? []) Object.freeze(seg);
 }
 
 /** Whether a cache key sets text in one of `families` (lower case): the
@@ -193,6 +209,7 @@ function throughCache(cache: MeasurementCache, key: string, started: number, mea
     return copy;
   }
   const result = measure();
+  freezeMeasured(result);
   cache._blocks.set(key, result);
   tap?.('measure.miss', perfNow() - found);
   return cloneMeasuredBlock(result);

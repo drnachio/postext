@@ -552,7 +552,7 @@ renderToScorm(docs, options): Promise<Uint8Array>;
 
 没有增量式的入口：没有哪个调用接收一个完成的VDT并更新它。内容或配置发生变化时（一次按键，换一种页面尺寸），宿主再次调用`buildDocument`，得到一份新文档。
 
-从一次构建延续到下一次构建的是测量结果。用`createMeasurementCache()`创建一次`MeasurementCache`，把它作为第三个参数传给每一次`buildDocument`调用。文本、字体、宽度和断行选项都没有变化的段落从缓存中读出，所以每次按键都重新排版的编辑器只需测量正在输入的那个段落。页面尺寸或栏数的变化会改变宽度，这些段落就要重新测量；Pretext的`prepare()`结果仍然有效，因为它们取决于字体和文本，与宽度无关，所以只需运行低开销的`layout()`算术。解析结果也有记忆化。模板页也会延续下来：模板、Markdown、样式和字体都没有变化的模板页直接沿用上一次构建的结果（`composed/pageMemo.ts`），所以在由模板页组成的章里编辑某一页，只会重排这一页。含有脚注、交叉引用、引文、目录或索引列表、漫画条的页面则总是重新排版。
+从一次构建延续到下一次构建的是测量结果。用`createMeasurementCache()`创建一次`MeasurementCache`，把它作为第三个参数传给每一次`buildDocument`调用。文本、字体、宽度和断行选项都没有变化的段落从缓存中读出，所以每次按键都重新排版的编辑器只需测量正在输入的那个段落。从缓存读出的行与缓存共用词片段，所以要修改已排版文档中某个片段（例如颜色）的代码，应在该行的`segments`里放入一份副本，而不是直接写入原片段。页面尺寸或栏数的变化会改变宽度，这些段落就要重新测量；Pretext的`prepare()`结果仍然有效，因为它们取决于字体和文本，与宽度无关，所以只需运行低开销的`layout()`算术。解析结果也有记忆化。模板页也会延续下来：模板、Markdown、样式和字体都没有变化的模板页直接沿用上一次构建的结果（`composed/pageMemo.ts`），所以在由模板页组成的章里编辑某一页，只会重排这一页。含有脚注、交叉引用、引文、目录或索引列表、漫画条的页面则总是重新排版。
 
 对于实时编辑器，`createLayoutWorker`（来自`postext/worker`）在主线程之外完成这一切：工作线程拥有一个与它同寿命的测量缓存，新的`build()`会取消正在进行的那一次。见[配置 › 测量缓存](/zh/docs/configuration-programmatic-usage#测量缓存)和[在Web Worker中运行排版](/zh/docs/configuration-programmatic-usage#在web-worker中运行排版)。
 

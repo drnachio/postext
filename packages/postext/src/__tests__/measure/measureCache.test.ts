@@ -96,15 +96,35 @@ describe('MeasurementCache', () => {
     expect(original.lines[0]!.sourceStart).toBeUndefined();
   });
 
-  it('segments array is shared between original and clone (shallow)', () => {
-    const original = fakeMeasuredBlock();
-    const clone = {
-      lines: original.lines.map((l) => ({ ...l, bbox: { ...l.bbox } })),
-      totalHeight: original.totalHeight,
-    };
+  it('a copy has its own lines and segment lists, and the segments of the cache (#1609)', () => {
+    const cache = createMeasurementCache();
+    const spans: InlineSpan[] = [{ text: 'Hello brave new world', bold: false, italic: false }];
+    const measure = () => cachedMeasureRichBlock(spans, '16px serif', '16px serif', '16px serif', '16px serif', 300, 20, undefined, cache);
+    const first = measure();
+    const second = measure();
+    const a = first.lines[0]!;
+    const b = second.lines[0]!;
 
-    // Segments should be the same reference (not deep-cloned, since build.ts never mutates them)
-    expect(clone.lines[0]!.segments).toBe(original.lines[0]!.segments);
+    expect(b).not.toBe(a);
+    expect(b.bbox).not.toBe(a.bbox);
+    expect(b.segments).not.toBe(a.segments);
+    expect(b.segments).toEqual(a.segments);
+    expect(a.segments!.length).toBeGreaterThan(1);
+    a.segments!.forEach((seg, i) => expect(b.segments![i]).toBe(seg));
+
+    // What the pipeline does to a line stays in the copy
+    a.bbox.x = 999;
+    a.segments![0] = { ...a.segments![0]!, color: '#aa0000' };
+    expect(measure().lines[0]!.bbox.x).toBe(0);
+    expect(measure().lines[0]!.segments![0]!.color).toBeUndefined();
+  });
+
+  it('the cached segments are frozen under test, so a write to one throws (#1609)', () => {
+    const cache = createMeasurementCache();
+    const spans: InlineSpan[] = [{ text: 'Hello world', bold: false, italic: false }];
+    const seg = cachedMeasureRichBlock(spans, '16px serif', '16px serif', '16px serif', '16px serif', 300, 20, undefined, cache).lines[0]!.segments![0]!;
+    expect(Object.isFrozen(seg)).toBe(true);
+    expect(() => { seg.color = '#aa0000'; }).toThrow(TypeError);
   });
 });
 

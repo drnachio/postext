@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/index.js';
+import { createMeasurementCache } from '../../../measure/index.js';
 import { stripConfigDefaults } from '../../../defaults/index.js';
 import { resolveCharacterStylesConfig, stripCharacterStylesDefaults } from '../../../defaults/text/characterStyles.js';
 import { resolveMarkStylesConfig } from '../../../defaults/text/markStyles.js';
@@ -77,6 +78,29 @@ describe('character styles', () => {
     const blue = build('Un :span[texto grande]{style="big"} aquí.', { characterStyles: [{ ...styles[0]!, color: hex('#0000aa') }] });
     expect(geometry(blue)).toEqual(geometry(red));
     expect(segs(blue).find((s) => s.text === 'texto')!.color).toBe('#0000aa');
+  });
+
+  it('paints the colour on the document, not on the measurement cache it was laid out with (#1609)', () => {
+    const cache = createMeasurementCache();
+    const md = 'Un :span[texto grande]{style="big"} y :mark[una marca]{style="mark"} aquí.';
+    const colours = (d: VDTDocument) => segs(d).filter((s) => s.kind === 'text').map((s) => s.color);
+    const withColour = (color: string) => buildDocument({ markdown: md }, base({
+      characterStyles: [{ ...styles[0]!, color: hex(color) }],
+      markStyles: [{ id: 'mark', color: hex(color) }],
+    }), cache);
+    const red = withColour('#aa0000');
+    const redColours = colours(red);
+    expect(redColours.filter((c) => c === '#aa0000')).toHaveLength(4);
+
+    // The same lines out of the cache, painted in another colour
+    const blue = withColour('#0000aa');
+    expect(colours(blue)).toEqual(redColours.map((c) => (c === '#aa0000' ? '#0000aa' : c)));
+    expect(colours(red)).toEqual(redColours);
+
+    // … and with no colour at all
+    const plain = buildDocument({ markdown: md }, base({ characterStyles: [{ id: 'big', fontSize: em(1.5), letterSpacing: em(0.1) }], markStyles: [{ id: 'mark' }] }), cache);
+    expect(colours(plain).filter((c) => c === '#aa0000' || c === '#0000aa')).toEqual([]);
+    expect(colours(blue).filter((c) => c === '#0000aa')).toHaveLength(4);
   });
 
   it('takes the band of the highlight style it names, translucent and rough', () => {
