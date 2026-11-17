@@ -108,7 +108,9 @@ function stageTable(raw: Map<string, { ms: number; n: number }>, totalMs: number
     ['post-pass: marks and annotations', of('post.marks'), count('post.marks')],
     ['post-pass: font and glyph fallback scans', of('post.fonts'), count('post.fonts')],
     ['post-pass: config warnings', of('post.config'), count('post.config')],
-    ['bundle: contents flags of each chapter', of('bundle.flags'), count('bundle.flags')],
+    // The flags are the first to ask for each chapter's blocks: the stage
+    // is the Markdown parse of the book, and little else (#1608).
+    ['bundle: Markdown parse of each chapter, contents flags', of('bundle.flags'), count('bundle.flags')],
     ['bundle: page fence ids', of('bundle.pageIds'), count('bundle.pageIds')],
     ['bundle: citation sources', of('bundle.citations'), count('bundle.citations')],
     ['bundle: provisional outline', of('bundle.provisionalOutline'), count('bundle.provisionalOutline')],
