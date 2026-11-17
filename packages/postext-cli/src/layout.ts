@@ -119,11 +119,11 @@ export async function layOut(
     cache: cache ?? createMeasurementCache(),
     ...(layoutCache ? { layoutCache } : {}),
   });
-  const workers = poolSize(opts, chapters, source, layoutCache !== undefined);
+  const hints = source ? pageHintsOf(book, chapters, source) : undefined;
+  const workers = poolSize(opts, chapters, source, layoutCache !== undefined, hints !== undefined);
   const docs = await reporter.time('layout', async () => {
     if (workers === 0) return onThisThread();
     try {
-      const hints = pageHintsOf(book, chapters, source!);
       const laid = await layOutOnWorkers(bundle, source!, opts, workers, undefined, hints);
       reporter.detail(`  laid out on ${workers} threads: ${laid.layouts} chapter layouts in ${laid.rounds} rounds${hints ? ', from the pages of the book\'s layouts file' : ''}`);
       return laid.docs;

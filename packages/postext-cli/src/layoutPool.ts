@@ -28,9 +28,11 @@ export type PoolResponse =
   | { kind: 'laid'; id: number; record: ChapterRecord }
   | { kind: 'error'; id?: number; message: string };
 
-/** Text below which a book is laid out on one thread: starting the
- *  workers and warming each one up costs more than it saves. */
-const MIN_CHARACTERS = 2_000_000;
+/** Text below which `--threads auto` lays a book out on one thread:
+ *  starting the workers and warming each one up costs more than it saves
+ *  (on a runner of four cores, 2.6 million characters in 2,030 pages lost
+ *  a tenth and 7.4 million in 2,700 pages won a quarter, #1611). */
+const MIN_CHARACTERS = 4_000_000;
 const MIN_CHAPTERS = 8;
 const MAX_WORKERS = 8;
 
@@ -43,10 +45,13 @@ export function layoutInputsKey(config: PostextConfig, resources: readonly Resou
 
 /** How many workers lay `chapters` out (0: this thread alone): `--threads
  *  N`, or with `--threads auto` as many as the machine has cores to spare
- *  for a book long enough. Without the option a book is laid out on one
- *  thread, and so is one that cannot be opened again (read from standard
- *  input) and a layout that keeps its chapters between runs (--watch). */
-export function poolSize(opts: Options, chapters: readonly BookChapter[], source: LayoutSource | undefined, watching: boolean): number {
+ *  for a book long enough whose pages are known from an earlier layout
+ *  (`hinted`): without them the chapters are laid out several times over
+ *  while their page offsets settle, which costs more than the threads
+ *  save. Without the option a book is laid out on one thread, and so is
+ *  one that cannot be opened again (read from standard input) and a layout
+ *  that keeps its chapters between runs (--watch). */
+export function poolSize(opts: Options, chapters: readonly BookChapter[], source: LayoutSource | undefined, watching: boolean, hinted: boolean): number {
   if (!source || watching || source.inputs.length === 0 || source.inputs.includes('-')) return 0;
   const asked = opts.string('threads');
   if (asked === undefined) return 0;
@@ -56,7 +61,7 @@ export function poolSize(opts: Options, chapters: readonly BookChapter[], source
     return n > 1 ? Math.min(n, chapters.length) : 0;
   }
   const characters = chapters.reduce((n, c) => n + c.markdown.length, 0);
-  if (chapters.length < MIN_CHAPTERS || characters < MIN_CHARACTERS) return 0;
+  if (!hinted || chapters.length < MIN_CHAPTERS || characters < MIN_CHARACTERS) return 0;
   const workers = Math.min(MAX_WORKERS, availableParallelism() - 1, chapters.length);
   return workers > 1 ? workers : 0;
 }
