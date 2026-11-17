@@ -53,6 +53,28 @@ const faults = (lines: string[]): number => lines.reduce((n, l, i) => {
 }, 0);
 
 describe('the spaces the rules price', () => {
+  it('reads a citation with a list, a range or a locator, and nothing that does not close', () => {
+    const cites = (text: string) => [...new Set(ruledSpaces(text, { citations: true, operators: false }).map((s) => s.text))];
+    expect(cites('autores [12, 14] y otros (12–15), más [3a; 4].')).toEqual(['[12, 14]', '(12–15)', '[3a; 4]']);
+    // The marker of `[@key, p. 12]`: a locator of one word or of two.
+    expect(cites('véase [3, p.\u00a012] y también [4,cap], no [3, p. 12]')).toEqual(['[3, p.\u00a012]', '[4,cap]']);
+    // The locator starts at whichever number lets the citation close.
+    expect(cites('como [3, 12a4] dice')).toEqual(['[3, 12a4]']);
+    expect(cites('como [3, 4, tres\u00a0palabras\u00a0más] dice')).toEqual([]);
+    expect(cites('abierta [12, 14 sin cerrar, y (a) sin número')).toEqual([]);
+    // Not after a number, nor at the start of the text.
+    expect(cites('[4] al inicio, y 2016 (3)')).toEqual([]);
+  });
+
+  // Code scanning #346: a list of numbers that never closes was read again
+  // from each of its numbers.
+  it('reads a long list that never closes in linear time', () => {
+    const hostile = `a [0${',0a'.repeat(100_000)} b [1${'!\u00a0'.repeat(100_000)}`;
+    const start = performance.now();
+    expect(ruledSpaces(hostile, { citations: true, operators: true })).toEqual([]);
+    expect(performance.now() - start).toBeLessThan(2000);
+  });
+
   it('are the spaces before and inside a citation, and around a lone operator', () => {
     const text = 'autores [12] y [14, 16] con LR+ = 18,29 y p < 0,05 (18).';
     const at = ruledSpaces(text, { citations: true, operators: true })

@@ -27,11 +27,104 @@ export interface SpaceBreakCosts {
 /** Scripts whose text the rules leave alone. */
 const OTHER_SCRIPTS = /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Thaana}\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Thai}\p{Script=Lao}\p{Script=Khmer}\p{Script=Myanmar}\p{Script=Tibetan}]/u;
 
-/** A space before a numbered citation and the citation: after a word or
- *  the punctuation that ends one, never after a number. The numbers may be
- *  a list or a range, and the marker the engine writes for `[@key, p. 12]`
- *  ends on a locator ("[3, p. 12]", its word joined by a no-break space). */
-const CITATION = /(?<=[\p{L}\p{M}.,;:!?»”’)\]]) ([[(]\d+[a-z]?(?:\s*[,;–-]\s*\d+[a-z]?)*(?:,\s*[^\s\])]+(?: [^\s\])]+)?)?[\])])/gu;
+/** What stands before the space of a numbered citation: a word or the
+ *  punctuation that ends one, never a number. */
+const BEFORE_CITATION = /[\p{L}\p{M}.,;:!?»”’)\]]$/u;
+const WHITESPACE = /\s/u;
+const NO_BREAK_SPACE = '\u00a0';
+
+const isDigit = (code: number): boolean => code >= 48 && code <= 57;
+const isLowerLetter = (code: number): boolean => code >= 97 && code <= 122;
+const isCloser = (ch: string | undefined): boolean => ch === ']' || ch === ')';
+const isSeparator = (ch: string | undefined): boolean => ch === ',' || ch === ';' || ch === '–' || ch === '-';
+
+/**
+ * Where the numbered citation that opens at `open` (its bracket or
+ * parenthesis) ends in `text`, past its closing one; -1 when what opens
+ * there is no citation. The numbers may be a list or a range ("[12, 14]",
+ * "(12–15)", "[3a; 4]"), and the marker the engine writes for
+ * `[@key, p. 12]` ends on a locator after a comma: one word, or two
+ * joined by a no-break space ("[3, p.~12]", the tilde standing for it).
+ *
+ * Read by hand, each character a bounded number of times: an expression
+ * whose list and locator may both read the same numbers takes quadratic
+ * time on a long list that never closes (code scanning #346).
+ */
+function citationEnd(text: string, open: number): number {
+  const n = text.length;
+  /** The end of a number and its letter at `p`, or -1. */
+  const numberEnd = (p: number): number => {
+    let q = p;
+    while (q < n && isDigit(text.charCodeAt(q))) q++;
+    if (q === p) return -1;
+    return q < n && isLowerLetter(text.charCodeAt(q)) ? q + 1 : q;
+  };
+  const pastSpace = (p: number): number => {
+    while (p < n && WHITESPACE.test(text[p]!)) p++;
+    return p;
+  };
+  let end = numberEnd(open + 1);
+  if (end < 0) return -1;
+  // Where each number of the list ends: the locator may start at any.
+  const ends = [end];
+  for (;;) {
+    let p = pastSpace(end);
+    if (!isSeparator(text[p])) break;
+    p = numberEnd(pastSpace(p + 1));
+    if (p < 0) break;
+    ends.push(end = p);
+  }
+  if (isCloser(text[end])) return end + 1;
+  // The end of the word that starts at `p`: the first space or closing
+  // sign. Words are read from the last backwards and kept, so a later
+  // start runs into one already read and takes its end.
+  const wordEnds = new Map<number, number>();
+  const wordEnd = (p: number): number => {
+    let q = p;
+    while (q < n) {
+      const known = wordEnds.get(q);
+      if (known !== undefined) {
+        q = known;
+        break;
+      }
+      const ch = text[q]!;
+      if (isCloser(ch) || WHITESPACE.test(ch)) break;
+      q++;
+    }
+    wordEnds.set(p, q);
+    return q;
+  };
+  for (let k = ends.length - 1; k >= 0; k--) {
+    const at = ends[k]!;
+    if (text[at] !== ',') continue;
+    const first = pastSpace(at + 1);
+    const firstEnd = wordEnd(first);
+    if (firstEnd === first) continue;
+    if (isCloser(text[firstEnd])) return firstEnd + 1;
+    if (text[firstEnd] !== NO_BREAK_SPACE) continue;
+    const secondEnd = wordEnd(firstEnd + 1);
+    if (secondEnd > firstEnd + 1 && isCloser(text[secondEnd])) return secondEnd + 1;
+  }
+  return -1;
+}
+
+/** Each numbered citation of `text` with the space before it: where that
+ *  space is and where the citation ends. */
+function citations(text: string): { start: number; end: number }[] {
+  const out: { start: number; end: number }[] = [];
+  let i = text.indexOf(' ');
+  while (i >= 0) {
+    const ch = text[i + 1];
+    const end = (ch === '[' || ch === '(') && i > 0 && BEFORE_CITATION.test(text.slice(Math.max(0, i - 2), i)) ? citationEnd(text, i + 1) : -1;
+    if (end < 0) {
+      i = text.indexOf(' ', i + 1);
+      continue;
+    }
+    out.push({ start: i, end });
+    i = text.indexOf(' ', end);
+  }
+  return out;
+}
 /** A relation or operator set between spaces. */
 const OPERATOR = /(?<=\S) ([=<>≤≥±×≈≠÷−+·→]) (?=\S)/gu;
 
@@ -55,12 +148,11 @@ export function ruledSpaces(text: string, rules: { citations: boolean; operators
   const out: RuledSpace[] = [];
   if (!text.includes(' ')) return out;
   if (rules.citations && (text.includes('[') || text.includes('('))) {
-    for (const m of text.matchAll(CITATION)) {
-      const start = m.index;
-      if (OTHER_SCRIPTS.test(around(text, start, start + m[0].length))) continue;
-      const cite = m[1]!;
+    for (const { start, end } of citations(text)) {
+      if (OTHER_SCRIPTS.test(around(text, start, end))) continue;
+      const cite = text.slice(start + 1, end);
       out.push({ at: start, rule: 'citation', text: cite });
-      for (let k = 1; k < m[0].length; k++) if (m[0][k] === ' ') out.push({ at: start + k, rule: 'citation', text: cite });
+      for (let k = start + 1; k < end; k++) if (text[k] === ' ') out.push({ at: k, rule: 'citation', text: cite });
     }
   }
   if (rules.operators) {
