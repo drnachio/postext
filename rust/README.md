@@ -55,7 +55,14 @@ Then replay it:
 
 ```sh
 cargo run --release -p postext-bench -- kp.jsonl                       # native Rust
+cargo run --release -p postext-bench -- --rounds 20 kp.jsonl           # the engine's search alone, repeated
 node rust/bench/replay.mjs [--proto other-breakpoints.js] kp.jsonl     # TS vs WASM, same process
 ```
+
+`--rounds` is the one to put under a profiler or an instruction counter (`/usr/bin/time -l` on macOS, `perf stat` on Linux): instructions do not move with the machine's load, where times do. The count with `--rounds 0` is what loading the corpus takes.
+
+## The search's short cut for loose lines
+
+Most of what a natural search evaluates are lines far too short for their measure (84 % of the evaluations on a novel): every active node gives one at each break until its line fills up, and each costs more than any setting without one. `Search::run` (`crates/linebreak/src/dp.rs`) does not price them where the paragraph allows it (every line after the first of one width, no tracking, no hyphenation zone, no stacks): a loose line still leaves its node, at an infinite cost, so the nodes and their order are those of the full search, and the first loose line at a break ends that break. When a priced line costs as much as a loose one, or no priced setting ends the paragraph, the search is run again in full, so the breaks are the same in every case (`short_cut_tests.rs` compares the two on generated paragraphs; the corpora compare them on books). `--rounds` prints how many searches took the short cut and how many gave it up. The TypeScript breaker, the fallback where WebAssembly is missing, searches in full.
 
 Corpora of private books stay outside the repository.

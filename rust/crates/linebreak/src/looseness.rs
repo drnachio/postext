@@ -109,7 +109,11 @@ fn one(
     out: &mut Vec<u32>,
 ) -> Option<Outcome> {
     out.clear();
-    let ran = search.run(items, o, Pass { looseness, constrained: longer.is_some(), exact_limits });
+    let pass = Pass { looseness, constrained: longer.is_some(), exact_limits, skip_loose: true };
+    let mut ran = search.run(items, o, pass);
+    if search.gave_up_short_cut {
+        ran = search.run(items, o, Pass { skip_loose: false, ..pass });
+    }
     // An exact search past its cap gives up.
     if exact_limits && !ran {
         return None;
