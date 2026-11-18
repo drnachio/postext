@@ -39,6 +39,7 @@ import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
 import { measureInkBox, measureInkProfile, measureLanguageKey, measurementGeneration, type InkProfile } from '../measure/canvas.js';
 import { fontEm } from '../measure/vertical.js';
 import { segmentFont, segmentPositions } from './cjkMarks.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 
 /** The combining marks of Arabic vocalisation and Qurʾānic annotation:
  *  the honorific and Qurʾānic signs U+0610–U+061A, the ḥarakāt and their
@@ -327,7 +328,7 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
         below = Math.max(below, descentOf(w));
       }
       // A line of a page kept from the build before has its ink (#1639).
-      if ((above > 0 || below > 0) && !Object.isFrozen(line)) line.markInk = { above: round(above), below: round(below) };
+      if ((above > 0 || below > 0) && !standsAsMade(line)) line.markInk = { above: round(above), below: round(below) };
       if (block.pageIndex >= 0) marked.add(`${block.pageIndex}:${block.columnIndex}`);
     }
   }

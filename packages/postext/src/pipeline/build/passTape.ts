@@ -14,8 +14,10 @@
 // setup (content blocks, planned floats and boxes, resources, styles,
 // named with `atoms`), frozen objects, functions, and objects of a class.
 //
-// This file imports nothing of the engine: the modules that keep side
-// tables import it.
+// This file imports nothing of the engine but `passMade.ts`, which
+// imports nothing: the modules that keep side tables import it.
+
+import { SOURCE_KEYS } from './passMade.js';
 
 /** A table another module keeps by an object of the document. */
 type SideTable = WeakMap<object, unknown> | WeakSet<object>;
@@ -84,6 +86,19 @@ export function groupHint(member: string, hints: ReadonlyMap<unknown, unknown>):
   return groups;
 }
 
+/** How the end of the pass before is taken as the end of a pass that
+ *  rejoined it (`passRejoin.ts`): the closed objects it holds of the
+ *  pages the two passes share by place give way to this pass's
+ *  (`stands`); a closed object of a page the edit changed that nothing
+ *  stands for stops it (`gone`); and what is copied has its places in the
+ *  source moved by the edit. */
+export interface TapeTaken {
+  stands: ReadonlyMap<object, object>;
+  gone: ReadonlySet<object>;
+  at: number;
+  delta: number;
+}
+
 /** An object of the setup as a checkpoint names it when the pass's setup
  *  is numbered ({@link SetupNames}): by its number, which the same object
  *  of a later setup carries too. */
@@ -126,6 +141,8 @@ export class PassTape {
   countsReads = false;
   /** Whether the pass's checkpoints are to outlive it. */
   recording = false;
+  /** Called once what follows the placing is done (`passReuse.ts`). */
+  afterFinish: (() => void) | undefined;
   /** The hints the pass has read, in order: the member of the hints and
    *  the key asked of it, or `ALL_OF_IT` for a read of the whole
    *  collection. A checkpoint keeps how long the list was. */
@@ -299,6 +316,7 @@ export class PassTape {
    *  place of a copy, the object given for them (what the build before
    *  made of the same page, #1639); those stay frozen. */
   open(finished?: ReadonlyMap<object, object>): void {
+    this.countsReads = false;
     if (!this.closedAny) return;
     this.named();
     const side: TapeImage['side'] = [];
@@ -315,8 +333,19 @@ export class PassTape {
    *  of the setup as their numbers and notes in `flags` what a later pass
    *  could not take up; `resolve` reads those numbers back as the objects
    *  of this pass's setup, and throws on a number it does not have. */
-  private copier(side: TapeImage['side'], mode?: 'thaw' | 'name' | 'resolve', flags?: { opaque: boolean }, finished?: ReadonlyMap<object, object>): (value: unknown) => unknown {
+  private copier(side: TapeImage['side'], mode?: 'thaw' | 'name' | 'resolve', flags?: { opaque: boolean }, finished?: ReadonlyMap<object, object>, taken?: TapeTaken): (value: unknown) => unknown {
     const done = new Map<object, object>();
+    /** A member that holds places in the source, moved by the edit. */
+    const movedPlaces = (member: unknown): unknown => {
+      if (typeof member === 'number') return member >= taken!.at ? member + taken!.delta : member;
+      if (typeof member !== 'object' || member === null) return member;
+      const known = done.get(member);
+      if (known !== undefined) return known;
+      const out = (Array.isArray(member) ? [] : {}) as Record<string | number, unknown>;
+      done.set(member, out);
+      for (const key in member) out[key] = movedPlaces((member as Record<string, unknown>)[key]);
+      return out;
+    };
     const thaw = mode === 'thaw';
     const names = this.names;
     const copy = (value: unknown): unknown => {
@@ -327,6 +356,7 @@ export class PassTape {
       // A page (or a block) the build before finished stands as it left it.
       const stands = finished?.get(value);
       if (stands !== undefined) return stands;
+      if (taken?.gone.has(value)) throw new ClosedPageWrite('The end of the pass before holds an object of a page the edit changed');
       if (value instanceof SetupRef) {
         if (mode !== 'resolve') return value;
         const found = names?.byId(value.id);
@@ -371,7 +401,8 @@ export class PassTape {
           // The words of a line (`VDTLine.segments`) are shared with the
           // measurement cache and never written to once placed (#1609): an
           // opened page takes a list of its own with the same words.
-          object[key] = thaw && key === 'segments' && Array.isArray(member) ? member.map((word) => (Object.isFrozen(word) ? word : copy(word))) : copy(member);
+          if (taken && SOURCE_KEYS.has(key)) object[key] = movedPlaces(member);
+          else object[key] = thaw && key === 'segments' && Array.isArray(member) ? member.map((word) => (Object.isFrozen(word) ? word : copy(word))) : copy(member);
         }
       } else {
         // An object of a class, a weak collection: by reference.
@@ -400,15 +431,17 @@ export class PassTape {
     return { bindings, variables, side, ...(flags.opaque ? { opaque: true } : {}) };
   }
 
-  /** Put the tape back to `image`, which stays as it is: the collections
+  /** (`taken`: the image is the end of the pass before, taken as the end
+   *  of this one where the two rejoined, see {@link TapeTaken}.)
+   *  Put the tape back to `image`, which stays as it is: the collections
    *  are emptied and filled with a copy of it, in place, so that every
    *  closure that holds one sees it. */
-  putBack(image: TapeImage): void {
+  putBack(image: TapeImage, taken?: TapeTaken): void {
     this.named();
     // One copy of the whole image: its side entries ride along as members
     // of the graph, so their keys are the copies the bindings hold.
     const side: TapeImage['side'] = [];
-    const copy = this.names ? this.copier(side, 'resolve') : this.copier(side);
+    const copy = this.names ? this.copier(side, 'resolve', undefined, taken?.stands, taken) : this.copier(side);
     this.fill(copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage);
   }
 
@@ -428,105 +461,11 @@ export class PassTape {
     }
   }
 
-  /** Everything on the tape as text: two tapes in the same state give
-   *  the same text. An object that is a key of a map, a member of a set or
-   *  a key of a side table is numbered where it is first met and named by
-   *  its number after that, so the text says which of them are one object;
-   *  any other object is written out wherever it stands, so two copies of
-   *  a line's words read as the words shared (what comes back from a memo
-   *  is a copy). The objects of the setup are numbered and not read. */
-  print(): string {
+  /** What the tape holds, for the code that reads it whole (the check of
+   *  a resumed pass, the search for where two layouts rejoin). */
+  parts(): { bindings: ReadonlyMap<string, object>; variables: ReadonlyMap<string, { get: () => unknown }>; tables: readonly { name: string; table: WeakMap<object, unknown> | WeakSet<object> }[]; kept: ReadonlySet<object> } {
     this.named();
-    // The objects whose identity the pass reads.
-    const keyed = new Set<object>();
-    const met = new Set<object>();
-    const find = (value: unknown, key: boolean): void => {
-      if (typeof value !== 'object' || value === null) return;
-      if (key) keyed.add(value);
-      if (met.has(value) || this.kept.has(value)) return;
-      met.add(value);
-      if (Array.isArray(value)) for (const item of value) find(item, false);
-      else if (value instanceof Map) for (const [k, v] of value) { find(k, true); find(v, false); }
-      else if (value instanceof Set) for (const item of value) find(item, true);
-      else if (isPlain(value)) for (const name in value) find((value as Plain)[name], false);
-      else return;
-      for (const { table } of this.tables) {
-        if (!table.has(value)) continue;
-        keyed.add(value);
-        if (table instanceof WeakMap) find(table.get(value), false);
-      }
-    };
-    for (const value of this.bindings.values()) find(value, false);
-    for (const v of this.variables.values()) find(v.get(), false);
-
-    const out: string[] = [];
-    const ids = new Map<object, number>();
-    const open = new Set<object>();
-    const walk = (value: unknown): void => {
-      if (typeof value === 'function') value = { function: value.name };
-      if (typeof value !== 'object' || value === null) {
-        out.push(typeof value === 'string' ? JSON.stringify(value) : typeof value === 'number' && Object.is(value, -0) ? '-0' : String(value));
-        return;
-      }
-      const atom = this.kept.has(value);
-      if (atom || keyed.has(value)) {
-        const seen = ids.get(value);
-        if (seen !== undefined) {
-          out.push(`${atom ? '@' : '#'}${seen}`);
-          return;
-        }
-        ids.set(value, ids.size);
-        out.push(`${atom ? '@' : '#'}${ids.size - 1}`);
-        if (atom) return;
-      }
-      if (open.has(value)) {
-        out.push('<itself>');
-        return;
-      }
-      open.add(value);
-      if (Array.isArray(value)) {
-        out.push('[');
-        for (let i = 0; i < value.length; i++) {
-          if (i in value) walk(value[i]);
-          else out.push('<hole>');
-          out.push(',');
-        }
-        out.push(']');
-      } else if (value instanceof Map) {
-        out.push('Map{');
-        for (const [k, v] of value) { walk(k); out.push('=>'); walk(v); out.push(','); }
-        out.push('}');
-      } else if (value instanceof Set) {
-        out.push('Set{');
-        for (const item of value) { walk(item); out.push(','); }
-        out.push('}');
-      } else if (isPlain(value)) {
-        out.push('{');
-        for (const key in value) {
-          // A key set to undefined reads as a key left out: what comes
-          // back from a memo kept as JSON has lost them.
-          const member = (value as Plain)[key];
-          if (member === undefined) continue;
-          out.push(`${key}:`);
-          walk(member);
-          out.push(',');
-        }
-        out.push('}');
-      } else {
-        out.push(`<${(value as object).constructor?.name ?? 'object'}>`);
-        open.delete(value);
-        return;
-      }
-      for (const { name, table } of this.tables) {
-        if (!table.has(value)) continue;
-        out.push(`~${name}=`);
-        walk(table instanceof WeakMap ? table.get(value) : true);
-      }
-      open.delete(value);
-    };
-    for (const [name, value] of this.bindings) { out.push(`\n${name}: `); walk(value); }
-    for (const [name, v] of this.variables) { out.push(`\n${name}= `); walk(v.get()); }
-    return out.join('');
+    return { bindings: this.bindings, variables: this.variables, tables: this.tables, kept: this.kept };
   }
 }
 

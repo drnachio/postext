@@ -22,6 +22,7 @@ import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js'
 import type { OrderedListMetrics } from '../../text/lists.js';
 import type { PassState } from './state.js';
 import { passTape } from '../passTape.js';
+import { standsAsMade } from '../passMade.js';
 
 /** What createNotes takes from the pass. */
 export interface NotesDeps {
@@ -459,7 +460,7 @@ export function createNotes(deps: NotesDeps) {
     for (const [col, entry] of columnNotesOf) {
       const page = columnOfNotes.get(col)!;
       // A page kept from the build before has its notes (#1639).
-      if (Object.isFrozen(page)) continue;
+      if (standsAsMade(page)) continue;
       const regions: { top: number; bottom: number; ids: string[] }[] = [];
       for (const slot of entry.slots) {
         const last = regions[regions.length - 1];

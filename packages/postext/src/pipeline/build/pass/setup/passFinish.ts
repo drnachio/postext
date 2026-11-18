@@ -40,6 +40,7 @@ import type { VDTBlock } from '../../../../vdt/blocks.js';
 import type { VDTComposedPage } from '../../../../vdt/pages/composed.js';
 import type { StoryJump } from '../../../../composed/carryTypes.js';
 import type { PassSetupState } from '../setupState.js';
+import { standsAsMade } from '../../passMade.js';
 
 /** What createPassFinish takes from the pass. */
 export interface PassFinishDeps {
@@ -139,7 +140,7 @@ export function createPassFinish(deps: PassFinishDeps) {
   if (chapterEndNotes) ruleChapterEndNotes();
   for (const index of centredPages) {
     const page = doc.pages[index];
-    if (page && !Object.isFrozen(page)) centrePageText(page, reservedOf);
+    if (page && !standsAsMade(page)) centrePageText(page, reservedOf);
   }
   // The text panels of the strips, where the strips stand now (#959).
   placeStripTexts();
@@ -179,7 +180,7 @@ export function createPassFinish(deps: PassFinishDeps) {
   const docRuleWidthPx = dimensionToPx(docRule.lineWidth, dpi);
   for (const page of doc.pages) {
     const layout = pageLayoutOf(page);
-    if (!layout || layout === setup.resolved.layout || page.partInfo || Object.isFrozen(page)) continue;
+    if (!layout || layout === setup.resolved.layout || page.partInfo || standsAsMade(page)) continue;
     const rule = layout.columnRule;
     const lineWidthPx = dimensionToPx(rule.lineWidth, dpi);
     const same = rule.enabled === docRule.enabled
@@ -198,7 +199,7 @@ export function createPassFinish(deps: PassFinishDeps) {
     if (!info) continue;
     const page = doc.pages[i]!;
     // A page kept from the build before has its label (#1639).
-    if (Object.isFrozen(page)) continue;
+    if (standsAsMade(page)) continue;
     page.pageNumberValue = info.value;
     page.pageLabel = info.label;
     page.pageNumberFormat = info.format;

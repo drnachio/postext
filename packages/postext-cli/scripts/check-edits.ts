@@ -63,6 +63,8 @@ for (const path of books) {
   let passes = 0;
   let placedAgain = 0;
   let pagesKept = 0;
+  let pagesTaken = 0;
+  let rejoined = 0;
   let pagesSeen = 0;
   const builtAgain = new Map<string, number>();
   const reasons = new Map<string, number>();
@@ -91,6 +93,8 @@ for (const path of books) {
         passes += stats.passes;
         placedAgain += stats.placedAgain;
         pagesKept += stats.pagesKept.reduce((a, b) => a + (b ?? 0), 0);
+        pagesTaken += stats.pagesTaken.reduce((a, b) => a + (b ?? 0), 0);
+        rejoined += stats.rejoinedAt.filter((b) => b !== undefined).length;
         pagesSeen += stats.passes * taped.pages.length;
         if (stats.builtAgain) builtAgain.set(stats.builtAgainAt ?? '?', (builtAgain.get(stats.builtAgainAt ?? '?') ?? 0) + 1);
         stats.startedAt.forEach((b, i) => {
@@ -113,7 +117,7 @@ for (const path of books) {
   }
   if (differing > 0) failed = true;
   const why = [...reasons].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${n} ${r}`).join('; ');
-  process.stdout.write(`${book.name}: ${edits} edits, ${differing} differing; ${fromCheckpoint} of ${passes} passes from a checkpoint, ${placedAgain} placed again${why ? ` (from the first block: ${why})` : ''}; ${pagesKept} of ${pagesSeen} pages kept as the build before finished them${timing}\n`);
+  process.stdout.write(`${book.name}: ${edits} edits, ${differing} differing; ${fromCheckpoint} of ${passes} passes from a checkpoint, ${placedAgain} placed again${why ? ` (from the first block: ${why})` : ''}; ${rejoined} rejoined the pass before; of ${pagesSeen} pages, ${pagesKept} kept before the edit and ${pagesTaken} taken after it${timing}\n`);
   for (const [at, n] of [...builtAgain].sort((a, b) => b[1] - a[1])) process.stdout.write(`  ${n} builds done again: ${at}\n`);
 }
 process.exit(failed ? 1 : 0);

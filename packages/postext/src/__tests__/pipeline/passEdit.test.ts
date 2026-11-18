@@ -66,6 +66,34 @@ describe('a build with tapes after an edit', () => {
     expect(Math.min(...again.stats.startedAt)).toBeGreaterThan(40);
   });
 
+  it('stops placing where the layout rejoins the one before, and takes the pages after from it', () => {
+    const config = { page } as PostextConfig;
+    const blocks = chapter(120);
+    const tapes = createLayoutTapes();
+    both(blocks, config, tapes);
+    // Letters typed in the middle: each build places a few pages, from
+    // the checkpoint before the edit to the first one after it where its
+    // state is the state the pass before had there.
+    for (let turn = 1; turn <= 4; turn++) {
+      blocks[50] = `${blocks[50]}x`;
+      const edited = both(blocks, config, tapes);
+      expect(edited.taped, `letter ${turn}`).toBe(edited.plain);
+      expect(edited.stats.rejoinedAt.some((b) => b !== undefined && b > 50)).toBe(true);
+      expect(Math.max(...edited.stats.pagesTaken)).toBeGreaterThan(2);
+      expect(edited.stats.builtAgain).toBe(false);
+    }
+    // Then earlier and later in the chapter, and a sentence that adds
+    // lines: whatever the build does, the document is the same.
+    for (const at of [20, 100, 50, 10, 110]) {
+      blocks[at] = `${blocks[at]} And a sentence more, long enough to add a line or two to the paragraph it ends.`;
+      const edited = both(blocks, config, tapes);
+      expect(edited.taped, `sentence at block ${at}`).toBe(edited.plain);
+      blocks[at] = `${blocks[at]}y`;
+      const typed = both(blocks, config, tapes);
+      expect(typed.taped, `letter at block ${at}`).toBe(typed.plain);
+    }
+  });
+
   it('starts over when the edit changes more than a block: a block added, the configuration changed', () => {
     const config = { page } as PostextConfig;
     const blocks = chapter(40);

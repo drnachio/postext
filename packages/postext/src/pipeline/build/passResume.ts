@@ -1,6 +1,12 @@
 // The check of the tape of a placement pass (`passTape.ts`, #1639).
 import type { PassTape, TapeImage } from './passTape.js';
 
+type Plain = Record<string, unknown>;
+const isPlain = (value: object): boolean => {
+  const proto = Object.getPrototypeOf(value) as unknown;
+  return proto === Object.prototype || proto === null;
+};
+
 export { ClosedPageWrite, withPassTape, type PassTape } from './passTape.js';
 
 // The check of the tape (#1639), for tests and benchmarks: a pass saves
@@ -61,7 +67,7 @@ export class PassResume {
    *  so the pass finishes from a restored tape too. */
   again(placeFrom: (blockIdx: number, again: boolean) => void): void {
     if (this.saved.length === 0) return;
-    const first = this.tape.print();
+    const first = printTape(this.tape);
     const end = this.tape.record();
     if (this.check.wroteBack && this.doc) {
       const now = this.doc.pages.map((p) => JSON.stringify(p));
@@ -75,7 +81,7 @@ export class PassResume {
     for (const { blockIdx, image } of this.saved) {
       this.tape.putBack(image);
       placeFrom(blockIdx, true);
-      this.check.compared(blockIdx, first, this.tape.print());
+      this.check.compared(blockIdx, first, printTape(this.tape));
     }
     this.tape.putBack(end);
   }
@@ -85,4 +91,105 @@ export class PassResume {
  *  to write to a frozen object, on a tape that closed pages. */
 export function isClosedPageWrite(tape: PassTape, error: unknown): boolean {
   return tape.closedAny && error instanceof TypeError;
+}
+
+/** Everything on the tape as text: two tapes in the same state give
+ *  the same text. An object that is a key of a map, a member of a set or
+ *  a key of a side table is numbered where it is first met and named by
+ *  its number after that, so the text says which of them are one object;
+ *  any other object is written out wherever it stands, so two copies of
+ *  a line's words read as the words shared (what comes back from a memo
+ *  is a copy). The objects of the setup are numbered and not read. */
+export function printTape(tape: PassTape): string {
+  const { bindings, variables, tables, kept } = tape.parts();
+  // The objects whose identity the pass reads.
+  const keyed = new Set<object>();
+  const met = new Set<object>();
+  const find = (value: unknown, key: boolean): void => {
+    if (typeof value !== 'object' || value === null) return;
+    if (key) keyed.add(value);
+    if (met.has(value) || kept.has(value)) return;
+    met.add(value);
+    if (Array.isArray(value)) for (const item of value) find(item, false);
+    else if (value instanceof Map) for (const [k, v] of value) { find(k, true); find(v, false); }
+    else if (value instanceof Set) for (const item of value) find(item, true);
+    else if (isPlain(value)) for (const name in value) find((value as Plain)[name], false);
+    else return;
+    for (const { table } of tables) {
+      if (!table.has(value)) continue;
+      keyed.add(value);
+      if (table instanceof WeakMap) find(table.get(value), false);
+    }
+  };
+  for (const value of bindings.values()) find(value, false);
+  for (const v of variables.values()) find(v.get(), false);
+
+  const out: string[] = [];
+  const ids = new Map<object, number>();
+  const open = new Set<object>();
+  const walk = (value: unknown): void => {
+    if (typeof value === 'function') value = { function: value.name };
+    if (typeof value !== 'object' || value === null) {
+      out.push(typeof value === 'string' ? JSON.stringify(value) : typeof value === 'number' && Object.is(value, -0) ? '-0' : String(value));
+      return;
+    }
+    const atom = kept.has(value);
+    if (atom || keyed.has(value)) {
+      const seen = ids.get(value);
+      if (seen !== undefined) {
+        out.push(`${atom ? '@' : '#'}${seen}`);
+        return;
+      }
+      ids.set(value, ids.size);
+      out.push(`${atom ? '@' : '#'}${ids.size - 1}`);
+      if (atom) return;
+    }
+    if (open.has(value)) {
+      out.push('<itself>');
+      return;
+    }
+    open.add(value);
+    if (Array.isArray(value)) {
+      out.push('[');
+      for (let i = 0; i < value.length; i++) {
+        if (i in value) walk(value[i]);
+        else out.push('<hole>');
+        out.push(',');
+      }
+      out.push(']');
+    } else if (value instanceof Map) {
+      out.push('Map{');
+      for (const [k, v] of value) { walk(k); out.push('=>'); walk(v); out.push(','); }
+      out.push('}');
+    } else if (value instanceof Set) {
+      out.push('Set{');
+      for (const item of value) { walk(item); out.push(','); }
+      out.push('}');
+    } else if (isPlain(value)) {
+      out.push('{');
+      for (const key in value) {
+        // A key set to undefined reads as a key left out: what comes
+        // back from a memo kept as JSON has lost them.
+        const member = (value as Plain)[key];
+        if (member === undefined) continue;
+        out.push(`${key}:`);
+        walk(member);
+        out.push(',');
+      }
+      out.push('}');
+    } else {
+      out.push(`<${(value as object).constructor?.name ?? 'object'}>`);
+      open.delete(value);
+      return;
+    }
+    for (const { name, table } of tables) {
+      if (!table.has(value)) continue;
+      out.push(`~${name}=`);
+      walk(table instanceof WeakMap ? table.get(value) : true);
+    }
+    open.delete(value);
+  };
+  for (const [name, value] of bindings) { out.push(`\n${name}: `); walk(value); }
+  for (const [name, v] of variables) { out.push(`\n${name}= `); walk(v.get()); }
+  return out.join('');
 }

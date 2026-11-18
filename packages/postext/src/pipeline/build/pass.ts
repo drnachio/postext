@@ -521,7 +521,7 @@ function placeDocumentPass(
       if (!again) {
         options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
         resume?.atBlock(blockIdx, doc.pages.length, contentBlocks.length);
-        recording?.atBlock(blockIdx);
+        if (recording?.atBlock(blockIdx)) return;
       }
       const rawBlock = contentBlocks[blockIdx]!;
       // Blocks a composed page set in its frames (#855) are done.
@@ -577,7 +577,6 @@ function placeDocumentPass(
     throw isClosedPageWrite(tape, error) ? new ClosedPageWrite() : error;
   }
   // What follows sets things on every page: on pages of its own.
-  tape.countsReads = false;
   tape.open();
   lap('pass.blocks');
 
@@ -595,6 +594,7 @@ function placeDocumentPass(
     setup
   });
 
+  tape.afterFinish?.();
   lap('pass.finish');
   return { doc, forcedBreakPages, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack, looseOutcome, looseOffGrid, captionUnderProposals, citingPageProposals, citingPageRefused, pullShortfalls, floatSlots };
 }

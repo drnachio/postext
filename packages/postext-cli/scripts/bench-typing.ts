@@ -73,10 +73,16 @@ let same = true;
   for (const text of texts) {
     const a = JSON.stringify(buildDocument(content(text), book.config, caches[0], { tapes: checked }));
     const b = JSON.stringify(buildDocument(content(text), book.config, caches[1]));
-    if (a !== b) same = false;
+    if (a === b) continue;
+    if (same) {
+      let i = 0;
+      while (i < a.length && a[i] === b[i]) i++;
+      process.stderr.write(`the documents differ:\n  tapes: …${a.slice(Math.max(0, i - 200), i + 120)}…\n  plain: …${b.slice(Math.max(0, i - 200), i + 120)}…\n`);
+    }
+    same = false;
   }
 }
 const median = (xs: number[]) => Math.round([...xs].sort((x, y) => x - y)[Math.floor(xs.length / 2)]!);
 const s = last;
-process.stdout.write(`${book.name}: chapter ${at + 1}, ${whole.docs[at]!.pages.length} pp, ${letters} letters at ${share}: ${median(taped)} ms with tapes, ${median(plain)} ms without; documents ${same ? 'equal' : 'DIFFER'}; last build: passes from blocks ${s.startedAt.join(', ')}, pages kept ${s.pagesKept.join(', ')}${s.reasons.some(Boolean) ? `, ${s.reasons.filter(Boolean).join('; ')}` : ''}${s.builtAgain ? `, built again (${s.builtAgainAt})` : ''}\n`);
+process.stdout.write(`${book.name}: chapter ${at + 1}, ${whole.docs[at]!.pages.length} pp, ${letters} letters at ${share}: ${median(taped)} ms with tapes, ${median(plain)} ms without; documents ${same ? 'equal' : 'DIFFER'}; last build: passes from blocks ${s.startedAt.join(', ')}, pages kept ${s.pagesKept.join(', ')}, rejoined at ${s.rejoinedAt.map((b) => b ?? '–').join(', ') || '–'}, pages taken ${s.pagesTaken.join(', ')}${s.apartAt.some(Boolean) ? `, apart at ${s.apartAt.filter(Boolean).join(' | ')}` : ''}${s.reasons.some(Boolean) ? `, ${s.reasons.filter(Boolean).join('; ')}` : ''}${s.builtAgain ? `, built again (${s.builtAgainAt})` : ''}\n`);
 process.exit(same ? 0 : 1);
