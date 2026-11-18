@@ -5,6 +5,7 @@ import { useRef, useEffect } from 'react';
 import { verticalTwinsSettled, loadVerticalTwins, standInsSettled, declareStandIns } from '../../../../controls/fonts/fontLoader.js';
 import { composeBookMemo } from '../../../../book/compose.js';
 import { perfSpan, type PerfSpan } from '../../../../perf/marks.js';
+import { incrementalLayoutEnabled } from '../../../../perf/incremental.js';
 import { buildBookChapters, type HeldChapterDoc } from '../../../../book/buildBook.js';
 import { stitchDocuments, type StitchedBook } from '../../../../book/stitch.js';
 import { leadingBlankPageCount, chapterLayoutFromDoc } from '../../../../book/pagination.js';
@@ -236,6 +237,9 @@ export function useLayoutBuild(deps: UseLayoutBuildDeps) {
           continuationKey: deferredSource.plan.continuationKey,
           outlineKey: deferredSource.plan.outlineKey,
         }),
+        // The chapter being edited, for the worker to lay it out from the
+        // layout before it (#1640, behind its switch).
+        ...(incrementalLayoutEnabled() ? { tapesKey: deferredSource.chapterId } : {}),
       },
     )
       .then((doc) => {

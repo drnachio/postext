@@ -23,6 +23,10 @@ export interface LayoutRequest {
   /** Warm the worker's cache only: the document is built and kept there,
    *  not sent back (needs `cacheKey`). Resolves with `undefined`. */
   warmOnly?: boolean;
+  /** Experimental (#1640): the document this build is a new state of (a
+   *  chapter being edited). The worker lays it out from the page before
+   *  the edit, with what the last build under that name left. */
+  tapesKey?: string;
 }
 
 export interface LayoutService {

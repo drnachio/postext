@@ -8,7 +8,7 @@
  * @module
  */
 
-import { buildDocumentAsync, BuildCancelledError } from '../pipeline/index.js';
+import { buildDocumentAsync, BuildCancelledError, createLayoutTapes, type LayoutTapes } from '../pipeline/index.js';
 import type { BuildPassInfo } from '../pipeline/build.js';
 import { initMathEngine, isMathReady } from '../math/index.js';
 import { contentHasScore, initMusicEngine, isMusicReady } from '../music/index.js';
@@ -58,6 +58,15 @@ function docCachePut(key: string, doc: VDTDocument): void {
     const oldest = docCache.keys().next().value;
     if (oldest !== undefined) docCache.delete(oldest);
   }
+}
+
+/** The tapes of the document being edited (`tapesKey` in the protocol,
+ *  #1640): one document's at a time. */
+let heldTapes: { key: string; tapes: LayoutTapes } | null = null;
+
+function tapesOf(key: string): LayoutTapes {
+  if (heldTapes?.key !== key) heldTapes = { key, tapes: createLayoutTapes() };
+  return heldTapes.tapes;
 }
 
 /** The resource list of the last build that carried one, by fingerprint. */
@@ -259,6 +268,7 @@ async function runBuild(msg: BuildRequest): Promise<void> {
     const passes: BuildPassInfo[] = [];
     const startedAt = performance.now();
     const doc = await buildDocumentAsync(content, msg.config, measurementCache, {
+      ...(msg.tapesKey !== undefined && msg.wantDoc !== false ? { tapes: tapesOf(msg.tapesKey) } : {}),
       shouldCancel: () => cancelRequestedFor === msg.id,
       onPass: (info) => { passes.push(info); },
       onProgress: (progress) => {
@@ -271,10 +281,13 @@ async function runBuild(msg: BuildRequest): Promise<void> {
     if (cancelRequestedFor === msg.id) {
       post({ kind: 'cancelled', id: msg.id });
     } else {
-      if (msg.cacheKey) docCachePut(msg.cacheKey, doc);
+      // A document built with tapes is not kept: the next build of its
+      // chapter moves the places in the source of its pages in place.
+      if (msg.cacheKey && msg.tapesKey === undefined) docCachePut(msg.cacheKey, doc);
       const totalMs = performance.now() - startedAt;
       const missing = missingFonts(doc);
-      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs, ...(missing ? { missingFonts: missing } : {}) } });
+      const tapes = msg.tapesKey !== undefined && heldTapes?.key === msg.tapesKey && msg.wantDoc !== false ? heldTapes.tapes.stats : undefined;
+      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs, ...(missing ? { missingFonts: missing } : {}), ...(tapes ? { tapes } : {}) } });
     }
   } catch (err) {
     if (err instanceof BuildCancelledError) {

@@ -77,6 +77,8 @@ interface FakeBuild {
   cacheKey: string | undefined;
   finish: (doc?: VDTDocument) => void;
   aborted: boolean;
+  tapesKey?: string;
+  wantDoc?: boolean;
 }
 
 /** A worker handle whose builds finish when the test says so. */
@@ -92,6 +94,8 @@ function fakeHandle() {
         const entry: FakeBuild = {
           markdown: content.markdown,
           cacheKey: opts?.cacheKey,
+          tapesKey: opts?.tapesKey,
+          wantDoc: opts?.wantDoc,
           aborted: false,
           finish: (doc) => resolve(doc ?? ({ pages: [], blocks: [] } as unknown as VDTDocument)),
         };
@@ -208,6 +212,28 @@ describe('createLayoutService', () => {
     expect(builds[0]!.cacheKey).toBe('k1');
     service.cancel('canvas');
     await expect(p).rejects.toMatchObject({ name: 'AbortError' });
+    service.dispose();
+  });
+
+  it('names the document being edited to the worker, and not for a build that only warms its cache (#1640)', async () => {
+    const { handle, builds } = fakeHandle();
+    const service = createLayoutService({ handle });
+    const edited = service.build({ clientId: 'canvas', priority: 'preview', content: content('x'), config: {}, cacheKey: 'k1', tapesKey: 'chapter-3' });
+    await tick();
+    expect(builds[0]!.tapesKey).toBe('chapter-3');
+    builds[0]!.finish();
+    await edited;
+    const plain = service.build({ clientId: 'canvas', priority: 'preview', content: content('y'), config: {}, cacheKey: 'k2' });
+    await tick();
+    expect(builds[1]!.tapesKey).toBeUndefined();
+    builds[1]!.finish();
+    await plain;
+    const warm = service.build({ clientId: 'warm', priority: 'background', content: content('z'), config: {}, cacheKey: 'k3', warmOnly: true, tapesKey: 'chapter-3' });
+    await tick();
+    expect(builds[2]!.wantDoc).toBe(false);
+    expect(builds[2]!.tapesKey).toBeUndefined();
+    builds[2]!.finish();
+    await warm;
     service.dispose();
   });
 });
