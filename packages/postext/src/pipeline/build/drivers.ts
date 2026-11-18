@@ -43,7 +43,7 @@ import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type Ch
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
 import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes } from './passReuse.js';
-import { afterMarks, beforeMarks } from './passMade.js';
+import { afterMarks, beforeMarks, settleMoves } from './passMade.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -208,6 +208,7 @@ function* buildDocumentSteps(
   lap('post.warnings');
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
+  settleMoves(doc.pages);
   beforeMarks(doc.pages);
   const annotations = annotateDocument(doc, doc.config?.cjk);
   // Arabic vowel marks (#376): how far each vocalised line's ink reaches,

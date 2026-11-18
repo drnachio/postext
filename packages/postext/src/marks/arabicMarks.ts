@@ -35,11 +35,11 @@
  * expression test) and left as it was.
  */
 
-import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
+import type { ContentWarning, VDTBlock, VDTDocument, VDTLine, VDTPage } from '../vdt.js';
 import { measureInkBox, measureInkProfile, measureLanguageKey, measurementGeneration, type InkProfile } from '../measure/canvas.js';
 import { fontEm } from '../measure/vertical.js';
 import { segmentFont, segmentPositions } from './cjkMarks.js';
-import { standsAsMade } from '../pipeline/build/passMade.js';
+import { ridesWith, standsAsMade } from '../pipeline/build/passMade.js';
 
 /** The combining marks of Arabic vocalisation and Qurʾānic annotation:
  *  the honorific and Qurʾānic signs U+0610–U+061A, the ḥarakāt and their
@@ -297,6 +297,21 @@ const TOUCH_PX = 0.5;
  * once per paragraph, on the lower line's paragraph). See the module
  * comment.
  */
+/** What the check gave each column of a page that holds a mark, kept with
+ *  the page (#1639): a page a build with tapes takes as the build before
+ *  made it is not checked again. Its lines have their ink, and its
+ *  warnings are these (they ride with the page: an edit before it moves
+ *  the places they name). A column's lines meet only lines of the same
+ *  column, so a page's answer is its own. */
+const columnWarnings = new WeakMap<VDTPage, Map<number, ContentWarning[]>>();
+
+/** The kept answer for the page of `block`, when both stand as made. */
+function keptAnswer(doc: VDTDocument, block: VDTBlock): Map<number, ContentWarning[]> | undefined {
+  if (block.pageIndex < 0 || !standsAsMade(block)) return undefined;
+  const page = doc.pages[block.pageIndex];
+  return page && standsAsMade(page) ? columnWarnings.get(page) : undefined;
+}
+
 export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
   // The document's vowel marks: none, and nothing is done.
   let any = false;
@@ -310,12 +325,13 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
   if (!any) return [];
   currentInkCaches();
   /** Lines of the columns that hold a marked line, with their words. */
-  const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: PlacedWord[]; em: number }[]>();
+  const columns = new Map<string, { line: VDTLine; block: VDTBlock; words: PlacedWord[]; em: number }[] | { kept: ContentWarning[] }>();
   const marked = new Set<string>();
   /** The words of the lines holding a mark, placed once for both rounds. */
   const placed = new Map<VDTLine, PlacedWord[]>();
   for (const block of doc.blocks) {
     if (block.type === 'resource' || block.designOverlay || block.hidden || !block.lines) continue;
+    if (keptAnswer(doc, block)) continue;
     for (const line of block.lines) {
       if (!hasArabicMarks(line.text)) continue;
       const words = linePlacedWords(line, block);
@@ -335,16 +351,33 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
   for (const block of doc.blocks) {
     if (block.type === 'resource' || block.designOverlay || block.hidden || !block.lines || block.pageIndex < 0) continue;
     const key = `${block.pageIndex}:${block.columnIndex}`;
+    // A column of a page with a kept answer takes its place among the
+    // columns where its first block stands, as it did when it was checked.
+    const answer = keptAnswer(doc, block);
+    if (answer) {
+      const kept = answer.get(block.columnIndex);
+      if (kept && !columns.has(key)) columns.set(key, { kept });
+      continue;
+    }
     if (!marked.has(key)) continue;
     let column = columns.get(key);
     if (!column) columns.set(key, (column = []));
+    if (!Array.isArray(column)) continue;
     const em = fontEm(block.fontString);
     for (const line of block.lines) column.push({ line, block, words: placed.get(line) ?? linePlacedWords(line, block), em });
   }
 
   const warnings: ContentWarning[] = [];
   const reported = new Set<VDTBlock>();
-  for (const column of columns.values()) {
+  for (const [key, column] of columns) {
+    if (!Array.isArray(column)) {
+      warnings.push(...column.kept);
+      continue;
+    }
+    // What this column gives is kept with its page.
+    const from = warnings.length;
+    const [pageIndex, columnIndex] = key.split(':').map(Number) as [number, number];
+    const page = doc.pages[pageIndex];
     column.sort((a, b) => a.line.baseline - b.line.baseline);
     for (let i = 1; i < column.length; i++) {
       const a = column[i - 1]!;
@@ -378,6 +411,13 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
         ...(block.sourceEnd !== undefined ? { sourceEnd: block.sourceEnd } : {}),
         pageIndex: block.pageIndex,
       });
+    }
+    if (page) {
+      const given = warnings.slice(from);
+      let answer = columnWarnings.get(page);
+      if (!answer) columnWarnings.set(page, (answer = new Map()));
+      answer.set(columnIndex, given);
+      ridesWith(page, given);
     }
   }
   return warnings;

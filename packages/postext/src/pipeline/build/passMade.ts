@@ -63,6 +63,17 @@ export function unfrozenCopy<T>(value: T, done = new Map<object, object>()): T {
  *  `delta` longer. */
 const moved = (place: number, at: number, delta: number): number => (place >= at ? place + delta : place);
 
+/** What rides with a page: things kept beside it that name places in
+ *  the source (the warnings a check gave its lines), moved when it is. */
+const riders = new WeakMap<object, object[]>();
+
+/** `value` rides with `page`. */
+export function ridesWith(page: object, value: object): void {
+  const list = riders.get(page);
+  if (list) list.push(value);
+  else riders.set(page, [value]);
+}
+
 /** Move every number under `places` (a member that holds places in the
  *  source: a number, a list of them, or per attribute its start and end). */
 function movePlacesUnder(places: Record<string | number, unknown>, at: number, delta: number, seen: Set<object>): void {
@@ -94,6 +105,8 @@ export function moveSourcePlaces(value: unknown, at: number, delta: number, seen
     } else if (typeof member === 'number') object[key] = moved(member, at, delta);
     else if (typeof member === 'object' && member !== null) movePlacesUnder(member as Record<string, unknown>, at, delta, seen);
   }
+  const riding = riders.get(value);
+  if (riding) moveSourcePlaces(riding, at, delta, seen);
 }
 
 /** The last place in the source anything of `value` names, -1 when it
@@ -112,6 +125,49 @@ export function lastPlaceOf(value: unknown, seen = new Set<object>(), places = f
     last = Math.max(last, lastPlaceOf((value as Record<string, unknown>)[key], seen, places || SOURCE_KEYS.has(key)));
   }
   return last;
+}
+
+// Moves that wait (#1639). A build has several passes and only the last
+// one's document goes out; the pages each of the others took from the
+// build before need their places in the source only if a later build
+// reads them. So a pass leaves the moves of its taken pages undone, and
+// they are made when its document is the one that goes out
+// ({@link settleMoves}), when another edit changes which pages are taken,
+// or when eight have gathered.
+
+/** The moves not yet made on the pages a pass took, in order. */
+export interface WaitingMoves {
+  /** The pages (and the blocks no page holds) they are owed to. */
+  objects: object[];
+  list: { at: number; delta: number }[];
+}
+
+/** Make the moves that wait, and forget them. */
+export function makeMoves(moves: WaitingMoves): void {
+  for (const { at, delta } of moves.list) {
+    const seen = new Set<object>();
+    for (const object of moves.objects) moveSourcePlaces(object, at, delta, seen);
+  }
+  moves.list.length = 0;
+}
+
+/** The moves that wait on a page, by the page: the document that goes
+ *  out may be another object than the pass's (index marks, chapter runs),
+ *  its pages are the pass's. */
+const waiting = new WeakMap<object, WaitingMoves>();
+
+/** The pages and blocks of `moves` hold places that wait to be moved. */
+export function movesWait(moves: WaitingMoves): void {
+  for (const object of moves.objects) waiting.set(object, moves);
+}
+
+/** `pages` are the pages of the document that goes out: their moves are
+ *  made. */
+export function settleMoves(pages: readonly object[]): void {
+  for (const page of pages) {
+    const moves = waiting.get(page);
+    if (moves && moves.list.length > 0) makeMoves(moves);
+  }
 }
 
 /** The pages that have been through the marks set after the passes

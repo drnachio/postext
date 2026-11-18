@@ -22,7 +22,7 @@
 import { measurementGeneration } from '../../measure/canvas.js';
 import { isMathReady } from '../../math/index.js';
 import { ClosedPageWrite, type PassTape, type TapeImage } from './passTape.js';
-import { carryMarks, lastPlaceOf, markMade, moveSourcePlaces, unfrozenCopy } from './passMade.js';
+import { carryMarks, lastPlaceOf, makeMoves, markMade, moveSourcePlaces, movesWait, unfrozenCopy, type WaitingMoves } from './passMade.js';
 import { objectsOf, tapeRejoins } from './passRejoin.js';
 import { Names, pairSetups, sameHintReads, type PassSetup } from './passSetups.js';
 
@@ -57,7 +57,7 @@ interface PassRecord extends PassSetup {
   /** The pass's pages and blocks as it placed them and as its finish (and
    *  the marks after it) left them, place by place; its document, whose
    *  block list ends with what the finish added. */
-  finished?: { placed: Listed; made: Listed; doc: Document; lastPlace: (number | undefined)[] };
+  finished?: { placed: Listed; made: Listed; doc: Document; lastPlace: (number | undefined)[]; moves?: WaitingMoves; movesFrom?: number };
   /** The tape once the pass had placed its last block. */
   end?: TapeImage;
   /** Freeze pages or blocks of this pass (its own setup left alone). */
@@ -387,6 +387,21 @@ export class PassRecording {
     const old = this.from ? this.before?.finished : undefined;
     const usable = old !== undefined && old.placed.pages.length === placed.pages.length && pagesStandAlone(this.input);
     const stands = new Map<object, object>();
+    // The pages this pass takes from the one before, and the moves that
+    // pass left waiting on its own: they go on waiting when the same
+    // pages are taken again (a letter typed after another), and are made
+    // now otherwise, before anything reads those pages.
+    const takes: object[] = [];
+    if (usable && this.rejoined) {
+      for (let i = this.rejoined.pages; i < placed.pages.length; i++) if (placed.pages[i] === old.placed.pages[i]) takes.push(old.made.pages[i]!);
+    }
+    let moves = old?.moves;
+    // The same pages: taken from the same page on. A page that was taken
+    // and is now before the edit must have its moves made to be kept.
+    if (moves && (moves.list.length >= 8 || old!.movesFrom !== this.rejoined?.pages || takes.some((page) => !moves!.objects.includes(page) || Object.isFrozen(page)))) {
+      makeMoves(moves);
+      moves = undefined;
+    }
     // A page is kept when it is the page the pass before placed and what
     // was made of it names no place the edit moved: a note set at its foot
     // may be written after the edit, wherever it is cited.
@@ -413,13 +428,14 @@ export class PassRecording {
     const delta = this.editDelta;
     const moved = new Set<object>();
     const copies = new Map<object, object>();
+    const owed: object[] = [];
     const taken = (made: object): object => {
       let page = copies.get(made) ?? made;
       if (Object.isFrozen(page)) {
         page = unfrozenCopy(made, copies);
         carryMarks(made, page);
       }
-      moveSourcePlaces(page, at, delta, moved);
+      owed.push(page);
       markMade(page);
       return page;
     };
@@ -460,9 +476,15 @@ export class PassRecording {
     for (const j of stale) moveSourcePlaces(doc.blocks[j], at, delta, moved);
     for (const block of before) doc.blocks.push(block);
     if (after.length > 0) this.tape.afterFinish = () => { for (const block of after) doc.blocks.push(block); };
+    // The move this edit owes the pages taken waits with the others.
+    const waits: WaitingMoves | undefined = owed.length > 0 && delta !== 0
+      ? { objects: owed, list: [...(moves?.list ?? []), { at, delta }] }
+      : owed.length > 0 && moves && moves.list.length > 0 ? { objects: owed, list: moves.list } : undefined;
+    if (waits) movesWait(waits);
     this.record.finished = {
       placed, made: { pages: [...doc.pages], blocks: doc.blocks.slice(0, placed.blocks.length) }, doc,
       lastPlace: old ? old.lastPlace.slice(0, kept) : [],
+      ...(waits ? { moves: waits, movesFrom: this.rejoined!.pages } : {}),
     };
     const t = this.tapes as Tapes;
     t.stats.pagesKept[this.ordinal] = kept;
