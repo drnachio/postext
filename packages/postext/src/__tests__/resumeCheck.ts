@@ -5,7 +5,7 @@
 // that built the document: something the pass changes is not on its tape
 // (`pipeline/build/passTape.ts`), or is kept by reference where it should
 // be copied.
-import type { PassResumeCheck } from '../pipeline/build/passTape.js';
+import type { PassResumeCheck } from '../pipeline/build/passResume.js';
 
 const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env;
 if (env?.POSTEXT_RESUME_CHECK === '1') {

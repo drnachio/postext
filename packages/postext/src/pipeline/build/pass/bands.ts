@@ -392,8 +392,9 @@ export function createBands(deps: BandsDeps) {
     state.bandStart = { contentIndex, part, visit };
     state.activeCap = null;
     if (!bandCaps) return;
-    for (const [spanIndex, cap] of bandCaps) {
-      if (cap.startContentIndex !== contentIndex || cap.startPart !== part || (cap.startVisit ?? 0) !== visit) continue;
+    // The caps of the band that opens here, asked for by its start (#1639):
+    // a cap for another band is none of this band's reading.
+    for (const [spanIndex, cap] of passTape().hintGroup('bandCaps', bandCaps, `${contentIndex}:${part}:${visit}`)) {
       // A cap whose last band took nothing (its opening block is taller
       // than the cut — a heading's leading over a one-line cap) would cut
       // the next band just as short, and the flow would open empty pages

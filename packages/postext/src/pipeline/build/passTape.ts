@@ -42,8 +42,61 @@ interface TapeVariable {
 export interface TapeImage {
   bindings: Map<string, unknown>;
   variables: Map<string, unknown>;
-  /** Entries of the side tables, by the copy of their key. */
-  side: { key: object; table: SideTable; value: unknown }[];
+  /** Entries of the side tables, by the copy of their key and the
+   *  table's name (a pass's own weak collections are made anew by every
+   *  pass, under the same names). */
+  side: { key: object; table: string; value: unknown }[];
+  /** The image holds something a pass over other content could not take
+   *  up: a function, an object of a class, an object of the setup with no
+   *  number. It serves the pass that made it alone. */
+  opaque?: boolean;
+}
+
+/** A read of a whole hint collection (its size, its entries), in
+ *  {@link PassTape.hintReads}. */
+export const ALL_OF_IT = Symbol('all of it');
+
+/** A read of one group of a hint map ({@link PassTape.hintGroup}). */
+export class HintGroupRead {
+  constructor(readonly group: string) {}
+}
+
+const NO_ENTRIES: readonly [unknown, unknown][] = [];
+
+/** How the entries of a hint map are grouped for {@link PassTape.hintGroup}:
+ *  the band caps by the block, the part of it and the visit their band
+ *  opens with (`BandCap` in `pipeline/columns/bandCaps.ts`). */
+const HINT_GROUPS: Record<string, (value: never) => string> = {
+  bandCaps: (cap: { startContentIndex: number; startPart: number; startVisit?: number }) => `${cap.startContentIndex}:${cap.startPart}:${cap.startVisit ?? 0}`,
+};
+
+/** The entries of the hint map `member` by group, in the map's order. */
+export function groupHint(member: string, hints: ReadonlyMap<unknown, unknown>): Map<string, [unknown, unknown][]> {
+  const groupOf = HINT_GROUPS[member];
+  if (!groupOf) throw new Error(`The hint ${member} has no grouping`);
+  const groups = new Map<string, [unknown, unknown][]>();
+  for (const entry of hints) {
+    const group = groupOf(entry[1] as never);
+    const list = groups.get(group);
+    if (list) list.push(entry);
+    else groups.set(group, [entry]);
+  }
+  return groups;
+}
+
+/** An object of the setup as a checkpoint names it when the pass's setup
+ *  is numbered ({@link SetupNames}): by its number, which the same object
+ *  of a later setup carries too. */
+export class SetupRef {
+  constructor(readonly id: number) {}
+}
+
+/** The numbers of the objects of a setup. */
+export interface SetupNames {
+  idOf(value: object): number | undefined;
+  byId(id: number): object | undefined;
+  /** A number for an object that has none yet. */
+  name(value: object): number;
 }
 
 type Plain = Record<string, unknown>;
@@ -61,13 +114,106 @@ export class PassTape {
   private readonly tables: { name: string; table: SideTable }[] = [...sideTables];
   private readonly tracked = new Set<object>();
   private readonly kept = new Set<object>();
-  /** The objects this tape froze when it closed pages ({@link close}).
-   *  What was frozen before (the words the measurement cache shares, once
-   *  a pass has closed a page that holds them) is not among them: such an
-   *  object is never written to, and is never copied. */
-  private closed = new Set<object>();
   /** Whether a page was closed: a write to one then throws. */
   closedAny = false;
+  /** The numbers of the setup's objects, when checkpoints are to outlive
+   *  the pass (#1639): they then name those objects by number. */
+  names: SetupNames | undefined;
+  private readonly refs = new Map<number, SetupRef>();
+  /** The highest content block read since {@link counting} began, and
+   *  whether reads count now (not while the setup reads the whole list). */
+  readUpTo = -1;
+  countsReads = false;
+  /** Whether the pass's checkpoints are to outlive it. */
+  recording = false;
+  /** The hints the pass has read, in order: the member of the hints and
+   *  the key asked of it, or `ALL_OF_IT` for a read of the whole
+   *  collection. A checkpoint keeps how long the list was. */
+  hintReads: [member: string, key: unknown][] = [];
+
+  /** `hints` as the pass is to read them when checkpoints outlive the
+   *  pass: each map and set through a note of what was asked of it. A
+   *  checkpoint then serves a later pass whose hints differ only in what
+   *  had not been read yet (the cap of the last page, say). */
+  countingHints<T extends object>(hints: T): T {
+    if (!this.recording) return hints;
+    const out: Record<string, unknown> = {};
+    for (const member in hints) {
+      const value = (hints as Record<string, unknown>)[member];
+      out[member] = value instanceof Map || value instanceof Set ? this.countingCollection(member, value) : value;
+    }
+    return out as T;
+  }
+
+  /** The collections the pass was given, by what it reads them through. */
+  private readonly givenHints = new WeakMap<object, Map<unknown, unknown>>();
+  private readonly hintGroups = new Map<string, Map<string, [unknown, unknown][]>>();
+
+  /**
+   * The entries of the hint `member` (a map, as the pass reads it) that
+   * {@link HINT_GROUPS} puts in `group`, in the map's order. For a hint
+   * the pass looks up by something other than its key (the band caps, by
+   * the block their band opens with): the read is noted as a read of the
+   * group, not of the whole map, so that a cap for another band does not
+   * count as read here.
+   */
+  hintGroup<K, V>(member: string, hints: ReadonlyMap<K, V>, group: string): readonly [K, V][] {
+    let groups = this.hintGroups.get(member);
+    if (!groups) {
+      groups = groupHint(member, this.givenHints.get(hints) ?? hints);
+      this.hintGroups.set(member, groups);
+    }
+    if (this.recording) this.hintReads.push([member, new HintGroupRead(group)]);
+    return (groups.get(group) ?? NO_ENTRIES) as [K, V][];
+  }
+
+  private countingCollection(member: string, collection: Map<unknown, unknown> | Set<unknown>): object {
+    const reads = this.hintReads;
+    const proxy = new Proxy(collection, {
+      get: (target, key) => {
+        const value = Reflect.get(target, key, target) as unknown;
+        if (typeof value !== 'function') {
+          reads.push([member, ALL_OF_IT]);
+          return value;
+        }
+        if (key === 'get' || key === 'has') {
+          return (asked: unknown): unknown => {
+            reads.push([member, asked]);
+            return (value as (k: unknown) => unknown).call(target, asked);
+          };
+        }
+        reads.push([member, ALL_OF_IT]);
+        return (value as (...args: unknown[]) => unknown).bind(target);
+      },
+    });
+    if (collection instanceof Map) this.givenHints.set(proxy, collection);
+    return proxy;
+  }
+
+  /** Whether `value` is on the tape: state of the pass, not its setup. */
+  tracks(value: object): boolean {
+    this.named();
+    return this.tracked.has(value);
+  }
+
+  /** `blocks` as the pass is to read it when checkpoints outlive the pass:
+   *  through a counter of the highest block read, so that a checkpoint
+   *  knows how far ahead of its block the pass had looked. */
+  counting<T extends object>(blocks: T[]): T[] {
+    if (!this.recording) return blocks;
+    return new Proxy(blocks, {
+      get: (target, key, receiver) => {
+        if (this.countsReads && typeof key === 'string') {
+          const c = key.charCodeAt(0);
+          if (c >= 48 && c <= 57) {
+            const index = Number(key);
+            if (index > this.readUpTo) this.readUpTo = index;
+          }
+        }
+        return Reflect.get(target, key, receiver) as unknown;
+      },
+    });
+  }
 
   /** What the factories named, as they named it: read into the tables
    *  above only when a checkpoint is first asked for ({@link named}). A
@@ -109,6 +255,7 @@ export class PassTape {
       if (this.kept.has(value) || this.tracked.has(value)) return;
       if (value instanceof WeakMap || value instanceof WeakSet) return;
       this.kept.add(value);
+      this.names?.name(value);
       if (Array.isArray(value)) for (const item of value) walk(item);
       else if (value instanceof Map) for (const [k, v] of value) { walk(k); walk(v); }
       else if (value instanceof Set) for (const item of value) walk(item);
@@ -129,7 +276,6 @@ export class PassTape {
       if (this.kept.has(value) || Object.isFrozen(value)) return;
       if (!Array.isArray(value) && !isPlain(value)) return;
       Object.freeze(value);
-      this.closed.add(value);
       if (Array.isArray(value)) for (const item of value) freeze(item);
       else for (const key in value) freeze((value as Plain)[key]);
     };
@@ -145,22 +291,49 @@ export class PassTape {
     if (!this.closedAny) return;
     this.named();
     const side: TapeImage['side'] = [];
-    const copy = this.copier(side, true);
+    const copy = this.copier(side, 'thaw');
     const bindings = new Map<string, unknown>();
     for (const [name, value] of this.bindings) bindings.set(name, copy(value));
     const variables = new Map<string, unknown>();
     for (const [name, v] of this.variables) variables.set(name, copy(v.get()));
     this.fill({ bindings, variables, side });
-    this.closed = new Set();
     this.closedAny = false;
   }
 
-  /** `thaw`: copy the closed pages too. */
-  private copier(side: TapeImage['side'], thaw = false): (value: unknown) => unknown {
+  /** `mode`: `thaw` copies what is frozen too (the closed pages); `name` writes the objects
+   *  of the setup as their numbers and notes in `flags` what a later pass
+   *  could not take up; `resolve` reads those numbers back as the objects
+   *  of this pass's setup, and throws on a number it does not have. */
+  private copier(side: TapeImage['side'], mode?: 'thaw' | 'name' | 'resolve', flags?: { opaque: boolean }): (value: unknown) => unknown {
     const done = new Map<object, object>();
+    const thaw = mode === 'thaw';
+    const names = this.names;
     const copy = (value: unknown): unknown => {
-      if (typeof value !== 'object' || value === null) return value;
-      if (this.kept.has(value) || (Object.isFrozen(value) && !(thaw && this.closed.has(value)))) return value;
+      if (typeof value !== 'object' || value === null) {
+        if (flags && typeof value === 'function') flags.opaque = true;
+        return value;
+      }
+      if (value instanceof SetupRef) {
+        if (mode !== 'resolve') return value;
+        const found = names?.byId(value.id);
+        if (found === undefined) throw new ClosedPageWrite('A checkpoint names an object this setup does not have');
+        return found;
+      }
+      if (this.kept.has(value)) {
+        if (mode !== 'name' || !names) return value;
+        const id = names.idOf(value);
+        if (id === undefined) {
+          flags!.opaque = true;
+          return value;
+        }
+        let ref = this.refs.get(id);
+        if (!ref) this.refs.set(id, (ref = new SetupRef(id)));
+        return ref;
+      }
+      // A frozen object is shared as it is, but when pages are opened
+      // again: then every object of a closed page is copied, whichever
+      // pass closed it, save the words of its lines (below).
+      if (!thaw && Object.isFrozen(value)) return value;
       const known = done.get(value);
       if (known !== undefined) return known;
       let out: object;
@@ -179,14 +352,21 @@ export class PassTape {
       } else if (isPlain(value)) {
         const object: Plain = Object.getPrototypeOf(value) === null ? Object.create(null) as Plain : {};
         done.set(value, (out = object));
-        for (const key in value) object[key] = copy((value as Plain)[key]);
+        for (const key in value) {
+          const member = (value as Plain)[key];
+          // The words of a line (`VDTLine.segments`) are shared with the
+          // measurement cache and never written to once placed (#1609): an
+          // opened page takes a list of its own with the same words.
+          object[key] = thaw && key === 'segments' && Array.isArray(member) ? member.map((word) => (Object.isFrozen(word) ? word : copy(word))) : copy(member);
+        }
       } else {
         // An object of a class, a weak collection: by reference.
+        if (flags) flags.opaque = true;
         return value;
       }
-      for (const { table } of this.tables) {
+      for (const { name, table } of this.tables) {
         if (!table.has(value)) continue;
-        side.push({ key: out, table, value: table instanceof WeakMap ? copy(table.get(value)) : true });
+        side.push({ key: out, table: name, value: table instanceof WeakMap ? copy(table.get(value)) : true });
       }
       return out;
     };
@@ -197,12 +377,13 @@ export class PassTape {
   record(): TapeImage {
     this.named();
     const side: TapeImage['side'] = [];
-    const copy = this.copier(side);
+    const flags = { opaque: false };
+    const copy = this.names ? this.copier(side, 'name', flags) : this.copier(side);
     const bindings = new Map<string, unknown>();
     for (const [name, value] of this.bindings) bindings.set(name, copy(value));
     const variables = new Map<string, unknown>();
     for (const [name, v] of this.variables) variables.set(name, copy(v.get()));
-    return { bindings, variables, side };
+    return { bindings, variables, side, ...(flags.opaque ? { opaque: true } : {}) };
   }
 
   /** Put the tape back to `image`, which stays as it is: the collections
@@ -213,15 +394,21 @@ export class PassTape {
     // One copy of the whole image: its side entries ride along as members
     // of the graph, so their keys are the copies the bindings hold.
     const side: TapeImage['side'] = [];
-    const copy = this.copier(side);
+    const copy = this.names ? this.copier(side, 'resolve') : this.copier(side);
     this.fill(copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage);
   }
 
   /** Fill the tape with `fresh`, which becomes its own. */
   private fill(fresh: TapeImage): void {
+    // An image of another pass must hold what this pass keeps, name for
+    // name: a pass with a collection the other did not have starts over.
+    for (const name of this.bindings.keys()) if (!fresh.bindings.has(name)) throw new ClosedPageWrite(`A checkpoint lacks ${name}`);
     for (const [name, target] of this.bindings) refill(target, fresh.bindings.get(name));
     for (const [name, v] of this.variables) v.set(fresh.variables.get(name) as never);
-    for (const { key, table, value } of fresh.side) {
+    const tables = new Map(this.tables.map((t) => [t.name, t.table]));
+    for (const { key, table: name, value } of fresh.side) {
+      const table = tables.get(name);
+      if (!table) throw new ClosedPageWrite(`A checkpoint names the side table ${name}, which this pass does not keep`);
       if (table instanceof WeakMap) table.set(key, value);
       else table.add(key);
     }
@@ -381,89 +568,7 @@ export function withPassTape<T>(pass: (tape: PassTape) => T): T {
   }
 }
 
-// The check of the tape (#1639), for tests and benchmarks: a pass saves
-// itself at the blocks the checker asks for, and once its blocks are
-// placed goes back to each and places the rest again. What it is in the
-// end, the document included, must be what the first run was.
-
-/** Asked of a pass by the check mode. */
-export interface PassResumeCheck {
-  /** Whether to save the pass before block `blockIdx`, the document at
-   *  `pages` pages. */
-  saveAt(blockIdx: number, pages: number, blocks: number): boolean;
-  /** A pass taken up again from `blockIdx` ended as `again`, where the
-   *  first run ended as `first` (both {@link PassTape.print}). */
-  compared(blockIdx: number, first: string, again: string): void;
-  /** Asked when present: of the `pages` pages the document had at a
-   *  checkpoint, `firstChanged` is the first the rest of the pass wrote to
-   *  (`pages` when it wrote to none of them). */
-  wroteBack?(pages: number, firstChanged: number): void;
-  /** Told when present: a pass wrote to a page it had closed and is
-   *  placed again from its first block with no page closed. */
-  placedAgain?(): void;
-}
-
-/** The checker listening, when one is. */
-export function passResumeCheck(): PassResumeCheck | undefined {
-  return (globalThis as { __postextPassResumeCheck?: PassResumeCheck }).__postextPassResumeCheck;
-}
-
-/** A pass under the check: its checkpoints, and the runs from them. */
-export class PassResume {
-  private readonly saved: { blockIdx: number; image: TapeImage; pages?: string[] }[] = [];
-  /** The document being built. */
-  doc: { pages: unknown[] } | undefined;
-  /** Whether the pages behind a checkpoint are closed. */
-  closes = true;
-
-  /** `setup`: the objects of the pass's setup, kept by reference in a
-   *  checkpoint; everything else on the tape is copied. */
-  constructor(private readonly tape: PassTape, private readonly check: PassResumeCheck, setup: unknown) {
-    tape.atoms(setup);
-  }
-
-  /** The first run is about to place block `blockIdx`. */
-  atBlock(blockIdx: number, pages: number, blocks: number): void {
-    if (!this.check.saveAt(blockIdx, pages, blocks)) return;
-    // Every page but the one being filled is closed (#1639): the rest of
-    // a pass writes to the open page alone, but for a box or a story that
-    // goes back to a page behind it.
-    if (this.closes && this.doc) this.tape.close(this.doc.pages.slice(0, -1));
-    const then = this.check.wroteBack && this.doc ? this.doc.pages.map((p) => JSON.stringify(p)) : undefined;
-    this.saved.push({ blockIdx, image: this.tape.record(), ...(then ? { pages: then } : {}) });
-  }
-
-  /** The first run has placed its blocks. Each checkpoint is put back and
-   *  the rest placed again (`placeFrom(blockIdx, true)`): the tape must
-   *  end as the first run left it. Then the first run's end is put back,
-   *  so the pass finishes from a restored tape too. */
-  again(placeFrom: (blockIdx: number, again: boolean) => void): void {
-    if (this.saved.length === 0) return;
-    const first = this.tape.print();
-    const end = this.tape.record();
-    if (this.check.wroteBack && this.doc) {
-      const now = this.doc.pages.map((p) => JSON.stringify(p));
-      for (const { pages } of this.saved) {
-        if (!pages) continue;
-        let at = 0;
-        while (at < pages.length && pages[at] === now[at]) at++;
-        this.check.wroteBack(pages.length, at);
-      }
-    }
-    for (const { blockIdx, image } of this.saved) {
-      this.tape.putBack(image);
-      placeFrom(blockIdx, true);
-      this.check.compared(blockIdx, first, this.tape.print());
-    }
-    this.tape.putBack(end);
-  }
-}
-
-/** Whether `error` is a write to a closed page: the engine's own refusal
- *  to write to a frozen object, on a tape that closed pages. */
-export function isClosedPageWrite(tape: PassTape, error: unknown): boolean {
-  return tape.closedAny && error instanceof TypeError;
-}
-
-/** Thrown out of a pass that wrote to a page it had closed. */
+/** Thrown out of a pass that wrote to a page it had closed, or that could
+ *  not take up the checkpoint it started from: the pass is placed again
+ *  from its first block, with no checkpoint. */
 export class ClosedPageWrite extends Error {}

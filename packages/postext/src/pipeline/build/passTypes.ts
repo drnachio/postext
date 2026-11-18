@@ -6,6 +6,7 @@ import type { MeasuredContentBlock } from '../blocks/measureContentBlock.js';
 import type { LooseBudget } from '../columns/columnBalancing.js';
 import type { BandCap, BandPassReport } from '../columns/bandCaps.js';
 import type { FloatPad, PlacedSlot } from './floatPads.js';
+import type { LayoutTapes } from './passReuse.js';
 
 /** Room (px) under closing boxes a balancing pass must close to be kept on
  *  that ground alone (see `boxRoomIn`). */
@@ -56,6 +57,17 @@ export interface BuildDocumentOptions {
    * skips both.
    */
   fontSet?: FontFaceSetLike | null;
+  /** The checkpoints of this document's layouts, kept by the host from
+   *  one build to the next (`createLayoutTapes`, #1639): a build after an
+   *  edit then places from the page before the edit. One set of tapes
+   *  serves one document; its content, configuration and resources must
+   *  not be changed in place between builds.
+   *
+   *  Experimental: the pages are the ones a build without tapes gives,
+   *  but a build with them is not yet the faster one. Recording costs
+   *  about a layout, and what follows the placing (notes, running heads)
+   *  is still done for every page. */
+  tapes?: LayoutTapes;
 }
 
 /** One placement pass of a build, as reported to {@link BuildDocumentOptions.onPass}. */

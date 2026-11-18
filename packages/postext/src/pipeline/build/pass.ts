@@ -52,8 +52,9 @@ import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
 import type { PlacedSlot } from './floatPads.js';
 import { perfLap } from '../../util/perfTap.js';
-import { ClosedPageWrite, PassResume, isClosedPageWrite, passResumeCheck, withPassTape, type PassTape } from './passTape.js';
+import { ClosedPageWrite, PassResume, isClosedPageWrite, passResumeCheck, withPassTape, type PassTape } from './passResume.js';
 import { withMeasuringAsFound } from './pass/measuringAsFound.js';
+import { PassRecording, dropTapePass, nextTapePass } from './passReuse.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -72,15 +73,17 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
+  const ordinal = nextTapePass(options?.tapes);
   return withMeasuringAsFound(() => {
     try {
-      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, true));
+      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, true, ordinal));
     } catch (error) {
-      // A pass under the check that still had something to set on a page
-      // it had closed (#1639): placed again with no page closed.
+      // A pass that wrote to a page it had closed, or could not take up its
+      // checkpoint (#1639): placed again, nothing closed, no checkpoint.
       if (!(error instanceof ClosedPageWrite)) throw error;
       passResumeCheck()?.placedAgain?.();
-      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, false));
+      if (options?.tapes && ordinal !== undefined) dropTapePass(options.tapes, ordinal);
+      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, false, undefined));
     }
   });
 }
@@ -93,7 +96,12 @@ function placeDocumentPass(
   hints: PassHints,
   tape: PassTape,
   closes: boolean,
+  /** The pass's place among the passes of a build with tapes. */
+  ordinal: number | undefined,
 ): PassResult {
+  tape.recording = ordinal !== undefined;
+  const given = hints;
+  hints = tape.countingHints(hints);
   const setup = {} as PassSetupState;
   const lap = perfLap();
   const state = {} as PassState;
@@ -191,13 +199,12 @@ function placeDocumentPass(
   });
 
   lap('pass.config');
+  const pageSetup = createPageSetup({ content, state, setup });
   const {
     baselineGrid, doc, continuation, pageIndexOffset, afterPartPage, pageMetrics, pageWidthPx,
     pageHeightPx, freshPageFlowColumns, designFramesOn, toLeaf, frontmatterMeta, markdownBody,
     bodyOffset, parsedBody
-  } = createPageSetup({
-    content, state, setup
-  });
+  } = pageSetup;
   tape.track('pass', { doc });
   lap('pass.pageSetup');
   // A figure's own words (#935): its alt, caption and note replace the
@@ -208,6 +215,10 @@ function placeDocumentPass(
     if (worded !== content.resources) content = { ...content, resources: worded };
   }
 
+  const contentSetup = createContentSetup({
+    content, config, hints, hyphenationRules, doc, continuation, pageMetrics, frontmatterMeta,
+    bodyOffset, parsedBody, setup
+  });
   const {
     captionCitations, footnoteDefs, footnoteNumbering, chapterEndNotes, anchorRefContext,
     templateSource, codeBoxes, contentBlocks, carried, headingPrefixes, headingNumbers,
@@ -217,10 +228,9 @@ function placeDocumentPass(
     paragraphContainers, calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans,
     comicTextPlans, floatedIds, floatsByFirstBlock, calloutFloats, cursor, forcedBreakPages,
     uncappedBottoms, openerHeadFloats
-  } = createContentSetup({
-    content, config, hints, hyphenationRules, doc, continuation, pageMetrics, frontmatterMeta,
-    bodyOffset, parsedBody, setup
-  });
+  } = contentSetup;
+  // From here on a read of a block is a read the checkpoints count.
+  tape.countsReads = true;
 
   lap('pass.contentSetup');
   const {
@@ -486,17 +496,19 @@ function placeDocumentPass(
   let dieAt = 0;
   setColumnObstacleSource(dieWrapSource(doc, contentBlocks, () => ({ blockIdx: dieAt, pageIndex: cursor.pageIndex })));
 
-  // The check of the tape (#1639): the objects of the setup are kept by
-  // reference in a checkpoint, everything else on the tape is copied.
-  const check = passResumeCheck();
-  const resume = check && new PassResume(tape, check, {
-    content, config, hints, setup, continuation, pageMetrics, baselineGrid, frontmatterMeta, parsedBody,
-    captionCitations, footnoteDefs, anchorRefContext, templateSource, codeBoxes, contentBlocks, carried,
-    headingPrefixes, headingNumbers, resources, resourceTypes, resourceById, resourceTypeById,
-    figureLabelsById, bodyStyle, calloutStyles, calloutResolved, blockquoteStyle, paragraphContainers,
-    calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans, comicTextPlans, floatsByFirstBlock,
-  });
+  // What the setup made, for the checkpoints: kept by reference in one
+  // that serves this pass (the check), named by number in one that is to
+  // serve the next build (the tapes), where the setups are also compared.
+  const check = ordinal === undefined ? passResumeCheck() : undefined;
+  const made = check || ordinal !== undefined ? {
+    content: { ...content, markdown: undefined }, config: config ?? {}, setup, hints: given,
+    pageSetup: { ...pageSetup, markdownBody: undefined, parsedBody: undefined }, contentSetup,
+  } : undefined;
+  const resume = check && new PassResume(tape, check, made);
   if (resume) Object.assign(resume, { doc, closes });
+  const recording = ordinal !== undefined && options?.tapes
+    ? new PassRecording(options.tapes, ordinal, tape, { roots: made!, body: markdownBody, blocks: codeBoxes.blocks, doc })
+    : undefined;
 
   lap('pass.wiring');
   /** Place the blocks from `from` to the end of the document. `again`: a
@@ -509,6 +521,7 @@ function placeDocumentPass(
       if (!again) {
         options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
         resume?.atBlock(blockIdx, doc.pages.length, contentBlocks.length);
+        recording?.atBlock(blockIdx);
       }
       const rawBlock = contentBlocks[blockIdx]!;
       // Blocks a composed page set in its frames (#855) are done.
@@ -557,12 +570,14 @@ function placeDocumentPass(
     closeFlowSegment(contentBlocks.length);
   };
   try {
-    placeFrom(0, false);
+    placeFrom(recording?.start() ?? 0, false);
+    recording?.done();
     resume?.again(placeFrom);
   } catch (error) {
     throw isClosedPageWrite(tape, error) ? new ClosedPageWrite() : error;
   }
   // What follows sets things on every page: on pages of its own.
+  tape.countsReads = false;
   tape.open();
   lap('pass.blocks');
 

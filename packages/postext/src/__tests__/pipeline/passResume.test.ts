@@ -4,7 +4,8 @@
 
 import { afterEach, describe, expect, it } from 'vitest';
 import { buildDocument } from '../../pipeline/build.js';
-import { PassTape, type PassResumeCheck } from '../../pipeline/build/passTape.js';
+import { PassTape } from '../../pipeline/build/passTape.js';
+import type { PassResumeCheck } from '../../pipeline/build/passResume.js';
 import type { PostextConfig } from '../../types.js';
 
 class StubCtx {

@@ -41,6 +41,7 @@ export const FIXED = {
   'pass/floats/floatFlush.ts:citingHeadsByPage': 'filled from the hints when the factory is made',
   'pass/notes.ts:measureCtx': 'a measuring context, its fields fixed',
   'pass/callouts/calloutCommit.ts:framePass': 'the pass as a box sees it, its fields fixed',
+  'pass/composed.ts:composedMemo': 'what the memo of composed pages reads of the pass, its fields fixed',
   // Memos whose answer depends on their key alone.
   'pass/setup/pageSetup.ts:freshFlowColumnsOf': 'the key of the memo below',
   'pass/setup/pageSetup.ts:freshFlowColumns': 'a memo by the geometry in force',

@@ -42,6 +42,7 @@ import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js'
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
+import { abandonLayoutTapes, beginLayoutTapes } from './passReuse.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -111,8 +112,28 @@ export async function buildDocumentAsync(
   }
 }
 
-/** The build as a generator: one `yield` after every placement pass. */
+/** The build as a generator: one `yield` after every placement pass. With
+ *  tapes (`options.tapes`, #1639), a build that does not reach its end
+ *  leaves them as the build before left them. */
 export function* buildDocumentGen(
+  content: PostextContent,
+  config?: PostextConfig,
+  cache?: MeasurementCache,
+  options?: BuildDocumentOptions,
+): Generator<void, VDTDocument, void> {
+  if (!options?.tapes) return yield* buildDocumentSteps(content, config, cache, options);
+  beginLayoutTapes(options.tapes);
+  let ended = false;
+  try {
+    const doc = yield* buildDocumentSteps(content, config, cache, options);
+    ended = true;
+    return doc;
+  } finally {
+    if (!ended) abandonLayoutTapes(options.tapes);
+  }
+}
+
+function* buildDocumentSteps(
   content: PostextContent,
   config?: PostextConfig,
   cache?: MeasurementCache,
