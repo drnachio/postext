@@ -4,7 +4,9 @@
 // near its start, its middle and its end, and after each the chapter is
 // laid out twice: with the tapes, where each pass starts from the last
 // checkpoint before the edit, and without them. The two documents must be
-// equal, object for object (pages, blocks, warnings).
+// equal, object for object (pages, blocks, warnings). Every other round
+// runs under a guard that freezes the pages taken after the edit, so that
+// a step which would set one of them a second time throws.
 //
 //   bun scripts/check-edits.ts [--rounds N] <book> [<book> …]
 //
@@ -78,6 +80,10 @@ for (const path of books) {
     let tapedMs = 0;
     let plainMs = 0;
     for (let round = 0; round < rounds; round++) {
+      // Every other round under the guard: the pages taken after the edit
+      // are frozen, so a step that would set one again throws (and the
+      // build is done again, counted below) where it would go unseen.
+      (globalThis as { __postextGuardTaken?: boolean }).__postextGuardTaken = round % 2 === 1;
       for (const share of [0.03, 0.5, 0.97]) {
         const next = typed(markdown, share);
         if (next === undefined) continue;

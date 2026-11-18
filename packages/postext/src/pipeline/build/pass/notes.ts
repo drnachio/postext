@@ -397,6 +397,8 @@ export function createNotes(deps: NotesDeps) {
    *  bottom float band). */
   const dropChapterEndNotes = (): void => {
     for (const page of doc.pages) {
+      // A page kept from the build before has its notes where they go.
+      if (standsAsMade(page)) continue;
       for (const col of page.columns) {
         const blocks = col.blocks;
         let first = blocks.length;
@@ -432,6 +434,7 @@ export function createNotes(deps: NotesDeps) {
     if (!sep.enabled || sep.width <= 0 || noteRulePx <= 0) return;
     const color = sep.color?.hex ?? resolved.footnotes.color?.hex ?? bodyStyle.color;
     for (const page of doc.pages) {
+      if (standsAsMade(page)) continue;
       for (const col of page.columns) {
         const at = col.blocks.findIndex((b, i) => b.footnoteNote !== undefined && col.blocks[i - 1]?.footnoteNote === undefined);
         if (at < 0) continue;

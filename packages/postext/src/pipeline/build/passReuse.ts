@@ -222,6 +222,8 @@ export class PassRecording {
   /** The checkpoints of the pass before that this pass may rejoin, by
    *  their block; and where it did: the pages and blocks it had then. */
   private rejoins: Map<number, Checkpoint> | undefined;
+  /** The setup of this pass is that of the pass before, but for the edit. */
+  private paired = false;
   private rejoined: { pages: number; blocks: number } | undefined;
   private readonly before: PassRecord | undefined;
   private lastPages = 0;
@@ -271,7 +273,10 @@ export class PassRecording {
           // past every block the edit changed, when every hint that pass
           // read is answered the same now and its pages stand alone.
           const last = Math.max(first, ...pairing.changed);
-          if (this.from) {
+          // (A pass that starts from its first block, the edit being before
+          // its first checkpoint, may rejoin all the same.)
+          this.paired = true;
+          {
             const whyNot = !before.end || !before.finished ? 'the pass before left no end'
               : before.end.opaque ? 'the end of the pass before cannot be read by another pass'
                 : hintsSame !== before.hintReads.length ? `the hints differ from read ${hintsSame} on (${String(before.hintReads[hintsSame]?.[0])})`
@@ -384,7 +389,7 @@ export class PassRecording {
     this.tape.close(doc.pages);
     this.record.end = this.tape.record();
     const placed: Listed = { pages: [...doc.pages], blocks: [...doc.blocks] };
-    const old = this.from ? this.before?.finished : undefined;
+    const old = this.paired ? this.before?.finished : undefined;
     const usable = old !== undefined && old.placed.pages.length === placed.pages.length && pagesStandAlone(this.input);
     const stands = new Map<object, object>();
     // The pages this pass takes from the one before, and the moves that
@@ -480,7 +485,14 @@ export class PassRecording {
     const waits: WaitingMoves | undefined = owed.length > 0 && delta !== 0
       ? { objects: owed, list: [...(moves?.list ?? []), { at, delta }] }
       : owed.length > 0 && moves && moves.list.length > 0 ? { objects: owed, list: moves.list } : undefined;
-    if (waits) movesWait(waits);
+    // Under the guard of the checks (`__postextGuardTaken`), the pages
+    // taken are moved now and frozen: a step after the placing that is not
+    // taught to leave a made page alone then throws, as it does on a page
+    // kept before the edit, instead of setting it twice unseen.
+    if ((globalThis as { __postextGuardTaken?: boolean }).__postextGuardTaken && owed.length > 0) {
+      if (waits) makeMoves(waits);
+      this.before!.freeze(owed);
+    } else if (waits) movesWait(waits);
     this.record.finished = {
       placed, made: { pages: [...doc.pages], blocks: doc.blocks.slice(0, placed.blocks.length) }, doc,
       lastPlace: old ? old.lastPlace.slice(0, kept) : [],
