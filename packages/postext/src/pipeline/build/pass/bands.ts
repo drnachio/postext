@@ -19,6 +19,7 @@ import type { BlockStyle } from '../../styles.js';
 import type { PartPlan } from '../../sections/parts.js';
 import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { PassState, PassLate } from './state.js';
+import { passTape } from '../passTape.js';
 
 /** What createBands takes from the pass. */
 export interface BandsDeps {
@@ -373,6 +374,7 @@ export function createBands(deps: BandsDeps) {
 
   /** Columns of the band each cap was last applied to. */
   const cappedBandColumns = new Map<number, readonly VDTColumn[]>();
+  passTape().track('bands', { bandVisits, balanceExtraInColumn, openerBandHeads, openerOwnColumn, sideObstacleColumn, headingClaims, headingLeftBand, spanHeadingOpenedHere, bandCapProposals, spanPlacedInBand, bandCapsApplied, capSlack, cappedBandColumns });
   const enterBand = (contentIndex: number, part: number): void => {
     const page = doc.pages[cursor.pageIndex]!;
     const band = currentBand(page, cursor);

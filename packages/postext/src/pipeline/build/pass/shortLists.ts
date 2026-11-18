@@ -17,6 +17,7 @@ import type { TableSliceSpec } from '../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside } from './types.js';
 import type { ResolvedHeadingStyleConfig } from '../../../types.js';
 import type { PassState } from './state.js';
+import { passTape } from '../passTape.js';
 
 /** What createShortLists takes from the pass. */
 export interface ShortListsDeps {
@@ -84,6 +85,7 @@ export function createShortLists(deps: ShortListsDeps) {
   /** The short lists of the running text by the content index of their
    *  first item (`null`: a block that opens none). */
   const shortLists = new Map<number, { items: number[] } | null>();
+  passTape().track('shortLists', { shortLists });
   /**
    * The short list content block `idx` opens: a run of list items (seen
    * through container markers, its nested lists included) of up to

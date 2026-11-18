@@ -17,6 +17,7 @@ import type { FloatRotation, CaptionAside, BodyCap, PlaceResult } from '../types
 import type { PassState, PassLate } from '../state.js';
 import { pinnedColumn, pinFirstPositions, pinFirstSlots } from './floatPins.js';
 import { footRowFirst } from './floatRows.js';
+import { passTape } from '../../passTape.js';
 
 /** What createFloatFlush takes from the pass. */
 export interface FloatFlushDeps {
@@ -321,13 +322,12 @@ export function createFloatFlush(deps: FloatFlushDeps) {
       const slot = citingPageFloats.get(f.resourceId);
       // A float set by hand goes where its pin says, not to the head.
       if (!slot || !f.citingPage || f.pin) continue;
-      const list = citingHeadsByPage.get(slot.pageIndex);
-      if (list) list.push(f);
-      else citingHeadsByPage.set(slot.pageIndex, [f]);
+      citingHeadsByPage.set(slot.pageIndex, [...(citingHeadsByPage.get(slot.pageIndex) ?? []), f]);
     }
   }
   /** The floats this pass set at the head of their citing page. */
   const citingHeadsSet = new Set<string>();
+  passTape().track('floatFlush', { citingHeadsSet });
   const floatPlanOrder = new Map(floatPlan.map((f, i) => [f.resourceId, i]));
   /** Whether every float of `f`'s numbering sequence first cited before it
    *  is set already: figure 4 never heads a page while figure 3 waits. */

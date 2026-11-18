@@ -13,6 +13,7 @@ import { codeParseOptions } from '../../../code/codeBlocks.js';
 import type { PostextContent } from '../../../../types.js';
 import type { PassState } from '../state.js';
 import type { PassSetupState } from '../setupState.js';
+import { passTape } from '../../passTape.js';
 
 /** What createPageSetup takes from the pass. */
 export interface PageSetupDeps {
@@ -97,6 +98,7 @@ export function createPageSetup(deps: PageSetupDeps) {
       })()
     : undefined;
   const leafPages = new WeakSet<VDTPage>();
+  passTape().track('pageSetup', { leafPages });
   const designFramesOn = (page: VDTPage | undefined): { page: BoundingBox; bleed: BoundingBox; upright?: boolean } => {
     if (leaf && page && leafPages.has(page)) return pageIsVertical(page) ? leaf.vertical : leaf.physical;
     return page && pageIsVertical(page) ? verticalFrames : physicalFrames;

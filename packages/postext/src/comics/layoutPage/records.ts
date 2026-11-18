@@ -2,11 +2,12 @@
 // each panel.
 import type { VDTComicPage, ContentWarning } from '../../vdt.js';
 import type { ComicPanelSource } from '../types.js';
+import { passSideTable } from '../../pipeline/build/passTape.js';
 
 /** Layout warnings of the comic pages laid out, keyed by the page they
  *  belong to (each build pass lays its pages out afresh; only the last
  *  pass's pages reach the document). */
-export const layoutWarnings = new WeakMap<VDTComicPage, ContentWarning[]>();
+export const layoutWarnings = passSideTable('comicLayoutWarnings', new WeakMap<VDTComicPage, ContentWarning[]>());
 
 /** The warnings the layout of a comic page found (`comicPanelLetterbox`,
  *  `comicBalloonOverflow`). */
@@ -16,7 +17,7 @@ export function comicPageLayoutWarnings(comic: VDTComicPage): readonly ContentWa
 
 /** The script (or text) each laid-out panel of a comic was set from, by
  *  the comic laid out (#885): what fills a text panel's frame. */
-export const panelSourcesOf = new WeakMap<VDTComicPage, readonly (ComicPanelSource | undefined)[]>();
+export const panelSourcesOf = passSideTable('comicPanelSources', new WeakMap<VDTComicPage, readonly (ComicPanelSource | undefined)[]>());
 
 /** The source of each panel of a comic laid out by {@link layoutComicFrame}
  *  (undefined for an empty cell), in panel order. Internal to the comics

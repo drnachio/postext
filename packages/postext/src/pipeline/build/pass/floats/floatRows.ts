@@ -10,6 +10,7 @@ import type { PlannedFloat } from '../../../floats/floatPlacement.js';
 import type { FloatSlot, FloatSlotPosition } from '../../../floats/floatSlots.js';
 import type { PlaceResult } from '../types.js';
 import type { FootStacks } from './footStack.js';
+import { passTape } from '../../passTape.js';
 
 type Place = (page: VDTPage, f: PlannedFloat, targetCols: readonly VDTColumn[], position: FloatSlotPosition, pageSpan: boolean,
   mode: 'fresh' | 'strict', anchorToCap?: boolean, side?: boolean, refY?: number) => PlaceResult;
@@ -44,6 +45,7 @@ export function createFloatRows(deps: FloatRowsDeps) {
   const on = resolved.layout.footFloatRow;
   /** A picture's natural block at a width, laid out once per pass. */
   const naturalFloats = new Map<string, ResolvedResourceBlock | null>();
+  passTape().track('floatRows', { naturalFloats });
 
   /** The float a foot row lines a new one in `col` up with: the only float
    *  at the foot of the column before it, on the same page and band, set

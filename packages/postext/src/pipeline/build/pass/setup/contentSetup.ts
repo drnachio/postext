@@ -50,6 +50,7 @@ import type { VDTDocument } from '../../../../vdt/document.js';
 import type { LayoutContinuation, DocumentMetadata } from '../../../../types/content.js';
 import type { PageMetrics } from '../../../blocks/buildHelpers.js';
 import type { PassSetupState } from '../setupState.js';
+import { passTape } from '../../passTape.js';
 
 /** What createContentSetup takes from the pass. */
 export interface ContentSetupDeps {
@@ -379,6 +380,7 @@ export function createContentSetup(deps: ContentSetupDeps) {
   /** The opener's own columns a float took the head of, under the opener:
    *  where the float's band ends, the flow's position right after it. */
   const openerHeadFloats = new Map<VDTColumn, number>();
+  passTape().track('contentSetup', { calloutFloats, cursor, forcedBreakPages, uncappedBottoms, openerHeadFloats });
   return {
     captionCitations, footnoteDefs, footnoteNumbering, chapterEndNotes, anchorRefContext,
     templateSource, codeBoxes, contentBlocks, carried, headingPrefixes, headingNumbers,

@@ -9,6 +9,7 @@ import type { PlannedFloat } from '../../../floats/floatPlacement.js';
 import type { FloatSlotPosition } from '../../../floats/floatSlots.js';
 import type { PlaceResult } from '../types.js';
 import type { FloatPlaceDeps } from './floatPlace.js';
+import { passTape } from '../../passTape.js';
 
 /** Places a float in a slot of a page (`placeFloatInColumns`). */
 export type FloatSlotPlacer = (
@@ -58,6 +59,7 @@ export function withCitationPull(place: FloatSlotPlacer, deps: CitationPullDeps)
   /** Slots where a picture's crop was tried (a slot offered again after it
    *  failed has no more room). */
   const cropTried = new Set<string>();
+  passTape().track('citationPull', { naturalFloats, cropTried });
   return (page, f, targetCols, position, pageSpan, mode, anchorToCap = false, side = false, refY) => {
     const r = place(page, f, targetCols, position, pageSpan, mode, anchorToCap, side, refY);
     if (r !== 'defer' || mode !== 'strict' || f.refPageIndex !== page.index) return r;

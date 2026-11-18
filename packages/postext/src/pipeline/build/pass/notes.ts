@@ -21,6 +21,7 @@ import type { Resource, ResourceType } from '../../../types.js';
 import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js';
 import type { OrderedListMetrics } from '../../text/lists.js';
 import type { PassState } from './state.js';
+import { passTape } from '../passTape.js';
 
 /** What createNotes takes from the pass. */
 export interface NotesDeps {
@@ -183,6 +184,8 @@ export function createNotes(deps: NotesDeps) {
   const pendingCiter = new Map<string, VDTBlock>();
   /** How far `doc.blocks` was read for such citations. */
   let notesScanned = 0;
+  passTape().variable('notes.spreadDeferredPage', () => spreadDeferredPage, (v) => { spreadDeferredPage = v; });
+  passTape().variable('notes.notesScanned', () => notesScanned, (v) => { notesScanned = v; });
   const collectPendingNotes = (): void => {
     for (; notesScanned < doc.blocks.length; notesScanned++) {
       const block = doc.blocks[notesScanned]!;
@@ -447,6 +450,7 @@ export function createNotes(deps: NotesDeps) {
   };
   /** Content index of the block citing each note (reading order). */
   const noteAnchor = new Map<string, number>();
+  passTape().track('notes', { calloutsOutOfFlow, joiningLetterSpacing, dropCapNotes, placedNotes, columnNotesOf, columnOfNotes, spreadDeferred, pendingNotes, pendingCiter, noteAnchor });
   /** Set the notes in the room reserved for them: the reservations of a
    *  column that touch (the usual case) make one stack in citation order
    *  under the separator; a float band set between two leaves each its own

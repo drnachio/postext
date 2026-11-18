@@ -293,6 +293,11 @@ jobs:
       - name: Source size
         run: node scripts/source-size.mjs --check
 
+      # Everything a placement pass changes is on its tape (#1639): a new
+      # collection or `let` in a pass factory that is not fails here.
+      - name: Pass tape
+        run: node scripts/pass-tape.mjs --check
+
       # What the release would publish on JSR (#1417): a new dependency whose
       # range JSR refuses, or a package past its 20 MB, fails here and not
       # after the release.

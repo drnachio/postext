@@ -21,6 +21,7 @@ import type { ComicPageSource } from '../../../../comics/types.js';
 import type { StripGeometry } from '../types.js';
 import { composedFrameMeasureContext, type BlockMeasureContext } from '../../../blocks/measureContentBlock.js';
 import type { PassState } from '../state.js';
+import { passTape } from '../../passTape.js';
 
 /** What createCalloutCommit takes from the pass. */
 export interface CalloutCommitDeps {
@@ -63,6 +64,7 @@ export function createCalloutCommit(deps: CalloutCommitDeps) {
    *  group. */
   const columnsNotes: ContentWarning[] = [];
   const narrowNoted = new Set<number>();
+  passTape().track('calloutCommit', { columnsNotes, narrowNoted });
   const noteNarrowGroups = (result: CalloutLayoutResult, pageIndex: number): void => {
     for (const g of result.groups ?? []) {
       if (!g.narrow || narrowNoted.has(g.contentIndex)) continue;

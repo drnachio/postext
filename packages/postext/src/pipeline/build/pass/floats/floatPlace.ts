@@ -21,6 +21,7 @@ import { withCitationPull } from './citationPull.js';
 import { createFloatRows } from './floatRows.js';
 import { createFloatPins } from './floatPins.js';
 import type { PlacedSlot } from '../../floatPads.js';
+import { passTape } from '../../passTape.js';
 
 /** The fresh pages a full-page plate waits past for one it can have
  *  whole before it takes the next as it is (#1461). */
@@ -97,6 +98,7 @@ export function createFloatPlace(deps: FloatPlaceDeps) {
   const pins = createFloatPins(pendingFloats);
   /** The fresh pages each full-page plate waited past (#1461). */
   const plateWaitPages = new Map<string, Set<number>>();
+  passTape().track('floatPlace', { plateWaitPages });
   /**
    * Whether full-page plate `f` waits for a later page instead of taking
    * fresh page `page` (#1461). It takes a page it can have whole: nothing

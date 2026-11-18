@@ -32,6 +32,7 @@ import { parseLengthText } from '../../defaults/text/tabStops.js';
 import { contourInsetSteps } from '../../contour/index.js';
 import { captionInsideShare } from '../resources/captionInside.js';
 import { isWidthLength, placementWidthOf } from './placementLength.js';
+import { passSideTable } from '../build/passTape.js';
 
 /** A `wrap` value as a side of the flow: `'start'` is `'left'`, `'end'` is
  *  `'right'`; `'none'` and anything else are no wrap. */
@@ -122,13 +123,13 @@ export interface OpenWrap {
   kind: 'top' | 'bottom' | 'fixed';
 }
 
-const openWraps = new WeakMap<VDTColumn, OpenWrap[]>();
+const openWraps = passSideTable('openWraps', new WeakMap<VDTColumn, OpenWrap[]>());
 
 /** What a column's sheet keeps text away from before anything is placed in
  *  it (#1565: the die-cut holes of its page), asked once per column. */
 export type ColumnObstacleSource = (col: VDTColumn) => readonly VDTExclusion[] | undefined;
 let obstacleSource: ColumnObstacleSource | undefined;
-const obstaclesAsked = new WeakSet<VDTColumn>();
+const obstaclesAsked = passSideTable('obstaclesAsked', new WeakSet<VDTColumn>());
 
 /** Sets the source of the columns' fixed obstacles for the pass that lays
  *  out now (`undefined`: none); returns the one before, to put back. */

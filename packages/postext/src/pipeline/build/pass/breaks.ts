@@ -13,6 +13,7 @@ import type { HeadingLevelResolver } from '../../sections/headingStyles.js';
 import type { LayoutContinuation } from '../../../types/content.js';
 import type { BandCapZone } from '../../columns/bandCaps.js';
 import type { PassState, PassLate } from './state.js';
+import { passTape } from '../passTape.js';
 
 /** What createBreaks takes from the pass. */
 export interface BreaksDeps {
@@ -261,6 +262,7 @@ export function createBreaks(deps: BreaksDeps) {
    *  headings it rolled back, by content index: the count `shortColumnMoves`
    *  bounds, kept across the rollback that sets the headings again. */
   const calloutShortMoves = new Map<number, number>();
+  passTape().track('breaks', { pageNumberSegments, calloutShortMoves });
   /** Whether a block moving on whole may take the `run` headings closing
    *  `col` along. A run that is all the column holds would open the next
    *  column just as it opens this one, and is rolled back no further —

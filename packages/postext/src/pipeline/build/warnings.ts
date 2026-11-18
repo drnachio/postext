@@ -1,6 +1,7 @@
 // Warnings a placement pass raises, kept per document until the build reads
 // them with the content warnings (#1276: split out of build.ts).
 import type { VDTDocument, ContentWarning, VDTBlock } from '../../vdt.js';
+import { passSideTable } from './passTape.js';
 
 /** Warnings the last pass's `:::index` raised, per document (read with
  *  the content warnings once the build is done). */
@@ -25,7 +26,7 @@ export const compositionWarningsByDoc = new WeakMap<VDTDocument, ContentWarning[
  *  its chapter (#639): a side box's frame, a side float's block, with the
  *  source range an `afterText` warning points at. Read from the finished
  *  layout, so the blocks a splice keeps bring their note along. */
-export const setAfterText = new WeakMap<VDTBlock, { resourceId?: string; sourceStart?: number; sourceEnd?: number }>();
+export const setAfterText = passSideTable('setAfterText', new WeakMap<VDTBlock, { resourceId?: string; sourceStart?: number; sourceEnd?: number }>());
 /** The `unplaced` warnings of a build (#639): what its last pass left in
  *  its queues. */
 export const unplacedByDoc = new WeakMap<VDTDocument, ContentWarning[]>();

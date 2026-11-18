@@ -52,6 +52,7 @@ import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
 import type { PlacedSlot } from './floatPads.js';
 import { perfLap } from '../../util/perfTap.js';
+import { PassResume, passResumeCheck, withPassTape, type PassTape } from './passTape.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -88,7 +89,7 @@ export function buildDocumentPass(
   const symbols = symbolFont();
   const obstacles = setColumnObstacleSource(undefined);
   try {
-    return placeDocumentPass(content, config, cache, options, hints);
+    return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape));
   } finally {
     setColumnObstacleSource(obstacles);
     setSymbolFont(symbols);
@@ -110,6 +111,7 @@ function placeDocumentPass(
   cache: MeasurementCache | undefined,
   options: BuildDocumentOptions | undefined,
   hints: PassHints,
+  tape: PassTape,
 ): PassResult {
   const setup = {} as PassSetupState;
   const lap = perfLap();
@@ -125,6 +127,7 @@ function placeDocumentPass(
    *  band above (a page-span box, a top float band) or a caption below has
    *  shortened it, so what does not fit it may still fit a full column. */
   const shortSideColumn = (page: VDTPage, col: VDTColumn): boolean => col.bbox.height < page.contentArea.height - 0.5;
+  tape.track('pass', { state, captionUnderProposals, floatSlots, pullShortfalls, asideCutBy });
   // Rebound once the content is read when it holds exercises (#1227): the
   // config then also carries their chip and paragraph styles.
   setup.resolved = resolveAllConfig(config);
@@ -152,6 +155,7 @@ function placeDocumentPass(
   const looseOffGrid = new Set<number>();
   // Lines gained so far per column budget group (see `LooseBudget`).
   const looseGained = new Map<number, number>();
+  tape.track('pass', { looseOutcome, looseOffGrid, looseGained });
   // Level configs with heading-style overrides merged in (`{style="…"}`).
   const headingLevels = createHeadingLevelResolver(setup.resolved);
   const dpi = setup.resolved.page.dpi;
@@ -213,6 +217,7 @@ function placeDocumentPass(
   } = createPageSetup({
     content, state, setup
   });
+  tape.track('pass', { doc });
   lap('pass.pageSetup');
   // A figure's own words (#935): its alt, caption and note replace the
   // resource's in this chapter, for the layout, the references and every
@@ -500,57 +505,77 @@ function placeDocumentPass(
   let dieAt = 0;
   setColumnObstacleSource(dieWrapSource(doc, contentBlocks, () => ({ blockIdx: dieAt, pageIndex: cursor.pageIndex })));
 
+  // The check of the tape (#1639): the objects of the setup are kept by
+  // reference in a checkpoint, everything else on the tape is copied.
+  const check = passResumeCheck();
+  const resume = check && new PassResume(tape, check, {
+    content, config, hints, setup, continuation, pageMetrics, baselineGrid, frontmatterMeta, parsedBody,
+    captionCitations, footnoteDefs, anchorRefContext, templateSource, codeBoxes, contentBlocks, carried,
+    headingPrefixes, headingNumbers, resources, resourceTypes, resourceById, resourceTypeById,
+    figureLabelsById, bodyStyle, calloutStyles, calloutResolved, blockquoteStyle, paragraphContainers,
+    calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans, comicTextPlans, floatsByFirstBlock,
+  });
+
   lap('pass.wiring');
-  for (let blockIdx = 0; blockIdx < contentBlocks.length; blockIdx++) {
-    const blockTurn = { blockIdx } as BlockIteration;
-    dieAt = blockIdx;
-    if (options?.shouldCancel?.()) throw new BuildCancelledError();
-    options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
-    const rawBlock = contentBlocks[blockIdx]!;
-    // Blocks a composed page set in its frames (#855) are done.
-    if (composedLaid.has(blockIdx)) continue;
+  /** Place the blocks from `from` to the end of the document. `again`: a
+   *  run of the check, which reports no progress and saves nothing. */
+  const placeFrom = (from: number, again: boolean): void => {
+    for (let blockIdx = from; blockIdx < contentBlocks.length; blockIdx++) {
+      const blockTurn = { blockIdx } as BlockIteration;
+      dieAt = blockIdx;
+      if (options?.shouldCancel?.()) throw new BuildCancelledError();
+      if (!again) {
+        options?.onProgress?.({ pass: 1, blocks: blockIdx, totalBlocks: contentBlocks.length, pages: doc.pages.length });
+        resume?.atBlock(blockIdx, doc.pages.length, contentBlocks.length);
+      }
+      const rawBlock = contentBlocks[blockIdx]!;
+      // Blocks a composed page set in its frames (#855) are done.
+      if (composedLaid.has(blockIdx)) continue;
 
-    // The styled section this block sits in: its geometry applies to the
-    // pages opened from here (a heading with `breakBefore` opens one).
-    const blockSection = sectionPlan.byBlock[blockIdx];
-    if (blockSection !== state.currentSection) enterSection(blockSection);
+      // The styled section this block sits in: its geometry applies to the
+      // pages opened from here (a heading with `breakBefore` opens one).
+      const blockSection = sectionPlan.byBlock[blockIdx];
+      if (blockSection !== state.currentSection) enterSection(blockSection);
 
-    // The repeat of a contents block's head row (#850): set where a cut
-    // block goes on in a fresh column, skipped everywhere else.
-    if (rawBlock.toc?.group?.role === 'continuation' && !tocContinuationOpens(blockIdx)) continue;
+      // The repeat of a contents block's head row (#850): set where a cut
+      // block goes on in a fresh column, skipped everywhere else.
+      if (rawBlock.toc?.group?.role === 'continuation' && !tocContinuationOpens(blockIdx)) continue;
 
-    // Floats whose reference landed in an earlier iteration take the first
-    // free slot of the current page now — after their reference in reading
-    // order. Then enqueue the floats first-referenced in this block, so the
-    // next page opened while placing it (or any later block) reserves their
-    // band and the next iteration offers them the slots that follow. A text
-    // block holds its floats back until the line citing them is placed
-    // (`gateCitedFloats`).
-    settleAwaitingSideBoxes(false);
-    releaseStaleCitationGates(blockIdx);
-    tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx), blockIdx);
-    enqueueFloatsFor(blockIdx);
+      // Floats whose reference landed in an earlier iteration take the first
+      // free slot of the current page now — after their reference in reading
+      // order. Then enqueue the floats first-referenced in this block, so the
+      // next page opened while placing it (or any later block) reserves their
+      // band and the next iteration offers them the slots that follow. A text
+      // block holds its floats back until the line citing them is placed
+      // (`gateCitedFloats`).
+      settleAwaitingSideBoxes(false);
+      releaseStaleCitationGates(blockIdx);
+      tryPlacePendingFloatsOnCurrentPage(spanBoxAt(blockIdx), blockIdx);
+      enqueueFloatsFor(blockIdx);
 
-    blockTurn.rawBlock = rawBlock;
-    const jump = dispatchBlock(blockTurn);
-    blockIdx = blockTurn.blockIdx;
-    if (jump === 'continue') continue;
+      blockTurn.rawBlock = rawBlock;
+      const jump = dispatchBlock(blockTurn);
+      blockIdx = blockTurn.blockIdx;
+      if (jump === 'continue') continue;
 
-    if (measureBlock(blockTurn) === 'continue') continue;
+      if (measureBlock(blockTurn) === 'continue') continue;
 
-    if (placeResourceBlock(blockTurn) === 'continue') continue;
+      if (placeResourceBlock(blockTurn) === 'continue') continue;
 
-    prepareLines(blockTurn);
+      prepareLines(blockTurn);
 
-    placeLines(blockTurn);
-    blockIdx = blockTurn.blockIdx;
+      placeLines(blockTurn);
+      blockIdx = blockTurn.blockIdx;
 
-    flushPendingNumberingAtBoundary();
-  }
+      flushPendingNumberingAtBoundary();
+    }
 
-  // End of the document: level the closing band and place any floats still
-  // pending (referenced on the last page) on pages appended after it.
-  closeFlowSegment(contentBlocks.length);
+    // End of the document: level the closing band and place any floats still
+    // pending (referenced on the last page) on pages appended after it.
+    closeFlowSegment(contentBlocks.length);
+  };
+  placeFrom(0, false);
+  resume?.again(placeFrom);
   lap('pass.blocks');
 
   const {
