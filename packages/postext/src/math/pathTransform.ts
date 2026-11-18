@@ -46,7 +46,23 @@ function applyLinear(m: AffineMatrix, x: number, y: number): [number, number] {
 
 type Cmd = { op: string; args: number[] };
 
-function tokenize(d: string): Cmd[] {
+/** The commands of the paths read last (#1632): a formula draws the same
+ *  glyph outlines again and again, each at a place of its own, and reading
+ *  the numbers of each was a twentieth of a maths chapter's first layout.
+ *  The commands are read only, never written. */
+const tokenized = new Map<string, readonly Cmd[]>();
+const MAX_TOKENIZED = 4000;
+
+function tokenize(d: string): readonly Cmd[] {
+  const known = tokenized.get(d);
+  if (known) return known;
+  const cmds = readCommands(d);
+  if (tokenized.size >= MAX_TOKENIZED) tokenized.clear();
+  tokenized.set(d, cmds);
+  return cmds;
+}
+
+function readCommands(d: string): Cmd[] {
   const cmds: Cmd[] = [];
   const re = /([MmLlHhVvCcSsQqTtAaZz])|(-?\d*\.?\d+(?:[eE][-+]?\d+)?)/g;
   let current: Cmd | null = null;

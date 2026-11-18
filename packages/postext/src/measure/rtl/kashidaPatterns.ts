@@ -186,12 +186,32 @@ const RASM_CLASSES: readonly { groups: readonly string[]; forms: readonly Form[]
   { groups: ['Kaf', 'Gaf'], forms: ['initial', 'medial'] },
 ];
 
-function rasmMatches(token: string, group: string | undefined, form: Form): boolean {
+/** What a pattern's group `token` matches in a form: the groups of its
+ *  class when it is the first of one (`Set`), nothing when it is a later
+ *  member (`false`), and only itself when no class holds it (`null`). */
+type RasmAnswer = ReadonlySet<string> | false | null;
+
+/** {@link RASM_CLASSES} read once per token and form (#1632): the search
+ *  ran for every letter of every pattern tried on every distinct word. */
+const rasmAnswers: Record<Form, Map<string, RasmAnswer>> = { isolated: new Map(), initial: new Map(), medial: new Map(), final: new Map() };
+
+function rasmAnswerOf(token: string, form: Form): RasmAnswer {
   for (const cls of RASM_CLASSES) {
     if (!cls.forms.includes(form) || !cls.groups.includes(token)) continue;
-    return cls.groups[0] === token && group !== undefined && cls.groups.includes(group);
+    return cls.groups[0] === token ? new Set(cls.groups) : false;
   }
-  return token === group;
+  return null;
+}
+
+function rasmMatches(token: string, group: string | undefined, form: Form): boolean {
+  const known = rasmAnswers[form];
+  let answer = known.get(token);
+  if (answer === undefined) {
+    answer = rasmAnswerOf(token, form);
+    known.set(token, answer);
+  }
+  if (answer === null) return token === group;
+  return answer !== false && group !== undefined && answer.has(group);
 }
 
 // ---------------------------------------------------------------------------
