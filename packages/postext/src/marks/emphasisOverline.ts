@@ -95,7 +95,7 @@ const ruled = new WeakSet<VDTLine>();
  *  module comment), in the block's emphasis colour. */
 export function overlineEmphasis(doc: VDTDocument): void {
   for (const block of doc.blocks) {
-    if (block.emphasis !== 'overline' || block.hidden) continue;
+    if (block.emphasis !== 'overline' || block.hidden || Object.isFrozen(block)) continue;
     for (const line of block.lines) {
       if (ruled.has(line)) continue;
       const marks = overlineMarks(line, block, block.italicColor);

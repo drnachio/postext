@@ -21,6 +21,7 @@ export function stampCarriedSource(doc: VDTDocument, carried: ImportedJumps, fen
   const stories = [...carried.stories.values()];
   const noteChapter = new Map(carried.footnotes.map((n) => [n.id, n.chapter]));
   for (const block of doc.blocks) {
+    if (Object.isFrozen(block)) continue;
     const note = block.footnoteNote !== undefined ? noteChapter.get(block.footnoteNote) : undefined;
     if (note !== undefined) block.sourceChapter = note;
     const at = block.contentIndex;

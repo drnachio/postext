@@ -47,6 +47,10 @@ describe('a build with tapes after an edit', () => {
       expect(edited.taped).toBe(edited.plain);
       expect(edited.stats.reasons.filter(Boolean)).toEqual([]);
       expect(Math.min(...edited.stats.startedAt)).toBeGreaterThan(30);
+      // The pages before the checkpoint keep what the build before made of
+      // them (their running heads, their labels): not finished again.
+      expect(Math.min(...edited.stats.pagesKept)).toBeGreaterThan(2);
+      expect(edited.stats.builtAgain).toBe(false);
     }
 
     // Then one near the start: the passes start there.

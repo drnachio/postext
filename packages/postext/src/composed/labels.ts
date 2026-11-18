@@ -725,7 +725,7 @@ export function stampFigureLabelRects(doc: VDTDocument): void {
     if (seen.has(block)) return;
     seen.add(block);
     const labels = block.resourceBlock?.labels;
-    if (!labels || labels.length === 0) return;
+    if (!labels || labels.length === 0 || Object.isFrozen(block)) return;
     for (const label of labels) {
       if (!label.layout) {
         delete label.rect;

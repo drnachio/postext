@@ -175,6 +175,8 @@ export function stampPagePaper(
     return firstPaper(page.floats, byBlock);
   });
   for (let i = 0; i < pages.length; i++) {
+    // A page kept from the build before has its paper (#1639).
+    if (Object.isFrozen(pages[i])) continue;
     let paper = found[i];
     if (paper === null) {
       let before: FolioPaperConfig | undefined | null = null;

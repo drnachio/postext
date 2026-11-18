@@ -458,6 +458,8 @@ export function createNotes(deps: NotesDeps) {
   const setColumnNotes = (): void => {
     for (const [col, entry] of columnNotesOf) {
       const page = columnOfNotes.get(col)!;
+      // A page kept from the build before has its notes (#1639).
+      if (Object.isFrozen(page)) continue;
       const regions: { top: number; bottom: number; ids: string[] }[] = [];
       for (const slot of entry.slots) {
         const last = regions[regions.length - 1];

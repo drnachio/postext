@@ -507,7 +507,7 @@ function placeDocumentPass(
   const resume = check && new PassResume(tape, check, made);
   if (resume) Object.assign(resume, { doc, closes });
   const recording = ordinal !== undefined && options?.tapes
-    ? new PassRecording(options.tapes, ordinal, tape, { roots: made!, body: markdownBody, blocks: codeBoxes.blocks, doc })
+    ? new PassRecording(options.tapes, ordinal, tape, { roots: made!, body: markdownBody, blocks: codeBoxes.blocks, doc, bodyOffset, numbersLines: setup.resolved.lineNumbers?.enabled === true })
     : undefined;
 
   lap('pass.wiring');

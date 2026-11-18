@@ -386,7 +386,7 @@ export function measureCodeLines(input: CodeLinesInput): MeasuredCode {
  */
 export function buildCodeLineNumbers(doc: VDTDocument): void {
   for (const page of doc.pages) {
-    if (pageIsVertical(page)) continue;
+    if (pageIsVertical(page) || Object.isFrozen(page)) continue;
     const blocks: VDTDesignTextBlock[] = [];
     const visit = (block: VDTBlock) => {
       const numbers = block.type === 'code' ? block.code?.numbers : undefined;

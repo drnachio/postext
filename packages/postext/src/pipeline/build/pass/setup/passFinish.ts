@@ -139,7 +139,7 @@ export function createPassFinish(deps: PassFinishDeps) {
   if (chapterEndNotes) ruleChapterEndNotes();
   for (const index of centredPages) {
     const page = doc.pages[index];
-    if (page) centrePageText(page, reservedOf);
+    if (page && !Object.isFrozen(page)) centrePageText(page, reservedOf);
   }
   // The text panels of the strips, where the strips stand now (#959).
   placeStripTexts();
@@ -179,7 +179,7 @@ export function createPassFinish(deps: PassFinishDeps) {
   const docRuleWidthPx = dimensionToPx(docRule.lineWidth, dpi);
   for (const page of doc.pages) {
     const layout = pageLayoutOf(page);
-    if (!layout || layout === setup.resolved.layout || page.partInfo) continue;
+    if (!layout || layout === setup.resolved.layout || page.partInfo || Object.isFrozen(page)) continue;
     const rule = layout.columnRule;
     const lineWidthPx = dimensionToPx(rule.lineWidth, dpi);
     const same = rule.enabled === docRule.enabled
@@ -197,6 +197,8 @@ export function createPassFinish(deps: PassFinishDeps) {
     const info = labels[i];
     if (!info) continue;
     const page = doc.pages[i]!;
+    // A page kept from the build before has its label (#1639).
+    if (Object.isFrozen(page)) continue;
     page.pageNumberValue = info.value;
     page.pageLabel = info.label;
     page.pageNumberFormat = info.format;

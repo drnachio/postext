@@ -215,6 +215,9 @@ export function textLineGroups(doc: VDTDocument): { lines: VDTLine[]; like: Bloc
   const visit = (block: VDTBlock): void => {
     if (seen.has(block)) return;
     seen.add(block);
+    // A block of a page kept from the build before has its marks, lines
+    // and colours (#1639): every reader of these groups writes to them.
+    if (Object.isFrozen(block)) return;
     if (block.resourceBlock) groups.push(...resourceTexts(block));
     else if (!block.designOverlay) groups.push({ lines: block.lines, like: block });
   };

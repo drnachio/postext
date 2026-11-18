@@ -165,12 +165,14 @@ export function orientPageLinesToFrame(page: VDTPage): void {
 export function orientLinesToFrames(doc: VDTDocument): void {
   const skip = new Set<VDTBlock>();
   for (const page of doc.pages) {
+    // A page kept from the build before is turned already (#1639).
+    if (Object.isFrozen(page)) continue;
     orientPageLinesToFrame(page);
     if (pageIsMirrored(page)) for (const b of unmirroredBlocks(page)) skip.add(b);
   }
   // Blocks the pages do not list (none today) are turned with their page.
   for (const block of doc.blocks) {
     const page = block.pageIndex >= 0 ? doc.pages[block.pageIndex] : undefined;
-    if (page && pageIsMirrored(page) && !skip.has(block)) orientBlock(block);
+    if (page && pageIsMirrored(page) && !skip.has(block) && !Object.isFrozen(block)) orientBlock(block);
   }
 }

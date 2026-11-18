@@ -125,6 +125,8 @@ function dashAdvances(dashes: Map<string, Set<string>>): Record<string, Record<s
  *  in a mode of its own (#944). Horizontal pages are otherwise left alone. */
 export function stampCentralBaselines(doc: VDTDocument): void {
   for (const page of doc.pages) {
+    // A page kept from the build before has its baselines (#1639).
+    if (Object.isFrozen(page)) continue;
     // A vertical frame on a page of another mode (#944): its own.
     for (const frame of page.composed?.frames ?? []) {
       if (frame.writingMode !== 'vertical-rl') continue;

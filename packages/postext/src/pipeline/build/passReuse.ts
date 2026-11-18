@@ -59,7 +59,27 @@ interface PassRecord {
   checkpoints: Checkpoint[];
   /** The reads of the hints the pass made, in order. */
   hintReads: [member: string, key: unknown][];
+  /** The pass's pages and blocks as it placed them and as its finish (and
+   *  the marks after it) left them, place by place; its document, whose
+   *  block list ends with what the finish added. */
+  finished?: { placed: Listed; made: Listed; doc: Document; lastPlace: (number | undefined)[] };
+  /** Freeze pages or blocks of this pass (its own setup left alone). */
+  freeze: (values: readonly unknown[]) => void;
 }
+
+interface Listed {
+  pages: object[];
+  blocks: object[];
+}
+
+interface Document {
+  pages: object[];
+  blocks: object[];
+}
+
+/** The page a block is on, as blocks and pages say it. */
+const pageOf = (value: object): unknown => (value as { pageIndex?: unknown }).pageIndex;
+const indexOf = (page: object): unknown => (page as { index?: unknown }).index;
 
 /** The numbers of the objects of a pass's setups, build after build. */
 class Names implements SetupNames {
@@ -111,6 +131,14 @@ export interface LayoutTapeStats {
   /** Passes placed again from the first block after starting from a
    *  checkpoint (a write to a closed page). */
   placedAgain: number;
+  /** For each pass, the pages that kept what the build before made of
+   *  them: not finished again. */
+  pagesKept: number[];
+  /** The build was done again without what the build before left: a
+   *  step after the placing wrote to a page that was kept. */
+  builtAgain: boolean;
+  /** Where that write was, when there was one. */
+  builtAgainAt?: string;
 }
 
 /**
@@ -128,20 +156,29 @@ class Tapes implements LayoutTapes {
   previous: (PassRecord | undefined)[] = [];
   current: (PassRecord | undefined)[] = [];
   private held: (PassRecord | undefined)[] | undefined;
-  stats: LayoutTapeStats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0 };
+  stats: LayoutTapeStats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], builtAgain: false };
 
   /** A build starts: its passes pair with those of the build before. */
   begin(): void {
     this.held = this.previous;
     this.previous = this.current;
     this.current = [];
-    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0 };
+    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], builtAgain: false };
   }
 
   /** The build did not end (cancelled, failed): the build before stands. */
   abandon(): void {
     this.current = this.previous;
     this.previous = this.held ?? [];
+  }
+
+  /** Forget every build: the next one starts from nothing. */
+  forget(error: Error): void {
+    this.previous = [];
+    this.current = [];
+    this.held = undefined;
+    const at = String(error.stack).split('\n').slice(0, 4).map((line) => line.trim().replace(/\(.*\/(src|dist)\//, '(')).join(' < ');
+    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], builtAgain: true, builtAgainAt: at };
   }
 }
 
@@ -158,6 +195,12 @@ export function beginLayoutTapes(tapes: LayoutTapes | undefined): void {
 /** A build with `tapes` did not end. */
 export function abandonLayoutTapes(tapes: LayoutTapes | undefined): void {
   (tapes as Tapes | undefined)?.abandon();
+}
+
+/** A build with `tapes` wrote to a page it had kept from the build before
+ *  and is done again: with the same tapes, emptied. */
+export function forgetLayoutTapes(tapes: LayoutTapes, error: Error): void {
+  (tapes as Tapes).forget(error);
 }
 
 /** The place of the next pass among the passes of the build. */
@@ -330,6 +373,46 @@ export interface PassRecordingInput {
   body: string;
   blocks: readonly { sourceStart: number; sourceEnd: number }[];
   doc: { pages: unknown[] };
+  /** The document numbers its lines in the margin. */
+  numbersLines: boolean;
+  /** Where the text starts in the source the places count from. */
+  bodyOffset: number;
+}
+
+/** The last place in the source anything of `value` names (a block's or a
+ *  line's `sourceStart`, `sourceEnd`, `sourceMap`), -1 when it names none. */
+function lastPlaceOf(value: unknown, seen = new Set<object>()): number {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return -1;
+  seen.add(value);
+  let last = -1;
+  if (Array.isArray(value)) {
+    for (const item of value) last = Math.max(last, lastPlaceOf(item, seen));
+    return last;
+  }
+  for (const key in value) {
+    const member = (value as Record<string, unknown>)[key];
+    if (!SOURCE_KEYS.has(key)) last = Math.max(last, lastPlaceOf(member, seen));
+    else if (typeof member === 'number') last = Math.max(last, member);
+    else if (Array.isArray(member)) for (const n of member) { if (typeof n === 'number' && n > last) last = n; }
+    else if (typeof member === 'object' && member !== null) {
+      for (const k in member) {
+        const n = (member as Record<string, unknown>)[k];
+        if (typeof n === 'number') last = Math.max(last, n);
+        else last = Math.max(last, lastPlaceOf(n, seen));
+      }
+    }
+  }
+  return last;
+}
+
+/** Whether the steps after the placing make, of a page of `doc`, only
+ *  what stays on the page. Line numbers in the margin, composed pages and
+ *  comics also leave records and warnings with the document (numbers that
+ *  overlap, a folio a page lost): such a document's pages are all made
+ *  again, so that those are too. */
+function pagesStandAlone(input: PassRecordingInput): boolean {
+  if (input.numbersLines) return false;
+  return !input.doc.pages.some((page) => (page as { composed?: unknown }).composed !== undefined || (page as { comic?: unknown }).comic !== undefined);
 }
 
 /** One pass of a build with tapes: where it starts, and the checkpoints
@@ -338,6 +421,10 @@ export class PassRecording {
   private readonly record: PassRecord;
   private readonly from: Checkpoint | undefined;
   private readonly adopted: Checkpoint[] = [];
+  /** Where the edit starts in the source, and by how much it moves what
+   *  follows (0: nothing moves). */
+  private editAt = 0;
+  private editDelta = 0;
   private readonly before: PassRecord | undefined;
   private lastPages = 0;
 
@@ -370,6 +457,8 @@ export class PassRecording {
         }
         if (pairing.changed.some((i) => i < first)) reason = 'a block before the edit changed';
         else {
+          this.editAt = pairing.at + input.bodyOffset;
+          this.editDelta = pairing.delta;
           const hintsSame = sameHintReads(before, input.roots.hints as Record<string, unknown>, pairing);
           names = before.names;
           names.succeed(pairing.pairs);
@@ -391,7 +480,10 @@ export class PassRecording {
     names ??= new Names();
     tape.names = names;
     tape.atoms(input.roots);
-    this.record = { roots: input.roots, blocks: input.blocks, body: input.body, environment: environment(), tracks, names, checkpoints: [], hintReads: tape.hintReads };
+    this.record = {
+      roots: input.roots, blocks: input.blocks, body: input.body, environment: environment(), tracks, names, checkpoints: [], hintReads: tape.hintReads,
+      freeze: (values) => tape.close(values),
+    };
     t.stats.reasons[ordinal] = reason;
     t.stats.startedAt[ordinal] = 0;
     tape.countsReads = true;
@@ -424,9 +516,63 @@ export class PassRecording {
     this.record.checkpoints.push({ blockIdx, readUpTo: this.tape.readUpTo, hintReads: this.tape.hintReads.length, image: this.tape.record() });
   }
 
-  /** The pass has placed its blocks. */
+  /**
+   * The pass has placed its blocks; what follows sets things on its pages
+   * (notes at the column feet, page labels, running heads, line frames).
+   * The pages the pass took from its checkpoint are the pages the pass
+   * before placed: what the build before made of them stands, frozen, and
+   * the steps that follow leave a frozen page alone. The other pages are
+   * opened (`PassTape.open`). Kept only while the document has as many
+   * pages as it had: a page's foot may print their number.
+   */
   done(): void {
-    (this.tapes as Tapes).current[this.ordinal] = this.record;
+    const doc = this.input.doc as Document;
+    const placed: Listed = { pages: [...doc.pages], blocks: [...doc.blocks] };
+    const old = this.from ? this.before?.finished : undefined;
+    const stands = new Map<object, object>();
+    let kept = 0;
+    // A page is kept when it is the page the pass before placed and what
+    // was made of it names no place the edit moved: a note set at its foot
+    // may be written after the edit, wherever it is cited.
+    const stays = (i: number): boolean => {
+      if (placed.pages[i] !== old!.placed.pages[i]) return false;
+      if (this.editDelta === 0) return true;
+      const last = (old!.lastPlace[i] ??= lastPlaceOf(old!.made.pages[i]));
+      return last < this.editAt;
+    };
+    if (old && old.placed.pages.length === placed.pages.length && pagesStandAlone(this.input)) {
+      while (kept < placed.pages.length - 1 && stays(kept)) kept++;
+    }
+    if (old && kept > 0) {
+      const pages = new Set<unknown>();
+      for (let i = 0; i < kept; i++) {
+        stands.set(placed.pages[i]!, old.made.pages[i]!);
+        pages.add(indexOf(placed.pages[i]!));
+      }
+      const blocks: object[] = [];
+      for (let j = 0; j < old.placed.blocks.length; j++) {
+        const block = placed.blocks[j];
+        if (block === undefined || block !== old.placed.blocks[j] || !pages.has(pageOf(block))) continue;
+        stands.set(block, old.made.blocks[j]!);
+        blocks.push(old.made.blocks[j]!);
+      }
+      // What the finish before added to the list for those pages (the
+      // notes at their columns' feet) comes after the blocks placed, in
+      // its order, before what this finish adds for the pages after them.
+      const added = old.doc.blocks.slice(old.placed.blocks.length).filter((b) => pages.has(pageOf(b)));
+      this.before!.freeze([...old.made.pages.slice(0, kept), ...blocks, ...added]);
+      this.tape.open(stands);
+      for (const block of added) doc.blocks.push(block);
+    } else {
+      this.tape.open();
+    }
+    this.record.finished = {
+      placed, made: { pages: [...doc.pages], blocks: doc.blocks.slice(0, placed.blocks.length) }, doc,
+      lastPlace: old ? old.lastPlace.slice(0, kept) : [],
+    };
+    const t = this.tapes as Tapes;
+    t.stats.pagesKept[this.ordinal] = kept;
+    t.current[this.ordinal] = this.record;
   }
 }
 

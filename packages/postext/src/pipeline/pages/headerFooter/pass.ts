@@ -146,7 +146,7 @@ export function stampPageBackgrounds(
   const sameValue = linked ? [] : entries.filter((e) => e.value.hex.toLowerCase() === base).map((e) => e.id);
   for (const page of doc.pages) {
     const overrides = palettes[page.index];
-    if (!overrides) continue;
+    if (!overrides || Object.isFrozen(page)) continue;
     const id = linked ? (overrides[linked] !== undefined ? linked : undefined) : sameValue.find((e) => overrides[e] !== undefined);
     if (!id) continue;
     const own = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;

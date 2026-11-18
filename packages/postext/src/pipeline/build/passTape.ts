@@ -277,7 +277,16 @@ export class PassTape {
       if (!Array.isArray(value) && !isPlain(value)) return;
       Object.freeze(value);
       if (Array.isArray(value)) for (const item of value) freeze(item);
-      else for (const key in value) freeze((value as Plain)[key]);
+      else {
+        for (const key in value) {
+          const member = (value as Plain)[key];
+          // The list of a line's words is frozen, the words are not: they
+          // are never written to once placed (#1609), and a justified
+          // Arabic line makes its own at every pass.
+          if (key === 'segments' && Array.isArray(member)) Object.freeze(member);
+          else freeze(member);
+        }
+      }
     };
     for (const page of pages) freeze(page);
     this.closedAny = true;
@@ -286,12 +295,14 @@ export class PassTape {
   /** Give the tape pages it may write to again: the closed pages are left
    *  as they are, for the checkpoints that hold them, and the tape goes on
    *  with copies. For what comes after the blocks are placed, which sets
-   *  things on every page. */
-  open(): void {
+   *  things on every page. `finished`: pages and blocks that take, in
+   *  place of a copy, the object given for them (what the build before
+   *  made of the same page, #1639); those stay frozen. */
+  open(finished?: ReadonlyMap<object, object>): void {
     if (!this.closedAny) return;
     this.named();
     const side: TapeImage['side'] = [];
-    const copy = this.copier(side, 'thaw');
+    const copy = this.copier(side, 'thaw', undefined, finished);
     const bindings = new Map<string, unknown>();
     for (const [name, value] of this.bindings) bindings.set(name, copy(value));
     const variables = new Map<string, unknown>();
@@ -304,7 +315,7 @@ export class PassTape {
    *  of the setup as their numbers and notes in `flags` what a later pass
    *  could not take up; `resolve` reads those numbers back as the objects
    *  of this pass's setup, and throws on a number it does not have. */
-  private copier(side: TapeImage['side'], mode?: 'thaw' | 'name' | 'resolve', flags?: { opaque: boolean }): (value: unknown) => unknown {
+  private copier(side: TapeImage['side'], mode?: 'thaw' | 'name' | 'resolve', flags?: { opaque: boolean }, finished?: ReadonlyMap<object, object>): (value: unknown) => unknown {
     const done = new Map<object, object>();
     const thaw = mode === 'thaw';
     const names = this.names;
@@ -313,6 +324,9 @@ export class PassTape {
         if (flags && typeof value === 'function') flags.opaque = true;
         return value;
       }
+      // A page (or a block) the build before finished stands as it left it.
+      const stands = finished?.get(value);
+      if (stands !== undefined) return stands;
       if (value instanceof SetupRef) {
         if (mode !== 'resolve') return value;
         const found = names?.byId(value.id);

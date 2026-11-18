@@ -42,7 +42,7 @@ import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js'
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
-import { abandonLayoutTapes, beginLayoutTapes } from './passReuse.js';
+import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes } from './passReuse.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -125,7 +125,16 @@ export function* buildDocumentGen(
   beginLayoutTapes(options.tapes);
   let ended = false;
   try {
-    const doc = yield* buildDocumentSteps(content, config, cache, options);
+    let doc: VDTDocument;
+    try {
+      doc = yield* buildDocumentSteps(content, config, cache, options);
+    } catch (error) {
+      // A step after the placing wrote to a page kept from the build
+      // before (it is frozen): the build is done again from nothing.
+      if (!(error instanceof TypeError)) throw error;
+      forgetLayoutTapes(options.tapes, error);
+      doc = yield* buildDocumentSteps(content, config, cache, options);
+    }
     ended = true;
     return doc;
   } finally {

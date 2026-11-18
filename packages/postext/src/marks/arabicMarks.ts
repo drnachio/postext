@@ -326,7 +326,8 @@ export function annotateArabicMarks(doc: VDTDocument): ContentWarning[] {
         above = Math.max(above, ascentOf(w));
         below = Math.max(below, descentOf(w));
       }
-      if (above > 0 || below > 0) line.markInk = { above: round(above), below: round(below) };
+      // A line of a page kept from the build before has its ink (#1639).
+      if ((above > 0 || below > 0) && !Object.isFrozen(line)) line.markInk = { above: round(above), below: round(below) };
       if (block.pageIndex >= 0) marked.add(`${block.pageIndex}:${block.columnIndex}`);
     }
   }

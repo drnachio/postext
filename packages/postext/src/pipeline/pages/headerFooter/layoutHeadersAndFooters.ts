@@ -213,6 +213,8 @@ export function layoutHeadersAndFooters(doc: VDTDocument, resourceById: Readonly
   const pageHex = resolved.page.backgroundColor.hex;
   const paperHex = pageHex && pageHex !== 'transparent' ? pageHex : '#ffffff';
   for (const page of doc.pages) {
+    // A page kept from the build before has its heads and feet (#1639).
+    if (Object.isFrozen(page)) continue;
     const pageTurn = { page } as PageFurnitureTurn;
     // Text in the flow (openers, part pages, in-column designs) reads as the
     // page's flow does; running heads and folios are horizontal on the
