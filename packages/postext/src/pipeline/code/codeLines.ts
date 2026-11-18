@@ -27,6 +27,7 @@ import { lineBaselineOffset } from '../../measure/vertical.js';
 import { dimensionToPx } from '../../units.js';
 import { resolvedCodeStyle } from '../../defaults/text/codeStyle.js';
 import { highlightCode, type CodeToken } from '../../code/highlight.js';
+import { standsAsMade } from '../build/passMade.js';
 
 /** What a fence asks of its listing, over `codeStyle`. */
 export interface CodeFenceSettings {
@@ -386,7 +387,7 @@ export function measureCodeLines(input: CodeLinesInput): MeasuredCode {
  */
 export function buildCodeLineNumbers(doc: VDTDocument): void {
   for (const page of doc.pages) {
-    if (pageIsVertical(page)) continue;
+    if (pageIsVertical(page) || standsAsMade(page)) continue;
     const blocks: VDTDesignTextBlock[] = [];
     const visit = (block: VDTBlock) => {
       const numbers = block.type === 'code' ? block.code?.numbers : undefined;

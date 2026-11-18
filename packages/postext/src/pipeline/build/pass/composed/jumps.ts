@@ -10,6 +10,7 @@ import type { FootnoteNumbering } from '../../../references/footnotes.js';
 import type { ContentWarning } from '../../../../vdt.js';
 import type { PlannedComposedPage } from '../../../composedPages/composedLayout.js';
 import type { FrameLayoutPass } from '../../../callouts/frameLayout.js';
+import { passTape } from '../../passTape.js';
 
 /** What createJumps takes from the pass. */
 export interface JumpsDeps {
@@ -35,6 +36,7 @@ export function createJumps(deps: JumpsDeps) {
   } = deps;
   /** Stories of this chapter that jump into a page of a later one (#943). */
   const pendingJumps: StoryJump[] = [];
+  passTape().track('jumps', { pendingJumps });
   /** The rest of the story `c` cut, as the chapter it goes to needs it
    *  (#943): its box and children as this chapter has them ready to lay,
    *  the cut, and the numbers the lookups by position would give. */

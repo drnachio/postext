@@ -11,6 +11,7 @@ import { isMarkerBlock } from '../../../blocks/buildHelpers.js';
 import type { ContentBlock } from '../../../../parse/index.js';
 import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PassState, PassLate } from '../state.js';
+import { passTape } from '../../passTape.js';
 
 /** What createFloatQueue takes from the pass. */
 export interface FloatQueueDeps {
@@ -110,6 +111,7 @@ export function createFloatQueue(deps: FloatQueueDeps) {
   const citationGates = new Map<string, { blockIdx: number; line: number }>();
   /** The text block whose lines are being placed, and how many are. */
   const citedLines = { blockIdx: -1, placed: 0 };
+  passTape().track('floatQueue', { pendingFloats, pendingSideBoxes, openerPages, openerFloatNotes, openerFloatsNoted, awaitingSideBoxes, enqueuedFloatIds, citationGates, citedLines });
   const awaitsCitation = (f: PlannedFloat): boolean => citationGates.has(f.resourceId);
   /** Drop the gates of blocks before `blockIdx` (a block always places all
    *  its lines before the flow moves past it; this only guards against a

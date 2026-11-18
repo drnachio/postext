@@ -11,6 +11,7 @@ import { partMarkPages } from '../../sections/parts.js';
 import { type PageFurniture, folioMissingWarnings } from '../../../composed/furniture.js';
 import type { DesignFrames } from '../../../design/layout.js';
 import { layoutHeadersAndFooters } from './layoutHeadersAndFooters.js';
+import { standsAsMade } from '../../build/passMade.js';
 
 /**
  * After body placement finishes, attach header/footer slots to every page.
@@ -146,7 +147,7 @@ export function stampPageBackgrounds(
   const sameValue = linked ? [] : entries.filter((e) => e.value.hex.toLowerCase() === base).map((e) => e.id);
   for (const page of doc.pages) {
     const overrides = palettes[page.index];
-    if (!overrides) continue;
+    if (!overrides || standsAsMade(page)) continue;
     const id = linked ? (overrides[linked] !== undefined ? linked : undefined) : sameValue.find((e) => overrides[e] !== undefined);
     if (!id) continue;
     const own = overrides[id]!.startsWith('#') ? overrides[id]! : `#${overrides[id]}`;

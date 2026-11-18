@@ -15,7 +15,7 @@ export interface LayoutWorkerApi {
   build(
     content: PostextContent,
     config: PostextConfig,
-    opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string },
+    opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string; tapesKey?: string },
   ): Promise<VDTDocument>;
   /**
    * Warm the worker's document cache for `cacheKey` without receiving the
@@ -38,8 +38,8 @@ export function useLayoutWorker(priority: LayoutPriority = 'preview'): LayoutWor
   }, [service, clientId]);
 
   const build = useCallback(
-    (content: PostextContent, config: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string }) =>
-      service.build({ clientId, priority, content, config, cacheKey: opts?.cacheKey, onProgress: opts?.onProgress }),
+    (content: PostextContent, config: PostextConfig, opts?: { onProgress?: (progress: BuildProgress) => void; cacheKey?: string; tapesKey?: string }) =>
+      service.build({ clientId, priority, content, config, cacheKey: opts?.cacheKey, onProgress: opts?.onProgress, ...(opts?.tapesKey !== undefined ? { tapesKey: opts.tapesKey } : {}) }),
     [service, clientId, priority],
   );
   const warm = useCallback(

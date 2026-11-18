@@ -27,6 +27,7 @@ import { fontEm } from '../measure/vertical.js';
 import { lineMarks } from './cjkMarks/lineMarks.js';
 import { type LineReach, lineReach, marksNeed, rubyNeed, kuntenNeed } from './cjkMarks/reach.js';
 import { type TextGroup, resourceBlocksOf, resourceTextGroups } from './cjkMarks/resources.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 
 export { segmentPositions, segmentFont } from './cjkMarks/geometry.js';
 export { lineMarks } from './cjkMarks/lineMarks.js';
@@ -89,7 +90,7 @@ export function annotateDocument(doc: VDTDocument, cjk: ResolvedCjkConfig | unde
         const flow = group.columnKey !== undefined && group.pageIndex >= 0 ? doc.pages[group.pageIndex]?.flow : undefined;
         const vertical = flow?.writingMode === 'vertical-rl' ? { region: cjk?.region ?? 'mainland', uprightDigits: cjk?.uprightDigits ?? 2 } : undefined;
         const marks = lineMarks(line, group.like, color, vertical);
-        if (marks.length > 0) line.marks = marks;
+        if (marks.length > 0 && !standsAsMade(line)) line.marks = marks;
       }
       // Only the CJK composer sets ruby (#194). A footnote marker in the
       // line gap is checked as a reading is, in any line.

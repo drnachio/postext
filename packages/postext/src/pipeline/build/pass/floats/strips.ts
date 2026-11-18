@@ -16,6 +16,7 @@ import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
 import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PlacementCursor } from '../../../blocks/placement.js';
 import type { StripGeometry } from '../types.js';
+import { passTape } from '../../passTape.js';
 
 /** What createStrips takes from the pass. */
 export interface StripsDeps {
@@ -55,6 +56,7 @@ export function createStrips(deps: StripsDeps) {
     return source ? { idx, source } : undefined;
   };
   const stripGeometryMemo = new Map<string, StripGeometry>();
+  passTape().track('strips', { stripGeometryMemo });
   const stripGeometry = (blockIdx: number, source: ComicPageSource, measure: number, max: number, vertical: boolean): StripGeometry => {
     const key = `${blockIdx}:${measure.toFixed(2)}:${max.toFixed(2)}:${vertical ? 1 : 0}`;
     const memo = stripGeometryMemo.get(key);

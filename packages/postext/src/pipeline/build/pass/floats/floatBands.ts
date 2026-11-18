@@ -12,6 +12,7 @@ import type { FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types
 import { floatWidthIn } from '../../../floats/placementLength.js';
 import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
 import type { PassState, PassLate } from '../state.js';
+import { passTape } from '../../passTape.js';
 
 /** What createFloatBands takes from the pass. */
 export interface FloatBandsDeps {
@@ -120,6 +121,7 @@ export function createFloatBands(deps: FloatBandsDeps) {
    *  (`clearSideObstacles`), above them when they fit there. Recorded by
    *  `markSideObstacles`, dropped when their heading is rolled back. */
   const sideObstacles = new WeakMap<VDTColumn, Array<SideObstacle & { owner: VDTBlock }>>();
+  passTape().track('floatBands', { sideObstacles });
 
   /**
    * Reserve a float band on `targetCols` (one column, or every text column

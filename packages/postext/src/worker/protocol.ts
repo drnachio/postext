@@ -1,6 +1,6 @@
 import type { PostextContent, PostextConfig } from '../types.js';
 import type { VDTDocument } from '../vdt.js';
-import type { BuildPassInfo, BuildProgress } from '../pipeline/build.js';
+import type { BuildPassInfo, BuildProgress, LayoutTapeStats } from '../pipeline/build.js';
 
 /** Where a build's time went (dev tooling; always attached, cheap). */
 export interface BuildStats {
@@ -14,6 +14,10 @@ export interface BuildStats {
    *  find — neither registered with `registerFonts` nor installed — so they
    *  were measured with a fallback font. Absent when every family was there. */
   missingFonts?: string[];
+  /** What a build with tapes (`tapesKey`) took from the build before it:
+   *  the block each pass started from, where it rejoined the old layout,
+   *  the pages kept and taken. */
+  tapes?: LayoutTapeStats;
 }
 
 /** A font face as it crosses to the layout worker. */
@@ -64,6 +68,13 @@ export type RequestMessage =
       /** False: build (and cache) the document but do not send it back —
        *  warming the cache for a chapter the reader may open next. */
       wantDoc?: boolean;
+      /** Experimental (#1640): the document this build is a new state of
+       *  (a chapter being edited). The worker keeps what the last build
+       *  under this name left (`BuildDocumentOptions.tapes`) and lays this
+       *  one out from the page before the edit. One name at a time: a
+       *  build under another name starts that document anew. A document
+       *  built this way is not kept in the worker's document cache. */
+      tapesKey?: string;
     }
   | {
       kind: 'cancel';

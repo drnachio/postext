@@ -12,6 +12,7 @@ import { parseLengthText } from '../../../defaults/text/tabStops.js';
 import type { GalleyItem } from '../../columns/columnsGroup.js';
 import type { CalloutLineWidth, GroupPos } from '../../columns/cutTypes.js';
 import type { BoxExclusion } from './geometry.js';
+import { passSideTable } from '../../build/passTape.js';
 
 // ---------------------------------------------------------------------------
 // Layout
@@ -203,7 +204,7 @@ export type BoxHeadingDesign = (
 /** The headings of boxes laid out with their own design (#906): their
  *  lines are not painted (the design replaces them), so a box never cuts
  *  between them. */
-export const designedBoxHeadings = new WeakSet<VDTBlock>();
+export const designedBoxHeadings = passSideTable('designedBoxHeadings', new WeakSet<VDTBlock>());
 /** Whether `block` is a heading of a box set with its own design (see
  *  `CalloutLayoutInput.headingDesign`). */
 export const isDesignedBoxHeading = (block: VDTBlock): boolean => designedBoxHeadings.has(block);

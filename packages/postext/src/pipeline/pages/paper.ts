@@ -7,6 +7,7 @@ import type {
   FolioPaperTexture,
   FolioPaperType,
 } from '../../types.js';
+import { standsAsMade } from '../build/passMade.js';
 
 /** The stocks `:::paper{type=…}` accepts (see {@link FolioPaperType}). */
 const PAPER_TYPES: ReadonlySet<string> = new Set<FolioPaperType>([
@@ -175,6 +176,8 @@ export function stampPagePaper(
     return firstPaper(page.floats, byBlock);
   });
   for (let i = 0; i < pages.length; i++) {
+    // A page kept from the build before has its paper (#1639).
+    if (standsAsMade(pages[i])) continue;
     let paper = found[i];
     if (paper === null) {
       let before: FolioPaperConfig | undefined | null = null;

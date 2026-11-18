@@ -26,6 +26,7 @@ import type { ComicPageSource } from '../../../../comics/types.js';
 import type { StripGeometry, FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types.js';
 import type { PassState } from '../state.js';
 import type { FloatPad } from '../../floatPads.js';
+import { passTape } from '../../passTape.js';
 
 /** What createFloatMeasure takes from the pass. */
 export interface FloatMeasureDeps {
@@ -522,6 +523,7 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
   /** Content index of the block that first referenced the latest float
    *  reserved at the head of each column. */
   const topFloatRefOf = new Map<VDTColumn, number>();
+  passTape().track('floatMeasure', { calloutFloatResults, calloutBandPages, tableMetricsMemo, floatMeasureMemo, floatReserved, bodyCropDelta, centredPages, textWrapNotes, movedNotes, contourFallbacks, floatWraps, topFloatRefOf });
 
   /** Kind of cap the column is under (`undefined` when uncapped). A cap that
    *  cannot be attributed to the active band is treated as a span cap — the

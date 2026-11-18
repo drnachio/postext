@@ -390,6 +390,7 @@ export function createLayoutService(options?: {
         onStats: (s: BuildStats) => { stats = s; },
         resourcesKey: request.content.resources ? resourcesKeyOf(request.content.resources) : undefined,
         cacheKey: request.cacheKey,
+        ...(request.tapesKey !== undefined && !request.warmOnly ? { tapesKey: request.tapesKey } : {}),
       };
       const build = (): Promise<VDTDocument> => exclusive(() => askWorker('build', () => worker().build(request.content, request.config, buildOptions)));
       at('the worker\'s layout');
@@ -423,6 +424,15 @@ export function createLayoutService(options?: {
         workerMs: built?.totalMs,
         passes: built?.passes.length,
         passMs: built?.passes.map((p) => Math.round(p.ms)).join('/'),
+        // A build from the layout before it (#1640): the block each pass
+        // started from, where it rejoined, the pages kept and taken.
+        ...(built?.tapes ? {
+          from: built.tapes.startedAt.join('/'),
+          rejoined: built.tapes.rejoinedAt.map((b) => b ?? '-').join('/'),
+          kept: built.tapes.pagesKept.join('/'),
+          taken: built.tapes.pagesTaken.join('/'),
+          again: built.tapes.builtAgain,
+        } : {}),
       });
       if (doc) {
         // Laid out without a face it asked for: said of the document, so

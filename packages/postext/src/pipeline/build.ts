@@ -6,3 +6,4 @@ export type { BuildDocumentOptions, BuildPassInfo, BuildProgress, PassHints, Cit
 export { buildDocumentPass } from './build/pass.js';
 export { buildDocument, yieldToEventLoop, buildDocumentAsync, buildDocumentGen } from './build/drivers.js';
 export { resolveJumpMarks } from './build/pageMarks.js';
+export { createLayoutTapes, type LayoutTapes, type LayoutTapeStats } from './build/passReuse.js';

@@ -18,6 +18,7 @@
 import type { VDTBlock, VDTColumn, VDTPage } from '../../../../vdt.js';
 import { type FloatMeasure, measureFloatBand, floatGapAbove } from '../../../floats/floatSlots.js';
 import { offsetBlock } from '../../../callouts/calloutLayout/geometry.js';
+import { passTape } from '../../passTape.js';
 
 interface FootEntry {
   /** What the float put on the page (a resource block, or a box frame and
@@ -68,6 +69,7 @@ export function createFootStacks(
   /** Every float set at each column's foot, and whether its band took
    *  that column alone. */
   const atFoot = new Map<VDTColumn, { entry: FootEntry; alone: boolean }[]>();
+  passTape().track('footStacks', { stacks, atFoot });
   const footOf = (col: VDTColumn): number => col.bbox.y + col.bbox.height;
 
   const feetOf = (cols: readonly VDTColumn[]): Map<VDTColumn, number> =>

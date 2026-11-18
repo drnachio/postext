@@ -9,6 +9,7 @@ import type { VDTDesignPathBlock, VDTDocument, VDTPage } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
 import { type DieCutMetrics, dieMetricsOf, dieShapeInBox } from '../../dieCut/shapes.js';
 import { type DiePlacement, buildDieCuts, configPlacements, shapePlacement } from '../../dieCut/place.js';
+import { standsAsMade } from '../build/passMade.js';
 
 /** A cut element's gap when neither it nor its die sets one. */
 const DEFAULT_GAP: Dimension = { value: 3, unit: 'mm' };
@@ -122,7 +123,7 @@ export function stampDieCuts(doc: VDTDocument, contentBlocks: readonly ContentBl
   const byBlock = dieByBlock(contentBlocks);
   const dies = byBlock.some((d) => d !== undefined) ? dieOfPages(doc.pages, byBlock) : [];
   if (!dice && lifted.length === 0) {
-    for (const page of doc.pages) delete page.dieCut;
+    for (const page of doc.pages) if (!standsAsMade(page)) delete page.dieCut;
     return;
   }
   const config: ResolvedDieCutsConfig = dice ?? { shapes: [], pages: [] };
@@ -135,6 +136,8 @@ export function stampDieCuts(doc: VDTDocument, contentBlocks: readonly ContentBl
     placements: [...earlyPlacements(doc, dies), ...lifted],
   });
   doc.pages.forEach((page, i) => {
+    // A page kept from the build before has its cut (#1639).
+    if (standsAsMade(page)) return;
     const cut = cuts[i];
     if (cut) page.dieCut = cut;
     else delete page.dieCut;

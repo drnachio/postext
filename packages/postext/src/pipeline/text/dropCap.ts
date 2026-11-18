@@ -67,6 +67,14 @@ function isRunningParagraph(b: ContentBlock): boolean {
     && b.toc === undefined && b.index === undefined && b.bibEntry === undefined;
 }
 
+/** The places of `blocks`, filled now: a pass that leaves checkpoints for
+ *  the next build (#1639) asks for the table in its setup, where reading
+ *  the whole chapter is part of what the next setup is compared with, and
+ *  not at the first paragraph placed. */
+export function dropCapPlaces(blocks: readonly ContentBlock[]): readonly unknown[] {
+  return placesOf(blocks);
+}
+
 /** {@link ParagraphPlace} of every paragraph of `blocks`, computed once per
  *  parse. */
 function placesOf(blocks: readonly ContentBlock[]): (ParagraphPlace | undefined)[] {

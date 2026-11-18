@@ -47,6 +47,11 @@ const delta = (before: ReturnType<typeof composedPageMemoStats>) => {
   return { hits: now.hits - before.hits, misses: now.misses - before.misses, skipped: now.skipped - before.skipped };
 };
 
+// These tests count what the memo was asked and what it held. The check of
+// the pass tape (POSTEXT_RESUME_CHECK, `__tests__/resumeCheck.ts`) places
+// the end of every pass a second time, which asks the memo again: off here.
+delete (globalThis as { __postextPassResumeCheck?: unknown }).__postextPassResumeCheck;
+
 describe('composed pages laid out once, reused where they did not change (#857)', () => {
   beforeEach(() => clearComposedPageMemo());
   afterAll(() => clearComposedPageMemo());

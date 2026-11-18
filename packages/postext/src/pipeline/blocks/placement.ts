@@ -6,6 +6,7 @@ import { contentAreaForPage, flowPageMirrored, type PageMetrics, pageMirrored, m
 import { dimensionToPx } from '../../units.js';
 import { measuringVertically } from '../../measure/vertical.js';
 import { shiftLineX } from '../../measure/rtl/bidiLines.js';
+import { passSideTable } from '../build/passTape.js';
 
 export { bandColumns, sideColumnOf, sideColumns, sideUsedBottom, currentBand, isBandLevel, bandUsedBottom, closeBandAndInsertSpan, closeBandAt } from './placement/bands.js';
 
@@ -30,7 +31,7 @@ export function resetLinePositions(
 
 /** The layout each page's columns were cut with: the document's, or a
  *  styled section's own (`deriveSectionGeometryConfig`). */
-const pageLayouts = new WeakMap<VDTPage, ResolvedConfig['layout']>();
+const pageLayouts = passSideTable('pageLayouts', new WeakMap<VDTPage, ResolvedConfig['layout']>());
 
 /** The layout `page` was created with (see `createPageWithColumns`). */
 export function pageLayoutOf(page: VDTPage): ResolvedConfig['layout'] | undefined {

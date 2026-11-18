@@ -18,6 +18,7 @@ import type { VDTDocument, VDTLine, VDTLineMark } from '../vdt.js';
 import { segmentFont, segmentPositions } from './cjkMarks.js';
 import { fontEm } from '../measure/vertical.js';
 import { inkBoxOf } from './arabicMarks.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 
 /** Gap between the run's ink and the rule, and the rule's thickness, in
  *  em of the text. */
@@ -95,7 +96,7 @@ const ruled = new WeakSet<VDTLine>();
  *  module comment), in the block's emphasis colour. */
 export function overlineEmphasis(doc: VDTDocument): void {
   for (const block of doc.blocks) {
-    if (block.emphasis !== 'overline' || block.hidden) continue;
+    if (block.emphasis !== 'overline' || block.hidden || standsAsMade(block)) continue;
     for (const line of block.lines) {
       if (ruled.has(line)) continue;
       const marks = overlineMarks(line, block, block.italicColor);

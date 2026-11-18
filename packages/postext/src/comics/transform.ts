@@ -7,6 +7,7 @@
 
 import type { BoundingBox, VDTBlock, VDTComicArt, VDTComicBalloon, VDTComicPage, VDTComicPanel, VDTComicSplitter, VDTDesignTextBlock, VDTFrame, VDTPage, VDTPoint } from '../vdt.js';
 import { flowRectToPage } from '../vdt.js';
+import { passSideTable } from '../pipeline/build/passTape.js';
 
 /** Numbers a command of an SVG path takes, and which of them are x (`x`) or
  *  y (`y`) coordinates. */
@@ -140,7 +141,7 @@ export function translateComicPage(comic: VDTComicPage, dx: number, dy: number):
 }
 
 /** Strip comics moved onto the sheet, kept while their block stays put. */
-const onSheet = new WeakMap<VDTComicPage, { x: number; y: number; frames: VDTComicPage['frames']; comic: VDTComicPage }>();
+const onSheet = passSideTable('comicOnSheet', new WeakMap<VDTComicPage, { x: number; y: number; frames: VDTComicPage['frames']; comic: VDTComicPage }>());
 
 /**
  * The comic of a strip block (`VDTBlock.comic`, #566) on the sheet of

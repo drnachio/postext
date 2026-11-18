@@ -50,6 +50,8 @@ import type { VDTDocument } from '../../../../vdt/document.js';
 import type { LayoutContinuation, DocumentMetadata } from '../../../../types/content.js';
 import type { PageMetrics } from '../../../blocks/buildHelpers.js';
 import type { PassSetupState } from '../setupState.js';
+import { passTape } from '../../passTape.js';
+import { dropCapPlaces } from '../../../text/dropCap.js';
 
 /** What createContentSetup takes from the pass. */
 export interface ContentSetupDeps {
@@ -194,7 +196,10 @@ export function createContentSetup(deps: ContentSetupDeps) {
   // column, one block per system.
   const scores = expandScoreBlocks(spanEmbeds.blocks, setup.resolved, computeColumnBboxes(pageMetrics.contentArea, setup.resolved)[0]?.width ?? pageMetrics.contentArea.width);
   const codeBoxes = wrapCodeBlocks(scores.blocks, setup.resolved);
-  const contentBlocks = codeBoxes.blocks;
+  // Read through the tape's counter when the pass leaves checkpoints for
+  // the next build (#1639).
+  const contentBlocks = passTape().counting(codeBoxes.blocks);
+  const dropCapTable = passTape().recording ? dropCapPlaces(contentBlocks) : undefined;
   // Stories of earlier chapters that jump into a page of this one (#943):
   // appended past the chapter's blocks by the composed pages' layout, with
   // the notes they cite numbered as their chapter numbered them.
@@ -379,6 +384,7 @@ export function createContentSetup(deps: ContentSetupDeps) {
   /** The opener's own columns a float took the head of, under the opener:
    *  where the float's band ends, the flow's position right after it. */
   const openerHeadFloats = new Map<VDTColumn, number>();
+  passTape().track('contentSetup', { calloutFloats, cursor, forcedBreakPages, uncappedBottoms, openerHeadFloats });
   return {
     captionCitations, footnoteDefs, footnoteNumbering, chapterEndNotes, anchorRefContext,
     templateSource, codeBoxes, contentBlocks, carried, headingPrefixes, headingNumbers,
@@ -387,6 +393,6 @@ export function createContentSetup(deps: ContentSetupDeps) {
     calloutResolved, blockquoteStyle, listLevelIndentsPx, orderedMetrics, orderedLevelIndentsPx,
     paragraphContainers, calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans,
     comicTextPlans, floatedIds, floatsByFirstBlock, calloutFloats, cursor, forcedBreakPages,
-    uncappedBottoms, openerHeadFloats
+    uncappedBottoms, openerHeadFloats, dropCapTable
   };
 }

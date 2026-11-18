@@ -23,6 +23,7 @@ import type { PassState } from './state.js';
 import { createJumps } from './composed/jumps.js';
 import { createPlacePage } from './composed/placePage.js';
 import { createComicText } from './composed/comicText.js';
+import { passTape } from '../passTape.js';
 
 /** What createComposed takes from the pass. */
 export interface ComposedDeps {
@@ -144,6 +145,7 @@ export function createComposed(deps: ComposedDeps) {
   const jumps = new Map<string, ComposedContinuation[]>();
   /** The closing marker of the fence each composed page was set from. */
   const fenceEnd = new Map<VDTComposedPage, number>();
+  passTape().track('composed', { composedLaid, composedNotes, frameAt, fenceById, jumps, fenceEnd });
   /** The carried stories are laid through a pass that answers for them;
    *  they wait for their fence with the others. */
   const composedPass = carried ? carriedPass(framePass, carried) : framePass;

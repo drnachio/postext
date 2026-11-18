@@ -14,6 +14,7 @@ import type { HeadingSectionPlan } from '../../sections/headingStyles.js';
 import type { PlannedFloat } from '../../floats/floatPlacement.js';
 import type { StripGeometry } from './types.js';
 import type { PassState, PassLate } from './state.js';
+import { passTape } from '../passTape.js';
 
 /** What createComics takes from the pass. */
 export interface ComicsDeps {
@@ -130,6 +131,7 @@ export function createComics(deps: ComicsDeps) {
   /** Boxes of page-wide strips set in the flow (no band of several
    *  columns where they stood): their markers are passed over. */
   const looseStripBoxes = new Set<number>();
+  passTape().track('comics', { looseStripBoxes });
   const placeComicStrip = (blockIdx: number, source: ComicPageSource): number | undefined => {
     const place = comicStripPlacement(source.attrs);
     const page = doc.pages[cursor.pageIndex]!;

@@ -22,6 +22,7 @@
 import type { PageRole } from '../../types.js';
 import type { ResolvedConfig, VDTBlock, VDTDocument, VDTPage } from '../../vdt.js';
 import { createHeadingLevelResolver, type HeadingLevelResolver } from '../sections/headingStyles.js';
+import { standsAsMade } from '../build/passMade.js';
 
 /** First block of the page in reading order (columns in index order), or
  *  `undefined` when the page holds no column content. */
@@ -71,6 +72,8 @@ export function classifyPage(
 export function classifyPages(doc: VDTDocument, resolved: ResolvedConfig = doc.config): void {
   const levels = createHeadingLevelResolver(resolved);
   for (const page of doc.pages) {
+    // A page kept from the build before has its role (#1639).
+    if (standsAsMade(page)) continue;
     page.role = classifyPage(page, resolved, levels);
   }
 }

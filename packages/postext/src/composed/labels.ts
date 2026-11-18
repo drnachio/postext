@@ -53,6 +53,8 @@ import { BREAK_PLACEHOLDER, SWATCH_PLACEHOLDER } from '../parse/inlineFormatting
 import { flowRectToPage, flowToPage } from '../vdt.js';
 import { capEnd, DEFAULT_CAP_SIZE_PER_WIDTH, DEFAULT_CONNECTOR_WIDTH, opacityOf, polylineCommands, type Pt as LinePt } from '../design/connector.js';
 import { colorWithOpacity, pathInkBox } from '../design/pathBlock.js';
+import { passSideTable } from '../pipeline/build/passTape.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 
 /** `[a, b, c, d, e, f]`, canvas `transform` order (y down). */
 export type LabelMatrix = [number, number, number, number, number, number];
@@ -724,7 +726,7 @@ export function stampFigureLabelRects(doc: VDTDocument): void {
     if (seen.has(block)) return;
     seen.add(block);
     const labels = block.resourceBlock?.labels;
-    if (!labels || labels.length === 0) return;
+    if (!labels || labels.length === 0 || standsAsMade(block)) return;
     for (const label of labels) {
       if (!label.layout) {
         delete label.rect;
@@ -840,7 +842,7 @@ export function labelGlyphAt(label: VDTFigureLabel, block: Pick<VDTBlock, 'bbox'
 // ---------------------------------------------------------------------------
 
 /** Layouts already turned for a mirrored page. */
-const mirrored = new WeakSet<VDTFigureLabelLayout>();
+const mirrored = passSideTable('labelsMirrored', new WeakSet<VDTFigureLabelLayout>());
 
 /**
  * A label layout for the flow of a mirrored page (a right-to-left book):

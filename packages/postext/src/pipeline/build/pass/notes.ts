@@ -21,6 +21,8 @@ import type { Resource, ResourceType } from '../../../types.js';
 import type { ResourceNumberingMap } from '../../resources/resourceNumbering.js';
 import type { OrderedListMetrics } from '../../text/lists.js';
 import type { PassState } from './state.js';
+import { passTape } from '../passTape.js';
+import { standsAsMade } from '../passMade.js';
 
 /** What createNotes takes from the pass. */
 export interface NotesDeps {
@@ -183,6 +185,8 @@ export function createNotes(deps: NotesDeps) {
   const pendingCiter = new Map<string, VDTBlock>();
   /** How far `doc.blocks` was read for such citations. */
   let notesScanned = 0;
+  passTape().variable('notes.spreadDeferredPage', () => spreadDeferredPage, (v) => { spreadDeferredPage = v; });
+  passTape().variable('notes.notesScanned', () => notesScanned, (v) => { notesScanned = v; });
   const collectPendingNotes = (): void => {
     for (; notesScanned < doc.blocks.length; notesScanned++) {
       const block = doc.blocks[notesScanned]!;
@@ -393,6 +397,8 @@ export function createNotes(deps: NotesDeps) {
    *  bottom float band). */
   const dropChapterEndNotes = (): void => {
     for (const page of doc.pages) {
+      // A page kept from the build before has its notes where they go.
+      if (standsAsMade(page)) continue;
       for (const col of page.columns) {
         const blocks = col.blocks;
         let first = blocks.length;
@@ -428,6 +434,7 @@ export function createNotes(deps: NotesDeps) {
     if (!sep.enabled || sep.width <= 0 || noteRulePx <= 0) return;
     const color = sep.color?.hex ?? resolved.footnotes.color?.hex ?? bodyStyle.color;
     for (const page of doc.pages) {
+      if (standsAsMade(page)) continue;
       for (const col of page.columns) {
         const at = col.blocks.findIndex((b, i) => b.footnoteNote !== undefined && col.blocks[i - 1]?.footnoteNote === undefined);
         if (at < 0) continue;
@@ -447,6 +454,7 @@ export function createNotes(deps: NotesDeps) {
   };
   /** Content index of the block citing each note (reading order). */
   const noteAnchor = new Map<string, number>();
+  passTape().track('notes', { calloutsOutOfFlow, joiningLetterSpacing, dropCapNotes, placedNotes, columnNotesOf, columnOfNotes, spreadDeferred, pendingNotes, pendingCiter, noteAnchor });
   /** Set the notes in the room reserved for them: the reservations of a
    *  column that touch (the usual case) make one stack in citation order
    *  under the separator; a float band set between two leaves each its own
@@ -454,6 +462,8 @@ export function createNotes(deps: NotesDeps) {
   const setColumnNotes = (): void => {
     for (const [col, entry] of columnNotesOf) {
       const page = columnOfNotes.get(col)!;
+      // A page kept from the build before has its notes (#1639).
+      if (standsAsMade(page)) continue;
       const regions: { top: number; bottom: number; ids: string[] }[] = [];
       for (const slot of entry.slots) {
         const last = regions[regions.length - 1];

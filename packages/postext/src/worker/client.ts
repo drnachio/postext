@@ -40,6 +40,11 @@ export interface BuildOptions {
   cacheKey?: string;
   /** @internal False: keep the document in the worker only (see `warm`). */
   wantDoc?: boolean;
+  /** Experimental: the document this build is a new state of, a name of
+   *  the host's choosing (a chapter's id). The worker lays it out from
+   *  the page before the edit, with what the last build under that name
+   *  left (see `tapesKey` in the protocol). */
+  tapesKey?: string;
 }
 
 /** A running layout worker: give it fonts, build documents on it, `dispose`
@@ -294,7 +299,7 @@ export function createLayoutWorker(
           if (sentResourcesKey === resourcesKey) payload = { ...content, resources: undefined };
           else sentResourcesKey = resourcesKey;
         }
-        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc });
+        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc, ...(opts?.tapesKey !== undefined ? { tapesKey: opts.tapesKey } : {}) });
       });
     },
     dispose() {

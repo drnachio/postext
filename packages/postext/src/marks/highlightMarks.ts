@@ -28,6 +28,7 @@ import { pickMarkStyle } from '../defaults/text/markStyles.js';
 import { measureTextWidth } from '../measure/canvas.js';
 import { fontEm } from '../measure/vertical.js';
 import { dimensionToPx } from '../units.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 
 type BlockLike = Parameters<typeof segmentPositions>[1];
 
@@ -215,6 +216,9 @@ export function textLineGroups(doc: VDTDocument): { lines: VDTLine[]; like: Bloc
   const visit = (block: VDTBlock): void => {
     if (seen.has(block)) return;
     seen.add(block);
+    // A block of a page kept from the build before has its marks, lines
+    // and colours (#1639): every reader of these groups writes to them.
+    if (standsAsMade(block)) return;
     if (block.resourceBlock) groups.push(...resourceTexts(block));
     else if (!block.designOverlay) groups.push({ lines: block.lines, like: block });
   };

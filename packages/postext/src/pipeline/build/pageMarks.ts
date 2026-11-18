@@ -11,6 +11,7 @@ import { locateCarriedOutline } from '../references/carriedOutline.js';
 import type { ImportedJumps } from '../../composed/carry.js';
 import { locateIndexMarks } from '../contents/indexDirective.js';
 import { codeParseOptions } from '../code/codeBlocks.js';
+import { standsAsMade } from './passMade.js';
 
 /**
  * Mark the blocks laid from stories that came in from other chapters
@@ -21,6 +22,7 @@ export function stampCarriedSource(doc: VDTDocument, carried: ImportedJumps, fen
   const stories = [...carried.stories.values()];
   const noteChapter = new Map(carried.footnotes.map((n) => [n.id, n.chapter]));
   for (const block of doc.blocks) {
+    if (standsAsMade(block)) continue;
     const note = block.footnoteNote !== undefined ? noteChapter.get(block.footnoteNote) : undefined;
     if (note !== undefined) block.sourceChapter = note;
     const at = block.contentIndex;

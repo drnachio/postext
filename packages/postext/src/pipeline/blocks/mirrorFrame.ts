@@ -34,6 +34,7 @@ import {
   type VDTPage,
 } from '../../vdt.js';
 import { mirrorLabelLayout } from '../../composed/labels.js';
+import { standsAsMade } from '../build/passMade.js';
 
 /** Lines this pass made (already in flow order). */
 const oriented = new WeakSet<VDTLine>();
@@ -165,12 +166,14 @@ export function orientPageLinesToFrame(page: VDTPage): void {
 export function orientLinesToFrames(doc: VDTDocument): void {
   const skip = new Set<VDTBlock>();
   for (const page of doc.pages) {
+    // A page kept from the build before is turned already (#1639).
+    if (standsAsMade(page)) continue;
     orientPageLinesToFrame(page);
     if (pageIsMirrored(page)) for (const b of unmirroredBlocks(page)) skip.add(b);
   }
   // Blocks the pages do not list (none today) are turned with their page.
   for (const block of doc.blocks) {
     const page = block.pageIndex >= 0 ? doc.pages[block.pageIndex] : undefined;
-    if (page && pageIsMirrored(page) && !skip.has(block)) orientBlock(block);
+    if (page && pageIsMirrored(page) && !skip.has(block) && !standsAsMade(block)) orientBlock(block);
   }
 }

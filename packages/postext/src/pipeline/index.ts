@@ -1,5 +1,5 @@
 export { resolveJumpMarks } from './build.js';
-export { buildDocument, buildDocumentAsync, buildDocumentGen, yieldToEventLoop, BuildCancelledError } from './build.js';
+export { buildDocument, buildDocumentAsync, buildDocumentGen, yieldToEventLoop, BuildCancelledError, createLayoutTapes, type LayoutTapes, type LayoutTapeStats } from './build.js';
 export type { BuildDocumentOptions, BuildPassInfo, BuildProgress } from './build.js';
 export { continuationAfter, contentOutline, pageFenceIds, laterPageIdsOf } from './continuation.js';
 export { computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline } from './contents/outline.js';

@@ -16,6 +16,7 @@ import {
 } from '../../vdt.js';
 import type { BlockStyle } from '../styles.js';
 import { renderMath, isMathReady, noteMathWithoutEngine } from '../../math/index.js';
+import { passSideTable } from '../build/passTape.js';
 
 // ---------------------------------------------------------------------------
 // Page geometry
@@ -256,7 +257,7 @@ export function contentAreaForPage(
  *  box stops that far short of the column's (or box's) end side, so the
  *  renderers, which align and justify a line against its block's box, set
  *  it there. Kept off the VDT: the box width says it. */
-const blockEndIndents = new WeakMap<VDTBlock, number>();
+const blockEndIndents = passSideTable('blockEndIndents', new WeakMap<VDTBlock, number>());
 
 /** `width` less the end indent of `blk`, never under 1 px. */
 export function widthLessEndIndent(blk: VDTBlock, width: number): number {
