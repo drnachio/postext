@@ -17,6 +17,8 @@ export const metadata = {
 
 Beides gehört zur Form des Buchs, also steht beides in der Konfiguration. Eine Veredelung verschiebt nie eine Zeile: Das Layout sieht eine Farbe, das PDF eine Druckfarbe auf einer eigenen Platte, und die Betrachter entscheiden, wie sie sie zeigen. Eine Stanzung verändert die Seite dagegen, denn der Text hält Abstand von einem Loch; das Markdown nennt die Stanzform nur dort, wo der Inhalt sie braucht.
 
+<YouTubeVideo film="specialInks" />
+
 ## Fünfte Druckfarbe
 
 Eine fünfte Farbe ist jede Druckfarbe, die der Auftrag über Cyan, Magenta, Gelb und Schwarz hinaus druckt: ein Pantone-Ton, der genau stimmen muss, eine Hausfarbe, die der Farbhersteller anmischt, oder eine der Spezialfarben weiter unten. In Postext ist sie eine Sonderfarbe, eine Farbe mit `model: 'spot'`, deren `spot` die Druckfarbe benennt, ihr Aussehen bei 100 % in CMYK angibt (den Ersatzwert, den ein Proof zeigt) und ihren Tonwert. Eine CMYK- oder PDF/X-Datei druckt sie auf einer Platte `Separation` mit dem Namen der Druckfarbe; der Bildschirm und eine RGB-Datei malen ihren `hex`-Wert. [Sonderfarben](/de/docs/configuration-pdf-output#sonderfarben) erklärt das Modell vollständig.

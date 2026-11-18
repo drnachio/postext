@@ -36,7 +36,7 @@ export const GLYPH_FALLBACK_PLACES = 200;
  * coverage. The `symbolFont` (`options.symbolFont`) draws a character in
  * its regular face too, the one every output loads.
  */
-export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbackOptions, 'hasGlyph' | 'skip' | 'symbolFont'> = {}): GlyphFallbackPlace[] {
+export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbackOptions, 'hasGlyph' | 'skip' | 'symbolFont' | 'reading'> = {}): GlyphFallbackPlace[] {
   const sources = options.hasGlyph ? { hasGlyph: options.hasGlyph } : defaultSources();
   if (!sources) return [];
   const { hasGlyph } = sources;
@@ -44,11 +44,24 @@ export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbac
   // Every text of the document comes through here, most of them many
   // times (#1606): a font shorthand is parsed once, and the characters a
   // face lacks in a text are found once, whichever blocks set it.
-  interface Checked { face: FontFaceRequest; key: string; rest: string[]; lacks: Map<string, boolean>; texts: Map<string, readonly string[]> }
+  interface Checked {
+    face: FontFaceRequest; key: string; rest: string[]; lacks: Map<string, boolean>; texts: Map<string, readonly string[]>;
+    /** The texts the caller's reading found in this shorthand, when the
+     *  face has every character of them: none lacks anything (#1635). */
+    whole?: ReadonlySet<string>;
+  }
   const NONE: readonly string[] = [];
   const fonts = new Map<string, Checked | null>();
   const faces = new Map<string, Pick<Checked, 'lacks' | 'texts'>>();
+  // The shorthand asked last: a block's words ask the same one (#1635).
+  let lastFont: string | undefined;
+  let lastChecked: Checked | null = null;
   const checked = (font: string): Checked | null => {
+    if (font === lastFont) return lastChecked;
+    lastFont = font;
+    return (lastChecked = checkedOf(font));
+  };
+  const checkedOf = (font: string): Checked | null => {
     let c = fonts.get(font);
     if (c !== undefined) return c;
     const face = parseFontString(font);
@@ -59,10 +72,22 @@ export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbac
         let shared = faces.get(key);
         if (!shared) faces.set(key, (shared = { lacks: new Map(), texts: new Map() }));
         c = { face, key, rest: fontStringFamilies(font).slice(1).filter((f) => f.toLowerCase() !== face.family.toLowerCase()), ...shared };
+        const chars = options.reading?.chars.get(font);
+        const texts = options.reading?.texts.get(font);
+        if (chars && texts && !lacksAny(c, chars)) c.whole = texts;
       }
     }
     fonts.set(font, c);
     return c;
+  };
+  /** Whether the face lacks one of `chars`. */
+  const lacksAny = (c: Checked, chars: Iterable<string>): boolean => {
+    for (const ch of chars) {
+      let v = c.lacks.get(ch);
+      if (v === undefined) c.lacks.set(ch, (v = !skippedChar(ch) && hasGlyph(c.face.family, c.face.weight, c.face.style, ch) === false));
+      if (v) return true;
+    }
+    return false;
   };
   /** The characters of `text` its face lacks, each once, in its order. */
   const lackingIn = (c: Checked, text: string): readonly string[] => {
@@ -92,7 +117,7 @@ export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbac
       const add: Add = (font, text) => {
         if (!font || !text) return;
         const c = checked(font);
-        if (!c) return;
+        if (!c || c.whole?.has(text)) return;
         const lacking = lackingIn(c, text);
         if (lacking.length === 0) return;
         let e = found.get(c.key);

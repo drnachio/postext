@@ -375,7 +375,9 @@
     "everyOutput": "Un manoscritto, ogni formato: PDF di stampa, PDF accessibile, web, EPUB e SCORM, a mano o con l’IA",
     "justification": "Gli spazi tra le parole: come Postext compone il testo giustificato, a mano o con l’IA",
     "wordFiles": "Word, andata e ritorno: manda un libro alla redattrice e riporta ogni correzione, con Postext",
-    "indesign": "InDesign, in entrata e in uscita: importare, portare ed esportare libri InDesign con Postext"
+    "indesign": "InDesign, in entrata e in uscita: importare, portare ed esportare libri InDesign con Postext",
+    "specialInks": "Inchiostri speciali e fustelle: lamina oro, bianco, vernice e fori fustellati con Postext",
+    "videos": "Video nei tuoi libri: codice QR su carta, lettore sullo schermo e film sulla pagina, con Postext"
   },
   "About": {
     "eyebrow": "Perché Postext",

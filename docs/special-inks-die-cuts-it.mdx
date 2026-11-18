@@ -17,6 +17,8 @@ export const metadata = {
 
 Entrambi appartengono alla forma del libro, quindi stanno entrambi nella configurazione. Una finitura non sposta mai una riga: l’impaginazione vede un colore, il PDF un inchiostro su una lastra propria, e i visualizzatori decidono come mostrarlo. Una fustella invece cambia la pagina, perché il testo si tiene lontano da un foro, ma il Markdown nomina la fustella solo dove il contenuto ne ha bisogno.
 
+<YouTubeVideo film="specialInks" />
+
 ## Quinti colori
 
 Un quinto colore è qualsiasi inchiostro che il lavoro stampa oltre a ciano, magenta, giallo e nero: un Pantone da rispettare esattamente, un colore aziendale preparato dal produttore di inchiostri, o uno degli inchiostri speciali descritti più avanti. In Postext è una tinta piatta, un colore con `model: 'spot'` il cui `spot` nomina l’inchiostro, ne dà l’aspetto al 100 % in CMYK (il sostituto che mostra una prova di stampa) e la tinta. Un file CMYK o PDF/X lo stampa su una lastra `Separation` che porta il nome dell’inchiostro; lo schermo e un file RGB ne dipingono l’`hex`. [Tinte piatte](/it/docs/configuration-pdf-output#tinte-piatte) spiega il modello per intero.

@@ -1,7 +1,7 @@
 // Cached text widths: plain, run, marked, and the script-sensitivity probe.
 import { cjkMarkPieces } from '../cjk/cjkClasses.js';
 import { hasCJK } from '../cjk/cjk.js';
-import { C, metricsOf } from './state.js';
+import { C, metricsOf, type InkBox } from './state.js';
 
 // Word-level width cache. Text measurement is the engine's hottest call:
 // tokenizers measure every word (plus hyphenation prefixes), and natural
@@ -9,6 +9,34 @@ import { C, metricsOf } from './state.js';
 // needs no string concatenation. Cleared wholesale when it grows past the
 // cap (rare) or when fonts change (see clearTextWidthCache).
 const MAX_WIDTH_CACHE_ENTRIES = 600_000;
+
+// The ink of a word measured for its width (#1630). Arabic vowel marks are
+// cleared against the ink of the words above and below them
+// (`marks/arabicMarks.ts`), and the canvas answers a width and an ink box
+// in one call: asking again for the ink of a word whose width is known
+// shaped it twice, 94,000 times on a long vocalised book (a seventh of its
+// first layout). Kept for words in Arabic script only, the ones whose ink
+// is asked for, so that other books hold nothing more.
+const INK_KEPT_RE = /[\u0600-\u06FF\u0750-\u077F\u0870-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/;
+
+function keepInk(text: string, font: string, metrics: TextMetrics): void {
+  const ascent = (metrics as Partial<TextMetrics>).actualBoundingBoxAscent;
+  const descent = (metrics as Partial<TextMetrics>).actualBoundingBoxDescent;
+  if (typeof ascent !== 'number' || typeof descent !== 'number' || !Number.isFinite(ascent) || !Number.isFinite(descent)) return;
+  let byText = C.ink.get(font);
+  if (byText === undefined) {
+    byText = new Map();
+    C.ink.set(font, byText);
+  }
+  byText.set(text, { ascent, descent });
+}
+
+/** The ink box the canvas gave with the width of `text` in `font`, when
+ *  {@link measureTextWidth} measured it in one call and kept it: what
+ *  `metricsOf(text, font)` would answer again. Shared: not to be written. */
+export function keptInkBox(text: string, font: string): InkBox | undefined {
+  return C.ink.get(font)?.get(text);
+}
 
 export function measureTextWidth(text: string, font: string): number {
   let byText = C.width.get(font);
@@ -24,15 +52,20 @@ export function measureTextWidth(text: string, font: string): number {
   // `cjkMarkCuts`), and the renderers paint them apart. Text with no CJK
   // is never cut (`markCuts`): one measure, with no cut to look for.
   let width = 0;
-  if (!hasCJK(text)) width += metricsOf(text, font).width;
-  else for (const piece of cjkMarkPieces(text, true)) width += metricsOf(piece, font).width;
+  let whole: TextMetrics | undefined;
+  if (!hasCJK(text)) {
+    whole = metricsOf(text, font);
+    width += whole.width;
+  } else for (const piece of cjkMarkPieces(text, true)) width += metricsOf(piece, font).width;
 
   if (C.widthEntries >= MAX_WIDTH_CACHE_ENTRIES) {
     C.width = new Map();
     C.widthEntries = 0;
+    C.ink = new Map();
     byText = new Map();
     C.width.set(font, byText);
   }
+  if (whole !== undefined && INK_KEPT_RE.test(text)) keepInk(text, font, whole);
   byText.set(text, width);
   C.widthEntries++;
   return width;

@@ -17,6 +17,8 @@ export const metadata = {
 
 Both belong to the form of the book, so both live in the configuration. A finish never moves a line: the layout sees a colour, the PDF sees an ink on a plate of its own, and the viewers decide how to show it. A die-cut does change the page, because text keeps clear of a hole, but the Markdown only names the die where the content needs it.
 
+<YouTubeVideo film="specialInks" />
+
 ## Fifth inks
 
 A fifth ink is any ink the job prints beyond cyan, magenta, yellow and black: a Pantone that has to match exactly, a corporate colour mixed by the ink maker, or one of the special inks below. In Postext it is a spot colour, a colour with `model: 'spot'` whose `spot` names the ink, gives its look at 100 % in CMYK (the alternate a proof shows) and its tint. A CMYK or PDF/X file prints it on a `Separation` plate named after the ink; the screen and an RGB file paint its `hex`. [Spot colours](/en/docs/configuration-pdf-output#spot-colours) explains the model in full.

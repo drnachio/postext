@@ -2,12 +2,15 @@
 // profiles and glyph widths.
 import { fontStringWithFamily } from '../fontString.js';
 import { metricsOf, onTextWidthCacheClear, measureUncachedWidth, type Context2D, _language, WIDE_RE, canvasText, applyLanguage } from './state.js';
-import { measureTextWidth } from './widths.js';
+import { keptInkBox, measureTextWidth } from './widths.js';
 
 /** The ink box of `text` in `font` above and below the alphabetic
  *  baseline (px), or null when the measurer gives no ink metrics. Not
- *  cached. */
+ *  cached, but for the box the canvas already gave with the word's width
+ *  (`keptInkBox`, #1630): an answer is not to be written to. */
 export function measureInkBox(text: string, font: string): { ascent: number; descent: number } | null {
+  const kept = keptInkBox(text, font);
+  if (kept !== undefined) return kept;
   const m = metricsOf(text, font) as Partial<TextMetrics>;
   const ascent = m.actualBoundingBoxAscent;
   const descent = m.actualBoundingBoxDescent;

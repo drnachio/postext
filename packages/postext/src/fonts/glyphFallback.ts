@@ -116,6 +116,11 @@ interface CoverageEntry {
 }
 
 const coverage: CoverageEntry[] = [];
+/** What the registered files cover for each face asked (`family|weight|
+ *  style`, null: no file of the family), kept until the files change
+ *  (#1635): the slices of a face were merged again for every document
+ *  checked, twice, and a Chinese face has a hundred of them. */
+const coverageOf = new Map<string, CodePointRanges | null>();
 
 function weightRange(weight: number | string): [number, number] {
   if (typeof weight === 'number') return [weight, weight];
@@ -149,12 +154,14 @@ export function registerFontCoverage(
   const ranges = slice ? intersectRanges(read, slice) : read;
   // A feature family (#1237) covers what its base family's files cover.
   coverage.push({ family: baseFontFamily(family).toLowerCase(), weight: weightRange(weight), style: /italic|oblique/i.test(style) ? 'italic' : 'normal', ranges });
+  coverageOf.clear();
   return true;
 }
 
 /** Forget the coverage registered for `families` (all of it without). */
 export function forgetFontCoverage(families?: Iterable<string>): void {
   forgetStrikeout(families);
+  coverageOf.clear();
   if (!families) {
     coverage.length = 0;
     return;
@@ -237,6 +244,20 @@ function walkTexts(node: unknown, add: Add, depth = 0): void {
  *  lines (paragraphs, headings, list items, captions, notes, table cells,
  *  figure labels) and the texts the pages set beside them. */
 export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
+  return readDocumentTexts(doc).chars;
+}
+
+/** What one reading of a document found, by font shorthand: the characters
+ *  set in it and the texts they were read from. The check of the faces
+ *  and the search for the places read the same document one after the
+ *  other (#1635): a text the first read in a shorthand whose characters
+ *  its face all has needs no second look. */
+export interface DocumentTexts {
+  chars: Map<string, Set<string>>;
+  texts: Map<string, Set<string>>;
+}
+
+export function readDocumentTexts(doc: VDTDocument): DocumentTexts {
   const out = new Map<string, Set<string>>();
   // The texts already read in each font: a word set again adds nothing.
   const read = new Map<string, Set<string>>();
@@ -255,8 +276,10 @@ export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
       set0 = set;
       read0 = read.get(font)!;
     }
-    if (read0.has(text)) return;
+    // One look-up for a text read before (#1635): adding tells.
+    const before = read0.size;
     read0.add(text);
+    if (read0.size === before) return;
     for (const ch of text) if (!set0.has(ch) && !skippedChar(ch)) set0.add(ch);
   };
   const blocks = new Set(doc.blocks);
@@ -281,7 +304,7 @@ export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
     }
   }
   for (const page of doc.pages) walkTexts(page, add);
-  return out;
+  return { chars: out, texts: read };
 }
 
 // --- The check -------------------------------------------------------------
@@ -306,6 +329,9 @@ export interface GlyphFallbackOptions {
    *  drawn where the document asked, so no family is advised for them
    *  (`glyphFallbackAt` still says where they are). */
   symbolFont?: string;
+  /** What {@link readDocumentTexts} found in the document checked, when
+   *  the caller already read it (one document, as it is now). */
+  reading?: DocumentTexts;
 }
 
 /** Whether `symbolFont` draws `ch` for a face of `weight` and `style`: in
@@ -319,6 +345,11 @@ const GENERIC_SUPPLIERS = ['serif', 'sans-serif', 'monospace'] as const;
 
 const faceFont = (face: FontFaceRequest, family: string): string =>
   `${face.style === 'italic' ? 'italic ' : ''}${face.weight} ${PROBE_SIZE_PX}px ${family}`;
+
+/** Whether {@link defaultSources} has something to answer with. */
+export function glyphSourcesReady(): boolean {
+  return probeReady() || coverage.length > 0;
+}
 
 /** The default sources (see the module comment): the probe where it is
  *  declared, else the registered files; undefined when there is neither. */
@@ -334,7 +365,7 @@ export function defaultSources(): { hasGlyph: HasGlyph; supplierOf?: SupplierOf 
     };
   }
   if (coverage.length === 0) return undefined;
-  const known = new Map<string, CodePointRanges | null>();
+  const known = coverageOf;
   // The face asked last: a run of characters asks the same one, and its
   // key is not built again for each (#1606).
   let lastFamily: string | undefined;
@@ -375,7 +406,7 @@ export function glyphFallbacks(docs: VDTDocument | readonly VDTDocument[], optio
   const found = new Map<string, Found>();
   const order: string[] = [];
   for (const doc of list) {
-    for (const [font, chars] of documentFontTexts(doc)) {
+    for (const [font, chars] of (list.length === 1 && options.reading ? options.reading : readDocumentTexts(doc)).chars) {
       const face = parseFontString(font);
       if (!face || isGenericFamily(face.family) || face.family === GLYPH_PROBE_FAMILY) continue;
       const key = faceRequestKey(face);

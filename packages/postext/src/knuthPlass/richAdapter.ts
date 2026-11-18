@@ -392,35 +392,49 @@ export function reconstructRichLines(
           ?? (token.wordScript !== undefined && meta.subStart !== undefined && meta.subEnd !== undefined
             ? pieceScriptContext(token.text, meta.subStart, meta.subEnd, token.wordScript)
             : undefined);
-        lineSegments.push({
+        // The fields in the order the segment has always had them, each set
+        // only where the token has it (#1633): a row of spreads, one per
+        // field, copied an empty object for nearly every one of them on
+        // every word of every line. A field set twice keeps its first place.
+        const segment: VDTLineSegment & { smallCaps?: boolean } = {
           kind: token.mathRender ? 'math' : token.swatch ? 'swatch' : token.chip ? 'chip' : 'text',
           text: cleanText,
           width: restWidths?.get(j) ?? it.width,
           bold: meta.bold || undefined,
           italic: meta.italic || undefined,
-          ...(token.captionLabel ? { captionLabel: true } : {}),
-          ...(token.mathRender ? { mathRender: token.mathRender } : {}),
-          ...(token.swatch ? { swatch: token.swatch } : {}),
-          ...(token.chip ? { chip: token.chip } : {}),
-          ...(token.refResourceId !== undefined ? { refResourceId: token.refResourceId, ...(token.refAnchor ? { refAnchor: true as const } : {}), ...(token.refPageIndex !== undefined ? { refPageIndex: token.refPageIndex } : {}), ...(token.refContinues ? { refContinues: true } : {}) } : {}),
-          ...(token.footnoteId !== undefined ? { footnoteId: token.footnoteId } : {}),
-          ...(token.labelTab ? { labelTab: true as const } : {}),
-          ...(token.script ? { script: token.script, fontString: token.scriptFont, baselineShift: token.baselineShift } : {}),
-          ...(token.markerFont && !token.script ? { fontString: token.markerFont } : {}),
-          ...(token.sideRuns ? { sideMarker: { runs: token.sideRuns } } : {}),
-          ...(token.markerShift !== undefined ? { baselineShift: token.markerShift } : {}),
-          ...(token.faceFont && !token.script ? { fontString: token.faceFont } : {}),
-          ...(token.stacked === 'first' ? { stacked: true } : {}),
-          ...(token.smallCaps ? { smallCaps: true } : {}),
-          ...(token.tcy ? { tcy: true as const } : {}),
-          ...(token.orientation ? { orientation: token.orientation } : {}),
-          ...(token.cjkMarks ? { cjkMarks: token.cjkMarks } : {}),
-          ...(token.charStyle ? { charStyle: token.charStyle } : {}),
-          ...(token.charTracking !== undefined ? { tracking: token.charTracking } : {}),
-          ...(token.inserted ? { inserted: true } : {}),
-          ...(token.runs ? { runs: token.runs } : {}),
-          ...(pieceScript ? { scriptContext: pieceScript } : {}),
-        });
+        };
+        if (token.captionLabel) segment.captionLabel = true;
+        if (token.mathRender) segment.mathRender = token.mathRender;
+        if (token.swatch) segment.swatch = token.swatch;
+        if (token.chip) segment.chip = token.chip;
+        if (token.refResourceId !== undefined) {
+          segment.refResourceId = token.refResourceId;
+          if (token.refAnchor) segment.refAnchor = true;
+          if (token.refPageIndex !== undefined) segment.refPageIndex = token.refPageIndex;
+          if (token.refContinues) segment.refContinues = true;
+        }
+        if (token.footnoteId !== undefined) segment.footnoteId = token.footnoteId;
+        if (token.labelTab) segment.labelTab = true;
+        if (token.script) {
+          segment.script = token.script;
+          segment.fontString = token.scriptFont;
+          segment.baselineShift = token.baselineShift;
+        }
+        if (token.markerFont && !token.script) segment.fontString = token.markerFont;
+        if (token.sideRuns) segment.sideMarker = { runs: token.sideRuns };
+        if (token.markerShift !== undefined) segment.baselineShift = token.markerShift;
+        if (token.faceFont && !token.script) segment.fontString = token.faceFont;
+        if (token.stacked === 'first') segment.stacked = true;
+        if (token.smallCaps) segment.smallCaps = true;
+        if (token.tcy) segment.tcy = true;
+        if (token.orientation) segment.orientation = token.orientation;
+        if (token.cjkMarks) segment.cjkMarks = token.cjkMarks;
+        if (token.charStyle) segment.charStyle = token.charStyle;
+        if (token.charTracking !== undefined) segment.tracking = token.charTracking;
+        if (token.inserted) segment.inserted = true;
+        if (token.runs) segment.runs = token.runs;
+        if (pieceScript) segment.scriptContext = pieceScript;
+        lineSegments.push(segment);
         textParts.push(cleanText);
       } else if (it.type === 'glue' && meta) {
         const token = tokens[meta.originalTokenIndex]!;

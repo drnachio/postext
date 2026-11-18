@@ -17,6 +17,8 @@ export const metadata = {
 
 Los dos pertenecen a la forma del libro, así que los dos van en la configuración. Un acabado nunca mueve una línea: la maquetación ve un color, el PDF ve una tinta en su propia plancha y cada visor decide cómo mostrarla. Un troquel sí cambia la página, porque el texto se aparta del hueco, pero el Markdown solo nombra el troquel donde el contenido lo pide.
 
+<YouTubeVideo film="specialInks" />
+
 ## Quintas tintas
 
 Una quinta tinta es cualquier tinta que el trabajo imprime además del cian, el magenta, el amarillo y el negro: un Pantone que tiene que coincidir exactamente, un color corporativo que prepara el fabricante de tintas o una de las tintas especiales de más abajo. En Postext es una tinta plana, un color con `model: 'spot'` cuyo `spot` nombra la tinta, da su aspecto al 100 % en CMYK (el equivalente que muestra una prueba) y su tono. Un archivo CMYK o PDF/X la imprime en una plancha `Separation` con el nombre de la tinta; la pantalla y un archivo RGB pintan su `hex`. [Tintas planas](/es/docs/configuration-pdf-output#tintas-planas) explica el modelo completo.

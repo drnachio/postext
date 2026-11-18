@@ -177,6 +177,12 @@ export function measureUncachedWidth(text: string, font: string): number {
   return metricsOf(text, font).width;
 }
 
+/** Ink above and below the alphabetic baseline, px. */
+export interface InkBox {
+  ascent: number;
+  descent: number;
+}
+
 /** The widths measured in one language: every cache below is one of
  *  these, so a document in two languages keeps both. */
 interface WidthCaches {
@@ -186,10 +192,14 @@ interface WidthCaches {
   runEntries: number;
   marked: Map<string, Map<string, number>>;
   markedEntries: number;
+  /** The ink of the words {@link WidthCaches.width} measured in one call
+   *  and whose ink is asked for later (`keepInk`, #1630): the canvas
+   *  gives both in one answer. Emptied with the widths. */
+  ink: Map<string, Map<string, InkBox>>;
   /** Font string → whether its punctuation changes with the script. */
   sensitive: Map<string, boolean>;
 }
-const newCaches = (): WidthCaches => ({ width: new Map(), widthEntries: 0, run: new Map(), runEntries: 0, marked: new Map(), markedEntries: 0, sensitive: new Map() });
+const newCaches = (): WidthCaches => ({ width: new Map(), widthEntries: 0, run: new Map(), runEntries: 0, marked: new Map(), markedEntries: 0, ink: new Map(), sensitive: new Map() });
 /** The caches of each language measured in (`''` under the key of the
  *  host's language is never mixed with the explicit empty tag: the host's
  *  is kept under {@link HOST_LANGUAGE}). */
@@ -286,7 +296,7 @@ export function evictionsSince(generation: number): { all: boolean; families: Se
  *  (#1460) listed after the face's draws the characters the face lacks,
  *  so widths measured with the system's stand-in before it loaded are
  *  stale once it does. */
-function dropFamilies(caches: Map<string, Map<string, number>>, families: ReadonlySet<string>): number {
+function dropFamilies(caches: Map<string, Map<string, unknown>>, families: ReadonlySet<string>): number {
   let dropped = 0;
   for (const [font, byText] of caches) {
     if (fontStringFamilies(font).some((family) => families.has(family.toLowerCase()))) {
@@ -312,6 +322,7 @@ export function evictTextWidths(families: Iterable<string> | null): void {
       caches.widthEntries -= dropFamilies(caches.width, set);
       caches.runEntries -= dropFamilies(caches.run, set);
       caches.markedEntries -= dropFamilies(caches.marked, set);
+      dropFamilies(caches.ink, set);
       for (const font of [...caches.sensitive.keys()]) {
         const family = fontStringFamily(font);
         // A face of the stack may stand in for another: any font string
