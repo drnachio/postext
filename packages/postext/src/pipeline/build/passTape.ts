@@ -61,8 +61,11 @@ export class PassTape {
   private readonly tables: { name: string; table: SideTable }[] = [...sideTables];
   private readonly tracked = new Set<object>();
   private readonly kept = new Set<object>();
-  /** The objects of the pages closed so far ({@link close}). */
-  private closed = new WeakSet<object>();
+  /** The objects this tape froze when it closed pages ({@link close}).
+   *  What was frozen before (the words the measurement cache shares, once
+   *  a pass has closed a page that holds them) is not among them: such an
+   *  object is never written to, and is never copied. */
+  private closed = new Set<object>();
   /** Whether a page was closed: a write to one then throws. */
   closedAny = false;
 
@@ -148,7 +151,7 @@ export class PassTape {
     const variables = new Map<string, unknown>();
     for (const [name, v] of this.variables) variables.set(name, copy(v.get()));
     this.fill({ bindings, variables, side });
-    this.closed = new WeakSet();
+    this.closed = new Set();
     this.closedAny = false;
   }
 
