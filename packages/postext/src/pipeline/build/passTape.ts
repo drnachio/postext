@@ -66,15 +66,29 @@ export class PassTape {
   /** Whether a page was closed: a write to one then throws. */
   closedAny = false;
 
+  /** What the factories named, as they named it: read into the tables
+   *  above only when a checkpoint is first asked for ({@link named}). A
+   *  pass that takes none pays one list entry per factory. */
+  private pending: [owner: string, bindings: Record<string, object>][] = [];
+
   /** Name the collections and objects `owner` changes during the pass. A
    *  weak collection becomes a side table of the pass. */
   track(owner: string, bindings: Record<string, object>): void {
-    for (const name in bindings) {
-      const value = bindings[name]!;
-      this.tracked.add(value);
-      if (value instanceof WeakMap || value instanceof WeakSet) this.tables.push({ name: `${owner}.${name}`, table: value });
-      else this.bindings.set(`${owner}.${name}`, value);
+    this.pending.push([owner, bindings]);
+  }
+
+  /** Read what {@link track} was given since the last call. */
+  private named(): void {
+    if (this.pending.length === 0) return;
+    for (const [owner, bindings] of this.pending) {
+      for (const name in bindings) {
+        const value = bindings[name]!;
+        this.tracked.add(value);
+        if (value instanceof WeakMap || value instanceof WeakSet) this.tables.push({ name: `${owner}.${name}`, table: value });
+        else this.bindings.set(`${owner}.${name}`, value);
+      }
     }
+    this.pending = [];
   }
 
   /** Name a loose variable of `owner`. */
@@ -86,6 +100,7 @@ export class PassTape {
    *  that is not on the tape is kept by reference in a checkpoint. Call
    *  it after the factories that own what is tracked. */
   atoms(roots: unknown): void {
+    this.named();
     const walk = (value: unknown): void => {
       if (typeof value !== 'object' || value === null) return;
       if (this.kept.has(value) || this.tracked.has(value)) return;
@@ -105,6 +120,7 @@ export class PassTape {
    *  set on a page behind it is placed again from its first block, with no
    *  page closed. The objects of the setup they point at are left alone. */
   close(pages: readonly unknown[]): void {
+    this.named();
     const freeze = (value: unknown): void => {
       if (typeof value !== 'object' || value === null) return;
       if (this.kept.has(value) || Object.isFrozen(value)) return;
@@ -124,6 +140,7 @@ export class PassTape {
    *  things on every page. */
   open(): void {
     if (!this.closedAny) return;
+    this.named();
     const side: TapeImage['side'] = [];
     const copy = this.copier(side, true);
     const bindings = new Map<string, unknown>();
@@ -175,6 +192,7 @@ export class PassTape {
 
   /** A copy of everything on the tape. */
   record(): TapeImage {
+    this.named();
     const side: TapeImage['side'] = [];
     const copy = this.copier(side);
     const bindings = new Map<string, unknown>();
@@ -188,6 +206,7 @@ export class PassTape {
    *  are emptied and filled with a copy of it, in place, so that every
    *  closure that holds one sees it. */
   putBack(image: TapeImage): void {
+    this.named();
     // One copy of the whole image: its side entries ride along as members
     // of the graph, so their keys are the copies the bindings hold.
     const side: TapeImage['side'] = [];
@@ -213,6 +232,7 @@ export class PassTape {
    *  a line's words read as the words shared (what comes back from a memo
    *  is a copy). The objects of the setup are numbered and not read. */
   print(): string {
+    this.named();
     // The objects whose identity the pass reads.
     const keyed = new Set<object>();
     const met = new Set<object>();
