@@ -153,16 +153,19 @@ export function kashidaCapacity(word: string, options: KashidaOptions, tatweelPx
 export function writtenText(seg: Pick<VDTLineSegment, 'text' | 'kashida'>): string {
   const at = seg.kashida;
   if (!at || at.length === 0) return seg.text;
+  // The text between the tatweels, slice by slice (#1631). The places are
+  // read in order, and one that does not follow the last (or lies past the
+  // text) ends the reading, as a walk character by character did.
+  const text = seg.text;
   let out = '';
-  let k = 0;
-  for (let i = 0; i < seg.text.length; i++) {
-    if (k < at.length && at[k] === i) {
-      k++;
-      continue;
-    }
-    out += seg.text[i];
+  let from = 0;
+  for (let k = 0; k < at.length; k++) {
+    const i = at[k]!;
+    if (i < from || i >= text.length) break;
+    out += text.slice(from, i);
+    from = i + 1;
   }
-  return out;
+  return out + text.slice(from);
 }
 
 /** Insert one tatweel at `offset` (in the text as it now stands) into a

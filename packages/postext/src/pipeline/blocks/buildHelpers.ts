@@ -391,6 +391,10 @@ function isUnprinted(c: string | undefined): boolean {
   return c === '\u00AD' || c === '\u200B';
 }
 
+const SOFT_HYPHEN_CODE = 0xad;
+const ZERO_WIDTH_SPACE_CODE = 0x200b;
+const HYPHEN_CODE = 0x2d;
+
 /** What a reference counts as in a line's units (see `stampSourceRanges`):
  *  a noncharacter, which no plain text holds. */
 const REF_UNIT = '\uFFFF';
@@ -487,13 +491,20 @@ export function stampSourceRanges(
     let i = cumPlain;
     // The hyphen a line opens with when it repeats the one of the compound
     // the line before broke at (`repeatHyphen`) is not in the plain text.
-    for (let u = line.repeatedHyphen && units[0] === '-' ? 1 : 0; u < units.length; u++) {
-      const c = units[u];
+    // By character code (#1631): this loop reads every character of every
+    // line of every pass, and a one-character string and two calls for each
+    // were 5 % of a long book's layout. Past the end of `plain` the code is
+    // NaN, which equals nothing, as `undefined` did.
+    const lastUnit = units.length - 1;
+    const breakHyphen = line.hyphenated === true;
+    for (let u = line.repeatedHyphen && units[0] === '-' ? 1 : 0; u <= lastUnit; u++) {
+      const c = units.charCodeAt(u);
+      let p = plain.charCodeAt(i);
       // A zero-width character the line holds and the plain text does not
       // (a break opportunity a measurer inserted) is no source character.
-      if (isUnprinted(c) && c !== plain[i]) continue;
-      while (isUnprinted(plain[i]) && c !== plain[i]) i++;
-      if (u === units.length - 1 && line.hyphenated && c === '-' && plain[i] !== '-') {
+      if ((c === SOFT_HYPHEN_CODE || c === ZERO_WIDTH_SPACE_CODE) && c !== p) continue;
+      while ((p === SOFT_HYPHEN_CODE || p === ZERO_WIDTH_SPACE_CODE) && c !== p) p = plain.charCodeAt(++i);
+      if (u === lastUnit && breakHyphen && c === HYPHEN_CODE && p !== HYPHEN_CODE) {
         // The hyphen of a break inside an `l·l` stands for the middle dot
         // the line drops: the dot is this line's.
         if (plain[i] === GEMINATE_DOT && endsInsideGeminate(plain.slice(i - 1, i + 1))) i++;
