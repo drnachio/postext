@@ -2,7 +2,8 @@
 // of every chapter saves itself at a few of the blocks where a page opens
 // and, once its blocks are placed, is taken up again from each. A pass
 // that ends otherwise than its first run is reported with the binding
-// that differs: something the pass changes is not on its tape
+// that differs. The pages behind each checkpoint are closed (frozen); a
+// pass that writes to one is placed again with none closed, and counted: something the pass changes is not on its tape
 // (`packages/postext/src/pipeline/build/passTape.ts`).
 //
 //   bun scripts/check-resume.ts <book> [<book> …]
@@ -22,6 +23,7 @@ process.env.DISABLE_SYSTEM_FONTS_LOAD = '1';
 await import('../src/env');
 
 interface Check {
+  placedAgain(): void;
   saveAt(blockIdx: number, pages: number, blocks: number): boolean;
   compared(blockIdx: number, first: string, again: string): void;
 }
@@ -41,8 +43,12 @@ for (const path of process.argv.slice(2)) {
   let opened = 0;
   let saved = 0;
   let compared = 0;
+  let placedAgain = 0;
   const differing = new Map<string, number>();
   hook.__postextPassResumeCheck = {
+    placedAgain() {
+      placedAgain++;
+    },
     saveAt(blockIdx, pages) {
       if (blockIdx === 0 && pages <= 1) {
         lastPages = -1;
@@ -76,6 +82,6 @@ for (const path of process.argv.slice(2)) {
   delete hook.__postextPassResumeCheck;
   const ok = differing.size === 0 && checked === plain;
   if (!ok) failed = true;
-  process.stdout.write(`${book.name}: ${saved} checkpoints, ${compared} resumed runs, ${differing.size === 0 ? 'all as the first run' : `differing in ${[...differing].map(([n, c]) => `${n} ${c}`).join(', ')}`}; pages ${checked === plain ? 'same' : `${plain} → ${checked}`} (${Math.round(performance.now() - t0)} ms)\n`);
+  process.stdout.write(`${book.name}: ${saved} checkpoints, ${compared} resumed runs, ${placedAgain} passes placed again for a write to a closed page, ${differing.size === 0 ? 'all as the first run' : `differing in ${[...differing].map(([n, c]) => `${n} ${c}`).join(', ')}`}; pages ${checked === plain ? 'same' : `${plain} → ${checked}`} (${Math.round(performance.now() - t0)} ms)\n`);
 }
 process.exit(failed ? 1 : 0);

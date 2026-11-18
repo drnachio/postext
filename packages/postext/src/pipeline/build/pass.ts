@@ -5,16 +5,16 @@ import type { PostextContent, PostextConfig, Resource } from '../../types.js';
 import { type VDTColumn, type VDTPage } from '../../vdt.js';
 import { withFigureWords } from '../resources/figureWords.js';
 import { type MeasurementCache, initHyphenator } from '../../measure/index.js';
-import { setSymbolFont, symbolFont } from '../../measure/font.js';
+import { setSymbolFont } from '../../measure/font.js';
 import { setHyphenationLimits } from '../../hyphenation/hyphenate.js';
-import { getCjkLineBreak, setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
-import { getSlashBreaks, setSlashBreaks } from '../../measure/breakRules.js';
-import { getCjkComposition, setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
-import { getMeasureWritingMode, getMeasureRegion, getMeasureUprightDigits, setMeasureWritingMode, setMeasureUprightDigits } from '../../measure/vertical.js';
+import { setCjkLineBreak } from '../../measure/cjk/cjkClasses.js';
+import { setSlashBreaks } from '../../measure/breakRules.js';
+import { setCjkComposition, cjkCompositionOf } from '../../measure/cjk/cjkPunctuation.js';
+import { setMeasureWritingMode, setMeasureUprightDigits } from '../../measure/vertical.js';
 import { resolveAllConfig, resolvedLocale, resolvedDirection, arabicNumbersOf } from '../config.js';
-import { getMeasureDirection, getMeasureArabicNumbers, setMeasureArabicNumbers, setMeasureDirection } from '../../measure/rtl/bidiLines.js';
-import { getMeasureScriptContext, setMeasureScriptContext, scriptContextOfLocale, hanMarksOfLocale } from '../../measure/script.js';
-import { getMeasureLanguage, setMeasureLanguage } from '../../measure/canvas.js';
+import { setMeasureArabicNumbers, setMeasureDirection } from '../../measure/rtl/bidiLines.js';
+import { setMeasureScriptContext, scriptContextOfLocale, hanMarksOfLocale } from '../../measure/script.js';
+import { setMeasureLanguage } from '../../measure/canvas.js';
 import { shapingLanguageOf } from '../../hyphenation/locale.js';
 import { createHeadingLevelResolver } from '../sections/headingStyles.js';
 import { type BuildDocumentOptions, type PassHints, type PassResult, BuildCancelledError } from './passTypes.js';
@@ -52,7 +52,8 @@ import { createPassFinish } from './pass/setup/passFinish.js';
 import type { PassSetupState } from './pass/setupState.js';
 import type { PlacedSlot } from './floatPads.js';
 import { perfLap } from '../../util/perfTap.js';
-import { PassResume, passResumeCheck, withPassTape, type PassTape } from './passTape.js';
+import { ClosedPageWrite, PassResume, isClosedPageWrite, passResumeCheck, withPassTape, type PassTape } from './passTape.js';
+import { withMeasuringAsFound } from './pass/measuringAsFound.js';
 
 /**
  * Single placement pass. `hints` carries the cross-pass adjustments: the
@@ -71,38 +72,17 @@ export function buildDocumentPass(
   options?: BuildDocumentOptions,
   hints: PassHints = {},
 ): PassResult {
-  // A pass sets the CJK line-break level, the CJK composition and the
-  // writing mode text is measured in for its own measuring, and the symbol
-  // font every font string lists (#1460); what the caller had in force is put
-  // back when it ends, also when it throws (a cancelled build), so text
-  // measured outside a build reads as it did before it.
-  const lineBreak = getCjkLineBreak();
-  const composition = getCjkComposition();
-  const writingMode = getMeasureWritingMode();
-  const region = getMeasureRegion();
-  const uprightDigits = getMeasureUprightDigits();
-  const direction = getMeasureDirection();
-  const arabicNumbers = getMeasureArabicNumbers();
-  const scriptContext = getMeasureScriptContext();
-  const language = getMeasureLanguage();
-  const slashBreaks = getSlashBreaks();
-  const symbols = symbolFont();
-  const obstacles = setColumnObstacleSource(undefined);
-  try {
-    return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape));
-  } finally {
-    setColumnObstacleSource(obstacles);
-    setSymbolFont(symbols);
-    setSlashBreaks(slashBreaks);
-    setMeasureLanguage(language);
-    setMeasureScriptContext(scriptContext);
-    setMeasureArabicNumbers(arabicNumbers);
-    setCjkLineBreak(lineBreak);
-    setCjkComposition(composition);
-    setMeasureWritingMode(writingMode, region);
-    setMeasureUprightDigits(uprightDigits);
-    setMeasureDirection(direction);
-  }
+  return withMeasuringAsFound(() => {
+    try {
+      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, true));
+    } catch (error) {
+      // A pass under the check that still had something to set on a page
+      // it had closed (#1639): placed again with no page closed.
+      if (!(error instanceof ClosedPageWrite)) throw error;
+      passResumeCheck()?.placedAgain?.();
+      return withPassTape((tape) => placeDocumentPass(content, config, cache, options, hints, tape, false));
+    }
+  });
 }
 
 function placeDocumentPass(
@@ -112,6 +92,7 @@ function placeDocumentPass(
   options: BuildDocumentOptions | undefined,
   hints: PassHints,
   tape: PassTape,
+  closes: boolean,
 ): PassResult {
   const setup = {} as PassSetupState;
   const lap = perfLap();
@@ -515,6 +496,7 @@ function placeDocumentPass(
     figureLabelsById, bodyStyle, calloutStyles, calloutResolved, blockquoteStyle, paragraphContainers,
     calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans, comicTextPlans, floatsByFirstBlock,
   });
+  if (resume) Object.assign(resume, { doc, closes });
 
   lap('pass.wiring');
   /** Place the blocks from `from` to the end of the document. `again`: a
@@ -574,8 +556,14 @@ function placeDocumentPass(
     // pending (referenced on the last page) on pages appended after it.
     closeFlowSegment(contentBlocks.length);
   };
-  placeFrom(0, false);
-  resume?.again(placeFrom);
+  try {
+    placeFrom(0, false);
+    resume?.again(placeFrom);
+  } catch (error) {
+    throw isClosedPageWrite(tape, error) ? new ClosedPageWrite() : error;
+  }
+  // What follows sets things on every page: on pages of its own.
+  tape.open();
   lap('pass.blocks');
 
   const {

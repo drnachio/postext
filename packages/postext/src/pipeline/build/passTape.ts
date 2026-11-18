@@ -61,6 +61,10 @@ export class PassTape {
   private readonly tables: { name: string; table: SideTable }[] = [...sideTables];
   private readonly tracked = new Set<object>();
   private readonly kept = new Set<object>();
+  /** The objects of the pages closed so far ({@link close}). */
+  private closed = new WeakSet<object>();
+  /** Whether a page was closed: a write to one then throws. */
+  closedAny = false;
 
   /** Name the collections and objects `owner` changes during the pass. A
    *  weak collection becomes a side table of the pass. */
@@ -95,11 +99,48 @@ export class PassTape {
     walk(roots);
   }
 
-  private copier(side: TapeImage['side']): (value: unknown) => unknown {
+  /** Close `pages`: nothing of them is written from here on, so every
+   *  checkpoint after this holds them by reference. Their objects are
+   *  frozen, and a write to one throws: a pass that still had something to
+   *  set on a page behind it is placed again from its first block, with no
+   *  page closed. The objects of the setup they point at are left alone. */
+  close(pages: readonly unknown[]): void {
+    const freeze = (value: unknown): void => {
+      if (typeof value !== 'object' || value === null) return;
+      if (this.kept.has(value) || Object.isFrozen(value)) return;
+      if (!Array.isArray(value) && !isPlain(value)) return;
+      Object.freeze(value);
+      this.closed.add(value);
+      if (Array.isArray(value)) for (const item of value) freeze(item);
+      else for (const key in value) freeze((value as Plain)[key]);
+    };
+    for (const page of pages) freeze(page);
+    this.closedAny = true;
+  }
+
+  /** Give the tape pages it may write to again: the closed pages are left
+   *  as they are, for the checkpoints that hold them, and the tape goes on
+   *  with copies. For what comes after the blocks are placed, which sets
+   *  things on every page. */
+  open(): void {
+    if (!this.closedAny) return;
+    const side: TapeImage['side'] = [];
+    const copy = this.copier(side, true);
+    const bindings = new Map<string, unknown>();
+    for (const [name, value] of this.bindings) bindings.set(name, copy(value));
+    const variables = new Map<string, unknown>();
+    for (const [name, v] of this.variables) variables.set(name, copy(v.get()));
+    this.fill({ bindings, variables, side });
+    this.closed = new WeakSet();
+    this.closedAny = false;
+  }
+
+  /** `thaw`: copy the closed pages too. */
+  private copier(side: TapeImage['side'], thaw = false): (value: unknown) => unknown {
     const done = new Map<object, object>();
     const copy = (value: unknown): unknown => {
       if (typeof value !== 'object' || value === null) return value;
-      if (this.kept.has(value) || Object.isFrozen(value)) return value;
+      if (this.kept.has(value) || (Object.isFrozen(value) && !(thaw && this.closed.has(value)))) return value;
       const known = done.get(value);
       if (known !== undefined) return known;
       let out: object;
@@ -151,7 +192,11 @@ export class PassTape {
     // of the graph, so their keys are the copies the bindings hold.
     const side: TapeImage['side'] = [];
     const copy = this.copier(side);
-    const fresh = copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage;
+    this.fill(copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage);
+  }
+
+  /** Fill the tape with `fresh`, which becomes its own. */
+  private fill(fresh: TapeImage): void {
     for (const [name, target] of this.bindings) refill(target, fresh.bindings.get(name));
     for (const [name, v] of this.variables) v.set(fresh.variables.get(name) as never);
     for (const { key, table, value } of fresh.side) {
@@ -326,6 +371,13 @@ export interface PassResumeCheck {
   /** A pass taken up again from `blockIdx` ended as `again`, where the
    *  first run ended as `first` (both {@link PassTape.print}). */
   compared(blockIdx: number, first: string, again: string): void;
+  /** Asked when present: of the `pages` pages the document had at a
+   *  checkpoint, `firstChanged` is the first the rest of the pass wrote to
+   *  (`pages` when it wrote to none of them). */
+  wroteBack?(pages: number, firstChanged: number): void;
+  /** Told when present: a pass wrote to a page it had closed and is
+   *  placed again from its first block with no page closed. */
+  placedAgain?(): void;
 }
 
 /** The checker listening, when one is. */
@@ -335,7 +387,11 @@ export function passResumeCheck(): PassResumeCheck | undefined {
 
 /** A pass under the check: its checkpoints, and the runs from them. */
 export class PassResume {
-  private readonly saved: { blockIdx: number; image: TapeImage }[] = [];
+  private readonly saved: { blockIdx: number; image: TapeImage; pages?: string[] }[] = [];
+  /** The document being built. */
+  doc: { pages: unknown[] } | undefined;
+  /** Whether the pages behind a checkpoint are closed. */
+  closes = true;
 
   /** `setup`: the objects of the pass's setup, kept by reference in a
    *  checkpoint; everything else on the tape is copied. */
@@ -345,7 +401,13 @@ export class PassResume {
 
   /** The first run is about to place block `blockIdx`. */
   atBlock(blockIdx: number, pages: number, blocks: number): void {
-    if (this.check.saveAt(blockIdx, pages, blocks)) this.saved.push({ blockIdx, image: this.tape.record() });
+    if (!this.check.saveAt(blockIdx, pages, blocks)) return;
+    // Every page but the one being filled is closed (#1639): the rest of
+    // a pass writes to the open page alone, but for a box or a story that
+    // goes back to a page behind it.
+    if (this.closes && this.doc) this.tape.close(this.doc.pages.slice(0, -1));
+    const then = this.check.wroteBack && this.doc ? this.doc.pages.map((p) => JSON.stringify(p)) : undefined;
+    this.saved.push({ blockIdx, image: this.tape.record(), ...(then ? { pages: then } : {}) });
   }
 
   /** The first run has placed its blocks. Each checkpoint is put back and
@@ -356,6 +418,15 @@ export class PassResume {
     if (this.saved.length === 0) return;
     const first = this.tape.print();
     const end = this.tape.record();
+    if (this.check.wroteBack && this.doc) {
+      const now = this.doc.pages.map((p) => JSON.stringify(p));
+      for (const { pages } of this.saved) {
+        if (!pages) continue;
+        let at = 0;
+        while (at < pages.length && pages[at] === now[at]) at++;
+        this.check.wroteBack(pages.length, at);
+      }
+    }
     for (const { blockIdx, image } of this.saved) {
       this.tape.putBack(image);
       placeFrom(blockIdx, true);
@@ -364,3 +435,12 @@ export class PassResume {
     this.tape.putBack(end);
   }
 }
+
+/** Whether `error` is a write to a closed page: the engine's own refusal
+ *  to write to a frozen object, on a tape that closed pages. */
+export function isClosedPageWrite(tape: PassTape, error: unknown): boolean {
+  return tape.closedAny && error instanceof TypeError;
+}
+
+/** Thrown out of a pass that wrote to a page it had closed. */
+export class ClosedPageWrite extends Error {}

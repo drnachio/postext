@@ -7,7 +7,8 @@
 // be copied.
 import type { PassResumeCheck } from '../pipeline/build/passTape.js';
 
-if ((globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.POSTEXT_RESUME_CHECK === '1') {
+const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env;
+if (env?.POSTEXT_RESUME_CHECK === '1') {
   /** The pages (counted as they open in a pass) a pass is saved at. */
   const SAVED_AT = new Set([1, 2, 4, 9, 20, 45]);
   let lastPages = -1;
@@ -21,6 +22,14 @@ if ((globalThis as { process?: { env: Record<string, string | undefined> } }).pr
       if (pages === lastPages) return false;
       lastPages = pages;
       return SAVED_AT.has(opened++);
+    },
+    ...(env?.POSTEXT_RESUME_BACK === '1' ? {
+      wroteBack(pages: number, firstChanged: number) {
+        if (pages - firstChanged > 1) throw new Error(`WROTE-BACK ${pages - firstChanged} pages (page ${firstChanged} of ${pages})`);
+      },
+    } : {}),
+    placedAgain() {
+      if (env?.POSTEXT_RESUME_BACK === '1') console.error('PLACED-AGAIN');
     },
     compared(blockIdx, first, again) {
       if (first === again) return;
