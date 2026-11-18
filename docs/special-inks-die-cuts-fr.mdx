@@ -17,6 +17,8 @@ export const metadata = {
 
 Toutes deux relèvent de la mise en forme du livre : elles se règlent donc dans la configuration. Une finition ne déplace jamais une ligne : la mise en page voit une couleur, le PDF une encre sur sa propre plaque, et les visionneuses décident comment la montrer. Une découpe change bien la page, puisque le texte s’écarte d’un trou, mais le Markdown ne nomme la forme qu’à l’endroit où le contenu en a besoin.
 
+<YouTubeVideo film="specialInks" />
+
 ## Cinquièmes couleurs
 
 Une cinquième couleur est toute encre que le travail imprime en plus du cyan, du magenta, du jaune et du noir : un Pantone qui doit être respecté exactement, une couleur d’entreprise préparée par le fabricant d’encres, ou l’une des encres spéciales ci-dessous. Dans Postext, c’est un ton direct, une couleur avec `model: 'spot'` dont le `spot` nomme l’encre, donne son aspect à 100 % en CMJN (la substitution que montre une épreuve) et sa teinte. Un fichier CMJN ou PDF/X l’imprime sur une plaque `Separation` qui porte le nom de l’encre ; l’écran et un fichier RVB peignent son `hex`. [Tons directs](/fr/docs/configuration-pdf-output#tons-directs) décrit le modèle en entier.

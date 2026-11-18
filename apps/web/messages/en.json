@@ -375,7 +375,9 @@
     "everyOutput": "One manuscript, every output: print PDF, accessible PDF, web, EPUB and SCORM, by hand or with AI",
     "justification": "The spaces between the words: how Postext sets justified text, by hand or with AI",
     "wordFiles": "Word, both ways: send a book to the copy editor and bring every correction back, with Postext",
-    "indesign": "InDesign, in and out: import, port and export InDesign books with Postext"
+    "indesign": "InDesign, in and out: import, port and export InDesign books with Postext",
+    "specialInks": "Special inks and die-cuts: gold foil, white ink, varnish and die-cut holes with Postext",
+    "videos": "Videos in your books: a QR code on paper, a player on screen and a film on the page, with Postext"
   },
   "About": {
     "eyebrow": "Why Postext",

@@ -17,6 +17,8 @@ export const metadata = {
 
 As duas fazem parte da forma do livro, por isso as duas ficam nas configurações. Um acabamento nunca move uma linha: a diagramação vê uma cor, o PDF vê uma tinta numa chapa própria, e os visualizadores decidem como mostrá-la. Uma faca muda a página, porque o texto se afasta do furo, mas o Markdown só nomeia a faca onde o conteúdo precisa dela.
 
+<YouTubeVideo film="specialInks" />
+
 ## Quintas cores
 
 Uma quinta cor é qualquer tinta que o trabalho imprime além do ciano, do magenta, do amarelo e do preto: um Pantone que precisa bater exatamente, uma cor corporativa preparada pelo fabricante de tintas ou uma das tintas especiais descritas abaixo. No Postext ela é uma cor especial, uma cor com `model: 'spot'` cujo `spot` nomeia a tinta, dá a aparência dela a 100 % em CMYK (o equivalente que uma prova mostra) e a retícula. Um arquivo CMYK ou PDF/X a imprime numa chapa `Separation` com o nome da tinta; a tela e um arquivo RGB pintam o `hex` dela. [Cores especiais](/pt/docs/configuration-pdf-output#cores-especiais) explica o modelo por inteiro.

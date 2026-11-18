@@ -17,6 +17,8 @@ export const metadata = {
 
 两者都属于书的形式，所以都写在配置里。工艺从不移动任何一行：排版看到的是一个颜色，PDF看到的是一种印在单独印版上的油墨，如何显示由各个视图决定。模切会改变页面，因为文字要避开孔，但Markdown只在内容需要的地方写出刀模的名称。
 
+<YouTubeVideo film="specialInks" />
+
 ## 第五色
 
 第五色是作业在青、品红、黄、黑之外印刷的任何油墨：必须准确匹配的Pantone色、由油墨厂调配的企业色，或者下文的某种特种油墨。在Postext中它是一个专色，即`model: 'spot'`的颜色，其`spot`写明油墨名称、油墨在100 %时以CMYK表示的外观（打样显示的替代色）及其网点浓度。CMYK或PDF/X文件把它印在以该油墨命名的`Separation`印版上；屏幕和RGB文件绘制它的`hex`。[专色](/zh/docs/configuration-pdf-output#专色)完整说明了这一模型。

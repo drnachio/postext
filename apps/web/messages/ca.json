@@ -375,7 +375,9 @@
     "everyOutput": "Un manuscrit, totes les sortides: PDF d’impremta, PDF accessible, web, EPUB i SCORM, a mà o amb IA",
     "justification": "Els espais entre les paraules: com compon Postext el text justificat, a mà o amb IA",
     "wordFiles": "Word, d’anada i tornada: envia un llibre a la correctora i recupera cada correcció, amb Postext",
-    "indesign": "InDesign, entrada i sortida: importa, porta i exporta llibres d’InDesign amb Postext"
+    "indesign": "InDesign, entrada i sortida: importa, porta i exporta llibres d’InDesign amb Postext",
+    "specialInks": "Tintes especials i troquels: estampació or, tinta blanca, vernís i forats troquelats amb Postext",
+    "videos": "Vídeos als llibres: un codi QR en paper, un reproductor en pantalla i una pel·lícula a la pàgina"
   },
   "About": {
     "eyebrow": "Per què Postext",

@@ -248,6 +248,30 @@ export const YOUTUBE_VIDEOS = {
     de: { id: "-gMnnuenwtI", duration: "4:36" },
     it: { id: "J_MNweWbeho", duration: "4:24" },
   },
+  specialInks: {
+    en: { id: "endXIDkpbh0", duration: "4:05" },
+    es: { id: "Lz88MpnGgRc", duration: "4:15" },
+    ca: { id: "OYYl4_6kgNU", duration: "4:08" },
+    zh: { id: "RNmM9bc-JiU", duration: "4:07" },
+    ja: { id: "MxjL7fpiqk4", duration: "4:57" },
+    ar: { id: "Wj984rl1uiM", duration: "4:44" },
+    pt: { id: "GgZ6IHo1F-U", duration: "4:14" },
+    fr: { id: "ib_XVe2RsJ4", duration: "4:03" },
+    de: { id: "xJ2pArS9ogo", duration: "4:22" },
+    it: { id: "RHImjz3XECE", duration: "4:18" },
+  },
+  videos: {
+    en: { id: "FLlRGWCrnJE", duration: "4:07" },
+    es: { id: "sSMqbiI9r1w", duration: "4:10" },
+    ca: { id: "Ke9ldA2RYWg", duration: "4:11" },
+    zh: { id: "hy6D4zcigyM", duration: "4:13" },
+    ja: { id: "CbuCU0w3H3U", duration: "5:09" },
+    ar: { id: "wqv0ioospSo", duration: "4:41" },
+    pt: { id: "0hU88AWEKmk", duration: "4:11" },
+    fr: { id: "lwfTsqtFyiM", duration: "4:01" },
+    de: { id: "QMO6KU1VyQ4", duration: "4:27" },
+    it: { id: "zPR_kTn9qoE", duration: "4:13" },
+  },
 } as const;
 
 export type YouTubeFilm = keyof typeof YOUTUBE_VIDEOS;

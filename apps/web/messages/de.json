@@ -375,7 +375,9 @@
     "everyOutput": "Ein Manuskript, jede Ausgabe: Druck-PDF, barrierefreies PDF, Web, EPUB, SCORM, von Hand oder mit KI",
     "justification": "Die Abstände zwischen den Wörtern: wie Postext Blocksatz setzt, von Hand oder mit KI",
     "wordFiles": "Word, in beide Richtungen: das Buch zur Lektorin, jede Korrektur zurück ins Buch, mit Postext",
-    "indesign": "InDesign, hinein und hinaus: InDesign-Bücher mit Postext importieren, portieren und exportieren"
+    "indesign": "InDesign, hinein und hinaus: InDesign-Bücher mit Postext importieren, portieren und exportieren",
+    "specialInks": "Spezialfarben und Stanzungen: Heißfolie, Deckweiß, Lack und gestanzte Löcher mit Postext",
+    "videos": "Videos in Ihren Büchern: QR-Code auf Papier, Player am Bildschirm, Film auf der Seite, mit Postext"
   },
   "About": {
     "eyebrow": "Warum Postext",
