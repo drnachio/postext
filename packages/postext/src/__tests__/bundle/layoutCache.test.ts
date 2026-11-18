@@ -96,6 +96,26 @@ describe('buildBundle with a layout cache (#782)', () => {
     expect(docs[0]!.blocks.some((b) => b.lines?.some((l) => l.text.includes('renamed')))).toBe(true);
   });
 
+  it('prints the contents a build without the cache prints when chapters come, go and gain sections (#1638)', () => {
+    // The outline the first round starts from is kept chapter by chapter:
+    // a chapter's entries go with its text and what the chapters before it
+    // leave it (its number), so a chapter moved down the book is read again.
+    const withToc = [`# Contents\n\n:::toc\n:::\n`, ...base];
+    const cache = createBundleLayoutCache();
+    rebuild(cache, withToc);
+    const contents = (docs: VDTDocument[]) => docs[0]!.blocks.flatMap((b) => b.lines?.map((l) => l.text) ?? []);
+    const inserted = [withToc[0]!, withToc[1]!, chapter('Inserted', 2), ...withToc.slice(2)];
+    const sections = [...inserted];
+    sections[2] = `${sections[2]}\n## Another section\n\n${paragraph('more')}\n`;
+    const removed = [sections[0]!, ...sections.slice(2)];
+    for (const chapters of [inserted, sections, removed, withToc]) {
+      const kept = rebuild(cache, chapters).docs;
+      const fresh = buildBundle(book(chapters));
+      expect(contents(kept)).toEqual(contents(fresh));
+      expect(pagesOf(kept)).toBe(pagesOf(fresh));
+    }
+  });
+
   it('lays out every chapter again when the configuration changes', () => {
     const cache = createBundleLayoutCache();
     rebuild(cache, base);

@@ -565,7 +565,17 @@ function bundleLayout(bundle: BundleInput, options: BuildBundleOptions, speculat
   /** Every chapter's outline entries as its text gives them, the counters
    *  chained from chapter to chapter as the rounds chain them. */
   function provisionalOutline(): OutlineEntry[] {
-    return sources.flatMap((markdown, index) => contentOutline({ markdown, resources }, config, inherited(index)).outline);
+    // A chapter's entries are kept with the layout cache, by its text and
+    // what it inherits (#1638): a save of one chapter read the headings of
+    // every chapter of the book again, 1.2 s on a book of 6 MB.
+    return sources.flatMap((markdown, index) => {
+      const prior = inherited(index);
+      const priorKey = jsonKey(prior);
+      return build.derive(
+        priorKey === undefined ? undefined : `outline\u0000${priorKey}\u0000${markdown}`,
+        () => contentOutline({ markdown, resources }, config, prior).outline,
+      );
+    });
   }
 
   /** What chapter `index` inherits from the chapters before it, as the
