@@ -59,11 +59,38 @@ export function hashMarkdown(markdown: string): string {
   return hashString(markdown);
 }
 
+/** What of a chapter the hashes read: its title and text. */
+const hashedPart = (c: Chapter) => ({ title: c.title, markdown: c.markdown });
+
 /** Hash of the chapter list: titles and text in book order. Ids and
  *  timestamps (fresh on every load) do not count. */
 export function hashChapters(chapters: readonly Chapter[]): string {
-  return held(chapterHashes, chapters, () => hashString(stableStringify(chapters.map((c) => ({ title: c.title, markdown: c.markdown })))));
+  return held(chapterHashes, chapters, () => hashString(stableStringify(chapters.map(hashedPart))));
 }
+
+// The length of the text `hashChapters` hashes, by chapter (#1646). That
+// text is the list's JSON, `[`, each chapter's, `]`, with commas between:
+// its length is the sum of the chapters', and a keystroke makes one
+// chapter anew, so one chapter is measured.
+const chapterLengths = new WeakMap<object, number>();
+
+/** The length of the text {@link hashChapters} hashes. */
+export function chaptersTextLength(chapters: readonly Chapter[]): number {
+  let length = 2 + Math.max(0, chapters.length - 1);
+  for (const chapter of chapters) {
+    let own = chapterLengths.get(chapter);
+    if (own === undefined) {
+      own = stableStringify(hashedPart(chapter)).length;
+      chapterLengths.set(chapter, own);
+    }
+    length += own;
+  }
+  return length;
+}
+
+/** The text lengths of snapshots written without one, learned when the
+ *  book matched them. */
+const learnedLengths = new WeakMap<object, number>();
 
 /** Hash of the configuration with defaults stripped — the same shape the
  *  sandbox persists, so a config saved and reloaded hashes identically. */
@@ -116,7 +143,12 @@ export function isDocumentUntouched(
   snapshot: AppliedPresetSnapshot | null | undefined,
 ): boolean {
   if (!snapshot) return false;
-  return hashChapters(state.chapters) === snapshot.markdownHash
-    && hashResources(state.resources) === snapshot.resourcesHash
+  // A text of another length is another text (#1646): asked on every
+  // keystroke, the answer then needs no hash of the whole book.
+  const length = snapshot.markdownLength ?? learnedLengths.get(snapshot);
+  if (length !== undefined && chaptersTextLength(state.chapters) !== length) return false;
+  if (hashChapters(state.chapters) !== snapshot.markdownHash) return false;
+  if (length === undefined) learnedLengths.set(snapshot, chaptersTextLength(state.chapters));
+  return hashResources(state.resources) === snapshot.resourcesHash
     && hashConfig(state.config) === snapshot.configHash;
 }

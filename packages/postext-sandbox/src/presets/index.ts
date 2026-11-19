@@ -39,7 +39,7 @@ export type { OpenedBundleZip } from './zip.js';
 export { createRemotePreset, fetchPresetIndex } from './remote.js';
 export { findDefaultPrivatePreset, listPresets } from './registry.js';
 export { applyPreset } from './apply.js';
-export { hashChapters, hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched, rekeyMigratedConfig } from './hash.js';
+export { chaptersTextLength, hashChapters, hashConfig, hashMarkdown, hashResources, hashString, isDocumentUntouched, rekeyMigratedConfig } from './hash.js';
 export type { DocumentHashSource } from './hash.js';
 export { decidePresetUpdate } from './watch.js';
 export type { PresetUpdateDecision } from './watch.js';

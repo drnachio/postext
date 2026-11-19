@@ -30,7 +30,7 @@ import {
 } from 'lucide-react';
 import { isCjkLanguage } from 'postext';
 import type { EditorView } from '@codemirror/view';
-import { useRef, useState, type ReactNode } from 'react';
+import { memo, useRef, useState, type ReactNode } from 'react';
 import { useSandboxConfig, useSandboxLabels, useSandboxResources } from '../../context/SandboxContext.js';
 import { useHistoryAvailability, useHistoryCommands } from '../../history/HistoryButtons.js';
 import { IconButton, Menu, MenuItem, MenuSeparator } from '../../ui/index.js';
@@ -177,7 +177,10 @@ export function insertBlockSelecting(view: EditorView, text: string, anchor: num
   view.focus();
 }
 
-export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbarProps) {
+// Memoised (#1646): the editor above it reads the whole state and renders
+// on every keystroke; the toolbar's props (a ref, the language, the read-
+// only switch) do not change then, so it renders only on its own state.
+export const EditorToolbar = memo(function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbarProps) {
   // What the toolbar shows, and no more of the state (#1629): it holds
   // some thirty buttons, each under a tooltip, and the text changes on
   // every keystroke.
@@ -445,4 +448,4 @@ export function EditorToolbar({ viewRef, lang, readOnly = false }: EditorToolbar
       />
     </div>
   );
-}
+});

@@ -188,6 +188,7 @@ function isAppliedPresetSnapshot(data: unknown): data is AppliedPresetSnapshot {
     && (d.locale === undefined || typeof d.locale === 'string')
     && (d.fingerprint === null || typeof d.fingerprint === 'string')
     && typeof d.markdownHash === 'string'
+    && (d.markdownLength === undefined || typeof d.markdownLength === 'number')
     && typeof d.configHash === 'string'
     && typeof d.resourcesHash === 'string';
 }
