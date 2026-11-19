@@ -16,7 +16,9 @@
 // book it prints how the passes started (from a checkpoint, or from the
 // first block and why) and, for its longest chapter, both times.
 
-import { buildDocument, createLayoutTapes, createMeasurementCache } from 'postext';
+import { buildDocument, createLayoutTapes, createMeasurementCache, type VDTDocument } from 'postext';
+// The worker's own pieces (#1642), not part of the package's face.
+import { applyDocumentPatch, makeDocumentPatch, sentWhole, type SentDocument } from '../../postext/dist/worker/docPatch.js';
 import { Options } from '../src/args';
 import { layOut } from '../src/layout';
 import { Reporter } from '../src/log';
@@ -64,6 +66,8 @@ for (const path of books) {
   let fromCheckpoint = 0;
   let passes = 0;
   let placedAgain = 0;
+  let patched = 0;
+  let pagesSent = 0;
   let pagesKept = 0;
   let pagesTaken = 0;
   let rejoined = 0;
@@ -76,7 +80,13 @@ for (const path of books) {
     const tapes = createLayoutTapes();
     let markdown = book.chapters[at]!.markdown;
     const build = (withTapes: boolean) => buildDocument({ markdown, resources: book.resources }, book.config, cache, withTapes ? { tapes } : undefined);
-    build(true);
+    // What the layout worker and its client do with each document built
+    // with tapes (#1642): the worker sends it as it differs from the one
+    // before, the client puts it together from the one it holds.
+    let seq = 1;
+    const opened = build(true);
+    let sent: SentDocument = sentWhole(opened, seq);
+    let held: VDTDocument = structuredClone(opened);
     let tapedMs = 0;
     let plainMs = 0;
     for (let round = 0; round < rounds; round++) {
@@ -107,6 +117,20 @@ for (const path of books) {
           if (b > 0) fromCheckpoint++;
           else reasons.set(stats.reasons[i] || 'the checkpoint is at the first block', (reasons.get(stats.reasons[i] || 'the checkpoint is at the first block') ?? 0) + 1);
         });
+        const patch = structuredClone(makeDocumentPatch(taped, sent));
+        sent = { seq: ++seq, pages: [...taped.pages], blocks: [...taped.blocks] };
+        held = applyDocumentPatch(patch, held);
+        pagesSent += patch.pages.filter((p) => typeof p !== 'number').length;
+        if (JSON.stringify(held) !== JSON.stringify(taped)) {
+          patched++;
+          if (patched <= 2) {
+            const a = JSON.stringify(held);
+            const b = JSON.stringify(taped);
+            let i = 0;
+            while (i < a.length && a[i] === b[i]) i++;
+            process.stderr.write(`${book.name}, chapter ${at + 1}, edit at ${share}: the document put together differs from the one built\n  together: …${a.slice(Math.max(0, i - 160), i + 120)}…\n  built:    …${b.slice(Math.max(0, i - 160), i + 120)}…\n`);
+          }
+        }
         if (JSON.stringify(taped) !== JSON.stringify(plain)) {
           differing++;
           if (differing <= 3) {
@@ -121,9 +145,9 @@ for (const path of books) {
     }
     if (at === longest && plainMs > 0) timing = `; longest chapter (${whole.docs[at]!.pages.length} pp), ${rounds * 3} edits: ${Math.round(tapedMs)} ms with tapes, ${Math.round(plainMs)} ms without`;
   }
-  if (differing > 0) failed = true;
+  if (differing > 0 || patched > 0) failed = true;
   const why = [...reasons].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${n} ${r}`).join('; ');
-  process.stdout.write(`${book.name}: ${edits} edits, ${differing} differing; ${fromCheckpoint} of ${passes} passes from a checkpoint, ${placedAgain} placed again${why ? ` (from the first block: ${why})` : ''}; ${rejoined} rejoined the pass before; of ${pagesSeen} pages, ${pagesKept} kept before the edit and ${pagesTaken} taken after it${timing}\n`);
+  process.stdout.write(`${book.name}: ${edits} edits, ${differing} differing; ${fromCheckpoint} of ${passes} passes from a checkpoint, ${placedAgain} placed again${why ? ` (from the first block: ${why})` : ''}; ${rejoined} rejoined the pass before; ${patched} put together from pieces differing, ${pagesSent} pages sent of ${edits === 0 ? 0 : Math.round(pagesSeen / Math.max(1, passes) * edits)}; of ${pagesSeen} pages, ${pagesKept} kept before the edit and ${pagesTaken} taken after it${timing}\n`);
   for (const [at, n] of [...builtAgain].sort((a, b) => b[1] - a[1])) process.stdout.write(`  ${n} builds done again: ${at}\n`);
 }
 process.exit(failed ? 1 : 0);

@@ -142,13 +142,33 @@ export interface WaitingMoves {
   list: { at: number; delta: number }[];
 }
 
-/** Make the moves that wait, and forget them. */
+/** Make the moves that wait, and forget them. Each is noted against the
+ *  pages and blocks it was made on ({@link movesMadeOn}). */
 export function makeMoves(moves: WaitingMoves): void {
-  for (const { at, delta } of moves.list) {
+  if (moves.list.length === 0) return;
+  for (const move of moves.list) {
     const seen = new Set<object>();
-    for (const object of moves.objects) moveSourcePlaces(object, at, delta, seen);
+    for (const object of moves.objects) moveSourcePlaces(object, move.at, move.delta, seen);
+  }
+  const made = [...moves.list];
+  for (const object of moves.objects) {
+    const noted = journal.get(object);
+    if (noted) noted.push(...made);
+    else journal.set(object, [...made]);
   }
   moves.list.length = 0;
+}
+
+/** The moves made on each page and block since it was last asked: what a
+ *  host that holds a copy of the page has to do to its copy (#1642). */
+const journal = new WeakMap<object, { at: number; delta: number }[]>();
+
+/** The moves made on `object` (a page, a block) since this was last
+ *  asked of it, in order; then none. */
+export function movesMadeOn(object: object): { at: number; delta: number }[] | undefined {
+  const made = journal.get(object);
+  if (made) journal.delete(object);
+  return made;
 }
 
 /** The moves that wait on a page, by the page: the document that goes

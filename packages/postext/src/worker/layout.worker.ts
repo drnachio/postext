@@ -22,6 +22,7 @@ import { createFontGenerations, installFontGenerations } from './fontGenerations
 import { forgetFontCoverage, installGlyphProbe, registerFontCoverage } from '../fonts/glyphFallback.js';
 import type { PostextContent, Resource } from '../types.js';
 import type { VDTDocument } from '../vdt.js';
+import { makeDocumentPatch, sentWhole, type SentDocument } from './docPatch.js';
 
 const ctx: DedicatedWorkerGlobalScope = self as unknown as DedicatedWorkerGlobalScope;
 
@@ -62,7 +63,8 @@ function docCachePut(key: string, doc: VDTDocument): void {
 
 /** The tapes of the document being edited (`tapesKey` in the protocol,
  *  #1640): one document's at a time. */
-let heldTapes: { key: string; tapes: LayoutTapes } | null = null;
+let heldTapes: { key: string; tapes: LayoutTapes; sent?: SentDocument } | null = null;
+let docSeq = 0;
 
 function tapesOf(key: string): LayoutTapes {
   if (heldTapes?.key !== key) heldTapes = { key, tapes: createLayoutTapes() };
@@ -286,8 +288,24 @@ async function runBuild(msg: BuildRequest): Promise<void> {
       if (msg.cacheKey && msg.tapesKey === undefined) docCachePut(msg.cacheKey, doc);
       const totalMs = performance.now() - startedAt;
       const missing = missingFonts(doc);
-      const tapes = msg.tapesKey !== undefined && heldTapes?.key === msg.tapesKey && msg.wantDoc !== false ? heldTapes.tapes.stats : undefined;
-      post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats: { passes, totalMs, ...(missing ? { missingFonts: missing } : {}), ...(tapes ? { tapes } : {}) } });
+      const held = msg.tapesKey !== undefined && heldTapes?.key === msg.tapesKey && msg.wantDoc !== false ? heldTapes : undefined;
+      const stats = { passes, totalMs, ...(missing ? { missingFonts: missing } : {}), ...(held ? { tapes: held.tapes.stats } : {}) };
+      if (!held) {
+        post({ kind: 'built', id: msg.id, doc: msg.wantDoc === false ? null : doc, stats });
+      } else {
+        // A document of a chapter being edited goes out as it differs from
+        // the one the client holds, when that is the one last sent (#1642).
+        const before = held.sent;
+        const seq = ++docSeq;
+        if (before && msg.haveDoc === before.seq) {
+          const patch = makeDocumentPatch(doc, before);
+          held.sent = { seq, pages: [...doc.pages], blocks: [...doc.blocks] };
+          post({ kind: 'built', id: msg.id, doc: null, patch, docSeq: seq, stats: { ...stats, pagesSent: patch.pages.filter((page) => typeof page !== 'number').length } });
+        } else {
+          held.sent = sentWhole(doc, seq);
+          post({ kind: 'built', id: msg.id, doc, docSeq: seq, stats });
+        }
+      }
     }
   } catch (err) {
     if (err instanceof BuildCancelledError) {

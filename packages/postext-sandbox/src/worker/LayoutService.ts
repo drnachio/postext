@@ -432,6 +432,9 @@ export function createLayoutService(options?: {
           kept: built.tapes.pagesKept.join('/'),
           taken: built.tapes.pagesTaken.join('/'),
           again: built.tapes.builtAgain,
+          // The pages that crossed from the worker (#1642); absent when the
+          // whole document did.
+          ...(built.pagesSent !== undefined ? { sent: built.pagesSent } : {}),
         } : {}),
       });
       if (doc) {
