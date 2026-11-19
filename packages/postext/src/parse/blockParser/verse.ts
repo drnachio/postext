@@ -11,6 +11,10 @@ import { withChipSources, joinedLines, CONTAINER_CLOSE_RE, HEMISTICH_WIKI_RE } f
 import { buildBlockMapping } from '../sourceMapping.js';
 import { parseDirectiveAttrs } from '../attrs.js';
 import type { ParseState } from './parseState.js';
+import { keptInlineRun, type KeptReading } from './keptRuns.js';
+
+/** A run of inline Markdown read: its plain text, spans and source map. */
+type InlineReading = { text: string; spans: ContentBlock['spans']; sourceMap: number[] };
 
 /** What createVerseParsing takes from the pass. */
 export interface VerseParsingDeps {
@@ -38,10 +42,20 @@ export function createVerseParsing(deps: VerseParsingDeps) {
    *  line that ends in a backslash). Maths issues are reported once, by
    *  the reading with `report`. With `icons` the inline symbols
    *  (`:icon[…]{…}`, #1058) are read: a figure label's text. */
-  const inlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks = false, report = true, icons = false): { text: string; spans: ContentBlock['spans']; sourceMap: number[] } => {
+  const inlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks = false, report = true, icons = false): InlineReading => {
+    // Kept by its text and how it is read (#1647): a keystroke reads one
+    // paragraph anew, the others come back moved in the source.
+    const exercise = inExerciseText();
+    const how = `${hardBreaks ? 1 : 0}${report ? 1 : 0}${icons ? 1 : 0}${exercise ? 1 : 0}${inline?.plusUnderline ? 1 : 0}`;
+    const key = `${how}\u0000${raw}\u0000${markdown.slice(srcStart, srcEnd)}`;
+    return keptInlineRun(key, srcStart, issues, () => readInlineRun(raw, srcStart, srcEnd, hardBreaks, report, icons, exercise));
+  };
+
+  const readInlineRun = (raw: string, srcStart: number, srcEnd: number, hardBreaks: boolean, report: boolean, icons: boolean, exercise: boolean): KeptReading<InlineReading> => {
+    const reported: ParseIssue[] = [];
     // The answers of an exercise (`[[…]]`, #1225), read first so their
     // words are shielded from the later passes.
-    const gapExtract = inExerciseText() ? extractExerciseGaps(protectCodeSpans(raw), srcStart) : undefined;
+    const gapExtract = exercise ? extractExerciseGaps(protectCodeSpans(raw), srcStart) : undefined;
     if (gapExtract) raw = gapExtract.cleaned;
     const chipExtract = extractInlineChips(protectCodeSpans(raw), srcStart);
     const fnExtract = extractInlineFootnotes(chipExtract.cleaned, srcStart);
@@ -49,7 +63,7 @@ export function createVerseParsing(deps: VerseParsingDeps) {
     const citeExtract = extractInlineCitations(refExtract.cleaned, srcStart);
     const swExtract = extractInlineSwatches(citeExtract.cleaned, srcStart, { icons });
     const mathExtract = extractInlineMath(swExtract.cleaned, null, srcStart, srcEnd);
-    if (report) issues.push(...mathExtract.issues);
+    if (report) reported.push(...mathExtract.issues);
     // Tabs (#622): `:tab` and tab characters, outside code and maths.
     const tabExtract = extractInlineTabs(mathExtract.cleaned);
     const formatted = hardBreaks
@@ -60,7 +74,8 @@ export function createVerseParsing(deps: VerseParsingDeps) {
       refExtract.refs,
     ), fnExtract.markers), chipExtract.chips, inline);
     const spans = gapExtract && gapExtract.gaps.length > 0 ? injectGapSpans(rawSpans, gapExtract.gaps, inline) : rawSpans;
-    return settleGapPlaceholders(withChipSources(markdown, joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, spans))));
+    const result = settleGapPlaceholders(withChipSources(markdown, joinedLines(markdown, buildBlockMapping(markdown, srcStart, srcEnd, spans))));
+    return { result, issues: reported };
   };
 
   /**
