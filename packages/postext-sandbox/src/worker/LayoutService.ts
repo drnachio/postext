@@ -375,7 +375,6 @@ export function createLayoutService(options?: {
     const span = perfSpan('worker.build', {
       client: request.priority,
       markdownKb: Math.round(request.content.markdown.length / 1024),
-      contentKb: perfSizeKb(request.content),
     });
     let stats: BuildStats | null = null;
     try {
@@ -416,9 +415,12 @@ export function createLayoutService(options?: {
         doc = await build();
       }
       const built = stats as BuildStats | null;
-      span.end({
+      span.end(() => ({
         warm: !!request.warmOnly,
         pages: doc?.pages.length,
+        // Read once the page is idle (#1644): the sizes cost as much as a
+        // short build.
+        contentKb: perfSizeKb(request.content),
         docKb: doc ? perfSizeKb(doc) : 0,
         cached: built?.cached ?? false,
         workerMs: built?.totalMs,
@@ -436,7 +438,7 @@ export function createLayoutService(options?: {
           // whole document did.
           ...(built.pagesSent !== undefined ? { sent: built.pagesSent } : {}),
         } : {}),
-      });
+      }));
       if (doc) {
         // Laid out without a face it asked for: said of the document, so
         // nobody takes its pages for the chapter's.

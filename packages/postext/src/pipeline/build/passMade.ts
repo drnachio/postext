@@ -79,6 +79,18 @@ export function ridesWith(page: object, value: object): void {
 function movePlacesUnder(places: Record<string | number, unknown>, at: number, delta: number, seen: Set<object>): void {
   if (seen.has(places)) return;
   seen.add(places);
+  // A source map is a list of hundreds of numbers, a whole chapter's tens
+  // of thousands: walked by index (#1644), not by key, which names each
+  // index as a string.
+  if (Array.isArray(places)) {
+    for (let i = 0; i < places.length; i++) {
+      const n: unknown = places[i];
+      if (typeof n === 'number') {
+        if (n >= at) places[i] = n + delta;
+      } else if (typeof n === 'object' && n !== null) movePlacesUnder(n as Record<string, unknown>, at, delta, seen);
+    }
+    return;
+  }
   for (const k in places) {
     const n = places[k];
     if (typeof n === 'number') places[k] = moved(n, at, delta);
