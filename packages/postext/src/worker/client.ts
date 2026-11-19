@@ -16,6 +16,7 @@ import { cdnWorkerEntryUrl } from './entryUrl.js';
 import { fontSampleText, prepareFonts, type FontReport, type PrepareFontsOptions } from '../fonts/prepare.js';
 import { registeredFontFiles } from '../svg/fontRegistry.js';
 import { featureFamilyParts, fontFeatureSettings } from '../fonts/figureStyle.js';
+import { applyDocumentPatch } from './docPatch.js';
 
 export type { BuildStats, FontPayload } from './protocol.js';
 export type { BuildPassInfo } from '../pipeline/build.js';
@@ -83,6 +84,8 @@ interface Pending {
   onAbort?: () => void;
   onProgress?: (progress: BuildProgress) => void;
   onStats?: (stats: BuildStats) => void;
+  /** The name of the document being edited the build was sent under. */
+  tapesKey?: string;
 }
 
 /** Options of `createLayoutWorker`. */
@@ -154,6 +157,10 @@ export function createLayoutWorker(
   let sentResourcesKey: string | null = null;
   /** Families already reported as missing in the worker (warned once). */
   const reportedMissingFonts = new Set<string>();
+  /** The document of the chapter being edited (`tapesKey`) as last given
+   *  to the host, and the number the worker sent it under (#1642): the
+   *  next one may come as a patch against it. */
+  let heldDoc: { key: string; seq: number; doc: VDTDocument } | null = null;
 
   worker.addEventListener('message', (event: MessageEvent<ResponseMessage>) => {
     releaseObjectUrl();
@@ -175,7 +182,19 @@ export function createLayoutWorker(
           );
         }
         entry.onStats?.(msg.stats);
-        entry.resolve(msg.doc ?? undefined);
+        {
+          let doc = msg.doc;
+          // A document that comes as it differs from the one held: put
+          // together here. The worker patches only against the number it
+          // was told, so the held one is that document.
+          if (msg.patch && heldDoc && heldDoc.seq === msg.patch.base) doc = applyDocumentPatch(msg.patch, heldDoc.doc);
+          else if (msg.patch) {
+            entry.reject(new Error('The layout worker sent a patch against a document the client does not hold'));
+            return;
+          }
+          if (entry.tapesKey !== undefined && doc && msg.docSeq !== undefined) heldDoc = { key: entry.tapesKey, seq: msg.docSeq, doc };
+          entry.resolve(doc ?? undefined);
+        }
         return;
       case 'fontsRegistered':
         pending.delete(msg.id);
@@ -292,6 +311,7 @@ export function createLayoutWorker(
           onAbort,
           onProgress: opts?.onProgress,
           onStats: opts?.onStats,
+          ...(opts?.tapesKey !== undefined ? { tapesKey: opts.tapesKey } : {}),
         });
         let payload = content;
         const resourcesKey = opts?.resourcesKey;
@@ -299,7 +319,7 @@ export function createLayoutWorker(
           if (sentResourcesKey === resourcesKey) payload = { ...content, resources: undefined };
           else sentResourcesKey = resourcesKey;
         }
-        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc, ...(opts?.tapesKey !== undefined ? { tapesKey: opts.tapesKey } : {}) });
+        send({ kind: 'build', id, content: payload, config, resourcesKey, cacheKey: opts?.cacheKey, wantDoc: opts?.wantDoc, ...(opts?.tapesKey !== undefined ? { tapesKey: opts.tapesKey, ...(heldDoc?.key === opts.tapesKey ? { haveDoc: heldDoc.seq } : {}) } : {}) });
       });
     },
     dispose() {

@@ -1,6 +1,7 @@
 import type { PostextContent, PostextConfig } from '../types.js';
 import type { VDTDocument } from '../vdt.js';
 import type { BuildPassInfo, BuildProgress, LayoutTapeStats } from '../pipeline/build.js';
+import type { DocumentPatch } from './docPatch.js';
 
 /** Where a build's time went (dev tooling; always attached, cheap). */
 export interface BuildStats {
@@ -18,6 +19,8 @@ export interface BuildStats {
    *  the block each pass started from, where it rejoined the old layout,
    *  the pages kept and taken. */
   tapes?: LayoutTapeStats;
+  /** When the document came as a patch (#1642): the pages that crossed. */
+  pagesSent?: number;
 }
 
 /** A font face as it crosses to the layout worker. */
@@ -75,6 +78,10 @@ export type RequestMessage =
        *  build under another name starts that document anew. A document
        *  built this way is not kept in the worker's document cache. */
       tapesKey?: string;
+      /** With `tapesKey`: the number (`docSeq`) of the document of that
+       *  name the client holds. When it is the one the worker last sent,
+       *  the answer may come as a patch against it (#1642). */
+      haveDoc?: number;
     }
   | {
       kind: 'cancel';
@@ -89,9 +96,16 @@ export type ResponseMessage =
   | {
       kind: 'built';
       id: number;
-      /** Null when the build asked for no document (`wantDoc: false`). */
+      /** Null when the build asked for no document (`wantDoc: false`), and
+       *  when the document comes as `patch`. */
       doc: VDTDocument | null;
       stats: BuildStats;
+      /** The document as it differs from the one the client said it holds
+       *  (`haveDoc`): see `docPatch.ts`. */
+      patch?: DocumentPatch;
+      /** With `tapesKey`: the number this document goes under, for the
+       *  `haveDoc` of the next build. */
+      docSeq?: number;
     }
   | {
       kind: 'progress';
