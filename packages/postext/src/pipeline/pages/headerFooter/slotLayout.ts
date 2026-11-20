@@ -61,8 +61,9 @@ export interface SlotLayoutExtras {
    *  ranges, by element id (#1189): a module's elements read its
    *  `:::module` fence. */
   elementAttrs?: ReadonlyMap<string, { attrs: Record<string, string>; attrSources: Record<string, { start: number; end: number }> }>;
-  /** Text elements painted over the frames of a composed page (#1189):
-   *  their blocks are marked `over`. */
+  /** Elements painted over the frames of a composed page (#1189): texts,
+   *  and boxes, pictures and paths that say `over`; their blocks are
+   *  marked `over`. */
   overTexts?: ReadonlySet<string>;
 }
 
@@ -283,7 +284,7 @@ export function layoutSlotToVdt(
       }
       if (src.attr !== undefined) block.attr = src.attr;
     }
-    if (block.kind === 'text' && extras?.overTexts?.has(prim.id)) block.over = true;
+    if ((block.kind === 'text' || block.kind === 'box' || block.kind === 'image' || block.kind === 'path') && extras?.overTexts?.has(prim.id)) block.over = true;
     return block;
   });
   return {

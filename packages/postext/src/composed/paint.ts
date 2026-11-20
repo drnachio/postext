@@ -23,9 +23,10 @@ export type ComposedPaintItem =
   | { kind: 'over' };
 
 /** Whether a decoration block is painted over the frames: a connector's
- *  path (#1076) or a text (#1189) marked `over`. */
+ *  path (#1076), a text (#1189), or a box, picture or path element marked
+ *  `over`. */
 export function paintsOverFrames(block: VDTDesignBlock): boolean {
-  return (block.kind === 'path' || block.kind === 'text') && block.over === true;
+  return (block.kind === 'path' || block.kind === 'text' || block.kind === 'box' || block.kind === 'image') && block.over === true;
 }
 
 /** The part of a composed page's decoration painted at layer 0, under
