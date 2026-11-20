@@ -16,7 +16,8 @@ export interface CropMarkSegment {
  * starts `markOffset` outside the trim, or at the bleed edge when the bleed
  * is wider, so it never lies over art that runs into the bleed. The sheet
  * grows by `bleed + markOffset + markLength` on every side, so a mark never
- * runs past it. Empty when cut lines are off. The canvas and PDF backends
+ * runs past it. A cover sheet adds a mark above and below each of its
+ * `foldMarks`. Empty when cut lines are off. The canvas and PDF backends
  * draw these.
  *
  * `trimOffset` is how far the trim box sits inside the sheet: pass the
@@ -48,6 +49,11 @@ export function cropMarkSegments(
     const v = y === top ? -1 : 1;
     segments.push({ x1: x + h * start, y1: y, x2: x + h * end, y2: y });
     segments.push({ x1: x, y1: y + v * start, x2: x, y2: y + v * end });
+  }
+  for (const fold of cutLines.foldMarks ?? []) {
+    const x = left + dimensionToPx(fold, dpi);
+    segments.push({ x1: x, y1: top - start, x2: x, y2: top - end });
+    segments.push({ x1: x, y1: bottom + start, x2: x, y2: bottom + end });
   }
   return segments;
 }

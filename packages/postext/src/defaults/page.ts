@@ -88,6 +88,7 @@ function resolveCutLines(raw?: CutLinesConfig | boolean): ResolvedPageConfig['cu
     markOffset: raw.markOffset ?? DEFAULT_CUT_LINES.markOffset,
     markWidth: raw.markWidth ?? DEFAULT_CUT_LINES.markWidth,
     color: raw.color ?? DEFAULT_CUT_LINES.color,
+    ...(raw.foldMarks?.length ? { foldMarks: raw.foldMarks } : {}),
   };
 }
 
@@ -190,7 +191,8 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
     const markOffsetOverride = page.cutLines.markOffset !== undefined && !dimensionsEqual(page.cutLines.markOffset, DEFAULT_CUT_LINES.markOffset);
     const markWidthOverride = page.cutLines.markWidth !== undefined && !dimensionsEqual(page.cutLines.markWidth, DEFAULT_CUT_LINES.markWidth);
     const colorOverride = page.cutLines.color !== undefined && !colorsEqual(page.cutLines.color, DEFAULT_CUT_LINES.color);
-    if (enabledOverride || bleedOverride || markLengthOverride || markOffsetOverride || markWidthOverride || colorOverride) {
+    const foldMarksOverride = !!page.cutLines.foldMarks?.length;
+    if (enabledOverride || bleedOverride || markLengthOverride || markOffsetOverride || markWidthOverride || colorOverride || foldMarksOverride) {
       result.cutLines = {
         enabled: page.cutLines.enabled ?? DEFAULT_CUT_LINES.enabled,
         ...(bleedOverride ? { bleed: page.cutLines.bleed } : {}),
@@ -198,6 +200,7 @@ export function stripPageDefaults(page?: PageConfig): PageConfig | undefined {
         ...(markOffsetOverride ? { markOffset: page.cutLines.markOffset } : {}),
         ...(markWidthOverride ? { markWidth: page.cutLines.markWidth } : {}),
         ...(colorOverride ? { color: page.cutLines.color } : {}),
+        ...(foldMarksOverride ? { foldMarks: page.cutLines.foldMarks } : {}),
       };
       hasOverride = true;
     }
