@@ -132,7 +132,10 @@ async function timed(book: Book, opts: Options, cache: MeasurementCache, fonts: 
 }
 
 const results: { book: string; chapters: number; initial: { incrementalMs: number; fullMs: number; same: boolean }; edits: Row[]; cold: { ms: number; same: boolean }; rssMB: number }[] = [];
-for (const path of books) {
+// One book in a function of its own (#1651): under Bun 1.2 an arrow
+// function made in a top-level loop of a module could read the loop's
+// bindings of the book before.
+async function forBook(path: string): Promise<void> {
   const opts = new Options({});
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter: new Reporter('quiet', true) };
   const { book: opened, fonts } = await openBook(ctx);
@@ -181,5 +184,6 @@ for (const path of books) {
   if (!json) process.stdout.write(`  cold full layout of the end state: ${coldCheck.ms} ms, ${coldCheck.same ? 'same' : 'DIFFERENT'}; rss ${rssMB} MB\n`);
   results.push({ book: book.name, chapters: book.chapters.length, initial, edits: rows, cold: coldCheck, rssMB });
 }
+for (const path of books) await forBook(path);
 if (json) process.stdout.write(`${JSON.stringify(results, null, 2)}\n`);
 if (results.some((r) => !r.initial.same || !r.cold.same || r.edits.some((e) => !e.same))) process.exitCode = 1;
