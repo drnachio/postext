@@ -176,12 +176,15 @@ export function createPageDecoration(deps: PageDecorationDeps) {
       // A module's elements (#1189): their `{attr.x}` and `when` read the
       // module's fence first, and its texts are painted over the frames
       // unless they say `over: false` (a page template's texts only when
-      // they say `over: true`).
+      // they say `over: true`). A box, picture or path is painted over
+      // them when it says `over: true`.
       const { elementAttrs, inModule } = moduleDecoration(template, slot.elements, pair ? [pair.left, pair.right] : [pageTurn.page]);
       const overTexts = new Set<string>();
       template.decoration.elements.forEach((el, i) => {
-        if (el.kind !== 'text') return;
-        const over = typeof el.over === 'boolean' ? el.over : inModule.has(i);
+        let over: boolean;
+        if (el.kind === 'text') over = typeof el.over === 'boolean' ? el.over : inModule.has(i);
+        else if (el.kind === 'box' || el.kind === 'image' || el.kind === 'path') over = el.over === true;
+        else return;
         const id = slot.elements[i]?.id;
         if (over && id !== undefined) overTexts.add(id);
       });
