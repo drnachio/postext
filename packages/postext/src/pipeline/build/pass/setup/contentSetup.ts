@@ -184,7 +184,6 @@ export function createContentSetup(deps: ContentSetupDeps) {
   // in a frame is a group of its box.
   const templateSource = { pageTemplates: setup.resolved.pageTemplates, calloutStyles: setup.resolved.calloutStyles };
   const composedWrap = wrapComposedPages(paragraphEmbedded, templateSource);
-  const hasComposedPage = paragraphEmbedded.some((b) => b.type === 'containerStart' && b.containerName === 'composedPage');
   // A comic page's text panels (#885): each panel's Markdown in a story
   // box of the same kind, set in the panel's frame (below).
   const comicText = wrapComicTextPanels(composedWrap.blocks, comicTextPanelsSupported(setup.resolved));
@@ -273,9 +272,9 @@ export function createContentSetup(deps: ContentSetupDeps) {
     // The boxes exercises are set in (#1227).
     ...(exerciseExpansion?.wrapped ? exerciseExpansion.boxes : []),
     // The frameless box of a composed page's story (#855); also on a
-    // composed page with no story at all (every frame empty), whose frames
-    // are still laid out in it.
-    ...(composedWrap.wrapped || comicText.wrapped || hasComposedPage ? [frameBoxStyle(Math.max(setup.resolved.bodyText.avoidOrphans ? setup.resolved.bodyText.orphanMinLines : 1, setup.resolved.bodyText.avoidWidows ? setup.resolved.bodyText.widowMinLines : 1))] : []),
+    // composed page none of whose content reached a frame (every frame
+    // empty, #1653): its frames are still laid out in it.
+    ...(composedWrap.pages || comicText.wrapped ? [frameBoxStyle(Math.max(setup.resolved.bodyText.avoidOrphans ? setup.resolved.bodyText.orphanMinLines : 1, setup.resolved.bodyText.avoidWidows ? setup.resolved.bodyText.widowMinLines : 1))] : []),
     // The boxes of main-flow groups: sub-columns a body line apart in the
     // text column, a gutter apart across the page.
     ...(flowGroups.wrapped

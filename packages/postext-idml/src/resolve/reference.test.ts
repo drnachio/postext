@@ -392,4 +392,58 @@ describe('a mixed ink with no process equivalent', () => {
     const hex = `#${cmykToRgb(100, 16, 0, 27 + 15).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
     expect(resolveColour(doc, 'MixedInk/B')).toMatchObject({ hex, kind: 'mixedInk' });
   });
+  // What #1653 added: the other ways such a swatch comes written.
+  const SPOT = '<Color Self="Color/PANTONE 307 C" Name="PANTONE 307 C" Model="Spot" Space="CMYK" ColorValue="100 16 0 27"/>';
+  const mixedInk = (attrs: string): string => `<MixedInk Self="MixedInk/B" Name="B" Model="Mixedinkmodel" Space="MixedInk" ${attrs}/>`;
+  const read = (swatches: string) => readIdml(mini({ designmap: '<idPkg:Graphic src="Resources/Graphic.xml"/>', files: { 'Resources/Graphic.xml': `<idPkg:Graphic>${swatches}</idPkg:Graphic>` } }));
+  const BLACK_AND_SPOT = 'InkList="Ink/$ID/Process%20Black Ink/PANTONE%20307%20C"';
+
+  it('keeps the CMYK it was made from, and names the spot inks in it', () => {
+    const c = resolveColour(read(SPOT + mixedInk(`${BLACK_AND_SPOT} InkPercentages="15 50"`)), 'MixedInk/B')!;
+    expect(c.cmyk).toEqual([50, 8, 0, 28.5]);
+    expect(c.mixedSpots).toEqual(['PANTONE 307 C']);
+    // A swatch InDesign wrote an equivalent for is not one of these.
+    const own = resolveColour(read('<MixedInk Self="MixedInk/B" Name="B" Space="CMYK" ColorValue="10 20 30 40" InkList="Ink/$ID/Process%20Black" InkPercentages="40"/>'), 'MixedInk/B')!;
+    expect(own.cmyk).toEqual([10, 20, 30, 40]);
+    expect(own.mixedSpots).toBeUndefined();
+  });
+
+  it('reads the shares of an older file from InkValues', () => {
+    const doc = read(SPOT + mixedInk(`${BLACK_AND_SPOT} InkValues="15 100"`));
+    expect(doc.swatches.get('MixedInk/B')).toMatchObject({ values: [15, 100] });
+    expect(resolveColour(doc, 'MixedInk/B')?.cmyk).toEqual([100, 16, 0, 42]);
+  });
+
+  it('holds each channel at 100 when the shares add past it, and takes a tint over the mix', () => {
+    const doc = read(SPOT + mixedInk(`${BLACK_AND_SPOT} InkPercentages="90 100"`));
+    expect(resolveColour(doc, 'MixedInk/B')).toMatchObject({ cmyk: [100, 16, 0, 100], hex: '#000000' });
+    const half = resolveColour(read(SPOT + mixedInk(`${BLACK_AND_SPOT} InkPercentages="0 100"`)), 'MixedInk/B', 50)!;
+    const full = cmykToRgb(100, 16, 0, 27);
+    expect(half.tint).toBe(0.5);
+    expect(half.hex).toBe(`#${full.map((v) => Math.round(255 - (255 - v) / 2).toString(16).padStart(2, '0')).join('')}`);
+  });
+
+  it('finds a spot ink by its name when its reference is not its name, and uses its CMYK alternate', () => {
+    const lab = '<Color Self="Color/u12f" Name="PANTONE 307 C" Model="Spot" Space="LAB" ColorValue="40 -20 -40" AlternateSpace="CMYK" AlternateColorValue="100 16 0 27"/>';
+    expect(resolveColour(read(lab + mixedInk(`${BLACK_AND_SPOT} InkPercentages="15 100"`)), 'MixedInk/B')?.cmyk).toEqual([100, 16, 0, 42]);
+  });
+
+  it('makes a spot ink with no CMYK of its own from its screen colour', () => {
+    const rgb = '<Color Self="Color/Red" Name="Red" Model="Spot" Space="RGB" ColorValue="255 0 0"/>';
+    const c = resolveColour(read(rgb + mixedInk('InkList="Ink/Red" InkPercentages="100"')), 'MixedInk/B')!;
+    expect(c.cmyk).toEqual([0, 100, 100, 0]);
+    expect(c.hex).toBe('#ff0000');
+  });
+
+  it('resolves to nothing when an ink is not in the document or the shares do not match the inks', () => {
+    expect(resolveColour(read(mixedInk(`${BLACK_AND_SPOT} InkPercentages="15 100"`)), 'MixedInk/B')).toBeUndefined();
+    expect(resolveColour(read(SPOT + mixedInk(`${BLACK_AND_SPOT} InkPercentages="15"`)), 'MixedInk/B')).toBeUndefined();
+    expect(resolveColour(read(SPOT + mixedInk(BLACK_AND_SPOT)), 'MixedInk/B')).toBeUndefined();
+  });
+
+  it('does not fail on an ink name with a stray % sign', () => {
+    const grey = '<Color Self="Color/50% Grey" Name="50% Grey" Model="Spot" Space="CMYK" ColorValue="0 0 0 50"/>';
+    expect(resolveColour(read(grey + mixedInk('InkList="Ink/50% Grey" InkPercentages="100"')), 'MixedInk/B')?.cmyk).toEqual([0, 0, 0, 50]);
+    expect(resolveColour(read(mixedInk('InkList="Ink/100%" InkPercentages="100"')), 'MixedInk/B')).toBeUndefined();
+  });
 });

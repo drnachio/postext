@@ -3,7 +3,7 @@
 
 import type { ColorPaletteEntry, ColorValue, Dimension } from 'postext';
 import type { IdmlDocument } from '../model/document.js';
-import { isNoColour, resolveColour, type ResolvedColour } from '../resolve/colour.js';
+import { isNoColour, resolveColour, rgbToCmyk, type ResolvedColour } from '../resolve/colour.js';
 import { idOf, Ids } from './escape.js';
 import type { Reporter } from './report.js';
 
@@ -58,7 +58,7 @@ export class Palette {
     // A spot ink prints on its own plate, at the tint it is used at: its
     // swatch's values are the ink's alternate at full strength.
     if (c.spot) {
-      const cmyk = c.cmyk ?? rgbToCmyk(c.hex, c.tint);
+      const cmyk = c.cmyk ?? untintedCmyk(c.hex, c.tint);
       return { hex: c.hex, model: 'spot', spot: { name: c.spot, cmyk: { c: round(cmyk[0], 2), m: round(cmyk[1], 2), y: round(cmyk[2], 2), k: round(cmyk[3], 2) }, ...(c.tint < 1 ? { tint: round(c.tint * 100, 2) } : {}) } };
     }
     const value: ColorValue = { hex: c.hex, model: c.cmyk ? 'cmyk' : 'hex' };
@@ -81,7 +81,10 @@ export class Palette {
       return { hex: '#000000', model: 'hex' };
     }
     if (c.kind === 'gradient') this.rep.add('gradient', 'warning', 'A gradient is set as its first colour: Postext has no gradient fill', `${swatch.name}${where ? ` (${where})` : ''}`);
-    if (c.kind === 'mixedInk') this.rep.add('mixedInk', 'warning', 'A mixed ink is set as its process equivalent', swatch.name);
+    if (c.kind === 'mixedInk') {
+      if (c.mixedSpots) this.rep.add('mixedInkFromInks', 'warning', 'A mixed ink with no process equivalent is made from its inks, added up: an approximation, and its spot inks print in process', `${swatch.name}${c.mixedSpots.length ? ` (${c.mixedSpots.join(', ')})` : ''}`);
+      else this.rep.add('mixedInk', 'warning', 'A mixed ink is set as its process equivalent', swatch.name);
+    }
     const value = this.valueOf(c);
     const own = tint === undefined || tint < 0 || tint >= 100;
     if (!own) return value;
@@ -112,16 +115,11 @@ export class Palette {
 
 /** A screen colour's naive CMYK, undone from its tint: the alternate of a
  *  spot ink whose swatch has no CMYK values (one defined in Lab or RGB). */
-function rgbToCmyk(hex: string, tint: number): [number, number, number, number] {
+function untintedCmyk(hex: string, tint: number): [number, number, number, number] {
   const n = parseInt(hex.slice(1, 7), 16);
   // Back to the ink at full strength: the tint lightened it over white.
-  const full = (v: number): number => 1 - (1 - v / 255) / Math.max(tint, 1e-6);
-  const r = Math.max(0, full((n >> 16) & 255));
-  const g = Math.max(0, full((n >> 8) & 255));
-  const b = Math.max(0, full(n & 255));
-  const k = 1 - Math.max(r, g, b);
-  if (k >= 1) return [0, 0, 0, 100];
-  return [((1 - r - k) / (1 - k)) * 100, ((1 - g - k) / (1 - k)) * 100, ((1 - b - k) / (1 - k)) * 100, k * 100];
+  const full = (v: number): number => 255 * (1 - (1 - v / 255) / Math.max(tint, 1e-6));
+  return rgbToCmyk(full((n >> 16) & 255), full((n >> 8) & 255), full(n & 255));
 }
 
 export const BLACK: ColorValue = { hex: '#000000', model: 'hex' };

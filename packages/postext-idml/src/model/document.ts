@@ -63,9 +63,13 @@ export interface IdmlMixedInk {
   kind: 'mixedInk';
   self: string;
   name: string;
+  /** Its inks, as references (`Ink/$ID/Process%20Black`). */
   inks: string[];
+  /** The share of each ink, 0–100 (`InkPercentages`; `InkValues` in
+   *  older files). */
   values: number[];
-  /** The process equivalent InDesign wrote for it. */
+  /** The process equivalent InDesign wrote for it; with
+   *  `Space="MixedInk"` there is none, and `value` is empty. */
   space: ColourSpace;
   value: number[];
 }

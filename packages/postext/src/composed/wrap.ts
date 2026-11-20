@@ -110,23 +110,27 @@ function variantFrameNames(config: PageTemplateSource, id: string, base: Resolve
  * regrouped into its stories (see the module comment). A page whose
  * template is unknown keeps its blocks as they are: its content is set in
  * the flow (`templateUnknown`). The same array comes back when nothing
- * changes.
+ * changes. `pages` says the content has a page of a known template,
+ * whether or not any of its content reached a frame: its frames are laid
+ * either way, in the frameless box style ({@link frameBoxStyle}).
  */
 export function wrapComposedPages(
   blocks: readonly ContentBlock[],
   config: PageTemplateSource | undefined,
-): { blocks: ContentBlock[]; wrapped: boolean } {
+): { blocks: ContentBlock[]; wrapped: boolean; pages: boolean } {
   const pages = composedPages(blocks);
-  if (pages.length === 0 || !config?.pageTemplates) return { blocks: blocks as ContentBlock[], wrapped: false };
+  if (pages.length === 0 || !config?.pageTemplates) return { blocks: blocks as ContentBlock[], wrapped: false, pages: false };
   const out: ContentBlock[] = [];
   let at = 0;
   let wrapped = 0;
+  let known = false;
   for (const page of pages) {
     // With the page's modules (#1062) laid in it; a module is never a page.
     const template = resolvePageTemplate(config, page.template, { modules: pageModuleUses(page) });
     if (!template || isModuleTemplate(template)) continue;
     const start = blocks.findIndex((b, i) => i >= at && b.type === 'containerStart' && b.containerName === 'composedPage' && b.composedPage?.fenceIndex === page.fenceIndex);
     if (start < 0) continue;
+    known = true;
     const end = endOf(blocks, start);
     for (let i = at; i <= start; i++) out.push(blocks[i]!);
     const regrouped = regroupPage(blocks, page, template, variantFrameNames(config, page.template, template), () => FRAME_CONTAINER_BASE + wrapped++);
@@ -134,9 +138,9 @@ export function wrapComposedPages(
     out.push(blocks[end]!);
     at = end + 1;
   }
-  if (wrapped === 0 && at === 0) return { blocks: blocks as ContentBlock[], wrapped: false };
+  if (wrapped === 0 && at === 0) return { blocks: blocks as ContentBlock[], wrapped: false, pages: known };
   for (let i = at; i < blocks.length; i++) out.push(blocks[i]!);
-  return { blocks: out, wrapped: wrapped > 0 };
+  return { blocks: out, wrapped: wrapped > 0, pages: known };
 }
 
 /** Index of the marker closing the container opened at `start`. */
