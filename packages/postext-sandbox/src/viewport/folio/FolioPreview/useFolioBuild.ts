@@ -92,6 +92,7 @@ export function useFolioBuild(deps: UseFolioBuildDeps) {
           held: heldDocsRef.current,
           build: layoutWorker.build,
           cancelled: () => cancelled,
+          incremental: incrementalLayoutEnabled(),
         });
         if (!result) return;
         heldDocsRef.current = result.held;

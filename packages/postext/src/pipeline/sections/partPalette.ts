@@ -22,6 +22,7 @@ import type { ColorPaletteEntry, ColorValue } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
 import { type FlowColorValues, withHash, type Remap } from './partPalette/colorKinds.js';
 import { type PageRemaps, recolorBlock, type KindGroups } from './partPalette/recolor.js';
+import { standsAsMade } from '../build/passMade.js';
 import { isTinted, paletteTintHex } from '../../defaults/shared.js';
 
 export type { TextColorRole, TocColorRole, FrameColorRole, FlowColorKind, FlowColorValues } from './partPalette/colorKinds.js';
@@ -67,6 +68,8 @@ export function applyPartPalettesToFlow(
     return remaps;
   };
   for (const page of doc.pages) {
+    // A page the build before made carries its colours (#1650).
+    if (standsAsMade(page)) continue;
     const overrides = palettes[page.index];
     if (!overrides || Object.keys(overrides).length === 0) continue;
     const r = remapsOf(overrides);

@@ -42,7 +42,7 @@ import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js'
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
-import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes } from './passReuse.js';
+import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes, noteTapedPages, tapesRest } from './passReuse.js';
 import { afterMarks, beforeMarks, settleMoves } from './passMade.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
@@ -123,6 +123,14 @@ export function* buildDocumentGen(
   options?: BuildDocumentOptions,
 ): Generator<void, VDTDocument, void> {
   if (!options?.tapes) return yield* buildDocumentSteps(content, config, cache, options);
+  if (tapesRest(options.tapes)) {
+    // A short document is laid out without its tapes (#1650).
+    const { tapes, ...plain } = options;
+    beginLayoutTapes(tapes);
+    const doc = yield* buildDocumentSteps(content, config, cache, plain);
+    noteTapedPages(tapes, doc.pages.length);
+    return doc;
+  }
   beginLayoutTapes(options.tapes);
   let ended = false;
   try {
@@ -137,6 +145,7 @@ export function* buildDocumentGen(
       doc = yield* buildDocumentSteps(content, config, cache, options);
     }
     ended = true;
+    noteTapedPages(options.tapes, doc.pages.length);
     return doc;
   } finally {
     if (!ended) abandonLayoutTapes(options.tapes);

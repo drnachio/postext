@@ -38,6 +38,11 @@ interface Checkpoint {
   /** How many reads of the hints it had made (`PassTape.hintReads`). */
   hintReads: number;
   image: TapeImage;
+  /** Taken from the pass before past the block where this pass rejoined
+   *  it (#1650). Its closed pages are that pass's, their places in the
+   *  source not moved by the edits since: a pass may rejoin at it (closed
+   *  objects are paired, not read), not start from it. */
+  carried?: true;
 }
 
 /** What a pass leaves for the same pass of the next build. */
@@ -118,7 +123,19 @@ export interface LayoutTapes {
   readonly stats: LayoutTapeStats;
 }
 
+/** How a host's tapes behave (`createLayoutTapes`). */
+export interface LayoutTapesOptions {
+  /** A document laid out on fewer pages than this is laid out without the
+   *  tapes, until it has as many again (#1650): on a short chapter what a
+   *  pass records costs more than what the next build saves. 0 (the
+   *  default): the tapes always record. */
+  restBelowPages?: number;
+}
+
 class Tapes implements LayoutTapes {
+  constructor(readonly restBelowPages = 0) {}
+  /** The last build was of fewer pages than {@link restBelowPages}. */
+  resting = false;
   previous: (PassRecord | undefined)[] = [];
   current: (PassRecord | undefined)[] = [];
   private held: (PassRecord | undefined)[] | undefined;
@@ -149,8 +166,25 @@ class Tapes implements LayoutTapes {
 }
 
 /** Tapes for one document. */
-export function createLayoutTapes(): LayoutTapes {
-  return new Tapes();
+export function createLayoutTapes(options?: LayoutTapesOptions): LayoutTapes {
+  return new Tapes(options?.restBelowPages);
+}
+
+/** Whether the next build with `tapes` is to be laid out without them. */
+export function tapesRest(tapes: LayoutTapes): boolean {
+  return (tapes as Tapes).resting;
+}
+
+/** A build with `tapes` (resting or not) laid its document out on
+ *  `pages` pages. Tapes that start or stop resting forget every build: the
+ *  next one that records starts from nothing. */
+export function noteTapedPages(tapes: LayoutTapes, pages: number): void {
+  const t = tapes as Tapes;
+  const resting = pages < t.restBelowPages;
+  if (resting === t.resting) return;
+  t.resting = resting;
+  t.previous = [];
+  t.current = [];
 }
 
 /** A build with `tapes` starts. */
@@ -264,7 +298,7 @@ export class PassRecording {
           names.succeed(pairing.pairs);
           for (let i = before.checkpoints.length - 1; i >= 0; i--) {
             const c = before.checkpoints[i]!;
-            if (c.image.opaque || c.readUpTo >= first || c.blockIdx > first || c.hintReads > hintsSame) continue;
+            if (c.carried || c.image.opaque || c.readUpTo >= first || c.blockIdx > first || c.hintReads > hintsSame) continue;
             this.from = c;
             this.adopted = before.checkpoints.slice(0, i + 1);
             break;
@@ -350,15 +384,22 @@ export class PassRecording {
     for (const object of closed.keys()) gone.delete(object);
     const here: Checkpoint = { blockIdx, readUpTo: this.tape.readUpTo, hintReads: this.tape.hintReads.length, image: this.tape.record() };
     const blocks = doc.blocks.length;
+    const taken = { stands: closed, gone, at: this.editAt, delta: this.editDelta };
     try {
-      this.tape.putBack(old.end!, { stands: closed, gone, at: this.editAt, delta: this.editDelta });
+      this.tape.putBack(old.end!, taken);
     } catch (error) {
       if (!(error instanceof ClosedPageWrite)) throw error;
       return false;
     }
-    // The checkpoint the next build may rejoin at, and the hints the
-    // pass before read from here on.
+    // The checkpoint the next build may rejoin at, those the pass before
+    // took after it (a pass after an edit further on may rejoin there,
+    // #1650), and the hints the pass before read from here on.
     this.record.checkpoints.push(here);
+    for (const later of old.checkpoints) {
+      if (later.blockIdx <= blockIdx || later.image.opaque) continue;
+      const image = this.tape.translate(later.image, taken);
+      if (image) this.record.checkpoints.push({ blockIdx: later.blockIdx, readUpTo: later.readUpTo, hintReads: here.hintReads + later.hintReads - c.hintReads, image, carried: true });
+    }
     this.tape.hintReads.push(...old.hintReads.slice(c.hintReads));
     this.rejoined = { pages, blocks };
     (this.tapes as Tapes).stats.rejoinedAt[this.ordinal] = blockIdx;

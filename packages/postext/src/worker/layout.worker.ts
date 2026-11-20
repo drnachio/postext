@@ -66,8 +66,13 @@ function docCachePut(key: string, doc: VDTDocument): void {
 let heldTapes: { key: string; tapes: LayoutTapes; sent?: SentDocument } | null = null;
 let docSeq = 0;
 
+/** A chapter laid out on fewer pages is laid out without tapes (#1650):
+ *  measured on the showcase books, recording costs more than it saves
+ *  below about this many pages, and the time is small either way. */
+const TAPES_REST_BELOW_PAGES = 24;
+
 function tapesOf(key: string): LayoutTapes {
-  if (heldTapes?.key !== key) heldTapes = { key, tapes: createLayoutTapes() };
+  if (heldTapes?.key !== key) heldTapes = { key, tapes: createLayoutTapes({ restBelowPages: TAPES_REST_BELOW_PAGES }) };
   return heldTapes.tapes;
 }
 

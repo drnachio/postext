@@ -9,7 +9,6 @@ import type { VDTPage, ContentWarning, VDTColumn, VDTLine, VDTBlock, ResolvedCon
 import { currentBand, bandColumns, sideColumnOf, type PlacementCursor } from '../../../blocks/placement.js';
 import { isMarkerBlock } from '../../../blocks/buildHelpers.js';
 import type { ContentBlock } from '../../../../parse/index.js';
-import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PassState, PassLate } from '../state.js';
 import { passTape } from '../../passTape.js';
 
@@ -20,7 +19,7 @@ export interface FloatQueueDeps {
   bodyOffset: number;
   contentBlocks: ContentBlock[];
   floatsByFirstBlock: Map<number, PlannedFloat[]>;
-  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
+  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }>;
   cursor: PlacementCursor;
   state: PassState;
   late: PassLate;

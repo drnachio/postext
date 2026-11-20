@@ -441,6 +441,19 @@ export class PassTape {
     this.fill(copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage);
   }
 
+  /** A checkpoint of the pass before, taken past the block where this
+   *  pass rejoined it, as this pass would have taken it (#1650): what
+   *  `taken` pairs stands for the old object, and places in the source are
+   *  moved. Undefined when it holds an object of a page the edit changed. */
+  translate(image: TapeImage, taken: TapeTaken): TapeImage | undefined {
+    try {
+      return this.copier([], undefined, undefined, taken.stands, taken)({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage;
+    } catch (error) {
+      if (error instanceof ClosedPageWrite) return undefined;
+      throw error;
+    }
+  }
+
   /** Fill the tape with `fresh`, which becomes its own. */
   private fill(fresh: TapeImage): void {
     // An image of another pass must hold what this pass keeps, name for

@@ -51,6 +51,58 @@ function typed(markdown: string, share: number): string | undefined {
   return lines.join('\n');
 }
 
+/** `markdown` with the first long word of the paragraph line nearest
+ *  `share` taken out (a deletion: the text after it moves back). */
+function deleted(markdown: string, share: number): string | undefined {
+  const lines = markdown.split('\n');
+  const body = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0;
+  const candidates = lines.map((l, i) => (i >= body && PARAGRAPH_LINE.test(l) && l.length > 40 ? i : -1)).filter((i) => i >= 0);
+  if (candidates.length === 0) return undefined;
+  const n = candidates[Math.min(candidates.length - 1, Math.floor(candidates.length * share))]!;
+  const edited = lines[n]!.replace(/ \p{L}[\p{L}\p{M}]{5,}/u, '');
+  if (edited === lines[n]) return undefined;
+  lines[n] = edited;
+  return lines.join('\n');
+}
+
+/** `markdown` with the paragraph line nearest `share` cut in two at its
+ *  middle space (a paragraph more). */
+function split(markdown: string, share: number): string | undefined {
+  const lines = markdown.split('\n');
+  const body = lines[0] === '---' ? lines.indexOf('---', 1) + 1 : 0;
+  const candidates = lines.map((l, i) => (i >= body && PARAGRAPH_LINE.test(l) && l.length > 80 && (lines[i + 1] ?? '') === '' && (lines[i - 1] ?? '') === '' ? i : -1)).filter((i) => i >= 0);
+  if (candidates.length === 0) return undefined;
+  const n = candidates[Math.min(candidates.length - 1, Math.floor(candidates.length * share))]!;
+  const line = lines[n]!;
+  const cut = line.indexOf(' ', Math.floor(line.length / 2));
+  if (cut < 0) return undefined;
+  lines.splice(n, 1, line.slice(0, cut), '', line.slice(cut + 1));
+  return lines.join('\n');
+}
+
+/** The edits of a round, made one after the other: a letter typed near
+ *  the start, the middle and the end; in every other round also the last
+ *  of them undone, a word deleted and a paragraph cut in two. */
+function* editsOf(start: string, round: number): Generator<[string, string]> {
+  let markdown = start;
+  for (const share of [0.03, 0.5, 0.97]) {
+    const next = typed(markdown, share);
+    if (next === undefined) continue;
+    const before = markdown;
+    markdown = next;
+    yield [`letter at ${share}`, markdown];
+    if (round % 2 === 1 && share === 0.97) {
+      markdown = before;
+      yield [`undo at ${share}`, markdown];
+    }
+  }
+  if (round % 2 === 0) return;
+  const gone = deleted(markdown, 0.5);
+  if (gone !== undefined) yield ['word deleted at 0.5', (markdown = gone)];
+  const cut = split(markdown, 0.6);
+  if (cut !== undefined) yield ['paragraph cut at 0.6', (markdown = cut)];
+}
+
 let failed = false;
 for (const path of books) {
   const opts = new Options({});
@@ -94,9 +146,7 @@ for (const path of books) {
       // are frozen, so a step that would set one again throws (and the
       // build is done again, counted below) where it would go unseen.
       (globalThis as { __postextGuardTaken?: boolean }).__postextGuardTaken = round % 2 === 1;
-      for (const share of [0.03, 0.5, 0.97]) {
-        const next = typed(markdown, share);
-        if (next === undefined) continue;
+      for (const [share, next] of editsOf(markdown, round)) {
         markdown = next;
         edits++;
         let t0 = performance.now();
@@ -143,7 +193,7 @@ for (const path of books) {
         }
       }
     }
-    if (at === longest && plainMs > 0) timing = `; longest chapter (${whole.docs[at]!.pages.length} pp), ${rounds * 3} edits: ${Math.round(tapedMs)} ms with tapes, ${Math.round(plainMs)} ms without`;
+    if (at === longest && plainMs > 0) timing = `; longest chapter (${whole.docs[at]!.pages.length} pp), ${rounds * 3}+ edits: ${Math.round(tapedMs)} ms with tapes, ${Math.round(plainMs)} ms without`;
   }
   if (differing > 0 || patched > 0) failed = true;
   const why = [...reasons].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${n} ${r}`).join('; ');

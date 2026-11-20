@@ -225,7 +225,7 @@ function placeDocumentPass(
     chapterNumberByBlock, resources, resourceTypes, resourceNumbering, stripNumbers, resourceById,
     resourceTypeById, resourceNumberById, figureLabelsById, bodyStyle, calloutStyles,
     calloutResolved, blockquoteStyle, listLevelIndentsPx, orderedMetrics, orderedLevelIndentsPx,
-    paragraphContainers, calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans,
+    paragraphContainers, calloutPlan, partPlan, partListMetrics, sectionPlan, floatPlan, composedPlans,
     comicTextPlans, floatedIds, floatsByFirstBlock, calloutFloats, cursor, forcedBreakPages,
     uncappedBottoms, openerHeadFloats
   } = contentSetup;
@@ -262,7 +262,7 @@ function placeDocumentPass(
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state, late
   });
 
   const {
@@ -317,7 +317,7 @@ function placeDocumentPass(
     pendingBeforeSelfSnapping, markForcedBreak
   } = createSections({
     resolved: setup.resolved, headingLevels, baselineGrid, doc, pageIndexOffset, pageMetrics, pageWidthPx,
-    pageHeightPx, contentBlocks, paragraphContainers, partPlan, measureCtx, cursor, forcedBreakPages,
+    pageHeightPx, contentBlocks, paragraphContainers, partPlan, partListMetrics, measureCtx, cursor, forcedBreakPages,
     state
   });
 

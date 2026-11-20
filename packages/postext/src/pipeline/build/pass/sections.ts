@@ -3,6 +3,7 @@
 // Part of the placement pass (pass.ts), split out of it in #1276.
 import { type BlockMeasureContext, measureContentBlock } from '../../blocks/measureContentBlock.js';
 import { derivePartMeasureContext, type PartPlan } from '../../sections/parts.js';
+import type { OrderedListMetrics } from '../../text/lists.js';
 import type { ResolvedHeadingStyleConfig } from '../../../types.js';
 import { deriveSectionMeasureContext, deriveSectionGeometryConfig, headingStyleOf, headingIsHidden, type HeadingLevelResolver } from '../../sections/headingStyles.js';
 import { computePageMetrics, nextNonMarkerBlock, isMarkerBlock, type PageMetrics } from '../../blocks/buildHelpers.js';
@@ -31,6 +32,8 @@ export interface SectionsDeps {
   contentBlocks: ContentBlock[];
   paragraphContainers: ParagraphContainerPlan;
   partPlan: PartPlan;
+  /** The part body's list number widths (`partOrderedMetrics`). */
+  partListMetrics?: OrderedListMetrics;
   measureCtx: BlockMeasureContext;
   cursor: PlacementCursor;
   forcedBreakPages: Set<number>;
@@ -40,12 +43,12 @@ export interface SectionsDeps {
 export function createSections(deps: SectionsDeps) {
   const {
     resolved, headingLevels, baselineGrid, doc, pageIndexOffset, pageMetrics, pageWidthPx,
-    pageHeightPx, contentBlocks, paragraphContainers, partPlan, measureCtx, cursor, forcedBreakPages,
+    pageHeightPx, contentBlocks, paragraphContainers, partPlan, partListMetrics, measureCtx, cursor, forcedBreakPages,
     state
   } = deps;
   // Blocks inside a `:::part` measure with the part body typography.
   const partMeasureCtx: BlockMeasureContext = partPlan.byStart.size > 0
-    ? derivePartMeasureContext(measureCtx)
+    ? derivePartMeasureContext(measureCtx, partListMetrics)
     : measureCtx;
 
   // Blocks inside a styled section with a body style measure with it.
