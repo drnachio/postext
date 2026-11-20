@@ -42,8 +42,8 @@ import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js'
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
-import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes, noteTapedPages, tapesRest } from './passReuse.js';
-import { afterMarks, beforeMarks, settleMoves } from './passMade.js';
+import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes, noteTapedPages, retryLayoutTapes, tapesRest } from './passReuse.js';
+import { afterMarks, beforeMarks, PageWithoutMarks, settleMoves } from './passMade.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
  *  first, for the page labels it prints to settle. */
@@ -141,8 +141,25 @@ export function* buildDocumentGen(
       // A step after the placing wrote to a page kept from the build
       // before (it is frozen): the build is done again from nothing.
       if (!(error instanceof TypeError)) throw error;
-      forgetLayoutTapes(options.tapes, error);
-      doc = yield* buildDocumentSteps(content, config, cache, options);
+      let failed: TypeError = error;
+      let again: VDTDocument | undefined;
+      if (error instanceof PageWithoutMarks) {
+        // A page that never had its marks came from a pass of the build
+        // before that was not its last: done again from that build, the
+        // passes that pair with such a pass placed without it (#1637).
+        retryLayoutTapes(options.tapes, error);
+        try {
+          again = yield* buildDocumentSteps(content, config, cache, options);
+        } catch (retried) {
+          if (!(retried instanceof TypeError)) throw retried;
+          failed = retried;
+        }
+      }
+      if (!again) {
+        forgetLayoutTapes(options.tapes, failed);
+        again = yield* buildDocumentSteps(content, config, cache, options);
+      }
+      doc = again;
     }
     ended = true;
     noteTapedPages(options.tapes, doc.pages.length);
@@ -177,6 +194,9 @@ function* buildDocumentSteps(
   // The warnings below read the book's settings and where each chapter lies.
   lap('build.rounds');
   if (runs && runs.length > 1) config = book;
+  // A page kept from the build before that never had its marks stops the
+  // build here, before the moves below change the pages of that build.
+  beforeMarks(doc.pages);
   // The pages taken from the build before have their places in the source
   // moved before anything reads them: the warnings below name the places
   // of lines (#1637).
@@ -221,7 +241,6 @@ function* buildDocumentSteps(
   lap('post.warnings');
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
-  beforeMarks(doc.pages);
   const annotations = annotateDocument(doc, doc.config?.cjk);
   // Arabic vowel marks (#376): how far each vocalised line's ink reaches,
   // for the column clip, and the paragraphs whose marks meet a
