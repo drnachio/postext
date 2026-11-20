@@ -7,7 +7,7 @@ import { putBlobsAt } from '../storage/blobStore.js';
 import { putFontFiles } from '../storage/fontStorage.js';
 import { saveBook, saveConfig, savePresetApplied, savePresetId } from '../storage/persistence.js';
 import type { BookContent } from '../book/types.js';
-import { hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash.js';
+import { chaptersTextLength, hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash.js';
 import type { AppliedPresetSnapshot, LoadedPreset, PresetApplyParts } from './types.js';
 import { loadPresetGeneral, saveWorkingLayers } from '../storage/persistence.js';
 import { presetSharedConfig, rebaseEdition, type ConfigScope } from '../editions/configLayers.js';
@@ -47,6 +47,7 @@ export function snapshotForApply(
     locale: loaded.locale,
     fingerprint,
     markdownHash: hashChapters(wantsMarkdown ? loaded.chapters : current.chapters),
+    markdownLength: chaptersTextLength(wantsMarkdown ? loaded.chapters : current.chapters),
     configHash: hashConfig(config),
     resourcesHash: hashResources(wantsResources ? loaded.resources : current.resources),
   };

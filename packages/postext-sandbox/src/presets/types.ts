@@ -145,6 +145,10 @@ export interface AppliedPresetSnapshot {
   fingerprint: string | null;
   /** Hash of the chapter list (titles + text, in order). */
   markdownHash: string;
+  /** Length of the text {@link markdownHash} hashes (#1646): a chapter list
+   *  of another length was edited, and is told so without hashing the
+   *  book. Absent in snapshots written before. */
+  markdownLength?: number;
   configHash: string;
   resourcesHash: string;
 }

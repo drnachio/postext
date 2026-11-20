@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
 import { createDefaultConfig } from '../context/defaultConfig.js';
 import {
+  chaptersTextLength,
   hashConfig,
   hashChapters,
   hashResources,
@@ -139,5 +140,52 @@ describe('the hashes of the state are held by object', () => {
     const hash = hashChapters(chapters);
     expect(hashChapters([chapter('# One\n\nText!')])).not.toBe(hash);
     expect(hashChapters([chapter('# One\n\nText.')])).toBe(hash);
+  });
+});
+
+// #1646: a chapter list of another text length than the snapshot's is
+// edited, and is told so without hashing the book.
+describe('the text length of the chapters', () => {
+  const chapter = (id: string, title: string | undefined, markdown: string) => ({ id, title, markdown, createdAt: 1, updatedAt: 1 }) as { id: string; title: string; markdown: string; createdAt: number; updatedAt: number };
+
+  it('is the length of the text the chapter hash reads', () => {
+    for (const chapters of [[], [chapter('a', 'One', '# One')], [chapter('a', 'One', 'x"\\\n'), chapter('b', undefined, 'ü — 中'), chapter('c', '', '')]]) {
+      expect(chaptersTextLength(chapters)).toBe(stableStringify(chapters.map((c) => ({ title: c.title, markdown: c.markdown }))).length);
+    }
+  });
+
+  it('answers an edit of another length without the hash, and one of the same length with it', () => {
+    const book = [chapter('a', 'One', '# One\n\nText.'), chapter('b', 'Two', '# Two')];
+    const state = { chapters: book, config: createDefaultConfig('en'), resources: [table()] };
+    const snapshot: AppliedPresetSnapshot = {
+      presetId: 'p',
+      fingerprint: null,
+      markdownHash: hashChapters(book),
+      markdownLength: chaptersTextLength(book),
+      configHash: hashConfig(state.config),
+      resourcesHash: hashResources(state.resources),
+    };
+    const longer = { ...state, chapters: [chapter('a', 'One', '# One\n\nText..'), book[1]!] };
+    const stringify = JSON.stringify;
+    let calls = 0;
+    chaptersTextLength(longer.chapters);
+    JSON.stringify = ((...args: Parameters<typeof JSON.stringify>) => { calls++; return stringify(...args); }) as typeof JSON.stringify;
+    try {
+      expect(isDocumentUntouched(longer, snapshot)).toBe(false);
+    } finally {
+      JSON.stringify = stringify;
+    }
+    expect(calls).toBe(0);
+    expect(isDocumentUntouched({ ...state, chapters: [chapter('a', 'One', '# One\n\nText!'), book[1]!] }, snapshot)).toBe(false);
+    expect(isDocumentUntouched({ ...state, chapters: [chapter('x', 'One', '# One\n\nText.'), book[1]!] }, snapshot)).toBe(true);
+  });
+
+  it('is learned for a snapshot written without it', () => {
+    const book = [chapter('a', 'One', '# One')];
+    const state = { chapters: book, config: createDefaultConfig('en'), resources: [] };
+    const snapshot: AppliedPresetSnapshot = { presetId: 'p', fingerprint: null, markdownHash: hashChapters(book), configHash: hashConfig(state.config), resourcesHash: hashResources([]) };
+    expect(isDocumentUntouched(state, snapshot)).toBe(true);
+    expect(isDocumentUntouched({ ...state, chapters: [chapter('a', 'One', '# One!')] }, snapshot)).toBe(false);
+    expect(isDocumentUntouched({ ...state, chapters: [chapter('a', 'One', '# One')] }, snapshot)).toBe(true);
   });
 });
