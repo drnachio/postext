@@ -272,7 +272,6 @@ export class PassTape {
       if (this.kept.has(value) || this.tracked.has(value)) return;
       if (value instanceof WeakMap || value instanceof WeakSet) return;
       this.kept.add(value);
-      this.names?.name(value);
       if (Array.isArray(value)) for (const item of value) walk(item);
       else if (value instanceof Map) for (const [k, v] of value) { walk(k); walk(v); }
       else if (value instanceof Set) for (const item of value) walk(item);
@@ -365,11 +364,8 @@ export class PassTape {
       }
       if (this.kept.has(value)) {
         if (mode !== 'name' || !names) return value;
-        const id = names.idOf(value);
-        if (id === undefined) {
-          flags!.opaque = true;
-          return value;
-        }
+        // Named when a checkpoint first holds it (#1637), not each pass.
+        const id = names.name(value);
         let ref = this.refs.get(id);
         if (!ref) this.refs.set(id, (ref = new SetupRef(id)));
         return ref;

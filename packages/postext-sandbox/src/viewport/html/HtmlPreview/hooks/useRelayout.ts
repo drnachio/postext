@@ -28,6 +28,7 @@ import type { PanelId } from '../../../../types/props.js';
 import type { PageNavigator } from '../../../canvas/CanvasPreview/interaction/types.js';
 import type { LayoutSource } from '../../../../context/SandboxContext/hooks.js';
 import type { SandboxLabels } from '../../../../types/labels.js';
+import { incrementalLayoutEnabled } from '../../../../perf/incremental.js';
 
 /** What useRelayout takes from the HTML preview. */
 export interface UseRelayoutDeps {
@@ -281,6 +282,9 @@ export function useRelayout(deps: UseRelayoutDeps) {
             : { continuation: currentLayout.continuation, ...planContent(currentLayout.plan) }),
         },
         configOverride,
+        // One chapter is laid out from its layout before (#1640); the whole
+        // book is not.
+        currentWholeBook || !incrementalLayoutEnabled() ? undefined : { tapesKey: `html:${currentLayout.chapterId}` },
       );
       if (seq !== renderSeqRef.current) return;
 

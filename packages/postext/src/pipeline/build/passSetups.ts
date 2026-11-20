@@ -48,9 +48,11 @@ export class Names implements SetupNames {
    *  changed block holds) is forgotten with the old setup. */
   succeed(pairs: ReadonlyMap<object, object>): void {
     const objects = new Map<number, object>();
-    for (const [before, now] of pairs) {
-      const id = this.ids.get(before);
-      if (id === undefined) continue;
+    // Objects are named when a checkpoint holds them: most of the pairs
+    // have no number, and the named ones are looked up instead (#1637).
+    for (const [id, before] of this.objects) {
+      const now = pairs.get(before);
+      if (now === undefined) continue;
       this.ids.set(now, id);
       objects.set(id, now);
     }
@@ -88,7 +90,18 @@ function same(before: unknown, now: unknown, key: string, p: Pairing): boolean {
   p.pairs.set(before, other);
   if (Array.isArray(before)) {
     if (!Array.isArray(other) || other.length !== before.length) return false;
-    for (let i = 0; i < before.length; i++) if (!same(before[i], other[i], key, p)) return false;
+    // A source map holds a number per letter of its paragraph: numbers
+    // are compared here, without a call each (#1637).
+    const places = p.delta !== 0 && SOURCE_KEYS.has(key);
+    for (let i = 0; i < before.length; i++) {
+      const a: unknown = before[i];
+      const b: unknown = other[i];
+      if (typeof a === 'number') {
+        if (Object.is(a, b) || (places && a >= p.at && b === a + p.delta)) continue;
+        return false;
+      }
+      if (!same(a, b, key, p)) return false;
+    }
     return true;
   }
   if (before instanceof Map) {
@@ -118,6 +131,17 @@ function same(before: unknown, now: unknown, key: string, p: Pairing): boolean {
   return true;
 }
 
+/** The blocks the last comparison read, and what it found of them. */
+let lastBlocks: { before: unknown[]; now: unknown[]; at: number; delta: number; changed: number[]; pairs: [object, object][] } | undefined;
+
+/** Whether two lists hold the same objects, in order. */
+function sameItems(a: readonly unknown[], b: readonly unknown[]): boolean {
+  if (a === b) return true;
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+  return true;
+}
+
 /**
  * Compare the setup of the pass before (`before`) with this pass's
  * (`now`). Undefined with the reason when they differ in more than the
@@ -138,12 +162,21 @@ export function pairSetups(before: PassSetup, roots: Record<string, unknown>, bo
   const blocksBefore = (before.roots.contentSetup as { contentBlocks?: unknown[] } | undefined)?.contentBlocks;
   const blocksNow = (roots.contentSetup as { contentBlocks?: unknown[] } | undefined)?.contentBlocks;
   if (!blocksBefore || !blocksNow || blocksBefore.length !== blocksNow.length) return 'the number of blocks changed';
-  for (let i = 0; i < blocksBefore.length; i++) {
-    const a = blocksBefore[i] as object;
-    const b = blocksNow[i] as object;
-    if (same(a, b, '', p)) continue;
-    p.changed.push(i);
-    p.pairs.set(a, b);
+  const known = lastBlocks !== undefined && lastBlocks.at === at && lastBlocks.delta === p.delta && sameItems(lastBlocks.before, blocksBefore) && sameItems(lastBlocks.now, blocksNow) ? lastBlocks : undefined;
+  if (known) {
+    // The passes of a build read the same blocks (#1637): the comparison
+    // the first one made holds for the others.
+    for (const [a, b] of known.pairs) p.pairs.set(a, b);
+    p.changed.push(...known.changed);
+  } else {
+    for (let i = 0; i < blocksBefore.length; i++) {
+      const a = blocksBefore[i] as object;
+      const b = blocksNow[i] as object;
+      if (same(a, b, '', p)) continue;
+      p.changed.push(i);
+      p.pairs.set(a, b);
+    }
+    lastBlocks = { before: blocksBefore, now: blocksNow, at, delta: p.delta, changed: [...p.changed], pairs: [...p.pairs] };
   }
   p.pairs.set(before.roots, roots);
   for (const rootName in before.roots) {

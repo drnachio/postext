@@ -168,6 +168,10 @@ function* buildDocumentSteps(
   // The warnings below read the book's settings and where each chapter lies.
   lap('build.rounds');
   if (runs && runs.length > 1) config = book;
+  // The pages taken from the build before have their places in the source
+  // moved before anything reads them: the warnings below name the places
+  // of lines (#1637).
+  settleMoves(doc.pages);
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
   markTurnedBoxes(doc);
@@ -208,7 +212,6 @@ function* buildDocumentSteps(
   lap('post.warnings');
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
-  settleMoves(doc.pages);
   beforeMarks(doc.pages);
   const annotations = annotateDocument(doc, doc.config?.cjk);
   // Arabic vowel marks (#376): how far each vocalised line's ink reaches,

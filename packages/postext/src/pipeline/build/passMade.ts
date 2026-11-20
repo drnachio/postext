@@ -154,13 +154,95 @@ export interface WaitingMoves {
   list: { at: number; delta: number }[];
 }
 
+/** Where a page or a block names places in the source, found once (#1637):
+ *  a page taken from the build before keeps its shape build after build,
+ *  and walking all of it for each move was most of the cost of moving. */
+interface PlaceIndex {
+  /** Objects with members that are places, and those members. */
+  holders: { holder: Record<string, unknown>; keys: string[] }[];
+  /** Lists of places (source maps). */
+  lists: unknown[][];
+}
+
+const placeIndexes = new WeakMap<object, PlaceIndex>();
+
+function placeIndexOf(value: object): PlaceIndex {
+  let index = placeIndexes.get(value);
+  if (index) return index;
+  index = { holders: [], lists: [] };
+  const seen = new Set<object>();
+  const under = (places: Record<string | number, unknown>): void => {
+    if (seen.has(places)) return;
+    seen.add(places);
+    if (Array.isArray(places)) {
+      index!.lists.push(places);
+      for (const n of places as unknown[]) if (typeof n === 'object' && n !== null) under(n as Record<string, unknown>);
+      return;
+    }
+    const keys: string[] = [];
+    for (const k in places) {
+      const n = places[k];
+      if (typeof n === 'number') keys.push(k);
+      else if (typeof n === 'object' && n !== null) under(n as Record<string, unknown>);
+    }
+    if (keys.length > 0) index!.holders.push({ holder: places as Record<string, unknown>, keys });
+  };
+  const walk = (v: unknown): void => {
+    if (typeof v !== 'object' || v === null || seen.has(v)) return;
+    seen.add(v);
+    if (Array.isArray(v)) {
+      for (const item of v) walk(item);
+      return;
+    }
+    const object = v as Record<string, unknown>;
+    const keys: string[] = [];
+    for (const key in object) {
+      const member = object[key];
+      if (!SOURCE_KEYS.has(key)) {
+        if (key !== 'segments') walk(member);
+      } else if (typeof member === 'number') keys.push(key);
+      else if (typeof member === 'object' && member !== null) under(member as Record<string, unknown>);
+    }
+    if (keys.length > 0) index!.holders.push({ holder: object, keys });
+  };
+  walk(value);
+  placeIndexes.set(value, index);
+  return index;
+}
+
+/** Move the places `value` names by its index; `seen`, the objects and
+ *  lists one move has moved (two blocks of a paragraph cut by a page
+ *  share their source map). */
+function moveIndexed(value: object, at: number, delta: number, seen: Set<object>): void {
+  if (seen.has(value)) return;
+  const index = placeIndexOf(value);
+  for (const { holder, keys } of index.holders) {
+    if (seen.has(holder)) continue;
+    seen.add(holder);
+    for (const key of keys) {
+      const n = holder[key];
+      if (typeof n === 'number' && n >= at) holder[key] = n + delta;
+    }
+  }
+  for (const list of index.lists) {
+    if (seen.has(list)) continue;
+    seen.add(list);
+    for (let i = 0; i < list.length; i++) {
+      const n = list[i];
+      if (typeof n === 'number' && n >= at) list[i] = n + delta;
+    }
+  }
+  const riding = riders.get(value);
+  if (riding) moveSourcePlaces(riding, at, delta, seen);
+}
+
 /** Make the moves that wait, and forget them. Each is noted against the
  *  pages and blocks it was made on ({@link movesMadeOn}). */
 export function makeMoves(moves: WaitingMoves): void {
   if (moves.list.length === 0) return;
   for (const move of moves.list) {
     const seen = new Set<object>();
-    for (const object of moves.objects) moveSourcePlaces(object, move.at, move.delta, seen);
+    for (const object of moves.objects) moveIndexed(object, move.at, move.delta, seen);
   }
   const made = [...moves.list];
   for (const object of moves.objects) {

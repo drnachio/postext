@@ -94,6 +94,19 @@ describe('a build with tapes after an edit', () => {
     }
   }, 120_000);
 
+  it('names the moved places in the warnings of the pages taken after the edit (#1637)', () => {
+    // Every line starts with the same word: a stack warning on each pair
+    // of lines, named by the places of the lines in the source.
+    const config = { page, bodyText: { stacks: 'warn' } } as PostextConfig;
+    const blocks = ['# A chapter', ...Array.from({ length: 160 }, () => 'same '.repeat(60).trim())];
+    const tapes = createLayoutTapes();
+    both(blocks, config, tapes);
+    blocks[40] = `${blocks[40]}s`;
+    const edited = both(blocks, config, tapes);
+    expect(Math.max(...edited.stats.pagesTaken)).toBeGreaterThan(0);
+    expect(edited.taped).toBe(edited.plain);
+  });
+
   it('starts over when the edit changes more than a block: a block added, the configuration changed', () => {
     const config = { page } as PostextConfig;
     const blocks = chapter(40);

@@ -16,6 +16,7 @@ import type { ChapterDocument, LayoutSource } from '../../../context/SandboxCont
 import type { LayoutWorkerApi } from '../../../worker/useLayoutWorker.js';
 import type { FontGate } from '../../../controls/fonts/fontLoader/loading.js';
 import type { BookPageMap } from '../../usePageHashSync.js';
+import { incrementalLayoutEnabled } from '../../../perf/incremental.js';
 
 /** What useFolioBuild takes from the Folio preview. */
 export interface UseFolioBuildDeps {
@@ -125,6 +126,9 @@ export function useFolioBuild(deps: UseFolioBuildDeps) {
             continuationKey: deferredSource.plan.continuationKey,
             outlineKey: deferredSource.plan.outlineKey,
           }),
+          // The chapter being edited, laid out from the layout before it
+          // (#1640), as the canvas lays it out.
+          ...(incrementalLayoutEnabled() ? { tapesKey: deferredSource.chapterId } : {}),
         },
       );
       if (cancelled) return;
