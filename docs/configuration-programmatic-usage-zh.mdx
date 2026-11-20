@@ -658,7 +658,6 @@ const off = onFontsChanged((families) => relayout());
 文本测量是排版中开销最大的步骤。有两类缓存让它保持低开销：
 
 - **由你持有的块缓存。**`createMeasurementCache()`返回一个`MeasurementCache`，它记住每个测量过的段落，键由段落的文本、字体、宽度、断行选项和当前的断词词典组成。把它作为`buildDocument`（或`buildDocumentAsync`）的第三个参数传入，就能在一次构建的各个放置遍之间和多次构建之间复用测量结果：每次按键都重新排版的编辑器，只需测量改动过的段落。不传缓存时，每一遍都会重新测量所有块。从缓存读出的段落与重新测量的段落完全相同，因此带缓存的构建与不带缓存的构建排出的每一行都一样；在postext 1.4.1中，缓存的段落会丢失“末行是孤字”的标记，孤字收紧和各栏齐底随后可能以不同方式断行。缓存记着填充它时的测量代次：某个字体族的字体到达或离开后，它在下一次查找时丢弃用该字体族排出的块，因此跨越字体加载保留下来的缓存，绝不会给出按回退字体测量的行。
-- **由你持有的记录带。**`createLayoutTapes(options?)`返回`LayoutTapes`，即一个文档排版过程的检查点。在该文档的每次构建中把它作为`BuildDocumentOptions.tapes`传入：编辑之后，每个放置遍从被编辑块之前的最后一个检查点开始，在其排版与上一次重新吻合的地方停下，此后的页面直接沿用，只移动它们在Markdown中的位置。得到的文档与不带记录带的构建完全相同。设置`options.restBelowPages`后，页数少于该值的文档不使用记录带排版，直到页数重新达到该值：在短章上，记录的开销超过节省的时间。`tapes.stats`说明上一次构建的每一遍从哪里开始，以及为什么不能更晚开始。一套记录带只服务一个文档；两次构建之间，不得原地修改该文档的内容、配置和资源。
 - **全局宽度缓存**。单词宽度按字体字符串缓存在模块状态中，页面中的所有构建共享；pretext也有自己的一份缓存。某个字体族的字体发生变化时（构建开始时、`watchFonts`、`prepareFonts`和`loadBundleFonts`），引擎丢弃该字体族的宽度；pretext的缓存没有按字体族的索引，只能整个清空。
 
 ```ts
@@ -832,7 +831,7 @@ Postext提供一个专用的Web Worker入口`postext/worker`，把流水线移�
 - **`createLayoutWorker(opts?): LayoutWorkerHandle`**：创建一个专用工作线程（或包装你通过`opts.worker`传入的工作线程，或从`opts.url`启动工作线程入口），返回一个带类型的句柄。见[从CDN加载工作线程](#从cdn加载工作线程)。
 - **`LayoutWorkerHandle.registerFonts(faces: FontPayload[]): Promise<void>`**：把字体字节送入工作线程。缓冲区会被转移，如果之后需要重新发送，请在主线程上保留一份新的副本。
 - **`LayoutWorkerHandle.unregisterFonts(families: string[]): Promise<void>`**：丢弃工作线程中这些字体族的字体，这样下一次为某个字体族调用`registerFonts`时，新字体才会生效，而不是与工作线程已有的字体相匹配。
-- **`LayoutWorkerHandle.build(content, config?, options?): Promise<VDTDocument>`**：运行流水线。`options`是`{ signal?, onProgress?, onStats?, resourcesKey?, cacheKey?, tapesKey? }`。中止`signal`会取消进行中的构建。放置推进时调用`onProgress({ pass, blocks, totalBlocks, pages })`；`onStats({ passes, totalMs, cached?, missingFonts? })`接收完成的构建各遍的耗时。`resourcesKey`是`content.resources`的指纹：连续几次构建的键相同时，资源列表只发送一次，由工作线程保留。`cacheKey`是整次构建的指纹：工作线程按它保留最近的几个文档，收到它已有其键的构建时，直接从这份缓存作答。`tapesKey`指明正在编辑的章：工作线程保留这一个文档的记录带（见*由你持有的记录带*），把同一键下的下一次构建从编辑处之前的那一页开始排版，并且只发送有变化的页面。不足24页的章不使用记录带排版。
+- **`LayoutWorkerHandle.build(content, config?, options?): Promise<VDTDocument>`**：运行流水线。`options`是`{ signal?, onProgress?, onStats?, resourcesKey?, cacheKey?, tapesKey? }`。中止`signal`会取消进行中的构建。放置推进时调用`onProgress({ pass, blocks, totalBlocks, pages })`；`onStats({ passes, totalMs, cached?, missingFonts? })`接收完成的构建各遍的耗时。`resourcesKey`是`content.resources`的指纹：同一键下的构建只发送一次资源列表。`cacheKey`是整次构建的指纹：工作线程已有其键的构建，直接从它最近的几个文档中作答。`tapesKey`指明正在编辑的章，该章从它的上一次构建出发排版（见[重新排版](/zh/docs/architecture#重新排版)）。
 - **`LayoutWorkerHandle.warm(content, config, { cacheKey, … }): Promise<void>`**：构建到工作线程的文档缓存中，不把文档发回，用于读者接下来可能打开的章节；之后带同一`cacheKey`的`build`直接从缓存作答。
 - **`LayoutWorkerHandle.prepareFonts(content, config?, options?)`**：先在页面上执行`prepareFonts`，再把找到的字体发送给工作线程；见[从CDN加载工作线程](#从cdn加载工作线程)。
 - **`LayoutWorkerHandle.dispose(): void`**：终止工作线程，并以`AbortError`拒绝所有待完成的构建。
