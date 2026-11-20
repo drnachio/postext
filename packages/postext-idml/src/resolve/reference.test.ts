@@ -3,7 +3,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { IDENTITY } from '../model/geometry.js';
-import { inlineItems, inlineText, reference } from '../read/fixture.test-helper.js';
+import { inlineItems, inlineText, mini, reference } from '../read/fixture.test-helper.js';
+import { readIdml } from '../read/index.js';
 import { cmykToRgb, isNoColour, labToRgb, resolveColour } from './colour.js';
 import { characterFormat, paragraphFormat } from './format.js';
 import { graphicCrop, itemGeometry, itemIndex, pageSize, textColumns, textContentBox } from './geometry.js';
@@ -376,5 +377,19 @@ describe('inspection', () => {
       nestedStyles: 1, grepStyles: 1, textOnPath: 1, effects: 1, conditions: 2, textVariables: 1, crossReferences: 1, rightToLeft: 1,
       missingLinks: 4, hiddenContent: 3, pasteboardContent: 1, gradients: 1, spotColours: 1,
     });
+  });
+});
+
+describe('a mixed ink with no process equivalent', () => {
+  it('is read with its percentages and made from its inks: a process ink and a spot colour’s CMYK', () => {
+    // As InDesign writes it: InkPercentages, Space="MixedInk", no ColorValue.
+    const graphic = '<idPkg:Graphic>'
+      + '<Color Self="Color/PANTONE 307 C" Name="PANTONE 307 C" Model="Spot" Space="CMYK" ColorValue="100 16 0 27"/>'
+      + '<MixedInk Self="MixedInk/B" Name="B" Model="Mixedinkmodel" Space="MixedInk" InkList="Ink/$ID/Process%20Black Ink/PANTONE%20307%20C" InkPercentages="15 100"/>'
+      + '</idPkg:Graphic>';
+    const doc = readIdml(mini({ designmap: '<idPkg:Graphic src="Resources/Graphic.xml"/>', files: { 'Resources/Graphic.xml': graphic } }));
+    expect(doc.swatches.get('MixedInk/B')).toMatchObject({ kind: 'mixedInk', values: [15, 100] });
+    const hex = `#${cmykToRgb(100, 16, 0, 27 + 15).map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')}`;
+    expect(resolveColour(doc, 'MixedInk/B')).toMatchObject({ hex, kind: 'mixedInk' });
   });
 });

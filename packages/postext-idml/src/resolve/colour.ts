@@ -84,6 +84,30 @@ function rgbOf(space: ColourSpace, v: readonly number[]): Rgb | undefined {
 /** `rgb` at `tint` (0–1) over white paper. */
 const tinted = (rgb: Rgb, tint: number): Rgb => [255 - (255 - rgb[0]) * tint, 255 - (255 - rgb[1]) * tint, 255 - (255 - rgb[2]) * tint];
 
+const PROCESS_INK: Record<string, number> = { Cyan: 0, Magenta: 1, Yellow: 2, Black: 3 };
+
+/** A mixed ink InDesign gave no process equivalent for, made from its
+ *  inks: each a process ink or a spot colour's CMYK, at its percentage,
+ *  added up. */
+function mixedRgb(doc: IdmlDocument, inks: readonly string[], values: readonly number[]): Rgb | undefined {
+  if (inks.length === 0 || inks.length !== values.length) return undefined;
+  const cmyk = [0, 0, 0, 0];
+  for (const [i, ink] of inks.entries()) {
+    const name = decodeURIComponent(ink.replace(/^Ink\//, '')).replace(/^\$ID\//, '');
+    const share = clamp(values[i]!, 0, 100) / 100;
+    const process = /^Process (Cyan|Magenta|Yellow|Black)$/.exec(name)?.[1];
+    if (process) {
+      cmyk[PROCESS_INK[process]!]! += 100 * share;
+      continue;
+    }
+    const spot = doc.swatches.get(`Color/${name}`);
+    const c = spot && spot.kind === 'color' ? resolve(doc, spot, 1, 0)?.cmyk : undefined;
+    if (!c) return undefined;
+    for (let k = 0; k < 4; k++) cmyk[k]! += c[k]! * share;
+  }
+  return cmykToRgb(cmyk[0]!, cmyk[1]!, cmyk[2]!, cmyk[3]!);
+}
+
 function resolve(doc: IdmlDocument, swatch: IdmlSwatch, tint: number, depth: number): ResolvedColour | undefined {
   switch (swatch.kind) {
     case 'none':
@@ -109,7 +133,7 @@ function resolve(doc: IdmlDocument, swatch: IdmlSwatch, tint: number, depth: num
       return resolve(doc, base, tint * (clamp(swatch.tint, 0, 100) / 100), depth + 1);
     }
     case 'mixedInk': {
-      const rgb = rgbOf(swatch.space, swatch.value);
+      const rgb = rgbOf(swatch.space, swatch.value) ?? mixedRgb(doc, swatch.inks, swatch.values);
       if (!rgb) return undefined;
       const out: ResolvedColour = { hex: hexOf(tinted(rgb, tint)), tint, kind: 'mixedInk' };
       if (swatch.space === 'CMYK' && swatch.value.length >= 4) out.cmyk = [swatch.value[0]!, swatch.value[1]!, swatch.value[2]!, swatch.value[3]!];

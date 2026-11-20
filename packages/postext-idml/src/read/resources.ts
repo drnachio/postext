@@ -93,7 +93,8 @@ export function graphicOf(root: XmlElement, warnings: IdmlWarning[], part?: stri
           self: a.Self ?? '',
           name: plainName(a.Name),
           inks: (a.InkList ?? '').split(/\s+(?=Ink\/)/).filter(Boolean),
-          values: nums(el, 'InkValues') ?? [],
+          // InDesign writes InkPercentages; InkValues in older files.
+          values: nums(el, 'InkPercentages') ?? nums(el, 'InkValues') ?? [],
           space: spaceOf(a.Space),
           value: nums(el, 'ColorValue') ?? [],
         });
