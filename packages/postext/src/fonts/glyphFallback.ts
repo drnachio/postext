@@ -22,7 +22,8 @@
 //
 // A face neither source knows of is not checked.
 
-import type { VDTDocument, VDTLine } from '../vdt.js';
+import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 import { quoteFamily } from '../measure/font.js';
 import { measureTextWidth } from '../measure/canvas.js';
 import { fontStringFamilies, parseFontString, type FontFaceRequest } from '../measure/fontString.js';
@@ -255,6 +256,9 @@ export function documentFontTexts(doc: VDTDocument): Map<string, Set<string>> {
 export interface DocumentTexts {
   chars: Map<string, Set<string>>;
   texts: Map<string, Set<string>>;
+  /** Set by {@link readDocumentTexts}: the reading holds every shorthand
+   *  the document sets, so one it does not name sets nothing (#1637). */
+  complete?: true;
 }
 
 export function readDocumentTexts(doc: VDTDocument): DocumentTexts {
@@ -285,26 +289,55 @@ export function readDocumentTexts(doc: VDTDocument): DocumentTexts {
   const blocks = new Set(doc.blocks);
   for (const page of doc.pages) for (const b of [...(page.floats ?? []), ...(page.marginNotes ?? [])]) blocks.add(b);
   for (const block of blocks) {
-    addLines(block.lines, block.fontString, block.boldFontString, block.italicFontString, block.boldItalicFontString, add);
-    const rb = block.resourceBlock;
-    if (rb) {
-      addLines(rb.captionLines, rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString, add);
-      addLines(rb.noteLines, rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString, add);
-      for (const label of rb.labels ?? []) {
-        const l = label.layout;
-        if (l) addLines(l.lines, l.fontString, l.boldFontString, l.italicFontString, l.boldItalicFontString, add);
-      }
-      const t = rb.table;
-      if (t) {
-        for (const cell of t.cells) {
-          if (cell.isHeader) addLines(cell.lines, t.headerFontString, t.headerBoldFontString, t.headerItalicFontString, t.headerBoldItalicFontString, add);
-          else addLines(cell.lines, t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString, add);
-        }
+    const texts = keptTexts(block, readBlockTexts);
+    for (let i = 0; i < texts.length; i += 2) add(texts[i], texts[i + 1]);
+  }
+  for (const page of doc.pages) {
+    const texts = keptTexts(page, (p, a) => walkTexts(p, a));
+    for (let i = 0; i < texts.length; i += 2) add(texts[i], texts[i + 1]);
+  }
+  return { chars: out, texts: read, complete: true };
+}
+
+/** The texts of a block or a page that stands as the build before made
+ *  it, by font, as `[font, text, …]` (#1637): an edit lays out a page or
+ *  two, and the pages it takes from the build before are not read again. */
+const keptReadings = new WeakMap<object, (string | undefined)[]>();
+
+function keptTexts<T extends object>(value: T, read: (value: T, add: Add) => void): (string | undefined)[] {
+  const made = standsAsMade(value);
+  if (made) {
+    const kept = keptReadings.get(value);
+    if (kept) return kept;
+  }
+  const texts: (string | undefined)[] = [];
+  read(value, (font, text) => {
+    texts.push(font, text);
+  });
+  // Only what stands as made is kept: a page of this build may still be
+  // written to by the steps after the reading.
+  if (made) keptReadings.set(value, texts);
+  return texts;
+}
+
+function readBlockTexts(block: VDTBlock, add: Add): void {
+  addLines(block.lines, block.fontString, block.boldFontString, block.italicFontString, block.boldItalicFontString, add);
+  const rb = block.resourceBlock;
+  if (rb) {
+    addLines(rb.captionLines, rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString, add);
+    addLines(rb.noteLines, rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString, add);
+    for (const label of rb.labels ?? []) {
+      const l = label.layout;
+      if (l) addLines(l.lines, l.fontString, l.boldFontString, l.italicFontString, l.boldItalicFontString, add);
+    }
+    const t = rb.table;
+    if (t) {
+      for (const cell of t.cells) {
+        if (cell.isHeader) addLines(cell.lines, t.headerFontString, t.headerBoldFontString, t.headerItalicFontString, t.headerBoldItalicFontString, add);
+        else addLines(cell.lines, t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString, add);
       }
     }
   }
-  for (const page of doc.pages) walkTexts(page, add);
-  return { chars: out, texts: read };
 }
 
 // --- The check -------------------------------------------------------------

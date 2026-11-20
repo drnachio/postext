@@ -31,7 +31,6 @@ import type { ContentBlock } from '../../../../parse/index.js';
 import type { ImportedJumps } from '../../../../composed/carry.js';
 import type { ParagraphContainerPlan } from '../../../callouts/paragraphContainers.js';
 import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
-import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PlannedFloat } from '../../../floats/floatPlacement.js';
 import type { CitingPageSlot, CitingPageRefusal } from '../../passTypes.js';
 import type { DropCapNote } from '../../../blocks/measureContentBlock.js';
@@ -58,7 +57,7 @@ export interface PassFinishDeps {
   carried: ImportedJumps | undefined;
   resourceById: Map<string, Resource>;
   paragraphContainers: ParagraphContainerPlan;
-  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
+  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }>;
   pendingFloats: PlannedFloat[];
   /** The resources the float plan kept a pin for (`placement.pin`). */
   pinnedFloats: ReadonlySet<string>;

@@ -13,7 +13,6 @@ import type { ResourceNumberingMap } from '../../../resources/resourceNumbering.
 import type { ResourceNumberEntry } from '../../../../types/content.js';
 import type { BlockStyle } from '../../../styles.js';
 import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
-import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PlacementCursor } from '../../../blocks/placement.js';
 import type { StripGeometry } from '../types.js';
 import { passTape } from '../../passTape.js';
@@ -32,7 +31,7 @@ export interface StripsDeps {
   resourceById: Map<string, Resource>;
   resourceTypeById: Map<string, ResourceType>;
   bodyStyle: BlockStyle;
-  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
+  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }>;
   cursor: PlacementCursor;
 }
 

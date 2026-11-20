@@ -108,6 +108,10 @@ export function glyphFallbackPlaces(doc: VDTDocument, options: Pick<GlyphFallbac
       ? symbolFontHas(hasGlyph, family, face.weight, face.style, ch)
       : hasGlyph(family, face.weight, face.style, ch) === true;
   const out: GlyphFallbackPlace[] = [];
+  // When the caller's whole reading found every face whole for every text
+  // it set (most documents), no block can have a place: the document is
+  // not read a second time (#1637).
+  if (options.reading?.complete && [...options.reading.chars.keys()].every((font) => checked(font)?.whole !== undefined || checked(font) === null)) return out;
   for (let pageIndex = 0; pageIndex < doc.pages.length && out.length < GLYPH_FALLBACK_PLACES; pageIndex++) {
     const page = doc.pages[pageIndex]!;
     const blocks = [...page.columns.flatMap((c) => c.blocks), ...(page.floats ?? []), ...(page.marginNotes ?? [])];

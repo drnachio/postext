@@ -11,7 +11,6 @@ import type { Resource, ResolvedCalloutStyleConfig } from '../../../../types.js'
 import type { BlockStyle } from '../../../styles.js';
 import type { CompositionRule } from '../../../../types/text/bodyText.js';
 import type { PlannedCallout } from '../../../callouts/calloutLayout.js';
-import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { TableOverflow } from '../../../../types/resources/tableStyles.js';
 import type { TableSliceSpec } from '../../../resources/resourceLayout.js';
 import type { FloatRotation, CaptionAside, BodyCap, PlaceResult, FloatSizing } from '../types.js';
@@ -44,7 +43,7 @@ export interface FloatPlaceDeps {
   openerFloatRule: CompositionRule;
   noteOpenerFloat: (page: VDTPage, f: PlannedFloat) => void;
   awaitsCitation: (f: PlannedFloat) => boolean;
-  calloutFloatOf: (resourceId: string) => { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; } | undefined;
+  calloutFloatOf: (resourceId: string) => { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; } | undefined;
   calloutBandPages: Set<VDTPage>;
   floatGapPx: number;
   minTextPx: number;

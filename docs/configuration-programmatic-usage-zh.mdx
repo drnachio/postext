@@ -831,7 +831,7 @@ Postext提供一个专用的Web Worker入口`postext/worker`，把流水线移�
 - **`createLayoutWorker(opts?): LayoutWorkerHandle`**：创建一个专用工作线程（或包装你通过`opts.worker`传入的工作线程，或从`opts.url`启动工作线程入口），返回一个带类型的句柄。见[从CDN加载工作线程](#从cdn加载工作线程)。
 - **`LayoutWorkerHandle.registerFonts(faces: FontPayload[]): Promise<void>`**：把字体字节送入工作线程。缓冲区会被转移，如果之后需要重新发送，请在主线程上保留一份新的副本。
 - **`LayoutWorkerHandle.unregisterFonts(families: string[]): Promise<void>`**：丢弃工作线程中这些字体族的字体，这样下一次为某个字体族调用`registerFonts`时，新字体才会生效，而不是与工作线程已有的字体相匹配。
-- **`LayoutWorkerHandle.build(content, config?, options?): Promise<VDTDocument>`**：运行流水线。`options`是`{ signal?, onProgress?, onStats?, resourcesKey?, cacheKey? }`。中止`signal`会取消进行中的构建。放置推进时调用`onProgress({ pass, blocks, totalBlocks, pages })`；`onStats({ passes, totalMs, cached?, missingFonts? })`接收完成的构建各遍的耗时。`resourcesKey`是`content.resources`的指纹：连续几次构建的键相同时，资源列表只发送一次，由工作线程保留。`cacheKey`是整次构建的指纹：工作线程按它保留最近的几个文档，收到它已有其键的构建时，直接从这份缓存作答。
+- **`LayoutWorkerHandle.build(content, config?, options?): Promise<VDTDocument>`**：运行流水线。`options`是`{ signal?, onProgress?, onStats?, resourcesKey?, cacheKey?, tapesKey? }`。中止`signal`会取消进行中的构建。放置推进时调用`onProgress({ pass, blocks, totalBlocks, pages })`；`onStats({ passes, totalMs, cached?, missingFonts? })`接收完成的构建各遍的耗时。`resourcesKey`是`content.resources`的指纹：同一键下的构建只发送一次资源列表。`cacheKey`是整次构建的指纹：工作线程已有其键的构建，直接从它最近的几个文档中作答。`tapesKey`指明正在编辑的章，该章从它的上一次构建出发排版（见[重新排版](/zh/docs/architecture#重新排版)）。
 - **`LayoutWorkerHandle.warm(content, config, { cacheKey, … }): Promise<void>`**：构建到工作线程的文档缓存中，不把文档发回，用于读者接下来可能打开的章节；之后带同一`cacheKey`的`build`直接从缓存作答。
 - **`LayoutWorkerHandle.prepareFonts(content, config?, options?)`**：先在页面上执行`prepareFonts`，再把找到的字体发送给工作线程；见[从CDN加载工作线程](#从cdn加载工作线程)。
 - **`LayoutWorkerHandle.dispose(): void`**：终止工作线程，并以`AbortError`拒绝所有待完成的构建。

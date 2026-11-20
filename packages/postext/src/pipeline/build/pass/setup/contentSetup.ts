@@ -40,10 +40,9 @@ import { relinkToPalette } from '../../../../defaults/shared.js';
 import { computeLevelIndentsPx, computeOrderedListRunMetrics, computeOrderedLevelIndentsPx } from '../../../text/lists.js';
 import { planParagraphContainers } from '../../../callouts/paragraphContainers.js';
 import { planCallouts, type PlannedCallout } from '../../../callouts/calloutLayout.js';
-import { planParts } from '../../../sections/parts.js';
+import { partOrderedMetrics, planParts } from '../../../sections/parts.js';
 import { computeFloatPlan, floatedResourceIds, type PlannedFloat } from '../../../floats/floatPlacement.js';
 import { planComposedPages, type PlannedComposedPage, composedPageAt } from '../../../composedPages/composedLayout.js';
-import type { CalloutLayouter } from '../../../callouts/frameLayout.js';
 import type { PlacementCursor } from '../../../blocks/placement.js';
 import type { PassHints } from '../../passTypes.js';
 import type { VDTDocument } from '../../../../vdt/document.js';
@@ -319,6 +318,8 @@ export function createContentSetup(deps: ContentSetupDeps) {
   const calloutPlan = planCallouts(contentBlocks);
   // `:::part` ranges: start/end marker indices and the enclosed blocks.
   const partPlan = planParts(contentBlocks);
+  // The part body's list number widths, over every block (#1650).
+  const partListMetrics = partPlan.byStart.size > 0 ? partOrderedMetrics(setup.resolved, contentBlocks) : undefined;
   // Styled sections (`{style="…"}` headings): geometry, running heads and
   // body typography per content-block index.
   const sectionPlan = planHeadingSections(contentBlocks, setup.resolved);
@@ -370,7 +371,7 @@ export function createContentSetup(deps: ContentSetupDeps) {
    *  while the text after it fills the page it left. Keyed by the fence's
    *  content index; the pending float carries the synthetic id
    *  `callout:<idx>` (see `calloutFloatOf`). */
-  const calloutFloats = new Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter }>();
+  const calloutFloats = new Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig }>();
 
   // Placement cursor
   const cursor: PlacementCursor = { pageIndex: 0, columnIndex: 0 };
@@ -391,7 +392,7 @@ export function createContentSetup(deps: ContentSetupDeps) {
     chapterNumberByBlock, resources, resourceTypes, resourceNumbering, stripNumbers, resourceById,
     resourceTypeById, resourceNumberById, figureLabelsById, bodyStyle, calloutStyles,
     calloutResolved, blockquoteStyle, listLevelIndentsPx, orderedMetrics, orderedLevelIndentsPx,
-    paragraphContainers, calloutPlan, partPlan, sectionPlan, floatPlan, composedPlans,
+    paragraphContainers, calloutPlan, partPlan, partListMetrics, sectionPlan, floatPlan, composedPlans,
     comicTextPlans, floatedIds, floatsByFirstBlock, calloutFloats, cursor, forcedBreakPages,
     uncappedBottoms, openerHeadFloats, dropCapTable
   };

@@ -24,7 +24,7 @@ import type { ContentBlock } from '../../../../parse/index.js';
 import type { BlockStyle } from '../../../styles.js';
 import type { ComicPageSource } from '../../../../comics/types.js';
 import type { StripGeometry, FloatRotation, CaptionAside, BodyCap, FloatSizing } from '../types.js';
-import type { PassState } from '../state.js';
+import type { PassState, PassLate } from '../state.js';
 import type { FloatPad } from '../../floatPads.js';
 import { passTape } from '../../passTape.js';
 
@@ -50,9 +50,9 @@ export interface FloatMeasureDeps {
   pendingFloats: PlannedFloat[];
   enqueuedFloatIds: Set<string>;
   enqueueFloatsFor: (blockIdx: number) => void;
-  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; }>;
+  calloutFloats: Map<number, { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; }>;
   CALLOUT_FLOAT_PREFIX: string;
-  calloutFloatOf: (resourceId: string) => { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; L: CalloutLayouter; } | undefined;
+  calloutFloatOf: (resourceId: string) => { plan: PlannedCallout; style: ResolvedCalloutStyleConfig; } | undefined;
   comicStripOf: (resourceId: string) => { idx: number; source: ComicPageSource; } | undefined;
   stripGeometry: (blockIdx: number, source: ComicPageSource, measure: number, max: number, vertical: boolean) => StripGeometry;
   buildComicStripBlock: (blockIdx: number, source: ComicPageSource, x: number, width: number, max: number, pageIndex: number, keep?: StripGeometry) => VDTBlock;
@@ -62,6 +62,7 @@ export interface FloatMeasureDeps {
    *  one page (see `proposeFloatPads`). */
   floatPads: ReadonlyMap<string, FloatPad> | undefined;
   state: PassState;
+  late: PassLate;
 }
 
 export function createFloatMeasure(deps: FloatMeasureDeps) {
@@ -70,8 +71,17 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     captionCitations, resources, resourceTypes, resourceNumbering, resourceById, resourceTypeById,
     resourceNumberById, figureLabelsById, bodyStyle, pendingFloats, enqueuedFloatIds,
     enqueueFloatsFor, calloutFloats, CALLOUT_FLOAT_PREFIX, calloutFloatOf, comicStripOf,
-    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state
+    stripGeometry, buildComicStripBlock, cursor, uncappedBottoms, floatPads, state, late
   } = deps;
+  // The layouter of a floated box, by its marker's index: a function of
+  // the box and this pass, so not on the tape (a closure there leaves every
+  // checkpoint unreadable by another pass, #1650).
+  const layouters = new Map<number, CalloutLayouter>();
+  const layouterOf = (startIdx: number, box: { plan: PlannedCallout; style: ResolvedCalloutStyleConfig }): CalloutLayouter => {
+    let L = layouters.get(startIdx);
+    if (!L) layouters.set(startIdx, (L = late.makeCalloutLayouter(startIdx, box.plan, box.style)));
+    return L;
+  };
   /** Boxes laid out for a band, waiting for the band's `y` (built in
    *  `buildFloatBlock`, committed in `commitFloatBlock`). */
   const calloutFloatResults = new Map<VDTBlock, { result: CalloutLayoutResult; startIdx: number; plan: PlannedCallout }>();
@@ -93,7 +103,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     // A keep-with-next replay passes the fence again: enqueue once.
     if (!enqueuedFloatIds.has(key)) {
       enqueuedFloatIds.add(key);
-      calloutFloats.set(startIdx, { plan, style, L });
+      calloutFloats.set(startIdx, { plan, style });
+      layouters.set(startIdx, L);
       const page = doc.pages[cursor.pageIndex];
       const col = page?.columns[cursor.columnIndex];
       pendingFloats.push({
@@ -305,7 +316,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
       // included; no caption baseline to align. Its margins, when wider
       // than the float gap, are the space the band keeps next to it
       // (EF-144), as a box set in the side column keeps its `marginBottom`.
-      const r = cf.L.layoutRange(CUT_START, cf.L.end, width, 'float-probe', false);
+      const L = layouterOf(Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length)), cf);
+      const r = L.layoutRange(CUT_START, L.end, width, 'float-probe', false);
       const mc: FloatMeasure = {
         height: r.totalHeight,
         ...(r.marginBottomPx > floatGapPx ? { gapBelow: r.marginBottomPx } : {}),
@@ -378,7 +390,8 @@ export function createFloatMeasure(deps: FloatMeasureDeps) {
     const cf = calloutFloatOf(resourceId);
     if (cf) {
       const startIdx = Number(resourceId.slice(CALLOUT_FLOAT_PREFIX.length));
-      const result = cf.L.layoutRange(CUT_START, cf.L.end, width, `block-${state.blockIdCounter++}`, false, mirrored);
+      const L = layouterOf(startIdx, cf);
+      const result = L.layoutRange(CUT_START, L.end, width, `block-${state.blockIdCounter++}`, false, mirrored);
       calloutFloatResults.set(result.frame, { result, startIdx, plan: cf.plan });
       return { block: result.frame, height: result.totalHeight };
     }

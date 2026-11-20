@@ -2,7 +2,7 @@ export { createLayout } from './createLayout.js';
 export { registerCodeHighlighter, highlightCode, builtinCodeLanguage } from './code/highlight.js';
 export { fencedCodeLines } from './parse/codeFence.js';
 export type { CodeHighlighter, CodeToken } from './code/highlight.js';
-export { buildDocument, resolveJumpMarks, BuildCancelledError, continuationAfter, contentOutline, pageFenceIds, laterPageIdsOf, computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline, hasAnchors, locateAnchors, duplicateAnchors, mergeCarriedOutline, carriedPlaces, createLayoutTapes, type LayoutTapes, type LayoutTapeStats } from './pipeline/index.js';
+export { buildDocument, resolveJumpMarks, BuildCancelledError, continuationAfter, contentOutline, pageFenceIds, laterPageIdsOf, computeOutline, computeOutlineFor, outlineFromDoc, outlineKey, sameOutline, hasTocDirective, hasIndexDirective, tocOutline, indexOutline, anchorOutline, hasAnchors, locateAnchors, duplicateAnchors, mergeCarriedOutline, carriedPlaces, createLayoutTapes, type LayoutTapes, type LayoutTapesOptions, type LayoutTapeStats } from './pipeline/index.js';
 export type { CarriedPlace } from './pipeline/index.js';
 export type { BuildDocumentOptions } from './pipeline/index.js';
 export type { ConfigOverride } from './defaults/configLayers.js';

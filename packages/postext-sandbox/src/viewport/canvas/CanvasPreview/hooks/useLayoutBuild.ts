@@ -141,6 +141,7 @@ export function useLayoutBuild(deps: UseLayoutBuildDeps) {
           held: heldDocsRef.current,
           build: layoutWorker.build,
           cancelled: () => cancelled,
+          incremental: incrementalLayoutEnabled(),
         });
         if (!result) return;
         const { held: next, built, records } = result;

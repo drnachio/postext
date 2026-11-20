@@ -40,13 +40,16 @@ export interface BuildBookInput {
   rawConfig: PostextConfig;
   resources: Resource[];
   held: ReadonlyMap<string, HeldChapterDoc>;
-  build: (content: PostextContent, config: PostextConfig, opts?: { cacheKey?: string }) => Promise<VDTDocument>;
+  build: (content: PostextContent, config: PostextConfig, opts?: { cacheKey?: string; tapesKey?: string }) => Promise<VDTDocument>;
   cancelled: () => boolean;
+  /** Lay a chapter whose text changed out from its layout before (the
+   *  engine's tapes, #1650). */
+  incremental?: boolean;
 }
 
 /** Lays the book out; null when the build was cancelled or the plan lags
  *  behind a chapter just added (the next build starts over). */
-export async function buildBookChapters({ chapters, plan, config, rawConfig, resources, held, build, cancelled }: BuildBookInput): Promise<BookBuild | null> {
+export async function buildBookChapters({ chapters, plan, config, rawConfig, resources, held, build, cancelled, incremental }: BuildBookInput): Promise<BookBuild | null> {
   const next = new Map<string, HeldChapterDoc>();
   const built: StitchedChapter[] = [];
   const records: ChapterLayout[] = [];
@@ -88,7 +91,13 @@ export async function buildBookChapters({ chapters, plan, config, rawConfig, res
         // Under the key the paginator and the PDF tab use, when the plan's
         // page chain agrees with the actual one, so the worker's cache is
         // shared.
-        { cacheKey: layoutCacheKey({ ...keyInput, continuationKey: chapterPlan.paginated && sameJumps ? chapterPlan.continuationKey : `stitched:${stableStringify(continuation ?? null)}` }) },
+        {
+          cacheKey: layoutCacheKey({ ...keyInput, continuationKey: chapterPlan.paginated && sameJumps ? chapterPlan.continuationKey : `stitched:${stableStringify(continuation ?? null)}` }),
+          // The chapter being edited: the worker keeps one chapter's tapes,
+          // so a chapter laid out again only because the pages before it
+          // moved does not take them (#1650).
+          ...(incremental && hit && hit.source.markdown !== source.markdown ? { tapesKey: `book:${chapter.id}` } : {}),
+        },
       );
       if (cancelled()) return null;
     }

@@ -272,7 +272,6 @@ export class PassTape {
       if (this.kept.has(value) || this.tracked.has(value)) return;
       if (value instanceof WeakMap || value instanceof WeakSet) return;
       this.kept.add(value);
-      this.names?.name(value);
       if (Array.isArray(value)) for (const item of value) walk(item);
       else if (value instanceof Map) for (const [k, v] of value) { walk(k); walk(v); }
       else if (value instanceof Set) for (const item of value) walk(item);
@@ -365,11 +364,8 @@ export class PassTape {
       }
       if (this.kept.has(value)) {
         if (mode !== 'name' || !names) return value;
-        const id = names.idOf(value);
-        if (id === undefined) {
-          flags!.opaque = true;
-          return value;
-        }
+        // Named when a checkpoint first holds it (#1637), not each pass.
+        const id = names.name(value);
         let ref = this.refs.get(id);
         if (!ref) this.refs.set(id, (ref = new SetupRef(id)));
         return ref;
@@ -443,6 +439,19 @@ export class PassTape {
     const side: TapeImage['side'] = [];
     const copy = this.names ? this.copier(side, 'resolve', undefined, taken?.stands, taken) : this.copier(side);
     this.fill(copy({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage);
+  }
+
+  /** A checkpoint of the pass before, taken past the block where this
+   *  pass rejoined it, as this pass would have taken it (#1650): what
+   *  `taken` pairs stands for the old object, and places in the source are
+   *  moved. Undefined when it holds an object of a page the edit changed. */
+  translate(image: TapeImage, taken: TapeTaken): TapeImage | undefined {
+    try {
+      return this.copier([], undefined, undefined, taken.stands, taken)({ bindings: image.bindings, variables: image.variables, side: image.side }) as TapeImage;
+    } catch (error) {
+      if (error instanceof ClosedPageWrite) return undefined;
+      throw error;
+    }
   }
 
   /** Fill the tape with `fresh`, which becomes its own. */

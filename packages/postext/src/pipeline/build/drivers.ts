@@ -42,7 +42,7 @@ import { chapterConfig, chapterConfigOf } from '../../defaults/chapterStyles.js'
 import { chapterRuns, mergeRunDocuments, nextRunContinuation, runSource, type ChapterRun } from './bookChapters.js';
 import { continuationAfter } from '../continuation.js';
 import { perfLap } from '../../util/perfTap.js';
-import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes } from './passReuse.js';
+import { abandonLayoutTapes, beginLayoutTapes, forgetLayoutTapes, noteTapedPages, tapesRest } from './passReuse.js';
 import { afterMarks, beforeMarks, settleMoves } from './passMade.js';
 
 /** Passes a document printing its own contents gets at most, beyond the
@@ -123,6 +123,14 @@ export function* buildDocumentGen(
   options?: BuildDocumentOptions,
 ): Generator<void, VDTDocument, void> {
   if (!options?.tapes) return yield* buildDocumentSteps(content, config, cache, options);
+  if (tapesRest(options.tapes)) {
+    // A short document is laid out without its tapes (#1650).
+    const { tapes, ...plain } = options;
+    beginLayoutTapes(tapes);
+    const doc = yield* buildDocumentSteps(content, config, cache, plain);
+    noteTapedPages(tapes, doc.pages.length);
+    return doc;
+  }
   beginLayoutTapes(options.tapes);
   let ended = false;
   try {
@@ -137,6 +145,7 @@ export function* buildDocumentGen(
       doc = yield* buildDocumentSteps(content, config, cache, options);
     }
     ended = true;
+    noteTapedPages(options.tapes, doc.pages.length);
     return doc;
   } finally {
     if (!ended) abandonLayoutTapes(options.tapes);
@@ -168,6 +177,10 @@ function* buildDocumentSteps(
   // The warnings below read the book's settings and where each chapter lies.
   lap('build.rounds');
   if (runs && runs.length > 1) config = book;
+  // The pages taken from the build before have their places in the source
+  // moved before anything reads them: the warnings below name the places
+  // of lines (#1637).
+  settleMoves(doc.pages);
   // Boxes printed upside down (#1229): their blocks learn the point they
   // turn about.
   markTurnedBoxes(doc);
@@ -208,7 +221,6 @@ function* buildDocumentSteps(
   lap('post.warnings');
   // Chinese marks placed where the lines are painted (#193), and the
   // paragraphs whose leading is too tight for their marks or readings.
-  settleMoves(doc.pages);
   beforeMarks(doc.pages);
   const annotations = annotateDocument(doc, doc.config?.cjk);
   // Arabic vowel marks (#376): how far each vocalised line's ink reaches,

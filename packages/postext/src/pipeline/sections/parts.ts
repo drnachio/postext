@@ -18,6 +18,7 @@ import {
   computeLevelIndentsPx,
   computeOrderedLevelIndentsPx,
   computeOrderedListRunMetrics,
+  type OrderedListMetrics,
 } from '../text/lists.js';
 import type { BlockMeasureContext } from '../blocks/measureContentBlock.js';
 
@@ -355,17 +356,22 @@ export function derivePartResolvedConfig(resolved: ResolvedConfig): ResolvedConf
   };
 }
 
+/** The ordered-list number widths of the blocks inside a part, measured
+ *  with the part body typography over every block of the document: part
+ *  of the content setup (#1650), where a build compares it with the build
+ *  before, not a read of every block by each pass. */
+export function partOrderedMetrics(base: ResolvedConfig, contentBlocks: readonly ContentBlock[]): OrderedListMetrics {
+  const resolved = derivePartResolvedConfig(base);
+  return computeOrderedListRunMetrics([...contentBlocks], resolved, resolveBodyStyle(resolved).fontSizePx);
+}
+
 /** Measurement context for the blocks inside a part: the derived config
  *  plus the body / blockquote styles, list indents and ordered-list number
  *  widths recomputed from it. */
-export function derivePartMeasureContext(ctx: BlockMeasureContext): BlockMeasureContext {
+export function derivePartMeasureContext(ctx: BlockMeasureContext, metrics?: OrderedListMetrics): BlockMeasureContext {
   const resolved = derivePartResolvedConfig(ctx.resolved);
   const bodyStyle = resolveBodyStyle(resolved);
-  const orderedMetrics = computeOrderedListRunMetrics(
-    [...ctx.contentBlocks],
-    resolved,
-    bodyStyle.fontSizePx,
-  );
+  const orderedMetrics = metrics ?? partOrderedMetrics(ctx.resolved, ctx.contentBlocks);
   return {
     ...ctx,
     resolved,

@@ -4,7 +4,8 @@
 // another one (the nearest weight as it is, bold drawn heavier, italic
 // slanted; #650). Shared by the main thread and the layout worker.
 
-import type { VDTDocument, VDTLine } from '../vdt.js';
+import type { VDTBlock, VDTDocument, VDTLine } from '../vdt.js';
+import { standsAsMade } from '../pipeline/build/passMade.js';
 import { quoteFamily } from '../measure/font.js';
 import { measureTextWidth } from '../measure/canvas.js';
 import { parseFontString, type FontFaceRequest } from '../measure/fontString.js';
@@ -201,6 +202,63 @@ function walkFonts(node: unknown, add: (font: string | undefined) => void, depth
   }
 }
 
+/** The fonts a block or a page sets, kept while it stands as the build
+ *  before made it (#1637): the pages an edit takes from the build before
+ *  are not read again. */
+const keptFontLists = new WeakMap<object, string[]>();
+
+function keptFonts<T extends object>(value: T, read: (value: T, add: (font: string | undefined) => void) => void): string[] {
+  // Only what stands as made is kept: a page of this build may still be
+  // written to by the steps after the reading.
+  const made = standsAsMade(value);
+  if (made) {
+    const kept = keptFontLists.get(value);
+    if (kept) return kept;
+  }
+  const fonts = new Set<string>();
+  read(value, (font) => {
+    if (font) fonts.add(font);
+  });
+  const list = [...fonts];
+  if (made) keptFontLists.set(value, list);
+  return list;
+}
+
+/** The fonts of a block: its lines, its resource's, and what it sets
+ *  beside them. */
+function blockFonts(block: VDTBlock, add: (font: string | undefined) => void): void {
+  addLines(block.lines, block.fontString, block.boldFontString, block.italicFontString, block.boldItalicFontString, add);
+  const rb = block.resourceBlock;
+  if (rb) {
+    addLines(rb.captionLines, rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString, add);
+    addLines(rb.noteLines, rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString, add);
+    // A figure's labels drawn on its picture (#860).
+    for (const label of rb.labels ?? []) {
+      const l = label.layout;
+      if (l) addLines(l.lines, l.fontString, l.boldFontString, l.italicFontString, l.boldItalicFontString, add);
+    }
+    const t = rb.table;
+    if (t) {
+      for (const cell of t.cells) {
+        if (cell.isHeader) addLines(cell.lines, t.headerFontString, t.headerBoldFontString, t.headerItalicFontString, t.headerBoldItalicFontString, add);
+        else addLines(cell.lines, t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString, add);
+      }
+    }
+    walkFonts(rb, add);
+  }
+  // Markers, drop caps, heading designs and whatever else the block
+  // sets beside its lines (its own `fontString` only when it has lines).
+  for (const key in block) {
+    if (key === 'fontString' || key === 'lines' || key === 'resourceBlock' || SKIP_KEYS.has(key)) continue;
+    const value = (block as unknown as Record<string, unknown>)[key];
+    if (typeof value === 'string') {
+      if (key.endsWith('FontString') && !/(?:bold|italic|Bold|Italic)FontString$/.test(key) && block.lines.length > 0) add(value);
+    } else if (value && typeof value === 'object') {
+      walkFonts(value, add);
+    }
+  }
+}
+
 /** The faces (family, weight, slant) the text of a laid-out document is
  *  set in: its blocks' lines and segments, list markers, drop caps,
  *  captions, notes and table cells, running heads, folios and design
@@ -216,40 +274,9 @@ export function documentFontFaces(doc: VDTDocument): FontFaceRequest[] {
   // The blocks of the flow, and floats a page holds outside it.
   const blocks = new Set(doc.blocks);
   for (const page of doc.pages) for (const b of page.floats ?? []) blocks.add(b);
-  for (const block of blocks) {
-    addLines(block.lines, block.fontString, block.boldFontString, block.italicFontString, block.boldItalicFontString, add);
-    const rb = block.resourceBlock;
-    if (rb) {
-      addLines(rb.captionLines, rb.captionFontString, rb.captionBoldFontString, rb.captionItalicFontString, rb.captionBoldItalicFontString, add);
-      addLines(rb.noteLines, rb.noteFontString, rb.noteBoldFontString, rb.noteItalicFontString, rb.noteBoldItalicFontString, add);
-      // A figure's labels drawn on its picture (#860).
-      for (const label of rb.labels ?? []) {
-        const l = label.layout;
-        if (l) addLines(l.lines, l.fontString, l.boldFontString, l.italicFontString, l.boldItalicFontString, add);
-      }
-      const t = rb.table;
-      if (t) {
-        for (const cell of t.cells) {
-          if (cell.isHeader) addLines(cell.lines, t.headerFontString, t.headerBoldFontString, t.headerItalicFontString, t.headerBoldItalicFontString, add);
-          else addLines(cell.lines, t.fontString, t.boldFontString, t.italicFontString, t.boldItalicFontString, add);
-        }
-      }
-      walkFonts(rb, add);
-    }
-    // Markers, drop caps, heading designs and whatever else the block
-    // sets beside its lines (its own `fontString` only when it has lines).
-    for (const key in block) {
-      if (key === 'fontString' || key === 'lines' || key === 'resourceBlock' || SKIP_KEYS.has(key)) continue;
-      const value = (block as unknown as Record<string, unknown>)[key];
-      if (typeof value === 'string') {
-        if (key.endsWith('FontString') && !/(?:bold|italic|Bold|Italic)FontString$/.test(key) && block.lines.length > 0) add(value);
-      } else if (value && typeof value === 'object') {
-        walkFonts(value, add);
-      }
-    }
-  }
+  for (const block of blocks) for (const font of keptFonts(block, blockFonts)) add(font);
   // Running heads, folios, opener bands, line numbers, comic lettering.
-  for (const page of doc.pages) walkFonts(page, add);
+  for (const page of doc.pages) for (const font of keptFonts(page, (p, a) => walkFonts(p, a))) add(font);
   const out = new Map<string, FontFaceRequest>();
   for (const font of fonts) {
     const face = parseFontString(font);

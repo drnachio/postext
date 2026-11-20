@@ -47,6 +47,7 @@ export const FIXED = {
   'pass/setup/pageSetup.ts:freshFlowColumns': 'a memo by the geometry in force',
   'pass/sections.ts:sectionMeasureCtxs': 'a memo by section style',
   'pass/notes.ts:noteMeasures': 'a memo by note and width, its answers never written to',
+  'pass/floats/floatMeasure.ts:layouters': 'a memo by box of the functions that lay it out, made again from its plan when missing (#1650)',
   // The loop's own variable, set at every block.
   'pass.ts:dieAt': 'set at the top of every block',
   // Made once the blocks are placed.

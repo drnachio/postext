@@ -41,7 +41,9 @@
         "VERAPDF",
         "COOKBOOK_PREVIEW",
         "COOKBOOK_FORCE_CONFIG",
-        "POSTEXT_QUICK_TESTS"
+        "POSTEXT_QUICK_TESTS",
+        "POSTEXT_RESUME_CHECK",
+        "POSTEXT_PARSE_CHECK"
       ]
     },
     "lint": {},
