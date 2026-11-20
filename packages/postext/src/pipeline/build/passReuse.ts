@@ -22,7 +22,7 @@
 import { measurementGeneration } from '../../measure/canvas.js';
 import { isMathReady } from '../../math/index.js';
 import { ClosedPageWrite, type PassTape, type TapeImage } from './passTape.js';
-import { carryMarks, lastPlaceOf, makeMoves, markMade, moveSourcePlaces, movesWait, unfrozenCopy, type WaitingMoves } from './passMade.js';
+import { carryMarks, hadMarks, lastPlaceOf, makeMoves, markMade, moveSourcePlaces, movesWait, unfrozenCopy, type WaitingMoves } from './passMade.js';
 import { objectsOf, tapeRejoins } from './passRejoin.js';
 import { Names, pairSetups, sameHintReads, type PassSetup } from './passSetups.js';
 
@@ -140,9 +140,13 @@ class Tapes implements LayoutTapes {
   current: (PassRecord | undefined)[] = [];
   private held: (PassRecord | undefined)[] | undefined;
   stats: LayoutTapeStats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], rejoinedAt: [], pagesTaken: [], apartAt: [], builtAgain: false };
+  /** The build is done again because a page it kept never had its marks:
+   *  a pass of the build before whose pages never had them is not used. */
+  marksOnly = false;
 
   /** A build starts: its passes pair with those of the build before. */
   begin(): void {
+    this.marksOnly = false;
     this.held = this.previous;
     this.previous = this.current;
     this.current = [];
@@ -155,15 +159,25 @@ class Tapes implements LayoutTapes {
     this.previous = this.held ?? [];
   }
 
+  /** The build is done again from the build before, without the passes
+   *  of that build whose pages never had their marks. */
+  retry(error: Error): void {
+    this.current = [];
+    this.marksOnly = true;
+    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], rejoinedAt: [], pagesTaken: [], apartAt: [], builtAgain: true, builtAgainAt: whereOf(error) };
+  }
+
   /** Forget every build: the next one starts from nothing. */
   forget(error: Error): void {
     this.previous = [];
     this.current = [];
     this.held = undefined;
-    const at = String(error.stack).split('\n').slice(0, 4).map((line) => line.trim().replace(/\(.*\/(src|dist)\//, '(')).join(' < ');
-    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], rejoinedAt: [], pagesTaken: [], apartAt: [], builtAgain: true, builtAgainAt: at };
+    this.stats = { passes: 0, startedAt: [], reasons: [], placedAgain: 0, pagesKept: [], rejoinedAt: [], pagesTaken: [], apartAt: [], builtAgain: true, builtAgainAt: whereOf(error) };
   }
 }
+
+/** Where `error` was thrown, in a line. */
+const whereOf = (error: Error): string => String(error.stack).split('\n').slice(0, 4).map((line) => line.trim().replace(/\(.*\/(src|dist)\//, '(')).join(' < ');
 
 /** Tapes for one document. */
 export function createLayoutTapes(options?: LayoutTapesOptions): LayoutTapes {
@@ -201,6 +215,12 @@ export function abandonLayoutTapes(tapes: LayoutTapes | undefined): void {
  *  and is done again: with the same tapes, emptied. */
 export function forgetLayoutTapes(tapes: LayoutTapes, error: Error): void {
   (tapes as Tapes).forget(error);
+}
+
+/** A build with `tapes` kept a page that never had its marks and is done
+ *  again from the build before, without its passes whose pages lack them. */
+export function retryLayoutTapes(tapes: LayoutTapes, error: Error): void {
+  (tapes as Tapes).retry(error);
 }
 
 /** The place of the next pass among the passes of the build. */
@@ -269,14 +289,16 @@ export class PassRecording {
     private readonly input: PassRecordingInput,
   ) {
     const t = tapes as Tapes;
-    const before = t.previous[ordinal];
+    const paired = t.previous[ordinal];
+    const unmarked = paired !== undefined && t.marksOnly && !paired.finished?.made.pages.every(hadMarks);
+    const before = unmarked ? undefined : paired;
     this.before = before;
     // Comparing and naming the setup reads every block: not reads of the
     // layout.
     tape.countsReads = false;
     const tracks = (value: object): boolean => tape.tracks(value);
     let names: Names | undefined;
-    let reason = before ? '' : 'no pass before';
+    let reason = before ? '' : unmarked ? 'the pass before never had its marks' : 'no pass before';
     if (before) {
       const pairing = before.environment !== environment() ? 'fonts or engines changed' : pairSetups(before, input.roots, input.body, tracks);
       if (typeof pairing === 'string') reason = pairing;

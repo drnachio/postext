@@ -56,7 +56,10 @@ const hooks = globalThis as {
   __postextPerfTap?: (stage: string, ms: number) => void;
 };
 const lines: string[] = [];
-for (const path of books) {
+// One book in a function of its own (#1651): under Bun 1.2 an arrow
+// function made in a top-level loop of a module could read the loop's
+// bindings of the book before.
+async function forBook(path: string): Promise<void> {
   const opts = new Options({});
   const reporter = new Reporter('quiet', true);
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter };
@@ -76,6 +79,7 @@ for (const path of books) {
   lines.push(`${book.name} layout ${layout.pageCount} ${vdtHash(layout.docs)}`);
   process.stderr.write(`${book.name}: ${build} builds, ${passes} passes, ${layout.pageCount} pp, layout ${vdtHash(layout.docs)}\n`);
 }
+for (const path of books) await forBook(path);
 const text = `${lines.join('\n')}\n`;
 if (out) writeFileSync(out, text);
 else if (!full) process.stdout.write(text);

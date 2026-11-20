@@ -206,3 +206,23 @@ describe('room in tables and between paragraphs', () => {
     expect((second!.marginBottom as { value: number }).value).toBe(2);
   });
 });
+
+describe('a mixed ink', () => {
+  const graphic = (mixed: string) => ({ designmap: '<idPkg:Graphic src="Resources/Graphic.xml"/>', files: { 'Resources/Graphic.xml': `<idPkg:Graphic><Color Self="Color/PANTONE 307 C" Name="PANTONE 307 C" Model="Spot" Space="CMYK" ColorValue="100 16 0 27"/>${mixed}</idPkg:Graphic>` } });
+  const text = para(run('Coloured words in the running text of the document. '.repeat(4), 'FillColor="MixedInk/B"'));
+
+  it('with no process equivalent comes as the CMYK of its inks, and the report says it is an approximation (#1653)', () => {
+    const r = importOne(text, {}, graphic('<MixedInk Self="MixedInk/B" Name="B" Model="Mixedinkmodel" Space="MixedInk" InkList="Ink/$ID/Process%20Black Ink/PANTONE%20307%20C" InkPercentages="15 100"/>'));
+    expect(r.config.colorPalette?.find((c) => c.name === 'B')?.value).toMatchObject({ model: 'cmyk', cmyk: { c: 100, m: 16, y: 0, k: 42 } });
+    expect(finding(r, 'mixedInkFromInks')).toMatchObject({ severity: 'warning', examples: ['B (PANTONE 307 C)'] });
+    expect(finding(r, 'mixedInk')).toBeUndefined();
+    expect(finding(r, 'unreadableSwatch')).toBeUndefined();
+  });
+
+  it('with a process equivalent in the file keeps it', () => {
+    const r = importOne(text, {}, graphic('<MixedInk Self="MixedInk/B" Name="B" Space="CMYK" ColorValue="10 20 30 40" InkList="Ink/$ID/Process%20Black" InkPercentages="40"/>'));
+    expect(r.config.colorPalette?.find((c) => c.name === 'B')?.value).toMatchObject({ model: 'cmyk', cmyk: { c: 10, m: 20, y: 30, k: 40 } });
+    expect(finding(r, 'mixedInk')).toBeDefined();
+    expect(finding(r, 'mixedInkFromInks')).toBeUndefined();
+  });
+});

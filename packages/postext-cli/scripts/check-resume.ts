@@ -33,7 +33,10 @@ const hook = globalThis as { __postextPassResumeCheck?: Check };
 const SAVED_AT = new Set([1, 2, 5, 13, 34, 89]);
 let failed = false;
 
-for (const path of process.argv.slice(2)) {
+// One book in a function of its own (#1651): under Bun 1.2 an arrow
+// function made in a top-level loop of a module could read the loop's
+// bindings of the book before.
+async function forBook(path: string): Promise<void> {
   const opts = new Options({});
   const reporter = new Reporter('quiet', true);
   const { book, fonts } = await openBook({ command: 'check', inputs: [path], opts, reporter });
@@ -84,4 +87,5 @@ for (const path of process.argv.slice(2)) {
   if (!ok) failed = true;
   process.stdout.write(`${book.name}: ${saved} checkpoints, ${compared} resumed runs, ${placedAgain} passes placed again for a write to a closed page, ${differing.size === 0 ? 'all as the first run' : `differing in ${[...differing].map(([n, c]) => `${n} ${c}`).join(', ')}`}; pages ${checked === plain ? 'same' : `${plain} → ${checked}`} (${Math.round(performance.now() - t0)} ms)\n`);
 }
+for (const path of process.argv.slice(2)) await forBook(path);
 process.exit(failed ? 1 : 0);

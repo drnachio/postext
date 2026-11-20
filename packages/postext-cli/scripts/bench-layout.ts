@@ -175,8 +175,11 @@ if (stages) {
   probe.acc.clear();
 }
 
-const results = [];
-for (const path of books) {
+const results: unknown[] = [];
+// One book in a function of its own (#1651): under Bun 1.2 an arrow
+// function made in a top-level loop of a module could read the loop's
+// bindings of the book before.
+async function forBook(path: string): Promise<void> {
   const opts = new Options(threads !== undefined ? { threads } : {});
   const reporter = new Reporter('quiet', true);
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter };
@@ -260,4 +263,5 @@ for (const path of books) {
   if (!json) process.stdout.write(`${row.book}: ${row.pages} pp, median ${row.medianMs} ms (${row.msPerPage} ms/page) runs ${row.runs.join(' ')} cpu ${row.cpuRuns.join(' ')} rss ${row.rssMB} MB hash ${row.hash}\n`);
   if (!json && row.stages) for (const [k, v] of Object.entries(row.stages)) process.stdout.write(`  ${String(v.ms).padStart(7)} ms ${String(v.pct).padStart(6)} %  ${k} (×${v.n})\n`);
 }
+for (const path of books) await forBook(path);
 if (json) process.stdout.write(`${JSON.stringify(results, null, 2)}\n`);

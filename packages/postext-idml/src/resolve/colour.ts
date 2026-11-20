@@ -5,8 +5,12 @@
 // leave), which is what a preview without the document's profiles can
 // say. Lab is exact: IDML's Lab is relative to D50, so it goes through
 // XYZ and a Bradford adaptation to sRGB's D65 white.
+//
+// A mixed ink the file gives no process equivalent for is the sum of its
+// inks, channel by channel: what a proof of its plates in process would
+// lay, not how the spot ink looks printed over the others.
 
-import type { ColourSpace, IdmlDocument, IdmlSwatch } from '../model/document.js';
+import type { ColourSpace, IdmlColor, IdmlDocument, IdmlSwatch } from '../model/document.js';
 
 export interface ResolvedColour {
   /** `#rrggbb`, the tint already applied. */
@@ -15,6 +19,10 @@ export interface ResolvedColour {
   cmyk?: [number, number, number, number];
   /** Name of the spot ink. */
   spot?: string;
+  /** A mixed ink made from its inks, the file giving it no process
+   *  equivalent: the spot inks that went into `cmyk` (none when every ink
+   *  is a process one). */
+  mixedSpots?: string[];
   /** 0–1: how much of the swatch is laid; the rest is paper. */
   tint: number;
   kind: 'process' | 'spot' | 'paper' | 'black' | 'registration' | 'gradient' | 'mixedInk';
@@ -84,6 +92,68 @@ function rgbOf(space: ColourSpace, v: readonly number[]): Rgb | undefined {
 /** `rgb` at `tint` (0–1) over white paper. */
 const tinted = (rgb: Rgb, tint: number): Rgb => [255 - (255 - rgb[0]) * tint, 255 - (255 - rgb[1]) * tint, 255 - (255 - rgb[2]) * tint];
 
+type Cmyk = [number, number, number, number];
+
+/** A screen colour's naive CMYK (0–100 from 0–255): the most black the
+ *  colour takes, and what each ink adds to it. */
+export function rgbToCmyk(r: number, g: number, b: number): Cmyk {
+  const [x, y, z] = [clamp(r, 0, 255) / 255, clamp(g, 0, 255) / 255, clamp(b, 0, 255) / 255];
+  const k = 1 - Math.max(x, y, z);
+  if (k >= 1) return [0, 0, 0, 100];
+  return [((1 - x - k) / (1 - k)) * 100, ((1 - y - k) / (1 - k)) * 100, ((1 - z - k) / (1 - k)) * 100, k * 100];
+}
+
+const PROCESS_INK: Record<string, number> = { Cyan: 0, Magenta: 1, Yellow: 2, Black: 3 };
+
+/** An ink's name out of its reference (`Ink/$ID/Process%20Black`). A name
+ *  with a stray `%` is not an encoded one: it is kept as written. */
+function inkName(ref: string): string {
+  const raw = ref.replace(/^Ink\//, '');
+  let name = raw;
+  try {
+    name = decodeURIComponent(raw);
+  } catch {
+    // Kept as written.
+  }
+  return name.replace(/^\$ID\//, '');
+}
+
+/** The spot colour an ink prints: the swatch named after it, by its
+ *  reference or, when its `Self` is not its name, by its name. */
+function spotOf(doc: IdmlDocument, name: string): IdmlColor | undefined {
+  const direct = doc.swatches.get(`Color/${name}`);
+  if (direct?.kind === 'color') return direct;
+  for (const s of doc.swatches.values()) if (s.kind === 'color' && s.model === 'Spot' && s.name === name) return s;
+  return undefined;
+}
+
+/** A mixed ink InDesign gave no process equivalent for, made from its
+ *  inks: each a process ink or a spot colour's CMYK (its values, its CMYK
+ *  alternate or, with neither, its screen colour's), at its percentage,
+ *  added up channel by channel and held at 100. `spots` names the spot
+ *  inks that went into it. */
+function mixedCmyk(doc: IdmlDocument, inks: readonly string[], values: readonly number[]): { cmyk: Cmyk; spots: string[] } | undefined {
+  if (inks.length === 0 || inks.length !== values.length || values.some((v) => !Number.isFinite(v))) return undefined;
+  const cmyk: Cmyk = [0, 0, 0, 0];
+  const spots: string[] = [];
+  for (const [i, ink] of inks.entries()) {
+    const name = inkName(ink);
+    const share = clamp(values[i]!, 0, 100) / 100;
+    const process = /^Process (Cyan|Magenta|Yellow|Black)$/.exec(name)?.[1];
+    if (process) {
+      cmyk[PROCESS_INK[process]!]! += 100 * share;
+      continue;
+    }
+    const spot = spotOf(doc, name);
+    const rgb = spot ? rgbOf(spot.space, spot.value) : undefined;
+    const c = spot ? (resolve(doc, spot, 1, 0)?.cmyk ?? (rgb ? rgbToCmyk(rgb[0], rgb[1], rgb[2]) : undefined)) : undefined;
+    if (!c) return undefined;
+    for (let k = 0; k < 4; k++) cmyk[k]! += c[k]! * share;
+    spots.push(spot!.name || name);
+  }
+  return { cmyk: [clamp(cmyk[0], 0, 100), clamp(cmyk[1], 0, 100), clamp(cmyk[2], 0, 100), clamp(cmyk[3], 0, 100)], spots };
+}
+
 function resolve(doc: IdmlDocument, swatch: IdmlSwatch, tint: number, depth: number): ResolvedColour | undefined {
   switch (swatch.kind) {
     case 'none':
@@ -109,10 +179,17 @@ function resolve(doc: IdmlDocument, swatch: IdmlSwatch, tint: number, depth: num
       return resolve(doc, base, tint * (clamp(swatch.tint, 0, 100) / 100), depth + 1);
     }
     case 'mixedInk': {
-      const rgb = rgbOf(swatch.space, swatch.value);
+      const own = rgbOf(swatch.space, swatch.value);
+      // No process equivalent in the file: the colour is made from its inks.
+      const mixed = own ? undefined : mixedCmyk(doc, swatch.inks, swatch.values);
+      const rgb = own ?? (mixed ? cmykToRgb(...mixed.cmyk) : undefined);
       if (!rgb) return undefined;
       const out: ResolvedColour = { hex: hexOf(tinted(rgb, tint)), tint, kind: 'mixedInk' };
       if (swatch.space === 'CMYK' && swatch.value.length >= 4) out.cmyk = [swatch.value[0]!, swatch.value[1]!, swatch.value[2]!, swatch.value[3]!];
+      if (mixed) {
+        out.cmyk = mixed.cmyk;
+        out.mixedSpots = mixed.spots;
+      }
       return out;
     }
     case 'gradient': {

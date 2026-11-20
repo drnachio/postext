@@ -82,7 +82,10 @@ interface Row {
 const median = (xs: number[]): number => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)]!;
 const out: { book: string; chapter: string; pages: number; rows: Row[] }[] = [];
 
-for (const path of books) {
+// One book in a function of its own (#1651): under Bun 1.2 an arrow
+// function made in a top-level loop of a module could read the loop's
+// bindings of the book before.
+async function forBook(path: string): Promise<void> {
   const opts = new Options({});
   const reporter = new Reporter('quiet', true);
   const ctx: CommandContext = { command: 'check', inputs: [path], opts, reporter };
@@ -143,6 +146,7 @@ for (const path of books) {
   }
   out.push({ book: book.name, chapter: String(at + 1), pages: layout.docs[at]!.pages.length, rows });
 }
+for (const path of books) await forBook(path);
 
 if (json) console.log(JSON.stringify(out, null, 2));
 else {

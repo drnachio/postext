@@ -271,8 +271,10 @@ export function createContentSetup(deps: ContentSetupDeps) {
     ...(codeBoxes.wrapped ? [codeBoxStyle(setup.resolved)] : []),
     // The boxes exercises are set in (#1227).
     ...(exerciseExpansion?.wrapped ? exerciseExpansion.boxes : []),
-    // The frameless box of a composed page's story (#855).
-    ...(composedWrap.wrapped || comicText.wrapped ? [frameBoxStyle(Math.max(setup.resolved.bodyText.avoidOrphans ? setup.resolved.bodyText.orphanMinLines : 1, setup.resolved.bodyText.avoidWidows ? setup.resolved.bodyText.widowMinLines : 1))] : []),
+    // The frameless box of a composed page's story (#855); also on a
+    // composed page none of whose content reached a frame (every frame
+    // empty, #1653): its frames are still laid out in it.
+    ...(composedWrap.pages || comicText.wrapped ? [frameBoxStyle(Math.max(setup.resolved.bodyText.avoidOrphans ? setup.resolved.bodyText.orphanMinLines : 1, setup.resolved.bodyText.avoidWidows ? setup.resolved.bodyText.widowMinLines : 1))] : []),
     // The boxes of main-flow groups: sub-columns a body line apart in the
     // text column, a gutter apart across the page.
     ...(flowGroups.wrapped

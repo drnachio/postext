@@ -288,14 +288,31 @@ export function settleMoves(pages: readonly object[]): void {
  *  (vowel ink, colours, underlines, highlights). */
 const marked = new WeakSet<object>();
 
+/** A page kept from the build before never had its marks: it was made by
+ *  a pass that was not its build's last. A `TypeError`, as a write to a
+ *  frozen page is: the build is done again. */
+export class PageWithoutMarks extends TypeError {
+  constructor() {
+    super('A page kept from the build before never had its marks set');
+  }
+}
+
 /** The marks are about to be set on `pages`: a page that stands as made
  *  and never had them (it was made by a pass that was not the build's
- *  last) cannot take them now. Throws the error a write to a frozen page
- *  throws, and the build is done again from nothing. */
+ *  last) cannot take them now, nor the steps after the passes that pass
+ *  over made pages. Throws {@link PageWithoutMarks}. Asked before the
+ *  moves of the edit are made ({@link settleMoves}), so that the pages of
+ *  the build before are left as they were and the build can be done again
+ *  from them (#1637). */
 export function beforeMarks(pages: readonly object[]): void {
   for (const page of pages) {
-    if (standsAsMade(page) && !marked.has(page)) throw new TypeError('A page kept from the build before never had its marks set');
+    if (standsAsMade(page) && !marked.has(page)) throw new PageWithoutMarks();
   }
+}
+
+/** `page` has been through the marks set after the passes. */
+export function hadMarks(page: object): boolean {
+  return marked.has(page);
 }
 
 /** `to` stands for `from` (a copy that can be written to): it has had

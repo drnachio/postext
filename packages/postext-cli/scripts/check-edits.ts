@@ -103,8 +103,11 @@ function* editsOf(start: string, round: number): Generator<[string, string]> {
   if (cut !== undefined) yield ['paragraph cut at 0.6', (markdown = cut)];
 }
 
-let failed = false;
-for (const path of books) {
+// Each book is checked in a function of its own (#1651): under Bun 1.2,
+// an arrow function made in the top-level loop of this module read some
+// of the loop's bindings from the book before (its configuration, its
+// layout), so a book was now and then laid out with another's settings.
+async function checkBook(path: string): Promise<boolean> {
   const opts = new Options({});
   const reporter = new Reporter('quiet', true);
   const { book, fonts } = await openBook({ command: 'check', inputs: [path], opts, reporter });
@@ -195,9 +198,12 @@ for (const path of books) {
     }
     if (at === longest && plainMs > 0) timing = `; longest chapter (${whole.docs[at]!.pages.length} pp), ${rounds * 3}+ edits: ${Math.round(tapedMs)} ms with tapes, ${Math.round(plainMs)} ms without`;
   }
-  if (differing > 0 || patched > 0) failed = true;
   const why = [...reasons].sort((a, b) => b[1] - a[1]).map(([r, n]) => `${n} ${r}`).join('; ');
   process.stdout.write(`${book.name}: ${edits} edits, ${differing} differing; ${fromCheckpoint} of ${passes} passes from a checkpoint, ${placedAgain} placed again${why ? ` (from the first block: ${why})` : ''}; ${rejoined} rejoined the pass before; ${patched} put together from pieces differing, ${pagesSent} pages sent of ${edits === 0 ? 0 : Math.round(pagesSeen / Math.max(1, passes) * edits)}; of ${pagesSeen} pages, ${pagesKept} kept before the edit and ${pagesTaken} taken after it${timing}\n`);
   for (const [at, n] of [...builtAgain].sort((a, b) => b[1] - a[1])) process.stdout.write(`  ${n} builds done again: ${at}\n`);
+  return differing > 0 || patched > 0;
 }
+
+let failed = false;
+for (const path of books) if (await checkBook(path)) failed = true;
 process.exit(failed ? 1 : 0);
