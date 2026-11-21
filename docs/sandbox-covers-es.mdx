@@ -6,7 +6,7 @@ export const metadata = {
   description: "El panel Cubierta: las versiones y encuadernaciones de un libro, el lomo según sus páginas y su papel, los pliegos de cubierta con su sangrado, sus pliegues y su código de barras, los textos y el diseño de la cubierta, sus bibliotecas y plantillas, y los archivos para la imprenta y para pantalla",
   lang: 'es',
   lastUpdated: '2026-11-21',
-  readingTime: "5 min",
+  readingTime: "6 min",
   order: 47,
   parent: 'sandbox',
   plainSummary: "El panel Cubierta prepara la cubierta que necesita la imprenta, aparte de las páginas del libro. Cada versión del libro, como una rústica y un cartoné, tiene su encuadernación y su ISBN. El lomo se calcula con las páginas y el papel. Escribes una vez los textos de la cubierta y le das un diseño, y el panel muestra el pliego con su sangrado, sus pliegues y su código de barras. Es una versión preliminar: aún queda mucho por hacer.",
@@ -30,7 +30,7 @@ La **Biblioteca de perfiles** guarda los perfiles de papel y de encuadernación 
 
 ## Textos y diseño
 
-Los **Textos de la cubierta** se escriben una vez para todas las versiones: título, subtítulo, autor, el texto de la contracubierta, el lomo y las solapas, en Markdown. El texto de cada zona se compone dentro de su zona segura.
+Los **Textos de la cubierta** se escriben una vez para todas las versiones: título, subtítulo, autor, el texto de la contracubierta, el lomo y las solapas, en Markdown. El texto de cada zona empieza como una caja sobre su zona segura; el diseñador coloca y compone cada texto por separado.
 
 El **Diseño** es el mismo en todas las versiones: un fondo para todo el pliego, un fondo para cada zona, una imagen de fondo (sobre todo el pliego o solo sobre la cubierta) y el color del texto. Los fondos y las imágenes que llegan al borde entran en el sangrado.
 
@@ -40,6 +40,16 @@ El **Diseño** es el mismo en todas las versiones: un fondo para todo el pliego,
 - La **Biblioteca de logos** guarda los logos de la editorial, de las colecciones y los sellos, cada uno con su margen de respeto.
 - Las **Colecciones** guardan el catálogo de anuncios de cada colección para las guardas; la sección **Guardas** de un cartoné elige para cada página el color del papel y nada, un anuncio o un texto, y avisa de lo que tapa el cajo.
 - Las **Plantillas de cubierta** guardan el diseño de la cubierta por partes (fondo, elementos, textos, efectos, logos, acabados) y lo aplican a otro libro por partes; se exportan e importan en un archivo.
+
+## El diseñador de cubierta
+
+**Abrir el diseñador de cubierta** (en el panel, o junto al pliego en la vista) muestra la cubierta en un lienzo propio, sobre todo el Sandbox. **Previsualización** la enseña como se imprimirá, con sus guías (pliegues y hendidos, zonas seguras, borde del sangrado) y las comprobaciones; **Edición** trabaja sobre ella por capas fijas, de abajo arriba: **Fondo**, **Elementos móviles**, **Textos editables**, **Efectos**, **Logos** y **Acabados especiales**. Cada capa se puede ocultar mientras se trabaja.
+
+- Los **elementos y efectos** son imágenes de la galería, recuadros de color y formas básicas con nodos editables, con esquinas redondeadas, filete, degradado y sombra. Una imagen se puede recortar con un contorno trazado o suavizar con una **Máscara** (una imagen en grises de la galería: el blanco deja ver y el negro oculta).
+- Los **textos** son cajas: **Añadir un texto** coloca uno de los textos generales (`{{Título}}`, `{{Autor}}`…) o palabras propias; cada caja tiene su letra para el título, el subtítulo, el encabezado y el texto, y puede girarse para leerse a lo largo del lomo.
+- Los **logos** guardan su margen de respeto, y los **acabados especiales** (barniz, plastificado, estampación, relieve) se imprimen como planchas de tinta plana aparte.
+- Se arrastra un elemento para moverlo y un tirador para cambiar su tamaño; Alt arrastra una copia, Cmd (Ctrl) lo alinea con las zonas y Mayús conserva sus proporciones. Cmd+C, X, V y D copian, cortan, pegan y duplican, y el diseñador tiene su propio **Deshacer** (Cmd+Z), aparte del del libro.
+- Un elemento colocado por zona se mueve y se escala con ella cuando cambia el formato o el lomo.
 
 ## Pliegos, comprobaciones y archivos
 

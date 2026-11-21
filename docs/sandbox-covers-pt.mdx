@@ -6,7 +6,7 @@ export const metadata = {
   description: "O painel Capa: as versões e encadernações de um livro, a lombada calculada pelas páginas e pelo papel, as folhas de capa com sangria, dobras e código de barras, os textos e o design da capa, suas bibliotecas e modelos, e os arquivos para a gráfica e para a tela",
   lang: 'pt',
   lastUpdated: '2026-11-21',
-  readingTime: "5 min",
+  readingTime: "6 min",
   order: 47,
   parent: 'sandbox',
   plainSummary: "O painel Capa prepara a capa de que a gráfica precisa, separada das páginas do livro. Cada versão do livro, como uma brochura e uma capa dura, tem sua encadernação e seu ISBN. A lombada é calculada pelas páginas e pelo papel. Você escreve os textos da capa uma vez e dá um design a ela, e o painel mostra a folha com sangria, dobras e código de barras. É uma versão preliminar: ainda há muito por fazer.",
@@ -30,7 +30,7 @@ A **Biblioteca de perfis** guarda os perfis de papel e de encadernação das sua
 
 ## Textos e design
 
-Os **Textos da capa** são escritos uma vez para todas as versões: título, subtítulo, autor, o texto da quarta capa, a lombada e as orelhas, em Markdown. O texto de cada zona é composto dentro da sua área de segurança.
+Os **Textos da capa** são escritos uma vez para todas as versões: título, subtítulo, autor, o texto da quarta capa, a lombada e as orelhas, em Markdown. O texto de cada zona começa como uma caixa sobre a sua área de segurança; o designer posiciona e compõe cada texto separadamente.
 
 O **Design** é o mesmo em todas as versões: um fundo para a folha inteira, um fundo para cada zona, uma imagem de fundo (sobre a folha inteira ou só sobre a primeira capa) e a cor do texto. Fundos e imagens que chegam à borda entram na sangria.
 
@@ -40,6 +40,16 @@ O **Design** é o mesmo em todas as versões: um fundo para a folha inteira, um 
 - A **Biblioteca de logótipos** guarda os logos da editora, das coleções e os selos, cada um com sua área de proteção.
 - As **Coleções** guardam o catálogo de anúncios de cada coleção para as guardas; a seção **Guardas** de uma capa dura escolhe para cada página a cor do papel e nada, um anúncio ou um texto, e avisa do que a canaleta cobre.
 - Os **Modelos de capa** salvam o design da capa por partes (fundo, elementos, textos, efeitos, logos, acabamentos) e o aplicam a outro livro por partes; são exportados e importados em um arquivo.
+
+## O designer de capa
+
+**Abrir o designer de capa** (no painel, ou ao lado da folha na visualização) mostra a capa em uma tela própria, sobre todo o Sandbox. **Pré-visualização** a mostra como será impressa, com suas guias (dobras e vincos, áreas de segurança, borda da sangria) e as verificações; **Edição** trabalha nela por camadas fixas, de baixo para cima: **Fundo**, **Elementos móveis**, **Textos editáveis**, **Efeitos**, **Logótipos** e **Acabamentos especiais**. Cada camada pode ser ocultada durante o trabalho.
+
+- Os **elementos e efeitos** são imagens da galeria, caixas de cor e formas básicas com nós editáveis, com cantos arredondados, filete, degradê e sombra. Uma imagem pode ser recortada por um contorno traçado ou suavizada por uma **Máscara** (uma imagem em cinza da galeria: o branco mostra, o preto oculta).
+- Os **textos** são caixas: **Adicionar um texto** coloca um dos textos gerais (`{{Título}}`, `{{Autor}}`…) ou palavras próprias; cada caixa tem sua letra para título, subtítulo, cabeçalho e texto, e pode girar para ser lida ao longo da lombada.
+- Os **logos** mantêm sua área de proteção, e os **acabamentos especiais** (verniz, laminação, hot stamping, relevo) são impressos como chapas de cor especial à parte.
+- Arraste um elemento para movê-lo e uma alça para redimensioná-lo; Alt arrasta uma cópia, Cmd (Ctrl) o alinha às zonas e Shift mantém as proporções. Cmd+C, X, V e D copiam, recortam, colam e duplicam, e o designer tem seu próprio **Desfazer** (Cmd+Z), separado do livro.
+- Um elemento colocado por zona se move e muda de escala com ela quando o formato ou a lombada mudam.
 
 ## Folhas, verificações e arquivos
 

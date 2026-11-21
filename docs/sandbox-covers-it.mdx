@@ -6,7 +6,7 @@ export const metadata = {
   description: "Il pannello Copertina: le versioni e le legature di un libro, il dorso calcolato dalle pagine e dalla carta, i fogli di copertina con l’abbondanza, le pieghe e il codice a barre, i testi e la grafica della copertina, le librerie e i modelli, e i file per la tipografia e per lo schermo",
   lang: 'it',
   lastUpdated: '2026-11-21',
-  readingTime: "5 min",
+  readingTime: "6 min",
   order: 47,
   parent: 'sandbox',
   plainSummary: "Il pannello Copertina prepara la copertina che serve alla tipografia, a parte le pagine del libro. Ogni versione del libro, come una brossura e un cartonato, ha la sua legatura e il suo ISBN. Il dorso si calcola dalle pagine e dalla carta. Scrivi una volta i testi della copertina e le dai una grafica, e il pannello mostra il foglio con l’abbondanza, le pieghe e il codice a barre. È una versione preliminare: resta ancora molto da fare.",
@@ -30,7 +30,7 @@ La **Libreria di profili** conserva i profili di carta e di legatura delle tue t
 
 ## Testi e grafica
 
-I **Testi della copertina** si scrivono una volta per tutte le versioni: titolo, sottotitolo, autore, il testo della quarta, il dorso e le alette, in Markdown. Il testo di ogni zona è composto nella sua area di sicurezza.
+I **Testi della copertina** si scrivono una volta per tutte le versioni: titolo, sottotitolo, autore, il testo della quarta, il dorso e le alette, in Markdown. Il testo di ogni zona parte come un riquadro sulla sua area di sicurezza; il designer colloca e compone ogni testo a parte.
 
 La **Grafica** è la stessa in tutte le versioni: un fondo per tutto il foglio, un fondo per ogni zona, un’immagine di fondo (su tutto il foglio o solo sulla prima) e il colore del testo. I fondi e le immagini che arrivano al bordo entrano nell’abbondanza.
 
@@ -40,6 +40,16 @@ La **Grafica** è la stessa in tutte le versioni: un fondo per tutto il foglio, 
 - La **Libreria di loghi** conserva i loghi dell’editore, delle collane e i marchi, ciascuno con la sua area di rispetto.
 - Le **Collane** conservano il catalogo di annunci di ogni collana per i risguardi; la sezione **Risguardi** di un cartonato sceglie per ogni pagina il colore della carta e niente, un annuncio o un testo, e avvisa di ciò che copre la cerniera.
 - I **Modelli di copertina** salvano la grafica della copertina per parti (fondo, elementi, testi, effetti, loghi, finiture) e la applicano a un altro libro per parti; si esportano e si importano in un file.
+
+## Il designer della copertina
+
+**Apri il designer della copertina** (nel pannello, o accanto al foglio nella vista) mostra la copertina su una tela a sé, sopra tutto il Sandbox. **Anteprima** la mostra come sarà stampata, con le sue guide (pieghe e cordonature, aree di sicurezza, bordo dell’abbondanza) e i controlli; **Modifica** ci lavora per livelli fissi, dal basso in alto: **Sfondo**, **Elementi mobili**, **Testi modificabili**, **Effetti**, **Loghi** e **Finiture speciali**. Ogni livello si può nascondere mentre si lavora.
+
+- Gli **elementi e gli effetti** sono immagini della galleria, riquadri di colore e forme di base con nodi modificabili, con angoli arrotondati, filetto, sfumatura e ombra. Un’immagine si può ritagliare con un contorno tracciato o ammorbidire con una **Maschera** (un’immagine in grigi della galleria: il bianco mostra, il nero nasconde).
+- I **testi** sono riquadri: **Aggiungi un testo** colloca uno dei testi generali (`{{Titolo}}`, `{{Autore}}`…) o parole proprie; ogni riquadro ha il suo carattere per titolo, sottotitolo, intestazione e testo, e può ruotare per leggersi lungo il dorso.
+- I **loghi** conservano la loro area di rispetto, e le **finiture speciali** (vernice, plastificazione, lamina, rilievo) si stampano come lastre di colore spot a parte.
+- Si trascina un elemento per spostarlo e una maniglia per ridimensionarlo; Alt trascina una copia, Cmd (Ctrl) lo allinea alle zone e Maiusc ne mantiene le proporzioni. Cmd+C, X, V e D copiano, tagliano, incollano e duplicano, e il designer ha il suo **Annulla** (Cmd+Z), distinto da quello del libro.
+- Un elemento collocato per zona si sposta e si scala con essa quando cambiano il formato o il dorso.
 
 ## Fogli, controlli e file
 

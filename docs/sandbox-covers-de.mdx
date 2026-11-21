@@ -6,7 +6,7 @@ export const metadata = {
   description: "Der Bereich Umschlag: die Ausgaben und Bindungen eines Buchs, der Rücken aus Seitenzahl und Papier, die Umschlagbogen mit Anschnitt, Falzen und Strichcode, die Texte und die Gestaltung des Umschlags, seine Bibliotheken und Vorlagen und die Dateien für die Druckerei und den Bildschirm",
   lang: 'de',
   lastUpdated: '2026-11-21',
-  readingTime: "5 min",
+  readingTime: "6 min",
   order: 47,
   parent: 'sandbox',
   plainSummary: "Der Bereich Umschlag erstellt den Umschlag, den die Druckerei braucht, getrennt von den Seiten des Buchs. Jede Ausgabe des Buchs, etwa ein Paperback und ein Hardcover, hat ihre Bindung und ihre ISBN. Der Rücken wird aus den Seiten und dem Papier berechnet. Sie schreiben die Umschlagtexte einmal und geben dem Umschlag eine Gestaltung, und der Bereich zeigt den Bogen mit Anschnitt, Falzen und Strichcode. Es ist eine vorläufige Version: Es bleibt noch viel zu tun.",
@@ -30,7 +30,7 @@ Die **Profilbibliothek** bewahrt die Papier- und Bindungsprofile Ihrer Druckerei
 
 ## Texte und Gestaltung
 
-Die **Umschlagtexte** werden einmal für alle Ausgaben geschrieben: Titel, Untertitel, Autor, der Text der Rückseite, der Rücken und die Klappen, in Markdown. Der Text jeder Zone wird in ihrem Sicherheitsbereich gesetzt.
+Die **Umschlagtexte** werden einmal für alle Ausgaben geschrieben: Titel, Untertitel, Autor, der Text der Rückseite, der Rücken und die Klappen, in Markdown. Der Text jeder Zone beginnt als Rahmen über ihrem Sicherheitsbereich; der Designer platziert und setzt jeden Text für sich.
 
 Die **Gestaltung** ist für alle Ausgaben dieselbe: ein Grund für den ganzen Bogen, ein Grund für jede Zone, ein Hintergrundbild (über den ganzen Bogen oder nur die Vorderseite) und die Textfarbe. Gründe und Bilder, die bis an den Rand reichen, laufen in den Anschnitt.
 
@@ -40,6 +40,16 @@ Die **Gestaltung** ist für alle Ausgaben dieselbe: ein Grund für den ganzen Bo
 - Die **Logobibliothek** bewahrt die Logos des Verlags, der Reihen und die Siegel auf, jedes mit seinem Schutzraum.
 - Die **Reihen** bewahren den Anzeigenkatalog jeder Reihe für die Vorsätze auf; der Abschnitt **Vorsätze** einer Buchdecke wählt für jede Seite die Papierfarbe und nichts, eine Anzeige oder einen Text und warnt, was der Falz verdeckt.
 - Die **Umschlagvorlagen** speichern die Gestaltung des Umschlags nach Teilen (Hintergrund, Elemente, Texte, Effekte, Logos, Veredelungen) und legen sie nach Teilen auf ein anderes Buch; sie werden als Datei exportiert und importiert.
+
+## Der Umschlag-Designer
+
+**Umschlag-Designer öffnen** (im Bereich oder neben dem Bogen in der Ansicht) zeigt den Umschlag auf einer eigenen Arbeitsfläche über dem ganzen Sandbox. **Vorschau** zeigt ihn, wie er gedruckt wird, mit seinen Hilfslinien (Falze und Rillen, Sicherheitsbereiche, Rand des Anschnitts) und den Prüfungen; **Bearbeiten** arbeitet in festen Ebenen von unten nach oben: **Hintergrund**, **Bewegliche Elemente**, **Bearbeitbare Texte**, **Effekte**, **Logos** und **Veredelungen**. Jede Ebene lässt sich bei der Arbeit ausblenden.
+
+- **Elemente und Effekte** sind Bilder der Galerie, Farbflächen und Grundformen mit bearbeitbaren Knoten, mit abgerundeten Ecken, Kontur, Verlauf und Schatten. Ein Bild lässt sich an einer nachgezeichneten Kontur beschneiden oder mit einer **Maske** weich auslaufen lassen (ein Graustufenbild der Galerie: Weiß zeigt, Schwarz verdeckt).
+- **Texte** sind Rahmen: **Text hinzufügen** setzt einen der allgemeinen Texte (`{{Titel}}`, `{{Autor}}`…) oder eigene Worte; jeder Rahmen hat seine Schrift für Titel, Untertitel, Zwischentitel und Text und kann gedreht werden, um am Rücken entlang zu laufen.
+- **Logos** behalten ihren Schutzraum, und **Veredelungen** (Lack, Kaschierung, Prägefolie, Prägung) werden als eigene Sonderfarbplatten gedruckt.
+- Ein Element wird zum Verschieben gezogen, ein Griff zum Skalieren; Alt zieht eine Kopie, Cmd (Strg) richtet es an den Zonen aus, Umschalt behält die Proportionen. Cmd+C, X, V und D kopieren, schneiden aus, fügen ein und duplizieren, und der Designer hat sein eigenes **Rückgängig** (Cmd+Z), getrennt von dem des Buchs.
+- Ein Element, das an einer Zone sitzt, bewegt und skaliert sich mit ihr, wenn sich Format oder Rücken ändern.
 
 ## Bogen, Prüfungen und Dateien
 

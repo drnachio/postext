@@ -6,7 +6,7 @@ export const metadata = {
   description: 'The Cover panel: a book’s versions and bindings, the spine from its pages and paper, the cover sheets with their bleed, folds and barcode, the cover’s texts and design, its libraries and templates, and the files for the printer and for screens',
   lang: 'en',
   lastUpdated: '2026-11-21',
-  readingTime: '5 min',
+  readingTime: '6 min',
   order: 47,
   parent: 'sandbox',
   plainSummary: "The Cover panel makes the cover a printer needs, apart from the book's pages. Each version of the book, such as a paperback and a hardcover, has its own binding and ISBN. The spine is worked out from the pages and the paper. You write the cover's texts once and give it a design, and the panel shows the sheet with its bleed, folds and barcode. It is a preliminary version: there is still a lot to do.",
@@ -30,7 +30,7 @@ The **Profile library** keeps your printers' paper and binding profiles; export 
 
 ## Texts and design
 
-The **Cover texts** are written once for every version: title, subtitle, author, the back cover's text, the spine and the flaps, in Markdown. Each zone's text is set in its safe area.
+The **Cover texts** are written once for every version: title, subtitle, author, the back cover's text, the spine and the flaps, in Markdown. Each zone's text starts as a box over its safe area; the designer places and sets each text on its own.
 
 The **Design** is the same for every version: a ground for the whole sheet, a ground for each zone, a background picture (over the whole sheet or the front cover only) and the text colour. Grounds and pictures that reach the edge run into the bleed.
 
@@ -40,6 +40,16 @@ The **Design** is the same for every version: a ground for the whole sheet, a gr
 - The **Logo library** keeps the publisher's, the collections' and the seals' logos, each with its clear space.
 - **Collections** keep each collection's catalogue of ads for the endpapers; the **Endpapers** section of a case chooses, for each page, its paper colour and nothing, an ad or a text, and warns of what the hinge covers.
 - **Cover templates** save the cover's design by parts (background, elements, texts, effects, logos, finishes) and lay them on another book by parts; export and import them as a file.
+
+## The cover designer
+
+**Open the cover designer** (in the panel, or beside the sheet in the viewport) shows the cover on a canvas of its own, over the whole Sandbox. **Preview** shows it as it will print, with its guides (folds and scores, safe areas, the edge of the bleed) and the checks; **Edit** works on it in fixed layers, bottom to top: **Background**, **Movable elements**, **Editable texts**, **Effects**, **Logos** and **Special finishes**. Each layer can be hidden while working.
+
+- **Elements and effects** are pictures of the gallery, boxes of colour and basic shapes whose nodes can be edited, with rounded corners, a border, a gradient and a shadow. A picture can be cut to a traced outline or softened by a **Mask** (a grey picture of the gallery: white shows, black hides).
+- **Texts** are boxes: **Add a text** places one of the general texts (`{{Title}}`, `{{Author}}`…) or words of its own; each box has its own type for its title, subtitle, heading and text, and can be turned to read along the spine.
+- **Logos** keep their clear space, and **Special finishes** (varnish, lamination, foil, embossing) print as separate spot plates.
+- Drag an item to move it and a handle to resize it; Alt drags a copy, Cmd (Ctrl) lines it up with the zones, Shift keeps its proportions. Cmd+C, X, V and D copy, cut, paste and duplicate, and the designer has its own **Undo** (Cmd+Z), apart from the book's.
+- An element placed by a zone moves and scales with it when the format or the spine changes.
 
 ## Sheets, checks and files
 
