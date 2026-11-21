@@ -24,6 +24,8 @@ import { PdfViewport } from './viewport/pdf/PdfViewport.js';
 import { ChapterPaginator } from './viewport/ChapterPaginator.js';
 import { useChapterHashSync } from './viewport/useChapterHashSync.js';
 import { useContourTraces } from './panels/resources/marks/contourTraces.js';
+import { ProductionPanel } from './production/ProductionPanel.js';
+import { CoverStage } from './production/CoverStage.js';
 import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost, uiDirectionOf, useUiRtl } from './ui/index.js';
 import { BundleReplaceDialog } from './BundleReplaceDialog.js';
@@ -45,13 +47,14 @@ const FolioViewport = lazy(() => import('./viewport/folio/FolioViewport.js').the
 const EpubViewport = lazy(() => import('./viewport/epub/EpubViewport.js').then((m) => ({ default: m.EpubViewport })));
 const ScormViewport = lazy(() => import('./viewport/ScormViewport.js').then((m) => ({ default: m.ScormViewport })));
 
-const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
+const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navProduction' | 'navWarnings'> = {
   projects: 'navBooks',
   chapters: 'navChapters',
   markdown: 'navManuscript',
   resources: 'navResources',
   fonts: 'navFonts',
   config: 'navDesign',
+  production: 'navProduction',
   warnings: 'navWarnings',
 };
 
@@ -175,6 +178,8 @@ function SandboxLayout({
 
   const renderPanel = () => {
     switch (activePanel) {
+      case 'production':
+        return <ProductionPanel />;
       case 'config':
         return <ConfigPanel />;
       case 'resources':
@@ -338,11 +343,18 @@ function SandboxLayout({
       <main id="main-content" tabIndex={-1} className="flex min-w-0 flex-1 flex-col outline-none">
         <SandboxHeading />
         <ChapterPaginator />
-        <ViewportTabs />
-        <div className="relative min-h-0 flex-1 overflow-hidden">
-          {renderViewport()}
-          <SelectionBreadcrumb />
-          {loadingCover}
+        {/* With the Cover panel open, its sheet as it is now in place of the
+            book's pages, which are not what the panel works on. */}
+        {activePanel === 'production' && <div className="relative min-h-0 flex-1 overflow-hidden"><CoverStage /></div>}
+        {/* The book's pages stay laid out under it, hidden: the cover's spine
+            waits for the whole book to be paginated. */}
+        <div className={activePanel === 'production' ? 'hidden' : 'contents'}>
+          <ViewportTabs />
+          <div className="relative min-h-0 flex-1 overflow-hidden">
+            {renderViewport()}
+            <SelectionBreadcrumb />
+            {loadingCover}
+          </div>
         </div>
         <SandboxAnnouncer />
         <PortalHost />

@@ -26,6 +26,7 @@ import type { EpubReaderHandle, EpubReaderPosition } from './EpubReader.js';
 import { EpubToolbar } from './EpubToolbar.js';
 import { useFloatingToolbarShell } from '../useFloatingToolbarShell.js';
 import { useViewerControls } from '../viewerControls.js';
+import { WORKING_BOOK } from '../../production/model/bookProduction.js';
 
 export type { EpubNotice } from '../../epub/write.js';
 
@@ -132,7 +133,7 @@ export function EpubViewport() {
         layout: snapshotLayout,
         identity,
         locale,
-        cover: (title) => epubCoverOf(docs[0]!, snapshot, title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
+        cover: (title) => epubCoverOf(docs[0]!, snapshot, title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }, state.activeProjectId ?? WORKING_BOOK),
         note,
       });
       const { fonts, cover } = written;

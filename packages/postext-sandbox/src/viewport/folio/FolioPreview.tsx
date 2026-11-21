@@ -22,6 +22,7 @@ import { useFolioSelection } from './useFolioSelection.js';
 import { type PreviewVideo, type VideoPick, type PreviewVideoResult, pickVideo } from '../viewerVideos.js';
 import { type ShownDoc, playableVideos, videoKey, PROOF_PAPER, fill, FOLIO_TEXTURES, samePage } from './FolioPreview/pages.js';
 import { useFolioBuild } from './FolioPreview/useFolioBuild.js';
+import { folioWithCover, useFolioCover } from '../../production/store/folioCover.js';
 
 interface FolioPreviewProps {
   /** What the left button does on the book. */
@@ -96,8 +97,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [resources, spineId]);
   const [spine, setSpine] = useState<{ fileId: string; url?: string } | null>(null);
   const spineUrl = spine?.fileId === spineFileId ? spine?.url : undefined;
-  const spineUrlRef = useRef(spineUrl);
-  spineUrlRef.current = spineUrl;
+  const spineUrlRef = useRef<string | HTMLCanvasElement | undefined>(spineUrl);
   // The picture of the spine is read (or found missing): a new viewer
   // waits for it rather than binding the book without it.
   const spineReady = !spineFileId || spine?.fileId === spineFileId;
@@ -332,11 +332,18 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     [printPreviewKey, deferredConfig.page?.dpi],
   );
   const proofing = printPreview !== undefined;
-  const shownFolio = useMemo(
-    () => (proofing ? { ...folioConfig, paper: { ...folioConfig?.paper, shade: PROOF_PAPER } } : folioConfig),
-    [proofing, folioConfig],
-  );
+  // The book's cover from the Cover panel (its binding, its boards'
+  // colour, its spine), under the book's own Folio settings.
+  const cover = useFolioCover();
+  const shownFolio = useMemo(() => {
+    const folio = folioWithCover(folioConfig, cover);
+    return proofing ? { ...folio, paper: { ...folio?.paper, shade: PROOF_PAPER } } : folio;
+  }, [proofing, folioConfig, cover]);
   folioConfigRef.current = shownFolio;
+  // The spine: the book's own picture when its settings name one, else the
+  // cover's, painted.
+  const shownSpine = spineUrl ?? (spineId ? undefined : cover?.spine);
+  spineUrlRef.current = shownSpine;
   const folioLabels = useMemo((): FolioLabels => ({
     region: labels.folioRegion,
     prev: labels.folioPrev,
@@ -479,8 +486,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [folioLabels]);
 
   useEffect(() => {
-    viewerRef.current?.setAppearance({ folio: shownFolio, spineImage: spineUrl });
-  }, [shownFolio, spineUrl]);
+    viewerRef.current?.setAppearance({ folio: shownFolio, spineImage: shownSpine });
+  }, [shownFolio, shownSpine]);
 
   useEffect(() => () => {
     viewerRef.current?.dispose();

@@ -8,6 +8,8 @@ import { setCustomFonts } from '../controls/fonts/fontLoader.js';
 import { invalidateResourceImage } from '../controls/media/resourceImages.js';
 import { slugify } from '../panels/resources/slugify.js';
 import type { BundleContent } from '../presets/bundle.js';
+import { storedProductionBundleFiles, storeProductionBundle } from '../production/model/productionBundle.js';
+import { WORKING_BOOK } from '../production/model/bookProduction.js';
 import { type PresetApplyParts, openBundleZip, type LoadedPreset, parseBundle, buildBundleFiles, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME } from '../presets/index.js';
 import { mimeForFile, extensionForImageMime } from '../presets/manifest.js';
 import { putBlobAt, getBlob } from '../storage/blobStore.js';
@@ -327,6 +329,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
         if (titles) record.editionTitles = titles;
       }
       const projectId = await persistNew(record);
+      // The production the bundle carries, for the new book.
+      await storeProductionBundle(projectId, opened.files).catch(() => false);
       // The bundle's pagination, when it still applies: the book opens
       // paginated (the records are written to storage with the state).
       if (loaded.layouts) dispatch({ type: 'SET_CHAPTER_LAYOUTS', payload: loaded.layouts });
@@ -391,6 +395,8 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       const s = deps.getState();
       let meta: { id: string; name: string; description?: string; locale?: string };
       let content: BundleContent;
+      // The book whose production goes along (none for a preset).
+      let productionKey: string | null = null;
       let readBlob = async (fileId: string) => (await getBlob(fileId))?.bytes ?? null;
       let readFont = async (fileId: string) => (await getFontFile(fileId))?.buffer ?? null;
 
@@ -422,6 +428,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       } else if (target?.kind === 'project' && target.id !== s.activeProjectId) {
         const record = await getProject(target.id);
         if (!record) throw new Error('Project not found');
+        productionKey = target.id;
         meta = { id: record.bundleId ?? (slugify(record.name) || 'project'), name: record.name, description: record.description, locale: record.locale };
         // The configuration as the working book had it (`applyRecord`), so
         // the records written then still fingerprint the same.
@@ -433,6 +440,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       } else {
         await deps.flushWorkingSave();
         const cur = deps.getState();
+        productionKey = cur.activeProjectId ?? WORKING_BOOK;
         const active = cur.activeProjectId ? cur.projects.find((p) => p.id === cur.activeProjectId) : undefined;
         const preset = cur.presetSummaries.find((p) => p.id === cur.activePresetId);
         const name = activeName();
@@ -478,7 +486,10 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       }
 
       const built = await buildBundleFiles(meta, content, { readBlob, readFont });
-      const zip = zipBundle(built.files);
+      // The book's production (its versions, its cover and the cover's
+      // pictures) goes along in a folder of its own.
+      const production = productionKey ? await storedProductionBundleFiles(productionKey).catch(() => ({})) : {};
+      const zip = zipBundle({ ...built.files, ...production });
       downloadBytes(zip, `${slugify(meta.name) || 'project'}${POSTEXT_EXTENSION}`, POSTEXT_MIME);
       if (built.warnings.length > 0) {
         dispatch({ type: 'SET_PROJECT_NOTICE', payload: deps.labels().projectExportWarnings.replace('__list__', built.warnings.join('; ')) });
