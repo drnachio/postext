@@ -22,7 +22,7 @@
 import { measurementGeneration } from '../../measure/canvas.js';
 import { isMathReady } from '../../math/index.js';
 import { ClosedPageWrite, type PassTape, type TapeImage } from './passTape.js';
-import { carryMarks, hadMarks, lastPlaceOf, makeMoves, markMade, moveSourcePlaces, movesWait, unfrozenCopy, type WaitingMoves } from './passMade.js';
+import { carryMarks, frontPages, hadMarks, makeMoves, markMade, moveSourcePlaces, movesWait, unfrozenCopy, type WaitingMoves } from './passMade.js';
 import { objectsOf, tapeRejoins } from './passRejoin.js';
 import { Names, pairSetups, sameHintReads, type PassSetup } from './passSetups.js';
 
@@ -40,8 +40,9 @@ interface Checkpoint {
   image: TapeImage;
   /** Taken from the pass before past the block where this pass rejoined
    *  it (#1650). Its closed pages are that pass's, their places in the
-   *  source not moved by the edits since: a pass may rejoin at it (closed
-   *  objects are paired, not read), not start from it. */
+   *  source not moved by the edits since: a pass that rejoins at it pairs
+   *  them, one that starts from it keeps or takes what the build before
+   *  made of them, their places moved (#1660). */
   carried?: true;
 }
 
@@ -281,6 +282,9 @@ export class PassRecording {
   private rejoined: { pages: number; blocks: number } | undefined;
   private readonly before: PassRecord | undefined;
   private lastPages = 0;
+  /** The pages the checkpoint the pass started from held before the one
+   *  it was filling. */
+  private startPages = 0;
 
   constructor(
     private readonly tapes: LayoutTapes,
@@ -320,7 +324,8 @@ export class PassRecording {
           names.succeed(pairing.pairs);
           for (let i = before.checkpoints.length - 1; i >= 0; i--) {
             const c = before.checkpoints[i]!;
-            if (c.carried || c.image.opaque || c.readUpTo >= first || c.blockIdx > first || c.hintReads > hintsSame) continue;
+            if (c.image.opaque || c.readUpTo >= first || c.blockIdx > first || c.hintReads > hintsSame) continue;
+            if (c.carried && !this.allStand(c, before)) continue;
             this.from = c;
             this.adopted = before.checkpoints.slice(0, i + 1);
             break;
@@ -366,6 +371,7 @@ export class PassRecording {
     const from = this.from;
     if (!from) return 0;
     this.tape.putBack(from.image);
+    this.startPages = this.input.doc.pages.length - 1;
     // The pages the checkpoint holds by reference are closed: a write to
     // one throws, and the pass is placed again from its first block.
     this.tape.close(this.input.doc.pages.slice(0, -1));
@@ -376,6 +382,15 @@ export class PassRecording {
     this.lastPages = this.input.doc.pages.length;
     (this.tapes as Tapes).stats.startedAt[this.ordinal] = from.blockIdx;
     return from.blockIdx;
+  }
+
+  /** Whether every page the carried checkpoint `c` holds before the one
+   *  it was filling stands from the pass `before`. */
+  private allStand(c: Checkpoint, before: PassRecord): boolean {
+    const pages = (c.image.bindings.get('pass.doc') as { pages?: object[] } | undefined)?.pages;
+    if (!pages || !before.finished || !pagesStandAlone(this.input, before.finished.made.pages)) return false;
+    const { kept, moved } = frontPages(before.finished, pages, this.editAt, this.editDelta);
+    return kept.length + moved.length === pages.length - 1;
   }
 
   /** The pass is about to place block `blockIdx`. True when it need not:
@@ -460,33 +475,29 @@ export class PassRecording {
     // pages are taken again (a letter typed after another), and are made
     // now otherwise, before anything reads those pages.
     const takes: object[] = [];
+    let moves = old?.moves;
+    const owedBefore = new Set<object>(moves?.objects);
+    // The pages before the edit that stand from the pass before.
+    const { kept: keptBefore, moved: frontMoved } = usable ? frontPages(old, placed.pages, this.editAt, this.editDelta) : { kept: [], moved: [] };
+    const kept = keptBefore.length + frontMoved.length;
+    // A pass that started from a checkpoint carried from the build before
+    // holds that build's pages as placed, their places not moved: each of
+    // them must stand for what was made of it.
+    if (this.from?.carried && kept < this.startPages) throw new ClosedPageWrite('A pass started from a carried checkpoint left a page before it that does not stand');
+    for (const i of frontMoved) takes.push(old!.made.pages[i]!);
     if (usable && this.rejoined) {
       for (let i = this.rejoined.pages; i < placed.pages.length; i++) if (placed.pages[i] === old.placed.pages[i]) takes.push(old.made.pages[i]!);
     }
-    let moves = old?.moves;
     // The same pages: taken from the same page on. A page that was taken
-    // and is now before the edit must have its moves made to be kept.
-    if (moves && (moves.list.length >= 8 || old!.movesFrom !== this.rejoined?.pages || takes.some((page) => !moves!.objects.includes(page) || Object.isFrozen(page)))) {
+    // and is now kept must have its moves made to be kept.
+    if (moves && (moves.list.length >= 8 || old!.movesFrom !== this.rejoined?.pages || takes.some((page) => !owedBefore.has(page) || Object.isFrozen(page)) || keptBefore.some((i) => owedBefore.has(old!.made.pages[i]!)))) {
       makeMoves(moves);
       moves = undefined;
     }
-    // A page is kept when it is the page the pass before placed and what
-    // was made of it names no place the edit moved: a note set at its foot
-    // may be written after the edit, wherever it is cited.
-    const stays = (i: number): boolean => {
-      if (placed.pages[i] !== old!.placed.pages[i]) return false;
-      if (this.editDelta === 0) return true;
-      const last = (old!.lastPlace[i] ??= lastPlaceOf(old!.made.pages[i]));
-      return last < this.editAt;
-    };
-    let kept = 0;
     const keptPages = new Set<unknown>();
-    if (usable) {
-      while (kept < placed.pages.length - 1 && stays(kept)) {
-        stands.set(placed.pages[kept]!, old.made.pages[kept]!);
-        keptPages.add(indexOf(placed.pages[kept]!));
-        kept++;
-      }
+    for (const i of keptBefore) {
+      stands.set(placed.pages[i]!, old!.made.pages[i]!);
+      keptPages.add(indexOf(placed.pages[i]!));
     }
     // The pages after the block where the pass rejoined the one before
     // are that pass's pages: what was made of them stands too, its places
@@ -508,6 +519,11 @@ export class PassRecording {
       return page;
     };
     const takenPages = new Set<unknown>();
+    const movedPages = new Set<unknown>();
+    for (const i of frontMoved) {
+      stands.set(placed.pages[i]!, taken(old!.made.pages[i]!));
+      movedPages.add(indexOf(placed.pages[i]!));
+    }
     if (usable && this.rejoined) {
       for (let i = this.rejoined.pages; i < placed.pages.length; i++) {
         if (placed.pages[i] !== old.placed.pages[i]) continue;
@@ -526,7 +542,7 @@ export class PassRecording {
         if (same && keptPages.has(pageOf(block))) {
           stands.set(block, old.made.blocks[j]!);
           frozen.push(old.made.blocks[j]!);
-        } else if (same && takenPages.has(pageOf(block))) {
+        } else if (same && (takenPages.has(pageOf(block)) || movedPages.has(pageOf(block)))) {
           stands.set(block, taken(old.made.blocks[j]!));
         } else if (this.rejoined && j >= this.rejoined.blocks && Object.isFrozen(block)) {
           stale.push(j);
@@ -537,9 +553,9 @@ export class PassRecording {
     // feet) comes after the blocks placed, page after page: for the pages
     // kept, before what this finish adds; for the pages taken, after it.
     const added = old ? old.doc.blocks.slice(old.placed.blocks.length) : [];
-    const before = added.filter((b) => keptPages.has(pageOf(b)));
+    const before = added.filter((b) => keptPages.has(pageOf(b)) || movedPages.has(pageOf(b))).map((b) => (movedPages.has(pageOf(b)) ? taken(b) : b));
     const after = added.filter((b) => takenPages.has(pageOf(b))).map(taken);
-    if (kept > 0) this.before!.freeze([...old!.made.pages.slice(0, kept), ...frozen, ...before]);
+    if (kept > 0) this.before!.freeze([...keptBefore.map((i) => old!.made.pages[i]!), ...frozen, ...before.filter((b) => keptPages.has(pageOf(b)))]);
     this.tape.open(stands.size > 0 ? stands : undefined);
     for (const j of stale) moveSourcePlaces(doc.blocks[j], at, delta, moved);
     for (const block of before) doc.blocks.push(block);
@@ -558,8 +574,8 @@ export class PassRecording {
     } else if (waits) movesWait(waits);
     this.record.finished = {
       placed, made: { pages: [...doc.pages], blocks: doc.blocks.slice(0, placed.blocks.length) }, doc,
-      lastPlace: old ? old.lastPlace.slice(0, kept) : [],
-      ...(waits ? { moves: waits, movesFrom: this.rejoined!.pages } : {}),
+      lastPlace: old ? old.lastPlace.slice(0, kept).map((last, i) => (frontMoved.includes(i) ? undefined : last)) : [],
+      ...(waits ? { moves: waits, movesFrom: this.rejoined?.pages } : {}),
     };
     const t = this.tapes as Tapes;
     t.stats.pagesKept[this.ordinal] = kept;

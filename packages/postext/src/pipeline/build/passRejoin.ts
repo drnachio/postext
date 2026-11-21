@@ -20,6 +20,12 @@ import { SetupRef, type PassTape, type TapeImage } from './passTape.js';
 
 type Plain = Record<string, unknown>;
 
+/** Every item of `list` is a number, a string or nothing. */
+const flat = (list: readonly unknown[]): boolean => {
+  for (const item of list) if (typeof item === 'object' && item !== null) return false;
+  return true;
+};
+
 /**
  * Whether the live `tape` is in the state `image` holds (a checkpoint of
  * the pass before, taken before the same block), the text having become
@@ -57,6 +63,19 @@ export function tapeRejoins(tape: PassTape, image: TapeImage, at: number, delta:
       return source && typeof old === 'number' && delta !== 0 && old >= at && live === old + delta;
     }
     if (typeof live !== 'object' || live === null || kept.has(live)) return false;
+    // A list of numbers or strings (a line's visual order, its places in
+    // the source) is read by value: one shared with the measurement cache
+    // may have been frozen by a page closed after the image was taken, or
+    // copied by it, and its identity says nothing (#1660).
+    if (!word && Array.isArray(old) && Array.isArray(live) && flat(old)) {
+      if (live.length !== old.length) return false;
+      for (let i = 0; i < old.length; i++) {
+        const l = live[i] as unknown;
+        if (typeof l === 'object' && l !== null) return false;
+        if (!Object.is(l, old[i]) && !(source && typeof old[i] === 'number' && delta !== 0 && (old[i] as number) >= at && l === (old[i] as number) + delta)) return false;
+      }
+      return true;
+    }
     const frozen = Object.isFrozen(old);
     if (!word) {
       if (frozen !== Object.isFrozen(live)) return false;

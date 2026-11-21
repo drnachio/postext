@@ -139,6 +139,63 @@ export function lastPlaceOf(value: unknown, seen = new Set<object>(), places = f
   return last;
 }
 
+/** `place` after `moves` are made, in order: a place read from a page
+ *  whose moves still wait. */
+export function placeAfter(place: number, moves: readonly { at: number; delta: number }[]): number {
+  for (const move of moves) if (place >= move.at) place += move.delta;
+  return place;
+}
+
+/** Whether something on `value` (a page) was set from text the edit
+ *  changed: a source range that meets `[at, end]`, its places read after
+ *  `moves`. A page that names places after the edit only (notes at its
+ *  foot whose text is at the end of the chapter) is not: it stands with
+ *  its places moved (#1637). */
+export function touchesEdit(value: unknown, at: number, end: number, moves: readonly { at: number; delta: number }[], seen = new Set<object>()): boolean {
+  if (typeof value !== 'object' || value === null || seen.has(value)) return false;
+  seen.add(value);
+  if (Array.isArray(value)) return value.some((item) => touchesEdit(item, at, end, moves, seen));
+  const { sourceStart, sourceEnd } = value as { sourceStart?: unknown; sourceEnd?: unknown };
+  if (typeof sourceStart === 'number') {
+    const last = typeof sourceEnd === 'number' ? sourceEnd : sourceStart;
+    if (placeAfter(sourceStart, moves) <= end && placeAfter(last, moves) >= at) return true;
+  }
+  for (const key in value) {
+    if (key === 'segments' || SOURCE_KEYS.has(key)) continue;
+    if (touchesEdit((value as Record<string, unknown>)[key], at, end, moves, seen)) return true;
+  }
+  return false;
+}
+
+/** Of `pages` (a pass's, its last apart), those that stand from the pass
+ *  before (`old`, its pages as placed and as made), from the first on
+ *  while they do (#1660). A page is kept when it is the page the pass
+ *  before placed and what was made of it names no place the edit at `at`
+ *  moved (a note set at its foot may be written after the edit, wherever
+ *  it is cited); one that names such places but holds nothing set from
+ *  the text the edit changed stands with its places moved, as a page
+ *  taken after a rejoin does. Places are read as the moves that wait on a
+ *  page leave them. */
+export function frontPages(
+  old: { placed: { pages: readonly object[] }; made: { pages: readonly object[] }; lastPlace: (number | undefined)[]; moves?: WaitingMoves },
+  pages: readonly object[],
+  at: number,
+  delta: number,
+): { kept: number[]; moved: number[] } {
+  const owed = new Set<object>(old.moves?.objects);
+  const waiting = (page: object) => (owed.has(page) ? old.moves!.list : []);
+  const end = at + Math.max(0, -delta);
+  const kept: number[] = [];
+  const moved: number[] = [];
+  for (let i = 0; i < pages.length - 1 && pages[i] === old.placed.pages[i]; i++) {
+    const made = old.made.pages[i]!;
+    if (delta === 0 || placeAfter((old.lastPlace[i] ??= lastPlaceOf(made)), waiting(made)) < at) kept.push(i);
+    else if (!touchesEdit(made, at, end, waiting(made))) moved.push(i);
+    else break;
+  }
+  return { kept, moved };
+}
+
 // Moves that wait (#1639). A build has several passes and only the last
 // one's document goes out; the pages each of the others took from the
 // build before need their places in the source only if a later build
