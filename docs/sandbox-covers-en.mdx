@@ -1,0 +1,61 @@
+{/* docs/sandbox-covers-en.mdx */}
+
+export const metadata = {
+  title: 'Sandbox: print covers',
+  sidebarTitle: 'Print covers',
+  description: 'The Cover panel: a book’s versions and bindings, the spine from its pages and paper, the cover sheets with their bleed, folds and barcode, the cover’s texts and design, its libraries and templates, and the files for the printer and for screens',
+  lang: 'en',
+  lastUpdated: '2026-11-21',
+  readingTime: '6 min',
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "The Cover panel makes the cover a printer needs, apart from the book's pages. Each version of the book, such as a paperback and a hardcover, has its own binding and ISBN. The spine is worked out from the pages and the paper. You write the cover's texts once and give it a design, and the panel shows the sheet with its bleed, folds and barcode. It is a preliminary version: there is still a lot to do.",
+};
+
+# Sandbox: print covers
+
+> **A preliminary version.** The Cover panel is a first approach to how Postext manages and produces print covers. It works from start to finish on real books, but a lot of work remains, and its shape may still change.
+
+A printer needs the cover as a sheet of its own: the back cover, the spine and the front cover side by side, and, depending on the binding, flaps, a jacket, a case with its turn-ins, or endpapers. The **Cover** panel (`BookCopy` icon in the activity bar) makes those sheets from what Postext already knows about the book: its trim, its pages and its paper. While the panel is open, the viewport shows the sheet chosen in the panel instead of the book's pages.
+
+## Versions
+
+A book can have several versions, each with its own binding and ISBN: **Add a paperback** and **Add a hardcover** start one. A version has a name, its **ISBN** (with a five-digit add-on, if any), the **ISBN of the complete work** for a volume of a collection, its **Binding** (perfect bound, sewn softcover, a case with a flat or a round spine), **Flaps** for a softcover, the direction of the spine's text, and, under **Printer settings**, any measure the printer gives (bleed, flap width, board, squares, joints, turn-in, safe margin). The first version starts from the book's own front matter: its title, subtitle, author and ISBN.
+
+## Spine and paper
+
+The **Spine** is worked out from the pages of the book, laid out whole, and the bulk of its paper, rounded to whole signatures, with the binding's allowance. The **Text paper** is the book design's (the Folio paper) or a paper profile of the library; **Add an insert** declares pages on another paper, such as a section of plates on coated stock. A spine too thin for text is left blank, and the panel says when the printer's profile cannot make the book.
+
+The **Profile library** keeps your printers' paper and binding profiles; export and import them as a file to share them.
+
+## Texts and design
+
+The **Cover texts** are written once for every version: title, subtitle, author, the back cover's text, the spine and the flaps, in Markdown. Each zone's text starts as a box over its safe area; the designer places and sets each text on its own.
+
+The **Design** is the same for every version: a ground for the whole sheet, a ground for each zone, a background picture (over the whole sheet or the front cover only) and the text colour. Grounds and pictures that reach the edge run into the bleed.
+
+## Libraries
+
+- The **Cover gallery** holds the cover's own pictures, apart from the book's figures: PNG, JPEG, SVG, TIFF, and PDF or AI files with their PDF (each page a picture of its own, with no ground). A picture can be traced, to keep its outline.
+- The **Logo library** keeps the publisher's, the collections' and the seals' logos, each with its clear space.
+- **Collections** keep each collection's catalogue of ads for the endpapers; the **Endpapers** section of a case chooses, for each page, its paper colour and nothing, an ad or a text, and warns of what the hinge covers.
+- **Cover templates** save the cover's design by parts (background, elements, texts, effects, logos, finishes) and lay them on another book by parts; export and import them as a file.
+
+## The cover designer
+
+**Open the cover designer** (in the panel, or beside the sheet in the viewport) shows the cover on a canvas of its own, over the whole Sandbox. **Preview** shows it as it will print, with its guides (folds and scores, safe areas, the edge of the bleed) and the checks; **Edit** works on it in fixed layers, bottom to top: **Background**, **Movable elements**, **Editable texts**, **Effects**, **Logos** and **Special finishes**. Each layer can be hidden while working.
+
+- **Elements and effects** are pictures of the gallery, boxes of colour and basic shapes whose nodes can be edited, with rounded corners, a border, a gradient and a shadow. A picture can be cut to a traced outline or softened by a **Mask** (a grey picture of the gallery: white shows, black hides).
+- **Texts** are boxes: **Add a text** places one of the general texts (`{{Title}}`, `{{Author}}`…) or words of its own; each box has its own type for its title, subtitle, heading and text, and can be turned to read along the spine.
+- **Logos** keep their clear space, and **Special finishes** (varnish, lamination, foil, embossing) print as separate spot plates.
+- Drag an item to move it and a handle to resize it; Alt drags a copy, Cmd (Ctrl) lines it up with the zones, Shift keeps its proportions. Cmd+C, X, V and D copy, cut, paste and duplicate, and the designer has its own **Undo** (Cmd+Z), apart from the book's.
+- An element placed by a zone moves and scales with it when the format or the spine changes.
+
+## Sheets, checks and files
+
+The **Sheet** selector chooses what the panel and the viewport show: the cover (or the case), the jacket, the front and back endpapers, and the front cover in screen formats (an EPUB cover and social media sizes). Each sheet gives its size with the bleed, and a list of checks before it goes to the printer: an element off the sheet or across a fold, a picture that is missing, a text that does not fit.
+
+- **Export PDF** writes the sheet with the book's print settings: its bleed and crop marks, a mark above and below each fold, finishes as spot plates that overprint.
+- A screen format exports as a JPEG.
+- The book's EPUB takes its front cover, and Folio's 3D book is bound as the version (a case or a softcover, its spine painted from the sheet).
+- The production is kept with the book in the browser and travels in its `.postext` bundle, with the gallery's pictures and the logos and profiles it uses.

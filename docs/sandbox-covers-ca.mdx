@@ -1,0 +1,61 @@
+{/* docs/sandbox-covers-ca.mdx */}
+
+export const metadata = {
+  title: "Sandbox: cobertes per a impremta",
+  sidebarTitle: "Cobertes per a impremta",
+  description: "El tauler Coberta: les versions i enquadernacions d’un llibre, el llom segons les pàgines i el paper, els plecs de coberta amb el sagnat, els plecs i el codi de barres, els textos i el disseny de la coberta, les biblioteques i plantilles, i els fitxers per a la impremta i per a pantalla",
+  lang: 'ca',
+  lastUpdated: '2026-11-21',
+  readingTime: "6 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "El tauler Coberta prepara la coberta que necessita la impremta, a part de les pàgines del llibre. Cada versió del llibre, com una rústica i un cartoné, té la seva enquadernació i el seu ISBN. El llom es calcula amb les pàgines i el paper. Escrius una vegada els textos de la coberta i li dones un disseny, i el tauler mostra el plec amb el sagnat, els plecs i el codi de barres. És una versió preliminar: encara queda molt per fer.",
+};
+
+# Sandbox: cobertes per a impremta
+
+> **Una versió preliminar.** El tauler Coberta és una primera manera de gestionar i generar cobertes per a impremta a Postext. Funciona de cap a cap amb llibres reals, però queda molta feina i la seva forma encara pot canviar.
+
+La impremta necessita la coberta en un plec propi: la contracoberta, el llom i la coberta l’un al costat de l’altre i, segons l’enquadernació, solapes, una sobrecoberta, un cartoné amb les seves voltes o unes guardes. El tauler **Coberta** (icona `BookCopy` de la barra d’activitat) fa aquests plecs amb el que Postext ja sap del llibre: el format, les pàgines i el paper. Mentre el tauler és obert, la vista mostra el plec triat al tauler en lloc de les pàgines del llibre.
+
+## Versions
+
+Un llibre pot tenir diverses versions, cadascuna amb la seva enquadernació i el seu ISBN: **Afegeix rústica** i **Afegeix cartoné** en creen una. Cada versió té un nom, el seu **ISBN** (amb el complement de cinc xifres, si en porta), l’**ISBN de l’obra completa** per a un volum d’una col·lecció, la seva **Enquadernació** (rústica fresada o cosida, cartoné de llom recte o rodó), **Solapes** en una rústica, el sentit del text del llom i, a **Ajustos d’impremta**, les mesures que doni la impremta (sagnat, amplada de solapa, cartró, cantells, caixos, volta, marge de seguretat). La primera versió parteix de les dades del mateix llibre: títol, subtítol, autor i ISBN.
+
+## Llom i paper
+
+El **Llom** es calcula amb les pàgines del llibre, maquetat sencer, i el gruix del paper, arrodonit a plecs complets i amb l’afegit de l’enquadernació. El **Paper de l’interior** és el del disseny del llibre (el paper de Folio) o un perfil de paper de la biblioteca; **Afegir un encart** declara pàgines en un altre paper, com un quadernet de làmines en estucat. Un llom massa prim per portar text es deixa en blanc, i el tauler avisa quan el perfil de la impremta no pot fer el llibre.
+
+La **Biblioteca de perfils** guarda els perfils de paper i d’enquadernació de les teves impremtes; exporta’ls i importa’ls en un fitxer per compartir-los.
+
+## Textos i disseny
+
+Els **Textos de la coberta** s’escriuen una vegada per a totes les versions: títol, subtítol, autor, el text de la contracoberta, el llom i les solapes, en Markdown. El text de cada zona comença com una caixa sobre la seva zona segura; el dissenyador col·loca i compon cada text per separat.
+
+El **Disseny** és el mateix en totes les versions: un fons per a tot el plec, un fons per a cada zona, una imatge de fons (sobre tot el plec o només sobre la coberta) i el color del text. Els fons i les imatges que arriben a la vora entren al sagnat.
+
+## Biblioteques
+
+- La **Galeria de la coberta** reuneix les imatges pròpies de la coberta, a part de les figures del llibre: PNG, JPEG, SVG, TIFF, i fitxers PDF o AI amb el seu PDF (cada pàgina, una imatge pròpia, sense fons). Una imatge es pot traçar per guardar-ne el contorn.
+- La **Biblioteca de logotips** guarda els logotips de l’editorial, de les col·leccions i els segells, cadascun amb el seu marge de respecte.
+- Les **Col·leccions** guarden el catàleg d’anuncis de cada col·lecció per a les guardes; la secció **Guardes** d’un cartoné tria per a cada pàgina el color del paper i res, un anunci o un text, i avisa del que tapa el caix.
+- Les **Plantilles de coberta** guarden el disseny de la coberta per parts (fons, elements, textos, efectes, logotips, acabats) i l’apliquen a un altre llibre per parts; s’exporten i s’importen en un fitxer.
+
+## El dissenyador de coberta
+
+**Obre el dissenyador de coberta** (al tauler, o al costat del plec a la vista) mostra la coberta en un llenç propi, sobre tot el Sandbox. **Previsualització** l’ensenya com s’imprimirà, amb les guies (plecs i hendits, zones segures, vora del sagnat) i les comprovacions; **Edició** hi treballa per capes fixes, de baix a dalt: **Fons**, **Elements mòbils**, **Textos editables**, **Efectes**, **Logotips** i **Acabats especials**. Cada capa es pot amagar mentre es treballa.
+
+- Els **elements i efectes** són imatges de la galeria, requadres de color i formes bàsiques amb nodes editables, amb cantonades arrodonides, filet, degradat i ombra. Una imatge es pot retallar amb un contorn traçat o suavitzar amb una **Màscara** (una imatge en grisos de la galeria: el blanc deixa veure i el negre amaga).
+- Els **textos** són caixes: **Afegeix un text** col·loca un dels textos generals (`{{Títol}}`, `{{Autor}}`…) o paraules pròpies; cada caixa té la seva lletra per al títol, el subtítol, l’encapçalament i el text, i es pot girar per llegir-se al llarg del llom.
+- Els **logotips** conserven el seu marge de respecte, i els **acabats especials** (vernís, plastificat, estampació, relleu) s’imprimeixen com a planxes de tinta plana a part.
+- S’arrossega un element per moure’l i un tirador per canviar-ne la mida; Alt arrossega una còpia, Cmd (Ctrl) l’alinea amb les zones i Majúscules en conserva les proporcions. Cmd+C, X, V i D copien, retallen, enganxen i dupliquen, i el dissenyador té el seu propi **Desfés** (Cmd+Z), a part del del llibre.
+- Un element col·locat per zona es mou i s’escala amb ella quan canvia el format o el llom.
+
+## Plecs, comprovacions i fitxers
+
+El selector **Plec** tria el que mostren el tauler i la vista: la coberta (o el cartoné), la sobrecoberta, les guardes davantera i posterior, i la coberta en formats de pantalla (la coberta de l’EPUB i les mides de xarxes socials). Cada plec dona la seva mida amb el sagnat i una llista de comprovacions abans de la impremta: un element fora del plec o sobre un plec, una imatge que falta, un text que no hi cap.
+
+- **Exporta PDF** escriu el plec amb els ajustos d’impressió del llibre: el sagnat i les marques de tall, una marca a sobre i a sota de cada plec, i els acabats com a planxes de tinta plana en sobreimpressió.
+- Un format de pantalla s’exporta com a JPEG.
+- L’EPUB del llibre en pren la coberta, i el llibre 3D de Folio s’enquaderna com la versió (cartoné o rústica, amb el llom pintat a partir del plec).
+- La producció es desa amb el llibre al navegador i viatja al seu paquet `.postext`, amb les imatges de la galeria i els logotips i perfils que fa servir.

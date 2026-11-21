@@ -1,0 +1,61 @@
+{/* docs/sandbox-covers-it.mdx */}
+
+export const metadata = {
+  title: "Sandbox: copertine per la stampa",
+  sidebarTitle: "Copertine per la stampa",
+  description: "Il pannello Copertina: le versioni e le legature di un libro, il dorso calcolato dalle pagine e dalla carta, i fogli di copertina con l’abbondanza, le pieghe e il codice a barre, i testi e la grafica della copertina, le librerie e i modelli, e i file per la tipografia e per lo schermo",
+  lang: 'it',
+  lastUpdated: '2026-11-21',
+  readingTime: "6 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "Il pannello Copertina prepara la copertina che serve alla tipografia, a parte le pagine del libro. Ogni versione del libro, come una brossura e un cartonato, ha la sua legatura e il suo ISBN. Il dorso si calcola dalle pagine e dalla carta. Scrivi una volta i testi della copertina e le dai una grafica, e il pannello mostra il foglio con l’abbondanza, le pieghe e il codice a barre. È una versione preliminare: resta ancora molto da fare.",
+};
+
+# Sandbox: copertine per la stampa
+
+> **Una versione preliminare.** Il pannello Copertina è un primo modo di gestire e produrre copertine per la stampa in Postext. Funziona dall’inizio alla fine su libri veri, ma resta molto lavoro e la sua forma può ancora cambiare.
+
+La tipografia ha bisogno della copertina su un foglio a sé: la quarta, il dorso e la prima affiancati e, a seconda della legatura, alette, una sovraccoperta, un cartonato con i risvolti o i risguardi. Il pannello **Copertina** (icona `BookCopy` della barra delle attività) fa questi fogli con ciò che Postext sa già del libro: il formato, le pagine e la carta. Mentre il pannello è aperto, la vista mostra il foglio scelto nel pannello al posto delle pagine del libro.
+
+## Versioni
+
+Un libro può avere più versioni, ciascuna con la sua legatura e il suo ISBN: **Aggiungi brossura** e **Aggiungi cartonato** ne creano una. Una versione ha un nome, il suo **ISBN** (con il complemento di cinque cifre, se c’è), l’**ISBN dell’opera completa** per un volume di una collana, la sua **Legatura** (brossura fresata o cucita, cartonato a dorso piatto o tondo), le **Alette** per una brossura, il verso del testo sul dorso e, in **Impostazioni di stampa**, le misure che dà la tipografia (abbondanza, larghezza dell’aletta, cartone, unghiature, cerniere, risvolto, margine di sicurezza). La prima versione parte dai dati del libro stesso: titolo, sottotitolo, autore e ISBN.
+
+## Dorso e carta
+
+Il **Dorso** si calcola dalle pagine del libro, impaginato per intero, e dallo spessore della carta, arrotondato a segnature intere e con l’aggiunta della legatura. La **Carta dell’interno** è quella del progetto del libro (la carta di Folio) o un profilo di carta della libreria; **Aggiungi un inserto** dichiara pagine su un’altra carta, come una segnatura di tavole su patinata. Un dorso troppo sottile per un testo resta vuoto, e il pannello avvisa quando il profilo della tipografia non può fare il libro.
+
+La **Libreria di profili** conserva i profili di carta e di legatura delle tue tipografie; esportali e importali in un file per condividerli.
+
+## Testi e grafica
+
+I **Testi della copertina** si scrivono una volta per tutte le versioni: titolo, sottotitolo, autore, il testo della quarta, il dorso e le alette, in Markdown. Il testo di ogni zona parte come un riquadro sulla sua area di sicurezza; il designer colloca e compone ogni testo a parte.
+
+La **Grafica** è la stessa in tutte le versioni: un fondo per tutto il foglio, un fondo per ogni zona, un’immagine di fondo (su tutto il foglio o solo sulla prima) e il colore del testo. I fondi e le immagini che arrivano al bordo entrano nell’abbondanza.
+
+## Librerie
+
+- La **Galleria della copertina** raccoglie le immagini proprie della copertina, a parte le figure del libro: PNG, JPEG, SVG, TIFF, e file PDF o AI con il loro PDF (ogni pagina un’immagine a sé, senza fondo). Un’immagine si può scontornare per conservarne il contorno.
+- La **Libreria di loghi** conserva i loghi dell’editore, delle collane e i marchi, ciascuno con la sua area di rispetto.
+- Le **Collane** conservano il catalogo di annunci di ogni collana per i risguardi; la sezione **Risguardi** di un cartonato sceglie per ogni pagina il colore della carta e niente, un annuncio o un testo, e avvisa di ciò che copre la cerniera.
+- I **Modelli di copertina** salvano la grafica della copertina per parti (fondo, elementi, testi, effetti, loghi, finiture) e la applicano a un altro libro per parti; si esportano e si importano in un file.
+
+## Il designer della copertina
+
+**Apri il designer della copertina** (nel pannello, o accanto al foglio nella vista) mostra la copertina su una tela a sé, sopra tutto il Sandbox. **Anteprima** la mostra come sarà stampata, con le sue guide (pieghe e cordonature, aree di sicurezza, bordo dell’abbondanza) e i controlli; **Modifica** ci lavora per livelli fissi, dal basso in alto: **Sfondo**, **Elementi mobili**, **Testi modificabili**, **Effetti**, **Loghi** e **Finiture speciali**. Ogni livello si può nascondere mentre si lavora.
+
+- Gli **elementi e gli effetti** sono immagini della galleria, riquadri di colore e forme di base con nodi modificabili, con angoli arrotondati, filetto, sfumatura e ombra. Un’immagine si può ritagliare con un contorno tracciato o ammorbidire con una **Maschera** (un’immagine in grigi della galleria: il bianco mostra, il nero nasconde).
+- I **testi** sono riquadri: **Aggiungi un testo** colloca uno dei testi generali (`{{Titolo}}`, `{{Autore}}`…) o parole proprie; ogni riquadro ha il suo carattere per titolo, sottotitolo, intestazione e testo, e può ruotare per leggersi lungo il dorso.
+- I **loghi** conservano la loro area di rispetto, e le **finiture speciali** (vernice, plastificazione, lamina, rilievo) si stampano come lastre di colore spot a parte.
+- Si trascina un elemento per spostarlo e una maniglia per ridimensionarlo; Alt trascina una copia, Cmd (Ctrl) lo allinea alle zone e Maiusc ne mantiene le proporzioni. Cmd+C, X, V e D copiano, tagliano, incollano e duplicano, e il designer ha il suo **Annulla** (Cmd+Z), distinto da quello del libro.
+- Un elemento collocato per zona si sposta e si scala con essa quando cambiano il formato o il dorso.
+
+## Fogli, controlli e file
+
+Il selettore **Foglio** sceglie ciò che mostrano il pannello e la vista: la copertina (o il cartonato), la sovraccoperta, i risguardi anteriore e posteriore, e la prima di copertina nei formati per lo schermo (la copertina dell’EPUB e le misure dei social). Ogni foglio dà la sua misura con l’abbondanza e un elenco di controlli prima della stampa: un elemento fuori dal foglio o su una piega, un’immagine che manca, un testo che non ci sta.
+
+- **Esporta PDF** scrive il foglio con le impostazioni di stampa del libro: l’abbondanza e i segni di taglio, un segno sopra e sotto ogni piega, e le finiture come lastre di colore spot in sovrastampa.
+- Un formato per lo schermo si esporta come JPEG.
+- L’EPUB del libro ne prende la prima di copertina, e il libro 3D di Folio è rilegato come la versione (cartonato o brossura, con il dorso dipinto dal foglio).
+- La produzione si conserva con il libro nel browser e viaggia nel suo pacchetto `.postext`, con le immagini della galleria e i loghi e i profili che usa.

@@ -51,6 +51,7 @@
     "fflate": "^0.8.3",
     "hls.js": "^1.7.3",
     "lucide-react": "^1.61.0",
+    "pdfjs-dist": "5.7.284",
     "postext-citeproc": "workspace:*",
     "postext-epub": "workspace:*",
     "postext-folio": "workspace:*",
@@ -58,7 +59,8 @@
     "postext-pdf": "workspace:*",
     "postext-scorm": "workspace:*",
     "tailwind-merge": "^3.7.0",
-    "three": "^0.186.1"
+    "three": "^0.186.1",
+    "utif": "3.1.0"
   },
   "devDependencies": {
     "@postext/typescript-config": "workspace:*",

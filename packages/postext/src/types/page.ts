@@ -165,6 +165,10 @@ export interface CutLinesConfig {
    *  whatever its colour space, so they print on every plate. Default
    *  black. */
   color?: ColorValue;
+  /** Where a cover sheet folds or is scored, measured from the left trim
+   *  edge: a short mark above and below the sheet at each, outside the
+   *  bleed, drawn as the crop marks are. Default none. */
+  foldMarks?: Dimension[];
 }
 
 /** How page numbers are written. */
@@ -242,7 +246,7 @@ export interface ResolvedPageConfig {
   height: Dimension;
   margins: Required<PageMargins>;
   dpi: number;
-  cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue };
+  cutLines: { enabled: boolean; bleed: Dimension; markLength: Dimension; markOffset: Dimension; markWidth: Dimension; color: ColorValue; foldMarks?: Dimension[] };
   baselineGrid: { enabled: boolean; color: ColorValue; lineWidth: Dimension };
   pageNumbering: ResolvedPageNumberingConfig;
   /** `binding` resolved: `'auto'` is `'right'` in a vertical document, a

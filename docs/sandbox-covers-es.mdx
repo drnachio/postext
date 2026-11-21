@@ -1,0 +1,61 @@
+{/* docs/sandbox-covers-es.mdx */}
+
+export const metadata = {
+  title: "Sandbox: cubiertas para imprenta",
+  sidebarTitle: "Cubiertas para imprenta",
+  description: "El panel Cubierta: las versiones y encuadernaciones de un libro, el lomo según sus páginas y su papel, los pliegos de cubierta con su sangrado, sus pliegues y su código de barras, los textos y el diseño de la cubierta, sus bibliotecas y plantillas, y los archivos para la imprenta y para pantalla",
+  lang: 'es',
+  lastUpdated: '2026-11-21',
+  readingTime: "6 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "El panel Cubierta prepara la cubierta que necesita la imprenta, aparte de las páginas del libro. Cada versión del libro, como una rústica y un cartoné, tiene su encuadernación y su ISBN. El lomo se calcula con las páginas y el papel. Escribes una vez los textos de la cubierta y le das un diseño, y el panel muestra el pliego con su sangrado, sus pliegues y su código de barras. Es una versión preliminar: aún queda mucho por hacer.",
+};
+
+# Sandbox: cubiertas para imprenta
+
+> **Una versión preliminar.** El panel Cubierta es una primera forma de gestionar y generar cubiertas para imprenta en Postext. Funciona de principio a fin con libros reales, pero queda mucho trabajo y su forma aún puede cambiar.
+
+La imprenta necesita la cubierta en un pliego propio: la contracubierta, el lomo y la cubierta uno junto a otro y, según la encuadernación, solapas, una sobrecubierta, un cartoné con sus vueltas o unas guardas. El panel **Cubierta** (icono `BookCopy` de la barra de actividad) hace esos pliegos con lo que Postext ya sabe del libro: su formato, sus páginas y su papel. Mientras el panel está abierto, la vista muestra el pliego elegido en el panel en lugar de las páginas del libro.
+
+## Versiones
+
+Un libro puede tener varias versiones, cada una con su encuadernación y su ISBN: **Añadir rústica** y **Añadir cartoné** crean una. Cada versión tiene un nombre, su **ISBN** (con el complemento de cinco cifras, si lo lleva), el **ISBN de la obra completa** para un volumen de una colección, su **Encuadernación** (rústica fresada o cosida, cartoné de lomo recto o redondo), **Solapas** en una rústica, el sentido del texto del lomo y, en **Ajustes de imprenta**, las medidas que dé la imprenta (sangrado, ancho de solapa, cartón, cejas, cajos, vuelta, margen de seguridad). La primera versión parte de los datos del propio libro: su título, subtítulo, autor e ISBN.
+
+## Lomo y papel
+
+El **Lomo** se calcula con las páginas del libro, maquetado entero, y la mano de su papel, redondeado a pliegos completos y con el añadido de la encuadernación. El **Papel del interior** es el del diseño del libro (el papel de Folio) o un perfil de papel de la biblioteca; **Añadir un encarte** declara páginas en otro papel, como un cuadernillo de láminas en estucado. Un lomo demasiado fino para llevar texto se deja en blanco, y el panel avisa cuando el perfil de la imprenta no puede hacer el libro.
+
+La **Biblioteca de perfiles** guarda los perfiles de papel y de encuadernación de tus imprentas; expórtalos e impórtalos en un archivo para compartirlos.
+
+## Textos y diseño
+
+Los **Textos de la cubierta** se escriben una vez para todas las versiones: título, subtítulo, autor, el texto de la contracubierta, el lomo y las solapas, en Markdown. El texto de cada zona empieza como una caja sobre su zona segura; el diseñador coloca y compone cada texto por separado.
+
+El **Diseño** es el mismo en todas las versiones: un fondo para todo el pliego, un fondo para cada zona, una imagen de fondo (sobre todo el pliego o solo sobre la cubierta) y el color del texto. Los fondos y las imágenes que llegan al borde entran en el sangrado.
+
+## Bibliotecas
+
+- La **Galería de la cubierta** reúne las imágenes propias de la cubierta, aparte de las figuras del libro: PNG, JPEG, SVG, TIFF, y archivos PDF o AI con su PDF (cada página, una imagen propia, sin fondo). Una imagen se puede trazar para guardar su contorno.
+- La **Biblioteca de logos** guarda los logos de la editorial, de las colecciones y los sellos, cada uno con su margen de respeto.
+- Las **Colecciones** guardan el catálogo de anuncios de cada colección para las guardas; la sección **Guardas** de un cartoné elige para cada página el color del papel y nada, un anuncio o un texto, y avisa de lo que tapa el cajo.
+- Las **Plantillas de cubierta** guardan el diseño de la cubierta por partes (fondo, elementos, textos, efectos, logos, acabados) y lo aplican a otro libro por partes; se exportan e importan en un archivo.
+
+## El diseñador de cubierta
+
+**Abrir el diseñador de cubierta** (en el panel, o junto al pliego en la vista) muestra la cubierta en un lienzo propio, sobre todo el Sandbox. **Previsualización** la enseña como se imprimirá, con sus guías (pliegues y hendidos, zonas seguras, borde del sangrado) y las comprobaciones; **Edición** trabaja sobre ella por capas fijas, de abajo arriba: **Fondo**, **Elementos móviles**, **Textos editables**, **Efectos**, **Logos** y **Acabados especiales**. Cada capa se puede ocultar mientras se trabaja.
+
+- Los **elementos y efectos** son imágenes de la galería, recuadros de color y formas básicas con nodos editables, con esquinas redondeadas, filete, degradado y sombra. Una imagen se puede recortar con un contorno trazado o suavizar con una **Máscara** (una imagen en grises de la galería: el blanco deja ver y el negro oculta).
+- Los **textos** son cajas: **Añadir un texto** coloca uno de los textos generales (`{{Título}}`, `{{Autor}}`…) o palabras propias; cada caja tiene su letra para el título, el subtítulo, el encabezado y el texto, y puede girarse para leerse a lo largo del lomo.
+- Los **logos** guardan su margen de respeto, y los **acabados especiales** (barniz, plastificado, estampación, relieve) se imprimen como planchas de tinta plana aparte.
+- Se arrastra un elemento para moverlo y un tirador para cambiar su tamaño; Alt arrastra una copia, Cmd (Ctrl) lo alinea con las zonas y Mayús conserva sus proporciones. Cmd+C, X, V y D copian, cortan, pegan y duplican, y el diseñador tiene su propio **Deshacer** (Cmd+Z), aparte del del libro.
+- Un elemento colocado por zona se mueve y se escala con ella cuando cambia el formato o el lomo.
+
+## Pliegos, comprobaciones y archivos
+
+El selector **Pliego** elige lo que muestran el panel y la vista: la cubierta (o el cartoné), la sobrecubierta, las guardas delantera y trasera, y la cubierta en formatos de pantalla (la cubierta del EPUB y los tamaños de redes sociales). Cada pliego da su tamaño con el sangrado y una lista de comprobaciones antes de imprenta: un elemento fuera del pliego o sobre un pliegue, una imagen que falta, un texto que no cabe.
+
+- **Exportar PDF** escribe el pliego con los ajustes de impresión del libro: su sangrado y sus marcas de corte, una marca encima y debajo de cada pliegue, y los acabados como planchas de tinta plana en sobreimpresión.
+- Un formato de pantalla se exporta como JPEG.
+- El EPUB del libro toma su cubierta, y el libro 3D de Folio se encuaderna como la versión (cartoné o rústica, con el lomo pintado a partir del pliego).
+- La producción se guarda con el libro en el navegador y viaja en su paquete `.postext`, con las imágenes de la galería y los logos y perfiles que usa.

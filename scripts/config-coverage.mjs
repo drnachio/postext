@@ -280,6 +280,7 @@ const PANEL_NOTED = [
   [/^Design\w+Element\.(when|unless)$/, 'FenceConditionFields.tsx, shared by every element editor'],
   [/^ElementAnchor\.at$/, 'PlacementFields.tsx (SidePointFields)'],
   [/^PageConfig\.cutLines$/, 'Print section (PrintSection.tsx)'],
+  [/^CutLinesConfig\.foldMarks$/, 'host only: coverPage sets it for a cover sheet'],
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],
