@@ -1,0 +1,51 @@
+{/* docs/sandbox-covers-pt.mdx */}
+
+export const metadata = {
+  title: "Sandbox: capas para impressão",
+  sidebarTitle: "Capas para impressão",
+  description: "O painel Capa: as versões e encadernações de um livro, a lombada calculada pelas páginas e pelo papel, as folhas de capa com sangria, dobras e código de barras, os textos e o design da capa, suas bibliotecas e modelos, e os arquivos para a gráfica e para a tela",
+  lang: 'pt',
+  lastUpdated: '2026-11-21',
+  readingTime: "5 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "O painel Capa prepara a capa de que a gráfica precisa, separada das páginas do livro. Cada versão do livro, como uma brochura e uma capa dura, tem sua encadernação e seu ISBN. A lombada é calculada pelas páginas e pelo papel. Você escreve os textos da capa uma vez e dá um design a ela, e o painel mostra a folha com sangria, dobras e código de barras. É uma versão preliminar: ainda há muito por fazer.",
+};
+
+# Sandbox: capas para impressão
+
+> **Uma versão preliminar.** O painel Capa é uma primeira forma de gerenciar e produzir capas para impressão no Postext. Ele funciona do começo ao fim com livros reais, mas ainda há muito trabalho e sua forma ainda pode mudar.
+
+A gráfica precisa da capa em uma folha própria: a quarta capa, a lombada e a primeira capa lado a lado e, conforme a encadernação, orelhas, uma sobrecapa, uma capa dura com suas viradas ou guardas. O painel **Capa** (ícone `BookCopy` da barra de atividades) faz essas folhas com o que o Postext já sabe do livro: o formato, as páginas e o papel. Enquanto o painel está aberto, a visualização mostra a folha escolhida no painel no lugar das páginas do livro.
+
+## Versões
+
+Um livro pode ter várias versões, cada uma com sua encadernação e seu ISBN: **Adicionar brochura** e **Adicionar capa dura** criam uma. Uma versão tem um nome, seu **ISBN** (com o complemento de cinco dígitos, se houver), o **ISBN da obra completa** para um volume de uma coleção, sua **Encadernação** (brochura colada ou costurada, capa dura de lombada reta ou redonda), **Badanas** (orelhas) em uma brochura, o sentido do texto da lombada e, em **Ajustes de gráfica**, as medidas que a gráfica informar (sangria, largura da orelha, papelão, sobras, canaletas, virada, margem de segurança). A primeira versão parte dos dados do próprio livro: título, subtítulo, autor e ISBN.
+
+## Lombada e papel
+
+A **Lombada** é calculada pelas páginas do livro, diagramado inteiro, e pela espessura do papel, arredondada a cadernos inteiros e com o acréscimo da encadernação. O **Papel do miolo** é o do projeto do livro (o papel do Folio) ou um perfil de papel da biblioteca; **Adicionar um encarte** declara páginas em outro papel, como um caderno de pranchas em couché. Uma lombada fina demais para levar texto fica em branco, e o painel avisa quando o perfil da gráfica não consegue fazer o livro.
+
+A **Biblioteca de perfis** guarda os perfis de papel e de encadernação das suas gráficas; exporte e importe em um arquivo para compartilhá-los.
+
+## Textos e design
+
+Os **Textos da capa** são escritos uma vez para todas as versões: título, subtítulo, autor, o texto da quarta capa, a lombada e as orelhas, em Markdown. O texto de cada zona é composto dentro da sua área de segurança.
+
+O **Design** é o mesmo em todas as versões: um fundo para a folha inteira, um fundo para cada zona, uma imagem de fundo (sobre a folha inteira ou só sobre a primeira capa) e a cor do texto. Fundos e imagens que chegam à borda entram na sangria.
+
+## Bibliotecas
+
+- A **Galeria da capa** reúne as imagens próprias da capa, separadas das figuras do livro: PNG, JPEG, SVG, TIFF, e arquivos PDF ou AI com seu PDF (cada página uma imagem própria, sem fundo). Uma imagem pode ser contornada para guardar seu contorno.
+- A **Biblioteca de logótipos** guarda os logos da editora, das coleções e os selos, cada um com sua área de proteção.
+- As **Coleções** guardam o catálogo de anúncios de cada coleção para as guardas; a seção **Guardas** de uma capa dura escolhe para cada página a cor do papel e nada, um anúncio ou um texto, e avisa do que a canaleta cobre.
+- Os **Modelos de capa** salvam o design da capa por partes (fundo, elementos, textos, efeitos, logos, acabamentos) e o aplicam a outro livro por partes; são exportados e importados em um arquivo.
+
+## Folhas, verificações e arquivos
+
+O seletor **Folha** escolhe o que o painel e a visualização mostram: a capa (ou a capa dura), a sobrecapa, as guardas da frente e de trás, e a primeira capa em formatos de tela (a capa do EPUB e os tamanhos de redes sociais). Cada folha informa seu tamanho com a sangria e uma lista de verificações antes da gráfica: um elemento fora da folha ou sobre uma dobra, uma imagem que falta, um texto que não cabe.
+
+- **Exportar PDF** grava a folha com os ajustes de impressão do livro: sangria e marcas de corte, uma marca acima e abaixo de cada dobra, e os acabamentos como chapas de cor especial em sobreimpressão.
+- Um formato de tela é exportado como JPEG.
+- O EPUB do livro recebe a primeira capa, e o livro 3D do Folio é encadernado como a versão (capa dura ou brochura, com a lombada pintada a partir da folha).
+- A produção fica guardada com o livro no navegador e viaja no seu pacote `.postext`, com as imagens da galeria e os logos e perfis que usa.
