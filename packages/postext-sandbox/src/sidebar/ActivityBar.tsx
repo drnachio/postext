@@ -1,7 +1,7 @@
 'use client';
 
 import { LargeTargetsToggle } from '../ui/LargeTargetsToggle.js';
-import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye } from 'lucide-react';
+import { BookOpen, FileCode, Settings2, FolderOpen, AlertTriangle, Type, Files, Eye, BookCopy } from 'lucide-react';
 import { useRef, useLayoutEffect, useEffect, useCallback, useState, type ReactNode } from 'react';
 import { useSandboxDispatch, useSandboxLabels, useSandboxPresetStale, useSandboxSelector, useSandboxWarnings } from '../context/SandboxContext.js';
 import type { PanelId } from '../types/index.js';
@@ -17,11 +17,11 @@ interface ActivityBarProps {
   homeLink?: ReactNode;
 }
 
-type NavLabelKey = 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings';
-type NavHintKey = 'navBooksHint' | 'navChaptersHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navWarningsHint';
+type NavLabelKey = 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navProduction' | 'navWarnings';
+type NavHintKey = 'navBooksHint' | 'navChaptersHint' | 'navManuscriptHint' | 'navResourcesHint' | 'navFontsHint' | 'navDesignHint' | 'navProductionHint' | 'navWarningsHint';
 
 /** Workflow order: pick a book, arrange its chapters, write, add figures and fonts, design,
- *  then check. Each entry has a one-word label (shown under the icon) and a
+ *  make the cover, then check. Each entry has a one-word label (shown under the icon) and a
  *  longer hint (tooltip + accessible description). */
 const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: NavLabelKey; hintKey: NavHintKey }[] = [
   { id: 'projects', Icon: Files, labelKey: 'navBooks', hintKey: 'navBooksHint' },
@@ -30,6 +30,7 @@ const PANEL_ICONS: { id: PanelId; Icon: typeof FileCode; labelKey: NavLabelKey; 
   { id: 'resources', Icon: FolderOpen, labelKey: 'navResources', hintKey: 'navResourcesHint' },
   { id: 'fonts', Icon: Type, labelKey: 'navFonts', hintKey: 'navFontsHint' },
   { id: 'config', Icon: Settings2, labelKey: 'navDesign', hintKey: 'navDesignHint' },
+  { id: 'production', Icon: BookCopy, labelKey: 'navProduction', hintKey: 'navProductionHint' },
   { id: 'warnings', Icon: AlertTriangle, labelKey: 'navWarnings', hintKey: 'navWarningsHint' },
 ];
 
@@ -262,10 +263,10 @@ export function MobileNavBar() {
   ];
 
   return (
-    // Eight 44px targets do not fit a 320px screen in one row: below 352px
-    // the bar is two rows of four (WCAG 1.4.10, 2.5.5).
+    // Ten 40px targets do not fit a 375px screen in one row: below 400px
+    // the bar is two rows of five (WCAG 1.4.10, 2.5.5).
     <nav
-      className="grid shrink-0 grid-cols-8 items-stretch border-t max-[351px]:grid-cols-4"
+      className="grid shrink-0 grid-cols-10 items-stretch border-t max-[399px]:grid-cols-5"
       style={{
         borderColor: 'var(--rule)',
         backgroundColor: 'var(--background)',

@@ -1,0 +1,51 @@
+{/* docs/sandbox-covers-de.mdx */}
+
+export const metadata = {
+  title: "Sandbox: Umschläge für den Druck",
+  sidebarTitle: "Umschläge für den Druck",
+  description: "Der Bereich Umschlag: die Ausgaben und Bindungen eines Buchs, der Rücken aus Seitenzahl und Papier, die Umschlagbogen mit Anschnitt, Falzen und Strichcode, die Texte und die Gestaltung des Umschlags, seine Bibliotheken und Vorlagen und die Dateien für die Druckerei und den Bildschirm",
+  lang: 'de',
+  lastUpdated: '2026-11-21',
+  readingTime: "5 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "Der Bereich Umschlag erstellt den Umschlag, den die Druckerei braucht, getrennt von den Seiten des Buchs. Jede Ausgabe des Buchs, etwa ein Paperback und ein Hardcover, hat ihre Bindung und ihre ISBN. Der Rücken wird aus den Seiten und dem Papier berechnet. Sie schreiben die Umschlagtexte einmal und geben dem Umschlag eine Gestaltung, und der Bereich zeigt den Bogen mit Anschnitt, Falzen und Strichcode. Es ist eine vorläufige Version: Es bleibt noch viel zu tun.",
+};
+
+# Sandbox: Umschläge für den Druck
+
+> **Eine vorläufige Version.** Der Bereich Umschlag ist ein erster Ansatz, Umschläge für den Druck in Postext zu verwalten und zu erzeugen. Er funktioniert von Anfang bis Ende mit echten Büchern, aber es bleibt viel Arbeit, und seine Form kann sich noch ändern.
+
+Die Druckerei braucht den Umschlag als eigenen Bogen: Rückseite, Rücken und Vorderseite nebeneinander und, je nach Bindung, Klappen, ein Schutzumschlag, eine Buchdecke mit ihrem Einschlag oder Vorsätze. Der Bereich **Umschlag** (Symbol `BookCopy` in der Aktivitätsleiste) erstellt diese Bogen aus dem, was Postext schon über das Buch weiß: Format, Seiten und Papier. Solange der Bereich offen ist, zeigt die Ansicht den im Bereich gewählten Bogen statt der Buchseiten.
+
+## Ausgaben
+
+Ein Buch kann mehrere Ausgaben haben, jede mit eigener Bindung und ISBN: **Paperback hinzufügen** und **Hardcover hinzufügen** legen eine an. Eine Ausgabe hat einen Namen, ihre **ISBN** (mit fünfstelligem Zusatz, falls vorhanden), die **ISBN des Gesamtwerks** für einen Band einer Reihe, ihre **Bindung** (Klebebindung oder fadengeheftet, Buchdecke mit geradem oder rundem Rücken), **Klappen** bei einem Paperback, die Laufrichtung des Rückentexts und unter **Druckereieinstellungen** die Maße, die die Druckerei vorgibt (Anschnitt, Klappenbreite, Pappe, Kanten, Falze, Einschlag, Sicherheitsabstand). Die erste Ausgabe übernimmt die Angaben des Buchs selbst: Titel, Untertitel, Autor und ISBN.
+
+## Rücken und Papier
+
+Der **Rücken** wird aus den Seiten des ganz umbrochenen Buchs und dem Volumen seines Papiers berechnet, auf ganze Bogen gerundet und um die Zugabe der Bindung ergänzt. Das **Papier des Inhalts** ist das der Buchgestaltung (das Folio-Papier) oder ein Papierprofil der Bibliothek; **Einschub hinzufügen** gibt Seiten auf anderem Papier an, etwa einen Bildteil auf gestrichenem Papier. Ein Rücken, der für Text zu schmal ist, bleibt leer, und der Bereich warnt, wenn das Profil der Druckerei das Buch nicht herstellen kann.
+
+Die **Profilbibliothek** bewahrt die Papier- und Bindungsprofile Ihrer Druckereien auf; exportieren und importieren Sie sie als Datei, um sie weiterzugeben.
+
+## Texte und Gestaltung
+
+Die **Umschlagtexte** werden einmal für alle Ausgaben geschrieben: Titel, Untertitel, Autor, der Text der Rückseite, der Rücken und die Klappen, in Markdown. Der Text jeder Zone wird in ihrem Sicherheitsbereich gesetzt.
+
+Die **Gestaltung** ist für alle Ausgaben dieselbe: ein Grund für den ganzen Bogen, ein Grund für jede Zone, ein Hintergrundbild (über den ganzen Bogen oder nur die Vorderseite) und die Textfarbe. Gründe und Bilder, die bis an den Rand reichen, laufen in den Anschnitt.
+
+## Bibliotheken
+
+- Die **Umschlaggalerie** sammelt die eigenen Bilder des Umschlags, getrennt von den Abbildungen des Buchs: PNG, JPEG, SVG, TIFF und PDF- oder AI-Dateien mit ihrem PDF (jede Seite ein eigenes Bild, ohne Grund). Ein Bild lässt sich nachzeichnen, um seine Kontur zu behalten.
+- Die **Logobibliothek** bewahrt die Logos des Verlags, der Reihen und die Siegel auf, jedes mit seinem Schutzraum.
+- Die **Reihen** bewahren den Anzeigenkatalog jeder Reihe für die Vorsätze auf; der Abschnitt **Vorsätze** einer Buchdecke wählt für jede Seite die Papierfarbe und nichts, eine Anzeige oder einen Text und warnt, was der Falz verdeckt.
+- Die **Umschlagvorlagen** speichern die Gestaltung des Umschlags nach Teilen (Hintergrund, Elemente, Texte, Effekte, Logos, Veredelungen) und legen sie nach Teilen auf ein anderes Buch; sie werden als Datei exportiert und importiert.
+
+## Bogen, Prüfungen und Dateien
+
+Die Auswahl **Bogen** bestimmt, was Bereich und Ansicht zeigen: den Umschlag (oder die Buchdecke), den Schutzumschlag, das vordere und hintere Vorsatz und die Vorderseite in Bildschirmformaten (das EPUB-Cover und die Größen sozialer Netzwerke). Jeder Bogen nennt seine Größe mit Anschnitt und eine Liste von Prüfungen vor dem Druck: ein Element außerhalb des Bogens oder über einem Falz, ein fehlendes Bild, ein Text, der nicht passt.
+
+- **PDF exportieren** schreibt den Bogen mit den Druckeinstellungen des Buchs: Anschnitt und Schnittmarken, eine Marke über und unter jedem Falz und die Veredelungen als überdruckende Sonderfarbplatten.
+- Ein Bildschirmformat wird als JPEG exportiert.
+- Das EPUB des Buchs übernimmt seine Vorderseite, und das 3D-Buch in Folio wird wie die Ausgabe gebunden (Buchdecke oder Paperback, der Rücken aus dem Bogen gemalt).
+- Die Herstellung wird mit dem Buch im Browser gespeichert und reist in seinem `.postext`-Paket mit, samt den Bildern der Galerie und den Logos und Profilen, die sie verwendet.

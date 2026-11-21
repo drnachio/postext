@@ -1,0 +1,51 @@
+{/* docs/sandbox-covers-fr.mdx */}
+
+export const metadata = {
+  title: "Sandbox : couvertures pour l’impression",
+  sidebarTitle: "Couvertures pour l’impression",
+  description: "Le panneau Couverture : les versions et reliures d’un livre, le dos calculé d’après ses pages et son papier, les feuilles de couverture avec leur fond perdu, leurs plis et leur code-barres, les textes et la mise en page de la couverture, ses bibliothèques et modèles, et les fichiers pour l’imprimeur et pour l’écran",
+  lang: 'fr',
+  lastUpdated: '2026-11-21',
+  readingTime: "5 min",
+  order: 47,
+  parent: 'sandbox',
+  plainSummary: "Le panneau Couverture prépare la couverture dont l’imprimeur a besoin, à part des pages du livre. Chaque version du livre, comme un broché et un relié, a sa reliure et son ISBN. Le dos est calculé d’après les pages et le papier. Vous écrivez une fois les textes de la couverture et lui donnez une mise en page, et le panneau montre la feuille avec son fond perdu, ses plis et son code-barres. C’est une version préliminaire : il reste beaucoup à faire.",
+};
+
+# Sandbox : couvertures pour l’impression
+
+> **Une version préliminaire.** Le panneau Couverture est une première façon de gérer et de produire des couvertures pour l’impression dans Postext. Il fonctionne de bout en bout sur de vrais livres, mais il reste beaucoup de travail et sa forme peut encore changer.
+
+L’imprimeur a besoin de la couverture sur une feuille à part : la quatrième de couverture, le dos et la première côte à côte et, selon la reliure, des rabats, une jaquette, un cartonnage avec ses remplis ou des gardes. Le panneau **Couverture** (icône `BookCopy` de la barre d’activité) fait ces feuilles à partir de ce que Postext sait déjà du livre : son format, ses pages et son papier. Tant que le panneau est ouvert, la vue montre la feuille choisie dans le panneau au lieu des pages du livre.
+
+## Versions
+
+Un livre peut avoir plusieurs versions, chacune avec sa reliure et son ISBN : **Ajouter un broché** et **Ajouter un relié** en créent une. Une version a un nom, son **ISBN** (avec le complément à cinq chiffres, s’il y en a un), l’**ISBN de l’œuvre complète** pour un volume d’une collection, sa **Reliure** (broché collé ou cousu, relié à dos plat ou rond), des **Rabats** pour un broché, le sens du texte du dos et, dans **Réglages d’imprimerie**, les mesures que donne l’imprimeur (fond perdu, largeur de rabat, carton, chasses, mors, rempli, marge de sécurité). La première version part des données du livre lui-même : son titre, son sous-titre, son auteur et son ISBN.
+
+## Dos et papier
+
+Le **Dos** est calculé d’après les pages du livre, mis en page en entier, et la main de son papier, arrondi à des cahiers entiers, avec l’ajout de la reliure. Le **Papier de l’intérieur** est celui de la conception du livre (le papier de Folio) ou un profil de papier de la bibliothèque ; **Ajouter un encart** déclare des pages sur un autre papier, comme un cahier de planches sur couché. Un dos trop mince pour porter du texte reste vide, et le panneau prévient quand le profil de l’imprimeur ne peut pas faire le livre.
+
+La **Bibliothèque de profils** garde les profils de papier et de reliure de vos imprimeurs ; exportez-les et importez-les dans un fichier pour les partager.
+
+## Textes et mise en page
+
+Les **Textes de la couverture** s’écrivent une fois pour toutes les versions : titre, sous-titre, auteur, le texte de la quatrième, le dos et les rabats, en Markdown. Le texte de chaque zone est composé dans sa zone de sécurité.
+
+La **Mise en page** est la même pour toutes les versions : un fond pour toute la feuille, un fond pour chaque zone, une image de fond (sur toute la feuille ou sur la première seulement) et la couleur du texte. Les fonds et les images qui atteignent le bord passent dans le fond perdu.
+
+## Bibliothèques
+
+- La **Galerie de la couverture** réunit les images propres à la couverture, à part des figures du livre : PNG, JPEG, SVG, TIFF, et fichiers PDF ou AI avec leur PDF (chaque page, une image à part, sans fond). Une image peut être détourée pour garder son contour.
+- La **Bibliothèque de logos** garde les logos de l’éditeur, des collections et les labels, chacun avec sa zone de protection.
+- Les **Collections** gardent le catalogue d’annonces de chaque collection pour les gardes ; la section **Gardes** d’un relié choisit pour chaque page la couleur du papier et rien, une annonce ou un texte, et prévient de ce que cache le mors.
+- Les **Modèles de couverture** enregistrent la conception de la couverture par parties (fond, éléments, textes, effets, logos, finitions) et l’appliquent à un autre livre par parties ; ils s’exportent et s’importent dans un fichier.
+
+## Feuilles, contrôles et fichiers
+
+Le sélecteur **Feuille** choisit ce que montrent le panneau et la vue : la couverture (ou le cartonnage), la jaquette, les gardes avant et arrière, et la première de couverture aux formats d’écran (la couverture de l’EPUB et les tailles des réseaux sociaux). Chaque feuille donne sa taille avec le fond perdu et une liste de contrôles avant l’impression : un élément hors de la feuille ou sur un pli, une image manquante, un texte qui ne tient pas.
+
+- **Exporter en PDF** écrit la feuille avec les réglages d’impression du livre : son fond perdu et ses traits de coupe, une marque au-dessus et au-dessous de chaque pli, et les finitions en plaques de ton direct en surimpression.
+- Un format d’écran s’exporte en JPEG.
+- L’EPUB du livre en prend la première de couverture, et le livre 3D de Folio est relié comme la version (relié ou broché, le dos peint d’après la feuille).
+- La production est gardée avec le livre dans le navigateur et voyage dans son paquet `.postext`, avec les images de la galerie et les logos et profils qu’elle utilise.

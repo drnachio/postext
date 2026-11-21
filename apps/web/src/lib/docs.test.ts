@@ -36,7 +36,7 @@ const CONFIGURATION_PAGES = [
 const CHAPTER_PAGES: Record<string, string[]> = {
   architecture: ["architecture-layout-pipeline"],
   "document-format": ["document-format-directives", "document-format-inline", "document-format-notes-references", "document-format-resources", "document-format-videos"],
-  sandbox: ["sandbox-design-checks", "sandbox-composed-pages", "sandbox-previews", "sandbox-books-saving", "sandbox-embedding"],
+  sandbox: ["sandbox-design-checks", "sandbox-composed-pages", "sandbox-previews", "sandbox-books-saving", "sandbox-covers", "sandbox-embedding"],
   "composed-pages": ["composed-pages-figures"],
 };
 
@@ -112,7 +112,7 @@ describe("docs table of contents", () => {
     }
   });
 
-  it("numbers the pages 1 to 53 and gives Part II the Configuration reference, the craft pages, Comics, Music notation, Exercises, Composed pages and Special inks and die-cuts, and Part III the Sandbox, the two guides, the skill, the command line and WebMCP", () => {
+  it("numbers the pages 1 to 54 and gives Part II the Configuration reference, the craft pages, Comics, Music notation, Exercises, Composed pages and Special inks and die-cuts, and Part III the Sandbox, the two guides, the skill, the command line and WebMCP", () => {
     expect(docs.map((d) => d.locales.en!.order)).toEqual(docs.map((_, i) => i + 1));
     expect(order("configuration")).toBe(4);
     expect(CONFIGURATION_PAGES.map((slug) => order(slug))).toEqual(CONFIGURATION_PAGES.map((_, i) => 5 + i));
@@ -131,8 +131,8 @@ describe("docs table of contents", () => {
     for (const slug of ["contributing", "sandbox", ...CHAPTER_PAGES.sandbox!, ...GUIDE_PAGES, "skill", "command-line", "webmcp"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([41, 42, 51, 52, 53]);
-    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([48, 49, 50]);
+    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([41, 42, 52, 53, 54]);
+    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([49, 50, 51]);
   });
 
   it("sets the pages of the Configuration reference under its entry page, in every language", () => {

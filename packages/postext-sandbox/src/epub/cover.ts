@@ -2,6 +2,7 @@ import { resolveColorValue, resolveDiagramStyleConfig, type PostextConfig, type 
 import type { EpubCover } from 'postext-epub';
 import { ensureResourceImages, type SvgImageOptions } from '../controls/media/resourceImages.js';
 import { renderCoverImage } from '../covers/renderCover.js';
+import { productionEpubCover } from '../production/store/promoImage.js';
 import { bookCoverPicture, RENDERED_COVER_WIDTH, usableCover } from './inputs.js';
 
 /** The book's own cover picture, when it is a bitmap large enough. A
@@ -61,10 +62,12 @@ export async function epubPaintedCover(
   return paintedFirstPage(first, title);
 }
 
-/** The cover: the book's own picture when it is a bitmap large enough,
- *  else its first page painted. Either is a picture of the first page, so
- *  the fixed layout keeps it as the cover image without a page of its
- *  own. The EPUB tab's; the Books panel's compiler takes the book's own
+/** The cover: the one the book's Cover panel designs, when it has a
+ *  version there (`productionKey`, its key in that panel's store: a cover
+ *  of its own, which the fixed layout gives a page); else the book's own
+ *  picture when it is a bitmap large enough, else its first page painted.
+ *  Those two are pictures of the first page, so the fixed layout keeps
+ *  them as the cover image without a page of their own. The EPUB tab's; the Books panel's compiler takes the book's own
  *  picture in the same way and paints the page in its worker
  *  (`export/compileBook.ts`). */
 export async function epubCoverOf(
@@ -72,6 +75,11 @@ export async function epubCoverOf(
   snapshot: { config: PostextConfig; resources: Resource[] },
   title: string,
   source: Parameters<typeof bookCoverPicture>[0],
+  productionKey?: string,
 ): Promise<EpubCover | null> {
+  const designed = productionKey
+    ? await productionEpubCover(productionKey, snapshot.config, snapshot.resources, title).catch(() => null)
+    : null;
+  if (designed) return designed;
   return (await epubOwnCover(title, source)) ?? epubPaintedCover(first, snapshot, title);
 }

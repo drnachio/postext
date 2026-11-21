@@ -214,6 +214,11 @@ export interface DesignBoxElement {
    *  group or its content moves it (art drawn to the page). Default
    *  `false`: the element moves with the frame. Ignored elsewhere. */
   pin?: boolean;
+  /** On a composed page's decoration: paint it over every frame of the
+   *  page instead of with the rest of the decoration, under the frames
+   *  (a cover's effects, logos and finishes over its text). Default
+   *  `false`. Ignored elsewhere. */
+  over?: boolean;
   pages?: PageRoleFilter;
   /** Running heads and a page template's decoration (#1087): drawn only on
    *  a composed page whose fence sets this attribute (`::::page{template=…
@@ -248,6 +253,11 @@ export interface DesignImageElement {
    *  group or its content moves it (art drawn to the page). Default
    *  `false`: the element moves with the frame. Ignored elsewhere. */
   pin?: boolean;
+  /** On a composed page's decoration: paint it over every frame of the
+   *  page instead of with the rest of the decoration, under the frames
+   *  (a cover's effects, logos and finishes over its text). Default
+   *  `false`. Ignored elsewhere. */
+  over?: boolean;
   pages?: PageRoleFilter;
   /** Running heads and a page template's decoration (#1087): drawn only on
    *  a composed page whose fence sets this attribute (`::::page{template=…
@@ -320,6 +330,11 @@ export interface DesignPathElement {
   /** On a composed page's decoration: anchored to a frame, stay where the
    *  template puts that frame (see `DesignBoxElement.pin`). */
   pin?: boolean;
+  /** On a composed page's decoration: paint it over every frame of the
+   *  page instead of with the rest of the decoration, under the frames
+   *  (a cover's effects, logos and finishes over its text). Default
+   *  `false`. Ignored elsewhere. */
+  over?: boolean;
   /** Heading designs only: whether the element counts toward the height
    *  the heading reserves. Default `true`. */
   reserve?: boolean;

@@ -201,6 +201,8 @@ page
 │               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
 │               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
+│               foldMarks: Dimension[] from the trim's left edge, a cover sheet's folds and scores
+│               (set by coverPage, not by hand)
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
 │               The grid is only defined here. Whether a block OPENS on a grid line is its style's
 │               snapTopToGrid (≥ 1.75, all default false): headings / levels[] / headingStyles[], bodyText
