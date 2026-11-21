@@ -9,10 +9,11 @@
 
 import { useMemo } from 'react';
 import { useSandboxLabels, useSandboxSelector } from '../context/SandboxContext.js';
-import { Select } from '../ui/index.js';
+import { Pencil } from 'lucide-react';
+import { Button, Select } from '../ui/index.js';
 import { bookTrimMm, coverDocumentInput, isPromo, pickSheet, sheetChoices } from './model/bookProduction.js';
 import { CoverCanvas } from './canvas/CoverCanvas.js';
-import { chooseCoverSheet, useCoverSheet } from './store/coverDesignerStore.js';
+import { chooseCoverSheet, openCoverDesigner, useCoverSheet } from './store/coverDesignerStore.js';
 import { SHEET_LABEL, isCaseCoverOf } from './SheetPreview.js';
 import { useCollections, useCoverGallery, useCoverWorkspace, useLogos, useMirror } from './store/useProduction.js';
 import { endpaperInput } from './library/collections.js';
@@ -63,6 +64,7 @@ export function CoverStage() {
               ariaLabel={labels.productionSheet}
             />
           )}
+          {input && <Button variant="outline" size="sm" icon={<Pencil size={13} />} onClick={openCoverDesigner}>{labels.coverDesignerOpen}</Button>}
         </span>
       </div>
       {sheet && input ? (

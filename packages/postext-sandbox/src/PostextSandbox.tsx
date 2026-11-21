@@ -26,6 +26,7 @@ import { useChapterHashSync } from './viewport/useChapterHashSync.js';
 import { useContourTraces } from './panels/resources/marks/contourTraces.js';
 import { ProductionPanel } from './production/ProductionPanel.js';
 import { CoverStage } from './production/CoverStage.js';
+import { CoverDesignerHost } from './production/designer/CoverDesigner.js';
 import { DirectionProvider } from '@base-ui/react/direction-provider';
 import { SandboxGlobalStyles, TooltipProvider, PortalProvider, PortalHost, uiDirectionOf, useUiRtl } from './ui/index.js';
 import { BundleReplaceDialog } from './BundleReplaceDialog.js';
@@ -303,6 +304,7 @@ function SandboxLayout({
             {loadingCover}
           </div>
           </div>
+          <CoverDesignerHost />
           <SandboxAnnouncer />
           <PortalHost />
           <BundleReplaceDialog />
@@ -356,6 +358,7 @@ function SandboxLayout({
             {loadingCover}
           </div>
         </div>
+        <CoverDesignerHost />
         <SandboxAnnouncer />
         <PortalHost />
         <BundleReplaceDialog />

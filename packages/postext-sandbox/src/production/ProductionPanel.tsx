@@ -55,7 +55,7 @@ import { useBookProduction, useCollections, useCoverGallery, useLogos, useProfil
 import { CoverTemplatesSection } from './CoverTemplatesSection.js';
 import { CollectionsSection } from './CollectionsSection.js';
 import { EndpapersSection } from './EndpapersSection.js';
-import { chooseCoverSheet, useCoverSheet } from './store/coverDesignerStore.js';
+import { chooseCoverSheet, openCoverDesigner, useCoverSheet } from './store/coverDesignerStore.js';
 
 const BUILT_IN_LABEL: Record<string, keyof Labels> = {
   perfect: 'productionProfilePerfect',
@@ -300,6 +300,10 @@ export function ProductionPanel() {
                 </ul>
               )}
             </section>
+          )}
+
+          {version && record && ready && complete && (
+            <Button variant="primary" size="sm" onClick={openCoverDesigner}>{labels.coverDesignerOpen}</Button>
           )}
 
           {version && record && ready && complete && (
