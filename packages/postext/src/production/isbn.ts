@@ -147,7 +147,7 @@ export function ean13Symbol(digits: string, addOn?: string): Ean13Symbol {
   return symbol;
 }
 
-/** The line printed over the barcode: `ISBN 978-84-9835-123-4` when the
+/** The line printed over the barcode: `ISBN 978-0-306-40615-7` when the
  *  ISBN was written with its hyphens (they mark the registration group,
  *  publisher and title, which only the agency's range table can place),
  *  the bare thirteen digits otherwise. */
