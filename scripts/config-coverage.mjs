@@ -182,7 +182,7 @@ const locale = opt('--locale') ?? 'en';
 const docsFiles = readdirSync(join(ROOT, 'docs')).filter((f) => f.endsWith(`-${locale}.mdx`)).map((f) => `docs/${f}`);
 const skillDir = 'plugins/postext/skills/postext-port';
 const skillFiles = [`${skillDir}/SKILL.md`, ...readdirSync(join(ROOT, skillDir, 'references')).map((f) => `${skillDir}/references/${f}`)];
-const panelFiles = ['sidebar', 'panels', 'controls', 'frameStyles', 'labelStyles', 'templates']
+const panelFiles = ['sidebar', 'panels', 'controls', 'frameStyles', 'labelStyles', 'templates', 'cover']
   .map((d) => `packages/postext-sandbox/src/${d}`)
   .flatMap((d) => {
     try {

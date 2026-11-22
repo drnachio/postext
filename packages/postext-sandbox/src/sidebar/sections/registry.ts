@@ -22,6 +22,7 @@ export type SettingsGroupId =
   | 'parts'
   | 'output'
   | 'folio'
+  | 'cover'
   | 'advanced';
 
 export type SettingsSectionId =
@@ -77,6 +78,7 @@ export type SettingsSectionId =
   | 'htmlViewer'
   | 'canvasViewer'
   | 'folio'
+  | 'cover'
   | 'pdfGeneration'
   | 'print'
   | 'debug'
@@ -120,6 +122,8 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'parts', labelKey: 'settingsGroupParts', descriptionKey: 'settingsGroupPartsDescription' },
   { id: 'output', labelKey: 'settingsGroupOutput', descriptionKey: 'settingsGroupOutputDescription' },
   { id: 'folio', labelKey: 'settingsGroupFolio', descriptionKey: 'settingsGroupFolioDescription' },
+  // The design's cover part (#1667): what every version's cover shares.
+  { id: 'cover', labelKey: 'settingsGroupCover', descriptionKey: 'settingsGroupCoverDescription' },
   { id: 'advanced', labelKey: 'settingsGroupAdvanced', descriptionKey: 'settingsGroupAdvancedDescription' },
 ];
 
@@ -195,6 +199,7 @@ export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   // The space between the pages in the Canvas (#1002).
   { id: 'canvasViewer', group: 'output', labelKey: 'canvasViewerSection', configKeys: ['canvasViewer'] },
   { id: 'folio', group: 'folio', labelKey: 'folioSection', configKeys: ['folio'] },
+  { id: 'cover', group: 'cover', labelKey: 'coverDesignSection', configKeys: ['cover'] },
   { id: 'debug', group: 'advanced', labelKey: 'debug', configKeys: ['debug', 'page'] },
   { id: 'warnings', group: 'advanced', labelKey: 'warnings', configKeys: ['debug'] },
   // The checks of the configuration itself (#849).

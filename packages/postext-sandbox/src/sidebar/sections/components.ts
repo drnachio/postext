@@ -42,6 +42,7 @@ import { PrintSection } from './output/PrintSection.js';
 import { ContrastSection } from './colors/ContrastSection.js';
 import { ChecksSection } from './advanced/ChecksSection.js';
 import { FolioSection } from './output/FolioSection.js';
+import { CoverDesignSection } from './output/CoverDesignSection.js';
 import { DebugSection } from './advanced/DebugSection.js';
 import { WarningsConfigSection } from './advanced/WarningsConfigSection.js';
 import { ComicsPanelsSection } from './comics/ComicsPanelsSection.js';
@@ -112,6 +113,7 @@ export const SECTION_COMPONENTS: Record<SettingsSectionId, ComponentType> = {
   'htmlViewer': HtmlViewerSection,
   'canvasViewer': CanvasViewerSection,
   'folio': FolioSection,
+  'cover': CoverDesignSection,
   'pdfGeneration': PdfGenerationSection,
   'print': PrintSection,
   'contrast': ContrastSection,

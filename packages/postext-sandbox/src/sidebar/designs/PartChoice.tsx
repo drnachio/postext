@@ -36,7 +36,7 @@ export function PartChoice({ legend, available, value, onChange }: {
                 checked={value.includes(p)}
                 onChange={(e) => onChange(e.target.checked ? DESIGN_PARTS.filter((x) => x === p || value.includes(x)) : value.filter((x) => x !== p))}
               />
-              {group ? String(labels[group.labelKey]) : p}
+              {group ? String(labels[group.labelKey]) : p === 'cover' ? labels.navCover : p}
             </label>
           );
         })}

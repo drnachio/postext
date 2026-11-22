@@ -23,7 +23,7 @@ import { findAnchor } from '../pagePoint.js';
 import { pagesOfOffset } from '../pageText.js';
 import { MAX_STATUS_ENTRIES, compactStatus, whenViewerIdle } from '../viewerStatus.js';
 
-const PANELS: readonly PanelId[] = ['projects', 'chapters', 'markdown', 'resources', 'fonts', 'config', 'warnings'];
+const PANELS: readonly PanelId[] = ['projects', 'chapters', 'markdown', 'resources', 'fonts', 'config', 'cover', 'warnings'];
 
 /** The viewer settings each tab takes. */
 const VIEWER_SETTINGS: Record<keyof ViewerSettings, readonly ViewportTab[]> = {

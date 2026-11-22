@@ -117,6 +117,7 @@ export function sectionHasOverrides(config: PostextConfig, section: SettingsSect
     case 'canvasViewer':
     case 'dieCuts':
     case 'folio':
+    case 'cover':
     case 'pdfGeneration':
     case 'exercises': {
       const entry = SETTINGS_SECTIONS.find((s) => s.id === section) as SettingsSectionEntry;
