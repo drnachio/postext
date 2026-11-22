@@ -58,6 +58,9 @@ describe('cover shapes', () => {
     });
     expect(art.defs).toContain('<clipPath');
     expect(art.content.match(/<image /g)).toHaveLength(2);
+    // Both pictures fill their boxes: the square gradient is stretched to
+    // the shape's, not fitted in its middle.
+    expect(art.content.match(/<image [^>]*preserveAspectRatio="none"/g)).toHaveLength(2);
     expect(art.content).toContain('stroke="#00ff00"');
     // The shadow falls past the box: the art covers more than it.
     expect(art.bounds.x + art.bounds.width).toBeGreaterThan(50);

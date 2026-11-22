@@ -277,7 +277,7 @@ export function shapeArt(rect: SheetRect, path: CoverPath, fill: ColorValue | un
     const reach = sh.blur * 1.5 + 0.5;
     const box = { x: rect.x + sh.x - reach, y: rect.y + sh.y - reach, width: rect.width + 2 * reach, height: rect.height + 2 * reach };
     const png = shadowPng(polys, box, sh.color, sh.opacity, sh.blur);
-    parts.push(`<image href="${dataUri(png)}" x="${mm(box.x)}" y="${mm(box.y)}" width="${mm(box.width)}" height="${mm(box.height)}"/>`);
+    parts.push(`<image href="${dataUri(png)}" preserveAspectRatio="none" x="${mm(box.x)}" y="${mm(box.y)}" width="${mm(box.width)}" height="${mm(box.height)}"/>`);
     grow(box);
   }
   if (fill && closed) {
@@ -285,7 +285,7 @@ export function shapeArt(rect: SheetRect, path: CoverPath, fill: ColorValue | un
       const id = `${idPrefix}-clip`;
       defs.push(`<clipPath id="${id}" clipPathUnits="userSpaceOnUse"><path d="${d}"/></clipPath>`);
       const png = gradientPng(fill, fx.gradient.to, fx.gradient.angle, rect.width / (rect.height || 1), opacity);
-      parts.push(`<g clip-path="url(#${id})"><image href="${dataUri(png)}" x="${mm(rect.x)}" y="${mm(rect.y)}" width="${mm(rect.width)}" height="${mm(rect.height)}"/></g>`);
+      parts.push(`<g clip-path="url(#${id})"><image href="${dataUri(png)}" preserveAspectRatio="none" x="${mm(rect.x)}" y="${mm(rect.y)}" width="${mm(rect.width)}" height="${mm(rect.height)}"/></g>`);
     } else {
       const [r, g, b, a] = rgb(fill);
       const alpha = a * opacity;
