@@ -23,6 +23,7 @@ import { CoverExportSection } from './CoverExportSection.js';
 import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
 import { VersionFields } from './VersionFields.js';
+import { DesignerSection } from '../designer/DesignerSection.js';
 
 const SHEETS: readonly CoverSheetKind[] = ['cover', 'jacket', 'endpaperFront', 'endpaperBack'];
 const TEXT_SLOTS = ['front', 'spine', 'back', 'flapFront', 'flapBack', 'pastedown', 'flyleaf'];
@@ -48,7 +49,8 @@ export default function CoverPanel() {
   const sheets = state.built?.sheets;
   const offered = SHEETS.filter((s) => s === 'cover' || (s === 'jacket' ? !!sheets?.jacket : !!sheets?.endpapers));
   const zones = new Set(state.built?.sheet.zones.map((z) => z.name) ?? []);
-  const slots = TEXT_SLOTS.filter((s) => zones.has(s as never));
+  // The zones' frames, then the text boxes the design places by hand.
+  const slots = [...TEXT_SLOTS.filter((s) => zones.has(s as never)), ...(config.cover?.textBoxes ?? []).map((t) => t.name)];
 
   return (
     <div className="flex h-full flex-col">
@@ -106,6 +108,9 @@ export default function CoverPanel() {
                     .replace('__height__', state.built.sheet.height.toFixed(1))}
                 </p>
               )}
+            </CollapsibleSection>
+            <CollapsibleSection title={labels.coverDesigner} sectionId="cover-designer" defaultOpen>
+              <DesignerSection />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverTexts} sectionId="cover-texts" defaultOpen>
               <CoverTexts slots={slots} />

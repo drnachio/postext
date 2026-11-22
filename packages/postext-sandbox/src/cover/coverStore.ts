@@ -6,6 +6,7 @@
 import { useSyncExternalStore } from 'react';
 import type { CoverSheetKind } from 'postext/production';
 import type { CoverState } from './useCover.js';
+import type { ItemRef } from './designer/designerModel.js';
 
 export interface CoverChoice {
   /** A version id; null for the book's first. */
@@ -51,4 +52,27 @@ export function publishCoverState(next: CoverState): void {
 
 export function useCoverState(): CoverState {
   return useSyncExternalStore(subscribe, getCoverState, getCoverState);
+}
+
+/** The designer: on, and the item selected on the sheet. */
+export interface CoverDesignerState {
+  open: boolean;
+  selected: ItemRef | null;
+}
+
+let designer: CoverDesignerState = { open: false, selected: null };
+
+export function getCoverDesigner(): CoverDesignerState {
+  return designer;
+}
+
+export function setCoverDesigner(next: Partial<CoverDesignerState>): void {
+  const merged = { ...designer, ...next };
+  if (merged.open === designer.open && merged.selected === designer.selected) return;
+  designer = merged;
+  emit();
+}
+
+export function useCoverDesigner(): CoverDesignerState {
+  return useSyncExternalStore(subscribe, getCoverDesigner, getCoverDesigner);
 }

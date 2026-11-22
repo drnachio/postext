@@ -7,7 +7,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { hasWindow } from '../env/window.js';
 import { useSandboxLabels } from '../context/SandboxContext.js';
-import { useCoverState } from './coverStore.js';
+import { useCoverDesigner, useCoverState } from './coverStore.js';
+import { CoverDesignerOverlay } from './designer/CoverDesignerOverlay.js';
 import { paintCoverPage } from './paintCover.js';
 
 export default function CoverStage() {
@@ -16,6 +17,8 @@ export default function CoverStage() {
   const boxRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [box, setBox] = useState({ width: 0, height: 0 });
+  const [shownSize, setShownSize] = useState({ width: 0, height: 0 });
+  const designer = useCoverDesigner();
 
   useEffect(() => {
     const el = boxRef.current;
@@ -35,8 +38,10 @@ export default function CoverStage() {
     const fit = Math.min(box.width / page.width, box.height / page.height);
     const dpr = hasWindow() ? window.devicePixelRatio || 1 : 1;
     paintCoverPage(doc, canvas, fit * dpr);
-    canvas.style.width = `${Math.round(page.width * fit)}px`;
-    canvas.style.height = `${Math.round(page.height * fit)}px`;
+    const size = { width: Math.round(page.width * fit), height: Math.round(page.height * fit) };
+    canvas.style.width = `${size.width}px`;
+    canvas.style.height = `${size.height}px`;
+    setShownSize((s) => (s.width === size.width && s.height === size.height ? s : size));
   }, [doc, paintKey, box]);
 
   const version = state.built?.sheets.version;
@@ -58,6 +63,11 @@ export default function CoverStage() {
           <p role="status" className="absolute inset-0 m-auto h-fit max-w-sm text-center text-sm text-(--slate)">
             {state.status === 'building' ? labels.coverBuilding : state.status === 'error' ? labels.coverPreviewFailed : labels.coverNoVersions}
           </p>
+        )}
+        {designer.open && state.doc && state.built && shownSize.width > 0 && (
+          <div className="absolute inset-0 m-auto" style={{ width: shownSize.width, height: shownSize.height }}>
+            <CoverDesignerOverlay built={state.built} doc={state.doc} cssWidth={shownSize.width} />
+          </div>
         )}
         {state.doc && busy && <span role="status" className="sr-only">{labels.coverBuilding}</span>}
       </div>
