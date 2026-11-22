@@ -120,6 +120,8 @@ export interface LoadedPreset {
   canvasScope?: LayoutScope;
   /** Where the bundle's book starts (the manifest's `start`, #695). */
   start?: BookStart;
+  /** The book's cover Markdown (the manifest's `coverMarkdown`, #1669). */
+  coverMarkdown?: string;
 }
 
 export interface PresetProvider {
@@ -151,6 +153,8 @@ export interface AppliedPresetSnapshot {
   markdownLength?: number;
   configHash: string;
   resourcesHash: string;
+  /** Hash of the cover Markdown (#1669), when the book had one. */
+  coverHash?: string;
 }
 
 /** Which slice of a loaded preset to apply. `resources` only replaces the

@@ -115,6 +115,12 @@ export interface DocumentHashSource {
   chapters: readonly Chapter[];
   config: PostextConfig;
   resources: Resource[];
+  coverMarkdown?: string;
+}
+
+/** Hash of a cover Markdown; undefined for none. */
+export function hashCover(cover: string | undefined): string | undefined {
+  return cover ? hashString(cover) : undefined;
 }
 
 /** The snapshot re-keyed to a configuration that was migrated on load
@@ -150,5 +156,6 @@ export function isDocumentUntouched(
   if (hashChapters(state.chapters) !== snapshot.markdownHash) return false;
   if (length === undefined) learnedLengths.set(snapshot, chaptersTextLength(state.chapters));
   return hashResources(state.resources) === snapshot.resourcesHash
-    && hashConfig(state.config) === snapshot.configHash;
+    && hashConfig(state.config) === snapshot.configHash
+    && hashCover(state.coverMarkdown) === snapshot.coverHash;
 }

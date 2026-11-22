@@ -178,6 +178,7 @@ export function SandboxProvider({
       pdfScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       canvasScope: effectiveCanvasScope(book.canvasScope, book.chapters.length),
       ...(book.start ? { bookStart: book.start } : {}),
+      ...(book.coverMarkdown ? { coverMarkdown: book.coverMarkdown } : {}),
       epubLayout: loadEpubLayout() ?? defaultEpubLayout(),
       scormLayout: loadScormLayout() ?? 'fixed',
       scormVersion: loadScormVersion() ?? '1.2',

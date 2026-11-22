@@ -55,6 +55,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
           canvasScope: s.canvasScope,
           // `undefined` clears a start the record held for another book.
           start: s.bookStart,
+          coverMarkdown: s.coverMarkdown,
           config: stripConfigDefaults(s.config),
           resources,
         };
@@ -80,7 +81,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
       activeProjectId: s.activeProjectId,
       activePresetId: s.activePresetId,
       snapshot: s.presetApplied,
-      content: { chapters: s.chapters, config: s.config, resources },
+      content: { chapters: s.chapters, config: s.config, resources, ...(s.coverMarkdown ? { coverMarkdown: s.coverMarkdown } : {}) },
       liveDraftKey: liveDraftKeyRef.current,
     });
     if (decision.action === 'put' && s.presetApplied) {
@@ -97,6 +98,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
         activeChapterId: s.activeChapterId,
         ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}),
         ...(s.bookStart ? { start: s.bookStart } : {}),
+        ...(s.coverMarkdown ? { coverMarkdown: s.coverMarkdown } : {}),
         config: s.config,
         resources,
         updatedAt: Date.now(),
@@ -125,7 +127,7 @@ export function useWorkingSave(deps: UseWorkingSaveDeps) {
     if (!hydratedRef.current) return;
     saverRef.current!.schedule();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.chapters, state.activeChapterId, state.canvasScope, state.bookStart, state.config, state.resources, state.activeProjectId, state.presetApplied, state.storeReady]);
+  }, [state.chapters, state.activeChapterId, state.canvasScope, state.bookStart, state.coverMarkdown, state.config, state.resources, state.activeProjectId, state.presetApplied, state.storeReady]);
 
   // Leaving the page — closing the tab, following a link out (the logo),
   // switching apps on a phone — writes the pending edits at once instead

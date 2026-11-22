@@ -383,6 +383,18 @@ describe('zip round trip', () => {
     expect(loaded.summary.locale).toBe('en');
   });
 
+  it('carries the cover Markdown through build → zip → open → parse', async () => {
+    const content = { ...sampleContent(), coverMarkdown: ':::frame{slot=back}\nBack text\n:::' };
+    const built = await buildBundleFiles({ id: 'p', name: 'P', locale: 'en' }, content, {
+      readBlob: (id) => Promise.resolve(id === 'b-svg' ? enc.encode(SVG).buffer : new Uint8Array([9, 9]).buffer),
+      readFont: () => Promise.resolve(new Uint8Array([1, 2]).buffer),
+    });
+    expect(Object.keys(built.files)).toContain('cover.md');
+    const opened = openBundleZip(zipBundle(built.files));
+    const loaded = await parseBundle(opened.manifest, opened.readFile, { locale: 'en', summary });
+    expect(loaded.coverMarkdown).toBe(content.coverMarkdown);
+  });
+
   it('accepts a bundle nested under one folder and ignores __MACOSX', () => {
     const files = {
       'acme/preset.json': enc.encode(JSON.stringify(manifest())),

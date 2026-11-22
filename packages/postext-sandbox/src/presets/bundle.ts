@@ -152,6 +152,7 @@ export async function parseBundle(
     ...(view?.canvasScope ? { canvasScope: view.canvasScope } : {}),
     // Where the book starts, for a bundle that holds part of a longer one.
     ...(read.start ? { start: read.start } : {}),
+    ...(read.coverMarkdown ? { coverMarkdown: read.coverMarkdown } : {}),
   };
 }
 
@@ -177,6 +178,8 @@ export interface BundleContent {
   canvasScope?: LayoutScope;
   /** Where the book starts, written as the manifest's `start` (#695). */
   start?: BookStart;
+  /** The print cover's Markdown, written as `cover.md` (#1669). */
+  coverMarkdown?: string;
   /** The cover picture, carried as the manifest's `thumbnail` so a project
    *  keeps it across an export/import round trip. */
   thumbnail?: { fileId: string; mime: string };
@@ -195,6 +198,7 @@ export interface BundleEdition {
   config: PostextConfig;
   resources: Resource[];
   start?: BookStart;
+  coverMarkdown?: string;
   /** The edition's own title and description, written as
    *  `localized[…].name` and `description` (#968). */
   name?: string;
@@ -248,6 +252,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     resources: content.resources,
     ...(content.canvasScope ? { canvasScope: content.canvasScope } : {}),
     ...(content.start ? { start: content.start } : {}),
+    ...(content.coverMarkdown ? { coverMarkdown: content.coverMarkdown } : {}),
     ...(content.thumbnail ? { thumbnail: content.thumbnail } : {}),
     ...(content.sharedConfig && content.localized && Object.keys(content.localized).length > 0 ? { sharedConfig: content.sharedConfig } : {}),
     ...(content.localized && Object.keys(content.localized).length > 0
@@ -256,6 +261,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
           config: e.config,
           resources: e.resources,
           ...(e.start ? { start: e.start } : {}),
+          ...(e.coverMarkdown ? { coverMarkdown: e.coverMarkdown } : {}),
           ...(e.name ? { name: e.name } : {}),
           ...(e.description ? { description: e.description } : {}),
         }])) }

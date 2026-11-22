@@ -93,6 +93,7 @@ export function useBookSwitch(deps: UseBookSwitchDeps) {
       activeChapterId: draft.activeChapterId,
       ...(draft.canvasScope ? { canvasScope: draft.canvasScope } : {}),
       ...(draft.start ? { start: draft.start } : {}),
+      ...(draft.coverMarkdown ? { coverMarkdown: draft.coverMarkdown } : {}),
     };
     dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });
     dispatch({ type: 'SET_PRESET', payload: { id: draft.presetId, config: draft.baseConfig ? withDefaultResourceTypes(draft.baseConfig, loc) : undefined } });
@@ -146,12 +147,12 @@ export function useBookSwitch(deps: UseBookSwitchDeps) {
         }, opts.discardKey).catch(() => []);
         if (seq !== presetLoadSeqRef.current) return false;
       }
-      const { chapters, config, resources } = late.stateRef.current;
+      const { chapters, config, resources, coverMarkdown } = late.stateRef.current;
       await applyPreset(loaded, dispatch, {
         parts,
         fingerprint,
         scope: late.stateRef.current.configLayers?.scope ?? 'all',
-        current: { chapters, config, resources },
+        current: { chapters, config, resources, ...(coverMarkdown ? { coverMarkdown } : {}) },
         before: () => {
           if (opts.leaveProject && late.stateRef.current.activeProjectId !== null) {
             dispatch({ type: 'SET_ACTIVE_PROJECT', payload: { id: null } });

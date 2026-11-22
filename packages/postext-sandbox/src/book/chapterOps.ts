@@ -241,7 +241,7 @@ export function cloneChapters(chapters: readonly Chapter[], ids: () => string, n
 export function cloneBook(book: BookContent, ids: () => string, now = Date.now()): BookContent {
   const { chapters, idMap } = cloneChapters(book.chapters, ids, now);
   // Where the book starts is the book's, whatever ids its chapters take.
-  return { chapters, activeChapterId: idMap.get(book.activeChapterId) ?? chapters[0]!.id, ...(book.start ? { start: book.start } : {}) };
+  return { chapters, activeChapterId: idMap.get(book.activeChapterId) ?? chapters[0]!.id, ...(book.start ? { start: book.start } : {}), ...(book.coverMarkdown ? { coverMarkdown: book.coverMarkdown } : {}) };
 }
 
 /** Where a chapter that opens at the level-1 heading at `h1` really starts:
