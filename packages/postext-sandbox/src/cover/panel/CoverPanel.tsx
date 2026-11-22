@@ -25,6 +25,7 @@ import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
 import { coverTextSlots } from '../coverText.js';
 import { VersionFields } from './VersionFields.js';
+import { ProfilesSection } from './ProfilesSection.js';
 import { DesignerSection } from '../designer/DesignerSection.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 
@@ -54,6 +55,9 @@ export default function CoverPanel() {
   const sheets = state.built?.sheets;
   const compact = useCompactLayout();
   const offered = SHEETS.filter((s) => s === 'cover' || (s === 'jacket' ? !!sheets?.jacket : !!sheets?.endpapers));
+  // The trim the profiles' measures are worked out for: the front's.
+  const front = state.built?.sheet.zones.find((z) => z.name === 'front')?.rect;
+  const trim = front ? { width: front.width, height: front.height } : { width: 148, height: 210 };
   // The zones' frames, then the text boxes the design places by hand.
   const slots = coverTextSlots(state.built?.sheet.zones.map((z) => z.name) ?? [], config.cover?.textBoxes);
 
@@ -94,7 +98,9 @@ export default function CoverPanel() {
             <Button variant="outline" size="sm" icon={<Plus size={13} />} onClick={() => add('paperback')}>{labels.coverAddPaperback}</Button>
             <Button variant="outline" size="sm" icon={<BookCopy size={13} />} onClick={() => add('hardcover')}>{labels.coverAddHardcover}</Button>
           </div>
-          {version && <VersionFields production={production} version={version} onChange={change} />}
+          {version && (
+            <VersionFields production={production} version={version} measures={sheets?.measures} onChange={change} />
+          )}
         </CollapsibleSection>
         {!version ? (
           <EmptyState title={labels.coverNoVersions} />
@@ -137,6 +143,7 @@ export default function CoverPanel() {
             </CollapsibleSection>
           </>
         )}
+        <ProfilesSection production={production} trim={trim} write={write} />
       </PanelBody>
       </ShowingDefaultsContext.Provider>
     </div>

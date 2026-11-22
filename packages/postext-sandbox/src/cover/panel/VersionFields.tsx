@@ -3,15 +3,20 @@
 // One version's fields: its name, binding, ISBNs, flaps or jacket, the
 // case's material and the spine as the printer gives it.
 
-import { BUILT_IN_BINDING_PROFILES, parseIsbn, type ProductionConfig, type ProductionVersion } from 'postext/production';
+import { BUILT_IN_BINDING_PROFILES, DEFAULT_SPINE_TEXT, parseIsbn, type BindingMeasures, type ProductionConfig, type ProductionVersion, type ResolvedBindingMeasures } from 'postext/production';
+import type { SandboxLabels } from '../../types/labels.js';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
-import { NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../controls/index.js';
+import { ShowingDefaultsContext } from '../../controls/fieldContext.js';
+import { CollapsibleSection, NumberInput, SelectInput, TextInput, ToggleSwitch } from '../../controls/index.js';
+import { MEASURE_GROUPS } from '../profiles.js';
 import { bindingProfiles, versionProfile } from '../versions.js';
 import { profileName } from './coverLabels.js';
 
-export function VersionFields({ production, version, onChange }: {
+export function VersionFields({ production, version, measures, onChange }: {
   production: ProductionConfig | undefined;
   version: ProductionVersion;
+  /** The version's measures as worked out for its trim. */
+  measures?: ResolvedBindingMeasures | undefined;
   onChange: (patch: Partial<ProductionVersion>) => void;
 }) {
   const labels = useSandboxLabels();
@@ -62,6 +67,56 @@ export function VersionFields({ production, version, onChange }: {
         options={[{ value: 'bottomToTop', label: labels.coverSpineUp }, { value: 'topToBottom', label: labels.coverSpineDown }]}
         onChange={(d) => onChange({ spineText: { ...version.spineText, direction: d === 'topToBottom' ? 'topToBottom' : 'bottomToTop' } })}
       />
+      {/* Values against a default: marked and reset, unlike the book's data above. */}
+      <ShowingDefaultsContext.Provider value={false}>
+      <NumberInput
+        label={labels.coverSpineMinText}
+        tooltip={labels.coverSpineMinTextTooltip}
+        value={version.spineText?.minSpine ?? DEFAULT_SPINE_TEXT.minSpine}
+        isDefault={version.spineText?.minSpine === undefined}
+        onReset={() => onChange({ spineText: spineTextWithout(version, 'minSpine') })}
+        min={0}
+        max={60}
+        step={0.5}
+        suffix="mm"
+        onChange={(minSpine) => onChange({ spineText: { ...version.spineText, minSpine } })}
+      />
+      {measures && (
+        <CollapsibleSection title={labels.coverVersionMeasures} sectionId="cover-version-measures" variant="subsection">
+          <p className="px-3 py-1 text-xs text-(--slate)">{labels.coverVersionMeasuresIntro}</p>
+          {MEASURE_GROUPS.filter((g) => (isCase ? g.id !== 'softcover' : g.id !== 'case' && g.id !== 'jacket' && g.id !== 'endpapers'))
+            .flatMap((g) => g.keys)
+            .filter((k) => k !== 'roundSpineAllowance' || profile?.style === 'caseRound')
+            .map((k) => (
+              <NumberInput
+                key={k}
+                label={labels[`coverMeasure_${k}` as keyof SandboxLabels] as string}
+                value={Math.round((version.overrides?.[k] ?? measures[k]) * 100) / 100}
+                isDefault={version.overrides?.[k] === undefined}
+                onReset={() => onChange({ overrides: overridesWith(version, k, undefined) })}
+                min={0}
+                max={200}
+                step={0.5}
+                suffix="mm"
+                onChange={(v) => onChange({ overrides: overridesWith(version, k, v) })}
+              />
+            ))}
+        </CollapsibleSection>
+      )}
+      </ShowingDefaultsContext.Provider>
     </div>
   );
+}
+
+function overridesWith(version: ProductionVersion, key: keyof BindingMeasures, mm: number | undefined): ProductionVersion['overrides'] {
+  const next = { ...version.overrides };
+  if (mm === undefined) delete next[key];
+  else next[key] = mm;
+  return Object.keys(next).length > 0 ? next : undefined;
+}
+
+function spineTextWithout(version: ProductionVersion, key: 'minSpine' | 'direction'): ProductionVersion['spineText'] {
+  const next = { ...version.spineText };
+  delete next[key];
+  return Object.keys(next).length > 0 ? next : undefined;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { chapter, harness } from './testHarness.js';
+import { chapter, harness } from '../testHarness.js';
 
 // #1669: the print cover for an agent — the sheet read, the cover's text
 // written as a step of the history.
