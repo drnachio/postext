@@ -20,6 +20,11 @@ describe('settings that never shape a page stay out of the layout key', () => {
     expect(forms.pdfGeneration?.forms).toEqual({ currency: 'USD', separatorStyle: 0 });
   });
 
+  it('ignores the print production (production, #1666)', () => {
+    const published: PostextConfig = { ...base(), production: { versions: [{ id: 'pb', name: 'Paperback', binding: 'perfect', isbn: '978-0-306-40615-7' }] } };
+    expect(configKeyOf(published)).toBe(configKeyOf(base()));
+  });
+
   it('still tells a setting that shapes pages apart', () => {
     const other: PostextConfig = { bodyText: { fontSize: { value: 12, unit: 'pt' } } as never };
     expect(configKeyOf(other)).not.toBe(configKeyOf(base()));

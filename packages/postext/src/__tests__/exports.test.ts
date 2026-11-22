@@ -1267,7 +1267,10 @@ describe("postext/production", () => {
       "PRODUCTION_FILE_FORMAT",
       "PRODUCTION_FILE_VERSION",
       "exportProductionProfiles",
+      "readPaperProfile",
+      "readBindingProfile",
       "importProductionProfiles",
+      "readProductionConfig",
     ]);
   });
 

@@ -4,6 +4,7 @@
  */
 
 import type { BindingMeasures, BindingProfile, BindingStyle, PaperProfile } from '../types/output/production.js';
+import { isNum, isRecord } from './guards.js';
 
 export const PRODUCTION_FILE_FORMAT = 'postext-production';
 export const PRODUCTION_FILE_VERSION = 1;
@@ -38,8 +39,6 @@ export function exportProductionProfiles(papers: readonly PaperProfile[], bindin
   };
 }
 
-const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
-const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
 const isTrim = (v: unknown): boolean => isRecord(v) && isNum(v.width) && isNum(v.height);
 
 /** `accepts` as written, or undefined when any part of it does not read:
@@ -72,6 +71,69 @@ function validLength(v: unknown): boolean {
     && (v.of === undefined || v.of === 'width' || v.of === 'height');
 }
 
+/** A paper profile as read from untrusted data, or undefined when it has
+ *  no id. Fields that do not read are dropped and listed in `issues`. */
+export function readPaperProfile(p: unknown, where: string, issues: ProductionImportIssue[]): PaperProfile | undefined {
+  if (!isRecord(p) || typeof p.id !== 'string' || !p.id) {
+    issues.push({ where, reason: 'missingId' });
+    return undefined;
+  }
+  const paper = structuredClone(p) as unknown as PaperProfile;
+  for (const key of ['grammage', 'bulk'] as const) {
+    if (paper[key] !== undefined && !(isNum(paper[key]) && paper[key]! > 0)) {
+      delete paper[key];
+      issues.push({ where: `${where}.${key}`, reason: 'badNumber' });
+    }
+  }
+  for (const [key, value] of Object.entries(paper)) {
+    // A paper's other fields are Folio's: words and numbers only.
+    if (value !== undefined && typeof value !== 'string' && !(typeof value === 'number' && Number.isFinite(value)) && typeof value !== 'boolean') {
+      delete (paper as unknown as Record<string, unknown>)[key];
+      issues.push({ where: `${where}.${key}`, reason: 'badText' });
+    }
+  }
+  keepStrings(paper as unknown as Record<string, unknown>, ['name', 'supplier', 'commercialName'], where, issues);
+  if (typeof paper.name !== 'string') paper.name = paper.id;
+  return paper;
+}
+
+/** A binding profile as read from untrusted data, or undefined when it has
+ *  no id or an unknown style. Fields that do not read are dropped and
+ *  listed in `issues`. */
+export function readBindingProfile(b: unknown, where: string, issues: ProductionImportIssue[]): BindingProfile | undefined {
+  if (!isRecord(b) || typeof b.id !== 'string' || !b.id) {
+    issues.push({ where, reason: 'missingId' });
+    return undefined;
+  }
+  if (typeof b.style !== 'string' || !STYLES.has(b.style)) {
+    issues.push({ where, reason: 'unknownStyle' });
+    return undefined;
+  }
+  const binding = structuredClone(b) as unknown as BindingProfile;
+  keepStrings(binding as unknown as Record<string, unknown>, ['name', 'printer'], where, issues);
+  if (typeof binding.name !== 'string') binding.name = binding.id;
+  if (binding.accepts !== undefined && !validAccepts(binding.accepts)) {
+    delete binding.accepts;
+    issues.push({ where: `${where}.accepts`, reason: 'badNumber' });
+  }
+  if (binding.signature !== undefined && !(isNum(binding.signature) && binding.signature > 0)) {
+    delete binding.signature;
+    issues.push({ where: `${where}.signature`, reason: 'badNumber' });
+  }
+  if (isRecord(binding.measures)) {
+    for (const [key, value] of Object.entries(binding.measures)) {
+      if (!(MEASURES.has(key) && validLength(value))) {
+        delete (binding.measures as Record<string, unknown>)[key];
+        issues.push({ where: `${where}.measures.${key}`, reason: MEASURES.has(key) ? 'badNumber' : 'badMeasure' });
+      }
+    }
+  } else if (binding.measures !== undefined) {
+    delete binding.measures;
+    issues.push({ where: `${where}.measures`, reason: 'badMeasure' });
+  }
+  return binding;
+}
+
 /** The profiles of a file (parsed JSON), each one checked: a profile
  *  without an id or with an unknown binding style is left out; a measure
  *  that is unknown or unreadable is dropped from its profile. What was left
@@ -92,52 +154,12 @@ export function importProductionProfiles(data: unknown): {
     issues.push({ where: 'file', reason: 'newerVersion' });
   }
   (Array.isArray(data.papers) ? data.papers : []).forEach((p, i) => {
-    if (!isRecord(p) || typeof p.id !== 'string' || !p.id) return issues.push({ where: `papers[${i}]`, reason: 'missingId' });
-    const paper = structuredClone(p) as unknown as PaperProfile;
-    for (const key of ['grammage', 'bulk'] as const) {
-      if (paper[key] !== undefined && !(isNum(paper[key]) && paper[key]! > 0)) {
-        delete paper[key];
-        issues.push({ where: `papers[${i}].${key}`, reason: 'badNumber' });
-      }
-    }
-    for (const [key, value] of Object.entries(paper)) {
-      // A paper's other fields are Folio's: words and numbers only.
-      if (value !== undefined && typeof value !== 'string' && !(typeof value === 'number' && Number.isFinite(value)) && typeof value !== 'boolean') {
-        delete (paper as unknown as Record<string, unknown>)[key];
-        issues.push({ where: `papers[${i}].${key}`, reason: 'badText' });
-      }
-    }
-    keepStrings(paper as unknown as Record<string, unknown>, ['name', 'supplier', 'commercialName'], `papers[${i}]`, issues);
-    if (typeof paper.name !== 'string') paper.name = paper.id;
-    papers.push(paper);
+    const paper = readPaperProfile(p, `papers[${i}]`, issues);
+    if (paper) papers.push(paper);
   });
   (Array.isArray(data.bindings) ? data.bindings : []).forEach((b, i) => {
-    if (!isRecord(b) || typeof b.id !== 'string' || !b.id) return issues.push({ where: `bindings[${i}]`, reason: 'missingId' });
-    if (typeof b.style !== 'string' || !STYLES.has(b.style)) return issues.push({ where: `bindings[${i}]`, reason: 'unknownStyle' });
-    const binding = structuredClone(b) as unknown as BindingProfile;
-    keepStrings(binding as unknown as Record<string, unknown>, ['name', 'printer'], `bindings[${i}]`, issues);
-    if (typeof binding.name !== 'string') binding.name = binding.id;
-    if (binding.accepts !== undefined && !validAccepts(binding.accepts)) {
-      delete binding.accepts;
-      issues.push({ where: `bindings[${i}].accepts`, reason: 'badNumber' });
-    }
-    if (binding.signature !== undefined && !(isNum(binding.signature) && binding.signature > 0)) {
-      delete binding.signature;
-      issues.push({ where: `bindings[${i}].signature`, reason: 'badNumber' });
-    }
-    if (isRecord(binding.measures)) {
-      for (const [key, value] of Object.entries(binding.measures)) {
-        const ok = MEASURES.has(key) && validLength(value);
-        if (!ok) {
-          delete (binding.measures as Record<string, unknown>)[key];
-          issues.push({ where: `bindings[${i}].measures.${key}`, reason: MEASURES.has(key) ? 'badNumber' : 'badMeasure' });
-        }
-      }
-    } else if (binding.measures !== undefined) {
-      delete binding.measures;
-      issues.push({ where: `bindings[${i}].measures`, reason: 'badMeasure' });
-    }
-    bindings.push(binding);
+    const binding = readBindingProfile(b, `bindings[${i}]`, issues);
+    if (binding) bindings.push(binding);
   });
   return { papers, bindings, issues };
 }

@@ -151,3 +151,20 @@ export interface ProductionCollection {
   isbn?: string;
   catalogue?: { id: string; title: string; resource?: string }[];
 }
+
+/** A book's print production (#1655, #1666): the versions it is published
+ *  in, each with its binding and ISBN, the profiles they name, and the
+ *  collection it belongs to. It belongs to the book, never to its design,
+ *  and no layout reads it: the book block's paper is `folio.paper` and its
+ *  pages' `:::paper` stocks. */
+export interface ProductionConfig {
+  /** Each binding the book is published in, in order. */
+  versions?: ProductionVersion[];
+  /** Binding profiles the versions name, carried with the book so a bundle
+   *  opened elsewhere finds them (the built-in ones need not be listed). */
+  bindings?: BindingProfile[];
+  /** Paper profiles the book was set up with, carried with it. */
+  papers?: PaperProfile[];
+  /** The collection or multi-volume work the book belongs to. */
+  collection?: ProductionCollection;
+}
