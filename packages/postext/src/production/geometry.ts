@@ -8,28 +8,10 @@
  */
 
 import type { BindingStyle, TrimMm } from '../types/output/production.js';
+import type { CoverZoneName, SheetRect } from '../types/output/cover.js';
 import type { ResolvedBindingMeasures } from './measures.js';
 
-/** A rectangle on a sheet, mm, from the top-left corner of the sheet (bleed
- *  or turn-in included). */
-export interface SheetRect {
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-}
-
-export type CoverZoneName =
-  | 'flapBack'
-  | 'back'
-  | 'jointBack'
-  | 'spine'
-  | 'jointFront'
-  | 'front'
-  | 'flapFront'
-  | 'pastedown'
-  | 'flyleaf'
-  | 'hinge';
+export type { CoverZoneName, SheetRect } from '../types/output/cover.js';
 
 export interface SheetZone {
   name: CoverZoneName;

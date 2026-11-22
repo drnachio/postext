@@ -13,6 +13,7 @@ import { collectCalloutStyleWarnings, collectLabelIconWarnings, collectDesignAnc
 import { collectUnknownKeyWarnings } from './unknownKeys.js';
 import { collectDieCutWarnings } from './dieCuts.js';
 import { collectProductionWarnings } from './production.js';
+import { collectCoverWarnings } from './cover.js';
 import { collectChapterStyleWarnings } from './chapterStyles.js';
 import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarnings, collectCjkGridWarnings } from './values.js';
 
@@ -65,7 +66,9 @@ import { collectValueWarnings, collectSideColumnWarnings, collectColumnCountWarn
  *   data it cannot read, a shape it drops (see `collectDieCutWarnings`);
  * - the print production (#1666): what of `production` the cover reader
  *   leaves out, an ISBN that does not read (see
- *   `collectProductionWarnings`).
+ *   `collectProductionWarnings`);
+ * - the covers' design (#1667): ids, zones, colours, finishes and text
+ *   boxes the cover leaves out or changes (see `collectCoverWarnings`).
  * Pure.
  */
 export function collectConfigWarnings(config: PostextConfig | undefined, options: ConfigWarningOptions = {}): ConfigWarning[] {
@@ -79,7 +82,7 @@ export function collectConfigWarnings(config: PostextConfig | undefined, options
     ...collectDesignPathWarnings(config), ...collectDesignKeyWarnings(config), ...collectBoxShapeWarnings(config),
     ...collectConnectorWarnings(config), ...collectTextOverWarnings(config), ...collectFenceConditionWarnings(config),
     ...exerciseConfigWarnings(config), ...collectChapterStyleWarnings(config), ...collectDieCutWarnings(config),
-    ...collectProductionWarnings(config),
+    ...collectProductionWarnings(config), ...collectCoverWarnings(config),
   ];
 }
 

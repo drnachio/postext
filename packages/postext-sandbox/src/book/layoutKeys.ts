@@ -78,6 +78,8 @@ function layoutPartOf(config: PostextConfig): PostextConfig {
   const layout: PostextConfig = { ...config };
   delete layout.folio;
   delete layout.production;
+  // The covers' design (#1667): laid out on the cover's own sheet.
+  delete layout.cover;
   delete layout.print;
   delete layout.contrast;
   delete layout.checks;
