@@ -204,8 +204,9 @@ function SandboxLayout({
   };
 
   const renderViewport = () => {
-    // The Cover panel shows the sheet it works on instead of the book.
-    if (activePanel === 'cover') {
+    // The Cover panel shows the sheet it works on instead of the book (on
+    // a phone, inside the panel, which covers the preview).
+    if (activePanel === 'cover' && !compact) {
       return (
         <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
           <CoverStage />

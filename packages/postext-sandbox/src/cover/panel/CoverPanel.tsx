@@ -8,6 +8,7 @@
  * design's `cover` part, edited in the designer.
  */
 
+import { lazy, Suspense } from 'react';
 import { BookCopy, Plus, Trash2 } from 'lucide-react';
 import type { CoverSheetKind, ProductionVersion } from 'postext/production';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
@@ -24,6 +25,10 @@ import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
 import { VersionFields } from './VersionFields.js';
 import { DesignerSection } from '../designer/DesignerSection.js';
+import { useCompactLayout } from '../../hooks/useCompactLayout.js';
+
+// On a phone the panel covers the preview: the sheet is shown in the panel.
+const CoverStage = lazy(() => import('../CoverStage.js'));
 
 const SHEETS: readonly CoverSheetKind[] = ['cover', 'jacket', 'endpaperFront', 'endpaperBack'];
 const TEXT_SLOTS = ['front', 'spine', 'back', 'flapFront', 'flapBack', 'pastedown', 'flyleaf'];
@@ -47,6 +52,7 @@ export default function CoverPanel() {
   const change = (patch: Partial<ProductionVersion>) => version && write(updateVersion(production, version.id, patch));
 
   const sheets = state.built?.sheets;
+  const compact = useCompactLayout();
   const offered = SHEETS.filter((s) => s === 'cover' || (s === 'jacket' ? !!sheets?.jacket : !!sheets?.endpapers));
   const zones = new Set(state.built?.sheet.zones.map((z) => z.name) ?? []);
   // The zones' frames, then the text boxes the design places by hand.
@@ -56,6 +62,11 @@ export default function CoverPanel() {
     <div className="flex h-full flex-col">
       <CoverBuilder />
       <PanelHeader title={labels.navCover} />
+      {compact && (
+        <div className="h-[38vh] min-h-48 shrink-0 border-b" style={{ borderColor: 'var(--rule)' }}>
+          <Suspense fallback={null}><CoverStage /></Suspense>
+        </div>
+      )}
       {/* The book's own data, not design settings: no changed-value marks. */}
       <ShowingDefaultsContext.Provider value>
       <PanelBody>
