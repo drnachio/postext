@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coverSlotTexts, hasCoverSlot, setCoverSlotText } from './coverText.js';
+import { coverSlotTexts, renameCoverSlot, hasCoverSlot, setCoverSlotText } from './coverText.js';
 
 const MD = ':::frame{slot="back"}\nA blurb.\n\nSecond paragraph.\n:::\n\n:::frame{slot="flapFront"}\nAbout the author.\n:::\n';
 
@@ -33,5 +33,13 @@ describe('cover text by slot', () => {
     const twice = `${MD}\n:::frame{slot="back"}\nOld copy\n:::\n`;
     const next = setCoverSlotText(twice, 'back', 'One');
     expect(next.match(/slot="back"/g)).toHaveLength(1);
+  });
+
+  it('renames a slot in its frames and leaves the rest', () => {
+    const md = ':::frame{slot="quote"}\nA line\n:::\n\n:::frame{slot="back"}\nBlurb\n:::\n';
+    const next = renameCoverSlot(md, 'quote', 'praise');
+    expect(next).toContain(':::frame{slot="praise"}\nA line');
+    expect(next).toContain(':::frame{slot="back"}\nBlurb');
+    expect(coverSlotTexts(next).praise).toBe('A line');
   });
 });

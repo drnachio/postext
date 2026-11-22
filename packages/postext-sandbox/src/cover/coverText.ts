@@ -71,3 +71,18 @@ export function coverTextSlots(zones: Iterable<string>, textBoxes: readonly { na
   const have = new Set(zones);
   return [...ZONE_TEXT_SLOTS.filter((s) => have.has(s)), ...(textBoxes ?? []).map((t) => t.name)];
 }
+
+/** The Markdown with every frame of a slot moved to another (a text box
+ *  renamed); the rest as it was written. */
+export function renameCoverSlot(markdown: string | undefined, from: string, to: string): string {
+  const md = (markdown ?? '').replace(/\r\n?/g, '\n');
+  let out = '';
+  let at = 0;
+  for (const f of coverFrames(md)) {
+    if (f.slot !== from) continue;
+    const head = md.slice(f.start, f.end);
+    out += md.slice(at, f.start) + head.replace(/slot\s*=\s*(["']?)[^"'\s}]+\1/, `slot="${to}"`);
+    at = f.end;
+  }
+  return out + md.slice(at);
+}

@@ -9,6 +9,8 @@ import type { ColorValue } from 'postext';
 import type { CoverElement, CoverFinish, CoverLogo, CoverTextFrame, ProductionSheet, SheetRect } from 'postext/production';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { ColorPicker, NumberInput, SelectInput } from '../../controls/index.js';
+import { ElementExtras } from './ElementExtras.js';
+import { TextBoxName } from './TextBoxName.js';
 import { designerItems, itemOf, patchItem, placeItem, sameRef, type ItemRef } from './designerModel.js';
 
 const INK: ColorValue = { hex: '#1f3a5f', model: 'hex' };
@@ -42,6 +44,7 @@ export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem
         const t = item as CoverTextFrame;
         return (
           <>
+            <TextBoxName name={t.name} sheet={sheet} />
             <SelectInput
               label={labels.coverTextTurn}
               value={String(t.rotate ?? 0)}
@@ -80,6 +83,7 @@ export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem
             {refItem.layer === 'logos' && (
               <NumberInput label={labels.coverItemClearance} tooltip={labels.coverItemClearanceTooltip} value={(e as CoverLogo).clearance ?? 0} min={0} max={30} step={0.5} suffix="mm" onChange={(clearance) => patch({ clearance })} />
             )}
+            <ElementExtras e={e} sheet={sheet} patch={patch} />
           </>
         );
       })()}
