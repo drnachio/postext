@@ -6,6 +6,7 @@ import { checkTools } from './checks.js';
 import { findTextTools } from './findText.js';
 import { comicTools } from './comics.js';
 import { configTools } from './config.js';
+import { coverTools } from './cover.js';
 import { designItemTools } from './designItems.js';
 import { designTools } from './designs.js';
 import { editionCheckTools } from './editionChecks.js';
@@ -43,6 +44,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...viewTools(host),
     ...viewerCommandTools(host),
     ...resourceTools(host),
+    ...coverTools(host),
     ...comicTools(host),
     ...libraryTools(host),
     ...wordTools(host),

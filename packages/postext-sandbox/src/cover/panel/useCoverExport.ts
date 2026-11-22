@@ -11,11 +11,10 @@ import { useSandboxLabels } from '../../context/SandboxContext.js';
 import { downloadBytes } from '../../storage/persistence/files.js';
 import { announce } from '../../ui/announcer.js';
 import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
-import { pdfWarnings, pdfWriterSettings } from '../../viewport/pdf/pdfWriterOptions.js';
-import { pdfCheckData } from '../../viewport/pdf/usePdfCheck.js';
 import type { Warning } from '../../warnings/types.js';
 import type { CoverState } from '../useCover.js';
 import { canvasJpeg, paintCoverZone } from '../paintCover.js';
+import { coverFileName as fileName, writeCoverPdf } from '../coverPdf.js';
 
 export interface CoverExport {
   busy: boolean;
@@ -26,8 +25,6 @@ export interface CoverExport {
   exportPdf: () => Promise<void>;
   exportFront: () => Promise<void>;
 }
-
-const fileName = (s: string) => s.replace(/[^\p{L}\p{N}_-]+/gu, '-').replace(/^-+|-+$/g, '') || 'cover';
 
 export function useCoverExport(state: CoverState): CoverExport {
   const labels = useSandboxLabels();
@@ -51,16 +48,9 @@ export function useCoverExport(state: CoverState): CoverExport {
     setError(null);
     setProgress(null);
     try {
-      const resources = built.content.resources ?? [];
-      const settings = await pdfWriterSettings(built.config, resources);
-      // Copies: the worker takes the buffers it is sent, and the built
-      // cover's files are painted and exported again.
-      for (const [id, bytes] of Object.entries(built.files)) settings.resourceBytes.set(id, bytes.slice());
-      const { onWarning, fontChecks } = pdfWarnings();
       workerRef.current ??= createPdfWorker();
-      const bytes = await workerRef.current.render([doc], { ...settings, fontProvider: providerRef.current, onWarning, onProgress: setProgress });
-      const check = pdfCheckData(built.config, resources, [doc], fontChecks);
-      setFindings(check.findings);
+      const { bytes, findings: found } = await writeCoverPdf(built, doc, workerRef.current, providerRef.current, setProgress);
+      setFindings(found);
       downloadBytes(bytes, `${base}.pdf`, 'application/pdf');
       announce(labels.coverExported);
     } catch (err) {

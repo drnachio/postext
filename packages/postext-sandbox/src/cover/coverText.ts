@@ -63,3 +63,11 @@ export function setCoverSlotText(markdown: string | undefined, slot: string, tex
   const tidy = out.replace(/\n{3,}/g, '\n\n').trim();
   return tidy ? `${tidy}\n` : '';
 }
+
+/** The slots a cover's text goes in: the zones of the sheet that take
+ *  text, then the text boxes the design places by hand. */
+const ZONE_TEXT_SLOTS = ['front', 'spine', 'back', 'flapFront', 'flapBack', 'pastedown', 'flyleaf'];
+export function coverTextSlots(zones: Iterable<string>, textBoxes: readonly { name: string }[] | undefined): string[] {
+  const have = new Set(zones);
+  return [...ZONE_TEXT_SLOTS.filter((s) => have.has(s)), ...(textBoxes ?? []).map((t) => t.name)];
+}

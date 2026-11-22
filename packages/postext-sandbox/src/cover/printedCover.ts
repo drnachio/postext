@@ -7,7 +7,7 @@
 
 import type { PostextConfig, PostextContent, VDTDocument } from 'postext';
 import type { EpubCover } from 'postext-epub';
-import { buildCover, type BuiltCover } from 'postext/production';
+import { buildCover, type BuiltCover, type CoverSheetKind } from 'postext/production';
 import { ensureResourceImages, type SvgRaster } from '../controls/media/resourceImages.js';
 import { coverPictureOptions } from '../epub/cover.js';
 import { coverBuildInput, pickVersion, type CoverBook } from './coverInput.js';
@@ -32,13 +32,17 @@ export interface LaidCover {
   doc: VDTDocument;
 }
 
-/** The cover sheet of the book's first print version laid out with its
- *  pictures readied; null when the book has no print version or the
- *  cover cannot be built. */
-export async function layOutPrintedCover(book: CoverBook, host: PrintedCoverHost): Promise<LaidCover | null> {
-  const version = pickVersion(book.config, null);
+/** A sheet of a print version (the book's first and its cover sheet by
+ *  default) laid out with its pictures readied; null when the book has no
+ *  print version or the sheet cannot be built. */
+export async function layOutPrintedCover(
+  book: CoverBook,
+  host: PrintedCoverHost,
+  which: { version?: string; sheet?: CoverSheetKind } = {},
+): Promise<LaidCover | null> {
+  const version = pickVersion(book.config, which.version ?? null);
   if (!version) return null;
-  const built = buildCover(coverBuildInput(book, version, 'cover'));
+  const built = buildCover(coverBuildInput(book, version, which.sheet ?? 'cover'));
   if (!('config' in built)) return null;
   const { content } = built;
   await host.fonts?.(built.config, content.markdown);

@@ -22,7 +22,7 @@ import { compileFromLibrary, compilesFromLibrary } from './compiledBook.js';
 
 /** Largest file handed back inside a result, in bytes; larger ones are
  *  downloaded. */
-const MAX_DATA_BYTES = 12 * 1024 * 1024;
+export const MAX_DATA_BYTES = 12 * 1024 * 1024;
 /** How long a PDF or an EPUB may take to write. */
 const GENERATE_TIMEOUT_MS = 10 * 60_000;
 
@@ -58,7 +58,7 @@ function bundleLanguages(bytes: Uint8Array): { manifest: Record<string, unknown>
   };
 }
 
-function toBase64(bytes: Uint8Array): string {
+export function toBase64(bytes: Uint8Array): string {
   let binary = '';
   for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   return btoa(binary);

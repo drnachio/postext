@@ -23,6 +23,7 @@ import { CoverChecks } from './CoverChecks.js';
 import { CoverExportSection } from './CoverExportSection.js';
 import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
+import { coverTextSlots } from '../coverText.js';
 import { VersionFields } from './VersionFields.js';
 import { DesignerSection } from '../designer/DesignerSection.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
@@ -31,7 +32,6 @@ import { useCompactLayout } from '../../hooks/useCompactLayout.js';
 const CoverStage = lazy(() => import('../CoverStage.js'));
 
 const SHEETS: readonly CoverSheetKind[] = ['cover', 'jacket', 'endpaperFront', 'endpaperBack'];
-const TEXT_SLOTS = ['front', 'spine', 'back', 'flapFront', 'flapBack', 'pastedown', 'flyleaf'];
 
 export default function CoverPanel() {
   const labels = useSandboxLabels();
@@ -54,9 +54,8 @@ export default function CoverPanel() {
   const sheets = state.built?.sheets;
   const compact = useCompactLayout();
   const offered = SHEETS.filter((s) => s === 'cover' || (s === 'jacket' ? !!sheets?.jacket : !!sheets?.endpapers));
-  const zones = new Set(state.built?.sheet.zones.map((z) => z.name) ?? []);
   // The zones' frames, then the text boxes the design places by hand.
-  const slots = [...TEXT_SLOTS.filter((s) => zones.has(s as never)), ...(config.cover?.textBoxes ?? []).map((t) => t.name)];
+  const slots = coverTextSlots(state.built?.sheet.zones.map((z) => z.name) ?? [], config.cover?.textBoxes);
 
   return (
     <div className="flex h-full flex-col">
