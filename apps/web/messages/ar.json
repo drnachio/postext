@@ -3420,7 +3420,7 @@
     "resetOnH4": "عند كل H4",
     "resetOnH5": "عند كل H5",
     "resetOnH6": "عند كل H6",
-    "resourcesDropToUpload": "أفلت الصور أو ملفات SVG لرفعها",
+    "resourcesDropToUpload": "أفلت صورًا أو SVG أو PDF أو TIFF لرفعها",
     "resourcesUploadNote": "المضافة: __added__؛ الملفات غير المدعومة التي تم تخطيها: __skipped__.",
     "resourceNew": "جديد",
     "resourceUploadImage": "رفع صورة",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "العملية",
     "cutElementProcessTooltip": "ما يفعله القالب: يقطع ثقبًا في الورقة، أو يرفع الورق (نقش بارز) أو يضغطه (نقش غائر) بالشكل، على لوح تقني لا يطبع شيئًا.",
     "cutElementProcessCut": "قطع",
-    "coverItemPathStraighten": "تقويم منحنياته"
+    "coverItemPathStraighten": "تقويم منحنياته",
+    "resourcesUploadPostscript": "__names__ بصيغة PostScript (ملف EPS، أو ملف Illustrator حُفظ دون PDF)، ولا يقرؤه المتصفح: احفظه بصيغة PDF، أو في Illustrator مع تفعيل «إنشاء ملف متوافق مع PDF»."
   },
   "PlainLanguage": {
     "heading": "باختصار",

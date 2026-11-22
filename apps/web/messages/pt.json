@@ -3417,7 +3417,7 @@
     "resetOnH4": "A cada H4",
     "resetOnH5": "A cada H5",
     "resetOnH6": "A cada H6",
-    "resourcesDropToUpload": "Solte imagens ou SVGs para enviar",
+    "resourcesDropToUpload": "Solte imagens, SVG, PDF ou TIFF para enviar",
     "resourcesUploadNote": "Adicionados: __added__; ignorados: __skipped__ arquivo(s) não suportado(s).",
     "resourceNew": "Novo",
     "resourceUploadImage": "Enviar imagem",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Processo",
     "cutElementProcessTooltip": "O que a faca faz: corta um furo na folha, ou eleva (relevo) ou afunda (baixo-relevo) o papel na forma, numa chapa técnica que não imprime nada.",
     "cutElementProcessCut": "Corte",
-    "coverItemPathStraighten": "Endireitar as curvas"
+    "coverItemPathStraighten": "Endireitar as curvas",
+    "resourcesUploadPostscript": "__names__ é PostScript (um EPS, ou um arquivo do Illustrator salvo sem o seu PDF), que um navegador não lê: salve-o como PDF, ou no Illustrator com “Criar arquivo compatível com PDF” ativado."
   },
   "PlainLanguage": {
     "heading": "Em poucas palavras",

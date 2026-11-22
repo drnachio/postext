@@ -6744,4 +6744,5 @@ export interface SandboxLabels {
   cutElementProcessTooltip: string;
   cutElementProcessCut: string;
   coverItemPathStraighten: string;
+  resourcesUploadPostscript: string;
 }

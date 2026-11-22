@@ -2791,7 +2791,7 @@ export const DEFAULT_LABELS: SandboxLabels = {
   resetOnH4: "On each H4",
   resetOnH5: "On each H5",
   resetOnH6: "On each H6",
-  resourcesDropToUpload: "Drop images or SVGs to upload",
+  resourcesDropToUpload: "Drop pictures, SVGs, PDFs or TIFFs to upload",
   resourcesUploadNote: "Added __added__; skipped __skipped__ unsupported file(s).",
   resourceNew: "New",
   resourceUploadImage: "Upload image",
@@ -6563,4 +6563,5 @@ export const DEFAULT_LABELS: SandboxLabels = {
   cutElementProcessTooltip: "What the die does: cuts a hole through the leaf, or raises (emboss) or presses (deboss) the paper in the shape, on a technical plate that prints nothing.",
   cutElementProcessCut: "Cut through",
   coverItemPathStraighten: "Straighten its curves",
+  resourcesUploadPostscript: "__names__ is PostScript (an EPS, or an Illustrator file saved without its PDF), which a browser cannot read: save it as PDF, or in Illustrator with “Create PDF Compatible File” on.",
 };

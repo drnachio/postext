@@ -3420,7 +3420,7 @@
     "resetOnH4": "A ogni H4",
     "resetOnH5": "A ogni H5",
     "resetOnH6": "A ogni H6",
-    "resourcesDropToUpload": "Trascina qui immagini o SVG per caricarli",
+    "resourcesDropToUpload": "Rilascia immagini, SVG, PDF o TIFF per caricarli",
     "resourcesUploadNote": "Aggiunti __added__; saltati __skipped__ file non supportati.",
     "resourceNew": "Nuova",
     "resourceUploadImage": "Carica immagine",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Lavorazione",
     "cutElementProcessTooltip": "Cosa fa la fustella: fora il foglio, oppure solleva (rilievo) o preme (incavo) la carta nella forma, su una lastra tecnica che non stampa nulla.",
     "cutElementProcessCut": "Fustellatura",
-    "coverItemPathStraighten": "Raddrizza le curve"
+    "coverItemPathStraighten": "Raddrizza le curve",
+    "resourcesUploadPostscript": "__names__ è PostScript (un EPS, o un file di Illustrator salvato senza il suo PDF), che un browser non sa leggere: salvalo come PDF, o in Illustrator con «Crea file compatibile PDF» attivo."
   },
   "PlainLanguage": {
     "heading": "In breve",

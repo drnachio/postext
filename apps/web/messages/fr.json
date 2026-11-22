@@ -3420,7 +3420,7 @@
     "resetOnH4": "À chaque H4",
     "resetOnH5": "À chaque H5",
     "resetOnH6": "À chaque H6",
-    "resourcesDropToUpload": "Déposez des images ou des SVG pour les téléverser",
+    "resourcesDropToUpload": "Déposez des images, SVG, PDF ou TIFF pour les importer",
     "resourcesUploadNote": "Ajouté(s) : __added__ ; ignoré(s) : __skipped__ fichier(s) non pris en charge.",
     "resourceNew": "Nouveau",
     "resourceUploadImage": "Téléverser une image",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Procédé",
     "cutElementProcessTooltip": "Ce que fait l’outil : percer la feuille, ou relever (gaufrage) ou enfoncer (embossage en creux) le papier selon la forme, sur une plaque technique qui n’imprime rien.",
     "cutElementProcessCut": "Découpe",
-    "coverItemPathStraighten": "Redresser ses courbes"
+    "coverItemPathStraighten": "Redresser ses courbes",
+    "resourcesUploadPostscript": "__names__ est en PostScript (un EPS, ou un fichier Illustrator enregistré sans son PDF), qu’un navigateur ne peut pas lire : enregistrez-le en PDF, ou dans Illustrator avec « Créer un fichier compatible PDF » activé."
   },
   "PlainLanguage": {
     "heading": "En bref",

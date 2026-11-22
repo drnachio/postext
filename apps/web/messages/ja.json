@@ -3420,7 +3420,7 @@
     "resetOnH4": "H4ごと",
     "resetOnH5": "H5ごと",
     "resetOnH6": "H6ごと",
-    "resourcesDropToUpload": "画像またはSVGをドロップしてアップロード",
+    "resourcesDropToUpload": "画像、SVG、PDF、TIFF をドロップしてアップロード",
     "resourcesUploadNote": "__added__件を追加しました。未対応のファイル__skipped__件はスキップしました。",
     "resourceNew": "新規",
     "resourceUploadImage": "画像をアップロード",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "加工",
     "cutElementProcessTooltip": "型の働き：紙に穴を抜くか、形どおりに紙を浮き出させる（エンボス）か押し込む（デボス）か。何も刷らない技術版に載ります。",
     "cutElementProcessCut": "型抜き",
-    "coverItemPathStraighten": "曲線を直線にする"
+    "coverItemPathStraighten": "曲線を直線にする",
+    "resourcesUploadPostscript": "__names__ は PostScript（EPS、または PDF 互換なしで保存した Illustrator ファイル）で、ブラウザでは読めません。PDF として保存するか、Illustrator で「PDF 互換ファイルを作成」をオンにして保存してください。"
   },
   "PlainLanguage": {
     "heading": "かんたんな説明",

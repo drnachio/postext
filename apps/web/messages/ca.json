@@ -3420,7 +3420,7 @@
     "resetOnH4": "A cada H4",
     "resetOnH5": "A cada H5",
     "resetOnH6": "A cada H6",
-    "resourcesDropToUpload": "Deixa anar imatges o SVG per pujar-los",
+    "resourcesDropToUpload": "Deixa anar imatges, SVG, PDF o TIFF per pujar-los",
     "resourcesUploadNote": "Afegits __added__; omesos __skipped__ fitxer(s) no compatible(s).",
     "resourceNew": "Nou",
     "resourceUploadImage": "Pujar imatge",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Procés",
     "cutElementProcessTooltip": "El que fa el troquel: talla un forat al full, o aixeca (relleu) o enfonsa (baix relleu) el paper amb la forma, en una planxa tècnica que no imprimeix res.",
     "cutElementProcessCut": "Troquelat",
-    "coverItemPathStraighten": "Redreça’n les corbes"
+    "coverItemPathStraighten": "Redreça’n les corbes",
+    "resourcesUploadPostscript": "__names__ és PostScript (un EPS, o un fitxer d’Illustrator desat sense el seu PDF), que un navegador no pot llegir: desa’l com a PDF, o a Illustrator amb «Crea un fitxer compatible amb PDF» activat."
   },
   "PlainLanguage": {
     "heading": "En poques paraules",

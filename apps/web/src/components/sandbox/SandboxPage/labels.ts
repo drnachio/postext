@@ -6550,5 +6550,6 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     cutElementProcessTooltip: t("cutElementProcessTooltip"),
     cutElementProcessCut: t("cutElementProcessCut"),
     coverItemPathStraighten: t("coverItemPathStraighten"),
+    resourcesUploadPostscript: t("resourcesUploadPostscript"),
   };
 }

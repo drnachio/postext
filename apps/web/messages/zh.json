@@ -3420,7 +3420,7 @@
     "resetOnH4": "每个H4处",
     "resetOnH5": "每个H5处",
     "resetOnH6": "每个H6处",
-    "resourcesDropToUpload": "拖入图片或SVG以上传",
+    "resourcesDropToUpload": "拖放图片、SVG、PDF 或 TIFF 以上传",
     "resourcesUploadNote": "已添加__added__个；跳过__skipped__个不支持的文件。",
     "resourceNew": "新建",
     "resourceUploadImage": "上传图片",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "工艺",
     "cutElementProcessTooltip": "模切的作用：在纸页上切出孔，或按形状凸起（压凸）或压下（压凹）纸张，用一块不印任何东西的技术版。",
     "cutElementProcessCut": "模切",
-    "coverItemPathStraighten": "把曲线变直"
+    "coverItemPathStraighten": "把曲线变直",
+    "resourcesUploadPostscript": "__names__ 是 PostScript（EPS，或未带 PDF 保存的 Illustrator 文件），浏览器无法读取：请另存为 PDF，或在 Illustrator 中勾选“创建 PDF 兼容文件”后保存。"
   },
   "PlainLanguage": {
     "heading": "简单来说",

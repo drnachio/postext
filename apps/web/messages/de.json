@@ -3420,7 +3420,7 @@
     "resetOnH4": "Bei jeder H4",
     "resetOnH5": "Bei jeder H5",
     "resetOnH6": "Bei jeder H6",
-    "resourcesDropToUpload": "Bilder oder SVGs zum Hochladen hier ablegen",
+    "resourcesDropToUpload": "Bilder, SVGs, PDFs oder TIFFs zum Hochladen ablegen",
     "resourcesUploadNote": "__added__ hinzugefügt; __skipped__ nicht unterstützte Datei(en) übersprungen.",
     "resourceNew": "Neu",
     "resourceUploadImage": "Bild hochladen",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Verfahren",
     "cutElementProcessTooltip": "Was das Werkzeug tut: ein Loch durch das Blatt stanzen oder das Papier in der Form hochprägen oder tiefprägen, auf einer technischen Platte, die nichts druckt.",
     "cutElementProcessCut": "Stanzung",
-    "coverItemPathStraighten": "Kurven begradigen"
+    "coverItemPathStraighten": "Kurven begradigen",
+    "resourcesUploadPostscript": "__names__ ist PostScript (eine EPS oder eine Illustrator-Datei ohne ihr PDF), die ein Browser nicht lesen kann: Speichern Sie sie als PDF oder in Illustrator mit „PDF-kompatible Datei erstellen“."
   },
   "PlainLanguage": {
     "heading": "Kurz gesagt",

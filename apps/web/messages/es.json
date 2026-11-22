@@ -706,7 +706,7 @@
     "resetOnH4": "En cada H4",
     "resetOnH5": "En cada H5",
     "resetOnH6": "En cada H6",
-    "resourcesDropToUpload": "Suelta imágenes o SVG para subirlas",
+    "resourcesDropToUpload": "Suelta imágenes, SVG, PDF o TIFF para subirlos",
     "resourcesUploadNote": "Añadidos: __added__. Omitidos por formato no admitido: __skipped__.",
     "resourceNew": "Nuevo",
     "resourceUploadImage": "Subir imagen",
@@ -7209,7 +7209,8 @@
     "cutElementProcess": "Proceso",
     "cutElementProcessTooltip": "Lo que hace el troquel: corta un hueco en la hoja, o levanta (relieve) o hunde (bajorrelieve) el papel con la forma, en una plancha técnica que no imprime nada.",
     "cutElementProcessCut": "Troquelado",
-    "coverItemPathStraighten": "Enderezar sus curvas"
+    "coverItemPathStraighten": "Enderezar sus curvas",
+    "resourcesUploadPostscript": "__names__ es PostScript (un EPS, o un archivo de Illustrator guardado sin su PDF), que un navegador no puede leer: guárdalo como PDF, o en Illustrator con «Crear archivo compatible con PDF» activado."
   },
   "PlainLanguage": {
     "heading": "En pocas palabras",
