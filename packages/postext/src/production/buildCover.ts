@@ -16,7 +16,7 @@ import { dimensionToPx } from '../units.js';
 import { pageRunsOf } from './spine.js';
 import { versionSheets, type ProductionWarning, type VersionSheets } from './version.js';
 import type { ProductionSheet } from './geometry.js';
-import { coverPage, type CoverIssue, type MirrorPicture } from './compose.js';
+import { COVER_SLOT_ZONES, coverPage, type CoverIssue, type MirrorPicture } from './compose.js';
 import { coverParagraphStyles, coverSource, type CoverSourceIssue } from './coverSource.js';
 import { workIsbnCaption } from './coverLabels.js';
 
@@ -64,6 +64,7 @@ export interface BuiltCover {
 }
 
 const MM_PER_IN = 25.4;
+const ZONE_SLOTS: ReadonlySet<string> = new Set(COVER_SLOT_ZONES);
 
 /** The book's trim in mm, from its page size. */
 function trimOf(config: PostextConfig): { width: number; height: number } {
@@ -142,6 +143,40 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
     files: made.files,
     sheets: read,
     sheet,
-    issues: [...read.warnings, ...made.issues, ...source.issues],
+    // One cover Markdown serves every sheet: a zone this sheet has not (the
+    // back cover on an endpaper) belongs to another, and is no mistake.
+    issues: [...read.warnings, ...made.issues, ...source.issues.filter((i) => !(i.kind === 'coverSlotUnknown' && ZONE_SLOTS.has(i.slot)))],
   };
+}
+
+/** A box on the laid-out cover page, px. */
+export interface CoverPageBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Where a zone of the cover (`'front'`, `'spine'`, `'back'`…) lies on its
+ * laid-out page, in the page's pixels: the zone's trimmed panel, past the
+ * bleed and the marks round it. What the CLI cuts the front cover's
+ * picture from, and the EPUB its cover. Undefined when the sheet has no
+ * such zone.
+ */
+export function coverZoneBox(
+  cover: Pick<BuiltCover, 'sheet'>,
+  zone: string,
+  doc: { trimOffset: number; config: { page: { dpi: number } } },
+): CoverPageBox | undefined {
+  const z = cover.sheet.zones.find((s) => s.name === zone);
+  if (!z) return undefined;
+  const px = (doc.config.page.dpi || 300) / MM_PER_IN;
+  const off = Math.max(0, doc.trimOffset);
+  const x0 = Math.max(z.rect.x, cover.sheet.trim.x);
+  const y0 = Math.max(z.rect.y, cover.sheet.trim.y);
+  const x1 = Math.min(z.rect.x + z.rect.width, cover.sheet.trim.x + cover.sheet.trim.width);
+  const y1 = Math.min(z.rect.y + z.rect.height, cover.sheet.trim.y + cover.sheet.trim.height);
+  if (x1 <= x0 || y1 <= y0) return undefined;
+  return { x: off + (x0 - cover.sheet.trim.x) * px, y: off + (y0 - cover.sheet.trim.y) * px, width: (x1 - x0) * px, height: (y1 - y0) * px };
 }

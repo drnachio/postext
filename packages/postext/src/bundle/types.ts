@@ -128,6 +128,9 @@ export interface BundleLocaleOverrides {
   /** Where this language's edition starts, in place of the manifest's
    *  `start` (a right-bound edition that opens on the other side). */
   start?: BundleStart;
+  /** This language's cover Markdown, in place of the manifest's
+   *  `coverMarkdown`. */
+  coverMarkdown?: string;
   resources?: (Pick<BundleResourceSpec, 'id'> & Partial<Pick<BundleResourceSpec, 'caption' | 'note' | 'altText' | 'table' | 'file' | 'pdfFile' | 'printFile' | 'poster' | 'video' | 'width' | 'height' | 'resolution' | 'fileResolution'>>)[];
 }
 
@@ -197,6 +200,10 @@ interface BundleManifestBase extends BundleShowcaseMeta {
   /** A design bundle (#1523): a design and no book. `config` holds the
    *  design's parts and `chapters` is empty. */
   design?: BundleDesignSpec;
+  /** The Markdown of the book's print cover (#1668), relative to the
+   *  bundle root (`cover.md`): a `:::frame{slot="…"}` per zone or text box
+   *  of the cover design (`config.cover`), laid out by `buildCover`. */
+  coverMarkdown?: string;
 }
 
 /** The marker of a design bundle: which parts of a design it holds (the

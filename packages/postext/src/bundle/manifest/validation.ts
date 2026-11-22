@@ -65,6 +65,7 @@ function isLocaleOverrides(v: unknown): v is BundleLocaleOverrides {
   if (v.config !== undefined && !isRecord(v.config)) return false;
   if (v.view !== undefined && !isViewField(v.view)) return false;
   if (v.start !== undefined && !isRecord(v.start)) return false;
+  if (v.coverMarkdown !== undefined && !isNonEmptyString(v.coverMarkdown)) return false;
   if (v.resources !== undefined) {
     if (!Array.isArray(v.resources)) return false;
     if (!v.resources.every((r) => isRecord(r) && isNonEmptyString(r.id))) return false;
@@ -93,6 +94,7 @@ export function isBundleManifest(data: unknown): data is BundleManifest {
   if (!hasValidShowcaseMeta(data)) return false;
   if (data.view !== undefined && !isViewField(data.view)) return false;
   if (data.start !== undefined && !isRecord(data.start)) return false;
+  if (data.coverMarkdown !== undefined && !isNonEmptyString(data.coverMarkdown)) return false;
   if (data.localized !== undefined && !isLocalizedField(data.localized)) return false;
   if (data.config !== undefined && !isRecord(data.config)) return false;
   if (data.resources !== undefined) {

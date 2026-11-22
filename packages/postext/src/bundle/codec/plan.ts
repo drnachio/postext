@@ -46,6 +46,9 @@ export interface BundleLocaleContent {
   /** Where the locale's edition starts, when not where the shared one
    *  does (see {@link BundleContent.start}). */
   start?: BundleStart;
+  /** The locale's own cover Markdown (see {@link BundleContent.coverMarkdown}),
+   *  written as `cover/<locale>.md` when it is not the shared one. */
+  coverMarkdown?: string;
 }
 
 /** What goes into a bundle: chapters, design, resources and translations. */
@@ -71,6 +74,10 @@ export interface BundleContent {
    *  the `continuation` its first chapter is laid out with, written as the
    *  manifest's `start`. Left out, or empty, nothing is written. */
   start?: BundleStart;
+  /** The print cover's Markdown (#1668), written as `cover.md` and named
+   *  by the manifest's `coverMarkdown`. Left out, or blank, nothing is
+   *  written. */
+  coverMarkdown?: string;
   /** Other locales of a bilingual bundle, by locale tag (`es`, `pt-BR`);
    *  `chapters`, `config` and `resources` are then the primary locale's
    *  (`BundleMeta.locale`, required). Written as the manifest's `locales`,
@@ -104,6 +111,8 @@ export interface BundlePlan {
    *  pagination file per language (`layouts.<locale>.json`) keys it by.
    *  Absent for a locale that reads the primary chapters. */
   localeChapterFiles?: Record<string, string[]>;
+  /** The cover Markdown files (`cover.md`, `cover/<locale>.md`) → text. */
+  coverFiles?: { path: string; markdown: string }[];
   warnings: string[];
 }
 
@@ -354,6 +363,9 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   // Per locale, what differs from the shared content: configuration keys,
   // and the wording and artwork of resources.
   const localizedSpecs: Record<string, BundleLocaleOverrides> = {};
+  const coverFiles: NonNullable<BundlePlan['coverFiles']> = [];
+  const coverPath = content.coverMarkdown?.trim() ? 'cover.md' : undefined;
+  if (coverPath) coverFiles.push({ path: coverPath, markdown: content.coverMarkdown! });
   const byId = new Map(content.resources.map((r) => [r.id, r]));
   for (const [locale, entry] of Object.entries(localized ?? {})) {
     const overrides: BundleLocaleOverrides = {};
@@ -418,6 +430,12 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
       const own = bundleStart(entry.start);
       if (!sameJson(own, start)) overrides.start = own ?? {};
     }
+    // A cover of its own, when it is not the shared one.
+    if (entry.coverMarkdown?.trim() && entry.coverMarkdown !== content.coverMarkdown) {
+      const path = `cover/${localeFolder(locale)}.md`;
+      coverFiles.push({ path, markdown: entry.coverMarkdown });
+      overrides.coverMarkdown = path;
+    }
     localizedSpecs[locale] = overrides;
   }
 
@@ -440,13 +458,14 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     ...(content.canvasScope === 'book' ? { view: { canvasScope: 'book' as const } } : {}),
     ...(start ? { start } : {}),
     ...(content.design ? { design: { parts: [...content.design.parts] } } : {}),
+    ...(coverPath ? { coverMarkdown: coverPath } : {}),
     chapters: chapterSpecs,
     config: configWithoutFonts as PostextConfig,
     ...(resources.length > 0 ? { resources } : {}),
     ...(fonts.length > 0 ? { fonts } : {}),
     ...(localized || writesLocalized ? { localized: localizedSpecs } : {}),
   };
-  return { manifest, files, chapterFiles, ...(Object.keys(localeChapterFiles).length > 0 ? { localeChapterFiles } : {}), warnings };
+  return { manifest, files, chapterFiles, ...(Object.keys(localeChapterFiles).length > 0 ? { localeChapterFiles } : {}), ...(coverFiles.length > 0 ? { coverFiles } : {}), warnings };
 }
 
 /** Resource fields a locale may word differently. */

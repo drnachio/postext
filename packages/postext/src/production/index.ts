@@ -10,13 +10,14 @@ export { coverPage, sheetGuides, COVER_SLOT_ZONES, COVER_TEMPLATE_ID, COVER_ID_P
 export type { CoverPageOptions, CoverPage, CoverIssue, SheetGuide, MirrorPicture } from './compose.js';
 export { coverSource, coverFrames, coverParagraphStyles, markdownLiteral, COVER_PARAGRAPH_STYLES } from './coverSource.js';
 export type { CoverSourceIssue } from './coverSource.js';
-export { buildCover } from './buildCover.js';
-export type { BuildCoverInput, BuildCoverIssue, BuiltCover, CoverSheetKind } from './buildCover.js';
+export { buildCover, coverZoneBox } from './buildCover.js';
+export type { BuildCoverInput, BuildCoverIssue, BuiltCover, CoverSheetKind, CoverPageBox } from './buildCover.js';
 export { coverElementRect, placeCoverElement, outlinePathData } from './coverDesign.js';
 export { basicShape, roundedRectPath, pathData, coverPathCommands, flattenCoverPath, coverPathBounds, BASIC_SHAPES } from './shapes.js';
 export type { BasicShape } from './shapes.js';
 export { COVER_FINISH_INKS } from './coverArt.js';
 export { workIsbnCaption } from './coverLabels.js';
+export { folioOfBook, folioVersionOf, productionFolioBinding } from './folio.js';
 export { DEFAULT_BINDING_MEASURES, BUILT_IN_BINDING_PROFILES, DEFAULT_SPINE_TEXT } from '../defaults/output/production.js';
 export type * from '../types/output/production.js';
 export type * from '../types/output/cover.js';

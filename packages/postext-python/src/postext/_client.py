@@ -90,6 +90,37 @@ class Postext(DesignIdmlCommands):
         own = opt("layout", layout) + opt("cover", cover)
         return self._book_command("epub", book, own, options, Report, out=out)
 
+    def cover(
+        self,
+        book: Books,
+        *,
+        out: Optional[PathLike] = None,
+        print_version: Optional[str] = None,
+        sheet: Optional[str] = None,
+        zone: Optional[str] = None,
+        color_space: Optional[str] = None,
+        pdfx: Optional[str] = None,
+        profile: Optional[PathLike] = None,
+        die_line: Optional[str] = None,
+        format: Optional[str] = None,
+        dpi: Optional[float] = None,
+        quality: Optional[int] = None,
+        **options: "Unpack[BookOptions]",
+    ) -> Report:
+        """The print cover of a version (``print_version``, default: the
+        book's first): the sheet as a PDF, or, with an ``out`` ending in
+        ``.png``, ``.jpg`` or ``.webp`` (or a ``format``), one panel of it as
+        an image (``zone``: ``front`` by default, ``back``, ``spine``,
+        ``flapFront``, ``flapBack`` or ``sheet``).
+
+        ``sheet``: ``cover`` (default), ``jacket``, ``endpaper-front`` or
+        ``endpaper-back``. The PDF options are ``pdf``'s.
+        """
+        own = opt("print-version", print_version) + opt("sheet", sheet) + opt("zone", zone)
+        own += opt("color-space", color_space) + opt("pdfx", pdfx) + opt("profile", profile) + opt("die-line", die_line)
+        own += opt("format", format) + opt("dpi", dpi) + opt("quality", quality)
+        return self._book_command("cover", book, own, options, Report, out=out)
+
     def image(
         self,
         book: Books,
@@ -301,6 +332,11 @@ class Postext(DesignIdmlCommands):
     def epub_bytes(self, book: Books, **kwargs: Any) -> bytes:
         """The EPUB's bytes."""
         return content(self.epub(book, out=STDOUT, **kwargs))
+
+    def cover_bytes(self, book: Books, **kwargs: Any) -> bytes:
+        """The cover sheet's PDF bytes, or with ``format`` an image of a
+        panel of it (the front cover unless ``zone`` names another)."""
+        return content(self.cover(book, out=STDOUT, **kwargs))
 
     def image_bytes(self, book: Books, *, page: Union[int, str], **kwargs: Any) -> bytes:
         """One page's image bytes (PNG unless ``format`` says otherwise)."""

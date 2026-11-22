@@ -55,6 +55,7 @@ import {
   avoidOrphansByDefault,
 } from '../defaults/index.js';
 import { dimensionToPx } from '../units.js';
+import { folioOfBook } from '../production/folio.js';
 import { hasDieCuts } from '../defaults/dieCuts.js';
 import { applyCjkGrid } from './text/cjkGrid.js';
 import { directionOf, localeScript, presentTag, resolveNumerals } from '../hyphenation/locale.js';
@@ -226,8 +227,9 @@ function resolveAllConfigUncached(givenConfig?: PostextConfig): ResolvedConfig {
     // The checks of the configuration itself (#849): `collectConfigWarnings`
     // reads them from the raw config; carried for hosts that show them.
     ...(config?.checks ? { checks: resolveChecksConfig(config.checks) } : {}),
-    // Not used by layout either: the Folio 3D viewer reads it.
-    ...(config?.folio ? { folio: resolveFolioConfig(config.folio, page.sizePreset) } : {}),
+    // Not used by layout either: the Folio 3D viewer reads it, with the
+    // binding of the book's first print version under it (#1668).
+    ...withFolio(config ? folioOfBook(config) : undefined, page.sizePreset),
     // Die-cuts (#1565): only a config that cuts something carries them, so
     // every other one resolves (and hashes) as before.
     ...dieCutsOf(config?.dieCuts),
@@ -475,4 +477,10 @@ export function computeColumnBboxes(
  *  layout with `sideColumnRole: 'floats'`). */
 export function hasFloatSideColumn(resolved: ResolvedConfig): boolean {
   return resolved.layout.layoutType === 'oneAndHalf' && resolved.layout.sideColumnRole === 'floats';
+}
+
+/** The resolved `folio` of a config that sets any, or whose print version
+ *  binds the 3D book. */
+function withFolio(folio: PostextConfig['folio'], sizePreset: Parameters<typeof resolveFolioConfig>[1]): { folio?: ReturnType<typeof resolveFolioConfig> } {
+  return folio ? { folio: resolveFolioConfig(folio, sizePreset) } : {};
 }

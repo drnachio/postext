@@ -3,7 +3,7 @@
 import { scoreFormatOfFile } from '../../music/types.js';
 import type { PostextConfig, Resource, CustomFontFamily } from '../../types.js';
 import { cloneDefaultColorPalette, defaultResourceTypes } from '../../defaults/index.js';
-import { isBundleManifest, resolveBundleLocale, svgSize, bitmapInfo, pickChapterSpecs, pickLocaleOverrides, mimeForFile, isBitmapFile, resourceFromSpec, isSvgFile, isPdfFile, printFormatOfFile, fileExtension, fontsToCustomFonts, resolveBundleConfigLocale, pickBundleStart } from '../manifest.js';
+import { isBundleManifest, resolveBundleLocale, svgSize, bitmapInfo, pickChapterSpecs, pickLocaleOverrides, mimeForFile, isBitmapFile, resourceFromSpec, isSvgFile, isPdfFile, printFormatOfFile, fileExtension, fontsToCustomFonts, resolveBundleConfigLocale, pickBundleStart, pickBundleCoverFile } from '../manifest.js';
 import { migrateBundleConfig } from '../configVersion.js';
 import type { TraceContourOptions } from '../../contour/index.js';
 import type { BundleIdScheme, BundleImageSize, BundleManifest, BundleChapter, BundleBlob, BundleFontFile, BundleStart, BundleFileReader, BundleResourceSpec } from '../types.js';
@@ -96,6 +96,9 @@ export interface ReadBundleResult {
    *  (the manifest's `start`, or the locale's own): the `continuation` of
    *  the first chapter. Absent for a book that starts at its beginning. */
   start?: BundleStart;
+  /** The print cover's Markdown (`coverMarkdown`, the locale's or the
+   *  manifest's), when the bundle has one. */
+  coverMarkdown?: string;
 }
 
 const identityIds: BundleIdScheme = { blob: (f) => f, font: (f) => f };
@@ -380,8 +383,19 @@ export async function readBundle(
   }
 
   const start = pickBundleStart(manifest, locale);
+  // The cover's Markdown: a missing file is a warning, never a failure (the
+  // book reads without its cover).
+  const coverFile = pickBundleCoverFile(manifest, locale);
+  let coverMarkdown: string | undefined;
+  if (coverFile) {
+    try {
+      coverMarkdown = decoder.decode(await readFile(coverFile));
+    } catch {
+      onWarning?.(`cover Markdown "${coverFile}" not found, ignored`);
+    }
+  }
   const traced = options.traceContours === false
     ? resources
     : await traceBundleContours(resources, blobs, config, options.decodeContour ? { decode: options.decodeContour } : {});
-  return { manifest, locale: served, chapters, config, ...(sharedConfig ? { sharedConfig } : {}), resources: traced, blobs, fonts, ...(start ? { start } : {}) };
+  return { manifest, locale: served, chapters, config, ...(sharedConfig ? { sharedConfig } : {}), resources: traced, blobs, fonts, ...(start ? { start } : {}), ...(coverMarkdown !== undefined ? { coverMarkdown } : {}) };
 }

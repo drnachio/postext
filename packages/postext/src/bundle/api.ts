@@ -40,6 +40,9 @@ export interface PostextBundle {
   files: Map<string, Uint8Array>;
   /** Path of the cover picture, when the bundle has one. */
   thumbnail?: string;
+  /** The print cover's Markdown in the locale read (#1668), for
+   *  `buildCover`: absent when the bundle has none. */
+  coverMarkdown?: string;
   /** How the bundle asks to be viewed (`book`: the whole book as one
    *  canvas). */
   canvasScope?: BundleCanvasScope;
@@ -99,6 +102,7 @@ export async function openBundle(
     ...(manifest.thumbnail && zip.files.has(manifest.thumbnail) ? { thumbnail: manifest.thumbnail } : {}),
     ...(view?.canvasScope ? { canvasScope: view.canvasScope } : {}),
     ...(read.start ? { start: read.start } : {}),
+    ...(read.coverMarkdown !== undefined ? { coverMarkdown: read.coverMarkdown } : {}),
     ...(manifest.design ? { design: { parts: [...manifest.design.parts] } } : {}),
     warnings,
   };
@@ -203,6 +207,9 @@ export interface CreateBundleInput {
   thumbnail?: { data: BundleFileData; mime: string };
   /** Ask viewers to lay the whole book out as one canvas. */
   canvasScope?: BundleCanvasScope;
+  /** The print cover's Markdown (#1668): written as `cover.md`, laid out
+   *  by `buildCover` with the cover design of `config.cover`. */
+  coverMarkdown?: string;
   /** Where the book starts, for a bundle that holds part of a longer one
    *  (#695): the `continuation` a single document would be built with
    *  (`{ pageIndexOffset: 57, pageNumbering: { startAt: 58 }, headings: {
@@ -252,6 +259,8 @@ export interface CreateBundleLocale {
   /** Where this language's edition starts, when not where the primary one
    *  does (a right-bound edition that opens on the other side). */
   start?: BundleStart;
+  /** This language's cover Markdown, when not the primary one's. */
+  coverMarkdown?: string;
 }
 
 /** What `createBundle` returns: the zip's bytes, its manifest and files, and
@@ -292,6 +301,7 @@ export async function createBundle(input: CreateBundleInput): Promise<CreatedBun
       ...(entry.config ? { config: entry.config } : {}),
       ...(entry.resources ? { resources: entry.resources } : {}),
       ...(entry.start !== undefined ? { start: entry.start } : {}),
+      ...(entry.coverMarkdown ? { coverMarkdown: entry.coverMarkdown } : {}),
     }]))
     : undefined;
   const fileMap = input.files instanceof Map ? input.files : new Map(Object.entries(input.files ?? {}));
@@ -310,6 +320,7 @@ export async function createBundle(input: CreateBundleInput): Promise<CreatedBun
       ...(input.canvasScope ? { canvasScope: input.canvasScope } : {}),
       ...(input.design ? { design: input.design } : {}),
       ...(input.start ? { start: input.start } : {}),
+      ...(input.coverMarkdown ? { coverMarkdown: input.coverMarkdown } : {}),
       ...(input.thumbnail ? { thumbnail: { fileId: THUMBNAIL_ID, mime: input.thumbnail.mime } } : {}),
       ...(localized ? { localized } : {}),
     },

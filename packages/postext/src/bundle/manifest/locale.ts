@@ -190,6 +190,12 @@ export function pickBundleStart(manifest: BundleManifest, locale: string): Bundl
   return bundleStart(own !== undefined ? own : manifest.start);
 }
 
+/** The path of the cover Markdown a bundle reads for `locale` (#1668): the
+ *  locale's own `coverMarkdown`, else the manifest's. */
+export function pickBundleCoverFile(manifest: BundleManifest, locale: string): string | undefined {
+  return pickLocaleOverrides(manifest, locale)?.coverMarkdown ?? manifest.coverMarkdown;
+}
+
 /** The locale a bundle actually serves for `locale`: the key of its
  *  chapter map when the content is a locale map, the key whose wording it
  *  reads when shared chapters carry `localized` wording, else the

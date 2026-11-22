@@ -3,7 +3,7 @@
 // custom fonts. No DOM or storage access.
 
 export { hasValidShowcaseMeta, isBundleManifest } from './manifest/validation.js';
-export { pickMarkdownFile, pickLocaleOverrides, pickBundleMeta, pickBundleView, bundleStart, pickBundleStart, resolveBundleLocale, resolveBundleConfigLocale, pickChapterSpecs } from './manifest/locale.js';
+export { pickMarkdownFile, pickLocaleOverrides, pickBundleMeta, pickBundleView, bundleStart, pickBundleStart, pickBundleCoverFile, resolveBundleLocale, resolveBundleConfigLocale, pickChapterSpecs } from './manifest/locale.js';
 export type { BundleNames } from './manifest/locale.js';
 export { slugify, uniqueSlug, chapterFileName, fileExtension, fileBasename, mimeForFile, isBitmapFile, isVideoFile, bitmapFormatOf, isSvgFile, isPdfFile, isPrintRasterFile, printFormatOfFile, fontFormatFromFile, extensionForImageMime, extensionForResource, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat } from './manifest/fileNames.js';
 export { fontsToCustomFonts, resourceFromSpec } from './manifest/entries.js';

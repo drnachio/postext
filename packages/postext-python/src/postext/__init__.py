@@ -46,6 +46,7 @@ _default = Postext()
 pdf = _default.pdf
 html = _default.html
 epub = _default.epub
+cover = _default.cover
 image = _default.image
 images = _default.images
 docx = _default.docx
@@ -62,6 +63,7 @@ build = _default.build
 pdf_bytes = _default.pdf_bytes
 html_bytes = _default.html_bytes
 epub_bytes = _default.epub_bytes
+cover_bytes = _default.cover_bytes
 image_bytes = _default.image_bytes
 docx_bytes = _default.docx_bytes
 idml_bytes = _default.idml_bytes
@@ -86,6 +88,7 @@ __all__ = [
     "pdf",
     "html",
     "epub",
+    "cover",
     "image",
     "images",
     "docx",
@@ -101,6 +104,7 @@ __all__ = [
     "pdf_bytes",
     "html_bytes",
     "epub_bytes",
+    "cover_bytes",
     "image_bytes",
     "docx_bytes",
     "idml_bytes",

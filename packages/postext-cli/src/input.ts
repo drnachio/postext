@@ -55,6 +55,8 @@ export interface Book {
   manifest?: BundleManifest;
   /** Path of the cover picture inside the book. */
   thumbnail?: string;
+  /** The print cover's Markdown (`coverMarkdown`, #1668). */
+  coverMarkdown?: string;
   /** Where the book starts, when it holds part of a longer one (the
    *  manifest's `start`): the continuation of its first chapter. */
   start?: BundleStart;
@@ -378,6 +380,7 @@ export async function loadBook(inputs: readonly string[], opts: Options, reporte
       manifest: m,
       ...(m.thumbnail && files.has(m.thumbnail) ? { thumbnail: m.thumbnail } : {}),
       ...(read.start ? { start: read.start } : {}),
+      ...(read.coverMarkdown !== undefined ? { coverMarkdown: read.coverMarkdown } : {}),
       watchPaths: [dir],
     };
   } else {
@@ -470,6 +473,7 @@ function bookOfBundle(opened: Awaited<ReturnType<typeof openBundle>>, kind: Inpu
     manifest: opened.manifest,
     ...(opened.thumbnail ? { thumbnail: opened.thumbnail } : {}),
     ...(opened.start ? { start: opened.start } : {}),
+    ...(opened.coverMarkdown !== undefined ? { coverMarkdown: opened.coverMarkdown } : {}),
     watchPaths,
   };
 }

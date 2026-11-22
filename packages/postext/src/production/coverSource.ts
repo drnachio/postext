@@ -17,10 +17,11 @@ export const COVER_PARAGRAPH_STYLES = ['cover-title', 'cover-subtitle', 'cover-a
 
 /** Something in the cover's Markdown the cover cannot lay out. */
 export type CoverSourceIssue =
-  /** A frame names a slot the cover has not (`slots`): its text is set
-   *  nowhere. */
+  /** A frame names a slot the cover has not (`slots`, an endpaper has no
+   *  back cover): its text is left out. */
   | { kind: 'coverSlotUnknown'; slot: string; sourceStart: number; sourceEnd: number }
-  /** Two frames fill one slot: only the first is laid out. */
+  /** Two frames fill one slot: only the first is laid out, the others
+   *  are left out. */
   | { kind: 'coverSlotRepeated'; slot: string; sourceStart: number; sourceEnd: number };
 
 const FRAME_OPEN = /^[ \t]{0,3}(:{3,})[ \t]*frame[ \t]*\{([^}\n]*)\}[ \t]*$/gm;
@@ -66,11 +67,21 @@ export function coverSource(
   const issues: CoverSourceIssue[] = [];
   const known = new Set(slots);
   const filled = new Set<string>();
-  for (const f of coverFrames(own)) {
-    if (!known.has(f.slot)) issues.push({ kind: 'coverSlotUnknown', slot: f.slot, sourceStart: f.start, sourceEnd: f.end });
+  const frames = coverFrames(own);
+  // A frame the cover cannot take is blanked, its text and its fence up to
+  // the next frame, so that nothing spills onto a page of its own and the
+  // offsets of what follows stay the Markdown's.
+  let kept = own;
+  frames.forEach((f, i) => {
+    const unknown = !known.has(f.slot);
+    if (unknown) issues.push({ kind: 'coverSlotUnknown', slot: f.slot, sourceStart: f.start, sourceEnd: f.end });
     else if (filled.has(f.slot)) issues.push({ kind: 'coverSlotRepeated', slot: f.slot, sourceStart: f.start, sourceEnd: f.end });
+    if (unknown || filled.has(f.slot)) {
+      const to = frames[i + 1]?.start ?? own.length;
+      kept = kept.slice(0, f.start) + kept.slice(f.start, to).replace(/[^\n]/g, ' ') + kept.slice(to);
+    }
     filled.add(f.slot);
-  }
+  });
   const title = metaText(metadata.title);
   const subtitle = metaText(metadata.subtitle);
   const author = metaText(metadata.author);
@@ -88,7 +99,7 @@ export function coverSource(
   }
   // The cover's own text first, so its source offsets inside the page are
   // the Markdown's shifted by the fence alone.
-  const body = [own, ...added].filter(Boolean).join('\n\n');
+  const body = [kept.trim() ? kept : '', ...added].filter(Boolean).join('\n\n');
   return { markdown: `::::page{template="${COVER_TEMPLATE_ID}"}\n${body}\n::::`, issues };
 }
 
@@ -98,7 +109,8 @@ export const coverSourceOffset = (): number => `::::page{template="${COVER_TEMPL
 
 /**
  * The paragraph styles the cover sets its metadata text in, from the
- * book's body text: the book's own style of each id wins. The title and
+ * book's body text: the book's own style of each id goes over its
+ * default, field by field. The title and
  * subtitle are centred at 2.4 and 1.4 times the body size, the author at
  * 1.2, the spine's line at the body size; none hyphenated.
  */
@@ -111,5 +123,11 @@ export function coverParagraphStyles(own: readonly ParagraphStyleConfig[] | unde
     { id: 'cover-author', fontSize: pt(1.2), lineHeight: pt(1.6), textAlign: 'center', hyphenation: false },
     { id: 'cover-spine', fontSize: pt(1), lineHeight: pt(1.2), textAlign: 'center', hyphenation: false },
   ];
-  return [...(own ?? []), ...defaults.filter((d) => !have.has(d.id))];
+  // A style of the book's with one of these ids keeps the defaults it
+  // leaves out (a colour alone keeps the size and the centring).
+  const byId = new Map(defaults.map((d) => [d.id, d]));
+  return [
+    ...(own ?? []).map((s) => (byId.has(s.id) ? { ...byId.get(s.id)!, ...s } : s)),
+    ...defaults.filter((d) => !have.has(d.id)),
+  ];
 }

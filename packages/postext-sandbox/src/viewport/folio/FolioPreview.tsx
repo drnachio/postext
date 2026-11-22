@@ -2,6 +2,7 @@
 
 import { forwardRef, useRef, useMemo, useState, useEffect, useDeferredValue, useImperativeHandle } from 'react';
 import { type FolioInteraction, type FolioDocumentViewer, type FolioLabels, createFolioFromDocument } from 'postext-folio';
+import { folioOfBook } from 'postext/production';
 import { type PostextConfig, type VDTDocument, watchFonts, onFontsChanged, resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig } from 'postext';
 import { useSandboxDispatch, useSandboxSelector, useSandboxDocRef, useSandboxDocSourceRef, useSandboxChapterDocsRef, useLayoutSource, useBookPlan } from '../../context/SandboxContext.js';
 import { type HeldChapterDoc } from '../../book/buildBook.js';
@@ -82,8 +83,9 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   const layoutSource = useLayoutSource();
   const config = useSandboxSelector((s) => s.config);
   // How the book is presented (paper, binding, desk, light): handed to the
-  // viewer as it changes, never laid out.
-  const folioConfig = config.folio;
+  // viewer as it changes, never laid out. The binding of the book's first
+  // print version lies under the Design settings (#1668).
+  const folioConfig = useMemo(() => folioOfBook(config), [config.folio, config.production]); // eslint-disable-line react-hooks/exhaustive-deps
   const folioConfigRef = useRef(folioConfig);
   const resources = useSandboxSelector((s) => s.resources);
   // The picture on the spine (none on a saddle stitch or a folded
