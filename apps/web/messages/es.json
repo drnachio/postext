@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "El espacio alrededor del logotipo en el que no debe entrar nada más.",
     "coverTextTurn": "Giro",
     "coverTextTurnNone": "Ninguno",
-    "coverTextBoxHint": "Su texto se escribe en Textos, con el nombre de la caja."
+    "coverTextBoxHint": "Su texto se escribe en Textos, con el nombre de la caja.",
+    "historyStepCover": "el texto de la cubierta"
   },
   "PlainLanguage": {
     "heading": "En pocas palabras",

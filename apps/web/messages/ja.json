@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "ロゴの周りで他の要素が入らない余白。",
     "coverTextTurn": "回転",
     "coverTextTurnNone": "なし",
-    "coverTextBoxHint": "文字は「文字」で枠の名前の欄に書きます。"
+    "coverTextBoxHint": "文字は「文字」で枠の名前の欄に書きます。",
+    "historyStepCover": "カバーの文字"
   },
   "PlainLanguage": {
     "heading": "かんたんな説明",

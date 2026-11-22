@@ -6441,4 +6441,5 @@ export const DEFAULT_LABELS: SandboxLabels = {
   coverTextTurn: "Turn",
   coverTextTurnNone: "None",
   coverTextBoxHint: "Its text is written in Texts, under the box’s name.",
+  historyStepCover: "the cover’s text",
 };

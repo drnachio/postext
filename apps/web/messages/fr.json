@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "L’espace autour du logo où rien d’autre ne doit entrer.",
     "coverTextTurn": "Rotation",
     "coverTextTurnNone": "Aucune",
-    "coverTextBoxHint": "Son texte s’écrit dans Textes, sous le nom du bloc."
+    "coverTextBoxHint": "Son texte s’écrit dans Textes, sous le nom du bloc.",
+    "historyStepCover": "le texte de la couverture"
   },
   "PlainLanguage": {
     "heading": "En bref",

@@ -39,6 +39,9 @@ import type { SandboxAction, SandboxState } from '../context/SandboxContext.js';
 import { applyTextChanges, changesApply } from '../book/textChanges.js';
 import { applyPatch, carryPatch, diffConfig, patchCovers, patchIsEmpty, patchSettingPaths, patchTopKeys, type ConfigPatch } from './configPatch.js';
 import { depthsOf, editSaved, runSaved, savedState, stateJSON } from './textHistory.js';
+import { coverRecorder, type CoverStep } from './coverHistory.js';
+import { chapterText, configMeta, sameResource } from './historyHelpers.js';
+export { activeHistory, setActiveHistory } from './activeHistory.js';
 
 /** Writes of the same settings closer than this are one step. */
 export const COALESCE_MS = 1000;
@@ -61,7 +64,7 @@ type ResourceStep = { kind: 'resource'; resourceId: string; before: Resource; af
 /** Steps of several chapters and resources taken back and put back as one
  *  (#1397: an edited Word export's changes; a replace-all over the book). */
 type GroupStep = { kind: 'group'; source: HistoryGroupSource; steps: (TextStep | ResourceStep)[]; at: number };
-type Step = TextStep | ConfigStep | ResourceStep | GroupStep;
+type Step = TextStep | ConfigStep | ResourceStep | GroupStep | CoverStep;
 
 /** What made a group of steps, for the words that name it. */
 export type HistoryGroupSource = 'word' | 'find';
@@ -81,6 +84,8 @@ export type HistoryStepInfo =
   | { kind: 'text'; chapterId: string }
   | { kind: 'config'; paths: string[]; keys: string[] }
   | { kind: 'resource'; resourceId: string }
+  /** The cover's Markdown (#1669). */
+  | { kind: 'cover' }
   | { kind: 'group'; source: HistoryGroupSource; chapterIds: string[]; resourceIds: string[] };
 
 /** The open editor of a chapter, as the history drives it. `run` undoes
@@ -105,7 +110,7 @@ export interface HistoryRunOptions {
   follow?: boolean;
   /** Only a step of this kind: when the latest is of the other kind,
    *  nothing is run (and null is answered). */
-  kind?: 'text' | 'config' | 'resource';
+  kind?: 'text' | 'config' | 'resource' | 'cover';
 }
 
 export interface SandboxHistory {
@@ -133,15 +138,6 @@ export interface SandboxHistory {
    *  `close()`, or after `timeoutMs`; a group of one step is that step. */
   group(source: HistoryGroupSource, expect: { chapters?: readonly string[]; resources?: readonly string[] }, timeoutMs?: number): HistoryGroup;
   clear(): void;
-}
-
-function chapterText(state: SandboxState, chapterId: string): string | null {
-  if (chapterId === state.activeChapterId) return state.markdown;
-  return state.chapters.find((c) => c.id === chapterId)?.markdown ?? null;
-}
-
-function configMeta(action: SandboxAction): ConfigHistoryMeta | undefined {
-  return action.type === 'SET_CONFIG' || action.type === 'UPDATE_CONFIG' ? action.history : undefined;
 }
 
 export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
@@ -188,7 +184,7 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
 
   const sealTop = () => {
     const top = undoList[undoList.length - 1];
-    if (top?.kind === 'config' || top?.kind === 'resource') top.open = false;
+    if (top?.kind === 'config' || top?.kind === 'resource' || top?.kind === 'cover') top.open = false;
   };
   /** The group being gathered, and the steps it still waits for. */
   let gathering: { step: GroupStep; chapters: Set<string>; resources: Set<string>; timer: ReturnType<typeof setTimeout> | undefined } | null = null;
@@ -223,6 +219,7 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
   const info = (step: Step): HistoryStepInfo => {
     if (step.kind === 'text') return { kind: 'text', chapterId: step.chapterId };
     if (step.kind === 'resource') return { kind: 'resource', resourceId: step.resourceId };
+    if (step.kind === 'cover') return { kind: 'cover' };
     if (step.kind === 'group') {
       const chapterIds = [...new Set(step.steps.flatMap((s) => (s.kind === 'text' ? [s.chapterId] : [])))];
       const resourceIds = [...new Set(step.steps.flatMap((s) => (s.kind === 'resource' ? [s.resourceId] : [])))];
@@ -265,6 +262,14 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
     const shared = step.shared ? (dir === 'undo' ? step.shared.before : step.shared.after) : undefined;
     deps.dispatch({ type: 'SET_CONFIG', payload: next, history: false, ...(shared ? { shared } : {}) });
   };
+
+  const cover = coverRecorder({
+    dispatch: deps.dispatch, getState: deps.getState, now, push, notify,
+    top: () => undoList[undoList.length - 1],
+    pop: () => { undoList.pop(); },
+    clearRedo: () => { redoList.length = 0; },
+    recording: () => { const s = deps.getState(); return !switching && s.storeReady && !s.booting; },
+  });
 
   // --- resources (#866) --------------------------------------------------
 
@@ -448,6 +453,9 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
       } else if (step.kind === 'resource') {
         if (!runResource(step, dir)) continue;
         step.open = false;
+      } else if (step.kind === 'cover') {
+        cover.run(step, dir);
+        step.open = false;
       } else if (step.kind === 'group') {
         if (!runGroup(step, dir)) continue;
       } else if (!runText(step, dir, options.follow === true)) {
@@ -473,6 +481,7 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
     gathering = null;
     clearAll();
     eagerText.clear();
+    cover.reset();
     switching = true;
     queueMicrotask(() => { switching = false; });
   };
@@ -488,6 +497,9 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
         break;
       case 'UPSERT_RESOURCE':
         recordResource(action);
+        break;
+      case 'SET_COVER_MARKDOWN':
+        cover.record(action);
         break;
       case 'SET_BOOK':
         startSwitch();
@@ -579,22 +591,4 @@ export function createSandboxHistory(deps: SandboxHistoryDeps): SandboxHistory {
       eagerText.clear();
     },
   };
-}
-
-/** Whether two versions of a resource differ in more than their stamp. */
-function sameResource(a: Resource, b: Resource): boolean {
-  return JSON.stringify({ ...a, updatedAt: 0 }) === JSON.stringify({ ...b, updatedAt: 0 });
-}
-
-// --- the history the module-level helpers reach ---------------------------
-
-let active: SandboxHistory | null = null;
-
-/** The provider's history, for code outside React (viewer edits, keys). */
-export function setActiveHistory(history: SandboxHistory | null): void {
-  active = history;
-}
-
-export function activeHistory(): SandboxHistory | null {
-  return active;
 }

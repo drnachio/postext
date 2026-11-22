@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "المساحة حول الشعار التي لا يدخلها شيء آخر.",
     "coverTextTurn": "الاستدارة",
     "coverTextTurnNone": "لا شيء",
-    "coverTextBoxHint": "يُكتب نصّه في «النصوص» تحت اسم المربّع."
+    "coverTextBoxHint": "يُكتب نصّه في «النصوص» تحت اسم المربّع.",
+    "historyStepCover": "نص الغلاف"
   },
   "PlainLanguage": {
     "heading": "باختصار",

@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "L’espai al voltant del logotip on no ha d’entrar res més.",
     "coverTextTurn": "Gir",
     "coverTextTurnNone": "Cap",
-    "coverTextBoxHint": "El seu text s’escriu a Textos, amb el nom de la caixa."
+    "coverTextBoxHint": "El seu text s’escriu a Textos, amb el nom de la caixa.",
+    "historyStepCover": "el text de la coberta"
   },
   "PlainLanguage": {
     "heading": "En poques paraules",

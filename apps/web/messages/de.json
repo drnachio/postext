@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "Der Raum um das Logo, in den nichts anderes ragen soll.",
     "coverTextTurn": "Drehung",
     "coverTextTurnNone": "Keine",
-    "coverTextBoxHint": "Sein Text steht unter Texte, beim Namen des Felds."
+    "coverTextBoxHint": "Sein Text steht unter Texte, beim Namen des Felds.",
+    "historyStepCover": "der Text des Umschlags"
   },
   "PlainLanguage": {
     "heading": "Kurz gesagt",

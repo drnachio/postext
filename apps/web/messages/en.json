@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "The space round the logo nothing else should enter.",
     "coverTextTurn": "Turn",
     "coverTextTurnNone": "None",
-    "coverTextBoxHint": "Its text is written in Texts, under the box’s name."
+    "coverTextBoxHint": "Its text is written in Texts, under the box’s name.",
+    "historyStepCover": "the cover’s text"
   },
   "PlainLanguage": {
     "heading": "In short",

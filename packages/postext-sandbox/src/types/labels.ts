@@ -6622,4 +6622,5 @@ export interface SandboxLabels {
   coverTextTurn: string;
   coverTextTurnNone: string;
   coverTextBoxHint: string;
+  historyStepCover: string;
 }

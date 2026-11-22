@@ -148,7 +148,7 @@ function ownStep(step: HistoryStepInfo | null, chapters: ReadonlySet<string>, de
   // the picture's anchors itself (#941), after the design step is undone.
   if (step.kind === 'resource') return designDone && resources.has(step.resourceId) ? 'resource' : null;
   // A group of steps (#1397: the changes from Word) is no step of it.
-  if (step.kind === 'group') return null;
+  if (step.kind === 'group' || step.kind === 'cover') return null;
   return chapters.has(step.chapterId) ? 'text' : null;
 }
 

@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "Lo spazio intorno al logo in cui non deve entrare altro.",
     "coverTextTurn": "Rotazione",
     "coverTextTurnNone": "Nessuna",
-    "coverTextBoxHint": "Il suo testo si scrive in Testi, con il nome della casella."
+    "coverTextBoxHint": "Il suo testo si scrive in Testi, con il nome della casella.",
+    "historyStepCover": "il testo della copertina"
   },
   "PlainLanguage": {
     "heading": "In breve",

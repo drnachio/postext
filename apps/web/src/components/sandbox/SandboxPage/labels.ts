@@ -6428,5 +6428,6 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     coverTextTurn: t("coverTextTurn"),
     coverTextTurnNone: t("coverTextTurnNone"),
     coverTextBoxHint: t("coverTextBoxHint"),
+    historyStepCover: t("historyStepCover"),
   };
 }

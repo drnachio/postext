@@ -7087,7 +7087,8 @@
     "coverItemClearanceTooltip": "标志周围不应放入其他内容的空间。",
     "coverTextTurn": "旋转",
     "coverTextTurnNone": "无",
-    "coverTextBoxHint": "其文字在“文字”中按框名填写。"
+    "coverTextBoxHint": "其文字在“文字”中按框名填写。",
+    "historyStepCover": "封面文字"
   },
   "PlainLanguage": {
     "heading": "简单来说",
