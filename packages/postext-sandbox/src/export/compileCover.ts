@@ -60,7 +60,7 @@ export async function compiledBookCover(
  *  the files that hold the page's characters (every file of a custom
  *  family), then the stand-ins of a bold or an italic a family lacks
  *  (#688), as the page and the layout worker declare them. */
-async function declareFaces(onePage: VDTDocument, config: PostextConfig, markdown: string): Promise<void> {
+export async function declareFaces(onePage: VDTDocument, config: PostextConfig, markdown: string): Promise<void> {
   const fonts = (globalThis as { fonts?: FontFaceSet }).fonts;
   if (!fonts || typeof FontFace === 'undefined') return;
   const faces = [

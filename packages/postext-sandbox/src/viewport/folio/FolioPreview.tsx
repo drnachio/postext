@@ -3,6 +3,7 @@
 import { forwardRef, useRef, useMemo, useState, useEffect, useDeferredValue, useImperativeHandle } from 'react';
 import { type FolioInteraction, type FolioDocumentViewer, type FolioLabels, createFolioFromDocument } from 'postext-folio';
 import { folioOfBook } from 'postext/production';
+import { usePrintedSpine } from '../../cover/usePrintedSpine.js';
 import { type PostextConfig, type VDTDocument, watchFonts, onFontsChanged, resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig } from 'postext';
 import { useSandboxDispatch, useSandboxSelector, useSandboxDocRef, useSandboxDocSourceRef, useSandboxChapterDocsRef, useLayoutSource, useBookPlan } from '../../context/SandboxContext.js';
 import { type HeldChapterDoc } from '../../book/buildBook.js';
@@ -97,7 +98,9 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     return r?.bitmap?.fileId ?? r?.svg?.fileId;
   }, [resources, spineId]);
   const [spine, setSpine] = useState<{ fileId: string; url?: string } | null>(null);
-  const spineUrl = spine?.fileId === spineFileId ? spine?.url : undefined;
+  // Without a picture of its own, the spine of the print cover (#1669).
+  const printedSpine = usePrintedSpine(!spineId && bindingType !== 'saddleStitch' && bindingType !== 'folded');
+  const spineUrl = (spine?.fileId === spineFileId ? spine?.url : undefined) ?? printedSpine;
   const spineUrlRef = useRef(spineUrl);
   spineUrlRef.current = spineUrl;
   // The picture of the spine is read (or found missing): a new viewer

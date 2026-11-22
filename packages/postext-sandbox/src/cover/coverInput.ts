@@ -23,6 +23,9 @@ export interface CoverBook {
   resources: readonly Resource[];
   coverMarkdown?: string | undefined;
   bookPages: BookPages;
+  /** The book's page count when it is known otherwise (the EPUB and the
+   *  compiler lay the whole book out): goes over `bookPages`. */
+  pages?: number;
 }
 
 /** The versions the book has, in their order. */
@@ -43,7 +46,7 @@ export function coverBuildInput(book: CoverBook, version: string | ProductionVer
     config: book.config,
     version,
     // At least one page: a book not yet paginated still shows a cover.
-    pages: Math.max(1, planPageCount(book.bookPages)),
+    pages: Math.max(1, book.pages ?? planPageCount(book.bookPages)),
     ...(book.coverMarkdown !== undefined ? { markdown: book.coverMarkdown } : {}),
     metadata: bookMetadata(book.chapters),
     resources: book.resources,

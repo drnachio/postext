@@ -41,23 +41,23 @@ export function useCoverConfig(): PostextConfig {
 
 /** The engine's cover of a version and sheet: what `buildCover` returns,
  *  or its issues when it cannot build one. */
-export function useBuiltCover(versionId: string | null, sheet: CoverSheetKind): BuiltCover | { issues: BuildCoverIssue[] } | null {
+export function useBuiltCover(versionId: string | null, sheet: CoverSheetKind, enabled = true): BuiltCover | { issues: BuildCoverIssue[] } | null {
   const config = useCoverConfig();
   const chapters = useSandboxSelector((s) => s.chapters);
   const resources = useSandboxSelector((s) => s.resources);
   const coverMarkdown = useSandboxSelector((s) => s.coverMarkdown);
   const { bookPages } = useBookPlan();
   return useMemo(() => {
-    const version = pickVersion(config, versionId);
+    const version = enabled ? pickVersion(config, versionId) : undefined;
     if (!version) return null;
     return buildCover(coverBuildInput({ config, chapters, resources, coverMarkdown, bookPages }, version, sheet));
-  }, [config, chapters, resources, coverMarkdown, bookPages, versionId, sheet]);
+  }, [config, chapters, resources, coverMarkdown, bookPages, versionId, sheet, enabled]);
 }
 
 /** The cover laid out: rebuilt a moment after the book changes, the last
- *  build winning. */
-export function useCover(versionId: string | null, sheet: CoverSheetKind = 'cover'): CoverState {
-  const built = useBuiltCover(versionId, sheet);
+ *  build winning. Nothing is built while `enabled` is false. */
+export function useCover(versionId: string | null, sheet: CoverSheetKind = 'cover', enabled = true): CoverState {
+  const built = useBuiltCover(versionId, sheet, enabled);
   const resources = useSandboxSelector((s) => s.resources);
   const { build } = useLayoutWorker('preview');
   const [state, setState] = useState<CoverState>({ status: 'none', issues: NO_ISSUES, paintKey: 0 });

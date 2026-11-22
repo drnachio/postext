@@ -3,6 +3,7 @@
 // has been given. The book's own pictures go through `ensureResourceImages`.
 
 import { registerResourceImage } from 'postext';
+import { rasterizedSvg, type SvgRaster } from '../controls/media/resourceImages.js';
 
 type Mime = 'image/svg+xml' | 'image/png' | 'image/jpeg';
 
@@ -28,9 +29,11 @@ export function bytesKey(bytes: Uint8Array): string {
 
 const registered = new Map<string, string>();
 
-async function decode(bytes: Uint8Array, mime: Mime): Promise<CanvasImageSource | null> {
+async function decode(bytes: Uint8Array, mime: Mime, raster?: SvgRaster): Promise<CanvasImageSource | null> {
   const blob = new Blob([bytes as BlobPart], { type: mime });
   if (mime !== 'image/svg+xml') return createImageBitmap(blob);
+  // A worker has no <img> to decode an SVG: the page rasterizes it.
+  if (typeof Image === 'undefined') return raster ? rasterizedSvg(new TextDecoder().decode(bytes), raster) : null;
   // An SVG through an <img>, its URL freed once decoded.
   const url = URL.createObjectURL(blob);
   try {
@@ -43,16 +46,16 @@ async function decode(bytes: Uint8Array, mime: Mime): Promise<CanvasImageSource 
   }
 }
 
-/** Register the cover's own files for the canvas. Returns true when one
- *  was (re)registered. */
-export async function registerCoverFiles(files: Readonly<Record<string, Uint8Array>>): Promise<boolean> {
+/** Register the cover's own files for the canvas (in a worker, its SVGs
+ *  through `raster`). Returns true when one was (re)registered. */
+export async function registerCoverFiles(files: Readonly<Record<string, Uint8Array>>, raster?: SvgRaster): Promise<boolean> {
   let changed = false;
   await Promise.all(Object.entries(files).map(async ([fileId, bytes]) => {
     const key = bytesKey(bytes);
     if (registered.get(fileId) === key) return;
     const mime = sniffCoverFile(bytes);
     if (!mime) return;
-    const image = await decode(bytes, mime).catch(() => null);
+    const image = await decode(bytes, mime, raster).catch(() => null);
     if (!image) return;
     registerResourceImage(fileId, image, { vector: mime === 'image/svg+xml', singleInk: false });
     registered.set(fileId, key);
