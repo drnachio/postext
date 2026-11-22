@@ -1,4 +1,4 @@
-import { resolveFolioConfig, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
+import { resolveFolioConfig, resolvePagePaper, type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig } from "postext";
 
 export type ResolvedPaper = ResolvedFolioConfig["paper"];
 
@@ -106,9 +106,7 @@ export function paperSpec(paper: ResolvedPaper, pageWidthMm?: number): PaperSpec
 /** The paper of a page: the book's, with the page's own stock over it (a
  *  page that names a stock takes that stock's defaults, not the book's). */
 export function pagePaper(book: FolioConfig | undefined, own: FolioPaperConfig | undefined): ResolvedPaper {
-  if (!own) return resolveFolioConfig(book).paper;
-  const base = own.type ? {} : book?.paper ?? {};
-  return resolveFolioConfig({ paper: { ...base, ...own } }).paper;
+  return own ? resolvePagePaper(book?.paper, own) : resolveFolioConfig(book).paper;
 }
 
 export function hexToRgb(hex: string): [number, number, number] {

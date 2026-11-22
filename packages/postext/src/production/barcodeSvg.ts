@@ -13,6 +13,7 @@ import {
   parseIsbn,
   type BarcodeBar,
 } from './isbn.js';
+import { escapeAttr } from '../util/xmlEscape.js';
 
 /** The smallest a barcode may be printed (GS1: 80 … 200 %). */
 export const EAN13_MIN_MAGNIFICATION = 0.8;
@@ -89,7 +90,7 @@ export function isbnBarcodeSvg(isbn: string, options: IsbnBarcodeOptions = {}): 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${fmt(width)}mm" height="${fmt(height)}mm" viewBox="0 0 ${fmt(width)} ${fmt(height)}">`
     + ground
     + `<g fill="#000">${rects(symbol.bars, left, barTop, x, barH, guardExtra)}${addOnSvg}</g>`
-    + `<g fill="#000" font-family="${font}">${caption}${digits.join('')}</g>`
+    + `<g fill="#000" font-family="${escapeAttr(font)}">${caption}${digits.join('')}</g>`
     + '</svg>';
   return { svg, width, height };
 }

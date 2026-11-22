@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync as readFile } from "node:fs";
 import * as postext from "../index.js";
 import * as writer from "../writer/index.js";
+import * as production from "../production/index.js";
 import type {
   Resource,
   ResourceType,
@@ -533,6 +534,7 @@ describe("package exports", () => {
       "folioDefaultsFor",
       "folioForTrim",
       "resolveFolioConfig",
+      "resolvePagePaper",
       "stripFolioDefaults",
       "wrapFolioYaw",
       "DEFAULT_HEADER_FOOTER_SLOT",
@@ -1137,42 +1139,6 @@ describe("package exports", () => {
       "decodePrintRaster",
       "rasterProfile",
       "rasterToRgba",
-      "DEFAULT_BINDING_MEASURES",
-      "BUILT_IN_BINDING_PROFILES",
-      "DEFAULT_SPINE_TEXT",
-      "ean13CheckDigit",
-      "parseIsbn",
-      "EAN13_MODULE_MM",
-      "EAN13_BAR_HEIGHT_MM",
-      "EAN13_QUIET_ZONE",
-      "EAN_ADDON_GAP",
-      "ean13Symbol",
-      "isbnCaption",
-      "EAN13_MIN_MAGNIFICATION",
-      "isbnBarcodeSvg",
-      "resolveLength",
-      "resolveBindingMeasures",
-      "checkProfileAccepts",
-      "pageRunsOf",
-      "signaturePages",
-      "leafMm",
-      "spineFromRuns",
-      "spineSafeMargin",
-      "softcoverSheet",
-      "caseBoard",
-      "caseSpineWidth",
-      "caseSheet",
-      "jacketSheet",
-      "endpaperSheet",
-      "PROMO_FORMATS",
-      "promoSheet",
-      "isCaseBinding",
-      "findBindingProfile",
-      "versionSheets",
-      "PRODUCTION_FILE_FORMAT",
-      "PRODUCTION_FILE_VERSION",
-      "exportProductionProfiles",
-      "importProductionProfiles",
       "DESIGN_PARTS",
       "DESIGN_PART_KEYS",
       "DESIGN_CARRIED_KEYS",
@@ -1210,6 +1176,7 @@ describe("package subpath exports", () => {
     expect(Object.keys(manifest.exports)).toEqual([
       ".",
       "./bundle",
+      "./production",
       "./word",
       "./writer",
       "./react",
@@ -1256,5 +1223,56 @@ describe("package subpath exports", () => {
       "attrValue",
       "slugify",
     ]);
+  });
+});
+
+// The print cover's geometry (#1655, #1665): its own entry, so the
+// package root stays the layout engine's.
+describe("postext/production", () => {
+  it("exports the cover sheets, the spine and the ISBN", () => {
+    expect(Object.keys(production)).toEqual([
+      "DEFAULT_BINDING_MEASURES",
+      "BUILT_IN_BINDING_PROFILES",
+      "DEFAULT_SPINE_TEXT",
+      "ean13CheckDigit",
+      "parseIsbn",
+      "EAN13_MODULE_MM",
+      "EAN13_BAR_HEIGHT_MM",
+      "EAN13_QUIET_ZONE",
+      "EAN_ADDON_GAP",
+      "ean13Symbol",
+      "isbnCaption",
+      "EAN13_MIN_MAGNIFICATION",
+      "isbnBarcodeSvg",
+      "resolveLength",
+      "resolveBindingMeasures",
+      "checkProfileAccepts",
+      "FOLIO_BINDING_OF_STYLE",
+      "pageRunsOf",
+      "signaturePages",
+      "leafMm",
+      "spineFromRuns",
+      "spineSafeMargin",
+      "softcoverSheet",
+      "caseBoard",
+      "caseSpineWidth",
+      "caseSheet",
+      "jacketSheet",
+      "endpaperSheet",
+      "PROMO_FORMATS",
+      "promoSheet",
+      "isCaseBinding",
+      "findBindingProfile",
+      "versionSheets",
+      "PRODUCTION_FILE_FORMAT",
+      "PRODUCTION_FILE_VERSION",
+      "exportProductionProfiles",
+      "importProductionProfiles",
+    ]);
+  });
+
+  it("keeps them out of the package root", () => {
+    expect(Object.keys(postext)).not.toContain("parseIsbn");
+    expect(Object.keys(postext)).not.toContain("basicShape");
   });
 });

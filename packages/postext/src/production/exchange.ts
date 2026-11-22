@@ -18,7 +18,7 @@ export interface ProductionFile {
 /** Something in an imported file that was left out, and why. */
 export interface ProductionImportIssue {
   where: string;
-  reason: 'notAProductionFile' | 'newerVersion' | 'missingId' | 'unknownStyle' | 'badMeasure' | 'badNumber';
+  reason: 'notAProductionFile' | 'newerVersion' | 'missingId' | 'unknownStyle' | 'badMeasure' | 'badNumber' | 'badText';
 }
 
 const STYLES: ReadonlySet<string> = new Set<BindingStyle>(['perfect', 'sewnSoftcover', 'caseFlat', 'caseRound']);
@@ -40,6 +40,27 @@ export function exportProductionProfiles(papers: readonly PaperProfile[], bindin
 
 const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v >= 0;
+const isTrim = (v: unknown): boolean => isRecord(v) && isNum(v.width) && isNum(v.height);
+
+/** `accepts` as written, or undefined when any part of it does not read:
+ *  trims with a width and a height, spine limits as numbers. */
+function validAccepts(v: unknown): boolean {
+  if (!isRecord(v)) return false;
+  const { trim, spine } = v;
+  if (trim !== undefined && !(isRecord(trim) && (trim.min === undefined || isTrim(trim.min)) && (trim.max === undefined || isTrim(trim.max)))) return false;
+  if (spine !== undefined && !(isRecord(spine) && (spine.min === undefined || isNum(spine.min)) && (spine.max === undefined || isNum(spine.max)))) return false;
+  return true;
+}
+
+/** Drops each named field that is present but not a string. */
+function keepStrings(o: Record<string, unknown>, keys: readonly string[], where: string, issues: ProductionImportIssue[]): void {
+  for (const key of keys) {
+    if (o[key] !== undefined && typeof o[key] !== 'string') {
+      delete o[key];
+      issues.push({ where: `${where}.${key}`, reason: 'badText' });
+    }
+  }
+}
 
 function validLength(v: unknown): boolean {
   if (isNum(v)) return true;
@@ -79,6 +100,14 @@ export function importProductionProfiles(data: unknown): {
         issues.push({ where: `papers[${i}].${key}`, reason: 'badNumber' });
       }
     }
+    for (const [key, value] of Object.entries(paper)) {
+      // A paper's other fields are Folio's: words and numbers only.
+      if (value !== undefined && typeof value !== 'string' && !(typeof value === 'number' && Number.isFinite(value)) && typeof value !== 'boolean') {
+        delete (paper as unknown as Record<string, unknown>)[key];
+        issues.push({ where: `papers[${i}].${key}`, reason: 'badText' });
+      }
+    }
+    keepStrings(paper as unknown as Record<string, unknown>, ['name', 'supplier', 'commercialName'], `papers[${i}]`, issues);
     if (typeof paper.name !== 'string') paper.name = paper.id;
     papers.push(paper);
   });
@@ -86,7 +115,12 @@ export function importProductionProfiles(data: unknown): {
     if (!isRecord(b) || typeof b.id !== 'string' || !b.id) return issues.push({ where: `bindings[${i}]`, reason: 'missingId' });
     if (typeof b.style !== 'string' || !STYLES.has(b.style)) return issues.push({ where: `bindings[${i}]`, reason: 'unknownStyle' });
     const binding = structuredClone(b) as unknown as BindingProfile;
+    keepStrings(binding as unknown as Record<string, unknown>, ['name', 'printer'], `bindings[${i}]`, issues);
     if (typeof binding.name !== 'string') binding.name = binding.id;
+    if (binding.accepts !== undefined && !validAccepts(binding.accepts)) {
+      delete binding.accepts;
+      issues.push({ where: `bindings[${i}].accepts`, reason: 'badNumber' });
+    }
     if (binding.signature !== undefined && !(isNum(binding.signature) && binding.signature > 0)) {
       delete binding.signature;
       issues.push({ where: `bindings[${i}].signature`, reason: 'badNumber' });

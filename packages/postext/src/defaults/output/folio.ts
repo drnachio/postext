@@ -1,6 +1,7 @@
 import type {
   ColorValue,
   FolioConfig,
+  FolioPaperConfig,
   FolioPaperFinish,
   FolioPaperTexture,
   FolioPaperType,
@@ -220,4 +221,14 @@ export function stripFolioDefaults(folio?: FolioConfig, sizePreset?: PageSizePre
   }
 
   return Object.keys(result).length ? result : undefined;
+}
+
+/** The paper a page is printed on: the book's paper with the page's own
+ *  stock (`:::paper`) over it. A page that names a stock (`type`) takes
+ *  that stock's defaults, not the book's, so its caliper is the stock's.
+ *  Folio's 3D book and the print cover's spine both read pages this way. */
+export function resolvePagePaper(book: FolioPaperConfig | undefined, own: FolioPaperConfig | undefined): ResolvedFolioConfig['paper'] {
+  if (!own) return resolveFolioConfig({ paper: book }).paper;
+  const base = own.type ? {} : book ?? {};
+  return resolveFolioConfig({ paper: { ...base, ...own } }).paper;
 }

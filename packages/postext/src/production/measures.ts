@@ -1,6 +1,8 @@
 import { DEFAULT_BINDING_MEASURES } from '../defaults/output/production.js';
+import type { FolioBindingType } from '../types/output/folio.js';
 import type {
   BindingMeasures,
+  BindingStyle,
   BindingProfile,
   ProductionLength,
   ProductionVersion,
@@ -66,3 +68,14 @@ export function checkProfileAccepts(profile: BindingProfile, trim: TrimMm, spine
   push('spine', spine, a.spine?.max, 'max');
   return out;
 }
+
+/** The binding Folio's 3D book takes for a binding style: the print
+ *  cover's styles are finer (a case with a flat or a round spine), Folio's
+ *  name how the book opens and looks. One mapping, used wherever a version
+ *  binds the 3D book. */
+export const FOLIO_BINDING_OF_STYLE: Readonly<Record<BindingStyle, FolioBindingType>> = {
+  perfect: 'paperback',
+  sewnSoftcover: 'sewn',
+  caseFlat: 'hardcover',
+  caseRound: 'hardcover',
+};

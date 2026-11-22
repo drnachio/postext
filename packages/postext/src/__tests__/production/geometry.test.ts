@@ -23,7 +23,9 @@ import {
   versionSheets,
   type ProductionSheet,
 } from '../../production/index.js';
-import type { BindingProfile, TrimMm } from '../../types.js';
+import type { BindingProfile, TrimMm } from '../../production/index.js';
+import { FOLIO_BINDING_OF_STYLE } from '../../production/index.js';
+import { resolvePagePaper } from '../../defaults/output/folio.js';
 
 const trim: TrimMm = { width: 150, height: 230 };
 const zone = (sheet: ProductionSheet, name: string) => sheet.zones.find((z) => z.name === name)!;
@@ -112,11 +114,35 @@ describe('spine', () => {
     expect(r.spine).toBeCloseTo(15.42, 6);
   });
 
+  it('counts a leaf that straddles two papers once', () => {
+    // 3 + 3 pages: three leaves, the second (pages 3 and 4) on the first
+    // run's paper, where its first page is printed.
+    const r = spineFromRuns([{ pages: 3, grammage: 80, bulk: 1.25 }, { pages: 3, grammage: 80, bulk: 1.25 }], undefined, 0);
+    expect(r.block).toBeCloseTo(0.3, 6);
+    const mixed = spineFromRuns([{ pages: 3, grammage: 80, bulk: 1.25 }, { pages: 3, grammage: 120, bulk: 1 }], undefined, 0);
+    expect(mixed.block).toBeCloseTo(2 * 0.1 + 0.12, 6);
+  });
+
+  it("reads a page's paper as Folio does", () => {
+    const named = { type: 'coatedMatte' as const };
+    for (const own of [undefined, named, { grammage: 100 }]) {
+      const runs = pageRunsOf([{ paper: own }], { grammage: 80 });
+      const p = resolvePagePaper({ grammage: 80 }, own);
+      expect(runs).toEqual([{ pages: 1, grammage: p.grammage, bulk: p.bulk }]);
+    }
+  });
+
+  it("maps each binding style to Folio's binding", () => {
+    expect(FOLIO_BINDING_OF_STYLE).toEqual({ perfect: 'paperback', sewnSoftcover: 'sewn', caseFlat: 'hardcover', caseRound: 'hardcover' });
+  });
+
   it('groups laid-out pages by their stock', () => {
     const pages = [{}, {}, { paper: { type: 'coatedMatte' as const } }, { paper: { type: 'coatedMatte' as const } }, {}];
+    // A page that names a stock takes that stock's weight, not the book's.
+    const matte = resolvePagePaper({ grammage: 80 }, { type: 'coatedMatte' });
     expect(pageRunsOf(pages, { grammage: 80 })).toEqual([
       { pages: 2, grammage: 80, bulk: 1.25 },
-      { pages: 2, grammage: 80, bulk: 1.0 },
+      { pages: 2, grammage: matte.grammage, bulk: matte.bulk },
       { pages: 1, grammage: 80, bulk: 1.25 },
     ]);
   });
@@ -161,6 +187,27 @@ describe('profiles', () => {
     expect(read.bindings[1]!.measures).toEqual({});
     expect(read.issues.map((i) => i.reason)).toEqual(['unknownStyle', 'badNumber', 'badMeasure']);
     expect(importProductionProfiles({ format: 'other' }).issues).toEqual([{ where: 'file', reason: 'notAProductionFile' }]);
+  });
+
+  it('drops fields of the wrong kind from an imported file', () => {
+    const read = importProductionProfiles({
+      format: 'postext-production',
+      version: 1,
+      papers: [{ id: 'p', name: 7, supplier: { x: 1 }, grammage: 90 }],
+      bindings: [
+        { id: 'b', name: 'B', style: 'perfect', printer: ['x'], accepts: { spine: { min: '3' } } },
+        { id: 'c', name: 'C', style: 'perfect', accepts: { trim: { max: { width: 200, height: 280 } }, spine: { max: 60 } } },
+      ],
+    });
+    expect(read.papers).toEqual([{ id: 'p', name: 'p', grammage: 90 }]);
+    expect(read.bindings[0]).toEqual({ id: 'b', name: 'B', style: 'perfect' });
+    expect(read.bindings[1]!.accepts).toEqual({ trim: { max: { width: 200, height: 280 } }, spine: { max: 60 } });
+    expect(read.issues.map((i) => `${i.where}:${i.reason}`)).toEqual([
+      'papers[0].supplier:badText',
+      'papers[0].name:badText',
+      'bindings[0].printer:badText',
+      'bindings[0].accepts:badNumber',
+    ]);
   });
 });
 
@@ -256,6 +303,12 @@ describe('versionSheets', () => {
 });
 
 describe('isbnBarcodeSvg', () => {
+  it('escapes the font name', () => {
+    const svg = isbnBarcodeSvg('978-0-306-40615-7', { fontFamily: 'Bodoni & Co "Pro"><x>' })!.svg;
+    expect(svg).toContain('font-family="Bodoni &amp; Co &quot;Pro&quot;&gt;&lt;x&gt;"');
+    expect(svg).not.toContain('<x>');
+  });
+
   it('measures 37.29 mm across the symbol and its quiet zones at 100 %', () => {
     expect(isbnBarcodeSvg('9780306406157')!.width).toBeCloseTo(113 * 0.33, 3);
     expect(isbnBarcodeSvg('9780306406157', { magnification: 0.5 })!.width).toBeCloseTo(113 * 0.33 * 0.8, 3);

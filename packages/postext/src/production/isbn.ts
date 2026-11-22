@@ -44,8 +44,8 @@ function isbn10Of(isbn13: string): string | undefined {
   return nine + (check === 10 ? 'X' : String(check));
 }
 
-/** Reads an ISBN as written, `978-84-9835-123-4`, `ISBN 8498351239` or
- *  `9788498351234`, and gives it as the thirteen digits of the barcode
+/** Reads an ISBN as written, `978-0-306-40615-7`, `ISBN 0306406152` or
+ *  `9780306406157`, and gives it as the thirteen digits of the barcode
  *  (an ISBN-10 is converted) together with its ISBN-10 when it has one. */
 export function parseIsbn(raw: string): IsbnReading {
   const d = isbnDigits(raw);
