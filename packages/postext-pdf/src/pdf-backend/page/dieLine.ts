@@ -13,6 +13,9 @@
  *   optional content, it sits in an optional content group "Die line" a
  *   reader can hide.
  *
+ * - An emboss or a deboss (#1667, `VDTPage.plates`) is filled on a plate of
+ *   its own the same way (`Emboss`, `Deboss`), in its own group.
+ *
  * It is written after the page's crop marks and after the print pass
  * (`printPass.ts`), so nothing reworks its colour or its overprint.
  */
@@ -31,6 +34,7 @@ import {
   setLineJoin,
   setLineCap,
   stroke,
+  fill,
   LineCapStyle,
   LineJoinStyle,
   type PDFDocument,
@@ -119,6 +123,40 @@ export function dieLineOps(
   ];
 }
 
+/**
+ * The operators of a page's relief plate (#1667): every outline filled on
+ * the plate at full tint (nonzero), under the overprinting state, inside
+ * the optional content group and the artifact when given.
+ */
+export function reliefOps(
+  paths: readonly VDTPathCommand[][],
+  frame: { scale: number; pageHeightPt: number },
+  names: DieLineNames,
+): PDFOperator[] {
+  if (paths.length === 0) return [];
+  const open: PDFOperator[] = [];
+  const close: PDFOperator[] = [];
+  if (names.artifact) {
+    open.push(PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [PDFName.of('Artifact'), names.artifact as unknown as OperatorArg]));
+    close.push(PDFOperator.of(PDFOperatorNames.EndMarkedContent));
+  }
+  if (names.layer) {
+    open.push(PDFOperator.of(PDFOperatorNames.BeginMarkedContentSequence, [PDFName.of('OC'), names.layer]));
+    close.unshift(PDFOperator.of(PDFOperatorNames.EndMarkedContent));
+  }
+  return [
+    ...open,
+    pushGraphicsState(),
+    setGraphicsState(names.state),
+    PDFOperator.of(PDFOperatorNames.NonStrokingColorspace, [names.space]),
+    PDFOperator.of(PDFOperatorNames.NonStrokingColorN, [PDFNumber.of(1)]),
+    ...traceOps(frame, paths),
+    fill(),
+    popGraphicsState(),
+    ...close,
+  ];
+}
+
 /** A dictionary of a page's resources (`ColorSpace`, `Properties`),
  *  made when missing. */
 function resourceDict(page: PDFPage, key: string): PDFDict {
@@ -131,18 +169,35 @@ function resourceDict(page: PDFPage, key: string): PDFDict {
   return dict;
 }
 
+/** The relief plates (#1667): each process's plate name, as the printer
+ *  and the die-maker read it, and the alternate a proof shows it in. */
+export const RELIEF_PLATES: Readonly<Record<'emboss' | 'deboss', { ink: string; layer: string; cmyk: { c: number; m: number; y: number; k: number } }>> = {
+  emboss: { ink: 'Emboss', layer: 'Emboss', cmyk: { c: 100, m: 0, y: 0, k: 0 } },
+  deboss: { ink: 'Deboss', layer: 'Deboss', cmyk: { c: 0, m: 0, y: 100, k: 0 } },
+};
+
+/** One non-printing plate's objects: its colour space and its optional
+ *  content group, written once in the document. */
+interface PlateObjects {
+  space: PDFRef;
+  layer?: PDFRef;
+}
+
 /**
- * The die line of one render: the plate's colour space, the overprinting
- * state and the optional content group, each written once in the
- * document, and the pages that draw it.
+ * The die line of one render, and the relief plates of its embosses and
+ * debosses (#1667): each plate's colour space, the overprinting state and
+ * each plate's optional content group, written once in the document, and
+ * the pages that draw them. A relief is filled, not stroked: the
+ * die-maker engraves the area. `print.dieLine.output: 'none'` leaves the
+ * reliefs out as well.
  */
 export class DieLineWriter {
   readonly config: ResolvedPrintDieLineConfig;
   /** The plate's name as the PDF writes it. */
   readonly plateName: string;
-  private space?: PDFRef;
+  private readonly plates = new Map<string, PlateObjects>();
+  private readonly layers: PDFRef[] = [];
   private state?: PDFRef;
-  private layer?: PDFRef;
   private drawn = 0;
 
   constructor(
@@ -155,43 +210,63 @@ export class DieLineWriter {
     this.plateName = printableInkName(this.config.ink);
   }
 
-  /** How many pages carry the die line so far. */
+  /** How many pages carry the die line or a relief plate so far. */
   get pages(): number {
     return this.drawn;
   }
 
-  /** Stroke `vdtPage`'s die-cut on `page` (its sheet), when it has one and
-   *  the die line is on. Returns whether anything was drawn. */
+  /** Stroke `vdtPage`'s die-cut on `page` (its sheet) and fill its relief
+   *  plates, when it has them and the die line is on. Returns whether
+   *  anything was drawn. */
   draw(page: PDFPage, vdtPage: VDTPage, doc: VDTDocument): boolean {
     if (this.config.output === 'none') return false;
     const paths = dieLinePaths(vdtPage.dieCut);
-    if (paths.length === 0) return false;
+    const reliefs = (vdtPage.plates ?? []).filter((p) => p.paths.length > 0);
+    if (paths.length === 0 && reliefs.length === 0) return false;
     const scale = 72 / doc.config.page.dpi;
-    const context = page.doc.context;
-    const spaces = resourceDict(page, 'ColorSpace');
-    const space = spaces.uniqueKey('CSDie');
-    spaces.set(space, this.spaceRef());
+    const frame = { scale, pageHeightPt: vdtPage.height * scale };
+    const artifact = this.options.tagged ? page.doc.context.obj({ Type: PDFName.of('Layout') }) : undefined;
     const state = page.node.newExtGState('GSDie', this.stateRef());
-    let layer: PDFName | undefined;
-    if (this.options.optionalContent) {
-      const properties = resourceDict(page, 'Properties');
-      layer = properties.uniqueKey('OCDie');
-      properties.set(layer, this.layerRef());
+    if (paths.length > 0) {
+      const names = this.pageNames(page, this.plateName, this.config.cmyk, DIE_LINE_LAYER, 'CSDie', 'OCDie');
+      const widthPt = dimensionToPx(this.config.width, doc.config.page.dpi) * scale;
+      page.pushOperators(...dieLineOps(paths, frame, widthPt, { ...names, state, ...(artifact ? { artifact } : {}) }));
     }
-    const artifact = this.options.tagged ? context.obj({ Type: PDFName.of('Layout') }) : undefined;
-    const widthPt = dimensionToPx(this.config.width, doc.config.page.dpi) * scale;
-    page.pushOperators(...dieLineOps(paths, { scale, pageHeightPt: vdtPage.height * scale }, widthPt, { space, state, ...(layer ? { layer } : {}), ...(artifact ? { artifact } : {}) }));
+    for (const process of ['emboss', 'deboss'] as const) {
+      const shapes = reliefs.filter((r) => r.process === process).flatMap((r) => r.paths);
+      if (shapes.length === 0) continue;
+      const plate = RELIEF_PLATES[process];
+      const names = this.pageNames(page, printableInkName(plate.ink), plate.cmyk, plate.layer, `CS${plate.ink}`, `OC${plate.ink}`);
+      page.pushOperators(...reliefOps(shapes, frame, { ...names, state, ...(artifact ? { artifact } : {}) }));
+    }
     this.drawn++;
     return true;
   }
 
-  private spaceRef(): PDFRef {
-    if (this.space) return this.space;
+  /** A plate's colour space and optional content group named in `page`'s
+   *  resources. */
+  private pageNames(page: PDFPage, ink: string, cmyk: { c: number; m: number; y: number; k: number }, layerName: string, spaceKey: string, layerKey: string): { space: PDFName; layer?: PDFName } {
+    const objects = this.plateObjects(ink, cmyk, layerName);
+    const spaces = resourceDict(page, 'ColorSpace');
+    const space = spaces.uniqueKey(spaceKey);
+    spaces.set(space, objects.space);
+    if (!objects.layer) return { space };
+    const properties = resourceDict(page, 'Properties');
+    const layer = properties.uniqueKey(layerKey);
+    properties.set(layer, objects.layer);
+    return { space, layer };
+  }
+
+  private plateObjects(ink: string, cmyk: { c: number; m: number; y: number; k: number }, layerName: string): PlateObjects {
+    const known = this.plates.get(ink);
+    if (known) return known;
     const context = this.pdfDoc.context;
-    const { c, m, y, k } = this.config.cmyk;
+    const { c, m, y, k } = cmyk;
     const fn = context.obj({ FunctionType: 2, Domain: [0, 1], C0: [0, 0, 0, 0], C1: [c / 100, m / 100, y / 100, k / 100].map(round4), N: 1 });
-    this.space = context.register(context.obj([PDFName.of('Separation'), inkPdfName(this.plateName), PDFName.of('DeviceCMYK'), fn]));
-    return this.space;
+    const space = context.register(context.obj([PDFName.of('Separation'), inkPdfName(ink), PDFName.of('DeviceCMYK'), fn]));
+    const objects: PlateObjects = { space, ...(this.options.optionalContent ? { layer: this.layerRef(layerName) } : {}) };
+    this.plates.set(ink, objects);
+    return objects;
   }
 
   private stateRef(): PDFRef {
@@ -199,20 +274,20 @@ export class DieLineWriter {
     return this.state;
   }
 
-  /** The optional content group, listed in the catalog's
-   *  `OCProperties` the first time: on by default, named in the default
-   *  configuration as PDF/X-4 asks. */
-  private layerRef(): PDFRef {
-    if (this.layer) return this.layer;
+  /** An optional content group, listed in the catalog's `OCProperties`
+   *  with the others: on by default, named in the default configuration
+   *  as PDF/X-4 asks. */
+  private layerRef(name: string): PDFRef {
     const context = this.pdfDoc.context;
-    this.layer = context.register(context.obj({ Type: 'OCG', Name: PDFHexString.fromText(DIE_LINE_LAYER) }));
+    const layer = context.register(context.obj({ Type: 'OCG', Name: PDFHexString.fromText(name) }));
+    this.layers.push(layer);
     this.pdfDoc.catalog.set(
       PDFName.of('OCProperties'),
       context.obj({
-        OCGs: [this.layer],
-        D: { Name: PDFHexString.fromText('Postext'), Order: [this.layer], ON: [this.layer], OFF: [] },
+        OCGs: [...this.layers],
+        D: { Name: PDFHexString.fromText('Postext'), Order: [...this.layers], ON: [...this.layers], OFF: [] },
       }),
     );
-    return this.layer;
+    return layer;
   }
 }

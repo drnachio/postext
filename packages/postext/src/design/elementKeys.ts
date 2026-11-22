@@ -40,7 +40,7 @@ export const DESIGN_PATH_KEYS = {
   ...PLACED, d: true, viewBox: true, fill: true, stroke: true, width: true, dash: true, preserveAspectRatio: true, over: true,
 } satisfies Record<keyof DesignPathElement, true>;
 export const DESIGN_CUT_KEYS = {
-  ...COMMON, placement: true, die: true, d: true, viewBox: true, preserveAspectRatio: true, leaves: true, wrap: true,
+  ...COMMON, placement: true, die: true, d: true, viewBox: true, preserveAspectRatio: true, leaves: true, wrap: true, process: true,
 } satisfies Record<keyof DesignCutElement, true>;
 export const DESIGN_CONNECTOR_KEYS = {
   ...COMMON, from: true, to: true, routing: true, radius: true, trunk: true, color: true, opacity: true, width: true,

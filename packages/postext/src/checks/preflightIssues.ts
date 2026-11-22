@@ -98,6 +98,16 @@ export type PreflightIssue = {
   | { kind: 'dieCutGutter'; die: string }
   /** A page or a `:::diecut` names a die the config does not have. */
   | { kind: 'dieCutUnknown'; die: string }
+  /** An emboss or a deboss (#1667) past the trim (critical, `distanceMm`
+   *  below 0) or within 3 mm of it (warning). `source` is the template
+   *  element it comes from. */
+  | { kind: 'reliefTrim'; process: 'emboss' | 'deboss'; source: string; distanceMm: number }
+  /** An emboss or a deboss across a fold (critical, `distanceMm` 0) or
+   *  within 3 mm of one (warning). */
+  | { kind: 'reliefFold'; process: 'emboss' | 'deboss'; source: string; distanceMm: number }
+  /** Text across a fold of the sheet (`distanceMm` 0) or within the safe
+   *  zone of one. */
+  | { kind: 'foldText'; text: string; distanceMm: number }
 );
 
 /** The kinds of problem preflight reports. */

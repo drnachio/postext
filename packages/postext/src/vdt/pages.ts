@@ -127,6 +127,11 @@ export interface VDTPage {
    *  mirrored for this side of the leaf. `sources` are the die ids that cut
    *  it, for the preflight and the Sandbox. */
   dieCut?: VDTDieCut;
+  /** Present on a page with an emboss or a deboss (#1667, a template's cut
+   *  element with `process`): each relief die's outline, in page px
+   *  (sheet coordinates, y down). Nothing paints it on screen; the PDF
+   *  fills it on a plate of its own that prints nothing. */
+  plates?: VDTTechnicalPlate[];
   /** Present on a comic page (`:::page`, `role: 'comic'`): its panels,
    *  split lines and lettering, in sheet coordinates. The page's columns
    *  are empty: nothing flows on it. */
@@ -163,6 +168,15 @@ export interface VDTLineNumberMark {
 
 /** The die-cuts of one page (#1565), as every backend and viewer reads
  *  them. */
+/** A relief die of a page (`VDTPage.plates`, #1667). */
+export interface VDTTechnicalPlate {
+  process: 'emboss' | 'deboss';
+  /** The die's closed outline, page px. */
+  paths: VDTPathCommand[][];
+  /** The id of the template element it comes from. */
+  source: string;
+}
+
 export interface VDTDieCut {
   /** Each hole's closed outline. */
   holes: VDTPathCommand[][];

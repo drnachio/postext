@@ -5,7 +5,7 @@
 
 import type { ContentBlock } from '../../parse/types.js';
 import type { Dimension, ResolvedDieCutsConfig } from '../../types.js';
-import type { VDTDesignPathBlock, VDTDocument, VDTPage } from '../../vdt.js';
+import type { VDTDesignPathBlock, VDTDocument, VDTPage, VDTTechnicalPlate } from '../../vdt.js';
 import { dimensionToPx } from '../../units.js';
 import { type DieCutMetrics, dieMetricsOf, dieShapeInBox } from '../../dieCut/shapes.js';
 import { type DiePlacement, buildDieCuts, configPlacements, shapePlacement } from '../../dieCut/place.js';
@@ -73,17 +73,31 @@ export function dieOfPages(pages: readonly RunPage[], byBlock: readonly (string 
 }
 
 /** The cut elements of `page`'s composed decoration as placements, taken
- *  out of the decoration (it never paints them). */
+ *  out of the decoration (it never paints them). An emboss or a deboss
+ *  (#1667) goes on the page's technical plates instead: it cuts nothing. */
 export function liftCutElements(page: VDTPage, pageIndex: number, dice: ResolvedDieCutsConfig | undefined, metrics: DieCutMetrics): DiePlacement[] {
   const deco = page.composed?.decoration;
   if (!deco || !deco.blocks.some((b) => b.kind === 'path' && b.dieCut)) return [];
   const out: DiePlacement[] = [];
+  const plates: VDTTechnicalPlate[] = [];
   deco.blocks = deco.blocks.filter((b) => {
     if (b.kind !== 'path' || !b.dieCut) return true;
-    out.push(cutPlacement(b as VDTDesignPathBlock & { dieCut: NonNullable<VDTDesignPathBlock['dieCut']> }, pageIndex, dice, metrics));
+    const cut = b as VDTDesignPathBlock & { dieCut: NonNullable<VDTDesignPathBlock['dieCut']> };
+    if (cut.dieCut.process) plates.push(reliefPlate(cut, dice, metrics));
+    else out.push(cutPlacement(cut, pageIndex, dice, metrics));
     return false;
   });
+  if (plates.length > 0) page.plates = plates;
   return out;
+}
+
+/** A relief die's outline: the die shape it names in its box, else its
+ *  own path. */
+function reliefPlate(b: VDTDesignPathBlock & { dieCut: NonNullable<VDTDesignPathBlock['dieCut']> }, dice: ResolvedDieCutsConfig | undefined, metrics: DieCutMetrics): VDTTechnicalPlate {
+  const c = b.dieCut;
+  const shape = c.die !== undefined ? dice?.shapes.find((s) => s.id === c.die) : undefined;
+  const paths = shape ? [dieShapeInBox(shape, c.box, metrics)] : b.subpaths.map((p) => [...p]);
+  return { process: c.process!, paths: paths.filter((p) => p.length > 0), source: b.elementId ?? c.die ?? '#relief' };
 }
 
 function cutPlacement(b: VDTDesignPathBlock & { dieCut: NonNullable<VDTDesignPathBlock['dieCut']> }, pageIndex: number, dice: ResolvedDieCutsConfig | undefined, metrics: DieCutMetrics): DiePlacement {

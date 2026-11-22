@@ -652,6 +652,7 @@ export type {
   VDTComicBalloon,
   VDTComicPage,
   VDTDieCut,
+  VDTTechnicalPlate,
   VDTComposedPage,
   VDTFrame,
   VDTFigureLabel,
