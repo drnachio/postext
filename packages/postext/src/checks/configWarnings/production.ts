@@ -39,5 +39,7 @@ export function collectProductionWarnings(config: PostextConfig): ConfigWarning[
       if (isbn !== undefined && !parseIsbn(isbn).ok) out.push({ kind: 'unknownConfigValue', path: `production.versions[${i}].${key}`, value: isbn, used: '' });
     }
   });
+  const collectionIsbn = read.production?.collection?.isbn;
+  if (collectionIsbn !== undefined && !parseIsbn(collectionIsbn).ok) out.push({ kind: 'unknownConfigValue', path: 'production.collection.isbn', value: collectionIsbn, used: '' });
   return out;
 }

@@ -115,7 +115,9 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
   // reader and a till see: the jacket when the case wears one.
   const onCover = kind === 'jacket' || (kind === 'cover' && !read.jacket);
   const isbn = onCover && read.isbn13 ? version.isbn : undefined;
-  const work = onCover && version.workIsbn ? workIsbnCaption(version.workIsbn, config.locale) : undefined;
+  // The whole work's ISBN: the version's own, else its collection's.
+  const workIsbn = version.workIsbn ?? production?.collection?.isbn;
+  const work = onCover && workIsbn ? workIsbnCaption(workIsbn, config.locale) : undefined;
   const made = coverPage(sheet, {
     ...(config.cover ? { cover: config.cover } : {}),
     ...(version.spineText ? { spineText: version.spineText } : {}),

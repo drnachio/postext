@@ -162,6 +162,16 @@ describe('buildCover', () => {
     expect(hc.content.resources!.some((r) => r.id === 'postext-cover-isbn')).toBe(false);
   });
 
+  it('prints the collection’s ISBN beside the barcode when the version names no work ISBN', () => {
+    const series = { ...config, production: { collection: { name: 'Serie', isbn: '978-84-9835-000-2' }, versions: [{ id: 'v', name: 'Tomo', binding: 'perfect', isbn: '978-0-306-40615-7' }] } } as PostextConfig;
+    const built = buildCover({ config: series, version: 'v', pages: 240 }) as BuiltCover;
+    const page = buildDocument(built.content, built.config).pages[0]!;
+    const deco = page.composed!.decoration!.blocks;
+    expect(deco.some((b) => b.kind === 'text' && b.lines.some((l) => l.text.includes('978-84-9835-000-2')))).toBe(true);
+    const bad = { ...series, production: { ...series.production, collection: { name: 'Serie', isbn: '978-84-9835-000-3' } } } as PostextConfig;
+    expect(collectConfigWarnings(bad).some((w) => w.path === 'production.collection.isbn')).toBe(true);
+  });
+
   it('prints the barcode on the jacket of a case that wears one, and on the case that does not', () => {
     const jacketed = { ...config, production: { versions: [{ id: 'hc', name: 'Hardcover', binding: 'case-flat', flaps: true, isbn: '978-0-306-40615-7', workIsbn: '978-84-9835-000-2' }] } } as PostextConfig;
     const barcode = (c: PostextConfig, sheet?: 'jacket') => (buildCover({ config: c, version: 'hc', pages: 240, sheet }) as BuiltCover).content.resources?.some((r) => r.id === 'postext-cover-isbn');
