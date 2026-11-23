@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveBodyTextConfig, resolveOrderedListsConfig, stripConfigDefaults, stripOrderedListsDefaults } from '../../../defaults/index.js';
 import type { OrderedListsConfig, PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
+import { fontPx } from '../../fontPx.js';
 
 // `orderedLists.numberWidth: 'item'` (#722): the number column of an item
 // is its own number, so its text starts one gap after its own label:
@@ -13,7 +14,7 @@ import type { VDTBlock, VDTDocument } from '../../../vdt.js';
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 20);
+    const size = Number(fontPx(this.font)?.[1] ?? 20);
     let w = 0;
     for (const ch of s) w += ch.codePointAt(0)! >= 0x2e80 ? size : size / 2;
     return { width: w };

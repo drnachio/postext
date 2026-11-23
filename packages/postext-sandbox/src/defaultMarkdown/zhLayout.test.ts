@@ -4,6 +4,7 @@ import { DEFAULT_MARKDOWN_ZH_HANS } from './index.js';
 import { sampleChapterTexts } from '../book/chapterOps.js';
 import { createPostextGuideConfig } from '../context/guideConfig.js';
 import { buildDefaultResources } from '../defaultResources/index.js';
+import { fontPx } from '../__tests__/fontPx.js';
 
 // Advances of the characters the Chinese guide sets outside the CJK blocks,
 // in thousandths of an em, read with fontkit from the Google Fonts static
@@ -17,7 +18,7 @@ const ADVANCES = {
   serifBold: [250, 355, 447, 615, 589, 966, 803, 235, 400, 400, 485, 603, 335, 370, 335, 400, 593, 466, 594, 593, 593, 594, 594, 588, 594, 596, 335, 335, 603, 603, 603, 473, 970, 746, 708, 702, 789, 666, 648, 757, 864, 426, 428, 767, 642, 1001, 815, 785, 673, 785, 751, 597, 695, 818, 734, 1091, 726, 701, 627, 372, 400, 372, 603, 593, 447, 585, 672, 565, 658, 572, 402, 596, 687, 349, 335, 651, 355, 1008, 685, 623, 671, 640, 500, 499, 393, 678, 578, 874, 599, 582, 517, 380, 338, 380, 603, 837, 335, 1000, 593, 928, 1000, 1000, 1000, 1000, 1000, 1000],
   sans: [225, 343, 518, 570, 570, 939, 706, 298, 356, 356, 484, 570, 298, 357, 298, 390, 570, 570, 570, 570, 570, 570, 570, 570, 570, 570, 298, 298, 570, 570, 570, 492, 972, 622, 667, 646, 699, 600, 566, 701, 741, 309, 549, 664, 558, 830, 734, 754, 648, 754, 656, 608, 611, 733, 594, 894, 596, 553, 607, 356, 390, 356, 570, 562, 615, 575, 629, 517, 630, 566, 346, 578, 621, 288, 289, 575, 298, 943, 624, 615, 630, 630, 409, 480, 396, 620, 545, 829, 526, 544, 491, 356, 281, 356, 570, 840, 1000, 1000, 540, 900, 1000, 1000, 1000, 1000, 1000, 1000],
 };
-const em = (font: string): number => Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 16);
+const em = (font: string): number => Number(fontPx(font)?.[1] ?? 16);
 function advance(text: string, font: string): number {
   const size = em(font);
   const face = /Noto Serif SC/.test(font) ? (/\b(700|bold)\b/.test(font) ? ADVANCES.serifBold : ADVANCES.serif) : ADVANCES.sans;

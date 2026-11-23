@@ -4,6 +4,7 @@ import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
+import { fontPx } from './fontPx.js';
 
 // EF-111: a box paragraph set one line shorter with negative tracking (the
 // runt fix, `bodyText.maxRuntTracking`) is painted with that tracking, as a
@@ -23,7 +24,7 @@ const W = (ch: string): number => {
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let w = 0;
     for (const ch of s) w += W(ch) * size;
     return { width: w };

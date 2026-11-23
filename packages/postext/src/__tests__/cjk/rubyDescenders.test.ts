@@ -3,6 +3,7 @@ import { buildDocument } from '../../index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLineSegment } from '../../vdt.js';
 import { SizedStubCtx } from '../vertical/stub.js';
+import { fontPx } from '../fontPx.js';
 
 // A Latin reading's descenders clear its base (#194, Nº 086). The reading's
 // em box stands on the base's, its baseline 0.12 em above the box's foot as
@@ -14,7 +15,7 @@ class DescenderInkCtx extends SizedStubCtx {
   override measureText(s: string): TextMetrics {
     const m = super.measureText(s);
     if (!/[gjpqy]/.test(s)) return m;
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     return { ...m, actualBoundingBoxDescent: DESCENT * em } as TextMetrics;
   }
 }

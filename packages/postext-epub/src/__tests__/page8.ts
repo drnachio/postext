@@ -9,12 +9,13 @@
 import fs from 'node:fs';
 import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
+import { fontPx } from './fontPx.js';
 
 class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string) {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     return {
       width: [...s].length * size * 0.5,
       actualBoundingBoxAscent: size * 0.7,

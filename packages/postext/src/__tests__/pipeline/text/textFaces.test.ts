@@ -7,13 +7,14 @@ import { buildDocument } from '../../../pipeline/build.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../../vdt.js';
 import type { PostextConfig } from '../../../types.js';
+import { fontPx } from '../../fontPx.js';
 
 // Deterministic text measurement stub (no DOM in the node test env): the
 // width follows the font size, so a small-caps run measures narrower.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     return { width: s.length * size * 0.5 };
   }
 }

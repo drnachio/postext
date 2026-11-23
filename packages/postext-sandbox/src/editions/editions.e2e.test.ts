@@ -15,12 +15,13 @@ import { fitMarksFor } from '../viewport/composed/fitMarks.js';
 import { matchingPage, syncedScrollTop } from '../viewport/composed/compareSync.js';
 import { EMPTY_VIEW_HASH } from '../storage/viewHash.js';
 import type { Chapter } from '../book/types.js';
+import { fontPx } from '../__tests__/fontPx.js';
 
 // Text measured at about the width of a book face (0.42 em a character).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const px = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const px = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * px * 0.42 };
   }
 }

@@ -5,6 +5,7 @@ import { setHyphenationLocale } from '../../hyphenation/hyphenate.js';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTLine } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // EF-65 (addendum): a justified line could be set past `maxWordSpacing`
 // though the paragraph had a setting with every line within it. The runt
@@ -25,7 +26,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let w = 0;
     for (const ch of s) w += W(ch) * size;
     return { width: w };

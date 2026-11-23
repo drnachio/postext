@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import { buildBundle } from 'postext';
 import type { PostextConfig, Resource, VDTComicBalloon, VDTComicPage, VDTDesignTextBlock, VDTDocument } from 'postext';
+import { fontPx } from './fontPx.js';
 
 // Text measured with a fixed advance (half an em per character): stable
 // line breaks without a font file or a DOM.
@@ -12,7 +13,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string) {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     return {
       width: [...s].length * size * 0.5,
       actualBoundingBoxAscent: size * 0.7,

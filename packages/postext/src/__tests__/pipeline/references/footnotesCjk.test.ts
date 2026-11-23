@@ -4,13 +4,14 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import { resolveFootnotesConfig, stripFootnotesDefaults } from '../../../defaults/index.js';
 import { numberFootnotesByPlacement, formatFootnoteNumber } from '../../../pipeline/references/footnotes.js';
 import type { PostextConfig, VDTBlock, VDTDocument, VDTLineSegment } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // Deterministic text measurement stub (no DOM in the node test env): wide
 // characters an em of a 14 px font, the rest 7 px.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 14);
+    const size = Number(fontPx(this.font)?.[1] ?? 14);
     let w = 0;
     for (const ch of s) w += ch.codePointAt(0)! > 0x2000 ? size : size / 2;
     return { width: w };
@@ -115,8 +116,8 @@ describe('circled markers', () => {
     const a = markerOf(doc, 'a');
     expect(a.script).toBeUndefined();
     expect(a.baselineShift).toBeUndefined();
-    const size = Number(/(\d*\.?\d+)px/.exec(a.fontString!)![1]);
-    const body = Number(/(\d*\.?\d+)px/.exec(doc.blocks.find((b) => b.footnoteNote === undefined)!.fontString)![1]);
+    const size = Number(fontPx(a.fontString!)![1]);
+    const body = Number(fontPx(doc.blocks.find((b) => b.footnoteNote === undefined)!.fontString)![1]);
     expect(size).toBeCloseTo(body * 0.75, 3);
     expect(a.width).toBeCloseTo(body * 0.75, 3);
   });
@@ -213,7 +214,7 @@ describe('Chinese text', () => {
     expect(a.text).toBe('①');
     expect(a.script).toBeUndefined();
     expect(a.orientation).not.toBe('sideways');
-    const body = Number(/(\d*\.?\d+)px/.exec(doc.blocks.find((b) => b.footnoteNote === undefined)!.fontString)![1]);
+    const body = Number(fontPx(doc.blocks.find((b) => b.footnoteNote === undefined)!.fontString)![1]);
     expect(a.width).toBeCloseTo(body, 1);
   });
 });

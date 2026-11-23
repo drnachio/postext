@@ -4,14 +4,14 @@ import { composeCjkParagraph } from '../../measure/cjk/cjkCompose.js';
 import { cachedMeasureRichBlock, createMeasurementCache } from '../../measure/index.js';
 import { fontFamilyOf, measureCentralBaseline, withMeasureWritingMode } from '../../measure/vertical.js';
 import { graphemesOf } from '../../measure/graphemes.js';
+import { fontPx } from '../fontPx.js';
 
 // Proportional marks, as Noto CJK draws them without `fwid`: — 0.89 em,
 // · 0.33 em; Han and fullwidth forms 1 em, Latin ½ em.
-const SIZE_RE = /(\d*\.?\d+)px/;
 class Ctx {
   font = '10px Test';
   measureText(s: string): TextMetrics {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = 0;
     for (const ch of s) {
       const cp = ch.codePointAt(0)!;

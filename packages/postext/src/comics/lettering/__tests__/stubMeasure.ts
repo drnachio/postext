@@ -3,8 +3,8 @@
 // font's px size, close enough to a comic face for shapes to be judged.
 
 import { clearTextWidthCache } from '../../../measure/canvas.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
-const SIZE_RE = /(\d*\.?\d+)px/;
 
 /** Advance of one character, in em. */
 export function stubAdvance(ch: string): number {
@@ -23,7 +23,7 @@ export function stubAdvance(ch: string): number {
 class StubCtx {
   font = '16px sans-serif';
   measureText(s: string): { width: number } {
-    const m = SIZE_RE.exec(this.font);
+    const m = fontPx(this.font);
     const px = m ? parseFloat(m[1]!) : 16;
     let w = 0;
     for (const ch of s) w += stubAdvance(ch);

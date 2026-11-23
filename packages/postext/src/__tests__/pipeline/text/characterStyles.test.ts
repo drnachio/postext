@@ -8,13 +8,14 @@ import { renderToHtml } from '../../../html-backend/html-backend.js';
 import { bandOutline } from '../../../marks/markGeometry.js';
 import { documentDisplayList } from '../../../paint/displayList/index.js';
 import type { CharacterStyleConfig, MarkStyleConfig, PostextConfig, VDTBlock, VDTDocument, VDTLine, VDTLineMark, VDTLineSegment } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // Deterministic measurement that scales with the font size: every glyph is
 // half an em wide (no DOM in the node test env).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }
@@ -62,9 +63,9 @@ describe('character styles', () => {
     const styled = segs(doc).filter((s) => s.charStyle?.style === 'big' && s.kind === 'text');
     expect(styled.map((s) => s.text)).toEqual(['texto', 'grande']);
     const body = segs(doc).find((s) => s.text === 'Un')!;
-    const bodySize = Number(/(\d*\.?\d+)px/.exec(paragraph(doc).fontString)![1]);
+    const bodySize = Number(fontPx(paragraph(doc).fontString)![1]);
     for (const s of styled) {
-      expect(Number(/(\d*\.?\d+)px/.exec(s.fontString!)![1])).toBeCloseTo(bodySize * 1.5, 5);
+      expect(Number(fontPx(s.fontString!)![1])).toBeCloseTo(bodySize * 1.5, 5);
       expect(s.color).toBe('#aa0000');
       expect(s.tracking).toBeCloseTo(bodySize * 0.1, 5);
       expect(s.width).toBeCloseTo(s.text.length * (bodySize * 1.5 * 0.5 + bodySize * 0.1), 5);

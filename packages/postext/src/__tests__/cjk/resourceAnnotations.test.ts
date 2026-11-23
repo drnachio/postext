@@ -6,6 +6,7 @@ import type { PostextConfig, Resource } from '../../types.js';
 import type { ResolvedResourceBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
 import { startTags } from '../htmlText.js';
+import { fontPx } from '../fontPx.js';
 
 // Ruby, emphasis marks, side lines and warichu notes in table cells,
 // captions and notes (#429): measured, marked and painted as in the body.
@@ -24,7 +25,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; calls: Call[] } {
       if (key === 'restore') return () => { Object.assign(t, stack.pop() ?? {}); };
       if (key === 'measureText') {
         return (s: string) => {
-          const em = Number(/(\d*\.?\d+)px/.exec(String(t.font))?.[1] ?? 10);
+          const em = Number(fontPx(String(t.font))?.[1] ?? 10);
           let w = 0;
           for (const ch of s) w += stubCharWidth(ch, em);
           return { width: w };

@@ -10,6 +10,7 @@ import { formatWarning } from '../../../pipeline/contentWarnings.js';
 import { resolveAllConfig } from '../../../pipeline/config.js';
 import { stripLabelStylesDefaults } from '../../../composed/templates.js';
 import type { ContentWarning, PostextConfig, Resource, VDTBlock, VDTDocument, VDTFigureLabel } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #860: the words of a map in the Markdown, their places in the resource.
 
@@ -17,7 +18,7 @@ class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
     // Half an em a character, from the font's size.
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

@@ -14,6 +14,7 @@ import { graphemesOf } from '../../measure/graphemes.js';
 import type { CjkRegion, Dimension, PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -175,7 +176,7 @@ function recordingCanvas(forms: string): { canvas: HTMLCanvasElement; painted: {
   const stack: M[] = [];
   const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
   const saved: Record<string, unknown>[] = [];
-  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const size = () => Number(fontPx(String(state.font))?.[1] ?? 10);
   const api: Record<string, unknown> = {
     save: () => { stack.push(m); saved.push({ ...state }); },
     restore: () => { m = stack.pop() ?? m; Object.assign(state, saved.pop() ?? {}); },

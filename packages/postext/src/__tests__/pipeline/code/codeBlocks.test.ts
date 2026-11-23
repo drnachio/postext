@@ -14,6 +14,7 @@ import { formatWarning } from '../../../pipeline/contentWarnings.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
 import { textOfHtml } from '../../htmlText.js';
+import { fontPx } from '../../fontPx.js';
 
 // #624: code blocks. The stub font: 7 px a character, a space 4 px; the
 // 'Shrinky' face scales with its size (7 px at 17 px).
@@ -22,7 +23,7 @@ class StubCtx {
   measureText(s: string): { width: number } {
     let w = 0;
     for (const c of s) w += c === ' ' ? 4 : 7;
-    const size = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const size = fontPx(this.font);
     return { width: this.font.includes('Shrinky') && size ? w * Number(size[1]) / 17 : w };
   }
 }

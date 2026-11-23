@@ -6,6 +6,7 @@ import { prepareText, readLetteringText } from '../text.js';
 import { shapeText } from '../shape-text.js';
 import { presetLetteringStyles } from '../presets.js';
 import type { InlineSpan } from '../../../parse/types.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
 // #723: the lines of a balloon are chosen with the widths they are set
 // at. A line the design-text layout sets with the CJK composer (#637) is
@@ -19,7 +20,6 @@ import type { InlineSpan } from '../../../parse/types.js';
 // U+2E80 half an em, the curly quotation marks among them).
 
 const EM = 20;
-const SIZE_RE = /(\d*\.?\d+)px/;
 interface Glyph { advance: number; left: number; right: number; top: number; bottom: number }
 const GLYPHS: Record<string, Glyph> = {
   '—': { advance: 0.89, left: 0.043, right: 0.846, top: 0.293, bottom: 0.242 },
@@ -34,7 +34,7 @@ class StubCtx {
   font = `${EM}px Test`;
   letterSpacing = '0px';
   measureText(s: string): TextMetrics {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
+    const em = Number(fontPx(this.font)?.[1] ?? EM);
     let x = 0;
     let left = Infinity;
     let right = -Infinity;

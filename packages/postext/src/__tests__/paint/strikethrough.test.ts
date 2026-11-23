@@ -7,6 +7,7 @@ import { documentDisplayList } from '../../paint/displayList/index.js';
 import { CENTRAL } from '../../measure/cjk/cjkAnnotate.js';
 import { STRIKE_AT } from '../../marks/strikeGeometry.js';
 import type { PostextConfig, Resource, VDTDocument, VDTLine, VDTLineMark } from '../../index.js';
+import { fontPx } from '../fontPx.js';
 
 // Struck-through text (`~~…~~`): the layout is the one without the line,
 // and each line holding struck words gets a `VDTLine.marks` line through
@@ -17,7 +18,7 @@ import type { PostextConfig, Resource, VDTDocument, VDTLine, VDTLineMark } from 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '16');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '16');
     return { width: s.length * size * 0.4375 };
   }
 }
@@ -40,7 +41,7 @@ const build = (markdown: string, config: PostextConfig = PAGE, resources?: Resou
 const lines = (doc: VDTDocument): VDTLine[] => doc.blocks.filter((b) => b.type !== 'resource').flatMap((b) => b.lines);
 const strikes = (line: VDTLine): VDTLineMark[] => (line.marks ?? []).filter((m) => m.kind === 'line');
 /** The size of the body text, px. */
-const emOf = (doc: VDTDocument): number => parseFloat(/(\d*\.?\d+)px/.exec(doc.blocks[0]!.fontString)![1]!);
+const emOf = (doc: VDTDocument): number => parseFloat(fontPx(doc.blocks[0]!.fontString)![1]!);
 
 describe('strikethrough lines', () => {
   it('draws one line through the struck words and the space between them, not past them', () => {

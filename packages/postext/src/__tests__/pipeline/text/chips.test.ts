@@ -12,13 +12,14 @@ import { CHIP_PLACEHOLDER } from '../../../parse/inlineFormatting.js';
 import { measureRichBlock, cachedMeasureRichBlock, createMeasurementCache } from '../../../measure/index.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument, VDTLineSegment } from '../../../index.js';
+import { fontPx as stubFontPx } from '../../fontPx.js';
 
 // Deterministic measurement that scales with the font size: every glyph is
 // half an em wide (no DOM in the node test env).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = stubFontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }

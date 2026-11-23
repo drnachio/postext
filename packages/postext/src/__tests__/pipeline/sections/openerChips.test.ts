@@ -9,6 +9,7 @@ import { CHIP_PLACEHOLDER } from '../../../parse/inlineFormatting.js';
 import { defaultOpenerTitle } from '../../../pipeline/pages/headerFooter.js';
 import { RichMeasurer, parseRichDesignText } from '../../../design/richText.js';
 import { resolveChipStylesConfig } from '../../../defaults/text/chipStyles.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1162: a heading's chip printed by the opener or design that draws the
 // heading's title.
@@ -16,7 +17,7 @@ import { resolveChipStylesConfig } from '../../../defaults/text/chipStyles.js';
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }

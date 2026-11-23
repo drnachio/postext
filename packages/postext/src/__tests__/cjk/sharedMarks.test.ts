@@ -7,6 +7,7 @@ import { withMeasureWritingMode } from '../../measure/vertical.js';
 import type { CjkComposition } from '../../measure/cjk/cjkPunctuation.js';
 import type { Dimension, PostextConfig } from '../../types.js';
 import type { VDTLine, VDTLineSegment } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // “ ” ‘ ’ … — · are shared by Latin and Chinese text. A font may set them
 // proportionally (LXGW WenKai: “ ” at 0.35 em; Noto Serif SC: the em dash
@@ -15,7 +16,6 @@ import type { VDTLine, VDTLineSegment } from '../../vdt.js';
 // Chinese font puts it; next to Western text they keep their own advance.
 
 const EM = 16;
-const SIZE_RE = /(\d*\.?\d+)px/;
 /** Advances in em: the shared marks proportional, as in LXGW WenKai. */
 const PROPORTIONAL: Record<string, number> = { '“': 0.35, '”': 0.35, '‘': 0.35, '’': 0.35, '…': 0.8, '—': 0.9, '·': 0.3 };
 const charWidth = (ch: string, em: number): number => {
@@ -38,7 +38,7 @@ class StubCtx {
   font = `${EM}px Test`;
   letterSpacing = '0px';
   measureText(s: string): TextMetrics {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
+    const em = Number(fontPx(this.font)?.[1] ?? EM);
     const w = width(s, em);
     if (!INK) return { width: w } as TextMetrics;
     return { width: w, actualBoundingBoxAscent: em * 0.8, actualBoundingBoxDescent: em * 0.04, actualBoundingBoxLeft: 0, actualBoundingBoxRight: w } as TextMetrics;

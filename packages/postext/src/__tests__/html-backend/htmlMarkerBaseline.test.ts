@@ -6,6 +6,7 @@ import { fontSizePxOf } from '../../measure/breakRules.js';
 import type { PostextConfig } from '../../types.js';
 import { DEFAULT_CENTRAL_BASELINE, type VDTBlock } from '../../vdt.js';
 import { elementsOf } from '../htmlText.js';
+import { fontPx } from '../fontPx.js';
 
 // A list marker stands where the canvas and the PDF set it: on
 // `bulletBaselineY` when it has one, otherwise with its baseline 0.3 em of
@@ -17,7 +18,7 @@ let box: { ascent: number; descent: number } | null = { ascent: 1.06, descent: 0
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return {
       width: s.length * 7,
       ...(box ? { fontBoundingBoxAscent: box.ascent * size, fontBoundingBoxDescent: box.descent * size } : {}),

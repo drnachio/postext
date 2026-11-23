@@ -7,6 +7,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { clearMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #770, the painter's side of Chrome's word cache. A canvas keeps the
 // words it shaped under their text alone, and a word with no letter
@@ -56,7 +57,7 @@ describe('the paint code hands its texts over through contextText.ts', () => {
 
 // ─── A context that keeps its words as Chrome does ──────────────────────────
 
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(fontPx(font)?.[1] ?? '10');
 const WIDE = /[^\u0000-ÿ]/;
 /** A character with a script of its own: a word with none has no letter. */
 const LETTER = /[^\p{Script=Common}\p{Script=Inherited}]/u;

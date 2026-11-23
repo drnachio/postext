@@ -15,6 +15,7 @@ import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../vdt.js';
 import { setSlashBreaks } from '../../measure/breakRules.js';
 import { attrsBefore, textOfHtml } from '../htmlText.js';
+import { fontPx } from '../fontPx.js';
 
 // #725: a word with no letter (`46.`, `1367)`) has no script of its own. A
 // face may draw its punctuation by script (Amiri: a Latin full stop and
@@ -82,7 +83,7 @@ const isDigit = (ch: string): boolean => /[0-9]/.test(ch);
 let chrome: 131 | 154 = 154;
 
 function shapedWidth(text: string, font: string, direction: string): number {
-  const size = parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+  const size = parseFloat(fontPx(font)?.[1] ?? '10');
   const sensitive = !font.includes('Plain');
   let width = 0;
   for (const word of text.split(/( )/)) {

@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { pixelToSourceOffset } from './geometry.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
 // Every glyph half an em wide, so the initial is wide enough to click.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return { width: s.length * size * 0.5 };
   }
 }

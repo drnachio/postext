@@ -9,6 +9,7 @@ import { renderLangOf, shapingLanguageOf, shapingTagOf } from '../../hyphenation
 import { resolveAllConfig } from '../../pipeline/config.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLineSegment } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 const resolveConfig = (config: PostextConfig) => resolveAllConfig(config);
 
@@ -71,7 +72,7 @@ class Context2D {
     const lang = this.lang === 'inherit' ? host : this.lang;
     measuredIn.add(this.lang === 'inherit' ? `host:${host}` : this.lang);
     measures++;
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.shorthand)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.shorthand)?.[1] ?? '10');
     let width = 0;
     for (const ch of s) width += advance(ch, this.shorthand, lang) * size;
     return { width };

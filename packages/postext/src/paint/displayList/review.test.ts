@@ -6,6 +6,7 @@ import { documentDisplayList, pageDisplayList } from './index.js';
 import { blockItems } from './blocks.js';
 import { IDENTITY } from './frame.js';
 import type { DisplayItem, DisplayPage } from './types.js';
+import { fontPx } from '../../__tests__/fontPx.js';
 
 // Deterministic stub: every character is 7 px wide.
 class StubCtx {
@@ -150,7 +151,7 @@ describe('display list review fixes (#1388)', () => {
     const seg = block.lines[0]!.segments!.find((s) => s.leader === 'rule')!;
     const dl = pageDisplayList(doc, 0);
     const rule = dl.items.find((i): i is Extract<DisplayItem, { kind: 'rule' }> => i.kind === 'rule')!;
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(block.fontString)![1]);
+    const size = Number(fontPx(block.fontString)![1]);
     const { dy, thickness } = leaderRuleGeometry(size);
     expect(rule.color).toBe(block.color);
     expect(rule.widthPx).toBeCloseTo(thickness, 6);

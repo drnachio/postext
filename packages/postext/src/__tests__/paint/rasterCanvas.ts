@@ -6,6 +6,8 @@
  * nothing, so the page painter runs on it whole.
  */
 
+import { fontPx } from '../fontPx.js';
+
 interface State {
   fill: [number, number, number, number];
   stroke: [number, number, number, number];
@@ -83,7 +85,7 @@ export class RasterContext {
     return { a, b, c, d, e, f };
   }
   measureText(t: string): { width: number; actualBoundingBoxAscent: number; actualBoundingBoxDescent: number } {
-    const px = Number(/([\d.]+)px/.exec(this.st.font)?.[1] ?? 10);
+    const px = Number(fontPx(this.st.font)?.[1] ?? 10);
     return { width: t.length * px * 0.5, actualBoundingBoxAscent: px * 0.8, actualBoundingBoxDescent: px * 0.2 };
   }
   /** The device box of a user-space rectangle (scale and translation only). */

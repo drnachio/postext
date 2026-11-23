@@ -1,12 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
 import { buildDocument, type PostextConfig, type Resource } from 'postext';
+import { fontPx } from '../__tests__/fontPx.js';
 
 // Text measured without a DOM: a fixed advance per character.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const px = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const px = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * px * 0.5 };
   }
 }

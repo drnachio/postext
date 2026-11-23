@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import * as engine from "postext";
 import type { PostextConfig } from "postext";
 import { PAGE8_CONFIG, PAGE8_RESOURCES } from "../../../../../packages/postext/src/__tests__/composed/fixtures/page8";
+import { fontPx } from "../../../../../packages/postext/src/__tests__/fontPx";
 import { stressFactor, UsageError } from "../../../scripts/cookbook/args.ts";
 import {
   changesAgainstBase, compareFindings, composedFindings, configSizeFindings, roundTripFindings, runChecks, stressFindings, usefulProposal,
@@ -25,7 +26,7 @@ import type { RecipeMeta, RecipeSources } from "./types.ts";
 class StubCtx {
   font = "";
   measureText(s: string): { width: number } {
-    const px = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 40);
+    const px = Number(fontPx(this.font)?.[1] ?? 40);
     return { width: s.length * px * 0.5 };
   }
 }

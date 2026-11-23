@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/index.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // EF-190: a section's or a part's palette recolours the table fills (header,
 // body, zebra rows, a cell's own fill) and the caption bar on its pages, as
@@ -9,7 +10,7 @@ import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../in
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }

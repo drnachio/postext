@@ -17,6 +17,7 @@ import { presetLetteringStyles } from '../presets.js';
 import { insetConvex } from '../geom.js';
 import type { ComicBalloonOut, LetteringItem, LetteringPanel, LetteringStyle, Point, Rect } from '../types.js';
 import type { VDTDesignTextBlock } from '../../../vdt.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
 const OUT = (globalThis as unknown as { process?: { env: Record<string, string | undefined> } }).process?.env.LETTER_OUT;
 
@@ -63,7 +64,7 @@ function installFontkitMeasure(fonts: Record<string, FontkitFont>): void {
   class Ctx {
     font = '16px sans-serif';
     measureText(s: string): { width: number } {
-      const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '16');
+      const size = parseFloat(fontPx(this.font)?.[1] ?? '16');
       const bold = /\b(700|800|900|bold)\b/.test(this.font);
       let w = 0;
       let run = '';
@@ -209,7 +210,7 @@ function letterPage(loc: (typeof LOCALES)[number]): { balloons: ComicBalloonOut[
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
 function fontAttrs(font: string): string {
-  const size = /(\d*\.?\d+)px/.exec(font)?.[1] ?? '12';
+  const size = fontPx(font)?.[1] ?? '12';
   const fam = font.slice(font.indexOf('px') + 2).trim();
   const bold = /\b(700|bold)\b/.test(font) ? ' font-weight="bold"' : '';
   const italic = /\bitalic\b/.test(font) ? ' font-style="italic"' : '';
@@ -222,7 +223,7 @@ function textSvg(b: VDTDesignTextBlock, fill: string, halo?: { width: number; co
   if (b.vertical) {
     for (const l of b.lines) {
       const central = Object.values(b.vertical.centralBaselines)[0] ?? 0.38;
-      const em = parseFloat(/(\d*\.?\d+)px/.exec(b.fontString)?.[1] ?? '12');
+      const em = parseFloat(fontPx(b.fontString)?.[1] ?? '12');
       const cx = b.bbox.x + b.bbox.width - (l.baselineY - central * em);
       parts.push(`<text x="${cx.toFixed(1)}" y="${(b.bbox.y + l.xOffset).toFixed(1)}" writing-mode="vertical-rl" ${fontAttrs(b.fontString)} fill="${fill}"${haloAttr}>${esc(l.text)}</text>`);
     }

@@ -8,6 +8,7 @@ import { readStrikeout, strikeoutOf } from '../../fonts/strikeout.js';
 import { minimalFont } from '../../fonts/minimalFont.js';
 import { STRIKE_AT, STRIKE_STROKE } from '../../marks/strikeGeometry.js';
 import type { PostextConfig, VDTDocument, VDTLine, VDTLineMark } from '../../index.js';
+import { fontPx } from '../fontPx.js';
 
 // The line through struck-through text (`~~…~~`) sits where the face puts
 // its strikeout and is as thick as the face says (OS/2 yStrikeoutPosition
@@ -37,7 +38,7 @@ function bareFace(): Uint8Array {
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '16');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '16');
     return { width: s.length * size * 0.5 };
   }
 }
@@ -111,7 +112,7 @@ describe('the face’s strikeout', () => {
     registerFontCoverage('Test Serif', 400, 'normal', LORA);
     const seg = build('A :chip[~~old~~ new] tag.', 'Test Serif').blocks.flatMap((b) => b.lines).flatMap((l) => l.segments ?? []).find((s) => s.chip)!;
     const strike = seg.chip!.strikes![0]!;
-    const sizePx = parseFloat(/(\d*\.?\d+)px/.exec(seg.chip!.runs[0]!.fontString)![1]!);
+    const sizePx = parseFloat(fontPx(seg.chip!.runs[0]!.fontString)![1]!);
     expect(strike.y).toBeCloseTo(-0.3 * sizePx, 6);
   });
 });

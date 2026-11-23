@@ -3,6 +3,7 @@ import { buildDocument } from '../../index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTAnnotationRun } from '../../vdt.js';
 import { SizedStubCtx } from '../vertical/stub.js';
+import { fontPx } from '../fontPx.js';
 
 // Zhuyin tone marks placed by their ink (T8 review): fonts set ˊ ˇ ˋ high
 // in their em box (Noto Serif TC's ˇ inks 0.484–0.826 em over its
@@ -12,7 +13,7 @@ class ToneInkCtx extends SizedStubCtx {
   override measureText(s: string): TextMetrics {
     const m = super.measureText(s);
     if (!/^[ˊˇˋ˙]$/.test(s)) return m;
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     return { ...m, actualBoundingBoxAscent: 0.826 * em, actualBoundingBoxDescent: -0.484 * em } as TextMetrics;
   }
 }

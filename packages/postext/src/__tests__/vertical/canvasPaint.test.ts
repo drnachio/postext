@@ -7,6 +7,7 @@ import { renderHeaderFooterSlot } from '../../canvas-backend/headerFooter.js';
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import type { Resource } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -37,7 +38,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; painted: Painted[]; cal
   const stack: M[] = [];
   const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
   const saved: Record<string, unknown>[] = [];
-  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const size = () => Number(fontPx(String(state.font))?.[1] ?? 10);
   const api: Record<string, unknown> = {
     save: () => { stack.push(m); saved.push({ ...state }); },
     restore: () => { m = stack.pop() ?? m; Object.assign(state, saved.pop() ?? {}); },

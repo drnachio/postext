@@ -6,6 +6,7 @@ import { measureBlock } from '../../measure/plain.js';
 import { pretextLanguageState } from '../../measure/pretextLanguage.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #770: Chrome's canvas keeps the words it shaped, by context, font and
 // language, under the word's text alone, and a word with no letter has two
@@ -78,7 +79,7 @@ function shapeOf(word: string, wide: boolean): Shape {
 
 /** The width of `text` on a context that kept the shapes of `kept`. */
 function shapedWidth(text: string, font: string, lang: string, direction: string, kept: Map<string, Shape>): number {
-  const size = parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+  const size = parseFloat(fontPx(font)?.[1] ?? '10');
   const wide = WIDE_RE.test(text);
   let width = (text.split(' ').length - 1) * advance(' ', 'latin', font) * size;
   for (const word of wordsOf(text, direction)) {

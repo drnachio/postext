@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import type { FrameConfig, PageTemplate } from '../../../composed/types.js';
 import { describeFrameOverflowProposal } from '../../../index.js';
 import type { ContentWarning, FrameOverflowProposal, PostextConfig, VDTDocument, VDTFrame, VDTLine } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1084: a pill held to its height (`minHeight` = `maxHeight`) whose word is
 // wider than its measure. The ladder's text shrink used to stop at the
@@ -15,7 +16,7 @@ import type { ContentWarning, FrameOverflowProposal, PostextConfig, VDTDocument,
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * size * 0.5 };
   }
 }

@@ -7,13 +7,14 @@ import type { PostextConfig, VDTDocument } from '../../../index.js';
 import { CHIP_PLACEHOLDER, withoutChips } from '../../../parse/inlineFormatting.js';
 import { blockLinesText } from '../../../pipeline/pages/placeholders.js';
 import { defaultOpenerTitle } from '../../../pipeline/pages/headerFooter.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1100: `:chip[…]{style}` in a heading, as in a paragraph.
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }
