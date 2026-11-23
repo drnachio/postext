@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: '精装', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // 精装书上即护封
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ const config: PostextConfig = {
 - `caseMaterial`：精装书壳的材料，`printed`（印好的封面覆膜后裱在纸板上，默认）或`cloth`（布面烫印，通常外加护封）。
 - `overrides`：这个版本自己设定、覆盖配置的尺寸（mm），用于印厂对这一本书要求不同中缝等情况。
 - `spineOverride`：印厂给出的书脊宽度（mm），代替计算值。
-- `spineText`：书脊文字的排法：`direction`为由下往上（`bottomToTop`，西班牙的通常做法，也是默认值）或由上往下（`topToBottom`，ISO 6357推荐的方向）；`minSpine`是能印文字的最窄书脊（默认6 mm）。
+- `spineText`：书脊文字的排法：`direction`为由上往下（`topToBottom`，ISO 6357规定的方向，也是默认值，书封面朝上平放时读来是正的）或由下往上（`bottomToTop`，西班牙较老的做法）；`minSpine`是能印文字的最窄书脊（默认6 mm）。
 
 `production.collection`指定书所属的丛书或多卷本作品：
 

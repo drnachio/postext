@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Cartoné', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // en tapa dura: una sobrecoberta
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Cada versió anomena la seva enquadernació per l'id d'un perfil, o porta el per
 - `caseMaterial`: en tapa dura, `printed` (la coberta impresa i plastificada sobre els cartrons, el valor per defecte) o `cloth` (tela estampada, normalment sota una sobrecoberta).
 - `overrides`: mides en mm que aquesta versió fixa per a si mateixa per sobre de les del perfil, quan la impremta demana una caixa diferent per a aquest llibre concret.
 - `spineOverride`: el llom en mm que dona la impremta, en lloc del calculat.
-- `spineText`: com es retola el llom: `direction` ascendent (`bottomToTop`, el costum a Espanya i el valor per defecte) o descendent (`topToBottom`, com prefereix la norma ISO 6357), i `minSpine`, el llom més estret que admet text (6 mm per defecte).
+- `spineText`: com es retola el llom: `direction` descendent (`topToBottom`, com el fixa la norma ISO 6357 i el valor per defecte, que es llegeix dret amb el llibre de cara amunt) o ascendent (`bottomToTop`, el costum espanyol més antic), i `minSpine`, el llom més estret que admet text (6 mm per defecte).
 
 `production.collection` anomena la col·lecció o l'obra en diversos volums a què pertany el llibre:
 

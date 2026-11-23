@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Hardcover', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // bei einer Buchdecke: ein Schutzumschlag
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Jede Ausgabe nennt ihre Bindung über die ID eines Profils oder bringt das Profi
 - `caseMaterial`: bei einer Buchdecke `printed` (der Umschlag bedruckt und kaschiert über den Pappen, der Standard) oder `cloth` (geprägt, meist unter einem Schutzumschlag).
 - `overrides`: Maße in mm, die diese Ausgabe über die ihres Profils setzt, wenn die Druckerei für dieses eine Buch einen anderen Falz verlangt.
 - `spineOverride`: der Buchrücken in mm, wie die Druckerei ihn angibt, anstelle des berechneten.
-- `spineText`: wie der Rücken beschriftet wird: `direction` aufsteigend (`bottomToTop`, in Spanien üblich und der Standard) oder absteigend (`topToBottom`, wie ISO 6357 es bevorzugt), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
+- `spineText`: wie der Rücken beschriftet wird: `direction` absteigend (`topToBottom`, wie ISO 6357 es festlegt, und der Standard, richtig herum lesbar, wenn das Buch mit dem Deckel nach oben liegt) oder aufsteigend (`bottomToTop`, der ältere spanische Brauch), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
 
 `production.collection` nennt die Reihe oder das mehrbändige Werk, zu dem das Buch gehört:
 

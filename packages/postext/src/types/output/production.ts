@@ -137,9 +137,9 @@ export interface ProductionVersion {
   overrides?: Partial<Record<keyof BindingMeasures, number>>;
   /** The spine as the printer gives it, mm: replaces the calculated one. */
   spineOverride?: number;
-  /** How the spine is lettered: rising (`'bottomToTop'`, the usual way in
-   *  Spain) or falling (`'topToBottom'`, ISO 6357), and the narrowest spine
-   *  that takes text, mm. */
+  /** How the spine is lettered: falling (`'topToBottom'`, ISO 6357, the
+   *  default) or rising (`'bottomToTop'`, the older Spanish way), and the
+   *  narrowest spine that takes text, mm. */
   spineText?: { direction?: 'bottomToTop' | 'topToBottom'; minSpine?: number };
 }
 

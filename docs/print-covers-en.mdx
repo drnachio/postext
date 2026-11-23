@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Hardcover', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // on a case: a dust jacket
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Each version names its binding by a profile's id, or carries the profile itself.
 - `caseMaterial`: on a case, `printed` (the cover printed and laminated over the boards, the default) or `cloth` (stamped, usually under a jacket).
 - `overrides`: measures in mm this version sets for itself over its profile's, when the printer asks for a different joint on this one book.
 - `spineOverride`: the spine in mm as the printer gives it, in place of the calculated one.
-- `spineText`: how the spine is lettered: `direction` rising (`bottomToTop`, the usual way in Spain and the default) or falling (`topToBottom`, as ISO 6357 prefers), and `minSpine`, the narrowest spine that takes text (6 mm by default).
+- `spineText`: how the spine is lettered: `direction` falling (`topToBottom`, as ISO 6357 has it and the default, read the right way up when the book lies face up) or rising (`bottomToTop`, the older Spanish way), and `minSpine`, the narrowest spine that takes text (6 mm by default).
 
 `production.collection` names the collection or multi-volume work the book belongs to:
 

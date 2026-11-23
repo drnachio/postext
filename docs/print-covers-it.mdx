@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Cartonato', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // su un cartonato: una sovraccoperta
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Ogni versione indica la sua legatura con l’id di un profilo, oppure porta il p
 - `caseMaterial`: su un cartonato, `printed` (la copertina stampata e plastificata sui piatti, il valore predefinito) o `cloth` (tela impressa a secco o a caldo, di solito sotto una sovraccoperta).
 - `overrides`: misure in mm che questa versione fissa per sé sopra quelle del suo profilo, quando la tipografia chiede una cerniera diversa per questo solo libro.
 - `spineOverride`: il dorso in mm come lo indica la tipografia, al posto di quello calcolato.
-- `spineText`: come si scrive sul dorso: `direction` dal basso in alto (`bottomToTop`, l’uso abituale in Spagna e il valore predefinito) o dall’alto in basso (`topToBottom`, come preferisce la norma ISO 6357), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
+- `spineText`: come si scrive sul dorso: `direction` dall’alto in basso (`topToBottom`, come stabilisce la norma ISO 6357 e il valore predefinito, che si legge dritto con il libro a faccia in su) o dal basso in alto (`bottomToTop`, l’uso spagnolo più antico), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
 
 `production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro:
 

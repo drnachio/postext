@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'غلاف مقوّى', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // في الغلاف المقوّى: غلاف واقٍ
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ const config: PostextConfig = {
 - `caseMaterial`: في الغلاف المقوّى، `printed` (الغلاف مطبوع ومغلّف بطبقة لامعة فوق الكرتون، وهو الافتراضي) أو `cloth` (قماش مختوم، يكون عادة تحت غلاف واقٍ).
 - `overrides`: مقاسات بالمليمتر تضعها هذه النسخة لنفسها فوق مقاسات ملف تعريفها، حين تطلب المطبعة مجرى مفصل مختلفًا لهذا الكتاب وحده.
 - `spineOverride`: عرض الكعب بالمليمتر كما تعطيه المطبعة، بدل المحسوب.
-- `spineText`: كيف يُكتب على الكعب: `direction` صاعدًا (`bottomToTop`، المعتاد في إسبانيا والافتراضي) أو نازلًا (`topToBottom`، كما يفضّل معيار ISO 6357)، و`minSpine`، أرقّ كعب يحمل نصًّا (6 مم افتراضيًا).
+- `spineText`: كيف يُكتب على الكعب: `direction` نازلًا (`topToBottom`، كما يحدّده معيار ISO 6357 وهو الافتراضي، ويُقرأ مستقيمًا والكتاب مستلقٍ على ظهره وغلافه إلى أعلى) أو صاعدًا (`bottomToTop`، العادة الإسبانية الأقدم)، و`minSpine`، أرقّ كعب يحمل نصًّا (6 مم افتراضيًا).
 
 ويسمّي `production.collection` السلسلة أو العمل متعدد المجلدات الذي ينتمي إليه الكتاب:
 

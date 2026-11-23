@@ -2736,7 +2736,7 @@ production
 │   ├─ caseMaterial   printed (default) | cloth
 │   ├─ overrides      { <measure>: mm } over the profile's, this version only
 │   ├─ spineOverride  mm, the printer's figure in place of the calculated spine
-│   └─ spineText      { direction: bottomToTop (default) | topToBottom, minSpine: 6 }
+│   └─ spineText      { direction: topToBottom (default, ISO 6357) | bottomToTop, minSpine: 6 }
 ├─ bindings[]   BindingProfile  { id, name, printer?, style, signature?, measures?, accepts? }
 │   ├─ style      perfect | sewnSoftcover | caseFlat | caseRound
 │   ├─ signature  pages per signature (built-ins 16): the count is rounded up, blanks reported

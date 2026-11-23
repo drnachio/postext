@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Relié', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // sur un cartonnage : une jaquette
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Chaque version désigne sa reliure par l’id d’un profil, ou porte le profil 
 - `caseMaterial` : sur un cartonnage, `printed` (la couverture imprimée et pelliculée sur les cartons, par défaut) ou `cloth` (toile marquée, en général sous une jaquette).
 - `overrides` : des mesures en mm que cette version fixe elle-même par-dessus celles de son profil, quand l’imprimeur demande un autre mors pour ce seul livre.
 - `spineOverride` : le dos en mm tel que le donne l’imprimeur, à la place du dos calculé.
-- `spineText` : le sens du titre au dos : `direction` montant (`bottomToTop`, l’usage courant en Espagne et la valeur par défaut) ou descendant (`topToBottom`, ce que préfère la norme ISO 6357), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
+- `spineText` : le sens du titre au dos : `direction` descendant (`topToBottom`, comme le fixe la norme ISO 6357 et la valeur par défaut, lisible à l’endroit quand le livre est posé à plat, couverture dessus) ou montant (`bottomToTop`, l’usage espagnol plus ancien), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
 
 `production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre :
 

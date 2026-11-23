@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Capa dura', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // numa capa dura: uma sobrecapa
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Cada versão indica a encadernação pelo id de um perfil ou traz o próprio per
 - `caseMaterial`: numa capa dura, `printed` (a capa impressa e laminada sobre o papelão, o padrão) ou `cloth` (tecido gravado, em geral sob uma sobrecapa).
 - `overrides`: medidas em mm que esta versão define para si por cima das do perfil, quando a gráfica pede uma canaleta diferente para este livro.
 - `spineOverride`: a lombada em mm tal como a gráfica a informa, no lugar da calculada.
-- `spineText`: como o texto corre na lombada: `direction` de baixo para cima (`bottomToTop`, o costume na Espanha e o padrão) ou de cima para baixo (`topToBottom`, como prefere a ISO 6357), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
+- `spineText`: como o texto corre na lombada: `direction` de cima para baixo (`topToBottom`, como fixa a ISO 6357 e o padrão, que se lê direito com o livro deitado de capa para cima) ou de baixo para cima (`bottomToTop`, o costume espanhol mais antigo), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
 
 `production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence:
 

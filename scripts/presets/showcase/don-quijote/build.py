@@ -331,7 +331,6 @@ def production(lang: str) -> dict:
                 "name": ed.PRINT_VERSION[lang],
                 "binding": "case-flat",
                 "caseMaterial": "printed",
-                "spineText": {"direction": "bottomToTop" if lang == "es" else "topToBottom"},
             }
         ]
     }

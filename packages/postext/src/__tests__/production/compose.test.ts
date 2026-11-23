@@ -32,13 +32,14 @@ describe('coverPage', () => {
     expect(cover.page.cutLines!.bleed).toEqual({ value: m.bleed, unit: 'mm' });
   });
 
-  it('turns the spine frame to read up it, or down it', () => {
+  it('turns the spine frame to read down it by default, or up it', () => {
     const sheet = softcoverSheet(trim, 20, m, false);
-    const up = coverPage(sheet).template.frames!.find((f) => f.name === 'spine')!;
-    expect(up.rotate).toBe(-90);
-    expect(up.width).toEqual({ value: zone(sheet, 'spine').safe.height, unit: 'mm' });
-    const down = coverPage(sheet, { spineText: { direction: 'topToBottom' } }).template.frames!.find((f) => f.name === 'spine')!;
+    // Falling (ISO 6357, #1677): right way up with the book face up.
+    const down = coverPage(sheet).template.frames!.find((f) => f.name === 'spine')!;
     expect(down.rotate).toBe(90);
+    expect(down.width).toEqual({ value: zone(sheet, 'spine').safe.height, unit: 'mm' });
+    const up = coverPage(sheet, { spineText: { direction: 'bottomToTop' } }).template.frames!.find((f) => f.name === 'spine')!;
+    expect(up.rotate).toBe(-90);
   });
 
   it('leaves a spine too thin for text without a frame', () => {

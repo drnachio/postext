@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: '上製', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // 上製ではカバー
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ const config: PostextConfig = {
 - `caseMaterial`：上製表紙の素材。`printed`（印刷して表面加工した紙を板紙にくるむもの、既定）または`cloth`（箔押ししたクロス、ふつうはカバーを掛けます）。
 - `overrides`：この版だけがプロファイルの値に優先して使う寸法（mm）。印刷所がこの1冊だけ違う溝を求めるときなどに使います。
 - `spineOverride`：計算値の代わりに使う、印刷所が示した背幅（mm）。
-- `spineText`：背の文字の組み方。`direction`は下から上へ（`bottomToTop`、スペインでふつうの向きで既定）か、上から下へ（`topToBottom`、ISO 6357が勧める向き）です。`minSpine`は文字を入れられる最も細い背幅です（既定は6 mm）。
+- `spineText`：背の文字の組み方。`direction`は上から下へ（`topToBottom`、ISO 6357が定める向きで既定。表紙を上にして置いたとき正しく読めます）か、下から上へ（`bottomToTop`、スペインの古い慣習）です。`minSpine`は文字を入れられる最も細い背幅です（既定は6 mm）。
 
 `production.collection`は、本が属するシリーズや複数巻の作品を指定します。
 
