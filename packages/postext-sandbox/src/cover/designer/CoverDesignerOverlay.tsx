@@ -14,7 +14,8 @@
 import { useMemo, useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
 import type { VDTDocument } from 'postext';
 import { sheetGuides, type BuiltCover, type SheetRect } from 'postext/production';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
+import { useSandboxLabels } from '../../context/SandboxContext.js';
+import { useEditedDesign } from '../useEditedDesign.js';
 import { dragRect, handleAt, handlePoint, RESIZE_HANDLES, snapRect, type Handle, type SnapLines } from '../../templates/frameGeometry.js';
 import { setCoverDesigner, useCoverDesigner } from '../coverStore.js';
 import { designerItems, nudge, placeItem, removeItem, sameRef, type DesignerItem, type ItemRef } from './designerModel.js';
@@ -54,8 +55,7 @@ function snapLinesOf(built: BuiltCover, items: readonly DesignerItem[], except: 
 
 export function CoverDesignerOverlay({ built, doc, cssWidth }: { built: BuiltCover; doc: VDTDocument; cssWidth: number }) {
   const labels = useSandboxLabels();
-  const dispatch = useSandboxDispatch();
-  const cover = useSandboxSelector((s) => s.config.cover);
+  const { design: cover, write: writeDesign } = useEditedDesign();
   const { selected } = useCoverDesigner();
   const svgRef = useRef<SVGSVGElement>(null);
   const [drag, setDrag] = useState<Drag | null>(null);
@@ -66,7 +66,7 @@ export function CoverDesignerOverlay({ built, doc, cssWidth }: { built: BuiltCov
 
   const cssPerMm = cssWidth > 0 ? cssWidth / space.viewBox.width : 1;
   const mmPerPx = () => 1 / cssPerMm;
-  const write = (next: typeof cover) => dispatch({ type: 'UPDATE_CONFIG', payload: { cover: next }, history: { merge: false } });
+  const write = (next: typeof cover) => writeDesign(next, { merge: false });
 
   const onPointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0 || !svgRef.current) return;
@@ -124,7 +124,7 @@ export function CoverDesignerOverlay({ built, doc, cssWidth }: { built: BuiltCov
     const step = e.shiftKey ? 10 : 1;
     const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
     if (d && current.rect) {
-      dispatch({ type: 'UPDATE_CONFIG', payload: { cover: placeItem(cover, built.sheet, current, nudge(current.rect, d[0]!, d[1]!)) } });
+      writeDesign(placeItem(cover, built.sheet, current, nudge(current.rect, d[0]!, d[1]!)));
       e.preventDefault();
     }
   };

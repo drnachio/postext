@@ -25,6 +25,9 @@ import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
 import { coverTextSlots } from '../coverText.js';
 import { VersionFields } from './VersionFields.js';
+import { CatalogueSection } from './CatalogueSection.js';
+import { SheetDesignChoice } from './SheetDesignChoice.js';
+import { useEditedDesign } from '../useEditedDesign.js';
 import { ProfilesSection } from './ProfilesSection.js';
 import { DesignerSection } from '../designer/DesignerSection.js';
 import { useCompactLayout } from '../../hooks/useCompactLayout.js';
@@ -59,7 +62,9 @@ export default function CoverPanel() {
   const front = state.built?.sheet.zones.find((z) => z.name === 'front')?.rect;
   const trim = front ? { width: front.width, height: front.height } : { width: 148, height: 210 };
   // The zones' frames, then the text boxes the design places by hand.
-  const slots = coverTextSlots(state.built?.sheet.zones.map((z) => z.name) ?? [], config.cover?.textBoxes);
+  // The sheet's own design's, when it has one (#1673).
+  const edited = useEditedDesign();
+  const slots = coverTextSlots(state.built?.sheet.zones.map((z) => z.name) ?? [], edited.design.textBoxes);
 
   return (
     <div className="flex h-full flex-col">
@@ -115,6 +120,7 @@ export default function CoverPanel() {
                   onChange={(s) => setCoverChoice({ sheet: s as CoverSheetKind })}
                 />
               )}
+              <SheetDesignChoice />
               {sheets && state.built && (
                 <p className="px-3 py-1.5 text-xs text-(--slate)" style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {labels.coverSpineSummary
@@ -129,11 +135,12 @@ export default function CoverPanel() {
               <DesignerSection />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverTexts} sectionId="cover-texts" defaultOpen>
-              <CoverTexts slots={slots} />
+              <CoverTexts slots={slots} sheets={edited.names} />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverCollection} sectionId="cover-collection">
               <TextInput label={labels.coverCollectionName} value={production?.collection?.name ?? ''} widthCh={18} onChange={(name) => write(setCollection(production, { ...production?.collection, name }))} />
               <TextInput label={labels.coverCollectionIsbn} value={production?.collection?.isbn ?? ''} widthCh={18} onChange={(isbn) => write(setCollection(production, { name: production?.collection?.name ?? '', ...production?.collection, ...(isbn.trim() ? { isbn } : { isbn: undefined }) }))} />
+              <CatalogueSection production={production} write={write} />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverExport} sectionId="cover-export" defaultOpen>
               <CoverExportSection state={state} />

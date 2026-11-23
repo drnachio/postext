@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { versionSheets, type ProductionSheet } from 'postext/production';
-import { addElement, addFinish, addTextBox, designerItems, freeId, itemOf, nudge, placeItem, removeItem, reorderItem } from './designerModel.js';
+import { addCatalogue, addElement, addFinish, addTextBox, designerItems, freeId, itemOf, nudge, placeItem, removeItem, reorderItem } from './designerModel.js';
 
 function sheet(): ProductionSheet {
   const s = versionSheets({ id: 'pb', name: 'P', binding: 'perfect' }, { width: 150, height: 230 }, [{ pages: 240, grammage: 80, bulk: 1.2 }]);
@@ -54,5 +54,15 @@ describe('cover designer model', () => {
     expect('box' in cover.finishes![0]!.shape).toBe(true);
     expect(designerItems(cover, sh)[0]!.rect).toBeDefined();
     expect(freeId(new Set(['text-1', 'text-2']), 'text')).toBe('text-3');
+  });
+
+  it('adds a catalogue across the front, the book’s own outlined (#1673)', () => {
+    const sh = sheet();
+    const { cover, ref } = addCatalogue(undefined, sh, 4);
+    expect(ref).toEqual({ layer: 'elements', id: 'catalogue-1' });
+    const el = itemOf(cover, ref) as { kind: string; zone: string; gap: number; stroke?: unknown };
+    expect(el).toMatchObject({ kind: 'catalogue', zone: 'front', gap: 3 });
+    expect(el.stroke).toBeDefined();
+    expect(designerItems(cover, sh)[0]).toMatchObject({ kind: 'catalogue' });
   });
 });

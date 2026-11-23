@@ -7,8 +7,10 @@
 
 import type { ColorValue } from 'postext';
 import type { CoverElement, CoverFinish, CoverLogo, CoverTextFrame, ProductionSheet, SheetRect } from 'postext/production';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
+import { useSandboxLabels } from '../../context/SandboxContext.js';
+import { useEditedDesign } from '../useEditedDesign.js';
 import { ColorPicker, NumberInput, SelectInput } from '../../controls/index.js';
+import { CatalogueFields } from './CatalogueFields.js';
 import { ElementExtras } from './ElementExtras.js';
 import { TextBoxName } from './TextBoxName.js';
 import { designerItems, itemOf, patchItem, placeItem, sameRef, type ItemRef } from './designerModel.js';
@@ -18,12 +20,11 @@ const r1 = (v: number) => Math.round(v * 10) / 10;
 
 export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem: ItemRef }) {
   const labels = useSandboxLabels();
-  const dispatch = useSandboxDispatch();
-  const cover = useSandboxSelector((s) => s.config.cover);
+  const { design: cover, write: writeDesign } = useEditedDesign();
   const item = itemOf(cover, refItem);
   const rect = designerItems(cover, sheet).find((i) => sameRef(i, refItem))?.rect;
   if (!item) return null;
-  const write = (next: typeof cover) => dispatch({ type: 'UPDATE_CONFIG', payload: { cover: next } });
+  const write = (next: typeof cover) => writeDesign(next);
   const patch = (p: Record<string, unknown>) => write(patchItem(cover, refItem, p));
   const box = (p: Partial<SheetRect>) => rect && write(placeItem(cover, sheet, refItem, { ...rect, ...p }));
   const maxW = sheet.width;
@@ -67,7 +68,7 @@ export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem
         const e = item as CoverElement;
         return (
           <>
-            {e.kind !== 'image' && (
+            {(e.kind === 'box' || e.kind === 'shape') && (
               <ColorPicker label={labels.coverItemColor} value={e.color ?? INK} onChange={(color) => patch({ color })} fieldId={`cover-item-color-${e.id}`} />
             )}
             <NumberInput label={labels.coverItemOpacity} value={Math.round((e.opacity ?? 1) * 100)} min={0} max={100} step={5} suffix="%" onChange={(v) => patch({ opacity: v === 100 ? undefined : v / 100 })} />
@@ -80,6 +81,7 @@ export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem
                 onChange={(v) => patch({ fit: v === 'cover' ? 'cover' : undefined })}
               />
             )}
+            {e.kind === 'catalogue' && <CatalogueFields e={e} patch={patch} />}
             {refItem.layer === 'logos' && (
               <NumberInput label={labels.coverItemClearance} tooltip={labels.coverItemClearanceTooltip} value={(e as CoverLogo).clearance ?? 0} min={0} max={30} step={0.5} suffix="mm" onChange={(clearance) => patch({ clearance })} />
             )}

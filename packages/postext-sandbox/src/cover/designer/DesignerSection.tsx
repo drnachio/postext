@@ -8,13 +8,14 @@
  * design's `cover` part, one undo step at a time.
  */
 
-import { ArrowDown, ArrowUp, Box, Image as ImageIcon, PenTool, Sparkles, Stamp, Trash2, Type } from 'lucide-react';
+import { ArrowDown, ArrowUp, Box, Image as ImageIcon, LayoutGrid, PenTool, Sparkles, Stamp, Trash2, Type } from 'lucide-react';
 import type { CoverFinishProcess } from 'postext/production';
-import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
+import { useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
 import { SelectInput, ToggleSwitch } from '../../controls/index.js';
 import { Button, IconButton, cn } from '../../ui/index.js';
 import { setCoverDesigner, useCoverDesigner, useCoverState } from '../coverStore.js';
-import { addElement, addFinish, addTextBox, designerItems, LAYERS, removeItem, reorderItem, sameRef, type Added, type DesignerLayer } from './designerModel.js';
+import { useEditedDesign } from '../useEditedDesign.js';
+import { addCatalogue, addElement, addFinish, addTextBox, designerItems, LAYERS, removeItem, reorderItem, sameRef, type Added, type DesignerLayer } from './designerModel.js';
 import { ItemFields } from './ItemFields.js';
 import { LAYER_LABEL, kindLabel } from './designerLabels.js';
 
@@ -23,15 +24,15 @@ const VEIL = { hex: '#000000', model: 'hex' as const };
 
 export function DesignerSection() {
   const labels = useSandboxLabels();
-  const dispatch = useSandboxDispatch();
-  const cover = useSandboxSelector((s) => s.config.cover);
+  const { design: cover, write: writeDesign } = useEditedDesign();
   const resources = useSandboxSelector((s) => s.resources);
+  const titles = useSandboxSelector((s) => s.config.production?.collection?.catalogue?.length ?? 0);
   const { open, selected } = useCoverDesigner();
   const { built } = useCoverState();
   const sheet = built?.sheet;
   const items = sheet ? designerItems(cover, sheet) : [];
   const pictures = resources.filter((r) => (r.kind === 'bitmap' && r.bitmap) || (r.kind === 'svg' && r.svg));
-  const write = (next: typeof cover) => dispatch({ type: 'UPDATE_CONFIG', payload: { cover: next }, history: { merge: false } });
+  const write = (next: typeof cover) => writeDesign(next, { merge: false });
   const added = ({ cover: next, ref }: Added) => {
     write(next);
     setCoverDesigner({ open: true, selected: ref });
@@ -52,6 +53,7 @@ export function DesignerSection() {
             <Button variant="outline" size="sm" icon={<Type size={13} />} onClick={() => added(addTextBox(cover, sheet))}>{labels.coverAddTextBox}</Button>
             <Button variant="outline" size="sm" icon={<Box size={13} />} onClick={() => added(addElement(cover, sheet, 'elements', { color: INK }))}>{labels.coverAddBox}</Button>
             <Button variant="outline" size="sm" icon={<Sparkles size={13} />} onClick={() => added(addElement(cover, sheet, 'effects', { color: VEIL }))}>{labels.coverAddVeil}</Button>
+            <Button variant="outline" size="sm" icon={<LayoutGrid size={13} />} title={labels.coverAddCatalogueTooltip} onClick={() => added(addCatalogue(cover, sheet, titles))}>{labels.coverAddCatalogue}</Button>
           </div>
           {pictures.length > 0 && (
             <div className="flex flex-col">
@@ -103,7 +105,7 @@ export function DesignerSection() {
                             onClick={() => setCoverDesigner({ open: true, selected: on ? null : { layer: i.layer, id: i.id } })}
                             className="flex min-h-11 min-w-0 flex-1 cursor-pointer items-center gap-2 px-1 text-start text-xs outline-(--brand) focus-visible:outline-2"
                           >
-                            {i.layer === 'textBoxes' ? <Type size={13} aria-hidden="true" /> : i.layer === 'finishes' ? <Stamp size={13} aria-hidden="true" /> : i.kind === 'image' ? <ImageIcon size={13} aria-hidden="true" /> : i.kind === 'shape' ? <PenTool size={13} aria-hidden="true" /> : <Box size={13} aria-hidden="true" />}
+                            {i.layer === 'textBoxes' ? <Type size={13} aria-hidden="true" /> : i.layer === 'finishes' ? <Stamp size={13} aria-hidden="true" /> : i.kind === 'image' ? <ImageIcon size={13} aria-hidden="true" /> : i.kind === 'shape' ? <PenTool size={13} aria-hidden="true" /> : i.kind === 'catalogue' ? <LayoutGrid size={13} aria-hidden="true" /> : <Box size={13} aria-hidden="true" />}
                             <span className="truncate">{i.id}</span>
                             <span className="text-(--slate)">{kindLabel(labels, i)}</span>
                           </button>

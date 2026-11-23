@@ -57,6 +57,7 @@ export function coverIssueText(labels: SandboxLabels, issue: BuildCoverIssue): s
     case 'coverBarcodeSize': return labels.coverCheckBarcodeSize;
     case 'coverSlotUnknown': return fill(labels.coverCheckSlotUnknown, { slot: i.slot });
     case 'coverSlotRepeated': return fill(labels.coverCheckSlotRepeated, { slot: i.slot });
+    case 'coverFrameSheetUnknown': return fill(labels.coverCheckFrameSheetUnknown, { sheet: i.sheet });
     case 'coverVersionMissing': return labels.coverNoVersions;
     case 'coverSheetMissing': return fill(labels.coverCheckSheetMissing, { sheet: labels[SHEET_LABEL[i.sheet as CoverSheetKind]] });
     default: return (issue as { kind: string }).kind;

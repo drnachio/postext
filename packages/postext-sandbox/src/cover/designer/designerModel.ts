@@ -193,6 +193,20 @@ export function addElement(
   return { cover: withList(c, layer, [...listOf(c, layer), item]), ref: { layer, id } };
 }
 
+/** A collection's catalogue added (#1673): the pictures of its titles in
+ *  a grid, a box across the middle of the zone (the front, else the
+ *  sheet's first panel: an endpaper's), the book's own outlined. */
+export function addCatalogue(cover: CoverConfig | undefined, sheet: ProductionSheet, titles: number): Added {
+  const c = cover ?? {};
+  const id = freeId(usedIds(c), 'catalogue');
+  const zone: CoverZoneName = sheet.zones.some((z) => z.name === 'front') ? 'front' : sheet.zones.find((z) => z.name === 'flyleaf')?.name ?? sheet.zones[0]!.name;
+  // A row of titles about as tall as a cover in proportion.
+  const across = Math.max(1, Math.min(titles, 4));
+  const rect = boxInZone(sheet, zone, 0.8, 1.45 / across);
+  const seed: CoverElement = { id, kind: 'catalogue', zone, x: 0, y: 0, width: 0, height: 0, gap: 3, fit: 'cover', stroke: { color: { hex: '#1f3a5f', model: 'hex' }, width: 0.6 } };
+  return { cover: withList(c, 'elements', [...(c.elements ?? []), placeCoverElement(sheet, seed, rect)]), ref: { layer: 'elements', id } };
+}
+
 /** A finish added: on an item's shape when one is given, else on a box
  *  of its own in the middle of the front. */
 export function addFinish(cover: CoverConfig | undefined, sheet: ProductionSheet, process: CoverFinishProcess, on?: ItemRef): Added {

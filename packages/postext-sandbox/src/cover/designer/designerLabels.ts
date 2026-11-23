@@ -16,6 +16,7 @@ const KIND_LABEL: Record<DesignerItem['kind'], keyof SandboxLabels> = {
   image: 'coverKindPicture',
   box: 'coverKindBox',
   shape: 'coverKindShape',
+  catalogue: 'coverKindCatalogue',
   varnish: 'coverFinishVarnish',
   foil: 'coverFinishFoil',
   emboss: 'coverFinishEmboss',

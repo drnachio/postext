@@ -21,7 +21,8 @@ export function ElementExtras({ e, sheet, patch }: { e: CoverElement; sheet: Pro
   const labels = useSandboxLabels();
   const zoneName = (z: string) => (ZONE_LABEL[z] ? String(labels[ZONE_LABEL[z]]) : z);
   const zone = sheet.zones.find((z) => z.name === e.zone);
-  const painted = e.kind !== 'image';
+  // A catalogue's border is its mark (CatalogueFields).
+  const painted = e.kind === 'box' || e.kind === 'shape';
   const r2 = (v: number) => Math.round(v * 100) / 100;
   const place = (p: Partial<CoverPlacement>) => patch(p);
 

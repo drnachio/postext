@@ -6,16 +6,23 @@
  * and picture, a ground per zone, where each zone's text sits, the
  * barcode's size and the mirrored bleed. The versions, the texts and the
  * printer's files are the book's, in the Cover panel.
+ *
+ * A case, a jacket or an endpaper may have a design of its own
+ * (`cover.sheets`, #1673): with the Cover panel showing such a sheet, the
+ * group edits that sheet's design when it has one, and says so.
  */
 
 import { memo } from 'react';
 import { BookMarked } from 'lucide-react';
 import type { ColorValue } from 'postext';
-import type { CoverConfig, CoverZoneName } from 'postext/production';
+import type { CoverConfig, CoverSheetKind, CoverSheetName, CoverZoneName } from 'postext/production';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../../context/SandboxContext.js';
 import { CollapsibleSection, ColorPicker, NumberInput, SelectInput, ToggleSwitch } from '../../../controls/index.js';
 import { Button } from '../../../ui/index.js';
 import type { SandboxLabels } from '../../../types/labels.js';
+import { useCoverChoice } from '../../../cover/coverStore.js';
+import { useEditedDesign } from '../../../cover/useEditedDesign.js';
+import { SheetDesignChoice } from '../../../cover/panel/SheetDesignChoice.js';
 
 const ZONES: readonly [CoverZoneName, keyof SandboxLabels][] = [
   ['front', 'coverZoneFront'],
@@ -24,6 +31,19 @@ const ZONES: readonly [CoverZoneName, keyof SandboxLabels][] = [
   ['flapFront', 'coverZoneFlapFront'],
   ['flapBack', 'coverZoneFlapBack'],
 ];
+/** An endpaper's panels: what an endpaper's own design grounds. */
+const ENDPAPER_ZONES: readonly [CoverZoneName, keyof SandboxLabels][] = [
+  ['pastedown', 'coverZonePastedown'],
+  ['flyleaf', 'coverZoneFlyleaf'],
+];
+const ENDPAPER_NAMES: ReadonlySet<CoverSheetName> = new Set(['endpapers', 'endpaperFront', 'endpaperBack']);
+/** The sheet the Cover panel shows, by name (a case's is `cover`). */
+const SHEET_LABEL: Record<CoverSheetKind, keyof SandboxLabels> = {
+  cover: 'coverSheetCase',
+  jacket: 'coverSheetJacket',
+  endpaperFront: 'coverSheetEndpaperFront',
+  endpaperBack: 'coverSheetEndpaperBack',
+};
 
 const WHITE: ColorValue = { hex: '#ffffff', model: 'hex' };
 
@@ -43,8 +63,10 @@ export const CoverDesignSection = memo(function CoverDesignSection() {
   const labels = useSandboxLabels();
   const raw = useSandboxSelector((s) => s.config.cover);
   const resources = useSandboxSelector((s) => s.resources);
-  const cover = raw ?? {};
-  const commit = (next: CoverConfig) => dispatch({ type: 'UPDATE_CONFIG', payload: { cover: prune(next) } });
+  const sheetKind = useCoverChoice().sheet;
+  const { design: cover, target, write } = useEditedDesign();
+  const commit = (next: CoverConfig) => write(prune(next));
+  const zones = target && ENDPAPER_NAMES.has(target) ? ENDPAPER_ZONES : ZONES;
   const setZone = (zone: CoverZoneName, color: ColorValue | undefined) => {
     const zones: Partial<Record<CoverZoneName, ColorValue>> = { ...cover.zones };
     if (color === undefined) delete zones[zone];
@@ -74,6 +96,10 @@ export const CoverDesignSection = memo(function CoverDesignSection() {
           {labels.coverDesignOpenPanel}
         </Button>
       </div>
+      {sheetKind !== 'cover' || target ? (
+        <p className="px-3 py-1 text-xs text-(--slate)">{labels.coverDesignShownSheet.replace('__sheet__', String(labels[SHEET_LABEL[sheetKind]]))}</p>
+      ) : null}
+      <SheetDesignChoice />
       <ColorPicker
         label={labels.coverDesignBackground}
         value={cover.background ?? WHITE}
@@ -99,7 +125,7 @@ export const CoverDesignSection = memo(function CoverDesignSection() {
           isDefault={cover.image.area === undefined}
         />
       )}
-      {ZONES.map(([zone, key]) => (
+      {zones.map(([zone, key]) => (
         <ColorPicker
           key={zone}
           label={labels.coverDesignZoneGround.replace('__zone__', zoneName(key))}
@@ -110,7 +136,7 @@ export const CoverDesignSection = memo(function CoverDesignSection() {
           fieldId={`cover-zone-${zone}`}
         />
       ))}
-      {ZONES.filter(([zone]) => zone !== 'spine').map(([zone, key]) => (
+      {zones.filter(([zone]) => zone !== 'spine').map(([zone, key]) => (
         <SelectInput
           key={zone}
           label={labels.coverDesignAlign.replace('__zone__', zoneName(key))}

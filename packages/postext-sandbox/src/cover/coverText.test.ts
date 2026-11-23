@@ -42,4 +42,29 @@ describe('cover text by slot', () => {
     expect(next).toContain(':::frame{slot="back"}\nBlurb');
     expect(coverSlotTexts(next).praise).toBe('A line');
   });
+
+  it('reads and writes a sheet’s own text apart from the shared one (#1673)', () => {
+    const own = setCoverSlotText(MD, 'back', 'For the case.', ['case', 'cover']);
+    expect(own).toContain(':::frame{slot="back" sheet="case"}\nFor the case.');
+    expect(coverSlotTexts(own)).toEqual(coverSlotTexts(MD));
+    expect(coverSlotTexts(own, ['case', 'cover'])).toEqual({ back: 'For the case.' });
+    expect(hasCoverSlot(own, 'back', ['jacket'])).toBe(false);
+    // The shared text written leaves the sheet's own frame alone.
+    const shared = setCoverSlotText(own, 'back', 'Shared.');
+    expect(coverSlotTexts(shared, ['case'])).toEqual({ back: 'For the case.' });
+    expect(coverSlotTexts(shared).back).toBe('Shared.');
+    // A frame for several sheets keeps them when one writes it.
+    const both = ':::frame{slot="front" sheet="case jacket"}\nOld\n:::\n';
+    expect(setCoverSlotText(both, 'front', 'New', ['jacket'])).toContain('sheet="case jacket"}\nNew');
+    const gone = setCoverSlotText(own, 'back', null, ['case']);
+    expect(gone).not.toContain('sheet=');
+    expect(coverSlotTexts(gone)).toEqual(coverSlotTexts(MD));
+  });
+
+  it('renames a text box’s frames for one sheet too', () => {
+    const md = ':::frame{slot="quote"}\nShared\n:::\n\n:::frame{slot="quote" sheet="jacket"}\nJacket\n:::\n';
+    const next = renameCoverSlot(md, 'quote', 'praise');
+    expect(coverSlotTexts(next).praise).toBe('Shared');
+    expect(coverSlotTexts(next, ['jacket']).praise).toBe('Jacket');
+  });
 });
