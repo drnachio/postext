@@ -111,7 +111,9 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
   const kind = input.sheet ?? 'cover';
   const sheet = sheetOf(read, kind);
   if (!sheet) return { issues: [...read.warnings, { kind: 'coverSheetMissing', sheet: kind }] };
-  const onCover = kind === 'cover' || kind === 'jacket';
+  // The barcode and the work's ISBN go on the outermost sheet, the one a
+  // reader and a till see: the jacket when the case wears one.
+  const onCover = kind === 'jacket' || (kind === 'cover' && !read.jacket);
   const isbn = onCover && read.isbn13 ? version.isbn : undefined;
   const work = onCover && version.workIsbn ? workIsbnCaption(version.workIsbn, config.locale) : undefined;
   const made = coverPage(sheet, {

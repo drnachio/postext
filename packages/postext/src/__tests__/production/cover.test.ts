@@ -162,6 +162,15 @@ describe('buildCover', () => {
     expect(hc.content.resources!.some((r) => r.id === 'postext-cover-isbn')).toBe(false);
   });
 
+  it('prints the barcode on the jacket of a case that wears one, and on the case that does not', () => {
+    const jacketed = { ...config, production: { versions: [{ id: 'hc', name: 'Hardcover', binding: 'case-flat', flaps: true, isbn: '978-0-306-40615-7', workIsbn: '978-84-9835-000-2' }] } } as PostextConfig;
+    const barcode = (c: PostextConfig, sheet?: 'jacket') => (buildCover({ config: c, version: 'hc', pages: 240, sheet }) as BuiltCover).content.resources?.some((r) => r.id === 'postext-cover-isbn');
+    expect(barcode(jacketed, 'jacket')).toBe(true);
+    expect(barcode(jacketed)).toBe(false);
+    const bare = { ...config, production: { versions: [{ id: 'hc', name: 'Hardcover', binding: 'case-flat', isbn: '978-0-306-40615-7' }] } } as PostextConfig;
+    expect(barcode(bare)).toBe(true);
+  });
+
   it('mirrors the sheet of a book bound on the right: the front on the left, the back on the right', () => {
     const order = (c: PostextConfig, version = 'pb', sheet?: 'jacket') =>
       (buildCover({ config: c, version, pages: 240, ...(sheet ? { sheet } : {}) }) as BuiltCover).sheet.zones.map((z) => z.name);
@@ -209,7 +218,7 @@ describe('buildCover', () => {
     // A vertical book's sheet is a horizontal page whose zones are set vertical.
     const v = buildCover({ config: vertical, version: 'pb', pages: 240 }) as BuiltCover;
     expect(v.config.layout?.writingMode).toBe('horizontal-tb');
-    expect(new Set(v.config.pageTemplates![0]!.frames.map((f) => f.writingMode))).toEqual(new Set(['vertical-rl']));
+    expect(new Set(v.config.pageTemplates![0]!.frames!.map((f) => f.writingMode))).toEqual(new Set(['vertical-rl']));
   });
 
   it('says what is missing instead of making a cover', () => {
