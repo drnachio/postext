@@ -3252,6 +3252,8 @@ How the viewer reads it:
   with the front cover (a full-page design or image) and the last chapter ends on the back cover.
 - `spineImage`: the spine as seen with the book standing, head up, front cover to the right; scaled to cover
   the spine and centred: make it spine-thickness × page-height in proportion, with room at the edges.
+- A print cover (`cover.print`) is also bound on the boards in the Sandbox's Folio: front and back are painted
+  round the pages, so the book lies closed on its cover; a book with `cover: "pages"` keeps its own pages.
 - `:::paper{type=coatedGloss grammage=130}` in the text prints a run of pages on another stock (plate
   sections, card inserts); its attributes are the `paper` fields above (document-format.md §7.5).
 - Colours: `{hex, model}` objects, palette links (`paletteId`) followed like any other colour.

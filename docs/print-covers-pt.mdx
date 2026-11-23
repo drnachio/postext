@@ -556,6 +556,8 @@ Um pacote leva as configurações `production` e `cover` na sua configuração e
 
 A visualização Folio encaderna o livro como a sua primeira versão: uma brochura colada ou costurada como brochura, uma capa dura como capa dura, com a lombada da capa pintada na lombada do livro. Um EPUB gravado pela linha de comando ou pelo Sandbox usa a capa impressa como imagem de capa quando o livro tem uma versão impressa e não indica outra.
 
+No Sandbox, a vista Folio também imprime a frente e o verso da capa nas capas do livro, então ele aparece fechado sobre a capa e se abre a partir dela. Um livro cujas primeira e última páginas são as suas capas (`binding.cover: 'pages'`) as mantém.
+
 ## Limites
 
 - A lombada conta as páginas tal como foram diagramadas. Se as páginas de um livro mudam depois de feita a capa, a capa precisa ser feita de novo; a lombada e todos os painéis se ajustam sozinhos.

@@ -556,6 +556,8 @@ Un paquet porta els paràmetres `production` i `cover` a la configuració i el t
 
 La vista Folio enquaderna el llibre com la seva primera versió: una rústica fresada o cosida com a rústica, una tapa dura com a cartoné, amb el llom de la coberta pintat al llom. Un EPUB escrit des de la línia d'ordres o des del Sandbox pren la coberta impresa com a imatge de coberta quan el llibre té una versió impresa i no n'indica cap altra.
 
+Al Sandbox, la vista Folio també imprimeix la portada i la contraportada de la coberta a les tapes, de manera que el llibre apareix tancat sobre la coberta i s'obre des d'ella. Un llibre les primeres i darreres pàgines del qual són les cobertes (`binding.cover: 'pages'`) les conserva.
+
 ## Límits
 
 - El llom compta les pàgines tal com estan maquetades. Si les pàgines d'un llibre canvien després de fer la coberta, cal tornar-la a fer; el llom i totes les zones s'ajusten sols.

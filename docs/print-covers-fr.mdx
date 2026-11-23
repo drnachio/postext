@@ -556,6 +556,8 @@ Un paquet porte les réglages `production` et `cover` dans sa configuration, et 
 
 La vue Folio relie le livre selon sa première version : un dos carré collé ou une couverture souple cousue comme un broché, un cartonnage comme un relié, avec le dos de la couverture peint sur le dos du livre. Un EPUB écrit par la ligne de commande ou par le Sandbox prend la première de couverture imprimée comme image de couverture quand le livre a une version imprimée et n’en indique pas d’autre.
 
+Dans le Sandbox, la vue Folio imprime aussi la première et la quatrième de couverture sur les plats : le livre apparaît fermé sur sa couverture et s’ouvre à partir d’elle. Un livre dont la première et la dernière page sont les couvertures (`binding.cover: 'pages'`) les garde.
+
 ## Limites
 
 - Le dos compte les pages telles qu’elles sont mises en page. Un livre dont les pages changent après la création de la couverture doit refaire sa couverture ; le dos et chaque panneau suivent d’eux-mêmes.

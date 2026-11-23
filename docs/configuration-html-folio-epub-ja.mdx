@@ -356,6 +356,7 @@ book.resetView();
     <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>：渡したページ以外の本のページ。ページの束の厚さに数えますが、描画はしません。</td></tr>
     <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>：渡した最初のページが表表紙、最後のページが（偶数ページに当たる場合）裏表紙になります。どちらも板としてめくられ、別の表紙（ケース）は描かれません。文書から作る場合は、最初のページで始まり最後のページで終わる本で<code>binding.cover: 'pages'</code>を指定した場合。</td></tr>
     <tr><td><code>spineImage</code></td><td>背に印刷される画像。URL、キャンバス、画像のいずれか。<code>createFolioFromDocument</code>はリソースを参照しないので、<code>folio.binding.spineImage</code>が指定するリソースの画像を渡してください。中綴じでは無視されます。</td></tr>
+    <tr><td><code>coverFaces</code></td><td>印刷した表紙の外側。<code>{'{ front, back, frontAlt, backAlt }'}</code>で、それぞれ表紙板一枚の仕上がりの画像。本に自前の表紙がなく、中綴じでも折りでもないとき、<code>createFolioFromDocument</code>はこれを二枚の表紙板としてページのまわりに綴じるので、本は表紙を見せて閉じる。ページ番号、見開き、点は文書のままで、<code>state.cover</code>はどの表紙板があり、本がどちらで閉じているかを示す。Sandboxは印刷用の表紙から描く。</td></tr>
     <tr><td><code>textureBaseUrl</code></td><td>写真から作った机のテクスチャーの配信場所。読み込まれるまでの間、または指定しない場合、机はプロシージャルなマップで描かれます。</td></tr>
   </tbody>
 </table>

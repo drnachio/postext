@@ -556,6 +556,8 @@ Ein Paket trägt die Einstellungen `production` und `cover` in seiner Konfigurat
 
 Die Ansicht Folio bindet das Buch als seine erste Ausgabe: eine Klebebindung oder eine fadengeheftete Broschur als Taschenbuch, eine Buchdecke als Hardcover, mit dem Rücken des Umschlags auf den Buchrücken gemalt. Ein EPUB, das die Kommandozeile oder die Sandbox schreibt, nimmt die Vorderseite des Druckumschlags als Umschlagbild, wenn das Buch eine Druckausgabe hat und kein anderes Bild nennt.
 
+In der Sandbox druckt die Folio-Ansicht außerdem Vorder- und Rückseite des Umschlags auf die Deckel: Das Buch liegt geschlossen auf seinem Umschlag und öffnet sich von dort. Ein Buch, dessen erste und letzte Seite seine Umschlagseiten sind (`binding.cover: 'pages'`), behält diese.
+
 ## Grenzen
 
 - Der Rücken zählt die Seiten, wie sie gesetzt sind. Ändern sich die Seiten eines Buchs, nachdem der Umschlag gemacht wurde, muss der Umschlag neu gemacht werden; Rücken und alle Flächen passen sich dann von selbst an.

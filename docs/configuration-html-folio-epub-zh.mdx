@@ -356,6 +356,7 @@ book.resetView();
     <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>：给定页面之外的书页数，计入书芯的厚度，从不绘制。</td></tr>
     <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>：给定的第一页是封面，最后一页（落在左页时）是封底。它们像纸板一样翻动，不绘制书壳。取自文档时：书从第一页开始、到最后一页结束，且设置了<code>binding.cover: 'pages'</code>。</td></tr>
     <tr><td><code>spineImage</code></td><td>印在书脊上的图片，可以是URL、画布或图片。<code>createFolioFromDocument</code>不查找资源：请传入<code>folio.binding.spineImage</code>所指资源的图片。骑马钉时忽略。</td></tr>
+    <tr><td><code>coverFaces</code></td><td>印刷封面的外侧，<code>{'{ front, back, frontAlt, backAlt }'}</code>，各为一块封面板成品尺寸的图片。书本身没有封面页、也不是骑马钉或折页时，<code>createFolioFromDocument</code>把它们作为两块封面板装在书页外面，书合上时露出封面；页码索引、跨页和点位仍按文档本身计算，<code>state.cover</code>说明有哪几块封面板、书合在哪一块上。Sandbox从印刷封面绘制它们。</td></tr>
     <tr><td><code>textureBaseUrl</code></td><td>实拍桌面纹理的提供位置。纹理载入之前，或不设置时，桌面用程序生成的贴图绘制。</td></tr>
   </tbody>
 </table>

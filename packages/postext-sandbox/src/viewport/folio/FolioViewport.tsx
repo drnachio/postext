@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState, type KeyboardEvent } from 'react';
 import { DEFAULT_FOLIO_CONFIG } from 'postext';
-import type { FolioInteraction } from 'postext-folio';
+import type { FolioInteraction, FolioState } from 'postext-folio';
 import { useSandboxDispatch, useSandboxStateGetter } from '../../context/SandboxContext.js';
 import { FolioPreview, type FolioPreviewHandle } from './FolioPreview.js';
 import { FolioToolbar } from './FolioToolbar.js';
@@ -26,6 +26,8 @@ export function FolioViewport() {
   const [generating, setGenerating] = useState(false);
   // The pages of the spread the book is open at (or turning to).
   const [spread, setSpread] = useState<readonly number[]>([]);
+  /** A board still to turn before the first page or after the last. */
+  const [boards, setBoards] = useState({ front: false, back: false });
   const [rightToLeft, setRightToLeft] = useState(false);
   const previewRef = useRef<FolioPreviewHandle | null>(null);
   // What the left button does on the book.
@@ -56,8 +58,11 @@ export function FolioViewport() {
     setLayout((l) => ({ pageCount: count, firstPage, pageNumbers, version: l.version + 1, ...(book ? { book } : {}) }));
   }, []);
   const handleCurrentPageChange = usePageHashSync(layout, handleJumpToPage);
-  const handleSpreadChange = useCallback((pages: readonly number[]) => {
+  const handleSpreadChange = useCallback((pages: readonly number[], cover?: FolioState['cover']) => {
     setSpread((prev) => (prev.length === pages.length && prev.every((p, i) => p === pages[i]) ? prev : [...pages]));
+    // The printed cover's boards turn past the first and last pages (#1685).
+    const ends = { front: !!cover?.front && cover.closed !== 'front', back: !!cover?.back && cover.closed !== 'back' };
+    setBoards((prev) => (prev.front === ends.front && prev.back === ends.back ? prev : ends));
   }, []);
   // The bar shows and takes book page numbers; the viewer works in page
   // indices.
@@ -102,8 +107,8 @@ export function FolioViewport() {
       pageCount,
       pageIndex: shown,
       pageNumber: pageNumberAt(layout, shown),
-      canPrevious: first > 0,
-      canNext: shown < pageCount - 1,
+      canPrevious: first > 0 || boards.front,
+      canNext: shown < pageCount - 1 || boards.back,
       view: previewRef.current?.getView() ?? null,
       magnification: previewRef.current?.getMagnification() ?? null,
       videos: (previewRef.current?.videos() ?? []).map((v) => ({ resource: v.resource, pageNumber: pageNumberAt(layout, v.pageIndex), state: v.state })),
@@ -161,8 +166,8 @@ export function FolioViewport() {
         pageNumber={pageNumberAt(layout, shown)}
         firstPageNumber={pageNumberAt(layout, 0)}
         lastPageNumber={pageNumberAt(layout, Math.max(0, pageCount - 1))}
-        canPrev={first > 0}
-        canNext={shown < pageCount - 1}
+        canPrev={first > 0 || boards.front}
+        canNext={shown < pageCount - 1 || boards.back}
         rightToLeft={rightToLeft}
         interaction={interaction}
         onSetInteraction={handleSetInteraction}

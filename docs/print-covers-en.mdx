@@ -556,6 +556,8 @@ A bundle carries the `production` and `cover` settings in its configuration and 
 
 The Folio view binds the book as its first version: a perfect binding or a sewn softcover as a paperback, a case as a hardcover, with the cover's spine painted on the spine. An EPUB written by the command line or the Sandbox takes the print front cover as its cover picture when the book has a print version and names no other.
 
+In the Sandbox the Folio view also prints the cover's front and back on the boards, so the book lies closed on its cover and turns open from it. A book whose own first and last pages are its covers (`binding.cover: 'pages'`) keeps them.
+
 ## Limits
 
 - The spine counts pages as laid out. A book whose pages change after the cover is made needs its cover made again; the spine and every panel follow on their own.

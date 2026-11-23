@@ -556,6 +556,8 @@ Un paquete lleva los ajustes `production` y `cover` en su configuración y el te
 
 La vista Folio encuaderna el libro como su primera versión: una rústica fresada o cosida como rústica, una tapa dura como cartoné, con el lomo de la cubierta pintado en el lomo. Un EPUB escrito desde la línea de comandos o desde el Sandbox toma la cubierta impresa como imagen de cubierta cuando el libro tiene una versión impresa y no indica otra.
 
+En el Sandbox, la vista Folio también imprime la portada y la contraportada de la cubierta en las tapas, así que el libro aparece cerrado sobre su cubierta y se abre desde ella. Un libro cuyas propias primera y última páginas son sus cubiertas (`binding.cover: 'pages'`) las conserva.
+
 ## Límites
 
 - El lomo cuenta las páginas tal como están maquetadas. Si las páginas de un libro cambian después de hacer la cubierta, hay que volver a hacerla; el lomo y todas las zonas se ajustan solos.

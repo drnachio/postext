@@ -556,6 +556,8 @@ Un pacchetto porta le impostazioni `production` e `cover` nella sua configurazio
 
 La vista Folio lega il libro come la sua prima versione: una brossura fresata o una brossura cucita come brossura, un cartonato come cartonato, con il dorso della copertina dipinto sul dorso del libro. Un EPUB scritto dalla riga di comando o dalla Sandbox prende la prima di copertina a stampa come immagine di copertina quando il libro ha una versione a stampa e non ne indica un’altra.
 
+Nella Sandbox la vista Folio stampa anche il fronte e il retro della copertina sui piatti, così il libro appare chiuso sulla copertina e si apre da lì. Un libro la cui prima e ultima pagina sono le sue copertine (`binding.cover: 'pages'`) le conserva.
+
 ## Limiti
 
 - Il dorso conta le pagine come sono impaginate. Un libro le cui pagine cambiano dopo aver creato la copertina deve rifare la copertina; il dorso e ogni pannello si adeguano da soli.
