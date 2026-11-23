@@ -97,7 +97,7 @@ class StubContext {
   font = '16px serif';
   letterSpacing = '0px';
   measureText(text: string) {
-    const em = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const em = parseFloat(this.font.split(/\s+/).find((t) => t.endsWith('px')) ?? '16');
     return { width: [...text].length * em, actualBoundingBoxAscent: em * 0.88, actualBoundingBoxDescent: em * 0.12, fontBoundingBoxAscent: em * 0.88, fontBoundingBoxDescent: em * 0.12 };
   }
 }
