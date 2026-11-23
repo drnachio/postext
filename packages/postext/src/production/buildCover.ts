@@ -19,6 +19,8 @@ import { versionSheets, type ProductionWarning, type VersionSheets } from './ver
 import type { ProductionSheet } from './geometry.js';
 import { COVER_SLOT_ZONES, coverPage, type CoverIssue, type MirrorPicture } from './compose.js';
 import { coverParagraphStyles, coverSource, type CoverSourceIssue } from './coverSource.js';
+import { expandCatalogueText, withCatalogue } from './catalogue.js';
+import type { CoverConfig, CoverSheetDesign, CoverSheetName } from '../types/output/cover.js';
 import { workIsbnCaption } from './coverLabels.js';
 
 /** Which sheet of a version: its cover (a softcover's, a case's covering),
@@ -81,6 +83,28 @@ function sheetOf(sheets: VersionSheets, kind: CoverSheetKind): ProductionSheet |
   return sheets.cover;
 }
 
+/** The names a sheet answers to, most particular first: the ones a design
+ *  of its own (`cover.sheets`) and a frame of the cover's text
+ *  (`sheet="…"`) may give. */
+export function coverSheetNames(kind: CoverSheetKind, sheet: ProductionSheet): CoverSheetName[] {
+  if (kind === 'jacket') return ['jacket'];
+  if (kind === 'endpaperFront') return ['endpaperFront', 'endpapers'];
+  if (kind === 'endpaperBack') return ['endpaperBack', 'endpapers'];
+  return sheet.kind === 'case' ? ['case', 'cover'] : ['cover'];
+}
+
+/** The design a sheet is drawn with: its own in `cover.sheets` (the most
+ *  particular of its names), else the book's cover design. */
+export function coverDesignFor(cover: CoverConfig | undefined, names: readonly CoverSheetName[]): CoverSheetDesign | undefined {
+  if (!cover) return undefined;
+  const { sheets, ...base } = cover;
+  for (const name of names) {
+    const own = sheets?.[name];
+    if (own && typeof own === 'object') return own;
+  }
+  return base;
+}
+
 /** Settings of the book that never reach its cover: the book's own page
  *  templates stay (a cover may not use them, but they cost nothing), its
  *  running heads and page furniture do not. */
@@ -118,8 +142,11 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
   // The whole work's ISBN: the version's own, else its collection's.
   const workIsbn = version.workIsbn ?? production?.collection?.isbn;
   const work = onCover && workIsbn ? workIsbnCaption(workIsbn, config.locale) : undefined;
+  const names = coverSheetNames(kind, sheet);
+  const collection = production?.collection;
+  const design = withCatalogue(coverDesignFor(config.cover, names), collection);
   const made = coverPage(sheet, {
-    ...(config.cover ? { cover: config.cover } : {}),
+    ...(design ? { cover: design } : {}),
     ...(version.spineText ? { spineText: version.spineText } : {}),
     ...(isbn ? { isbn } : {}),
     ...(isbn && version.isbnAddOn ? { isbnAddOn: version.isbnAddOn } : {}),
@@ -131,7 +158,8 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
     // pictures and boxes placed on the sheet as drawn.
     ...(vertical ? { vertical: true } : resolved.direction === 'rtl' ? { mirrored: true } : {}),
   });
-  const source = coverSource(input.markdown, made.slots, input.metadata);
+  const markdown = input.markdown === undefined ? undefined : expandCatalogueText(input.markdown, collection, config.locale);
+  const source = coverSource(markdown, made.slots, input.metadata, names);
   const own: PostextConfig = { ...config };
   for (const key of DROPPED) delete own[key];
   const bodySize = config.bodyText?.fontSize;

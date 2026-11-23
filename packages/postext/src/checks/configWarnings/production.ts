@@ -39,7 +39,9 @@ export function collectProductionWarnings(config: PostextConfig): ConfigWarning[
       if (isbn !== undefined && !parseIsbn(isbn).ok) out.push({ kind: 'unknownConfigValue', path: `production.versions[${i}].${key}`, value: isbn, used: '' });
     }
   });
-  const collectionIsbn = read.production?.collection?.isbn;
+  const collection = read.production?.collection;
+  if (collection?.volume !== undefined && !(collection.catalogue ?? []).some((e) => e.id === collection.volume)) out.push({ kind: 'unknownConfigValue', path: 'production.collection.volume', value: collection.volume, used: '' });
+  const collectionIsbn = collection?.isbn;
   if (collectionIsbn !== undefined && !parseIsbn(collectionIsbn).ok) out.push({ kind: 'unknownConfigValue', path: 'production.collection.isbn', value: collectionIsbn, used: '' });
   return out;
 }

@@ -148,8 +148,16 @@ export interface ProductionVersion {
  *  advertisements for the endpapers. */
 export interface ProductionCollection {
   name: string;
+  /** The whole work's ISBN, printed beside the barcode of a version that
+   *  names no `workIsbn` of its own. */
   isbn?: string;
+  /** The collection's titles in order, each with an optional picture
+   *  resource of the book: what `::catalogue` and a cover's `catalogue`
+   *  element set on the endpapers. */
   catalogue?: { id: string; title: string; resource?: string }[];
+  /** The catalogue entry (`id`) that is this book: marked where the
+   *  catalogue is set. */
+  volume?: string;
 }
 
 /** A book's print production (#1655, #1666): the versions it is published

@@ -85,6 +85,8 @@ function readCollection(c: unknown, issues: ProductionImportIssue[]): Production
       } else issues.push({ where: `${where}.catalogue[${i}]`, reason: 'badText' });
     });
   } else if (c.catalogue !== undefined) issues.push({ where: `${where}.catalogue`, reason: 'badText' });
+  if (isText(c.volume) && c.volume) out.volume = c.volume;
+  else if (c.volume !== undefined) issues.push({ where: `${where}.volume`, reason: 'badText' });
   return out;
 }
 

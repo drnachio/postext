@@ -81,12 +81,22 @@ export interface CoverPlacement {
   to?: { zone: CoverZoneName; x: number; basis?: number };
 }
 
-/** A movable element of a cover's design: a picture, a box of colour, or
- *  a shape of colour. */
+/** A movable element of a cover's design: a picture, a box of colour, a
+ *  shape of colour, or the collection's catalogue (#1673): the pictures of
+ *  its titles in a grid inside the box, the book's own outlined by
+ *  `stroke`. */
 export interface CoverElement extends CoverEffects, CoverPlacement {
   /** Letters, digits, `-` and `_`. */
   id: string;
-  kind: 'image' | 'box' | 'shape';
+  kind: 'image' | 'box' | 'shape' | 'catalogue';
+  /** A catalogue's columns (default: every title in one row). */
+  columns?: number;
+  /** A catalogue's gap between its pictures, mm (default 3). */
+  gap?: number;
+  /** A catalogue's first and last titles, by their place in it from 1
+   *  (default: all of them). */
+  first?: number;
+  last?: number;
   /** A shape's outline, in its box (a traced one). */
   outline?: CoverOutline;
   /** A shape drawn by nodes, in its box; over `outline` when both are
@@ -198,4 +208,16 @@ export interface CoverConfig {
   mirrorMargin?: number;
   /** The barcode's size against nominal, 0.8 … 2. Default 1. */
   barcodeMagnification?: number;
+  /** A design of their own for a hardcover's sheets (#1673), each used in
+   *  place of this one on its sheet: the case under a jacket, the jacket,
+   *  both endpapers or one of them (`endpaperFront`, `endpaperBack`, over
+   *  `endpapers`). A sheet without one takes this design. */
+  sheets?: Partial<Record<CoverSheetName, CoverSheetDesign>>;
 }
+
+/** The sheets of a version a design or a frame of the cover's text may
+ *  name: `cover` is the cover of a softcover or the covering of a case. */
+export type CoverSheetName = 'cover' | 'case' | 'jacket' | 'endpapers' | 'endpaperFront' | 'endpaperBack';
+
+/** The design of one sheet: a cover design without sheets of its own. */
+export type CoverSheetDesign = Omit<CoverConfig, 'sheets'>;

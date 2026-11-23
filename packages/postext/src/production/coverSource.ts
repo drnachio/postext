@@ -22,19 +22,28 @@ export type CoverSourceIssue =
   | { kind: 'coverSlotUnknown'; slot: string; sourceStart: number; sourceEnd: number }
   /** Two frames fill one slot: only the first is laid out, the others
    *  are left out. */
-  | { kind: 'coverSlotRepeated'; slot: string; sourceStart: number; sourceEnd: number };
+  | { kind: 'coverSlotRepeated'; slot: string; sourceStart: number; sourceEnd: number }
+  /** A frame names a sheet no version has (`sheet="…"`): left out. */
+  | { kind: 'coverFrameSheetUnknown'; sheet: string; sourceStart: number; sourceEnd: number };
+
+/** The sheet names a frame's `sheet` attribute may give (#1673). */
+export const COVER_FRAME_SHEETS: ReadonlySet<string> = new Set(['cover', 'case', 'jacket', 'endpapers', 'endpaperFront', 'endpaperBack']);
 
 const FRAME_OPEN = /^[ \t]{0,3}(:{3,})[ \t]*frame[ \t]*\{([^}\n]*)\}[ \t]*$/gm;
 const SLOT_ATTR = /(?:^|\s)slot\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))/;
+const SHEET_ATTR = /(?:^|\s)sheet\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))/;
 
 /** The slots the cover's Markdown fills, in order, with where each frame
- *  opens. */
-export function coverFrames(markdown: string): { slot: string; start: number; end: number }[] {
-  const out: { slot: string; start: number; end: number }[] = [];
+ *  opens and the sheets it is for (`sheet="case jacket"`; absent: every
+ *  sheet). */
+export function coverFrames(markdown: string): { slot: string; start: number; end: number; sheets?: string[] }[] {
+  const out: { slot: string; start: number; end: number; sheets?: string[] }[] = [];
   for (const m of markdown.matchAll(FRAME_OPEN)) {
     const attr = SLOT_ATTR.exec(m[2]!);
     if (!attr) continue;
-    out.push({ slot: attr[1] ?? attr[2] ?? attr[3] ?? '', start: m.index!, end: m.index! + m[0].length });
+    const sheet = SHEET_ATTR.exec(m[2]!);
+    const sheets = sheet ? (sheet[1] ?? sheet[2] ?? sheet[3] ?? '').split(/[\s,]+/).filter(Boolean) : undefined;
+    out.push({ slot: attr[1] ?? attr[2] ?? attr[3] ?? '', start: m.index!, end: m.index! + m[0].length, ...(sheets ? { sheets } : {}) });
   }
   return out;
 }
@@ -56,30 +65,44 @@ function styled(style: string, text: string): string {
  * the cover's page fence, and a frame for the front and one for the spine
  * when the cover has the slot, the Markdown leaves it empty and the
  * metadata has something to put there. `slots` are the cover page's
- * (`CoverPage.slots`).
+ * (`CoverPage.slots`); `sheets`, the names of the sheet being laid out
+ * (`case`, `endpaperFront` and `endpapers`…): a frame for other sheets is
+ * left out, and one for this sheet takes its slot over a frame for every
+ * sheet.
  */
 export function coverSource(
   markdown: string | undefined,
   slots: readonly string[],
   metadata: DocumentMetadata = {},
+  sheets: readonly string[] = [],
 ): { markdown: string; issues: CoverSourceIssue[] } {
   const own = (markdown ?? '').replace(/\r\n?/g, '\n').trim();
   const issues: CoverSourceIssue[] = [];
   const known = new Set(slots);
+  const here = new Set(sheets);
   const filled = new Set<string>();
   const frames = coverFrames(own);
+  const forHere = (f: { sheets?: string[] }) => !f.sheets || f.sheets.some((s) => here.has(s));
+  // The slots a frame of this sheet's own fills.
+  const ownSlots = new Set(frames.filter((f) => f.sheets && forHere(f)).map((f) => f.slot));
   // A frame the cover cannot take is blanked, its text and its fence up to
   // the next frame, so that nothing spills onto a page of its own and the
   // offsets of what follows stay the Markdown's.
   let kept = own;
+  const blank = (i: number) => {
+    const to = frames[i + 1]?.start ?? own.length;
+    kept = kept.slice(0, frames[i]!.start) + kept.slice(frames[i]!.start, to).replace(/[^\n]/g, ' ') + kept.slice(to);
+  };
   frames.forEach((f, i) => {
+    const strange = f.sheets?.find((s) => !COVER_FRAME_SHEETS.has(s));
+    if (strange !== undefined) issues.push({ kind: 'coverFrameSheetUnknown', sheet: strange, sourceStart: f.start, sourceEnd: f.end });
+    // Another sheet's frame, or a frame for every sheet where this one
+    // has its own: no mistake, only not this sheet's.
+    if (!forHere(f) || (!f.sheets && ownSlots.has(f.slot))) return blank(i);
     const unknown = !known.has(f.slot);
     if (unknown) issues.push({ kind: 'coverSlotUnknown', slot: f.slot, sourceStart: f.start, sourceEnd: f.end });
     else if (filled.has(f.slot)) issues.push({ kind: 'coverSlotRepeated', slot: f.slot, sourceStart: f.start, sourceEnd: f.end });
-    if (unknown || filled.has(f.slot)) {
-      const to = frames[i + 1]?.start ?? own.length;
-      kept = kept.slice(0, f.start) + kept.slice(f.start, to).replace(/[^\n]/g, ' ') + kept.slice(to);
-    }
+    if (unknown || filled.has(f.slot)) blank(i);
     filled.add(f.slot);
   });
   const title = metaText(metadata.title);
@@ -112,7 +135,8 @@ export const coverSourceOffset = (): number => `::::page{template="${COVER_TEMPL
  * book's body text: the book's own style of each id goes over its
  * default, field by field. The title and
  * subtitle are centred at 2.4 and 1.4 times the body size, the author at
- * 1.2, the spine's line at the body size; none hyphenated.
+ * 1.2, the spine's line at the body size, a catalogue's titles at the body
+ * size from the left; none hyphenated.
  */
 export function coverParagraphStyles(own: readonly ParagraphStyleConfig[] | undefined, bodySizePt = 10): ParagraphStyleConfig[] {
   const have = new Set((own ?? []).map((s) => s.id));
@@ -122,6 +146,9 @@ export function coverParagraphStyles(own: readonly ParagraphStyleConfig[] | unde
     { id: 'cover-subtitle', fontSize: pt(1.4), lineHeight: pt(1.8), textAlign: 'center', hyphenation: false },
     { id: 'cover-author', fontSize: pt(1.2), lineHeight: pt(1.6), textAlign: 'center', hyphenation: false },
     { id: 'cover-spine', fontSize: pt(1), lineHeight: pt(1.2), textAlign: 'center', hyphenation: false },
+    // A collection's titles (`::catalogue`), the book's own in bold.
+    { id: 'cover-catalogue', fontSize: pt(1), lineHeight: pt(1.4), textAlign: 'left', hyphenation: false },
+    { id: 'cover-catalogue-current', fontSize: pt(1), lineHeight: pt(1.4), fontWeight: 700, textAlign: 'left', hyphenation: false },
   ];
   // A style of the book's with one of these ids keeps the defaults it
   // leaves out (a colour alone keeps the size and the centring).

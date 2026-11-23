@@ -97,7 +97,7 @@ describe("the cover's Markdown", () => {
 
   it('reports a slot the cover has not and a slot filled twice', () => {
     const { issues } = coverSource(':::frame{slot="back"}\nA\n:::\n:::frame{slot=back}\nB\n:::\n:::frame{slot="rear"}\nC\n:::', slots);
-    expect(issues.map((i) => [i.kind, i.slot])).toEqual([['coverSlotRepeated', 'back'], ['coverSlotUnknown', 'rear']]);
+    expect(issues.map((i) => [i.kind, 'slot' in i ? i.slot : i.sheet])).toEqual([['coverSlotRepeated', 'back'], ['coverSlotUnknown', 'rear']]);
   });
 
   it('writes text as Markdown that reads as written', () => {
@@ -135,7 +135,7 @@ describe('buildCover', () => {
     // The book's own title style wins; the rest are the cover's defaults.
     const styles = built.config.paragraphStyles!;
     expect(styles.find((s) => s.id === 'cover-title')!.fontSize).toEqual({ value: 40, unit: 'pt' });
-    expect(styles.map((s) => s.id)).toEqual(['cover-title', 'cover-subtitle', 'cover-author', 'cover-spine']);
+    expect(styles.map((s) => s.id)).toEqual(['cover-title', 'cover-subtitle', 'cover-author', 'cover-spine', 'cover-catalogue', 'cover-catalogue-current']);
     expect(built.content.resources!.map((r) => r.id)).toContain('postext-cover-isbn');
     expect(text(built.files['postext-cover-isbn.svg'])).toContain('978-0-306-40615-7');
     const doc = buildDocument(built.content, built.config);
