@@ -6,12 +6,16 @@ import type { SettingsFocus } from '../../context/settingsNavigation.js';
 import { sectionsInGroup, type SettingsGroupId, type SettingsSectionId } from '../sections/registry.js';
 import { SECTION_COMPONENTS } from '../sections/components.js';
 import { PageGroupPreview } from '../settings/PageGroupPreview.js';
+import { PageSpreadEditor } from '../editors/PageSpreadEditor.js';
 import { PreviewHighlightProvider } from '../settings/previewHighlight.js';
 import { focusSettingsEntry } from '../settingsFocus.js';
 import { sectionPanelId, sectionTabId } from './SectionTabs.js';
 
-/** The sections whose page opens on the drawing of the page. */
-const DRAWN: ReadonlySet<SettingsSectionId> = new Set(['page', 'layout', 'writing', 'cjk']);
+/** The sections whose page opens on the drawing of the page: the page
+ *  and its columns on the one whose margins and gutter are dragged, the
+ *  writing system on the plain drawing. */
+const EDITED: ReadonlySet<SettingsSectionId> = new Set(['page', 'layout']);
+const DRAWN: ReadonlySet<SettingsSectionId> = new Set(['writing', 'cjk']);
 
 /** The open section of a settings group: one section on screen at a time,
  *  the one its tab names. An entry asked for from outside (a design
@@ -45,6 +49,7 @@ export function GroupPage({ group, section, entry, onEntryShown }: {
           ref={pageRef}
           {...(tabbed ? { role: 'tabpanel', id: sectionPanelId(section), 'aria-labelledby': sectionTabId(section) } : {})}
         >
+          {EDITED.has(section) && <div className="pt-3"><PageSpreadEditor /></div>}
           {DRAWN.has(section) && <div className="pt-3"><PageGroupPreview /></div>}
           <Section key={section} />
         </div>
