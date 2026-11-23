@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'it',
   lastUpdated: '2026-11-10',
   readingTime: '32 min',
-  order: 42,
+  order: 43,
   plainSummary: "La Sandbox è uno strumento gratuito di questo sito per provare Postext senza installare nulla. Scrivi il testo da una parte e vedi le pagine finite dall’altra, e cambiano mentre scrivi. Questa pagina spiega le parti dello schermo e i pannelli in cui scrivi il testo, gestisci libri e capitoli, aggiungi immagini e scegli i font. Altre pagine trattano le impostazioni grafiche, le anteprime, il salvataggio e l’importazione, e l’inserimento della Sandbox nel tuo sito.",
 };
 
@@ -33,6 +33,7 @@ Una stretta striscia lungo il bordo sinistro ha un pulsante per pannello. Ogni p
 - **Risorse** (icona `FolderOpen`): immagini, disegni SVG e tabelle usati nel libro
 - **Font** (icona `Type`): i caratteri usati dal libro e i tuoi file di font
 - **Grafica** (icona `Settings2`): impostazioni di pagina, tipografia, titoli, figure, riquadri ed esportazione
+- **Copertina** (icona `BookMarked`): le versioni a stampa del libro, il foglio di copertina con il dorso, la sua grafica e i suoi testi (vedi [Copertine per la stampa](/it/docs/print-covers#nella-sandbox))
 - **Verifiche** (icona `AlertTriangle`): problemi di composizione trovati nell’impaginazione. L’icona mostra un contatore aggiornato degli avvisi correnti, che si ferma a `99+`.
 
 Un clic sul pulsante del pannello attivo chiude la barra laterale, e un clic su un altro pulsante passa a quel pannello. La barra è un unico punto di tabulazione: i tasti freccia (↑ / ↓, con ritorno all’inizio), **Home** e **Fine** spostano il focus tra i pulsanti, e Invio o Spazio aprono il pannello che ha il focus.
@@ -233,7 +234,7 @@ Gestisce le risorse del libro: immagini bitmap, figure SVG, tabelle e video. Il 
 - **Nuova tabella**: parte come una griglia 2×2 con una riga di intestazione
 - **Aggiungi video**: un video di YouTube o Vimeo, un file video o il suo indirizzo (un MP4 o uno stream HLS; vedi *Video* più avanti). Un libro i cui tipi di risorsa sono anteriori ai video riceve il tipo integrato *Video* quando aggiunge il primo.
 
-Puoi anche trascinare file dal disco sul pannello, file video compresi (MP4, WebM, Ogg, QuickTime). Vengono caricati in blocco, con id ricavati dai nomi dei file. I file non supportati vengono saltati, e una breve nota riporta quanti ne sono stati aggiunti e quanti saltati.
+Puoi anche trascinare file dal disco sul pannello, file video compresi (MP4, WebM, Ogg, QuickTime). Un PDF, o un file Illustrator salvato con la compatibilità PDF, diventa un’immagine per pagina (fino a 20) a 300 ppi su fondo trasparente; i file TIFF e PSD mantengono la loro dimensione piena. Un file EPS non viene letto: una nota chiede di salvarlo come PDF. Vengono caricati in blocco, con id ricavati dai nomi dei file. I file non supportati vengono saltati, e una breve nota riporta quanti ne sono stati aggiunti e quanti saltati.
 
 **Vista di dettaglio.** Quando selezioni una risorsa, se ne apre l’editor:
 

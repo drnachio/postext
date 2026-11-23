@@ -28,6 +28,8 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+印刷用の表紙のある本は、表紙のMarkdownを`cover.md`として持ち、独自の表紙の文字を持つ言語はそれを`cover/<language>.md`として持ちます。`openBundle`はそれを`coverMarkdown`として返し、`createBundle`も同じ形で受け取ります。表紙のデザインと印刷版は設定（`cover`、`production`）にあります。[印刷用の表紙](/ja/docs/print-covers)を参照してください。
+
 マニフェストの各フィールドは、Sandboxの付録[プリセットバンドルの形式](/ja/docs/sandbox-embedding#プリセットバンドルの形式)で説明しています。ファイルには`layouts.json`を含めることもできます。これはSandboxのページ数の記録で、本がSandboxで最初からページ分けされた状態で開きます。多言語の本では版ごとに1つずつ含めることもできます（`layouts.zh-Hant.json`。こちらが先に読まれます）。`openBundle`はこれらを無視します。
 
 APIは`postext`本体と、低レベルのヘルパーを加えた`postext/bundle`サブパスから公開されています。描画もする場合は`postext`からインポートしてください。そうすればバンドルのアダプターとレンダラーが1つのモジュールインスタンスを共有します。これは、エントリーポイントごとに別のビルドになるesm.shのようなCDNで重要です。

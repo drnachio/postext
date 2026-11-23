@@ -1,0 +1,396 @@
+{/* docs/print-covers-en.mdx */}
+
+export const metadata = {
+  title: 'Print covers',
+  sidebarTitle: 'Print covers',
+  description: "A book's print versions, each with its binding, ISBN and spine; binding and paper profiles from the printer; the cover sheet with its flaps, jacket, case and endpapers; the cover's design and finishes; its Markdown text; and the cover from the Sandbox, the command line and code",
+  lang: 'en',
+  lastUpdated: '2026-11-23',
+  readingTime: '16 min',
+  order: 41,
+  plainSummary: "This page is about the cover of a printed book: the sheet that wraps the pages, with the back, the spine and the front, and sometimes flaps, a dust jacket or endpapers. A book can be printed in several versions, such as a paperback and a hardcover, and each version has its own binding and its own ISBN. Postext works out how wide the spine is from the number of pages and the paper, and builds the sheet at the size the printer needs, with the bleed and the fold marks. The design of the cover lives in the settings and its texts in a Markdown document, and the title and author come from the book's own details. The page shows how to do all this in the Sandbox, from the command line and from code.",
+};
+
+# Print covers
+
+**A book's print versions live in its `production` settings; the cover's design is the `cover` setting; its text is a Markdown document of the book.**
+
+The pages of a book are one thing and the sheet that wraps them is another. The cover sheet is wider than two pages: it carries the back cover, the spine and the front cover side by side, sometimes flaps, and it changes with every reprint that changes the page count or the paper. Postext builds it from three parts of the book:
+
+- **The production**: the versions the book is printed in (a paperback, a hardcover), each with its binding, its ISBN and its spine. It belongs to the book, not to its design, and nothing in the layout of the pages reads it.
+- **The cover's design**: grounds, pictures, boxes, logos, text boxes and finishes, placed on the panels of the sheet. It is a part of the design, shared by every version of the book and by the books of a collection.
+- **The cover's text**: a Markdown document with one block per panel. The front and the spine that it leaves empty take the title, subtitle and author from the book's metadata on every build, so a corrected title reaches the cover without copying it.
+
+From these three, the cover is laid out by the same engine as the pages, and the PDF goes to the printer with the sheet's bleed and fold marks.
+
+## Versions of a book
+
+A version is the book as one binding makes it. A novel published as a paperback and as a hardcover has two versions over the same pages: each has its own binding, its own ISBN and its own cover sheet.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Paperback', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Hardcover', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // on a case: a dust jacket
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Each version names its binding by a profile's id, or carries the profile itself. The fields:
+
+- `id` and `name`: how the version is chosen (the command line's `--print-version`) and shown.
+- `binding`: a binding profile (below).
+- `isbn`: this version's ISBN, ISBN-10 or ISBN-13, with or without hyphens. Each binding of a book has its own. A valid one prints as a barcode on the back cover.
+- `isbnAddOn`: five digits printed after the barcode. In Spain it carries no price: the ISBN agency allows it only starting with 9, for the publisher's own use (`90000` means no price).
+- `workIsbn`: the ISBN of the whole work, for a volume of a collection or of a work in several volumes. The barcode carries the volume's `isbn`; this one is printed as text beside it.
+- `flaps`: on a softcover, flaps; on a case, a dust jacket.
+- `caseMaterial`: on a case, `printed` (the cover printed and laminated over the boards, the default) or `cloth` (stamped, usually under a jacket).
+- `overrides`: measures in mm this version sets for itself over its profile's, when the printer asks for a different joint on this one book.
+- `spineOverride`: the spine in mm as the printer gives it, in place of the calculated one.
+- `spineText`: how the spine is lettered: `direction` rising (`bottomToTop`, the usual way in Spain and the default) or falling (`topToBottom`, as ISO 6357 prefers), and `minSpine`, the narrowest spine that takes text (6 mm by default).
+
+`production.collection` names the collection or multi-volume work the book belongs to, with its own ISBN (printed as text beside the volume's) and a `catalogue` of its titles, each with an `id`, a `title` and an optional picture `resource`, for the endpapers.
+
+### Binding profiles
+
+A binding profile describes how a printer binds: a style, its measures and what it can make. Postext comes with one generic profile per style, on signatures of 16 pages:
+
+<table>
+  <thead>
+    <tr><th>Id</th><th>Style</th><th>What it is</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>A softcover glued at the spine (PUR or hot melt). It takes spines from 3 to 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>A softcover over sewn signatures.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>A hardcover with a flat spine.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>A hardcover with a rounded spine.</td></tr>
+  </tbody>
+</table>
+
+The measures of these profiles come from printers' and binders' published specifications; where they disagree, the value most of them give. They are a starting point. A printer's own go in a profile of the book, in `production.bindings`, which travels with the book so a bundle opened elsewhere still finds it:
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Perfect bound, my printer',
+    printer: 'Gráficas Ejemplo',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Paperback', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style`: `perfect`, `sewnSoftcover`, `caseFlat` or `caseRound`.
+- `signature`: pages per signature. The page count is rounded up to whole signatures for the spine, and the check says how many blank pages that adds.
+- `measures`: any left out take the defaults of the style.
+- `accepts`: the smallest and largest trim (`trim.min`, `trim.max`, each a `width` and a `height` in mm) and the thinnest and thickest spine (`spine.min`, `spine.max`) the printer can bind. A book outside them gets a check instead of a cover nobody can bind.
+
+Every measure is in mm, written in one of three ways so that one profile serves every trim:
+
+- **A number**: the same for any trim (a 3 mm square).
+- **Steps**: a list of `{ upTo: { width, height }, mm }`, the first step whose `upTo` the trim fits in, and the last one, without `upTo`, for anything larger. A printer that thickens the board on big books writes it this way.
+- **A share of the trim**: `{ ratio, of, min, max }`, a ratio of the trim's `width` (the default) or `height`, kept between `min` and `max`. Flaps are usually written this way.
+
+<table>
+  <thead>
+    <tr><th>Measure</th><th>Applies to</th><th>What it is</th><th>Default</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>all</td><td>Added to the thickness of the pages: glue, sewing and, on a softcover, the cover board round it.</td><td>0.5</td></tr>
+    <tr><td><code>bleed</code></td><td>softcover</td><td>Bleed round the cover sheet.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>softcover</td><td>Distance of the hinge scores from each spine fold (0: scored only at the spine).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>softcover</td><td>Width of each flap.</td><td>2/3 of the width, 65 at least</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>softcover</td><td>How much narrower than the trim each cover panel is made, so the flap folds just inside the fore-edge.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>case</td><td>Board thickness.</td><td>2 up to 150 × 230, 2.5 up to 216 × 280, 3 above</td></tr>
+    <tr><td><code>square</code></td><td>case</td><td>How far the boards stand out from the pages at head, foot and fore-edge.</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>case</td><td>The hinge gap between each board and the spine.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>case</td><td>The cover material turned in round the boards.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>case</td><td>How much narrower than the trim each board is cut at the spine side, before the square is added at the fore-edge.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>case</td><td>Added to the pages and two boards for the width of the spine board.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>round case</td><td>Added to the flat case spine for the round.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>jacket</td><td>Extra width at each fore-edge fold, for the board it wraps.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>jacket</td><td>Width of each jacket flap.</td><td>2/3 of the width, 80 at least</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>jacket</td><td>Bleed round the jacket.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>endpapers</td><td>Glue strip along the fold, tipped onto the pages.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>endpapers</td><td>Bleed at head, foot and fore-edge (none at the fold).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>all</td><td>Kept clear of text inside each fold, score, joint and trim.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>all</td><td>How far past the trim the design is drawn before a mirrored bleed takes over (below).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### Paper and the spine
+
+The spine is the thickness of the pages plus the binding's allowance. A leaf (two pages) is as thick as its paper's grammage times its bulk, in micrometres: 90 g/m² at a bulk of 1.3 makes a leaf of 0.117 mm. The pages are the book as laid out, rounded up to whole signatures. Each page is counted on its own paper: the book's paper is `folio.paper`, and a run of pages on another stock (a `:::paper` block, a section of coated plates) counts with its own, by the same rule [Folio](/en/docs/configuration-html-folio-epub) uses to show the book.
+
+So the spine follows the book. When an edit adds a signature, the spine grows, the sheet widens, and every element placed on the front or the back moves with its panel. When the printer measures a dummy and gives a figure, `spineOverride` sets it, and the check notes both numbers. A spine under `spineText.minSpine` carries no text.
+
+A paper of the book can also be kept as a profile, in `production.papers`: the stock Folio knows (`type`, `grammage`, `bulk`, its finish and shade) with an `id`, a `name`, its `supplier` and its `commercialName`.
+
+### Profiles from one book to another
+
+Binding and paper profiles move between books, and between people, as a `.postext-production.json` file. `exportProductionProfiles(papers, bindings)` writes one, and `importProductionProfiles(data)` reads one back with the issues of the entries it left out. The Sandbox's Cover panel has both as buttons.
+
+## The sheet and its panels
+
+The sheet is made of panels, called zones, side by side, each what that part of the sheet becomes once folded:
+
+<table>
+  <thead>
+    <tr><th>Sheet</th><th>Zones, left to right</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Softcover</td><td><code>flapBack</code> (with flaps), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (with flaps)</td></tr>
+    <tr><td>Case</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, with the turn-in round them</td></tr>
+    <tr><td>Dust jacket</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Endpaper</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+A softcover version has one sheet, its cover. A case has its covering, a jacket when `flaps` is on, and a front and a back endpaper. A book set right to left (`direction: 'rtl'`) has its sheet mirrored: the front panel on the left, the back on the right.
+
+Each zone has a safe area inside it, `safeMargin` in from every fold and trim, and the spine's own narrower margin across it. The Sandbox draws the folds, the scores and the safe areas over the sheet; the PDF draws fold marks in the slug outside the bleed.
+
+## The cover's design
+
+The `cover` setting is the cover's design. Like the rest of the design, it does not say what the cover reads, only how it looks, and it does not change the layout of the pages:
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background`: the ground of the whole sheet.
+- `image`: a bitmap or SVG resource of the book filling the whole sheet (`area: 'sheet'`, the default) or only the front cover (`'front'`), cropped to cover it about `focus` (fractions of the picture).
+- `zones`: a ground per zone, over the sheet's ground and its picture.
+- `verticalAlign`: where each zone's text sits in it: `top` (the default), `middle` or `bottom`. The spine's text is always centred across it.
+- `barcodeMagnification`: the barcode's size against the nominal one, from 0.8 to 2 (default 1). Below 0.8 it is set at 0.8 and the check says so.
+- `mirrorMargin`: the mirrored bleed (below).
+
+### Elements, effects and logos
+
+Over the grounds, the design places three lists of items, each drawn back to front: `elements` under the text, `effects` over it, and `logos` over everything. An item is a picture (`kind: 'image'` with a `resourceId`), a box of colour (`'box'`) or a shape of colour (`'shape'`), and has an `id` of letters, digits, `-` and `_`.
+
+An item is placed by the zone it stands in, so it moves with that zone when the spine grows or the binding changes:
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height`: its box, in mm from the zone's top-left corner. It may run out of the zone, onto the next ones or into the bleed.
+- `basis`: the size of its zone when it was placed. When the zone is another size now, because the book's format changed or the spine grew, the item scales with it: a box or a shape on each axis, a picture evenly about its centre, keeping its proportions. Without it, the item stays as placed.
+- `to`: a box or shape that runs across zones, such as a band from the back to the front: its right edge, in mm from the left of the zone it ends in (`to.zone`, `to.x`), and that zone's width when it was placed (`to.basis`). Each edge then follows its own zone.
+- `color` and `opacity`: a box's or a shape's colour, and the opacity of any item (0 to 1). A picture keeps its own transparency.
+- `fit`: how a picture fills its box: whole inside it (`contain`, the default) or covering it, cropped (`cover`).
+- `path`: a shape drawn by nodes, in fractions of its box (0, 0 its top-left corner; 1, 1 its bottom-right), so the shape stretches with the box. Each part has its `nodes` and is `closed` or open; a node has `x` and `y`, and the handles of the curve that comes into it (`in`) and leaves it (`out`).
+- `outline`: closed polygons in fractions of the box, traced from a picture, for a veil or a finish in its shape.
+- `clip`: a picture cut to an outline, so a picture shows only within its illustration's own shape.
+- `bleed`: past the design margin of a mirrored bleed, `mirror` (the default) folds the item out with the ground; `own` paints it as it is, over the fold.
+- `clearance` (logos): the clear space in mm nothing else should enter round the logo.
+
+A box or a shape can also carry the effects a page's box style cannot draw: `radius` for rounded corners in mm, `stroke` for a border (`color` and `width` in mm), `gradient` from its colour to `to` at `angle` degrees (0: left to right; 90: top to bottom), and `shadow` (`color`, `opacity`, how far it falls `x` and `y` in mm, and how soft it is, `blur`). A gradient or a shadow makes the item a picture of its own, drawn at the PDF's resolution.
+
+### Mirrored bleed
+
+A cover's art usually stops at the trim, and a case's turn-in runs 15 mm past it, round the board. With `mirrorMargin`, the design is drawn that many mm past the trim (2 at the least), and beyond it the ground and the elements are mirrored out to the sheet's edge, so the turn-in and the bleed continue the picture instead of showing a blank strip. A profile's `designMargin` gives the margin a printer expects. An element marked `bleed: 'own'` is not mirrored.
+
+### Text boxes
+
+Each zone is a text frame of its own. `textBoxes` adds frames placed by hand, for a quotation across the front, a line on the spine's foot or a caption over a picture:
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name`: letters, digits, `-` and `_`, and not a zone's name. The cover's Markdown fills the box by it.
+- `rect`: its place on the sheet, in mm from the corner of the bleed.
+- `rotate`: `-90` turns the text a quarter to read up a spine, `90` to read down it.
+- `verticalAlign`: `top`, `middle` or `bottom`.
+
+### Finishes and technical plates
+
+`finishes` are what the printer adds after the inks, each over a shape of the design:
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process`: `varnish` or `foil`, printed on a spot plate of its own (an ink with a [finish](/en/docs/special-inks-die-cuts#finishes)); or `emboss` or `deboss`, a relief die.
+- `ink`: the varnish's or foil's spot colour. By default a varnish is `Varnish` and a foil `Gold foil`.
+- `sheen`: `gloss` (the default), `satin`, `matte` or `softTouch`.
+- `shape`: what the finish covers: a box of its own (`{ box }`, placed like an element), the shape of an element, effect or logo (`{ element: id }`; a picture's contour when its resource has one), or a saved outline in a box of its own (`{ outline, box }`).
+
+An emboss or a deboss prints nothing. Its shape goes to the printer on a technical plate, next to the [die line](/en/docs/special-inks-die-cuts#the-die-line-in-the-pdf): a `Separation` named `Emboss` or `Deboss` that the preflight lists and no proof paints. The binder makes the relief die from it.
+
+## The cover's text
+
+The cover's text is a Markdown document of the book, kept next to its chapters. Each block fills one zone or one text box by its name:
+
+```md
+:::frame{slot="back"}
+A city that keeps its books underground, and the girl who reads them aloud.
+
+:::paragraphs{style="cover-praise"}
+"A novel to read in one sitting." — *A newspaper*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Ana Pérez** was born in Zaragoza in 1984. *The Underground Library* is her second novel.
+:::
+
+:::frame{slot="praise"}
+*Winner of the First Novel Prize*
+:::
+```
+
+The text is set in the book's typography: its paragraph styles, character styles and fonts. Four paragraph styles are the cover's own, and the book may redefine them: `cover-title`, `cover-subtitle`, `cover-author` and `cover-spine`. The front and the spine the Markdown leaves empty take the book's title, subtitle and author from its metadata, set in these styles, on every build: they are never copied into the cover's text. A `front` or `spine` frame replaces them with its own text.
+
+A frame for a slot the sheet does not have (a flap on a sheet without flaps, a back cover on an endpaper) is left out, and the check says so; a second frame for one slot is left out too. Write the cover's text as paragraphs and paragraph styles: a `#` heading takes the design the book gives its chapter headings.
+
+One cover text serves every version and every sheet. A book in several languages may give each language its own.
+
+## The checks
+
+Building a cover reports what it could not do as asked. The Sandbox shows them in the Cover panel's **Checks**, the command line prints them, and `buildCover` returns them in `issues`:
+
+<table>
+  <thead>
+    <tr><th>Kind</th><th>What happened</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>The version names a binding profile the book does not have.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>The trim or the spine is outside what the profile's <code>accepts</code> allows.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>The ISBN does not read: its length or check digit is wrong. The cover has no barcode.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>The spine was set by hand; both the calculated and the used widths are given.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>Rounding to whole signatures adds blank pages.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>The spine is under <code>minSpine</code> and carries no text.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>A text box has a name the cover cannot use.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>The cover's text fills a slot the sheet lacks, or one slot twice.</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>The mirrored bleed left out pictures it could not read, or stopped short of the sheet's edge.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>Pictures cut to an outline were drawn whole.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>The barcode was asked under 80 % and is set at 80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>The book has no such version, or the version no such sheet.</td></tr>
+  </tbody>
+</table>
+
+The configuration checks also read `production` and `cover` like any other setting: an unknown key, a value of the wrong kind or an ISBN that does not read is reported with its path.
+
+The cover's PDF goes through the same [preflight](/en/docs/configuration-pdf-output) as the book's: resolution of its pictures, black, ink coverage, its finishes and technical plates.
+
+## In the Sandbox
+
+The **Cover** panel, in the sidebar, holds the print versions and their cover:
+
+- **Versions**: **Add paperback** or **Add hardcover**, then each version's name, binding, ISBN, add-on and work ISBN, its flaps or jacket, a case's material, the spine from the printer, the direction of the spine text and the narrowest spine that takes it. **This version's measures** overrides the profile's for this version only.
+- **Sheet**: which sheet is shown (cover, jacket, front or back endpaper), and its pages, spine and size.
+- **Design on the sheet**: **Edit on the sheet** turns the sheet into the designer. Text boxes, colour boxes, veils, pictures, logos and finishes are added from its bar, dragged and resized on the sheet, snapping to folds, safe areas and each other (Alt turns snapping off). The arrow keys move the selected item 1 mm, 10 mm with Shift. **Layers** lists the items under the text, the text boxes, the items over the text, the logos and the finishes, and orders them. The selected item's fields set its place, colour, opacity, how a picture fills its box, its corner radius, border, gradient and shadow, what it does past a mirrored bleed, whether it scales with its panel, and its path, outline or clip. Renaming a text box moves its text in the cover's Markdown with it.
+- **Texts**: one Markdown editor per zone and text box. The front and the spine show what they take from the metadata until they are given **own text**.
+- **Collection**: the collection's name and ISBN.
+- **Files for the printer**: **Download sheet PDF**, written with the book's PDF settings (colour space, output profile, PDF/X), and **Download front cover** as a picture.
+- **Checks**: the checks above.
+- **Printer profiles**: binding profiles copied from a built-in one and set to a printer's measures, each by millimetres, by a share of the trim or by steps of trim size, with what it comes to for this book; paper profiles with their supplier and commercial name; and **Export profiles** and **Import profiles** for the `.postext-production.json` file.
+
+The Design panel's **Cover design** group holds the grounds, the picture, the zones' text alignment, the barcode size and the mirrored bleed. Every change in the Cover panel is a step of the undo history.
+
+Pictures for a cover often come as print files. The Resources panel reads a PDF, or an Illustrator file saved with PDF compatibility, as one picture per page at 300 ppi on a clear background, and TIFF and PSD files at their full size. An EPS file is not read: the panel asks for it saved as PDF.
+
+## From the command line
+
+`postext cover` typesets one sheet of a version:
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` chooses the version (the first by default), `--sheet` the sheet (`cover`, `jacket`, `endpaper-front` or `endpaper-back`). A path ending in `.png`, `.jpg` or `.webp`, or `--format`, paints one panel instead of the PDF: the front cover unless `--zone` names another (`back`, `spine`, `flapFront`, `flapBack`, or `sheet` for the whole). The PDF options (`--color-space`, `--pdfx`, `--profile` and the rest) apply as for `postext pdf`. See [Command line](/en/docs/command-line).
+
+## From code
+
+`postext/production` holds the whole cover chain. `buildCover` takes the book's configuration, a version, the laid-out pages (for the spine), the cover's Markdown, the metadata and the resources, and returns the cover as a document of one page:
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` gives the sheet's size and zones in mm, `cover.sheets` every sheet of the version with its spine, and `cover.issues` the checks. `pages` may also be a page count, all on the book's paper.
+
+The rest of the module exposes each step:
+
+- **ISBN**: `parseIsbn` reads and checks an ISBN, `isbnBarcodeSvg` draws its EAN-13 barcode with an add-on, `ean13CheckDigit` and `isbnCaption` the rest.
+- **Measures and sheets**: `resolveBindingMeasures` works out a profile's measures for a trim, `resolveLength` one measure, `checkProfileAccepts` the limits; `spineFromRuns`, `pageRunsOf`, `signaturePages` and `leafMm` the spine; `softcoverSheet`, `caseSheet`, `jacketSheet` and `endpaperSheet` each sheet, and `versionSheets` a version's.
+- **The design**: `coverPage` composes a sheet's page template, `coverSource` the Markdown it is laid out from, `coverZoneBox` a zone's box, `placeCoverElement` and `coverElementRect` an item's place, `basicShape`, `pathData` and `flattenCoverPath` its shapes.
+- **Profiles and settings**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` and `readProductionConfig`, which reads a `production` block from untrusted data and reports what it dropped.
+- **Folio**: `folioOfBook` gives the Folio settings with the first version's binding, and `productionFolioBinding` and `folioVersionOf` a chosen version's.
+
+## In a `.postext` file
+
+A bundle carries the `production` and `cover` settings in its configuration and the cover's text as `cover.md` beside the chapters. A language with a cover text of its own carries it as `cover/<language>.md`. `openBundle` (from `postext/bundle`) returns it as `coverMarkdown`, and `createBundle` takes it the same way. See [Bundles](/en/docs/configuration-bundles).
+
+## Folio and EPUB
+
+The Folio view binds the book as its first version: a perfect binding or a sewn softcover as a paperback, a case as a hardcover, with the cover's spine painted on the spine. An EPUB written by the command line or the Sandbox takes the print front cover as its cover picture when the book has a print version and names no other.
+
+## Limits
+
+- The spine counts pages as laid out. A book whose pages change after the cover is made needs its cover made again; the spine and every panel follow on their own.
+- The default measures are a starting point taken from published specifications. Ask the printer for theirs and keep them in a profile.
+- Only PDF and the picture formats are written. An IDML package of the cover sheet is not.
+- A `#` heading in the cover's text takes the book's chapter heading design; set cover titles with paragraph styles.

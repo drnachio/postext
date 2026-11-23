@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-11-10',
   readingTime: '30 min',
-  order: 42,
+  order: 43,
   plainSummary: "The Sandbox is a free tool on this website for trying Postext without installing anything. You write your text on one side and see the finished pages on the other, and they change as you type. This page explains the parts of the screen and the panels where you write the text, manage books and chapters, add pictures and choose fonts. Other pages cover the design settings, the previews, saving and importing, and putting the Sandbox in your own website.",
 };
 
@@ -33,6 +33,7 @@ A narrow strip on the left edge has one button per panel. Each button shows an i
 - **Resources** (`FolderOpen` icon): images, SVG drawings and tables used in the book
 - **Fonts** (`Type` icon): the typefaces the book uses, and your own font files
 - **Design** (`Settings2` icon): page, typography, headings, figures, boxes and export settings
+- **Cover** (`BookMarked` icon): the book's print versions, the cover sheet with its spine, its design and its texts (see [Print covers](/en/docs/print-covers#in-the-sandbox))
 - **Checks** (`AlertTriangle` icon): typesetting problems found in the layout. The icon carries a live count badge of current warnings, capped at `99+`.
 
 Clicking the active panel's button collapses the sidebar, and clicking a different button switches to that panel. The bar is a single tab stop: the arrow keys (↑ / ↓, wrapping), **Home** and **End** move focus between the buttons, and Enter or Space opens the focused panel.
@@ -233,7 +234,7 @@ Manages the book's resources: bitmap images, SVG figures, tables and videos. The
 - **New table**: starts as a 2×2 grid with one header row
 - **Add video**: a YouTube or Vimeo video, a video file, or the address of one (an MP4 or an HLS stream; see *Video* below). A book whose resource types predate videos gets the built-in *Video* type when it adds its first one.
 
-You can also drag and drop files from disk onto the panel, video files (MP4, WebM, Ogg, QuickTime) included. They upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many were skipped.
+You can also drag and drop files from disk onto the panel, video files (MP4, WebM, Ogg, QuickTime) included. A PDF, or an Illustrator file saved with PDF compatibility, becomes one picture per page (up to 20) at 300 ppi on a clear background; TIFF and PSD files keep their full size. An EPS file is not read: a note asks for it saved as PDF. They upload in bulk, with ids slugified from their filenames. Unsupported files are skipped, and a short note reports how many were added and how many were skipped.
 
 **Detail view.** Selecting a resource opens its editor:
 

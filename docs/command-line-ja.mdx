@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ja',
   lastUpdated: '2026-11-16',
   readingTime: '14分',
-  order: 52,
+  order: 53,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
 };
 
@@ -126,6 +126,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>pdf</code></td><td>PDF。しおり、リンク、埋め込みフォントが入り、既定ではアクセシビリティのためのタグ付き（PDF/UA）です。印刷用にはPDF/XとCMYK。</td></tr>
     <tr><td><code>html</code></td><td>テキストを画像にせず、テキストのまま収めたHTMLのページ。自己完結した1つのファイル、または<code>index.html</code>と<code>assets/</code>を持つフォルダーです。</td></tr>
     <tr><td><code>epub</code></td><td>EPUB 3の本。印刷したとおりの固定ページか、リフローするテキストです。</td></tr>
+    <tr><td><code>cover</code></td><td>本のいずれかの版の印刷用の表紙。用紙全体のPDFか、そのうちの1面の画像です。</td></tr>
     <tr><td><code>image</code></td><td>1ページをPNG、JPEG、WebPの画像にします。</td></tr>
     <tr><td><code>images</code></td><td>全ページ、または範囲を指定したページを、フォルダーの中の画像にします。</td></tr>
     <tr><td><code>docx</code></td><td>章をWordの文書にします。セマンティック（内容だけを簡素なWordのスタイルで）、組版どおり（同じ編集できるテキストを本のデザインで）、ページの複製（各行を固定のテキストボックスに）のいずれかです。</td></tr>
@@ -177,7 +178,24 @@ postext epub book.postext -o book.epub
 postext epub book.postext --layout reflowable --cover cover.jpg
 ```
 
-`--layout fixed`（既定）は、すべてのページを印刷したとおりに保ち、テキストは選択できます。`--layout reflowable`は、読書システムがその画面に合わせてテキストを組み直せるようにします（[EPUBの本](/ja/docs/configuration-html-folio-epub#epubの本postext-epub)を参照）。表紙は、`--cover`で画像を指定しない限り本のサムネイルです。パッケージのメタデータ（タイトル、著者、言語、識別子）は、Sandboxと同じく最初の章のフロントマターから取ります。`redistributable: false`のフォントはコピーされません。`fallback`を指定したフォントは、そのオープンフォントの書体が元のフォントの名前で埋め込まれます（postext 1.43以降）。
+`--layout fixed`（既定）は、すべてのページを印刷したとおりに保ち、テキストは選択できます。`--layout reflowable`は、読書システムがその画面に合わせてテキストを組み直せるようにします（[EPUBの本](/ja/docs/configuration-html-folio-epub#epubの本postext-epub)を参照）。表紙は`--cover`で指定した画像です。指定がなければ、本に印刷版があるときは印刷用の表紙の表1、ないときは本のサムネイルです。パッケージのメタデータ（タイトル、著者、言語、識別子）は、Sandboxと同じく最初の章のフロントマターから取ります。`redistributable: false`のフォントはコピーされません。`fallback`を指定したフォントは、そのオープンフォントの書体が元のフォントの名前で埋め込まれます（postext 1.43以降）。
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+本のいずれかの印刷版（`production`設定）の表紙の用紙です。表4、背、表1と袖を、製本と本のページから決まる大きさで、塗り足しと折りのトンボを付けて、本の表紙デザインと表紙のMarkdownから組みます。表紙のMarkdownが書いていない書名、著者、背は本のメタデータから入ります。[印刷用の表紙](/ja/docs/print-covers)を参照してください。
+
+- `--print-version ID`：版（`production.versions[].id`。既定は最初の版）。プログラムのバージョンを出力する`--version`とは別のものです。
+- `--sheet cover|jacket|endpaper-front|endpaper-back`：用紙（既定は`cover`）。
+- パスが`.png`、`.jpg`、`.webp`で終わるか`--format`を指定すると、PDFを書く代わりに1つの面を描きます。`--zone`で`back`、`spine`、`flapFront`、`flapBack`、全体なら`sheet`を指定しない限り表1です。`--dpi`と`--quality`は`image`と同じように使えます。
+- `pdf`のオプション（`--pdfx`、`--profile`、`--color-space`など）はPDFに使えます。
+
+表紙のチェック（文字を入れるには細すぎる背、折丁で増えた白ページ、無効なISBN）は警告として出力されます。
 
 ### imageとimages
 

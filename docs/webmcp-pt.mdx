@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: um agente trabalhando no Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 64 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
+  description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 69 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
   lang: 'pt',
   lastUpdated: '2026-11-12',
   readingTime: '13 min',
-  order: 53,
+  order: 54,
   plainSummary: "Esta página é para quem quer que um assistente de inteligência artificial trabalhe por você em um livro no Sandbox. Enquanto o Sandbox está aberto, ele entrega ao assistente um conjunto de ferramentas para olhar qualquer página, mudar o design, editar o texto, adicionar imagens e tabelas, encontrar problemas e salvar arquivos. Você pede com suas próprias palavras, por exemplo “aumente um pouco a letra e confira se o livro continua cabendo em 40 páginas”, e o assistente usa as ferramentas e mostra as páginas para você. Tudo fica no seu navegador. A página explica como conectar um assistente, o que ele pode fazer e como cada ferramenta é chamada.",
 };
 
@@ -24,7 +24,7 @@ interface: ele lê o livro, pede uma imagem da página 12, define
 páginas e volta ao valor anterior. Ele faz o que você faz a olho, com o seu
 livro e no seu navegador.
 
-São 64 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
+São 69 ferramentas com nomes que começam por `sandbox_`, registradas enquanto
 o Sandbox está na tela, e 8 ferramentas do site, `site_*`, em todas as páginas
 do postext.dev. Esta página as organiza pelo que você pediria a um agente e
 mostra a chamada de cada uma.
@@ -41,7 +41,7 @@ configurar nada do lado do Postext.
 O WebMCP ainda é um rascunho. O Chrome o oferece como teste de origem e atrás
 da flag `chrome://flags/#enable-webmcp-testing`. As ferramentas acompanham a
 página: na página inicial ou na documentação o agente tem as ferramentas
-`site_*`; quando o Sandbox está na tela, aparecem também as 55 ferramentas
+`site_*`; quando o Sandbox está na tela, aparecem também as 69 ferramentas
 `sandbox_*`.
 
 ### Em qualquer outro navegador: `window.postextWebMcp`
@@ -648,6 +648,34 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
 
 - **Projetos gráficos.** `sandbox_list_designs` lista a galeria do painel Design (projetos salvos, os que vêm com o Sandbox e os dos livros de exemplo) com suas partes. `sandbox_save_design` salva o projeto de um livro, `sandbox_try_design` experimenta um no livro na tela e `sandbox_end_design_trial` o mantém ou descarta (Descartar traz de volta só o que o projeto substituiu), `sandbox_apply_design` aplica um de uma vez ou como estilo de capítulo, `sandbox_import_design` e `sandbox_export_design` leem e escrevem arquivos de projeto, e `sandbox_delete_design` exclui um salvo. Todas aceitam `parts`, os grupos do painel Design, e respondem com os estilos que o texto nomeia e que faltam ao projeto.
 
+### Capas para impressão
+
+As versões impressas e o projeto da capa são configurações:
+`sandbox_set_config` grava `production.versions` e `cover` (`cover.textBoxes`,
+`cover.elements`, `cover.finishes`…). Três ferramentas leem, gravam e exportam
+o resto, como faz o painel Capa:
+
+- `sandbox_cover_get` lê a capa de uma versão (`version`, a primeira por
+  padrão) e uma das suas folhas (`sheet`: `cover`, `jacket`, `endpaperFront`
+  ou `endpaperBack`): as versões, o tamanho e a lombada da folha em mm com as
+  páginas de onde vêm, o retângulo de cada painel, os espaços onde vai o texto
+  da capa com o texto de cada um, os itens do projeto posicionados na folha e
+  as verificações.
+- `sandbox_cover_write_text` grava o Markdown de um espaço, um painel ou uma
+  caixa de texto pelo nome; `text: null` o remove, e a capa e a lombada voltam
+  ao título, subtítulo e autor dos metadados. É um passo do histórico de
+  desfazer.
+- `sandbox_cover_export` grava a folha como PDF para a gráfica
+  (`format: "pdf"`, com o resultado do preflight) ou um painel como JPEG
+  (`format: "jpeg"`, `zone`, `longSide`), baixado ou, com `deliver: "data"`,
+  devolvido codificado em base64.
+
+```json
+{ "slot": "back", "text": "Uma cidade que guarda os seus livros debaixo da terra.\n\nE a menina que os lê em voz alta." }
+```
+
+Veja [Capas para impressão](/pt/docs/print-covers).
+
 ### Perguntas e mensagens
 
 Quando um link abre um livro do qual você já tem uma versão própria, o Sandbox
@@ -751,6 +779,8 @@ cada uma vêm com `postextWebMcp.listTools()`.
 - **Recursos e fontes**: `sandbox_list_resources`, `sandbox_save_resource`,
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Quadrinhos**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
+- **Páginas compostas**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
+- **Capas para impressão**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`.
 - **Livros e arquivos**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

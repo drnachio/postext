@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'de',
   lastUpdated: '2026-11-10',
   readingTime: '30 min',
-  order: 42,
+  order: 43,
   plainSummary: "Die Sandbox ist ein kostenloses Werkzeug auf dieser Website, mit dem Sie Postext ausprobieren können, ohne etwas zu installieren. Sie schreiben Ihren Text auf der einen Seite und sehen auf der anderen die fertigen Seiten, die sich beim Tippen mitändern. Diese Seite erklärt die Teile des Bildschirms und die Bedienfelder, in denen Sie den Text schreiben, Bücher und Kapitel verwalten, Bilder hinzufügen und Schriften wählen. Andere Seiten behandeln die Gestaltungseinstellungen, die Vorschauen, das Speichern und Importieren und das Einbinden der Sandbox in Ihre eigene Website.",
 };
 
@@ -33,6 +33,7 @@ Ein schmaler Streifen am linken Rand enthält je Bedienfeld eine Schaltfläche. 
 - **Ressourcen** (Symbol `FolderOpen`): Bilder, SVG-Zeichnungen und Tabellen, die das Buch verwendet
 - **Schriften** (Symbol `Type`): die Schriften des Buchs und Ihre eigenen Schriftdateien
 - **Gestaltung** (Symbol `Settings2`): Seite, Typografie, Überschriften, Abbildungen, Kästen und Exporteinstellungen
+- **Umschlag** (Symbol `BookMarked`): die Druckausgaben des Buchs, der Umschlagbogen mit seinem Rücken, seine Gestaltung und seine Texte (siehe [Buchumschläge](/de/docs/print-covers#in-der-sandbox))
 - **Prüfungen** (Symbol `AlertTriangle`): Satzprobleme, die im Layout gefunden wurden. Das Symbol trägt ein laufend aktualisiertes Zählerabzeichen mit der Zahl der aktuellen Warnungen, höchstens `99+`.
 
 Ein Klick auf die Schaltfläche des aktiven Bedienfelds klappt die Seitenleiste ein, ein Klick auf eine andere Schaltfläche wechselt zu deren Bedienfeld. Die Leiste ist ein einziger Tabstopp: Die Pfeiltasten (↑ / ↓, mit Umlauf), **Pos1** und **Ende** bewegen den Fokus zwischen den Schaltflächen, Eingabe oder Leertaste öffnet das fokussierte Bedienfeld.
@@ -233,7 +234,7 @@ Verwaltet die Ressourcen des Buchs: Bitmap-Bilder, SVG-Abbildungen, Tabellen und
 - **Neue Tabelle**: beginnt als Raster von 2 × 2 Zellen mit einer Kopfzeile
 - **Video hinzufügen**: ein YouTube- oder Vimeo-Video, eine Videodatei oder deren Adresse (ein MP4 oder ein HLS-Stream; siehe *Video* unten). Ein Buch, dessen Ressourcentypen älter als die Videos sind, erhält beim ersten Video den eingebauten Typ *Video*.
 
-Sie können auch Dateien von der Festplatte auf das Bedienfeld ziehen, Videodateien (MP4, WebM, Ogg, QuickTime) eingeschlossen. Sie werden gesammelt hochgeladen, mit IDs, die aus den Dateinamen als Slug gebildet werden. Nicht unterstützte Dateien werden übersprungen, und ein kurzer Hinweis meldet, wie viele hinzugefügt und wie viele übersprungen wurden.
+Sie können auch Dateien von der Festplatte auf das Bedienfeld ziehen, Videodateien (MP4, WebM, Ogg, QuickTime) eingeschlossen. Ein PDF oder eine mit PDF-Kompatibilität gespeicherte Illustrator-Datei wird zu einem Bild je Seite (bis zu 20) mit 300 ppi auf transparentem Hintergrund; TIFF- und PSD-Dateien behalten ihre volle Größe. Eine EPS-Datei wird nicht gelesen: Ein Hinweis bittet darum, sie als PDF zu speichern. Sie werden gesammelt hochgeladen, mit IDs, die aus den Dateinamen als Slug gebildet werden. Nicht unterstützte Dateien werden übersprungen, und ein kurzer Hinweis meldet, wie viele hinzugefügt und wie viele übersprungen wurden.
 
 **Detailansicht.** Die Auswahl einer Ressource öffnet ihren Editor:
 

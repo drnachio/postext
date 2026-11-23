@@ -28,6 +28,8 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+有印刷封面的书还以`cover.md`带上封面的Markdown；某种语言有自己的封面文字时，存为`cover/<language>.md`。`openBundle`以`coverMarkdown`返回它，`createBundle`也以同样的方式接收。封面的设计和印刷版本在配置中（`cover`、`production`）。见[印刷封面](/zh/docs/print-covers)。
+
 清单的各个字段在沙盒文档的附录[预设文件包格式](/zh/docs/sandbox-embedding#预设文件包格式)中逐一说明。文件里还可以带一个`layouts.json`，即沙盒记录的页数，这样书在沙盒中打开时就已经分好页；多语言的书也可以每个版本带一个（如`layouts.zh-Hant.json`，优先读取）。`openBundle`会忽略这些文件。
 
 这套API既从`postext`本身导出，也从`postext/bundle`子路径导出，后者还提供底层辅助函数。如果你同时要渲染，就从`postext`导入。这样文件包适配器和渲染器共用同一个模块实例；在esm.sh这类CDN上，每个入口都是单独构建的，这一点就很重要。

@@ -65,6 +65,7 @@ const DOC_PAGES: Record<string, string> = {
   "composed-pages": "Composed-Pages",
   "composed-pages-figures": "Composed-Pages-Figures-with-Labels",
   "special-inks-die-cuts": "Special-Inks-and-Die-Cuts",
+  "print-covers": "Print-Covers",
   contributing: "Contributing",
   sandbox: "Sandbox",
   "sandbox-design-checks": "Sandbox-Design-and-Checks-Panels",

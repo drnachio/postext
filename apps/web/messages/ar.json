@@ -7089,7 +7089,7 @@
     "coverTextTurnNone": "لا شيء",
     "coverTextBoxHint": "يُكتب نصّه في «النصوص» تحت اسم المربّع.",
     "historyStepCover": "نص الغلاف",
-    "coverProfiles": "ملفات المطبعة",
+    "coverProfiles": "ملفات تعريف المطبعة",
     "coverProfilesIntro": "المقاسات التي تعطيها المطبعة لأنواع تجليدها، والأوراق التي تطبع عليها. انسخ ملفًا واضبطه على أرقام مطبعتك، ثم جلّد به نسخة. تنتقل الملفات بين الكتب كملف.",
     "coverBindingProfiles": "ملفات التجليد",
     "coverProfile": "الملف",

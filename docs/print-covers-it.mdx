@@ -1,0 +1,396 @@
+{/* docs/print-covers-it.mdx */}
+
+export const metadata = {
+  title: 'Copertine per la stampa',
+  sidebarTitle: 'Copertine per la stampa',
+  description: "Le versioni a stampa di un libro, ognuna con la sua legatura, il suo ISBN e il suo dorso; i profili di legatura e di carta della tipografia; il foglio di copertina con alette, sovraccoperta, copertina del cartonato e risguardi; la grafica della copertina e le sue finiture; il suo testo in Markdown; e la copertina dalla Sandbox, dalla riga di comando e dal codice",
+  lang: 'it',
+  lastUpdated: '2026-11-23',
+  readingTime: '16 min',
+  order: 41,
+  plainSummary: "Questa pagina parla della copertina di un libro stampato: il foglio che avvolge le pagine, con la quarta di copertina, il dorso e la prima, a volte con alette, una sovraccoperta o i risguardi. Un libro si può stampare in più versioni, per esempio in brossura e cartonato, e ogni versione ha la sua legatura e il suo ISBN. Postext calcola lo spessore del dorso dal numero di pagine e dalla carta, e costruisce il foglio nel formato che serve alla tipografia, con l’abbondanza e i segni di piega. La grafica della copertina sta nelle impostazioni e i suoi testi in un documento Markdown; il titolo e l’autore vengono dai dati del libro stesso. La pagina mostra come fare tutto questo nella Sandbox, dalla riga di comando e dal codice.",
+};
+
+# Copertine per la stampa
+
+**Le versioni a stampa di un libro stanno nelle sue impostazioni `production`; la grafica della copertina è l’impostazione `cover`; il suo testo è un documento Markdown del libro.**
+
+Le pagine di un libro sono una cosa e il foglio che le avvolge è un’altra. Il foglio di copertina è più largo di due pagine: porta affiancati la quarta di copertina, il dorso e la prima di copertina, a volte le alette, e cambia a ogni ristampa che modifica il numero di pagine o la carta. Postext lo costruisce a partire da tre parti del libro:
+
+- **La produzione**: le versioni in cui il libro viene stampato (una brossura, un cartonato), ognuna con la sua legatura, il suo ISBN e il suo dorso. Appartiene al libro, non alla sua grafica, e niente nell’impaginazione delle pagine la legge.
+- **La grafica della copertina**: fondi, immagini, riquadri, loghi, caselle di testo e finiture, disposti sui pannelli del foglio. Fa parte della grafica ed è comune a tutte le versioni del libro e ai libri di una collana.
+- **Il testo della copertina**: un documento Markdown con un blocco per pannello. La prima di copertina e il dorso che lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore dai metadati del libro, così un titolo corretto arriva in copertina senza ricopiarlo.
+
+A partire da queste tre parti la copertina viene impaginata dallo stesso motore delle pagine, e il PDF va in tipografia con l’abbondanza e i segni di piega del foglio.
+
+## Versioni di un libro
+
+Una versione è il libro come lo produce una legatura. Un romanzo pubblicato in brossura e in cartonato ha due versioni sulle stesse pagine: ognuna ha la sua legatura, il suo ISBN e il suo foglio di copertina.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Brossura', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Cartonato', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // su un cartonato: una sovraccoperta
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Ogni versione indica la sua legatura con l’id di un profilo, oppure porta il profilo stesso. I campi:
+
+- `id` e `name`: come si sceglie la versione (`--print-version` nella riga di comando) e come viene mostrata.
+- `binding`: un profilo di legatura (vedi sotto).
+- `isbn`: l’ISBN di questa versione, ISBN-10 o ISBN-13, con o senza trattini. Ogni legatura di un libro ha il suo. Un ISBN valido si stampa come codice a barre sulla quarta di copertina.
+- `isbnAddOn`: cinque cifre stampate dopo il codice a barre. In Spagna non riporta il prezzo: l’agenzia ISBN lo consente solo se comincia con 9, per l’uso interno dell’editore (`90000` significa senza prezzo).
+- `workIsbn`: l’ISBN dell’opera completa, per un volume di una collana o di un’opera in più volumi. Il codice a barre porta l’`isbn` del volume; questo si stampa come testo accanto.
+- `flaps`: su una brossura, le alette; su un cartonato, una sovraccoperta.
+- `caseMaterial`: su un cartonato, `printed` (la copertina stampata e plastificata sui piatti, il valore predefinito) o `cloth` (tela impressa a secco o a caldo, di solito sotto una sovraccoperta).
+- `overrides`: misure in mm che questa versione fissa per sé sopra quelle del suo profilo, quando la tipografia chiede una cerniera diversa per questo solo libro.
+- `spineOverride`: il dorso in mm come lo indica la tipografia, al posto di quello calcolato.
+- `spineText`: come si scrive sul dorso: `direction` dal basso in alto (`bottomToTop`, l’uso abituale in Spagna e il valore predefinito) o dall’alto in basso (`topToBottom`, come preferisce la norma ISO 6357), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
+
+`production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro, con il suo ISBN (stampato come testo accanto a quello del volume) e un `catalogue` dei suoi titoli, ognuno con un `id`, un `title` e un’immagine `resource` facoltativa, per i risguardi.
+
+### Profili di legatura
+
+Un profilo di legatura descrive come lega una tipografia: un tipo di legatura, le sue misure e che cosa può produrre. Postext include un profilo generico per tipo, su segnature da 16 pagine:
+
+<table>
+  <thead>
+    <tr><th>Id</th><th>Tipo</th><th>Che cos’è</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>Una brossura incollata al dorso (brossura fresata, PUR o hot melt). Accetta dorsi da 3 a 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>Una brossura su segnature cucite.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>Un cartonato con dorso quadro.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>Un cartonato con dorso tondo.</td></tr>
+  </tbody>
+</table>
+
+Le misure di questi profili vengono dalle specifiche pubblicate da tipografie e legatorie; dove non concordano, il valore indicato dalla maggior parte. Sono un punto di partenza. Quelle di una tipografia precisa vanno in un profilo del libro, in `production.bindings`, che viaggia con il libro, così un pacchetto aperto altrove lo ritrova:
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Brossura fresata, la mia tipografia',
+    printer: 'Gráficas Ejemplo',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Brossura', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style`: `perfect`, `sewnSoftcover`, `caseFlat` o `caseRound`.
+- `signature`: le pagine per segnatura. Per il dorso il numero di pagine viene arrotondato a segnature intere, e il controllo indica quante pagine bianche aggiunge.
+- `measures`: quelle omesse prendono i valori predefiniti del tipo.
+- `accepts`: il formato rifilato più piccolo e più grande (`trim.min`, `trim.max`, ognuno con una larghezza `width` e un’altezza `height` in mm) e il dorso più sottile e più spesso (`spine.min`, `spine.max`) che la tipografia sa legare. Un libro fuori da questi limiti riceve un controllo invece di una copertina che nessuno può legare.
+
+Ogni misura è in mm e si scrive in uno di tre modi, perché un solo profilo serva per qualsiasi formato:
+
+- **Un numero**: lo stesso valore per ogni formato (un’unghiatura di 3 mm).
+- **Scaglioni**: un elenco di `{ upTo: { width, height }, mm }`; vale il primo scaglione nel cui `upTo` rientra il formato, e l’ultimo, senza `upTo`, per qualsiasi formato più grande. Una tipografia che ispessisce il cartone sui libri grandi lo scrive così.
+- **Una quota del formato**: `{ ratio, of, min, max }`, una proporzione della larghezza (`width`, il valore predefinito) o dell’altezza (`height`) del formato rifilato, mantenuta tra `min` e `max`. Le alette di solito si scrivono così.
+
+<table>
+  <thead>
+    <tr><th>Misura</th><th>Si applica a</th><th>Che cos’è</th><th>Predefinito</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>tutte</td><td>Si aggiunge allo spessore delle pagine: colla, cucitura e, su una brossura, il cartoncino di copertina che lo avvolge.</td><td>0,5</td></tr>
+    <tr><td><code>bleed</code></td><td>brossura</td><td>Abbondanza attorno al foglio di copertina.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>brossura</td><td>Distanza delle cordonature di cerniera da ogni piega del dorso (0: cordonato solo al dorso).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>brossura</td><td>Larghezza di ogni aletta.</td><td>2/3 della larghezza, almeno 65</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>brossura</td><td>Di quanto ogni pannello di copertina è più stretto del formato rifilato, perché l’aletta si pieghi appena dentro il taglio davanti.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>cartonato</td><td>Spessore del cartone.</td><td>2 fino a 150 × 230, 2,5 fino a 216 × 280, 3 oltre</td></tr>
+    <tr><td><code>square</code></td><td>cartonato</td><td>L’unghiatura: di quanto i piatti sporgono dalle pagine in testa, al piede e sul davanti.</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>cartonato</td><td>La cerniera, lo spazio tra ogni piatto e il dorso.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>cartonato</td><td>Il rimbocco del materiale di copertina risvoltato attorno ai piatti.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>cartonato</td><td>Di quanto ogni piatto è tagliato più stretto del formato rifilato dal lato del dorso, prima di aggiungere l’unghiatura sul davanti.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>cartonato</td><td>Si aggiunge alle pagine e ai due piatti per la larghezza del cartone del dorso.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>cartonato a dorso tondo</td><td>Si aggiunge al dorso quadro del cartonato per la curvatura.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>sovraccoperta</td><td>Larghezza in più a ogni piega sul davanti, per il piatto che avvolge.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>sovraccoperta</td><td>Larghezza di ogni aletta della sovraccoperta.</td><td>2/3 della larghezza, almeno 80</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>sovraccoperta</td><td>Abbondanza attorno alla sovraccoperta.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>risguardi</td><td>Striscia di colla lungo la piega, incollata alle pagine.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>risguardi</td><td>Abbondanza in testa, al piede e sul davanti (nessuna alla piega).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>tutte</td><td>Spazio tenuto libero dal testo all’interno di ogni piega, cordonatura, cerniera e taglio.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>tutte</td><td>Fin dove oltre il taglio si disegna la grafica prima che subentri un’abbondanza specchiata (vedi sotto).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### La carta e il dorso
+
+Il dorso è lo spessore delle pagine più il margine della legatura. Un foglio (due pagine) è spesso quanto la grammatura della sua carta per la sua mano, in micrometri: 90 g/m² con una mano di 1,3 danno un foglio di 0,117 mm. Le pagine sono quelle del libro impaginato, arrotondate a segnature intere. Ogni pagina conta sulla sua carta: la carta del libro è `folio.paper`, e una serie di pagine su un’altra carta (un blocco `:::paper`, una segnatura di tavole fuori testo su carta patinata) conta con la propria, secondo la stessa regola che [Folio](/it/docs/configuration-html-folio-epub) usa per mostrare il libro.
+
+Il dorso quindi segue il libro. Quando una modifica aggiunge una segnatura, il dorso cresce, il foglio si allarga e ogni elemento collocato sulla prima o sulla quarta di copertina si sposta con il suo pannello. Quando la tipografia misura un menabò in bianco e dà una cifra, `spineOverride` la fissa, e il controllo annota entrambi i valori. Un dorso più stretto di `spineText.minSpine` non porta testo.
+
+Una carta del libro si può anche conservare come profilo, in `production.papers`: la carta che Folio conosce (`type`, `grammage`, `bulk`, la finitura e il tono) con un `id`, un `name`, il fornitore `supplier` e il nome commerciale `commercialName`.
+
+### Profili da un libro all’altro
+
+I profili di legatura e di carta passano da un libro all’altro, e da una persona all’altra, come file `.postext-production.json`. `exportProductionProfiles(papers, bindings)` ne scrive uno, e `importProductionProfiles(data)` lo rilegge, con i problemi delle voci che ha scartato. Il pannello Copertina della Sandbox li offre entrambi come pulsanti.
+
+## Il foglio e i suoi pannelli
+
+Il foglio è fatto di pannelli, chiamati zone, affiancati; ognuno è ciò che quella parte del foglio diventa una volta piegata:
+
+<table>
+  <thead>
+    <tr><th>Foglio</th><th>Zone, da sinistra a destra</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Brossura</td><td><code>flapBack</code> (con alette), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (con alette)</td></tr>
+    <tr><td>Cartonato</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, con il rimbocco tutto attorno</td></tr>
+    <tr><td>Sovraccoperta</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Risguardo</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+Una versione in brossura ha un solo foglio, la sua copertina. Un cartonato ha il suo rivestimento, una sovraccoperta quando `flaps` è attivo, e un risguardo anteriore e uno posteriore. Un libro composto da destra a sinistra (`direction: 'rtl'`) ha il foglio specchiato: la prima di copertina a sinistra, la quarta a destra.
+
+Ogni zona ha al suo interno un’area di sicurezza, a `safeMargin` da ogni piega e da ogni taglio, e il dorso ha un suo margine più stretto nella sua larghezza. La Sandbox disegna le pieghe, le cordonature e le aree di sicurezza sul foglio; il PDF disegna i segni di piega nella zona fuori formato, oltre l’abbondanza.
+
+## La grafica della copertina
+
+L’impostazione `cover` è la grafica della copertina. Come il resto della grafica, non dice che cosa c’è scritto in copertina, solo come appare, e non cambia l’impaginazione delle pagine:
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background`: il fondo dell’intero foglio.
+- `image`: una risorsa bitmap o SVG del libro che riempie tutto il foglio (`area: 'sheet'`, il valore predefinito) o solo la prima di copertina (`'front'`), ritagliata per coprirla attorno a `focus` (in frazioni dell’immagine).
+- `zones`: un fondo per zona, sopra il fondo del foglio e la sua immagine.
+- `verticalAlign`: dove sta il testo di ogni zona: `top` (il valore predefinito), `middle` o `bottom`. Il testo del dorso è sempre centrato nella sua larghezza.
+- `barcodeMagnification`: la dimensione del codice a barre rispetto a quella nominale, da 0,8 a 2 (predefinito 1). Sotto 0,8 viene fissato a 0,8 e il controllo lo segnala.
+- `mirrorMargin`: l’abbondanza specchiata (vedi sotto).
+
+### Elementi, effetti e loghi
+
+Sopra i fondi, la grafica dispone tre elenchi di elementi, ognuno disegnato dal fondo verso il primo piano: `elements` sotto il testo, `effects` sopra, e `logos` sopra tutto. Un elemento è un’immagine (`kind: 'image'` con un `resourceId`), un riquadro di colore (`'box'`) o una forma di colore (`'shape'`), e ha un `id` fatto di lettere, cifre, `-` e `_`.
+
+Un elemento si colloca rispetto alla zona in cui si trova, così si sposta con quella zona quando il dorso cresce o la legatura cambia:
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height`: il suo riquadro, in mm dall’angolo superiore sinistro della zona. Può uscire dalla zona, sulle zone vicine o nell’abbondanza.
+- `basis`: la dimensione della sua zona quando è stato collocato. Se ora la zona ha un’altra dimensione, perché il formato del libro è cambiato o il dorso è cresciuto, l’elemento si adatta: un riquadro o una forma su ciascun asse, un’immagine in modo uniforme attorno al suo centro, mantenendo le proporzioni. Senza `basis` l’elemento resta come è stato collocato.
+- `to`: un riquadro o una forma che attraversa più zone, come una fascia dalla quarta alla prima di copertina: il suo bordo destro, in mm dalla sinistra della zona in cui finisce (`to.zone`, `to.x`), e la larghezza di quella zona al momento del collocamento (`to.basis`). Ogni bordo segue allora la propria zona.
+- `color` e `opacity`: il colore di un riquadro o di una forma, e l’opacità di qualsiasi elemento (da 0 a 1). Un’immagine mantiene la propria trasparenza.
+- `fit`: come un’immagine riempie il suo riquadro: intera al suo interno (`contain`, il valore predefinito) o coprendolo, ritagliata (`cover`).
+- `path`: una forma tracciata per nodi, in frazioni del suo riquadro (0, 0 l’angolo superiore sinistro; 1, 1 quello inferiore destro), così la forma si allunga con il riquadro. Ogni parte ha i suoi `nodes` ed è chiusa (`closed`) o aperta; un nodo ha `x` e `y`, e le maniglie della curva che vi entra (`in`) e che ne esce (`out`).
+- `outline`: poligoni chiusi in frazioni del riquadro, ricavati da un’immagine, per un velo o una finitura che ne segua la forma.
+- `clip`: un’immagine ritagliata secondo un contorno, perché si veda solo dentro la sagoma della sua illustrazione.
+- `bleed`: oltre il margine di grafica di un’abbondanza specchiata, `mirror` (il valore predefinito) riporta l’elemento a specchio insieme al fondo; `own` lo dipinge così com’è, sopra la piega.
+- `clearance` (loghi): lo spazio di rispetto in mm attorno al logo in cui non deve entrare nient’altro.
+
+Un riquadro o una forma può portare anche gli effetti che uno stile di riquadro di pagina non sa disegnare: `radius` per gli angoli arrotondati in mm, `stroke` per un bordo (`color` e `width` in mm), `gradient` per una sfumatura dal suo colore a `to` con un angolo di `angle` gradi (0: da sinistra a destra; 90: dall’alto in basso), e `shadow` per un’ombra (`color`, `opacity`, il suo scostamento `x` e `y` in mm, e la sua morbidezza, `blur`). Una sfumatura o un’ombra fanno dell’elemento un’immagine a sé, disegnata alla risoluzione del PDF.
+
+### Abbondanza specchiata
+
+L’illustrazione di una copertina di solito si ferma al taglio, mentre il rimbocco di un cartonato lo supera di 15 mm, attorno al piatto. Con `mirrorMargin` la grafica si disegna fino a quei mm oltre il taglio (almeno 2), e più in là il fondo e gli elementi vengono riportati a specchio fino al bordo del foglio: così il rimbocco e l’abbondanza continuano l’immagine invece di mostrare una striscia bianca. Il `designMargin` di un profilo indica il margine che una tipografia si aspetta. Un elemento marcato `bleed: 'own'` non viene specchiato.
+
+### Caselle di testo
+
+Ogni zona è una casella di testo a sé. `textBoxes` aggiunge caselle collocate a mano, per una citazione attraverso la prima di copertina, una riga al piede del dorso o una didascalia sopra un’immagine:
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name`: lettere, cifre, `-` e `_`, e non il nome di una zona. Il Markdown della copertina riempie la casella con questo nome.
+- `rect`: la sua posizione sul foglio, in mm dall’angolo dell’abbondanza.
+- `rotate`: `-90` ruota il testo di un quarto di giro perché si legga salendo lungo un dorso, `90` perché si legga scendendo.
+- `verticalAlign`: `top`, `middle` o `bottom`.
+
+### Finiture e lastre tecniche
+
+Le `finishes` sono ciò che la tipografia aggiunge dopo gli inchiostri, ognuna su una forma della grafica:
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process`: `varnish` (vernice) o `foil` (stampa a caldo), stampate su una lastra di tinta piatta propria (un inchiostro con una [finitura](/it/docs/special-inks-die-cuts#finiture)); oppure `emboss` (rilievo) o `deboss` (impressione a secco in incavo), uno stampo di rilievo.
+- `ink`: la tinta piatta della vernice o della lamina. Per impostazione predefinita una vernice è `Varnish` e una lamina `Gold foil`.
+- `sheen`: `gloss` (lucido, il valore predefinito), `satin`, `matte` (opaco) o `softTouch` (effetto vellutato).
+- `shape`: che cosa copre la finitura: un riquadro proprio (`{ box }`, collocato come un elemento), la forma di un elemento, di un effetto o di un logo (`{ element: id }`; il contorno di un’immagine quando la sua risorsa ne ha uno), oppure un contorno salvato in un riquadro proprio (`{ outline, box }`).
+
+Un rilievo o un’impressione in incavo non stampa nulla. La sua forma va in tipografia su una lastra tecnica, accanto alla [linea di fustella](/it/docs/special-inks-die-cuts#la-linea-di-fustella-nel-pdf): una `Separation` chiamata `Emboss` o `Deboss` che il preflight elenca e che nessuna prova dipinge. Il legatore ne ricava lo stampo di rilievo.
+
+## Il testo della copertina
+
+Il testo della copertina è un documento Markdown del libro, conservato accanto ai suoi capitoli. Ogni blocco riempie una zona o una casella di testo indicata per nome:
+
+```md
+:::frame{slot="back"}
+Una città che custodisce i suoi libri sottoterra, e la ragazza che li legge ad alta voce.
+
+:::paragraphs{style="cover-praise"}
+«Un romanzo da leggere tutto d’un fiato.» — *Un quotidiano*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Ana Pérez** è nata a Saragozza nel 1984. *La biblioteca sotterranea* è il suo secondo romanzo.
+:::
+
+:::frame{slot="praise"}
+*Vincitore del Premio Opera Prima*
+:::
+```
+
+Il testo si compone con la tipografia del libro: i suoi stili di paragrafo, gli stili di carattere e i font. Quattro stili di paragrafo sono propri della copertina, e il libro può ridefinirli: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`. La prima di copertina e il dorso che il Markdown lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore del libro dai suoi metadati, composti in questi stili: non vengono mai copiati nel testo della copertina. Un blocco `front` o `spine` li sostituisce con il proprio testo.
+
+Un blocco per una posizione che il foglio non ha (un’aletta su un foglio senza alette, una quarta di copertina su un risguardo) viene scartato, e il controllo lo segnala; anche un secondo blocco per la stessa posizione viene scartato. Scrivi il testo della copertina con paragrafi e stili di paragrafo: un titolo `#` prende la grafica che il libro dà ai titoli dei suoi capitoli.
+
+Un solo testo di copertina serve per tutte le versioni e per tutti i fogli. Un libro in più lingue può darne uno a ciascuna lingua.
+
+## I controlli
+
+La generazione di una copertina segnala ciò che non ha potuto fare come richiesto. La Sandbox li mostra nei **Controlli** del pannello Copertina, la riga di comando li stampa e `buildCover` li restituisce in `issues`:
+
+<table>
+  <thead>
+    <tr><th>Tipo</th><th>Che cosa è successo</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>La versione indica un profilo di legatura che il libro non ha.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>Il formato rifilato o il dorso sono fuori da ciò che consente l’<code>accepts</code> del profilo.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>L’ISBN non si legge: la lunghezza o la cifra di controllo sono sbagliate. La copertina non ha codice a barre.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>Il dorso è stato fissato a mano; si indicano sia la larghezza calcolata sia quella usata.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>L’arrotondamento a segnature intere aggiunge pagine bianche.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>Il dorso è più stretto di <code>minSpine</code> e non porta testo.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>Una casella di testo ha un nome che la copertina non può usare.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Il testo della copertina riempie una posizione che il foglio non ha, o la stessa posizione due volte.</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>L’abbondanza specchiata ha tralasciato immagini che non ha potuto leggere, o si è fermata prima del bordo del foglio.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>Immagini ritagliate secondo un contorno sono state disegnate intere.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>Il codice a barre è stato chiesto sotto l’80 % ed è fissato all’80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>Il libro non ha quella versione, o la versione non ha quel foglio.</td></tr>
+  </tbody>
+</table>
+
+Anche le verifiche della configurazione leggono `production` e `cover` come qualsiasi altra impostazione: una chiave sconosciuta, un valore del tipo sbagliato o un ISBN illeggibile vengono segnalati con il loro percorso.
+
+Il PDF della copertina passa per lo stesso [preflight](/it/docs/configuration-pdf-output) di quello del libro: risoluzione delle immagini, nero, copertura d’inchiostro, finiture e lastre tecniche.
+
+## Nella Sandbox
+
+Il pannello **Copertina**, nella barra laterale, contiene le versioni a stampa e la loro copertina:
+
+- **Versioni**: **Aggiungi brossura** o **Aggiungi cartonato**, poi per ogni versione il nome, la legatura, l’ISBN, l’add-on e l’ISBN dell’opera, le alette o la sovraccoperta, il materiale di un cartonato, il dorso indicato dalla tipografia, la direzione del testo sul dorso e il dorso più stretto che lo accoglie. **Misure di questa versione** sostituisce quelle del profilo solo per questa versione.
+- **Foglio**: quale foglio si vede (copertina, sovraccoperta, risguardo anteriore o posteriore), con le sue pagine, il dorso e il formato.
+- **Grafica sul foglio**: **Modifica sul foglio** trasforma il foglio in editor grafico. Caselle di testo, riquadri di colore, veli, immagini, loghi e finiture si aggiungono dalla sua barra, si trascinano e si ridimensionano sul foglio, e si agganciano alle pieghe, alle aree di sicurezza e tra loro (Alt disattiva l’aggancio). I tasti freccia spostano l’elemento selezionato di 1 mm, di 10 mm con Maiusc. **Livelli** elenca gli elementi sotto il testo, le caselle di testo, gli elementi sopra il testo, i loghi e le finiture, e ne stabilisce l’ordine. I campi dell’elemento selezionato ne fissano la posizione, il colore, l’opacità, il modo in cui un’immagine riempie il riquadro, il raggio degli angoli, il bordo, la sfumatura e l’ombra, il comportamento oltre un’abbondanza specchiata, se si adatta al suo pannello, e il tracciato, il contorno o il ritaglio. Rinominare una casella di testo sposta con sé il suo testo nel Markdown della copertina.
+- **Testi**: un editor Markdown per ogni zona e casella di testo. La prima di copertina e il dorso mostrano ciò che prendono dai metadati finché non ricevono un **testo proprio**.
+- **Collana**: il nome e l’ISBN della collana.
+- **File per la tipografia**: **Scarica il PDF del foglio**, scritto con le impostazioni PDF del libro (spazio colore, profilo di output, PDF/X), e **Scarica la prima di copertina** come immagine.
+- **Controlli**: i controlli descritti sopra.
+- **Profili di stampa**: profili di legatura copiati da uno incluso e adattati alle misure di una tipografia, ognuna in millimetri, come quota del formato o per scaglioni di formato, con il valore che ne risulta per questo libro; profili di carta con il fornitore e il nome commerciale; e **Esporta profili** e **Importa profili** per il file `.postext-production.json`.
+
+Il gruppo **Grafica di copertina** del pannello Grafica contiene i fondi, l’immagine, l’allineamento del testo delle zone, la dimensione del codice a barre e l’abbondanza specchiata. Ogni modifica nel pannello Copertina è un passo della cronologia degli annullamenti.
+
+Le immagini per una copertina arrivano spesso come file di stampa. Il pannello Risorse legge un PDF, o un file Illustrator salvato con la compatibilità PDF, come un’immagine per pagina a 300 ppi su fondo trasparente, e i file TIFF e PSD alla loro dimensione piena. Un file EPS non viene letto: il pannello chiede di salvarlo come PDF.
+
+## Dalla riga di comando
+
+`postext cover` compone un foglio di una versione:
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` sceglie la versione (la prima per impostazione predefinita), `--sheet` il foglio (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Un percorso che termina in `.png`, `.jpg` o `.webp`, oppure `--format`, dipinge un pannello invece del PDF: la prima di copertina, a meno che `--zone` non ne indichi un altro (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` per il foglio intero). Le opzioni del PDF (`--color-space`, `--pdfx`, `--profile` e le altre) valgono come per `postext pdf`. Vedi [Riga di comando](/it/docs/command-line).
+
+## Dal codice
+
+`postext/production` contiene l’intera catena della copertina. `buildCover` riceve la configurazione del libro, una versione, le pagine impaginate (per il dorso), il Markdown della copertina, i metadati e le risorse, e restituisce la copertina come documento di una pagina:
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` dà il formato e le zone del foglio in mm, `cover.sheets` tutti i fogli della versione con il loro dorso, e `cover.issues` i controlli. `pages` può essere anche un numero di pagine, tutte sulla carta del libro.
+
+Il resto del modulo espone ogni passo:
+
+- **ISBN**: `parseIsbn` legge e verifica un ISBN, `isbnBarcodeSvg` disegna il suo codice a barre EAN-13 con un add-on, `ean13CheckDigit` e `isbnCaption` fanno il resto.
+- **Misure e fogli**: `resolveBindingMeasures` calcola le misure di un profilo per un formato, `resolveLength` una misura, `checkProfileAccepts` i limiti; `spineFromRuns`, `pageRunsOf`, `signaturePages` e `leafMm` il dorso; `softcoverSheet`, `caseSheet`, `jacketSheet` e `endpaperSheet` ciascun foglio, e `versionSheets` quelli di una versione.
+- **La grafica**: `coverPage` compone il modello di pagina di un foglio, `coverSource` il Markdown da cui viene impaginato, `coverZoneBox` il riquadro di una zona, `placeCoverElement` e `coverElementRect` la posizione di un elemento, `basicShape`, `pathData` e `flattenCoverPath` le sue forme.
+- **Profili e impostazioni**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` e `readProductionConfig`, che legge un blocco `production` da dati non affidabili e segnala ciò che ha scartato.
+- **Folio**: `folioOfBook` dà le impostazioni di Folio con la legatura della prima versione, e `productionFolioBinding` e `folioVersionOf` quelle di una versione scelta.
+
+## In un file `.postext`
+
+Un pacchetto porta le impostazioni `production` e `cover` nella sua configurazione e il testo della copertina come `cover.md` accanto ai capitoli. Una lingua con un testo di copertina proprio lo porta come `cover/<language>.md`. `openBundle` (da `postext/bundle`) lo restituisce come `coverMarkdown`, e `createBundle` lo riceve allo stesso modo. Vedi [Pacchetti](/it/docs/configuration-bundles).
+
+## Folio ed EPUB
+
+La vista Folio lega il libro come la sua prima versione: una brossura fresata o una brossura cucita come brossura, un cartonato come cartonato, con il dorso della copertina dipinto sul dorso del libro. Un EPUB scritto dalla riga di comando o dalla Sandbox prende la prima di copertina a stampa come immagine di copertina quando il libro ha una versione a stampa e non ne indica un’altra.
+
+## Limiti
+
+- Il dorso conta le pagine come sono impaginate. Un libro le cui pagine cambiano dopo aver creato la copertina deve rifare la copertina; il dorso e ogni pannello si adeguano da soli.
+- Le misure predefinite sono un punto di partenza ricavato da specifiche pubblicate. Chiedi alla tipografia le sue e conservale in un profilo.
+- Si scrivono solo il PDF e i formati d’immagine. Non viene prodotto un pacchetto IDML del foglio di copertina.
+- Un titolo `#` nel testo della copertina prende la grafica dei titoli di capitolo del libro; componi i titoli di copertina con stili di paragrafo.

@@ -1,0 +1,396 @@
+{/* docs/print-covers-pt.mdx */}
+
+export const metadata = {
+  title: 'Capas para impressão',
+  sidebarTitle: 'Capas para impressão',
+  description: 'As versões impressas de um livro, cada uma com sua encadernação, seu ISBN e sua lombada; perfis de encadernação e de papel da gráfica; a folha de capa com orelhas, sobrecapa, capa dura e guardas; o projeto e os acabamentos da capa; seu texto em Markdown; e a capa a partir do Sandbox, da linha de comando e do código',
+  lang: 'pt',
+  lastUpdated: '2026-11-23',
+  readingTime: '16 min',
+  order: 41,
+  plainSummary: 'Esta página trata da capa de um livro impresso: a folha que envolve as páginas, com a contracapa, a lombada e a capa, e às vezes orelhas, uma sobrecapa ou guardas. Um livro pode ser impresso em várias versões, como uma brochura e uma capa dura, e cada versão tem a sua própria encadernação e o seu próprio ISBN. O Postext calcula a largura da lombada a partir do número de páginas e do papel e monta a folha no tamanho de que a gráfica precisa, com a sangria e as marcas de dobra. O projeto da capa fica nas configurações e os textos num documento Markdown, e o título e o autor vêm dos próprios dados do livro. A página mostra como fazer tudo isso no Sandbox, pela linha de comando e no código.',
+};
+
+# Capas para impressão
+
+**As versões impressas de um livro ficam nas configurações `production`; o projeto da capa é a configuração `cover`; o texto dela é um documento Markdown do livro.**
+
+As páginas de um livro são uma coisa, e a folha que as envolve é outra. A folha de capa é mais larga que duas páginas: leva lado a lado a contracapa, a lombada e a capa, às vezes orelhas, e muda a cada reimpressão que altera o número de páginas ou o papel. O Postext a monta a partir de três partes do livro:
+
+- **A produção**: as versões em que o livro é impresso (uma brochura, uma capa dura), cada uma com sua encadernação, seu ISBN e sua lombada. Ela pertence ao livro, não ao projeto gráfico, e nada na diagramação das páginas a lê.
+- **O projeto da capa**: fundos, imagens, blocos, logotipos, caixas de texto e acabamentos, posicionados nos painéis da folha. Faz parte do projeto gráfico e vale para todas as versões do livro e para os livros de uma coleção.
+- **O texto da capa**: um documento Markdown com um bloco por painel. A capa e a lombada que ele deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor dos metadados do livro, e assim um título corrigido chega à capa sem precisar ser copiado.
+
+A partir dessas três partes, a capa é diagramada pelo mesmo motor das páginas, e o PDF vai para a gráfica com a sangria e as marcas de dobra da folha.
+
+## Versões de um livro
+
+Uma versão é o livro tal como uma encadernação o faz. Um romance publicado em brochura e em capa dura tem duas versões sobre as mesmas páginas: cada uma tem a sua encadernação, o seu ISBN e a sua folha de capa.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Brochura', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Capa dura', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // numa capa dura: uma sobrecapa
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Cada versão indica a encadernação pelo id de um perfil ou traz o próprio perfil. Os campos:
+
+- `id` e `name`: como a versão é escolhida (o `--print-version` da linha de comando) e exibida.
+- `binding`: um perfil de encadernação (veja abaixo).
+- `isbn`: o ISBN desta versão, ISBN-10 ou ISBN-13, com ou sem hifens. Cada encadernação de um livro tem o seu. Um ISBN válido é impresso como código de barras na contracapa.
+- `isbnAddOn`: cinco dígitos impressos depois do código de barras. Na Espanha ele não leva preço: a agência do ISBN só o permite começando por 9, para uso próprio da editora (`90000` significa sem preço).
+- `workIsbn`: o ISBN da obra completa, para um volume de uma coleção ou de uma obra em vários volumes. O código de barras leva o `isbn` do volume; este é impresso como texto ao lado.
+- `flaps`: numa brochura, orelhas; numa capa dura, uma sobrecapa.
+- `caseMaterial`: numa capa dura, `printed` (a capa impressa e laminada sobre o papelão, o padrão) ou `cloth` (tecido gravado, em geral sob uma sobrecapa).
+- `overrides`: medidas em mm que esta versão define para si por cima das do perfil, quando a gráfica pede uma canaleta diferente para este livro.
+- `spineOverride`: a lombada em mm tal como a gráfica a informa, no lugar da calculada.
+- `spineText`: como o texto corre na lombada: `direction` de baixo para cima (`bottomToTop`, o costume na Espanha e o padrão) ou de cima para baixo (`topToBottom`, como prefere a ISO 6357), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
+
+`production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence, com o seu próprio ISBN (impresso como texto ao lado do do volume) e um `catalogue` dos seus títulos, cada um com `id`, `title` e, se quiser, uma imagem em `resource`, para as guardas.
+
+### Perfis de encadernação
+
+Um perfil de encadernação descreve como uma gráfica encaderna: um tipo, as suas medidas e o que ela consegue fazer. O Postext traz um perfil genérico por tipo, com cadernos de 16 páginas:
+
+<table>
+  <thead>
+    <tr><th>Id</th><th>Tipo</th><th>O que é</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>Uma brochura colada na lombada (PUR ou hot melt). Aceita lombadas de 3 a 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>Uma brochura com cadernos costurados.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>Uma capa dura com lombada reta.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>Uma capa dura com lombada redonda.</td></tr>
+  </tbody>
+</table>
+
+As medidas desses perfis vêm das especificações publicadas por gráficas e encadernadoras; onde elas divergem, vale o valor que a maioria dá. São um ponto de partida. As medidas de uma gráfica vão num perfil do livro, em `production.bindings`, que viaja com o livro para que um pacote aberto em outro lugar ainda o encontre:
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Brochura colada, minha gráfica',
+    printer: 'Gráficas Ejemplo',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Brochura', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style`: `perfect`, `sewnSoftcover`, `caseFlat` ou `caseRound`.
+- `signature`: páginas por caderno. Para a lombada, o número de páginas é arredondado para cima até cadernos inteiros, e a verificação diz quantas páginas em branco isso acrescenta.
+- `measures`: as que faltam ficam com os valores padrão do tipo.
+- `accepts`: o menor e o maior formato (`trim.min`, `trim.max`, cada um com `width` e `height` em mm) e a lombada mais fina e a mais grossa (`spine.min`, `spine.max`) que a gráfica consegue encadernar. Um livro fora desses limites recebe uma verificação em vez de uma capa que ninguém consegue encadernar.
+
+Toda medida é em mm e pode ser escrita de três maneiras, para que um perfil sirva a qualquer formato:
+
+- **Um número**: igual para qualquer formato (uma seixa de 3 mm).
+- **Faixas**: uma lista de `{ upTo: { width, height }, mm }`. Vale a primeira faixa em cujo `upTo` o formato cabe, e a última, sem `upTo`, para qualquer formato maior. Uma gráfica que engrossa o papelão nos livros grandes escreve assim.
+- **Uma proporção do formato**: `{ ratio, of, min, max }`, uma razão da largura (`width`, o padrão) ou da altura (`height`) do formato, mantida entre `min` e `max`. As orelhas costumam ser escritas assim.
+
+<table>
+  <thead>
+    <tr><th>Medida</th><th>Vale para</th><th>O que é</th><th>Padrão</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>todas</td><td>Somada à espessura das páginas: cola, costura e, numa brochura, o cartão da capa em volta.</td><td>0,5</td></tr>
+    <tr><td><code>bleed</code></td><td>brochura</td><td>Sangria em volta da folha de capa.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>brochura</td><td>Distância dos vincos da dobradiça a cada dobra da lombada (0: vincada só na lombada).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>brochura</td><td>Largura de cada orelha.</td><td>2/3 da largura, no mínimo 65</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>brochura</td><td>Quanto cada painel da capa fica mais estreito que o formato, para que a orelha dobre logo antes do corte da frente.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>capa dura</td><td>Espessura do papelão.</td><td>2 até 150 × 230, 2,5 até 216 × 280, 3 acima</td></tr>
+    <tr><td><code>square</code></td><td>capa dura</td><td>Seixa: quanto o papelão passa das páginas no pé, na cabeça e no corte da frente.</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>capa dura</td><td>A canaleta entre cada papelão e a lombada.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>capa dura</td><td>A dobra do revestimento em volta do papelão.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>capa dura</td><td>Quanto cada papelão é cortado mais estreito que o formato do lado da lombada, antes de somar a seixa no corte da frente.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>capa dura</td><td>Somada às páginas e aos dois papelões para a largura do papelão da lombada.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>capa dura redonda</td><td>Somada à lombada reta da capa para o arredondamento.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>sobrecapa</td><td>Largura extra em cada dobra do lado do corte da frente, para o papelão que ela envolve.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>sobrecapa</td><td>Largura de cada orelha da sobrecapa.</td><td>2/3 da largura, no mínimo 80</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>sobrecapa</td><td>Sangria em volta da sobrecapa.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>guardas</td><td>Faixa de cola ao longo da dobra, colada às páginas.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>guardas</td><td>Sangria na cabeça, no pé e no corte da frente (nenhuma na dobra).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>todas</td><td>Espaço sem texto do lado de dentro de cada dobra, vinco, canaleta e corte.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>todas</td><td>Até onde, além do corte, o projeto é desenhado antes que uma sangria espelhada assuma (veja abaixo).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### O papel e a lombada
+
+A lombada é a espessura das páginas mais a folga da encadernação. Uma folha (duas páginas) tem a espessura da gramatura do papel vezes o seu volume (bulk), em micrômetros: 90 g/m² com volume 1,3 dão uma folha de 0,117 mm. As páginas são o livro tal como foi diagramado, arredondado para cima até cadernos inteiros. Cada página conta com o seu próprio papel: o papel do livro é `folio.paper`, e uma sequência de páginas em outro papel (um bloco `:::paper`, um caderno de pranchas em papel cuchê) conta com o seu, pela mesma regra que o [Folio](/pt/docs/configuration-html-folio-epub) usa para mostrar o livro.
+
+Assim, a lombada acompanha o livro. Quando uma edição acrescenta um caderno, a lombada cresce, a folha se alarga e todo elemento posicionado na capa ou na contracapa se desloca com o seu painel. Quando a gráfica mede um boneco e informa um número, `spineOverride` o define, e a verificação registra os dois valores. Uma lombada abaixo de `spineText.minSpine` não leva texto.
+
+Um papel do livro também pode ser guardado como perfil, em `production.papers`: o papel que o Folio conhece (`type`, `grammage`, `bulk`, o acabamento e o tom) com `id`, `name`, o fornecedor (`supplier`) e o nome comercial (`commercialName`).
+
+### Perfis de um livro para outro
+
+Os perfis de encadernação e de papel passam de um livro para outro, e de uma pessoa para outra, como um arquivo `.postext-production.json`. `exportProductionProfiles(papers, bindings)` grava um, e `importProductionProfiles(data)` o lê de volta, com os problemas das entradas que deixou de fora. O painel Capa do Sandbox tem as duas coisas como botões.
+
+## A folha e seus painéis
+
+A folha é feita de painéis, chamados zonas, lado a lado, cada um correspondendo ao que essa parte da folha vira depois de dobrada:
+
+<table>
+  <thead>
+    <tr><th>Folha</th><th>Zonas, da esquerda para a direita</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Brochura</td><td><code>flapBack</code> (com orelhas), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (com orelhas)</td></tr>
+    <tr><td>Capa dura</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, com a dobra em volta</td></tr>
+    <tr><td>Sobrecapa</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Guarda</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+Uma versão em brochura tem uma folha, a sua capa. Uma capa dura tem o revestimento, uma sobrecapa quando `flaps` está ativo e uma guarda da frente e outra de trás. Num livro composto da direita para a esquerda (`direction: 'rtl'`), a folha é espelhada: a capa fica à esquerda e a contracapa à direita.
+
+Cada zona tem dentro dela uma área de segurança, `safeMargin` para dentro de cada dobra e de cada corte, e a lombada tem a sua margem própria, mais estreita, no sentido da largura. O Sandbox desenha as dobras, os vincos e as áreas de segurança sobre a folha; o PDF desenha marcas de dobra na área de informações, fora da sangria.
+
+## O projeto da capa
+
+A configuração `cover` é o projeto da capa. Como o resto do projeto gráfico, ela não diz o que a capa diz, só como ela é, e não altera a diagramação das páginas:
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background`: o fundo da folha inteira.
+- `image`: um recurso bitmap ou SVG do livro que preenche a folha inteira (`area: 'sheet'`, o padrão) ou só a capa (`'front'`), recortado para cobri-la em torno de `focus` (em frações da imagem).
+- `zones`: um fundo por zona, por cima do fundo da folha e da sua imagem.
+- `verticalAlign`: onde fica o texto de cada zona: `top` (o padrão), `middle` ou `bottom`. O texto da lombada fica sempre centralizado na largura dela.
+- `barcodeMagnification`: o tamanho do código de barras em relação ao nominal, de 0,8 a 2 (padrão 1). Abaixo de 0,8, ele fica em 0,8 e a verificação avisa.
+- `mirrorMargin`: a sangria espelhada (veja abaixo).
+
+### Elementos, efeitos e logotipos
+
+Sobre os fundos, o projeto posiciona três listas de itens, cada uma desenhada de trás para a frente: `elements` sob o texto, `effects` sobre ele e `logos` por cima de tudo. Um item é uma imagem (`kind: 'image'` com um `resourceId`), um bloco de cor (`'box'`) ou uma forma de cor (`'shape'`), e tem um `id` de letras, algarismos, `-` e `_`.
+
+Um item é posicionado pela zona em que está, e por isso se desloca com ela quando a lombada cresce ou a encadernação muda:
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height`: a sua caixa, em mm a partir do canto superior esquerdo da zona. Pode sair da zona, passar para as vizinhas ou entrar na sangria.
+- `basis`: o tamanho da zona quando o item foi posicionado. Se agora a zona tem outro tamanho, porque o formato do livro mudou ou a lombada cresceu, o item acompanha: um bloco ou uma forma em cada eixo, uma imagem por igual em torno do centro, mantendo as proporções. Sem `basis`, o item fica como foi posicionado.
+- `to`: um bloco ou uma forma que atravessa zonas, como uma faixa da contracapa à capa: a borda direita, em mm a partir da esquerda da zona onde termina (`to.zone`, `to.x`), e a largura dessa zona quando foi posicionado (`to.basis`). Cada borda passa então a acompanhar a sua própria zona.
+- `color` e `opacity`: a cor de um bloco ou de uma forma e a opacidade de qualquer item (de 0 a 1). Uma imagem mantém a sua própria transparência.
+- `fit`: como uma imagem preenche a caixa: inteira dentro dela (`contain`, o padrão) ou cobrindo-a, recortada (`cover`).
+- `path`: uma forma desenhada por nós, em frações da caixa (0, 0 o canto superior esquerdo; 1, 1 o inferior direito), de modo que a forma estica com a caixa. Cada parte tem os seus `nodes` e é fechada (`closed`) ou aberta; um nó tem `x` e `y` e as alças da curva que chega a ele (`in`) e da que sai dele (`out`).
+- `outline`: polígonos fechados em frações da caixa, decalcados de uma imagem, para um véu ou um acabamento com a forma dela.
+- `clip`: uma imagem recortada num contorno, para que apareça só dentro da forma da própria ilustração.
+- `bleed`: além da margem de projeto de uma sangria espelhada, `mirror` (o padrão) dobra o item para fora junto com o fundo; `own` o pinta como está, por cima da dobra.
+- `clearance` (logotipos): a área de proteção em mm em volta do logotipo, onde nada mais deve entrar.
+
+Um bloco ou uma forma também pode levar os efeitos que um estilo de box das páginas não desenha: `radius` para cantos arredondados em mm, `stroke` para uma borda (`color` e `width` em mm), `gradient` para um degradê da sua cor até `to` num ângulo `angle` em graus (0: da esquerda para a direita; 90: de cima para baixo), e `shadow` (`color`, `opacity`, o deslocamento `x` e `y` em mm e a suavidade, `blur`). Um degradê ou uma sombra transforma o item numa imagem à parte, desenhada na resolução do PDF.
+
+### Sangria espelhada
+
+A arte de uma capa costuma parar no corte, e a dobra de uma capa dura vai 15 mm além dele, em volta do papelão. Com `mirrorMargin`, o projeto é desenhado essa quantidade de mm além do corte (no mínimo 2), e daí em diante o fundo e os elementos são espelhados até a borda da folha. Assim, a dobra e a sangria continuam a imagem em vez de mostrar uma faixa em branco. O `designMargin` de um perfil dá a margem que uma gráfica espera. Um elemento marcado com `bleed: 'own'` não é espelhado.
+
+### Caixas de texto
+
+Cada zona é um quadro de texto. `textBoxes` acrescenta quadros posicionados à mão, para uma citação na capa, uma linha no pé da lombada ou uma legenda sobre uma imagem:
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name`: letras, algarismos, `-` e `_`, e não o nome de uma zona. O Markdown da capa preenche a caixa por esse nome.
+- `rect`: o seu lugar na folha, em mm a partir do canto da sangria.
+- `rotate`: `-90` gira o texto um quarto de volta para que ele suba pela lombada, `90` para que desça.
+- `verticalAlign`: `top`, `middle` ou `bottom`.
+
+### Acabamentos e chapas técnicas
+
+`finishes` são o que a gráfica acrescenta depois das tintas, cada um sobre uma forma do projeto:
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process`: `varnish` (verniz) ou `foil` (hot stamping), impressos numa chapa de cor especial própria (uma tinta com [acabamento](/pt/docs/special-inks-die-cuts#acabamentos)); ou `emboss` ou `deboss`, um clichê de relevo ou de baixo-relevo.
+- `ink`: a cor especial do verniz ou do hot stamping. Por padrão, um verniz é `Varnish` e um hot stamping é `Gold foil`.
+- `sheen`: `gloss` (o padrão), `satin`, `matte` ou `softTouch`.
+- `shape`: o que o acabamento cobre: uma caixa própria (`{ box }`, posicionada como um elemento), a forma de um elemento, efeito ou logotipo (`{ element: id }`; o contorno de uma imagem quando o recurso tem um), ou um contorno salvo numa caixa própria (`{ outline, box }`).
+
+Um relevo ou um baixo-relevo não imprime nada. A sua forma vai para a gráfica numa chapa técnica, ao lado da [linha de faca](/pt/docs/special-inks-die-cuts#a-linha-de-faca-no-pdf): uma `Separation` chamada `Emboss` ou `Deboss`, que o preflight lista e que nenhuma prova pinta. A encadernadora faz o clichê a partir dela.
+
+## O texto da capa
+
+O texto da capa é um documento Markdown do livro, guardado ao lado dos capítulos. Cada bloco preenche uma zona ou uma caixa de texto pelo nome:
+
+```md
+:::frame{slot="back"}
+Uma cidade que guarda os seus livros debaixo da terra, e a menina que os lê em voz alta.
+
+:::paragraphs{style="cover-praise"}
+"Um romance para ler de uma vez só." — *Um jornal*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Ana Pérez** nasceu em Saragoça em 1984. *A biblioteca subterrânea* é o seu segundo romance.
+:::
+
+:::frame{slot="praise"}
+*Vencedor do Prêmio de Romance de Estreia*
+:::
+```
+
+O texto é composto com a tipografia do livro: os seus estilos de parágrafo, estilos de caractere e fontes. Quatro estilos de parágrafo são próprios da capa, e o livro pode redefini-los: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`. A capa e a lombada que o Markdown deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor do livro a partir dos metadados, compostos nesses estilos; eles nunca são copiados para o texto da capa. Um quadro `front` ou `spine` os substitui pelo seu próprio texto.
+
+Um quadro para um espaço que a folha não tem (uma orelha numa folha sem orelhas, uma contracapa numa guarda) fica de fora, e a verificação avisa; um segundo quadro para o mesmo espaço também fica de fora. Escreva o texto da capa como parágrafos com estilos de parágrafo: um título `#` recebe o projeto que o livro dá aos títulos de capítulo.
+
+Um só texto de capa serve a todas as versões e a todas as folhas. Um livro em vários idiomas pode dar a cada idioma o seu.
+
+## As verificações
+
+A montagem de uma capa informa o que não conseguiu fazer como foi pedido. O Sandbox mostra esses avisos em **Verificações**, no painel Capa, a linha de comando os imprime, e `buildCover` os devolve em `issues`:
+
+<table>
+  <thead>
+    <tr><th>Tipo</th><th>O que aconteceu</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>A versão indica um perfil de encadernação que o livro não tem.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>O formato ou a lombada estão fora do que o <code>accepts</code> do perfil permite.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>O ISBN não é válido: o comprimento ou o dígito verificador estão errados. A capa fica sem código de barras.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>A lombada foi definida à mão; são informadas a largura calculada e a usada.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>O arredondamento para cadernos inteiros acrescenta páginas em branco.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>A lombada é mais estreita que <code>minSpine</code> e não leva texto.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>Uma caixa de texto tem um nome que a capa não aceita.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>O texto da capa preenche um espaço que a folha não tem, ou o mesmo espaço duas vezes.</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>A sangria espelhada deixou de fora imagens que não conseguiu ler, ou parou antes da borda da folha.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>As imagens recortadas num contorno foram desenhadas inteiras.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>O código de barras foi pedido abaixo de 80 % e fica em 80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>O livro não tem essa versão, ou a versão não tem essa folha.</td></tr>
+  </tbody>
+</table>
+
+As verificações da configuração também leem `production` e `cover` como qualquer outra configuração: uma chave desconhecida, um valor do tipo errado ou um ISBN inválido é informado com o seu caminho.
+
+O PDF da capa passa pelo mesmo [preflight](/pt/docs/configuration-pdf-output) que o do livro: resolução das imagens, preto, carga de tinta, os acabamentos e as chapas técnicas.
+
+## No Sandbox
+
+O painel **Capa**, na barra lateral, reúne as versões impressas e a sua capa:
+
+- **Versões**: **Adicionar brochura** ou **Adicionar capa dura**, e depois, para cada versão, o nome, a encadernação, o ISBN, o complemento e o ISBN da obra, as orelhas ou a sobrecapa, o revestimento de uma capa dura, a lombada da gráfica, o sentido do texto da lombada e a lombada mais estreita que o recebe. **Medidas desta versão** substitui as do perfil só para esta versão.
+- **Folha**: qual folha aparece (capa, sobrecapa, guarda da frente ou de trás), com as suas páginas, a lombada e o tamanho.
+- **Projeto na folha**: **Editar na folha** transforma a folha no editor do projeto. Caixas de texto, blocos de cor, véus, imagens, logotipos e acabamentos são acrescentados pela barra dele, arrastados e redimensionados na folha, e se encaixam nas dobras, nas áreas de segurança e uns nos outros (Alt desliga o encaixe). As setas movem o item selecionado 1 mm, ou 10 mm com Shift. **Camadas** lista os itens sob o texto, as caixas de texto, os itens sobre o texto, os logotipos e os acabamentos, e os ordena. Os campos do item selecionado definem o lugar, a cor, a opacidade, como uma imagem preenche a caixa, o raio dos cantos, a borda, o degradê e a sombra, o que ele faz além de uma sangria espelhada, se acompanha o tamanho do painel, e o traçado, o contorno ou o recorte. Renomear uma caixa de texto leva junto o texto dela no Markdown da capa.
+- **Textos**: um editor de Markdown por zona e por caixa de texto. A capa e a lombada mostram o que recebem dos metadados até ganharem um **texto próprio**.
+- **Coleção**: o nome e o ISBN da coleção.
+- **Arquivos para a gráfica**: **Baixar PDF da folha**, gravado com as configurações de PDF do livro (espaço de cor, perfil de saída, PDF/X), e **Baixar a capa** como imagem.
+- **Verificações**: as verificações acima.
+- **Perfis de gráfica**: perfis de encadernação copiados de um embutido e ajustados às medidas de uma gráfica, cada medida em milímetros, como proporção do formato ou por faixas de tamanho do formato, com o valor que dá para este livro; perfis de papel com fornecedor e nome comercial; e **Exportar perfis** e **Importar perfis** para o arquivo `.postext-production.json`.
+
+O grupo **Projeto da capa** do painel Design reúne os fundos, a imagem, o alinhamento do texto das zonas, o tamanho do código de barras e a sangria espelhada. Toda mudança no painel Capa é um passo do histórico de desfazer.
+
+As imagens de uma capa costumam chegar como arquivos de impressão. O painel Recursos lê um PDF, ou um arquivo do Illustrator salvo com compatibilidade com PDF, como uma imagem por página a 300 ppi com fundo transparente, e arquivos TIFF e PSD no tamanho original. Um arquivo EPS não é lido: o painel pede que ele seja salvo como PDF.
+
+## Pela linha de comando
+
+`postext cover` compõe uma folha de uma versão:
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` escolhe a versão (a primeira, por padrão), `--sheet` a folha (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Um caminho terminado em `.png`, `.jpg` ou `.webp`, ou `--format`, pinta um painel em vez do PDF: a capa, a menos que `--zone` indique outro (`back`, `spine`, `flapFront`, `flapBack` ou `sheet` para a folha inteira). As opções de PDF (`--color-space`, `--pdfx`, `--profile` e as demais) valem como em `postext pdf`. Veja [Linha de comando](/pt/docs/command-line).
+
+## No código
+
+`postext/production` reúne toda a cadeia da capa. `buildCover` recebe a configuração do livro, uma versão, as páginas diagramadas (para a lombada), o Markdown da capa, os metadados e os recursos, e devolve a capa como um documento de uma página:
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` dá o tamanho e as zonas da folha em mm, `cover.sheets` todas as folhas da versão com a sua lombada, e `cover.issues` as verificações. `pages` também pode ser um número de páginas, todas no papel do livro.
+
+O resto do módulo expõe cada etapa:
+
+- **ISBN**: `parseIsbn` lê e confere um ISBN, `isbnBarcodeSvg` desenha o código de barras EAN-13 com complemento, e `ean13CheckDigit` e `isbnCaption` fazem o resto.
+- **Medidas e folhas**: `resolveBindingMeasures` calcula as medidas de um perfil para um formato, `resolveLength` uma medida, `checkProfileAccepts` os limites; `spineFromRuns`, `pageRunsOf`, `signaturePages` e `leafMm` a lombada; `softcoverSheet`, `caseSheet`, `jacketSheet` e `endpaperSheet` cada folha, e `versionSheets` as de uma versão.
+- **O projeto**: `coverPage` compõe o modelo de página de uma folha, `coverSource` o Markdown a partir do qual ela é diagramada, `coverZoneBox` a caixa de uma zona, `placeCoverElement` e `coverElementRect` o lugar de um item, `basicShape`, `pathData` e `flattenCoverPath` as suas formas.
+- **Perfis e configurações**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` e `readProductionConfig`, que lê um bloco `production` de dados não confiáveis e informa o que descartou.
+- **Folio**: `folioOfBook` dá as configurações do Folio com a encadernação da primeira versão, e `productionFolioBinding` e `folioVersionOf` as de uma versão escolhida.
+
+## Num arquivo `.postext`
+
+Um pacote leva as configurações `production` e `cover` na sua configuração e o texto da capa como `cover.md`, ao lado dos capítulos. Um idioma com texto de capa próprio o leva como `cover/<language>.md`. `openBundle` (de `postext/bundle`) o devolve como `coverMarkdown`, e `createBundle` o recebe da mesma forma. Veja [Pacotes](/pt/docs/configuration-bundles).
+
+## Folio e EPUB
+
+A visualização Folio encaderna o livro como a sua primeira versão: uma brochura colada ou costurada como brochura, uma capa dura como capa dura, com a lombada da capa pintada na lombada do livro. Um EPUB gravado pela linha de comando ou pelo Sandbox usa a capa impressa como imagem de capa quando o livro tem uma versão impressa e não indica outra.
+
+## Limites
+
+- A lombada conta as páginas tal como foram diagramadas. Se as páginas de um livro mudam depois de feita a capa, a capa precisa ser feita de novo; a lombada e todos os painéis se ajustam sozinhos.
+- As medidas padrão são um ponto de partida tirado de especificações publicadas. Peça as medidas à gráfica e guarde-as num perfil.
+- Só são gravados o PDF e os formatos de imagem. Um pacote IDML da folha de capa, não.
+- Um título `#` no texto da capa recebe o projeto dos títulos de capítulo do livro; componha os títulos da capa com estilos de parágrafo.
