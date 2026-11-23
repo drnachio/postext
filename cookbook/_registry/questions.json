@@ -6554,5 +6554,33 @@
       "it": "Vernice, lamina e rilievo in copertina"
     },
     "theme": "output"
+  },
+  "Q238": {
+    "kind": "how",
+    "text": {
+      "en": "How do I place the texts of a cover against each other, so a longer title pushes the rest down and the blurb runs on into a second box?",
+      "es": "¿Cómo coloco los textos de una cubierta unos respecto de otros, para que un título más largo empuje lo demás hacia abajo y la sinopsis siga en una segunda caja?",
+      "ca": "Com col·loco els textos d'una coberta els uns respecte dels altres, perquè un títol més llarg empenyi la resta cap avall i la sinopsi continuï en una segona caixa?",
+      "zh": "怎样让封面上的各段文字彼此相对定位，书名变长时把下面的文字推下去，简介接着排进第二个文本框？",
+      "ar": "كيف أضع نصوص الغلاف بعضها نسبةً إلى بعض، فيدفع العنوانُ الأطول ما تحته إلى الأسفل ويستمر الملخّص في مربّع ثانٍ؟",
+      "ja": "表紙の文字を互いの位置に合わせて置き、題名が長くなれば下の文字を押し下げ、紹介文を二つ目の枠へ流すには？",
+      "pt": "Como posiciono os textos de uma capa uns em relação aos outros, para que um título mais longo empurre o resto para baixo e a sinopse continue numa segunda caixa?",
+      "fr": "Comment placer les textes d’une couverture les uns par rapport aux autres, pour qu’un titre plus long pousse le reste vers le bas et que le résumé continue dans un second bloc ?",
+      "de": "Wie platziere ich die Texte eines Umschlags relativ zueinander, sodass ein längerer Titel den Rest nach unten schiebt und der Klappentext in einem zweiten Feld weiterläuft?",
+      "it": "Come colloco i testi di una copertina l’uno rispetto all’altro, perché un titolo più lungo spinga giù il resto e la quarta prosegua in una seconda casella?"
+    },
+    "index": {
+      "en": "Cover text boxes, anchored and chained",
+      "es": "Cajas de texto de cubierta, ancladas y encadenadas",
+      "ca": "Caixes de text de coberta, ancorades i encadenades",
+      "zh": "封面文本框的锚定与串接",
+      "ar": "مربّعات نص الغلاف، المثبّتة والمتسلسلة",
+      "ja": "表紙のテキスト枠の固定と連結",
+      "pt": "Caixas de texto da capa, ancoradas e encadeadas",
+      "fr": "Blocs de texte de couverture, ancrés et chaînés",
+      "de": "Textfelder des Umschlags, verankert und verkettet",
+      "it": "Caselle di testo di copertina, ancorate e concatenate"
+    },
+    "theme": "output"
   }
 }

@@ -1,0 +1,97 @@
+---
+title: "Caixas de texto da capa ancoradas e encadeadas"
+summary: "Dois contos de Poe em brochura, com a capa em seis caixas de texto penduradas umas nas outras, um título que cresce e uma sinopse que continua."
+plain: "Um livrinho com dois contos de Edgar Allan Poe e a folha da sua capa. Cada texto da capa fica abaixo, acima ou ao lado de outro: um título mais longo faz o resto descer, e o texto da contracapa continua abaixo de uma citação."
+description: "Caixas de texto da capa no Postext: ancoradas a um painel ou a outra caixa, que crescem com o texto e se encadeiam para que a sinopse continue noutra caixa."
+question: "Como posiciono os textos de uma capa uns em relação aos outros, para que um título longo empurre o resto?"
+aliases: ["caixa de texto da capa", "caixas ancoradas", "caixas encadeadas", "texto da contracapa", "sinopse da contracapa", "título que cresce", "cover text box", "linked text boxes"]
+pageNotes: { "22": "A folha de capa aberta. À esquerda a contracapa, quase preta, com uma sinopse em letra creme que para depois de oito linhas, uma citação do conto em itálico dourado e o resto da sinopse embaixo, que termina numa linha de versaletes dourados; o código de barras ISBN no canto junto à lombada. Uma lombada estreita com o título em versaletes. À direita a capa, uma pintura de um baile de máscaras numa sequência de salas coloridas sob uma abóbada gótica escura, com um relógio de ébano à esquerda e uma figura amortalhada à direita; no alto o título The Masque of the Red Death em duas linhas de maiúsculas creme, embaixo o subtítulo em itálico dourado e, ao pé, o nome do autor em maiúsculas espaçadas." }
+---
+
+## O que você vai compor
+
+Dois contos de Edgar Allan Poe, “The Masque of the Red Death” e “The Oval Portrait” (a edição espanhola compõe a tradução de Carlos Olivera, de 1884), numa brochura de 125 × 195 mm, e a folha da sua capa. Nenhum texto da capa tem coordenadas: cada um é uma caixa pendurada em outra coisa. Na capa, o título pende do alto do painel, o subtítulo pende do título e o autor se apoia no pé. O título ocupa duas linhas nas duas edições, então a caixa dele cresce e o subtítulo desce junto. Na contracapa, a sinopse preenche uma caixa de 50 mm, e as linhas que não cabem continuam numa segunda caixa, abaixo de uma citação do conto. Acima das páginas, a receita desenha a folha duas vezes: como é impressa, e com cada caixa contornada e a cadeia marcada.
+
+## Preparo
+
+### 1 · Cada caixa pende de um painel ou de outra caixa
+
+O código é [a resposta curta](#a-resposta-curta) acima. Um `anchor` nomeia um painel da folha ou outra caixa de texto, e um ponto. Num painel, o ponto é um dos nove da sua área segura, e a caixa põe ali o seu próprio ponto equivalente: `edge: 'top'` centraliza o título na capa e apoia a borda de cima dele na da área segura; `edge: 'bottom'` apoia o pé do autor no pé do painel. Numa caixa, o ponto também pode ser `below`, `above`, `right-of` ou `left-of`. `x` e `y` deslocam a caixa a partir desse ponto, em mm. Com uma âncora, `rect` dá só o tamanho, e assim as caixas ficam no lugar quando a lombada engorda ou o livro muda de formato.
+
+### 2 · O título cresce e leva o subtítulo para baixo
+
+<Excerpt region="cover-type" />
+
+O título é composto em Cinzel de 30 pt com entrelinha de 33. A caixa dele mede 14 mm, uma linha. “The Masque of the Red Death” e “La máscara de la muerte” precisam de duas, então a caixa cresce com o texto até os 40 mm de `maxHeight`; só passado esse limite a letra diminuiria. O subtítulo está ancorado `below` do título, 2 mm abaixo, e desce a altura da segunda linha. O autor está ancorado ao pé do painel e não se mexe.
+
+### 3 · A sinopse continua noutra caixa
+
+A caixa da sinopse tem `next: 'blurb-end'`. O que não cabe é cortado entre linhas e continua nessa caixa, que não tem bloco próprio no Markdown da capa. A citação pende da sinopse e `blurb-end` da citação, então as três mantêm o espaçamento se a primeira caixa ficar mais alta. Só quando nem a segunda caixa basta o texto da cadeia diminui, todo de uma vez, até 90 % por padrão (`fit.minScale`). A linha em versaletes dourados é o último parágrafo do bloco da sinopse, e por isso fecha o texto na segunda caixa:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+While a plague empties his country, Prince Prospero shuts himself up …
+:::
+
+:::paragraphs{style="cover-note"}
+From the Raven Edition of Poe's works
+:::
+:::
+```
+
+O bloco `front` vazio impede que `buildCover` ponha na capa o título, o subtítulo e o autor dos metadados do livro: aqui quem os põe são as caixas.
+
+### 4 · Uma brochura com a lombada calculada pelas páginas
+
+<Excerpt region="binding" />
+
+Encadernação PUR em cadernos de 16 páginas, em papel creme de 120 g/m² com mão 2,2. O livro tem 21 páginas, 32 depois de encadernado, e a lombada fica com uns 4,7 mm. Por padrão, uma lombada com menos de 6 mm não recebe texto, então a versão define `spineText.minSpine` como 4,5 e a lombada leva o título e o autor. O ISBN é um número de exemplo, não atribuído a nenhum livro.
+
+### 5 · O miolo do livro
+
+<Excerpt region="pages" />
+
+Falsa folha de rosto, folha de rosto e página de créditos; depois, cada conto numa página ímpar, rebaixado 50 mm, sob o título em Cinzel e um fio vermelho curto. Os cabeçalhos levam o autor na página par e o título do conto na ímpar, e o colofão fecha o livro na última ímpar.
+
+### 6 · A folha é montada a partir das páginas já compostas
+
+<Excerpt region="sheet" />
+
+`buildCover` recebe as páginas, os metadados e o Markdown da capa e devolve um documento de uma só página, a folha. As caixas de texto viram blocos dessa página e são compostas como os de uma página composta. Os dígitos do código de barras pedem OCR-B, que nenhum servidor de fontes oferece; a receita os compõe em Cinzel.
+
+### 7 · Onde cada caixa foi parar
+
+<Excerpt region="views" />
+
+A página da folha volta com os seus blocos em `page.composed.frames`, cada um com o retângulo que a composição lhe deu depois de ancorar e crescer, e `continuesTo` quando o texto dele continua noutro bloco. A segunda vista contorna as seis caixas sobre a folha e traça a cadeia do pé da sinopse até a borda de cima de `blurb-end`.
+
+## Variações
+
+### Pendure o autor abaixo do subtítulo
+
+Assim o autor também acompanha o título para baixo, em vez de ficar no pé do painel.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Reduza um título longo a uma linha
+
+Sem `maxHeight`, a caixa do título fica com os seus 14 mm e a composição diminui o título até ele caber: aqui numa linha, a cerca de dois terços do corpo.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Erros comuns
+
+- A caixa nomeada pelo `next` de outra recebe o texto que aquela lhe passa. Não dê a ela um bloco próprio no Markdown da capa, e termine o bloco da primeira caixa com o que deve fechar o texto, como a nota daqui.
+- Uma âncora que não nomeia nada, que nomeia a própria caixa ou que fecha um ciclo é avisada, e a caixa fica no seu `rect`. Dê a toda caixa ancorada um `rect` com um tamanho real.
+- `maxHeight` não vale para uma caixa girada (`rotate`), que mantém o tamanho do seu `rect`.
