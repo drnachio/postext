@@ -1132,7 +1132,7 @@ La **loupe** se tient au-dessus du livre, là où se trouve le pointeur, ou just
 Les vidéos se lisent sur la page. Quand le pointeur tourne les pages, un clic sur l’image d’aperçu d’une vidéo la lance sur place, et elle continue pendant que le feuillet tourne. Un autre clic la met en pause, en lancer une autre arrête la première, et une vidéo s’arrête quand le livre s’immobilise sur une double page qui ne la montre plus. Une vidéo réglée pour se lancer d’elle-même démarre la première fois que sa double page s’affiche. Les vidéos YouTube et Vimeo ne peuvent pas être dessinées dans une page : un clic sur l’une d’elles tourne le feuillet.
 
 :::callout{type="try"}
-Ouvrez l’onglet Folio sur ce guide, tournez quelques pages en tirant leurs coins, puis faites pivoter le livre d’un glisser au bouton droit pour voir son pli agrafé. Réinitialiser la vue le remet en place.
+Ouvrez l’onglet Folio sur ce guide, tournez quelques pages en tirant leurs coins, puis faites pivoter le livre d’un glisser au bouton droit pour voir le titre sur son dos. Réinitialiser la vue le remet en place.
 :::
 
 ## Le papier
@@ -1165,7 +1165,7 @@ Une sorte de papier couvre des feuilles entières : le contenu de la série com
 
 Le livre repose sur une **surface** : chêne, noyer, lin, feutre, cuir, marbre, couleur unie, ou rien du tout, ce qui laisse voir le fond de la page. Cinq **lumières** plantent le décor : un studio, la lumière du jour, une lampe de lecture, un ciel couvert et la nuit. Chacune forme une paire : l’environnement que reflètent les papiers couchés et brillants quand un feuillet tourne, et une lumière principale qui projette les ombres du bloc et d’une page soulevée sur les pages en dessous. L’**exposition** éclaircit ou assombrit la scène, et les ombres peuvent être désactivées sur un ordinateur lent. L’**inclinaison** règle de combien la vue s’écarte de la verticale, jusqu’à soixante-dix degrés, et la **rotation** de combien elle tourne autour du livre ; Enregistrer comme vue par défaut mémorise les deux telles que vous les voyez.
 
-Ce guide est monté en brochure en piqûre à cheval, sur papier couché brillant de 170 grammes, sur un tapis de feutre bleu, en lumière de studio. Ses couvertures sont ses propres première et dernière pages : il s’ouvre donc sur la couverture et se ferme quand le dernier feuillet tourne. Tout cela se trouve dans le groupe **Folio** du panneau Maquette, et rien dans ce groupe ne change une seule ligne des pages.
+Ce guide est relié en broché, dos carré collé, sur papier couché brillant de 170 grammes, sur un tapis de feutre bleu, en lumière de studio. Ses couvertures sont ses propres première et dernière pages : il s’ouvre donc sur la couverture et se ferme quand le dernier feuillet tourne. Tout cela se trouve dans le groupe **Folio** du panneau Maquette, et rien dans ce groupe ne change une seule ligne des pages.
 
 ## Encres et trous en main
 

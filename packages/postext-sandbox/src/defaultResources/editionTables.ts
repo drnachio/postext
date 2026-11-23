@@ -9,7 +9,7 @@ import { table } from './featureTables.js';
  *  the fewest and the most among the Latin editions (English leaves its
  *  hyphenation to its locale), then each edition in a script of its own.
  *  `general` is the size of the layer they share. */
-export const EDITION_OVERRIDES = { general: 1437, latin: [42, 43], ar: 338, zh: 524, ja: 552 };
+export const EDITION_OVERRIDES = { general: 1436, latin: [42, 43], ar: 338, zh: 524, ja: 552 };
 
 const WORDS: Record<GuideLang, { head: [string, string, string]; latin: [string, string, string]; ar: [string, string]; zh: [string, string]; ja: [string, string] }> = {
   en: {

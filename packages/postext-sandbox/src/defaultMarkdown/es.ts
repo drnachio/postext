@@ -1136,7 +1136,7 @@ La **lupa** se sostiene sobre el libro donde está el puntero, o un poco por enc
 Los vídeos se reproducen en la página. En el modo de pasar páginas, un clic en la portada de un vídeo lo pone en marcha allí mismo, y sigue mientras la hoja gira. Otro clic lo pausa, empezar otro detiene el anterior, y el vídeo se detiene cuando el libro queda abierto por un pliego que ya no lo muestra. Un vídeo configurado para reproducirse por sí solo empieza la primera vez que aparece su pliego. Los de YouTube y Vimeo no se pueden dibujar dentro de la página: un clic en ellos pasa la hoja.
 
 :::callout{type="try"}
-Abre la pestaña Folio con esta guía, pasa unas cuantas páginas arrastrando sus esquinas y luego gira el libro arrastrando con el botón derecho para ver su pliegue grapado. Restablecer la vista lo devuelve a su sitio.
+Abre la pestaña Folio con esta guía, pasa unas cuantas páginas arrastrando sus esquinas y luego gira el libro arrastrando con el botón derecho para ver el título en su lomo. Restablecer la vista lo devuelve a su sitio.
 :::
 
 ## El papel
@@ -1169,7 +1169,7 @@ Un papel ocupa pliegos enteros, así que el contenido del tramo empieza en una p
 
 El libro descansa sobre una **superficie**: roble, nogal, lino, fieltro, piel, mármol, un color liso o nada, que deja ver el fondo de la página. Cada superficie es una textura fotografiada, y un tinte cambia el color de cualquiera de ellas. Cinco **luces** crean la escena: estudio, luz de día, lámpara de lectura, cielo cubierto y noche. Cada una es un par: el entorno que reflejan los papeles estucados y de brillo al girar una hoja, y una luz principal que proyecta las sombras del bloque y de una página levantada sobre las páginas de debajo. La **exposición** aclara u oscurece la escena, y las sombras se pueden desactivar en un equipo lento. La **inclinación** fija cuánto se aparta la vista de la vertical, hasta setenta grados, y el **giro** cuánto rodea el libro; Guardar como vista por defecto guarda los dos tal como los ves.
 
-Esta guía está montada como un folleto grapado a caballete, en papel estucado brillo de 170 gramos, sobre un tapete de fieltro azul y con luz de estudio. Sus cubiertas son su propia primera y última página, así que se abre por la cubierta y se cierra al pasar la última hoja. Todo ello está en el grupo **Folio** del panel **Diseño**, y nada en ese grupo cambia una sola línea de las páginas. El folleto, el papel, el tapete y la luz son ajustes de la configuración, así que otro libro puede mostrarse en tapa dura, sobre otra mesa y con otra luz. Para comparar papeles basta con cambiar el del folleto en el grupo **Folio**: el libro se vuelve a dibujar con el nuevo grosor, brillo y textura sin volver a maquetarse.
+Esta guía está encuadernada en rústica fresada, con el título en el lomo, en papel estucado brillo de 170 gramos, sobre un tapete de fieltro azul y con luz de estudio. Sus cubiertas son su propia primera y última página, así que se abre por la cubierta y se cierra al pasar la última hoja. Todo ello está en el grupo **Folio** del panel **Diseño**, y nada en ese grupo cambia una sola línea de las páginas. La encuadernación, el papel, el tapete y la luz son ajustes de la configuración, así que otro libro puede mostrarse en tapa dura, sobre otra mesa y con otra luz. Para comparar papeles basta con cambiar el del libro en el grupo **Folio**: el libro se vuelve a dibujar con el nuevo grosor, brillo y textura sin volver a maquetarse.
 
 ## Tintas y huecos en la mano
 

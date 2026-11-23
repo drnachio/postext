@@ -1131,7 +1131,7 @@ A **lupa** fica sobre o livro onde está o ponteiro, ou um pouco acima do dedo n
 Os vídeos tocam na página. No modo de virar páginas, um clique no pôster de um vídeo o inicia ali mesmo, e ele continua tocando enquanto a folha vira. Outro clique o pausa, iniciar outro para o primeiro, e um vídeo para quando o livro se acomoda numa página dupla que já não o mostra. Um vídeo configurado para tocar sozinho começa na primeira vez que a sua página dupla aparece. Vídeos do YouTube e do Vimeo não podem ser desenhados dentro de uma página: um clique num deles vira a folha.
 
 :::callout{type="try"}
-Abra a aba Folio com este guia, vire algumas páginas arrastando os cantos e depois gire o livro arrastando com o botão direito para ver a dobra grampeada. Redefinir visualização o traz de volta.
+Abra a aba Folio com este guia, vire algumas páginas arrastando os cantos e depois gire o livro arrastando com o botão direito para ver o título na lombada. Redefinir visualização o traz de volta.
 :::
 
 ## Papel
@@ -1164,7 +1164,7 @@ Um papel ocupa folhas inteiras, então o conteúdo dentro do trecho começa numa
 
 O livro fica sobre uma **superfície**: carvalho, nogueira, linho, feltro, couro, mármore, uma cor lisa ou nenhuma, o que deixa à mostra o fundo da página. Cada superfície é uma textura fotografada, e uma tonalidade muda a cor de qualquer uma delas. Cinco **luzes** montam a cena: estúdio, luz do dia, luminária de leitura, céu nublado e noite. Cada uma é um par: o ambiente que os papéis couché e brilho refletem quando uma folha vira, e uma luz principal que projeta as sombras do miolo e de uma página levantada sobre as páginas de baixo. A **exposição** clareia ou escurece a cena, e as sombras podem ser desativadas num computador lento. A **inclinação** define quanto a vista se afasta da visão de cima, até setenta graus, e o **giro**, quanto ela dá a volta no livro; Salvar como visualização padrão guarda os dois do jeito que você os vê.
 
-Este guia está montado como um livreto em grampo canoa, em papel couché brilho de 170 gramas, sobre um feltro azul, com luz de estúdio. As suas capas são a sua própria primeira e última página, então ele abre na capa e se fecha quando a última folha vira. Tudo isso está no grupo **Folio** do painel Design, e nada nesse grupo muda uma única linha das páginas. Por isso o papel, a encadernação e a luz podem mudar à vontade depois que o livro está diagramado, sem que um número de página ou uma quebra de coluna se mova.
+Este guia está encadernado como uma brochura colada, com o título na lombada, em papel couché brilho de 170 gramas, sobre um feltro azul, com luz de estúdio. As suas capas são a sua própria primeira e última página, então ele abre na capa e se fecha quando a última folha vira. Tudo isso está no grupo **Folio** do painel Design, e nada nesse grupo muda uma única linha das páginas. Por isso o papel, a encadernação e a luz podem mudar à vontade depois que o livro está diagramado, sem que um número de página ou uma quebra de coluna se mova.
 
 ## Tintas e furos na mão
 

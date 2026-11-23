@@ -119,15 +119,16 @@ export const GUIDE_PART_COLOURS = { foundations: '#2b4acb', craft: '#8f6408', be
 /** Resource id of the cover artwork (see `defaultResources`). */
 export const GUIDE_COVER_RESOURCE_ID = 'guide-cover';
 
-/** How the Folio viewer shows the guide: a stapled booklet (its cover a
- *  sheet a little heavier than the pages) on thick gloss coated paper, on a
- *  blue felt mat in studio light, seen from low over its foot and a little
- *  to its left. */
+/** How the Folio viewer shows the guide: bound as its paperback (the
+ *  first print version, perfect bound, with the printed spine), its own
+ *  first and last pages for covers, on thick gloss coated paper, on a blue
+ *  felt mat in studio light, seen from low over its foot and a little to
+ *  its left (#1678). */
 export const GUIDE_FOLIO: FolioConfig = {
   tilt: 44,
   yaw: -14,
   paper: { type: 'coatedGloss', grammage: 170 },
-  binding: { type: 'saddleStitch', cover: 'pages' },
+  binding: { cover: 'pages' },
   surface: { type: 'felt', color: { hex: '#3a4a86', model: 'hex' } },
   lighting: { environment: 'studio' },
 };
