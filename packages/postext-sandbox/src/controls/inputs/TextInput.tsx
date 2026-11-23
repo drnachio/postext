@@ -25,7 +25,7 @@ export function TextInput({
   tooltip,
   isDefault,
   onReset,
-  widthCh = 14,
+  widthCh,
   onFocus,
   onBlur,
 }: TextInputProps) {
@@ -40,6 +40,7 @@ export function TextInput({
         placeholder={placeholder}
         widthCh={widthCh}
         muted={muted}
+        className={widthCh === undefined ? 'w-(--pt-field-w)' : undefined}
       />
     </FieldRow>
   );

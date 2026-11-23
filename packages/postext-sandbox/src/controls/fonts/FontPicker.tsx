@@ -422,7 +422,7 @@ function FontTrigger({ buttonRef, value, open, muted, onClick }: {
       aria-labelledby={ids ? `${ids.labelId} ${valueId}` : undefined}
       aria-describedby={ids?.descriptionId}
       className={cn(
-        'inline-flex h-7 pt-large:h-11 max-w-[10.5rem] cursor-pointer items-center gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pe-1.5 ps-2 transition-colors',
+        'inline-flex h-7 pt-large:h-11 w-(--pt-field-w) cursor-pointer items-center justify-between gap-1.5 rounded-md border border-(--pt-control-border) bg-(--surface) pe-1.5 ps-2 transition-colors',
         'hover:border-(--rule-strong,var(--slate)) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
         open && 'border-(--brand)',
         muted ? 'text-(--slate)' : 'text-(--foreground)',

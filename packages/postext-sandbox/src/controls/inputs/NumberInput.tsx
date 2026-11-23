@@ -22,10 +22,13 @@ export function NumberInput({ label, value, onChange, min = 0, max = 100, step =
   const muted = isDefault ?? false;
   return (
     <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={suffix ? [suffix] : undefined}>
-      <NumberControl value={value} onChange={onChange} min={min} max={max} step={step} muted={muted} {...(widthCh !== undefined ? { widthCh } : {})} />
-      {suffix && (
-        <span className="min-w-[1.5ch] text-xs text-(--slate)">
-          {suffix}
+      {/* A width of its own (a year, a page count) keeps it; otherwise
+          the row's control width, the suffix inside the frame. */}
+      {widthCh !== undefined ? (
+        <NumberControl value={value} onChange={onChange} min={min} max={max} step={step} muted={muted} widthCh={widthCh} suffix={suffix} />
+      ) : (
+        <span className="inline-flex w-(--pt-field-w)">
+          <NumberControl value={value} onChange={onChange} min={min} max={max} step={step} muted={muted} fill suffix={suffix} />
         </span>
       )}
     </FieldRow>

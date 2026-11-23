@@ -22,6 +22,11 @@ export interface NumberFieldProps {
   widthCh?: number;
   /** Hide the − / + buttons (e.g. inside dense grids). */
   steppers?: boolean;
+  /** Take the width of the container (a field row's control column)
+   *  instead of the width of the value. */
+  fill?: boolean;
+  /** What the number counts (%, ‰, ×), set inside the frame after it. */
+  suffix?: string;
   /** Accessible names of the − / + buttons. */
   decrementLabel?: string;
   incrementLabel?: string;
@@ -49,6 +54,8 @@ export function NumberField({
   muted,
   widthCh,
   steppers = true,
+  fill,
+  suffix,
   decrementLabel = 'Decrease',
   incrementLabel = 'Increase',
   className,
@@ -69,11 +76,12 @@ export function NumberField({
       format={{ maximumFractionDigits: Math.max(decimals, 2), useGrouping: false }}
       onValueChange={(v) => { if (v !== null && Number.isFinite(v)) onValueChange(v); }}
       onValueCommitted={(v) => { if (v !== null && Number.isFinite(v)) onValueCommitted?.(v); }}
-      className={cn('inline-flex', className)}
+      className={cn(fill ? 'flex w-full' : 'inline-flex', className)}
     >
       <NumberFieldPrimitive.Group
         className={cn(
-          'inline-flex h-7 pt-large:h-11 items-stretch overflow-hidden rounded-md border border-(--pt-control-border) bg-(--surface) transition-colors',
+          'h-7 pt-large:h-11 items-stretch overflow-hidden rounded-md border border-(--pt-control-border) bg-(--surface) transition-colors',
+          fill ? 'flex w-full' : 'inline-flex',
           'hover:border-(--slate) focus-within:border-(--brand) focus-within:outline-2 focus-within:outline-offset-1 focus-within:outline-(--brand)',
         )}
       >
@@ -88,11 +96,17 @@ export function NumberField({
           aria-describedby={ariaDescribedBy}
           aria-label={ariaLabelledBy ? undefined : ariaLabel}
           className={cn(
-            'min-w-0 bg-transparent px-1 text-center text-xs tabular-nums outline-none',
+            'min-w-0 bg-transparent px-1 text-xs tabular-nums outline-none',
+            fill ? 'flex-1' : '',
+            // With a suffix, the number and what it counts are centred as one.
+            suffix ? 'text-end' : 'text-center',
             muted ? 'text-(--slate)' : 'text-(--foreground)',
           )}
-          style={{ width: `${chars}ch` }}
+          style={fill ? undefined : { width: `${chars}ch` }}
         />
+        {suffix && (
+          <span aria-hidden="true" className={cn('inline-flex items-center text-[0.66rem] text-(--slate) select-none', fill ? 'min-w-0 flex-1' : 'shrink-0 pe-1.5')}>{suffix}</span>
+        )}
         {steppers && (
           <NumberFieldPrimitive.Increment className={STEPPER} aria-label={incrementLabel} tabIndex={-1}>
             <Plus size={11} aria-hidden="true" />
