@@ -1,0 +1,78 @@
+---
+title: "Una copertina con oro, vernice selettiva e goffratura"
+summary: "Le Coplas di Manrique in brossura, con vernice lucida sul dipinto, un cartiglio in oro su una goffratura e una goffratura a secco, ognuna sulla sua lastra."
+plain: "Un libretto con una poesia classica e il foglio della sua copertina. Alcune parti si lavorano dopo la stampa: uno strato lucido sul dipinto, una cornice in oro a caldo e forme in rilievo sul cartoncino."
+description: "Vernice selettiva, stampa a caldo in oro e goffratura con Postext: finiture su forme del progetto, tinte piatte in un PDF/X-4 e una lastra di goffratura."
+question: "Come metto vernice selettiva, oro e un titolo goffrato su una copertina?"
+aliases: ["vernice selettiva", "UV selettivo", "stampa a caldo", "lamina oro", "goffratura", "goffratura a secco", "rilievo", "incavo", "finiture di copertina", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "Il foglio di copertina disteso. A sinistra la quarta, verde bottiglia, con tre versi della poesia in corsivo ocra, due paragrafi su Rodrigo Manrique e la traduzione, e il codice a barre ISBN su fondo bianco al piede. Un dorso stretto con il titolo in maiuscoletto. A destra la prima, un dipinto di un castello in rovina su una rupe al tramonto, sopra un fiume con pioppi e una barca tra i giunchi; al centro un cartiglio verde scuro con gli angoli incavati ad arco e una doppia cornice dorata porta il titolo Coplas, il sottotitolo e l’autore. Intorno, i segni di taglio e di piega." }
+---
+
+## Che cosa comporrai
+
+Le *Coplas* di Jorge Manrique per la morte del padre, nella traduzione di Longfellow (l’edizione spagnola compone l’originale), in una brossura di 125 × 200 mm, e il foglio di copertina che va in legatoria per le finiture una volta stampati i quattro colori. Le finiture sono tre. Una vernice lucida selettiva copre il dipinto sopra e sotto il cartiglio. La doppia cornice del cartiglio è stampata a caldo in oro e il riquadro che racchiude è goffrato, così il titolo sta su un campo in rilievo. In quarta, un rombo in goffratura a secco: nessun inchiostro, solo il cartoncino sollevato. Sotto il libro la ricetta disegna il foglio quattro volte: come si stampa, con le lastre di vernice e oro in falsi colori, a luce radente e come la lastra di goffratura da cui l’incisore ricava il cliché. Il PDF è un PDF/X-4 con una lastra per ciascuna finitura.
+
+## Preparazione
+
+### 1 · Ogni finitura segue una forma del progetto
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Una finitura nomina un processo, un inchiostro se il processo ne stampa uno, e una forma: un elemento della copertina (`{ element: 'cartouche' }`), un riquadro in una delle sue zone o un contorno dentro un riquadro. La vernice e l’oro sono tinte piatte con un `finish` nella tavolozza, quindi ciascuna ha la sua lastra nel PDF e il controllo preliminare le elenca. La goffratura non stampa nulla. Va su una lastra tecnica che il file di stampa chiama Emboss, quella che usa l’incisore, e sulla pagina non viene dipinta.
+
+La vernice è fatta di due riquadri, uno sopra il cartiglio e uno sotto, che si fermano a 4 mm da esso perché la vernice non finisca mai sull’oro. La quarta e il dorso restano opachi. Il libro conta 27 pagine su carta avoriata da 120 g/m² con mano 2,2, 32 una volta legato in segnature da 16, e ne viene un dorso di 4,7 mm. Di norma un dorso sotto i 6 mm non porta scritte, perciò la versione imposta `spineText.minSpine` a 4,5. L’ISBN è un numero d’esempio, non assegnato a nessun libro.
+
+### 2 · Il cartiglio è un tracciato del progetto, non un’immagine
+
+<Excerpt region="art" />
+
+L’oro e la goffratura prendono esattamente il contorno dell’elemento che nominano, quindi la cornice deve essere una forma di cui il motore conosce il tracciato. Un tracciato di copertina è un elenco di contorni chiusi con nodi espressi come frazioni del riquadro dell’elemento e maniglie d’entrata e d’uscita per le curve. Ogni angolo è un quarto di cerchio rivolto verso l’interno, disegnato come una cubica. Un anello è un contorno esterno più uno interno percorso al contrario: con la regola nonzero lo spazio tra i due resta vuoto. Due anelli formano la doppia cornice. La cornice ha il colore del riquadro e in quadricromia non stampa nulla: la porta la lastra dell’oro. L’emblema in quarta è un contorno salvato, due rombi, il minore rovesciato.
+
+### 3 · Gli stili della copertina
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` e `cover-spine` sono i nomi che `buildCover` dà ai metadati che colloca; `cover-quote`, `cover-blurb` e `cover-note` si nominano nel Markdown della copertina. La prima è centrata in altezza (`verticalAlign`), e così il titolo cade nel cartiglio qualunque sia il suo corpo.
+
+### 4 · Il blocco del libro
+
+<Excerpt region="pages" />
+
+Occhiello, frontespizio, pagina dei crediti, poi la poesia da una pagina dispari, 46 mm più in basso, composta in versi senza dividere una strofa tra due pagine. Le testatine portano l’autore sulla pari e il titolo sulla dispari. Il colophon chiude il libro sull’ultima dispari.
+
+### 5 · Il foglio nasce dalle pagine composte
+
+<Excerpt region="sheet" />
+
+`buildCover` riceve le pagine, i metadati e il Markdown della copertina e restituisce un documento per `buildDocumentWithFonts`, più il codice a barre in SVG. Le sue cifre chiedono l’OCR-B, che nessun server di font offre, quindi la ricetta le compone in Alegreya Sans SC, già caricata.
+
+### 6 · Che cosa copre ogni lastra
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` dipinge le finiture in tre modi. `flat` dipinge gli inchiostri come li stende la macchina: l’oro nel suo colore, la vernice per niente. `map` sbiadisce il foglio e segna ogni lastra speciale in falso colore. `sheen` fa passare una luce radente sul foglio, e la vernice e l’oro la riflettono. La goffratura non compare in nessuna delle tre, perché non stampa; la quarta vista disegna in nero sul foglio sbiadito le lastre tecniche della pagina (`page.plates`), i contorni che il PDF riempie nella sua separazione Emboss. La riga sotto legge le tinte piatte da `preflightDocument` e i processi dalle lastre.
+
+## Varianti
+
+### Goffrare l’emblema in incavo
+
+L’incavo spinge la forma dentro il cartoncino invece di sollevarla, e va su una lastra Deboss a parte.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Verniciare tutto il dipinto
+
+Una sola finitura sull’elemento del dipinto sostituisce i due riquadri. La vernice allora passa anche sul cartiglio e sul titolo.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Errori frequenti
+
+- Una goffratura o un incavo a meno di 3 mm dal taglio o da una piega viene segnalato dal controllo preliminare (`reliefTrim`, `reliefFold`): lì il cartoncino si crepa. Tieni i rilievi lontani dalle pieghe del dorso.
+- La goffratura non si dipinge mai sullo schermo. Controllala nella separazione Emboss del PDF, oppure disegna `page.plates` come fa la ricetta.
+- Una finitura posata su una cornice di testo ne copre le righe, nelle viste come nel file di stampa. Lascia parte del testo fuori dall’oro, come qui il titolo, nel vuoto del cartiglio.

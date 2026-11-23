@@ -1,0 +1,78 @@
+---
+title: "Une couverture en dorure, vernis sélectif et gaufrage"
+summary: "Les Coplas de Manrique en broché, avec un vernis brillant sur la peinture, un cartouche doré sur un gaufrage et un gaufrage à sec, chacun sur sa plaque."
+plain: "Un petit livre d’un poème classique et la feuille de sa couverture. Certaines parties sont traitées après l’impression : un voile brillant sur la peinture, un cadre doré à chaud et des formes en relief."
+description: "Vernis sélectif, dorure à chaud et gaufrage avec Postext : finitions sur des formes du dessin, tons directs dans un PDF/X-4 et une plaque de gaufrage."
+question: "Comment mettre un vernis sélectif, une dorure et un titre gaufré sur une couverture ?"
+aliases: ["vernis sélectif", "vernis UV sélectif", "dorure à chaud", "marquage à chaud", "gaufrage", "gaufrage à sec", "embossage", "débossage", "finitions de couverture", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "La feuille de couverture à plat. À gauche la quatrième, vert bouteille, avec trois vers du poème en italique ocre, deux paragraphes sur Rodrigo Manrique et la traduction, et le code-barres ISBN sur un cartouche blanc en pied. Un dos étroit titré en petites capitales. À droite la première, une peinture d’un château en ruine sur un rocher au soleil couchant, au-dessus d’une rivière bordée de peupliers avec une barque dans les roseaux ; au milieu, un cartouche vert sombre aux coins creusés en arc et à double cadre doré porte le titre Coplas, le sous-titre et l’auteur. Tout autour, les traits de coupe et de pli." }
+---
+
+## Ce que vous allez composer
+
+Les *Coplas* de Jorge Manrique sur la mort de son père, dans la traduction de Longfellow (l’édition espagnole donne l’original), en broché de 125 × 200 mm, et la feuille de couverture qui part chez le façonnier une fois les quatre couleurs imprimées. Elle reçoit trois finitions. Un vernis brillant sélectif couvre la peinture au-dessus et au-dessous du cartouche. Le double cadre du cartouche est doré à chaud, et le panneau qu’il entoure est gaufré : le titre se lit sur un champ en relief. En quatrième, un losange gaufré à sec, sans encre, le carton seulement soulevé. Sous le livre, la recette dessine la feuille quatre fois : telle qu’elle s’imprime, avec les plaques de vernis et de dorure en fausses couleurs, sous une lumière rasante, et comme la plaque de gaufrage dont part le graveur. Le PDF est un PDF/X-4 avec une plaque pour chacune.
+
+## Préparation
+
+### 1 · Chaque finition suit une forme du dessin
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Une finition nomme un procédé, une encre quand le procédé en imprime une, et une forme : un élément de la couverture (`{ element: 'cartouche' }`), une boîte dans l’une de ses zones ou un contour dans une boîte. Le vernis et la dorure sont des tons directs dotés d’un `finish` dans la palette : chacun a sa plaque dans le PDF et le contrôle en amont les énumère. Le gaufrage n’imprime rien. Il va sur une plaque technique que le fichier d’impression nomme Emboss, celle dont se sert le graveur, et rien n’en est peint sur la page.
+
+Le vernis tient en deux boîtes, l’une au-dessus du cartouche et l’autre au-dessous, arrêtées à 4 mm de lui pour qu’il ne recouvre jamais la dorure. La quatrième et le dos restent mats. Le livre compte 27 pages sur un bouffant de 120 g/m² à une main de 2,2, soit 32 une fois relié en cahiers de 16, ce qui donne un dos de 4,7 mm. Par défaut un dos de moins de 6 mm ne reçoit pas de titre ; la version fixe donc `spineText.minSpine` à 4,5. L’ISBN est un numéro d’exemple, attribué à aucun livre.
+
+### 2 · Le cartouche est un tracé du dessin, pas une image
+
+<Excerpt region="art" />
+
+La dorure et le gaufrage prennent exactement le contour de l’élément qu’ils nomment ; le cadre doit donc être une forme dont le moteur connaît le tracé. Un tracé de couverture est une liste de contours fermés dont les nœuds sont des fractions de la boîte de l’élément, avec des poignées d’entrée et de sortie pour les courbes. Chaque coin est un quart de cercle tourné vers l’intérieur, dessiné en cubique. Un anneau réunit un contour extérieur et un contour intérieur parcouru dans l’autre sens : avec la règle nonzero, l’espace entre les deux reste vide. Deux anneaux font le double cadre. Le cadre a la couleur du panneau et n’imprime donc rien en quadrichromie : c’est la plaque de dorure qui le porte. L’emblème de la quatrième est un contour enregistré, deux losanges, le petit inversé.
+
+### 3 · Les styles de la couverture
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` et `cover-spine` sont les noms que `buildCover` donne aux métadonnées qu’il place ; `cover-quote`, `cover-blurb` et `cover-note` sont nommés dans le Markdown de la couverture. La première est centrée en hauteur (`verticalAlign`), ce qui loge le titre dans le cartouche quel que soit son corps.
+
+### 4 · Le corps d’ouvrage
+
+<Excerpt region="pages" />
+
+Faux-titre, titre, page de droits, puis le poème à partir d’une belle page, 46 mm plus bas, composé en vers sans couper une strophe entre deux pages. Les titres courants portent l’auteur en page paire et le titre en page impaire. L’achevé d’imprimer ferme le livre sur la dernière belle page.
+
+### 5 · La feuille naît des pages composées
+
+<Excerpt region="sheet" />
+
+`buildCover` reçoit les pages, les métadonnées et le Markdown de la couverture et rend un document pour `buildDocumentWithFonts`, plus le code-barres en SVG. Ses chiffres demandent de l’OCR-B, qu’aucun serveur de polices ne fournit ; la recette les compose donc en Alegreya Sans SC, déjà chargée.
+
+### 6 · Ce que couvre chaque plaque
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` peint les finitions de trois façons. `flat` peint les encres comme la presse les pose : la dorure dans sa couleur, le vernis pas du tout. `map` estompe la feuille et marque chaque plaque spéciale en fausse couleur. `sheen` fait passer une lumière rasante sur la feuille, et le vernis et la dorure la prennent. Le gaufrage n’apparaît dans aucune des trois puisqu’il n’imprime rien ; la quatrième vue dessine en noir, sur la feuille estompée, les plaques techniques de la page (`page.plates`), les contours que le PDF remplit sur sa séparation Emboss. La ligne en dessous lit les tons directs dans `preflightDocument` et les procédés dans les plaques.
+
+## Variantes
+
+### Gaufrer l’emblème en creux
+
+Le débossage enfonce la forme dans le carton au lieu de la soulever, et va sur une plaque Deboss à part.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Vernir toute la peinture
+
+Une seule finition sur l’élément de la peinture remplace les deux boîtes. Le vernis passe alors aussi sur le cartouche et le titre.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Erreurs fréquentes
+
+- Un gaufrage ou un débossage à moins de 3 mm de la coupe ou d’un pli est signalé par le contrôle en amont (`reliefTrim`, `reliefFold`) : le carton s’y fend. Tenez les reliefs loin des plis du dos.
+- Le gaufrage n’est jamais peint à l’écran. Vérifiez-le sur la séparation Emboss du PDF, ou dessinez `page.plates` comme le fait la recette.
+- Une finition posée sur un cadre de texte en masque les lignes, dans les vues comme dans le fichier d’impression. Laissez une partie du texte hors de la dorure, comme ici le titre, logé dans le creux du cartouche.

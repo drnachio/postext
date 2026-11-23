@@ -1,0 +1,78 @@
+---
+title: "Ein Umschlag mit Goldfolie, Spotlack und Prägung"
+summary: "Manriques Coplas als Broschur: Glanzlack auf dem Bild, eine Kartusche in Goldfolie über einer Hochprägung, eine Blindprägung, jede auf eigener Platte."
+plain: "Ein schmales Buch mit einem klassischen Gedicht und der Bogen für seinen Umschlag. Teile davon werden nach dem Druck veredelt: Glanz auf dem Bild, ein Rahmen in Goldfolie und Formen, die aus dem Karton gehoben sind."
+description: "Spotlack, Heißfolie und Prägung mit Postext: Veredelungen über Formen des Entwurfs, Sonderfarben in einer PDF/X-4-Datei und eine Prägeplatte."
+question: "Wie bekommt ein Buchumschlag Spotlack, Goldfolie und einen geprägten Titel?"
+aliases: ["Spotlack", "partieller UV-Lack", "Heißfolienprägung", "Goldfolie", "Prägung", "Hochprägung", "Blindprägung", "Tiefprägung", "Umschlagveredelung", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "Der Umschlagbogen flach ausgelegt. Links die Rückseite in Flaschengrün mit drei Versen des Gedichts in ockerfarbener Kursive, zwei Absätzen über Rodrigo Manrique und die Übersetzung und dem ISBN-Strichcode auf weißem Feld am Fuß. Ein schmaler Rücken in Kapitälchen. Rechts die Vorderseite, ein Gemälde einer Burgruine auf einem Felsen im Abendlicht über einem Fluss mit Pappeln und einem Boot im Schilf; in der Mitte trägt eine dunkelgrüne Kartusche mit nach innen gewölbten Ecken und doppeltem Goldrahmen den Titel Coplas, den Untertitel und den Autor. Ringsum Schneid- und Falzmarken." }
+---
+
+## Was Sie setzen
+
+Jorge Manriques *Coplas* auf den Tod seines Vaters in Longfellows Übersetzung (die spanische Ausgabe setzt das Original) als Broschur von 125 × 200 mm, dazu der Umschlagbogen, der nach dem Vierfarbdruck in die Veredelung geht. Er bekommt drei Veredelungen. Ein partieller Glanzlack liegt über dem Bild, oberhalb und unterhalb der Kartusche. Der doppelte Rahmen der Kartusche wird in Goldfolie geprägt, das Feld darin hochgeprägt, sodass der Titel auf einer erhabenen Fläche steht. Auf der Rückseite eine Raute als Blindprägung: keine Farbe, nur der Karton angehoben. Unter dem Buch zeichnet das Rezept den Bogen viermal: wie er gedruckt wird, mit den Platten für Lack und Folie in Falschfarben, im Streiflicht und als Prägeplatte, nach der der Graveur das Werkzeug schneidet. Das PDF ist ein PDF/X-4 mit einer Platte für jede Veredelung.
+
+## Zubereitung
+
+### 1 · Jede Veredelung folgt einer Form des Entwurfs
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Eine Veredelung nennt ein Verfahren, eine Farbe, wenn das Verfahren eine druckt, und eine Form: ein Element des Umschlags (`{ element: 'cartouche' }`), einen Kasten in einer seiner Zonen oder einen Umriss in einem Kasten. Lack und Folie sind Sonderfarben mit `finish` in der Palette; jede bekommt ihre Platte im PDF, und der Preflight führt sie auf. Die Prägung druckt nichts. Sie liegt auf einer technischen Platte, die die Druckdatei Emboss nennt, der Vorlage des Graveurs, und auf der Seite wird nichts davon gemalt.
+
+Der Lack besteht aus zwei Kästen, einer über der Kartusche und einer darunter, die 4 mm vor ihr enden, damit der Lack nie auf der Folie liegt. Rückseite und Rücken bleiben matt. Das Buch hat 27 Seiten auf Werkdruckpapier von 120 g/m² mit Volumen 2,2, gebunden in Lagen zu 16 also 32, und das ergibt einen Rücken von 4,7 mm. Ein Rücken unter 6 mm bleibt standardmäßig unbeschriftet; die Ausgabe setzt `spineText.minSpine` deshalb auf 4,5. Die ISBN ist eine Beispielnummer, die keinem Buch gehört.
+
+### 2 · Die Kartusche ist ein Pfad des Entwurfs, kein Bild
+
+<Excerpt region="art" />
+
+Folie und Prägung übernehmen genau den Umriss des Elements, das sie nennen; der Rahmen muss also eine Form sein, deren Pfad die Engine kennt. Ein Umschlagpfad ist eine Liste geschlossener Konturen, deren Knoten Bruchteile des Elementkastens sind, mit Ein- und Ausgangsgriffen für Kurven. Jede Ecke ist ein nach innen gekehrter Viertelkreis, als kubische Kurve gezeichnet. Ein Ring ist eine äußere Kontur und eine innere, die andersherum läuft: Mit der Regel nonzero bleibt der Raum dazwischen leer. Zwei Ringe ergeben den doppelten Rahmen. Der Rahmen hat die Farbe des Feldes und druckt im Vierfarbsatz nichts; ihn trägt die Folienplatte. Das Emblem der Rückseite ist ein gespeicherter Umriss aus zwei Rauten, die kleinere umgekehrt.
+
+### 3 · Die Schriften des Umschlags
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` und `cover-spine` sind die Namen, die `buildCover` den platzierten Metadaten gibt; `cover-quote`, `cover-blurb` und `cover-note` werden im Markdown des Umschlags genannt. Die Vorderseite ist in der Höhe zentriert (`verticalAlign`), so landet der Titel in der Kartusche, wie groß seine Schrift auch ist.
+
+### 4 · Der Buchblock
+
+<Excerpt region="pages" />
+
+Schmutztitel, Titelseite, Impressum, dann das Gedicht ab einer rechten Seite, 46 mm tiefer, als Vers gesetzt, der keine Strophe auf zwei Seiten verteilt. Die lebenden Kolumnentitel tragen links den Autor und rechts den Titel. Das Kolophon schließt das Buch auf der letzten rechten Seite.
+
+### 5 · Der Bogen entsteht aus den gesetzten Seiten
+
+<Excerpt region="sheet" />
+
+`buildCover` erhält die Seiten, die Metadaten und das Markdown des Umschlags und liefert ein Dokument für `buildDocumentWithFonts`, dazu den Strichcode als SVG. Seine Ziffern verlangen OCR-B, das kein Schriftserver anbietet; das Rezept setzt sie daher in der schon geladenen Alegreya Sans SC.
+
+### 6 · Was jede Platte bedeckt
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` malt Veredelungen auf drei Arten. `flat` malt die Farben, wie die Maschine sie legt: die Folie in ihrer Farbe, den Lack gar nicht. `map` blasst den Bogen ab und markiert jede Sonderplatte in Falschfarbe. `sheen` führt ein Streiflicht über den Bogen, in dem Lack und Folie glänzen. Die Prägung erscheint in keiner der drei, da sie nichts druckt; die vierte Ansicht zeichnet die technischen Platten der Seite (`page.plates`) schwarz auf den abgeblassten Bogen, die Umrisse, die das PDF auf seinem Auszug Emboss füllt. Die Zeile darunter liest die Sonderfarben aus `preflightDocument` und die Verfahren aus den Platten.
+
+## Varianten
+
+### Das Emblem tiefprägen
+
+Eine Tiefprägung drückt die Form in den Karton, statt sie anzuheben, und liegt auf einer eigenen Platte Deboss.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Das ganze Bild lackieren
+
+Eine einzige Veredelung auf dem Element des Bildes ersetzt die zwei Kästen. Der Lack liegt dann auch über der Kartusche und dem Titel.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Häufige Fehler
+
+- Eine Hoch- oder Tiefprägung näher als 3 mm am Beschnitt oder an einem Falz meldet der Preflight (`reliefTrim`, `reliefFold`): Dort bricht der Karton. Halten Sie Prägungen von den Rückenfalzen fern.
+- Die Prägung wird am Bildschirm nie gemalt. Prüfen Sie sie im Auszug Emboss des PDF oder zeichnen Sie `page.plates`, wie es das Rezept tut.
+- Eine Veredelung über einem Textrahmen verdeckt dessen Zeilen, in den Ansichten wie in der Druckdatei. Lassen Sie einen Teil des Textes frei von der Folie, wie hier den Titel in der Öffnung der Kartusche.
