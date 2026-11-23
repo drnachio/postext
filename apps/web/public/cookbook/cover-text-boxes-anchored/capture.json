@@ -179,8 +179,8 @@
       },
       "sandbox": {
         "file": "cover-text-boxes-anchored.postext",
-        "bytes": 295579,
-        "folio": "e040c3a1",
+        "bytes": 295641,
+        "folio": "08655aeb",
         "keep": "first",
         "pages": 21,
         "chapters": [
@@ -437,11 +437,6 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "book in several languages: en, es"
           }
         ]
       }
@@ -615,8 +610,8 @@
       },
       "sandbox": {
         "file": "cover-text-boxes-anchored.postext",
-        "bytes": 295125,
-        "folio": "e040c3a1",
+        "bytes": 295191,
+        "folio": "08655aeb",
         "keep": "first",
         "pages": 21,
         "chapters": [
@@ -878,11 +873,6 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "cover Markdown carried as cover.md"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",
