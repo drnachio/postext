@@ -1,5 +1,5 @@
 {
-  "$comment": "Exported symbols recipes import (from postext, postext/worker, postext-pdf, postext-citeproc, postext-folio and postext-epub) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
+  "$comment": "Exported symbols recipes import (from postext, postext/worker, postext/production, postext-pdf, postext-citeproc, postext-folio and postext-epub) → the docs section that explains them. The capture lists the symbols a pen imports (detected.apis) and the recipe page links each through this map; a symbol with no dedicated docs section points at the nearest one. Keys are case-sensitive export names.",
   "buildDocument": {
     "slug": "configuration-programmatic-usage",
     "heading": {
@@ -1063,6 +1063,156 @@
       "fr": "Une partition dans le texte",
       "de": "Noten im Text",
       "it": "Una partitura nel testo"
+    }
+  },
+  "buildCover": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "coverZoneBox": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "versionSheets": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "parseIsbn": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "isbnBarcodeSvg": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "coverPage": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "coverSource": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "resolveBindingMeasures": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "spineFromRuns": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "From code",
+      "es": "Desde el código",
+      "ca": "Des del codi",
+      "zh": "在代码中",
+      "ar": "من الشيفرة",
+      "ja": "コードから",
+      "pt": "No código",
+      "fr": "Depuis le code",
+      "de": "Im Code",
+      "it": "Dal codice"
+    }
+  },
+  "folioOfBook": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "Folio and EPUB",
+      "es": "Folio y EPUB",
+      "ca": "Folio i EPUB",
+      "zh": "Folio与EPUB",
+      "ar": "Folio وEPUB",
+      "ja": "FolioとEPUB",
+      "pt": "Folio e EPUB",
+      "fr": "Folio et EPUB",
+      "de": "Folio und EPUB",
+      "it": "Folio ed EPUB"
     }
   }
 }

@@ -6442,5 +6442,117 @@
       "ar": "ورنيش UV موضعي فوق الملمس المخملي"
     },
     "theme": "output"
+  },
+  "Q234": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make the cover sheet of a paperback with flaps, with the spine worked out from the page count?",
+      "es": "¿Cómo hago el pliego de cubierta de una rústica con solapas, con el lomo calculado a partir de las páginas?",
+      "ca": "Com faig el plec de coberta d'una rústica amb solapes, amb el llom calculat a partir de les pàgines?",
+      "zh": "怎样做一本带勒口平装书的封面印张，并按页数算出书脊？",
+      "ar": "كيف أصنع فرخ غلاف كتاب ورقي بألسنة، والكعب محسوب من عدد الصفحات؟",
+      "ja": "袖付き並製本の表紙用紙を、ページ数から背幅を求めて作るには？",
+      "pt": "Como faço a folha de capa de uma brochura com orelhas, com a lombada calculada pelo número de páginas?",
+      "fr": "Comment faire la feuille de couverture d’un broché à rabats, avec le dos calculé d’après le nombre de pages ?",
+      "de": "Wie mache ich den Umschlagbogen einer Klappenbroschur, mit dem Rücken aus der Seitenzahl berechnet?",
+      "it": "Come faccio il foglio di copertina di una brossura con alette, con il dorso calcolato dal numero di pagine?"
+    },
+    "index": {
+      "en": "Paperback cover with flaps",
+      "es": "Cubierta de rústica con solapas",
+      "ca": "Coberta de rústica amb solapes",
+      "zh": "带勒口的平装封面",
+      "ar": "غلاف ورقي بألسنة",
+      "ja": "袖付き並製の表紙",
+      "pt": "Capa de brochura com orelhas",
+      "fr": "Couverture de broché à rabats",
+      "de": "Umschlag einer Klappenbroschur",
+      "it": "Copertina di brossura con alette"
+    },
+    "theme": "output"
+  },
+  "Q235": {
+    "kind": "how",
+    "text": {
+      "en": "How do I make a hardcover's case, dust jacket and endpapers for the same book as its paperback?",
+      "es": "¿Cómo hago la tapa, la sobrecubierta y las guardas de la edición en tapa dura del mismo libro que la rústica?",
+      "ca": "Com faig la tapa, la sobrecoberta i les guardes de l'edició en tapa dura del mateix llibre que la rústica?",
+      "zh": "同一本书除了平装，怎样再做精装的封壳、护封和环衬？",
+      "ar": "كيف أصنع الغلاف المقوّى وسترته وأوراق البطانة لطبعة مجلّدة من الكتاب نفسه الذي صدر بغلاف ورقي؟",
+      "ja": "並製と同じ本の上製版で、表紙、カバー、見返しを作るには？",
+      "pt": "Como faço a capa dura, a sobrecapa e as guardas da edição encadernada do mesmo livro da brochura?",
+      "fr": "Comment faire le cartonnage, la jaquette et les gardes de l’édition reliée du même livre que le broché ?",
+      "de": "Wie mache ich Buchdecke, Schutzumschlag und Vorsätze der Hardcover-Ausgabe desselben Buchs wie die Broschur?",
+      "it": "Come faccio la copertina rigida, la sovraccoperta e i risguardi del cartonato dello stesso libro della brossura?"
+    },
+    "index": {
+      "en": "Hardcover case, jacket and endpapers",
+      "es": "Tapa dura, sobrecubierta y guardas",
+      "ca": "Tapa dura, sobrecoberta i guardes",
+      "zh": "精装封壳、护封与环衬",
+      "ar": "الغلاف المقوّى والسترة والبطانة",
+      "ja": "上製の表紙、カバー、見返し",
+      "pt": "Capa dura, sobrecapa e guardas",
+      "fr": "Cartonnage, jaquette et gardes",
+      "de": "Buchdecke, Schutzumschlag und Vorsätze",
+      "it": "Copertina rigida, sovraccoperta e risguardi"
+    },
+    "theme": "output"
+  },
+  "Q236": {
+    "kind": "how",
+    "text": {
+      "en": "How do I print a volume of a collection with the collection's ISBN and its other titles on the endpapers?",
+      "es": "¿Cómo imprimo un volumen de una colección con el ISBN de la obra completa y los demás títulos en las guardas?",
+      "ca": "Com imprimeixo un volum d'una col·lecció amb l'ISBN de l'obra completa i els altres títols a les guardes?",
+      "zh": "怎样印丛书中的一卷，带上整套书的ISBN，并在环衬上列出其他书目？",
+      "ar": "كيف أطبع مجلّدًا من سلسلة بردمك السلسلة وعناوينها الأخرى على أوراق البطانة؟",
+      "ja": "シリーズの1冊を、セットISBNと見返しの既刊案内付きで刷るには？",
+      "pt": "Como imprimo um volume de uma coleção com o ISBN da obra completa e os outros títulos nas guardas?",
+      "fr": "Comment imprimer un volume d’une collection avec l’ISBN de l’ensemble et les autres titres sur les gardes ?",
+      "de": "Wie drucke ich einen Band einer Reihe mit der Gesamt-ISBN und den übrigen Titeln auf den Vorsätzen?",
+      "it": "Come stampo un volume di una collana con l’ISBN dell’opera completa e gli altri titoli sui risguardi?"
+    },
+    "index": {
+      "en": "Collection volume, work ISBN",
+      "es": "Volumen de colección, ISBN de la obra",
+      "ca": "Volum de col·lecció, ISBN de l'obra",
+      "zh": "丛书分卷与整套ISBN",
+      "ar": "مجلّد سلسلة وردمك العمل",
+      "ja": "シリーズの巻とセットISBN",
+      "pt": "Volume de coleção, ISBN da obra",
+      "fr": "Volume de collection, ISBN de l’ensemble",
+      "de": "Reihenband mit Gesamt-ISBN",
+      "it": "Volume di collana, ISBN dell’opera"
+    },
+    "theme": "output"
+  },
+  "Q237": {
+    "kind": "how",
+    "text": {
+      "en": "How do I put spot varnish, foil and an embossed title on a cover, for the printer and the binder?",
+      "es": "¿Cómo pongo barniz selectivo, estampación y un título en relieve en una cubierta, para la imprenta y el encuadernador?",
+      "ca": "Com poso vernís selectiu, estampació i un títol en relleu en una coberta, per a la impremta i l'enquadernador?",
+      "zh": "怎样给封面加局部光油、烫印和起凸的书名，交给印厂和装订厂？",
+      "ar": "كيف أضع ورنيشًا موضعيًا وختمًا حراريًا وعنوانًا بارزًا على غلاف، للمطبعة وللمجلّد؟",
+      "ja": "表紙に部分ニス、箔押し、空押しのタイトルを入れ、印刷所と製本所に渡すには？",
+      "pt": "Como ponho verniz localizado, hot stamping e um título em relevo numa capa, para a gráfica e o encadernador?",
+      "fr": "Comment poser un vernis sélectif, une dorure et un titre gaufré sur une couverture, pour l’imprimeur et le relieur ?",
+      "de": "Wie bringe ich partiellen Lack, Folie und einen geprägten Titel auf einen Umschlag, für Druckerei und Buchbinder?",
+      "it": "Come metto vernice selettiva, lamina e un titolo a rilievo su una copertina, per lo stampatore e il legatore?"
+    },
+    "index": {
+      "en": "Cover varnish, foil and emboss",
+      "es": "Barniz, estampación y relieve de cubierta",
+      "ca": "Vernís, estampació i relleu de coberta",
+      "zh": "封面光油、烫印与起凸",
+      "ar": "ورنيش الغلاف وختمه وبروزه",
+      "ja": "表紙のニス、箔、空押し",
+      "pt": "Verniz, hot stamping e relevo na capa",
+      "fr": "Vernis, dorure et gaufrage de couverture",
+      "de": "Lack, Folie und Prägung am Umschlag",
+      "it": "Vernice, lamina e rilievo in copertina"
+    },
+    "theme": "output"
   }
 }

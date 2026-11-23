@@ -29211,5 +29211,383 @@
         "print.inks[].aliases"
       ]
     }
+  },
+  "print-versions": {
+    "label": {
+      "en": "Print versions, ISBN and spine",
+      "es": "Versiones impresas, ISBN y lomo",
+      "ca": "Versions impreses, ISBN i llom",
+      "zh": "印刷版本、ISBN与书脊",
+      "ar": "النسخ المطبوعة والردمك والكعب",
+      "ja": "印刷版、ISBN、背幅",
+      "pt": "Versões impressas, ISBN e lombada",
+      "fr": "Versions imprimées, ISBN et dos",
+      "de": "Druckausgaben, ISBN und Buchrücken",
+      "it": "Versioni a stampa, ISBN e dorso"
+    },
+    "definition": {
+      "en": "production.versions gives each binding of a book its binding profile and ISBN, printed as an EAN-13 barcode; the spine comes from the page count and the paper. production.collection adds the whole work's ISBN and a catalogue of its titles.",
+      "es": "production.versions da a cada encuadernación de un libro su perfil de encuadernación y su ISBN, impreso como código de barras EAN-13; el lomo sale del número de páginas y del papel. production.collection añade el ISBN de la obra completa y un catálogo de sus títulos.",
+      "ca": "production.versions dona a cada enquadernació d'un llibre el seu perfil d'enquadernació i el seu ISBN, imprès com a codi de barres EAN-13; el llom surt del nombre de pàgines i del paper. production.collection hi afegeix l'ISBN de l'obra completa i un catàleg dels seus títols.",
+      "zh": "production.versions为书的每种装订指定装订配置和ISBN，ISBN印成EAN-13条码；书脊宽度由页数和纸张算出。production.collection再加上整部作品的ISBN及其书目。",
+      "ar": "تعطي production.versions كل تجليد للكتاب ملف تجليده وردمكه، ويُطبع الردمك رمزًا شريطيًا EAN-13؛ ويُحسب الكعب من عدد الصفحات والورق. وتضيف production.collection ردمك العمل الكامل وفهرسًا بعناوينه.",
+      "ja": "production.versionsは本の製本ごとに製本プロファイルとISBNを持たせ、ISBNはEAN-13のバーコードで刷られます。背幅はページ数と紙から求まります。production.collectionはシリーズ全体のISBNと書目を加えます。",
+      "pt": "production.versions dá a cada encadernação de um livro seu perfil de encadernação e seu ISBN, impresso como código de barras EAN-13; a lombada vem do número de páginas e do papel. production.collection acrescenta o ISBN da obra completa e um catálogo de seus títulos.",
+      "fr": "production.versions donne à chaque reliure d’un livre son profil de reliure et son ISBN, imprimé en code-barres EAN-13 ; le dos se calcule d’après le nombre de pages et le papier. production.collection ajoute l’ISBN de l’œuvre complète et un catalogue de ses titres.",
+      "de": "production.versions gibt jeder Bindung eines Buchs ihr Bindungsprofil und ihre ISBN, gedruckt als EAN-13-Strichcode; der Buchrücken ergibt sich aus Seitenzahl und Papier. production.collection fügt die ISBN des Gesamtwerks und einen Katalog seiner Titel hinzu.",
+      "it": "production.versions dà a ogni legatura di un libro il suo profilo di legatura e il suo ISBN, stampato come codice a barre EAN-13; il dorso si ricava dal numero di pagine e dalla carta. production.collection aggiunge l’ISBN dell’opera completa e un catalogo dei suoi titoli."
+    },
+    "aliases": {
+      "en": [
+        "ISBN barcode",
+        "EAN-13",
+        "spine width",
+        "binding profile",
+        "print run",
+        "paperback",
+        "hardcover",
+        "series ISBN"
+      ],
+      "es": [
+        "código de barras ISBN",
+        "EAN-13",
+        "ancho de lomo",
+        "perfil de encuadernación",
+        "rústica",
+        "tapa dura",
+        "ISBN de la obra completa"
+      ],
+      "ca": [
+        "codi de barres ISBN",
+        "EAN-13",
+        "amplada del llom",
+        "rústica",
+        "tapa dura",
+        "ISBN de l'obra completa"
+      ],
+      "zh": [
+        "ISBN条码",
+        "EAN-13",
+        "书脊宽度",
+        "平装",
+        "精装",
+        "丛书ISBN"
+      ],
+      "ar": [
+        "رمز الردمك الشريطي",
+        "EAN-13",
+        "عرض الكعب",
+        "غلاف ورقي",
+        "غلاف مقوّى",
+        "ردمك المجموعة"
+      ],
+      "ja": [
+        "ISBNバーコード",
+        "EAN-13",
+        "背幅",
+        "並製",
+        "上製",
+        "セットISBN"
+      ],
+      "pt": [
+        "código de barras ISBN",
+        "EAN-13",
+        "largura da lombada",
+        "brochura",
+        "capa dura",
+        "ISBN da obra completa"
+      ],
+      "fr": [
+        "code-barres ISBN",
+        "EAN-13",
+        "épaisseur du dos",
+        "broché",
+        "relié",
+        "ISBN de l’ensemble"
+      ],
+      "de": [
+        "ISBN-Strichcode",
+        "EAN-13",
+        "Rückenstärke",
+        "Broschur",
+        "Hardcover",
+        "Gesamt-ISBN"
+      ],
+      "it": [
+        "codice a barre ISBN",
+        "EAN-13",
+        "spessore del dorso",
+        "brossura",
+        "cartonato",
+        "ISBN dell’opera completa"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "print-covers",
+      "heading": {
+        "en": "Versions of a book",
+        "es": "Versiones de un libro",
+        "ca": "Versions d'un llibre",
+        "zh": "书的版本",
+        "ar": "نسخ الكتاب",
+        "ja": "本の版",
+        "pt": "Versões de um livro",
+        "fr": "Versions d’un livre",
+        "de": "Ausgaben eines Buchs",
+        "it": "Versioni di un libro"
+      }
+    },
+    "detect": {
+      "config": [
+        "production.versions",
+        "production.bindings",
+        "production.collection"
+      ],
+      "api": [
+        "versionSheets",
+        "parseIsbn",
+        "isbnBarcodeSvg"
+      ]
+    }
+  },
+  "cover-sheet": {
+    "label": {
+      "en": "Print cover sheet",
+      "es": "Pliego de cubierta",
+      "ca": "Plec de coberta",
+      "zh": "封面印张",
+      "ar": "فرخ الغلاف",
+      "ja": "表紙の用紙",
+      "pt": "Folha de capa",
+      "fr": "Feuille de couverture",
+      "de": "Umschlagbogen",
+      "it": "Foglio di copertina"
+    },
+    "definition": {
+      "en": "buildCover lays out the sheet of a print version: back, spine and front, with flaps, a hardcover's case and dust jacket, and its endpapers, with bleed and fold marks. The cover setting designs it and a Markdown document of the book fills its panels.",
+      "es": "buildCover compone el pliego de una versión impresa: contracubierta, lomo y cubierta, con solapas, o el estuche, la sobrecubierta y las guardas de una tapa dura, con sangrado y marcas de plegado. El ajuste cover lo diseña y un documento Markdown del libro llena sus zonas.",
+      "ca": "buildCover compon el plec d'una versió impresa: contracoberta, llom i coberta, amb solapes, o la tapa, la sobrecoberta i les guardes d'una tapa dura, amb sang i marques de plegat. L'ajust cover el dissenya i un document Markdown del llibre n'omple les zones.",
+      "zh": "buildCover排出一个印刷版本的封面印张：封底、书脊和封面，带勒口，或精装的封壳、护封和环衬，含出血和折线标记。cover设置负责它的设计，书中的一份Markdown文档填写各个区域。",
+      "ar": "تُخرج buildCover فرخ نسخة مطبوعة: الغلاف الخلفي والكعب والغلاف الأمامي، مع الألسنة، أو غلاف التجليد المقوّى وسترته وأوراق البطانة، بالنزف وعلامات الطيّ. ويصمّمه إعداد cover ويملأ لوحاته مستند Markdown من الكتاب.",
+      "ja": "buildCoverは印刷版の表紙用紙を組みます。表4、背、表1に袖を付け、上製なら表紙、カバー、見返しも、裁ち落としと折りトンボ付きで作ります。デザインはcover設定、各部の文字は本のMarkdown文書が受け持ちます。",
+      "pt": "buildCover compõe a folha de uma versão impressa: quarta capa, lombada e capa, com orelhas, ou a capa dura, a sobrecapa e as guardas, com sangria e marcas de dobra. A configuração cover a desenha e um documento Markdown do livro preenche seus painéis.",
+      "fr": "buildCover compose la feuille d’une version imprimée : quatrième, dos et première, avec rabats, ou le cartonnage, la jaquette et les gardes d’un relié, avec fond perdu et repères de pliage. Le réglage cover la dessine et un document Markdown du livre remplit ses panneaux.",
+      "de": "buildCover setzt den Bogen einer Druckausgabe: Rückseite, Rücken und Vorderseite, mit Klappen, oder Einband, Schutzumschlag und Vorsätze eines Hardcovers, mit Anschnitt und Falzmarken. Die Einstellung cover gestaltet ihn, ein Markdown-Dokument des Buchs füllt seine Flächen.",
+      "it": "buildCover compone il foglio di una versione a stampa: quarta, dorso e prima, con alette, o la copertina rigida, la sovraccoperta e i risguardi di un cartonato, con abbondanza e segni di piega. L’impostazione cover lo disegna e un documento Markdown del libro ne riempie i pannelli."
+    },
+    "aliases": {
+      "en": [
+        "cover spread",
+        "flaps",
+        "dust jacket",
+        "endpapers",
+        "case",
+        "fold marks",
+        "back cover blurb"
+      ],
+      "es": [
+        "tripa de cubierta",
+        "solapas",
+        "sobrecubierta",
+        "guardas",
+        "tapa dura",
+        "contracubierta",
+        "marcas de plegado"
+      ],
+      "ca": [
+        "solapes",
+        "sobrecoberta",
+        "guardes",
+        "contracoberta",
+        "tapa dura"
+      ],
+      "zh": [
+        "勒口",
+        "护封",
+        "环衬",
+        "封底文案",
+        "精装封壳"
+      ],
+      "ar": [
+        "الألسنة",
+        "سترة الغلاف",
+        "أوراق البطانة",
+        "الغلاف الخلفي",
+        "الغلاف المقوّى"
+      ],
+      "ja": [
+        "袖",
+        "カバー",
+        "見返し",
+        "表4",
+        "上製表紙"
+      ],
+      "pt": [
+        "orelhas",
+        "sobrecapa",
+        "guardas",
+        "quarta capa",
+        "capa dura"
+      ],
+      "fr": [
+        "rabats",
+        "jaquette",
+        "gardes",
+        "quatrième de couverture",
+        "cartonnage"
+      ],
+      "de": [
+        "Klappenbroschur",
+        "Schutzumschlag",
+        "Vorsatz",
+        "Buchdecke",
+        "Klappentext"
+      ],
+      "it": [
+        "alette",
+        "sovraccoperta",
+        "risguardi",
+        "quarta di copertina",
+        "cartonato"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "print-covers",
+      "heading": {
+        "en": "The sheet and its panels",
+        "es": "El pliego y sus zonas",
+        "ca": "El plec i les seves zones",
+        "zh": "版面及其区域",
+        "ar": "الفرخ ولوحاته",
+        "ja": "用紙とその各部",
+        "pt": "A folha e seus painéis",
+        "fr": "La feuille et ses panneaux",
+        "de": "Der Bogen und seine Flächen",
+        "it": "Il foglio e i suoi pannelli"
+      }
+    },
+    "detect": {
+      "config": [
+        "cover"
+      ],
+      "api": [
+        "buildCover",
+        "coverZoneBox"
+      ]
+    }
+  },
+  "cover-finishes": {
+    "label": {
+      "en": "Cover finishes and technical plates",
+      "es": "Acabados de cubierta y planchas técnicas",
+      "ca": "Acabats de coberta i planxes tècniques",
+      "zh": "封面工艺与技术印版",
+      "ar": "تشطيبات الغلاف والألواح التقنية",
+      "ja": "表紙の加工と技術版",
+      "pt": "Acabamentos de capa e chapas técnicas",
+      "fr": "Finitions de couverture et plaques techniques",
+      "de": "Umschlagveredelung und technische Platten",
+      "it": "Finiture di copertina e lastre tecniche"
+    },
+    "definition": {
+      "en": "cover.finishes puts a varnish or a foil on a spot plate of its own over a shape of the cover's design, and an emboss or a deboss on a technical plate that prints nothing, for the binder's relief die.",
+      "es": "cover.finishes pone un barniz o un estampado en una plancha directa propia sobre una forma del diseño de la cubierta, y un relieve o un bajorrelieve en una plancha técnica que no imprime, para el grabado del encuadernador.",
+      "ca": "cover.finishes posa un vernís o un estampat en una planxa directa pròpia sobre una forma del disseny de la coberta, i un relleu o un baix relleu en una planxa tècnica que no imprimeix, per al gravat de l'enquadernador.",
+      "zh": "cover.finishes把光油或烫印放在单独的专色印版上，覆盖封面设计中的某个形状；凹凸压印则放在不印刷的技术印版上，供装订厂制作压凸版。",
+      "ar": "تضع cover.finishes الورنيش أو الختم الحراري على لوح لون خاص مستقل فوق شكل من تصميم الغلاف، والطبع البارز أو الغائر على لوح تقني لا يطبع شيئًا، ليصنع منه المجلّد قالب البروز.",
+      "ja": "cover.finishesは、ニスや箔を表紙デザインの形に合わせて専用の特色版に載せ、空押しや凹押しは印刷しない技術版に載せて、製本所の型の元にします。",
+      "pt": "cover.finishes põe verniz ou hot stamping numa chapa de cor especial própria sobre uma forma do projeto da capa, e relevo seco ou baixo-relevo numa chapa técnica que não imprime, para o clichê do encadernador.",
+      "fr": "cover.finishes pose un vernis ou une dorure sur une plaque d’accompagnement à part, sur une forme de la maquette, et un gaufrage ou un embossage en creux sur une plaque technique qui n’imprime rien, pour le cliché du relieur.",
+      "de": "cover.finishes legt Lack oder Folie auf eine eigene Schmuckfarbenplatte über einer Form der Gestaltung und eine Hoch- oder Tiefprägung auf eine technische Platte, die nichts druckt, für den Prägestempel des Buchbinders.",
+      "it": "cover.finishes mette una vernice o una lamina su una lastra a colore speciale propria, sopra una forma della grafica, e un rilievo a secco o un rilievo in negativo su una lastra tecnica che non stampa, per il cliché del legatore."
+    },
+    "aliases": {
+      "en": [
+        "spot UV",
+        "hot foil",
+        "emboss",
+        "deboss",
+        "blind emboss",
+        "relief die"
+      ],
+      "es": [
+        "barniz selectivo",
+        "estampación en caliente",
+        "relieve en seco",
+        "bajorrelieve",
+        "golpe en seco"
+      ],
+      "ca": [
+        "vernís selectiu",
+        "estampació en calent",
+        "relleu en sec",
+        "baix relleu"
+      ],
+      "zh": [
+        "局部UV",
+        "烫金",
+        "起凸",
+        "压凹"
+      ],
+      "ar": [
+        "ورنيش موضعي",
+        "ختم حراري",
+        "طبع بارز",
+        "طبع غائر"
+      ],
+      "ja": [
+        "部分ニス",
+        "箔押し",
+        "空押し",
+        "エンボス"
+      ],
+      "pt": [
+        "verniz localizado",
+        "hot stamping",
+        "relevo seco",
+        "baixo-relevo"
+      ],
+      "fr": [
+        "vernis sélectif",
+        "dorure à chaud",
+        "gaufrage",
+        "marquage à sec"
+      ],
+      "de": [
+        "partieller UV-Lack",
+        "Heißfolienprägung",
+        "Blindprägung",
+        "Tiefprägung"
+      ],
+      "it": [
+        "vernice selettiva",
+        "lamina a caldo",
+        "rilievo a secco",
+        "stampa a secco"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "print-covers",
+      "heading": {
+        "en": "Finishes and technical plates",
+        "es": "Acabados y planchas técnicas",
+        "ca": "Acabats i planxes tècniques",
+        "zh": "工艺与技术印版",
+        "ar": "التشطيبات والألواح التقنية",
+        "ja": "加工と技術版",
+        "pt": "Acabamentos e chapas técnicas",
+        "fr": "Finitions et plaques techniques",
+        "de": "Veredelungen und technische Platten",
+        "it": "Finiture e lastre tecniche"
+      }
+    },
+    "detect": {
+      "config": [
+        "cover.finishes"
+      ]
+    }
   }
 }
