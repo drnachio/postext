@@ -630,6 +630,40 @@ What to write:
 - Do not reproduce the die-line plate or layer as artwork, and do not paint a varnish or foil area
   as a colour in a figure: the finish is the spot colour's, the area is the text or box that uses it.
 
+## Print covers
+
+Postext ≥ 1.92 builds the cover sheet from the book (configuration.md §19j). Port it when the user has
+the printer's cover file or the book in hand; the front alone (a JPEG of the cover) is a picture, not
+a cover sheet.
+
+- **The sheet**: a cover PDF is one page wider than two trims. Measure it with `inventory.py` or
+  `pdf_regions.py`: the trim from the book's pages, the bleed from the TrimBox/BleedBox (or the crop
+  marks), the spine as the gap between the two panels, the flaps as what is left at each end. Fold and
+  score marks in the slug give the exact fold positions. A hardcover's case adds the turn-in (about
+  15 mm) and the joints; its jacket is a sheet of its own.
+- **The versions**: the copyright page lists one ISBN per binding ("rústica", "cartoné", paperback,
+  hardcover, eBook). Make a `production.versions[]` entry per printed binding with its `isbn`; the
+  eBook ISBN is not a print version. A volume of a collection carries the collection's ISBN as
+  `workIsbn`.
+- **The spine**: do not copy the measured spine into the design. Put the paper in `folio.paper`
+  (grammage from the colophon or the printer, bulk 1.0 to 1.5 for uncoated book papers) and compare the
+  spine `postext cover book.postext --json` reports (`cover.spineMm`) with the source's. When they disagree by more than a millimetre and
+  the page count matches, set `spineOverride` to the source's figure, or the profile's
+  `spineAllowance` when the printer's binding adds it to every book. Signatures: the source's page count
+  rounded up (16 or 32) shows in `signatureBlanks`.
+- **The binding profile**: start from the built-in profile of the style and change only what the
+  source shows (flap width, hinge score, bleed); put a printer's own figures in `production.bindings`.
+- **The design**: the art is a resource (`cover.image`, area `front` or `sheet`), grounds are
+  `cover.background` and `cover.zones`, bands and boxes are `cover.elements` placed by zone with a
+  `basis` so they follow a new spine, the publisher's mark is a `cover.logos` entry. Spot UV, foil and
+  embossing in the printer's file are `cover.finishes`, never colours in the picture.
+- **The texts**: the back-cover blurb, the flap biographies and any quotation go in `cover.md` as
+  frames. Leave the front and spine to the metadata (title, subtitle, author in the chapters' front
+  matter) unless the source sets them in a way the styles `cover-title`, `cover-subtitle`,
+  `cover-author` and `cover-spine` cannot; restyle those paragraph styles first.
+- **Check**: `postext cover book.postext -o cover.pdf`, then `-o front.jpg --dpi 150` beside the source's
+  front, and read the checks it prints.
+
 ## Content you must not copy blindly
 
 - **Rights**: when the user owns the title (publisher, author, licensee;

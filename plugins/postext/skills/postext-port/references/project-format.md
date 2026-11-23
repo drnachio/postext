@@ -47,6 +47,9 @@ my-book/
   "binding": "right",                  // optional: the edge a shelf draws the spine on (index.json;
                                        // `preset_kit.py index` copies it there). The layout's binding is page.binding
   "thumbnail": "thumbnail.jpg", "license": "CC BY 4.0", "credits": "…", "tags": ["book"],
+  "coverMarkdown": "cover.md",         // optional (postext ≥ 1.92): the print cover's texts, a :::frame{slot=…} per
+                                       // panel or text box (configuration.md §19j); localized[lang].coverMarkdown
+                                       // names a language's own (cover/<lang>.md)
   "view": { "canvasScope": "book" },   // "book": the canvas lays out the whole book; default "chapter".
                                        // Books over 200 chapters open a chapter at a time whatever they ask
   "start": { "pageIndexOffset": 57, "pageNumbering": { "startAt": 58 }, "headings": { "h1": 3 } },

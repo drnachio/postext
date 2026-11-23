@@ -2716,6 +2716,88 @@ dieCuts
 - Preflight (whenever enabled): `dieCutText` (text in a gap or under a hole), `dieCutTrim` (< 3 mm from the
   trim; critical past it), `dieCutGutter` (critical, within 3 mm of the spine), `dieCutUnknown`.
 
+## 19j. Print covers — `production` and `cover` (postext ≥ 1.92)
+
+The cover sheet (back, spine, front, flaps; a case, its jacket and endpapers) is built from three
+parts of the book: `production` (what is printed: versions, bindings, papers), `cover` (the
+design, a part of the design shared by every version) and the cover's Markdown (`cover.md`, the
+texts). Neither key changes the layout of the pages. Docs: /en/docs/print-covers.
+
+```
+production
+├─ versions[]   ProductionVersion  one per binding the book is published in
+│   ├─ id, name
+│   ├─ binding        'perfect' | 'sewn-softcover' | 'case-flat' | 'case-round' | a profile id | a BindingProfile
+│   ├─ isbn           ISBN-10/13, hyphens allowed; each binding its own; a valid one prints the EAN-13
+│   ├─ isbnAddOn      five digits after the barcode (Spain: 9xxxx only, 90000 = no price)
+│   ├─ workIsbn       the whole work's ISBN, printed as text beside the volume's
+│   ├─ flaps          softcover: flaps; case: a dust jacket
+│   ├─ caseMaterial   printed (default) | cloth
+│   ├─ overrides      { <measure>: mm } over the profile's, this version only
+│   ├─ spineOverride  mm, the printer's figure in place of the calculated spine
+│   └─ spineText      { direction: bottomToTop (default) | topToBottom, minSpine: 6 }
+├─ bindings[]   BindingProfile  { id, name, printer?, style, signature?, measures?, accepts? }
+│   ├─ style      perfect | sewnSoftcover | caseFlat | caseRound
+│   ├─ signature  pages per signature (built-ins 16): the count is rounded up, blanks reported
+│   ├─ accepts    { trim: { min, max: { width, height } }, spine: { min, max } } mm
+│   └─ measures   Partial<BindingMeasures>, each a ProductionLength (below); the rest from the style
+├─ papers[]     PaperProfile  a folio paper ({ type, grammage, bulk, … }) + id, name, supplier, commercialName
+└─ collection   { name, isbn?, catalogue?: [{ id, title, resource? }] }
+
+ProductionLength = mm | [{ upTo?: { width, height }, mm }, …] | { ratio, of?: width | height, min?, max? }
+
+BindingMeasures (mm, defaults)
+  all:        spineAllowance 0.5, safeMargin 5, designMargin 5
+  softcover:  bleed 3, hingeScore 6, flapWidth {ratio 2/3, min 65}, flapFoldInset 2
+  case:       board 2|2.5|3 by trim, square 3, joint 7, turnIn 15, boardSetback 7,
+              caseSpineAllowance 0, roundSpineAllowance 3 (caseRound)
+  jacket:     jacketFoldAllowance 3, jacketFlapWidth {ratio 2/3, min 80}, jacketBleed 3
+  endpapers:  endpaperGlueStrip 5, endpaperBleed 3
+```
+- Spine = leaves × grammage × bulk / 1000 + `spineAllowance`, the pages counted as laid out and rounded
+  up to the signature, each run of `:::paper` on its own stock over `folio.paper`. Put the source's
+  real stock in `folio.paper` (grammage, bulk) or the spine will be wrong; when the printer gave the
+  spine, set `spineOverride` and keep the calculation as the check.
+- Zones per sheet: softcover `flapBack? back spine front flapFront?`; case `back jointBack spine
+  jointFront front` (+ turn-in); jacket `flapBack back spine front flapFront`; endpaper `pastedown hinge
+  flyleaf`. A right-to-left book mirrors the sheet.
+
+```
+cover
+├─ background            ColorValue for the whole sheet
+├─ image                 { resourceId, area: sheet (default) | front, focus?: { x, y } }  cropped to cover
+├─ zones                 { <zone>: ColorValue }  a ground per zone
+├─ verticalAlign         { <zone>: top (default) | middle | bottom }  (spine always centred)
+├─ elements[] / effects[]  CoverElement, under / over the text, back to front
+│   ├─ id, kind          image | box | shape; resourceId (image), color, opacity, fit: contain | cover
+│   ├─ zone, x, y, width, height   mm from the zone's top-left; may run past it
+│   ├─ basis             { width, height } of the zone when placed: scale with it (absent: stay as placed)
+│   ├─ to                { zone, x, basis? }  right edge in another zone (a band across back, spine, front)
+│   ├─ path              [{ nodes: [{ x, y, in?, out? }], closed }]  fractions of the box
+│   ├─ outline / clip    [[{ x, y }]]  traced polygons / a picture cut to them
+│   ├─ radius, stroke { color, width }, gradient { to, angle }, shadow { color, opacity, x, y, blur }
+│   └─ bleed             mirror (default) | own
+├─ logos[]               CoverElement (kind image) + clearance mm
+├─ textBoxes[]           { name, rect: { x, y, width, height } mm on the sheet from the bleed's corner,
+│                          rotate?: 90 | -90, verticalAlign? }   filled by :::frame{slot="name"}
+├─ finishes[]            { id, process: varnish | foil | emboss | deboss, ink?, sheen?, shape }
+│   └─ shape             { box: placement } | { element: id } | { outline, box }
+├─ mirrorMargin          mm drawn past the trim (≥ 2); beyond, ground and elements are mirrored
+└─ barcodeMagnification  0.8 … 2 (default 1)
+```
+- Varnish and foil print on a spot plate of their own (default inks `Varnish`, `Gold foil`); emboss and
+  deboss go on a non-printing technical plate (`Emboss`/`Deboss` Separation) beside the die line.
+- The cover's Markdown (`cover.md`, manifest `coverMarkdown`; per language `localized[lang].coverMarkdown`):
+  one `:::frame{slot="<zone or text box>"}` per slot. Front and spine left empty take title, subtitle and
+  author from the metadata in the paragraph styles `cover-title`, `cover-subtitle`, `cover-author`,
+  `cover-spine` (redefine them in `paragraphStyles`). Never copy the title into `cover.md`. Set cover
+  text with paragraphs and paragraph styles: a `#` heading takes the book's chapter heading design.
+- Checks: `bindingProfileMissing`, `profileOutOfRange`, `isbnInvalid`, `spineOverridden`,
+  `signatureBlanks`, `spineTooThinForText`, `coverSlotUnknown`, `coverSlotRepeated`, `coverTextBoxName`,
+  `coverMirrorSkipped`, `coverMirrorCapped`, `coverClipSkipped`, `coverBarcodeSize`.
+- Output: `postext cover book.postext [--print-version ID] [--sheet cover|jacket|endpaper-front|endpaper-back]
+  -o cover.pdf` (or `-o front.jpg [--zone back|spine|…|sheet]`); `buildCover` from `postext/production`.
+
 ## 20. Fonts — `customFonts` and what goes in preset.json
 
 `CustomFontFamily = { name, variants: [{ weight 100–900, style 'normal'|'italic', fileId, format 'woff2'|'woff'|'ttf'|'otf', fileName? }], redistributable?: boolean (default true), fallback?: string (≥ 1.42) }`.
