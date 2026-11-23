@@ -72,6 +72,14 @@ export interface CoverPageOptions {
    *  px. A picture missing here is left out of the mirror, and an
    *  effect's is drawn whole. */
   mirrorPictures?: Readonly<Record<string, MirrorPicture>>;
+  /** The page is laid out right to left (a horizontal book whose
+   *  `direction` is rtl): its flow is painted mirrored, so the frames are
+   *  placed mirrored to land on their zones. */
+  mirrored?: boolean;
+  /** The book is set in vertical lines: the sheet stays a horizontal page,
+   *  and the zones' frames are set vertical, the spine's down the spine
+   *  without a turn. */
+  vertical?: boolean;
 }
 
 /** Something a cover could not do as its design asks. */
@@ -112,9 +120,11 @@ function frameFor(
   sheet: ProductionSheet,
   spineText: Required<NonNullable<ProductionVersion['spineText']>>,
   vertical?: 'top' | 'middle' | 'bottom',
+  verticalLines = false,
 ): FrameConfig | undefined {
   const s = zone.safe;
   const at = (x: number, y: number) => ({ anchor: { to: 'container' as const, edge: 'top-left' as const }, offset: { x: mm(x - sheet.trim.x), y: mm(y - sheet.trim.y) } });
+  const mode = verticalLines ? { writingMode: 'vertical-rl' as const } : {};
   if (zone.name !== 'spine') {
     return {
       name: zone.name,
@@ -122,10 +132,13 @@ function frameFor(
       height: mm(s.height),
       placement: at(s.x, s.y),
       optional: true,
+      ...mode,
       ...(vertical === 'middle' || vertical === 'bottom' ? { verticalAlign: vertical } : {}),
     };
   }
   if (zone.rect.width < spineText.minSpine) return undefined;
+  // A vertical book's spine reads down it as its lines do.
+  if (verticalLines) return { name: 'spine', width: mm(s.width), height: mm(s.height), placement: at(s.x, s.y), optional: true, ...mode };
   // Laid out along the spine, then turned about its centre to read up
   // (−90°) or down (90°) it.
   const length = s.height;
@@ -161,6 +174,14 @@ function textBoxFrame(box: CoverTextFrame, sheet: ProductionSheet): FrameConfig 
   };
 }
 
+/** A frame placed across the trim's middle: on a right-to-left page, whose
+ *  flow is painted mirrored, where it lands on its own zone. */
+function mirrorFrame(frame: FrameConfig, sheet: ProductionSheet): FrameConfig {
+  const at = frame.placement as { anchor: unknown; offset: { x: { value: number }; y: unknown } };
+  const width = (frame.width as { value: number }).value;
+  return { ...frame, placement: { ...at, offset: { ...at.offset, x: mm(sheet.trim.width - at.offset.x.value - width) } } } as FrameConfig;
+}
+
 /** A resource of a picture the cover makes of itself: an SVG of `w` × `h`
  *  mm, decorative. */
 function svgResource(id: string, w: number, h: number, extra: Partial<Resource> = {}): Resource {
@@ -181,7 +202,7 @@ export function coverPage(sheet: ProductionSheet, options: CoverPageOptions = {}
   const frames: FrameConfig[] = [];
   for (const zone of sheet.zones) {
     if (!SLOT_ZONES.has(zone.name)) continue;
-    const frame = frameFor(zone, sheet, spineText, cover?.verticalAlign?.[zone.name]);
+    const frame = frameFor(zone, sheet, spineText, cover?.verticalAlign?.[zone.name], options.vertical);
     if (frame) frames.push(frame);
   }
   const names = new Set<string>(COVER_SLOT_ZONES);
@@ -208,7 +229,7 @@ export function coverPage(sheet: ProductionSheet, options: CoverPageOptions = {}
       ? { enabled: false }
       : { enabled: true, bleed: mm(sheet.bleed), ...(folds.length ? { foldMarks: folds } : {}) },
   };
-  const template: PageTemplate = { id: COVER_TEMPLATE_ID, area: 'trim', frames, header: false, footer: false };
+  const template: PageTemplate = { id: COVER_TEMPLATE_ID, area: 'trim', frames: options.mirrored ? frames.map((f) => mirrorFrame(f, sheet)) : frames, header: false, footer: false };
   const resources: Resource[] = [];
   const files: Record<string, Uint8Array> = {};
   const addSvg = (resource: Resource, svg: string) => {

@@ -161,7 +161,7 @@ Der Bogen besteht aus Flächen, Zonen genannt, nebeneinander, jede das, was aus 
   </tbody>
 </table>
 
-Eine Ausgabe als Broschur hat einen Bogen, ihren Umschlag. Eine Buchdecke hat ihren Bezug, einen Schutzumschlag, wenn `flaps` gesetzt ist, und ein vorderes und ein hinteres Vorsatz. Bei einem Buch, das von rechts nach links gesetzt ist (`direction: 'rtl'`), ist der Bogen gespiegelt: die Vorderseite links, die Rückseite rechts.
+Eine Ausgabe als Broschur hat einen Bogen, ihren Umschlag. Eine Buchdecke hat ihren Bezug, einen Schutzumschlag, wenn `flaps` gesetzt ist, und ein vorderes und ein hinteres Vorsatz. Bei einem Buch, das von rechts nach links gesetzt ist (oder rechts gebunden: ein vertikal gesetztes chinesisches oder japanisches Buch, oder mit `page.binding: 'right'`), ist der Bogen gespiegelt: die Vorderseite links, die Rückseite rechts. In einem vertikal gesetzten Buch stehen die Texte der Zonen in senkrechten Zeilen; der Rückentext läuft ungedreht den Rücken hinunter, `spineText.direction` gilt dort nicht.
 
 Jede Zone hat innen einen Sicherheitsbereich, `safeMargin` von jedem Falz und jedem Beschnitt entfernt, und der Rücken hat quer dazu seinen eigenen, schmaleren Rand. Die Sandbox zeichnet Falze, Rillen und Sicherheitsbereiche über den Bogen; das PDF setzt Falzmarken in den Infobereich außerhalb der Beschnittzugabe.
 

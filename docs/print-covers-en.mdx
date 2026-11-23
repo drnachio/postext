@@ -161,7 +161,7 @@ The sheet is made of panels, called zones, side by side, each what that part of 
   </tbody>
 </table>
 
-A softcover version has one sheet, its cover. A case has its covering, a jacket when `flaps` is on, and a front and a back endpaper. A book set right to left (`direction: 'rtl'`) has its sheet mirrored: the front panel on the left, the back on the right.
+A softcover version has one sheet, its cover. A case has its covering, a jacket when `flaps` is on, and a front and a back endpaper. A book bound on the right (set right to left, a vertical Chinese or Japanese book, or `page.binding: 'right'`) has its sheet mirrored: the front panel on the left, the back on the right. A vertical book's zones are set in vertical lines, the spine's running down it without a turn, so `spineText.direction` does not apply.
 
 Each zone has a safe area inside it, `safeMargin` in from every fold and trim, and the spine's own narrower margin across it. The Sandbox draws the folds, the scores and the safe areas over the sheet; the PDF draws fold marks in the slug outside the bleed.
 

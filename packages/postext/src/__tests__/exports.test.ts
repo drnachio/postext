@@ -1279,6 +1279,7 @@ describe("postext/production", () => {
       "jacketSheet",
       "leafMm",
       "markdownLiteral",
+      "mirrorSheet",
       "outlinePathData",
       "pageRunsOf",
       "parseIsbn",

@@ -161,7 +161,7 @@ El pliego está hecho de paneles, llamados zonas, uno al lado de otro, cada uno 
   </tbody>
 </table>
 
-Una versión en rústica tiene un pliego, su cubierta. Una tapa dura tiene su forro de tapas, una sobrecubierta cuando `flaps` está activado, y una guarda delantera y otra trasera. Un libro compuesto de derecha a izquierda (`direction: 'rtl'`) tiene el pliego en espejo: la cubierta a la izquierda y la contracubierta a la derecha.
+Una versión en rústica tiene un pliego, su cubierta. Una tapa dura tiene su forro de tapas, una sobrecubierta cuando `flaps` está activado, y una guarda delantera y otra trasera. Un libro compuesto de derecha a izquierda (o encuadernado por la derecha: un libro chino o japonés vertical, o con `page.binding: 'right'`) tiene el pliego en espejo: la cubierta a la izquierda y la contracubierta a la derecha. En un libro vertical, el texto de cada zona se compone en líneas verticales; el del lomo baja por él sin girar, así que `spineText.direction` no se aplica.
 
 Cada zona tiene dentro un área segura, a `safeMargin` de cada pliegue y cada corte, y el lomo tiene a lo ancho su propio margen, más estrecho. El Sandbox dibuja sobre el pliego los pliegues, los hendidos y las áreas seguras; el PDF dibuja las marcas de plegado en la zona de información, fuera del sangrado.
 

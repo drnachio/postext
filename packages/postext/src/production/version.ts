@@ -5,6 +5,7 @@ import {
   caseSpineWidth,
   endpaperSheet,
   jacketSheet,
+  mirrorSheet,
   softcoverSheet,
   type ProductionSheet,
 } from './geometry.js';
@@ -89,15 +90,17 @@ export function versionSheets(
   }
 
   const base = { version: version.id, profile, measures: m, warnings, ...(isbn13 ? { isbn13 } : {}) };
+  // A book bound on the right has its front cover on the left of the sheet.
+  const side = (sheet: ProductionSheet) => (options.rtl ? mirrorSheet(sheet) : sheet);
   if (!isCaseBinding(profile.style)) {
-    return { ...base, spine: { ...reading, used }, cover: softcoverSheet(trim, used, m, !!version.flaps) };
+    return { ...base, spine: { ...reading, used }, cover: side(softcoverSheet(trim, used, m, !!version.flaps)) };
   }
   const caseSpine = caseSpineWidth(used, profile.style, m);
   return {
     ...base,
     spine: { ...reading, used, caseSpine },
-    cover: caseSheet(trim, caseSpine, m),
-    ...(version.flaps ? { jacket: jacketSheet(trim, caseSpine, m) } : {}),
+    cover: side(caseSheet(trim, caseSpine, m)),
+    ...(version.flaps ? { jacket: side(jacketSheet(trim, caseSpine, m)) } : {}),
     endpapers: {
       front: endpaperSheet(trim, m, 'front', options.rtl),
       back: endpaperSheet(trim, m, 'back', options.rtl),

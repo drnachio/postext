@@ -161,7 +161,7 @@ A folha é feita de painéis, chamados zonas, lado a lado, cada um correspondend
   </tbody>
 </table>
 
-Uma versão em brochura tem uma folha, a sua capa. Uma capa dura tem o revestimento, uma sobrecapa quando `flaps` está ativo e uma guarda da frente e outra de trás. Num livro composto da direita para a esquerda (`direction: 'rtl'`), a folha é espelhada: a capa fica à esquerda e a contracapa à direita.
+Uma versão em brochura tem uma folha, a sua capa. Uma capa dura tem o revestimento, uma sobrecapa quando `flaps` está ativo e uma guarda da frente e outra de trás. Num livro composto da direita para a esquerda (ou encadernado à direita: um livro chinês ou japonês vertical, ou com `page.binding: 'right'`), a folha é espelhada: a capa fica à esquerda e a contracapa à direita. Num livro vertical, o texto de cada zona é composto em linhas verticais; o da lombada desce por ela sem girar, por isso `spineText.direction` não se aplica.
 
 Cada zona tem dentro dela uma área de segurança, `safeMargin` para dentro de cada dobra e de cada corte, e a lombada tem a sua margem própria, mais estreita, no sentido da largura. O Sandbox desenha as dobras, os vincos e as áreas de segurança sobre a folha; o PDF desenha marcas de dobra na área de informações, fora da sangria.
 

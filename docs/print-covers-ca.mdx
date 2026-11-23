@@ -161,7 +161,7 @@ El plec està fet de plafons, anomenats zones, l'un al costat de l'altre, cadasc
   </tbody>
 </table>
 
-Una versió en rústica té un plec, la coberta. Una tapa dura té el folre de les tapes, una sobrecoberta quan `flaps` està activat, i una guarda davantera i una altra de posterior. Un llibre compost de dreta a esquerra (`direction: 'rtl'`) té el plec en mirall: la coberta a l'esquerra i la contracoberta a la dreta.
+Una versió en rústica té un plec, la coberta. Una tapa dura té el folre de les tapes, una sobrecoberta quan `flaps` està activat, i una guarda davantera i una altra de posterior. Un llibre compost de dreta a esquerra (o enquadernat per la dreta: un llibre xinès o japonès vertical, o amb `page.binding: 'right'`) té el plec en mirall: la coberta a l'esquerra i la contracoberta a la dreta. En un llibre vertical, el text de cada zona es compon en línies verticals; el del llom hi baixa sense girar, de manera que `spineText.direction` no s'aplica.
 
 Cada zona té a dins una àrea segura, a `safeMargin` de cada plegat i de cada tall, i el llom té a través el seu propi marge, més estret. El Sandbox dibuixa sobre el plec els plegats, els hendits i les àrees segures; el PDF dibuixa les marques de plegat a la zona d'informació, fora de la sang.
 

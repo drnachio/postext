@@ -12,6 +12,7 @@ import type { Resource } from '../types/resources/resources.js';
 import type { FolioPaperConfig } from '../types/output/folio.js';
 import type { ProductionVersion } from '../types/output/production.js';
 import { resolvePageConfig } from '../defaults/page.js';
+import { resolveAllConfig } from '../pipeline/config.js';
 import { dimensionToPx } from '../units.js';
 import { pageRunsOf } from './spine.js';
 import { versionSheets, type ProductionWarning, type VersionSheets } from './version.js';
@@ -98,9 +99,13 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
   const version = typeof input.version === 'string' ? production?.versions?.find((v) => v.id === input.version) : input.version;
   if (!version) return { issues: [{ kind: 'coverVersionMissing', version: String(input.version) }] };
   const pages = typeof input.pages === 'number' ? Array.from({ length: Math.max(0, Math.floor(input.pages)) }, () => ({})) : input.pages;
+  const resolved = resolveAllConfig(config);
+  const vertical = resolved.layout.writingMode === 'vertical-rl';
   const read = versionSheets(version, trimOf(config), pageRunsOf(pages, config.folio?.paper), {
     library: production?.bindings ?? [],
-    rtl: config.direction === 'rtl',
+    // Bound on the right as the pages are: Arabic and Hebrew books
+    // (`direction` rtl or auto), vertical Chinese and Japanese ones, a manga.
+    rtl: resolved.page.binding === 'right',
   });
   if (!('cover' in read)) return { issues: read.warnings };
   const kind = input.sheet ?? 'cover';
@@ -117,6 +122,10 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
     ...(isbn && work ? { workIsbnCaption: work } : {}),
     resources: input.resources ?? [],
     ...(input.mirrorPictures ? { mirrorPictures: input.mirrorPictures } : {}),
+    // A right-to-left book's cover page is laid out as its pages are; a
+    // vertical book's is a horizontal page with vertical frames, its
+    // pictures and boxes placed on the sheet as drawn.
+    ...(vertical ? { vertical: true } : resolved.direction === 'rtl' ? { mirrored: true } : {}),
   });
   const source = coverSource(input.markdown, made.slots, input.metadata);
   const own: PostextConfig = { ...config };
@@ -130,6 +139,7 @@ export function buildCover(input: BuildCoverInput): BuiltCover | { issues: Build
     paragraphStyles: coverParagraphStyles(config.paragraphStyles, bodyPt),
     header: { elements: [] },
     footer: { elements: [] },
+    ...(vertical ? { layout: { ...(config.layout ?? {}), writingMode: 'horizontal-tb' } } : {}),
   };
   if (coverConfig.page?.binding === undefined) delete coverConfig.page!.binding;
   const content: PostextContent = {

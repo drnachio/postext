@@ -2760,7 +2760,9 @@ BindingMeasures (mm, defaults)
   spine, set `spineOverride` and keep the calculation as the check.
 - Zones per sheet: softcover `flapBack? back spine front flapFront?`; case `back jointBack spine
   jointFront front` (+ turn-in); jacket `flapBack back spine front flapFront`; endpaper `pastedown hinge
-  flyleaf`. A right-to-left book mirrors the sheet.
+  flyleaf`. A book bound on the right (right to left, vertical CJK, `page.binding: 'right'`) has its
+  sheet mirrored: front on the left (postext ≥ 1.92). A vertical book's sheet is a horizontal page
+  whose zone frames are `vertical-rl`; the spine reads down unturned (`spineText.direction` unused).
 
 ```
 cover

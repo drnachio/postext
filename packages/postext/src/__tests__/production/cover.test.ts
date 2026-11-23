@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildCover,
+  coverZoneBox,
   caseSheet,
   coverPage,
   coverSource,
@@ -13,6 +14,7 @@ import {
 import { mirrorBands, mirrorBleedSvg, MAX_MIRROR_BANDS } from '../../production/mirrorBleed.js';
 import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import { buildDocument } from '../../pipeline/index.js';
+import { flowRectToPage, pageIsMirrored } from '../../vdt/flowFrames.js';
 import { isBookOwnKey, isBookWideKey } from '../../defaults/index.js';
 import { DESIGN_PARTS, DESIGN_PART_KEYS } from '../../designs/parts.js';
 import { preflightDocument } from '../../checks/preflight.js';
@@ -158,6 +160,56 @@ describe('buildCover', () => {
     const hc = buildCover({ config, version: 'hc', pages: 240, sheet: 'endpaperFront' }) as BuiltCover;
     expect(hc.sheet.kind).toBe('endpaper');
     expect(hc.content.resources!.some((r) => r.id === 'postext-cover-isbn')).toBe(false);
+  });
+
+  it('mirrors the sheet of a book bound on the right: the front on the left, the back on the right', () => {
+    const order = (c: PostextConfig, version = 'pb', sheet?: 'jacket') =>
+      (buildCover({ config: c, version, pages: 240, ...(sheet ? { sheet } : {}) }) as BuiltCover).sheet.zones.map((z) => z.name);
+    expect(order(config)).toEqual(['flapBack', 'back', 'spine', 'front', 'flapFront']);
+    // An Arabic book (direction auto from its language), a vertical one, a page bound on the right.
+    const arabic = { ...config, locale: 'ar' } as PostextConfig;
+    const vertical = { ...config, locale: 'ja', layout: { writingMode: 'vertical-rl' } } as PostextConfig;
+    const right = { ...config, page: { ...config.page, binding: 'right' } } as PostextConfig;
+    for (const c of [arabic, vertical, right]) expect(order(c)).toEqual(['flapFront', 'front', 'spine', 'back', 'flapBack']);
+    expect(order(arabic, 'hc')).toEqual(['front', 'jointFront', 'spine', 'jointBack', 'back']);
+    const built = buildCover({ config: arabic, version: 'pb', pages: 240 }) as BuiltCover;
+    const zone = (n: string) => built.sheet.zones.find((z) => z.name === n)!;
+    // The same panels, moved across: the back flap ends where the sheet's bleed starts.
+    expect(zone('flapBack').rect.x + zone('flapBack').rect.width).toBeCloseTo(built.sheet.width - built.sheet.bleed, 6);
+    expect(built.sheet.lines.map((l) => l.x)).toEqual([...built.sheet.lines.map((l) => l.x)].sort((a, b) => a - b));
+  });
+
+  it('sets each zone’s text in its own panel on a sheet bound either way', () => {
+    const arabic = { ...config, locale: 'ar' } as PostextConfig;
+    const vertical = { ...config, locale: 'ja', layout: { writingMode: 'vertical-rl' } } as PostextConfig;
+    const right = { ...config, page: { ...config.page, binding: 'right' } } as PostextConfig;
+    for (const c of [config, arabic, vertical, right]) {
+      const built = buildCover({ config: c, version: 'pb', pages: 240, markdown: ':::frame{slot="back"}\nUna historia.\n:::', metadata }) as BuiltCover;
+      const doc = buildDocument(built.content, built.config);
+      const page = doc.pages[0]!;
+      const centre = (text: string) => {
+        // A line that says only that: the spine joins the title and the author.
+        const block = (page.floats ?? []).find((b) => b.lines.some((l) => l.text === text))!;
+        // Where it is painted: a right-to-left page's flow is mirrored; a
+        // vertical page's frames are laid out on the page itself.
+        const r = pageIsMirrored(page) ? flowRectToPage(page, block.bbox) : block.bbox;
+        return r.x + r.width / 2;
+      };
+      const inside = (text: string, zone: string) => {
+        const box = coverZoneBox(built, zone, doc)!;
+        const x = centre(text);
+        expect(x, `${c.locale ?? 'en'} ${zone}`).toBeGreaterThan(box.x);
+        expect(x, `${c.locale ?? 'en'} ${zone}`).toBeLessThan(box.x + box.width);
+      };
+      inside('Una historia.', 'back');
+      inside('La linterna', 'front');
+      // A turned spine is turned about its centre, so its box's centre holds.
+      inside('La linterna · Ana Ruiz', 'spine');
+    }
+    // A vertical book's sheet is a horizontal page whose zones are set vertical.
+    const v = buildCover({ config: vertical, version: 'pb', pages: 240 }) as BuiltCover;
+    expect(v.config.layout?.writingMode).toBe('horizontal-tb');
+    expect(new Set(v.config.pageTemplates![0]!.frames.map((f) => f.writingMode))).toEqual(new Set(['vertical-rl']));
   });
 
   it('says what is missing instead of making a cover', () => {

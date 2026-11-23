@@ -161,7 +161,7 @@ Il foglio è fatto di pannelli, chiamati zone, affiancati; ognuno è ciò che qu
   </tbody>
 </table>
 
-Una versione in brossura ha un solo foglio, la sua copertina. Un cartonato ha il suo rivestimento, una sovraccoperta quando `flaps` è attivo, e un risguardo anteriore e uno posteriore. Un libro composto da destra a sinistra (`direction: 'rtl'`) ha il foglio specchiato: la prima di copertina a sinistra, la quarta a destra.
+Una versione in brossura ha un solo foglio, la sua copertina. Un cartonato ha il suo rivestimento, una sovraccoperta quando `flaps` è attivo, e un risguardo anteriore e uno posteriore. Un libro composto da destra a sinistra (o rilegato a destra: un libro cinese o giapponese verticale, o con `page.binding: 'right'`) ha il foglio specchiato: la prima di copertina a sinistra, la quarta a destra. In un libro verticale il testo di ogni zona è composto in righe verticali; quello del dorso scende lungo il dorso senza rotazione, quindi `spineText.direction` non si applica.
 
 Ogni zona ha al suo interno un’area di sicurezza, a `safeMargin` da ogni piega e da ogni taglio, e il dorso ha un suo margine più stretto nella sua larghezza. La Sandbox disegna le pieghe, le cordonature e le aree di sicurezza sul foglio; il PDF disegna i segni di piega nella zona fuori formato, oltre l’abbondanza.
 

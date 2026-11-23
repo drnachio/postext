@@ -161,7 +161,7 @@ La feuille se compose de panneaux, appelés zones, placés côte à côte ; ch
   </tbody>
 </table>
 
-Une version à couverture souple a une seule feuille, sa couverture. Un cartonnage a sa couvrure, une jaquette quand `flaps` est activé, et une garde avant et une garde arrière. Un livre composé de droite à gauche (`direction: 'rtl'`) a sa feuille en miroir : la première de couverture à gauche, la quatrième à droite.
+Une version à couverture souple a une seule feuille, sa couverture. Un cartonnage a sa couvrure, une jaquette quand `flaps` est activé, et une garde avant et une garde arrière. Un livre composé de droite à gauche (ou relié à droite : un livre chinois ou japonais vertical, ou avec `page.binding: 'right'`) a sa feuille en miroir : la première de couverture à gauche, la quatrième à droite. Dans un livre vertical, le texte de chaque zone est composé en lignes verticales ; celui du dos descend le long du dos sans rotation, et `spineText.direction` ne s'applique pas.
 
 Chaque zone contient une zone de sécurité, à `safeMargin` de chaque pli et de chaque coupe, et le dos a sa propre marge, plus étroite, sur sa largeur. Le Sandbox dessine les plis, les rainages et les zones de sécurité sur la feuille ; le PDF dessine les repères de pli dans la zone de contrôle, hors du fond perdu.
 

@@ -96,6 +96,21 @@ function lineAt(zones: SheetZone[], after: CoverZoneName, kind: SheetLine['kind'
   return { x: z.rect.x + z.rect.width, kind };
 }
 
+/** A sheet read from the right (a book bound on the right: Arabic,
+ *  Hebrew, a vertical Chinese or Japanese book): the same panels in
+ *  mirror order, the front on the left and the back on the right, with
+ *  every zone, safe area and line moved across. Its zones stay listed left
+ *  to right. */
+export function mirrorSheet(sheet: ProductionSheet): ProductionSheet {
+  const flip = (r: SheetRect): SheetRect => ({ ...r, x: sheet.width - r.x - r.width });
+  return {
+    ...sheet,
+    trim: flip(sheet.trim),
+    zones: sheet.zones.map((z) => ({ ...z, rect: flip(z.rect), safe: flip(z.safe) })).sort((a, b) => a.rect.x - b.rect.x),
+    lines: sheet.lines.map((l) => ({ ...l, x: sheet.width - l.x })).sort((a, b) => a.x - b.x),
+  };
+}
+
 /** The cover sheet of a softcover: back, spine and front (and the flaps),
  *  scored at the spine and at the hinges, with bleed all round. */
 export function softcoverSheet(trim: TrimMm, spine: number, m: ResolvedBindingMeasures, flaps: boolean): ProductionSheet {
