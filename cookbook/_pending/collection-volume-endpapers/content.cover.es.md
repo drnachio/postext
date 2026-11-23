@@ -1,4 +1,4 @@
-:::frame{slot="back"}
+:::frame{slot="back" sheet="case jacket"}
 :::paragraphs{style="back-series"}
 Novelas ejemplares · XI
 :::
@@ -10,4 +10,28 @@ Un alférez sale del hospital de Valladolid apoyado en la espada. Durante la com
 :::paragraphs{style="back-blurb"}
 Al terminar le pone en las manos un cartapacio: las dos noches de conversación que dice haber oído a dos perros del hospital, que forman el volumen duodécimo y último de esta colección.
 :::
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+:::paragraphs{style="ad-head"}
+Novelas ejemplares
+:::
+
+:::paragraphs{style="ad-note"}
+Doce novelas de Miguel de Cervantes, impresas por primera vez en Madrid en 1613, una por volumen en el orden de aquella edición.
+:::
+
+::catalogue{numbers="I" first=1 last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+:::paragraphs{style="ad-head"}
+Novelas ejemplares
+:::
+
+:::paragraphs{style="ad-note"}
+La segunda mitad de la colección. Este libro es el volumen XI.
+:::
+
+::catalogue{numbers="I" first=7 last=12}
 :::

@@ -28,9 +28,9 @@ const work = (en, es, id) => ({ id, title: t({ en, es }), resource: `cat-${id}` 
 
 // #region answer: the volume and its collection: two ISBNs and the series' catalogue
 // The collection is data of the book, beside its versions. The volume's barcode carries its
-// own ISBN; `workIsbn` prints the collection's as a line above the bars. `catalogue` lists
-// the twelve titles, each with its cover picture: Postext keeps it with the book and checks
-// it, and this pen lays it out on the endpapers (section 4).
+// own ISBN, and the collection's `isbn` prints as a line above the bars. `catalogue` lists
+// the twelve titles with their cover pictures, and `volume` names the one this book is: the
+// endpapers set the list and the pictures from it (section 4), this volume marked in both.
 const collection = {
   name: t({ en: 'Exemplary Novels', es: 'Novelas ejemplares' }),
   isbn: '978-84-0000-200-8',
@@ -49,12 +49,12 @@ const collection = {
     work('The Dialogue of the Dogs', 'El coloquio de los perros', 'coloquio'),
   ],
 };
+collection.volume = collection.catalogue[VOLUME - 1].id;
 const production = {
   collection,
   // A printed case with a flat spine: the case sheet and two endpapers, no jacket.
   versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
-    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
-    workIsbn: collection.isbn }],
+    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000' }],
 };
 // #endregion
 const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
@@ -80,35 +80,22 @@ const livery = [
 ];
 // #endregion
 
-// #region endpapers: the catalogue as miniature covers, six to a page
-// Both endpapers take one design and one text: the pastedown (I–VI) and the flyleaf
-// (VII–XII) swap sides at the back of the book.
-const miniature = (entry, i) => {
-  const zone = i < 6 ? 'pastedown' : 'flyleaf';
-  const [x, y] = [8.5 + (i % 3) * 36, 12 + (Math.floor(i / 3) % 2) * 57];
-  return [
-    ...(i + 1 === VOLUME ? [box(`this-${entry.id}`, zone, x - 1, y - 1, 33, 53, 'gold')] : []),
-    // The case at a quarter of its size: two gold bars for the lettering, the window.
-    box(`mini-${entry.id}`, zone, x, y, 31, 51, 'case'),
-    box(`bar-${entry.id}`, zone, x + 7, y + 6, 17, 0.9, 'gold'),
-    box(`bar2-${entry.id}`, zone, x + 10.5, y + 9.5, 10, 0.6, 'gold'),
-    picture(`pic-${entry.id}`, zone, x + 3.2, y + 16, 24.6, 27.8, entry.resource),
-  ];
-};
-const paragraphs = (style, text) => `:::paragraphs{style="${style}"}\n${text}\n:::`;
-const entry = (e, i) => paragraphs(i + 1 === VOLUME ? 'ad-this' : 'ad-entry',
-  `**${roman(i + 1)}**\t${e.title}`);
-const endpaperText = [
-  `:::frame{slot="pastedown"}`, paragraphs('ad-head', collection.name),
-  ...collection.catalogue.slice(0, 6).map(entry), ':::',
-  `:::frame{slot="flyleaf"}`, ...collection.catalogue.slice(6).map((e, i) => entry(e, i + 6)),
-  paragraphs('ad-isbn', workIsbnCaption(collection.isbn, LANG)), ':::',
-].join('\n\n');
+// #region endpapers: a design of their own, half the catalogue on each
+// The case takes the livery; each endpaper names a design in `sheets`. At the front the
+// pastedown is the left page, at the back the right one: volumes I–VI open the book,
+// VII–XII close it, the pictures always on the pastedown, in the case's colour. A catalogue
+// element grids the titles' pictures in its box; `stroke` outlines this volume's.
+const shelf = (first, last) => ({ id: `shelf-${first}`, kind: 'catalogue', zone: 'pastedown',
+  x: 26.5, y: 18, width: 67, height: 149, columns: 2, gap: 7, first, last,
+  stroke: { color: col('gold'), width: 0.8 } });
+const endpaper = (first, last) => ({ background: col('endpaper'),
+  zones: { pastedown: col('case') }, elements: [shelf(first, last)],
+  verticalAlign: { flyleaf: 'middle' } });
 const cover = {
   background: col('case'),
-  zones: { pastedown: col('endpaper'), flyleaf: col('endpaper'), hinge: col('endpaper') },
-  elements: [...livery, ...collection.catalogue.flatMap(miniature)],
-  verticalAlign: { back: 'top', pastedown: 'bottom', flyleaf: 'bottom' },
+  elements: livery,
+  verticalAlign: { back: 'top' },
+  sheets: { endpaperFront: endpaper(1, 6), endpaperBack: endpaper(7, 12) },
 };
 // #endregion
 
@@ -129,12 +116,13 @@ const coverStyles = [
   style('back-series', 'Josefin Sans', 7.5, 10, col('gold'), { ...caps(1.4),
     marginBottom: pt(9) }),
   style('back-blurb', 'Crimson Pro', 10.5, 14.5, col('bone'), { marginBottom: pt(7) }),
-  style('ad-head', 'Cormorant Garamond', 17, 20, col('accent'), { fontWeight: 600,
-    marginBottom: pt(6) }),
-  ...['ad-entry', 'ad-this'].map((id) => style(id, 'Crimson Pro', 10.5, 15,
-    col(id === 'ad-this' ? 'accent' : 'ink'), { boldFontWeight: 600, boldColor: col('accent'),
-      tabStops: [{ position: mm(10) }] })),
-  style('ad-isbn', 'Josefin Sans', 6.8, 9, col('muted'), { ...caps(0.8), marginTop: pt(8) }),
+  // The endpapers' lines: the series' name, a note, and the titles `::catalogue` sets in
+  // `cover-catalogue`, this volume's in `cover-catalogue-current`.
+  style('ad-head', 'Cormorant Garamond', 19, 22, col('accent'), { fontWeight: 600, ...centre }),
+  style('ad-note', 'Crimson Pro', 9.5, 13, col('muted'), { italic: true, ...centre,
+    marginTop: pt(4), marginBottom: pt(14) }),
+  ...['cover-catalogue', 'cover-catalogue-current'].map((id, own) => style(id, 'Crimson Pro',
+    11, 17, col(own ? 'accent' : 'ink'), { fontWeight: own ? 600 : 400, ...centre })),
 ];
 // #endregion
 
@@ -210,11 +198,11 @@ const config = {
 };
 
 // ─── 2 · Content ────────────────────────────────────────────────────────────
-// The novella runs through three files; the back cover's text is a fourth (the endpapers' above).
+// The novella runs through three files; the cover's text, case and endpapers, is a fourth.
 const markdown = /* @content */ '';
 const part2 = /* @content:part-2 */ '';
 const part3 = /* @content:part-3 */ '';
-const coverText = `${/* @content:cover */ ''}\n\n${endpaperText}`;
+const coverText = /* @content:cover */ '';
 const resources = [
   { id: 'cover-art', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0,
     bitmap: { fileId: 'cover-art.jpg', format: 'jpeg', width: 1000, height: 1125 }, altText: t({

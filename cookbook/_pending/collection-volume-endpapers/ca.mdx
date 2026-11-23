@@ -2,21 +2,21 @@
 title: "Un volum de col·lecció, amb la sèrie a les guardes"
 summary: "El volum XI d'una col·lecció de dotze en tapa dura: dos ISBN al costat del codi de barres, una tapa comuna a tots i la col·lecció sencera a les guardes."
 plain: "Un llibre de tapa dura d'una sèrie de dotze, amb els plecs per a la impremta: la tapa amb els colors de la col·lecció i el número del volum, i les dues guardes de dins, amb les cobertes i els títols dels dotze llibres."
-description: "Un volum de col·lecció a Postext: production.collection amb l'ISBN de l'obra completa al costat del codi de barres i el catàleg de la sèrie a les guardes."
+description: "Un volum de col·lecció a Postext: production.collection imprimeix l'ISBN de l'obra al costat del codi de barres i ::catalogue posa la sèrie a les guardes."
 question: "Com imprimeixo un volum d'una col·lecció amb l'ISBN de l'obra completa i els altres títols a les guardes?"
 aliases: ["col·lecció", "sèrie", "obra en diversos volums", "ISBN obra completa", "guardes", "contraguarda", "full volant", "tapa dura", "endpapers", "guardas"]
-pageNotes: { "27": "La tapa estesa sobre un fons granat: la contracoberta amb la línia de la col·lecció en or, el text de presentació i el codi de barres sobre una etiqueta clara amb la línia de l'ISBN de l'obra completa al damunt; el llom retolat de baix a dalt entre dues bandes daurades, amb el número XI en un anell al peu; i la coberta amb el títol, el nom de la col·lecció, l'autor, una pintura d'un soldat pàl·lid i un home de negre a la porta d'un hospital dins un marc daurat i el número XI en un anell d'or.", "28": "La guarda davantera: sobre un fons ocre clar, dotze miniatures de la tapa de la col·lecció, cadascuna amb la seva pintura, sis a cada pàgina, la del volum XI emmarcada en or; a sota, el nom de la col·lecció, els dotze títols numerats de l'I al XII i l'ISBN de l'obra completa.", "29": "La guarda del darrere: el mateix disseny amb les dues pàgines canviades de costat, els volums VII a XII a l'esquerra i I a VI a la dreta." }
+pageNotes: {"27": "La tapa estesa sobre un fons granat: la contracoberta amb la línia de la col·lecció en or, el text de presentació i el codi de barres sobre una etiqueta clara amb la línia de l'ISBN de l'obra completa al damunt; el llom retolat de baix a dalt entre dues bandes daurades, amb el número XI en un anell al peu; i la coberta amb el títol, el nom de la col·lecció, l'autor, una pintura d'un soldat pàl·lid i un home de negre a la porta d'un hospital dins un marc daurat i el número XI en un anell d'or.", "28": "La guarda davantera: a la pàgina esquerra, sobre el granat de la tapa, les pintures dels volums I a VI en dues columnes de tres; a la dreta, sobre un fons ocre clar, el nom de la col·lecció, una línia sobre la primera edició i els títols del I al VI, centrats i numerats en romans.", "29": "La guarda del darrere: a la pàgina esquerra, sobre el fons ocre, el nom de la col·lecció, una nota i els títols del VII al XII, amb el volum XI en vermell fosc; a la dreta, sobre el granat, les pintures dels volums VII a XII, la de l'XI emmarcada en or."}
 ---
 
 ## Què compondràs
 
-*El casamiento engañoso*, l'onzena de les dotze *Novelas ejemplares* de Cervantes, com a volum XI d'una col·lecció que publica una novel·la a cada volum de tapa dura. Les 26 pàgines van en Crimson Pro de 11/15,2 sobre una pàgina de 120 × 185 mm. Amb elles, `buildCover` fa tres plecs per a l'enquadernador: la tapa impresa, en el granat de la col·lecció, amb un marc daurat al voltant de la pintura i el número en un anell d'or, i les guardes davantera i del darrere, que mostren els dotze volums com a miniatures d'aquesta tapa sobre una llista numerada de títols. Al costat del codi de barres, que porta l'ISBN del volum, la tapa imprimeix l'ISBN de l'obra completa.
+*El casamiento engañoso*, l'onzena de les dotze *Novelas ejemplares* de Cervantes, com a volum XI d'una col·lecció que publica una novel·la a cada volum de tapa dura. Les 26 pàgines van en Crimson Pro de 11/15,2 sobre una pàgina de 120 × 185 mm. Amb elles, `buildCover` fa tres plecs per a l'enquadernador: la tapa impresa, en el granat de la col·lecció, amb un marc daurat al voltant de la pintura i el número en un anell d'or, i les guardes davantera i del darrere, que es reparteixen la col·lecció: els volums I a VI obren el llibre i els VII a XII el tanquen, cada meitat en pintures a la contraguarda i en llista numerada al full volant. Al costat del codi de barres, que porta l'ISBN del volum, la tapa imprimeix l'ISBN de l'obra completa.
 
 ## Elaboració
 
 ### 1 · La col·lecció és una dada del llibre
 
-El codi és [la resposta curta](#la-resposta-curta) de dalt. `production.collection` desa la sèrie: el nom, l'ISBN i un `catalogue` amb un identificador, un títol i una imatge per a cada volum. El que Postext imprimeix és el `workIsbn` de la versió: una línia en negre de 6,5 pt damunt del codi de barres, «ISBN obra completa», en la llengua del llibre. El catàleg viatja amb el llibre a l'arxiu `.postext` i les comprovacions de la configuració el llegeixen, però `buildCover` no hi dibuixa res, de manera que el mateix codi el compon al pas 3. Els dos ISBN són números de mostra del bloc 978-84-0000, que no corresponen a cap llibre.
+El codi és [la resposta curta](#la-resposta-curta) de dalt. `production.collection` desa la sèrie: el nom, l'ISBN, un `catalogue` amb un identificador, un títol i una imatge per a cada volum, i `volume`, l'identificador de l'entrada que és aquest llibre. L'`isbn` de la col·lecció és el que Postext imprimeix al costat del codi de barres: una línia en negre de 6,5 pt damunt de les barres, «ISBN obra completa», en la llengua del llibre. Si la versió declara un `workIsbn` propi, s'imprimeix aquest. Els dos ISBN són números de mostra del bloc 978-84-0000, que no corresponen a cap llibre. Les comprovacions de la configuració avisen d'un `volume` que no és al catàleg i d'un ISBN de col·lecció amb el dígit de control equivocat.
 
 ### 2 · Un mateix disseny per a tots els volums
 
@@ -24,34 +24,47 @@ El codi és [la resposta curta](#la-resposta-curta) de dalt. `production.collect
 
 El disseny de la tapa és el mateix objecte a tots els volums de la col·lecció; només canvien `VOLUME`, la pintura i els textos. Cada element es col·loca respecte a la zona on és, de manera que, si un altre volum té més pàgines i un llom més gruixut, la coberta es desplaça amb el seu panell. Al llom, `basis` anota els 10 mm de llom sobre els quals es van dibuixar les bandes: amb un llom de 8,3 mm o de 14 mm les bandes s'ajusten a l'amplada i l'anell continua a l'eix. La línia damunt del codi de barres va en negre, i per això el codi descansa sobre una etiqueta clara.
 
-### 3 · Les guardes es componen amb el catàleg
+### 3 · Cada guarda té el seu propi disseny
 
 <Excerpt region="endpapers" />
 
-Un element la zona del qual no existeix en un plec no s'hi dibuixa. Les miniatures són a `pastedown` i `flyleaf` (contraguarda i full volant), així que surten a les guardes i no a la tapa, i la pintura de `front` no arriba a les guardes. Amb el text passa el mateix: un únic Markdown de coberta serveix per a tots els plecs; a les guardes es descarta el marc de la contracoberta, i a la tapa, els de les guardes. El codi escriu els marcs de les guardes a partir del catàleg, de manera que la llista i les miniatures sempre coincideixen. Les dues guardes porten el mateix disseny i el mateix text, i al final del llibre la contraguarda queda a la dreta: allà apareixen primer els volums VII–XII.
+`cover.sheets` dona a un plec un disseny que substitueix el de la coberta: aquí `endpaperFront` i `endpaperBack`, cadascun amb el seu fons, la contraguarda del color de la tapa, i un element `catalogue`. L'element és una caixa en una zona que el motor omple amb les imatges dels títols de `first` a `last`, en `columns` columnes separades `gap` mm, cada imatge cobrint la seva cel·la. El títol l'identificador del qual és `collection.volume` es perfila amb el `stroke` de l'element; en aquestes guardes és el marc daurat del volum XI. El disseny de la tapa no arriba a les guardes, perquè cada plec dibuixa només el seu. En obrir el llibre per davant, la contraguarda és la pàgina esquerra, i al final és la dreta, de manera que les pintures queden sempre damunt del cartró.
+
+Els títols surten del Markdown de coberta, que serveix per a tots els plecs. Un marc que anomena els seus plecs només va en aquests:
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+:::paragraphs{style="ad-head"}
+Exemplary Novels
+:::
+
+::catalogue{numbers="I" first=7 last=12}
+:::
+```
+
+`::catalogue` se substitueix pels títols del catàleg, un paràgraf cadascun: el lloc en l'estil de numeració que indica `numbers`, un espai de mitja quadratí i el títol. Les línies porten l'estil de paràgraf `cover-catalogue`, i la d'aquest volum, `cover-catalogue-current`; el codi redefineix tots dos, centrats en Crimson Pro, l'actual en vermell fosc. El marc de la contracoberta anomena `case jacket`, així que les guardes el deixen fora.
 
 ### 4 · Tres plecs d'un mateix llibre
 
 <Excerpt region="sheets" />
 
-La mateixa crida amb `sheet: 'cover'`, `'endpaperFront'` i `'endpaperBack'` fa la tapa i les dues guardes, cadascuna un document d'una pàgina a la seva mida. Les 26 pàgines s'arrodoneixen a dos quaderns de 16, 16 fulls de 240 µm; amb mig mil·límetre de marge el bloc fa 4,3 mm i el llom de la tapa 8,3 mm, en sumar-hi dos cartrons de 2 mm. Les comprovacions donen `spineTooThinForText` per als 4,3 mm del bloc, mentre que el rètol va al llom de 8,3 mm de la tapa, que supera el mínim de 6 mm. El PDF porta les 26 pàgines i després la tapa i les guardes.
+La mateixa crida amb `sheet: 'cover'`, `'endpaperFront'` i `'endpaperBack'` fa la tapa i les dues guardes, cadascuna un document d'una pàgina a la seva mida. Les 26 pàgines s'arrodoneixen a dos quaderns de 16, 16 fulls de 240 µm; amb mig mil·límetre de marge el bloc fa 4,3 mm i el llom de la tapa 8,3 mm, en sumar-hi dos cartrons de 2 mm. El rètol es comprova contra el llom de la tapa, que supera el mínim de 6 mm. El PDF porta les 26 pàgines i després la tapa i les guardes.
 
 ## Variants
 
 ### Vesteix la tapa amb una sobrecoberta
 
-En una tapa dura, `flaps` hi afegeix la sobrecoberta, un quart plec amb les seves solapes, i la seva contracoberta porta el codi de barres i l'ISBN de l'obra completa com la tapa.
+En una tapa dura, `flaps` hi afegeix la sobrecoberta, un quart plec amb les seves solapes. El codi de barres i l'ISBN de l'obra completa passen a la seva contracoberta, i amb ells el text de presentació, el marc del qual anomena `jacket`.
 
 ```diff
    versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
-     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
--    workIsbn: collection.isbn }],
-+    workIsbn: collection.isbn, flaps: true }],
+-    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000' }],
++    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000', flaps: true }],
 ```
 
 ### Compon el volum següent
 
-Per al volum XII el disseny no canvia: el número, el marc daurat de les guardes i el títol destacat segueixen `VOLUME`. El text, la pintura i l'ISBN són els d'aquest volum.
+Per al volum XII el disseny no canvia: `VOLUME` anomena l'entrada del catàleg a `collection.volume`, i l'anell, el marc daurat de les guardes i el títol destacat la segueixen. El Markdown de coberta, la pintura i l'ISBN són els d'aquest volum.
 
 ```diff
 -const VOLUME = 11; // this book's place in the collection
@@ -62,4 +75,5 @@ Per al volum XII el disseny no canvia: el número, el marc daurat de les guardes
 
 - Els plecs van darrere de les pàgines del llibre a la llista capturada: la tapa és la pàgina 27, el nombre de pàgines del llibre més u. Un canvi que afegeixi una pàgina al llibre els desplaça.
 - La comprovació `contentInConfig` del Receptari pren la línia que `buildCover` imprimeix damunt del codi de barres per text desat en un disseny. El codi la declara a `checks.contentInConfig.allow`, amb la redacció de `workIsbnCaption`, la funció que fa servir el motor.
+- Un element `catalogue` dibuixa només les imatges. La llista de títols és el `::catalogue` del Markdown, així que un plec sense aquesta línia mostra les pintures sense cap nom a sota.
 - Les xifres del codi de barres demanen OCR-B, que no serveix cap servidor de fonts. Carrega el codi de barres amb el `font-family` d'una font que ja carregues, o el PDF falla.

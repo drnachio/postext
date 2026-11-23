@@ -2,21 +2,21 @@
 title: "Un volume di collana, la serie sui suoi risguardi"
 summary: "Il volume XI di una collana rilegata in dodici: due ISBN accanto al codice a barre, una copertina comune a tutti i volumi e la collana intera sui risguardi."
 plain: "Un libro rilegato di una serie di dodici, con i suoi fogli per la tipografia: la copertina rigida nei colori della collana con il numero del volume e i due risguardi interni, che mostrano le copertine e i titoli di tutti e dodici i libri."
-description: "Un volume di collana in Postext: production.collection con l'ISBN dell'opera completa accanto al codice a barre e il catalogo della serie sui risguardi."
+description: "Un volume di collana in Postext: production.collection stampa l'ISBN dell'opera accanto al codice a barre e ::catalogue mette la serie sui risguardi."
 question: "Come stampo un volume di una collana con l'ISBN dell'opera completa e gli altri titoli sui risguardi?"
 aliases: ["collana", "serie", "opera in più volumi", "ISBN opera completa", "risguardi", "controguardia", "sguardia", "copertina rigida", "endpapers", "guardas"]
-pageNotes: { "27": "La copertina rigida distesa su un fondo rosso sangue di bue: il retro con la riga della collana in oro, il testo di presentazione e il codice a barre su un'etichetta chiara con sopra la riga dell'ISBN dell'opera completa; il dorso scritto dal basso verso l'alto fra due fasce dorate, con il numero XI in un anello al piede; e il piatto anteriore con il titolo, il nome della collana, l'autore, un dipinto di un soldato pallido e di un uomo in nero alla porta di un ospedale in una cornice dorata e il numero XI in un anello d'oro.", "28": "Il risguardo anteriore: su un fondo ocra chiaro, dodici miniature della copertina della collana, ciascuna con il suo dipinto, sei per pagina, quella del volume XI incorniciata d'oro; sotto, il nome della collana, i dodici titoli numerati da I a XII e l'ISBN dell'opera completa.", "29": "Il risguardo posteriore: lo stesso disegno con le due pagine scambiate, i volumi da VII a XII a sinistra e da I a VI a destra." }
+pageNotes: {"27": "La copertina rigida distesa su un fondo rosso sangue di bue: il retro con la riga della collana in oro, il testo di presentazione e il codice a barre su un'etichetta chiara con sopra la riga dell'ISBN dell'opera completa; il dorso scritto dal basso verso l'alto fra due fasce dorate, con il numero XI in un anello al piede; e il piatto anteriore con il titolo, il nome della collana, l'autore, un dipinto di un soldato pallido e di un uomo in nero alla porta di un ospedale in una cornice dorata e il numero XI in un anello d'oro.", "28": "Il risguardo anteriore: a sinistra, nel rosso sangue di bue della copertina, i dipinti dei volumi dal I al VI in due colonne da tre; a destra, su un fondo ocra chiaro, il nome della collana, una riga sulla prima edizione e i titoli dal I al VI, centrati e numerati in cifre romane.", "29": "Il risguardo posteriore: a sinistra, sul fondo ocra, il nome della collana, una nota e i titoli dal VII al XII, con il volume XI in rosso scuro; a destra, nel rosso sangue di bue, i dipinti dei volumi dal VII al XII, quello dell'XI in una cornice dorata."}
 ---
 
 ## Che cosa comporrai
 
-*Il matrimonio ingannevole*, l'undicesima delle dodici *Novelle esemplari* di Cervantes, come volume XI di una collana che pubblica una novella per ogni volume rilegato. Le 26 pagine sono in Crimson Pro 11/15,2 su una pagina di 120 × 185 mm. Da queste `buildCover` ricava tre fogli per il legatore: la copertina rigida stampata, nel rosso sangue di bue della collana, con una cornice dorata intorno al dipinto e il numero in un anello d'oro, e i risguardi anteriore e posteriore, che mostrano i dodici volumi come miniature di quella copertina sopra un elenco numerato dei titoli. Accanto al codice a barre, che porta l'ISBN del volume, la copertina stampa l'ISBN dell'opera completa.
+*Il matrimonio ingannevole*, l'undicesima delle dodici *Novelle esemplari* di Cervantes, come volume XI di una collana che pubblica una novella per ogni volume rilegato. Le 26 pagine sono in Crimson Pro 11/15,2 su una pagina di 120 × 185 mm. Da queste `buildCover` ricava tre fogli per il legatore: la copertina rigida stampata, nel rosso sangue di bue della collana, con una cornice dorata intorno al dipinto e il numero in un anello d'oro, e i risguardi anteriore e posteriore, che si dividono la collana: i volumi dal I al VI aprono il libro e quelli dal VII al XII lo chiudono, ogni metà in dipinti sulla controguardia e in elenco numerato sulla sguardia. Accanto al codice a barre, che porta l'ISBN del volume, la copertina stampa l'ISBN dell'opera completa.
 
 ## Preparazione
 
 ### 1 · La collana è un dato del libro
 
-Il codice è [la risposta breve](#la-risposta-breve) qui sopra. `production.collection` contiene la serie: il nome, l'ISBN e un `catalogue` con un identificativo, un titolo e un'immagine per ogni volume. Quello che Postext stampa è il `workIsbn` della versione: una riga nera da 6,5 pt sopra il codice a barre, «ISBN opera completa», nella lingua del libro. Il catalogo viaggia con il libro nel file `.postext` e i controlli della configurazione lo leggono, ma `buildCover` non ne disegna nulla: è il codice stesso a impaginarlo nel passo 3. I due ISBN sono numeri di esempio del blocco 978-84-0000, non assegnati ad alcun libro.
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. `production.collection` contiene la serie: il nome, l'ISBN, un `catalogue` con un identificativo, un titolo e un'immagine per ogni volume, e `volume`, l'identificativo della voce che è questo libro. L'`isbn` della collana è ciò che Postext stampa accanto al codice a barre: una riga nera da 6,5 pt sopra le barre, «ISBN opera completa», nella lingua del libro. Se la versione dichiara un proprio `workIsbn`, si stampa quello. I due ISBN sono numeri di esempio del blocco 978-84-0000, non assegnati ad alcun libro. I controlli della configurazione segnalano un `volume` che non è nel catalogo e un ISBN di collana con la cifra di controllo sbagliata.
 
 ### 2 · Una veste per ogni volume
 
@@ -24,34 +24,47 @@ Il codice è [la risposta breve](#la-risposta-breve) qui sopra. `production.coll
 
 Il disegno della copertina è lo stesso oggetto in tutti i volumi della collana; cambiano solo `VOLUME`, il dipinto e i testi. Ogni elemento è collocato rispetto alla zona in cui si trova: se un altro volume ha più pagine e un dorso più spesso, il piatto anteriore si sposta con il suo pannello. Sul dorso, `basis` registra i 10 mm di dorso su cui sono state disegnate le fasce: con un dorso di 8,3 mm o di 14 mm le fasce si adattano alla larghezza e l'anello resta sull'asse. La riga sopra il codice a barre è in nero, perciò il codice poggia su un'etichetta chiara.
 
-### 3 · I risguardi si impaginano dal catalogo
+### 3 · Ogni risguardo ha un disegno suo
 
 <Excerpt region="endpapers" />
 
-Un elemento la cui zona non esiste su un foglio non vi viene disegnato. Le miniature stanno in `pastedown` e `flyleaf` (controguardia e sguardia), quindi compaiono sui risguardi e non sulla copertina, e il dipinto di `front` resta fuori dai risguardi. Il testo segue la stessa regola: un unico Markdown di copertina serve a tutti i fogli; sui risguardi si scarta la cornice del retro, sulla copertina quelle dei risguardi. Il codice scrive le cornici dei risguardi a partire dal catalogo, così elenco e miniature coincidono sempre. I due risguardi ricevono lo stesso disegno e lo stesso testo, e in fondo al libro la controguardia sta a destra: lì vengono prima i volumi VII–XII.
+`cover.sheets` dà a un foglio un disegno che prende il posto di quello della copertina: qui `endpaperFront` e `endpaperBack`, ciascuno con il suo fondo, la controguardia nel colore della copertina, e un elemento `catalogue`. L'elemento è un riquadro in una zona che il motore riempie con le immagini dei titoli da `first` a `last`, su `columns` colonne distanziate di `gap` mm, ogni immagine a coprire la sua cella. Il titolo il cui identificativo è `collection.volume` viene contornato con lo `stroke` dell'elemento; su questi risguardi è la cornice dorata del volume XI. La veste della copertina non arriva ai risguardi, perché ogni foglio disegna solo il proprio. Aprendo il libro davanti la controguardia è la pagina sinistra, in fondo è quella destra, così i dipinti stanno sempre sul cartone.
+
+I titoli vengono dal Markdown di copertina, che serve a tutti i fogli. Una cornice che nomina i suoi fogli va solo su quelli:
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+:::paragraphs{style="ad-head"}
+Exemplary Novels
+:::
+
+::catalogue{numbers="I" first=7 last=12}
+:::
+```
+
+`::catalogue` viene sostituito dai titoli del catalogo, un paragrafo ciascuno: il posto nello stile di numerazione indicato da `numbers`, uno spazio da mezzo quadratone e il titolo. Le righe prendono lo stile di paragrafo `cover-catalogue`, quella di questo volume `cover-catalogue-current`; il codice li ridefinisce entrambi, centrati in Crimson Pro, il corrente in rosso scuro. La cornice del retro nomina `case jacket`, quindi i risguardi la lasciano fuori.
 
 ### 4 · Tre fogli da un solo libro
 
 <Excerpt region="sheets" />
 
-La stessa chiamata con `sheet: 'cover'`, `'endpaperFront'` e `'endpaperBack'` produce la copertina e i due risguardi, ciascuno un documento di una pagina nel proprio formato. Le 26 pagine si arrotondano a due segnature da 16, 16 carte da 240 µm; con 0,5 mm di tolleranza il blocco è spesso 4,3 mm e il dorso della copertina 8,3 mm, aggiunti due cartoni da 2 mm. I controlli segnalano `spineTooThinForText` per i 4,3 mm del blocco, mentre la scritta va sul dorso di 8,3 mm della copertina, oltre il minimo di 6 mm. Il PDF contiene le 26 pagine, poi la copertina e i risguardi.
+La stessa chiamata con `sheet: 'cover'`, `'endpaperFront'` e `'endpaperBack'` produce la copertina e i due risguardi, ciascuno un documento di una pagina nel proprio formato. Le 26 pagine si arrotondano a due segnature da 16, 16 carte da 240 µm; con 0,5 mm di tolleranza il blocco è spesso 4,3 mm e il dorso della copertina 8,3 mm, aggiunti due cartoni da 2 mm. La scritta sul dorso si controlla sul dorso della copertina, oltre il minimo di 6 mm. Il PDF contiene le 26 pagine, poi la copertina e i risguardi.
 
 ## Varianti
 
 ### Avvolgi la copertina in una sovraccoperta
 
-Su una copertina rigida, `flaps` aggiunge una sovraccoperta, un quarto foglio con le sue alette, il cui retro porta il codice a barre e l'ISBN dell'opera completa come la copertina.
+Su una copertina rigida, `flaps` aggiunge una sovraccoperta, un quarto foglio con le sue alette. Il codice a barre e l'ISBN dell'opera completa passano sul suo retro, e con loro il testo di presentazione, la cui cornice nomina `jacket`.
 
 ```diff
    versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
-     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
--    workIsbn: collection.isbn }],
-+    workIsbn: collection.isbn, flaps: true }],
+-    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000' }],
++    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000', flaps: true }],
 ```
 
 ### Componi il volume successivo
 
-Per il volume XII il disegno resta com'è: il numero, la cornice dorata sui risguardi e il titolo evidenziato seguono `VOLUME`. Il testo, il dipinto e l'ISBN sono quelli di quel volume.
+Per il volume XII il disegno resta com'è: `VOLUME` indica la voce del catalogo in `collection.volume`, e l'anello, la cornice dorata sui risguardi e il titolo evidenziato la seguono. Il Markdown di copertina, il dipinto e l'ISBN sono quelli di quel volume.
 
 ```diff
 -const VOLUME = 11; // this book's place in the collection
@@ -62,4 +75,5 @@ Per il volume XII il disegno resta com'è: il numero, la cornice dorata sui risg
 
 - I fogli vengono dopo le pagine del libro nell'elenco catturato: la copertina è la pagina 27, il numero di pagine del libro più uno. Una modifica che aggiunge una pagina al libro li sposta.
 - Il controllo `contentInConfig` del Ricettario scambia la riga che `buildCover` stampa sopra il codice a barre per testo conservato in un disegno. Il codice la dichiara in `checks.contentInConfig.allow`, con la formulazione di `workIsbnCaption`, la funzione usata dal motore.
+- Un elemento `catalogue` disegna solo le immagini. L'elenco dei titoli è il `::catalogue` del Markdown, quindi un foglio senza quella riga mostra i dipinti senza nomi sotto.
 - Le cifre del codice a barre richiedono OCR-B, che nessun server di font fornisce. Carica il codice a barre con il `font-family` di un font che il codice carica già, altrimenti il PDF fallisce.

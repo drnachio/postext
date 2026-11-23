@@ -2,21 +2,21 @@
 title: "Ein Band einer Reihe, die Reihe auf seinen Vorsätzen"
 summary: "Band XI einer gebundenen Reihe in zwölf Bänden: zwei ISBN am Strichcode, eine Einbanddecke für alle Bände und die ganze Reihe auf den Vorsätzen."
 plain: "Ein gebundenes Buch aus einer Reihe von zwölf, mit seinen Bogen für die Druckerei: die Einbanddecke in den Farben der Reihe mit der Bandnummer und die beiden Vorsätze im Inneren, auf denen die Umschläge und Titel aller zwölf Bücher stehen."
-description: "Ein Reihenband in Postext: production.collection mit der Gesamt-ISBN neben dem Strichcode des Bandes und dem Katalog der Reihe auf den Vorsätzen."
+description: "Ein Reihenband in Postext: production.collection druckt die Gesamt-ISBN neben den Strichcode, ::catalogue setzt die Reihe auf die Vorsätze."
 question: "Wie drucke ich einen Band einer Reihe mit der Gesamt-ISBN und den übrigen Titeln auf den Vorsätzen?"
 aliases: ["Reihe", "Buchreihe", "mehrbändiges Werk", "Gesamt-ISBN", "Vorsatz", "Spiegel", "fliegendes Blatt", "Hardcover", "endpapers", "guardas"]
-pageNotes: { "27": "Die Einbanddecke flach auf ochsenblutrotem Grund: die Rückseite mit einer goldenen Reihenzeile, dem Klappentext und dem Strichcode auf einem hellen Etikett, darüber die Zeile mit der Gesamt-ISBN; der Rücken von unten nach oben beschriftet zwischen zwei goldenen Bändern, die Zahl XI in einem Ring am Fuß; und die Vorderseite mit Titel, Reihenname, Autor, einem Gemälde eines bleichen Soldaten und eines schwarz gekleideten Mannes am Tor eines Hospitals in goldenem Rahmen und der Zahl XI in einem goldenen Ring.", "28": "Der vordere Vorsatz: auf hellem Ockergrund zwölf Miniaturen der Einbanddecke der Reihe, jede mit ihrem eigenen Gemälde, sechs auf jeder Seite, die von Band XI golden gerahmt; darunter der Reihenname, die zwölf Titel von I bis XII nummeriert und die Gesamt-ISBN.", "29": "Der hintere Vorsatz: dieselbe Gestaltung mit vertauschten Seiten, die Bände VII bis XII links und I bis VI rechts." }
+pageNotes: {"27": "Die Einbanddecke flach auf ochsenblutrotem Grund: die Rückseite mit einer goldenen Reihenzeile, dem Klappentext und dem Strichcode auf einem hellen Etikett, darüber die Zeile mit der Gesamt-ISBN; der Rücken von unten nach oben beschriftet zwischen zwei goldenen Bändern, die Zahl XI in einem Ring am Fuß; und die Vorderseite mit Titel, Reihenname, Autor, einem Gemälde eines bleichen Soldaten und eines schwarz gekleideten Mannes am Tor eines Hospitals in goldenem Rahmen und der Zahl XI in einem goldenen Ring.", "28": "Der vordere Vorsatz: links, im Ochsenblutrot der Decke, die Gemälde der Bände I bis VI in zwei Spalten zu drei; rechts, auf hellem Ocker, der Name der Reihe, eine Zeile zur Erstausgabe und die Titel I bis VI, zentriert und römisch nummeriert.", "29": "Der hintere Vorsatz: links, auf dem Ockergrund, der Name der Reihe, eine Notiz und die Titel VII bis XII, Band XI in Dunkelrot; rechts, in Ochsenblutrot, die Gemälde der Bände VII bis XII, das von Band XI golden gerahmt."}
 ---
 
 ## Was Sie setzen
 
-*Die betrügerische Heirat*, die elfte der zwölf *Exemplarischen Novellen* von Cervantes, als Band XI einer Reihe, die jede Novelle in einem eigenen gebundenen Band bringt. Die 26 Seiten stehen in Crimson Pro 11/15,2 auf einer Seite von 120 × 185 mm. Daraus macht `buildCover` drei Bogen für den Buchbinder: die bedruckte Einbanddecke im Ochsenblutrot der Reihe, mit goldenem Rahmen um das Gemälde und der Bandnummer in einem goldenen Ring, und den vorderen und hinteren Vorsatz, die die zwölf Bände als Miniaturen dieser Decke über einer nummerierten Titelliste zeigen. Neben dem Strichcode, der die ISBN des Bandes trägt, druckt die Decke die ISBN des Gesamtwerks.
+*Die betrügerische Heirat*, die elfte der zwölf *Exemplarischen Novellen* von Cervantes, als Band XI einer Reihe, die jede Novelle in einem eigenen gebundenen Band bringt. Die 26 Seiten stehen in Crimson Pro 11/15,2 auf einer Seite von 120 × 185 mm. Daraus macht `buildCover` drei Bogen für den Buchbinder: die bedruckte Einbanddecke im Ochsenblutrot der Reihe, mit goldenem Rahmen um das Gemälde und der Bandnummer in einem goldenen Ring, und den vorderen und hinteren Vorsatz, die sich die Reihe teilen: Die Bände I bis VI eröffnen das Buch, VII bis XII schließen es, jede Hälfte als Gemälde auf dem Spiegel und als nummerierte Liste auf dem fliegenden Blatt. Neben dem Strichcode, der die ISBN des Bandes trägt, druckt die Decke die ISBN des Gesamtwerks.
 
 ## Zubereitung
 
 ### 1 · Die Reihe gehört zu den Daten des Buches
 
-Der Code ist die oben stehende [kurze Antwort](#die-kurze-antwort). `production.collection` hält die Reihe: ihren Namen, ihre ISBN und einen `catalogue` mit Kennung, Titel und Bild für jeden Band. Gedruckt wird von Postext die `workIsbn` der Ausgabe: eine schwarze Zeile in 6,5 pt über dem Strichcode, „ISBN Gesamtwerk“, in der Sprache des Buches. Der Katalog reist mit dem Buch in der `.postext`-Datei, und die Prüfungen der Konfiguration lesen ihn, aber `buildCover` zeichnet daraus nichts; der Code setzt ihn daher in Schritt 3 selbst. Beide ISBN sind Beispielnummern aus dem Block 978-84-0000 und gehören zu keinem Buch.
+Der Code ist die oben stehende [kurze Antwort](#die-kurze-antwort). `production.collection` hält die Reihe: ihren Namen, ihre ISBN, einen `catalogue` mit Kennung, Titel und Bild für jeden Band und `volume`, die Kennung des Eintrags, der dieses Buch ist. Die `isbn` der Reihe druckt Postext neben dem Strichcode: eine schwarze Zeile in 6,5 pt über den Balken, „ISBN Gesamtwerk“, in der Sprache des Buches. Nennt die Ausgabe eine eigene `workIsbn`, wird diese gedruckt. Beide ISBN sind Beispielnummern aus dem Block 978-84-0000 und gehören zu keinem Buch. Die Prüfungen der Konfiguration melden ein `volume`, das nicht im Katalog steht, und eine Reihen-ISBN mit falscher Prüfziffer.
 
 ### 2 · Eine Ausstattung für jeden Band
 
@@ -24,34 +24,47 @@ Der Code ist die oben stehende [kurze Antwort](#die-kurze-antwort). `production.
 
 Die Gestaltung der Decke ist in jedem Band der Reihe dasselbe Objekt; nur `VOLUME`, das Gemälde und die Texte ändern sich. Jedes Element sitzt relativ zu seiner Zone: Hat ein anderer Band mehr Seiten und einen dickeren Rücken, wandert die Vorderseite mit ihrem Feld. Auf dem Rücken hält `basis` die 10 mm Rückenbreite fest, für die die Bänder gezeichnet wurden; ein Rücken von 8,3 mm oder 14 mm dehnt die Bänder auf seine Breite und hält den Ring auf der Mittelachse. Die Zeile über dem Strichcode steht in Schwarz, deshalb liegt der Strichcode auf einem hellen Etikett.
 
-### 3 · Die Vorsätze werden aus dem Katalog gesetzt
+### 3 · Jeder Vorsatz hat eine eigene Gestaltung
 
 <Excerpt region="endpapers" />
 
-Ein Element, dessen Zone ein Bogen nicht hat, fällt auf diesem Bogen weg. Die Miniaturen stehen in `pastedown` und `flyleaf` (Spiegel und fliegendes Blatt), erscheinen also auf den Vorsätzen und nicht auf der Decke, und das Gemälde auf `front` bleibt den Vorsätzen fern. Für den Text gilt dasselbe: Ein einziges Umschlag-Markdown dient allen Bogen; auf den Vorsätzen fällt der Rahmen der Rückseite weg, auf der Decke die Rahmen der Vorsätze. Der Code schreibt die Vorsatzrahmen aus dem Katalog, so stimmen Liste und Miniaturen immer überein. Beide Vorsätze bekommen dieselbe Gestaltung und denselben Text, und hinten im Buch liegt der Spiegel rechts: Dort kommen die Bände VII–XII zuerst.
+`cover.sheets` gibt einem Bogen eine Gestaltung, die die des Umschlags ersetzt: hier `endpaperFront` und `endpaperBack`, jede mit ihrem Grund, der Spiegel in der Farbe der Decke, und einem `catalogue`-Element. Das Element ist ein Kasten in einer Zone, den die Engine mit den Bildern der Titel von `first` bis `last` füllt, in `columns` Spalten mit `gap` mm Abstand, jedes Bild füllt seine Zelle. Der Titel, dessen Kennung `collection.volume` ist, wird mit dem `stroke` des Elements umrandet; auf diesen Vorsätzen ist das der goldene Rahmen um Band XI. Die Ausstattung der Decke kommt nicht auf die Vorsätze, denn jeder Bogen zeichnet nur seine eigene Gestaltung. Vorn im Buch ist der Spiegel die linke Seite, hinten die rechte, so liegen die Gemälde immer auf der Pappe.
+
+Die Titel kommen aus dem Umschlag-Markdown, das allen Bogen dient. Ein Rahmen, der seine Bogen nennt, steht nur auf diesen:
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+:::paragraphs{style="ad-head"}
+Exemplary Novels
+:::
+
+::catalogue{numbers="I" first=7 last=12}
+:::
+```
+
+`::catalogue` steht für die Titel des Katalogs, je ein Absatz: die Stelle in der Zählweise, die `numbers` nennt, ein Halbgeviert-Leerraum und der Titel. Die Zeilen bekommen die Absatzvorlage `cover-catalogue`, die dieses Bandes `cover-catalogue-current`; der Code definiert beide neu, zentriert in Crimson Pro, den aktuellen in Dunkelrot. Der Rahmen der Rückseite nennt `case jacket`, die Vorsätze lassen ihn also weg.
 
 ### 4 · Drei Bogen aus einem Buch
 
 <Excerpt region="sheets" />
 
-Derselbe Aufruf mit `sheet: 'cover'`, `'endpaperFront'` und `'endpaperBack'` erzeugt die Decke und die beiden Vorsätze, jeweils ein einseitiges Dokument in eigener Größe. Die 26 Seiten werden auf zwei Lagen zu 16 Seiten aufgerundet, 16 Blatt zu 240 µm; mit 0,5 mm Zugabe ist der Buchblock 4,3 mm dick und der Rücken der Decke 8,3 mm, zwei Pappen zu 2 mm eingerechnet. Die Prüfungen melden `spineTooThinForText` für den Buchblock von 4,3 mm, während die Beschriftung auf dem 8,3-mm-Rücken der Decke steht, der über dem Minimum von 6 mm liegt. Das PDF enthält die 26 Seiten, danach die Decke und die Vorsätze.
+Derselbe Aufruf mit `sheet: 'cover'`, `'endpaperFront'` und `'endpaperBack'` erzeugt die Decke und die beiden Vorsätze, jeweils ein einseitiges Dokument in eigener Größe. Die 26 Seiten werden auf zwei Lagen zu 16 Seiten aufgerundet, 16 Blatt zu 240 µm; mit 0,5 mm Zugabe ist der Buchblock 4,3 mm dick und der Rücken der Decke 8,3 mm, zwei Pappen zu 2 mm eingerechnet. Die Rückenbeschriftung wird am Rücken der Decke gemessen, der über dem Minimum von 6 mm liegt. Das PDF enthält die 26 Seiten, danach die Decke und die Vorsätze.
 
 ## Varianten
 
 ### Die Decke mit einem Schutzumschlag
 
-Bei einer Einbanddecke fügt `flaps` einen Schutzumschlag hinzu, einen vierten Bogen mit eigenen Klappen, dessen Rückseite Strichcode und Gesamt-ISBN trägt wie die Decke.
+Bei einer Einbanddecke fügt `flaps` einen Schutzumschlag hinzu, einen vierten Bogen mit eigenen Klappen. Strichcode und Gesamt-ISBN wandern auf seine Rückseite, und der Klappentext, dessen Rahmen `jacket` nennt, geht mit.
 
 ```diff
    versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
-     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
--    workIsbn: collection.isbn }],
-+    workIsbn: collection.isbn, flaps: true }],
+-    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000' }],
++    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000', flaps: true }],
 ```
 
 ### Den nächsten Band setzen
 
-Für Band XII bleibt die Gestaltung, wie sie ist: Nummer, goldener Rahmen auf den Vorsätzen und hervorgehobener Titel folgen `VOLUME`. Text, Gemälde und ISBN sind die jenes Bandes.
+Für Band XII bleibt die Gestaltung, wie sie ist: `VOLUME` nennt den Katalogeintrag in `collection.volume`, und Ring, goldener Rahmen auf den Vorsätzen und hervorgehobener Titel folgen ihm. Umschlag-Markdown, Gemälde und ISBN sind die jenes Bandes.
 
 ```diff
 -const VOLUME = 11; // this book's place in the collection
@@ -62,4 +75,5 @@ Für Band XII bleibt die Gestaltung, wie sie ist: Nummer, goldener Rahmen auf de
 
 - Die Bogen kommen in der erfassten Liste nach den Seiten des Buches: Die Decke ist Seite 27, die Seitenzahl des Buches plus eins. Eine Änderung, die dem Buch eine Seite hinzufügt, verschiebt sie.
 - Die Prüfung `contentInConfig` des Kochbuchs hält die Zeile, die `buildCover` über den Strichcode druckt, für Text in einer Gestaltung. Der Code trägt sie in `checks.contentInConfig.allow` ein, im Wortlaut von `workIsbnCaption`, der Funktion, die auch die Engine verwendet.
+- Ein `catalogue`-Element zeichnet nur die Bilder. Die Titelliste ist das `::catalogue` im Markdown; ein Bogen ohne diese Zeile zeigt die Gemälde ohne Namen darunter.
 - Die Ziffern des Strichcodes verlangen OCR-B, das kein Schriftserver anbietet. Laden Sie den Strichcode mit einer `font-family`, die der Code ohnehin lädt, sonst scheitert das PDF.
