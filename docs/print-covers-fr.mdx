@@ -6,7 +6,7 @@ export const metadata = {
   description: "Les versions imprimées d’un livre, chacune avec sa reliure, son ISBN et son dos ; les profils de reliure et de papier de l’imprimeur ; la feuille de couverture avec ses rabats, sa jaquette, sa couverture de cartonnage et ses gardes ; la maquette de la couverture et ses finitions ; son texte en Markdown ; et la couverture depuis le Sandbox, la ligne de commande et le code",
   lang: 'fr',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: "Cette page traite de la couverture d’un livre imprimé : la feuille qui enveloppe les pages, avec la quatrième de couverture, le dos et la première, parfois des rabats, une jaquette ou des gardes. Un livre peut s’imprimer en plusieurs versions, par exemple un broché et un relié, et chaque version a sa propre reliure et son propre ISBN. Postext calcule la largeur du dos d’après le nombre de pages et le papier, et monte la feuille au format dont l’imprimeur a besoin, avec le fond perdu et les repères de pli. La maquette de la couverture se trouve dans les réglages et ses textes dans un document Markdown ; le titre et l’auteur viennent des informations du livre lui-même. La page montre comment faire tout cela dans le Sandbox, en ligne de commande et depuis le code.",
 };
@@ -22,6 +22,18 @@ Les pages d’un livre sont une chose, la feuille qui les enveloppe en est une a
 - **Le texte de la couverture** : un document Markdown avec un bloc par panneau. La première de couverture et le dos qu’il laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur des métadonnées du livre, si bien qu’un titre corrigé arrive sur la couverture sans qu’on le recopie.
 
 À partir de ces trois parties, la couverture est mise en page par le même moteur que les pages, et le PDF part chez l’imprimeur avec le fond perdu et les repères de pli de la feuille.
+
+## Une couverture, pas à pas
+
+L’ordre qui mène d’un livre à une feuille pour l’imprimeur. Chaque étape a sa section plus bas.
+
+1. **Donnez son papier au livre.** `folio.paper` reçoit le grammage et la main du papier sur lequel les pages sont imprimées. Le dos est calculé d’après ce papier, si bien qu’un mauvais papier donne un mauvais dos.
+2. **Ajoutez une version.** Une entrée dans `production.versions` avec un `id`, un `name` et un `binding` : `perfect` pour un broché à dos carré collé, `case-flat` pour un relié. Son `isbn` imprime le code-barres, et `flaps: true` ajoute des rabats, ou une jaquette sur un relié.
+3. **Regardez la feuille.** `postext cover book.postext -o cover.pdf`, ou le panneau Couverture du Sandbox, la compose. Le titre, le sous-titre et l’auteur figurent déjà sur la première de couverture et au dos, lus dans l’en-tête YAML du premier chapitre du livre.
+4. **Écrivez les textes.** Le texte de la quatrième de couverture et celui des rabats vont dans le Markdown de la couverture, un `:::frame{slot="…"}` par panneau. Une première de couverture ou un dos qui doit dire autre chose reçoit aussi un bloc.
+5. **Faites la maquette.** Les fonds, l’image et les éléments placés sur les panneaux vont dans `cover`. Un texte qui a besoin d’une place à lui sur un panneau reçoit un bloc de texte.
+6. **Ajoutez les finitions** que l’imprimeur applique après les encres : vernis, dorure à chaud, relief.
+7. **Lisez les vérifications**, corrigez ce qu’elles signalent et envoyez le PDF. Quand l’imprimeur donne ses propres mesures, mettez-les dans un profil de reliure et refaites la feuille.
 
 ## Versions d’un livre
 
@@ -58,7 +70,7 @@ Chaque version désigne sa reliure par l’id d’un profil, ou porte le profil 
 - `caseMaterial` : sur un cartonnage, `printed` (la couverture imprimée et pelliculée sur les cartons, par défaut) ou `cloth` (toile marquée, en général sous une jaquette).
 - `overrides` : des mesures en mm que cette version fixe elle-même par-dessus celles de son profil, quand l’imprimeur demande un autre mors pour ce seul livre.
 - `spineOverride` : le dos en mm tel que le donne l’imprimeur, à la place du dos calculé.
-- `spineText` : le sens du titre au dos : `direction` descendant (`topToBottom`, comme le fixe la norme ISO 6357 et la valeur par défaut, lisible à l’endroit quand le livre est posé à plat, couverture dessus) ou montant (`bottomToTop`, l’usage espagnol plus ancien), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
+- `spineText` : le sens du titre au dos : `direction` descendant (`topToBottom`, comme le fixe la norme ISO 6357 et la valeur par défaut, lisible à l’endroit quand le livre est posé à plat, couverture dessus) ou montant (`bottomToTop`, l’usage espagnol plus ancien), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut). Le sens descendant est la valeur par défaut depuis postext 1.93 ; en 1.92, sans `direction`, le titre montait, si bien qu’un livre fait alors et qui doit garder son dos montant indique `bottomToTop`.
 
 `production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre :
 
@@ -363,7 +375,38 @@ Une ville qui garde ses livres sous terre, et la jeune fille qui les lit à voix
 :::
 ```
 
-Le texte se compose avec la typographie du livre : ses styles de paragraphe, ses styles de caractère et ses polices. Six styles de paragraphe sont propres à la couverture, et le livre peut les redéfinir : `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine`, et pour le catalogue de la collection (plus bas) `cover-catalogue` et `cover-catalogue-current`. La première de couverture et le dos que le Markdown laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur du livre tirés de ses métadonnées, composés dans ces styles : ils ne sont jamais copiés dans le texte de la couverture. Un bloc `front` ou `spine` les remplace par son propre texte.
+Le texte se compose avec la typographie du livre : ses styles de paragraphe, ses styles de caractère et ses polices. Six styles de paragraphe sont propres à la couverture : `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine`, et pour le catalogue de la collection (plus bas) `cover-catalogue` et `cover-catalogue-current`.
+
+### Le titre, l’auteur et le dos
+
+La première de couverture et le dos que le Markdown laisse vides reçoivent à chaque génération leur texte des métadonnées du livre, le `title`, le `subtitle` et l’`author` de l’en-tête YAML de son premier chapitre : ils ne sont jamais copiés dans le texte de la couverture. La première de couverture porte les trois, un paragraphe chacun, dans `cover-title`, `cover-subtitle` et `cover-author`. Le dos porte le titre et l’auteur sur une ligne, séparés par un point médian, dans `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Style</th><th>Sans style du livre</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>2,4 fois le corps du texte, en gras, centré</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>1,4 fois le corps du texte, centré</td></tr>
+    <tr><td><code>cover-author</code></td><td>1,2 fois le corps du texte, centré</td></tr>
+    <tr><td><code>cover-spine</code></td><td>Le corps du texte, centré</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>Le corps du texte, aligné à gauche ; le titre du livre lui-même en gras</td></tr>
+  </tbody>
+</table>
+
+Aucun n’applique la césure. Un style de paragraphe du livre qui porte l’un de ces id change les champs qu’il définit et garde les autres : un `cover-title` qui n’indique qu’une police et une couleur garde son corps et son centrage.
+
+Un bloc `front` ou `spine` remplace le texte des métadonnées par le sien. Comme le texte du bloc est un texte ordinaire de la couverture, nommez le style dans lequel il est composé, sinon il est composé comme le texte courant :
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+Un bloc `front` ou `spine` vide laisse ce panneau sans texte. Dans le Sandbox, l’interrupteur **texte propre** de chacun des deux champs écrit ce bloc, à partir du texte et des styles que donnent les métadonnées.
 
 Un bloc destiné à un emplacement que la feuille n’a pas (un rabat sur une feuille sans rabats, une quatrième de couverture sur une garde) est écarté, et la vérification le signale ; un second bloc pour un même emplacement est écarté aussi. Écrivez le texte de la couverture en paragraphes et en styles de paragraphe : un titre `#` prend la maquette que le livre donne à ses titres de chapitre.
 
@@ -441,15 +484,15 @@ Le PDF de la couverture passe par le même [contrôle en amont](/fr/docs/configu
 Le panneau **Couverture**, dans la barre latérale, contient les versions imprimées et leur couverture :
 
 - **Versions** : **Ajouter un broché** ou **Ajouter un relié**, puis, pour chaque version, son nom, sa reliure, son ISBN, son complément et l’ISBN de l’œuvre, ses rabats ou sa jaquette, la matière d’un cartonnage, le dos donné par l’imprimeur, le sens du texte au dos et le dos le plus étroit qui le reçoit. **Mesures de cette version** remplace celles du profil pour cette seule version.
-- **Feuille** : la feuille affichée (couverture, jaquette, garde avant ou arrière), avec ses pages, son dos et son format.
-- **Maquette sur la feuille** : **Modifier sur la feuille** transforme la feuille en éditeur de maquette. Blocs de texte, aplats de couleur, voiles, images, logos et finitions s’ajoutent depuis sa barre, se déplacent et se redimensionnent sur la feuille, et s’aimantent aux plis, aux zones de sécurité et entre eux (Alt désactive l’aimantation). Les touches fléchées déplacent l’élément sélectionné de 1 mm, de 10 mm avec Maj. **Calques** liste les éléments sous le texte, les blocs de texte, les éléments par-dessus le texte, les logos et les finitions, et les ordonne. Les champs de l’élément sélectionné règlent sa place, sa couleur, son opacité, la façon dont une image remplit son cadre, le rayon de ses coins, sa bordure, son dégradé et son ombre, son comportement au-delà d’un fond perdu en miroir, s’il suit la taille de son panneau, et son tracé, son contour ou sa découpe. Renommer un bloc de texte déplace son texte dans le Markdown de la couverture. Un bloc de texte sélectionné peut être ancré à une zone ou à un autre bloc (**Ancré à**, le point et le décalage), continuer son texte dans un autre bloc (**Le texte continue dans**), grandir avec son texte jusqu’à une hauteur et réduire son texte jusqu’à une taille minimale.
-- **Textes** : un éditeur Markdown par zone et par bloc de texte. La première de couverture et le dos montrent ce qu’ils tirent des métadonnées tant qu’on ne leur donne pas un **texte propre**. Un bloc qui reçoit la suite du texte d’un autre l’indique au lieu d’afficher un éditeur.
-- **Collection** : le nom et l’ISBN de la collection.
+- **Feuille** : la feuille affichée (couverture ou couvrure, jaquette, garde avant ou arrière), avec ses pages, son dos et son format. Sur les feuilles d’un cartonnage, **Maquette de cette feuille** choisit entre la maquette de couverture du livre et une maquette à elle (`cover.sheets`), pour les deux gardes ou pour une seule. Une maquette à elle part d’une copie de celle du livre.
+- **Textes** : un éditeur Markdown par zone et par bloc de texte. La première de couverture et le dos montrent ce qu’ils tirent de l’en-tête YAML du premier chapitre tant que **texte propre** n’est pas activé ; ils gardent ensuite le texte d’un bloc, comme les autres. Sur la couvrure, la jaquette et les gardes d’un cartonnage, **texte pour cette feuille seulement** écrit le champ comme un bloc pour cette feuille (`sheet="…"`), qui y prend la place du texte commun. Un bloc qui reçoit la suite du texte d’un autre l’indique au lieu d’afficher un éditeur.
+- **Maquette sur la feuille** : **Modifier sur la feuille** transforme la feuille en éditeur de maquette. Blocs de texte, aplats de couleur, voiles, catalogues, images, logos et finitions s’ajoutent depuis sa barre, se déplacent et se redimensionnent sur la feuille, et s’aimantent aux plis, aux zones de sécurité et entre eux (Alt désactive l’aimantation). Les touches fléchées déplacent l’élément sélectionné de 1 mm, de 10 mm avec Maj. **Calques** liste les éléments sous le texte, les blocs de texte, les éléments par-dessus le texte, les logos et les finitions, et les ordonne. Les champs de l’élément sélectionné règlent sa place, sa couleur, son opacité, la façon dont une image remplit son cadre, le rayon de ses coins, sa bordure, son dégradé et son ombre, son comportement au-delà d’un fond perdu en miroir, s’il suit la taille de son panneau, et son tracé, son contour ou sa découpe. Renommer un bloc de texte déplace son texte dans le Markdown de la couverture. Un bloc de texte sélectionné peut être ancré à une zone ou à un autre bloc (**Ancré à**, le point et le décalage), continuer son texte dans un autre bloc (**Le texte continue dans**), grandir avec son texte jusqu’à une hauteur et réduire son texte jusqu’à une taille minimale.
+- **Collection** : le nom et l’ISBN de la collection, et son **Catalogue** : les titres dans l’ordre, chacun avec son id et son image, et **Ce livre dans le catalogue** pour le titre qui correspond à ce livre (`collection.volume`).
 - **Fichiers pour l’imprimeur** : **Télécharger le PDF de la feuille**, écrit avec les réglages PDF du livre (espace colorimétrique, profil de sortie, PDF/X), et **Télécharger la première de couverture** sous forme d’image.
 - **Vérifications** : les vérifications ci-dessus.
 - **Profils d’imprimeur** : des profils de reliure copiés d’un profil intégré et réglés sur les mesures d’un imprimeur, chacune en millimètres, en part du format ou par paliers de format, avec ce que cela donne pour ce livre ; des profils de papier avec leur fournisseur et leur nom commercial ; et **Exporter les profils** et **Importer des profils** pour le fichier `.postext-production.json`.
 
-Les maquettes de chaque feuille, les textes d’une seule feuille, l’élément de catalogue et le volume de la collection se modifient aussi dans le panneau Couverture.
+Tant que le panneau Couverture est ouvert, la vue Canvas montre la feuille à la place des pages : ouvrir le panneau sélectionne le Canvas, et choisir une autre vue (PDF, Folio, HTML, EPUB) ferme le panneau et revient au livre.
 
 Le groupe **Maquette de couverture** du panneau Maquette contient les fonds, l’image, l’alignement du texte des zones, la taille du code-barres et le fond perdu en miroir. Chaque modification dans le panneau Couverture est une étape de l’historique d’annulation.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` choisit la version (la première par défaut), `--sheet` la feuille (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Un chemin qui se termine par `.png`, `.jpg` ou `.webp`, ou `--format`, peint un panneau au lieu du PDF : la première de couverture, sauf si `--zone` en nomme un autre (`back`, `spine`, `flapFront`, `flapBack`, ou `sheet` pour la feuille entière). Les options PDF (`--color-space`, `--pdfx`, `--profile` et les autres) s’appliquent comme pour `postext pdf`. Voir [Ligne de commande](/fr/docs/command-line).
+`--print-version` choisit la version (la première par défaut), `--sheet` la feuille (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Un chemin qui se termine par `.png`, `.jpg` ou `.webp`, ou `--format`, peint un panneau au lieu du PDF : la première de couverture, sauf si `--zone` en nomme un autre (`back`, `spine`, `flapFront`, `flapBack`, ou `sheet` pour la feuille entière). Les options PDF (`--color-space`, `--pdfx`, `--profile` et les autres) s’appliquent comme pour `postext pdf`. Avec `--json`, le résultat porte une entrée `cover` avec la version, la feuille et ses mesures en mm (`widthMm`, `heightMm`, `spineMm`), pour comparer le dos calculé à celui de l’imprimeur. Voir [Ligne de commande](/fr/docs/command-line).
 
 ## Depuis le code
 
@@ -512,6 +555,8 @@ Un paquet porte les réglages `production` et `cover` dans sa configuration, et 
 ## Folio et EPUB
 
 La vue Folio relie le livre selon sa première version : un dos carré collé ou une couverture souple cousue comme un broché, un cartonnage comme un relié, avec le dos de la couverture peint sur le dos du livre. Un EPUB écrit par la ligne de commande ou par le Sandbox prend la première de couverture imprimée comme image de couverture quand le livre a une version imprimée et n’en indique pas d’autre.
+
+Dans le Sandbox, la vue Folio imprime aussi la première et la quatrième de couverture sur les plats : le livre apparaît fermé sur sa couverture et s’ouvre à partir d’elle. Un livre dont la première et la dernière page sont les couvertures (`binding.cover: 'pages'`) les garde.
 
 ## Limites
 

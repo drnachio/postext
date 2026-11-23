@@ -327,6 +327,13 @@ describe('isbnBarcodeSvg', () => {
     expect(isbnBarcodeSvg('9780306406157', { magnification: 0.5 })!.width).toBeCloseTo(113 * 0.33 * 0.8, 3);
     expect(isbnBarcodeSvg('978')).toBeUndefined();
   });
+
+  it('leaves as much white under the digits as over the ISBN line', () => {
+    const { svg, height } = isbnBarcodeSvg('9780306406157')!;
+    const ys = [...svg.matchAll(/<text x="[^"]+" y="([^"]+)"/g)].map((m) => Number(m[1]));
+    const digitBaseline = Math.max(...ys);
+    expect(height - digitBaseline).toBeCloseTo(2.75 * 0.33, 3);
+  });
 });
 
 describe('promoSheet', () => {

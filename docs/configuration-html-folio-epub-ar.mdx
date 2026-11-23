@@ -356,6 +356,7 @@ book.resetView();
     <tr><td><code>extraPages</code></td><td><code>{'{ before, after }'}</code>: صفحات من الكتاب خارج الصفحات المعطاة، تُحسب في سماكة كتلتَي الصفحات ولا تُرسم أبدًا.</td></tr>
     <tr><td><code>covers</code></td><td><code>{'{ front, back }'}</code>: الصفحة الأولى المعطاة هي الغلاف الأمامي، والأخيرة الغلاف الخلفي (حين تقع على صفحة زوجية). تنقلبان لوحَي غلاف، ولا يُرسم غلاف مقوّى حولهما. من المستند: <code>binding.cover: 'pages'</code> في كتاب يبدأ بصفحته الأولى وينتهي بصفحته الأخيرة.</td></tr>
     <tr><td><code>spineImage</code></td><td>الصورة المطبوعة على الكعب، عنوانَ URL أو عنصر canvas أو صورة. لا تبحث <code>createFolioFromDocument</code> عن الموارد: مرّر صورة المورد الذي يحدّده <code>folio.binding.spineImage</code>. وتُتجاهل في التجليد بالدبّوس (saddle stitch).</td></tr>
+    <tr><td><code>coverFaces</code></td><td>ظاهر الغلاف المطبوع، <code>{'{ front, back, frontAlt, backAlt }'}</code>، وكلٌّ منهما صورة بمقاس قصّ لوح واحد. يجلّدهما <code>createFolioFromDocument</code> حول الصفحات لوحين، فينغلق الكتاب على غلافه، إذا لم يكن للكتاب غلافان من صفحاته ولم يكن مدبّسًا ولا مطويًّا؛ وتبقى أرقام الصفحات والصفحات المتقابلة والنقاط هي التي للمستند، ويقول <code>state.cover</code> أيّ اللوحين موجود وعلى أيّهما ينغلق الكتاب. ويرسمهما Sandbox من غلاف الطباعة.</td></tr>
     <tr><td><code>textureBaseUrl</code></td><td>المكان الذي تُقدَّم منه خامات المكتب المصوّرة. وإلى أن تُحمَّل، أو في غيابه، يُرسم المكتب بخرائط إجرائية.</td></tr>
   </tbody>
 </table>

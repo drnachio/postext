@@ -878,10 +878,14 @@ list deliberate deviations.
 - Print covers (postext ≥ 1.92): a printer's cover PDF becomes `production.versions` (one per
   binding, each with its ISBN), `cover` (art, grounds, bands placed by zone, logos, finishes) and a
   `cover.md` of `:::frame{slot=…}` blocks for the back cover and flaps; title, subtitle, author and
-  spine come from the metadata. A case under a jacket or differing endpapers take `cover.sheets` and
-  `:::frame{… sheet="case"}`; a series list is `collection.catalogue` + `volume`, set by `::catalogue`
-  or a `catalogue` element. Put the real paper in `folio.paper` so the spine is calculated, and
-  check with `postext cover`. See sources.md, "Print covers", and configuration.md §19j.
+  spine come from the metadata (the spine sets title · author; a spine that says anything else is a
+  `spine` frame in `cover-spine`). Texts with a place of their own on a panel are `cover.textBoxes`,
+  anchored to a zone or to each other (1.93). A case under a jacket or differing endpapers take
+  `cover.sheets` and `:::frame{… sheet="case"}`; a series list is `collection.catalogue` + `volume`,
+  set by `::catalogue` or a `catalogue` element. Spines read top to bottom by default (1.93): a source
+  whose spine rises names `spineText.direction: 'bottomToTop'`. Put the real paper in `folio.paper` so
+  the spine is calculated, and check with `postext cover`. See sources.md, "Print covers", and
+  configuration.md §19j.
 - Comic pictures: `scripts/comic_panels.py grid|check|contact` (read and check
   anchors and safe areas, compare pages); give every panel picture its
   `width`/`height` and `altText`.

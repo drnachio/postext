@@ -127,6 +127,8 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
         createPostextGuideConfig('ca'), createPostextGuideConfig('ar'), createPostextGuideConfig('ja'),
         createPostextGuideConfig('pt-BR'), createPostextGuideConfig('fr'), createPostextGuideConfig('de'), createPostextGuideConfig('it'),
         defaultResourcesSignature(),
+        // The cover's text of each edition: the spine's line is its own.
+        BUILTIN_PRESET_LOCALES.map((l) => guideCoverMarkdown(GUIDE_MARKDOWN[l], l)),
       ]);
       fingerprintValue = `builtin-${hashString(source)}`;
     }
@@ -159,8 +161,9 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
       const config = configOf(lang);
       const resources = await buildDefaultResources(lang);
       const { chapters } = sampleBook(markdown, () => generateId('chapter'), opts.name);
-      // The print cover's text (#1670): the edition's back-cover blurb.
-      const coverMarkdown = custom ? undefined : guideCoverMarkdown(markdown);
+      // The print cover's text (#1670, #1686): the edition's back-cover
+      // blurb and its spine's line.
+      const coverMarkdown = custom ? undefined : guideCoverMarkdown(markdown, lang);
       return { summary, locale: lang, chapters, config, sharedConfig: guideShared(), resources, blobs: [], fonts: [], canvasScope: 'book', ...(coverMarkdown ? { coverMarkdown } : {}) };
     },
   };

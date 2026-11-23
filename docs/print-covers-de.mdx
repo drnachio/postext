@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Die Druckausgaben eines Buchs, jede mit Bindung, ISBN und Buchrücken; Bindungs- und Papierprofile der Druckerei; der Umschlagbogen mit Klappen, Schutzumschlag, Buchdecke und Vorsatz; Gestaltung und Veredelungen des Umschlags; sein Text in Markdown; und der Umschlag aus der Sandbox, über die Kommandozeile und im Code',
   lang: 'de',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: "Diese Seite handelt vom Umschlag eines gedruckten Buchs: dem Bogen, der die Seiten umschließt, mit Rückseite, Buchrücken und Vorderseite, manchmal auch mit Klappen, einem Schutzumschlag oder Vorsätzen. Ein Buch kann in mehreren Ausgaben gedruckt werden, etwa als Taschenbuch und als Hardcover, und jede Ausgabe hat ihre eigene Bindung und ihre eigene ISBN. Postext berechnet aus der Seitenzahl und dem Papier, wie breit der Buchrücken wird, und legt den Bogen in der Größe an, die die Druckerei braucht, mit Beschnittzugabe und Falzmarken. Die Gestaltung des Umschlags steht in den Einstellungen, seine Texte in einem Markdown-Dokument, und Titel und Autor kommen aus den Angaben des Buchs selbst. Die Seite zeigt, wie das in der Sandbox, über die Kommandozeile und im Code geht.",
 };
@@ -22,6 +22,18 @@ Die Seiten eines Buchs sind das eine, der Bogen, der sie umschließt, ist etwas 
 - **Der Text des Umschlags**: ein Markdown-Dokument mit einem Block je Fläche. Vorderseite und Buchrücken, die es leer lässt, erhalten bei jedem Aufbau Titel, Untertitel und Autor aus den Metadaten des Buchs. Ein korrigierter Titel erreicht so den Umschlag, ohne dass man ihn kopieren muss.
 
 Aus diesen dreien setzt dieselbe Engine wie bei den Seiten den Umschlag, und das PDF geht mit Beschnittzugabe und Falzmarken des Bogens an die Druckerei.
+
+## Ein Umschlag, Schritt für Schritt
+
+Die Reihenfolge, die vom Buch zum Bogen für die Druckerei führt. Jeder Schritt hat weiter unten seinen Abschnitt.
+
+1. **Geben Sie dem Buch sein Papier.** `folio.paper` nennt Flächengewicht und Volumen des Papiers, auf dem die Seiten gedruckt werden. Aus ihm wird der Buchrücken berechnet, ein falsches Papier ergibt also einen falschen Rücken.
+2. **Legen Sie eine Ausgabe an.** Ein Eintrag in `production.versions` mit einer `id`, einem `name` und einem `binding`: `perfect` für eine Broschur in Klebebindung, `case-flat` für ein Hardcover. Die `isbn` der Ausgabe wird als Strichcode gedruckt, und `flaps: true` fügt Klappen hinzu, bei einem Hardcover einen Schutzumschlag.
+3. **Sehen Sie sich den Bogen an.** `postext cover book.postext -o cover.pdf` oder das Bedienfeld Umschlag der Sandbox setzt ihn. Titel, Untertitel und Autor stehen schon auf Vorderseite und Rücken, gelesen aus dem Frontmatter des ersten Kapitels des Buchs.
+4. **Schreiben Sie die Texte.** Der Text für Rückseite und Klappen steht im Markdown des Umschlags, mit einem `:::frame{slot="…"}` je Fläche. Auch eine Vorderseite oder ein Rücken mit anderem Text erhält einen Rahmen.
+5. **Gestalten Sie ihn.** Die Gründe, das Bild und die Elemente auf den Flächen stehen in `cover`. Ein Text, der auf einer Fläche einen eigenen Platz braucht, erhält ein Textfeld.
+6. **Fügen Sie die Veredelungen hinzu**, die die Druckerei nach den Druckfarben aufbringt: Lack, Folie, Prägung.
+7. **Lesen Sie die Prüfungen**, korrigieren Sie, was sie melden, und schicken Sie das PDF ab. Nennt die Druckerei eigene Maße, legen Sie sie in einem Bindungsprofil ab und bauen Sie den Bogen neu auf.
 
 ## Ausgaben eines Buchs
 
@@ -58,7 +70,7 @@ Jede Ausgabe nennt ihre Bindung über die ID eines Profils oder bringt das Profi
 - `caseMaterial`: bei einer Buchdecke `printed` (der Umschlag bedruckt und kaschiert über den Pappen, der Standard) oder `cloth` (geprägt, meist unter einem Schutzumschlag).
 - `overrides`: Maße in mm, die diese Ausgabe über die ihres Profils setzt, wenn die Druckerei für dieses eine Buch einen anderen Falz verlangt.
 - `spineOverride`: der Buchrücken in mm, wie die Druckerei ihn angibt, anstelle des berechneten.
-- `spineText`: wie der Rücken beschriftet wird: `direction` absteigend (`topToBottom`, wie ISO 6357 es festlegt, und der Standard, richtig herum lesbar, wenn das Buch mit dem Deckel nach oben liegt) oder aufsteigend (`bottomToTop`, der ältere spanische Brauch), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
+- `spineText`: wie der Rücken beschriftet wird: `direction` absteigend (`topToBottom`, wie ISO 6357 es festlegt, und der Standard, richtig herum lesbar, wenn das Buch mit dem Deckel nach oben liegt) oder aufsteigend (`bottomToTop`, der ältere spanische Brauch), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm). Absteigend ist seit postext 1.93 der Standard; in 1.92 stieg ein Rückentext ohne angegebene Richtung auf, sodass ein damals angelegtes Buch, das seinen aufsteigenden Rücken behalten soll, `bottomToTop` nennen muss.
 
 `production.collection` nennt die Reihe oder das mehrbändige Werk, zu dem das Buch gehört:
 
@@ -363,7 +375,38 @@ Eine Stadt, die ihre Bücher unter der Erde aufbewahrt, und das Mädchen, das si
 :::
 ```
 
-Der Text wird in der Typografie des Buchs gesetzt: mit seinen Absatzformaten, Zeichenformaten und Schriften. Sechs Absatzformate gehören dem Umschlag, und das Buch kann sie neu festlegen: `cover-title`, `cover-subtitle`, `cover-author` und `cover-spine`, dazu für den Katalog der Reihe (siehe unten) `cover-catalogue` und `cover-catalogue-current`. Vorderseite und Rücken, die das Markdown leer lässt, erhalten bei jedem Aufbau Titel, Untertitel und Autor des Buchs aus seinen Metadaten, in diesen Formaten gesetzt; sie werden nie in den Text des Umschlags kopiert. Ein Rahmen `front` oder `spine` ersetzt sie durch seinen eigenen Text.
+Der Text wird in der Typografie des Buchs gesetzt: mit seinen Absatzformaten, Zeichenformaten und Schriften. Sechs Absatzformate gehören dem Umschlag: `cover-title`, `cover-subtitle`, `cover-author` und `cover-spine`, dazu für den Katalog der Reihe (siehe unten) `cover-catalogue` und `cover-catalogue-current`.
+
+### Titel, Autor und Buchrücken
+
+Vorderseite und Rücken, die das Markdown leer lässt, erhalten ihren Text bei jedem Aufbau aus den Metadaten des Buchs, aus `title`, `subtitle` und `author` im Frontmatter seines ersten Kapitels; er wird nie in den Text des Umschlags kopiert. Die Vorderseite trägt alle drei, je einen Absatz, in `cover-title`, `cover-subtitle` und `cover-author`. Der Rücken trägt Titel und Autor in einer Zeile, mit einem Mittelpunkt (·) dazwischen, in `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Format</th><th>Ohne ein Format des Buchs</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>Das 2,4-Fache der Grundschriftgröße, fett, zentriert</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>Das 1,4-Fache der Grundschriftgröße, zentriert</td></tr>
+    <tr><td><code>cover-author</code></td><td>Das 1,2-Fache der Grundschriftgröße, zentriert</td></tr>
+    <tr><td><code>cover-spine</code></td><td>Die Grundschriftgröße, zentriert</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>Die Grundschriftgröße, linksbündig; der Titel des Buchs selbst fett</td></tr>
+  </tbody>
+</table>
+
+Keines wird mit Silbentrennung gesetzt. Ein Absatzformat des Buchs mit einer dieser IDs ändert die Felder, die es setzt, und behält die übrigen: Ein `cover-title`, das nur eine Schrift und eine Farbe nennt, behält seine Größe und seine Zentrierung.
+
+Ein Rahmen `front` oder `spine` ersetzt den Text aus den Metadaten durch seinen eigenen. Der Text des Rahmens ist gewöhnlicher Umschlagtext; nennen Sie deshalb das Format, in dem er gesetzt wird, sonst wird er als Fließtext gesetzt:
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+Ein leerer Rahmen `front` oder `spine` lässt diese Fläche ohne Text. In der Sandbox schreibt der Schalter **eigener Text** jedes der beiden Felder diesen Rahmen, ausgehend von dem Text und den Formaten, die die Metadaten liefern.
 
 Ein Rahmen für einen Platz, den der Bogen nicht hat (eine Klappe auf einem Bogen ohne Klappen, eine Rückseite auf einem Vorsatz), wird ausgelassen, und die Prüfung meldet es; ein zweiter Rahmen für denselben Platz ebenso. Schreiben Sie den Text des Umschlags als Absätze mit Absatzformaten: Eine Überschrift mit `#` erhält die Gestaltung, die das Buch seinen Kapitelüberschriften gibt.
 
@@ -441,15 +484,15 @@ Das PDF des Umschlags durchläuft denselben [Preflight](/de/docs/configuration-p
 Das Bedienfeld **Umschlag** in der Seitenleiste enthält die Druckausgaben und ihren Umschlag:
 
 - **Ausgaben**: **Taschenbuch hinzufügen** oder **Hardcover hinzufügen**, dann für jede Ausgabe Name, Bindung, ISBN, Zusatzcode und Gesamt-ISBN, Klappen oder Schutzumschlag, der Bezug einer Buchdecke, der Rücken laut Druckerei, die Richtung des Rückentexts und der schmalste Rücken, der ihn trägt. **Maße dieser Version** setzt die Maße des Profils nur für diese Ausgabe außer Kraft.
-- **Bogen**: welcher Bogen gezeigt wird (Umschlag, Schutzumschlag, vorderes oder hinteres Vorsatz), mit seinen Seiten, seinem Rücken und seiner Größe.
-- **Gestaltung auf dem Bogen**: **Auf dem Bogen bearbeiten** macht den Bogen zum Gestaltungswerkzeug. Textfelder, Farbflächen, Schleier, Bilder, Logos und Veredelungen werden über seine Leiste hinzugefügt und auf dem Bogen verschoben und in der Größe geändert; sie rasten an Falzen, Sicherheitsbereichen und aneinander ein (Alt schaltet das Einrasten ab). Die Pfeiltasten verschieben das gewählte Element um 1 mm, mit Umschalt um 10 mm. **Ebenen** listet die Elemente unter dem Text, die Textfelder, die Elemente über dem Text, die Logos und die Veredelungen auf und ordnet sie. Die Felder des gewählten Elements legen fest: Stelle, Farbe, Deckkraft, wie ein Bild seinen Rahmen füllt, Eckenradius, Rand, Verlauf und Schatten, was es jenseits eines gespiegelten Anschnitts tut, ob es mit seiner Fläche skaliert, und seinen Pfad, seine Kontur oder seinen Zuschnitt. Wird ein Textfeld umbenannt, wandert sein Text im Markdown des Umschlags mit. Ein ausgewähltes Textfeld lässt sich an einer Zone oder einem anderen Feld verankern (**Verankert an**, der Punkt und der Versatz), seinen Text in einem anderen Feld fortsetzen (**Text läuft weiter in**), mit seinem Text bis zu einer Höhe wachsen und seinen Text bis zu einer kleinsten Größe verkleinern.
-- **Texte**: ein Markdown-Editor je Zone und Textfeld. Vorderseite und Rücken zeigen, was sie aus den Metadaten übernehmen, bis sie einen **eigenen Text** erhalten. Ein Feld, das den Rest des Textes eines anderen aufnimmt, zeigt das statt eines Editors.
-- **Reihe**: Name und ISBN der Reihe.
+- **Bogen**: welcher Bogen gezeigt wird (Umschlag oder Bezug, Schutzumschlag, Vorsatz vorn oder hinten), mit seinen Seiten, seinem Rücken und seiner Größe. Bei den Bogen eines Hardcovers wählt **Gestaltung dieses Bogens** zwischen der Umschlaggestaltung des Buchs und einer eigenen Gestaltung (`cover.sheets`), für beide Vorsätze oder für eines. Eine eigene Gestaltung beginnt als Kopie der des Buchs.
+- **Texte**: ein Markdown-Editor je Zone und Textfeld. Vorderseite und Rücken zeigen, was sie aus dem Frontmatter des ersten Kapitels übernehmen, bis **eigener Text** eingeschaltet wird; dann enthalten sie wie die anderen den Text eines Rahmens. Auf Bezug, Schutzumschlag und Vorsätzen eines Hardcovers schreibt **Text nur für diesen Bogen** das Feld als Rahmen für diesen Bogen (`sheet="…"`), der dort an die Stelle des gemeinsamen Textes tritt. Ein Feld, das den Rest des Textes eines anderen aufnimmt, zeigt das statt eines Editors.
+- **Gestaltung auf dem Bogen**: **Auf dem Bogen bearbeiten** macht den Bogen zum Gestaltungswerkzeug. Textfelder, Farbflächen, Schleier, Verzeichnisse, Bilder, Logos und Veredelungen werden über seine Leiste hinzugefügt und auf dem Bogen verschoben und in der Größe geändert; sie rasten an Falzen, Sicherheitsbereichen und aneinander ein (Alt schaltet das Einrasten ab). Die Pfeiltasten verschieben das gewählte Element um 1 mm, mit Umschalt um 10 mm. **Ebenen** listet die Elemente unter dem Text, die Textfelder, die Elemente über dem Text, die Logos und die Veredelungen auf und ordnet sie. Die Felder des gewählten Elements legen fest: Stelle, Farbe, Deckkraft, wie ein Bild seinen Rahmen füllt, Eckenradius, Rand, Verlauf und Schatten, was es jenseits eines gespiegelten Anschnitts tut, ob es mit seiner Fläche skaliert, und seinen Pfad, seine Kontur oder seinen Zuschnitt. Wird ein Textfeld umbenannt, wandert sein Text im Markdown des Umschlags mit. Ein ausgewähltes Textfeld lässt sich an einer Zone oder einem anderen Feld verankern (**Verankert an**, der Punkt und der Versatz), seinen Text in einem anderen Feld fortsetzen (**Text läuft weiter in**), mit seinem Text bis zu einer Höhe wachsen und seinen Text bis zu einer kleinsten Größe verkleinern.
+- **Reihe**: Name und ISBN der Reihe, dazu das **Verzeichnis der Reihe**: die Titel in ihrer Folge, jeder mit ID und Bild, und **Dieses Buch im Verzeichnis** für den Titel, der dieses Buch ist (`collection.volume`).
 - **Dateien für die Druckerei**: **Bogen als PDF laden**, geschrieben mit den PDF-Einstellungen des Buchs (Farbraum, Ausgabeprofil, PDF/X), und **Vorderseite laden** als Bild.
 - **Prüfungen**: die Prüfungen oben.
 - **Druckereiprofile**: Bindungsprofile, aus einem eingebauten kopiert und auf die Maße einer Druckerei gebracht, jedes Maß in Millimetern, als Anteil am Format oder in Stufen nach Formatgröße, mit dem Wert, der sich für dieses Buch ergibt; Papierprofile mit Lieferant und Handelsname; und **Profile exportieren** und **Profile importieren** für die Datei `.postext-production.json`.
 
-Die Gestaltungen einzelner Bogen, die Texte für einen Bogen, das Katalogelement und der Band der Reihe werden ebenfalls im Bedienfeld Umschlag bearbeitet.
+Solange das Bedienfeld Umschlag geöffnet ist, zeigt die Ansicht Canvas den Bogen statt der Seiten: Das Öffnen des Bedienfelds wählt das Canvas; wer eine andere Ansicht wählt (PDF, Folio, HTML, EPUB), schließt das Bedienfeld und kehrt zum Buch zurück.
 
 Die Gruppe **Umschlaggestaltung** im Bedienfeld Gestaltung enthält die Gründe, das Bild, die Textausrichtung der Zonen, die Strichcodegröße und den gespiegelten Anschnitt. Jede Änderung im Bedienfeld Umschlag ist ein Schritt im Verlauf zum Rückgängigmachen.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` wählt die Ausgabe (standardmäßig die erste), `--sheet` den Bogen (`cover`, `jacket`, `endpaper-front` oder `endpaper-back`). Ein Pfad auf `.png`, `.jpg` oder `.webp` oder `--format` malt eine Fläche statt des PDFs: die Vorderseite, es sei denn, `--zone` nennt eine andere (`back`, `spine`, `flapFront`, `flapBack` oder `sheet` für den ganzen Bogen). Die PDF-Optionen (`--color-space`, `--pdfx`, `--profile` und die übrigen) gelten wie bei `postext pdf`. Siehe [Kommandozeile](/de/docs/command-line).
+`--print-version` wählt die Ausgabe (standardmäßig die erste), `--sheet` den Bogen (`cover`, `jacket`, `endpaper-front` oder `endpaper-back`). Ein Pfad auf `.png`, `.jpg` oder `.webp` oder `--format` malt eine Fläche statt des PDFs: die Vorderseite, es sei denn, `--zone` nennt eine andere (`back`, `spine`, `flapFront`, `flapBack` oder `sheet` für den ganzen Bogen). Die PDF-Optionen (`--color-space`, `--pdfx`, `--profile` und die übrigen) gelten wie bei `postext pdf`. Mit `--json` enthält das Ergebnis einen Eintrag `cover` mit der Ausgabe, dem Bogen und seinen Maßen in mm (`widthMm`, `heightMm`, `spineMm`), um den berechneten Rücken mit dem der Druckerei zu vergleichen. Siehe [Kommandozeile](/de/docs/command-line).
 
 ## Im Code
 
@@ -512,6 +555,8 @@ Ein Paket trägt die Einstellungen `production` und `cover` in seiner Konfigurat
 ## Folio und EPUB
 
 Die Ansicht Folio bindet das Buch als seine erste Ausgabe: eine Klebebindung oder eine fadengeheftete Broschur als Taschenbuch, eine Buchdecke als Hardcover, mit dem Rücken des Umschlags auf den Buchrücken gemalt. Ein EPUB, das die Kommandozeile oder die Sandbox schreibt, nimmt die Vorderseite des Druckumschlags als Umschlagbild, wenn das Buch eine Druckausgabe hat und kein anderes Bild nennt.
+
+In der Sandbox druckt die Folio-Ansicht außerdem Vorder- und Rückseite des Umschlags auf die Deckel: Das Buch liegt geschlossen auf seinem Umschlag und öffnet sich von dort. Ein Buch, dessen erste und letzte Seite seine Umschlagseiten sind (`binding.cover: 'pages'`), behält diese.
 
 ## Grenzen
 

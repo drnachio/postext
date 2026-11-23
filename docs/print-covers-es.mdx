@@ -6,7 +6,7 @@ export const metadata = {
   description: 'Las versiones impresas de un libro, cada una con su encuadernación, su ISBN y su lomo; los perfiles de encuadernación y de papel de la imprenta; el pliego de cubierta con sus solapas, la sobrecubierta, las tapas y las guardas; el diseño de la cubierta y sus acabados; su texto en Markdown; y la cubierta desde el Sandbox, la línea de comandos y el código',
   lang: 'es',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: "Esta página trata de la cubierta de un libro impreso: el pliego que envuelve las páginas, con la contracubierta, el lomo y la cubierta, y a veces solapas, una sobrecubierta o guardas. Un libro puede imprimirse en varias versiones, por ejemplo en rústica y en cartoné, y cada versión tiene su encuadernación y su ISBN. Postext calcula el ancho del lomo a partir del número de páginas y del papel, y monta el pliego al tamaño que pide la imprenta, con el sangrado y las marcas de plegado. El diseño de la cubierta está en los ajustes y sus textos en un documento Markdown, y el título y el autor salen de los datos del propio libro. La página explica cómo hacer todo esto en el Sandbox, desde la línea de comandos y desde el código.",
 };
@@ -22,6 +22,18 @@ Las páginas de un libro son una cosa y el pliego que las envuelve es otra. El p
 - **El texto de la cubierta**: un documento Markdown con un bloque por zona. La cubierta y el lomo que deja vacíos toman el título, el subtítulo y el autor de los metadatos del libro cada vez que se compone, así que un título corregido llega a la cubierta sin copiarlo.
 
 Con estas tres partes, el mismo motor que compone las páginas compone la cubierta, y el PDF va a la imprenta con el sangrado y las marcas de plegado del pliego.
+
+## Una cubierta, paso a paso
+
+El orden que lleva de un libro a un pliego para la imprenta. Cada paso tiene su apartado más abajo.
+
+1. **Dale al libro su papel.** `folio.paper` lleva el gramaje y la mano del papel en que se imprimen las páginas. El lomo se calcula con él, así que un papel equivocado da un lomo equivocado.
+2. **Añade una versión.** Una entrada en `production.versions` con un `id`, un `name` y un `binding`: `perfect` para una rústica encolada, `case-flat` para un cartoné. Su `isbn` imprime el código de barras, y `flaps: true` añade solapas, o una sobrecubierta en un cartoné.
+3. **Mira el pliego.** `postext cover libro.postext -o cubierta.pdf`, o el panel Cubierta del Sandbox, lo componen. El título, el subtítulo y el autor ya están en la cubierta y en el lomo, leídos del frontmatter del primer capítulo del libro.
+4. **Escribe los textos.** El texto de la contracubierta y las solapas van en el Markdown de la cubierta, un `:::frame{slot="…"}` por zona. Una cubierta o un lomo que deban decir otra cosa llevan también su marco.
+5. **Diséñala.** Los fondos, la imagen y los elementos colocados sobre las zonas van en `cover`. Un texto que necesita un sitio propio dentro de una zona lleva una caja de texto.
+6. **Añade los acabados** que la imprenta aplica después de las tintas: barniz, estampación, relieve.
+7. **Lee las revisiones**, corrige lo que señalan y envía el PDF. Cuando la imprenta dé sus propias medidas, ponlas en un perfil de encuadernación y vuelve a hacer el pliego.
 
 ## Versiones de un libro
 
@@ -58,7 +70,7 @@ Cada versión nombra su encuadernación por el id de un perfil, o lleva el perfi
 - `caseMaterial`: en tapa dura, `printed` (la cubierta impresa y plastificada sobre los cartones, el valor predeterminado) o `cloth` (tela con estampación, normalmente bajo una sobrecubierta).
 - `overrides`: medidas en mm que esta versión fija para sí por encima de las de su perfil, cuando la imprenta pide un cajo distinto para este libro concreto.
 - `spineOverride`: el lomo en mm que da la imprenta, en lugar del calculado.
-- `spineText`: cómo se rotula el lomo: `direction` descendente (`topToBottom`, como lo fija la norma ISO 6357 y el valor predeterminado, que se lee derecho con el libro boca arriba) o ascendente (`bottomToTop`, la costumbre española más antigua), y `minSpine`, el lomo más estrecho que admite texto (6 mm por defecto).
+- `spineText`: cómo se rotula el lomo: `direction` descendente (`topToBottom`, como lo fija la norma ISO 6357 y el valor predeterminado, que se lee derecho con el libro boca arriba) o ascendente (`bottomToTop`, la costumbre española más antigua), y `minSpine`, el lomo más estrecho que admite texto (6 mm por defecto). El sentido descendente es el predeterminado desde postext 1.93; en la 1.92 un lomo sin sentido indicado subía, así que un libro hecho entonces que deba conservar su lomo ascendente indica `bottomToTop`.
 
 `production.collection` nombra la colección o la obra en varios volúmenes a la que pertenece el libro:
 
@@ -363,7 +375,38 @@ Una ciudad que guarda sus libros bajo tierra, y la muchacha que los lee en voz a
 :::
 ```
 
-El texto se compone con la tipografía del libro: sus estilos de párrafo, sus estilos de carácter y sus fuentes. Seis estilos de párrafo son propios de la cubierta, y el libro puede redefinirlos: `cover-title`, `cover-subtitle`, `cover-author` y `cover-spine`, y para el catálogo de la colección (más abajo) `cover-catalogue` y `cover-catalogue-current`. La cubierta y el lomo que el Markdown deja vacíos toman el título, el subtítulo y el autor de los metadatos del libro, con estos estilos, cada vez que se compone: nunca se copian al texto de la cubierta. Un marco `front` o `spine` los sustituye por su propio texto.
+El texto se compone con la tipografía del libro: sus estilos de párrafo, sus estilos de carácter y sus fuentes. Seis estilos de párrafo son propios de la cubierta: `cover-title`, `cover-subtitle`, `cover-author` y `cover-spine`, y para el catálogo de la colección (más abajo) `cover-catalogue` y `cover-catalogue-current`.
+
+### El título, el autor y el lomo
+
+La cubierta y el lomo que el Markdown deja vacíos toman su texto de los metadatos del libro, el `title`, el `subtitle` y el `author` del frontmatter de su primer capítulo, cada vez que se compone: nunca se copian al texto de la cubierta. La cubierta lleva los tres, un párrafo cada uno, en `cover-title`, `cover-subtitle` y `cover-author`. El lomo lleva el título y el autor en una línea, con un punto medio entre ambos, en `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Estilo</th><th>Sin un estilo del libro</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>2,4 veces el cuerpo del texto, en negrita, centrado</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>1,4 veces el cuerpo del texto, centrado</td></tr>
+    <tr><td><code>cover-author</code></td><td>1,2 veces el cuerpo del texto, centrado</td></tr>
+    <tr><td><code>cover-spine</code></td><td>El cuerpo del texto, centrado</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>El cuerpo del texto, alineado a la izquierda; el título del propio libro en negrita</td></tr>
+  </tbody>
+</table>
+
+Ninguno se parte con guiones. Un estilo de párrafo del libro con uno de estos identificadores cambia los campos que fija y conserva el resto: un `cover-title` que solo indica una fuente y un color mantiene su tamaño y su centrado.
+
+Un marco `front` o `spine` sustituye el texto de los metadatos por el suyo. El texto del marco es texto corriente de la cubierta, así que hay que indicar el estilo con que se compone, o se compone como texto base:
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+Un marco `front` o `spine` vacío deja esa zona sin texto. En el Sandbox, el interruptor **texto propio** de cada uno de los dos campos escribe este marco, partiendo del texto y los estilos que dan los metadatos.
 
 Un marco para un hueco que el pliego no tiene (una solapa en un pliego sin solapas, una contracubierta en una guarda) se deja fuera, y la revisión lo indica; un segundo marco para el mismo hueco también se deja fuera. Escribe el texto de la cubierta con párrafos y estilos de párrafo: un título `#` toma el diseño que el libro da a los títulos de capítulo.
 
@@ -441,15 +484,15 @@ El PDF de la cubierta pasa por el mismo [preflight](/es/docs/configuration-pdf-o
 El panel **Cubierta**, en la barra lateral, reúne las versiones impresas y su cubierta:
 
 - **Versiones**: **Añadir rústica** o **Añadir cartoné**, y luego el nombre de cada versión, su encuadernación, su ISBN, el complemento y el ISBN de la obra, sus solapas o su sobrecubierta, el material de las tapas, el lomo que da la imprenta, el sentido del texto del lomo y el lomo más estrecho que lo admite. **Medidas de esta versión** sustituye las del perfil solo para esa versión.
-- **Pliego**: qué pliego se muestra (cubierta, sobrecubierta, guarda delantera o trasera), con sus páginas, su lomo y su tamaño.
-- **Diseño sobre el pliego**: **Editar sobre el pliego** convierte el pliego en el diseñador. Las cajas de texto, las cajas de color, los velos, las imágenes, los logotipos y los acabados se añaden desde su barra y se arrastran y redimensionan sobre el pliego, ajustándose a los pliegues, a las áreas seguras y entre sí (Alt desactiva el ajuste). Las flechas mueven el elemento seleccionado 1 mm, y 10 mm con Mayúsculas. **Capas** enumera los elementos bajo el texto, las cajas de texto, los elementos sobre el texto, los logotipos y los acabados, y los ordena. Los campos del elemento seleccionado fijan su posición, su color, su opacidad, cómo llena una imagen su caja, el radio de sus esquinas, su borde, su degradado y su sombra, qué hace pasado un sangrado en espejo, si se escala con su zona, y su trazado, su contorno o su recorte. Al cambiar el nombre de una caja de texto, su texto se mueve con ella en el Markdown de la cubierta. Una caja de texto seleccionada puede anclarse a una zona o a otra caja (**Anclada a**, el punto y el desplazamiento), seguir su texto en otra caja (**El texto sigue en**), crecer con su texto hasta una altura y reducir su texto hasta un tamaño mínimo.
-- **Textos**: un editor de Markdown por zona y por caja de texto. La cubierta y el lomo muestran lo que toman de los metadatos hasta que se les da **texto propio**. Una caja que recoge el resto del texto de otra lo indica en lugar de mostrar un editor.
-- **Colección**: el nombre y el ISBN de la colección.
+- **Pliego**: qué pliego se muestra (cubierta o tapas, sobrecubierta, guarda delantera o trasera), con sus páginas, su lomo y su tamaño. En los pliegos de un cartoné, **Diseño de este pliego** elige entre el diseño de cubierta del libro y un diseño propio (`cover.sheets`), para las dos guardas o para una sola. Un diseño propio empieza como copia del diseño del libro.
+- **Textos**: un editor de Markdown por zona y por caja de texto. La cubierta y el lomo muestran lo que toman del frontmatter del primer capítulo hasta que se activa **texto propio**, y entonces guardan el texto de un marco como los demás. En las tapas, la sobrecubierta y las guardas de un cartoné, **texto solo para este pliego** escribe el campo como un marco para ese pliego (`sheet="…"`), que allí ocupa el lugar del texto compartido. Una caja que recoge el resto del texto de otra lo indica en lugar de mostrar un editor.
+- **Diseño sobre el pliego**: **Editar sobre el pliego** convierte el pliego en el diseñador. Las cajas de texto, las cajas de color, los velos, los catálogos, las imágenes, los logotipos y los acabados se añaden desde su barra y se arrastran y redimensionan sobre el pliego, ajustándose a los pliegues, a las áreas seguras y entre sí (Alt desactiva el ajuste). Las flechas mueven el elemento seleccionado 1 mm, y 10 mm con Mayúsculas. **Capas** enumera los elementos bajo el texto, las cajas de texto, los elementos sobre el texto, los logotipos y los acabados, y los ordena. Los campos del elemento seleccionado fijan su posición, su color, su opacidad, cómo llena una imagen su caja, el radio de sus esquinas, su borde, su degradado y su sombra, qué hace pasado un sangrado en espejo, si se escala con su zona, y su trazado, su contorno o su recorte. Al cambiar el nombre de una caja de texto, su texto se mueve con ella en el Markdown de la cubierta. Una caja de texto seleccionada puede anclarse a una zona o a otra caja (**Anclada a**, el punto y el desplazamiento), seguir su texto en otra caja (**El texto sigue en**), crecer con su texto hasta una altura y reducir su texto hasta un tamaño mínimo.
+- **Colección**: el nombre y el ISBN de la colección, y su **Catálogo**: los títulos en orden, cada uno con su identificador y su imagen, y **Este libro en el catálogo** para el título que es este libro (`collection.volume`).
 - **Archivos para la imprenta**: **Descargar PDF del pliego**, escrito con los ajustes de PDF del libro (espacio de color, perfil de salida, PDF/X), y **Descargar la cubierta** como imagen.
 - **Revisiones**: las revisiones de más arriba.
 - **Perfiles de imprenta**: perfiles de encuadernación copiados de uno de los que trae Postext y ajustados a las medidas de una imprenta, cada medida en milímetros, como proporción del formato o por escalones de formato, con lo que resulta para este libro; perfiles de papel con su proveedor y su nombre comercial; y **Exportar perfiles** e **Importar perfiles** para el archivo `.postext-production.json`.
 
-Los diseños de cada pliego, los textos de un solo pliego, el elemento de catálogo y el volumen de la colección también se editan en el panel Cubierta.
+Mientras el panel Cubierta está abierto, la vista Canvas muestra el pliego en lugar de las páginas: abrir el panel selecciona el Canvas, y elegir otra vista (PDF, Folio, HTML, EPUB) cierra el panel y vuelve al libro.
 
 El grupo **Diseño de cubierta** del panel Diseño reúne los fondos, la imagen, la alineación del texto de las zonas, el tamaño del código de barras y el sangrado en espejo. Cada cambio en el panel Cubierta es un paso del historial de deshacer.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` elige la versión (la primera por defecto) y `--sheet` el pliego (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Una ruta que termina en `.png`, `.jpg` o `.webp`, o `--format`, pinta una zona en lugar del PDF: la cubierta, salvo que `--zone` nombre otra (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` para el pliego entero). Las opciones del PDF (`--color-space`, `--pdfx`, `--profile` y las demás) se aplican como en `postext pdf`. Véase [Línea de comandos](/es/docs/command-line).
+`--print-version` elige la versión (la primera por defecto) y `--sheet` el pliego (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Una ruta que termina en `.png`, `.jpg` o `.webp`, o `--format`, pinta una zona en lugar del PDF: la cubierta, salvo que `--zone` nombre otra (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` para el pliego entero). Las opciones del PDF (`--color-space`, `--pdfx`, `--profile` y las demás) se aplican como en `postext pdf`. Con `--json`, el resultado lleva una entrada `cover` con la versión, el pliego y sus medidas en mm (`widthMm`, `heightMm`, `spineMm`), para comparar el lomo calculado con el de la imprenta. Véase [Línea de comandos](/es/docs/command-line).
 
 ## Desde el código
 
@@ -512,6 +555,8 @@ Un paquete lleva los ajustes `production` y `cover` en su configuración y el te
 ## Folio y EPUB
 
 La vista Folio encuaderna el libro como su primera versión: una rústica fresada o cosida como rústica, una tapa dura como cartoné, con el lomo de la cubierta pintado en el lomo. Un EPUB escrito desde la línea de comandos o desde el Sandbox toma la cubierta impresa como imagen de cubierta cuando el libro tiene una versión impresa y no indica otra.
+
+En el Sandbox, la vista Folio también imprime la portada y la contraportada de la cubierta en las tapas, así que el libro aparece cerrado sobre su cubierta y se abre desde ella. Un libro cuyas propias primera y última páginas son sus cubiertas (`binding.cover: 'pages'`) las conserva.
 
 ## Límites
 

@@ -88,6 +88,14 @@
       "grammage": 120,
       "bulk": 2.2,
       "shade": "#f8f3e8"
+    },
+    "surface": {
+      "type": "marble",
+      "color": "#3d3943"
+    },
+    "lighting": {
+      "environment": "overcast",
+      "intensity": 0.95
     }
   },
   "credits": {

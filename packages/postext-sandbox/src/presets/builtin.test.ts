@@ -5,6 +5,7 @@ import { localeShortTag } from './localeNames.js';
 import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_ZH_HANS } from '../defaultMarkdown/index.js';
 import { isPristineBook, sampleBook } from '../book/chapterOps.js';
 import { createPostextGuideConfig } from '../context/guideConfig.js';
+import { coverSlotTexts } from '../cover/coverText.js';
 
 const preset = (extra: Partial<Parameters<typeof createPostextGuidePreset>[0]> = {}) =>
   createPostextGuidePreset({ name: 'The Postext guide', ...extra });
@@ -183,6 +184,25 @@ describe('the built-in guide in ten languages', () => {
     expect(ar.config.bodyText?.fontFamily).toBe('Amiri');
     const ja = await preset({ configOverride: host }).load('ja');
     expect(ja.config.bodyText?.fontFamily).toBe('Noto Serif JP');
+  });
+
+  it('opens every edition with a spine line of its own beside the back cover (#1686)', async () => {
+    const lines = new Set<string>();
+    for (const locale of BUILTIN_PRESET_LOCALES) {
+      const { coverMarkdown } = await preset().load(locale);
+      const texts = coverSlotTexts(coverMarkdown);
+      expect(Object.keys(texts).sort()).toEqual(['back', 'spine']);
+      const spine = /^:::paragraphs\{style="cover-spine"\}\n(Postext[^\n]+)\n:::$/.exec(texts.spine!);
+      expect(spine, locale).not.toBeNull();
+      expect(spine![1]).toContain('MIT');
+      lines.add(spine![1]!);
+    }
+    // Each edition says it in its language.
+    expect(lines.size).toBe(BUILTIN_PRESET_LOCALES.length);
+    const en = await preset().load('en');
+    expect(coverSlotTexts(en.coverMarkdown).spine).toBe(':::paragraphs{style="cover-spine"}\nPostext · Open Source MIT License\n:::');
+    // A host's own text has no cover text of the guide's.
+    expect((await preset({ markdownOverride: '# Mine\n\nText.' }).load('en')).coverMarkdown).toBeUndefined();
   });
 
   it('has a fingerprint that covers the seven editions', async () => {

@@ -2811,6 +2811,16 @@ cover
   author from the metadata in the paragraph styles `cover-title`, `cover-subtitle`, `cover-author`,
   `cover-spine` (redefine them in `paragraphStyles`). Never copy the title into `cover.md`. Set cover
   text with paragraphs and paragraph styles: a `#` heading takes the book's chapter heading design.
+- What the metadata sets: the front, three paragraphs (title, subtitle, author); the spine, one line
+  `title · author`. The metadata is the first chapter's front matter. Defaults of the six cover
+  styles, against the body size: `cover-title` × 2.4 bold centred, `cover-subtitle` × 1.4 centred,
+  `cover-author` × 1.2 centred, `cover-spine` × 1 centred, `cover-catalogue` and
+  `cover-catalogue-current` × 1 from the left (the current one bold); none hyphenated. A paragraph
+  style of the book with one of these ids is merged over its default field by field (a colour alone
+  keeps the size and the centring).
+- A `front` or `spine` frame replaces the metadata's text on that panel; its text is plain cover text,
+  so wrap it in the style it is set in (`:::paragraphs{style="cover-spine"}` … `:::` inside the
+  frame) or it is set as body text. An empty `front` or `spine` frame leaves the panel without text.
 - A frame for one sheet: `:::frame{slot="front" sheet="case"}` (one or more names of `cover.sheets`,
   space-separated) is laid out on that sheet only and takes its slot there over a frame that names no
   sheet. A case answers to `case` and `cover` (`sheet="cover"` reaches it too; `sheet="case"` only the
@@ -2832,9 +2842,15 @@ cover
   `signatureBlanks`, `spineTooThinForText` (a hardcover: the case's spine), `coverSlotUnknown`,
   `coverSlotRepeated`, `coverFrameSheetUnknown`, `coverTextBoxName`, `coverTextBoxAnchor` (anchor to
   nothing, itself, a loop, or below/above/beside a zone: stays on rect), `coverTextBoxNext`,
-  `coverMirrorSkipped`, `coverMirrorCapped`, `coverClipSkipped`, `coverBarcodeSize`.
+  `coverMirrorSkipped`, `coverMirrorCapped`, `coverClipSkipped`, `coverBarcodeSize`,
+  `coverIsbnInvalid` (the ISBN does not read: no barcode), and, with no cover built at all,
+  `coverVersionMissing` (no such version id) and `coverSheetMissing` (the version has no such sheet:
+  a jacket asked of a version without `flaps`, an endpaper of a softcover).
 - Output: `postext cover book.postext [--print-version ID] [--sheet cover|jacket|endpaper-front|endpaper-back]
   -o cover.pdf` (or `-o front.jpg [--zone back|spine|…|sheet]`); `buildCover` from `postext/production`.
+  `--json` adds `cover: { version, sheet, widthMm, heightMm, spineMm }` to the result. The first
+  version is the default, and it is also the one Folio binds the book as.
+- `spineText.direction` defaults to `topToBottom` since 1.93; 1.92 rose (`bottomToTop`) when unset.
 
 ## 20. Fonts — `customFonts` and what goes in preset.json
 
@@ -3236,6 +3252,8 @@ How the viewer reads it:
   with the front cover (a full-page design or image) and the last chapter ends on the back cover.
 - `spineImage`: the spine as seen with the book standing, head up, front cover to the right; scaled to cover
   the spine and centred: make it spine-thickness × page-height in proportion, with room at the edges.
+- A print cover (`cover.print`) is also bound on the boards in the Sandbox's Folio: front and back are painted
+  round the pages, so the book lies closed on its cover; a book with `cover: "pages"` keeps its own pages.
 - `:::paper{type=coatedGloss grammage=130}` in the text prints a run of pages on another stock (plate
   sections, card inserts); its attributes are the `paper` fields above (document-format.md §7.5).
 - Colours: `{hex, model}` objects, palette links (`paletteId`) followed like any other colour.

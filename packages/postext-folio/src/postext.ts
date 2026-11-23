@@ -10,6 +10,9 @@ import { createDocumentSharp } from './postext/sharp.js';
 import type { FolioDocumentState, FolioDocumentLate } from './postext/state.js';
 import { cachedThrough, isCut } from './postext/through.js';
 import type { FaceFinish } from './pageFlip/finish.js';
+import type { PageSource } from './pageFlip.js';
+import { DEFAULT_LABELS } from './viewer/constants.js';
+import { boardedAppearance, boardedLabels, boardedViewer, boardMap, boardsOf, withBoards, type CoverBoards } from './postext/boards.js';
 
 export type { FolioDocumentOptions, FolioDocumentViewer } from './postext/types.js';
 export { firstPageIsRecto, trimmedSize, appearanceOf, carriedPaintings } from './postext/book.js';
@@ -56,6 +59,12 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
   let resizeTimer = 0;
   ds.ready = false;
   let hostAppearance: FolioAppearance | undefined = options.appearance;
+  // The printed cover's boards round the pages (#1685), and the map that
+  // keeps the host in the document's own page indexes.
+  let boards: CoverBoards = boardsOf(doc, hostAppearance);
+  const map = boardMap(() => boards, () => ds.current.pages.length);
+  const labelsFor = (labels: FolioDocumentOptions["labels"]) => boardedLabels(labels, DEFAULT_LABELS.count, map, () => ds.current.pages.length);
+  const shownAppearance = () => boardedAppearance(appearanceOf(ds.current, hostAppearance), boards);
 
   const slotWidth = () => viewer.pageSize.deviceWidth;
 
@@ -100,20 +109,67 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     options, free, ds, dlate
   });
 
+  /** What a board page shows: the cover's face outside, blank inside. */
+  const boardFace = (index: number): PageSource => {
+    if (boards.front && index === 0) return boards.front;
+    if (boards.back && index === boards.lead + ds.current.pages.length + boards.trail - 1) return boards.back;
+    return "";
+  };
+  /** Where `setPages` puts the book: on the board it lay closed on, when
+   *  the page asked for is the one under it (a relayout, another painting
+   *  of the cover, the host restoring its page); else that page. */
+  const restAt = (closed: "front" | "back" | undefined, at: number, n: number): number =>
+    closed === "front" && boards.lead && at === 0 ? -boards.lead
+      : closed === "back" && boards.trail && at === n - 1 ? n + boards.trail - 1
+      : at;
+  /** The boards again after the host's appearance changed (a cover face
+   *  painted, a binding changed): the book stays on the page it shows, and
+   *  closes on its cover when it lay open at the first page as the front
+   *  board came. */
+  const rebind = () => {
+    const was = boards;
+    const shown = map.state(raw.state);
+    const at = shown.pages[0] ?? 0;
+    boards = boardsOf(ds.current, hostAppearance);
+    raw.setAppearance(shownAppearance());
+    if (was.front === boards.front && was.back === boards.back && was.lead === boards.lead && was.trail === boards.trail) return;
+    // Closed on a board it keeps (another painting of the cover), the book
+    // stays closed there; open at the first page as the front board comes,
+    // it closes on it.
+    const target = at === 0 && !was.lead && boards.lead ? -boards.lead : restAt(shown.cover?.closed, at, ds.current.pages.length);
+    viewer.setPages(sources(), { at: target, firstPageRecto: firstPageIsRecto(ds.current) });
+    ds.focus = viewer.state.pages;
+    if (!ds.turning) ds.settled = viewer.state.pages;
+    refresh(around(viewer.state));
+    // The host learns of the boards (its buttons turn past the pages now).
+    options.onChange?.(viewer.state);
+  };
   const first = doc.pages[0];
-  const viewer = createFolio(container, {
+  const detail = options.detail ?? { paint: paintSharp, release: releaseSharp };
+  const raw = createFolio(container, {
     ...options,
-    detail: options.detail ?? { paint: paintSharp, release: releaseSharp },
-    pages: doc.pages.map((p) => {
+    labels: labelsFor(options.labels),
+    // A board shows its cover face; a page, the host's painting of it.
+    detail: {
+      ...detail,
+      paint: (index: number, deviceWidth: number) => {
+        const page = map.toDoc(index);
+        return page !== undefined ? detail.paint(page, deviceWidth) : boardFace(index);
+      },
+    },
+    pages: withBoards(doc.pages.map((p) => {
       const paper = pagePaperOf(p);
       return paper ? { src: "", paper } : "";
-    }),
-    appearance: appearanceOf(doc, options.appearance),
+    }), boards),
+    appearance: shownAppearance(),
     aspect: first ? ((s) => s.width / s.height)(trimmedSize(first, doc)) : undefined,
-    firstPageRecto: firstPageIsRecto(doc),
+    firstPageRecto: boards.lead ? true : firstPageIsRecto(doc),
     binding: doc.binding === "right" ? "right" : "left",
     paper: options.paper ?? paperOf(doc),
-    onTarget: (state) => {
+    // At the first page with a front board, the book lies closed on it.
+    ...(options.at !== undefined ? { at: options.at === 0 && boards.lead ? 0 : map.toView(options.at) } : {}),
+    onTarget: (shown) => {
+      const state = map.state(shown);
       ds.focus = state.pages;
       ds.turning = true;
       // The sweep first: the pages it keeps are not let go by the refresh.
@@ -121,9 +177,16 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       refresh(around(state));
       options.onTarget?.(state);
     },
-    onPageClick: (point) => toggleVideoAt(point) || !!options.onPageClick?.(point),
-    isPageAction: (point) => !!spotAt(point) || !!options.isPageAction?.(point),
-    onChange: (state) => {
+    onPageClick: (shown) => {
+      const point = map.point(shown);
+      return !!point && (toggleVideoAt(point) || !!options.onPageClick?.(point));
+    },
+    isPageAction: (shown) => {
+      const point = map.point(shown);
+      return !!point && (!!spotAt(point) || !!options.isPageAction?.(point));
+    },
+    onChange: (shown) => {
+      const state = map.state(shown);
       // A video whose page has turned away stops; one set to play on its
       // own starts when its spread is shown (see `autoplayOn`).
       for (const p of [...ds.players]) if (!state.pages.includes(p.page)) stopPlayer(p);
@@ -147,6 +210,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       resizeTimer = window.setTimeout(() => refresh(around(viewer.state)), RESIZE_SETTLE_MS);
     },
   });
+  const viewer = boardedViewer(raw, map, () => boards);
   Object.assign(dlate, { viewer });
   // The open spread, painted at the slot's size before the first frame.
   ds.ready = true;
@@ -192,7 +256,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     setPageVideos: viewer.setPageVideos,
     toggleVideoAt,
     stopVideo: stopVideos,
-    setLabels: viewer.setLabels,
+    setLabels: (labels) => raw.setLabels(labelsFor(labels)),
     resetView: viewer.resetView,
     getView: viewer.getView,
     setInteraction: viewer.setInteraction,
@@ -203,7 +267,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     pointOnScreen: viewer.pointOnScreen,
     setAppearance(next: FolioAppearance) {
       hostAppearance = { ...hostAppearance, ...next };
-      viewer.setAppearance(appearanceOf(ds.current, hostAppearance));
+      rebind();
     },
     get pageSize() {
       return viewer.pageSize;
@@ -214,6 +278,7 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
     setDocument(next: VDTDocument, opts: { at?: number; repaint?: boolean; appearance?: FolioAppearance } = {}) {
       if (opts.appearance) hostAppearance = { ...hostAppearance, ...opts.appearance };
       const at = Math.max(0, Math.min(next.pages.length - 1, opts.at ?? viewer.state.pages[0] ?? 0));
+      const closed = viewer.state.cover?.closed;
       const before = ds.current;
       const oldCanvases = ds.canvases;
       const oldDecorated = ds.decorated;
@@ -247,12 +312,13 @@ export function createFolioFromDocument(container: HTMLElement, doc: VDTDocument
       for (const canvas of oldCanvases) if (canvas) canvas.width = canvas.height = 0;
       for (const canvas of oldDecorated) free(canvas);
       for (const i of ds.painted.keys()) decorate(i);
-      viewer.setAppearance(appearanceOf(next, hostAppearance));
+      boards = boardsOf(next, hostAppearance);
+      raw.setAppearance(shownAppearance());
       viewer.setPages(sources(), {
         firstPageRecto: firstPageIsRecto(next),
         binding: next.binding === "right" ? "right" : "left",
         paper: options.paper ?? paperOf(next),
-        at,
+        at: restAt(closed, at, next.pages.length),
       });
       ds.focus = viewer.state.pages;
       // A relayout while leaves are in the air (the chapter the book was

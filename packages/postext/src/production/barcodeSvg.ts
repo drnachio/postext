@@ -43,6 +43,9 @@ const DIGIT_MODULES = 7;
  *  band the guard bars run down into, and below). */
 const DIGIT_SIZE = 9;
 const CAPTION_SIZE = 9.5;
+/** White under the digits' baseline, in modules: the gap over the ISBN
+ *  line's capitals. */
+const FOOT_MARGIN = 2.75;
 
 function rects(bars: BarcodeBar[], left: number, top: number, x: number, h: number, guardExtra: number): string {
   return bars
@@ -67,8 +70,10 @@ export function isbnBarcodeSvg(isbn: string, options: IsbnBarcodeOptions = {}): 
   const addOn = symbol.addOn;
   const rightModules = addOn ? addOn.x + addOn.width + 5 : symbol.width + EAN13_QUIET_ZONE.right;
   const width = left + rightModules * x;
-  const height = barTop + barH + guardExtra + DIGIT_SIZE * x * 0.4;
   const digitY = barTop + barH + DIGIT_SIZE * x * 0.95;
+  // As much white under the digits as over the ISBN line (#1687): the
+  // digits stood on the ground's edge.
+  const height = digitY + FOOT_MARGIN * x;
   const text = (s: string, cx: number, y: number, size: number, anchor = 'middle') =>
     `<text x="${fmt(cx)}" y="${fmt(y)}" font-size="${fmt(size)}" text-anchor="${anchor}">${s}</text>`;
 

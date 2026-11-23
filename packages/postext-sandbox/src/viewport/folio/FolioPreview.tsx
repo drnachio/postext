@@ -1,9 +1,9 @@
 'use client';
 
 import { forwardRef, useRef, useMemo, useState, useEffect, useDeferredValue, useImperativeHandle } from 'react';
-import { type FolioInteraction, type FolioDocumentViewer, type FolioLabels, createFolioFromDocument } from 'postext-folio';
+import { type FolioInteraction, type FolioDocumentViewer, type FolioLabels, type FolioState, createFolioFromDocument } from 'postext-folio';
 import { folioOfBook } from 'postext/production';
-import { usePrintedSpine } from '../../cover/usePrintedSpine.js';
+import { usePrintedCover } from '../../cover/usePrintedCover.js';
 import { type PostextConfig, type VDTDocument, watchFonts, onFontsChanged, resolveDiagramStyleConfig, resolveColorValue, resolveDebugConfig } from 'postext';
 import { useSandboxDispatch, useSandboxSelector, useSandboxDocRef, useSandboxDocSourceRef, useSandboxChapterDocsRef, useLayoutSource, useBookPlan } from '../../context/SandboxContext.js';
 import { type HeldChapterDoc } from '../../book/buildBook.js';
@@ -36,7 +36,9 @@ interface FolioPreviewProps {
   onCurrentPageChange?: (index: number) => void;
   /** The pages of the spread the book is sent to (as soon as it is sent,
    *  and again once its leaves have landed). */
-  onSpreadChange?: (pages: readonly number[]) => void;
+  /** The pages on show, and the printed cover's boards round them (the
+   *  one the book lies closed on, #1685). */
+  onSpreadChange?: (pages: readonly number[], cover?: FolioState['cover']) => void;
   /** Whether the book is bound on the right (its leaves turn leftward). */
   onBindingChange?: (rightToLeft: boolean) => void;
 }
@@ -98,9 +100,20 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
     return r?.bitmap?.fileId ?? r?.svg?.fileId;
   }, [resources, spineId]);
   const [spine, setSpine] = useState<{ fileId: string; url?: string } | null>(null);
-  // Without a picture of its own, the spine of the print cover (#1669).
-  const printedSpine = usePrintedSpine(!spineId && bindingType !== 'saddleStitch' && bindingType !== 'folded');
-  const spineUrl = (spine?.fileId === spineFileId ? spine?.url : undefined) ?? printedSpine;
+  // Without a picture of its own, the spine of the print cover (#1669);
+  // and its front and back on the boards when the book has no covers of
+  // its own (#1685).
+  const bound = bindingType !== 'saddleStitch' && bindingType !== 'folded';
+  const printed = usePrintedCover({ spine: !spineId && bound, boards: bound && folioConfig?.binding?.cover !== 'pages' });
+  const spineUrl = (spine?.fileId === spineFileId ? spine?.url : undefined) ?? printed.spine;
+  const coverFaces = useMemo(
+    () => (printed.front || printed.back
+      ? { front: printed.front, back: printed.back, frontAlt: labels.coverZoneFront, backAlt: labels.coverZoneBack }
+      : undefined),
+    [printed.front, printed.back, labels.coverZoneFront, labels.coverZoneBack],
+  );
+  const coverFacesRef = useRef(coverFaces);
+  coverFacesRef.current = coverFaces;
   const spineUrlRef = useRef(spineUrl);
   spineUrlRef.current = spineUrl;
   // The picture of the spine is read (or found missing): a new viewer
@@ -406,7 +419,7 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
         controls: false,
         labels: folioLabelsRef.current,
         interaction: interactionRef.current,
-        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current, extraPages: shownDoc.extraPages },
+        appearance: { folio: folioConfigRef.current, textureBaseUrl: FOLIO_TEXTURES, spineImage: spineUrlRef.current, coverFaces: coverFacesRef.current, extraPages: shownDoc.extraPages },
         alt: (i) => fill(pageAltRef.current, { page: viewerDocRef.current?.doc.pages[i]?.pageNumberValue ?? i + 1 }),
         decorate: (index, ctx) => selectionRef.current.decorate(index, ctx),
         // Videos play on the pages (#477): an uploaded file from its object
@@ -417,11 +430,11 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
           else videoStatesRef.current.delete(videoKey(page, resourceId));
         },
         onTarget: (state) => {
-          callbacksRef.current.onSpreadChange?.(state.pages);
+          callbacksRef.current.onSpreadChange?.(state.pages, state.cover);
           selectionRef.current.onSpread();
         },
         onChange: (state) => {
-          callbacksRef.current.onSpreadChange?.(state.pages);
+          callbacksRef.current.onSpreadChange?.(state.pages, state.cover);
           selectionRef.current.onSpread();
           const page = state.pages[state.pages.length - 1];
           if (page !== undefined) callbacksRef.current.onCurrentPageChange?.(page);
@@ -484,8 +497,8 @@ export const FolioPreview = forwardRef<FolioPreviewHandle, FolioPreviewProps>(fu
   }, [folioLabels]);
 
   useEffect(() => {
-    viewerRef.current?.setAppearance({ folio: shownFolio, spineImage: spineUrl });
-  }, [shownFolio, spineUrl]);
+    viewerRef.current?.setAppearance({ folio: shownFolio, spineImage: spineUrl, coverFaces });
+  }, [shownFolio, spineUrl, coverFaces]);
 
   useEffect(() => () => {
     viewerRef.current?.dispose();

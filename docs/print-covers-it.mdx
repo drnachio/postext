@@ -6,7 +6,7 @@ export const metadata = {
   description: "Le versioni a stampa di un libro, ognuna con la sua legatura, il suo ISBN e il suo dorso; i profili di legatura e di carta della tipografia; il foglio di copertina con alette, sovraccoperta, copertina del cartonato e risguardi; la grafica della copertina e le sue finiture; il suo testo in Markdown; e la copertina dalla Sandbox, dalla riga di comando e dal codice",
   lang: 'it',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: "Questa pagina parla della copertina di un libro stampato: il foglio che avvolge le pagine, con la quarta di copertina, il dorso e la prima, a volte con alette, una sovraccoperta o i risguardi. Un libro si può stampare in più versioni, per esempio in brossura e cartonato, e ogni versione ha la sua legatura e il suo ISBN. Postext calcola lo spessore del dorso dal numero di pagine e dalla carta, e costruisce il foglio nel formato che serve alla tipografia, con l’abbondanza e i segni di piega. La grafica della copertina sta nelle impostazioni e i suoi testi in un documento Markdown; il titolo e l’autore vengono dai dati del libro stesso. La pagina mostra come fare tutto questo nella Sandbox, dalla riga di comando e dal codice.",
 };
@@ -22,6 +22,18 @@ Le pagine di un libro sono una cosa e il foglio che le avvolge è un’altra. Il
 - **Il testo della copertina**: un documento Markdown con un blocco per pannello. La prima di copertina e il dorso che lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore dai metadati del libro, così un titolo corretto arriva in copertina senza ricopiarlo.
 
 A partire da queste tre parti la copertina viene impaginata dallo stesso motore delle pagine, e il PDF va in tipografia con l’abbondanza e i segni di piega del foglio.
+
+## Una copertina, passo per passo
+
+L’ordine che porta da un libro a un foglio per la tipografia. Ogni passo ha la sua sezione più avanti.
+
+1. **Dai al libro la sua carta.** `folio.paper` riceve la grammatura e la mano della carta su cui si stampano le pagine. Il dorso si calcola da questa carta, quindi una carta sbagliata dà un dorso sbagliato.
+2. **Aggiungi una versione.** Una voce in `production.versions` con un `id`, un `name` e un `binding`: `perfect` per una brossura fresata, `case-flat` per un cartonato. Il suo `isbn` stampa il codice a barre, e `flaps: true` aggiunge le alette, o una sovraccoperta su un cartonato.
+3. **Guarda il foglio.** `postext cover book.postext -o cover.pdf`, oppure il pannello Copertina della Sandbox, lo compone. Il titolo, il sottotitolo e l’autore sono già sulla prima di copertina e sul dorso, letti dal front matter del primo capitolo del libro.
+4. **Scrivi i testi.** Il testo della quarta di copertina e quello delle alette vanno nel Markdown della copertina, un `:::frame{slot="…"}` per pannello. Anche una prima di copertina o un dorso che devono dire altro ricevono un blocco.
+5. **Progetta la grafica.** I fondi, l’immagine e gli elementi disposti sui pannelli vanno in `cover`. Un testo che ha bisogno di un posto suo su un pannello riceve una casella di testo.
+6. **Aggiungi le finiture** che la tipografia applica dopo gli inchiostri: vernice, stampa a caldo, rilievo.
+7. **Leggi i controlli**, correggi ciò che segnalano e invia il PDF. Quando la tipografia dà le sue misure, mettile in un profilo di legatura e rifai il foglio.
 
 ## Versioni di un libro
 
@@ -58,7 +70,7 @@ Ogni versione indica la sua legatura con l’id di un profilo, oppure porta il p
 - `caseMaterial`: su un cartonato, `printed` (la copertina stampata e plastificata sui piatti, il valore predefinito) o `cloth` (tela impressa a secco o a caldo, di solito sotto una sovraccoperta).
 - `overrides`: misure in mm che questa versione fissa per sé sopra quelle del suo profilo, quando la tipografia chiede una cerniera diversa per questo solo libro.
 - `spineOverride`: il dorso in mm come lo indica la tipografia, al posto di quello calcolato.
-- `spineText`: come si scrive sul dorso: `direction` dall’alto in basso (`topToBottom`, come stabilisce la norma ISO 6357 e il valore predefinito, che si legge dritto con il libro a faccia in su) o dal basso in alto (`bottomToTop`, l’uso spagnolo più antico), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
+- `spineText`: come si scrive sul dorso: `direction` dall’alto in basso (`topToBottom`, come stabilisce la norma ISO 6357 e il valore predefinito, che si legge dritto con il libro a faccia in su) o dal basso in alto (`bottomToTop`, l’uso spagnolo più antico), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita). La direzione dall’alto in basso è il valore predefinito da postext 1.93; nella 1.92, senza `direction`, il testo andava dal basso in alto, quindi un libro fatto allora che deve conservare quel dorso indica `bottomToTop`.
 
 `production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro:
 
@@ -363,7 +375,38 @@ Una città che custodisce i suoi libri sottoterra, e la ragazza che li legge ad 
 :::
 ```
 
-Il testo si compone con la tipografia del libro: i suoi stili di paragrafo, gli stili di carattere e i font. Sei stili di paragrafo sono propri della copertina, e il libro può ridefinirli: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e per il catalogo della collana (più avanti) `cover-catalogue` e `cover-catalogue-current`. La prima di copertina e il dorso che il Markdown lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore del libro dai suoi metadati, composti in questi stili: non vengono mai copiati nel testo della copertina. Un blocco `front` o `spine` li sostituisce con il proprio testo.
+Il testo si compone con la tipografia del libro: i suoi stili di paragrafo, gli stili di carattere e i font. Sei stili di paragrafo sono propri della copertina: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e per il catalogo della collana (più avanti) `cover-catalogue` e `cover-catalogue-current`.
+
+### Il titolo, l’autore e il dorso
+
+La prima di copertina e il dorso che il Markdown lascia vuoti ricevono a ogni generazione il loro testo dai metadati del libro, il `title`, il `subtitle` e l’`author` nel front matter del suo primo capitolo: non vengono mai copiati nel testo della copertina. La prima di copertina porta tutti e tre, un paragrafo ciascuno, in `cover-title`, `cover-subtitle` e `cover-author`. Il dorso porta il titolo e l’autore su una riga, separati da un punto mediano, in `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Stile</th><th>Senza uno stile del libro</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>2,4 volte il corpo del testo, in grassetto, centrato</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>1,4 volte il corpo del testo, centrato</td></tr>
+    <tr><td><code>cover-author</code></td><td>1,2 volte il corpo del testo, centrato</td></tr>
+    <tr><td><code>cover-spine</code></td><td>Il corpo del testo, centrato</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>Il corpo del testo, allineato a sinistra; il titolo del libro stesso in grassetto</td></tr>
+  </tbody>
+</table>
+
+Nessuno è sillabato. Uno stile di paragrafo del libro con uno di questi id cambia i campi che imposta e conserva gli altri: un `cover-title` che indica solo un font e un colore mantiene il suo corpo e la sua centratura.
+
+Un blocco `front` o `spine` sostituisce il testo dei metadati con il proprio. Il testo del blocco è normale testo di copertina, quindi va indicato lo stile in cui si compone, altrimenti si compone come testo corrente:
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+Un blocco `front` o `spine` vuoto lascia quel pannello senza testo. Nella Sandbox, l’interruttore **testo proprio** di ciascuno dei due campi scrive questo blocco, a partire dal testo e dagli stili che danno i metadati.
 
 Un blocco per una posizione che il foglio non ha (un’aletta su un foglio senza alette, una quarta di copertina su un risguardo) viene scartato, e il controllo lo segnala; anche un secondo blocco per la stessa posizione viene scartato. Scrivi il testo della copertina con paragrafi e stili di paragrafo: un titolo `#` prende la grafica che il libro dà ai titoli dei suoi capitoli.
 
@@ -441,15 +484,15 @@ Il PDF della copertina passa per lo stesso [preflight](/it/docs/configuration-pd
 Il pannello **Copertina**, nella barra laterale, contiene le versioni a stampa e la loro copertina:
 
 - **Versioni**: **Aggiungi brossura** o **Aggiungi cartonato**, poi per ogni versione il nome, la legatura, l’ISBN, l’add-on e l’ISBN dell’opera, le alette o la sovraccoperta, il materiale di un cartonato, il dorso indicato dalla tipografia, la direzione del testo sul dorso e il dorso più stretto che lo accoglie. **Misure di questa versione** sostituisce quelle del profilo solo per questa versione.
-- **Foglio**: quale foglio si vede (copertina, sovraccoperta, risguardo anteriore o posteriore), con le sue pagine, il dorso e il formato.
-- **Grafica sul foglio**: **Modifica sul foglio** trasforma il foglio in editor grafico. Caselle di testo, riquadri di colore, veli, immagini, loghi e finiture si aggiungono dalla sua barra, si trascinano e si ridimensionano sul foglio, e si agganciano alle pieghe, alle aree di sicurezza e tra loro (Alt disattiva l’aggancio). I tasti freccia spostano l’elemento selezionato di 1 mm, di 10 mm con Maiusc. **Livelli** elenca gli elementi sotto il testo, le caselle di testo, gli elementi sopra il testo, i loghi e le finiture, e ne stabilisce l’ordine. I campi dell’elemento selezionato ne fissano la posizione, il colore, l’opacità, il modo in cui un’immagine riempie il riquadro, il raggio degli angoli, il bordo, la sfumatura e l’ombra, il comportamento oltre un’abbondanza specchiata, se si adatta al suo pannello, e il tracciato, il contorno o il ritaglio. Rinominare una casella di testo sposta con sé il suo testo nel Markdown della copertina. Una casella di testo selezionata può essere ancorata a una zona o a un’altra casella (**Ancorata a**, il punto e lo spostamento), continuare il testo in un’altra casella (**Il testo continua in**), crescere con il testo fino a un’altezza e ridurre il testo fino a una dimensione minima.
-- **Testi**: un editor Markdown per ogni zona e casella di testo. La prima di copertina e il dorso mostrano ciò che prendono dai metadati finché non ricevono un **testo proprio**. Una casella che riceve il resto del testo di un’altra lo indica invece di mostrare un editor.
-- **Collana**: il nome e l’ISBN della collana.
+- **Foglio**: quale foglio si vede (copertina o copertina rigida, sovraccoperta, risguardo anteriore o posteriore), con le sue pagine, il dorso e il formato. Sui fogli di un cartonato, **Grafica di questo foglio** sceglie tra la grafica di copertina del libro e una grafica propria (`cover.sheets`), per entrambi i risguardi o per uno solo. Una grafica propria parte come copia di quella del libro.
+- **Testi**: un editor Markdown per ogni zona e casella di testo. La prima di copertina e il dorso mostrano ciò che prendono dal front matter del primo capitolo finché non si attiva **testo proprio**, e da quel momento contengono il testo di un blocco come gli altri. Sul rivestimento, sulla sovraccoperta e sui risguardi di un cartonato, **testo solo per questo foglio** scrive il campo come blocco per quel foglio (`sheet="…"`), che lì prende il posto del testo comune. Una casella che riceve il resto del testo di un’altra lo indica invece di mostrare un editor.
+- **Grafica sul foglio**: **Modifica sul foglio** trasforma il foglio in editor grafico. Caselle di testo, riquadri di colore, veli, cataloghi, immagini, loghi e finiture si aggiungono dalla sua barra, si trascinano e si ridimensionano sul foglio, e si agganciano alle pieghe, alle aree di sicurezza e tra loro (Alt disattiva l’aggancio). I tasti freccia spostano l’elemento selezionato di 1 mm, di 10 mm con Maiusc. **Livelli** elenca gli elementi sotto il testo, le caselle di testo, gli elementi sopra il testo, i loghi e le finiture, e ne stabilisce l’ordine. I campi dell’elemento selezionato ne fissano la posizione, il colore, l’opacità, il modo in cui un’immagine riempie il riquadro, il raggio degli angoli, il bordo, la sfumatura e l’ombra, il comportamento oltre un’abbondanza specchiata, se si adatta al suo pannello, e il tracciato, il contorno o il ritaglio. Rinominare una casella di testo sposta con sé il suo testo nel Markdown della copertina. Una casella di testo selezionata può essere ancorata a una zona o a un’altra casella (**Ancorata a**, il punto e lo spostamento), continuare il testo in un’altra casella (**Il testo continua in**), crescere con il testo fino a un’altezza e ridurre il testo fino a una dimensione minima.
+- **Collana**: il nome e l’ISBN della collana, e il suo **Catalogo**: i titoli in ordine, ognuno con il suo id e la sua immagine, e **Questo libro nel catalogo** per il titolo che corrisponde a questo libro (`collection.volume`).
 - **File per la tipografia**: **Scarica il PDF del foglio**, scritto con le impostazioni PDF del libro (spazio colore, profilo di output, PDF/X), e **Scarica la prima di copertina** come immagine.
 - **Controlli**: i controlli descritti sopra.
 - **Profili di stampa**: profili di legatura copiati da uno incluso e adattati alle misure di una tipografia, ognuna in millimetri, come quota del formato o per scaglioni di formato, con il valore che ne risulta per questo libro; profili di carta con il fornitore e il nome commerciale; e **Esporta profili** e **Importa profili** per il file `.postext-production.json`.
 
-Le grafiche dei singoli fogli, i testi per un solo foglio, l’elemento catalogo e il volume della collana si modificano anch’essi nel pannello Copertina.
+Finché il pannello Copertina è aperto, la vista Canvas mostra il foglio al posto delle pagine: aprire il pannello seleziona il Canvas, e scegliere un’altra vista (PDF, Folio, HTML, EPUB) chiude il pannello e torna al libro.
 
 Il gruppo **Grafica di copertina** del pannello Grafica contiene i fondi, l’immagine, l’allineamento del testo delle zone, la dimensione del codice a barre e l’abbondanza specchiata. Ogni modifica nel pannello Copertina è un passo della cronologia degli annullamenti.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` sceglie la versione (la prima per impostazione predefinita), `--sheet` il foglio (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Un percorso che termina in `.png`, `.jpg` o `.webp`, oppure `--format`, dipinge un pannello invece del PDF: la prima di copertina, a meno che `--zone` non ne indichi un altro (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` per il foglio intero). Le opzioni del PDF (`--color-space`, `--pdfx`, `--profile` e le altre) valgono come per `postext pdf`. Vedi [Riga di comando](/it/docs/command-line).
+`--print-version` sceglie la versione (la prima per impostazione predefinita), `--sheet` il foglio (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Un percorso che termina in `.png`, `.jpg` o `.webp`, oppure `--format`, dipinge un pannello invece del PDF: la prima di copertina, a meno che `--zone` non ne indichi un altro (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` per il foglio intero). Le opzioni del PDF (`--color-space`, `--pdfx`, `--profile` e le altre) valgono come per `postext pdf`. Con `--json`, il risultato contiene una voce `cover` con la versione, il foglio e le sue misure in mm (`widthMm`, `heightMm`, `spineMm`), per confrontare il dorso calcolato con quello della tipografia. Vedi [Riga di comando](/it/docs/command-line).
 
 ## Dal codice
 
@@ -512,6 +555,8 @@ Un pacchetto porta le impostazioni `production` e `cover` nella sua configurazio
 ## Folio ed EPUB
 
 La vista Folio lega il libro come la sua prima versione: una brossura fresata o una brossura cucita come brossura, un cartonato come cartonato, con il dorso della copertina dipinto sul dorso del libro. Un EPUB scritto dalla riga di comando o dalla Sandbox prende la prima di copertina a stampa come immagine di copertina quando il libro ha una versione a stampa e non ne indica un’altra.
+
+Nella Sandbox la vista Folio stampa anche il fronte e il retro della copertina sui piatti, così il libro appare chiuso sulla copertina e si apre da lì. Un libro la cui prima e ultima pagina sono le sue copertine (`binding.cover: 'pages'`) le conserva.
 
 ## Limiti
 

@@ -32,6 +32,14 @@ export interface FolioAppearance {
    *  cover (when it falls on a verso): they turn as boards and no case
    *  is drawn round the pages. */
   covers?: { front: boolean; back: boolean };
+  /** The outside of the book's printed cover (#1685): the front and the
+   *  back as pictures (a URL, a drawn canvas or an image), each the trim
+   *  of one board. `createFolioFromDocument` binds them round the pages
+   *  as two boards, so the book closes on its cover, when the book has no
+   *  covers of its own (`binding.cover: 'pages'`) and is not stapled or
+   *  folded; page indexes, spreads and points stay the document's. The
+   *  `alt` texts name them for assistive technology. */
+  coverFaces?: { front?: PageSource; back?: PageSource; frontAlt?: string; backAlt?: string };
   /** The picture printed on the spine: the image the `folio.binding.
    *  spineImage` resource names, as a URL (or a drawn canvas or image).
    *  See `FlipAppearance.spineImage`. */
@@ -175,6 +183,10 @@ export interface FolioState {
   spread: number;
   /** The page indexes on show (one or two). */
   pages: number[];
+  /** The printed cover's boards round the pages (#1685,
+   *  `FolioAppearance.coverFaces`), and the one the book lies closed on:
+   *  `pages` then names the page under it. */
+  cover?: { front: boolean; back: boolean; closed?: "front" | "back" };
 }
 
 /** A running viewer: turn its pages, change its content or look, read its
