@@ -6,7 +6,7 @@ export const metadata = {
   description: 'As versões impressas de um livro, cada uma com sua encadernação, seu ISBN e sua lombada; perfis de encadernação e de papel da gráfica; a folha de capa com orelhas, sobrecapa, capa dura e guardas; o projeto e os acabamentos da capa; seu texto em Markdown; e a capa a partir do Sandbox, da linha de comando e do código',
   lang: 'pt',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: 'Esta página trata da capa de um livro impresso: a folha que envolve as páginas, com a contracapa, a lombada e a capa, e às vezes orelhas, uma sobrecapa ou guardas. Um livro pode ser impresso em várias versões, como uma brochura e uma capa dura, e cada versão tem a sua própria encadernação e o seu próprio ISBN. O Postext calcula a largura da lombada a partir do número de páginas e do papel e monta a folha no tamanho de que a gráfica precisa, com a sangria e as marcas de dobra. O projeto da capa fica nas configurações e os textos num documento Markdown, e o título e o autor vêm dos próprios dados do livro. A página mostra como fazer tudo isso no Sandbox, pela linha de comando e no código.',
 };
@@ -22,6 +22,18 @@ As páginas de um livro são uma coisa, e a folha que as envolve é outra. A fol
 - **O texto da capa**: um documento Markdown com um bloco por painel. A capa e a lombada que ele deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor dos metadados do livro, e assim um título corrigido chega à capa sem precisar ser copiado.
 
 A partir dessas três partes, a capa é diagramada pelo mesmo motor das páginas, e o PDF vai para a gráfica com a sangria e as marcas de dobra da folha.
+
+## Uma capa, passo a passo
+
+A ordem que leva de um livro a uma folha para a gráfica. Cada passo tem a sua seção mais abaixo.
+
+1. **Dê ao livro o seu papel.** `folio.paper` recebe a gramatura e o volume (bulk) do papel em que as páginas são impressas. A lombada é calculada a partir dele, e um papel errado dá uma lombada errada.
+2. **Adicione uma versão.** Uma entrada em `production.versions` com um `id`, um `name` e um `binding`: `perfect` para uma brochura colada, `case-flat` para uma capa dura. O `isbn` dela imprime o código de barras, e `flaps: true` acrescenta orelhas, ou uma sobrecapa numa capa dura.
+3. **Veja a folha.** `postext cover book.postext -o cover.pdf`, ou o painel Capa do Sandbox, a monta. O título, o subtítulo e o autor já estão na capa e na lombada, lidos do front matter do primeiro capítulo do livro.
+4. **Escreva os textos.** O texto da contracapa e as orelhas vão no Markdown da capa, um `:::frame{slot="…"}` por painel. Uma capa ou uma lombada que devam dizer outra coisa também recebem um quadro.
+5. **Faça o projeto.** Os fundos, a imagem e os itens posicionados nos painéis vão em `cover`. Um texto que precisa de um lugar próprio num painel recebe uma caixa de texto.
+6. **Acrescente os acabamentos** que a gráfica aplica depois das tintas: verniz, hot stamping, relevo.
+7. **Leia as verificações**, corrija o que elas apontam e envie o PDF. Quando a gráfica informar medidas próprias, coloque-as num perfil de encadernação e faça a folha de novo.
 
 ## Versões de um livro
 
@@ -58,7 +70,7 @@ Cada versão indica a encadernação pelo id de um perfil ou traz o próprio per
 - `caseMaterial`: numa capa dura, `printed` (a capa impressa e laminada sobre o papelão, o padrão) ou `cloth` (tecido gravado, em geral sob uma sobrecapa).
 - `overrides`: medidas em mm que esta versão define para si por cima das do perfil, quando a gráfica pede uma canaleta diferente para este livro.
 - `spineOverride`: a lombada em mm tal como a gráfica a informa, no lugar da calculada.
-- `spineText`: como o texto corre na lombada: `direction` de cima para baixo (`topToBottom`, como fixa a ISO 6357 e o padrão, que se lê direito com o livro deitado de capa para cima) ou de baixo para cima (`bottomToTop`, o costume espanhol mais antigo), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
+- `spineText`: como o texto corre na lombada: `direction` de cima para baixo (`topToBottom`, como fixa a ISO 6357 e o padrão, que se lê direito com o livro deitado de capa para cima) ou de baixo para cima (`bottomToTop`, o costume espanhol mais antigo), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão). O sentido de cima para baixo é o padrão desde o postext 1.93; no 1.92, sem `direction`, o texto subia, e por isso um livro feito naquela versão que deva manter a lombada de baixo para cima indica `bottomToTop`.
 
 `production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence:
 
@@ -363,7 +375,38 @@ Uma cidade que guarda os seus livros debaixo da terra, e a menina que os lê em 
 :::
 ```
 
-O texto é composto com a tipografia do livro: os seus estilos de parágrafo, estilos de caractere e fontes. Seis estilos de parágrafo são próprios da capa, e o livro pode redefini-los: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e para o catálogo da coleção (mais abaixo) `cover-catalogue` e `cover-catalogue-current`. A capa e a lombada que o Markdown deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor do livro a partir dos metadados, compostos nesses estilos; eles nunca são copiados para o texto da capa. Um quadro `front` ou `spine` os substitui pelo seu próprio texto.
+O texto é composto com a tipografia do livro: os seus estilos de parágrafo, estilos de caractere e fontes. Seis estilos de parágrafo são próprios da capa: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e para o catálogo da coleção (mais abaixo) `cover-catalogue` e `cover-catalogue-current`.
+
+### O título, o autor e a lombada
+
+A capa e a lombada que o Markdown deixa vazias recebem, a cada montagem, o texto dos metadados do livro, o `title`, o `subtitle` e o `author` do front matter do primeiro capítulo; ele nunca é copiado para o texto da capa. A capa leva os três, um parágrafo cada, em `cover-title`, `cover-subtitle` e `cover-author`. A lombada leva o título e o autor numa só linha, com um ponto médio entre eles, em `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Estilo</th><th>Sem um estilo do livro</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>2,4 vezes o corpo do texto, em negrito, centralizado</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>1,4 vezes o corpo do texto, centralizado</td></tr>
+    <tr><td><code>cover-author</code></td><td>1,2 vezes o corpo do texto, centralizado</td></tr>
+    <tr><td><code>cover-spine</code></td><td>O corpo do texto, centralizado</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>O corpo do texto, alinhado à esquerda; o título do próprio livro em negrito</td></tr>
+  </tbody>
+</table>
+
+Nenhum deles é hifenizado. Um estilo de parágrafo do livro com um desses ids muda os campos que define e conserva os demais: um `cover-title` que indica só uma fonte e uma cor mantém o tamanho e a centralização.
+
+Um quadro `front` ou `spine` substitui o texto dos metadados pelo seu. O texto do quadro é texto comum da capa; indique o estilo em que ele é composto, ou ele é composto como texto corrido:
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+Um quadro `front` ou `spine` vazio deixa esse painel sem texto. No Sandbox, a chave **texto próprio** de cada um dos dois campos grava esse quadro, a partir do texto e dos estilos que os metadados dão.
 
 Um quadro para um espaço que a folha não tem (uma orelha numa folha sem orelhas, uma contracapa numa guarda) fica de fora, e a verificação avisa; um segundo quadro para o mesmo espaço também fica de fora. Escreva o texto da capa como parágrafos com estilos de parágrafo: um título `#` recebe o projeto que o livro dá aos títulos de capítulo.
 
@@ -441,15 +484,15 @@ O PDF da capa passa pelo mesmo [preflight](/pt/docs/configuration-pdf-output) qu
 O painel **Capa**, na barra lateral, reúne as versões impressas e a sua capa:
 
 - **Versões**: **Adicionar brochura** ou **Adicionar capa dura**, e depois, para cada versão, o nome, a encadernação, o ISBN, o complemento e o ISBN da obra, as orelhas ou a sobrecapa, o revestimento de uma capa dura, a lombada da gráfica, o sentido do texto da lombada e a lombada mais estreita que o recebe. **Medidas desta versão** substitui as do perfil só para esta versão.
-- **Folha**: qual folha aparece (capa, sobrecapa, guarda da frente ou de trás), com as suas páginas, a lombada e o tamanho.
-- **Projeto na folha**: **Editar na folha** transforma a folha no editor do projeto. Caixas de texto, blocos de cor, véus, imagens, logotipos e acabamentos são acrescentados pela barra dele, arrastados e redimensionados na folha, e se encaixam nas dobras, nas áreas de segurança e uns nos outros (Alt desliga o encaixe). As setas movem o item selecionado 1 mm, ou 10 mm com Shift. **Camadas** lista os itens sob o texto, as caixas de texto, os itens sobre o texto, os logotipos e os acabamentos, e os ordena. Os campos do item selecionado definem o lugar, a cor, a opacidade, como uma imagem preenche a caixa, o raio dos cantos, a borda, o degradê e a sombra, o que ele faz além de uma sangria espelhada, se acompanha o tamanho do painel, e o traçado, o contorno ou o recorte. Renomear uma caixa de texto leva junto o texto dela no Markdown da capa. Uma caixa de texto selecionada pode ser ancorada a uma zona ou a outra caixa (**Ancorada em**, o ponto e o deslocamento), continuar o texto em outra caixa (**O texto continua em**), crescer com o texto até uma altura e reduzir o texto até um tamanho mínimo.
-- **Textos**: um editor de Markdown por zona e por caixa de texto. A capa e a lombada mostram o que recebem dos metadados até ganharem um **texto próprio**. Uma caixa que recebe o resto do texto de outra indica isso em vez de mostrar um editor.
-- **Coleção**: o nome e o ISBN da coleção.
+- **Folha**: qual folha aparece (capa ou revestimento, sobrecapa, guarda da frente ou de trás), com as suas páginas, a lombada e o tamanho. Nas folhas de uma capa dura, **Projeto desta folha** escolhe entre o projeto da capa do livro e um projeto próprio (`cover.sheets`), para as duas guardas ou para uma só. Um projeto próprio começa como cópia do projeto do livro.
+- **Textos**: um editor de Markdown por zona e por caixa de texto. A capa e a lombada mostram o que recebem do front matter do primeiro capítulo até que **texto próprio** seja ativado, e a partir daí guardam o texto de um quadro, como os demais. No revestimento, na sobrecapa e nas guardas de uma capa dura, **texto só para esta folha** grava o campo como um quadro para essa folha (`sheet="…"`), que ali fica no lugar do texto compartilhado. Uma caixa que recebe o resto do texto de outra indica isso em vez de mostrar um editor.
+- **Projeto na folha**: **Editar na folha** transforma a folha no editor do projeto. Caixas de texto, blocos de cor, véus, catálogos, imagens, logotipos e acabamentos são acrescentados pela barra dele, arrastados e redimensionados na folha, e se encaixam nas dobras, nas áreas de segurança e uns nos outros (Alt desliga o encaixe). As setas movem o item selecionado 1 mm, ou 10 mm com Shift. **Camadas** lista os itens sob o texto, as caixas de texto, os itens sobre o texto, os logotipos e os acabamentos, e os ordena. Os campos do item selecionado definem o lugar, a cor, a opacidade, como uma imagem preenche a caixa, o raio dos cantos, a borda, o degradê e a sombra, o que ele faz além de uma sangria espelhada, se acompanha o tamanho do painel, e o traçado, o contorno ou o recorte. Renomear uma caixa de texto leva junto o texto dela no Markdown da capa. Uma caixa de texto selecionada pode ser ancorada a uma zona ou a outra caixa (**Ancorada em**, o ponto e o deslocamento), continuar o texto em outra caixa (**O texto continua em**), crescer com o texto até uma altura e reduzir o texto até um tamanho mínimo.
+- **Coleção**: o nome e o ISBN da coleção, e o seu **Catálogo**: os títulos em ordem, cada um com o seu id e a sua imagem, e **Este livro no catálogo** para o título que é este livro (`collection.volume`).
 - **Arquivos para a gráfica**: **Baixar PDF da folha**, gravado com as configurações de PDF do livro (espaço de cor, perfil de saída, PDF/X), e **Baixar a capa** como imagem.
 - **Verificações**: as verificações acima.
 - **Perfis de gráfica**: perfis de encadernação copiados de um embutido e ajustados às medidas de uma gráfica, cada medida em milímetros, como proporção do formato ou por faixas de tamanho do formato, com o valor que dá para este livro; perfis de papel com fornecedor e nome comercial; e **Exportar perfis** e **Importar perfis** para o arquivo `.postext-production.json`.
 
-Os projetos de cada folha, os textos de uma só folha, o item de catálogo e o volume da coleção também são editados no painel Capa.
+Enquanto o painel Capa está aberto, a visualização Canvas mostra a folha no lugar das páginas: abrir o painel seleciona o Canvas, e escolher outra visualização (PDF, Folio, HTML, EPUB) fecha o painel e volta ao livro.
 
 O grupo **Projeto da capa** do painel Design reúne os fundos, a imagem, o alinhamento do texto das zonas, o tamanho do código de barras e a sangria espelhada. Toda mudança no painel Capa é um passo do histórico de desfazer.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` escolhe a versão (a primeira, por padrão), `--sheet` a folha (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Um caminho terminado em `.png`, `.jpg` ou `.webp`, ou `--format`, pinta um painel em vez do PDF: a capa, a menos que `--zone` indique outro (`back`, `spine`, `flapFront`, `flapBack` ou `sheet` para a folha inteira). As opções de PDF (`--color-space`, `--pdfx`, `--profile` e as demais) valem como em `postext pdf`. Veja [Linha de comando](/pt/docs/command-line).
+`--print-version` escolhe a versão (a primeira, por padrão), `--sheet` a folha (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Um caminho terminado em `.png`, `.jpg` ou `.webp`, ou `--format`, pinta um painel em vez do PDF: a capa, a menos que `--zone` indique outro (`back`, `spine`, `flapFront`, `flapBack` ou `sheet` para a folha inteira). As opções de PDF (`--color-space`, `--pdfx`, `--profile` e as demais) valem como em `postext pdf`. Com `--json`, o resultado traz uma entrada `cover` com a versão, a folha e as suas medidas em mm (`widthMm`, `heightMm`, `spineMm`), para comparar a lombada calculada com a da gráfica. Veja [Linha de comando](/pt/docs/command-line).
 
 ## No código
 

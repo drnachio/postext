@@ -6,7 +6,7 @@ export const metadata = {
   description: "A book's print versions, each with its binding, ISBN and spine; binding and paper profiles from the printer; the cover sheet with its flaps, jacket, case and endpapers; the cover's design and finishes; its Markdown text; and the cover from the Sandbox, the command line and code",
   lang: 'en',
   lastUpdated: '2026-11-23',
-  readingTime: '19 min',
+  readingTime: '21 min',
   order: 41,
   plainSummary: "This page is about the cover of a printed book: the sheet that wraps the pages, with the back, the spine and the front, and sometimes flaps, a dust jacket or endpapers. A book can be printed in several versions, such as a paperback and a hardcover, and each version has its own binding and its own ISBN. Postext works out how wide the spine is from the number of pages and the paper, and builds the sheet at the size the printer needs, with the bleed and the fold marks. The design of the cover lives in the settings and its texts in a Markdown document, and the title and author come from the book's own details. The page shows how to do all this in the Sandbox, from the command line and from code.",
 };
@@ -22,6 +22,18 @@ The pages of a book are one thing and the sheet that wraps them is another. The 
 - **The cover's text**: a Markdown document with one block per panel. The front and the spine that it leaves empty take the title, subtitle and author from the book's metadata on every build, so a corrected title reaches the cover without copying it.
 
 From these three, the cover is laid out by the same engine as the pages, and the PDF goes to the printer with the sheet's bleed and fold marks.
+
+## A cover, step by step
+
+The order that takes a book to a sheet for the printer. Each step has its section below.
+
+1. **Give the book its paper.** `folio.paper` takes the grammage and the bulk of the stock the pages are printed on. The spine is calculated from it, so the wrong paper gives the wrong spine.
+2. **Add a version.** One entry in `production.versions` with an `id`, a `name` and a `binding`: `perfect` for a glued paperback, `case-flat` for a hardcover. Its `isbn` prints the barcode, and `flaps: true` adds flaps, or a dust jacket on a hardcover.
+3. **Look at the sheet.** `postext cover book.postext -o cover.pdf`, or the Sandbox's Cover panel, lays it out. The title, subtitle and author already stand on the front and the spine, read from the front matter of the book's first chapter.
+4. **Write the texts.** The back cover's blurb and the flaps go in the cover's Markdown, one `:::frame{slot="…"}` per panel. A front or a spine that should say something else gets a frame too.
+5. **Design it.** Grounds, the picture and the items placed on the panels go in `cover`. A text that needs a place of its own on a panel gets a text box.
+6. **Add the finishes** the printer applies after the inks: varnish, foil, relief.
+7. **Read the checks**, correct what they report and send the PDF. When the printer gives measures of their own, put them in a binding profile and make the sheet again.
 
 ## Versions of a book
 
@@ -58,7 +70,7 @@ Each version names its binding by a profile's id, or carries the profile itself.
 - `caseMaterial`: on a case, `printed` (the cover printed and laminated over the boards, the default) or `cloth` (stamped, usually under a jacket).
 - `overrides`: measures in mm this version sets for itself over its profile's, when the printer asks for a different joint on this one book.
 - `spineOverride`: the spine in mm as the printer gives it, in place of the calculated one.
-- `spineText`: how the spine is lettered: `direction` falling (`topToBottom`, as ISO 6357 has it and the default, read the right way up when the book lies face up) or rising (`bottomToTop`, the older Spanish way), and `minSpine`, the narrowest spine that takes text (6 mm by default).
+- `spineText`: how the spine is lettered: `direction` falling (`topToBottom`, as ISO 6357 has it and the default, read the right way up when the book lies face up) or rising (`bottomToTop`, the older Spanish way), and `minSpine`, the narrowest spine that takes text (6 mm by default). Falling is the default since postext 1.93; in 1.92 an unset direction rose, so a book made then that should keep its rising spine names `bottomToTop`.
 
 `production.collection` names the collection or multi-volume work the book belongs to:
 
@@ -363,7 +375,38 @@ A city that keeps its books underground, and the girl who reads them aloud.
 :::
 ```
 
-The text is set in the book's typography: its paragraph styles, character styles and fonts. Six paragraph styles are the cover's own, and the book may redefine them: `cover-title`, `cover-subtitle`, `cover-author` and `cover-spine`, and for the collection's catalogue (below) `cover-catalogue` and `cover-catalogue-current`. The front and the spine the Markdown leaves empty take the book's title, subtitle and author from its metadata, set in these styles, on every build: they are never copied into the cover's text. A `front` or `spine` frame replaces them with its own text.
+The text is set in the book's typography: its paragraph styles, character styles and fonts. Six paragraph styles are the cover's own: `cover-title`, `cover-subtitle`, `cover-author` and `cover-spine`, and for the collection's catalogue (below) `cover-catalogue` and `cover-catalogue-current`.
+
+### The title, the author and the spine
+
+The front and the spine the Markdown leaves empty take their text from the book's metadata, the `title`, `subtitle` and `author` in the front matter of its first chapter, on every build: they are never copied into the cover's text. The front carries the three, a paragraph each, in `cover-title`, `cover-subtitle` and `cover-author`. The spine carries the title and the author on one line with a middle dot between them, in `cover-spine`.
+
+<table>
+  <thead>
+    <tr><th>Style</th><th>Without a style of the book's</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>cover-title</code></td><td>2.4 times the body size, bold, centred</td></tr>
+    <tr><td><code>cover-subtitle</code></td><td>1.4 times the body size, centred</td></tr>
+    <tr><td><code>cover-author</code></td><td>1.2 times the body size, centred</td></tr>
+    <tr><td><code>cover-spine</code></td><td>The body size, centred</td></tr>
+    <tr><td><code>cover-catalogue</code>, <code>cover-catalogue-current</code></td><td>The body size from the left; the current title in bold</td></tr>
+  </tbody>
+</table>
+
+None is hyphenated. A paragraph style of the book with one of these ids changes the fields it sets and keeps the rest: a `cover-title` that names only a font and a colour keeps its size and its centring.
+
+A `front` or `spine` frame replaces the metadata's text with its own. The frame's text is plain cover text, so name the style it is set in, or it is set as body text:
+
+```md
+:::frame{slot="spine"}
+:::paragraphs{style="cover-spine"}
+Postext · Open Source MIT License
+:::
+:::
+```
+
+An empty `front` or `spine` frame leaves that panel without text. In the Sandbox, the **own text** switch of each of the two fields writes this frame, starting from the text and the styles the metadata gives.
 
 A frame for a slot the sheet does not have (a flap on a sheet without flaps, a back cover on an endpaper) is left out, and the check says so; a second frame for one slot is left out too. Write the cover's text as paragraphs and paragraph styles: a `#` heading takes the design the book gives its chapter headings.
 
@@ -441,15 +484,15 @@ The cover's PDF goes through the same [preflight](/en/docs/configuration-pdf-out
 The **Cover** panel, in the sidebar, holds the print versions and their cover:
 
 - **Versions**: **Add paperback** or **Add hardcover**, then each version's name, binding, ISBN, add-on and work ISBN, its flaps or jacket, a case's material, the spine from the printer, the direction of the spine text and the narrowest spine that takes it. **This version's measures** overrides the profile's for this version only.
-- **Sheet**: which sheet is shown (cover, jacket, front or back endpaper), and its pages, spine and size.
-- **Design on the sheet**: **Edit on the sheet** turns the sheet into the designer. Text boxes, colour boxes, veils, pictures, logos and finishes are added from its bar, dragged and resized on the sheet, snapping to folds, safe areas and each other (Alt turns snapping off). The arrow keys move the selected item 1 mm, 10 mm with Shift. **Layers** lists the items under the text, the text boxes, the items over the text, the logos and the finishes, and orders them. The selected item's fields set its place, colour, opacity, how a picture fills its box, its corner radius, border, gradient and shadow, what it does past a mirrored bleed, whether it scales with its panel, and its path, outline or clip. Renaming a text box moves its text in the cover's Markdown with it. A selected text box can be anchored to a zone or another box (**Anchored to**, the point and the offset), continue its text in another box (**Text continues in**), grow with its text up to a height and shrink its text down to a smallest size.
-- **Texts**: one Markdown editor per zone and text box. The front and the spine show what they take from the metadata until they are given **own text**. A box that takes the rest of another box's text shows that instead of an editor.
-- **Collection**: the collection's name and ISBN.
+- **Sheet**: which sheet is shown (cover or case, dust jacket, front or back endpaper), with its pages, spine and size. On a hardcover's sheets, **Design of this sheet** chooses between the book's cover design and a design of its own (`cover.sheets`), for both endpapers or for one. A design of its own starts as a copy of the book's.
+- **Texts**: one Markdown editor per zone and text box. The front and the spine show what they take from the first chapter's front matter until **own text** is switched on, and then hold a frame's text like the others. On a hardcover's case, jacket and endpapers, **text for this sheet only** writes the field as a frame for that sheet (`sheet="…"`), in place of the shared text there. A box that takes the rest of another box's text shows that instead of an editor.
+- **Design on the sheet**: **Edit on the sheet** turns the sheet into the designer. Text boxes, colour boxes, veils, catalogues, pictures, logos and finishes are added from its bar, dragged and resized on the sheet, snapping to folds, safe areas and each other (Alt turns snapping off). The arrow keys move the selected item 1 mm, 10 mm with Shift. **Layers** lists the items under the text, the text boxes, the items over the text, the logos and the finishes, and orders them. The selected item's fields set its place, colour, opacity, how a picture fills its box, its corner radius, border, gradient and shadow, what it does past a mirrored bleed, whether it scales with its panel, and its path, outline or clip. Renaming a text box moves its text in the cover's Markdown with it. A selected text box can be anchored to a zone or another box (**Anchored to**, the point and the offset), continue its text in another box (**Text continues in**), grow with its text up to a height and shrink its text down to a smallest size.
+- **Collection**: the collection's name and ISBN, and its **Catalogue**: the titles in order, each with its id and picture, and **This book in the catalogue** for the title that is this book (`collection.volume`).
 - **Files for the printer**: **Download sheet PDF**, written with the book's PDF settings (colour space, output profile, PDF/X), and **Download front cover** as a picture.
 - **Checks**: the checks above.
 - **Printer profiles**: binding profiles copied from a built-in one and set to a printer's measures, each by millimetres, by a share of the trim or by steps of trim size, with what it comes to for this book; paper profiles with their supplier and commercial name; and **Export profiles** and **Import profiles** for the `.postext-production.json` file.
 
-The designs of single sheets, the texts for one sheet, the catalogue element and the collection's volume are edited in the Cover panel too.
+While the Cover panel is open, the Canvas view shows the sheet in place of the pages: opening the panel selects the Canvas, and choosing another view (PDF, Folio, HTML, EPUB) closes the panel and goes back to the book.
 
 The Design panel's **Cover design** group holds the grounds, the picture, the zones' text alignment, the barcode size and the mirrored bleed. Every change in the Cover panel is a step of the undo history.
 
@@ -465,7 +508,7 @@ postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pd
 postext cover book.postext -o front.jpg --dpi 300
 ```
 
-`--print-version` chooses the version (the first by default), `--sheet` the sheet (`cover`, `jacket`, `endpaper-front` or `endpaper-back`). A path ending in `.png`, `.jpg` or `.webp`, or `--format`, paints one panel instead of the PDF: the front cover unless `--zone` names another (`back`, `spine`, `flapFront`, `flapBack`, or `sheet` for the whole). The PDF options (`--color-space`, `--pdfx`, `--profile` and the rest) apply as for `postext pdf`. See [Command line](/en/docs/command-line).
+`--print-version` chooses the version (the first by default), `--sheet` the sheet (`cover`, `jacket`, `endpaper-front` or `endpaper-back`). A path ending in `.png`, `.jpg` or `.webp`, or `--format`, paints one panel instead of the PDF: the front cover unless `--zone` names another (`back`, `spine`, `flapFront`, `flapBack`, or `sheet` for the whole). The PDF options (`--color-space`, `--pdfx`, `--profile` and the rest) apply as for `postext pdf`. With `--json`, the result carries a `cover` entry with the version, the sheet and its measures in mm (`widthMm`, `heightMm`, `spineMm`), to compare the calculated spine with the printer's. See [Command line](/en/docs/command-line).
 
 ## From code
 
