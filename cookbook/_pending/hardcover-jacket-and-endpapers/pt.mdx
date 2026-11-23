@@ -22,30 +22,32 @@ O código é [a resposta curta](#a-resposta-curta) lá em cima. As duas versões
 
 <Excerpt region="sheets" />
 
-A capa de uma brochura é cortada no formato do livro e as orelhas se dobram no corte da frente. A capa de um livro de capa dura é um forro que envolve dois cartões. Cada cartão é cortado 7 mm mais estreito que a página do lado da lombada e passa 3 mm das páginas na cabeça, no pé e no corte da frente (as esquadrias), então mede 116 × 196 mm. Entre cada cartão e a lombada fica uma junta de 7 mm, onde a capa dobra. Em volta de tudo, uma virada de 15 mm se dobra sobre as bordas dos cartões, e por isso o fundo de tecido vai até uma folha de 286,3 × 226 mm. A capa é feita com a versão sem ISBN, para o tecido não levar código de barras, e com um texto de capa vazio, para que a capa da frente e a lombada tomem dos metadados só o título, o subtítulo e o autor, aqui em dourado.
+A capa de uma brochura é cortada no formato do livro e as orelhas se dobram no corte da frente. A capa de um livro de capa dura é um forro que envolve dois cartões. Cada cartão é cortado 7 mm mais estreito que a página do lado da lombada e passa 3 mm das páginas na cabeça, no pé e no corte da frente (as esquadrias), então mede 116 × 196 mm. Entre cada cartão e a lombada fica uma junta de 7 mm, onde a capa dobra. Em volta de tudo, uma virada de 15 mm se dobra sobre as bordas dos cartões, e por isso o fundo de tecido vai até uma folha de 286,3 × 226 mm.
+
+Todas as folhas são feitas com a mesma `config` e o mesmo texto de capa. A capa toma o projeto de `cover.sheets.case`, um fundo de tecido e mais nada, e as linhas dos quadros marcados com `sheet="case"`: título, subtítulo e autor na capa da frente e na lombada, com estilos `case-` que são os da sobrecapa em dourado, e um quadro vazio na capa de trás, que deixa o tecido sem o texto de apresentação. O código de barras só é impresso na sobrecapa, a folha que o caixa escaneia.
 
 ### 3 · A sobrecapa repete o projeto e o texto da capa
 
 <Excerpt region="cover-type" />
 
-A sobrecapa é feita com o `cover` do próprio livro, os mesmos estilos de parágrafo e o mesmo Markdown de capa que a brochura usa. Seus painéis são mais largos: cada um cobre um cartão, a junta e mais 3 mm para dobrar sobre a borda, 126 mm no total. As orelhas crescem para 80 mm, dois terços da largura da página, a medida padrão de uma sobrecapa. A pintura enche o painel da frente até a dobra, e o código de barras fica no painel de trás, onde o livreiro o lê.
+A sobrecapa não tem entrada em `cover.sheets`, então toma o `cover` do livro e os quadros sem `sheet`, com os estilos de parágrafo e o Markdown de capa da brochura; o painel da frente e a lombada são preenchidos com os metadados, porque ali os quadros da capa ficam de fora. Seus painéis são mais largos: cada um cobre um cartão, a junta e mais 3 mm para dobrar sobre a borda, 126 mm no total. As orelhas crescem para 80 mm, dois terços da largura da página, a medida padrão de uma sobrecapa. A pintura enche o painel da frente até a dobra, e o código de barras fica no painel de trás, onde o livreiro o lê.
 
 ### 4 · As duas guardas num documento
 
 <Excerpt region="endpapers" />
 
-Uma guarda tem duas páginas de largura: a contraguarda é colada no cartão e a folha de guarda vira como uma página. Na frente a contraguarda fica à esquerda; atrás, à direita. Cada folha mede 246 × 196 mm, com 3 mm de sangria na cabeça, no pé e nas bordas externas e nenhuma na dobra, onde uma faixa de cola de 5 mm a prende ao miolo. As duas pinturas deixam o meio calmo, porque a dobra passa por ali. As duas folhas têm o mesmo formato, então um só documento reúne as duas, uma por página.
+Uma guarda tem duas páginas de largura: a contraguarda é colada no cartão e a folha de guarda vira como uma página. Na frente a contraguarda fica à esquerda; atrás, à direita. Cada folha mede 246 × 196 mm, com 3 mm de sangria na cabeça, no pé e nas bordas externas e nenhuma na dobra, onde uma faixa de cola de 5 mm a prende ao miolo. As duas pinturas deixam o meio calmo, porque a dobra passa por ali. As duas folhas têm o mesmo formato, então um só documento reúne as duas, uma por página. Cada pintura é o projeto da sua guarda em `cover.sheets`, estendido sobre as duas folhas.
 
 ## Variações
 
 ### Imprima a capa em vez de forrá-la de tecido
 
-Tire a entrada da capa de `looks` e ela toma o projeto do livro: o fundo noturno e a pintura na capa da frente.
+Tire `case` de `cover.sheets` e a capa toma o projeto do livro: o fundo noturno e a pintura na capa da frente. Seus próprios quadros continuam pondo o título em dourado.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Arredonde a lombada
@@ -60,4 +62,4 @@ Num livro mais grosso, `case-round` soma 3 mm à lombada da capa, e a da sobreca
 ## Erros comuns
 
 - As folhas vêm depois das páginas do livro na lista capturada: a capa na 38, a sobrecapa na 39 e as guardas na 40 e na 41. Se o livro ganha uma página, todos os números mudam.
-- Uma capa de tecido sob sobrecapa não precisa de código de barras. Se você passar ao buildCover a versão com seu ISBN, ele também o imprime na capa de trás.
+- Num livro de capa dura, `sheet="cover"` vale tanto para o forro dos cartões quanto para a capa de uma brochura; `sheet="case"` vale só para o forro. O quadro próprio de uma folha substitui o quadro comum daquela zona só nessa folha, e um vazio a deixa em branco.

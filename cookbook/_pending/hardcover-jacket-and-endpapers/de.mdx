@@ -22,30 +22,32 @@ Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Beide Ausgaben 
 
 <Excerpt region="sheets" />
 
-Der Umschlag eines Paperbacks wird auf das Format geschnitten, und seine Klappen schlagen am Vorderschnitt ein. Die Decke eines Hardcovers ist ein Bezug um zwei Pappen. Jede Pappe ist an der Rückenseite 7 mm schmaler als die Seite und steht an Kopf, Fuß und Vorderschnitt 3 mm über die Seiten hinaus (die Kanten), misst also 116 × 196 mm. Zwischen jeder Pappe und dem Rücken liegt ein Gelenk von 7 mm, in dem die Decke knickt. Rundherum schlägt ein Einschlag von 15 mm um die Pappkanten, deshalb läuft der Leinengrund bis zu einem Bogen von 286,3 × 226 mm. Die Decke entsteht aus der Ausgabe ohne ISBN, damit das Leinen keinen Strichcode trägt, und aus einem leeren Umschlagtext, damit vorderer Deckel und Rücken aus den Metadaten nur Titel, Untertitel und Autor nehmen, hier in Gold.
+Der Umschlag eines Paperbacks wird auf das Format geschnitten, und seine Klappen schlagen am Vorderschnitt ein. Die Decke eines Hardcovers ist ein Bezug um zwei Pappen. Jede Pappe ist an der Rückenseite 7 mm schmaler als die Seite und steht an Kopf, Fuß und Vorderschnitt 3 mm über die Seiten hinaus (die Kanten), misst also 116 × 196 mm. Zwischen jeder Pappe und dem Rücken liegt ein Gelenk von 7 mm, in dem die Decke knickt. Rundherum schlägt ein Einschlag von 15 mm um die Pappkanten, deshalb läuft der Leinengrund bis zu einem Bogen von 286,3 × 226 mm.
+
+Alle Bogen entstehen aus derselben `config` und demselben Umschlagtext. Die Decke nimmt ihre Gestaltung aus `cover.sheets.case`, einem bloßen Leinengrund, und ihre Zeilen aus den Rahmen mit `sheet="case"`: Titel, Untertitel und Autor auf dem vorderen Deckel und dem Rücken, in `case-`-Formaten, die die des Umschlags in Gold sind, und ein leerer Rahmen auf dem hinteren Deckel, der den Klappentext vom Leinen fernhält. Der Strichcode wird nur auf den Schutzumschlag gedruckt, den Bogen, den die Kasse scannt.
 
 ### 3 · Der Schutzumschlag übernimmt Gestaltung und Text des Umschlags
 
 <Excerpt region="cover-type" />
 
-Der Schutzumschlag entsteht aus dem `cover` des Buches, denselben Absatzformaten und demselben Umschlag-Markdown wie das Paperback. Seine Felder sind breiter: Jedes deckt eine Pappe, das Gelenk und 3 mm mehr zum Umschlagen um die Kante, zusammen 126 mm. Die Klappen wachsen auf 80 mm, zwei Drittel der Seitenbreite, das Standardmaß eines Schutzumschlags. Das Gemälde füllt die Vorderseite bis zum Falz, und der Strichcode steht auf der Rückseite, wo die Buchhandlung ihn scannt.
+Der Schutzumschlag hat keinen Eintrag in `cover.sheets`, nimmt also das `cover` des Buches und die Rahmen ohne `sheet`, mit den Absatzformaten und dem Umschlag-Markdown des Paperbacks; Vorderseite und Rücken füllen sich aus den Metadaten, weil die Rahmen der Decke dort wegfallen. Seine Felder sind breiter: Jedes deckt eine Pappe, das Gelenk und 3 mm mehr zum Umschlagen um die Kante, zusammen 126 mm. Die Klappen wachsen auf 80 mm, zwei Drittel der Seitenbreite, das Standardmaß eines Schutzumschlags. Das Gemälde füllt die Vorderseite bis zum Falz, und der Strichcode steht auf der Rückseite, wo die Buchhandlung ihn scannt.
 
 ### 4 · Beide Vorsätze in einem Dokument
 
 <Excerpt region="endpapers" />
 
-Ein Vorsatz ist zwei Seiten breit: Das Spiegelblatt klebt auf der Pappe, das fliegende Blatt wendet sich wie eine Seite. Vorn liegt der Spiegel links, hinten rechts. Jeder Bogen misst 246 × 196 mm, mit 3 mm Anschnitt an Kopf, Fuß und Außenkanten und keinem am Falz, wo ein Leimstreifen von 5 mm ihn am Block hält. Beide Gemälde halten die Mitte ruhig, weil der Falz hindurchläuft. Die zwei Bogen haben dasselbe Format, also nimmt ein Dokument beide auf, einen je Seite.
+Ein Vorsatz ist zwei Seiten breit: Das Spiegelblatt klebt auf der Pappe, das fliegende Blatt wendet sich wie eine Seite. Vorn liegt der Spiegel links, hinten rechts. Jeder Bogen misst 246 × 196 mm, mit 3 mm Anschnitt an Kopf, Fuß und Außenkanten und keinem am Falz, wo ein Leimstreifen von 5 mm ihn am Block hält. Beide Gemälde halten die Mitte ruhig, weil der Falz hindurchläuft. Die zwei Bogen haben dasselbe Format, also nimmt ein Dokument beide auf, einen je Seite. Jedes Gemälde ist die Gestaltung seines Vorsatzes in `cover.sheets`, über beide Blätter gelegt.
 
 ## Varianten
 
 ### Die Decke bedrucken statt mit Leinen beziehen
 
-Nehmen Sie den Eintrag der Decke aus `looks`, dann übernimmt sie die Gestaltung des Buches: den Nachtgrund und das Gemälde auf dem vorderen Deckel.
+Nehmen Sie `case` aus `cover.sheets`, dann übernimmt die Decke die Gestaltung des Buches: den Nachtgrund und das Gemälde auf dem vorderen Deckel. Ihre eigenen Rahmen setzen den Titel weiter in Gold.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Den Rücken runden
@@ -60,4 +62,4 @@ Bei einem dickeren Buch gibt `case-round` dem Rücken der Decke 3 mm zu, und der
 ## Häufige Fehler
 
 - Die Bogen folgen in der erfassten Liste auf die Seiten des Buches: die Decke auf Seite 38, der Umschlag auf 39, die Vorsätze auf 40 und 41. Bekommt das Buch eine Seite mehr, verschieben sich alle Nummern.
-- Eine Leinendecke unter einem Schutzumschlag braucht keinen Strichcode. Übergeben Sie buildCover die Ausgabe mit ihrer ISBN, druckt es ihn auch auf den hinteren Deckel.
+- Bei einem Hardcover meint `sheet="cover"` die Decke ebenso wie den Umschlag eines Paperbacks; `sheet="case"` meint nur die Decke. Der eigene Rahmen eines Bogens ersetzt den gemeinsamen Rahmen dieser Zone nur auf diesem Bogen, ein leerer lässt sie dort frei.

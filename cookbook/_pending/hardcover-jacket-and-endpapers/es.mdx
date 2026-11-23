@@ -22,30 +22,32 @@ El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las dos versi
 
 <Excerpt region="sheets" />
 
-La cubierta de una rústica se corta a la medida del libro y sus solapas se doblan en el corte delantero. La tapa de un cartoné es un forro que envuelve dos cartones. Cada cartón se corta 7 mm más estrecho que la página por el lado del lomo y sobresale 3 mm de las páginas en cabeza, pie y corte delantero (las cejas), así que mide 116 × 196 mm. Entre cada cartón y el lomo queda un cajo de 7 mm, donde la tapa se dobla. Alrededor de todo, una pestaña de 15 mm se vuelve sobre los cantos de los cartones, y por eso el fondo de tela llega hasta un pliego de 286,3 × 226 mm. La tapa se hace con la versión sin ISBN, para que la tela no lleve código de barras, y con un texto de cubierta vacío, para que la tapa delantera y el lomo tomen de los metadatos solo el título, el subtítulo y el autor, que aquí van en oro.
+La cubierta de una rústica se corta a la medida del libro y sus solapas se doblan en el corte delantero. La tapa de un cartoné es un forro que envuelve dos cartones. Cada cartón se corta 7 mm más estrecho que la página por el lado del lomo y sobresale 3 mm de las páginas en cabeza, pie y corte delantero (las cejas), así que mide 116 × 196 mm. Entre cada cartón y el lomo queda un cajo de 7 mm, donde la tapa se dobla. Alrededor de todo, una pestaña de 15 mm se vuelve sobre los cantos de los cartones, y por eso el fondo de tela llega hasta un pliego de 286,3 × 226 mm.
+
+Todos los pliegos se hacen con la misma `config` y el mismo texto de cubierta. La tapa toma su diseño de `cover.sheets.case`, un fondo de tela sin nada más, y sus líneas de los marcos marcados con `sheet="case"`: título, subtítulo y autor en la tapa delantera y en el lomo, con estilos `case-` que son los de la sobrecubierta en oro, y un marco vacío en la tapa trasera, que deja la tela sin el texto de presentación. El código de barras solo se imprime en la sobrecubierta, que es lo que se escanea en caja.
 
 ### 3 · La sobrecubierta repite el diseño y el texto de la cubierta
 
 <Excerpt region="cover-type" />
 
-La sobrecubierta se hace con el `cover` del propio libro, los mismos estilos de párrafo y el mismo Markdown de cubierta que usa la rústica. Sus paneles son más anchos: cada uno cubre un cartón, el cajo y 3 mm más para doblarse sobre el canto, 126 mm en total. Las solapas crecen hasta 80 mm, dos tercios del ancho de página, la medida por omisión de una sobrecubierta. La pintura llena el panel delantero hasta el pliegue, y el código de barras queda en el panel trasero, donde lo lee el librero.
+La sobrecubierta no tiene entrada en `cover.sheets`, así que toma el `cover` del libro y los marcos sin `sheet`, con los estilos de párrafo y el Markdown de cubierta que usa la rústica; su cara delantera y su lomo se llenan con los metadatos, porque allí se dejan fuera los marcos de la tapa. Sus paneles son más anchos: cada uno cubre un cartón, el cajo y 3 mm más para doblarse sobre el canto, 126 mm en total. Las solapas crecen hasta 80 mm, dos tercios del ancho de página, la medida por omisión de una sobrecubierta. La pintura llena el panel delantero hasta el pliegue, y el código de barras queda en el panel trasero, donde lo lee el librero.
 
 ### 4 · Las dos guardas en un documento
 
 <Excerpt region="endpapers" />
 
-Una guarda tiene dos páginas de ancho: la contraguarda va pegada al cartón y la hoja volante pasa como una página más. En la guarda delantera la contraguarda queda a la izquierda, y en la trasera, a la derecha. Cada pliego mide 246 × 196 mm, con 3 mm de sangrado en cabeza, pie y cantos exteriores y ninguno en el pliegue, donde una franja de cola de 5 mm la sujeta al bloque. Las dos pinturas dejan tranquilo el centro, porque por ahí pasa el pliegue. Los dos pliegos tienen la misma medida, así que un solo documento los reúne, uno en cada página.
+Una guarda tiene dos páginas de ancho: la contraguarda va pegada al cartón y la hoja volante pasa como una página más. En la guarda delantera la contraguarda queda a la izquierda, y en la trasera, a la derecha. Cada pliego mide 246 × 196 mm, con 3 mm de sangrado en cabeza, pie y cantos exteriores y ninguno en el pliegue, donde una franja de cola de 5 mm la sujeta al bloque. Las dos pinturas dejan tranquilo el centro, porque por ahí pasa el pliegue. Los dos pliegos tienen la misma medida, así que un solo documento los reúne, uno en cada página. Cada pintura es el diseño de su guarda en `cover.sheets`, extendido sobre las dos hojas.
 
 ## Variantes
 
 ### Imprime la tapa en vez de forrarla de tela
 
-Quita la entrada de la tapa en `looks` y la tapa toma el diseño del libro: el fondo de noche y la pintura en la tapa delantera.
+Quita `case` de `cover.sheets` y la tapa toma el diseño del libro: el fondo de noche y la pintura en la tapa delantera. Sus propios marcos siguen poniendo el título en oro.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Redondea el lomo
@@ -60,4 +62,4 @@ En un libro más grueso, `case-round` suma 3 mm al lomo de la tapa, y el de la s
 ## Errores frecuentes
 
 - Los pliegos van después de las páginas del libro en la lista capturada: la tapa en la 38, la sobrecubierta en la 39 y las guardas en la 40 y la 41. Si el libro gana una página, todos los números se mueven.
-- Una tapa de tela bajo sobrecubierta no necesita código de barras. Si pasas a buildCover la versión con su ISBN, también lo imprime en la tapa trasera.
+- En un cartoné, `sheet="cover"` nombra la tapa además de la cubierta de una rústica; `sheet="case"` nombra solo la tapa. El marco propio de un pliego sustituye al marco común de esa zona solo en ese pliego, así que uno vacío deja la zona en blanco allí.

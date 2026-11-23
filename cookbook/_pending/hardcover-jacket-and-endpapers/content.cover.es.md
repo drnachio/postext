@@ -31,3 +31,26 @@ Esta edición
 Las dos leyendas se publicaron en 1861 en *El Contemporáneo*, de Madrid. El texto sigue la edición de las *Obras* que la librería de Fernando Fe publicó en Madrid en 1885, con la acentuación y la puntuación del diálogo puestas al día. El monte y la fuente existen, y las guardas de la edición en cartoné los pintan.
 :::
 :::
+
+:::frame{slot="front" sheet="case"}
+:::paragraphs{style="case-title"}
+El monte de las ánimas
+:::
+
+:::paragraphs{style="case-subtitle"}
+y Los ojos verdes
+:::
+
+:::paragraphs{style="case-author"}
+Gustavo Adolfo Bécquer
+:::
+:::
+
+:::frame{slot="spine" sheet="case"}
+:::paragraphs{style="case-spine"}
+El monte de las ánimas · Gustavo Adolfo Bécquer
+:::
+:::
+
+:::frame{slot="back" sheet="case"}
+:::

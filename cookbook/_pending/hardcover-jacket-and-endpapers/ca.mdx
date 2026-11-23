@@ -22,30 +22,32 @@ El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les dues vers
 
 <Excerpt region="sheets" />
 
-La coberta d'una rústica es talla a la mida del llibre i les solapes es dobleguen al tall del davant. La tapa d'un cartoné és un folre que embolica dos cartons. Cada cartó es talla 7 mm més estret que la pàgina pel costat del llom i sobresurt 3 mm de les pàgines al cap, al peu i al tall del davant (les celles), així que fa 116 × 196 mm. Entre cada cartó i el llom queda un caix de 7 mm, on la tapa es doblega. Al voltant de tot, una pestanya de 15 mm es gira sobre els cantells dels cartons, i per això el fons de tela arriba fins a un plec de 286,3 × 226 mm. La tapa es fa amb la versió sense ISBN, perquè la tela no porti codi de barres, i amb un text de coberta buit, perquè la tapa del davant i el llom prenguin de les metadades només el títol, el subtítol i l'autor, que aquí van en or.
+La coberta d'una rústica es talla a la mida del llibre i les solapes es dobleguen al tall del davant. La tapa d'un cartoné és un folre que embolica dos cartons. Cada cartó es talla 7 mm més estret que la pàgina pel costat del llom i sobresurt 3 mm de les pàgines al cap, al peu i al tall del davant (les celles), així que fa 116 × 196 mm. Entre cada cartó i el llom queda un caix de 7 mm, on la tapa es doblega. Al voltant de tot, una pestanya de 15 mm es gira sobre els cantells dels cartons, i per això el fons de tela arriba fins a un plec de 286,3 × 226 mm.
+
+Tots els plecs es fan amb la mateixa `config` i el mateix text de coberta. La tapa pren el disseny de `cover.sheets.case`, un fons de tela sense res més, i les línies dels marcs marcats amb `sheet="case"`: títol, subtítol i autor a la tapa del davant i al llom, amb estils `case-` que són els de la sobrecoberta en or, i un marc buit a la tapa del darrere, que deixa la tela sense el text de presentació. El codi de barres només s'imprimeix a la sobrecoberta, que és el que s'escaneja a la caixa.
 
 ### 3 · La sobrecoberta repeteix el disseny i el text de la coberta
 
 <Excerpt region="cover-type" />
 
-La sobrecoberta es fa amb el `cover` del mateix llibre, els mateixos estils de paràgraf i el mateix Markdown de coberta que fa servir la rústica. Els seus panells són més amples: cadascun cobreix un cartó, el caix i 3 mm més per doblegar-se sobre el cantell, 126 mm en total. Les solapes creixen fins a 80 mm, dos terços de l'amplada de pàgina, la mida per defecte d'una sobrecoberta. La pintura omple el panell del davant fins al plec, i el codi de barres queda al panell del darrere, on el llegeix el llibreter.
+La sobrecoberta no té entrada a `cover.sheets`, així que pren el `cover` del llibre i els marcs sense `sheet`, amb els estils de paràgraf i el Markdown de coberta que fa servir la rústica; la cara del davant i el llom s'omplen amb les metadades, perquè allà es deixen fora els marcs de la tapa. Els seus panells són més amples: cadascun cobreix un cartó, el caix i 3 mm més per doblegar-se sobre el cantell, 126 mm en total. Les solapes creixen fins a 80 mm, dos terços de l'amplada de pàgina, la mida per defecte d'una sobrecoberta. La pintura omple el panell del davant fins al plec, i el codi de barres queda al panell del darrere, on el llegeix el llibreter.
 
 ### 4 · Les dues guardes en un document
 
 <Excerpt region="endpapers" />
 
-Una guarda té dues pàgines d'amplada: la contraguarda va enganxada al cartó i el full de guarda passa com una pàgina més. A la guarda del davant la contraguarda queda a l'esquerra, i a la del darrere, a la dreta. Cada plec fa 246 × 196 mm, amb 3 mm de sang al cap, al peu i als cantells exteriors i cap al plec, on una franja de cola de 5 mm la subjecta al bloc. Les dues pintures deixen tranquil el centre, perquè hi passa el plec. Els dos plecs tenen la mateixa mida, així que un sol document els aplega, un a cada pàgina.
+Una guarda té dues pàgines d'amplada: la contraguarda va enganxada al cartó i el full de guarda passa com una pàgina més. A la guarda del davant la contraguarda queda a l'esquerra, i a la del darrere, a la dreta. Cada plec fa 246 × 196 mm, amb 3 mm de sang al cap, al peu i als cantells exteriors i cap al plec, on una franja de cola de 5 mm la subjecta al bloc. Les dues pintures deixen tranquil el centre, perquè hi passa el plec. Els dos plecs tenen la mateixa mida, així que un sol document els aplega, un a cada pàgina. Cada pintura és el disseny de la seva guarda a `cover.sheets`, estès sobre els dos fulls.
 
 ## Variants
 
 ### Imprimeix la tapa en lloc de folrar-la de tela
 
-Treu l'entrada de la tapa de `looks` i la tapa pren el disseny del llibre: el fons de nit i la pintura a la tapa del davant.
+Treu `case` de `cover.sheets` i la tapa pren el disseny del llibre: el fons de nit i la pintura a la tapa del davant. Els seus marcs continuen posant el títol en or.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Arrodoneix el llom
@@ -60,4 +62,4 @@ En un llibre més gruixut, `case-round` suma 3 mm al llom de la tapa, i el de la
 ## Errors freqüents
 
 - Els plecs van després de les pàgines del llibre a la llista capturada: la tapa a la 38, la sobrecoberta a la 39 i les guardes a la 40 i la 41. Si el llibre guanya una pàgina, tots els números es mouen.
-- Una tapa de tela sota sobrecoberta no necessita codi de barres. Si passes a buildCover la versió amb el seu ISBN, també l'imprimeix a la tapa del darrere.
+- En un cartoné, `sheet="cover"` anomena la tapa a més de la coberta d'una rústica; `sheet="case"` anomena només la tapa. El marc propi d'un plec substitueix el marc comú d'aquella zona només en aquell plec, així que un de buit la deixa en blanc.

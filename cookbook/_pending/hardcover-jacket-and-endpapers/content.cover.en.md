@@ -31,3 +31,26 @@ The translators
 Cornelia Frances Bates (1826–1908) began to study Spanish at seventy-one and read Bécquer in two small green volumes with a red dictionary beside them. Her daughter Katharine Lee Bates (1859–1929), professor of English at Wellesley College, finished the translation they had planned together and published it in New York in 1909 as *Romantic Legends of Spain*.
 :::
 :::
+
+:::frame{slot="front" sheet="case"}
+:::paragraphs{style="case-title"}
+The Spirits’ Mountain
+:::
+
+:::paragraphs{style="case-subtitle"}
+and The Emerald Eyes
+:::
+
+:::paragraphs{style="case-author"}
+Gustavo Adolfo Bécquer
+:::
+:::
+
+:::frame{slot="spine" sheet="case"}
+:::paragraphs{style="case-spine"}
+The Spirits’ Mountain · Gustavo Adolfo Bécquer
+:::
+:::
+
+:::frame{slot="back" sheet="case"}
+:::

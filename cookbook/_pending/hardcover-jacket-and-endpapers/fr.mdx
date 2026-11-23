@@ -22,30 +22,32 @@ Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Les deux v
 
 <Excerpt region="sheets" />
 
-La couverture d’un broché est coupée au format du livre et ses rabats se replient sur la tranche de gouttière. Le boîtier d’un relié est une couvrure qui enveloppe deux cartons. Chaque carton est coupé 7 mm plus étroit que la page du côté du dos et dépasse les pages de 3 mm en tête, en pied et en gouttière (les chasses) : il mesure donc 116 × 196 mm. Entre chaque carton et le dos court un mors de 7 mm, où le boîtier plie. Tout autour, un rempli de 15 mm se rabat sur les chants des cartons, ce qui porte le fond de toile jusqu’à une feuille de 286,3 × 226 mm. Le boîtier est fait avec la version sans ISBN, pour que la toile ne porte pas de code-barres, et avec un texte de couverture vide, pour que le premier plat et le dos ne prennent aux métadonnées que le titre, le sous-titre et l’auteur, mis ici en or.
+La couverture d’un broché est coupée au format du livre et ses rabats se replient sur la tranche de gouttière. Le boîtier d’un relié est une couvrure qui enveloppe deux cartons. Chaque carton est coupé 7 mm plus étroit que la page du côté du dos et dépasse les pages de 3 mm en tête, en pied et en gouttière (les chasses) : il mesure donc 116 × 196 mm. Entre chaque carton et le dos court un mors de 7 mm, où le boîtier plie. Tout autour, un rempli de 15 mm se rabat sur les chants des cartons, ce qui porte le fond de toile jusqu’à une feuille de 286,3 × 226 mm.
+
+Toutes les feuilles sont faites avec la même `config` et le même texte de couverture. Le boîtier prend son dessin dans `cover.sheets.case`, un fond de toile nu, et ses lignes dans les cadres marqués `sheet="case"` : titre, sous-titre et auteur sur le premier plat et le dos, dans des styles `case-` qui sont ceux de la jaquette passés en or, et un cadre vide sur le plat arrière, qui garde la toile sans le texte de présentation. Le code-barres ne s’imprime que sur la jaquette, la feuille que la caisse scanne.
 
 ### 3 · La jaquette reprend le dessin et le texte de la couverture
 
 <Excerpt region="cover-type" />
 
-La jaquette est faite avec le `cover` du livre, les mêmes styles de paragraphe et le même Markdown de couverture que le broché. Ses panneaux sont plus larges : chacun couvre un carton, le mors et 3 mm de plus pour se replier sur le chant, 126 mm en tout. Ses rabats passent à 80 mm, deux tiers de la largeur de page, la mesure par défaut d’une jaquette. La peinture remplit le panneau avant jusqu’au pli, et le code-barres se trouve sur le panneau arrière, là où le libraire le lit.
+La jaquette n’a pas d’entrée dans `cover.sheets` : elle prend le `cover` du livre et les cadres sans `sheet`, avec les styles de paragraphe et le Markdown de couverture du broché ; son panneau avant et son dos sont remplis par les métadonnées, puisque les cadres du boîtier y sont laissés de côté. Ses panneaux sont plus larges : chacun couvre un carton, le mors et 3 mm de plus pour se replier sur le chant, 126 mm en tout. Ses rabats passent à 80 mm, deux tiers de la largeur de page, la mesure par défaut d’une jaquette. La peinture remplit le panneau avant jusqu’au pli, et le code-barres se trouve sur le panneau arrière, là où le libraire le lit.
 
 ### 4 · Les deux gardes dans un document
 
 <Excerpt region="endpapers" />
 
-Une garde fait deux pages de large : la contre-garde est collée au carton et la garde volante tourne comme une page. À l’avant la contre-garde est à gauche, à l’arrière elle est à droite. Chaque feuille mesure 246 × 196 mm, avec 3 mm de fond perdu en tête, en pied et sur les bords extérieurs et aucun au pli, où une bande de colle de 5 mm la fixe au bloc. Les deux peintures laissent le milieu calme, puisque le pli le traverse. Les deux feuilles ont le même format : un seul document les réunit, une par page.
+Une garde fait deux pages de large : la contre-garde est collée au carton et la garde volante tourne comme une page. À l’avant la contre-garde est à gauche, à l’arrière elle est à droite. Chaque feuille mesure 246 × 196 mm, avec 3 mm de fond perdu en tête, en pied et sur les bords extérieurs et aucun au pli, où une bande de colle de 5 mm la fixe au bloc. Les deux peintures laissent le milieu calme, puisque le pli le traverse. Les deux feuilles ont le même format : un seul document les réunit, une par page. Chaque peinture est le dessin de sa garde dans `cover.sheets`, étendu sur les deux feuillets.
 
 ## Variantes
 
 ### Imprimer le boîtier au lieu de le couvrir de toile
 
-Retirez l’entrée du boîtier dans `looks` : il prend le dessin du livre, le fond de nuit et la peinture sur le premier plat.
+Retirez `case` de `cover.sheets` : le boîtier prend le dessin du livre, le fond de nuit et la peinture sur le premier plat. Ses propres cadres mettent toujours le titre en or.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Arrondir le dos
@@ -60,4 +62,4 @@ Sur un livre plus épais, `case-round` ajoute 3 mm au dos du boîtier, et celui 
 ## Erreurs fréquentes
 
 - Les feuilles viennent après les pages du livre dans la liste capturée : le boîtier en 38, la jaquette en 39, les gardes en 40 et 41. Ajoutez une page au livre et tous les numéros bougent.
-- Un boîtier en toile sous jaquette n’a pas besoin de code-barres. Si vous passez à buildCover la version avec son ISBN, il en imprime un aussi sur le plat arrière.
+- Sur un relié, `sheet="cover"` désigne le boîtier autant que la couverture d’un broché ; `sheet="case"` ne désigne que le boîtier. Le cadre propre d’une feuille remplace le cadre commun de cette zone sur cette feuille seulement : vide, il la laisse nue.

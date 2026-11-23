@@ -42,10 +42,17 @@ const production = {
 };
 // 100 g/m² bulky cream wove at a bulk of 2.4: each leaf is 100 × 2.4 = 240 µm thick.
 const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
-// The design every printed cover shares (the paperback's, the jacket): a night ground and
-// the painting on the front panel, into the bleed, whatever the panel's width.
+// The book's cover design (the paperback's, the jacket's): a night ground and the painting
+// on the front panel, into the bleed, whatever the panel's width. `sheets` gives the
+// hardcover's other sheets a design of their own: the case its cloth, each endpaper its
+// painting across both leaves.
 const cover = { background: col('night'), verticalAlign: { back: 'middle' },
-  image: { resourceId: 'moncayo', area: 'front', focus: { x: 0.5, y: 0.4 } } };
+  image: { resourceId: 'moncayo', area: 'front', focus: { x: 0.5, y: 0.4 } },
+  sheets: {
+    case: { background: col('cloth') },
+    endpaperFront: { image: { resourceId: 'soria' } },
+    endpaperBack: { image: { resourceId: 'fuente' } },
+  } };
 // #endregion
 
 // #region cover-type: the paragraph styles the cover's text is set in
@@ -67,6 +74,11 @@ const coverStyles = [
   style('flap-head', 'Josefin Sans', 7.5, 10, col('gold'), caps(1.4)),
   style('flap-text', 'Crimson Pro', 9.6, 13.2, col('bone'), { marginTop: pt(5) }),
 ];
+// The case's frames (`sheet="case"` in the cover text) set the jacket's lines in gold, the
+// colour the cloth is stamped in.
+const stamped = coverStyles.filter((s) => /title|subtitle|author|spine/.test(s.id))
+  .map((s) => ({ ...s, id: s.id.replace('cover-', 'case-'), color: col('gold'),
+    italicColor: col('gold') }));
 // #endregion
 
 // #region pages: the book block, a small literary paperback
@@ -144,7 +156,7 @@ const config = {
   paragraphStyles: [
     style('rights', 'Crimson Pro', 8, 11, col('muted'), { marginBottom: pt(5) }),
     style('colophon', 'Crimson Pro', 9.5, 13, col('muted'), { italic: true, textAlign: 'center' }),
-    ...coverStyles,
+    ...coverStyles, ...stamped,
   ],
   toc: { levels: [{ level: 1, fontFamily: 'Crimson Pro', fontSize: pt(11), color: col('ink'),
     marginBottom: pt(LEAD / 2) }], pageNumber: { fontFamily: 'Crimson Pro', fontSize: pt(11),
@@ -191,22 +203,13 @@ const book = await buildDocumentWithFonts({ markdown: [markdown, part2, part3]
   .join('\n\n'), resources }, config, kitFonts(FONTS));
 
 // #region sheets: the hardcover's four sheets, built from the pages just laid out
-// One call per sheet. The jacket takes the book's design and cover text; the cloth case
-// gets a ground of its cloth, the title and author stamped in gold, and no barcode (the
-// jacket carries it); each endpaper gets its painting across both its leaves.
-const hardcover = production.versions[1];
-const gold = config.paragraphStyles.map((s) => (s.id.startsWith('cover-')
-  ? { ...s, color: col('gold'), italicColor: col('gold') } : s));
-const looks = {
-  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-  endpaperFront: { cover: { image: { resourceId: 'soria' } } },
-  endpaperBack: { cover: { image: { resourceId: 'fuente' } } },
-};
+// One call per sheet, with the same config and the same cover text: each sheet takes its
+// design from `cover.sheets` (the jacket, the book's) and the frames meant for it. The
+// barcode goes on the jacket alone, the sheet a till scans.
 const built = {};
 for (const sheet of ['cover', 'jacket', 'endpaperFront', 'endpaperBack']) {
-  const made = buildCover({ config: { ...config, ...looks[sheet] }, sheet, pages: book.pages,
-    version: sheet === 'cover' ? { ...hardcover, isbn: undefined } : 'hardcover',
-    markdown: sheet === 'cover' ? '' : coverText, metadata: book.metadata, resources });
+  const made = buildCover({ config, sheet, pages: book.pages, version: 'hardcover',
+    markdown: coverText, metadata: book.metadata, resources });
   if (!('config' in made)) throw new Error(made.issues.map((i) => i.kind).join(', '));
   // The barcode's digits name OCR-B, which no font server has: set in the label face.
   for (const [id, bytes] of Object.entries(made.files)) {

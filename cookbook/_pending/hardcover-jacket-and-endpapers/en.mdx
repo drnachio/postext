@@ -22,30 +22,32 @@ The code is [the short answer](#the-short-answer) above. Both versions read the 
 
 <Excerpt region="sheets" />
 
-A paperback cover is cut to the trim and its flaps fold in at the fore-edges. A case is a covering wrapped round two boards. Each board is cut 7 mm narrower than the page at the spine and stands 3 mm proud of the pages at head, foot and fore-edge (the squares), so it measures 116 × 196 mm. Between each board and the spine runs a 7 mm joint, where the cover bends. Round the whole piece a 15 mm turn-in folds over the board edges, which is why the cloth ground runs out to a 286.3 × 226 mm sheet. The case is built from the version with no ISBN, so the cloth carries no barcode, and from an empty cover text, so its front and spine take only the title, subtitle and author from the metadata, restyled in gold.
+A paperback cover is cut to the trim and its flaps fold in at the fore-edges. A case is a covering wrapped round two boards. Each board is cut 7 mm narrower than the page at the spine and stands 3 mm proud of the pages at head, foot and fore-edge (the squares), so it measures 116 × 196 mm. Between each board and the spine runs a 7 mm joint, where the cover bends. Round the whole piece a 15 mm turn-in folds over the board edges, which is why the cloth ground runs out to a 286.3 × 226 mm sheet.
+
+Each sheet is built from the same `config` and the same cover text. The case takes its design from `cover.sheets.case`, a bare cloth ground, and its lines from the frames marked `sheet="case"`: title, subtitle and author on the front board and the spine, in `case-` styles that are the jacket's in gold, and an empty frame on the back board, which keeps the blurb off the cloth. The barcode prints on the jacket only, the sheet a till scans.
 
 ### 3 · The jacket reuses the cover's design and text
 
 <Excerpt region="cover-type" />
 
-The jacket is built from the book's own `cover`, the same paragraph styles and the same cover Markdown the paperback uses. Its panels are wider: each covers a board, the joint and 3 mm more to fold round the board's edge, 126 mm in all. Its flaps grow to 80 mm, two thirds of the page width, which is the default for a jacket. The painting fills the front panel up to its fold, and the barcode sits on the back panel, where a bookseller scans it.
+The jacket has no entry in `cover.sheets`, so it takes the book's `cover` and the frames with no `sheet`, with the paragraph styles and cover Markdown the paperback uses; its front and spine are filled from the metadata, since the case's frames are left out there. Its panels are wider: each covers a board, the joint and 3 mm more to fold round the board's edge, 126 mm in all. Its flaps grow to 80 mm, two thirds of the page width, which is the default for a jacket. The painting fills the front panel up to its fold, and the barcode sits on the back panel, where a bookseller scans it.
 
 ### 4 · Two endpapers in one document
 
 <Excerpt region="endpapers" />
 
-An endpaper is two pages wide: the pastedown is glued to the board and the flyleaf turns like a page. At the front the pastedown is on the left, and at the back it is on the right. Each sheet is 246 × 196 mm, with 3 mm of bleed at head, foot and the outer edges and none at the fold, where a 5 mm glue strip holds it to the block. Both paintings keep their middles quiet, since the fold runs through them. The two sheets have one size, so one document holds them, a page each.
+An endpaper is two pages wide: the pastedown is glued to the board and the flyleaf turns like a page. At the front the pastedown is on the left, and at the back it is on the right. Each sheet is 246 × 196 mm, with 3 mm of bleed at head, foot and the outer edges and none at the fold, where a 5 mm glue strip holds it to the block. Both paintings keep their middles quiet, since the fold runs through them. The two sheets have one size, so one document holds them, a page each. Each painting is its endpaper's design in `cover.sheets`, laid across both leaves.
 
 ## Variations
 
 ### Print the case instead of covering it in cloth
 
-Drop the case's entry from `looks` and the case takes the book's design: the night ground, and the painting on the front board.
+Drop `case` from `cover.sheets` and the case takes the book's design: the night ground and the painting on the front board. Its own frames still set the title in gold.
 
 ```diff
- const looks = {
--  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
-   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
 ```
 
 ### Round the spine
@@ -60,4 +62,4 @@ On a thicker book, `case-round` adds 3 mm to the case spine and the jacket's spi
 ## Pitfalls
 
 - The sheets come after the book's pages in the captured list: the case at 38, the jacket at 39, the endpapers at 40 and 41. Add a page to the book and every number moves.
-- A cloth case under a jacket does not need the barcode. If you hand buildCover the version with its ISBN, it prints one on the case's back board too.
+- On a hardcover, `sheet="cover"` names the case as well as a paperback's cover; `sheet="case"` names the case alone. A frame of a sheet's own replaces the shared frame of that zone on that sheet only, so an empty one leaves the zone bare there.
