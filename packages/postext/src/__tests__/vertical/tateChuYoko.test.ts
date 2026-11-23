@@ -8,6 +8,7 @@ import { withMeasureWritingMode } from '../../measure/vertical.js';
 import type { CjkRegion, PostextConfig, Dimension, Resource } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -262,7 +263,7 @@ function record(): { canvas: HTMLCanvasElement; calls: Call[] } {
   const stack: M[] = [];
   const mul = (a: M, b: M): M => [a[0] * b[0] + a[2] * b[1], a[1] * b[0] + a[3] * b[1], a[0] * b[2] + a[2] * b[3], a[1] * b[2] + a[3] * b[3], a[0] * b[4] + a[2] * b[5] + a[4], a[1] * b[4] + a[3] * b[5] + a[5]];
   const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
-  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const size = () => Number(fontPx(String(state.font))?.[1] ?? 10);
   const api: Record<string, unknown> = {
     save: () => stack.push(m),
     restore: () => { m = stack.pop() ?? m; },

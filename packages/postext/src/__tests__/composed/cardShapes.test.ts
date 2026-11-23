@@ -13,11 +13,12 @@ import { buildDocument } from '../../pipeline/index.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import { collectConfigWarnings } from '../../checks/configWarnings.js';
 import type { PostextConfig, VDTBlock, VDTDesignBlock, VDTDesignBoxBlock, VDTDesignPathBlock } from '../../index.js';
+import { fontPx } from '../fontPx.js';
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return { width: [...s].length * size * 0.5 };
   }
 }

@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import { parseMarkdown } from '../../../parse/index.js';
 import { renderToHtmlIndexed } from '../../../html-backend/html-backend.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #935: a figure says its alt, caption and note in the words of its own
 // edition; the resource keeps the picture and the anchors.
@@ -11,7 +12,7 @@ import type { PostextConfig, Resource, VDTBlock, VDTDocument } from '../../../in
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

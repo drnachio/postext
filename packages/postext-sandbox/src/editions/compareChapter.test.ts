@@ -4,12 +4,13 @@ import type { LayoutService } from '../worker/LayoutService.js';
 import type { Chapter } from '../book/types.js';
 import { editionEntry, ensureEdition, resetEditions, subscribeEditions, type EditionEntry } from './editionStore.js';
 import { threeEditionsBook } from './threeEditions.fixture.js';
+import { fontPx } from '../__tests__/fontPx.js';
 
 // Text measured at about the width of a book face (0.42 em a character).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const px = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const px = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * px * 0.42 };
   }
 }

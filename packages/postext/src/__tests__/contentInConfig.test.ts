@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildDocument, collectConfigWarnings, configDesignSlots, designTextLiteral, formatWarning, stripConfigDefaults } from '../index.js';
 import type { ConfigWarning, DesignElement, PostextConfig } from '../index.js';
+import { fontPx } from './fontPx.js';
 
 // A measurer for the build: every character half an em wide.
 (globalThis as unknown as { OffscreenCanvas: unknown }).OffscreenCanvas = class {
@@ -9,7 +10,7 @@ import type { ConfigWarning, DesignElement, PostextConfig } from '../index.js';
       font: '',
       letterSpacing: '0px',
       measureText(this: { font: string }, s: string) {
-        const m = /(\d*\.?\d+)px/.exec(this.font);
+        const m = fontPx(this.font);
         return { width: s.length * (m ? parseFloat(m[1]!) : 16) / 2 };
       },
     };

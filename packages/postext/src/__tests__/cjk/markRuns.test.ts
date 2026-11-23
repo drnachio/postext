@@ -7,6 +7,7 @@ import { markCuts } from '../../measure/cjk/markCuts.js';
 import { graphemesOf } from '../../measure/graphemes.js';
 import type { Dimension, PostextConfig, WritingMode } from '../../types.js';
 import type { VDTDocument, VDTLine } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // A browser sets the first of two CJK marks that meet half width when it
 // measures or paints them in one run (Chrome's `text-spacing-trim: normal`,
@@ -18,7 +19,6 @@ import type { VDTDocument, VDTLine } from '../../vdt.js';
 // check compares a run with trimming against one without.
 
 const EM = 16;
-const SIZE_RE = /(\d*\.?\d+)px/;
 /** The marks the stub browser trims when two meet. */
 const MARKS = new Set([...'（）《》「」『』“”‘’，。、：；！？·・　']);
 let trimming = false;
@@ -40,7 +40,7 @@ function pens(text: string, em: number, spacing: number): number[] {
   });
   return out;
 }
-const sizeOf = (font: unknown): number => Number(SIZE_RE.exec(String(font))?.[1] ?? EM);
+const sizeOf = (font: unknown): number => Number(fontPx(String(font))?.[1] ?? EM);
 
 class TrimmingCtx {
   font = `${EM}px Test`;

@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { buildDocument, flowToPage, pageToFlow, type PostextConfig } from 'postext';
 import { pixelToSourceOffset, designImageFileIdAtPixel } from './geometry.js';
 import { groupPagesIntoRows } from './layoutUtils.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
 // CJK characters 1 em, anything else ½ em, at the font's size.
-const SIZE_RE = /(\d*\.?\d+)px/;
 class StubCtx {
   font = '10px Test';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = 0;
     for (const ch of s) w += ch.codePointAt(0)! >= 0x2e80 ? em : em / 2;
     return { width: w };

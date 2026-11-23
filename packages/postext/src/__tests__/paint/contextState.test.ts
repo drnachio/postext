@@ -11,6 +11,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { clearMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTComicBalloon, VDTDesignTextBlock, VDTDocument, VDTPage } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #764, the paint side. Chrome (131 and 154, a DOM canvas and an
 // OffscreenCanvas) makes every saved state with the language `inherit`,
@@ -86,7 +87,7 @@ describe('the paint code saves and spaces through contextState.ts', () => {
 /** The language of the page that hosts the canvas (`inherit`). */
 const HOST = 'en';
 const primary = (lang: string): string => lang.toLowerCase().split('-')[0]!;
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(fontPx(font)?.[1] ?? '10');
 /** A face that draws by language, as the measured ones do: its digits are
  *  narrower in Chinese and Japanese, its full stop wider in Arabic. */
 function advance(ch: string, lang: string): number {

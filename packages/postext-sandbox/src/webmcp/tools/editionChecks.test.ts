@@ -3,13 +3,14 @@ import type { Chapter } from '../../book/types.js';
 import { FIXTURE_LOCALES, threeEditionsBook, type FixtureLocale } from '../../editions/threeEditions.fixture.js';
 import type { LoadedPreset, PresetProvider, PresetSummary } from '../../presets/types.js';
 import { harness } from './testHarness.js';
+import { fontPx } from '../../__tests__/fontPx.js';
 
 // Text measured at about the width of a book face, as the editions' own
 // tests do (the harness's stub is narrower).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const px = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const px = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * px * 0.42 };
   }
 }

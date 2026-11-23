@@ -5,13 +5,14 @@ import { renderPageToCanvas } from '../../../index.js';
 import { renderToHtmlIndexed } from '../../../html-backend/html-backend.js';
 import { labelLayoutOnSheet } from '../../../composed/labels.js';
 import type { PostextConfig, Resource, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #955: a vertical label on the mirrored page of a right-to-left book.
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

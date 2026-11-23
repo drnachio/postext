@@ -2,6 +2,8 @@
 // (#770): node has none, and the widths that matter here are the ones a
 // face changes with the language of the context that measures.
 
+import { fontPx } from '../../__tests__/fontPx.js';
+
 /** Advances, in ems, of a face that draws by language as Noto Serif SC
  *  does: a digit is 0.471 em wide in Chinese and 0.55 em in any other
  *  language (4.71 px and 5.5 px at 10 px), a Han character 1 em, a space
@@ -45,7 +47,7 @@ export class LanguageContext {
   measureText(text: string): { width: number } {
     LanguageContext.measuredIn.push(this.lang === 'inherit' ? 'host' : this.lang);
     const lang = this.lang === 'inherit' ? LanguageContext.host : this.lang;
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let width = 0;
     for (const ch of text) width += advance(ch, lang) * size;
     return { width };

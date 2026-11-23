@@ -6,6 +6,7 @@ import { cjkCompositionOf, type CjkComposition } from '../../measure/cjk/cjkPunc
 import { resolveCjkConfig } from '../../defaults/text/cjk.js';
 import type { Dimension, PostextConfig } from '../../types.js';
 import type { VDTLine, VDTLineSegment } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // A Japanese two-em dash (2倍ダッシュ, ―― or ——) is one stroke, and a row
 // of dashes one rule (#680). The stub is Noto Serif JP's: its horizontal
@@ -15,7 +16,6 @@ import type { VDTLine, VDTLineSegment } from '../../vdt.js';
 // has ink from 0.079 em below the baseline to 0.822 em above it.
 
 const EM = 20;
-const SIZE_RE = /(\d*\.?\d+)px/;
 interface Glyph { advance: number; left: number; right: number; top: number; bottom: number }
 const GLYPHS: Record<string, Glyph> = {
   '—': { advance: 0.89, left: 0.043, right: 0.846, top: 0.293, bottom: 0.242 },
@@ -29,7 +29,7 @@ class StubCtx {
   font = `${EM}px Test`;
   letterSpacing = '0px';
   measureText(s: string): TextMetrics {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
+    const em = Number(fontPx(this.font)?.[1] ?? EM);
     let x = 0;
     let left = Infinity;
     let right = -Infinity;

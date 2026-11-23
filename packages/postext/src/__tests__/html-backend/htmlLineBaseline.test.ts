@@ -3,6 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { renderToHtml } from '../../html-backend/html-backend.js';
 import { clearTextWidthCache } from '../../measure/canvas.js';
 import type { PostextConfig } from '../../types.js';
+import { fontPx } from '../fontPx.js';
 
 // A line box stands its text on the line's baseline, which the engine puts
 // at 0.8 of the leading (`lineBaselineOffset`) and the canvas and the PDF
@@ -19,7 +20,7 @@ let box: { ascent: number; descent: number } | null = { ascent: 0.75, descent: 0
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/([\d.]+)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return {
       width: s.length * 7,
       ...(box ? { fontBoundingBoxAscent: box.ascent * size, fontBoundingBoxDescent: box.descent * size } : {}),

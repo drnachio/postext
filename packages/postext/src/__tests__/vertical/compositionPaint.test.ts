@@ -10,6 +10,7 @@ import type { InlineSpan } from '../../parse/index.js';
 import type { CjkRegion, Dimension, PostextConfig, WritingMode } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 // The punctuation model of #185–#187 fed through the cells of the vertical
 // writing mode (#188): compression, line-edge trims, hanging and the
@@ -359,7 +360,7 @@ function recordingCanvas(pageWidth: number, vertical: boolean): { canvas: HTMLCa
   const stack: M[] = [];
   const state: Record<string, unknown> = { font: FONT, letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
   const saved: Record<string, unknown>[] = [];
-  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? EM);
+  const size = () => Number(fontPx(String(state.font))?.[1] ?? EM);
   // Sheet → flow x.
   const flowX = (sx: number, sy: number): number => (vertical ? sy : sx);
   const api: Record<string, unknown> = {

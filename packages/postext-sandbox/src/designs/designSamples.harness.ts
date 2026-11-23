@@ -23,6 +23,7 @@ import { sampleChapterTexts } from '../book/chapterOps.js';
 import { DEFAULT_MARKDOWN_EN } from '../defaultMarkdown/index.js';
 import { buildDefaultResources } from '../defaultResources/index.js';
 import { generalSettingsWithWording } from '../editions/configLayers.js';
+import { fontPx } from '../__tests__/fontPx.js';
 
 const PUBLIC = new URL('../../../../apps/web/public/', import.meta.url);
 const at = (...path: string[]): URL => new URL(path.join('/'), PUBLIC);
@@ -33,7 +34,7 @@ const list = (url: URL): string[] => readdirSync(url) as string[];
 /** Text measured without a canvas: half an em a character, enough for
  *  where pages break. */
 export function stubCanvas(): void {
-  const em = (font: string): number => Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 16);
+  const em = (font: string): number => Number(fontPx(font)?.[1] ?? 16);
   class StubContext {
     font = '16px serif';
     letterSpacing = '0px';

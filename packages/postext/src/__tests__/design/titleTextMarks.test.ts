@@ -2,12 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../pipeline/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDesignSlot, VDTDesignTextBlock, VDTDocument } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // Deterministic text measurement stub (no DOM in the node test env).
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const size = m ? Number(m[1]) : 16;
     return { width: s.length * size * 0.5 };
   }

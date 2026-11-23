@@ -9,6 +9,7 @@ import { collectConfigWarnings } from '../../../checks/configWarnings.js';
 import { configFontFamilies } from '../../../fonts/usage.js';
 import type { FrameConfig, PageTemplate } from '../../../composed/types.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDesignBlock, VDTDesignBoxBlock, VDTDesignTextBlock, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1054: a label tab's icon can be a glyph of a font (a ◉) in the tab's
 // colour, beside the tab or inside it, as a picture icon is.
@@ -18,7 +19,7 @@ import type { PostextConfig, Resource, VDTBlock, VDTDesignBlock, VDTDesignBoxBlo
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return { width: [...s].length * size * 0.7 };
   }
 }

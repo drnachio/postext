@@ -3,6 +3,7 @@ import { buildDocument, pageComics, type PostextConfig, type Resource, type VDTC
 import { balloonTextAt, balloonTextNearest, type TextMeasure } from './balloonText.js';
 import { comicPressAt } from './comicHit.js';
 import { boxCentre, rotateAbout } from './balloonDrag.js';
+import { fontPx } from '../../__tests__/fontPx.js';
 
 // Nothing measures in the node tests: a run's characters share its advance
 // evenly (the Sandbox measures them with the font in the browser).
@@ -247,7 +248,7 @@ describe('balloon words of a laid-out comic page (#595)', () => {
         comic.balloons.forEach((b, i) => {
           const t = b.text[0]!;
           const line = t.lines[0]!;
-          const em = Number(/(\d+(?:\.\d+)?)px/.exec(t.fontString)![1]);
+          const em = Number(fontPx(t.fontString)![1]);
           const step = line.width / line.text.length;
           let x: number;
           let y: number;

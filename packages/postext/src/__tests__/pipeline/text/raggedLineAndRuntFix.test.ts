@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../../../measure/index.js';
 import { formatWarning, raggedLineWarnings } from '../../../pipeline/contentWarnings.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
+import { fontPx } from '../../fontPx.js';
 
 // Two things the engine did without saying so.
 //
@@ -28,7 +29,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let w = 0;
     for (const ch of s) w += W(ch) * size;
     return { width: w };

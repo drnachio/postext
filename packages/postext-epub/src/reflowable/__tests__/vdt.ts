@@ -5,12 +5,13 @@
 
 import { buildDocument, continuationAfter } from 'postext';
 import type { LayoutContinuation, PostextConfig, Resource, VDTDocument } from 'postext';
+import { fontPx } from '../../__tests__/fontPx.js';
 
 class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number; actualBoundingBoxAscent: number; actualBoundingBoxDescent: number; fontBoundingBoxAscent: number; fontBoundingBoxDescent: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     return {
       width: [...s].length * size * 0.5,
       actualBoundingBoxAscent: size * 0.7,

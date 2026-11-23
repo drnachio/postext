@@ -4,6 +4,7 @@ import { renderToHtml } from '../../html-backend/html-backend.js';
 import { clearTextWidthCache } from '../../measure/canvas.js';
 import type { Dimension, PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDesignTextBlock, VDTDesignTextLine, VDTDesignTextRun, VDTDocument } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #652: a 破折号 (——) in Chinese design text (a running head, a heading
 // design, the lettering of a comic balloon) is one unbroken rule over its
@@ -13,7 +14,6 @@ import type { VDTBlock, VDTDesignTextBlock, VDTDesignTextLine, VDTDesignTextRun,
 // 0.89 em wide with ink from 0.043 to 0.846 em.
 
 const EM = 20;
-const SIZE_RE = /(\d*\.?\d+)px/;
 interface Glyph { advance: number; left: number; right: number; top: number; bottom: number }
 const GLYPHS: Record<string, Glyph> = {
   '—': { advance: 0.89, left: 0.043, right: 0.846, top: 0.293, bottom: 0.242 },
@@ -26,7 +26,7 @@ class StubCtx {
   font = `${EM}px Test`;
   letterSpacing = '0px';
   measureText(s: string): TextMetrics {
-    const em = Number(SIZE_RE.exec(this.font)?.[1] ?? EM);
+    const em = Number(fontPx(this.font)?.[1] ?? EM);
     let x = 0;
     let left = Infinity;
     let right = -Infinity;

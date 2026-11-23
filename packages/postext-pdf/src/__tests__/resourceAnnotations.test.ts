@@ -4,6 +4,7 @@ import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib
 import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
+import { fontPx } from './fontPx.js';
 
 // Ruby, emphasis marks, side lines and warichu notes in table cells and
 // captions (#429): a reading in the RT of its base's Ruby inside the cell
@@ -19,7 +20,7 @@ class StubCtx {
   font = '10px Test';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = 0;
     for (const ch of s) w += ch === ' ' ? em / 4 : ch.codePointAt(0)! >= 0x2e80 ? em : em / 2;
     return { width: w };

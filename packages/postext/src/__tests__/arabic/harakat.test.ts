@@ -5,6 +5,7 @@ import { columnClipRect } from '../../paint/columnClip.js';
 import { clearMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTColumn, VDTDocument, VDTLine } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // Issue #376: Arabic vowel marks live in the leading. Lines that carry them
 // record how far their ink reaches (`VDTLine.markInk`), the column clip takes
@@ -19,7 +20,7 @@ class StubCtx {
   measureText(s: string): Partial<TextMetrics> {
     const width = s.length * 7;
     if (!inkMetrics) return { width };
-    const size = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     const ink = inkMetrics(s, size);
     return { width, actualBoundingBoxAscent: ink.ascent, actualBoundingBoxDescent: ink.descent, actualBoundingBoxLeft: 0, actualBoundingBoxRight: width };
   }

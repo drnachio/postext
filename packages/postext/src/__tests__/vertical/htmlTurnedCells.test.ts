@@ -3,6 +3,7 @@ import { buildDocument, renderToHtml, verticalFlowOf } from '../../index.js';
 import type { PostextConfig, Dimension } from '../../types.js';
 import type { VDTLine } from '../../vdt.js';
 import { SizedStubCtx } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 // A mark a vertical line turns in a cell of its own (· ‧ – …) advances its
 // cell in the layout, the canvas and the PDF, where a browser setting the
@@ -14,7 +15,7 @@ import { SizedStubCtx } from './stub.js';
 class NarrowMarksCtx extends SizedStubCtx {
   override measureText(s: string): TextMetrics {
     const m = super.measureText(s);
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = m.width;
     for (const ch of s) {
       if (ch === '·') w -= em - em * 0.3;

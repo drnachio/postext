@@ -8,6 +8,7 @@ import * as engine from '../../index.js';
 import type { PostextConfig, Resource } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { elementsOf, textOfHtml } from '../htmlText.js';
+import { fontPx } from '../fontPx.js';
 
 // #770: the pieces of a word. A paragraph with a style in it is cut word
 // by word, and a piece of a word is as wide as the word grew by it; a
@@ -21,7 +22,7 @@ import { elementsOf, textOfHtml } from '../htmlText.js';
  *  context left at `inherit` measures and paints in. */
 let host = 'en';
 const primary = (lang: string): string => lang.toLowerCase().split('-')[0]!;
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(fontPx(font)?.[1] ?? '10');
 
 /**
  * The advance of `text` in a face that draws across its letters, as the

@@ -3,6 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { renderBlock } from '../../canvas-backend/blockRender.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // A chip on a line of the CJK composer was painted with the letter spacing
 // the justified run before it had set (`seg.tracking`), though it was
@@ -13,7 +14,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     return { width: [...s].reduce((w, ch) => w + (/[　-鿿]/.test(ch) ? size : size * 0.5), 0) };
   }
 }

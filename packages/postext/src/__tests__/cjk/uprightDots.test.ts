@@ -3,6 +3,7 @@ import { buildDocument } from '../../index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTLine } from '../../vdt.js';
 import { SizedStubCtx, stubCharWidth } from '../vertical/stub.js';
+import { fontPx } from '../fontPx.js';
 
 // Emphasis dots over an `:upright[…]` run down a vertical line (#190 with
 // #193): each letter stands in a cell of one em, so each dot is centred on
@@ -13,7 +14,7 @@ const LATIN: Record<string, number> = { W: 1, i: 0.25, l: 0.3 };
 class ProportionalCtx extends SizedStubCtx {
   override measureText(s: string): TextMetrics {
     const m = super.measureText(s);
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = 0;
     for (const ch of s) w += LATIN[ch] !== undefined ? LATIN[ch]! * em : stubCharWidth(ch, em);
     return { ...m, width: w, actualBoundingBoxRight: w } as TextMetrics;

@@ -6,6 +6,7 @@ import { getMeasureWritingMode } from '../../measure/vertical.js';
 import type { PostextConfig, Dimension, Resource } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -56,7 +57,7 @@ function paintedRuns(seg: VDTLineSegment, region: 'mainland' | 'taiwan' | 'hongk
  *  their length; the segment's tracking after every grapheme. */
 function paintedAdvance(seg: VDTLineSegment, font: string, region: 'mainland' | 'taiwan' | 'hongkong', digits = 2): number {
   const f = seg.fontString ?? font;
-  const em = Number(/(\d*\.?\d+)px/.exec(f)![1]);
+  const em = Number(fontPx(f)![1]);
   const t = seg.tracking ?? 0;
   let adv = 0;
   // Short numbers stand in one cell (`cjk.uprightDigits`, 2 by default).
@@ -241,7 +242,7 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
     const blocks = doc.pages.flatMap((p) => [...p.columns.flatMap((c) => c.blocks), ...(p.floats ?? [])]).filter((b) => b.resourceBlock);
     expect(blocks.length).toBe(2);
     const caption = blocks.find((b) => b.resourceBlock!.resource.id === 'f1')!.resourceBlock!;
-    const captionEm = Number(/(\d*\.?\d+)px/.exec(caption.captionFontString)![1]);
+    const captionEm = Number(fontPx(caption.captionFontString)![1]);
     const withDot = caption.captionLines.flatMap((l) => l.segments ?? []).filter((s) => s.text.includes('·'));
     expect(withDot.length).toBeGreaterThan(0);
     for (const [measured, horizontal] of horizontalWidths(caption.captionLines.flatMap((l) => l.segments ?? []), captionEm)) {
@@ -249,7 +250,7 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
     }
     const tableLayout = blocks.find((b) => b.resourceBlock!.resource.id === 't1')!.resourceBlock!.table!;
     const john = tableLayout.cells.find((c) => c.lines.some((l) => l.text.includes('·')))!;
-    const cellEm = Number(/(\d*\.?\d+)px/.exec(tableLayout.fontString)![1]);
+    const cellEm = Number(fontPx(tableLayout.fontString)![1]);
     for (const [measured, horizontal] of horizontalWidths(john.lines.flatMap((l) => l.segments ?? [{ kind: 'text', text: l.text, width: l.bbox.width } as VDTLineSegment]), cellEm)) {
       expect(measured).toBeCloseTo(horizontal);
     }
@@ -272,7 +273,7 @@ describe('vertical text: what stands upright on the sheet is measured horizontal
     const text = header.blocks.find((b) => b.kind === 'text')!;
     expect(text.kind).toBe('text');
     if (text.kind !== 'text') return;
-    const em = Number(/(\d*\.?\d+)px/.exec(text.fontString)![1]);
+    const em = Number(fontPx(text.fontString)![1]);
     // 紅樓夢 and 第一回 one em each, · half an em (the stub): not a cell.
     expect(text.lines[0]!.width).toBeCloseTo(6 * em + em / 2);
     // Composed (the default): · in its Chinese box, one em.

@@ -6,6 +6,7 @@ import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineMark } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
 import { tagsAt } from '../htmlText.js';
+import { fontPx } from '../fontPx.js';
 
 // The sesame (傍点) and the side lines (傍線) of #421 in the canvas and HTML
 // backends: the sesame stands on the sheet the same way in horizontal and
@@ -24,7 +25,7 @@ function recordingCanvas(): { canvas: HTMLCanvasElement; calls: Call[] } {
       if (key === 'restore') return () => { Object.assign(t, stack.pop() ?? {}); };
       if (key === 'measureText') {
         return (s: string) => {
-          const em = Number(/(\d*\.?\d+)px/.exec(String(t.font))?.[1] ?? 10);
+          const em = Number(fontPx(String(t.font))?.[1] ?? 10);
           let w = 0;
           for (const ch of s) w += stubCharWidth(ch, em);
           return { width: w };

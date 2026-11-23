@@ -8,13 +8,14 @@ import { renderPageToCanvas } from '../../../index.js';
 import { renderToHtmlIndexed } from '../../../html-backend/html-backend.js';
 import { preflightDocument } from '../../../checks/preflight.js';
 import type { ContentWarning, PostextConfig, Resource, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #902: checks on the labels of a figure (overlap, overflow).
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

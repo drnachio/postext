@@ -11,6 +11,7 @@ import { exerciseSettingsOf } from '../../defaults/boxes/exercises.js';
 import { expandExercises } from '../../exercises/expand.js';
 import type { VDTBlock, VDTChip, VDTDocument } from '../../vdt.js';
 import type { DesignPathElement, DesignTextElement, PostextConfig } from '../../types.js';
+import { fontPx } from '../fontPx.js';
 
 // What the exercises programme left (#1244).
 
@@ -77,7 +78,7 @@ describe('a reading over a blank', () => {
       const doc = build(vmd, config({ locale: 'ja', layout: { layoutType: 'single', writingMode }, exerciseStyles: [{ id: 'k', blank: { look: 'box', width: 'answer' } }] }));
       const blank = chips(doc).find((c) => c.styleId.includes('blank'))!;
       const r = blank.readings![0]!;
-      const rtEm = Number(/([\d.]+)px/.exec(r.fontString)![1]);
+      const rtEm = Number(fontPx(r.fontString)![1]);
       // The reading's em box (its axis ± half its em) lies past the box's
       // top, right of a vertical line.
       const axis = r.dy - CENTRAL * rtEm;

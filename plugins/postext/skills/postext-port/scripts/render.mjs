@@ -233,10 +233,47 @@ function pickVariant(name, weight, style) {
 }
 for (const vs of families.values()) for (const v of vs) await loadFace(v.file);
 const unknownFamilies = new Set();
+const isDigit = (s, i) => s.charCodeAt(i) >= 48 && s.charCodeAt(i) <= 57;
+const isSpace = (ch) => ch.trim() === '';
+/** Whether `s` is digits only, or digits and dots with `dots`. */
+function isNumber(s, dots) {
+  if (s === '') return false;
+  for (let i = 0; i < s.length; i++) if (!isDigit(s, i) && !(dots && s[i] === '.')) return false;
+  return true;
+}
+/** A font shorthand `[style] [weight] <size>px <family>` in its parts:
+ *  `[whole, style, weight, size, family]`, or null when it is not one.
+ *  Read word by word: an expression for it takes quadratic time on a long
+ *  run of spaces. */
+function fontParts(font) {
+  const s = font.trim();
+  let at = 0;
+  const word = () => {
+    let end = at;
+    while (end < s.length && !isSpace(s[end])) end++;
+    return s.slice(at, end);
+  };
+  const after = (w) => {
+    at += w.length;
+    while (at < s.length && isSpace(s[at])) at++;
+    return word();
+  };
+  let w = word();
+  let style;
+  let weight;
+  if (w === 'italic' || w === 'oblique') { style = w; w = after(w); }
+  if (w === 'bold' || w === 'normal' || (w.length === 3 && isNumber(w, false))) { weight = w; w = after(w); }
+  const size = w.endsWith('px') ? w.slice(0, -2) : '';
+  if (!isNumber(size, true)) return null;
+  after(w);
+  const family = s.slice(at);
+  if (family === '' || [...family].some((ch) => ch === '\n' || ch === '\r' || ch === '\u2028' || ch === '\u2029')) return null;
+  return [s, style, weight, size, family];
+}
 class Ctx {
   font = '';
   measureText(s) {
-    const m = /^(?:(italic|oblique)\s+)?(?:(\d{3}|bold|normal)\s+)?([\d.]+)px\s+(.+)$/.exec(this.font.trim());
+    const m = fontParts(this.font);
     if (!m) return { width: s.length * 7 };
     const name = m[4].replace(/["']/g, '').split(',')[0].trim();
     const { family, features } = featureParts(name);

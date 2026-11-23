@@ -9,6 +9,7 @@ import type { InlineSpan } from '../../parse/index.js';
 import type { CjkRegion, PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from '../vertical/stub.js';
+import { fontPx } from '../fontPx.js';
 
 // Furigana (#422): jukugo ruby, kana-aware overhang, JIS 1:2:1 alignment,
 // full-size small kana and the VDT ruby id. The stub measures kana and
@@ -454,7 +455,7 @@ describe('renderers paint the geometry', () => {
         if (key === 'restore') return () => { Object.assign(t, stack.pop() ?? {}); };
         if (key === 'measureText') {
           return (s: string) => {
-            const em = Number(/(\d*\.?\d+)px/.exec(String(t.font))?.[1] ?? 10);
+            const em = Number(fontPx(String(t.font))?.[1] ?? 10);
             let w = 0;
             for (const ch of s) w += stubCharWidth(ch, em);
             return { width: w };

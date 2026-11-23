@@ -6,6 +6,7 @@ import { fontStringFamilies } from '../../measure/fontString.js';
 import { syncFontSet } from '../../fonts/fontSet.js';
 import { measurementGeneration } from '../../measure/canvas.js';
 import type { ContentWarning } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #1105, the glyph probe: in a browser the engine cannot read a loaded
 // face's `cmap`, so it declares a face that covers all of Unicode at an
@@ -26,7 +27,7 @@ let probeAdvance = 0;
 class BrowserCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const size = Number(fontPx(this.font)?.[1] ?? 16);
     const families = fontStringFamilies(this.font).map((f) => f.toLowerCase());
     let width = 0;
     for (const ch of s) {

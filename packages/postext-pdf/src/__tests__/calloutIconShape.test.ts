@@ -4,6 +4,7 @@ import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
+import { fontPx } from './fontPx.js';
 
 // #1120: a ring drawn as a box's icon and a dot on its label tab are
 // painted as vector fills in the PDF: the ring even-odd, the dot plain.
@@ -14,7 +15,7 @@ const fontProvider = async () => new Uint8Array(fontBytes);
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     return { width: s.length * 0.5 * size };
   }
 }

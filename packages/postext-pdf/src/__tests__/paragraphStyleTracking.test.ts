@@ -4,6 +4,7 @@ import { PDFArray, PDFDocument, PDFRawStream, decodePDFRawStream } from 'pdf-lib
 import { buildDocument } from 'postext';
 import type { PostextConfig, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
+import { fontPx } from './fontPx.js';
 
 // #907: a paragraph style's letterSpacing is painted as the character
 // spacing of every line it sets, in the running text and in a box.
@@ -22,7 +23,7 @@ const W = (ch: string): number => {
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let w = 0;
     for (const ch of s) w += W(ch) * size;
     return { width: w };

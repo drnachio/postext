@@ -19,12 +19,13 @@ import type { PageTemplate } from '../../../composed/types.js';
 import type { ContentWarning, DesignConnectorElement, PostextConfig, Resource, VDTBlock, VDTDocument, VDTFigureLabel, VDTPage } from '../../../index.js';
 import { MAP_PARTS_RESOURCES, MAP_PARTS_TEMPLATE, mapPartsFixture, type MapPartsLocale } from '../fixtures/mapParts.js';
 import { GRID_CONFIG, GRID_RESOURCES, photoPage, PHOTO_TEMPLATE } from '../fixtures/grid.js';
+import { fontPx } from '../../fontPx.js';
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
     // Half an em a character, from the font's size.
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

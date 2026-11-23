@@ -14,6 +14,8 @@ import { readBundle } from '../../bundle/codec.js';
 import { mergeConfigLayers } from '../../defaults/configLayers.js';
 import { extractFrontmatter } from '../../parse/frontmatter.js';
 import type { VDTDocument } from '../../index.js';
+import { fontPx } from '../fontPx.js';
+import { fontParts } from '../fontPx.js';
 
 const BUNDLE = join(__dirname, '../../../../../apps/web/public/presets/hongloumeng');
 const EDITORIAL = join(__dirname, '../../../../../scripts/presets/showcase/hongloumeng/editorial.py');
@@ -43,7 +45,7 @@ class Ctx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const m = /^(?:(italic|oblique)\s+)?(?:(\d{3}|bold|normal)\s+)?([\d.]+)px\s+(.+)$/.exec(this.font.trim());
+    const m = fontParts(this.font);
     if (!m) return { width: s.length * 7 };
     const size = Number(m[3]);
     const family = m[4]!.replace(/["']/g, '').split(',')[0]!.trim();
@@ -373,7 +375,7 @@ describe('hongloumeng pages', () => {
     // mainland's Kaiming marks take half an em inside the line (#185), so a
     // line with marks holds a few more; the last line of a paragraph fewer.
     const blocks = doc.pages[1]!.columns.flatMap((c) => c.blocks).filter((b) => b.type === 'paragraph');
-    const em = Number(/(\d*\.?\d+)px/.exec(blocks[0]!.fontString)![1]);
+    const em = Number(fontPx(blocks[0]!.fontString)![1]);
     // (103.72 mm: 28 ems to a thousandth.)
     for (const b of blocks) expect(b.bbox.width / em).toBeCloseTo(28, 2);
     const full = blocks.flatMap((b) => b.lines.slice(0, -1).map((l) => ({ l, b })));
@@ -398,7 +400,7 @@ describe('hongloumeng pages', () => {
     expect(JSON.stringify(opener)).toContain('第一回');
     expect(body!.flow?.writingMode).toBe('vertical-rl');
     const blocks = body!.columns.flatMap((c) => c.blocks).filter((b) => b.type === 'paragraph');
-    const em = Number(/(\d*\.?\d+)px/.exec(blocks[0]!.fontString)![1]);
+    const em = Number(fontPx(blocks[0]!.fontString)![1]);
     // A column is 38 ems long: the flow's x runs down the page.
     for (const b of blocks) expect(b.bbox.width / em).toBeCloseTo(38, 2);
     // Fifteen columns a page (a page may end a column early, where a

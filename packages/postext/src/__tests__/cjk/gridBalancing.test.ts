@@ -5,6 +5,7 @@ import { cjkGridGeometry } from '../../pipeline/text/cjkGrid.js';
 import { createMeasurementCache } from '../../measure/index.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTBlock, VDTDocument } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // CJK characters one em wide, anything else half.
 const adv = (s: string, size: number): number => {
@@ -16,7 +17,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: adv(s, m ? parseFloat(m[1]!) : 16) };
   }
 }

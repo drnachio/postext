@@ -7,6 +7,7 @@ import { clearMeasurementCache } from '../../measure/index.js';
 import { cellsOf } from '../../paint/wordPieces.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
+import { fontPx } from '../fontPx.js';
 
 // #770: the cells of the CJK composer. The composer measures a Chinese or
 // Japanese character alone, and a line carries the cells of one style as
@@ -16,7 +17,7 @@ import type { VDTDocument, VDTLine, VDTLineSegment } from '../../vdt.js';
 // the runs the browser sets as wide as their cells; the HTML turns the
 // kerning off on its box.
 
-const sizeOf = (font: string): number => parseFloat(/(\d*\.?\d+)px/.exec(font)?.[1] ?? '10');
+const sizeOf = (font: string): number => parseFloat(fontPx(font)?.[1] ?? '10');
 
 /** The pairs the face kerns, in ems, as Noto Sans JP does under `ja`. */
 const KERNED: Record<string, number> = { 'す。': -0.1, 'れ、': 0.06, 'ノン': -0.04 };

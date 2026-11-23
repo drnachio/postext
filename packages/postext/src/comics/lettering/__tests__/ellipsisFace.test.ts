@@ -9,6 +9,7 @@ import { letterPanelDetailed } from '../letter.js';
 import { presetLetteringStyles } from '../presets.js';
 import { prepareText, readLetteringText } from '../text.js';
 import type { LetteringPanel } from '../types.js';
+import { fontPx } from '../../../__tests__/fontPx.js';
 
 // The stub measurer, with a face named Lalezar whose ellipsis is one dot.
 beforeAll(() => {
@@ -17,7 +18,7 @@ beforeAll(() => {
       return {
         font: '16px sans-serif',
         measureText(this: { font: string }, t: string) {
-          const px = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '16');
+          const px = parseFloat(fontPx(this.font)?.[1] ?? '16');
           const oneDot = this.font.includes('Lalezar');
           let w = 0;
           for (const ch of t) w += oneDot && ch === '…' ? stubAdvance('.') * 1.07 : stubAdvance(ch);

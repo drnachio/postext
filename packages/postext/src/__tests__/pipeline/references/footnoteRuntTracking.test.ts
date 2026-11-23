@@ -4,6 +4,7 @@ import { renderBlock } from '../../../canvas-backend/blockRender.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
 import type { PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTDocument } from '../../../vdt.js';
+import { fontPx } from '../../fontPx.js';
 
 // #662: a note at the foot of its column whose runt the engine takes up by
 // setting it one line shorter with a little negative tracking
@@ -27,7 +28,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     let w = 0;
     for (const ch of s) w += W(ch) * size;
     return { width: w };

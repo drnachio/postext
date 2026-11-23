@@ -6,6 +6,7 @@ import { stripCalloutStylesDefaults } from '../../../defaults/index.js';
 import { boxOutline, boxStylePathBlocks, tabRegionOutline } from '../../../design/boxShape.js';
 import { createBoundingBox } from '../../../vdt.js';
 import type { CalloutStyleConfig, PostextConfig, VDTBlock, VDTDesignBlock, VDTDesignBoxBlock, VDTDesignPathBlock, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1102: a label tab with corners of its own, apart from the box or
 // joined to it.
@@ -13,7 +14,7 @@ import type { CalloutStyleConfig, PostextConfig, VDTBlock, VDTDesignBlock, VDTDe
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return { width: [...s].length * size * 0.6 };
   }
 }

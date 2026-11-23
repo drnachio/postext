@@ -8,6 +8,7 @@ import { resolveBodyTextConfig } from '../../../defaults/text/bodyText.js';
 import { resolveHeadingsConfig } from '../../../defaults/structure/headings.js';
 import { resolveUnorderedListsConfig } from '../../../defaults/text/unorderedLists.js';
 import type { CalloutStyleConfig, PostextConfig, VDTBlock, VDTDesignBlock, VDTDesignBoxBlock, VDTDesignPathBlock, VDTDocument } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1059: box styles with a radius per corner, a border per side, and a
 // card joined to its label tab.
@@ -15,7 +16,7 @@ import type { CalloutStyleConfig, PostextConfig, VDTBlock, VDTDesignBlock, VDTDe
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     return { width: [...s].length * size * 0.6 };
   }
 }

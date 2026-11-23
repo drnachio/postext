@@ -9,6 +9,7 @@ import fontkit from '../../../../postext-pdf/node_modules/@pdf-lib/fontkit/dist/
 import { buildDocument } from '../../pipeline/index.js';
 import { mergeConfigLayers } from '../../defaults/configLayers.js';
 import type { PostextConfig, Resource, VDTDocument } from '../../index.js';
+import { fontParts } from '../fontPx.js';
 
 const BUNDLE = join(__dirname, '../../../../../apps/web/public/presets/deep-sky');
 const manifest = JSON.parse(readFileSync(join(BUNDLE, 'preset.json'), 'utf8'));
@@ -32,7 +33,7 @@ function fontFor(family: string, weight: number, italic: boolean): any {
 class Ctx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /^(?:(italic|oblique)\s+)?(?:(\d{3}|bold|normal)\s+)?([\d.]+)px\s+(.+)$/.exec(this.font.trim());
+    const m = fontParts(this.font);
     if (!m) return { width: s.length * 7 };
     const italic = m[1] !== undefined;
     const weight = m[2] === 'bold' ? 700 : m[2] ? Number(m[2]) : 400;

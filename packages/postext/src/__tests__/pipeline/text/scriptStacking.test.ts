@@ -19,6 +19,7 @@ import { renderToHtmlIndexed } from '../../../html-backend/html-backend.js';
 import type { DesignPlaceholderContext } from '../../../design/placeholders.js';
 import type { DesignElement, PostextConfig } from '../../../types.js';
 import type { VDTBlock, VDTLine, VDTLineSegment, VDTPage } from '../../../vdt.js';
+import { fontPx } from '../../fontPx.js';
 
 // EF-80: a subscript used to drop as far as a superscript rises (a third of
 // the text size), so it hung below the descenders, and a superscript right
@@ -31,7 +32,7 @@ class StubCtx {
   font = '';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     return { width: s.length * size * 0.5 };
   }
 }

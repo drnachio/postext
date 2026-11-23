@@ -4,11 +4,12 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { mapPartsFixture } from '../../__tests__/composed/fixtures/mapParts.js';
 import { markerPath } from './labels.js';
 import { pageDisplayList } from './page.js';
+import { fontPx } from '../../__tests__/fontPx.js';
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: [...s].length * (m ? Number(m[1]) : 10) * 0.5 };
   }
 }

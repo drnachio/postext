@@ -4,6 +4,7 @@ import { createMeasurementCache } from '../../measure/index.js';
 import { parseInlineFormatting, extractInlineSwatches, injectSwatchSpans, swatchShapeFromAttrs } from '../../parse/inlineFormatting.js';
 import { swatchGeometry } from '../../paint/swatchShape.js';
 import type { PostextConfig, VDTDocument, VDTLineSegment } from '../../index.js';
+import { fontPx } from '../fontPx.js';
 
 // #1104: a legend's swatches set at a size of their own, with an outline
 // and rounded corners, and room after them for their label.
@@ -11,7 +12,7 @@ import type { PostextConfig, VDTDocument, VDTLineSegment } from '../../index.js'
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }

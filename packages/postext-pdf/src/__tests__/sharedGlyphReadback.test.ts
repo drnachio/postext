@@ -12,6 +12,7 @@ import { FontCache } from '../fontCache.js';
 import { loadComplexShaper } from '../complexShaping.js';
 import { beginActualTextSpan, drawMeasuredTextPx, drawTextPx, endActualTextSpan, measuredTextShows, textShows, type PageCtx, type TextShow } from '../pdf-backend/primitives.js';
 import '../pdf-backend/text/shapedText.js';
+import { fontPx } from './fontPx.js';
 
 // #755: a font's `/ToUnicode` map is one per font and a glyph keeps the
 // characters it was first given. A right-to-left run draws a bracket with
@@ -38,7 +39,7 @@ const SHARED = fixture('shared-glyphs.ttf');
       direction: 'ltr',
       letterSpacing: '0px',
       measureText(s: string) {
-        return { width: [...s].length * 0.5 * parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10') };
+        return { width: [...s].length * 0.5 * parseFloat(fontPx(this.font)?.[1] ?? '10') };
       },
     };
   }

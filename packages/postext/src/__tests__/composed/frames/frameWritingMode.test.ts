@@ -9,6 +9,7 @@ import { sourceAt } from '../../../composed/sourceMap.js';
 import { installSizedStub, stubCharWidth } from '../../vertical/stub.js';
 import { renderPageToCanvas } from '../../../index.js';
 import { renderToHtml } from '../../../html-backend/html-backend.js';
+import { fontPx } from '../../fontPx.js';
 
 installSizedStub();
 
@@ -268,7 +269,7 @@ function paint(page: VDTPage, doc: VDTDocument): { text: string; x: number; y: n
   let m: M = [1, 0, 0, 1, 0, 0];
   const stack: M[] = [];
   const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px' };
-  const size = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const size = () => Number(fontPx(String(state.font))?.[1] ?? 10);
   const api: Record<string, unknown> = {
     save: () => { stack.push(m); },
     restore: () => { m = stack.pop() ?? m; },

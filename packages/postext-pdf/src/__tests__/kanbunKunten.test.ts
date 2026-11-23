@@ -5,6 +5,7 @@ import { buildDocument } from 'postext';
 import type { PostextConfig, Resource, VDTDocument } from 'postext';
 import { renderToPdf } from '../pdf-backend/index.js';
 import { cjkLineText, readText } from '../pdf-backend/primitives.js';
+import { fontPx } from './fontPx.js';
 
 // Kanbun marks (#430) in the PDF: painted with their character, the line's
 // /ActualText reading the 送り仮名 after it (學ビテ) and leaving the 返り点
@@ -18,7 +19,7 @@ class StubCtx {
   font = '10px Test';
   letterSpacing = '0px';
   measureText(s: string): { width: number } {
-    const em = Number(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? 10);
+    const em = Number(fontPx(this.font)?.[1] ?? 10);
     let w = 0;
     for (const ch of s) w += ch === ' ' ? em / 4 : ch.codePointAt(0)! >= 0x2e80 ? em : em / 2;
     return { width: w };

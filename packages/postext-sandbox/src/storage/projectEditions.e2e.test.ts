@@ -24,11 +24,12 @@ import { LAYOUTS_FILE, localeLayoutsFile, type BundleLayoutsFile } from '../pres
 import type { ChapterLayout } from '../book/types.js';
 import type { PostextConfig, Resource } from 'postext';
 import type { PostextContent } from 'postext';
+import { fontPx } from '../__tests__/fontPx.js';
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const px = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 16);
+    const px = Number(fontPx(this.font)?.[1] ?? 16);
     return { width: s.length * px * 0.42 };
   }
 }

@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { parseInlineFormatting, stripInlineFormatting } from '../../parse/inlineFormatting.js';
 import { measureRichBlock, scriptMetrics, SCRIPT_SIZE_RATIO } from '../../measure/rich.js';
+import { fontPx } from '../fontPx.js';
 
 // Deterministic text measurement stub (no DOM in the node test env): the
 // width follows the font size so a script span measures narrower.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const size = parseFloat(/(\d*\.?\d+)px/.exec(this.font)?.[1] ?? '10');
+    const size = parseFloat(fontPx(this.font)?.[1] ?? '10');
     return { width: s.length * size * 0.5 };
   }
 }

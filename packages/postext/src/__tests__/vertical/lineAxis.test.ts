@@ -3,6 +3,7 @@ import { buildDocument, renderPageToCanvas } from '../../index.js';
 import type { PostextConfig, Dimension, DesignTextElement } from '../../types.js';
 import type { VDTDesignTextBlock, VDTDocument, VDTPage } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -28,7 +29,7 @@ function paintedCentres(page: VDTPage, doc: VDTDocument): Array<{ text: string; 
   let m: M = [1, 0, 0, 1, 0, 0];
   const stack: M[] = [];
   const state: Record<string, unknown> = { font: '10px Test', letterSpacing: '0px', textBaseline: 'alphabetic', textAlign: 'start' };
-  const emOf = () => Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 10);
+  const emOf = () => Number(fontPx(String(state.font))?.[1] ?? 10);
   const widthOf = (s: string) => [...s].reduce((w, ch) => w + stubCharWidth(ch, emOf()), 0);
   const api: Record<string, unknown> = {
     save: () => stack.push(m),

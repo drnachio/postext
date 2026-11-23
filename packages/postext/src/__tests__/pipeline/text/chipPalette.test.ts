@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { buildDocument } from '../../../pipeline/index.js';
 import { createMeasurementCache } from '../../../measure/index.js';
 import type { PostextConfig, VDTDocument, VDTLineSegment } from '../../../index.js';
+import { fontPx } from '../../fontPx.js';
 
 // EF-87: a section's or a part's palette recolours the chips set on its
 // pages, as it recolours headings, bold runs and callout frames.
@@ -9,7 +10,7 @@ import type { PostextConfig, VDTDocument, VDTLineSegment } from '../../../index.
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d*\.?\d+)px/.exec(this.font);
+    const m = fontPx(this.font);
     return { width: s.length * (m ? Number(m[1]) : 16) * 0.5 };
   }
 }

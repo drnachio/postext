@@ -14,6 +14,7 @@ import { ICON_CAP_EM } from '../../../measure/inlineIcon.js';
 import { collectFontUsage, configFontFamilies } from '../../../fonts/usage.js';
 import type { PostextConfig, Resource, VDTBlock, VDTDocument, VDTFigureLabel, VDTLine, VDTLineSegment } from '../../../index.js';
 import { legendMapFixture, type LegendMapLocale } from '../fixtures/legendMap.js';
+import { fontPx } from '../../fontPx.js';
 
 // #1058: a map's key and a scale bar's numbers set as labels: inline
 // symbols, lines kept as written, legend rows, plates with an outline.
@@ -22,7 +23,7 @@ class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
     // Half an em a character, from the font's size.
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

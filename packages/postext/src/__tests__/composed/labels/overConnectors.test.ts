@@ -18,11 +18,12 @@ import { flowRectToPage, type VDTDesignPathBlock, type VDTPathCommand } from '..
 import type { PageTemplate } from '../../../composed/types.js';
 import type { DesignConnectorElement, PostextConfig, VDTDocument, VDTPage } from '../../../index.js';
 import { mapPartsFixture, type MapPartsLocale } from '../fixtures/mapParts.js';
+import { fontPx } from '../../fontPx.js';
 
 class StubCtx {
   font = '';
   measureText(s: string): { width: number } {
-    const m = /(\d+(?:\.\d+)?)px/.exec(this.font);
+    const m = fontPx(this.font);
     const em = m ? Number(m[1]) : 10;
     return { width: [...s].length * em * 0.5 };
   }

@@ -11,6 +11,7 @@ import { collectFontUsage } from '../../../fonts/usage.js';
 import { documentFontFamilies } from '../../../worker/fonts.js';
 import type { ParagraphDropCap, PostextConfig, Resource } from '../../../types.js';
 import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from '../../../vdt.js';
+import { fontPx } from '../../fontPx.js';
 
 // #623: drop caps in body paragraphs. The initial comes out of the text the
 // measurers break; the paragraph's first `sink` lines are indented by its
@@ -21,7 +22,7 @@ import type { ContentWarning, VDTBlock, VDTDocument, VDTLine } from '../../../vd
 class StubCtx {
   font = '';
   measureText(s: string): { width: number; actualBoundingBoxAscent?: number; actualBoundingBoxDescent?: number } {
-    const size = Number(/(\d+(?:\.\d+)?)px/.exec(this.font)?.[1] ?? 10);
+    const size = Number(fontPx(this.font)?.[1] ?? 10);
     const ratio = /Beta/.test(this.font) ? 0.66 : /NoInk/.test(this.font) ? undefined : 0.7;
     return { width: s.length * size * 0.5, ...(ratio !== undefined ? { actualBoundingBoxAscent: ratio * size, actualBoundingBoxDescent: 0.2 * size } : {}) };
   }

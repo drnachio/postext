@@ -3,6 +3,7 @@ import { buildDocument, renderPageToCanvas, renderToHtml } from '../../index.js'
 import type { PostextConfig, Dimension, DesignTextElement } from '../../types.js';
 import type { VDTDesignTextBlock, VDTPage } from '../../vdt.js';
 import { installSizedStub, stubCharWidth } from './stub.js';
+import { fontPx } from '../fontPx.js';
 
 installSizedStub();
 
@@ -87,7 +88,7 @@ describe('vertical running heads down the fore-edge (#192)', () => {
       scale: (x: number, y: number) => { m = mul(m, [x, 0, 0, y, 0, 0]); },
       rotate: (t: number) => { m = mul(m, [Math.cos(t), Math.sin(t), -Math.sin(t), Math.cos(t), 0, 0]); },
       fillText: (text: string, x: number, y: number) => painted.push({ text, x: m[0] * x + m[2] * y + m[4], y: m[1] * x + m[3] * y + m[5], ax: Math.round(m[0]) }),
-      measureText: (s: string) => ({ width: [...s].reduce((w, ch) => w + stubCharWidth(ch, Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 8)), 0) }),
+      measureText: (s: string) => ({ width: [...s].reduce((w, ch) => w + stubCharWidth(ch, Number(fontPx(String(state.font))?.[1] ?? 8)), 0) }),
     };
     const ctx = new Proxy(state, {
       get: (t, k) => (typeof k === 'string' && k in api ? api[k] : k in t ? t[k as string] : () => undefined),
@@ -173,7 +174,7 @@ describe('orientation marks in vertical design text (#190, #192 review)', () => 
       scale: (x: number, y: number) => { m = mul(m, [x, 0, 0, y, 0, 0]); },
       rotate: (t: number) => { m = mul(m, [Math.cos(t), Math.sin(t), -Math.sin(t), Math.cos(t), 0, 0]); },
       fillText: (text: string) => painted.push({ text, a: Math.round(m[0] * 1000) / 1000, b: Math.round(m[1] * 1000) / 1000 }),
-      measureText: (s: string) => ({ width: [...s].reduce((w, ch) => w + stubCharWidth(ch, Number(/(\d*\.?\d+)px/.exec(String(state.font))?.[1] ?? 8)), 0) }),
+      measureText: (s: string) => ({ width: [...s].reduce((w, ch) => w + stubCharWidth(ch, Number(fontPx(String(state.font))?.[1] ?? 8)), 0) }),
     };
     const ctx = new Proxy(state, {
       get: (t, k) => (typeof k === 'string' && k in api ? api[k] : k in t ? t[k as string] : () => undefined),
