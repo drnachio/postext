@@ -1,10 +1,7 @@
 import { WebGLRenderer, Scene, PerspectiveCamera, Mesh, PlaneGeometry, type Material, BufferGeometry, MeshStandardMaterial, Group, MeshPhysicalMaterial, Texture, BoxGeometry, DirectionalLight, PMREMGenerator, OrthographicCamera, WebGLRenderTarget, Vector2, ShaderMaterial, TextureLoader, Raycaster, SRGBColorSpace, NeutralToneMapping, HalfFloatType, PCFShadowMap, LinearFilter, BufferAttribute, ShadowMaterial, Color, Vector3, LinearMipmapLinearFilter, Plane, DepthTexture, type Object3D } from 'three';
-import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
-import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
-import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
-import { SMAAPass } from 'three/examples/jsm/postprocessing/SMAAPass.js';
+import { Picture } from './pageFlip/picture.js';
 import { type FolioConfig, type FolioPaperConfig, type ResolvedFolioConfig, resolveFolioConfig } from 'postext';
-import { BINDINGS, profiles, gutterOcclusion, along, stackGeometry, type EdgeOutline, type Profile } from './bookGeometry.js';
+import { BINDINGS, profiles, gutterOcclusion, along, stackGeometry, PAGE_LIFT, type EdgeOutline, type Profile } from './bookGeometry.js';
 import { type EnvironmentKind, type Environment, environment } from './environments.js';
 import { type PaperSpec, paperSpec, pagePaper } from './paper.js';
 import { loadDeskMaps, type DeskMaps } from './deskTextures.js';
@@ -115,7 +112,7 @@ export class PageFlipper {
   private renderer: WebGLRenderer;
   private scene = new Scene();
   private camera = new PerspectiveCamera(FOV, 1, 1, 10000);
-  private composer: EffectComposer;
+  private picture: Picture;
   private left: PageMesh;
   private right: PageMesh;
   private desk: Mesh<PlaneGeometry, Material>;
@@ -238,16 +235,8 @@ export class PageFlipper {
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.toneMapping = NeutralToneMapping;
     this.renderer.setClearColor(0x000000, 0);
-    // Edges smoothed by SMAA over the finished picture (#503), not by the
-    // canvas's own four samples a pixel: those left steps on long, nearly
-    // level edges of strong contrast (a light page over the dark block)
-    // and cost the most of a frame (resolved into a preserved drawing
-    // buffer); SMAA smooths them better for a fraction of it. The scene
-    // is drawn into a float picture, toned for the screen, then smoothed.
-    this.composer = new EffectComposer(this.renderer, new WebGLRenderTarget(1, 1, { type: HalfFloatType }));
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.composer.addPass(new OutputPass());
-    this.composer.addPass(new SMAAPass());
+    // The book at rest (no leaf in the air) is drawn again and averaged.
+    this.picture = new Picture(this.renderer, this.scene, this.camera, () => !this.raf && !this.starting);
     if (this.renderer.shadowMap) {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = PCFShadowMap;
@@ -722,7 +711,7 @@ export class PageFlipper {
         const row = Math.floor(i / (NX_OPEN + 1));
         const t = column(ix / NX_OPEN);
         const [x, z] = along(own, t * W);
-        pos.setXYZ(i, side * x, row === 0 ? H / 2 : -H / 2, z + 0.02);
+        pos.setXYZ(i, side * x, row === 0 ? H / 2 : -H / 2, z + PAGE_LIFT);
         aoAttr.setX(i, ao[Math.round(t * (ao.length - 1))]);
       }
       pos.needsUpdate = true;
@@ -876,8 +865,7 @@ export class PageFlipper {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.renderer.setPixelRatio(1);
     this.renderer.setSize(Math.round(cw * dpr), Math.round(ch * dpr), false);
-    this.composer.setPixelRatio(1);
-    this.composer.setSize(Math.round(cw * dpr), Math.round(ch * dpr));
+    this.picture.setSize(Math.round(cw * dpr), Math.round(ch * dpr));
     this.buffer.set(Math.round(cw * dpr), Math.round(ch * dpr));
     this.dpr = dpr;
     const spread = this.spread.getBoundingClientRect();
@@ -1853,8 +1841,7 @@ export class PageFlipper {
     }
     this.mirror(air.length > 0 || this.block !== null);
     this.behind(air.map((a) => a.mesh));
-    this.composer.render();
-    this.drawLoupe();
+    this.picture.render(() => this.drawLoupe());
   }
 
   // ── The magnifying glass (#527) ──
@@ -2065,6 +2052,7 @@ export class PageFlipper {
     if (this.raf || this.starting) return;
     if (this.persistent) return this.redraw();
     this.spread.classList.remove("is-turning");
+    this.picture.cancel();
     this.renderer.clear();
   }
 
@@ -2090,7 +2078,7 @@ export class PageFlipper {
     for (const tex of this.ready.values()) tex.dispose();
     this.finishes.dispose();
     this.shadowTarget?.dispose();
-    this.composer.dispose();
+    this.picture.dispose();
     this.loupe?.dispose();
     for (const d of this.details.values()) d.tex?.dispose();
     this.details.clear();

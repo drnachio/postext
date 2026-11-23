@@ -2,7 +2,7 @@
 // turning leaf, how far through its turn it is, and laying its mesh out
 // (#1276: split out of pageFlip.ts).
 import { BufferAttribute, BufferGeometry, Mesh, BoxGeometry, MeshStandardMaterial, Plane, PlaneGeometry, Vector3 } from 'three';
-import { along, type Profile, topAt } from '../bookGeometry.js';
+import { along, column, type Profile, topAt } from '../bookGeometry.js';
 import type { PaperSpec } from '../paper.js';
 import { ROLL, BLOCK_GAP, NX, NY, OWN_GAP } from './constants.js';
 import { smooth, type PageMaterial } from './materials.js';
@@ -15,9 +15,7 @@ export const MAX_PITCH = (70 * Math.PI) / 180;
  *  book parallel to it and dropping back. */
 const LEAN = 0.02;
 
-/** Where column `t` (0 … 1) of a page's mesh lies across it: closer
- *  together near the spine, where the gutter bends tightest. */
-export const column = (t: number) => Math.pow(t, 1.45);
+export { column };
 
 /** Sets a page mesh's u coordinates to its columns. */
 export function spreadColumns(geometry: BufferGeometry, nx: number) {

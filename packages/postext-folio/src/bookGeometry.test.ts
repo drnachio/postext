@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { along, profiles } from "./bookGeometry.js";
+import { along, column, PAGE_LIFT, profiles, stackGeometry } from "./bookGeometry.js";
+import { NX_OPEN } from "./pageFlip/constants.js";
 
 const W = 500;
 const k = 3.3;
@@ -54,5 +55,41 @@ describe("the open book's shape", () => {
     expect(folded.right.g).toBeGreaterThan(stapled.right.g);
     // Away from the fold both lie on their stacks.
     expect(along(folded.right, W)[1]).toBeCloseTo(along(stapled.right, W)[1], 1);
+  });
+});
+
+describe("the block's sides under an open page (#1676)", () => {
+  const W = 479;
+  const H = 726;
+
+  it("end at the page's own edge: the same points, to the bit", () => {
+    for (const binding of ["paperback", "hardcover"] as const) {
+      const { right, left } = profiles(binding, W, 3.09, 30, 44.3, { noCase: true });
+      for (const [p, side] of [[right, 1], [left, -1]] as const) {
+        const pos = stackGeometry(p, side, W, H, 36).getAttribute("position");
+        const at = new Set<string>();
+        for (let i = 0; i < pos.count; i++) at.add(`${pos.getX(i)},${pos.getY(i)},${pos.getZ(i)}`);
+        // The open page's vertices, as the flipper lays them: every one of
+        // them along the head and the tail is a vertex of the block too.
+        for (let c = 0; c <= NX_OPEN; c++) {
+          const [x, z] = along(p, column(c / NX_OPEN) * W);
+          for (const y of [H / 2, -H / 2]) expect(at.has(`${Math.fround(side * x)},${y},${Math.fround(z + PAGE_LIFT)}`)).toBe(true);
+        }
+      }
+    }
+  });
+
+  it("stay under the page everywhere else", () => {
+    const { right } = profiles("paperback", W, 3.09, 30, 44.3, { noCase: true });
+    const g = stackGeometry(right, 1, W, H, 36);
+    const pos = g.getAttribute("position");
+    const lambda = g.getAttribute("lambda");
+    let top = 0;
+    for (let i = 0; i < pos.count; i++) {
+      if (lambda.getX(i) === 1) top++;
+      else expect(pos.getZ(i)).toBeLessThan(44.3 + PAGE_LIFT);
+    }
+    // Head, tail and fore-edge.
+    expect(top).toBe(2 * (NX_OPEN + 1) + 2);
   });
 });
