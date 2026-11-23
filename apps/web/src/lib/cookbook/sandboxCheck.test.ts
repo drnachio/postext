@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { sandboxEntry } from "../../../scripts/cookbook/capture.ts";
 import { fontsourceRange, keptOnDisk, repoAsset, routeFor, withFontsourceVersion } from "../../../scripts/cookbook/net.ts";
 import { COOKBOOK_DIR, REPO_DIR } from "./paths.ts";
-import { compareEdition, extraWarnings, variableFamilies, warningSince } from "../../../scripts/cookbook/sandbox.ts";
+import { compareEdition, extraWarnings, SITE_HOOK, variableFamilies, warningSince } from "../../../scripts/cookbook/sandbox.ts";
 import type { SandboxExpected, SandboxRun } from "../../../scripts/cookbook/sandbox.ts";
 import type { RecipeMeta } from "./types.ts";
 
@@ -177,6 +177,70 @@ describe("compareEdition (#736)", () => {
     expect(extraWarnings(["a", "b"], ["b", "a"])).toEqual([]);
     expect(extraWarnings(["a"], ["a", "a", "c"])).toEqual(["a", "c"]);
     expect(extraWarnings([], [])).toEqual([]);
+  });
+});
+
+describe("--site: the documents read from the page's layout workers (#1682)", () => {
+  // The hook in a page of its own: a worker that takes what it is posted
+  // and answers what the test hands it.
+  interface Held { chapters: Map<string, { doc: { pages: unknown[]; blocks: unknown[]; config?: string }; seq: number }>; errors: string[] }
+  const open = () => {
+    class FakeWorker extends EventTarget {
+      postMessage(): void {}
+    }
+    const page = { Worker: FakeWorker } as unknown as { Worker: new (url: string) => EventTarget & { postMessage(data: unknown): void }; __sbSite: Held };
+    new Function("window", SITE_HOOK)(page);
+    const worker = new page.Worker("layout.worker.js");
+    const answer = (data: unknown) => worker.dispatchEvent(Object.assign(new Event("message"), { data }));
+    const ask = (id: number, markdown: string) => worker.postMessage({ kind: "build", id, content: { markdown } });
+    return { state: page.__sbSite, ask, answer };
+  };
+
+  it("keeps the newest whole document per text built", () => {
+    const { state, ask, answer } = open();
+    ask(1, "# One");
+    answer({ kind: "built", id: 1, doc: { pages: ["a"], blocks: ["x"] } });
+    ask(2, "# One");
+    answer({ kind: "built", id: 2, doc: { pages: ["b", "c"], blocks: ["y"] } });
+    expect([...state.chapters.keys()]).toEqual(["# One"]);
+    expect(state.chapters.get("# One")!.doc.pages).toEqual(["b", "c"]);
+  });
+
+  it("puts together a document sent as a patch against the one before it", () => {
+    const { state, ask, answer } = open();
+    ask(1, "# One");
+    answer({ kind: "built", id: 1, docSeq: 1, doc: { pages: ["p1", "p2", "p3"], blocks: ["b1", "b2"], config: "first" } });
+    // The same text again once a face arrived: the first page stands, the
+    // others and a block are new.
+    ask(2, "# One");
+    answer({ kind: "built", id: 2, docSeq: 2, doc: null, patch: { base: 1, pages: [0, "p2'", "p3'"], blocks: ["b1'", 1], moves: [], rest: { pages: [], blocks: [], config: "second" } } });
+    expect(state.chapters.get("# One")!.doc).toEqual({ pages: ["p1", "p2'", "p3'"], blocks: ["b1'", "b2"], config: "second" });
+    // And a patch against that one.
+    ask(3, "# One");
+    answer({ kind: "built", id: 3, docSeq: 3, doc: null, patch: { base: 2, pages: [0, 1, "p3''"], blocks: [0, 1], moves: [], rest: { pages: [], blocks: [], config: "third" } } });
+    expect(state.chapters.get("# One")!.doc).toEqual({ pages: ["p1", "p2'", "p3''"], blocks: ["b1'", "b2"], config: "third" });
+    expect(state.errors).toEqual([]);
+  });
+
+  it("holds the pages the client moves in place: the message's own objects", () => {
+    const { state, ask, answer } = open();
+    const page = { at: 10 };
+    ask(1, "# One");
+    answer({ kind: "built", id: 1, docSeq: 1, doc: { pages: [page], blocks: [] } });
+    ask(2, "# One!");
+    answer({ kind: "built", id: 2, docSeq: 2, doc: null, patch: { base: 1, pages: [0], blocks: [], moves: [], rest: { pages: [], blocks: [] } } });
+    page.at = 11;
+    expect(state.chapters.get("# One!")!.doc.pages[0]).toBe(page);
+  });
+
+  it("says a patch against a document it does not hold, and leaves a build that asked for no document", () => {
+    const { state, ask, answer } = open();
+    ask(1, "# One");
+    answer({ kind: "built", id: 1, doc: null });
+    expect(state.chapters.size).toBe(0);
+    answer({ kind: "built", id: 1, docSeq: 5, doc: null, patch: { base: 4, pages: [0], blocks: [], moves: [], rest: { pages: [], blocks: [] } } });
+    expect(state.chapters.size).toBe(0);
+    expect(state.errors).toEqual(["worker patch: against document 4, which the probe does not hold"]);
   });
 });
 

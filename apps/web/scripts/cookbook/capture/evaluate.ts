@@ -148,6 +148,9 @@ export function evaluate(
   const bundle = run.sandbox?.bytes ?? null;
   if (bundle) files.set(sandboxFile(slug), bundle);
   const vdtHash = facts?.vdt ? sha1(facts.vdt) : "";
+  // The preview gets the layout text the hash is taken of: two engines'
+  // previews diffed say which line moved (#1682).
+  if (facts?.vdt) previews.set("vdt.txt", Buffer.from(facts.vdt));
   const detected = facts && facts.selected >= 0 ? detect(meta, facts, run.pen, registry) : null;
   const previous = task.previous;
   const findings: Finding[] = runChecks({
