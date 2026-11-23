@@ -5,6 +5,7 @@ import type {
   ParagraphStyleConfig,
   PostextConfig,
 } from 'postext';
+import { guideCover, guideCoverStyles, guideProduction } from './guidePrintCover.js';
 import { defaultResourceTypes } from 'postext';
 import {
   GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W,
@@ -206,7 +207,7 @@ export function createChineseGuideConfig(): PostextConfig {
       ],
     },
     headingStyles: headingStyles(),
-    paragraphStyles: paragraphStyles(),
+    paragraphStyles: [...paragraphStyles(), ...guideCoverStyles({ text: ZH_TEXT, sans: ZH_SANS }, 'left', false)],
     calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['zh-Hans'])],
     exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['zh-Hans']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['zh-Hans']),
@@ -246,6 +247,8 @@ export function createChineseGuideConfig(): PostextConfig {
     // Canvas shows a spread with its pages joined.
     canvasViewer: { pageGap: 0 },
     folio: GUIDE_FOLIO,
+    production: guideProduction('zh-Hans'),
+    cover: guideCover(true, true),
     header: runningHeads(),
     footer: slot(),
     captionStyle: {

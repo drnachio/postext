@@ -13,6 +13,7 @@ import {
 import { createChineseGuideConfig } from './guideConfigZh.js';
 import { createArabicGuideConfig } from './guideConfigAr.js';
 import { createJapaneseGuideConfig } from './guideConfigJa.js';
+import { guideCover, guideCoverStyles, guideProduction } from './guidePrintCover.js';
 import { FEATURE_NAMES, asideCallout, colophonCallout, exerciseCallouts, guideChipStyles, guideExerciseStyles, guideMarkStyles, indexHeadingStyle, sheetCallouts, sheetTemplate, type FeatureFaces, type FeatureOptions } from './guideFeatures.js';
 
 export { GUIDE_COVER_RESOURCE_ID, GUIDE_PART_COLOURS } from './guideKit.js';
@@ -428,7 +429,7 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
       ],
     },
     headingStyles: headingStyles(lang),
-    paragraphStyles: paragraphStyles(),
+    paragraphStyles: [...paragraphStyles(), ...guideCoverStyles({ text: TEXT, sans: SANS })],
     calloutStyles: [...calloutStyles(lang), colophonCallout(COLOPHON_TYPE), asideCallout(FACES, FEATURES, FEATURE_NAMES[lang].aside), ...exerciseCallouts(FACES, FEATURES, FEATURE_NAMES[lang]), ...sheetCallouts(FACES, FEATURES, FEATURE_NAMES[lang])],
     exerciseStyles: guideExerciseStyles(FACES, FEATURE_NAMES[lang]),
     chipStyles: guideChipStyles(FACES, FEATURE_NAMES[lang]),
@@ -464,6 +465,8 @@ export function createPostextGuideConfig(locale = 'en'): PostextConfig {
     // Canvas shows a spread with its pages joined.
     canvasViewer: { pageGap: 0 },
     folio: GUIDE_FOLIO,
+    production: guideProduction(lang),
+    cover: guideCover(),
     header: runningHeads(lang),
     footer: openerFooter(),
     captionStyle: {

@@ -5,6 +5,7 @@ import type {
   ParagraphStyleConfig,
   PostextConfig,
 } from 'postext';
+import { guideCover, guideCoverStyles, guideProduction } from './guidePrintCover.js';
 import { defaultResourceTypes } from 'postext';
 import {
   GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W,
@@ -237,7 +238,7 @@ export function createJapaneseGuideConfig(): PostextConfig {
       ],
     },
     headingStyles: headingStyles(),
-    paragraphStyles: paragraphStyles(),
+    paragraphStyles: [...paragraphStyles(), ...guideCoverStyles({ text: JA_TEXT, sans: JA_SANS }, 'left', false)],
     calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ja'])],
     exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ja']),
@@ -278,6 +279,8 @@ export function createJapaneseGuideConfig(): PostextConfig {
     // Canvas shows a spread with its pages joined.
     canvasViewer: { pageGap: 0 },
     folio: GUIDE_FOLIO,
+    production: guideProduction('ja'),
+    cover: guideCover(true, true),
     header: runningHeads(),
     footer: folios(),
     captionStyle: {

@@ -4,6 +4,7 @@ import type {
   ParagraphStyleConfig,
   PostextConfig,
 } from 'postext';
+import { guideCover, guideCoverStyles, guideProduction } from './guidePrintCover.js';
 import { defaultResourceTypes } from 'postext';
 import {
   DISPLAY, GUIDE_COVER_RESOURCE_ID, GUIDE_FOLIO, M_BOTTOM, M_INNER, M_OUTER, M_TOP, PAGE_H, PAGE_W, TEXT_W,
@@ -442,7 +443,7 @@ export function createArabicGuideConfig(): PostextConfig {
       ],
     },
     headingStyles: headingStyles(),
-    paragraphStyles: paragraphStyles(),
+    paragraphStyles: [...paragraphStyles(), ...guideCoverStyles({ text: AR_TEXT, sans: AR_SANS }, 'left', false)],
     calloutStyles: [...calloutStyles(), colophonCallout(COLOPHON_TYPE), asideCallout(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'].aside), ...exerciseCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar']), ...sheetCallouts(FEATURE_FACES, FEATURES, FEATURE_NAMES['ar'])],
     exerciseStyles: guideExerciseStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
     chipStyles: guideChipStyles(FEATURE_FACES, FEATURE_NAMES['ar']),
@@ -478,6 +479,8 @@ export function createArabicGuideConfig(): PostextConfig {
     // Canvas shows a spread with its pages joined.
     canvasViewer: { pageGap: 0 },
     folio: GUIDE_FOLIO,
+    production: guideProduction('ar'),
+    cover: guideCover(true),
     header: runningHeads(),
     footer: openerFooter(),
     captionStyle: {
