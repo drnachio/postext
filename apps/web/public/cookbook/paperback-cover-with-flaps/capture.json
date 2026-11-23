@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "paperback-cover-with-flaps",
-  "sourceHash": "752864c29f170f5a62597078c4101ab7535fb0b160ef52599be33b6de8e82f33",
+  "sourceHash": "a057227eadb9d8e364a3e3faf659fa5d5b18512598350625328eeacb7583c833",
   "engine": {
-    "postext": "1.92.0",
-    "postextPdf": "1.92.0",
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.79",
-  "capturedAt": "2026-11-23T12:56:47.366Z",
+  "capturedAt": "2026-11-23T17:04:22.436Z",
   "variants": {
     "en": {
-      "hash8": "3eacbf1d",
+      "hash8": "9446d4a8",
       "vdtHash": "962365b49a429ba467d09149c3bfe789e0622822",
       "timings": {
-        "importMs": 11188,
-        "fontsMs": 72,
-        "buildMs": 287,
-        "totalMs": 12343,
+        "importMs": 800,
+        "fontsMs": 70,
+        "buildMs": 189,
+        "totalMs": 1797,
         "builds": 2
       },
       "specimen": {
@@ -171,7 +171,7 @@
           "h": 552,
           "file": "p38.webp",
           "strip": "p38.s.webp",
-          "bytes": 60860,
+          "bytes": 60704,
           "alt": "Page 1."
         }
       ],
@@ -236,7 +236,7 @@
       },
       "sandbox": {
         "file": "paperback-cover-with-flaps.postext",
-        "bytes": 355800,
+        "bytes": 355780,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 37,
@@ -560,13 +560,13 @@
       }
     },
     "es": {
-      "hash8": "a253ca04",
+      "hash8": "c32ef192",
       "vdtHash": "da4a2c2f9cbba1e61e50fb5512e14b6a8e806362",
       "timings": {
-        "importMs": 11190,
-        "fontsMs": 77,
-        "buildMs": 273,
-        "totalMs": 12347,
+        "importMs": 799,
+        "fontsMs": 58,
+        "buildMs": 180,
+        "totalMs": 1784,
         "builds": 2
       },
       "specimen": {
@@ -720,7 +720,7 @@
           "h": 552,
           "file": "p38.webp",
           "strip": "p38.s.webp",
-          "bytes": 59648,
+          "bytes": 59702,
           "alt": "Página 1."
         }
       ],
@@ -780,12 +780,12 @@
       },
       "pdf": {
         "file": "paperback-cover-with-flaps.pdf",
-        "bytes": 617319,
+        "bytes": 617322,
         "pages": 38
       },
       "sandbox": {
         "file": "paperback-cover-with-flaps.postext",
-        "bytes": 355502,
+        "bytes": 355510,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 37,

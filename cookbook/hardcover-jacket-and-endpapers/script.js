@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 197 · A hardcover's case, dust jacket and endpapers ═══
 // https://postext.dev/en/cookbook/hardcover-jacket-and-endpapers
 // Code: MIT · Text: Bécquer, tr. C. F. & K. L. Bates (public domain) · Art: diffusion models
-// Fonts: Crimson Pro, Cormorant Garamond, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.92.0
+// Fonts: Crimson Pro, Cormorant Garamond, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.93.0
 //
 // The pages of Nº 196 bound two ways: the paperback with flaps, and a cloth hardcover in a
 // dust jacket with painted endpapers. Each version has its binding and its ISBN; buildCover

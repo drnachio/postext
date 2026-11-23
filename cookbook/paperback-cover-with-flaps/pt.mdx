@@ -5,7 +5,7 @@ plain: "Um livro de bolso com duas lendas de Bécquer e a folha da capa do jeito
 description: "Uma brochura com orelhas no Postext: perfil de encadernação, código de barras ISBN e lombada calculada pelas páginas e pelo papel; a capa, em Markdown."
 question: "Como faço a folha de capa de uma brochura com orelhas, com a lombada calculada pelo número de páginas?"
 aliases: ["folha de capa", "orelhas", "largura da lombada", "código de barras ISBN", "quarta capa", "lombada quadrada colada", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "A folha de capa aberta: à esquerda a orelha de trás sobre as tradutoras, depois a quarta capa com o texto e um código de barras ISBN num quadro branco, a lombada escrita de baixo para cima, a capa com uma capela em ruínas pintada num morro sob uma serra nevada e o título por cima, e à direita a orelha da frente com uma nota sobre o autor. Em volta, as marcas de corte e de dobra." }
+pageNotes: { "38": "A folha de capa aberta: à esquerda a orelha de trás sobre as tradutoras, depois a quarta capa com o texto e um código de barras ISBN num quadro branco, a lombada escrita de cima para baixo, a capa com uma capela em ruínas pintada num morro sob uma serra nevada e o título por cima, e à direita a orelha da frente com uma nota sobre o autor. Em volta, as marcas de corte e de dobra." }
 ---
 
 ## O que você vai compor
@@ -38,15 +38,15 @@ A folha é composta com a configuração do livro, então seus estilos de parág
 
 ## Variações
 
-### Escreva a lombada de cima para baixo
+### Escreva a lombada de baixo para cima
 
-Livros ingleses e americanos leem a lombada de cima para baixo; o padrão, de baixo para cima, segue o uso espanhol e de boa parte da Europa.
+O padrão escreve a lombada de cima para baixo, como pede a norma ISO 6357 e fazem os livros ingleses, legível quando o livro está com a capa para cima. O uso espanhol e de boa parte da Europa, mais antigo, escreve de baixo para cima.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Imprima num papel mais fino

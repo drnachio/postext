@@ -5,7 +5,7 @@ plain: "Un tascabile con due leggende di Bécquer e il foglio della sua copertin
 description: "Una brossura con alette in Postext: profilo di legatura, codice a barre ISBN e un dorso calcolato da pagine e carta, con il testo di copertina in Markdown."
 question: "Come faccio il foglio di copertina di una brossura con alette, con il dorso calcolato dal numero di pagine?"
 aliases: ["foglio di copertina", "alette", "spessore del dorso", "codice a barre ISBN", "quarta di copertina", "brossura fresata", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "Il foglio di copertina steso: a sinistra l’aletta posteriore sulle traduttrici, poi la quarta con il testo e un codice a barre ISBN su un riquadro bianco, il dorso scritto dal basso verso l’alto, la prima con una cappella in rovina dipinta su un colle sotto una cresta innevata e il titolo sopra, e a destra l’aletta anteriore con una nota sull’autore. Tutt’intorno i segni di taglio e di piega." }
+pageNotes: { "38": "Il foglio di copertina steso: a sinistra l’aletta posteriore sulle traduttrici, poi la quarta con il testo e un codice a barre ISBN su un riquadro bianco, il dorso scritto dall’alto verso il basso, la prima con una cappella in rovina dipinta su un colle sotto una cresta innevata e il titolo sopra, e a destra l’aletta anteriore con una nota sull’autore. Tutt’intorno i segni di taglio e di piega." }
 ---
 
 ## Che cosa comporrai
@@ -38,15 +38,15 @@ Il foglio si compone con la configurazione del libro, quindi i suoi stili di par
 
 ## Varianti
 
-### Scrivi il dorso dall’alto verso il basso
+### Scrivi il dorso dal basso verso l’alto
 
-I libri inglesi e americani si leggono sul dorso dall’alto verso il basso; il valore predefinito, dal basso verso l’alto, segue l’uso continentale.
+Il valore predefinito scrive il dorso dall’alto verso il basso, come vuole la norma ISO 6357 e come fanno i libri inglesi, dritto quando il libro è posato a faccia in su. L’uso continentale più antico lo scrive dal basso verso l’alto.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Stampa su una carta più sottile

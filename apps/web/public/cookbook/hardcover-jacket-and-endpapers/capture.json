@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "hardcover-jacket-and-endpapers",
-  "sourceHash": "952a0568a8a52eaf141fc0e0155f3855f4347a05ff2b473558767b6ec1f644b9",
+  "sourceHash": "b0961cc3d56fbcbe37ee86efdb5f2cd608ac55db47b772841fa74cfc1232b0b5",
   "engine": {
-    "postext": "1.92.0",
-    "postextPdf": "1.92.0",
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.79",
-  "capturedAt": "2026-11-23T12:56:52.191Z",
+  "capturedAt": "2026-11-23T17:04:22.475Z",
   "variants": {
     "en": {
-      "hash8": "c6d29a79",
+      "hash8": "37c1fac7",
       "vdtHash": "c6fd800f3301f5a4467bcb86060ad98efdfdca29",
       "timings": {
-        "importMs": 920,
-        "fontsMs": 88,
-        "buildMs": 189,
-        "totalMs": 1988,
+        "importMs": 799,
+        "fontsMs": 96,
+        "buildMs": 190,
+        "totalMs": 1856,
         "builds": 4
       },
       "specimen": {
@@ -127,7 +127,7 @@
           "h": 801,
           "file": "p38.webp",
           "strip": "p38.s.webp",
-          "bytes": 9776,
+          "bytes": 9760,
           "alt": "Page 1."
         },
         {
@@ -138,7 +138,7 @@
           "h": 491,
           "file": "p39.webp",
           "strip": "p39.s.webp",
-          "bytes": 48470,
+          "bytes": 48490,
           "alt": "Page 1."
         },
         {
@@ -220,12 +220,12 @@
       },
       "pdf": {
         "file": "hardcover-jacket-and-endpapers.pdf",
-        "bytes": 1251227,
+        "bytes": 1251226,
         "pages": 41
       },
       "sandbox": {
         "file": "hardcover-jacket-and-endpapers.postext",
-        "bytes": 999245,
+        "bytes": 999235,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 37,
@@ -548,13 +548,13 @@
       }
     },
     "es": {
-      "hash8": "4389f903",
+      "hash8": "8b234f06",
       "vdtHash": "e9d7a4258269bc3e2d97d397035a17c39ebdca16",
       "timings": {
-        "importMs": 903,
-        "fontsMs": 93,
-        "buildMs": 184,
-        "totalMs": 1921,
+        "importMs": 787,
+        "fontsMs": 134,
+        "buildMs": 176,
+        "totalMs": 1915,
         "builds": 4
       },
       "specimen": {
@@ -664,7 +664,7 @@
           "h": 801,
           "file": "p38.webp",
           "strip": "p38.s.webp",
-          "bytes": 9592,
+          "bytes": 9586,
           "alt": "Página 1."
         },
         {
@@ -675,7 +675,7 @@
           "h": 491,
           "file": "p39.webp",
           "strip": "p39.s.webp",
-          "bytes": 48746,
+          "bytes": 48740,
           "alt": "Página 1."
         },
         {
@@ -757,12 +757,12 @@
       },
       "pdf": {
         "file": "hardcover-jacket-and-endpapers.pdf",
-        "bytes": 1267207,
+        "bytes": 1267206,
         "pages": 41
       },
       "sandbox": {
         "file": "hardcover-jacket-and-endpapers.postext",
-        "bytes": 998795,
+        "bytes": 998793,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 37,

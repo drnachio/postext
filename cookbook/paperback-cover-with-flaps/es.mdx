@@ -5,7 +5,7 @@ plain: "Un libro de bolsillo con dos leyendas de Bécquer y el pliego de su cubi
 description: "Una rústica con solapas en Postext: perfil de encuadernación, código de barras ISBN y lomo calculado con las páginas y el papel; la cubierta, en Markdown."
 question: "¿Cómo hago el pliego de cubierta de una rústica con solapas, con el lomo calculado a partir de las páginas?"
 aliases: ["pliego de cubierta", "solapas", "ancho de lomo", "código de barras ISBN", "contracubierta", "texto de contracubierta", "encuadernación fresada", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "El pliego de cubierta extendido: a la izquierda la solapa trasera sobre esta edición, luego la contracubierta con el texto y un código de barras ISBN sobre fondo blanco, el lomo rotulado de abajo arriba, la cubierta con una capilla en ruinas pintada en un cerro bajo una sierra nevada y el título encima, y a la derecha la solapa delantera con una nota sobre el autor. Alrededor, las marcas de corte y de plegado." }
+pageNotes: { "38": "El pliego de cubierta extendido: a la izquierda la solapa trasera sobre esta edición, luego la contracubierta con el texto y un código de barras ISBN sobre fondo blanco, el lomo rotulado de arriba abajo, la cubierta con una capilla en ruinas pintada en un cerro bajo una sierra nevada y el título encima, y a la derecha la solapa delantera con una nota sobre el autor. Alrededor, las marcas de corte y de plegado." }
 ---
 
 ## Lo que vas a componer
@@ -38,15 +38,15 @@ El pliego se compone con la configuración del libro, así que sus estilos de p�
 
 ## Variantes
 
-### Rotula el lomo de arriba abajo
+### Rotula el lomo de abajo arriba
 
-Los libros ingleses y norteamericanos leen el lomo de arriba abajo; la opción por omisión, de abajo arriba, es la costumbre española y europea.
+La opción por omisión lee el lomo de arriba abajo, como pide la norma ISO 6357 y hacen los libros ingleses, al derecho cuando el libro está boca arriba. La costumbre española y europea más antigua lo lee de abajo arriba.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Imprime en un papel más fino

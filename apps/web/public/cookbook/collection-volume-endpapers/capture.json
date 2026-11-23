@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "collection-volume-endpapers",
-  "sourceHash": "86cada04ba6cc3ae86182e71543da96be61d129a5dd01443376915b08af906f4",
+  "sourceHash": "7fe6e404e2428af2fcf081917305beadf1f709a066fc5d0536fd2dfc6b1c8f01",
   "engine": {
-    "postext": "1.92.0",
-    "postextPdf": "1.92.0",
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.79",
-  "capturedAt": "2026-11-23T12:56:56.204Z",
+  "capturedAt": "2026-11-23T17:04:22.522Z",
   "variants": {
     "en": {
-      "hash8": "6898e5f5",
+      "hash8": "cada069a",
       "vdtHash": "a42d14912c29c626a87254e3f6ee9bdf892b931c",
       "timings": {
-        "importMs": 562,
-        "fontsMs": 92,
-        "buildMs": 110,
-        "totalMs": 1539,
+        "importMs": 802,
+        "fontsMs": 96,
+        "buildMs": 114,
+        "totalMs": 1734,
         "builds": 4
       },
       "specimen": {
@@ -138,7 +138,7 @@
           "h": 789,
           "file": "p27.webp",
           "strip": "p27.s.webp",
-          "bytes": 42446,
+          "bytes": 42468,
           "alt": "Page 1."
         },
         {
@@ -216,12 +216,12 @@
       },
       "pdf": {
         "file": "collection-volume-endpapers.pdf",
-        "bytes": 925215,
+        "bytes": 925211,
         "pages": 29
       },
       "sandbox": {
         "file": "collection-volume-endpapers.postext",
-        "bytes": 707895,
+        "bytes": 707885,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 26,
@@ -524,13 +524,13 @@
       }
     },
     "es": {
-      "hash8": "f42eaf51",
+      "hash8": "c52eda25",
       "vdtHash": "bcb41957332f164b66aa81d8d3ddde55354942ab",
       "timings": {
-        "importMs": 571,
-        "fontsMs": 82,
-        "buildMs": 123,
-        "totalMs": 1525,
+        "importMs": 866,
+        "fontsMs": 79,
+        "buildMs": 130,
+        "totalMs": 1810,
         "builds": 4
       },
       "specimen": {
@@ -651,7 +651,7 @@
           "h": 789,
           "file": "p27.webp",
           "strip": "p27.s.webp",
-          "bytes": 43088,
+          "bytes": 43072,
           "alt": "Página 1."
         },
         {
@@ -729,12 +729,12 @@
       },
       "pdf": {
         "file": "collection-volume-endpapers.pdf",
-        "bytes": 941733,
+        "bytes": 941731,
         "pages": 29
       },
       "sandbox": {
         "file": "collection-volume-endpapers.postext",
-        "bytes": 707705,
+        "bytes": 707683,
         "folio": "d01b95e2",
         "keep": "first",
         "pages": 26,
