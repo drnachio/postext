@@ -651,6 +651,14 @@ a cover sheet.
   the page count matches, set `spineOverride` to the source's figure, or the profile's
   `spineAllowance` when the printer's binding adds it to every book. Signatures: the source's page count
   rounded up (16 or 32) shows in `signatureBlanks`.
+- **The spine's lettering**: look at which way the source's spine reads. With the book lying face up, a
+  falling spine reads the right way up (ISO 6357, English-language books, the default since 1.93); a
+  rising one reads upside down there (the older Spanish, French and German habit): set
+  `spineText.direction: 'bottomToTop'` on that version. A book pinned to 1.92 rises unless told
+  otherwise. A vertical Chinese or Japanese book's spine runs down unturned and reads no direction; a
+  book bound on the right has its whole sheet mirrored by the engine, so place its items as on any
+  sheet, by zone. A spine thinner than `spineText.minSpine` (6 mm) carries no text: lower it only when
+  the source letters a thinner spine.
 - **The binding profile**: start from the built-in profile of the style and change only what the
   source shows (flap width, hinge score, bleed); put a printer's own figures in `production.bindings`.
 - **The design**: the art is a resource (`cover.image`, area `front` or `sheet`), grounds are
@@ -658,9 +666,29 @@ a cover sheet.
   `basis` so they follow a new spine, the publisher's mark is a `cover.logos` entry. Spot UV, foil and
   embossing in the printer's file are `cover.finishes`, never colours in the picture.
 - **The texts**: the back-cover blurb, the flap biographies and any quotation go in `cover.md` as
-  frames. Leave the front and spine to the metadata (title, subtitle, author in the chapters' front
-  matter) unless the source sets them in a way the styles `cover-title`, `cover-subtitle`,
-  `cover-author` and `cover-spine` cannot; restyle those paragraph styles first.
+  frames. Leave the front and spine to the metadata (title, subtitle, author in the first chapter's
+  front matter) unless the source sets them in a way the styles `cover-title`, `cover-subtitle`,
+  `cover-author` and `cover-spine` cannot; restyle those paragraph styles first (a style of the book
+  with one of those ids changes only the fields it sets). The metadata puts title, subtitle and author
+  on the front and `title · author` on the spine. A spine that carries something else (the publisher's
+  name, a series line, the title alone) is a `:::frame{slot="spine"}` whose text names its style, or
+  it is set as body text:
+  ```
+  :::frame{slot="spine"}
+  :::paragraphs{style="cover-spine"}
+  The Underground Library
+  :::
+  :::
+  ```
+  The same holds for a `front` frame; an empty one leaves the panel without text (a front that is
+  all picture, its title drawn in the art).
+- **Text blocks on a panel**: a title, a subtitle under it and a line at the foot of the front, or a
+  blurb that runs from the back onto a flap, are `cover.textBoxes` (1.93): one box per block, each
+  anchored to its zone (`anchor: { to: 'front', edge: 'top', y: 12 }`) or hung under another box
+  (`edge: 'below'`, `y` the gap), `next` for a text that goes on in another box, `maxHeight` on a
+  title that may run to two lines, `fit.minScale` for how far a text may shrink. Each box is filled
+  by a frame of its name in `cover.md`. Do not place boxes by absolute `rect` alone when the source
+  aligns them to a panel: anchored boxes keep their place when the spine or a text changes.
 - **A hardcover's sheets**: a cloth or stamped case under a printed jacket, or endpapers that differ
   front and back, each get a design of their own in `cover.sheets` (`case`, `jacket`, `endpapers`,
   `endpaperFront`, `endpaperBack`) and, where their text differs, frames with `sheet="…"`. An empty
