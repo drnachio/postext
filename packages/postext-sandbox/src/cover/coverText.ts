@@ -89,6 +89,14 @@ export function coverTextSlots(zones: Iterable<string>, textBoxes: readonly { na
   return [...ZONE_TEXT_SLOTS.filter((s) => have.has(s)), ...(textBoxes ?? []).map((t) => t.name)];
 }
 
+/** The text boxes that only take the rest of another box's text
+ *  (#1679, the other's `next`), each by the box it continues. */
+export function continuedBoxes(textBoxes: readonly { name: string; next?: string }[] | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const t of textBoxes ?? []) if (t.next && t.next !== t.name && !(t.next in out)) out[t.next] = t.name;
+  return out;
+}
+
 /** The Markdown with every frame of a slot moved to another (a text box
  *  renamed); the rest as it was written. */
 export function renameCoverSlot(markdown: string | undefined, from: string, to: string): string {

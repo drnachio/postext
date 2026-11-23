@@ -29589,5 +29589,107 @@
         "cover.finishes"
       ]
     }
+  },
+  "cover-text-boxes": {
+    "label": {
+      "en": "Cover text boxes",
+      "es": "Cajas de texto de cubierta",
+      "ca": "Caixes de text de coberta",
+      "zh": "封面文本框",
+      "ar": "مربّعات نص الغلاف",
+      "ja": "表紙のテキスト枠",
+      "pt": "Caixas de texto da capa",
+      "fr": "Blocs de texte de couverture",
+      "de": "Textfelder des Umschlags",
+      "it": "Caselle di testo di copertina"
+    },
+    "definition": {
+      "en": "cover.textBoxes adds text frames to the cover sheet, each placed by its rect or anchored to a zone's safe area or to another box (below, above, beside); next continues its text in another box, maxHeight lets it grow with its text, and fit sets how far its text may shrink.",
+      "es": "cover.textBoxes añade marcos de texto al pliego de cubierta, cada uno colocado por su rect o anclado a la zona segura de una zona o a otra caja (debajo, encima, al lado); next continúa su texto en otra caja, maxHeight la deja crecer con el texto y fit fija cuánto puede encogerse la letra.",
+      "ca": "cover.textBoxes afegeix marcs de text al plec de coberta, cadascun col·locat pel seu rect o ancorat a l'àrea segura d'una zona o a una altra caixa (a sota, a sobre, al costat); next continua el text en una altra caixa, maxHeight la deixa créixer amb el text i fit fixa quant es pot encongir la lletra.",
+      "zh": "cover.textBoxes在封面印张上添加文本框，每个框按rect定位，或锚定在某个区域的安全区或另一个文本框上（下方、上方、旁边）；next把放不下的文字接到另一个框，maxHeight让框随文字长高，fit规定文字最多缩小多少。",
+      "ar": "تضيف cover.textBoxes إطارات نصية إلى فرخ الغلاف، يوضع كلٌّ منها بمستطيله rect أو يُثبَّت إلى المنطقة الآمنة للوحة أو إلى مربّع آخر (تحته أو فوقه أو بجانبه)؛ وتُكمل next نصّه في مربّع آخر، وتتيح maxHeight أن يطول مع نصّه، وتحدّد fit مقدار ما يصغر خطّه.",
+      "ja": "cover.textBoxesは表紙の用紙にテキスト枠を加えます。各枠はrectで置くか、ゾーンの安全領域や別の枠（下、上、横）に固定します。nextは収まらない文章を別の枠へ続け、maxHeightは文章に合わせて枠を伸ばし、fitは文字をどこまで縮めるかを決めます。",
+      "pt": "cover.textBoxes acrescenta blocos de texto à folha de capa, cada um posicionado pelo seu rect ou ancorado à área segura de um painel ou a outra caixa (abaixo, acima, ao lado); next continua o texto noutra caixa, maxHeight deixa-a crescer com o texto e fit define quanto a letra pode encolher.",
+      "fr": "cover.textBoxes ajoute des blocs de texte à la feuille de couverture, chacun placé par son rect ou ancré à la zone de sécurité d’un panneau ou à un autre bloc (dessous, dessus, à côté) ; next poursuit son texte dans un autre bloc, maxHeight le laisse grandir avec son texte et fit fixe jusqu’où le texte peut rétrécir.",
+      "de": "cover.textBoxes fügt dem Umschlagbogen Textrahmen hinzu, jeder über sein rect platziert oder am Sicherheitsbereich einer Fläche oder an einem anderen Feld verankert (darunter, darüber, daneben); next setzt den Text in einem anderen Feld fort, maxHeight lässt das Feld mit dem Text wachsen, und fit legt fest, wie weit die Schrift schrumpfen darf.",
+      "it": "cover.textBoxes aggiunge cornici di testo al foglio di copertina, ciascuna collocata dal suo rect o ancorata all’area di sicurezza di un pannello o a un’altra casella (sotto, sopra, accanto); next prosegue il testo in un’altra casella, maxHeight la lascia crescere con il testo e fit stabilisce quanto può ridursi il carattere."
+    },
+    "aliases": {
+      "en": [
+        "cover title box",
+        "back cover blurb",
+        "text box anchor",
+        "linked text boxes"
+      ],
+      "es": [
+        "caja de título de cubierta",
+        "texto de contracubierta",
+        "anclar cajas de texto",
+        "cajas enlazadas"
+      ],
+      "ca": [
+        "caixa de títol de coberta",
+        "text de contracoberta",
+        "caixes enllaçades"
+      ],
+      "zh": [
+        "封面标题框",
+        "封底简介",
+        "文本框锚定",
+        "串接文本框"
+      ],
+      "ar": [
+        "مربّع عنوان الغلاف",
+        "ملخّص الغلاف الخلفي",
+        "مربّعات نص مترابطة"
+      ],
+      "ja": [
+        "表紙の題名枠",
+        "裏表紙の紹介文",
+        "連結テキスト枠"
+      ],
+      "pt": [
+        "caixa de título da capa",
+        "texto da contracapa",
+        "caixas encadeadas"
+      ],
+      "fr": [
+        "bloc titre de couverture",
+        "texte de quatrième",
+        "blocs chaînés"
+      ],
+      "de": [
+        "Titelfeld des Umschlags",
+        "Klappentext",
+        "verkettete Textfelder"
+      ],
+      "it": [
+        "casella del titolo",
+        "testo di quarta",
+        "caselle concatenate"
+      ]
+    },
+    "group": "pdf",
+    "docs": {
+      "slug": "print-covers",
+      "heading": {
+        "en": "Text boxes",
+        "es": "Cajas de texto",
+        "ca": "Caixes de text",
+        "zh": "文本框",
+        "ar": "مربّعات النص",
+        "ja": "テキスト枠",
+        "pt": "Caixas de texto",
+        "fr": "Blocs de texte",
+        "de": "Textfelder",
+        "it": "Caselle di testo"
+      }
+    },
+    "detect": {
+      "config": [
+        "cover.textBoxes"
+      ]
+    }
   }
 }

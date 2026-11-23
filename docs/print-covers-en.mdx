@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` turns the text a quarter to read up a spine, `90` to read down it.
 - `verticalAlign`: `top`, `middle` or `bottom`.
 
+A text box is a frame of the cover's page, with the abilities of the [frames of a composed page](/en/docs/composed-pages) (since postext 1.93): several texts on one panel, each placed against a panel or against another box, text that runs from one box into the next, boxes that grow with their text and text that shrinks to fit.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: places the box against a zone (its safe area) or another text box, as [a frame anchored to another](/en/docs/composed-pages#placing-the-frames). `to` names it and `edge` the point: on a zone one of `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, which pins the same point of the box there; on a box also `below`, `above`, `right-of`, `left-of`. `x` and `y` move it, in mm. Only the box's size is then read from `rect`. A box hung under one that grows goes down with it, and a box anchored by its foot grows upwards.
+- `next`: the text box the text goes on in when this one is full, cut between lines, as in [chained frames](/en/docs/composed-pages#chaining-frames). That box takes no text of its own from the Markdown.
+- `maxHeight`: the box grows with its text up to this height, in mm, before its text shrinks. Not on a turned box. A box with `next` does not grow: it passes the rest of its text on.
+- `fit`: `shrinkText: false` keeps the text at its size; `minScale` (`0.9` by default) is how small it may get when it still does not fit, the last step of the [reflow ladder](/en/docs/composed-pages#when-it-still-does-not-fit).
+
+A turned box, and a box anchored to a turned one, stands where its anchor puts it, at its own size.
+
 ### Finishes and technical plates
 
 `finishes` are what the printer adds after the inks, each over a shape of the design:
@@ -405,6 +422,7 @@ Building a cover reports what it could not do as asked. The Sandbox shows them i
     <tr><td><code>signatureBlanks</code></td><td>Rounding to whole signatures adds blank pages.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>The spine is under <code>minSpine</code> and carries no text. On a hardcover it is the case's spine, two boards wider than the pages, that counts.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>A text box has a name the cover cannot use.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>A text box is anchored to something the sheet lacks, to itself, in a loop or at a point a zone has not, and stays on its <code>rect</code>; or its text continues in no other box, or back into its own chain, and stops there.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>The cover's text fills a slot the sheet lacks, or one slot twice.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>A frame of the cover's text names a sheet that does not exist (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>The mirrored bleed left out pictures it could not read, or stopped short of the sheet's edge.</td></tr>
@@ -424,8 +442,8 @@ The **Cover** panel, in the sidebar, holds the print versions and their cover:
 
 - **Versions**: **Add paperback** or **Add hardcover**, then each version's name, binding, ISBN, add-on and work ISBN, its flaps or jacket, a case's material, the spine from the printer, the direction of the spine text and the narrowest spine that takes it. **This version's measures** overrides the profile's for this version only.
 - **Sheet**: which sheet is shown (cover, jacket, front or back endpaper), and its pages, spine and size.
-- **Design on the sheet**: **Edit on the sheet** turns the sheet into the designer. Text boxes, colour boxes, veils, pictures, logos and finishes are added from its bar, dragged and resized on the sheet, snapping to folds, safe areas and each other (Alt turns snapping off). The arrow keys move the selected item 1 mm, 10 mm with Shift. **Layers** lists the items under the text, the text boxes, the items over the text, the logos and the finishes, and orders them. The selected item's fields set its place, colour, opacity, how a picture fills its box, its corner radius, border, gradient and shadow, what it does past a mirrored bleed, whether it scales with its panel, and its path, outline or clip. Renaming a text box moves its text in the cover's Markdown with it.
-- **Texts**: one Markdown editor per zone and text box. The front and the spine show what they take from the metadata until they are given **own text**.
+- **Design on the sheet**: **Edit on the sheet** turns the sheet into the designer. Text boxes, colour boxes, veils, pictures, logos and finishes are added from its bar, dragged and resized on the sheet, snapping to folds, safe areas and each other (Alt turns snapping off). The arrow keys move the selected item 1 mm, 10 mm with Shift. **Layers** lists the items under the text, the text boxes, the items over the text, the logos and the finishes, and orders them. The selected item's fields set its place, colour, opacity, how a picture fills its box, its corner radius, border, gradient and shadow, what it does past a mirrored bleed, whether it scales with its panel, and its path, outline or clip. Renaming a text box moves its text in the cover's Markdown with it. A selected text box can be anchored to a zone or another box (**Anchored to**, the point and the offset), continue its text in another box (**Text continues in**), grow with its text up to a height and shrink its text down to a smallest size.
+- **Texts**: one Markdown editor per zone and text box. The front and the spine show what they take from the metadata until they are given **own text**. A box that takes the rest of another box's text shows that instead of an editor.
 - **Collection**: the collection's name and ISBN.
 - **Files for the printer**: **Download sheet PDF**, written with the book's PDF settings (colour space, output profile, PDF/X), and **Download front cover** as a picture.
 - **Checks**: the checks above.

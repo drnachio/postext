@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { versionSheets, type ProductionSheet } from 'postext/production';
-import { addCatalogue, addElement, addFinish, addTextBox, designerItems, freeId, itemOf, nudge, placeItem, removeItem, reorderItem } from './designerModel.js';
+import { continuedFrom, renameTextBoxRefs, addCatalogue, addElement, addFinish, addTextBox, designerItems, freeId, itemOf, nudge, placeItem, removeItem, reorderItem } from './designerModel.js';
 
 function sheet(): ProductionSheet {
   const s = versionSheets({ id: 'pb', name: 'P', binding: 'perfect' }, { width: 150, height: 230 }, [{ pages: 240, grammage: 80, bulk: 1.2 }]);
@@ -64,5 +64,28 @@ describe('cover designer model', () => {
     expect(el).toMatchObject({ kind: 'catalogue', zone: 'front', gap: 3 });
     expect(el.stroke).toBeDefined();
     expect(designerItems(cover, sh)[0]).toMatchObject({ kind: 'catalogue' });
+  });
+
+  // #1679: a text box anchored to a panel or a box, continued in another.
+  it('moves an anchored text box by its offset and lets go of a removed box', () => {
+    const sh = sheet();
+    const front = sh.zones.find((z) => z.name === 'front')!.safe;
+    const cover = { textBoxes: [
+      { name: 'a', rect: { x: 0, y: 0, width: 40, height: 10 }, anchor: { to: 'front', edge: 'top-left' as const } },
+      { name: 'b', rect: { x: 0, y: 0, width: 40, height: 10 }, anchor: { to: 'a', edge: 'below' as const, y: 2 }, next: 'c' },
+      { name: 'c', rect: { x: 0, y: 0, width: 40, height: 10 } },
+    ] };
+    const items = designerItems(cover, sh);
+    expect(items[1]!.rect!.y).toBeCloseTo(front.y + 12, 6);
+    const moved = placeItem(cover, sh, { layer: 'textBoxes', id: 'b' }, nudge(items[1]!.rect!, 3, 1));
+    expect((itemOf(moved, { layer: 'textBoxes', id: 'b' }) as { anchor: unknown }).anchor).toEqual({ to: 'a', edge: 'below', x: 3, y: 3 });
+    expect(continuedFrom(cover, 'c')).toBe('b');
+    const renamed = renameTextBoxRefs(cover, 'a', 'head');
+    expect(renamed.textBoxes![1]!.anchor!.to).toBe('head');
+    const without = removeItem(cover, { layer: 'textBoxes', id: 'a' }, sh);
+    const b = itemOf(without, { layer: 'textBoxes', id: 'b' }) as { anchor?: unknown; rect: { y: number } };
+    expect(b.anchor).toBeUndefined();
+    expect(b.rect.y).toBeCloseTo(front.y + 12, 1);
+    expect((itemOf(removeItem(cover, { layer: 'textBoxes', id: 'c' }, sh), { layer: 'textBoxes', id: 'b' }) as { next?: string }).next).toBeUndefined();
   });
 });

@@ -12,6 +12,7 @@ import { useEditedDesign } from '../useEditedDesign.js';
 import { ColorPicker, NumberInput, SelectInput } from '../../controls/index.js';
 import { CatalogueFields } from './CatalogueFields.js';
 import { ElementExtras } from './ElementExtras.js';
+import { TextBoxFlow } from './TextBoxFlow.js';
 import { TextBoxName } from './TextBoxName.js';
 import { designerItems, itemOf, patchItem, placeItem, sameRef, type ItemRef } from './designerModel.js';
 
@@ -60,6 +61,7 @@ export function ItemFields({ sheet, refItem }: { sheet: ProductionSheet; refItem
               options={[{ value: 'top', label: labels.coverDesignAlignTop }, { value: 'middle', label: labels.coverDesignAlignMiddle }, { value: 'bottom', label: labels.coverDesignAlignBottom }]}
               onChange={(v) => patch({ verticalAlign: v === 'top' ? undefined : v })}
             />
+            <TextBoxFlow t={t} cover={cover} sheet={sheet} patch={patch} />
             <p className="px-3 py-1 text-xs text-(--slate)">{labels.coverTextBoxHint}</p>
           </>
         );

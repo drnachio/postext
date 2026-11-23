@@ -23,7 +23,7 @@ import { CoverChecks } from './CoverChecks.js';
 import { CoverExportSection } from './CoverExportSection.js';
 import { CoverTexts } from './CoverTexts.js';
 import { SHEET_LABEL } from './coverLabels.js';
-import { coverTextSlots } from '../coverText.js';
+import { continuedBoxes, coverTextSlots } from '../coverText.js';
 import { VersionFields } from './VersionFields.js';
 import { CatalogueSection } from './CatalogueSection.js';
 import { SheetDesignChoice } from './SheetDesignChoice.js';
@@ -132,7 +132,7 @@ export default function CoverPanel() {
               )}
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverTexts} sectionId="cover-texts" defaultOpen>
-              <CoverTexts slots={slots} sheets={edited.names} metadata={state.built?.content.metadata} />
+              <CoverTexts slots={slots} sheets={edited.names} metadata={state.built?.content.metadata} continued={continuedBoxes(edited.design.textBoxes)} />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverDesigner} sectionId="cover-designer" defaultOpen>
               <DesignerSection />

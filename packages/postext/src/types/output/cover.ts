@@ -159,17 +159,59 @@ export interface CoverFinish {
   shape: CoverFinishShape;
 }
 
+/** The points a cover text box can be anchored to (#1679): a point of
+ *  the nine-point grid of a zone or another box, or, on another box only,
+ *  beside it (`right-of`, `left-of`, `below`, `above`). */
+export type CoverAnchorEdge =
+  | 'top-left' | 'top' | 'top-right'
+  | 'left' | 'center' | 'right'
+  | 'bottom-left' | 'bottom' | 'bottom-right'
+  | 'right-of' | 'left-of' | 'below' | 'above';
+
+/** Where a text box stands against a zone (its safe area) or another text
+ *  box (#1679), as a composed page's frame is anchored to another frame:
+ *  `edge` is the point of `to` the box is pinned to, the box's own matching
+ *  point on it (`bottom` stands the box on the foot of the zone, centred;
+ *  `below` hangs it under the other box, left edges aligned), and `x`, `y`
+ *  move it from there, mm. */
+export interface CoverTextAnchor {
+  /** A zone (`front`, `spine`…) or the name of another text box. */
+  to: string;
+  edge: CoverAnchorEdge;
+  x?: number;
+  y?: number;
+}
+
 /** A text box of a cover: a frame the cover's Markdown fills by `name`
  *  (`:::frame{slot="name"}`), placed on `rect` (mm on the sheet, from its
  *  bleed's corner), its text laid along it or, with `rotate`, across it
  *  and turned a quarter about its centre (to read up the spine, −90, or
- *  down it, 90). */
+ *  down it, 90). It is a frame of the cover's page template, and the
+ *  abilities below are a composed page's frame's (#1679). */
 export interface CoverTextFrame {
   /** Letters, digits, `-` and `_`; not a zone's name. */
   name: string;
+  /** Its box. With `anchor`, its size is read and its place is worked out
+   *  from the anchor (the Sandbox keeps `x` and `y` where it lands). */
   rect: SheetRect;
   rotate?: 90 | -90;
   verticalAlign?: 'top' | 'middle' | 'bottom';
+  /** Placed against a zone or another text box, and moved with it: a box
+   *  hung under one that grows goes down with it. */
+  anchor?: CoverTextAnchor;
+  /** The text this box cannot hold continues in this other text box, cut
+   *  between lines (a composed page frame's `next`). The box it names
+   *  takes no text of its own from the Markdown. */
+  next?: string;
+  /** The box grows with its text up to this height, mm, before its text
+   *  shrinks (the frame's `maxHeight`). It grows away from the point it is
+   *  anchored by: down from the top, up from the foot. Not on a turned
+   *  box. */
+  maxHeight?: number;
+  /** How the box's text shrinks when it still does not fit (the frame's
+   *  `fit`): `shrinkText: false` keeps its size; `minScale`, above 0 and
+   *  at most 1, is the smallest scale (default 0.9). */
+  fit?: { shrinkText?: boolean; minScale?: number };
 }
 
 /**

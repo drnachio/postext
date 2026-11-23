@@ -2788,6 +2788,12 @@ cover
 ├─ logos[]               CoverElement (kind image) + clearance mm
 ├─ textBoxes[]           { name, rect: { x, y, width, height } mm on the sheet from the bleed's corner,
 │                          rotate?: 90 | -90, verticalAlign? }   filled by :::frame{slot="name"}
+│   ├─ anchor            { to: zone | box name, edge, x?, y? } mm (1.93): nine points on a zone's safe
+│   │                      area or a box (top-left … bottom-right; the box's same point pinned there), and
+│   │                      below | above | right-of | left-of on a box; rect gives the size only
+│   ├─ next              box name: the text it cannot hold goes on there (that box has no frame of its own)
+│   ├─ maxHeight         mm: grows with its text away from its anchor point before shrinking (not turned)
+│   └─ fit               { shrinkText?: false, minScale? (0.9) }
 ├─ finishes[]            { id, process: varnish | foil | emboss | deboss, ink?, sheen?, shape }
 │   └─ shape             { box: placement } | { element: id } | { outline, box }
 ├─ mirrorMargin          mm drawn past the trim (≥ 2); beyond, ground and elements are mirrored
@@ -2817,9 +2823,15 @@ cover
   `cover-catalogue-current` (bold); `numbers` 1 (default) | 01 | I | i | A | a | none; numbers keep
   their place in the whole list. A series list on the endpapers of the source is this plus `volume`,
   never typed titles; the covers' grid is a `catalogue` element.
+- Several texts on one panel (a title, a subtitle under it, a blurb that runs from the back onto a
+  flap): one text box each, anchored to the zone and to each other (`below` with `y` the gap), the
+  long one `next` into the box it continues in and `maxHeight` on a title that may run to two lines.
+  Port a cover's text blocks this way rather than as boxes placed by hand: they keep their spacing
+  when a text grows or the spine changes.
 - Checks: `bindingProfileMissing`, `profileOutOfRange`, `isbnInvalid`, `spineOverridden`,
   `signatureBlanks`, `spineTooThinForText` (a hardcover: the case's spine), `coverSlotUnknown`,
-  `coverSlotRepeated`, `coverFrameSheetUnknown`, `coverTextBoxName`,
+  `coverSlotRepeated`, `coverFrameSheetUnknown`, `coverTextBoxName`, `coverTextBoxAnchor` (anchor to
+  nothing, itself, a loop, or below/above/beside a zone: stays on rect), `coverTextBoxNext`,
   `coverMirrorSkipped`, `coverMirrorCapped`, `coverClipSkipped`, `coverBarcodeSize`.
 - Output: `postext cover book.postext [--print-version ID] [--sheet cover|jacket|endpaper-front|endpaper-back]
   -o cover.pdf` (or `-o front.jpg [--zone back|spine|…|sheet]`); `buildCover` from `postext/production`.

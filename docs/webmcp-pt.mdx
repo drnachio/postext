@@ -653,7 +653,7 @@ A resposta avisa quando um balão cai sobre um rosto ou sai do quadro. Veja
 As versões impressas e o projeto da capa são configurações:
 `sandbox_set_config` grava `production.versions`, `production.collection` e
 `cover` (`cover.textBoxes`, `cover.elements`, `cover.finishes`,
-`cover.sheets`…). Cinco ferramentas leem, gravam e exportam o resto, como faz
+`cover.sheets`…). Seis ferramentas leem, gravam e exportam o resto, como faz
 o painel Capa:
 
 - `sandbox_cover_get` lê a capa de uma versão (`version`, a primeira por
@@ -689,6 +689,13 @@ o painel Capa:
   que não é passado fica como está. `::catalogue` no texto da capa compõe os
   títulos como lista, e um elemento de capa do tipo `catalogue` dispõe as
   imagens deles. É um passo do histórico de desfazer.
+- `sandbox_cover_text_box` acrescenta ou muda uma caixa de texto do projeto com
+  que a folha é desenhada, pelo `name`: o seu `rect`, o seu `anchor` a uma
+  zona ou outra caixa (`to`, `edge`, `x`, `y`), a caixa em que o texto
+  continua (`next`), a altura até onde cresce (`maxHeight`), como o texto se
+  reduz (`fit`), `rotate` e `verticalAlign`; `null` tira um campo e
+  `remove: true` a caixa. Responde com a caixa, onde ela fica na folha e as
+  verificações. Um passo do histórico de desfazer.
 
 ```json
 { "slot": "back", "text": "Uma cidade que guarda os seus livros debaixo da terra.\n\nE a menina que os lê em voz alta." }
@@ -800,7 +807,7 @@ cada uma vêm com `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Quadrinhos**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Páginas compostas**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Capas para impressão**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Capas para impressão**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Livros e arquivos**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

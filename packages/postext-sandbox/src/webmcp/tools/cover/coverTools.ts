@@ -7,14 +7,14 @@
 // design of its own and texts of its own (#1673), and the collection's
 // catalogue and this book's volume are the book's (production.collection).
 
-import type { CoverSheetKind, CoverSheetName } from 'postext/production';
-import { buildCover, coverSheetNames } from 'postext/production';
+import type { CoverConfig, CoverSheetKind, CoverSheetName, CoverTextFrame } from 'postext/production';
+import { buildCover, COVER_BESIDE_EDGES, COVER_GRID_EDGES, coverSheetNames } from 'postext/production';
 import { createPdfWorker } from 'postext-pdf/worker';
 import { ensureConfigFontsLoaded } from '../../../controls/fonts/fontLoader.js';
 import { withHyphenationLocale } from '../../../controls/language/hyphenation.js';
 import { bookVersions, coverBuildInput, pickVersion, type CoverBook } from '../../../cover/coverInput.js';
 import { coverFileName, writeCoverPdf } from '../../../cover/coverPdf.js';
-import { coverSlotTexts, coverTextSlots, setCoverSlotText } from '../../../cover/coverText.js';
+import { continuedBoxes, coverSlotTexts, coverTextSlots, setCoverSlotText } from '../../../cover/coverText.js';
 import { designerItems } from '../../../cover/designer/designerModel.js';
 import { chooseSheetDesign, designOf, sheetDesignChoices, sheetDesignTarget, withDesign } from '../../../cover/sheetDesign.js';
 import { catalogueIdValid } from '../../../cover/collection.js';
@@ -71,19 +71,38 @@ function built(host: SandboxToolHost, args: Record<string, unknown>) {
  *  cover, whose texts are the shared ones. */
 const ownTextNames = (names: readonly CoverSheetName[]) => (names[0] === 'cover' ? undefined : names);
 
-function slotList(markdown: string | undefined, slots: readonly string[], names: readonly CoverSheetName[]) {
+function slotList(markdown: string | undefined, slots: readonly string[], names: readonly CoverSheetName[], design?: CoverConfig) {
   const texts = coverSlotTexts(markdown);
   const own = ownTextNames(names);
   const mine = own ? coverSlotTexts(markdown, own) : {};
-  return slots.map((slot) => ({ slot, text: texts[slot] ?? null, ...(own && slot in mine ? { sheetText: mine[slot] } : {}) }));
+  // A box that takes the rest of another's text (#1679).
+  const continued = continuedBoxes(design?.textBoxes);
+  return slots.map((slot) => ({ slot, text: texts[slot] ?? null, ...(own && slot in mine ? { sheetText: mine[slot] } : {}), ...(slot in continued ? { continues: continued[slot] } : {}) }));
 }
+
+/** A text box's own fields beyond its box (#1679): what it is anchored
+ *  to, the box its text continues in, its growth and its fit. */
+function textBoxFields(design: CoverConfig, name: string): Record<string, unknown> {
+  const t = design.textBoxes?.find((b) => b.name === name);
+  if (!t) return {};
+  return {
+    ...(t.rotate ? { rotate: t.rotate } : {}),
+    ...(t.verticalAlign ? { verticalAlign: t.verticalAlign } : {}),
+    ...(t.anchor ? { anchor: t.anchor } : {}),
+    ...(t.next ? { next: t.next } : {}),
+    ...(t.maxHeight !== undefined ? { maxHeight: t.maxHeight } : {}),
+    ...(t.fit ? { fit: t.fit } : {}),
+  };
+}
+
+const EDGES: readonly string[] = [...COVER_GRID_EDGES, ...COVER_BESIDE_EDGES];
 
 export function coverTools(host: SandboxToolHost): WebMcpTool[] {
   const { store } = host;
   const get: WebMcpTool = {
     name: 'sandbox_cover_get',
     title: 'Sandbox: read the print cover',
-    description: "Read the print cover of one of the book's versions, as the Cover panel shows it: the versions (id, name, binding, ISBN), the sheet's size in mm with its spine (measured from the book's pages and paper), the sheets the version has (cover, a hardcover's jacket, endpapers), each panel's rectangle on the sheet in mm (front, back, spine, flaps), the slots the cover's text goes in with the shared text each has (and sheetText, the text a case, jacket or endpaper has for itself alone), the design the sheet is drawn with (design.uses: book, or the name of its own in cover.sheets: case, jacket, endpapers, endpaperFront, endpaperBack; design.choices: the own designs it may take), that design's items placed on the sheet (text boxes, pictures, logos, effects, finishes, catalogues), the collection (name, ISBN, catalogue of titles with id, title and picture resource, and volume: the title that is this book) and the issues building it raised. The front and the spine the text leaves empty take the title, subtitle and author from the book's metadata. Versions and the cover's design are settings: sandbox_set_config writes production.versions, production.collection and cover (cover.textBoxes, cover.elements, cover.sheets…); sandbox_cover_sheet_design gives a sheet a design of its own, sandbox_cover_set_collection writes the catalogue and the volume, and the cover's text is written with sandbox_cover_write_text.",
+    description: "Read the print cover of one of the book's versions, as the Cover panel shows it: the versions (id, name, binding, ISBN), the sheet's size in mm with its spine (measured from the book's pages and paper), the sheets the version has (cover, a hardcover's jacket, endpapers), each panel's rectangle on the sheet in mm (front, back, spine, flaps), the slots the cover's text goes in with the shared text each has (continues: the box whose text a box takes the rest of, so it has no text of its own; sheetText, the text a case, jacket or endpaper has for itself alone), the design the sheet is drawn with (design.uses: book, or the name of its own in cover.sheets: case, jacket, endpapers, endpaperFront, endpaperBack; design.choices: the own designs it may take), that design's items placed on the sheet (text boxes, pictures, logos, effects, finishes, catalogues; a text box with its anchor, next, maxHeight and fit, its rectMm where its anchor puts it), the collection (name, ISBN, catalogue of titles with id, title and picture resource, and volume: the title that is this book) and the issues building it raised. The front and the spine the text leaves empty take the title, subtitle and author from the book's metadata. Versions and the cover's design are settings: sandbox_set_config writes production.versions, production.collection and cover (cover.textBoxes, cover.elements, cover.sheets…); sandbox_cover_sheet_design gives a sheet a design of its own, sandbox_cover_set_collection writes the catalogue and the volume, and the cover's text is written with sandbox_cover_write_text.",
     inputSchema: { type: 'object', properties: { version: VERSION_PARAM, sheet: SHEET_PARAM }, additionalProperties: false },
     annotations: { readOnlyHint: true },
     execute: async (args) => {
@@ -98,11 +117,11 @@ export function coverTools(host: SandboxToolHost): WebMcpTool[] {
         sheets: SHEETS.filter((k) => k === 'cover' || (k === 'jacket' ? !!b.sheets.jacket : !!b.sheets.endpapers)),
         size: { widthMm: mm(b.sheet.width), heightMm: mm(b.sheet.height), spineMm: mm(b.sheet.spine), pages: b.sheets.spine.pages },
         zones: b.sheet.zones.map((z) => ({ name: z.name, xMm: mm(z.rect.x), yMm: mm(z.rect.y), widthMm: mm(z.rect.width), heightMm: mm(z.rect.height) })),
-        slots: slotList(s.coverMarkdown, slots, names),
+        slots: slotList(s.coverMarkdown, slots, names, design),
         ...(Object.keys(texts).some((k) => !slots.includes(k)) ? { otherSlots: Object.keys(texts).filter((k) => !slots.includes(k)) } : {}),
         design: { uses: target ?? 'book', choices: sheetDesignChoices(names), ...(s.config.cover?.sheets ? { sheetDesigns: Object.keys(s.config.cover.sheets) } : {}) },
         ...(collection ? { collection } : {}),
-        items: designerItems(design, b.sheet).map((i) => ({ layer: i.layer, id: i.id, kind: i.kind, ...(i.rect ? { rectMm: { x: mm(i.rect.x), y: mm(i.rect.y), width: mm(i.rect.width), height: mm(i.rect.height) } } : {}) })),
+        items: designerItems(design, b.sheet).map((i) => ({ layer: i.layer, id: i.id, kind: i.kind, ...(i.rect ? { rectMm: { x: mm(i.rect.x), y: mm(i.rect.y), width: mm(i.rect.width), height: mm(i.rect.height) } } : {}), ...(i.layer === 'textBoxes' ? textBoxFields(design, i.id) : {}) })),
         issues: b.issues,
       };
     },
@@ -134,7 +153,7 @@ export function coverTools(host: SandboxToolHost): WebMcpTool[] {
       const text = args.text as string | null;
       const next = setCoverSlotText(s.coverMarkdown, slot, text === null ? null : String(text), own);
       const after = await dispatchAndWait(host, { type: 'SET_COVER_MARKDOWN', payload: next });
-      return { slots: slotList(after.coverMarkdown, slots, names) };
+      return { slots: slotList(after.coverMarkdown, slots, names, design) };
     },
   };
 
@@ -282,5 +301,81 @@ export function coverTools(host: SandboxToolHost): WebMcpTool[] {
     },
   };
 
-  return [get, writeText, exportCover, sheetDesign, setCollectionTool];
+  const textBox: WebMcpTool = {
+    name: 'sandbox_cover_text_box',
+    title: 'Sandbox: a cover text box',
+    description: "Add or change a text box of the design the sheet is drawn with, as the Cover panel's designer does (#1679). A text box is a frame of the cover's page, with a composed page frame's abilities: rect, its box on the sheet in mm from the bleed's corner (with an anchor, only its size is read); anchor { to, edge, x, y }, placed against a panel (front, back, spine, flapFront…, its safe area: edge one of top-left, top, top-right, left, center, right, bottom-left, bottom, bottom-right) or another text box (those, or below, above, right-of, left-of), moved by x and y mm, and moved with it when that box grows; next, the text box the text this one cannot hold continues in (that box then takes no text of its own); maxHeight, the height in mm the box grows to with its text before its text shrinks (not on a turned box); fit { shrinkText, minScale }, whether the text shrinks to fit and how far (0.9 by default); rotate 90 or -90; verticalAlign top, middle or bottom. A box not there yet is added (rect is then required). null removes a field; remove true removes the box. One step of the undo history (sandbox_undo). Answers with the box, where it stands on the sheet and the issues building the cover raised.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'The box, by name: letters, digits, - and _, not a panel\'s name.' },
+        rect: { type: 'object', properties: { x: { type: 'number' }, y: { type: 'number' }, width: { type: 'number' }, height: { type: 'number' } }, required: ['x', 'y', 'width', 'height'], additionalProperties: false },
+        anchor: {
+          type: ['object', 'null'],
+          properties: { to: { type: 'string' }, edge: { type: 'string', enum: EDGES }, x: { type: 'number' }, y: { type: 'number' } },
+          required: ['to', 'edge'],
+          additionalProperties: false,
+        },
+        next: { type: ['string', 'null'] },
+        maxHeight: { type: ['number', 'null'] },
+        fit: { type: ['object', 'null'], properties: { shrinkText: { type: 'boolean' }, minScale: { type: 'number' } }, additionalProperties: false },
+        rotate: { type: ['integer', 'null'], enum: [90, -90, null] },
+        verticalAlign: { type: ['string', 'null'], enum: ['top', 'middle', 'bottom', null] },
+        remove: { type: 'boolean' },
+        version: VERSION_PARAM,
+        sheet: SHEET_PARAM,
+      },
+      required: ['name'],
+      additionalProperties: false,
+    },
+    execute: async (args) => {
+      const { s, built: b, target, design } = built(host, args);
+      const name = String(args.name);
+      const zones = b.sheet.zones.map((z) => z.name as string);
+      if (!/^[A-Za-z0-9_-]+$/.test(name) || zones.includes(name)) throw new ToolError(`A text box is named with letters, digits, - and _, and not as a panel (${zones.join(', ')}).`);
+      const boxes = design.textBoxes ?? [];
+      const old = boxes.find((t) => t.name === name);
+      let list: CoverTextFrame[];
+      if (args.remove === true) {
+        if (!old) throw new ToolError(`No text box ${JSON.stringify(name)}. The boxes: ${boxes.map((t) => t.name).join(', ') || 'none'}.`);
+        // The boxes hung from it, or continuing into it, let go of it.
+        list = boxes.filter((t) => t.name !== name).map((t) => {
+          const out: Record<string, unknown> = { ...t };
+          if (t.anchor?.to === name) delete out.anchor;
+          if (t.next === name) delete out.next;
+          return out as unknown as CoverTextFrame;
+        });
+      } else {
+        if (!old && !args.rect) throw new ToolError(`No text box ${JSON.stringify(name)} yet: give its rect to add it.`);
+        const next: Record<string, unknown> = { ...(old ?? { name }) };
+        for (const k of ['rect', 'anchor', 'next', 'maxHeight', 'fit', 'rotate', 'verticalAlign'] as const) {
+          if (!(k in args)) continue;
+          if (args[k] === null) delete next[k];
+          else next[k] = args[k];
+        }
+        const others = new Set(boxes.map((t) => t.name).filter((n) => n !== name));
+        const a = next.anchor as CoverTextFrame['anchor'];
+        if (a) {
+          const zone = zones.includes(a.to);
+          if (!zone && !others.has(a.to)) throw new ToolError(`anchor.to ${JSON.stringify(a.to)} is neither a panel of this sheet (${zones.join(', ')}) nor another text box (${[...others].join(', ') || 'none'}).`);
+          if (zone && !(COVER_GRID_EDGES as readonly string[]).includes(a.edge)) throw new ToolError(`A panel is anchored to by one of ${COVER_GRID_EDGES.join(', ')}; ${a.edge} is beside another text box.`);
+        }
+        if (next.next !== undefined && !others.has(next.next as string)) throw new ToolError(`next ${JSON.stringify(next.next)} is no other text box. The boxes: ${[...others].join(', ') || 'none'}.`);
+        const fit = next.fit as CoverTextFrame['fit'];
+        if (fit?.minScale !== undefined && !(fit.minScale > 0 && fit.minScale <= 1)) throw new ToolError('fit.minScale is above 0 and at most 1.');
+        list = old ? boxes.map((t) => (t.name === name ? (next as unknown as CoverTextFrame) : t)) : [...boxes, next as unknown as CoverTextFrame];
+      }
+      const patched: Record<string, unknown> = { ...design, textBoxes: list };
+      if (list.length === 0) delete patched.textBoxes;
+      await dispatchAndWait(host, { type: 'UPDATE_CONFIG', payload: { cover: withDesign(s.config.cover, target, patched as CoverConfig) }, history: { merge: false } });
+      const again = built(host, args);
+      const item = designerItems(again.design, again.built.sheet).find((i) => i.layer === 'textBoxes' && i.id === name);
+      return {
+        ...(args.remove === true ? { removed: name } : { box: again.design.textBoxes?.find((t) => t.name === name), ...(item?.rect ? { rectMm: { x: mm(item.rect.x), y: mm(item.rect.y), width: mm(item.rect.width), height: mm(item.rect.height) } } : {}) }),
+        issues: again.built.issues.filter((i) => i.kind.startsWith('coverTextBox')),
+      };
+    },
+  };
+
+  return [get, writeText, exportCover, sheetDesign, setCollectionTool, textBox];
 }

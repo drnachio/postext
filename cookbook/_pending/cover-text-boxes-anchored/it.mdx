@@ -1,0 +1,97 @@
+---
+title: "Caselle di testo di copertina ancorate e concatenate"
+summary: "Due racconti di Poe in brossura, con la copertina in sei caselle di testo appese l’una all’altra, un titolo che cresce e una quarta che prosegue altrove."
+plain: "Un libretto con due racconti di Edgar Allan Poe e il foglio della sua copertina. Ogni testo della copertina sta sotto, sopra o accanto a un altro: un titolo più lungo fa scendere il resto, e il testo del retro prosegue sotto una citazione."
+description: "Caselle di testo di copertina in Postext: ancorate a un pannello o a un’altra casella, crescono con il testo e si concatenano perché la quarta prosegua."
+question: "Come colloco i testi di una copertina l’uno rispetto all’altro, perché un titolo lungo spinga giù il resto?"
+aliases: ["casella di testo di copertina", "caselle ancorate", "caselle concatenate", "testo di quarta", "quarta di copertina", "titolo che cresce", "cover text box", "linked text boxes"]
+pageNotes: { "22": "Il foglio di copertina steso. A sinistra la quarta, quasi nera, con un testo in carattere crema che si interrompe dopo otto righe, una citazione del racconto in corsivo dorato e il resto del testo sotto, che finisce con una riga di maiuscoletto dorato; il codice a barre ISBN nell’angolo verso il dorso. Un dorso stretto con il titolo in maiuscoletto. A destra la prima, un dipinto di un ballo in maschera in una fuga di sale colorate sotto una volta gotica in ombra, con un orologio d’ebano a sinistra e una figura avvolta in un sudario a destra; in alto il titolo The Masque of the Red Death su due righe di maiuscole crema, sotto il sottotitolo in corsivo dorato e al piede il nome dell’autore in maiuscole spaziate." }
+---
+
+## Che cosa comporrai
+
+Due racconti di Edgar Allan Poe, «The Masque of the Red Death» e «The Oval Portrait» (l’edizione spagnola compone la traduzione di Carlos Olivera del 1884), in una brossura di 125 × 195 mm, e il foglio della sua copertina. Nessun testo della copertina ha coordinate: ognuno è una casella appesa a qualcos’altro. In prima, il titolo pende dall’alto del pannello, il sottotitolo pende dal titolo e l’autore poggia sul piede. Il titolo occupa due righe in entrambe le edizioni, quindi la sua casella cresce e il sottotitolo scende con lei. In quarta, il testo riempie una casella di 50 mm e le righe che non ci stanno proseguono in una seconda casella, sotto una citazione del racconto. Sopra le pagine, la ricetta disegna il foglio due volte: come si stampa, e con ogni casella riquadrata e la catena segnata.
+
+## Preparazione
+
+### 1 · Ogni casella pende da un pannello o da un’altra casella
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Un `anchor` nomina una zona del foglio o un’altra casella di testo, e un punto. Su una zona il punto è uno dei nove della sua area di sicurezza, e la casella vi posa il proprio punto corrispondente: `edge: 'top'` centra il titolo in prima e appoggia il suo bordo superiore su quello dell’area di sicurezza; `edge: 'bottom'` appoggia il piede dell’autore sul piede della zona. Su una casella il punto può essere anche `below`, `above`, `right-of` o `left-of`. `x` e `y` spostano la casella da quel punto, in mm. Con un’ancora, `rect` dà solo la misura, così le caselle restano al loro posto quando il dorso si allarga o il libro cambia formato.
+
+### 2 · Il titolo cresce e porta giù il sottotitolo
+
+<Excerpt region="cover-type" />
+
+Il titolo è composto in Cinzel corpo 30 su 33. La sua casella è alta 14 mm, una riga. «The Masque of the Red Death» e «La máscara de la muerte» ne chiedono due, quindi la casella cresce con il testo fino ai 40 mm di `maxHeight`; solo oltre quell’altezza il corpo si ridurrebbe. Il sottotitolo è ancorato `below` al titolo, 2 mm sotto, e scende quanto la seconda riga. L’autore è ancorato al piede del pannello e non si muove.
+
+### 3 · La quarta prosegue in un’altra casella
+
+La casella del testo di quarta porta `next: 'blurb-end'`. Quello che non ci sta viene tagliato tra due righe e prosegue in quella casella, che non ha una cornice propria nel Markdown della copertina. La citazione pende dal testo e `blurb-end` dalla citazione, così le tre mantengono le distanze se la prima casella diventa più alta. Solo quando non basta nemmeno la seconda casella il testo della catena si riduce, tutto insieme, fino al 90 % per impostazione predefinita (`fit.minScale`). La riga in maiuscoletto dorato è l’ultimo paragrafo della cornice del testo, e perciò chiude il testo nella seconda casella:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+While a plague empties his country, Prince Prospero shuts himself up …
+:::
+
+:::paragraphs{style="cover-note"}
+From the Raven Edition of Poe's works
+:::
+:::
+```
+
+La cornice `front` vuota impedisce a `buildCover` di mettere in prima il titolo, il sottotitolo e l’autore presi dai metadati del libro: qui li mettono le caselle.
+
+### 4 · Una brossura con il dorso calcolato dalle pagine
+
+<Excerpt region="binding" />
+
+Brossura fresata PUR in segnature da 16 pagine, su carta avoriata da 120 g/m² con mano 2,2. Il libro conta 21 pagine, 32 una volta legato, e il dorso misura circa 4,7 mm. Per impostazione predefinita un dorso sotto i 6 mm non riceve testo, quindi la versione imposta `spineText.minSpine` a 4,5 e il dorso porta titolo e autore. L’ISBN è un numero d’esempio, non assegnato ad alcun libro.
+
+### 5 · Il corpo del libro
+
+<Excerpt region="pages" />
+
+Occhiello, frontespizio e pagina dei crediti, poi ogni racconto in pagina dispari, abbassato di 50 mm, sotto il suo titolo in Cinzel e un breve filetto rosso. Le testatine portano l’autore in pagina pari e il titolo del racconto in pagina dispari, e il colophon chiude il libro sull’ultima dispari.
+
+### 6 · Il foglio si costruisce dalle pagine già composte
+
+<Excerpt region="sheet" />
+
+`buildCover` prende le pagine, i metadati e il Markdown della copertina e restituisce un documento di una sola pagina, il foglio. Le caselle di testo diventano cornici di quella pagina e si compongono come quelle di una pagina composta. Le cifre del codice a barre chiedono l’OCR-B, che nessun server di font offre; la ricetta le compone in Cinzel.
+
+### 7 · Dove è finita ogni casella
+
+<Excerpt region="views" />
+
+La pagina del foglio torna con le sue cornici in `page.composed.frames`, ciascuna con il rettangolo che l’impaginazione le ha dato dopo l’ancoraggio e la crescita, e `continuesTo` quando il suo testo prosegue in un’altra cornice. La seconda vista riquadra le sei caselle sul foglio e traccia la catena dal piede del testo di quarta fino al bordo superiore di `blurb-end`.
+
+## Varianti
+
+### Appendi l’autore sotto il sottotitolo
+
+Così anche l’autore segue il titolo verso il basso, invece di restare al piede del pannello.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Riduci un titolo lungo a una riga
+
+Senza `maxHeight`, la casella del titolo resta di 14 mm e l’impaginazione riduce il titolo finché ci sta: qui su una riga, a circa due terzi del suo corpo.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Errori frequenti
+
+- La casella nominata dal `next` di un’altra riceve il testo che quella le passa. Non darle una cornice propria nel Markdown della copertina, e chiudi la cornice della prima casella con ciò che deve chiudere il testo, come la nota qui.
+- Un’ancora che non nomina nulla, che nomina sé stessa o che chiude un anello viene segnalata, e la casella resta sul suo `rect`. Dai a ogni casella ancorata un `rect` di misura reale.
+- `maxHeight` non vale per una casella ruotata (`rotate`), che conserva la misura del suo `rect`.

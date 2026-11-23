@@ -1,0 +1,97 @@
+---
+title: "Verankerte und verkettete Textfelder auf dem Umschlag"
+summary: "Zwei Erzählungen von Poe als Paperback, der Umschlag aus sechs aneinander hängenden Textfeldern: ein Titel, der wächst, und ein Klappentext, der weiterläuft."
+plain: "Ein kleines Buch mit zwei Erzählungen von Edgar Allan Poe und der Bogen seines Umschlags. Jeder Text steht unter, über oder neben einem anderen: Ein längerer Titel schiebt den Rest nach unten, die Rückseite läuft unter einem Zitat weiter."
+description: "Textfelder des Umschlags in Postext: an einer Fläche oder einem Feld verankert, mit dem Text wachsend und verkettet, sodass der Klappentext weiterläuft."
+question: "Wie platziere ich die Texte eines Umschlags zueinander, sodass ein langer Titel den Rest nach unten schiebt?"
+aliases: ["Textfeld auf dem Umschlag", "verankerte Textfelder", "verkettete Textfelder", "Klappentext", "Text der Rückseite", "wachsender Titel", "cover text box", "linked text boxes"]
+pageNotes: { "22": "Der Umschlagbogen flach ausgebreitet. Links die Rückseite, fast schwarz, mit einem Klappentext in cremefarbener Schrift, der nach acht Zeilen abbricht, einem Zitat aus der Erzählung in goldener Kursive und dem Rest des Klappentexts darunter, der mit einer Zeile goldener Kapitälchen endet; der ISBN-Strichcode in der Ecke am Rücken. Ein schmaler Rücken, in Kapitälchen beschriftet. Rechts die Vorderseite, ein Gemälde eines Maskenballs in einer Flucht farbiger Säle unter einem dunklen gotischen Gewölbe, links eine Uhr aus Ebenholz, rechts eine Gestalt im Leichentuch; oben der Titel The Masque of the Red Death in zwei Zeilen cremefarbener Versalien, darunter der Untertitel in goldener Kursive und am Fuß der Name des Autors in gesperrten Versalien." }
+---
+
+## Was Sie setzen
+
+Zwei Erzählungen von Edgar Allan Poe, „The Masque of the Red Death“ und „The Oval Portrait“ (die spanische Ausgabe setzt die Übersetzung von Carlos Olivera aus dem Jahr 1884), als Paperback im Format 125 × 195 mm, dazu der Bogen seines Umschlags. Kein Text auf dem Umschlag hat Koordinaten: Jeder ist ein Textfeld, das an etwas anderem hängt. Auf der Vorderseite hängt der Titel am oberen Rand der Fläche, der Untertitel hängt am Titel, und der Autor steht auf dem Fuß. Der Titel braucht in beiden Ausgaben zwei Zeilen, also wächst sein Feld, und der Untertitel rückt mit nach unten. Auf der Rückseite füllt der Klappentext ein Feld von 50 mm, und die Zeilen, die nicht hineinpassen, laufen in einem zweiten Feld unter einem Zitat aus der Erzählung weiter. Über den Seiten zeichnet das Rezept den Bogen zweimal: so, wie er gedruckt wird, und mit jedem Feld umrandet und der Kette markiert.
+
+## Zubereitung
+
+### 1 · Jedes Feld hängt an einer Fläche oder an einem anderen Feld
+
+Der Code ist oben in [der kurzen Antwort](#die-kurze-antwort). Ein `anchor` nennt eine Fläche des Bogens oder ein anderes Textfeld und einen Punkt. Auf einer Fläche ist der Punkt einer der neun ihres Sicherheitsbereichs, und das Feld legt seinen eigenen, gleichnamigen Punkt darauf: `edge: 'top'` zentriert den Titel auf der Vorderseite und setzt seine Oberkante auf die des Sicherheitsbereichs; `edge: 'bottom'` stellt den Fuß des Autorfelds auf den Fuß der Fläche. Auf einem Feld kann der Punkt auch `below`, `above`, `right-of` oder `left-of` sein. `x` und `y` verschieben das Feld von diesem Punkt aus, in mm. Mit einem Anker gibt `rect` nur noch die Größe an; so bleiben die Felder an ihrem Platz, wenn der Rücken dicker wird oder das Buch das Format wechselt.
+
+### 2 · Der Titel wächst und nimmt den Untertitel mit
+
+<Excerpt region="cover-type" />
+
+Der Titel steht in der Cinzel, 30 auf 33 pt. Sein Feld ist 14 mm hoch, eine Zeile. „The Masque of the Red Death“ und „La máscara de la muerte“ brauchen zwei, also wächst das Feld mit dem Text bis zu den 40 mm von `maxHeight`; erst darüber hinaus würde die Schrift kleiner. Der Untertitel ist `below` am Titel verankert, 2 mm darunter, und rückt um die Höhe der zweiten Zeile nach unten. Der Autor ist am Fuß der Fläche verankert und bleibt stehen.
+
+### 3 · Der Klappentext läuft in einem anderen Feld weiter
+
+Das Feld des Klappentexts trägt `next: 'blurb-end'`. Was es nicht fassen kann, wird zwischen zwei Zeilen getrennt und läuft in diesem Feld weiter, das im Markdown des Umschlags keinen eigenen Rahmen hat. Das Zitat hängt am Klappentext und `blurb-end` am Zitat, sodass alle drei ihre Abstände behalten, wenn das erste Feld höher wird. Erst wenn auch das zweite Feld nicht reicht, wird der Text der Kette verkleinert, und zwar als Ganzes, standardmäßig bis auf 90 % (`fit.minScale`). Die Zeile in goldenen Kapitälchen ist der letzte Absatz im Rahmen des Klappentexts und schließt den Text deshalb im zweiten Feld ab:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+While a plague empties his country, Prince Prospero shuts himself up …
+:::
+
+:::paragraphs{style="cover-note"}
+From the Raven Edition of Poe's works
+:::
+:::
+```
+
+Der leere Rahmen `front` verhindert, dass `buildCover` Titel, Untertitel und Autor aus den Metadaten des Buchs auf die Vorderseite setzt: Hier setzen sie die Felder.
+
+### 4 · Ein Paperback, dessen Rücken aus den Seiten folgt
+
+<Excerpt region="binding" />
+
+PUR-Klebebindung in Lagen zu 16 Seiten, auf Werkdruckpapier von 120 g/m² mit Volumen 2,2. Das Buch hat 21 Seiten, gebunden 32, und der Rücken misst etwa 4,7 mm. Unter 6 mm wird ein Rücken standardmäßig nicht beschriftet, daher setzt die Version `spineText.minSpine` auf 4,5, und der Rücken trägt Titel und Autor. Die ISBN ist eine Beispielnummer, die keinem Buch zugeteilt ist.
+
+### 5 · Der Buchblock
+
+<Excerpt region="pages" />
+
+Schmutztitel, Titelseite und Impressum, dann jede Erzählung auf einer rechten Seite, 50 mm tiefer angesetzt, unter ihrem Titel in der Cinzel und einer kurzen roten Linie. Die Kolumnentitel tragen den Autor links und den Titel der Erzählung rechts, und das Kolophon schließt das Buch auf der letzten rechten Seite.
+
+### 6 · Der Bogen entsteht aus den gesetzten Seiten
+
+<Excerpt region="sheet" />
+
+`buildCover` nimmt die Seiten, die Metadaten und das Markdown des Umschlags und gibt ein Dokument mit einer einzigen Seite zurück, dem Bogen. Die Textfelder werden Rahmen dieser Seite und werden gesetzt wie die Rahmen einer gestalteten Seite. Die Ziffern des Strichcodes verlangen OCR-B, die kein Schriftenserver anbietet; das Rezept setzt sie in der Cinzel.
+
+### 7 · Wo jedes Feld gelandet ist
+
+<Excerpt region="views" />
+
+Die Seite des Bogens kommt mit ihren Rahmen in `page.composed.frames` zurück, jeder mit dem Rechteck, das ihm der Satz nach Verankern und Wachsen gegeben hat, und mit `continuesTo`, wenn sein Text in einem anderen Rahmen weiterläuft. Die zweite Ansicht umrandet die sechs Felder auf dem Bogen und zeichnet die Kette vom Fuß des Klappentexts bis zur Oberkante von `blurb-end`.
+
+## Varianten
+
+### Den Autor unter den Untertitel hängen
+
+Dann folgt auch der Autor dem Titel nach unten, statt am Fuß der Fläche zu stehen.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Einen langen Titel auf eine Zeile verkleinern
+
+Ohne `maxHeight` behält das Titelfeld seine 14 mm, und der Satz verkleinert den Titel, bis er passt: hier auf eine Zeile, bei etwa zwei Dritteln seines Grads.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Häufige Fehler
+
+- Das Feld, das das `next` eines anderen nennt, bekommt den Text, den jenes weitergibt. Geben Sie ihm im Markdown des Umschlags keinen eigenen Rahmen, und beenden Sie den Rahmen des ersten Felds mit dem, was den Text abschließen soll, wie hier die Notiz.
+- Ein Anker, der nichts nennt, sich selbst nennt oder eine Schleife schließt, wird gemeldet, und das Feld steht auf seinem `rect`. Geben Sie jedem verankerten Feld ein `rect` mit einer echten Größe.
+- `maxHeight` gilt nicht für ein gedrehtes Feld (`rotate`), das die Größe seines `rect` behält.

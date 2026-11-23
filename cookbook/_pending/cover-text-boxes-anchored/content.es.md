@@ -1,0 +1,47 @@
+---
+title: "La máscara de la muerte"
+subtitle: "y El retrato oval"
+author: "Edgar Allan Poe"
+---
+
+# La máscara de la muerte {style="half-title"}
+
+# La máscara de la muerte {style="title-page" credit="Traducción de Carlos Olivera" imprint="Taller de la Mar · Ocaña"}
+
+# Créditos {style="rights"}
+
+:::paragraphs{style="rights"}
+«The Masque of the Red Death» se publicó en *Graham’s Magazine* en mayo de 1842; «The Oval Portrait», en la misma revista en abril de 1842 con el título «Life in Death», y en su versión breve en el *Broadway Journal* en 1845. La traducción es la de Carlos Olivera en *Novelas y cuentos* (París, Garnier Hermanos, 1884), transcrita en Wikisource, con la ortografía y la puntuación modernizadas. Es de dominio público.
+
+Rústica · ISBN 978-84-0000-200-8 · un número de muestra, que no corresponde a ningún libro.
+
+Cubierta: cuatro tintas sobre cartulina de 300 g/m². Pintura de cubierta generada con modelos de difusión.
+
+Compuesto en EB Garamond y Cinzel (SIL OFL) sobre papel ahuesado de 120 g/m².
+:::
+
+# La máscara de la muerte {style="tale"}
+
+La Muerte Roja había devastado grandemente la comarca. Nunca se había visto una epidemia más fatal, más horrorosa. La sangre era su Avatar, y su sello—lo rojo y lo horrible de la sangre. Eran dolores agudos; vértigos repentinos y luego una abundante hemorragia a la que seguía la muerte. Las manchas escarlatas sobre el cuerpo y especialmente sobre el rostro de la víctima, eran los anuncios de la peste, que le alejaban de la ayuda y de la simpatía de sus semejantes. Y entre el comienzo, progreso y terminación de la enfermedad, no pasaba más de media hora.
+
+Pero el príncipe Próspero era feliz, e intrépido, y sagaz. Cuando sus dominios hubieron sido despoblados de casi la mitad, llamó a su presencia a un millar de vigorosos y alegres amigos que escogió entre los caballeros y damas de su corte, y se retiró con ellos a la profunda soledad de uno de sus almenados castillos.
+
+Era un extenso y magnífico edificio, creación del excéntrico aunque regio gusto del príncipe mismo. Una fuerte y elevada muralla lo circundaba completamente. Esta muralla tenía puertas de hierro. Los cortesanos, una vez dentro, con ayuda de hornos y gruesos martillos; soldaron los cerrojos. Habían resuelto no dejar medios ningunos de entrada a los impulsos repentinos de la desesperación o a los de frenesí, del interior. El castillo fue abundantemente provisto de víveres. Con semejantes precauciones, los cortesanos podían mandar desafiar a la epidemia. El mundo del exterior se cuidaría a si propio. Mientras tanto, era un crimen apesadumbrarse o pensar. El príncipe había llevado todos los accesorios del placer. Había bufones, había improvisadores, había bailarines, había músicos, había belleza, había vino. Todo esto y la seguridad, adentro. Afuera, la Muerte Roja.
+
+Fue hacia el fin del quinto o sexto mes de reclusión, y mientras la peste asolaba más furiosamente en el exterior, que el príncipe Próspero convidó sus mil amigos para un baile de máscaras de la más soberbia magnificencia.
+
+Era una voluptuosa escena, aquella mascarada. Pero dejad que describa antes las habitaciones en que tenía lugar. Eran siete; una serie imperial. En muchos palacios, sin embargo, tales series forman una larga perspectiva recta, pues las batientes de las puertas, asentadas contra, la pared, a cada lado, no impiden en alguna manera, que la vista penetre hasta el fin. En este caso, era muy diferente, como podía esperarse del amor del soberano por lo extravagante.
+
+Los departamentos estaban tan irregularmente dispuestos, que la visión abrazaba muy poco más de uno a la vez. Había un recodo agudo a cada veinte o treinta yardas, y en cada recodo, un nuevo efecto. A derecha e izquierda, en mitad de cada pared, una alta y estrecha ventana gótica daba sobre un cerrado corredor que proseguía los recodos de la serie. Estas ventanas eran de cristales pintados, cuyo color variaba, de acuerdo con el que dominaba en las decoraciones de la pieza a que daba acceso. Por ejemplo, la situada en la extremidad oriental estaba adornada de azul, y tenia las ventanas azules. El segundo cuarto era púrpura en sus adornos y tapicerías, y los cristales eran color púrpura. El tercero era verde enteramente, y verdes eran los vidrios. El cuarto estaba adornado de amarillo; el quinto de blanco; el sexto de violeta; el color de los cristales era siempre igual a los adornos. El séptimo salón estaba completamente tapizado de terciopelo negro, que cubría el techo y paredes, cayendo en pesados dobleces sobre una alfombra de la misma tela y color. Unicamente en esta pieza el color de las cristales dejaba de estar en armonía con las decoraciones. Los vidrios eran escarlata: un profundo color de sangre.
+
+Además, en ninguna de las siete habitaciones había lámparas ni candelabros, entre la profusión de ornamentos de oro que se hallaban distribuídos por todas partes, o colgaban del techo. Ni una sola luz emanaba de lámpara o bujía en la serie de cuartos adornados. Pero en los corredores que seguían a las habitaciones, había, frente a cada ventana, un sombrío trípode, lleno de carbones encendidos, que proyectaban sus rayos a través de los pintados cristales, iluminando brillantemente la pieza. Y así se producían una multitud de apariencias ostentosas y fantásticas. Pero en el cuarto occidental o negro, el efecto de la luz-de-fuego, temblando sobre las oscuras tapicerías, después de pasar por los cristales color sangre, era sombrío en extremo, y producía un tan extraño efecto sobre los rostros de los que en él entraban, que había muy pocos entre la concurrencia, suficientemente intrépidos para experimentarlo.
+
+Era en ese salón, también, donde se encontraba colocado, contra la pared occidental, un gigantesco reloj de ébano.
+
+Su péndulo se movía de un lado a otro con un chirrido triste, grave, monótono; cuando el minutero recorría el círculo, y la hora estaba a punto de sonar, salía de entre los pulmones de bronce del reloj, un sonido que era claro, y agudo, y profundo, y extremadamente musical; pero de un tono y énfasis tal, que a cada hora, los músicos de la orquesta se veían obligados a hacer una pausa, momentáneamente, en su ejecución, para escuchar el sonido; y entonces los valsadores cesaban en sus movimientos; y había una pequeña nube en la alegre compañia; y mientras que duraban los golpes de la campana, se notaba que los más festivos se volvían pálidos, y que los más viejos se pasaban la mano por la frente; como si les atormentara una fantástica meditación. Pero cuando los ecos habían cesado por completo, una alegre carcajada escapaba de todos los pechos; los músicos se miraban unos a otros y sonreían como de su propia nerviosidad y tontería, y en voz baja juraban entre sí, que el próximo sonido del reloj no produciría en ellos semejante emoción; y entonces y después del lapso de los sesenta minutos—que abraza tres mil seiscientos segundos del tiempo que huye—volvía otra vez el sonido del reloj y sucedía lo mismo que antes: el mismo desconcierto, el mismo temblor, la misma meditación.
+
+Pero, a despecho de esas cosas, era una alegre y magnífica bacanal. Los gustos del príncipe eran singulares. Tenía buen ojo para los colores y los efectos. Desdeñaba las decoraciones de la simple moda. Sus planes eran atrevidos y salvajes, y sus concepciones brillaban por una esplendidez soberana. Hay gentes que le hubieran creído loco. Sus compañeros comprendían que no lo era. Era necesario oírle, verle y tocarle para convencerse de que no lo era.
+
+Había dirigido, en gran parte, el embellecimiento de los siete cuartos, en ocasión de esta gran fiesta, y había sido su propio gusto el que había dado carácter a los disfraces. Seguramente eran grotescos. Había mucho brillo, mucho de picante y de fantástico—mucho de lo que se ha visto después en Hernani. Había figuras arabescas, con adornos y vestidos extraños. Había caprichos de delirio como los trajes de los locos. Había mucho de bello, mucho de fastuoso, mucho de extravagante, algo de terrible y no poco de lo que puede excitar disgusto. En una palabra, los siete cuartos eran recorridos por una multitud de ensueños, que se balanceaban aquí y allá. Y éstos—los ensueños—se agitaban en todos sentidos, tomando color diferente en cada pieza, y haciendo que la salvaje música de la orquesta, pareciera el eco de sus pasos. Y, cada hora, suena el reloj de ébano que está en el cuarto de terciopelo. Y entonces, durante un momento, todo enmudece, salvo la voz del reloj. Los ensueños quedan inmóviles en el sitio que ocupan—helados.
+
+Pero los ecos de la campana se apagan de nuevo—no han durado más que un instante—y apenas han desaparecido, una alegre aunque temblorosa carcajada entreabre los labios de los que danzan. Y entonces la música se dilata otra vez, y los ensueños se ponen en movimiento, y se tuercen acá y allá más jovialmente que nunca, tomando el color de los pintados vidrios, a través de los cuales fluyen los rayos de los trípodes. Pero en el cuarto que está más al occidente de los siete, ninguno de los máscaras se aventura ahora; porque la noche pasa rápidamente; y penetra una luz siempre más roja a través de los vidrios color sangre; y la negrura de los fúnebres paños, aterra; y el que pone sus pies sobre la negra alfombra, recibe del cercano reloj de ébano un sordo repique, más solemnemente enfático que los percibidos por los que se abandonan a indolente alegría en las otras habitaciones.

@@ -637,8 +637,7 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
 
 The print versions and the cover's design are settings: `sandbox_set_config`
 writes `production.versions`, `production.collection` and `cover`
-(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Five
-tools read, write and export the rest, as the Cover panel does:
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Six tools read, write and export the rest, as the Cover panel does:
 
 - `sandbox_cover_get` reads the cover of a version (`version`, the first by
   default) and one of its sheets (`sheet`: `cover`, `jacket`,
@@ -672,6 +671,13 @@ tools read, write and export the rest, as the Cover panel does:
   `::catalogue` in the cover's text sets the titles as a list, and a cover
   element of kind `catalogue` lays out their pictures. One step of the undo
   history.
+- `sandbox_cover_text_box` adds or changes a text box of the design the sheet
+  is drawn with, by `name`: its `rect`, its `anchor` to a panel or another box
+  (`to`, `edge`, `x`, `y`), the box its text continues in (`next`), the
+  height it grows to (`maxHeight`), how its text shrinks (`fit`), `rotate`
+  and `verticalAlign`; `null` removes a field and `remove: true` the box.
+  It answers with the box, where it stands on the sheet and the checks. One
+  step of the undo history.
 
 ```json
 { "slot": "back", "text": "A city that keeps its books underground.\n\nAnd the girl who reads them aloud." }
@@ -780,7 +786,7 @@ each one come with `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Comics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Composed pages**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Print covers**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Print covers**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Books and files**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
