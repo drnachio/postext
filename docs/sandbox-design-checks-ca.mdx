@@ -19,18 +19,17 @@ export const metadata = {
 
 Un formulari per editar `PostextConfig`, amb més de cinc-cents camps.
 
-**Resum.** En obrir el tauler Disseny es mostra un resum:
+**Resum.** El tauler Disseny s'obre amb un resum:
 
-- Una targeta **Aquest llibre** amb un dibuix en viu de la pàgina. El dibuix respecta les proporcions reals i mostra els marges, les columnes i els colors de la pàgina i la tinta, com a doble pàgina quan els marges són simètrics. Les línies d'un llibre vertical es dibuixen de dalt a baix començant per la dreta, i les columnes, com a pisos. Al costat apareixen el format, la disposició de columnes, l'escriptura, la font i la mida del text de cos, i la paleta. La línia de l'escriptura indica la llengua del document i, quan es poden triar, la direcció i l'enquadernació (*Vertical · enquadernat per la dreta · 中文（繁體）*, *De dreta a esquerra · enquadernat per la dreta · العربية*); obre **Escriptura**.
-- La llista dels catorze **grups de configuració**. Cada grup té una descripció d'una frase i el nombre de seccions que hi has canviat.
+- Una targeta **Aquest llibre**: un dibuix en viu de la pàgina amb les proporcions reals (marges, columnes, colors de la pàgina i la tinta; doble pàgina quan els marges són simètrics) al costat del format, la disposició de columnes, l'escriptura, la font i la mida del text de cos, i la paleta. La línia de l'escriptura indica la llengua del document i, quan es poden triar, la direcció i l'enquadernació (*Vertical · enquadernat per la dreta · 中文（繁體）*); obre **Escriptura**.
+- Els **grups de configuració**, sota cinc epígrafs (*El llibre*, *El text*, *Elements*, *Estructura*, *Sortida*); un punt marca els grups amb seccions canviades, i **Mostrar totes les explicacions** escriu la frase de cada grup sota el nom.
 
-**Una pàgina per grup.** En obrir un grup, les seccions que conté es mostren en una pàgina pròpia. Només es construeix aquest grup, i així el tauler continua sent àgil fins i tot amb llibres grans.
+**Una secció cada vegada.** Un grup mostra una de les seccions que conté; les altres són pestanyes a sobre, i només es construeix la que és oberta.
 
-- Una ruta de navegació (**Disseny › grup**) porta de tornada al resum.
-- Unes fitxes sota el títol de la pàgina porten a cada secció.
-- Un enllaç **Següent** al final obre el grup següent.
-- El focus passa al títol de la pàgina en obrir un grup, i torna a la fila del grup en tornar enrere.
-- El grup obert es recorda entre sessions.
+- La barra que hi ha sobre el grup porta de tornada al resum; el nom del grup enumera tots els grups.
+- Un punt marca les pestanyes amb canvis; quan les pestanyes no hi caben, un menú al final les enumera.
+- **⌘K** (Ctrl+K) posa el cursor al cercador.
+- El grup obert i la secció oberta de cada grup es recorden entre sessions.
 
 **Llibres en diverses llengües.** En un llibre amb més d'una llengua, un selector a dalt del tauler indica on van els canvis: **Totes les llengües** o **Només *llengua***, la llengua en pantalla. Les edicions comparteixen uns ajustos generals, i cadascuna conserva els ajustos que fixa ella mateixa (vegeu [Ajustos generals i ajustos propis de cada llengua](/ca/docs/configuration-bundles#ajustos-generals-i-ajustos-propis-de-cada-llengua)).
 
@@ -43,8 +42,8 @@ Un formulari per editar `PostextConfig`, amb més de cinc-cents camps.
 Els grups, en ordre de navegació:
 
 - **Pàgina i columnes**
-  - *Pàgina*: els camps s'agrupen en **Mida**, **Marges**, **Paper** i **Numeració**.
-    - **Mida**: els formats predefinits diuen per a què serveixen: *Llibre de butxaca* 11 × 17, *Novel·la, narrativa* 12 × 19, *Assaig, manual* 17 × 24 i *Llibre de text, revista* 21 × 28; els formats de diari *Llençol* 37,5 × 59,7, *Berlinès* 31,5 × 47, *Tabloide* 28 × 43 i *Compacte* 29,7 × 42 (des de postext 1.18); o *Personalitzat*. **Resolució de maquetació (px per polzada)** (`page.dpi`) també és aquí: els píxels amb què treballa la maquetació, no la resolució de les imatges, tot i que un mapa de bits sense resolució pròpia s'imprimeix amb aquests ppp.
+  - *Pàgina*: els camps s'agrupen en **Mida**, **Marges**, **Paper** i **Numeració**. El dibuix que hi ha a sobre és un editor: arrossega un marge (a *Columnes*, el corondell). A sota hi ha la taca, les columnes i les línies que caben en una pàgina.
+    - **Mida**: una galeria de formats dibuixats en proporció. Els formats predefinits diuen per a què serveixen: *Llibre de butxaca* 11 × 17, *Novel·la, narrativa* 12 × 19, *Assaig, manual* 17 × 24 i *Llibre de text, revista* 21 × 28; els formats de diari *Llençol* 37,5 × 59,7, *Berlinès* 31,5 × 47, *Tabloide* 28 × 43 i *Compacte* 29,7 × 42 (des de postext 1.18); o *Personalitzat*. **Resolució de maquetació (px per polzada)** (`page.dpi`) també és aquí: els píxels amb què treballa la maquetació, no la resolució de les imatges, tot i que un mapa de bits sense resolució pròpia s'imprimeix amb aquests ppp.
     - **Marges**: cada marge està lligat al dibuix de la pàgina. Quan passes el ratolí per sobre d'un camp de marge o hi poses el focus, aquest marge s'acoloreix al dibuix. Un interruptor de **marges simètrics** converteix esquerre/dret en interior/exterior per a les pàgines encarades.
     - **Paper**: el color de fons de la pàgina.
     - **Numeració**: el format del número de pàgina i el número pel qual comencen les pàgines.
@@ -69,7 +68,7 @@ Els grups, en ordre de navegació:
   - *Contrast* (`contrast`): **Comprova el contrast**, el **Nivell** (AA o AAA), **Es comprova per a** (*Automàtic*, *Pantalla*, *Impremta*, *Pantalla i impremta*) i, sota **Text calat**, les mides de lletra per sota de les quals s'avisa del text clar sobre un fons de tinta. Canviar-les no torna a compondre cap pàgina. Vegeu [Comprovació del contrast](/ca/docs/configuration-fonts-colors-viewers#comprovació-del-contrast-configuració).
   - *La ràtio al costat d'un color*: un camp de color amb un color que les pàgines componen com a text, o com a fons d'un text, mostra la ràtio de contrast més baixa que té a les pàgines, amb una marca de verificació quan arriba al nivell i un senyal d'avís quan no hi arriba. En obrir el camp es llista cada color amb què es compon (*Text sobre #ffffff*, *Fons del text #1a1a1a*), la mida de lletra més petita i la ràtio en pantalla i, en un llibre preparat per a impremta, sobre el paper. Els números segueixen el selector mentre arrossegues, abans que la pàgina es torni a compondre. Un color que només es fa servir en filets o vores no mostra cap ràtio.
 - **Tipografia**
-  - *Text de cos*: comença amb una **mostra tipogràfica** a mida real composta amb la font, la mida, l'interlineat i el color actuals, en la llengua del document: un llibre en xinès mostra el començament de 紅樓夢 en caràcters xinesos, `*…*` amb punts d'èmfasi, i el compon de dalt a baix quan les línies són verticals. Els salts de línia de la mostra són els del navegador; la pàgina fa servir els de Postext. Els camps s'agrupen en:
+  - *Text de cos*: comença amb una **mostra tipogràfica** a mida real composta amb la font, la mida, l'interlineat i el color actuals, en la llengua del document: un llibre en xinès mostra el començament de 紅樓夢 en caràcters xinesos, `*…*` amb punts d'èmfasi, i el compon de dalt a baix quan les línies són verticals. Els salts de línia de la mostra són els del navegador; la pàgina fa servir els de Postext. A sota: caràcters per línia (davant de l'interval còmode de 45–75), interlineat com a proporció de la mida, línies per pàgina. Els camps s'agrupen en:
     - **Tipus de lletra**: font, **Font de símbols** (`symbolFont`), mida, interlineat i els pesos normal i negreta. La font de símbols compon els caràcters que les fonts del text no tenen (lletres i operadors matemàtics com ∪ o ∀, grec en una font llatina, fletxes) a la pantalla, al PDF i a l'EPUB, en lloc d'una caixa buida; si es deixa buida, no n'hi ha cap.
     - **Paràgrafs**: alineació (amb la partició de mots, els límits de justificació i **Espaiat màxim de lletres en justificar** (`bodyText.maxJustifyTracking`) quan el text és justificat, i **Partició de mots en bandera** amb la zona, **Tall de línies òptim** i **Tall òptim del text en bandera** (`bodyText.optimalRagged`) quan no ho és; amb el cos justificat, **Tall òptim del text en bandera** va després de **Tall de línies òptim**, per als estils de paràgraf i requadres en bandera; **Dividir mots compostos** (`bodyText.hyphenation.compounds`) al costat de la llengua de la partició de mots), **Tallar després de guió** (`bodyText.breakAfterDashes`), **Tallar després de guionet** (`bodyText.breakAfterHyphens`), **Repetir el guionet a la línia següent** (`bodyText.repeatHyphen`), **Salts de línia forçats** (`bodyText.hardLineBreaks`), **Subratllat amb ++** (`bodyText.plusUnderline`: llegeix `++text++` com a text subratllat, igual que `:underline[text]`, que es llegeix sempre; desactivat, els signes més s'imprimeixen), **Tabulacions** (`bodyText.tabStops`: una llista de tabulacions, cadascuna amb la posició, l'alineació, el farciment, la separació del farciment i el separador decimal) amb **Interval de tabulació predeterminat** (`bodyText.tabInterval`), sagnats i espai entre paràgrafs. **Començar els paràgrafs en una línia de la retícula** (`bodyText.snapTopToGrid`) comença cada paràgraf i cada cita en una línia de la retícula.
     - **Color**: els colors del text, la negreta i la cursiva.
@@ -95,7 +94,7 @@ Els grups, en ordre de navegació:
   - **Guionets al paràgraf**, que aplica el tall de línies òptim (el grup ho indica quan està desactivat): **Menys guionets**, **Escales de guionets** amb **Guionets seguits** i **Penalització d'escala**, i **Última paraula partida** amb **Penalització d'última paraula**.
   - **Inici i final de línia**: **Repeticions** amb **Caràcters de repetició** a *Avisar* i *Evitar* i **Penalització de repetició** a *Evitar* (vegeu *Repetició* al tauler de revisió, més avall), **Cita a l'inici de línia** amb **Penalització de cita tallada**, i **Signe a la vora de la línia** amb **Penalització de signe tallat**.
 - **Títols i índex**
-  - *Títols*: valors generals i paràmetres per nivell, de H1 a H6. Inclouen:
+  - *Títols*: una mostra tipogràfica dels nivells, cadascun amb la seva font (cada línia obre el seu nivell), i després valors generals i paràmetres per nivell, de H1 a H6. Inclouen:
     - la caixa del text, l'**Espaiat entre lletres** (`levels[].letterSpacing`, negatiu per estrènyer), l'alineació (en bandera, justificada, centrada o alineada a la dreta), el salt previ amb paritat i l'extensió;
     - un interruptor **Tornar a la retícula després dels títols** (`headings.snapToGrid`, activat per defecte: el text torna a la retícula de base sota un títol) i, per nivell, **Tornar a la retícula després d'aquest títol** (`levels[].snapToGrid`), que el substitueix per a aquest nivell;
     - **Començar els títols en una línia de la retícula** (`headings.snapTopToGrid`) i, per nivell, **Començar en una línia de la retícula** (`levels[].snapTopToGrid`), que comencen el títol en una línia de la retícula; amb l’ajust apagat, **Recuperar la retícula al text** (`regainGrid`) torna a la retícula el bloc que segueix el títol;

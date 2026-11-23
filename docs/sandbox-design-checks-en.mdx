@@ -19,18 +19,17 @@ export const metadata = {
 
 A form-based editor for `PostextConfig`, with more than five hundred fields.
 
-**Overview.** When the Design panel opens, it shows an overview:
+**Overview.** The Design panel opens on an overview:
 
-- A **This book** card with a live drawing of the page. The drawing uses true proportions and shows the margins, the columns and the page and ink colours, as a spread when the margins are mirrored. A vertical book's lines are drawn down the page from the right, its columns as tiers. Beside it are the trim size, the column layout, the writing system, the body typeface and size, and the palette. The writing system line names the document language and, when they are a choice, the direction and the binding (*Vertical · bound on the right · 中文（繁體）*, *Right to left · bound on the right · العربية*); it opens **Writing system**.
-- The list of the fourteen **settings groups**. Each group has a one-sentence description and the number of sections you have changed in it.
+- A **This book** card: a live drawing of the page in true proportions (margins, columns, page and ink colours; a spread when the margins are mirrored) beside the trim size, the column layout, the writing system, the body typeface and size, and the palette. The writing system line names the document language and, when they are a choice, the direction and the binding (*Vertical · bound on the right · 中文（繁體）*); it opens **Writing system**.
+- The **settings groups** under five headings (*The book*, *The text*, *Elements*, *Structure*, *Output*); a dot marks a group with changed sections, and **Show every explanation** writes each group's sentence under its name.
 
-**One page per group.** Opening a group shows that group's sections as their own page. Only that group is built, which keeps the panel fast even on large books.
+**One section at a time.** A group shows one of its sections; the others are tabs above it, and only the open one is built.
 
-- A breadcrumb (**Design › group**) leads back to the overview.
-- Chips under the page heading jump to each section on the page.
-- A **Next** link at the bottom opens the following group.
-- Focus moves to the page heading when you open a group, and back to the group's row when you return.
-- The open group is remembered between sessions.
+- The bar over the group leads back to the overview; the group's name lists every group.
+- A dot marks a tab with changes; when the tabs do not fit, a menu at their end lists them.
+- **⌘K** (Ctrl+K) puts the cursor in the search box.
+- The open group and each group's open section are remembered between sessions.
 
 **Books in several languages.** In a book with more than one language, a switch at the top of the panel says where changes go: **All languages** or ***language* only**, the language on screen. The editions share general settings, and each keeps the settings it sets itself (see [General settings and per-language overrides](/en/docs/configuration-bundles#general-settings-and-per-language-overrides)).
 
@@ -43,8 +42,8 @@ A form-based editor for `PostextConfig`, with more than five hundred fields.
 The groups, in browsing order:
 
 - **Page & columns**
-  - *Page*: fields are grouped as **Size**, **Margins**, **Paper** and **Numbering**.
-    - **Size**: the size presets say what they are for: *Pocket book* 11 × 17, *Novel, narrative* 12 × 19, *Essay, handbook* 17 × 24 and *Textbook, magazine* 21 × 28; the newspaper trims *Broadsheet* 37.5 × 59.7, *Berliner* 31.5 × 47, *Tabloid* 28 × 43 and *Compact* 29.7 × 42 (since postext 1.18); or *Custom*. **Layout resolution (px per inch)** (`page.dpi`) is here too: the pixels the layout works in, not the resolution of pictures, though a bitmap with no resolution of its own prints at that many ppi.
+  - *Page*: fields are grouped as **Size**, **Margins**, **Paper** and **Numbering**. The drawing above them is an editor: drag a margin (under *Columns*, the gutter). Under it are the type area, the columns and the lines a page holds.
+    - **Size**: a gallery of formats drawn to proportion. The presets say what they are for: *Pocket book* 11 × 17, *Novel, narrative* 12 × 19, *Essay, handbook* 17 × 24 and *Textbook, magazine* 21 × 28; the newspaper trims *Broadsheet* 37.5 × 59.7, *Berliner* 31.5 × 47, *Tabloid* 28 × 43 and *Compact* 29.7 × 42 (since postext 1.18); or *Custom*. **Layout resolution (px per inch)** (`page.dpi`) is here too: the pixels the layout works in, not the resolution of pictures, though a bitmap with no resolution of its own prints at that many ppi.
     - **Margins**: each margin is tied to the page drawing. Pointing at a margin field or focusing it tints that margin on the drawing. A **mirrored** switch turns left/right into inner/outer margins for facing pages.
     - **Paper**: the page background colour.
     - **Numbering**: the page-number format and the number the pages start at.
@@ -69,7 +68,7 @@ The groups, in browsing order:
   - *Contrast* (`contrast`): **Check contrast**, the **Level** (AA or AAA), **Checked for** (*Automatic*, *Screen*, *Print*, *Screen and print*) and, under **Reversed text**, the sizes under which light text on an inked ground is reported. Changing them does not lay any page out again. See [Contrast check](/en/docs/configuration-fonts-colors-viewers#contrast-check-config).
   - *The ratio beside a colour*: a colour field whose colour the pages set as text, or as the ground of text, shows the lowest contrast ratio it has there, with a tick when it reaches the level and a warning mark when it does not. Opening the field lists each colour it is set with (*Text on #ffffff*, *Ground of #1a1a1a text*), the smallest size, and the ratio on screen and, for a book set up for print, on paper. The numbers follow the picker while you drag, before the page is laid out again. A colour used only for rules or borders shows no ratio.
 - **Typography**
-  - *Body text*: opens with a true-size **type specimen** set in the current typeface, size, leading and colour, in the document's language: a Chinese book shows the opening of 紅樓夢 in its script, `*…*` with emphasis dots, and sets it top to bottom when its lines are vertical. Its line breaks are the browser's; the page uses Postext's. The fields are grouped as:
+  - *Body text*: opens with a true-size **type specimen** set in the current typeface, size, leading and colour, in the document's language: a Chinese book shows the opening of 紅樓夢 in its script, `*…*` with emphasis dots, and sets it top to bottom when its lines are vertical. Its line breaks are the browser's; the page uses Postext's. Under it: characters per line (against the comfortable 45–75), leading as a share of the size, lines per page. The fields are grouped as:
     - **Typeface**: font, **Symbol font** (`symbolFont`), size, line height, and the regular and bold weights. The symbol font sets the characters the text fonts have no glyph for (mathematical letters and operators such as ∪ or ∀, Greek in a Latin face, arrows) on screen, in the PDF and in the EPUB, instead of an empty box; left empty, there is none.
     - **Paragraphs**: alignment (with hyphenation, the justification limits and **Most letter-spacing to justify** (`bodyText.maxJustifyTracking`) when the text is justified, and **Hyphenate ragged text** with its zone, **Optimal Line Breaking** and **Optimal Breaking of Ragged Text** (`bodyText.optimalRagged`) when it is not; under a justified body **Optimal Breaking of Ragged Text** follows **Optimal Line Breaking**, for the ragged paragraph styles and boxes; **Hyphenate compounds** (`bodyText.hyphenation.compounds`) with the hyphenation language), **Break After Dashes** (`bodyText.breakAfterDashes`), **Break After Hyphens** (`bodyText.breakAfterHyphens`), **Repeat Hyphen on Next Line** (`bodyText.repeatHyphen`), **Forced Line Breaks** (`bodyText.hardLineBreaks`), **Underline with ++** (`bodyText.plusUnderline`: `++text++` is read as underlined text, as `:underline[text]` always is; off, the plus signs print), **Tab stops** (`bodyText.tabStops`: a list of stops, each with its position, alignment, leader, leader gap and decimal character) with **Default tab interval** (`bodyText.tabInterval`), indents and paragraph spacing. **Open paragraphs on a grid line** (`bodyText.snapTopToGrid`) opens every paragraph and blockquote on a grid line.
     - **Colour**: the text, bold and italic colours.
@@ -95,7 +94,7 @@ The groups, in browsing order:
   - **Hyphens in the paragraph**, which optimal line breaking applies (the group says so when it is off): **Fewer hyphens**, **Hyphen ladders** with **Hyphens in a row** and **Ladder penalty**, and **Last word divided** with **Last word penalty**.
   - **Line starts and ends**: **Stacks** with **Stack characters** under *Warn* and *Avoid* and **Stack penalty** under *Avoid* (see *Stack* in the Checks panel below), **Citation at line start** with **Citation break penalty**, and **Sign at line edge** with **Sign break penalty**.
 - **Headings & contents**
-  - *Headings*: general defaults plus per-level H1–H6 settings. They include:
+  - *Headings*: a type specimen of the levels, each in its own face (a line opens its level), then general defaults plus per-level H1–H6 settings. They include:
     - letter case, **Letter spacing** (`levels[].letterSpacing`, negative to tighten), alignment (ragged right, justified, centred or ragged left), break-before with parity, and span;
     - a **Snap back to the grid after headings** switch (`headings.snapToGrid`, on by default: the text snaps back to the baseline grid under a heading), and per level **Snap back to the grid after this heading** (`levels[].snapToGrid`), which overrides it for that level;
     - **Open headings on a grid line** (`headings.snapTopToGrid`) and, per level, **Open on a grid line** (`levels[].snapTopToGrid`), which open the heading on a grid line; with snapping off, **Regain the grid at the text** (`regainGrid`) brings the block after the heading back onto the grid;

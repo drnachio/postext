@@ -19,18 +19,17 @@ export const metadata = {
 
 Um editor em formulário para a `PostextConfig`, com mais de quinhentos campos.
 
-**Visão geral.** Quando o painel Design abre, ele mostra uma visão geral:
+**Visão geral.** O painel Design abre numa visão geral:
 
-- Um cartão **Este livro** com um desenho ao vivo da página. O desenho usa as proporções reais e mostra as margens, as colunas e as cores do papel e da tinta, como página dupla quando as margens são espelhadas. As linhas de um livro vertical são desenhadas de cima para baixo a partir da direita, e as colunas dele, como fileiras. Ao lado ficam o formato de refile, a disposição das colunas, o sistema de escrita, o tipo e o corpo do texto e a paleta. A linha do sistema de escrita indica o idioma do documento e, quando são uma escolha, a direção e a encadernação (*Vertical · encadernado à direita · 中文（繁體）*, *Da direita para a esquerda · encadernado à direita · العربية*); ela abre **Sistema de escrita**.
-- A lista dos catorze **grupos de configurações**. Cada grupo tem uma descrição de uma frase e o número de seções que você alterou nele.
+- Um cartão **Este livro**: um desenho ao vivo da página nas proporções reais (margens, colunas, cores do papel e da tinta; página dupla quando as margens são espelhadas) ao lado do formato de refile, da disposição das colunas, do sistema de escrita, do tipo e do corpo do texto e da paleta. A linha do sistema de escrita indica o idioma do documento e, quando são uma escolha, a direção e a encadernação (*Vertical · encadernado à direita · 中文（繁體）*); ela abre **Sistema de escrita**.
+- Os **grupos de configurações**, sob cinco títulos (*O livro*, *O texto*, *Elementos*, *Estrutura*, *Saída*); um ponto marca um grupo com seções alteradas, e **Mostrar todas as explicações** escreve a frase de cada grupo sob o nome dele.
 
-**Uma página por grupo.** Abrir um grupo mostra as seções desse grupo como uma página própria. Só esse grupo é montado, o que mantém o painel rápido mesmo em livros grandes.
+**Uma seção por vez.** Um grupo mostra uma das seções dele; as outras são abas acima dela, e só a que está aberta é montada.
 
-- Uma trilha de navegação (**Design › grupo**) leva de volta à visão geral.
-- Chips sob o título da página levam a cada seção da página.
-- Um link **Próxima** no fim abre o grupo seguinte.
-- O foco vai para o título da página quando você abre um grupo, e volta para a linha do grupo quando você retorna.
-- O grupo aberto é lembrado entre sessões.
+- A barra acima do grupo leva de volta à visão geral; o nome do grupo lista todos os grupos.
+- Um ponto marca uma aba com alterações; quando as abas não cabem, um menu no fim delas lista todas.
+- **⌘K** (Ctrl+K) põe o cursor na caixa de busca.
+- O grupo aberto e a seção aberta de cada grupo são lembrados entre sessões.
 
 **Livros em vários idiomas.** Num livro com mais de um idioma, uma chave no topo do painel indica para onde vão as mudanças: **Todos os idiomas** ou **Só *idioma***, o idioma que está na tela. As edições compartilham ajustes gerais, e cada uma guarda os ajustes que define por conta própria (veja [Ajustes gerais e substituições por idioma](/pt/docs/configuration-bundles#ajustes-gerais-e-substituições-por-idioma)).
 
@@ -43,8 +42,8 @@ Um editor em formulário para a `PostextConfig`, com mais de quinhentos campos.
 Os grupos, na ordem de navegação:
 
 - **Página e colunas**
-  - *Página*: os campos se agrupam em **Tamanho**, **Margens**, **Papel** e **Numeração**.
-    - **Tamanho**: as predefinições de tamanho indicam para que servem: *Livro de bolso* 11 × 17, *Romance, narrativa* 12 × 19, *Ensaio, manual* 17 × 24 e *Livro didático, revista* 21 × 28; os formatos de jornal *Standard* 37,5 × 59,7, *Berliner* 31,5 × 47, *Tabloide* 28 × 43 e *Compacto* 29,7 × 42 (desde o postext 1.18); ou *Personalizado*. A **Resolução da diagramação (px por polegada)** (`page.dpi`) também fica aqui: os pixels com que a diagramação trabalha, não a resolução das imagens, embora um bitmap sem resolução própria seja impresso com esse número de ppi.
+  - *Página*: os campos se agrupam em **Tamanho**, **Margens**, **Papel** e **Numeração**. O desenho acima deles é um editor: arraste uma margem (em *Colunas*, a medianiz). Sob ele ficam a mancha, as colunas e as linhas que cabem numa página.
+    - **Tamanho**: uma galeria de formatos desenhados em proporção. As predefinições indicam para que servem: *Livro de bolso* 11 × 17, *Romance, narrativa* 12 × 19, *Ensaio, manual* 17 × 24 e *Livro didático, revista* 21 × 28; os formatos de jornal *Standard* 37,5 × 59,7, *Berliner* 31,5 × 47, *Tabloide* 28 × 43 e *Compacto* 29,7 × 42 (desde o postext 1.18); ou *Personalizado*. A **Resolução da diagramação (px por polegada)** (`page.dpi`) também fica aqui: os pixels com que a diagramação trabalha, não a resolução das imagens, embora um bitmap sem resolução própria seja impresso com esse número de ppi.
     - **Margens**: cada margem está ligada ao desenho da página. Apontar para um campo de margem ou dar foco a ele colore essa margem no desenho. Uma chave **Margens espelhadas** transforma esquerda/direita em margens interna/externa para páginas espelhadas.
     - **Papel**: a cor de fundo da página.
     - **Numeração**: o formato do número de página e o número em que as páginas começam.
@@ -69,7 +68,7 @@ Os grupos, na ordem de navegação:
   - *Contraste* (`contrast`): **Verificar o contraste**, o **Nível** (AA ou AAA), **Verificado para** (*Automático*, *Tela*, *Impressão*, *Tela e impressão*) e, em **Texto vazado**, os corpos abaixo dos quais o texto claro sobre um fundo de tinta é sinalizado. Mudá-los não diagrama nenhuma página de novo. Veja [Verificação de contraste](/pt/docs/configuration-fonts-colors-viewers#verificação-de-contraste-configuração).
   - *A razão ao lado de uma cor*: um campo de cor cuja cor as páginas compõem como texto, ou como fundo de texto, mostra a menor razão de contraste que ela tem ali, com uma marca de verificação quando alcança o nível e um sinal de aviso quando não alcança. Abrir o campo lista cada cor com que ela é composta (*Texto sobre #ffffff*, *Fundo do texto #1a1a1a*), o menor corpo, e a razão na tela e, num livro preparado para impressão, no papel. Os números acompanham o seletor enquanto você arrasta, antes de a página ser diagramada de novo. Uma cor usada só em fios ou bordas não mostra nenhuma razão.
 - **Tipografia**
-  - *Texto do corpo*: abre com um **espécime tipográfico** em tamanho real, composto no tipo, no corpo, na entrelinha e na cor atuais, no idioma do documento: um livro em chinês mostra o início de 紅樓夢 na escrita dele, `*…*` com pontos de ênfase, e o compõe de cima para baixo quando as linhas são verticais. As quebras de linha dele são as do navegador; a página usa as do Postext. Os campos se agrupam em:
+  - *Texto do corpo*: abre com um **espécime tipográfico** em tamanho real, composto no tipo, no corpo, na entrelinha e na cor atuais, no idioma do documento: um livro em chinês mostra o início de 紅樓夢 na escrita dele, `*…*` com pontos de ênfase, e o compõe de cima para baixo quando as linhas são verticais. As quebras de linha dele são as do navegador; a página usa as do Postext. Abaixo dele: caracteres por linha (diante da faixa confortável de 45–75), entrelinha como proporção do corpo, linhas por página. Os campos se agrupam em:
     - **Tipo**: fonte, **Fonte de símbolos** (`symbolFont`), corpo, entrelinha e os pesos regular e negrito. A fonte de símbolos compõe os caracteres que as fontes do texto não têm (letras e operadores matemáticos como ∪ ou ∀, grego numa fonte latina, setas) na tela, no PDF e no EPUB, em vez de uma caixa vazia; deixada vazia, não há nenhuma.
     - **Parágrafos**: alinhamento (com a hifenização, os limites de justificação e **Espaço máx. entre letras ao justificar** (`bodyText.maxJustifyTracking`) quando o texto é justificado, e **Hifenizar texto em bandeira** com a zona, **Quebra de linha ótima** e **Quebra ideal do texto em bandeira** (`bodyText.optimalRagged`) quando não é; com o corpo justificado, **Quebra ideal do texto em bandeira** vem depois de **Quebra de linha ótima**, para os estilos de parágrafo e os boxes em bandeira; **Hifenizar compostos** (`bodyText.hyphenation.compounds`) com o idioma de hifenização), **Quebrar após travessão** (`bodyText.breakAfterDashes`), **Quebrar após hífen** (`bodyText.breakAfterHyphens`), **Repetir o hífen na linha seguinte** (`bodyText.repeatHyphen`), **Quebras de linha forçadas** (`bodyText.hardLineBreaks`), **Sublinhado com ++** (`bodyText.plusUnderline`: lê `++texto++` como texto sublinhado, como `:underline[texto]`, que é lido sempre; desligado, os sinais de mais são impressos), **Paradas de tabulação** (`bodyText.tabStops`: uma lista de paradas, cada uma com posição, alinhamento, preenchimento, espaço do preenchimento e separador decimal) com **Intervalo padrão de tabulação** (`bodyText.tabInterval`), recuos e espaço entre parágrafos. **Começar os parágrafos numa linha da grade** (`bodyText.snapTopToGrid`) começa cada parágrafo e cada citação numa linha da grade.
     - **Cor**: as cores do texto, do negrito e do itálico.
@@ -95,7 +94,7 @@ Os grupos, na ordem de navegação:
   - **Hífenes no parágrafo**, que a quebra de linha ótima aplica (o grupo avisa quando ela está desativada): **Menos hífenes**, **Escadas de hífenes** com **Hífenes seguidos** e **Penalização de escada**, e **Última palavra dividida** com **Penalização de última palavra**.
   - **Início e fim de linha**: **Repetições** com **Caracteres de repetição** em *Aviso* e *Evitar* e **Penalização de repetição** em *Evitar* (veja *Repetição* no painel Verificações, mais abaixo), **Citação no início da linha** com **Penalização de citação quebrada**, e **Sinal na borda da linha** com **Penalização de sinal quebrado**.
 - **Títulos e sumário**
-  - *Títulos*: padrões gerais mais configurações por nível, de H1 a H6. Incluem:
+  - *Títulos*: um espécime tipográfico dos níveis, cada um no seu próprio tipo (cada linha abre o seu nível), e depois padrões gerais mais configurações por nível, de H1 a H6. Incluem:
     - caixa, **Espaçamento entre letras** (`levels[].letterSpacing`, negativo para apertar), alinhamento (em bandeira, justificado, centralizado ou alinhado à direita), quebra antes com paridade, e largura;
     - uma chave **Voltar à grade após os títulos** (`headings.snapToGrid`, ativada por padrão: o texto volta à grade de linhas de base sob um título) e, por nível, **Voltar à grade após este título** (`levels[].snapToGrid`), que a substitui naquele nível;
     - **Começar os títulos numa linha da grade** (`headings.snapTopToGrid`) e, por nível, **Começar numa linha da grade** (`levels[].snapTopToGrid`), que começam o título numa linha da grade; com o ajuste desligado, **Recuperar a grade no texto** (`regainGrid`) devolve à grade o bloco que segue o título;
