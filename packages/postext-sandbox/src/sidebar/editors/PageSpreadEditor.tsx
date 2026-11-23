@@ -1,14 +1,13 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
-import { resolveBodyTextConfig, resolveColorValue, resolveLayoutConfig, resolvePageConfig } from 'postext';
+import { resolveColorValue } from 'postext';
 import type { Dimension, DimensionUnit } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxSelector } from '../../context/SandboxContext.js';
-import { documentComicDirection, documentDirection, documentLanguage } from '../../context/documentDirection.js';
 import { TO_PT, formatNumber, toPt } from '../../controls/inputs/units.js';
-import { defaultDocumentLocale } from '../../controls/language/hyphenation.js';
 import { cn } from '../../ui/index.js';
-import { pageDrawingConfig, useCjkGrid } from '../sections/writing/cjkGridReadout.js';
+import { useCjkGrid } from '../sections/writing/cjkGridReadout.js';
+import { bodyMetrics, bookSpread, spreadPageOf } from './bookSpread.js';
 import { PagePreview } from '../settings/PagePreview.js';
 import { usePreviewHighlight } from '../settings/previewHighlight.js';
 import { dragGuide, snapLength, spreadGap, spreadGuides, typeArea, type Guide, type GuidePart, type SpreadPage } from './spreadGeometry.js';
@@ -59,13 +58,9 @@ export function PageSpreadEditor() {
   }, []);
 
   // The page as it is set: the character grid's margins when it is on.
-  const drawn = useMemo(() => pageDrawingConfig(config), [config]);
-  const language = documentLanguage(config, defaultDocumentLocale(uiLocale));
-  const direction = documentDirection(config.direction, language);
-  const baseLayout = resolveLayoutConfig(drawn.layout);
-  const basePage = resolvePageConfig(drawn.page, language, baseLayout.writingMode, direction, documentComicDirection(config, language, baseLayout.writingMode, direction));
-  const body = resolveBodyTextConfig(config.bodyText, config.locale);
+  const { page: basePage, layout: baseLayout, body } = useMemo(() => bookSpread(config, uiLocale), [config, uiLocale]);
   const ink = resolveColorValue(body.color, config.colorPalette, { hex: '#000000', model: 'hex' }).hex;
+  const leading = bodyMetrics(body).leading;
 
   // The value being dragged is drawn before it is written.
   const page = drag && drag.part !== 'gutter'
@@ -73,16 +68,8 @@ export function PageSpreadEditor() {
     : basePage;
   const layout = drag?.part === 'gutter' ? { ...baseLayout, gutterWidth: drag.value } : baseLayout;
 
-  const mirror = page.margins.mirror ?? false;
-  const geometry: SpreadPage = {
-    width: Math.max(toPt(page.width), 1),
-    height: Math.max(toPt(page.height), 1),
-    top: toPt(page.margins.top),
-    bottom: toPt(page.margins.bottom),
-    inner: toPt(page.margins.left),
-    outer: toPt(page.margins.right),
-    mirror,
-  };
+  const geometry = spreadPageOf(page);
+  const mirror = geometry.mirror;
   const totalW = mirror ? geometry.width * 2 + spreadGap(geometry.width) : geometry.width;
   const height = boxWidth > 0 ? Math.min(MAX_HEIGHT, (boxWidth * geometry.height) / totalW) : MAX_HEIGHT;
   const width = (height * totalW) / geometry.height;
@@ -155,7 +142,7 @@ export function PageSpreadEditor() {
   const n = (v: number) => formatNumber(v, uiLocale);
   const unit = readUnit(page.width.unit);
   const len = (points: number) => `${n(Math.round((points / TO_PT[unit]) * 10) / 10)}`;
-  const area = typeArea(geometry, layout, toPt(body.lineHeight));
+  const area = typeArea(geometry, layout, leading);
   const shown = drag?.part ?? hover;
   const highlight = shown ?? fieldHighlight;
 
@@ -171,7 +158,7 @@ export function PageSpreadEditor() {
     <figure className="mx-3 mb-1 flex flex-col rounded-lg border border-(--rule) bg-(--surface)">
       <div ref={boxRef} className="mx-3 mt-4 flex justify-center">
         <div className="group/spread relative" style={{ width, height }}>
-          <PagePreview page={page} layout={layout} lineHeightPt={toPt(body.lineHeight)} inkHex={ink} height={height} highlight={highlight} folios />
+          <PagePreview page={page} layout={layout} lineHeightPt={leading} inkHex={ink} height={height} highlight={highlight} folios />
           {editable && (
             <svg
               ref={svgRef}

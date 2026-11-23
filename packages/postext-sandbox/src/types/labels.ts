@@ -4987,6 +4987,13 @@ export interface SandboxLabels {
   settingsGroupModifiedMany: string;
   settingsJumpTo: string;
   settingsNextGroup: string;
+  typeMetricsTitle: string;
+  typeMetricCharsPerLine: string;
+  typeMetricLeading: string;
+  typeMetricLinesPerPage: string;
+  typeMeasureShort: string;
+  typeMeasureGood: string;
+  typeMeasureLong: string;
   pageTypeArea: string;
   pageColumnsOf: string;
   pageLinesPerPage: string;

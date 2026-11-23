@@ -2,6 +2,7 @@
 
 import { FieldRow } from '../FieldRow.js';
 import { NumberControl } from './NumberControl.js';
+import { fontWeightName } from './fontWeightName.js';
 
 interface NumberInputProps {
   label: string;
@@ -18,10 +19,13 @@ interface NumberInputProps {
   widthCh?: number;
 }
 
-export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix, widthCh }: NumberInputProps) {
+export function NumberInput({ label, value, onChange, min = 0, max = 100, step = 1, tooltip, isDefault, onReset, suffix: suffixProp, widthCh }: NumberInputProps) {
   const muted = isDefault ?? false;
+  // A font weight (the fields that run from 100 to 900) is read with the
+  // name designers give it: 400 Regular, 700 Bold.
+  const suffix = suffixProp ?? (min === 100 && max === 900 ? fontWeightName(value) : undefined);
   return (
-    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={suffix ? [suffix] : undefined}>
+    <FieldRow label={label} tooltip={tooltip} isDefault={muted} onReset={onReset} extraTerms={suffixProp ? [suffixProp] : undefined}>
       {/* A width of its own (a year, a page count) keeps it; otherwise
           the row's control width, the suffix inside the frame. */}
       {widthCh !== undefined ? (

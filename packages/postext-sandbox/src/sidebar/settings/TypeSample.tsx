@@ -28,6 +28,13 @@ const CHINESE_SAMPLE = {
  *  macrons (ō) not every Japanese face carries. */
 const JAPANESE_SAMPLE = '**吾輩は猫である**。名前はまだ無い。どこで生れたか*とんと*見当がつかぬ。何でも薄暗いじめじめした所でニャーニャー泣いていた事だけは記憶している。（Natsume Sōseki, *Wagahai wa neko de aru*）';
 
+/** The text of the sample for a document in `lang`: the line of 紅樓夢
+ *  or of 吾輩は猫である, or `latin` (the interface's own sample). */
+export function bodySampleText(lang: string, latin: string): string {
+  const script = chineseScriptOf(lang);
+  return script ? CHINESE_SAMPLE[script] : isJapaneseLanguage(lang) ? JAPANESE_SAMPLE : latin;
+}
+
 /** A short paragraph set with the body text settings — typeface, size,
  *  leading, weight, alignment, indent, colours — at true size on the page
  *  colour, in the document's language: a line of 紅樓夢 for a Chinese book,
@@ -56,7 +63,7 @@ export function TypeSample({ body, lang }: TypeSampleProps) {
 
   const script = chineseScriptOf(lang);
   const japanese = isJapaneseLanguage(lang);
-  const text = script ? CHINESE_SAMPLE[script] : japanese ? JAPANESE_SAMPLE : labels.bodyTypeSample;
+  const text = bodySampleText(lang, labels.bodyTypeSample);
   // `*…*` in Chinese and Japanese text prints what `cjk.emphasis` resolves
   // to (#193): emphasis marks unless the document asks for italics, in the
   // shape and on the side `cjk.emphasisMark` gives (the dot under Chinese
