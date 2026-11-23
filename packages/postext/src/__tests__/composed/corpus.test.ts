@@ -16,7 +16,9 @@ describe('corpus (#854)', () => {
     ? readdirSync(root).flatMap((d) => {
       const dir = join(root, d);
       try {
-        return readdirSync(dir).filter((f) => /^content.*\.md$/.test(f)).map((f) => join(dir, f));
+        // A print cover's text (`content.cover.<lang>.md`) is frames on the
+        // cover's page by design (#1667), not a book's text.
+        return readdirSync(dir).filter((f) => /^content.*\.md$/.test(f) && !/^content\.cover\./.test(f)).map((f) => join(dir, f));
       } catch {
         return [];
       }
