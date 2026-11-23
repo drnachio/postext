@@ -1,0 +1,896 @@
+{
+  "schemaVersion": 1,
+  "slug": "cover-text-boxes-anchored",
+  "sourceHash": "9488280affa8b64ce1ce1f6d977302fbd81766ea5dddb3d2617973b64b6c57aa",
+  "engine": {
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T17:01:56.511Z",
+  "variants": {
+    "en": {
+      "hash8": "84557ea3",
+      "vdtHash": "ae265042a8adf023a7433a028f3c49e591b233fc",
+      "timings": {
+        "importMs": 1570,
+        "fontsMs": 53,
+        "buildMs": 79,
+        "totalMs": 2510,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          125,
+          195
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "EB Garamond",
+          "sizePt": 11,
+          "leadingPt": 14.6
+        },
+        "families": [
+          "Cinzel",
+          "EB Garamond"
+        ],
+        "pages": 22,
+        "ownLines": 241
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 7082,
+          "alt": "Opening page 1: The Masque of the Red Death."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 19308,
+          "alt": "Opening page 3: The Masque of the Red Death."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 39610,
+          "alt": "Opening page 4: Rights."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 99322,
+          "alt": "Opening page 5: The Masque of the Red Death."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1560,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 150164,
+          "alt": "Page 6."
+        },
+        {
+          "n": 15,
+          "label": "15",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p15.webp",
+          "strip": "p15.s.webp",
+          "bytes": 98960,
+          "alt": "Opening page 15: The Oval Portrait."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 9804,
+          "alt": "Opening page 21: Colophon."
+        },
+        {
+          "n": 22,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 784,
+          "file": "p22.webp",
+          "strip": "p22.s.webp",
+          "bytes": 86912,
+          "alt": "Page 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "cover-text-boxes-anchored.pdf",
+        "bytes": 415046,
+        "pages": 22
+      },
+      "sandbox": {
+        "file": "cover-text-boxes-anchored.postext",
+        "bytes": 295579,
+        "folio": "e040c3a1",
+        "keep": "first",
+        "pages": 21,
+        "chapters": [
+          {
+            "pages": 21,
+            "hash": "1d88d74284f51ab8",
+            "lines": "963e0b2e856711ec"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.textBoxes",
+          "cover.textBoxes[].anchor",
+          "cover.textBoxes[].maxHeight",
+          "cover.textBoxes[].name",
+          "cover.textBoxes[].next",
+          "cover.textBoxes[].rect",
+          "cover.textBoxes[].verticalAlign",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].name",
+          "production.versions[].spineText"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "production"
+        ],
+        "configLeaves": 456,
+        "designElements": 15,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cinzel",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Cinzel",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-sheet",
+          "cover-text-boxes",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 1,
+          "share": 0.003,
+          "worst": 2.13
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 8 block, 6 frame, 19 line"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "046fb9c7",
+      "vdtHash": "a110178a1416dc3260f63434f712c9dec355d731",
+      "timings": {
+        "importMs": 1569,
+        "fontsMs": 44,
+        "buildMs": 117,
+        "totalMs": 2563,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          125,
+          195
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "EB Garamond",
+          "sizePt": 11,
+          "leadingPt": 14.6
+        },
+        "families": [
+          "Cinzel",
+          "EB Garamond"
+        ],
+        "pages": 22,
+        "ownLines": 241
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 6606,
+          "alt": "Página de apertura 1: La máscara de la muerte."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 16630,
+          "alt": "Página de apertura 3: La máscara de la muerte."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 41504,
+          "alt": "Página de apertura 4: Créditos."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 89258,
+          "alt": "Página de apertura 5: La máscara de la muerte."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1560,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 144316,
+          "alt": "Página 6."
+        },
+        {
+          "n": 15,
+          "label": "15",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p15.webp",
+          "strip": "p15.s.webp",
+          "bytes": 89404,
+          "alt": "Página de apertura 15: El retrato oval."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "opener",
+          "w": 1000,
+          "h": 1560,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 10222,
+          "alt": "Página de apertura 21: Colofón."
+        },
+        {
+          "n": 22,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 784,
+          "file": "p22.webp",
+          "strip": "p22.s.webp",
+          "bytes": 86326,
+          "alt": "Página 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ],
+        [
+          null,
+          7
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "cover-text-boxes-anchored.pdf",
+        "bytes": 437481,
+        "pages": 22
+      },
+      "sandbox": {
+        "file": "cover-text-boxes-anchored.postext",
+        "bytes": 295125,
+        "folio": "e040c3a1",
+        "keep": "first",
+        "pages": 21,
+        "chapters": [
+          {
+            "pages": 21,
+            "hash": "1ea27cade70f7fbb",
+            "lines": "7651d349ff89d34d"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.textBoxes",
+          "cover.textBoxes[].anchor",
+          "cover.textBoxes[].maxHeight",
+          "cover.textBoxes[].name",
+          "cover.textBoxes[].next",
+          "cover.textBoxes[].rect",
+          "cover.textBoxes[].verticalAlign",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].name",
+          "production.versions[].spineText"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "production"
+        ],
+        "configLeaves": 456,
+        "designElements": 15,
+        "directives": [
+          ":::paragraphs"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cinzel",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Cinzel",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "EB Garamond",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-sheet",
+          "cover-text-boxes",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 2,
+          "share": 0.006,
+          "worst": 2.08
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "runtFixes": {
+          "count": 1,
+          "tracked": 1,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 8 block, 6 frame, 20 line"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "1 paragraph set a line short with tracking (worst −10‰, the cap): p. 16 −10‰ “En el fondo del mismo se dejó ver en medio de un…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}
