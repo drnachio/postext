@@ -7,8 +7,11 @@
 
 import type { ColorValue } from 'postext';
 import {
+  COVER_SLOT_ZONES,
   coverElementRect,
+  keptCoverTextBoxes,
   placeCoverElement,
+  resolveCoverTextBoxes,
   type CoverConfig,
   type CoverElement,
   type CoverFinish,
@@ -51,7 +54,8 @@ function listOf(cover: CoverConfig, layer: DesignerLayer): readonly (CoverElemen
 export function designerItems(cover: CoverConfig | undefined, sheet: ProductionSheet): DesignerItem[] {
   const c = cover ?? {};
   const out: DesignerItem[] = [];
-  for (const t of c.textBoxes ?? []) out.push({ layer: 'textBoxes', id: t.name, rect: t.rect, kind: 'text' });
+  const placed = textBoxRects(c, sheet);
+  for (const t of c.textBoxes ?? []) out.push({ layer: 'textBoxes', id: t.name, rect: placed.get(t.name) ?? t.rect, kind: 'text' });
   for (const layer of ['elements', 'effects', 'logos'] as const) {
     for (const e of (c[layer] ?? []) as CoverElement[]) {
       const rect = coverElementRect(sheet, e);
@@ -63,6 +67,32 @@ export function designerItems(cover: CoverConfig | undefined, sheet: ProductionS
     out.push({ layer: 'finishes', id: f.id, kind: f.process, ...(rect ? { rect } : {}) });
   }
   return out;
+}
+
+/** Where each text box stands on the sheet (#1679): its rect, or where
+ *  its anchor puts it, as the cover lays it out (before it grows). */
+export function textBoxRects(cover: CoverConfig | undefined, sheet: ProductionSheet): Map<string, SheetRect> {
+  const { boxes } = keptCoverTextBoxes(cover?.textBoxes, COVER_SLOT_ZONES);
+  return resolveCoverTextBoxes(sheet, boxes).rects;
+}
+
+/** The text box whose text continues in `name` (its `next`), if any. */
+export function continuedFrom(cover: CoverConfig | undefined, name: string): string | undefined {
+  return cover?.textBoxes?.find((t) => t.next === name && t.name !== name)?.name;
+}
+
+/** The design with a text box renamed in the boxes that name it: their
+ *  anchors and continuations follow it. */
+export function renameTextBoxRefs(cover: CoverConfig, from: string, to: string): CoverConfig {
+  if (!cover.textBoxes) return cover;
+  return {
+    ...cover,
+    textBoxes: cover.textBoxes.map((t) => ({
+      ...t,
+      ...(t.anchor?.to === from ? { anchor: { ...t.anchor, to } } : {}),
+      ...(t.next === from ? { next: to } : {}),
+    })),
+  };
 }
 
 /** The item a ref names. */
@@ -95,7 +125,18 @@ function placementOf(sheet: ProductionSheet, rect: SheetRect): CoverPlacement {
 /** The design with an item moved or resized to `rect` (mm on the sheet). */
 export function placeItem(cover: CoverConfig | undefined, sheet: ProductionSheet, ref: ItemRef, rect: SheetRect): CoverConfig {
   const c = cover ?? {};
-  if (ref.layer === 'textBoxes') return mapItem(c, ref, (t: CoverTextFrame) => ({ ...t, rect: roundRect(rect) }));
+  if (ref.layer === 'textBoxes') {
+    // An anchored box keeps its anchor: the move goes into its offset, and
+    // its rect follows where it lands.
+    const at = textBoxRects(c, sheet).get(ref.id);
+    return mapItem(c, ref, (t: CoverTextFrame) => {
+      if (!t.anchor || !at) return { ...t, rect: roundRect(rect) };
+      const x = round((t.anchor.x ?? 0) + rect.x - at.x);
+      const y = round((t.anchor.y ?? 0) + rect.y - at.y);
+      const anchor = { to: t.anchor.to, edge: t.anchor.edge, ...(x ? { x } : {}), ...(y ? { y } : {}) };
+      return { ...t, anchor, rect: roundRect(rect) };
+    });
+  }
   if (ref.layer === 'finishes') {
     return mapItem(c, ref, (f: CoverFinish) => ('box' in f.shape ? { ...f, shape: { ...f.shape, box: placementOf(sheet, rect) } } : f));
   }
@@ -112,9 +153,26 @@ export function patchItem(cover: CoverConfig | undefined, ref: ItemRef, patch: R
 }
 
 /** The design without an item; a finish that took its shape goes too. */
-export function removeItem(cover: CoverConfig | undefined, ref: ItemRef): CoverConfig {
+export function removeItem(cover: CoverConfig | undefined, ref: ItemRef, sheet?: ProductionSheet): CoverConfig {
   const c = cover ?? {};
   let next = withList(c, ref.layer, listOf(c, ref.layer).filter((i) => idOf(ref.layer, i as never) !== ref.id));
+  if (ref.layer === 'textBoxes') {
+    // The boxes hung from it stay where they stand; the one whose text
+    // went on in it stops there.
+    const at = sheet ? textBoxRects(c, sheet) : new Map<string, SheetRect>();
+    next = withList(next, 'textBoxes', (next.textBoxes ?? []).map((t) => {
+      let out: CoverTextFrame = t;
+      if (t.anchor?.to === ref.id) {
+        const { anchor: _a, ...rest } = out; // eslint-disable-line @typescript-eslint/no-unused-vars
+        out = { ...rest, rect: roundRect(at.get(t.name) ?? t.rect) };
+      }
+      if (out.next === ref.id) {
+        const { next: _n, ...rest } = out; // eslint-disable-line @typescript-eslint/no-unused-vars
+        out = rest;
+      }
+      return out;
+    }));
+  }
   if (ref.layer !== 'textBoxes' && ref.layer !== 'finishes') {
     next = withList(next, 'finishes', (next.finishes ?? []).filter((f) => !('element' in f.shape && f.shape.element === ref.id)));
   }

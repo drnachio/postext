@@ -112,4 +112,25 @@ describe('the cover tools', () => {
     await call('sandbox_cover_set_collection', { catalogue: [{ id: 'one', title: 'One' }] });
     expect(get().config.production!.collection).toEqual({ name: 'Series', catalogue: [{ id: 'one', title: 'One' }] });
   });
+
+  // #1679: text boxes anchored, continued, grown and shrunk.
+  it('add text boxes anchored to a panel and to each other, continued, and report them', async () => {
+    const { call, get } = harness({ ...book(), config: withVersion as never });
+    const title = await call('sandbox_cover_text_box', { name: 'title', rect: { x: 0, y: 0, width: 80, height: 20 }, anchor: { to: 'front', edge: 'top', y: 10 }, maxHeight: 40 });
+    expect(title.error).toBeUndefined();
+    expect(title.box).toMatchObject({ name: 'title', anchor: { to: 'front', edge: 'top', y: 10 }, maxHeight: 40 });
+    await call('sandbox_cover_text_box', { name: 'more', rect: { x: 0, y: 0, width: 80, height: 30 } });
+    const blurb = await call('sandbox_cover_text_box', { name: 'blurb', rect: { x: 0, y: 0, width: 80, height: 30 }, anchor: { to: 'title', edge: 'below', y: 4 }, next: 'more', fit: { minScale: 0.8 } });
+    expect(blurb.rectMm.y).toBeCloseTo(title.rectMm.y + 20 + 4, 1);
+    expect(blurb.issues).toEqual([]);
+    const got = await call('sandbox_cover_get');
+    expect(got.items).toEqual(expect.arrayContaining([expect.objectContaining({ id: 'blurb', anchor: { to: 'title', edge: 'below', y: 4 }, next: 'more', fit: { minScale: 0.8 } })]));
+    expect(got.slots).toEqual(expect.arrayContaining([{ slot: 'more', text: null, continues: 'blurb' }]));
+    expect((await call('sandbox_cover_text_box', { name: 'x', rect: { x: 0, y: 0, width: 1, height: 1 }, anchor: { to: 'front', edge: 'below' } })).error).toMatch(/beside another text box/);
+    expect((await call('sandbox_cover_text_box', { name: 'blurb', next: 'nowhere' })).error).toMatch(/no other text box/);
+    // Removing the box hung from lets the other go.
+    const removed = await call('sandbox_cover_text_box', { name: 'title', remove: true });
+    expect(removed.removed).toBe('title');
+    expect(get().config.cover!.textBoxes!.find((t) => t.name === 'blurb')!.anchor).toBeUndefined();
+  });
 });

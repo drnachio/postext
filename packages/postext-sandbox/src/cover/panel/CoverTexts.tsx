@@ -49,9 +49,10 @@ function ZoneText({ slot, value, onChange, label }: { slot: string; value: strin
 /**
  * `sheets`: the names of the shown sheet, most particular first (`case`
  * then `cover`…); a sheet that is the book's cover itself (a paperback's)
- * has no texts of its own.
+ * has no texts of its own. `continued`: the boxes that only take the rest
+ * of another box's text, by the box they continue.
  */
-export function CoverTexts({ slots, sheets, metadata }: { slots: readonly string[]; sheets?: readonly string[]; metadata?: DocumentMetadata }) {
+export function CoverTexts({ slots, sheets, metadata, continued = {} }: { slots: readonly string[]; sheets?: readonly string[]; metadata?: DocumentMetadata; continued?: Readonly<Record<string, string>> }) {
   const labels = useSandboxLabels();
   const dispatch = useSandboxDispatch();
   const markdown = useSandboxSelector((s) => s.coverMarkdown);
@@ -73,6 +74,11 @@ export function CoverTexts({ slots, sheets, metadata }: { slots: readonly string
     <div className="flex flex-col pb-2">
       <p className="px-3 py-1 text-xs text-(--slate)">{labels.coverTextsIntro}</p>
       {slots.map((slot) => {
+        // A box that only takes the rest of another's text (#1679).
+        const from = continued[slot];
+        if (from !== undefined) {
+          return <p key={slot} className="px-3 py-1.5 text-xs text-(--slate)"><span className="font-semibold text-(--foreground)">{slot}</span>: {labels.coverTextContinues.replace('__name__', from)}</p>;
+        }
         const shared = !FROM_METADATA.has(slot)
           ? <ZoneText slot={slot} value={texts[slot] ?? ''} onChange={(t) => write(slot, t.trim() ? t : null)} />
           : (() => {

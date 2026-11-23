@@ -12,7 +12,7 @@ import { FieldRow, TextControl } from '../../controls/index.js';
 import { renameCoverSlot } from '../coverText.js';
 import { setCoverDesigner } from '../coverStore.js';
 import { useEditedDesign } from '../useEditedDesign.js';
-import { patchItem, usedIds } from './designerModel.js';
+import { patchItem, renameTextBoxRefs, usedIds } from './designerModel.js';
 
 const NAME = /^[A-Za-z0-9_-]+$/;
 
@@ -37,7 +37,7 @@ export function TextBoxName({ name, sheet }: { name: string; sheet: ProductionSh
     const next = draft.trim();
     if (next === name || problem(next)) return;
     const renamed: Partial<CoverTextFrame> = { name: next };
-    write(patchItem(cover, { layer: 'textBoxes', id: name }, renamed));
+    write(renameTextBoxRefs(patchItem(cover, { layer: 'textBoxes', id: name }, renamed), name, next));
     dispatch({ type: 'SET_COVER_MARKDOWN', payload: renameCoverSlot(markdown, name, next) });
     setCoverDesigner({ selected: { layer: 'textBoxes', id: next } });
   };

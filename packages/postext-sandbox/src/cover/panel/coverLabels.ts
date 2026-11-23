@@ -51,6 +51,8 @@ export function coverIssueText(labels: SandboxLabels, issue: BuildCoverIssue): s
     case 'spineTooThinForText': return fill(labels.coverCheckSpineTooThin, { spine: mm(i.spine), min: mm(i.minSpine) });
     case 'profileOutOfRange': return fill(labels.coverCheckProfileOutOfRange, { value: mm(i.value), limit: mm(i.limit) });
     case 'coverTextBoxName': return fill(labels.coverCheckTextBoxName, { name: i.name });
+    case 'coverTextBoxAnchor': return fill(labels.coverCheckTextBoxAnchor, { name: i.name, to: i.to });
+    case 'coverTextBoxNext': return fill(labels.coverCheckTextBoxNext, { name: i.name, next: i.next });
     case 'coverMirrorSkipped': return labels.coverCheckMirrorSkipped;
     case 'coverMirrorCapped': return labels.coverCheckMirrorCapped;
     case 'coverClipSkipped': return labels.coverCheckClipSkipped;

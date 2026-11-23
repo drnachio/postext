@@ -111,7 +111,7 @@ export function DesignerSection() {
                           </button>
                           <IconButton label={labels.coverItemBackward} icon={<ArrowDown size={13} />} onClick={() => write(reorderItem(cover, i, -1))} />
                           <IconButton label={labels.coverItemForward} icon={<ArrowUp size={13} />} onClick={() => write(reorderItem(cover, i, 1))} />
-                          <IconButton label={labels.coverItemDelete} icon={<Trash2 size={13} />} destructive onClick={() => { write(removeItem(cover, i)); if (on) setCoverDesigner({ selected: null }); }} />
+                          <IconButton label={labels.coverItemDelete} icon={<Trash2 size={13} />} destructive onClick={() => { write(removeItem(cover, i, sheet)); if (on) setCoverDesigner({ selected: null }); }} />
                         </li>
                       );
                     })}
