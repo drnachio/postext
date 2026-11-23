@@ -60,9 +60,11 @@ import type { NetIssue } from './net.ts';
 import { releasedVersion } from './shim.ts';
 import { step, StepError, harnessDetail } from './steps.ts';
 import { type Edition, editionsOf, dim, bundleFile, compareEdition, resultOf, pool } from './sandbox/compare.ts';
+import { SITE_HOOK } from './sandbox/siteHook.ts';
 
 export { extraWarnings, WARNING_SINCE, warningSince, laterRelease, variableFamilies } from './sandbox/warnings.ts';
 export { compareEdition } from './sandbox/compare.ts';
+export { SITE_HOOK } from './sandbox/siteHook.ts';
 
 export { SANDBOX_USAGE } from "./sandbox-usage.ts";
 
@@ -295,34 +297,6 @@ async function runLocal(browser: Browser, userAgent: string, url: string, editio
 }
 
 // ─── A deployed site ────────────────────────────────────────────────────────
-
-/** Runs before the page's scripts: every layout worker's `build` requests
- *  and `built` answers are kept, the newest document per text built (a
- *  chapter is built again when the ones before it move its start). */
-const SITE_HOOK = `(() => {
-  const state = (window.__sbSite = { chapters: new Map(), errors: [], lastBuiltAt: 0, seq: 0 });
-  const Real = window.Worker;
-  window.Worker = class extends Real {
-    constructor(url, options) {
-      super(url, options);
-      const asked = new Map();
-      const post = this.postMessage.bind(this);
-      this.postMessage = (data, transfer) => {
-        if (data && data.kind === 'build' && data.content) asked.set(data.id, String(data.content.markdown ?? ''));
-        return post(data, transfer);
-      };
-      this.addEventListener('message', (event) => {
-        const data = event.data || {};
-        if (data.kind === 'built' && data.doc && asked.has(data.id)) {
-          state.chapters.set(asked.get(data.id), { doc: data.doc, seq: state.seq++ });
-          state.lastBuiltAt = performance.now();
-        }
-        if (data.kind === 'error') state.errors.push('worker error: ' + String(data.message ?? data.error ?? '').slice(0, 300));
-      });
-      this.addEventListener('error', (event) => state.errors.push('worker error: ' + String(event.message ?? 'the layout worker failed').slice(0, 300)));
-    }
-  };
-})()`;
 
 /** How long no `built` message must come before the last one is read. */
 const QUIET_MS = 2500;

@@ -47,7 +47,8 @@ const CAPTURE_USAGE = `pnpm cookbook capture [slug…] [options]
   --refresh-net          Bypass the on-disk network cache
   --engine <spec>        npm (default: packages/postext's version), npm@x.y.z, or local
                          (the workspace packages' dist; checks only, writes no capture)
-  --preview-dir <dir>    Also write every page image, the card and the edition's capture.json here for inspection
+  --preview-dir <dir>    Also write every page image, the card, the edition's capture.json and its
+                         layout text (vdt.txt: every block and line with its box) here for inspection
   --verify               After a release: run as a capture does and write only the
                          record that the recipe was found unchanged on this release
                          (capture.json \`verified\`: the recipe page then prints it as

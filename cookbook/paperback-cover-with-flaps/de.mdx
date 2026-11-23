@@ -5,7 +5,7 @@ plain: "Ein Taschenbuch mit zwei Legenden von Bécquer und der Bogen für seinen
 description: "Eine Klappenbroschur mit Postext: Bindungsprofil, ISBN-Strichcode und ein Rücken aus Seitenzahl und Papier berechnet, der Umschlagtext in Markdown."
 question: "Wie mache ich den Umschlagbogen einer Klappenbroschur, mit dem Rücken aus der Seitenzahl berechnet?"
 aliases: ["Umschlagbogen", "Klappen", "Rückenstärke", "ISBN-Strichcode", "Klappentext", "Klebebindung", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "Der Umschlagbogen flach ausgebreitet: links die hintere Klappe über die Übersetzerinnen, dann die Rückseite mit dem Text und einem ISBN-Strichcode auf weißem Feld, der Rücken von unten nach oben beschriftet, die Vorderseite mit einer gemalten Kapellenruine auf einem Hügel unter einem verschneiten Kamm und dem Titel darüber, rechts die vordere Klappe mit einer Notiz zum Autor. Ringsum Schnitt- und Falzmarken." }
+pageNotes: { "38": "Der Umschlagbogen flach ausgebreitet: links die hintere Klappe über die Übersetzerinnen, dann die Rückseite mit dem Text und einem ISBN-Strichcode auf weißem Feld, der Rücken von oben nach unten beschriftet, die Vorderseite mit einer gemalten Kapellenruine auf einem Hügel unter einem verschneiten Kamm und dem Titel darüber, rechts die vordere Klappe mit einer Notiz zum Autor. Ringsum Schnitt- und Falzmarken." }
 ---
 
 ## Was Sie setzen
@@ -38,15 +38,15 @@ Der Bogen wird mit der Konfiguration des Buchs gesetzt, seine Absatzstile stehen
 
 ## Varianten
 
-### Den Rücken von oben nach unten beschriften
+### Den Rücken von unten nach oben beschriften
 
-Englische und amerikanische Bücher lesen den Rücken von oben nach unten; die Voreinstellung, von unten nach oben, folgt dem kontinentalen Brauch.
+Die Voreinstellung beschriftet den Rücken von oben nach unten, wie ISO 6357 es vorsieht und englische Bücher es tun, lesbar, wenn das Buch mit dem Vorderdeckel nach oben liegt. Der ältere kontinentale Brauch liest von unten nach oben.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Auf dünneres Papier drucken

@@ -42,11 +42,11 @@ function endnotes(markdown, style = 'note') {
     return cited.indexOf(label) + 1;
   };
   // Markers side by side share one superscript, [^a][^b] → **^1,2^**, never 12 raised (note 12).
-  // A word joiner (U+2060, no width) opens each one: after an italic, '*Royal George*' and the
-  // bold's ** would make '***', which the parser reads as a bold run, and print the asterisks.
+  // Word joiners (U+2060, no width) around the stars: '*Royal George*' and ** would make '***',
+  // and ** between a letter and a caret opens no bold (CommonMark): the asterisks would print.
   const marked = text.replace(/(?:\[\^[^\]\s]+\])+/g, (run) => {
     const numbers = [...run.matchAll(/\[\^([^\]\s]+)\]/g)].map(([, label]) => number(label));
-    return `⁠**^${numbers.join(',')}^**`;
+    return `\u2060**\u2060^${numbers.join(',')}^\u2060**`;
   });
   const unused = [...notes.keys()].filter((label) => !cited.includes(label));
   if (unused.length) console.warn(`Notes never cited: ${unused.join(', ')}`);

@@ -5,7 +5,7 @@ plain: "Un livre de poche de deux légendes de Bécquer et la feuille de sa couv
 description: "Un broché à rabats avec Postext : profil de reliure, code-barres ISBN et dos calculé d’après les pages et le papier, avec le texte de couverture en Markdown."
 question: "Comment faire la feuille de couverture d’un broché à rabats, avec le dos calculé d’après le nombre de pages ?"
 aliases: ["feuille de couverture", "rabats", "épaisseur du dos", "code-barres ISBN", "quatrième de couverture", "dos carré collé", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "La feuille de couverture à plat : à gauche le rabat arrière sur les traductrices, puis la quatrième avec le texte et un code-barres ISBN sur un cartouche blanc, le dos titré de bas en haut, la première avec une chapelle en ruine peinte sur une colline sous une crête enneigée et le titre au-dessus, et à droite le rabat avant avec une note sur l’auteur. Les traits de coupe et de pliage l’entourent." }
+pageNotes: { "38": "La feuille de couverture à plat : à gauche le rabat arrière sur les traductrices, puis la quatrième avec le texte et un code-barres ISBN sur un cartouche blanc, le dos titré de haut en bas, la première avec une chapelle en ruine peinte sur une colline sous une crête enneigée et le titre au-dessus, et à droite le rabat avant avec une note sur l’auteur. Les traits de coupe et de pliage l’entourent." }
 ---
 
 ## Ce que vous allez composer
@@ -38,15 +38,15 @@ La feuille est composée avec la configuration du livre, si bien que ses styles 
 
 ## Variantes
 
-### Titrez le dos de haut en bas
+### Titrez le dos de bas en haut
 
-Les livres anglais et américains se lisent au dos de haut en bas ; le réglage par défaut, de bas en haut, suit l’usage français et continental.
+Le réglage par défaut titre le dos de haut en bas, comme le veut la norme ISO 6357 et comme le font les livres anglais, à l’endroit quand le livre est posé à plat. L’usage français et continental titre de bas en haut.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Imprimez sur un papier plus fin

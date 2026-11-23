@@ -21,7 +21,7 @@
   "gotchas": [],
   "workarounds": [],
   "related": ["magazine-feature-opener", "running-heads-by-parity", "chapter-opener-bleed-band"],
-  "engine": { "postext": "1.34.0" },
+  "engine": { "postext": "1.88.1" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es", "pt", "fr", "de", "it"] },
   "capture": { "hero": 1, "card": "page", "expect": { "pages": [2, 2] } },

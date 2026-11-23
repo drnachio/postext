@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "baseline-grid-book-page",
-  "sourceHash": "e69d1960b4f57225dce108f38812d4b5f12e2fd5366e17bf760df454810e7d26",
+  "sourceHash": "47ab38f84c0ab5e9ff7559717b3db68687b82399daaf8270e7b06577b71f826e",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.93.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:31:43.224Z",
-  "verified": {
-    "postext": "1.65.0",
-    "chrome": "156.0.8078.76",
-    "at": "2026-10-31T16:47:31.399Z"
-  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T17:26:42.296Z",
   "variants": {
     "en": {
-      "hash8": "f80f5337",
+      "hash8": "4021d3b3",
       "vdtHash": "f55297049f1e5f9ea49a89f52e109267aee3fbe3",
       "timings": {
-        "importMs": 218,
+        "importMs": 639,
         "fontsMs": 3,
-        "buildMs": 82,
-        "totalMs": 2751,
+        "buildMs": 88,
+        "totalMs": 1488,
         "builds": 1
       },
       "specimen": {
@@ -55,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 151444,
+          "bytes": 151370,
           "alt": "Opening page 9: The Secret Canon. Figure 1.1. The canon on an open spread of 2:3 pages. The diagonals fix the corners of both text blocks; the circle, as wide as a page, is exactly as tall as its block."
         },
         {
@@ -66,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 182158,
+          "bytes": 182214,
           "alt": "Page 10: Lines to stand on."
         },
         {
@@ -105,7 +100,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 65613,
+        "bytes": 65610,
         "folio": "e8c31713",
         "chapters": [
           {
@@ -326,7 +321,7 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",
@@ -337,18 +332,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, pt, fr, de, it"
           }
         ]
       }
     },
     "es": {
-      "hash8": "5bf75026",
+      "hash8": "a4de98b9",
       "vdtHash": "18cb678cde83a6862dc2b5d160a0456d970249e3",
       "timings": {
-        "importMs": 189,
-        "fontsMs": 3,
-        "buildMs": 76,
-        "totalMs": 1797,
+        "importMs": 385,
+        "fontsMs": 4,
+        "buildMs": 79,
+        "totalMs": 1141,
         "builds": 1
       },
       "specimen": {
@@ -382,7 +382,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 153852,
+          "bytes": 153844,
           "alt": "Página de apertura 9: El canon secreto. Figura 1.1. El canon sobre un pliego abierto de páginas 2:3. Las diagonales fijan las esquinas de las dos cajas; el círculo, tan ancho como la página, es tan alto como su caja."
         },
         {
@@ -393,7 +393,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 186418,
+          "bytes": 186372,
           "alt": "Página 10: Líneas en las que apoyarse."
         },
         {
@@ -432,7 +432,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 66274,
+        "bytes": 66264,
         "folio": "e8c31713",
         "chapters": [
           {
@@ -643,7 +643,7 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",
@@ -654,18 +654,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: es, en, pt, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, pt, fr, de, it"
           }
         ]
       }
     },
     "pt": {
-      "hash8": "c87178c4",
+      "hash8": "b1490d95",
       "vdtHash": "2acdd6b557c1c08659556959a5561aab4bda1812",
       "timings": {
-        "importMs": 171,
-        "fontsMs": 3,
-        "buildMs": 71,
-        "totalMs": 1135,
+        "importMs": 480,
+        "fontsMs": 4,
+        "buildMs": 68,
+        "totalMs": 1394,
         "builds": 1
       },
       "specimen": {
@@ -699,7 +704,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 149382,
+          "bytes": 149344,
           "alt": "Página de abertura 9: O cânone secreto. Figura 1.1. O cânone sobre uma página dupla aberta de páginas 2:3. As diagonais fixam os cantos das duas manchas; o círculo, da largura da página, tem exatamente a altura da mancha."
         },
         {
@@ -710,7 +715,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 187168,
+          "bytes": 187140,
           "alt": "Página 10: Linhas onde se apoiar."
         },
         {
@@ -721,7 +726,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 50358,
+          "bytes": 50354,
           "alt": "Página 11. Figura 1.2. A página de 210 × 280 mm deste livro, duas vezes. À esquerda, dividida em nonos pelo cânone, com uma mancha de 140 × 187 mm. À direita, como o livro a compõe: margens de 16, 24, 32 e 48 mm e duas colunas de 44 linhas."
         }
       ],
@@ -749,7 +754,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 65195,
+        "bytes": 65204,
         "folio": "e8c31713",
         "chapters": [
           {
@@ -960,7 +965,7 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",
@@ -971,18 +976,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: pt, en, es, fr, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, fr, de, it"
           }
         ]
       }
     },
     "fr": {
-      "hash8": "6e42f75e",
-      "vdtHash": "b24b689c34e1d1c30909531fb94be60796f23188",
+      "hash8": "838cc19c",
+      "vdtHash": "f93821b14209fa93ec8c4d0f87ba1186b19c9014",
       "timings": {
-        "importMs": 446,
+        "importMs": 465,
         "fontsMs": 4,
-        "buildMs": 80,
-        "totalMs": 1350,
+        "buildMs": 82,
+        "totalMs": 1382,
         "builds": 1
       },
       "specimen": {
@@ -1016,7 +1026,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 149464,
+          "bytes": 149442,
           "alt": "Page d’ouverture 9 : Le canon secret. Figure 1.1. Le canon sur une double page ouverte de pages 2:3. Les diagonales fixent les angles des deux blocs de texte ; le cercle, aussi large que la page, est exactement aussi haut que son bloc."
         },
         {
@@ -1027,7 +1037,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 190924,
+          "bytes": 190758,
           "alt": "Page 10 : Des lignes où se poser."
         },
         {
@@ -1038,7 +1048,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 72534,
+          "bytes": 72576,
           "alt": "Page 11. Figure 1.2. La page de 210 × 280 mm de ce livre, deux fois. À gauche, divisée en neuvièmes par le canon, avec un bloc de texte de 140 × 187 mm. À droite, telle que le livre la compose : marges de 16, 24, 32 et 48 mm et deux colonnes de 44 lignes."
         }
       ],
@@ -1066,13 +1076,13 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 64877,
+        "bytes": 64900,
         "folio": "e8c31713",
         "chapters": [
           {
             "pages": 3,
-            "hash": "bf27cad226e33898",
-            "lines": "4f2191c466fb1e48"
+            "hash": "980cd1053ad9c5f5",
+            "lines": "4e12598061d54ba8"
           }
         ]
       },
@@ -1287,7 +1297,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",
@@ -1298,18 +1313,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: fr, en, es, pt, de, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, pt, de, it"
           }
         ]
       }
     },
     "de": {
-      "hash8": "eee2c072",
+      "hash8": "3d542e9e",
       "vdtHash": "49cb48b979a884c8b97affd133e774a9ead74d64",
       "timings": {
-        "importMs": 451,
-        "fontsMs": 3,
-        "buildMs": 88,
-        "totalMs": 1303,
+        "importMs": 219,
+        "fontsMs": 4,
+        "buildMs": 90,
+        "totalMs": 1137,
         "builds": 1
       },
       "specimen": {
@@ -1343,7 +1363,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 154554,
+          "bytes": 154642,
           "alt": "Kapitelauftakt, Seite 9: Geheimer Kanon. Abbildung 1.1. Der Kanon auf einer aufgeschlagenen Doppelseite aus Seiten im Verhältnis 2:3. Die Diagonalen legen die Ecken beider Satzspiegel fest; der Kreis, so breit wie die Seite, ist genau so hoch wie ihr Satzspiegel."
         },
         {
@@ -1354,7 +1374,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 185378,
+          "bytes": 185510,
           "alt": "Seite 10: Linien für die Schrift."
         },
         {
@@ -1393,7 +1413,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 65421,
+        "bytes": 65432,
         "folio": "e8c31713",
         "chapters": [
           {
@@ -1614,7 +1634,7 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",
@@ -1625,18 +1645,23 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: de, en, es, pt, fr, it"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, pt, fr, it"
           }
         ]
       }
     },
     "it": {
-      "hash8": "b4041242",
+      "hash8": "ca4646cf",
       "vdtHash": "cc050837b4128f5b234c89b533b97ae4c550b877",
       "timings": {
-        "importMs": 460,
+        "importMs": 404,
         "fontsMs": 4,
-        "buildMs": 90,
-        "totalMs": 1302,
+        "buildMs": 93,
+        "totalMs": 1207,
         "builds": 1
       },
       "specimen": {
@@ -1670,7 +1695,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 150612,
+          "bytes": 150662,
           "alt": "Pagina d’apertura 9: Il canone segreto. Figura 1.1. Il canone su una doppia pagina aperta di pagine 2:3. Le diagonali fissano gli angoli delle due gabbie; il cerchio, largo quanto la pagina, è alto esattamente quanto la sua gabbia."
         },
         {
@@ -1681,7 +1706,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 181102,
+          "bytes": 181194,
           "alt": "Pagina 10: Righe su cui posarsi."
         },
         {
@@ -1692,7 +1717,7 @@
           "h": 1333,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 59184,
+          "bytes": 59182,
           "alt": "Pagina 11. Figura 1.2. La pagina di 210 × 280 mm di questo libro, due volte. A sinistra, divisa in noni dal canone, con una gabbia di 140 × 187 mm. A destra, come la compone il libro: margini di 16, 24, 32 e 48 mm e due colonne di 44 righe."
         }
       ],
@@ -1720,7 +1745,7 @@
       },
       "sandbox": {
         "file": "baseline-grid-book-page.postext",
-        "bytes": 65770,
+        "bytes": 65771,
         "folio": "e8c31713",
         "chapters": [
           {
@@ -1931,12 +1956,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
           },
           {
             "check": "sandbox",
             "severity": "info",
             "detail": "continuation carried as the bundle's start: pageIndexOffset, pageNumbering"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, pt, fr, de"
           },
           {
             "check": "sandbox",

@@ -5,7 +5,7 @@ plain: "Un llibre de butxaca amb dues llegendes de Bécquer i el plec de la seva
 description: "Una rústica amb solapes a Postext: perfil d'enquadernació, codi de barres ISBN i llom calculat amb les pàgines i el paper; la coberta, en Markdown."
 question: "Com faig el plec de coberta d'una rústica amb solapes, amb el llom calculat a partir de les pàgines?"
 aliases: ["plec de coberta", "solapes", "amplada del llom", "codi de barres ISBN", "contracoberta", "enquadernació fresada", "cover sheet", "flaps", "spine width"]
-pageNotes: { "38": "El plec de coberta estès: a l'esquerra la solapa del darrere sobre les traductores, després la contracoberta amb el text i un codi de barres ISBN sobre fons blanc, el llom retolat de baix a dalt, la coberta amb una capella en ruïnes pintada en un turó sota una serra nevada i el títol al damunt, i a la dreta la solapa del davant amb una nota sobre l'autor. Al voltant, les marques de tall i de plegat." }
+pageNotes: { "38": "El plec de coberta estès: a l'esquerra la solapa del darrere sobre les traductores, després la contracoberta amb el text i un codi de barres ISBN sobre fons blanc, el llom retolat de dalt a baix, la coberta amb una capella en ruïnes pintada en un turó sota una serra nevada i el títol al damunt, i a la dreta la solapa del davant amb una nota sobre l'autor. Al voltant, les marques de tall i de plegat." }
 ---
 
 ## Què compondràs
@@ -38,15 +38,15 @@ El plec es compon amb la configuració del llibre, de manera que els seus estils
 
 ## Variants
 
-### Retola el llom de dalt a baix
+### Retola el llom de baix a dalt
 
-Els llibres anglesos i nord-americans llegeixen el llom de dalt a baix; l'opció per defecte, de baix a dalt, és el costum català i europeu.
+L'opció per defecte llegeix el llom de dalt a baix, com demana la norma ISO 6357 i fan els llibres anglesos, al dret quan el llibre és de cara amunt. El costum català i europeu més antic el llegeix de baix a dalt.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Imprimeix en un paper més prim

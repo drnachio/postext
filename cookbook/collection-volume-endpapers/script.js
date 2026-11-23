@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 198 · A volume of a collection, its endpapers the series ═══
 // https://postext.dev/en/cookbook/collection-volume-endpapers
 // Code: MIT · Text: Cervantes, tr. W. K. Kelly (public domain) · Art: diffusion models
-// Fonts: Crimson Pro, Cormorant Garamond, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.92.0
+// Fonts: Crimson Pro, Cormorant Garamond, Josefin Sans (SIL OFL 1.1) · Needs postext ≥ 1.93.0
 //
 // Volume XI of the twelve Exemplary Novels, one novella per hardcover: the series livery on
 // the case, two ISBNs by the barcode, the twelve titles of the collection on the endpapers.

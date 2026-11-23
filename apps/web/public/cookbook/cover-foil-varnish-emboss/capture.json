@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
   "slug": "cover-foil-varnish-emboss",
-  "sourceHash": "3710df550a9f60c8cb74ad289b685111bfdca4c6c43e9b58474439af4195b4ec",
+  "sourceHash": "a0d090656207d59dcc67f0775eade60e221ac84a0c3acc940acce8ae75c11660",
   "engine": {
-    "postext": "1.92.0",
-    "postextPdf": "1.92.0",
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0",
     "source": "npm"
   },
   "chrome": "157.0.8103.79",
-  "capturedAt": "2026-11-23T12:57:00.322Z",
+  "capturedAt": "2026-11-23T17:04:22.550Z",
   "variants": {
     "en": {
-      "hash8": "1cd99fc6",
+      "hash8": "e7e2d550",
       "vdtHash": "b3dafdbb3bd4b577f257e5be1e1d6969c52cce1b",
       "timings": {
-        "importMs": 688,
-        "fontsMs": 53,
-        "buildMs": 163,
-        "totalMs": 1673,
+        "importMs": 396,
+        "fontsMs": 130,
+        "buildMs": 156,
+        "totalMs": 1521,
         "builds": 2
       },
       "specimen": {
@@ -116,7 +116,7 @@
           "h": 802,
           "file": "p28.webp",
           "strip": "p28.s.webp",
-          "bytes": 90756,
+          "bytes": 90730,
           "alt": "Page 1."
         }
       ],
@@ -165,7 +165,7 @@
       },
       "sandbox": {
         "file": "cover-foil-varnish-emboss.postext",
-        "bytes": 405443,
+        "bytes": 405449,
         "folio": "0147102c",
         "keep": "first",
         "pages": 27,
@@ -446,13 +446,13 @@
       }
     },
     "es": {
-      "hash8": "159f50c8",
+      "hash8": "cb1af752",
       "vdtHash": "4eba91e56920ad5f2fd41bb327870e8c657820f7",
       "timings": {
-        "importMs": 691,
-        "fontsMs": 64,
-        "buildMs": 99,
-        "totalMs": 1592,
+        "importMs": 498,
+        "fontsMs": 48,
+        "buildMs": 94,
+        "totalMs": 1420,
         "builds": 2
       },
       "specimen": {
@@ -551,7 +551,7 @@
           "h": 802,
           "file": "p28.webp",
           "strip": "p28.s.webp",
-          "bytes": 87708,
+          "bytes": 87666,
           "alt": "Página 1."
         }
       ],
@@ -600,7 +600,7 @@
       },
       "sandbox": {
         "file": "cover-foil-varnish-emboss.postext",
-        "bytes": 405265,
+        "bytes": 405269,
         "folio": "0147102c",
         "keep": "first",
         "pages": 27,

@@ -5,7 +5,7 @@ plain: "A small paperback of two Spanish legends, and the printer's sheet for it
 description: "A paperback with flaps in Postext: a binding profile, an ISBN barcode and a spine worked out from the page count and the paper, with the cover text in Markdown."
 question: "How do I make the cover sheet of a paperback with flaps, with its spine worked out from the page count?"
 aliases: ["cover spread", "flaps", "spine width", "ISBN barcode", "back cover blurb", "perfect binding", "solapas", "lomo", "contracubierta", "cover sheet"]
-pageNotes: { "38": "The cover sheet laid flat: on the left the back flap about the translators, then the back cover with the blurb and an ISBN barcode on a white plate, the spine lettered from bottom to top, the front cover with a painted ruined chapel on a hill under a snowy ridge and the title above it, and on the right the front flap with a note on the author. Crop and fold marks run round it." }
+pageNotes: { "38": "The cover sheet laid flat: on the left the back flap about the translators, then the back cover with the blurb and an ISBN barcode on a white plate, the spine lettered from top to bottom, the front cover with a painted ruined chapel on a hill under a snowy ridge and the title above it, and on the right the front flap with a note on the author. Crop and fold marks run round it." }
 ---
 
 ## What you'll build
@@ -38,15 +38,15 @@ The sheet is laid out with the book's configuration, so its paragraph styles sit
 
 ## Variations
 
-### Letter the spine from top to bottom
+### Letter the spine from bottom to top
 
-English and American books read their spines from the top down; the default, bottom to top, is the Spanish and continental custom.
+The default reads the spine from the top down, as ISO 6357 has it and English books do, the right way up when the book lies face up. Older Spanish and continental books read it from the bottom up.
 
 ```diff
    versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
 -    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
 +    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
-+    spineText: { direction: 'topToBottom' } }],
++    spineText: { direction: 'bottomToTop' } }],
 ```
 
 ### Print on thinner paper

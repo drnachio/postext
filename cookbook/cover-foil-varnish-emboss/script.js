@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 199 · A cover in foil, spot varnish and emboss ═══════════════
 // https://postext.dev/en/cookbook/cover-foil-varnish-emboss
 // Code: MIT · Text: Manrique, tr. H. W. Longfellow (public domain) · Art: diffusion models
-// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.92.0
+// Fonts: Alegreya, Alegreya SC, Alegreya Sans SC (SIL OFL 1.1) · Needs postext ≥ 1.93.0
 //
 // Manrique's Coplas as a slim paperback whose cover goes to the finisher after the press: a
 // spot gloss over the painting, a gold-foil cartouche stamped over an emboss of the same
