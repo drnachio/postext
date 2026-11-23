@@ -155,6 +155,8 @@ const recipes = getAllRecipes();
 const INKS_AND_DIES = [
   "gold-foil-poetry-cover", "corporate-fifth-ink-report", "fluorescent-pink-zine", "white-ink-kraft-menu",
   "spot-uv-photo-magazine", "peek-a-boo-board-book", "die-cut-window-cover", "forest-tunnel-book",
+  // A cover's foil, varnish and emboss (Nº 199) uses the same finishes.
+  "cover-foil-varnish-emboss",
 ];
 
 describe.skipIf(recipes.length === 0)("buildDocExamples", () => {
@@ -182,7 +184,7 @@ describe.skipIf(recipes.length === 0)("buildDocExamples", () => {
     }
   });
 
-  it.each(LOCALES)("links the eight special inks and die-cuts recipes on that page in %s", (locale: Locale) => {
+  it.each(LOCALES)("links the special inks and die-cuts recipes on that page in %s", (locale: Locale) => {
     const page = buildDocExamples(locale).pages["special-inks-die-cuts"]!;
     expect(new Set(page.groups.flatMap((g) => g.recipes))).toEqual(new Set(INKS_AND_DIES));
     const at = (english: string) => {

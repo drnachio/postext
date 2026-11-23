@@ -1,0 +1,148 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 200,
+  "status": "draft",
+  "chapter": "output",
+  "order": 270,
+  "level": 3,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "cover-text-boxes",
+      "cover-sheet"
+    ],
+    "also": [
+      "threaded-frames",
+      "print-versions",
+      "covers",
+      "heading-styles",
+      "opener-design",
+      "design-elements",
+      "frontmatter",
+      "paragraph-styles",
+      "running-heads",
+      "resources",
+      "color-palette",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q238"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.93.0",
+    "postextPdf": "1.93.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 22,
+    "card": "screenshot",
+    "selector": "#box-views figure:last-of-type",
+    "viewport": {
+      "width": 1280,
+      "height": 1000
+    },
+    "doc": [
+      "first",
+      "last"
+    ],
+    "sandbox": "first",
+    "pages": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      15,
+      21,
+      22
+    ]
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 120,
+      "bulk": 2.2,
+      "shade": "#f8f3e8"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Masque of the Red Death and The Oval Portrait, from The Works of Edgar Allan Poe (Raven Edition, 1903), Project Gutenberg eBooks #2148 and #2147",
+          "es": "The Masque of the Red Death y The Oval Portrait, de The Works of Edgar Allan Poe (Raven Edition, 1903), libros electrónicos n.º 2148 y n.º 2147 del Proyecto Gutenberg"
+        },
+        "who": "Edgar Allan Poe",
+        "source": "https://www.gutenberg.org/ebooks/2148",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "La máscara de la muerte and El retrato oval, translated by Carlos Olivera, from Novelas y cuentos (Garnier Hermanos, Paris, 1884), as transcribed on Wikisource, spelling and punctuation modernised",
+          "es": "La máscara de la muerte y El retrato oval, en la traducción de Carlos Olivera, de Novelas y cuentos (Garnier Hermanos, París, 1884), según la transcripción de Wikisource, con la ortografía y la puntuación modernizadas"
+        },
+        "who": "Carlos Olivera",
+        "source": "https://es.wikisource.org/wiki/Novelas_y_cuentos_(Poe)",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The cover painting: a masked ball in a file of coloured rooms under a Gothic vault, with an ebony clock and a figure in a grave-shroud, in oils",
+          "es": "La pintura de cubierta: un baile de máscaras en una hilera de salas de colores bajo una bóveda gótica, con un reloj de ébano y una figura amortajada, al óleo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "masque-1024.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "EB Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cinzel",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-23",
+  "updated": "2026-11-23"
+}

@@ -1,7 +1,7 @@
 {
  "$comment": "Files and directories still over the limits of scripts/source-size.mjs (#1276), with their size. CI fails when one grows or a new one appears; shrink this list, never grow it.",
  "files": {
-  "packages/postext-folio/src/pageFlip.ts": 2134,
+  "packages/postext-folio/src/pageFlip.ts": 2120,
   "packages/postext/src/exercises/runtime.ts": 1657,
   "packages/postext-epub/src/reflowable/walk.ts": 1603,
   "packages/postext/src/exercises/expand.ts": 1210,

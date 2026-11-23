@@ -1,7 +1,7 @@
 // The book's ambient occlusion from its height map, the key light's soft
 // shadow with a receiver-plane bias, and the caster copies of the meshes
 // drawn into the map (#1276: split out of pageFlip.ts).
-import { Texture, Vector4, ShaderChunk, BufferGeometry, Mesh, BufferAttribute, ShaderMaterial, DoubleSide, CustomBlending, MaxEquation, OneFactor, MeshStandardMaterial } from 'three';
+import { Texture, Vector2, Vector4, ShaderChunk, BufferGeometry, Mesh, BufferAttribute, ShaderMaterial, DoubleSide, CustomBlending, MaxEquation, OneFactor, MeshStandardMaterial } from 'three';
 
 // Ambient occlusion from the book's own shape: each frame the book is
 // drawn, seen from straight above, into a height map: channel r the
@@ -16,6 +16,10 @@ export const OCCLUSION = /* glsl */ `
   uniform float uShadowOn;
   uniform float uOccRadius;
   uniform float uOccBias;
+  // The grain of the samples below, pinned to the screen's pixels: still
+  // while the book moves, shifted from one picture to the next of those
+  // averaged once it lies at rest (#1676), where it evens out.
+  uniform vec2 uGrain;
   float casterAt(vec2 s, float channel) {
     vec2 uv = (s - uShadowBox.xy) / uShadowBox.zw;
     if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) return -1e4;
@@ -27,7 +31,7 @@ export const OCCLUSION = /* glsl */ `
   // cosine-weighted slice.
   float bookOcclusion(vec3 p, float channel) {
     if (uShadowOn < 0.5) return 0.0;
-    float spin = fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453);
+    float spin = fract(sin(dot(gl_FragCoord.xy + uGrain, vec2(12.9898, 78.233))) * 43758.5453);
     float occ = 0.0;
     for (int d = 0; d < 8; d++) {
       float a = (float(d) + spin) * 0.785398;
@@ -52,7 +56,7 @@ export const OCCLUSION = /* glsl */ `
   float reflectionOcclusion(vec3 p, vec3 r, float channel) {
     if (uShadowOn < 0.5) return 0.0;
     // Interleaved gradient noise: neighbours take evenly spread shifts.
-    float spin = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+    float spin = fract(52.9829189 * fract(dot(gl_FragCoord.xy + uGrain, vec2(0.06711056, 0.00583715))));
     float hidden = 0.0;
     for (int i = 0; i < 8; i++) {
       float s = (float(i) + spin) / 8.0;
@@ -94,6 +98,7 @@ export const occlusionUniforms = {
   uShadowOn: { value: 0 },
   uOccRadius: { value: 60 },
   uOccBias: { value: 1 },
+  uGrain: { value: new Vector2() },
 };
 
 // The key light's soft shadow, each of its samples compared against the
@@ -115,7 +120,7 @@ const SHADOW_PCF = /* glsl */ `
     float shadow = 1.0;
     if (shadowCoord.x >= 0.0 && shadowCoord.x <= 1.0 && shadowCoord.y >= 0.0 && shadowCoord.y <= 1.0 && shadowCoord.z <= 1.0) {
       float radius = shadowRadius / shadowMapSize.x;
-      float phi = interleavedGradientNoise(gl_FragCoord.xy) * PI2;
+      float phi = interleavedGradientNoise(gl_FragCoord.xy + uGrain) * PI2;
       shadow = 0.0;
       for (int i = 0; i < 5; i++) {
         vec2 o = vogelDiskSample(i, 5, phi) * radius;

@@ -1135,7 +1135,7 @@ La **lupa** se sosté damunt del llibre allà on és el punter, o just per sobre
 Els vídeos es reprodueixen a la pàgina. En el mode de passar pàgines, un clic a la portada d'un vídeo el posa en marxa allà mateix, i continua mentre el full gira. Un altre clic el posa en pausa, començar-ne un altre atura l'anterior, i el vídeo s'atura quan el llibre queda obert per un plec que ja no el mostra. Un vídeo configurat per reproduir-se sol comença la primera vegada que es mostra el seu plec. Els de YouTube i Vimeo no es poden dibuixar dins de la pàgina: un clic sobre ells passa el full.
 
 :::callout{type="try"}
-Obre la pestanya Folio amb aquesta guia, passa unes quantes pàgines arrossegant-ne les cantonades i després gira el llibre arrossegant amb el botó dret per veure'n el plec grapat. Restablir la vista el torna al seu lloc.
+Obre la pestanya Folio amb aquesta guia, passa unes quantes pàgines arrossegant-ne les cantonades i després gira el llibre arrossegant amb el botó dret per veure'n el títol al llom. Restablir la vista el torna al seu lloc.
 :::
 
 ## El paper
@@ -1168,7 +1168,7 @@ Un paper ocupa plecs sencers, així que el contingut del tram comença en una p�
 
 El llibre reposa sobre una **superfície**: roure, noguera, lli, feltre, pell, marbre, un color llis o res, que deixa veure el fons de la pàgina. Cada superfície és una textura fotografiada, i un tint canvia el color de qualsevol d'elles. Cinc **llums** creen l'escena: estudi, llum de dia, làmpada de lectura, cel cobert i nit. Cadascuna és un parell: l'entorn que reflecteixen els papers estucats i brillants quan gira un full, i una llum principal que projecta les ombres del bloc i d'una pàgina aixecada sobre les pàgines de sota. L'**exposició** aclareix o enfosqueix l'escena, i les ombres es poden desactivar en un equip lent. La **inclinació** fixa quant s'aparta la vista de la vertical, fins a setanta graus, i el **gir** quant envolta el llibre; Desar com a vista per defecte desa tots dos tal com els veus.
 
-Aquesta guia està muntada com un fullet grapat a cavall, en paper estucat brillant de 170 grams, sobre un tapet de feltre blau i amb llum d'estudi. Les seves cobertes són la seva pròpia primera i última pàgina, així que s'obre per la coberta i es tanca en passar l'últim full. Tot això és al grup **Folio** del tauler **Disseny**, i res d'aquest grup no canvia ni una sola línia de les pàgines.
+Aquesta guia està enquadernada en rústica fresada, amb el títol al llom, en paper estucat brillant de 170 grams, sobre un tapet de feltre blau i amb llum d'estudi. Les seves cobertes són la seva pròpia primera i última pàgina, així que s'obre per la coberta i es tanca en passar l'últim full. Tot això és al grup **Folio** del tauler **Disseny**, i res d'aquest grup no canvia ni una sola línia de les pàgines.
 
 ## Tintes i forats a la mà
 

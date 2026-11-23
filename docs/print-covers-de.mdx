@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Hardcover', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // bei einer Buchdecke: ein Schutzumschlag
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Jede Ausgabe nennt ihre Bindung über die ID eines Profils oder bringt das Profi
 - `caseMaterial`: bei einer Buchdecke `printed` (der Umschlag bedruckt und kaschiert über den Pappen, der Standard) oder `cloth` (geprägt, meist unter einem Schutzumschlag).
 - `overrides`: Maße in mm, die diese Ausgabe über die ihres Profils setzt, wenn die Druckerei für dieses eine Buch einen anderen Falz verlangt.
 - `spineOverride`: der Buchrücken in mm, wie die Druckerei ihn angibt, anstelle des berechneten.
-- `spineText`: wie der Rücken beschriftet wird: `direction` aufsteigend (`bottomToTop`, in Spanien üblich und der Standard) oder absteigend (`topToBottom`, wie ISO 6357 es bevorzugt), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
+- `spineText`: wie der Rücken beschriftet wird: `direction` absteigend (`topToBottom`, wie ISO 6357 es festlegt, und der Standard, richtig herum lesbar, wenn das Buch mit dem Deckel nach oben liegt) oder aufsteigend (`bottomToTop`, der ältere spanische Brauch), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
 
 `production.collection` nennt die Reihe oder das mehrbändige Werk, zu dem das Buch gehört:
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` dreht den Text um eine Vierteldrehung, sodass er den Rücken hinauf läuft, `90` den Rücken hinunter.
 - `verticalAlign`: `top`, `middle` oder `bottom`.
 
+Ein Textfeld ist ein Rahmen der Umschlagseite und kann, was die [Rahmen einer zusammengesetzten Seite](/de/docs/composed-pages) können (seit postext 1.93): mehrere Texte auf einer Fläche, jeder an einer Zone oder einem anderen Feld ausgerichtet, Text, der von einem Feld ins nächste läuft, Felder, die mit ihrem Text wachsen, und Text, der kleiner wird, bis er passt.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: setzt das Feld an eine Zone (ihren Sicherheitsbereich) oder ein anderes Textfeld, wie [einen an einem anderen verankerten Rahmen](/de/docs/composed-pages#rahmen-platzieren). `to` nennt sie, `edge` den Punkt: an einer Zone einer von `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, der denselben Punkt des Felds dort festhält; an einem Feld auch `below`, `above`, `right-of`, `left-of`. `x` und `y` verschieben es, in mm. Aus `rect` wird dann nur die Größe gelesen. Ein Feld unter einem wachsenden Feld rückt mit nach unten, und ein an seinem Fuß verankertes Feld wächst nach oben.
+- `next`: das Textfeld, in dem der Text weiterläuft, wenn dieses voll ist, zwischen zwei Zeilen getrennt, wie bei [verketteten Rahmen](/de/docs/composed-pages#rahmen-verketten). Jenes Feld bekommt keinen eigenen Text aus dem Markdown.
+- `maxHeight`: das Feld wächst mit seinem Text bis zu dieser Höhe in mm, bevor der Text kleiner wird. Nicht bei einem gedrehten Feld. Ein Feld mit `next` wächst nicht, es gibt den Rest seines Textes weiter.
+- `fit`: `shrinkText: false` lässt den Text in seiner Größe; `minScale` (Standard `0.9`) sagt, wie klein er werden darf, wenn er immer noch nicht passt, die letzte Stufe der [Anpassungsleiter](/de/docs/composed-pages#wenn-der-inhalt-immer-noch-nicht-passt).
+
+Ein gedrehtes Feld und ein Feld, das an einem gedrehten verankert ist, steht, wo sein Anker es hinsetzt, in seiner eigenen Größe.
+
 ### Veredelungen und technische Platten
 
 `finishes` sind, was die Druckerei nach den Druckfarben hinzufügt, jeweils über einer Form der Gestaltung:
@@ -405,6 +422,7 @@ Beim Aufbau eines Umschlags wird gemeldet, was sich nicht wie verlangt umsetzen 
     <tr><td><code>signatureBlanks</code></td><td>Das Aufrunden auf ganze Lagen fügt leere Seiten hinzu.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>Der Rücken ist schmaler als <code>minSpine</code> und trägt keinen Text. Bei einer Buchdecke zählt der Rücken des Bezugs, der um zwei Pappen breiter ist als die Seiten.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Ein Textfeld hat einen Namen, den der Umschlag nicht zulässt.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Ein Textfeld ist an etwas verankert, das der Bogen nicht hat, an sich selbst, in einer Schleife oder an einem Punkt, den eine Zone nicht hat, und bleibt auf seinem <code>rect</code>; oder sein Text läuft in kein anderes Feld weiter oder zurück in seine eigene Kette und endet dort.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Der Text des Umschlags füllt einen Platz, den der Bogen nicht hat, oder einen Platz zweimal.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Ein Rahmen im Text des Umschlags nennt einen Bogen, den es nicht gibt (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>Der gespiegelte Anschnitt hat Bilder ausgelassen, die er nicht lesen konnte, oder endet vor dem Rand des Bogens.</td></tr>
@@ -424,8 +442,8 @@ Das Bedienfeld **Umschlag** in der Seitenleiste enthält die Druckausgaben und i
 
 - **Ausgaben**: **Taschenbuch hinzufügen** oder **Hardcover hinzufügen**, dann für jede Ausgabe Name, Bindung, ISBN, Zusatzcode und Gesamt-ISBN, Klappen oder Schutzumschlag, der Bezug einer Buchdecke, der Rücken laut Druckerei, die Richtung des Rückentexts und der schmalste Rücken, der ihn trägt. **Maße dieser Version** setzt die Maße des Profils nur für diese Ausgabe außer Kraft.
 - **Bogen**: welcher Bogen gezeigt wird (Umschlag, Schutzumschlag, vorderes oder hinteres Vorsatz), mit seinen Seiten, seinem Rücken und seiner Größe.
-- **Gestaltung auf dem Bogen**: **Auf dem Bogen bearbeiten** macht den Bogen zum Gestaltungswerkzeug. Textfelder, Farbflächen, Schleier, Bilder, Logos und Veredelungen werden über seine Leiste hinzugefügt und auf dem Bogen verschoben und in der Größe geändert; sie rasten an Falzen, Sicherheitsbereichen und aneinander ein (Alt schaltet das Einrasten ab). Die Pfeiltasten verschieben das gewählte Element um 1 mm, mit Umschalt um 10 mm. **Ebenen** listet die Elemente unter dem Text, die Textfelder, die Elemente über dem Text, die Logos und die Veredelungen auf und ordnet sie. Die Felder des gewählten Elements legen fest: Stelle, Farbe, Deckkraft, wie ein Bild seinen Rahmen füllt, Eckenradius, Rand, Verlauf und Schatten, was es jenseits eines gespiegelten Anschnitts tut, ob es mit seiner Fläche skaliert, und seinen Pfad, seine Kontur oder seinen Zuschnitt. Wird ein Textfeld umbenannt, wandert sein Text im Markdown des Umschlags mit.
-- **Texte**: ein Markdown-Editor je Zone und Textfeld. Vorderseite und Rücken zeigen, was sie aus den Metadaten übernehmen, bis sie einen **eigenen Text** erhalten.
+- **Gestaltung auf dem Bogen**: **Auf dem Bogen bearbeiten** macht den Bogen zum Gestaltungswerkzeug. Textfelder, Farbflächen, Schleier, Bilder, Logos und Veredelungen werden über seine Leiste hinzugefügt und auf dem Bogen verschoben und in der Größe geändert; sie rasten an Falzen, Sicherheitsbereichen und aneinander ein (Alt schaltet das Einrasten ab). Die Pfeiltasten verschieben das gewählte Element um 1 mm, mit Umschalt um 10 mm. **Ebenen** listet die Elemente unter dem Text, die Textfelder, die Elemente über dem Text, die Logos und die Veredelungen auf und ordnet sie. Die Felder des gewählten Elements legen fest: Stelle, Farbe, Deckkraft, wie ein Bild seinen Rahmen füllt, Eckenradius, Rand, Verlauf und Schatten, was es jenseits eines gespiegelten Anschnitts tut, ob es mit seiner Fläche skaliert, und seinen Pfad, seine Kontur oder seinen Zuschnitt. Wird ein Textfeld umbenannt, wandert sein Text im Markdown des Umschlags mit. Ein ausgewähltes Textfeld lässt sich an einer Zone oder einem anderen Feld verankern (**Verankert an**, der Punkt und der Versatz), seinen Text in einem anderen Feld fortsetzen (**Text läuft weiter in**), mit seinem Text bis zu einer Höhe wachsen und seinen Text bis zu einer kleinsten Größe verkleinern.
+- **Texte**: ein Markdown-Editor je Zone und Textfeld. Vorderseite und Rücken zeigen, was sie aus den Metadaten übernehmen, bis sie einen **eigenen Text** erhalten. Ein Feld, das den Rest des Textes eines anderen aufnimmt, zeigt das statt eines Editors.
 - **Reihe**: Name und ISBN der Reihe.
 - **Dateien für die Druckerei**: **Bogen als PDF laden**, geschrieben mit den PDF-Einstellungen des Buchs (Farbraum, Ausgabeprofil, PDF/X), und **Vorderseite laden** als Bild.
 - **Prüfungen**: die Prüfungen oben.

@@ -14,13 +14,14 @@ import type { DesignElement, DesignImageElement } from '../types/designElements.
 import type { Dimension, PageConfig } from '../types/page.js';
 import type { Resource } from '../types/resources/resources.js';
 import type { ProductionVersion } from '../types/output/production.js';
-import type { CoverConfig, CoverTextFrame } from '../types/output/cover.js';
+import type { CoverConfig } from '../types/output/cover.js';
+import { coverTextBoxFrame, keptCoverTextBoxes, mirrorFrame, resolveCoverTextBoxes, type CoverTextBoxIssue } from './coverTextBoxes.js';
 import { isbnBarcodeSvg } from './barcodeSvg.js';
 import type { CoverZoneName, ProductionSheet, SheetLine, SheetRect, SheetZone } from './geometry.js';
 import { mirrorBleedSvg } from './mirrorBleed.js';
 import { needsArt, shapeArt, shapeArtSvg } from './shapes.js';
 import { coverElementRect } from './coverDesign.js';
-import { finite, isSafeId } from './svgSafe.js';
+import { finite } from './svgSafe.js';
 import {
   COVER_ID_PREFIX,
   MIRROR_RESOURCE_ID,
@@ -87,6 +88,8 @@ export type CoverIssue =
   /** A text box whose name is not letters, digits, `-` and `_`, is a
    *  zone's, or is another box's: left out. */
   | { kind: 'coverTextBoxName'; name: string }
+  /** A text box's anchor or continuation the cover cannot follow (#1679). */
+  | CoverTextBoxIssue
   /** The mirror bleed needs pictures it was not given as PNG or JPEG data:
    *  the design runs to the sheet's edge as it is. */
   | { kind: 'coverMirrorSkipped'; resources: string[] }
@@ -156,32 +159,6 @@ function frameFor(
   };
 }
 
-function textBoxFrame(box: CoverTextFrame, sheet: ProductionSheet): FrameConfig {
-  const r = { x: finite(box.rect?.x), y: finite(box.rect?.y), width: Math.max(0, finite(box.rect?.width)), height: Math.max(0, finite(box.rect?.height)) };
-  const rotate = box.rotate === 90 || box.rotate === -90 ? box.rotate : undefined;
-  // A turned box is laid out with its sides swapped, then turned about
-  // its centre into the rectangle it was given.
-  const w = rotate ? r.height : r.width;
-  const h = rotate ? r.width : r.height;
-  return {
-    name: box.name,
-    width: mm(w),
-    height: mm(h),
-    ...(rotate ? { rotate } : {}),
-    ...(box.verticalAlign === 'middle' || box.verticalAlign === 'bottom' ? { verticalAlign: box.verticalAlign } : {}),
-    placement: { anchor: { to: 'container', edge: 'top-left' }, offset: { x: mm(r.x + r.width / 2 - w / 2 - sheet.trim.x), y: mm(r.y + r.height / 2 - h / 2 - sheet.trim.y) } },
-    optional: true,
-  };
-}
-
-/** A frame placed across the trim's middle: on a right-to-left page, whose
- *  flow is painted mirrored, where it lands on its own zone. */
-function mirrorFrame(frame: FrameConfig, sheet: ProductionSheet): FrameConfig {
-  const at = frame.placement as { anchor: unknown; offset: { x: { value: number }; y: unknown } };
-  const width = (frame.width as { value: number }).value;
-  return { ...frame, placement: { ...at, offset: { ...at.offset, x: mm(sheet.trim.width - at.offset.x.value - width) } } } as FrameConfig;
-}
-
 /** A resource of a picture the cover makes of itself: an SVG of `w` × `h`
  *  mm, decorative. */
 function svgResource(id: string, w: number, h: number, extra: Partial<Resource> = {}): Resource {
@@ -205,15 +182,12 @@ export function coverPage(sheet: ProductionSheet, options: CoverPageOptions = {}
     const frame = frameFor(zone, sheet, spineText, cover?.verticalAlign?.[zone.name], options.vertical);
     if (frame) frames.push(frame);
   }
-  const names = new Set<string>(COVER_SLOT_ZONES);
-  for (const box of cover?.textBoxes ?? []) {
-    if (!isSafeId(box?.name) || names.has(box.name)) {
-      issues.push({ kind: 'coverTextBoxName', name: String(box?.name ?? '') });
-      continue;
-    }
-    names.add(box.name);
-    frames.push(textBoxFrame(box, sheet));
-  }
+  const { boxes, dropped } = keptCoverTextBoxes(cover?.textBoxes, COVER_SLOT_ZONES);
+  for (const name of dropped) issues.push({ kind: 'coverTextBoxName', name });
+  const resolved = resolveCoverTextBoxes(sheet, boxes);
+  issues.push(...resolved.issues);
+  const byName = new Map(boxes.map((b) => [b.name, b]));
+  for (const box of boxes) frames.push(coverTextBoxFrame(box, sheet, resolved, byName));
   // Fold marks inside the trim only: a case's turn-in folds are its trim.
   const folds = sheet.lines
     .map((l) => l.x - sheet.trim.x)
@@ -229,7 +203,7 @@ export function coverPage(sheet: ProductionSheet, options: CoverPageOptions = {}
       ? { enabled: false }
       : { enabled: true, bleed: mm(sheet.bleed), ...(folds.length ? { foldMarks: folds } : {}) },
   };
-  const template: PageTemplate = { id: COVER_TEMPLATE_ID, area: 'trim', frames: options.mirrored ? frames.map((f) => mirrorFrame(f, sheet)) : frames, header: false, footer: false };
+  const template: PageTemplate = { id: COVER_TEMPLATE_ID, area: 'trim', frames: options.mirrored ? frames.map(mirrorFrame) : frames, header: false, footer: false };
   const resources: Resource[] = [];
   const files: Record<string, Uint8Array> = {};
   const addSvg = (resource: Resource, svg: string) => {

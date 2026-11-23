@@ -1,0 +1,97 @@
+---
+title: "Cajas de texto de cubierta ancladas y encadenadas"
+summary: "Dos cuentos de Poe en rústica, con la cubierta en seis cajas de texto colgadas unas de otras, un título que crece y una sinopsis que sigue en otra caja."
+plain: "Un librito con dos cuentos de Edgar Allan Poe y el pliego de su cubierta. Cada texto de la cubierta va debajo, encima o al lado de otro, así que un título más largo baja lo demás y el texto de la contracubierta continúa debajo de una cita."
+description: "Cajas de texto de cubierta en Postext: ancladas a una zona o a otra caja, que crecen con su texto y se encadenan para que la sinopsis siga en otra caja."
+question: "¿Cómo coloco los textos de una cubierta unos respecto de otros, para que un título largo empuje lo demás?"
+aliases: ["caja de texto de cubierta", "cajas de texto ancladas", "cajas enlazadas", "texto de contracubierta", "sinopsis de contracubierta", "título que crece", "cover text box", "linked text boxes"]
+pageNotes: { "22": "El pliego de cubierta extendido. A la izquierda la contracubierta, casi negra, con una sinopsis en letra crema que se corta tras ocho líneas, una cita del cuento en cursiva dorada y el resto de la sinopsis debajo, que termina en una línea de versalitas doradas; el código de barras ISBN en la esquina junto al lomo. Un lomo estrecho rotulado en versalitas. A la derecha la cubierta, una pintura de un baile de máscaras en una hilera de salas de colores bajo una bóveda gótica en sombra, con un reloj de ébano a la izquierda y una figura amortajada a la derecha; el título La máscara de la muerte en dos líneas de mayúsculas crema arriba, el subtítulo en cursiva dorada debajo y el nombre del autor en mayúsculas espaciadas al pie." }
+---
+
+## Lo que vas a componer
+
+Dos cuentos de Edgar Allan Poe, «La máscara de la muerte» y «El retrato oval», en la traducción de Carlos Olivera de 1884 (la edición inglesa lleva el original), en una rústica de 125 × 195 mm, y el pliego de su cubierta. Ningún texto de la cubierta lleva coordenadas: cada uno es una caja colgada de otra cosa. En la cubierta, el título cuelga de la parte alta de la zona, el subtítulo cuelga del título y el autor se apoya en el pie. El título ocupa dos líneas en las dos ediciones, así que su caja crece y el subtítulo baja con ella. En la contracubierta, la sinopsis llena una caja de 50 mm y las líneas que no caben siguen en otra caja, debajo de una cita del cuento. Encima de las páginas, la receta dibuja el pliego dos veces: como se imprime y con cada caja recuadrada y la cadena marcada.
+
+## Elaboración
+
+### 1 · Cada caja cuelga de una zona o de otra caja
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un `anchor` nombra una zona del pliego u otra caja de texto, y un punto. En una zona, el punto es uno de los nueve de su zona segura, y la caja pone ahí su propio punto equivalente: `edge: 'top'` centra el título en la cubierta y apoya su borde superior en el de la zona segura; `edge: 'bottom'` apoya el pie del autor en el pie de la zona. En una caja el punto puede ser además `below`, `above`, `right-of` o `left-of`. `x` e `y` desplazan la caja desde ese punto, en mm. Con un ancla, `rect` solo da el tamaño, de modo que las cajas no se mueven de su sitio cuando el lomo engorda o el libro cambia de formato.
+
+### 2 · El título crece y baja el subtítulo
+
+<Excerpt region="cover-type" />
+
+El título va en Cinzel de 30 pt con 33 de interlineado. Su caja mide 14 mm, una línea. «La máscara de la muerte» y «The Masque of the Red Death» necesitan dos, así que la caja crece con el texto hasta los 40 mm de `maxHeight`; solo pasado ese alto se reduciría la letra. El subtítulo está anclado `below` del título, 2 mm por debajo, y baja lo que mide la segunda línea. El autor está anclado al pie de la zona y no se mueve.
+
+### 3 · La sinopsis sigue en otra caja
+
+La caja de la sinopsis lleva `next: 'blurb-end'`. Lo que no cabe se corta entre líneas y continúa en esa caja, que no tiene marco propio en el Markdown de la cubierta. La cita cuelga de la sinopsis y `blurb-end` de la cita, de modo que las tres conservan la separación si la primera caja se hace más alta. Solo cuando tampoco basta la segunda caja se reduce el texto de la cadena, todo a la vez, hasta el 90 % por omisión (`fit.minScale`). La línea en versalitas doradas es el último párrafo del marco de la sinopsis, y por eso cierra el texto en la segunda caja:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+Mientras la peste vacía su país, el príncipe Próspero se encierra …
+:::
+
+:::paragraphs{style="cover-note"}
+Traducción de Carlos Olivera (1884)
+:::
+:::
+```
+
+El marco `front` vacío impide que `buildCover` ponga en la cubierta el título, el subtítulo y el autor de los metadatos del libro: aquí los ponen las cajas.
+
+### 4 · Una rústica con el lomo calculado a partir de las páginas
+
+<Excerpt region="binding" />
+
+Encuadernación fresada PUR en cuadernillos de 16 páginas, sobre papel ahuesado de 120 g/m² con 2,2 de mano. El libro tiene 21 páginas, 32 una vez encuadernado, y el lomo sale de unos 4,7 mm. Por omisión un lomo de menos de 6 mm no se rotula, así que la versión pone `spineText.minSpine` en 4,5 y el lomo lleva el título y el autor. El ISBN es un número de muestra que no corresponde a ningún libro.
+
+### 5 · El cuerpo del libro
+
+<Excerpt region="pages" />
+
+Anteportada, portada y página de créditos; después, cada cuento en página impar, con 50 mm de blanco, debajo de su título en Cinzel y un filete rojo corto. Las cabeceras llevan el autor en la página par y el título del cuento en la impar, y el colofón cierra el libro en la última impar.
+
+### 6 · El pliego se construye con las páginas ya compuestas
+
+<Excerpt region="sheet" />
+
+`buildCover` toma las páginas, los metadatos y el Markdown de la cubierta y devuelve un documento con una sola página, el pliego. Las cajas de texto pasan a ser marcos de esa página y se componen como los de una página compuesta. Los dígitos del código de barras piden OCR-B, que no está en ningún servidor de fuentes, y la receta los compone en Cinzel.
+
+### 7 · Dónde ha quedado cada caja
+
+<Excerpt region="views" />
+
+La página del pliego trae sus marcos en `page.composed.frames`, cada uno con el rectángulo que le ha dado la composición tras anclarlo y hacerlo crecer, y `continuesTo` cuando su texto sigue en otro marco. La segunda vista recuadra las seis cajas sobre el pliego y dibuja la cadena desde el pie de la sinopsis hasta el borde superior de `blurb-end`.
+
+## Variantes
+
+### Cuelga el autor del subtítulo
+
+Así el autor también baja con el título, en lugar de quedarse en el pie de la zona.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Reduce un título largo a una línea
+
+Sin `maxHeight`, la caja del título se queda en sus 14 mm y la composición reduce el título hasta que cabe: aquí en una línea, a unos dos tercios de su cuerpo.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Errores frecuentes
+
+- La caja a la que apunta el `next` de otra recibe el texto que esa le pasa. No le des marco propio en el Markdown de la cubierta, y termina el marco de la primera caja con lo que deba cerrar el texto, como la nota de aquí.
+- Un ancla que no nombra nada, que se nombra a sí misma o que cierra un bucle se avisa, y la caja se queda en su `rect`. Da a toda caja anclada un `rect` con un tamaño real.
+- `maxHeight` no se aplica a una caja girada (`rotate`), que conserva el tamaño de su `rect`.

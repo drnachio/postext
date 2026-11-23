@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Cartoné', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // en tapa dura: una sobrecubierta
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Cada versión nombra su encuadernación por el id de un perfil, o lleva el perfi
 - `caseMaterial`: en tapa dura, `printed` (la cubierta impresa y plastificada sobre los cartones, el valor predeterminado) o `cloth` (tela con estampación, normalmente bajo una sobrecubierta).
 - `overrides`: medidas en mm que esta versión fija para sí por encima de las de su perfil, cuando la imprenta pide un cajo distinto para este libro concreto.
 - `spineOverride`: el lomo en mm que da la imprenta, en lugar del calculado.
-- `spineText`: cómo se rotula el lomo: `direction` ascendente (`bottomToTop`, lo habitual en España y el valor predeterminado) o descendente (`topToBottom`, como prefiere la norma ISO 6357), y `minSpine`, el lomo más estrecho que admite texto (6 mm por defecto).
+- `spineText`: cómo se rotula el lomo: `direction` descendente (`topToBottom`, como lo fija la norma ISO 6357 y el valor predeterminado, que se lee derecho con el libro boca arriba) o ascendente (`bottomToTop`, la costumbre española más antigua), y `minSpine`, el lomo más estrecho que admite texto (6 mm por defecto).
 
 `production.collection` nombra la colección o la obra en varios volúmenes a la que pertenece el libro:
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` gira el texto un cuarto de vuelta para leerlo de abajo arriba en un lomo, `90` para leerlo de arriba abajo.
 - `verticalAlign`: `top`, `middle` o `bottom`.
 
+Una caja de texto es un marco de la página de la cubierta, con las capacidades de los [marcos de una página compuesta](/es/docs/composed-pages) (desde postext 1.93): varios textos en una zona, cada uno colocado respecto a una zona o a otra caja, texto que pasa de una caja a la siguiente, cajas que crecen con su texto y texto que se reduce para caber.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: coloca la caja respecto a una zona (su área segura) u otra caja de texto, como [un marco anclado a otro](/es/docs/composed-pages#colocar-los-marcos). `to` la nombra y `edge` da el punto: en una zona, uno de `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, que fija ahí el mismo punto de la caja; en una caja, también `below`, `above`, `right-of`, `left-of`. `x` e `y` la desplazan, en mm. De `rect` solo se lee entonces el tamaño. Una caja colgada bajo otra que crece baja con ella, y una caja anclada por su pie crece hacia arriba.
+- `next`: la caja de texto en la que sigue el texto cuando esta se llena, cortado entre líneas, como en los [marcos encadenados](/es/docs/composed-pages#encadenar-marcos). Esa caja no toma texto propio del Markdown.
+- `maxHeight`: la caja crece con su texto hasta esta altura, en mm, antes de reducir el texto. No en una caja girada. Una caja con `next` no crece: pasa el resto del texto a la siguiente.
+- `fit`: `shrinkText: false` deja el texto a su tamaño; `minScale` (`0.9` por omisión) es cuánto puede reducirse cuando aun así no cabe, el último paso de la [escalera de ajuste](/es/docs/composed-pages#cuando-aun-así-no-cabe).
+
+Una caja girada, y una caja anclada a una girada, se queda donde la pone su ancla, a su propio tamaño.
+
 ### Acabados y planchas técnicas
 
 `finishes` son lo que la imprenta añade después de las tintas, cada uno sobre una forma del diseño:
@@ -405,6 +422,7 @@ Al componer una cubierta se informa de lo que no se ha podido hacer como se ped�
     <tr><td><code>signatureBlanks</code></td><td>El redondeo a pliegos completos añade páginas en blanco.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>El lomo mide menos de <code>minSpine</code> y va sin texto. En una tapa dura cuenta el lomo del forro de tapas, dos cartones más ancho que las páginas.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Una caja de texto tiene un nombre que la cubierta no admite.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Una caja de texto está anclada a algo que el pliego no tiene, a sí misma, en un bucle o a un punto que una zona no tiene, y se queda en su <code>rect</code>; o su texto sigue en ninguna otra caja, o vuelve a su propia cadena, y se detiene ahí.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>El texto de la cubierta rellena un hueco que el pliego no tiene, o el mismo hueco dos veces.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Un marco del texto de la cubierta nombra un pliego que no existe (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>El sangrado en espejo dejó fuera imágenes que no pudo leer, o no llega al borde del pliego.</td></tr>
@@ -424,8 +442,8 @@ El panel **Cubierta**, en la barra lateral, reúne las versiones impresas y su c
 
 - **Versiones**: **Añadir rústica** o **Añadir cartoné**, y luego el nombre de cada versión, su encuadernación, su ISBN, el complemento y el ISBN de la obra, sus solapas o su sobrecubierta, el material de las tapas, el lomo que da la imprenta, el sentido del texto del lomo y el lomo más estrecho que lo admite. **Medidas de esta versión** sustituye las del perfil solo para esa versión.
 - **Pliego**: qué pliego se muestra (cubierta, sobrecubierta, guarda delantera o trasera), con sus páginas, su lomo y su tamaño.
-- **Diseño sobre el pliego**: **Editar sobre el pliego** convierte el pliego en el diseñador. Las cajas de texto, las cajas de color, los velos, las imágenes, los logotipos y los acabados se añaden desde su barra y se arrastran y redimensionan sobre el pliego, ajustándose a los pliegues, a las áreas seguras y entre sí (Alt desactiva el ajuste). Las flechas mueven el elemento seleccionado 1 mm, y 10 mm con Mayúsculas. **Capas** enumera los elementos bajo el texto, las cajas de texto, los elementos sobre el texto, los logotipos y los acabados, y los ordena. Los campos del elemento seleccionado fijan su posición, su color, su opacidad, cómo llena una imagen su caja, el radio de sus esquinas, su borde, su degradado y su sombra, qué hace pasado un sangrado en espejo, si se escala con su zona, y su trazado, su contorno o su recorte. Al cambiar el nombre de una caja de texto, su texto se mueve con ella en el Markdown de la cubierta.
-- **Textos**: un editor de Markdown por zona y por caja de texto. La cubierta y el lomo muestran lo que toman de los metadatos hasta que se les da **texto propio**.
+- **Diseño sobre el pliego**: **Editar sobre el pliego** convierte el pliego en el diseñador. Las cajas de texto, las cajas de color, los velos, las imágenes, los logotipos y los acabados se añaden desde su barra y se arrastran y redimensionan sobre el pliego, ajustándose a los pliegues, a las áreas seguras y entre sí (Alt desactiva el ajuste). Las flechas mueven el elemento seleccionado 1 mm, y 10 mm con Mayúsculas. **Capas** enumera los elementos bajo el texto, las cajas de texto, los elementos sobre el texto, los logotipos y los acabados, y los ordena. Los campos del elemento seleccionado fijan su posición, su color, su opacidad, cómo llena una imagen su caja, el radio de sus esquinas, su borde, su degradado y su sombra, qué hace pasado un sangrado en espejo, si se escala con su zona, y su trazado, su contorno o su recorte. Al cambiar el nombre de una caja de texto, su texto se mueve con ella en el Markdown de la cubierta. Una caja de texto seleccionada puede anclarse a una zona o a otra caja (**Anclada a**, el punto y el desplazamiento), seguir su texto en otra caja (**El texto sigue en**), crecer con su texto hasta una altura y reducir su texto hasta un tamaño mínimo.
+- **Textos**: un editor de Markdown por zona y por caja de texto. La cubierta y el lomo muestran lo que toman de los metadatos hasta que se les da **texto propio**. Una caja que recoge el resto del texto de otra lo indica en lugar de mostrar un editor.
 - **Colección**: el nombre y el ISBN de la colección.
 - **Archivos para la imprenta**: **Descargar PDF del pliego**, escrito con los ajustes de PDF del libro (espacio de color, perfil de salida, PDF/X), y **Descargar la cubierta** como imagen.
 - **Revisiones**: las revisiones de más arriba.

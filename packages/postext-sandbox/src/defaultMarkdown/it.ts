@@ -1138,7 +1138,7 @@ La **lente d’ingrandimento** si tiene sopra il libro dove sta il puntatore, o 
 I video si riproducono sulla pagina. In modalità sfoglio, un clic sull’immagine di anteprima di un video lo avvia lì, e il video continua a scorrere mentre il foglio gira. Un altro clic lo mette in pausa, avviarne un altro ferma il primo, e un video si ferma quando il libro si posa su una doppia pagina che non lo mostra più. Un video impostato per partire da solo comincia la prima volta che la sua doppia pagina è in vista. I video di YouTube e Vimeo non si possono disegnare dentro una pagina: un clic su uno di essi gira il foglio, e il video si apre nella sua pagina, dove si può guardare per intero.
 
 :::callout{type="try"}
-Apri la scheda Folio su questa guida, gira qualche pagina trascinandone gli angoli, poi ruota il libro trascinando con il tasto destro per vederne la piega con i punti metallici. Reimposta la vista lo rimette a posto.
+Apri la scheda Folio su questa guida, gira qualche pagina trascinandone gli angoli, poi ruota il libro trascinando con il tasto destro per vederne il titolo sul dorso. Reimposta la vista lo rimette a posto.
 :::
 
 ## Carta
@@ -1171,7 +1171,7 @@ Una carta copre fogli interi, così il contenuto della sequenza comincia su una 
 
 Il libro poggia su una **superficie**: rovere, noce, lino, feltro, cuoio, marmo, un colore uniforme, o niente del tutto, il che lascia vedere lo sfondo della pagina. Ogni superficie è una texture fotografata, e una tinta può ricolorarle tutte. Cinque **luci** creano la scena: uno studio, la luce del giorno, una lampada da lettura, un cielo coperto e la notte. Ognuna è una coppia: l’ambiente che la carta patinata e lucida riflette quando un foglio gira, e una luce principale che proietta le ombre del blocco e di una pagina sollevata sulle pagine sottostanti. L’**esposizione** schiarisce o scurisce la scena, e le ombre si possono disattivare su un computer lento. L’**inclinazione** stabilisce quanto la vista si discosta dalla verticale, fino a settanta gradi, e la **rotazione** quanto gira intorno al libro; Salva come vista predefinita memorizza entrambe così come le vedi.
 
-Questa guida è un fascicolo a punto metallico, su carta patinata lucida da 170 grammi, posato su un tappetino di feltro blu in luce da studio. Le sue copertine sono la sua prima e la sua ultima pagina, così si apre sulla copertina e si chiude quando gira l’ultimo foglio. Tutto questo si trova nel gruppo **Folio** del pannello **Grafica**, e nulla in quel gruppo cambia una sola riga delle pagine.
+Questa guida è una brossura fresata, con il titolo sul dorso, su carta patinata lucida da 170 grammi, posato su un tappetino di feltro blu in luce da studio. Le sue copertine sono la sua prima e la sua ultima pagina, così si apre sulla copertina e si chiude quando gira l’ultimo foglio. Tutto questo si trova nel gruppo **Folio** del pannello **Grafica**, e nulla in quel gruppo cambia una sola riga delle pagine.
 
 ## Inchiostri e fori in mano
 

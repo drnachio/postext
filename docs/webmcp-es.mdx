@@ -652,8 +652,7 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
 
 Las versiones impresas y el diseño de la cubierta son ajustes: `sandbox_set_config`
 escribe `production.versions`, `production.collection` y `cover`
-(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Cinco
-herramientas leen, escriben y exportan lo demás, como hace el panel Cubierta:
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Seis herramientas leen, escriben y exportan lo demás, como hace el panel Cubierta:
 
 - `sandbox_cover_get` lee la cubierta de una versión (`version`, la primera por
   defecto) y uno de sus pliegos (`sheet`: `cover`, `jacket`,
@@ -689,6 +688,13 @@ herramientas leen, escriben y exportan lo demás, como hace el panel Cubierta:
   que no se pasa se queda como está. `::catalogue` en el texto de la cubierta
   compone los títulos como lista, y un elemento de cubierta de tipo `catalogue`
   coloca sus imágenes. Es un paso del historial de deshacer.
+- `sandbox_cover_text_box` añade o cambia una caja de texto del diseño con el
+  que se dibuja el pliego, por su `name`: su `rect`, su `anchor` a una zona u
+  otra caja (`to`, `edge`, `x`, `y`), la caja en la que sigue su texto
+  (`next`), la altura hasta la que crece (`maxHeight`), cómo se reduce su
+  texto (`fit`), `rotate` y `verticalAlign`; `null` quita un campo y
+  `remove: true` la caja. Responde con la caja, dónde queda en el pliego y
+  las comprobaciones. Es un paso del historial de deshacer.
 
 ```json
 { "slot": "back", "text": "Una ciudad que guarda sus libros bajo tierra.\n\nY la muchacha que los lee en voz alta." }
@@ -801,7 +807,7 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Cómics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Páginas compuestas**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Cubiertas para imprenta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Cubiertas para imprenta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Libros y archivos**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

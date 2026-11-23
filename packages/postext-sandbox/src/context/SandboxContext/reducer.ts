@@ -79,6 +79,12 @@ export function bookOf(state: SandboxState): BookContent {
   };
 }
 
+/** The panel shown; the Cover panel shows its sheet in the Canvas, so
+ *  opening it selects the Canvas among the views (#1675). */
+function withPanel(state: SandboxState, activePanel: SandboxState['activePanel']): SandboxState {
+  return { ...state, activePanel, ...(activePanel === 'cover' ? { activeViewport: 'canvas' as const } : {}) };
+}
+
 export function sandboxReducer(state: SandboxState, action: SandboxAction): SandboxState {
   switch (action.type) {
     case 'SET_MARKDOWN': {
@@ -202,12 +208,9 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'UPDATE_CONFIG':
       return { ...state, config: { ...state.config, ...action.payload } };
     case 'TOGGLE_PANEL':
-      return {
-        ...state,
-        activePanel: state.activePanel === action.payload ? null : action.payload,
-      };
+      return withPanel(state, state.activePanel === action.payload ? null : action.payload);
     case 'SET_PANEL':
-      return { ...state, activePanel: action.payload };
+      return withPanel(state, action.payload);
     case 'SET_EDITING_CHAPTER_STYLE':
       if (state.editingChapterStyle === action.payload) return state;
       return { ...state, editingChapterStyle: action.payload };
@@ -215,9 +218,13 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
       return { ...state, sidebarPercent: action.payload };
     case 'SET_SIDEBAR_DRAGGING':
       return { ...state, sidebarDragging: action.payload };
-    case 'SET_VIEWPORT':
+    case 'SET_VIEWPORT': {
       // A link may still name the Folio on a device that does not offer it.
-      return { ...state, activeViewport: usableViewport(action.payload) };
+      const activeViewport = usableViewport(action.payload);
+      // The cover sheet is shown in the Canvas: another view leaves it.
+      const leaveCover = state.activePanel === 'cover' && activeViewport !== 'canvas';
+      return { ...state, activeViewport, ...(leaveCover ? { activePanel: null } : {}) };
+    }
     case 'SET_SELECTION':
       if (
         state.selection.from === action.payload.from &&

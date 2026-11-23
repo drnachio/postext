@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Relié', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // sur un cartonnage : une jaquette
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Chaque version désigne sa reliure par l’id d’un profil, ou porte le profil 
 - `caseMaterial` : sur un cartonnage, `printed` (la couverture imprimée et pelliculée sur les cartons, par défaut) ou `cloth` (toile marquée, en général sous une jaquette).
 - `overrides` : des mesures en mm que cette version fixe elle-même par-dessus celles de son profil, quand l’imprimeur demande un autre mors pour ce seul livre.
 - `spineOverride` : le dos en mm tel que le donne l’imprimeur, à la place du dos calculé.
-- `spineText` : le sens du titre au dos : `direction` montant (`bottomToTop`, l’usage courant en Espagne et la valeur par défaut) ou descendant (`topToBottom`, ce que préfère la norme ISO 6357), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
+- `spineText` : le sens du titre au dos : `direction` descendant (`topToBottom`, comme le fixe la norme ISO 6357 et la valeur par défaut, lisible à l’endroit quand le livre est posé à plat, couverture dessus) ou montant (`bottomToTop`, l’usage espagnol plus ancien), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
 
 `production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre :
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate` : `-90` fait pivoter le texte d’un quart de tour pour qu’il se lise en montant le long d’un dos, `90` pour qu’il se lise en descendant.
 - `verticalAlign` : `top`, `middle` ou `bottom`.
 
+Un bloc de texte est un bloc de la page de la couverture, avec les capacités des [blocs d’une page composée](/fr/docs/composed-pages) (depuis postext 1.93) : plusieurs textes dans une zone, chacun placé par rapport à une zone ou à un autre bloc, un texte qui passe d’un bloc au suivant, des blocs qui grandissent avec leur texte et un texte qui rétrécit pour tenir.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor` : place le bloc par rapport à une zone (sa zone de sécurité) ou à un autre bloc de texte, comme [un bloc ancré à un autre](/fr/docs/composed-pages#placer-les-blocs). `to` le nomme et `edge` donne le point : sur une zone, l’un de `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, qui y fixe le même point du bloc ; sur un bloc, aussi `below`, `above`, `right-of`, `left-of`. `x` et `y` le décalent, en mm. Seule la taille est alors lue dans `rect`. Un bloc accroché sous un autre qui grandit descend avec lui, et un bloc ancré par son pied grandit vers le haut.
+- `next` : le bloc de texte où le texte continue quand celui-ci est plein, coupé entre deux lignes, comme pour les [blocs chaînés](/fr/docs/composed-pages#chaîner-des-blocs). Ce bloc-là ne reçoit pas de texte propre du Markdown.
+- `maxHeight` : le bloc grandit avec son texte jusqu’à cette hauteur, en mm, avant que son texte ne rétrécisse. Pas sur un bloc pivoté. Un bloc avec `next` ne grandit pas : il passe la suite de son texte.
+- `fit` : `shrinkText: false` garde le texte à sa taille ; `minScale` (`0.9` par défaut) dit jusqu’où il peut rétrécir quand il ne tient toujours pas, dernière marche de l’[échelle d’ajustement](/fr/docs/composed-pages#quand-le-contenu-ne-tient-toujours-pas).
+
+Un bloc pivoté, et un bloc ancré à un bloc pivoté, reste là où son ancre le place, à sa propre taille.
+
 ### Finitions et plaques techniques
 
 Les `finishes` sont ce que l’imprimeur ajoute après les encres, chacune sur une forme de la maquette :
@@ -405,6 +422,7 @@ La génération d’une couverture signale ce qu’elle n’a pas pu faire comme
     <tr><td><code>signatureBlanks</code></td><td>L’arrondi à des cahiers entiers ajoute des pages blanches.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>Le dos est plus étroit que <code>minSpine</code> et ne porte pas de texte. Sur un cartonnage, c’est le dos de la couvrure qui compte, plus large que les pages de deux cartons.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Un bloc de texte porte un nom que la couverture ne peut pas utiliser.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Un bloc de texte est ancré à quelque chose que la feuille n’a pas, à lui-même, en boucle ou à un point qu’une zone n’a pas, et reste sur son <code>rect</code> ; ou son texte continue dans aucun autre bloc, ou revient dans sa propre chaîne, et s’arrête là.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Le texte de la couverture remplit un emplacement que la feuille n’a pas, ou deux fois le même.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Un bloc du texte de la couverture nomme une feuille qui n’existe pas (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>Le fond perdu en miroir a laissé de côté des images qu’il n’a pas pu lire, ou s’est arrêté avant le bord de la feuille.</td></tr>
@@ -424,8 +442,8 @@ Le panneau **Couverture**, dans la barre latérale, contient les versions imprim
 
 - **Versions** : **Ajouter un broché** ou **Ajouter un relié**, puis, pour chaque version, son nom, sa reliure, son ISBN, son complément et l’ISBN de l’œuvre, ses rabats ou sa jaquette, la matière d’un cartonnage, le dos donné par l’imprimeur, le sens du texte au dos et le dos le plus étroit qui le reçoit. **Mesures de cette version** remplace celles du profil pour cette seule version.
 - **Feuille** : la feuille affichée (couverture, jaquette, garde avant ou arrière), avec ses pages, son dos et son format.
-- **Maquette sur la feuille** : **Modifier sur la feuille** transforme la feuille en éditeur de maquette. Blocs de texte, aplats de couleur, voiles, images, logos et finitions s’ajoutent depuis sa barre, se déplacent et se redimensionnent sur la feuille, et s’aimantent aux plis, aux zones de sécurité et entre eux (Alt désactive l’aimantation). Les touches fléchées déplacent l’élément sélectionné de 1 mm, de 10 mm avec Maj. **Calques** liste les éléments sous le texte, les blocs de texte, les éléments par-dessus le texte, les logos et les finitions, et les ordonne. Les champs de l’élément sélectionné règlent sa place, sa couleur, son opacité, la façon dont une image remplit son cadre, le rayon de ses coins, sa bordure, son dégradé et son ombre, son comportement au-delà d’un fond perdu en miroir, s’il suit la taille de son panneau, et son tracé, son contour ou sa découpe. Renommer un bloc de texte déplace son texte dans le Markdown de la couverture.
-- **Textes** : un éditeur Markdown par zone et par bloc de texte. La première de couverture et le dos montrent ce qu’ils tirent des métadonnées tant qu’on ne leur donne pas un **texte propre**.
+- **Maquette sur la feuille** : **Modifier sur la feuille** transforme la feuille en éditeur de maquette. Blocs de texte, aplats de couleur, voiles, images, logos et finitions s’ajoutent depuis sa barre, se déplacent et se redimensionnent sur la feuille, et s’aimantent aux plis, aux zones de sécurité et entre eux (Alt désactive l’aimantation). Les touches fléchées déplacent l’élément sélectionné de 1 mm, de 10 mm avec Maj. **Calques** liste les éléments sous le texte, les blocs de texte, les éléments par-dessus le texte, les logos et les finitions, et les ordonne. Les champs de l’élément sélectionné règlent sa place, sa couleur, son opacité, la façon dont une image remplit son cadre, le rayon de ses coins, sa bordure, son dégradé et son ombre, son comportement au-delà d’un fond perdu en miroir, s’il suit la taille de son panneau, et son tracé, son contour ou sa découpe. Renommer un bloc de texte déplace son texte dans le Markdown de la couverture. Un bloc de texte sélectionné peut être ancré à une zone ou à un autre bloc (**Ancré à**, le point et le décalage), continuer son texte dans un autre bloc (**Le texte continue dans**), grandir avec son texte jusqu’à une hauteur et réduire son texte jusqu’à une taille minimale.
+- **Textes** : un éditeur Markdown par zone et par bloc de texte. La première de couverture et le dos montrent ce qu’ils tirent des métadonnées tant qu’on ne leur donne pas un **texte propre**. Un bloc qui reçoit la suite du texte d’un autre l’indique au lieu d’afficher un éditeur.
 - **Collection** : le nom et l’ISBN de la collection.
 - **Fichiers pour l’imprimeur** : **Télécharger le PDF de la feuille**, écrit avec les réglages PDF du livre (espace colorimétrique, profil de sortie, PDF/X), et **Télécharger la première de couverture** sous forme d’image.
 - **Vérifications** : les vérifications ci-dessus.

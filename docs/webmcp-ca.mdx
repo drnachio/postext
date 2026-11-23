@@ -649,8 +649,7 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
 
 Les versions impreses i el disseny de la coberta són paràmetres: `sandbox_set_config`
 escriu `production.versions`, `production.collection` i `cover`
-(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Cinc
-eines llegeixen, escriuen i exporten la resta, com fa el tauler Coberta:
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Sis eines llegeixen, escriuen i exporten la resta, com fa el tauler Coberta:
 
 - `sandbox_cover_get` llegeix la coberta d'una versió (`version`, la primera per
   defecte) i un dels seus plecs (`sheet`: `cover`, `jacket`,
@@ -686,6 +685,13 @@ eines llegeixen, escriuen i exporten la resta, com fa el tauler Coberta:
   que no es passa queda com és. `::catalogue` al text de la coberta compon els
   títols com a llista, i un element de coberta de tipus `catalogue` hi col·loca
   les imatges. És un pas de l'historial de desfer.
+- `sandbox_cover_text_box` afegeix o canvia una caixa de text del disseny amb
+  què es dibuixa el plec, pel seu `name`: el seu `rect`, el seu `anchor` a una
+  zona o una altra caixa (`to`, `edge`, `x`, `y`), la caixa on continua el
+  text (`next`), l'alçada fins on creix (`maxHeight`), com es redueix el text
+  (`fit`), `rotate` i `verticalAlign`; `null` treu un camp i `remove: true` la
+  caixa. Respon amb la caixa, on queda al plec i les comprovacions. És un pas
+  de l'historial de desfer.
 
 ```json
 { "slot": "back", "text": "Una ciutat que guarda els seus llibres sota terra.\n\nI la noia que els llegeix en veu alta." }
@@ -799,7 +805,7 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Còmics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Pàgines compostes**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Cobertes per a impremta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Cobertes per a impremta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Llibres i fitxers**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

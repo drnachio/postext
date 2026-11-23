@@ -643,7 +643,7 @@ La risposta avvisa quando una nuvoletta finisce su un volto o esce dalla sua vig
 Le versioni a stampa e la grafica della copertina sono impostazioni:
 `sandbox_set_config` scrive `production.versions`, `production.collection` e
 `cover` (`cover.textBoxes`, `cover.elements`, `cover.finishes`,
-`cover.sheets`…). Cinque strumenti leggono, scrivono ed esportano il resto, come
+`cover.sheets`…). Sei strumenti leggono, scrivono ed esportano il resto, come
 fa il pannello Copertina:
 
 - `sandbox_cover_get` legge la copertina di una versione (`version`, la prima
@@ -682,6 +682,13 @@ fa il pannello Copertina:
   campo non passato resta com’è. `::catalogue` nel testo della copertina
   compone i titoli come elenco, e un elemento di copertina di tipo `catalogue`
   ne dispone le immagini. È un passo della cronologia degli annullamenti.
+- `sandbox_cover_text_box` aggiunge o cambia una casella di testo della grafica
+  con cui è disegnato il foglio, per `name`: il suo `rect`, il suo `anchor` a
+  una zona o a un’altra casella (`to`, `edge`, `x`, `y`), la casella in cui
+  continua il testo (`next`), l’altezza fino a cui cresce (`maxHeight`), come
+  si riduce il testo (`fit`), `rotate` e `verticalAlign`; `null` toglie un
+  campo e `remove: true` la casella. Risponde con la casella, dove si trova
+  sul foglio e i controlli. Un passo della cronologia di annullamento.
 
 ```json
 { "slot": "back", "text": "Una città che custodisce i suoi libri sottoterra.\n\nE la ragazza che li legge ad alta voce." }
@@ -790,7 +797,7 @@ ciascuno arrivano con `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Fumetti**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Pagine composte**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Copertine per la stampa**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Copertine per la stampa**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Libri e file**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

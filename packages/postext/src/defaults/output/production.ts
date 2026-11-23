@@ -80,9 +80,10 @@ export const BUILT_IN_BINDING_PROFILES: readonly BindingProfile[] = [
   { id: 'case-round', name: 'Cartoné, lomo redondo', style: 'caseRound', signature: 16 },
 ];
 
-/** Spine lettering: rising, as most Spanish books are (ISO 6357 prefers
- *  falling), and none below 6 mm (booksfactory.es 6, Mariana Eguaras 7). */
+/** Spine lettering: falling, as ISO 6357 has it, read the right way up
+ *  when the book lies face up (#1677; rising, the older Spanish way, is a
+ *  setting), and none below 6 mm (booksfactory.es 6, Mariana Eguaras 7). */
 export const DEFAULT_SPINE_TEXT: Required<NonNullable<ProductionVersion['spineText']>> = {
-  direction: 'bottomToTop',
+  direction: 'topToBottom',
   minSpine: 6,
 };

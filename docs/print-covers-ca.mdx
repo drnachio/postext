@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Cartoné', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // en tapa dura: una sobrecoberta
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Cada versió anomena la seva enquadernació per l'id d'un perfil, o porta el per
 - `caseMaterial`: en tapa dura, `printed` (la coberta impresa i plastificada sobre els cartrons, el valor per defecte) o `cloth` (tela estampada, normalment sota una sobrecoberta).
 - `overrides`: mides en mm que aquesta versió fixa per a si mateixa per sobre de les del perfil, quan la impremta demana una caixa diferent per a aquest llibre concret.
 - `spineOverride`: el llom en mm que dona la impremta, en lloc del calculat.
-- `spineText`: com es retola el llom: `direction` ascendent (`bottomToTop`, el costum a Espanya i el valor per defecte) o descendent (`topToBottom`, com prefereix la norma ISO 6357), i `minSpine`, el llom més estret que admet text (6 mm per defecte).
+- `spineText`: com es retola el llom: `direction` descendent (`topToBottom`, com el fixa la norma ISO 6357 i el valor per defecte, que es llegeix dret amb el llibre de cara amunt) o ascendent (`bottomToTop`, el costum espanyol més antic), i `minSpine`, el llom més estret que admet text (6 mm per defecte).
 
 `production.collection` anomena la col·lecció o l'obra en diversos volums a què pertany el llibre:
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` gira el text un quart de volta perquè es llegeixi de baix a dalt en un llom, `90` perquè es llegeixi de dalt a baix.
 - `verticalAlign`: `top`, `middle` o `bottom`.
 
+Una caixa de text és un marc de la pàgina de la coberta, amb les capacitats dels [marcs d'una pàgina composta](/ca/docs/composed-pages) (des de postext 1.93): diversos textos en una zona, cadascun col·locat respecte a una zona o a una altra caixa, text que passa d'una caixa a la següent, caixes que creixen amb el text i text que es redueix perquè hi càpiga.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: col·loca la caixa respecte a una zona (la seva àrea segura) o una altra caixa de text, com [un marc ancorat a un altre](/ca/docs/composed-pages#collocar-els-marcs). `to` la nomena i `edge` dona el punt: en una zona, un de `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, que hi fixa el mateix punt de la caixa; en una caixa, també `below`, `above`, `right-of`, `left-of`. `x` i `y` la desplacen, en mm. De `rect` només se'n llegeix aleshores la mida. Una caixa penjada sota una altra que creix baixa amb ella, i una caixa ancorada pel peu creix cap amunt.
+- `next`: la caixa de text on continua el text quan aquesta s'omple, tallat entre línies, com en els [marcs encadenats](/ca/docs/composed-pages#encadenar-marcs). Aquella caixa no pren text propi del Markdown.
+- `maxHeight`: la caixa creix amb el text fins a aquesta alçada, en mm, abans de reduir el text. No en una caixa girada. Una caixa amb `next` no creix: passa la resta del text a la següent.
+- `fit`: `shrinkText: false` deixa el text a la seva mida; `minScale` (`0.9` per defecte) és quant es pot reduir quan tot i així no hi cap, l'últim pas de l'[escala d'ajust](/ca/docs/composed-pages#quan-tot-i-així-no-hi-cap).
+
+Una caixa girada, i una caixa ancorada a una de girada, es queda on la posa l'àncora, a la seva mida.
+
 ### Acabats i planxes tècniques
 
 `finishes` són el que la impremta afegeix després de les tintes, cadascun sobre una forma del disseny:
@@ -405,6 +422,7 @@ En compondre una coberta s'informa del que no s'ha pogut fer com es demanava. El
     <tr><td><code>signatureBlanks</code></td><td>L'arrodoniment a plecs sencers afegeix pàgines en blanc.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>El llom fa menys de <code>minSpine</code> i va sense text. En una tapa dura compta el llom del folre de les tapes, dos cartrons més ample que les pàgines.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Una caixa de text té un nom que la coberta no admet.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Una caixa de text està ancorada a una cosa que el plec no té, a si mateixa, en un bucle o a un punt que una zona no té, i es queda al seu <code>rect</code>; o el seu text continua en cap altra caixa, o torna a la seva pròpia cadena, i s'hi atura.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>El text de la coberta omple un buit que el plec no té, o el mateix buit dues vegades.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Un marc del text de la coberta anomena un plec que no existeix (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>La sang en mirall ha deixat fora imatges que no ha pogut llegir, o no arriba a la vora del plec.</td></tr>
@@ -424,8 +442,8 @@ El tauler **Coberta**, a la barra lateral, reuneix les versions impreses i la se
 
 - **Versions**: **Afegeix rústica** o **Afegeix cartoné**, i després el nom de cada versió, l'enquadernació, l'ISBN, el complement i l'ISBN de l'obra, les solapes o la sobrecoberta, el material de les tapes, el llom que dona la impremta, el sentit del text del llom i el llom més estret que l'admet. **Mides d’aquesta versió** substitueix les del perfil només per a aquella versió.
 - **Plec**: quin plec es mostra (coberta, sobrecoberta, guarda davantera o posterior), amb les pàgines, el llom i la mida.
-- **Disseny sobre el plec**: **Edita sobre el plec** converteix el plec en el dissenyador. Les caixes de text, les caixes de color, els vels, les imatges, els logotips i els acabats s'afegeixen des de la seva barra i s'arrosseguen i es redimensionen sobre el plec, ajustant-se als plegats, a les àrees segures i entre si (Alt desactiva l'ajust). Les fletxes mouen l'element seleccionat 1 mm, i 10 mm amb Maj. **Capes** enumera els elements sota el text, les caixes de text, els elements sobre el text, els logotips i els acabats, i els ordena. Els camps de l'element seleccionat en fixen la posició, el color, l'opacitat, com omple una imatge la seva caixa, el radi de les cantonades, la vora, el degradat i l'ombra, què fa més enllà d'una sang en mirall, si s'escala amb la seva zona, i el traçat, el contorn o el retall. Quan es canvia el nom d'una caixa de text, el seu text es mou amb ella al Markdown de la coberta.
-- **Textos**: un editor de Markdown per zona i per caixa de text. La coberta i el llom mostren el que prenen de les metadades fins que se'ls dona **text propi**.
+- **Disseny sobre el plec**: **Edita sobre el plec** converteix el plec en el dissenyador. Les caixes de text, les caixes de color, els vels, les imatges, els logotips i els acabats s'afegeixen des de la seva barra i s'arrosseguen i es redimensionen sobre el plec, ajustant-se als plegats, a les àrees segures i entre si (Alt desactiva l'ajust). Les fletxes mouen l'element seleccionat 1 mm, i 10 mm amb Maj. **Capes** enumera els elements sota el text, les caixes de text, els elements sobre el text, els logotips i els acabats, i els ordena. Els camps de l'element seleccionat en fixen la posició, el color, l'opacitat, com omple una imatge la seva caixa, el radi de les cantonades, la vora, el degradat i l'ombra, què fa més enllà d'una sang en mirall, si s'escala amb la seva zona, i el traçat, el contorn o el retall. Quan es canvia el nom d'una caixa de text, el seu text es mou amb ella al Markdown de la coberta. Una caixa de text seleccionada es pot ancorar a una zona o a una altra caixa (**Ancorada a**, el punt i el desplaçament), continuar el text en una altra caixa (**El text continua a**), créixer amb el text fins a una alçada i reduir el text fins a una mida mínima.
+- **Textos**: un editor de Markdown per zona i per caixa de text. La coberta i el llom mostren el que prenen de les metadades fins que se'ls dona **text propi**. Una caixa que recull la resta del text d'una altra ho indica en lloc de mostrar un editor.
 - **Col·lecció**: el nom i l'ISBN de la col·lecció.
 - **Fitxers per a la impremta**: **Baixa el PDF del plec**, escrit amb la configuració de PDF del llibre (espai de color, perfil de sortida, PDF/X), i **Baixa la coberta** com a imatge.
 - **Revisions**: les revisions de més amunt.

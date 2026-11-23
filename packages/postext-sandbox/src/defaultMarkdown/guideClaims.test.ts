@@ -7,6 +7,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { buildDocument, resolveCjkConfig, type CjkRegion, type PostextConfig } from 'postext';
+import { folioOfBook } from 'postext/production';
 import { DEFAULT_MARKDOWN_AR, DEFAULT_MARKDOWN_CA, DEFAULT_MARKDOWN_EN, DEFAULT_MARKDOWN_ES, DEFAULT_MARKDOWN_JA, DEFAULT_MARKDOWN_PT_BR, DEFAULT_MARKDOWN_FR, DEFAULT_MARKDOWN_DE, DEFAULT_MARKDOWN_IT, DEFAULT_MARKDOWN_ZH_HANS } from './index.js';
 import { createPostextGuideConfig } from '../context/guideConfig.js';
 import { GUIDE_FOLIO } from '../context/guideKit.js';
@@ -459,23 +460,25 @@ describe('what the guide says about itself and the Sandbox', () => {
     // Paper weight, stock, binding, surface and light, as the chapter on the
     // Folio view states them.
     const said: Record<Edition, [RegExp, RegExp, RegExp, RegExp, RegExp]> = {
-      en: [/This guide is set as ([^.]*)\./, /saddle-stitched/, /coated gloss paper of (\d+) grams/, /felt/, /studio light/],
-      es: [/Esta guía está montada como ([^.]*)\./, /grapado a caballete/, /estucado brillo de (\d+) gramos/, /fieltro/, /luz de estudio/],
-      ca: [/Aquesta guia està muntada com ([^.]*)\./, /grapat a cavall/, /estucat brillant de (\d+) grams/, /feltre/, /llum d'estudi/],
-      'zh-Hans': [/本指南设为([^。]*)。/, /骑马钉/, /(\d+)g\/m²的光面铜版纸/, /毛毡/, /摄影棚光照/],
-      // The Arabic interface's words (messages/ar.json): تدبيس سرجي, مطلي لامع, لبّاد, استوديو.
-      ar: [/([^.\n]*تدبيس سرجي[^.\n]*)\./, /تدبيس سرجي/, /مطلي لامع[^.\d٠-٩]*([\d٠-٩]+) غرام/, /لبّاد|لباد/, /استوديو/],
-      ja: [/本ガイドは([^。]*)。/, /中綴じ/, /坪量([〇一二三四五六七八九十百]+)グラムのグロスコート紙/, /フェルト/, /スタジオの照明/],
-      'pt-BR': [/Este guia está montado como ([^.]*)\./, /grampo canoa/, /couché brilho de (\d+) gramas/, /feltro/, /luz de estúdio/],
-      fr: [/Ce guide est monté ([^.]*)\./, /piqûre à cheval/, /couché brillant de (\d+) grammes/, /feutre/, /lumière de studio/],
-      de: [/Dieser Leitfaden ist als ([^.]*)\./, /rückendrahtgeheftet/, /glänzend gestrichenem Papier von (\d+) Gramm/, /Filz/, /Studiolicht/],
-      it: [/Questa guida è un fascicolo ([^.]*)\./, /punto metallico/, /patinata lucida da (\d+) grammi/, /feltro/, /luce da studio/],
+      en: [/This guide is bound as ([^.]*)\./, /perfect bound/, /coated gloss paper of (\d+) grams/, /felt/, /studio light/],
+      es: [/Esta guía está encuadernada en ([^.]*)\./, /rústica fresada/, /estucado brillo de (\d+) gramos/, /fieltro/, /luz de estudio/],
+      ca: [/Aquesta guia està enquadernada en ([^.]*)\./, /rústica fresada/, /estucat brillant de (\d+) grams/, /feltre/, /llum d'estudi/],
+      'zh-Hans': [/本指南设为([^。]*)。/, /无线胶装/, /(\d+)g\/m²的光面铜版纸/, /毛毡/, /摄影棚光照/],
+      // The Arabic interface's words (messages/ar.json): تجليد بالغراء, مطلي لامع, لبّاد, استوديو.
+      ar: [/(هذا الدليل غلاف ورقي[^.\n]*)\./, /تجليد بالغراء/, /مطلي لامع[^.\d٠-٩]*([\d٠-٩]+) غرام/, /لبّاد|لباد/, /استوديو/],
+      ja: [/本ガイドは([^。]*)。/, /無線綴じ/, /坪量([〇一二三四五六七八九十百]+)グラムのグロスコート紙/, /フェルト/, /スタジオの照明/],
+      'pt-BR': [/Este guia está encadernado como ([^.]*)\./, /brochura colada/, /couché brilho de (\d+) gramas/, /feltro/, /luz de estúdio/],
+      fr: [/Ce guide est relié ([^.]*)\./, /dos carré collé/, /couché brillant de (\d+) grammes/, /feutre/, /lumière de studio/],
+      de: [/Dieser Leitfaden ist als ([^.]*)\./, /klebegebunden/, /glänzend gestrichenem Papier von (\d+) Gramm/, /Filz/, /Studiolicht/],
+      it: [/Questa guida è una brossura ([^.]*)\./, /fresata/, /patinata lucida da (\d+) grammi/, /feltro/, /luce da studio/],
     };
     for (const edition of Object.keys(said) as Edition[]) {
       const [sentence, binding, paper, surface, light] = said[edition];
       const text = claim(edition, sentence)[1]!;
       expect(text, edition).toMatch(binding);
-      expect(GUIDE_FOLIO.binding?.type).toBe('saddleStitch');
+      // Bound as its first print version, the perfect-bound paperback (#1678).
+      expect(GUIDE_FOLIO.binding?.type).toBeUndefined();
+      expect(folioOfBook(createPostextGuideConfig('en'))?.binding?.type).toBe('paperback');
       expect(numberOf(text.match(paper)?.[1]), edition).toBe(GUIDE_FOLIO.paper?.grammage);
       expect(GUIDE_FOLIO.paper?.type).toBe('coatedGloss');
       expect(text, edition).toMatch(surface);

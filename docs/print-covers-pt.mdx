@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Capa dura', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // numa capa dura: uma sobrecapa
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Cada versão indica a encadernação pelo id de um perfil ou traz o próprio per
 - `caseMaterial`: numa capa dura, `printed` (a capa impressa e laminada sobre o papelão, o padrão) ou `cloth` (tecido gravado, em geral sob uma sobrecapa).
 - `overrides`: medidas em mm que esta versão define para si por cima das do perfil, quando a gráfica pede uma canaleta diferente para este livro.
 - `spineOverride`: a lombada em mm tal como a gráfica a informa, no lugar da calculada.
-- `spineText`: como o texto corre na lombada: `direction` de baixo para cima (`bottomToTop`, o costume na Espanha e o padrão) ou de cima para baixo (`topToBottom`, como prefere a ISO 6357), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
+- `spineText`: como o texto corre na lombada: `direction` de cima para baixo (`topToBottom`, como fixa a ISO 6357 e o padrão, que se lê direito com o livro deitado de capa para cima) ou de baixo para cima (`bottomToTop`, o costume espanhol mais antigo), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
 
 `production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence:
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` gira o texto um quarto de volta para que ele suba pela lombada, `90` para que desça.
 - `verticalAlign`: `top`, `middle` ou `bottom`.
 
+Uma caixa de texto é um quadro da página da capa, com as capacidades dos [quadros de uma página composta](/pt/docs/composed-pages) (desde o postext 1.93): vários textos numa zona, cada um posicionado em relação a uma zona ou a outra caixa, texto que passa de uma caixa para a seguinte, caixas que crescem com o texto e texto que se reduz para caber.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: posiciona a caixa em relação a uma zona (a sua área segura) ou a outra caixa de texto, como [um quadro ancorado a outro](/pt/docs/composed-pages#posicionar-os-blocos). `to` a nomeia e `edge` dá o ponto: numa zona, um de `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, que fixa ali o mesmo ponto da caixa; numa caixa, também `below`, `above`, `right-of`, `left-of`. `x` e `y` a deslocam, em mm. De `rect` lê-se então só o tamanho. Uma caixa pendurada sob outra que cresce desce com ela, e uma caixa ancorada pelo pé cresce para cima.
+- `next`: a caixa de texto em que o texto continua quando esta se enche, cortado entre linhas, como nos [quadros encadeados](/pt/docs/composed-pages#encadear-blocos). Essa caixa não recebe texto próprio do Markdown.
+- `maxHeight`: a caixa cresce com o texto até esta altura, em mm, antes de o texto se reduzir. Não numa caixa girada. Uma caixa com `next` não cresce: passa o resto do texto à seguinte.
+- `fit`: `shrinkText: false` mantém o texto no seu tamanho; `minScale` (`0.9` por padrão) é quanto ele pode se reduzir quando ainda não cabe, o último degrau da [escada de ajuste](/pt/docs/composed-pages#quando-ainda-assim-não-cabe).
+
+Uma caixa girada, e uma caixa ancorada a uma girada, fica onde a âncora a coloca, no seu próprio tamanho.
+
 ### Acabamentos e chapas técnicas
 
 `finishes` são o que a gráfica acrescenta depois das tintas, cada um sobre uma forma do projeto:
@@ -405,6 +422,7 @@ A montagem de uma capa informa o que não conseguiu fazer como foi pedido. O San
     <tr><td><code>signatureBlanks</code></td><td>O arredondamento para cadernos inteiros acrescenta páginas em branco.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>A lombada é mais estreita que <code>minSpine</code> e não leva texto. Numa capa dura, conta a lombada do revestimento, dois papelões mais larga que as páginas.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Uma caixa de texto tem um nome que a capa não aceita.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Uma caixa de texto está ancorada a algo que a folha não tem, a si mesma, num ciclo ou a um ponto que uma zona não tem, e fica no seu <code>rect</code>; ou o seu texto continua em nenhuma outra caixa, ou volta para a própria cadeia, e para ali.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>O texto da capa preenche um espaço que a folha não tem, ou o mesmo espaço duas vezes.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Um quadro do texto da capa indica uma folha que não existe (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>A sangria espelhada deixou de fora imagens que não conseguiu ler, ou parou antes da borda da folha.</td></tr>
@@ -424,8 +442,8 @@ O painel **Capa**, na barra lateral, reúne as versões impressas e a sua capa:
 
 - **Versões**: **Adicionar brochura** ou **Adicionar capa dura**, e depois, para cada versão, o nome, a encadernação, o ISBN, o complemento e o ISBN da obra, as orelhas ou a sobrecapa, o revestimento de uma capa dura, a lombada da gráfica, o sentido do texto da lombada e a lombada mais estreita que o recebe. **Medidas desta versão** substitui as do perfil só para esta versão.
 - **Folha**: qual folha aparece (capa, sobrecapa, guarda da frente ou de trás), com as suas páginas, a lombada e o tamanho.
-- **Projeto na folha**: **Editar na folha** transforma a folha no editor do projeto. Caixas de texto, blocos de cor, véus, imagens, logotipos e acabamentos são acrescentados pela barra dele, arrastados e redimensionados na folha, e se encaixam nas dobras, nas áreas de segurança e uns nos outros (Alt desliga o encaixe). As setas movem o item selecionado 1 mm, ou 10 mm com Shift. **Camadas** lista os itens sob o texto, as caixas de texto, os itens sobre o texto, os logotipos e os acabamentos, e os ordena. Os campos do item selecionado definem o lugar, a cor, a opacidade, como uma imagem preenche a caixa, o raio dos cantos, a borda, o degradê e a sombra, o que ele faz além de uma sangria espelhada, se acompanha o tamanho do painel, e o traçado, o contorno ou o recorte. Renomear uma caixa de texto leva junto o texto dela no Markdown da capa.
-- **Textos**: um editor de Markdown por zona e por caixa de texto. A capa e a lombada mostram o que recebem dos metadados até ganharem um **texto próprio**.
+- **Projeto na folha**: **Editar na folha** transforma a folha no editor do projeto. Caixas de texto, blocos de cor, véus, imagens, logotipos e acabamentos são acrescentados pela barra dele, arrastados e redimensionados na folha, e se encaixam nas dobras, nas áreas de segurança e uns nos outros (Alt desliga o encaixe). As setas movem o item selecionado 1 mm, ou 10 mm com Shift. **Camadas** lista os itens sob o texto, as caixas de texto, os itens sobre o texto, os logotipos e os acabamentos, e os ordena. Os campos do item selecionado definem o lugar, a cor, a opacidade, como uma imagem preenche a caixa, o raio dos cantos, a borda, o degradê e a sombra, o que ele faz além de uma sangria espelhada, se acompanha o tamanho do painel, e o traçado, o contorno ou o recorte. Renomear uma caixa de texto leva junto o texto dela no Markdown da capa. Uma caixa de texto selecionada pode ser ancorada a uma zona ou a outra caixa (**Ancorada em**, o ponto e o deslocamento), continuar o texto em outra caixa (**O texto continua em**), crescer com o texto até uma altura e reduzir o texto até um tamanho mínimo.
+- **Textos**: um editor de Markdown por zona e por caixa de texto. A capa e a lombada mostram o que recebem dos metadados até ganharem um **texto próprio**. Uma caixa que recebe o resto do texto de outra indica isso em vez de mostrar um editor.
 - **Coleção**: o nome e o ISBN da coleção.
 - **Arquivos para a gráfica**: **Baixar PDF da folha**, gravado com as configurações de PDF do livro (espaço de cor, perfil de saída, PDF/X), e **Baixar a capa** como imagem.
 - **Verificações**: as verificações acima.

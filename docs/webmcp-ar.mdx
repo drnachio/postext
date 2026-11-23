@@ -613,7 +613,7 @@ await browser.close();
 
 النسخ المطبوعة وتصميم الغلاف إعدادات: يكتب `sandbox_set_config`
 ‏`production.versions` و`production.collection` و`cover` (`cover.textBoxes`
-و`cover.elements` و`cover.finishes` و`cover.sheets`…). وخمس أدوات تقرأ الباقي
+و`cover.elements` و`cover.finishes` و`cover.sheets`…). وست أدوات تقرأ الباقي
 وتكتبه وتصدّره، كما تفعل لوحة الغلاف:
 
 - يقرأ `sandbox_cover_get` غلاف نسخة (`version`، الأولى افتراضيًا) وأحد أفراخها
@@ -645,6 +645,12 @@ await browser.close();
   الكتاب، و`null` إن لم يكن). والحقل الذي لا يُمرَّر يبقى كما هو. ويصفّ
   `::catalogue` في نص الغلاف العناوين قائمةً، ويرتّب عنصر غلاف من نوع
   `catalogue` صورها. وهو خطوة واحدة في سجل التراجع.
+- يضيف `sandbox_cover_text_box` مربّع نص إلى التصميم الذي يُرسم به الفرخ أو
+  يغيّره، باسمه `name`: ‏`rect` الخاص به، و`anchor` إلى منطقة أو مربّع آخر
+  (`to` و`edge` و`x` و`y`)، والمربّع الذي يُكمَل فيه نصّه (`next`)، والارتفاع
+  الذي يكبر إليه (`maxHeight`)، وكيف يصغُر نصّه (`fit`)، و`rotate`
+  و`verticalAlign`؛ و`null` يحذف حقلًا و`remove: true` يحذف المربّع. ويجيب
+  بالمربّع وموضعه على الفرخ والفحوص. وهو خطوة واحدة في سجل التراجع.
 
 ```json
 { "slot": "back", "text": "مدينة تحفظ كتبها تحت الأرض.\n\nوفتاة تقرؤها بصوت عالٍ." }
@@ -744,7 +750,7 @@ Sandbox، ويواصل العمل هناك بأدوات `sandbox_*`.
   و`sandbox_delete_resource`، و`sandbox_list_fonts`، و`sandbox_save_font`.
 - **القصص المصورة**: `sandbox_inspect_comic`، و`sandbox_edit_comic`.
 - **الصفحات المركّبة**: `sandbox_modules`، و`sandbox_create_module`، و`sandbox_rename_module`، و`sandbox_insert_module`، و`sandbox_extract_module`، و`sandbox_frames_to_grid`، و`sandbox_edit_labels`.
-- **أغلفة الطباعة**: `sandbox_cover_get`، و`sandbox_cover_write_text`، و`sandbox_cover_export`، و`sandbox_cover_sheet_design`، و`sandbox_cover_set_collection`.
+- **أغلفة الطباعة**: `sandbox_cover_get`، و`sandbox_cover_write_text`، و`sandbox_cover_export`، و`sandbox_cover_sheet_design`، و`sandbox_cover_set_collection`، و`sandbox_cover_text_box`.
 - **الكتب والملفات**: `sandbox_list_books`، و`sandbox_open_book`،
   و`sandbox_save_book`، و`sandbox_delete_book`، و`sandbox_import_book`،
   و`sandbox_export`.

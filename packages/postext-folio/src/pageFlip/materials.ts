@@ -398,7 +398,11 @@ export function edgeMaterial(sign: number, bands?: { lo: number; hi: number; col
           );
           float h0 = edgeHeight(lv, fade);
           vec2 dH = vec2(edgeHeight(lv + dx, fade) - h0, edgeHeight(lv + dy, fade) - h0) * uEdgeK * uEdgeRelief;
-          if (vLambda >= uBoardLo && vLambda <= uBoardHi) normal = edgeNormal(-vViewPosition, normal, dH, faceDirection);
+          // Worked out for every pixel, then kept or not: derivatives taken
+          // under a test that differs from one pixel to the next are
+          // undefined, and left specks along a board's edge (#1676).
+          vec3 relieved = edgeNormal(-vViewPosition, normal, dH, faceDirection);
+          if (vLambda >= uBoardLo && vLambda <= uBoardHi) normal = relieved;
         }`,
       )
       .replace(

@@ -1,0 +1,97 @@
+---
+title: "Cover text boxes anchored, chained and grown"
+summary: "A paperback of two Poe tales whose cover is set from six text boxes hung from the panels and from each other, a title that grows and a blurb that runs on."
+plain: "A small book of two stories by Edgar Allan Poe and the printer's sheet for its cover. Each text on the cover is placed under, above or against another, so a longer title moves the rest down and the back text carries on below a quotation."
+description: "Cover text boxes in Postext: anchored to a panel or to another box, grown with their text up to a height, and chained so the blurb continues in a second box."
+question: "How do I place cover texts against each other, so a long title pushes the rest down?"
+aliases: ["cover text box", "anchored text box", "linked text boxes", "back cover blurb", "title grows", "caja de texto de cubierta", "cajas enlazadas", "texto de contracubierta"]
+pageNotes: { "22": "The cover sheet laid flat. On the left the back cover, near black, with a blurb in cream type that stops after eight lines, a quotation from the tale in gold italics, and the rest of the blurb under it, ending in a line of gold small capitals; the ISBN barcode stands in the corner by the spine. A narrow spine lettered in small capitals. On the right the front, a painting of a masked ball in a file of coloured rooms under a dark Gothic vault, with an ebony clock on the left and a figure in a grave-shroud on the right; the title The Masque of the Red Death in two lines of cream capitals at the top, the subtitle in gold italics under it, and the author's name in spaced capitals at the foot." }
+---
+
+## What you'll build
+
+Two tales by Edgar Allan Poe, "The Masque of the Red Death" and "The Oval Portrait" (the Spanish edition sets Carlos Olivera's translation of 1884), as a paperback of 125 × 195 mm, and its cover sheet. Every text on the cover is a text box without coordinates. On the front the title hangs from the top of the panel, the subtitle hangs under the title and the author stands on the foot. The title runs to two lines in both editions, so its box grows and the subtitle moves down with it. On the back the blurb fills a box of 50 mm, and the lines it cannot hold go on in a second box below a quotation from the tale. Above the pages the pen draws the sheet twice: as it prints, and with each box outlined and the chain marked.
+
+## Method
+
+### 1 · Each box hangs from a panel or from another box
+
+The code is [the short answer](#the-short-answer) above. An `anchor` names a zone of the sheet or another text box, and a point. On a zone the point is one of the nine of its safe area, and the box puts the same point of its own there: `edge: 'top'` centres the title on the front and sets its top on the top of the safe area, `edge: 'bottom'` sets the author's foot on its foot. On a box the point can also be `below`, `above`, `right-of` or `left-of`. `x` and `y` move the box from that point, in mm. With an anchor, `rect` gives only the box's size, so the boxes keep their places when the spine grows or the book changes format.
+
+### 2 · The title grows and takes the subtitle down
+
+<Excerpt region="cover-type" />
+
+The title is set in Cinzel at 30 pt on 33. Its box is 14 mm deep, one line. "The Masque of the Red Death" and "La máscara de la muerte" both need two, so the box grows with its text, up to the 40 mm of `maxHeight`, and only past that would the type shrink. The subtitle is anchored `below` the title, 2 mm under it, so it moves down by the depth of the second line. The author is anchored to the foot of the panel and stays where it is.
+
+### 3 · The blurb runs on in another box
+
+The blurb box names `next: 'blurb-end'`. What it cannot hold is cut between lines and continues in that box, which takes no frame of its own in the cover Markdown. The quotation hangs under the blurb, and `blurb-end` under the quotation, so the three keep their spacing if the blurb box is made deeper. Only when the second box runs short too does the text of the chain shrink, as one, down to 90 % by default (`fit.minScale`). The line of gold small capitals is the last paragraph of the blurb's frame, so it closes the text in the second box:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+While a plague empties his country, Prince Prospero shuts himself up …
+:::
+
+:::paragraphs{style="cover-note"}
+From the Raven Edition of Poe's works
+:::
+:::
+```
+
+The empty `front` frame keeps out the title, subtitle and author `buildCover` would otherwise set on the front from the book's metadata: here the boxes set them.
+
+### 4 · A paperback with its spine from the pages
+
+<Excerpt region="binding" />
+
+PUR perfect binding in 16-page signatures, on 120 g/m² wove at a bulk of 2.2. The book has 21 pages, 32 once bound, so the spine is about 4.7 mm, under the 6 mm a spine is lettered from by default; the version sets `spineText.minSpine` to 4.5 and the spine carries the title and the author. The ISBN is a sample number, assigned to no book.
+
+### 5 · The book block
+
+<Excerpt region="pages" />
+
+Half title, title page and rights, then each tale on a recto, sunk 50 mm, under its title in Cinzel and a short red rule. The running heads carry the author on the verso and the tale's title on the recto, and the colophon closes the book on the last recto.
+
+### 6 · The sheet is built from the laid-out pages
+
+<Excerpt region="sheet" />
+
+`buildCover` takes the pages, the metadata and the cover Markdown and returns a document whose one page is the sheet. The text boxes become frames of that page, laid out like the frames of a composed page. The barcode's digits ask for OCR-B, which no font server has, so the pen sets them in Cinzel.
+
+### 7 · Where each box ended up
+
+<Excerpt region="views" />
+
+The sheet's page comes back with its frames in `page.composed.frames`, each with the rect the layout gave it after anchoring and growing, and `continuesTo` when its text goes on in another frame. The second view outlines the six boxes over the sheet and draws the chain from the foot of the blurb to the top of `blurb-end`.
+
+## Variations
+
+### Hang the author under the subtitle
+
+The author then follows the title down too, instead of standing on the foot of the panel.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Shrink a long title onto one line
+
+Without `maxHeight` the title box keeps its 14 mm, and the ladder sets the title smaller until it fits: here on one line, at about two thirds of its size.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Pitfalls
+
+- A box that another box's `next` names takes the text that box passes on. Give it no frame of its own in the cover Markdown, and end the first box's frame with whatever should close the text, as the note here.
+- An anchor that names nothing, names the box itself or closes a loop is reported, and the box stands on its `rect`. Give every anchored box a `rect` with a real size.
+- `maxHeight` does not apply to a turned box (`rotate`), which keeps the size of its `rect`.

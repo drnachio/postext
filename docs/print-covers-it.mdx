@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: 'Cartonato', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // su un cartonato: una sovraccoperta
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ Ogni versione indica la sua legatura con l’id di un profilo, oppure porta il p
 - `caseMaterial`: su un cartonato, `printed` (la copertina stampata e plastificata sui piatti, il valore predefinito) o `cloth` (tela impressa a secco o a caldo, di solito sotto una sovraccoperta).
 - `overrides`: misure in mm che questa versione fissa per sé sopra quelle del suo profilo, quando la tipografia chiede una cerniera diversa per questo solo libro.
 - `spineOverride`: il dorso in mm come lo indica la tipografia, al posto di quello calcolato.
-- `spineText`: come si scrive sul dorso: `direction` dal basso in alto (`bottomToTop`, l’uso abituale in Spagna e il valore predefinito) o dall’alto in basso (`topToBottom`, come preferisce la norma ISO 6357), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
+- `spineText`: come si scrive sul dorso: `direction` dall’alto in basso (`topToBottom`, come stabilisce la norma ISO 6357 e il valore predefinito, che si legge dritto con il libro a faccia in su) o dal basso in alto (`bottomToTop`, l’uso spagnolo più antico), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
 
 `production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro:
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`: `-90` ruota il testo di un quarto di giro perché si legga salendo lungo un dorso, `90` perché si legga scendendo.
 - `verticalAlign`: `top`, `middle` o `bottom`.
 
+Una casella di testo è una cornice della pagina della copertina, con le capacità delle [cornici di una pagina composta](/it/docs/composed-pages) (da postext 1.93): più testi in una zona, ognuno collocato rispetto a una zona o a un’altra casella, testo che passa da una casella alla successiva, caselle che crescono con il testo e testo che si riduce per starci.
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`: colloca la casella rispetto a una zona (la sua area sicura) o a un’altra casella di testo, come [una cornice ancorata a un’altra](/it/docs/composed-pages#collocare-le-cornici). `to` la nomina e `edge` dà il punto: su una zona, uno fra `top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`, che vi fissa lo stesso punto della casella; su una casella, anche `below`, `above`, `right-of`, `left-of`. `x` e `y` la spostano, in mm. Da `rect` si legge allora solo la dimensione. Una casella appesa sotto un’altra che cresce scende con lei, e una casella ancorata per il piede cresce verso l’alto.
+- `next`: la casella di testo in cui il testo continua quando questa è piena, tagliato tra le righe, come nelle [cornici concatenate](/it/docs/composed-pages#concatenare-le-cornici). Quella casella non prende testo proprio dal Markdown.
+- `maxHeight`: la casella cresce con il testo fino a questa altezza, in mm, prima che il testo si riduca. Non su una casella ruotata. Una casella con `next` non cresce: passa il resto del testo alla successiva.
+- `fit`: `shrinkText: false` lascia il testo alla sua dimensione; `minScale` (`0.9` per impostazione predefinita) è quanto può ridursi quando ancora non ci sta, l’ultimo gradino della [scala di adattamento](/it/docs/composed-pages#quando-il-contenuto-ancora-non-entra).
+
+Una casella ruotata, e una casella ancorata a una ruotata, resta dove la mette la sua ancora, alla sua dimensione.
+
 ### Finiture e lastre tecniche
 
 Le `finishes` sono ciò che la tipografia aggiunge dopo gli inchiostri, ognuna su una forma della grafica:
@@ -405,6 +422,7 @@ La generazione di una copertina segnala ciò che non ha potuto fare come richies
     <tr><td><code>signatureBlanks</code></td><td>L’arrotondamento a segnature intere aggiunge pagine bianche.</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>Il dorso è più stretto di <code>minSpine</code> e non porta testo. In un cartonato conta il dorso del rivestimento, più largo delle pagine di due cartoni.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Una casella di testo ha un nome che la copertina non può usare.</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>Una casella di testo è ancorata a qualcosa che il foglio non ha, a sé stessa, in un ciclo o a un punto che una zona non ha, e resta sul suo <code>rect</code>; oppure il suo testo continua in nessun’altra casella, o torna nella propria catena, e si ferma lì.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Il testo della copertina riempie una posizione che il foglio non ha, o la stessa posizione due volte.</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>Un blocco del testo della copertina indica un foglio che non esiste (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>L’abbondanza specchiata ha tralasciato immagini che non ha potuto leggere, o si è fermata prima del bordo del foglio.</td></tr>
@@ -424,8 +442,8 @@ Il pannello **Copertina**, nella barra laterale, contiene le versioni a stampa e
 
 - **Versioni**: **Aggiungi brossura** o **Aggiungi cartonato**, poi per ogni versione il nome, la legatura, l’ISBN, l’add-on e l’ISBN dell’opera, le alette o la sovraccoperta, il materiale di un cartonato, il dorso indicato dalla tipografia, la direzione del testo sul dorso e il dorso più stretto che lo accoglie. **Misure di questa versione** sostituisce quelle del profilo solo per questa versione.
 - **Foglio**: quale foglio si vede (copertina, sovraccoperta, risguardo anteriore o posteriore), con le sue pagine, il dorso e il formato.
-- **Grafica sul foglio**: **Modifica sul foglio** trasforma il foglio in editor grafico. Caselle di testo, riquadri di colore, veli, immagini, loghi e finiture si aggiungono dalla sua barra, si trascinano e si ridimensionano sul foglio, e si agganciano alle pieghe, alle aree di sicurezza e tra loro (Alt disattiva l’aggancio). I tasti freccia spostano l’elemento selezionato di 1 mm, di 10 mm con Maiusc. **Livelli** elenca gli elementi sotto il testo, le caselle di testo, gli elementi sopra il testo, i loghi e le finiture, e ne stabilisce l’ordine. I campi dell’elemento selezionato ne fissano la posizione, il colore, l’opacità, il modo in cui un’immagine riempie il riquadro, il raggio degli angoli, il bordo, la sfumatura e l’ombra, il comportamento oltre un’abbondanza specchiata, se si adatta al suo pannello, e il tracciato, il contorno o il ritaglio. Rinominare una casella di testo sposta con sé il suo testo nel Markdown della copertina.
-- **Testi**: un editor Markdown per ogni zona e casella di testo. La prima di copertina e il dorso mostrano ciò che prendono dai metadati finché non ricevono un **testo proprio**.
+- **Grafica sul foglio**: **Modifica sul foglio** trasforma il foglio in editor grafico. Caselle di testo, riquadri di colore, veli, immagini, loghi e finiture si aggiungono dalla sua barra, si trascinano e si ridimensionano sul foglio, e si agganciano alle pieghe, alle aree di sicurezza e tra loro (Alt disattiva l’aggancio). I tasti freccia spostano l’elemento selezionato di 1 mm, di 10 mm con Maiusc. **Livelli** elenca gli elementi sotto il testo, le caselle di testo, gli elementi sopra il testo, i loghi e le finiture, e ne stabilisce l’ordine. I campi dell’elemento selezionato ne fissano la posizione, il colore, l’opacità, il modo in cui un’immagine riempie il riquadro, il raggio degli angoli, il bordo, la sfumatura e l’ombra, il comportamento oltre un’abbondanza specchiata, se si adatta al suo pannello, e il tracciato, il contorno o il ritaglio. Rinominare una casella di testo sposta con sé il suo testo nel Markdown della copertina. Una casella di testo selezionata può essere ancorata a una zona o a un’altra casella (**Ancorata a**, il punto e lo spostamento), continuare il testo in un’altra casella (**Il testo continua in**), crescere con il testo fino a un’altezza e ridurre il testo fino a una dimensione minima.
+- **Testi**: un editor Markdown per ogni zona e casella di testo. La prima di copertina e il dorso mostrano ciò che prendono dai metadati finché non ricevono un **testo proprio**. Una casella che riceve il resto del testo di un’altra lo indica invece di mostrare un editor.
 - **Collana**: il nome e l’ISBN della collana.
 - **File per la tipografia**: **Scarica il PDF del foglio**, scritto con le impostazioni PDF del libro (spazio colore, profilo di output, PDF/X), e **Scarica la prima di copertina** come immagine.
 - **Controlli**: i controlli descritti sopra.

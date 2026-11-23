@@ -40,7 +40,7 @@ const config: PostextConfig = {
         id: 'hardcover', name: '精装', binding: 'case-flat', isbn: '978-84-0000-001-1',
         flaps: true, // 精装书上即护封
         caseMaterial: 'cloth',
-        spineText: { direction: 'topToBottom' },
+        spineText: { direction: 'bottomToTop' },
       },
     ],
   },
@@ -58,7 +58,7 @@ const config: PostextConfig = {
 - `caseMaterial`：精装书壳的材料，`printed`（印好的封面覆膜后裱在纸板上，默认）或`cloth`（布面烫印，通常外加护封）。
 - `overrides`：这个版本自己设定、覆盖配置的尺寸（mm），用于印厂对这一本书要求不同中缝等情况。
 - `spineOverride`：印厂给出的书脊宽度（mm），代替计算值。
-- `spineText`：书脊文字的排法：`direction`为由下往上（`bottomToTop`，西班牙的通常做法，也是默认值）或由上往下（`topToBottom`，ISO 6357推荐的方向）；`minSpine`是能印文字的最窄书脊（默认6 mm）。
+- `spineText`：书脊文字的排法：`direction`为由上往下（`topToBottom`，ISO 6357规定的方向，也是默认值，书封面朝上平放时读来是正的）或由下往上（`bottomToTop`，西班牙较老的做法）；`minSpine`是能印文字的最窄书脊（默认6 mm）。
 
 `production.collection`指定书所属的丛书或多卷本作品：
 
@@ -275,6 +275,23 @@ textBoxes: [
 - `rotate`：`-90`把文字转四分之一圈，沿书脊由下往上读；`90`由上往下读。
 - `verticalAlign`：`top`、`middle`或`bottom`。
 
+文本框是封面页上的一个框，具备[模板页中框](/zh/docs/composed-pages)的能力（自postext 1.93起）：一个区域里可放多段文字，每段相对某个区域或另一个框放置；文字可从一个框续排到下一个框；框可随文字增高，文字可缩小以适应。
+
+```ts
+textBoxes: [
+  { name: 'title', rect: { x: 0, y: 0, width: 110, height: 30 }, anchor: { to: 'front', edge: 'top', y: 12 }, maxHeight: 60 },
+  { name: 'blurb', rect: { x: 0, y: 0, width: 110, height: 50 }, anchor: { to: 'title', edge: 'below', y: 6 }, next: 'blurb-2', fit: { minScale: 0.85 } },
+  { name: 'blurb-2', rect: { x: 0, y: 0, width: 110, height: 60 }, anchor: { to: 'back', edge: 'top' } },
+],
+```
+
+- `anchor`：将框相对某个区域（其安全区）或另一个文本框放置，与[锚定到另一个框的框](/zh/docs/composed-pages#放置框)相同。`to`指明对象，`edge`指明锚点：对区域，可取`top-left`, `top`, `top-right`, `left`, `center`, `right`, `bottom-left`, `bottom`, `bottom-right`之一，框上相同的点固定在那里；对框，还可取`below`, `above`, `right-of`, `left-of`。`x`和`y`以mm为单位偏移。此时只从`rect`读取大小。挂在会增高的框下方的框会随之下移，以底边锚定的框向上增高。
+- `next`：本框排满后文字续排进去的文本框，在行与行之间断开，与[串接框](/zh/docs/composed-pages#串接框)相同。那个框不再从Markdown取自己的文字。
+- `maxHeight`：在缩小文字之前，框随文字增高到这个高度（mm）。旋转的框不适用。有 `next` 的框不会增高，而是把余下的文字交给下一个框。
+- `fit`：`shrinkText: false`保持文字大小；`minScale`（默认`0.9`）是仍放不下时可缩小到的程度，即[调整步骤](/zh/docs/composed-pages#仍然放不下时)的最后一步。
+
+旋转的框，以及锚定到旋转框的框，停在锚点确定的位置，保持自身大小。
+
 ### 工艺与技术印版
 
 `finishes`是印厂在印完油墨后加上的工艺，每一项作用在设计中的一个形状上：
@@ -405,6 +422,7 @@ cover: {
     <tr><td><code>signatureBlanks</code></td><td>补足为整数个印张后增加了空白页。</td></tr>
     <tr><td><code>spineTooThinForText</code></td><td>书脊窄于<code>minSpine</code>，不印文字。精装书以书壳的书脊为准，它比书页宽出两块纸板。</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>有文本框的名称封面无法使用。</td></tr>
+    <tr><td><code>coverTextBoxAnchor</code>, <code>coverTextBoxNext</code></td><td>文本框锚定到版面上没有的对象、自身、形成循环，或区域没有的锚点，于是留在其<code>rect</code>处；或者其文字续排到的不是另一个框，或回到自身的链中，于是在那里停止。</td></tr>
     <tr><td><code>coverSlotUnknown</code>、<code>coverSlotRepeated</code></td><td>封面文字填充了版面没有的槽位，或者把一个槽位填了两次。</td></tr>
     <tr><td><code>coverFrameSheetUnknown</code></td><td>封面文字的某个框指定了不存在的版面（<code>sheet="…"</code>）。</td></tr>
     <tr><td><code>coverMirrorSkipped</code>、<code>coverMirrorCapped</code></td><td>镜像出血略去了无法读取的图片，或者没有延伸到版面边缘。</td></tr>
@@ -424,8 +442,8 @@ cover: {
 
 - **版本**：**添加平装**或**添加精装**，然后是每个版本的名称、装订、ISBN、附加码和全套ISBN，勒口或护封，书壳的材料，印厂给定的书脊，书脊文字的方向以及能印文字的最窄书脊。**此版本的尺寸**只为这个版本覆盖配置中的尺寸。
 - **版面**：显示哪张版面（封面、护封、前环衬或后环衬），以及它的页数、书脊和尺寸。
-- **在版面上设计**：**在版面上编辑**把版面变成设计器。文本框、色块、半透明层、图片、标志和工艺从它的工具栏添加，在版面上拖动和调整大小，吸附到折线、安全区和彼此（按住Alt关闭吸附）。方向键把所选项目移动1 mm，按住Shift移动10 mm。**图层**列出文字下方的项目、文本框、文字上方的项目、标志和工艺，并调整它们的顺序。所选项目的字段设置它的位置、颜色、不透明度、图片如何填充框、圆角半径、边框、渐变和阴影、超出镜像出血后的处理、是否随区域缩放，以及它的路径、轮廓或裁切。给文本框改名时，它在封面Markdown中的文字随之移动。
-- **文字**：每个区域和每个文本框一个Markdown编辑器。封面和书脊显示它们从元数据取来的内容，直到给它们**自定文字**为止。
+- **在版面上设计**：**在版面上编辑**把版面变成设计器。文本框、色块、半透明层、图片、标志和工艺从它的工具栏添加，在版面上拖动和调整大小，吸附到折线、安全区和彼此（按住Alt关闭吸附）。方向键把所选项目移动1 mm，按住Shift移动10 mm。**图层**列出文字下方的项目、文本框、文字上方的项目、标志和工艺，并调整它们的顺序。所选项目的字段设置它的位置、颜色、不透明度、图片如何填充框、圆角半径、边框、渐变和阴影、超出镜像出血后的处理、是否随区域缩放，以及它的路径、轮廓或裁切。给文本框改名时，它在封面Markdown中的文字随之移动。选中的文本框可以锚定到某个区域或另一个框（**锚定到**、锚点和偏移），把文字续排到另一个框（**文字续排到**），随文字增高到某个高度，并把文字缩小到最小尺寸。
+- **文字**：每个区域和每个文本框一个Markdown编辑器。封面和书脊显示它们从元数据取来的内容，直到给它们**自定文字**为止。接排另一个框其余文字的框会显示这一点，而不是编辑器。
 - **丛书**：丛书的名称和ISBN。
 - **印厂文件**：**下载版面PDF**，按书的PDF设置（色彩空间、输出配置文件、PDF/X）写出；**下载封面图**，以图片形式下载封面。
 - **检查**：上面列出的检查。

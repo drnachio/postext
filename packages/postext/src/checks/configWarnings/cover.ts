@@ -1,7 +1,7 @@
 // The covers' design (#1667): keys `cover` does not have, and values the
 // cover leaves out or changes when it draws them. Pure.
 
-import type { ColorValue, CoverConfig, PostextConfig } from '../../types.js';
+import type { ColorValue, CoverConfig, CoverTextFrame, PostextConfig } from '../../types.js';
 import type { ConfigWarning } from '../../vdt.js';
 import { closestKey } from '../../util/closestKey.js';
 import { isSafeId } from '../../production/svgSafe.js';
@@ -29,7 +29,8 @@ const isRecord = (v: unknown): v is Record<string, unknown> => !!v && typeof v =
  *   `#rrggbb`; a finish of no known process; a varnish's or foil's ink
  *   that is no spot ink (the default ink is used); a text box named as a
  *   zone, another box or not as an id (left out); a mirror margin under
- *   2 mm and a barcode size outside 0.8 … 2 (the nearest is used);
+ *   2 mm and a barcode size outside 0.8 … 2 (the nearest is used); a text
+ *   box's anchor, continuation, growth or fit the cover cannot follow;
  * - in `sheets`, a sheet no version has, and each sheet's own design as
  *   the cover's (#1673); a catalogue element's columns, gap and titles.
  */
@@ -108,12 +109,60 @@ function checkDesign(cover: Record<string, unknown>, where: string, out: ConfigW
     if (isRecord(f.shape) && typeof f.shape.element === 'string' && !ids.has(f.shape.element)) bad(`${at}.shape.element`, f.shape.element);
   });
   const names = new Set<string>(ZONES);
-  if (Array.isArray(cover.textBoxes)) cover.textBoxes.forEach((b: unknown, i) => {
-    const name = isRecord(b) ? b.name : undefined;
-    if (!isSafeId(name) || names.has(name)) bad(`textBoxes[${i}].name`, name);
-    else names.add(name);
-  });
+  if (Array.isArray(cover.textBoxes)) {
+    const boxes = cover.textBoxes as unknown[];
+    const all = new Set(boxes.map((b) => (isRecord(b) ? b.name : undefined)).filter((n): n is string => typeof n === 'string'));
+    boxes.forEach((b: unknown, i) => {
+      const at = `textBoxes[${i}]`;
+      const name = isRecord(b) ? b.name : undefined;
+      if (!isSafeId(name) || names.has(name)) bad(`${at}.name`, name);
+      else names.add(name);
+      if (isRecord(b)) checkTextBox(b, at, all, bad);
+    });
+  }
   if (cover.mirrorMargin !== undefined && !(typeof cover.mirrorMargin === 'number' && cover.mirrorMargin >= MIN_MIRROR_MARGIN)) bad('mirrorMargin', cover.mirrorMargin, String(MIN_MIRROR_MARGIN));
   const mag = cover.barcodeMagnification;
   if (mag !== undefined && !(typeof mag === 'number' && mag >= 0.8 && mag <= 2)) bad('barcodeMagnification', mag, typeof mag === 'number' && mag > 2 ? '2' : '0.8');
+}
+
+const TEXT_BOX_KEYS = {
+  name: true, rect: true, rotate: true, verticalAlign: true, anchor: true, next: true, maxHeight: true, fit: true,
+} satisfies Record<keyof CoverTextFrame, true>;
+const GRID_EDGES = new Set(['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right']);
+const BESIDE_EDGES = new Set(['right-of', 'left-of', 'below', 'above']);
+
+/** A text box's anchor, continuation, growth and fit (#1679): an anchor to
+ *  no zone or box, to the box itself or at a point its target has not
+ *  (`below` a zone), a continuation into no other box, a height it cannot
+ *  grow to, a scale outside 0 … 1. */
+function checkTextBox(b: Record<string, unknown>, at: string, boxes: ReadonlySet<string>, bad: (path: string, value: unknown, used?: string) => void): void {
+  for (const key of Object.keys(b)) {
+    if (!Object.prototype.hasOwnProperty.call(TEXT_BOX_KEYS, key)) bad(`${at}.${key}`, key);
+  }
+  if (b.rotate !== undefined && b.rotate !== 90 && b.rotate !== -90) bad(`${at}.rotate`, b.rotate, '0');
+  if (b.verticalAlign !== undefined && !['top', 'middle', 'bottom'].includes(b.verticalAlign as string)) bad(`${at}.verticalAlign`, b.verticalAlign, 'top');
+  const a = b.anchor;
+  if (a !== undefined) {
+    if (!isRecord(a)) bad(`${at}.anchor`, a);
+    else {
+      const zone = ZONES.has(a.to as string);
+      const box = typeof a.to === 'string' && boxes.has(a.to) && a.to !== b.name;
+      if (!zone && !box) bad(`${at}.anchor.to`, a.to);
+      else if (!GRID_EDGES.has(a.edge as string) && !(box && BESIDE_EDGES.has(a.edge as string))) bad(`${at}.anchor.edge`, a.edge);
+      for (const k of ['x', 'y'] as const) if (a[k] !== undefined && !(typeof a[k] === 'number' && Number.isFinite(a[k]))) bad(`${at}.anchor.${k}`, a[k], '0');
+    }
+  }
+  if (b.next !== undefined && !(typeof b.next === 'string' && boxes.has(b.next) && b.next !== b.name)) bad(`${at}.next`, b.next);
+  if (b.maxHeight !== undefined) {
+    const h = isRecord(b.rect) ? b.rect.height : undefined;
+    if (!(typeof b.maxHeight === 'number' && Number.isFinite(b.maxHeight) && (typeof h !== 'number' || b.maxHeight >= h)) || b.rotate === 90 || b.rotate === -90) bad(`${at}.maxHeight`, b.maxHeight);
+  }
+  const fit = b.fit;
+  if (fit !== undefined) {
+    if (!isRecord(fit)) bad(`${at}.fit`, fit);
+    else {
+      if (fit.shrinkText !== undefined && typeof fit.shrinkText !== 'boolean') bad(`${at}.fit.shrinkText`, fit.shrinkText, 'true');
+      if (fit.minScale !== undefined && !(typeof fit.minScale === 'number' && fit.minScale > 0 && fit.minScale <= 1)) bad(`${at}.fit.minScale`, fit.minScale, '0.9');
+    }
+  }
 }

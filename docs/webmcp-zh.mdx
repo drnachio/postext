@@ -456,13 +456,14 @@ await browser.close();
 
 ### 印刷封面
 
-印刷版本和封面的设计都是设置：`sandbox_set_config`写入`production.versions`、`production.collection`和`cover`（`cover.textBoxes`、`cover.elements`、`cover.finishes`、`cover.sheets`等）。其余部分由五个工具读取、写入和导出，和封面面板的做法一样：
+印刷版本和封面的设计都是设置：`sandbox_set_config`写入`production.versions`、`production.collection`和`cover`（`cover.textBoxes`、`cover.elements`、`cover.finishes`、`cover.sheets`等）。其余部分由六个工具读取、写入和导出，和封面面板的做法一样：
 
 - `sandbox_cover_get`读取一个版本（`version`，默认第一个）的封面及其一张版面（`sheet`：`cover`、`jacket`、`endpaperFront`或`endpaperBack`）：各个版本，版面的尺寸和书脊（mm）以及它们所依据的页数，每个区域的矩形，封面文字所填的槽位及各自的文字（以及`sheetText`，即封壳、护封或环衬单独拥有的文字），绘制该版面所用的设计（`design.uses`：`book`或它在`cover.sheets`中自己设计的名称；`design.choices`：它可以采用的自己的设计），设计中放在版面上的项目，丛书（`collection`），以及检查结果。
 - `sandbox_cover_write_text`按名称写入一个槽位（区域或文本框）的Markdown；`text: null`去掉它，封面和书脊恢复为元数据中的书名、副标题和作者。同一份文字供所有版本和版面使用；加上`thisSheetOnly: true`，文字只写给某个封壳、护封或环衬，并在那里取代共用的文字。它是撤销历史中的一步。
 - `sandbox_cover_export`把版面写成交给印厂的PDF（`format: "pdf"`，带印前检查的结果），或把一个区域写成JPEG（`format: "jpeg"`、`zone`、`longSide`），由浏览器下载，或者加上`deliver: "data"`以base64编码返回。
 - `sandbox_cover_sheet_design`选择精装书的一张版面用哪个设计绘制，和“本版面的设计”的做法一样：`design: "book"`（全书的封面设计）、`"own"`（封壳或护封自己的设计，或仅本环衬的设计）或`"endpapers"`（前后环衬共用一个设计），新设计从全书设计的副本开始。随后`patch`修改该设计的字段（`background`、`image`、`elements`、`textBoxes`等；`null`去掉一个字段）。它是撤销历史中的一步。
 - `sandbox_cover_set_collection`写入本书所属的丛书：`name`、`isbn`、`catalogue`（按顺序排列的书目，每项为`{ id, title, resource? }`，整个列表一次替换）和`volume`（书目中代表本书的id，`null`表示没有）。未传的字段保持不变。封面文字中的`::catalogue`把书目排成列表，类型为`catalogue`的封面元素则排出它们的图片。它是撤销历史中的一步。
+- `sandbox_cover_text_box`按`name`添加或修改绘制该版面所用设计中的文本框：其`rect`、锚定到某个区域或另一个框的`anchor`（`to`、`edge`、`x`、`y`）、文字续排到的框（`next`）、可增高到的高度（`maxHeight`）、文字如何缩小（`fit`）、`rotate`和`verticalAlign`；`null`删除一个字段，`remove: true`删除该框。返回该框、它在版面上的位置和检查结果。是撤销历史中的一步。
 
 ```json
 { "slot": "back", "text": "一座把书藏在地下的城市。\n\n和一个为人朗读这些书的女孩。" }
@@ -523,7 +524,7 @@ await browser.close();
 - **资源和字体**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **模板页**：`sandbox_modules`、`sandbox_create_module`、`sandbox_rename_module`、`sandbox_insert_module`、`sandbox_extract_module`、`sandbox_frames_to_grid`、`sandbox_edit_labels`。
-- **印刷封面**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`。
+- **印刷封面**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`、`sandbox_cover_text_box`。
 - **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **InDesign**：`sandbox_import_idml`。

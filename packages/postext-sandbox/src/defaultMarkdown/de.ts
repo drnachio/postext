@@ -1142,7 +1142,7 @@ Die **Lupe** schwebt dort über dem Buch, wo der Zeiger steht, auf einem Touchsc
 Videos laufen auf der Seite. Im Blättermodus startet ein Klick auf das Vorschaubild eines Videos es an Ort und Stelle, und es läuft weiter, während sich das Blatt wendet. Ein weiterer Klick hält es an. YouTube- und Vimeo-Videos lassen sich nicht in eine Seite zeichnen: Ein Klick darauf blättert das Blatt um.
 
 :::callout{type="try"}
-Öffnen Sie den Tab Folio für diesen Leitfaden, blättern Sie ein paar Seiten um, indem Sie an ihren Ecken ziehen, und kreisen Sie dann durch Ziehen mit der rechten Maustaste um das Buch, um seinen gehefteten Falz zu sehen. Ansicht zurücksetzen bringt es zurück.
+Öffnen Sie den Tab Folio für diesen Leitfaden, blättern Sie ein paar Seiten um, indem Sie an ihren Ecken ziehen, und kreisen Sie dann durch Ziehen mit der rechten Maustaste um das Buch, um den Titel auf seinem Rücken zu sehen. Ansicht zurücksetzen bringt es zurück.
 :::
 
 ## Papier
@@ -1175,7 +1175,7 @@ Eine Papiersorte umfasst ganze Bogen, deshalb beginnt der Inhalt des Abschnitts 
 
 Das Buch liegt auf einer **Unterlage**: Eiche, Nussbaum, Leinen, Filz, Leder, Marmor, eine einfache Farbe oder gar nichts, sodass der Hintergrund der Seite bleibt. Jede Unterlage ist eine fotografierte Textur, und eine Tönung färbt jede davon um. Fünf **Lichtstimmungen** bestimmen die Szene: ein Studio, Tageslicht, eine Leselampe, ein bedeckter Himmel und Nacht. Jede ist ein Paar: die Umgebung, die gestrichenes und glänzendes Papier spiegeln, während sich ein Blatt wendet, und ein Hauptlicht, das die Schatten des Blocks und einer angehobenen Seite auf die Seiten darunter wirft. Die **Belichtung** hellt die Szene auf oder dunkelt sie ab, und die Schatten lassen sich auf einem langsamen Rechner abschalten. Die **Neigung** legt fest, wie weit sich die Ansicht aus der Draufsicht neigt, bis zu siebzig Grad, und die **Drehung**, wie weit sie um das Buch herumgeht; Als Standardansicht speichern hält beides so fest, wie Sie es sehen. **Ansicht zurücksetzen** bringt das Buch danach in genau diesen Winkel zurück.
 
-Dieser Leitfaden ist als rückendrahtgeheftete Broschüre gesetzt, auf glänzend gestrichenem Papier von 170 Gramm, auf einer blauen Filzmatte im Studiolicht. Seine Umschläge sind seine eigene erste und letzte Seite, deshalb öffnet er sich auf dem Umschlag und schließt sich, wenn das letzte Blatt umgeblättert wird. All das steht in der Gruppe **Folio** des Bedienfelds Gestaltung, und nichts in dieser Gruppe ändert auch nur eine Zeile der Seiten.
+Dieser Leitfaden ist als Paperback klebegebunden, mit dem Titel auf dem Rücken, auf glänzend gestrichenem Papier von 170 Gramm, auf einer blauen Filzmatte im Studiolicht. Seine Umschläge sind seine eigene erste und letzte Seite, deshalb öffnet er sich auf dem Umschlag und schließt sich, wenn das letzte Blatt umgeblättert wird. All das steht in der Gruppe **Folio** des Bedienfelds Gestaltung, und nichts in dieser Gruppe ändert auch nur eine Zeile der Seiten.
 
 ## Farben und Löcher in der Hand
 

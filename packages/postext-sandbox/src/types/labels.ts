@@ -6513,6 +6513,8 @@ export interface SandboxLabels {
   coverTexts: string;
   coverTextsIntro: string;
   coverOverride: string;
+  /** Under a front or spine switch left off: what the sheet prints there now. __text__ */
+  coverTextFromBook: string;
   coverZoneFront: string;
   coverZoneBack: string;
   coverZoneSpine: string;
@@ -6541,6 +6543,8 @@ export interface SandboxLabels {
   coverCheckSpineTooThin: string;
   coverCheckProfileOutOfRange: string;
   coverCheckTextBoxName: string;
+  coverCheckTextBoxAnchor: string;
+  coverCheckTextBoxNext: string;
   coverCheckMirrorSkipped: string;
   coverCheckMirrorCapped: string;
   coverCheckClipSkipped: string;
@@ -6622,6 +6626,22 @@ export interface SandboxLabels {
   coverTextTurn: string;
   coverTextTurnNone: string;
   coverTextBoxHint: string;
+  coverTextAnchor: string;
+  coverTextAnchorTooltip: string;
+  coverTextAnchorNone: string;
+  coverTextAnchorEdge: string;
+  coverTextAnchorX: string;
+  coverTextAnchorY: string;
+  coverTextNext: string;
+  coverTextNextTooltip: string;
+  coverTextNextNone: string;
+  coverTextGrow: string;
+  coverTextGrowTooltip: string;
+  coverTextMaxHeight: string;
+  coverTextShrink: string;
+  coverTextShrinkTooltip: string;
+  coverTextMinScale: string;
+  coverTextContinues: string;
   historyStepCover: string;
   coverProfiles: string;
   coverProfilesIntro: string;

@@ -2802,9 +2802,6 @@
      "versions": [
       {
        "name": "Cartoné",
-       "spineText": {
-        "direction": "bottomToTop"
-       },
        "id": "hardcover"
       }
      ]
@@ -3044,9 +3041,6 @@
      "versions": [
       {
        "name": "Hardcover",
-       "spineText": {
-        "direction": "topToBottom"
-       },
        "id": "hardcover"
       }
      ]

@@ -143,6 +143,8 @@ export function SandboxProvider({
     const savedViewport = loadViewport() as ViewportTab | null;
     const savedPercent = loadSidebarPercent();
     const savedPanel = loadPanel() as PanelId | null | undefined;
+    const panel = savedPanel !== undefined ? savedPanel : ('markdown' as PanelId);
+    const restoredPanel = panel === 'cover' && initialHash.view != null && usableViewport(initialHash.view) !== 'canvas' ? null : panel;
     const config = withDefaultResourceTypes(
       storedConfig?.config ?? initialConfig ?? createPostextGuideConfig(locale ?? 'en'),
       locale ?? 'en',
@@ -193,10 +195,12 @@ export function SandboxProvider({
       bookLoading: false,
       presetDrafts: [],
       presetCovers: {},
-      activePanel: savedPanel !== undefined ? savedPanel : ('markdown' as PanelId),
+      // The Cover panel shows its sheet in the Canvas (#1675): a link to
+      // another view closes it, else it opens there.
+      activePanel: restoredPanel,
       sidebarPercent: savedPercent ?? 25,
       sidebarDragging: false,
-      activeViewport: usableViewport(initialHash.view ?? (isViewportTab(savedViewport) ? savedViewport : 'canvas')),
+      activeViewport: restoredPanel === 'cover' ? 'canvas' : usableViewport(initialHash.view ?? (isViewportTab(savedViewport) ? savedViewport : 'canvas')),
       labels: mergedLabels,
       locale: locale ?? 'en',
       selection: { from: 0, to: 0, head: 0 },

@@ -119,7 +119,7 @@ export function CoverDesignerOverlay({ built, doc, cssWidth }: { built: BuiltCov
     const current = items.find((i) => sameRef(i, selected));
     if (!current) return;
     if (e.key === 'Delete' || e.key === 'Backspace') {
-      write(removeItem(cover, current));
+      write(removeItem(cover, current, built.sheet));
       setCoverDesigner({ selected: null });
       e.preventDefault();
       return;

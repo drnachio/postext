@@ -1,4 +1,5 @@
 import { BufferAttribute, BufferGeometry } from "three";
+import { NX_OPEN } from "./pageFlip/constants.js";
 
 // The open book's shape, in book coordinates: x from the spine (right page
 // positive), y up the page (0 at its middle), z up from the desk; lengths
@@ -229,8 +230,24 @@ export function gutterOcclusion(own: Profile, other: Profile, W: number, n = 64)
  *  round to the spine at the foot. */
 export type EdgeOutline = readonly (readonly [number, number])[];
 
+/** Where column `t` (0 … 1) of a page's mesh lies across it: closer
+ *  together near the spine, where the gutter bends tightest. */
+export const column = (t: number) => Math.pow(t, 1.45);
+
+/** How far over its block a page lying open is drawn. */
+export const PAGE_LIFT = 0.02;
+
 export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, leaves: number, outline?: EdgeOutline): BufferGeometry {
   const NS = 48;
+  // The top of each side is the open page's own edge (#1676): the same
+  // points across it at the same height, so the two meet with no gap. A
+  // page a hair over sides cut at other points left pixels of what lies
+  // behind along its edges, most where the gutter bends.
+  const layerAt = (s: number, lambda: number): [number, number] => {
+    if (lambda < 1) return alongLayer(p, s, lambda);
+    const [x, z] = along(p, s);
+    return [x, z + PAGE_LIFT];
+  };
   const NL = Math.max(2, Math.min(24, leaves + 1));
   const pos: number[] = [];
   const nrm: number[] = [];
@@ -279,7 +296,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
         (c, r) => {
           const f = c / cols;
           const lambda = r / (NL - 1);
-          const [x, z] = alongLayer(p, (s0 + (s1 - s0) * f) * W, lambda);
+          const [x, z] = layerAt((s0 + (s1 - s0) * f) * W, lambda);
           return [side * x, H / 2 - (v0 + (v1 - v0) * f) * H, z, lambda * leaves, start + f * len];
         },
         // Outward: the strip runs clockwise seen from above a recto.
@@ -291,11 +308,11 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
   } else for (const end of [1, -1] as const) {
     // Head (y = H/2, facing +y) and tail (facing −y).
     quadGrid(
-      NS,
+      NX_OPEN,
       NL - 1,
       (c, r) => {
         const lambda = r / (NL - 1);
-        const [x, z] = alongLayer(p, (c / NS) * W, lambda);
+        const [x, z] = layerAt(column(c / NX_OPEN) * W, lambda);
         return [side * x, (end * H) / 2, z, lambda * leaves, x];
       },
       [0, end, 0],
@@ -308,7 +325,7 @@ export function stackGeometry(p: Profile, side: 1 | -1, W: number, H: number, le
     NL - 1,
     (c, r) => {
       const lambda = r / (NL - 1);
-      const [x, z] = alongLayer(p, W, lambda);
+      const [x, z] = layerAt(W, lambda);
       return [side * x, (c ? -1 : 1) * (H / 2), z, lambda * leaves, W + (c ? H : 0)];
     },
     [side, 0, 0],

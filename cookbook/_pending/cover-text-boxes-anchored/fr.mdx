@@ -1,0 +1,97 @@
+---
+title: "Blocs de texte de couverture ancrés et chaînés"
+summary: "Deux contes de Poe en broché, la couverture composée en six blocs de texte accrochés les uns aux autres, un titre qui grandit et un résumé qui continue."
+plain: "Un petit livre de deux nouvelles d’Edgar Allan Poe et la feuille de sa couverture. Chaque texte se place sous, sur ou à côté d’un autre : un titre plus long fait descendre le reste, et la quatrième continue sous une citation."
+description: "Blocs de texte de couverture dans Postext : ancrés à un panneau ou à un autre bloc, qui grandissent avec leur texte et se chaînent pour que le résumé continue."
+question: "Comment placer les textes d’une couverture entre eux, pour qu’un titre long pousse le reste ?"
+aliases: ["bloc de texte de couverture", "blocs ancrés", "blocs chaînés", "texte de quatrième", "résumé de quatrième", "titre qui grandit", "cover text box", "linked text boxes"]
+pageNotes: { "22": "La feuille de couverture à plat. À gauche la quatrième, presque noire, avec un résumé en caractères crème qui s’arrête après huit lignes, une citation du conte en italique doré et la suite du résumé dessous, qui se termine par une ligne de petites capitales dorées ; le code-barres ISBN dans le coin côté dos. Un dos étroit titré en petites capitales. À droite la première, une peinture d’un bal masqué dans une enfilade de salles colorées sous une voûte gothique sombre, avec une horloge d’ébène à gauche et une silhouette en linceul à droite ; le titre The Masque of the Red Death en deux lignes de capitales crème en haut, le sous-titre en italique doré dessous et le nom de l’auteur en capitales espacées en pied." }
+---
+
+## Ce que vous allez composer
+
+Deux contes d’Edgar Allan Poe, « The Masque of the Red Death » et « The Oval Portrait » (l’édition espagnole compose la traduction de Carlos Olivera, 1884), en broché de 125 × 195 mm, et la feuille de sa couverture. Aucun texte de la couverture n’a de coordonnées : chacun est un bloc accroché à autre chose. Sur la première, le titre pend du haut du panneau, le sous-titre pend du titre et l’auteur repose sur le pied. Le titre tient sur deux lignes dans les deux éditions, donc son bloc grandit et le sous-titre descend avec lui. Sur la quatrième, le résumé remplit un bloc de 50 mm et les lignes qui n’y tiennent pas continuent dans un second bloc, sous une citation du conte. Au-dessus des pages, la recette dessine la feuille deux fois : telle qu’elle s’imprime, et avec chaque bloc encadré et la chaîne marquée.
+
+## Préparation
+
+### 1 · Chaque bloc pend d’un panneau ou d’un autre bloc
+
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. Un `anchor` nomme une zone de la feuille ou un autre bloc de texte, et un point. Sur une zone, le point est l’un des neuf de sa zone de sécurité, et le bloc y pose son propre point équivalent : `edge: 'top'` centre le titre sur la première et pose son bord supérieur sur celui de la zone de sécurité ; `edge: 'bottom'` pose le pied de l’auteur sur le pied de la zone. Sur un bloc, le point peut aussi être `below`, `above`, `right-of` ou `left-of`. `x` et `y` décalent le bloc depuis ce point, en mm. Avec une ancre, `rect` ne donne plus que la taille, si bien que les blocs gardent leur place quand le dos s’épaissit ou que le livre change de format.
+
+### 2 · Le titre grandit et fait descendre le sous-titre
+
+<Excerpt region="cover-type" />
+
+Le titre est composé en Cinzel corps 30 sur 33. Son bloc mesure 14 mm, une ligne. « The Masque of the Red Death » et « La máscara de la muerte » en demandent deux : le bloc grandit avec son texte jusqu’aux 40 mm de `maxHeight`, et c’est seulement au-delà que le corps diminuerait. Le sous-titre est ancré `below` du titre, 2 mm dessous, et descend de la hauteur de la seconde ligne. L’auteur est ancré au pied du panneau et ne bouge pas.
+
+### 3 · Le résumé continue dans un autre bloc
+
+Le bloc du résumé porte `next: 'blurb-end'`. Ce qu’il ne peut contenir est coupé entre deux lignes et continue dans ce bloc, qui n’a pas de cadre à lui dans le Markdown de la couverture. La citation pend du résumé et `blurb-end` de la citation, si bien que les trois gardent leurs écarts si le premier bloc devient plus haut. Ce n’est que lorsque le second bloc manque de place à son tour que le texte de la chaîne rétrécit, d’un seul tenant, jusqu’à 90 % par défaut (`fit.minScale`). La ligne de petites capitales dorées est le dernier paragraphe du cadre du résumé ; elle ferme donc le texte dans le second bloc :
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+While a plague empties his country, Prince Prospero shuts himself up …
+:::
+
+:::paragraphs{style="cover-note"}
+From the Raven Edition of Poe's works
+:::
+:::
+```
+
+Le cadre `front` vide empêche `buildCover` de poser sur la première le titre, le sous-titre et l’auteur tirés des métadonnées du livre : ici, ce sont les blocs qui les posent.
+
+### 4 · Un broché dont le dos se calcule d’après les pages
+
+<Excerpt region="binding" />
+
+Reliure PUR en cahiers de 16 pages, sur un bouffant de 120 g/m² à une main de 2,2. Le livre compte 21 pages, 32 une fois relié, ce qui donne un dos d’environ 4,7 mm, sous les 6 mm à partir desquels un dos est titré par défaut ; la version règle `spineText.minSpine` à 4,5 et le dos porte le titre et l’auteur. L’ISBN est un numéro d’exemple, attribué à aucun livre.
+
+### 5 · Le corps du livre
+
+<Excerpt region="pages" />
+
+Faux titre, page de titre et page des mentions, puis chaque conte sur une belle page, descendu de 50 mm, sous son titre en Cinzel et un court filet rouge. Les titres courants portent l’auteur en page paire et le titre du conte en page impaire, et l’achevé d’imprimer ferme le livre sur la dernière belle page.
+
+### 6 · La feuille se construit à partir des pages composées
+
+<Excerpt region="sheet" />
+
+`buildCover` reçoit les pages, les métadonnées et le Markdown de la couverture, et renvoie un document d’une seule page, la feuille. Les blocs de texte deviennent des cadres de cette page, composés comme ceux d’une page composée. Les chiffres du code-barres demandent l’OCR-B, qu’aucun serveur de polices ne propose ; la recette les compose en Cinzel.
+
+### 7 · Où chaque bloc a fini
+
+<Excerpt region="views" />
+
+La page de la feuille revient avec ses cadres dans `page.composed.frames`, chacun avec le rectangle que la mise en page lui a donné après l’ancrage et la croissance, et `continuesTo` quand son texte se poursuit dans un autre cadre. La seconde vue encadre les six blocs sur la feuille et trace la chaîne du pied du résumé jusqu’au haut de `blurb-end`.
+
+## Variantes
+
+### Accrocher l’auteur sous le sous-titre
+
+L’auteur suit alors lui aussi le titre vers le bas, au lieu de rester au pied du panneau.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Réduire un titre long sur une ligne
+
+Sans `maxHeight`, le bloc du titre garde ses 14 mm et la mise en page réduit le titre jusqu’à ce qu’il tienne : ici sur une ligne, à environ deux tiers de son corps.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Erreurs fréquentes
+
+- Le bloc que nomme le `next` d’un autre reçoit le texte que celui-ci lui passe. Ne lui donnez pas de cadre à lui dans le Markdown de la couverture, et terminez le cadre du premier bloc par ce qui doit fermer le texte, comme la note ici.
+- Une ancre qui ne nomme rien, qui se nomme elle-même ou qui ferme une boucle est signalée, et le bloc reste sur son `rect`. Donnez à tout bloc ancré un `rect` d’une taille réelle.
+- `maxHeight` ne s’applique pas à un bloc tourné (`rotate`), qui garde la taille de son `rect`.

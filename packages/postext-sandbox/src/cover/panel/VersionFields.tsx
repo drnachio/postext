@@ -62,9 +62,9 @@ export function VersionFields({ production, version, measures, onChange }: {
       )}
       <SelectInput
         label={labels.coverSpineDirection}
-        value={version.spineText?.direction ?? 'bottomToTop'}
+        value={version.spineText?.direction ?? DEFAULT_SPINE_TEXT.direction}
         variant="segmented"
-        options={[{ value: 'bottomToTop', label: labels.coverSpineUp }, { value: 'topToBottom', label: labels.coverSpineDown }]}
+        options={[{ value: 'topToBottom', label: labels.coverSpineDown }, { value: 'bottomToTop', label: labels.coverSpineUp }]}
         onChange={(d) => onChange({ spineText: { ...version.spineText, direction: d === 'topToBottom' ? 'topToBottom' : 'bottomToTop' } })}
       />
       {/* Values against a default: marked and reset, unlike the book's data above. */}

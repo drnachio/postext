@@ -1,0 +1,884 @@
+{
+  "schemaVersion": 1,
+  "slug": "cover-foil-varnish-emboss",
+  "sourceHash": "3710df550a9f60c8cb74ad289b685111bfdca4c6c43e9b58474439af4195b4ec",
+  "engine": {
+    "postext": "1.92.0",
+    "postextPdf": "1.92.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T12:57:00.322Z",
+  "variants": {
+    "en": {
+      "hash8": "1cd99fc6",
+      "vdtHash": "b3dafdbb3bd4b577f257e5be1e1d6969c52cce1b",
+      "timings": {
+        "importMs": 688,
+        "fontsMs": 53,
+        "buildMs": 163,
+        "totalMs": 1673,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          125,
+          200
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Alegreya",
+          "Alegreya SC",
+          "Alegreya Sans SC"
+        ],
+        "pages": 28,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 4894,
+          "alt": "Opening page 1: Coplas."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 16598,
+          "alt": "Opening page 3: Coplas."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 43536,
+          "alt": "Opening page 4: Rights."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 44778,
+          "alt": "Opening page 5: Coplas de Manrique."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1600,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 68118,
+          "alt": "Page 6."
+        },
+        {
+          "n": 27,
+          "label": "27",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p27.webp",
+          "strip": "p27.s.webp",
+          "bytes": 11416,
+          "alt": "Opening page 27: Colophon."
+        },
+        {
+          "n": 28,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 802,
+          "file": "p28.webp",
+          "strip": "p28.s.webp",
+          "bytes": 90756,
+          "alt": "Page 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "cover-foil-varnish-emboss.pdf",
+        "bytes": 570915,
+        "pages": 28
+      },
+      "sandbox": {
+        "file": "cover-foil-varnish-emboss.postext",
+        "bytes": 405443,
+        "folio": "0147102c",
+        "keep": "first",
+        "pages": 27,
+        "chapters": [
+          {
+            "pages": 27,
+            "hash": "2393d3cb68b042e7",
+            "lines": "6610863ac27f2710"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "preflightDocument",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].color",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].path",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.finishes",
+          "cover.finishes[].id",
+          "cover.finishes[].ink",
+          "cover.finishes[].process",
+          "cover.finishes[].shape",
+          "cover.verticalAlign",
+          "cover.verticalAlign.back",
+          "cover.verticalAlign.front",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.outputProfile",
+          "print.standard",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].name",
+          "production.versions[].spineText"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "production"
+        ],
+        "configLeaves": 658,
+        "designElements": 18,
+        "directives": [
+          ":::paragraphs",
+          ":::verse"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-finishes",
+          "cover-sheet",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "special-inks",
+          "spot-inks",
+          "unnumbered-headings",
+          "verse"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 7 block, 2 frame, 15 line"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "159f50c8",
+      "vdtHash": "4eba91e56920ad5f2fd41bb327870e8c657820f7",
+      "timings": {
+        "importMs": 691,
+        "fontsMs": 64,
+        "buildMs": 99,
+        "totalMs": 1592,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          125,
+          200
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Alegreya",
+          "sizePt": 11,
+          "leadingPt": 15
+        },
+        "families": [
+          "Alegreya",
+          "Alegreya SC",
+          "Alegreya Sans SC"
+        ],
+        "pages": 28,
+        "ownLines": 250
+      },
+      "pages": [
+        {
+          "n": 1,
+          "label": "1",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p01.webp",
+          "strip": "p01.s.webp",
+          "bytes": 4894,
+          "alt": "Página de apertura 1: Coplas."
+        },
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 17796,
+          "alt": "Página de apertura 3: Coplas."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 47386,
+          "alt": "Página de apertura 4: Créditos."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 32778,
+          "alt": "Página de apertura 5: Coplas."
+        },
+        {
+          "n": 6,
+          "label": "6",
+          "role": "body",
+          "w": 1000,
+          "h": 1600,
+          "file": "p06.webp",
+          "strip": "p06.s.webp",
+          "bytes": 49668,
+          "alt": "Página 6."
+        },
+        {
+          "n": 27,
+          "label": "27",
+          "role": "opener",
+          "w": 1000,
+          "h": 1600,
+          "file": "p27.webp",
+          "strip": "p27.s.webp",
+          "bytes": 9446,
+          "alt": "Página de apertura 27: Colofón."
+        },
+        {
+          "n": 28,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 802,
+          "file": "p28.webp",
+          "strip": "p28.s.webp",
+          "bytes": 87708,
+          "alt": "Página 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          null,
+          1
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          4,
+          null
+        ],
+        [
+          null,
+          5
+        ],
+        [
+          null,
+          6
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "screenshot"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "cover-foil-varnish-emboss.pdf",
+        "bytes": 561251,
+        "pages": 28
+      },
+      "sandbox": {
+        "file": "cover-foil-varnish-emboss.postext",
+        "bytes": 405265,
+        "folio": "0147102c",
+        "keep": "first",
+        "pages": 27,
+        "chapters": [
+          {
+            "pages": 27,
+            "hash": "623b5dbc972c49a8",
+            "lines": "b443941914c15e19"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "preflightDocument",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].color",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].path",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.finishes",
+          "cover.finishes[].id",
+          "cover.finishes[].ink",
+          "cover.finishes[].process",
+          "cover.finishes[].shape",
+          "cover.verticalAlign",
+          "cover.verticalAlign.back",
+          "cover.verticalAlign.front",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "print",
+          "print.convertImages",
+          "print.outputProfile",
+          "print.standard",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].name",
+          "production.versions[].spineText"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "print",
+          "production"
+        ],
+        "configLeaves": 658,
+        "designElements": 18,
+        "directives": [
+          ":::paragraphs",
+          ":::verse"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Alegreya Sans SC",
+            "weight": 700,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya SC",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Alegreya",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-finishes",
+          "cover-sheet",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "special-inks",
+          "spot-inks",
+          "unnumbered-headings",
+          "verse"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 1,
+        "looseLines": {
+          "count": 0,
+          "share": 0,
+          "worst": 0
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 7 block, 2 frame, 15 line"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}

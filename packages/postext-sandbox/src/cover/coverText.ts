@@ -9,7 +9,8 @@
 // read and write the shared frames unless given the names of a sheet
 // (`case`, `endpaperFront`…), and then that sheet's own.
 
-import { coverFrames } from 'postext/production';
+import { coverFrames, coverSource } from 'postext/production';
+import type { DocumentMetadata } from 'postext';
 
 const CLOSE = /\n?[ \t]{0,3}:{3,}[ \t]*\n*$/;
 
@@ -88,6 +89,14 @@ export function coverTextSlots(zones: Iterable<string>, textBoxes: readonly { na
   return [...ZONE_TEXT_SLOTS.filter((s) => have.has(s)), ...(textBoxes ?? []).map((t) => t.name)];
 }
 
+/** The text boxes that only take the rest of another box's text
+ *  (#1679, the other's `next`), each by the box it continues. */
+export function continuedBoxes(textBoxes: readonly { name: string; next?: string }[] | undefined): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const t of textBoxes ?? []) if (t.next && t.next !== t.name && !(t.next in out)) out[t.next] = t.name;
+  return out;
+}
+
 /** The Markdown with every frame of a slot moved to another (a text box
  *  renamed); the rest as it was written. */
 export function renameCoverSlot(markdown: string | undefined, from: string, to: string): string {
@@ -101,4 +110,13 @@ export function renameCoverSlot(markdown: string | undefined, from: string, to: 
     at = f.end;
   }
   return out + md.slice(at);
+}
+
+/** The texts the front and the spine print while no frame replaces them:
+ *  the frames the cover writes from the book's metadata (its title,
+ *  subtitle and author in the cover's styles), without the page fence
+ *  round them (#1675). */
+export function metadataSlotTexts(metadata: DocumentMetadata | undefined): Record<string, string> {
+  const md = coverSource(undefined, ['front', 'spine'], metadata ?? {}).markdown;
+  return coverSlotTexts(md.replace(/^[^\n]*\n/, '').replace(/\n:{4,}\s*$/, ''));
 }

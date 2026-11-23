@@ -1136,7 +1136,7 @@ The **magnifying glass** is held over the book where the pointer is, or just abo
 Videos play on the page. In page-turning mode a click on a video's poster starts it there, and it keeps playing while the leaf turns. Another click pauses it, starting another stops the first, and a video stops when the book comes to rest on a spread that no longer shows it. A video set to play by itself starts the first time its spread is shown. YouTube and Vimeo videos cannot be drawn inside a page: a click on one turns the leaf.
 
 :::callout{type="try"}
-Open the Folio tab on this guide, turn a few pages by dragging their corners, then orbit the book with a right-drag to see its stapled fold. Reset view brings it back.
+Open the Folio tab on this guide, turn a few pages by dragging their corners, then orbit the book with a right-drag to see the title on its spine. Reset view brings it back.
 :::
 
 ## Paper
@@ -1169,7 +1169,7 @@ A stock covers whole sheets, so the content inside the run starts on a new page 
 
 The book lies on a **surface**: oak, walnut, linen, felt, leather, marble, a plain colour, or nothing at all, which leaves the background of the page. Each surface is a photographed texture, and a tint recolours any of them. Five **lights** set the scene: a studio, daylight, a reading lamp, an overcast sky and night. Each is a pair: the surroundings that coated and gloss paper reflect as a leaf turns, and a main light that casts the shadows of the block and of a lifted page onto the pages beneath it. The **exposure** brightens or darkens the scene, and the shadows can be turned off on a slow computer. The **tilt** sets how far the view leans from straight above, up to seventy degrees, and the **turn** how far it goes round the book; Save as default view stores both as you see them.
 
-This guide is set as a saddle-stitched booklet, on coated gloss paper of 170 grams, on a blue felt mat in studio light. Its covers are its own first and last pages, so it opens on the cover and closes when the last leaf turns. All of it is in the **Folio** group of the Design panel, and nothing in that group changes a single line of the pages.
+This guide is bound as its paperback, perfect bound with its title on the spine, on coated gloss paper of 170 grams, on a blue felt mat in studio light. Its covers are its own first and last pages, so it opens on the cover and closes when the last leaf turns. All of it is in the **Folio** group of the Design panel, and nothing in that group changes a single line of the pages.
 
 ## Inks and holes in the hand
 

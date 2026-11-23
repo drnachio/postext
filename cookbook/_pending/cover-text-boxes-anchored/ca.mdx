@@ -1,0 +1,97 @@
+---
+title: "Caixes de text de coberta ancorades i encadenades"
+summary: "Dos contes de Poe en rústica, amb la coberta en sis caixes de text penjades les unes de les altres, un títol que creix i una sinopsi que continua."
+plain: "Un llibret amb dos contes d'Edgar Allan Poe i el plec de la seva coberta. Cada text de la coberta va a sota, a sobre o al costat d'un altre: un títol més llarg fa baixar la resta i la contracoberta continua sota una cita."
+description: "Caixes de text de coberta a Postext: ancorades a una zona o a una altra caixa, que creixen amb el text i s'encadenen perquè la sinopsi continuï."
+question: "Com col·loco els textos d'una coberta els uns respecte dels altres, perquè un títol llarg empenyi la resta?"
+aliases: ["caixa de text de coberta", "caixes de text ancorades", "caixes enllaçades", "text de contracoberta", "sinopsi de contracoberta", "títol que creix", "cover text box", "linked text boxes"]
+pageNotes: { "22": "El plec de coberta estès. A l'esquerra la contracoberta, gairebé negra, amb una sinopsi en lletra crema que es talla després de vuit línies, una cita del conte en cursiva daurada i la resta de la sinopsi a sota, que acaba en una línia de versaletes daurades; el codi de barres ISBN a la cantonada del costat del llom. Un llom estret retolat en versaletes. A la dreta la coberta, una pintura d'un ball de màscares en una filera de sales de colors sota una volta gòtica en ombra, amb un rellotge de banús a l'esquerra i una figura amortallada a la dreta; el títol La máscara de la muerte en dues línies de majúscules crema a dalt, el subtítol en cursiva daurada a sota i el nom de l'autor en majúscules espaiades al peu." }
+---
+
+## Què compondràs
+
+Dos contes d'Edgar Allan Poe, «La máscara de la muerte» i «El retrato oval», en la traducció castellana de Carlos Olivera de 1884 (l'edició anglesa porta l'original), en una rústica de 125 × 195 mm, i el plec de la seva coberta. Cap text de la coberta no porta coordenades: cadascun és una caixa penjada d'una altra cosa. A la coberta, el títol penja de la part alta de la zona, el subtítol penja del títol i l'autor es recolza al peu. El títol ocupa dues línies a les dues edicions, així que la seva caixa creix i el subtítol baixa amb ella. A la contracoberta, la sinopsi omple una caixa de 50 mm i les línies que no hi caben continuen en una altra caixa, sota una cita del conte. Damunt de les pàgines, la recepta dibuixa el plec dues vegades: tal com s'imprimeix i amb cada caixa requadrada i la cadena marcada.
+
+## Elaboració
+
+### 1 · Cada caixa penja d'una zona o d'una altra caixa
+
+El codi és [la resposta curta](#la-resposta-curta) de dalt. Un `anchor` anomena una zona del plec o una altra caixa de text, i un punt. En una zona, el punt és un dels nou de la seva àrea segura, i la caixa hi posa el seu propi punt equivalent: `edge: 'top'` centra el títol a la coberta i recolza el seu cantell superior en el de l'àrea segura; `edge: 'bottom'` recolza el peu de l'autor en el peu de la zona. En una caixa, el punt també pot ser `below`, `above`, `right-of` o `left-of`. `x` i `y` desplacen la caixa des d'aquest punt, en mm. Amb una àncora, `rect` només dona la mida, de manera que les caixes no es mouen del seu lloc quan el llom s'engreixa o el llibre canvia de format.
+
+### 2 · El títol creix i fa baixar el subtítol
+
+<Excerpt region="cover-type" />
+
+El títol va en Cinzel de 30 pt amb 33 d'interlineat. La seva caixa fa 14 mm, una línia. «La máscara de la muerte» i «The Masque of the Red Death» en necessiten dues, així que la caixa creix amb el text fins als 40 mm de `maxHeight`; només passada aquesta alçada es reduiria la lletra. El subtítol està ancorat `below` del títol, 2 mm per sota, i baixa el que fa la segona línia. L'autor està ancorat al peu de la zona i no es mou.
+
+### 3 · La sinopsi continua en una altra caixa
+
+La caixa de la sinopsi porta `next: 'blurb-end'`. El que no hi cap es talla entre línies i continua en aquesta caixa, que no té marc propi al Markdown de la coberta. La cita penja de la sinopsi i `blurb-end` de la cita, de manera que les tres conserven la separació si la primera caixa es fa més alta. Només quan tampoc no n'hi ha prou amb la segona caixa es redueix el text de la cadena, tot alhora, fins al 90 % per defecte (`fit.minScale`). La línia en versaletes daurades és l'últim paràgraf del marc de la sinopsi, i per això tanca el text a la segona caixa:
+
+```md
+:::frame{slot="front"}
+:::
+
+:::frame{slot="blurb"}
+:::paragraphs{style="cover-blurb-first"}
+Mientras la peste vacía su país, el príncipe Próspero se encierra …
+:::
+
+:::paragraphs{style="cover-note"}
+Traducción de Carlos Olivera (1884)
+:::
+:::
+```
+
+El marc `front` buit impedeix que `buildCover` posi a la coberta el títol, el subtítol i l'autor de les metadades del llibre: aquí els posen les caixes.
+
+### 4 · Una rústica amb el llom calculat a partir de les pàgines
+
+<Excerpt region="binding" />
+
+Enquadernació fresada PUR en quaderns de 16 pàgines, sobre paper de 120 g/m² amb una mà de 2,2. El llibre té 21 pàgines, 32 un cop enquadernat, i el llom fa uns 4,7 mm. Per defecte un llom de menys de 6 mm no es retola, així que la versió posa `spineText.minSpine` a 4,5 i el llom porta el títol i l'autor. L'ISBN és un número de mostra que no correspon a cap llibre.
+
+### 5 · El cos del llibre
+
+<Excerpt region="pages" />
+
+Avantportada, portada i pàgina de crèdits; després, cada conte en pàgina senar, amb 50 mm de blanc, sota el seu títol en Cinzel i un filet vermell curt. Les capçaleres porten l'autor a la pàgina parella i el títol del conte a la senar, i el colofó tanca el llibre a l'última senar.
+
+### 6 · El plec es construeix amb les pàgines ja compostes
+
+<Excerpt region="sheet" />
+
+`buildCover` pren les pàgines, les metadades i el Markdown de la coberta i retorna un document amb una sola pàgina, el plec. Les caixes de text passen a ser marcs d'aquesta pàgina i es componen com els d'una pàgina composta. Els dígits del codi de barres demanen OCR-B, que no és a cap servidor de fonts, i la recepta els compon en Cinzel.
+
+### 7 · On ha quedat cada caixa
+
+<Excerpt region="views" />
+
+La pàgina del plec porta els seus marcs a `page.composed.frames`, cadascun amb el rectangle que li ha donat la composició després d'ancorar-lo i fer-lo créixer, i `continuesTo` quan el seu text continua en un altre marc. La segona vista requadra les sis caixes sobre el plec i dibuixa la cadena des del peu de la sinopsi fins al cantell superior de `blurb-end`.
+
+## Variants
+
+### Penja l'autor del subtítol
+
+Així l'autor també baixa amb el títol, en lloc de quedar-se al peu de la zona.
+
+```diff
+-  { name: 'author', rect: size(100, 8), anchor: { to: 'front', edge: 'bottom', y: -6 } },
++  { name: 'author', rect: size(100, 8), anchor: { to: 'subtitle', edge: 'below', y: 6 } },
+```
+
+### Redueix un títol llarg a una línia
+
+Sense `maxHeight`, la caixa del títol es queda en els seus 14 mm i la composició redueix el títol fins que hi cap: aquí en una línia, a uns dos terços del seu cos.
+
+```diff
+   { name: 'title', rect: size(100, 14), anchor: { to: 'front', edge: 'top', y: 8 },
+-    maxHeight: 40 },
++    fit: { minScale: 0.6 } },
+```
+
+## Errors freqüents
+
+- La caixa a la qual apunta el `next` d'una altra rep el text que aquella li passa. No li donis marc propi al Markdown de la coberta, i acaba el marc de la primera caixa amb el que hagi de tancar el text, com la nota d'aquí.
+- Una àncora que no anomena res, que s'anomena a si mateixa o que tanca un bucle s'avisa, i la caixa es queda en el seu `rect`. Dona a tota caixa ancorada un `rect` amb una mida real.
+- `maxHeight` no s'aplica a una caixa girada (`rotate`), que conserva la mida del seu `rect`.
