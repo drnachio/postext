@@ -1,0 +1,1099 @@
+{
+  "schemaVersion": 1,
+  "slug": "paperback-cover-with-flaps",
+  "sourceHash": "752864c29f170f5a62597078c4101ab7535fb0b160ef52599be33b6de8e82f33",
+  "engine": {
+    "postext": "1.92.0",
+    "postextPdf": "1.92.0",
+    "source": "npm"
+  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T12:56:47.366Z",
+  "variants": {
+    "en": {
+      "hash8": "3eacbf1d",
+      "vdtHash": "962365b49a429ba467d09149c3bfe789e0622822",
+      "timings": {
+        "importMs": 11188,
+        "fontsMs": 72,
+        "buildMs": 287,
+        "totalMs": 12343,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          190
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 15.2
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Crimson Pro",
+          "Josefin Sans"
+        ],
+        "pages": 38,
+        "ownLines": 189
+      },
+      "pages": [
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 21626,
+          "alt": "Opening page 3: The Spirits’ Mountain."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 36556,
+          "alt": "Opening page 4: Rights."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 8834,
+          "alt": "Opening page 5: Contents."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 9430,
+          "alt": "Opening page 7: The Spirits’ Mountain."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 67234,
+          "alt": "Opening page 9: The Spirits’ Mountain."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 112810,
+          "alt": "Page 10: I."
+        },
+        {
+          "n": 20,
+          "label": "20",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p20.webp",
+          "strip": "p20.s.webp",
+          "bytes": 135088,
+          "alt": "Page 20."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 93302,
+          "alt": "Page 21: IV."
+        },
+        {
+          "n": 23,
+          "label": "23",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p23.webp",
+          "strip": "p23.s.webp",
+          "bytes": 9312,
+          "alt": "Opening page 23: The Emerald Eyes."
+        },
+        {
+          "n": 25,
+          "label": "25",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p25.webp",
+          "strip": "p25.s.webp",
+          "bytes": 77240,
+          "alt": "Opening page 25: The Emerald Eyes."
+        },
+        {
+          "n": 37,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p37.webp",
+          "strip": "p37.s.webp",
+          "bytes": 8312,
+          "alt": "Opening page 37: Colophon."
+        },
+        {
+          "n": 38,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 552,
+          "file": "p38.webp",
+          "strip": "p38.s.webp",
+          "bytes": 60860,
+          "alt": "Page 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          null,
+          3
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          null,
+          9
+        ],
+        [
+          null,
+          10
+        ],
+        [
+          null,
+          11
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "paperback-cover-with-flaps.pdf",
+        "bytes": 601063,
+        "pages": 38
+      },
+      "sandbox": {
+        "file": "paperback-cover-with-flaps.postext",
+        "bytes": 355800,
+        "folio": "d01b95e2",
+        "keep": "first",
+        "pages": 37,
+        "chapters": [
+          {
+            "pages": 37,
+            "hash": "bfeae703d0610b07",
+            "lines": "6ac46251e658405d"
+          }
+        ],
+        "warnings": [
+          "raggedLine “From the day on which, notwithstanding your"
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.verticalAlign",
+          "cover.verticalAlign.back",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].flaps",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].isbnAddOn",
+          "production.versions[].name",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].color",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.color",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "production",
+          "toc"
+        ],
+        "configLeaves": 523,
+        "designElements": 21,
+        "directives": [
+          ":::paragraphs",
+          ":::toc"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Josefin Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-sheet",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 17,
+          "share": 0.0341,
+          "worst": 2.81
+        },
+        "raggedLines": {
+          "count": 1
+        },
+        "runtFixes": {
+          "count": 2,
+          "tracked": 2,
+          "worst": 10
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 10 block, 4 frame, 38 line"
+          },
+          {
+            "check": "C24",
+            "severity": "warn",
+            "detail": "17 of 498 justified lines (3.4 %) stretch past 2× (worst 2.81×); loosest: p. 18 2.81× “The Postigo clock struck midnight. Beatriz heard”, p. 10 2.67× “As they went, Alonso related in these words the”, p. 17 2.67× “tales of ghostly apparitions; the wind was shri…”"
+          },
+          {
+            "check": "C35",
+            "severity": "info",
+            "detail": "2 paragraphs set a line short with tracking (worst −10‰, the cap): p. 26 −10‰ “At that moment, the lord of the festival, Fernan…”, p. 20 −5‰ “When her attendants rushed in, aghast, to tell h…”"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es"
+          }
+        ]
+      }
+    },
+    "es": {
+      "hash8": "a253ca04",
+      "vdtHash": "da4a2c2f9cbba1e61e50fb5512e14b6a8e806362",
+      "timings": {
+        "importMs": 11190,
+        "fontsMs": 77,
+        "buildMs": 273,
+        "totalMs": 12347,
+        "builds": 2
+      },
+      "specimen": {
+        "trimMm": [
+          120,
+          190
+        ],
+        "dpi": 300,
+        "layoutType": "single",
+        "mirror": true,
+        "body": {
+          "family": "Crimson Pro",
+          "sizePt": 11,
+          "leadingPt": 15.2
+        },
+        "families": [
+          "Cormorant Garamond",
+          "Crimson Pro",
+          "Josefin Sans"
+        ],
+        "pages": 38,
+        "ownLines": 189
+      },
+      "pages": [
+        {
+          "n": 3,
+          "label": "3",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p03.webp",
+          "strip": "p03.s.webp",
+          "bytes": 18382,
+          "alt": "Página de apertura 3: El monte de las ánimas."
+        },
+        {
+          "n": 4,
+          "label": "4",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p04.webp",
+          "strip": "p04.s.webp",
+          "bytes": 33374,
+          "alt": "Página de apertura 4: Créditos."
+        },
+        {
+          "n": 5,
+          "label": "5",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p05.webp",
+          "strip": "p05.s.webp",
+          "bytes": 8210,
+          "alt": "Página de apertura 5: Índice."
+        },
+        {
+          "n": 7,
+          "label": "7",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p07.webp",
+          "strip": "p07.s.webp",
+          "bytes": 9448,
+          "alt": "Página de apertura 7: El monte de las ánimas."
+        },
+        {
+          "n": 9,
+          "label": "9",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p09.webp",
+          "strip": "p09.s.webp",
+          "bytes": 73126,
+          "alt": "Página de apertura 9: El monte de las ánimas."
+        },
+        {
+          "n": 10,
+          "label": "10",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p10.webp",
+          "strip": "p10.s.webp",
+          "bytes": 125654,
+          "alt": "Página 10."
+        },
+        {
+          "n": 20,
+          "label": "20",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p20.webp",
+          "strip": "p20.s.webp",
+          "bytes": 120826,
+          "alt": "Página 20: IV."
+        },
+        {
+          "n": 21,
+          "label": "21",
+          "role": "body",
+          "w": 1000,
+          "h": 1583,
+          "file": "p21.webp",
+          "strip": "p21.s.webp",
+          "bytes": 43870,
+          "alt": "Página 21."
+        },
+        {
+          "n": 23,
+          "label": "23",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p23.webp",
+          "strip": "p23.s.webp",
+          "bytes": 8526,
+          "alt": "Página de apertura 23: Los ojos verdes."
+        },
+        {
+          "n": 25,
+          "label": "25",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p25.webp",
+          "strip": "p25.s.webp",
+          "bytes": 78228,
+          "alt": "Página de apertura 25: Los ojos verdes."
+        },
+        {
+          "n": 37,
+          "label": "37",
+          "role": "opener",
+          "w": 1000,
+          "h": 1583,
+          "file": "p37.webp",
+          "strip": "p37.s.webp",
+          "bytes": 9260,
+          "alt": "Página de apertura 37: Colofón."
+        },
+        {
+          "n": 38,
+          "label": "1",
+          "role": "composed",
+          "w": 1000,
+          "h": 552,
+          "file": "p38.webp",
+          "strip": "p38.s.webp",
+          "bytes": 59648,
+          "alt": "Página 1."
+        }
+      ],
+      "spreads": [
+        [
+          null,
+          0
+        ],
+        [
+          1,
+          2
+        ],
+        [
+          null,
+          3
+        ],
+        [
+          null,
+          4
+        ],
+        [
+          5,
+          null
+        ],
+        [
+          6,
+          7
+        ],
+        [
+          null,
+          8
+        ],
+        [
+          null,
+          9
+        ],
+        [
+          null,
+          10
+        ],
+        [
+          null,
+          11
+        ]
+      ],
+      "card": {
+        "file": "card.webp",
+        "file480": "card.480.webp",
+        "w": 960,
+        "h": 720,
+        "mode": "page"
+      },
+      "og": {
+        "file": "og.jpg",
+        "w": 580,
+        "h": 622
+      },
+      "pdf": {
+        "file": "paperback-cover-with-flaps.pdf",
+        "bytes": 617319,
+        "pages": 38
+      },
+      "sandbox": {
+        "file": "paperback-cover-with-flaps.postext",
+        "bytes": 355502,
+        "folio": "d01b95e2",
+        "keep": "first",
+        "pages": 37,
+        "chapters": [
+          {
+            "pages": 37,
+            "hash": "ac570c9fc38ee1e9",
+            "lines": "04caf065433cb83d"
+          }
+        ]
+      },
+      "detected": {
+        "apis": [
+          "buildCover",
+          "buildDocumentWithFonts",
+          "decompressWoff2",
+          "inlineSvgFonts",
+          "registerResourceImage",
+          "renderPageToCanvas",
+          "renderToPdf"
+        ],
+        "configKeys": [
+          "bodyText",
+          "bodyText.avoidOrphans",
+          "bodyText.avoidWidows",
+          "bodyText.boldColor",
+          "bodyText.color",
+          "bodyText.firstLineIndent",
+          "bodyText.fontFamily",
+          "bodyText.fontSize",
+          "bodyText.hyphenation",
+          "bodyText.hyphenation.enabled",
+          "bodyText.indentAfterHeading",
+          "bodyText.italicColor",
+          "bodyText.lineHeight",
+          "bodyText.optimalLineBreaking",
+          "bodyText.referenceColor",
+          "bodyText.textAlign",
+          "colorPalette",
+          "colorPalette[].id",
+          "colorPalette[].name",
+          "colorPalette[].value",
+          "cover",
+          "cover.background",
+          "cover.elements",
+          "cover.elements[].fit",
+          "cover.elements[].height",
+          "cover.elements[].id",
+          "cover.elements[].kind",
+          "cover.elements[].resourceId",
+          "cover.elements[].width",
+          "cover.elements[].x",
+          "cover.elements[].y",
+          "cover.elements[].zone",
+          "cover.verticalAlign",
+          "cover.verticalAlign.back",
+          "folio",
+          "folio.paper",
+          "folio.paper.bulk",
+          "folio.paper.grammage",
+          "folio.paper.shade",
+          "folio.paper.type",
+          "footer",
+          "footer.elements",
+          "footer.elements[].align",
+          "footer.elements[].color",
+          "footer.elements[].content",
+          "footer.elements[].fontFamily",
+          "footer.elements[].fontSize",
+          "footer.elements[].id",
+          "footer.elements[].kind",
+          "footer.elements[].overflow",
+          "footer.elements[].pages",
+          "footer.elements[].placement",
+          "header",
+          "header.elements",
+          "header.elements[].align",
+          "header.elements[].color",
+          "header.elements[].content",
+          "header.elements[].fontFamily",
+          "header.elements[].fontSize",
+          "header.elements[].fontWeight",
+          "header.elements[].id",
+          "header.elements[].kind",
+          "header.elements[].letterSpacing",
+          "header.elements[].overflow",
+          "header.elements[].pages",
+          "header.elements[].parity",
+          "header.elements[].placement",
+          "header.elements[].textTransform",
+          "headingStyles",
+          "headingStyles[].advancedDesign",
+          "headingStyles[].advancedDesign.enabled",
+          "headingStyles[].advancedDesign.minHeight",
+          "headingStyles[].advancedDesign.slot",
+          "headingStyles[].breakBefore",
+          "headingStyles[].breakBefore.enabled",
+          "headingStyles[].breakBefore.parity",
+          "headingStyles[].footer",
+          "headingStyles[].footer.elements",
+          "headingStyles[].header",
+          "headingStyles[].header.elements",
+          "headingStyles[].id",
+          "headingStyles[].numbered",
+          "headingStyles[].toc",
+          "headings",
+          "headings.color",
+          "headings.fontFamily",
+          "headings.levels",
+          "headings.levels[].color",
+          "headings.levels[].fontSize",
+          "headings.levels[].fontWeight",
+          "headings.levels[].level",
+          "headings.levels[].lineHeight",
+          "headings.levels[].marginBottom",
+          "headings.levels[].marginTop",
+          "headings.textAlign",
+          "layout",
+          "layout.layoutType",
+          "locale",
+          "page",
+          "page.backgroundColor",
+          "page.dpi",
+          "page.height",
+          "page.margins",
+          "page.margins.bottom",
+          "page.margins.left",
+          "page.margins.mirror",
+          "page.margins.right",
+          "page.margins.top",
+          "page.sizePreset",
+          "page.width",
+          "paragraphStyles",
+          "paragraphStyles[].color",
+          "paragraphStyles[].firstLineIndent",
+          "paragraphStyles[].fontFamily",
+          "paragraphStyles[].fontSize",
+          "paragraphStyles[].fontWeight",
+          "paragraphStyles[].hyphenation",
+          "paragraphStyles[].id",
+          "paragraphStyles[].italic",
+          "paragraphStyles[].italicColor",
+          "paragraphStyles[].letterSpacing",
+          "paragraphStyles[].lineHeight",
+          "paragraphStyles[].marginBottom",
+          "paragraphStyles[].marginTop",
+          "paragraphStyles[].textAlign",
+          "paragraphStyles[].textTransform",
+          "production",
+          "production.bindings",
+          "production.bindings[].id",
+          "production.bindings[].measures",
+          "production.bindings[].name",
+          "production.bindings[].signature",
+          "production.bindings[].style",
+          "production.versions",
+          "production.versions[].binding",
+          "production.versions[].flaps",
+          "production.versions[].id",
+          "production.versions[].isbn",
+          "production.versions[].isbnAddOn",
+          "production.versions[].name",
+          "toc",
+          "toc.leader",
+          "toc.leader.char",
+          "toc.leader.gap",
+          "toc.levels",
+          "toc.levels[].color",
+          "toc.levels[].fontFamily",
+          "toc.levels[].fontSize",
+          "toc.levels[].level",
+          "toc.levels[].marginBottom",
+          "toc.pageNumber",
+          "toc.pageNumber.color",
+          "toc.pageNumber.fontFamily",
+          "toc.pageNumber.fontSize",
+          "toc.pageNumber.width"
+        ],
+        "configSections": [
+          "bodyText",
+          "colorPalette",
+          "cover",
+          "folio",
+          "footer",
+          "header",
+          "headingStyles",
+          "headings",
+          "layout",
+          "locale",
+          "page",
+          "paragraphStyles",
+          "production",
+          "toc"
+        ],
+        "configLeaves": 523,
+        "designElements": 21,
+        "directives": [
+          ":::paragraphs",
+          ":::toc"
+        ],
+        "inline": [
+          "{attrs}"
+        ],
+        "resources": {
+          "svg": 0,
+          "bitmap": 1,
+          "table": 0
+        },
+        "fonts": [
+          {
+            "family": "Cormorant Garamond",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "italic"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 500,
+            "style": "normal"
+          },
+          {
+            "family": "Cormorant Garamond",
+            "weight": 600,
+            "style": "normal"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "italic"
+          },
+          {
+            "family": "Crimson Pro",
+            "weight": 400,
+            "style": "normal"
+          },
+          {
+            "family": "Josefin Sans",
+            "weight": 600,
+            "style": "normal"
+          }
+        ],
+        "features": [
+          "cover-sheet",
+          "folio-appearance",
+          "heading-attributes",
+          "heading-styles",
+          "opener-design",
+          "page-background",
+          "page-role-filters",
+          "paragraph-styles",
+          "pdf-export",
+          "pdf-fonts",
+          "print-versions",
+          "resources",
+          "section-running-heads",
+          "toc",
+          "unnumbered-headings"
+        ],
+        "suggestedLevel": 3
+      },
+      "diagnostics": {
+        "converged": true,
+        "iterationCount": 2,
+        "looseLines": {
+          "count": 1,
+          "share": 0.0021,
+          "worst": 2.47
+        },
+        "raggedLines": {
+          "count": 0
+        },
+        "findings": [
+          {
+            "check": "C40",
+            "severity": "info",
+            "detail": "every element came back to its source: 10 block, 4 frame, 35 line"
+          },
+          {
+            "check": "C34",
+            "severity": "info",
+            "detail": "capture.expect.raggedLines accepts 1, and the edition has 0"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "capture.sandbox keeps build 1 of 2: the bundle is that document alone"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "cover Markdown carried as cover.md"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en"
+          }
+        ]
+      }
+    }
+  }
+}
