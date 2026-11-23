@@ -83,8 +83,8 @@ describe("the cover's Markdown", () => {
     const { markdown } = coverSource(':::frame{slot="back"}\nBlurb.\n:::', slots, { title: 'C++ *Primer*', subtitle: 'Fifth edition', author: 'S. Lippman' });
     expect(markdown).toContain(':::frame{slot="back"}\nBlurb.\n:::');
     expect(markdown).toContain(':::frame{slot="front"}\n:::paragraphs{style="cover-title"}\nC\\+\\+ \\*Primer\\*\n:::');
-    expect(markdown).toContain(':::paragraphs{style="cover-author"}\nS\\. Lippman\n:::');
-    expect(markdown).toContain(':::frame{slot="spine"}\n:::paragraphs{style="cover-spine"}\nC\\+\\+ \\*Primer\\* · S\\. Lippman\n:::');
+    expect(markdown).toContain(':::paragraphs{style="cover-author"}\nS. Lippman\n:::');
+    expect(markdown).toContain(':::frame{slot="spine"}\n:::paragraphs{style="cover-spine"}\nC\\+\\+ \\*Primer\\* · S. Lippman\n:::');
   });
 
   it('leaves a front or a spine the cover writes itself alone, and fills nothing without metadata', () => {
@@ -101,7 +101,7 @@ describe("the cover's Markdown", () => {
   });
 
   it('writes text as Markdown that reads as written', () => {
-    expect(markdownLiteral('  A_b [c](d)\n:::x  ')).toBe('A\\_b \\[c\\]\\(d\\) \\:\\:\\:x');
+    expect(markdownLiteral('  A_b [c](d)\n:::x 5$  ')).toBe('A\\_b [c](d) :::x 5\\$');
   });
 });
 

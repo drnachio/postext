@@ -143,6 +143,16 @@ describe('the catalogue', () => {
   });
 });
 
+describe('text read from the metadata and the catalogue', () => {
+  it('prints its punctuation as written, with no backslash', () => {
+    const title = 'The Spanish-English Lady: *one* (1613), 5$ & [more] — user@mail';
+    const text = words(buildCover({ config, version: 'hc', pages: 200, metadata: { title }, sheet: 'jacket' }) as BuiltCover);
+    expect(text).not.toContain('\\');
+    expect(text).toContain('Spanish-English Lady: *one* (1613), 5$');
+    expect(expandCatalogueText('::catalogue{numbers="none"}', { name: 'Novelas', catalogue: [{ id: 'x', title: 'The Spanish-English Lady' }] })).toContain('\nThe Spanish-English Lady\n');
+  });
+});
+
 describe('the checks', () => {
   it('report a sheet no version has, a catalogue’s bad numbers and a volume not in the catalogue', () => {
     const bad = {

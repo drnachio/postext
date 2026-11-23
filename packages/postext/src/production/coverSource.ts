@@ -48,10 +48,15 @@ export function coverFrames(markdown: string): { slot: string; start: number; en
   return out;
 }
 
-/** Text as Markdown that reads as written: every ASCII punctuation mark
- *  escaped, line breaks as spaces. */
+/** The marks the inline parser reads back after a backslash: emphasis,
+ *  strikethrough, super- and subscript, code, cross-references and maths.
+ *  Any other mark escaped would print its backslash. */
+const LITERAL_MARKS = /[*_^~+`@$]/g;
+
+/** Text as Markdown that reads as written: the inline marks escaped, line
+ *  breaks as spaces. */
 export function markdownLiteral(text: string): string {
-  return text.replace(/\s+/g, ' ').trim().replace(/[!-/:-@[-`{-~]/g, (c) => `\\${c}`);
+  return text.replace(/\s+/g, ' ').trim().replace(LITERAL_MARKS, (c) => `\\${c}`);
 }
 
 const metaText = (v: unknown): string => (typeof v === 'string' ? v.trim() : typeof v === 'number' ? String(v) : '');
