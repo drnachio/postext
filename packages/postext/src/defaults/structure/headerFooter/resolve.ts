@@ -208,6 +208,7 @@ function resolveCutElement(el: DesignCutElement, idx: number): ResolvedDesignPat
     reserve: false,
     ...(el.pin ? { pin: true } : {}),
     cut: {
+      ...(el.process === 'emboss' || el.process === 'deboss' ? { process: el.process } : {}),
       ...(typeof el.die === 'string' && el.die.trim() ? { die: el.die.trim() } : {}),
       ...(typeof el.leaves === 'number' ? { leaves: el.leaves } : {}),
       ...(el.wrap !== undefined ? { wrap: el.wrap === false ? false as const : { ...el.wrap } } : {}),

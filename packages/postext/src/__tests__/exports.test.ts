@@ -3,6 +3,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync as readFile } from "node:fs";
 import * as postext from "../index.js";
 import * as writer from "../writer/index.js";
+import * as production from "../production/index.js";
 import type {
   Resource,
   ResourceType,
@@ -533,6 +534,7 @@ describe("package exports", () => {
       "folioDefaultsFor",
       "folioForTrim",
       "resolveFolioConfig",
+      "resolvePagePaper",
       "stripFolioDefaults",
       "wrapFolioYaw",
       "DEFAULT_HEADER_FOOTER_SLOT",
@@ -1174,6 +1176,7 @@ describe("package subpath exports", () => {
     expect(Object.keys(manifest.exports)).toEqual([
       ".",
       "./bundle",
+      "./production",
       "./word",
       "./writer",
       "./react",
@@ -1220,5 +1223,96 @@ describe("package subpath exports", () => {
       "attrValue",
       "slugify",
     ]);
+  });
+});
+
+// The print cover's geometry (#1655, #1665): its own entry, so the
+// package root stays the layout engine's.
+describe("postext/production", () => {
+  it("exports the cover sheets, the spine, the ISBN and the cover as a document", () => {
+    expect(Object.keys(production).sort()).toEqual([
+      "BARCODE_RESOURCE_ID",
+      "BASIC_SHAPES",
+      "BUILT_IN_BINDING_PROFILES",
+      "CATALOGUE_CURRENT_STYLE",
+      "CATALOGUE_STYLE",
+      "COVER_FINISH_INKS",
+      "COVER_FRAME_SHEETS",
+      "COVER_ID_PREFIX",
+      "COVER_PARAGRAPH_STYLES",
+      "COVER_SLOT_ZONES",
+      "COVER_TEMPLATE_ID",
+      "DEFAULT_BINDING_MEASURES",
+      "DEFAULT_SPINE_TEXT",
+      "EAN13_BAR_HEIGHT_MM",
+      "EAN13_MIN_MAGNIFICATION",
+      "EAN13_MODULE_MM",
+      "EAN13_QUIET_ZONE",
+      "EAN_ADDON_GAP",
+      "FOLIO_BINDING_OF_STYLE",
+      "PRODUCTION_FILE_FORMAT",
+      "PRODUCTION_FILE_VERSION",
+      "PROMO_FORMATS",
+      "basicShape",
+      "buildCover",
+      "caseBoard",
+      "caseSheet",
+      "caseSpineWidth",
+      "catalogueRange",
+      "checkProfileAccepts",
+      "coverDesignFor",
+      "coverElementRect",
+      "coverFrames",
+      "coverPage",
+      "coverParagraphStyles",
+      "coverPathBounds",
+      "coverPathCommands",
+      "coverSheetNames",
+      "coverSource",
+      "coverZoneBox",
+      "ean13CheckDigit",
+      "ean13Symbol",
+      "endpaperSheet",
+      "expandCatalogueText",
+      "exportProductionProfiles",
+      "findBindingProfile",
+      "flattenCoverPath",
+      "folioOfBook",
+      "folioVersionOf",
+      "importProductionProfiles",
+      "isCaseBinding",
+      "isbnBarcodeSvg",
+      "isbnCaption",
+      "jacketSheet",
+      "leafMm",
+      "markdownLiteral",
+      "mirrorSheet",
+      "outlinePathData",
+      "pageRunsOf",
+      "parseIsbn",
+      "pathData",
+      "placeCoverElement",
+      "productionFolioBinding",
+      "promoSheet",
+      "readBindingProfile",
+      "readPaperProfile",
+      "readProductionConfig",
+      "resolveBindingMeasures",
+      "resolveLength",
+      "roundedRectPath",
+      "sheetGuides",
+      "signaturePages",
+      "softcoverSheet",
+      "spineFromRuns",
+      "spineSafeMargin",
+      "versionSheets",
+      "withCatalogue",
+      "workIsbnCaption",
+    ]);
+  });
+
+  it("keeps them out of the package root", () => {
+    expect(Object.keys(postext)).not.toContain("parseIsbn");
+    expect(Object.keys(postext)).not.toContain("basicShape");
   });
 });

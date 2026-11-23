@@ -1,0 +1,78 @@
+---
+title: "Una coberta amb or, vernís a registre i gofrat"
+summary: "Les Coplas de Manrique en rústica, amb vernís brillant sobre la pintura, una cartel·la d'or sobre un gofrat i un gofrat en sec, cada acabat a la seva planxa."
+plain: "Un llibret amb un poema clàssic i el plec de la seva coberta. Algunes parts es tracten després d'imprimir: una capa brillant sobre la pintura, un marc d'or estampat i formes en relleu sobre la cartolina."
+description: "Vernís a registre, estampació en or i gofrat a Postext: acabats sobre formes del disseny, tintes planes en un PDF/X-4 i una planxa de gofrat."
+question: "Com poso vernís a registre, or i un títol gofrat en una coberta?"
+aliases: ["vernís a registre", "vernís UVI selectiu", "estampació en calent", "estampació en or", "gofrat", "gofrat en sec", "baix relleu", "acabats de coberta", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "El plec de coberta estès. A l'esquerra la contracoberta, verd ampolla, amb tres versos del poema en cursiva ocre, dos paràgrafs sobre Rodrigo Manrique i la traducció, i el codi de barres ISBN sobre fons blanc al peu. Un llom estret retolat en versaletes. A la dreta la coberta, una pintura d'un castell en ruïnes sobre un penyal a la posta, damunt d'un riu amb pollancres i una barca entre els joncs; al mig, una cartel·la verd fosc amb els cantons en arc cap endins i un doble marc daurat guarda el títol Coplas, el subtítol i l'autor. Al voltant, les marques de tall i de plec." }
+---
+
+## Què compondràs
+
+Les *Coplas* de Jorge Manrique per la mort del seu pare (l'edició anglesa porta la traducció de Longfellow, la castellana l'original) en una rústica de 125 × 200 mm, i el plec de coberta que passa al taller d'acabats quan ja s'han imprès les quatre tintes. Porta tres acabats. Un vernís brillant a registre cobreix la pintura per sobre i per sota de la cartel·la. El doble marc de la cartel·la s'estampa en or, i el plafó que tanca va gofrat, de manera que el títol queda sobre un camp en relleu. A la contracoberta, un rombe en gofrat en sec: sense tinta, només la cartolina aixecada. Sota el llibre, la recepta dibuixa el plec quatre vegades: tal com s'imprimeix, amb les planxes de vernís i or en fals color, amb llum rasant i com la planxa de gofrat de la qual parteix el gravador del motlle. El PDF és PDF/X-4 i porta una planxa per a cada acabat.
+
+## Elaboració
+
+### 1 · Cada acabat segueix una forma del disseny
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Un acabat indica un procés, una tinta si el procés n'imprimeix i una forma: un element de la coberta (`{ element: 'cartouche' }`), una caixa en una de les seves zones o un contorn dins d'una caixa. El vernís i l'or són tintes planes amb `finish` a la paleta, de manera que cadascuna té la seva planxa al PDF i el control previ les enumera. El gofrat no imprimeix res. Va en una planxa tècnica que el fitxer d'impremta anomena Emboss, la que fa servir el gravador, i a la pàgina no es pinta.
+
+El vernís són dues caixes, una per sobre de la cartel·la i una per sota, que s'aturen a 4 mm d'ella perquè el vernís no trepitgi mai l'or. La contracoberta i el llom queden mats. El llibre té 27 pàgines de paper de 120 g/m² amb una mà de 2,2, 32 un cop enquadernat en quaderns de 16, i això dona un llom de 4,7 mm. Per defecte un llom de menys de 6 mm no es retola, així que la versió posa `spineText.minSpine` a 4,5. L'ISBN és un número de mostra que no correspon a cap llibre.
+
+### 2 · La cartel·la és un traçat del disseny, no una imatge
+
+<Excerpt region="art" />
+
+L'or i el gofrat prenen el contorn exacte de l'element que assenyalen, així que el marc ha de ser una forma el traçat de la qual conegui el motor. Un traçat de coberta és una llista de contorns tancats amb nodes expressats en fraccions de la caixa de l'element i nanses d'entrada i de sortida per a les corbes. Cada cantó és un quart de cercle girat cap endins, dibuixat com una cúbica. Un anell és un contorn exterior i un altre d'interior recorregut en sentit contrari: amb la regla nonzero, l'espai entre tots dos queda buit. Dos anells fan el doble marc. El marc té el color del plafó, de manera que en quadricromia no imprimeix res i el porta la planxa de l'or. L'emblema de la contracoberta és un contorn desat, dos rombes, el petit invertit.
+
+### 3 · Els estils de la coberta
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` i `cover-spine` són els noms que `buildCover` dona a les metadades que col·loca; `cover-quote`, `cover-blurb` i `cover-note` s'anomenen al Markdown de la coberta. La coberta es centra en alçada (`verticalAlign`), i així el títol cau dins la cartel·la sigui quin sigui el seu cos.
+
+### 4 · El cos del llibre
+
+<Excerpt region="pages" />
+
+Avantportada, portada, crèdits i el poema des d'una senar, 46 mm més avall, compost en vers que no parteix cap estrofa entre dues pàgines. Els titulets porten l'autor a la parell i el títol a la senar. El colofó tanca el llibre a l'última senar.
+
+### 5 · El plec surt de les pàgines compostes
+
+<Excerpt region="sheet" />
+
+`buildCover` rep les pàgines, les metadades i el Markdown de la coberta i torna un document per a `buildDocumentWithFonts`, a més del codi de barres en SVG. Les xifres del codi demanen OCR-B, que no té cap servidor de fonts, així que la recepta les compon en Alegreya Sans SC, que ja és carregada.
+
+### 6 · Què cobreix cada planxa
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` pinta els acabats de tres maneres. `flat` pinta les tintes com les posa la màquina: l'or en el seu color i el vernís gens. `map` esmorteeix el plec i marca cada planxa especial en fals color. `sheen` passa una llum rasant pel plec, i el vernís i l'or la recullen. El gofrat no surt en cap de les tres, perquè no imprimeix; la quarta vista dibuixa en negre sobre el plec esmorteït les planxes tècniques de la pàgina (`page.plates`), els contorns que el PDF omple a la seva separació Emboss. La línia de sota llegeix les tintes planes de `preflightDocument` i els processos de les planxes.
+
+## Variants
+
+### Gofrat enfonsat a l'emblema
+
+El baix relleu enfonsa la forma a la cartolina en lloc d'aixecar-la, i va en una planxa Deboss pròpia.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Vernís sobre tota la pintura
+
+Un sol acabat sobre l'element de la pintura substitueix les dues caixes. Aleshores el vernís passa també per la cartel·la i el títol.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Errors freqüents
+
+- Un gofrat o un baix relleu a menys de 3 mm del tall o d'un plec el senyala el control previ (`reliefTrim`, `reliefFold`): allà la cartolina s'esquerda. Deixa els relleus lluny dels plecs del llom.
+- El gofrat no es pinta mai a la pantalla. Comprova'l a la separació Emboss del PDF o dibuixa `page.plates`, com fa la recepta.
+- Un acabat posat sobre un marc de text en tapa les línies a les vistes i al fitxer d'impremta. Deixa part del text fora de l'or, com aquí el títol, que va al buit de la cartel·la.

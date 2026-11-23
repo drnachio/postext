@@ -23,6 +23,7 @@ export function contentOfLoaded(loaded: LoadedPreset): ProjectContent {
     activeChapterId: loaded.chapters[0]!.id,
     ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}),
     ...(loaded.start ? { start: loaded.start } : {}),
+    ...(loaded.coverMarkdown ? { coverMarkdown: loaded.coverMarkdown } : {}),
   };
   return { ...book, config: loaded.config, resources: loaded.resources };
 }

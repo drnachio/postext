@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: un agente trabajando en el Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 64 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
+  description: 'Qué puede hacer un agente de IA en el navegador con el Sandbox gracias a sus 71 herramientas WebMCP (mirar las páginas, cambiar cualquier ajuste, editar el texto, añadir imágenes, tablas y fuentes, pasar las comprobaciones, exportar) y cómo se invoca cada una, con argumentos y respuestas reales',
   lang: 'es',
-  lastUpdated: '2026-11-12',
-  readingTime: '13 min',
-  order: 53,
+  lastUpdated: '2026-11-23',
+  readingTime: '14 min',
+  order: 54,
   plainSummary: "Esta página es para quien quiere que un asistente de inteligencia artificial trabaje por él en un libro del Sandbox. Mientras el Sandbox está abierto, le da al asistente un juego de herramientas para mirar cualquier página, cambiar el diseño, editar el texto, añadir imágenes y tablas, encontrar problemas y guardar archivos. Tú se lo pides con tus palabras, por ejemplo «sube un poco la letra y comprueba que el libro sigue cabiendo en 40 páginas», y el asistente usa las herramientas y te enseña las páginas. Todo se queda en tu navegador. La página explica cómo conectar un asistente, qué puede hacer y cómo se invoca cada herramienta.",
 };
 
@@ -23,7 +23,7 @@ libro, pide una imagen de la página 12, pone `bodyText.fontSize` a 10,5 pt, ve
 que el capítulo ha pasado de 18 a 19 páginas y lo deja como estaba. Hace lo
 mismo que tú haces a ojo, con tu libro y en tu navegador.
 
-Hay 64 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
+Hay 71 herramientas cuyo nombre empieza por `sandbox_`, registradas mientras el
 Sandbox está en pantalla, y 8 herramientas del sitio, `site_*`, en todas las
 páginas de postext.dev. Esta página las ordena según lo que le pedirías a un
 agente y muestra cómo se invoca cada una.
@@ -40,7 +40,7 @@ nada que instalar ni configurar.
 WebMCP sigue siendo un borrador. Chrome lo ofrece como prueba de origen (origin
 trial) y tras la marca experimental `chrome://flags/#enable-webmcp-testing`. Las herramientas dependen de
 la página: en la portada o en la documentación el agente tiene las herramientas
-`site_*`; cuando el Sandbox está en pantalla aparecen además las 55
+`site_*`; cuando el Sandbox está en pantalla aparecen además las 71
 herramientas `sandbox_*`.
 
 ### En cualquier otro navegador: `window.postextWebMcp`
@@ -648,6 +648,54 @@ viñeta. El formato se explica en [Cómics](/es/docs/comics).
 
 - **Diseños.** `sandbox_list_designs` enumera la galería del panel Diseño (diseños guardados, los que trae el Sandbox y los de los libros de ejemplo) con sus partes. `sandbox_save_design` guarda el diseño de un libro, `sandbox_try_design` prueba uno en el libro en pantalla y `sandbox_end_design_trial` lo conserva o lo descarta (Descartar devuelve solo lo que el diseño sustituyó), `sandbox_apply_design` aplica uno de una vez o como estilo de capítulo, `sandbox_import_design` y `sandbox_export_design` leen y escriben archivos de diseño, y `sandbox_delete_design` elimina uno guardado. Todas aceptan `parts`, los grupos del panel Diseño, y responden con los estilos que nombra el texto y que al diseño le faltan.
 
+### Cubiertas para imprenta
+
+Las versiones impresas y el diseño de la cubierta son ajustes: `sandbox_set_config`
+escribe `production.versions`, `production.collection` y `cover`
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Cinco
+herramientas leen, escriben y exportan lo demás, como hace el panel Cubierta:
+
+- `sandbox_cover_get` lee la cubierta de una versión (`version`, la primera por
+  defecto) y uno de sus pliegos (`sheet`: `cover`, `jacket`,
+  `endpaperFront` o `endpaperBack`): las versiones, el tamaño y el lomo del pliego
+  en mm con las páginas de las que salen, el rectángulo de cada zona, los huecos
+  donde va el texto de la cubierta con el texto que tiene cada uno (y
+  `sheetText`, el texto que unas tapas, una sobrecubierta o una guarda tienen
+  solo para sí), el diseño con el que se dibuja el pliego (`design.uses`: `book`
+  o el nombre del suyo en `cover.sheets`; `design.choices`: los diseños propios
+  que puede tomar), los elementos del diseño colocados en el pliego, la
+  colección (`collection`) y las revisiones.
+- `sandbox_cover_write_text` escribe el Markdown de un hueco, una zona o una caja
+  de texto por su nombre; `text: null` lo quita, y la cubierta y el lomo vuelven
+  al título, el subtítulo y el autor de los metadatos. Un mismo texto sirve a
+  todas las versiones y pliegos; con `thisSheetOnly: true` se escribe solo para
+  unas tapas, una sobrecubierta o una guarda, y allí ocupa el lugar del texto
+  compartido. Es un paso del historial de deshacer.
+- `sandbox_cover_export` escribe el pliego como PDF para la imprenta
+  (`format: "pdf"`, con los resultados del preflight) o una zona como JPEG
+  (`format: "jpeg"`, `zone`, `longSide`), descargado o, con
+  `deliver: "data"`, devuelto codificado en base64.
+- `sandbox_cover_sheet_design` elige el diseño con el que se dibuja un pliego de
+  un cartoné, como hace «Diseño de este pliego»: `design: "book"` (el diseño de
+  cubierta del libro), `"own"` (el de las tapas o la sobrecubierta, o el de esta
+  guarda sola) o `"endpapers"` (uno para las dos guardas), que empieza como copia
+  del del libro. Después, `patch` cambia campos de ese diseño (`background`,
+  `image`, `elements`, `textBoxes`…; `null` quita uno). Es un paso del historial
+  de deshacer.
+- `sandbox_cover_set_collection` escribe la colección a la que pertenece el
+  libro: `name`, `isbn`, `catalogue` (los títulos en orden, cada uno
+  `{ id, title, resource? }`, que sustituye la lista entera) y `volume` (el
+  identificador del catálogo que es este libro, `null` para ninguno). Un campo
+  que no se pasa se queda como está. `::catalogue` en el texto de la cubierta
+  compone los títulos como lista, y un elemento de cubierta de tipo `catalogue`
+  coloca sus imágenes. Es un paso del historial de deshacer.
+
+```json
+{ "slot": "back", "text": "Una ciudad que guarda sus libros bajo tierra.\n\nY la muchacha que los lee en voz alta." }
+```
+
+Véase [Cubiertas para imprenta](/es/docs/print-covers).
+
 ### Preguntas y avisos
 
 Cuando un enlace abre un libro del que ya tienes tu propia versión, el Sandbox
@@ -752,6 +800,8 @@ de cada una se obtienen con `postextWebMcp.listTools()`.
 - **Recursos y fuentes**: `sandbox_list_resources`, `sandbox_save_resource`,
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Cómics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
+- **Páginas compuestas**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
+- **Cubiertas para imprenta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
 - **Libros y archivos**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

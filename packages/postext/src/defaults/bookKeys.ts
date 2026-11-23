@@ -18,7 +18,7 @@ export const BOOK_PAGE_KEYS = ['sizePreset', 'width', 'height', 'dpi', 'cutLines
  *  types, one print production and PDF, one set of viewers and checks. */
 export const BOOK_WIDE_KEYS = [
   'locale', 'direction', 'numerals', 'customFonts', 'symbolFont', 'resourceTypes',
-  'print', 'pdfGeneration', 'htmlViewer', 'canvasViewer', 'folio', 'dieCuts',
+  'print', 'pdfGeneration', 'htmlViewer', 'canvasViewer', 'folio', 'production', 'cover', 'dieCuts',
   'debug', 'checks', 'contrast', 'chapterStyles', 'composedViewerLeaf',
 ] as const satisfies readonly (keyof PostextConfig)[];
 
@@ -26,7 +26,7 @@ export const BOOK_WIDE_KEYS = [
  *  design: a design template neither takes them from the book it is saved
  *  from nor sets them on the book it is applied to. */
 export const BOOK_OWN_KEYS = [
-  'locale', 'direction', 'numerals', 'resourceTypes', 'debug', 'checks', 'composedViewerLeaf',
+  'locale', 'direction', 'numerals', 'resourceTypes', 'debug', 'checks', 'composedViewerLeaf', 'production',
 ] as const satisfies readonly (keyof PostextConfig)[];
 
 export type BookWideKey = (typeof BOOK_WIDE_KEYS)[number];

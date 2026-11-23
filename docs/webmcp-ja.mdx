@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP：Sandboxで作業するエージェント',
   sidebarTitle: 'WebMCP',
-  description: 'ブラウザーで動くAIエージェントが64のWebMCPツールでSandboxに対してできること（ページを見る、どの設定でも変える、本文を編集する、画像・表・フォントを加える、検査する、書き出す）と、実際の引数と応答で示す各ツールの呼び出し方',
+  description: 'ブラウザーで動くAIエージェントが71のWebMCPツールでSandboxに対してできること（ページを見る、どの設定でも変える、本文を編集する、画像・表・フォントを加える、検査する、書き出す）と、実際の引数と応答で示す各ツールの呼び出し方',
   lang: 'ja',
-  lastUpdated: '2026-11-12',
-  readingTime: '13分',
-  order: 53,
+  lastUpdated: '2026-11-23',
+  readingTime: '14分',
+  order: 54,
   plainSummary: "このページは、Sandboxでの本の作業をAIアシスタントに任せたい人のためのものです。Sandboxを開いている間、アシスタントには、ページを見る、デザインを変える、本文を直す、画像や表を加える、問題を見つける、ファイルを保存するための道具が渡されます。たとえば「本文を少し大きくして、本が40ページに収まるか確かめて」と普段の言葉で頼むと、アシスタントが道具を使い、そのページを見せてくれます。作業はすべてお使いのブラウザーの中で行われます。このページでは、アシスタントのつなぎ方、アシスタントにできること、各ツールの呼び出し方を説明します。",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 [Sandbox](/ja/docs/sandbox)は、[WebMCP](https://webmachinelearning.github.io/webmcp/)を通じてエージェントに専用のツールを渡します。WebMCPはWeb標準の草案で、ページがブラウザーとやり取りしているAIモデルにツールを渡せるようにするものです。エージェントはこのツールを使うので、画面をクリックしてたどる必要がありません。本を読み、12ページの画像を求め、`bodyText.fontSize`を10.5 ptにし、章が18ページから19ページに増えたのを見て、元に戻します。人が目で確かめながらすることを、あなたの本に対して、あなたのブラウザーの中で行います。
 
-ツールは、名前が`sandbox_`で始まるものが64個あり、Sandboxが画面にある間だけ登録されます。ほかに、postext.devのどのページにもあるサイトのツール`site_*`が8個あります。このページでは、エージェントに頼みたい内容ごとにツールを分け、それぞれの呼び出し方を示します。
+ツールは、名前が`sandbox_`で始まるものが71個あり、Sandboxが画面にある間だけ登録されます。ほかに、postext.devのどのページにもあるサイトのツール`site_*`が8個あります。このページでは、エージェントに頼みたい内容ごとにツールを分け、それぞれの呼び出し方を示します。
 
 ## エージェントをつなぐ
 
@@ -25,7 +25,7 @@ export const metadata = {
 
 ツールはSandboxがマウントされたときに`document.modelContext`に登録され、Sandboxを離れると取り下げられます。ブラウザーからページのツールを受け取るエージェントは、そこでツールを見つけます。Postext側でインストールや設定をするものはありません。
 
-WebMCPはまだ草案の段階です。Chromeではオリジントライアルとして、また`chrome://flags/#enable-webmcp-testing`のフラグで使えます。ツールはページに従います。ホームページやドキュメントでは、エージェントが使えるのは`site_*`のツールで、Sandboxが画面に出ると64個の`sandbox_*`のツールが加わります。
+WebMCPはまだ草案の段階です。Chromeではオリジントライアルとして、また`chrome://flags/#enable-webmcp-testing`のフラグで使えます。ツールはページに従います。ホームページやドキュメントでは、エージェントが使えるのは`site_*`のツールで、Sandboxが画面に出ると71個の`sandbox_*`のツールが加わります。
 
 ### そのほかのブラウザー：`window.postextWebMcp`
 
@@ -455,6 +455,22 @@ await browser.close();
 
 - **デザイン**：`sandbox_list_designs`はデザインパネルのギャラリー（保存したデザイン、Sandbox付属のもの、サンプルの本のもの）をパーツ付きで一覧にします。`sandbox_save_design`は本のデザインを保存し、`sandbox_try_design`は表示中の本でデザインを試し、`sandbox_end_design_trial`はそれを残すか破棄します（破棄すると、デザインが置き換えたものだけが戻ります）。`sandbox_apply_design`はすぐに、または章スタイルとして適用し、`sandbox_import_design`と`sandbox_export_design`はデザインファイルを読み書きし、`sandbox_delete_design`は保存したデザインを削除します。どれもデザインパネルのグループである`parts`を受け取り、本文が使っているのにデザインにないスタイルを返します。
 
+### 印刷用の表紙
+
+印刷版と表紙のデザインは設定です。`sandbox_set_config`で`production.versions`、`production.collection`、`cover`（`cover.textBoxes`、`cover.elements`、`cover.finishes`、`cover.sheets`など）を書きます。残りは、**カバー**パネルと同じように5つのツールで読み、書き、書き出します。
+
+- `sandbox_cover_get`は、版（`version`、既定は最初の版）の表紙と、その用紙のひとつ（`sheet`：`cover`、`jacket`、`endpaperFront`、`endpaperBack`）を読みます。返すのは、版の一覧、用紙の大きさと背幅（mm）とそのもとになったページ数、各面の矩形、表紙の文字が入るスロットとそれぞれの文字（と、上製表紙、カバー、見返しがそれだけで持つ文字`sheetText`）、用紙を描くデザイン（`design.uses`：`book`または`cover.sheets`にある独自のデザインの名前、`design.choices`：選べる独自のデザイン）、用紙に置かれたデザインの要素、シリーズ（`collection`）、チェックです。
+- `sandbox_cover_write_text`は、スロット（面またはテキスト枠）ひとつのMarkdownを名前で書きます。`text: null`で取り除くと、表1と背はメタデータの書名、副題、著者に戻ります。ひとつの文字がすべての版と用紙で共通です。`thisSheetOnly: true`を渡すと、上製表紙、カバー、見返しのどれかひとつだけの文字として書かれ、そこでは共通の文字の代わりになります。取り消し履歴の1ステップになります。
+- `sandbox_cover_export`は、用紙を印刷所用のPDF（`format: "pdf"`、プリフライトの結果付き）として、または1つの面をJPEG（`format: "jpeg"`、`zone`、`longSide`）として書き出します。ダウンロードするか、`deliver: "data"`を渡すとbase64でエンコードして返します。
+- `sandbox_cover_sheet_design`は、上製本の用紙をどのデザインで描くかを、「この用紙のデザイン」と同じように選びます。`design: "book"`（本のカバーデザイン）、`"own"`（上製表紙またはカバー独自のもの、あるいはこの見返しだけのもの）、`"endpapers"`（前後の見返しで共通のもの）のいずれかで、新しいデザインは本のデザインの複製から始まります。続けて`patch`でそのデザインのフィールド（`background`、`image`、`elements`、`textBoxes`など。`null`で取り除く）を変えます。取り消し履歴の1ステップになります。
+- `sandbox_cover_set_collection`は、本が属するシリーズを書きます。`name`、`isbn`、`catalogue`（順番に並べたタイトル。それぞれ`{ id, title, resource? }`で、リスト全体を置き換えます）、`volume`（既刊一覧でこの本にあたるid。なければ`null`）です。渡さなかったフィールドはそのままです。表紙の文字に`::catalogue`を書くとタイトルが一覧として組まれ、種類が`catalogue`の表紙の要素はその画像を並べます。取り消し履歴の1ステップになります。
+
+```json
+{ "slot": "back", "text": "本を地下にしまっておく町。\n\nそして、それを声に出して読む少女。" }
+```
+
+[印刷用の表紙](/ja/docs/print-covers)を参照してください。
+
 ### 確認と通知
 
 リンクから開いた本について、あなたがすでに自分のコピーを持っている場合、Sandboxは手元のコピーを置き換えるかどうかを尋ねます。`sandbox_get_state`はこれを`question`として、`ready: false`とともに伝えます。`sandbox_answer`がこれに答えます。`replaceCopy: false`は手元のコピーを残し、`true`は公開版で置き換えて手元のコピーを削除します。`dismissNotice: true`は**本**パネルのメッセージを消します。
@@ -507,6 +523,8 @@ Sandboxが登録するときのまとまりで並べています。各ツール�
 - **表示**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。
 - **リソースとフォント**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
+- **テンプレートページ**：`sandbox_modules`、`sandbox_create_module`、`sandbox_rename_module`、`sandbox_insert_module`、`sandbox_extract_module`、`sandbox_frames_to_grid`、`sandbox_edit_labels`。
+- **印刷用の表紙**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`。
 - **本とファイル**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **InDesign**：`sandbox_import_idml`。

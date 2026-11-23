@@ -794,5 +794,35 @@
       "de": "Kapitelstile",
       "it": "Stili dei capitoli"
     }
+  },
+  "production": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "Versions of a book",
+      "es": "Versiones de un libro",
+      "ca": "Versions d'un llibre",
+      "zh": "书的版本",
+      "ar": "نسخ الكتاب",
+      "ja": "本の版",
+      "pt": "Versões de um livro",
+      "fr": "Versions d’un livre",
+      "de": "Ausgaben eines Buchs",
+      "it": "Versioni di un libro"
+    }
+  },
+  "cover": {
+    "slug": "print-covers",
+    "heading": {
+      "en": "The cover's design",
+      "es": "El diseño de la cubierta",
+      "ca": "El disseny de la coberta",
+      "zh": "封面的设计",
+      "ar": "تصميم الغلاف",
+      "ja": "表紙のデザイン",
+      "pt": "O projeto da capa",
+      "fr": "La maquette de la couverture",
+      "de": "Die Gestaltung des Umschlags",
+      "it": "La grafica della copertina"
+    }
   }
 }

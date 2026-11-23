@@ -73,9 +73,13 @@ function layoutPartOf(config: PostextConfig): PostextConfig {
   // How the Folio viewer presents the book does not shape its pages, nor
   // does how it is separated and checked for print, nor the contrast
   // check's settings, nor the checks of the configuration (#849), nor the
-  // space the Canvas leaves between pages (#1002).
+  // space the Canvas leaves between pages (#1002), nor the book's print
+  // production: its versions, bindings and ISBNs (#1666).
   const layout: PostextConfig = { ...config };
   delete layout.folio;
+  delete layout.production;
+  // The covers' design (#1667): laid out on the cover's own sheet.
+  delete layout.cover;
   delete layout.print;
   delete layout.contrast;
   delete layout.checks;

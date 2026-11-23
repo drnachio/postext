@@ -34,13 +34,13 @@ export const DESIGN_TEXT_KEYS = {
   repeat: true, writingMode: true, over: true,
 } satisfies Record<keyof DesignTextElement, true>;
 export const DESIGN_RULE_KEYS = { ...PLACED, direction: true, color: true, thickness: true } satisfies Record<keyof DesignRuleElement, true>;
-export const DESIGN_BOX_KEYS = { ...PLACED, style: true } satisfies Record<keyof DesignBoxElement, true>;
-export const DESIGN_IMAGE_KEYS = { ...PLACED, resourceId: true, decorative: true, fit: true, focus: true } satisfies Record<keyof DesignImageElement, true>;
+export const DESIGN_BOX_KEYS = { ...PLACED, style: true, over: true } satisfies Record<keyof DesignBoxElement, true>;
+export const DESIGN_IMAGE_KEYS = { ...PLACED, resourceId: true, decorative: true, fit: true, focus: true, over: true } satisfies Record<keyof DesignImageElement, true>;
 export const DESIGN_PATH_KEYS = {
-  ...PLACED, d: true, viewBox: true, fill: true, stroke: true, width: true, dash: true, preserveAspectRatio: true,
+  ...PLACED, d: true, viewBox: true, fill: true, stroke: true, width: true, dash: true, preserveAspectRatio: true, over: true,
 } satisfies Record<keyof DesignPathElement, true>;
 export const DESIGN_CUT_KEYS = {
-  ...COMMON, placement: true, die: true, d: true, viewBox: true, preserveAspectRatio: true, leaves: true, wrap: true,
+  ...COMMON, placement: true, die: true, d: true, viewBox: true, preserveAspectRatio: true, leaves: true, wrap: true, process: true,
 } satisfies Record<keyof DesignCutElement, true>;
 export const DESIGN_CONNECTOR_KEYS = {
   ...COMMON, from: true, to: true, routing: true, radius: true, trunk: true, color: true, opacity: true, width: true,
@@ -74,7 +74,7 @@ export const CONFIG_KEYS = {
   parts: true, headingStyles: true, toc: true, index: true, unorderedLists: true, orderedLists: true, math: true,
   footnotes: true, crossRefs: true, citations: true, links: true, cjk: true, lineNumbers: true, codeStyle: true, header: true,
   footer: true, locale: true, direction: true, numerals: true, debug: true, htmlViewer: true, canvasViewer: true,
-  folio: true, dieCuts: true, comics: true, pageTemplates: true, chapterStyles: true, labelStyles: true, frameLooks: true, composedViewerLeaf: true,
+  folio: true, production: true, cover: true, dieCuts: true, comics: true, pageTemplates: true, chapterStyles: true, labelStyles: true, frameLooks: true, composedViewerLeaf: true,
   pdfGeneration: true, print: true, contrast: true, checks: true, colorPalette: true, customFonts: true, symbolFont: true,
   resourceTypes: true, exerciseStyles: true, exercises: true,
 } satisfies Record<keyof PostextConfig, true>;

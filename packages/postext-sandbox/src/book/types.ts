@@ -45,6 +45,11 @@ export interface BookContent {
   /** Where the book starts, when it holds part of a longer one (see
    *  {@link BookStart}). Absent: at page 1, with every counter at zero. */
   start?: BookStart;
+  /** The Markdown of the book's print cover (#1669): a
+   *  `:::frame{slot="…"}` per zone the cover fills (the back cover, the
+   *  flaps, the front and the spine when they differ from the metadata),
+   *  written as the bundle's `cover.md`. Absent: no cover text. */
+  coverMarkdown?: string;
 }
 
 /** Where one chapter's text sits inside the composed document. */

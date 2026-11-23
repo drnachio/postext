@@ -3,6 +3,8 @@ import { putBlob } from '../../../storage/blobStore.js';
 import { slugifyFilename, uniqueSlug } from '../slugify.js';
 import { isValidSvg, svgIntrinsicSize } from '../svg/svgIntrinsic.js';
 import { defaultPoster, readVideoMetadata, videoFormatOf } from '../video/videoMedia.js';
+import { fitScale, MAX_PRINT_FILE_BYTES, readPdfPages, sniffPrintFile } from '../print/printFiles.js';
+import { downscaleRgba } from '../print/downscale.js';
 
 /** Bitmap MIME types we accept for upload. */
 const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
@@ -15,10 +17,25 @@ const IMAGE_FORMATS: Record<string, 'png' | 'jpeg' | 'webp' | 'gif'> = {
 /** The media type a print original is stored under. */
 const PRINT_MIME = { tiff: 'image/tiff', psd: 'image/vnd.adobe.photoshop' } as const;
 
-/** Turn a single dropped/selected file into a stored Resource, or null if the
- *  file is not a supported image/SVG. `existingIds` is mutated so a batch of
- *  files gets distinct ids. */
+/** One file as one stored Resource (a PDF's first page), or null if the
+ *  file is not a supported picture. `existingIds` is mutated. */
 export async function resourceFromFile(
+  file: File,
+  typeId: string,
+  existingIds: Set<string>,
+  videoTypeId?: () => string,
+  exampleTypeId?: () => string,
+): Promise<Resource | null> {
+  const out = await resourcesFromFile(file, typeId, existingIds, videoTypeId, exampleTypeId);
+  if (out === 'postscript') return null;
+  return Array.isArray(out) ? out[0] ?? null : out;
+}
+
+/** Turn a single dropped/selected file into stored Resources: one, or one
+ *  per page of a PDF; `'postscript'` for an EPS a browser cannot read;
+ *  null if the file is not a supported picture. `existingIds` is mutated so
+ *  a batch of files gets distinct ids. */
+export async function resourcesFromFile(
   file: File,
   typeId: string,
   existingIds: Set<string>,
@@ -27,7 +44,7 @@ export async function resourceFromFile(
   /** The type of a music example (#1172), asked for only when a notation
    *  file is dropped. */
   exampleTypeId: () => string = () => 'example',
-): Promise<Resource | null> {
+): Promise<Resource | Resource[] | 'postscript' | null> {
   const now = Date.now();
   const scoreFormat = scoreFormatOfFile(file.name);
   if (scoreFormat) {
@@ -107,10 +124,30 @@ export async function resourceFromFile(
     };
   }
 
+  // A print file: past its limit, it is not read at all.
+  if (file.size > MAX_PRINT_FILE_BYTES) return null;
+  const buffer = await file.arrayBuffer();
+
+  // A PDF, or an Illustrator file saved PDF-compatible: a picture per page.
+  // An EPS (or an Illustrator file without its PDF) is told apart.
+  const printKind = sniffPrintFile(new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 1024)));
+  if (printKind === 'postscript') return 'postscript';
+  if (printKind === 'pdf') {
+    const pages = await readPdfPages(new Uint8Array(buffer));
+    const base = slugifyFilename(file.name);
+    const out: Resource[] = [];
+    for (const p of pages) {
+      const fileId = await putBlob(p.png, 'image/png');
+      const id = uniqueSlug(p.pages > 1 ? `${base}-${p.page}` : base, existingIds, 'image');
+      existingIds.add(id);
+      out.push({ id, typeId, kind: 'bitmap', bitmap: { fileId, format: 'png', width: p.width, height: p.height, fileResolution: 300 }, createdAt: now, updatedAt: now });
+    }
+    return out.length > 0 ? out : null;
+  }
+
   // A TIFF or Photoshop original, known by its bytes (browsers give a PSD
   // an empty or odd type): kept as it is for print, with an sRGB PNG
   // preview for screens. One that does not decode is skipped.
-  const buffer = await file.arrayBuffer();
   const printFormat = printRasterFormat(new Uint8Array(buffer));
   if (printFormat) {
     let raster;
@@ -119,7 +156,10 @@ export async function resourceFromFile(
     } catch {
       return null;
     }
-    const preview = await pngPreview(rasterToRgba(raster), raster.width, raster.height);
+    // The preview within what a canvas draws; the original keeps every pixel.
+    const k = fitScale(raster.width, raster.height);
+    const small = k < 1 ? downscaleRgba(rasterToRgba(raster), raster.width, raster.height, k) : { rgba: rasterToRgba(raster), width: raster.width, height: raster.height };
+    const preview = await pngPreview(small.rgba, small.width, small.height);
     const fileId = await putBlob(preview, 'image/png');
     const printFileId = await putBlob(buffer, PRINT_MIME[printFormat]);
     const id = uniqueSlug(slugifyFilename(file.name), existingIds, 'image');
@@ -163,6 +203,9 @@ export interface UploadFilesResult {
   created: Resource[];
   /** Names of files that were skipped (unsupported type or invalid). */
   skipped: string[];
+  /** Of those, the PostScript ones (an EPS, an Illustrator file saved
+   *  without its PDF), which read once saved as PDF. */
+  postscript: string[];
 }
 
 /** Upload many files at once. Supported image/SVG files become Resources; any
@@ -177,14 +220,19 @@ export async function uploadFiles(
 ): Promise<UploadFilesResult> {
   const created: Resource[] = [];
   const skipped: string[] = [];
+  const postscript: string[] = [];
   for (const file of files) {
     try {
-      const resource = await resourceFromFile(file, typeId, existingIds, videoTypeId, exampleTypeId);
-      if (resource) created.push(resource);
+      const resource = await resourcesFromFile(file, typeId, existingIds, videoTypeId, exampleTypeId);
+      if (resource === 'postscript') {
+        skipped.push(file.name);
+        postscript.push(file.name);
+      } else if (Array.isArray(resource)) created.push(...resource);
+      else if (resource) created.push(resource);
       else skipped.push(file.name);
     } catch {
       skipped.push(file.name);
     }
   }
-  return { created, skipped };
+  return { created, skipped, postscript };
 }

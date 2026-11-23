@@ -33,6 +33,7 @@ import { spotInkIssues } from './preflightInks.js';
 import { platesIssues } from './preflightPlates.js';
 import { finishIssues } from './preflightFinishes.js';
 import { dieCutIssues } from './preflightDieCuts.js';
+import { foldIssues } from './preflightFolds.js';
 import { resolvePrintConfig } from '../defaults/output/print.js';
 import { dimensionToPx } from '../units.js';
 import { findPxSize } from '../measure/fontString.js';
@@ -511,6 +512,9 @@ function runPreflight(doc: VDTDocument, options: PreflightOptions, placed?: Plac
 
   // Die-cuts (#1565): holes by the trim, the fold or the text.
   if (pf.enabled) out.push(...dieCutIssues(doc));
+  // Folds and reliefs (#1667): a cover's emboss by the trim or a fold,
+  // text across a fold.
+  if (pf.enabled) out.push(...foldIssues(doc, safePx));
 
   // A job on a few plates: the colours it moves onto them.
   if (cmykJob) out.push(...platesIssues({ print, spots, authored, usedColors, usedInks, ...(t ? { transform: t } : {}), pageIndex: offset }));

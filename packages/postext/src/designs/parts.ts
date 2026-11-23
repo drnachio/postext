@@ -38,12 +38,12 @@ import type { BookOwnKey } from '../defaults/bookKeys.js';
 export type DesignPart =
   | 'page' | 'writing' | 'colors' | 'text' | 'composition' | 'headings' | 'lists' | 'figures'
   | 'callouts' | 'exercises' | 'comics' | 'running' | 'parts' | 'output'
-  | 'folio' | 'advanced';
+  | 'folio' | 'cover' | 'advanced';
 
 /** Every part, in the Design panel's order. */
 export const DESIGN_PARTS: readonly DesignPart[] = [
   'page', 'writing', 'colors', 'text', 'composition', 'headings', 'lists', 'figures',
-  'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced',
+  'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'cover', 'advanced',
 ];
 
 /** A top-level setting, or one field of `page`, `layout` or `bodyText`
@@ -84,6 +84,7 @@ export const DESIGN_PART_KEYS = {
   parts: ['parts'],
   output: ['print', 'pdfGeneration', 'htmlViewer', 'canvasViewer', 'page.cutLines'],
   folio: ['folio'],
+  cover: ['cover'],
   advanced: ['page.baselineGrid'],
 } as const satisfies { readonly [P in DesignPart]: readonly DesignKeyPath[] };
 

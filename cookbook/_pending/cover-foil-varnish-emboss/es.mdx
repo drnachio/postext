@@ -1,0 +1,78 @@
+---
+title: "Una cubierta con oro, barniz a registro y gofrado"
+summary: "Las Coplas de Manrique en rústica, con barniz brillante sobre la pintura, una cartela en oro sobre un gofrado y un gofrado en seco, cada acabado en su plancha."
+plain: "Un librito con un poema clásico y el pliego de su cubierta. Algunas partes se tratan después de imprimir: una capa brillante sobre la pintura, un marco de oro estampado y formas en relieve sobre la cartulina."
+description: "Barniz a registro, estampación en oro y gofrado en Postext: acabados sobre formas del diseño, tintas planas en un PDF/X-4 y una plancha de gofrado."
+question: "¿Cómo pongo barniz a registro, oro y un título gofrado en una cubierta?"
+aliases: ["barniz a registro", "barniz UVI selectivo", "estampación en caliente", "estampación en oro", "gofrado", "gofrado en seco", "bajorrelieve", "acabados de cubierta", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "El pliego de cubierta extendido. A la izquierda la contracubierta, verde botella, con tres versos del poema en cursiva ocre, dos párrafos sobre Rodrigo Manrique y su hijo, y el código de barras ISBN sobre fondo blanco al pie. Un lomo estrecho rotulado en versalitas. A la derecha la cubierta, una pintura de un castillo en ruinas sobre un peñasco al ocaso, encima de un río con chopos y una barca entre los juncos; en su centro, una cartela verde oscura con las esquinas en arco hacia dentro y un doble marco dorado guarda el título Coplas, el subtítulo y el autor. Alrededor, las marcas de corte y de plegado." }
+---
+
+## Lo que vas a componer
+
+Las *Coplas por la muerte de su padre* de Jorge Manrique (la edición inglesa lleva la traducción de Longfellow) en una rústica de 125 × 200 mm, y el pliego de cubierta que pasa al taller de acabados cuando ya están impresas las cuatro tintas. Lleva tres acabados. Un barniz brillante a registro cubre la pintura por encima y por debajo de la cartela. El doble marco de la cartela se estampa en oro, y el panel que encierra va gofrado, de modo que el título queda sobre un campo en relieve. En la contracubierta, un rombo en gofrado en seco: sin tinta, solo la cartulina levantada. Debajo del libro, la receta dibuja el pliego cuatro veces: como se imprime, con las planchas de barniz y oro en falso color, con luz rasante y como la plancha de gofrado de la que parte el grabador del troquel. El PDF es PDF/X-4 y trae una plancha para cada acabado.
+
+## Elaboración
+
+### 1 · Cada acabado sigue una forma del diseño
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Un acabado indica un proceso, una tinta si el proceso la imprime y una forma: un elemento de la cubierta (`{ element: 'cartouche' }`), una caja en una de sus zonas o un contorno dentro de una caja. El barniz y el oro son tintas planas con `finish` en la paleta, así que cada una tiene su plancha en el PDF y el control previo las enumera. El gofrado no imprime nada. Va en una plancha técnica que el archivo de imprenta llama Emboss, la que usa el grabador, y en la página no se pinta.
+
+El barniz son dos cajas, una por encima de la cartela y otra por debajo, que se quedan a 4 mm de ella para que el barniz nunca pise el oro. La contracubierta y el lomo quedan mates. El libro tiene 27 páginas de papel ahuesado de 120 g/m² con 2,2 de mano, 32 una vez encuadernado en cuadernillos de 16, y eso da un lomo de 4,7 mm. Por omisión un lomo de menos de 6 mm no se rotula, así que la versión pone `spineText.minSpine` en 4,5. El ISBN es un número de muestra que no corresponde a ningún libro.
+
+### 2 · La cartela es un trazado del diseño, no una imagen
+
+<Excerpt region="art" />
+
+El oro y el gofrado toman el contorno exacto del elemento al que apuntan, así que el marco tiene que ser una forma cuyo trazado conozca el motor. Un trazado de cubierta es una lista de contornos cerrados con nodos expresados en fracciones de la caja del elemento y tiradores de entrada y salida para las curvas. Cada esquina es un cuarto de círculo vuelto hacia dentro, dibujado como una cúbica. Un anillo es un contorno exterior y otro interior recorrido en sentido contrario: con la regla nonzero, el hueco entre ambos queda vacío. Dos anillos forman el doble marco. El marco tiene el color del panel, de modo que en cuatricromía no imprime nada y lo lleva la plancha del oro. El emblema de la contracubierta es un contorno guardado, dos rombos, el menor invertido.
+
+### 3 · Los estilos de la cubierta
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` y `cover-spine` son los nombres que `buildCover` da a los metadatos que coloca; `cover-quote`, `cover-blurb` y `cover-note` se nombran en el Markdown de la cubierta. La cubierta se centra en altura (`verticalAlign`), y así el título cae dentro de la cartela sea cual sea su cuerpo.
+
+### 4 · La tripa
+
+<Excerpt region="pages" />
+
+Anteportada, portada, créditos y el poema desde una impar, 46 mm más abajo, compuesto en verso que no parte ninguna copla entre dos páginas. Los titulillos llevan el autor en la par y el título en la impar. El colofón cierra el libro en la última impar.
+
+### 5 · El pliego sale de las páginas compuestas
+
+<Excerpt region="sheet" />
+
+`buildCover` recibe las páginas, los metadatos y el Markdown de la cubierta y devuelve un documento para `buildDocumentWithFonts`, además del código de barras en SVG. Las cifras del código piden OCR-B, que no tiene ningún servidor de fuentes, así que la receta las compone en Alegreya Sans SC, que ya está cargada.
+
+### 6 · Lo que cubre cada plancha
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` pinta los acabados de tres maneras. `flat` pinta las tintas como las pone la máquina: el oro en su color y el barniz nada. `map` apaga el pliego y marca cada plancha especial en falso color. `sheen` pasa una luz rasante por el pliego, y el barniz y el oro la recogen. El gofrado no sale en ninguna de las tres, porque no imprime; la cuarta vista dibuja en negro sobre el pliego apagado las planchas técnicas de la página (`page.plates`), los contornos que el PDF rellena en su separación Emboss. La línea de debajo lee las tintas planas de `preflightDocument` y los procesos de las planchas.
+
+## Variantes
+
+### Gofrado hundido en el emblema
+
+El bajorrelieve hunde la forma en la cartulina en vez de levantarla, y va en una plancha Deboss propia.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Barniz sobre toda la pintura
+
+Un solo acabado sobre el elemento de la pintura sustituye a las dos cajas. El barniz pasa entonces también por la cartela y el título.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Errores frecuentes
+
+- Un gofrado o un bajorrelieve a menos de 3 mm del corte o de un pliegue lo señala el control previo (`reliefTrim`, `reliefFold`): ahí la cartulina se agrieta. Deja los relieves lejos de los pliegues del lomo.
+- El gofrado nunca se pinta en pantalla. Compruébalo en la separación Emboss del PDF o dibuja `page.plates`, como hace la receta.
+- Un acabado puesto sobre un marco de texto tapa sus líneas en las vistas y en el archivo de imprenta. Deja parte del texto fuera del oro, como aquí el título, que va en el hueco de la cartela.

@@ -18,7 +18,7 @@ const ADVANCES = {
   serifBold: [250, 355, 447, 615, 589, 966, 803, 235, 400, 400, 485, 603, 335, 370, 335, 400, 593, 466, 594, 593, 593, 594, 594, 588, 594, 596, 335, 335, 603, 603, 603, 473, 970, 746, 708, 702, 789, 666, 648, 757, 864, 426, 428, 767, 642, 1001, 815, 785, 673, 785, 751, 597, 695, 818, 734, 1091, 726, 701, 627, 372, 400, 372, 603, 593, 447, 585, 672, 565, 658, 572, 402, 596, 687, 349, 335, 651, 355, 1008, 685, 623, 671, 640, 500, 499, 393, 678, 578, 874, 599, 582, 517, 380, 338, 380, 603, 837, 335, 1000, 593, 928, 245, 245, 464, 461, 358, 1000],
   sans: [225, 343, 518, 570, 570, 939, 706, 298, 356, 356, 484, 570, 298, 357, 298, 390, 570, 570, 570, 570, 570, 570, 570, 570, 570, 570, 298, 298, 570, 570, 570, 492, 972, 622, 667, 646, 699, 600, 566, 701, 741, 309, 549, 664, 558, 830, 734, 754, 648, 754, 656, 608, 611, 733, 594, 894, 596, 553, 607, 356, 390, 356, 570, 562, 615, 575, 629, 517, 630, 566, 346, 578, 621, 288, 289, 575, 298, 943, 624, 615, 630, 630, 409, 480, 396, 620, 545, 829, 526, 544, 491, 356, 281, 356, 570, 840, 574, 1000, 540, 900, 298, 298, 518, 518, 356, 1000],
 };
-const em = (font: string): number => Number(/(\d+(?:\.\d+)?)px/.exec(font)?.[1] ?? 16);
+const em = (font: string): number => parseFloat(font.split(/\s+/).find((t) => t.endsWith('px')) ?? '16');
 function advance(text: string, font: string): number {
   const size = em(font);
   // Inline code is set in Geist Mono (#845): 600 thousandths for every
@@ -131,8 +131,8 @@ describe('the Japanese guide laid out as a book', () => {
     // 148 since #1590: the English update added twelve sections (paragraph
     // rules, full-page figures, chapter styles, designs, PDF forms, spot
     // colours, two-colour printing, special inks, die-cuts, the 3D finishes,
-    // InDesign out and back in).
-    expect(headings.length).toBe(148);
+    // InDesign out and back in); 149 since #1670 (the cover sheet).
+    expect(headings.length).toBe(149);
     for (const h of headings) {
       // The band: three lines of the tier, whatever the heading's own pitch.
       expect(h.bbox.height / pitch, h.lines[0]?.text).toBeCloseTo(3, 1);

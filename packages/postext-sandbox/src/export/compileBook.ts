@@ -19,9 +19,10 @@
 // the PDF and EPUB tabs lay it out (`layOutBookPrint`), and written with
 // the options those tabs write with (`pdfWriterSettings`,
 // `epubWriterOptions`); the HTML is the command line's page
-// (`renderHtmlBook`). The EPUB's cover, when the book has no picture of
-// its own, is its first page painted here with the book's faces
-// (`compileCover.ts`, #1548). The page is asked only for what a worker
+// (`renderHtmlBook`). The EPUB's cover is the front of the book's print
+// cover when it has a print version (`cover/printedCover.ts`, #1669), laid
+// out on this worker's service; else its own picture; else its first page
+// painted here with the book's faces (`compileCover.ts`, #1548). The page is asked only for what a worker
 // cannot do: an SVG rasterized, for the PDF or for that cover.
 
 import { metadataText, htmlBookFiles, renderHtmlBook, type HtmlBookFontNote, type HtmlBookWarning, type PostextConfig, type Resource } from 'postext';
@@ -46,7 +47,8 @@ import { createPdfFontProvider } from '../viewport/pdf/pdfFontProvider.js';
 import { pdfWarnings, pdfWriterSettings } from '../viewport/pdf/pdfWriterOptions.js';
 import { createLayoutService } from '../worker/LayoutService.js';
 import type { LayoutService } from '../worker/LayoutService.js';
-import { compiledBookCover } from './compileCover.js';
+import { compiledBookCover, declareFaces } from './compileCover.js';
+import { printedFrontCover } from '../cover/printedCover.js';
 import { compiledEdition } from './edition.js';
 
 export type CompiledFormat = 'pdf' | 'html' | 'epub';
@@ -171,7 +173,18 @@ export async function compileBook(request: CompileRequest, host: CompileHost): P
         docs, chapters, config: effective, layout: request.epubLayout,
         identity: { kind: 'project', id: record.id, name: edition.name },
         locale: request.uiLocale,
-        cover: async (coverTitle) => (await epubOwnCover(coverTitle, record.thumbnail ? { projectThumbnail: record.thumbnail } : {}))
+        // The front of the print cover first (#1669), laid out on this
+        // worker's service and painted here with the book's faces.
+        cover: async (coverTitle) => (await printedFrontCover(
+          { config: effective, chapters, resources, coverMarkdown: edition.content.coverMarkdown, bookPages: {}, pages },
+          coverTitle,
+          {
+            build: (content, cfg) => service.build({ clientId: 'compile', priority: 'pdf', content, config: cfg }),
+            fonts: async (cfg, md, doc) => { if (doc) await declareFaces(doc, cfg, md); },
+            rasterize: host.rasterizeSvg,
+          },
+        ))
+          ?? (await epubOwnCover(coverTitle, record.thumbnail ? { projectThumbnail: record.thumbnail } : {}))
           ?? compiledBookCover(docs[0]!, { config: effective, resources, markdown: chapters[0]?.markdown ?? '' }, coverTitle, host.rasterizeSvg),
         note,
       });

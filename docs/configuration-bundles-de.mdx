@@ -28,6 +28,8 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+Ein Buch mit Druckumschlag enthält außerdem das Markdown des Umschlags als `cover.md` und, für eine Sprache mit eigenem Umschlagtext, `cover/<language>.md`; `openBundle` liefert es als `coverMarkdown`, und `createBundle` nimmt es auf dieselbe Weise entgegen. Die Gestaltung des Umschlags und die Druckausgaben stehen in der Konfiguration (`cover`, `production`). Siehe [Buchumschläge](/de/docs/print-covers).
+
 Das Manifest ist Feld für Feld im Anhang [Paketformat der Beispielbücher](/de/docs/sandbox-embedding#paketformat-der-beispielbücher) der Sandbox beschrieben. Eine Datei kann auch `layouts.json` enthalten, die Seitenzahlen der Sandbox, sodass sich das Buch dort bereits paginiert öffnet, oder eine pro Ausgabe eines mehrsprachigen Buches (`layouts.zh-Hant.json`, wird zuerst gelesen). `openBundle` ignoriert sie.
 
 Die API wird aus `postext` selbst und aus dem Unterpfad `postext/bundle` exportiert, der die Hilfsfunktionen der unteren Ebene hinzufügt. Importieren Sie aus `postext`, wenn Sie auch rendern. So teilen sich die Paket-Adapter und die Renderer eine Modulinstanz, was auf einem CDN wie esm.sh wichtig ist, wo jeder Einstiegspunkt ein eigener Build ist.

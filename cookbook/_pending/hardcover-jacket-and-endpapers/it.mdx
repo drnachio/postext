@@ -1,0 +1,65 @@
+---
+title: "Coperta, sovraccoperta e risguardi di un cartonato"
+summary: "Le pagine di una brossura rilegate in tela: un’altra versione con il suo ISBN, e buildCover fa la coperta, la sovraccoperta e i due risguardi."
+plain: "Le stesse due leggende di Bécquer in un libro rilegato: la tela che riveste i piatti, la sovraccoperta di carta che la avvolge e i fogli dipinti incollati all’interno. Le pagine non cambiano; ogni versione ha i suoi fogli e il suo ISBN."
+description: "Un cartonato in Postext: una seconda versione stampata sulle stesse pagine, con coperta in tela, sovraccoperta e due risguardi dipinti fatti con buildCover."
+question: "Come faccio coperta, sovraccoperta e risguardi di un cartonato con le stesse pagine della brossura?"
+aliases: ["libro rilegato", "copertina rigida", "sovraccoperta", "risguardi", "legatura cartonata", "coperta in tela", "rimbocco", "unghiatura", "cerniera", "hardcover", "dust jacket", "endpapers"]
+pageNotes: { "38": "La coperta in tela distesa: un fondo verde scuro che arriva al rimbocco di 15 mm, il piatto posteriore vuoto, il dorso scritto dal basso in alto in oro, e titolo, sottotitolo e autore in oro in testa al piatto anteriore. I segni di piega indicano le due cerniere ai lati del dorso.", "39": "La sovraccoperta distesa: l’aletta posteriore sulle traduttrici, il pannello posteriore con il testo di presentazione e un codice a barre ISBN su fondo bianco, il dorso, il pannello anteriore con una cappella in rovina dipinta su un colle sotto una cresta innevata e il titolo sopra, e l’aletta anteriore sull’autore.", "40": "Il risguardo anteriore: una veduta dipinta di una città antica con campanili e un ponte di pietra su un fiume nebbioso al crepuscolo, e a destra un colle con una piccola cappella in rovina tra pioppi spogli. Un segno di piega in testa e al piede indica il centro.", "41": "Il risguardo posteriore: uno specchio d’acqua dipinto al chiaro di luna tra rocce grigie e alti pioppi, una piccola cascata a sinistra e una vetta innevata in lontananza a destra." }
+---
+
+## Che cosa comporrai
+
+Le due leggende di Bécquer della brossura con alette, rilegate una seconda volta in un cartonato di 120 × 190 mm. Le 37 pagine restano come sono. Il libro ha ora due versioni, ciascuna con la sua legatura e il suo ISBN, e il cartonato dà al legatore quattro fogli. La coperta è rivestita di tela verde scuro, con titolo e autore impressi in oro sul piatto anteriore e sul dorso. La sovraccoperta porta il dipinto, il testo di presentazione, il codice a barre e le due alette. Dentro i piatti ci sono due risguardi dipinti: Soria sopra il Duero davanti, la fonte della seconda leggenda dietro.
+
+## Preparazione
+
+### 1 · Un solo blocco di pagine, due versioni
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Le due versioni leggono lo stesso `folio.paper` e le stesse pagine impaginate: 37 pagine, arrotondate a tre segnature da 16, cioè 24 carte da 240 µm. La brossura aggiunge il margine per la colla e ha un dorso di 6,3 mm. Il cartonato aggiunge anche i due cartoni da 2 mm, e il suo dorso misura 10,3 mm. Ogni versione ha il suo ISBN, entrambi numeri d’esempio di un blocco editoriale non assegnato a nessun libro. Il dorso è piatto perché un blocco sotto i 6 mm è troppo sottile per arrotondarlo; `case-round` aggiungerebbe 3 mm e lo arrotonderebbe. La coperta è in tela (`cloth`) perché la sovraccoperta porta già il dipinto, i testi e il codice a barre, e sotto basta un titolo impresso.
+
+### 2 · La coperta: rimbocco, cerniere e unghiature
+
+<Excerpt region="sheets" />
+
+La copertina di una brossura si taglia al formato del libro e le alette si piegano sul taglio davanti. La coperta di un cartonato è un rivestimento che avvolge due cartoni. Ogni cartone è tagliato 7 mm più stretto della pagina dal lato del dorso e sporge 3 mm dalle pagine in testa, al piede e sul taglio davanti (le unghiature), quindi misura 116 × 196 mm. Tra ogni cartone e il dorso corre una cerniera di 7 mm, dove la coperta si piega. Tutto intorno, un rimbocco di 15 mm si ripiega sui bordi dei cartoni, ed è per questo che il fondo di tela arriva a un foglio di 286,3 × 226 mm.
+
+Tutti i fogli si fanno con la stessa `config` e lo stesso testo di copertina. La coperta prende il progetto da `cover.sheets.case`, un fondo di tela e nient’altro, e le righe dai riquadri segnati `sheet="case"`: titolo, sottotitolo e autore sul piatto anteriore e sul dorso, con stili `case-` che sono quelli della sovraccoperta in oro, e un riquadro vuoto sul piatto posteriore, che tiene la tela libera dal testo di presentazione. Il codice a barre si stampa solo sulla sovraccoperta, il foglio che la cassa legge.
+
+### 3 · La sovraccoperta riprende progetto e testo della copertina
+
+<Excerpt region="cover-type" />
+
+La sovraccoperta non ha una voce in `cover.sheets`, quindi prende il `cover` del libro e i riquadri senza `sheet`, con gli stili di paragrafo e il Markdown di copertina della brossura; il pannello anteriore e il dorso si riempiono con i metadati, perché lì i riquadri della coperta restano fuori. I suoi pannelli sono più larghi: ciascuno copre un cartone, la cerniera e 3 mm in più per ripiegarsi sul bordo, 126 mm in tutto. Le alette passano a 80 mm, due terzi della larghezza di pagina, la misura predefinita di una sovraccoperta. Il dipinto riempie il pannello anteriore fino alla piega, e il codice a barre sta sul pannello posteriore, dove il libraio lo legge.
+
+### 4 · I due risguardi in un documento
+
+<Excerpt region="endpapers" />
+
+Un risguardo è largo due pagine: la controguardia è incollata al cartone e la carta di guardia si gira come una pagina. Davanti la controguardia sta a sinistra, dietro a destra. Ogni foglio misura 246 × 196 mm, con 3 mm di abbondanza in testa, al piede e sui bordi esterni e nessuna alla piega, dove una striscia di colla di 5 mm lo fissa al blocco. I due dipinti lasciano tranquillo il centro, perché la piega lo attraversa. I due fogli hanno lo stesso formato, quindi un solo documento li raccoglie, uno per pagina. Ogni dipinto è il progetto del suo risguardo in `cover.sheets`, steso su entrambe le carte.
+
+## Varianti
+
+### Stampa la coperta invece di rivestirla di tela
+
+Togli `case` da `cover.sheets` e la coperta prende il progetto del libro: il fondo notturno e il dipinto sul piatto anteriore. I suoi riquadri continuano a mettere il titolo in oro.
+
+```diff
+   sheets: {
+-    case: { background: col('cloth') },
+     endpaperFront: { image: { resourceId: 'soria' } },
+```
+
+### Arrotonda il dorso
+
+Su un libro più spesso, `case-round` aggiunge 3 mm al dorso della coperta, e quello della sovraccoperta cresce con lui.
+
+```diff
+-    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-flat',
++    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-round',
+```
+
+## Errori frequenti
+
+- I fogli vengono dopo le pagine del libro nell’elenco catturato: la coperta alla 38, la sovraccoperta alla 39, i risguardi alla 40 e alla 41. Se il libro guadagna una pagina, tutti i numeri si spostano.
+- In un cartonato `sheet="cover"` indica la coperta oltre alla copertina di una brossura; `sheet="case"` indica solo la coperta. Il riquadro proprio di un foglio sostituisce quello comune della stessa zona solo su quel foglio, e uno vuoto la lascia bianca.

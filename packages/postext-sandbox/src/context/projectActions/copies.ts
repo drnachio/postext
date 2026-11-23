@@ -75,7 +75,7 @@ export async function adoptPresetThumbnail(summary: PresetSummary, projectId: st
  *  carried them, else from IndexedDB (the built-in preset seeds its blobs
  *  directly). */
 export function bookFromLoaded(loaded: LoadedPreset): BookContent {
-  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}), ...(loaded.start ? { start: loaded.start } : {}) };
+  return { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}), ...(loaded.start ? { start: loaded.start } : {}), ...(loaded.coverMarkdown ? { coverMarkdown: loaded.coverMarkdown } : {}) };
 }
 
 export async function adoptLoadedPreset(loaded: LoadedPreset, projectId: string): Promise<ProjectContent> {
@@ -140,7 +140,7 @@ export function newRecord(
 }
 
 export function bookOfState(s: SandboxState): BookContent {
-  return { chapters: s.chapters, activeChapterId: s.activeChapterId, ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}), ...(s.bookStart ? { start: s.bookStart } : {}) };
+  return { chapters: s.chapters, activeChapterId: s.activeChapterId, ...(s.canvasScope === 'book' ? { canvasScope: s.canvasScope } : {}), ...(s.bookStart ? { start: s.bookStart } : {}), ...(s.coverMarkdown ? { coverMarkdown: s.coverMarkdown } : {}) };
 }
 
 /** The slices of a stored book a project owns, nothing else of the record
@@ -184,6 +184,7 @@ export async function localizedOf(record: ProjectRecord): Promise<BundleContent[
       config: withDefaultResourceTypes(e.config, locale),
       resources: e.resources,
       ...(e.start ? { start: e.start } : {}),
+      ...(e.coverMarkdown ? { coverMarkdown: e.coverMarkdown } : {}),
       ...(title ? { name: title.name, ...(title.description !== undefined ? { description: title.description } : {}) } : {}),
       ...(Object.keys(layouts).length > 0 ? { layouts } : {}),
     };

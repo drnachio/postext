@@ -1,0 +1,503 @@
+{/* docs/print-covers-de.mdx */}
+
+export const metadata = {
+  title: 'Buchumschläge für den Druck',
+  sidebarTitle: 'Buchumschläge',
+  description: 'Die Druckausgaben eines Buchs, jede mit Bindung, ISBN und Buchrücken; Bindungs- und Papierprofile der Druckerei; der Umschlagbogen mit Klappen, Schutzumschlag, Buchdecke und Vorsatz; Gestaltung und Veredelungen des Umschlags; sein Text in Markdown; und der Umschlag aus der Sandbox, über die Kommandozeile und im Code',
+  lang: 'de',
+  lastUpdated: '2026-11-23',
+  readingTime: '19 min',
+  order: 41,
+  plainSummary: "Diese Seite handelt vom Umschlag eines gedruckten Buchs: dem Bogen, der die Seiten umschließt, mit Rückseite, Buchrücken und Vorderseite, manchmal auch mit Klappen, einem Schutzumschlag oder Vorsätzen. Ein Buch kann in mehreren Ausgaben gedruckt werden, etwa als Taschenbuch und als Hardcover, und jede Ausgabe hat ihre eigene Bindung und ihre eigene ISBN. Postext berechnet aus der Seitenzahl und dem Papier, wie breit der Buchrücken wird, und legt den Bogen in der Größe an, die die Druckerei braucht, mit Beschnittzugabe und Falzmarken. Die Gestaltung des Umschlags steht in den Einstellungen, seine Texte in einem Markdown-Dokument, und Titel und Autor kommen aus den Angaben des Buchs selbst. Die Seite zeigt, wie das in der Sandbox, über die Kommandozeile und im Code geht.",
+};
+
+# Buchumschläge für den Druck
+
+**Die Druckausgaben eines Buchs stehen in seinen `production`-Einstellungen; die Gestaltung des Umschlags ist die Einstellung `cover`; sein Text ist ein Markdown-Dokument des Buchs.**
+
+Die Seiten eines Buchs sind das eine, der Bogen, der sie umschließt, ist etwas anderes. Der Umschlagbogen ist breiter als zwei Seiten: Er trägt Rückseite, Buchrücken und Vorderseite nebeneinander, manchmal Klappen, und er ändert sich mit jeder Neuauflage, die die Seitenzahl oder das Papier ändert. Postext baut ihn aus drei Teilen des Buchs:
+
+- **Die Herstellung**: die Ausgaben, in denen das Buch gedruckt wird (ein Taschenbuch, ein Hardcover), jede mit ihrer Bindung, ihrer ISBN und ihrem Buchrücken. Sie gehört zum Buch, nicht zu seiner Gestaltung, und nichts im Satz der Seiten liest sie.
+- **Die Gestaltung des Umschlags**: Flächen, Bilder, Kästen, Logos, Textfelder und Veredelungen, auf die Flächen des Bogens gesetzt. Sie ist ein Teil der Gestaltung und gilt für jede Ausgabe des Buchs und für die Bücher einer Reihe.
+- **Der Text des Umschlags**: ein Markdown-Dokument mit einem Block je Fläche. Vorderseite und Buchrücken, die es leer lässt, erhalten bei jedem Aufbau Titel, Untertitel und Autor aus den Metadaten des Buchs. Ein korrigierter Titel erreicht so den Umschlag, ohne dass man ihn kopieren muss.
+
+Aus diesen dreien setzt dieselbe Engine wie bei den Seiten den Umschlag, und das PDF geht mit Beschnittzugabe und Falzmarken des Bogens an die Druckerei.
+
+## Ausgaben eines Buchs
+
+Eine Ausgabe ist das Buch, wie eine Bindung es macht. Ein Roman, der als Taschenbuch und als Hardcover erscheint, hat zwei Ausgaben über denselben Seiten: Jede hat ihre eigene Bindung, ihre eigene ISBN und ihren eigenen Umschlagbogen.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Taschenbuch', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Hardcover', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // bei einer Buchdecke: ein Schutzumschlag
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Jede Ausgabe nennt ihre Bindung über die ID eines Profils oder bringt das Profil selbst mit. Die Felder:
+
+- `id` und `name`: wie die Ausgabe gewählt (mit `--print-version` auf der Kommandozeile) und angezeigt wird.
+- `binding`: ein Bindungsprofil (siehe unten).
+- `isbn`: die ISBN dieser Ausgabe, ISBN-10 oder ISBN-13, mit oder ohne Bindestriche. Jede Bindung eines Buchs hat ihre eigene. Eine gültige wird als Strichcode auf die Rückseite des äußersten Bogens gedruckt: auf den Schutzumschlag einer Buchdecke, die einen trägt, sonst auf den Bezug oder den Broschurumschlag.
+- `isbnAddOn`: fünf Ziffern, die hinter dem Strichcode gedruckt werden. In Spanien trägt er keinen Preis: Die ISBN-Agentur erlaubt ihn nur mit einer 9 am Anfang, für den eigenen Gebrauch des Verlags (`90000` heißt ohne Preis).
+- `workIsbn`: die ISBN des Gesamtwerks, für einen Band einer Reihe oder eines mehrbändigen Werks. Der Strichcode trägt die `isbn` des Bands; diese wird als Text daneben gedruckt. Fehlt sie, steht dort die `isbn` der Reihe.
+- `flaps`: bei einer Broschur Klappen; bei einer Buchdecke ein Schutzumschlag.
+- `caseMaterial`: bei einer Buchdecke `printed` (der Umschlag bedruckt und kaschiert über den Pappen, der Standard) oder `cloth` (geprägt, meist unter einem Schutzumschlag).
+- `overrides`: Maße in mm, die diese Ausgabe über die ihres Profils setzt, wenn die Druckerei für dieses eine Buch einen anderen Falz verlangt.
+- `spineOverride`: der Buchrücken in mm, wie die Druckerei ihn angibt, anstelle des berechneten.
+- `spineText`: wie der Rücken beschriftet wird: `direction` aufsteigend (`bottomToTop`, in Spanien üblich und der Standard) oder absteigend (`topToBottom`, wie ISO 6357 es bevorzugt), und `minSpine`, der schmalste Rücken, der noch Text trägt (standardmäßig 6 mm).
+
+`production.collection` nennt die Reihe oder das mehrbändige Werk, zu dem das Buch gehört:
+
+```ts
+production: {
+  collection: {
+    name: 'Bibliothek des Meeres',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Riffe', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Gezeiten', resource: 'cover-tides' },
+      { id: 'abyss', title: 'Die Tiefsee', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`: der Name der Reihe.
+- `isbn`: die ISBN des Gesamtwerks, als Text neben den Strichcode einer Ausgabe gedruckt, die keine eigene `workIsbn` nennt.
+- `catalogue`: die Titel der Reihe in ihrer Folge, jeder mit `id`, `title` und wahlweise einem Bild als `resource` (meist seiner Vorderseite). `::catalogue` im Text des Umschlags setzt sie als Zeilen, ein Element `catalogue` der Gestaltung als Bilder, auf den Vorsätzen oder der Rückseite.
+- `volume`: die `id` des Katalogeintrags, der dieses Buch ist; er wird überall hervorgehoben, wo der Katalog gesetzt wird. Ein `volume`, das keinen Eintrag nennt, melden die Prüfungen der Konfiguration.
+
+### Bindungsprofile
+
+Ein Bindungsprofil beschreibt, wie eine Druckerei bindet: eine Bindeart, ihre Maße und was sie herstellen kann. Postext bringt je Bindeart ein allgemeines Profil mit, auf Lagen zu 16 Seiten:
+
+<table>
+  <thead>
+    <tr><th>ID</th><th>Bindeart</th><th>Was es ist</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>Eine Broschur in Klebebindung (PUR oder Hotmelt). Sie nimmt Rücken von 3 bis 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>Eine Broschur über fadengehefteten Lagen.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>Ein Hardcover mit geradem Rücken.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>Ein Hardcover mit rundem Rücken.</td></tr>
+  </tbody>
+</table>
+
+Die Maße dieser Profile stammen aus den veröffentlichten Spezifikationen von Druckereien und Buchbindereien; wo sie voneinander abweichen, gilt der Wert, den die meisten angeben. Sie sind ein Ausgangspunkt. Die Maße einer bestimmten Druckerei gehören in ein Profil des Buchs, in `production.bindings`. Es reist mit dem Buch, sodass ein Paket, das anderswo geöffnet wird, es noch findet:
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Klebebindung, meine Druckerei',
+    printer: 'Gráficas Ejemplo',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Taschenbuch', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style`: `perfect`, `sewnSoftcover`, `caseFlat` oder `caseRound`.
+- `signature`: Seiten je Lage. Für den Rücken wird die Seitenzahl auf ganze Lagen aufgerundet, und die Prüfung sagt, wie viele leere Seiten das hinzufügt.
+- `measures`: Fehlende Maße übernehmen die Standardwerte der Bindeart.
+- `accepts`: das kleinste und größte Format (`trim.min`, `trim.max`, jeweils `width` und `height` in mm) und der schmalste und breiteste Rücken (`spine.min`, `spine.max`), den die Druckerei binden kann. Ein Buch außerhalb davon erhält eine Prüfung statt eines Umschlags, den niemand binden kann.
+
+Jedes Maß steht in mm und lässt sich auf drei Arten schreiben, damit ein Profil für jedes Format taugt:
+
+- **Eine Zahl**: für jedes Format gleich (ein Kantenüberstand von 3 mm).
+- **Stufen**: eine Liste von `{ upTo: { width, height }, mm }`. Es gilt die erste Stufe, in deren `upTo` das Format passt, und die letzte, ohne `upTo`, für alles Größere. Eine Druckerei, die bei großen Büchern dickere Pappe nimmt, schreibt es so.
+- **Ein Anteil am Format**: `{ ratio, of, min, max }`, ein Verhältnis zur Breite (`width`, der Standard) oder Höhe (`height`) des Formats, zwischen `min` und `max` gehalten. Klappen werden meist so angegeben.
+
+<table>
+  <thead>
+    <tr><th>Maß</th><th>Gilt für</th><th>Was es ist</th><th>Standard</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>alle</td><td>Wird zur Stärke der Seiten addiert: Leim, Heftung und bei einer Broschur der Umschlagkarton um den Rücken.</td><td>0,5</td></tr>
+    <tr><td><code>bleed</code></td><td>Broschur</td><td>Beschnittzugabe rund um den Umschlagbogen.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>Broschur</td><td>Abstand der Gelenkrillen von jedem Rückenfalz (0: nur am Rücken gerillt).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>Broschur</td><td>Breite jeder Klappe.</td><td>2/3 der Breite, mindestens 65</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>Broschur</td><td>Um wie viel jede Umschlagseite schmaler als das Format ist, damit die Klappe knapp innerhalb des Vorderschnitts falzt.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>Buchdecke</td><td>Pappenstärke.</td><td>2 bis 150 × 230, 2,5 bis 216 × 280, 3 darüber</td></tr>
+    <tr><td><code>square</code></td><td>Buchdecke</td><td>Wie weit die Pappen an Kopf, Fuß und Vorderschnitt über die Seiten stehen.</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>Buchdecke</td><td>Der Falz zwischen jeder Pappe und dem Rücken.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>Buchdecke</td><td>Der Einschlag des Bezugs um die Pappen.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>Buchdecke</td><td>Um wie viel jede Pappe auf der Rückenseite schmaler als das Format zugeschnitten wird, bevor am Vorderschnitt der Kantenüberstand hinzukommt.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>Buchdecke</td><td>Wird zu den Seiten und zwei Pappen addiert, für die Breite der Rückeneinlage.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>Decke mit rundem Rücken</td><td>Wird für die Rundung zum geraden Rücken der Decke addiert.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>Schutzumschlag</td><td>Zusätzliche Breite an jedem Falz am Vorderschnitt, für die Pappe, die er umfasst.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>Schutzumschlag</td><td>Breite jeder Klappe des Schutzumschlags.</td><td>2/3 der Breite, mindestens 80</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>Schutzumschlag</td><td>Beschnittzugabe rund um den Schutzumschlag.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>Vorsätze</td><td>Leimstreifen entlang des Falzes, an die Seiten angeklebt.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>Vorsätze</td><td>Beschnittzugabe an Kopf, Fuß und Vorderschnitt (keine am Falz).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>alle</td><td>Bleibt innerhalb jedes Falzes, jeder Rille, jedes Gelenks und jedes Beschnitts frei von Text.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>alle</td><td>Wie weit über den Beschnitt die Gestaltung gezeichnet wird, bevor ein gespiegelter Anschnitt übernimmt (siehe unten).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### Papier und Buchrücken
+
+Der Buchrücken ist die Stärke der Seiten plus die Zugabe der Bindung. Ein Blatt (zwei Seiten) ist so dick wie das Flächengewicht seines Papiers mal sein Volumen, in Mikrometern: 90 g/m² bei einem Volumen von 1,3 ergeben ein Blatt von 0,117 mm. Die Seiten sind das Buch, wie es gesetzt ist, auf ganze Lagen aufgerundet. Jede Seite zählt auf ihrem eigenen Papier: Das Papier des Buchs ist `folio.paper`, und eine Folge von Seiten auf einem anderen Papier (ein `:::paper`-Block, ein Teil mit Tafeln auf gestrichenem Papier) zählt mit ihrem eigenen, nach derselben Regel, mit der [Folio](/de/docs/configuration-html-folio-epub) das Buch zeigt.
+
+Der Buchrücken folgt also dem Buch. Fügt eine Änderung eine Lage hinzu, wächst der Rücken, der Bogen wird breiter, und jedes Element auf der Vorder- oder Rückseite wandert mit seiner Fläche. Misst die Druckerei einen Blindband aus und nennt eine Zahl, setzt `spineOverride` sie, und die Prüfung vermerkt beide Werte. Ein Rücken unter `spineText.minSpine` trägt keinen Text.
+
+Ein Papier des Buchs lässt sich auch als Profil in `production.papers` ablegen: das Papier, das Folio kennt (`type`, `grammage`, `bulk`, seine Oberfläche und sein Farbton), mit `id`, `name`, seinem Lieferanten (`supplier`) und seinem Handelsnamen (`commercialName`).
+
+### Profile von einem Buch zum anderen
+
+Bindungs- und Papierprofile wandern zwischen Büchern und zwischen Personen als Datei `.postext-production.json`. `exportProductionProfiles(papers, bindings)` schreibt eine, und `importProductionProfiles(data)` liest eine zurück, zusammen mit den Problemen der Einträge, die es ausgelassen hat. Das Bedienfeld Umschlag der Sandbox hat beides als Schaltflächen.
+
+## Der Bogen und seine Flächen
+
+Der Bogen besteht aus Flächen, Zonen genannt, nebeneinander, jede das, was aus diesem Teil des Bogens nach dem Falzen wird:
+
+<table>
+  <thead>
+    <tr><th>Bogen</th><th>Zonen, von links nach rechts</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Broschur</td><td><code>flapBack</code> (mit Klappen), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (mit Klappen)</td></tr>
+    <tr><td>Buchdecke</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, mit dem Einschlag ringsum</td></tr>
+    <tr><td>Schutzumschlag</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Vorsatz</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+Eine Ausgabe als Broschur hat einen Bogen, ihren Umschlag. Eine Buchdecke hat ihren Bezug, einen Schutzumschlag, wenn `flaps` gesetzt ist, und ein vorderes und ein hinteres Vorsatz. Bei einem Buch, das von rechts nach links gesetzt ist (oder rechts gebunden: ein vertikal gesetztes chinesisches oder japanisches Buch, oder mit `page.binding: 'right'`), ist der Bogen gespiegelt: die Vorderseite links, die Rückseite rechts. In einem vertikal gesetzten Buch stehen die Texte der Zonen in senkrechten Zeilen; der Rückentext läuft ungedreht den Rücken hinunter, `spineText.direction` gilt dort nicht.
+
+Jede Zone hat innen einen Sicherheitsbereich, `safeMargin` von jedem Falz und jedem Beschnitt entfernt, und der Rücken hat quer dazu seinen eigenen, schmaleren Rand. Die Sandbox zeichnet Falze, Rillen und Sicherheitsbereiche über den Bogen; das PDF setzt Falzmarken in den Infobereich außerhalb der Beschnittzugabe.
+
+## Die Gestaltung des Umschlags
+
+Die Einstellung `cover` ist die Gestaltung des Umschlags. Wie die übrige Gestaltung sagt sie nicht, was auf dem Umschlag steht, nur wie er aussieht, und sie ändert den Satz der Seiten nicht:
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background`: der Grund des ganzen Bogens.
+- `image`: eine Bitmap- oder SVG-Ressource des Buchs, die den ganzen Bogen (`area: 'sheet'`, der Standard) oder nur die Vorderseite (`'front'`) füllt, um `focus` herum zugeschnitten (in Bruchteilen des Bilds).
+- `zones`: ein Grund je Zone, über dem Grund des Bogens und seinem Bild.
+- `verticalAlign`: wo der Text jeder Zone darin steht: `top` (der Standard), `middle` oder `bottom`. Der Text des Rückens steht immer quer zu ihm mittig.
+- `barcodeMagnification`: die Größe des Strichcodes gegenüber der Nenngröße, von 0,8 bis 2 (Standard 1). Unter 0,8 wird er auf 0,8 gesetzt, und die Prüfung meldet es.
+- `mirrorMargin`: der gespiegelte Anschnitt (siehe unten).
+
+### Elemente, Effekte und Logos
+
+Über die Gründe setzt die Gestaltung drei Listen von Elementen, jede von hinten nach vorn gezeichnet: `elements` unter dem Text, `effects` darüber und `logos` über allem. Ein Element ist ein Bild (`kind: 'image'` mit einer `resourceId`), ein Farbkasten (`'box'`), eine Farbform (`'shape'`) oder der Katalog der Reihe (`'catalogue'`, siehe unten) und hat eine `id` aus Buchstaben, Ziffern, `-` und `_`.
+
+Ein Element wird über die Zone platziert, in der es steht, und wandert deshalb mit dieser Zone, wenn der Rücken wächst oder die Bindung wechselt:
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height`: sein Rahmen, in mm ab der oberen linken Ecke der Zone. Er darf aus der Zone hinausragen, in die nächsten oder in die Beschnittzugabe.
+- `basis`: die Größe seiner Zone, als es platziert wurde. Hat die Zone jetzt eine andere Größe, weil sich das Format des Buchs geändert hat oder der Rücken gewachsen ist, skaliert das Element mit: ein Kasten oder eine Form auf jeder Achse, ein Bild gleichmäßig um seine Mitte, mit gleichen Proportionen. Ohne `basis` bleibt das Element, wie es gesetzt wurde.
+- `to`: ein Kasten oder eine Form über mehrere Zonen, etwa ein Band von der Rückseite zur Vorderseite: seine rechte Kante, in mm ab dem linken Rand der Zone, in der es endet (`to.zone`, `to.x`), und die Breite dieser Zone beim Platzieren (`to.basis`). Jede Kante folgt dann ihrer eigenen Zone.
+- `color` und `opacity`: die Farbe eines Kastens oder einer Form und die Deckkraft jedes Elements (0 bis 1). Ein Bild behält seine eigene Transparenz.
+- `fit`: wie ein Bild seinen Rahmen füllt: ganz darin (`contain`, der Standard) oder ihn deckend, beschnitten (`cover`).
+- `path`: eine aus Knoten gezeichnete Form, in Bruchteilen ihres Rahmens (0, 0 die obere linke Ecke; 1, 1 die untere rechte), sodass sich die Form mit dem Rahmen dehnt. Jeder Teil hat seine `nodes` und ist geschlossen (`closed`) oder offen; ein Knoten hat `x` und `y` und die Griffe der Kurve, die in ihn hineinläuft (`in`) und ihn verlässt (`out`).
+- `outline`: geschlossene Polygone in Bruchteilen des Rahmens, aus einem Bild nachgezeichnet, für einen Schleier oder eine Veredelung in dessen Form.
+- `clip`: ein Bild, auf eine Kontur beschnitten, sodass es nur innerhalb der eigenen Form seiner Illustration erscheint.
+- `bleed`: jenseits des Gestaltungsrands eines gespiegelten Anschnitts spiegelt `mirror` (der Standard) das Element mit dem Grund nach außen; `own` malt es unverändert über den Falz.
+- `clearance` (Logos): die Schutzzone in mm um das Logo, in die nichts anderes ragen soll.
+
+Ein Kasten oder eine Form kann auch die Effekte tragen, die ein Kastenstil der Seiten nicht zeichnen kann: `radius` für abgerundete Ecken in mm, `stroke` für einen Rand (`color` und `width` in mm), `gradient` für einen Verlauf von seiner Farbe zu `to` unter `angle` Grad (0: von links nach rechts; 90: von oben nach unten) und `shadow` (`color`, `opacity`, wie weit er fällt, `x` und `y` in mm, und wie weich er ist, `blur`). Ein Verlauf oder ein Schatten macht das Element zu einem eigenen Bild, das in der Auflösung des PDFs gezeichnet wird.
+
+Ein Element `catalogue` ordnet die Bilder der Titel der Reihe in einem Raster in seinem Kasten an, sodass die Reihe auf einem Vorsatz erscheint, ohne jeden Umschlag von Hand zu platzieren:
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`: Bilder je Zeile des Rasters (standardmäßig alle Titel in einer Zeile).
+- `gap`: der Abstand zwischen den Bildern in mm (standardmäßig 3).
+- `first` und `last`: der erste und der letzte gezeigte Titel, nach ihrer Stelle im Katalog ab 1 gezählt, um einen langen Katalog auf zwei Seiten zu verteilen (standardmäßig alle).
+- `fit`: Jedes Bild füllt seine Zelle beschnitten aus (`cover`, hier der Standard) oder steht ganz darin (`contain`).
+- `stroke` und `radius`: der Rand um den Titel des Buchs selbst (`collection.volume`). Ohne `stroke` wird er nicht hervorgehoben.
+
+Ein Titel ohne `resource` lässt seine Zelle leer, eine Reihe ohne Katalog zeichnet nichts. Mit einer `basis` skalieren die Zellen mit der Zone wie das Element selbst.
+
+### Gespiegelter Anschnitt
+
+Das Motiv eines Umschlags endet meist am Beschnitt, und der Einschlag einer Buchdecke reicht 15 mm darüber hinaus, um die Pappe herum. Mit `mirrorMargin` wird die Gestaltung so viele mm über den Beschnitt gezeichnet (mindestens 2), und dahinter werden Grund und Elemente bis zum Rand des Bogens gespiegelt. Einschlag und Beschnittzugabe setzen dann das Bild fort, statt einen leeren Streifen zu zeigen. Das `designMargin` eines Profils gibt den Rand an, den eine Druckerei erwartet. Ein Element mit `bleed: 'own'` wird nicht gespiegelt.
+
+### Textfelder
+
+Jede Zone ist ein eigener Textrahmen. `textBoxes` fügt von Hand platzierte Rahmen hinzu, für ein Zitat quer über die Vorderseite, eine Zeile am Fuß des Rückens oder eine Bildunterschrift über einem Bild:
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name`: Buchstaben, Ziffern, `-` und `_`, und nicht der Name einer Zone. Das Markdown des Umschlags füllt das Feld über diesen Namen.
+- `rect`: seine Stelle auf dem Bogen, in mm ab der Ecke der Beschnittzugabe.
+- `rotate`: `-90` dreht den Text um eine Vierteldrehung, sodass er den Rücken hinauf läuft, `90` den Rücken hinunter.
+- `verticalAlign`: `top`, `middle` oder `bottom`.
+
+### Veredelungen und technische Platten
+
+`finishes` sind, was die Druckerei nach den Druckfarben hinzufügt, jeweils über einer Form der Gestaltung:
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process`: `varnish` oder `foil`, auf einer eigenen Sonderfarbenplatte gedruckt (eine Druckfarbe mit [Veredelung](/de/docs/special-inks-die-cuts#veredelungen)); oder `emboss` oder `deboss`, ein Prägewerkzeug für Hoch- oder Tiefprägung.
+- `ink`: die Sonderfarbe des Lacks oder der Folie. Standardmäßig heißt ein Lack `Varnish` und eine Folie `Gold foil`.
+- `sheen`: `gloss` (der Standard), `satin`, `matte` oder `softTouch`.
+- `shape`: was die Veredelung bedeckt: einen eigenen Rahmen (`{ box }`, platziert wie ein Element), die Form eines Elements, Effekts oder Logos (`{ element: id }`; die Kontur eines Bilds, wenn seine Ressource eine hat) oder eine gespeicherte Kontur in einem eigenen Rahmen (`{ outline, box }`).
+
+Eine Hoch- oder Tiefprägung druckt nichts. Ihre Form geht auf einer technischen Platte an die Druckerei, neben der [Stanzlinie](/de/docs/special-inks-die-cuts#die-stanzlinie-im-pdf): eine `Separation` namens `Emboss` oder `Deboss`, die der Preflight auflistet und die kein Proof zeichnet. Die Buchbinderei fertigt daraus das Prägewerkzeug.
+
+### Eine Gestaltung für jeden Bogen
+
+Eine Buchdecke besteht aus mehreren Bogen, und standardmäßig übernehmen alle die Gestaltung `cover` des Buchs. `sheets` gibt einem Bogen eine eigene Gestaltung, die auf diesem Bogen an die Stelle der des Buchs tritt:
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+Die Bogen heißen:
+
+- `case`: der Bezug einer Buchdecke, etwa ein Leinen mit Folienprägung unter einem bedruckten Schutzumschlag.
+- `jacket`: der Schutzumschlag.
+- `endpapers`: beide Vorsätze; `endpaperFront` und `endpaperBack`: einer davon, vor `endpapers`.
+- `cover`: der Umschlag einer Broschur oder der Bezug einer Buchdecke ohne eigene Gestaltung `case`.
+
+Jede ist eine vollständige Gestaltung mit allen Feldern von `cover` außer `sheets` und übernimmt nichts von der des Buchs: Im Beispiel zeigt der Bezug das Bild des Schutzumschlags nicht. Ein Bogen ohne eigene Gestaltung übernimmt die des Buchs.
+
+## Der Text des Umschlags
+
+Der Text des Umschlags ist ein Markdown-Dokument des Buchs, neben seinen Kapiteln abgelegt. Jeder Block füllt eine Zone oder ein Textfeld über dessen Namen:
+
+```md
+:::frame{slot="back"}
+Eine Stadt, die ihre Bücher unter der Erde aufbewahrt, und das Mädchen, das sie laut vorliest.
+
+:::paragraphs{style="cover-praise"}
+„Ein Roman, den man in einem Zug liest.“ – *Eine Zeitung*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Ana Pérez** wurde 1984 in Saragossa geboren. *Die unterirdische Bibliothek* ist ihr zweiter Roman.
+:::
+
+:::frame{slot="praise"}
+*Ausgezeichnet mit dem Preis für das beste Debüt*
+:::
+```
+
+Der Text wird in der Typografie des Buchs gesetzt: mit seinen Absatzformaten, Zeichenformaten und Schriften. Sechs Absatzformate gehören dem Umschlag, und das Buch kann sie neu festlegen: `cover-title`, `cover-subtitle`, `cover-author` und `cover-spine`, dazu für den Katalog der Reihe (siehe unten) `cover-catalogue` und `cover-catalogue-current`. Vorderseite und Rücken, die das Markdown leer lässt, erhalten bei jedem Aufbau Titel, Untertitel und Autor des Buchs aus seinen Metadaten, in diesen Formaten gesetzt; sie werden nie in den Text des Umschlags kopiert. Ein Rahmen `front` oder `spine` ersetzt sie durch seinen eigenen Text.
+
+Ein Rahmen für einen Platz, den der Bogen nicht hat (eine Klappe auf einem Bogen ohne Klappen, eine Rückseite auf einem Vorsatz), wird ausgelassen, und die Prüfung meldet es; ein zweiter Rahmen für denselben Platz ebenso. Schreiben Sie den Text des Umschlags als Absätze mit Absatzformaten: Eine Überschrift mit `#` erhält die Gestaltung, die das Buch seinen Kapitelüberschriften gibt.
+
+Ein Umschlagtext dient jeder Ausgabe und jedem Bogen. Ein mehrsprachiges Buch kann jeder Sprache ihren eigenen geben.
+
+### Ein Text für einen einzelnen Bogen
+
+Ein Rahmen, der mit `sheet` einen Bogen nennt, wird nur auf diesem Bogen gesetzt und nimmt dort seinen Platz vor einem Rahmen ein, der keinen nennt. So kann eine Buchdecke unter einem Schutzumschlag vorn nur den Namen der Reihe tragen, während die Vorderseite des Schutzumschlags den Titel aus den Metadaten behält:
+
+```md
+:::frame{slot="front" sheet="case"}
+**Bibliothek des Meeres**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*Aus dem Archiv des Verlags*
+:::
+```
+
+`sheet` nimmt die Namen aus `cover.sheets`, einen oder mehrere durch Leerzeichen getrennt (`sheet="case jacket"`). Ein Rahmen für `cover` erreicht auch den Bezug einer Buchdecke, der sowohl auf `case` als auch auf `cover` hört, während einer für `case` nur den Bezug erreicht; einer für `endpapers` erreicht beide Vorsätze. Ein leerer Rahmen für einen Bogen, sofort wieder geschlossen (`:::frame{slot="back" sheet="case"}` gefolgt von `:::`), lässt diese Zone auf diesem Bogen leer: Er nimmt dem gemeinsamen Rahmen aller Bogen den Platz und setzt nichts hinein. Auf der Vorderseite oder dem Rücken hält er außerdem den Titel aus den Metadaten fern. Ein Name, der zu keinem Bogen gehört, wird gemeldet (`coverFrameSheetUnknown`), und ein Rahmen, der keinen anderen Bogen nennt, entfällt.
+
+### Der Katalog der Reihe
+
+`::catalogue` auf einer eigenen Zeile in einem Rahmen setzt die Titel aus `production.collection.catalogue` in ihrer Folge, je einen Absatz: die Nummer, ein Halbgeviert-Leerzeichen und den Titel. Die Titel stehen in `cover-catalogue`, in der Grundschriftgröße linksbündig, der des Buchs selbst (`collection.volume`) in `cover-catalogue-current`, fett.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**In derselben Reihe**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`: der Zählerstil der Nummern: `1` (der Standard), `01`, `I`, `i`, `A`, `a` oder `none` für Titel ohne Nummer.
+- `first` und `last`: der erste und der letzte gesetzte Titel, nach ihrer Stelle ab 1 gezählt, um eine lange Liste auf die beiden Vorsätze zu verteilen. Jeder Titel behält die Nummer seiner Stelle in der ganzen Liste.
+
+Ein Buch, dessen Reihe keinen Katalog hat, erhält an dieser Stelle nichts.
+
+## Die Prüfungen
+
+Beim Aufbau eines Umschlags wird gemeldet, was sich nicht wie verlangt umsetzen ließ. Die Sandbox zeigt diese Meldungen unter **Prüfungen** im Bedienfeld Umschlag, die Kommandozeile gibt sie aus, und `buildCover` liefert sie in `issues`:
+
+<table>
+  <thead>
+    <tr><th>Art</th><th>Was geschehen ist</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>Die Ausgabe nennt ein Bindungsprofil, das das Buch nicht hat.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>Format oder Rücken liegen außerhalb dessen, was <code>accepts</code> des Profils zulässt.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>Die ISBN ist ungültig: Länge oder Prüfziffer stimmen nicht. Der Umschlag hat keinen Strichcode.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>Der Rücken wurde von Hand gesetzt; berechnete und verwendete Breite werden beide angegeben.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>Das Aufrunden auf ganze Lagen fügt leere Seiten hinzu.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>Der Rücken ist schmaler als <code>minSpine</code> und trägt keinen Text. Bei einer Buchdecke zählt der Rücken des Bezugs, der um zwei Pappen breiter ist als die Seiten.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>Ein Textfeld hat einen Namen, den der Umschlag nicht zulässt.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Der Text des Umschlags füllt einen Platz, den der Bogen nicht hat, oder einen Platz zweimal.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Ein Rahmen im Text des Umschlags nennt einen Bogen, den es nicht gibt (<code>sheet="…"</code>).</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>Der gespiegelte Anschnitt hat Bilder ausgelassen, die er nicht lesen konnte, oder endet vor dem Rand des Bogens.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>Auf eine Kontur beschnittene Bilder wurden ganz gezeichnet.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>Der Strichcode war unter 80 % verlangt und steht auf 80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>Das Buch hat keine solche Ausgabe oder die Ausgabe keinen solchen Bogen.</td></tr>
+  </tbody>
+</table>
+
+Die Prüfungen der Konfiguration lesen `production` und `cover` wie jede andere Einstellung: Ein unbekannter Schlüssel, ein Wert der falschen Art oder eine ungültige ISBN wird mit seinem Pfad gemeldet. Jede Gestaltung in `cover.sheets` wird wie die des Umschlags geprüft; gemeldet werden außerdem ein Bogenname, der keiner der sechs ist, `columns`, `first` und `last` eines Katalogelements, die keine ganzen Zahlen ab 1 sind, ein negativer `gap` und ein `collection.volume`, das keinen Titel des Katalogs nennt.
+
+Das PDF des Umschlags durchläuft denselben [Preflight](/de/docs/configuration-pdf-output) wie das des Buchs: Auflösung seiner Bilder, Schwarz, Farbauftrag, seine Veredelungen und technischen Platten.
+
+## In der Sandbox
+
+Das Bedienfeld **Umschlag** in der Seitenleiste enthält die Druckausgaben und ihren Umschlag:
+
+- **Ausgaben**: **Taschenbuch hinzufügen** oder **Hardcover hinzufügen**, dann für jede Ausgabe Name, Bindung, ISBN, Zusatzcode und Gesamt-ISBN, Klappen oder Schutzumschlag, der Bezug einer Buchdecke, der Rücken laut Druckerei, die Richtung des Rückentexts und der schmalste Rücken, der ihn trägt. **Maße dieser Version** setzt die Maße des Profils nur für diese Ausgabe außer Kraft.
+- **Bogen**: welcher Bogen gezeigt wird (Umschlag, Schutzumschlag, vorderes oder hinteres Vorsatz), mit seinen Seiten, seinem Rücken und seiner Größe.
+- **Gestaltung auf dem Bogen**: **Auf dem Bogen bearbeiten** macht den Bogen zum Gestaltungswerkzeug. Textfelder, Farbflächen, Schleier, Bilder, Logos und Veredelungen werden über seine Leiste hinzugefügt und auf dem Bogen verschoben und in der Größe geändert; sie rasten an Falzen, Sicherheitsbereichen und aneinander ein (Alt schaltet das Einrasten ab). Die Pfeiltasten verschieben das gewählte Element um 1 mm, mit Umschalt um 10 mm. **Ebenen** listet die Elemente unter dem Text, die Textfelder, die Elemente über dem Text, die Logos und die Veredelungen auf und ordnet sie. Die Felder des gewählten Elements legen fest: Stelle, Farbe, Deckkraft, wie ein Bild seinen Rahmen füllt, Eckenradius, Rand, Verlauf und Schatten, was es jenseits eines gespiegelten Anschnitts tut, ob es mit seiner Fläche skaliert, und seinen Pfad, seine Kontur oder seinen Zuschnitt. Wird ein Textfeld umbenannt, wandert sein Text im Markdown des Umschlags mit.
+- **Texte**: ein Markdown-Editor je Zone und Textfeld. Vorderseite und Rücken zeigen, was sie aus den Metadaten übernehmen, bis sie einen **eigenen Text** erhalten.
+- **Reihe**: Name und ISBN der Reihe.
+- **Dateien für die Druckerei**: **Bogen als PDF laden**, geschrieben mit den PDF-Einstellungen des Buchs (Farbraum, Ausgabeprofil, PDF/X), und **Vorderseite laden** als Bild.
+- **Prüfungen**: die Prüfungen oben.
+- **Druckereiprofile**: Bindungsprofile, aus einem eingebauten kopiert und auf die Maße einer Druckerei gebracht, jedes Maß in Millimetern, als Anteil am Format oder in Stufen nach Formatgröße, mit dem Wert, der sich für dieses Buch ergibt; Papierprofile mit Lieferant und Handelsname; und **Profile exportieren** und **Profile importieren** für die Datei `.postext-production.json`.
+
+Die Gestaltungen einzelner Bogen, die Texte für einen Bogen, das Katalogelement und der Band der Reihe werden ebenfalls im Bedienfeld Umschlag bearbeitet.
+
+Die Gruppe **Umschlaggestaltung** im Bedienfeld Gestaltung enthält die Gründe, das Bild, die Textausrichtung der Zonen, die Strichcodegröße und den gespiegelten Anschnitt. Jede Änderung im Bedienfeld Umschlag ist ein Schritt im Verlauf zum Rückgängigmachen.
+
+Bilder für einen Umschlag kommen oft als Druckdateien. Das Bedienfeld Ressourcen liest ein PDF oder eine mit PDF-Kompatibilität gespeicherte Illustrator-Datei als ein Bild je Seite mit 300 ppi auf transparentem Hintergrund, und TIFF- und PSD-Dateien in voller Größe. Eine EPS-Datei wird nicht gelesen: Das Bedienfeld bittet darum, sie als PDF zu speichern.
+
+## Über die Kommandozeile
+
+`postext cover` setzt einen Bogen einer Ausgabe:
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` wählt die Ausgabe (standardmäßig die erste), `--sheet` den Bogen (`cover`, `jacket`, `endpaper-front` oder `endpaper-back`). Ein Pfad auf `.png`, `.jpg` oder `.webp` oder `--format` malt eine Fläche statt des PDFs: die Vorderseite, es sei denn, `--zone` nennt eine andere (`back`, `spine`, `flapFront`, `flapBack` oder `sheet` für den ganzen Bogen). Die PDF-Optionen (`--color-space`, `--pdfx`, `--profile` und die übrigen) gelten wie bei `postext pdf`. Siehe [Kommandozeile](/de/docs/command-line).
+
+## Im Code
+
+`postext/production` enthält die ganze Kette des Umschlags. `buildCover` nimmt die Konfiguration des Buchs, eine Ausgabe, die gesetzten Seiten (für den Rücken), das Markdown des Umschlags, die Metadaten und die Ressourcen und liefert den Umschlag als Dokument mit einer Seite:
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` gibt Größe und Zonen des Bogens in mm an, `cover.sheets` jeden Bogen der Ausgabe mit seinem Rücken und `cover.issues` die Prüfungen. `pages` kann auch eine Seitenzahl sein, dann alle auf dem Papier des Buchs.
+
+Der Rest des Moduls legt jeden Schritt offen:
+
+- **ISBN**: `parseIsbn` liest und prüft eine ISBN, `isbnBarcodeSvg` zeichnet ihren EAN-13-Strichcode mit Zusatzcode, `ean13CheckDigit` und `isbnCaption` erledigen den Rest.
+- **Maße und Bögen**: `resolveBindingMeasures` errechnet die Maße eines Profils für ein Format, `resolveLength` ein einzelnes Maß, `checkProfileAccepts` die Grenzen; `spineFromRuns`, `pageRunsOf`, `signaturePages` und `leafMm` den Rücken; `softcoverSheet`, `caseSheet`, `jacketSheet` und `endpaperSheet` je einen Bogen, und `versionSheets` die Bögen einer Ausgabe.
+- **Die Gestaltung**: `coverPage` stellt die Seitenvorlage eines Bogens zusammen, `coverSource` das Markdown, aus dem er gesetzt wird, `coverZoneBox` den Rahmen einer Zone, `placeCoverElement` und `coverElementRect` die Stelle eines Elements, `basicShape`, `pathData` und `flattenCoverPath` seine Formen; `coverSheetNames` und `coverDesignFor` die Gestaltung, die ein Bogen erhält, und `withCatalogue` und `expandCatalogueText` die Bilder und Zeilen des Katalogs.
+- **Profile und Einstellungen**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` und `readProductionConfig`, das einen `production`-Block aus nicht vertrauenswürdigen Daten liest und meldet, was es verworfen hat.
+- **Folio**: `folioOfBook` liefert die Folio-Einstellungen mit der Bindung der ersten Ausgabe, `productionFolioBinding` und `folioVersionOf` die einer gewählten Ausgabe.
+
+## In einer `.postext`-Datei
+
+Ein Paket trägt die Einstellungen `production` und `cover` in seiner Konfiguration und den Text des Umschlags als `cover.md` neben den Kapiteln. Eine Sprache mit eigenem Umschlagtext trägt ihn als `cover/<language>.md`. `openBundle` (aus `postext/bundle`) liefert ihn als `coverMarkdown`, und `createBundle` nimmt ihn auf dieselbe Weise entgegen. Siehe [Pakete](/de/docs/configuration-bundles).
+
+## Folio und EPUB
+
+Die Ansicht Folio bindet das Buch als seine erste Ausgabe: eine Klebebindung oder eine fadengeheftete Broschur als Taschenbuch, eine Buchdecke als Hardcover, mit dem Rücken des Umschlags auf den Buchrücken gemalt. Ein EPUB, das die Kommandozeile oder die Sandbox schreibt, nimmt die Vorderseite des Druckumschlags als Umschlagbild, wenn das Buch eine Druckausgabe hat und kein anderes Bild nennt.
+
+## Grenzen
+
+- Der Rücken zählt die Seiten, wie sie gesetzt sind. Ändern sich die Seiten eines Buchs, nachdem der Umschlag gemacht wurde, muss der Umschlag neu gemacht werden; Rücken und alle Flächen passen sich dann von selbst an.
+- Die Standardmaße sind ein Ausgangspunkt aus veröffentlichten Spezifikationen. Fragen Sie die Druckerei nach ihren Maßen und legen Sie sie in einem Profil ab.
+- Geschrieben werden nur PDF und die Bildformate, kein IDML-Paket des Umschlagbogens.
+- Eine Überschrift mit `#` im Text des Umschlags erhält die Gestaltung der Kapitelüberschriften des Buchs; setzen Sie Titel auf dem Umschlag mit Absatzformaten.

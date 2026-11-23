@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'zh',
   lastUpdated: '2026-11-16',
   readingTime: '10分钟',
-  order: 52,
+  order: 53,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
 };
 
@@ -126,6 +126,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>pdf</code></td><td>生成PDF，带书签、链接和嵌入的字体，默认带有无障碍标签（PDF/UA）；印刷时可用PDF/X和CMYK。</td></tr>
     <tr><td><code>html</code></td><td>把页面生成为带真实文字的HTML：一个独立文件，或一个含有<code>index.html</code>和<code>assets/</code>的文件夹。</td></tr>
     <tr><td><code>epub</code></td><td>生成EPUB 3电子书，可以是与印刷版相同的固定页面，也可以是流式版式的文字。</td></tr>
+    <tr><td><code>cover</code></td><td>生成书的某个版本的印刷封面：整张版面为PDF，或其中一个区域为图片。</td></tr>
     <tr><td><code>image</code></td><td>把一页生成为PNG、JPEG或WebP图片。</td></tr>
     <tr><td><code>images</code></td><td>把每一页或某个范围的页面生成为图片，放进一个文件夹。</td></tr>
     <tr><td><code>docx</code></td><td>把各章生成为Word文档：语义（只有内容，用朴素的Word样式）、版式（同样可编辑的文字，套用书的设计）或页面摹本（每一行放在固定的文本框中）。</td></tr>
@@ -177,7 +178,24 @@ postext epub book.postext -o book.epub
 postext epub book.postext --layout reflowable --cover cover.jpg
 ```
 
-`--layout fixed`（默认）让每一页保持印刷时的样子，文字可以选取；`--layout reflowable`让阅读系统按自己的屏幕重排文字（见[EPUB电子书](/zh/docs/configuration-html-folio-epub#epub电子书postext-epub)）。封面是书的缩略图，除非`--cover`给出一张图片。EPUB包的元数据（书名、作者、语言、标识符）来自第一章的前置元数据，与沙盒中相同。标记为`redistributable: false`的字体不会复制进去；指定了`fallback`的字体族，以自己的名称嵌入那个开放字体族的字面（自postext 1.43起）。
+`--layout fixed`（默认）让每一页保持印刷时的样子，文字可以选取；`--layout reflowable`让阅读系统按自己的屏幕重排文字（见[EPUB电子书](/zh/docs/configuration-html-folio-epub#epub电子书postext-epub)）。封面是`--cover`给出的图片；没有给出时，书有印刷版本就用印刷封面的封面部分，否则用书的缩略图。EPUB包的元数据（书名、作者、语言、标识符）来自第一章的前置元数据，与沙盒中相同。标记为`redistributable: false`的字体不会复制进去；指定了`fallback`的字体族，以自己的名称嵌入那个开放字体族的字面（自postext 1.43起）。
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+书的某个印刷版本（它的`production`设置）的封面版面：封底、书脊和封面，以及勒口，尺寸由装订和书页决定，带出血和折线标记，按书的封面设计和封面Markdown排出。封面Markdown没有写的书名、作者和书脊文字取自书的元数据。见[印刷封面](/zh/docs/print-covers)。
+
+- `--print-version ID`：版本（`production.versions[].id`；默认第一个）。它不是`--version`，后者打印程序的版本。
+- `--sheet cover|jacket|endpaper-front|endpaper-back`：版面（默认`cover`）。
+- 路径以`.png`、`.jpg`或`.webp`结尾，或给出`--format`时，画出一个区域而不是写PDF：默认是封面，除非`--zone`指定`back`、`spine`、`flapFront`、`flapBack`，或表示整张版面的`sheet`。`--dpi`和`--quality`的用法与`image`相同。
+- `pdf`的选项（`--pdfx`、`--profile`、`--color-space`等）适用于PDF。
+
+封面的检查（书脊太窄不能印字、印张补足增加的空白页、无效的ISBN）作为警告打印出来。
 
 ### image和images
 

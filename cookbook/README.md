@@ -319,6 +319,25 @@ are all linted. Regions: exactly one `answer`, at most six others, never nested.
   and `items`. Write the package at top level, from the documents the pen built, so the capture
   reads it back (C42), and offer it through an `<a download>` link.
   `self-checking-course-module` (Nº 179) is the model.
+- **Print cover.** Lay the book out first, then hand its pages to `buildCover` from
+  `https://esm.sh/postext/production` and build the sheet it returns as a second document:
+  ```js
+  const built = buildCover({ config, version: 'paperback', pages: book.pages, markdown: coverText, metadata: book.metadata, resources });
+  const sheet = await buildDocumentWithFonts(built.content, built.config, kitFonts(FONTS));
+  ```
+  `config` holds `production` (the bindings and versions), `cover` (the design) and `folio.paper`
+  (the spine is worked out from them and the page count), and the cover's text is a content file
+  of its own (`const coverText = /* @content:cover */ '';`, `content.cover.<lang>.md`, a
+  `:::frame{slot="back"}` per panel). Load the files of `built.files` (the barcode) with
+  `loadSvg` before the sheet's build. Set `capture.doc: ["first", "last"]` so the capture
+  publishes the book's pages and then the sheet, numbered after them (a book of 37 pages puts
+  the sheet at 38: name that number in `capture.pages` and `hero`, and recount when the text
+  changes), and `capture.sandbox: "first"`, so the Sandbox bundle holds the book; the capture
+  records the cover Markdown (shim `postext-production.js`) and the bundle carries it as
+  `cover.md`, beside the `production` and `cover` of the configuration. Hand `renderToPdf` both
+  documents, `[book, sheet]`, so the PDF has the pages C14 counts. The barcode's digits name
+  OCR-B, which Fontsource does not serve: rewrite its `font-family` to a face the pen loads, or
+  the PDF's font provider fails. `paperback-cover-with-flaps` (Nº 196) is the model.
 
 ### 5.4 The kit
 

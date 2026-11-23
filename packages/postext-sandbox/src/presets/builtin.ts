@@ -1,6 +1,7 @@
 import { commonConfig, type PostextConfig } from 'postext';
 import { initialSharedConfig } from '../editions/configLayers.js';
 import { createPostextGuideConfig } from '../context/guideConfig.js';
+import { guideCoverMarkdown } from '../context/guidePrintCover.js';
 import { buildDefaultResources, defaultResourcesSignature } from '../defaultResources/index.js';
 import { coverThumbnailSvg } from '../defaultResources/cover.js';
 import { guideLang, type GuideLang } from '../defaultResources/lang.js';
@@ -158,7 +159,9 @@ export function createPostextGuidePreset(opts: BuiltinPresetOptions): PresetProv
       const config = configOf(lang);
       const resources = await buildDefaultResources(lang);
       const { chapters } = sampleBook(markdown, () => generateId('chapter'), opts.name);
-      return { summary, locale: lang, chapters, config, sharedConfig: guideShared(), resources, blobs: [], fonts: [], canvasScope: 'book' };
+      // The print cover's text (#1670): the edition's back-cover blurb.
+      const coverMarkdown = custom ? undefined : guideCoverMarkdown(markdown);
+      return { summary, locale: lang, chapters, config, sharedConfig: guideShared(), resources, blobs: [], fonts: [], canvasScope: 'book', ...(coverMarkdown ? { coverMarkdown } : {}) };
     },
   };
 }

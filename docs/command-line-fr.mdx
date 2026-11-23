@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'fr',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "Cette page s’adresse à ceux qui veulent faire des livres avec Postext depuis un terminal plutôt que depuis le site. Vous téléchargez un seul fichier pour votre ordinateur et vous le lancez, sans rien installer. Vous lui donnez votre livre, ou quelques fichiers texte, et il produit un PDF, une page web, un livre numérique, des images des pages ou un document Word. Il peut aussi vérifier qu’un livre n’a pas de problème et réunir ses fichiers en un seul. Les programmes et les assistants d’IA peuvent l’utiliser eux aussi, car il sait répondre dans un format qu’ils lisent facilement.",
 };
 
@@ -168,6 +168,7 @@ sa propre langue, sauf si `--locale` en demande une autre (`--locale en`).
     <tr><td><code>pdf</code></td><td>Le PDF, avec signets, liens, polices incorporées et, par défaut, balisé pour l’accessibilité (PDF/UA) ; PDF/X et CMJN pour l’impression.</td></tr>
     <tr><td><code>html</code></td><td>Les pages en HTML avec du vrai texte : un seul fichier autonome, ou un dossier avec <code>index.html</code> et <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Un livre EPUB 3, avec des pages fixes comme à l’impression ou un texte recomposable.</td></tr>
+    <tr><td><code>cover</code></td><td>La couverture imprimée de l’une des versions du livre : la feuille entière en PDF, ou l’un de ses panneaux en image.</td></tr>
     <tr><td><code>image</code></td><td>Une page sous forme d’image PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Toutes les pages, ou une plage, sous forme d’images dans un dossier.</td></tr>
     <tr><td><code>docx</code></td><td>Les chapitres en document Word : sémantique (le contenu seul, dans des styles Word simples), mis en page (le même texte modifiable avec la maquette du livre) ou fac-similé des pages (chaque ligne dans une zone de texte fixe).</td></tr>
@@ -239,9 +240,39 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (par défaut) garde chaque page comme à l’impression, avec un
 texte sélectionnable ; `--layout reflowable` laisse le système de lecture
 recomposer le texte pour son écran (voir [Livres EPUB](/fr/docs/configuration-html-folio-epub#livres-epub-postext-epub)). La
-couverture est la vignette du livre, sauf si `--cover` donne une image. Les
+couverture est l’image que donne `--cover` ; sans elle, la première de couverture
+imprimée du livre quand il a une version imprimée, et sinon sa vignette. Les
 métadonnées du paquet EPUB (titre, auteurs, langue, identifiant) viennent du
 l’en-tête YAML du premier chapitre, comme dans le Sandbox. Les polices marquées `redistributable: false` ne sont pas copiées ; une famille qui indique un `fallback` est incorporée avec les fontes de cette famille libre, sous son propre nom (depuis postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+La feuille de couverture de l’une des versions imprimées du livre (ses réglages
+`production`) : quatrième de couverture, dos et première, et les rabats, au
+format que donnent la reliure et les pages du livre, avec le fond perdu et les
+repères de pli, composée d’après la maquette de couverture du livre et son
+Markdown de couverture. Le titre, l’auteur et le dos viennent des métadonnées du
+livre là où le Markdown de couverture les omet. Voir
+[Couvertures imprimées](/fr/docs/print-covers).
+
+- `--print-version ID` : la version (`production.versions[].id` ; la première
+  par défaut). Ce n’est pas `--version`, qui affiche la version du programme.
+- `--sheet cover|jacket|endpaper-front|endpaper-back` : la feuille (`cover` par défaut).
+- Un chemin qui se termine par `.png`, `.jpg` ou `.webp`, ou `--format`, peint
+  un panneau au lieu d’écrire le PDF : la première de couverture, sauf si
+  `--zone` nomme `back`, `spine`, `flapFront`, `flapBack` ou `sheet` pour la
+  feuille entière. `--dpi` et `--quality` s’appliquent comme pour `image`.
+- Les options de `pdf` (`--pdfx`, `--profile`, `--color-space`…) s’appliquent au PDF.
+
+Les vérifications de la couverture (un dos trop mince pour du texte, des pages
+blanches ajoutées par les cahiers, un ISBN illisible) s’affichent comme des
+avertissements.
 
 ### image et images
 

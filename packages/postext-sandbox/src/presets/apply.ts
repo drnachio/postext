@@ -7,7 +7,7 @@ import { putBlobsAt } from '../storage/blobStore.js';
 import { putFontFiles } from '../storage/fontStorage.js';
 import { saveBook, saveConfig, savePresetApplied, savePresetId } from '../storage/persistence.js';
 import type { BookContent } from '../book/types.js';
-import { chaptersTextLength, hashChapters, hashConfig, hashResources, type DocumentHashSource } from './hash.js';
+import { chaptersTextLength, hashChapters, hashConfig, hashCover, hashResources, type DocumentHashSource } from './hash.js';
 import type { AppliedPresetSnapshot, LoadedPreset, PresetApplyParts } from './types.js';
 import { loadPresetGeneral, saveWorkingLayers } from '../storage/persistence.js';
 import { presetSharedConfig, rebaseEdition, type ConfigScope } from '../editions/configLayers.js';
@@ -50,6 +50,10 @@ export function snapshotForApply(
     markdownLength: chaptersTextLength(wantsMarkdown ? loaded.chapters : current.chapters),
     configHash: hashConfig(config),
     resourcesHash: hashResources(wantsResources ? loaded.resources : current.resources),
+    ...(() => {
+      const coverHash = hashCover(wantsMarkdown ? loaded.coverMarkdown : current.coverMarkdown);
+      return coverHash ? { coverHash } : {};
+    })(),
   };
 }
 
@@ -108,7 +112,7 @@ export async function applyPreset(
   }
   if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: loaded.resources });
   const book: BookContent | null = wantsMarkdown
-    ? { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}), ...(loaded.start ? { start: loaded.start } : {}) }
+    ? { chapters: loaded.chapters, activeChapterId: loaded.chapters[0]!.id, ...(loaded.canvasScope ? { canvasScope: loaded.canvasScope } : {}), ...(loaded.start ? { start: loaded.start } : {}), ...(loaded.coverMarkdown ? { coverMarkdown: loaded.coverMarkdown } : {}) }
     : null;
   if (book) {
     dispatch({ type: 'SET_BOOK', payload: book });

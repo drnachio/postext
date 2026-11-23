@@ -1,0 +1,64 @@
+---
+title: "Uma brochura com orelhas, a lombada tirada das páginas"
+summary: "Uma brochura de 120 × 190 mm com orelhas de 60 mm: as páginas são compostas e buildCover faz com elas a folha de capa, com a lombada que o papel dá."
+plain: "Um livro de bolso com duas lendas de Bécquer e a folha da capa do jeito que vai para a gráfica: quarta capa, lombada, capa e as duas orelhas numa peça só. A lombada tem a espessura das páginas, então é calculada a partir do próprio livro."
+description: "Uma brochura com orelhas no Postext: perfil de encadernação, código de barras ISBN e lombada calculada pelas páginas e pelo papel; a capa, em Markdown."
+question: "Como faço a folha de capa de uma brochura com orelhas, com a lombada calculada pelo número de páginas?"
+aliases: ["folha de capa", "orelhas", "largura da lombada", "código de barras ISBN", "quarta capa", "lombada quadrada colada", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "A folha de capa aberta: à esquerda a orelha de trás sobre as tradutoras, depois a quarta capa com o texto e um código de barras ISBN num quadro branco, a lombada escrita de baixo para cima, a capa com uma capela em ruínas pintada num morro sob uma serra nevada e o título por cima, e à direita a orelha da frente com uma nota sobre o autor. Em volta, as marcas de corte e de dobra." }
+---
+
+## O que você vai compor
+
+Duas lendas de Bécquer, *The Spirits’ Mountain* e *The Emerald Eyes* (*El monte de las ánimas* e *Los ojos verdes*), numa brochura de bolso de 120 × 190 mm com orelhas de 60 mm, e a folha em que a capa é impressa. O Postext compõe antes as 37 páginas: falsa folha de rosto, folha de rosto, créditos, sumário, uma folha de título para cada lenda e o texto em Crimson Pro 11/15,2. Depois `buildCover` pega essas páginas e monta a folha: orelha de trás, quarta capa com o texto de apresentação e o código de barras, lombada, capa com a pintura de uma capela em ruínas ao pé do Moncayo e orelha da frente. Título, subtítulo e autor vêm dos metadados do livro, e o texto das orelhas, de um Markdown à parte.
+
+## Preparo
+
+### 1 · A encadernação dá as orelhas, o papel dá a lombada
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. O perfil de encadernação descreve como a gráfica trabalha: lombada quadrada colada com PUR em cadernos de 16 páginas, orelhas de 60 mm, 3 mm de sangria e meio milímetro a mais na lombada para a cola. A versão traz o ISBN e o complemento de cinco dígitos; o ISBN é um número de exemplo, que não pertence a nenhum livro. A largura da lombada não está escrita em lugar nenhum. As 37 páginas são arredondadas para três cadernos, 48 páginas ou 24 folhas, e cada folha de um papel de 100 g/m² com mão 2,4 tem 240 µm: 24 × 0,24 + 0,5 dá uma lombada de 6,3 mm. Por padrão uma lombada com menos de 6 mm fica sem texto (`spineText.minSpine`), e por isso o livro vai num papel de muita mão.
+
+### 2 · Primeiro, as páginas
+
+<Excerpt region="pages" />
+
+O miolo é um documento comum do Postext, e cada página dele conta para a lombada. As páginas pré-textuais usam estilos de título cujos desenhos põem o título, o fio e a marca da editora em alturas fixas da página. Cada lenda tem sua folha de título (a que o sumário indica) e recomeça na página ímpar seguinte, 40 mm mais abaixo. Mude o corpo da letra ou as margens e o número de páginas muda; a lombada acompanha na composição seguinte.
+
+### 3 · Os estilos da capa ficam junto com os do livro
+
+<Excerpt region="cover-type" />
+
+A folha é composta com a configuração do livro, então seus estilos de parágrafo estão na mesma lista que os dos créditos e do colofão. `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine` são os nomes que `buildCover` dá aos metadados que posiciona; `cover-blurb`, `cover-note`, `flap-head` e `flap-text` são nomeados no Markdown da capa. Sobre o fundo de noite o texto vai alinhado à esquerda, sem hifenização, no marfim e no dourado da paleta.
+
+### 4 · A folha sai das páginas compostas
+
+<Excerpt region="sheet" />
+
+`buildCover` recebe as páginas, os metadados e o Markdown da capa, com um `:::frame` para a quarta capa e outro para cada orelha. Devolve um documento que `buildDocumentWithFonts` compõe como qualquer outro, além do código de barras num arquivo SVG. Os dígitos do código pedem OCR-B, que nenhum servidor de fontes oferece, então o exemplo os compõe em Josefin Sans, uma fonte que o PDF já incorpora. O PDF traz as 37 páginas e depois a folha no tamanho dela, o arquivo que uma gráfica espera.
+
+## Variações
+
+### Escreva a lombada de cima para baixo
+
+Livros ingleses e americanos leem a lombada de cima para baixo; o padrão, de baixo para cima, segue o uso espanhol e de boa parte da Europa.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Imprima num papel mais fino
+
+Com 80 g/m² e mão 2,2 a folha tem 176 µm, a lombada cai para 4,7 mm e perde o texto, que precisa de 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Erros comuns
+
+- Na lista de páginas capturadas a folha vem depois das do livro, então o número dela é o número de páginas do livro mais um. Se o livro ganhar uma página, o número muda.
+- Um código de barras cujos dígitos pedem uma fonte que o PDF não encontra faz a exportação falhar. Carregue o SVG dele com uma `font-family` que o exemplo já tenha.

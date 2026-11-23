@@ -82,7 +82,7 @@ export { DEFAULT_PRINT_CONFIG, DEFAULT_PRINT_BLACK_CONFIG, DEFAULT_PRINT_PREFLIG
 export { resolveDieCutsConfig, stripDieCutsDefaults } from './dieCuts.js';
 export { DEFAULT_CHECKS_CONFIG, DEFAULT_CONTENT_IN_CONFIG_CHECK, resolveChecksConfig, resolveContentInConfigCheck, stripChecksDefaults } from './output/checks.js';
 export { DEFAULT_CONTRAST_CONFIG, DEFAULT_CONTRAST_REVERSED_TEXT_CONFIG, CONTRAST_LEVELS, CONTRAST_MODES, resolveContrastConfig, resolveContrastReversedTextConfig, stripContrastDefaults } from './output/contrast.js';
-export { FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, isNewspaperSizePreset, folioDefaultsFor, folioForTrim, resolveFolioConfig, stripFolioDefaults, wrapFolioYaw } from './output/folio.js';
+export { FOLIO_PAPER_STOCKS, FOLIO_MAX_TILT, DEFAULT_FOLIO_CONFIG, isNewspaperSizePreset, folioDefaultsFor, folioForTrim, resolveFolioConfig, resolvePagePaper, stripFolioDefaults, wrapFolioYaw } from './output/folio.js';
 export type { FolioPaperStock } from './output/folio.js';
 export { DEFAULT_HEADER_FOOTER_SLOT, DEFAULT_HEADER_SLOT, DEFAULT_FOOTER_SLOT, DEFAULT_TEXT_ELEMENT, DEFAULT_RULE_ELEMENT, resolveHeaderFooterConfig, stripHeaderFooterDefaults } from './structure/headerFooter.js';
 export type { HeaderFooterSlotKind } from './structure/headerFooter.js';

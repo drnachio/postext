@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { defaultResourceTypes, effectiveResourceTypes, resolveBodyTextConfig, stripConfigDefaults } from "postext";
 import type { PostextConfig } from "postext";
 import {
-  bundleGroup, bundleLanguage, bundleLocale, configKeyOf, extraWarnings, languageBack, layoutHash, linesHash, namedLanguage, readBundleBack, startLossNotes, startOf,
+  bundleGroup, bundleLanguage, bundleLocale, configKeyOf, coverMarkdownOf, extraWarnings, languageBack, layoutHash, linesHash, namedLanguage, readBundleBack, startLossNotes, startOf,
 } from "../../../scripts/cookbook/lib/probe.js";
 
 // The Sandbox bundle of a capture whose `capture.doc` lists several builds:
@@ -432,5 +432,23 @@ describe("linesHash (#736)", () => {
     const table = (text: string) => block({ resourceBlock: { table: { cells: [{ row: 0, col: 1, lines: [line(text)] }] } } });
     expect(linesHash(table("12 mm"))).not.toBe(linesHash(table("12")));
     expect(linesHash(block({ hidden: true }))).not.toBe(linesHash(block({})));
+  });
+});
+
+describe("coverMarkdownOf: the cover sheet's text in the bundle (#1671)", () => {
+  const covers = [
+    { version: "paperback", markdown: "First.", built: true },
+    { version: "paperback", markdown: "  ", built: true },
+    { version: "none", markdown: "Failed.", built: false },
+    { version: "hardcover", markdown: "Last.", built: true },
+  ];
+  it("is the last cover built from a non-blank Markdown", () => {
+    expect(coverMarkdownOf(covers, { cover: {} })).toBe("Last.");
+    expect(coverMarkdownOf(covers.slice(0, 3), { cover: {} })).toBe("First.");
+  });
+  it("is nothing without a cover design in the configuration, or without a cover", () => {
+    expect(coverMarkdownOf(covers, { page: {} })).toBeNull();
+    expect(coverMarkdownOf([], { cover: {} })).toBeNull();
+    expect(coverMarkdownOf(undefined, { cover: {} })).toBeNull();
   });
 });

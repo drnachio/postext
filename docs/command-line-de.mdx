@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'de',
   lastUpdated: '2026-11-16',
   readingTime: '13 min',
-  order: 52,
+  order: 53,
   plainSummary: "Diese Seite richtet sich an alle, die Bücher mit Postext im Terminal statt auf der Website machen wollen. Sie laden eine einzige Datei für Ihren Computer herunter und führen sie aus, ohne etwas zu installieren. Sie geben ihr Ihr Buch oder ein paar Textdateien, und sie erzeugt ein PDF, eine Webseite, ein E-Book, Bilder der Seiten oder ein Word-Dokument. Sie kann ein Buch auch auf Probleme prüfen und seine Dateien zu einer einzigen packen. Auch Programme und KI-Assistenten können sie nutzen, denn sie kann in einem Format antworten, das diese leicht lesen.",
 };
 
@@ -163,6 +163,7 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>pdf</code></td><td>Das PDF, mit Lesezeichen, Links, eingebetteten Schriften und standardmäßig für Barrierefreiheit getaggt (PDF/UA); PDF/X und CMYK für den Druck.</td></tr>
     <tr><td><code>html</code></td><td>Die Seiten als HTML mit echtem Text: eine eigenständige Datei oder ein Ordner mit <code>index.html</code> und <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Ein EPUB-3-Buch, mit festen Seiten wie gedruckt oder umfließendem Text.</td></tr>
+    <tr><td><code>cover</code></td><td>Der Druckumschlag einer Ausgabe des Buchs: der ganze Bogen als PDF oder eine seiner Flächen als Bild.</td></tr>
     <tr><td><code>image</code></td><td>Eine Seite als PNG-, JPEG- oder WebP-Bild.</td></tr>
     <tr><td><code>images</code></td><td>Alle Seiten oder einen Bereich als Bilder in einem Ordner.</td></tr>
     <tr><td><code>docx</code></td><td>Die Kapitel als Word-Dokument: semantisch (der Inhalt allein, in schlichten Word-Formatvorlagen), gesetzt (derselbe bearbeitbare Text im Design des Buchs) oder als Seitenfaksimile (jede Zeile in einem festen Textfeld).</td></tr>
@@ -231,9 +232,37 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (Standard) behält jede Seite wie gedruckt, mit markierbarem
 Text; `--layout reflowable` lässt das Lesesystem den Text für seinen Bildschirm
 neu setzen (siehe [EPUB-Bücher](/de/docs/configuration-html-folio-epub#epub-bücher-postext-epub)). Das
-Cover ist das Vorschaubild des Buchs, es sei denn, `--cover` gibt ein Bild an. Die
+Cover ist das Bild, das `--cover` angibt; ohne diese Option die Vorderseite des
+Druckumschlags, wenn das Buch eine Druckausgabe hat, sonst sein Vorschaubild. Die
 Metadaten des Pakets (Titel, Autoren, Sprache, Kennung) kommen aus dem Frontmatter
 des ersten Kapitels, wie in der Sandbox. Schriften mit `redistributable: false` werden nicht kopiert; eine Familie, die einen `fallback` angibt, wird mit den Schnitten dieser freien Familie unter ihrem eigenen Namen eingebettet (seit postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+Der Umschlagbogen einer der Druckausgaben des Buchs (seiner `production`-Einstellungen):
+Rückseite, Buchrücken und Vorderseite und die Klappen, in der Größe, die sich aus
+Bindung und Seiten des Buchs ergibt, mit Beschnittzugabe und Falzmarken, gesetzt
+aus der Umschlaggestaltung des Buchs und seinem Umschlag-Markdown. Titel, Autor
+und Rücken kommen aus den Metadaten des Buchs, wo das Umschlag-Markdown sie
+auslässt. Siehe [Buchumschläge](/de/docs/print-covers).
+
+- `--print-version ID`: die Ausgabe (`production.versions[].id`; standardmäßig die
+  erste). Nicht `--version`, das die Version des Programms ausgibt.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: der Bogen (standardmäßig `cover`).
+- Ein Pfad auf `.png`, `.jpg` oder `.webp` oder `--format` malt eine Fläche,
+  statt das PDF zu schreiben: die Vorderseite, es sei denn, `--zone` nennt `back`,
+  `spine`, `flapFront`, `flapBack` oder `sheet` für den ganzen Bogen. `--dpi` und
+  `--quality` gelten wie bei `image`.
+- Die Optionen von `pdf` (`--pdfx`, `--profile`, `--color-space`…) gelten für das PDF.
+
+Die Prüfungen des Umschlags (ein Rücken, der für Text zu schmal ist, leere Seiten
+durch die Lagen, eine ungültige ISBN) werden als Warnungen ausgegeben.
 
 ### image und images
 

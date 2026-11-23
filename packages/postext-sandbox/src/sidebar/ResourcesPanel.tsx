@@ -89,16 +89,14 @@ export function ResourcesPanel({ isDark = true }: ResourcesPanelProps) {
     if (files.length === 0) return;
     const existingIds = new Set(resources.map((r) => r.id));
     const typeId = types[0]?.id ?? '';
-    const { created, skipped } = await uploadFiles(files, typeId, existingIds, videoTypeId, exampleTypeId);
+    const { created, skipped, postscript } = await uploadFiles(files, typeId, existingIds, videoTypeId, exampleTypeId);
     for (const r of created) dispatch({ type: 'UPSERT_RESOURCE', payload: r });
     if (created.length === 1) setSelectedId(created[0].id);
-    setUploadNote(
-      skipped.length > 0
-        ? labels.resourcesUploadNote
-            .replace('__added__', String(created.length))
-            .replace('__skipped__', String(skipped.length))
-        : null,
-    );
+    const notes = [
+      skipped.length > 0 ? labels.resourcesUploadNote.replace('__added__', String(created.length)).replace('__skipped__', String(skipped.length)) : '',
+      postscript.length > 0 ? labels.resourcesUploadPostscript.replace('__names__', postscript.join(', ')) : '',
+    ].filter(Boolean);
+    setUploadNote(notes.length > 0 ? notes.join(' ') : null);
   };
 
   // Only react to drags that carry files (not internal element drags).

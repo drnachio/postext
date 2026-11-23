@@ -28,6 +28,8 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+A book with a print cover also carries the cover's Markdown as `cover.md`, and a language with a cover text of its own as `cover/<language>.md`; `openBundle` returns it as `coverMarkdown` and `createBundle` takes it the same way. The cover's design and the print versions are in the configuration (`cover`, `production`). See [Print covers](/en/docs/print-covers).
+
 The manifest is described field by field in the Sandbox's [Preset bundle format](/en/docs/sandbox-embedding#preset-bundle-format) appendix. A file may also carry `layouts.json`, the Sandbox's page counts, so that the book opens already paginated there, or one such file per edition of a multilingual book (`layouts.zh-Hant.json`, which is read first). `openBundle` ignores them.
 
 The API is exported from `postext` itself and from the `postext/bundle` subpath, which adds the low-level helpers. Import from `postext` when you also render. That way the bundle adapters and the renderers share one module instance, which matters on a CDN such as esm.sh, where every entry point is a separate build.

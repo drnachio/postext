@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'it',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "Questa pagina è per chi vuole fare libri con Postext da un terminale invece che dal sito. Scarichi un solo file per il tuo computer e lo esegui, senza installare nulla. Gli dai il tuo libro, o qualche file di testo, e il programma produce un PDF, una pagina web, un e-book, immagini delle pagine o un documento Word. Può anche cercare problemi in un libro e riunire i suoi file in uno solo. Lo possono usare anche i programmi e gli assistenti di intelligenza artificiale, perché sa rispondere in un formato che leggono facilmente.",
 };
 
@@ -163,6 +163,7 @@ configurazione del libro. Un pacchetto multilingue viene letto nella sua lingua,
     <tr><td><code>pdf</code></td><td>Il PDF, con segnalibri, link, font incorporati e, per impostazione predefinita, marcato per l’accessibilità (PDF/UA); PDF/X e CMYK per la stampa.</td></tr>
     <tr><td><code>html</code></td><td>Le pagine in HTML con testo vero: un unico file autonomo, o una cartella con <code>index.html</code> e <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Un libro EPUB 3, con pagine fisse come in stampa o testo a layout fluido.</td></tr>
+    <tr><td><code>cover</code></td><td>La copertina a stampa di una delle versioni del libro: l’intero foglio come PDF, o un suo pannello come immagine.</td></tr>
     <tr><td><code>image</code></td><td>Una pagina come immagine PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Tutte le pagine, o un intervallo, come immagini in una cartella.</td></tr>
     <tr><td><code>docx</code></td><td>I capitoli come documento Word: semantico (il solo contenuto, in stili Word semplici), impaginato (lo stesso testo modificabile con il progetto grafico del libro) o facsimile delle pagine (ogni riga in una casella di testo fissa).</td></tr>
@@ -231,9 +232,38 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (il valore predefinito) conserva ogni pagina come stampata, con testo
 selezionabile; `--layout reflowable` lascia che il sistema di lettura ricomponga il testo per il suo
 schermo (vedi [Libri EPUB](/it/docs/configuration-html-folio-epub#libri-epub-postext-epub)). La
-copertina è la miniatura del libro, a meno che `--cover` non indichi un’immagine. I metadati del
+copertina è l’immagine indicata da `--cover`; senza, la prima di copertina a stampa del libro
+quando il libro ha una versione a stampa, e altrimenti la sua miniatura. I metadati del
 pacchetto (titolo, autori, lingua, identificatore) vengono dal front matter del primo capitolo,
 come nella Sandbox. I font marcati `redistributable: false` non vengono copiati; una famiglia che indica un `fallback` viene incorporata con gli stili di quella famiglia libera, ma con il proprio nome (da postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+Il foglio di copertina di una delle versioni a stampa del libro (le sue
+impostazioni `production`): quarta di copertina, dorso e prima, e le alette, nel
+formato che danno la legatura e le pagine del libro, con l’abbondanza e i segni
+di piega, composto dalla grafica di copertina del libro e dal suo Markdown di
+copertina. Il titolo, l’autore e il dorso vengono dai metadati del libro dove il
+Markdown di copertina li omette. Vedi
+[Copertine per la stampa](/it/docs/print-covers).
+
+- `--print-version ID`: la versione (`production.versions[].id`; la prima per
+  impostazione predefinita). Non è `--version`, che stampa la versione del programma.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: il foglio (`cover` per impostazione predefinita).
+- Un percorso che termina in `.png`, `.jpg` o `.webp`, oppure `--format`,
+  dipinge un pannello invece di scrivere il PDF: la prima di copertina, a meno
+  che `--zone` non indichi `back`, `spine`, `flapFront`, `flapBack` o `sheet`
+  per il foglio intero. `--dpi` e `--quality` valgono come per `image`.
+- Le opzioni di `pdf` (`--pdfx`, `--profile`, `--color-space`…) valgono per il PDF.
+
+I controlli della copertina (un dorso troppo sottile per il testo, pagine bianche
+aggiunte dalle segnature, un ISBN illeggibile) vengono stampati come avvisi.
 
 ### image e images
 

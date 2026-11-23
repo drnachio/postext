@@ -1,0 +1,64 @@
+---
+title: "Un broché à rabats, le dos calculé d’après les pages"
+summary: "Un broché de 120 × 190 mm à rabats de 60 mm : les pages sont composées, puis buildCover en tire la feuille de couverture, au dos aussi épais que le papier."
+plain: "Un livre de poche de deux légendes de Bécquer et la feuille de sa couverture : quatrième, dos, première et les deux rabats d’un seul tenant. Le dos fait l’épaisseur des pages, on le calcule donc d’après le livre."
+description: "Un broché à rabats avec Postext : profil de reliure, code-barres ISBN et dos calculé d’après les pages et le papier, avec le texte de couverture en Markdown."
+question: "Comment faire la feuille de couverture d’un broché à rabats, avec le dos calculé d’après le nombre de pages ?"
+aliases: ["feuille de couverture", "rabats", "épaisseur du dos", "code-barres ISBN", "quatrième de couverture", "dos carré collé", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "La feuille de couverture à plat : à gauche le rabat arrière sur les traductrices, puis la quatrième avec le texte et un code-barres ISBN sur un cartouche blanc, le dos titré de bas en haut, la première avec une chapelle en ruine peinte sur une colline sous une crête enneigée et le titre au-dessus, et à droite le rabat avant avec une note sur l’auteur. Les traits de coupe et de pliage l’entourent." }
+---
+
+## Ce que vous allez composer
+
+Deux légendes de Bécquer, *The Spirits’ Mountain* et *The Emerald Eyes* (*El monte de las ánimas* et *Los ojos verdes*), en broché de poche de 120 × 190 mm à rabats de 60 mm, avec la feuille sur laquelle s’imprime sa couverture. Postext compose d’abord les 37 pages : faux titre, titre, mentions, sommaire, un feuillet de titre pour chaque légende, puis le texte en Crimson Pro 11/15,2. `buildCover` prend ensuite ces pages et monte la feuille : rabat arrière, quatrième avec le texte de présentation et le code-barres, dos, première avec la peinture d’une chapelle en ruine au pied du Moncayo, rabat avant. Le titre, le sous-titre et l’auteur viennent des métadonnées du livre, et le texte des rabats d’un fichier Markdown à part.
+
+## Préparation
+
+### 1 · La reliure donne les rabats, le papier donne le dos
+
+Le code est dans [la réponse courte](#la-réponse-courte) plus haut. Le profil de reliure décrit le travail de l’atelier : dos carré collé au PUR en cahiers de 16 pages, rabats de 60 mm, 3 mm de fond perdu et un demi-millimètre ajouté au dos pour la colle. La version porte l’ISBN et son complément à cinq chiffres ; l’ISBN est un numéro d’exemple, attribué à aucun livre. L’épaisseur du dos n’est écrite nulle part. Les 37 pages sont arrondies à trois cahiers, soit 48 pages ou 24 feuillets, et chaque feuillet d’un papier de 100 g/m² à une main de 2,4 mesure 240 µm : 24 × 0,24 + 0,5 donne un dos de 6,3 mm. Par défaut un dos de moins de 6 mm ne reçoit pas de titre (`spineText.minSpine`), d’où ce papier bouffant.
+
+### 2 · Les pages d’abord
+
+<Excerpt region="pages" />
+
+Le corps d’ouvrage est un document Postext ordinaire, et chacune de ses pages compte pour le dos. Les pages liminaires utilisent des styles de titre dont les maquettes placent le titre, le filet et la marque d’éditeur à des hauteurs fixes. Chaque légende a son feuillet de titre (celui vers lequel renvoie le sommaire) et recommence sur la belle page suivante, 40 mm plus bas. Changez le corps ou les marges : le nombre de pages bouge, et le dos suit à la composition suivante.
+
+### 3 · Les styles de la couverture vivent avec ceux du livre
+
+<Excerpt region="cover-type" />
+
+La feuille est composée avec la configuration du livre, si bien que ses styles de paragraphe figurent dans la même liste que ceux des mentions et de l’achevé d’imprimer. `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine` sont les noms que `buildCover` donne aux métadonnées qu’il place ; `cover-blurb`, `cover-note`, `flap-head` et `flap-text` sont nommés dans le Markdown de la couverture. Sur le fond de nuit, le texte est en drapeau, sans coupures, dans l’os et l’or de la palette.
+
+### 4 · La feuille naît des pages composées
+
+<Excerpt region="sheet" />
+
+`buildCover` reçoit les pages, les métadonnées et le Markdown de la couverture, avec un `:::frame` pour la quatrième et un pour chaque rabat. Il renvoie un document que `buildDocumentWithFonts` compose comme un autre, plus le code-barres dans un fichier SVG. Les chiffres du code demandent l’OCR-B, qu’aucun serveur de polices ne propose ; l’exemple les compose donc en Josefin Sans, une police que le PDF embarque déjà. Le PDF contient les 37 pages puis la feuille à son propre format, le fichier qu’attend un imprimeur.
+
+## Variantes
+
+### Titrez le dos de haut en bas
+
+Les livres anglais et américains se lisent au dos de haut en bas ; le réglage par défaut, de bas en haut, suit l’usage français et continental.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Imprimez sur un papier plus fin
+
+À 80 g/m² et une main de 2,2, le feuillet mesure 176 µm, le dos descend à 4,7 mm et perd son titre, qui demande 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Erreurs fréquentes
+
+- Dans la liste des pages capturées, la feuille vient après celles du livre : son numéro est le nombre de pages du livre plus un. Ajoutez une page au livre et le numéro change.
+- Un code-barres dont les chiffres demandent une police que le PDF ne trouve pas fait échouer l’export. Chargez son SVG avec une `font-family` que l’exemple possède déjà.

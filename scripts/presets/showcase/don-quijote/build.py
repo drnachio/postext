@@ -25,7 +25,7 @@ import editorial as ed  # noqa: E402
 import gutenberg as g  # noqa: E402
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from _common import build_spines as build_spines_of, layer_configs, spine_thickness_mm  # noqa: E402
+from _common import layer_configs  # noqa: E402
 
 # Phrases the design repeats that are form, not content: the title, the
 # author or a brand line in a running head (#849, `contentInConfig`).
@@ -299,6 +299,93 @@ def back_cover_design() -> dict:
     }
 
 
+# --- print cover (#1671) ------------------------------------------------------
+#
+# One print version, a flat-spined hardcover in a printed case, and its case
+# sheet in the boards' own design: the cream of the cover page with the same
+# Doré plate over the title on the front, the vignette of the back cover over
+# its text, and the red bands of the old spine across the cover's spine. The
+# front and the spine take the title and the author from the metadata; the
+# back cover's text is the cover Markdown (`cover.md`, `cover/en.md`). Folio
+# binds the book as this version, its spine painted from the sheet, its
+# boards the first and last pages (`folio.binding.cover: "pages"`).
+
+PRINT_VERSION_ID = "hardcover"
+# A case's board for this trim, mm (the default case measures: 7 mm set back
+# at the spine, a 3 mm square at head, foot and fore-edge).
+BOARD_W, BOARD_H = PAGE_W - 7 + 3, PAGE_H + 2 * 3
+COVER_PLATE_W = TEXT_W
+COVER_PLATE_H = round(COVER_PLATE_W / (1950 / 2400), 1)  # x-enchantment aspect
+BACK_VIGNETTE_W = 84.0
+# The back cover's measure, as on the back page: about 105 mm.
+BACK_INDENT = 18.0
+
+
+def production(lang: str) -> dict:
+    """No ISBN: a showcase, not a published book (and so no barcode). The
+    spine is lettered rising in Spanish, falling in English."""
+    return {
+        "versions": [
+            {
+                "id": PRINT_VERSION_ID,
+                "name": ed.PRINT_VERSION[lang],
+                "binding": "case-flat",
+                "caseMaterial": "printed",
+                "spineText": {"direction": "bottomToTop" if lang == "es" else "topToBottom"},
+            }
+        ]
+    }
+
+
+def print_cover_design() -> dict:
+    def hexc(pid: str) -> dict:
+        return {"hex": PALETTE[pid], "model": "hex"}
+
+    def band(id_: str, y: float) -> dict:
+        # Across the spine, its right edge on the front joint's left: it
+        # follows the spine as it grows.
+        return {"id": id_, "kind": "box", "zone": "spine", "x": 0, "y": y, "width": 0, "height": 1.2, "to": {"zone": "jointFront", "x": 0}, "color": hexc("accent")}
+
+    vignette_h = round(BACK_VIGNETTE_W / (1291 / 972), 1)
+    return {
+        "background": hexc("cream"),
+        "verticalAlign": {"front": "bottom", "back": "bottom"},
+        "elements": [
+            # As on the cover page: the plate across the measure, set a little
+            # lower, closer to the title at the foot of the board.
+            {"id": "plate", "kind": "image", "zone": "front", "x": round((BOARD_W - COVER_PLATE_W) / 2, 2), "y": 26, "width": COVER_PLATE_W, "height": COVER_PLATE_H, "resourceId": "x-enchantment"},
+            {"id": "vignette", "kind": "image", "zone": "back", "x": round((BOARD_W - BACK_VIGNETTE_W) / 2, 2), "y": 40, "width": BACK_VIGNETTE_W, "height": vignette_h, "resourceId": BACK_VIGNETTE},
+            band("band-head", 11),
+            band("band-foot", BOARD_H - 11 - 1.2),
+        ],
+    }
+
+
+def cover_paragraph_styles() -> list[dict]:
+    """The cover's styles in the book's faces: the title and author as on
+    the cover page, the back cover's text as on the back page."""
+    base = {"textAlign": "center", "hyphenation": False, "firstLineIndent": mm(0)}
+    measure = {"indent": mm(BACK_INDENT), "endIndent": mm(BACK_INDENT)}
+    return [
+        {"id": "cover-title", "name": "Cubierta: título", **base, "fontFamily": "Playfair Display", "fontWeight": 400, "fontSize": pt(21), "lineHeight": pt(23.5), "color": col("ink")},
+        {"id": "cover-author", "name": "Cubierta: autor", **base, "fontFamily": "Alegreya SC", "fontSize": pt(12), "lineHeight": pt(15), "color": col("ink"), "marginTop": pt(9)},
+        {"id": "cover-spine", "name": "Cubierta: lomo", **base, "fontFamily": "Playfair Display", "fontSize": pt(9.5), "lineHeight": pt(11), "color": col("ink")},
+        {"id": "cover-quote", "name": "Cubierta: cita", **base, "fontFamily": "Playfair Display", "italic": True, "fontSize": pt(13), "lineHeight": pt(18), "color": col("ink"), "marginBottom": pt(12), **measure},
+        {"id": "cover-blurb", "name": "Cubierta: texto", **base, "fontFamily": "Alegreya", "fontSize": pt(10.5), "lineHeight": pt(14.8), "color": col("muted"), "spaceBetween": pt(6), **measure},
+        {"id": "cover-imprint", "name": "Cubierta: sello", **base, "fontFamily": "Alegreya SC", "fontSize": pt(9), "lineHeight": pt(11), "color": col("accent"), "letterSpacing": pt(1), "marginTop": pt(16)},
+    ]
+
+
+def cover_markdown(lang: str) -> str:
+    c = ed.PRINT_COVER[lang]
+
+    def styled(style: str, text_: str) -> str:
+        return f':::paragraphs{{style="{style}"}}\n{text_}\n:::\n'
+
+    body = styled("cover-quote", c["quote"]) + styled("cover-blurb", "\n\n".join(c["blurb"])) + styled("cover-imprint", c["imprint"])
+    return f':::frame{{slot="back"}}\n{body}:::\n'
+
+
 def part_design(label: str) -> dict:
     return {
         "elements": [
@@ -526,6 +613,7 @@ def paragraph_styles() -> list[dict]:
         {"id": "verso", "name": "Verso", "fontSize": pt(10), "lineHeight": pt(13.5), "textAlign": "left", "hyphenation": False, "firstLineIndent": mm(0), "hangingIndent": mm(4), "spaceBetween": pt(0), "marginTop": pt(6), "marginBottom": pt(6)},
         # The title over a poem (Antonio's ballad, Grisóstomo's song).
         {"id": "cancion", "name": "Título de canción", "fontFamily": "Alegreya SC", "fontSize": pt(9.5), "lineHeight": pt(13.5), "color": col("accent"), "textAlign": "left", "firstLineIndent": mm(0), "marginTop": pt(10), "marginBottom": pt(2)},
+        *cover_paragraph_styles(),
     ]
 
 
@@ -577,12 +665,16 @@ def shared_config() -> dict:
         # form (commons.wikimedia.org/?curid=N), so the list still says where
         # every plate comes from.
         "links": {"print": "inline", "urlDisplay": "short"},
+        # The print version and its cover sheet (#1671).
+        "production": production("es"),
+        "cover": print_cover_design(),
         # Folio: a cream book wove with the faint laid lines of an old
-        # edition, bound in boards (the first page is the cover and the last
-        # the back cover, turned as the boards), on a leather desk by day.
+        # edition, bound as the print version, a hardcover (the first page is
+        # the cover and the last the back cover, turned as the boards; the
+        # spine painted from the cover sheet), on a leather desk by day.
         "folio": {
             "paper": {"type": "bookWove", "grammage": 90, "texture": "laid", "textureStrength": 0.6},
-            "binding": {"type": "hardcover", "cover": "pages", "spineImage": SPINE},
+            "binding": {"cover": "pages"},
             "surface": {"type": "leather"},
             "lighting": {"environment": "daylight"},
         },
@@ -597,6 +689,7 @@ def localized_config(lang: str) -> dict:
         "headingStyles": heading_styles(lang),
         "parts": parts(lang),
         "resourceTypes": resource_types(lang),
+        "production": production(lang),
     }
 
 
@@ -679,32 +772,6 @@ PLACEMENTS = {
     "sidetail": {"position": "auto", "span": "side", "width": 1},
     "cover": {"position": "here", "span": "column", "width": 1},
 }
-
-
-# The spine (Folio's `binding.spineImage`): author, title and imprint on the
-# cream of the boards, between red bands; sized for a book of about this
-# many pages on the paper of `folio.paper`.
-SPINE = "x-spine"
-SPINE_PAGES = 142
-
-
-def build_spines() -> tuple[dict, dict[str, dict]]:
-    fonts = os.path.join(OUT, "fonts")
-    sc, display = os.path.join(fonts, "AlegreyaSC-Regular.ttf"), os.path.join(fonts, "PlayfairDisplay-Regular.ttf")
-    common = {
-        "height_mm": PAGE_H,
-        "thickness_mm": spine_thickness_mm(SPINE_PAGES, 90, 1.6, "hardcover"),
-        "ground": PALETTE["cream"], "ink": PALETTE["ink"], "rules": PALETTE["accent"],
-    }
-    titles = {"es": "Don Quijote de la Mancha", "en": "Don Quixote of La Mancha"}
-    return build_spines_of(OUT, SPINE, "ornament", "es", {
-        lang: {**common, "pieces": [
-            {"text": "Cervantes", "font": sc, "size": 0.34, "at": 0.16, "color": PALETTE["accent"]},
-            {"text": titles[lang], "font": display, "size": 0.42, "at": 0.52},
-            {"text": "Postext", "font": sc, "size": 0.26, "at": 0.9, "color": PALETTE["muted"]},
-        ]}
-        for lang in LANGS
-    })
 
 
 def resource_specs(plates: dict[str, dict]) -> tuple[list[dict], dict[str, list[dict]]]:
@@ -1090,14 +1157,30 @@ def write_manifest(chapters: dict[str, list[dict]], resources: list[dict], wordi
         "view": {"canvasScope": "book"},
         "chapters": chapters,
         "config": {**shared_config(), "checks": CONTENT_CHECKS},
-        "localized": {lang: {"config": localized_config(lang), "resources": wording[lang]} for lang in LANGS},
+        "localized": {lang: {"config": localized_config(lang), "resources": wording[lang], **({"coverMarkdown": cover_path(lang)} if lang != "es" else {})} for lang in LANGS},
         "resources": resources,
         "fonts": fonts,
+        # The print cover's text (#1671): the Spanish one, and each other
+        # language's own under `localized`.
+        "coverMarkdown": cover_path("es"),
     }
+    write_cover_markdown()
     with open(os.path.join(OUT, "preset.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=1, ensure_ascii=False)
         f.write("\n")
     return meta
+
+
+def cover_path(lang: str) -> str:
+    return "cover.md" if lang == "es" else f"cover/{lang}.md"
+
+
+def write_cover_markdown() -> None:
+    for lang in LANGS:
+        path = os.path.join(OUT, cover_path(lang))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(cover_markdown(lang))
 
 
 def write_fingerprint() -> None:
@@ -1133,17 +1216,13 @@ def register(meta: dict) -> None:
 def main() -> None:
     if not os.path.exists(os.path.join(SOURCE, "plates", "meta.json")):
         raise SystemExit("run fetch.py first")
-    for sub in ("chapters", "resources"):
+    for sub in ("chapters", "resources", "cover"):
         shutil.rmtree(os.path.join(OUT, sub), ignore_errors=True)
     os.makedirs(OUT, exist_ok=True)
     meta = json.load(open(os.path.join(SOURCE, "plates", "meta.json"), encoding="utf-8"))
     plates = process_plates(meta)
     resources, wording = resource_specs(plates)
     fonts = build_fonts()
-    spine, spine_wording = build_spines()
-    resources.append(spine)
-    for lang in LANGS:
-        wording[lang].append(spine_wording[lang])
     chapters = write_chapters(plates)
     if MISSING_ANCHORS:
         raise SystemExit("anchors not found:\n  " + "\n  ".join(MISSING_ANCHORS))

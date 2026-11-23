@@ -43,6 +43,8 @@
   "htmlViewer",
   "canvasViewer",
   "folio",
+  "production",
+  "cover",
   "dieCuts",
   "comics",
   "pageTemplates",

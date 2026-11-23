@@ -7,12 +7,14 @@ import { applySingleInkToSvg, fontNoteWarning, redistributableFaces, screenSvgCo
 import { diagramInkHex, mimeForFile } from 'postext/bundle';
 import { renderToEpub, type EpubCover, type EpubFontFile, type EpubWarning, type RenderToEpubOptions } from 'postext-epub';
 import { epubMetadataOf } from '../../../postext-sandbox/src/epub/metadata';
-import type { Options } from '../args';
+import { Options } from '../args';
 import type { FontSet } from '../fonts';
 import type { Book } from '../input';
 import { byteLength, writeOut } from '../io';
 import type { Layout } from '../layout';
-import type { Reporter } from '../log';
+import { Reporter } from '../log';
+import { encode } from './images';
+import { layOutCover, paintCover } from './printCover';
 
 const COVER_TYPES: Record<string, EpubCover['mediaType']> = {
   'image/jpeg': 'image/jpeg',
@@ -21,13 +23,42 @@ const COVER_TYPES: Record<string, EpubCover['mediaType']> = {
   'image/svg+xml': 'image/svg+xml',
 };
 
-function coverOf(book: Book, opts: Options): EpubCover | undefined {
+/** Long side of the front cover an EPUB carries, px. */
+export const EPUB_COVER_LONG_SIDE = 1600;
+
+/** The front of the book's print cover (#1668), when it has a print
+ *  version: its first, as `postext cover` lays it out. Undefined, with a
+ *  note, when it cannot be laid out or painted. */
+async function printedFront(book: Book, layout: Layout, fonts: FontSet, reporter: Reporter): Promise<EpubCover | undefined> {
+  if (!book.config.production?.versions?.length) return undefined;
+  try {
+    // The print sheet's own warnings (signatures, the spine's limits) are
+    // `postext cover`'s business, not the EPUB's.
+    const quiet = new Reporter('quiet', true);
+    const laid = await layOutCover(book, layout, fonts, new Options({}), quiet);
+    const front = laid.built.sheet.zones.find((z) => z.name === 'front');
+    if (!front) return undefined;
+    const dpi = (EPUB_COVER_LONG_SIDE * 25.4) / Math.max(front.rect.width, front.rect.height);
+    const options = { format: 'jpeg' as const, dpi, quality: 90, printPreview: false };
+    const bytes = await encode(await paintCover(laid, 'front', options, quiet), options);
+    return { bytes, mediaType: 'image/jpeg' };
+  } catch (err) {
+    reporter.warn({ kind: 'epub.cover', severity: 'info', message: `the print cover was not painted: ${(err as Error).message}` });
+    return undefined;
+  }
+}
+
+/** The EPUB's cover: `--cover`, else the front of the print cover, else
+ *  the book's thumbnail. */
+async function coverOf(book: Book, layout: Layout, fonts: FontSet, opts: Options, reporter: Reporter): Promise<EpubCover | undefined> {
   const path = opts.string('cover');
   if (path) {
     const mediaType = COVER_TYPES[mimeForFile(path)];
     if (mediaType) return { bytes: new Uint8Array(readFileSync(path)), mediaType };
     return undefined;
   }
+  const front = await printedFront(book, layout, fonts, reporter);
+  if (front) return front;
   if (!book.thumbnail) return undefined;
   const bytes = book.files.get(book.thumbnail);
   const mediaType = COVER_TYPES[mimeForFile(book.thumbnail)];
@@ -61,7 +92,7 @@ export async function writeEpub(book: Book, layout: Layout, fonts: FontSet, opts
   const inkHex = diagramInkHex(book.config);
   const svgOf = new Set(book.resources.filter((r) => r.kind === 'svg').map((r) => r.svg?.fileId));
   const metadata = epubMetadataOf(layout.docs[0]?.metadata ?? {}, book.config, { kind: 'preset', id: book.id, locale: book.locale, name: book.name }, book.locale);
-  const cover = coverOf(book, opts);
+  const cover = await coverOf(book, layout, fonts, opts, reporter);
   const options: RenderToEpubOptions = {
     layout: layoutKind,
     metadata,

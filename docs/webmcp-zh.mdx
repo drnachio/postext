@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP：在沙盒里工作的智能体',
   sidebarTitle: 'WebMCP',
-  description: '浏览器里的AI智能体借助沙盒的64个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
+  description: '浏览器里的AI智能体借助沙盒的71个WebMCP工具能做什么：查看页面、修改任何设置、编辑文字、添加图片、表格和字体、运行检查、导出文件，以及每个工具怎样调用，附真实的参数和回答',
   lang: 'zh',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-23',
   readingTime: '9分钟',
-  order: 53,
+  order: 54,
   plainSummary: "本页写给想让AI助手替自己在沙盒里处理一本书的人。沙盒打开时，会交给助手一套工具，用来查看任意一页、修改设计、编辑文字、添加图片和表格、找出问题和保存文件。你用自己的话提出要求，比如“把字稍微放大一点，再看看书是不是还能排在40页以内”，助手就去使用这些工具，并把页面给你看。一切都留在你的浏览器里。本页说明怎样接入助手、它能做什么，以及每个工具怎样调用。",
 };
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 [沙盒](/zh/docs/sandbox)通过[WebMCP](https://webmachinelearning.github.io/webmcp/)把专门的工具交给智能体。WebMCP是一项Web标准草案，让网页可以把工具交给浏览器所连接的AI模型。有了这些工具，智能体不必在界面上一下一下地点：它读这本书，要一张第12页的图像，把`bodyText.fontSize`设为10.5 pt，看到这一章从18页变成了19页，再把值改回去。你凭眼睛做的事，它也照样做，用的是你的书，在你的浏览器里。
 
-以`sandbox_`开头的工具共有64个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
+以`sandbox_`开头的工具共有71个，沙盒显示在屏幕上时注册；另有8个网站工具`site_*`，postext.dev的每一页上都有。本页按你会请智能体做的事情给它们分类，并给出每个工具的调用方式。
 
 ## 接入智能体
 
@@ -25,7 +25,7 @@ export const metadata = {
 
 沙盒挂载时把这些工具注册到`document.modelContext`，离开沙盒时收回。浏览器向其提供页面工具的智能体会在那里找到它们。Postext这边不需要安装或设置任何东西。
 
-WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，64个`sandbox_*`工具也随之出现。
+WebMCP还是草案。Chrome以来源试用的方式提供它，也可以通过`chrome://flags/#enable-webmcp-testing`标志开启。工具随页面而变：在首页或文档中，智能体拿到的是`site_*`工具；沙盒一出现在屏幕上，71个`sandbox_*`工具也随之出现。
 
 ### 在其他浏览器中：`window.postextWebMcp`
 
@@ -454,6 +454,22 @@ await browser.close();
 
 - **设计**：`sandbox_list_designs`列出版面设计面板的图库（已保存的设计、沙盒内置的设计和示例书的设计）及其部分。`sandbox_save_design`保存一本书的设计，`sandbox_try_design`在屏幕上的书中试用一种设计，`sandbox_end_design_trial`保留或放弃它（放弃只恢复设计替换掉的内容），`sandbox_apply_design`直接应用或作为章节样式应用，`sandbox_import_design`和`sandbox_export_design`读写设计文件，`sandbox_delete_design`删除已保存的设计。它们都接受`parts`（版面设计面板的分组），并返回正文用到而设计缺少的样式。
 
+### 印刷封面
+
+印刷版本和封面的设计都是设置：`sandbox_set_config`写入`production.versions`、`production.collection`和`cover`（`cover.textBoxes`、`cover.elements`、`cover.finishes`、`cover.sheets`等）。其余部分由五个工具读取、写入和导出，和封面面板的做法一样：
+
+- `sandbox_cover_get`读取一个版本（`version`，默认第一个）的封面及其一张版面（`sheet`：`cover`、`jacket`、`endpaperFront`或`endpaperBack`）：各个版本，版面的尺寸和书脊（mm）以及它们所依据的页数，每个区域的矩形，封面文字所填的槽位及各自的文字（以及`sheetText`，即封壳、护封或环衬单独拥有的文字），绘制该版面所用的设计（`design.uses`：`book`或它在`cover.sheets`中自己设计的名称；`design.choices`：它可以采用的自己的设计），设计中放在版面上的项目，丛书（`collection`），以及检查结果。
+- `sandbox_cover_write_text`按名称写入一个槽位（区域或文本框）的Markdown；`text: null`去掉它，封面和书脊恢复为元数据中的书名、副标题和作者。同一份文字供所有版本和版面使用；加上`thisSheetOnly: true`，文字只写给某个封壳、护封或环衬，并在那里取代共用的文字。它是撤销历史中的一步。
+- `sandbox_cover_export`把版面写成交给印厂的PDF（`format: "pdf"`，带印前检查的结果），或把一个区域写成JPEG（`format: "jpeg"`、`zone`、`longSide`），由浏览器下载，或者加上`deliver: "data"`以base64编码返回。
+- `sandbox_cover_sheet_design`选择精装书的一张版面用哪个设计绘制，和“本版面的设计”的做法一样：`design: "book"`（全书的封面设计）、`"own"`（封壳或护封自己的设计，或仅本环衬的设计）或`"endpapers"`（前后环衬共用一个设计），新设计从全书设计的副本开始。随后`patch`修改该设计的字段（`background`、`image`、`elements`、`textBoxes`等；`null`去掉一个字段）。它是撤销历史中的一步。
+- `sandbox_cover_set_collection`写入本书所属的丛书：`name`、`isbn`、`catalogue`（按顺序排列的书目，每项为`{ id, title, resource? }`，整个列表一次替换）和`volume`（书目中代表本书的id，`null`表示没有）。未传的字段保持不变。封面文字中的`::catalogue`把书目排成列表，类型为`catalogue`的封面元素则排出它们的图片。它是撤销历史中的一步。
+
+```json
+{ "slot": "back", "text": "一座把书藏在地下的城市。\n\n和一个为人朗读这些书的女孩。" }
+```
+
+见[印刷封面](/zh/docs/print-covers)。
+
 ### 询问与提示
 
 通过链接打开一本你已经有自己版本的书时，沙盒会询问是否替换你的副本，`sandbox_get_state`把这件事报告为`question`，同时给出`ready: false`。`sandbox_answer`回答这个询问：`replaceCopy: false`保留你的副本，`true`用发布的书替换它，并删除你的副本。`dismissNotice: true`清除书库面板中的消息。
@@ -506,6 +522,8 @@ await browser.close();
 - **显示方式**：`sandbox_set_view`、`sandbox_go_to_page`、`sandbox_run_viewer`。
 - **资源和字体**：`sandbox_list_resources`、`sandbox_save_resource`、`sandbox_delete_resource`、`sandbox_list_fonts`、`sandbox_save_font`。
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
+- **模板页**：`sandbox_modules`、`sandbox_create_module`、`sandbox_rename_module`、`sandbox_insert_module`、`sandbox_extract_module`、`sandbox_frames_to_grid`、`sandbox_edit_labels`。
+- **印刷封面**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`。
 - **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **InDesign**：`sandbox_import_idml`。

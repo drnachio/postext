@@ -111,5 +111,6 @@ export async function resolveBundleFiles(plan: BundlePlan, sources: BundleByteSo
   const enc = new TextEncoder();
   files['preset.json'] = enc.encode(JSON.stringify(manifest, null, 2));
   for (const c of plan.chapterFiles) files[c.path] = enc.encode(c.markdown);
+  for (const c of plan.coverFiles ?? []) files[c.path] = enc.encode(c.markdown);
   return { files, manifest, warnings, missing: [...missingPaths] };
 }

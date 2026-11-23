@@ -33,13 +33,17 @@ function withBook(state: SandboxState, book: BookContent, resetSelection = false
     book.chapters === state.chapters &&
     book.activeChapterId === state.activeChapterId &&
     canvasScope === state.canvasScope &&
-    sameStart
+    sameStart &&
+    book.coverMarkdown === state.coverMarkdown
   ) return state;
   const chapterChanged = book.activeChapterId !== state.activeChapterId;
-  const { bookStart: _previousStart, ...rest } = state;
+  const { bookStart: _previousStart, coverMarkdown: _previousCover, ...rest } = state;
   void _previousStart;
+  void _previousCover;
   return {
     ...rest,
+    // So does its cover text.
+    ...(book.coverMarkdown ? { coverMarkdown: book.coverMarkdown } : {}),
     // Where the book starts comes with the book: another book has its own
     // or none.
     ...(sameStart ? (state.bookStart ? { bookStart: state.bookStart } : {}) : book.start ? { bookStart: book.start } : {}),
@@ -71,6 +75,7 @@ export function bookOf(state: SandboxState): BookContent {
     activeChapterId: state.activeChapterId,
     ...(state.canvasScope === 'book' ? { canvasScope: state.canvasScope } : {}),
     ...(state.bookStart ? { start: state.bookStart } : {}),
+    ...(state.coverMarkdown ? { coverMarkdown: state.coverMarkdown } : {}),
   };
 }
 
@@ -118,6 +123,13 @@ export function sandboxReducer(state: SandboxState, action: SandboxAction): Sand
     case 'SET_PDF_SCOPE':
       if (action.payload === state.pdfScope) return state;
       return { ...state, pdfScope: action.payload };
+    case 'SET_COVER_MARKDOWN': {
+      const next = action.payload;
+      if (next === (state.coverMarkdown ?? '')) return state;
+      const { coverMarkdown: _old, ...rest } = state;
+      void _old;
+      return next ? { ...rest, coverMarkdown: next } : rest;
+    }
     case 'SET_CANVAS_SCOPE':
       if (action.payload === state.canvasScope) return state;
       if (action.payload === 'book' && !wholeBookAllowed(state.chapters.length)) return state;

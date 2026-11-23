@@ -10,6 +10,7 @@ import type { Chapter } from '../../book/types.js';
 import { ensureConfigFontsLoaded, onCustomFontsChanged } from '../../controls/fonts/fontLoader.js';
 import { withHyphenationLocale } from '../../controls/language/hyphenation.js';
 import { epubCoverOf } from '../../epub/cover.js';
+import { printedFrontCover } from '../../cover/printedCover.js';
 import { collectEpubFonts } from '../../epub/inputs.js';
 import { epubFileName, type EpubBookIdentity } from '../../epub/metadata.js';
 import { epubNotices, epubWriterOptions, type EpubNotice } from '../../epub/write.js';
@@ -132,7 +133,13 @@ export function EpubViewport() {
         layout: snapshotLayout,
         identity,
         locale,
-        cover: (title) => epubCoverOf(docs[0]!, snapshot, title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
+        // The front of the print cover first, as the command line's EPUB
+        // (#1669); else the book's picture, else its first page painted.
+        cover: async (title) => (await printedFrontCover(
+          { ...snapshot, coverMarkdown: state.coverMarkdown, bookPages: {}, pages: docs.reduce((n, d) => n + d.pages.length, 0) },
+          title,
+          { build: (content, cfg) => layoutWorker.build(content, cfg), fonts: async (cfg, md, doc) => { if (!doc) await ensureConfigFontsLoaded(cfg, md); } },
+        )) ?? epubCoverOf(docs[0]!, snapshot, title, { projectThumbnail: project?.thumbnail, presetThumbnailUrl: preset?.thumbnailUrl }),
         note,
       });
       const { fonts, cover } = written;

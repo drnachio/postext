@@ -29,7 +29,7 @@ import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import type { HTTPRequest } from "puppeteer-core";
-import { REPO_DIR, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
+import { COOKBOOK_DIR, RECIPES_DIR, REPO_DIR, WEB_DIR } from "../../src/lib/cookbook/paths.ts";
 
 export const NET_CACHE_DIR = path.join(WEB_DIR, ".cache", "cookbook-net");
 const PUBLIC_DIR = path.join(WEB_DIR, "public");
@@ -76,6 +76,19 @@ export function safeFile(base: string, rel: string): string | null {
   const file = path.resolve(base, decoded);
   if (file !== base && !file.startsWith(base + path.sep)) return null;
   return fs.existsSync(file) && fs.statSync(file).isFile() ? file : null;
+}
+
+/**
+ * A repository file a pen fetches from jsDelivr (`asset()`), on disk. A
+ * recipe read from another folder (`COOKBOOK_RECIPES_DIR`: a preview draft
+ * in `cookbook/_pending`, the bench's fixture) keeps its `assets/` there,
+ * so `cookbook/<slug>/…` is looked for in that folder when the repository
+ * has no such file.
+ */
+export function repoAsset(rel: string, recipesDir: string = RECIPES_DIR): string | null {
+  const own = safeFile(REPO_DIR, rel);
+  if (own || recipesDir === COOKBOOK_DIR || !rel.startsWith("cookbook/")) return own;
+  return safeFile(recipesDir, rel.slice("cookbook/".length));
 }
 
 /** Who is asking. A pen may reach esm.sh and Fontsource, nothing else. The
@@ -292,7 +305,7 @@ export function interceptor(opts: InterceptorOptions): (request: HTTPRequest) =>
       }
       if (route.kind === "repo" || route.kind === "public") {
         const base = route.kind === "repo" ? REPO_DIR : PUBLIC_DIR;
-        const file = safeFile(base, route.rel);
+        const file = route.kind === "repo" ? repoAsset(route.rel) : safeFile(base, route.rel);
         if (!file) {
           const where = route.kind === "repo" ? route.rel : `apps/web/public/${route.rel}`;
           opts.onIssue({ severity: "fail", url, detail: `missing ${route.kind === "repo" ? "repo asset" : "site file"}: ${where}` });

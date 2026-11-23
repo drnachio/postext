@@ -28,6 +28,8 @@ mi-libro.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+Un llibre amb coberta per a impremta porta, a més, el Markdown de la coberta com a `cover.md`, i una llengua amb un text de coberta propi, com a `cover/<llengua>.md`; `openBundle` el retorna com a `coverMarkdown` i `createBundle` el rep de la mateixa manera. El disseny de la coberta i les versions impreses són a la configuració (`cover`, `production`). Vegeu [Cobertes per a impremta](/ca/docs/print-covers).
+
 El manifest es descriu camp per camp a l'apèndix [Format de paquet de preset](/ca/docs/sandbox-embedding#indexjson) del Sandbox. Un fitxer també pot incloure `layouts.json`, amb el recompte de pàgines del Sandbox, perquè el llibre s'hi obri ja paginat, o un fitxer d'aquests per edició d'un llibre en diverses llengües (`layouts.zh-Hant.json`, que es llegeix primer). `openBundle` els ignora.
 
 L'API s'exporta des de `postext` mateix i des del subcamí `postext/bundle`, que hi afegeix les funcions de baix nivell. Si també has de renderitzar, importa-la des de `postext`. Així els adaptadors de paquets i els renderitzadors comparteixen una sola instància del mòdul, cosa que importa en un CDN com esm.sh, on cada punt d'entrada és una compilació diferent.

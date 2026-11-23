@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-11-10',
   readingTime: '34 min',
-  order: 42,
+  order: 43,
   plainSummary: "El Sandbox és una eina gratuïta d'aquest web per provar Postext sense instal·lar res. Escrius el text a una banda i veus les pàgines acabades a l'altra, i canvien mentre escrius. Aquesta pàgina explica les parts de la pantalla i els taulers on escrius el text, organitzes llibres i capítols, afegeixes imatges i tries els tipus de lletra. Altres pàgines expliquen els paràmetres de disseny, les previsualitzacions, com desar i importar, i com posar el Sandbox al teu web.",
 };
 
@@ -33,6 +33,7 @@ Una franja estreta a la vora esquerra té un botó per tauler. Cada botó mostra
 - **Recursos** (icona `FolderOpen`): imatges, dibuixos SVG i taules que fa servir el llibre
 - **Fonts** (icona `Type`): els tipus de lletra que fa servir el llibre i els teus propis fitxers de font
 - **Disseny** (icona `Settings2`): paràmetres de pàgina, tipografia, encapçalaments, figures, requadres i exportació
+- **Coberta** (icona `BookMarked`): les versions impreses del llibre, el plec de coberta amb el llom, el disseny i els textos (vegeu [Cobertes per a impremta](/ca/docs/print-covers#al-sandbox))
 - **Revisió** (icona `AlertTriangle`): problemes de composició trobats a la maquetació. La icona porta un distintiu amb el nombre d'avisos actuals, que s'actualitza en directe i arriba com a màxim a `99+`.
 
 Si fas clic al botó del tauler actiu, la barra lateral es replega, i si fas clic a un altre botó, passes a aquell tauler. La barra és una sola parada de tabulació: les fletxes (↑ / ↓, que tornen a començar en arribar a l'extrem), **Inici** i **Fi** mouen el focus entre els botons, i Retorn o Espai obren el tauler que té el focus.
@@ -233,7 +234,7 @@ Gestiona els recursos del llibre: imatges de mapa de bits, figures SVG, taules i
 - **Taula nova**: comença com una graella de 2×2 amb una fila de capçalera
 - **Afegir vídeo**: un vídeo de YouTube o de Vimeo, un fitxer de vídeo o l'adreça d'un vídeo (un MP4 o un flux HLS; vegeu *Vídeo* més avall). Un llibre amb tipus de recurs anteriors als vídeos rep el tipus *Vídeo* integrat quan n'afegeix el primer.
 
-També pots arrossegar fitxers des del disc i deixar-los anar sobre el tauler, inclosos fitxers de vídeo (MP4, WebM, Ogg, QuickTime). Es pugen tots alhora, amb ids generats a partir dels noms dels fitxers. Els fitxers no admesos s'ometen, i una nota breu indica quants se n'han afegit i quants se n'han omès.
+També pots arrossegar fitxers des del disc i deixar-los anar sobre el tauler, inclosos fitxers de vídeo (MP4, WebM, Ogg, QuickTime). Un PDF, o un fitxer d'Illustrator desat amb compatibilitat PDF, es converteix en una imatge per pàgina (fins a 20) a 300 ppp sobre fons transparent; els fitxers TIFF i PSD conserven la mida completa. Un fitxer EPS no es llegeix: una nota demana que es desi com a PDF. Es pugen tots alhora, amb ids generats a partir dels noms dels fitxers. Els fitxers no admesos s'ometen, i una nota breu indica quants se n'han afegit i quants se n'han omès.
 
 **Vista de detall.** En seleccionar un recurs s'obre el seu editor:
 

@@ -42,6 +42,7 @@ export {
   pickBundleView,
   pickBundleMeta,
   pickBundleStart,
+  pickBundleCoverFile,
   bundleStart,
   resolveBundleLocale,
   resolveBundleConfigLocale,

@@ -1,0 +1,78 @@
+---
+title: "Uma capa com hot stamping, verniz localizado e relevo"
+summary: "As Coplas de Manrique em brochura: verniz brilhante sobre a pintura, uma cartela dourada sobre um alto-relevo e um relevo seco, cada um em sua chapa."
+plain: "Um livrinho com um poema clássico e a folha da sua capa. Algumas partes são tratadas depois da impressão: uma camada brilhante na pintura, uma moldura dourada estampada e formas em relevo no cartão."
+description: "Verniz localizado, hot stamping e relevo no Postext: acabamentos sobre formas do projeto, cores especiais num PDF/X-4 e uma chapa de relevo."
+question: "Como coloco verniz localizado, dourado e um título em relevo numa capa?"
+aliases: ["verniz localizado", "verniz UV localizado", "hot stamping", "estampa dourada", "relevo", "alto-relevo", "relevo seco", "baixo-relevo", "acabamentos de capa", "spot varnish", "foil", "emboss"]
+pageNotes: { "28": "A folha da capa aberta. À esquerda a quarta capa, verde-garrafa, com três versos do poema em itálico ocre, dois parágrafos sobre Rodrigo Manrique e a tradução, e o código de barras ISBN sobre fundo branco no pé. Uma lombada estreita com versaletes. À direita a capa, uma pintura de um castelo em ruínas sobre um penhasco ao pôr do sol, acima de um rio com choupos e um barco entre os juncos; no meio, uma cartela verde-escura com os cantos recortados em arco para dentro e moldura dourada dupla traz o título Coplas, o subtítulo e o autor. Em volta, as marcas de corte e de dobra." }
+---
+
+## O que você vai compor
+
+As *Coplas* de Jorge Manrique pela morte do pai, na tradução de Longfellow (a edição espanhola traz o original), numa brochura de 125 × 200 mm, e a folha da capa que vai para o acabamento depois de impressas as quatro cores. Ela leva três acabamentos. Um verniz brilhante localizado cobre a pintura acima e abaixo da cartela. A moldura dupla da cartela é estampada em dourado, e o painel que ela envolve recebe alto-relevo, de modo que o título fica sobre um campo em relevo. Na quarta capa, um losango em relevo seco: sem tinta, só o cartão levantado. Embaixo do livro, a receita desenha a folha quatro vezes: como sai da impressão, com as chapas de verniz e dourado em cor falsa, sob luz rasante e como a chapa de relevo de onde o gravador tira o clichê. O PDF é PDF/X-4, com uma chapa para cada acabamento.
+
+## Preparo
+
+### 1 · Cada acabamento segue uma forma do projeto
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. Um acabamento indica um processo, uma tinta quando o processo imprime uma, e uma forma: um elemento da capa (`{ element: 'cartouche' }`), uma caixa numa das suas zonas ou um contorno dentro de uma caixa. O verniz e o dourado são cores especiais com `finish` na paleta, então cada um tem sua chapa no PDF e a verificação prévia os lista. O relevo não imprime nada. Ele vai numa chapa técnica que o arquivo de impressão chama de Emboss, a que o gravador usa, e nada dele é pintado na página.
+
+O verniz são duas caixas, uma acima da cartela e outra abaixo, que param a 4 mm dela para o verniz nunca cair sobre o dourado. A quarta capa e a lombada ficam foscas. O livro tem 27 páginas em papel creme de 120 g/m² com mão 2,2, 32 depois de encadernado em cadernos de 16, o que dá uma lombada de 4,7 mm. Por padrão uma lombada com menos de 6 mm fica sem texto, então a versão define `spineText.minSpine` como 4,5. O ISBN é um número de exemplo, que não pertence a nenhum livro.
+
+### 2 · A cartela é um traçado do projeto, não uma imagem
+
+<Excerpt region="art" />
+
+O dourado e o relevo seguem exatamente o contorno do elemento que indicam, então a moldura precisa ser uma forma cujo traçado o motor conhece. Um traçado de capa é uma lista de contornos fechados, com nós dados em frações da caixa do elemento e alças de entrada e saída para as curvas. Cada canto é um quarto de círculo voltado para dentro, desenhado como uma cúbica. Um anel é um contorno externo mais um interno percorrido no sentido contrário: com a regra nonzero, o espaço entre os dois fica vazio. Dois anéis fazem a moldura dupla. A moldura tem a cor do painel, então em quadricromia não imprime nada; quem a leva é a chapa do dourado. O emblema da quarta capa é um contorno salvo, dois losangos, o menor invertido.
+
+### 3 · Os estilos da capa
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` e `cover-spine` são os nomes que `buildCover` dá aos metadados que posiciona; `cover-quote`, `cover-blurb` e `cover-note` são nomeados no Markdown da capa. A capa é centralizada na altura (`verticalAlign`), e assim o título cai dentro da cartela seja qual for o corpo da letra.
+
+### 4 · O miolo
+
+<Excerpt region="pages" />
+
+Falsa folha de rosto, folha de rosto, créditos e o poema a partir de uma página ímpar, 46 mm mais abaixo, composto em verso sem partir uma estrofe entre duas páginas. Os cabeços trazem o autor na página par e o título na ímpar. O colofão fecha o livro na última página ímpar.
+
+### 5 · A folha nasce das páginas compostas
+
+<Excerpt region="sheet" />
+
+`buildCover` recebe as páginas, os metadados e o Markdown da capa e devolve um documento para `buildDocumentWithFonts`, além do código de barras em SVG. Os dígitos do código pedem OCR-B, que nenhum servidor de fontes tem, então a receita os compõe em Alegreya Sans SC, já carregada.
+
+### 6 · O que cada chapa cobre
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` pinta os acabamentos de três jeitos. `flat` pinta as tintas como a máquina as põe: o dourado na sua cor, o verniz em nada. `map` apaga a folha e marca cada chapa especial em cor falsa. `sheen` passa uma luz rasante pela folha, e o verniz e o dourado brilham com ela. O relevo não aparece em nenhuma das três, porque não imprime; a quarta vista desenha em preto, sobre a folha apagada, as chapas técnicas da página (`page.plates`), os contornos que o PDF preenche na separação Emboss. A linha de baixo lê as cores especiais em `preflightDocument` e os processos nas chapas.
+
+## Variações
+
+### Baixo-relevo no emblema
+
+O baixo-relevo afunda a forma no cartão em vez de levantá-la, e vai numa chapa Deboss própria.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Verniz em toda a pintura
+
+Um único acabamento sobre o elemento da pintura substitui as duas caixas. O verniz passa então também pela cartela e pelo título.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Erros comuns
+
+- Um alto ou baixo-relevo a menos de 3 mm do corte ou de uma dobra é apontado pela verificação prévia (`reliefTrim`, `reliefFold`): ali o cartão racha. Mantenha os relevos longe das dobras da lombada.
+- O relevo nunca é pintado na tela. Confira na separação Emboss do PDF, ou desenhe `page.plates` como a receita faz.
+- Um acabamento posto sobre um quadro de texto cobre as suas linhas, nas vistas e no arquivo de impressão. Deixe parte do texto fora do dourado, como aqui o título, no vão da cartela.

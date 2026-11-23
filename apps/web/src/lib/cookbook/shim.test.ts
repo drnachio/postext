@@ -9,7 +9,7 @@ import {
   OWN_WOFF2_SINCE, SHIM_PATHS, WAWOFF2_IMPORTS, WAWOFF2_SHIM, WOFF2_BINDING_URL, forcedConfig, importMap, importMapTag, localImports,
   releasedVersion, resolveBare, resolveEngine, rewriteBareImports, shimModules, wawoff2Shim,
 } from "../../../scripts/cookbook/shim.ts";
-import { scormShim } from "../../../scripts/cookbook/shim/sources.ts";
+import { productionShim, scormShim } from "../../../scripts/cookbook/shim/sources.ts";
 import type { ScormRecord } from "../../../scripts/cookbook/checks.ts";
 import { POSTEXT_EPUB_URL, POSTEXT_EPUB_WORKER_URL, POSTEXT_FOLIO_URL, POSTEXT_SCORM_URL, isEngineUrl } from "./detect.ts";
 import { ALLOWED_IMPORTS } from "./lint.ts";
@@ -61,6 +61,29 @@ describe("capture shims", () => {
     expect(shimModules(resolveEngine("local"))["/__shim/postext-scorm.js"]).toContain("'/__local/postext-scorm/index.js'");
     expect(importMapTag()).toContain(`"${POSTEXT_SCORM_URL}":"/__shim/postext-scorm.js"`);
     expect(localImports()["postext-scorm"]).toBe("/__local/postext-scorm/index.js");
+  });
+
+  it("record each cover sheet the pen builds with postext/production, and its Markdown (#1671)", async () => {
+    expect(shimModules(resolveEngine("local"))["/__shim/postext-production.js"]).toContain("'/__local/postext/production/index.js'");
+    const npm = resolveEngine("npm");
+    expect(shimModules(npm)["/__shim/postext-production.js"]).toContain(`https://esm.sh/postext@${npm.postext}/production`);
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "cb-production-"));
+    const recorder = path.join(dir, "recorder.mjs");
+    fs.writeFileSync(recorder, "export const cb = {};\n");
+    const real = path.join(dir, "real.mjs");
+    fs.writeFileSync(real, "export const sheetSize = 1;\nexport function buildCover(input) { return input.version === 'none' ? { issues: [{ kind: 'unknown-version' }] } : { config: {}, content: {} }; }\n");
+    const shim = path.join(dir, "shim.mjs");
+    fs.writeFileSync(shim, productionShim(pathToFileURL(real).href).replace("'/__shim/recorder.js'", `'${pathToFileURL(recorder).href}'`));
+    const mod = (await import(pathToFileURL(shim).href)) as { buildCover: (i: unknown) => unknown; sheetSize: number };
+    const { cb } = (await import(pathToFileURL(recorder).href)) as { cb: { covers?: unknown[] } };
+    expect(mod.sheetSize).toBe(1);
+    expect(mod.buildCover({ version: "paperback", markdown: "Blurb." })).toEqual({ config: {}, content: {} });
+    mod.buildCover({ version: "none" });
+    fs.rmSync(dir, { recursive: true, force: true });
+    expect(cb.covers).toEqual([
+      { version: "paperback", markdown: "Blurb.", built: true },
+      { version: "none", markdown: "", built: false },
+    ]);
   });
 
   it("read a SCORM package back: manifest, version, a launch page per SCO, missing files (#1346)", async () => {

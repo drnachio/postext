@@ -1,5 +1,5 @@
 // The `.postext` bundle for the Sandbox, written by the pen's own engine.
-import { keptPosition, bundleGroup, configKeyOf, imageFile, bytesOfBase64, headingTitle, ZIP_EPOCH, base64Of } from './bundle.js';
+import { keptPosition, bundleGroup, configKeyOf, coverMarkdownOf, imageFile, bytesOfBase64, headingTitle, ZIP_EPOCH, base64Of } from './bundle.js';
 import { plain } from './fonts.js';
 import { warningsOf } from './hashes.js';
 import { startOf, bundleLocale, bundleLanguage, startLossNotes, readBundleBack } from './readBack.js';
@@ -126,6 +126,10 @@ export async function sandboxBundle({ select = 'last', keep = null, id, name, de
   const language = bundleLanguage(engine, config, build.docs?.[0]);
   if (language.locale) config.locale = language.locale;
   if (language.note) notes.push(language.note);
+  // The cover sheet's text (postext/production buildCover), beside the
+  // configuration's `production` and `cover`: the Sandbox lays it out again.
+  const coverMarkdown = coverMarkdownOf(cb.covers, config);
+  if (coverMarkdown) notes.push('cover Markdown carried as cover.md');
   const input = {
     id,
     name,
@@ -135,6 +139,7 @@ export async function sandboxBundle({ select = 'last', keep = null, id, name, de
     resources,
     files,
     ...(start ? { start } : {}),
+    ...(coverMarkdown ? { coverMarkdown } : {}),
     ...(thumbnail ? { thumbnail: { data: bytesOfBase64(thumbnail), mime: 'image/webp' } } : {}),
   };
   if (build.kind === 'bundle') {

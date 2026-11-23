@@ -21,7 +21,7 @@ export const CONFIG_KEYS: readonly string[] = [
   "diagramStyle", "scoreStyle", "scoreStyles", "videoStyle", "paragraphStyles", "calloutStyles", "chipStyles", "characterStyles", "markStyles", "parts", "headingStyles", "toc",
   "index", "unorderedLists", "orderedLists", "math", "footnotes", "crossRefs", "citations", "links", "cjk", "header", "footer", "locale", "direction", "numerals", "debug",
   "htmlViewer", "canvasViewer", "pdfGeneration", "folio", "colorPalette", "customFonts", "symbolFont", "resourceTypes", "comics", "print", "lineNumbers", "codeStyle", "contrast", "checks",
-  "pageTemplates", "chapterStyles", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises", "dieCuts",
+  "pageTemplates", "chapterStyles", "labelStyles", "frameLooks", "composedViewerLeaf", "exerciseStyles", "exercises", "dieCuts", "production", "cover",
 ];
 
 /** The parser's single-line directives and fenced containers
@@ -62,6 +62,8 @@ export const POSTEXT_EPUB_WORKER_URL = "https://esm.sh/postext-epub/worker";
 export const POSTEXT_SCORM_URL = "https://esm.sh/postext-scorm";
 /** The layout worker's client (worker recipes, `engine.worker`). */
 export const POSTEXT_WORKER_URL = "https://esm.sh/postext/worker";
+/** The print-cover chain: versions, sheets, ISBN and `buildCover` (#1671). */
+export const POSTEXT_PRODUCTION_URL = "https://esm.sh/postext/production";
 
 // ─── Imports and API ────────────────────────────────────────────────────────
 
@@ -120,7 +122,7 @@ export function parseImports(js: string, scan: JsScan = scanJs(js)): PenImport[]
 /** True for the engine's module URLs (any version or query: the lint
  *  decides which forms are allowed). */
 export function isEngineUrl(url: string): boolean {
-  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio|-epub|-scorm)?(@[^/?]*)?(\/worker)?(\?.*)?$/.test(url);
+  return /^https:\/\/esm\.sh\/postext(-pdf|-citeproc|-folio|-epub|-scorm)?(@[^/?]*)?(\/worker|\/production)?(\?.*)?$/.test(url);
 }
 
 /** `text` as a literal inside a regular expression (backslash included). */

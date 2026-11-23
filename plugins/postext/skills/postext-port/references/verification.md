@@ -617,7 +617,7 @@ output is the reference; headless metrics can differ slightly.
 With a browser it can script (Claude in Chrome, Chrome DevTools MCP, Puppeteer, Playwright), an agent checks the
 bundle in the real Sandbox, with the Sandbox's own measure (`shapingLanguage: 'document'`) and its extra checks
 (loose lines, heading hierarchy, placeholders, parity), which `postext check` does not give. Open
-`https://postext.dev/en/sandbox`. The page registers 41 `sandbox_*` tools on `document.modelContext` (WebMCP) and on
+`https://postext.dev/en/sandbox`. The page registers 71 `sandbox_*` tools on `document.modelContext` (WebMCP) and on
 `window.postextWebMcp` in every browser:
 
 ```js

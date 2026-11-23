@@ -3,6 +3,7 @@ import { buildDocument } from '../../pipeline/index.js';
 import { renderCutLines } from '../../canvas-backend/decorations.js';
 import { cropMarkSegments } from '../../paint/cropMarks.js';
 import { dimensionToPx } from '../../units.js';
+import { stripPageDefaults } from '../../defaults/page.js';
 import type { PostextConfig } from '../../types.js';
 import type { VDTDocument } from '../../vdt.js';
 
@@ -142,5 +143,37 @@ describe('crop marks (EF-120)', () => {
   it('lists no marks when cut lines are off', () => {
     const doc = buildDocument({ markdown: 'Text.' }, {});
     expect(cropMarkSegments(doc.pages[0]!, doc.config.page)).toEqual([]);
+  });
+
+  // #1667: a cover sheet's folds and scores, marked above and below the
+  // sheet outside the bleed, as the crop marks are.
+  it('adds a mark above and below each fold, measured from the left trim edge', () => {
+    const doc = docWith({ enabled: true, bleed: mm(5), foldMarks: [mm(40), mm(52.5)] });
+    const page = doc.pages[0]!;
+    const segments = cropMarkSegments(page, doc.config.page);
+    expect(segments).toHaveLength(8 + 4);
+    const folds = segments.slice(8);
+    const left = doc.trimOffset;
+    const bleed = dimensionToPx(mm(5), 150);
+    const length = dimensionToPx(mm(5), 150);
+    expect(folds.map((s) => s.x1)).toEqual([
+      left + dimensionToPx(mm(40), 150), left + dimensionToPx(mm(40), 150),
+      left + dimensionToPx(mm(52.5), 150), left + dimensionToPx(mm(52.5), 150),
+    ]);
+    for (const s of folds) {
+      expect(s.x1).toBe(s.x2);
+      const [near, far] = distancesFromTrim({ ...s, x1: s.x1, x2: s.x1 }, doc);
+      expect(near).toBeCloseTo(bleed, 6);
+      expect(far).toBeCloseTo(bleed + length, 6);
+    }
+    expect(strokedMarks(doc)).toEqual(segments);
+  });
+
+  it('keeps fold marks through stripPageDefaults and leaves pages without them unchanged', () => {
+    const plain = cropMarkSegments(docWith({ enabled: true }).pages[0]!, docWith({ enabled: true }).config.page);
+    const none = docWith({ enabled: true, foldMarks: [] });
+    expect(cropMarkSegments(none.pages[0]!, none.config.page)).toEqual(plain);
+    expect(stripPageDefaults({ cutLines: { enabled: true, foldMarks: [mm(40)] } })?.cutLines).toEqual({ enabled: true, foldMarks: [mm(40)] });
+    expect(stripPageDefaults({ cutLines: { enabled: true, foldMarks: [] } })?.cutLines).toEqual({ enabled: true });
   });
 });

@@ -889,7 +889,7 @@ Tudo o que este livro descreve pode ser experimentado agora mesmo, sem escrever 
 
 ## Um passeio pela interface
 
-:index{term="Sandbox"}A interface segue a disposição de um editor conhecido, esboçada em :ref{id="sandbox-ui"}. Uma **barra de atividades** à esquerda alterna entre sete painéis: Livros, Capítulos, Texto, Recursos, Fontes, Design e Verificações, este último com o número de pendências em aberto. Uma **barra lateral** redimensionável abriga o painel ativo; clicar no ícone ativo a recolhe. A **área de visualização**, à direita, mostra a mesma diagramação em seis abas: Canvas, PDF, Folio, HTML, EPUB 3 e SCORM. A interface está em inglês, espanhol, catalão, francês, alemão, italiano, português do Brasil, chinês simplificado, japonês e árabe, e em árabe corre da direita para a esquerda; uma opção de botões e campos grandes deixa cada controle mais fácil de alcançar com o dedo ou com uma mão pouco firme.
+:index{term="Sandbox"}A interface segue a disposição de um editor conhecido, esboçada em :ref{id="sandbox-ui"}. Uma **barra de atividades** à esquerda alterna entre oito painéis: Livros, Capítulos, Texto, Recursos, Fontes, Design, Capa e Verificações, este último com o número de pendências em aberto. Uma **barra lateral** redimensionável abriga o painel ativo; clicar no ícone ativo a recolhe. A **área de visualização**, à direita, mostra a mesma diagramação em seis abas: Canvas, PDF, Folio, HTML, EPUB 3 e SCORM. A interface está em inglês, espanhol, catalão, francês, alemão, italiano, português do Brasil, chinês simplificado, japonês e árabe, e em árabe corre da direita para a esquerda; uma opção de botões e campos grandes deixa cada controle mais fácil de alcançar com o dedo ou com uma mão pouco firme.
 
 A barra lateral e a área de visualização dividem a janela, e a fronteira entre elas pode ser arrastada. Cada painel e a área de visualização lembram o seu estado entre uma visita e outra: o zoom e o modo de exibição do canvas, o modo de colunas da visualização HTML, os grupos abertos no painel Design. O tema e o idioma da interface são trocados no pé da barra de atividades, e o idioma da interface é independente do idioma do livro.
 
@@ -905,7 +905,7 @@ O editor também fica de olho no livro inteiro. O menu de capítulos lista cada 
 
 ## Configuração
 
-O painel **Design** edita a configuração inteira (mais de quinhentos campos) por grupos: página e colunas, sistema de escrita, cores, tipografia, composição, títulos e sumário, listas, figuras e tabelas, boxes, exercícios, quadrinhos, cabeçalhos e rodapés, partes, exportação, Folio (o livro em 3D) e configurações de nível avançado. Uma caixa de busca encontra qualquer opção pelo nome, e o filtro **Alteradas** mostra o que difere dos valores padrão. Cada campo e cada seção podem ser restaurados separadamente, e a configuração pode ser exportada e importada como arquivo. Num livro com vários idiomas, uma chave no alto do painel escolhe entre as configurações que todas as edições compartilham e as da edição que está na tela, como explica o :ref{id="languages"}.
+O painel **Design** edita a configuração inteira (mais de quinhentos campos) por grupos: página e colunas, sistema de escrita, cores, tipografia, composição, títulos e sumário, listas, figuras e tabelas, boxes, exercícios, quadrinhos, cabeçalhos e rodapés, partes, exportação, Folio (o livro em 3D), capa e configurações de nível avançado. Uma caixa de busca encontra qualquer opção pelo nome, e o filtro **Alteradas** mostra o que difere dos valores padrão. Cada campo e cada seção podem ser restaurados separadamente, e a configuração pode ser exportada e importada como arquivo. Num livro com vários idiomas, uma chave no alto do painel escolhe entre as configurações que todas as edições compartilham e as da edição que está na tela, como explica o :ref{id="languages"}.
 
 ## As seis visualizações
 
@@ -1069,6 +1069,16 @@ Abra a visualização Canvas na capa deste guia e pressione **Tintas especiais**
 Uma **faca especial**:index{term="facas especiais"} é o trabalho de uma faca de aço depois da impressão: uma janela numa capa, um furo através das folhas de um livro cartonado, cantos arredondados, um livro recortado no contorno de uma casa. As formas pertencem ao design, um retângulo, um retângulo de cantos arredondados, um círculo, uma elipse ou qualquer traçado, posicionadas a partir do refile, e o Markdown nomeia uma só onde o conteúdo decide quais páginas são cortadas, com \`:::diecut{die=window}\`; \`dieCuts.pages\` corta páginas pelo número. O papel tem dois lados, então um furo corta também o verso da sua folha, espelhado, e uma forma com \`leaves\` continua pelas folhas seguintes no mesmo lugar, como mostra a :ref{id="die-cut"}. O texto se afasta de um furo em cada página que ele corta, como se afasta de uma imagem que contorna.
 
 A página em si é impressa inteira. O fabricante de facas trabalha a partir da **linha de faca**, o contorno de cada furo, que o PDF traça numa chapa que a impressora nunca entinta e numa camada que um leitor pode ocultar, e o preflight avisa de um furo perto demais do refile ou da lombada, ou de texto deixado dentro de um. O canvas e a visualização HTML mostram as páginas de baixo através de cada furo, até onde os furos se alinham.
+
+## A folha de capa
+
+:index{term="capas para impressão"}A capa de um livro impresso é uma única folha dobrada em volta das páginas: a contracapa, a lombada e a capa lado a lado, com as orelhas ou a dobra do revestimento em volta do papelão de uma capa dura. A largura dela depende do livro, porque a lombada é tão grossa quanto as páginas, e o Postext calcula a lombada a partir do número de páginas e do papel em que o livro é impresso. Cada versão do livro, uma brochura ou uma capa dura, tem a sua própria folha e o seu próprio ISBN.
+
+O projeto da folha, com o fundo, as imagens, os blocos e os acabamentos, faz parte da configuração; as palavras vêm do livro. O título, o subtítulo e o autor chegam à capa e à lombada a partir dos metadados, e o texto da contracapa é um pequeno documento Markdown próprio. Um texto de contracapa novo nunca mexe no projeto, e um título corrigido chega ao mesmo tempo à capa e à lombada, sem nada copiado à mão. O painel **Capa** desenha a folha com as dobras e a sangria, avisa quando a lombada é estreita demais para o seu letreiro e exporta a folha em PDF para a gráfica.
+
+:::callout{type="try"}
+Abra o painel **Capa** neste guia. A folha da brochura leva a imagem da primeira página de um lado a outro da cabeça da capa, com um verniz brilho por cima, e na contracapa o texto da última página do guia. Em **Arquivos para a gráfica**, **Baixar PDF da folha** dá a folha inteira com as marcas, e **Baixar a capa** só a capa, como imagem para a página de uma loja, um catálogo ou a capa de um EPUB.
+:::
 
 ## PDF/X
 

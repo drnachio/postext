@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sandboxEntry } from "../../../scripts/cookbook/capture.ts";
-import { fontsourceRange, keptOnDisk, routeFor, withFontsourceVersion } from "../../../scripts/cookbook/net.ts";
+import { fontsourceRange, keptOnDisk, repoAsset, routeFor, withFontsourceVersion } from "../../../scripts/cookbook/net.ts";
+import { COOKBOOK_DIR, REPO_DIR } from "./paths.ts";
 import { compareEdition, extraWarnings, variableFamilies, warningSince } from "../../../scripts/cookbook/sandbox.ts";
 import type { SandboxExpected, SandboxRun } from "../../../scripts/cookbook/sandbox.ts";
 import type { RecipeMeta } from "./types.ts";
@@ -212,6 +213,18 @@ describe("the network of the Sandbox check (#736)", () => {
       expect(routeFor("https://example.com/tracker.js", profile)).toEqual({ kind: "blocked", host: "example.com" });
       expect(routeFor("https://cdn.jsdelivr.net/npm/left-pad/index.js", profile)).toMatchObject({ kind: "blocked" });
     }
+  });
+
+  it("finds a draft's assets in the folder its recipes are read from (#1671)", () => {
+    const fixtures = `${REPO_DIR}/apps/web/src/lib/cookbook/fixtures/recipes`;
+    const rel = "cookbook/composed-bench/recipe.json";
+    // Not in the repository's cookbook/, found in COOKBOOK_RECIPES_DIR.
+    expect(repoAsset(rel, COOKBOOK_DIR)).toBeNull();
+    expect(repoAsset(rel, fixtures)).toBe(`${fixtures}/composed-bench/recipe.json`);
+    // A repository file stays the repository's, and nothing leaves the folder.
+    expect(repoAsset("cookbook/README.md", fixtures)).toBe(`${COOKBOOK_DIR}/README.md`);
+    expect(repoAsset("cookbook/../../etc/passwd", fixtures)).toBeNull();
+    expect(repoAsset("apps/web/package.json", fixtures)).toBe(`${REPO_DIR}/apps/web/package.json`);
   });
 });
 

@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-11-10',
   readingTime: '33 min',
-  order: 42,
+  order: 43,
   plainSummary: "O Sandbox é uma ferramenta gratuita deste site para experimentar o Postext sem instalar nada. Você escreve o texto de um lado e vê as páginas prontas do outro, e elas mudam enquanto você digita. Esta página explica as partes da tela e os painéis em que você escreve o texto, organiza livros e capítulos, inclui imagens e escolhe fontes. Outras páginas tratam dos ajustes de design, das visualizações, de como salvar e importar, e de como colocar o Sandbox no seu próprio site.",
 };
 
@@ -33,6 +33,7 @@ Uma faixa estreita na borda esquerda tem um botão por painel. Cada botão mostr
 - **Recursos** (ícone `FolderOpen`): imagens, desenhos SVG e tabelas usados no livro
 - **Fontes** (ícone `Type`): as famílias tipográficas que o livro usa e seus próprios arquivos de fonte
 - **Design** (ícone `Settings2`): configurações de página, tipografia, títulos, figuras, boxes e exportação
+- **Capa** (ícone `BookMarked`): as versões impressas do livro, a folha de capa com a lombada, o seu projeto e os seus textos (veja [Capas para impressão](/pt/docs/print-covers#no-sandbox))
 - **Verificações** (ícone `AlertTriangle`): problemas de composição encontrados na diagramação. O ícone traz um selo com a contagem dos avisos atuais, limitada a `99+`.
 
 Clicar no botão do painel ativo recolhe a barra lateral, e clicar em outro botão troca para aquele painel. A barra é uma única parada de tabulação: as setas (↑ / ↓, voltando ao início), **Home** e **End** movem o foco entre os botões, e Enter ou Espaço abre o painel em foco.
@@ -233,7 +234,7 @@ Gerencia os recursos do livro: imagens bitmap, figuras SVG, tabelas e vídeos. O
 - **Nova tabela**: começa como uma grade de 2×2 com uma linha de cabeçalho
 - **Adicionar vídeo**: um vídeo do YouTube ou do Vimeo, um arquivo de vídeo ou o endereço de um (um MP4 ou um stream HLS; veja *Vídeo* abaixo). Um livro cujos tipos de recurso são anteriores aos vídeos ganha o tipo embutido *Vídeo* quando acrescenta o primeiro.
 
-Você também pode arrastar e soltar arquivos do disco no painel, incluindo arquivos de vídeo (MP4, WebM, Ogg, QuickTime). Eles são enviados em lote, com ids gerados a partir dos nomes dos arquivos. Arquivos não suportados são ignorados, e uma nota curta informa quantos foram acrescentados e quantos foram ignorados.
+Você também pode arrastar e soltar arquivos do disco no painel, incluindo arquivos de vídeo (MP4, WebM, Ogg, QuickTime). Um PDF, ou um arquivo do Illustrator salvo com compatibilidade com PDF, vira uma imagem por página (até 20) a 300 ppi com fundo transparente; arquivos TIFF e PSD mantêm o tamanho original. Um arquivo EPS não é lido: uma nota pede que ele seja salvo como PDF. Eles são enviados em lote, com ids gerados a partir dos nomes dos arquivos. Arquivos não suportados são ignorados, e uma nota curta informa quantos foram acrescentados e quantos foram ignorados.
 
 **Vista de detalhe.** Selecionar um recurso abre o editor dele:
 

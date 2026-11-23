@@ -92,6 +92,9 @@ export interface SandboxState {
    *  with the book (the working copy, the project record, the draft of a
    *  preset) and written back on export; no panel edits it. */
   bookStart?: BookStart;
+  /** The book's cover Markdown (`BookContent.coverMarkdown`, #1669),
+   *  edited in the Cover panel, kept and exported with the book. */
+  coverMarkdown?: string;
   /** The EPUB 3 rendition the EPUB tab builds: the printed pages as a
    *  fixed layout, or a reflowable book (the EPUB default, and the
    *  Sandbox's). The tab always takes the whole book, so it has no scope;
@@ -251,6 +254,9 @@ export type SandboxAction =
   | { type: 'SET_ACTIVE_CHAPTER'; payload: string }
   | { type: 'SET_PDF_SCOPE'; payload: LayoutScope }
   | { type: 'SET_CANVAS_SCOPE'; payload: LayoutScope }
+  /** The cover's Markdown (#1669); `history: false` keeps it out of the
+   *  undo history (a step taken back or put back). */
+  | { type: 'SET_COVER_MARKDOWN'; payload: string; history?: false }
   | { type: 'SET_EPUB_LAYOUT'; payload: EpubLayout }
   | { type: 'SET_SCORM_LAYOUT'; payload: EpubLayout }
   | { type: 'SET_SCORM_VERSION'; payload: ScormVersion }

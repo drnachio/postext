@@ -44,6 +44,8 @@ export function describeStep(step: HistoryStepInfo, state: Pick<SandboxState, 'c
   }
   // A picture's marks (#866): the resource by its id.
   if (step.kind === 'resource') return labels.historyStepResource.replace('__resource__', step.resourceId);
+  // The cover's text (#1669).
+  if (step.kind === 'cover') return labels.historyStepCover;
   // The changes of an edited Word export (#1397), or of a replace-all over
   // the book, all at once.
   if (step.kind === 'group') return step.source === 'find' ? labels.historyStepReplaceAll : labels.historyStepWordEdits;

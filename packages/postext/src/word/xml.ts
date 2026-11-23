@@ -25,20 +25,7 @@ export function decodeEntities(s: string): string {
   });
 }
 
-/** Text escaped for an element body. */
-export function escapeXml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    // Characters XML 1.0 does not allow (C0 controls bar tab, LF, CR).
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f￾￿]/g, '');
-}
-
-/** Text escaped for a double-quoted attribute value. */
-export function escapeAttr(s: string): string {
-  return escapeXml(s).replace(/"/g, '&quot;');
-}
+export { escapeXml, escapeAttr } from '../util/xmlEscape.js';
 
 /** The local part of a qualified name (`w:p` → `p`). */
 export const localName = (name: string): string => name.slice(name.indexOf(':') + 1);

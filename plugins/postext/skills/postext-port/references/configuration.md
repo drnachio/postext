@@ -201,6 +201,8 @@ page
 │               bitmap with no resolution of its own prints at this many ppi: keep 300 for print, or
 │               give pictures a resolution (layout.bitmapResolution / bitmap.resolution, ≥ 1.24)
 ├─ cutLines     { enabled=false, bleed=3mm, markLength=5mm, markOffset=3mm, markWidth=0.25pt, color=#000 }
+│               foldMarks: Dimension[] from the trim's left edge, a cover sheet's folds and scores
+│               (set by coverPage, not by hand)
 ├─ baselineGrid { enabled=false, color=#cccccc, lineWidth=0.5pt }   VISUAL OVERLAY ONLY (pdfGeneration.baselineGrid=false keeps it out of the PDF)
 │               The grid is only defined here. Whether a block OPENS on a grid line is its style's
 │               snapTopToGrid (≥ 1.75, all default false): headings / levels[] / headingStyles[], bodyText
@@ -2713,6 +2715,114 @@ dieCuts
   (0.25 pt). The page prints whole; the hole is not cut out of the PDF. CLI: `postext pdf --die-line none`.
 - Preflight (whenever enabled): `dieCutText` (text in a gap or under a hole), `dieCutTrim` (< 3 mm from the
   trim; critical past it), `dieCutGutter` (critical, within 3 mm of the spine), `dieCutUnknown`.
+
+## 19j. Print covers — `production` and `cover` (postext ≥ 1.92)
+
+The cover sheet (back, spine, front, flaps; a case, its jacket and endpapers) is built from three
+parts of the book: `production` (what is printed: versions, bindings, papers), `cover` (the
+design, a part of the design shared by every version) and the cover's Markdown (`cover.md`, the
+texts). Neither key changes the layout of the pages. Docs: /en/docs/print-covers.
+
+```
+production
+├─ versions[]   ProductionVersion  one per binding the book is published in
+│   ├─ id, name
+│   ├─ binding        'perfect' | 'sewn-softcover' | 'case-flat' | 'case-round' | a profile id | a BindingProfile
+│   ├─ isbn           ISBN-10/13, hyphens allowed; each binding its own; a valid one prints the EAN-13
+│   │                 on the outermost sheet's back: the jacket of a case that wears one, else the case
+│   ├─ isbnAddOn      five digits after the barcode (Spain: 9xxxx only, 90000 = no price)
+│   ├─ workIsbn       the whole work's ISBN, printed as text beside the volume's (absent: collection.isbn)
+│   ├─ flaps          softcover: flaps; case: a dust jacket
+│   ├─ caseMaterial   printed (default) | cloth
+│   ├─ overrides      { <measure>: mm } over the profile's, this version only
+│   ├─ spineOverride  mm, the printer's figure in place of the calculated spine
+│   └─ spineText      { direction: bottomToTop (default) | topToBottom, minSpine: 6 }
+├─ bindings[]   BindingProfile  { id, name, printer?, style, signature?, measures?, accepts? }
+│   ├─ style      perfect | sewnSoftcover | caseFlat | caseRound
+│   ├─ signature  pages per signature (built-ins 16): the count is rounded up, blanks reported
+│   ├─ accepts    { trim: { min, max: { width, height } }, spine: { min, max } } mm
+│   └─ measures   Partial<BindingMeasures>, each a ProductionLength (below); the rest from the style
+├─ papers[]     PaperProfile  a folio paper ({ type, grammage, bulk, … }) + id, name, supplier, commercialName
+└─ collection   { name, isbn?, catalogue?: [{ id, title, resource? }], volume? }
+                 isbn: printed beside the barcode of a version with no workIsbn; volume: the catalogue
+                 id that is this book (marked where the catalogue is set; an unknown id is a config warning)
+
+ProductionLength = mm | [{ upTo?: { width, height }, mm }, …] | { ratio, of?: width | height, min?, max? }
+
+BindingMeasures (mm, defaults)
+  all:        spineAllowance 0.5, safeMargin 5, designMargin 5
+  softcover:  bleed 3, hingeScore 6, flapWidth {ratio 2/3, min 65}, flapFoldInset 2
+  case:       board 2|2.5|3 by trim, square 3, joint 7, turnIn 15, boardSetback 7,
+              caseSpineAllowance 0, roundSpineAllowance 3 (caseRound)
+  jacket:     jacketFoldAllowance 3, jacketFlapWidth {ratio 2/3, min 80}, jacketBleed 3
+  endpapers:  endpaperGlueStrip 5, endpaperBleed 3
+```
+- Spine = leaves × grammage × bulk / 1000 + `spineAllowance`, the pages counted as laid out and rounded
+  up to the signature, each run of `:::paper` on its own stock over `folio.paper`. Put the source's
+  real stock in `folio.paper` (grammage, bulk) or the spine will be wrong; when the printer gave the
+  spine, set `spineOverride` and keep the calculation as the check.
+- Zones per sheet: softcover `flapBack? back spine front flapFront?`; case `back jointBack spine
+  jointFront front` (+ turn-in); jacket `flapBack back spine front flapFront`; endpaper `pastedown hinge
+  flyleaf`. A book bound on the right (right to left, vertical CJK, `page.binding: 'right'`) has its
+  sheet mirrored: front on the left (postext ≥ 1.92). A vertical book's sheet is a horizontal page
+  whose zone frames are `vertical-rl`; the spine reads down unturned (`spineText.direction` unused).
+
+```
+cover
+├─ background            ColorValue for the whole sheet
+├─ image                 { resourceId, area: sheet (default) | front, focus?: { x, y } }  cropped to cover
+├─ zones                 { <zone>: ColorValue }  a ground per zone
+├─ verticalAlign         { <zone>: top (default) | middle | bottom }  (spine always centred)
+├─ elements[] / effects[]  CoverElement, under / over the text, back to front
+│   ├─ id, kind          image | box | shape | catalogue; resourceId (image), color, opacity, fit: contain | cover
+│   ├─ columns, gap, first, last   catalogue only: the collection's pictures in a grid in the box (columns
+│   │                    default all in one row, gap mm default 3, first/last places from 1); fit default
+│   │                    cover; the book's own (collection.volume) outlined by stroke (+ radius)
+│   ├─ zone, x, y, width, height   mm from the zone's top-left; may run past it
+│   ├─ basis             { width, height } of the zone when placed: scale with it (absent: stay as placed)
+│   ├─ to                { zone, x, basis? }  right edge in another zone (a band across back, spine, front)
+│   ├─ path              [{ nodes: [{ x, y, in?, out? }], closed }]  fractions of the box
+│   ├─ outline / clip    [[{ x, y }]]  traced polygons / a picture cut to them
+│   ├─ radius, stroke { color, width }, gradient { to, angle }, shadow { color, opacity, x, y, blur }
+│   └─ bleed             mirror (default) | own
+├─ logos[]               CoverElement (kind image) + clearance mm
+├─ textBoxes[]           { name, rect: { x, y, width, height } mm on the sheet from the bleed's corner,
+│                          rotate?: 90 | -90, verticalAlign? }   filled by :::frame{slot="name"}
+├─ finishes[]            { id, process: varnish | foil | emboss | deboss, ink?, sheen?, shape }
+│   └─ shape             { box: placement } | { element: id } | { outline, box }
+├─ mirrorMargin          mm drawn past the trim (≥ 2); beyond, ground and elements are mirrored
+├─ barcodeMagnification  0.8 … 2 (default 1)
+└─ sheets                { case?, jacket?, endpapers?, endpaperFront?, endpaperBack?, cover? }
+                           a whole design per sheet (every key above but sheets), used in place of the book's
+                           on that sheet; nothing inherited. endpaperFront/Back over endpapers; `cover` is a
+                           softcover's cover or a case without its own `case` design; the jacket and the
+                           endpapers never take `cover`.
+```
+- Varnish and foil print on a spot plate of their own (default inks `Varnish`, `Gold foil`); emboss and
+  deboss go on a non-printing technical plate (`Emboss`/`Deboss` Separation) beside the die line.
+- The cover's Markdown (`cover.md`, manifest `coverMarkdown`; per language `localized[lang].coverMarkdown`):
+  one `:::frame{slot="<zone or text box>"}` per slot. Front and spine left empty take title, subtitle and
+  author from the metadata in the paragraph styles `cover-title`, `cover-subtitle`, `cover-author`,
+  `cover-spine` (redefine them in `paragraphStyles`). Never copy the title into `cover.md`. Set cover
+  text with paragraphs and paragraph styles: a `#` heading takes the book's chapter heading design.
+- A frame for one sheet: `:::frame{slot="front" sheet="case"}` (one or more names of `cover.sheets`,
+  space-separated) is laid out on that sheet only and takes its slot there over a frame that names no
+  sheet. A case answers to `case` and `cover` (`sheet="cover"` reaches it too; `sheet="case"` only the
+  case); `endpapers` reaches both endpapers. An empty sheet frame (`:::frame{slot="back" sheet="case"}`
+  then `:::`) leaves that zone bare on that sheet; on front or spine it also stops the metadata title.
+  An unknown name: `coverFrameSheetUnknown`. Use it for a cloth case under a printed jacket (case: the
+  series name or nothing; jacket: blurb and title) and for endpapers that differ front and back.
+- `::catalogue{numbers="I" first=1 last=6}` on its own line in a frame sets `collection.catalogue` as
+  one paragraph per title (number, en space, title) in `cover-catalogue`, the book's own (`volume`) in
+  `cover-catalogue-current` (bold); `numbers` 1 (default) | 01 | I | i | A | a | none; numbers keep
+  their place in the whole list. A series list on the endpapers of the source is this plus `volume`,
+  never typed titles; the covers' grid is a `catalogue` element.
+- Checks: `bindingProfileMissing`, `profileOutOfRange`, `isbnInvalid`, `spineOverridden`,
+  `signatureBlanks`, `spineTooThinForText` (a hardcover: the case's spine), `coverSlotUnknown`,
+  `coverSlotRepeated`, `coverFrameSheetUnknown`, `coverTextBoxName`,
+  `coverMirrorSkipped`, `coverMirrorCapped`, `coverClipSkipped`, `coverBarcodeSize`.
+- Output: `postext cover book.postext [--print-version ID] [--sheet cover|jacket|endpaper-front|endpaper-back]
+  -o cover.pdf` (or `-o front.jpg [--zone back|spine|…|sheet]`); `buildCover` from `postext/production`.
 
 ## 20. Fonts — `customFonts` and what goes in preset.json
 

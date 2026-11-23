@@ -30,6 +30,8 @@ pub mod kind {
         Html;
         /// `postext epub`
         Epub;
+        /// `postext cover`
+        Cover;
         /// `postext image`
         Image;
         /// `postext images`
@@ -74,6 +76,7 @@ macro_rules! kind {
 kind!(Pdf, "pdf", Report, File; ReadsBook, TakesFonts, WritesFile);
 kind!(Html, "html", Report, File; ReadsBook, TakesFonts, WritesFile);
 kind!(Epub, "epub", Report, File; ReadsBook, TakesFonts, WritesFile);
+kind!(Cover, "cover", Report, File; ReadsBook, TakesFonts, WritesFile);
 kind!(Image, "image", ImageReport, File; ReadsBook, TakesFonts, WritesFile);
 kind!(Images, "images", Report, Required; ReadsBook, TakesFonts);
 kind!(Docx, "docx", Report, File; ReadsBook, TakesFonts, WritesFile);
@@ -146,6 +149,30 @@ options!(Epub {
     layout: text "layout";
     /// A cover picture.
     cover: text "cover";
+});
+
+options!(Cover {
+    /// The print version (`production.versions[].id`; default: the first).
+    print_version: text "print-version";
+    /// `cover` (default), `jacket`, `endpaper-front` or `endpaper-back`.
+    sheet: text "sheet";
+    /// For an image: `front` (default), `back`, `spine`, `flapFront`,
+    /// `flapBack`, or `sheet` for the whole.
+    zone: text "zone";
+    /// As in `pdf`.
+    color_space: text "color-space";
+    /// As in `pdf`.
+    pdfx: text "pdfx";
+    /// As in `pdf`.
+    profile: text "profile";
+    /// As in `pdf`.
+    die_line: text "die-line";
+    /// As in `image`: an image of a panel instead of the PDF.
+    format: text "format";
+    /// As in `image`.
+    dpi: real "dpi";
+    /// As in `image`.
+    quality: count "quality";
 });
 
 options!(Image {
@@ -415,6 +442,12 @@ impl Postext {
 
     /// An EPUB 3 book.
     pub fn epub(&self, book: impl Into<Books>) -> Command<'_, kind::Epub> {
+        Command::new(self, book.into())
+    }
+
+    /// The print cover of a version: the sheet as a PDF, or (an `out`
+    /// ending in `.png`, `.jpg` or `.webp`) the front cover as an image.
+    pub fn cover(&self, book: impl Into<Books>) -> Command<'_, kind::Cover> {
         Command::new(self, book.into())
     }
 

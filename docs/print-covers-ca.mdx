@@ -1,0 +1,503 @@
+{/* docs/print-covers-ca.mdx */}
+
+export const metadata = {
+  title: 'Cobertes per a impremta',
+  sidebarTitle: 'Cobertes per a impremta',
+  description: "Les versions impreses d'un llibre, cadascuna amb la seva enquadernació, el seu ISBN i el seu llom; els perfils d'enquadernació i de paper de la impremta; el plec de coberta amb les solapes, la sobrecoberta, les tapes i les guardes; el disseny de la coberta i els acabats; el text en Markdown; i la coberta des del Sandbox, la línia d'ordres i el codi",
+  lang: 'ca',
+  lastUpdated: '2026-11-23',
+  readingTime: '19 min',
+  order: 41,
+  plainSummary: "Aquesta pàgina tracta de la coberta d'un llibre imprès: el plec que embolcalla les pàgines, amb la contracoberta, el llom i la coberta, i de vegades solapes, una sobrecoberta o guardes. Un llibre es pot imprimir en diverses versions, per exemple en rústica i en cartoné, i cada versió té la seva enquadernació i el seu ISBN. Postext calcula l'amplada del llom a partir del nombre de pàgines i del paper, i munta el plec a la mida que demana la impremta, amb la sang i les marques de plegat. El disseny de la coberta és a la configuració i els textos, en un document Markdown, i el títol i l'autor surten de les dades del mateix llibre. La pàgina explica com fer tot això al Sandbox, des de la línia d'ordres i des del codi.",
+};
+
+# Cobertes per a impremta
+
+**Les versions impreses d'un llibre són a la configuració `production`; el disseny de la coberta és el paràmetre `cover`; el text és un document Markdown del llibre.**
+
+Les pàgines d'un llibre són una cosa i el plec que les embolcalla n'és una altra. El plec de coberta és més ample que dues pàgines: porta la contracoberta, el llom i la coberta l'un al costat de l'altre, de vegades solapes, i canvia amb cada reimpressió que canviï el nombre de pàgines o el paper. Postext el munta a partir de tres parts del llibre:
+
+- **La producció**: les versions en què s'imprimeix el llibre (una rústica, un cartoné), cadascuna amb la seva enquadernació, el seu ISBN i el seu llom. És del llibre, no del disseny, i la maquetació de les pàgines no la llegeix mai.
+- **El disseny de la coberta**: fons, imatges, caixes, logotips, caixes de text i acabats, situats sobre les zones del plec. Forma part del disseny, i el comparteixen totes les versions del llibre i els llibres d'una col·lecció.
+- **El text de la coberta**: un document Markdown amb un bloc per zona. La coberta i el llom que deixa buits prenen el títol, el subtítol i l'autor de les metadades del llibre cada vegada que es compon, de manera que un títol corregit arriba a la coberta sense copiar-lo.
+
+Amb aquestes tres parts, el mateix motor que compon les pàgines compon la coberta, i el PDF va a la impremta amb la sang i les marques de plegat.
+
+## Versions d'un llibre
+
+Una versió és el llibre tal com el fa una enquadernació. Una novel·la publicada en rústica i en cartoné té dues versions sobre les mateixes pàgines: cadascuna té la seva enquadernació, el seu ISBN i el seu plec de coberta.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Rústica', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Cartoné', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // en tapa dura: una sobrecoberta
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Cada versió anomena la seva enquadernació per l'id d'un perfil, o porta el perfil sencer. Els camps:
+
+- `id` i `name`: com es tria la versió (el `--print-version` de la línia d'ordres) i com es mostra.
+- `binding`: un perfil d'enquadernació (més avall).
+- `isbn`: l'ISBN d'aquesta versió, ISBN-10 o ISBN-13, amb guionets o sense. Cada enquadernació d'un llibre té el seu. Si és vàlid, s'imprimeix com a codi de barres a la contracoberta del plec més exterior: la sobrecoberta d'una tapa dura que en porti; si no, el folre de les tapes o la coberta de rústica.
+- `isbnAddOn`: cinc xifres impreses després del codi de barres. A Espanya no porta preu: l'Agència de l'ISBN només l'admet si comença per 9, per a ús propi de l'editor (`90000` vol dir sense preu).
+- `workIsbn`: l'ISBN de l'obra completa, per a un volum d'una col·lecció o d'una obra en diversos volums. El codi de barres porta l'`isbn` del volum; aquest s'imprimeix com a text al costat. Si no hi és, s'hi imprimeix l'`isbn` de la col·lecció.
+- `flaps`: en rústica, solapes; en tapa dura, una sobrecoberta.
+- `caseMaterial`: en tapa dura, `printed` (la coberta impresa i plastificada sobre els cartrons, el valor per defecte) o `cloth` (tela estampada, normalment sota una sobrecoberta).
+- `overrides`: mides en mm que aquesta versió fixa per a si mateixa per sobre de les del perfil, quan la impremta demana una caixa diferent per a aquest llibre concret.
+- `spineOverride`: el llom en mm que dona la impremta, en lloc del calculat.
+- `spineText`: com es retola el llom: `direction` ascendent (`bottomToTop`, el costum a Espanya i el valor per defecte) o descendent (`topToBottom`, com prefereix la norma ISO 6357), i `minSpine`, el llom més estret que admet text (6 mm per defecte).
+
+`production.collection` anomena la col·lecció o l'obra en diversos volums a què pertany el llibre:
+
+```ts
+production: {
+  collection: {
+    name: 'Biblioteca del Mar',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Esculls', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Marees', resource: 'cover-tides' },
+      { id: 'abyss', title: 'L’abisme', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`: el nom de la col·lecció.
+- `isbn`: l'ISBN de l'obra completa, imprès com a text al costat del codi de barres d'una versió que no dona un `workIsbn` propi.
+- `catalogue`: els títols de la col·lecció per ordre, cadascun amb un `id`, un `title` i una imatge opcional (`resource`, normalment la coberta). `::catalogue` al text de la coberta els compon com a línies, i un element `catalogue` del disseny com a imatges, a les guardes o a la contracoberta.
+- `volume`: l'`id` de l'entrada del catàleg que és aquest llibre, que es destaca allà on es compon el catàleg. Les revisions de la configuració notifiquen un `volume` que no anomena cap entrada.
+
+### Perfils d'enquadernació
+
+Un perfil d'enquadernació descriu com enquaderna una impremta: un estil, les seves mides i el que és capaç de fer. Postext porta un perfil genèric per estil, sobre plecs de 16 pàgines:
+
+<table>
+  <thead>
+    <tr><th>Id</th><th>Estil</th><th>Què és</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>Una rústica encolada pel llom (PUR o hotmelt). Admet lloms de 3 a 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>Una rústica sobre plecs cosits.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>Un cartoné de llom recte.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>Un cartoné de llom rodó.</td></tr>
+  </tbody>
+</table>
+
+Les mides d'aquests perfils surten de les especificacions que publiquen impremtes i enquadernadors; on no coincideixen, es pren el valor que dona la majoria. Són un punt de partida. Les d'una impremta concreta van en un perfil del llibre, a `production.bindings`, que viatja amb el llibre perquè un paquet obert en un altre lloc el continuï trobant:
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Rústica fresada, la meva impremta',
+    printer: 'Gràfiques Exemple',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Rústica', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style`: `perfect`, `sewnSoftcover`, `caseFlat` o `caseRound`.
+- `signature`: pàgines per plec. Per al llom, el nombre de pàgines s'arrodoneix cap amunt a plecs sencers, i la revisió diu quantes pàgines en blanc hi afegeix.
+- `measures`: les que s'ometen prenen els valors de l'estil.
+- `accepts`: el format més petit i el més gran (`trim.min`, `trim.max`, cadascun amb `width` i `height` en mm) i el llom més prim i el més gruixut (`spine.min`, `spine.max`) que la impremta pot enquadernar. Un llibre fora d'aquests límits rep una revisió en lloc d'una coberta que ningú no pot enquadernar.
+
+Totes les mides són en mm i s'escriuen d'una d'aquestes tres maneres, perquè un mateix perfil serveixi per a qualsevol format:
+
+- **Un nombre**: igual per a qualsevol format (un quadrat de 3 mm).
+- **Graons**: una llista de `{ upTo: { width, height }, mm }`; es fa servir el primer graó en el `upTo` del qual cap el format, i l'últim, sense `upTo`, per a qualsevol format més gran. Així ho escriu una impremta que fa més gruixut el cartró dels llibres grans.
+- **Una proporció del format**: `{ ratio, of, min, max }`, una fracció de l'amplada (`width`, el valor per defecte) o de l'alçada (`height`) del format, mantinguda entre `min` i `max`. Les solapes se solen escriure així.
+
+<table>
+  <thead>
+    <tr><th>Mida</th><th>S'aplica a</th><th>Què és</th><th>Valor per defecte</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>totes</td><td>S'afegeix al gruix de les pàgines: la cola, el cosit i, en rústica, la cartolina de la coberta que l'envolta.</td><td>0,5</td></tr>
+    <tr><td><code>bleed</code></td><td>rústica</td><td>Sang al voltant del plec de coberta.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>rústica</td><td>Distància dels hendits de frontissa a cada plegat del llom (0: només hendit al llom).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>rústica</td><td>Amplada de cada solapa.</td><td>2/3 de l'amplada, 65 com a mínim</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>rústica</td><td>Quant més estret que el format es fa cada plafó de coberta, perquè la solapa es plegui just per dins del tall davanter.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>tapa dura</td><td>Gruix del cartró.</td><td>2 fins a 150 × 230, 2,5 fins a 216 × 280, 3 per sobre</td></tr>
+    <tr><td><code>square</code></td><td>tapa dura</td><td>Quant sobresurten els cartrons de les pàgines per cap, peu i tall davanter (la cella).</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>tapa dura</td><td>La caixa, la separació entre cada cartró i el llom.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>tapa dura</td><td>El doblec del material de coberta al voltant dels cartrons.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>tapa dura</td><td>Quant més estret que el format es talla cada cartró pel costat del llom, abans de sumar-hi la cella al tall davanter.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>tapa dura</td><td>S'afegeix a les pàgines i als dos cartrons per a l'amplada del cartró del llom.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>tapa dura de llom rodó</td><td>S'afegeix al llom recte per a l'arrodoniment.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>sobrecoberta</td><td>Amplada de més a cada plegat del tall davanter, pel cartró que embolcalla.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>sobrecoberta</td><td>Amplada de cada solapa de la sobrecoberta.</td><td>2/3 de l'amplada, 80 com a mínim</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>sobrecoberta</td><td>Sang al voltant de la sobrecoberta.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>guardes</td><td>Franja de cola al llarg del plegat, enganxada a les pàgines.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>guardes</td><td>Sang al cap, al peu i al tall davanter (no n'hi ha al plegat).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>totes</td><td>Zona sense text per dins de cada plegat, hendit, caixa i tall.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>totes</td><td>Fins on, més enllà del tall, es dibuixa el disseny abans que comenci la sang en mirall (més avall).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### El paper i el llom
+
+El llom és el gruix de les pàgines més el marge de l'enquadernació. Un full (dues pàgines) és tan gruixut com el gramatge del seu paper per la seva mà, en micres: 90 g/m² amb una mà d'1,3 donen un full de 0,117 mm. Les pàgines són les del llibre tal com està maquetat, arrodonides a plecs sencers. Cada pàgina compta amb el seu propi paper: el paper del llibre és `folio.paper`, i una tanda de pàgines en un altre paper (un bloc `:::paper`, un plec de làmines en paper estucat) compta amb el seu, amb la mateixa regla amb què [Folio](/ca/docs/configuration-html-folio-epub) mostra el llibre.
+
+Així, el llom segueix el llibre. Quan una correcció afegeix un plec, el llom creix, el plec de coberta s'eixampla i cada element situat a la coberta o a la contracoberta es desplaça amb la seva zona. Quan la impremta mesura una maqueta en blanc i dona una xifra, `spineOverride` la fixa, i la revisió anota tots dos nombres. Un llom per sota de `spineText.minSpine` no porta text.
+
+Un paper del llibre també es pot desar com a perfil, a `production.papers`: el paper que coneix Folio (`type`, `grammage`, `bulk`, l'acabat i el to) amb un `id`, un `name`, el proveïdor (`supplier`) i el nom comercial (`commercialName`).
+
+### Perfils d'un llibre a un altre
+
+Els perfils d'enquadernació i de paper passen d'un llibre a un altre, i d'una persona a una altra, en un fitxer `.postext-production.json`. `exportProductionProfiles(papers, bindings)` l'escriu, i `importProductionProfiles(data)` el torna a llegir i retorna els problemes de les entrades que ha deixat fora. El tauler Coberta del Sandbox té totes dues coses com a botons.
+
+## El plec i les seves zones
+
+El plec està fet de plafons, anomenats zones, l'un al costat de l'altre, cadascun amb el que aquella part del plec serà un cop plegat:
+
+<table>
+  <thead>
+    <tr><th>Plec</th><th>Zones, d'esquerra a dreta</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Rústica</td><td><code>flapBack</code> (amb solapes), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (amb solapes)</td></tr>
+    <tr><td>Tapa dura</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, amb el doblec al voltant</td></tr>
+    <tr><td>Sobrecoberta</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Guarda</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+Una versió en rústica té un plec, la coberta. Una tapa dura té el folre de les tapes, una sobrecoberta quan `flaps` està activat, i una guarda davantera i una altra de posterior. Un llibre compost de dreta a esquerra (o enquadernat per la dreta: un llibre xinès o japonès vertical, o amb `page.binding: 'right'`) té el plec en mirall: la coberta a l'esquerra i la contracoberta a la dreta. En un llibre vertical, el text de cada zona es compon en línies verticals; el del llom hi baixa sense girar, de manera que `spineText.direction` no s'aplica.
+
+Cada zona té a dins una àrea segura, a `safeMargin` de cada plegat i de cada tall, i el llom té a través el seu propi marge, més estret. El Sandbox dibuixa sobre el plec els plegats, els hendits i les àrees segures; el PDF dibuixa les marques de plegat a la zona d'informació, fora de la sang.
+
+## El disseny de la coberta
+
+El paràmetre `cover` és el disseny de la coberta. Com la resta del disseny, no diu què posa la coberta, només quin aspecte té, i no canvia la maquetació de les pàgines:
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background`: el fons de tot el plec.
+- `image`: un recurs de mapa de bits o SVG del llibre que omple tot el plec (`area: 'sheet'`, el valor per defecte) o només la coberta (`'front'`), retallat per cobrir-la al voltant de `focus` (fraccions de la imatge).
+- `zones`: un fons per zona, sobre el fons del plec i la seva imatge.
+- `verticalAlign`: on se situa el text de cada zona: `top` (el valor per defecte), `middle` o `bottom`. El text del llom va sempre centrat a través.
+- `barcodeMagnification`: la mida del codi de barres respecte a la nominal, de 0,8 a 2 (1 per defecte). Per sota de 0,8 es posa a 0,8 i la revisió ho indica.
+- `mirrorMargin`: la sang en mirall (més avall).
+
+### Elements, efectes i logotips
+
+Sobre els fons, el disseny situa tres llistes d'elements, cadascuna dibuixada del fons cap endavant: `elements` sota el text, `effects` sobre el text i `logos` per damunt de tot. Un element és una imatge (`kind: 'image'` amb un `resourceId`), una caixa de color (`'box'`), una forma de color (`'shape'`) o el catàleg de la col·lecció (`'catalogue'`, més avall), i té un `id` de lletres, xifres, `-` i `_`.
+
+Un element se situa respecte a la zona on és, de manera que es mou amb ella quan el llom creix o l'enquadernació canvia:
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height`: la seva caixa, en mm des de la cantonada superior esquerra de la zona. Pot sortir de la zona, cap a les següents o cap a la sang.
+- `basis`: la mida de la seva zona quan s'hi va situar. Si ara la zona fa una altra mida, perquè ha canviat el format del llibre o ha crescut el llom, l'element s'escala amb ella: una caixa o una forma en cada eix, una imatge per igual al voltant del seu centre, sense perdre les proporcions. Sense `basis`, l'element es queda com es va situar.
+- `to`: una caixa o una forma que travessa zones, com una banda de la contracoberta a la coberta: la seva vora dreta, en mm des de l'esquerra de la zona on acaba (`to.zone`, `to.x`), i l'amplada d'aquella zona quan s'hi va situar (`to.basis`). Així cada vora segueix la seva pròpia zona.
+- `color` i `opacity`: el color d'una caixa o d'una forma, i l'opacitat de qualsevol element (de 0 a 1). Una imatge conserva la seva pròpia transparència.
+- `fit`: com omple una imatge la seva caixa: sencera a dins (`contain`, el valor per defecte) o cobrint-la, retallada (`cover`).
+- `path`: una forma dibuixada amb nodes, en fraccions de la seva caixa (0, 0 la cantonada superior esquerra; 1, 1 la inferior dreta), de manera que la forma s'estira amb la caixa. Cada part té els seus `nodes` i és tancada (`closed`) o oberta; un node té `x` i `y`, i les nanses de la corba que hi entra (`in`) i que en surt (`out`).
+- `outline`: polígons tancats en fraccions de la caixa, calcats d'una imatge, per a un vel o un acabat amb la seva forma.
+- `clip`: una imatge retallada a un contorn, perquè només es vegi dins de la silueta de la seva il·lustració.
+- `bleed`: més enllà del marge de disseny d'una sang en mirall, `mirror` (el valor per defecte) reflecteix l'element cap enfora amb el fons; `own` el pinta tal com és, per sobre del reflex.
+- `clearance` (logotips): l'espai de respecte en mm al voltant del logotip, on no ha d'entrar res més.
+
+Una caixa o una forma també poden portar els efectes que l'estil de requadre d'una pàgina no dibuixa: `radius` per a cantonades arrodonides en mm, `stroke` per a una vora (`color` i `width` en mm), `gradient` des del seu color fins a `to` amb un angle `angle` en graus (0: d'esquerra a dreta; 90: de dalt a baix), i `shadow` (`color`, `opacity`, quant cau en `x` i en `y` en mm i quant es difumina, `blur`). Un degradat o una ombra converteixen l'element en una imatge pròpia, dibuixada a la resolució del PDF.
+
+Un element `catalogue` disposa les imatges dels títols de la col·lecció en una quadrícula dins la seva caixa, per mostrar la sèrie en una guarda sense col·locar cada coberta a mà:
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`: imatges per fila (per defecte, tots els títols en una fila).
+- `gap`: l'espai entre les imatges, en mm (3 per defecte).
+- `first` i `last`: el primer i l'últim títol que es mostren, pel seu lloc al catàleg comptant des d'1, per repartir un catàleg llarg entre dues pàgines (per defecte, tots).
+- `fit`: cada imatge cobreix la seva cel·la, retallada (`cover`, aquí el valor per defecte), o hi cap sencera (`contain`).
+- `stroke` i `radius`: la vora que envolta el títol del mateix llibre (`collection.volume`). Sense `stroke` no es destaca.
+
+Un títol sense `resource` deixa la cel·la buida, i una col·lecció sense catàleg no dibuixa res. Amb un `basis`, les cel·les s'escalen amb la zona igual que l'element.
+
+### Sang en mirall
+
+L'art d'una coberta sol acabar al tall, i el doblec d'un cartoné passa 15 mm més enllà, al voltant del cartró. Amb `mirrorMargin`, el disseny es dibuixa aquests mil·límetres més enllà del tall (2 com a mínim), i a partir d'aquí el fons i els elements es reflecteixen en mirall fins a la vora del plec, de manera que el doblec i la sang continuen la imatge en lloc de mostrar una franja en blanc. El `designMargin` d'un perfil dona el marge que espera una impremta. Un element marcat amb `bleed: 'own'` no es reflecteix.
+
+### Caixes de text
+
+Cada zona és un marc de text propi. `textBoxes` hi afegeix marcs situats a mà, per a una cita que travessa la coberta, una línia al peu del llom o un peu sobre una imatge:
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name`: lletres, xifres, `-` i `_`, i que no sigui el nom d'una zona. El Markdown de la coberta omple la caixa per aquest nom.
+- `rect`: el seu lloc al plec, en mm des de la cantonada de la sang.
+- `rotate`: `-90` gira el text un quart de volta perquè es llegeixi de baix a dalt en un llom, `90` perquè es llegeixi de dalt a baix.
+- `verticalAlign`: `top`, `middle` o `bottom`.
+
+### Acabats i planxes tècniques
+
+`finishes` són el que la impremta afegeix després de les tintes, cadascun sobre una forma del disseny:
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process`: `varnish` (vernís) o `foil` (estampació), impresos en una planxa de tinta plana pròpia (una tinta amb [acabat](/ca/docs/special-inks-die-cuts#acabats)); o `emboss` (relleu) o `deboss` (baix relleu), un gravat de relleu.
+- `ink`: la tinta plana del vernís o de l'estampació. Per defecte, un vernís és `Varnish` i una estampació, `Gold foil`.
+- `sheen`: `gloss` (brillant, el valor per defecte), `satin`, `matte` o `softTouch` (tacte suau).
+- `shape`: el que cobreix l'acabat: una caixa pròpia (`{ box }`, situada com un element), la forma d'un element, efecte o logotip (`{ element: id }`; el contorn d'una imatge quan el seu recurs en té) o un contorn desat en una caixa pròpia (`{ outline, box }`).
+
+Un relleu o un baix relleu no imprimeixen res. La seva forma va a la impremta en una planxa tècnica, al costat de la [línia de troquel](/ca/docs/special-inks-die-cuts#la-línia-de-troquel-al-pdf): una `Separation` anomenada `Emboss` o `Deboss` que el preflight enumera i que cap prova no pinta. L'enquadernador en fa el gravat de relleu.
+
+### Un disseny per a cada plec
+
+Una tapa dura es compon de diversos plecs, i per defecte tots prenen el disseny `cover` del llibre. `sheets` dona a un plec un disseny propi, que substitueix el del llibre en aquell plec:
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+Els plecs s'anomenen:
+
+- `case`: el folre de les tapes d'un cartoné, com una tela estampada en or sota una sobrecoberta impresa.
+- `jacket`: la sobrecoberta.
+- `endpapers`: les dues guardes; `endpaperFront` i `endpaperBack`: una d'elles, per sobre d'`endpapers`.
+- `cover`: la coberta d'una rústica, o el folre de les tapes d'un cartoné que no té disseny `case`.
+
+Cadascun és un disseny complet, amb tots els camps de `cover` llevat de `sheets`, i no pren res del disseny del llibre: a l'exemple, el folre de les tapes no mostra la imatge de la sobrecoberta. Un plec sense disseny propi pren el del llibre.
+
+## El text de la coberta
+
+El text de la coberta és un document Markdown del llibre, desat al costat dels capítols. Cada bloc omple una zona o una caixa de text pel seu nom:
+
+```md
+:::frame{slot="back"}
+Una ciutat que guarda els seus llibres sota terra, i la noia que els llegeix en veu alta.
+
+:::paragraphs{style="cover-praise"}
+«Una novel·la per llegir d'una tirada». — *Un diari*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Anna Pérez** va néixer a Saragossa el 1984. *La biblioteca subterrània* és la seva segona novel·la.
+:::
+
+:::frame{slot="praise"}
+*Premi a la Primera Novel·la*
+:::
+```
+
+El text es compon amb la tipografia del llibre: els estils de paràgraf, els estils de caràcter i les fonts. Sis estils de paràgraf són propis de la coberta, i el llibre els pot redefinir: `cover-title`, `cover-subtitle`, `cover-author` i `cover-spine`, i per al catàleg de la col·lecció (més avall) `cover-catalogue` i `cover-catalogue-current`. La coberta i el llom que el Markdown deixa buits prenen el títol, el subtítol i l'autor de les metadades del llibre, amb aquests estils, cada vegada que es compon: no es copien mai al text de la coberta. Un marc `front` o `spine` els substitueix pel seu propi text.
+
+Un marc per a un buit que el plec no té (una solapa en un plec sense solapes, una contracoberta en una guarda) es deixa fora, i la revisió ho indica; un segon marc per al mateix buit també es deixa fora. Escriu el text de la coberta amb paràgrafs i estils de paràgraf: un títol `#` pren el disseny que el llibre dona als títols de capítol.
+
+Un mateix text de coberta serveix per a totes les versions i tots els plecs. Un llibre en diverses llengües pot donar a cada llengua el seu.
+
+### Un text per a un sol plec
+
+Un marc que anomena un plec amb `sheet` es compon només en aquell plec, i allà ocupa el seu buit per davant d'un marc que no n'anomena cap. Així, un cartoné sota sobrecoberta pot portar a la tapa només el nom de la col·lecció, mentre la coberta de la sobrecoberta conserva el títol de les metadades:
+
+```md
+:::frame{slot="front" sheet="case"}
+**Biblioteca del Mar**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*De l'arxiu de l'editorial*
+:::
+```
+
+`sheet` admet els noms de `cover.sheets`, un o diversos separats per espais (`sheet="case jacket"`). Un marc per a `cover` arriba també al folre de les tapes d'un cartoné, que respon tant a `case` com a `cover`, mentre que un per a `case` arriba només a aquest folre; un per a `endpapers` arriba a les dues guardes. Un marc buit per a un plec, tancat de seguida (`:::frame{slot="back" sheet="case"}` seguit de `:::`), deixa aquella zona en blanc en aquell plec: pren el buit al marc comú a tots els plecs i no hi posa res. A la coberta o al llom també impedeix el títol que hi posarien les metadades. Un nom que no és de cap plec es notifica (`coverFrameSheetUnknown`), i un marc que no anomena cap altre plec es deixa fora.
+
+### El catàleg de la col·lecció
+
+`::catalogue`, en una línia pròpia dins d'un marc, compon per ordre els títols de `production.collection.catalogue`, un paràgraf cadascun: el número, un espai de mig quadratí i el títol. Els títols van en `cover-catalogue`, al cos del text i alineats a l'esquerra, i el del mateix llibre (`collection.volume`) en `cover-catalogue-current`, en negreta.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**A la mateixa col·lecció**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`: l'estil de comptador dels números: `1` (el per defecte), `01`, `I`, `i`, `A`, `a`, o `none` per a títols sense número.
+- `first` i `last`: el primer i l'últim títol que es componen, pel seu lloc comptant des d'1, per repartir una llista llarga entre les dues guardes. Cada títol conserva el número del seu lloc a la llista completa.
+
+Un llibre la col·lecció del qual no té catàleg no rep res en el seu lloc.
+
+## Les revisions
+
+En compondre una coberta s'informa del que no s'ha pogut fer com es demanava. El Sandbox ho mostra a les **Revisions** del tauler Coberta, la línia d'ordres ho imprimeix i `buildCover` ho retorna a `issues`:
+
+<table>
+  <thead>
+    <tr><th>Tipus</th><th>Què ha passat</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>La versió anomena un perfil d'enquadernació que el llibre no té.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>El format o el llom queden fora del que admet l'<code>accepts</code> del perfil.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>L'ISBN no és vàlid: la longitud o el dígit de control són incorrectes. La coberta va sense codi de barres.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>El llom es va fixar a mà; es donen l'amplada calculada i la que s'ha fet servir.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>L'arrodoniment a plecs sencers afegeix pàgines en blanc.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>El llom fa menys de <code>minSpine</code> i va sense text. En una tapa dura compta el llom del folre de les tapes, dos cartrons més ample que les pàgines.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>Una caixa de text té un nom que la coberta no admet.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>El text de la coberta omple un buit que el plec no té, o el mateix buit dues vegades.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Un marc del text de la coberta anomena un plec que no existeix (<code>sheet="…"</code>).</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>La sang en mirall ha deixat fora imatges que no ha pogut llegir, o no arriba a la vora del plec.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>Les imatges retallades a un contorn s'han dibuixat senceres.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>El codi de barres es va demanar per sota del 80 % i va al 80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>El llibre no té aquesta versió, o la versió no té aquest plec.</td></tr>
+  </tbody>
+</table>
+
+Les revisions de la configuració també llegeixen `production` i `cover` com qualsevol altre paràmetre: una clau desconeguda, un valor del tipus equivocat o un ISBN que no és vàlid es notifiquen amb el seu camí. Cada disseny de `cover.sheets` es revisa com el de la mateixa coberta, i també es notifiquen un nom de plec que no és cap dels sis, uns `columns`, `first` i `last` d'un element de catàleg que no són nombres enters des d'1, un `gap` negatiu i un `collection.volume` que no anomena cap títol del catàleg.
+
+El PDF de la coberta passa pel mateix [preflight](/ca/docs/configuration-pdf-output) que el del llibre: la resolució de les imatges, el negre, la cobertura de tinta, els acabats i les planxes tècniques.
+
+## Al Sandbox
+
+El tauler **Coberta**, a la barra lateral, reuneix les versions impreses i la seva coberta:
+
+- **Versions**: **Afegeix rústica** o **Afegeix cartoné**, i després el nom de cada versió, l'enquadernació, l'ISBN, el complement i l'ISBN de l'obra, les solapes o la sobrecoberta, el material de les tapes, el llom que dona la impremta, el sentit del text del llom i el llom més estret que l'admet. **Mides d’aquesta versió** substitueix les del perfil només per a aquella versió.
+- **Plec**: quin plec es mostra (coberta, sobrecoberta, guarda davantera o posterior), amb les pàgines, el llom i la mida.
+- **Disseny sobre el plec**: **Edita sobre el plec** converteix el plec en el dissenyador. Les caixes de text, les caixes de color, els vels, les imatges, els logotips i els acabats s'afegeixen des de la seva barra i s'arrosseguen i es redimensionen sobre el plec, ajustant-se als plegats, a les àrees segures i entre si (Alt desactiva l'ajust). Les fletxes mouen l'element seleccionat 1 mm, i 10 mm amb Maj. **Capes** enumera els elements sota el text, les caixes de text, els elements sobre el text, els logotips i els acabats, i els ordena. Els camps de l'element seleccionat en fixen la posició, el color, l'opacitat, com omple una imatge la seva caixa, el radi de les cantonades, la vora, el degradat i l'ombra, què fa més enllà d'una sang en mirall, si s'escala amb la seva zona, i el traçat, el contorn o el retall. Quan es canvia el nom d'una caixa de text, el seu text es mou amb ella al Markdown de la coberta.
+- **Textos**: un editor de Markdown per zona i per caixa de text. La coberta i el llom mostren el que prenen de les metadades fins que se'ls dona **text propi**.
+- **Col·lecció**: el nom i l'ISBN de la col·lecció.
+- **Fitxers per a la impremta**: **Baixa el PDF del plec**, escrit amb la configuració de PDF del llibre (espai de color, perfil de sortida, PDF/X), i **Baixa la coberta** com a imatge.
+- **Revisions**: les revisions de més amunt.
+- **Perfils d’impremta**: perfils d'enquadernació copiats d'un dels que porta Postext i ajustats a les mides d'una impremta, cada mida en mil·límetres, com a proporció del format o per graons de format, amb el que en resulta per a aquest llibre; perfils de paper amb el proveïdor i el nom comercial; i **Exporta els perfils** i **Importa perfils** per al fitxer `.postext-production.json`.
+
+Els dissenys de cada plec, els textos d'un sol plec, l'element de catàleg i el volum de la col·lecció també s'editen al tauler Coberta.
+
+El grup **Disseny de coberta** del tauler Disseny reuneix els fons, la imatge, l'alineació del text de les zones, la mida del codi de barres i la sang en mirall. Cada canvi al tauler Coberta és un pas de l'historial de desfer.
+
+Les imatges d'una coberta sovint arriben com a fitxers d'impremta. El tauler Recursos llegeix un PDF, o un fitxer d'Illustrator desat amb compatibilitat PDF, com una imatge per pàgina a 300 ppp sobre fons transparent, i els fitxers TIFF i PSD a la seva mida completa. Un fitxer EPS no es llegeix: el tauler demana que es desi com a PDF.
+
+## Des de la línia d'ordres
+
+`postext cover` compon un plec d'una versió:
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` tria la versió (la primera per defecte) i `--sheet` el plec (`cover`, `jacket`, `endpaper-front` o `endpaper-back`). Un camí que acaba en `.png`, `.jpg` o `.webp`, o `--format`, pinta una zona en lloc del PDF: la coberta, tret que `--zone` n'anomeni una altra (`back`, `spine`, `flapFront`, `flapBack`, o `sheet` per al plec sencer). Les opcions del PDF (`--color-space`, `--pdfx`, `--profile` i les altres) s'apliquen com a `postext pdf`. Vegeu [Línia d'ordres](/ca/docs/command-line).
+
+## Des del codi
+
+`postext/production` conté tota la cadena de la coberta. `buildCover` rep la configuració del llibre, una versió, les pàgines maquetades (per al llom), el Markdown de la coberta, les metadades i els recursos, i retorna la coberta com un document d'una pàgina:
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` dona la mida del plec i les zones en mm, `cover.sheets` tots els plecs de la versió amb el llom i `cover.issues` les revisions. `pages` també pot ser un nombre de pàgines, totes en el paper del llibre.
+
+La resta del mòdul exposa cada pas:
+
+- **ISBN**: `parseIsbn` llegeix i comprova un ISBN, `isbnBarcodeSvg` en dibuixa el codi de barres EAN-13 amb complement, i `ean13CheckDigit` i `isbnCaption` fan la resta.
+- **Mides i plecs**: `resolveBindingMeasures` calcula les mides d'un perfil per a un format, `resolveLength` una mida i `checkProfileAccepts` els límits; `spineFromRuns`, `pageRunsOf`, `signaturePages` i `leafMm` el llom; `softcoverSheet`, `caseSheet`, `jacketSheet` i `endpaperSheet` cada plec, i `versionSheets` els d'una versió.
+- **El disseny**: `coverPage` compon la plantilla de pàgina d'un plec, `coverSource` el Markdown amb què es maqueta, `coverZoneBox` la caixa d'una zona, `placeCoverElement` i `coverElementRect` la posició d'un element, i `basicShape`, `pathData` i `flattenCoverPath` les seves formes; `coverSheetNames` i `coverDesignFor` el disseny que pren un plec, i `withCatalogue` i `expandCatalogueText` les imatges i les línies del catàleg.
+- **Perfils i configuració**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` i `readProductionConfig`, que llegeix un bloc `production` de dades no fiables i informa del que ha descartat.
+- **Folio**: `folioOfBook` dona la configuració de Folio amb l'enquadernació de la primera versió, i `productionFolioBinding` i `folioVersionOf` la d'una versió triada.
+
+## En un fitxer `.postext`
+
+Un paquet porta els paràmetres `production` i `cover` a la configuració i el text de la coberta com a `cover.md`, al costat dels capítols. Una llengua amb un text de coberta propi el porta com a `cover/<llengua>.md`. `openBundle` (de `postext/bundle`) el retorna com a `coverMarkdown`, i `createBundle` el rep de la mateixa manera. Vegeu [Paquets](/ca/docs/configuration-bundles).
+
+## Folio i EPUB
+
+La vista Folio enquaderna el llibre com la seva primera versió: una rústica fresada o cosida com a rústica, una tapa dura com a cartoné, amb el llom de la coberta pintat al llom. Un EPUB escrit des de la línia d'ordres o des del Sandbox pren la coberta impresa com a imatge de coberta quan el llibre té una versió impresa i no n'indica cap altra.
+
+## Límits
+
+- El llom compta les pàgines tal com estan maquetades. Si les pàgines d'un llibre canvien després de fer la coberta, cal tornar-la a fer; el llom i totes les zones s'ajusten sols.
+- Les mides per defecte són un punt de partida tret d'especificacions publicades. Demana a la impremta les seves i desa-les en un perfil.
+- Només s'escriuen el PDF i els formats d'imatge. No s'escriu cap paquet IDML del plec de coberta.
+- Un títol `#` al text de la coberta pren el disseny dels títols de capítol del llibre; compon els títols de la coberta amb estils de paràgraf.

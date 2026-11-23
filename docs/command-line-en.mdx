@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'en',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
 };
 
@@ -163,6 +163,7 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>pdf</code></td><td>The PDF, with bookmarks, links, embedded fonts and, by default, tagged for accessibility (PDF/UA); PDF/X and CMYK for print.</td></tr>
     <tr><td><code>html</code></td><td>The pages as HTML with real text: one self-contained file, or a folder with <code>index.html</code> and <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>An EPUB 3 book, with fixed pages as printed or reflowable text.</td></tr>
+    <tr><td><code>cover</code></td><td>The print cover of one of the book's versions: the whole sheet as a PDF, or one panel of it as a picture.</td></tr>
     <tr><td><code>image</code></td><td>One page as a PNG, JPEG or WebP picture.</td></tr>
     <tr><td><code>images</code></td><td>Every page, or a range, as pictures in a folder.</td></tr>
     <tr><td><code>docx</code></td><td>The chapters as a Word document: semantic (the content alone, in plain Word styles), formatted (the same editable text with the book's design) or a page facsimile (every line in a fixed text box).</td></tr>
@@ -231,9 +232,37 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (the default) keeps every page as printed, with selectable
 text; `--layout reflowable` lets the reading system set the text again for its
 screen (see [EPUB books](/en/docs/configuration-html-folio-epub#epub-books-postext-epub)). The
-cover is the book's thumbnail unless `--cover` gives a picture. The package
+cover is the picture `--cover` gives; without it, the front of the book's print
+cover when the book has a print version, and otherwise its thumbnail. The package
 metadata (title, authors, language, identifier) comes from the first chapter's
 front matter, as in the Sandbox. Fonts marked `redistributable: false` are not copied; a family that names a `fallback` is embedded in that open family's faces under its own name (since postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+The cover sheet of one of the book's print versions (its `production`
+settings): back, spine and front, and the flaps, at the size the binding and
+the book's pages give, with the bleed and the fold marks, set from the book's
+cover design and its cover Markdown. The title, the author and the spine come
+from the book's metadata where the cover Markdown leaves them out. See
+[Print covers](/en/docs/print-covers).
+
+- `--print-version ID`: the version (`production.versions[].id`; the first by
+  default). It is not `--version`, which prints the program's version.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: the sheet (`cover` by default).
+- A path ending in `.png`, `.jpg` or `.webp`, or `--format`, paints one panel
+  instead of writing the PDF: the front cover, unless `--zone` names `back`,
+  `spine`, `flapFront`, `flapBack` or `sheet` for the whole. `--dpi` and
+  `--quality` apply as for `image`.
+- The options of `pdf` (`--pdfx`, `--profile`, `--color-space`…) apply to the PDF.
+
+The checks of the cover (a spine too thin for text, blank pages added by the
+signatures, an ISBN that does not read) are printed as warnings.
 
 ### image and images
 

@@ -18,8 +18,9 @@ const PARTS: DocPart[] = [
  *  Part I ends with the Architecture chapter and its page (3); Part II runs
  *  from Configuration (4) and the twenty pages of its reference to
  *  Comics (35), Music notation (36), Exercises (37), Composed pages (38),
- *  its page of figures (39) and Special inks and die-cuts (40). */
-const PART_ENDS = [3, 40];
+ *  its page of figures (39), Special inks and die-cuts (40) and Print
+ *  covers (41). */
+const PART_ENDS = [3, 41];
 
 export function docPart(order: number): DocPart {
   const i = PART_ENDS.findIndex((end) => order <= end);

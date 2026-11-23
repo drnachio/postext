@@ -875,6 +875,13 @@ list deliberate deviations.
   `spot.finish` or in `print.inks`. A die is config: its shape goes in `dieCuts.shapes`, and the
   Markdown only names it (`:::diecut{die=window}`) or a page template places it (`kind: 'cut'`).
   See sources.md, "Special inks and die-cuts", and configuration.md §19i.
+- Print covers (postext ≥ 1.92): a printer's cover PDF becomes `production.versions` (one per
+  binding, each with its ISBN), `cover` (art, grounds, bands placed by zone, logos, finishes) and a
+  `cover.md` of `:::frame{slot=…}` blocks for the back cover and flaps; title, subtitle, author and
+  spine come from the metadata. A case under a jacket or differing endpapers take `cover.sheets` and
+  `:::frame{… sheet="case"}`; a series list is `collection.catalogue` + `volume`, set by `::catalogue`
+  or a `catalogue` element. Put the real paper in `folio.paper` so the spine is calculated, and
+  check with `postext cover`. See sources.md, "Print covers", and configuration.md §19j.
 - Comic pictures: `scripts/comic_panels.py grid|check|contact` (read and check
   anchors and safe areas, compare pages); give every panel picture its
   `width`/`height` and `altText`.

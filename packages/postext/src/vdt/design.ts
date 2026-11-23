@@ -258,12 +258,19 @@ export interface VDTDesignBoxBlock extends VDTDesignBlockOrigin {
    *  follows the frame's rounded corners, as CSS clips a `border-left` to
    *  `border-radius`. Absent = no clip. */
   clip?: RoundedOutline;
+  /** A composed page's decoration box painted over the frames
+   *  (`DesignBoxElement.over`): painted after every frame of the page, as
+   *  an over connector's path. Absent: painted with the slot. */
+  over?: true;
 }
 
 /** Image drawn from the resource image registry (e.g. a callout icon). */
 export interface VDTDesignImageBlock extends VDTDesignBlockOrigin {
   kind: 'image';
   bbox: BoundingBox;
+  /** A composed page's decoration picture painted over the frames
+   *  (`DesignImageElement.over`). Absent: painted with the slot. */
+  over?: true;
   /** Out-of-band binary id resolved at render time (canvas registry, HTML
    *  `resourceImageUrl`, PDF resource image map). */
   fileId: string;
@@ -358,9 +365,10 @@ export interface VDTDesignPathBlock extends VDTDesignBlockOrigin {
   subpaths: VDTPathCommand[][];
   /** A page template's die-cut element (`kind: 'cut'`, #1565) while the
    *  page is laid out: its element box, the die it names, its leaves and
-   *  wrap. The layout moves it onto `VDTPage.dieCut` before the document
+   *  wrap (an emboss or deboss, #1667, its `process`). The layout moves it
+   *  onto `VDTPage.dieCut` (a relief onto `VDTPage.plates`) before the document
    *  is returned, so no finished page paints one. */
-  dieCut?: { box: BoundingBox; die?: string; leaves?: number; wrap?: false | { gap?: Dimension } };
+  dieCut?: { box: BoundingBox; process?: 'emboss' | 'deboss'; die?: string; leaves?: number; wrap?: false | { gap?: Dimension } };
   /** Fill colour; absent = no fill. */
   fill?: string;
   /** Absent: `'nonzero'`. */

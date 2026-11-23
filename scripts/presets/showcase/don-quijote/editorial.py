@@ -575,6 +575,30 @@ BACK_COVER = {
     },
 }
 
+# The print cover (#1671): the name of the one print version and the back
+# cover's text, set in the cover paragraph styles of build.py. The front and
+# the spine take the title and the author from the metadata.
+PRINT_VERSION = {"es": "Cartoné", "en": "Hardcover"}
+
+PRINT_COVER = {
+    "es": {
+        "quote": "«En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor.»",
+        "blurb": [
+            "Un hidalgo manchego pierde el juicio leyendo libros de caballerías y sale a los caminos a deshacer agravios, primero solo y después con Sancho Panza.",
+            "Este volumen contiene el prólogo y los catorce primeros capítulos del libro de 1605, sus dos primeras partes, en el texto de la edición electrónica de Project Gutenberg. Los acompañan los grabados que Gustave Doré dibujó para la edición de París de 1863, cortados en madera por Héliodore Pisan, y glosas al margen escritas para esta edición.",
+        ],
+        "imprint": "Edición de muestra de Postext · postext.dev",
+    },
+    "en": {
+        "quote": "“In a village of La Mancha, the name of which I have no desire to call to mind, there lived not long since one of those gentlemen that keep a lance in the lance-rack, an old buckler, a lean hack, and a greyhound for coursing.”",
+        "blurb": [
+            "A gentleman of La Mancha reads himself out of his wits on books of chivalry and takes to the roads to right wrongs, alone at first and then with Sancho Panza.",
+            "This volume holds the preface and the first fourteen chapters of the 1605 book, its first two parts, in John Ormsby’s translation of 1885 as published by Project Gutenberg. With them come the engravings Gustave Doré drew for the Paris edition of 1863, cut on wood by Héliodore Pisan, and margin glosses written for this edition.",
+        ],
+        "imprint": "A Postext sample edition · postext.dev",
+    },
+}
+
 CREDITS = {
     "es": [
         "**Texto.** *El ingenioso hidalgo don Quijote de la Mancha*, de Miguel de Cervantes Saavedra (1605), según la edición electrónica de Project Gutenberg (libro n.º 2000). Obra en dominio público.",

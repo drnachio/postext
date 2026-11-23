@@ -54,6 +54,7 @@ export function CutElementEditor({ raw, slotKind, siblings = [], frames = [], on
   const leaves = raw.leaves ?? die?.leaves ?? 1;
   const wrap = raw.wrap ?? die?.wrap;
   const wrapOn = wrap !== false;
+  const relief = raw.process === 'emboss' || raw.process === 'deboss';
   const gap = (wrap && wrap.gap) || DEFAULT_GAP;
   const viewBox = raw.viewBox ?? [1, 1];
 
@@ -121,6 +122,21 @@ export function CutElementEditor({ raw, slotKind, siblings = [], frames = [], on
           )}
         </>
       )}
+      <SelectInput
+        label={labels.cutElementProcess}
+        tooltip={labels.cutElementProcessTooltip}
+        value={raw.process ?? 'cut'}
+        options={[
+          { value: 'cut', label: labels.cutElementProcessCut },
+          { value: 'emboss', label: labels.coverFinishEmboss },
+          { value: 'deboss', label: labels.coverFinishDeboss },
+        ]}
+        onChange={(v) => update({ process: v === 'emboss' || v === 'deboss' ? v : undefined })}
+        isDefault={raw.process === undefined}
+        onReset={() => update({ process: undefined })}
+      />
+      {/* An emboss or a deboss goes through no leaves and keeps no text off. */}
+      {relief ? <p className="mb-2 text-xs text-(--slate) [text-wrap:pretty]">{labels.coverFinishPlateHint}</p> : <>
       <NumberInput label={labels.dieCutsLeaves} tooltip={labels.dieCutsLeavesTooltip} value={leaves}
         onChange={(v) => update({ leaves: Math.max(1, Math.floor(v)) })} min={1} max={999} step={1}
         isDefault={raw.leaves === undefined} onReset={() => update({ leaves: undefined })} />
@@ -135,6 +151,7 @@ export function CutElementEditor({ raw, slotKind, siblings = [], frames = [], on
             onReset={() => update({ wrap: undefined })} />
         </NestedGroup>
       )}
+      </>}
       {!widthTo && (
         <DimensionInput label={labels.headerFooterElementWidth} tooltip={labels.headerFooterElementWidthTooltip} value={width} onChange={(d) => updateSize({ width: d })} min={0} step={1} />
       )}

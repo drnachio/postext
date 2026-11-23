@@ -28,6 +28,8 @@ my-book.postext
 └── fonts/ebgaramond-400-normal.woff2
 ```
 
+Un libro con una copertina a stampa contiene anche il Markdown della copertina come `cover.md`, e una lingua con un testo di copertina proprio lo contiene come `cover/<language>.md`; `openBundle` lo restituisce come `coverMarkdown` e `createBundle` lo riceve allo stesso modo. La grafica della copertina e le versioni a stampa stanno nella configurazione (`cover`, `production`). Vedi [Copertine per la stampa](/it/docs/print-covers).
+
 Il manifesto è descritto campo per campo nell’appendice [Formato dei pacchetti preset](/it/docs/sandbox-embedding#formato-dei-pacchetti-preset) della Sandbox. Un file può contenere anche `layouts.json`, il numero di pagine calcolato dalla Sandbox, così lì il libro si apre già impaginato, oppure uno per ogni edizione di un libro multilingue (`layouts.zh-Hant.json`, letto per primo). `openBundle` li ignora.
 
 L’API è esportata da `postext` stesso e dal sottopercorso `postext/bundle`, che aggiunge le funzioni di basso livello. Importa da `postext` quando devi anche disegnare. In questo modo gli adattatori dei pacchetti e i renderer condividono un’unica istanza del modulo, il che conta su una CDN come esm.sh, dove ogni punto di ingresso è una build separata.

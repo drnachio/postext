@@ -43,15 +43,18 @@ import { SandboxWebMcp } from './webmcp/SandboxWebMcp.js';
 const FolioViewport = lazy(() => import('./viewport/folio/FolioViewport.js').then((m) => ({ default: m.FolioViewport })));
 // So does the EPUB writer with the EPUB tab.
 const EpubViewport = lazy(() => import('./viewport/epub/EpubViewport.js').then((m) => ({ default: m.EpubViewport })));
+const CoverPanel = lazy(() => import('./cover/panel/CoverPanel.js'));
+const CoverStage = lazy(() => import('./cover/CoverStage.js'));
 const ScormViewport = lazy(() => import('./viewport/ScormViewport.js').then((m) => ({ default: m.ScormViewport })));
 
-const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navWarnings'> = {
+const PANEL_LABEL_KEYS: Record<PanelId, 'navBooks' | 'navChapters' | 'navManuscript' | 'navResources' | 'navFonts' | 'navDesign' | 'navCover' | 'navWarnings'> = {
   projects: 'navBooks',
   chapters: 'navChapters',
   markdown: 'navManuscript',
   resources: 'navResources',
   fonts: 'navFonts',
   config: 'navDesign',
+  cover: 'navCover',
   warnings: 'navWarnings',
 };
 
@@ -189,12 +192,27 @@ function SandboxLayout({
         return <ProjectsPanel />;
       case 'chapters':
         return <ChaptersPanel />;
+      case 'cover':
+        return (
+          <Suspense fallback={null}>
+            <CoverPanel />
+          </Suspense>
+        );
       default:
         return null;
     }
   };
 
   const renderViewport = () => {
+    // The Cover panel shows the sheet it works on instead of the book (on
+    // a phone, inside the panel, which covers the preview).
+    if (activePanel === 'cover' && !compact) {
+      return (
+        <Suspense fallback={<div className="h-full w-full" style={{ backgroundColor: 'var(--surface)' }} />}>
+          <CoverStage />
+        </Suspense>
+      );
+    }
     switch (activeViewport) {
       case 'canvas':
         return <CanvasViewport />;

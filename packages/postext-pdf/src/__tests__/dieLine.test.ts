@@ -140,3 +140,51 @@ describe('die line paths', () => {
     expect(dieLinePaths(cut)).toEqual([cut.holes[0], outline]);
   });
 });
+
+// Emboss and deboss (#1667): each relief filled on a plate of its own that
+// prints nothing, beside the die line, each in its own optional content
+// group.
+describe('the relief plates', () => {
+  const withReliefs = (doc: VDTDocument, both = true): VDTDocument => {
+    doc.pages[0]!.plates = [
+      { process: 'emboss', paths: [rect(100, 100, 80, 40)], source: 'seal' },
+      ...(both ? [{ process: 'deboss' as const, paths: [rect(100, 300, 60, 30)], source: 'mark' }] : []),
+    ];
+    return doc;
+  };
+
+  it('fills each relief on its own Separation, overprinting, with its own layer', async () => {
+    const { pdf, content, bytes } = await renderInk(withCut(withReliefs(inkDocument([gold]))), { standard: 'pdfx4' });
+    const emboss = separationOf(pdf, 'Emboss')!;
+    const deboss = separationOf(pdf, 'Deboss')!;
+    expect(emboss).toBeDefined();
+    expect(deboss).toBeDefined();
+    expect(separations(pdf).get(emboss)!.c1).toEqual([1, 0, 0, 0]);
+    expect(separations(pdf).get(deboss)!.c1).toEqual([0, 0, 1, 0]);
+    const at = content.indexOf(`/${emboss} cs\n1 scn`);
+    expect(at).toBeGreaterThan(0);
+    const ops = content.slice(content.lastIndexOf('\nq\n', at));
+    expect(ops.slice(0, ops.indexOf('\nQ\n'))).toMatch(/\nf$/);
+    const report = await inspectPrintPdf(bytes);
+    expect(report.layers).toEqual(['Die line', 'Emboss', 'Deboss']);
+    expect(report.color.spots).toEqual(['Deboss', 'Die', 'Emboss', 'Gold']);
+    const gs = /\/(\S+) gs/.exec(ops)![1]!;
+    expect(extGStates(pdf).get(gs)!.lookup(PDFName.of('OP'))?.toString()).toBe('true');
+  });
+
+  it('draws a relief on a page without a die-cut, and leaves it out with output: none', async () => {
+    const only = await renderInk(withReliefs(inkDocument([]), false), { standard: 'pdfx4' });
+    expect(separationOf(only.pdf, 'Emboss')).toBeDefined();
+    expect(separationOf(only.pdf, 'Die')).toBeUndefined();
+    const none = await renderInk(withReliefs(inkDocument([]), false), { standard: 'pdfx4', dieLine: { output: 'none' } });
+    expect(separationOf(none.pdf, 'Emboss')).toBeUndefined();
+    const plain = await renderInk(inkDocument([]), { standard: 'pdfx4' });
+    expect(none.bytes).toEqual(plain.bytes);
+  });
+
+  it('writes no optional content in PDF/X-1a', async () => {
+    const { pdf } = await renderInk(withReliefs(inkDocument([])), { standard: 'pdfx1a' });
+    expect(separationOf(pdf, 'Deboss')).toBeDefined();
+    expect(pdf.catalog.get(PDFName.of('OCProperties'))).toBeUndefined();
+  });
+});

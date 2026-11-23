@@ -135,6 +135,7 @@ export function withActiveEdition(record: ProjectRecord, locale: string): Projec
     activeChapterId: record.activeChapterId,
     ...(record.canvasScope ? { canvasScope: record.canvasScope } : {}),
     ...(record.start ? { start: record.start } : {}),
+    ...(record.coverMarkdown ? { coverMarkdown: record.coverMarkdown } : {}),
     config: record.config,
     resources: record.resources,
   };
@@ -156,6 +157,8 @@ export function withActiveEdition(record: ProjectRecord, locale: string): Projec
   else delete next.canvasScope;
   if (target.start) next.start = target.start;
   else delete next.start;
+  if (target.coverMarkdown) next.coverMarkdown = target.coverMarkdown;
+  else delete next.coverMarkdown;
   if (title) {
     if (title.description !== undefined) next.description = title.description;
     else delete next.description;

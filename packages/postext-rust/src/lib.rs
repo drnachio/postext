@@ -138,6 +138,8 @@ root! {
     html(book: impl Into<Books>) -> Html;
     /// [`Postext::epub`] with the default client.
     epub(book: impl Into<Books>) -> Epub;
+    /// [`Postext::cover`] with the default client.
+    cover(book: impl Into<Books>) -> Cover;
     /// [`Postext::images`] with the default client.
     images(book: impl Into<Books>) -> Images;
     /// [`Postext::docx`] with the default client.

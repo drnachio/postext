@@ -8,7 +8,13 @@ import type { Dimension } from './page.js';
  *  decoration and puts it on the page's `dieCut`, mirrored on the other
  *  side of the leaf. Its outline is the die shape `die` names stretched to
  *  the element's box, else the path data `d` in `viewBox` units, else the
- *  box itself. */
+ *  box itself.
+ *
+ *  With `process` `'emboss'` or `'deboss'` (#1667) it is the shape of a
+ *  relief die instead of a hole: nothing is cut, text is not kept clear
+ *  of it, and the outline goes on the page's technical plates
+ *  (`VDTPage.plates`), which the PDF fills on a plate of its own that
+ *  prints nothing, as the die line. */
 export interface DesignCutElement {
   kind: 'cut';
   id: string;
@@ -33,12 +39,18 @@ export interface DesignCutElement {
   /** Text keeps `gap` clear of the hole (default: the die's, else 3 mm);
    *  `false` lets it run under. */
   wrap?: false | { gap?: Dimension };
+  /** What the die does: `'cut'` (default) a hole through the leaf;
+   *  `'emboss'` raises the paper in the shape, `'deboss'` presses it in.
+   *  An emboss or deboss reads no `leaves` and no `wrap`. */
+  process?: 'cut' | 'emboss' | 'deboss';
 }
 
 /** What a cut element carries past its outline (#1565): the die it names,
  *  its leaves and its wrap, as written (the die's fill in where it sets
  *  none, when the page's die-cuts are stamped). */
 export interface ResolvedDesignCut {
+  /** A relief die (`DesignCutElement.process`); absent: a hole. */
+  process?: 'emboss' | 'deboss';
   die?: string;
   leaves?: number;
   wrap?: false | { gap?: Dimension };

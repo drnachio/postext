@@ -1,0 +1,78 @@
+---
+title: "A cover in gold foil, spot varnish and emboss"
+summary: "A paperback of Manrique's Coplas with spot gloss over the painting, a foil cartouche on an embossed panel and a blind emboss, each on its own plate."
+plain: "A small book of a Spanish poem and the printer's sheet for its cover. Parts of the cover are finished after printing: a shiny coat on the picture, a gold frame in foil and shapes raised from the board."
+description: "Spot varnish, foil and emboss on a book cover in Postext: finishes over shapes of the design, spot plates in a PDF/X-4 file and an Emboss plate."
+question: "How do I add spot varnish, foil and an embossed title to a book cover?"
+aliases: ["spot UV", "spot varnish", "hot foil", "foil stamping", "emboss", "blind emboss", "deboss", "cover finishes", "barniz a registro", "estampación en oro", "gofrado"]
+pageNotes: { "28": "The cover sheet laid flat. On the left the back cover, bottle green, with three lines of the poem in ochre italics, two paragraphs on Rodrigo Manrique and the translation, and the ISBN barcode on a white plate at the foot. A narrow spine lettered in small capitals. On the right the front cover, a painting of a ruined castle on a crag at sunset above a river with poplars and a boat in the reeds; across its middle a dark green cartouche with hollow corners and a double gold frame holds the title Coplas, the subtitle and the author. Crop and fold marks run round the sheet." }
+---
+
+## What you'll build
+
+Jorge Manrique's *Coplas* on the death of his father, in Longfellow's translation (the Spanish edition sets the original), as a paperback of 125 × 200 mm, and the cover sheet that goes to the finisher once the four colours are printed. Three finishes are laid on it. A spot gloss varnish covers the painting above and below the title panel. The double frame of the cartouche is stamped in gold foil, and the panel inside it is embossed, so the title stands on a raised field. On the back a lozenge is blind-embossed: no ink, only the board pressed up. Under the book the pen draws the sheet four times: as it prints, with the varnish and foil plates in false colour, under a raking light, and as the Emboss plate a die-maker cuts from. The PDF is PDF/X-4 with a plate for each of them.
+
+## Method
+
+### 1 · Each finish follows a shape of the design
+
+The code is [the short answer](#the-short-answer) above. A finish names a process, an ink when the process prints one, and a shape: an element of the cover (`{ element: 'cartouche' }`), a box in one of its zones, or an outline inside a box. The varnish and the foil are spot inks with a `finish` in the palette, so each gets a plate of its own in the PDF and the preflight lists them. The emboss prints nothing. It goes on a technical plate the press file names Emboss, the one the die-maker works from, and nothing of it is painted on the page.
+
+The varnish is two boxes, one above the panel and one below, each stopping 4 mm short of it, so the varnish never lies on the foil. The back and the spine stay matt. The book is 27 pages on 120 g/m² wove at a bulk of 2.2, 32 pages once bound in 16-page signatures, which gives a spine of 4.7 mm. That is under the 6 mm a spine is lettered from by default, so the version sets `spineText.minSpine` to 4.5. The ISBN is a sample number, assigned to no book.
+
+### 2 · The cartouche is a path of the design, not a picture
+
+<Excerpt region="art" />
+
+The foil and the emboss take exactly the outline of the element they name, so the frame has to be a shape whose path the engine knows. A cover path is a list of closed contours whose nodes are fractions of the element's box, with in and out handles for curves. Each hollow corner is a quarter circle turned inwards, drawn as a cubic. A ring is an outer contour plus an inner one run the other way round: with the nonzero rule the hole between them stays empty. Two rings make the double frame. The frame has the panel's colour, so in four colours it prints nothing; the foil plate carries it. The emblem on the back is a saved outline, two lozenges, the smaller one reversed.
+
+### 3 · The cover's type
+
+<Excerpt region="cover-type" />
+
+`cover-title`, `cover-subtitle`, `cover-author` and `cover-spine` are the names `buildCover` gives the metadata it places; `cover-quote`, `cover-blurb` and `cover-note` are named in the cover Markdown. The front is centred on its height (`verticalAlign`), which puts the title inside the cartouche whatever the size of its type.
+
+### 4 · The book block
+
+<Excerpt region="pages" />
+
+Half title, title page, rights, then the poem from a recto 46 mm down, set as verse that keeps each stanza on one page. The running heads carry the author on the verso and the title on the recto. The colophon closes the book on the last recto.
+
+### 5 · The sheet is built from the laid-out pages
+
+<Excerpt region="sheet" />
+
+`buildCover` takes the pages, the metadata and the cover Markdown and returns a document for `buildDocumentWithFonts`, plus the barcode as an SVG. The barcode's digits ask for OCR-B, which no font server has, so the pen sets them in Alegreya Sans SC, already loaded.
+
+### 6 · What each plate covers
+
+<Excerpt region="views" />
+
+`renderPageToCanvas` has three ways of painting finishes. `flat` paints the inks as the press lays them: the foil in its colour, the varnish not at all. `map` fades the sheet and marks each special plate in false colour. `sheen` rakes a light across the sheet, so the varnish and the foil catch it. The emboss is on none of the three, since it prints nothing; the fourth view draws the page's technical plates (`page.plates`) in black over a faded sheet, the outlines the PDF fills on its Emboss separation. The line under the views reads the spot inks from `preflightDocument` and the processes from the plates.
+
+## Variations
+
+### Deboss the emblem
+
+A deboss presses the shape into the board instead of raising it, and goes on a Deboss plate of its own.
+
+```diff
+-    { id: 'emblem', process: 'emboss', shape: { outline: emblem,
++    { id: 'emblem', process: 'deboss', shape: { outline: emblem,
+```
+
+### Varnish the whole painting
+
+One finish on the painting's element replaces the two boxes. The varnish then runs over the panel and the title as well.
+
+```diff
+-    ...[[-3, 76], [127, 76]].map(([y, height], i) => ({ id: `gloss-${i + 1}`, process: 'varnish',
+-      ink: col('varnish'), shape: { box: { zone: 'front', x: 0, y, width: 128, height } } })),
++    { id: 'gloss', process: 'varnish', ink: col('varnish'), shape: { element: 'art' } },
+```
+
+## Pitfalls
+
+- An emboss or deboss closer than 3 mm to the trim or to a fold is flagged by the preflight (`reliefTrim`, `reliefFold`): the board cracks there. Keep reliefs off the spine folds.
+- The emboss is never painted on screen. Check it in the PDF's Emboss separation, or draw `page.plates` as the pen does.
+- A finish laid over a frame of text covers its lines in the views and in the press file alike. Leave some of the text clear of the foil, as the title here sits in the cartouche's hole.

@@ -79,7 +79,7 @@ export function createProjectActions(deps: ProjectActionDeps): ProjectActions {
       dispatch({ type: 'UPDATE_CONFIG', payload: { customFonts: config.customFonts } });
     }
     if (wantsResources) dispatch({ type: 'SET_RESOURCES', payload: record.resources });
-    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId, ...(record.canvasScope ? { canvasScope: record.canvasScope } : {}), ...(record.start ? { start: record.start } : {}) };
+    const book: BookContent = { chapters: record.chapters, activeChapterId: record.activeChapterId, ...(record.canvasScope ? { canvasScope: record.canvasScope } : {}), ...(record.start ? { start: record.start } : {}), ...(record.coverMarkdown ? { coverMarkdown: record.coverMarkdown } : {}) };
     if (wantsMarkdown) dispatch({ type: 'SET_BOOK', payload: book });
     clearMeasurementCache();
     saveProjectId(record.id);

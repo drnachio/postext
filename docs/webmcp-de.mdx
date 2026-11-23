@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: ein Agent bei der Arbeit in der Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'Was ein KI-Agent im Browser mit den 64 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
+  description: 'Was ein KI-Agent im Browser mit den 71 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
-  lastUpdated: '2026-11-12',
-  readingTime: '12 min',
-  order: 53,
+  lastUpdated: '2026-11-23',
+  readingTime: '13 min',
+  order: 54,
   plainSummary: "Diese Seite ist für alle, die einen KI-Helfer für sich an einem Buch in der Sandbox arbeiten lassen möchten. Solange die Sandbox geöffnet ist, gibt sie dem Helfer eine Reihe von Werkzeugen: um jede Seite anzusehen, die Gestaltung zu ändern, den Text zu bearbeiten, Bilder und Tabellen hinzuzufügen, Probleme zu finden und Dateien zu speichern. Sie bitten mit Ihren eigenen Worten, zum Beispiel „mach die Schrift etwas größer und prüf, ob das Buch noch auf 40 Seiten passt“, und der Helfer setzt die Werkzeuge ein und zeigt Ihnen die Seiten. Alles bleibt in Ihrem Browser. Die Seite erklärt, wie Sie einen Helfer verbinden, was er tun kann und wie jedes Werkzeug aufgerufen wird.",
 };
 
@@ -24,7 +24,7 @@ Oberfläche: Er liest das Buch, fordert ein Bild von Seite 12 an, setzt
 gewachsen ist, und nimmt die Änderung zurück. Er tut, was Sie mit dem Auge tun,
 und er tut es mit Ihrem Buch, in Ihrem Browser.
 
-Solange die Sandbox auf dem Bildschirm ist, sind 64 Werkzeuge registriert,
+Solange die Sandbox auf dem Bildschirm ist, sind 71 Werkzeuge registriert,
 deren Namen mit `sandbox_` beginnen; dazu kommen auf jeder Seite von
 postext.dev 8 Werkzeuge der Website, `site_*`. Diese Seite ordnet sie nach den
 Aufgaben, die Sie einem Agenten stellen würden, und zeigt für jedes den Aufruf.
@@ -41,7 +41,7 @@ Postext muss nichts installiert oder eingerichtet werden.
 WebMCP ist noch ein Entwurf. Chrome bietet es als Origin Trial an, außerdem hinter
 dem Flag `chrome://flags/#enable-webmcp-testing`. Die Werkzeuge folgen der
 Seite: Auf der Startseite oder in der Dokumentation hat der Agent die
-Werkzeuge `site_*`; sobald die Sandbox auf dem Bildschirm ist, kommen die 55
+Werkzeuge `site_*`; sobald die Sandbox auf dem Bildschirm ist, kommen die 71
 Werkzeuge `sandbox_*` hinzu.
 
 ### In jedem anderen Browser: `window.postextWebMcp`
@@ -671,6 +671,58 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
 
 - **Gestaltungen.** `sandbox_list_designs` listet die Galerie des Bedienfelds Gestaltung (gespeicherte Gestaltungen, die mitgelieferten und die der Beispielbücher) mit ihren Teilen. `sandbox_save_design` speichert die Gestaltung eines Buchs, `sandbox_try_design` probiert eine am Buch auf dem Bildschirm aus und `sandbox_end_design_trial` behält oder verwirft sie (Verwerfen bringt nur zurück, was die Gestaltung ersetzt hat), `sandbox_apply_design` wendet eine sofort oder als Kapitelstil an, `sandbox_import_design` und `sandbox_export_design` lesen und schreiben Gestaltungsdateien, und `sandbox_delete_design` löscht eine gespeicherte. Alle nehmen `parts`, die Gruppen des Bedienfelds Gestaltung, und antworten mit den Stilen, die der Text verwendet und die der Gestaltung fehlen.
 
+### Buchumschläge
+
+Die Druckausgaben und die Gestaltung des Umschlags sind Einstellungen:
+`sandbox_set_config` schreibt `production.versions`, `production.collection`
+und `cover` (`cover.textBoxes`, `cover.elements`, `cover.finishes`,
+`cover.sheets`…). Fünf Werkzeuge lesen, schreiben und exportieren den Rest, wie
+es das Bedienfeld Umschlag tut:
+
+- `sandbox_cover_get` liest den Umschlag einer Ausgabe (`version`, standardmäßig
+  die erste) und einen ihrer Bögen (`sheet`: `cover`, `jacket`,
+  `endpaperFront` oder `endpaperBack`): die Ausgaben, Größe und Rücken des
+  Bogens in mm mit den Seiten, aus denen sie sich ergeben, das Rechteck jeder
+  Fläche, die Plätze für den Text des Umschlags mit dem Text, den jeder hat (und
+  `sheetText`, den Text, den ein Bezug, ein Schutzumschlag oder ein Vorsatz nur
+  für sich hat), die Gestaltung, mit der der Bogen gezeichnet wird
+  (`design.uses`: `book` oder der Name seiner eigenen in `cover.sheets`;
+  `design.choices`: die eigenen Gestaltungen, die er haben kann), die auf den
+  Bogen gesetzten Elemente der Gestaltung, die Reihe (`collection`) und die
+  Prüfungen.
+- `sandbox_cover_write_text` schreibt das Markdown eines Platzes, einer Fläche
+  oder eines Textfelds über seinen Namen; `text: null` entfernt es, und
+  Vorderseite und Rücken kehren zu Titel, Untertitel und Autor aus den
+  Metadaten zurück. Ein Text gilt für alle Ausgaben und Bögen; mit
+  `thisSheetOnly: true` wird er nur für einen Bezug, einen Schutzumschlag oder
+  ein Vorsatz geschrieben und tritt dort an die Stelle des gemeinsamen Texts.
+  Es ist ein Schritt im Verlauf zum Rückgängigmachen.
+- `sandbox_cover_export` schreibt den Bogen als PDF für die Druckerei
+  (`format: "pdf"`, mit den Befunden des Preflights) oder eine Fläche als JPEG
+  (`format: "jpeg"`, `zone`, `longSide`), heruntergeladen oder mit
+  `deliver: "data"` base64-kodiert zurückgegeben.
+- `sandbox_cover_sheet_design` wählt die Gestaltung, mit der ein Bogen eines
+  Hardcovers gezeichnet wird, wie es „Gestaltung dieses Bogens“ tut:
+  `design: "book"` (die Umschlaggestaltung des Buchs), `"own"` (die des Bezugs
+  oder des Schutzumschlags oder die dieses Vorsatzes allein) oder `"endpapers"`
+  (eine für beide Vorsätze), die als Kopie der des Buchs beginnt. `patch`
+  ändert dann Felder dieser Gestaltung (`background`, `image`, `elements`,
+  `textBoxes`…; `null` entfernt eines). Es ist ein Schritt im Verlauf zum
+  Rückgängigmachen.
+- `sandbox_cover_set_collection` schreibt die Reihe, zu der das Buch gehört:
+  `name`, `isbn`, `catalogue` (die Titel in ihrer Reihenfolge, jeder als
+  `{ id, title, resource? }`; ersetzt die ganze Liste) und `volume` (die
+  Kennung im Verzeichnis, die dieses Buch ist, `null` für keine). Ein
+  weggelassenes Feld bleibt, wie es ist. `::catalogue` im Text des Umschlags
+  setzt die Titel als Liste, und ein Umschlagelement der Art `catalogue` legt
+  ihre Bilder aus. Es ist ein Schritt im Verlauf zum Rückgängigmachen.
+
+```json
+{ "slot": "back", "text": "Eine Stadt, die ihre Bücher unter der Erde aufbewahrt.\n\nUnd das Mädchen, das sie laut vorliest." }
+```
+
+Siehe [Buchumschläge](/de/docs/print-covers).
+
 ### Rückfragen und Hinweise
 
 Öffnet ein Link ein Buch, von dem Sie bereits eine eigene Fassung haben, fragt
@@ -779,6 +831,8 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
 - **Ressourcen und Schriften**: `sandbox_list_resources`, `sandbox_save_resource`,
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Comics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
+- **Zusammengesetzte Seiten**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
+- **Buchumschläge**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
 - **Bücher und Dateien**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

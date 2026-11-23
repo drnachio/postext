@@ -113,7 +113,8 @@ export function normalizeBookContent(raw: unknown, deps: MigrationDeps): BookCon
   const canvasScope = raw.canvasScope === 'book' || raw.canvasScope === 'chapter' ? raw.canvasScope : undefined;
   // Where the book starts (#695), in the shape the engine takes.
   const start = bundleStart(raw.start);
-  return { chapters, activeChapterId, ...(canvasScope ? { canvasScope } : {}), ...(start ? { start } : {}) };
+  const coverMarkdown = typeof raw.coverMarkdown === 'string' && raw.coverMarkdown ? raw.coverMarkdown : undefined;
+  return { chapters, activeChapterId, ...(canvasScope ? { canvasScope } : {}), ...(start ? { start } : {}), ...(coverMarkdown ? { coverMarkdown } : {}) };
 }
 
 /** A configuration saved by postext 1.4 or earlier, pinned to the heading

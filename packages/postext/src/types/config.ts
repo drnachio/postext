@@ -12,6 +12,8 @@ import type { DieCutsConfig } from './dieCuts.js';
 import type { DiagramStyleConfig } from './resources/diagramStyles.js';
 import type { ExerciseStyleConfig, ExercisesConfig } from './boxes/exercises.js';
 import type { FolioConfig } from './output/folio.js';
+import type { ProductionConfig } from './output/production.js';
+import type { CoverConfig } from './output/cover.js';
 import type { CustomFontFamily } from './text/fonts.js';
 import type { FootnotesConfig } from './structure/footnotes.js';
 import type { LinksConfig } from './structure/links.js';
@@ -179,6 +181,18 @@ export interface PostextConfig {
 
   /** The 3D book viewer (`postext-folio`): paper, binding, surface, light. */
   folio?: FolioConfig;
+
+  /** The book's print production (#1666): its versions (binding, flaps,
+   *  ISBN), the binding and paper profiles they name, and its collection.
+   *  The book's own, never part of a design, and out of every layout: the
+   *  print covers of `postext/production` read it. */
+  production?: ProductionConfig;
+
+  /** The design of the book's print covers (#1667): grounds, pictures,
+   *  movable elements, effects, logos and finishes placed by zone, so they
+   *  follow every version's sheet. A design part of its own; out of every
+   *  layout of the book. The cover's text is its Markdown. */
+  cover?: CoverConfig;
 
   /** Die-cuts (#1565): holes through one or many leaves, rounded corners,
    *  a shaped book. Part of the layout (text wraps around a hole); the PDF

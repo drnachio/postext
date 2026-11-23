@@ -182,7 +182,7 @@ const locale = opt('--locale') ?? 'en';
 const docsFiles = readdirSync(join(ROOT, 'docs')).filter((f) => f.endsWith(`-${locale}.mdx`)).map((f) => `docs/${f}`);
 const skillDir = 'plugins/postext/skills/postext-port';
 const skillFiles = [`${skillDir}/SKILL.md`, ...readdirSync(join(ROOT, skillDir, 'references')).map((f) => `${skillDir}/references/${f}`)];
-const panelFiles = ['sidebar', 'panels', 'controls', 'frameStyles', 'labelStyles', 'templates']
+const panelFiles = ['sidebar', 'panels', 'controls', 'frameStyles', 'labelStyles', 'templates', 'cover']
   .map((d) => `packages/postext-sandbox/src/${d}`)
   .flatMap((d) => {
     try {
@@ -280,6 +280,7 @@ const PANEL_NOTED = [
   [/^Design\w+Element\.(when|unless)$/, 'FenceConditionFields.tsx, shared by every element editor'],
   [/^ElementAnchor\.at$/, 'PlacementFields.tsx (SidePointFields)'],
   [/^PageConfig\.cutLines$/, 'Print section (PrintSection.tsx)'],
+  [/^CutLinesConfig\.foldMarks$/, 'host only: coverPage sets it for a cover sheet'],
   [/^PageTemplateGrid\./, 'PageTemplatesSection: the grid is written whole'],
   [/^ComicsConfig\.(balloonStyles|panelStyles)$/, "comics sections, setComicsField(raw, '…')"],
   [/^PostextConfig\.numerals$/, 'Writing section (WritingSection.tsx)'],

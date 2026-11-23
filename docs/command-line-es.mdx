@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'es',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "Esta página es para quien quiere hacer libros con Postext desde una terminal en lugar de desde la web. Descargas un único archivo para tu ordenador y lo ejecutas, sin instalar nada más. Le das tu libro, o unos cuantos archivos de texto, y te hace un PDF, una página web, un libro electrónico, imágenes de las páginas o un documento de Word. También puede revisar un libro en busca de problemas y juntar todos sus archivos en uno. Otros programas y los asistentes de inteligencia artificial también pueden usarlo, porque sabe responder en un formato que leen con facilidad.",
 };
 
@@ -162,6 +162,7 @@ pida otro (`--locale en`).
     <tr><td><code>pdf</code></td><td>El PDF, con marcadores, enlaces, fuentes incrustadas y, por defecto, etiquetado para la accesibilidad (PDF/UA); PDF/X y CMYK para imprenta.</td></tr>
     <tr><td><code>html</code></td><td>Las páginas en HTML con texto real: un único archivo autónomo, o una carpeta con <code>index.html</code> y <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Un libro EPUB 3, de páginas fijas como las impresas o de maquetación fluida.</td></tr>
+    <tr><td><code>cover</code></td><td>La cubierta para imprenta de una de las versiones del libro: el pliego entero como PDF, o una de sus zonas como imagen.</td></tr>
     <tr><td><code>image</code></td><td>Una página como imagen PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas las páginas, o un intervalo, como imágenes en una carpeta.</td></tr>
     <tr><td><code>docx</code></td><td>Los capítulos como documento de Word: semántico (solo el contenido, en estilos de Word sencillos), maquetado (el mismo texto editable con el diseño del libro) o facsímil de páginas (cada línea en un cuadro de texto fijo).</td></tr>
@@ -234,10 +235,38 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 seleccionable; `--layout reflowable` deja que el sistema de lectura vuelva a componer el texto para
 su pantalla (consulta
 [Libros EPUB](/es/docs/configuration-html-folio-epub#libros-epub-postext-epub)). La cubierta es la
-miniatura del libro, salvo que `--cover` indique una imagen. Los metadatos del paquete (título,
+imagen que indica `--cover`; sin ella, la cubierta del pliego impreso cuando el libro tiene una
+versión impresa, y si no, su miniatura. Los metadatos del paquete (título,
 autores, idioma, identificador) salen del frontmatter del primer capítulo, como en el Sandbox. Las
 fuentes marcadas con `redistributable: false` no se copian; una familia que indica un `fallback` se
 incrusta con las variantes de esa familia abierta, bajo su propio nombre (desde postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+El pliego de cubierta de una de las versiones impresas del libro (sus ajustes
+`production`): contracubierta, lomo y cubierta, y las solapas, al tamaño que dan
+la encuadernación y las páginas del libro, con el sangrado y las marcas de
+plegado, compuesto con el diseño de cubierta del libro y su Markdown de cubierta.
+El título, el autor y el lomo salen de los metadatos del libro donde el Markdown
+de la cubierta no los pone. Véase [Cubiertas para imprenta](/es/docs/print-covers).
+
+- `--print-version ID`: la versión (`production.versions[].id`; la primera por
+  defecto). No es `--version`, que imprime la versión del programa.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: el pliego (`cover` por defecto).
+- Una ruta que termina en `.png`, `.jpg` o `.webp`, o `--format`, pinta una zona
+  en lugar de escribir el PDF: la cubierta, salvo que `--zone` nombre `back`,
+  `spine`, `flapFront`, `flapBack` o `sheet` para el pliego entero. `--dpi` y
+  `--quality` funcionan como en `image`.
+- Las opciones de `pdf` (`--pdfx`, `--profile`, `--color-space`…) se aplican al PDF.
+
+Las revisiones de la cubierta (un lomo demasiado fino para llevar texto, páginas en
+blanco añadidas por los pliegos, un ISBN que no es válido) se imprimen como avisos.
 
 ### image e images
 

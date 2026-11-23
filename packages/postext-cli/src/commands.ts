@@ -64,7 +64,7 @@ export const HTML_OPTIONS: OptionSpec[] = [
 
 export const EPUB_OPTIONS: OptionSpec[] = [
   { name: 'layout', kind: 'string', arg: 'fixed|reflowable', help: 'Fixed pages as printed, or reflowable text (default fixed)' },
-  { name: 'cover', kind: 'string', arg: 'FILE', help: 'Cover picture (default: the book\'s thumbnail)' },
+  { name: 'cover', kind: 'string', arg: 'FILE', help: 'Cover picture (default: the front of the print cover when the book has a print version, else the book\'s thumbnail)' },
 ];
 
 export const IMAGE_OPTIONS: OptionSpec[] = [
@@ -76,7 +76,7 @@ export const IMAGE_OPTIONS: OptionSpec[] = [
 
 /** The parts of a design, as the engine's DESIGN_PARTS lists them (a test
  *  pins the two together; the help loads no engine). */
-export const DESIGN_PART_NAMES = ['page', 'writing', 'colors', 'text', 'composition', 'headings', 'lists', 'figures', 'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'advanced'];
+export const DESIGN_PART_NAMES = ['page', 'writing', 'colors', 'text', 'composition', 'headings', 'lists', 'figures', 'callouts', 'exercises', 'comics', 'running', 'parts', 'output', 'folio', 'cover', 'advanced'];
 
 const PAGES_HELP = 'Pages as printed ("3", "7-9", "iv") or by position ("#1", "#10-#20"), comma separated';
 
@@ -108,6 +108,23 @@ export const COMMANDS: CommandSpec[] = [
     examples: ['postext epub book.postext -o book.epub', 'postext epub book.postext --layout reflowable'],
     canvas: true,
     run: () => import('./commands/epub'),
+  },
+  {
+    name: 'cover',
+    summary: 'Typeset the print cover of a version: the sheet as a PDF, or the front cover as an image',
+    usage: 'postext cover <input…> [--print-version ID] [--sheet cover|jacket|endpaper-front|endpaper-back] [-o cover.pdf | -o front.png]',
+    description: 'The cover sheet of one of the book\'s print versions (its production settings): back, spine and front (and the flaps) at the size the binding and the book\'s pages give, with the bleed and the fold marks, set from the book\'s cover design and its cover Markdown; the title, the author and the spine come from the book\'s metadata when the cover Markdown leaves them out. A path ending in .png, .jpg or .webp (or --format) paints one panel of it, the front cover unless --zone names another.',
+    options: [
+      OUT,
+      { name: 'print-version', kind: 'string', arg: 'ID', help: 'The print version (production.versions[].id; default: the first)' },
+      { name: 'sheet', kind: 'string', arg: 'NAME', help: 'cover (default), jacket, endpaper-front or endpaper-back' },
+      { name: 'zone', kind: 'string', arg: 'NAME', help: 'For an image: front (default), back, spine, flapFront, flapBack, or sheet for the whole' },
+      ...PDF_OPTIONS,
+      ...IMAGE_OPTIONS,
+    ],
+    examples: ['postext cover book.postext -o cover.pdf', 'postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf', 'postext cover book.postext -o front.jpg --dpi 300'],
+    canvas: true,
+    run: () => import('./commands/cover'),
   },
   {
     name: 'image',

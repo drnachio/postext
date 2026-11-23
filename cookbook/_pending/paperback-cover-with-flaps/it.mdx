@@ -1,0 +1,64 @@
+---
+title: "Una brossura con alette, il dorso ricavato dalle pagine"
+summary: "Una brossura di 120 × 190 mm con alette di 60 mm: si compongono le pagine e buildCover ne ricava il foglio di copertina, con un dorso spesso quanto la carta."
+plain: "Un tascabile con due leggende di Bécquer e il foglio della sua copertina come va in tipografia: quarta, dorso, prima e le due alette in un solo pezzo. Il dorso è largo quanto sono spesse le pagine, quindi si calcola dal libro stesso."
+description: "Una brossura con alette in Postext: profilo di legatura, codice a barre ISBN e un dorso calcolato da pagine e carta, con il testo di copertina in Markdown."
+question: "Come faccio il foglio di copertina di una brossura con alette, con il dorso calcolato dal numero di pagine?"
+aliases: ["foglio di copertina", "alette", "spessore del dorso", "codice a barre ISBN", "quarta di copertina", "brossura fresata", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "Il foglio di copertina steso: a sinistra l’aletta posteriore sulle traduttrici, poi la quarta con il testo e un codice a barre ISBN su un riquadro bianco, il dorso scritto dal basso verso l’alto, la prima con una cappella in rovina dipinta su un colle sotto una cresta innevata e il titolo sopra, e a destra l’aletta anteriore con una nota sull’autore. Tutt’intorno i segni di taglio e di piega." }
+---
+
+## Che cosa comporrai
+
+Due leggende di Bécquer, *The Spirits’ Mountain* e *The Emerald Eyes* (*El monte de las ánimas* e *Los ojos verdes*), in un tascabile di 120 × 190 mm con alette di 60 mm, e il foglio su cui si stampa la sua copertina. Postext compone prima le 37 pagine: occhiello, frontespizio, colophon dei diritti, indice, una carta di titolo per ogni leggenda e il testo in Crimson Pro 11/15,2. Poi `buildCover` prende quelle pagine e monta il foglio: aletta posteriore, quarta con il testo di presentazione e il codice a barre, dorso, prima con il dipinto di una cappella in rovina ai piedi del Moncayo, aletta anteriore. Titolo, sottotitolo e autore vengono dai metadati del libro, il testo delle alette da un file Markdown a parte.
+
+## Preparazione
+
+### 1 · La legatura dà le alette, la carta dà il dorso
+
+Il codice è [la risposta breve](#la-risposta-breve) qui sopra. Il profilo di legatura descrive come lavora il legatore: brossura fresata con PUR in segnature da 16 pagine, alette di 60 mm, 3 mm di abbondanza e mezzo millimetro in più sul dorso per la colla. La versione porta l’ISBN e il suo complemento di cinque cifre; l’ISBN è un numero d’esempio, non assegnato a nessun libro. Lo spessore del dorso non è scritto da nessuna parte. Le 37 pagine si arrotondano a tre segnature, 48 pagine o 24 carte, e ogni carta di una carta da 100 g/m² con mano 2,4 è spessa 240 µm: 24 × 0,24 + 0,5 dà un dorso di 6,3 mm. Di norma un dorso sotto i 6 mm non porta scritte (`spineText.minSpine`), ed è per questo che il libro è stampato su carta di molta mano.
+
+### 2 · Prima le pagine
+
+<Excerpt region="pages" />
+
+Il blocco del libro è un normale documento Postext, e ogni sua pagina conta per il dorso. Le pagine preliminari usano stili di titolo i cui disegni collocano il titolo, il filetto e la sigla editoriale ad altezze fisse della pagina. Ogni leggenda ha la sua carta di titolo (quella a cui rimanda l’indice) e ricomincia sulla pagina dispari seguente, 40 mm più in basso. Cambia il corpo o i margini e cambia il numero di pagine; il dorso lo segue alla composizione successiva.
+
+### 3 · Gli stili della copertina stanno con quelli del libro
+
+<Excerpt region="cover-type" />
+
+Il foglio si compone con la configurazione del libro, quindi i suoi stili di paragrafo stanno nella stessa lista di quelli dei diritti e del colophon. `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine` sono i nomi che `buildCover` dà ai metadati che colloca; `cover-blurb`, `cover-note`, `flap-head` e `flap-text` li nomina il Markdown della copertina. Sul fondo notturno il testo va in bandiera, senza sillabazione, nell’avorio e nell’oro della tavolozza.
+
+### 4 · Il foglio nasce dalle pagine composte
+
+<Excerpt region="sheet" />
+
+`buildCover` riceve le pagine, i metadati e il Markdown della copertina, con un `:::frame` per la quarta e uno per ciascuna aletta. Restituisce un documento che `buildDocumentWithFonts` compone come qualsiasi altro, più il codice a barre in un file SVG. Le cifre del codice chiedono l’OCR-B, che nessun server di caratteri offre, perciò l’esempio le compone in Josefin Sans, un carattere che il PDF incorpora già. Il PDF contiene le 37 pagine e dopo il foglio nel suo formato, il file che una tipografia si aspetta.
+
+## Varianti
+
+### Scrivi il dorso dall’alto verso il basso
+
+I libri inglesi e americani si leggono sul dorso dall’alto verso il basso; il valore predefinito, dal basso verso l’alto, segue l’uso continentale.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Stampa su una carta più sottile
+
+A 80 g/m² con mano 2,2 la carta è spessa 176 µm, il dorso scende a 4,7 mm e perde la scritta, che chiede 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Errori frequenti
+
+- Nell’elenco delle pagine catturate il foglio viene dopo quelle del libro, quindi il suo numero è il numero di pagine del libro più uno. Se il libro guadagna una pagina, il numero cambia.
+- Un codice a barre le cui cifre chiedono un carattere che il PDF non trova fa fallire l’esportazione. Carica il suo SVG con una `font-family` che l’esempio ha già.

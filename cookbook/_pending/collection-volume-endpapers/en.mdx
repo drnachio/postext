@@ -1,0 +1,79 @@
+---
+title: "A volume of a collection, the series on its endpapers"
+summary: "Volume XI of a twelve-volume hardcover series: two ISBNs by the barcode, a case design shared by every volume, and endpapers that show the whole collection."
+plain: "One hardcover from a series of twelve, with its printer's sheets: the case in the series' colours with the volume's number, and the two endpapers inside its boards, which show the covers and titles of all twelve books."
+description: "A collection volume in Postext: production.collection prints the work's ISBN by the barcode, and ::catalogue sets the series on the endpapers."
+question: "How do I print a volume of a collection with the work's ISBN and its other titles on the endpapers?"
+aliases: ["series", "collection", "multi-volume work", "set ISBN", "endpapers", "pastedown", "flyleaf", "case binding", "catalogue", "guardas", "obra completa"]
+pageNotes: { "27": "The case laid flat on an oxblood ground: the back cover with a gold series line, the blurb and the barcode on a pale label with the line for the work's ISBN above it, the spine lettered from bottom to top between two gold bands with the number XI in a ring at its foot, and the front with the title, the series name, the author, a painting of a pale soldier and a man in black at a hospital gate in a gold frame, and the number XI in a gold ring.", "28": "The front endpaper: on the left page, in the case's oxblood, the paintings of volumes I to VI in two columns of three; on the right page, on a pale ochre ground, the series name, a line on the first edition and the titles I to VI, centred and numbered in roman figures.", "29": "The back endpaper: on the left page, on the ochre ground, the series name, a note and the titles VII to XII, with volume XI in dark red; on the right page, in oxblood, the paintings of volumes VII to XII, the one of volume XI framed in gold." }
+---
+
+## What you'll build
+
+*The Deceitful Marriage*, the eleventh of Cervantes' twelve *Exemplary Novels*, as volume XI of a series that prints one novella per hardcover. The 26 pages are set in Crimson Pro 11/15.2 on a 120 × 185 mm page. `buildCover` then makes three sheets for the binder from them: the printed case, in the series' oxblood with a gold frame round the painting and the number in a gold ring, and the front and back endpapers, which share the collection between them: volumes I to VI open the book and VII to XII close it, each half as paintings on the pastedown and as a numbered list on the flyleaf. Beside the barcode, which carries the volume's ISBN, the case prints the ISBN of the complete work.
+
+## Method
+
+### 1 · The collection is data of the book
+
+The code is [the short answer](#the-short-answer) above. `production.collection` holds the series: its name, its ISBN, a `catalogue` with an id, a title and a picture for each volume, and `volume`, the id of the entry that is this book. The collection's `isbn` is what Postext prints beside the barcode: a line in black 6.5 pt over the bars, "ISBN of the complete work", in the book's language. A version that names a `workIsbn` of its own prints that one instead. Both ISBNs are sample numbers in the 978-84-0000 block, assigned to no book. The configuration checks report a `volume` that is not in the catalogue and a collection ISBN whose check digit is wrong.
+
+### 2 · One livery for every volume
+
+<Excerpt region="livery" />
+
+The design of the case is the same object on every volume of the series; only `VOLUME`, the painting and the texts change. Each item is placed by the zone it stands in, so when another volume has more pages and a thicker spine the front moves with its panel. On the spine, `basis` records the 10 mm spine the bands were drawn on, and a spine of 8.3 mm or 14 mm stretches the bands to its width and keeps the badge on its centre line. The caption over the barcode is set in black, so the barcode sits on a pale label.
+
+### 3 · Each endpaper has a design of its own
+
+<Excerpt region="endpapers" />
+
+`cover.sheets` gives a sheet a design in place of the cover's: here `endpaperFront` and `endpaperBack`, each with its ground, the pastedown in the case's colour, and a `catalogue` element. The element is a box in a zone that the engine fills with the pictures of the titles from `first` to `last`, `columns` across with `gap` mm between them, each picture covering its cell. The title whose id is `collection.volume` is outlined with the element's `stroke`; on these endpapers that is the gold frame round volume XI. The livery stays off the endpapers, as each sheet draws only its own design. Opening the front of the book the pastedown is the left page, and at the back it is the right one, so the pictures always lie on the board.
+
+The titles come from the cover's Markdown, which serves every sheet. A frame that names its sheets goes only on those:
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+:::paragraphs{style="ad-head"}
+Exemplary Novels
+:::
+
+::catalogue{numbers="I" first=7 last=12}
+:::
+```
+
+`::catalogue` stands for the titles of the catalogue, one paragraph each: the place in the counter style that `numbers` names, an en space and the title. The lines take the paragraph style `cover-catalogue`, and this volume's `cover-catalogue-current`; the pen restyles both, centred in Crimson Pro, the current one in dark red. The back cover's frame names `case jacket`, so the endpapers leave it out.
+
+### 4 · Three sheets from one book
+
+<Excerpt region="sheets" />
+
+The same call with `sheet: 'cover'`, `'endpaperFront'` and `'endpaperBack'` makes the case and the two endpapers, each a document of one page at its own size. The 26 pages round up to two 16-page signatures, 16 leaves of 240 µm; with 0.5 mm of allowance the block is 4.3 mm thick and the case spine 8.3 mm, two boards of 2 mm added. The lettering is checked against the case's spine, which is wider than the 6 mm minimum. The PDF holds the 26 pages, then the case and the endpapers.
+
+## Variations
+
+### Wrap the case in a dust jacket
+
+On a case, `flaps` adds a jacket, a fourth sheet with flaps of its own. The barcode and the work's ISBN move to the jacket's back cover, and the blurb, whose frame names `jacket`, goes with them.
+
+```diff
+   versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
+-    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000' }],
++    binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000', flaps: true }],
+```
+
+### Set the next volume
+
+For volume XII the design stays as it is: `VOLUME` names the catalogue entry in `collection.volume`, so the badge, the gold frame on the endpapers and the highlighted title follow it. The cover's Markdown, the painting and the ISBN are that volume's.
+
+```diff
+-const VOLUME = 11; // this book's place in the collection
++const VOLUME = 12; // this book's place in the collection
+```
+
+## Pitfalls
+
+- The sheets come after the book's pages in the captured list: the case is page 27, the book's count plus one. A change that adds a page to the book moves them.
+- The Cookbook's `contentInConfig` check counts the line `buildCover` prints over the barcode as text kept in a design. The pen lists it in `checks.contentInConfig.allow`, worded by `workIsbnCaption`, the function the engine uses.
+- A `catalogue` element draws the pictures only. The list of titles is the Markdown's `::catalogue`, so a sheet without that line shows the paintings with no names under them.
+- The barcode's digits name OCR-B, which no font server has. Load the barcode with a `font-family` the pen already loads, or the PDF fails.

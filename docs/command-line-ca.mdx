@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'ca',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
 };
 
@@ -166,6 +166,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>pdf</code></td><td>El PDF, amb marcadors, enllaços, fonts incrustades i, per defecte, etiquetat per a l'accessibilitat (PDF/UA); PDF/X i CMYK per a impremta.</td></tr>
     <tr><td><code>html</code></td><td>Les pàgines en HTML amb text real: un fitxer autònom, o una carpeta amb <code>index.html</code> i <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Un llibre EPUB 3, amb pàgines fixes com les impreses o amb text adaptable.</td></tr>
+    <tr><td><code>cover</code></td><td>La coberta per a impremta d'una de les versions del llibre: el plec sencer com a PDF, o una de les seves zones com a imatge.</td></tr>
     <tr><td><code>image</code></td><td>Una pàgina com a imatge PNG, JPEG o WebP.</td></tr>
     <tr><td><code>images</code></td><td>Totes les pàgines, o un interval, com a imatges en una carpeta.</td></tr>
     <tr><td><code>docx</code></td><td>Els capítols com un document de Word: semàntic (només el contingut, en estils de Word senzills), maquetat (el mateix text editable amb el disseny del llibre) o facsímil de pàgines (cada línia en un quadre de text fix).</td></tr>
@@ -239,9 +240,37 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 seleccionable; `--layout reflowable` deixa que el sistema de lectura torni a
 compondre el text per a la pantalla (vegeu
 [Llibres EPUB](/ca/docs/configuration-html-folio-epub#llibres-epub-postext-epub)). La coberta
-és la miniatura del llibre, tret que indiquis una imatge amb `--cover`. Les metadades
+és la imatge que indiquis amb `--cover`; sense aquesta opció, la coberta del plec imprès
+quan el llibre té una versió impresa, i si no, la miniatura del llibre. Les metadades
 del paquet (títol, autors, llengua, identificador) surten del frontmatter del
 primer capítol, com al Sandbox. Les fonts marcades `redistributable: false` no es copien; una família que indica un `fallback` s'incrusta amb les cares d'aquesta família oberta, però amb el nom original (des de postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+El plec de coberta d'una de les versions impreses del llibre (la seva configuració
+`production`): contracoberta, llom i coberta, i les solapes, a la mida que donen
+l'enquadernació i les pàgines del llibre, amb la sang i les marques de plegat,
+compost amb el disseny de coberta del llibre i el seu Markdown de coberta. El
+títol, l'autor i el llom surten de les metadades del llibre allà on el Markdown de
+la coberta no els posa. Vegeu [Cobertes per a impremta](/ca/docs/print-covers).
+
+- `--print-version ID`: la versió (`production.versions[].id`; la primera per
+  defecte). No és `--version`, que imprimeix la versió del programa.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: el plec (`cover` per defecte).
+- Un camí que acaba en `.png`, `.jpg` o `.webp`, o `--format`, pinta una zona en
+  lloc d'escriure el PDF: la coberta, tret que `--zone` anomeni `back`, `spine`,
+  `flapFront`, `flapBack` o `sheet` per al plec sencer. `--dpi` i `--quality`
+  funcionen com a `image`.
+- Les opcions de `pdf` (`--pdfx`, `--profile`, `--color-space`…) s'apliquen al PDF.
+
+Les revisions de la coberta (un llom massa prim per portar text, pàgines en blanc
+afegides pels plecs, un ISBN que no és vàlid) s'imprimeixen com a avisos.
 
 ### image i images
 

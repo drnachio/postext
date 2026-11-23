@@ -1,0 +1,503 @@
+{/* docs/print-covers-fr.mdx */}
+
+export const metadata = {
+  title: 'Couvertures imprimées',
+  sidebarTitle: 'Couvertures imprimées',
+  description: "Les versions imprimées d’un livre, chacune avec sa reliure, son ISBN et son dos ; les profils de reliure et de papier de l’imprimeur ; la feuille de couverture avec ses rabats, sa jaquette, sa couverture de cartonnage et ses gardes ; la maquette de la couverture et ses finitions ; son texte en Markdown ; et la couverture depuis le Sandbox, la ligne de commande et le code",
+  lang: 'fr',
+  lastUpdated: '2026-11-23',
+  readingTime: '19 min',
+  order: 41,
+  plainSummary: "Cette page traite de la couverture d’un livre imprimé : la feuille qui enveloppe les pages, avec la quatrième de couverture, le dos et la première, parfois des rabats, une jaquette ou des gardes. Un livre peut s’imprimer en plusieurs versions, par exemple un broché et un relié, et chaque version a sa propre reliure et son propre ISBN. Postext calcule la largeur du dos d’après le nombre de pages et le papier, et monte la feuille au format dont l’imprimeur a besoin, avec le fond perdu et les repères de pli. La maquette de la couverture se trouve dans les réglages et ses textes dans un document Markdown ; le titre et l’auteur viennent des informations du livre lui-même. La page montre comment faire tout cela dans le Sandbox, en ligne de commande et depuis le code.",
+};
+
+# Couvertures imprimées
+
+**Les versions imprimées d’un livre se trouvent dans ses réglages `production` ; la maquette de la couverture est le réglage `cover` ; son texte est un document Markdown du livre.**
+
+Les pages d’un livre sont une chose, la feuille qui les enveloppe en est une autre. La feuille de couverture est plus large que deux pages : elle porte côte à côte la quatrième de couverture, le dos et la première de couverture, parfois des rabats, et elle change à chaque réimpression qui modifie le nombre de pages ou le papier. Postext la construit à partir de trois parties du livre :
+
+- **La production** : les versions sous lesquelles le livre s’imprime (un broché, un relié), chacune avec sa reliure, son ISBN et son dos. Elle appartient au livre, pas à sa maquette, et rien dans la mise en page des pages ne la lit.
+- **La maquette de la couverture** : fonds, images, aplats, logos, blocs de texte et finitions, placés sur les panneaux de la feuille. Elle fait partie de la maquette, commune à toutes les versions du livre et aux livres d’une collection.
+- **Le texte de la couverture** : un document Markdown avec un bloc par panneau. La première de couverture et le dos qu’il laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur des métadonnées du livre, si bien qu’un titre corrigé arrive sur la couverture sans qu’on le recopie.
+
+À partir de ces trois parties, la couverture est mise en page par le même moteur que les pages, et le PDF part chez l’imprimeur avec le fond perdu et les repères de pli de la feuille.
+
+## Versions d’un livre
+
+Une version est le livre tel qu’une reliure le fabrique. Un roman publié en broché et en relié a deux versions sur les mêmes pages : chacune a sa reliure, son ISBN et sa feuille de couverture.
+
+```ts
+import type { PostextConfig } from 'postext';
+
+const config: PostextConfig = {
+  page: { width: { value: 150, unit: 'mm' }, height: { value: 230, unit: 'mm' } },
+  folio: { paper: { type: 'uncoated', grammage: 90, bulk: 1.3 } },
+  production: {
+    versions: [
+      { id: 'paperback', name: 'Broché', binding: 'perfect', isbn: '978-84-0000-000-4', flaps: true },
+      {
+        id: 'hardcover', name: 'Relié', binding: 'case-flat', isbn: '978-84-0000-001-1',
+        flaps: true, // sur un cartonnage : une jaquette
+        caseMaterial: 'cloth',
+        spineText: { direction: 'topToBottom' },
+      },
+    ],
+  },
+};
+```
+
+Chaque version désigne sa reliure par l’id d’un profil, ou porte le profil lui-même. Les champs :
+
+- `id` et `name` : comment la version se choisit (`--print-version` en ligne de commande) et s’affiche.
+- `binding` : un profil de reliure (voir plus bas).
+- `isbn` : l’ISBN de cette version, ISBN-10 ou ISBN-13, avec ou sans tirets. Chaque reliure d’un livre a le sien. Un ISBN valide s’imprime en code-barres sur la quatrième de la feuille la plus extérieure : la jaquette d’un cartonnage qui en porte une, sinon la couvrure ou la couverture souple.
+- `isbnAddOn` : cinq chiffres imprimés après le code-barres. En Espagne, il ne porte pas de prix : l’agence ISBN ne l’autorise que s’il commence par 9, pour l’usage propre de l’éditeur (`90000` signifie sans prix).
+- `workIsbn` : l’ISBN de l’œuvre entière, pour un volume d’une collection ou d’une œuvre en plusieurs volumes. Le code-barres porte l’`isbn` du volume ; celui-ci s’imprime en texte à côté. À défaut, c’est l’`isbn` de la collection qui s’y imprime.
+- `flaps` : sur une couverture souple, des rabats ; sur un cartonnage, une jaquette.
+- `caseMaterial` : sur un cartonnage, `printed` (la couverture imprimée et pelliculée sur les cartons, par défaut) ou `cloth` (toile marquée, en général sous une jaquette).
+- `overrides` : des mesures en mm que cette version fixe elle-même par-dessus celles de son profil, quand l’imprimeur demande un autre mors pour ce seul livre.
+- `spineOverride` : le dos en mm tel que le donne l’imprimeur, à la place du dos calculé.
+- `spineText` : le sens du titre au dos : `direction` montant (`bottomToTop`, l’usage courant en Espagne et la valeur par défaut) ou descendant (`topToBottom`, ce que préfère la norme ISO 6357), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
+
+`production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre :
+
+```ts
+production: {
+  collection: {
+    name: 'Bibliothèque de la mer',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Récifs', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Marées', resource: 'cover-tides' },
+      { id: 'abyss', title: 'L’Abîme', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name` : le nom de la collection.
+- `isbn` : l’ISBN de l’œuvre entière, imprimé en texte à côté du code-barres d’une version qui ne donne pas de `workIsbn` à elle.
+- `catalogue` : les titres de la collection dans l’ordre, chacun avec un `id`, un `title` et une image `resource` facultative (en général sa première de couverture). `::catalogue` dans le texte de la couverture les compose en lignes, et un élément `catalogue` de la maquette en images, sur les gardes ou en quatrième.
+- `volume` : l’`id` de l’entrée du catalogue qui correspond à ce livre, mise en évidence partout où le catalogue est composé. Les vérifications de la configuration signalent un `volume` qui ne nomme aucune entrée.
+
+### Profils de reliure
+
+Un profil de reliure décrit la façon dont relie un imprimeur : un type de reliure, ses mesures et ce qu’il sait fabriquer. Postext fournit un profil générique par type, sur des cahiers de 16 pages :
+
+<table>
+  <thead>
+    <tr><th>Id</th><th>Type</th><th>Ce que c’est</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>perfect</code></td><td><code>perfect</code></td><td>Une couverture souple collée au dos (dos carré collé, PUR ou colle à chaud). Elle accepte des dos de 3 à 50 mm.</td></tr>
+    <tr><td><code>sewn-softcover</code></td><td><code>sewnSoftcover</code></td><td>Une couverture souple sur des cahiers cousus.</td></tr>
+    <tr><td><code>case-flat</code></td><td><code>caseFlat</code></td><td>Un cartonnage à dos plat.</td></tr>
+    <tr><td><code>case-round</code></td><td><code>caseRound</code></td><td>Un cartonnage à dos rond.</td></tr>
+  </tbody>
+</table>
+
+Les mesures de ces profils viennent des spécifications publiées par des imprimeurs et des relieurs ; là où elles divergent, la valeur que donnent la plupart d’entre eux. Elles servent de point de départ. Celles d’un imprimeur précis vont dans un profil du livre, dans `production.bindings`, qui voyage avec le livre : un paquet ouvert ailleurs le retrouve ainsi.
+
+```ts
+production: {
+  bindings: [{
+    id: 'my-printer-perfect',
+    name: 'Dos carré collé, mon imprimeur',
+    printer: 'Gráficas Ejemplo',
+    style: 'perfect',
+    signature: 32,
+    measures: { bleed: 5, hingeScore: 7, flapWidth: { ratio: 0.6, of: 'width', min: 70, max: 110 } },
+    accepts: { trim: { max: { width: 240, height: 320 } }, spine: { min: 4, max: 45 } },
+  }],
+  versions: [{ id: 'paperback', name: 'Broché', binding: 'my-printer-perfect' }],
+},
+```
+
+- `style` : `perfect`, `sewnSoftcover`, `caseFlat` ou `caseRound`.
+- `signature` : le nombre de pages par cahier. Le nombre de pages est arrondi à des cahiers entiers pour le dos, et la vérification indique combien de pages blanches cela ajoute.
+- `measures` : celles qui manquent prennent les valeurs par défaut du type.
+- `accepts` : le plus petit et le plus grand format rogné (`trim.min`, `trim.max`, chacun avec une largeur `width` et une hauteur `height` en mm) et le dos le plus mince et le plus épais (`spine.min`, `spine.max`) que l’imprimeur sait relier. Un livre hors de ces limites reçoit une vérification plutôt qu’une couverture que personne ne peut relier.
+
+Chaque mesure est en mm et s’écrit de l’une de trois façons, pour qu’un seul profil serve à tous les formats :
+
+- **Un nombre** : la même valeur pour tout format (une chasse de 3 mm).
+- **Des paliers** : une liste de `{ upTo: { width, height }, mm }` ; le premier palier dont le `upTo` contient le format s’applique, et le dernier, sans `upTo`, vaut pour tout format plus grand. Un imprimeur qui épaissit le carton sur les grands livres l’écrit ainsi.
+- **Une part du format** : `{ ratio, of, min, max }`, une proportion de la largeur (`width`, par défaut) ou de la hauteur (`height`) du format rogné, maintenue entre `min` et `max`. Les rabats s’écrivent en général ainsi.
+
+<table>
+  <thead>
+    <tr><th>Mesure</th><th>S’applique à</th><th>Ce que c’est</th><th>Par défaut</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>spineAllowance</code></td><td>toutes</td><td>S’ajoute à l’épaisseur des pages : colle, couture et, sur une couverture souple, le carton de couverture qui l’entoure.</td><td>0,5</td></tr>
+    <tr><td><code>bleed</code></td><td>couverture souple</td><td>Fond perdu autour de la feuille de couverture.</td><td>3</td></tr>
+    <tr><td><code>hingeScore</code></td><td>couverture souple</td><td>Distance des rainages de charnière à chaque pli du dos (0 : rainé seulement au dos).</td><td>6</td></tr>
+    <tr><td><code>flapWidth</code></td><td>couverture souple</td><td>Largeur de chaque rabat.</td><td>2/3 de la largeur, 65 au moins</td></tr>
+    <tr><td><code>flapFoldInset</code></td><td>couverture souple</td><td>De combien chaque panneau de couverture est plus étroit que le format rogné, pour que le rabat se plie juste en deçà de la gouttière.</td><td>2</td></tr>
+    <tr><td><code>board</code></td><td>cartonnage</td><td>Épaisseur du carton.</td><td>2 jusqu’à 150 × 230, 2,5 jusqu’à 216 × 280, 3 au-delà</td></tr>
+    <tr><td><code>square</code></td><td>cartonnage</td><td>La chasse : de combien les cartons dépassent les pages en tête, en pied et en gouttière.</td><td>3</td></tr>
+    <tr><td><code>joint</code></td><td>cartonnage</td><td>Le mors, l’espace de charnière entre chaque carton et le dos.</td><td>7</td></tr>
+    <tr><td><code>turnIn</code></td><td>cartonnage</td><td>Le rempli de la matière de couverture rabattue autour des cartons.</td><td>15</td></tr>
+    <tr><td><code>boardSetback</code></td><td>cartonnage</td><td>De combien chaque carton est coupé plus étroit que le format rogné côté dos, avant d’ajouter la chasse en gouttière.</td><td>7</td></tr>
+    <tr><td><code>caseSpineAllowance</code></td><td>cartonnage</td><td>S’ajoute aux pages et aux deux cartons pour la largeur du carton de dos.</td><td>0</td></tr>
+    <tr><td><code>roundSpineAllowance</code></td><td>cartonnage à dos rond</td><td>S’ajoute au dos plat du cartonnage pour l’arrondi.</td><td>3</td></tr>
+    <tr><td><code>jacketFoldAllowance</code></td><td>jaquette</td><td>Largeur en plus à chaque pli de gouttière, pour le carton qu’elle enveloppe.</td><td>3</td></tr>
+    <tr><td><code>jacketFlapWidth</code></td><td>jaquette</td><td>Largeur de chaque rabat de la jaquette.</td><td>2/3 de la largeur, 80 au moins</td></tr>
+    <tr><td><code>jacketBleed</code></td><td>jaquette</td><td>Fond perdu autour de la jaquette.</td><td>3</td></tr>
+    <tr><td><code>endpaperGlueStrip</code></td><td>gardes</td><td>Bande de colle le long du pli, collée sur les pages.</td><td>5</td></tr>
+    <tr><td><code>endpaperBleed</code></td><td>gardes</td><td>Fond perdu en tête, en pied et en gouttière (aucun au pli).</td><td>3</td></tr>
+    <tr><td><code>safeMargin</code></td><td>toutes</td><td>Zone gardée libre de texte à l’intérieur de chaque pli, rainage, mors et coupe.</td><td>5</td></tr>
+    <tr><td><code>designMargin</code></td><td>toutes</td><td>Jusqu’où la maquette se dessine au-delà de la coupe avant qu’un fond perdu en miroir prenne le relais (voir plus bas).</td><td>5</td></tr>
+  </tbody>
+</table>
+
+### Le papier et le dos
+
+Le dos est l’épaisseur des pages plus la marge de la reliure. Un feuillet (deux pages) est aussi épais que le grammage de son papier multiplié par sa main, en micromètres : 90 g/m² avec une main de 1,3 donnent un feuillet de 0,117 mm. Les pages sont celles du livre mis en page, arrondies à des cahiers entiers. Chaque page compte sur son propre papier : le papier du livre est `folio.paper`, et une suite de pages sur un autre papier (un bloc `:::paper`, un cahier de hors-texte sur papier couché) compte avec le sien, selon la même règle que celle dont [Folio](/fr/docs/configuration-html-folio-epub) se sert pour montrer le livre.
+
+Le dos suit donc le livre. Quand une modification ajoute un cahier, le dos grandit, la feuille s’élargit, et chaque élément placé sur la première ou la quatrième de couverture se déplace avec son panneau. Quand l’imprimeur mesure une maquette en blanc et donne un chiffre, `spineOverride` le fixe, et la vérification note les deux valeurs. Un dos plus étroit que `spineText.minSpine` ne porte pas de texte.
+
+Un papier du livre peut aussi se garder comme profil, dans `production.papers` : le papier que connaît Folio (`type`, `grammage`, `bulk`, son fini et sa teinte) avec un `id`, un `name`, son fournisseur `supplier` et son nom commercial `commercialName`.
+
+### Des profils d’un livre à l’autre
+
+Les profils de reliure et de papier passent d’un livre à l’autre, et d’une personne à l’autre, sous forme de fichier `.postext-production.json`. `exportProductionProfiles(papers, bindings)` en écrit un, et `importProductionProfiles(data)` le relit, avec les problèmes des entrées qu’il a écartées. Le panneau Couverture du Sandbox propose les deux sous forme de boutons.
+
+## La feuille et ses panneaux
+
+La feuille se compose de panneaux, appelés zones, placés côte à côte ; chacun est ce que devient cette partie de la feuille une fois pliée :
+
+<table>
+  <thead>
+    <tr><th>Feuille</th><th>Zones, de gauche à droite</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Couverture souple</td><td><code>flapBack</code> (avec rabats), <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code> (avec rabats)</td></tr>
+    <tr><td>Cartonnage</td><td><code>back</code>, <code>jointBack</code>, <code>spine</code>, <code>jointFront</code>, <code>front</code>, avec le rempli tout autour</td></tr>
+    <tr><td>Jaquette</td><td><code>flapBack</code>, <code>back</code>, <code>spine</code>, <code>front</code>, <code>flapFront</code></td></tr>
+    <tr><td>Garde</td><td><code>pastedown</code>, <code>hinge</code>, <code>flyleaf</code></td></tr>
+  </tbody>
+</table>
+
+Une version à couverture souple a une seule feuille, sa couverture. Un cartonnage a sa couvrure, une jaquette quand `flaps` est activé, et une garde avant et une garde arrière. Un livre composé de droite à gauche (ou relié à droite : un livre chinois ou japonais vertical, ou avec `page.binding: 'right'`) a sa feuille en miroir : la première de couverture à gauche, la quatrième à droite. Dans un livre vertical, le texte de chaque zone est composé en lignes verticales ; celui du dos descend le long du dos sans rotation, et `spineText.direction` ne s'applique pas.
+
+Chaque zone contient une zone de sécurité, à `safeMargin` de chaque pli et de chaque coupe, et le dos a sa propre marge, plus étroite, sur sa largeur. Le Sandbox dessine les plis, les rainages et les zones de sécurité sur la feuille ; le PDF dessine les repères de pli dans la zone de contrôle, hors du fond perdu.
+
+## La maquette de la couverture
+
+Le réglage `cover` est la maquette de la couverture. Comme le reste de la maquette, il ne dit pas ce qu’on lit sur la couverture, seulement son apparence, et il ne change pas la mise en page des pages :
+
+```ts
+cover: {
+  background: { hex: '#1f3f99', model: 'hex' },
+  image: { resourceId: 'cover-art', area: 'front', focus: { x: 0.5, y: 0.35 } },
+  zones: { spine: { hex: '#14295f', model: 'hex' } },
+  verticalAlign: { front: 'bottom', back: 'middle' },
+  barcodeMagnification: 0.9,
+  mirrorMargin: 5,
+},
+```
+
+- `background` : le fond de toute la feuille.
+- `image` : une ressource bitmap ou SVG du livre qui remplit toute la feuille (`area: 'sheet'`, par défaut) ou seulement la première de couverture (`'front'`), recadrée pour la couvrir autour de `focus` (en fractions de l’image).
+- `zones` : un fond par zone, par-dessus le fond de la feuille et son image.
+- `verticalAlign` : où se place le texte de chaque zone : `top` (par défaut), `middle` ou `bottom`. Le texte du dos est toujours centré dans sa largeur.
+- `barcodeMagnification` : la taille du code-barres par rapport à la taille nominale, de 0,8 à 2 (1 par défaut). En dessous de 0,8, il est fixé à 0,8 et la vérification le signale.
+- `mirrorMargin` : le fond perdu en miroir (voir plus bas).
+
+### Éléments, effets et logos
+
+Par-dessus les fonds, la maquette place trois listes d’éléments, chacune dessinée de l’arrière vers l’avant : `elements` sous le texte, `effects` par-dessus, et `logos` au-dessus de tout. Un élément est une image (`kind: 'image'` avec un `resourceId`), un aplat de couleur (`'box'`), une forme de couleur (`'shape'`) ou le catalogue de la collection (`'catalogue'`, plus bas), et a un `id` fait de lettres, de chiffres, de `-` et de `_`.
+
+Un élément se place par rapport à la zone où il se trouve : il se déplace donc avec cette zone quand le dos grandit ou que la reliure change.
+
+```ts
+elements: [
+  { id: 'band', kind: 'box', zone: 'back', x: -3, y: 180, width: 0, height: 24,
+    to: { zone: 'front', x: 153 }, color: { hex: '#d8a21b', model: 'hex' } },
+  { id: 'seal', kind: 'shape', zone: 'front', x: 100, y: 20, width: 30, height: 30,
+    basis: { width: 150, height: 230 }, color: { hex: '#ffffff', model: 'hex' }, opacity: 0.8,
+    path: [{ closed: true, nodes: [{ x: 0.5, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }] }] },
+],
+logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8, height: 12,
+  resourceId: 'logo', clearance: 2 }],
+```
+
+- `zone`, `x`, `y`, `width`, `height` : son cadre, en mm depuis le coin supérieur gauche de la zone. Il peut déborder de la zone, sur les zones voisines ou dans le fond perdu.
+- `basis` : la taille de sa zone au moment où il a été placé. Quand la zone a maintenant une autre taille, parce que le format du livre a changé ou que le dos a grandi, l’élément suit : un aplat ou une forme sur chaque axe, une image uniformément autour de son centre, en gardant ses proportions. Sans `basis`, l’élément reste tel qu’il a été placé.
+- `to` : un aplat ou une forme qui traverse plusieurs zones, comme un bandeau de la quatrième à la première de couverture : son bord droit, en mm depuis la gauche de la zone où il se termine (`to.zone`, `to.x`), et la largeur de cette zone au moment du placement (`to.basis`). Chaque bord suit alors sa propre zone.
+- `color` et `opacity` : la couleur d’un aplat ou d’une forme, et l’opacité de tout élément (de 0 à 1). Une image garde sa propre transparence.
+- `fit` : comment une image remplit son cadre : entière à l’intérieur (`contain`, par défaut) ou en le couvrant, recadrée (`cover`).
+- `path` : une forme tracée par des nœuds, en fractions de son cadre (0, 0 son coin supérieur gauche ; 1, 1 son coin inférieur droit), si bien que la forme s’étire avec le cadre. Chaque partie a ses `nodes` et est fermée (`closed`) ou ouverte ; un nœud a `x` et `y`, et les poignées de la courbe qui y arrive (`in`) et qui en part (`out`).
+- `outline` : des polygones fermés en fractions du cadre, détourés d’après une image, pour un voile ou une finition qui en suit la forme.
+- `clip` : une image découpée selon un contour, pour qu’elle ne se montre qu’à l’intérieur de la forme propre de son illustration.
+- `bleed` : au-delà de la marge de maquette d’un fond perdu en miroir, `mirror` (par défaut) reporte l’élément en miroir avec le fond ; `own` le peint tel quel, par-dessus le pli.
+- `clearance` (logos) : l’espace de protection en mm que rien d’autre ne doit franchir autour du logo.
+
+Un aplat ou une forme peut aussi porter les effets qu’un style d’encadré de page ne sait pas dessiner : `radius` pour des coins arrondis en mm, `stroke` pour une bordure (`color` et `width` en mm), `gradient` pour un dégradé de sa couleur vers `to` à `angle` degrés (0 : de gauche à droite ; 90 : de haut en bas), et `shadow` pour une ombre (`color`, `opacity`, son décalage `x` et `y` en mm, et sa douceur, `blur`). Un dégradé ou une ombre fait de l’élément une image à part, dessinée à la résolution du PDF.
+
+Un élément `catalogue` dispose les images des titres de la collection en grille dans son cadre, pour montrer la série sur une garde sans placer chaque couverture à la main :
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns` : le nombre d’images par rangée (par défaut, tous les titres sur une rangée).
+- `gap` : l’espace entre les images, en mm (3 par défaut).
+- `first` et `last` : le premier et le dernier titre montrés, par leur rang dans le catalogue à partir de 1, pour partager un long catalogue entre deux pages (par défaut, tous).
+- `fit` : chaque image couvre sa case, recadrée (`cover`, ici la valeur par défaut), ou y tient entière (`contain`).
+- `stroke` et `radius` : la bordure qui entoure le titre du livre lui-même (`collection.volume`). Sans `stroke`, il n’est pas mis en évidence.
+
+Un titre sans `resource` laisse sa case vide, et une collection sans catalogue ne dessine rien. Avec un `basis`, les cases suivent l’échelle de la zone comme l’élément.
+
+### Fond perdu en miroir
+
+Le visuel d’une couverture s’arrête en général à la coupe, alors que le rempli d’un cartonnage la dépasse de 15 mm, autour du carton. Avec `mirrorMargin`, la maquette se dessine jusqu’à ce nombre de mm au-delà de la coupe (2 au moins), et plus loin le fond et les éléments sont reportés en miroir jusqu’au bord de la feuille : le rempli et le fond perdu prolongent ainsi l’image au lieu de laisser une bande vide. Le `designMargin` d’un profil donne la marge qu’attend un imprimeur. Un élément marqué `bleed: 'own'` n’est pas reporté en miroir.
+
+### Blocs de texte
+
+Chaque zone est un bloc de texte à elle seule. `textBoxes` ajoute des blocs placés à la main, pour une citation en travers de la première de couverture, une ligne en pied de dos ou une légende sur une image :
+
+```ts
+textBoxes: [
+  { name: 'praise', rect: { x: 18, y: 30, width: 110, height: 40 }, verticalAlign: 'middle' },
+  { name: 'spine-foot', rect: { x: 158, y: 200, width: 6, height: 25 }, rotate: -90 },
+],
+```
+
+- `name` : lettres, chiffres, `-` et `_`, et pas le nom d’une zone. Le Markdown de la couverture remplit le bloc par ce nom.
+- `rect` : sa place sur la feuille, en mm depuis le coin du fond perdu.
+- `rotate` : `-90` fait pivoter le texte d’un quart de tour pour qu’il se lise en montant le long d’un dos, `90` pour qu’il se lise en descendant.
+- `verticalAlign` : `top`, `middle` ou `bottom`.
+
+### Finitions et plaques techniques
+
+Les `finishes` sont ce que l’imprimeur ajoute après les encres, chacune sur une forme de la maquette :
+
+```ts
+finishes: [
+  { id: 'title-foil', process: 'foil', sheen: 'gloss', shape: { element: 'seal' } },
+  { id: 'spot-uv', process: 'varnish', shape: { box: { zone: 'front', x: 0, y: 0, width: 150, height: 120 } } },
+  { id: 'relief', process: 'emboss', shape: { element: 'publisher' } },
+],
+```
+
+- `process` : `varnish` (vernis) ou `foil` (dorure à chaud), imprimés sur une plaque de ton direct à part (une encre dotée d’une [finition](/fr/docs/special-inks-die-cuts#finitions)) ; ou `emboss` (gaufrage) ou `deboss` (embossage en creux), une matrice de relief.
+- `ink` : le ton direct du vernis ou de la dorure. Par défaut, un vernis est `Varnish` et une dorure `Gold foil`.
+- `sheen` : `gloss` (brillant, par défaut), `satin`, `matte` (mat) ou `softTouch` (toucher velours).
+- `shape` : ce que couvre la finition : un cadre à elle (`{ box }`, placé comme un élément), la forme d’un élément, d’un effet ou d’un logo (`{ element: id }` ; le contour d’une image quand sa ressource en a un), ou un contour enregistré dans un cadre à elle (`{ outline, box }`).
+
+Un gaufrage ou un embossage en creux n’imprime rien. Sa forme part chez l’imprimeur sur une plaque technique, à côté du [tracé de découpe](/fr/docs/special-inks-die-cuts#le-tracé-de-découpe-dans-le-pdf) : une `Separation` nommée `Emboss` ou `Deboss` que le contrôle en amont liste et qu’aucune épreuve ne peint. Le relieur en tire la matrice de relief.
+
+### Une maquette pour chaque feuille
+
+Un cartonnage se compose de plusieurs feuilles, et par défaut toutes prennent la maquette `cover` du livre. `sheets` donne à une feuille une maquette à elle, qui remplace celle du livre sur cette feuille :
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+Les feuilles se nomment :
+
+- `case` : la couvrure d’un cartonnage, par exemple une toile marquée à chaud sous une jaquette imprimée.
+- `jacket` : la jaquette.
+- `endpapers` : les deux gardes ; `endpaperFront` et `endpaperBack` : l’une d’elles, prioritaire sur `endpapers`.
+- `cover` : la couverture d’un livre à couverture souple, ou la couvrure d’un cartonnage qui n’a pas de maquette `case`.
+
+Chacune est une maquette complète, avec tous les champs de `cover` sauf `sheets`, et ne reprend rien de celle du livre : dans l’exemple, la couvrure ne montre pas l’image de la jaquette. Une feuille sans maquette à elle prend celle du livre.
+
+## Le texte de la couverture
+
+Le texte de la couverture est un document Markdown du livre, rangé à côté de ses chapitres. Chaque bloc remplit une zone ou un bloc de texte désigné par son nom :
+
+```md
+:::frame{slot="back"}
+Une ville qui garde ses livres sous terre, et la jeune fille qui les lit à voix haute.
+
+:::paragraphs{style="cover-praise"}
+« Un roman à lire d’une traite. » — *Un journal*
+:::
+:::
+
+:::frame{slot="flapFront"}
+**Ana Pérez** est née à Saragosse en 1984. *La Bibliothèque souterraine* est son deuxième roman.
+:::
+
+:::frame{slot="praise"}
+*Prix du premier roman*
+:::
+```
+
+Le texte se compose avec la typographie du livre : ses styles de paragraphe, ses styles de caractère et ses polices. Six styles de paragraphe sont propres à la couverture, et le livre peut les redéfinir : `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine`, et pour le catalogue de la collection (plus bas) `cover-catalogue` et `cover-catalogue-current`. La première de couverture et le dos que le Markdown laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur du livre tirés de ses métadonnées, composés dans ces styles : ils ne sont jamais copiés dans le texte de la couverture. Un bloc `front` ou `spine` les remplace par son propre texte.
+
+Un bloc destiné à un emplacement que la feuille n’a pas (un rabat sur une feuille sans rabats, une quatrième de couverture sur une garde) est écarté, et la vérification le signale ; un second bloc pour un même emplacement est écarté aussi. Écrivez le texte de la couverture en paragraphes et en styles de paragraphe : un titre `#` prend la maquette que le livre donne à ses titres de chapitre.
+
+Un seul texte de couverture sert à toutes les versions et à toutes les feuilles. Un livre en plusieurs langues peut en donner un à chaque langue.
+
+### Un texte pour une seule feuille
+
+Un bloc qui nomme une feuille avec `sheet` n’est mis en page que sur cette feuille, et il y prend son emplacement de préférence à un bloc qui n’en nomme aucune. Un cartonnage sous jaquette peut ainsi porter sur son plat le seul nom de la collection, tandis que la première de la jaquette garde le titre tiré des métadonnées :
+
+```md
+:::frame{slot="front" sheet="case"}
+**Bibliothèque de la mer**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*Des archives de l’éditeur*
+:::
+```
+
+`sheet` prend les noms de `cover.sheets`, un seul ou plusieurs séparés par des espaces (`sheet="case jacket"`). Un bloc pour `cover` atteint aussi la couvrure d’un cartonnage, qui répond à la fois à `case` et à `cover`, alors qu’un bloc pour `case` n’atteint que la couvrure ; un bloc pour `endpapers` atteint les deux gardes. Un bloc vide pour une feuille, refermé aussitôt (`:::frame{slot="back" sheet="case"}` suivi de `:::`), laisse cette zone nue sur cette feuille : il prend l’emplacement au bloc commun à toutes les feuilles et n’y met rien. Sur la première ou le dos, il écarte aussi le titre que les métadonnées y placeraient. Un nom qui n’est celui d’aucune feuille est signalé (`coverFrameSheetUnknown`), et un bloc qui ne nomme aucune autre feuille est écarté.
+
+### Le catalogue de la collection
+
+`::catalogue`, seul sur sa ligne dans un bloc, compose dans l’ordre les titres de `production.collection.catalogue`, un paragraphe chacun : son numéro, une espace demi-cadratin et le titre. Les titres sont composés dans `cover-catalogue`, au corps du texte et alignés à gauche, et celui du livre lui-même (`collection.volume`) dans `cover-catalogue-current`, en gras.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**Dans la même collection**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers` : le style de compteur des numéros : `1` (par défaut), `01`, `I`, `i`, `A`, `a`, ou `none` pour des titres sans numéro.
+- `first` et `last` : le premier et le dernier titre composés, par leur rang à partir de 1, pour partager une longue liste entre les deux gardes. Chaque titre garde le numéro de son rang dans la liste entière.
+
+Un livre dont la collection n’a pas de catalogue ne reçoit rien à sa place.
+
+## Les vérifications
+
+La génération d’une couverture signale ce qu’elle n’a pas pu faire comme demandé. Le Sandbox les montre dans les **Vérifications** du panneau Couverture, la ligne de commande les affiche, et `buildCover` les renvoie dans `issues` :
+
+<table>
+  <thead>
+    <tr><th>Type</th><th>Ce qui s’est passé</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>bindingProfileMissing</code></td><td>La version désigne un profil de reliure que le livre n’a pas.</td></tr>
+    <tr><td><code>profileOutOfRange</code></td><td>Le format rogné ou le dos sort de ce que permet le <code>accepts</code> du profil.</td></tr>
+    <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>L’ISBN ne se lit pas : sa longueur ou sa clé de contrôle est fausse. La couverture n’a pas de code-barres.</td></tr>
+    <tr><td><code>spineOverridden</code></td><td>Le dos a été fixé à la main ; la largeur calculée et la largeur utilisée sont indiquées toutes les deux.</td></tr>
+    <tr><td><code>signatureBlanks</code></td><td>L’arrondi à des cahiers entiers ajoute des pages blanches.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>Le dos est plus étroit que <code>minSpine</code> et ne porte pas de texte. Sur un cartonnage, c’est le dos de la couvrure qui compte, plus large que les pages de deux cartons.</td></tr>
+    <tr><td><code>coverTextBoxName</code></td><td>Un bloc de texte porte un nom que la couverture ne peut pas utiliser.</td></tr>
+    <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Le texte de la couverture remplit un emplacement que la feuille n’a pas, ou deux fois le même.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Un bloc du texte de la couverture nomme une feuille qui n’existe pas (<code>sheet="…"</code>).</td></tr>
+    <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>Le fond perdu en miroir a laissé de côté des images qu’il n’a pas pu lire, ou s’est arrêté avant le bord de la feuille.</td></tr>
+    <tr><td><code>coverClipSkipped</code></td><td>Des images découpées selon un contour ont été dessinées entières.</td></tr>
+    <tr><td><code>coverBarcodeSize</code></td><td>Le code-barres a été demandé sous 80 % et est fixé à 80 %.</td></tr>
+    <tr><td><code>coverVersionMissing</code>, <code>coverSheetMissing</code></td><td>Le livre n’a pas cette version, ou la version n’a pas cette feuille.</td></tr>
+  </tbody>
+</table>
+
+Les vérifications de la configuration lisent aussi `production` et `cover` comme n’importe quel autre réglage : une clé inconnue, une valeur du mauvais type ou un ISBN illisible sont signalés avec leur chemin. Chaque maquette de `cover.sheets` est lue comme celle de la couverture, et sont signalés aussi un nom de feuille qui n’est aucun des six, des `columns`, `first` et `last` d’un élément de catalogue qui ne sont pas des entiers à partir de 1, un `gap` négatif et un `collection.volume` qui ne nomme aucun titre du catalogue.
+
+Le PDF de la couverture passe par le même [contrôle en amont](/fr/docs/configuration-pdf-output) que celui du livre : résolution de ses images, noir, taux d’encrage, ses finitions et ses plaques techniques.
+
+## Dans le Sandbox
+
+Le panneau **Couverture**, dans la barre latérale, contient les versions imprimées et leur couverture :
+
+- **Versions** : **Ajouter un broché** ou **Ajouter un relié**, puis, pour chaque version, son nom, sa reliure, son ISBN, son complément et l’ISBN de l’œuvre, ses rabats ou sa jaquette, la matière d’un cartonnage, le dos donné par l’imprimeur, le sens du texte au dos et le dos le plus étroit qui le reçoit. **Mesures de cette version** remplace celles du profil pour cette seule version.
+- **Feuille** : la feuille affichée (couverture, jaquette, garde avant ou arrière), avec ses pages, son dos et son format.
+- **Maquette sur la feuille** : **Modifier sur la feuille** transforme la feuille en éditeur de maquette. Blocs de texte, aplats de couleur, voiles, images, logos et finitions s’ajoutent depuis sa barre, se déplacent et se redimensionnent sur la feuille, et s’aimantent aux plis, aux zones de sécurité et entre eux (Alt désactive l’aimantation). Les touches fléchées déplacent l’élément sélectionné de 1 mm, de 10 mm avec Maj. **Calques** liste les éléments sous le texte, les blocs de texte, les éléments par-dessus le texte, les logos et les finitions, et les ordonne. Les champs de l’élément sélectionné règlent sa place, sa couleur, son opacité, la façon dont une image remplit son cadre, le rayon de ses coins, sa bordure, son dégradé et son ombre, son comportement au-delà d’un fond perdu en miroir, s’il suit la taille de son panneau, et son tracé, son contour ou sa découpe. Renommer un bloc de texte déplace son texte dans le Markdown de la couverture.
+- **Textes** : un éditeur Markdown par zone et par bloc de texte. La première de couverture et le dos montrent ce qu’ils tirent des métadonnées tant qu’on ne leur donne pas un **texte propre**.
+- **Collection** : le nom et l’ISBN de la collection.
+- **Fichiers pour l’imprimeur** : **Télécharger le PDF de la feuille**, écrit avec les réglages PDF du livre (espace colorimétrique, profil de sortie, PDF/X), et **Télécharger la première de couverture** sous forme d’image.
+- **Vérifications** : les vérifications ci-dessus.
+- **Profils d’imprimeur** : des profils de reliure copiés d’un profil intégré et réglés sur les mesures d’un imprimeur, chacune en millimètres, en part du format ou par paliers de format, avec ce que cela donne pour ce livre ; des profils de papier avec leur fournisseur et leur nom commercial ; et **Exporter les profils** et **Importer des profils** pour le fichier `.postext-production.json`.
+
+Les maquettes de chaque feuille, les textes d’une seule feuille, l’élément de catalogue et le volume de la collection se modifient aussi dans le panneau Couverture.
+
+Le groupe **Maquette de couverture** du panneau Maquette contient les fonds, l’image, l’alignement du texte des zones, la taille du code-barres et le fond perdu en miroir. Chaque modification dans le panneau Couverture est une étape de l’historique d’annulation.
+
+Les images d’une couverture arrivent souvent sous forme de fichiers d’impression. Le panneau Ressources lit un PDF, ou un fichier Illustrator enregistré avec la compatibilité PDF, comme une image par page à 300 ppp sur fond transparent, et les fichiers TIFF et PSD à leur taille réelle. Un fichier EPS n’est pas lu : le panneau demande de l’enregistrer en PDF.
+
+## En ligne de commande
+
+`postext cover` compose une feuille d’une version :
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+`--print-version` choisit la version (la première par défaut), `--sheet` la feuille (`cover`, `jacket`, `endpaper-front` ou `endpaper-back`). Un chemin qui se termine par `.png`, `.jpg` ou `.webp`, ou `--format`, peint un panneau au lieu du PDF : la première de couverture, sauf si `--zone` en nomme un autre (`back`, `spine`, `flapFront`, `flapBack`, ou `sheet` pour la feuille entière). Les options PDF (`--color-space`, `--pdfx`, `--profile` et les autres) s’appliquent comme pour `postext pdf`. Voir [Ligne de commande](/fr/docs/command-line).
+
+## Depuis le code
+
+`postext/production` contient toute la chaîne de la couverture. `buildCover` prend la configuration du livre, une version, les pages mises en page (pour le dos), le Markdown de la couverture, les métadonnées et les ressources, et renvoie la couverture comme un document d’une page :
+
+```ts
+import { buildDocument } from 'postext';
+import { buildCover } from 'postext/production';
+import { renderToPdf } from 'postext-pdf';
+
+const book = buildDocument(content, config);
+const cover = buildCover({
+  config,
+  version: 'paperback',
+  pages: book.pages,
+  markdown: coverMarkdown,
+  metadata: content.metadata,
+  resources: content.resources,
+  sheet: 'cover',
+});
+if (!('config' in cover)) throw new Error(cover.issues.map((i) => i.kind).join(', '));
+
+const doc = buildDocument(cover.content, cover.config);
+const pdf = await renderToPdf([doc], {
+  fontProvider,
+  resourceBytes: (fileId) => cover.files[fileId] ?? bookFiles[fileId],
+});
+```
+
+`cover.sheet` donne le format et les zones de la feuille en mm, `cover.sheets` toutes les feuilles de la version avec leur dos, et `cover.issues` les vérifications. `pages` peut aussi être un nombre de pages, toutes sur le papier du livre.
+
+Le reste du module expose chaque étape :
+
+- **ISBN** : `parseIsbn` lit et contrôle un ISBN, `isbnBarcodeSvg` dessine son code-barres EAN-13 avec un complément, `ean13CheckDigit` et `isbnCaption` font le reste.
+- **Mesures et feuilles** : `resolveBindingMeasures` calcule les mesures d’un profil pour un format, `resolveLength` une mesure, `checkProfileAccepts` les limites ; `spineFromRuns`, `pageRunsOf`, `signaturePages` et `leafMm` le dos ; `softcoverSheet`, `caseSheet`, `jacketSheet` et `endpaperSheet` chaque feuille, et `versionSheets` celles d’une version.
+- **La maquette** : `coverPage` compose le gabarit de page d’une feuille, `coverSource` le Markdown à partir duquel elle est mise en page, `coverZoneBox` le cadre d’une zone, `placeCoverElement` et `coverElementRect` la place d’un élément, `basicShape`, `pathData` et `flattenCoverPath` ses formes ; `coverSheetNames` et `coverDesignFor` la maquette que prend une feuille, et `withCatalogue` et `expandCatalogueText` les images et les lignes du catalogue.
+- **Profils et réglages** : `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` et `readProductionConfig`, qui lit un bloc `production` depuis des données non fiables et signale ce qu’il a écarté.
+- **Folio** : `folioOfBook` donne les réglages Folio avec la reliure de la première version, et `productionFolioBinding` et `folioVersionOf` ceux d’une version choisie.
+
+## Dans un fichier `.postext`
+
+Un paquet porte les réglages `production` et `cover` dans sa configuration, et le texte de la couverture sous le nom `cover.md` à côté des chapitres. Une langue qui a son propre texte de couverture le porte sous `cover/<language>.md`. `openBundle` (de `postext/bundle`) le renvoie dans `coverMarkdown`, et `createBundle` le reçoit de la même façon. Voir [Paquets](/fr/docs/configuration-bundles).
+
+## Folio et EPUB
+
+La vue Folio relie le livre selon sa première version : un dos carré collé ou une couverture souple cousue comme un broché, un cartonnage comme un relié, avec le dos de la couverture peint sur le dos du livre. Un EPUB écrit par la ligne de commande ou par le Sandbox prend la première de couverture imprimée comme image de couverture quand le livre a une version imprimée et n’en indique pas d’autre.
+
+## Limites
+
+- Le dos compte les pages telles qu’elles sont mises en page. Un livre dont les pages changent après la création de la couverture doit refaire sa couverture ; le dos et chaque panneau suivent d’eux-mêmes.
+- Les mesures par défaut sont un point de départ tiré de spécifications publiées. Demandez les siennes à l’imprimeur et gardez-les dans un profil.
+- Seuls le PDF et les formats d’image sont écrits. Aucun paquet IDML de la feuille de couverture n’est produit.
+- Un titre `#` dans le texte de la couverture prend la maquette des titres de chapitre du livre ; composez les titres de couverture avec des styles de paragraphe.

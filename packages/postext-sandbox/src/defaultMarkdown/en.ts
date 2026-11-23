@@ -894,7 +894,7 @@ Everything described in this book can be tried right now, without writing code. 
 
 ## A tour of the interface
 
-:index{term="Sandbox"}The interface follows the layout of a familiar code editor, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between seven panels — Books, Chapters, Text, Resources, Fonts, Design and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in six tabs: Canvas, PDF, Folio, HTML, EPUB 3 and SCORM. The interface speaks English, Spanish, Catalan, French, German, Italian, Brazilian Portuguese, Simplified Chinese, Japanese and Arabic, and runs from right to left in Arabic; a setting for large buttons and fields makes every control easier to reach by touch or with an unsteady hand.
+:index{term="Sandbox"}The interface follows the layout of a familiar code editor, sketched in :ref{id="sandbox-ui"}. An **activity bar** on the left switches between eight panels — Books, Chapters, Text, Resources, Fonts, Design, Cover and Checks, the last with a count of open issues. A resizable **sidebar** holds the active panel; clicking the active icon collapses it. The **viewport** on the right shows the same layout in six tabs: Canvas, PDF, Folio, HTML, EPUB 3 and SCORM. The interface speaks English, Spanish, Catalan, French, German, Italian, Brazilian Portuguese, Simplified Chinese, Japanese and Arabic, and runs from right to left in Arabic; a setting for large buttons and fields makes every control easier to reach by touch or with an unsteady hand.
 
 The sidebar and the viewport share the window, and the boundary between them can be dragged. Every panel and the viewport remember their state between visits: the zoom and view mode of the canvas, the column mode of the HTML view, the groups open in the Design panel. The theme and the interface language are switched from the foot of the activity bar, and the language of the interface is independent of the language of the book.
 
@@ -910,7 +910,7 @@ The editor also keeps an eye on the book. Its chapter menu lists every chapter w
 
 ## Configuration
 
-The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, composition, headings and contents, lists, figures and tables, boxes, exercises, comics, headers and footers, parts, export, Folio (the book in 3D) and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file. In a book with several languages a switch at the head of the panel chooses between the settings all editions share and those of the edition on screen, as :ref{id="languages"} explains.
+The **Design** panel edits the whole configuration — more than five hundred fields — in groups: page and columns, writing system, colours, typography, composition, headings and contents, lists, figures and tables, boxes, exercises, comics, headers and footers, parts, export, Folio (the book in 3D), cover and advanced settings. A search box finds any option by name, and the **Changed** filter shows what differs from the defaults. Every field and every section can be reset on its own, and the configuration can be exported and imported as a file. In a book with several languages a switch at the head of the panel chooses between the settings all editions share and those of the edition on screen, as :ref{id="languages"} explains.
 
 ## The six views
 
@@ -1075,6 +1075,16 @@ A **die-cut**:index{term="die-cuts"} is the work of a steel-rule die after print
 
 The page itself prints whole. The die-maker works from the **die line**, the outline of every hole, which the PDF strokes on a plate the press never inks and in a layer a reader can hide, and the preflight warns of a hole too close to the trim or the spine, or of text left inside one. The canvas and the HTML view show the pages beneath through each hole, as deep as the holes line up. In the Folio view the hole is cut through the paper itself.
 
+## The cover sheet
+
+:index{term="print covers"}The cover of a printed book is one sheet folded round the pages: the back, the spine and the front side by side, with flaps or the turn-in of a case round them. Its width depends on the book, because the spine is as thick as the pages, and Postext measures the spine from the page count and the paper the book is printed on. Each version of the book, a paperback or a hardcover, has a sheet and an ISBN of its own.
+
+The design of the sheet, its ground, pictures, boxes and finishes, is part of the configuration, while its words come from the book. The title, the subtitle and the author reach the front and the spine from the metadata, and the back cover's text is a short Markdown document of its own, so a new blurb never touches the design, and a corrected title reaches the front and the spine in the same moment, with nothing to copy by hand. The **Cover** panel draws the sheet with its folds and its bleed, warns when the spine is too thin for its lettering, and exports the sheet as a PDF for the printer.
+
+:::callout{type="try"}
+Open the **Cover** panel on this guide. Its paperback sheet carries the picture of the first page across the front, a gloss varnish over it, and the text of the back page on the back. Under **Files for the printer**, **Download sheet PDF** gives the whole sheet with its marks, and **Download front cover** the front alone, as a picture for a shop page, a catalogue or the cover of an EPUB.
+:::
+
 ## PDF/X
 
 Printers ask for **PDF/X**:index{term="PDF!PDF/X"} because it removes the guesswork. A PDF/X file says which printing condition it was made for, embeds every font, carries its trim and bleed boxes and leaves out anything a press cannot use, such as links. Postext writes the two versions printers ask for most. PDF/X-1a is the conservative one: four inks and grey only, no transparency. PDF/X-4 keeps transparency and is the usual choice today. Either is chosen under Design › Export › Print preparation, or with the \`--pdfx\` option of the command line.
@@ -1103,7 +1113,7 @@ The **print preview** shows:index{term="print preview"} the pages as the press w
 
 ## The accessible PDF and the printed one
 
-The PDF for the press and the PDF for readers can be the same file. The tagged structure that makes a PDF accessible, described in :ref{id="output"}, sits alongside the PDF/X rules without conflict; only the links are dropped, because a printing standard does not allow them. The tags, the alternative text and the reading order stay.
+The PDF for the press and the PDF for readers can be the same file. The tagged structure that makes a PDF accessible, described in :ref{id="output"}, sits alongside the PDF/X rules without conflict; only the links are dropped, because a printing standard does not allow them. The tags, the alternative text and the reading order stay, so the one file serves the printer and a reader who listens to the book.
 
 # The book in 3D {lead="A layout is a set of pages, but a book is an object: paper of a certain weight and colour, a binding that opens a certain way, a thickness the hand feels. The Folio view shows the pages as that object, before anything is printed." summary="The Folio view, paper stocks, bindings, covers and the light"}
 

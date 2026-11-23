@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'es',
   lastUpdated: '2026-11-10',
   readingTime: '34 min',
-  order: 42,
+  order: 43,
   plainSummary: "El Sandbox es una herramienta gratuita de esta web para probar Postext sin instalar nada. Escribes el texto a un lado y ves las páginas terminadas al otro, y cambian mientras escribes. Esta página explica las partes de la pantalla y los paneles donde escribes el texto, organizas libros y capítulos, añades imágenes y eliges tipografías. Otras páginas explican los ajustes de diseño, las vistas previas, cómo guardar e importar, y cómo poner el Sandbox en tu propia web.",
 };
 
@@ -33,6 +33,7 @@ Una franja estrecha en el borde izquierdo tiene un botón por panel. Cada botón
 - **Recursos** (icono `FolderOpen`): imágenes, dibujos SVG y tablas que usa el libro
 - **Fuentes** (icono `Type`): los tipos de letra que usa el libro y tus propios archivos de fuente
 - **Diseño** (icono `Settings2`): ajustes de página, tipografía, títulos, figuras, recuadros y exportación
+- **Cubierta** (icono `BookMarked`): las versiones impresas del libro, el pliego de cubierta con su lomo, su diseño y sus textos (véase [Cubiertas para imprenta](/es/docs/print-covers#en-el-sandbox))
 - **Revisión** (icono `AlertTriangle`): los problemas de composición que se han encontrado en la maquetación. El icono lleva una insignia con el número de avisos del momento, hasta un máximo de `99+`.
 
 Al pulsar el botón del panel activo, la barra lateral se contrae; al pulsar otro botón, se pasa a ese panel. La barra es una sola parada de tabulación: las flechas (↑ / ↓, que vuelven a empezar al llegar al final), **Inicio** y **Fin** mueven el foco entre los botones, e Intro o Espacio abren el panel que tiene el foco.
@@ -233,7 +234,7 @@ Gestiona los recursos del libro: imágenes de mapa de bits, figuras SVG, tablas 
 - **Nueva tabla**: empieza como una cuadrícula de 2×2 con una fila de cabecera
 - **Añadir vídeo**: un vídeo de YouTube o Vimeo, un archivo de vídeo o la dirección de uno (un MP4 o un flujo HLS; véase *Vídeo*, más abajo). Un libro cuyos tipos de recurso son anteriores a los vídeos recibe el tipo integrado *Vídeo* al añadir el primero.
 
-También puedes arrastrar archivos desde el disco y soltarlos sobre el panel, incluidos archivos de vídeo (MP4, WebM, Ogg, QuickTime). Se suben en lote, con ids generados a partir de sus nombres de archivo. Los archivos no admitidos se omiten, y una nota breve indica cuántos se han añadido y cuántos se han omitido.
+También puedes arrastrar archivos desde el disco y soltarlos sobre el panel, incluidos archivos de vídeo (MP4, WebM, Ogg, QuickTime). Un PDF, o un archivo de Illustrator guardado con compatibilidad PDF, se convierte en una imagen por página (hasta 20) a 300 ppp sobre fondo transparente; los archivos TIFF y PSD conservan su tamaño completo. Un archivo EPS no se lee: una nota pide que se guarde como PDF. Se suben en lote, con ids generados a partir de sus nombres de archivo. Los archivos no admitidos se omiten, y una nota breve indica cuántos se han añadido y cuántos se han omitido.
 
 **Vista de detalle.** Al seleccionar un recurso se abre su editor:
 

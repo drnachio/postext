@@ -204,7 +204,7 @@ const SVG_DEFAULT_SIZE = { width: 300, height: 150 };
 /** SVG markup as a bitmap from `raster`, at its own proportions (as an
  *  `<img>` would take them, then stretched to the box it is placed in)
  *  and as large as `raster.box` holds. */
-async function rasterizedSvg(svgText: string, raster: SvgRaster): Promise<ImageBitmap | null> {
+export async function rasterizedSvg(svgText: string, raster: SvgRaster): Promise<ImageBitmap | null> {
   const size = svgSize(svgText) ?? SVG_DEFAULT_SIZE;
   const fit = Math.min(raster.box.width / size.width, raster.box.height / size.height);
   const png = await raster.rasterize(svgText, Math.max(1, Math.round(size.width * fit)), Math.max(1, Math.round(size.height * fit)));

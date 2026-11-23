@@ -72,6 +72,7 @@ describe("docs table of contents", () => {
       "composed-pages",
       ...CHAPTER_PAGES["composed-pages"]!,
       "special-inks-die-cuts",
+      "print-covers",
       "contributing",
       "sandbox",
       ...CHAPTER_PAGES.sandbox!,
@@ -112,7 +113,7 @@ describe("docs table of contents", () => {
     }
   });
 
-  it("numbers the pages 1 to 53 and gives Part II the Configuration reference, the craft pages, Comics, Music notation, Exercises, Composed pages and Special inks and die-cuts, and Part III the Sandbox, the two guides, the skill, the command line and WebMCP", () => {
+  it("numbers the pages 1 to 54 and gives Part II the Configuration reference, the craft pages, Comics, Music notation, Exercises, Composed pages, Special inks and die-cuts and Print covers, and Part III the Sandbox, the two guides, the skill, the command line and WebMCP", () => {
     expect(docs.map((d) => d.locales.en!.order)).toEqual(docs.map((_, i) => i + 1));
     expect(order("configuration")).toBe(4);
     expect(CONFIGURATION_PAGES.map((slug) => order(slug))).toEqual(CONFIGURATION_PAGES.map((_, i) => 5 + i));
@@ -122,17 +123,18 @@ describe("docs table of contents", () => {
     expect(order("exercises")).toBe(37);
     expect(order("composed-pages")).toBe(38);
     expect(order("special-inks-die-cuts")).toBe(40);
+    expect(order("print-covers")).toBe(41);
     for (const slug of ["introduction", "architecture", ...CHAPTER_PAGES.architecture!]) {
       expect(docPart(order(slug)!).key, slug).toBe("foundations");
     }
-    for (const slug of ["configuration", ...CONFIGURATION_PAGES, "justification", "document-format", ...CHAPTER_PAGES["document-format"]!, "chinese-layout", "arabic-layout", "japanese-layout", "comics", "music", "exercises", "composed-pages", ...CHAPTER_PAGES["composed-pages"]!, "special-inks-die-cuts"]) {
+    for (const slug of ["configuration", ...CONFIGURATION_PAGES, "justification", "document-format", ...CHAPTER_PAGES["document-format"]!, "chinese-layout", "arabic-layout", "japanese-layout", "comics", "music", "exercises", "composed-pages", ...CHAPTER_PAGES["composed-pages"]!, "special-inks-die-cuts", "print-covers"]) {
       expect(docPart(order(slug)!).key, slug).toBe("craft");
     }
     for (const slug of ["contributing", "sandbox", ...CHAPTER_PAGES.sandbox!, ...GUIDE_PAGES, "skill", "command-line", "webmcp"]) {
       expect(docPart(order(slug)!).key, slug).toBe("practice");
     }
-    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([41, 42, 51, 52, 53]);
-    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([48, 49, 50]);
+    expect([order("contributing"), order("sandbox"), order("skill"), order("command-line"), order("webmcp")]).toEqual([42, 43, 52, 53, 54]);
+    expect(GUIDE_PAGES.map((slug) => order(slug))).toEqual([49, 50, 51]);
   });
 
   it("sets the pages of the Configuration reference under its entry page, in every language", () => {

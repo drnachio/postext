@@ -3,11 +3,11 @@
 export const metadata = {
   title: 'WebMCP: un agent treballant al Sandbox',
   sidebarTitle: 'WebMCP',
-  description: "Què pot fer un agent d'IA al navegador amb les 64 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
+  description: "Què pot fer un agent d'IA al navegador amb les 71 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
-  lastUpdated: '2026-11-12',
-  readingTime: '13 min',
-  order: 53,
+  lastUpdated: '2026-11-23',
+  readingTime: '14 min',
+  order: 54,
   plainSummary: "Aquesta pàgina és per a qui vol que un assistent d'intel·ligència artificial li faci la feina en un llibre del Sandbox. Mentre el Sandbox és obert, dona a l'assistent un joc d'eines per mirar qualsevol pàgina, canviar el disseny, editar el text, afegir imatges i taules, trobar problemes i desar fitxers. Li demanes les coses amb les teves paraules, per exemple «fes la lletra una mica més grossa i comprova que el llibre encara cap en 40 pàgines», i l'assistent fa servir les eines i et mostra les pàgines. Tot es queda al teu navegador. La pàgina explica com connectar-hi un assistent, què pot fer i com es crida cada eina.",
 };
 
@@ -23,7 +23,7 @@ el llibre, demana una imatge de la pàgina 12, posa `bodyText.fontSize` a 10,5 p
 veu que el capítol ha passat de 18 a 19 pàgines i ho torna a deixar com estava.
 Fa el que tu fas a ull, i ho fa amb el teu llibre, al teu navegador.
 
-Hi ha 64 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
+Hi ha 71 eines amb un nom que comença per `sandbox_`, registrades mentre el Sandbox
 és a la pantalla, i 8 eines del lloc, `site_*`, a totes les pàgines de
 postext.dev. Aquesta pàgina les ordena segons el que demanaries a un agent i
 dona la crida de cadascuna.
@@ -39,7 +39,7 @@ pàgina les hi troba. A Postext no cal instal·lar ni configurar res.
 WebMCP encara és un esborrany. Chrome l'ofereix com a prova d'origen i darrere
 de l'indicador `chrome://flags/#enable-webmcp-testing`. Les eines depenen de la
 pàgina: a la pàgina d'inici o a la documentació, l'agent té les eines `site_*`;
-quan el Sandbox és a la pantalla, apareixen també les 55 eines `sandbox_*`.
+quan el Sandbox és a la pantalla, apareixen també les 71 eines `sandbox_*`.
 
 ### En qualsevol altre navegador: `window.postextWebMcp`
 
@@ -645,6 +645,54 @@ vinyeta. El format és a [Còmics](/ca/docs/comics).
 
 - **Dissenys.** `sandbox_list_designs` enumera la galeria del tauler Disseny (dissenys desats, els que porta el Sandbox i els dels llibres d'exemple) amb les seves parts. `sandbox_save_design` desa el disseny d'un llibre, `sandbox_try_design` en prova un al llibre en pantalla i `sandbox_end_design_trial` el conserva o el descarta (Descarta torna només el que el disseny va substituir), `sandbox_apply_design` n'aplica un de cop o com a estil de capítol, `sandbox_import_design` i `sandbox_export_design` llegeixen i escriuen fitxers de disseny, i `sandbox_delete_design` n'elimina un de desat. Totes accepten `parts`, els grups del tauler Disseny, i responen amb els estils que el text anomena i que al disseny li falten.
 
+### Cobertes per a impremta
+
+Les versions impreses i el disseny de la coberta són paràmetres: `sandbox_set_config`
+escriu `production.versions`, `production.collection` i `cover`
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Cinc
+eines llegeixen, escriuen i exporten la resta, com fa el tauler Coberta:
+
+- `sandbox_cover_get` llegeix la coberta d'una versió (`version`, la primera per
+  defecte) i un dels seus plecs (`sheet`: `cover`, `jacket`,
+  `endpaperFront` o `endpaperBack`): les versions, la mida i el llom del plec
+  en mm amb les pàgines de què surten, el rectangle de cada zona, els buits
+  on va el text de la coberta amb el text que té cadascun (i `sheetText`, el
+  text que unes tapes, una sobrecoberta o una guarda tenen només per a si), el
+  disseny amb què es dibuixa el plec (`design.uses`: `book` o el nom del seu a
+  `cover.sheets`; `design.choices`: els dissenys propis que pot prendre), els
+  elements del disseny situats al plec, la col·lecció (`collection`) i les
+  revisions.
+- `sandbox_cover_write_text` escriu el Markdown d'un buit, una zona o una caixa
+  de text pel seu nom; `text: null` el treu, i la coberta i el llom tornen al
+  títol, el subtítol i l'autor de les metadades. Un mateix text serveix a
+  totes les versions i plecs; amb `thisSheetOnly: true` s'escriu només per a
+  unes tapes, una sobrecoberta o una guarda, i allà ocupa el lloc del text
+  compartit. És un pas de l'historial de desfer.
+- `sandbox_cover_export` escriu el plec com a PDF per a la impremta
+  (`format: "pdf"`, amb els resultats del preflight) o una zona com a JPEG
+  (`format: "jpeg"`, `zone`, `longSide`), baixat o, amb
+  `deliver: "data"`, retornat codificat en base64.
+- `sandbox_cover_sheet_design` tria el disseny amb què es dibuixa un plec d'un
+  cartoné, com fa «Disseny d'aquest plec»: `design: "book"` (el disseny de
+  coberta del llibre), `"own"` (el de les tapes o la sobrecoberta, o el d'aquesta
+  guarda sola) o `"endpapers"` (un per a les dues guardes), que comença com a
+  còpia del del llibre. Després, `patch` canvia camps d'aquest disseny
+  (`background`, `image`, `elements`, `textBoxes`…; `null` en treu un). És un
+  pas de l'historial de desfer.
+- `sandbox_cover_set_collection` escriu la col·lecció a què pertany el llibre:
+  `name`, `isbn`, `catalogue` (els títols en ordre, cadascun
+  `{ id, title, resource? }`, que substitueix la llista sencera) i `volume`
+  (l'identificador del catàleg que és aquest llibre, `null` per a cap). Un camp
+  que no es passa queda com és. `::catalogue` al text de la coberta compon els
+  títols com a llista, i un element de coberta de tipus `catalogue` hi col·loca
+  les imatges. És un pas de l'historial de desfer.
+
+```json
+{ "slot": "back", "text": "Una ciutat que guarda els seus llibres sota terra.\n\nI la noia que els llegeix en veu alta." }
+```
+
+Vegeu [Cobertes per a impremta](/ca/docs/print-covers).
+
 ### Preguntes i avisos
 
 Quan un enllaç obre un llibre que ja tens en una versió pròpia, el Sandbox et
@@ -750,6 +798,8 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
 - **Recursos i fonts**: `sandbox_list_resources`, `sandbox_save_resource`,
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Còmics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
+- **Pàgines compostes**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
+- **Cobertes per a impremta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
 - **Llibres i fitxers**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

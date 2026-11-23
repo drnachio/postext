@@ -7,7 +7,7 @@ export const metadata = {
   lang: 'pt',
   lastUpdated: '2026-11-16',
   readingTime: '14 min',
-  order: 52,
+  order: 53,
   plainSummary: "Esta página é para quem quer fazer livros com o Postext a partir de um terminal, sem usar o site. Você baixa um único arquivo feito para o seu computador e o executa, sem instalar mais nada. Você entrega a ele o livro, ou alguns arquivos de texto, e ele faz um PDF, uma página da web, um livro digital, imagens das páginas ou um documento do Word. Ele também verifica se o livro tem problemas e junta todos os arquivos do livro em um só. Programas e assistentes de inteligência artificial também podem usá-lo, porque ele responde em um formato que esses programas leem com facilidade.",
 };
 
@@ -165,6 +165,7 @@ próprio idioma, a menos que `--locale` peça outro (`--locale en`).
     <tr><td><code>pdf</code></td><td>O PDF, com marcadores, links, fontes incorporadas e, por padrão, marcado para acessibilidade (PDF/UA); PDF/X e CMYK para impressão.</td></tr>
     <tr><td><code>html</code></td><td>As páginas em HTML com texto real: um arquivo autossuficiente, ou uma pasta com <code>index.html</code> e <code>assets/</code>.</td></tr>
     <tr><td><code>epub</code></td><td>Um livro EPUB 3, com páginas fixas como no impresso ou texto refluível.</td></tr>
+    <tr><td><code>cover</code></td><td>A capa impressa de uma das versões do livro: a folha inteira como PDF, ou um dos painéis como imagem.</td></tr>
     <tr><td><code>image</code></td><td>Uma página como imagem PNG, JPEG ou WebP.</td></tr>
     <tr><td><code>images</code></td><td>Todas as páginas, ou um intervalo, como imagens em uma pasta.</td></tr>
     <tr><td><code>docx</code></td><td>Os capítulos como documento do Word: semântico (só o conteúdo, em estilos simples do Word), diagramado (o mesmo texto editável com o projeto gráfico do livro) ou fac-símile das páginas (cada linha numa caixa de texto fixa).</td></tr>
@@ -235,9 +236,37 @@ postext epub book.postext --layout reflowable --cover cover.jpg
 `--layout fixed` (o padrão) mantém cada página como no impresso, com texto
 selecionável; `--layout reflowable` deixa o sistema de leitura recompor o
 texto para a própria tela (veja [Livros EPUB](/pt/docs/configuration-html-folio-epub#livros-epub-postext-epub)).
-A capa é a miniatura do livro, a menos que `--cover` indique uma imagem. Os
+A capa é a imagem que `--cover` indica; sem ela, a capa da versão impressa do
+livro, quando o livro tem uma, e, se não, a miniatura. Os
 metadados do pacote EPUB (título, autores, idioma, identificador) vêm do front
 matter do primeiro capítulo, como no Sandbox. As fontes marcadas com `redistributable: false` não são copiadas; uma família que indica um `fallback` é incorporada com as faces dessa família aberta, mas com o nome original (desde o postext 1.43).
+
+### cover
+
+```bash
+postext cover book.postext -o cover.pdf
+postext cover book.postext --print-version hardcover --sheet jacket -o jacket.pdf
+postext cover book.postext -o front.jpg --dpi 300
+```
+
+A folha de capa de uma das versões impressas do livro (as suas configurações
+`production`): contracapa, lombada e capa, e as orelhas, no tamanho que a
+encadernação e as páginas do livro dão, com a sangria e as marcas de dobra,
+composta a partir do projeto da capa do livro e do Markdown da capa. O título,
+o autor e a lombada vêm dos metadados do livro quando o Markdown da capa não os
+traz. Veja [Capas para impressão](/pt/docs/print-covers).
+
+- `--print-version ID`: a versão (`production.versions[].id`; a primeira por
+  padrão). Não é `--version`, que imprime a versão do programa.
+- `--sheet cover|jacket|endpaper-front|endpaper-back`: a folha (`cover` por padrão).
+- Um caminho terminado em `.png`, `.jpg` ou `.webp`, ou `--format`, pinta um
+  painel em vez de gravar o PDF: a capa, a menos que `--zone` indique `back`,
+  `spine`, `flapFront`, `flapBack` ou `sheet` para a folha inteira. `--dpi` e
+  `--quality` valem como em `image`.
+- As opções de `pdf` (`--pdfx`, `--profile`, `--color-space`…) valem para o PDF.
+
+As verificações da capa (uma lombada estreita demais para texto, páginas em
+branco acrescentadas pelos cadernos, um ISBN inválido) são impressas como avisos.
 
 ### image e images
 
