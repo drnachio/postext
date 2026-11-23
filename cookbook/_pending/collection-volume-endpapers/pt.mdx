@@ -1,0 +1,65 @@
+---
+title: "Um volume de coleção, com a série nas guardas"
+summary: "O volume XI de uma coleção de doze em capa dura: dois ISBN ao lado do código de barras, uma capa comum a todos os volumes e a coleção inteira nas guardas."
+plain: "Um livro de capa dura de uma série de doze, com as folhas para a gráfica: a capa nas cores da coleção com o número do volume e as duas guardas de dentro, que mostram as capas e os títulos dos doze livros."
+description: "Um volume de coleção no Postext: production.collection com o ISBN da obra completa ao lado do código de barras e o catálogo da série nas guardas."
+question: "Como imprimo um volume de uma coleção com o ISBN da obra completa e os outros títulos nas guardas?"
+aliases: ["coleção", "série", "obra em vários volumes", "ISBN da obra completa", "guardas", "contraguarda", "folha volante", "capa dura", "endpapers", "guardas"]
+pageNotes: { "27": "A capa dura aberta sobre um fundo bordô: a quarta capa com a linha da coleção em dourado, o texto de apresentação e o código de barras sobre uma etiqueta clara com a linha do ISBN da obra completa acima; a lombada escrita de baixo para cima entre duas faixas douradas, com o número XI num anel ao pé; e a primeira capa com o título, o nome da coleção, o autor, uma pintura de um soldado pálido e um homem de preto no portão de um hospital numa moldura dourada e o número XI num anel de ouro.", "28": "A guarda da frente: sobre um fundo ocre claro, doze miniaturas da capa da coleção, cada uma com a sua pintura, seis em cada página, a do volume XI emoldurada em ouro; embaixo, o nome da coleção, os doze títulos numerados de I a XII e o ISBN da obra completa.", "29": "A guarda de trás: o mesmo desenho com as duas páginas trocadas, os volumes VII a XII à esquerda e I a VI à direita." }
+---
+
+## O que você vai compor
+
+*O casamento enganoso*, a décima primeira das doze *Novelas exemplares* de Cervantes, como volume XI de uma coleção que publica uma novela por volume de capa dura. As 26 páginas vão em Crimson Pro 11/15,2 numa página de 120 × 185 mm. A partir delas, `buildCover` faz três folhas para o encadernador: a capa impressa, no bordô da coleção, com uma moldura dourada em volta da pintura e o número num anel de ouro, e as guardas da frente e de trás, que mostram os doze volumes como miniaturas dessa capa sobre uma lista numerada de títulos. Ao lado do código de barras, que leva o ISBN do volume, a capa imprime o ISBN da obra completa.
+
+## Preparo
+
+### 1 · A coleção é um dado do livro
+
+O código é [a resposta curta](#a-resposta-curta) acima. `production.collection` guarda a série: o nome, o ISBN e um `catalogue` com um identificador, um título e uma imagem para cada volume. O que o Postext imprime é o `workIsbn` da versão: uma linha preta de 6,5 pt sobre o código de barras, «ISBN da obra completa», na língua do livro. O catálogo viaja com o livro no arquivo `.postext` e as verificações da configuração o leem, mas `buildCover` não desenha nada com ele, então o próprio código o compõe no passo 3. Os dois ISBN são números de exemplo do bloco 978-84-0000, que não pertencem a nenhum livro.
+
+### 2 · Um mesmo desenho para todos os volumes
+
+<Excerpt region="livery" />
+
+O desenho da capa é o mesmo objeto em todos os volumes da coleção; só mudam `VOLUME`, a pintura e os textos. Cada elemento é posicionado em relação à zona em que está, de modo que, se outro volume tiver mais páginas e uma lombada mais grossa, a primeira capa se desloca com o seu painel. Na lombada, `basis` registra os 10 mm de lombada sobre os quais as faixas foram desenhadas: com uma lombada de 8,3 mm ou de 14 mm, as faixas se ajustam à largura e o anel fica no eixo. A linha sobre o código de barras é preta, e por isso o código fica sobre uma etiqueta clara.
+
+### 3 · As guardas são compostas a partir do catálogo
+
+<Excerpt region="endpapers" />
+
+Um elemento cuja zona não existe numa folha não é desenhado nela. As miniaturas ficam em `pastedown` e `flyleaf` (contraguarda e folha volante), então aparecem nas guardas e não na capa, e a pintura de `front` não chega às guardas. Com o texto acontece o mesmo: um único Markdown de capa serve a todas as folhas; nas guardas descarta-se o quadro da quarta capa, e na capa, os das guardas. O código escreve os quadros das guardas a partir do catálogo, de modo que a lista e as miniaturas sempre coincidem. As duas guardas recebem o mesmo desenho e o mesmo texto, e no fim do livro a contraguarda fica à direita: ali aparecem primeiro os volumes VII–XII.
+
+### 4 · Três folhas de um mesmo livro
+
+<Excerpt region="sheets" />
+
+A mesma chamada com `sheet: 'cover'`, `'endpaperFront'` e `'endpaperBack'` faz a capa e as duas guardas, cada uma um documento de uma página no seu próprio formato. As 26 páginas são arredondadas para dois cadernos de 16, 16 folhas de 240 µm; com meio milímetro de folga, o miolo tem 4,3 mm e a lombada da capa 8,3 mm, somados dois papelões de 2 mm. As verificações apontam `spineTooThinForText` para os 4,3 mm do miolo, enquanto o título vai na lombada de 8,3 mm da capa, acima do mínimo de 6 mm. O PDF traz as 26 páginas e depois a capa e as guardas.
+
+## Variações
+
+### Vista a capa com uma sobrecapa
+
+Numa capa dura, `flaps` acrescenta uma sobrecapa, uma quarta folha com orelhas próprias, cuja quarta capa leva o código de barras e o ISBN da obra completa como a capa.
+
+```diff
+   versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
+     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
+-    workIsbn: collection.isbn }],
++    workIsbn: collection.isbn, flaps: true }],
+```
+
+### Componha o volume seguinte
+
+Para o volume XII o desenho não muda: o número, a moldura dourada nas guardas e o título destacado seguem `VOLUME`. O texto, a pintura e o ISBN são os desse volume.
+
+```diff
+-const VOLUME = 11; // this book's place in the collection
++const VOLUME = 12; // this book's place in the collection
+```
+
+## Erros comuns
+
+- As folhas vêm depois das páginas do livro na lista capturada: a capa é a página 27, o número de páginas do livro mais um. Uma mudança que acrescente uma página ao livro as desloca.
+- A verificação `contentInConfig` do Livro de receitas toma a linha que `buildCover` imprime sobre o código de barras por texto guardado num desenho. O código a declara em `checks.contentInConfig.allow`, com a redação de `workIsbnCaption`, a função que o motor usa.
+- Os dígitos do código de barras pedem OCR-B, que nenhum servidor de fontes oferece. Carregue o código de barras com o `font-family` de uma fonte que o código já carrega, ou o PDF falha.

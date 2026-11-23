@@ -1,0 +1,65 @@
+---
+title: "Un volumen de colección, con la serie en las guardas"
+summary: "El volumen XI de una colección de doce en tapa dura: dos ISBN junto al código de barras, una tapa común a todos y la colección entera en las guardas."
+plain: "Un libro de tapa dura de una serie de doce, con sus pliegos para la imprenta: la tapa con los colores de la colección y el número del volumen, y las dos guardas de dentro, con las cubiertas y los títulos de los doce libros."
+description: "Un volumen de colección en Postext: production.collection con el ISBN de la obra completa junto al código de barras y el catálogo de la serie en las guardas."
+question: "¿Cómo imprimo un volumen de una colección con el ISBN de la obra completa y los demás títulos en las guardas?"
+aliases: ["colección", "serie", "obra en varios volúmenes", "ISBN obra completa", "guardas", "contraguarda", "hoja volante", "tapa dura", "endpapers", "set ISBN"]
+pageNotes: { "27": "La tapa extendida sobre un fondo granate: la contracubierta con la línea de la colección en oro, el texto de presentación y el código de barras sobre una etiqueta clara con la línea del ISBN de la obra completa encima; el lomo rotulado de abajo arriba entre dos bandas doradas, con el número XI en un aro al pie; y la cubierta con el título, el nombre de la colección, el autor, una pintura de un soldado pálido y un hombre de negro a la puerta de un hospital en un marco dorado y el número XI en un aro de oro.", "28": "La guarda delantera: sobre un fondo ocre claro, doce miniaturas de la tapa de la colección, cada una con su pintura, seis en cada página, la del volumen XI enmarcada en oro; debajo, el nombre de la colección, los doce títulos numerados del I al XII y el ISBN de la obra completa.", "29": "La guarda trasera: el mismo diseño con las dos páginas cambiadas de lado, los volúmenes VII a XII a la izquierda y I a VI a la derecha." }
+---
+
+## Lo que vas a componer
+
+*El casamiento engañoso*, la undécima de las doce *Novelas ejemplares* de Cervantes, como volumen XI de una colección que publica una novela en cada tomo de tapa dura. Las 26 páginas van en Crimson Pro de 11/15,2 sobre una página de 120 × 185 mm. Con ellas, `buildCover` hace tres pliegos para el encuadernador: la tapa impresa, en el granate de la colección, con un marco dorado alrededor de la pintura y el número en un aro de oro, y las guardas delantera y trasera, que muestran los doce volúmenes como miniaturas de esa tapa sobre una lista numerada de títulos. Junto al código de barras, que lleva el ISBN del volumen, la tapa imprime el ISBN de la obra completa.
+
+## Elaboración
+
+### 1 · La colección es un dato del libro
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. `production.collection` guarda la serie: su nombre, su ISBN y un `catalogue` con un identificador, un título y una imagen para cada volumen. Lo que Postext imprime es el `workIsbn` de la versión: una línea en negro de 6,5 pt sobre el código de barras, «ISBN obra completa», en la lengua del libro. El catálogo viaja con el libro en el archivo `.postext` y las comprobaciones de la configuración lo leen, pero `buildCover` no dibuja nada con él, así que el propio código lo compone en el paso 3. Los dos ISBN son números de muestra del bloque 978-84-0000, que no corresponden a ningún libro.
+
+### 2 · Un mismo diseño para todos los volúmenes
+
+<Excerpt region="livery" />
+
+El diseño de la tapa es el mismo objeto en todos los volúmenes de la colección; solo cambian `VOLUME`, la pintura y los textos. Cada elemento se coloca respecto a la zona en que está, de modo que, si otro volumen tiene más páginas y un lomo más grueso, la cubierta se desplaza con su panel. En el lomo, `basis` anota los 10 mm de lomo sobre los que se dibujaron las bandas: con un lomo de 8,3 mm o de 14 mm las bandas se ajustan a su ancho y el aro sigue en el eje. La línea sobre el código de barras va en negro, y por eso el código se apoya en una etiqueta clara.
+
+### 3 · Las guardas se componen con el catálogo
+
+<Excerpt region="endpapers" />
+
+Un elemento cuya zona no existe en un pliego no se dibuja en él. Las miniaturas están en `pastedown` y `flyleaf` (contraguarda y hoja volante), así que salen en las guardas y no en la tapa, y la pintura de `front` no llega a las guardas. Con el texto pasa lo mismo: un único Markdown de cubierta sirve para todos los pliegos; en las guardas se descarta el marco de la contracubierta, y en la tapa, los de las guardas. El código escribe los marcos de las guardas a partir del catálogo, de modo que la lista y las miniaturas siempre coinciden. Las dos guardas llevan el mismo diseño y el mismo texto, y al final del libro la contraguarda queda a la derecha: allí aparecen primero los volúmenes VII–XII.
+
+### 4 · Tres pliegos de un mismo libro
+
+<Excerpt region="sheets" />
+
+La misma llamada con `sheet: 'cover'`, `'endpaperFront'` y `'endpaperBack'` hace la tapa y las dos guardas, cada una un documento de una página a su propio tamaño. Las 26 páginas se redondean a dos cuadernillos de 16, 16 hojas de 240 µm; con medio milímetro de margen la tripa mide 4,3 mm y el lomo de la tapa 8,3 mm, al sumar dos cartones de 2 mm. Las comprobaciones dan `spineTooThinForText` para los 4,3 mm de la tripa, mientras que el rótulo va en el lomo de 8,3 mm de la tapa, que supera el mínimo de 6 mm. El PDF lleva las 26 páginas y después la tapa y las guardas.
+
+## Variantes
+
+### Viste la tapa con una sobrecubierta
+
+En una tapa dura, `flaps` añade la sobrecubierta, un cuarto pliego con sus solapas, y su contracubierta lleva el código de barras y el ISBN de la obra completa como la tapa.
+
+```diff
+   versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
+     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
+-    workIsbn: collection.isbn }],
++    workIsbn: collection.isbn, flaps: true }],
+```
+
+### Compón el volumen siguiente
+
+Para el volumen XII el diseño no cambia: el número, el marco dorado de las guardas y el título resaltado siguen a `VOLUME`. El texto, la pintura y el ISBN son los de ese volumen.
+
+```diff
+-const VOLUME = 11; // this book's place in the collection
++const VOLUME = 12; // this book's place in the collection
+```
+
+## Errores frecuentes
+
+- Los pliegos van detrás de las páginas del libro en la lista capturada: la tapa es la página 27, el número de páginas del libro más uno. Un cambio que añada una página al libro los desplaza.
+- La comprobación `contentInConfig` del Recetario toma la línea que `buildCover` imprime sobre el código de barras por texto guardado en un diseño. El código la declara en `checks.contentInConfig.allow`, con la redacción de `workIsbnCaption`, la función que usa el motor.
+- Las cifras del código de barras piden OCR-B, que no sirve ningún servidor de fuentes. Carga el código de barras con el `font-family` de una fuente que ya cargas, o el PDF falla.

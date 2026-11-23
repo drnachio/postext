@@ -1,0 +1,65 @@
+---
+title: "Un volume de collection, la série sur ses gardes"
+summary: "Le volume XI d’une collection reliée de douze : deux ISBN près du code-barres, un cartonnage commun à tous les volumes et la collection entière sur les gardes."
+plain: "Un livre relié d’une série de douze, avec ses feuilles pour l’imprimeur : le cartonnage aux couleurs de la collection avec le numéro du volume, et les deux gardes intérieures, avec les couvertures et les titres des douze livres."
+description: "Un volume de collection dans Postext : production.collection avec l’ISBN de l’ensemble près du code-barres, et le catalogue de la série sur les gardes."
+question: "Comment imprimer un volume d’une collection avec l’ISBN de l’ensemble et les autres titres sur les gardes ?"
+aliases: ["collection", "série", "ouvrage en plusieurs volumes", "ISBN de l’ensemble", "gardes", "contre-garde", "garde volante", "cartonnage", "endpapers", "guardas"]
+pageNotes: { "27": "Le cartonnage à plat sur un fond lie-de-vin : le plat verso avec la ligne de la collection en or, le texte de présentation et le code-barres sur une étiquette claire, la ligne de l’ISBN de l’ensemble au-dessus ; le dos titré de bas en haut entre deux bandes dorées, le numéro XI dans un anneau à son pied ; et le plat recto avec le titre, le nom de la collection, l’auteur, une peinture d’un soldat pâle et d’un homme en noir à la porte d’un hôpital dans un cadre doré, et le numéro XI dans un anneau d’or.", "28": "La garde avant : sur un fond ocre clair, douze miniatures du cartonnage de la collection, chacune avec sa peinture, six par page, celle du volume XI encadrée d’or ; dessous, le nom de la collection, les douze titres numérotés de I à XII et l’ISBN de l’ensemble.", "29": "La garde arrière : le même dessin avec les deux pages inversées, les volumes VII à XII à gauche et I à VI à droite." }
+---
+
+## Ce que vous allez composer
+
+*The Deceitful Marriage*, la onzième des douze *Nouvelles exemplaires* de Cervantes, en volume XI d’une collection qui publie une nouvelle par volume relié. Les 26 pages sont composées en Crimson Pro 11/15,2 sur une page de 120 × 185 mm. `buildCover` en tire trois feuilles pour le relieur : le cartonnage imprimé, dans le lie-de-vin de la collection, avec un cadre doré autour de la peinture et le numéro dans un anneau d’or, et les gardes avant et arrière, qui montrent les douze volumes en miniatures de ce cartonnage au-dessus d’une liste numérotée des titres. Près du code-barres, qui porte l’ISBN du volume, le cartonnage imprime l’ISBN de l’ensemble.
+
+## Préparation
+
+### 1 · La collection est une donnée du livre
+
+Le code est [la réponse courte](#la-réponse-courte) ci-dessus. `production.collection` contient la série : son nom, son ISBN et un `catalogue` avec un identifiant, un titre et une image pour chaque volume. Ce que Postext imprime, c’est le `workIsbn` de la version : une ligne en noir de 6,5 pt au-dessus du code-barres, « ISBN de l’ouvrage complet », dans la langue du livre. Le catalogue voyage avec le livre dans le fichier `.postext` et les contrôles de la configuration le lisent, mais `buildCover` n’en dessine rien : le code le met en page lui-même à l’étape 3. Les deux ISBN sont des numéros d’exemple du bloc 978-84-0000, attribués à aucun livre.
+
+### 2 · Une même livrée pour chaque volume
+
+<Excerpt region="livery" />
+
+Le dessin du cartonnage est le même objet pour tous les volumes de la série ; seuls changent `VOLUME`, la peinture et les textes. Chaque élément est placé par rapport à la zone où il se trouve : quand un autre volume a plus de pages et un dos plus épais, le plat recto se déplace avec son panneau. Sur le dos, `basis` note les 10 mm de dos sur lesquels les bandes ont été dessinées : avec un dos de 8,3 mm ou de 14 mm, les bandes prennent sa largeur et l’anneau reste sur l’axe. La ligne au-dessus du code-barres est en noir, d’où l’étiquette claire sous le code-barres.
+
+### 3 · Les gardes sont mises en page à partir du catalogue
+
+<Excerpt region="endpapers" />
+
+Un élément dont la zone n’existe pas sur une feuille n’y est pas dessiné. Les miniatures sont dans `pastedown` et `flyleaf` (contre-garde et garde volante) : elles apparaissent sur les gardes et pas sur le cartonnage, et la peinture de `front` ne va pas sur les gardes. Le texte suit la même règle : un seul Markdown de couverture sert à toutes les feuilles ; sur les gardes, le cadre du plat verso est écarté, et sur le cartonnage, ceux des gardes. Le code écrit les cadres des gardes à partir du catalogue, si bien que la liste et les miniatures concordent toujours. Les deux gardes reçoivent le même dessin et le même texte, et à la fin du livre la contre-garde est à droite : les volumes VII–XII y viennent en premier.
+
+### 4 · Trois feuilles pour un livre
+
+<Excerpt region="sheets" />
+
+Le même appel avec `sheet: 'cover'`, `'endpaperFront'` et `'endpaperBack'` produit le cartonnage et les deux gardes, chacun un document d’une page à sa propre taille. Les 26 pages sont arrondies à deux cahiers de 16, soit 16 feuillets de 240 µm ; avec 0,5 mm de marge, le bloc fait 4,3 mm et le dos du cartonnage 8,3 mm, deux cartons de 2 mm ajoutés. Les contrôles signalent `spineTooThinForText` pour les 4,3 mm du bloc, alors que le titre va sur le dos de 8,3 mm du cartonnage, au-dessus du minimum de 6 mm. Le PDF contient les 26 pages, puis le cartonnage et les gardes.
+
+## Variantes
+
+### Habillez le cartonnage d’une jaquette
+
+Sur un cartonnage, `flaps` ajoute une jaquette, une quatrième feuille avec ses propres rabats, dont le plat verso porte le code-barres et l’ISBN de l’ensemble comme le cartonnage.
+
+```diff
+   versions: [{ id: 'hardcover', name: t({ en: 'Hardcover', es: 'Tapa dura' }),
+     binding: 'case-flat', isbn: '978-84-0000-198-8', isbnAddOn: '90000',
+-    workIsbn: collection.isbn }],
++    workIsbn: collection.isbn, flaps: true }],
+```
+
+### Composez le volume suivant
+
+Pour le volume XII, le dessin reste tel quel : le numéro, le cadre doré des gardes et le titre mis en avant suivent `VOLUME`. Le texte, la peinture et l’ISBN sont ceux de ce volume.
+
+```diff
+-const VOLUME = 11; // this book's place in the collection
++const VOLUME = 12; // this book's place in the collection
+```
+
+## Erreurs fréquentes
+
+- Les feuilles viennent après les pages du livre dans la liste capturée : le cartonnage est la page 27, le nombre de pages du livre plus un. Une modification qui ajoute une page au livre les décale.
+- Le contrôle `contentInConfig` du Livre de recettes prend la ligne que `buildCover` imprime au-dessus du code-barres pour du texte gardé dans un dessin. Le code la déclare dans `checks.contentInConfig.allow`, avec la formulation de `workIsbnCaption`, la fonction qu’emploie le moteur.
+- Les chiffres du code-barres demandent OCR-B, qu’aucun serveur de polices ne fournit. Chargez le code-barres avec le `font-family` d’une police que le code charge déjà, sinon le PDF échoue.

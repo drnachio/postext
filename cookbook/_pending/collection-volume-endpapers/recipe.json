@@ -1,0 +1,261 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 198,
+  "status": "draft",
+  "chapter": "output",
+  "order": 250,
+  "level": 3,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "print-versions",
+      "cover-sheet"
+    ],
+    "also": [
+      "covers",
+      "heading-styles",
+      "opener-design",
+      "design-elements",
+      "frontmatter",
+      "paragraph-styles",
+      "running-heads",
+      "resources",
+      "color-palette",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q236"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.92.0",
+    "postextPdf": "1.92.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 27,
+    "card": "page",
+    "doc": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "sandbox": "first",
+    "pages": [
+      1,
+      3,
+      4,
+      5,
+      7,
+      8,
+      20,
+      21,
+      27,
+      28,
+      29
+    ],
+    "expect": {
+      "raggedLines": 1
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 100,
+      "bulk": 2.4,
+      "shade": "#f7f1e3"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Deceitful Marriage, translated by Walter K. Kelly, from The Exemplary Novels of Cervantes (London, Bohn’s Standard Library, 1846; 1881 reprint), Project Gutenberg eBook #14420",
+          "es": "The Deceitful Marriage, en la traducción de Walter K. Kelly, de The Exemplary Novels of Cervantes (Londres, Bohn’s Standard Library, 1846; reimpresión de 1881), libro electrónico n.º 14420 del Proyecto Gutenberg"
+        },
+        "who": "Miguel de Cervantes",
+        "source": "https://www.gutenberg.org/ebooks/14420",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "El casamiento engañoso, from the Novelas ejemplares in the 1825 edition as transcribed on Wikisource",
+          "es": "El casamiento engañoso, de las Novelas ejemplares en la edición de 1825 según la transcripción de Wikisource"
+        },
+        "who": "Miguel de Cervantes",
+        "source": "https://es.wikisource.org/wiki/El_casamiento_enga%C3%B1oso_(1825)",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The front cover: a pale ensign leaning on his sword at the gate of the hospital of Valladolid, in oils",
+          "es": "La cubierta: un alférez pálido apoyado en su espada a la puerta del hospital de Valladolid, al óleo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "casamiento-1000.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 1, The Little Gipsy Girl, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 1, La gitanilla, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "gitanilla-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 2, The Generous Lover, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 2, El amante liberal, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "amante-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 3, Rinconete and Cortadillo, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 3, Rinconete y Cortadillo, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "rinconete-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 4, The Spanish-English Lady, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 4, La española inglesa, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "espanola-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 5, The Licentiate Vidriera, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 5, El licenciado Vidriera, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "vidriera-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 6, The Force of Blood, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 6, La fuerza de la sangre, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fuerza-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 7, The Jealous Estremaduran, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 7, El celoso extremeño, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "celoso-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 8, The Illustrious Scullery-Maid, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 8, La ilustre fregona, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fregona-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 9, The Two Damsels, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 9, Las dos doncellas, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "doncellas-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 10, The Lady Cornelia, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 10, La señora Cornelia, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "cornelia-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 11, The Deceitful Marriage, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 11, El casamiento engañoso, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "casamiento-320.jpg"
+      },
+      {
+        "what": {
+          "en": "The miniature cover of volume 12, The Dialogue of the Dogs, painted to match the front cover",
+          "es": "La miniatura de cubierta del volumen 12, El coloquio de los perros, pintada a juego con la cubierta"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "coloquio-320.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Josefin Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-23",
+  "updated": "2026-11-23"
+}
